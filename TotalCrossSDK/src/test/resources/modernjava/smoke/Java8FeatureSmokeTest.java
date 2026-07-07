@@ -100,8 +100,8 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
 
   private void testDefaultAndStaticInterfaceMethods() {
     DefaultGreeting greeting = new DefaultGreetingImpl();
-    checkEquals("default", greeting.defaultText(), "default interface method");
-    checkEquals("static", DefaultGreeting.staticText(), "static interface method");
+    checkEquals("default", greeting::defaultText, "default interface method");
+    checkEquals("static", DefaultGreeting::staticText, "static interface method");
   }
 
   private void testTypeAnnotationMetadata() {

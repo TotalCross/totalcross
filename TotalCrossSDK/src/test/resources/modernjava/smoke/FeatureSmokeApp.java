@@ -25,5 +25,7 @@ public class FeatureSmokeApp extends MainWindow {
 
     System.out.println("[PASS] Feature smoke app - all suites scheduled");
     add(new Label("Feature smoke app OK"), LEFT + 8, AFTER + 4);
+
+    exit(0);
   }
 }
