@@ -216,22 +216,23 @@ publishing {
 
 
 task signJar {
-    try {
-        ant.signjar(
-            jar: jar.archiveFile.get().asFile,
-            signedJar: jar.archiveFile.get().asFile,
-            alias:'tcandroidkey',
-            storetype:"jks",
-            keystore: "$System.env.TC_PATH_TO_KEY_STORE",
-            storepass: "$System.env.TC_STORE_PASSWORD",
-            keypass: "$System.env.TC_STORE_KEY",
-            verbose:true,
-            preservelastmodified:"true"
-        )
-    } catch (Exception e) {
-        logger.warn("TC_PATH_TO_KEY_STORE or TC_STORE_PASSWORD or TC_STORE_KEY not defined! Jar won't be signed")
+    doLast {
+        try {
+            ant.signjar(
+                jar: jar.archiveFile.get().asFile,
+                signedJar: jar.archiveFile.get().asFile,
+                alias:'tcandroidkey',
+                storetype:"jks",
+                keystore: "$System.env.TC_PATH_TO_KEY_STORE",
+                storepass: "$System.env.TC_STORE_PASSWORD",
+                keypass: "$System.env.TC_STORE_KEY",
+                verbose:true,
+                preservelastmodified:"true"
+            )
+        } catch (Exception e) {
+            logger.warn("TC_PATH_TO_KEY_STORE or TC_STORE_PASSWORD or TC_STORE_KEY not defined! Jar won't be signed")
+        }
     }
-    
 }
 
 // tc.base.lang.jar

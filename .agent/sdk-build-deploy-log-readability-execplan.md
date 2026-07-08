@@ -21,6 +21,7 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - [x] (2026-07-08 14:09 America/Sao_Paulo) Captured a successful baseline log at `TotalCrossSDK/agent-logs/sdk-clean-dist-after-anonymous-test-disable-20260708-full.log` after excluding `AnonymousUserDataTest` from the default Gradle test task.
 - [x] (2026-07-08 14:20 America/Sao_Paulo) Re-evaluated priorities from the successful log: `tc.Deploy` output is now the largest readability problem.
 - [x] (2026-07-08 15:15 America/Sao_Paulo) Created the `TotalCrossSDK/gradlew-agent` wrapper, verified its no-argument usage contract, and ignored local `agent-logs/`.
+- [x] (2026-07-08 15:40 America/Sao_Paulo) Moved the `signJar` warning out of Gradle configuration so ordinary SDK builds no longer emit it.
 - [ ] Implement the first version of the agent log summarizer for Gradle logs.
 - [ ] Reduce Gradle-side noise that is not a real build warning.
 - [ ] Add structured logging controls to `tc.Deploy`.
@@ -70,7 +71,7 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 
 ## Outcomes & Retrospective
 
-No implementation outcome has been completed yet. The current plan is based on a successful baseline build and is ready for implementation. Update this section after each milestone with what changed, what was validated, and which risks remain.
+The wrapper milestone is complete, and the Gradle configuration warning from `signJar` now waits until the task actually runs. The remaining immediate work is the log summarizer and the broader `tc.Deploy` cleanup. Update this section after each milestone with what changed, what was validated, and which risks remain.
 
 ## Context and Orientation
 
