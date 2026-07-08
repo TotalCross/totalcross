@@ -72,6 +72,8 @@ public class LinuxBuildNatives {
           maintainer = args[++i];
           break;
         case 'q':
+          DeploySettings.logLevel = DeployLogger.Level.VERBOSE;
+          DeployLogger.setLevel(DeploySettings.logLevel);
           DeploySettings.quiet = false;
           break;
         default:
@@ -123,7 +125,7 @@ public class LinuxBuildNatives {
     //String baseDir = "install/linux/" + name;
     String baseDir = "install/linux/usr/lib/totalcross";
 
-    DeployLogger.normal("baseDir = " + baseDir);
+    DeployLogger.verbose("baseDir = " + baseDir);
     // create the output folder
     File dir = new File(baseDir);
     if (!dir.exists()) {
@@ -135,7 +137,7 @@ public class LinuxBuildNatives {
 
     String controlDir = "install/linux/debian/" + name + "/DEBIAN/";
 
-    DeployLogger.normal("controlDir = " + controlDir);
+    DeployLogger.verbose("controlDir = " + controlDir);
     // create the output folder
     dir = new File(controlDir);
     if (!dir.exists()) {
@@ -143,7 +145,7 @@ public class LinuxBuildNatives {
     }
 
     String outFile = "control";
-    DeployLogger.normal("...writing " + outFile);
+    DeployLogger.verbose("...writing " + outFile);
     DataOutputStream dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
     dos.writeBytes("Package: " + name + "\n" + "Name: " + name + "\n" + "Version: " + version + "\n"
         + "Architecture: i386\n" + "Priority: optional\n" + "Description: " + description + "\n" + "Homepage: " + url
@@ -167,12 +169,12 @@ public class LinuxBuildNatives {
       String source = (String) files.items[i];
       String fname = source.substring(source.lastIndexOf('/') + 1);
       String dest = baseDir + "/" + fname;
-      DeployLogger.normal("file: " + source + " to " + dest);
+      DeployLogger.verbose("file: " + source + " to " + dest);
       Utils.copyFile(source, dest, false);
     }
 
     outFile = "postinst";
-    DeployLogger.normal("...writing " + outFile);
+    DeployLogger.verbose("...writing " + outFile);
     dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
     dos.writeBytes("#!/bin/sh\n" + "set -e\n" + "if [ \"$1\" = \"configure\" ]; then\n"
         + "  ldconfig /usr/lib/totalcross\n" + "fi\n");
@@ -181,7 +183,7 @@ public class LinuxBuildNatives {
     ff.setExecutable(true, false);
 
     outFile = "postrm";
-    DeployLogger.normal("...writing " + outFile);
+    DeployLogger.verbose("...writing " + outFile);
     dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
     dos.writeBytes("#!/bin/sh\n" + "set -e\n" + "if [ \"$1\" = \"remove\" ]; then\n"
         + "  ldconfig /usr/lib/totalcross\n" + "fi\n");
@@ -292,7 +294,7 @@ public class LinuxBuildNatives {
 
     @Override
     public void info(String s) {
-      DeployLogger.normal(s);
+      DeployLogger.verbose(s);
     }
 
     @Override

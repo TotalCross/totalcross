@@ -365,7 +365,7 @@ public class Deployer4Android {
     }
     
     
-    if (!DeploySettings.quiet) {
+    if (DeployLogger.isVerbose()) {
       IOUtils.write(originalManifest, new FileOutputStream(new File(targetDir, "AndroidManifest.xml")));
     }
     try (FileOutputStream fos = new FileOutputStream(decodedManifestFile)) {
@@ -499,7 +499,7 @@ public class Deployer4Android {
     }
 
     String execOutput = Utils.exec(javaCmdList.toArray(new String[0]), new File(targetDir).getAbsolutePath());
-    if (!DeploySettings.quiet) {
+    if (DeployLogger.isVerbose() && execOutput != null && !execOutput.isEmpty()) {
       DeployLogger.debug(execOutput);
     }
 
