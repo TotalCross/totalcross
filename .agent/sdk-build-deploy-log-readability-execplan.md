@@ -20,7 +20,7 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 
 - [x] (2026-07-08 14:09 America/Sao_Paulo) Captured a successful baseline log at `TotalCrossSDK/agent-logs/sdk-clean-dist-after-anonymous-test-disable-20260708-full.log` after excluding `AnonymousUserDataTest` from the default Gradle test task.
 - [x] (2026-07-08 14:20 America/Sao_Paulo) Re-evaluated priorities from the successful log: `tc.Deploy` output is now the largest readability problem.
-- [ ] Create the `TotalCrossSDK/gradlew-agent` wrapper and ignore local `agent-logs/`.
+- [x] (2026-07-08 15:15 America/Sao_Paulo) Created the `TotalCrossSDK/gradlew-agent` wrapper, verified its no-argument usage contract, and ignored local `agent-logs/`.
 - [ ] Implement the first version of the agent log summarizer for Gradle logs.
 - [ ] Reduce Gradle-side noise that is not a real build warning.
 - [ ] Add structured logging controls to `tc.Deploy`.
@@ -46,6 +46,9 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 
 - Observation: The compile warning count is small enough to fix incrementally after logging behavior is under control.
   Evidence: `compileJava` reports `57 warnings`: 56 removal warnings and 1 dep-ann warning.
+
+- Observation: The first wrapper run keeps the terminal quiet and moves Gradle notices into the agent log.
+  Evidence: `TotalCrossSDK/agent-logs/20260708-151556-compileJava-agent.log` shows `status: success`, a short stdout summary, and separate `signing_warnings` and `deprecation_notices` sections while the full log still contains the raw Gradle output.
 
 ## Decision Log
 
@@ -267,3 +270,5 @@ The agent log format does not need to be JSON in the first implementation. Plain
 2026-07-08 / Codex: Initial ExecPlan created from the successful `clean dist` log after `AnonymousUserDataTest` was excluded. The plan prioritizes `tc.Deploy` log reduction first because the successful log shows it dominates output volume.
 
 2026-07-08 / Codex: Added explicit end-of-milestone staging and commit instructions so each completed operation closes with a focused `git add` and a descriptive commit message, while keeping generated logs out of version control.
+
+2026-07-08 / Codex: Marked the wrapper-and-ignore milestone complete after validating `./gradlew-agent` usage and `compileJava`. The plan now records that the wrapper emits a short stdout summary and moves Gradle notices into the agent log.
