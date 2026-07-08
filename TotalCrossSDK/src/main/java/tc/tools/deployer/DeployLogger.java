@@ -41,6 +41,13 @@ public final class DeployLogger {
     return level;
   }
 
+  public static boolean isEnabled(Level minimumLevel) {
+    if (minimumLevel == null) {
+      return false;
+    }
+    return getLevel().ordinal() >= minimumLevel.ordinal();
+  }
+
   public static boolean isQuiet() {
     return level == Level.QUIET;
   }

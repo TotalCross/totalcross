@@ -27,7 +27,7 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - [x] (2026-07-08 16:02 America/Sao_Paulo) Replaced direct `System.out` and `System.err` usage across `tc.tools.deployer` classes with `DeployLogger`, keeping only the logger's own sink implementation on raw streams.
 - [x] (2026-07-08 16:18 America/Sao_Paulo) Implemented the first agent-log summarizer pass in `gradlew-agent`, including failed-task detection and a focused failure excerpt, and validated it on both a successful `compileJava` run and a controlled failing Gradle invocation.
 - [x] (2026-07-08 16:21 America/Sao_Paulo) Removed Gradle 10 deprecation noise caused by the SDK build script by replacing deprecated dependency notation, Groovy space-assignment syntax, and `archives` artifact registration, then revalidated `compileJava` with `--warning-mode=all`.
-- [ ] Add the remaining structured logging controls to `tc.Deploy`.
+- [x] (2026-07-08 16:26 America/Sao_Paulo) Finished the remaining structured logging control pass by adding explicit log-level checks to `DeployLogger`, routing the remaining `quiet`-gated deploy helper behavior through logger levels, and revalidating with `deployTcbaselang`.
 - [ ] Reduce `tc.Deploy` normal output and keep full detail available through debug or full logs.
 - [ ] Clean compiler warnings that are safe to fix without changing compatibility behavior.
 - [ ] Clean Javadoc errors and warnings without disabling doclint.
@@ -75,6 +75,12 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - Observation: The current wrapper naming scheme can collide when the same task slug is launched more than once in the same second.
   Evidence: Two concurrent `./gradlew-agent compileJava` validations at 16:21 wrote the same `agent-logs/20260708-162107-compileJava-*.log` paths and one run overwrote the other's output.
 
+- Observation: A small part of deploy behavior was still controlled by the old `DeploySettings.quiet` flag even after the logger-level flags existed.
+  Evidence: Before this milestone, `Deployer4Android` still gated manifest dumping and bundletool output on `!DeploySettings.quiet`, and `LinuxBuildNatives` still toggled verbosity through `DeploySettings.quiet = false`.
+
+- Observation: The logger-level cleanup did not change the successful default `deployTcbaselang` path.
+  Evidence: `TotalCrossSDK/agent-logs/20260708-162541-deployTcbaselang-full.log` still ends with `BUILD SUCCESSFUL in 4s`, while the updated code now checks `DeployLogger.isVerbose()` or `DeployLogger.isEnabled(...)` instead of consulting `quiet` directly in deploy helpers.
+
 ## Decision Log
 
 - Decision: Treat `AnonymousUserDataTest` correction and reactivation as a separate future task, not part of this log-readability implementation.
@@ -107,7 +113,7 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 
 ## Outcomes & Retrospective
 
-The wrapper milestone is complete, the Gradle configuration warning from `signJar` now waits until the task actually runs, and the first structured deploy logging pass is in place. The wrapper now also emits an agent summary with task lists, compile and Javadoc counts, deploy high-volume counters, and a focused failure excerpt instead of a blind tail. The SDK build script no longer emits the Gradle 10 deprecation summary on ordinary runs, because the deprecated dependency declarations, property assignments, and `archives` usage were replaced with current Gradle DSL. Normal deploy output is already much shorter, and `/log-level debug` proves that the full classpath and per-entry conversion lines can still be restored when needed. The remaining immediate work is the SLF4J binder noise, the rest of the deploy logger migration, and the broader compiler and Javadoc cleanup. Update this section after each milestone with what changed, what was validated, and which risks remain.
+The wrapper milestone is complete, the Gradle configuration warning from `signJar` now waits until the task actually runs, and the first structured deploy logging pass is in place. The wrapper now also emits an agent summary with task lists, compile and Javadoc counts, deploy high-volume counters, and a focused failure excerpt instead of a blind tail. The SDK build script no longer emits the Gradle 10 deprecation summary on ordinary runs, because the deprecated dependency declarations, property assignments, and `archives` usage were replaced with current Gradle DSL. The remaining deploy helpers that still depended on the legacy `quiet` flag now derive their behavior from `DeployLogger` levels instead, which keeps `/log-level` as the single control surface for deploy verbosity. The remaining immediate work is reducing default deploy output further, the SLF4J binder noise, and the broader compiler and Javadoc cleanup. Update this section after each milestone with what changed, what was validated, and which risks remain.
 
 ## Context and Orientation
 
