@@ -122,6 +122,30 @@ extract_unique_tasks() {
   ' "$full_log"
 }
 
+extract_failed_tasks() {
+  awk '
+    /^> Task / && $0 ~ / FAILED$/ {
+      task=$3
+      if (!(task in seen)) {
+        seen[task]=1
+        order[++count]=task
+      }
+    }
+    match($0, /Execution failed for task '\''[^'\'']+'\''\./) {
+      task=substr($0, RSTART + 27, RLENGTH - 29)
+      if (!(task in seen)) {
+        seen[task]=1
+        order[++count]=task
+      }
+    }
+    END {
+      for (i = 1; i <= count; i++) {
+        printf "%s%s", order[i], (i < count ? ", " : "")
+      }
+    }
+  ' "$full_log"
+}
+
 top_section_counts() {
   local task_name="$1"
   local kind="$2"
@@ -145,6 +169,32 @@ count_lines() {
   awk -v pattern="$pattern" '$0 ~ pattern { count++ } END { print count + 0 }' "$full_log"
 }
 
+extract_failure_excerpt() {
+  awk '
+    /^FAILURE: Build failed with an exception\./ {
+      capture=1
+      count=0
+    }
+    capture {
+      if (/^Deprecated Gradle features were used in this build/) {
+        capture=0
+        next
+      }
+      lines[++count]=$0
+      if (/^BUILD FAILED/) {
+        capture=0
+      }
+    }
+    END {
+      if (count > 0) {
+        for (i = 1; i <= count; i++) {
+          print lines[i]
+        }
+      }
+    }
+  ' "$full_log"
+}
+
 {
   printf '# Gradle Agent Summary\n'
   printf 'status: %s\n' "$status_label"
@@ -164,6 +214,16 @@ count_lines() {
   printf 'tasks_seen: %s\n' "$tasks_seen"
   if [[ -n "$tasks" ]]; then
     printf 'tasks: %s\n' "$tasks"
+  fi
+  failed_tasks="$(extract_failed_tasks)"
+  if [[ -n "$failed_tasks" ]]; then
+    failed_tasks_count="$(awk -v tasks="$failed_tasks" 'BEGIN { n = split(tasks, arr, /, /); print n }')"
+  else
+    failed_tasks_count=0
+  fi
+  printf 'failed_tasks_seen: %s\n' "$failed_tasks_count"
+  if [[ -n "$failed_tasks" ]]; then
+    printf 'failed_tasks: %s\n' "$failed_tasks"
   fi
   actionable="$(awk '/^[0-9]+ actionable tasks:/ { line=$0 } END { print line }' "$full_log")"
   if [[ -n "$actionable" ]]; then
@@ -267,7 +327,12 @@ count_lines() {
 
   if [[ $status -ne 0 ]]; then
     printf '## Failure Excerpt\n'
-    tail -40 "$full_log" | sed 's/^/  /'
+    failure_excerpt="$(extract_failure_excerpt)"
+    if [[ -n "$failure_excerpt" ]]; then
+      printf '%s\n' "$failure_excerpt" | sed 's/^/  /'
+    else
+      tail -40 "$full_log" | sed 's/^/  /'
+    fi
   fi
 } >"$agent_log"
 
