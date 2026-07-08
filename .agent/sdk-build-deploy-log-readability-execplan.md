@@ -25,7 +25,7 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - [x] (2026-07-08 15:39 America/Sao_Paulo) Added the first structured `tc.Deploy` logging pass: `DeployLogger`, `/log-level`, `/agent-log`, command-line and deploy summaries, and aggregated float-parameter warnings.
 - [x] (2026-07-08 15:40 America/Sao_Paulo) Verified that `deployTcbaselang` stays concise at normal log level and restores `Classpath:` plus `Adding ...` output when `/log-level debug` is injected temporarily.
 - [x] (2026-07-08 16:02 America/Sao_Paulo) Replaced direct `System.out` and `System.err` usage across `tc.tools.deployer` classes with `DeployLogger`, keeping only the logger's own sink implementation on raw streams.
-- [ ] Implement the first version of the agent log summarizer for Gradle logs.
+- [x] (2026-07-08 16:18 America/Sao_Paulo) Implemented the first agent-log summarizer pass in `gradlew-agent`, including failed-task detection and a focused failure excerpt, and validated it on both a successful `compileJava` run and a controlled failing Gradle invocation.
 - [ ] Reduce Gradle-side noise that is not a real build warning.
 - [ ] Add the remaining structured logging controls to `tc.Deploy`.
 - [ ] Reduce `tc.Deploy` normal output and keep full detail available through debug or full logs.
@@ -63,6 +63,9 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - Observation: After replacing the remaining deployer prints with `DeployLogger`, the package still compiles and the `deployTcbaselang` smoke run succeeds.
   Evidence: `./gradlew-agent compileJava` succeeded with log `TotalCrossSDK/agent-logs/20260708-160218-compileJava-full.log`, and `./gradlew-agent deployTcbaselang` succeeded with log `TotalCrossSDK/agent-logs/20260708-160228-deployTcbaselang-full.log`.
 
+- Observation: The wrapper summary is now useful on both success and failure without dumping the whole Gradle tail.
+  Evidence: `TotalCrossSDK/agent-logs/20260708-161624-compileJava-agent.log` records task, result, and warning counts for a successful run, while `TotalCrossSDK/agent-logs/20260708-161712-doesNotExist-agent.log` captures the `FAILURE: Build failed with an exception.` block for a controlled Gradle failure.
+
 ## Decision Log
 
 - Decision: Treat `AnonymousUserDataTest` correction and reactivation as a separate future task, not part of this log-readability implementation.
@@ -95,7 +98,7 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 
 ## Outcomes & Retrospective
 
-The wrapper milestone is complete, the Gradle configuration warning from `signJar` now waits until the task actually runs, and the first structured deploy logging pass is in place. Normal deploy output is already much shorter, and `/log-level debug` proves that the full classpath and per-entry conversion lines can still be restored when needed. The remaining immediate work is the SLF4J binder noise, the rest of the deploy logger migration, and the broader Gradle and documentation cleanup. Update this section after each milestone with what changed, what was validated, and which risks remain.
+The wrapper milestone is complete, the Gradle configuration warning from `signJar` now waits until the task actually runs, and the first structured deploy logging pass is in place. The wrapper now also emits an agent summary with task lists, compile and Javadoc counts, deploy high-volume counters, and a focused failure excerpt instead of a blind tail. Normal deploy output is already much shorter, and `/log-level debug` proves that the full classpath and per-entry conversion lines can still be restored when needed. The remaining immediate work is trimming the remaining Gradle-side notices, the SLF4J binder noise, and the broader compiler and Javadoc cleanup. Update this section after each milestone with what changed, what was validated, and which risks remain.
 
 ## Context and Orientation
 
