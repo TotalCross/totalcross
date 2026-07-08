@@ -31,8 +31,8 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - [x] (2026-07-08 16:32 America/Sao_Paulo) Reduced default `tc.Deploy` output to deployment summaries, key identifiers, and warnings by demoting internal context and secondary metadata to `verbose` or `debug`, then revalidated both the quieter default path and an on-demand debug path.
 - [x] (2026-07-08 16:38 America/Sao_Paulo) Cleaned the remaining safe compiler warnings by replacing boxed `Byte` construction with `Byte.valueOf`, annotating the legacy `VirtualKeyboard.updateMessages` API as deprecated, and suppressing the unavoidable Applet and AudioClip removal warnings at the class level, leaving `compileJava` warning-free.
 - [x] (2026-07-08 17:10 America/Sao_Paulo) Cleaned the remaining boxed-constructor warnings in the JSON, SQLite, and regex converter paths, and revalidated `javadoc` until `compileJava_warnings` dropped back to zero.
+- [x] (2026-07-08 17:55 America/Sao_Paulo) Updated `AGENTS.md` to prefer `TotalCrossSDK/gradlew-agent` for SDK builds and to direct agents to read the compact agent log first.
 - [ ] Clean Javadoc errors and warnings without disabling doclint. Current focus: the build is still success-only but the doclint summary remains noisy, so keep iterating on malformed HTML, bad entities, and missing tags.
-- [ ] Update `AGENTS.md` to make `gradlew-agent` the preferred SDK build command.
 - [ ] Run final validation and update this plan's outcomes.
 
 ## Surprises & Discoveries
