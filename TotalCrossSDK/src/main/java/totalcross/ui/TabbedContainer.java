@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -57,7 +58,7 @@ import totalcross.util.Vector;
  *
  *    public void onEvent(Event event)
  *    {
- *       if (event.type == ControlEvent.PRESSED && event.target == tp)
+ *       if (event.type == ControlEvent.PRESSED &amp;&amp; event.target == tp)
  *       {
  *          int activeIndex = tp.getActiveTab();
  *          ... handle tab being pressed

@@ -33,31 +33,16 @@ import totalcross.io.CharStream;
 import totalcross.io.IOException;
 
 /**
- * <b>The Replacer class</b> suggests some methods to replace occurences of a pattern 
- * either by a result of evaluation of a perl-like expression, or by a plain string,
- * or according to a custom substitution model, provided as a Substitution interface implementation.<br>
- * A Replacer instance may be obtained either using Pattern.replacer(...) method, or by constructor:<pre>
- * Pattern p=new Pattern("\\w+");
- * Replacer perlExpressionReplacer=p.replacer("[$&]");
- * //or another way to do the same
- * Substitution myOwnModel=new Substitution(){
- *    public void appendSubstitution(MatchResult match,TextBuffer tb){
- *       tb.append('[');
- *       match.getGroup(MatchResult.MATCH,tb);
- *       tb.append(']');
- *    }
- * }
- * Replacer myVeryOwnReplacer=new Replacer(p,myOwnModel);
- * </pre>
- * The second method is much more verbose, but gives more freedom.
- * To perform a replacement call replace(someInput):<pre>
- * System.out.print(perlExpressionReplacer.replace("All your base "));
- * System.out.println(myVeryOwnReplacer.replace("are belong to us"));
- * //result: "[All] [your] [base] [are] [belong] [to] [us]"
- * </pre>
- * @see        Substitution
- * @see        PerlSubstitution
- * @see        Replacer#Replacer(totalcross.util.regex.Pattern,totalcross.util.regex.Substitution)
+ * Replaces matches of a pattern using either a Perl-like replacement string or a
+ * custom substitution object.
+ *
+ * <p>A replacer can be created from {@link Pattern#replacer(String)} or by calling the constructor directly.
+ * For example, {@code p.replacer("[$&amp;]")} wraps each match in square brackets, while a custom
+ * {@link Substitution} can build the replacement text programmatically.
+ *
+ * @see Substitution
+ * @see PerlSubstitution
+ * @see Replacer#Replacer(totalcross.util.regex.Pattern,totalcross.util.regex.Substitution)
  */
 
 public class Replacer {

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -26,7 +27,7 @@ import totalcross.ui.gfx.Graphics;
    gc.setPageSize(linhas,colunas);
    gc.setRowsPerPage(linhasPorPagina);
    Celula []cels = new Celula[TOTAL_ITEMS];
-   for (int i = 0; i < cels.length; i++)
+   for (int i = 0; i &lt; cels.length; i++)
       cels[i] = new Celula(i);
    gc.setCells(cels);
  * </pre>

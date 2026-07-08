@@ -1,6 +1,7 @@
 // Copyright (C) 2001 Daniel Tauchke 
 // Copyright (C) 2001-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui;
@@ -42,7 +43,7 @@ import totalcross.ui.image.Image;
  *
  *  public void onEvent(Event event)
  *  {
- *     if (event.type == ControlEvent.PRESSED && event.target == sb2)
+ *     if (event.type == ControlEvent.PRESSED &amp;&amp; event.target == sb2)
  *     {
  *        int value = sb2.getValue();
  *        sb1.setValue(value);

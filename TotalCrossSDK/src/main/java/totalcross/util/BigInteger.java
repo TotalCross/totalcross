@@ -1,5 +1,7 @@
-// Copyright (C) 1998-2006 Free Software Foundation, Inc. 
-// Copyright (C) 2009-2013 SuperWaba Ltda. 
+// Copyright (C) 1998-2006 Free Software Foundation, Inc.
+// Copyright (C) 2009-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -53,8 +55,7 @@ import totalcross.sys.Vm;
  * IntNum.java BitOps.java by Per Bothner (per@bothner.com) (found in Kawa 1.6.62).
  * 
  * @author Warren Levy (warrenl@cygnus.com)
- * @date December 20, 1999.
- * @status believed complete and correct.
+ * Original GNU Classpath notes preserved for historical context.
  */
 public class BigInteger implements Comparable {
   /**

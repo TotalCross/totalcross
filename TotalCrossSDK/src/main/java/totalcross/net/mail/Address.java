@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -7,7 +8,7 @@ package totalcross.net.mail;
 
 /**
  * This class represents an Internet e-mail address using the syntax of RFC822. The typical address syntax is of the form
- * <code>user@host.domain</code> or <code>Personal Name <user@host.domain></code>.
+ * <code>user@host.domain</code> or <code>Personal Name &lt;user@host.domain&gt;</code>.
  * 
  * @since TotalCross 1.13
  */

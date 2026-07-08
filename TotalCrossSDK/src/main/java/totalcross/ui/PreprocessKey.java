@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.sys.Convert;
@@ -35,10 +40,10 @@ import totalcross.ui.event.TimerListener;
 
          protected char[] getKeySet(Control target, KeyEvent e)
          {
-            if (e.type == KeyEvent.KEY_PRESS && (Settings.onJavaSE || (e.modifiers & SpecialKeys.SYSTEM) != 0)) // use only if key came from physical keyboard
+            if (e.type == KeyEvent.KEY_PRESS &amp;&amp; (Settings.onJavaSE || (e.modifiers &amp; SpecialKeys.SYSTEM) != 0)) // use only if key came from physical keyboard
             {
                char c = Convert.toLowerCase((char)e.key);
-               for (int i = 0; i < keys.length; i++)
+               for (int i = 0; i &lt; keys.length; i++)
                   if (keys[i][0] == c)
                      return keys[i];
             }
@@ -50,7 +55,8 @@ import totalcross.ui.event.TimerListener;
             handleKeypadPress(target, e);
          }
       };
- * 
+ * </pre>
+ *
  */
 
 public abstract class PreprocessKey {

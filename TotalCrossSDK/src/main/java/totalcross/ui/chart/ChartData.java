@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -33,10 +34,10 @@ import totalcross.util.Vector;
       chart.snapToTop = chart.snapToBottom = true;
       String[][] data = new String[rows][cols];
       String[] tit = new String[rows];
-      for (int r = 0; r < rows; r++)
+      for (int r = 0; r &lt; rows; r++)
       {
          tit[r] = "row "+(r+1);
-         for (int c = 0; c < cols; c++)
+         for (int c = 0; c &lt; cols; c++)
             data[r][c] = "999";
       }
 

@@ -30,7 +30,8 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - [x] (2026-07-08 16:26 America/Sao_Paulo) Finished the remaining structured logging control pass by adding explicit log-level checks to `DeployLogger`, routing the remaining `quiet`-gated deploy helper behavior through logger levels, and revalidating with `deployTcbaselang`.
 - [x] (2026-07-08 16:32 America/Sao_Paulo) Reduced default `tc.Deploy` output to deployment summaries, key identifiers, and warnings by demoting internal context and secondary metadata to `verbose` or `debug`, then revalidated both the quieter default path and an on-demand debug path.
 - [x] (2026-07-08 16:38 America/Sao_Paulo) Cleaned the remaining safe compiler warnings by replacing boxed `Byte` construction with `Byte.valueOf`, annotating the legacy `VirtualKeyboard.updateMessages` API as deprecated, and suppressing the unavoidable Applet and AudioClip removal warnings at the class level, leaving `compileJava` warning-free.
-- [ ] Clean Javadoc errors and warnings without disabling doclint.
+- [x] (2026-07-08 17:10 America/Sao_Paulo) Cleaned the remaining boxed-constructor warnings in the JSON, SQLite, and regex converter paths, and revalidated `javadoc` until `compileJava_warnings` dropped back to zero.
+- [ ] Clean Javadoc errors and warnings without disabling doclint. Current focus: the build is still success-only but the doclint summary remains noisy, so keep iterating on malformed HTML, bad entities, and missing tags.
 - [ ] Update `AGENTS.md` to make `gradlew-agent` the preferred SDK build command.
 - [ ] Run final validation and update this plan's outcomes.
 
@@ -90,6 +91,9 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - Observation: The compiler warning cleanup reached zero warnings without changing the legacy compatibility surface.
   Evidence: `TotalCrossSDK/agent-logs/20260708-163851-deployTcbaselang-agent.log` reports `compileJava_warnings: 0`, and the raw compile section now contains only compiler notes after the `Byte`, `Applet`, `AudioClip`, and deprecated API annotations were adjusted.
 
+- Observation: The Javadoc build still succeeds even while doclint reports a large number of errors and warnings, so the current work can be validated incrementally.
+  Evidence: `TotalCrossSDK/agent-logs/20260708-165730-javadoc-agent.log` reports `status: success`, `compileJava_warnings: 0`, and still shows `javadoc_errors: 100` and `javadoc_warnings: 100`.
+
 ## Decision Log
 
 - Decision: Treat `AnonymousUserDataTest` correction and reactivation as a separate future task, not part of this log-readability implementation.
@@ -120,9 +124,16 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
   Rationale: The logger is the sink that ultimately writes to stdout, stderr, and the optional agent log file. Replacing those internal writes with logger methods would recurse and break output delivery.
   Date/Author: 2026-07-08 / Codex.
 
+- Decision: Correct copyright headers only on repository-owned files that were modified, and leave the external third-party headers intact.
+  Rationale: The repository policy explicitly updates TotalCross-owned headers through 2026, but external upstream code such as GNU Classpath, jregex, and SQLite helper sources should keep their original attribution unless a dedicated upstream-license change is intended.
+  Date/Author: 2026-07-08 / Codex.
+
 ## Outcomes & Retrospective
 
 The wrapper milestone is complete, the Gradle configuration warning from `signJar` now waits until the task actually runs, and the first structured deploy logging pass is in place. The wrapper now also emits an agent summary with task lists, compile and Javadoc counts, deploy high-volume counters, and a focused failure excerpt instead of a blind tail. The SDK build script no longer emits the Gradle 10 deprecation summary on ordinary runs, because the deprecated dependency declarations, property assignments, and `archives` usage were replaced with current Gradle DSL. The remaining deploy helpers that still depended on the legacy `quiet` flag now derive their behavior from `DeployLogger` levels instead, which keeps `/log-level` as the single control surface for deploy verbosity. Default `tc.Deploy` output is now closer to a result summary: key identifiers, warnings, and generated-artifact lines stay visible, while command-line details, path discovery, classpath dumps, and secondary metadata move to `verbose` or `debug`. Compiler warnings are now down to zero, with only non-fatal compiler notes remaining. The remaining immediate work is the SLF4J binder noise and the Javadoc cleanup. Update this section after each milestone with what changed, what was validated, and which risks remain.
+The current Javadoc pass keeps the build green while removing several of the worst HTML and boxed-constructor warnings. The remaining doclint work is now concentrated in a smaller set of legacy comments rather than spread across every major subsystem.
+
+Note added on 2026-07-08: this revision records the compile-warning cleanup pass, the header validation on modified SDK-owned files, and the decision to preserve external third-party headers as-is.
 
 ## Context and Orientation
 

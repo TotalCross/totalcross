@@ -34,48 +34,15 @@ import totalcross.io.IOException;
 import totalcross.util.Hashtable;
 
 /**
- * A handle for a precompiled regular expression.<br>
- * To match a regular expression <code>myExpr</code> against a text <code>myString</code> one should first create a Pattern object:<pre>
- * Pattern p=new Pattern(myExpr);
- * </pre>
- * then obtain a Matcher object:<pre>
- * Matcher matcher=p.matcher(myText);
- * </pre>
- * The latter is an automaton that actually performs a search. It provides the following methods:
- * <li> search for matching substrings : matcher.find() or matcher.findAll();
- * <li> test whether the text matches the whole pattern : matcher.matches();
- * <li> test whether the text matches the beginning of the pattern : matcher.matchesPrefix();
- * <li> search with custom options : matcher.find(int options)
- * <p>
- * <b>Flags</b><br>
- * Flags (see REFlags interface) change the meaning of some regular expression elements at compiletime.
- * These flags may be passed both as string(see Pattern(String,String)) and as bitwise OR of:
- * <li><b>REFlags.IGNORE_CASE</b> - enables case insensitivity
- * <li><b>REFlags.MULTILINE</b> - forces "^" and "$" to match both at the start and the end of line;
- * <li><b>REFlags.DOTALL</b> - forces "." to match eols('\r' and '\n' in ASCII);
- * <li><b>REFlags.IGNORE_SPACES</b> - literal spaces in expression are ignored for better readability;
- * <li><b>REFlags.UNICODE</b> - the predefined classes('\w','\d',etc) are referenced to Unicode;
- * <li><b>REFlags.XML_SCHEMA</b> - permits XML Schema regular expressions syntax extentions.
- * <p>
- * <b>Multithreading</b><br>
- * Pattern instances are thread-safe, i.e. the same Pattern object may be used 
- * by any number of threads simultaniously. On the other hand, the Matcher objects 
- * are NOT thread safe, so, given a Pattern instance, each thread must obtain 
- * and use its own Matcher.
- * 
- * @see        REFlags
- * @see        Matcher
- * @see        Matcher#setTarget(java.lang.String)
- * @see        Matcher#setTarget(java.lang.String,int,int)
- * @see        Matcher#setTarget(char[],int,int)
- * @see        MatchResult
- * @see        MatchResult#group(int)
- * @see        MatchResult#start(int)
- * @see        MatchResult#end(int)
- * @see        MatchResult#length(int)
- * @see        MatchResult#charAt(int,int)
- * @see        MatchResult#prefix()
- * @see        MatchResult#suffix()
+ * A handle for a precompiled regular expression.
+ *
+ * <p>Create a {@code Pattern} from a regular expression string, then obtain a {@link Matcher} to search a target.
+ * The pattern flags control case sensitivity, multiline handling, dot-all matching, whitespace handling, Unicode
+ * character classes, and XML Schema compatibility.
+ *
+ * @see REFlags
+ * @see Matcher
+ * @see MatchResult
  */
 
 public class Pattern implements /*Serializable,*/REFlags {

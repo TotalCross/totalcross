@@ -34,24 +34,12 @@ import totalcross.io.IOException;
 import totalcross.util.ElementNotFoundException;
 
 /**
- * The Tokenizer class suggests a methods to break a text into tokens using 
- * occurences of a pattern as delimiters.
- * There are two ways to obtain a text tokenizer for some pattern:<pre>
- * Pattern p=new Pattern("\\s+"); //any number of space characters
- * String text="blah blah blah";
- * //by factory method
- * RETokenizer tok1=p.tokenizer(text);
- * //or by constructor
- * RETokenizer tok2=new RETokenizer(p,text);
- * </pre>
- * Now the one way is to use the tokenizer as a token enumeration/iterator:<pre>
- * while(tok1.hasMore()) System.out.println(tok1.nextToken());
- * </pre>
- * and another way is to split it into a String array:<pre> 
- * String[] arr=tok2.split();
- * for(int i=0;i<tok2.length;i++) System.out.println(arr[i]);
- * </pre>
- * @see        Pattern#tokenizer(java.lang.String)
+ * Breaks text into tokens using a pattern as the delimiter.
+ *
+ * <p>Create one from {@link Pattern#tokenizer(String)} or with the constructor, then iterate over
+ * {@link #nextToken()} or collect the tokens with {@link #split()}.
+ *
+ * @see Pattern#tokenizer(java.lang.String)
  */
 
 public class RETokenizer {

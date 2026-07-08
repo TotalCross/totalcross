@@ -1780,7 +1780,7 @@ class MetaData implements DatabaseMetaData {
 
     Vector indexList = new Vector(20);
     while (rs.next()) {
-      indexList.addElement(new Object[] { rs.getString(2), new Integer(rs.getInt(3)) });
+      indexList.addElement(new Object[] { rs.getString(2), Integer.valueOf(rs.getInt(3)) });
     }
     rs.close();
 

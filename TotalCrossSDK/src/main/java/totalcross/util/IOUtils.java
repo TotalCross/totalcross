@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.util;
 
 import java.io.EOFException;
@@ -9,9 +14,9 @@ import java.io.Writer;
 
 /**
  * Largely based on <a href="https://commons.apache.org/proper/commons-io/javadocs/api-2.5/src-html/org/apache/commons/io/IOUtils.html"> Apache IOUtils</a>
- * <p/>
+ * <p>
  * Only needed methods copied, like copy InputStream -> OutoutStream and copy Reader -> Writer
- * <p/>
+ * <p>
  * Javadoc maintained where possible, but the "since" tag was largely removed
  */
 public final class IOUtils {

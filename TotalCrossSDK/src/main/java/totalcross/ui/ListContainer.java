@@ -1,5 +1,6 @@
 // Copyright (C) 2009-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -51,7 +52,7 @@ import totalcross.util.Vector;
    {
       ListContainer lc;
       add(lc = new ListContainer(),LEFT,TOP,FILL,FILL);
-      for (int i =0; i < 10; i++)
+      for (int i =0; i &lt; 10; i++)
          lc.addContainer(new LCItem());
    }
  *  </pre>

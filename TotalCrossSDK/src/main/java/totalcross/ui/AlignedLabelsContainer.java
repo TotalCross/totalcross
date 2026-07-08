@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -30,7 +31,7 @@ import totalcross.ui.gfx.Graphics;
  * c.setInsets(2,2,2,2);
  * c.childrenFont = font;    // but controls are normal
  * add(c,LEFT+2,TOP+2,FILL-2,PREFERRED+4);
- * for (int i =0; i < labels.length-2; i++)
+ * for (int i =0; i &lt; labels.length-2; i++)
  *    c.add(new Edit(),LEFT+2,AFTER+(i==0?2:0));
  * c.add(new ComboBox(new String[]{"Brazil","France"}),LEFT+2,AFTER);
  * c.add(new Button("Insert data"),RIGHT,SAME);

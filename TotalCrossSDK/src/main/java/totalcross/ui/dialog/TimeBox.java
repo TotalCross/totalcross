@@ -1,6 +1,7 @@
 // Copyright (C) 2000-2001 Allan C. Solomon 
 // Copyright (C) 2001-2013 SuperWaba Ltda. 
-// Copyright (C) 2013-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2013-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui.dialog;
@@ -44,7 +45,7 @@ import totalcross.util.Vector;
  * }
  * 
  * public void onEvent(Event e) {
- * 	if (e.type == ControlEvent.PRESSED && e.target == tb)
+ * 	if (e.type == ControlEvent.PRESSED &amp;&amp; e.target == tb)
  * 		Vm.debug("ret: " + tb.getTime());
  * }
  * </pre>

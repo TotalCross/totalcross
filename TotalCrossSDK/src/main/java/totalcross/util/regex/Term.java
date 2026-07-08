@@ -285,7 +285,7 @@ class Term implements REFlags {
           } catch (Exception e) {
             throw new PatternSyntaxException("group name starts with digit but is not a number");
           }
-          if (groupNames.exists(new Integer(id))) {
+          if (groupNames.exists(Integer.valueOf(id))) {
             if (t.groupDeclared) {
               throw new PatternSyntaxException(
                   "group redeclaration: " + gname + "; use ({=id}...) for multiple group assignments");
@@ -298,7 +298,7 @@ class Term implements REFlags {
           Integer no = (Integer) groupNames.get(gname);
           if (no == null) {
             id = vars[MEMREG_COUNT]++;
-            groupNames.put(t.groupName, new Integer(id));
+            groupNames.put(t.groupName, Integer.valueOf(id));
           } else {
             if (t.groupDeclared) {
               throw new PatternSyntaxException(
@@ -1625,16 +1625,16 @@ class Term implements REFlags {
   }
 
   public String toStringAll(Vector v) {
-    v.addElement(new Integer(instanceNum));
+    v.addElement(Integer.valueOf(instanceNum));
     String s = toString();
     if (next != null) {
-      if (!v.contains(new Integer(next.instanceNum))) {
+      if (!v.contains(Integer.valueOf(next.instanceNum))) {
         s += "\r\n";
         s += next.toStringAll(v);
       }
     }
     if (failNext != null) {
-      if (!v.contains(new Integer(failNext.instanceNum))) {
+      if (!v.contains(Integer.valueOf(failNext.instanceNum))) {
         s += "\r\n";
         s += failNext.toStringAll(v);
       }
