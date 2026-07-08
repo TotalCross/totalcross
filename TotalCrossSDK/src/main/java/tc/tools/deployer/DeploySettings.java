@@ -55,6 +55,8 @@ public class DeploySettings {
   public static boolean autoSign;
   public static String autoSignPassword;
   public static boolean quiet = true; // to set to false, pass /v(erbose) to tc.Deploy
+  public static DeployLogger.Level logLevel = DeployLogger.Level.NORMAL;
+  public static String agentLogPath;
 
   public static final char DIRSEP = java.io.File.pathSeparatorChar;
   public static final char SLASH = java.io.File.separatorChar;
@@ -196,11 +198,11 @@ public class DeploySettings {
       binDir = Convert.replace(etcDir, "/etc/", "/bin/");
       distDir = Convert.replace(etcDir, "/etc/", "/dist/");
     }
-    System.out.println("TotalCross SDK version " + Settings.versionStr + "." + Settings.buildNumber + " running on "
+    DeployLogger.normal("TotalCross SDK version " + Settings.versionStr + "." + Settings.buildNumber + " running on "
         + osName + " with JDK " + javaVersion);
-    System.out.println("Current folder: " + currentDir);
-    System.out.println("Etc directory: " + (etcDir != null ? etcDir : "not found")); // keep this always visible, its a very important information
-    System.out.println("Classpath: " + cp0);
+    DeployLogger.normal("Current folder: " + currentDir);
+    DeployLogger.normal("Etc directory: " + (etcDir != null ? etcDir : "not found")); // keep this always visible, its a very important information
+    DeployLogger.verbose("Classpath: " + cp0);
 
     // find the demo and release folders for totalcross
     if (distDir != null) {
@@ -254,7 +256,7 @@ public class DeploySettings {
 
           tcappProp = bytes;
         }
-        System.out.println("Application's build number: " + appBuildNumber);
+        DeployLogger.normal("Application's build number: " + appBuildNumber);
         break;
       } catch (FileNotFoundException fnfe) {
         dir = Utils.getParent(dir);
@@ -266,7 +268,7 @@ public class DeploySettings {
         break;
       }
       if (tcappProp == null) {
-        Utils.println("File " + TCAPP_PROP + " not found; build number could not be generated.");
+        DeployLogger.verbose("File " + TCAPP_PROP + " not found; build number could not be generated.");
       }
     }
   }

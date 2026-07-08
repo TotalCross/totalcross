@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
@@ -287,7 +288,7 @@ public class Bitmaps {
       offset += 4;
       /*colorsImport= */readInt(offset);
       offset += 4;
-      //System.out.println(width+"x"+height+"x"+bitsPerPixel);
+      //DeployLogger.debug(width+"x"+height+"x"+bitsPerPixel);
       if (numberColors <= 0) {
         numberColors = 1 << bitsPerPixel;
       }
@@ -296,7 +297,7 @@ public class Bitmaps {
       pixels = new byte[imageSize];
       System.arraycopy(wholeImage, offset, pixels, 0, imageSize);
       if (palette[0] == 0xFFFFFF && width != 22 && width != 15 && width != 30 && width != 44 && width != 20) {
-        System.out.println("This image won't appear correct in WinCE. Palette index 0 must be black (it is white): "
+        DeployLogger.warn("This image won't appear correct in WinCE. Palette index 0 must be black (it is white): "
             + width + "x" + (height >> 1) + "x" + bitsPerPixel + ". Please read the instructions.");
       }
 
@@ -611,7 +612,7 @@ class IconStore extends Hashtable {
           String name = null;
           String file = files[i].toLowerCase();
           if (file.endsWith("appicon.gif")) {
-            System.out.println("*** Warning: appicon.gif is deprecated. Convert it to a 256x256 png with transparency");
+            DeployLogger.warn("*** Warning: appicon.gif is deprecated. Convert it to a 256x256 png with transparency");
             name = "appicon";
           } else if (file.endsWith("appicon.png")) {
             name = "appicon";
@@ -632,7 +633,7 @@ class IconStore extends Hashtable {
             try {
               byte[] b = Utils.loadFile(files[i], false);
               if (b == null) {
-                System.out.println("File not found: " + files[i]);
+                DeployLogger.warn("File not found: " + files[i]);
                 continue;
               }
               Image img = new Image(b);

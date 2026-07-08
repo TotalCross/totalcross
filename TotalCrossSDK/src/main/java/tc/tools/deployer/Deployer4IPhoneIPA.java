@@ -135,20 +135,18 @@ public class Deployer4IPhoneIPA {
       }
       new TFile(google_services_json_path).cp(new TFile(appFolder, "GoogleService-Info.plist"));
     } catch (FileNotFoundException e) {
-      System.out
-          .println("Could not find 'GoogleService-Info.plist', thus Firebase will be ignored further on (iOS deploy)");
+      DeployLogger.warn("Could not find 'GoogleService-Info.plist', thus Firebase will be ignored further on (iOS deploy)");
     }
 
     /**
      * Parameter /m deprecated
      */
     if(isUsingMParam) {
-      System.out.println("####################################################################################################################");
-      System.out
-              .println("Parameter /m is deprecated! Now you can package an ipa file without using certificate. Certificates are required in \n" +
+      DeployLogger.warn("####################################################################################################################");
+      DeployLogger.warn("Parameter /m is deprecated! Now you can package an ipa file without using certificate. Certificates are required in \n" +
                       "a next step for resigning your iOS app.\n" +
                       "See: https://totalcross.gitbook.io/playbook/learn-totalcross/deploy-your-app-android-ios-and-windows/deploy-ios");
-      System.out.println("####################################################################################################################");
+      DeployLogger.warn("####################################################################################################################");
     }
 
     Hashtable ht = new Hashtable(13);
@@ -206,7 +204,7 @@ public class Deployer4IPhoneIPA {
       bundleIdentifier = "com." + DeploySettings.applicationId + "."
           + DeploySettings.appTitle.replace(" ", "").trim().toLowerCase();
     }
-    Utils.println("Package suffix id (CFBundleIdentifier): " + bundleIdentifier);
+    DeployLogger.normal("Package suffix id (CFBundleIdentifier): " + bundleIdentifier);
 
     rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
@@ -249,7 +247,7 @@ public class Deployer4IPhoneIPA {
     FileUtils.copyFile(targetFile,
         new File(Convert.appendPath(DeploySettings.targetDir, "/ios/" + DeploySettings.filePrefix + ".ipa")));
 
-    System.out.println("... Files written to folder " + Convert.appendPath(DeploySettings.targetDir, "/ios/"));
+    DeployLogger.normal("... Files written to folder " + Convert.appendPath(DeploySettings.targetDir, "/ios/"));
   }
 
   private void addIcons(TFile appFolder, NSDictionary rootDict) throws IOException {
@@ -374,7 +372,7 @@ public class Deployer4IPhoneIPA {
       iosDistributionCertificate = new org.bouncycastle.cert.X509CertificateHolder(storecert.getEncoded());
       Provision = MobileProvision.readFromFile(mobileProvision);
       Settings.iosCertDate = new Time(Provision.expirationDate.getDate().getTime(), false);
-      Utils.println("iOS Certificate expiration date: " + Settings.iosCertDate.getSQLString());
+      DeployLogger.normal("iOS Certificate expiration date: " + Settings.iosCertDate.getSQLString());
     }
   }
 }

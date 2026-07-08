@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
@@ -29,7 +30,7 @@ public class Deployer4Applet {
     }
 
     writeJar(targetDir + DeploySettings.filePrefix + ".jar", targetDir);
-    System.out.println("... Files written to folder " + targetDir);
+    DeployLogger.normal("... Files written to folder " + targetDir);
   }
 
   private void writeJar(String name, String targetDir) throws Exception {

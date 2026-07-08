@@ -1,4 +1,5 @@
-// Copyright (C) 2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
@@ -89,6 +90,6 @@ public class Deployer4LinuxArm {
                                       new java.io.File(targetDir));
 
     }
-    System.out.println("... Files written to folder " + targetDir);
+    DeployLogger.normal("... Files written to folder " + targetDir);
   }
 }

@@ -10,7 +10,6 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import de.schlichtherle.truezip.file.TFile;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStream;
 import totalcross.io.File;
@@ -101,7 +100,7 @@ public class Utils {
             }
           }
           if (capStart != null && !lines[i].startsWith(";")) {
-            println("invalid line in custom inf file: " + lines[i]);
+            DeployLogger.normal("invalid line in custom inf file: " + lines[i]);
           }
         }
       }
@@ -392,7 +391,7 @@ public class Utils {
       e.printStackTrace();
     }
     if (bytes != null && showFile) {
-      println("Found " + path);
+      DeployLogger.normal("Found " + path);
     }
     return bytes;
   }
@@ -670,23 +669,6 @@ public class Utils {
     }
 
     return noSpaces;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////////////
-  public static void println(String s) {
-    if (!DeploySettings.quiet) {
-      System.out.println(s);
-    }
-  }
-
-  public static void warn(String s) {
-    System.err.println(s);
-  }
-
-  public static void println(String s, boolean force) {
-    if (!DeploySettings.quiet || force) {
-      System.out.println(s);
-    }
   }
 
   /////////////////////////////////////////////////////////////////////////////////////

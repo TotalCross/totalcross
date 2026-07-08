@@ -107,14 +107,14 @@ public class LinuxBuildNatives {
 
     createLinuxPackage(name, category, description, location, url, version, maintainer, binFile, targetDir, vFiles);
 
-    System.out.println("... Files written to folder " + targetDir);
+    DeployLogger.normal("... Files written to folder " + targetDir);
   }
 
   /////////////////////////////////////////////////////////////////////////////////////
 
   public static void createLinuxPackage(String name, String category, String description, String location, String url,
       String version, String maintainer, String binFile, String targetDir, Vector files) throws Exception {
-    Utils.println("...creating Linux Installation...");
+    DeployLogger.normal("...creating Linux Installation...");
 
     files.addElement(binFile);
 
@@ -123,7 +123,7 @@ public class LinuxBuildNatives {
     //String baseDir = "install/linux/" + name;
     String baseDir = "install/linux/usr/lib/totalcross";
 
-    Utils.println("baseDir = " + baseDir);
+    DeployLogger.normal("baseDir = " + baseDir);
     // create the output folder
     File dir = new File(baseDir);
     if (!dir.exists()) {
@@ -135,7 +135,7 @@ public class LinuxBuildNatives {
 
     String controlDir = "install/linux/debian/" + name + "/DEBIAN/";
 
-    Utils.println("controlDir = " + controlDir);
+    DeployLogger.normal("controlDir = " + controlDir);
     // create the output folder
     dir = new File(controlDir);
     if (!dir.exists()) {
@@ -143,7 +143,7 @@ public class LinuxBuildNatives {
     }
 
     String outFile = "control";
-    Utils.println("...writing " + outFile);
+    DeployLogger.normal("...writing " + outFile);
     DataOutputStream dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
     dos.writeBytes("Package: " + name + "\n" + "Name: " + name + "\n" + "Version: " + version + "\n"
         + "Architecture: i386\n" + "Priority: optional\n" + "Description: " + description + "\n" + "Homepage: " + url
@@ -167,12 +167,12 @@ public class LinuxBuildNatives {
       String source = (String) files.items[i];
       String fname = source.substring(source.lastIndexOf('/') + 1);
       String dest = baseDir + "/" + fname;
-      Utils.println("file: " + source + " to " + dest);
+      DeployLogger.normal("file: " + source + " to " + dest);
       Utils.copyFile(source, dest, false);
     }
 
     outFile = "postinst";
-    Utils.println("...writing " + outFile);
+    DeployLogger.normal("...writing " + outFile);
     dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
     dos.writeBytes("#!/bin/sh\n" + "set -e\n" + "if [ \"$1\" = \"configure\" ]; then\n"
         + "  ldconfig /usr/lib/totalcross\n" + "fi\n");
@@ -181,7 +181,7 @@ public class LinuxBuildNatives {
     ff.setExecutable(true, false);
 
     outFile = "postrm";
-    Utils.println("...writing " + outFile);
+    DeployLogger.normal("...writing " + outFile);
     dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
     dos.writeBytes("#!/bin/sh\n" + "set -e\n" + "if [ \"$1\" = \"remove\" ]; then\n"
         + "  ldconfig /usr/lib/totalcross\n" + "fi\n");
@@ -201,9 +201,9 @@ public class LinuxBuildNatives {
       debMaker.setDeb(debOut);
       debMaker.validate();
       BinaryPackageControlFile pdsc = debMaker.createDeb(Compression.BZIP2);
-      System.out.println("debian package descriptor:\n" + pdsc.toString());
+      DeployLogger.debug("debian package descriptor:\n" + pdsc.toString());
     } catch (PackagingException e) {
-      System.err.println(e);
+      DeployLogger.error(String.valueOf(e));
     }
     Utils.copyFile("install/linux/" + debName, targetDir + "/" + debName, false);
     totalcross.io.File.deleteDir("install");
@@ -287,17 +287,17 @@ public class LinuxBuildNatives {
 
     @Override
     public void debug(String s) {
-      Utils.println(s);
+      DeployLogger.debug(s);
     }
 
     @Override
     public void info(String s) {
-      Utils.println(s);
+      DeployLogger.normal(s);
     }
 
     @Override
     public void warn(String s) {
-      Utils.warn(s);
+      DeployLogger.warn(s);
     }
   }
 }
@@ -320,7 +320,7 @@ public class LinuxBuildNatives {
 //      +Section: Games 
 
       outFile = "postinst";
-      Utils.println("...writing "+outFile);
+      DeployLogger.normal("...writing " + outFile);
       dos = new DataOutputStream(new FileOutputStream(controlDir + outFile));
       dos.writeBytes(
             "#!/bin/sh\n" +
