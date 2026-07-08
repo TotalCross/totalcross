@@ -1,7 +1,8 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000 Dave Slaughter
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross;
@@ -83,7 +84,7 @@ import totalcross.util.zip.TCZ;
  */
 
 /** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
-
+@SuppressWarnings({"deprecation", "removal"})
 final public class Launcher extends java.applet.Applet implements WindowListener, KeyListener,
     java.awt.event.MouseListener, MouseWheelListener, MouseMotionListener, ComponentListener {
   public static Launcher instance;
@@ -133,7 +134,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
   public totalcross.ui.Insets toInsetsPortrait;
   public totalcross.ui.Insets toInsetsLandscape;
 
-  @SuppressWarnings("deprecation")
   public Launcher() {
     instance = this;
     addKeyListener(this);
