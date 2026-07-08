@@ -37,10 +37,17 @@ CHECK_EXTENSIONS = {
 EXCLUDED_PREFIXES = (
     "TotalCrossVM/deps/",
     "build/",
+    "TotalCrossSDK/src/main/java/totalcross/util/regex/",
+    "TotalCrossSDK/src/main/java/totalcross/db/sqlite/",
 )
 
 EXCLUDED_PATHS = {
     ".agent/PLANS.md",
+}
+
+ALWAYS_CHECK_PATHS = {
+    "TotalCrossSDK/src/main/java/totalcross/db/sqlite/SQLiteUtil.java",
+    "TotalCrossSDK/src/main/java/totalcross/db/sqlite/ui/DBListBox.java",
 }
 
 COPYRIGHT_RE = re.compile(r"Copyright \(C\) ([0-9]{4})(?:-([0-9]{4}))? (.+)$")
@@ -75,6 +82,8 @@ def staged_entries():
 def should_check(path):
     if path in EXCLUDED_PATHS:
         return False
+    if path in ALWAYS_CHECK_PATHS:
+        return True
     path_obj = Path(path)
     if path_obj.suffix not in CHECK_EXTENSIONS:
         return False
