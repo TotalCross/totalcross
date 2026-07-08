@@ -94,43 +94,43 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.vafer/jdeb
-    implementation(group: 'org.vafer', name: 'jdeb', version: '1.14') {
+    implementation('org.vafer:jdeb:1.14') {
 		exclude group: 'org.bouncycastle'
 	}
     // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-bcpkix-lts8on
     implementation("org.bouncycastle:bcpkix-lts8on:2.73.11")
     // https://mvnrepository.com/artifact/com.googlecode.plist/dd-plist
-    implementation group: 'com.googlecode.plist', name: 'dd-plist', version: '1.19'
+    implementation 'com.googlecode.plist:dd-plist:1.19'
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
-    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.32.3.3'
+    implementation 'org.xerial:sqlite-jdbc:3.32.3.3'
     // https://mvnrepository.com/artifact/de.schlichtherle.truezip/truezip-file
-    implementation group: 'de.schlichtherle.truezip', name: 'truezip-file', version: '7.5.1'
+    implementation 'de.schlichtherle.truezip:truezip-file:7.5.1'
     // https://mvnrepository.com/artifact/de.schlichtherle.truezip/truezip-driver-zip
-    implementation(group: 'de.schlichtherle.truezip', name: 'truezip-driver-zip', version: '7.5.1') {
+    implementation('de.schlichtherle.truezip:truezip-driver-zip:7.5.1') {
 		exclude group: 'org.bouncycastle'
 	}
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation group: 'commons-io', name: 'commons-io', version: '2.2'
+    implementation 'commons-io:commons-io:2.2'
 
     // https://mvnrepository.com/artifact/org.ow2.asm/asm
-    implementation group: 'org.ow2.asm', name: 'asm', version: '5.2'
+    implementation 'org.ow2.asm:asm:5.2'
     // https://mvnrepository.com/artifact/org.ow2.asm/asm-tree
-    implementation group: 'org.ow2.asm', name: 'asm-tree', version: '5.2'
+    implementation 'org.ow2.asm:asm-tree:5.2'
 
     // https://mvnrepository.com/artifact/net.harawata/appdirs
-    implementation group: 'net.harawata', name: 'appdirs', version: '1.2.0'
+    implementation 'net.harawata:appdirs:1.2.0'
 	// https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
-	runtimeOnly group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
+	runtimeOnly 'net.java.dev.jna:jna-platform:4.2.2'
 	
 	// https://mvnrepository.com/artifact/net.coobird/thumbnailator
-	implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.20'
+	implementation 'net.coobird:thumbnailator:0.4.20'
 
 	// https://mvnrepository.com/artifact/junit/junit
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'
 
-    implementation(group: 'com.totalcross.annotations', name: 'totalcross-annotations', version: '1.0.0')
+    implementation 'com.totalcross.annotations:totalcross-annotations:1.0.0'
 }
 
 test {
@@ -167,7 +167,7 @@ jar {
 publishing {
     publications {
         mavenCustom(MavenPublication) {
-            artifactId 'totalcross-sdk'
+            artifactId = 'totalcross-sdk'
 			pom.packaging = 'jar'
 			
 			// workaround - maven-publish lists all dependencies as runtime regardless of the original scope
@@ -209,7 +209,7 @@ publishing {
     repositories {
         maven {
             // change to point to your repo, e.g. http://my.org/repo
-            url "build/repo"
+            url = uri('build/repo')
         }
     }
 }
@@ -465,6 +465,6 @@ task javadocJar(type: Jar) {
 }
 javadoc.finalizedBy(javadocJar)
 
-artifacts {
-    archives sourcesJar, javadocJar, tcbaselangJar, tcbaseutilJar, tcbasemiscJar, tcuiJar
+tasks.named('assemble') {
+    dependsOn sourcesJar, javadocJar, tcbaselangJar, tcbaseutilJar, tcbasemiscJar, tcuiJar
 }
