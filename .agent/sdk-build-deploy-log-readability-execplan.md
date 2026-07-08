@@ -22,9 +22,12 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - [x] (2026-07-08 14:20 America/Sao_Paulo) Re-evaluated priorities from the successful log: `tc.Deploy` output is now the largest readability problem.
 - [x] (2026-07-08 15:15 America/Sao_Paulo) Created the `TotalCrossSDK/gradlew-agent` wrapper, verified its no-argument usage contract, and ignored local `agent-logs/`.
 - [x] (2026-07-08 15:40 America/Sao_Paulo) Moved the `signJar` warning out of Gradle configuration so ordinary SDK builds no longer emit it.
+- [x] (2026-07-08 15:39 America/Sao_Paulo) Added the first structured `tc.Deploy` logging pass: `DeployLogger`, `/log-level`, `/agent-log`, command-line and deploy summaries, and aggregated float-parameter warnings.
+- [x] (2026-07-08 15:40 America/Sao_Paulo) Verified that `deployTcbaselang` stays concise at normal log level and restores `Classpath:` plus `Adding ...` output when `/log-level debug` is injected temporarily.
+- [x] (2026-07-08 16:02 America/Sao_Paulo) Replaced direct `System.out` and `System.err` usage across `tc.tools.deployer` classes with `DeployLogger`, keeping only the logger's own sink implementation on raw streams.
 - [ ] Implement the first version of the agent log summarizer for Gradle logs.
 - [ ] Reduce Gradle-side noise that is not a real build warning.
-- [ ] Add structured logging controls to `tc.Deploy`.
+- [ ] Add the remaining structured logging controls to `tc.Deploy`.
 - [ ] Reduce `tc.Deploy` normal output and keep full detail available through debug or full logs.
 - [ ] Clean compiler warnings that are safe to fix without changing compatibility behavior.
 - [ ] Clean Javadoc errors and warnings without disabling doclint.
@@ -51,6 +54,15 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
 - Observation: The first wrapper run keeps the terminal quiet and moves Gradle notices into the agent log.
   Evidence: `TotalCrossSDK/agent-logs/20260708-151556-compileJava-agent.log` shows `status: success`, a short stdout summary, and separate `signing_warnings` and `deprecation_notices` sections while the full log still contains the raw Gradle output.
 
+- Observation: The new deploy logger already restores debug detail on demand while keeping the default deploy output concise.
+  Evidence: `TotalCrossSDK/agent-logs/20260708-153940-deployTcbaselang-full.log` shows `Classpath:` and many `Adding ...` lines only after a temporary `'/log-level', 'debug'` edit was added to the `deployTcbaselang` task.
+
+- Observation: The default deploy path is now much shorter, but the SLF4J binder warning is still a separate cleanup item.
+  Evidence: `TotalCrossSDK/agent-logs/20260708-154050-deployTcbaselang-full.log` still contains the three `SLF4J:` lines, while `classpath_lines: 0` and `adding_lines: 0` in the agent summary confirm the new logger removed the largest deploy spam at the default level.
+
+- Observation: After replacing the remaining deployer prints with `DeployLogger`, the package still compiles and the `deployTcbaselang` smoke run succeeds.
+  Evidence: `./gradlew-agent compileJava` succeeded with log `TotalCrossSDK/agent-logs/20260708-160218-compileJava-full.log`, and `./gradlew-agent deployTcbaselang` succeeded with log `TotalCrossSDK/agent-logs/20260708-160228-deployTcbaselang-full.log`.
+
 ## Decision Log
 
 - Decision: Treat `AnonymousUserDataTest` correction and reactivation as a separate future task, not part of this log-readability implementation.
@@ -69,9 +81,21 @@ The visible behavior is: from `TotalCrossSDK`, running `./gradlew-agent clean di
   Rationale: The user wants errors and warnings corrected where possible. Suppressing doclint would make the build quieter but would not improve code or documentation quality.
   Date/Author: 2026-07-08 / Codex.
 
+- Decision: Keep the new deploy logger layered on top of the existing quiet flag instead of replacing the old behavior in one sweep.
+  Rationale: The repository has many legacy deploy helpers that still check `DeploySettings.quiet`. A layered approach lets the common high-volume messages move to explicit levels now while the older callers stay stable until a later pass.
+  Date/Author: 2026-07-08 / Codex.
+
+- Decision: Treat the SLF4J binder warning as a separate follow-up after the deploy logger pass.
+  Rationale: The new logger work already made the biggest deploy noise disappear. Keeping the remaining SLF4J cleanup separate makes it easier to verify that the logging changes themselves are correct before changing runtime dependencies.
+  Date/Author: 2026-07-08 / Codex.
+
+- Decision: Leave `System.out` and `System.err` only inside `DeployLogger` itself.
+  Rationale: The logger is the sink that ultimately writes to stdout, stderr, and the optional agent log file. Replacing those internal writes with logger methods would recurse and break output delivery.
+  Date/Author: 2026-07-08 / Codex.
+
 ## Outcomes & Retrospective
 
-The wrapper milestone is complete, and the Gradle configuration warning from `signJar` now waits until the task actually runs. The remaining immediate work is the log summarizer and the broader `tc.Deploy` cleanup. Update this section after each milestone with what changed, what was validated, and which risks remain.
+The wrapper milestone is complete, the Gradle configuration warning from `signJar` now waits until the task actually runs, and the first structured deploy logging pass is in place. Normal deploy output is already much shorter, and `/log-level debug` proves that the full classpath and per-entry conversion lines can still be restored when needed. The remaining immediate work is the SLF4J binder noise, the rest of the deploy logger migration, and the broader Gradle and documentation cleanup. Update this section after each milestone with what changed, what was validated, and which risks remain.
 
 ## Context and Orientation
 
@@ -105,7 +129,7 @@ The seventh milestone cleans Javadoc diagnostics without disabling doclint. Star
 
 The eighth milestone updates agent documentation. In `AGENTS.md`, change SDK build instructions to prefer `cd TotalCrossSDK` followed by `./gradlew-agent clean dist`. Document that agents should read the `*-agent.log` first and open the `*-full.log` only for deeper diagnosis. Update deploy/smoke guidance so direct `tc.Deploy` invocations use `/agent-log` when log analysis is expected.
 
-At the end of each milestone, stage only the files changed by that milestone and finish with a descriptive commit message. Do not stage local logs or other generated artifacts unless a milestone explicitly says to promote them.
+At the end of each milestone, validate the copyright headers of every modified file against `AGENTS.md`, correct any stale year range or missing Amalgam line, and only then stage the files changed by that milestone. Finish with a descriptive commit message. Do not stage local logs or other generated artifacts unless a milestone explicitly says to promote them.
 
 ## Concrete Steps
 
@@ -205,7 +229,9 @@ If a validation command fails because the Gradle cache under `~/.gradle` is not 
 
 If a Javadoc fix produces a suspicious documentation change, prefer preserving the original visible text with escaped HTML entities or `{@code ...}` rather than deleting content. If a compiler warning fix touches compatibility classes such as Applet or AudioClip support, prefer targeted suppression over removing legacy API surface.
 
-When a milestone is complete, use `git add` on the related source and plan files only, confirm the staged diff is the intended one, and then end that operation with a commit message that clearly names the change. Local logs under `TotalCrossSDK/agent-logs/` stay untracked.
+When a milestone is complete, first review the copyright header of each file you touched and update it to the current-year form required by `AGENTS.md`. After that, use `git add` on the related source and plan files only, confirm the staged diff is the intended one, and then end that operation with a commit message that clearly names the change. Local logs under `TotalCrossSDK/agent-logs/` stay untracked.
+
+Revision note (2026-07-08): Added an explicit pre-staging copyright-header validation step because this repository requires current-year header maintenance on every touched file, and staged changes should already satisfy that rule before commit preparation.
 
 ## Artifacts and Notes
 

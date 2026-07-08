@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
@@ -59,7 +60,7 @@ public class Deployer4WinCE {
         DeploySettings.bitmaps.saveWinCEIcons(bytes, bitmap16x16x8_Offset, bitmap32x32x8_Offset, bitmap48x48x8_Offset);
         saveStub(targetDir, DeploySettings.filePrefix, false);
       } catch (Exception e) {
-        Utils.println("Exception: " + e.getMessage());
+        DeployLogger.normal("Exception: " + e.getMessage());
       }
     } else {
       // if no exe files, just create the directories
@@ -99,7 +100,7 @@ public class Deployer4WinCE {
     // write the file
     String fullPath = Convert.appendPath(userPath, fileName);
     if (show) {
-      Utils.println("...writing " + fullPath);
+      DeployLogger.normal("...writing " + fullPath);
     }
 
     try {
@@ -134,13 +135,13 @@ public class Deployer4WinCE {
     bitmap32x32x8_Offset = Utils.indexOf(bytes, icon32x32x8_header, false);
     bitmap48x48x8_Offset = Utils.indexOf(bytes, icon48x48x8_header, false);
     if (bitmap16x16x8_Offset == -1) {
-      System.out.println("Could not find offset for 16x16x8");
+      DeployLogger.warn("Could not find offset for 16x16x8");
     }
     if (bitmap32x32x8_Offset == -1) {
-      System.out.println("Could not find offset for 32x32x8");
+      DeployLogger.warn("Could not find offset for 32x32x8");
     }
     if (bitmap48x48x8_Offset == -1) {
-      System.out.println("Could not find offset for 48x48x8");
+      DeployLogger.warn("Could not find offset for 48x48x8");
     }
   }
 
@@ -232,7 +233,7 @@ public class Deployer4WinCE {
       if (DeploySettings.packageVM) // include the vm?
       {
         if (!hasExe) {
-          System.out.println("Warning: /p ignored since package has no binary files");
+          DeployLogger.warn("Warning: /p ignored since package has no binary files");
         } else {
           // tc is always included
           // include non-binary files
@@ -355,7 +356,7 @@ public class Deployer4WinCE {
       Vm.sleep(100);
     }
     if (!new File(Convert.appendPath(targetDir, cabName + ".CAB")).exists()) {
-      System.err.println("\n\nFailed calling execCabWiz for WM5!\n\nExecution output:\n\n" + out);
+      DeployLogger.error("\n\nFailed calling execCabWiz for WM5!\n\nExecution output:\n\n" + out);
     }
 
     // delete the temp files
@@ -408,7 +409,7 @@ public class Deployer4WinCE {
       }
     }
     // everything done!
-    System.out.println("... Files written to folder " + targetDir);
+    DeployLogger.normal("... Files written to folder " + targetDir);
   }
 
   private void deleteCopiedFiles(Vector v) throws totalcross.io.IOException {

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
@@ -34,7 +35,6 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.bouncycastle.crypto.RuntimeCryptoException;
 
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
@@ -135,7 +135,7 @@ public class Deployer4Android {
         } else if (osArch.equals("x86_64") || osArch.equals("amd64")) {
           osArch = "x86_64";
         } else {
-          System.out.println("Couldn't detect system architecture, trying with x86_64");
+          DeployLogger.warn("Couldn't detect system architecture, trying with x86_64");
           osArch = "x86_64";
         }
         osName = "linux-" + osArch;
@@ -150,7 +150,7 @@ public class Deployer4Android {
         final String downloadUrl = BASE_URL + VERSION + "/" + protocString + ".zip";
         // download and unzip protoc
         try {
-          System.out.println("Downloading protoc...");
+          DeployLogger.normal("Downloading protoc...");
           downloadAndUnzip(downloadUrl, protocBaseFolder.getAbsolutePath());
         } catch (Exception e) {
           throw new RuntimeException("Failed to download protoc at: " + downloadUrl
@@ -261,7 +261,7 @@ public class Deployer4Android {
       final File bundletoolJar = new File(androidToolsFolder, FILE_NAME);
       if (!bundletoolJar.exists()) {
         try {
-          System.out.println("Downloading bundletool...");
+          DeployLogger.normal("Downloading bundletool...");
           ProtocExec.downloadFile(DOWNLOAD_URL, bundletoolJar);
         } catch (Exception e) {
           throw new RuntimeException("Failed to download bundletool at: " + DOWNLOAD_URL
@@ -298,7 +298,7 @@ public class Deployer4Android {
     final String sourcePackage = "totalcross/android";
     targetTCZ = "app" + DeploySettings.applicationId.toLowerCase(Locale.ROOT);
     final String targetPackage = "totalcross/" + targetTCZ;
-    System.out.println("Android application folder: /data/data/" + (targetPackage.replace('/', '.')));
+    DeployLogger.normal("Android application folder: /data/data/" + (targetPackage.replace('/', '.')));
 
     String newPackage = targetPackage.replace('/', '.');
     String newVersion = DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0";
@@ -445,8 +445,7 @@ public class Deployer4Android {
         googleServicesJson.input(jsonStream);
       }
     } catch (FileNotFoundException e) {
-      System.out
-          .println("Could not find 'google-services.json', thus Firebase will be ignored further on (Android deploy)");
+      DeployLogger.warn("Could not find 'google-services.json', thus Firebase will be ignored further on (Android deploy)");
     }
 
     // 11. unmount to commit changes
@@ -501,7 +500,7 @@ public class Deployer4Android {
 
     String execOutput = Utils.exec(javaCmdList.toArray(new String[0]), new File(targetDir).getAbsolutePath());
     if (!DeploySettings.quiet) {
-      System.out.println(execOutput);
+      DeployLogger.debug(execOutput);
     }
 
     FileUtils.moveFile(new File(targetDir, fileName + ".apks/universal.apk"), new File(targetDir, fileName + ".apk"));
@@ -514,7 +513,7 @@ public class Deployer4Android {
       extraMsg = callADB(apk);
     }
 
-    System.out.println("... Files written to folder " + targetDir + extraMsg);
+    DeployLogger.normal("... Files written to folder " + targetDir + extraMsg);
   }
 
   private String callADB(String apk) throws Exception {
@@ -526,7 +525,7 @@ public class Deployer4Android {
     if (message != null && message.indexOf("INPUT:Success") >= 0) {
       return " (installed)";
     }
-    System.out.println(message);
+    DeployLogger.warn(message);
     return " (error on installl)";
   }
 
@@ -563,7 +562,7 @@ public class Deployer4Android {
   private static void processClassesDex(byte[] bytes, OutputStream outputStream, byte[] sourcePackageBytes, byte[] targetPackageBytes) throws Exception {
     replaceBytes(bytes, sourcePackageBytes, targetPackageBytes);
     if (DeploySettings.autoStart || DeploySettings.isService) {
-      System.out.println("Is service.");
+      DeployLogger.normal("Is service.");
       replaceBytes(bytes, new byte[] { (byte) 0x71, (byte) 0xC3, (byte) 0x5B, (byte) 0x07 },
           DeploySettings.isService ? new byte[] { 1, 0, 0, 0 } : new byte[] { 0, 0, 0, 0 });
     }
@@ -662,7 +661,7 @@ public class Deployer4Android {
 
       File file = getFirstReadableFile(pathname, Convert.appendPath(DeploySettings.currentDir, pathname), Utils.findPath(pathname, true));
       if (file == null) {
-        System.out.println("File not found: " + pathname);
+        DeployLogger.warn("File not found: " + pathname);
         continue;
       }
 

@@ -67,6 +67,6 @@ public class Deployer4MacOS {
       FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "/macos/libtcvm.dylib"),
           new java.io.File(targetDir));
     }
-    System.out.println("... Files written to folder " + targetDir);
+    DeployLogger.normal("... Files written to folder " + targetDir);
   }
 }

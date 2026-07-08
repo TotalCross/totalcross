@@ -27,6 +27,7 @@ import tc.tools.deployer.Deployer4MacOS;
 import tc.tools.deployer.Deployer4Win32;
 import tc.tools.deployer.Deployer4WinCE;
 import tc.tools.deployer.DeployerException;
+import tc.tools.deployer.DeployLogger;
 import tc.tools.deployer.Utils;
 import totalcross.sys.Convert;
 import totalcross.util.ElementNotFoundException;
@@ -63,7 +64,8 @@ public class Deploy {
         usage();
         return;
       }
-      System.out.println("Command line: " + Utils.toString(args));
+      configureLogging(args);
+      DeployLogger.normal("Command line: " + Utils.toString(args));
       DeploySettings.init();
 
       checkClasspath();
@@ -79,9 +81,9 @@ public class Deploy {
       J2TC.process(fileName, options);
 
       if (DeploySettings.testClass) {
-        System.out.println("Test mode on. No file created.");
+        DeployLogger.normal("Test mode on. No file created.");
       } else if (options == 0) {
-        System.out.println("TCZ file created, but no target platforms specified. Type \"java tc.Deploy\" for help.");
+        DeployLogger.normal("TCZ file created, but no target platforms specified. Type \"java tc.Deploy\" for help.");
       } else {
         if (DeploySettings.etcDir == null || !new File(DeploySettings.etcDir).exists()) {
           throw new DeployerException(
@@ -151,11 +153,11 @@ public class Deploy {
         }
 
         if (!DeploySettings.testClass && (options & BUILD_APPLET) != 0 && DeploySettings.isJarOrZip) {
-          System.out.println(
+          DeployLogger.normal(
               "\nAttention: Deployer for Applet was not able to process the dependencies to create a single jar file because you passed a jar or zip as input file. In this situation, the applet will require the tc.jar file to run.");
         }
         if (!DeploySettings.testClass && DeploySettings.showBBPKGName != null) {
-          System.out.println("\nThe BlackBerry's " + DeploySettings.showBBPKGName
+          DeployLogger.normal("\nThe BlackBerry's " + DeploySettings.showBBPKGName
               + ".cod package was created. The files will be copied to the folder \"" + DeploySettings.showBBPKGRoot
               + "\". Remember that the files are not uninstalled when your application is removed.");
         }
@@ -164,15 +166,15 @@ public class Deploy {
           int dot = fn.lastIndexOf('.');
           String name = fn.substring(0, dot);
           String ext = fn.substring(dot + 1);
-          System.out.println("\nThe file '" + fileName + "' does not contain a class named '" + name
+          DeployLogger.normal("\nThe file '" + fileName + "' does not contain a class named '" + name
               + "' that extends totalcross.ui.MainWindow, so this file is considered as LIBRARY-ONLY and no executable were generated. However, if this jar is indeed an application, make sure that the JAR has the same name of your MainWindow class.");
           if (!DeploySettings.filePrefix.startsWith("tc.base") && !DeploySettings.filePrefix.equals("TCUI")
               && !DeploySettings.filePrefix.toLowerCase().endsWith("lib")) {
-            System.out.println("If this file is really a library, you must name it " + DeploySettings.filePrefix
+            DeployLogger.normal("If this file is really a library, you must name it " + DeploySettings.filePrefix
                 + "Lib." + ext + ", or it will NOT be loaded in the device.");
           }
         }
-        System.out.println(
+        DeployLogger.normal(
             "Finished at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime()));
       }
     } catch (OutOfMemoryError oome) {
@@ -183,6 +185,7 @@ public class Deploy {
       showException(e, null);
       throw e;
     } finally {
+      DeployLogger.close();
       new Thread(() -> {
         try {
           AnonymousUserData.instance().deploy(args);
@@ -211,20 +214,20 @@ public class Deploy {
   }
 
   private void showException(Throwable e, String extraMsg) {
-    System.err.println("################################# FATAL ERROR ##################################");
+    DeployLogger.error("################################# FATAL ERROR ##################################");
     if (J2TC.currentClass != null) {
-      System.err.println("Class: " + J2TC.currentClass);
+      DeployLogger.error("Class: " + J2TC.currentClass);
     }
     if (J2TC.currentMethod != null) {
-      System.err.println("Method: " + J2TC.currentMethod);
+      DeployLogger.error("Method: " + J2TC.currentMethod);
     }
     
     e.printStackTrace(System.err);
 
     if (extraMsg != null) {
-      System.err.println(extraMsg);
+      DeployLogger.error(extraMsg);
     }
-    System.err.println("################################################################################");
+    DeployLogger.error("################################################################################");
     if (waitIfError) {
       try {
         System.out.print("Press enter to quit ");
@@ -300,7 +303,7 @@ public class Deploy {
             Deployer4Android.permissionRequestInstallPackages = true;
           }
           else if (op.equals("/autostart")) {
-            System.out.println("Autostart on Android's boot");
+            DeployLogger.normal("Autostart on Android's boot");
             DeploySettings.autoStart = true;
           } else {
             DeploySettings.applicationId = args[++i];
@@ -376,6 +379,27 @@ public class Deploy {
           break;
         case 'v':
           DeploySettings.quiet = false;
+          DeploySettings.logLevel = DeployLogger.Level.VERBOSE;
+          DeployLogger.setLevel(DeploySettings.logLevel);
+          break;
+        case 'l':
+          if (op.equals("/log-level")) {
+            if (i >= args.length - 1) {
+              throw new DeployerException("Missing value for /log-level");
+            }
+            DeploySettings.logLevel = parseLogLevel(args[++i]);
+            DeployLogger.setLevel(DeploySettings.logLevel);
+            DeploySettings.quiet = DeploySettings.logLevel == DeployLogger.Level.QUIET
+                || DeploySettings.logLevel == DeployLogger.Level.NORMAL;
+          } else if (op.equals("/agent-log")) {
+            if (i >= args.length - 1) {
+              throw new DeployerException("Missing value for /agent-log");
+            }
+            DeploySettings.agentLogPath = args[++i];
+            DeployLogger.setAgentLogPath(DeploySettings.agentLogPath);
+          } else {
+            throw new DeployerException("Invalid option: " + op);
+          }
           break;
         case 'r':
           String key = args[++i].toUpperCase();
@@ -405,7 +429,7 @@ public class Deploy {
             throw new DeployerException(
                 "Could not find the path for TotalCross3, so its impossible to create a single installation package.");
           }
-          System.out.println("Creating single installation package");
+          DeployLogger.normal("Creating single installation package");
           break;
         case 'i':
           DeploySettings.installPlatforms = args[++i].toLowerCase() + ",";
@@ -421,9 +445,52 @@ public class Deploy {
     }
     if (activationKey != null) {
       DeploySettings.rasKey = Convert.hexStringToBytes(activationKey, true);
-      System.out.println("The application was signed with the given registration key.");
+      DeployLogger.normal("The application was signed with the given registration key.");
     }
     return options;
+  }
+
+  private void configureLogging(String[] args) throws Exception {
+    DeployLogger.Level level = DeployLogger.Level.NORMAL;
+    String agentLogPath = null;
+    for (int i = 1; i < args.length; i++) {
+      String op = args[i].toLowerCase();
+      if ("/v".equals(op)) {
+        level = DeployLogger.Level.VERBOSE;
+      } else if ("/log-level".equals(op)) {
+        if (i >= args.length - 1) {
+          throw new DeployerException("Missing value for /log-level");
+        }
+        level = parseLogLevel(args[++i]);
+      } else if ("/agent-log".equals(op)) {
+        if (i >= args.length - 1) {
+          throw new DeployerException("Missing value for /agent-log");
+        }
+        agentLogPath = args[++i];
+      }
+    }
+    DeploySettings.logLevel = level;
+    DeploySettings.agentLogPath = agentLogPath;
+    DeployLogger.configure(level, agentLogPath);
+    DeploySettings.quiet = level == DeployLogger.Level.QUIET || level == DeployLogger.Level.NORMAL;
+  }
+
+  private DeployLogger.Level parseLogLevel(String rawLevel) throws DeployerException {
+    if (rawLevel == null) {
+      throw new DeployerException("Missing value for /log-level");
+    }
+    switch (rawLevel.toLowerCase()) {
+    case "quiet":
+      return DeployLogger.Level.QUIET;
+    case "normal":
+      return DeployLogger.Level.NORMAL;
+    case "verbose":
+      return DeployLogger.Level.VERBOSE;
+    case "debug":
+      return DeployLogger.Level.DEBUG;
+    default:
+      throw new DeployerException("Invalid /log-level value: " + rawLevel);
+    }
   }
 
   private void usage() {

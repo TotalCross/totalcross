@@ -56,6 +56,7 @@ import tc.tools.converter.tclass.TCMethod;
 import tc.tools.converter.tclass.TCMethodFlags;
 import tc.tools.converter.tclass.TCObjectField;
 import tc.tools.converter.tclass.TCValue64Field;
+import tc.tools.deployer.DeployLogger;
 import tc.tools.deployer.DeploySettings;
 import tc.tools.deployer.DeployerException;
 import tc.tools.deployer.Utils;
@@ -117,7 +118,7 @@ public final class J2TC implements JConstants, TCConstants {
       tc.tools.converter.Storage.compressAndWrite(tcbas, new DataStream(tcbasz));
       bytes = tcbasz.toByteArray();
     } else {
-      Utils.println("Replacing " + jc.className + " by its 4D");
+      DeployLogger.verbose("Replacing " + jc.className + " by its 4D");
     }
   }
 
@@ -132,7 +133,7 @@ public final class J2TC implements JConstants, TCConstants {
     {
       String withoutDollar = className.substring(0, dollar);
       if (htAddedClasses.exists(withoutDollar + "4D.class")) {
-        Utils.println("Skipping inner " + className);
+        DeployLogger.verbose("Skipping inner " + className);
         return true;
       }
     }
@@ -149,9 +150,9 @@ public final class J2TC implements JConstants, TCConstants {
     tcbasz.reset();
     converted.write(new DataStreamLE(tcbas));
     if (dump) {
-      System.out.println(jc.className);
+      DeployLogger.debug(jc.className);
       byte[] bytes = tcbas.toByteArray();
-      System.out.println(Utils.toString(bytes, 0, bytes.length));
+      DeployLogger.debug(Utils.toString(bytes, 0, bytes.length));
     }
     tc.tools.converter.Storage.compressAndWrite(tcbas, new DataStream(tcbasz));
     bytes = tcbasz.toByteArray();
@@ -351,7 +352,7 @@ public final class J2TC implements JConstants, TCConstants {
     TCZ.mainClassName = DeploySettings.mainClassName = jc.className;
     DeploySettings.isMainWindow = !isMainClassOrService(jc);
     if (!DeploySettings.isMainWindow) {
-      System.out.println("Application is MainClass or Service");
+      DeployLogger.verbose("Application is MainClass or Service");
     }
 
     for (int i = 0; i < jc.methods.length; i++) {
@@ -397,7 +398,7 @@ public final class J2TC implements JConstants, TCConstants {
         if (Bytecode2TCCode.hasMethodWith4D(jc, sign)) {
           methodsIgnored.put(i, i); // put its index
           newMethodCount--;
-          Utils.println("removing method " + jm.signature + " of class " + jc.className);
+          DeployLogger.verbose("removing method " + jm.signature + " of class " + jc.className);
         }
       }
       currentMethod = null;
@@ -520,12 +521,12 @@ public final class J2TC implements JConstants, TCConstants {
         }
 
         if (dumpBytecodes) {
-          System.out.println(jc.className + "." + jm.name);
+          DeployLogger.debug(jc.className + "." + jm.name);
         }
         for (int j = 0; j < bc.length; j++) {
           Instruction tccode = Bytecode2TCCode.convert(bc, bc[j], stack, vcode, isStaticInitializer, jm.signature);
           if (dumpBytecodes) {
-            System.out.println(bc[j] + " -> " + tccode); // dump
+            DeployLogger.debug(bc[j] + " -> " + tccode); // dump
           }
         }
         Bytecode2TCCode.updateBranchs(vcode);
@@ -547,6 +548,7 @@ public final class J2TC implements JConstants, TCConstants {
     RegAllocation.makeRegAllocation(tc.methods);
     generateCode(tc.methods);
     methodsIgnored.clear();
+    JavaMethod.flushFloatWarnings();
   }
 
   public static void generateCode(TCMethod[] methods) {
@@ -591,7 +593,7 @@ public final class J2TC implements JConstants, TCConstants {
     f.isSynchronized = jm.isSynchronized;
     // jm.isStrict - not used
     if (jm.isSynchronized && !syncWarned) {
-      System.out.println("Synchronized is not supported for methods yet.");
+      DeployLogger.warn("Synchronized is not supported for methods yet.");
       syncWarned = true;
     }
     return f;
@@ -925,7 +927,7 @@ public final class J2TC implements JConstants, TCConstants {
             print = false;
           } else {
             bytes = j2.bytes; // replace the bytes by the tclass ones
-            System.out.print("Adding " + j2.converted.className);
+            DeployLogger.debug("Adding " + j2.converted.className);
             if (!DeploySettings.testClass) {
               vout.addElement(new TCZ.Entry(bytes, j2.converted.className, len)); // note that all files must be added - use the real package name
             }
@@ -935,14 +937,14 @@ public final class J2TC implements JConstants, TCConstants {
           print = !name.equals("tckey.bin") && !name.equals("tcparms.bin") && !name.equals(DeploySettings.TCAPP_PROP);
 
           if (print) {
-            System.out.print("Adding " + name);
+            DeployLogger.debug("Adding " + name);
           }
           tcbasz.reset();
           if (nameLow.endsWith(".bmp") || nameLow.endsWith(".gif")) // convert gif and bmp to png
           {
             new Image(bytes).createPng(basz = new ByteArrayStream(8192));
             len = basz.getPos();
-            System.out.print(" (converted to PNG)");
+            DeployLogger.debug(" (converted to PNG)");
           }
 
           tc.tools.converter.Storage.compressAndWrite(basz, new DataStream(tcbasz));
@@ -950,12 +952,12 @@ public final class J2TC implements JConstants, TCConstants {
           vout.addElement(new TCZ.Entry(bytes, name, len)); // note that all files must be added
         }
         if (print && len != 0) {
-          System.out.println("... " + (bytes.length * 100 / len) + "%");
+          DeployLogger.debug("... " + (bytes.length * 100 / len) + "%");
         }
 
         vin.removeElementAt(0); // no error, remove element.
       } catch (ConstantPoolLimitReachedException cplre) {
-        System.out.println("Limit reached for " + cplre.getMessage() + ". Splitting tcz...");
+        DeployLogger.normal("Limit reached for " + cplre.getMessage() + ". Splitting tcz...");
         GlobalConstantPool.restoreState();
         return s;
       }
@@ -973,7 +975,7 @@ public final class J2TC implements JConstants, TCConstants {
       }
       n = callForName.size();
       if (n > 0) {
-        System.out.println("Adding " + n + " classes specified with Class.forName");
+        DeployLogger.verbose("Adding " + n + " classes specified with Class.forName");
         String[] classes = (String[]) callForName.toObjectArray();
 
         Vector temp = new Vector(50); // process callForName on this temporary vector
@@ -1013,7 +1015,7 @@ public final class J2TC implements JConstants, TCConstants {
         if (throwErrorIfInexistant) {
           throw new IllegalArgumentException("File not found: " + name);
         } else {
-          System.out.println("Class.forName not found: " + name);
+          DeployLogger.warn("Class.forName not found: " + name);
         }
       }
       return;
@@ -1329,7 +1331,7 @@ public final class J2TC implements JConstants, TCConstants {
         Vector vout = new Vector(200);
         inSize = processFiles(vin, vout);
         if (notResolvedForNameFound && !DeploySettings.isJarOrZip) {
-          System.out.println(
+          DeployLogger.warn(
               "ATTENTION: An unhandled Class.forName was detected. The deployer can handle Class.forName(x), when x is a String with "
                   + "the class name, but cannot handle when x is a variable. Thus, the referenced classes will not be added to the deploy. "
                   + "Consider to use a jar file with all the project classes and pass it as parameter to tc.Deploy.");
@@ -1417,53 +1419,53 @@ public final class J2TC implements JConstants, TCConstants {
       }
       DeploySettings.tczs = (String[]) tczs.toObjectArray();
       for (int i = 0; i < tczMsg.size(); i++) {
-        System.out.println(tczMsg.items[i]);
+        DeployLogger.normal((String) tczMsg.items[i]);
       }
     }
     if (!DeploySettings.testClass) {
       if (DeploySettings.mainClassName != null) {
-        System.out.println("Main class name: " + DeploySettings.mainClassName);
+        DeployLogger.normal("Main class name: " + DeploySettings.mainClassName);
       }
       if (DeploySettings.appTitle != null && DeploySettings.appTitle.trim().length() > 0) {
-        System.out.println("Application title: " + DeploySettings.appTitle);
+        DeployLogger.normal("Application title: " + DeploySettings.appTitle);
       } else {
-        System.out.println("Application title not provided, using: " + (DeploySettings.appTitle = cn));
+        DeployLogger.normal("Application title not provided, using: " + (DeploySettings.appTitle = cn));
       }
       if (DeploySettings.companyInfo != null) {
-        System.out.println("Company information: " + DeploySettings.companyInfo);
+        DeployLogger.normal("Company information: " + DeploySettings.companyInfo);
       }
       if (DeploySettings.applicationId != null) {
-        System.out.println("Application id: " + DeploySettings.applicationId);
+        DeployLogger.normal("Application id: " + DeploySettings.applicationId);
       } else {
         String name = cn;
         if (name.indexOf('.') > 0) {
           name = name.substring(0, name.lastIndexOf('.'));
         }
         DeploySettings.applicationId = Utils.getCreator(name);
-        System.out
-            .println("Application id not provided. Created from \"" + name + "\": " + DeploySettings.applicationId);
+        DeployLogger.normal("Application id not provided. Created from \"" + name + "\": " + DeploySettings.applicationId);
       }
       if (DeploySettings.appVersion != null) {
-        System.out.println("Application version: " + DeploySettings.appVersion);
+        DeployLogger.normal("Application version: " + DeploySettings.appVersion);
       }
       if (totalcross.sys.Settings.appCategory != null) {
-        System.out.println("Application category: " + totalcross.sys.Settings.appCategory);
+        DeployLogger.normal("Application category: " + totalcross.sys.Settings.appCategory);
       }
       if (totalcross.sys.Settings.appDescription != null) {
-        System.out.println("Application description: " + totalcross.sys.Settings.appDescription);
+        DeployLogger.normal("Application description: " + totalcross.sys.Settings.appDescription);
       }
       if (totalcross.sys.Settings.appLocation != null) {
-        System.out.println("Application location: " + totalcross.sys.Settings.appLocation);
+        DeployLogger.normal("Application location: " + totalcross.sys.Settings.appLocation);
       }
       if (DeploySettings.isFullScreen) {
-        System.out.println("Application will be Full Screen " + (DeploySettings.fullScreenPlatforms != null
+        DeployLogger.normal("Application will be Full Screen " + (DeploySettings.fullScreenPlatforms != null
             ? ("on platforms " + DeploySettings.fullScreenPlatforms) : ""));
         if (DeploySettings.fullScreenPlatforms == null
             || DeploySettings.fullScreenPlatforms.toLowerCase().indexOf("android") >= 0) {
-          Utils.println(
+          DeployLogger.warn(
               "Caution! Android should not be fullscreen because the virtual keyboard will not appear correctly. Consider removing \"Android\" from the Settings.fullScreenPlatforms field");
         }
       }
+      JavaMethod.flushFloatWarnings();
     }
   }
 
