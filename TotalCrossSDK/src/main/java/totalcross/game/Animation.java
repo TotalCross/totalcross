@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2017-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2017-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -14,7 +15,7 @@ import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 
 /**
- * The Animation control class. <br>
+ * The Animation control class.
  * This control displays an animation that can be loaded from indexed BMP files (one frame per image) or by a multi-frames BMP. This kind of BMP file
  * contains a list of images having all the same size and that lay side by side.
  * 
@@ -55,7 +56,7 @@ public class Animation extends Control {
   private int startFrame, endFrame, incFrame, frameCount, loopCount;
 
   /** 
-   * Event notification mask, whose value is <code>eventFinish<code>, which means that an event is posted only when the animation finishes.
+ * Event notification mask, whose value is {@code eventFinish}, which means that an event is posted only when the animation finishes.
    */
   protected int eventsMask = eventFinish; // fdie@341_3 new notification mechanism
 

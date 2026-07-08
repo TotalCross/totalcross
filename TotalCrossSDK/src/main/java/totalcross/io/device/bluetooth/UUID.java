@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2017-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2017-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -8,31 +9,25 @@ package totalcross.io.device.bluetooth;
 import totalcross.sys.Convert;
 
 /**
- * The <code>UUID</code> class defines universally unique identifiers. These 128-bit unsigned integers are guaranteed to
- * be unique across all time and space. Accordingly, an instance of this class is immutable.
- * 
- * The Bluetooth specification provides an algorithm describing how a 16-bit or 32-bit UUID could be promoted to a
- * 128-bit UUID. Accordingly, this class provides an interface that assists applications in creating 16-bit, 32-bit, and
- * 128-bit long UUIDs. The methods supported by this class allow equality testing of two UUID objects.
- * 
- * </p>
- * <p>
- * 
- * The Bluetooth Assigned Numbers document (<a href="http://www.bluetooth.org/assigned-numbers/sdp.htm">
- * http://www.bluetooth.org/assigned-numbers/sdp.htm</a>) defines a large number of UUIDs for protocols and service
- * classes. The table below provides a short list of the most common UUIDs defined in the Bluetooth Assigned Numbers
- * document.
+ * Represents a Bluetooth UUID.
+ *
+ * <p>The class supports 16-bit, 32-bit, and 128-bit UUID values, and provides
+ * equality and string conversion helpers.</p>
+ *
+ * <p>Common UUIDs:</p>
  * <table>
- * <tbody>
+ * <caption>Common Bluetooth UUIDs</caption>
+ * <thead>
  * <tr>
  * <th>Name</th>
  * <th>Value</th>
  * <th>Size</th>
  * </tr>
+ * </thead>
+ * <tbody>
  * <tr>
- * <td>Base UUID Value (Used in promoting 16-bit and 32-bit UUIDs to 128-bit UUIDs)</td>
+ * <td>Base UUID Value</td>
  * <td>0x0000000000001000800000805F9B34FB</td>
- * 
  * <td>128-bit</td>
  * </tr>
  * <tr>
@@ -112,9 +107,10 @@ import totalcross.sys.Convert;
  * <tr>
  * <td>Group Network</td>
  * <td>0x1117</td>
- * <td>16-bit</td> </tbody>
+ * <td>16-bit</td>
+ * </tbody>
  * </table>
- * 
+ *
  * @since TotalCross 1.2
  */
 public class UUID {

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -16,13 +17,9 @@ import totalcross.io.Stream;
 /**
  * This class implements stream compression with the ZLib library.
  * 
- * <blockquote> <i><q>zlib is designed to be a free, general-purpose, legally unencumbered - that is, not covered by any
- * patents -- lossless data-compression library for use on virtually any computer hardware and operating system. The
- * zlib data format is itself portable across platforms.</q></i>
- * <p align=right>
- * <a href="http://www.zlib.net/" />http://www.zlib.net/</a>
- * </p>
- * </blockquote>
+ * <p>zlib is a free, general-purpose lossless data-compression library.</p>
+ *
+ * <p>ZLib home page: <a href="http://www.zlib.net/">http://www.zlib.net/</a></p>
  */
 final public class ZLib {
   /** Compression level for no compression, which is 0 in a scale from 0 (no compression) to 9 (best compression) */
@@ -199,7 +196,7 @@ final public class ZLib {
    * @param out
    *           Inflated output stream
    * @param sizeIn
-   *           How many bytes to read, or -1 to read until <code>in</code>'s end
+   *           How many bytes to read, or -1 to read until {@code in}'s end.
    * @return Size of the inflated stream
    * @throws ZipException
    * @throws IOException
@@ -221,7 +218,7 @@ final public class ZLib {
    * @param out
    *           Inflated output stream
    * @param sizeIn
-   *           How many bytes to read, or -1 to read until <code>in</code>'s end
+   *           How many bytes to read, or -1 to read until {@code in}'s end.
    * @param noWrap
    *           if true then support GZIP compatible compression
    * @return Size of the inflated stream

@@ -30,13 +30,17 @@
 package totalcross.util.regex;
 
 /**
- * A Pattern subclass that accepts a simplified pattern syntax:
- * <li><code>?<code> - matches any single character;
- * <li><code>*<code> - matches any number of any characters;
- * <li>all the rest      - matches itself.
- * Each wildcard takes a capturing group withing a pattern.
- * 
- * @see        Pattern
+ * A Pattern subclass that accepts a simplified pattern syntax.
+ *
+ * <ul>
+ * <li>{@code ?} matches any single character.</li>
+ * <li>{@code *} matches any number of any characters.</li>
+ * <li>All the rest matches itself.</li>
+ * </ul>
+ *
+ * Each wildcard takes a capturing group within a pattern.
+ *
+ * @see Pattern
  */
 
 public class WildcardPattern extends Pattern {

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.io.device.gps;
@@ -15,62 +16,36 @@ import totalcross.sys.Time;
 import totalcross.util.ElementNotFoundException;
 
 /**
- * Class that retrieves GPS coordinates read from the COM (or Bluetooth, or IR) port.
- * Windows Mobile, Android and iOS use the native API instead of reading from the COM port.
- * 
- * This class only retrieves data updating the internal fields. If you want to display that data,
- * you may use the GPSView class.
- * 
- * For example:
- * 
- * <pre>
- * new Thread() 
- * {
- *    public void run()
- *    {
- *       gps = new GPS();
- *       for (int i = 0; i < 60*2 && gps.location[0] == 0; i++) // wait 60s
- *       {
- *          Vm.safeSleep(500);
- *          try
- *          {
- *             gps.retrieveGPSData();
- *          }
- *          catch (GPSDisabledException gde)
- *          {
- *             Toast.show("Please enable GPS!",2000);
- *          }
- *          catch (Exception eee)
- *          {
- *             eee.printStackTrace();
- *             break;
- *          }
- *       }
- *    }
- * }.start();
- * </pre>
- * 
- * If the GPS fails connecting to the satellites, and the phone has signal, you can use the cell tower location as a
- * rough location. The precision is vary between 50m to 3km, depending where the phone is. You can get the 
- * latitude and longitude using CellInfo.toCoordinates.
+ * Retrieves GPS coordinates from the platform GPS source or COM port.
  *
- * See the tc.samples.maps.GoogleMaps sample.
- * 
- * @see totalcross.io.device.gps.GPS
- * @see totalcross.phone.CellInfo#toCoordinates()
- * 
+ * <p>On supported platforms, the native API is used instead of reading from
+ * the COM port.</p>
+ *
+ * <p>Example:</p>
+ * <pre>{@code
+ * GPS gps = new GPS();
+ * try {
+ *   if (gps.retrieveGPSData()) {
+ *     double latitude = gps.getLatitude();
+ *     double longitude = gps.getLongitude();
+ *   }
+ * } catch (GPSDisabledException e) {
+ *   // prompt the user to enable GPS
+ * }
+ * }</pre>
+ *
  * @since TotalCross 1.38
  */
 
 public class GPS {
   /** Stores the location - latitude on first index (0) and longitude on second index (1). 
-   * On low signal, it contains the value <CODE>INVALID</code>. */
+   * On low signal, it contains the value {@code INVALID}. */
   public double[] location = { INVALID, INVALID };
   /** Stores the direction in degrees from the North. 
-   * On low signal, it contains the value <CODE>INVALID</code>. */
+   * On low signal, it contains the value {@code INVALID}. */
   public double direction = INVALID;
   /** Stores the speed in knots. 
-   * On low signal, it contains the value <CODE>INVALID</code>. */
+   * On low signal, it contains the value {@code INVALID}. */
   public double velocity = INVALID;
   /**
    * Number of satellites in view.

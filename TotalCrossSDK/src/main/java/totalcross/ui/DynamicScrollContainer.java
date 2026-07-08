@@ -1,6 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
 // Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui;
@@ -262,7 +262,9 @@ public class DynamicScrollContainer extends ScrollContainer {
     }
 
     /**
-     * the width of the parent container in which this view will be visible,</br> this is the width of {@link DynamicScrollContainer} </br> DO NOT MODIFY This is set when adding this view to the {@link DataSource}
+     * the width of the parent container in which this view will be visible,<br>
+     * this is the width of {@link DynamicScrollContainer}. DO NOT MODIFY. This
+     * is set when adding this view to the {@link DataSource}
      */
     public int parentWidth;
     /**
@@ -275,7 +277,7 @@ public class DynamicScrollContainer extends ScrollContainer {
     /**
      * Returns the height of this view.
      * This needs to be calculated by the view itself using {@link #getHeight()} and is exposed
-     * for faster referencing by {@link DataSource}.</br>
+     * for faster referencing by {@link DataSource}.<br>
      * If you know the height of your component then set this directly and have {@link #getHeight()} return this value.
      * 
      */
@@ -288,7 +290,8 @@ public class DynamicScrollContainer extends ScrollContainer {
 
     /**
      * Returns the height this view will occupy in the {@link DynamicScrollContainer}. This method should not
-     * initialize the component just return the height the view will take up on the scroll container. </br>
+     * initialize the component just return the height the view will take up on
+     * the scroll container.<br>
      * <p>
      * If you know the height of your component then set {@link #height} directly and return that value. If your component's height can only be determined when the component is painted, say for example because of text that may be wrapped, dynamically added controls,etc, then you need to calculate the height in this method, set {@link #height} to the value and then return it.
      * </p>
@@ -297,7 +300,8 @@ public class DynamicScrollContainer extends ScrollContainer {
 
     /**
      * Returns the container to display on the {@link DynamicScrollContainer}.
-     * </br> Do not create your ui here but in {@link #initUI()}
+     * <br>
+     * Do not create your ui here but in {@link #initUI()}
      */
     public Container getComponent() {
       if (c == null) {
@@ -307,9 +311,9 @@ public class DynamicScrollContainer extends ScrollContainer {
     }
 
     /**
-     * Initializes the container that represents this view.</br>
+     * Initializes the container that represents this view.<br>
      * You must create your UI in this method.
-     * The UI must fit into the height specified by {@link #getHeight()} </br>
+     * The UI must fit into the height specified by {@link #getHeight()}.<br>
      * You could lazy load data onto your ui at this point in time from a datasource, however if the loading takes a long
      * time it will delay the painting of the ui in the {@link DynamicScrollContainer}
      * 
@@ -320,8 +324,10 @@ public class DynamicScrollContainer extends ScrollContainer {
     }
 
     /**
-     * Called when this view is scrolled out of the visible view area.</br> The view is destroyed </br> You can overwrite
-     * to include any further garbage collection and resource release
+     * Called when this view is scrolled out of the visible view area.<br>
+     * The view is destroyed.<br>
+     * You can overwrite to include any further garbage collection and resource
+     * release.
      */
     public void clear() {
       c = null;

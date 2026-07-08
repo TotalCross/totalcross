@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2017-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2017-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -15,6 +16,7 @@ package totalcross.io.device.bluetooth;
  * http://www.bluetooth.org/assigned-numbers/sdp.htm</a>) defines the service class, major device class, and minor
  * device class. The table below provides some examples of possible return values and their meaning:
  * <TABLE>
+ * <CAPTION>Example Bluetooth device class values</CAPTION>
  * <TR>
  * <TH>Method</TH>
  * <TH>Return Value</TH>

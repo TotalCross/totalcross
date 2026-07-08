@@ -1,29 +1,22 @@
-// Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>   
+// Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 package totalcross.sys;
 
 /**
- * SpecialKeys is an interface containing values for special keys and modifiers.
- * <p>
- * Below is an example of SpecialKeys being used.
+ * Contains values for special keys and modifier masks.
  *
- * <pre>
- * public void onEvent(Event event)
- * {
- *  if (event.type == KeyEvent.SPECIAL_KEY_PRESS)
- *  {
- *     KeyEvent ke = (KeyEvent)event;
- *     if ((ke.modifiers & SpecialKeys.CONTROL) != 0)
- *        ... control key was held down
- *     if (ke.key == SpecialKeys.PAGE_DOWN)
- *        ... page down key pressed
- *     if (ke.key == SpecialKeys.PAGE_UP)
- *        ... page up key pressed
- * </pre>
+ * <p>Example:</p>
+ * <pre>{@code
+ * if ((event.key == SpecialKeys.PAGE_UP) &&
+ *     ((event.modifiers & SpecialKeys.CONTROL) != 0)) {
+ *   // handle Ctrl+Page Up
+ * }
+ * }</pre>
  */
 public interface SpecialKeys {
   // NOTE: The TotalCross VM indexes directly to these values

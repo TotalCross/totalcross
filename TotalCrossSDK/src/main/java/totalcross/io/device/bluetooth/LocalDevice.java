@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2017-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2017-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -11,13 +12,12 @@ import totalcross.io.device.RadioDevice;
 import totalcross.sys.Settings;
 
 /**
- * The <code>LocalDevice</code> class defines the basic functions of the Bluetooth manager. The Bluetooth manager
- * provides the lowest level of interface possible into the Bluetooth stack. It provides access to and control of the
- * local Bluetooth device. </p>
- * <p>
- * This class produces a singleton object.
- * </p>
- * 
+ * The {@code LocalDevice} class defines the basic functions of the Bluetooth
+ * manager.
+ *
+ * <p>The Bluetooth manager provides access to and control of the local
+ * Bluetooth device. This class produces a singleton object.</p>
+ *
  * @since TotalCross 1.15
  */
 public class LocalDevice {

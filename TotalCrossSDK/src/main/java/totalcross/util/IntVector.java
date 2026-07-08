@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -27,7 +28,7 @@ import totalcross.sys.Vm;
  * if (vec.size() > 5)
  * ...
  * </pre>
- * <br>For efficiency, get and set is made directly through the <items> public array.
+ * <br>For efficiency, get and set is made directly through the {@code items} public array.
  * <b>Please use the add and remove methods to manipulate the IntVector.</b>
  */
 public class IntVector {

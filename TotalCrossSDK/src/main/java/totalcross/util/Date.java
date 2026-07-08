@@ -1,5 +1,7 @@
 // Copyright (C) 2000, 2001 Allan C. Solomon
-// Copyright (C) 2000-2013 SuperWaba Ltda. 
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -10,15 +12,13 @@ import totalcross.sys.Settings;
 import totalcross.sys.Time;
 
 /**
- The Date class is a general date data type(Object) that is similar to those built in to other languages.
- It supports all days from January 1st, 1000 D.C. through December 31st, 2999. It checks to make sure that the dates
- that are instanciated or changed exist and if they don't an exception is thrown.  It provides
- methods to advance the date backwards and forwards by increments of day, week, and month.  It provides
- comparisons =,>,<.
-
- <b>Added by Allan C. Solomon</b> and modified by guich.
- @version 1.0 16 Aug 2000
- @author Allan C. Solomon
+ * Represents a calendar date with range validation and simple date arithmetic.
+ *
+ * <p>The class supports dates from January 1st, 1000 through December 31st,
+ * 2999.</p>
+ *
+ * @author Allan C. Solomon
+ * @version 1.0 16 Aug 2000
  */
 
 public class Date implements Comparable {
