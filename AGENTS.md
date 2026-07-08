@@ -91,7 +91,7 @@ SDK:
 
 ```bash
 cd TotalCrossSDK
-./gradlew clean dist -x test
+./gradlew-agent clean dist
 ```
 
 Android:
@@ -321,7 +321,7 @@ Gradle and build tools must be quiet by default.
 Prefer:
 
 ```sh
-./gradlew <task> --warning-mode=none --console=plain
+./gradlew-agent <task>
 ```
 
 Avoid `clean dist` unless necessary.
@@ -329,7 +329,7 @@ Avoid `clean dist` unless necessary.
 Prefer:
 
 ```sh
-./gradlew dist -x test --warning-mode=none --console=plain
+./gradlew-agent dist -x test
 ```
 
 When a command is known to be verbose, save the full log to a file and show only the result summary, relevant errors, and a short tail.
@@ -344,6 +344,10 @@ exit $status
 ```
 
 If the command succeeds, summarize success and mention where the full log was saved. Do not paste the full log.
+
+When using the SDK wrapper, prefer the agent summary log for analysis and open the full log only when you need extra context.
+
+If you are building the SDK, use `TotalCrossSDK/gradlew-agent` instead of `TotalCrossSDK/gradlew` so the build emits both a full log and a compact agent log.
 
 ### Deploy and smoke test output
 
