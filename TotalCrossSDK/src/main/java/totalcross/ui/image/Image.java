@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>   
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -51,7 +52,7 @@ import totalcross.util.zip.ZLib;
  * <pre>
    Image img = new Image("alligator.gif");
    add(new ImageControl(img),LEFT,TOP,FILL,PREFERRED);
-   for (int i = 0; i < 100; i++)
+   for (int i = 0; i &lt; 100; i++)
    {
       repaintNow();
       Vm.sleep(200);

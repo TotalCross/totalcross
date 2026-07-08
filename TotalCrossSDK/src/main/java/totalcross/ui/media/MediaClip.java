@@ -33,7 +33,7 @@ import totalcross.ui.MainWindow;
  * If you're playing a sound clip under a Windows CE device and you don't hear anything, make sure that the device is
  * set to allow programs to play sounds. To check the setting, look at:
  * <p>
- * Start->Settings->Volume & Sounds
+ * Start->Settings->Volume &amp; Sounds
  * <p>
  * for the check box:
  * <p>

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -10,52 +11,22 @@ import totalcross.io.IOException;
 import totalcross.io.IllegalArgumentIOException;
 
 /**
- * The ConnectionManager allows you to open and close remote connections from your application.<br>
+ * The ConnectionManager allows you to open and close remote connections from your application.
  * Although its behavior may differ from one platform to another, the objective is to provide a unified process to
- * handle connections across all supported platforms.<br>
- * 
- * The configuration string received by setDefaultConfiguration is a list of parameters in the format "parameter=value"
- * separated by a semi-colon ";" (spaces are not allowed).<br>
- * <br>
- * To configure a GPRS connection, you may provide the following parameters:<br>
- * 
- * <table border="1" cellpadding="3" cellspacing="0">
- * <tr bgcolor="white" class="TableHeadingColor" valign="top">
- * <td align="left">
- * <p>
- * <em>Parameter</em></td>
- * <td align="left">
- * <p>
- * <em>Description</em></td>
- * </tr>
- * 
- * <tr bgcolor="white" class="TableRowColor" valign="top">
- * <td>
- * <code>apn</code></td>
- * <td>
- * The APN over which the connection will be made.</td>
- * </tr>
- * 
- * <tr bgcolor="white" class="TableRowColor" valign="top">
- ** 
- * <td>
- * <code>username</code></td>
- * <td>
- * The user name to use to connect to the APN. May be omitted if not required by the specified APN.</td>
- * </tr>
- * 
- * <tr bgcolor="white" class="TableRowColor" valign="top">
- * <td>
- * <code>password</code></td>
- * <td>
- * The password to use to connect to the APN. May be omitted if not required by the specified APN.</td>
- * </table>
- * 
- * <br>
- * 
- * The parameters configured here are automatically used by Socket if the argument params passed to the Socket
+ * handle connections across all supported platforms.
+ *
+ * <p>The configuration string received by setDefaultConfiguration is a list of parameters in the format
+ * {@code parameter=value} separated by a semi-colon {@code ;} (spaces are not allowed).
+ * To configure a GPRS connection, you may provide:
+ * <ul>
+ * <li><code>apn</code>: the APN over which the connection will be made.</li>
+ * <li><code>username</code>: the user name used to connect to the APN.</li>
+ * <li><code>password</code>: the password used to connect to the APN.</li>
+ * </ul>
+ *
+ * <p>The parameters configured here are automatically used by Socket if the argument params passed to the Socket
  * constructor is null. Otherwise it will ignore the default configuration and attempt to connect using the parameters
- * defined by Socket.<br>
+ * defined by Socket.
  */
 
 public class ConnectionManager {

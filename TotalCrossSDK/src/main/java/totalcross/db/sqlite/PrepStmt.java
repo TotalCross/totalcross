@@ -375,7 +375,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
    */
   @Override
   public void setDouble(int pos, double value) throws SQLException {
-    batch(pos, new Double(value));
+    batch(pos, Double.valueOf(value));
   }
 
   /**
@@ -383,7 +383,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
    */
   @Override
   public void setInt(int pos, int value) throws SQLException {
-    batch(pos, new Integer(value));
+    batch(pos, Integer.valueOf(value));
   }
 
   /**
@@ -391,7 +391,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
    */
   @Override
   public void setLong(int pos, long value) throws SQLException {
-    batch(pos, new Long(value));
+    batch(pos, Long.valueOf(value));
   }
 
   /**
@@ -423,13 +423,13 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
       batch(pos, ((Time) value).getSQLString());
     } else if (value instanceof Timestamp) {
       long l = ((Timestamp) value).getTime();
-      batch(pos, new Long(l));
+      batch(pos, Long.valueOf(l));
     } else if (value instanceof Long) {
       batch(pos, value);
     } else if (value instanceof Integer) {
       batch(pos, value);
     } else if (value instanceof Short) {
-      batch(pos, new Integer(((Short) value).shortValue()));
+      batch(pos, Integer.valueOf(((Short) value).shortValue()));
     } else if (value instanceof Float) {
       batch(pos, value);
     } else if (value instanceof Double) {

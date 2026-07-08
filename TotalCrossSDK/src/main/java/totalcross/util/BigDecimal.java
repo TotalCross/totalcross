@@ -1,5 +1,7 @@
 // Copyright (C) 1999-2006 Free Software Foundation, Inc.
-// Copyright (C) 2009-2013 SuperWaba Ltda. 
+// Copyright (C) 2009-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 /* java.math.BigDecimal -- Arbitrary precision decimals.
@@ -48,7 +50,7 @@ import totalcross.sys.InvalidNumberException;
  * Arbitrary-precision signed decimal numbers. A <code>BigDecimal</code> consists of an arbitrary precision integer <i>unscaled value</i> and a 
  * 32-bit integer <i>scale</i>. If zero or positive, the scale is the number of digits to the right of the decimal point. If negative, the unscaled 
  * value of the number is multiplied by ten to the power of the negation of the scale. The value of the number represented by the 
- * <code>BigDecimal</code> is therefore <tt>(unscaledValue &times; 10<sup>-scale</sup>)</tt>.
+ * <code>BigDecimal</code> is therefore <code>(unscaledValue &times; 10<sup>-scale</sup>)</code>.
  */
 public class BigDecimal implements Comparable {
   private BigInteger intVal;
@@ -226,7 +228,7 @@ public class BigDecimal implements Comparable {
   /**
    * Translates a <code>double</code> into a <code>BigDecimal</code> which is the exact decimal representation of the <code>double</code>s binary 
    * floating-point value. The scale of the returned <code>BigDecimal</code> is the smallest value such that 
-   * <tt>(10<sup>scale</sup> &times; val)</tt> is an integer.
+   * <code>(10<sup>scale</sup> &times; val)</code> is an integer.
    * 
    * @param num The number to be converted
    * @throws InvalidNumberException If the number passed is infinite or NaN.
@@ -297,7 +299,7 @@ public class BigDecimal implements Comparable {
    * provided in preference to a <code>(long, int)</code> constructor because it allows for reuse of frequently used <code>BigDecimal</code> values.
    *
    * @param scale Scale of the <code>BigDecimal</code>.
-   * @return A <code>BigDecimal</code> whose value is <tt>(unscaledVal &times; 10<sup>-scale</sup>)</tt>.
+   * @return A <code>BigDecimal</code> whose value is <code>(unscaledVal &times; 10<sup>-scale</sup>)</code>.
    */
   public static BigDecimal valueOf(long val, int scale) throws InvalidNumberException {
     if ((scale == 0) && ((int) val == val)) {
@@ -349,7 +351,7 @@ public class BigDecimal implements Comparable {
   }
 
   /**
-   * Returns a <code>BigDecimal</code> whose value is <tt>(this &times; val)</tt>, and whose scale is <code>(this.scale() + val.scale())</code>.
+   * Returns a <code>BigDecimal</code> whose value is <code>(this &times; val)</code>, and whose scale is <code>(this.scale() + val.scale())</code>.
    *
    * @param  val The value to be multiplied by this <code>BigDecimal</code>.
    * @return <code>(this * val)</code>.

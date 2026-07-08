@@ -36,24 +36,11 @@ import totalcross.util.ElementNotFoundException;
 import totalcross.util.Vector;
 
 /**
- * Matcher instance is an automaton that actually performs matching. It provides the following methods:
- * <li> searching for a matching substrings : matcher.find() or matcher.findAll();
- * <li> testing whether a text matches a whole pattern : matcher.matches();
- * <li> testing whether the text matches the beginning of a pattern : matcher.matchesPrefix();
- * <li> searching with custom options : matcher.find(int options)
- * <p>
- * <b>Obtaining results</b><br>
- * After the search succeded, i.e. if one of above methods returned <code>true</code>
- * one may obtain an information on the match:
- * <li> may check whether some group is captured : matcher.isCaptured(int);
- * <li> may obtain start and end positions of the match and its length : matcher.start(int),matcher.end(int),matcher.length(int);
- * <li> may obtain match contents as String : matcher.group(int).<br>
- * The same way can be obtained the match prefix and suffix information.
- * The appropriate methods are grouped in MatchResult interface, which the Matcher class implements.<br>
- * Matcher objects are not thread-safe, so only one thread may use a matcher instance at a time.
- * Note, that Pattern objects are thread-safe(the same instanse may be shared between
- * multiple threads), and the typical tactics in multithreaded applications is to have one Pattern instance per expression(a singleton),
- * and one Matcher object per thread.
+ * An automaton that performs matching against a target string or character array.
+ *
+ * <p>Use a matcher to search for substrings, test whether the whole target matches, or narrow the active target to a
+ * prefix, suffix, or captured group. {@link Pattern} instances are thread-safe, but matcher instances are not, so a
+ * matcher should be used by only one thread at a time.
  */
 
 public class Matcher implements MatchResult {
@@ -242,7 +229,7 @@ public class Matcher implements MatchResult {
   /**
    * To be used with much care.
    * Supplies a text to search in/match with, as a part of a char array, as above, but also allows to permit
-   * to use the array as internal buffer for subsequent inputs. That is, if we call it with <code>shared=false</code>:<pre>
+   * to use the array as internal buffer for subsequent inputs. That is, if we call it with {@code shared=false}:<pre>
    *   myMatcher.setTarget(myCharArray,x,y,<b>false</b>); //we declare that array contents is NEITHER shared NOR will be used later, so may modifications on it are permitted
    * </pre>
    * then we should expect the array contents to be changed on subsequent setTarget(..) operations.
@@ -251,7 +238,7 @@ public class Matcher implements MatchResult {
    * @param text - a data source
    * @param start - where the target starts
    * @param len - how long is the target
-   * @param shared - if <code>true<code>: data are shared or used later, <b>don't</b> modify it; if <code>false<code>: possible modifications of the text on subsequent <code>setTarget()</code> calls are perceived and allowed.
+   * @param shared - if <code>true</code>: data are shared or used later, <b>don't</b> modify it; if <code>false</code>: possible modifications of the text on subsequent <code>setTarget()</code> calls are perceived and allowed.
    * @see Matcher#setTarget(totalcross.util.regex.Matcher,int)
    * @see Matcher#setTarget(java.lang.String)
    * @see Matcher#setTarget(java.lang.String,int,int)
@@ -352,7 +339,7 @@ public class Matcher implements MatchResult {
    * This feature allows to find a mismatch by examining only a beginning part of 
    * the target (as if the beginning of the target doesn't match the beginning of the pattern, then the entire target 
    * also couldn't match).<br>
-   * For example the following assertions yield <code>true<code>:<pre>
+   * For example the following assertions yield <code>true</code>:<pre>
    *   Pattern p=new Pattern("abcd"); 
    *   p.matcher("").matchesPrefix();
    *   p.matcher("a").matchesPrefix();
@@ -360,7 +347,7 @@ public class Matcher implements MatchResult {
    *   p.matcher("abc").matchesPrefix();
    *   p.matcher("abcd").matchesPrefix();
    * </pre>
-   * and the following yield <code>false<code>:<pre>
+   * and the following yield <code>false</code>:<pre>
    *   p.matcher("b").isPrefix();
    *   p.matcher("abcdef").isPrefix();
    *   p.matcher("x").isPrefix();
@@ -384,13 +371,13 @@ public class Matcher implements MatchResult {
 
   /**
    * Tells whether a current target matches the whole pattern.
-   * For example the following yields the <code>true<code>:<pre>
+   * For example the following yields <code>true</code>:<pre>
    *   Pattern p=new Pattern("\\w+"); 
    *   p.matcher("a").matches();
    *   p.matcher("ab").matches();
    *   p.matcher("abc").matches();
    * </pre>
-   * and the following yields the <code>false<code>:<pre>
+   * and the following yields <code>false</code>:<pre>
    *   p.matcher("abc def").matches();
    *   p.matcher("bcd ").matches();
    *   p.matcher(" bcd").matches();

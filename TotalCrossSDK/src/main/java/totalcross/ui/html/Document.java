@@ -1,6 +1,7 @@
 // Copyright (C) 2003-2004 Pierre G. Richard
 // Copyright (C) 2004-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -58,7 +59,7 @@ import totalcross.xml.XmlReader;
  *    DataStream ds;
  *
  *    /** The cat parameter should be an already open PDBFile which contains all the images.
- *      * Note that the image is in the form "<rec number>.gif" or "<rec number>.jpeg".
+ *      * Note that the image is in the form "&lt;rec number&gt;.gif" or "&lt;rec number&gt;.jpeg".
  *      * /
  *    public ArticleDocument(XmlReadable doc, PDBFile cat)
  *    {
@@ -86,8 +87,8 @@ import totalcross.xml.XmlReader;
  * And here's a sample on how to call it:
  * <pre>
  * String s = ...; // get the html from somewhere and store in a String
- * if (!s.substring(0,10).toLowerCase().startsWith("<body")) // make sure we are between a body tag
- *    s = "<body>"+s+"</body>";
+ * if (!s.substring(0,10).toLowerCase().startsWith("&lt;body")) // make sure we are between a body tag
+ *    s = "&lt;body&gt;"+s+"&lt;/body&gt;";
  * // Displays the xml
  * hcView.setDocument(new ArticleDocument(new XmlReadableString(s),cat)); // cat must be already instantiated
  * </pre>

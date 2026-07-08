@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui;
@@ -15,9 +16,11 @@ import totalcross.util.Vector;
  * where hundreds or thousands of views need to be displayed in a scrollable list.
  * </p>
  * <p>
- * The performance is achieved by only every having the visible views on the screen occupy memory at a given time.</br> When a view is scrolled out of the visible area of the scroll container it is immediately destroyed and removed from memory.</br> When a view is scrolled into the visible area of the scroll container it is created if not already visible.
+ * The performance is achieved by only ever having the visible views on the screen occupy memory at a given time.<br>
+ * When a view is scrolled out of the visible area of the scroll container it is immediately destroyed and removed from memory.<br>
+ * When a view is scrolled into the visible area of the scroll container it is created if not already visible.
  * </p>
- * Views are created by a {@link DataSource} </p>
+ * Views are created by a {@link DataSource}.
  * <b>Only vertical scrolling is supported.</b>
  * 
  */
@@ -245,7 +248,7 @@ public class DynamicScrollContainer extends ScrollContainer {
   }
 
   /**
-   * Represents a view to be displayed on a {@link DynamicScrollContainer}. </br>
+   * Represents a view to be displayed on a {@link DynamicScrollContainer}. <br>
    * You must subclass {@link AbstractView} and overwrite {@link #getHeight()} and {@link #initUI()}
    * 
    * <p>

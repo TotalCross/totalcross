@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -24,266 +25,84 @@ import totalcross.util.Vector;
  * this will speedup everything.
  * </p>
  * Check the sample RemoteExplorer. Here is an example code:
- * 
- * <pre>
- &nbsp   ftp = new FTP(url, user, pass, cbLog);
- &nbsp   ftp.makeDir(&quot;tempdir&quot;);
- &nbsp   ftp.changeDir(&quot;tempdir&quot;);
- &nbsp   String textfile = &quot;Viva Verinha!&quot;;
- &nbsp   ByteArrayStream bas = new ByteArrayStream(textfile.getBytes());
- &nbsp   ftp.sendFile(bas, &quot;verinha.txt&quot;, false);
- &nbsp   String[] files = ftp.list(&quot;*.txt&quot;);
- &nbsp   if (files == null || files.length != 1)
- &nbsp      cbLog.add(&quot;Something went wrong in sending files...&quot;);
- &nbsp   ftp.rename(&quot;verinha.txt&quot;, &quot;vivaverinha.txt&quot;);
- &nbsp   bas = new ByteArrayStream(50);
- &nbsp   ftp.receiveFile(&quot;vivaverinha.txt&quot;, bas);
- &nbsp   cbLog.add(new String(bas.getCopy()));
- &nbsp   ftp.delete(&quot;vivaverinha.txt&quot;);
- &nbsp   ftp.changeDir(&quot;..&quot;);
- &nbsp   ftp.removeDir(&quot;tempdir&quot;);
- * </pre>
+ *
+ * <pre>{@code
+ * ftp = new FTP(url, user, pass, cbLog);
+ * ftp.makeDir("tempdir");
+ * ftp.changeDir("tempdir");
+ * String textfile = "Viva Verinha!";
+ * ByteArrayStream bas = new ByteArrayStream(textfile.getBytes());
+ * ftp.sendFile(bas, "verinha.txt", false);
+ * String[] files = ftp.list("*.txt");
+ * if (files == null || files.length != 1)
+ *    cbLog.add("Something went wrong in sending files...");
+ * ftp.rename("verinha.txt", "vivaverinha.txt");
+ * bas = new ByteArrayStream(50);
+ * ftp.receiveFile("vivaverinha.txt", bas);
+ * cbLog.add(new String(bas.getCopy()));
+ * ftp.delete("vivaverinha.txt");
+ * ftp.changeDir("..");
+ * ftp.removeDir("tempdir");
+ * }</pre>
  * 
  * You can use the CompressedByteArrayStream to transfer and receive big files to/from the server (check the class for more
  * information and samples).
  * <p>
  * To transfer a File to the server, all you have to do is:
  * 
- * <pre>
- &nbsp   File f = new File(&quot;michelle.txt&quot;, File.READ_WRITE);
- &nbsp   ftp.sendFile(f, &quot;michelle.txt&quot;, false); // last parameter depends on what you want to do
- * </pre>
+ * <pre>{@code
+ * File f = new File("michelle.txt", File.READ_WRITE);
+ * ftp.sendFile(f, "michelle.txt", false); // last parameter depends on what you want to do
+ * }</pre>
  * 
  * It is currently impossible to transfer a whole PDBFile to/from the server. The solution for this would be to send
  * each record in pieces, and store it in separate files in the server. Then a routine written in TotalCross in the server could
  * reassemble the records into a new PDBFile. Here is an idea:
  * 
- * <pre>
- &nbsp   // for the Client:
- &nbsp   // i assume that a ftp class is prepared to be used
- &nbsp   String name = &quot;myPDBFile&quot;;
- &nbsp   PDBFile cat = new PDBFile(name + &quot;.crtr.type&quot;, READ_WRITE);
- &nbsp   int n = cat.getRecordCount();
- &nbsp   for (int i = 0; i &lt; n; i++)
- &nbsp   {
- &nbsp      if (!cat.setRecordPos(i))
- &nbsp         throw new RuntimeException(&quot;PDBFile is in use elsewhere!&quot;);
- &nbsp      else
- &nbsp         ftp.sendFile(cat, name + &quot;#&quot; + i, false);
- &nbsp   }
-
- &nbsp   // for the server
- &nbsp   String name = &quot;myPDBFile&quot;;
- &nbsp   // for simplicity, I'll assume that the PDBFile does not exists
- &nbsp   byte[] buf = new byte[65536]; // in desktop this is possible
- &nbsp   PDBFile cat = new PDBFile(name + &quot;.crtr.type&quot;, PDBFile.CREATE);
- &nbsp   for (int i = 0;; i++)
- &nbsp   {
- &nbsp      File f = new File(name + &quot;#&quot; + i, File.READ_WRITE);
- &nbsp      if (!f.exists())
- &nbsp         break; // no more records
- &nbsp      int size = f.getSize();
- &nbsp      f.readBytes(buf, 0, size);
- &nbsp      f.delete(); // could be also: f.close();
-
- &nbsp      cat.addRecord(size);
- &nbsp      cat.writeBytes(buf, 0, size);
- &nbsp   }
- &nbsp   cat.close();
- * </pre>
+ * <pre>{@code
+ * // for the Client:
+ * // i assume that a ftp class is prepared to be used
+ * String name = "myPDBFile";
+ * PDBFile cat = new PDBFile(name + ".crtr.type", READ_WRITE);
+ * int n = cat.getRecordCount();
+ * for (int i = 0; i < n; i++)
+ * {
+ *    if (!cat.setRecordPos(i))
+ *       throw new RuntimeException("PDBFile is in use elsewhere!");
+ *    else
+ *       ftp.sendFile(cat, name + "#" + i, false);
+ * }
+ *
+ * // for the server
+ * String name = "myPDBFile";
+ * // for simplicity, I'll assume that the PDBFile does not exists
+ * byte[] buf = new byte[65536]; // in desktop this is possible
+ * PDBFile cat = new PDBFile(name + ".crtr.type", PDBFile.CREATE);
+ * for (int i = 0;; i++)
+ * {
+ *    File f = new File(name + "#" + i, File.READ_WRITE);
+ *    if (!f.exists())
+ *       break; // no more records
+ *    int size = f.getSize();
+ *    f.readBytes(buf, 0, size);
+ *    f.delete(); // could be also: f.close();
+ *
+ *    cat.addRecord(size);
+ *    cat.writeBytes(buf, 0, size);
+ * }
+ * cat.close();
+ * }</pre>
  * 
  * The example above can be easily changed to add support for compression.
  * <p>
- * Here is a list of error codes that can thrown if an Exception occurs: <p>
-      <TABLE width="100%" border=0 cellpadding="2" cellspacing="1" bgcolor="#FFFFFF">
-        <TR bgcolor="#CCCCCC" align="CENTER">
-          <TD><B>Code</B></TD>
-          <TD><B>Description</B></TD>
-        </TR>
-        <TR bgcolor="#FFFFCC">
-          <TD align=CENTER NOWRAP><B>100 Codes</B></TD>
-          <TD align=left><B>The requested action is being taken. Expect a reply
-              before proceeding with a new command.</B></TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>110</B></TD>
-          <TD>Restart marker reply.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>120</B></TD>
-          <TD>Service ready in (n) minutes.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>125</B></TD>
-          <TD>Data connection already open, transfer starting.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>150</B></TD>
-          <TD>File status okay, about to open data connection.</TD>
-        </TR>
-        <TR VALIGN="TOP" bgcolor="#FFFFCC">
-          <TD align=CENTER><B>200 Codes</B></TD>
-          <TD align=left><B>The requested action has been successfully completed.</B></TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>200</B></TD>
-          <TD>Command okay.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>202</B></TD>
-          <TD>Command not implemented</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>211</B></TD>
-          <TD>System status, or system help reply.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>212</B></TD>
-          <TD>Directory status.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>213</B></TD>
-          <TD>File status.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>214</B></TD>
-          <TD>Help message.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>215</B></TD>
-          <TD>NAME system type. (NAME is an official system name from the list
-            in the Assigned Numbers document.)</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>220</B></TD>
-          <TD>Service ready for new user.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>221</B></TD>
-          <TD>Service closing control connection. (Logged out if appropriate.)</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>225</B></TD>
-          <TD>Data connection open, no transfer in progress.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>226</B></TD>
-          <TD>Closing data connection. Requested file action successful (file
-            transfer, abort, etc.).</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>227</B></TD>
-          <TD>Entering Passive Mode</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>230</B></TD>
-          <TD>User logged in, proceed.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>250</B></TD>
-          <TD>Requested file action okay, completed.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>257</B></TD>
-          <TD>"PATHNAME" created.</TD>
-        </TR>
-        <TR VALIGN="TOP" bgcolor="#FFFFCC">
-          <TD align=CENTER><B>300 Codes</B></TD>
-          <TD align=left><B>The command has been accepted, but the requested
-              action is being held pending receipt of further information.</B></TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>331</B></TD>
-          <TD>User name okay, need password.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>332</B></TD>
-          <TD>Need account for login.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>350</B></TD>
-          <TD>Requested file action pending further information. <br>If you're using "list *.txt", try "list *.*" and filter localy.</TD>
-        </TR>
-        <TR VALIGN="TOP" bgcolor="#FFFFCC">
-          <TD align=CENTER><B>400 Codes</B></TD>
-          <TD align=left><B>The command was not accepted and the requested action
-              did not take place. <BR>
-            Tthe error condition is temporary, however, and the action may be
-          requested again.</B></TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>421</B></TD>
-          <TD>Service not available, closing control connection. (May be a reply
-            to any command if the service knows it must shut down.)'</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>425</B></TD>
-          <TD>Can't open data connection.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>426</B></TD>
-          <TD>Connection closed, transfer aborted.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>450</B></TD>
-          <TD>Requested file action not taken. File unavailable (e.g., file busy).</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>451</B></TD>
-          <TD>Requested action aborted, local error in processing.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>452</B></TD>
-          <TD>Requested action not taken. Insufficient storage space in system.</TD>
-        </TR>
-        <TR VALIGN="TOP" bgcolor="#FFFFCC">
-          <TD align=CENTER><B>500 Codes</B></TD>
-          <TD align=left><B>The command was not accepted and the requested action
-              did not take place.</B></TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>500</B></TD>
-          <TD>Syntax error, command unrecognized. This may include errors such
-            as command line too long.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>501</B></TD>
-          <TD>Syntax error in parameters or arguments.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>502</B></TD>
-          <TD>Command not implemented.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>503</B></TD>
-          <TD>Bad sequence of commands.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>504</B></TD>
-          <TD>Command not implemented for that parameter.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>530</B></TD>
-          <TD>User not logged in.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>532</B></TD>
-          <TD>Need account for storing files.</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>550</B></TD>
-          <TD>Requested action not taken. File unavailable (e.g., file not found,
-            no access).</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>552</B></TD>
-          <TD>Requested file action aborted, storage allocation exceeded</TD>
-        </TR>
-        <TR VALIGN="TOP">
-          <TD align="CENTER" class="text1"><B>553</B></TD>
-          <TD>Requested action not taken. Illegal file name.</TD>
-        </TR>
-      </TABLE>
+ * Here is a concise summary of common FTP reply code groups:
+ * <ul>
+ * <li>1xx: preliminary reply, request accepted but not finished.</li>
+ * <li>2xx: command completed successfully.</li>
+ * <li>3xx: command accepted, waiting for more information.</li>
+ * <li>4xx: transient failure; you can usually retry later.</li>
+ * <li>5xx: permanent failure or invalid command.</li>
+ * </ul>
  * 
  * @since SuperWaba 5.6
  * @author Guilherme C. Hazan

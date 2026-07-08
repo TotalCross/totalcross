@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -12,160 +13,34 @@ import totalcross.util.Properties;
 
 /**
  * Used to store properties used by the messaging API.
- * 
- * <P>
- * The SMTP protocol provider supports the following properties, which may be set in the <code>MailSession</code>
- * object. The properties are always set as strings; the Type column describes how the string is interpreted. For
- * example, use
- * 
- * <PRE>
- * props.put(&quot;mail.smtp.port&quot;, &quot;888&quot;);
- * </PRE>
- * 
- * to set the <CODE>mail.smtp.port</CODE> property, which is of type int.
- * <P>
- * <TABLE BORDER>
- * <TR>
- * <TH>Name</TH>
- * <TH>Type</TH>
- * <TH>Description</TH>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.user</TD>
- * <TD>String</TD>
- * <TD>Default user name for SMTP.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.password</TD>
- * <TD>String</TD>
- * <TD>SMTP Password for the default user name.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.host</TD>
- * <TD>String</TD>
- * <TD>The SMTP server to connect to.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.port</TD>
- * <TD>int</TD>
- * <TD>The SMTP server port to connect to, if the connect() method doesn't explicitly specify one. Defaults to 25.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.connectiontimeout</TD>
- * <TD>int</TD>
- * <TD>Socket connection timeout value in milliseconds. Default is 5000 milliseconds.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.timeout</TD>
- * <TD>int</TD>
- * <TD>Socket I/O timeout value in milliseconds. Default is 2000 milliseconds.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.from</TD>
- * <TD>String</TD>
- * <TD>Email address to use for SMTP MAIL command. This sets the envelope return address. Defaults to msg.getFrom()[0]
- * or ConnectionManager.getLocalHost(). NOTE: mail.smtp.user was previously used for this.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.auth</TD>
- * <TD>boolean</TD>
- * <TD>If true, attempt to authenticate the user using the AUTH command. Defaults to false.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.starttls.enable</TD>
- * <TD>boolean</TD>
- * <TD>
- * If true, enables the use of the <code>STARTTLS</code> command (if supported by the server) to switch the connection
- * to a TLS-protected connection before issuing any login commands. Note that an appropriate trust store must configured
- * so that the client will trust the server's certificate. Defaults to false.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.starttls.required</TD>
- * <TD>boolean</TD>
- * <TD>
- * If true, requires the use of the STARTTLS command. If the server doesn't support the STARTTLS command, or the command
- * fails, the connect method will fail. Defaults to false.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.ssl.port</TD>
- * <TD>int</TD>
- * <TD>
- * The SMTP server port to connect to when STARTTLS is enabled, if the connect() method doesn't explicitly specify one.
- * Defaults to 587.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.smtp.ssl.socketFactory.class</TD>
- * <TD>String</TD>
- * <TD>
- * If set, specifies the name of a class that extends the totalcross.net.ssl.SSLSocketFactory class. This class will be
- * used to create SMTP SSL sockets.</TD>
- * </TR>
- * 
- * </TABLE>
- * <P>
- * 
- * <P>
- * The POP3 protocol provider supports the following properties, which may be set in the <code>MailSession</code>
- * object. The properties are always set as strings; the Type column describes how the string is interpreted. For
- * example, use
- * 
- * <PRE>
- * props.put(&quot;mail.pop3.port&quot;, &quot;888&quot;);
- * </PRE>
- * 
- * to set the <CODE>mail.pop3.port</CODE> property, which is of type int.
- * <P>
- * <TABLE BORDER>
- * <TR>
- * <TH>Name</TH>
- * <TH>Type</TH>
- * <TH>Description</TH>
- * </TR>
- * 
- * <TR>
- * <TD>mail.pop3.user</TD>
- * <TD>String</TD>
- * <TD>Default user name for POP3.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.pop3.host</TD>
- * <TD>String</TD>
- * <TD>The POP3 server to connect to.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.pop3.port</TD>
- * <TD>int</TD>
- * <TD>The POP3 server port to connect to, if the connect() method doesn't explicitly specify one. Defaults to 110.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.pop3.connectiontimeout</TD>
- * <TD>int</TD>
- * <TD>Socket connection timeout value in milliseconds. Default is infinite timeout.</TD>
- * </TR>
- * 
- * <TR>
- * <TD>mail.pop3.timeout</TD>
- * <TD>int</TD>
- * <TD>Socket I/O timeout value in milliseconds. Default is infinite timeout.</TD>
- * </TR>
- * 
- * </TABLE>
- * 
+ *
+ * <p>The SMTP properties are stored as string keys on the session, with the value
+ * type indicated below:
+ * <ul>
+ * <li><code>mail.smtp.user</code>: default SMTP user name.</li>
+ * <li><code>mail.smtp.password</code>: SMTP password for the default user name.</li>
+ * <li><code>mail.smtp.host</code>: SMTP server to connect to.</li>
+ * <li><code>mail.smtp.port</code>: SMTP server port, defaulting to 25.</li>
+ * <li><code>mail.smtp.connectiontimeout</code>: socket connection timeout in milliseconds.</li>
+ * <li><code>mail.smtp.timeout</code>: socket I/O timeout in milliseconds.</li>
+ * <li><code>mail.smtp.from</code>: email address to use for SMTP MAIL commands.</li>
+ * <li><code>mail.smtp.auth</code>: whether to authenticate with AUTH.</li>
+ * <li><code>mail.smtp.starttls.enable</code>: whether to enable STARTTLS.</li>
+ * <li><code>mail.smtp.starttls.required</code>: whether STARTTLS is mandatory.</li>
+ * <li><code>mail.smtp.ssl.port</code>: SMTP SSL port, defaulting to 587 when STARTTLS is enabled.</li>
+ * <li><code>mail.smtp.ssl.socketFactory.class</code>: socket factory class name for SMTP SSL sockets.</li>
+ * </ul>
+ *
+ * <p>The POP3 properties follow the same pattern:
+ * <ul>
+ * <li><code>mail.pop3.user</code>: default POP3 user name.</li>
+ * <li><code>mail.pop3.host</code>: POP3 server to connect to.</li>
+ * <li><code>mail.pop3.port</code>: POP3 server port, defaulting to 110.</li>
+ * <li><code>mail.pop3.connectiontimeout</code>: socket connection timeout in milliseconds.</li>
+ * <li><code>mail.pop3.timeout</code>: socket I/O timeout in milliseconds.</li>
+ * <li><code>mail.pop3.password</code>: POP3 password for the default user name.</li>
+ * </ul>
+ *
  * @since TotalCross 1.13
  */
 public class MailSession extends Properties {

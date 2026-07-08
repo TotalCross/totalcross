@@ -102,14 +102,14 @@ public class PerlSubstitution implements Substitution {
       if (refMatcher.isCaptured(NAME_ID)) {
         char c = refMatcher.charAt(0, NAME_ID);
         if (c == '&') {
-          element = new IntRefHandler(refMatcher.prefix(), new Integer(0));
+          element = new IntRefHandler(refMatcher.prefix(), Integer.valueOf(0));
         } else if (Character.isDigit(c)) {
           int v = 0;
           try {
             v = Convert.toInt(refMatcher.group(NAME_ID));
           } catch (InvalidNumberException e) {
           }
-          element = new IntRefHandler(refMatcher.prefix(), new Integer(v));
+          element = new IntRefHandler(refMatcher.prefix(), Integer.valueOf(v));
         } else {
           element = new StringRefHandler(refMatcher.prefix(), refMatcher.group(NAME_ID));
         }
