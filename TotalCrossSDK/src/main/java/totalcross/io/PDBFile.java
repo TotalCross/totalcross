@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>   
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -296,7 +297,7 @@ public class PDBFile extends Stream {
     Vector records = (Vector) openRef;
     _hvRecordPos = records.size();
     records.addElement(new byte[size]);
-    _attrs.addElement(new Byte(PDBFile.REC_ATTR_DIRTY));
+    _attrs.addElement(Byte.valueOf(PDBFile.REC_ATTR_DIRTY));
     _hvRecordOffset = 0;
     _hvRecordLength = size;
     modificationNumber++;
@@ -326,7 +327,7 @@ public class PDBFile extends Stream {
     }
 
     records.insertElementAt(new byte[size], pos);
-    _attrs.insertElementAt(new Byte(PDBFile.REC_ATTR_DIRTY), pos);
+    _attrs.insertElementAt(Byte.valueOf(PDBFile.REC_ATTR_DIRTY), pos);
     modificationNumber++;
     _hvRecordPos = pos;
     _hvRecordOffset = 0;
@@ -832,7 +833,7 @@ public class PDBFile extends Stream {
       throw new totalcross.io.IllegalArgumentIOException("Invalid value for argument 'recordPos': " + recordPos);
     }
 
-    _attrs.items[recordPos] = new Byte(attr);
+    _attrs.items[recordPos] = Byte.valueOf(attr);
     modificationNumber++;
   }
 
@@ -1248,7 +1249,7 @@ public class PDBFile extends Stream {
       recAttributes = is.readByte();
       is.readBytes(recUniqueID);
       if (_attrs != null) {
-        _attrs.addElement(new Byte(recAttributes));
+        _attrs.addElement(Byte.valueOf(recAttributes));
       }
     }
     recOffsets[numRecords] = all.length; // add the total size so we can compute the size of each record
