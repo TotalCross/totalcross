@@ -4,7 +4,12 @@
 
 package smoke;
 
+import java.util.function.BiPredicate;
+import java.util.function.DoublePredicate;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
+import java.util.function.LongPredicate;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import java.lang.annotation.ElementType;
@@ -31,6 +36,7 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
     testReferenceArgumentAdaptation();
     testPrimitiveAdaptation();
     testDefaultAndStaticInterfaceMethods();
+    testPredicateDefaults();
     testTypeAnnotationMetadata();
     testRepeatableAnnotationMetadata();
     finish();
@@ -102,6 +108,35 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
     DefaultGreeting greeting = new DefaultGreetingImpl();
     checkEquals("default", greeting::defaultText, "default interface method");
     checkEquals("static", DefaultGreeting::staticText, "static interface method");
+  }
+
+  private void testPredicateDefaults() {
+    Predicate<String> startsWithJava = value -> value.startsWith("java");
+    Predicate<String> endsWithEight = value -> value.endsWith("8");
+    Predicate<String> composed = startsWithJava.and(endsWithEight);
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(composed.test("java8")), "predicate default and");
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(startsWithJava.or(endsWithEight).test("totalcross8")),
+        "predicate default or");
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(startsWithJava.negate().test("totalcross")),
+        "predicate default negate");
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(Predicate.isEqual("java8").test("java8")),
+        "predicate static isEqual");
+
+    BiPredicate<String, String> sameLength = (left, right) -> left.length() == right.length();
+    BiPredicate<String, String> sameStart = (left, right) -> left.charAt(0) == right.charAt(0);
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(sameLength.and(sameStart).test("java", "jvm!")),
+        "biPredicate default and");
+
+    IntPredicate positive = value -> value > 0;
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(positive.and(value -> value < 10).test(8)),
+        "intPredicate default and");
+
+    LongPredicate large = value -> value > 100L;
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(large.or(value -> value == 8L).test(8L)),
+        "longPredicate default or");
+
+    DoublePredicate whole = value -> value == (long) value;
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(whole.negate().test(8.5D)), "doublePredicate default negate");
   }
 
   private void testTypeAnnotationMetadata() {
