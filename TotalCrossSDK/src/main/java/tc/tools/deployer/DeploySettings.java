@@ -200,9 +200,13 @@ public class DeploySettings {
     }
     DeployLogger.normal("TotalCross SDK version " + Settings.versionStr + "." + Settings.buildNumber + " running on "
         + osName + " with JDK " + javaVersion);
-    DeployLogger.normal("Current folder: " + currentDir);
-    DeployLogger.normal("Etc directory: " + (etcDir != null ? etcDir : "not found")); // keep this always visible, its a very important information
-    DeployLogger.verbose("Classpath: " + cp0);
+    DeployLogger.verbose("Current folder: " + currentDir);
+    if (etcDir != null) {
+      DeployLogger.verbose("Etc directory: " + etcDir);
+    } else {
+      DeployLogger.warn("Etc directory: not found");
+    }
+    DeployLogger.debug("Classpath: " + cp0);
 
     // find the demo and release folders for totalcross
     if (distDir != null) {
@@ -256,7 +260,7 @@ public class DeploySettings {
 
           tcappProp = bytes;
         }
-        DeployLogger.normal("Application's build number: " + appBuildNumber);
+        DeployLogger.verbose("Application's build number: " + appBuildNumber);
         break;
       } catch (FileNotFoundException fnfe) {
         dir = Utils.getParent(dir);

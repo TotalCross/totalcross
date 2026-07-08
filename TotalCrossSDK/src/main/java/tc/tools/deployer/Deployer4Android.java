@@ -298,7 +298,7 @@ public class Deployer4Android {
     final String sourcePackage = "totalcross/android";
     targetTCZ = "app" + DeploySettings.applicationId.toLowerCase(Locale.ROOT);
     final String targetPackage = "totalcross/" + targetTCZ;
-    DeployLogger.normal("Android application folder: /data/data/" + (targetPackage.replace('/', '.')));
+    DeployLogger.verbose("Android application folder: /data/data/" + (targetPackage.replace('/', '.')));
 
     String newPackage = targetPackage.replace('/', '.');
     String newVersion = DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0";
@@ -562,7 +562,7 @@ public class Deployer4Android {
   private static void processClassesDex(byte[] bytes, OutputStream outputStream, byte[] sourcePackageBytes, byte[] targetPackageBytes) throws Exception {
     replaceBytes(bytes, sourcePackageBytes, targetPackageBytes);
     if (DeploySettings.autoStart || DeploySettings.isService) {
-      DeployLogger.normal("Is service.");
+      DeployLogger.verbose("Is service.");
       replaceBytes(bytes, new byte[] { (byte) 0x71, (byte) 0xC3, (byte) 0x5B, (byte) 0x07 },
           DeploySettings.isService ? new byte[] { 1, 0, 0, 0 } : new byte[] { 0, 0, 0, 0 });
     }

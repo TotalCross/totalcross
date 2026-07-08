@@ -65,7 +65,7 @@ public class Deploy {
         return;
       }
       configureLogging(args);
-      DeployLogger.normal("Command line: " + Utils.toString(args));
+      DeployLogger.debug("Command line: " + Utils.toString(args));
       DeploySettings.init();
 
       checkClasspath();
@@ -174,7 +174,7 @@ public class Deploy {
                 + "Lib." + ext + ", or it will NOT be loaded in the device.");
           }
         }
-        DeployLogger.normal(
+        DeployLogger.verbose(
             "Finished at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime()));
       }
     } catch (OutOfMemoryError oome) {

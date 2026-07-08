@@ -204,7 +204,7 @@ public class Deployer4IPhoneIPA {
       bundleIdentifier = "com." + DeploySettings.applicationId + "."
           + DeploySettings.appTitle.replace(" ", "").trim().toLowerCase();
     }
-    DeployLogger.normal("Package suffix id (CFBundleIdentifier): " + bundleIdentifier);
+    DeployLogger.verbose("Package suffix id (CFBundleIdentifier): " + bundleIdentifier);
 
     rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
@@ -372,7 +372,7 @@ public class Deployer4IPhoneIPA {
       iosDistributionCertificate = new org.bouncycastle.cert.X509CertificateHolder(storecert.getEncoded());
       Provision = MobileProvision.readFromFile(mobileProvision);
       Settings.iosCertDate = new Time(Provision.expirationDate.getDate().getTime(), false);
-      DeployLogger.normal("iOS Certificate expiration date: " + Settings.iosCertDate.getSQLString());
+      DeployLogger.verbose("iOS Certificate expiration date: " + Settings.iosCertDate.getSQLString());
     }
   }
 }
