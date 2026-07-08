@@ -1424,7 +1424,7 @@ public final class J2TC implements JConstants, TCConstants {
     }
     if (!DeploySettings.testClass) {
       if (DeploySettings.mainClassName != null) {
-        DeployLogger.normal("Main class name: " + DeploySettings.mainClassName);
+        DeployLogger.verbose("Main class name: " + DeploySettings.mainClassName);
       }
       if (DeploySettings.appTitle != null && DeploySettings.appTitle.trim().length() > 0) {
         DeployLogger.normal("Application title: " + DeploySettings.appTitle);
@@ -1432,7 +1432,7 @@ public final class J2TC implements JConstants, TCConstants {
         DeployLogger.normal("Application title not provided, using: " + (DeploySettings.appTitle = cn));
       }
       if (DeploySettings.companyInfo != null) {
-        DeployLogger.normal("Company information: " + DeploySettings.companyInfo);
+        DeployLogger.verbose("Company information: " + DeploySettings.companyInfo);
       }
       if (DeploySettings.applicationId != null) {
         DeployLogger.normal("Application id: " + DeploySettings.applicationId);
@@ -1445,19 +1445,19 @@ public final class J2TC implements JConstants, TCConstants {
         DeployLogger.normal("Application id not provided. Created from \"" + name + "\": " + DeploySettings.applicationId);
       }
       if (DeploySettings.appVersion != null) {
-        DeployLogger.normal("Application version: " + DeploySettings.appVersion);
+        DeployLogger.verbose("Application version: " + DeploySettings.appVersion);
       }
       if (totalcross.sys.Settings.appCategory != null) {
-        DeployLogger.normal("Application category: " + totalcross.sys.Settings.appCategory);
+        DeployLogger.verbose("Application category: " + totalcross.sys.Settings.appCategory);
       }
       if (totalcross.sys.Settings.appDescription != null) {
-        DeployLogger.normal("Application description: " + totalcross.sys.Settings.appDescription);
+        DeployLogger.verbose("Application description: " + totalcross.sys.Settings.appDescription);
       }
       if (totalcross.sys.Settings.appLocation != null) {
-        DeployLogger.normal("Application location: " + totalcross.sys.Settings.appLocation);
+        DeployLogger.verbose("Application location: " + totalcross.sys.Settings.appLocation);
       }
       if (DeploySettings.isFullScreen) {
-        DeployLogger.normal("Application will be Full Screen " + (DeploySettings.fullScreenPlatforms != null
+        DeployLogger.verbose("Application will be Full Screen " + (DeploySettings.fullScreenPlatforms != null
             ? ("on platforms " + DeploySettings.fullScreenPlatforms) : ""));
         if (DeploySettings.fullScreenPlatforms == null
             || DeploySettings.fullScreenPlatforms.toLowerCase().indexOf("android") >= 0) {

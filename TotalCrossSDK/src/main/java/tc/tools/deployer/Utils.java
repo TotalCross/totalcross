@@ -391,7 +391,7 @@ public class Utils {
       e.printStackTrace();
     }
     if (bytes != null && showFile) {
-      DeployLogger.normal("Found " + path);
+      DeployLogger.debug("Found " + path);
     }
     return bytes;
   }
