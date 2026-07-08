@@ -77,6 +77,11 @@ Important top-level areas:
     Amalgam entry from 2022 through the current year.
   - files created in 2022 or later use Amalgam from the creation year through
     the current year, or only the creation year when it equals the current year.
+- Do not validate copyright headers for `TotalCrossSDK/src/main/java/totalcross/util/regex/**`
+  or `TotalCrossSDK/src/main/java/totalcross/db/sqlite/**`, except
+  `TotalCrossSDK/src/main/java/totalcross/db/sqlite/SQLiteUtil.java` and
+  `TotalCrossSDK/src/main/java/totalcross/db/sqlite/ui/DBListBox.java`, which
+  must still be validated normally.
 
 ## Build And Test Commands
 
