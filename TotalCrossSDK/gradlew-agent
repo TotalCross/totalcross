@@ -1,0 +1,279 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$script_dir"
+
+usage() {
+  cat <<'EOF'
+Usage: ./gradlew-agent <gradle arguments>
+Runs Gradle with plain console output and writes full and agent-friendly logs under agent-logs/.
+EOF
+}
+
+if (($# == 0)); then
+  usage >&2
+  exit 2
+fi
+
+mkdir -p agent-logs
+
+timestamp="$(date +%Y%m%d-%H%M%S)"
+
+slug_from_args() {
+  local arg
+  for arg in "$@"; do
+    case "$arg" in
+      -|--)
+        continue
+        ;;
+      -*)
+        continue
+        ;;
+      *)
+        printf '%s' "$arg"
+        return 0
+        ;;
+    esac
+  done
+  printf 'gradle'
+}
+
+slug="$(slug_from_args "$@")"
+slug="${slug//\//-}"
+slug="${slug//[^A-Za-z0-9._-]/-}"
+slug="${slug#-}"
+slug="${slug%-}"
+if [[ -z "$slug" ]]; then
+  slug="gradle"
+fi
+
+full_log="agent-logs/${timestamp}-${slug}-full.log"
+agent_log="agent-logs/${timestamp}-${slug}-agent.log"
+
+gradle_args=("$@")
+has_console=false
+has_warning_mode=false
+has_problems_report=false
+index=0
+while ((index < ${#gradle_args[@]})); do
+  case "${gradle_args[index]}" in
+    --console)
+      has_console=true
+      ((index += 1))
+      ;;
+    --console=*)
+      has_console=true
+      ;;
+    --warning-mode)
+      has_warning_mode=true
+      ((index += 1))
+      ;;
+    --warning-mode=*)
+      has_warning_mode=true
+      ;;
+    --problems-report|--no-problems-report)
+      has_problems_report=true
+      ;;
+  esac
+  ((index += 1))
+done
+
+if ! $has_console; then
+  gradle_args+=(--console=plain)
+fi
+if ! $has_warning_mode; then
+  gradle_args+=(--warning-mode=summary)
+fi
+if ! $has_problems_report; then
+  gradle_args+=(--no-problems-report)
+fi
+
+start_epoch="$(date +%s)"
+set +e
+./gradlew "${gradle_args[@]}" >"$full_log" 2>&1
+status=$?
+set -e
+end_epoch="$(date +%s)"
+duration_seconds=$((end_epoch - start_epoch))
+
+status_label="failure"
+if [[ $status -eq 0 ]]; then
+  status_label="success"
+fi
+
+extract_unique_tasks() {
+  awk '
+    /^> Task / {
+      task=$3
+      if (!(task in seen)) {
+        seen[task]=1
+        order[++count]=task
+      }
+    }
+    END {
+      for (i = 1; i <= count; i++) {
+        printf "%s%s", order[i], (i < count ? ", " : "")
+      }
+    }
+  ' "$full_log"
+}
+
+top_section_counts() {
+  local task_name="$1"
+  local kind="$2"
+  awk -v task_name="$task_name" -v kind="$kind" '
+    /^> Task / { current=$3; next }
+    current == task_name && index($0, kind ":") {
+      msg=$0
+      sub("^.*" kind ": ", "", msg)
+      counts[msg]++
+    }
+    END {
+      for (msg in counts) {
+        printf "%d\t%s\n", counts[msg], msg
+      }
+    }
+  ' "$full_log" | sort -nr | head -10
+}
+
+count_lines() {
+  local pattern="$1"
+  awk -v pattern="$pattern" '$0 ~ pattern { count++ } END { print count + 0 }' "$full_log"
+}
+
+{
+  printf '# Gradle Agent Summary\n'
+  printf 'status: %s\n' "$status_label"
+  printf 'exit_code: %s\n' "$status"
+  printf 'duration_seconds: %s\n' "$duration_seconds"
+  printf 'command: ./gradlew %s\n' "$(printf '%q ' "${gradle_args[@]}")"
+  printf 'full_log: %s\n' "$full_log"
+  printf 'agent_log: %s\n\n' "$agent_log"
+
+  printf '## Gradle\n'
+  tasks="$(extract_unique_tasks)"
+  if [[ -n "$tasks" ]]; then
+    tasks_seen="$(awk -v tasks="$tasks" 'BEGIN { n = split(tasks, arr, /, /); print n }')"
+  else
+    tasks_seen=0
+  fi
+  printf 'tasks_seen: %s\n' "$tasks_seen"
+  if [[ -n "$tasks" ]]; then
+    printf 'tasks: %s\n' "$tasks"
+  fi
+  actionable="$(awk '/^[0-9]+ actionable tasks:/ { line=$0 } END { print line }' "$full_log")"
+  if [[ -n "$actionable" ]]; then
+    printf 'actionable: %s\n' "$actionable"
+  fi
+  result_line="$(awk '/^BUILD (SUCCESSFUL|FAILED)/ { line=$0 } END { print line }' "$full_log")"
+  if [[ -n "$result_line" ]]; then
+    printf 'result: %s\n' "$result_line"
+  fi
+  printf '\n'
+
+  printf '## Gradle Notices\n'
+  signing_warning_total="$(count_lines "Jar won't be signed")"
+  if [[ "$signing_warning_total" -gt 0 ]]; then
+    printf 'signing_warnings: %s\n' "$signing_warning_total"
+    signing_warning_line="$(awk "/Jar won't be signed/ { line=\$0 } END { print line }" "$full_log")"
+    if [[ -n "$signing_warning_line" ]]; then
+      printf '  - %s\n' "$signing_warning_line"
+    fi
+  fi
+  deprecation_notice_total="$(count_lines '^Deprecated Gradle features were used in this build')"
+  if [[ "$deprecation_notice_total" -gt 0 ]]; then
+    printf 'deprecation_notices: %s\n' "$deprecation_notice_total"
+    deprecation_notice_line="$(awk '/^Deprecated Gradle features were used in this build/ { line=$0 } END { print line }' "$full_log")"
+    if [[ -n "$deprecation_notice_line" ]]; then
+      printf '  - %s\n' "$deprecation_notice_line"
+    fi
+  fi
+  problems_report_total="$(count_lines 'Problems report is available')"
+  if [[ "$problems_report_total" -gt 0 ]]; then
+    printf 'problems_report_lines: %s\n' "$problems_report_total"
+  fi
+  printf '\n'
+
+  printf '## Compilation\n'
+  compile_warning_total="$(awk '
+    /^> Task / { current=$3; next }
+    current == ":compileJava" && /warning:/ { count++ }
+    END { print count + 0 }
+  ' "$full_log")"
+  printf 'compileJava_warnings: %s\n' "$compile_warning_total"
+  if [[ "$compile_warning_total" -gt 0 ]]; then
+    printf 'top_compile_warnings:\n'
+    top_section_counts ":compileJava" "warning" | while IFS=$'\t' read -r count message; do
+      [[ -n "$count" ]] || continue
+      printf '  - %s x %s\n' "$count" "$message"
+    done
+  fi
+  printf '\n'
+
+  printf '## Javadoc\n'
+  javadoc_error_total="$(awk '
+    /^> Task / { current=$3; next }
+    current == ":javadoc" && /error:/ { count++ }
+    END { print count + 0 }
+  ' "$full_log")"
+  javadoc_warning_total="$(awk '
+    /^> Task / { current=$3; next }
+    current == ":javadoc" && /warning:/ { count++ }
+    END { print count + 0 }
+  ' "$full_log")"
+  printf 'javadoc_errors: %s\n' "$javadoc_error_total"
+  printf 'javadoc_warnings: %s\n' "$javadoc_warning_total"
+  if [[ "$javadoc_error_total" -gt 0 ]]; then
+    printf 'top_javadoc_errors:\n'
+    top_section_counts ":javadoc" "error" | while IFS=$'\t' read -r count message; do
+      [[ -n "$count" ]] || continue
+      printf '  - %s x %s\n' "$count" "$message"
+    done
+  fi
+  if [[ "$javadoc_warning_total" -gt 0 ]]; then
+    printf 'top_javadoc_warnings:\n'
+    top_section_counts ":javadoc" "warning" | while IFS=$'\t' read -r count message; do
+      [[ -n "$count" ]] || continue
+      printf '  - %s x %s\n' "$count" "$message"
+    done
+  fi
+  printf '\n'
+
+  printf '## tc.Deploy\n'
+  printf 'deploy_tasks: %s\n' "$(awk '/^> Task :deploy/ { count++ } END { print count + 0 }' "$full_log")"
+  printf 'classpath_lines: %s\n' "$(count_lines '^Classpath:')"
+  printf 'adding_lines: %s\n' "$(count_lines '^Adding ')"
+  printf 'slf4j_lines: %s\n' "$(count_lines '^SLF4J:')"
+  printf 'float_warning_lines: %s\n' "$(count_lines 'float parameter')"
+  generated_files="$(awk '/^File .* written/ { print }' "$full_log")"
+  if [[ -n "$generated_files" ]]; then
+    printf 'generated_files:\n'
+    printf '%s\n' "$generated_files" | tail -10 | sed 's/^/  - /'
+  fi
+  deploy_messages="$(awk '
+    /^Application title/ || /^Application id/ || /^TCZ file created/ || /^Total References/ {
+      print
+    }
+  ' "$full_log")"
+  if [[ -n "$deploy_messages" ]]; then
+    printf 'deploy_messages:\n'
+    printf '%s\n' "$deploy_messages" | tail -20 | sed 's/^/  - /'
+  fi
+  printf '\n'
+
+  if [[ $status -ne 0 ]]; then
+    printf '## Failure Excerpt\n'
+    tail -40 "$full_log" | sed 's/^/  /'
+  fi
+} >"$agent_log"
+
+printf 'status=%s\n' "$status_label"
+printf 'duration_seconds=%s\n' "$duration_seconds"
+printf 'full_log=%s\n' "$full_log"
+printf 'agent_log=%s\n' "$agent_log"
+
+exit "$status"

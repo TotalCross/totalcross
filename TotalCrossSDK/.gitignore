@@ -16,3 +16,4 @@ help.dat
 /build/**
 /.gradle/**
 /build/
+agent-logs/
