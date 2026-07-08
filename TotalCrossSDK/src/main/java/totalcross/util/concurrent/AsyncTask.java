@@ -1,4 +1,5 @@
-// Copyright (C) 2019-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.util.concurrent;
@@ -9,78 +10,23 @@ import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
 
 /**
- * AsyncTask provides use of asynchronous operations without ocupying UI Thread
- * with non user interface tasks. In addition, you can easily publish results
- * without the need of manupulating Thread, see the example bellow (Copy and
- * paste this code inside a Container instance):
- * 
- * <pre>
- * Button dldButton = new Button("download zip");
- * add(dldButton, CENTER, CENTER);
+ * Provides a simple background task abstraction that can publish progress and
+ * marshal callbacks back to the UI thread.
  *
- * final ProgressBar progressBar = new ProgressBar();
- * add(progressBar, CENTER, AFTER + UnitsConverter.toPixels(DP + 16),
- *         PARENTSIZE + 80, PREFERRED);
+ * <p>Example:</p>
+ * <pre>{@code
+ * new AsyncTask<Void, Integer, Void>() {
+ *   @Override
+ *   protected Void doInBackground(Void... params) {
+ *     publishProgress(50);
+ *     return null;
+ *   }
+ * }.execute();
+ * }</pre>
  *
- * dldButton.addPressListener((c) -> {
- *     new AsyncTask()<Void, Void, Void> {
- *         int progress = 0;
- *         UpdateListener updateListener = null;
- *
- *         &#64;Override
- *         protected Object doInBackground(Object... objects) {
- *             HttpStream.Options o = new HttpStream.Options();
- *             o.httpType = HttpStream.GET;
- *             final String url = "<INSERT AN URL TO DOWNLOAD A ZIP FILE>";
- *
- *             if(url.startsWith("https:"))
- *                 o.socketFactory = new SSLSocketFactory();
- *
- *             try {
- *                 HttpStream p = new HttpStream(new URI(url));
- *                 File f = new File("file.zip", File.CREATE_EMPTY);
- *                 int totalSize = p.contentLength;
- *                 byte [] buff = new  byte[4096];
- *                 BufferedStream bs = new BufferedStream(f, BufferedStream.WRITE, 4096);
- *                 int counter = 0;
- *                 while(true) {
- *                     int size = p.readBytes(buff, 0, buff.length);
- *                     counter += size;
- *                     progress = (int)((counter/(double)totalSize)*100);
- *                     if(size <= 0) break;
- *                     bs.writeBytes(buff, 0, size);
- *                 }
- *                 progress = 100;
- *                 bs.close();
- *                 p.close();
- *                 f.close();
- *             } catch (IOException e) {
- *                 e.printStackTrace();
- *             }
- *             return null;
- *         }
- *
- *         &#64;Override
- *         protected void onPreExecute() {
- *             dldButton.setEnabled(false);
- *             MainWindow.getMainWindow().addUpdateListener(updateListener = (elapsed) -> {
- *                 progressBar.setValue(progress);
- *             });
- *         }
- *
- *         &#64;Override
- *         protected void onPostExecute(Object result) {
- *             dldButton.setEnabled(true);
- *             MainWindow.getMainWindow().removeUpdateListener(updateListener);
- *         }
- *     }.execute();
- * });
- *
- * </pre>
- *
- * @param <Params>
- * @param <Progress>
- * @param <Result>
+ * @param <Params> input parameter types for {@link #doInBackground(Object[])}
+ * @param <Progress> progress values published to {@link #onProgressUpdate(Object[])}
+ * @param <Result> result type returned from {@link #doInBackground(Object[])}
  *
  * @since TotalCross 4.3.9
  */

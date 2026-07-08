@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2017-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2017-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -128,6 +129,7 @@ public interface DiscoveryListener {
    * and <code>SERVICE_SEARCH_DEVICE_NOT_REACHABLE</code>. The following table describes when each
    * <code>respCode</code> will be used:
    * <table>
+   * <caption>Bluetooth discovery event codes</caption>
    * 
    * <tbody>
    * <tr>

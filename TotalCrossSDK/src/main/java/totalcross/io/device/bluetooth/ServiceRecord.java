@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2017-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2017-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -43,6 +44,7 @@ package totalcross.io.device.bluetooth;
  * service attribute IDs and their types.
  *
  * <TABLE BORDER=1>
+ * <CAPTION>Common Bluetooth service attributes</CAPTION>
  * <TR><TH>Attribute Name</TH><TH>Attribute ID</TH><TH>Attribute Value Type</TH></TR>
  * <TR><TD>ServiceRecordHandle</TD><TD>0x0000</TD><TD>32-bit unsigned integer</TD></TR>
  * <TR><TD>ServiceClassIDList</TD><TD>0x0001</TD><TD>DATSEQ of UUIDs</TD></TR>
@@ -66,7 +68,8 @@ package totalcross.io.device.bluetooth;
  * service ID. (For more information, see the Service Discovery Protocol Specification 
  * located in the Bluetooth Core Specification.
  * <p>
- * <TABLE BORDER=1> 
+ * <TABLE BORDER=1>
+ * <CAPTION>Common Bluetooth string-valued attribute ID offsets</CAPTION>
  * <TR><TH>Attribute Name</TH><TH>Attribute ID Offset</TH><TH>Attribute Value Type</TH></TR>
  * <TR><TD>ServiceName</TD><TD>0x0000</TD><TD>String</TD></TR>
  * <TR><TD>ServiceDescription</TD><TD>0x0001</TD><TD>String</TD></TR>

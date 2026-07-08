@@ -1,4 +1,5 @@
-// Copyright (C) 2017-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -10,9 +11,9 @@ import totalcross.net.Base64;
 import totalcross.sys.Vm;
 
 /**
- * Receive a stream of base64 encoded bytes and decode to the original.
- * <p/>
- * Given a base 64 encoded image (img64), one may use:
+ * Receives a stream of base64 encoded bytes and decodes it to the original.
+ *
+ * <p>Given a base64 encoded image, one may use:</p>
  * <pre>
  * Image createImage(String img64) {
  * 		ByteArrayStream bas = new ByteArrayStream(img64.getBytes()); // get a Stream to read the String
@@ -23,10 +24,10 @@ import totalcross.sys.Vm;
  * 		return new Image(imgSource); // passing the stream directly to the image for the sake of memory
  * }
  * </pre>
- * 
- * @see {@link totalcross.io.Stream#asInputStream()}
- * @see {@link totalcross.io.Stream#asStream(java.io.InputStream)}
- * 
+ *
+ * @see totalcross.io.Stream#asInputStream()
+ * @see totalcross.io.Stream#asStream(java.io.InputStream)
+ *
  * @author Jefferson Quesado
  */
 public class Base64decoderStream extends InputStream {

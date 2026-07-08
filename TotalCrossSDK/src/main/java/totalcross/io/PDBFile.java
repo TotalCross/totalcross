@@ -24,7 +24,7 @@ import totalcross.util.Vector;
  *    PDBFile pdbFile = new PDBFile("MyPDBFile.CRTR.TYPE", PDBFile.READ_WRITE);
  *    DataStream ds = new DataStream(pdbFile);
  *    int count = pdbFile.getRecordCount();
- *    for (int i = 0; i < count; i++)
+ *    for (int i = 0; i &lt; count; i++)
  *    {
  *       pdbFile.setRecordPos(i);
  *       String name = ds.readString();

@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 /* Adler32.java - Computes Adler32 data checksum of a data stream
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
@@ -45,37 +50,11 @@ package totalcross.util.zip;
  */
 
 /**
- * Computes an Adler-32 checksum for a stream of data. An Adler-32 checksum is not as reliable as a CRC-32 checksum, but a lot faster to compute.
- * <p>
- * The specification for Adler-32 may be found in RFC 1950. (ZLIB Compressed Data Format Specification version 3.3).
- * <p>
- * <p>
- * From that document:
- * <p>
- * "ADLER32 (Adler-32 checksum) This contains a checksum value of the uncompressed data (excluding any dictionary data) computed according to 
- * Adler-32 algorithm. This algorithm is a 32-bit extension and improvement of the Fletcher algorithm, used in the ITU-T X.224 / ISO 8073 standard.
- * <p>
- * Adler-32 is composed of two sums accumulated per byte: <code>s1</code> is the sum of all bytes, <code>s2</code> is the sum of all s1 values. Both 
- * sums are done modulo <code>65521</code>. <code>s1</code> is initialized to <code>1</code>, <code>s2</code> to zero. The Adler-32 checksum is 
- * stored as <code>s2*65536 + s1</code> in most- significant-byte first (network) order."
+ * Computes an Adler-32 checksum for a stream of data.
  *
- * <p>
- * "8.2. The Adler-32 algorithm
- * <p>
- * The Adler-32 algorithm is much faster than the CRC32 algorithm yet still provides an extremely low probability of undetected errors.
- * <p>
- * The modulo on <code>unsigned long</code> accumulators can be delayed for <code>5552</code> bytes, so the modulo operation time is negligible. If 
- * the bytes are <code>a</code>, <code>b</code>, <code>c</code>, the second sum is <code>3a + 2b + c + 3</code>, and so is position and order 
- * sensitive, unlike the first sum, which is just a checksum. That <code>65521</code> is prime is important to avoid a possible large class of 
- * two-byte errors that leave the check unchanged. (The Fletcher checksum uses <code>255</code>, which is not prime and which also makes the 
- * Fletcher check insensitive to single byte changes <code>0 <-> 255</code>.)
- * <p>
- * The sum <code>s1</code> is initialized to <code>1</code> instead of zero to make the length of the sequence part of <code>s2</code>, so that the
- * length does not have to be checked separately. (Any sequence of zeroes has a Fletcher checksum of zero.)"
- * 
- * Changes for TotalCross:<br>
- * Extends the abstract class <code>Checksum</code> (which was originally an interface).
- * 
+ * <p>The algorithm is faster than CRC-32, but less resistant to accidental
+ * collisions.</p>
+ *
  * @author John Leuner, Per Bothner
  * @since JDK 1.1
  */

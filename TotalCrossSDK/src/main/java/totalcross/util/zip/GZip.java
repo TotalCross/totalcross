@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -15,18 +16,10 @@ import totalcross.io.Stream;
 /**
  * This class implements stream compression using the GZip algorithm provided with the ZLib library.
  * 
- * <blockquote><i><q>gzip (GNU zip) is a compression utility designed to be a replacement for compress. Its main
- * advantages over compress are much better compression and freedom from patented algorithms. It has been adopted by the
- * GNU project and is now relatively popular on the Internet.</q></i>
- * <p align=right>
- * <a href="http://www.gzip.org/" />http://www.gzip.org/</a>
- * </p>
- * </blockquote>
- * 
- * The ZLib library home page is
- * <p align=right>
- * <a href="http://www.zlib.net/" />http://www.zlib.net/</a>
- * </p>
+ * <p>gzip is a compression utility designed as a replacement for compress.</p>
+ *
+ * <p>GZip home page: <a href="http://www.gzip.org/">http://www.gzip.org/</a></p>
+ * <p>ZLib home page: <a href="http://www.zlib.net/">http://www.zlib.net/</a></p>
  * 
  * @since TotalCross 1.10
  */
@@ -96,7 +89,7 @@ final public class GZip {
    * @param out
    *           Inflated output stream
    * @param sizeIn
-   *           How many bytes to read, or -1 to read until <code>in</code>'s end.
+   *           How many bytes to read, or -1 to read until {@code in}'s end.
    * @return Size of the inflated stream
    * @throws IOException
    * @throws ZipException

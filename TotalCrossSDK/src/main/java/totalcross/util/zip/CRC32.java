@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 /* CRC32.java - Computes CRC32 data checksum of a data stream
    Copyright (C) 1999. 2000, 2001 Free Software Foundation, Inc.
 
@@ -52,7 +57,7 @@ package totalcross.util.zip;
  * Extends the abstract class Checksum (which was originally an interface).
  * 
  * @author Per Bothner
- * @date April 1, 1999.
+ * @since JDK 1.1
  */
 public class CRC32 extends Checksum {
   /** The crc data checksum so far. */
