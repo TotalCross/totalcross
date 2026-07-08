@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -103,6 +104,37 @@ bool checkArrayRange(Context currentContext, TCObject obj, int32 start, int32 co
    return false;
 }
 
+static Method findDeclaredMethod(ConstantPool callerCp, UInt16Array callerParams, int32 callerParamLen, TCClass class_, int32 hashName, int32 hashParams, CharP methodName)
+{
+   Method method;
+   int32 i;
+
+   if (class_ == null)
+      return null;
+   for (method = class_->methods, i = ARRAYLENV(class_->methods); i-- > 0; method++)
+      if (method->hashName == hashName && method->hashParams == hashParams && strEq(method->name, methodName) && paramsEq(callerCp, callerParams, callerParamLen, class_->cp, method->cpParams))
+         return method;
+   return null;
+}
+
+static Method findInterfaceMethod(ConstantPool callerCp, UInt16Array callerParams, int32 callerParamLen, TCClass interfaceClass, int32 hashName, int32 hashParams, CharP methodName)
+{
+   Method method;
+   int32 i;
+
+   method = findDeclaredMethod(callerCp, callerParams, callerParamLen, interfaceClass, hashName, hashParams, methodName);
+   if (method != null)
+      return method;
+   if (interfaceClass != null && interfaceClass->interfaces != null)
+      for (i = ARRAYLENV(interfaceClass->interfaces); i-- > 0;)
+      {
+         method = findInterfaceMethod(callerCp, callerParams, callerParamLen, interfaceClass->interfaces[i], hashName, hashParams, methodName);
+         if (method != null)
+            return method;
+      }
+   return null;
+}
+
 #if defined(WINCE) || defined(WIN32)
 #pragma optimize( "ys", off ) // with this pragma, evc3 makes less one branch per instruction
 #endif
@@ -172,7 +204,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    int32 callStackMethodEnd = 0;
    // get method's variables
    register Code code = method->code;
-   TCClass class_ = method->class_, c=null,thisClass;
+   TCClass class_ = method->class_, c=null,thisClass,originalInterfaceClass=null;
    ConstantPool cp = class_->cp;
    uint32 nparam=0;
    NMParams nmp = &context->nmp;
@@ -753,6 +785,7 @@ popStackFrame:
             UNLOCKVAR(metAndCls);
 notYetLinked:
             originalClassIsInterface = false;
+            originalInterfaceClass = null;
             sym = cp->mtd[ code->mtd.sym ]; // virtual methods are directly referenced: mtd.sym is the index to an array that will point to the mtd table
             len = cp->mtdLens[code->mtd.sym];
             className = cp->cls[sym[0]];
@@ -789,6 +822,10 @@ notYetLinked:
                if (c->flags.isInterface) // if we're calling an interface method, use the current object's class instead
                {
                   originalClassIsInterface = true;
+                  originalInterfaceClass = c;
+                  newMethod = findDeclaredMethod(cp, sym, len, c, hashName, hashParams, methodName);
+                  if (newMethod != null && newMethod->flags.isStatic)
+                     goto contCall;
                   if (regO[code->mtd.this_] == null)
                   {
                      exceptionMsg = "Calling an interface's method";
@@ -816,12 +853,18 @@ notYetLinked:
                            cp->boundNormal[code->mtd.sym] = newMethod;
                      }
                      goto contCall;
-                  }
+               }
                // not found in current class, search in inherited classes, if calling a virtual method
                if (code->op.op != CALL_virtual && code->op.op != CALL_normal && !originalClassIsInterface)
                   break;
                c = c->superClass;
             } while (c);
+            if (originalClassIsInterface)
+            {
+               newMethod = findInterfaceMethod(cp, sym, len, originalInterfaceClass, hashName, hashParams, methodName);
+               if (newMethod != null)
+                  goto contCall;
+            }
          }
          goto throwNoSuchMethodError;
       OPCODE(CONV_regI_regL)   regI[code->reg_reg.reg0] =  (int32)REGL(reg64)[code->reg_reg.reg1]; NEXT_OP

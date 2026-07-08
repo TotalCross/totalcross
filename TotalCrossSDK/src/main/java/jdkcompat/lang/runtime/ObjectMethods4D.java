@@ -4,7 +4,7 @@
 
 package jdkcompat.lang.runtime;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public final class ObjectMethods4D {
   private ObjectMethods4D() {
@@ -40,17 +40,17 @@ public final class ObjectMethods4D {
     }
     String[] names = splitComponentNames(componentNames);
     for (int i = 0; i < names.length; i++) {
-      if (!equals(selfValues[i], fieldValue(other, names[i]))) {
+      if (!equals(selfValues[i], componentValue(other, names[i]))) {
         return false;
       }
     }
     return true;
   }
 
-  private static Object fieldValue(Object target, String name) {
+  private static Object componentValue(Object target, String name) {
     try {
-      Field field = target.getClass().getDeclaredField(name);
-      return field.get(target);
+      Method accessor = target.getClass().getMethod(name, new Class[0]);
+      return accessor.invoke(target, new Object[0]);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

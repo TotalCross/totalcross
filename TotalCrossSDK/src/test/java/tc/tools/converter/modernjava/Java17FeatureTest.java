@@ -79,12 +79,20 @@ class Java17FeatureTest {
   }
 
   public static final class PlainRecord {
-    public final String name;
-    public final int version;
+    private final String name;
+    private final int version;
 
     PlainRecord(String name, int version) {
       this.name = name;
       this.version = version;
+    }
+
+    public String name() {
+      return name;
+    }
+
+    public int version() {
+      return version;
     }
   }
 }
