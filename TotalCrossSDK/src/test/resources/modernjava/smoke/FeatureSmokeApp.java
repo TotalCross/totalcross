@@ -22,6 +22,7 @@ public class FeatureSmokeApp extends MainWindow {
     add(new Java15FeatureSmokeTest(), LEFT, AFTER, FILL, 28);
     add(new Java16FeatureSmokeTest(), LEFT, AFTER, FILL, 28);
     add(new Java17FeatureSmokeTest(), LEFT, AFTER, FILL, 28);
+    add(new ZipStreamSmokeTest(), LEFT, AFTER, FILL, 28);
 
     System.out.println("[PASS] Feature smoke app - all suites scheduled");
     add(new Label("Feature smoke app OK"), LEFT + 8, AFTER + 4);
