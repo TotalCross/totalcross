@@ -144,9 +144,10 @@ used by the bootstrap script. The script reads the first non-empty,
 non-comment line from that file, while `TOTALCROSS_DEPOT_TOOLS_REF` still takes
 precedence when set. If the ref file is missing or has no ref, the script logs a
 warning and falls back to the repository default branch/main. When the
-`totalcross-depot-tools` directory already exists, the script verifies that it is
-the expected Git checkout, fetches tags, and checks out the configured ref
-instead of returning only because `deps.yml` is present.
+`totalcross-depot-tools` directory already exists, the script restores Git
+metadata if the directory came from a source archive, verifies the expected
+origin, fetches tags, and checks out the configured ref instead of returning only
+because `deps.yml` is present.
 
 The Android Gradle module uses `fetchNativeDependencies` to fetch the Android
 prebuilt artifacts before CMake tasks. If native dependencies are missing in a
