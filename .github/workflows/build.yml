@@ -104,7 +104,7 @@ jobs:
         done
 
     - name: Fetch depot tools metadata
-      run: TotalCrossVM/fetch-depot-tools.sh
+      run: TotalCrossVM/deps/fetch-depot-tools.sh
 
     - name: Cache artifacts
       uses: actions/cache@v5
@@ -115,7 +115,7 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/libpng/local
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
           TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-        key: native-deps-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/fetch-depot-tools.sh') }}
+        key: native-deps-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
 
     - name: Cache C/C++ compilation
       uses: actions/cache@v5
@@ -325,7 +325,7 @@ jobs:
       run: brew install ninja sdl2
 
     - name: Fetch depot tools metadata
-      run: TotalCrossVM/fetch-depot-tools.sh
+      run: TotalCrossVM/deps/fetch-depot-tools.sh
 
     - name: Cache artifacts
       uses: actions/cache@v5
@@ -336,7 +336,7 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/libpng/local
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
           TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-        key: native-deps-macos-arm64-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/fetch-depot-tools.sh') }}
+        key: native-deps-macos-arm64-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
 
     - name: Build VM & Launcher
       run: |
@@ -448,7 +448,7 @@ jobs:
         java-version: 17
 
     - name: Fetch depot tools metadata
-      run: TotalCrossVM/fetch-depot-tools.sh
+      run: TotalCrossVM/deps/fetch-depot-tools.sh
 
     - name: Cache artifacts
       uses: actions/cache@v5
@@ -460,7 +460,7 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
           TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
           TotalCrossVM/android/tcvm/src/main/jniLibs
-        key: native-deps-android-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/fetch-depot-tools.sh') }}
+        key: native-deps-android-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
@@ -527,7 +527,7 @@ jobs:
         done
 
     - name: Fetch depot tools metadata
-      run: TotalCrossVM/fetch-depot-tools.sh
+      run: TotalCrossVM/deps/fetch-depot-tools.sh
 
     - name: Cache artifacts
       uses: actions/cache@v5
@@ -538,7 +538,7 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/libpng/local
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
           TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-        key: native-deps-ios-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/fetch-depot-tools.sh') }}
+        key: native-deps-ios-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
 
     - name: Cache CocoaPods
       uses: actions/cache@v5

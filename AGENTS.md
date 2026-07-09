@@ -136,8 +136,17 @@ fetched into:
 The bootstrap script is:
 
 ```bash
-TotalCrossVM/fetch-depot-tools.sh
+TotalCrossVM/deps/fetch-depot-tools.sh
 ```
+
+`TotalCrossVM/deps/totalcross-depot-tools.ref` pins the depot-tools checkout
+used by the bootstrap script. The script reads the first non-empty,
+non-comment line from that file, while `TOTALCROSS_DEPOT_TOOLS_REF` still takes
+precedence when set. If the ref file is missing or has no ref, the script logs a
+warning and falls back to the repository default branch/main. When the
+`totalcross-depot-tools` directory already exists, the script verifies that it is
+the expected Git checkout, fetches tags, and checks out the configured ref
+instead of returning only because `deps.yml` is present.
 
 The Android Gradle module uses `fetchNativeDependencies` to fetch the Android
 prebuilt artifacts before CMake tasks. If native dependencies are missing in a
@@ -289,9 +298,10 @@ revert(sdk): restore legacy deploy option
 - If a CMake/Gradle clean fails because of stale Android ABI directories under
   `.cxx`, prefer fixing the build logic or removing only the stale generated
   ABI directory, not source files.
-- Treat `TotalCrossVM/deps/totalcross-depot-tools` as a fetched dependency
-  checkout. Changes needed there should usually be made in the depot-tools
-  repository and then consumed here through the bootstrap/ref mechanism.
+- Treat `TotalCrossVM/deps/totalcross-depot-tools` as a generated/fetched
+  dependency checkout. Changes needed there should usually be made in the
+  depot-tools repository and then consumed here through
+  `TotalCrossVM/deps/totalcross-depot-tools.ref`.
 
 ## Token and Tool Output Budget
 

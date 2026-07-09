@@ -1,7 +1,13 @@
+// Copyright (C) 2021 TotalCross Global Mobile Platform Ltda
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 apply plugin: 'com.android.library'
 
-def depotToolsFetchScript = file("${projectDir}/../../fetch-depot-tools.sh")
+def depotToolsFetchScript = file("${projectDir}/../../deps/fetch-depot-tools.sh")
 def depotToolsDir = file("${projectDir}/../../deps/totalcross-depot-tools")
+def depotToolsRefFile = file("${projectDir}/../../deps/totalcross-depot-tools.ref")
 def skiaFetchScript = file("${depotToolsDir}/skia/fetch.sh")
 def zlibNgFetchScript = file("${depotToolsDir}/zlib-ng/fetch.sh")
 def libpngFetchScript = file("${depotToolsDir}/libpng/fetch.sh")
@@ -42,6 +48,7 @@ tasks.register('fetchNativeDependencies') {
     description = 'Fetches the Android native dependency prebuilts required by the native build.'
 
     inputs.file(depotToolsFetchScript)
+    inputs.file(depotToolsRefFile).optional()
     inputs.file(depotToolsDepsFile).optional()
     inputs.property('sqliteReleaseTag', optionalInput(sqliteReleaseTag))
     inputs.property('sqliteGithubRepo', optionalInput(sqliteGithubRepo))
