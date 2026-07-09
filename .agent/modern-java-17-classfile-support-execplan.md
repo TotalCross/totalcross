@@ -49,12 +49,12 @@ This table tracks language and class-file features through Java 17. "Supported" 
 | 9 | `StringConcatFactory` string concatenation | Supported for common recipes | `JavaStringConcatLowering` lowers `makeConcat` and common `makeConcatWithConstants` recipes to `StringBuffer`; Java 9, Java 11, and Java 17 smokes exercise string concat. | Exotic concat constants should keep precise diagnostics if found. |
 | 9 | Private interface methods and private static interface methods | Supported for common javac output | The aggregate smoke app compiles, deploys, and runs private/private static interface method fixtures. | More complex interface hierarchy dispatch remains demand-driven runtime compatibility work. |
 | 9 | Diamond anonymous classes, effectively-final try-with-resources, private `@SafeVarargs` | Supported | `Java9FeatureSmokeTest` covers each source feature. | No known deployer gap. |
-| 9 | Module metadata | Partial | `Java11ClassFileTest` parses generated `module-info.class`, `Module`, `ModulePackages`, and `ModuleMainClass`. | TotalCross does not implement the Java module runtime; module descriptors are metadata for deployer acceptance. |
+| 9 | Module metadata | Supported as metadata-only | `Java11ClassFileTest` parses generated `module-info.class`, `Module`, `ModulePackages`, and `ModuleMainClass`, and verifies `module-info.class` converts without requiring a superclass. | TotalCross does not implement the Java module runtime; module descriptors are metadata for deployer acceptance. |
 | 10 | Local variable type inference | Supported | `Java10FeatureSmokeTest` covers `var` local variables. | No bytecode-specific work expected. |
 | 11 | Nestmates | Supported for deployer acceptance | `Java11ClassFileTest` verifies `NestHost`/`NestMembers`; `Java11FeatureSmokeTest` covers nested private access. | No runtime nestmate enforcement beyond deployable javac output is planned. |
 | 11 | Lambda `var` parameters | Supported | `Java11FeatureSmokeTest` covers lambda `var` parameters. | No bytecode-specific work expected. |
 | 11 | Common runtime helpers | Supported for covered helpers | `Java11FeatureSmokeTest` covers `Predicate.not`, `String.isBlank`, `String.strip`, `String.stripLeading`, `String.stripTrailing`, and `String.repeat`. | Broader Java 11 library APIs remain demand-driven runtime compatibility work. |
-| 11 | `CONSTANT_Dynamic` | Partial | Constant-pool tag 17 is parsed; `ldc` of dynamic constants fails with a precise unsupported-feature diagnostic. | Add deterministic lowering only if a common Java 17-compatible source fixture requires it. |
+| 11 | `CONSTANT_Dynamic` | Unsupported for `ldc`, with precise diagnostics | Constant-pool tag 17 is parsed; `ldc` of dynamic constants fails with a precise unsupported-feature diagnostic. | Add deterministic lowering only if a common Java 17-compatible source fixture requires it. No current through-Java-17 smoke fixture requires dynamic constants. |
 | 12-13 | Switch expressions as preview | Unsupported by policy | Preview class files are rejected by minor version 65535. | Keep preview rejection clear. |
 | 14 | Switch expressions | Supported | `Java14FeatureSmokeTest` covers final switch expressions. | No known deployer gap. |
 | 15 | Text blocks | Supported | `Java15FeatureSmokeTest` covers text blocks as ordinary string constants. | No known deployer gap. |
@@ -87,7 +87,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 - [x] (2026-07-08) Added Java 8 predicate helper defaults for `Predicate`, `BiPredicate`, `IntPredicate`, `LongPredicate`, and `DoublePredicate`, then validated them in the aggregate smoke app.
 - [x] (2026-07-08) Reviewed Java 8 serializable lambda behavior: marker support now deploys and runs, while deserialization is intentionally unsupported with a generated `writeReplace` diagnostic.
 - [x] (2026-07-08) Added Java 11 runtime smoke coverage for `Predicate.not` and common `String` helpers, then implemented the missing `String4D` methods.
-- [ ] Review Java 9-11 runtime/API gaps found by fixtures, especially module runtime behavior and deterministic `CONSTANT_Dynamic` lowering.
+- [x] (2026-07-08) Reviewed Java 9-11 module and `CONSTANT_Dynamic` gaps: module descriptors remain metadata-only and `ldc` dynamic constants remain unsupported with precise diagnostics.
 - [ ] Add focused tests for annotation metadata retention/reflection only if TotalCross apps need annotation reflection through Java 17.
 - [ ] Run broad SDK validation and the aggregate smoke deploy after each remaining feature fix.
 
@@ -155,6 +155,10 @@ This table tracks language and class-file features through Java 17. "Supported" 
   Rationale: Common app code may use the `Serializable` marker in lambda intersection casts, but full `SerializedLambda` reconstruction is low-value for this milestone and depends on runtime serialization APIs beyond class-file support. A generated `writeReplace` diagnostic is clearer than failing through missing `java.lang.invoke.SerializedLambda`.
   Date/Author: 2026-07-08 / Codex
 
+- Decision: Treat Java module descriptors as metadata-only and keep `CONSTANT_Dynamic` `ldc` unsupported unless a common source fixture requires deterministic lowering.
+  Rationale: TotalCross has no Java module runtime, but accepting `module-info.class` improves class-file compatibility. Generic dynamic constants need bootstrap execution semantics that are outside the high-value javac output covered by the current smoke suite, so a precise unsupported-feature diagnostic is preferable until a real app requires a specific lowering.
+  Date/Author: 2026-07-08 / Codex
+
 ## Outcomes & Retrospective
 
 2026-07-02 / Codex: The planned Java 8 `LambdaMetafactory` lowering milestone is complete for the common javac shapes targeted by this ExecPlan. Generated adapters support stateless and captured lambdas, static/bound/unbound method references, constructor references, `altMetafactory` markers and direct bridges, reference casts, reference-covariant returns, and common primitive boxing/unboxing/widening through wrapper methods.
@@ -186,6 +190,8 @@ This table tracks language and class-file features through Java 17. "Supported" 
 2026-07-08 / Codex: Java 8 serializable lambda markers now deploy and run, while lambda deserialization is explicitly unsupported. `Java8LambdaLowering` ignores javac's synthetic `$deserializeLambda$(SerializedLambda)` method during lambda-site discovery, `J2TC` skips that method during conversion, and generated serializable adapters include a private `writeReplace` that throws `UnsupportedOperationException` with a clear TotalCross message. Validation passed with `./gradlew-agent test --tests tc.tools.converter.modernjava.Java8LambdaLoweringTest`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app reported no `[FAIL]` lines and passed the new Java 8 serializable lambda marker smoke coverage.
 
 2026-07-08 / Codex: Java 11 common runtime helper coverage expanded. `String4D` now implements `isBlank`, `strip`, `stripLeading`, `stripTrailing`, and `repeat`, while `Java11FeatureSmokeTest` also validates the previously added `Predicate.not`. Validation passed with `./gradlew-agent compileJava`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app reported no `[FAIL]` lines and Java 11 smoke now passes 9 runtime tests.
+
+2026-07-08 / Codex: Java 9-11 module and dynamic-constant behavior is closed for this milestone. `module-info.class` now converts as metadata-only by allowing classes with no superclass through `J2TC`, and `Java11ClassFileTest` covers that conversion path. `CONSTANT_Dynamic` loaded by `ldc` remains unsupported with a precise diagnostic because no current through-Java-17 smoke fixture requires deterministic dynamic-constant lowering. Validation passed with `./gradlew-agent test --tests tc.tools.converter.modernjava.Java11ClassFileTest`.
 
 ## Context and Orientation
 
