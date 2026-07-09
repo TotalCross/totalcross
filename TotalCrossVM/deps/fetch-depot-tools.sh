@@ -53,9 +53,12 @@ if [ ! -e "${DEST_DIR}" ]; then
   mkdir -p "$(dirname "${DEST_DIR}")"
   git clone "${REPO_URL}" "${DEST_DIR}"
 elif [ ! -d "${DEST_DIR}/.git" ]; then
-  echo "Error: ${DEST_DIR} exists but is not a Git checkout of totalcross-depot-tools" >&2
-  echo "Move it aside or set TOTALCROSS_DEPOT_TOOLS_DIR to a valid checkout." >&2
-  exit 1
+  tmp_dir="$(mktemp -d "${DEST_DIR}.tmp.XXXXXX")"
+  trap 'rm -rf "${tmp_dir}"' EXIT
+
+  echo "Warning: ${DEST_DIR} exists without Git metadata; restoring it from ${REPO_URL}" >&2
+  git clone "${REPO_URL}" "${tmp_dir}"
+  cp -a "${tmp_dir}/." "${DEST_DIR}/"
 fi
 
 actual_repo_url="$(git -C "${DEST_DIR}" remote get-url origin 2>/dev/null || true)"
@@ -72,12 +75,12 @@ fi
 git -C "${DEST_DIR}" fetch --tags origin
 
 if [ -n "${REF}" ]; then
-  git -C "${DEST_DIR}" checkout --detach "${REF}"
+  git -C "${DEST_DIR}" -c advice.detachedHead=false checkout --force --detach "${REF}"
 else
   default_branch="$(git -C "${DEST_DIR}" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || true)"
   default_branch="${default_branch#origin/}"
   if [ -n "${default_branch}" ]; then
-    git -C "${DEST_DIR}" checkout "${default_branch}"
+    git -C "${DEST_DIR}" checkout --force "${default_branch}"
     git -C "${DEST_DIR}" pull --ff-only origin "${default_branch}"
   else
     git -C "${DEST_DIR}" pull --ff-only
