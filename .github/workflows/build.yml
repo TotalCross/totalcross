@@ -385,6 +385,14 @@ jobs:
       working-directory: scripts
       run: ./package-sdk.sh
 
+    - name: Upload SDK Gradle logs
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: sdk-gradle-logs
+        path: build/logs/sdk-gradle
+        if-no-files-found: warn
+
     - name: Pack SDK build artifacts
       run: tar -czf sdk-build.tar.gz build/TotalCross
 

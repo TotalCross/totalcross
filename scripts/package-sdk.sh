@@ -5,8 +5,22 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
+set -euo pipefail
+
 BASEDIR=$(cd ..; pwd)
 OUTDIR=$BASEDIR/build/TotalCross
+LOGDIR=$BASEDIR/build/logs/sdk-gradle
+
+archive_gradle_logs() {
+   local status=$?
+   if [ -d "$BASEDIR/TotalCrossSDK/agent-logs" ]; then
+      mkdir -p "$LOGDIR"
+      rsync --recursive "$BASEDIR/TotalCrossSDK/agent-logs/" "$LOGDIR/" || true
+   fi
+   return "$status"
+}
+
+trap archive_gradle_logs EXIT
 
 echo "PACKAGE SDK"
 
@@ -22,7 +36,8 @@ pushd $BASEDIR/TotalCrossSDK
       etc \
       $OUTDIR
 
-   ./gradlew clean dist -x test
+   ./gradlew-agent clean dist
+   archive_gradle_logs
    if [ ! -f dist/libs/appdirs-1.2.0.jar ]; then
       echo "Could not find appdirs-1.2.0.jar in TotalCrossSDK/dist/libs after Gradle dist" >&2
       find dist -maxdepth 3 -type f -print >&2
