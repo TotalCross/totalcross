@@ -18,6 +18,9 @@ env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
   ZLIB_NG_GITHUB_TOKEN: ${{ secrets.ZLIB_NG_GITHUB_TOKEN }}
   LIBPNG_GITHUB_TOKEN: ${{ secrets.LIBPNG_GITHUB_TOKEN }}
+  MBEDTLS_GITHUB_TOKEN: ${{ secrets.MBEDTLS_GITHUB_TOKEN }}
+  SKIA_GITHUB_TOKEN: ${{ secrets.SKIA_GITHUB_TOKEN }}
+  VCRUNTIME_GITHUB_TOKEN: ${{ secrets.VCRUNTIME_GITHUB_TOKEN }}
 
 jobs:
   checkout-source:
@@ -41,6 +44,103 @@ jobs:
 
     - name: Pack source code
       run: tar --exclude=.git -czf "${RUNNER_TEMP}/source-code.tar.gz" .
+
+    - name: Export dependency overrides
+      env:
+        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
+        SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
+        ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.ZLIB_NG_RELEASE_TAG }}
+        ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
+        LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
+        LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
+        MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
+        MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
+        SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
+        SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
+        VCRUNTIME_RELEASE_TAG_OVERRIDE: ${{ secrets.VCRUNTIME_RELEASE_TAG }}
+        VCRUNTIME_GITHUB_REPO_OVERRIDE: ${{ secrets.VCRUNTIME_GITHUB_REPO }}
+      run: |
+        for name in \
+          SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
+          ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
+          LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+          SKIA_RELEASE_TAG SKIA_GITHUB_REPO \
+          VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
+        do
+          value_name="${name}_OVERRIDE"
+          if [ -n "${!value_name:-}" ]; then
+            printf '%s=%s\n' "$name" "${!value_name}" >> "$GITHUB_ENV"
+          fi
+        done
+
+    - name: Cache depot tools
+      uses: actions/cache@v5
+      with:
+        path: TotalCrossVM/deps/totalcross-depot-tools
+        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+        enableCrossOsArchive: true
+
+    - name: Fetch depot tools metadata
+      run: TotalCrossVM/deps/fetch-depot-tools.sh
+
+    - name: Fetch native dependencies
+      run: |
+        set -euo pipefail
+
+        depot_dir="TotalCrossVM/deps/totalcross-depot-tools"
+
+        add_optional_arg() {
+          local -n args_ref="$1"
+          local option_name="$2"
+          local option_value="$3"
+          if [ -n "${option_value}" ]; then
+            args_ref+=("${option_name}" "${option_value}")
+          fi
+        }
+
+        fetch_dep() {
+          local dep="$1"
+          local platform="$2"
+          local arch="$3"
+          local token_env="$4"
+          local release_tag_var="$5"
+          local github_repo_var="$6"
+          shift 6
+
+          local args=(
+            "${depot_dir}/${dep}/fetch.sh"
+            --platform "${platform}"
+            --arch "${arch}"
+            --github-token-env "${token_env}"
+          )
+          add_optional_arg args --release-tag "${!release_tag_var:-}"
+          add_optional_arg args --github-repo "${!github_repo_var:-}"
+          args+=("$@")
+
+          bash "${args[@]}"
+        }
+
+        common_targets=(
+          "linux x86_64"
+          "linux aarch64"
+          "linux armv7l"
+          "windows x86"
+          "macos arm64"
+          "android arm64-v8a"
+          "ios arm64"
+        )
+
+        for target in "${common_targets[@]}"; do
+          read -r platform arch <<< "${target}"
+          fetch_dep zlib-ng "${platform}" "${arch}" ZLIB_NG_GITHUB_TOKEN ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO
+          fetch_dep libpng "${platform}" "${arch}" LIBPNG_GITHUB_TOKEN LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO
+          fetch_dep sqlite3 "${platform}" "${arch}" SQLITE3_GITHUB_TOKEN SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO
+          fetch_dep mbedtls "${platform}" "${arch}" MBEDTLS_GITHUB_TOKEN MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO
+          fetch_dep skia "${platform}" "${arch}" SKIA_GITHUB_TOKEN SKIA_RELEASE_TAG SKIA_GITHUB_REPO --install-dev
+        done
+
+        fetch_dep vcruntime windows x86 VCRUNTIME_GITHUB_TOKEN VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
 
     - name: Upload source code
       uses: actions/upload-artifact@v7
@@ -80,6 +180,13 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
+    - name: Restore depot tools cache
+      uses: actions/cache/restore@v5
+      with:
+        path: TotalCrossVM/deps/totalcross-depot-tools
+        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+        enableCrossOsArchive: true
+
     - name: Export dependency overrides
       env:
         SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
@@ -88,6 +195,8 @@ jobs:
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
         LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
+        MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
+        MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -95,6 +204,7 @@ jobs:
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
@@ -102,20 +212,6 @@ jobs:
             printf '%s=%s\n' "$name" "${!value_name}" >> "$GITHUB_ENV"
           fi
         done
-
-    - name: Fetch depot tools metadata
-      run: TotalCrossVM/deps/fetch-depot-tools.sh
-
-    - name: Cache artifacts
-      uses: actions/cache@v5
-      with:
-        path: |
-          TotalCrossVM/deps/totalcross-depot-tools/skia/local
-          TotalCrossVM/deps/totalcross-depot-tools/zlib-ng/local
-          TotalCrossVM/deps/totalcross-depot-tools/libpng/local
-          TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
-          TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-        key: native-deps-${{ matrix.project }}-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
 
     - name: Cache C/C++ compilation
       uses: actions/cache@v5
@@ -140,11 +236,13 @@ jobs:
           -e SQLITE3_GITHUB_TOKEN
           -e ZLIB_NG_GITHUB_TOKEN
           -e LIBPNG_GITHUB_TOKEN
+          -e MBEDTLS_GITHUB_TOKEN
         )
         for env_name in \
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           if [ -n "${!env_name:-}" ]; then
@@ -207,6 +305,13 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
+    - name: Restore depot tools cache
+      uses: actions/cache/restore@v5
+      with:
+        path: TotalCrossVM/deps/totalcross-depot-tools
+        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+        enableCrossOsArchive: true
+
     - name: Install cross toolchain
       run: |
         sudo apt-get update
@@ -243,6 +348,13 @@ jobs:
       shell: bash
       run: tar -xzf source-code.tar.gz
 
+    - name: Restore depot tools cache
+      uses: actions/cache/restore@v5
+      with:
+        path: TotalCrossVM/deps/totalcross-depot-tools
+        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+        enableCrossOsArchive: true
+
     - name: Export dependency overrides
       shell: bash
       env:
@@ -252,6 +364,8 @@ jobs:
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
         LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
+        MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
+        MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -259,6 +373,7 @@ jobs:
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
@@ -298,6 +413,13 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
+    - name: Restore depot tools cache
+      uses: actions/cache/restore@v5
+      with:
+        path: TotalCrossVM/deps/totalcross-depot-tools
+        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+        enableCrossOsArchive: true
+
     - name: Export dependency overrides
       env:
         SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
@@ -306,6 +428,8 @@ jobs:
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
         LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
+        MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
+        MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -313,6 +437,7 @@ jobs:
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
@@ -323,20 +448,6 @@ jobs:
 
     - name: Install build tools
       run: brew install ninja sdl2
-
-    - name: Fetch depot tools metadata
-      run: TotalCrossVM/deps/fetch-depot-tools.sh
-
-    - name: Cache artifacts
-      uses: actions/cache@v5
-      with:
-        path: |
-          TotalCrossVM/deps/totalcross-depot-tools/skia/local
-          TotalCrossVM/deps/totalcross-depot-tools/zlib-ng/local
-          TotalCrossVM/deps/totalcross-depot-tools/libpng/local
-          TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
-          TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-        key: native-deps-macos-arm64-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
 
     - name: Build VM & Launcher
       run: |
@@ -368,6 +479,13 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
+    - name: Restore depot tools cache
+      uses: actions/cache/restore@v5
+      with:
+        path: TotalCrossVM/deps/totalcross-depot-tools
+        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+        enableCrossOsArchive: true
+
     - name: Setup JDK 17
       uses: actions/setup-java@v5
       with:
@@ -380,6 +498,19 @@ jobs:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
+
+    - name: Export dependency overrides
+      env:
+        VCRUNTIME_RELEASE_TAG_OVERRIDE: ${{ secrets.VCRUNTIME_RELEASE_TAG }}
+        VCRUNTIME_GITHUB_REPO_OVERRIDE: ${{ secrets.VCRUNTIME_GITHUB_REPO }}
+      run: |
+        for name in VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
+        do
+          value_name="${name}_OVERRIDE"
+          if [ -n "${!value_name:-}" ]; then
+            printf '%s=%s\n' "$name" "${!value_name}" >> "$GITHUB_ENV"
+          fi
+        done
 
     - name: Build SDK
       working-directory: scripts
@@ -418,6 +549,13 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
+    - name: Restore depot tools cache
+      uses: actions/cache/restore@v5
+      with:
+        path: TotalCrossVM/deps/totalcross-depot-tools
+        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+        enableCrossOsArchive: true
+
     - name: Export dependency overrides
       env:
         SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
@@ -426,6 +564,8 @@ jobs:
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
         LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
+        MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
+        MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -433,6 +573,7 @@ jobs:
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
@@ -446,21 +587,6 @@ jobs:
       with:
         distribution: temurin
         java-version: 17
-
-    - name: Fetch depot tools metadata
-      run: TotalCrossVM/deps/fetch-depot-tools.sh
-
-    - name: Cache artifacts
-      uses: actions/cache@v5
-      with:
-        path: |
-          TotalCrossVM/deps/totalcross-depot-tools/skia/local
-          TotalCrossVM/deps/totalcross-depot-tools/zlib-ng/local
-          TotalCrossVM/deps/totalcross-depot-tools/libpng/local
-          TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
-          TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-          TotalCrossVM/android/tcvm/src/main/jniLibs
-        key: native-deps-android-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
@@ -503,6 +629,13 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
+    - name: Restore depot tools cache
+      uses: actions/cache/restore@v5
+      with:
+        path: TotalCrossVM/deps/totalcross-depot-tools
+        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+        enableCrossOsArchive: true
+
     - name: Export dependency overrides
       env:
         SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
@@ -511,6 +644,8 @@ jobs:
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
         LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
+        MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
+        MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
         SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
       run: |
@@ -518,6 +653,7 @@ jobs:
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+          MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
@@ -525,20 +661,6 @@ jobs:
             printf '%s=%s\n' "$name" "${!value_name}" >> "$GITHUB_ENV"
           fi
         done
-
-    - name: Fetch depot tools metadata
-      run: TotalCrossVM/deps/fetch-depot-tools.sh
-
-    - name: Cache artifacts
-      uses: actions/cache@v5
-      with:
-        path: |
-          TotalCrossVM/deps/totalcross-depot-tools/skia/local
-          TotalCrossVM/deps/totalcross-depot-tools/zlib-ng/local
-          TotalCrossVM/deps/totalcross-depot-tools/libpng/local
-          TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local
-          TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
-        key: native-deps-ios-${{ hashFiles('TotalCrossVM/deps/totalcross-depot-tools/deps.yml', 'TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
 
     - name: Cache CocoaPods
       uses: actions/cache@v5
