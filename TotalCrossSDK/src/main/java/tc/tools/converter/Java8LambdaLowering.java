@@ -21,6 +21,9 @@ public final class Java8LambdaLowering implements Opcodes {
   private static final String BOOTSTRAP_METHOD = "metafactory";
   private static final String ALT_BOOTSTRAP_METHOD = "altMetafactory";
   private static final String FACTORY_PREFIX = "$$tc_lambda_factory$";
+  private static final String DESERIALIZE_LAMBDA_METHOD = "$deserializeLambda$";
+  private static final String DESERIALIZE_LAMBDA_SIGNATURE =
+      "$deserializeLambda$(Ljava/lang/invoke/SerializedLambda;)";
   private static final int FLAG_SERIALIZABLE = 1;
   private static final int FLAG_MARKERS = 2;
   private static final int FLAG_BRIDGES = 4;
@@ -50,7 +53,7 @@ public final class Java8LambdaLowering implements Opcodes {
         site.descriptor.substring(0, site.descriptor.length() - site.ret.length()), site.ret, site.jargs, site.name,
         samDescriptor, implementation.referenceKind, implementation.getOwner(owner.cp), implementation.getName(owner.cp),
         implementation.getDescriptor(owner.cp), instantiatedDescriptor, options.markerInterfaces,
-        options.bridgeDescriptors, site.pcInMethod);
+        options.bridgeDescriptors, options.serializable, site.pcInMethod);
   }
 
   public static JavaClass[] generateAdapterClasses(JavaClass owner) throws totalcross.io.IOException {
@@ -66,6 +69,10 @@ public final class Java8LambdaLowering implements Opcodes {
 
   public static boolean hasLambdaSites(JavaClass owner) {
     return lambdaSites(owner).length > 0;
+  }
+
+  public static boolean isSerializableLambdaDeserializationMethod(JavaMethod method) {
+    return DESERIALIZE_LAMBDA_METHOD.equals(method.name) && DESERIALIZE_LAMBDA_SIGNATURE.equals(method.signature);
   }
 
   public static void validateSupportedLambdaMetafactory(JavaClass owner, BC186_invokedynamic bytecode,
@@ -96,8 +103,25 @@ public final class Java8LambdaLowering implements Opcodes {
     generateFactory(cw, site);
     generateSamMethod(cw, site);
     generateBridgeMethods(cw, site);
+    generateSerializableWriteReplace(cw, site);
     cw.visitEnd();
     return cw.toByteArray();
+  }
+
+  private static void generateSerializableWriteReplace(ClassWriter cw, LambdaSite site) {
+    if (!site.serializable) {
+      return;
+    }
+    MethodVisitor mv = cw.visitMethod(ACC_PRIVATE | ACC_FINAL, "writeReplace", "()Ljava/lang/Object;", null, null);
+    mv.visitCode();
+    mv.visitTypeInsn(NEW, "java/lang/UnsupportedOperationException");
+    mv.visitInsn(DUP);
+    mv.visitLdcInsn("TotalCross does not support serializable lambda deserialization");
+    mv.visitMethodInsn(INVOKESPECIAL, "java/lang/UnsupportedOperationException", "<init>", "(Ljava/lang/String;)V",
+        false);
+    mv.visitInsn(ATHROW);
+    mv.visitMaxs(0, 0);
+    mv.visitEnd();
   }
 
   private static void generateCaptureFields(ClassWriter cw, LambdaSite site) {
@@ -694,6 +718,9 @@ public final class Java8LambdaLowering implements Opcodes {
         if (method.code == null || method.code.bcs == null) {
           continue;
         }
+        if (isSerializableLambdaDeserializationMethod(method)) {
+          continue;
+        }
         for (int j = 0; j < method.code.bcs.length; j++) {
           if (method.code.bcs[j] instanceof BC186_invokedynamic) {
             BC186_invokedynamic site = (BC186_invokedynamic) method.code.bcs[j];
@@ -723,7 +750,7 @@ public final class Java8LambdaLowering implements Opcodes {
   private static AltMetafactoryOptions parseAltMetafactoryOptions(JavaClass owner, BC186_invokedynamic site,
       JavaMethodHandle bootstrapHandle, JavaBootstrapMethod bootstrapMethod) {
     if (BOOTSTRAP_METHOD.equals(bootstrapHandle.getName(owner.cp))) {
-      return new AltMetafactoryOptions(new String[0], new String[0]);
+      return new AltMetafactoryOptions(new String[0], new String[0], false);
     }
     int[] bootstrapArguments = bootstrapMethod.bootstrapArguments;
     if (bootstrapArguments.length < 4) {
@@ -733,7 +760,8 @@ public final class Java8LambdaLowering implements Opcodes {
     int flags = intConstant(owner.cp, bootstrapArguments[cursor++]);
     totalcross.util.Vector markerInterfaces = new totalcross.util.Vector(2);
     totalcross.util.Vector bridgeDescriptors = new totalcross.util.Vector(2);
-    if ((flags & FLAG_SERIALIZABLE) != 0) {
+    boolean serializable = (flags & FLAG_SERIALIZABLE) != 0;
+    if (serializable) {
       markerInterfaces.addElement("java/io/Serializable");
     }
     if ((flags & FLAG_MARKERS) != 0) {
@@ -748,7 +776,7 @@ public final class Java8LambdaLowering implements Opcodes {
         bridgeDescriptors.addElement(methodTypeDescriptor(owner.cp, bootstrapArguments[cursor++]));
       }
     }
-    return new AltMetafactoryOptions(toStringArray(markerInterfaces), toStringArray(bridgeDescriptors));
+    return new AltMetafactoryOptions(toStringArray(markerInterfaces), toStringArray(bridgeDescriptors), serializable);
   }
 
   private static int intConstant(JavaConstantPool cp, int constantPoolIndex) {
@@ -811,12 +839,14 @@ public final class Java8LambdaLowering implements Opcodes {
     public final String instantiatedDescriptor;
     public final String[] markerInterfaces;
     public final String[] bridgeDescriptors;
+    public final boolean serializable;
     public final int bytecodeIndex;
 
     private LambdaSite(String adapterClassName, String factoryMethodName, String factoryDescriptorWithoutReturn,
         String factoryReturnDescriptor, String[] factoryParams, String samMethodName, String samDescriptor,
         int implementationKind, String implementationOwner, String implementationName, String implementationDescriptor,
-        String instantiatedDescriptor, String[] markerInterfaces, String[] bridgeDescriptors, int bytecodeIndex) {
+        String instantiatedDescriptor, String[] markerInterfaces, String[] bridgeDescriptors, boolean serializable,
+        int bytecodeIndex) {
       this.adapterClassName = adapterClassName;
       this.factoryMethodName = factoryMethodName;
       this.factoryDescriptorWithoutReturn = factoryDescriptorWithoutReturn;
@@ -831,6 +861,7 @@ public final class Java8LambdaLowering implements Opcodes {
       this.instantiatedDescriptor = instantiatedDescriptor;
       this.markerInterfaces = markerInterfaces;
       this.bridgeDescriptors = bridgeDescriptors;
+      this.serializable = serializable;
       this.bytecodeIndex = bytecodeIndex;
     }
   }
@@ -838,10 +869,12 @@ public final class Java8LambdaLowering implements Opcodes {
   private static final class AltMetafactoryOptions {
     final String[] markerInterfaces;
     final String[] bridgeDescriptors;
+    final boolean serializable;
 
-    AltMetafactoryOptions(String[] markerInterfaces, String[] bridgeDescriptors) {
+    AltMetafactoryOptions(String[] markerInterfaces, String[] bridgeDescriptors, boolean serializable) {
       this.markerInterfaces = markerInterfaces;
       this.bridgeDescriptors = bridgeDescriptors;
+      this.serializable = serializable;
     }
   }
 

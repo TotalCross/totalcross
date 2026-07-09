@@ -43,7 +43,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 | 5 | Annotations | Partial | Annotation metadata compiles and deploys in `Java5FeatureSmokeTest`. | Runtime reflection over annotations is not validated by the smoke app. |
 | 6 | `@Override` on interface methods | Supported | `Java6FeatureSmokeTest` covers compilation and deploy of the source feature. | No bytecode-specific work expected. |
 | 7 | Diamond operator, string switch, try-with-resources, multi-catch, binary literals, numeric separators | Supported | `Java7FeatureSmokeTest` covers each source feature. Try-with-resources deploys with current `Throwable.addSuppressed` support. | Broader Java 7 library APIs remain demand-driven runtime compatibility work. |
-| 8 | Lambdas and method references | Supported for common javac output | `Java8LambdaLoweringTest`, `RetrolambdaRemovalTest`, and `Java8FeatureSmokeTest` cover stateless/captured lambdas, static/bound/unbound method references, constructor references, marker and bridge `altMetafactory`, reference casts, reference-covariant returns, common primitive boxing/unboxing/widening, and common predicate helper defaults. | Rare descriptor adaptations, arbitrary bootstrap methods, and serializable lambda deserialization remain unsupported. |
+| 8 | Lambdas and method references | Supported for common javac output | `Java8LambdaLoweringTest`, `RetrolambdaRemovalTest`, and `Java8FeatureSmokeTest` cover stateless/captured lambdas, static/bound/unbound method references, constructor references, marker and bridge `altMetafactory`, serializable lambda markers, reference casts, reference-covariant returns, common primitive boxing/unboxing/widening, and common predicate helper defaults. | Rare descriptor adaptations and arbitrary bootstrap methods remain unsupported. Serializable lambda deserialization is intentionally unsupported; generated adapters provide a clear `writeReplace` diagnostic instead of depending on `java.lang.invoke.SerializedLambda`. |
 | 8 | Default and static interface methods | Supported for common javac output | The aggregate smoke app compiles, deploys, and runs default/static interface method fixtures. The VM resolves static interface methods directly and falls back to interface default methods when a concrete class does not override them. | More complex Java default-method conflict resolution remains demand-driven runtime compatibility work. |
 | 8 | Type annotations and repeatable annotations | Partial | `Java8FeatureSmokeTest` includes type-use and repeatable annotation metadata. | Runtime reflection over those annotations is not validated. |
 | 9 | `StringConcatFactory` string concatenation | Supported for common recipes | `JavaStringConcatLowering` lowers `makeConcat` and common `makeConcatWithConstants` recipes to `StringBuffer`; Java 9, Java 11, and Java 17 smokes exercise string concat. | Exotic concat constants should keep precise diagnostics if found. |
@@ -84,7 +84,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 - [x] (2026-07-08) Fixed generated record `equals` at runtime by reading record component values through public accessors instead of private fields.
 - [x] (2026-07-08) Fixed Java 8 and Java 9 interface-method runtime smoke failures by resolving static interface methods directly and falling back to interface methods for default/private instance dispatch.
 - [x] (2026-07-08) Added Java 8 predicate helper defaults for `Predicate`, `BiPredicate`, `IntPredicate`, `LongPredicate`, and `DoublePredicate`, then validated them in the aggregate smoke app.
-- [ ] Review remaining Java 8 runtime/API gaps outside the aggregate smoke failures, especially serializable lambda deserialization, and either implement or document precise unsupported diagnostics.
+- [x] (2026-07-08) Reviewed Java 8 serializable lambda behavior: marker support now deploys and runs, while deserialization is intentionally unsupported with a generated `writeReplace` diagnostic.
 - [ ] Review Java 9-11 runtime/API gaps found by fixtures, especially module runtime behavior and deterministic `CONSTANT_Dynamic` lowering.
 - [ ] Add focused tests for annotation metadata retention/reflection only if TotalCross apps need annotation reflection through Java 17.
 - [ ] Run broad SDK validation and the aggregate smoke deploy after each remaining feature fix.
@@ -101,7 +101,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
   Evidence: existing TCVM dispatch resolves calls through the TotalCross global constant pool, so the high-value path is deployer lowering into ordinary calls.
 
 - Observation: Java 8 helper APIs and serializable lambda deserialization are runtime compatibility gaps rather than parser/lowering blockers.
-  Evidence: ordinary lambdas and method references deploy after lowering. Common `Predicate`/primitive predicate helper defaults now pass runtime smoke, while `SerializedLambda` still requires additional runtime API support.
+  Evidence: ordinary lambdas and method references deploy after lowering. Common `Predicate`/primitive predicate helper defaults now pass runtime smoke. Serializable lambda markers also pass runtime smoke, while generated `writeReplace` reports that lambda deserialization is unsupported instead of depending on `SerializedLambda`.
 
 - Observation: Java 9+ string concatenation is emitted for ordinary string `+` source code.
   Evidence: Java 9, Java 11, and Java 17 fixtures contain `StringConcatFactory` sites and now deploy after lowering to `StringBuffer`.
@@ -149,6 +149,10 @@ This table tracks language and class-file features through Java 17. "Supported" 
   Rationale: The source layout documents when each feature was introduced, while the aggregate app gives one deploy target that schedules every smoke suite.
   Date/Author: 2026-07-04 / Codex
 
+- Decision: Support serializable lambda markers, but not serializable lambda deserialization.
+  Rationale: Common app code may use the `Serializable` marker in lambda intersection casts, but full `SerializedLambda` reconstruction is low-value for this milestone and depends on runtime serialization APIs beyond class-file support. A generated `writeReplace` diagnostic is clearer than failing through missing `java.lang.invoke.SerializedLambda`.
+  Date/Author: 2026-07-08 / Codex
+
 ## Outcomes & Retrospective
 
 2026-07-02 / Codex: The planned Java 8 `LambdaMetafactory` lowering milestone is complete for the common javac shapes targeted by this ExecPlan. Generated adapters support stateless and captured lambdas, static/bound/unbound method references, constructor references, `altMetafactory` markers and direct bridges, reference casts, reference-covariant returns, and common primitive boxing/unboxing/widening through wrapper methods.
@@ -176,6 +180,8 @@ This table tracks language and class-file features through Java 17. "Supported" 
 2026-07-08 / Codex: Java 8/9 interface method runtime smoke failures now pass with a rebuilt `libtcvm.dylib`. `tcvm.c` resolves static interface methods without requiring a receiver, preserves concrete-class override lookup for instance interface calls, and falls back to declared interface/superinterface methods for default and private interface methods. Validation passed with incremental `ninja -C build tcvm`, copying the rebuilt `build/libtcvm.dylib` into the generated smoke app install folder, then running `TotalCrossSDK/build/feature-smoke/classes/install/macos/FeatureSmokeApp`. The app reported no `[FAIL]` lines and passed Java 8 default/static interface methods plus Java 9 private/private static interface methods.
 
 2026-07-08 / Codex: Java 8 predicate helper defaults now pass runtime smoke. `Predicate4D`, `BiPredicate4D`, `IntPredicate4D`, `LongPredicate4D`, and `DoublePredicate4D` implement common `and`, `or`, and `negate` helpers without using lambdas inside the compatibility layer. `Predicate4D` also exposes `isEqual` and Java 11-era `not`. Validation passed with `./gradlew-agent compileJava`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app reported no `[FAIL]` lines and passed the new Java 8 predicate default-method smoke coverage.
+
+2026-07-08 / Codex: Java 8 serializable lambda markers now deploy and run, while lambda deserialization is explicitly unsupported. `Java8LambdaLowering` ignores javac's synthetic `$deserializeLambda$(SerializedLambda)` method during lambda-site discovery, `J2TC` skips that method during conversion, and generated serializable adapters include a private `writeReplace` that throws `UnsupportedOperationException` with a clear TotalCross message. Validation passed with `./gradlew-agent test --tests tc.tools.converter.modernjava.Java8LambdaLoweringTest`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app reported no `[FAIL]` lines and passed the new Java 8 serializable lambda marker smoke coverage.
 
 ## Context and Orientation
 

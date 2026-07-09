@@ -207,6 +207,34 @@ class Java8LambdaLoweringTest {
   }
 
   @Test
+  void generatesAdapterClassForSerializableLambdasWithClearUnsupportedDeserialization() throws Exception {
+    JavaClass javaClass = serializableLambdaClass();
+
+    JavaClass[] adapters = Java8LambdaLowering.generateAdapterClasses(javaClass);
+
+    assertEquals(1, adapters.length);
+    assertEquals("fixtures/CompiledJava8SerializableLambda$$TC$$Lambda$0", adapters[0].className);
+    assertTrue(hasInterface(adapters[0], "fixtures/CompiledJava8SerializableLambda$TextFactory"));
+    assertTrue(hasInterface(adapters[0], "java/io/Serializable"));
+    assertTrue(hasMethod(adapters[0], "get", "get()"));
+    assertTrue(hasMethod(adapters[0], "writeReplace", "writeReplace()", "Ljava/lang/Object;"));
+    assertTrue(hasMethodCall(adapters[0], "java/lang/UnsupportedOperationException", "<init>",
+        "(Ljava/lang/String;)V"));
+    assertFalse(hasInvokeDynamic(adapters[0]));
+
+    GlobalConstantPool.init();
+    assertDoesNotThrow(() -> new J2TC(adapters[0], true));
+  }
+
+  @Test
+  void convertsSerializableLambdasToNormalFactoryCalls() throws Exception {
+    JavaClass javaClass = serializableLambdaClass();
+    GlobalConstantPool.init();
+
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
+  }
+
+  @Test
   void generatesAdapterClassForReferenceReturnAdaptation() throws Exception {
     JavaClass javaClass = referenceReturnAdaptationClass();
 
@@ -339,6 +367,14 @@ class Java8LambdaLoweringTest {
     assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
     Optional<ModernJavaClassFileFixture> fixture =
         ModernJavaClassFileFixtures.compileJava8AltMetafactoryBridgeFixture(workDir);
+    assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
+    return new JavaClass(fixture.get().bytes, false);
+  }
+
+  private JavaClass serializableLambdaClass() throws Exception {
+    assumeTrue(ToolProvider.getSystemJavaCompiler() != null, "A JDK with javac is required for javac fixture tests");
+    Optional<ModernJavaClassFileFixture> fixture =
+        ModernJavaClassFileFixtures.compileJava8SerializableLambdaFixture(workDir);
     assumeTrue(fixture.isPresent(), "Current javac cannot target Java 8");
     return new JavaClass(fixture.get().bytes, false);
   }
