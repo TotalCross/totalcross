@@ -53,6 +53,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 | 10 | Local variable type inference | Supported | `Java10FeatureSmokeTest` covers `var` local variables. | No bytecode-specific work expected. |
 | 11 | Nestmates | Supported for deployer acceptance | `Java11ClassFileTest` verifies `NestHost`/`NestMembers`; `Java11FeatureSmokeTest` covers nested private access. | No runtime nestmate enforcement beyond deployable javac output is planned. |
 | 11 | Lambda `var` parameters | Supported | `Java11FeatureSmokeTest` covers lambda `var` parameters. | No bytecode-specific work expected. |
+| 11 | Common runtime helpers | Supported for covered helpers | `Java11FeatureSmokeTest` covers `Predicate.not`, `String.isBlank`, `String.strip`, `String.stripLeading`, `String.stripTrailing`, and `String.repeat`. | Broader Java 11 library APIs remain demand-driven runtime compatibility work. |
 | 11 | `CONSTANT_Dynamic` | Partial | Constant-pool tag 17 is parsed; `ldc` of dynamic constants fails with a precise unsupported-feature diagnostic. | Add deterministic lowering only if a common Java 17-compatible source fixture requires it. |
 | 12-13 | Switch expressions as preview | Unsupported by policy | Preview class files are rejected by minor version 65535. | Keep preview rejection clear. |
 | 14 | Switch expressions | Supported | `Java14FeatureSmokeTest` covers final switch expressions. | No known deployer gap. |
@@ -85,6 +86,7 @@ This table tracks language and class-file features through Java 17. "Supported" 
 - [x] (2026-07-08) Fixed Java 8 and Java 9 interface-method runtime smoke failures by resolving static interface methods directly and falling back to interface methods for default/private instance dispatch.
 - [x] (2026-07-08) Added Java 8 predicate helper defaults for `Predicate`, `BiPredicate`, `IntPredicate`, `LongPredicate`, and `DoublePredicate`, then validated them in the aggregate smoke app.
 - [x] (2026-07-08) Reviewed Java 8 serializable lambda behavior: marker support now deploys and runs, while deserialization is intentionally unsupported with a generated `writeReplace` diagnostic.
+- [x] (2026-07-08) Added Java 11 runtime smoke coverage for `Predicate.not` and common `String` helpers, then implemented the missing `String4D` methods.
 - [ ] Review Java 9-11 runtime/API gaps found by fixtures, especially module runtime behavior and deterministic `CONSTANT_Dynamic` lowering.
 - [ ] Add focused tests for annotation metadata retention/reflection only if TotalCross apps need annotation reflection through Java 17.
 - [ ] Run broad SDK validation and the aggregate smoke deploy after each remaining feature fix.
@@ -182,6 +184,8 @@ This table tracks language and class-file features through Java 17. "Supported" 
 2026-07-08 / Codex: Java 8 predicate helper defaults now pass runtime smoke. `Predicate4D`, `BiPredicate4D`, `IntPredicate4D`, `LongPredicate4D`, and `DoublePredicate4D` implement common `and`, `or`, and `negate` helpers without using lambdas inside the compatibility layer. `Predicate4D` also exposes `isEqual` and Java 11-era `not`. Validation passed with `./gradlew-agent compileJava`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app reported no `[FAIL]` lines and passed the new Java 8 predicate default-method smoke coverage.
 
 2026-07-08 / Codex: Java 8 serializable lambda markers now deploy and run, while lambda deserialization is explicitly unsupported. `Java8LambdaLowering` ignores javac's synthetic `$deserializeLambda$(SerializedLambda)` method during lambda-site discovery, `J2TC` skips that method during conversion, and generated serializable adapters include a private `writeReplace` that throws `UnsupportedOperationException` with a clear TotalCross message. Validation passed with `./gradlew-agent test --tests tc.tools.converter.modernjava.Java8LambdaLoweringTest`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app reported no `[FAIL]` lines and passed the new Java 8 serializable lambda marker smoke coverage.
+
+2026-07-08 / Codex: Java 11 common runtime helper coverage expanded. `String4D` now implements `isBlank`, `strip`, `stripLeading`, `stripTrailing`, and `repeat`, while `Java11FeatureSmokeTest` also validates the previously added `Predicate.not`. Validation passed with `./gradlew-agent compileJava`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app reported no `[FAIL]` lines and Java 11 smoke now passes 9 runtime tests.
 
 ## Context and Orientation
 
