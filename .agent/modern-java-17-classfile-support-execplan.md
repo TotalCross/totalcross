@@ -40,12 +40,12 @@ This table tracks language and class-file features through Java 17. "Supported" 
 | 5 | Enums | Supported | `Java5FeatureSmokeTest` covers enum constants and enum switch. `Enum4D` exists in the compatibility runtime. | Broader `EnumSet`/`EnumMap` behavior is runtime API compatibility and should be added only when real apps require it. |
 | 5 | Generics | Supported | `Java5FeatureSmokeTest` covers generic classes; Java 8 lambda tests cover erased generic SAM adaptation. | Generic signatures are metadata; reflection over generic signatures is not a deployer milestone. |
 | 5 | Enhanced for, autoboxing/unboxing, varargs, covariant returns | Supported | `Java5FeatureSmokeTest` covers each source feature through deployable bytecode. | No known deployer gap. |
-| 5 | Annotations | Partial | Annotation metadata compiles and deploys in `Java5FeatureSmokeTest`. | Runtime reflection over annotations is not validated by the smoke app. |
+| 5 | Annotations | Supported for deployable metadata | Annotation metadata compiles and deploys in `Java5FeatureSmokeTest`; method annotations used by `ReplacedByNativeOnDeploy` are parsed where the deployer needs them. | General runtime reflection over annotations is demand-driven runtime API compatibility work and is not required for this Java 17 class-file milestone. |
 | 6 | `@Override` on interface methods | Supported | `Java6FeatureSmokeTest` covers compilation and deploy of the source feature. | No bytecode-specific work expected. |
 | 7 | Diamond operator, string switch, try-with-resources, multi-catch, binary literals, numeric separators | Supported | `Java7FeatureSmokeTest` covers each source feature. Try-with-resources deploys with current `Throwable.addSuppressed` support. | Broader Java 7 library APIs remain demand-driven runtime compatibility work. |
 | 8 | Lambdas and method references | Supported for common javac output | `Java8LambdaLoweringTest`, `RetrolambdaRemovalTest`, and `Java8FeatureSmokeTest` cover stateless/captured lambdas, static/bound/unbound method references, constructor references, marker and bridge `altMetafactory`, serializable lambda markers, reference casts, reference-covariant returns, common primitive boxing/unboxing/widening, and common predicate helper defaults. | Rare descriptor adaptations and arbitrary bootstrap methods remain unsupported. Serializable lambda deserialization is intentionally unsupported; generated adapters provide a clear `writeReplace` diagnostic instead of depending on `java.lang.invoke.SerializedLambda`. |
 | 8 | Default and static interface methods | Supported for common javac output | The aggregate smoke app compiles, deploys, and runs default/static interface method fixtures. The VM resolves static interface methods directly and falls back to interface default methods when a concrete class does not override them. | More complex Java default-method conflict resolution remains demand-driven runtime compatibility work. |
-| 8 | Type annotations and repeatable annotations | Partial | `Java8FeatureSmokeTest` includes type-use and repeatable annotation metadata. | Runtime reflection over those annotations is not validated. |
+| 8 | Type annotations and repeatable annotations | Supported for deployable metadata | `Java8FeatureSmokeTest` includes type-use and repeatable annotation metadata. | General runtime reflection over those annotations is demand-driven runtime API compatibility work and is not required for this Java 17 class-file milestone. |
 | 9 | `StringConcatFactory` string concatenation | Supported for common recipes | `JavaStringConcatLowering` lowers `makeConcat` and common `makeConcatWithConstants` recipes to `StringBuffer`; Java 9, Java 11, and Java 17 smokes exercise string concat. | Exotic concat constants should keep precise diagnostics if found. |
 | 9 | Private interface methods and private static interface methods | Supported for common javac output | The aggregate smoke app compiles, deploys, and runs private/private static interface method fixtures. | More complex interface hierarchy dispatch remains demand-driven runtime compatibility work. |
 | 9 | Diamond anonymous classes, effectively-final try-with-resources, private `@SafeVarargs` | Supported | `Java9FeatureSmokeTest` covers each source feature. | No known deployer gap. |
@@ -88,8 +88,8 @@ This table tracks language and class-file features through Java 17. "Supported" 
 - [x] (2026-07-08) Reviewed Java 8 serializable lambda behavior: marker support now deploys and runs, while deserialization is intentionally unsupported with a generated `writeReplace` diagnostic.
 - [x] (2026-07-08) Added Java 11 runtime smoke coverage for `Predicate.not` and common `String` helpers, then implemented the missing `String4D` methods.
 - [x] (2026-07-08) Reviewed Java 9-11 module and `CONSTANT_Dynamic` gaps: module descriptors remain metadata-only and `ldc` dynamic constants remain unsupported with precise diagnostics.
-- [ ] Add focused tests for annotation metadata retention/reflection only if TotalCross apps need annotation reflection through Java 17.
-- [ ] Run broad SDK validation and the aggregate smoke deploy after each remaining feature fix.
+- [x] (2026-07-08) Reviewed annotation metadata/reflection scope: deployable annotation metadata remains supported, while general runtime annotation reflection is deferred until TotalCross apps require it.
+- [x] (2026-07-08) Ran broad final validation for the Java 17 class-file milestone: modern converter tests, SDK dist, aggregate smoke deploy, and generated smoke app runtime all passed.
 
 ## Surprises & Discoveries
 
@@ -159,6 +159,10 @@ This table tracks language and class-file features through Java 17. "Supported" 
   Rationale: TotalCross has no Java module runtime, but accepting `module-info.class` improves class-file compatibility. Generic dynamic constants need bootstrap execution semantics that are outside the high-value javac output covered by the current smoke suite, so a precise unsupported-feature diagnostic is preferable until a real app requires a specific lowering.
   Date/Author: 2026-07-08 / Codex
 
+- Decision: Treat annotation runtime reflection as demand-driven runtime API compatibility, not a Java 17 class-file milestone blocker.
+  Rationale: Annotation metadata already parses or skips safely enough for deployable class files, and method annotations required by deployer behavior are handled. General runtime annotation reflection would broaden the runtime API surface without evidence that current TotalCross apps need it for modern class-file support.
+  Date/Author: 2026-07-08 / Codex
+
 ## Outcomes & Retrospective
 
 2026-07-02 / Codex: The planned Java 8 `LambdaMetafactory` lowering milestone is complete for the common javac shapes targeted by this ExecPlan. Generated adapters support stateless and captured lambdas, static/bound/unbound method references, constructor references, `altMetafactory` markers and direct bridges, reference casts, reference-covariant returns, and common primitive boxing/unboxing/widening through wrapper methods.
@@ -192,6 +196,10 @@ This table tracks language and class-file features through Java 17. "Supported" 
 2026-07-08 / Codex: Java 11 common runtime helper coverage expanded. `String4D` now implements `isBlank`, `strip`, `stripLeading`, `stripTrailing`, and `repeat`, while `Java11FeatureSmokeTest` also validates the previously added `Predicate.not`. Validation passed with `./gradlew-agent compileJava`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app reported no `[FAIL]` lines and Java 11 smoke now passes 9 runtime tests.
 
 2026-07-08 / Codex: Java 9-11 module and dynamic-constant behavior is closed for this milestone. `module-info.class` now converts as metadata-only by allowing classes with no superclass through `J2TC`, and `Java11ClassFileTest` covers that conversion path. `CONSTANT_Dynamic` loaded by `ldc` remains unsupported with a precise diagnostic because no current through-Java-17 smoke fixture requires deterministic dynamic-constant lowering. Validation passed with `./gradlew-agent test --tests tc.tools.converter.modernjava.Java11ClassFileTest`.
+
+2026-07-08 / Codex: Annotation metadata/reflection scope is closed for this milestone. Java 5 annotations, Java 8 type-use annotations, and repeatable annotations remain covered as deployable metadata in the aggregate smoke app. General runtime annotation reflection is deferred until a TotalCross app requires it, because it is runtime API compatibility work rather than a class-file acceptance blocker.
+
+2026-07-08 / Codex: Broad final validation passed for the Java 17 class-file support milestone. Validation commands were `./gradlew-agent test --tests tc.tools.converter.modernjava.*`, `./gradlew-agent dist -x test`, `./gradlew-agent deployModernJavaFeatureSmoke`, and the generated macOS `FeatureSmokeApp` after copying in the rebuilt `libtcvm.dylib`. The app exited with status 0 and reported no `[FAIL]` lines. Runtime smoke totals were Java 1.4: 1, Java 5: 7, Java 6: 1, Java 7: 5, Java 8: 28, Java 9: 6, Java 10: 1, Java 11: 9, Java 14: 1, Java 15: 1, Java 16: 7, and Java 17: 1.
 
 ## Context and Orientation
 
