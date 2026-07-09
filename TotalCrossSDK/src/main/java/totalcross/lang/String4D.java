@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>   
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -285,6 +286,69 @@ public final class String4D implements Comparable<String4D>, CharSequence {
 
   /** Removes characters less than or equal to ' ' (space) from the beginning and end of this String */
   native public String4D trim();
+
+  /** Returns true if this string is empty or contains only white space characters. */
+  public boolean isBlank() {
+    for (int i = 0; i < chars.length; i++) {
+      if (!Character.isWhitespace(chars[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Removes leading and trailing white space characters. */
+  public String4D strip() {
+    return stripRange(stripLeadingIndex(), stripTrailingIndex());
+  }
+
+  /** Removes leading white space characters. */
+  public String4D stripLeading() {
+    return stripRange(stripLeadingIndex(), chars.length);
+  }
+
+  /** Removes trailing white space characters. */
+  public String4D stripTrailing() {
+    return stripRange(0, stripTrailingIndex());
+  }
+
+  /** Repeats this string count times. */
+  public String4D repeat(int count) {
+    if (count < 0) {
+      throw new IllegalArgumentException("count is negative: " + count);
+    }
+    if (count == 0) {
+      return new String4D();
+    }
+    if (count == 1 || chars.length == 0) {
+      return this;
+    }
+    char[] repeated = new char[chars.length * count];
+    for (int offset = 0; offset < repeated.length; offset += chars.length) {
+      copyChars(chars, 0, repeated, offset, chars.length);
+    }
+    return new String4D(repeated, true);
+  }
+
+  private int stripLeadingIndex() {
+    int start = 0;
+    while (start < chars.length && Character.isWhitespace(chars[start])) {
+      start++;
+    }
+    return start;
+  }
+
+  private int stripTrailingIndex() {
+    int end = chars.length;
+    while (end > 0 && Character.isWhitespace(chars[end - 1])) {
+      end--;
+    }
+    return end;
+  }
+
+  private String4D stripRange(int start, int end) {
+    return start == 0 && end == chars.length ? this : substring(start, end);
+  }
 
   /**
    * Copies characters from this String into the specified character array.

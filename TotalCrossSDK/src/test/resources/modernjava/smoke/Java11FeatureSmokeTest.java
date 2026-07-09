@@ -4,6 +4,8 @@
 
 package smoke;
 
+import java.util.function.Predicate;
+
 public class Java11FeatureSmokeTest extends FeatureSmokeTest {
   private int javaVersion = 11;
 
@@ -16,6 +18,8 @@ public class Java11FeatureSmokeTest extends FeatureSmokeTest {
     testStringConcatFactory();
     testNestmatePrivateAccess();
     testLambdaVarParameters();
+    testPredicateNot();
+    testStringHelpers();
     finish();
   }
 
@@ -32,6 +36,19 @@ public class Java11FeatureSmokeTest extends FeatureSmokeTest {
   private void testLambdaVarParameters() {
     Mapper mapper = (var value) -> value + javaVersion;
     checkEquals("java11", mapper.map("java"), "lambda var parameters");
+  }
+
+  private void testPredicateNot() {
+    Predicate<String> blank = String::isBlank;
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(Predicate.not(blank).test("java11")), "Predicate.not");
+  }
+
+  private void testStringHelpers() {
+    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(" \t\n".isBlank()), "String.isBlank");
+    checkEquals("java11", "  java11 \t".strip(), "String.strip");
+    checkEquals("java11 ", "\t java11 ".stripLeading(), "String.stripLeading");
+    checkEquals(" java11", " java11 \n".stripTrailing(), "String.stripTrailing");
+    checkEquals("javajavajava", "java".repeat(3), "String.repeat");
   }
 
   private String secret() {
