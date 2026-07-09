@@ -33,7 +33,7 @@ static void registerWake(bool set)
 #if defined(linux) || defined(__APPLE__)
 #include <unistd.h>
 
-static bool copyResolvedPath(const char *path, char *out, size_t outSize)
+static inline bool copyResolvedPath(const char *path, char *out, size_t outSize)
 {
    char resolved[MAX_PATHNAME];
    const char *resolvedPath;
@@ -52,7 +52,7 @@ static bool copyResolvedPath(const char *path, char *out, size_t outSize)
    return true;
 }
 
-static bool stripFileName(char *path)
+static inline bool stripFileName(char *path)
 {
    char *slash = xstrrchr(path, '/');
 
@@ -67,7 +67,7 @@ static bool stripFileName(char *path)
    return true;
 }
 
-static bool copyFileName(const char *path, char *out, size_t outSize)
+static inline bool copyFileName(const char *path, char *out, size_t outSize)
 {
    const char *slash;
 
@@ -85,7 +85,7 @@ static bool copyFileName(const char *path, char *out, size_t outSize)
    return true;
 }
 
-static bool getMainExecutablePath(char *out, size_t outSize)
+static inline bool getMainExecutablePath(char *out, size_t outSize)
 {
 #if defined(__APPLE__)
    char path[MAX_PATHNAME];
@@ -111,7 +111,7 @@ static bool getMainExecutablePath(char *out, size_t outSize)
 #endif
 }
 
-static bool getMainExecutableDir(char *out, size_t outSize)
+static inline bool getMainExecutableDir(char *out, size_t outSize)
 {
    if (!getMainExecutablePath(out, outSize))
       return false;
@@ -119,7 +119,7 @@ static bool getMainExecutableDir(char *out, size_t outSize)
    return stripFileName(out);
 }
 
-static bool getMainExecutableName(char *out, size_t outSize)
+static inline bool getMainExecutableName(char *out, size_t outSize)
 {
    char path[MAX_PATHNAME];
 
@@ -129,7 +129,7 @@ static bool getMainExecutableName(char *out, size_t outSize)
    return copyFileName(path, out, outSize);
 }
 
-static bool getThisLibraryDir(char *out, size_t outSize)
+static inline bool getThisLibraryDir(char *out, size_t outSize)
 {
    Dl_info info;
 
