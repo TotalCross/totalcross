@@ -152,6 +152,20 @@ final class ModernJavaClassFileFixtures {
         "java 8 altMetafactory bridge", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8SerializableLambdaFixture(Path workDir)
+      throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8SerializableLambda";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface TextFactory { String get(); }\n"
+        + "  public TextFactory serializableReference() { return (TextFactory & java.io.Serializable) " + simpleName
+        + "::text; }\n"
+        + "  public static String text() { return \"text\"; }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 serializable lambda", className, source);
+  }
+
   static Optional<ModernJavaClassFileFixture> compileJava8ReferenceReturnAdaptationFixture(Path workDir)
       throws IOException {
     String packageName = "fixtures";

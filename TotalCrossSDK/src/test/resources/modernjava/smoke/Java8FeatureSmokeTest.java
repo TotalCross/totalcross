@@ -4,6 +4,8 @@
 
 package smoke;
 
+import java.io.Serializable;
+
 import java.util.function.BiPredicate;
 import java.util.function.DoublePredicate;
 import java.util.function.Function;
@@ -32,6 +34,7 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
     testConstructorReference();
     testAltMetafactoryMarker();
     testAltMetafactoryBridge();
+    testSerializableLambdaMarker();
     testReferenceReturnAdaptation();
     testReferenceArgumentAdaptation();
     testPrimitiveAdaptation();
@@ -84,6 +87,12 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
     StringFactory factory = (StringFactory & ObjectFactory) Java8FeatureSmokeTest::staticText;
     checkEquals("text", factory.get(), "altMetafactory bridge string value");
     checkEquals("text", ((ObjectFactory) factory).get(), "altMetafactory bridge object value");
+  }
+
+  private void testSerializableLambdaMarker() {
+    Supplier<String> supplier = (Supplier<String> & Serializable) Java8FeatureSmokeTest::staticText;
+    check(supplier instanceof Serializable, "serializable lambda marker");
+    checkEquals("text", supplier.get(), "serializable lambda value");
   }
 
   private void testReferenceReturnAdaptation() {

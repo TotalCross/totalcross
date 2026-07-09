@@ -393,6 +393,11 @@ public final class J2TC implements JConstants, TCConstants {
       currentMethod = jm.name + " (stage 1)";
       if (jm.name.equals("<clinit>")) {
         staticInit = true;
+      } else if (Java8LambdaLowering.isSerializableLambdaDeserializationMethod(jm)) {
+        methodsIgnored.put(i, i);
+        newMethodCount--;
+        DeployLogger.verbose("removing unsupported serializable lambda deserialization method " + jm.signature
+            + " of class " + jc.className);
       } else {
         String sign = jm.name + "4D" + jm.signature.substring(jm.name.length());
         if (Bytecode2TCCode.hasMethodWith4D(jc, sign)) {
