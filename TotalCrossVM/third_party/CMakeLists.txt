@@ -1,4 +1,5 @@
 # Copyright (C) 2021 TotalCross Global Mobile Platform Ltda.
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
@@ -82,5 +83,13 @@ endif()
 target_sources(tcvm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/png/PngLoader.c")
 
 # TotalCross uses its own stream/object wrapper around libjpeg.
-target_sources(tcvm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/jpeg/JpegLoader.c")
-target_include_directories(tcvm PRIVATE ${JPEG_INCLUDE_DIRS})
+target_sources(tcvm PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/jpeg/JpegLoader.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/jpeg/jdatadst-tc.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/jpeg/jdatasrc-tc.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/jpeg/jerror-tc.c"
+)
+target_include_directories(tcvm PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/jpeg"
+    ${JPEG_INCLUDE_DIRS}
+)
