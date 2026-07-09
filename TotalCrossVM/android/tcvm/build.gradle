@@ -10,6 +10,7 @@ def depotToolsDir = file("${projectDir}/../../deps/totalcross-depot-tools")
 def depotToolsRefFile = file("${projectDir}/../../deps/totalcross-depot-tools.ref")
 def skiaFetchScript = file("${depotToolsDir}/skia/fetch.sh")
 def zlibNgFetchScript = file("${depotToolsDir}/zlib-ng/fetch.sh")
+def minizipNgFetchScript = file("${depotToolsDir}/minizip-ng/fetch.sh")
 def libpngFetchScript = file("${depotToolsDir}/libpng/fetch.sh")
 def libjpegTurboFetchScript = file("${depotToolsDir}/libjpeg-turbo/fetch.sh")
 def sqliteFetchScript = file("${depotToolsDir}/sqlite3/fetch.sh")
@@ -37,6 +38,8 @@ def sqliteReleaseTag = envOrNull('SQLITE3_RELEASE_TAG')
 def sqliteGithubRepo = envOrNull('SQLITE3_GITHUB_REPO')
 def zlibNgReleaseTag = envOrNull('ZLIB_NG_RELEASE_TAG')
 def zlibNgGithubRepo = envOrNull('ZLIB_NG_GITHUB_REPO')
+def minizipNgReleaseTag = envOrNull('MINIZIP_NG_RELEASE_TAG')
+def minizipNgGithubRepo = envOrNull('MINIZIP_NG_GITHUB_REPO')
 def libpngReleaseTag = envOrNull('LIBPNG_RELEASE_TAG')
 def libpngGithubRepo = envOrNull('LIBPNG_GITHUB_REPO')
 def libjpegTurboReleaseTag = envOrNull('LIBJPEG_TURBO_RELEASE_TAG')
@@ -57,6 +60,8 @@ tasks.register('fetchNativeDependencies') {
     inputs.property('sqliteGithubRepo', optionalInput(sqliteGithubRepo))
     inputs.property('zlibNgReleaseTag', optionalInput(zlibNgReleaseTag))
     inputs.property('zlibNgGithubRepo', optionalInput(zlibNgGithubRepo))
+    inputs.property('minizipNgReleaseTag', optionalInput(minizipNgReleaseTag))
+    inputs.property('minizipNgGithubRepo', optionalInput(minizipNgGithubRepo))
     inputs.property('libpngReleaseTag', optionalInput(libpngReleaseTag))
     inputs.property('libpngGithubRepo', optionalInput(libpngGithubRepo))
     inputs.property('libjpegTurboReleaseTag', optionalInput(libjpegTurboReleaseTag))
@@ -72,6 +77,13 @@ tasks.register('fetchNativeDependencies') {
             file("${depotToolsDir}/zlib-ng/local/android/${abi}/include/zlib.h")
         } + nativeAndroidAbis.collect { abi ->
             file("${depotToolsDir}/zlib-ng/local/android/${abi}/lib/libz.a")
+        } + nativeAndroidAbis.collectMany { abi -> [
+            file("${depotToolsDir}/minizip-ng/local/android/${abi}/include/mz.h"),
+            file("${depotToolsDir}/minizip-ng/local/android/${abi}/include/ioapi.h"),
+            file("${depotToolsDir}/minizip-ng/local/android/${abi}/include/unzip.h"),
+            file("${depotToolsDir}/minizip-ng/local/android/${abi}/include/zip.h"),
+            file("${depotToolsDir}/minizip-ng/local/android/${abi}/lib/libminizip.a")
+        ]
         } + nativeAndroidAbis.collect { abi ->
             file("${depotToolsDir}/libpng/local/android/${abi}/include/png.h")
         } + nativeAndroidAbis.collect { abi ->
@@ -105,6 +117,20 @@ tasks.register('fetchNativeDependencies') {
             ]
             addOptionalArg(fetchArgs, '--release-tag', zlibNgReleaseTag)
             addOptionalArg(fetchArgs, '--github-repo', zlibNgGithubRepo)
+
+            executable 'bash'
+            args fetchArgs
+        }
+
+        exec {
+            def fetchArgs = [
+                minizipNgFetchScript.absolutePath,
+                '--platform', 'android',
+                '--arch', nativeAndroidAbis[0],
+                '--github-token-env', 'MINIZIP_NG_GITHUB_TOKEN'
+            ]
+            addOptionalArg(fetchArgs, '--release-tag', minizipNgReleaseTag)
+            addOptionalArg(fetchArgs, '--github-repo', minizipNgGithubRepo)
 
             executable 'bash'
             args fetchArgs

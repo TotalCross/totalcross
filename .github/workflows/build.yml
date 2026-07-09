@@ -17,6 +17,7 @@ on:
 env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
   ZLIB_NG_GITHUB_TOKEN: ${{ secrets.ZLIB_NG_GITHUB_TOKEN }}
+  MINIZIP_NG_GITHUB_TOKEN: ${{ secrets.MINIZIP_NG_GITHUB_TOKEN }}
   LIBPNG_GITHUB_TOKEN: ${{ secrets.LIBPNG_GITHUB_TOKEN }}
   MBEDTLS_GITHUB_TOKEN: ${{ secrets.MBEDTLS_GITHUB_TOKEN }}
   SKIA_GITHUB_TOKEN: ${{ secrets.SKIA_GITHUB_TOKEN }}
@@ -52,6 +53,8 @@ jobs:
         SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
         ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.ZLIB_NG_RELEASE_TAG }}
         ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
+        MINIZIP_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.MINIZIP_NG_RELEASE_TAG }}
+        MINIZIP_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.MINIZIP_NG_GITHUB_REPO }}
         LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
         LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
         MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
@@ -66,6 +69,7 @@ jobs:
         for name in \
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
           ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
+          MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO \
           LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
           MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
           LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
@@ -138,6 +142,7 @@ jobs:
         for target in "${common_targets[@]}"; do
           read -r platform arch <<< "${target}"
           fetch_dep zlib-ng "${platform}" "${arch}" ZLIB_NG_GITHUB_TOKEN ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO
+          fetch_dep minizip-ng "${platform}" "${arch}" MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
           fetch_dep libpng "${platform}" "${arch}" LIBPNG_GITHUB_TOKEN LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO
           fetch_dep libjpeg-turbo "${platform}" "${arch}" LIBJPEG_TURBO_GITHUB_TOKEN LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO
           fetch_dep sqlite3 "${platform}" "${arch}" SQLITE3_GITHUB_TOKEN SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO
@@ -146,6 +151,9 @@ jobs:
         done
 
         fetch_dep vcruntime windows x86 VCRUNTIME_GITHUB_TOKEN VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
+        fetch_dep minizip-ng windows x64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
+        fetch_dep minizip-ng windows arm64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
+        fetch_dep minizip-ng ios-simulator arm64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
 
     - name: Upload source code
       uses: actions/upload-artifact@v7
@@ -289,6 +297,7 @@ jobs:
           .ccache \
           TotalCrossVM/deps/totalcross-depot-tools/skia/local \
           TotalCrossVM/deps/totalcross-depot-tools/zlib-ng/local \
+          TotalCrossVM/deps/totalcross-depot-tools/minizip-ng/local \
           TotalCrossVM/deps/totalcross-depot-tools/libpng/local \
           TotalCrossVM/deps/totalcross-depot-tools/libjpeg-turbo/local \
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local \

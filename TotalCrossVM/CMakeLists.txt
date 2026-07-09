@@ -65,6 +65,10 @@ if (NOT DEFINED ZLIBNG_AUTO_FETCH)
   set(ZLIBNG_AUTO_FETCH ON)
 endif()
 
+if (NOT DEFINED MINIZIP_NG_AUTO_FETCH)
+  set(MINIZIP_NG_AUTO_FETCH ON)
+endif()
+
 if (NOT DEFINED LIBPNG_AUTO_FETCH)
   set(LIBPNG_AUTO_FETCH ON)
 endif()
@@ -121,6 +125,7 @@ endif()
 
 set(CMAKE_MODULE_PATH
   "${TCVM_DEPOT_TOOLS_DIR}/zlib-ng/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/minizip-ng/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/libpng/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/libjpeg-turbo/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/sqlite3/cmake"
@@ -135,6 +140,8 @@ foreach(TCVM_DEP_CACHE_VAR
     ZLIB_DIR
     ZLIB_INCLUDE_DIR
     ZLIB_LIBRARY
+    MINIZIP_INCLUDE_DIR
+    MINIZIP_LIBRARY
     PNG_DIR
     PNG_INCLUDE_DIR
     PNG_LIBRARY
@@ -169,6 +176,21 @@ if(NOT USE_MADLER_ZLIB)
     tcvm_auto_fetch_zlibng()
   endif()
 endif()
+
+if(TARGET_WINCE)
+  if(NOT DEFINED MINIZIP_DIR)
+    message(FATAL_ERROR
+      "WinCE requires an externally supplied minizip-ng prebuilt. "
+      "Set MINIZIP_DIR to a directory containing include/ and lib/."
+    )
+  endif()
+else()
+  include("${TCVM_DEPOT_TOOLS_DIR}/minizip-ng/cmake/AutoFetchMinizipNg.cmake")
+  if(MINIZIP_NG_AUTO_FETCH)
+    tcvm_auto_fetch_minizipng()
+  endif()
+endif()
+find_package(MINIZIP REQUIRED)
 
 # Find libpng
 if(NOT TARGET_WINCE)
@@ -231,7 +253,7 @@ endif()
 add_subdirectory(third_party) 
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
-  target_link_libraries(tcvm PRIVATE zlibstatic png_static JPEG::JPEG SQLite::SQLite3)
+  target_link_libraries(tcvm PRIVATE zlibstatic png_static JPEG::JPEG SQLite::SQLite3 MINIZIP::MINIZIP)
   if(NOT TARGET_WINCE)
     target_link_libraries(tcvm PRIVATE
       MbedTLS::mbedtls
@@ -241,11 +263,28 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
   endif()
 else()
   target_link_libraries(tcvm zlibstatic)
+  target_link_libraries(tcvm MINIZIP::MINIZIP)
   target_link_libraries(tcvm png_static)
   target_link_libraries(tcvm JPEG::JPEG)
   target_link_libraries(tcvm ${SQLITE3_LIBRARIES})
   if(NOT TARGET_WINCE)
     target_link_libraries(tcvm MbedTLS::mbedtls)
+  endif()
+endif()
+
+if(APPLE)
+  find_library(TCVM_COREFOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
+  find_library(TCVM_SECURITY_FRAMEWORK Security REQUIRED)
+  if(CMAKE_GENERATOR STREQUAL Xcode)
+    target_link_libraries(tcvm PRIVATE
+      "${TCVM_COREFOUNDATION_FRAMEWORK}"
+      "${TCVM_SECURITY_FRAMEWORK}"
+    )
+  else()
+    target_link_libraries(tcvm
+      "${TCVM_COREFOUNDATION_FRAMEWORK}"
+      "${TCVM_SECURITY_FRAMEWORK}"
+    )
   endif()
 endif()
 
@@ -322,10 +361,6 @@ set(SOURCES
     ${TC_SRCDIR}/util/nativelib.c
     ${TC_SRCDIR}/util/guid.c
     ${TC_SRCDIR}/util/xtypes.c
-
-    ${TC_SRCDIR}/minizip/ioapi.c
-    ${TC_SRCDIR}/minizip/unzip.c
-    ${TC_SRCDIR}/minizip/zip.c
 
     ${TC_SRCDIR}/ras/ras_Utils.c
 
@@ -527,7 +562,6 @@ include_directories(${TC_SRCDIR}/event)
 include_directories(${TC_SRCDIR}/event/android)
 include_directories(${TC_SRCDIR}/init)
 include_directories(${TC_SRCDIR}/init/android)
-include_directories(${TC_SRCDIR}/minizip)
 include_directories(${TC_SRCDIR}/nm)
 include_directories(${TC_SRCDIR}/nm/crypto)
 include_directories(${TC_SRCDIR}/nm/db)
@@ -628,6 +662,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
   set(TCVM_XCODE_ARCHIVE_DEPENDENCIES
     "${PNG_LIBRARY}"
     "${ZLIB_LIBRARY}"
+    "${MINIZIP_LIBRARY}"
     "${JPEG_LIBRARIES}"
     "${SQLITE3_LIBRARIES}"
     "${MBEDTLS_LIBRARIES}"
