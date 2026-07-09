@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -10,6 +11,7 @@
 #include "tcvm.h"
 #include "ImagePrimitives_c.h"
 #include "io/File.h"
+#include "JpegLoader.h"
 #if POSIX
    #include <sys/mman.h>
    #include <errno.h>
@@ -19,7 +21,6 @@
 #include "darwin/image_Image_c.h"
 #endif
 
-void jpegLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, const char* first4, int32 size, int32 scale_num, int32 scale_denom);
 void pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
 
 //////////////////////////////////////////////////////////////////////////
@@ -192,7 +193,6 @@ TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native pub
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality); // JpegLoader.c
 TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
 {
    TCObject thisObj = p->obj[0];

@@ -1,7 +1,8 @@
 // Copyright (C) 1991-1996, Thomas G. Lane.
 // Copyright (C) 2003 Jaxo-Systems (Pierre G. Richard)
 // Copyright (C) 2003-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -9,197 +10,10 @@
 * This software is based in part on the work of the Independent JPEG Group.
 */
 
-#include <stdio.h>
 #include <string.h>
 
-#include "tcvm.h"
-#include "jpeglib.h"
-#include "jerror.h"
-
-typedef struct TJPEGFILE
-{
-   TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
-
-   union
-   {
-      TCObject inputStreamObj;
-      TCObject outputStreamObj;
-   };
-   union
-   {
-      Method readBytesMethod;
-      Method writeBytesMethod;
-   };
-
-   TCObject bufObj;
-   TValue params[4];
-   const char * first4;
-   const char * mapped;
-   int32 size;
-   int32 cursor;
-   Context currentContext;
-} JPEGFILE;
-
-int jpegRead(void *buff, int count, JPEGFILE *in);
-int jpegWrite(void *buff, int count, JPEGFILE *in);
-
-typedef struct
-{
-   struct jpeg_error_mgr pub;
-   Heap heap;
-} TCJpegErrorManager;
-
-static void tc_jpeg_error_exit(j_common_ptr cinfo)
-{
-   TCJpegErrorManager *err = (TCJpegErrorManager *)cinfo->err;
-   HEAP_ERROR(err->heap, err->pub.msg_code);
-}
-
-static struct jpeg_error_mgr *tc_jpeg_std_error(TCJpegErrorManager *err, Heap heap)
-{
-   jpeg_std_error(&err->pub);
-   err->heap = heap;
-   err->pub.error_exit = tc_jpeg_error_exit;
-   return &err->pub;
-}
-
-typedef struct
-{
-   struct jpeg_source_mgr pub;
-   JPEGFILE *infile;
-   JOCTET *buffer;
-   boolean start_of_file;
-} TCJpegSourceManager;
-
-typedef TCJpegSourceManager *TCJpegSourcePtr;
-
-#define INPUT_BUF_SIZE 4096
-
-static void tc_jpeg_init_source(j_decompress_ptr cinfo)
-{
-   TCJpegSourcePtr src = (TCJpegSourcePtr)cinfo->src;
-   src->start_of_file = TRUE;
-}
-
-static boolean tc_jpeg_fill_input_buffer(j_decompress_ptr cinfo)
-{
-   TCJpegSourcePtr src = (TCJpegSourcePtr)cinfo->src;
-   size_t nbytes = jpegRead(src->buffer, INPUT_BUF_SIZE, src->infile);
-
-   if (nbytes <= 0)
-   {
-      if (src->start_of_file)
-         ERREXIT(cinfo, JERR_INPUT_EMPTY);
-
-      WARNMS(cinfo, JWRN_JPEG_EOF);
-      src->buffer[0] = (JOCTET)0xFF;
-      src->buffer[1] = (JOCTET)JPEG_EOI;
-      nbytes = 2;
-   }
-
-   src->pub.next_input_byte = src->buffer;
-   src->pub.bytes_in_buffer = nbytes;
-   src->start_of_file = FALSE;
-   return TRUE;
-}
-
-static void tc_jpeg_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
-{
-   struct jpeg_source_mgr *src = cinfo->src;
-
-   if (num_bytes > 0)
-   {
-      while (num_bytes > (long)src->bytes_in_buffer)
-      {
-         num_bytes -= (long)src->bytes_in_buffer;
-         (void)(*src->fill_input_buffer)(cinfo);
-      }
-      src->next_input_byte += (size_t)num_bytes;
-      src->bytes_in_buffer -= (size_t)num_bytes;
-   }
-}
-
-static void tc_jpeg_term_source(j_decompress_ptr cinfo)
-{
-   UNUSED(cinfo);
-}
-
-static void tc_jpeg_stream_src(j_decompress_ptr cinfo, JPEGFILE *infile)
-{
-   TCJpegSourcePtr src;
-
-   if (cinfo->src == NULL)
-   {
-      cinfo->src = (struct jpeg_source_mgr *)(*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_PERMANENT, sizeof(TCJpegSourceManager));
-      src = (TCJpegSourcePtr)cinfo->src;
-      src->buffer = (JOCTET *)(*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_PERMANENT, INPUT_BUF_SIZE * sizeof(JOCTET));
-   }
-
-   src = (TCJpegSourcePtr)cinfo->src;
-   src->pub.init_source = tc_jpeg_init_source;
-   src->pub.fill_input_buffer = tc_jpeg_fill_input_buffer;
-   src->pub.skip_input_data = tc_jpeg_skip_input_data;
-   src->pub.resync_to_restart = jpeg_resync_to_restart;
-   src->pub.term_source = tc_jpeg_term_source;
-   src->infile = infile;
-   src->pub.bytes_in_buffer = 0;
-   src->pub.next_input_byte = NULL;
-}
-
-typedef struct
-{
-   struct jpeg_destination_mgr pub;
-   JPEGFILE *outfile;
-   JOCTET *buffer;
-} TCJpegDestinationManager;
-
-typedef TCJpegDestinationManager *TCJpegDestinationPtr;
-
-#define OUTPUT_BUF_SIZE 4096
-
-static void tc_jpeg_init_destination(j_compress_ptr cinfo)
-{
-   TCJpegDestinationPtr dest = (TCJpegDestinationPtr)cinfo->dest;
-
-   dest->buffer = (JOCTET *)(*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_IMAGE, OUTPUT_BUF_SIZE * sizeof(JOCTET));
-   dest->pub.next_output_byte = dest->buffer;
-   dest->pub.free_in_buffer = OUTPUT_BUF_SIZE;
-}
-
-static boolean tc_jpeg_empty_output_buffer(j_compress_ptr cinfo)
-{
-   TCJpegDestinationPtr dest = (TCJpegDestinationPtr)cinfo->dest;
-
-   if (jpegWrite(dest->buffer, OUTPUT_BUF_SIZE, dest->outfile) != (int)OUTPUT_BUF_SIZE)
-      ERREXIT(cinfo, JERR_FILE_WRITE);
-
-   dest->pub.next_output_byte = dest->buffer;
-   dest->pub.free_in_buffer = OUTPUT_BUF_SIZE;
-   return TRUE;
-}
-
-static void tc_jpeg_term_destination(j_compress_ptr cinfo)
-{
-   TCJpegDestinationPtr dest = (TCJpegDestinationPtr)cinfo->dest;
-   size_t datacount = OUTPUT_BUF_SIZE - dest->pub.free_in_buffer;
-
-   if (datacount > 0 && jpegWrite(dest->buffer, (int)datacount, dest->outfile) != (int)datacount)
-      ERREXIT(cinfo, JERR_FILE_WRITE);
-}
-
-static void tc_jpeg_stream_dest(j_compress_ptr cinfo, JPEGFILE *outfile)
-{
-   TCJpegDestinationPtr dest;
-
-   if (cinfo->dest == NULL)
-      cinfo->dest = (struct jpeg_destination_mgr *)(*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_PERMANENT, sizeof(TCJpegDestinationManager));
-
-   dest = (TCJpegDestinationPtr)cinfo->dest;
-   dest->pub.init_destination = tc_jpeg_init_destination;
-   dest->pub.empty_output_buffer = tc_jpeg_empty_output_buffer;
-   dest->pub.term_destination = tc_jpeg_term_destination;
-   dest->outfile = outfile;
-}
+#include "JpegLoader.h"
+#include "jerror-tc.h"
 
 #if defined _WINDOWS || defined WINCE
 #ifndef fmin
@@ -207,23 +21,24 @@ static void tc_jpeg_stream_dest(j_compress_ptr cinfo, JPEGFILE *outfile)
 #endif
 #endif
 
-// Read the JPEG Input file.
-int jpegRead(void *buff, int count, JPEGFILE *in)
+static size_t jpegReadCallback(void *opaque, void *buffer, size_t count)
 {
+   JPEGFILE *in = (JPEGFILE *)opaque;
    int32 extra = 0,n;
-   uint8* cur = (uint8*)buff;
+   int32 remaining = (int32)count;
+   uint8* cur = (uint8*)buffer;
 
    if (in->mapped) {
       extra = in->size - in->cursor;
       if (extra == 0) {
          return 0;
       }
-      if (extra > count) {
-         extra = count;
+      if (extra > remaining) {
+         extra = remaining;
       }
-      memcpy(buff, in->mapped + in->cursor, extra);
+      memcpy(buffer, in->mapped + in->cursor, extra);
       in->cursor += extra;
-      return extra;
+      return (size_t)extra;
    }
    else {
       if (in->first4) // place the first 4 bytes in the output buffer
@@ -231,53 +46,54 @@ int jpegRead(void *buff, int count, JPEGFILE *in)
          xmove4(cur, in->first4);
          in->first4 = null;
          cur += 4;
-         count -= 4;
+         remaining -= 4;
          extra = 4;
       }
       if (in->tcz != null)
-         return tczRead(in->tcz, cur, count) + extra;
+         return (size_t)(tczRead(in->tcz, cur, remaining) + extra);
       else
       {
-         uint8* start = (uint8*)buff;
+         uint8* start = (uint8*)buffer;
          TCObject bufObj = in->params[1].asObj;
          int tempBufSize = ARRAYOBJ_LEN(bufObj);
          uint8 *tempBufStart = (uint8*)ARRAYOBJ_START(bufObj);
 
-         while (count > 0)
+         while (remaining > 0)
          {
             n=0;
-            in->params[3].asInt32 = (count < tempBufSize)? count : tempBufSize;
+            in->params[3].asInt32 = (remaining < tempBufSize)? remaining : tempBufSize;
             n = executeMethod(in->currentContext, in->readBytesMethod, in->params[0].asObj, in->params[1].asObj, in->params[2].asInt32, in->params[3].asInt32).asInt32;
             if (n <= 0)
                break;
             xmemmove(cur, tempBufStart, n);
             cur += n;
-            count -= n;
+            remaining -= n;
          }
-         return (int)(cur - start);
+         return (size_t)(cur - start);
       }
    }
    return 0;
 }
 
-// Write the JPEG Output file.
-int jpegWrite(void *buff, int count, JPEGFILE *in)
+static size_t jpegWriteCallback(void *opaque, const void *buffer, size_t count)
 {
+   JPEGFILE *in = (JPEGFILE *)opaque;
    TCObject bufObj = in->params[1].asObj;
    int32 bufObjSize = ARRAYOBJ_LEN(in->bufObj);
    int32 remaining;
    int32 current = 0;
    int32 toCopy;
+   int32 total = (int32)count;
 
-   while (current < count)
+   while (current < total)
    {
-      remaining = count - current;
+      remaining = total - current;
       toCopy = in->params[3].asInt32 = bufObjSize < remaining ? bufObjSize : remaining;
-      xmemmove(ARRAYOBJ_START(bufObj), (uint8*) buff + current, toCopy);
+      xmemmove(ARRAYOBJ_START(bufObj), (uint8*) buffer + current, toCopy);
       executeMethod(in->currentContext, in->writeBytesMethod, in->params[0].asObj, in->params[1].asObj, in->params[2].asInt32, in->params[3].asInt32);
       current += toCopy;
    }
-   return current;
+   return (size_t)current;
 }
 
 #define F1_8 12.5
@@ -295,10 +111,12 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    uint8* buffer;
    int32 x,width,height;
    struct jpeg_decompress_struct cinfo;
+   TCJpegIOContext io;
    TCObject pixelsObj;
 
    xmemzero(&errbase, sizeof(errbase));
    xmemzero(&cinfo, sizeof(cinfo));
+   xmemzero(&io, sizeof(io));
    xmemzero(&file, sizeof(file));
 
    heap = heapCreate();
@@ -333,6 +151,9 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    /* Start decompressor */
    cinfo.err = tc_jpeg_std_error(&errbase, heap);
    jpeg_create_decompress(&cinfo);
+   io.opaque = &file;
+   io.read = jpegReadCallback;
+   cinfo.client_data = &io;
 
    if (inputStreamObj != null)
    {
@@ -343,7 +164,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
       file.params[0].asObj = file.inputStreamObj;
       file.params[1].asObj = file.bufObj;
    }
-   tc_jpeg_stream_src(&cinfo, &file); /* Specify data source for decompression */
+   jpeg_tc_src(&cinfo); /* Specify data source for decompression */
    jpeg_read_header(&cinfo, TRUE); /* Read file header, set default decompression parameters */
    /* override with specified decompression parameters */
    cinfo.dither_mode = JDITHER_NONE; // 8580 -> 5360
@@ -419,6 +240,7 @@ bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStr
    JPEGFILE srcFile, dstFile;
    TCJpegErrorManager errbase;
    struct jpeg_compress_struct cinfo;
+   TCJpegIOContext dstIO;
    volatile Heap heap;
    TCObject bufObj;
    uint8* bufP;
@@ -431,6 +253,7 @@ bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStr
    // initialize structs
    xmemzero(&errbase, sizeof(errbase));
    xmemzero(&cinfo, sizeof(cinfo));
+   xmemzero(&dstIO, sizeof(dstIO));
    xmemzero(&srcFile, sizeof(srcFile));
    xmemzero(&dstFile, sizeof(dstFile));
 
@@ -467,9 +290,12 @@ bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStr
    // initialize error handler and compressor.
    cinfo.err = tc_jpeg_std_error(&errbase, heap);
    jpeg_create_compress(&cinfo);
+   dstIO.opaque = &dstFile;
+   dstIO.write = jpegWriteCallback;
+   cinfo.client_data = &dstIO;
 
    // set the compressor output to dstFile
-   tc_jpeg_stream_dest(&cinfo, &dstFile);
+   jpeg_tc_dest(&cinfo);
 
 	cinfo.image_width = width; 	/* image width and height, in pixels */
 	cinfo.image_height = height;
@@ -531,6 +357,7 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    JPEGFILE dstFile;
    TCJpegErrorManager errbase;
    struct jpeg_compress_struct cinfo;
+   TCJpegIOContext dstIO;
    volatile Heap heap;
    TCObject bufObj;
    uint8* bufAux;
@@ -546,6 +373,7 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    // initialize structs
    xmemzero(&errbase, sizeof(errbase));
    xmemzero(&cinfo, sizeof(cinfo));
+   xmemzero(&dstIO, sizeof(dstIO));
    xmemzero(&dstFile, sizeof(dstFile));
 
    if ((bufObj = createByteArray(currentContext, scanLineOut)) == null)
@@ -575,9 +403,12 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    // initialize error handler and compressor.
    cinfo.err = tc_jpeg_std_error(&errbase, heap);
    jpeg_create_compress(&cinfo);
+   dstIO.opaque = &dstFile;
+   dstIO.write = jpegWriteCallback;
+   cinfo.client_data = &dstIO;
 
    // set the compressor output to dstFile
-   tc_jpeg_stream_dest(&cinfo, &dstFile);
+   jpeg_tc_dest(&cinfo);
 
 	cinfo.image_width = width; 	/* image width and height, in pixels */
 	cinfo.image_height = height;
