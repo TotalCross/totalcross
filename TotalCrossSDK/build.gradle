@@ -30,8 +30,9 @@ configurations {
 	obfuscatedArchive
 }
 
-def depotToolsFetchScript = file("${rootDir}/../TotalCrossVM/fetch-depot-tools.sh")
+def depotToolsFetchScript = file("${rootDir}/../TotalCrossVM/deps/fetch-depot-tools.sh")
 def depotToolsDir = file("${rootDir}/../TotalCrossVM/deps/totalcross-depot-tools")
+def depotToolsRefFile = file("${rootDir}/../TotalCrossVM/deps/totalcross-depot-tools.ref")
 def vcruntimeFetchScript = file("${depotToolsDir}/vcruntime/fetch.sh")
 def vcruntimeLocalDir = file("${depotToolsDir}/vcruntime/local/windows/x86")
 def vcruntimeDll = file("${vcruntimeLocalDir}/vcruntime140.dll")
@@ -324,6 +325,7 @@ task fetchSdkNativeRuntime {
 	description = 'Fetches native runtime DLLs distributed with the SDK.'
 
 	inputs.file(depotToolsFetchScript)
+	inputs.file(depotToolsRefFile).optional()
 	inputs.property('vcruntimeReleaseTag', optionalInput(vcruntimeReleaseTag))
 	inputs.property('vcruntimeGithubRepo', optionalInput(vcruntimeGithubRepo))
 	outputs.file(vcruntimeDll)
