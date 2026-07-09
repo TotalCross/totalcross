@@ -5,6 +5,7 @@
 package tc.tools.converter.modernjava;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import tc.tools.converter.ConverterException;
+import tc.tools.converter.GlobalConstantPool;
+import tc.tools.converter.J2TC;
 import tc.tools.converter.bytecode.ByteCode;
 import tc.tools.converter.java.JavaClass;
 import tc.tools.converter.java.JavaClassFileVersion;
@@ -43,6 +46,15 @@ class Java11ClassFileTest {
     assertEquals("module-info", javaClass.className);
     assertEquals("", javaClass.superClass);
     assertEquals("fixtures.module", javaClass.moduleName);
+  }
+
+  @Test
+  void converterAcceptsModuleInfoAsMetadataOnly() throws Exception {
+    JavaClass javaClass = new JavaClass(ModernJavaClassFileFixtures.moduleInfoClassFile("fixtures.module",
+        JavaClassFileVersion.JAVA_11), false);
+    GlobalConstantPool.init();
+
+    assertDoesNotThrow(() -> new J2TC(javaClass, true));
   }
 
   @Test

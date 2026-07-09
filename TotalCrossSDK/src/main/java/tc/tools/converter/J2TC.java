@@ -184,11 +184,11 @@ public final class J2TC implements JConstants, TCConstants {
 
     // other attributes
     tc.interfaces = jc.interfaces;
-    tc.superClass = jc.superClass;
+    tc.superClass = jc.superClass != null && jc.superClass.length() > 0 ? jc.superClass : null;
     // add the class name to the cp
     GlobalConstantPool.putCls(jc.className);
-    if (jc.superClass != null) {
-      GlobalConstantPool.putCls(jc.superClass);
+    if (tc.superClass != null) {
+      GlobalConstantPool.putCls(tc.superClass);
     }
     if (jc.interfaces != null) {
       for (int i = 0; i < jc.interfaces.length; i++) {
