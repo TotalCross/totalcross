@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -7,35 +8,10 @@
 
 #include "tcvm.h"
 
-// temporary
-#if defined(linux) || defined(WIN32) || defined(ANDROID)
-#include "axtls/ssl.h"
+#include "TotalCrossAxTLSPort.h"
 #define HAVE_IMPLEMENTATION
 #ifndef WIN32
 typedef int SOCKET;
-#endif
-
-static void destroyHT(Context currentContext, bool throwEx)
-{
-   heapDestroy(heapSSLSocket);
-   heapSSLSocket = null;
-   if (throwEx)
-      throwException(currentContext, OutOfMemoryError, null);
-}
-static bool createHT(Context currentContext)
-{
-   if (heapSSLSocket == null) // create the heap and the hash table on the first create call.
-   {
-      heapSSLSocket = heapCreate();
-      IF_HEAP_ERROR(heapSSLSocket)
-      {
-         destroyHT(currentContext, true);
-         return false;
-      }
-      htSSLSocket = htNew(16, heapSSLSocket);
-   }
-   return true;
-}
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -45,20 +21,11 @@ TC_API void tnsSSL_dispose(NMParams p) // totalcross/net/ssl/SSL native public v
    TCObject sslObj = p->obj[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
    int32 dontFinalize = SSL_sslDontFinalize(sslObj);
-   int32 fd;
-
    if (!dontFinalize)
    {                
       if (ssl)
       {
-         fd = ssl->client_fd; // we should access "ssl" only after checking the "dontFinalize" field
          ssl_free(ssl);
-   
-         LOCKVAR(htSSL);
-         htRemove(&htSSLSocket, fd); // remove socket object from the hash table when the ssl is disposed.
-         if (htSSLSocket.size == 0) // destroy the hash table if empty
-            destroyHT(p->currentContext, false);
-         UNLOCKVAR(htSSL);
       }
       SSL_sslDontFinalize(sslObj) = true; //flsobral@tc114_36: don't finalize disposed objects.
    }
@@ -212,7 +179,11 @@ TC_API void tnsSSLCTX_create_ii(NMParams p) // totalcross/net/ssl/SSLCTX native 
    int32 options = p->i32[0];
    int32 num_sessions = p->i32[1];
 
-   SSLCTX_ctxRef(sslCtxObj) = (int64) ssl_ctx_new(options, num_sessions);
+   TC_AxTLSContextP context = tcAxTLSCreate(p->currentContext, options, num_sessions);
+   if (context == null)
+      throwException(p->currentContext, OutOfMemoryError, null);
+   else
+      SSLCTX_ctxRef(sslCtxObj) = (int64)context;
 #else
    p = 0;
 #endif
@@ -222,12 +193,18 @@ TC_API void tnsSSLCTX_dispose(NMParams p) // totalcross/net/ssl/SSLCTX native pu
 {
 #ifdef HAVE_IMPLEMENTATION
    TCObject sslCtxObj = p->obj[0];
-   SSLCTX *ssl_ctx = (SSLCTX*)SSLCTX_ctxRef(sslCtxObj);
+   TC_AxTLSContextP context = (TC_AxTLSContextP)SSLCTX_ctxRef(sslCtxObj);
    int32 dontFinalize = SSLCTX_dontFinalize(sslCtxObj);
 
    if (!dontFinalize)
    {
-      ssl_ctx_free(ssl_ctx);
+      if (context != null)
+      {
+         tcAxTLSSetCurrentContext(context, p->currentContext);
+         ssl_ctx_free(context->sslContext);
+         tcAxTLSDestroy(context);
+      }
+      SSLCTX_ctxRef(sslCtxObj) = 0;
       SSLCTX_dontFinalize(sslCtxObj) = true; //flsobral@tc114_36: don't finalize disposed objects.
    }
 
@@ -241,7 +218,7 @@ TC_API void tnsSSLCTX_find_s(NMParams p) // totalcross/net/ssl/SSLCTX native pub
 #ifdef HAVE_IMPLEMENTATION
    TCObject sslCtxObj = p->obj[0];
    TCObject socketObj = p->obj[1];
-   SSLCTX *ssl_ctx = (SSLCTX*)SSLCTX_ctxRef(sslCtxObj);
+   TC_AxTLSContextP context = (TC_AxTLSContextP)SSLCTX_ctxRef(sslCtxObj);
    SOCKET *socketHandle;
 
    if (socketObj == null || Socket_socketRef(socketObj) == null)
@@ -251,7 +228,8 @@ TC_API void tnsSSLCTX_find_s(NMParams p) // totalcross/net/ssl/SSLCTX native pub
    }
 
    socketHandle = (SOCKET*) ARRAYOBJ_START(Socket_socketRef(socketObj));
-   p->retO = (TCObject)ssl_find(ssl_ctx, (uint32)*socketHandle); // flsobral@tc110_106: ssl_find expects a handle, not an object.
+   tcAxTLSSetCurrentContext(context, p->currentContext);
+   p->retO = (TCObject)ssl_find(context->sslContext, (uint32)*socketHandle);
 
 #else
    p = 0;
@@ -273,7 +251,7 @@ TC_API void tnsSSLCTX_objLoad_iss(NMParams p) // totalcross/net/ssl/SSLCTX nativ
    volatile CharP password = null;
    uint8* buffer = null;
    
-   SSLCTX *ssl_ctx = (SSLCTX*)SSLCTX_ctxRef(sslCtxObj);
+   TC_AxTLSContextP context = (TC_AxTLSContextP)SSLCTX_ctxRef(sslCtxObj);
 
    if (streamObj == null)
       throwNullArgumentException(p->currentContext, "material");
@@ -321,7 +299,8 @@ TC_API void tnsSSLCTX_objLoad_iss(NMParams p) // totalcross/net/ssl/SSLCTX nativ
          }
       } while (bytesRead > 0);
 
-      p->retI = ssl_obj_memory_load(ssl_ctx, obj_type, buffer, bufferCount, password);
+      tcAxTLSSetCurrentContext(context, p->currentContext);
+      p->retI = ssl_obj_memory_load(context->sslContext, obj_type, buffer, bufferCount, password);
    }
 
 cleanup:
@@ -344,7 +323,7 @@ TC_API void tnsSSLCTX_objLoad_iBis(NMParams p) // totalcross/net/ssl/SSLCTX nati
    TCObject dataObj = p->obj[1];
    int32 len = p->i32[1];
    TCObject passwordObj = p->obj[2];
-   SSLCTX *ssl_ctx = (SSLCTX*)SSLCTX_ctxRef(sslCtxObj);
+   TC_AxTLSContextP context = (TC_AxTLSContextP)SSLCTX_ctxRef(sslCtxObj);
    volatile CharP password = null;
 
    if (dataObj == null)
@@ -354,7 +333,10 @@ TC_API void tnsSSLCTX_objLoad_iBis(NMParams p) // totalcross/net/ssl/SSLCTX nati
    else if (passwordObj != null && (password = String2CharP(passwordObj)) == null)
       throwException(p->currentContext, OutOfMemoryError, null);
    else
-      p->retI = ssl_obj_memory_load(ssl_ctx, obj_type, ARRAYOBJ_START(dataObj), len, password);
+   {
+      tcAxTLSSetCurrentContext(context, p->currentContext);
+      p->retI = ssl_obj_memory_load(context->sslContext, obj_type, ARRAYOBJ_START(dataObj), len, password);
+   }
 
    if (password)
       xfree(password);
@@ -366,7 +348,7 @@ TC_API void tnsSSLCTX_objLoad_iBis(NMParams p) // totalcross/net/ssl/SSLCTX nati
 TC_API void tnsSSLCTX_newClient_sB(NMParams p) // totalcross/net/ssl/SSLCTX native public totalcross.net.ssl.SSL newClient(totalcross.net.Socket s, byte []session_id);
 {
 #ifdef HAVE_IMPLEMENTATION
-   SSL_CTX *ssl_ctx = (SSL_CTX*)SSLCTX_ctxRef(p->obj[0]);
+   TC_AxTLSContextP context = (TC_AxTLSContextP)SSLCTX_ctxRef(p->obj[0]);
    TCObject socketObj = p->obj[1];
    TCObject id = p->obj[2];
    volatile TCObject ssl = null;
@@ -382,19 +364,12 @@ TC_API void tnsSSLCTX_newClient_sB(NMParams p) // totalcross/net/ssl/SSLCTX nati
       goto error;
    
    socketHandle = (SOCKET*) ARRAYOBJ_START(Socket_socketRef(socketObj));
-   LOCKVAR(htSSL);
-   if (heapSSLSocket != null || createHT(p->currentContext))
+   if (!tcAxTLSSetSocket(context, p->currentContext, socketObj))
    {
-      IF_HEAP_ERROR(heapSSLSocket)
-      {
-         destroyHT(p->currentContext, true);
-      }
-      else
-         htPutPtr(&htSSLSocket, (int32)*socketHandle, socketObj); // add the new socket to the hash table.
+      throwException(p->currentContext, IOException, "SSL context already has a socket");
+      goto error;
    }
-   UNLOCKVAR(htSSL);
-
-   SSL_sslRef(ssl) = (int64)ssl_client_new(ssl_ctx, (int32)*socketHandle, id ? ARRAYOBJ_START(id): NULL, id ? ARRAYOBJ_LEN(id) : 0, null);
+   SSL_sslRef(ssl) = (int64)ssl_client_new(context->sslContext, (int32)*socketHandle, id ? ARRAYOBJ_START(id): NULL, id ? ARRAYOBJ_LEN(id) : 0, null);
    p->retO = ssl;
 
    setObjectLock(p->retO, UNLOCKED);      
@@ -411,7 +386,7 @@ error:
 TC_API void tnsSSLCTX_newServer_s(NMParams p) // totalcross/net/ssl/SSLCTX native public totalcross.net.ssl.SSL newServer(totalcross.net.Socket s);
 {
 #ifdef HAVE_IMPLEMENTATION
-   SSL_CTX *ssl_ctx = (SSL_CTX*)SSLCTX_ctxRef(p->obj[0]);
+   TC_AxTLSContextP context = (TC_AxTLSContextP)SSLCTX_ctxRef(p->obj[0]);
    TCObject socketObj = p->obj[1];
    volatile TCObject ssl = null;
    SOCKET *socketHandle;
@@ -426,19 +401,12 @@ TC_API void tnsSSLCTX_newServer_s(NMParams p) // totalcross/net/ssl/SSLCTX nativ
       goto error;
 
    socketHandle = (SOCKET*) ARRAYOBJ_START(Socket_socketRef(socketObj));
-   LOCKVAR(htSSL);
-   if (heapSSLSocket != null || createHT(p->currentContext))
+   if (!tcAxTLSSetSocket(context, p->currentContext, socketObj))
    {
-      IF_HEAP_ERROR(heapSSLSocket)
-      {
-         destroyHT(p->currentContext, true);
-      }
-      else
-         htPutPtr(&htSSLSocket, (int32)*socketHandle, socketObj); // add the new socket to the hash table.
+      throwException(p->currentContext, IOException, "SSL context already has a socket");
+      goto error;
    }
-   UNLOCKVAR(htSSL);
-
-   SSL_sslRef(ssl) = (int64)ssl_server_new(ssl_ctx, (int32)*socketHandle);
+   SSL_sslRef(ssl) = (int64)ssl_server_new(context->sslContext, (int32)*socketHandle);
    p->retO = ssl;
 
    setObjectLock(p->retO, UNLOCKED);

@@ -27,11 +27,13 @@
 #include <stdlib.h>
 //#include <util.h>
 
+#include "tcvm.h"
+
 /**
  * use os_port.h defines instead of sha1.h
  */
 //#include <sha1.h>
-#include "axtls/os_port.h"
+#include <axtls/os_port.h>
 
 /**
  * openbsd compat
@@ -43,7 +45,7 @@
 #define freezero(a, b) free(a)
 #endif
 
-#include "axtls/crypto.h"
+#include <axtls/crypto.h>
 #define SHA1_DIGEST_LENGTH SHA1_SIZE
 
 #ifndef MINIMUM

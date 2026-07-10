@@ -77,6 +77,10 @@ if (NOT DEFINED LIBJPEG_TURBO_AUTO_FETCH)
   set(LIBJPEG_TURBO_AUTO_FETCH ON)
 endif()
 
+if (NOT DEFINED AXTLS_AUTO_FETCH)
+  set(AXTLS_AUTO_FETCH ON)
+endif()
+
 if(TCVM_SHARED)
   add_library(tcvm SHARED)
 else()
@@ -130,6 +134,7 @@ set(CMAKE_MODULE_PATH
   "${TCVM_DEPOT_TOOLS_DIR}/libjpeg-turbo/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/sqlite3/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/mbedtls/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/axtls/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/skia/cmake"
   "${CMAKE_SOURCE_DIR}/modules"
 )
@@ -157,6 +162,9 @@ foreach(TCVM_DEP_CACHE_VAR
     MbedTLS_LIBRARY
     MbedCrypto_LIBRARY
     MbedX509_LIBRARY
+    AXTLS_DIR
+    AXTLS_INCLUDE_DIR
+    AXTLS_LIBRARY
     SKIA_CONFIG_INCLUDE_DIR
     SKIA_CORE_INCLUDE_DIR
     SKIA_UTILS_INCLUDE_DIR
@@ -176,6 +184,13 @@ if(NOT USE_MADLER_ZLIB)
     tcvm_auto_fetch_zlibng()
   endif()
 endif()
+
+# Find axTLS
+include("${TCVM_DEPOT_TOOLS_DIR}/axtls/cmake/AutoFetchAxTLS.cmake")
+if(AXTLS_AUTO_FETCH)
+  tcvm_auto_fetch_axtls()
+endif()
+find_package(AxTLS REQUIRED)
 
 if(TARGET_WINCE)
   if(NOT DEFINED MINIZIP_DIR)
@@ -253,7 +268,7 @@ endif()
 add_subdirectory(third_party) 
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
-  target_link_libraries(tcvm PRIVATE zlibstatic png_static JPEG::JPEG SQLite::SQLite3 MINIZIP::MINIZIP)
+  target_link_libraries(tcvm PRIVATE zlibstatic png_static JPEG::JPEG SQLite::SQLite3 MINIZIP::MINIZIP AxTLS::AxTLS)
   if(NOT TARGET_WINCE)
     target_link_libraries(tcvm PRIVATE
       MbedTLS::mbedtls
@@ -264,6 +279,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
 else()
   target_link_libraries(tcvm zlibstatic)
   target_link_libraries(tcvm MINIZIP::MINIZIP)
+  target_link_libraries(tcvm AxTLS::AxTLS)
   target_link_libraries(tcvm png_static)
   target_link_libraries(tcvm JPEG::JPEG)
   target_link_libraries(tcvm ${SQLITE3_LIBRARIES})
@@ -311,28 +327,6 @@ set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
 
 set(SOURCES
-    ${TC_SRCDIR}/axtls/aes.c
-    ${TC_SRCDIR}/axtls/asn1.c
-    ${TC_SRCDIR}/axtls/bigint.c
-    ${TC_SRCDIR}/axtls/crypto_misc.c
-    ${TC_SRCDIR}/axtls/hmac.c
-    ${TC_SRCDIR}/axtls/os_port.c
-    ${TC_SRCDIR}/axtls/loader.c
-    ${TC_SRCDIR}/axtls/md5.c
-    ${TC_SRCDIR}/axtls/md2.c
-    ${TC_SRCDIR}/axtls/openssl.c
-    ${TC_SRCDIR}/axtls/p12.c
-    ${TC_SRCDIR}/axtls/rsa.c
-    ${TC_SRCDIR}/axtls/rc4.c
-    ${TC_SRCDIR}/axtls/sha1.c
-    ${TC_SRCDIR}/axtls/sha256.c
-    ${TC_SRCDIR}/axtls/sha384.c
-    ${TC_SRCDIR}/axtls/sha512.c
-    ${TC_SRCDIR}/axtls/x509.c
-    ${TC_SRCDIR}/axtls/tls1.c
-    ${TC_SRCDIR}/axtls/tls1_svr.c
-    ${TC_SRCDIR}/axtls/tls1_clnt.c
-    
     ${TC_SRCDIR}/openbsd/libutil/pkcs5_pbkdf2.c
 
     ${TC_SRCDIR}/tcvm/tcthread.c
@@ -556,7 +550,7 @@ endif()
 
 include_directories(${TC_SRCDIR})
 include_directories(${TC_SRCDIR}/nm/ui/darwin)
-include_directories(${TC_SRCDIR}/axtls)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/axtls)
 include_directories(${TC_SRCDIR}/dx)
 include_directories(${TC_SRCDIR}/event)
 include_directories(${TC_SRCDIR}/event/android)
@@ -666,6 +660,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
     "${JPEG_LIBRARIES}"
     "${SQLITE3_LIBRARIES}"
     "${MBEDTLS_LIBRARIES}"
+    "${AXTLS_LIBRARY}"
   )
   if(TCVM_ENABLE_SKIA)
     set(TCVM_XCODE_ARCHIVE_DEPENDENCIES

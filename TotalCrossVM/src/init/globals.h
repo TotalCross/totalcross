@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -227,10 +228,6 @@ extern int32 WSACount;
 
 // xml/xml_Tokenizer.c
 extern bool xmlInitialized;
-
-// ssl_SSL.c
-extern Hashtable htSSLSocket;
-extern Heap heapSSLSocket;
 
 #ifdef ANDROID
 extern jmethodID jshowCamera,jgetNativeResolutions,jgetNativeVideoResolutions,jgetDefaultToString,jzxing;

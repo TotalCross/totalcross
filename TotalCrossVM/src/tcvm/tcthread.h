@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -102,7 +103,6 @@ extern DECLARE_MUTEX(omm);
 extern DECLARE_MUTEX(tcz);
 extern DECLARE_MUTEX(metAndCls);
 extern DECLARE_MUTEX(screen);
-extern DECLARE_MUTEX(htSSL);
 extern DECLARE_MUTEX(createdHeaps);
 extern DECLARE_MUTEX(alloc);
 extern DECLARE_MUTEX(fonts);

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -256,11 +257,6 @@ int32 WSACount = 0;
 // xml/xml_Tokenizer.c
 bool xmlInitialized = false;
 
-// ssl_SSL.c
-Hashtable htSSLSocket = { 0 };
-Heap heapSSLSocket = NULL;
-DECLARE_MUTEX(htSSL);
-
 #ifdef ANDROID
 jmethodID jshowCamera;
 jmethodID jgetNativeResolutions;
@@ -324,7 +320,6 @@ bool initGlobals()
    INIT_MUTEX(metAndCls);
    INIT_MUTEX(alloc);
    INIT_MUTEX(screen);
-   INIT_MUTEX(htSSL); 
    INIT_MUTEX(createdHeaps);
    INIT_MUTEX(fonts);
    INIT_MUTEX(mutexes);
@@ -347,7 +342,6 @@ void destroyGlobals()
    DESTROY_MUTEX(tcz);
    DESTROY_MUTEX(metAndCls);
    DESTROY_MUTEX(screen);
-   DESTROY_MUTEX(htSSL);
    DESTROY_MUTEX(createdHeaps);
    DESTROY_MUTEX(alloc);
    DESTROY_MUTEX(fonts);
