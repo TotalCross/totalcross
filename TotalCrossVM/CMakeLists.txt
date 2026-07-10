@@ -87,6 +87,27 @@ else()
   add_library(tcvm STATIC)
 endif()
 
+# qrcode does not compile with _MSC_VER, so qrcodegen is mandatory for MSVC.
+set(TC_QRCODE_MSVC_COMPATIBLE OFF)
+set(TC_QRCODE_USE_QRCODEGEN_DEFAULT ON)
+if(MSVC OR CMAKE_C_SIMULATE_ID STREQUAL "MSVC")
+  set(TC_QRCODE_MSVC_COMPATIBLE ON)
+endif()
+
+option(TC_QRCODE_USE_QRCODEGEN
+  "Use qrcodegen instead of qrcode to generate QR codes"
+  ${TC_QRCODE_USE_QRCODEGEN_DEFAULT})
+
+if(TC_QRCODE_MSVC_COMPATIBLE AND NOT TC_QRCODE_USE_QRCODEGEN)
+  message(FATAL_ERROR "TC_QRCODE_USE_QRCODEGEN must be ON when compiling with _MSC_VER")
+endif()
+
+if(TC_QRCODE_USE_QRCODEGEN)
+  target_compile_definitions(tcvm PRIVATE TC_QRCODE_USE_QRCODEGEN=1)
+else()
+  target_compile_definitions(tcvm PRIVATE TC_QRCODE_USE_QRCODEGEN=0)
+endif()
+
 # Force using madler zlib on wince instead of zlib-ng, which isn't supported
 if(NOT DEFINED USE_MADLER_ZLIB)
   if(TARGET_WINCE)
@@ -326,6 +347,12 @@ endif(TCVM_ENABLE_SKIA)
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
 
+if(TC_QRCODE_USE_QRCODEGEN)
+  set(TC_QRCODE_SOURCES ${TC_SRCDIR}/nm/qrcode/win/qrcodegen.c)
+else()
+  set(TC_QRCODE_SOURCES ${TC_SRCDIR}/nm/qrcode/qrcode.c)
+endif()
+
 set(SOURCES
     ${TC_SRCDIR}/nm/crypto/PBKDF2WithHmacSHA1.c
 
@@ -459,14 +486,12 @@ endif(UNIX AND NOT (DEFINED ANDROID_ABI OR APPLE))
 if(MSVC)
   set(TC_MSVC_SOURCES
     ${TC_SRCDIR}/util/winsockLib.c
-    ${TC_SRCDIR}/nm/qrcode/win/qrcodegen.c
   )
 endif(MSVC)
 
 if(NOT MSVC)
   set(TC_NOT_MSVC_SOURCES
     ${TC_SRCDIR}/nm/lang/posix/cpproc.c
-    ${TC_SRCDIR}/nm/qrcode/qrcode.c
   )
 endif(NOT MSVC)
 
@@ -616,7 +641,7 @@ add_definitions(-DTOTALCROSS -DTC_EXPORTS)
 link_directories(${PROJECT_SOURCE_DIR})
 
 # add the library
-set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
+set(LIBRARY_ARGS ${SOURCES} ${TC_QRCODE_SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
 # Set C/CXX flags
