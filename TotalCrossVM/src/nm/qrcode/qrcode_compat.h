@@ -23,7 +23,7 @@
 #ifndef __bool_true_false_are_defined
   #define __bool_true_false_are_defined 1
 #endif
-#include "win/qrcodegen.h"
+#include "qrcodegen.h"
 
 typedef struct TCQRCode {
     uint8_t modules[qrcodegen_BUFFER_LEN_MAX];
