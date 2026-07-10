@@ -703,6 +703,10 @@ endif()
 # XCode Properties
 if(CMAKE_GENERATOR STREQUAL Xcode)
   # Fold prebuilt native dependencies into libtcvm.a at archive creation time.
+  get_target_property(TC_QRCODE_LIBRARY_PATH ${TC_QRCODE_LIBRARY} IMPORTED_LOCATION)
+  if(NOT TC_QRCODE_LIBRARY_PATH)
+    message(FATAL_ERROR "Unable to resolve the selected QR Code static library")
+  endif()
   set(TCVM_XCODE_ARCHIVE_DEPENDENCIES
     "${PNG_LIBRARY}"
     "${ZLIB_LIBRARY}"
@@ -711,6 +715,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
     "${SQLITE3_LIBRARIES}"
     "${MBEDTLS_LIBRARIES}"
     "${AXTLS_LIBRARY}"
+    "${TC_QRCODE_LIBRARY_PATH}"
   )
   if(TCVM_ENABLE_SKIA)
     set(TCVM_XCODE_ARCHIVE_DEPENDENCIES
