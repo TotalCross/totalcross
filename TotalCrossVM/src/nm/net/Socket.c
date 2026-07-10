@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -107,40 +108,6 @@ TC_API void tnS_readWriteBytes_Biib(NMParams p) // totalcross/net/Socket native 
    else
       p->retI = retCount;
 }
-//////////////////////////////////////////////////////////////////////////
-// Used by axTLS as socket I/O function.
-int tcSocketReadWrite(int fd, CharP buf, int32 count, bool isRead)
-{
-   int32 written = 0;
-   int32 retCount;
-   TCObject socket;
-   int32 timeout;
-   Err err;
-
-   LOCKVAR(htSSL);
-   socket = (TCObject)htGetPtr(&htSSLSocket, fd);
-   UNLOCKVAR(htSSL);
-
-   if (!socket) // guich@tc113_14
-      return -1;
-
-   if (isRead)
-      timeout = Socket_readTimeout(socket);
-   else
-      timeout = Socket_writeTimeout(socket);
-
-   do
-   {
-      err = socketReadWriteBytes(fd, timeout, buf, 0 + written, count - written, &retCount, isRead);
-      if (retCount == 0) // Gracefully closed by the remote, just break the loop.
-         break;
-      if (retCount > 0)
-         written += retCount;
-   }
-   while (written < count && err == NO_ERROR);
-   return (err == NO_ERROR) ? written : -1;
-}
-
 #ifdef ENABLE_TEST_SUITE
 #include "Socket_test.h"
 #endif

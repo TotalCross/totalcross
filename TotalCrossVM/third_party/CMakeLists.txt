@@ -82,6 +82,9 @@ endif()
 # TotalCross uses its own wrapper around libpng.
 target_sources(tcvm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/png/PngLoader.c")
 
+target_sources(tcvm PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/axtls/TotalCrossAxTLSPort.c")
+target_include_directories(tcvm PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/axtls")
+
 # TotalCross adapts its Stream objects to the minizip-ng compatibility API.
 target_sources(tcvm PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/minizip/MinizipIO.c")
 target_include_directories(tcvm PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/minizip")

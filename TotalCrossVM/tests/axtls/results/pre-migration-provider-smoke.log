@@ -1,0 +1,109 @@
+Testing video drivers...
+SDL_VIDEODRIVER available: cocoa offscreen dummy
+SDL_VIDEODRIVER selected : cocoa
+SDL_RENDER_DRIVER available: metal opengl opengles2 software
+SDL_RENDER_DRIVER selected : software
+SDL_PIXEL_FORMAT: SDL_PIXELFORMAT_ARGB8888
+[START] provider matrix
+[INFO] creating default provider factory for TLSv1.2
+[INFO] default TLSv1.2: starting request
+[INFO] default TLSv1.2: opening TCP socket on port 18612
+[INFO] default TLSv1.2: TCP socket opened
+[INFO] default TLSv1.2: starting TLS handshake
+[INFO] default TLSv1.2: TLS handshake returned
+[INFO] default TLSv1.2: TLS payload sent
+[INFO] default TLSv1.2: socket closed
+[PASS] default TLSv1.2
+[INFO] creating default provider factory for TLSv1.3
+[INFO] default TLSv1.3 unsupported (FFFF8880): starting request expected to fail with Error Code: FFFF8880
+[INFO] default TLSv1.3 unsupported (FFFF8880): opening TCP socket on port 19612
+[INFO] default TLSv1.3 unsupported (FFFF8880): TCP socket opened
+[INFO] default TLSv1.3 unsupported (FFFF8880): starting TLS handshake
+[INFO] default TLSv1.3 unsupported (FFFF8880): TLS handshake returned
+[INFO] default TLSv1.3 unsupported (FFFF8880): socket closed
+[PASS] default TLSv1.3 unsupported (FFFF8880)
+[INFO] creating default provider factory for TLSv1.2 ECDSA
+[INFO] default TLSv1.2 ECDSA: starting request
+[INFO] default TLSv1.2 ECDSA: opening TCP socket on port 20612
+[INFO] default TLSv1.2 ECDSA: TCP socket opened
+[INFO] default TLSv1.2 ECDSA: starting TLS handshake
+[INFO] default TLSv1.2 ECDSA: TLS handshake returned
+[INFO] default TLSv1.2 ECDSA: TLS payload sent
+[INFO] default TLSv1.2 ECDSA: socket closed
+[PASS] default TLSv1.2 ECDSA
+[INFO] creating base provider factory for TLSv1.2
+[INFO] base TLSv1.2: starting request
+[INFO] base TLSv1.2: opening TCP socket on port 18612
+[INFO] base TLSv1.2: TCP socket opened
+[INFO] base TLSv1.2: starting TLS handshake
+[INFO] base TLSv1.2: TLS handshake returned
+[INFO] base TLSv1.2: TLS payload sent
+[INFO] base TLSv1.2: socket closed
+[PASS] base TLSv1.2
+[INFO] creating base provider factory for TLSv1.3
+[INFO] base TLSv1.3 rejected: starting request expected to fail
+[INFO] base TLSv1.3 rejected: opening TCP socket on port 19612
+[INFO] base TLSv1.3 rejected: TCP socket opened
+[INFO] base TLSv1.3 rejected: starting TLS handshake
+[INFO] base TLSv1.3 rejected: socket close ignored
+[PASS] base TLSv1.3 rejected
+[INFO] creating base provider factory for TLSv1.2 ECDSA
+[INFO] base TLSv1.2 ECDSA rejected: starting request expected to fail
+[INFO] base TLSv1.2 ECDSA rejected: opening TCP socket on port 20612
+[INFO] base TLSv1.2 ECDSA rejected: TCP socket opened
+[INFO] base TLSv1.2 ECDSA rejected: starting TLS handshake
+[INFO] base TLSv1.2 ECDSA rejected: socket close ignored
+[PASS] base TLSv1.2 ECDSA rejected
+[PASS] provider matrix complete
+tuMW_exit_i
+[START] provider matrix
+[INFO] creating default provider factory for TLSv1.2
+[INFO] default TLSv1.2: starting request
+[INFO] default TLSv1.2: opening TCP socket on port 18612
+[INFO] default TLSv1.2: TCP socket opened
+[INFO] default TLSv1.2: starting TLS handshake
+[INFO] default TLSv1.2: TLS handshake returned
+[INFO] default TLSv1.2: TLS payload sent
+[INFO] default TLSv1.2: socket closed
+[PASS] default TLSv1.2
+[INFO] creating default provider factory for TLSv1.3
+[INFO] default TLSv1.3 unsupported (FFFF8880): starting request expected to fail with Error Code: FFFF8880
+[INFO] default TLSv1.3 unsupported (FFFF8880): opening TCP socket on port 19612
+[INFO] default TLSv1.3 unsupported (FFFF8880): TCP socket opened
+[INFO] default TLSv1.3 unsupported (FFFF8880): starting TLS handshake
+[INFO] default TLSv1.3 unsupported (FFFF8880): TLS handshake returned
+[INFO] default TLSv1.3 unsupported (FFFF8880): socket closed
+[PASS] default TLSv1.3 unsupported (FFFF8880)
+[INFO] creating default provider factory for TLSv1.2 ECDSA
+[INFO] default TLSv1.2 ECDSA: starting request
+[INFO] default TLSv1.2 ECDSA: opening TCP socket on port 20612
+[INFO] default TLSv1.2 ECDSA: TCP socket opened
+[INFO] default TLSv1.2 ECDSA: starting TLS handshake
+[INFO] default TLSv1.2 ECDSA: TLS handshake returned
+[INFO] default TLSv1.2 ECDSA: TLS payload sent
+[INFO] default TLSv1.2 ECDSA: socket closed
+[PASS] default TLSv1.2 ECDSA
+[INFO] creating base provider factory for TLSv1.2
+[INFO] base TLSv1.2: starting request
+[INFO] base TLSv1.2: opening TCP socket on port 18612
+[INFO] base TLSv1.2: TCP socket opened
+[INFO] base TLSv1.2: starting TLS handshake
+[INFO] base TLSv1.2: TLS handshake returned
+[INFO] base TLSv1.2: TLS payload sent
+[INFO] base TLSv1.2: socket closed
+[PASS] base TLSv1.2
+[INFO] creating base provider factory for TLSv1.3
+[INFO] base TLSv1.3 rejected: starting request expected to fail
+[INFO] base TLSv1.3 rejected: opening TCP socket on port 19612
+[INFO] base TLSv1.3 rejected: TCP socket opened
+[INFO] base TLSv1.3 rejected: starting TLS handshake
+[INFO] base TLSv1.3 rejected: socket close ignored
+[PASS] base TLSv1.3 rejected
+[INFO] creating base provider factory for TLSv1.2 ECDSA
+[INFO] base TLSv1.2 ECDSA rejected: starting request expected to fail
+[INFO] base TLSv1.2 ECDSA rejected: opening TCP socket on port 20612
+[INFO] base TLSv1.2 ECDSA rejected: TCP socket opened
+[INFO] base TLSv1.2 ECDSA rejected: starting TLS handshake
+[INFO] base TLSv1.2 ECDSA rejected: socket close ignored
+[PASS] base TLSv1.2 ECDSA rejected
+[PASS] provider matrix complete

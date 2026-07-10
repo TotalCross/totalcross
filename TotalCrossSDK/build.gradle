@@ -393,6 +393,11 @@ def featureSmokeSdkJar = file('dist/totalcross-sdk.jar')
 def featureSmokeSources = fileTree('src/test/resources/modernjava/smoke') {
 	include '*.java'
 }
+def axtlsProviderSmokeClassesDir = layout.buildDirectory.dir('axtls-provider-smoke/classes')
+def axtlsProviderSmokeSdkJar = file('dist/totalcross-sdk.jar')
+def axtlsProviderSmokeSources = fileTree('src/test/resources/axtls') {
+	include '*.java'
+}
 
 tasks.register('compileModernJavaFeatureSmoke', JavaCompile) {
 	group = 'verification'
@@ -441,6 +446,55 @@ tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
             platformArg
         ]
     }
+}
+
+tasks.register('compileAxtlsProviderSmoke', JavaCompile) {
+	group = 'verification'
+	description = 'Compiles the axTLS/default-provider TLS smoke app against the generated SDK.'
+
+	source axtlsProviderSmokeSources
+	classpath = files(axtlsProviderSmokeSdkJar)
+	destinationDirectory = axtlsProviderSmokeClassesDir
+	options.encoding = 'UTF-8'
+	options.release.set(17)
+
+	doFirst {
+		if (!axtlsProviderSmokeSdkJar.isFile()) {
+			throw new GradleException('Run ./gradlew-agent dist -x test before compiling the axTLS provider smoke app.')
+		}
+	}
+}
+
+tasks.register('deployAxtlsProviderSmoke', JavaExec) {
+	group = 'verification'
+	description = 'Deploys the axTLS/default-provider TLS smoke app with the generated SDK.'
+	dependsOn 'copySdkDependencies', 'compileAxtlsProviderSmoke'
+
+	mainClass = 'tc.Deploy'
+	classpath = files(axtlsProviderSmokeSdkJar) + fileTree('dist/libs') {
+		include '*.jar'
+	}
+	workingDir axtlsProviderSmokeClassesDir.get().asFile
+
+	doFirst {
+		def os = System.getProperty('os.name').toLowerCase()
+		def platformArg
+
+		if (os.contains('win')) {
+			platformArg = '-win32'
+		} else if (os.contains('mac')) {
+			platformArg = '-macos'
+		} else if (os.contains('linux')) {
+			platformArg = '-linux'
+		} else {
+			throw new GradleException("Unsupported operating system: ${System.getProperty('os.name')}")
+		}
+
+		args = [
+			'axtls/AxTLSProviderSmoke.class',
+			platformArg
+		]
+	}
 }
 
 build.finalizedBy(deployTcbaselang, deployTcbaseutil, deployTcbasemisc, deployTcui)

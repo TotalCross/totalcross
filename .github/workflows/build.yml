@@ -301,7 +301,8 @@ jobs:
           TotalCrossVM/deps/totalcross-depot-tools/libpng/local \
           TotalCrossVM/deps/totalcross-depot-tools/libjpeg-turbo/local \
           TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local \
-          TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local
+          TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local \
+          TotalCrossVM/deps/totalcross-depot-tools/axtls/local
 
     - name: Upload Linux build artifacts
       uses: actions/upload-artifact@v7
