@@ -81,13 +81,21 @@ if (NOT DEFINED AXTLS_AUTO_FETCH)
   set(AXTLS_AUTO_FETCH ON)
 endif()
 
+if (NOT DEFINED QRCODE_AUTO_FETCH)
+  set(QRCODE_AUTO_FETCH ON)
+endif()
+
+if (NOT DEFINED QRCODEGEN_AUTO_FETCH)
+  set(QRCODEGEN_AUTO_FETCH ON)
+endif()
+
 if(TCVM_SHARED)
   add_library(tcvm SHARED)
 else()
   add_library(tcvm STATIC)
 endif()
 
-# qrcode does not compile with _MSC_VER, so qrcodegen is mandatory for MSVC.
+# qrcodegen is the default backend and is mandatory for _MSC_VER.
 set(TC_QRCODE_MSVC_COMPATIBLE OFF)
 set(TC_QRCODE_USE_QRCODEGEN_DEFAULT ON)
 if(MSVC OR CMAKE_C_SIMULATE_ID STREQUAL "MSVC")
@@ -149,6 +157,8 @@ if(NOT EXISTS "${TCVM_DEPOT_TOOLS_DIR}/deps.yml")
 endif()
 
 set(CMAKE_MODULE_PATH
+  "${TCVM_DEPOT_TOOLS_DIR}/qrcode/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/qrcodegen/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/zlib-ng/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/minizip-ng/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/libpng/cmake"
@@ -186,6 +196,12 @@ foreach(TCVM_DEP_CACHE_VAR
     AXTLS_DIR
     AXTLS_INCLUDE_DIR
     AXTLS_LIBRARY
+    QRCODE_DIR
+    QRCODE_INCLUDE_DIR
+    QRCODE_LIBRARY
+    QRCODEGEN_DIR
+    QRCODEGEN_INCLUDE_DIR
+    QRCODEGEN_LIBRARY
     SKIA_CONFIG_INCLUDE_DIR
     SKIA_CORE_INCLUDE_DIR
     SKIA_UTILS_INCLUDE_DIR
@@ -212,6 +228,22 @@ if(AXTLS_AUTO_FETCH)
   tcvm_auto_fetch_axtls()
 endif()
 find_package(AxTLS REQUIRED)
+
+if(TC_QRCODE_USE_QRCODEGEN)
+  include("${TCVM_DEPOT_TOOLS_DIR}/qrcodegen/cmake/AutoFetchQRCodeGen.cmake")
+  if(QRCODEGEN_AUTO_FETCH)
+    tcvm_auto_fetch_qrcodegen()
+  endif()
+  find_package(QRCodeGen REQUIRED)
+  set(TC_QRCODE_LIBRARY QRCodeGen::QRCodeGen)
+else()
+  include("${TCVM_DEPOT_TOOLS_DIR}/qrcode/cmake/AutoFetchQRCode.cmake")
+  if(QRCODE_AUTO_FETCH)
+    tcvm_auto_fetch_qrcode()
+  endif()
+  find_package(QRCode REQUIRED)
+  set(TC_QRCODE_LIBRARY QRCode::QRCode)
+endif()
 
 if(TARGET_WINCE)
   if(NOT DEFINED MINIZIP_DIR)
@@ -289,7 +321,7 @@ endif()
 add_subdirectory(third_party) 
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
-  target_link_libraries(tcvm PRIVATE zlibstatic png_static JPEG::JPEG SQLite::SQLite3 MINIZIP::MINIZIP AxTLS::AxTLS)
+  target_link_libraries(tcvm PRIVATE zlibstatic png_static JPEG::JPEG SQLite::SQLite3 MINIZIP::MINIZIP AxTLS::AxTLS ${TC_QRCODE_LIBRARY})
   if(NOT TARGET_WINCE)
     target_link_libraries(tcvm PRIVATE
       MbedTLS::mbedtls
@@ -299,6 +331,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
   endif()
 else()
   target_link_libraries(tcvm zlibstatic)
+  target_link_libraries(tcvm ${TC_QRCODE_LIBRARY})
   target_link_libraries(tcvm MINIZIP::MINIZIP)
   target_link_libraries(tcvm AxTLS::AxTLS)
   target_link_libraries(tcvm png_static)
@@ -346,12 +379,6 @@ endif(TCVM_ENABLE_SKIA)
 
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
-
-if(TC_QRCODE_USE_QRCODEGEN)
-  set(TC_QRCODE_SOURCES ${TC_SRCDIR}/nm/qrcode/win/qrcodegen.c)
-else()
-  set(TC_QRCODE_SOURCES ${TC_SRCDIR}/nm/qrcode/qrcode.c)
-endif()
 
 set(SOURCES
     ${TC_SRCDIR}/nm/crypto/PBKDF2WithHmacSHA1.c
@@ -606,15 +633,13 @@ include_directories(${TC_SRCDIR}/tcvm)
 include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
 
-if(MSVC)
-  include_directories(${TC_SRCDIR}/nm/qrcode/win)
-  if(TARGET_WINCE)
-    include_directories(${TC_SRCDIR}/core/wince) # Only include this folder for WinCE!
-  endif()
-else()
-  include_directories(${TC_SRCDIR}/nm/qrcode)
+if(MSVC AND TARGET_WINCE)
+  include_directories(${TC_SRCDIR}/core/wince) # Only include this folder for WinCE!
+endif()
+
+if(NOT MSVC)
   include_directories(${TC_SRCDIR}/nm/lang/posix)
-endif(MSVC)
+endif()
 
 # add_definitions
 if(DEFINED ANDROID_ABI)
@@ -641,7 +666,7 @@ add_definitions(-DTOTALCROSS -DTC_EXPORTS)
 link_directories(${PROJECT_SOURCE_DIR})
 
 # add the library
-set(LIBRARY_ARGS ${SOURCES} ${TC_QRCODE_SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
+set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
 # Set C/CXX flags
