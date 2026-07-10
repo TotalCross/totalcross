@@ -1,14 +1,14 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 #include "tcvm.h"
-#ifdef _MSC_VER
-#include "win/qrcodegen.h"
-#else
-#include "qrcode.h"
-#endif
+#include "qrcode_compat.h"
 
 TC_API void tqQRC_nativeGetBytes_sii(NMParams p) {
     uint8_t version = p->i32[1];
     uint8_t ecc = p->i32[0]; //Error correction 
-    uint8_t* qrcodeBytes;
     TCObject text = p->obj[1];
     int y;
     int x;
@@ -16,47 +16,29 @@ TC_API void tqQRC_nativeGetBytes_sii(NMParams p) {
     TCObject byteMatrix;
     TCObjectArray out; 
     CharP textChars = String2CharP(text);
-{
-#if defined WIN32 || defined WINCE
-    uint8_t qrcode[qrcodegen_BUFFER_LEN_MAX];
-    uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
-    
-    qrcodegen_encodeText(textChars, tempBuffer, qrcode, ecc, version, version, qrcodegen_Mask_AUTO, true);
-    size = qrcodegen_getSize(qrcode);
-#else
-    QRCode qrcode;
-    qrcodeBytes = xmalloc(sizeof(uint8_t) * qrcode_getBufferSize(version));
-    qrcode_initText(&qrcode, qrcodeBytes, version, ecc, textChars);
+    TCQRCode qrcode;
+
+    tcQRCodeInitText(&qrcode, version, ecc, textChars);
     xfree(textChars);
-    size = qrcode.size;
-#endif
-        byteMatrix = createArrayObject(p->currentContext, "[[&B", size);
-	out = (TCObjectArray)ARRAYOBJ_START(byteMatrix);
-        for(y = 0; y < size; y++, out++) {
-            *out = createByteArray(p->currentContext, size);
-            {
-                uint8_t* byteArrayWithInfoForTheQRCode = ARRAYOBJ_START(*out);
-                for(x = 0; x < size; x++) {
-#if defined WIN32 || defined WINCE
-                    if(qrcodegen_getModule(qrcode, x, y)) {
-#else
-                    if(qrcode_getModule(&qrcode, x, y)) {
-#endif
-                
+
+    size = tcQRCodeGetSize(&qrcode);
+    byteMatrix = createArrayObject(p->currentContext, "[[&B", size);
+    out = (TCObjectArray)ARRAYOBJ_START(byteMatrix);
+    for(y = 0; y < size; y++, out++) {
+        *out = createByteArray(p->currentContext, size);
+        {
+            uint8_t* byteArrayWithInfoForTheQRCode = ARRAYOBJ_START(*out);
+            for(x = 0; x < size; x++) {
+                if(tcQRCodeGetModule(&qrcode, x, y)) {
 						byteArrayWithInfoForTheQRCode[x] = 0xFF; //11111111
-                    } else {
-                        byteArrayWithInfoForTheQRCode[x] = 0; //00000000
-                    }
+                } else {
+                    byteArrayWithInfoForTheQRCode[x] = 0; //00000000
                 }
             }
-            setObjectLock(*out, UNLOCKED);
         }
+        setObjectLock(*out, UNLOCKED);
     }
-#ifdef _MSC_VER
-
-#else
-    xfree(qrcodeBytes);
-#endif
+    tcQRCodeDispose(&qrcode);
     p->retO = byteMatrix;
     setObjectLock(p->retO, UNLOCKED);
 }
