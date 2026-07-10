@@ -778,7 +778,9 @@ jobs:
       run: |
         cmake ../ \
           -GXcode \
-          -DCMAKE_SYSTEM_NAME=iOS
+          -DCMAKE_SYSTEM_NAME=iOS \
+          -DCMAKE_OSX_SYSROOT=iphoneos \
+          -DCMAKE_OSX_ARCHITECTURES=arm64
         ruby -pi -e "gsub(\"config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'x86_64'\", \"config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'arm64'\")" Podfile
         pod install
         /usr/libexec/PlistBuddy -c "Add :DisableBuildSystemDeprecationDiagnostic bool" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings || true
