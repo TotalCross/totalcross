@@ -327,7 +327,7 @@ set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
 
 set(SOURCES
-    ${TC_SRCDIR}/openbsd/libutil/pkcs5_pbkdf2.c
+    ${TC_SRCDIR}/nm/crypto/PBKDF2WithHmacSHA1.c
 
     ${TC_SRCDIR}/tcvm/tcthread.c
     ${TC_SRCDIR}/tcvm/tcclass.c

@@ -196,3 +196,5 @@ and the regression comparison uses:
 2026-07-10 / Codex: The post-migration CMake smoke passed the same six cases. The Android arm64-v8a Gradle build found and linked `axtls/local/android/arm64-v8a/lib/libaxtls.a`; all published Linux, Windows, Android, iOS, iOS-simulator, and macOS archives were fetched locally without adding them to version control.
 
 2026-07-10 / Codex: Final static checks found no supported-source references to `tcSocketReadWrite`, `htSSLSocket`, `heapSSLSocket`, or `htSSL`; `TotalCrossVM/src/axtls` is absent. `git diff --check`, the final CMake build, and the final Android native build passed.
+
+2026-07-10 / Codex: The PBKDF2 implementation was moved from TotalCrossVM into the TotalCross axTLS distribution. Depot-tools now carries `2.1.5-tc.1`, an RFC 2104-safe HMAC-SHA1 wrapper, `axtls_pbkdf2_sha1`, CTest vectors, provenance and a curated changelog. The consumer calls only the new prebuilt API; release publication is tracked by the depot-tools axTLS workflow.

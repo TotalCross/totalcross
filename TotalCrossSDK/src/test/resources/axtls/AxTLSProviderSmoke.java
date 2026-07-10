@@ -5,11 +5,14 @@
 package axtls;
 
 import totalcross.io.File;
+import totalcross.crypto.provider.PBKDF2WithHmacSHA1Factory;
 import totalcross.net.Socket;
 import totalcross.net.ssl.SSLContext;
 import totalcross.net.ssl.SSLSocket;
 import totalcross.net.ssl.SSLSocketFactory;
 import totalcross.ui.MainWindow;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.PBEKeySpec;
 
 public class AxTLSProviderSmoke extends MainWindow {
   private static final int CONNECT_TIMEOUT_MILLIS = 10000;
@@ -42,6 +45,7 @@ public class AxTLSProviderSmoke extends MainWindow {
     }
 
     int failures = 0;
+    failures += expectPbkdf2Native();
     report("[INFO] creating default provider factory for TLSv1.2");
     failures += expectSuccess("default TLSv1.2", defaultFactory(), tls12Port);
     report("[INFO] creating default provider factory for TLSv1.3");
@@ -65,6 +69,33 @@ public class AxTLSProviderSmoke extends MainWindow {
       saveResults();
       exit(1);
     }
+  }
+
+  private int expectPbkdf2Native() {
+    report("[INFO] PBKDF2 native: deriving RFC 6070 vector");
+    try {
+      SecretKey key = PBKDF2WithHmacSHA1Factory.generateSecret(
+          new PBEKeySpec("password".toCharArray(), "salt".getBytes(), 1, 160));
+      if (!"0c60c80f961f0e71f3a9b524af6012062fe037a6".equals(toHex(key.getEncoded()))) {
+        report("[FAIL] PBKDF2 native: unexpected derived key");
+        return 1;
+      }
+      report("[PASS] PBKDF2 native");
+      return 0;
+    } catch (Exception e) {
+      report("[FAIL] PBKDF2 native: " + message(e));
+      return 1;
+    }
+  }
+
+  private String toHex(byte[] bytes) {
+    char[] value = new char[bytes.length * 2];
+    final char[] digits = "0123456789abcdef".toCharArray();
+    for (int i = 0; i < bytes.length; i++) {
+      value[i * 2] = digits[(bytes[i] >>> 4) & 15];
+      value[i * 2 + 1] = digits[bytes[i] & 15];
+    }
+    return new String(value);
   }
 
   private SSLSocketFactory baseFactory() {
