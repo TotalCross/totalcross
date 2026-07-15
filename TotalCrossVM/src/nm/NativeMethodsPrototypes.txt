@@ -125,7 +125,7 @@ TC_API void tugG_fillCircle_iii(NMParams p);
 TC_API void tugG_getPixel_ii(NMParams p);
 TC_API void tugG_setPixel_ii(NMParams p);
 TC_API void tugG_drawLine_iiii(NMParams p);
-TC_API void tugG_drawLine_iiiii(NMParams p);
+TC_API void tugG_drawLine_iiiip(NMParams p);
 TC_API void tugG_drawDots_iiii(NMParams p);
 TC_API void tugG_drawRect_iiii(NMParams p);
 TC_API void tugG_fillRect_iiii(NMParams p);
@@ -135,6 +135,13 @@ TC_API void tugG_drawPolyline_IIi(NMParams p);
 TC_API void tugG_drawText_siii(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
 TC_API void tugG_fillRoundRect_iiiii(NMParams p);
+TC_API void tugG_drawRRect_rib(NMParams p);
+TC_API void tugRR_containsCorner_ddddddi(NMParams p);
+TC_API void tugRR_leftBoundForY_dddddddd(NMParams p);
+TC_API void tugRR_rightBoundForY_dddddddd(NMParams p);
+TC_API void tugRR_ellipseLeftBound_ddddd(NMParams p);
+TC_API void tugRR_ellipseRightBound_ddddd(NMParams p);
+TC_API void tugRR_ellipseDx_ddd(NMParams p);
 TC_API void tugG_copyRect_giiiiii(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
 TC_API void tugG_drawImage_iiib(NMParams p);
@@ -1050,7 +1057,7 @@ TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by, int c);
+TC_API void tugG_drawLine_iiiip(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by, totalcross.ui.gfx.Paint paint);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1087,6 +1094,34 @@ TC_API void tugG_drawRoundRect_iiiii(NMParams p) // totalcross/ui/gfx/Graphics n
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillRoundRect_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillRoundRect(int x, int y, int width, int height, int r);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawRRect_rib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRRect(totalcross.ui.gfx.RRect rrect, int color, boolean filled);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugRR_containsCorner_ddddddi(NMParams p) // totalcross/ui/gfx/RRect native private static boolean containsCorner(double px, double py, double x, double y, double rx, double ry, int corner);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugRR_leftBoundForY_dddddddd(NMParams p) // totalcross/ui/gfx/RRect native private static double leftBoundForY(double py, double left, double top, double bottom, double topRx, double topRy, double bottomRx, double bottomRy);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugRR_rightBoundForY_dddddddd(NMParams p) // totalcross/ui/gfx/RRect native private static double rightBoundForY(double py, double right, double top, double bottom, double topRx, double topRy, double bottomRx, double bottomRy);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugRR_ellipseLeftBound_ddddd(NMParams p) // totalcross/ui/gfx/RRect native private static double ellipseLeftBound(double cx, double cy, double rx, double ry, double py);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugRR_ellipseRightBound_ddddd(NMParams p) // totalcross/ui/gfx/RRect native private static double ellipseRightBound(double cx, double cy, double rx, double ry, double py);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugRR_ellipseDx_ddd(NMParams p) // totalcross/ui/gfx/RRect native private static double ellipseDx(double rx, double ry, double dy);
 {
 }
 //////////////////////////////////////////////////////////////////////////
