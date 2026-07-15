@@ -46,7 +46,7 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
       - name: Download packaged SDK
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: package.yml
           workflow_conclusion: success
@@ -54,7 +54,7 @@ jobs:
           path: release-assets
 
       - name: Download packaged jars
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: package.yml
           workflow_conclusion: success
