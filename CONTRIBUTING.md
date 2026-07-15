@@ -1,3 +1,10 @@
+<!--
+Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+
+SPDX-License-Identifier: LGPL-2.1-only
+-->
+
 # Contribution guidelines
 
 ## Table of contents
@@ -287,7 +294,8 @@ The commit body is optional, but encouraged when:
 - there are trade-offs or side effects
 
 Guidelines:
-- Wrap lines at 80 characters
+- Wrap lines at 80 characters. In Markdown links written as `[text](url)`,
+  only `text` counts toward the limit.
 - Explain why the change was made, not just what changed
 - Mention architecture here when relevant (for example, `arm64`, `x86`, `x64`)
 - For `revert` commits, reference the commit hash or hashes being reverted

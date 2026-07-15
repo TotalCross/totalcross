@@ -1,3 +1,8 @@
+# Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
 name: Commit Message Check
 
 on:
@@ -40,7 +45,7 @@ jobs:
           TITLE_WORD_COUNT = re.compile(r'^[^ ]+([ \t]+[^ ]+){2,}$', re.S)
           TITLE_LENGTH = re.compile(r'^([^\n]{1,80})(\n.*)?$', re.S)
           BLANK_LINE = re.compile(r'^[^\n]+(\n\n.+)?$', re.S)
-          BODY_LINE_LENGTH = re.compile(r'^[^\n]+(\n[^\n]{0,80})*$', re.S)
+          MARKDOWN_LINK = re.compile(r'\[([^\]]*)\]\([^)]+\)')
 
           def run(*args):
             return subprocess.check_output(args, text=True).strip()
@@ -71,6 +76,9 @@ jobs:
                 text=True,
             ).rstrip("\n")
 
+          def body_line_length(line):
+            return len(MARKDOWN_LINK.sub(r"\1", line))
+
           def validate(commit, message):
             title = message.split("\n", 1)[0]
             failures = []
@@ -89,8 +97,11 @@ jobs:
               failures.append(
                   "If a commit body is present, it must be separated from the title by a blank line."
               )
-            if not BODY_LINE_LENGTH.match(message):
-              failures.append("Each line in the commit body must be 80 characters or less.")
+            if any(body_line_length(line) > 80 for line in message.split("\n")[1:]):
+              failures.append(
+                  "Each line in the commit body must be 80 characters or less, "
+                  "excluding Markdown link URLs."
+              )
 
             return title, failures
 
