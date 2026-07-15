@@ -6,6 +6,7 @@
 package tc.tools.deployer;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -160,8 +161,8 @@ public class Deployer4Android {
 
       }
 
-        if (DeploySettings.isMac()) {
-          try {
+      if (DeploySettings.isMac()) {
+        try {
           // The attribute is optional; avoid treating its absence as a deployment warning.
           Process query = new ProcessBuilder("/usr/bin/xattr", "-p", "com.apple.quarantine", protocExecutable.getAbsolutePath()).start();
           if (query.waitFor() == 0) {
@@ -175,18 +176,18 @@ public class Deployer4Android {
           throw new RuntimeException("Interrupted while removing the macOS quarantine attribute from protoc", e);
         } catch (IOException e) {
           DeployLogger.warn("Could not start xattr to remove the macOS quarantine attribute from protoc; continuing with deployment.");
-          }
         }
-        if (!DeploySettings.isWindows()) {
-          try {
+      }
+      if (!DeploySettings.isWindows()) {
+        try {
           // Also repair a protoc executable restored from an existing SDK cache.
-            Files.setPosixFilePermissions(
-                Paths.get(protocExecutable.getAbsolutePath()),
-                PosixFilePermissions.fromString("rwxr-xr-x"));
-          } catch (IOException e) {
-            throw new RuntimeException("Failed to set execution permission to: " + protocExecutable.getAbsolutePath());
-          }
+          Files.setPosixFilePermissions(
+              Paths.get(protocExecutable.getAbsolutePath()),
+              PosixFilePermissions.fromString("rwxr-xr-x"));
+        } catch (IOException e) {
+          throw new RuntimeException("Failed to set execution permission to: " + protocExecutable.getAbsolutePath());
         }
+      }
 
       final String protocExecutablePath = protocExecutable.getAbsolutePath();
       if (!protocExecutable.exists()) {
@@ -385,7 +386,19 @@ public class Deployer4Android {
     Process encodeProcess = Runtime.getRuntime().exec(encodeCmd, null, new File(DeploySettings.etcDir, "tools/android"));
     IOUtils.copy(new FileInputStream(decodedManifestFile), encodeProcess.getOutputStream());
     encodeProcess.getOutputStream().close();
-    b.input(encodeProcess.getInputStream());
+    byte[] encodedManifest;
+    try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+      IOUtils.copy(encodeProcess.getInputStream(), output);
+      encodedManifest = output.toByteArray();
+    }
+    String encodeError = IOUtils.toString(encodeProcess.getErrorStream(), "UTF-8");
+    if (encodeProcess.waitFor() != 0) {
+      throw new DeployerException("Failed to encode AndroidManifest.xml with protoc: " + encodeError);
+    }
+    if (encodedManifest.length == 0) {
+      throw new DeployerException("protoc encoded an empty AndroidManifest.xml");
+    }
+    b.input(new ByteArrayInputStream(encodedManifest));
 
     // 8. replace icons
     TFile res = new TFile(targetZip, "base/res/");
