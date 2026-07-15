@@ -158,20 +158,28 @@ public class Deployer4Android {
               + protocBaseFolder.getAbsolutePath(), e);
         }
 
+      }
+
         if (DeploySettings.isMac()) {
           try {
-            // Remove quarentine (macOS)
-            new ProcessBuilder("xattr", "-d", "com.apple.quarantine", protocExecutable.getAbsolutePath())
-                .start()
-                .waitFor();
-          } catch (InterruptedException | IOException e) {
-            throw new RuntimeException("Failed to remove protoc from quarentine (xattr -d com.apple.quarantine "
-                + protocExecutable.getAbsolutePath() + ")", e);
+          // The attribute is optional; avoid treating its absence as a deployment warning.
+          Process query = new ProcessBuilder("/usr/bin/xattr", "-p", "com.apple.quarantine", protocExecutable.getAbsolutePath()).start();
+          if (query.waitFor() == 0) {
+            Process remove = new ProcessBuilder("/usr/bin/xattr", "-d", "com.apple.quarantine", protocExecutable.getAbsolutePath()).start();
+            if (remove.waitFor() != 0) {
+              DeployLogger.warn("Could not remove the macOS quarantine attribute from protoc; continuing with deployment.");
+            }
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException("Interrupted while removing the macOS quarantine attribute from protoc", e);
+        } catch (IOException e) {
+          DeployLogger.warn("Could not start xattr to remove the macOS quarantine attribute from protoc; continuing with deployment.");
           }
         }
         if (!DeploySettings.isWindows()) {
           try {
-            // Make executable
+          // Also repair a protoc executable restored from an existing SDK cache.
             Files.setPosixFilePermissions(
                 Paths.get(protocExecutable.getAbsolutePath()),
                 PosixFilePermissions.fromString("rwxr-xr-x"));
@@ -179,7 +187,6 @@ public class Deployer4Android {
             throw new RuntimeException("Failed to set execution permission to: " + protocExecutable.getAbsolutePath());
           }
         }
-      }
 
       final String protocExecutablePath = protocExecutable.getAbsolutePath();
       if (!protocExecutable.exists()) {
