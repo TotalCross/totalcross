@@ -15,7 +15,9 @@ This is the baseline inventory for the planned work, not a claim that JIT/AOT ex
 - **Fallback**: a valid method remains wholly interpreted.
 - **Investigate**: semantics or test evidence need deeper source/application inspection.
 
-The exact per-opcode semantics are in `totalcross-bytecode-reference.md`. Every numeric TotalCross opcode 0–159 appears below; `OPCODE_LENGTH` is excluded because it is a count.
+The exact per-opcode semantics are in `totalcross-bytecode-reference.md`. Every numeric TotalCross opcode 0–159 appears below; `OPCODE_LENGTH` is excluded because it is a count. The table remains a backend roadmap: Milestone 2 implemented the contract and registry, not the frontend/interpreter/backend cells labeled POC.
+
+The machine-readable authority added in Milestone 2 is `TotalCrossVM/src/tcvm/ir/tcir_opcode_registry.def`. Every opcode has three independent fields: decoder shape, planned lowering class, and current POC status. The lowering classes are `direct`, `lowered`, `runtime-helper`, `unsupported-in-poc`, `future`, `obsolete`, `platform-specific`, and `needs-investigation`; the POC status is `supported`, `fallback`, or `investigate`. Keeping these axes separate prevents a future direct lowering from being mistaken for already implemented frontend or backend support.
 
 ## TotalCross opcode coverage
 
@@ -81,9 +83,9 @@ The requested target matrix and current workflow reality differ. The plan must t
 | Android arm64-v8a | root `TotalCrossVM/CMakeLists.txt` with Android toolchain | required | off initially | required | device tests and executable-memory policy; legacy `Android.mk` is out of scope |
 | iOS arm64 | root `TotalCrossVM/CMakeLists.txt` with iOS generator/toolchain | required where feasible | off by policy | required/primary | generated C statically linked; legacy `TCVM.xcodeproj` is out of scope |
 
-## Test status accounting
+## Registry and test status accounting
 
-The repository contains converter tests under `TotalCrossSDK/src/test/java/tc/tools/converter/modernjava` and native test declarations/fixtures under `TotalCrossVM/src/tests` and `tcvm_test.h`. This document does not mark an opcode “tested” merely because a handler or test function name exists. Milestone 0 must generate a machine-readable cross-check with these states:
+The repository contains converter tests under `TotalCrossSDK/src/test/java/tc/tools/converter/modernjava` and native test declarations/fixtures under `TotalCrossVM/src/tests` and `tcvm_test.h`. This document does not mark an opcode “tested” merely because a handler or test function name exists. The long-term execution states remain:
 
 ```text
 no_test_found
@@ -95,6 +97,10 @@ aot_target_passed
 ```
 
 Every matrix change must name the test and the platform result. A forced-backend test mode must fail if a method expected to compile silently falls back.
+
+Milestone 2 adds two focused CTest entries behind `TC_BUILD_IR_TESTS`. `tcir-core` verifies the hand-built `add`, `abs`, and `sumTo` functions, compares two dumps of each function with the committed golden text under `TotalCrossVM/src/tests/ir/golden`, checks ten stable negative diagnostics, and validates that all 160 registry rows have a disposition. `tcir-opcode-sources` runs `scripts/validate-tcir-opcodes.py`, which cross-checks C definitions, Java numeric constants, runtime dispatch, this matrix, and the bytecode reference. The observed macOS arm64 Debug and ASan/UBSan builds both passed 2/2 CTest entries. This evidence establishes the contract and inventory only; no opcode has yet reached `differential_ir_passed`.
+
+The cross-check also emits the current known discrepancy: `TCConstants.bcTClassNames` contains 158 entries and omits `MONITOR_Enter2` and `MONITOR_Exit2`, while every numeric/dispatch source and the TCIR registry contain all 160. Correcting that Java presentation array remains a separately scoped compatibility change.
 
 ## Exit condition for broad backend enablement
 

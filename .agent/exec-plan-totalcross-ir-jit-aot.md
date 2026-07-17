@@ -23,7 +23,11 @@ Correctness, portability, diagnostics, and safe fallback are the primary outcome
 - [x] (2026-07-17T05:14:37Z) Traced class serialization, Java conversion, all 160 TotalCross opcodes, `executeMethod`, runtime class/method/field structures, frames, calls, exceptions, monitors, and GC roots.
 - [x] (2026-07-17T05:14:37Z) Created the eight factual/proposed architecture documents and the initial compatibility inventory without changing analyzed source files or VM behavior.
 - [x] (2026-07-17T05:41:55Z) Validated nine new artifacts: all headers and required plan sections are present, all 160 C opcode names occur in both the reference and matrix, Java numeric values match C, runtime dispatch matches C, no Portuguese-language hits were found, whitespace checks passed, and scoped source status is unchanged.
-- [ ] Milestone 2: turn the TCIR proposal into versioned C interfaces, an opcode mapping registry, a structural verifier, and canonical text golden fixtures.
+- [x] (2026-07-17T16:40:39Z) Implemented the owned TCIR version 1 C contract, canonical printer, structural/type verifier, and backend-facing read-only accessors under `TotalCrossVM/src/tcvm/ir`.
+- [x] (2026-07-17T16:40:39Z) Added the 160-row macro registry and repository-wide source cross-check, preserving the `bcTClassNames` 158/159 discrepancy as an explicit notice.
+- [x] (2026-07-17T16:40:39Z) Added valid `add`, `abs`, and `sumTo` golden fixtures plus ten stable negative verifier cases and the optional `TC_BUILD_IR_TESTS`/`check-tcir` CMake path.
+- [x] (2026-07-17T16:40:39Z) Validated Milestone 2 on macOS arm64 with strict warnings, Clang static analysis, normal CTest, and a separate ASan/UBSan build; committed the main implementation as `96c17be4b` and the completed metadata/non-null contract as `a3a5e33fa`.
+- [x] (2026-07-17T16:40:39Z) Milestone 2: turned the TCIR proposal into versioned C interfaces, an opcode mapping registry, a structural verifier, and canonical text golden fixtures.
 - [ ] Milestone 3: implement the partial TotalCross-bytecode-to-TCIR frontend for the proof-of-concept subset.
 - [ ] Milestone 4: implement the TCIR reference interpreter and prove differential equivalence with `executeMethod`.
 - [ ] Milestone 5: integrate pinned SLJIT and implement the baseline JIT subset behind an experimental build/runtime flag.
@@ -60,6 +64,10 @@ The native build has one source of truth: `TotalCrossVM/CMakeLists.txt`. `TotalC
 
 SLJIT's upstream architecture coverage fits most TotalCross CPU targets, but executable-memory policy is separate from CPU support. macOS requires a compliant Hardened Runtime/`MAP_JIT`/W^X configuration, Android requires device and distribution-policy validation, and this plan keeps iOS JIT off in favor of statically linked AOT.
 
+The root CMake configuration resolves the full VM dependency graph even when only the focused `check-tcir` target is requested. The first Milestone 2 configure populated ignored `TotalCrossVM/deps/totalcross-depot-tools/*/local` artifacts before building the independent TCIR target. This does not add TCIR dependencies, but it explains why subsequent focused configurations are much faster and why those generated artifacts must remain uncommitted.
+
+A one-way canonical printer is sufficient for stable Milestone 2 fixtures. The committed golden files carry repository copyright comments that the test loader removes before byte-for-byte comparison with printer output; no parser or text-as-cache promise was needed.
+
 ## Decision Log
 
 - Decision: Keep the current TCZ and 4-byte TotalCross bytecode as the canonical shipping input for the initial architecture. Rationale: it preserves compatibility and makes the current interpreter a stable oracle. Date: 2026-07-17.
@@ -78,6 +86,11 @@ SLJIT's upstream architecture coverage fits most TotalCross CPU targets, but exe
 - Decision: Prefer runtime helpers for resolution, calls, allocation, complex object/array operations, checks, monitors, and exceptions until layouts/effects are documented and tested. Rationale: direct lowering must not bypass GC, lazy linking, or error ordering. Date: 2026-07-17.
 - Decision: Make `TotalCrossVM/CMakeLists.txt` the exclusive native-build integration point. Ignore legacy `TCVM.xcodeproj` and `TotalCrossVM/src/jni/Android.mk`; do not edit or validate against them. Rationale: the user confirmed that every supported native build now originates at the root TotalCrossVM CMake project. Date: 2026-07-17.
 - Decision: Documentation in this repository is English-only. Rationale: explicit user instruction received while drafting the analysis artifacts. Date: 2026-07-17.
+- Decision: Implement TCIR version 1 as an owned C99 library with opaque public structures, optional allocator callbacks, copied caller arrays, explicit destruction, and read-only iteration APIs. Rationale: this makes ownership and backend boundaries testable without exposing allocation layout or depending on the VM runtime. Date: 2026-07-17.
+- Decision: Keep builders mechanically permissive for cross-function values and malformed terminators, then make `tcirVerifyFunction` the single mandatory structural/type rejection boundary. Rationale: negative fixtures must prove stable verifier diagnostics rather than being short-circuited by inconsistent builder checks. Date: 2026-07-17.
+- Decision: Give the opcode registry separate decoder-shape, lowering-class, and current-POC-status fields. Rationale: encoding shape, eventual implementation strategy, and present support are different facts and must not be collapsed into one ambiguous status. Date: 2026-07-17.
+- Decision: Require a deterministic printer but omit a TCIR text parser in Milestone 2. Rationale: one-way golden comparison proves stable diagnostics/output without accidentally creating a new shipping or cache format. Date: 2026-07-17.
+- Decision: Expose focused native validation as the optional root-CMake flag `TC_BUILD_IR_TESTS` and target `check-tcir`. Rationale: TCIR tests need a real runnable target while normal VM behavior and backend selection remain unchanged. Date: 2026-07-17.
 
 ## Outcomes & Retrospective
 
@@ -85,51 +98,55 @@ The completed analysis stage produced a traceable description of the existing fo
 
 The source inventory also corrected two potentially dangerous assumptions before implementation: the runtime input is register bytecode rather than a JVM stack machine, and the package already named `converter.ir` is target-shaped rather than the independent IR. The opcode inventory found the missing final monitor names in one Java text table, which justifies an automated single-source coverage check in Milestone 2.
 
+Milestone 2 delivered a standalone versioned contract without changing `executeMethod`, TCZ data, or runtime dispatch. The owned graph and verifier now reject structural/type errors before execution can exist, and canonical dumps for `add`, `abs`, and `sumTo` are byte-identical across repeated runs. The three-field registry gives every opcode 0–159 one decoder shape, lowering disposition, and POC decision, while the source validator proves agreement with `opcodes.h`, Java numeric constants, runtime dispatch, and both architecture inventories.
+
+The focused normal and ASan/UBSan builds each passed both CTest entries on macOS arm64. These results establish memory-safe ownership for the exercised construction/destruction paths and deterministic verification; they do not establish frontend correctness, interpreter equivalence, backend performance, or non-host platform support.
+
 This section must be updated after every completed milestone with delivered behavior, validation evidence, deferred scope, and lessons. At full completion it must state exactly which opcode and platform sets are production-ready, which remain experimental, and why.
 
 ## Editorial Report
 
-This is an interim factual report for the completed analysis/documentation stage. It is not the final report required by `.agent/PLANS.md`; Milestone 9 must reconcile it with actual implementation, tests, measurements, and `Outcomes & Retrospective`.
+This is an interim factual report through the completed TCIR-contract stage. It is not the final report required by `.agent/PLANS.md`; Milestone 9 must reconcile it with actual frontend, execution, backend, platform, and performance evidence.
 
 ### Editorial Summary
 
-The project now has a source-grounded map from Java class parsing through TotalCross bytecode execution and GC, plus a staged design for a backend-neutral TCIR, an SLJIT baseline JIT, and generated-C AOT. No runtime implementation was changed at this stage.
+The project now has a source-grounded map from Java class parsing through TotalCross bytecode execution and GC plus an implemented backend-neutral TCIR version 1 contract. Developers can construct owned functions, verify structural/type/GC/effect invariants, emit deterministic text, and classify every TotalCross opcode before any execution backend accepts it. No runtime execution path changed.
 
 ### Original Plan versus Actual Outcome
 
-The requested outcome for this task was only the ExecPlan and explicit architecture documents. That boundary was met. The future compiler, VM integration, and benchmarks remain planned work and are not represented as completed.
+Milestone 1 produced only the ExecPlan and architecture documents. Milestone 2 then implemented the planned C contract, verifier, printer, registry, fixtures, and focused tests. The optional text parser was omitted because stable one-way golden output met acceptance without creating another input format. The frontend, TCIR interpreter, VM integration, native backends, and benchmarks remain planned work and are not represented as completed.
 
 ### What Changed
 
-Eight new documents under `docs/architecture/bytecode` and this ExecPlan were added. No existing analyzed source file was edited. During drafting, all repository documentation was standardized to English following the user's instruction.
+The initial eight documents under `docs/architecture/bytecode` and this ExecPlan remain the design record. Milestone 2 added `TotalCrossVM/src/tcvm/ir/tcir.h`, the owned implementation/private layout, `tcir_verify.c`, `tcir_dump.c`, the opcode registry/map, focused fixtures and tests under `TotalCrossVM/src/tests/ir`, the `TC_BUILD_IR_TESTS` CMake option, and `scripts/validate-tcir-opcodes.py`.
 
 ### Decisions and Trade-offs
 
-The proposed POC selects a simplified-SSA, block/value IR; a frame ABI over current typed arenas; reference homes in `regO`; explicit exception status; method-atomic fallback; SLJIT as the baseline; and deterministic generated C as AOT. These decisions prioritize proof and portability over peak performance.
+TCIR version 1 uses opaque owned C structures, simplified-SSA values and block arguments, typed homes, explicit source metadata/effects, stable diagnostics, and a deterministic one-way printer. Builders copy temporary arrays but the verifier—not the builder—is the canonical malformed-graph rejection boundary. The future execution design still selects a frame ABI over current typed arenas, reference homes in `regO`, explicit exception status, method-atomic fallback, SLJIT as the baseline, and deterministic generated C as AOT.
 
 ### Unexpected Problems and Discoveries
 
-The existing converter IR is opcode-shaped, float identity is normalized, the class record is unversioned inside TCZ, and one Java opcode-name table omits values 158/159. These discoveries materially shaped the verifier, type, and inventory requirements.
+The existing converter IR is opcode-shaped, float identity is normalized, the class record is unversioned inside TCZ, and one Java opcode-name table omits values 158/159. During implementation, root CMake also proved to resolve the full native dependency graph before the focused target can run. These discoveries shaped the independent type model, explicit three-axis opcode registry, source validator, and ignored-artifact handling.
 
 ### Validation and Measurable Results
 
-At this stage, validation is static: all required source/artifact paths existed; the 160 C opcode definitions matched runtime dispatch and the Java numeric constants; every name appeared in both the reference and compatibility matrix; all nine new files had the required header and no detected Portuguese-language terms; every required ExecPlan heading was present; no-index whitespace checks and `git diff --check` passed; and scoped analyzed-source status was empty. No performance benchmark is valid yet because no execution implementation changed.
+Milestone 2 validation observed: strict C99 compilation with `-Wall -Wextra -Werror`; Clang static analysis with no diagnostics; `ninja -C build-ir check-tcir` with 2/2 CTest entries passing; and the same 2/2 result in `build-ir-sanitize` with ASan/UBSan flags. `tcir-core` covered three byte-identical golden fixtures, ten stable negative diagnostics, and 160 registry dispositions. `tcir-opcode-sources` proved all 160 entries agree across C, Java numeric constants, dispatch, reference, and matrix while reporting the known two-name presentation gap. No execution or performance measurement is valid yet.
 
 ### Useful Evidence and Examples
 
-The bytecode reference enumerates all 160 opcodes. The TCIR design includes a deterministic textual loop example. The JIT/AOT document records the mixed-mode ABI and platform gates. The compatibility matrix distinguishes current interpreter behavior from POC and planned backend coverage.
+The bytecode reference enumerates all 160 opcodes. `TotalCrossVM/src/tests/ir/golden/sumTo.tcir` is a deterministic loop example, and `TotalCrossVM/src/tests/ir/tcir_tests.c` contains the accepted and rejected constructions. Commits `96c17be4b` and `a3a5e33fa` are the executable Milestone 2 implementation. The compatibility matrix continues to distinguish an implemented contract from unimplemented POC execution coverage.
 
 ### Limitations, Remaining Work, and Open Questions
 
-No TCIR parser, verifier, interpreter, native backend, runtime integration, or platform execution test exists yet. The helper `may_gc` closure, thread-suspension protocol, class/artifact lifecycle, volatile/atomic semantics, and real-world legacy `JUMP_regI` corpus require deeper inspection during implementation.
+No TotalCross-bytecode frontend, TCIR text parser, TCIR interpreter, native backend, runtime integration, or non-host platform execution test exists yet. The verifier covers the structural forms exposed by version 1, but the helper `may_gc` closure, thread-suspension protocol, class/artifact lifecycle, volatile/atomic semantics, and real-world legacy `JUMP_regI` corpus require deeper inspection in later milestones.
 
 ### Possible Article Angles
 
-A future technical article could explain how a register-bytecode interpreter can gain multiple execution tiers without changing its shipping format, or how reusing managed register arenas simplifies the first correct GC contract for generated code.
+A future technical article could explain how to establish a verifiable IR boundary before writing a bytecode frontend, how a three-axis opcode registry prevents roadmap status from masquerading as implementation coverage, or how reusing managed register arenas can simplify the first correct GC contract for generated code.
 
 ### Suggested Narrative
 
-Start with the existing Java-to-register-bytecode path, show why the target-shaped converter IR cannot serve multiple backends, introduce verified TCIR as the semantic boundary, then explain how the same frame/helper contract supports an interpreter, low-latency SLJIT, and portable generated C. End with evidence from differential tests and measured trade-offs once they exist.
+Start with the existing Java-to-register-bytecode path, show why the target-shaped converter IR cannot serve multiple backends, then introduce the owned TCIR contract, canonical verifier, deterministic fixtures, and complete registry as the boundary established before execution. Continue with the future frontend and reference interpreter, then explain how the same frame/helper contract can support low-latency SLJIT and portable generated C. End with differential evidence and measured trade-offs once those later milestones exist.
 
 ### Claims Requiring Human Review
 
@@ -157,13 +174,13 @@ The produced artifacts are the eight documents under `docs/architecture/bytecode
 
 ### Milestone 2: make TCIR a versioned, verifiable contract
 
-Create a small C library under `TotalCrossVM/src/tcvm/ir`, tentatively `tcir.h`, `tcir.c`, `tcir_verify.c`, `tcir_dump.c`, and `tcir_opcode_map.c`. The public header declares opaque module/function/block/value structures, type/effect/op/terminator enums, source metadata, diagnostics, and `TC_IR_VERSION`. Keep allocation ownership explicit and return errors rather than exiting. Add a single generated or macro-driven opcode registry that maps all values 0–159 to a decoder classification and planned TCIR/helper status; use it to cross-check `opcodes.h`, runtime dispatch, docs, and tests.
+This milestone is complete. The C99 library under `TotalCrossVM/src/tcvm/ir` consists of `tcir.h`, `tcir.c`, `tcir_internal.h`, `tcir_verify.c`, `tcir_dump.c`, `tcir_opcode_map.h`, `tcir_opcode_map.c`, and `tcir_opcode_registry.def`. The public header declares opaque module/function/block/value/symbol structures, type/effect/op/terminator enums, source metadata, stable diagnostics, allocator ownership, read-only iteration, and `TC_IR_VERSION`. APIs return errors rather than exiting.
 
-Define the canonical text grammar and deterministic ordering in code and golden fixtures. Implement construction APIs and structural/type verification without executing functions. The verifier checks continuation slots, targets, definitions, block arguments, types, return signature, handler edges, symbol kinds, unchecked-array proofs, helper effects, GC homes, and internal-address lifetime. It reports method identity and TC PC in every diagnostic.
+The macro registry maps all values 0–159 to decoder shape, lowering class, and current POC status. Compile-time checks bind every row to `opcodes.h`; the C validator checks count, ordering, duplicates, and dispositions; and `scripts/validate-tcir-opcodes.py` compares C, Java numeric constants, runtime dispatch, docs, and tests. The canonical printer uses stable numeric values, numeric block ordering, quoted identities, ordered effects, and explicit metadata. No parser was needed.
 
-Manually construct `add`, `abs`, and `sumTo` TCIR fixtures plus malformed fixtures for undefined values, mismatched block arguments, invalid terminators, wrong return type, and missing GC homes. Keep a serializer/parser out of the critical path: a stable printer is required; a text parser is optional unless it materially improves fixtures.
+The verifier checks continuation-slot source PCs, targets, definition ownership/order, block arguments, types, return signatures, handler edges, symbol kinds, unchecked-array proofs, helper effects, GC homes, non-null proofs, and internal-address lifetime. Every diagnostic includes stable code, function identity, and TC PC. Tests manually construct `add`, `abs`, and `sumTo` plus ten malformed cases: the five required cases and additional continuation, helper-effect, unchecked-proof, internal-address, and non-null-proof failures.
 
-Acceptance is observed when the three valid fixtures verify and produce byte-identical text on repeated runs, all invalid fixtures fail with stable diagnostic codes, and the registry test proves that every opcode has one disposition. No interpreter or native code exists yet. Update `totalcross-ir-design.md`, `compatibility-matrix.md`, Progress, Decision Log, and the interim Editorial Report with actual names and results.
+Acceptance was observed on macOS arm64: both normal Debug and ASan/UBSan `check-tcir` runs passed 2/2 CTest entries; repeated valid dumps matched the committed goldens byte-for-byte; all ten invalid functions produced repeatable codes/messages/identity/TC PC; Clang static analysis emitted no diagnostics; and the registry/source validators covered all 160 opcodes. No interpreter or native generated code exists yet. The executable implementation is commits `96c17be4b` and `a3a5e33fa`.
 
 ### Milestone 3: partial TotalCross bytecode to TCIR frontend
 
@@ -229,7 +246,7 @@ Finally, reconcile every Progress item, Decision Log entry, discovery, validatio
 
 ## Concrete Steps
 
-All commands below run from `/Users/flsobral/repos/totalcross-github` unless a command starts with `cd`. Future agents should use the equivalent checkout path rather than hard-coding this user's path in source or scripts.
+All commands below run from the repository root unless a command starts with `cd`. Build scripts and source files must not hard-code a checkout path.
 
 Reproduce the initial source and opcode inventory:
 
@@ -249,12 +266,15 @@ Before each implementation milestone, inspect only scoped local changes and pres
     git status --short -- plans docs/architecture/bytecode TotalCrossVM/src/tcvm TotalCrossVM/src/tests TotalCrossVM/CMakeLists.txt TotalCrossVM/deps/totalcross-depot-tools.ref
     git diff --stat -- plans docs/architecture/bytecode TotalCrossVM/src/tcvm TotalCrossVM/src/tests TotalCrossVM/CMakeLists.txt
 
-Milestone 2 should first add the IR library and focused native tests, then expose it to CMake without enabling a backend. The exact test command must follow the repository's native test harness discovered at implementation time. At minimum configure a focused host build without cleaning unrelated artifacts:
+Milestone 2 exposes the IR library and focused native tests without enabling a backend. Its actual host commands are:
 
     cmake -S TotalCrossVM -B build-ir -DCMAKE_BUILD_TYPE=Debug -G Ninja -DTC_BUILD_IR_TESTS=ON
-    ninja -C build-ir
+    ninja -C build-ir check-tcir
 
-`TC_BUILD_IR_TESTS` is a proposed focused-test option to add in Milestone 2, not a current repository option. If implementation chooses a different name, update this command first. The existing `ENABLE_TEST_SUITE` preprocessor macro is not currently exposed as an equivalent CMake option, so passing `-DENABLE_TEST_SUITE=ON` to CMake would not prove that tests were built. If the current CMake configuration has no runnable focused native-test target, add one as part of Milestone 2 rather than claiming tests ran. Record the target and command in this plan. Use ASan/UBSan in a separate host build where supported; do not impose unsupported sanitizer flags on all platforms.
+`TC_BUILD_IR_TESTS` is optional and off by default. `check-tcir` builds `libtcir.a` and `tcir_tests`, then runs the `tcir-core` and `tcir-opcode-sources` CTest entries. The existing `ENABLE_TEST_SUITE` preprocessor macro is unrelated. The observed sanitizer configuration was:
+
+    cmake -S TotalCrossVM -B build-ir-sanitize -DCMAKE_BUILD_TYPE=Debug -G Ninja -DTC_BUILD_IR_TESTS=ON -DCMAKE_C_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer' -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
+    ninja -C build-ir-sanitize check-tcir
 
 Generate POC converter inputs with the smallest SDK test/task that is available. Use `TotalCrossSDK/gradlew-agent`, keep full Gradle output in its log, and avoid `clean` unless stale artifacts are proven. Example shape, to be replaced by the actual focused test name created in Milestone 3:
 
@@ -350,7 +370,7 @@ The analysis stage produced:
     docs/architecture/bytecode/jit-aot-architecture.md
     docs/architecture/bytecode/compatibility-matrix.md
 
-Milestone 2 is expected to add the TCIR core/verifier/dumper/opcode registry and focused native fixtures/tests. Milestone 3 adds the bytecode decoder/frontend and converter-generated golden fixtures. Milestone 4 adds the TCIR interpreter/differential harness. Milestone 5 adds the optional SLJIT backend, dependency pin/license, executable-memory abstraction, and JIT tests. Milestone 6 adds the C generator, tool, manifest/registry schema, CMake integration, and reproducibility tests. Milestone 7 adds experimental dispatcher policy, runtime thunks, diagnostics, and mixed-mode/GC tests. Milestone 8 grows those artifacts without introducing a second competing IR. Milestone 9 adds recorded platform/benchmark result artifacts and final editorial evidence.
+Milestone 2 delivered the TCIR core/verifier/dumper/opcode registry and focused native fixtures/tests in commits `96c17be4b` and `a3a5e33fa`. Milestone 3 adds the bytecode decoder/frontend and converter-generated golden fixtures. Milestone 4 adds the TCIR interpreter/differential harness. Milestone 5 adds the optional SLJIT backend, dependency pin/license, executable-memory abstraction, and JIT tests. Milestone 6 adds the C generator, tool, manifest/registry schema, CMake integration, and reproducibility tests. Milestone 7 adds experimental dispatcher policy, runtime thunks, diagnostics, and mixed-mode/GC tests. Milestone 8 grows those artifacts without introducing a second competing IR. Milestone 9 adds recorded platform/benchmark result artifacts and final editorial evidence.
 
 Do not commit generated dependency checkouts, native archives, build directories, generated C, local logs, or benchmark binaries. Small canonical golden text/manifest fixtures may be source artifacts when they are deterministic and reviewed.
 
@@ -399,4 +419,6 @@ Which Windows x86-64 and embedded targets are product-supported rather than aspi
 
 What iOS AOT registration/linking model best fits the root `TotalCrossVM/CMakeLists.txt` target graph, static initialization, dead stripping, and code-signing flow when configured with the supported iOS CMake toolchain/generator? Milestone 6 must answer this entirely in CMake and must not inspect or patch legacy `TCVM.xcodeproj`.
 
-Revision note (2026-07-17): created the initial self-contained plan after source analysis, changed all repository documentation to English, and made root `TotalCrossVM/CMakeLists.txt` the only native-build integration point while excluding legacy `TCVM.xcodeproj` and `Android.mk`, following the user's explicit instructions. The implementation milestones remain unstarted.
+Revision note (2026-07-17): created the initial self-contained plan after source analysis, changed all repository documentation to English, and made root `TotalCrossVM/CMakeLists.txt` the only native-build integration point while excluding legacy `TCVM.xcodeproj` and `Android.mk`, following the user's explicit instructions.
+
+Revision note (2026-07-17, Milestone 2): reconciled the plan with the implemented version 1 owned TCIR API, verifier, one-way canonical printer, three-axis 160-opcode registry, focused CMake tests, source cross-check, normal/sanitizer evidence, and commits `96c17be4b` and `a3a5e33fa`. Milestones 3–9 remain unstarted.
