@@ -13,8 +13,11 @@ from pathlib import Path
 
 BACKENDS = ("executeMethod", "tcir", "sljit")
 WORKLOADS = ("add", "abs", "sumTo")
-WARMUP_COUNT = 5
-SAMPLE_COUNT = 60
+PROFILES = {
+    60: 5,
+    200: 10,
+    1000: 20,
+}
 EXPECTED_PERMUTATIONS = {
     ("executeMethod", "tcir", "sljit"),
     ("tcir", "sljit", "executeMethod"),
@@ -34,10 +37,10 @@ def close_enough(actual, expected):
     return math.isclose(float(actual), float(expected), rel_tol=1e-9, abs_tol=1e-3)
 
 
-def validate_stats(stats, samples, invocation_count):
+def validate_stats(stats, samples, invocation_count, sample_count):
     require(stats["unit"] == "nanoseconds per batch", "unexpected statistics unit")
     require(stats["lower_is_better"] is True, "execution statistics must be lower-is-better")
-    require(stats["sample_count"] == SAMPLE_COUNT, "unexpected statistics sample count")
+    require(stats["sample_count"] == sample_count, "unexpected statistics sample count")
     require(close_enough(stats["mean"], statistics.fmean(samples)), "mean mismatch")
     require(close_enough(stats["median"], statistics.median(samples)), "median mismatch")
     require(
@@ -93,11 +96,22 @@ def validate_artifacts(json_path, csv_path):
     require("TC_BUILD_IR_BENCHMARKS=ON" in build["options"], "benchmark option missing")
 
     protocol = data["protocol"]
-    require(protocol["warmup_count"] == WARMUP_COUNT, "exactly five warmups are required")
-    require(protocol["sample_count"] == SAMPLE_COUNT, "exactly 60 samples are required")
+    sample_count = protocol["sample_count"]
+    require(sample_count in PROFILES, "sample count is not a required benchmark profile")
+    require(
+        protocol["warmup_count"] == PROFILES[sample_count],
+        f"the {sample_count}-sample profile requires {PROFILES[sample_count]} warmups",
+    )
+    require(
+        protocol["order_policy"]
+        == "six backend permutations in round-robin order; counts differ by at most one",
+        "backend order policy mismatch",
+    )
     require(protocol["outlier_policy"] == "no samples excluded or filtered", "outlier policy mismatch")
+    require(json_path.stem == csv_path.stem, "JSON and CSV artifact names must match")
+    require(json_path.stem.endswith(f"-s{sample_count}"), "artifact name does not identify its profile")
     require(len(data["workloads"]) == len(WORKLOADS), "unexpected workload count")
-    require(len(rows) == len(WORKLOADS) * SAMPLE_COUNT * 4, "unexpected CSV row count")
+    require(len(rows) == len(WORKLOADS) * sample_count * 4, "unexpected CSV row count")
     require(all(row["validated"] == "true" for row in rows), "unvalidated CSV sample")
     require(all(row["revision"] == data["repository_revision"] for row in rows), "revision mismatch")
 
@@ -114,7 +128,7 @@ def validate_artifacts(json_path, csv_path):
                 f"correctness evidence missing for {name}")
 
         compile_rows = grouped[(name, "jit_compile", "sljit")]
-        require(len(compile_rows) == SAMPLE_COUNT, f"compile sample count mismatch for {name}")
+        require(len(compile_rows) == sample_count, f"compile sample count mismatch for {name}")
         compile_rows.sort(key=lambda row: int(row["sample"]))
         compile_samples = [int(row["duration_nanoseconds"]) for row in compile_rows]
         require(
@@ -123,14 +137,14 @@ def validate_artifacts(json_path, csv_path):
         )
         require(workload["jit_compile"]["baseline"] == "not_applicable", "compile baseline mismatch")
         require(workload["jit_compile"]["code_bytes"] > 0, f"missing code size for {name}")
-        validate_stats(workload["jit_compile"]["stats"], compile_samples, 1)
+        validate_stats(workload["jit_compile"]["stats"], compile_samples, 1, sample_count)
 
         sample_orders = []
-        for sample in range(1, SAMPLE_COUNT + 1):
+        for sample in range(1, sample_count + 1):
             ordered = []
             for backend in BACKENDS:
                 execution_rows = grouped[(name, "execution", backend)]
-                require(len(execution_rows) == SAMPLE_COUNT, f"execution sample count mismatch: {name}/{backend}")
+                require(len(execution_rows) == sample_count, f"execution sample count mismatch: {name}/{backend}")
                 row = next(row for row in execution_rows if int(row["sample"]) == sample)
                 require(int(row["invocations"]) == invocation_count, "CSV invocation count mismatch")
                 ordered.append((int(row["order_position"]), backend))
@@ -138,7 +152,7 @@ def validate_artifacts(json_path, csv_path):
         counts = Counter(sample_orders)
         require(set(counts) == EXPECTED_PERMUTATIONS, f"missing backend permutation for {name}")
         require(
-            all(count == SAMPLE_COUNT // len(EXPECTED_PERMUTATIONS) for count in counts.values()),
+            max(counts.values()) - min(counts.values()) <= 1,
             f"unbalanced backend order for {name}",
         )
 
@@ -152,7 +166,9 @@ def validate_artifacts(json_path, csv_path):
                 samples == workload["execution"][backend]["raw_nanoseconds"],
                 f"execution raw samples differ between JSON and CSV for {name}/{backend}",
             )
-            validate_stats(workload["execution"][backend]["stats"], samples, invocation_count)
+            validate_stats(
+                workload["execution"][backend]["stats"], samples, invocation_count, sample_count
+            )
 
         baseline_mean = statistics.fmean(execution_samples["executeMethod"])
         for backend in ("tcir", "sljit"):

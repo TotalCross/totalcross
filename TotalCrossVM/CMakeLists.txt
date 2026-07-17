@@ -1050,55 +1050,83 @@ if(TC_BUILD_IR_BENCHMARKS)
   string(REPLACE "\\" "\\\\" TC_BENCHMARK_EFFECTIVE_C_FLAGS "${TC_BENCHMARK_EFFECTIVE_C_FLAGS}")
   string(REPLACE "\"" "\\\"" TC_BENCHMARK_EFFECTIVE_C_FLAGS "${TC_BENCHMARK_EFFECTIVE_C_FLAGS}")
 
-  add_executable(tcir_jit_benchmark
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/tcir_jit_benchmark.c
-  )
-  target_link_libraries(tcir_jit_benchmark PRIVATE
-    tcir_jit
-    $<TARGET_LINKER_FILE:tcvm>
-  )
-  if(NOT MSVC)
-    target_link_libraries(tcir_jit_benchmark PRIVATE m)
-  endif()
-  add_dependencies(tcir_jit_benchmark tcvm)
-  target_compile_definitions(tcir_jit_benchmark PRIVATE
-    TC_BENCHMARK_GIT_REVISION="${TC_BENCHMARK_GIT_REVISION}"
-    TC_BENCHMARK_COMPILER_ID="${CMAKE_C_COMPILER_ID}"
-    TC_BENCHMARK_COMPILER_VERSION="${CMAKE_C_COMPILER_VERSION}"
-    TC_BENCHMARK_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
-    TC_BENCHMARK_GENERATOR="${CMAKE_GENERATOR}"
-    TC_BENCHMARK_TARGET_PROCESSOR="${CMAKE_SYSTEM_PROCESSOR}"
-    TC_BENCHMARK_C_FLAGS="${TC_BENCHMARK_EFFECTIVE_C_FLAGS}"
-  )
-  target_compile_options(tcir_jit_benchmark PRIVATE
-    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
-  )
-  set_target_properties(tcir_jit_benchmark PROPERTIES
-    BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR}"
-    C_STANDARD 11
-    C_STANDARD_REQUIRED YES
-    C_EXTENSIONS NO
-  )
+  function(tc_configure_ir_benchmark_target TARGET_NAME SAMPLE_COUNT WARMUP_COUNT)
+    add_executable(${TARGET_NAME}
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/tcir_jit_benchmark.c
+    )
+    target_link_libraries(${TARGET_NAME} PRIVATE
+      tcir_jit
+      $<TARGET_LINKER_FILE:tcvm>
+    )
+    if(NOT MSVC)
+      target_link_libraries(${TARGET_NAME} PRIVATE m)
+    endif()
+    add_dependencies(${TARGET_NAME} tcvm)
+    target_compile_definitions(${TARGET_NAME} PRIVATE
+      TC_BENCHMARK_GIT_REVISION="${TC_BENCHMARK_GIT_REVISION}"
+      TC_BENCHMARK_COMPILER_ID="${CMAKE_C_COMPILER_ID}"
+      TC_BENCHMARK_COMPILER_VERSION="${CMAKE_C_COMPILER_VERSION}"
+      TC_BENCHMARK_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+      TC_BENCHMARK_GENERATOR="${CMAKE_GENERATOR}"
+      TC_BENCHMARK_TARGET_PROCESSOR="${CMAKE_SYSTEM_PROCESSOR}"
+      TC_BENCHMARK_C_FLAGS="${TC_BENCHMARK_EFFECTIVE_C_FLAGS}"
+      TC_BENCHMARK_CONFIG_SAMPLE_COUNT=${SAMPLE_COUNT}
+      TC_BENCHMARK_CONFIG_WARMUP_COUNT=${WARMUP_COUNT}
+    )
+    target_compile_options(${TARGET_NAME} PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+    )
+    set_target_properties(${TARGET_NAME} PROPERTIES
+      BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR}"
+      C_STANDARD 11
+      C_STANDARD_REQUIRED YES
+      C_EXTENSIONS NO
+    )
+  endfunction()
+
+  tc_configure_ir_benchmark_target(tcir_jit_benchmark 60 5)
+  tc_configure_ir_benchmark_target(tcir_jit_benchmark_200 200 10)
+  tc_configure_ir_benchmark_target(tcir_jit_benchmark_1000 1000 20)
 
   set(TC_BENCHMARK_RESULTS_DIR "${CMAKE_CURRENT_BINARY_DIR}/results")
   string(REPLACE ";" "," TC_BENCHMARK_POWER_MODE_ARGUMENT "${TC_BENCHMARK_POWER_MODE}")
   string(REPLACE ";" "," TC_BENCHMARK_BACKGROUND_LOAD_ARGUMENT "${TC_BENCHMARK_BACKGROUND_LOAD}")
   string(REPLACE ";" "," TC_BENCHMARK_DIRTY_PATHS_ARGUMENT "${TC_BENCHMARK_DIRTY_PATHS}")
   string(SUBSTRING "${TC_BENCHMARK_GIT_REVISION}" 0 12 TC_BENCHMARK_REVISION_ID)
-  set(TC_BENCHMARK_RESULT_BASENAME "tcir-jit-benchmark-${TC_BENCHMARK_REVISION_ID}")
+  set(TC_BENCHMARK_RESULT_PREFIX "tcir-jit-benchmark-${TC_BENCHMARK_REVISION_ID}")
   add_custom_target(run-tcir-jit-benchmark
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_BENCHMARK_RESULTS_DIR}
     COMMAND $<TARGET_FILE:tcir_jit_benchmark>
-      --json ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_BASENAME}.json
-      --csv ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_BASENAME}.csv
+      --json ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s60.json
+      --csv ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s60.csv
       --power-mode "${TC_BENCHMARK_POWER_MODE_ARGUMENT}"
       --background-load "${TC_BENCHMARK_BACKGROUND_LOAD_ARGUMENT}"
       --dirty-paths "${TC_BENCHMARK_DIRTY_PATHS_ARGUMENT}"
     COMMAND ${TC_BENCHMARK_PYTHON_EXECUTABLE}
       ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/validate-tcir-jit-benchmark.py
-      --json ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_BASENAME}.json
-      --csv ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_BASENAME}.csv
-    DEPENDS tcir_jit_benchmark
+      --json ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s60.json
+      --csv ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s60.csv
+    COMMAND $<TARGET_FILE:tcir_jit_benchmark_200>
+      --json ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s200.json
+      --csv ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s200.csv
+      --power-mode "${TC_BENCHMARK_POWER_MODE_ARGUMENT}"
+      --background-load "${TC_BENCHMARK_BACKGROUND_LOAD_ARGUMENT}"
+      --dirty-paths "${TC_BENCHMARK_DIRTY_PATHS_ARGUMENT}"
+    COMMAND ${TC_BENCHMARK_PYTHON_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/validate-tcir-jit-benchmark.py
+      --json ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s200.json
+      --csv ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s200.csv
+    COMMAND $<TARGET_FILE:tcir_jit_benchmark_1000>
+      --json ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s1000.json
+      --csv ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s1000.csv
+      --power-mode "${TC_BENCHMARK_POWER_MODE_ARGUMENT}"
+      --background-load "${TC_BENCHMARK_BACKGROUND_LOAD_ARGUMENT}"
+      --dirty-paths "${TC_BENCHMARK_DIRTY_PATHS_ARGUMENT}"
+    COMMAND ${TC_BENCHMARK_PYTHON_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/validate-tcir-jit-benchmark.py
+      --json ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s1000.json
+      --csv ${TC_BENCHMARK_RESULTS_DIR}/${TC_BENCHMARK_RESULT_PREFIX}-s1000.csv
+    DEPENDS tcir_jit_benchmark tcir_jit_benchmark_200 tcir_jit_benchmark_1000
     USES_TERMINAL
   )
 endif()
