@@ -43,7 +43,11 @@ Correctness, portability, diagnostics, and safe fallback are the primary outcome
 - [x] (2026-07-17T22:20:54Z) Added the off-by-default `TC_BUILD_IR_BENCHMARKS` harness and revision-keyed JSON/CSV validator in `e49acf6a5`, with alternating execution order, oracle checksums, raw samples, descriptive statistics, and host/build metadata.
 - [x] (2026-07-17T22:32:21Z) Expanded the aggregate benchmark in `77d179edc` to require sequential 60-, 200-, and 1,000-sample profiles with 5, 10, and 20 warmups, respectively, and profile-specific artifact validation.
 - [x] (2026-07-17T22:32:21Z) Captured and validated all three post-Milestone-5 macOS arm64 performance profiles under `build/m5-sljit-benchmark/results`, preserving six raw artifacts and recording their hashes and interpretation below for future comparisons.
-- [ ] Milestone 6: implement deterministic portable-C AOT generation, host compilation, registration, and comparison tests.
+- [x] (2026-07-17T23:09:05Z) Extracted the versioned compiled-frame contract into backend-neutral `tcir_compiled.h`, then implemented verified deterministic C generation, exact-identity registry lookup, structured manifest output, and the native `tcaot` host tool in commits `8d738ff66` and `1aa428b74`.
+- [x] (2026-07-17T23:09:05Z) Added default-off `TC_ENABLE_C_AOT`, build-directory-only generated sources, `tcvm_aot_fixture`, byte-for-byte clean regeneration, independent manifest validation, unsupported-input rejection, identity invalidation, and 1,179-case four-way differential execution.
+- [x] (2026-07-17T23:09:05Z) Validated Milestone 6 on macOS arm64 in Debug and Release, AOT-only and default-off configurations, ASan and focused Clang analysis, plus Android arm64-v8a/API 23 and iOS arm64 generated-C compilation; Linux, Windows/MSVC, full iOS linkage, and device execution remain recorded gaps.
+- [x] (2026-07-17T23:09:05Z) Repeated the mandatory 60-, 200-, and 1,000-sample macOS benchmark matrix at revision `1aa428b740124b33830c157eadf08deb5660ea69`, preserving the historical `executeMethod`/TCIR/SLJIT scope and all six validated artifacts for later comparison.
+- [x] (2026-07-17T23:09:05Z) Milestone 6: implemented the deterministic portable-C AOT proof of concept without production runtime selection or source-tree generated artifacts.
 - [ ] Milestone 7: integrate method-atomic mixed-mode dispatch with GC, exception, call, lifecycle, and observability safeguards.
 - [ ] Milestone 8: expand coverage operation family by operation family until every valid opcode has a tested mapping or an explicit retained-fallback decision.
 - [ ] Milestone 9: complete the platform, security, performance, and release-readiness gates; reconcile outcomes and finalize the Editorial Report.
@@ -92,6 +96,12 @@ On the macOS arm64 development host, SLJIT's W^X allocator finalized executable 
 
 Short standalone methods expose transition costs more strongly than generated-code throughput. Both `tcirInterpretFunction` and `tcirJitInvoke` currently allocate invocation scratch, and the TCIR interpreter also verifies and preflights each call; `add` and `abs` therefore remained slower than `executeMethod` in the structured checkpoints. `sumTo(65537)` amortized those costs and made the generated loop observable. The first 30-sample attempt exposed scheduler variance in millisecond-scale batches, so the accepted protocol grew to mandatory 60-, 200-, and 1,000-sample profiles with larger batches rather than filtering outliers. Since 200 and 1,000 are not divisible by six, exact equality among the six execution-order counts is impossible; deterministic round-robin scheduling keeps the difference to at most one.
 
+The first unsupported-AOT negative fixture failed in the canonical verifier before reaching backend eligibility: its synthetic `SWITCH` used source targets and cross-block values without the required slots and block arguments. Repairing the fixture instead of weakening verification preserved the rule that every backend receives only structurally valid TCIR, including for eligibility-rejection tests.
+
+The portable-C generator needs a stable content identity without making a security claim. Milestone 6 uses a deterministic 64-bit FNV-1a digest over semantic TCIR and stable identities for registry matching and regeneration; it is deliberately not an integrity signature or trust boundary. The initial `tcaot` input adapter is the canonical converter-backed POC fixture set, not a general TCZ reader. Production class input, publication, dead-strip-safe registration, and runtime dispatch therefore remain Milestone 7 work.
+
+A broad `scan-build` of the full fixture dependency graph reported 119 findings in pre-existing VM/runtime sources such as `dlmalloc`. A focused scan of the new generator, tool-facing library, generated target, and AOT tests reported no bugs. The focused result is the Milestone 6 evidence; the broad legacy findings were not reclassified as AOT defects or silently discarded.
+
 ## Decision Log
 
 - Decision: Keep the current TCZ and 4-byte TotalCross bytecode as the canonical shipping input for the initial architecture. Rationale: it preserves compatibility and makes the current interpreter a stable oracle. Date: 2026-07-17.
@@ -129,6 +139,12 @@ Short standalone methods expose transition costs more strongly than generated-co
 - Decision: Store raw benchmark JSON/CSV under the ignored build directory with filenames keyed by repository revision, then record paths, hashes, protocol, and summary in this living plan. Rationale: future revisions can coexist for direct comparison without committing machine-specific measurements as source or overwriting the current checkpoint. Date: 2026-07-17.
 - Decision: Treat the current benchmark as standalone-API evidence, including current per-invocation verifier and scratch-allocation costs. Rationale: production dispatcher/frame management arrives in Milestone 7, so removing those costs from this baseline would create a synthetic number that future runtime comparisons could not interpret honestly. Date: 2026-07-17.
 - Decision: Make the aggregate performance target run the 60-, 200-, and 1,000-sample profiles sequentially, with 5, 10, and 20 warmups, and require all six artifacts to validate. Rationale: every future checkpoint must retain both the inexpensive signal and the larger distributions, while sequential execution prevents profiles from competing for host resources. Date: 2026-07-17.
+- Decision: Move `TCCompiledFrame`, result/status types, entry signature, and `TC_RUNTIME_ABI_VERSION` into `tcir_compiled.h`. Rationale: SLJIT and generated C must share one backend-neutral ABI rather than making AOT depend on the JIT interface. Date: 2026-07-17.
+- Decision: Keep `TC_ENABLE_C_AOT` off by default and generate all C/header/manifest files below the selected build directory. Rationale: the proof of concept must not affect ordinary builds or turn derived platform code into maintained source. Date: 2026-07-17.
+- Decision: Emit restricted C11 as a deterministic state machine with lexically sorted registry entries and content-derived escaped symbols. Rationale: this preserves CFG semantics without compiler extensions and makes clean regeneration byte-identical across input order. Date: 2026-07-17.
+- Decision: Use the exact class, method, signature, and semantic-content hash tuple for AOT lookup; treat FNV-1a only as deterministic identity, not cryptographic integrity. Rationale: changed input must fail closed while artifact trust/signing remains a separate production concern. Date: 2026-07-17.
+- Decision: Limit the Milestone 6 host tool to the canonical POC fixtures and keep static registration standalone. Rationale: a general TCZ/runtime adapter and dead-strip-safe publication would cross the Milestone 7 production-dispatch boundary. Date: 2026-07-17.
+- Decision: Repeat the existing three-way performance matrix unchanged after Milestone 6 and test AOT performance only in a future explicitly versioned regime. Rationale: adding AOT would change ordering and workload semantics, making the historical M5/M6 checkpoint incomparable; four-way AOT correctness is established separately. Date: 2026-07-17.
 
 ## Outcomes & Retrospective
 
@@ -180,43 +196,73 @@ The accepted raw artifacts are:
 
 Each JSON preserves host/build/protocol metadata, raw compile/execution samples, descriptive statistics, deltas, percentages, and ratios; each CSV preserves the paired raw observations and execution position. Future comparisons must rerun all three profiles and retain this scope, or label any changed dispatcher, scratch, power, workload, or profile regime explicitly.
 
+Milestone 6 added `tcir_aot` and a native `tcaot` tool behind default-off `TC_ENABLE_C_AOT`. The generator verifies and preflights the complete function set before emitting a restricted C11 state machine, generated declarations, a lexically sorted exact-identity registry, and schema-versioned JSON manifest. Entry names combine escaped class/method/signature components with semantic content hashes. Successful output records generator, TCIR, and runtime ABI versions, aggregate input hash, target options, supported methods, and an empty rejected-method list; unsupported valid TCIR instead returns a structured diagnostic before any output file is written. Registration accepts only an exact class, method, signature, and content-hash match.
+
+The host proof uses the canonical converter-produced `add`, `abs`, and `sumTo` set through `--input poc-fixtures`; it is not yet a general TCZ reader. In Debug and Release builds, seven focused tests passed: core, opcode-source validation, AOT generator behavior, clean determinism, independent manifest validation, differential execution, and SLJIT lifecycle/security. The differential harness performed 1,179 fresh-state `executeMethod`/TCIR/SLJIT/generated-C comparisons with fixed seed `0x4d595df4`. A separate AOT-only configuration passed 6/6 without SLJIT, and the default configuration exposed no AOT target and retained the original 3/3 tests. ASan covered the full AOT/JIT differential graph; ASan/UBSan covered the generator test with Apple leak detection disabled; focused Clang analysis reported no bugs. The broader VM scan produced 119 pre-existing reports outside the new AOT scope.
+
+The accepted Release output under `build/m6-aot-release/aot/poc` has aggregate input hash `290ae3b843d50748` and method hashes `188dacfc7c8a2565` (`abs`), `2e2ae7a59518baec` (`add`), and `bbb376f3c57bafcb` (`sumTo`). `tcir_aot_generated.c` is 8,423 bytes with SHA-256 `14a7842d2a1d9714b3f49823530102062094e2f238680e9f927b4a0f5ad4351b`; its 340-byte header has SHA-256 `d0b47ae9eadfacdf5eefd27cb3af2d436586cad219f0f0c3cb510af6df2609b1`; and its 1,062-byte manifest has SHA-256 `077d3d005ecfb06f36fe05c6dc54b1237d0a16e0fba6eb4a8e97b1591a91e9ca`. The Release object is 2,608 bytes, static library 2,872 bytes, and native host tool 90,152 bytes. These ignored build artifacts are reproducibility evidence, not committed source or cross-platform size claims.
+
+Android NDK `28.2.13676358` compiled `tcir_aot` and the host-generated C as an ELF64 AArch64 object for arm64-v8a/API 23. Apple Clang compiled the same generated C as a Mach-O arm64 object for iPhoneOS with minimum version 12.0. These are cross-compilation checks only: the Android toolchain cannot execute the host generator, and no Android/iOS device, application, static-registration, signing, or packaging test was performed. GCC, Linux, Windows/MSVC, and a full iOS root-CMake application link were unavailable and remain unvalidated.
+
+The mandatory post-Milestone-6 macOS performance checkpoint reused the historical three-way standalone regime so it can be compared with the post-Milestone-5 baseline; generated C was deliberately excluded from performance ordering. It ran at revision `1aa428b740124b33830c157eadf08deb5660ea69` on the same Apple M1 Pro/Darwin 25.5.0 arm64 host class, AC power at 100% battery with Low Power Mode on, no affinity, and no intentional load. The 5/10/20 warmup and 60/200/1,000-sample profiles all validated their 720/2,400/12,000 CSV rows. Mean nanoseconds per invocation and JIT compile microseconds were:
+
+| Samples | Workload | `executeMethod` | TCIR | SLJIT | SLJIT vs `executeMethod` | JIT compile |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 60 | `add` | 50.407 | 237.111 | 72.796 | 44.415% slower | 3.370 |
+| 60 | `abs` | 56.433 | 439.124 | 85.732 | 51.918% slower | 4.750 |
+| 60 | `sumTo(65537)` | 894,197.657 | 4,514,294.334 | 638,306.751 | 28.617% faster (1.401x) | 5.117 |
+| 200 | `add` | 50.869 | 249.645 | 73.323 | 44.143% slower | 3.689 |
+| 200 | `abs` | 68.432 | 568.594 | 99.570 | 45.502% slower | 4.480 |
+| 200 | `sumTo(65537)` | 981,886.484 | 4,849,665.449 | 681,906.699 | 30.551% faster (1.440x) | 5.741 |
+| 1,000 | `add` | 50.177 | 239.150 | 72.966 | 45.419% slower | 3.580 |
+| 1,000 | `abs` | 56.769 | 443.216 | 81.737 | 43.982% slower | 4.008 |
+| 1,000 | `sumTo(65537)` | 947,253.648 | 4,687,367.999 | 668,555.915 | 29.422% faster (1.417x) | 24.819 |
+
+The 1,000-sample `sumTo` compilation mean retains its raw outlier influence, as required; code sizes remained 84, 256, and 424 bytes. The six accepted artifacts are:
+
+- 60 samples: `build/m6-sljit-benchmark/results/tcir-jit-benchmark-1aa428b74012-s60.json` (11,988 bytes, SHA-256 `8ec87930a5482eff03b400a60e12aa9e1f1e17882c8a6b36961f3b8de7791ac9`) and `.csv` (77,177 bytes, SHA-256 `7236e4bb69932fac71bbc470705bea0ea6b0a56ff06bb339dcf2ff554bae0ecc`).
+- 200 samples: `build/m6-sljit-benchmark/results/tcir-jit-benchmark-1aa428b74012-s200.json` (25,072 bytes, SHA-256 `723ca4078c1f4772fc24bdbcbfa5c0240abc1a02b81ca9e06ee771d892fc7b05`) and `.csv` (258,459 bytes, SHA-256 `3c9893e25a2b99210a00bdea0c58409172c5981e4b07d80140cf3ffdedfafac6`).
+- 1,000 samples: `build/m6-sljit-benchmark/results/tcir-jit-benchmark-1aa428b74012-s1000.json` (99,766 bytes, SHA-256 `40f6c9b975ea47870fcc63a84199fdc47375d776184a6753ca43ff0003aa37e3`) and `.csv` (1,297,155 bytes, SHA-256 `c3b8f06c940557eac0bc4788bef4cafd883ce0e9479ae15b02a7dae8e407b440`).
+
+This checkpoint makes no generated-C performance claim. A future four-way benchmark must be introduced as a separately named regime while continuing to repeat the historical three-way matrix.
+
 This section must be updated after every completed milestone with delivered behavior, validation evidence, deferred scope, and lessons. At full completion it must state exactly which opcode and platform sets are production-ready, which remain experimental, and why.
 
 ## Editorial Report
 
-This is an interim factual report through the completed SLJIT baseline stage. It is not the final report required by `.agent/PLANS.md`; Milestone 9 must reconcile it with AOT, runtime-integration, broader platform, and performance evidence.
+This is an interim factual report through the completed deterministic-C AOT proof of concept. It is not the final report required by `.agent/PLANS.md`; Milestone 9 must reconcile it with production runtime integration, broader semantic/platform coverage, and final performance evidence.
 
 ### Editorial Summary
 
-The project now has a source-grounded map from Java class parsing through TotalCross bytecode execution and GC, an implemented backend-neutral TCIR version 1 contract, a bounded frontend for the static-integer POC subset, a verified reference interpreter, and an opt-in SLJIT baseline backend. Developers can generate representative TCode through the existing converter, decode and execute verified TCIR, inspect deterministic CFG text, and force native execution through the shared frame ABI. No default production runtime execution path changed.
+The project now has a source-grounded map from Java class parsing through TotalCross bytecode execution and GC, an implemented backend-neutral TCIR version 1 contract, a bounded frontend for the static-integer POC subset, a verified reference interpreter, an opt-in SLJIT baseline, and an opt-in deterministic portable-C generator. Developers can take the three canonical converter fixtures through `executeMethod`, TCIR, forced native SLJIT, and compiled generated C using one versioned frame ABI. No default production runtime execution path changed.
 
 ### Original Plan versus Actual Outcome
 
-Milestone 1 produced only the ExecPlan and architecture documents. Milestone 2 then implemented the planned C contract, verifier, printer, registry, fixtures, and focused tests. The optional text parser was omitted because stable one-way golden output met acceptance without creating another input format. Milestone 3 implemented the partial decoder/frontend through an explicit bounded method view and generated its integration fixtures through the production converter. Milestone 4 implemented reference execution and an isolated real-`executeMethod` oracle. Milestone 5 implemented the pinned, optional SLJIT backend and standalone artifact cache, including Android cross-compilation but not Android execution. A production runtime adapter, VM dispatch integration, AOT backend, and benchmarks remain planned work and are not represented as completed.
+Milestone 1 produced only the ExecPlan and architecture documents. Milestone 2 then implemented the planned C contract, verifier, printer, registry, fixtures, and focused tests. The optional text parser was omitted because stable one-way golden output met acceptance without creating another input format. Milestone 3 implemented the partial decoder/frontend through an explicit bounded method view and generated its integration fixtures through the production converter. Milestone 4 implemented reference execution and an isolated real-`executeMethod` oracle. Milestone 5 implemented the pinned, optional SLJIT backend and standalone artifact cache, including Android cross-compilation but not Android execution. Milestone 6 implemented deterministic generated C, an exact-identity registry and manifest, a native POC host tool, and four-way functional comparison. The planned general TCZ input, production runtime adapter, dispatcher publication, and AOT performance regime remain later work.
 
 ### What Changed
 
-The initial eight documents under `docs/architecture/bytecode` and this ExecPlan remain the design record. Milestone 2 added the owned TCIR implementation, verifier, printer, registry, focused tests, CMake option, and opcode source validator. Milestone 3 added the bounded frontend, converter-backed fixtures/goldens, and SDK regeneration check. Milestone 4 added `tcir_interp.h`, `tcir_interp.c`, reference execution/rejection tests in `tcir_tests.c`, and the real-runtime `tcir_differential_tests.c` harness as a third focused CTest entry. Milestone 5 added the `tcir_jit` library, frame/backend/cache/memory interfaces, forced `tcir-jit` test, three-way differential mode, depot-tools tag pin, and Android artifact/build integration.
+The initial eight documents under `docs/architecture/bytecode` and this ExecPlan remain the design record. Milestone 2 added the owned TCIR implementation, verifier, printer, registry, focused tests, CMake option, and opcode source validator. Milestone 3 added the bounded frontend, converter-backed fixtures/goldens, and SDK regeneration check. Milestone 4 added `tcir_interp.h`, `tcir_interp.c`, reference execution/rejection tests in `tcir_tests.c`, and the real-runtime differential harness. Milestone 5 added the `tcir_jit` library, backend/cache/memory interfaces, forced JIT test, depot-tools pin, and Android integration. Milestone 6 extracted `tcir_compiled.h`, added `tcir_aot`, `tcaot`, generated C/header/manifest output, deterministic and manifest validators, exact registry tests, four-way differential execution, and CMake fixture targets.
 
 ### Decisions and Trade-offs
 
-TCIR version 1 uses opaque owned C structures, simplified-SSA values and block arguments, typed homes, explicit source metadata/effects, stable diagnostics, and a deterministic one-way printer. Builders copy temporary arrays but the verifier—not the builder—is the canonical malformed-graph rejection boundary. Reference and SLJIT execution share typed-frame concepts without importing private `Context` layout and use explicit result/rejection status. The baseline stores SSA values in bounded invocation scratch for correctness and compile speed; it does not claim register allocation performance. Future runtime work still requires a real adapter, reference homes in `regO`, helper ABI, method-atomic dispatch, and deterministic generated C as AOT.
+TCIR version 1 uses opaque owned C structures, simplified-SSA values and block arguments, typed homes, explicit source metadata/effects, stable diagnostics, and a deterministic one-way printer. Builders copy temporary arrays but the verifier—not the builder—is the canonical malformed-graph rejection boundary. Reference, SLJIT, and AOT entries share `tcir_compiled.h` without importing private `Context` layout and use explicit result/rejection status. Generated C uses a portable state machine and stable lexical order instead of compiler extensions; semantic FNV-1a hashes provide deterministic identity, not cryptographic trust. Future runtime work still requires a real class/TCZ adapter, reference homes in `regO`, helper ABI, method-atomic dispatch, and production AOT publication.
 
 ### Unexpected Problems and Discoveries
 
-The existing converter IR is opcode-shaped, float identity is normalized, the class record is unversioned inside TCZ, and one Java opcode-name table omits values 158/159. Root CMake resolves the full native dependency graph before focused targets run, and its legacy PUBLIC source list propagates all VM sources to normal target consumers; the differential harness therefore links the built artifact directly. Milestone 3 found that `TMethod` discards its serialized code count, call width depends on resolved signature metadata, and converter control flow uses `BREAK` padding. Milestone 4 also made the legacy oracle's signed-C overflow assumption observable under UBSan, so sanitizer evidence separates defined TCIR arithmetic from ASan-only oracle comparison. Milestone 5 confirmed that depot-tools can carry SLJIT with its license and W^X configuration, that macOS host mappings finalize non-writable/executable, and that the same backend cross-compiles unchanged for Android API 23.
+The existing converter IR is opcode-shaped, float identity is normalized, the class record is unversioned inside TCZ, and one Java opcode-name table omits values 158/159. Root CMake resolves the full native dependency graph before focused targets run, and its legacy PUBLIC source list propagates all VM sources to normal target consumers; the differential harness therefore links the built artifact directly. Milestone 3 found that `TMethod` discards its serialized code count, call width depends on resolved signature metadata, and converter control flow uses `BREAK` padding. Milestone 4 exposed the legacy oracle's signed-C overflow under UBSan. Milestone 5 confirmed depot-tools SLJIT/W^X and Android API 23 compilation. Milestone 6 showed that negative backend fixtures must first be valid TCIR, that cross builds need C generated by a native host tool, and that broad VM static analysis surfaces legacy findings which must be separated from focused new-code analysis.
 
 ### Validation and Measurable Results
 
-Milestone 5 validation observed: normal and Release builds with 4/4 CTest entries passing; 1,179 forced `executeMethod`/TCIR/SLJIT comparisons with fixed seed `0x4d595df4`; a standalone ASan/UBSan backend run; Clang static analysis with no reports; explicit non-writable/executable mapping inspection; default-off configuration with no JIT targets and 3/3 tests passing; and Android arm64-v8a NDK r28c/API 23 native compilation. The subsequent macOS checkpoint used a separate optimized harness with mandatory 60-, 200-, and 1,000-sample profiles, 5/10/20 warmups, deterministic near-balanced backend order, larger batches after a high-variance trial, and no excluded samples. The JSON/CSV validator passed all three workloads and 720/2,400/12,000 raw rows. Under the recorded Low Power Mode conditions, every profile found SLJIT mean execution slower for `add`/`abs` but 1.390x–1.438x faster for `sumTo(65537)`. Android execution, Apple distribution entitlements, Windows/Linux targets, production dispatch, and product workload benchmarks remain unvalidated.
+Milestone 6 validation observed Debug and Release 7/7 CTest passing with 1,179 forced `executeMethod`/TCIR/SLJIT/AOT comparisons; AOT-only 6/6; default-off 3/3 with no AOT targets; byte-identical clean regeneration; independent manifest validation; ASan full differential execution; ASan/UBSan generator coverage; and focused Clang analysis with no reports. Android NDK r28c/API 23 and iPhoneOS arm64 compiled the same host-generated C object, without device execution or application linkage. The mandatory macOS 60/200/1,000 matrix was repeated with its historical three-way scope, all 720/2,400/12,000 rows validated, and no samples excluded. It again found short-call SLJIT overhead and a 1.401x–1.440x mean advantage for `sumTo(65537)`; generated-C performance was intentionally not measured. Linux/GCC, Windows/MSVC, full iOS linkage, production dispatch, and product workloads remain unvalidated.
 
 ### Useful Evidence and Examples
 
-The bytecode reference enumerates all 160 opcodes. `TotalCrossVM/src/tests/ir/fixtures/tcir_converter_fixtures.h` records exact converter words/lines, `golden/frontend-sumTo.tcir` shows the deterministic loop CFG, `tcir_tests.c` covers reference execution and rejection, `tcir_differential_tests.c` contains the three-way real-runtime corpus, and `tcir_jit_tests.c` covers backend security/lifecycle behavior. Commits `d7d4ad64a` and `8a5ae42d6` are the Milestone 5 dependency/build and backend/test implementation; `e49acf6a5` adds the optional benchmark and artifact validator, and `77d179edc` makes all three sample profiles mandatory. The six raw revision-keyed JSON/CSV paths and SHA-256 hashes above identify the accepted measurement checkpoint. The compatibility matrix distinguishes the exact fixture combinations that reached JIT execution from untested family/backend coverage.
+The bytecode reference enumerates all 160 opcodes. `tcir_converter_fixtures.h` records exact converter words/lines, `golden/frontend-sumTo.tcir` shows the deterministic loop CFG, `tcir_aot_tests.c` covers order-independent output, input invalidation, lookup mismatch, and unsupported rejection, and `tcir_differential_tests.c` contains the four-way real-runtime corpus. `ValidateTCIRAotDeterminism.cmake` and `validate-tcir-aot-manifest.py` independently test derived output. Commits `8d738ff66` and `1aa428b74` are the shared ABI and Milestone 6 implementation. The generated artifact and repeated benchmark paths and SHA-256 hashes above identify the accepted checkpoints; the compatibility matrix distinguishes exact fixture evidence from family-level roadmap labels.
 
 ### Limitations, Remaining Work, and Open Questions
 
-No TCIR text parser, AOT backend, production runtime `Method` adapter, runtime integration, or non-host platform execution test exists yet. The frontend/interpreter/SLJIT backend cover only the registry's static-integer POC subset and valid helper- or exception-bearing methods remain fallback. The benchmark measures standalone API calls, includes current per-invocation verification/allocation overhead, ran with Low Power Mode enabled, and covers only three synthetic integer fixtures; it is a useful versioned comparison point, not evidence for application or production-VM speed. Handler behavior, heap mutation, GC, the helper `may_gc` closure, thread-suspension protocol, class unloading/redefinition, volatile/atomic semantics, and real-world legacy `JUMP_regI` corpus require deeper inspection in later milestones.
+No TCIR text parser, general TCZ-to-AOT input adapter, production runtime `Method` adapter, dispatcher integration, static publication model, or non-host platform execution test exists yet. The frontend/interpreter/SLJIT/AOT backends cover only the registry's static-integer POC subset and valid helper- or exception-bearing methods remain fallback. The benchmark measures standalone interpreter/JIT APIs, includes current per-invocation verification/allocation overhead, ran with Low Power Mode enabled, covers only three synthetic integer fixtures, and does not measure AOT. Handler behavior, heap mutation, GC, helper effects, thread suspension, unloading/redefinition, volatile/atomic semantics, dead stripping/signing, and real-world legacy `JUMP_regI` require later evidence.
 
 ### Possible Article Angles
 
@@ -224,7 +270,7 @@ A future technical article could explain how to establish a verifiable IR bounda
 
 ### Suggested Narrative
 
-Start with the existing Java-to-register-bytecode path, show why the target-shaped converter IR cannot serve multiple backends, then introduce the owned TCIR contract, bounded method view, structural decoder, canonical verifier, converter-backed fixtures, and deterministic CFG as the boundary established before execution. Continue with the future reference interpreter, then explain how the same frame/helper contract can support low-latency SLJIT and portable generated C. End with differential evidence and measured trade-offs once those later milestones exist.
+Start with the existing Java-to-register-bytecode path, show why the target-shaped converter IR cannot serve multiple backends, then introduce the owned TCIR contract, bounded method view, structural decoder, canonical verifier, converter-backed fixtures, and deterministic CFG as the boundary established before execution. Continue with the reference interpreter, then explain how the same frame contract supports low-latency SLJIT and deterministic portable C. End with four-way differential evidence, current standalone JIT measurements, and the explicit runtime-integration boundary.
 
 ### Claims Requiring Human Review
 
@@ -303,6 +349,8 @@ Add an AOT generator, tentatively under `TotalCrossVM/src/tcvm/aot`, plus a host
 Generated functions implement the same frame ABI and runtime-helper calls as JIT. The manifest records generator, IR and runtime ABI versions, input hash, target options, supported and rejected methods, and diagnostic codes. Registration verifies class/method/signature and content identity before publishing an entry; mismatch falls back. For the POC, compile with the host C toolchain through CMake, link a focused harness or VM target, and run the same corpus. Verify the C also compiles with both GCC/Clang syntax expectations and avoids extensions unsupported by MSVC where applicable.
 
 Acceptance means two clean generations from identical inputs are byte-for-byte equal; the POC C compiles, links, and produces results identical to the two interpreters and SLJIT; a changed input invalidates registration; unsupported IR is reported before C output; and a build with AOT disabled is unchanged. Document root-`TotalCrossVM/CMakeLists.txt` configure/build commands for Linux, Windows, Apple Clang, Android NDK, and iOS toolchains even if only the host is executed in this milestone. Do not add an `Android.mk` or Xcode-project integration path.
+
+Acceptance was observed for the standalone POC in commits `8d738ff66` and `1aa428b74`. Two clean generations and reversed input order produced byte-identical C, header, and manifest; a semantic input change changed the content/aggregate hash and made old identity lookup fail; a valid unsupported switch returned a structured diagnostic before output; and the default-off build retained only the original targets. Debug and Release passed 7/7 focused tests, including 1,179 four-way comparisons. AOT-only passed 6/6 without SLJIT. Host-generated C compiled as macOS, Android arm64-v8a/API 23, and iPhoneOS arm64 objects, while the Android/iOS cross toolchains did not execute `tcaot`. Linux/GCC, Windows/MSVC, full iOS application linkage, production TCZ input, dead-strip-safe registration, runtime publication, and AOT performance remain later validation/integration work.
 
 ### Milestone 7: controlled TCVM mixed-mode integration
 
@@ -403,13 +451,70 @@ Configure and run the optional standalone performance checkpoint only in an opti
 
 Do not log authenticated URLs or tokens. Save verbose configure/build/test output to a temporary log and show only the status, relevant errors, and a short tail.
 
-For AOT, the milestone must provide an explicit tool command. Its expected shape is:
+Milestone 6 exposes `TC_ENABLE_C_AOT`, native host tool `tcaot`, and aggregate fixture target `tcvm_aot_fixture`. The current tool input name `poc-fixtures` selects the three canonical converter-backed methods; it is not a path or a general TCZ reader. Generate only into a build directory:
 
-    build-aot/tools/tcaot --input <fixture.tcz> --output <build-directory> --manifest <manifest.json>
-    cmake --build build-aot --target tcvm_aot_fixture
-    ctest --test-dir build-aot -R 'tcir|jit|aot' --output-on-failure
+    cmake -S TotalCrossVM -B build/m6-aot -G Ninja \
+      -DCMAKE_BUILD_TYPE=Debug \
+      -DTC_ENABLE_C_AOT=ON \
+      -DTC_ENABLE_SLJIT_JIT=ON \
+      -DTC_BUILD_IR_TESTS=ON \
+      -DUSE_SKIA=OFF
+    cmake --build build/m6-aot --target tcvm_aot_fixture --parallel
+    cmake -E make_directory build/m6-aot/aot/manual
+    build/m6-aot/tools/tcaot \
+      --input poc-fixtures \
+      --output build/m6-aot/aot/manual \
+      --manifest build/m6-aot/aot/manual/manifest.json \
+      --target-options host-c11-poc
+    cmake --build build/m6-aot --target check-tcir --parallel
 
-These names are placeholders until implemented; update the plan immediately when real target names exist. Never report placeholder commands as executed.
+The same root project configures Linux/GCC or Clang. Use a native build first so `tcaot` can generate C, then pass or compile the generated translation unit in the target build:
+
+    CC=gcc cmake -S TotalCrossVM -B build/m6-aot-linux -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release -DTC_ENABLE_C_AOT=ON \
+      -DTC_BUILD_IR_TESTS=ON -DUSE_SKIA=OFF
+    cmake --build build/m6-aot-linux --target tcvm_aot_fixture --parallel
+
+Windows Release builds must use the static MSVC runtime `/MT`; configure x64 and the repository's x86 target independently:
+
+    cmake -S TotalCrossVM -B build/m6-aot-windows-x64 -G "Visual Studio 17 2022" -A x64 \
+      -DTC_ENABLE_C_AOT=ON -DTC_BUILD_IR_TESTS=ON \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DUSE_SKIA=OFF
+    cmake --build build/m6-aot-windows-x64 --config Release --target tcvm_aot_fixture
+    cmake -S TotalCrossVM -B build/m6-aot-windows-x86 -G "Visual Studio 17 2022" -A Win32 \
+      -DTC_ENABLE_C_AOT=ON -DTC_BUILD_IR_TESTS=ON \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DUSE_SKIA=OFF
+    cmake --build build/m6-aot-windows-x86 --config Release --target tcvm_aot_fixture
+
+Apple Clang host validation uses the first native command with `-DCMAKE_BUILD_TYPE=Release`. Cross configurations intentionally build `tcir_aot` but not `tcaot`; generated C must come from a prior native host invocation. Android arm64-v8a/API 23 with the currently selected NDK is:
+
+    cmake -S TotalCrossVM -B build/m6-aot-android -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_TOOLCHAIN_FILE=<android-ndk-28.2.13676358>/build/cmake/android.toolchain.cmake \
+      -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-23 \
+      -DANDROID_STL=c++_static -DTC_ENABLE_C_AOT=ON \
+      -DTC_BUILD_IR_TESTS=OFF -DUSE_SKIA=OFF
+    cmake --build build/m6-aot-android --target tcir_aot --parallel
+    <android-ndk-28.2.13676358>/toolchains/llvm/prebuilt/<host>/bin/aarch64-linux-android23-clang \
+      -std=c11 -Wall -Wextra -Werror -pedantic \
+      -I TotalCrossVM/src/tcvm/aot -I TotalCrossVM/src/tcvm/ir \
+      -c build/m6-aot/aot/poc/tcir_aot_generated.c \
+      -o build/m6-aot-android/tcir_aot_generated.o
+
+The root CMake iOS cross-configuration is likewise separate from the checked-in legacy project. A representative arm64 device configuration and direct generated-C syntax/object check are:
+
+    cmake -S TotalCrossVM -B build/m6-aot-ios -G Xcode \
+      -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 -DTC_ENABLE_C_AOT=ON \
+      -DTC_BUILD_IR_TESTS=OFF -DUSE_SKIA=OFF
+    cmake --build build/m6-aot-ios --config Release --target tcir_aot
+    xcrun --sdk iphoneos clang -arch arm64 -miphoneos-version-min=12.0 \
+      -std=c11 -Wall -Wextra -Werror -pedantic \
+      -I TotalCrossVM/src/tcvm/aot -I TotalCrossVM/src/tcvm/ir \
+      -c build/m6-aot/aot/poc/tcir_aot_generated.c \
+      -o build/m6-aot-ios/tcir_aot_generated.o
+
+Only the macOS host, Android object, and iPhoneOS object paths were executed for Milestone 6. Linux/GCC, Windows/MSVC, and the full iOS CMake/link commands above are reproducibility instructions for future platform validation, not reported results.
 
 At every milestone boundary run:
 
@@ -484,7 +589,7 @@ The analysis stage produced:
     docs/architecture/bytecode/jit-aot-architecture.md
     docs/architecture/bytecode/compatibility-matrix.md
 
-Milestone 2 delivered the TCIR core/verifier/dumper/opcode registry and focused native fixtures/tests in commits `96c17be4b` and `a3a5e33fa`. Milestone 3 delivered the bounded bytecode decoder/frontend and production-converter golden fixtures in commits `0fa51be08` and `f0e241b11`. Milestone 4 delivered the TCIR interpreter and real-`executeMethod` differential harness in commits `d5ebceb43` and `801ae507b`. Milestone 5 delivered the optional SLJIT dependency/build integration and baseline backend/tests in commits `d7d4ad64a` and `8a5ae42d6`; commits `e49acf6a5` and `77d179edc` add its reproducible post-milestone three-profile performance checkpoint. Milestone 6 adds the C generator, tool, manifest/registry schema, CMake integration, and reproducibility tests. Milestone 7 adds experimental dispatcher policy, runtime thunks, diagnostics, and mixed-mode/GC tests. Milestone 8 grows those artifacts without introducing a second competing IR. Milestone 9 adds broader recorded platform/benchmark result artifacts and final editorial evidence.
+Milestone 2 delivered the TCIR core/verifier/dumper/opcode registry and focused native fixtures/tests in commits `96c17be4b` and `a3a5e33fa`. Milestone 3 delivered the bounded bytecode decoder/frontend and production-converter golden fixtures in commits `0fa51be08` and `f0e241b11`. Milestone 4 delivered the TCIR interpreter and real-`executeMethod` differential harness in commits `d5ebceb43` and `801ae507b`. Milestone 5 delivered the optional SLJIT dependency/build integration and baseline backend/tests in commits `d7d4ad64a` and `8a5ae42d6`; commits `e49acf6a5` and `77d179edc` add its reproducible post-milestone three-profile performance checkpoint. Milestone 6 delivered the shared compiled ABI in `8d738ff66` and the deterministic C generator, host tool, manifest/registry schema, CMake integration, reproducibility/registration tests, and four-way differential execution in `1aa428b74`. Milestone 7 adds experimental dispatcher policy, runtime thunks, diagnostics, and mixed-mode/GC tests. Milestone 8 grows those artifacts without introducing a second competing IR. Milestone 9 adds broader recorded platform/benchmark result artifacts and final editorial evidence.
 
 Do not commit generated dependency checkouts, native archives, build directories, generated C, local logs, or benchmark binaries. Small canonical golden text/manifest fixtures may be source artifacts when they are deterministic and reviewed.
 
@@ -531,7 +636,7 @@ What exact semantics distinguish the two symbol-based monitor opcodes and what c
 
 Which Windows x86-64 and embedded targets are product-supported rather than aspirational, and what compiler, calling convention, executable-memory, and CI runners apply? Milestone 9 requires maintainer/product confirmation.
 
-What iOS AOT registration/linking model best fits the root `TotalCrossVM/CMakeLists.txt` target graph, static initialization, dead stripping, and code-signing flow when configured with the supported iOS CMake toolchain/generator? Milestone 6 must answer this entirely in CMake and must not inspect or patch legacy `TCVM.xcodeproj`.
+What iOS AOT registration/linking model best fits the root `TotalCrossVM/CMakeLists.txt` target graph, static initialization, dead stripping, and code-signing flow when configured with the supported iOS CMake toolchain/generator? Milestone 6 established a deterministic explicit registry and proved that host-generated C compiles for iPhoneOS arm64 without touching legacy `TCVM.xcodeproj`; Milestone 7 must select and test its production archive/link/publication model, including dead stripping and signing.
 
 Revision note (2026-07-17): created the initial self-contained plan after source analysis, changed all repository documentation to English, and made root `TotalCrossVM/CMakeLists.txt` the only native-build integration point while excluding legacy `TCVM.xcodeproj` and `Android.mk`, following the user's explicit instructions.
 
@@ -544,3 +649,5 @@ Revision note (2026-07-17, Milestone 4): reconciled the plan with the verified r
 Revision note (2026-07-17, Milestone 5): reconciled the plan with pinned depot-tools tag `sljit-20260717`, the default-off root-CMake backend, Android arm64-v8a compilation, verified whole-method SLJIT emission, W^X finalization, frame ABI, synchronized side-table lifecycle, 1,179-case forced three-way comparison, host sanitizer/Release/static-analysis evidence, and commits `d7d4ad64a` and `8a5ae42d6`. Milestones 6–9 remain unstarted.
 
 Revision note (2026-07-17, post-Milestone-5 benchmark): added the optional revision-keyed benchmark/validator in `e49acf6a5`, then made its 60/200/1,000-sample matrix mandatory in `77d179edc`; captured 5/10/20 warmups and all raw samples across near-balanced rotations of all six backend permutations on macOS arm64; recorded compile latency, code size, execution statistics, host/build/power/dirty metadata, six artifact hashes, and the standalone-API scope. Every accepted profile found SLJIT slower for short `add`/`abs` calls but 1.390x–1.438x faster on mean for `sumTo(65537)` under the recorded Low Power Mode conditions. Future checkpoints must repeat all three profiles. Milestones 6–9 remain unstarted.
+
+Revision note (2026-07-17, Milestone 6): reconciled the plan with backend-neutral `tcir_compiled.h`, default-off deterministic C11 generation, the native canonical-fixture `tcaot` adapter, exact identity/hash lookup, schema-versioned manifest, build-directory-only output, seven focused tests, 1,179-case four-way execution, host/AOT-only/default-off/sanitizer/static-analysis evidence, and Android/iPhoneOS arm64 object compilation in commits `8d738ff66` and `1aa428b74`. The mandatory three-way performance matrix was repeated unchanged at revision `1aa428b740124b33830c157eadf08deb5660ea69` with all six artifacts recorded above. General TCZ input, production runtime publication, full iOS linkage, Linux/Windows validation, device execution, and AOT performance remain later work. Milestones 7–9 remain unstarted.

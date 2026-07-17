@@ -59,7 +59,7 @@ TCCompiledStatus tcCompiledInvoke(
     TValue *result);
 ```
 
-Milestone 5 implements this boundary as `TCIRJitArtifact`, `tcirJitCompile`, `TCCompiledFrame`, `TCCompiledResult`, `tcirJitInvoke`, and explicit artifact disposal under `TotalCrossVM/src/tcvm/jit`. These properties remain required:
+Milestone 5 implements the JIT side of this boundary as `TCIRJitArtifact`, `tcirJitCompile`, `tcirJitInvoke`, and explicit artifact disposal under `TotalCrossVM/src/tcvm/jit`. Milestone 6 moves `TCCompiledFrame`, `TCCompiledResult`, `TCCompiledStatus`, `TCCompiledEntry`, and `TC_RUNTIME_ABI_VERSION` into backend-neutral `TotalCrossVM/src/tcvm/ir/tcir_compiled.h`; generated C uses that exact entry signature. These properties remain required:
 
 - compile failure is structured and non-fatal;
 - an artifact records IR version, runtime ABI version, target, feature flags, code ownership and entry address;
@@ -118,17 +118,17 @@ On Apple Silicon macOS, Apple's [JIT porting guidance](https://developer.apple.c
 
 | Platform | Baseline JIT default | AOT direction | Gate |
 |---|---|---|---|
-| Linux x86-64/aarch64/armv7 | experimental opt-in | supported | executable-memory and CI tests |
-| Windows x86/x86-64 | experimental opt-in where built | supported | allocation/protection/unwind tests |
-| macOS arm64 | off unless correctly entitled/configured | supported | forced host execution/W^X passed; Hardened Runtime and distribution review remain |
-| Android arm64-v8a | compiled but not selected | supported | NDK r28c/API 23 build passed; device and Play/security validation remain |
-| iOS arm64 | off by project policy | primary path | static AOT, signing and App Review review |
+| Linux x86-64/aarch64/armv7 | experimental opt-in | implemented POC, platform validation pending | executable-memory and CI tests |
+| Windows x86/x86-64 | experimental opt-in where built | implemented POC, MSVC validation pending | allocation/protection/unwind tests; Release uses static `/MT` runtime |
+| macOS arm64 | off unless correctly entitled/configured | POC compile/link/run passed | forced host execution/W^X passed; Hardened Runtime and distribution review remain |
+| Android arm64-v8a | compiled but not selected | generated C object passed | NDK r28c/API 23 build passed; device and Play/security validation remain |
+| iOS arm64 | off by project policy | generated C object passed; primary path | full static linkage, dead stripping, signing and App Review review remain |
 
 Apple's [App Review Guideline 2.5.2](https://developer.apple.com/app-store/review/guidelines/#software-requirements) restricts downloading, installing, or executing code that changes app functionality. This plan does not claim that every form of JIT is universally prohibited by the OS; it chooses JIT-off for iOS until entitlement, distribution, and legal/product policy are reviewed. Generated C compiled and statically linked as part of the app build is the intended path.
 
 ## Generated-C AOT flow
 
-The AOT backend translates verified TCIR into deterministic, portable C that calls the same runtime helper ABI. It is a build tool, not a runtime C compiler.
+The AOT backend translates verified TCIR into deterministic, portable C that uses the shared compiled-frame ABI. It is a build tool, not a runtime C compiler. `TC_ENABLE_C_AOT` controls the `tcir_aot` library and native `tcaot` tool and is off by default.
 
 Generated artifacts live in the build directory and include:
 
@@ -137,9 +137,11 @@ Generated artifacts live in the build directory and include:
 - a manifest containing tool/IR/ABI version, input content hash, target options, supported/unsupported methods and diagnostics; and
 - optional line maps from generated C to TC PC/source line.
 
-The generated functions use the frame ABI and explicit labels/branches. Names derive from stable hashes plus readable escaped components, never addresses or iteration order. Sorting inputs and symbols ensures two identical invocations produce byte-identical C and manifests.
+The Milestone 6 POC emits restricted C11 as an explicit block-state machine. Generated functions use `TCCompiledFrame`, modular `uint32_t` arithmetic for Java/TotalCross i32 wrap, bounded scratch/home access, and explicit result/status publication. Names derive from readable escaped class/method/signature components plus a 64-bit semantic content hash, never addresses or insertion order. Inputs and registry entries are sorted lexically, so two clean identical invocations and reversed fixture input order produce byte-identical C, header, and manifest.
 
-At startup/class load, the static registry matches class, method name and signature plus an artifact identity/hash. A mismatch leaves the method interpreted. AOT must never bind solely by a mutable constant-pool pointer or index from another process.
+`tcaot --input poc-fixtures --output <build-directory> --manifest <manifest.json> --target-options <options>` currently builds only the three canonical converter-backed POC functions. This input selector is not a TCZ reader. The generator verifies and preflights the complete set before creating output; a valid unsupported operation returns a structured diagnostic without partial C/header/manifest files. The manifest records schema, generator, TCIR and runtime ABI versions, target options, aggregate input hash, supported methods, content hashes, entry symbols, and rejected methods.
+
+The generated static registry matches class name, method name, signature, and semantic content hash exactly. A mismatch leaves no usable entry. The POC hash is deterministic FNV-1a identity, not a cryptographic signature or artifact trust mechanism. Production class loading, archive publication, dead-strip retention, and integrity/signing policy remain part of runtime integration.
 
 ## Mixed-mode calls
 
@@ -177,9 +179,11 @@ Every supported operation needs:
 
 Counters should expose methods seen/verified/compiled/fallen back, code bytes, compile time, runtime time and fallback reasons. Logging is opt-in and bounded.
 
-The current forced tests compile converter-produced `add`, `abs`, and `sumTo` and fail on any fallback. The Milestone 4 corpus now performs 1,179 fresh-state comparisons across `executeMethod`, TCIR interpretation, and SLJIT. Separate tests cover invalid/unsupported rejection, deterministic emission failure, repeated create/dispose, competing lookup plus interpreter progress, publication, shutdown with an outstanding claim, and W^X permissions.
+The current forced tests compile converter-produced `add`, `abs`, and `sumTo` and fail on any fallback. With both optional backends enabled, the corpus performs 1,179 fresh-state comparisons across `executeMethod`, TCIR interpretation, SLJIT, and linked generated C. Separate JIT tests cover invalid/unsupported rejection, deterministic emission failure, repeated create/dispose, competing lookup plus interpreter progress, publication, shutdown with an outstanding claim, and W^X permissions. AOT tests cover reversed input order, clean byte-for-byte regeneration, semantic-input invalidation, exact registry mismatches, manifest consistency, and unsupported valid TCIR rejection before output.
 
-An additional macOS checkpoint is available through the off-by-default `TC_BUILD_IR_BENCHMARKS` option and `run-tcir-jit-benchmark` target. It requires Release plus SLJIT and sequentially runs 60-, 200-, and 1,000-sample profiles after 5, 10, and 20 warmups. Each profile rotates through all six backend orders with occurrence counts differing by at most one, excludes no outliers, and validates every batch against the `executeMethod` checksum. The paired JSON/CSV validator independently recomputes statistics and checks all 720, 2,400, and 12,000 CSV rows. At revision `77d179edc` on the recorded Apple M1 Pro/Low Power Mode host, every profile found SLJIT mean execution slower than `executeMethod` for short `add` (36.577%–48.120%) and `abs` (41.798%–45.920%), but faster for `sumTo(65537)` (28.036%–30.472%, or 1.390x–1.438x). This is a revision- and profile-keyed standalone-API baseline that includes current per-invocation verification and scratch allocation, not production-dispatch or application performance evidence; the ExecPlan records the six raw artifact paths, hashes, complete conditions, compilation statistics, and unfiltered scheduler variance. Future checkpoints must repeat all three profiles.
+Seven focused CTest entries pass on the macOS arm64 host when both backends are enabled: `tcir-core`, `tcir-opcode-sources`, `tcir-aot`, `tcir-aot-determinism`, `tcir-aot-manifest`, `tcir-differential`, and `tcir-jit`. AOT-only passes 6/6 without SLJIT; the default-off configuration retains the original 3/3 and exposes no AOT target. Debug, Release, ASan differential execution, ASan/UBSan generator coverage, and focused Clang analysis passed. The same host-generated C compiled as Android arm64-v8a/API 23 ELF and iPhoneOS arm64 Mach-O objects. Linux/GCC, Windows/MSVC, full iOS application linkage, and device execution remain unvalidated.
+
+An additional macOS checkpoint is available through the off-by-default `TC_BUILD_IR_BENCHMARKS` option and `run-tcir-jit-benchmark` target. It requires Release plus SLJIT and sequentially runs 60-, 200-, and 1,000-sample profiles after 5, 10, and 20 warmups. Each profile rotates through all six backend orders with occurrence counts differing by at most one, excludes no outliers, and validates every batch against the `executeMethod` checksum. The paired JSON/CSV validator independently recomputes statistics and checks all 720, 2,400, and 12,000 CSV rows. The matrix was repeated after Milestone 6 at revision `1aa428b74012` on the recorded Apple M1 Pro/Low Power Mode host. It again found SLJIT slower for short `add`/`abs` and faster for `sumTo(65537)` by 28.617%–30.551% (1.401x–1.440x). This remains the historical three-way standalone-API regime and deliberately excludes generated C, whose performance requires a separately named four-way protocol. The ExecPlan records both checkpoints, all artifact paths/hashes, complete conditions, compilation statistics, and unfiltered variance. Future checkpoints must repeat the three historical profiles even when a new AOT regime is added.
 
 ## Readiness for an optimizing backend
 
