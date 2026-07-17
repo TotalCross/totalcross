@@ -17,6 +17,7 @@ set(TCIR_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_decode.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_dump.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_frontend.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_interp.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_opcode_map.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_verify.c
 )

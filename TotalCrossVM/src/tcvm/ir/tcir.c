@@ -269,7 +269,8 @@ const char *tcirDiagnosticCodeName(TCIRDiagnosticCode code)
       "invalid_register",
       "invalid_symbol",
       "invalid_handler",
-      "type_merge"
+      "type_merge",
+      "execution_limit"
    };
    size_t count = sizeof(names) / sizeof(names[0]);
    return (unsigned int)code < count ? names[(unsigned int)code] : "unknown";

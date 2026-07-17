@@ -4,8 +4,10 @@
 
 #include "tcir.h"
 #include "tcir_frontend.h"
+#include "tcir_interp.h"
 #include "tcir_opcode_map.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -446,6 +448,191 @@ static int testConstructedFunctions(void)
    REQUIRE(tcirVerifyFunction(add, &diagnostic));
    REQUIRE(tcirVerifyFunction(absolute, &diagnostic));
    REQUIRE(tcirVerifyFunction(sum_to, &diagnostic));
+
+   tcirModuleDestroy(module);
+   return 1;
+}
+
+static TCIRInterpreterStatus interpretI32(
+   const TCIRFunction *function,
+   const int *arguments,
+   size_t argument_count,
+   size_t max_steps,
+   TCIRInterpreterResult *result,
+   TCIRDiagnostic *diagnostic)
+{
+   TCIRRuntimeValue runtime_arguments[2];
+   TCIRInterpreterOptions options;
+   TCIRInterpreterFrame frame;
+   int32_t i32_homes[8];
+   size_t index;
+
+   memset(runtime_arguments, 0, sizeof(runtime_arguments));
+   memset(i32_homes, 0, sizeof(i32_homes));
+   for (index = 0U; index < argument_count; ++index)
+      runtime_arguments[index].i32 = (int32_t)arguments[index];
+   memset(&frame, 0, sizeof(frame));
+   frame.i32_homes = i32_homes;
+   frame.i32_home_count = sizeof(i32_homes) / sizeof(i32_homes[0]);
+   frame.arguments = runtime_arguments;
+   frame.argument_count = argument_count;
+   frame.tc_pc = TCIR_TCPC_NONE;
+   options.max_steps = max_steps;
+   return tcirInterpretFunction(function, &frame, &options, result, diagnostic);
+}
+
+static TCIRFunction *buildHomeRoundTrip(TCIRModule *module, TCIRDiagnostic *diagnostic)
+{
+   const TCIRType parameters[] = { TCIR_TYPE_I32 };
+   const TCIRValue *operands[1];
+   TCIROperationSpec spec;
+   TCIRFunction *function = tcirModuleAddFunction(
+      module, "Example.homeRoundTrip:(I)I", parameters, 1, TCIR_TYPE_I32, diagnostic);
+   TCIRBlock *entry;
+   TCIRValue *loaded;
+
+   BUILD_REQUIRE(function != NULL);
+   BUILD_REQUIRE(tcirFunctionSetHomes(function, 1, 0, 0, diagnostic) == TCIR_STATUS_OK);
+   BUILD_REQUIRE(setAllSourceSlots(function, 3, diagnostic));
+   entry = tcirFunctionAppendBlock(function, 0, source(0, 40), 0, diagnostic);
+   BUILD_REQUIRE(entry != NULL);
+
+   operands[0] = tcirFunctionParameter(function, 0);
+   memset(&spec, 0, sizeof(spec));
+   spec.opcode = TCIR_OP_STORE_SLOT;
+   spec.result_type = TCIR_TYPE_VOID;
+   spec.operands = operands;
+   spec.operand_count = 1;
+   spec.home_bank = TCIR_HOME_I32;
+   spec.home_index = 0;
+   spec.source = source(0, 40);
+   BUILD_REQUIRE(tcirBlockAppendOperation(entry, &spec, NULL, diagnostic) == TCIR_STATUS_OK);
+
+   memset(&spec, 0, sizeof(spec));
+   spec.opcode = TCIR_OP_LOAD_SLOT;
+   spec.result_type = TCIR_TYPE_I32;
+   spec.home_bank = TCIR_HOME_I32;
+   spec.home_index = 0;
+   spec.source = source(1, 40);
+   BUILD_REQUIRE(tcirBlockAppendOperation(entry, &spec, &loaded, diagnostic) == TCIR_STATUS_OK);
+   BUILD_REQUIRE(setTerminator(entry, TCIR_TERMINATOR_RETURN, loaded, NULL, 0, 2, diagnostic));
+   return function;
+}
+
+static int testReferenceInterpreter(void)
+{
+   const int add_inputs[][2] = {
+      { 0, 0 },
+      { 19, 23 },
+      { -19, 23 },
+      { INT_MAX, 1 },
+      { INT_MIN, -1 }
+   };
+   const int add_outputs[] = { 0, 42, 4, INT_MIN, INT_MAX };
+   const int abs_inputs[] = { 0, 42, -42, INT_MAX, INT_MIN };
+   const int abs_outputs[] = { 0, 42, 42, INT_MAX, INT_MIN };
+   const int sum_inputs[] = { -7, 0, 1, 10, 100 };
+   const int sum_outputs[] = { 0, 0, 0, 45, 4950 };
+   TCIRDiagnostic diagnostic;
+   TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
+   TCIRFunction *add;
+   TCIRFunction *absolute;
+   TCIRFunction *sum_to;
+   TCIRFunction *home_round_trip;
+   TCIRInterpreterResult result;
+   size_t index;
+
+   REQUIRE(module != NULL);
+   add = buildAdd(module, &diagnostic);
+   absolute = buildAbs(module, &diagnostic);
+   sum_to = buildSumTo(module, &diagnostic);
+   home_round_trip = buildHomeRoundTrip(module, &diagnostic);
+   REQUIRE(add != NULL && absolute != NULL && sum_to != NULL && home_round_trip != NULL);
+
+   for (index = 0U; index < sizeof(add_inputs) / sizeof(add_inputs[0]); ++index)
+   {
+      REQUIRE(interpretI32(add, add_inputs[index], 2, 0, &result, &diagnostic) == TCIR_INTERPRETER_RETURNED);
+      REQUIRE(result.type == TCIR_TYPE_I32);
+      REQUIRE(result.value.i32 == add_outputs[index]);
+      REQUIRE(result.tc_pc == 1U);
+   }
+   for (index = 0U; index < sizeof(abs_inputs) / sizeof(abs_inputs[0]); ++index)
+   {
+      REQUIRE(interpretI32(absolute, &abs_inputs[index], 1, 0, &result, &diagnostic)
+              == TCIR_INTERPRETER_RETURNED);
+      REQUIRE(result.value.i32 == abs_outputs[index]);
+   }
+   for (index = 0U; index < sizeof(sum_inputs) / sizeof(sum_inputs[0]); ++index)
+   {
+      REQUIRE(interpretI32(sum_to, &sum_inputs[index], 1, 0, &result, &diagnostic)
+              == TCIR_INTERPRETER_RETURNED);
+      REQUIRE(result.value.i32 == sum_outputs[index]);
+   }
+   REQUIRE(interpretI32(home_round_trip, &abs_inputs[1], 1, 0, &result, &diagnostic)
+           == TCIR_INTERPRETER_RETURNED);
+   REQUIRE(result.value.i32 == abs_inputs[1]);
+
+   REQUIRE(interpretI32(sum_to, &sum_inputs[3], 1, 3, &result, &diagnostic)
+           == TCIR_INTERPRETER_STEP_LIMIT);
+   REQUIRE(result.status == TCIR_INTERPRETER_STEP_LIMIT);
+   REQUIRE(result.steps == 3U);
+   REQUIRE(diagnostic.code == TCIR_DIAGNOSTIC_EXECUTION_LIMIT);
+
+   tcirModuleDestroy(module);
+   return 1;
+}
+
+static int testInterpreterRejectsBeforeExecution(void)
+{
+   TCIROperationSpec spec;
+   TCIRDiagnostic diagnostic;
+   TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
+   TCIRSymbol *helper;
+   TCIRFunction *unsupported;
+   TCIRFunction *invalid;
+   TCIRBlock *entry;
+   TCIRInterpreterFrame frame;
+   TCIRInterpreterResult result;
+   int32_t home = 123456;
+
+   REQUIRE(module != NULL);
+   helper = tcirModuleAddSymbol(
+      module, TCIR_SYMBOL_HELPER, "runtime", "noop", "()V", 0, TCIR_EFFECT_NONE, &diagnostic);
+   unsupported = tcirModuleAddFunction(module, "Fallback.noop:()V", NULL, 0, TCIR_TYPE_VOID, &diagnostic);
+   REQUIRE(helper != NULL && unsupported != NULL);
+   REQUIRE(tcirFunctionSetHomes(unsupported, 1, 0, 0, &diagnostic) == TCIR_STATUS_OK);
+   REQUIRE(setAllSourceSlots(unsupported, 2, &diagnostic));
+   entry = tcirFunctionAppendBlock(unsupported, 0, source(0, 50), 0, &diagnostic);
+   REQUIRE(entry != NULL);
+   memset(&spec, 0, sizeof(spec));
+   spec.opcode = TCIR_OP_RUNTIME_CALL;
+   spec.result_type = TCIR_TYPE_VOID;
+   spec.symbol = helper;
+   spec.source = source(0, 50);
+   REQUIRE(tcirBlockAppendOperation(entry, &spec, NULL, &diagnostic) == TCIR_STATUS_OK);
+   REQUIRE(setTerminator(entry, TCIR_TERMINATOR_RETURN, NULL, NULL, 0, 1, &diagnostic));
+   REQUIRE(tcirVerifyFunction(unsupported, &diagnostic));
+
+   memset(&frame, 0, sizeof(frame));
+   frame.i32_homes = &home;
+   frame.i32_home_count = 1;
+   frame.tc_pc = 99U;
+   REQUIRE(tcirInterpretFunction(unsupported, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_REJECTED);
+   REQUIRE(diagnostic.code == TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE);
+   REQUIRE(home == 123456);
+   REQUIRE(frame.tc_pc == 99U);
+
+   invalid = tcirModuleAddFunction(module, "Invalid.execute:()I", NULL, 0, TCIR_TYPE_I32, &diagnostic);
+   REQUIRE(invalid != NULL && setAllSourceSlots(invalid, 1, &diagnostic));
+   entry = tcirFunctionAppendBlock(invalid, 0, source(0, 51), 0, &diagnostic);
+   REQUIRE(entry != NULL);
+   REQUIRE(setTerminator(entry, TCIR_TERMINATOR_RETURN, NULL, NULL, 0, 0, &diagnostic));
+   REQUIRE(tcirInterpretFunction(invalid, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_REJECTED);
+   REQUIRE(diagnostic.code == TCIR_DIAGNOSTIC_RETURN_TYPE);
+   REQUIRE(home == 123456);
+   REQUIRE(frame.tc_pc == 99U);
 
    tcirModuleDestroy(module);
    return 1;
@@ -1018,6 +1205,8 @@ int main(void)
 {
    int passed = 1;
    passed = testConstructedFunctions() && passed;
+   passed = testReferenceInterpreter() && passed;
+   passed = testInterpreterRejectsBeforeExecution() && passed;
    passed = testConverterFrontendFixtures() && passed;
    passed = testFrontendDiagnostics() && passed;
    passed = testUndefinedValue() && passed;
@@ -1033,6 +1222,6 @@ int main(void)
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
-   printf("TCIR tests passed: 3 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
+   printf("TCIR tests passed: reference execution, 3 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
    return 0;
 }
