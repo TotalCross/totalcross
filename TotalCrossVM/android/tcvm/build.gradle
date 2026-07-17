@@ -16,6 +16,7 @@ def libjpegTurboFetchScript = file("${depotToolsDir}/libjpeg-turbo/fetch.sh")
 def sqliteFetchScript = file("${depotToolsDir}/sqlite3/fetch.sh")
 def mbedtlsFetchScript = file("${depotToolsDir}/mbedtls/fetch.sh")
 def axtlsFetchScript = file("${depotToolsDir}/axtls/fetch.sh")
+def sljitFetchScript = file("${depotToolsDir}/sljit/fetch.sh")
 def depotToolsDepsFile = file("${depotToolsDir}/deps.yml")
 def nativeAndroidAbis = ['arm64-v8a']
 def skiaDevBundleOutputs = [
@@ -49,6 +50,8 @@ def mbedtlsReleaseTag = envOrNull('MBEDTLS_RELEASE_TAG')
 def mbedtlsGithubRepo = envOrNull('MBEDTLS_GITHUB_REPO')
 def axtlsReleaseTag = envOrNull('AXTLS_RELEASE_TAG')
 def axtlsGithubRepo = envOrNull('AXTLS_GITHUB_REPO')
+def sljitReleaseTag = envOrNull('SLJIT_RELEASE_TAG')
+def sljitGithubRepo = envOrNull('SLJIT_GITHUB_REPO')
 def skiaReleaseTag = envOrNull('SKIA_RELEASE_TAG')
 def skiaGithubRepo = envOrNull('SKIA_GITHUB_REPO')
 
@@ -73,6 +76,8 @@ tasks.register('fetchNativeDependencies') {
     inputs.property('mbedtlsGithubRepo', optionalInput(mbedtlsGithubRepo))
     inputs.property('axtlsReleaseTag', optionalInput(axtlsReleaseTag))
     inputs.property('axtlsGithubRepo', optionalInput(axtlsGithubRepo))
+    inputs.property('sljitReleaseTag', optionalInput(sljitReleaseTag))
+    inputs.property('sljitGithubRepo', optionalInput(sljitGithubRepo))
     inputs.property('skiaReleaseTag', optionalInput(skiaReleaseTag))
     inputs.property('skiaGithubRepo', optionalInput(skiaGithubRepo))
     outputs.files(
@@ -107,6 +112,10 @@ tasks.register('fetchNativeDependencies') {
             file("${depotToolsDir}/axtls/local/android/${abi}/include/axtls/axtls.h"),
             file("${depotToolsDir}/axtls/local/android/${abi}/include/axtls/axtls_port.h"),
             file("${depotToolsDir}/axtls/local/android/${abi}/lib/libaxtls.a")
+        ] } + nativeAndroidAbis.collectMany { abi -> [
+            file("${depotToolsDir}/sljit/local/android/${abi}/include/sljitLir.h"),
+            file("${depotToolsDir}/sljit/local/android/${abi}/lib/libsljit.a"),
+            file("${depotToolsDir}/sljit/local/android/${abi}/manifest.txt")
         ] } + skiaDevBundleOutputs
     )
     outputs.dir(file("${depotToolsDir}/sqlite3/local"))
@@ -217,6 +226,20 @@ tasks.register('fetchNativeDependencies') {
 
         exec {
             def fetchArgs = [
+                sljitFetchScript.absolutePath,
+                '--platform', 'android',
+                '--arch', nativeAndroidAbis[0],
+                '--github-token-env', 'SLJIT_GITHUB_TOKEN'
+            ]
+            addOptionalArg(fetchArgs, '--release-tag', sljitReleaseTag)
+            addOptionalArg(fetchArgs, '--github-repo', sljitGithubRepo)
+
+            executable 'bash'
+            args fetchArgs
+        }
+
+        exec {
+            def fetchArgs = [
                 skiaFetchScript.absolutePath,
                 '--platform', 'android',
                 '--arch', nativeAndroidAbis[0],
@@ -307,7 +330,7 @@ android {
         externalNativeBuild {
             cmake {
                 abiFilters nativeAndroidAbis as String[]
-                arguments "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF"
+                arguments "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF", "-DTC_ENABLE_SLJIT_JIT=ON"
                 cppFlags "-std=c++14", "-DSK_GL"
                 targets "tcvm"
             }

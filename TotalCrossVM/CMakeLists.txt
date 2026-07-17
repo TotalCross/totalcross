@@ -11,6 +11,7 @@ include(FetchContent)
 project(tcvm VERSION 7.2.2)
 
 option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
+option(TC_ENABLE_SLJIT_JIT "Build the experimental SLJIT TCIR backend" OFF)
 
 set(TCIR_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir.c
@@ -146,6 +147,10 @@ if (NOT DEFINED QRCODEGEN_AUTO_FETCH)
   set(QRCODEGEN_AUTO_FETCH ON)
 endif()
 
+if (NOT DEFINED SLJIT_AUTO_FETCH)
+  set(SLJIT_AUTO_FETCH ON)
+endif()
+
 if(TCVM_SHARED)
   add_library(tcvm SHARED)
 else()
@@ -223,6 +228,7 @@ set(CMAKE_MODULE_PATH
   "${TCVM_DEPOT_TOOLS_DIR}/sqlite3/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/mbedtls/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/axtls/cmake"
+  "${TCVM_DEPOT_TOOLS_DIR}/sljit/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/skia/cmake"
   "${CMAKE_SOURCE_DIR}/modules"
 )
@@ -259,6 +265,9 @@ foreach(TCVM_DEP_CACHE_VAR
     QRCODEGEN_DIR
     QRCODEGEN_INCLUDE_DIR
     QRCODEGEN_LIBRARY
+    SLJIT_DIR
+    SLJIT_INCLUDE_DIR
+    SLJIT_LIBRARY
     SKIA_CONFIG_INCLUDE_DIR
     SKIA_CORE_INCLUDE_DIR
     SKIA_UTILS_INCLUDE_DIR
@@ -271,6 +280,14 @@ foreach(TCVM_DEP_CACHE_VAR
   unset(${TCVM_DEP_CACHE_VAR} CACHE)
   unset(${TCVM_DEP_CACHE_VAR})
 endforeach()
+
+if(TC_ENABLE_SLJIT_JIT)
+  include("${TCVM_DEPOT_TOOLS_DIR}/sljit/cmake/AutoFetchSLJIT.cmake")
+  if(SLJIT_AUTO_FETCH)
+    tcvm_auto_fetch_sljit()
+  endif()
+  find_package(SLJIT REQUIRED)
+endif()
 
 if(NOT USE_MADLER_ZLIB)
   include("${TCVM_DEPOT_TOOLS_DIR}/zlib-ng/cmake/AutoFetchZlibNg.cmake")
