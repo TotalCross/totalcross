@@ -10,6 +10,60 @@ include(FetchContent)
 # set the project name
 project(tcvm VERSION 7.2.2)
 
+option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
+
+set(TCIR_SOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_dump.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_opcode_map.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_verify.c
+)
+
+add_library(tcir STATIC ${TCIR_SOURCES})
+target_include_directories(tcir PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir)
+set_target_properties(tcir PROPERTIES
+  C_STANDARD 99
+  C_STANDARD_REQUIRED YES
+  C_EXTENSIONS NO
+)
+
+if(TC_BUILD_IR_TESTS)
+  enable_testing()
+  find_program(TCIR_PYTHON_EXECUTABLE NAMES python3)
+  if(NOT TCIR_PYTHON_EXECUTABLE)
+    message(FATAL_ERROR "TC_BUILD_IR_TESTS requires a Python 3 interpreter")
+  endif()
+
+  add_executable(tcir_tests
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/tcir_tests.c
+  )
+  target_link_libraries(tcir_tests tcir)
+  target_compile_definitions(tcir_tests PRIVATE
+    TCIR_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/golden"
+  )
+  target_compile_options(tcir_tests PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(tcir_tests PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+  )
+
+  add_test(NAME tcir-core COMMAND tcir_tests)
+  add_test(
+    NAME tcir-opcode-sources
+    COMMAND ${TCIR_PYTHON_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/validate-tcir-opcodes.py
+      --root ${CMAKE_CURRENT_SOURCE_DIR}/..
+  )
+  add_custom_target(check-tcir
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -R "^tcir-"
+    DEPENDS tcir_tests
+    USES_TERMINAL
+  )
+endif()
+
 if(MSVC)
   if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
     set(TARGET_WINCE ON)
