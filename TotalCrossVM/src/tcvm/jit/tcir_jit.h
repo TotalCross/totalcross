@@ -5,7 +5,7 @@
 #ifndef TCIR_JIT_H
 #define TCIR_JIT_H
 
-#include "tcir_interp.h"
+#include "tcir_compiled.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,44 +14,9 @@
 extern "C" {
 #endif
 
-#define TC_RUNTIME_ABI_VERSION 1U
-
 typedef struct TCIRJitArtifact TCIRJitArtifact;
 typedef struct TCIRJitCache TCIRJitCache;
 typedef struct TCIRJitClaim TCIRJitClaim;
-
-typedef struct TCCompiledFrame
-{
-   int32_t *i32_homes;
-   size_t i32_home_count;
-   void **ref_homes;
-   size_t ref_home_count;
-   TCIRV64Home *v64_homes;
-   size_t v64_home_count;
-   const TCIRRuntimeValue *arguments;
-   size_t argument_count;
-   unsigned int tc_pc;
-   int32_t *scratch_i32_values;
-   size_t scratch_i32_count;
-   int32_t *edge_i32_values;
-   size_t edge_i32_count;
-} TCCompiledFrame;
-
-typedef enum TCCompiledStatus
-{
-   TC_COMPILED_RETURNED = 0,
-   TC_COMPILED_THROWN,
-   TC_COMPILED_REJECTED,
-   TC_COMPILED_OUT_OF_MEMORY
-} TCCompiledStatus;
-
-typedef struct TCCompiledResult
-{
-   TCCompiledStatus status;
-   TCIRType type;
-   TCIRRuntimeValue value;
-   unsigned int tc_pc;
-} TCCompiledResult;
 
 typedef enum TCIRJitCompileStatus
 {
