@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Status and intent
 
-Version 1 of the backend-neutral TCIR contract is implemented under `TotalCrossVM/src/tcvm/ir`. It provides owned construction APIs, opaque public structures, structural and type verification, a canonical text printer, and a complete TotalCross-opcode disposition registry. Milestone 3 added bounded TotalCross-bytecode decoding and CFG/value construction for the static-integer POC subset. TCIR execution remains Milestone 4. The on-disk TCZ/class/bytecode format remains unchanged, and the interpreter remains the semantic reference.
+Version 1 of the backend-neutral TCIR contract is implemented under `TotalCrossVM/src/tcvm/ir`. It provides owned construction APIs, opaque public structures, structural and type verification, a canonical text printer, and a complete TotalCross-opcode disposition registry. Milestone 3 added bounded TotalCross-bytecode decoding and CFG/value construction for the static-integer POC subset. Milestone 4 added a verified reference interpreter and differential comparison with the existing `executeMethod` path for the three converter fixtures. The on-disk TCZ/class/bytecode format, default VM dispatch, and semantic authority of the bytecode interpreter remain unchanged.
 
 The Java package currently named `tc.tools.converter.ir` is not this IR. Its instruction classes mirror TotalCross opcodes and bit layouts, and register allocation mutates those target-shaped instructions before serialization. Some control-flow and liveness algorithms may be reusable after decoupling, but the model itself must not become the JIT/AOT contract.
 
@@ -201,7 +201,11 @@ Verification is mandatory in debug and release builds for untrusted artifacts. A
 
 ## IR interpreter
 
-Before native code generation, a small IR interpreter executes the same `TCIRFunction` using the current `Context` arenas and runtime helpers. Its purpose is semantic isolation and differential testing, not production speed. The comparison tiers are:
+`tcir_interp.c` executes verified functions directly over immutable values, block arguments, explicit edges, and the three typed home banks. `TCIRInterpreterFrame` mirrors the `Context` integer, reference, and 64-bit arenas without making the standalone TCIR library depend on VM-private structures; a later runtime adapter can point those banks at a real `Context`. Function arguments are explicit because frontend parameter values need not be reloaded from homes.
+
+Every public invocation runs the canonical verifier and a complete interpreter-eligibility scan before changing the frame. Malformed graphs, undersized frames, and operations outside the stable direct subset are rejected without partial execution. Debug builds additionally assert the successful verifier result, while release builds retain the mandatory checked path. Execution has a configurable step bound and structured `returned`, `thrown`, `rejected`, `step-limit`, and allocation-failure outcomes with the last TC PC. Integer add, subtract, and multiply use explicit 32-bit modular arithmetic instead of relying on signed C overflow.
+
+The current direct subset covers integer constants/copies/arithmetic/comparisons, typed-home load/store, branches, conditional branches, switches, returns, and explicit throws. Heap access, checks, resolution, calls, monitors, and other helper-bearing operations remain ineligible until the runtime helper ABI exists. The interpreter's purpose is semantic isolation and differential testing, not production speed. The comparison tiers are:
 
 ```text
 TotalCross bytecode interpreter
@@ -212,6 +216,8 @@ SLJIT baseline / generated-C AOT
 ```
 
 Adding a new operation requires verifier rules, canonical golden-dump coverage, IR-interpreter semantics, backend eligibility behavior, and compatibility-matrix updates.
+
+The Milestone 4 host harness builds the same production-converter `add`, `abs`, and `sumTo` slots into both a minimal real `TMethod` for `executeMethod` and a verified `TCIRFunction`. Each invocation uses fresh independent frame storage. The deterministic corpus performs 1,179 comparisons covering zero, signed extrema where bounded execution permits, wrap-producing arithmetic, a 65,537-iteration overflow loop, and fixed-seed generated inputs. It compares outcome, return type/value, stable exception details when present, and frame restoration. These pure integer fixtures do not exercise handlers, heap mutation, GC, or runtime helpers, so those remain required future differential cases rather than inferred coverage.
 
 ## Optimization policy
 
