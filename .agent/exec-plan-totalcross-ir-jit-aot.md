@@ -32,7 +32,10 @@ Correctness, portability, diagnostics, and safe fallback are the primary outcome
 - [x] (2026-07-17T17:28:38Z) Added production-converter fixtures for `add`, `abs`, and `sumTo`, canonical frontend goldens, repeated-build determinism checks, and malformed metadata/payload cases.
 - [x] (2026-07-17T17:28:38Z) Validated Milestone 3 on macOS arm64 with the focused SDK converter test, normal and ASan/UBSan CTest, strict C99 warnings, and Clang static analysis; committed the implementation as `0fa51be08` and converter-backed evidence as `f0e241b11`.
 - [x] (2026-07-17T17:28:38Z) Milestone 3: implemented the partial TotalCross-bytecode-to-TCIR frontend for the proof-of-concept subset.
-- [ ] Milestone 4: implement the TCIR reference interpreter and prove differential equivalence with `executeMethod`.
+- [x] (2026-07-17T18:20:41Z) Implemented the bounded verified TCIR reference interpreter with typed homes, defined i32 wrap semantics, explicit outcomes, step limits, and pre-execution rejection in `d5ebceb43`.
+- [x] (2026-07-17T18:20:41Z) Added a fresh-state differential harness linked to the real `executeMethod`, covering 1,179 curated/fixed-seed comparisons and method-atomic fallback in `801ae507b`.
+- [x] (2026-07-17T18:20:41Z) Validated Milestone 4 on macOS arm64 with normal and Release 3/3 CTest, TCIR ASan/UBSan, differential ASan, strict C99, Clang static analysis, and the focused SDK converter test.
+- [x] (2026-07-17T18:20:41Z) Milestone 4: implemented the TCIR reference interpreter and proved differential equivalence with `executeMethod` for the three proof-of-concept fixtures.
 - [ ] Milestone 5: integrate pinned SLJIT and implement the baseline JIT subset behind an experimental build/runtime flag.
 - [ ] Milestone 6: implement deterministic portable-C AOT generation, host compilation, registration, and comparison tests.
 - [ ] Milestone 7: integrate method-atomic mixed-mode dispatch with GC, exception, call, lifecycle, and observability safeguards.
@@ -104,6 +107,9 @@ The converter-generated `abs` and `sumTo` methods contain opcode `BREAK` as bran
 - Decision: Decode 32-bit slots with masks and shifts and structurally size all continuation classes before checking POC eligibility. Rationale: this avoids unchecked bitfield aliasing, diagnoses truncated payloads, and prevents a supported branch from targeting continuation data even when the containing opcode will ultimately fall back. Date: 2026-07-17.
 - Decision: Thread every POC i32 home through block arguments at non-entry blocks, seeding entry homes from explicit parameter mappings and converter definitions. Rationale: it is deterministic simplified SSA over register bytecode, handles loops without a JVM stack simulation, and leaves liveness-based argument pruning as an optimization rather than a correctness prerequisite. Date: 2026-07-17.
 - Decision: Make the SDK test the reproducible authority for native fixture words and source lines. Rationale: compiling Java and running the production `J2TC` converter prevents hand-authored integration encodings from drifting, while malformed slot arrays remain appropriate for decoder rejection tests. Date: 2026-07-17.
+- Decision: Make the reference-interpreter frame mirror the three typed `Context` banks without directly depending on the private VM `Context` structure. Rationale: TCIR remains a standalone C99 library, while a later runtime adapter can point the same frame contract at real context arenas. Date: 2026-07-17.
+- Decision: Verify and preflight the entire TCIR function on every reference-interpreter entry before mutating the frame. Rationale: malformed and unsupported functions must never partially execute, and the checked release path must not depend on debug assertions. Date: 2026-07-17.
+- Decision: Link the differential harness to the already-built `tcvm` artifact instead of the CMake target's legacy PUBLIC source interface. Rationale: consuming that interface recompiles the complete VM source list into the test executable, while the artifact gives the harness the real `executeMethod` implementation without duplicate compilation. Date: 2026-07-17.
 
 ## Outcomes & Retrospective
 
@@ -119,43 +125,47 @@ Milestone 3 added a bounded frontend without changing `executeMethod`, TCZ seria
 
 The normal and ASan/UBSan focused builds passed 2/2 CTest entries on macOS arm64, with leak detection explicitly disabled because Apple ASan reports it unsupported. The focused SDK fixture test passed, strict C99 compilation covered all six TCIR sources, and Clang static analysis emitted no diagnostics. This is translation and rejection evidence only: no TCIR interpreter, differential execution, backend, runtime adapter, non-host validation, or performance result exists yet.
 
+Milestone 4 added a deliberately unoptimized reference interpreter with mandatory verification, whole-function eligibility, typed homes, SSA block-edge transfer, defined modular i32 arithmetic, explicit return/throw/rejection outcomes, and bounded execution. Unsupported operations and invalid graphs are rejected before the frame or TC PC changes; debug builds assert a second successful verifier pass, while Release retains the checked rejection path.
+
+The differential harness uses the production-converter slots to invoke the existing `executeMethod` and TCIR interpreter with fresh independent state. Across 1,179 comparisons, `add`, `abs`, and `sumTo` agreed for curated zero/positive/negative/extreme/overflow cases and fixed-seed generated values; the bounded high loop includes an overflowing 65,537 iteration case. Normal and Release builds passed 3/3 CTest entries. ASan/UBSan passed the standalone TCIR core, ASan passed the differential runtime, strict C99 and Clang analysis covered all seven TCIR sources, and the SDK fixture test passed. Apple leak detection remains unavailable. UBSan signed-overflow instrumentation was intentionally not applied to `executeMethod` because its existing arithmetic implements wrap with signed C operations; new TCIR arithmetic is defined and passed UBSan. No native backend, production runtime adapter/dispatch, exception-handler/GC/helper evidence, non-host result, or performance claim exists yet.
+
 This section must be updated after every completed milestone with delivered behavior, validation evidence, deferred scope, and lessons. At full completion it must state exactly which opcode and platform sets are production-ready, which remain experimental, and why.
 
 ## Editorial Report
 
-This is an interim factual report through the completed POC frontend stage. It is not the final report required by `.agent/PLANS.md`; Milestone 9 must reconcile it with actual execution, backend, platform, and performance evidence.
+This is an interim factual report through the completed reference-interpreter stage. It is not the final report required by `.agent/PLANS.md`; Milestone 9 must reconcile it with native backend, runtime-integration, platform, and performance evidence.
 
 ### Editorial Summary
 
-The project now has a source-grounded map from Java class parsing through TotalCross bytecode execution and GC, an implemented backend-neutral TCIR version 1 contract, and a bounded frontend for the static-integer POC subset. Developers can generate representative TCode through the existing converter, decode it into verified TCIR, inspect deterministic CFG text, and receive structured rejection/fallback diagnostics. No runtime execution path changed.
+The project now has a source-grounded map from Java class parsing through TotalCross bytecode execution and GC, an implemented backend-neutral TCIR version 1 contract, a bounded frontend for the static-integer POC subset, and a verified reference interpreter. Developers can generate representative TCode through the existing converter, decode and execute verified TCIR, inspect deterministic CFG text, and compare the result with the existing interpreter. No default runtime execution path changed.
 
 ### Original Plan versus Actual Outcome
 
-Milestone 1 produced only the ExecPlan and architecture documents. Milestone 2 then implemented the planned C contract, verifier, printer, registry, fixtures, and focused tests. The optional text parser was omitted because stable one-way golden output met acceptance without creating another input format. Milestone 3 implemented the partial decoder/frontend through an explicit bounded method view and generated its integration fixtures through the production converter. The TCIR interpreter, direct runtime adapter, VM integration, native backends, and benchmarks remain planned work and are not represented as completed.
+Milestone 1 produced only the ExecPlan and architecture documents. Milestone 2 then implemented the planned C contract, verifier, printer, registry, fixtures, and focused tests. The optional text parser was omitted because stable one-way golden output met acceptance without creating another input format. Milestone 3 implemented the partial decoder/frontend through an explicit bounded method view and generated its integration fixtures through the production converter. Milestone 4 implemented reference execution and an isolated real-`executeMethod` oracle. A production runtime adapter, VM dispatch integration, native backends, and benchmarks remain planned work and are not represented as completed.
 
 ### What Changed
 
-The initial eight documents under `docs/architecture/bytecode` and this ExecPlan remain the design record. Milestone 2 added the owned TCIR implementation, verifier, printer, registry, focused tests, CMake option, and opcode source validator. Milestone 3 added `tcir_frontend.h`, `tcir_decode.c`, `tcir_frontend.c`, converter-backed fixtures/goldens under `TotalCrossVM/src/tests/ir`, and `TCIRConverterFixtureTest.java` as their regeneration check.
+The initial eight documents under `docs/architecture/bytecode` and this ExecPlan remain the design record. Milestone 2 added the owned TCIR implementation, verifier, printer, registry, focused tests, CMake option, and opcode source validator. Milestone 3 added the bounded frontend, converter-backed fixtures/goldens, and SDK regeneration check. Milestone 4 added `tcir_interp.h`, `tcir_interp.c`, reference execution/rejection tests in `tcir_tests.c`, and the real-runtime `tcir_differential_tests.c` harness as a third focused CTest entry.
 
 ### Decisions and Trade-offs
 
-TCIR version 1 uses opaque owned C structures, simplified-SSA values and block arguments, typed homes, explicit source metadata/effects, stable diagnostics, and a deterministic one-way printer. Builders copy temporary arrays but the verifier—not the builder—is the canonical malformed-graph rejection boundary. The future execution design still selects a frame ABI over current typed arenas, reference homes in `regO`, explicit exception status, method-atomic fallback, SLJIT as the baseline, and deterministic generated C as AOT.
+TCIR version 1 uses opaque owned C structures, simplified-SSA values and block arguments, typed homes, explicit source metadata/effects, stable diagnostics, and a deterministic one-way printer. Builders copy temporary arrays but the verifier—not the builder—is the canonical malformed-graph rejection boundary. Reference execution mirrors the current typed arenas without importing private `Context` layout and uses explicit result/exception/rejection status. Future runtime work still requires a real adapter, reference homes in `regO`, helper ABI, method-atomic dispatch, SLJIT as the baseline, and deterministic generated C as AOT.
 
 ### Unexpected Problems and Discoveries
 
-The existing converter IR is opcode-shaped, float identity is normalized, the class record is unversioned inside TCZ, and one Java opcode-name table omits values 158/159. During implementation, root CMake also proved to resolve the full native dependency graph before the focused target can run. Milestone 3 additionally found that `TMethod` discards its serialized code count, call width depends on resolved signature metadata, and converter control flow uses `BREAK` padding. These discoveries shaped the explicit method view, structural continuation decoder, no-op lowering, and deferred runtime adapter.
+The existing converter IR is opcode-shaped, float identity is normalized, the class record is unversioned inside TCZ, and one Java opcode-name table omits values 158/159. Root CMake resolves the full native dependency graph before focused targets run, and its legacy PUBLIC source list propagates all VM sources to normal target consumers; the differential harness therefore links the built artifact directly. Milestone 3 found that `TMethod` discards its serialized code count, call width depends on resolved signature metadata, and converter control flow uses `BREAK` padding. Milestone 4 also made the legacy oracle's signed-C overflow assumption observable under UBSan, so sanitizer evidence separates defined TCIR arithmetic from ASan-only oracle comparison.
 
 ### Validation and Measurable Results
 
-Milestone 3 validation observed: strict C99 compilation with `-pedantic -Wall -Wextra -Werror` for all six TCIR sources; Clang static analysis with no diagnostics; normal and ASan/UBSan builds with 2/2 CTest entries passing; and the focused `TCIRConverterFixtureTest` passing through `gradlew-agent`. `tcir-core` now covers three production-converter fixtures, byte-identical repeated frontend dumps, canonical CFG edges, twenty stable verifier/frontend diagnostics, and 160 registry dispositions. Apple ASan does not support `detect_leaks=1`, so the passing sanitizer run used `detect_leaks=0` and is not leak-detector evidence. No execution or performance measurement is valid yet.
+Milestone 4 validation observed: strict C99 compilation with `-pedantic -Wall -Wextra -Werror` and Clang static analysis for all seven TCIR sources; normal and Release builds with 3/3 CTest entries passing; ASan/UBSan passing the TCIR core/source tests; ASan passing the differential test; and the focused `TCIRConverterFixtureTest` passing through `gradlew-agent`. `tcir-differential` performs 1,179 comparisons with fixed seed `0x4d595df4`. Apple ASan used `detect_leaks=0` and is not leak-detector evidence. This is correctness evidence for the named host POC only, not a performance measurement.
 
 ### Useful Evidence and Examples
 
-The bytecode reference enumerates all 160 opcodes. `TotalCrossVM/src/tests/ir/fixtures/tcir_converter_fixtures.h` records exact converter words/lines, `golden/frontend-sumTo.tcir` shows the deterministic loop CFG, and `tcir_tests.c` contains accepted and rejected frontend cases. Commits `0fa51be08` and `f0e241b11` are the executable Milestone 3 implementation/evidence. The compatibility matrix continues to distinguish frontend translation from unimplemented execution/backend coverage.
+The bytecode reference enumerates all 160 opcodes. `TotalCrossVM/src/tests/ir/fixtures/tcir_converter_fixtures.h` records exact converter words/lines, `golden/frontend-sumTo.tcir` shows the deterministic loop CFG, `tcir_tests.c` covers reference execution and rejection, and `tcir_differential_tests.c` contains the real-runtime corpus. Commits `d5ebceb43` and `801ae507b` are the executable Milestone 4 implementation/evidence. The compatibility matrix distinguishes the exact fixture combinations that reached differential execution from untested family/backend coverage.
 
 ### Limitations, Remaining Work, and Open Questions
 
-No TCIR text parser, TCIR interpreter, native backend, direct runtime `Method` adapter, runtime integration, or non-host platform execution test exists yet. The frontend covers only the registry's static-integer POC subset and valid exception-bearing methods remain fallback. The helper `may_gc` closure, thread-suspension protocol, class/artifact lifecycle, volatile/atomic semantics, and real-world legacy `JUMP_regI` corpus require deeper inspection in later milestones.
+No TCIR text parser, native backend, production runtime `Method` adapter, runtime integration, or non-host platform execution test exists yet. The frontend/interpreter cover only the registry's static-integer POC subset and valid helper- or exception-bearing methods remain fallback. Handler behavior, heap mutation, GC, the helper `may_gc` closure, thread-suspension protocol, class/artifact lifecycle, volatile/atomic semantics, and real-world legacy `JUMP_regI` corpus require deeper inspection in later milestones.
 
 ### Possible Article Angles
 
@@ -218,6 +228,8 @@ Implement `tcir_interp.c` over verified functions. It executes block/value seman
 Build a differential harness that invokes the existing TotalCross bytecode interpreter and TCIR interpreter with independent fresh state for the same method and inputs. Compare return type/value, pending exception class/message where stable, selected handler behavior, and relevant mutated state. For `add`, `abs`, and `sumTo`, include zero, positive, negative, `INT32_MIN`, `INT32_MAX`, overflow-producing combinations, and loop counts including zero and a bounded high value. Add fixed-seed generated integer cases.
 
 Acceptance means every supported fixture agrees across both interpreters for the deterministic corpus and fixed seed; malformed/unverified IR never executes; unsupported methods remain wholly interpreted; and sanitizer-enabled host tests report no IR ownership or bounds defect where the repository toolchain supports them. Only after this milestone can optimization passes begin, and even then each pass must remain independently toggleable.
+
+Acceptance was observed on macOS arm64. The reference interpreter rejected invalid or ineligible functions before frame mutation in both assertion-enabled and Release builds. The real `executeMethod` and TCIR paths agreed for all 1,179 fresh-state comparisons across the converter-produced `add`, `abs`, and `sumTo` fixtures, including signed extrema, overflow-producing arithmetic, negative/zero loops, a bounded 65,537-iteration overflow loop, and seed `0x4d595df4`. Unsupported frontend input returned method-atomic fallback without publishing a function. Normal and Release CTest passed 3/3; ASan/UBSan passed the standalone TCIR tests; ASan passed the differential runtime; strict C99, Clang analysis, and the focused SDK fixture test passed. Apple leak detection was unavailable, and UBSan signed-overflow checking was excluded only from the legacy oracle comparison for the reason recorded in Outcomes. The executable implementation is commits `d5ebceb43` and `801ae507b`.
 
 ### Milestone 5: SLJIT baseline backend
 
@@ -290,10 +302,17 @@ Milestone 2 exposes the IR library and focused native tests without enabling a b
     cmake -S TotalCrossVM -B build-ir -DCMAKE_BUILD_TYPE=Debug -G Ninja -DTC_BUILD_IR_TESTS=ON
     ninja -C build-ir check-tcir
 
-`TC_BUILD_IR_TESTS` is optional and off by default. `check-tcir` builds `libtcir.a` and `tcir_tests`, then runs the `tcir-core` and `tcir-opcode-sources` CTest entries. The existing `ENABLE_TEST_SUITE` preprocessor macro is unrelated. The observed sanitizer configuration was:
+`TC_BUILD_IR_TESTS` is optional and off by default. `check-tcir` builds `libtcir.a`, `tcir_tests`, the normal `tcvm` artifact, and `tcir_differential_tests`, then runs `tcir-core`, `tcir-opcode-sources`, and `tcir-differential`. The existing `ENABLE_TEST_SUITE` preprocessor macro is unrelated. The standalone TCIR ASan/UBSan configuration is:
 
     cmake -S TotalCrossVM -B build-ir-sanitize -DCMAKE_BUILD_TYPE=Debug -G Ninja -DTC_BUILD_IR_TESTS=ON -DCMAKE_C_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer' -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
-    ninja -C build-ir-sanitize check-tcir
+    ninja -C build-ir-sanitize tcir_tests
+    ASAN_OPTIONS=detect_leaks=0 ctest --test-dir build-ir-sanitize --output-on-failure -R '^tcir-(core|opcode-sources)$'
+
+The differential oracle uses ASan without UBSan signed-overflow instrumentation because `executeMethod` currently performs signed C arithmetic for TotalCross/Java wrap semantics:
+
+    cmake -S TotalCrossVM -B build-ir-asan-diff -DCMAKE_BUILD_TYPE=Debug -G Ninja -DTC_BUILD_IR_TESTS=ON -DCMAKE_C_FLAGS='-fsanitize=address -fno-omit-frame-pointer' -DCMAKE_CXX_FLAGS='-fsanitize=address -fno-omit-frame-pointer' -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address' -DCMAKE_SHARED_LINKER_FLAGS='-fsanitize=address'
+    ninja -C build-ir-asan-diff tcir_differential_tests
+    ASAN_OPTIONS=detect_leaks=0 ctest --test-dir build-ir-asan-diff --output-on-failure -R '^tcir-differential$'
 
 Generate and verify the POC converter inputs with the focused SDK test. Use `TotalCrossSDK/gradlew-agent`, keep full Gradle output in its log, and avoid `clean` unless stale artifacts are proven:
 
@@ -391,7 +410,7 @@ The analysis stage produced:
     docs/architecture/bytecode/jit-aot-architecture.md
     docs/architecture/bytecode/compatibility-matrix.md
 
-Milestone 2 delivered the TCIR core/verifier/dumper/opcode registry and focused native fixtures/tests in commits `96c17be4b` and `a3a5e33fa`. Milestone 3 delivered the bounded bytecode decoder/frontend and production-converter golden fixtures in commits `0fa51be08` and `f0e241b11`. Milestone 4 adds the TCIR interpreter/differential harness. Milestone 5 adds the optional SLJIT backend, dependency pin/license, executable-memory abstraction, and JIT tests. Milestone 6 adds the C generator, tool, manifest/registry schema, CMake integration, and reproducibility tests. Milestone 7 adds experimental dispatcher policy, runtime thunks, diagnostics, and mixed-mode/GC tests. Milestone 8 grows those artifacts without introducing a second competing IR. Milestone 9 adds recorded platform/benchmark result artifacts and final editorial evidence.
+Milestone 2 delivered the TCIR core/verifier/dumper/opcode registry and focused native fixtures/tests in commits `96c17be4b` and `a3a5e33fa`. Milestone 3 delivered the bounded bytecode decoder/frontend and production-converter golden fixtures in commits `0fa51be08` and `f0e241b11`. Milestone 4 delivered the TCIR interpreter and real-`executeMethod` differential harness in commits `d5ebceb43` and `801ae507b`. Milestone 5 adds the optional SLJIT backend, dependency pin/license, executable-memory abstraction, and JIT tests. Milestone 6 adds the C generator, tool, manifest/registry schema, CMake integration, and reproducibility tests. Milestone 7 adds experimental dispatcher policy, runtime thunks, diagnostics, and mixed-mode/GC tests. Milestone 8 grows those artifacts without introducing a second competing IR. Milestone 9 adds recorded platform/benchmark result artifacts and final editorial evidence.
 
 Do not commit generated dependency checkouts, native archives, build directories, generated C, local logs, or benchmark binaries. Small canonical golden text/manifest fixtures may be source artifacts when they are deterministic and reviewed.
 
@@ -444,4 +463,6 @@ Revision note (2026-07-17): created the initial self-contained plan after source
 
 Revision note (2026-07-17, Milestone 2): reconciled the plan with the implemented version 1 owned TCIR API, verifier, one-way canonical printer, three-axis 160-opcode registry, focused CMake tests, source cross-check, normal/sanitizer evidence, and commits `96c17be4b` and `a3a5e33fa`.
 
-Revision note (2026-07-17, Milestone 3): reconciled the plan with the bounded method view, structural continuation decoder, static-integer CFG/SSA frontend, production-converter fixtures, twenty deterministic diagnostic cases, host validation evidence, and commits `0fa51be08` and `f0e241b11`. Milestones 4–9 remain unstarted.
+Revision note (2026-07-17, Milestone 3): reconciled the plan with the bounded method view, structural continuation decoder, static-integer CFG/SSA frontend, production-converter fixtures, twenty deterministic diagnostic cases, host validation evidence, and commits `0fa51be08` and `f0e241b11`. At that revision, Milestones 4–9 were unstarted.
+
+Revision note (2026-07-17, Milestone 4): reconciled the plan with the verified reference interpreter, typed-home execution contract, defined i32 wrap semantics, pre-execution rejection, 1,179-case real-`executeMethod` oracle, method-atomic fallback, host sanitizer/Release evidence, and commits `d5ebceb43` and `801ae507b`. Milestones 5–9 remain unstarted.
