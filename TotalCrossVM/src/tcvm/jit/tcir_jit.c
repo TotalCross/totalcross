@@ -1,0 +1,827 @@
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
+#include "tcir_jit.h"
+#include "tcir_jit_memory.h"
+
+#include <limits.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef sljit_s32 (SLJIT_FUNC *TCIRJitEntry)(TCCompiledFrame *frame);
+
+struct TCIRJitArtifact
+{
+   void *code;
+   TCIRJitEntry entry;
+   size_t code_size;
+   size_t value_count;
+   size_t edge_value_count;
+   unsigned int *parameter_value_ids;
+   size_t parameter_count;
+   unsigned int i32_home_count;
+   unsigned int ref_home_count;
+   unsigned int v64_home_count;
+   TCIRType return_type;
+};
+
+typedef struct TCIRJitPendingJump
+{
+   struct sljit_jump *jump;
+   size_t target_index;
+} TCIRJitPendingJump;
+
+typedef struct TCIRJitEmitter
+{
+   const TCIRFunction *function;
+   struct sljit_compiler *compiler;
+   struct sljit_label **labels;
+   TCIRJitPendingJump *jumps;
+   size_t jump_count;
+   size_t jump_capacity;
+   size_t emitted_count;
+   size_t emission_limit;
+   unsigned int tc_pc;
+   TCIRJitDiagnostic *diagnostic;
+} TCIRJitEmitter;
+
+typedef struct TCIRJitEligibility
+{
+   size_t value_count;
+   size_t edge_value_count;
+} TCIRJitEligibility;
+
+static void tcirJitSetDiagnostic(
+   TCIRJitDiagnostic *diagnostic,
+   TCIRJitDiagnosticCode code,
+   unsigned int tc_pc,
+   const char *format,
+   ...)
+{
+   va_list arguments;
+
+   if (diagnostic == NULL)
+      return;
+   diagnostic->code = code;
+   diagnostic->tc_pc = tc_pc;
+   va_start(arguments, format);
+   vsnprintf(diagnostic->message, sizeof(diagnostic->message), format, arguments);
+   va_end(arguments);
+}
+
+void tcirJitDiagnosticClear(TCIRJitDiagnostic *diagnostic)
+{
+   if (diagnostic != NULL)
+   {
+      memset(diagnostic, 0, sizeof(*diagnostic));
+      diagnostic->tc_pc = TCIR_TCPC_NONE;
+      tcirDiagnosticClear(&diagnostic->verifier);
+   }
+}
+
+const char *tcirJitDiagnosticCodeName(TCIRJitDiagnosticCode code)
+{
+   switch (code)
+   {
+      case TCIR_JIT_DIAGNOSTIC_NONE: return "none";
+      case TCIR_JIT_DIAGNOSTIC_INVALID_ARGUMENT: return "invalid_argument";
+      case TCIR_JIT_DIAGNOSTIC_VERIFICATION_FAILED: return "verification_failed";
+      case TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE: return "ineligible_type";
+      case TCIR_JIT_DIAGNOSTIC_INELIGIBLE_OPERATION: return "ineligible_operation";
+      case TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TERMINATOR: return "ineligible_terminator";
+      case TCIR_JIT_DIAGNOSTIC_OUT_OF_MEMORY: return "out_of_memory";
+      case TCIR_JIT_DIAGNOSTIC_EMISSION_FAILED: return "emission_failed";
+      case TCIR_JIT_DIAGNOSTIC_NOT_READY: return "not_ready";
+      case TCIR_JIT_DIAGNOSTIC_SHUTDOWN: return "shutdown";
+      default: return "unknown";
+   }
+}
+
+const char *tcirJitPlatformName(void)
+{
+   return tcirJitExecutableMemoryPlatformName();
+}
+
+static int tcirJitUpdateValueCount(const TCIRValue *value, size_t *value_count)
+{
+   size_t candidate;
+
+   if (value == NULL)
+      return 1;
+   candidate = (size_t)tcirValueId(value) + 1U;
+   if (candidate == 0U || candidate > (size_t)PTRDIFF_MAX / sizeof(int32_t))
+      return 0;
+   if (candidate > *value_count)
+      *value_count = candidate;
+   return 1;
+}
+
+static int tcirJitTypeIsI32Like(TCIRType type)
+{
+   return type == TCIR_TYPE_I1 || type == TCIR_TYPE_I32;
+}
+
+static int tcirJitOperationIsEligible(const TCIROperationView *operation)
+{
+   switch (operation->opcode)
+   {
+      case TCIR_OP_CONST_I32:
+      case TCIR_OP_COPY:
+      case TCIR_OP_ADD_I32:
+      case TCIR_OP_SUB_I32:
+      case TCIR_OP_MUL_I32:
+      case TCIR_OP_CMP_EQ_I32:
+      case TCIR_OP_CMP_LT_I32:
+      case TCIR_OP_CMP_LE_I32:
+      case TCIR_OP_CMP_GT_I32:
+      case TCIR_OP_CMP_GE_I32:
+         return operation->result != NULL && tcirJitTypeIsI32Like(operation->result_type)
+            && operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_LOAD_SLOT:
+         return operation->result != NULL && operation->result_type == TCIR_TYPE_I32
+            && operation->home_bank == TCIR_HOME_I32 && operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_STORE_SLOT:
+         return operation->result == NULL && operation->operand_count == 1U
+            && operation->home_bank == TCIR_HOME_I32 && operation->effects == TCIR_EFFECT_NONE;
+      default:
+         return 0;
+   }
+}
+
+static TCIRJitCompileStatus tcirJitInspectEligibility(
+   const TCIRFunction *function,
+   TCIRJitEligibility *eligibility,
+   TCIRJitDiagnostic *diagnostic)
+{
+   size_t block_index;
+   size_t parameter_index;
+
+   if (function == NULL || eligibility == NULL)
+   {
+      tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INVALID_ARGUMENT, TCIR_TCPC_NONE,
+                           "invalid SLJIT eligibility arguments");
+      return TCIR_JIT_COMPILE_INELIGIBLE;
+   }
+
+   memset(eligibility, 0, sizeof(*eligibility));
+   if (!tcirVerifyFunction(function, diagnostic == NULL ? NULL : &diagnostic->verifier))
+   {
+      unsigned int tc_pc = diagnostic == NULL ? TCIR_TCPC_NONE : diagnostic->verifier.tc_pc;
+      tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_VERIFICATION_FAILED, tc_pc,
+                           "TCIR verification failed before SLJIT eligibility");
+      return TCIR_JIT_COMPILE_VERIFICATION_FAILED;
+   }
+
+   if (tcirFunctionReturnType(function) != TCIR_TYPE_I32
+       && tcirFunctionReturnType(function) != TCIR_TYPE_VOID)
+   {
+      tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE, TCIR_TCPC_NONE,
+                           "SLJIT baseline supports only i32 and void returns");
+      return TCIR_JIT_COMPILE_INELIGIBLE;
+   }
+
+   for (parameter_index = 0U; parameter_index < tcirFunctionParameterCount(function); ++parameter_index)
+   {
+      const TCIRValue *parameter = tcirFunctionParameter(function, parameter_index);
+      if (tcirValueType(parameter) != TCIR_TYPE_I32 || !tcirJitUpdateValueCount(parameter, &eligibility->value_count))
+      {
+         tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE, TCIR_TCPC_NONE,
+                              "SLJIT baseline supports only bounded i32 parameters");
+         return TCIR_JIT_COMPILE_INELIGIBLE;
+      }
+   }
+
+   for (block_index = 0U; block_index < tcirFunctionBlockCount(function); ++block_index)
+   {
+      const TCIRBlock *block = tcirFunctionBlockAt(function, block_index);
+      TCIRTerminatorView terminator;
+      size_t argument_index;
+      size_t operation_index;
+      size_t edge_index;
+
+      if (tcirBlockIsExceptionHandler(block))
+      {
+         tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TERMINATOR,
+                              tcirBlockSource(block).tc_pc,
+                              "SLJIT baseline does not compile exception-handler blocks");
+         return TCIR_JIT_COMPILE_INELIGIBLE;
+      }
+      if (tcirBlockArgumentCount(block) > eligibility->edge_value_count)
+         eligibility->edge_value_count = tcirBlockArgumentCount(block);
+      for (argument_index = 0U; argument_index < tcirBlockArgumentCount(block); ++argument_index)
+      {
+         const TCIRValue *argument = tcirBlockArgumentAt(block, argument_index);
+         if (tcirValueType(argument) != TCIR_TYPE_I32
+             || !tcirJitUpdateValueCount(argument, &eligibility->value_count))
+         {
+            tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE,
+                                 tcirBlockSource(block).tc_pc,
+                                 "SLJIT baseline supports only bounded i32 block arguments");
+            return TCIR_JIT_COMPILE_INELIGIBLE;
+         }
+      }
+
+      for (operation_index = 0U; operation_index < tcirBlockOperationCount(block); ++operation_index)
+      {
+         TCIROperationView operation;
+         size_t operand_index;
+         if (tcirBlockOperationAt(block, operation_index, &operation) != TCIR_STATUS_OK
+             || !tcirJitOperationIsEligible(&operation))
+         {
+            unsigned int tc_pc = operation_index < tcirBlockOperationCount(block)
+               && tcirBlockOperationAt(block, operation_index, &operation) == TCIR_STATUS_OK
+               ? operation.source.tc_pc : tcirBlockSource(block).tc_pc;
+            tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_OPERATION, tc_pc,
+                                 "function contains an operation unsupported by the SLJIT baseline");
+            return TCIR_JIT_COMPILE_INELIGIBLE;
+         }
+         if (!tcirJitUpdateValueCount(operation.result, &eligibility->value_count))
+         {
+            tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE, operation.source.tc_pc,
+                                 "SLJIT value table is too large");
+            return TCIR_JIT_COMPILE_INELIGIBLE;
+         }
+         for (operand_index = 0U; operand_index < operation.operand_count; ++operand_index)
+            if (!tcirJitTypeIsI32Like(tcirValueType(operation.operands[operand_index])))
+            {
+               tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE,
+                                    operation.source.tc_pc,
+                                    "SLJIT baseline operation has a non-integer operand");
+               return TCIR_JIT_COMPILE_INELIGIBLE;
+            }
+      }
+
+      if (tcirBlockTerminator(block, &terminator) != TCIR_STATUS_OK
+          || (terminator.kind != TCIR_TERMINATOR_BRANCH
+              && terminator.kind != TCIR_TERMINATOR_BRANCH_IF
+              && terminator.kind != TCIR_TERMINATOR_RETURN))
+      {
+         tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TERMINATOR,
+                              tcirBlockSource(block).tc_pc,
+                              "function contains a terminator unsupported by the SLJIT baseline");
+         return TCIR_JIT_COMPILE_INELIGIBLE;
+      }
+      if (terminator.value != NULL && !tcirJitTypeIsI32Like(tcirValueType(terminator.value)))
+      {
+         tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE,
+                              terminator.source.tc_pc,
+                              "SLJIT baseline terminator has a non-integer value");
+         return TCIR_JIT_COMPILE_INELIGIBLE;
+      }
+      for (edge_index = 0U; edge_index < terminator.edge_count; ++edge_index)
+      {
+         size_t edge_argument_index;
+         for (edge_argument_index = 0U;
+              edge_argument_index < terminator.edges[edge_index].argument_count;
+              ++edge_argument_index)
+            if (tcirValueType(terminator.edges[edge_index].arguments[edge_argument_index]) != TCIR_TYPE_I32)
+            {
+               tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE,
+                                    terminator.source.tc_pc,
+                                    "SLJIT baseline edge has a non-i32 argument");
+               return TCIR_JIT_COMPILE_INELIGIBLE;
+            }
+      }
+   }
+
+   return TCIR_JIT_COMPILE_READY;
+}
+
+TCIRJitCompileStatus tcirJitCheckEligibility(
+   const TCIRFunction *function,
+   TCIRJitDiagnostic *diagnostic)
+{
+   TCIRJitEligibility eligibility;
+   tcirJitDiagnosticClear(diagnostic);
+   return tcirJitInspectEligibility(function, &eligibility, diagnostic);
+}
+
+static int tcirJitBeforeEmission(TCIRJitEmitter *emitter)
+{
+   if (emitter->emission_limit != 0U && emitter->emitted_count >= emitter->emission_limit)
+   {
+      tcirJitSetDiagnostic(emitter->diagnostic, TCIR_JIT_DIAGNOSTIC_EMISSION_FAILED, emitter->tc_pc,
+                           "SLJIT emission limit reached");
+      return 0;
+   }
+   ++emitter->emitted_count;
+   return 1;
+}
+
+static int tcirJitEmitOp1(
+   TCIRJitEmitter *emitter,
+   sljit_s32 op,
+   sljit_s32 dst,
+   sljit_sw dstw,
+   sljit_s32 src,
+   sljit_sw srcw)
+{
+   return tcirJitBeforeEmission(emitter)
+      && sljit_emit_op1(emitter->compiler, op, dst, dstw, src, srcw) == SLJIT_SUCCESS;
+}
+
+static int tcirJitEmitOp2(
+   TCIRJitEmitter *emitter,
+   sljit_s32 op,
+   sljit_s32 dst,
+   sljit_sw dstw,
+   sljit_s32 src1,
+   sljit_sw src1w,
+   sljit_s32 src2,
+   sljit_sw src2w)
+{
+   return tcirJitBeforeEmission(emitter)
+      && sljit_emit_op2(emitter->compiler, op, dst, dstw, src1, src1w, src2, src2w) == SLJIT_SUCCESS;
+}
+
+static int tcirJitEmitOp2U(
+   TCIRJitEmitter *emitter,
+   sljit_s32 op,
+   sljit_s32 src1,
+   sljit_sw src1w,
+   sljit_s32 src2,
+   sljit_sw src2w)
+{
+   return tcirJitBeforeEmission(emitter)
+      && sljit_emit_op2u(emitter->compiler, op, src1, src1w, src2, src2w) == SLJIT_SUCCESS;
+}
+
+static int tcirJitEmitOpFlags(
+   TCIRJitEmitter *emitter,
+   sljit_s32 op,
+   sljit_s32 dst,
+   sljit_sw dstw,
+   sljit_s32 type)
+{
+   return tcirJitBeforeEmission(emitter)
+      && sljit_emit_op_flags(emitter->compiler, op, dst, dstw, type) == SLJIT_SUCCESS;
+}
+
+static struct sljit_label *tcirJitEmitLabel(TCIRJitEmitter *emitter)
+{
+   if (!tcirJitBeforeEmission(emitter))
+      return NULL;
+   return sljit_emit_label(emitter->compiler);
+}
+
+static struct sljit_jump *tcirJitEmitJump(TCIRJitEmitter *emitter, sljit_s32 type)
+{
+   if (!tcirJitBeforeEmission(emitter))
+      return NULL;
+   return sljit_emit_jump(emitter->compiler, type);
+}
+
+static struct sljit_jump *tcirJitEmitCompare(
+   TCIRJitEmitter *emitter,
+   sljit_s32 type,
+   sljit_s32 src1,
+   sljit_sw src1w,
+   sljit_s32 src2,
+   sljit_sw src2w)
+{
+   if (!tcirJitBeforeEmission(emitter))
+      return NULL;
+   return sljit_emit_cmp(emitter->compiler, type, src1, src1w, src2, src2w);
+}
+
+static int tcirJitEmitReturn(TCIRJitEmitter *emitter, sljit_s32 src, sljit_sw srcw)
+{
+   return tcirJitBeforeEmission(emitter)
+      && sljit_emit_return(emitter->compiler, SLJIT_MOV32, src, srcw) == SLJIT_SUCCESS;
+}
+
+static sljit_sw tcirJitValueOffset(const TCIRValue *value)
+{
+   return (sljit_sw)((size_t)tcirValueId(value) * sizeof(int32_t));
+}
+
+static int tcirJitLoadValue(TCIRJitEmitter *emitter, sljit_s32 register_id, const TCIRValue *value)
+{
+   return tcirJitEmitOp1(emitter, SLJIT_MOV32, register_id, 0,
+                         SLJIT_MEM1(SLJIT_S1), tcirJitValueOffset(value));
+}
+
+static int tcirJitStoreValue(TCIRJitEmitter *emitter, const TCIRValue *value, sljit_s32 register_id)
+{
+   return tcirJitEmitOp1(emitter, SLJIT_MOV32,
+                         SLJIT_MEM1(SLJIT_S1), tcirJitValueOffset(value), register_id, 0);
+}
+
+static size_t tcirJitBlockIndex(const TCIRFunction *function, const TCIRBlock *target)
+{
+   size_t index;
+   for (index = 0U; index < tcirFunctionBlockCount(function); ++index)
+      if (tcirFunctionBlockAt(function, index) == target)
+         return index;
+   return (size_t)-1;
+}
+
+static int tcirJitAppendJump(
+   TCIRJitEmitter *emitter,
+   struct sljit_jump *jump,
+   const TCIRBlock *target)
+{
+   size_t target_index = tcirJitBlockIndex(emitter->function, target);
+   if (jump == NULL || target_index == (size_t)-1)
+      return 0;
+   if (emitter->jump_count == emitter->jump_capacity)
+   {
+      size_t next_capacity = emitter->jump_capacity == 0U ? 8U : emitter->jump_capacity * 2U;
+      TCIRJitPendingJump *next;
+      if (next_capacity < emitter->jump_capacity)
+         return 0;
+      next = (TCIRJitPendingJump *)realloc(emitter->jumps, next_capacity * sizeof(*next));
+      if (next == NULL)
+         return 0;
+      emitter->jumps = next;
+      emitter->jump_capacity = next_capacity;
+   }
+   emitter->jumps[emitter->jump_count].jump = jump;
+   emitter->jumps[emitter->jump_count].target_index = target_index;
+   ++emitter->jump_count;
+   return 1;
+}
+
+static int tcirJitEmitPC(TCIRJitEmitter *emitter, unsigned int tc_pc)
+{
+   emitter->tc_pc = tc_pc;
+   return tcirJitEmitOp1(emitter, SLJIT_MOV32,
+                         SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, tc_pc),
+                         SLJIT_IMM, (sljit_sw)tc_pc);
+}
+
+static int tcirJitEmitOperation(TCIRJitEmitter *emitter, const TCIROperationView *operation)
+{
+   sljit_s32 arithmetic_op;
+   sljit_s32 comparison_flag;
+   sljit_s32 comparison_type;
+
+   if (!tcirJitEmitPC(emitter, operation->source.tc_pc))
+      return 0;
+   switch (operation->opcode)
+   {
+      case TCIR_OP_CONST_I32:
+         return tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_R0, 0,
+                               SLJIT_IMM, (sljit_sw)operation->immediate_i32)
+            && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+      case TCIR_OP_COPY:
+         return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+            && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+      case TCIR_OP_ADD_I32:
+         arithmetic_op = SLJIT_ADD32;
+         break;
+      case TCIR_OP_SUB_I32:
+         arithmetic_op = SLJIT_SUB32;
+         break;
+      case TCIR_OP_MUL_I32:
+         arithmetic_op = SLJIT_MUL32;
+         break;
+      case TCIR_OP_CMP_EQ_I32:
+         comparison_flag = SLJIT_SET_Z;
+         comparison_type = SLJIT_EQUAL;
+         goto comparison;
+      case TCIR_OP_CMP_LT_I32:
+         comparison_flag = SLJIT_SET_SIG_LESS;
+         comparison_type = SLJIT_SIG_LESS;
+         goto comparison;
+      case TCIR_OP_CMP_LE_I32:
+         comparison_flag = SLJIT_SET_SIG_LESS_EQUAL;
+         comparison_type = SLJIT_SIG_LESS_EQUAL;
+         goto comparison;
+      case TCIR_OP_CMP_GT_I32:
+         comparison_flag = SLJIT_SET_SIG_GREATER;
+         comparison_type = SLJIT_SIG_GREATER;
+         goto comparison;
+      case TCIR_OP_CMP_GE_I32:
+         comparison_flag = SLJIT_SET_SIG_GREATER_EQUAL;
+         comparison_type = SLJIT_SIG_GREATER_EQUAL;
+         goto comparison;
+      case TCIR_OP_LOAD_SLOT:
+         return tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_R0, 0,
+                               SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, i32_homes))
+            && tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_R1, 0, SLJIT_MEM1(SLJIT_R0),
+                              (sljit_sw)((size_t)operation->home_index * sizeof(int32_t)))
+            && tcirJitStoreValue(emitter, operation->result, SLJIT_R1);
+      case TCIR_OP_STORE_SLOT:
+         return tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_R0, 0,
+                               SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, i32_homes))
+            && tcirJitLoadValue(emitter, SLJIT_R1, operation->operands[0])
+            && tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_MEM1(SLJIT_R0),
+                              (sljit_sw)((size_t)operation->home_index * sizeof(int32_t)), SLJIT_R1, 0);
+      default:
+         return 0;
+   }
+
+   return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+      && tcirJitLoadValue(emitter, SLJIT_R1, operation->operands[1])
+      && tcirJitEmitOp2(emitter, arithmetic_op, SLJIT_R0, 0, SLJIT_R0, 0, SLJIT_R1, 0)
+      && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+
+comparison:
+   return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+      && tcirJitLoadValue(emitter, SLJIT_R1, operation->operands[1])
+      && tcirJitEmitOp2U(emitter, SLJIT_SUB32 | comparison_flag, SLJIT_R0, 0, SLJIT_R1, 0)
+      && tcirJitEmitOpFlags(emitter, SLJIT_MOV32, SLJIT_R0, 0, comparison_type)
+      && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+}
+
+static int tcirJitEmitEdge(TCIRJitEmitter *emitter, const TCIREdge *edge)
+{
+   size_t index;
+   struct sljit_jump *jump;
+
+   for (index = 0U; index < edge->argument_count; ++index)
+      if (!tcirJitLoadValue(emitter, SLJIT_R0, edge->arguments[index])
+          || !tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_MEM1(SLJIT_S2),
+                             (sljit_sw)(index * sizeof(int32_t)), SLJIT_R0, 0))
+         return 0;
+   for (index = 0U; index < edge->argument_count; ++index)
+      if (!tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_R0, 0, SLJIT_MEM1(SLJIT_S2),
+                          (sljit_sw)(index * sizeof(int32_t)))
+          || !tcirJitStoreValue(emitter, tcirBlockArgumentAt(edge->target, index), SLJIT_R0))
+         return 0;
+
+   jump = tcirJitEmitJump(emitter, SLJIT_JUMP);
+   return tcirJitAppendJump(emitter, jump, edge->target);
+}
+
+static int tcirJitEmitTerminator(TCIRJitEmitter *emitter, const TCIRTerminatorView *terminator)
+{
+   if (!tcirJitEmitPC(emitter, terminator->source.tc_pc))
+      return 0;
+   switch (terminator->kind)
+   {
+      case TCIR_TERMINATOR_BRANCH:
+         return tcirJitEmitEdge(emitter, &terminator->edges[0]);
+      case TCIR_TERMINATOR_BRANCH_IF:
+      {
+         struct sljit_jump *true_jump;
+         struct sljit_label *true_label;
+         if (!tcirJitLoadValue(emitter, SLJIT_R0, terminator->value))
+            return 0;
+         true_jump = tcirJitEmitCompare(emitter, SLJIT_NOT_EQUAL | SLJIT_32,
+                                        SLJIT_R0, 0, SLJIT_IMM, 0);
+         if (true_jump == NULL || !tcirJitEmitEdge(emitter, &terminator->edges[1]))
+            return 0;
+         true_label = tcirJitEmitLabel(emitter);
+         if (true_label == NULL)
+            return 0;
+         sljit_set_label(true_jump, true_label);
+         return tcirJitEmitEdge(emitter, &terminator->edges[0]);
+      }
+      case TCIR_TERMINATOR_RETURN:
+         if (terminator->value == NULL)
+            return tcirJitEmitReturn(emitter, SLJIT_IMM, 0);
+         return tcirJitLoadValue(emitter, SLJIT_R0, terminator->value)
+            && tcirJitEmitReturn(emitter, SLJIT_R0, 0);
+      default:
+         return 0;
+   }
+}
+
+static int tcirJitEmitFunction(TCIRJitEmitter *emitter)
+{
+   size_t block_index;
+
+   emitter->tc_pc = TCIR_TCPC_NONE;
+   if (!tcirJitBeforeEmission(emitter)
+       || sljit_emit_enter(emitter->compiler, 0, SLJIT_ARGS1(32, P), 2, 3, 0) != SLJIT_SUCCESS
+       || !tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_S1, 0,
+                          SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, scratch_i32_values))
+       || !tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_S2, 0,
+                          SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, edge_i32_values)))
+      return 0;
+
+   for (block_index = 0U; block_index < tcirFunctionBlockCount(emitter->function); ++block_index)
+   {
+      const TCIRBlock *block = tcirFunctionBlockAt(emitter->function, block_index);
+      TCIRTerminatorView terminator;
+      size_t operation_index;
+
+      emitter->labels[block_index] = tcirJitEmitLabel(emitter);
+      if (emitter->labels[block_index] == NULL)
+         return 0;
+      for (operation_index = 0U; operation_index < tcirBlockOperationCount(block); ++operation_index)
+      {
+         TCIROperationView operation;
+         if (tcirBlockOperationAt(block, operation_index, &operation) != TCIR_STATUS_OK
+             || !tcirJitEmitOperation(emitter, &operation))
+            return 0;
+      }
+      if (tcirBlockTerminator(block, &terminator) != TCIR_STATUS_OK
+          || !tcirJitEmitTerminator(emitter, &terminator))
+         return 0;
+   }
+
+   for (block_index = 0U; block_index < emitter->jump_count; ++block_index)
+   {
+      size_t target_index = emitter->jumps[block_index].target_index;
+      if (target_index >= tcirFunctionBlockCount(emitter->function)
+          || emitter->labels[target_index] == NULL)
+         return 0;
+      sljit_set_label(emitter->jumps[block_index].jump, emitter->labels[target_index]);
+   }
+   return sljit_get_compiler_error(emitter->compiler) == SLJIT_SUCCESS;
+}
+
+TCIRJitCompileStatus tcirJitCompile(
+   const TCIRFunction *function,
+   const TCIRJitCompileOptions *options,
+   TCIRJitArtifact **artifact,
+   TCIRJitDiagnostic *diagnostic)
+{
+   TCIRJitEligibility eligibility;
+   TCIRJitCompileStatus eligibility_status;
+   TCIRJitEmitter emitter;
+   TCIRJitArtifact *created = NULL;
+   size_t parameter_index;
+
+   tcirJitDiagnosticClear(diagnostic);
+   if (artifact == NULL)
+   {
+      tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INVALID_ARGUMENT, TCIR_TCPC_NONE,
+                           "SLJIT compile requires an artifact output");
+      return TCIR_JIT_COMPILE_INELIGIBLE;
+   }
+   *artifact = NULL;
+   eligibility_status = tcirJitInspectEligibility(function, &eligibility, diagnostic);
+   if (eligibility_status != TCIR_JIT_COMPILE_READY)
+      return eligibility_status;
+
+   created = (TCIRJitArtifact *)calloc(1U, sizeof(*created));
+   if (created == NULL)
+      goto out_of_memory;
+   created->parameter_count = tcirFunctionParameterCount(function);
+   created->parameter_value_ids = (unsigned int *)calloc(
+      created->parameter_count == 0U ? 1U : created->parameter_count,
+      sizeof(*created->parameter_value_ids));
+   if (created->parameter_value_ids == NULL)
+      goto out_of_memory;
+   for (parameter_index = 0U; parameter_index < created->parameter_count; ++parameter_index)
+      created->parameter_value_ids[parameter_index] = tcirValueId(tcirFunctionParameter(function, parameter_index));
+   created->value_count = eligibility.value_count;
+   created->edge_value_count = eligibility.edge_value_count;
+   created->i32_home_count = tcirFunctionHomeCount(function, TCIR_HOME_I32);
+   created->ref_home_count = tcirFunctionHomeCount(function, TCIR_HOME_REF);
+   created->v64_home_count = tcirFunctionHomeCount(function, TCIR_HOME_V64);
+   created->return_type = tcirFunctionReturnType(function);
+
+   memset(&emitter, 0, sizeof(emitter));
+   emitter.function = function;
+   emitter.diagnostic = diagnostic;
+   emitter.emission_limit = options == NULL ? 0U : options->emission_limit;
+   emitter.compiler = sljit_create_compiler(NULL);
+   emitter.labels = (struct sljit_label **)calloc(
+      tcirFunctionBlockCount(function) == 0U ? 1U : tcirFunctionBlockCount(function),
+      sizeof(*emitter.labels));
+   if (emitter.compiler == NULL || emitter.labels == NULL)
+   {
+      sljit_free_compiler(emitter.compiler);
+      free(emitter.labels);
+      goto out_of_memory;
+   }
+   if (!tcirJitEmitFunction(&emitter))
+   {
+      if (diagnostic == NULL || diagnostic->code == TCIR_JIT_DIAGNOSTIC_NONE)
+         tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_EMISSION_FAILED, emitter.tc_pc,
+                              "SLJIT failed while emitting verified eligible TCIR");
+      sljit_free_compiler(emitter.compiler);
+      free(emitter.jumps);
+      free(emitter.labels);
+      tcirJitArtifactDestroy(created);
+      return TCIR_JIT_COMPILE_EMISSION_FAILED;
+   }
+
+   created->code = tcirJitExecutableMemoryFinalize(emitter.compiler, &created->code_size);
+   if (created->code != NULL)
+      created->entry = (TCIRJitEntry)created->code;
+   sljit_free_compiler(emitter.compiler);
+   free(emitter.jumps);
+   free(emitter.labels);
+   if (created->entry == NULL)
+   {
+      tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_EMISSION_FAILED, emitter.tc_pc,
+                           "SLJIT could not finalize executable code");
+      tcirJitArtifactDestroy(created);
+      return TCIR_JIT_COMPILE_EMISSION_FAILED;
+   }
+
+   *artifact = created;
+   return TCIR_JIT_COMPILE_READY;
+
+out_of_memory:
+   tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_OUT_OF_MEMORY, TCIR_TCPC_NONE,
+                        "unable to allocate the SLJIT artifact");
+   tcirJitArtifactDestroy(created);
+   return TCIR_JIT_COMPILE_OUT_OF_MEMORY;
+}
+
+void tcirJitArtifactDestroy(TCIRJitArtifact *artifact)
+{
+   if (artifact != NULL)
+   {
+      if (artifact->code != NULL)
+         tcirJitExecutableMemoryDispose(artifact->code);
+      free(artifact->parameter_value_ids);
+      free(artifact);
+   }
+}
+
+size_t tcirJitArtifactCodeSize(const TCIRJitArtifact *artifact)
+{
+   return artifact == NULL ? 0U : artifact->code_size;
+}
+
+const void *tcirJitArtifactCodeAddress(const TCIRJitArtifact *artifact)
+{
+   return artifact == NULL ? NULL : artifact->code;
+}
+
+TCIRJitMemoryPolicy tcirJitArtifactMemoryPolicy(const TCIRJitArtifact *artifact)
+{
+   (void)artifact;
+   return TCIR_JIT_MEMORY_WX;
+}
+
+TCCompiledStatus tcirJitInvoke(
+   const TCIRJitArtifact *artifact,
+   TCCompiledFrame *frame,
+   TCCompiledResult *result,
+   TCIRJitDiagnostic *diagnostic)
+{
+   int32_t *scratch_values;
+   int32_t *edge_values;
+   int32_t *previous_scratch;
+   int32_t *previous_edge;
+   size_t previous_scratch_count;
+   size_t previous_edge_count;
+   sljit_s32 return_value;
+   size_t parameter_index;
+
+   tcirJitDiagnosticClear(diagnostic);
+   if (result != NULL)
+   {
+      memset(result, 0, sizeof(*result));
+      result->status = TC_COMPILED_REJECTED;
+      result->type = TCIR_TYPE_VOID;
+      result->tc_pc = TCIR_TCPC_NONE;
+   }
+   if (artifact == NULL || artifact->entry == NULL || frame == NULL || result == NULL
+       || frame->argument_count != artifact->parameter_count
+       || (frame->argument_count != 0U && frame->arguments == NULL)
+       || frame->i32_home_count < artifact->i32_home_count
+       || (frame->i32_home_count != 0U && frame->i32_homes == NULL)
+       || frame->ref_home_count < artifact->ref_home_count
+       || (frame->ref_home_count != 0U && frame->ref_homes == NULL)
+       || frame->v64_home_count < artifact->v64_home_count
+       || (frame->v64_home_count != 0U && frame->v64_homes == NULL))
+   {
+      tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INVALID_ARGUMENT, TCIR_TCPC_NONE,
+                           "compiled frame does not match the SLJIT artifact ABI");
+      return TC_COMPILED_REJECTED;
+   }
+
+   scratch_values = (int32_t *)calloc(artifact->value_count == 0U ? 1U : artifact->value_count,
+                                      sizeof(*scratch_values));
+   edge_values = (int32_t *)calloc(artifact->edge_value_count == 0U ? 1U : artifact->edge_value_count,
+                                   sizeof(*edge_values));
+   if (scratch_values == NULL || edge_values == NULL)
+   {
+      free(edge_values);
+      free(scratch_values);
+      result->status = TC_COMPILED_OUT_OF_MEMORY;
+      tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_OUT_OF_MEMORY, TCIR_TCPC_NONE,
+                           "unable to allocate the SLJIT invocation scratch frame");
+      return TC_COMPILED_OUT_OF_MEMORY;
+   }
+   for (parameter_index = 0U; parameter_index < artifact->parameter_count; ++parameter_index)
+      scratch_values[artifact->parameter_value_ids[parameter_index]] = frame->arguments[parameter_index].i32;
+
+   previous_scratch = frame->scratch_i32_values;
+   previous_scratch_count = frame->scratch_i32_count;
+   previous_edge = frame->edge_i32_values;
+   previous_edge_count = frame->edge_i32_count;
+   frame->scratch_i32_values = scratch_values;
+   frame->scratch_i32_count = artifact->value_count;
+   frame->edge_i32_values = edge_values;
+   frame->edge_i32_count = artifact->edge_value_count;
+   frame->tc_pc = TCIR_TCPC_NONE;
+   return_value = artifact->entry(frame);
+   frame->scratch_i32_values = previous_scratch;
+   frame->scratch_i32_count = previous_scratch_count;
+   frame->edge_i32_values = previous_edge;
+   frame->edge_i32_count = previous_edge_count;
+   free(edge_values);
+   free(scratch_values);
+
+   result->status = TC_COMPILED_RETURNED;
+   result->type = artifact->return_type;
+   result->tc_pc = frame->tc_pc;
+   if (artifact->return_type == TCIR_TYPE_I32)
+      result->value.i32 = (int32_t)return_value;
+   return TC_COMPILED_RETURNED;
+}

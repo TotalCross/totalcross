@@ -287,6 +287,25 @@ if(TC_ENABLE_SLJIT_JIT)
     tcvm_auto_fetch_sljit()
   endif()
   find_package(SLJIT REQUIRED)
+
+  add_library(tcir_jit STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/jit/tcir_jit.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/jit/tcir_jit_cache.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/jit/tcir_jit_memory.c
+  )
+  target_include_directories(tcir_jit PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/jit
+  )
+  target_link_libraries(tcir_jit PUBLIC tcir PRIVATE SLJIT::SLJIT)
+  target_compile_options(tcir_jit PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(tcir_jit PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+  )
+  target_link_libraries(tcvm tcir_jit)
 endif()
 
 if(NOT USE_MADLER_ZLIB)
@@ -953,6 +972,10 @@ if(TC_BUILD_IR_TESTS)
   # VM source as part of the executable.
   target_link_libraries(tcir_differential_tests PRIVATE tcir $<TARGET_LINKER_FILE:tcvm>)
   add_dependencies(tcir_differential_tests tcvm)
+  if(TC_ENABLE_SLJIT_JIT)
+    target_compile_definitions(tcir_differential_tests PRIVATE TCIR_HAS_SLJIT=1)
+    target_link_libraries(tcir_differential_tests PRIVATE tcir_jit)
+  endif()
   target_compile_options(tcir_differential_tests PRIVATE
     $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
   )
@@ -964,6 +987,23 @@ if(TC_BUILD_IR_TESTS)
   )
   add_test(NAME tcir-differential COMMAND tcir_differential_tests)
   add_dependencies(check-tcir tcir_differential_tests)
+
+  if(TC_ENABLE_SLJIT_JIT)
+    add_executable(tcir_jit_tests
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/tcir_jit_tests.c
+    )
+    target_link_libraries(tcir_jit_tests PRIVATE tcir_jit)
+    target_compile_options(tcir_jit_tests PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+    )
+    set_target_properties(tcir_jit_tests PROPERTIES
+      C_STANDARD 11
+      C_STANDARD_REQUIRED YES
+      C_EXTENSIONS NO
+    )
+    add_test(NAME tcir-jit COMMAND tcir_jit_tests)
+    add_dependencies(check-tcir tcir_jit_tests)
+  endif()
 endif()
 
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
