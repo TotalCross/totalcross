@@ -4,6 +4,10 @@
 
 #include "tcir_frontend.h"
 #include "tcir_interp.h"
+#if defined(TCIR_HAS_AOT)
+#include "tcir_aot.h"
+#include "tcir_aot_generated.h"
+#endif
 #if defined(TCIR_HAS_SLJIT)
 #include "tcir_jit.h"
 #endif
@@ -297,6 +301,82 @@ static DifferentialResult executeSLJIT(
 }
 #endif
 
+#if defined(TCIR_HAS_AOT)
+static DifferentialResult executeAOT(
+   TCCompiledEntry entry,
+   const TCIRConverterFixture *fixture,
+   int32_t first,
+   int32_t second)
+{
+   TCIRRuntimeValue arguments[2];
+   TCCompiledFrame frame;
+   TCCompiledResult compiled_result;
+   int32_t i32_homes[16];
+   void *ref_homes[16];
+   TCIRV64Home v64_homes[16];
+   DifferentialResult result;
+
+   memset(arguments, 0, sizeof(arguments));
+   arguments[0].i32 = first;
+   arguments[1].i32 = second;
+   memset(i32_homes, 0, sizeof(i32_homes));
+   memset(ref_homes, 0, sizeof(ref_homes));
+   memset(v64_homes, 0, sizeof(v64_homes));
+   memset(&frame, 0, sizeof(frame));
+   frame.i32_homes = i32_homes;
+   frame.i32_home_count = fixture->i32_count;
+   frame.ref_homes = ref_homes;
+   frame.ref_home_count = fixture->ref_count;
+   frame.v64_homes = v64_homes;
+   frame.v64_home_count = fixture->v64_count;
+   frame.arguments = arguments;
+   frame.argument_count = fixture->parameter_count;
+   frame.tc_pc = TCIR_TCPC_NONE;
+   memset(&result, 0, sizeof(result));
+   if (entry(&frame, &compiled_result) == TC_COMPILED_RETURNED)
+   {
+      result.outcome = DIFFERENTIAL_RETURNED;
+      result.return_type = compiled_result.type;
+      result.return_i32 = compiled_result.value.i32;
+   }
+   else
+   {
+      result.outcome = DIFFERENTIAL_THROWN;
+      result.return_type = compiled_result.type;
+      result.exception_class = "<aot>";
+      snprintf(result.exception_message, sizeof(result.exception_message), "portable-C entry rejected the frame");
+   }
+   result.frame_restored = frame.scratch_i32_values == NULL
+      && frame.scratch_i32_count == 0U
+      && frame.edge_i32_values == NULL
+      && frame.edge_i32_count == 0U;
+   return result;
+}
+
+static TCCompiledEntry findAOTEntry(const char *class_name, const char *method_name, const char *signature)
+{
+   size_t index;
+   for (index = 0U; index < tcir_aot_generated_registry_count; ++index)
+   {
+      const TCIRAotRegistryEntry *candidate = &tcir_aot_generated_registry[index];
+      if (strcmp(candidate->class_name, class_name) == 0
+          && strcmp(candidate->method_name, method_name) == 0
+          && strcmp(candidate->signature, signature) == 0)
+      {
+         const TCIRAotRegistryEntry *registered = tcirAotRegistryFind(
+            tcir_aot_generated_registry,
+            tcir_aot_generated_registry_count,
+            class_name,
+            method_name,
+            signature,
+            candidate->content_hash);
+         return registered == NULL ? NULL : registered->entry;
+      }
+   }
+   return NULL;
+}
+#endif
+
 static int resultsAgree(
    const TCIRConverterFixture *fixture,
    int32_t first,
@@ -340,6 +420,9 @@ static int compareInput(
    int32_t first,
    int32_t second,
    const void *jit_artifact,
+#if defined(TCIR_HAS_AOT)
+   TCCompiledEntry aot_entry,
+#endif
    TCIRDiagnostic *diagnostic)
 {
    DifferentialResult tcode = executeTCode(fixture, first, second);
@@ -349,10 +432,18 @@ static int compareInput(
 #if defined(TCIR_HAS_SLJIT)
    {
       DifferentialResult sljit = executeSLJIT((const TCIRJitArtifact *)jit_artifact, fixture, first, second);
-      return resultsAgree(fixture, first, second, &tcode, &sljit, "SLJIT");
+      if (!resultsAgree(fixture, first, second, &tcode, &sljit, "SLJIT"))
+         return 0;
    }
 #else
    (void)jit_artifact;
+#endif
+#if defined(TCIR_HAS_AOT)
+   {
+      DifferentialResult aot = executeAOT(aot_entry, fixture, first, second);
+      return resultsAgree(fixture, first, second, &tcode, &aot, "AOT");
+   }
+#else
    return 1;
 #endif
 }
@@ -394,6 +485,11 @@ static int testFixtureCorpus(void)
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
    TCIRFunction *functions[3];
    void *jit_artifacts[3] = { NULL, NULL, NULL };
+#if defined(TCIR_HAS_AOT)
+   static const char *const method_names[] = { "add", "abs", "sumTo" };
+   static const char *const signatures[] = { "(II)I", "(I)I", "(I)I" };
+   TCCompiledEntry aot_entries[3];
+#endif
    uint32_t generated_state = UINT32_C(0x4d595df4);
    size_t case_index;
    size_t fixture_index;
@@ -417,32 +513,61 @@ static int testFixtureCorpus(void)
          jit_artifacts[fixture_index] = artifact;
       }
 #endif
+#if defined(TCIR_HAS_AOT)
+      aot_entries[fixture_index] = findAOTEntry(
+         "fixtures.TCIRPoc", method_names[fixture_index], signatures[fixture_index]);
+      REQUIRE(aot_entries[fixture_index] != NULL);
+#endif
    }
 
    for (case_index = 0U; case_index < sizeof(add_cases) / sizeof(add_cases[0]); ++case_index)
       REQUIRE(compareInput(&tcir_converter_fixtures[0], functions[0], add_cases[case_index][0],
-                           add_cases[case_index][1], jit_artifacts[0], &diagnostic));
+                           add_cases[case_index][1], jit_artifacts[0],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[0],
+#endif
+                           &diagnostic));
    for (case_index = 0U; case_index < sizeof(abs_cases) / sizeof(abs_cases[0]); ++case_index)
       REQUIRE(compareInput(&tcir_converter_fixtures[1], functions[1], abs_cases[case_index], 0,
-                           jit_artifacts[1], &diagnostic));
+                           jit_artifacts[1],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[1],
+#endif
+                           &diagnostic));
    for (case_index = 0U; case_index < sizeof(sum_cases) / sizeof(sum_cases[0]); ++case_index)
       REQUIRE(compareInput(&tcir_converter_fixtures[2], functions[2], sum_cases[case_index], 0,
-                           jit_artifacts[2], &diagnostic));
+                           jit_artifacts[2],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[2],
+#endif
+                           &diagnostic));
 
    for (case_index = 0U; case_index < 512U; ++case_index)
    {
       int32_t first = i32FromBits(nextGeneratedValue(&generated_state));
       int32_t second = i32FromBits(nextGeneratedValue(&generated_state));
       REQUIRE(compareInput(&tcir_converter_fixtures[0], functions[0], first, second,
-                           jit_artifacts[0], &diagnostic));
+                           jit_artifacts[0],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[0],
+#endif
+                           &diagnostic));
       REQUIRE(compareInput(&tcir_converter_fixtures[1], functions[1], first, 0,
-                           jit_artifacts[1], &diagnostic));
+                           jit_artifacts[1],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[1],
+#endif
+                           &diagnostic));
    }
    for (case_index = 0U; case_index < 128U; ++case_index)
    {
       int32_t value = (int32_t)(nextGeneratedValue(&generated_state) % UINT32_C(4129)) - 32;
       REQUIRE(compareInput(&tcir_converter_fixtures[2], functions[2], value, 0,
-                           jit_artifacts[2], &diagnostic));
+                           jit_artifacts[2],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[2],
+#endif
+                           &diagnostic));
    }
 
 #if defined(TCIR_HAS_SLJIT)
@@ -481,7 +606,15 @@ int main(void)
    if (!testFixtureCorpus() || !testUnsupportedFrontendFallback())
       return 1;
 #if defined(TCIR_HAS_SLJIT)
+#if defined(TCIR_HAS_AOT)
+   printf("TCIR differential tests passed: 3 fixtures, 1,179 executeMethod/TCIR/SLJIT/AOT comparisons, "
+          "fixed seed 0x4d595df4.\n");
+#else
    printf("TCIR differential tests passed: 3 fixtures, 1,179 executeMethod/TCIR/SLJIT comparisons, "
+          "fixed seed 0x4d595df4.\n");
+#endif
+#elif defined(TCIR_HAS_AOT)
+   printf("TCIR differential tests passed: 3 fixtures, 1,179 executeMethod/TCIR/AOT comparisons, "
           "fixed seed 0x4d595df4.\n");
 #else
    printf("TCIR differential tests passed: 3 fixtures, 1,179 executeMethod comparisons, fixed seed 0x4d595df4.\n");

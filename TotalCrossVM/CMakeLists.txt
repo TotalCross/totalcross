@@ -12,6 +12,7 @@ project(tcvm VERSION 7.2.2)
 
 option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
 option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
+option(TC_ENABLE_C_AOT "Build the experimental portable-C TCIR backend" OFF)
 option(TC_ENABLE_SLJIT_JIT "Build the experimental SLJIT TCIR backend" OFF)
 
 if(TC_BUILD_IR_BENCHMARKS AND NOT TC_ENABLE_SLJIT_JIT)
@@ -35,6 +36,43 @@ set_target_properties(tcir PROPERTIES
   C_STANDARD_REQUIRED YES
   C_EXTENSIONS NO
 )
+
+if(TC_ENABLE_C_AOT)
+  add_library(tcir_aot STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/aot/tcir_aot.c
+  )
+  target_include_directories(tcir_aot PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/aot
+  )
+  target_link_libraries(tcir_aot PUBLIC tcir)
+  target_compile_options(tcir_aot PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(tcir_aot PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+  )
+
+  if(NOT CMAKE_CROSSCOMPILING)
+    add_executable(tcaot
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/tools/tcaot.c
+    )
+    target_include_directories(tcaot PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir
+    )
+    target_link_libraries(tcaot PRIVATE tcir_aot)
+    target_compile_options(tcaot PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+    )
+    set_target_properties(tcaot PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tools"
+      C_STANDARD 11
+      C_STANDARD_REQUIRED YES
+      C_EXTENSIONS NO
+    )
+  endif()
+endif()
 
 if(TC_BUILD_IR_TESTS)
   enable_testing()
@@ -969,6 +1007,77 @@ else()
 endif(DEFINED ANDROID_ABI)
 
 if(TC_BUILD_IR_TESTS)
+  if(TC_ENABLE_C_AOT)
+    if(NOT TARGET tcaot)
+      message(FATAL_ERROR "TCIR AOT host tests require a native tcaot executable")
+    endif()
+    set(TCIR_AOT_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/aot/poc")
+    set(TCIR_AOT_GENERATED_SOURCE "${TCIR_AOT_GENERATED_DIR}/tcir_aot_generated.c")
+    set(TCIR_AOT_GENERATED_HEADER "${TCIR_AOT_GENERATED_DIR}/tcir_aot_generated.h")
+    set(TCIR_AOT_GENERATED_MANIFEST "${TCIR_AOT_GENERATED_DIR}/manifest.json")
+    add_custom_command(
+      OUTPUT
+        ${TCIR_AOT_GENERATED_SOURCE}
+        ${TCIR_AOT_GENERATED_HEADER}
+        ${TCIR_AOT_GENERATED_MANIFEST}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${TCIR_AOT_GENERATED_DIR}
+      COMMAND $<TARGET_FILE:tcaot>
+        --input poc-fixtures
+        --output ${TCIR_AOT_GENERATED_DIR}
+        --manifest ${TCIR_AOT_GENERATED_MANIFEST}
+        --target-options "host-c11-poc"
+      DEPENDS
+        tcaot
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/fixtures/tcir_converter_fixtures.h
+      VERBATIM
+    )
+    add_library(tcir_aot_generated STATIC
+      ${TCIR_AOT_GENERATED_SOURCE}
+      ${TCIR_AOT_GENERATED_HEADER}
+    )
+    target_include_directories(tcir_aot_generated PUBLIC ${TCIR_AOT_GENERATED_DIR})
+    target_link_libraries(tcir_aot_generated PUBLIC tcir_aot)
+    target_compile_options(tcir_aot_generated PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror;-pedantic>
+    )
+    set_target_properties(tcir_aot_generated PROPERTIES
+      C_STANDARD 11
+      C_STANDARD_REQUIRED YES
+      C_EXTENSIONS NO
+    )
+
+    add_executable(tcir_aot_tests
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/tcir_aot_tests.c
+    )
+    target_include_directories(tcir_aot_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir)
+    target_link_libraries(tcir_aot_tests PRIVATE tcir_aot)
+    target_compile_options(tcir_aot_tests PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+    )
+    set_target_properties(tcir_aot_tests PROPERTIES
+      C_STANDARD 11
+      C_STANDARD_REQUIRED YES
+      C_EXTENSIONS NO
+    )
+    add_test(NAME tcir-aot COMMAND tcir_aot_tests)
+    add_test(
+      NAME tcir-aot-determinism
+      COMMAND ${CMAKE_COMMAND}
+        -DTCIR_AOT_TOOL=$<TARGET_FILE:tcaot>
+        -DTCIR_AOT_TEST_DIR=${CMAKE_CURRENT_BINARY_DIR}/aot/determinism
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/modules/ValidateTCIRAotDeterminism.cmake
+    )
+    add_test(
+      NAME tcir-aot-manifest
+      COMMAND ${TCIR_PYTHON_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/validate-tcir-aot-manifest.py
+        --manifest ${TCIR_AOT_GENERATED_MANIFEST}
+        --source ${TCIR_AOT_GENERATED_SOURCE}
+        --header ${TCIR_AOT_GENERATED_HEADER}
+    )
+    add_dependencies(check-tcir tcir_aot_tests tcir_aot_generated)
+  endif()
+
   add_executable(tcir_differential_tests
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/tcir_differential_tests.c
   )
@@ -981,6 +1090,11 @@ if(TC_BUILD_IR_TESTS)
     target_compile_definitions(tcir_differential_tests PRIVATE TCIR_HAS_SLJIT=1)
     target_link_libraries(tcir_differential_tests PRIVATE tcir_jit)
   endif()
+  if(TC_ENABLE_C_AOT)
+    target_compile_definitions(tcir_differential_tests PRIVATE TCIR_HAS_AOT=1)
+    target_include_directories(tcir_differential_tests PRIVATE ${TCIR_AOT_GENERATED_DIR})
+    target_link_libraries(tcir_differential_tests PRIVATE tcir_aot_generated)
+  endif()
   target_compile_options(tcir_differential_tests PRIVATE
     $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
   )
@@ -992,6 +1106,12 @@ if(TC_BUILD_IR_TESTS)
   )
   add_test(NAME tcir-differential COMMAND tcir_differential_tests)
   add_dependencies(check-tcir tcir_differential_tests)
+
+  if(TC_ENABLE_C_AOT)
+    add_custom_target(tcvm_aot_fixture
+      DEPENDS tcir_aot_tests tcir_differential_tests tcir_aot_generated
+    )
+  endif()
 
   if(TC_ENABLE_SLJIT_JIT)
     add_executable(tcir_jit_tests
