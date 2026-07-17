@@ -927,6 +927,28 @@ else()
   endif(NOT APPLE AND UNIX)
 endif(DEFINED ANDROID_ABI)
 
+if(TC_BUILD_IR_TESTS)
+  add_executable(tcir_differential_tests
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/tcir_differential_tests.c
+  )
+  # tcvm exposes its source list as PUBLIC for legacy consumers. Link the built
+  # runtime artifact directly so this focused harness does not recompile every
+  # VM source as part of the executable.
+  target_link_libraries(tcir_differential_tests PRIVATE tcir $<TARGET_LINKER_FILE:tcvm>)
+  add_dependencies(tcir_differential_tests tcvm)
+  target_compile_options(tcir_differential_tests PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(tcir_differential_tests PROPERTIES
+    BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR}"
+    C_STANDARD 99
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+  )
+  add_test(NAME tcir-differential COMMAND tcir_differential_tests)
+  add_dependencies(check-tcir tcir_differential_tests)
+endif()
+
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 include_directories(${TC_SRCDIR}/util)
