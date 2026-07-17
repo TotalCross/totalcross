@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Status and intent
 
-Version 1 of the backend-neutral TCIR contract is implemented under `TotalCrossVM/src/tcvm/ir`. It provides owned construction APIs, opaque public structures, structural and type verification, a canonical text printer, and a complete TotalCross-opcode disposition registry. It does not yet decode TotalCross bytecode or execute TCIR; those remain Milestones 3 and 4. The on-disk TCZ/class/bytecode format remains unchanged, and the interpreter remains the semantic reference.
+Version 1 of the backend-neutral TCIR contract is implemented under `TotalCrossVM/src/tcvm/ir`. It provides owned construction APIs, opaque public structures, structural and type verification, a canonical text printer, and a complete TotalCross-opcode disposition registry. Milestone 3 added bounded TotalCross-bytecode decoding and CFG/value construction for the static-integer POC subset. TCIR execution remains Milestone 4. The on-disk TCZ/class/bytecode format remains unchanged, and the interpreter remains the semantic reference.
 
 The Java package currently named `tc.tools.converter.ir` is not this IR. Its instruction classes mirror TotalCross opcodes and bit layouts, and register allocation mutates those target-shaped instructions before serialization. Some control-flow and liveness algorithms may be reusable after decoupling, but the model itself must not become the JIT/AOT contract.
 
@@ -156,19 +156,22 @@ Names derived from memory addresses, hash-table iteration order, or thread timin
 
 ## Frontend algorithm
 
-The bytecode-to-IR frontend planned for Milestone 3 performs these phases:
+The bytecode-to-IR frontend implemented for the Milestone 3 POC performs these phases:
 
 1. decode slots into logical instructions and mark continuation slots;
-2. validate opcode, operand ranges, symbols, register banks, call payloads, switch tables, handler ranges, and line data;
-3. discover block leaders from entry, branch/switch targets, fallthrough, handlers, and legacy indirect targets;
-4. emit slot-form IR with explicit checks/effects and TC PC metadata;
-5. compute predecessor/successor and exceptional edges;
-6. propagate types and definedness through every edge;
-7. promote slot values where safe and create block arguments;
-8. run the canonical verifier; and
-9. optionally emit stable text and an execution eligibility report.
+2. validate structural widths, POC operands, symbols, register banks, branch/switch targets, handler ranges, and parameter homes;
+3. reject or return method-atomic fallback before creating TCIR;
+4. discover block leaders from entry, supported branch targets, and fallthrough;
+5. precreate deterministic blocks and i32-home block arguments;
+6. lower register state into immutable operations and explicit successor edges while preserving TC PC/source line;
+7. run the canonical verifier; and
+8. optionally emit stable text for diagnostics and golden comparison.
 
 A failure returns a structured reason and leaves the method eligible for the existing interpreter. It must not terminate the process.
+
+The implementation accepts a non-owning `TCIRMethodView`, not a bare runtime `TMethod`, because the current loader does not retain the serialized code-slot count in `TMethod`. The view makes code bounds, home counts, parameter-home mapping, i32 constants, source lines, handlers, and call-shape resolution explicit. This is a frontend safety boundary rather than a new shipping format or runtime ABI. A later integration milestone must build the view from loader/runtime-owned metadata before dispatch can use it.
+
+For the static-integer POC, every non-entry block receives the declared i32 homes as deterministic block arguments. Entry parameters seed their explicit homes; converter instructions define local homes before use. This intentionally favors a simple verifiable construction over liveness-minimal argument lists. Reference/v64 promotion, exception edges, and valid handler-bearing methods remain outside this milestone and retain interpreter fallback.
 
 ## Verifier invariants
 

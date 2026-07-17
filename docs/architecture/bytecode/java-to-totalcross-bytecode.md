@@ -107,7 +107,7 @@ An `invokedynamic` outside known patterns produces a deterministic conversion er
 
 ## Requirements for the bytecode-to-IR frontend
 
-The new frontend consumes `TMethod` and TotalCross slots rather than repeating `.class` conversion. It must:
+The new frontend consumes a bounded view of `TMethod` metadata and TotalCross slots rather than repeating `.class` conversion. `TMethod` itself does not retain the serialized code-slot count, so Milestone 3 uses `TCIRMethodView` to make that bound and the required pool/debug metadata explicit. It must:
 
 1. decode instructions and every continuation slot;
 2. reject a target in the middle of an instruction;
@@ -120,6 +120,8 @@ The new frontend consumes `TMethod` and TotalCross slots rather than repeating `
 9. fail before compilation when an opcode or combination is not supported.
 
 The independent frontend starts after Java compatibility has already been reduced to TotalCross semantics. Differential tests should therefore compare the TotalCross bytecode interpreter with the IR interpreter, while converter tests continue covering `.class -> TCZ` behavior.
+
+Milestone 3's `TCIRConverterFixtureTest` compiles `add`, `abs`, and `sumTo`, runs the production `J2TC` path, and compares the exact emitted TCode words and source lines with the native fixture header. This proves the frontend integration inputs are converter-backed; it does not yet prove interpreter equivalence, because TCIR execution begins in Milestone 4.
 
 ## Preservation rule
 
