@@ -49,13 +49,19 @@
 #ifndef TC_BENCHMARK_C_FLAGS
 #define TC_BENCHMARK_C_FLAGS "unknown"
 #endif
+#ifndef TC_BENCHMARK_CONFIG_WARMUP_COUNT
+#define TC_BENCHMARK_CONFIG_WARMUP_COUNT 5
+#endif
+#ifndef TC_BENCHMARK_CONFIG_SAMPLE_COUNT
+#define TC_BENCHMARK_CONFIG_SAMPLE_COUNT 60
+#endif
 
 enum
 {
    TC_BENCHMARK_BACKEND_COUNT = 3,
    TC_BENCHMARK_FIXTURE_COUNT = 3,
-   TC_BENCHMARK_WARMUP_COUNT = 5,
-   TC_BENCHMARK_SAMPLE_COUNT = 60,
+   TC_BENCHMARK_WARMUP_COUNT = TC_BENCHMARK_CONFIG_WARMUP_COUNT,
+   TC_BENCHMARK_SAMPLE_COUNT = TC_BENCHMARK_CONFIG_SAMPLE_COUNT,
    TC_BENCHMARK_FRAME_CAPACITY = 16
 };
 
@@ -795,13 +801,12 @@ static int benchmarkWriteJson(
    fprintf(
       output,
       "  \"protocol\":{\"timer\":\"monotonic wall clock\",\"warmup_count\":%u,"
-      "\"sample_count\":%u,\"order_policy\":\"all six backend permutations repeated %u times\","
+      "\"sample_count\":%u,\"order_policy\":\"six backend permutations in round-robin order; counts differ by at most one\","
       "\"validation\":\"every warmup and measured batch checksum must match executeMethod\","
       "\"outlier_policy\":\"no samples excluded or filtered\","
       "\"scope\":\"hot standalone API invocation with contexts and artifacts reused; current per-invocation verifier and scratch allocation costs included\"},\n",
       TC_BENCHMARK_WARMUP_COUNT,
-      TC_BENCHMARK_SAMPLE_COUNT,
-      TC_BENCHMARK_SAMPLE_COUNT / 6U);
+      TC_BENCHMARK_SAMPLE_COUNT);
    fputs("  \"workloads\":[\n", output);
    for (fixture_index = 0U; fixture_index < TC_BENCHMARK_FIXTURE_COUNT; ++fixture_index)
    {
