@@ -1,0 +1,11 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.add:(II)I"(%v0: i32, %v1: i32) -> i32
+  homes i32 2, ref 0, v64 0
+bb0() ; tcpc=0 line=4
+  %v2 = add.i32 %v0, %v1 -> i32 ; tcpc=0 line=4
+  ret %v2 ; tcpc=1 line=4
+end
