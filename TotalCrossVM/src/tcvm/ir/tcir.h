@@ -257,6 +257,8 @@ TCIRSymbol *tcirModuleAddSymbol(
 
 size_t tcirModuleFunctionCount(const TCIRModule *module);
 const TCIRFunction *tcirModuleFunctionAt(const TCIRModule *module, size_t index);
+size_t tcirModuleSymbolCount(const TCIRModule *module);
+const TCIRSymbol *tcirModuleSymbolAt(const TCIRModule *module, size_t index);
 
 const char *tcirFunctionIdentity(const TCIRFunction *function);
 TCIRType tcirFunctionReturnType(const TCIRFunction *function);
@@ -273,6 +275,9 @@ TCIRStatus tcirFunctionSetSourceSlots(
    size_t slot_count,
    const unsigned char *instruction_starts,
    TCIRDiagnostic *diagnostic);
+unsigned int tcirFunctionHomeCount(const TCIRFunction *function, TCIRHomeBank bank);
+size_t tcirFunctionSourceSlotCount(const TCIRFunction *function);
+int tcirFunctionSourceSlotIsInstructionStart(const TCIRFunction *function, size_t slot_index);
 
 TCIRBlock *tcirFunctionAppendBlock(
    TCIRFunction *function,

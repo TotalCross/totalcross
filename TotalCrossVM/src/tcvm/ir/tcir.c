@@ -554,6 +554,16 @@ const TCIRFunction *tcirModuleFunctionAt(const TCIRModule *module, size_t index)
    return module == NULL || index >= module->function_count ? NULL : module->functions[index];
 }
 
+size_t tcirModuleSymbolCount(const TCIRModule *module)
+{
+   return module == NULL ? 0 : module->symbol_count;
+}
+
+const TCIRSymbol *tcirModuleSymbolAt(const TCIRModule *module, size_t index)
+{
+   return module == NULL || index >= module->symbol_count ? NULL : module->symbols[index];
+}
+
 const char *tcirFunctionIdentity(const TCIRFunction *function)
 {
    return function == NULL ? NULL : function->identity;
@@ -626,6 +636,24 @@ TCIRStatus tcirFunctionSetSourceSlots(
    function->instruction_starts = copy;
    function->source_slot_count = slot_count;
    return TCIR_STATUS_OK;
+}
+
+unsigned int tcirFunctionHomeCount(const TCIRFunction *function, TCIRHomeBank bank)
+{
+   if (function == NULL || (unsigned int)bank > (unsigned int)TCIR_HOME_V64)
+      return 0;
+   return function->home_counts[bank];
+}
+
+size_t tcirFunctionSourceSlotCount(const TCIRFunction *function)
+{
+   return function == NULL ? 0 : function->source_slot_count;
+}
+
+int tcirFunctionSourceSlotIsInstructionStart(const TCIRFunction *function, size_t slot_index)
+{
+   return function != NULL && slot_index < function->source_slot_count &&
+          function->instruction_starts[slot_index] != 0;
 }
 
 TCIRBlock *tcirFunctionAppendBlock(

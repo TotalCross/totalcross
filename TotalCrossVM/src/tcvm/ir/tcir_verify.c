@@ -454,6 +454,20 @@ static int tcirVerifyOperation(
          tcirOperationName(operation->opcode));
       return 0;
    }
+   if (operation->result_type == TCIR_TYPE_NON_NULL_REF &&
+       operation->opcode != TCIR_OP_NULL_CHECK &&
+       !(operation->opcode == TCIR_OP_COPY && operation->operand_count == 1 &&
+         operation->operands[0]->type == TCIR_TYPE_NON_NULL_REF))
+   {
+      tcirSetDiagnostic(
+         diagnostic,
+         TCIR_DIAGNOSTIC_RESULT_TYPE,
+         function->identity,
+         operation->source.tc_pc,
+         "%s cannot produce ref! without a non-null proof",
+         tcirOperationName(operation->opcode));
+      return 0;
+   }
 
    switch (operation->opcode)
    {

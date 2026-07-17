@@ -384,12 +384,29 @@ static int testGoldenFunctions(void)
    TCIRFunction *add;
    TCIRFunction *absolute;
    TCIRFunction *sum_to;
+   TCIROperationView operation;
+   TCIRTerminatorView terminator;
 
    REQUIRE(module != NULL);
    add = buildAdd(module, &diagnostic);
    absolute = buildAbs(module, &diagnostic);
    sum_to = buildSumTo(module, &diagnostic);
    REQUIRE(add != NULL && absolute != NULL && sum_to != NULL);
+   REQUIRE(tcirModuleFunctionCount(module) == 3);
+   REQUIRE(tcirModuleFunctionAt(module, 0) == add);
+   REQUIRE(tcirModuleFunctionAt(module, 3) == NULL);
+   REQUIRE(tcirFunctionHomeCount(add, TCIR_HOME_I32) == 2);
+   REQUIRE(tcirFunctionHomeCount(add, TCIR_HOME_REF) == 0);
+   REQUIRE(tcirFunctionSourceSlotCount(add) == 2);
+   REQUIRE(tcirFunctionSourceSlotIsInstructionStart(add, 0));
+   REQUIRE(!tcirFunctionSourceSlotIsInstructionStart(add, 2));
+   REQUIRE(tcirFunctionBlockCount(add) == 1);
+   REQUIRE(tcirBlockOperationCount(tcirFunctionBlockAt(add, 0)) == 1);
+   REQUIRE(tcirBlockOperationAt(tcirFunctionBlockAt(add, 0), 0, &operation) == TCIR_STATUS_OK);
+   REQUIRE(operation.opcode == TCIR_OP_ADD_I32);
+   REQUIRE(operation.operand_count == 2);
+   REQUIRE(tcirBlockTerminator(tcirFunctionBlockAt(add, 0), &terminator) == TCIR_STATUS_OK);
+   REQUIRE(terminator.kind == TCIR_TERMINATOR_RETURN);
 
    REQUIRE(checkGolden(module, add, "add", &diagnostic));
    REQUIRE(checkGolden(module, absolute, "abs", &diagnostic));
@@ -697,6 +714,44 @@ static int testInternalAddressLifetime(void)
    return 1;
 }
 
+static int testNonNullProof(void)
+{
+   const TCIRType parameters[] = { TCIR_TYPE_REF };
+   const TCIRValue *operands[1];
+   TCIROperationSpec spec;
+   TCIRDiagnostic diagnostic;
+   TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
+   TCIRSymbol *field;
+   TCIRFunction *function;
+   TCIRBlock *entry;
+   TCIRValue *loaded;
+
+   REQUIRE(module != NULL);
+   field = tcirModuleAddSymbol(
+      module, TCIR_SYMBOL_FIELD, "Example", "value", "LObject;", 1, TCIR_EFFECT_NONE, &diagnostic);
+   function = tcirModuleAddFunction(
+      module, "Invalid.nonNull:(O)O", parameters, 1, TCIR_TYPE_NON_NULL_REF, &diagnostic);
+   REQUIRE(field != NULL && function != NULL && setAllSourceSlots(function, 2, &diagnostic));
+   REQUIRE(tcirModuleSymbolCount(module) == 1);
+   REQUIRE(tcirModuleSymbolAt(module, 0) == field);
+   REQUIRE(tcirModuleSymbolAt(module, 1) == NULL);
+   entry = tcirFunctionAppendBlock(function, 0, source(0, -1), 0, &diagnostic);
+   REQUIRE(entry != NULL);
+   operands[0] = tcirFunctionParameter(function, 0);
+   memset(&spec, 0, sizeof(spec));
+   spec.opcode = TCIR_OP_FIELD_LOAD;
+   spec.result_type = TCIR_TYPE_NON_NULL_REF;
+   spec.operands = operands;
+   spec.operand_count = 1;
+   spec.symbol = field;
+   spec.source = source(0, -1);
+   REQUIRE(tcirBlockAppendOperation(entry, &spec, &loaded, &diagnostic) == TCIR_STATUS_OK);
+   REQUIRE(setTerminator(entry, TCIR_TERMINATOR_RETURN, loaded, NULL, 0, 1, &diagnostic));
+   REQUIRE(expectInvalid(function, TCIR_DIAGNOSTIC_RESULT_TYPE, 0));
+   tcirModuleDestroy(module);
+   return 1;
+}
+
 static int testOpcodeRegistry(void)
 {
    TCIRDiagnostic diagnostic;
@@ -728,9 +783,10 @@ int main(void)
    passed = testHelperEffects() && passed;
    passed = testUncheckedArrayProof() && passed;
    passed = testInternalAddressLifetime() && passed;
+   passed = testNonNullProof() && passed;
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
-   printf("TCIR tests passed: 3 golden fixtures, 9 stable verifier diagnostics, 160 opcode dispositions.\n");
+   printf("TCIR tests passed: 3 golden fixtures, 10 stable verifier diagnostics, 160 opcode dispositions.\n");
    return 0;
 }
