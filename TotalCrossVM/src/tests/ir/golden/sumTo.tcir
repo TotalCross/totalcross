@@ -1,0 +1,21 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"Example.sumTo:(I)I"(%v0: i32) -> i32
+  homes i32 4, ref 0, v64 0
+bb0() ; tcpc=0 line=30
+  %v8 = const.i32 0 ; tcpc=0
+  br bb1(%v8, %v8, %v0) ; tcpc=1
+bb1(%v1: i32, %v2: i32, %v3: i32) ; tcpc=2 line=31
+  %v9 = cmp.ge.s.i32 %v1, %v3 -> i1 ; tcpc=2
+  br_if %v9, bb3(%v2), bb2(%v1, %v2, %v3) ; tcpc=4
+bb2(%v4: i32, %v5: i32, %v6: i32) ; tcpc=5 line=32
+  %v10 = add.i32 %v5, %v4 -> i32 ; tcpc=5
+  %v11 = const.i32 1 ; tcpc=6
+  %v12 = add.i32 %v4, %v11 -> i32 ; tcpc=7
+  br bb1(%v12, %v10, %v6) ; tcpc=8
+bb3(%v7: i32) ; tcpc=9 line=33
+  ret %v7 ; tcpc=9
+end
