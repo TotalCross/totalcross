@@ -14,7 +14,9 @@ option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
 
 set(TCIR_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_decode.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_dump.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_frontend.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_opcode_map.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_verify.c
 )

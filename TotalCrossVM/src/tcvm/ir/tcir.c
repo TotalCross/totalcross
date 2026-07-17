@@ -262,7 +262,14 @@ const char *tcirDiagnosticCodeName(TCIRDiagnosticCode code)
       "gc_home",
       "internal_address_lifetime",
       "unreachable_block",
-      "opcode_registry"
+      "opcode_registry",
+      "unsupported_opcode",
+      "malformed_continuation",
+      "invalid_target",
+      "invalid_register",
+      "invalid_symbol",
+      "invalid_handler",
+      "type_merge"
    };
    size_t count = sizeof(names) / sizeof(names[0]);
    return (unsigned int)code < count ? names[(unsigned int)code] : "unknown";
