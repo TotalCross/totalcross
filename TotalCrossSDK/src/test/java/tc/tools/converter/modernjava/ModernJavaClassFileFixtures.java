@@ -358,6 +358,30 @@ final class ModernJavaClassFileFixtures {
         "java 17 sealed metadata", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileTCIRPocFixture(Path workDir) throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "TCIRPoc";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n"
+        + "public final class " + simpleName + " {\n"
+        + "  public static int add(int left, int right) {\n"
+        + "    return left + right;\n"
+        + "  }\n"
+        + "  public static int abs(int value) {\n"
+        + "    return value < 0 ? -value : value;\n"
+        + "  }\n"
+        + "  public static int sumTo(int limit) {\n"
+        + "    int sum = 0;\n"
+        + "    for (int value = 0; value < limit; value++) {\n"
+        + "      sum += value;\n"
+        + "    }\n"
+        + "    return sum;\n"
+        + "  }\n"
+        + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "TCIR POC converter output", className, source);
+  }
+
   private static Optional<ModernJavaClassFileFixture> compile(Path workDir, int javaRelease, int expectedMajorVersion,
       String featureName, String className, String source) throws IOException {
     Path sourceDir = workDir.resolve("src");

@@ -1,0 +1,20 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.abs:(I)I"(%v0: i32) -> i32
+  homes i32 1, ref 0, v64 0
+bb0() ; tcpc=0 line=7
+  %v4 = const.i32 0 ; tcpc=0 line=7
+  %v5 = cmp.ge.s.i32 %v0, %v4 -> i1 ; tcpc=0 line=7
+  br_if %v5, bb2(%v0), bb1(%v0) ; tcpc=0 line=7
+bb1(%v1: i32) ; tcpc=1 line=7
+  %v6 = const.i32 0 ; tcpc=1 line=7
+  %v7 = sub.i32 %v6, %v1 -> i32 ; tcpc=1 line=7
+  br bb3(%v7) ; tcpc=3 line=7
+bb2(%v2: i32) ; tcpc=4 line=7
+  br bb3(%v2) ; tcpc=4 line=7
+bb3(%v3: i32) ; tcpc=5 line=7
+  ret %v3 ; tcpc=5 line=7
+end

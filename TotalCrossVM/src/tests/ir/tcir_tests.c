@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcir.h"
+#include "tcir_frontend.h"
 #include "tcir_opcode_map.h"
 
 #include <stdio.h>
@@ -29,6 +30,20 @@
       if (!(condition)) \
          return NULL; \
    } while (0)
+
+typedef struct TCIRConverterFixture
+{
+   const char *identity;
+   const unsigned int *code;
+   const int *lines;
+   size_t code_count;
+   unsigned int i32_count;
+   unsigned int ref_count;
+   unsigned int v64_count;
+   unsigned int parameter_count;
+} TCIRConverterFixture;
+
+#include "fixtures/tcir_converter_fixtures.h"
 
 static TCIRSourceLocation source(unsigned int tc_pc, int line)
 {
@@ -328,6 +343,24 @@ static char *readGoldenPayload(const char *name)
    return data;
 }
 
+static int writeGoldenPayload(const char *name, const char *payload)
+{
+   char path[1024];
+   FILE *file;
+   snprintf(path, sizeof(path), "%s/%s.tcir", TCIR_GOLDEN_DIR, name);
+   file = fopen(path, "wb");
+   if (file == NULL)
+      return 0;
+   fprintf(
+      file,
+      "; Copyright (C) 2026 Amalgam Solucoes em TI Ltda\n"
+      ";\n"
+      "; SPDX-License-Identifier: LGPL-2.1-only\n\n"
+      "%s",
+      payload);
+   return fclose(file) == 0;
+}
+
 static int expectInvalid(
    const TCIRFunction *function,
    TCIRDiagnosticCode expected_code,
@@ -363,6 +396,8 @@ static int checkGolden(
       goto cleanup;
    first = tcirFunctionDump(function, diagnostic);
    second = tcirFunctionDump(function, diagnostic);
+   if (first != NULL && getenv("TCIR_UPDATE_GOLDENS") != NULL && !writeGoldenPayload(name, first))
+      goto cleanup;
    expected = readGoldenPayload(name);
    if (first == NULL || second == NULL || expected == NULL)
       goto cleanup;
@@ -377,7 +412,7 @@ cleanup:
    return passed;
 }
 
-static int testGoldenFunctions(void)
+static int testConstructedFunctions(void)
 {
    TCIRDiagnostic diagnostic;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
@@ -408,11 +443,220 @@ static int testGoldenFunctions(void)
    REQUIRE(tcirBlockTerminator(tcirFunctionBlockAt(add, 0), &terminator) == TCIR_STATUS_OK);
    REQUIRE(terminator.kind == TCIR_TERMINATOR_RETURN);
 
-   REQUIRE(checkGolden(module, add, "add", &diagnostic));
-   REQUIRE(checkGolden(module, absolute, "abs", &diagnostic));
-   REQUIRE(checkGolden(module, sum_to, "sumTo", &diagnostic));
+   REQUIRE(tcirVerifyFunction(add, &diagnostic));
+   REQUIRE(tcirVerifyFunction(absolute, &diagnostic));
+   REQUIRE(tcirVerifyFunction(sum_to, &diagnostic));
 
    tcirModuleDestroy(module);
+   return 1;
+}
+
+static int buildFixtureView(
+   const TCIRConverterFixture *fixture,
+   TCIRMethodView *view,
+   TCIRMethodParameter *parameters)
+{
+   static const int constants[] = { 0 };
+   size_t index;
+
+   if (fixture->parameter_count > 2)
+      return 0;
+   for (index = 0; index < fixture->parameter_count; index++)
+   {
+      parameters[index].type = TCIR_TYPE_I32;
+      parameters[index].home_bank = TCIR_HOME_I32;
+      parameters[index].home_index = (unsigned int)index;
+   }
+   memset(view, 0, sizeof(*view));
+   view->identity = fixture->identity;
+   view->code = fixture->code;
+   view->code_slot_count = fixture->code_count;
+   view->i32_home_count = fixture->i32_count;
+   view->ref_home_count = fixture->ref_count;
+   view->v64_home_count = fixture->v64_count;
+   view->parameters = parameters;
+   view->parameter_count = fixture->parameter_count;
+   view->return_type = TCIR_TYPE_I32;
+   view->i32_constants = constants;
+   view->i32_constant_count = sizeof(constants) / sizeof(constants[0]);
+   view->source_lines = fixture->lines;
+   return 1;
+}
+
+static int testConverterFrontendFixtures(void)
+{
+   static const char *const golden_names[] = { "frontend-add", "frontend-abs", "frontend-sumTo" };
+   static const size_t expected_block_counts[] = { 1, 4, 4 };
+   TCIRDiagnostic diagnostic;
+   TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
+   size_t fixture_index;
+
+   REQUIRE(module != NULL);
+   REQUIRE(sizeof(tcir_converter_fixtures) / sizeof(tcir_converter_fixtures[0]) == 3);
+   for (fixture_index = 0; fixture_index < 3; fixture_index++)
+   {
+      const TCIRConverterFixture *fixture = &tcir_converter_fixtures[fixture_index];
+      TCIRMethodParameter parameters[2];
+      TCIRMethodView view;
+      TCIRFunction *first = NULL;
+      TCIRFunction *second = NULL;
+      char *first_dump;
+      char *second_dump;
+      size_t pc;
+
+      REQUIRE(buildFixtureView(fixture, &view, parameters));
+      REQUIRE(tcirFrontendBuildFunction(module, &view, &first, &diagnostic) == TCIR_FRONTEND_OK);
+      REQUIRE(first != NULL);
+      REQUIRE(tcirVerifyFunction(first, &diagnostic));
+      REQUIRE(tcirFunctionBlockCount(first) == expected_block_counts[fixture_index]);
+      REQUIRE(tcirFunctionSourceSlotCount(first) == fixture->code_count);
+      for (pc = 0; pc < fixture->code_count; pc++)
+         REQUIRE(tcirFunctionSourceSlotIsInstructionStart(first, pc));
+      REQUIRE(checkGolden(module, first, golden_names[fixture_index], &diagnostic));
+
+      REQUIRE(tcirFrontendBuildFunction(module, &view, &second, &diagnostic) == TCIR_FRONTEND_OK);
+      REQUIRE(second != NULL && tcirVerifyFunction(second, &diagnostic));
+      first_dump = tcirFunctionDump(first, &diagnostic);
+      second_dump = tcirFunctionDump(second, &diagnostic);
+      REQUIRE(first_dump != NULL && second_dump != NULL);
+      REQUIRE(strcmp(first_dump, second_dump) == 0);
+      tcirFreeText(module, first_dump);
+      tcirFreeText(module, second_dump);
+   }
+   tcirModuleDestroy(module);
+   return 1;
+}
+
+static int expectFrontendDiagnostic(
+   const TCIRMethodView *view,
+   TCIRFrontendResult expected_result,
+   TCIRDiagnosticCode expected_code,
+   unsigned int expected_pc)
+{
+   TCIRDiagnostic first;
+   TCIRDiagnostic second;
+   TCIRModule *first_module = tcirModuleCreate(NULL, &first);
+   TCIRModule *second_module = tcirModuleCreate(NULL, &second);
+   TCIRFunction *function = NULL;
+
+   REQUIRE(first_module != NULL && second_module != NULL);
+   REQUIRE(tcirFrontendBuildFunction(first_module, view, &function, &first) == expected_result);
+   REQUIRE(function == NULL);
+   REQUIRE(tcirFrontendBuildFunction(second_module, view, &function, &second) == expected_result);
+   REQUIRE(function == NULL);
+   REQUIRE(first.code == expected_code && first.tc_pc == expected_pc);
+   REQUIRE(first.code == second.code && first.tc_pc == second.tc_pc);
+   REQUIRE(strcmp(first.function, second.function) == 0);
+   REQUIRE(strcmp(first.message, second.message) == 0);
+   REQUIRE(tcirModuleFunctionCount(first_module) == 0);
+   REQUIRE(tcirModuleFunctionCount(second_module) == 0);
+   tcirModuleDestroy(first_module);
+   tcirModuleDestroy(second_module);
+   return 1;
+}
+
+static int resolveLargeCall(void *user_data, unsigned int symbol, TCIRCallShape *shape)
+{
+   (void)user_data;
+   (void)symbol;
+   shape->parameter_count = 6;
+   shape->returns_value = 1;
+   return 1;
+}
+
+static TCIRMethodView diagnosticView(
+   const char *identity,
+   const unsigned int *code,
+   size_t code_count,
+   TCIRType return_type)
+{
+   static const int constants[] = { 0 };
+   TCIRMethodView view;
+   memset(&view, 0, sizeof(view));
+   view.identity = identity;
+   view.code = code;
+   view.code_slot_count = code_count;
+   view.i32_home_count = 1;
+   view.return_type = return_type;
+   view.i32_constants = constants;
+   view.i32_constant_count = sizeof(constants) / sizeof(constants[0]);
+   return view;
+}
+
+static int testFrontendDiagnostics(void)
+{
+   const unsigned int malformed_switch[] = { 145U | (1U << 16) };
+   const unsigned int malformed_call[] = { 153U };
+   const unsigned int continuation_target[] = {
+      123U | (2U << 8),
+      145U | (1U << 16),
+      4U,
+      7U,
+      4U,
+      136U
+   };
+   const unsigned int invalid_register[] = { 7U | (3U << 8), 133U };
+   const unsigned int invalid_symbol[] = { 6U | (1U << 16), 133U };
+   const unsigned int returns_void[] = { 136U };
+   const unsigned int unsupported[] = { 149U, 136U };
+   const unsigned int unsupported_conditional[] = { 104U, 136U };
+   const unsigned int supported_call_shape[] = { 153U, 0U, 0U, 136U };
+   TCIRMethodView view;
+   TCIRMethodParameter parameter;
+   TCIRMethodHandler handler;
+
+   view = diagnosticView("Invalid.switch:()V", malformed_switch, 1, TCIR_TYPE_VOID);
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_MALFORMED_CONTINUATION, 0));
+
+   view = diagnosticView("Invalid.call:()V", malformed_call, 1, TCIR_TYPE_VOID);
+   view.resolve_call_shape = resolveLargeCall;
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_MALFORMED_CONTINUATION, 0));
+
+   view = diagnosticView("Invalid.target:()V", continuation_target, 6, TCIR_TYPE_VOID);
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_INVALID_TARGET, 0));
+
+   view = diagnosticView("Invalid.register:()I", invalid_register, 2, TCIR_TYPE_I32);
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_INVALID_REGISTER, 0));
+
+   view = diagnosticView("Invalid.symbol:()I", invalid_symbol, 2, TCIR_TYPE_I32);
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_INVALID_SYMBOL, 0));
+
+   view = diagnosticView("Invalid.handler:()V", returns_void, 1, TCIR_TYPE_VOID);
+   handler.start_pc = 0;
+   handler.end_pc = 0;
+   handler.handler_pc = 0;
+   handler.exception_home = 0;
+   view.handlers = &handler;
+   view.handler_count = 1;
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_INVALID_HANDLER, 0));
+
+   view = diagnosticView("Invalid.merge:(O)V", returns_void, 1, TCIR_TYPE_VOID);
+   parameter.type = TCIR_TYPE_REF;
+   parameter.home_bank = TCIR_HOME_I32;
+   parameter.home_index = 0;
+   view.parameters = &parameter;
+   view.parameter_count = 1;
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_TYPE_MERGE, 0));
+
+   view = diagnosticView("Fallback.object:()V", unsupported, 2, TCIR_TYPE_VOID);
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_FALLBACK, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE, 0));
+
+   view = diagnosticView("Fallback.longBranch:()V", unsupported_conditional, 2, TCIR_TYPE_VOID);
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_FALLBACK, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE, 0));
+
+   view = diagnosticView("Fallback.call:()V", supported_call_shape, 4, TCIR_TYPE_VOID);
+   view.resolve_call_shape = resolveLargeCall;
+   REQUIRE(expectFrontendDiagnostic(
+      &view, TCIR_FRONTEND_FALLBACK, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE, 0));
    return 1;
 }
 
@@ -773,7 +1017,9 @@ static int testOpcodeRegistry(void)
 int main(void)
 {
    int passed = 1;
-   passed = testGoldenFunctions() && passed;
+   passed = testConstructedFunctions() && passed;
+   passed = testConverterFrontendFixtures() && passed;
+   passed = testFrontendDiagnostics() && passed;
    passed = testUndefinedValue() && passed;
    passed = testBlockArgumentType() && passed;
    passed = testInvalidTerminator() && passed;
@@ -787,6 +1033,6 @@ int main(void)
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
-   printf("TCIR tests passed: 3 golden fixtures, 10 stable verifier diagnostics, 160 opcode dispositions.\n");
+   printf("TCIR tests passed: 3 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
    return 0;
 }
