@@ -31,9 +31,11 @@ The bytecode interpreter remains available for every valid existing method. Comp
 
 [SLJIT](https://github.com/zherczeg/sljit) is a small, low-level, platform-independent JIT generator with direct register and stack operations, code serialization facilities, and upstream support for x86 32/64, ARM 32/64, RISC-V 32/64, s390x, PowerPC, LoongArch and MIPS families. Its low abstraction level fits a baseline backend but does not replace TCIR, validation, register-home, exception, or GC design. SLJIT uses the [Simplified BSD license](https://github.com/zherczeg/sljit/blob/master/LICENSE), whose notice and redistribution requirements must be carried in source and binary distributions.
 
-The dependency should be pinned through the repository's native-dependency/depot-tools flow, with a reproducible revision and license artifact. An unpinned network fetch during ordinary CMake configuration is not acceptable.
+Milestone 5 pins depot-tools tag `sljit-20260717` in `TotalCrossVM/deps/totalcross-depot-tools.ref`. Its artifacts contain upstream revision `3907e69005ba6e30b225000f24aaef3632f88347`, source SHA-256 `f3e299647a610c537296a41d8866f1e7b664401c229e6cdb67a621250086efd9`, and the upstream license at `share/licenses/sljit/LICENSE`. The package enables argument checks and the W^X executable allocator. Ordinary CMake configuration consumes the prebuilt package instead of fetching unpinned upstream source.
 
 All native integration in this architecture belongs in the root `TotalCrossVM/CMakeLists.txt`. The legacy `TotalCrossVM/src/jni/Android.mk` and `TCVM.xcodeproj` are not build inputs for this plan and must not be edited or used for validation. Android NDK and Apple toolchains are selected through the root CMake project.
+
+`TC_ENABLE_SLJIT_JIT` controls the optional `tcir_jit` library and is off by default. The current Android arm64-v8a Gradle build deliberately passes it as `ON` so NDK builds compile the backend while runtime selection remains absent. The verified Android configuration is NDK `28.2.13676358`, target `aarch64-none-linux-android23`, compile/target SDK 35, and minSdk 23.
 
 ## Backend interface
 
@@ -57,7 +59,7 @@ TCCompiledStatus tcCompiledInvoke(
     TValue *result);
 ```
 
-The actual names may change during implementation, but these properties are required:
+Milestone 5 implements this boundary as `TCIRJitArtifact`, `tcirJitCompile`, `TCCompiledFrame`, `TCCompiledResult`, `tcirJitInvoke`, and explicit artifact disposal under `TotalCrossVM/src/tcvm/jit`. These properties remain required:
 
 - compile failure is structured and non-fatal;
 - an artifact records IR version, runtime ABI version, target, feature flags, code ownership and entry address;
@@ -104,11 +106,13 @@ Helpers must document argument ownership, whether they may allocate/GC/throw/loc
 
 The POC supports integer constants/copies, integer arithmetic, comparisons, conditional/unconditional branches, loops, and integer/void return. Direct calls may be the next slice. Unsupported methods remain entirely interpreted.
 
+Milestone 5 implements steps 3–6 as a standalone backend and test cache. It reruns the canonical verifier and a whole-method eligibility pass before creating an SLJIT compiler, publishes no artifact on any rejection/emission failure, and returns `COMPILING` to competing cache lookups so their caller can retain interpreter execution. Production thresholding and dispatcher invocation in steps 1, 2, and 7 remain Milestone 7 work.
+
 Tiering, background compilation and hot counters are deliberately later milestones. Correctness and deterministic eligibility come first.
 
 ## Executable-memory policy
 
-JIT memory handling is a platform security boundary. The implementation must centralize allocation/finalization/freeing and enforce W^X; it must never leave pages writable and executable simultaneously where the platform offers a compliant transition.
+JIT memory handling is a platform security boundary. `tcir_jit_memory.c` is the only backend path that finalizes or disposes executable code. It rejects SLJIT builds without `SLJIT_WX_EXECUTABLE_ALLOCATOR=1` or with `SLJIT_PROT_EXECUTABLE_ALLOCATOR=1`; SLJIT owns platform write/finalize/execute transitions and instruction-cache synchronization. The host test inspects the finalized entry mapping and requires executable permission without writable permission.
 
 On Apple Silicon macOS, Apple's [JIT porting guidance](https://developer.apple.com/documentation/apple-silicon/porting-just-in-time-compilers-to-apple-silicon) describes `MAP_JIT`, the Hardened Runtime JIT entitlement, write-protect transitions, and architecture-specific requirements. The default project policy should therefore be:
 
@@ -116,8 +120,8 @@ On Apple Silicon macOS, Apple's [JIT porting guidance](https://developer.apple.c
 |---|---|---|---|
 | Linux x86-64/aarch64/armv7 | experimental opt-in | supported | executable-memory and CI tests |
 | Windows x86/x86-64 | experimental opt-in where built | supported | allocation/protection/unwind tests |
-| macOS arm64 | off unless correctly entitled/configured | supported | Hardened Runtime, `MAP_JIT`, W^X review |
-| Android arm64-v8a | off initially | supported | Play/security policy and device validation |
+| macOS arm64 | off unless correctly entitled/configured | supported | forced host execution/W^X passed; Hardened Runtime and distribution review remain |
+| Android arm64-v8a | compiled but not selected | supported | NDK r28c/API 23 build passed; device and Play/security validation remain |
 | iOS arm64 | off by project policy | primary path | static AOT, signing and App Review review |
 
 Apple's [App Review Guideline 2.5.2](https://developer.apple.com/app-store/review/guidelines/#software-requirements) restricts downloading, installing, or executing code that changes app functionality. This plan does not claim that every form of JIT is universally prohibited by the OS; it chooses JIT-off for iOS until entitlement, distribution, and legal/product policy are reviewed. Generated C compiled and statically linked as part of the app build is the intended path.
@@ -156,7 +160,7 @@ The baseline does not use native unwinding, conservative stack scanning or hidde
 
 ## Cache, invalidation and lifecycle
 
-The first JIT cache is in-memory only. Its key includes `Method` bytecode content, IR version, runtime ABI version, backend version, target architecture and semantic flags. Failed eligibility may be cached with a bounded diagnostic code. Machine-code serialization is not enabled merely because SLJIT exposes serialization; persistent cache requires threat modeling, signature/integrity, ASLR/relocation, CPU feature and app-version design.
+The first JIT cache is in-memory only. The Milestone 5 side table accepts an opaque method key supplied by its future runtime adapter and records `COMPILING`, `READY`, or `REJECTED`; only the claiming thread can publish or reject. A mutex makes state publication atomic, the cache owns only successfully published artifacts, and shutdown defers final disposal until outstanding claims resolve. The full runtime identity must later include method bytecode content, IR/runtime/backend versions, target architecture, and semantic flags. Machine-code serialization is not enabled merely because SLJIT exposes serialization; persistent cache requires threat modeling, signature/integrity, ASLR/relocation, CPU feature and app-version design.
 
 Compiled artifacts are invalidated on VM shutdown and any future class unloading/redefinition event. Because current behavior must be confirmed for those events, the POC side table owns artifacts without altering serialized `TMethod` layout.
 
@@ -172,6 +176,8 @@ Every supported operation needs:
 - a forced-backend mode that fails tests when an expected method falls back.
 
 Counters should expose methods seen/verified/compiled/fallen back, code bytes, compile time, runtime time and fallback reasons. Logging is opt-in and bounded.
+
+The current forced tests compile converter-produced `add`, `abs`, and `sumTo` and fail on any fallback. The Milestone 4 corpus now performs 1,179 fresh-state comparisons across `executeMethod`, TCIR interpretation, and SLJIT. Separate tests cover invalid/unsupported rejection, deterministic emission failure, repeated create/dispose, competing lookup plus interpreter progress, publication, shutdown with an outstanding claim, and W^X permissions. On Darwin 25.5.0 arm64 with Apple Clang 21.0.0, one Debug functional observation produced 84, 256, and 424 code bytes and 0.000167 seconds aggregate compile CPU time; this is not a benchmark or performance claim.
 
 ## Readiness for an optimizing backend
 
