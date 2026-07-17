@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Status and intent
 
-This document proposes a backend-neutral intermediate representation between TotalCross bytecode and execution engines. It is not implemented yet. The on-disk TCZ/class/bytecode format remains unchanged, and the interpreter remains the semantic reference.
+Version 1 of the backend-neutral TCIR contract is implemented under `TotalCrossVM/src/tcvm/ir`. It provides owned construction APIs, opaque public structures, structural and type verification, a canonical text printer, and a complete TotalCross-opcode disposition registry. It does not yet decode TotalCross bytecode or execute TCIR; those remain Milestones 3 and 4. The on-disk TCZ/class/bytecode format remains unchanged, and the interpreter remains the semantic reference.
 
 The Java package currently named `tc.tools.converter.ir` is not this IR. Its instruction classes mirror TotalCross opcodes and bit layouts, and register allocation mutates those target-shaped instructions before serialization. Some control-flow and liveness algorithms may be reusable after decoupling, but the model itself must not become the JIT/AOT contract.
 
@@ -31,7 +31,7 @@ The Java package currently named `tc.tools.converter.ir` is not this IR. Its ins
 
 ## Core model
 
-An `IRModule` owns versioned symbol identities and one or more `IRFunction` objects. A function contains a signature, typed virtual register homes, basic blocks, metadata, and an ordered instruction list per block.
+A `TCIRModule` owns versioned `TCIRSymbol` identities and one or more `TCIRFunction` objects. A function contains a signature, typed virtual register homes, basic blocks, metadata, and an ordered instruction list per block. Public declarations are in `TotalCrossVM/src/tcvm/ir/tcir.h`; concrete layouts remain private in `tcir_internal.h`. A module also owns every function, block, value, operation, edge copy, and symbol created through it. `tcirModuleDestroy` releases the graph, while text returned by `tcirFunctionDump` is explicitly released with `tcirFreeText`.
 
 The initial representation uses a pragmatic hybrid:
 
@@ -69,6 +69,7 @@ The required first-version types are:
 | `ref` | nullable managed object reference |
 | `ref!` | verifier-proven non-null managed reference inside a dominated region |
 | `token` | ordered runtime effect, used only if needed to prevent illegal motion |
+| `internal_address` | temporary interior/native address restricted to one no-safepoint region |
 
 Array element and class identities are metadata on `ref`, not native pointers. An internal address type may exist only within a no-safepoint region and may never be stored, returned, merged across a safepoint, or exposed in text as a stable ABI.
 
@@ -89,7 +90,7 @@ Handler blocks are explicitly marked and receive the thrown `ref` as an argument
 
 ## Operation families
 
-The initial operation set is semantic rather than encoding-shaped:
+The semantic operation roadmap is encoding-independent:
 
 - constants, `copy`, and typed conversions;
 - integer and floating arithmetic, shifts, and bitwise operations;
@@ -105,6 +106,8 @@ The initial operation set is semantic rather than encoding-shaped:
 - the terminators above.
 
 Checked TotalCross array opcodes lower to explicit checks followed by an unchecked memory operation. Unchecked opcodes require a dominating proof or retain an `assume.checked` precondition that the verifier can trace back to the original bytecode contract. A backend must never silently drop a required check.
+
+The Milestone 2 public enum intentionally exposes only the subset needed to establish the contract and its hard invariants: `const.i32`, `copy`, i32 add/subtract/multiply and comparisons, typed home load/store, null and bounds checks, unchecked array access guarded by a proof token, field access, runtime calls, and internal addresses. Later milestones must extend the enum and verifier together before lowering the remaining roadmap families.
 
 ## Symbols and runtime ABI
 
@@ -127,34 +130,33 @@ Effect declarations are part of verification and backend conformance. In particu
 
 ## Text form
 
-The canonical text format is versioned, deterministic, and intended for tests, not as a new shipping artifact. Example:
+The canonical text format is versioned, deterministic, and intended for tests, not as a new shipping artifact. Functions and symbols use quoted stable identities, values use construction-stable numeric identifiers, blocks are printed in numeric order, effects have a fixed order, and memory addresses never appear. The committed `sumTo` fixture is:
 
 ```text
 tcir 1
-func @Example.sum(%this: ref, %n: i32) -> i32
-  homes i32 4, ref 1, v64 0
-bb0:                                      ; tcpc=0 line=12
-  %zero = const.i32 0
-  store.slot.i32 1, %zero
-  br bb1(%zero, %zero)
-bb1(%i: i32, %acc: i32):                 ; tcpc=2
-  %done = cmp.ge.s.i32 %i, %n
-  br_if %done, bb3(%acc), bb2(%i, %acc)
-bb2(%old_i: i32, %old_acc: i32):         ; tcpc=5
-  %next_acc = add.i32 %old_acc, %old_i
-  %one = const.i32 1
-  %next_i = add.i32 %old_i, %one
-  br bb1(%next_i, %next_acc)
-bb3(%result: i32):                        ; tcpc=9
-  ret %result
+func @"Example.sumTo:(I)I"(%v0: i32) -> i32
+  homes i32 4, ref 0, v64 0
+bb0() ; tcpc=0 line=30
+  %v8 = const.i32 0 ; tcpc=0
+  br bb1(%v8, %v8, %v0) ; tcpc=1
+bb1(%v1: i32, %v2: i32, %v3: i32) ; tcpc=2 line=31
+  %v9 = cmp.ge.s.i32 %v1, %v3 -> i1 ; tcpc=2
+  br_if %v9, bb3(%v2), bb2(%v1, %v2, %v3) ; tcpc=4
+bb2(%v4: i32, %v5: i32, %v6: i32) ; tcpc=5 line=32
+  %v10 = add.i32 %v5, %v4 -> i32 ; tcpc=5
+  %v11 = const.i32 1 ; tcpc=6
+  %v12 = add.i32 %v4, %v11 -> i32 ; tcpc=7
+  br bb1(%v12, %v10, %v6) ; tcpc=8
+bb3(%v7: i32) ; tcpc=9 line=33
+  ret %v7 ; tcpc=9
 end
 ```
 
-Names derived from memory addresses, hash-table iteration order, or thread timing are forbidden. Constant/symbol tables are sorted by stable identity. Dumps include the IR version, function signature, homes, block order, TC PC, optional source line, effects, and explicit successors.
+Names derived from memory addresses, hash-table iteration order, or thread timing are forbidden. Dumps include the IR version, function signature, homes, block order, TC PC, optional source line, effects, GC-home declarations, exceptional destinations, and explicit successors. The printer is deliberately one-way in this milestone; no text parser or shipping/cache format is defined.
 
 ## Frontend algorithm
 
-The bytecode-to-IR frontend performs these phases:
+The bytecode-to-IR frontend planned for Milestone 3 performs these phases:
 
 1. decode slots into logical instructions and mark continuation slots;
 2. validate opcode, operand ranges, symbols, register banks, call payloads, switch tables, handler ranges, and line data;
@@ -170,7 +172,9 @@ A failure returns a structured reason and leaves the method eligible for the exi
 
 ## Verifier invariants
 
-- Every block is reachable or explicitly retained for diagnostics, has one terminator, and agrees with predecessor argument types.
+`tcirVerifyFunction` implements the structural contract before any execution backend exists. It returns a stable `TCIRDiagnosticCode` and records the function identity and originating TC PC on every failure. The builder copies caller-owned operand, edge, and GC-home arrays, but intentionally permits several malformed graphs so the canonical verifier remains the single rejection boundary tested by negative fixtures.
+
+- Every block is reachable, has one terminator, and agrees with predecessor argument types.
 - Every value is defined before use and belongs to the same function.
 - Register index and symbol identity match the opcode/IR type.
 - All branch, switch, and handler targets are logical instruction boundaries.
@@ -180,13 +184,21 @@ A failure returns a structured reason and leaves the method eligible for the exi
 - Live references have GC-visible homes at `may_gc` operations.
 - A throwing operation has a valid handler edge or propagates to the dispatcher.
 - No internal address crosses a safepoint.
-- Return type and parameter mapping match `TMethod`.
+- Return type matches the declared `TCIRFunction` signature; the Milestone 3 frontend must additionally prove parameter mapping against `TMethod`.
+
+The current negative suite exercises foreign/undefined values, mismatched block arguments, an invalid conditional terminator, a wrong return type, a missing GC-visible home, a source PC into a continuation slot, mismatched helper effects, an incompatible unchecked-array proof, an internal address live across `may_gc`, and a `ref!` result without a non-null proof. Handler signatures and exceptional destinations are checked by the same verifier even though the three valid integer fixtures do not need handlers yet.
 
 Verification is mandatory in debug and release builds for untrusted artifacts. A build may cache a successful result, but the cache key includes bytecode identity, IR version, runtime ABI version, target, and relevant feature flags.
 
+## Opcode registry
+
+`TotalCrossVM/src/tcvm/ir/tcir_opcode_registry.def` is the macro-driven registry for all numeric TotalCross opcodes 0–159. Each row records its decoder shape (`single`, `call`, `switch`, or `multiarray`), planned lowering class, and current POC status. `tcir_opcode_map.c` compiles each row against the matching constant in `opcodes.h`; `tcirOpcodeRegistryValidate` rejects gaps, duplicates, invalid enum values, and count drift.
+
+`scripts/validate-tcir-opcodes.py` supplies the repository-wide cross-check. It compares the registry with `opcodes.h`, the numeric Java constants in `TCConstants.java`, every `OPCODE(...)` dispatch in `tcvm.c`, the bytecode reference, and the compatibility matrix. It reports the known `bcTClassNames` omission of opcodes 158 and 159 as an explicit discrepancy rather than treating that incomplete text array as the numeric authority.
+
 ## IR interpreter
 
-Before native code generation, a small IR interpreter executes the same `IRFunction` using the current `Context` arenas and runtime helpers. Its purpose is semantic isolation and differential testing, not production speed. The comparison tiers are:
+Before native code generation, a small IR interpreter executes the same `TCIRFunction` using the current `Context` arenas and runtime helpers. Its purpose is semantic isolation and differential testing, not production speed. The comparison tiers are:
 
 ```text
 TotalCross bytecode interpreter
@@ -196,7 +208,7 @@ IR interpreter
 SLJIT baseline / generated-C AOT
 ```
 
-Adding a new operation requires verifier rules, text round-trip/golden coverage, IR-interpreter semantics, backend eligibility behavior, and compatibility-matrix updates.
+Adding a new operation requires verifier rules, canonical golden-dump coverage, IR-interpreter semantics, backend eligibility behavior, and compatibility-matrix updates.
 
 ## Optimization policy
 
@@ -204,7 +216,7 @@ Version 1 permits only obviously semantics-preserving local passes after differe
 
 ## Versioning and extensibility
 
-`TC_IR_VERSION` and `TC_RUNTIME_ABI_VERSION` are independent. Backends consume an interface that enumerates operations, types, effects, blocks, symbols, and metadata rather than concrete struct layouts. An LLVM or Cranelift backend becomes viable only after:
+`TC_IR_VERSION` is currently `1U` in `tcir.h`. `TC_RUNTIME_ABI_VERSION` remains a separate future contract and is not invented by this milestone. Backends consume read-only accessors that enumerate operations, types, effects, blocks, symbols, terminators, and metadata rather than concrete struct layouts. An LLVM or Cranelift backend becomes viable only after:
 
 - the semantic test matrix covers all opcodes selected for that backend;
 - runtime helper ABI and GC-root protocol are stable;
