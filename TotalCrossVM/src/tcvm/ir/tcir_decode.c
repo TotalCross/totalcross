@@ -151,6 +151,8 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case ADD_regL_regL_regL:
       case SUB_regL_regL_regL:
       case MUL_regL_regL_regL:
+      case DIV_regL_regL_regL:
+      case MOD_regL_regL_regL:
       case SHR_regL_regL_regL:
       case SHL_regL_regL_regL:
       case USHR_regL_regL_regL:
@@ -460,6 +462,8 @@ static int tcirValidateInstruction(
       case ADD_regL_regL_regL:
       case SUB_regL_regL_regL:
       case MUL_regL_regL_regL:
+      case DIV_regL_regL_regL:
+      case MOD_regL_regL_regL:
       case SHR_regL_regL_regL:
       case SHL_regL_regL_regL:
       case USHR_regL_regL_regL:

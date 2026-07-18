@@ -136,6 +136,8 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_ADD_I64:
       case TCIR_OP_SUB_I64:
       case TCIR_OP_MUL_I64:
+      case TCIR_OP_DIV_I64:
+      case TCIR_OP_MOD_I64:
       case TCIR_OP_SHL_I64:
       case TCIR_OP_SHR_I64:
       case TCIR_OP_USHR_I64:
@@ -514,6 +516,30 @@ static int tcirExecuteOperation(
          break;
       case TCIR_OP_MUL_I64:
          value.i64 = tcirI64FromBits((uint64_t)left.i64 * (uint64_t)right.i64);
+         break;
+      case TCIR_OP_DIV_I64:
+         if (right.i64 == 0)
+         {
+            if (frame->raise_exception != NULL)
+               frame->raise_exception(
+                  frame->runtime_context, TCIR_RUNTIME_EXCEPTION_ARITHMETIC, operation->source.tc_pc);
+            *thrown = 1;
+            return 1;
+         }
+         value.i64 = left.i64 == INT64_MIN && right.i64 == -1
+            ? INT64_MIN : left.i64 / right.i64;
+         break;
+      case TCIR_OP_MOD_I64:
+         if (right.i64 == 0)
+         {
+            if (frame->raise_exception != NULL)
+               frame->raise_exception(
+                  frame->runtime_context, TCIR_RUNTIME_EXCEPTION_ARITHMETIC, operation->source.tc_pc);
+            *thrown = 1;
+            return 1;
+         }
+         value.i64 = left.i64 == INT64_MIN && right.i64 == -1
+            ? 0 : left.i64 % right.i64;
          break;
       case TCIR_OP_SHL_I64:
          value.i64 = tcirI64FromBits(

@@ -72,7 +72,8 @@ static int tcirFrontendIsI32Narrowing(unsigned int opcode)
 static int tcirFrontendIsI64Arithmetic(unsigned int opcode)
 {
    return opcode == ADD_regL_regL_regL || opcode == SUB_regL_regL_regL ||
-          opcode == MUL_regL_regL_regL || opcode == SHR_regL_regL_regL ||
+          opcode == MUL_regL_regL_regL || opcode == DIV_regL_regL_regL ||
+          opcode == MOD_regL_regL_regL || opcode == SHR_regL_regL_regL ||
           opcode == SHL_regL_regL_regL || opcode == USHR_regL_regL_regL ||
           opcode == AND_regL_regL_regL || opcode == OR_regL_regL_regL ||
           opcode == XOR_regL_regL_regL;
@@ -362,6 +363,7 @@ static TCIRValue *tcirFrontendAppendCheckedBinary(
    TCIROperation operation,
    const TCIRValue *left,
    const TCIRValue *right,
+   TCIRType result_type,
    TCIRSourceLocation source,
    TCIRDiagnostic *diagnostic)
 {
@@ -373,7 +375,7 @@ static TCIRValue *tcirFrontendAppendCheckedBinary(
    operands[1] = right;
    memset(&spec, 0, sizeof(spec));
    spec.opcode = operation;
-   spec.result_type = TCIR_TYPE_I32;
+   spec.result_type = result_type;
    spec.operands = operands;
    spec.operand_count = 2U;
    spec.effects = TCIR_EFFECT_MAY_THROW | TCIR_EFFECT_MAY_GC;
@@ -522,7 +524,7 @@ static int tcirFrontendTranslateArithmetic(
    }
    if (operation == TCIR_OP_DIV_I32 || operation == TCIR_OP_MOD_I32)
       state[instruction->reg0] = tcirFrontendAppendCheckedBinary(
-         block, operation, left, right, source, diagnostic);
+         block, operation, left, right, TCIR_TYPE_I32, source, diagnostic);
    else
       state[instruction->reg0] = tcirFrontendAppendBinary(
          block, operation, left, right, TCIR_TYPE_I32, source, diagnostic);
@@ -579,6 +581,8 @@ static int tcirFrontendTranslateI64Arithmetic(
    {
       case SUB_regL_regL_regL: operation = TCIR_OP_SUB_I64; break;
       case MUL_regL_regL_regL: operation = TCIR_OP_MUL_I64; break;
+      case DIV_regL_regL_regL: operation = TCIR_OP_DIV_I64; break;
+      case MOD_regL_regL_regL: operation = TCIR_OP_MOD_I64; break;
       case SHR_regL_regL_regL: operation = TCIR_OP_SHR_I64; break;
       case SHL_regL_regL_regL: operation = TCIR_OP_SHL_I64; break;
       case USHR_regL_regL_regL: operation = TCIR_OP_USHR_I64; break;
@@ -587,8 +591,12 @@ static int tcirFrontendTranslateI64Arithmetic(
       case XOR_regL_regL_regL: operation = TCIR_OP_XOR_I64; break;
       default: operation = TCIR_OP_ADD_I64; break;
    }
-   state[destination] = tcirFrontendAppendBinary(
-      block, operation, left, right, TCIR_TYPE_I64, source, diagnostic);
+   if (operation == TCIR_OP_DIV_I64 || operation == TCIR_OP_MOD_I64)
+      state[destination] = tcirFrontendAppendCheckedBinary(
+         block, operation, left, right, TCIR_TYPE_I64, source, diagnostic);
+   else
+      state[destination] = tcirFrontendAppendBinary(
+         block, operation, left, right, TCIR_TYPE_I64, source, diagnostic);
    return state[destination] != NULL;
 }
 
