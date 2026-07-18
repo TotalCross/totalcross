@@ -41,6 +41,23 @@ typedef void (*TCIRRaiseExceptionFunction)(
    TCIRRuntimeExceptionKind kind,
    unsigned int tc_pc);
 
+typedef enum TCIRMethodCallStatus
+{
+   TCIR_METHOD_CALL_RETURNED = 0,
+   TCIR_METHOD_CALL_THROWN,
+   TCIR_METHOD_CALL_REJECTED,
+   TCIR_METHOD_CALL_OUT_OF_MEMORY
+} TCIRMethodCallStatus;
+
+typedef TCIRMethodCallStatus (*TCIRMethodCallFunction)(
+   void *runtime_context,
+   const TCIRSymbol *symbol,
+   TCIRCallKind kind,
+   void *receiver,
+   const TCIRRuntimeValue *arguments,
+   size_t argument_count,
+   TCIRRuntimeValue *result);
+
 typedef struct TCIRInterpreterFrame
 {
    int32_t *i32_homes;
@@ -54,6 +71,7 @@ typedef struct TCIRInterpreterFrame
    unsigned int tc_pc;
    void *runtime_context;
    TCIRRaiseExceptionFunction raise_exception;
+   TCIRMethodCallFunction call_method;
 } TCIRInterpreterFrame;
 
 typedef struct TCIRInterpreterOptions

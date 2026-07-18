@@ -367,6 +367,7 @@ const char *tcirOperationName(TCIROperation operation)
       "array.store.unchecked",
       "field.load",
       "field.store",
+      "method.call",
       "runtime.call",
       "internal.address"
    };

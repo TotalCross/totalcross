@@ -30,6 +30,12 @@ typedef struct TCIRCallShape
 {
    unsigned int parameter_count;
    int returns_value;
+   TCIRCallKind kind;
+   const TCIRType *parameter_types;
+   TCIRType return_type;
+   const char *owner;
+   const char *name;
+   const char *descriptor;
 } TCIRCallShape;
 
 typedef int (*TCIRResolveCallShapeFunction)(

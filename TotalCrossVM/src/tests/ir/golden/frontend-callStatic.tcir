@@ -1,0 +1,11 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.callStatic:(II)I"(%v0: i32, %v1: i32) -> i32
+  homes i32 2, ref 1, v64 0
+bb0() ; tcpc=0 line=80
+  %v2 = method.call @"fixtures.TCIRPoc.callTarget:(II)I#1" %v0, %v1 -> i32 effects[reads_heap,writes_heap,may_throw,may_gc,may_lock,resolves_symbol,calls_unknown] exception propagate ; tcpc=0 line=80
+  ret %v2 ; tcpc=2 line=80
+end

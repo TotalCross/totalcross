@@ -65,6 +65,58 @@ typedef struct DifferentialResult
 
 #include "fixtures/tcir_converter_fixtures.h"
 
+static int isStaticCallFixture(const TCIRConverterFixture *fixture)
+{
+   return fixture != NULL && fixture->code == tcir_fixture_callStatic_code;
+}
+
+static TCIRMethodCallStatus invokeFixtureCall(
+   void *runtime_context,
+   const TCIRSymbol *symbol,
+   TCIRCallKind kind,
+   void *receiver,
+   const TCIRRuntimeValue *arguments,
+   size_t argument_count,
+   TCIRRuntimeValue *result)
+{
+   const TCIRConverterFixture *fixture = (const TCIRConverterFixture *)runtime_context;
+   if (!isStaticCallFixture(fixture) || symbol == NULL || kind != TCIR_CALL_STATIC ||
+       receiver != NULL || arguments == NULL || argument_count != 2U || result == NULL ||
+       tcirSymbolKind(symbol) != TCIR_SYMBOL_METHOD ||
+       tcirSymbolConstantPoolIndex(symbol) != 1U)
+      return TCIR_METHOD_CALL_REJECTED;
+   memset(result, 0, sizeof(*result));
+   result->i32 = arguments[0].i32 + arguments[1].i32;
+   return TCIR_METHOD_CALL_RETURNED;
+}
+
+static TCCompiledStatus invokeCompiledFixtureCall(
+   const TCCompiledRuntime *runtime,
+   const TCCompiledCall *call,
+   TCCompiledResult *result)
+{
+   const TCIRConverterFixture *fixture = runtime == NULL
+      ? NULL
+      : (const TCIRConverterFixture *)runtime->context;
+   if (runtime == NULL || runtime->abi_version != TC_RUNTIME_ABI_VERSION ||
+       !isStaticCallFixture(fixture) || call == NULL || result == NULL ||
+       call->constant_pool_index != 1U || call->kind != TCIR_CALL_STATIC ||
+       call->receiver != NULL || call->arguments == NULL || call->argument_count != 2U ||
+       call->result_type != TCIR_TYPE_I32)
+      return TC_COMPILED_REJECTED;
+   memset(result, 0, sizeof(*result));
+   result->status = TC_COMPILED_RETURNED;
+   result->type = TCIR_TYPE_I32;
+   result->value.i32 = call->arguments[0].i32 + call->arguments[1].i32;
+   result->tc_pc = TCIR_TCPC_NONE;
+   return TC_COMPILED_RETURNED;
+}
+
+static void nativeAddI32(NMParams parameters)
+{
+   parameters->retI = parameters->i32[0] + parameters->i32[1];
+}
+
 static int buildFixtureView(
    const TCIRConverterFixture *fixture,
    TCIRMethodView *view,
@@ -86,6 +138,8 @@ static int buildFixtureView(
    view->i32_constants = constants;
    view->i32_constant_count = sizeof(constants) / sizeof(constants[0]);
    view->source_lines = fixture->lines;
+   view->resolve_call_shape = tcirResolveConverterFixtureCall;
+   view->resolve_call_shape_user_data = (void *)fixture;
    return 1;
 }
 
@@ -177,6 +231,11 @@ static DifferentialResult executeTCode(
    TMethod method;
    TTCClass class_;
    TConstantPool constant_pool;
+   TCode target_code[1];
+   TMethod target_method;
+   TTCClass target_class;
+   Method bound_normal[2];
+   uint8_t target_parameter_registers[2];
    uint8_t parameter_registers[2];
    TContext context;
    int32 register_i32[FRAME_CAPACITY];
@@ -191,6 +250,34 @@ static DifferentialResult executeTCode(
 
    memset(&result, 0, sizeof(result));
    initializeMethod(fixture, code, &method, &class_, &constant_pool, parameter_registers);
+   if (isStaticCallFixture(fixture))
+   {
+      memset(target_code, 0, sizeof(target_code));
+      memset(&target_method, 0, sizeof(target_method));
+      memset(&target_class, 0, sizeof(target_class));
+      memset(bound_normal, 0, sizeof(bound_normal));
+      target_class.cp = &constant_pool;
+      target_class.name = (CharP)"fixtures.TCIRPoc";
+      target_code[0].op.op = BREAK;
+      target_method.iCount = 2U;
+      target_method.oCount = 1U;
+      target_method.paramSkip = 1U;
+      target_method.code = target_code;
+      target_method.class_ = &target_class;
+      target_method.name = (CharP)"callTarget";
+      target_method.paramCount = 2U;
+      target_method.paramRegs = target_parameter_registers;
+      target_parameter_registers[0] = RegI;
+      target_parameter_registers[1] = RegI;
+      target_method.cpReturn = 1U;
+      target_method.returnReg = RegI;
+      target_method.flags.isStatic = true;
+      target_method.flags.isNative = true;
+      target_method.boundNM = nativeAddI32;
+      bound_normal[1] = &target_method;
+      constant_pool.boundNormal = bound_normal;
+      constant_pool.mtdCount = 2U;
+   }
    initializeContext(&context, register_i32, register_ref, register_v64, call_stack, FRAME_CAPACITY);
    initializeArguments(fixture, inputs, arguments);
    memset(argument_values, 0, sizeof(argument_values));
@@ -257,6 +344,8 @@ static DifferentialResult executeTCIR(
    frame.arguments = arguments;
    frame.argument_count = fixture->parameter_count;
    frame.tc_pc = TCIR_TCPC_NONE;
+   frame.runtime_context = (void *)fixture;
+   frame.call_method = invokeFixtureCall;
    memset(&result, 0, sizeof(result));
    result.frame_restored = 1;
    if (tcirInterpretFunction(function, &frame, NULL, &interpreter_result, diagnostic)
@@ -287,6 +376,7 @@ static DifferentialResult executeSLJIT(
 {
    TCIRRuntimeValue arguments[2];
    TCCompiledFrame frame;
+   TCCompiledRuntime runtime;
    TCCompiledResult compiled_result;
    TCIRJitDiagnostic diagnostic;
    int32_t i32_homes[16];
@@ -308,6 +398,11 @@ static DifferentialResult executeSLJIT(
    frame.arguments = arguments;
    frame.argument_count = fixture->parameter_count;
    frame.tc_pc = TCIR_TCPC_NONE;
+   memset(&runtime, 0, sizeof(runtime));
+   runtime.abi_version = TC_RUNTIME_ABI_VERSION;
+   runtime.context = (void *)fixture;
+   runtime.invoke = invokeCompiledFixtureCall;
+   frame.runtime = &runtime;
    memset(&result, 0, sizeof(result));
    if (tcirJitInvoke(artifact, &frame, &compiled_result, &diagnostic) == TC_COMPILED_RETURNED)
    {
@@ -341,6 +436,7 @@ static DifferentialResult executeAOT(
 {
    TCIRRuntimeValue arguments[2];
    TCCompiledFrame frame;
+   TCCompiledRuntime runtime;
    TCCompiledResult compiled_result;
    int32_t i32_homes[16];
    void *ref_homes[16];
@@ -361,6 +457,11 @@ static DifferentialResult executeAOT(
    frame.arguments = arguments;
    frame.argument_count = fixture->parameter_count;
    frame.tc_pc = TCIR_TCPC_NONE;
+   memset(&runtime, 0, sizeof(runtime));
+   runtime.abi_version = TC_RUNTIME_ABI_VERSION;
+   runtime.context = (void *)fixture;
+   runtime.invoke = invokeCompiledFixtureCall;
+   frame.runtime = &runtime;
    memset(&result, 0, sizeof(result));
    if (entry(&frame, &compiled_result) == TC_COMPILED_RETURNED)
    {
@@ -676,12 +777,14 @@ static int testFixtureCorpus(void)
 #if defined(TCIR_HAS_AOT)
    static const char *const method_names[] = {
       "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
-      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef", "switchScore"
+      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef", "switchScore",
+      "callStatic"
    };
    static const char *const signatures[] = {
       "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
       "(I)D", "(J)D", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
-      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;", "(I)I"
+      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;", "(I)I",
+      "(II)I"
    };
    TCCompiledEntry aot_entries[TCIR_CONVERTER_FIXTURE_COUNT];
 #endif
@@ -824,6 +927,13 @@ static int testFixtureCorpus(void)
                            aot_entries[12],
 #endif
                            &diagnostic));
+   for (case_index = 0U; case_index < sizeof(add_cases) / sizeof(add_cases[0]); ++case_index)
+      REQUIRE(compareInput(&tcir_converter_fixtures[13], functions[13], add_cases[case_index][0],
+                           add_cases[case_index][1], jit_artifacts[13],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[13],
+#endif
+                           &diagnostic));
 
    for (case_index = 0U; case_index < 512U; ++case_index)
    {
@@ -857,6 +967,12 @@ static int testFixtureCorpus(void)
                            jit_artifacts[12],
 #if defined(TCIR_HAS_AOT)
                            aot_entries[12],
+#endif
+                           &diagnostic));
+      REQUIRE(compareInput(&tcir_converter_fixtures[13], functions[13], first, second,
+                           jit_artifacts[13],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[13],
 #endif
                            &diagnostic));
       {
@@ -963,17 +1079,17 @@ int main(void)
       return 1;
 #if defined(TCIR_HAS_SLJIT)
 #if defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 13 fixtures, 5,876 executeMethod/TCIR/SLJIT/AOT comparisons, "
+   printf("TCIR differential tests passed: 14 fixtures, 6,398 executeMethod/TCIR/SLJIT/AOT comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #else
-   printf("TCIR differential tests passed: 13 fixtures, 5,876 executeMethod/TCIR/SLJIT comparisons, "
+   printf("TCIR differential tests passed: 14 fixtures, 6,398 executeMethod/TCIR/SLJIT comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #endif
 #elif defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 13 fixtures, 5,876 executeMethod/TCIR/AOT comparisons, "
+   printf("TCIR differential tests passed: 14 fixtures, 6,398 executeMethod/TCIR/AOT comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #else
-   printf("TCIR differential tests passed: 13 fixtures, 5,876 executeMethod comparisons, "
+   printf("TCIR differential tests passed: 14 fixtures, 6,398 executeMethod comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #endif
    return 0;

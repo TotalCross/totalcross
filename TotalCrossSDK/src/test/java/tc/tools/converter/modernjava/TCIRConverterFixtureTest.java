@@ -33,17 +33,20 @@ import tc.tools.converter.tclass.TCMethod;
 class TCIRConverterFixtureTest {
   private static final String[] METHOD_NAMES = {
       "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
-      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef", "switchScore"
+      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef", "switchScore",
+      "callStatic"
   };
   private static final String[] METHOD_DESCRIPTORS = {
       "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
       "(I)D", "(J)D", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
-      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;", "(I)I"
+      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;", "(I)I",
+      "(II)I"
   };
   private static final String[] RETURN_TYPES = {
       "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32",
       "TCIR_TYPE_I64", "TCIR_TYPE_F64", "TCIR_TYPE_F64", "TCIR_TYPE_F64",
-      "TCIR_TYPE_F64", "TCIR_TYPE_REF", "TCIR_TYPE_I32", "TCIR_TYPE_REF", "TCIR_TYPE_I32"
+      "TCIR_TYPE_F64", "TCIR_TYPE_REF", "TCIR_TYPE_I32", "TCIR_TYPE_REF", "TCIR_TYPE_I32",
+      "TCIR_TYPE_I32"
   };
 
   @TempDir
@@ -91,6 +94,26 @@ class TCIRConverterFixtureTest {
       appendParameterArray(out, index);
       appendV64TypeArray(out, METHOD_NAMES[index], methods[index].v64Count);
     }
+
+    out.append("static int tcirResolveConverterFixtureCall(\n")
+        .append("   void *user_data, unsigned int symbol, TCIRCallShape *shape)\n")
+        .append("{\n")
+        .append("   static const TCIRType parameter_types[] = { TCIR_TYPE_I32, TCIR_TYPE_I32 };\n")
+        .append("   const TCIRConverterFixture *fixture = (const TCIRConverterFixture *)user_data;\n")
+        .append("   if (fixture == (const TCIRConverterFixture *)0 ||\n")
+        .append("       fixture->code != tcir_fixture_callStatic_code ||\n")
+        .append("       symbol != ((fixture->code[0] >> 8) & 0xfffU))\n")
+        .append("      return 0;\n")
+        .append("   shape->parameter_count = 2U;\n")
+        .append("   shape->returns_value = 1;\n")
+        .append("   shape->kind = TCIR_CALL_STATIC;\n")
+        .append("   shape->parameter_types = parameter_types;\n")
+        .append("   shape->return_type = TCIR_TYPE_I32;\n")
+        .append("   shape->owner = \"fixtures.TCIRPoc\";\n")
+        .append("   shape->name = \"callTarget\";\n")
+        .append("   shape->descriptor = \"(II)I\";\n")
+        .append("   return 1;\n")
+        .append("}\n\n");
 
     out.append("static const TCIRConverterFixture tcir_converter_fixtures[] = {\n");
     for (int index = 0; index < methods.length; index++) {

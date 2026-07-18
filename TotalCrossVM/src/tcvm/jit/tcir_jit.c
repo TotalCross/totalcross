@@ -28,6 +28,8 @@ struct TCIRJitArtifact
    unsigned int ref_home_count;
    unsigned int v64_home_count;
    TCIRType return_type;
+   size_t max_call_argument_count;
+   int has_method_call;
 };
 
 typedef struct TCIRJitPendingJump
@@ -54,7 +56,40 @@ typedef struct TCIRJitEligibility
 {
    size_t value_count;
    size_t edge_value_count;
+   size_t max_call_argument_count;
+   int has_method_call;
 } TCIRJitEligibility;
+
+static sljit_s32 SLJIT_FUNC tcirJitInvokeMethodCall(TCCompiledFrame *frame)
+{
+   TCCompiledStatus status;
+   TCCompiledResult *result;
+
+   if (frame == NULL || frame->call_result == NULL)
+      return (sljit_s32)TC_COMPILED_REJECTED;
+   result = frame->call_result;
+   memset(result, 0, sizeof(*result));
+   result->status = TC_COMPILED_REJECTED;
+   result->type = TCIR_TYPE_VOID;
+   result->tc_pc = TCIR_TCPC_NONE;
+   if (frame->runtime == NULL || frame->runtime->abi_version != TC_RUNTIME_ABI_VERSION ||
+       frame->runtime->invoke == NULL ||
+       frame->call.argument_count > frame->call_argument_count ||
+       (frame->call.argument_count != 0U && frame->call.arguments == NULL))
+      return (sljit_s32)TC_COMPILED_REJECTED;
+   status = frame->runtime->invoke(frame->runtime, &frame->call, result);
+   if (status != result->status ||
+       (status == TC_COMPILED_RETURNED && result->type != frame->call.result_type))
+   {
+      result->status = TC_COMPILED_REJECTED;
+      result->type = TCIR_TYPE_VOID;
+      result->tc_pc = frame->call.tc_pc;
+      return (sljit_s32)TC_COMPILED_REJECTED;
+   }
+   if (status != TC_COMPILED_RETURNED && result->tc_pc == TCIR_TCPC_NONE)
+      result->tc_pc = frame->call.tc_pc;
+   return (sljit_s32)status;
+}
 
 static void tcirJitSetDiagnostic(
    TCIRJitDiagnostic *diagnostic,
@@ -237,6 +272,12 @@ static int tcirJitOperationIsEligible(const TCIROperationView *operation)
             (operation->home_bank == TCIR_HOME_I32 || operation->home_bank == TCIR_HOME_REF ||
              (tcirJitTypeIsSupported(tcirValueType(operation->operands[0])) &&
               operation->home_bank == TCIR_HOME_V64));
+      case TCIR_OP_METHOD_CALL:
+         return operation->immediate_i32 == (int)TCIR_CALL_STATIC &&
+            operation->symbol != NULL &&
+            tcirSymbolKind(operation->symbol) == TCIR_SYMBOL_METHOD &&
+            operation->effects == TCIR_METHOD_CALL_EFFECTS &&
+            operation->propagates_exception;
       default:
          return 0;
    }
@@ -338,6 +379,12 @@ static TCIRJitCompileStatus tcirJitInspectEligibility(
             tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE, operation.source.tc_pc,
                                  "SLJIT value table is too large");
             return TCIR_JIT_COMPILE_INELIGIBLE;
+         }
+         if (operation.opcode == TCIR_OP_METHOD_CALL)
+         {
+            eligibility->has_method_call = 1;
+            if (operation.operand_count > eligibility->max_call_argument_count)
+               eligibility->max_call_argument_count = operation.operand_count;
          }
          for (operand_index = 0U; operand_index < operation.operand_count; ++operand_index)
             if (!tcirJitTypeIsSupported(tcirValueType(operation.operands[operand_index])))
@@ -515,6 +562,211 @@ static int tcirJitEmitReturn(TCIRJitEmitter *emitter, sljit_s32 src, sljit_sw sr
 {
    return tcirJitBeforeEmission(emitter)
       && sljit_emit_return(emitter->compiler, SLJIT_MOV32, src, srcw) == SLJIT_SUCCESS;
+}
+
+static sljit_s32 tcirJitMoveForType(TCIRType type);
+static int tcirJitLoadValue(
+   TCIRJitEmitter *emitter,
+   sljit_s32 register_id,
+   const TCIRValue *value);
+static int tcirJitStoreValue(
+   TCIRJitEmitter *emitter,
+   const TCIRValue *value,
+   sljit_s32 register_id);
+static int tcirJitLoadF64(
+   TCIRJitEmitter *emitter,
+   sljit_s32 register_id,
+   const TCIRValue *value);
+static int tcirJitStoreF64(
+   TCIRJitEmitter *emitter,
+   const TCIRValue *value,
+   sljit_s32 register_id);
+
+static int tcirJitEmitMethodCall(
+   TCIRJitEmitter *emitter,
+   const TCIROperationView *operation)
+{
+   const sljit_sw call_offset = (sljit_sw)offsetof(TCCompiledFrame, call);
+   struct sljit_jump *success_jump;
+   struct sljit_label *success_label;
+   size_t index;
+
+   for (index = 0U; index < operation->gc_home_count; ++index)
+   {
+      const TCIRGCHome *home = &operation->gc_homes[index];
+      if (!tcirJitEmitOp1(
+             emitter,
+             SLJIT_MOV_P,
+             SLJIT_R0,
+             0,
+             SLJIT_MEM1(SLJIT_S0),
+             (sljit_sw)offsetof(TCCompiledFrame, ref_homes)) ||
+          !tcirJitLoadValue(emitter, SLJIT_R1, home->value) ||
+          !tcirJitEmitOp1(
+             emitter,
+             SLJIT_MOV_P,
+             SLJIT_MEM1(SLJIT_R0),
+             (sljit_sw)((size_t)home->home_index * sizeof(void *)),
+             SLJIT_R1,
+             0))
+         return 0;
+   }
+   if (!tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV_P,
+          SLJIT_R0,
+          0,
+          SLJIT_MEM1(SLJIT_S0),
+          (sljit_sw)offsetof(TCCompiledFrame, call_arguments)))
+      return 0;
+   for (index = 0U; index < operation->operand_count; ++index)
+   {
+      TCIRType type = tcirValueType(operation->operands[index]);
+      sljit_sw offset = (sljit_sw)(index * sizeof(TCIRRuntimeValue));
+      if (type == TCIR_TYPE_F64)
+      {
+         if (!tcirJitLoadF64(emitter, SLJIT_FR0, operation->operands[index]) ||
+             !tcirJitEmitFop1(
+                emitter, SLJIT_MOV_F64, SLJIT_MEM1(SLJIT_R0), offset, SLJIT_FR0, 0))
+            return 0;
+      }
+      else if (!tcirJitLoadValue(emitter, SLJIT_R1, operation->operands[index]) ||
+               !tcirJitEmitOp1(
+                  emitter,
+                  tcirJitMoveForType(type),
+                  SLJIT_MEM1(SLJIT_R0),
+                  offset,
+                  SLJIT_R1,
+                  0))
+         return 0;
+   }
+   if (!tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV32,
+          SLJIT_MEM1(SLJIT_S0),
+          call_offset + (sljit_sw)offsetof(TCCompiledCall, constant_pool_index),
+          SLJIT_IMM,
+          (sljit_sw)tcirSymbolConstantPoolIndex(operation->symbol)) ||
+       !tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV32,
+          SLJIT_MEM1(SLJIT_S0),
+          call_offset + (sljit_sw)offsetof(TCCompiledCall, kind),
+          SLJIT_IMM,
+          (sljit_sw)TCIR_CALL_STATIC) ||
+       !tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV_P,
+          SLJIT_MEM1(SLJIT_S0),
+          call_offset + (sljit_sw)offsetof(TCCompiledCall, receiver),
+          SLJIT_IMM,
+          0) ||
+       !tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV_P,
+          SLJIT_R0,
+          0,
+          SLJIT_MEM1(SLJIT_S0),
+          (sljit_sw)offsetof(TCCompiledFrame, call_arguments)) ||
+       !tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV_P,
+          SLJIT_MEM1(SLJIT_S0),
+          call_offset + (sljit_sw)offsetof(TCCompiledCall, arguments),
+          SLJIT_R0,
+          0) ||
+       !tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV,
+          SLJIT_MEM1(SLJIT_S0),
+          call_offset + (sljit_sw)offsetof(TCCompiledCall, argument_count),
+          SLJIT_IMM,
+          (sljit_sw)operation->operand_count) ||
+       !tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV32,
+          SLJIT_MEM1(SLJIT_S0),
+          call_offset + (sljit_sw)offsetof(TCCompiledCall, result_type),
+          SLJIT_IMM,
+          (sljit_sw)operation->result_type) ||
+       !tcirJitEmitOp1(
+          emitter,
+          SLJIT_MOV32,
+          SLJIT_MEM1(SLJIT_S0),
+          call_offset + (sljit_sw)offsetof(TCCompiledCall, tc_pc),
+          SLJIT_IMM,
+          (sljit_sw)operation->source.tc_pc) ||
+       !tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_R0, 0, SLJIT_S0, 0) ||
+       !tcirJitBeforeEmission(emitter) ||
+       sljit_emit_icall(
+          emitter->compiler,
+          SLJIT_CALL,
+          SLJIT_ARGS1(32, P),
+          SLJIT_IMM,
+          (sljit_sw)tcirJitInvokeMethodCall) != SLJIT_SUCCESS)
+      return 0;
+   success_jump = tcirJitEmitCompare(
+      emitter, SLJIT_EQUAL | SLJIT_32, SLJIT_R0, 0, SLJIT_IMM, (sljit_sw)TC_COMPILED_RETURNED);
+   if (success_jump == NULL || !tcirJitEmitReturn(emitter, SLJIT_IMM, 0))
+      return 0;
+   success_label = tcirJitEmitLabel(emitter);
+   if (success_label == NULL)
+      return 0;
+   sljit_set_label(success_jump, success_label);
+   if (operation->result != NULL)
+   {
+      TCIRType type = operation->result_type;
+      if (!tcirJitEmitOp1(
+             emitter,
+             SLJIT_MOV_P,
+             SLJIT_R0,
+             0,
+             SLJIT_MEM1(SLJIT_S0),
+             (sljit_sw)offsetof(TCCompiledFrame, call_result)))
+         return 0;
+      if (type == TCIR_TYPE_F64)
+      {
+         if (!tcirJitEmitFop1(
+                emitter,
+                SLJIT_MOV_F64,
+                SLJIT_FR0,
+                0,
+                SLJIT_MEM1(SLJIT_R0),
+                (sljit_sw)offsetof(TCCompiledResult, value)) ||
+             !tcirJitStoreF64(emitter, operation->result, SLJIT_FR0))
+            return 0;
+      }
+      else if (!tcirJitEmitOp1(
+                  emitter,
+                  tcirJitMoveForType(type),
+                  SLJIT_R1,
+                  0,
+                  SLJIT_MEM1(SLJIT_R0),
+                  (sljit_sw)offsetof(TCCompiledResult, value)) ||
+               !tcirJitStoreValue(emitter, operation->result, SLJIT_R1))
+         return 0;
+   }
+   for (index = 0U; index < operation->gc_home_count; ++index)
+   {
+      const TCIRGCHome *home = &operation->gc_homes[index];
+      if (!tcirJitEmitOp1(
+             emitter,
+             SLJIT_MOV_P,
+             SLJIT_R0,
+             0,
+             SLJIT_MEM1(SLJIT_S0),
+             (sljit_sw)offsetof(TCCompiledFrame, ref_homes)) ||
+          !tcirJitEmitOp1(
+             emitter,
+             SLJIT_MOV_P,
+             SLJIT_R1,
+             0,
+             SLJIT_MEM1(SLJIT_R0),
+             (sljit_sw)((size_t)home->home_index * sizeof(void *))) ||
+          !tcirJitStoreValue(emitter, home->value, SLJIT_R1))
+         return 0;
+   }
+   return 1;
 }
 
 static sljit_sw tcirJitValueOffset(const TCIRValue *value)
@@ -846,6 +1098,8 @@ static int tcirJitEmitOperation(TCIRJitEmitter *emitter, const TCIROperationView
             && tcirJitEmitOp1(emitter, move, SLJIT_MEM1(SLJIT_R0),
                               (sljit_sw)((size_t)operation->home_index * item_size), SLJIT_R1, 0);
       }
+      case TCIR_OP_METHOD_CALL:
+         return tcirJitEmitMethodCall(emitter, operation);
       default:
          return 0;
    }
@@ -1144,6 +1398,8 @@ TCIRJitCompileStatus tcirJitCompile(
    created->ref_home_count = tcirFunctionHomeCount(function, TCIR_HOME_REF);
    created->v64_home_count = tcirFunctionHomeCount(function, TCIR_HOME_V64);
    created->return_type = tcirFunctionReturnType(function);
+   created->max_call_argument_count = eligibility.max_call_argument_count;
+   created->has_method_call = eligibility.has_method_call;
 
    memset(&emitter, 0, sizeof(emitter));
    emitter.function = function;
@@ -1231,8 +1487,14 @@ TCCompiledStatus tcirJitInvoke(
 {
    TCIRRuntimeValue *scratch_values;
    TCIRRuntimeValue *edge_values;
+   TCIRRuntimeValue *call_arguments;
+   TCIRRuntimeValue *previous_call_arguments;
+   TCCompiledResult call_result;
+   TCCompiledResult *previous_call_result;
+   TCCompiledCall previous_call;
    TCIRRuntimeValue *previous_scratch;
    TCIRRuntimeValue *previous_edge;
+   size_t previous_call_argument_count;
    size_t previous_scratch_count;
    size_t previous_edge_count;
    sljit_s32 return_value;
@@ -1254,7 +1516,10 @@ TCCompiledStatus tcirJitInvoke(
        || frame->ref_home_count < artifact->ref_home_count
        || (frame->ref_home_count != 0U && frame->ref_homes == NULL)
        || frame->v64_home_count < artifact->v64_home_count
-       || (frame->v64_home_count != 0U && frame->v64_homes == NULL))
+       || (frame->v64_home_count != 0U && frame->v64_homes == NULL)
+       || (artifact->has_method_call &&
+           (frame->runtime == NULL || frame->runtime->abi_version != TC_RUNTIME_ABI_VERSION ||
+            frame->runtime->invoke == NULL)))
    {
       tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INVALID_ARGUMENT, TCIR_TCPC_NONE,
                            "compiled frame does not match the SLJIT artifact ABI");
@@ -1265,8 +1530,17 @@ TCCompiledStatus tcirJitInvoke(
       artifact->value_count == 0U ? 1U : artifact->value_count, sizeof(*scratch_values));
    edge_values = (TCIRRuntimeValue *)calloc(
       artifact->edge_value_count == 0U ? 1U : artifact->edge_value_count, sizeof(*edge_values));
-   if (scratch_values == NULL || edge_values == NULL)
+   call_arguments = artifact->has_method_call
+                       ? (TCIRRuntimeValue *)calloc(
+                            artifact->max_call_argument_count == 0U
+                               ? 1U
+                               : artifact->max_call_argument_count,
+                            sizeof(*call_arguments))
+                       : NULL;
+   if (scratch_values == NULL || edge_values == NULL ||
+       (artifact->has_method_call && call_arguments == NULL))
    {
+      free(call_arguments);
       free(edge_values);
       free(scratch_values);
       result->status = TC_COMPILED_OUT_OF_MEMORY;
@@ -1291,10 +1565,22 @@ TCCompiledStatus tcirJitInvoke(
    previous_scratch_count = frame->scratch_count;
    previous_edge = frame->edge_values;
    previous_edge_count = frame->edge_count;
+   previous_call_arguments = frame->call_arguments;
+   previous_call_argument_count = frame->call_argument_count;
+   previous_call = frame->call;
+   previous_call_result = frame->call_result;
    frame->scratch_values = scratch_values;
    frame->scratch_count = artifact->value_count;
    frame->edge_values = edge_values;
    frame->edge_count = artifact->edge_value_count;
+   frame->call_arguments = call_arguments;
+   frame->call_argument_count = artifact->max_call_argument_count;
+   memset(&frame->call, 0, sizeof(frame->call));
+   memset(&call_result, 0, sizeof(call_result));
+   call_result.status = TC_COMPILED_RETURNED;
+   call_result.type = TCIR_TYPE_VOID;
+   call_result.tc_pc = TCIR_TCPC_NONE;
+   frame->call_result = &call_result;
    memset(&frame->jit_return_value, 0, sizeof(frame->jit_return_value));
    frame->tc_pc = TCIR_TCPC_NONE;
    return_value = artifact->entry(frame);
@@ -1302,8 +1588,19 @@ TCCompiledStatus tcirJitInvoke(
    frame->scratch_count = previous_scratch_count;
    frame->edge_values = previous_edge;
    frame->edge_count = previous_edge_count;
+   frame->call_arguments = previous_call_arguments;
+   frame->call_argument_count = previous_call_argument_count;
+   frame->call = previous_call;
+   frame->call_result = previous_call_result;
+   free(call_arguments);
    free(edge_values);
    free(scratch_values);
+
+   if (call_result.status != TC_COMPILED_RETURNED)
+   {
+      *result = call_result;
+      return call_result.status;
+   }
 
    result->status = TC_COMPILED_RETURNED;
    result->type = artifact->return_type;

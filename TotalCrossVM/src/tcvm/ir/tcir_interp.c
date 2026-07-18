@@ -175,6 +175,7 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
       case TCIR_OP_NULL_CHECK:
+      case TCIR_OP_METHOD_CALL:
          return 1;
       default:
          return 0;
@@ -282,6 +283,10 @@ static TCIRInterpreterStatus tcirPreflight(
          if (!tcirInterpreterSupportsOperation(operation.opcode))
             return tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE,
                               operation.source.tc_pc, "function contains an operation unsupported by the reference interpreter");
+         if (operation.opcode == TCIR_OP_METHOD_CALL && frame->call_method == NULL)
+            return tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE,
+                              operation.source.tc_pc,
+                              "method.call requires a runtime call callback");
          if (!tcirUpdateMaximumValue(operation.result, value_count))
             return tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_OUT_OF_MEMORY,
                               operation.source.tc_pc, "TCIR value table is too large");
@@ -414,13 +419,13 @@ static int tcirExecuteOperation(
    TCIRRuntimeValue left;
    TCIRRuntimeValue right;
    TCIRRuntimeValue value;
+   size_t operand_index;
 
    *thrown = 0;
    memset(&value, 0, sizeof(value));
-   if (operation->operand_count > 0U && !tcirValueIsDefined(state, operation->operands[0]))
-      return 0;
-   if (operation->operand_count > 1U && !tcirValueIsDefined(state, operation->operands[1]))
-      return 0;
+   for (operand_index = 0U; operand_index < operation->operand_count; ++operand_index)
+      if (!tcirValueIsDefined(state, operation->operands[operand_index]))
+         return 0;
    if (operation->operand_count > 0U)
       left = tcirReadValue(state, operation->operands[0]);
    else
@@ -672,6 +677,39 @@ static int tcirExecuteOperation(
          }
          value.ref = left.ref;
          break;
+      case TCIR_OP_METHOD_CALL:
+      {
+         TCIRRuntimeValue *arguments = NULL;
+         TCIRMethodCallStatus call_status;
+         if (operation->operand_count != 0U)
+         {
+            arguments = (TCIRRuntimeValue *)calloc(
+               operation->operand_count, sizeof(*arguments));
+            if (arguments == NULL)
+               return -1;
+            for (operand_index = 0U; operand_index < operation->operand_count; ++operand_index)
+               arguments[operand_index] = tcirReadValue(state, operation->operands[operand_index]);
+         }
+         call_status = frame->call_method(
+            frame->runtime_context,
+            operation->symbol,
+            (TCIRCallKind)operation->immediate_i32,
+            NULL,
+            arguments,
+            operation->operand_count,
+            &value);
+         free(arguments);
+         if (call_status == TCIR_METHOD_CALL_THROWN)
+         {
+            *thrown = 1;
+            return 1;
+         }
+         if (call_status == TCIR_METHOD_CALL_OUT_OF_MEMORY)
+            return -1;
+         if (call_status != TCIR_METHOD_CALL_RETURNED)
+            return 0;
+         break;
+      }
       default:
          return 0;
    }
@@ -694,6 +732,25 @@ static int tcirSpillGCHomes(
           !tcirValueIsDefined(state, home->value))
          return 0;
       frame->ref_homes[home->home_index] = tcirReadValue(state, home->value).ref;
+   }
+   return 1;
+}
+
+static int tcirReloadGCHomes(
+   TCIRInterpreterState *state,
+   const TCIRInterpreterFrame *frame,
+   const TCIROperationView *operation)
+{
+   size_t index;
+   for (index = 0U; index < operation->gc_home_count; ++index)
+   {
+      const TCIRGCHome *home = &operation->gc_homes[index];
+      TCIRRuntimeValue value;
+      if (home->home_index >= frame->ref_home_count || frame->ref_homes == NULL)
+         return 0;
+      memset(&value, 0, sizeof(value));
+      value.ref = frame->ref_homes[home->home_index];
+      tcirWriteValue(state, home->value, value);
    }
    return 1;
 }
@@ -798,11 +855,30 @@ TCIRInterpreterStatus tcirInterpretFunction(
                        "verified TCIR could not materialize a GC home");
             goto done;
          }
-         if (!tcirExecuteOperation(&state, frame, &operation, &operation_threw))
          {
-            tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_UNDEFINED_VALUE, operation.source.tc_pc,
-                       "verified TCIR reached an invalid operation state");
-            goto done;
+            int operation_status = tcirExecuteOperation(
+               &state, frame, &operation, &operation_threw);
+            if (operation_status < 0)
+            {
+               memset(result, 0, sizeof(*result));
+               result->status = TCIR_INTERPRETER_OUT_OF_MEMORY;
+               result->type = TCIR_TYPE_VOID;
+               result->tc_pc = operation.source.tc_pc;
+               result->steps = state.steps;
+               tcirSetDiagnostic(
+                  diagnostic,
+                  TCIR_DIAGNOSTIC_OUT_OF_MEMORY,
+                  tcirFunctionIdentity(function),
+                  operation.source.tc_pc,
+                  "runtime method call ran out of memory");
+               goto done;
+            }
+            if (operation_status == 0)
+            {
+               tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_UNDEFINED_VALUE, operation.source.tc_pc,
+                          "verified TCIR reached an invalid operation state");
+               goto done;
+            }
          }
          if (operation_threw)
          {
@@ -811,6 +887,13 @@ TCIRInterpreterStatus tcirInterpretFunction(
             result->type = TCIR_TYPE_VOID;
             result->tc_pc = operation.source.tc_pc;
             result->steps = state.steps;
+            goto done;
+         }
+         if ((operation.effects & TCIR_EFFECT_MAY_GC) != 0U &&
+             !tcirReloadGCHomes(&state, frame, &operation))
+         {
+            tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_GC_HOME, operation.source.tc_pc,
+                       "verified TCIR could not reload a GC home");
             goto done;
          }
       }

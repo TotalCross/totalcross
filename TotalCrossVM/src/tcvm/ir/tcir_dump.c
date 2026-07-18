@@ -232,6 +232,7 @@ static void tcirDumpOperation(TCIRTextBuffer *buffer, const TCIROperationData *o
          break;
       case TCIR_OP_FIELD_LOAD:
       case TCIR_OP_FIELD_STORE:
+      case TCIR_OP_METHOD_CALL:
       case TCIR_OP_RUNTIME_CALL:
          tcirBufferAppend(buffer, " ");
          tcirBufferAppendSymbol(buffer, operation->symbol);
