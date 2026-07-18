@@ -351,6 +351,27 @@ static TCIRFunction *buildInvalidFunction(TCIRModule *module, TCIRDiagnostic *di
    return function;
 }
 
+static TCIRFunction *buildNullCheckFunction(TCIRModule *module, TCIRDiagnostic *diagnostic)
+{
+   static const unsigned int code[] = { 0x0000007aU, 0x00000088U };
+   TCIRMethodParameter parameter;
+   TCIRMethodView view;
+   TCIRFunction *function = NULL;
+   memset(&parameter, 0, sizeof(parameter));
+   parameter.type = TCIR_TYPE_REF;
+   parameter.home_bank = TCIR_HOME_REF;
+   memset(&view, 0, sizeof(view));
+   view.identity = "Jit.checkedRef:(Ljava/lang/Object;)V";
+   view.code = code;
+   view.code_slot_count = sizeof(code) / sizeof(code[0]);
+   view.ref_home_count = 1U;
+   view.parameters = &parameter;
+   view.parameter_count = 1U;
+   view.return_type = TCIR_TYPE_VOID;
+   return tcirFrontendBuildFunction(module, &view, &function, diagnostic) == TCIR_FRONTEND_OK
+      ? function : NULL;
+}
+
 static int testRejectionAndCleanup(TCIRModule *module, const TCIRFunction *valid_function)
 {
    TCIRDiagnostic ir_diagnostic;
@@ -358,6 +379,7 @@ static int testRejectionAndCleanup(TCIRModule *module, const TCIRFunction *valid
    TCIRJitCompileOptions options;
    TCIRJitArtifact *artifact = NULL;
    TCIRFunction *unsupported = buildSwitchFunction(module, &ir_diagnostic);
+   TCIRFunction *null_check = buildNullCheckFunction(module, &ir_diagnostic);
    TCIRFunction *invalid = buildInvalidFunction(module, &ir_diagnostic);
    int32_t untouched_homes[] = { 0x12345678, -12345 };
    size_t index;
@@ -366,6 +388,10 @@ static int testRejectionAndCleanup(TCIRModule *module, const TCIRFunction *valid
    REQUIRE(tcirJitCompile(unsupported, NULL, &artifact, &jit_diagnostic) == TCIR_JIT_COMPILE_INELIGIBLE);
    REQUIRE(artifact == NULL);
    REQUIRE(jit_diagnostic.code == TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TERMINATOR);
+   REQUIRE(null_check != NULL && tcirVerifyFunction(null_check, &ir_diagnostic));
+   REQUIRE(tcirJitCompile(null_check, NULL, &artifact, &jit_diagnostic) == TCIR_JIT_COMPILE_INELIGIBLE);
+   REQUIRE(artifact == NULL);
+   REQUIRE(jit_diagnostic.code == TCIR_JIT_DIAGNOSTIC_INELIGIBLE_OPERATION);
    REQUIRE(invalid != NULL && !tcirVerifyFunction(invalid, &ir_diagnostic));
    REQUIRE(tcirJitCompile(invalid, NULL, &artifact, &jit_diagnostic)
            == TCIR_JIT_COMPILE_VERIFICATION_FAILED);

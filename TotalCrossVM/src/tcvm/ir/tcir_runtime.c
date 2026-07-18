@@ -72,6 +72,8 @@ static void tcirRuntimeRaiseException(
       return;
    if (kind == TCIR_RUNTIME_EXCEPTION_ARITHMETIC)
       throwException(context, ArithmeticException, null);
+   else if (kind == TCIR_RUNTIME_EXCEPTION_NULL_POINTER)
+      throwException(context, NullPointerException, null);
 }
 
 #if defined(_WIN32)

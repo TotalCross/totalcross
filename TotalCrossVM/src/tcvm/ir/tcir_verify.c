@@ -780,14 +780,14 @@ static int tcirVerifyOperation(
              !tcirRequireReferenceOperand(function, operation, 0, diagnostic) ||
              !tcirRequireResultType(function, operation, TCIR_TYPE_NON_NULL_REF, diagnostic))
             return 0;
-         if ((operation->effects & TCIR_EFFECT_MAY_THROW) == 0)
+         if (operation->effects != (TCIR_EFFECT_MAY_THROW | TCIR_EFFECT_MAY_GC))
          {
             tcirSetDiagnostic(
                diagnostic,
                TCIR_DIAGNOSTIC_HELPER_EFFECTS,
                function->identity,
                operation->source.tc_pc,
-               "null.check must declare may_throw");
+               "null.check must declare may_throw and may_gc");
             return 0;
          }
          break;

@@ -32,7 +32,8 @@ typedef union TCIRV64Home
 
 typedef enum TCIRRuntimeExceptionKind
 {
-   TCIR_RUNTIME_EXCEPTION_ARITHMETIC = 0
+   TCIR_RUNTIME_EXCEPTION_ARITHMETIC = 0,
+   TCIR_RUNTIME_EXCEPTION_NULL_POINTER
 } TCIRRuntimeExceptionKind;
 
 typedef void (*TCIRRaiseExceptionFunction)(

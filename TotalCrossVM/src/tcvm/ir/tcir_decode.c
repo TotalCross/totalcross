@@ -115,6 +115,7 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
          instruction->reg1 = tcirBits(slot, 16, 8);
          break;
       case MOV_regO_null:
+      case TEST_regO:
          instruction->reg0 = tcirBits(slot, 8, 8);
          break;
       case MOV_regI_sym:
@@ -547,6 +548,7 @@ static int tcirValidateInstruction(
                 tcirValidateRefRegister(method, instruction, instruction->reg1, "source", diagnostic);
       case MOV_regO_null:
       case RETURN_regO:
+      case TEST_regO:
          return tcirValidateRefRegister(method, instruction, instruction->reg0, "operand", diagnostic);
       case MOV_regI_sym:
          return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
