@@ -58,6 +58,8 @@ static int buildFixtureView(
    view->source_lines = fixture->lines;
    view->resolve_call_shape = tcirResolveConverterFixtureCall;
    view->resolve_call_shape_user_data = (void *)fixture;
+   view->resolve_class_name = tcirResolveConverterFixtureClass;
+   view->resolve_class_name_user_data = (void *)fixture;
    return 1;
 }
 
@@ -141,7 +143,7 @@ static int testDeterministicGeneration(void)
    REQUIRE(strcmp(first.input_hash, second.input_hash) == 0);
    REQUIRE(strstr(first.manifest, "\"generator\":\"tcir-portable-c\"") != NULL);
    REQUIRE(strstr(first.manifest, "\"ir_version\":1") != NULL);
-   REQUIRE(strstr(first.manifest, "\"runtime_abi_version\":4") != NULL);
+   REQUIRE(strstr(first.manifest, "\"runtime_abi_version\":5") != NULL);
    REQUIRE(strstr(first.manifest, "\"rejected_methods\":[]") != NULL);
    abs_position = strstr(first.manifest, "fixtures.TCIRPoc.abs:(I)I");
    add_position = strstr(first.manifest, "fixtures.TCIRPoc.add:(II)I");
