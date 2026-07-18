@@ -349,6 +349,7 @@ const char *tcirOperationName(TCIROperation operation)
       "add.f64",
       "sub.f64",
       "mul.f64",
+      "div.f64",
       "cmp.eq.f64",
       "cmp.lt.f64",
       "cmp.le.f64",

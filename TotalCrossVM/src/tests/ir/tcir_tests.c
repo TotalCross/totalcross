@@ -784,7 +784,7 @@ static int testFrontendDiagnostics(void)
    const unsigned int invalid_symbol[] = { 6U | (1U << 16), 133U };
    const unsigned int returns_void[] = { 136U };
    const unsigned int unsupported[] = { 149U, 136U };
-   const unsigned int unsupported_double_division[] = { 64U, 136U };
+   const unsigned int unsupported_double_remainder[] = { 68U, 136U };
    const unsigned int supported_call_shape[] = { 153U, 0U, 0U, 136U };
    TCIRMethodView view;
    TCIRMethodParameter parameter;
@@ -834,7 +834,7 @@ static int testFrontendDiagnostics(void)
    REQUIRE(expectFrontendDiagnostic(
       &view, TCIR_FRONTEND_FALLBACK, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE, 0));
 
-   view = diagnosticView("Fallback.doubleDivision:()V", unsupported_double_division, 2, TCIR_TYPE_VOID);
+   view = diagnosticView("Fallback.doubleRemainder:()V", unsupported_double_remainder, 2, TCIR_TYPE_VOID);
    REQUIRE(expectFrontendDiagnostic(
       &view, TCIR_FRONTEND_FALLBACK, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE, 0));
 
@@ -1390,6 +1390,79 @@ static int testCheckedI64Arithmetic(void)
    return 1;
 }
 
+static int testCheckedF64Division(void)
+{
+   static const unsigned int code[] = { 0x01000240U, 0x00000287U };
+   static const TCIRType v64_types[] = {
+      TCIR_TYPE_F64, TCIR_TYPE_F64, TCIR_TYPE_F64
+   };
+   TCIRMethodParameter parameters[2];
+   TCIRMethodView view;
+   TCIRDiagnostic diagnostic;
+   TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
+   TCIRFunction *function = NULL;
+   TCIROperationView operation;
+   TCIRRuntimeValue arguments[2];
+   TCIRInterpreterFrame frame;
+   TCIRInterpreterResult result;
+   TCIRExceptionCapture capture;
+   TCIRV64Home homes[3];
+
+   REQUIRE(module != NULL);
+   memset(parameters, 0, sizeof(parameters));
+   parameters[0].type = TCIR_TYPE_F64;
+   parameters[0].home_bank = TCIR_HOME_V64;
+   parameters[0].home_index = 0U;
+   parameters[1].type = TCIR_TYPE_F64;
+   parameters[1].home_bank = TCIR_HOME_V64;
+   parameters[1].home_index = 1U;
+   memset(&view, 0, sizeof(view));
+   view.identity = "Example.checkedF64Division:(DD)D";
+   view.code = code;
+   view.code_slot_count = sizeof(code) / sizeof(code[0]);
+   view.v64_home_count = sizeof(v64_types) / sizeof(v64_types[0]);
+   view.v64_home_types = v64_types;
+   view.parameters = parameters;
+   view.parameter_count = sizeof(parameters) / sizeof(parameters[0]);
+   view.return_type = TCIR_TYPE_F64;
+   REQUIRE(tcirFrontendBuildFunction(module, &view, &function, &diagnostic) == TCIR_FRONTEND_OK);
+   REQUIRE(function != NULL && tcirVerifyFunction(function, &diagnostic));
+   REQUIRE(tcirBlockOperationAt(tcirFunctionBlockAt(function, 0U), 0U, &operation) == TCIR_STATUS_OK);
+   REQUIRE(operation.opcode == TCIR_OP_DIV_F64);
+   REQUIRE(operation.effects == (TCIR_EFFECT_MAY_THROW | TCIR_EFFECT_MAY_GC));
+   REQUIRE(operation.propagates_exception);
+
+   memset(&frame, 0, sizeof(frame));
+   memset(arguments, 0, sizeof(arguments));
+   memset(homes, 0, sizeof(homes));
+   memset(&capture, 0, sizeof(capture));
+   frame.v64_homes = homes;
+   frame.v64_home_count = sizeof(homes) / sizeof(homes[0]);
+   frame.arguments = arguments;
+   frame.argument_count = sizeof(arguments) / sizeof(arguments[0]);
+   frame.runtime_context = &capture;
+   frame.raise_exception = captureRuntimeException;
+
+   arguments[0].f64 = 7.5;
+   arguments[1].f64 = 2.5;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_RETURNED);
+   REQUIRE(result.type == TCIR_TYPE_F64 && result.value.f64 == 3.0 && capture.count == 0U);
+
+   arguments[1].f64 = 0.0;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_THROWN);
+   REQUIRE(result.tc_pc == 0U && capture.count == 1U);
+   REQUIRE(capture.kind == TCIR_RUNTIME_EXCEPTION_ARITHMETIC && capture.tc_pc == 0U);
+
+   arguments[1].f64 = -0.0;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_THROWN);
+   REQUIRE(result.tc_pc == 0U && capture.count == 2U);
+   tcirModuleDestroy(module);
+   return 1;
+}
+
 int main(void)
 {
    int passed = 1;
@@ -1410,6 +1483,7 @@ int main(void)
    passed = testNonNullProof() && passed;
    passed = testCheckedI32Arithmetic() && passed;
    passed = testCheckedI64Arithmetic() && passed;
+   passed = testCheckedF64Division() && passed;
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
