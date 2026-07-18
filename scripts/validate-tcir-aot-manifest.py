@@ -11,6 +11,7 @@ from pathlib import Path
 EXPECTED_IDENTITIES = (
     "fixtures.TCIRPoc.abs:(I)I",
     "fixtures.TCIRPoc.add:(II)I",
+    "fixtures.TCIRPoc.callStatic:(II)I",
     "fixtures.TCIRPoc.i32ToF64:(I)D",
     "fixtures.TCIRPoc.i64ToF64:(J)D",
     "fixtures.TCIRPoc.normalizedF32:(F)F",
@@ -41,7 +42,7 @@ def validate(manifest_path, source_path, header_path):
     require(manifest["generator"] == "tcir-portable-c", "unexpected generator")
     require(manifest["generator_version"] == 1, "unexpected generator version")
     require(manifest["ir_version"] == 1, "unexpected IR version")
-    require(manifest["runtime_abi_version"] == 3, "unexpected runtime ABI version")
+    require(manifest["runtime_abi_version"] == 4, "unexpected runtime ABI version")
     require(manifest["input_hash_algorithm"] == "fnv1a64", "unexpected input hash algorithm")
     require(HEX64.fullmatch(manifest["input_hash"]) is not None, "invalid input hash")
     require(manifest["target_options"], "missing target options")

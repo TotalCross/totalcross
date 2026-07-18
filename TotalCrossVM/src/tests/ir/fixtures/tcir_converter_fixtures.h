@@ -221,6 +221,39 @@ static const TCIRMethodParameter tcir_fixture_switchScore_parameters[] = {
    { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }
 };
 
+static const unsigned int tcir_fixture_callStatic_code[] = {
+   0x00000199U, 0x00000100U, 0x00000085U
+};
+
+static const int tcir_fixture_callStatic_lines[] = {
+   80, 80, 80
+};
+
+static const TCIRMethodParameter tcir_fixture_callStatic_parameters[] = {
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U },
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 1U }
+};
+
+static int tcirResolveConverterFixtureCall(
+   void *user_data, unsigned int symbol, TCIRCallShape *shape)
+{
+   static const TCIRType parameter_types[] = { TCIR_TYPE_I32, TCIR_TYPE_I32 };
+   const TCIRConverterFixture *fixture = (const TCIRConverterFixture *)user_data;
+   if (fixture == (const TCIRConverterFixture *)0 ||
+       fixture->code != tcir_fixture_callStatic_code ||
+       symbol != ((fixture->code[0] >> 8) & 0xfffU))
+      return 0;
+   shape->parameter_count = 2U;
+   shape->returns_value = 1;
+   shape->kind = TCIR_CALL_STATIC;
+   shape->parameter_types = parameter_types;
+   shape->return_type = TCIR_TYPE_I32;
+   shape->owner = "fixtures.TCIRPoc";
+   shape->name = "callTarget";
+   shape->descriptor = "(II)I";
+   return 1;
+}
+
 static const TCIRConverterFixture tcir_converter_fixtures[] = {
    { "fixtures.TCIRPoc.add:(II)I", tcir_fixture_add_code, tcir_fixture_add_lines, 2U, 2U, 0U, 0U, 2U, tcir_fixture_add_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
    { "fixtures.TCIRPoc.abs:(I)I", tcir_fixture_abs_code, tcir_fixture_abs_lines, 6U, 1U, 0U, 0U, 1U, tcir_fixture_abs_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
@@ -235,6 +268,7 @@ static const TCIRConverterFixture tcir_converter_fixtures[] = {
    { "fixtures.TCIRPoc.referenceScore:(Ljava/lang/Object;Ljava/lang/Object;)I", tcir_fixture_referenceScore_code, tcir_fixture_referenceScore_lines, 10U, 1U, 2U, 0U, 2U, tcir_fixture_referenceScore_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
    { "fixtures.TCIRPoc.nullRef:(Ljava/lang/Object;)Ljava/lang/Object;", tcir_fixture_nullRef_code, tcir_fixture_nullRef_lines, 1U, 0U, 1U, 0U, 1U, tcir_fixture_nullRef_parameters, TCIR_TYPE_REF, (const TCIRType *)0 },
    { "fixtures.TCIRPoc.switchScore:(I)I", tcir_fixture_switchScore_code, tcir_fixture_switchScore_lines, 13U, 1U, 0U, 0U, 1U, tcir_fixture_switchScore_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
+   { "fixtures.TCIRPoc.callStatic:(II)I", tcir_fixture_callStatic_code, tcir_fixture_callStatic_lines, 3U, 2U, 1U, 0U, 2U, tcir_fixture_callStatic_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
 };
 
 #define TCIR_CONVERTER_FIXTURE_COUNT \

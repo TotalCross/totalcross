@@ -440,6 +440,12 @@ final class ModernJavaClassFileFixtures {
         + "      default: return -1;\n"
         + "    }\n"
         + "  }\n"
+        + "  public static int callStatic(int left, int right) {\n"
+        + "    return callTarget(left, right);\n"
+        + "  }\n"
+        + "  private static int callTarget(int left, int right) {\n"
+        + "    return left + right;\n"
+        + "  }\n"
         + "}\n";
     return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
         "TCIR POC converter output", className, source);

@@ -32,6 +32,8 @@ typedef struct TCIRAotMethodInfo
    uint64_t content_hash;
    size_t value_count;
    size_t edge_value_count;
+   size_t max_call_argument_count;
+   int has_method_call;
 } TCIRAotMethodInfo;
 
 static void tcirAotSetDiagnostic(
@@ -311,6 +313,18 @@ static uint64_t tcirAotFunctionHash(const TCIRFunction *function)
          hash = tcirAotHashU64(hash, (uint64_t)operation.home_bank);
          hash = tcirAotHashU64(hash, operation.home_index);
          hash = tcirAotHashU64(hash, operation.effects);
+         hash = tcirAotHashU64(hash, (uint64_t)operation.gc_home_count);
+         for (operand = 0U; operand < operation.gc_home_count; ++operand)
+         {
+            hash = tcirAotHashValue(hash, operation.gc_homes[operand].value);
+            hash = tcirAotHashU64(hash, operation.gc_homes[operand].home_index);
+         }
+         hash = tcirAotHashU64(
+            hash,
+            operation.exception_target == NULL
+               ? UINT64_MAX
+               : (uint64_t)tcirBlockId(operation.exception_target));
+         hash = tcirAotHashU64(hash, (uint64_t)operation.propagates_exception);
          hash = tcirAotHashU64(hash, operation.source.tc_pc);
          hash = tcirAotHashU64(hash, (uint64_t)(uint32_t)operation.source.source_line);
          if (operation.symbol != NULL)
@@ -445,6 +459,12 @@ static int tcirAotOperationIsEligible(const TCIROperationView *operation)
             && operation->effects == TCIR_EFFECT_NONE &&
             (operation->home_bank == TCIR_HOME_I32 || operation->home_bank == TCIR_HOME_REF ||
              operation->home_bank == TCIR_HOME_V64);
+      case TCIR_OP_METHOD_CALL:
+         return operation->immediate_i32 == (int)TCIR_CALL_STATIC &&
+            operation->symbol != NULL &&
+            tcirSymbolKind(operation->symbol) == TCIR_SYMBOL_METHOD &&
+            operation->effects == TCIR_METHOD_CALL_EFFECTS &&
+            operation->propagates_exception;
       default:
          return 0;
    }
@@ -467,6 +487,8 @@ static TCIRAotGenerateStatus tcirAotCheckEligibility(
    const TCIRFunction *function,
    size_t *value_count,
    size_t *edge_value_count,
+   size_t *max_call_argument_count,
+   int *has_method_call,
    TCIRAotDiagnostic *diagnostic)
 {
    size_t block_index;
@@ -491,6 +513,8 @@ static TCIRAotGenerateStatus tcirAotCheckEligibility(
    }
    *value_count = 0U;
    *edge_value_count = 0U;
+   *max_call_argument_count = 0U;
+   *has_method_call = 0;
    for (parameter_index = 0U; parameter_index < tcirFunctionParameterCount(function); ++parameter_index)
    {
       const TCIRValue *parameter = tcirFunctionParameter(function, parameter_index);
@@ -548,6 +572,12 @@ static TCIRAotGenerateStatus tcirAotCheckEligibility(
             tcirAotSetDiagnostic(diagnostic, TCIR_AOT_DIAGNOSTIC_INELIGIBLE_TYPE, function,
                                  operation.source.tc_pc, "portable-C value table is too large");
             return TCIR_AOT_GENERATE_INELIGIBLE;
+         }
+         if (operation.opcode == TCIR_OP_METHOD_CALL)
+         {
+            *has_method_call = 1;
+            if (operation.operand_count > *max_call_argument_count)
+               *max_call_argument_count = operation.operand_count;
          }
          for (operand = 0U; operand < operation.operand_count; ++operand)
             if (!tcirAotTypeIsSupported(tcirValueType(operation.operands[operand])))
@@ -660,6 +690,30 @@ static const char *tcirAotEdgeValueArray(TCIRType type)
    if (type == TCIR_TYPE_F64)
       return "f64_edge_values";
    return "edge_values";
+}
+
+static const char *tcirAotRuntimeValueMember(TCIRType type)
+{
+   if (type == TCIR_TYPE_REF)
+      return "ref";
+   if (type == TCIR_TYPE_I64)
+      return "i64";
+   if (type == TCIR_TYPE_F64)
+      return "f64";
+   return "i32";
+}
+
+static const char *tcirAotTypeConstant(TCIRType type)
+{
+   switch (type)
+   {
+      case TCIR_TYPE_VOID: return "TCIR_TYPE_VOID";
+      case TCIR_TYPE_I32: return "TCIR_TYPE_I32";
+      case TCIR_TYPE_I64: return "TCIR_TYPE_I64";
+      case TCIR_TYPE_F64: return "TCIR_TYPE_F64";
+      case TCIR_TYPE_REF: return "TCIR_TYPE_REF";
+      default: return "TCIR_TYPE_VOID";
+   }
 }
 
 static int tcirAotEmitEdge(
@@ -928,6 +982,82 @@ static int tcirAotEmitOperation(TCIRAotBuffer *source, const TCIROperationView *
          }
          return tcirAotBufferAppendFormat(source, "         frame->i32_homes[%u] = values[%u];\n",
                                           operation->home_index, left);
+      case TCIR_OP_METHOD_CALL:
+      {
+         size_t index;
+         for (index = 0U; index < operation->gc_home_count; ++index)
+         {
+            const TCIRGCHome *home = &operation->gc_homes[index];
+            if (!tcirAotBufferAppendFormat(
+                   source,
+                   "         frame->ref_homes[%u] = ref_values[%u];\n",
+                   home->home_index,
+                   tcirValueId(home->value)))
+               return 0;
+         }
+         for (index = 0U; index < operation->operand_count; ++index)
+         {
+            TCIRType type = tcirValueType(operation->operands[index]);
+            if (!tcirAotBufferAppendFormat(
+                   source,
+                   "         call_arguments[%lu].%s = %s[%u];\n",
+                   (unsigned long)index,
+                   tcirAotRuntimeValueMember(type),
+                   tcirAotValueArray(type),
+                   tcirValueId(operation->operands[index])))
+               return 0;
+         }
+         if (!tcirAotBufferAppendFormat(
+                source,
+                "         call.constant_pool_index = %uU;\n"
+                "         call.kind = TCIR_CALL_STATIC;\n"
+                "         call.receiver = (void *)0;\n"
+                "         call.arguments = call_arguments;\n"
+                "         call.argument_count = %luU;\n"
+                "         call.result_type = %s;\n"
+                "         call.tc_pc = %uU;\n"
+                "         memset(&call_result, 0, sizeof(call_result));\n"
+                "         call_result.status = TC_COMPILED_REJECTED;\n"
+                "         call_result.type = TCIR_TYPE_VOID;\n"
+                "         call_result.tc_pc = TCIR_TCPC_NONE;\n"
+                "         call_status = frame->runtime->invoke(frame->runtime, &call, &call_result);\n"
+                "         if (call_status != call_result.status)\n"
+                "            return TC_COMPILED_REJECTED;\n"
+                "         if (call_status != TC_COMPILED_RETURNED)\n"
+                "         {\n"
+                "            if (call_result.tc_pc == TCIR_TCPC_NONE) call_result.tc_pc = %uU;\n"
+                "            *result = call_result;\n"
+                "            return call_status;\n"
+                "         }\n"
+                "         if (call_result.type != %s)\n"
+                "            return TC_COMPILED_REJECTED;\n",
+                tcirSymbolConstantPoolIndex(operation->symbol),
+                (unsigned long)operation->operand_count,
+                tcirAotTypeConstant(operation->result_type),
+                operation->source.tc_pc,
+                operation->source.tc_pc,
+                tcirAotTypeConstant(operation->result_type)))
+            return 0;
+         if (operation->result != NULL &&
+             !tcirAotBufferAppendFormat(
+                source,
+                "         %s[%u] = call_result.value.%s;\n",
+                tcirAotValueArray(operation->result_type),
+                result,
+                tcirAotRuntimeValueMember(operation->result_type)))
+            return 0;
+         for (index = 0U; index < operation->gc_home_count; ++index)
+         {
+            const TCIRGCHome *home = &operation->gc_homes[index];
+            if (!tcirAotBufferAppendFormat(
+                   source,
+                   "         ref_values[%u] = frame->ref_homes[%u];\n",
+                   tcirValueId(home->value),
+                   home->home_index))
+               return 0;
+         }
+         return 1;
+      }
       default:
          return 0;
    }
@@ -940,6 +1070,8 @@ static int tcirAotEmitMethod(TCIRAotBuffer *source, const TCIRAotMethodInfo *met
    size_t parameter_index;
    size_t values = method->value_count == 0U ? 1U : method->value_count;
    size_t edges = method->edge_value_count == 0U ? 1U : method->edge_value_count;
+   size_t call_arguments = method->max_call_argument_count == 0U
+      ? 1U : method->max_call_argument_count;
 
    if (!tcirAotBufferAppendFormat(source,
       "static TCCompiledStatus %s(TCCompiledFrame *frame, TCCompiledResult *result)\n"
@@ -952,11 +1084,19 @@ static int tcirAotEmitMethod(TCIRAotBuffer *source, const TCIRAotMethodInfo *met
       "   int64_t v64_edge_values[%lu] = { 0 };\n"
       "   double f64_values[%lu] = { 0 };\n"
       "   double f64_edge_values[%lu] = { 0 };\n"
+      "   TCIRRuntimeValue call_arguments[%lu] = { { 0 } };\n"
+      "   TCCompiledCall call = { 0 };\n"
+      "   TCCompiledResult call_result;\n"
+      "   TCCompiledStatus call_status = TC_COMPILED_RETURNED;\n"
       "   unsigned int block = 0U;\n\n"
       "   (void)edge_values;\n"
       "   (void)ref_edge_values;\n"
       "   (void)v64_edge_values;\n"
       "   (void)f64_edge_values;\n"
+      "   (void)call_arguments;\n"
+      "   (void)call;\n"
+      "   (void)call_result;\n"
+      "   (void)call_status;\n"
       "   if (result != NULL)\n"
       "   {\n"
       "      memset(result, 0, sizeof(*result));\n"
@@ -984,10 +1124,18 @@ static int tcirAotEmitMethod(TCIRAotBuffer *source, const TCIRAotMethodInfo *met
       (unsigned long)edges,
       (unsigned long)values,
       (unsigned long)edges,
+      (unsigned long)call_arguments,
       (unsigned long)tcirFunctionParameterCount(function),
       tcirFunctionHomeCount(function, TCIR_HOME_I32),
       tcirFunctionHomeCount(function, TCIR_HOME_REF),
       tcirFunctionHomeCount(function, TCIR_HOME_V64)))
+      return 0;
+   if (method->has_method_call &&
+       !tcirAotBufferAppend(source,
+          "   if (frame->runtime == NULL\n"
+          "       || frame->runtime->abi_version != TC_RUNTIME_ABI_VERSION\n"
+          "       || frame->runtime->invoke == NULL)\n"
+          "      return TC_COMPILED_REJECTED;\n"))
       return 0;
    for (parameter_index = 0U; parameter_index < tcirFunctionParameterCount(function); ++parameter_index)
    {
@@ -1301,8 +1449,13 @@ TCIRAotGenerateStatus tcirAotGenerate(
       }
       method->function = functions[index];
       method->identity = tcirFunctionIdentity(functions[index]);
-      status = tcirAotCheckEligibility(functions[index], &method->value_count,
-                                       &method->edge_value_count, diagnostic);
+      status = tcirAotCheckEligibility(
+         functions[index],
+         &method->value_count,
+         &method->edge_value_count,
+         &method->max_call_argument_count,
+         &method->has_method_call,
+         diagnostic);
       if (status != TCIR_AOT_GENERATE_READY)
          goto failure;
       method->content_hash = tcirAotFunctionHash(functions[index]);

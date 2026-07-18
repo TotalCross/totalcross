@@ -121,6 +121,12 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case SWITCH:
          instruction->reg0 = tcirBits(slot, 8, 8);
          break;
+      case CALL_normal:
+      case CALL_virtual:
+         instruction->symbol = tcirBits(slot, 8, 12);
+         instruction->reg0 = tcirBits(slot, 20, 6);
+         instruction->reg1 = tcirBits(slot, 26, 6);
+         break;
       case MOV_regI_sym:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->symbol = tcirBits(slot, 16, 16);
@@ -513,6 +519,142 @@ static int tcirValidateSwitchTargets(
    return 1;
 }
 
+static int tcirResolveValidatedCallShape(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   TCIRCallShape *shape,
+   TCIRDiagnostic *diagnostic)
+{
+   memset(shape, 0, sizeof(*shape));
+   if (method->resolve_call_shape == NULL ||
+       !method->resolve_call_shape(
+          method->resolve_call_shape_user_data, instruction->symbol, shape))
+   {
+      tcirSetDiagnostic(
+         diagnostic,
+         TCIR_DIAGNOSTIC_INVALID_SYMBOL,
+         method->identity,
+         instruction->pc,
+         "%s cannot resolve method symbol %u",
+         instruction->info->name,
+         instruction->symbol);
+      return 0;
+   }
+   if ((shape->returns_value != 0 && shape->returns_value != 1) ||
+       (shape->parameter_count != 0U && shape->parameter_types == NULL) ||
+       shape->owner == NULL || shape->name == NULL || shape->descriptor == NULL ||
+       (shape->returns_value && shape->return_type != TCIR_TYPE_I32 &&
+        shape->return_type != TCIR_TYPE_I64 && shape->return_type != TCIR_TYPE_F64 &&
+        shape->return_type != TCIR_TYPE_REF) ||
+       (!shape->returns_value && shape->return_type != TCIR_TYPE_VOID))
+   {
+      tcirSetDiagnostic(
+         diagnostic,
+         TCIR_DIAGNOSTIC_TYPE_MERGE,
+         method->identity,
+         instruction->pc,
+         "%s method symbol %u has an incomplete call shape",
+         instruction->info->name,
+         instruction->symbol);
+      return 0;
+   }
+   return 1;
+}
+
+static unsigned int tcirCallParameterEncoding(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   const TCIRCallShape *shape,
+   size_t parameter)
+{
+   size_t packed_parameter;
+   size_t slot;
+   unsigned int shift;
+
+   if (!shape->returns_value && parameter == 0U)
+      return instruction->reg1;
+   packed_parameter = parameter - (!shape->returns_value ? 1U : 0U);
+   slot = instruction->pc + 1U + packed_parameter / 4U;
+   shift = (unsigned int)(packed_parameter % 4U) * 8U;
+   return tcirBits(method->code[slot], shift, 8);
+}
+
+static int tcirValidateCallRegister(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   unsigned int reg,
+   TCIRType type,
+   const char *role,
+   TCIRDiagnostic *diagnostic)
+{
+   if (type == TCIR_TYPE_I32)
+      return tcirValidateRegister(method, instruction, reg, role, diagnostic);
+   if (type == TCIR_TYPE_REF)
+      return tcirValidateRefRegister(method, instruction, reg, role, diagnostic);
+   if (type == TCIR_TYPE_I64 || type == TCIR_TYPE_F64)
+      return tcirValidateV64Register(method, instruction, reg, role, type, diagnostic);
+   tcirSetDiagnostic(
+      diagnostic,
+      TCIR_DIAGNOSTIC_OPERAND_TYPE,
+      method->identity,
+      instruction->pc,
+      "%s %s has unsupported type %s",
+      instruction->info->name,
+      role,
+      tcirTypeName(type));
+   return 0;
+}
+
+static int tcirValidateStaticCall(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   TCIRDiagnostic *diagnostic)
+{
+   TCIRCallShape shape;
+   size_t parameter;
+
+   if (!tcirResolveValidatedCallShape(method, instruction, &shape, diagnostic))
+      return 0;
+   if (shape.kind != TCIR_CALL_STATIC)
+   {
+      tcirSetDiagnostic(
+         diagnostic,
+         TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE,
+         method->identity,
+         instruction->pc,
+         "CALL_normal method symbol %u is not static; keep method interpreter-eligible",
+         instruction->symbol);
+      return 0;
+   }
+   if (shape.returns_value &&
+       !tcirValidateCallRegister(
+          method, instruction, instruction->reg1, shape.return_type, "return", diagnostic))
+      return 0;
+   for (parameter = 0U; parameter < shape.parameter_count; ++parameter)
+   {
+      unsigned int encoding = tcirCallParameterEncoding(method, instruction, &shape, parameter);
+      TCIRType type = shape.parameter_types[parameter];
+      if (type != TCIR_TYPE_I32 && type != TCIR_TYPE_I64 && type != TCIR_TYPE_F64 &&
+          type != TCIR_TYPE_REF)
+      {
+         tcirSetDiagnostic(
+            diagnostic,
+            TCIR_DIAGNOSTIC_OPERAND_TYPE,
+            method->identity,
+            instruction->pc,
+            "CALL_normal parameter %u has unsupported type %s",
+            (unsigned int)parameter,
+            tcirTypeName(type));
+         return 0;
+      }
+      if (encoding <= 63U &&
+          !tcirValidateCallRegister(
+             method, instruction, encoding, type, "parameter", diagnostic))
+         return 0;
+   }
+   return 1;
+}
+
 static int tcirValidateInstruction(
    const TCIRMethodView *method,
    const TCIRDecodedMethod *decoded,
@@ -737,6 +879,8 @@ static int tcirValidateInstruction(
       case SWITCH:
          return tcirValidateRegister(method, instruction, instruction->reg0, "selector", diagnostic) &&
                 tcirValidateSwitchTargets(method, decoded, instruction, diagnostic);
+      case CALL_normal:
+         return tcirValidateStaticCall(method, instruction, diagnostic);
       default:
          break;
    }
@@ -951,7 +1095,9 @@ TCIRFrontendResult tcirDecodeMethod(
       if (!tcirValidateInstruction(method, decoded, &decoded->instructions[index], diagnostic))
       {
          tcirDecodedMethodDestroy(decoded);
-         return TCIR_FRONTEND_ERROR;
+         return diagnostic != NULL && diagnostic->code == TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE
+            ? TCIR_FRONTEND_FALLBACK
+            : TCIR_FRONTEND_ERROR;
       }
    }
    if (decoded->instructions[count - 1U].info->poc_status == TCIR_POC_SUPPORTED &&

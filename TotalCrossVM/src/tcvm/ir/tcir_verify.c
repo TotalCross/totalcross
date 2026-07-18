@@ -916,6 +916,70 @@ static int tcirVerifyOperation(
          }
          break;
 
+      case TCIR_OP_METHOD_CALL:
+         if (operation->symbol == NULL || operation->symbol->module != function->module ||
+             operation->symbol->kind != TCIR_SYMBOL_METHOD)
+         {
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_SYMBOL_KIND,
+               function->identity,
+               operation->source.tc_pc,
+               "method.call requires a method symbol from the same module");
+            return 0;
+         }
+         if (operation->immediate_i32 != (int)TCIR_CALL_STATIC)
+         {
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_INVALID_ARGUMENT,
+               function->identity,
+               operation->source.tc_pc,
+               "method.call supports only static invocation in this slice");
+            return 0;
+         }
+         if (operation->effects != TCIR_METHOD_CALL_EFFECTS || !operation->propagates_exception)
+         {
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_HELPER_EFFECTS,
+               function->identity,
+               operation->source.tc_pc,
+               "method.call must declare the complete call effects and propagate exceptions");
+            return 0;
+         }
+         if (operation->result_type != TCIR_TYPE_VOID && operation->result_type != TCIR_TYPE_I32 &&
+             operation->result_type != TCIR_TYPE_I64 && operation->result_type != TCIR_TYPE_F64 &&
+             operation->result_type != TCIR_TYPE_REF)
+         {
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_RESULT_TYPE,
+               function->identity,
+               operation->source.tc_pc,
+               "method.call has unsupported result type %s",
+               tcirTypeName(operation->result_type));
+            return 0;
+         }
+         for (operand_index = 0; operand_index < operation->operand_count; ++operand_index)
+         {
+            TCIRType type = operation->operands[operand_index]->type;
+            if (type != TCIR_TYPE_I32 && type != TCIR_TYPE_I64 && type != TCIR_TYPE_F64 &&
+                type != TCIR_TYPE_REF)
+            {
+               tcirSetDiagnostic(
+                  diagnostic,
+                  TCIR_DIAGNOSTIC_OPERAND_TYPE,
+                  function->identity,
+                  operation->source.tc_pc,
+                  "method.call operand %u has unsupported type %s",
+                  (unsigned int)operand_index,
+                  tcirTypeName(type));
+               return 0;
+            }
+         }
+         break;
+
       case TCIR_OP_INTERNAL_ADDRESS:
          if (!tcirRequireOperandCount(function, operation, 1, diagnostic) ||
              !tcirRequireReferenceOperand(function, operation, 0, diagnostic) ||

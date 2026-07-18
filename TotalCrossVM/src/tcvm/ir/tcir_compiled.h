@@ -14,9 +14,10 @@
 extern "C" {
 #endif
 
-#define TC_RUNTIME_ABI_VERSION 3U
+#define TC_RUNTIME_ABI_VERSION 4U
 
 typedef struct TCCompiledResult TCCompiledResult;
+typedef struct TCCompiledRuntime TCCompiledRuntime;
 
 typedef enum TCCompiledStatus
 {
@@ -34,12 +35,30 @@ typedef TCCompiledStatus (*TCCompiledDispatchThunk)(
    size_t argument_count,
    TCCompiledResult *result);
 
-typedef struct TCCompiledRuntime
+typedef struct TCCompiledCall
+{
+   unsigned int constant_pool_index;
+   TCIRCallKind kind;
+   void *receiver;
+   const TCIRRuntimeValue *arguments;
+   size_t argument_count;
+   TCIRType result_type;
+   unsigned int tc_pc;
+} TCCompiledCall;
+
+typedef TCCompiledStatus (*TCCompiledInvokeThunk)(
+   const TCCompiledRuntime *runtime,
+   const TCCompiledCall *call,
+   TCCompiledResult *result);
+
+struct TCCompiledRuntime
 {
    unsigned int abi_version;
    void *context;
+   const void *method_key;
    TCCompiledDispatchThunk dispatch;
-} TCCompiledRuntime;
+   TCCompiledInvokeThunk invoke;
+};
 
 typedef struct TCCompiledFrame
 {
@@ -56,6 +75,10 @@ typedef struct TCCompiledFrame
    size_t scratch_count;
    TCIRRuntimeValue *edge_values;
    size_t edge_count;
+   TCIRRuntimeValue *call_arguments;
+   size_t call_argument_count;
+   TCCompiledCall call;
+   TCCompiledResult *call_result;
    TCIRRuntimeValue jit_return_value;
    const TCCompiledRuntime *runtime;
 } TCCompiledFrame;

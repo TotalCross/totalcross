@@ -663,6 +663,8 @@ static int buildFixtureView(
    view->i32_constants = constants;
    view->i32_constant_count = sizeof(constants) / sizeof(constants[0]);
    view->source_lines = fixture->lines;
+   view->resolve_call_shape = tcirResolveConverterFixtureCall;
+   view->resolve_call_shape_user_data = (void *)fixture;
    return 1;
 }
 
@@ -671,15 +673,16 @@ static int testConverterFrontendFixtures(void)
    static const char *const golden_names[] = {
       "frontend-add", "frontend-abs", "frontend-sumTo", "frontend-pureI32", "frontend-pureI64",
       "frontend-pureF64", "frontend-normalizedF32", "frontend-i32ToF64", "frontend-i64ToF64",
-      "frontend-selectRef", "frontend-referenceScore", "frontend-nullRef", "frontend-switchScore"
+      "frontend-selectRef", "frontend-referenceScore", "frontend-nullRef", "frontend-switchScore",
+      "frontend-callStatic"
    };
-   static const size_t expected_block_counts[] = { 1, 4, 4, 1, 4, 4, 13, 1, 1, 5, 9, 1, 6 };
+   static const size_t expected_block_counts[] = { 1, 4, 4, 1, 4, 4, 13, 1, 1, 5, 9, 1, 6, 1 };
    TCIRDiagnostic diagnostic;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
    size_t fixture_index;
 
    REQUIRE(module != NULL);
-   REQUIRE(TCIR_CONVERTER_FIXTURE_COUNT == 13U);
+   REQUIRE(TCIR_CONVERTER_FIXTURE_COUNT == 14U);
    for (fixture_index = 0; fixture_index < TCIR_CONVERTER_FIXTURE_COUNT; fixture_index++)
    {
       const TCIRConverterFixture *fixture = &tcir_converter_fixtures[fixture_index];
@@ -795,7 +798,7 @@ static int testFrontendDiagnostics(void)
    const unsigned int returns_void[] = { 136U };
    const unsigned int unsupported[] = { 149U, 136U };
    const unsigned int unsupported_double_remainder[] = { 68U, 136U };
-   const unsigned int supported_call_shape[] = { 153U, 0U, 0U, 136U };
+   const unsigned int fallback_call_shape[] = { 154U, 0U, 0U, 136U };
    TCIRMethodView view;
    TCIRMethodParameter parameter;
    TCIRMethodHandler handler;
@@ -848,7 +851,7 @@ static int testFrontendDiagnostics(void)
    REQUIRE(expectFrontendDiagnostic(
       &view, TCIR_FRONTEND_FALLBACK, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE, 0));
 
-   view = diagnosticView("Fallback.call:()V", supported_call_shape, 4, TCIR_TYPE_VOID);
+   view = diagnosticView("Fallback.call:()V", fallback_call_shape, 4, TCIR_TYPE_VOID);
    view.resolve_call_shape = resolveLargeCall;
    REQUIRE(expectFrontendDiagnostic(
       &view, TCIR_FRONTEND_FALLBACK, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE, 0));
@@ -1567,6 +1570,6 @@ int main(void)
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
-   printf("TCIR tests passed: reference execution, 13 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
+   printf("TCIR tests passed: reference execution, 14 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
    return 0;
 }

@@ -683,6 +683,166 @@ static int tcirFrontendTranslateNullCheck(
    return result != NULL;
 }
 
+static unsigned int tcirFrontendCallParameterEncoding(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   const TCIRCallShape *shape,
+   size_t parameter)
+{
+   size_t packed_parameter;
+   size_t slot;
+   unsigned int shift;
+
+   if (!shape->returns_value && parameter == 0U)
+      return instruction->reg1;
+   packed_parameter = parameter - (!shape->returns_value ? 1U : 0U);
+   slot = instruction->pc + 1U + packed_parameter / 4U;
+   shift = (unsigned int)(packed_parameter % 4U) * 8U;
+   return (method->code[slot] >> shift) & 0xffU;
+}
+
+static const TCIRValue *tcirFrontendCallRegisterValue(
+   const TCIRMethodView *method,
+   const TCIRValue *const *state,
+   TCIRType type,
+   unsigned int reg)
+{
+   if (type == TCIR_TYPE_REF)
+      return state[tcirFrontendRefStateIndex(method, reg)];
+   if (type == TCIR_TYPE_I64 || type == TCIR_TYPE_F64)
+      return state[tcirFrontendV64StateIndex(method, reg)];
+   return state[reg];
+}
+
+static TCIRValue *tcirFrontendCallConstant(
+   TCIRBlock *block,
+   TCIRType type,
+   int value,
+   TCIRSourceLocation source,
+   TCIRDiagnostic *diagnostic)
+{
+   if (type == TCIR_TYPE_REF)
+      return tcirFrontendAppendNull(block, source, diagnostic);
+   if (type == TCIR_TYPE_I64)
+      return tcirFrontendAppendConstI64(block, (int64_t)value, source, diagnostic);
+   if (type == TCIR_TYPE_F64)
+      return tcirFrontendAppendConstF64(block, (double)value, source, diagnostic);
+   return tcirFrontendAppendConst(block, value, source, diagnostic);
+}
+
+static int tcirFrontendTranslateStaticCall(
+   TCIRFunction *function,
+   TCIRBlock *block,
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   const TCIRValue **state,
+   TCIRDiagnostic *diagnostic)
+{
+   TCIRCallShape shape;
+   const TCIRValue **operands = NULL;
+   TCIRGCHome *gc_homes = NULL;
+   TCIRSymbol *symbol;
+   TCIROperationSpec spec;
+   TCIRValue *result = NULL;
+   TCIRSourceLocation source = tcirFrontendSource(method, instruction->pc);
+   size_t parameter;
+   size_t home;
+   size_t gc_home_count = 0U;
+   int status = 0;
+
+   memset(&shape, 0, sizeof(shape));
+   if (method->resolve_call_shape == NULL ||
+       !method->resolve_call_shape(
+          method->resolve_call_shape_user_data, instruction->symbol, &shape) ||
+       shape.kind != TCIR_CALL_STATIC)
+      return 0;
+   operands = (const TCIRValue **)calloc(
+      shape.parameter_count == 0U ? 1U : shape.parameter_count, sizeof(*operands));
+   gc_homes = (TCIRGCHome *)calloc(
+      method->ref_home_count == 0U ? 1U : method->ref_home_count, sizeof(*gc_homes));
+   if (operands == NULL || gc_homes == NULL)
+   {
+      tcirSetDiagnostic(
+         diagnostic,
+         TCIR_DIAGNOSTIC_OUT_OF_MEMORY,
+         method->identity,
+         instruction->pc,
+         "cannot allocate static-call operands and GC homes");
+      goto done;
+   }
+   for (parameter = 0U; parameter < shape.parameter_count; ++parameter)
+   {
+      unsigned int encoding = tcirFrontendCallParameterEncoding(
+         method, instruction, &shape, parameter);
+      operands[parameter] = encoding <= 63U
+         ? tcirFrontendCallRegisterValue(method, state, shape.parameter_types[parameter], encoding)
+         : tcirFrontendCallConstant(
+              block, shape.parameter_types[parameter], (int)encoding - 65, source, diagnostic);
+      if (operands[parameter] == NULL)
+      {
+         if (diagnostic == NULL || diagnostic->code == TCIR_DIAGNOSTIC_NONE)
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_UNDEFINED_VALUE,
+               method->identity,
+               instruction->pc,
+               "CALL_normal parameter %u reads an undefined register",
+               (unsigned int)parameter);
+         goto done;
+      }
+   }
+   for (home = 0U; home < method->ref_home_count; ++home)
+   {
+      const TCIRValue *value = state[tcirFrontendRefStateIndex(method, (unsigned int)home)];
+      if (value != NULL)
+      {
+         gc_homes[gc_home_count].value = value;
+         gc_homes[gc_home_count].home_index = (unsigned int)home;
+         ++gc_home_count;
+      }
+   }
+   symbol = tcirModuleAddSymbol(
+      function->module,
+      TCIR_SYMBOL_METHOD,
+      shape.owner,
+      shape.name,
+      shape.descriptor,
+      instruction->symbol,
+      0U,
+      diagnostic);
+   if (symbol == NULL)
+      goto done;
+   memset(&spec, 0, sizeof(spec));
+   spec.opcode = TCIR_OP_METHOD_CALL;
+   spec.result_type = shape.return_type;
+   spec.operands = operands;
+   spec.operand_count = shape.parameter_count;
+   spec.immediate_i32 = (int)shape.kind;
+   spec.symbol = symbol;
+   spec.effects = TCIR_METHOD_CALL_EFFECTS;
+   spec.gc_homes = gc_homes;
+   spec.gc_home_count = gc_home_count;
+   spec.propagates_exception = 1;
+   spec.source = source;
+   if (tcirBlockAppendOperation(block, &spec, &result, diagnostic) != TCIR_STATUS_OK)
+      goto done;
+   if (shape.returns_value)
+   {
+      size_t destination = shape.return_type == TCIR_TYPE_REF
+         ? tcirFrontendRefStateIndex(method, instruction->reg1)
+         : ((shape.return_type == TCIR_TYPE_I64 || shape.return_type == TCIR_TYPE_F64)
+            ? tcirFrontendV64StateIndex(method, instruction->reg1)
+            : instruction->reg1);
+      state[destination] = result;
+   }
+   status = 1;
+
+done:
+   free(gc_homes);
+   free(operands);
+   return status;
+}
+
 static int tcirFrontendTranslateArithmetic(
    TCIRBlock *block,
    const TCIRMethodView *method,
@@ -1171,6 +1331,12 @@ static int tcirFrontendTranslateBlock(
          if (!tcirFrontendSetSwitch(block, method, instruction, blocks, state, diagnostic))
             goto failed;
          terminated = 1;
+      }
+      else if (opcode == CALL_normal)
+      {
+         if (!tcirFrontendTranslateStaticCall(
+                function, block, method, instruction, state, diagnostic))
+            goto failed;
       }
       else if (tcirFrontendIsReturn(opcode))
       {
