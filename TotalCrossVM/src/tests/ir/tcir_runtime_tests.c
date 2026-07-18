@@ -88,6 +88,8 @@ static int buildFixtureView(
    view->source_lines = fixture->lines;
    view->resolve_call_shape = tcirResolveConverterFixtureCall;
    view->resolve_call_shape_user_data = (void *)fixture;
+   view->resolve_class_name = tcirResolveConverterFixtureClass;
+   view->resolve_class_name_user_data = (void *)fixture;
    return 1;
 }
 
@@ -366,7 +368,7 @@ static int testBackendPolicies(void)
 
 static int testRegistrationAndForcedFallback(void)
 {
-   static const unsigned int unsupported_code[] = { NEWOBJ };
+   static const unsigned int unsupported_code[] = { RETURN_symO };
    static const int unsupported_lines[] = { 1 };
    static const TCIRConverterFixture unsupported_fixture = {
       "fixtures.TCIRPoc.unsupported:()I",
@@ -496,6 +498,43 @@ static int testLoweredStaticCalls(void)
 #endif
    REQUIRE(expectStaticCallPreflightFallback(0));
    REQUIRE(expectStaticCallPreflightFallback(1));
+   REQUIRE(tcirRuntimeReset());
+   return 1;
+}
+
+static int testObjectAllocationPreflight(void)
+{
+   enum { CAPACITY = 64 };
+   RuntimeMethod method;
+   TContext context;
+   int32 register_i32[CAPACITY];
+   TCObject register_ref[CAPACITY];
+   int64 register_v64[CAPACITY];
+   VoidP call_stack[CAPACITY];
+   TCCompiledResult result;
+   TCIRRuntimeDiagnostic diagnostic;
+   TCIRRuntimeStats stats;
+
+   REQUIRE(tcirRuntimeReset());
+   initializeFixtureMethod(&method, &tcir_converter_fixtures[14]);
+   REQUIRE(registerFixture(&method, &tcir_converter_fixtures[14], NULL, NULL)
+           == TCIR_RUNTIME_REGISTRATION_READY);
+   REQUIRE(tcirRuntimeSetBackend(TCIR_RUNTIME_BACKEND_IR));
+   initializeContext(&context, register_i32, register_ref, register_v64, call_stack, CAPACITY);
+   REQUIRE(tcirRuntimeTryDispatch(
+      &context,
+      &method.method,
+      register_i32,
+      register_ref,
+      register_v64,
+      &result,
+      &diagnostic) == TCIR_RUNTIME_DISPATCH_FALLBACK);
+   REQUIRE(diagnostic.fallback_reason == TCIR_RUNTIME_FALLBACK_INVOCATION_REJECTED);
+   REQUIRE(strstr(diagnostic.message, "class symbols") != NULL);
+   tcirRuntimeGetStats(&stats);
+   REQUIRE(stats.allocation_thunks == 0U && stats.ir_invocations == 0U);
+   REQUIRE(stats.fallback_counts[TCIR_RUNTIME_FALLBACK_INVOCATION_REJECTED] == 1U);
+   DESTROY_MUTEX(context.usageLock);
    REQUIRE(tcirRuntimeReset());
    return 1;
 }
@@ -905,6 +944,7 @@ int main(void)
       && testBackendPolicies()
       && testRegistrationAndForcedFallback()
       && testLoweredStaticCalls()
+      && testObjectAllocationPreflight()
       && testInterpreterToCompiledCall()
 #if defined(TCIR_RUNTIME_TEST_HAS_AOT)
       && testCompiledCallThunks()
@@ -916,6 +956,6 @@ int main(void)
    tcirRuntimeShutdown();
    if (!accepted)
       return 1;
-   printf("TCIR runtime dispatch tests passed with conditional integration, lowered static calls, and mixed-call thunks.\n");
+   printf("TCIR runtime dispatch tests passed with conditional integration, lowered static calls, object-allocation preflight, and mixed-call thunks.\n");
    return 0;
 }

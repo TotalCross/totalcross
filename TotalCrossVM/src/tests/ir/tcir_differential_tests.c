@@ -70,6 +70,55 @@ static int isStaticCallFixture(const TCIRConverterFixture *fixture)
    return fixture != NULL && fixture->code == tcir_fixture_callStatic_code;
 }
 
+static int allocation_token;
+
+static int isObjectAllocationFixture(const TCIRConverterFixture *fixture)
+{
+   return fixture != NULL && fixture->code == tcir_fixture_newObject_code;
+}
+
+static TCIRObjectAllocationStatus allocateFixtureObject(
+   void *runtime_context,
+   const TCIRSymbol *symbol,
+   void **ref_homes,
+   size_t ref_home_count,
+   unsigned int destination_home,
+   TCIRRuntimeValue *result)
+{
+   const TCIRConverterFixture *fixture = (const TCIRConverterFixture *)runtime_context;
+   if (!isObjectAllocationFixture(fixture) || symbol == NULL || ref_homes == NULL ||
+       ref_home_count != 1U || destination_home != 0U || result == NULL ||
+       tcirSymbolKind(symbol) != TCIR_SYMBOL_CLASS ||
+       tcirSymbolConstantPoolIndex(symbol) != 11U)
+      return TCIR_OBJECT_ALLOCATION_REJECTED;
+   ref_homes[destination_home] = &allocation_token;
+   memset(result, 0, sizeof(*result));
+   result->ref = &allocation_token;
+   return TCIR_OBJECT_ALLOCATION_RETURNED;
+}
+
+static TCCompiledStatus allocateCompiledFixtureObject(
+   const TCCompiledRuntime *runtime,
+   const TCCompiledAllocation *allocation,
+   TCCompiledResult *result)
+{
+   const TCIRConverterFixture *fixture = runtime == NULL
+      ? NULL : (const TCIRConverterFixture *)runtime->context;
+   if (runtime == NULL || runtime->abi_version != TC_RUNTIME_ABI_VERSION ||
+       !isObjectAllocationFixture(fixture) || allocation == NULL || result == NULL ||
+       allocation->constant_pool_index != 11U || allocation->ref_homes == NULL ||
+       allocation->ref_home_count != 1U || allocation->destination_home != 0U ||
+       allocation->tc_pc != 0U)
+      return TC_COMPILED_REJECTED;
+   allocation->ref_homes[allocation->destination_home] = &allocation_token;
+   memset(result, 0, sizeof(*result));
+   result->status = TC_COMPILED_RETURNED;
+   result->type = TCIR_TYPE_REF;
+   result->value.ref = &allocation_token;
+   result->tc_pc = allocation->tc_pc;
+   return TC_COMPILED_RETURNED;
+}
+
 static TCIRMethodCallStatus invokeFixtureCall(
    void *runtime_context,
    const TCIRSymbol *symbol,
@@ -140,6 +189,8 @@ static int buildFixtureView(
    view->source_lines = fixture->lines;
    view->resolve_call_shape = tcirResolveConverterFixtureCall;
    view->resolve_call_shape_user_data = (void *)fixture;
+   view->resolve_class_name = tcirResolveConverterFixtureClass;
+   view->resolve_class_name_user_data = (void *)fixture;
    return 1;
 }
 
@@ -346,6 +397,7 @@ static DifferentialResult executeTCIR(
    frame.tc_pc = TCIR_TCPC_NONE;
    frame.runtime_context = (void *)fixture;
    frame.call_method = invokeFixtureCall;
+   frame.allocate_object = allocateFixtureObject;
    memset(&result, 0, sizeof(result));
    result.frame_restored = 1;
    if (tcirInterpretFunction(function, &frame, NULL, &interpreter_result, diagnostic)
@@ -402,6 +454,7 @@ static DifferentialResult executeSLJIT(
    runtime.abi_version = TC_RUNTIME_ABI_VERSION;
    runtime.context = (void *)fixture;
    runtime.invoke = invokeCompiledFixtureCall;
+   runtime.allocate = allocateCompiledFixtureObject;
    frame.runtime = &runtime;
    memset(&result, 0, sizeof(result));
    if (tcirJitInvoke(artifact, &frame, &compiled_result, &diagnostic) == TC_COMPILED_RETURNED)
@@ -461,6 +514,7 @@ static DifferentialResult executeAOT(
    runtime.abi_version = TC_RUNTIME_ABI_VERSION;
    runtime.context = (void *)fixture;
    runtime.invoke = invokeCompiledFixtureCall;
+   runtime.allocate = allocateCompiledFixtureObject;
    frame.runtime = &runtime;
    memset(&result, 0, sizeof(result));
    if (entry(&frame, &compiled_result) == TC_COMPILED_RETURNED)
@@ -676,6 +730,43 @@ static int compareRefInput(
                         diagnostic);
 }
 
+static int compareObjectAllocation(
+   const TCIRConverterFixture *fixture,
+   const TCIRFunction *function,
+   const void *jit_artifact,
+#if defined(TCIR_HAS_AOT)
+   TCCompiledEntry aot_entry,
+#endif
+   TCIRDiagnostic *diagnostic)
+{
+   TCIRRuntimeValue inputs[2];
+   DifferentialResult reference;
+   memset(inputs, 0, sizeof(inputs));
+   reference = executeTCIR(function, fixture, inputs, diagnostic);
+   if (reference.outcome != DIFFERENTIAL_RETURNED ||
+       reference.return_type != TCIR_TYPE_REF ||
+       reference.return_ref != &allocation_token)
+      return 0;
+#if defined(TCIR_HAS_SLJIT)
+   {
+      DifferentialResult sljit = executeSLJIT(
+         (const TCIRJitArtifact *)jit_artifact, fixture, inputs);
+      if (!resultsAgree(fixture, inputs, &reference, &sljit, "SLJIT allocation contract"))
+         return 0;
+   }
+#else
+   (void)jit_artifact;
+#endif
+#if defined(TCIR_HAS_AOT)
+   {
+      DifferentialResult aot = executeAOT(aot_entry, fixture, inputs);
+      return resultsAgree(fixture, inputs, &reference, &aot, "AOT allocation contract");
+   }
+#else
+   return 1;
+#endif
+}
+
 static uint32_t nextGeneratedValue(uint32_t *state)
 {
    uint32_t value = *state;
@@ -778,13 +869,13 @@ static int testFixtureCorpus(void)
    static const char *const method_names[] = {
       "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
       "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef", "switchScore",
-      "callStatic"
+      "callStatic", "newObject"
    };
    static const char *const signatures[] = {
       "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
       "(I)D", "(J)D", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
       "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;", "(I)I",
-      "(II)I"
+      "(II)I", "()Ljava/lang/Object;"
    };
    TCCompiledEntry aot_entries[TCIR_CONVERTER_FIXTURE_COUNT];
 #endif
@@ -934,6 +1025,13 @@ static int testFixtureCorpus(void)
                            aot_entries[13],
 #endif
                            &diagnostic));
+   for (case_index = 0U; case_index < 16U; ++case_index)
+      REQUIRE(compareObjectAllocation(
+         &tcir_converter_fixtures[14], functions[14], jit_artifacts[14],
+#if defined(TCIR_HAS_AOT)
+         aot_entries[14],
+#endif
+         &diagnostic));
 
    for (case_index = 0U; case_index < 512U; ++case_index)
    {
@@ -1052,7 +1150,7 @@ static int testFixtureCorpus(void)
 
 static int testUnsupportedFrontendFallback(void)
 {
-   const unsigned int unsupported_code[] = { 149U, 136U };
+   const unsigned int unsupported_code[] = { RETURN_symO };
    TCIRDiagnostic diagnostic;
    TCIRMethodView view;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
@@ -1060,10 +1158,9 @@ static int testUnsupportedFrontendFallback(void)
 
    REQUIRE(module != NULL);
    memset(&view, 0, sizeof(view));
-   view.identity = "Fallback.object:()V";
+   view.identity = "Fallback.constantRef:()V";
    view.code = unsupported_code;
    view.code_slot_count = sizeof(unsupported_code) / sizeof(unsupported_code[0]);
-   view.ref_home_count = 1U;
    view.return_type = TCIR_TYPE_VOID;
    REQUIRE(tcirFrontendBuildFunction(module, &view, &function, &diagnostic) == TCIR_FRONTEND_FALLBACK);
    REQUIRE(function == NULL);
@@ -1079,17 +1176,21 @@ int main(void)
       return 1;
 #if defined(TCIR_HAS_SLJIT)
 #if defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 14 fixtures, 6,398 executeMethod/TCIR/SLJIT/AOT comparisons, "
+   printf("TCIR differential tests passed: 15 fixtures, 6,398 executeMethod/TCIR/SLJIT/AOT comparisons, "
+          "16 TCIR/SLJIT/AOT allocation-contract comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #else
-   printf("TCIR differential tests passed: 14 fixtures, 6,398 executeMethod/TCIR/SLJIT comparisons, "
+   printf("TCIR differential tests passed: 15 fixtures, 6,398 executeMethod/TCIR/SLJIT comparisons, "
+          "16 TCIR/SLJIT allocation-contract comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #endif
 #elif defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 14 fixtures, 6,398 executeMethod/TCIR/AOT comparisons, "
+   printf("TCIR differential tests passed: 15 fixtures, 6,398 executeMethod/TCIR/AOT comparisons, "
+          "16 TCIR/AOT allocation-contract comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #else
-   printf("TCIR differential tests passed: 14 fixtures, 6,398 executeMethod comparisons, "
+   printf("TCIR differential tests passed: 15 fixtures, 6,398 executeMethod comparisons, "
+          "16 TCIR allocation-contract comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #endif
    return 0;

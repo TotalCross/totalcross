@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-#define TC_RUNTIME_ABI_VERSION 4U
+#define TC_RUNTIME_ABI_VERSION 5U
 
 typedef struct TCCompiledResult TCCompiledResult;
 typedef struct TCCompiledRuntime TCCompiledRuntime;
@@ -51,6 +51,20 @@ typedef TCCompiledStatus (*TCCompiledInvokeThunk)(
    const TCCompiledCall *call,
    TCCompiledResult *result);
 
+typedef struct TCCompiledAllocation
+{
+   unsigned int constant_pool_index;
+   void **ref_homes;
+   size_t ref_home_count;
+   unsigned int destination_home;
+   unsigned int tc_pc;
+} TCCompiledAllocation;
+
+typedef TCCompiledStatus (*TCCompiledAllocateThunk)(
+   const TCCompiledRuntime *runtime,
+   const TCCompiledAllocation *allocation,
+   TCCompiledResult *result);
+
 struct TCCompiledRuntime
 {
    unsigned int abi_version;
@@ -58,6 +72,7 @@ struct TCCompiledRuntime
    const void *method_key;
    TCCompiledDispatchThunk dispatch;
    TCCompiledInvokeThunk invoke;
+   TCCompiledAllocateThunk allocate;
 };
 
 typedef struct TCCompiledFrame
@@ -78,6 +93,7 @@ typedef struct TCCompiledFrame
    TCIRRuntimeValue *call_arguments;
    size_t call_argument_count;
    TCCompiledCall call;
+   TCCompiledAllocation allocation;
    TCCompiledResult *call_result;
    TCIRRuntimeValue jit_return_value;
    const TCCompiledRuntime *runtime;

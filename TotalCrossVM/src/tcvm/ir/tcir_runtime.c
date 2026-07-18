@@ -524,6 +524,30 @@ static int tcirRuntimeCallMatchesOperation(
    return 1;
 }
 
+static int tcirRuntimeAllocationMatchesOperation(
+   const TCCompiledRuntime *runtime,
+   const TCIROperationView *operation)
+{
+   Method caller;
+   ConstantPool constant_pool;
+   unsigned int index;
+
+   if (runtime == NULL || runtime->abi_version != TC_RUNTIME_ABI_VERSION ||
+       runtime->method_key == NULL || operation == NULL ||
+       operation->opcode != TCIR_OP_NEW_OBJECT || operation->symbol == NULL ||
+       tcirSymbolKind(operation->symbol) != TCIR_SYMBOL_CLASS ||
+       operation->home_bank != TCIR_HOME_REF)
+      return 0;
+   caller = (Method)runtime->method_key;
+   if (caller->class_ == NULL || caller->class_->cp == NULL)
+      return 0;
+   constant_pool = caller->class_->cp;
+   index = tcirSymbolConstantPoolIndex(operation->symbol);
+   return constant_pool->cls != NULL && index != 0U && index < constant_pool->clsCount &&
+      constant_pool->cls[index] != NULL &&
+      strcmp(constant_pool->cls[index], tcirSymbolName(operation->symbol)) == 0;
+}
+
 static int tcirRuntimePreflightCalls(
    const TCIRRuntimeEntry *entry,
    const TCCompiledRuntime *runtime)
@@ -541,6 +565,9 @@ static int tcirRuntimePreflightCalls(
             return 0;
          if (operation.opcode == TCIR_OP_METHOD_CALL &&
              !tcirRuntimeCallMatchesOperation(runtime, &operation))
+            return 0;
+         if (operation.opcode == TCIR_OP_NEW_OBJECT &&
+             !tcirRuntimeAllocationMatchesOperation(runtime, &operation))
             return 0;
       }
    }
@@ -677,6 +704,65 @@ static TCCompiledStatus tcirRuntimeInvokeStaticCall(
    return status;
 }
 
+static TCCompiledStatus tcirRuntimeAllocateObject(
+   const TCCompiledRuntime *runtime,
+   const TCCompiledAllocation *allocation,
+   TCCompiledResult *result)
+{
+   Context context;
+   Method caller;
+   ConstantPool constant_pool;
+   TCObject object;
+
+   if (result != NULL)
+   {
+      memset(result, 0, sizeof(*result));
+      result->status = TC_COMPILED_REJECTED;
+      result->type = TCIR_TYPE_VOID;
+      result->tc_pc = allocation == NULL ? TCIR_TCPC_NONE : allocation->tc_pc;
+   }
+   if (runtime == NULL || runtime->abi_version != TC_RUNTIME_ABI_VERSION ||
+       runtime->context == NULL || runtime->method_key == NULL || allocation == NULL ||
+       result == NULL || allocation->ref_homes == NULL ||
+       allocation->destination_home >= allocation->ref_home_count)
+      return TC_COMPILED_REJECTED;
+   context = (Context)runtime->context;
+   caller = (Method)runtime->method_key;
+   if (caller->class_ == NULL || caller->class_->cp == NULL)
+      return TC_COMPILED_REJECTED;
+   constant_pool = caller->class_->cp;
+   if (constant_pool->cls == NULL || allocation->constant_pool_index == 0U ||
+       allocation->constant_pool_index >= constant_pool->clsCount ||
+       constant_pool->cls[allocation->constant_pool_index] == NULL)
+      return TC_COMPILED_REJECTED;
+
+   TCIR_RUNTIME_LOCK();
+   ++tcir_runtime_state.stats.allocation_thunks;
+   TCIR_RUNTIME_UNLOCK();
+   object = createObjectWithoutCallingDefaultConstructor(
+      context, constant_pool->cls[allocation->constant_pool_index]);
+   if (object == null)
+   {
+      if (context->thrownException == null)
+         throwException(context, OutOfMemoryError, "When creating object");
+      result->status = TC_COMPILED_THROWN;
+      return TC_COMPILED_THROWN;
+   }
+
+   allocation->ref_homes[allocation->destination_home] = object;
+   result->value.ref = object;
+   result->type = TCIR_TYPE_REF;
+   setObjectLock(object, UNLOCKED);
+   if (context->thrownException != null)
+   {
+      result->status = TC_COMPILED_THROWN;
+      result->type = TCIR_TYPE_VOID;
+      return TC_COMPILED_THROWN;
+   }
+   result->status = TC_COMPILED_RETURNED;
+   return TC_COMPILED_RETURNED;
+}
+
 static TCIRMethodCallStatus tcirRuntimeInvokeInterpretedCall(
    void *runtime_context,
    const TCIRSymbol *symbol,
@@ -716,6 +802,40 @@ static TCIRMethodCallStatus tcirRuntimeInvokeInterpretedCall(
    if (status == TC_COMPILED_OUT_OF_MEMORY)
       return TCIR_METHOD_CALL_OUT_OF_MEMORY;
    return TCIR_METHOD_CALL_REJECTED;
+}
+
+static TCIRObjectAllocationStatus tcirRuntimeAllocateInterpretedObject(
+   void *runtime_context,
+   const TCIRSymbol *symbol,
+   void **ref_homes,
+   size_t ref_home_count,
+   unsigned int destination_home,
+   TCIRRuntimeValue *value)
+{
+   const TCCompiledRuntime *runtime = (const TCCompiledRuntime *)runtime_context;
+   TCCompiledAllocation allocation;
+   TCCompiledResult result;
+   TCCompiledStatus status;
+
+   if (symbol == NULL || tcirSymbolKind(symbol) != TCIR_SYMBOL_CLASS || value == NULL)
+      return TCIR_OBJECT_ALLOCATION_REJECTED;
+   memset(&allocation, 0, sizeof(allocation));
+   allocation.constant_pool_index = tcirSymbolConstantPoolIndex(symbol);
+   allocation.ref_homes = ref_homes;
+   allocation.ref_home_count = ref_home_count;
+   allocation.destination_home = destination_home;
+   allocation.tc_pc = TCIR_TCPC_NONE;
+   status = tcirRuntimeAllocateObject(runtime, &allocation, &result);
+   if (status == TC_COMPILED_RETURNED)
+   {
+      *value = result.value;
+      return TCIR_OBJECT_ALLOCATION_RETURNED;
+   }
+   if (status == TC_COMPILED_THROWN)
+      return TCIR_OBJECT_ALLOCATION_THROWN;
+   if (status == TC_COMPILED_OUT_OF_MEMORY)
+      return TCIR_OBJECT_ALLOCATION_OUT_OF_MEMORY;
+   return TCIR_OBJECT_ALLOCATION_REJECTED;
 }
 
 static void tcirRuntimeReleaseOperation(void)
@@ -783,6 +903,7 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
    runtime.method_key = method;
    runtime.dispatch = tcirRuntimeDispatchCall;
    runtime.invoke = tcirRuntimeInvokeStaticCall;
+   runtime.allocate = tcirRuntimeAllocateObject;
 
    TCIR_RUNTIME_LOCK();
    ++tcir_runtime_state.stats.dispatch_attempts;
@@ -874,7 +995,7 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
          configured_backend,
          diagnostic,
          fallback_reason == TCIR_RUNTIME_FALLBACK_INVOCATION_REJECTED
-            ? "compiled dispatch requires pre-bound compatible static call targets"
+            ? "compiled dispatch requires compatible bound call and class symbols"
             : "compiled dispatch selected the legacy interpreter");
       TCIR_RUNTIME_UNLOCK();
       return TCIR_RUNTIME_DISPATCH_FALLBACK;
@@ -982,6 +1103,7 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
       interpreter_frame.runtime_context = &runtime;
       interpreter_frame.raise_exception = tcirRuntimeRaiseException;
       interpreter_frame.call_method = tcirRuntimeInvokeInterpretedCall;
+      interpreter_frame.allocate_object = tcirRuntimeAllocateInterpretedObject;
       interpreter_status = tcirInterpretFunction(entry->function, &interpreter_frame, NULL,
                                                  &interpreter_result, &ir_diagnostic);
       result->status = interpreter_status == TCIR_INTERPRETER_RETURNED

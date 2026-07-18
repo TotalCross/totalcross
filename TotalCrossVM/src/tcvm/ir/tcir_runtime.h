@@ -80,6 +80,7 @@ typedef struct TCIRRuntimeStats
    uint64_t jit_compile_nanoseconds;
    uint64_t jit_code_bytes;
    uint64_t call_thunks;
+   uint64_t allocation_thunks;
    uint64_t forced_failures;
    uint64_t fallback_counts[TCIR_RUNTIME_FALLBACK_COUNT];
 } TCIRRuntimeStats;

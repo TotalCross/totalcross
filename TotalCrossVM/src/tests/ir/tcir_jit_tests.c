@@ -81,6 +81,8 @@ static int buildFixtureView(
    view->source_lines = fixture->lines;
    view->resolve_call_shape = tcirResolveConverterFixtureCall;
    view->resolve_call_shape_user_data = (void *)fixture;
+   view->resolve_class_name = tcirResolveConverterFixtureClass;
+   view->resolve_class_name_user_data = (void *)fixture;
    return 1;
 }
 
@@ -158,6 +160,83 @@ static int invokeJit(
        || frame.edge_values != NULL)
       return 0;
    *value = result.value.i32;
+   return 1;
+}
+
+typedef struct TCIRJitAllocationCapture
+{
+   TCCompiledStatus status;
+   void *object;
+   unsigned int calls;
+   int publish;
+   int contract_matched;
+} TCIRJitAllocationCapture;
+
+static TCCompiledStatus captureJitAllocation(
+   const TCCompiledRuntime *runtime,
+   const TCCompiledAllocation *allocation,
+   TCCompiledResult *result)
+{
+   TCIRJitAllocationCapture *capture = runtime == NULL
+      ? NULL : (TCIRJitAllocationCapture *)runtime->context;
+   if (capture == NULL || allocation == NULL || result == NULL)
+      return TC_COMPILED_REJECTED;
+   ++capture->calls;
+   capture->contract_matched = allocation->constant_pool_index == 11U &&
+      allocation->ref_homes != NULL && allocation->ref_home_count == 1U &&
+      allocation->destination_home == 0U && allocation->tc_pc == 0U;
+   memset(result, 0, sizeof(*result));
+   result->status = capture->status;
+   result->tc_pc = allocation->tc_pc;
+   if (capture->status == TC_COMPILED_RETURNED)
+   {
+      result->type = TCIR_TYPE_REF;
+      result->value.ref = capture->object;
+      if (capture->publish)
+         allocation->ref_homes[allocation->destination_home] = capture->object;
+   }
+   return capture->status;
+}
+
+static int testObjectAllocation(const TCIRJitArtifact *artifact)
+{
+   const TCIRConverterFixture *fixture = &tcir_converter_fixtures[14];
+   TCIRJitAllocationCapture capture;
+   TCCompiledRuntime runtime;
+   TCCompiledFrame frame;
+   TCCompiledResult result;
+   TCIRJitDiagnostic diagnostic;
+   void *ref_homes[1];
+   int object_token;
+
+   memset(&capture, 0, sizeof(capture));
+   capture.status = TC_COMPILED_RETURNED;
+   capture.object = &object_token;
+   capture.publish = 1;
+   memset(&runtime, 0, sizeof(runtime));
+   runtime.abi_version = TC_RUNTIME_ABI_VERSION;
+   runtime.context = &capture;
+   runtime.allocate = captureJitAllocation;
+   memset(&frame, 0, sizeof(frame));
+   ref_homes[0] = NULL;
+   frame.ref_homes = ref_homes;
+   frame.ref_home_count = fixture->ref_count;
+   frame.argument_count = fixture->parameter_count;
+   frame.runtime = &runtime;
+   REQUIRE(tcirJitInvoke(artifact, &frame, &result, &diagnostic) == TC_COMPILED_RETURNED);
+   REQUIRE(result.type == TCIR_TYPE_REF && result.value.ref == &object_token);
+   REQUIRE(ref_homes[0] == &object_token && capture.calls == 1U && capture.contract_matched);
+
+   capture.calls = 0U;
+   capture.publish = 0;
+   ref_homes[0] = NULL;
+   REQUIRE(tcirJitInvoke(artifact, &frame, &result, &diagnostic) == TC_COMPILED_REJECTED);
+   REQUIRE(capture.calls == 1U && ref_homes[0] == NULL);
+
+   capture.calls = 0U;
+   capture.status = TC_COMPILED_THROWN;
+   REQUIRE(tcirJitInvoke(artifact, &frame, &result, &diagnostic) == TC_COMPILED_THROWN);
+   REQUIRE(result.tc_pc == 0U && capture.calls == 1U);
    return 1;
 }
 
@@ -472,6 +551,7 @@ int main(void)
    if (module == NULL)
       return 1;
    accepted = testForcedJitCorpus(module, functions, artifacts)
+      && testObjectAllocation(artifacts[14])
       && testRejectionAndCleanup(module, functions[0])
       && testConcurrentPublication(functions[0], &tcir_converter_fixtures[0])
       && testShutdownWithCompilationClaim(functions[0]);
@@ -480,6 +560,6 @@ int main(void)
    tcirModuleDestroy(module);
    if (!accepted)
       return 1;
-   printf("SLJIT backend tests passed: forced execution, W^X, rejection, cleanup, concurrency, shutdown.\n");
+   printf("SLJIT backend tests passed: forced execution, object allocation, W^X, rejection, cleanup, concurrency, shutdown.\n");
    return 0;
 }

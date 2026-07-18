@@ -344,6 +344,10 @@ static int benchmarkBuildFixtureView(
    view->i32_constants = constants;
    view->i32_constant_count = sizeof(constants) / sizeof(constants[0]);
    view->source_lines = fixture->lines;
+   view->resolve_call_shape = tcirResolveConverterFixtureCall;
+   view->resolve_call_shape_user_data = (void *)fixture;
+   view->resolve_class_name = tcirResolveConverterFixtureClass;
+   view->resolve_class_name_user_data = (void *)fixture;
    return 1;
 }
 
