@@ -100,6 +100,7 @@ TC_API TCIRRuntimeRegistrationStatus tcirRuntimeRegisterMethod(
    const char *aot_content_hash,
    TCIRRuntimeDiagnostic *diagnostic);
 
+/* A NULL diagnostic enables the lock-free backend-off fast path used by executeMethod. */
 TC_API TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
    Context context,
    Method method,

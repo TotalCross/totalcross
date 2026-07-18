@@ -394,9 +394,8 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 #if defined(TC_ENABLE_COMPILED_DISPATCH)
    {
       TCCompiledResult compiledResult;
-      TCIRRuntimeDiagnostic compiledDiagnostic;
       TCIRRuntimeDispatchStatus compiledStatus = tcirRuntimeTryDispatch(
-         context, method, regI, regO, reg64, &compiledResult, &compiledDiagnostic);
+         context, method, regI, regO, reg64, &compiledResult, NULL);
       if (compiledStatus == TCIR_RUNTIME_DISPATCH_RETURNED)
       {
          context->callStack -= 2;
@@ -707,9 +706,8 @@ noMoreParams:
             if (!newMethod->flags.isNative)
             {
                TCCompiledResult compiledResult;
-               TCIRRuntimeDiagnostic compiledDiagnostic;
                TCIRRuntimeDispatchStatus compiledStatus = tcirRuntimeTryDispatch(
-                  context, newMethod, regI, regO, reg64, &compiledResult, &compiledDiagnostic);
+                  context, newMethod, regI, regO, reg64, &compiledResult, NULL);
                if (compiledStatus != TCIR_RUNTIME_DISPATCH_FALLBACK)
                {
                   Method compiledMethod = newMethod;

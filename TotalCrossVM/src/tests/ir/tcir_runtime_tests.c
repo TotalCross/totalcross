@@ -231,7 +231,7 @@ static int testPolicyAndObservability(void)
    execution = executeRuntimeMethod(&runtime_method.method, 19, 23);
    REQUIRE(execution.value.asInt32 == 42 && execution.frame_restored && execution.usage_released);
    tcirRuntimeGetStats(&stats);
-   REQUIRE(stats.fallback_counts[TCIR_RUNTIME_FALLBACK_DISABLED] == 1U);
+   REQUIRE(stats.dispatch_attempts == 0U);
 
    REQUIRE(tcirRuntimeSetBackend(TCIR_RUNTIME_BACKEND_IR));
    REQUIRE(tcirRuntimeGetBackend() == TCIR_RUNTIME_BACKEND_IR);
@@ -254,7 +254,8 @@ static int testPolicyAndObservability(void)
    execution = executeRuntimeMethod(&runtime_method.method, 20, 22);
    REQUIRE(execution.value.asInt32 == 42 && execution.frame_restored && execution.usage_released);
    tcirRuntimeGetStats(&stats);
-   REQUIRE(stats.fallback_counts[TCIR_RUNTIME_FALLBACK_SHUTDOWN] == 1U);
+   REQUIRE(tcirRuntimeGetBackend() == TCIR_RUNTIME_BACKEND_OFF);
+   REQUIRE(stats.fallback_counts[TCIR_RUNTIME_FALLBACK_SHUTDOWN] == 0U);
    REQUIRE(tcirRuntimeReset());
    return 1;
 }

@@ -62,6 +62,18 @@ typedef struct TCIRRuntimeState
 static TCIRRuntimeState tcir_runtime_state;
 
 #if defined(_WIN32)
+static volatile LONG tcir_runtime_dispatch_enabled;
+
+static int tcirRuntimeDispatchEnabled(void)
+{
+   return InterlockedCompareExchange(&tcir_runtime_dispatch_enabled, 0L, 0L) != 0L;
+}
+
+static void tcirRuntimeSetDispatchEnabled(int enabled)
+{
+   (void)InterlockedExchange(&tcir_runtime_dispatch_enabled, enabled ? 1L : 0L);
+}
+
 static BOOL CALLBACK tcirRuntimeInitializeOnce(PINIT_ONCE once, PVOID parameter, PVOID *context)
 {
    (void)once;
@@ -79,6 +91,18 @@ static int tcirRuntimeInitialize(void)
 #define TCIR_RUNTIME_LOCK() EnterCriticalSection(&tcir_runtime_state.mutex)
 #define TCIR_RUNTIME_UNLOCK() LeaveCriticalSection(&tcir_runtime_state.mutex)
 #else
+static int tcir_runtime_dispatch_enabled;
+
+static int tcirRuntimeDispatchEnabled(void)
+{
+   return __atomic_load_n(&tcir_runtime_dispatch_enabled, __ATOMIC_ACQUIRE) != 0;
+}
+
+static void tcirRuntimeSetDispatchEnabled(int enabled)
+{
+   __atomic_store_n(&tcir_runtime_dispatch_enabled, enabled != 0, __ATOMIC_RELEASE);
+}
+
 static void tcirRuntimeInitializeOnce(void)
 {
    (void)pthread_mutex_init(&tcir_runtime_state.mutex, NULL);
@@ -235,6 +259,7 @@ int tcirRuntimeSetBackend(TCIRRuntimeBackend backend)
       return 0;
    }
    tcir_runtime_state.backend = backend;
+   tcirRuntimeSetDispatchEnabled(backend != TCIR_RUNTIME_BACKEND_OFF);
    TCIR_RUNTIME_UNLOCK();
    return 1;
 }
@@ -542,6 +567,8 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
    const TCIRJitArtifact *jit_artifact = NULL;
 #endif
 
+   if (diagnostic == NULL && !tcirRuntimeDispatchEnabled())
+      return TCIR_RUNTIME_DISPATCH_FALLBACK;
    tcirRuntimeDiagnosticClear(diagnostic);
    if (result != NULL)
    {
@@ -861,6 +888,7 @@ void tcirRuntimeShutdown(void)
    TCIR_RUNTIME_LOCK();
    tcir_runtime_state.shutdown = 1;
    tcir_runtime_state.backend = TCIR_RUNTIME_BACKEND_OFF;
+   tcirRuntimeSetDispatchEnabled(0);
    tcir_runtime_state.forced_method = NULL;
    if (tcir_runtime_state.active_operations == 0U)
    {
@@ -885,6 +913,7 @@ int tcirRuntimeReset(void)
    dispose = tcir_runtime_state.entries;
    tcir_runtime_state.entries = NULL;
    tcir_runtime_state.backend = TCIR_RUNTIME_BACKEND_OFF;
+   tcirRuntimeSetDispatchEnabled(0);
    tcir_runtime_state.forced_method = NULL;
    tcir_runtime_state.shutdown = 0;
    memset(&tcir_runtime_state.stats, 0, sizeof(tcir_runtime_state.stats));
