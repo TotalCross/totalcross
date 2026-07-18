@@ -14,6 +14,7 @@ option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
 option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
 option(TC_ENABLE_C_AOT "Build the experimental portable-C TCIR backend" OFF)
 option(TC_ENABLE_SLJIT_JIT "Build the experimental SLJIT TCIR backend" OFF)
+option(TC_ENABLE_COMPILED_DISPATCH "Integrate experimental TCIR dispatch into executeMethod" OFF)
 
 if(TC_BUILD_IR_BENCHMARKS AND NOT TC_ENABLE_SLJIT_JIT)
   message(FATAL_ERROR "TC_BUILD_IR_BENCHMARKS requires TC_ENABLE_SLJIT_JIT=ON")
@@ -807,6 +808,33 @@ link_directories(${PROJECT_SOURCE_DIR})
 set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
+if(TC_ENABLE_COMPILED_DISPATCH)
+  add_library(tcir_runtime STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir/tcir_runtime.c
+  )
+  target_include_directories(tcir_runtime PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm/ir
+  )
+  target_link_libraries(tcir_runtime PUBLIC tcir)
+  if(TC_ENABLE_SLJIT_JIT)
+    target_compile_definitions(tcir_runtime PRIVATE TCIR_RUNTIME_HAS_SLJIT=1)
+    target_link_libraries(tcir_runtime PUBLIC tcir_jit)
+  endif()
+  if(TC_ENABLE_C_AOT)
+    target_compile_definitions(tcir_runtime PRIVATE TCIR_RUNTIME_HAS_AOT=1)
+  endif()
+  target_compile_options(tcir_runtime PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(tcir_runtime PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+  )
+  target_compile_definitions(tcvm PRIVATE TC_ENABLE_COMPILED_DISPATCH=1)
+  target_link_libraries(tcvm tcir_runtime)
+endif()
+
 # Set C/CXX flags
 target_compile_options(tcvm
   PRIVATE
@@ -1106,6 +1134,41 @@ if(TC_BUILD_IR_TESTS)
   )
   add_test(NAME tcir-differential COMMAND tcir_differential_tests)
   add_dependencies(check-tcir tcir_differential_tests)
+
+  if(TC_ENABLE_COMPILED_DISPATCH)
+    find_package(Threads REQUIRED)
+    add_executable(tcir_runtime_tests
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/ir/tcir_runtime_tests.c
+    )
+    target_link_libraries(tcir_runtime_tests PRIVATE
+      tcir
+      Threads::Threads
+      $<TARGET_LINKER_FILE:tcvm>
+    )
+    add_dependencies(tcir_runtime_tests tcvm)
+    target_compile_definitions(tcir_runtime_tests PRIVATE
+      TCIR_RUNTIME_DUMP_PATH="${CMAKE_CURRENT_BINARY_DIR}/tcir-runtime-test.tcir"
+    )
+    if(TC_ENABLE_SLJIT_JIT)
+      target_compile_definitions(tcir_runtime_tests PRIVATE TCIR_RUNTIME_TEST_HAS_SLJIT=1)
+    endif()
+    if(TC_ENABLE_C_AOT)
+      target_compile_definitions(tcir_runtime_tests PRIVATE TCIR_RUNTIME_TEST_HAS_AOT=1)
+      target_include_directories(tcir_runtime_tests PRIVATE ${TCIR_AOT_GENERATED_DIR})
+      target_link_libraries(tcir_runtime_tests PRIVATE tcir_aot_generated)
+    endif()
+    target_compile_options(tcir_runtime_tests PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+    )
+    set_target_properties(tcir_runtime_tests PROPERTIES
+      BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR}"
+      C_STANDARD 11
+      C_STANDARD_REQUIRED YES
+      C_EXTENSIONS NO
+    )
+    add_test(NAME tcir-runtime COMMAND tcir_runtime_tests)
+    add_dependencies(check-tcir tcir_runtime_tests)
+  endif()
 
   if(TC_ENABLE_C_AOT)
     add_custom_target(tcvm_aot_fixture

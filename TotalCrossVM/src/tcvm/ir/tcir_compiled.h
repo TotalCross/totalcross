@@ -14,7 +14,32 @@
 extern "C" {
 #endif
 
-#define TC_RUNTIME_ABI_VERSION 1U
+#define TC_RUNTIME_ABI_VERSION 2U
+
+typedef struct TCCompiledResult TCCompiledResult;
+
+typedef enum TCCompiledStatus
+{
+   TC_COMPILED_RETURNED = 0,
+   TC_COMPILED_THROWN,
+   TC_COMPILED_REJECTED,
+   TC_COMPILED_OUT_OF_MEMORY
+} TCCompiledStatus;
+
+typedef TCCompiledStatus (*TCCompiledDispatchThunk)(
+   void *runtime_context,
+   const void *method_key,
+   void *receiver,
+   const TCIRRuntimeValue *arguments,
+   size_t argument_count,
+   TCCompiledResult *result);
+
+typedef struct TCCompiledRuntime
+{
+   unsigned int abi_version;
+   void *context;
+   TCCompiledDispatchThunk dispatch;
+} TCCompiledRuntime;
 
 typedef struct TCCompiledFrame
 {
@@ -31,23 +56,16 @@ typedef struct TCCompiledFrame
    size_t scratch_i32_count;
    int32_t *edge_i32_values;
    size_t edge_i32_count;
+   const TCCompiledRuntime *runtime;
 } TCCompiledFrame;
 
-typedef enum TCCompiledStatus
-{
-   TC_COMPILED_RETURNED = 0,
-   TC_COMPILED_THROWN,
-   TC_COMPILED_REJECTED,
-   TC_COMPILED_OUT_OF_MEMORY
-} TCCompiledStatus;
-
-typedef struct TCCompiledResult
+struct TCCompiledResult
 {
    TCCompiledStatus status;
    TCIRType type;
    TCIRRuntimeValue value;
    unsigned int tc_pc;
-} TCCompiledResult;
+};
 
 typedef TCCompiledStatus (*TCCompiledEntry)(TCCompiledFrame *frame, TCCompiledResult *result);
 
