@@ -164,6 +164,7 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case ADD_regD_regD_regD:
       case SUB_regD_regD_regD:
       case MUL_regD_regD_regD:
+      case DIV_regD_regD_regD:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->reg1 = tcirBits(slot, 16, 8);
          instruction->reg2 = tcirBits(slot, 24, 8);
@@ -576,6 +577,7 @@ static int tcirValidateInstruction(
       case ADD_regD_regD_regD:
       case SUB_regD_regD_regD:
       case MUL_regD_regD_regD:
+      case DIV_regD_regD_regD:
          return tcirValidateV64Register(
                    method, instruction, instruction->reg0, "destination", TCIR_TYPE_F64, diagnostic) &&
                 tcirValidateV64Register(

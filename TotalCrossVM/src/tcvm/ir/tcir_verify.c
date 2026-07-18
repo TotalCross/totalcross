@@ -653,6 +653,25 @@ static int tcirVerifyOperation(
             return 0;
          break;
 
+      case TCIR_OP_DIV_F64:
+         if (!tcirRequireOperandCount(function, operation, 2, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_F64, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 1, TCIR_TYPE_F64, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_F64, diagnostic))
+            return 0;
+         if (operation->effects != (TCIR_EFFECT_MAY_THROW | TCIR_EFFECT_MAY_GC))
+         {
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_HELPER_EFFECTS,
+               function->identity,
+               operation->source.tc_pc,
+               "%s must declare may_throw and may_gc",
+               tcirOperationName(operation->opcode));
+            return 0;
+         }
+         break;
+
       case TCIR_OP_CMP_EQ_F64:
       case TCIR_OP_CMP_LT_F64:
       case TCIR_OP_CMP_LE_F64:

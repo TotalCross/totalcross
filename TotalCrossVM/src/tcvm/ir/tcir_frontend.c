@@ -92,7 +92,7 @@ static int tcirFrontendIsNumericConversion(unsigned int opcode)
 static int tcirFrontendIsF64Arithmetic(unsigned int opcode)
 {
    return opcode == ADD_regD_regD_regD || opcode == SUB_regD_regD_regD ||
-          opcode == MUL_regD_regD_regD;
+          opcode == MUL_regD_regD_regD || opcode == DIV_regD_regD_regD;
 }
 
 static size_t tcirFrontendV64StateIndex(const TCIRMethodView *method, unsigned int home)
@@ -709,8 +709,14 @@ static int tcirFrontendTranslateF64Arithmetic(
       operation = TCIR_OP_SUB_F64;
    else if (instruction->info->value == MUL_regD_regD_regD)
       operation = TCIR_OP_MUL_F64;
-   state[destination] = tcirFrontendAppendBinary(
-      block, operation, left, right, TCIR_TYPE_F64, source, diagnostic);
+   else if (instruction->info->value == DIV_regD_regD_regD)
+      operation = TCIR_OP_DIV_F64;
+   if (operation == TCIR_OP_DIV_F64)
+      state[destination] = tcirFrontendAppendCheckedBinary(
+         block, operation, left, right, TCIR_TYPE_F64, source, diagnostic);
+   else
+      state[destination] = tcirFrontendAppendBinary(
+         block, operation, left, right, TCIR_TYPE_F64, source, diagnostic);
    return state[destination] != NULL;
 }
 

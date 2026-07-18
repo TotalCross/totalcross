@@ -162,6 +162,7 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_ADD_F64:
       case TCIR_OP_SUB_F64:
       case TCIR_OP_MUL_F64:
+      case TCIR_OP_DIV_F64:
       case TCIR_OP_CMP_EQ_F64:
       case TCIR_OP_CMP_LT_F64:
       case TCIR_OP_CMP_LE_F64:
@@ -611,6 +612,17 @@ static int tcirExecuteOperation(
          break;
       case TCIR_OP_MUL_F64:
          value.f64 = left.f64 * right.f64;
+         break;
+      case TCIR_OP_DIV_F64:
+         if (right.f64 == 0.0)
+         {
+            if (frame->raise_exception != NULL)
+               frame->raise_exception(
+                  frame->runtime_context, TCIR_RUNTIME_EXCEPTION_ARITHMETIC, operation->source.tc_pc);
+            *thrown = 1;
+            return 1;
+         }
+         value.f64 = left.f64 / right.f64;
          break;
       case TCIR_OP_CMP_EQ_F64:
          value.i1 = left.f64 == right.f64;
