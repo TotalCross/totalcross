@@ -174,6 +174,7 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_CMP_EQ_REF:
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
+      case TCIR_OP_NULL_CHECK:
          return 1;
       default:
          return 0;
@@ -660,12 +661,40 @@ static int tcirExecuteOperation(
       case TCIR_OP_STORE_SLOT:
          return tcirStoreHome(frame, operation->home_bank, operation->home_index,
                               tcirValueType(operation->operands[0]), left);
+      case TCIR_OP_NULL_CHECK:
+         if (left.ref == NULL)
+         {
+            if (frame->raise_exception != NULL)
+               frame->raise_exception(
+                  frame->runtime_context, TCIR_RUNTIME_EXCEPTION_NULL_POINTER, operation->source.tc_pc);
+            *thrown = 1;
+            return 1;
+         }
+         value.ref = left.ref;
+         break;
       default:
          return 0;
    }
 
    if (operation->result != NULL)
       tcirWriteValue(state, operation->result, value);
+   return 1;
+}
+
+static int tcirSpillGCHomes(
+   const TCIRInterpreterState *state,
+   TCIRInterpreterFrame *frame,
+   const TCIROperationView *operation)
+{
+   size_t index;
+   for (index = 0U; index < operation->gc_home_count; ++index)
+   {
+      const TCIRGCHome *home = &operation->gc_homes[index];
+      if (home->home_index >= frame->ref_home_count || frame->ref_homes == NULL ||
+          !tcirValueIsDefined(state, home->value))
+         return 0;
+      frame->ref_homes[home->home_index] = tcirReadValue(state, home->value).ref;
+   }
    return 1;
 }
 
@@ -762,6 +791,13 @@ TCIRInterpreterStatus tcirInterpretFunction(
          (void)tcirBlockOperationAt(block, operation_index, &operation);
          if (!tcirConsumeStep(function, &state, frame, result, diagnostic, operation.source.tc_pc))
             goto done;
+         if ((operation.effects & TCIR_EFFECT_MAY_GC) != 0U &&
+             !tcirSpillGCHomes(&state, frame, &operation))
+         {
+            tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_GC_HOME, operation.source.tc_pc,
+                       "verified TCIR could not materialize a GC home");
+            goto done;
+         }
          if (!tcirExecuteOperation(&state, frame, &operation, &operation_threw))
          {
             tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_UNDEFINED_VALUE, operation.source.tc_pc,

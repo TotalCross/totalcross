@@ -1223,6 +1223,75 @@ static void captureRuntimeException(
    capture->tc_pc = tc_pc;
 }
 
+static int testCheckedReference(void)
+{
+   static const unsigned int code[] = { 0x0000007aU, 0x00000186U };
+   TCIRMethodParameter parameters[2];
+   TCIRMethodView view;
+   TCIRDiagnostic diagnostic;
+   TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
+   TCIRFunction *function = NULL;
+   TCIROperationView operation;
+   TCIRRuntimeValue arguments[2];
+   TCIRInterpreterFrame frame;
+   TCIRInterpreterResult result;
+   TCIRExceptionCapture capture;
+   void *homes[2];
+   int token_a;
+   int token_b;
+
+   REQUIRE(module != NULL);
+   memset(parameters, 0, sizeof(parameters));
+   parameters[0].type = TCIR_TYPE_REF;
+   parameters[0].home_bank = TCIR_HOME_REF;
+   parameters[1].type = TCIR_TYPE_REF;
+   parameters[1].home_bank = TCIR_HOME_REF;
+   parameters[1].home_index = 1U;
+   memset(&view, 0, sizeof(view));
+   view.identity = "Example.checkedReference:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;";
+   view.code = code;
+   view.code_slot_count = sizeof(code) / sizeof(code[0]);
+   view.ref_home_count = 2U;
+   view.parameters = parameters;
+   view.parameter_count = 2U;
+   view.return_type = TCIR_TYPE_REF;
+   REQUIRE(tcirFrontendBuildFunction(module, &view, &function, &diagnostic) == TCIR_FRONTEND_OK);
+   REQUIRE(function != NULL && tcirVerifyFunction(function, &diagnostic));
+   REQUIRE(tcirBlockOperationAt(tcirFunctionBlockAt(function, 0U), 0U, &operation) == TCIR_STATUS_OK);
+   REQUIRE(operation.opcode == TCIR_OP_NULL_CHECK);
+   REQUIRE(operation.effects == (TCIR_EFFECT_MAY_THROW | TCIR_EFFECT_MAY_GC));
+   REQUIRE(operation.propagates_exception && operation.gc_home_count == 2U);
+
+   memset(&frame, 0, sizeof(frame));
+   memset(&capture, 0, sizeof(capture));
+   arguments[0].ref = &token_a;
+   arguments[1].ref = &token_b;
+   homes[0] = NULL;
+   homes[1] = NULL;
+   frame.ref_homes = homes;
+   frame.ref_home_count = 2U;
+   frame.arguments = arguments;
+   frame.argument_count = 2U;
+   frame.runtime_context = &capture;
+   frame.raise_exception = captureRuntimeException;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_RETURNED);
+   REQUIRE(result.type == TCIR_TYPE_REF && result.value.ref == &token_b && capture.count == 0U);
+   REQUIRE(homes[0] == &token_a && homes[1] == &token_b);
+
+   arguments[0].ref = NULL;
+   homes[0] = &token_a;
+   homes[1] = NULL;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_THROWN);
+   REQUIRE(result.tc_pc == 0U && capture.count == 1U);
+   REQUIRE(capture.kind == TCIR_RUNTIME_EXCEPTION_NULL_POINTER && capture.tc_pc == 0U);
+   REQUIRE(homes[0] == NULL && homes[1] == &token_b);
+
+   tcirModuleDestroy(module);
+   return 1;
+}
+
 static int testCheckedI32Arithmetic(void)
 {
    static const unsigned int code[] = {
@@ -1487,6 +1556,7 @@ int main(void)
    passed = testUncheckedArrayProof() && passed;
    passed = testInternalAddressLifetime() && passed;
    passed = testNonNullProof() && passed;
+   passed = testCheckedReference() && passed;
    passed = testCheckedI32Arithmetic() && passed;
    passed = testCheckedI64Arithmetic() && passed;
    passed = testCheckedF64Division() && passed;

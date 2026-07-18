@@ -537,6 +537,59 @@ static int tcirFrontendTranslateRefMove(
    return state[destination] != NULL;
 }
 
+static int tcirFrontendTranslateNullCheck(
+   TCIRBlock *block,
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   const TCIRValue *const *state,
+   TCIRDiagnostic *diagnostic)
+{
+   const TCIRValue *operand[1];
+   TCIROperationSpec spec;
+   TCIRGCHome *gc_homes;
+   TCIRValue *result = NULL;
+   size_t home;
+   size_t gc_home_count = 0U;
+
+   gc_homes = (TCIRGCHome *)calloc(method->ref_home_count == 0U ? 1U : method->ref_home_count,
+                                   sizeof(*gc_homes));
+   if (gc_homes == NULL)
+   {
+      tcirSetDiagnostic(
+         diagnostic,
+         TCIR_DIAGNOSTIC_OUT_OF_MEMORY,
+         method->identity,
+         instruction->pc,
+         "cannot allocate null-check GC homes");
+      return 0;
+   }
+   for (home = 0U; home < method->ref_home_count; ++home)
+   {
+      const TCIRValue *value = state[tcirFrontendRefStateIndex(method, (unsigned int)home)];
+      if (value != NULL)
+      {
+         gc_homes[gc_home_count].value = value;
+         gc_homes[gc_home_count].home_index = (unsigned int)home;
+         ++gc_home_count;
+      }
+   }
+   operand[0] = state[tcirFrontendRefStateIndex(method, instruction->reg0)];
+   memset(&spec, 0, sizeof(spec));
+   spec.opcode = TCIR_OP_NULL_CHECK;
+   spec.result_type = TCIR_TYPE_NON_NULL_REF;
+   spec.operands = operand;
+   spec.operand_count = 1U;
+   spec.effects = TCIR_EFFECT_MAY_THROW | TCIR_EFFECT_MAY_GC;
+   spec.gc_homes = gc_homes;
+   spec.gc_home_count = gc_home_count;
+   spec.propagates_exception = 1;
+   spec.source = tcirFrontendSource(method, instruction->pc);
+   if (tcirBlockAppendOperation(block, &spec, &result, diagnostic) != TCIR_STATUS_OK)
+      result = NULL;
+   free(gc_homes);
+   return result != NULL;
+}
+
 static int tcirFrontendTranslateArithmetic(
    TCIRBlock *block,
    const TCIRMethodView *method,
@@ -964,6 +1017,11 @@ static int tcirFrontendTranslateBlock(
       else if (opcode == MOV_regO_regO || opcode == MOV_regO_null)
       {
          if (!tcirFrontendTranslateRefMove(block, method, instruction, state, diagnostic))
+            goto failed;
+      }
+      else if (opcode == TEST_regO)
+      {
+         if (!tcirFrontendTranslateNullCheck(block, method, instruction, state, diagnostic))
             goto failed;
       }
       else if (opcode == MOV_reg64_reg64 || opcode == MOV_regL_sym || opcode == MOV_regL_s18 ||

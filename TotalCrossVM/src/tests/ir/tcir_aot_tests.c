@@ -138,6 +138,27 @@ static TCIRFunction *buildUnsupportedSwitch(TCIRModule *module, TCIRDiagnostic *
    return function;
 }
 
+static TCIRFunction *buildUnsupportedNullCheck(TCIRModule *module, TCIRDiagnostic *diagnostic)
+{
+   static const unsigned int code[] = { 0x0000007aU, 0x00000088U };
+   TCIRMethodParameter parameter;
+   TCIRMethodView view;
+   TCIRFunction *function = NULL;
+   memset(&parameter, 0, sizeof(parameter));
+   parameter.type = TCIR_TYPE_REF;
+   parameter.home_bank = TCIR_HOME_REF;
+   memset(&view, 0, sizeof(view));
+   view.identity = "fixtures.TCIRPoc.checkedRef:(Ljava/lang/Object;)V";
+   view.code = code;
+   view.code_slot_count = sizeof(code) / sizeof(code[0]);
+   view.ref_home_count = 1U;
+   view.parameters = &parameter;
+   view.parameter_count = 1U;
+   view.return_type = TCIR_TYPE_VOID;
+   return tcirFrontendBuildFunction(module, &view, &function, diagnostic) == TCIR_FRONTEND_OK
+      ? function : NULL;
+}
+
 static TCCompiledStatus fakeEntry(TCCompiledFrame *frame, TCCompiledResult *result)
 {
    (void)frame;
@@ -251,6 +272,14 @@ static int testUnsupportedRejectedBeforeOutput(void)
    REQUIRE(aot_diagnostic.code == TCIR_AOT_DIAGNOSTIC_INELIGIBLE_TERMINATOR);
    REQUIRE(output.source == NULL && output.header == NULL && output.manifest == NULL);
    REQUIRE(output.input_hash[0] == '\0');
+   function = buildUnsupportedNullCheck(module, &ir_diagnostic);
+   REQUIRE(function != NULL && tcirVerifyFunction(function, &ir_diagnostic));
+   input[0] = function;
+   memset(&output, 0xa5, sizeof(output));
+   REQUIRE(tcirAotGenerate(input, 1U, NULL, &output, &aot_diagnostic)
+           == TCIR_AOT_GENERATE_INELIGIBLE);
+   REQUIRE(aot_diagnostic.code == TCIR_AOT_DIAGNOSTIC_INELIGIBLE_OPERATION);
+   REQUIRE(output.source == NULL && output.header == NULL && output.manifest == NULL);
    tcirModuleDestroy(module);
    return 1;
 }
