@@ -21,6 +21,7 @@ EXPECTED_IDENTITIES = (
     "fixtures.TCIRPoc.referenceScore:(Ljava/lang/Object;Ljava/lang/Object;)I",
     "fixtures.TCIRPoc.selectRef:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
     "fixtures.TCIRPoc.sumTo:(I)I",
+    "fixtures.TCIRPoc.switchScore:(I)I",
 )
 HEX64 = re.compile(r"^[0-9a-f]{16}$")
 C_IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")

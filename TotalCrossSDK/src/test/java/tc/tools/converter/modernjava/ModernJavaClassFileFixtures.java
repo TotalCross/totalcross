@@ -431,6 +431,15 @@ final class ModernJavaClassFileFixtures {
         + "  public static Object nullRef(Object ignored) {\n"
         + "    return null;\n"
         + "  }\n"
+        + "  public static int switchScore(int value) {\n"
+        + "    switch (value) {\n"
+        + "      case -7: return 11;\n"
+        + "      case 0: return 22;\n"
+        + "      case 5: return 33;\n"
+        + "      case 1024: return 44;\n"
+        + "      default: return -1;\n"
+        + "    }\n"
+        + "  }\n"
         + "}\n";
     return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
         "TCIR POC converter output", className, source);

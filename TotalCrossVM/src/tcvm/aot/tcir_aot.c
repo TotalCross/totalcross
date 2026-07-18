@@ -561,6 +561,7 @@ static TCIRAotGenerateStatus tcirAotCheckEligibility(
       if (tcirBlockTerminator(block, &terminator) != TCIR_STATUS_OK
           || (terminator.kind != TCIR_TERMINATOR_BRANCH
               && terminator.kind != TCIR_TERMINATOR_BRANCH_IF
+              && terminator.kind != TCIR_TERMINATOR_SWITCH
               && terminator.kind != TCIR_TERMINATOR_RETURN))
       {
          tcirAotSetDiagnostic(diagnostic, TCIR_AOT_DIAGNOSTIC_INELIGIBLE_TERMINATOR, function,
@@ -1035,6 +1036,32 @@ static int tcirAotEmitMethod(TCIRAotBuffer *source, const TCIRAotMethodInfo *met
                 || !tcirAotBufferAppend(source, "         }\n"))
                return 0;
             break;
+         case TCIR_TERMINATOR_SWITCH:
+         {
+            const TCIREdge *default_edge = NULL;
+            size_t edge_index;
+            if (!tcirAotBufferAppendFormat(
+                   source, "         switch (values[%u])\n         {\n", tcirValueId(terminator.value)))
+               return 0;
+            for (edge_index = 0U; edge_index < terminator.edge_count; ++edge_index)
+            {
+               const TCIREdge *edge = &terminator.edges[edge_index];
+               if (!edge->has_case_value)
+               {
+                  default_edge = edge;
+                  continue;
+               }
+               if (!tcirAotBufferAppendFormat(source, "            case %d:\n", edge->case_value)
+                   || !tcirAotEmitEdge(source, function, edge, "               "))
+                  return 0;
+            }
+            if (default_edge == NULL
+                || !tcirAotBufferAppend(source, "            default:\n")
+                || !tcirAotEmitEdge(source, function, default_edge, "               ")
+                || !tcirAotBufferAppend(source, "         }\n"))
+               return 0;
+            break;
+         }
          case TCIR_TERMINATOR_RETURN:
             if (!tcirAotBufferAppend(source,
                "         result->status = TC_COMPILED_RETURNED;\n"

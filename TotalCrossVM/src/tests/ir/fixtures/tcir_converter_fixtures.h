@@ -205,6 +205,22 @@ static const TCIRMethodParameter tcir_fixture_nullRef_parameters[] = {
    { TCIR_TYPE_REF, TCIR_HOME_REF, 0U }
 };
 
+static const unsigned int tcir_fixture_switchScore_code[] = {
+   0x00040091U, 0x0000000cU, 0xfffffff9U, 0x00000000U,
+   0x00000005U, 0x00000400U, 0x00090008U, 0x000b000aU,
+   0x00000b89U, 0x00001689U, 0x00002189U, 0x00002c89U,
+   0xffffff89U
+};
+
+static const int tcir_fixture_switchScore_lines[] = {
+   71, 71, 71, 71, 71, 71, 71, 71, 72, 73, 74, 75,
+   76
+};
+
+static const TCIRMethodParameter tcir_fixture_switchScore_parameters[] = {
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }
+};
+
 static const TCIRConverterFixture tcir_converter_fixtures[] = {
    { "fixtures.TCIRPoc.add:(II)I", tcir_fixture_add_code, tcir_fixture_add_lines, 2U, 2U, 0U, 0U, 2U, tcir_fixture_add_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
    { "fixtures.TCIRPoc.abs:(I)I", tcir_fixture_abs_code, tcir_fixture_abs_lines, 6U, 1U, 0U, 0U, 1U, tcir_fixture_abs_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
@@ -218,6 +234,7 @@ static const TCIRConverterFixture tcir_converter_fixtures[] = {
    { "fixtures.TCIRPoc.selectRef:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", tcir_fixture_selectRef_code, tcir_fixture_selectRef_lines, 6U, 0U, 3U, 0U, 2U, tcir_fixture_selectRef_parameters, TCIR_TYPE_REF, (const TCIRType *)0 },
    { "fixtures.TCIRPoc.referenceScore:(Ljava/lang/Object;Ljava/lang/Object;)I", tcir_fixture_referenceScore_code, tcir_fixture_referenceScore_lines, 10U, 1U, 2U, 0U, 2U, tcir_fixture_referenceScore_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
    { "fixtures.TCIRPoc.nullRef:(Ljava/lang/Object;)Ljava/lang/Object;", tcir_fixture_nullRef_code, tcir_fixture_nullRef_lines, 1U, 0U, 1U, 0U, 1U, tcir_fixture_nullRef_parameters, TCIR_TYPE_REF, (const TCIRType *)0 },
+   { "fixtures.TCIRPoc.switchScore:(I)I", tcir_fixture_switchScore_code, tcir_fixture_switchScore_lines, 13U, 1U, 0U, 0U, 1U, tcir_fixture_switchScore_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
 };
 
 #define TCIR_CONVERTER_FIXTURE_COUNT \

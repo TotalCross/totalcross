@@ -113,6 +113,42 @@ static size_t tcirFrontendStateCount(const TCIRMethodView *method)
    return (size_t)method->i32_home_count + method->ref_home_count + method->v64_home_count;
 }
 
+static size_t tcirFrontendSwitchCaseCount(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction)
+{
+   return (size_t)((method->code[instruction->pc] >> 16) & 0xffffU);
+}
+
+static int tcirFrontendSwitchKey(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   size_t case_index)
+{
+   unsigned int bits = method->code[instruction->pc + 2U + case_index];
+   int key;
+   memcpy(&key, &bits, sizeof(key));
+   return key;
+}
+
+static unsigned int tcirFrontendSwitchTarget(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   size_t case_index)
+{
+   size_t case_count = tcirFrontendSwitchCaseCount(method, instruction);
+   size_t slot = instruction->pc + 2U + case_count + (case_index / 2U);
+   unsigned int shift = (unsigned int)(case_index % 2U) * 16U;
+   return instruction->pc + ((method->code[slot] >> shift) & 0xffffU);
+}
+
+static unsigned int tcirFrontendSwitchDefaultTarget(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction)
+{
+   return instruction->pc + (method->code[instruction->pc + 1U] & 0xffffU);
+}
+
 static void tcirFrontendBlocksDestroy(TCIRFrontendBlocks *blocks)
 {
    if (blocks == NULL)
@@ -149,6 +185,13 @@ static int tcirFrontendDiscoverBlocks(
          blocks->leaders[(size_t)instruction->target] = 1;
       if (tcirFrontendIsConditional(opcode))
          blocks->leaders[instruction->pc + instruction->width] = 1;
+      if (opcode == SWITCH)
+      {
+         size_t case_index;
+         blocks->leaders[tcirFrontendSwitchDefaultTarget(method, instruction)] = 1;
+         for (case_index = 0U; case_index < tcirFrontendSwitchCaseCount(method, instruction); ++case_index)
+            blocks->leaders[tcirFrontendSwitchTarget(method, instruction, case_index)] = 1;
+      }
    }
 
    for (index = 0; index < method->code_slot_count; index++)
@@ -312,6 +355,56 @@ static int tcirFrontendSetConditionalBranch(
    edges[1].argument_count = state_count;
    return tcirFrontendSetTerminator(
       block, TCIR_TERMINATOR_BRANCH_IF, condition, edges, 2, source, diagnostic);
+}
+
+static TCIRBlock *tcirFrontendBlockAtPC(
+   const TCIRMethodView *method,
+   const TCIRFrontendBlocks *blocks,
+   unsigned int pc);
+
+static int tcirFrontendSetSwitch(
+   TCIRBlock *block,
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   const TCIRFrontendBlocks *blocks,
+   const TCIRValue *const *state,
+   TCIRDiagnostic *diagnostic)
+{
+   size_t case_count = tcirFrontendSwitchCaseCount(method, instruction);
+   size_t state_count = tcirFrontendStateCount(method);
+   TCIREdge *edges = (TCIREdge *)calloc(case_count + 1U, sizeof(*edges));
+   TCIRSourceLocation source = tcirFrontendSource(method, instruction->pc);
+   const TCIRValue *selector = state[instruction->reg0];
+   size_t case_index;
+   int status;
+
+   if (edges == NULL)
+   {
+      tcirSetDiagnostic(
+         diagnostic,
+         TCIR_DIAGNOSTIC_OUT_OF_MEMORY,
+         method->identity,
+         instruction->pc,
+         "cannot allocate SWITCH edges");
+      return 0;
+   }
+   for (case_index = 0U; case_index < case_count; ++case_index)
+   {
+      edges[case_index].target = tcirFrontendBlockAtPC(
+         method, blocks, tcirFrontendSwitchTarget(method, instruction, case_index));
+      edges[case_index].arguments = state;
+      edges[case_index].argument_count = state_count;
+      edges[case_index].has_case_value = 1;
+      edges[case_index].case_value = tcirFrontendSwitchKey(method, instruction, case_index);
+   }
+   edges[case_count].target = tcirFrontendBlockAtPC(
+      method, blocks, tcirFrontendSwitchDefaultTarget(method, instruction));
+   edges[case_count].arguments = state;
+   edges[case_count].argument_count = state_count;
+   status = tcirFrontendSetTerminator(
+      block, TCIR_TERMINATOR_SWITCH, selector, edges, case_count + 1U, source, diagnostic);
+   free(edges);
+   return status;
 }
 
 static TCIRBlock *tcirFrontendBlockAtPC(
@@ -1070,6 +1163,12 @@ static int tcirFrontendTranslateBlock(
                 tcirFrontendStateCount(method),
                 source,
                 diagnostic))
+            goto failed;
+         terminated = 1;
+      }
+      else if (opcode == SWITCH)
+      {
+         if (!tcirFrontendSetSwitch(block, method, instruction, blocks, state, diagnostic))
             goto failed;
          terminated = 1;
       }

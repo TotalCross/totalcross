@@ -33,17 +33,17 @@ import tc.tools.converter.tclass.TCMethod;
 class TCIRConverterFixtureTest {
   private static final String[] METHOD_NAMES = {
       "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
-      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef"
+      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef", "switchScore"
   };
   private static final String[] METHOD_DESCRIPTORS = {
       "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
       "(I)D", "(J)D", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
-      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;"
+      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;", "(I)I"
   };
   private static final String[] RETURN_TYPES = {
       "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32",
       "TCIR_TYPE_I64", "TCIR_TYPE_F64", "TCIR_TYPE_F64", "TCIR_TYPE_F64",
-      "TCIR_TYPE_F64", "TCIR_TYPE_REF", "TCIR_TYPE_I32", "TCIR_TYPE_REF"
+      "TCIR_TYPE_F64", "TCIR_TYPE_REF", "TCIR_TYPE_I32", "TCIR_TYPE_REF", "TCIR_TYPE_I32"
   };
 
   @TempDir

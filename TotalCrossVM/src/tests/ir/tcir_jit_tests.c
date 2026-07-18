@@ -294,51 +294,6 @@ static int testForcedJitCorpus(TCIRModule *module, TCIRFunction **functions, TCI
    return 1;
 }
 
-static TCIRFunction *buildSwitchFunction(TCIRModule *module, TCIRDiagnostic *diagnostic)
-{
-   static const TCIRType parameter_type = TCIR_TYPE_I32;
-   static const unsigned char starts[] = { 1U, 1U };
-   TCIRFunction *function = tcirModuleAddFunction(
-      module, "Jit.unsupportedSwitch:(I)I", &parameter_type, 1U, TCIR_TYPE_I32, diagnostic);
-   TCIRBlock *entry;
-   TCIRBlock *exit;
-   TCIRValue *exit_argument;
-   const TCIRValue *parameter;
-   const TCIRValue *edge_arguments[1];
-   TCIREdge edge;
-   TCIRTerminatorSpec terminator;
-
-   if (function == NULL
-       || tcirFunctionSetSourceSlots(function, 2U, starts, diagnostic) != TCIR_STATUS_OK)
-      return NULL;
-   entry = tcirFunctionAppendBlock(function, 0U, (TCIRSourceLocation){ 0U, 1 }, 0, diagnostic);
-   exit = tcirFunctionAppendBlock(function, 1U, (TCIRSourceLocation){ 1U, 1 }, 0, diagnostic);
-   exit_argument = tcirBlockAppendArgument(exit, TCIR_TYPE_I32, diagnostic);
-   parameter = tcirFunctionParameter(function, 0U);
-   if (entry == NULL || exit == NULL || exit_argument == NULL || parameter == NULL)
-      return NULL;
-   edge_arguments[0] = parameter;
-   memset(&edge, 0, sizeof(edge));
-   edge.target = exit;
-   edge.arguments = edge_arguments;
-   edge.argument_count = 1U;
-   memset(&terminator, 0, sizeof(terminator));
-   terminator.kind = TCIR_TERMINATOR_SWITCH;
-   terminator.value = parameter;
-   terminator.edges = &edge;
-   terminator.edge_count = 1U;
-   terminator.source = (TCIRSourceLocation){ 0U, 1 };
-   if (tcirBlockSetTerminator(entry, &terminator, diagnostic) != TCIR_STATUS_OK)
-      return NULL;
-   memset(&terminator, 0, sizeof(terminator));
-   terminator.kind = TCIR_TERMINATOR_RETURN;
-   terminator.value = exit_argument;
-   terminator.source = (TCIRSourceLocation){ 1U, 1 };
-   if (tcirBlockSetTerminator(exit, &terminator, diagnostic) != TCIR_STATUS_OK)
-      return NULL;
-   return function;
-}
-
 static TCIRFunction *buildInvalidFunction(TCIRModule *module, TCIRDiagnostic *diagnostic)
 {
    static const unsigned char starts[] = { 1U };
@@ -378,16 +333,11 @@ static int testRejectionAndCleanup(TCIRModule *module, const TCIRFunction *valid
    TCIRJitDiagnostic jit_diagnostic;
    TCIRJitCompileOptions options;
    TCIRJitArtifact *artifact = NULL;
-   TCIRFunction *unsupported = buildSwitchFunction(module, &ir_diagnostic);
    TCIRFunction *null_check = buildNullCheckFunction(module, &ir_diagnostic);
    TCIRFunction *invalid = buildInvalidFunction(module, &ir_diagnostic);
    int32_t untouched_homes[] = { 0x12345678, -12345 };
    size_t index;
 
-   REQUIRE(unsupported != NULL && tcirVerifyFunction(unsupported, &ir_diagnostic));
-   REQUIRE(tcirJitCompile(unsupported, NULL, &artifact, &jit_diagnostic) == TCIR_JIT_COMPILE_INELIGIBLE);
-   REQUIRE(artifact == NULL);
-   REQUIRE(jit_diagnostic.code == TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TERMINATOR);
    REQUIRE(null_check != NULL && tcirVerifyFunction(null_check, &ir_diagnostic));
    REQUIRE(tcirJitCompile(null_check, NULL, &artifact, &jit_diagnostic) == TCIR_JIT_COMPILE_INELIGIBLE);
    REQUIRE(artifact == NULL);
