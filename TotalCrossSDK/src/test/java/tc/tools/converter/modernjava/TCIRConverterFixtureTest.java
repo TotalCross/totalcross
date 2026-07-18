@@ -34,19 +34,19 @@ class TCIRConverterFixtureTest {
   private static final String[] METHOD_NAMES = {
       "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
       "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef", "switchScore",
-      "callStatic"
+      "callStatic", "newObject"
   };
   private static final String[] METHOD_DESCRIPTORS = {
       "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
       "(I)D", "(J)D", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
       "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;", "(I)I",
-      "(II)I"
+      "(II)I", "()Ljava/lang/Object;"
   };
   private static final String[] RETURN_TYPES = {
       "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32",
       "TCIR_TYPE_I64", "TCIR_TYPE_F64", "TCIR_TYPE_F64", "TCIR_TYPE_F64",
       "TCIR_TYPE_F64", "TCIR_TYPE_REF", "TCIR_TYPE_I32", "TCIR_TYPE_REF", "TCIR_TYPE_I32",
-      "TCIR_TYPE_I32"
+      "TCIR_TYPE_I32", "TCIR_TYPE_REF"
   };
 
   @TempDir
@@ -112,6 +112,19 @@ class TCIRConverterFixtureTest {
         .append("   shape->owner = \"fixtures.TCIRPoc\";\n")
         .append("   shape->name = \"callTarget\";\n")
         .append("   shape->descriptor = \"(II)I\";\n")
+        .append("   return 1;\n")
+        .append("}\n\n");
+
+    out.append("static int tcirResolveConverterFixtureClass(\n")
+        .append("   void *user_data, unsigned int symbol, const char **class_name)\n")
+        .append("{\n")
+        .append("   const TCIRConverterFixture *fixture = (const TCIRConverterFixture *)user_data;\n")
+        .append("   if (fixture == (const TCIRConverterFixture *)0 ||\n")
+        .append("       fixture->code != tcir_fixture_newObject_code ||\n")
+        .append("       symbol != ((fixture->code[0] >> 16) & 0xffffU) ||\n")
+        .append("       class_name == (const char **)0)\n")
+        .append("      return 0;\n")
+        .append("   *class_name = \"java.lang.Object\";\n")
         .append("   return 1;\n")
         .append("}\n\n");
 
@@ -191,6 +204,8 @@ class TCIRConverterFixtureTest {
           .append("   { TCIR_TYPE_REF, TCIR_HOME_REF, 1U }\n");
     } else if ("nullRef".equals(name)) {
       out.append("   { TCIR_TYPE_REF, TCIR_HOME_REF, 0U }\n");
+    } else if ("newObject".equals(name)) {
+      out.append("   { TCIR_TYPE_VOID, TCIR_HOME_I32, 0U }\n");
     } else {
       int parameterCount = METHOD_DESCRIPTORS[methodIndex].equals("(II)I") ? 2 : 1;
       for (int parameter = 0; parameter < parameterCount; parameter++) {

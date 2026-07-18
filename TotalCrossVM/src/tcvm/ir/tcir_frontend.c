@@ -843,6 +843,80 @@ done:
    return status;
 }
 
+static int tcirFrontendTranslateNewObject(
+   TCIRFunction *function,
+   TCIRBlock *block,
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   const TCIRValue **state,
+   TCIRDiagnostic *diagnostic)
+{
+   const char *class_name = NULL;
+   TCIRGCHome *gc_homes = NULL;
+   TCIRSymbol *symbol;
+   TCIROperationSpec spec;
+   TCIRValue *result = NULL;
+   size_t home;
+   size_t gc_home_count = 0U;
+
+   if (method->resolve_class_name == NULL ||
+       !method->resolve_class_name(
+          method->resolve_class_name_user_data, instruction->symbol, &class_name) ||
+       class_name == NULL || class_name[0] == '\0')
+      return 0;
+   gc_homes = (TCIRGCHome *)calloc(
+      method->ref_home_count == 0U ? 1U : method->ref_home_count, sizeof(*gc_homes));
+   if (gc_homes == NULL)
+   {
+      tcirSetDiagnostic(
+         diagnostic,
+         TCIR_DIAGNOSTIC_OUT_OF_MEMORY,
+         method->identity,
+         instruction->pc,
+         "cannot allocate object-allocation GC homes");
+      return 0;
+   }
+   for (home = 0U; home < method->ref_home_count; ++home)
+   {
+      const TCIRValue *value = state[tcirFrontendRefStateIndex(method, (unsigned int)home)];
+      if (value != NULL)
+      {
+         gc_homes[gc_home_count].value = value;
+         gc_homes[gc_home_count].home_index = (unsigned int)home;
+         ++gc_home_count;
+      }
+   }
+   symbol = tcirModuleAddSymbol(
+      function->module,
+      TCIR_SYMBOL_CLASS,
+      "",
+      class_name,
+      "",
+      instruction->symbol,
+      0U,
+      diagnostic);
+   if (symbol == NULL)
+      goto done;
+   memset(&spec, 0, sizeof(spec));
+   spec.opcode = TCIR_OP_NEW_OBJECT;
+   spec.result_type = TCIR_TYPE_REF;
+   spec.home_bank = TCIR_HOME_REF;
+   spec.home_index = instruction->reg0;
+   spec.symbol = symbol;
+   spec.effects = TCIR_OBJECT_ALLOCATION_EFFECTS;
+   spec.gc_homes = gc_homes;
+   spec.gc_home_count = gc_home_count;
+   spec.propagates_exception = 1;
+   spec.source = tcirFrontendSource(method, instruction->pc);
+   if (tcirBlockAppendOperation(block, &spec, &result, diagnostic) != TCIR_STATUS_OK)
+      goto done;
+   state[tcirFrontendRefStateIndex(method, instruction->reg0)] = result;
+
+done:
+   free(gc_homes);
+   return result != NULL;
+}
+
 static int tcirFrontendTranslateArithmetic(
    TCIRBlock *block,
    const TCIRMethodView *method,
@@ -1335,6 +1409,12 @@ static int tcirFrontendTranslateBlock(
       else if (opcode == CALL_normal)
       {
          if (!tcirFrontendTranslateStaticCall(
+                function, block, method, instruction, state, diagnostic))
+            goto failed;
+      }
+      else if (opcode == NEWOBJ)
+      {
+         if (!tcirFrontendTranslateNewObject(
                 function, block, method, instruction, state, diagnostic))
             goto failed;
       }

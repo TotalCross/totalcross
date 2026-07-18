@@ -980,6 +980,45 @@ static int tcirVerifyOperation(
          }
          break;
 
+      case TCIR_OP_NEW_OBJECT:
+         if (!tcirRequireOperandCount(function, operation, 0, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_REF, diagnostic))
+            return 0;
+         if (operation->symbol == NULL || operation->symbol->module != function->module ||
+             operation->symbol->kind != TCIR_SYMBOL_CLASS)
+         {
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_SYMBOL_KIND,
+               function->identity,
+               operation->source.tc_pc,
+               "new.object requires a class symbol from the same module");
+            return 0;
+         }
+         if (operation->home_bank != TCIR_HOME_REF ||
+             operation->home_index >= function->home_counts[TCIR_HOME_REF])
+         {
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_GC_HOME,
+               function->identity,
+               operation->source.tc_pc,
+               "new.object requires a valid destination reference home");
+            return 0;
+         }
+         if (operation->effects != TCIR_OBJECT_ALLOCATION_EFFECTS ||
+             !operation->propagates_exception)
+         {
+            tcirSetDiagnostic(
+               diagnostic,
+               TCIR_DIAGNOSTIC_HELPER_EFFECTS,
+               function->identity,
+               operation->source.tc_pc,
+               "new.object must declare the complete allocation effects and propagate exceptions");
+            return 0;
+         }
+         break;
+
       case TCIR_OP_INTERNAL_ADDRESS:
          if (!tcirRequireOperandCount(function, operation, 1, diagnostic) ||
              !tcirRequireReferenceOperand(function, operation, 0, diagnostic) ||
