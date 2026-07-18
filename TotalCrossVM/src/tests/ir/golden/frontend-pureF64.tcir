@@ -1,0 +1,22 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.pureF64:(DD)D"(%v0: f64, %v1: f64) -> f64
+  homes i32 0, ref 0, v64 4
+bb0() ; tcpc=0 line=34
+  %v14 = add.f64 %v0, %v1 -> f64 ; tcpc=0 line=34
+  %v15 = const.f64 0x4008000000000000 -> f64 ; tcpc=1 line=34
+  %v16 = mul.f64 %v14, %v15 -> f64 ; tcpc=2 line=34
+  %v17 = sub.f64 %v16, %v0 -> f64 ; tcpc=3 line=34
+  %v18 = cmp.lt.f64 %v17, %v1 -> i1 ; tcpc=5 line=35
+  br_if %v18, bb2(%v17, %v1, %v16, %v14), bb1(%v17, %v1, %v16, %v14) ; tcpc=5 line=35
+bb1(%v2: f64, %v3: f64, %v4: f64, %v5: f64) ; tcpc=6 line=35
+  br bb3(%v2, %v3, %v4, %v5) ; tcpc=7 line=35
+bb2(%v6: f64, %v7: f64, %v8: f64, %v9: f64) ; tcpc=8 line=35
+  %v19 = copy %v7 -> f64 ; tcpc=8 line=35
+  br bb3(%v19, %v7, %v8, %v9) ; tcpc=8 line=35
+bb3(%v10: f64, %v11: f64, %v12: f64, %v13: f64) ; tcpc=9 line=35
+  ret %v10 ; tcpc=9 line=35
+end

@@ -11,6 +11,8 @@ from pathlib import Path
 EXPECTED_IDENTITIES = (
     "fixtures.TCIRPoc.abs:(I)I",
     "fixtures.TCIRPoc.add:(II)I",
+    "fixtures.TCIRPoc.normalizedF32:(F)F",
+    "fixtures.TCIRPoc.pureF64:(DD)D",
     "fixtures.TCIRPoc.pureI32:(II)I",
     "fixtures.TCIRPoc.pureI64:(JI)J",
     "fixtures.TCIRPoc.sumTo:(I)I",

@@ -53,6 +53,8 @@ typedef struct TCIRMethodView
    size_t i32_constant_count;
    const int64_t *i64_constants;
    size_t i64_constant_count;
+   const double *f64_constants;
+   size_t f64_constant_count;
    const int *source_lines;
    const TCIRMethodHandler *handlers;
    size_t handler_count;

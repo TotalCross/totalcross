@@ -218,6 +218,10 @@ static void tcirDumpOperation(TCIRTextBuffer *buffer, const TCIROperationData *o
       case TCIR_OP_CONST_I64:
          tcirBufferAppendFormat(buffer, " %lld", (long long)operation->immediate_i64);
          break;
+      case TCIR_OP_CONST_F64:
+         tcirBufferAppendFormat(
+            buffer, " 0x%016llx", (unsigned long long)operation->immediate_f64_bits);
+         break;
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
          tcirBufferAppendFormat(

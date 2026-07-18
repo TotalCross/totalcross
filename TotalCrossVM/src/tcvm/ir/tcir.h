@@ -172,6 +172,15 @@ typedef enum TCIROperation
    TCIR_OP_CMP_LE_I64,
    TCIR_OP_CMP_GT_I64,
    TCIR_OP_CMP_GE_I64,
+   TCIR_OP_CONST_F64,
+   TCIR_OP_ADD_F64,
+   TCIR_OP_SUB_F64,
+   TCIR_OP_MUL_F64,
+   TCIR_OP_CMP_EQ_F64,
+   TCIR_OP_CMP_LT_F64,
+   TCIR_OP_CMP_LE_F64,
+   TCIR_OP_CMP_GT_F64,
+   TCIR_OP_CMP_GE_F64,
    TCIR_OP_LOAD_SLOT,
    TCIR_OP_STORE_SLOT,
    TCIR_OP_NULL_CHECK,
@@ -214,6 +223,7 @@ typedef struct TCIROperationSpec
    size_t operand_count;
    int immediate_i32;
    int64_t immediate_i64;
+   uint64_t immediate_f64_bits;
    TCIRHomeBank home_bank;
    unsigned int home_index;
    const TCIRSymbol *symbol;
@@ -234,6 +244,7 @@ typedef struct TCIROperationView
    size_t operand_count;
    int immediate_i32;
    int64_t immediate_i64;
+   uint64_t immediate_f64_bits;
    TCIRHomeBank home_bank;
    unsigned int home_index;
    const TCIRSymbol *symbol;

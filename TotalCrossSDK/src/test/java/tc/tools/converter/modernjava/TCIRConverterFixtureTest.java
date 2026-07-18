@@ -31,8 +31,16 @@ import tc.tools.converter.tclass.TCCode;
 import tc.tools.converter.tclass.TCMethod;
 
 class TCIRConverterFixtureTest {
-  private static final String[] METHOD_NAMES = {"add", "abs", "sumTo", "pureI32", "pureI64"};
-  private static final String[] METHOD_DESCRIPTORS = {"(II)I", "(I)I", "(I)I", "(II)I", "(JI)J"};
+  private static final String[] METHOD_NAMES = {
+      "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32"
+  };
+  private static final String[] METHOD_DESCRIPTORS = {
+      "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F"
+  };
+  private static final String[] RETURN_TYPES = {
+      "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32",
+      "TCIR_TYPE_I64", "TCIR_TYPE_F64", "TCIR_TYPE_F64"
+  };
 
   @TempDir
   Path workDir;
@@ -93,7 +101,7 @@ class TCIRConverterFixtureTest {
           .append(method.v64Count).append("U, ")
           .append(method.paramCount).append("U, tcir_fixture_")
           .append(METHOD_NAMES[index]).append("_parameters, ")
-          .append(index == METHOD_NAMES.length - 1 ? "TCIR_TYPE_I64" : "TCIR_TYPE_I32")
+          .append(RETURN_TYPES[index])
           .append(", ")
           .append(method.v64Count == 0 ? "(const TCIRType *)0" : "tcir_fixture_"
               + METHOD_NAMES[index] + "_v64_types")
@@ -139,9 +147,14 @@ class TCIRConverterFixtureTest {
   private static void appendParameterArray(StringBuilder out, int methodIndex) {
     String name = METHOD_NAMES[methodIndex];
     out.append("static const TCIRMethodParameter tcir_fixture_").append(name).append("_parameters[] = {\n");
-    if (methodIndex == METHOD_NAMES.length - 1) {
+    if ("pureI64".equals(name)) {
       out.append("   { TCIR_TYPE_I64, TCIR_HOME_V64, 0U },\n")
           .append("   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }\n");
+    } else if ("pureF64".equals(name)) {
+      out.append("   { TCIR_TYPE_F64, TCIR_HOME_V64, 0U },\n")
+          .append("   { TCIR_TYPE_F64, TCIR_HOME_V64, 1U }\n");
+    } else if ("normalizedF32".equals(name)) {
+      out.append("   { TCIR_TYPE_F64, TCIR_HOME_V64, 0U }\n");
     } else {
       int parameterCount = METHOD_DESCRIPTORS[methodIndex].equals("(II)I") ? 2 : 1;
       for (int parameter = 0; parameter < parameterCount; parameter++) {
@@ -161,7 +174,7 @@ class TCIRConverterFixtureTest {
       if (index != 0) {
         out.append(index % 8 == 0 ? ",\n   " : ", ");
       }
-      out.append("TCIR_TYPE_I64");
+      out.append("pureI64".equals(name) ? "TCIR_TYPE_I64" : "TCIR_TYPE_F64");
     }
     out.append("\n};\n\n");
   }

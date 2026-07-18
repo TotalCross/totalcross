@@ -196,7 +196,7 @@ static const TCIRAotRegistryEntry *findAotEntry(size_t fixture_index)
    static const char *const method_names[] = { "add", "abs", "sumTo" };
    static const char *const signatures[] = { "(II)I", "(I)I", "(I)I" };
    static const char *const hashes[] = {
-      "8f1da0a24467f4ec", "8a3a7cb2b20bd88a", "3e751e0f1c557704"
+      "2e80511cea626eec", "14d3639c5a105a4a", "5b4140fbcc53b2a4"
    };
    return tcirAotRegistryFind(
       tcir_aot_generated_registry,

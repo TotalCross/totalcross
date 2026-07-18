@@ -637,6 +637,34 @@ static int tcirVerifyOperation(
             return 0;
          break;
 
+      case TCIR_OP_CONST_F64:
+         if (!tcirRequireOperandCount(function, operation, 0, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_F64, diagnostic))
+            return 0;
+         break;
+
+      case TCIR_OP_ADD_F64:
+      case TCIR_OP_SUB_F64:
+      case TCIR_OP_MUL_F64:
+         if (!tcirRequireOperandCount(function, operation, 2, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_F64, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 1, TCIR_TYPE_F64, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_F64, diagnostic))
+            return 0;
+         break;
+
+      case TCIR_OP_CMP_EQ_F64:
+      case TCIR_OP_CMP_LT_F64:
+      case TCIR_OP_CMP_LE_F64:
+      case TCIR_OP_CMP_GT_F64:
+      case TCIR_OP_CMP_GE_F64:
+         if (!tcirRequireOperandCount(function, operation, 2, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_F64, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 1, TCIR_TYPE_F64, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_I1, diagnostic))
+            return 0;
+         break;
+
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
          if ((unsigned int)operation->home_bank > (unsigned int)TCIR_HOME_V64)
