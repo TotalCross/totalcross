@@ -57,6 +57,7 @@ typedef struct DifferentialResult
    int32_t return_i32;
    int64_t return_i64;
    double return_f64;
+   void *return_ref;
    const char *exception_class;
    char exception_message[1024];
    int frame_restored;
@@ -107,7 +108,7 @@ static void initializeMethod(
    class_->name = (CharP)"fixtures.TCIRPoc";
    memset(method, 0, sizeof(*method));
    method->iCount = (uint8)fixture->i32_count;
-   method->oCount = 1U;
+   method->oCount = (uint8)fixture->ref_count;
    method->v64Count = (uint8)fixture->v64_count;
    method->code = code;
    method->class_ = class_;
@@ -115,12 +116,14 @@ static void initializeMethod(
    method->paramCount = (uint16)fixture->parameter_count;
    method->paramRegs = parameter_registers;
    method->returnReg = fixture->return_type == TCIR_TYPE_I64 ? RegL :
-      (fixture->return_type == TCIR_TYPE_F64 ? RegD : RegI);
+      (fixture->return_type == TCIR_TYPE_F64 ? RegD :
+       (fixture->return_type == TCIR_TYPE_REF ? RegO : RegI));
    method->flags.isStatic = true;
    for (index = 0U; index < fixture->parameter_count; ++index)
       parameter_registers[index] = fixture->parameters[index].type == TCIR_TYPE_I64
          ? (uint8)RegL
-         : (fixture->parameters[index].type == TCIR_TYPE_F64 ? (uint8)RegD : (uint8)RegI);
+         : (fixture->parameters[index].type == TCIR_TYPE_F64 ? (uint8)RegD :
+            (fixture->parameters[index].type == TCIR_TYPE_REF ? (uint8)RegO : (uint8)RegI));
 }
 
 static void initializeArguments(
@@ -197,6 +200,8 @@ static DifferentialResult executeTCode(
          argument_values[index].asInt64 = arguments[index].i64;
       else if (fixture->parameters[index].type == TCIR_TYPE_F64)
          argument_values[index].asDouble = arguments[index].f64;
+      else if (fixture->parameters[index].type == TCIR_TYPE_REF)
+         argument_values[index].asObj = (TCObject)arguments[index].ref;
       else
          argument_values[index].asInt32 = arguments[index].i32;
    }
@@ -210,6 +215,7 @@ static DifferentialResult executeTCode(
    result.return_i32 = (int32_t)value.asInt32;
    result.return_i64 = (int64_t)value.asInt64;
    result.return_f64 = value.asDouble;
+   result.return_ref = value.asObj;
    result.frame_restored = context.regI == context.regIStart
       && context.regO == context.regOStart
       && context.reg64 == context.reg64Start
@@ -261,6 +267,7 @@ static DifferentialResult executeTCIR(
       result.return_i32 = interpreter_result.value.i32;
       result.return_i64 = interpreter_result.value.i64;
       result.return_f64 = interpreter_result.value.f64;
+      result.return_ref = interpreter_result.value.ref;
    }
    else
    {
@@ -309,6 +316,7 @@ static DifferentialResult executeSLJIT(
       result.return_i32 = compiled_result.value.i32;
       result.return_i64 = compiled_result.value.i64;
       result.return_f64 = compiled_result.value.f64;
+      result.return_ref = compiled_result.value.ref;
    }
    else
    {
@@ -361,6 +369,7 @@ static DifferentialResult executeAOT(
       result.return_i32 = compiled_result.value.i32;
       result.return_i64 = compiled_result.value.i64;
       result.return_f64 = compiled_result.value.f64;
+      result.return_ref = compiled_result.value.ref;
    }
    else
    {
@@ -420,6 +429,8 @@ static uint64_t resultBits(const DifferentialResult *result)
       return (uint64_t)result->return_i64;
    if (result->return_type == TCIR_TYPE_F64)
       return f64Bits(result->return_f64);
+   if (result->return_type == TCIR_TYPE_REF)
+      return (uint64_t)(uintptr_t)result->return_ref;
    return (uint64_t)(uint32_t)result->return_i32;
 }
 
@@ -542,6 +553,28 @@ static int compareF64Input(
                         diagnostic);
 }
 
+static int compareRefInput(
+   const TCIRConverterFixture *fixture,
+   const TCIRFunction *function,
+   void *first,
+   void *second,
+   const void *jit_artifact,
+#if defined(TCIR_HAS_AOT)
+   TCCompiledEntry aot_entry,
+#endif
+   TCIRDiagnostic *diagnostic)
+{
+   TCIRRuntimeValue inputs[2];
+   memset(inputs, 0, sizeof(inputs));
+   inputs[0].ref = first;
+   inputs[1].ref = second;
+   return compareValues(fixture, function, inputs, jit_artifact,
+#if defined(TCIR_HAS_AOT)
+                        aot_entry,
+#endif
+                        diagnostic);
+}
+
 static uint32_t nextGeneratedValue(uint32_t *state)
 {
    uint32_t value = *state;
@@ -627,6 +660,12 @@ static int testFixtureCorpus(void)
       UINT32_C(0x7f800000), UINT32_C(0xff800000),
       UINT32_C(0x7fc00001), UINT32_C(0xffc01234)
    };
+   static int reference_token_a;
+   static int reference_token_b;
+   static void *const reference_values[] = { NULL, &reference_token_a, &reference_token_b };
+   static const unsigned int reference_cases[][2] = {
+      { 0U, 0U }, { 1U, 0U }, { 0U, 2U }, { 1U, 1U }, { 1U, 2U }, { 2U, 1U }
+   };
    TCIRDiagnostic diagnostic;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
    TCIRFunction *functions[TCIR_CONVERTER_FIXTURE_COUNT];
@@ -634,11 +673,12 @@ static int testFixtureCorpus(void)
 #if defined(TCIR_HAS_AOT)
    static const char *const method_names[] = {
       "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
-      "i32ToF64", "i64ToF64"
+      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef"
    };
    static const char *const signatures[] = {
       "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
-      "(I)D", "(J)D"
+      "(I)D", "(J)D", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;"
    };
    TCCompiledEntry aot_entries[TCIR_CONVERTER_FIXTURE_COUNT];
 #endif
@@ -646,6 +686,7 @@ static int testFixtureCorpus(void)
    uint32_t generated_i64_state = UINT32_C(0x8a5cd789);
    uint32_t generated_f64_state = UINT32_C(0x31f2a8c7);
    uint32_t generated_f32_state = UINT32_C(0xc42b91e5);
+   uint32_t generated_ref_state = UINT32_C(0x7f4a7c15);
    size_t case_index;
    size_t fixture_index;
 
@@ -749,6 +790,30 @@ static int testFixtureCorpus(void)
                            aot_entries[8],
 #endif
                            &diagnostic));
+   for (case_index = 0U; case_index < sizeof(reference_cases) / sizeof(reference_cases[0]); ++case_index)
+   {
+      void *first = reference_values[reference_cases[case_index][0]];
+      void *second = reference_values[reference_cases[case_index][1]];
+      REQUIRE(compareRefInput(&tcir_converter_fixtures[9], functions[9], first, second,
+                              jit_artifacts[9],
+#if defined(TCIR_HAS_AOT)
+                              aot_entries[9],
+#endif
+                              &diagnostic));
+      REQUIRE(compareRefInput(&tcir_converter_fixtures[10], functions[10], first, second,
+                              jit_artifacts[10],
+#if defined(TCIR_HAS_AOT)
+                              aot_entries[10],
+#endif
+                              &diagnostic));
+   }
+   for (case_index = 0U; case_index < sizeof(reference_values) / sizeof(reference_values[0]); ++case_index)
+      REQUIRE(compareRefInput(&tcir_converter_fixtures[11], functions[11], reference_values[case_index], NULL,
+                              jit_artifacts[11],
+#if defined(TCIR_HAS_AOT)
+                              aot_entries[11],
+#endif
+                              &diagnostic));
 
    for (case_index = 0U; case_index < 512U; ++case_index)
    {
@@ -817,6 +882,22 @@ static int testFixtureCorpus(void)
          aot_entries[6],
 #endif
          &diagnostic));
+      {
+         void *first_ref = reference_values[nextGeneratedValue(&generated_ref_state) % 3U];
+         void *second_ref = reference_values[nextGeneratedValue(&generated_ref_state) % 3U];
+         REQUIRE(compareRefInput(&tcir_converter_fixtures[9], functions[9], first_ref, second_ref,
+                                 jit_artifacts[9],
+#if defined(TCIR_HAS_AOT)
+                                 aot_entries[9],
+#endif
+                                 &diagnostic));
+         REQUIRE(compareRefInput(&tcir_converter_fixtures[10], functions[10], first_ref, second_ref,
+                                 jit_artifacts[10],
+#if defined(TCIR_HAS_AOT)
+                                 aot_entries[10],
+#endif
+                                 &diagnostic));
+      }
    }
    for (case_index = 0U; case_index < 128U; ++case_index)
    {
@@ -866,18 +947,18 @@ int main(void)
       return 1;
 #if defined(TCIR_HAS_SLJIT)
 #if defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 9 fixtures, 4,311 executeMethod/TCIR/SLJIT/AOT comparisons, "
-          "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5.\n");
+   printf("TCIR differential tests passed: 12 fixtures, 5,350 executeMethod/TCIR/SLJIT/AOT comparisons, "
+          "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #else
-   printf("TCIR differential tests passed: 9 fixtures, 4,311 executeMethod/TCIR/SLJIT comparisons, "
-          "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5.\n");
+   printf("TCIR differential tests passed: 12 fixtures, 5,350 executeMethod/TCIR/SLJIT comparisons, "
+          "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #endif
 #elif defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 9 fixtures, 4,311 executeMethod/TCIR/AOT comparisons, "
-          "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5.\n");
+   printf("TCIR differential tests passed: 12 fixtures, 5,350 executeMethod/TCIR/AOT comparisons, "
+          "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #else
-   printf("TCIR differential tests passed: 9 fixtures, 4,311 executeMethod comparisons, "
-          "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5.\n");
+   printf("TCIR differential tests passed: 12 fixtures, 5,350 executeMethod comparisons, "
+          "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5/0x7f4a7c15.\n");
 #endif
    return 0;
 }

@@ -14,9 +14,12 @@ EXPECTED_IDENTITIES = (
     "fixtures.TCIRPoc.i32ToF64:(I)D",
     "fixtures.TCIRPoc.i64ToF64:(J)D",
     "fixtures.TCIRPoc.normalizedF32:(F)F",
+    "fixtures.TCIRPoc.nullRef:(Ljava/lang/Object;)Ljava/lang/Object;",
     "fixtures.TCIRPoc.pureF64:(DD)D",
     "fixtures.TCIRPoc.pureI32:(II)I",
     "fixtures.TCIRPoc.pureI64:(JI)J",
+    "fixtures.TCIRPoc.referenceScore:(Ljava/lang/Object;Ljava/lang/Object;)I",
+    "fixtures.TCIRPoc.selectRef:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
     "fixtures.TCIRPoc.sumTo:(I)I",
 )
 HEX64 = re.compile(r"^[0-9a-f]{16}$")

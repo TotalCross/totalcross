@@ -1,0 +1,41 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.referenceScore:(Ljava/lang/Object;Ljava/lang/Object;)I"(%v0: ref, %v1: ref) -> i32
+  homes i32 1, ref 2, v64 0
+bb0() ; tcpc=0 line=60
+  %v26 = const.i32 0 ; tcpc=0 line=60
+  %v27 = cmp.eq.ref %v0, %v1 -> i1 ; tcpc=1 line=61
+  br_if %v27, bb1(%v26, %v0, %v1), bb2(%v26, %v0, %v1) ; tcpc=1 line=61
+bb1(%v2: i32, %v3: ref, %v4: ref) ; tcpc=2 line=61
+  %v28 = const.i32 1 ; tcpc=2 line=61
+  %v29 = add.i32 %v2, %v28 -> i32 ; tcpc=2 line=61
+  br bb2(%v29, %v3, %v4) ; tcpc=2 line=61
+bb2(%v5: i32, %v6: ref, %v7: ref) ; tcpc=3 line=62
+  %v30 = cmp.eq.ref %v6, %v7 -> i1 ; tcpc=3 line=62
+  br_if %v30, bb4(%v5, %v6, %v7), bb3(%v5, %v6, %v7) ; tcpc=3 line=62
+bb3(%v8: i32, %v9: ref, %v10: ref) ; tcpc=4 line=62
+  %v31 = const.i32 2 ; tcpc=4 line=62
+  %v32 = add.i32 %v8, %v31 -> i32 ; tcpc=4 line=62
+  br bb4(%v32, %v9, %v10) ; tcpc=4 line=62
+bb4(%v11: i32, %v12: ref, %v13: ref) ; tcpc=5 line=63
+  %v33 = const.ref.null -> ref ; tcpc=5 line=63
+  %v34 = cmp.eq.ref %v12, %v33 -> i1 ; tcpc=5 line=63
+  br_if %v34, bb5(%v11, %v12, %v13), bb6(%v11, %v12, %v13) ; tcpc=5 line=63
+bb5(%v14: i32, %v15: ref, %v16: ref) ; tcpc=6 line=63
+  %v35 = const.i32 4 ; tcpc=6 line=63
+  %v36 = add.i32 %v14, %v35 -> i32 ; tcpc=6 line=63
+  br bb6(%v36, %v15, %v16) ; tcpc=6 line=63
+bb6(%v17: i32, %v18: ref, %v19: ref) ; tcpc=7 line=64
+  %v37 = const.ref.null -> ref ; tcpc=7 line=64
+  %v38 = cmp.eq.ref %v18, %v37 -> i1 ; tcpc=7 line=64
+  br_if %v38, bb8(%v17, %v18, %v19), bb7(%v17, %v18, %v19) ; tcpc=7 line=64
+bb7(%v20: i32, %v21: ref, %v22: ref) ; tcpc=8 line=64
+  %v39 = const.i32 8 ; tcpc=8 line=64
+  %v40 = add.i32 %v20, %v39 -> i32 ; tcpc=8 line=64
+  br bb8(%v40, %v21, %v22) ; tcpc=8 line=64
+bb8(%v23: i32, %v24: ref, %v25: ref) ; tcpc=9 line=65
+  ret %v23 ; tcpc=9 line=65
+end

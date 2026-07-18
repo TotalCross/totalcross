@@ -164,6 +164,47 @@ static const TCIRType tcir_fixture_i64ToF64_v64_types[] = {
    TCIR_TYPE_I64
 };
 
+static const unsigned int tcir_fixture_selectRef_code[] = {
+   0x0000022cU, 0x0020005aU, 0x00000209U, 0x00200261U,
+   0x00010209U, 0x00000286U
+};
+
+static const int tcir_fixture_selectRef_lines[] = {
+   54, 55, 55, 56, 56, 57
+};
+
+static const TCIRMethodParameter tcir_fixture_selectRef_parameters[] = {
+   { TCIR_TYPE_REF, TCIR_HOME_REF, 0U },
+   { TCIR_TYPE_REF, TCIR_HOME_REF, 1U }
+};
+
+static const unsigned int tcir_fixture_referenceScore_code[] = {
+   0x00000007U, 0x00204060U, 0x0001002dU, 0x00204059U,
+   0x0002002dU, 0x00200061U, 0x0004002dU, 0x0020005aU,
+   0x0008002dU, 0x00000085U
+};
+
+static const int tcir_fixture_referenceScore_lines[] = {
+   60, 61, 61, 62, 62, 63, 63, 64, 64, 65
+};
+
+static const TCIRMethodParameter tcir_fixture_referenceScore_parameters[] = {
+   { TCIR_TYPE_REF, TCIR_HOME_REF, 0U },
+   { TCIR_TYPE_REF, TCIR_HOME_REF, 1U }
+};
+
+static const unsigned int tcir_fixture_nullRef_code[] = {
+   0x0000008aU
+};
+
+static const int tcir_fixture_nullRef_lines[] = {
+   68
+};
+
+static const TCIRMethodParameter tcir_fixture_nullRef_parameters[] = {
+   { TCIR_TYPE_REF, TCIR_HOME_REF, 0U }
+};
+
 static const TCIRConverterFixture tcir_converter_fixtures[] = {
    { "fixtures.TCIRPoc.add:(II)I", tcir_fixture_add_code, tcir_fixture_add_lines, 2U, 2U, 0U, 0U, 2U, tcir_fixture_add_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
    { "fixtures.TCIRPoc.abs:(I)I", tcir_fixture_abs_code, tcir_fixture_abs_lines, 6U, 1U, 0U, 0U, 1U, tcir_fixture_abs_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
@@ -174,6 +215,9 @@ static const TCIRConverterFixture tcir_converter_fixtures[] = {
    { "fixtures.TCIRPoc.normalizedF32:(F)F", tcir_fixture_normalizedF32_code, tcir_fixture_normalizedF32_lines, 32U, 0U, 0U, 3U, 1U, tcir_fixture_normalizedF32_parameters, TCIR_TYPE_F64, tcir_fixture_normalizedF32_v64_types },
    { "fixtures.TCIRPoc.i32ToF64:(I)D", tcir_fixture_i32ToF64_code, tcir_fixture_i32ToF64_lines, 2U, 1U, 0U, 1U, 1U, tcir_fixture_i32ToF64_parameters, TCIR_TYPE_F64, tcir_fixture_i32ToF64_v64_types },
    { "fixtures.TCIRPoc.i64ToF64:(J)D", tcir_fixture_i64ToF64_code, tcir_fixture_i64ToF64_lines, 2U, 0U, 0U, 1U, 1U, tcir_fixture_i64ToF64_parameters, TCIR_TYPE_F64, tcir_fixture_i64ToF64_v64_types },
+   { "fixtures.TCIRPoc.selectRef:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", tcir_fixture_selectRef_code, tcir_fixture_selectRef_lines, 6U, 0U, 3U, 0U, 2U, tcir_fixture_selectRef_parameters, TCIR_TYPE_REF, (const TCIRType *)0 },
+   { "fixtures.TCIRPoc.referenceScore:(Ljava/lang/Object;Ljava/lang/Object;)I", tcir_fixture_referenceScore_code, tcir_fixture_referenceScore_lines, 10U, 1U, 2U, 0U, 2U, tcir_fixture_referenceScore_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
+   { "fixtures.TCIRPoc.nullRef:(Ljava/lang/Object;)Ljava/lang/Object;", tcir_fixture_nullRef_code, tcir_fixture_nullRef_lines, 1U, 0U, 1U, 0U, 1U, tcir_fixture_nullRef_parameters, TCIR_TYPE_REF, (const TCIRType *)0 },
 };
 
 #define TCIR_CONVERTER_FIXTURE_COUNT \
