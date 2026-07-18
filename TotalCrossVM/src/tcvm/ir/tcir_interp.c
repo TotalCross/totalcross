@@ -105,6 +105,13 @@ static int64_t tcirShrI64(int64_t value, int64_t distance)
    return tcirI64FromBits((bits >> shift) | (UINT64_MAX << (64U - shift)));
 }
 
+static double tcirF64FromBits(uint64_t bits)
+{
+   double value;
+   memcpy(&value, &bits, sizeof(value));
+   return value;
+}
+
 static int tcirInterpreterSupportsOperation(TCIROperation opcode)
 {
    switch (opcode)
@@ -151,6 +158,15 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_CMP_LE_I64:
       case TCIR_OP_CMP_GT_I64:
       case TCIR_OP_CMP_GE_I64:
+      case TCIR_OP_CONST_F64:
+      case TCIR_OP_ADD_F64:
+      case TCIR_OP_SUB_F64:
+      case TCIR_OP_MUL_F64:
+      case TCIR_OP_CMP_EQ_F64:
+      case TCIR_OP_CMP_LT_F64:
+      case TCIR_OP_CMP_LE_F64:
+      case TCIR_OP_CMP_GT_F64:
+      case TCIR_OP_CMP_GE_F64:
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
          return 1;
@@ -581,6 +597,33 @@ static int tcirExecuteOperation(
          break;
       case TCIR_OP_CMP_GE_I64:
          value.i1 = left.i64 >= right.i64;
+         break;
+      case TCIR_OP_CONST_F64:
+         value.f64 = tcirF64FromBits(operation->immediate_f64_bits);
+         break;
+      case TCIR_OP_ADD_F64:
+         value.f64 = left.f64 + right.f64;
+         break;
+      case TCIR_OP_SUB_F64:
+         value.f64 = left.f64 - right.f64;
+         break;
+      case TCIR_OP_MUL_F64:
+         value.f64 = left.f64 * right.f64;
+         break;
+      case TCIR_OP_CMP_EQ_F64:
+         value.i1 = left.f64 == right.f64;
+         break;
+      case TCIR_OP_CMP_LT_F64:
+         value.i1 = left.f64 < right.f64;
+         break;
+      case TCIR_OP_CMP_LE_F64:
+         value.i1 = left.f64 <= right.f64;
+         break;
+      case TCIR_OP_CMP_GT_F64:
+         value.i1 = left.f64 > right.f64;
+         break;
+      case TCIR_OP_CMP_GE_F64:
+         value.i1 = left.f64 >= right.f64;
          break;
       case TCIR_OP_LOAD_SLOT:
          if (!tcirLoadHome(frame, operation->home_bank, operation->home_index, operation->result_type, &value))

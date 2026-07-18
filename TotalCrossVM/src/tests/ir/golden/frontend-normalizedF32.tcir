@@ -1,0 +1,65 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.normalizedF32:(F)F"(%v0: f64) -> f64
+  homes i32 0, ref 0, v64 3
+bb0() ; tcpc=0 line=38
+  %v37 = const.f64 0x0000000000000000 -> f64 ; tcpc=0 line=38
+  %v38 = const.f64 0x0000000000000000 -> f64 ; tcpc=1 line=39
+  %v39 = cmp.eq.f64 %v0, %v38 -> i1 ; tcpc=2 line=39
+  br_if %v39, bb1(%v0, %v38, %v37), bb2(%v0, %v38, %v37) ; tcpc=2 line=39
+bb1(%v1: f64, %v2: f64, %v3: f64) ; tcpc=3 line=39
+  %v40 = const.f64 0x3ff0000000000000 -> f64 ; tcpc=3 line=39
+  %v41 = add.f64 %v3, %v40 -> f64 ; tcpc=4 line=39
+  %v42 = copy %v41 -> f64 ; tcpc=5 line=39
+  br bb2(%v1, %v41, %v42) ; tcpc=5 line=39
+bb2(%v4: f64, %v5: f64, %v6: f64) ; tcpc=6 line=40
+  %v43 = const.f64 0x0000000000000000 -> f64 ; tcpc=6 line=40
+  %v44 = cmp.eq.f64 %v4, %v43 -> i1 ; tcpc=7 line=40
+  br_if %v44, bb4(%v4, %v43, %v6), bb3(%v4, %v43, %v6) ; tcpc=7 line=40
+bb3(%v7: f64, %v8: f64, %v9: f64) ; tcpc=8 line=40
+  %v45 = const.f64 0x4000000000000000 -> f64 ; tcpc=8 line=40
+  %v46 = add.f64 %v9, %v45 -> f64 ; tcpc=9 line=40
+  %v47 = copy %v46 -> f64 ; tcpc=10 line=40
+  br bb4(%v7, %v46, %v47) ; tcpc=10 line=40
+bb4(%v10: f64, %v11: f64, %v12: f64) ; tcpc=11 line=41
+  %v48 = const.f64 0x0000000000000000 -> f64 ; tcpc=11 line=41
+  %v49 = cmp.ge.f64 %v10, %v48 -> i1 ; tcpc=12 line=41
+  br_if %v49, bb6(%v10, %v48, %v12), bb5(%v10, %v48, %v12) ; tcpc=12 line=41
+bb5(%v13: f64, %v14: f64, %v15: f64) ; tcpc=13 line=41
+  %v50 = const.f64 0x4010000000000000 -> f64 ; tcpc=13 line=41
+  %v51 = add.f64 %v15, %v50 -> f64 ; tcpc=14 line=41
+  %v52 = copy %v51 -> f64 ; tcpc=15 line=41
+  br bb6(%v13, %v51, %v52) ; tcpc=15 line=41
+bb6(%v16: f64, %v17: f64, %v18: f64) ; tcpc=16 line=42
+  %v53 = const.f64 0x0000000000000000 -> f64 ; tcpc=16 line=42
+  %v54 = cmp.gt.f64 %v16, %v53 -> i1 ; tcpc=17 line=42
+  br_if %v54, bb8(%v16, %v53, %v18), bb7(%v16, %v53, %v18) ; tcpc=17 line=42
+bb7(%v19: f64, %v20: f64, %v21: f64) ; tcpc=18 line=42
+  %v55 = const.f64 0x4020000000000000 -> f64 ; tcpc=18 line=42
+  %v56 = add.f64 %v21, %v55 -> f64 ; tcpc=19 line=42
+  %v57 = copy %v56 -> f64 ; tcpc=20 line=42
+  br bb8(%v19, %v56, %v57) ; tcpc=20 line=42
+bb8(%v22: f64, %v23: f64, %v24: f64) ; tcpc=21 line=43
+  %v58 = const.f64 0x0000000000000000 -> f64 ; tcpc=21 line=43
+  %v59 = cmp.le.f64 %v22, %v58 -> i1 ; tcpc=22 line=43
+  br_if %v59, bb10(%v22, %v58, %v24), bb9(%v22, %v58, %v24) ; tcpc=22 line=43
+bb9(%v25: f64, %v26: f64, %v27: f64) ; tcpc=23 line=43
+  %v60 = const.f64 0x4030000000000000 -> f64 ; tcpc=23 line=43
+  %v61 = add.f64 %v27, %v60 -> f64 ; tcpc=24 line=43
+  %v62 = copy %v61 -> f64 ; tcpc=25 line=43
+  br bb10(%v25, %v61, %v62) ; tcpc=25 line=43
+bb10(%v28: f64, %v29: f64, %v30: f64) ; tcpc=26 line=44
+  %v63 = const.f64 0x0000000000000000 -> f64 ; tcpc=26 line=44
+  %v64 = cmp.lt.f64 %v28, %v63 -> i1 ; tcpc=27 line=44
+  br_if %v64, bb12(%v28, %v63, %v30), bb11(%v28, %v63, %v30) ; tcpc=27 line=44
+bb11(%v31: f64, %v32: f64, %v33: f64) ; tcpc=28 line=44
+  %v65 = const.f64 0x4040000000000000 -> f64 ; tcpc=28 line=44
+  %v66 = add.f64 %v33, %v65 -> f64 ; tcpc=29 line=44
+  %v67 = copy %v66 -> f64 ; tcpc=30 line=44
+  br bb12(%v66, %v32, %v67) ; tcpc=30 line=44
+bb12(%v34: f64, %v35: f64, %v36: f64) ; tcpc=31 line=45
+  ret %v36 ; tcpc=31 line=45
+end

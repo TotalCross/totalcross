@@ -345,6 +345,15 @@ const char *tcirOperationName(TCIROperation operation)
       "cmp.le.s.i64",
       "cmp.gt.s.i64",
       "cmp.ge.s.i64",
+      "const.f64",
+      "add.f64",
+      "sub.f64",
+      "mul.f64",
+      "cmp.eq.f64",
+      "cmp.lt.f64",
+      "cmp.le.f64",
+      "cmp.gt.f64",
+      "cmp.ge.f64",
       "load.slot",
       "store.slot",
       "null.check",
@@ -902,6 +911,7 @@ TCIRStatus tcirBlockAppendOperation(
    operation.operand_count = spec->operand_count;
    operation.immediate_i32 = spec->immediate_i32;
    operation.immediate_i64 = spec->immediate_i64;
+   operation.immediate_f64_bits = spec->immediate_f64_bits;
    operation.home_bank = spec->home_bank;
    operation.home_index = spec->home_index;
    operation.symbol = spec->symbol;
@@ -990,6 +1000,7 @@ TCIRStatus tcirBlockOperationAt(const TCIRBlock *block, size_t index, TCIROperat
    view->operand_count = operation->operand_count;
    view->immediate_i32 = operation->immediate_i32;
    view->immediate_i64 = operation->immediate_i64;
+   view->immediate_f64_bits = operation->immediate_f64_bits;
    view->home_bank = operation->home_bank;
    view->home_index = operation->home_index;
    view->symbol = operation->symbol;

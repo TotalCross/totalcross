@@ -394,6 +394,20 @@ final class ModernJavaClassFileFixtures {
         + "    mixed ^= (long) (int) mixed;\n"
         + "    return mixed >= value ? mixed : value;\n"
         + "  }\n"
+        + "  public static double pureF64(double left, double right) {\n"
+        + "    double mixed = (left + right) * 3.0 - left;\n"
+        + "    return mixed >= right ? mixed : right;\n"
+        + "  }\n"
+        + "  public static float normalizedF32(float value) {\n"
+        + "    float score = 0.0f;\n"
+        + "    if (value == 0.0f) score += 1.0f;\n"
+        + "    if (value != 0.0f) score += 2.0f;\n"
+        + "    if (value < 0.0f) score += 4.0f;\n"
+        + "    if (value <= 0.0f) score += 8.0f;\n"
+        + "    if (value > 0.0f) score += 16.0f;\n"
+        + "    if (value >= 0.0f) score += 32.0f;\n"
+        + "    return score;\n"
+        + "  }\n"
         + "}\n";
     return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
         "TCIR POC converter output", className, source);
