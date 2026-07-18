@@ -633,10 +633,12 @@ static int testFixtureCorpus(void)
    void *jit_artifacts[TCIR_CONVERTER_FIXTURE_COUNT] = { NULL };
 #if defined(TCIR_HAS_AOT)
    static const char *const method_names[] = {
-      "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32"
+      "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
+      "i32ToF64", "i64ToF64"
    };
    static const char *const signatures[] = {
-      "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F"
+      "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
+      "(I)D", "(J)D"
    };
    TCCompiledEntry aot_entries[TCIR_CONVERTER_FIXTURE_COUNT];
 #endif
@@ -733,6 +735,20 @@ static int testFixtureCorpus(void)
          aot_entries[6],
 #endif
          &diagnostic));
+   for (case_index = 0U; case_index < sizeof(add_cases) / sizeof(add_cases[0]); ++case_index)
+      REQUIRE(compareInput(&tcir_converter_fixtures[7], functions[7], add_cases[case_index][0], 0,
+                           jit_artifacts[7],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[7],
+#endif
+                           &diagnostic));
+   for (case_index = 0U; case_index < sizeof(pure_i64_cases) / sizeof(pure_i64_cases[0]); ++case_index)
+      REQUIRE(compareInput(&tcir_converter_fixtures[8], functions[8], pure_i64_cases[case_index][0], 0,
+                           jit_artifacts[8],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[8],
+#endif
+                           &diagnostic));
 
    for (case_index = 0U; case_index < 512U; ++case_index)
    {
@@ -756,6 +772,12 @@ static int testFixtureCorpus(void)
                            aot_entries[3],
 #endif
                            &diagnostic));
+      REQUIRE(compareInput(&tcir_converter_fixtures[7], functions[7], first, 0,
+                           jit_artifacts[7],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[7],
+#endif
+                           &diagnostic));
       {
          uint64_t bits = ((uint64_t)nextGeneratedValue(&generated_i64_state) << 32)
             | (uint64_t)nextGeneratedValue(&generated_i64_state);
@@ -765,6 +787,12 @@ static int testFixtureCorpus(void)
                               jit_artifacts[4],
 #if defined(TCIR_HAS_AOT)
                               aot_entries[4],
+#endif
+                              &diagnostic));
+         REQUIRE(compareInput(&tcir_converter_fixtures[8], functions[8], long_value, 0,
+                              jit_artifacts[8],
+#if defined(TCIR_HAS_AOT)
+                              aot_entries[8],
 #endif
                               &diagnostic));
       }
@@ -838,17 +866,17 @@ int main(void)
       return 1;
 #if defined(TCIR_HAS_SLJIT)
 #if defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 7 fixtures, 3,267 executeMethod/TCIR/SLJIT/AOT comparisons, "
+   printf("TCIR differential tests passed: 9 fixtures, 4,311 executeMethod/TCIR/SLJIT/AOT comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5.\n");
 #else
-   printf("TCIR differential tests passed: 7 fixtures, 3,267 executeMethod/TCIR/SLJIT comparisons, "
+   printf("TCIR differential tests passed: 9 fixtures, 4,311 executeMethod/TCIR/SLJIT comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5.\n");
 #endif
 #elif defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 7 fixtures, 3,267 executeMethod/TCIR/AOT comparisons, "
+   printf("TCIR differential tests passed: 9 fixtures, 4,311 executeMethod/TCIR/AOT comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5.\n");
 #else
-   printf("TCIR differential tests passed: 7 fixtures, 3,267 executeMethod comparisons, "
+   printf("TCIR differential tests passed: 9 fixtures, 4,311 executeMethod comparisons, "
           "fixed seeds 0x4d595df4/0x8a5cd789/0x31f2a8c7/0xc42b91e5.\n");
 #endif
    return 0;

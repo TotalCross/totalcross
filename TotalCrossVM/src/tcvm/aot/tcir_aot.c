@@ -423,6 +423,10 @@ static int tcirAotOperationIsEligible(const TCIROperationView *operation)
       case TCIR_OP_CMP_GE_F64:
          return operation->result != NULL && operation->result_type == TCIR_TYPE_I1 &&
             operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_I32_TO_F64:
+      case TCIR_OP_I64_TO_F64:
+         return operation->result != NULL && operation->result_type == TCIR_TYPE_F64 &&
+            operation->effects == TCIR_EFFECT_NONE;
       case TCIR_OP_LOAD_SLOT:
          return operation->result != NULL && operation->effects == TCIR_EFFECT_NONE &&
             ((operation->result_type == TCIR_TYPE_I32 && operation->home_bank == TCIR_HOME_I32) ||
@@ -860,6 +864,12 @@ static int tcirAotEmitOperation(TCIRAotBuffer *source, const TCIROperationView *
       case TCIR_OP_CMP_GE_F64:
          return tcirAotBufferAppendFormat(source,
             "         values[%u] = f64_values[%u] >= f64_values[%u];\n", result, left, right);
+      case TCIR_OP_I32_TO_F64:
+         return tcirAotBufferAppendFormat(source,
+            "         f64_values[%u] = (double)values[%u];\n", result, left);
+      case TCIR_OP_I64_TO_F64:
+         return tcirAotBufferAppendFormat(source,
+            "         f64_values[%u] = (double)v64_values[%u];\n", result, left);
       case TCIR_OP_LOAD_SLOT:
          if (operation->home_bank == TCIR_HOME_V64)
          {

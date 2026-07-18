@@ -665,6 +665,20 @@ static int tcirVerifyOperation(
             return 0;
          break;
 
+      case TCIR_OP_I32_TO_F64:
+         if (!tcirRequireOperandCount(function, operation, 1, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_I32, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_F64, diagnostic))
+            return 0;
+         break;
+
+      case TCIR_OP_I64_TO_F64:
+         if (!tcirRequireOperandCount(function, operation, 1, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_I64, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_F64, diagnostic))
+            return 0;
+         break;
+
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
          if ((unsigned int)operation->home_bank > (unsigned int)TCIR_HOME_V64)

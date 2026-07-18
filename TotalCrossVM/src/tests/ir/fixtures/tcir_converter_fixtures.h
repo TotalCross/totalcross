@@ -132,6 +132,38 @@ static const TCIRType tcir_fixture_normalizedF32_v64_types[] = {
    TCIR_TYPE_F64, TCIR_TYPE_F64, TCIR_TYPE_F64
 };
 
+static const unsigned int tcir_fixture_i32ToF64_code[] = {
+   0x00000083U, 0x00000087U
+};
+
+static const int tcir_fixture_i32ToF64_lines[] = {
+   48, 48
+};
+
+static const TCIRMethodParameter tcir_fixture_i32ToF64_parameters[] = {
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }
+};
+
+static const TCIRType tcir_fixture_i32ToF64_v64_types[] = {
+   TCIR_TYPE_F64
+};
+
+static const unsigned int tcir_fixture_i64ToF64_code[] = {
+   0x00000084U, 0x00000087U
+};
+
+static const int tcir_fixture_i64ToF64_lines[] = {
+   51, 51
+};
+
+static const TCIRMethodParameter tcir_fixture_i64ToF64_parameters[] = {
+   { TCIR_TYPE_I64, TCIR_HOME_V64, 0U }
+};
+
+static const TCIRType tcir_fixture_i64ToF64_v64_types[] = {
+   TCIR_TYPE_I64
+};
+
 static const TCIRConverterFixture tcir_converter_fixtures[] = {
    { "fixtures.TCIRPoc.add:(II)I", tcir_fixture_add_code, tcir_fixture_add_lines, 2U, 2U, 0U, 0U, 2U, tcir_fixture_add_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
    { "fixtures.TCIRPoc.abs:(I)I", tcir_fixture_abs_code, tcir_fixture_abs_lines, 6U, 1U, 0U, 0U, 1U, tcir_fixture_abs_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
@@ -140,6 +172,8 @@ static const TCIRConverterFixture tcir_converter_fixtures[] = {
    { "fixtures.TCIRPoc.pureI64:(JI)J", tcir_fixture_pureI64_code, tcir_fixture_pureI64_lines, 32U, 1U, 0U, 5U, 2U, tcir_fixture_pureI64_parameters, TCIR_TYPE_I64, tcir_fixture_pureI64_v64_types },
    { "fixtures.TCIRPoc.pureF64:(DD)D", tcir_fixture_pureF64_code, tcir_fixture_pureF64_lines, 10U, 0U, 0U, 4U, 2U, tcir_fixture_pureF64_parameters, TCIR_TYPE_F64, tcir_fixture_pureF64_v64_types },
    { "fixtures.TCIRPoc.normalizedF32:(F)F", tcir_fixture_normalizedF32_code, tcir_fixture_normalizedF32_lines, 32U, 0U, 0U, 3U, 1U, tcir_fixture_normalizedF32_parameters, TCIR_TYPE_F64, tcir_fixture_normalizedF32_v64_types },
+   { "fixtures.TCIRPoc.i32ToF64:(I)D", tcir_fixture_i32ToF64_code, tcir_fixture_i32ToF64_lines, 2U, 1U, 0U, 1U, 1U, tcir_fixture_i32ToF64_parameters, TCIR_TYPE_F64, tcir_fixture_i32ToF64_v64_types },
+   { "fixtures.TCIRPoc.i64ToF64:(J)D", tcir_fixture_i64ToF64_code, tcir_fixture_i64ToF64_lines, 2U, 0U, 0U, 1U, 1U, tcir_fixture_i64ToF64_parameters, TCIR_TYPE_F64, tcir_fixture_i64ToF64_v64_types },
 };
 
 #define TCIR_CONVERTER_FIXTURE_COUNT \

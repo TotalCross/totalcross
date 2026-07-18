@@ -408,6 +408,12 @@ final class ModernJavaClassFileFixtures {
         + "    if (value >= 0.0f) score += 32.0f;\n"
         + "    return score;\n"
         + "  }\n"
+        + "  public static double i32ToF64(int value) {\n"
+        + "    return (double) value;\n"
+        + "  }\n"
+        + "  public static double i64ToF64(long value) {\n"
+        + "    return (double) value;\n"
+        + "  }\n"
         + "}\n";
     return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
         "TCIR POC converter output", className, source);

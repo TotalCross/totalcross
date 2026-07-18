@@ -188,6 +188,8 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case CONV_regIs_regI:
       case CONV_regI_regL:
       case CONV_regL_regI:
+      case CONV_regD_regI:
+      case CONV_regD_regL:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->reg1 = tcirBits(slot, 16, 8);
          break;
@@ -308,6 +310,28 @@ static int tcirValidateV64Register(
       role,
       tcirTypeName(expected_type),
       reg);
+   return 0;
+}
+
+static int tcirValidateV64Index(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   unsigned int reg,
+   const char *role,
+   TCIRDiagnostic *diagnostic)
+{
+   if (reg < method->v64_home_count)
+      return 1;
+   tcirSetDiagnostic(
+      diagnostic,
+      TCIR_DIAGNOSTIC_INVALID_REGISTER,
+      method->identity,
+      instruction->pc,
+      "%s %s uses v64 register %u but the method declares %u",
+      instruction->info->name,
+      role,
+      reg,
+      method->v64_home_count);
    return 0;
 }
 
@@ -515,8 +539,7 @@ static int tcirValidateInstruction(
             return 0;
          break;
       case RETURN_reg64:
-         if (!tcirValidateV64Register(
-                method, instruction, instruction->reg0, "operand", method->return_type, diagnostic))
+         if (!tcirValidateV64Index(method, instruction, instruction->reg0, "operand", diagnostic))
             return 0;
          break;
       case ADD_regI_regI_regI:
@@ -585,6 +608,15 @@ static int tcirValidateInstruction(
          return tcirValidateV64Register(
                    method, instruction, instruction->reg0, "destination", TCIR_TYPE_I64, diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg1, "source", diagnostic);
+      case CONV_regD_regI:
+         return tcirValidateV64Index(
+                   method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateRegister(method, instruction, instruction->reg1, "source", diagnostic);
+      case CONV_regD_regL:
+         return tcirValidateV64Index(
+                   method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateV64Register(
+                   method, instruction, instruction->reg1, "source", TCIR_TYPE_I64, diagnostic);
       case ADD_regI_regI_sym:
          return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg1, "operand", diagnostic) &&
