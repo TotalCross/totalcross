@@ -128,6 +128,8 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case ADD_regI_regI_regI:
       case SUB_regI_regI_regI:
       case MUL_regI_regI_regI:
+      case DIV_regI_regI_regI:
+      case MOD_regI_regI_regI:
       case SHR_regI_regI_regI:
       case SHL_regI_regI_regI:
       case USHR_regI_regI_regI:
@@ -141,6 +143,8 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case ADD_regI_s12_regI:
       case SUB_regI_s12_regI:
       case MUL_regI_regI_s12:
+      case DIV_regI_regI_s12:
+      case MOD_regI_regI_s12:
       case SHR_regI_regI_s12:
       case SHL_regI_regI_s12:
       case USHR_regI_regI_s12:
@@ -354,6 +358,8 @@ static int tcirValidateInstruction(
       case ADD_regI_regI_regI:
       case SUB_regI_regI_regI:
       case MUL_regI_regI_regI:
+      case DIV_regI_regI_regI:
+      case MOD_regI_regI_regI:
       case SHR_regI_regI_regI:
       case SHL_regI_regI_regI:
       case USHR_regI_regI_regI:
@@ -366,6 +372,8 @@ static int tcirValidateInstruction(
       case ADD_regI_s12_regI:
       case SUB_regI_s12_regI:
       case MUL_regI_regI_s12:
+      case DIV_regI_regI_s12:
+      case MOD_regI_regI_s12:
       case SHR_regI_regI_s12:
       case SHL_regI_regI_s12:
       case USHR_regI_regI_s12:

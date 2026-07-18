@@ -308,6 +308,8 @@ const char *tcirOperationName(TCIROperation operation)
       "add.i32",
       "sub.i32",
       "mul.i32",
+      "div.i32",
+      "mod.i32",
       "shl.i32",
       "shr.i32",
       "ushr.i32",
