@@ -55,7 +55,7 @@ typedef struct RuntimeMethod
    TTCClass class_;
    TConstantPool constant_pool;
    uint8_t parameter_registers[4];
-   Method bound_normal[1];
+   Method bound_normal[2];
 } RuntimeMethod;
 
 typedef struct RuntimeExecution
@@ -195,20 +195,71 @@ static TCIRRuntimeRegistrationStatus registerFixture(
 #if defined(TCIR_RUNTIME_TEST_HAS_AOT)
 static const TCIRAotRegistryEntry *findAotEntry(size_t fixture_index)
 {
-   static const char *const method_names[] = { "add", "abs", "sumTo" };
-   static const char *const signatures[] = { "(II)I", "(I)I", "(I)I" };
-   static const char *const hashes[] = {
-      "2e80511cea626eec", "14d3639c5a105a4a", "5b4140fbcc53b2a4"
+   static const char *const method_names[] = {
+      "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
+      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef", "switchScore",
+      "callStatic"
    };
-   return tcirAotRegistryFind(
-      tcir_aot_generated_registry,
-      tcir_aot_generated_registry_count,
-      "fixtures.TCIRPoc",
-      method_names[fixture_index],
-      signatures[fixture_index],
-      hashes[fixture_index]);
+   static const char *const signatures[] = {
+      "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
+      "(I)D", "(J)D", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;", "(I)I",
+      "(II)I"
+   };
+   size_t index;
+
+   for (index = 0U; index < tcir_aot_generated_registry_count; ++index)
+   {
+      const TCIRAotRegistryEntry *candidate = &tcir_aot_generated_registry[index];
+      if (strcmp(candidate->class_name, "fixtures.TCIRPoc") == 0 &&
+          strcmp(candidate->method_name, method_names[fixture_index]) == 0 &&
+          strcmp(candidate->signature, signatures[fixture_index]) == 0)
+         return tcirAotRegistryFind(
+            tcir_aot_generated_registry,
+            tcir_aot_generated_registry_count,
+            candidate->class_name,
+            candidate->method_name,
+            candidate->signature,
+            candidate->content_hash);
+   }
+   return NULL;
 }
 #endif
+
+static void nativeAddI32(NMParams parameters)
+{
+   parameters->retI = parameters->i32[0] + parameters->i32[1];
+}
+
+static void initializeNativeI32Target(RuntimeMethod *target)
+{
+   memset(target, 0, sizeof(*target));
+   target->class_.cp = &target->constant_pool;
+   target->class_.name = (CharP)"fixtures.TCIRNative";
+   target->code[0].op.op = BREAK;
+   target->method.iCount = 2U;
+   target->method.oCount = 1U;
+   target->method.paramSkip = 1U;
+   target->method.code = target->code;
+   target->method.class_ = &target->class_;
+   target->method.name = (CharP)"add";
+   target->method.paramCount = 2U;
+   target->method.paramRegs = target->parameter_registers;
+   target->parameter_registers[0] = RegI;
+   target->parameter_registers[1] = RegI;
+   target->method.cpReturn = 1U;
+   target->method.returnReg = RegI;
+   target->method.flags.isStatic = true;
+   target->method.flags.isNative = true;
+   target->method.boundNM = nativeAddI32;
+}
+
+static void bindStaticCallTarget(RuntimeMethod *caller, Method target)
+{
+   caller->constant_pool.boundNormal = caller->bound_normal;
+   caller->constant_pool.mtdCount = 2U;
+   caller->bound_normal[1] = target;
+}
 
 static int testPolicyAndObservability(void)
 {
@@ -349,6 +400,102 @@ static int testRegistrationAndForcedFallback(void)
    tcirRuntimeGetStats(&stats);
    REQUIRE(stats.forced_failures == 1U);
    REQUIRE(stats.fallback_counts[TCIR_RUNTIME_FALLBACK_UNREGISTERED] == 1U);
+   REQUIRE(tcirRuntimeReset());
+   return 1;
+}
+
+static int executeLoweredStaticCall(
+   TCIRRuntimeBackend backend,
+   TCCompiledEntry aot_entry,
+   const char *content_hash)
+{
+   RuntimeMethod caller;
+   RuntimeMethod target;
+   RuntimeExecution execution;
+   TCIRRuntimeStats stats;
+
+   REQUIRE(tcirRuntimeReset());
+   initializeFixtureMethod(&caller, &tcir_converter_fixtures[13]);
+   initializeNativeI32Target(&target);
+   bindStaticCallTarget(&caller, &target.method);
+   REQUIRE(registerFixture(
+      &caller, &tcir_converter_fixtures[13], aot_entry, content_hash)
+      == TCIR_RUNTIME_REGISTRATION_READY);
+   REQUIRE(tcirRuntimeSetBackend(backend));
+   execution = executeRuntimeMethod(&caller.method, 19, 23);
+   REQUIRE(execution.value.asInt32 == 42 && execution.frame_restored && execution.usage_released);
+   tcirRuntimeGetStats(&stats);
+   REQUIRE(stats.call_thunks == 1U && stats.dispatch_returns == 1U);
+   if (backend == TCIR_RUNTIME_BACKEND_IR)
+      REQUIRE(stats.ir_invocations == 1U);
+   else if (backend == TCIR_RUNTIME_BACKEND_JIT)
+      REQUIRE(stats.jit_invocations == 1U && stats.jit_compilations == 1U);
+   else if (backend == TCIR_RUNTIME_BACKEND_AOT)
+      REQUIRE(stats.aot_invocations == 1U);
+   return 1;
+}
+
+static int expectStaticCallPreflightFallback(int incompatible_target)
+{
+   enum { CAPACITY = 64 };
+   RuntimeMethod caller;
+   RuntimeMethod target;
+   TContext context;
+   int32 register_i32[CAPACITY];
+   TCObject register_ref[CAPACITY];
+   int64 register_v64[CAPACITY];
+   VoidP call_stack[CAPACITY];
+   TCCompiledResult result;
+   TCIRRuntimeDiagnostic diagnostic;
+   TCIRRuntimeStats stats;
+
+   REQUIRE(tcirRuntimeReset());
+   initializeFixtureMethod(&caller, &tcir_converter_fixtures[13]);
+   if (incompatible_target)
+   {
+      initializeNativeI32Target(&target);
+      target.method.returnReg = RegD;
+      bindStaticCallTarget(&caller, &target.method);
+   }
+   REQUIRE(registerFixture(&caller, &tcir_converter_fixtures[13], NULL, NULL)
+           == TCIR_RUNTIME_REGISTRATION_READY);
+   REQUIRE(tcirRuntimeSetBackend(TCIR_RUNTIME_BACKEND_IR));
+   initializeContext(&context, register_i32, register_ref, register_v64, call_stack, CAPACITY);
+   register_i32[0] = 19;
+   register_i32[1] = 23;
+   REQUIRE(tcirRuntimeTryDispatch(
+      &context,
+      &caller.method,
+      register_i32,
+      register_ref,
+      register_v64,
+      &result,
+      &diagnostic) == TCIR_RUNTIME_DISPATCH_FALLBACK);
+   REQUIRE(diagnostic.fallback_reason == TCIR_RUNTIME_FALLBACK_INVOCATION_REJECTED);
+   REQUIRE(register_i32[0] == 19 && register_i32[1] == 23);
+   tcirRuntimeGetStats(&stats);
+   REQUIRE(stats.ir_invocations == 0U && stats.call_thunks == 0U);
+   REQUIRE(stats.fallback_counts[TCIR_RUNTIME_FALLBACK_INVOCATION_REJECTED] == 1U);
+   DESTROY_MUTEX(context.usageLock);
+   return 1;
+}
+
+static int testLoweredStaticCalls(void)
+{
+   REQUIRE(executeLoweredStaticCall(TCIR_RUNTIME_BACKEND_IR, NULL, NULL));
+#if defined(TCIR_RUNTIME_TEST_HAS_SLJIT)
+   REQUIRE(executeLoweredStaticCall(TCIR_RUNTIME_BACKEND_JIT, NULL, NULL));
+#endif
+#if defined(TCIR_RUNTIME_TEST_HAS_AOT)
+   {
+      const TCIRAotRegistryEntry *aot_entry = findAotEntry(13U);
+      REQUIRE(aot_entry != NULL);
+      REQUIRE(executeLoweredStaticCall(
+         TCIR_RUNTIME_BACKEND_AOT, aot_entry->entry, aot_entry->content_hash));
+   }
+#endif
+   REQUIRE(expectStaticCallPreflightFallback(0));
+   REQUIRE(expectStaticCallPreflightFallback(1));
    REQUIRE(tcirRuntimeReset());
    return 1;
 }
@@ -757,6 +904,7 @@ int main(void)
    int accepted = testPolicyAndObservability()
       && testBackendPolicies()
       && testRegistrationAndForcedFallback()
+      && testLoweredStaticCalls()
       && testInterpreterToCompiledCall()
 #if defined(TCIR_RUNTIME_TEST_HAS_AOT)
       && testCompiledCallThunks()
@@ -768,6 +916,6 @@ int main(void)
    tcirRuntimeShutdown();
    if (!accepted)
       return 1;
-   printf("TCIR runtime dispatch tests passed with conditional integration and mixed-call thunks.\n");
+   printf("TCIR runtime dispatch tests passed with conditional integration, lowered static calls, and mixed-call thunks.\n");
    return 0;
 }
