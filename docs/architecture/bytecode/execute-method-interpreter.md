@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current role
 
-`executeMethod(Context, Method, ...)` in `TotalCrossVM/src/tcvm/tcvm.c` is the reference executor for TotalCross bytecode. It combines dispatch, frame setup, parameter passing, lazy resolution, native calls, virtual dispatch, exceptions, and returns. The first IR/JIT/AOT version must preserve this path and use it as the differential oracle.
+`executeMethod(Context, Method, ...)` in `TotalCrossVM/src/tcvm/tcvm.c` is the reference executor for TotalCross bytecode. It combines dispatch, frame setup, parameter passing, lazy resolution, native calls, virtual dispatch, exceptions, and returns. It remains the differential oracle and permanent compatibility path. Milestone 7 adds compiled dispatch only when root CMake option `TC_ENABLE_COMPILED_DISPATCH` is enabled; the default-off build does not compile the runtime adapter or either hook.
 
 ## Execution state
 
@@ -95,20 +95,25 @@ The loop has no safepoint opcode or periodic poll. Allocation and other runtime 
 
 For the compiled POC, native frames should reserve and use the same `regO` region. Before every helper that may collect, every live reference must be in that region; a value only in a CPU register or C local is not a root. This avoids machine stack maps initially. Keeping references elsewhere later requires an integrated shadow stack or stack maps.
 
-## Recommended integration point
+## Experimental integration point
 
-The dispatcher keeps `executeMethod` as its facade. After frame validation/reservation and before the first opcode, it consults a side table keyed by `Method`:
+The dispatcher keeps `executeMethod` as its facade. Milestone 7 implements two conditional hook points in `tcvm.c`: top-level entry after parameter placement and native-method selection but before the first opcode, and nested entry after a `CALL_normal` target frame and arguments have been prepared but before control switches into the callee bytecode. Both hooks are removed by preprocessing when `TC_ENABLE_COMPILED_DISPATCH` is off.
+
+`tcir_runtime.c` owns a separate mutex-protected side table keyed by `Method`; it does not change `TMethod`, serialized class records, or the call-stack layout. Registration takes an explicit bounded `TCIRMethodView`, builds and verifies the complete function, and publishes the entry only after successful construction:
 
 ```text
-unseen -> verifying -> compilable -> compiling -> ready
-                         |              |
-                         v              v
-                    interpreter       failed
+unregistered -> frontend/verifier -> registered
+                    |                       |
+                    v                       +--> IR entry
+             whole-method fallback          +--> lazy JIT compiling -> ready/rejected
+                                            `--> exact AOT entry
 ```
 
-Only `ready` invokes compiled code. `failed` records a bounded reason and stays interpreted. The POC compiles by explicit option or controlled first use rather than introducing hotness policy immediately.
+Runtime policy is selected explicitly through the `off`, `ir`, `jit`, `aot`, or `auto` API. `off` is the initial state. A platform atomic lets `executeMethod` return directly to bytecode without runtime initialization, result clearing, statistics, or a mutex while that state remains off. Explicit diagnostic callers can still request a structured `disabled` reason. The build-disabled path was also checked to contain neither a `tcir_runtime` target nor exported `tcirRuntime*` symbols.
 
-An entry returns normal, pending-exception, or pre-execution-fallback status. Verification guarantees that fallback is never requested after the first effect. A call to an uncompiled method can use a dispatcher thunk.
+An entry returns normal, pending-exception, out-of-memory, or pre-execution-rejection status. Whole-method frontend/backend rejection happens before execution and retains the bytecode path. Once an entry begins, normal return, pending exception, and OOM rejoin the existing `executeMethod` finish/handler paths rather than restarting the method. Generated entries receive a versioned runtime thunk which converts typed arguments into the existing `TValue` internal-call form and recursively invokes `executeMethod`. This gives the POC interpreter-to-compiled, compiled-to-interpreter, compiled-to-compiled, and compiled-to-native routes without direct call patching.
+
+The current converter-backed subset is still pure static i32 code and contains no TCIR runtime-helper, managed-reference, allocation, or handler operation. The thunk and status contracts are present, and tests cover primitive results, native bridging, exception-status handoff, frame restoration, usage ownership, concurrent lazy compilation, and shutdown with an active AOT invocation. Reference-result rooting, arena growth after a `may_gc` helper, real handler/stack-trace equivalence, and forced GC cannot be claimed until those operation families enter TCIR in Milestone 8.
 
 ## Equivalence invariants
 
@@ -133,6 +138,6 @@ An entry returns normal, pending-exception, or pre-execution-fallback status. Ve
 
 Compiled code may implement an interpreter responsibility directly only when TCIR specifies it and conformance tests prove equivalence. Linker, object-system, GC, and native-bridge responsibilities initially remain runtime helpers. This boundary prevents a backend from copying private layout or cache behavior that is not yet an ABI.
 
-## Minimum future diagnostics
+## Diagnostics and remaining work
 
-When enabled by a build flag, the dispatcher should record structured events only: method, backend, fallback reason, verification/compilation time, and code size. It must not print tokens, private URLs, sensitive arguments, or per-opcode logs by default.
+The optional runtime records bounded in-memory statistics for registrations, dispatch outcomes, backend invocations, lazy-JIT compilation time/code size, call thunks, forced-method failures, and enumerated fallback reasons. `tcirRuntimeWriteIr` writes a requested registered method to an explicit file; no dispatcher path logs by default. Existing frontend, canonical IR, AOT C, and manifest tools remain the source of their corresponding build-directory artifacts. Per-method bytecode/CFG dump orchestration, unsupported-opcode aggregation over production inputs, and a stable external telemetry/export format remain future work; none should print tokens, private URLs, sensitive arguments, or per-opcode logs by default.

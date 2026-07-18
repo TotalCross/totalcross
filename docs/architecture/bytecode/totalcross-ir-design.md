@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Status and intent
 
-Version 1 of the backend-neutral TCIR contract is implemented under `TotalCrossVM/src/tcvm/ir`. It provides owned construction APIs, opaque public structures, structural and type verification, a canonical text printer, and a complete TotalCross-opcode disposition registry. Milestone 3 added bounded TotalCross-bytecode decoding and CFG/value construction for the static-integer POC subset. Milestone 4 added a verified reference interpreter and differential comparison with the existing `executeMethod` path for the three converter fixtures. The on-disk TCZ/class/bytecode format, default VM dispatch, and semantic authority of the bytecode interpreter remain unchanged.
+Version 1 of the backend-neutral TCIR contract is implemented under `TotalCrossVM/src/tcvm/ir`. It provides owned construction APIs, opaque public structures, structural and type verification, a canonical text printer, and a complete TotalCross-opcode disposition registry. Milestone 3 added bounded TotalCross-bytecode decoding and CFG/value construction for the static-integer POC subset. Milestone 4 added a verified reference interpreter and differential comparison with the existing `executeMethod` path for the three converter fixtures. Milestones 5 and 6 added SLJIT and deterministic-C backends. Milestone 7 adds a separately default-off runtime adapter and conditional `executeMethod` hooks without changing the on-disk TCZ/class/bytecode format, `TMethod` layout, or semantic authority of the bytecode interpreter.
 
 The Java package currently named `tc.tools.converter.ir` is not this IR. Its instruction classes mirror TotalCross opcodes and bit layouts, and register allocation mutates those target-shaped instructions before serialization. Some control-flow and liveness algorithms may be reusable after decoupling, but the model itself must not become the JIT/AOT contract.
 
@@ -169,7 +169,7 @@ The bytecode-to-IR frontend implemented for the Milestone 3 POC performs these p
 
 A failure returns a structured reason and leaves the method eligible for the existing interpreter. It must not terminate the process.
 
-The implementation accepts a non-owning `TCIRMethodView`, not a bare runtime `TMethod`, because the current loader does not retain the serialized code-slot count in `TMethod`. The view makes code bounds, home counts, parameter-home mapping, i32 constants, source lines, handlers, and call-shape resolution explicit. This is a frontend safety boundary rather than a new shipping format or runtime ABI. A later integration milestone must build the view from loader/runtime-owned metadata before dispatch can use it.
+The implementation accepts a non-owning `TCIRMethodView`, not a bare runtime `TMethod`, because the current loader does not retain the serialized code-slot count in `TMethod`. The view makes code bounds, home counts, parameter-home mapping, i32 constants, source lines, handlers, and call-shape resolution explicit. This is a frontend safety boundary rather than a new shipping format or runtime ABI. Milestone 7 runtime registration deliberately requires the same explicit bounded view; a general class-loader/TCZ adapter must retain or reconstruct authoritative bounds before automatic registration can exist.
 
 For the static-integer POC, every non-entry block receives the declared i32 homes as deterministic block arguments. Entry parameters seed their explicit homes; converter instructions define local homes before use. This intentionally favors a simple verifiable construction over liveness-minimal argument lists. Reference/v64 promotion, exception edges, and valid handler-bearing methods remain outside this milestone and retain interpreter fallback.
 
@@ -201,7 +201,7 @@ Verification is mandatory in debug and release builds for untrusted artifacts. A
 
 ## IR interpreter
 
-`tcir_interp.c` executes verified functions directly over immutable values, block arguments, explicit edges, and the three typed home banks. `TCIRInterpreterFrame` mirrors the `Context` integer, reference, and 64-bit arenas without making the standalone TCIR library depend on VM-private structures; a later runtime adapter can point those banks at a real `Context`. Function arguments are explicit because frontend parameter values need not be reloaded from homes.
+`tcir_interp.c` executes verified functions directly over immutable values, block arguments, explicit edges, and the three typed home banks. `TCIRInterpreterFrame` mirrors the `Context` integer, reference, and 64-bit arenas without making the standalone TCIR library depend on VM-private structures. Milestone 7's optional `tcir_runtime.c` adapter points those banks at an already reserved real `Context` frame. Function arguments are explicit because frontend parameter values need not be reloaded from homes.
 
 Every public invocation runs the canonical verifier and a complete interpreter-eligibility scan before changing the frame. Malformed graphs, undersized frames, and operations outside the stable direct subset are rejected without partial execution. Debug builds additionally assert the successful verifier result, while release builds retain the mandatory checked path. Execution has a configurable step bound and structured `returned`, `thrown`, `rejected`, `step-limit`, and allocation-failure outcomes with the last TC PC. Integer add, subtract, and multiply use explicit 32-bit modular arithmetic instead of relying on signed C overflow.
 
@@ -219,13 +219,21 @@ Adding a new operation requires verifier rules, canonical golden-dump coverage, 
 
 The Milestone 4 host harness builds the same production-converter `add`, `abs`, and `sumTo` slots into both a minimal real `TMethod` for `executeMethod` and a verified `TCIRFunction`. Each invocation uses fresh independent frame storage. The deterministic corpus performs 1,179 comparisons covering zero, signed extrema where bounded execution permits, wrap-producing arithmetic, a 65,537-iteration overflow loop, and fixed-seed generated inputs. It compares outcome, return type/value, stable exception details when present, and frame restoration. These pure integer fixtures do not exercise handlers, heap mutation, GC, or runtime helpers, so those remain required future differential cases rather than inferred coverage.
 
+## Runtime registration and dispatch
+
+`tcir_runtime.h` is the experimental VM-facing boundary. It provides explicit whole-method registration, backend policy (`off`, `ir`, `jit`, `aot`, `auto`), forced-method selection for tests, structured diagnostics/fallback reasons, statistics, explicit IR dumps, and lifecycle control. Its owned side table is keyed by `Method`; it owns each module/function and optional lazy JIT artifact while leaving `TMethod` untouched. Registration rejection never publishes a partial entry.
+
+With root CMake option `TC_ENABLE_COMPILED_DISPATCH=ON`, `executeMethod` consults this table after top-level frame setup and after nested normal-call frame preparation. The initial backend state is `off`; a platform atomic makes that state a no-lock/no-statistics fast path. Enabling a backend allows compatible registered methods to run through the existing typed homes. A version-2 compiled frame carries an opaque runtime dispatch thunk, letting a generated entry re-enter `executeMethod` for interpreted, compiled, or native targets. The test-only canonical registration remains explicit and is not a production class-loader publication mechanism.
+
+The runtime test proves default-off bypass, IR/JIT/AOT policy, forced fallback, exact AOT selection, lazy-JIT single publication under eight callers, interpreter-to-compiled nested calls, compiled thunk calls to interpreted/compiled/native targets, primitive results, pending-exception status/TC-PC handoff, frame/usage restoration, shutdown during an active AOT call, and explicit IR output. These are ABI/lifecycle tests over the static i32 subset. They do not promote `CALL_normal`, reference returns, allocation, handlers, GC helpers, arena growth, or stack traces to supported TCIR operations.
+
 ## Optimization policy
 
 Version 1 permits only obviously semantics-preserving local passes after differential coverage exists: constant folding with exact Java/IEEE rules, copy propagation, dead pure operations, branch simplification, and bounds-check reuse with dominance proof. Passes are individually toggleable and dump before/after IR. No pass may reorder `may_throw`, `may_gc`, locks, volatile-like runtime operations, or symbol resolution without a documented memory/effect model.
 
 ## Versioning and extensibility
 
-`TC_IR_VERSION` is currently `1U` in `tcir.h`. `TC_RUNTIME_ABI_VERSION` remains a separate future contract and is not invented by this milestone. Backends consume read-only accessors that enumerate operations, types, effects, blocks, symbols, terminators, and metadata rather than concrete struct layouts. An LLVM or Cranelift backend becomes viable only after:
+`TC_IR_VERSION` is currently `1U` in `tcir.h`. `TC_RUNTIME_ABI_VERSION` is a separate contract and is currently `2U` in `tcir_compiled.h`; version 2 adds the opaque runtime dispatch thunk to the compiled frame. Backends consume read-only accessors that enumerate operations, types, effects, blocks, symbols, terminators, and metadata rather than concrete struct layouts. An LLVM or Cranelift backend becomes viable only after:
 
 - the semantic test matrix covers all opcodes selected for that backend;
 - runtime helper ABI and GC-root protocol are stable;
