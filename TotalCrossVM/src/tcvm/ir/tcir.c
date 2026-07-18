@@ -330,6 +330,8 @@ const char *tcirOperationName(TCIROperation operation)
       "add.i64",
       "sub.i64",
       "mul.i64",
+      "div.i64",
+      "mod.i64",
       "shl.i64",
       "shr.i64",
       "ushr.i64",
