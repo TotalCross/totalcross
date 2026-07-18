@@ -377,6 +377,14 @@ final class ModernJavaClassFileFixtures {
         + "    }\n"
         + "    return sum;\n"
         + "  }\n"
+        + "  public static int pureI32(int value, int distance) {\n"
+        + "    int mixed = ((value << 5) & 0x5a5)\n"
+        + "        ^ ((value >> 5) | 0x123)\n"
+        + "        ^ ((value >>> 5) ^ -1);\n"
+        + "    mixed = (mixed & value) | distance;\n"
+        + "    mixed = (mixed << distance) ^ (mixed >> distance) ^ (mixed >>> distance);\n"
+        + "    return (byte) mixed ^ (char) mixed ^ (short) mixed;\n"
+        + "  }\n"
         + "}\n";
     return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
         "TCIR POC converter output", className, source);

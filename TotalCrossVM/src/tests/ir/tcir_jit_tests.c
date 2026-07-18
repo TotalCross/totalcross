@@ -228,7 +228,7 @@ static int testForcedJitCorpus(TCIRModule *module, TCIRFunction **functions, TCI
    size_t fixture_index;
    size_t case_index;
 
-   for (fixture_index = 0U; fixture_index < 3U; ++fixture_index)
+   for (fixture_index = 0U; fixture_index < TCIR_CONVERTER_FIXTURE_COUNT; ++fixture_index)
    {
       TCIRMethodParameter parameters[2];
       TCIRMethodView view;
@@ -274,13 +274,25 @@ static int testForcedJitCorpus(TCIRModule *module, TCIRFunction **functions, TCI
       REQUIRE(interpreted == compiled);
    }
 
+   for (case_index = 0U; case_index < sizeof(add_cases) / sizeof(add_cases[0]); ++case_index)
+   {
+      int32_t interpreted;
+      int32_t compiled;
+      REQUIRE(invokeInterpreter(functions[3], &tcir_converter_fixtures[3],
+                                add_cases[case_index][0], add_cases[case_index][1], &interpreted));
+      REQUIRE(invokeJit(artifacts[3], &tcir_converter_fixtures[3],
+                        add_cases[case_index][0], add_cases[case_index][1], &compiled));
+      REQUIRE(interpreted == compiled);
+   }
+
    printf(
-      "SLJIT observations: platform=%s, code_bytes={%lu,%lu,%lu}, "
+      "SLJIT observations: platform=%s, code_bytes={%lu,%lu,%lu,%lu}, "
       "compile_cpu_seconds=%.9f (%lu ticks at %lu ticks/second).\n",
       tcirJitPlatformName(),
       (unsigned long)tcirJitArtifactCodeSize(artifacts[0]),
       (unsigned long)tcirJitArtifactCodeSize(artifacts[1]),
       (unsigned long)tcirJitArtifactCodeSize(artifacts[2]),
+      (unsigned long)tcirJitArtifactCodeSize(artifacts[3]),
       (double)compile_ticks / (double)CLOCKS_PER_SEC,
       (unsigned long)compile_ticks,
       (unsigned long)CLOCKS_PER_SEC);
@@ -479,8 +491,8 @@ int main(void)
 {
    TCIRDiagnostic diagnostic;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
-   TCIRFunction *functions[3] = { NULL, NULL, NULL };
-   TCIRJitArtifact *artifacts[3] = { NULL, NULL, NULL };
+   TCIRFunction *functions[TCIR_CONVERTER_FIXTURE_COUNT] = { NULL };
+   TCIRJitArtifact *artifacts[TCIR_CONVERTER_FIXTURE_COUNT] = { NULL };
    size_t index;
    int accepted;
 
@@ -490,7 +502,7 @@ int main(void)
       && testRejectionAndCleanup(module, functions[0])
       && testConcurrentPublication(functions[0], &tcir_converter_fixtures[0])
       && testShutdownWithCompilationClaim(functions[0]);
-   for (index = 0U; index < 3U; ++index)
+   for (index = 0U; index < TCIR_CONVERTER_FIXTURE_COUNT; ++index)
       tcirJitArtifactDestroy(artifacts[index]);
    tcirModuleDestroy(module);
    if (!accepted)

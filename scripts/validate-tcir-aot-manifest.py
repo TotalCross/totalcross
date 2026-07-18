@@ -11,6 +11,7 @@ from pathlib import Path
 EXPECTED_IDENTITIES = (
     "fixtures.TCIRPoc.abs:(I)I",
     "fixtures.TCIRPoc.add:(II)I",
+    "fixtures.TCIRPoc.pureI32:(II)I",
     "fixtures.TCIRPoc.sumTo:(I)I",
 )
 HEX64 = re.compile(r"^[0-9a-f]{16}$")

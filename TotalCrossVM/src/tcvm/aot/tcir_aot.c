@@ -345,7 +345,8 @@ static uint64_t tcirAotFunctionHash(const TCIRFunction *function)
 
 static int tcirAotTypeIsI32Like(TCIRType type)
 {
-   return type == TCIR_TYPE_I1 || type == TCIR_TYPE_I32;
+   return type == TCIR_TYPE_I1 || type == TCIR_TYPE_I8 ||
+      type == TCIR_TYPE_I16 || type == TCIR_TYPE_I32;
 }
 
 static int tcirAotOperationIsEligible(const TCIROperationView *operation)
@@ -357,6 +358,17 @@ static int tcirAotOperationIsEligible(const TCIROperationView *operation)
       case TCIR_OP_ADD_I32:
       case TCIR_OP_SUB_I32:
       case TCIR_OP_MUL_I32:
+      case TCIR_OP_SHL_I32:
+      case TCIR_OP_SHR_I32:
+      case TCIR_OP_USHR_I32:
+      case TCIR_OP_AND_I32:
+      case TCIR_OP_OR_I32:
+      case TCIR_OP_XOR_I32:
+      case TCIR_OP_TRUNC_I32_I8:
+      case TCIR_OP_TRUNC_I32_I16:
+      case TCIR_OP_SEXT_I8_I32:
+      case TCIR_OP_SEXT_I16_I32:
+      case TCIR_OP_ZEXT_I16_I32:
       case TCIR_OP_CMP_EQ_I32:
       case TCIR_OP_CMP_LT_I32:
       case TCIR_OP_CMP_LE_I32:
@@ -612,6 +624,47 @@ static int tcirAotEmitOperation(TCIRAotBuffer *source, const TCIROperationView *
          return tcirAotBufferAppendFormat(source,
             "         values[%u] = tc_aot_i32_from_u32((uint32_t)values[%u] * (uint32_t)values[%u]);\n",
             result, left, right);
+      case TCIR_OP_SHL_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((uint32_t)values[%u] << ((uint32_t)values[%u] & UINT32_C(31)));\n",
+            result, left, right);
+      case TCIR_OP_SHR_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_shr_i32(values[%u], values[%u]);\n",
+            result, left, right);
+      case TCIR_OP_USHR_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((uint32_t)values[%u] >> ((uint32_t)values[%u] & UINT32_C(31)));\n",
+            result, left, right);
+      case TCIR_OP_AND_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((uint32_t)values[%u] & (uint32_t)values[%u]);\n",
+            result, left, right);
+      case TCIR_OP_OR_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((uint32_t)values[%u] | (uint32_t)values[%u]);\n",
+            result, left, right);
+      case TCIR_OP_XOR_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((uint32_t)values[%u] ^ (uint32_t)values[%u]);\n",
+            result, left, right);
+      case TCIR_OP_TRUNC_I32_I8:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((uint32_t)values[%u] & UINT32_C(0xff));\n",
+            result, left);
+      case TCIR_OP_TRUNC_I32_I16:
+      case TCIR_OP_ZEXT_I16_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((uint32_t)values[%u] & UINT32_C(0xffff));\n",
+            result, left);
+      case TCIR_OP_SEXT_I8_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((((uint32_t)values[%u] & UINT32_C(0xff)) ^ UINT32_C(0x80)) - UINT32_C(0x80));\n",
+            result, left);
+      case TCIR_OP_SEXT_I16_I32:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = tc_aot_i32_from_u32((((uint32_t)values[%u] & UINT32_C(0xffff)) ^ UINT32_C(0x8000)) - UINT32_C(0x8000));\n",
+            result, left);
       case TCIR_OP_CMP_EQ_I32:
          return tcirAotBufferAppendFormat(source, "         values[%u] = values[%u] == values[%u];\n",
                                           result, left, right);
@@ -783,6 +836,14 @@ static int tcirAotEmitSource(
       "   if (bits <= (uint32_t)INT32_MAX)\n"
       "      return (int32_t)bits;\n"
       "   return (int32_t)(-1 - (int32_t)(UINT32_MAX - bits));\n"
+      "}\n\n"
+      "static int32_t tc_aot_shr_i32(int32_t value, int32_t distance)\n"
+      "{\n"
+      "   unsigned int shift = (unsigned int)((uint32_t)distance & UINT32_C(31));\n"
+      "   uint32_t bits = (uint32_t)value;\n"
+      "   if (shift == 0U || value >= 0)\n"
+      "      return tc_aot_i32_from_u32(bits >> shift);\n"
+      "   return tc_aot_i32_from_u32((bits >> shift) | (UINT32_MAX << (32U - shift)));\n"
       "}\n\n"
       "static int tc_aot_count_too_small(size_t actual, size_t required)\n"
       "{\n"

@@ -495,9 +495,44 @@ static int tcirVerifyOperation(
       case TCIR_OP_ADD_I32:
       case TCIR_OP_SUB_I32:
       case TCIR_OP_MUL_I32:
+      case TCIR_OP_SHL_I32:
+      case TCIR_OP_SHR_I32:
+      case TCIR_OP_USHR_I32:
+      case TCIR_OP_AND_I32:
+      case TCIR_OP_OR_I32:
+      case TCIR_OP_XOR_I32:
          if (!tcirRequireOperandCount(function, operation, 2, diagnostic) ||
              !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_I32, diagnostic) ||
              !tcirRequireOperandType(function, operation, 1, TCIR_TYPE_I32, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_I32, diagnostic))
+            return 0;
+         break;
+
+      case TCIR_OP_TRUNC_I32_I8:
+         if (!tcirRequireOperandCount(function, operation, 1, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_I32, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_I8, diagnostic))
+            return 0;
+         break;
+
+      case TCIR_OP_TRUNC_I32_I16:
+         if (!tcirRequireOperandCount(function, operation, 1, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_I32, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_I16, diagnostic))
+            return 0;
+         break;
+
+      case TCIR_OP_SEXT_I8_I32:
+         if (!tcirRequireOperandCount(function, operation, 1, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_I8, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_I32, diagnostic))
+            return 0;
+         break;
+
+      case TCIR_OP_SEXT_I16_I32:
+      case TCIR_OP_ZEXT_I16_I32:
+         if (!tcirRequireOperandCount(function, operation, 1, diagnostic) ||
+             !tcirRequireOperandType(function, operation, 0, TCIR_TYPE_I16, diagnostic) ||
              !tcirRequireResultType(function, operation, TCIR_TYPE_I32, diagnostic))
             return 0;
          break;

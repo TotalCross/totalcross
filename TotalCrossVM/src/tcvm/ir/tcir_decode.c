@@ -128,6 +128,12 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case ADD_regI_regI_regI:
       case SUB_regI_regI_regI:
       case MUL_regI_regI_regI:
+      case SHR_regI_regI_regI:
+      case SHL_regI_regI_regI:
+      case USHR_regI_regI_regI:
+      case AND_regI_regI_regI:
+      case OR_regI_regI_regI:
+      case XOR_regI_regI_regI:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->reg1 = tcirBits(slot, 16, 8);
          instruction->reg2 = tcirBits(slot, 24, 8);
@@ -135,9 +141,21 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case ADD_regI_s12_regI:
       case SUB_regI_s12_regI:
       case MUL_regI_regI_s12:
+      case SHR_regI_regI_s12:
+      case SHL_regI_regI_s12:
+      case USHR_regI_regI_s12:
+      case AND_regI_regI_s12:
+      case OR_regI_regI_s12:
+      case XOR_regI_regI_s12:
          instruction->reg0 = tcirBits(slot, 8, 6);
          instruction->reg1 = tcirBits(slot, 14, 6);
          instruction->immediate = tcirSignExtend(tcirBits(slot, 20, 12), 12);
+         break;
+      case CONV_regIb_regI:
+      case CONV_regIc_regI:
+      case CONV_regIs_regI:
+         instruction->reg0 = tcirBits(slot, 8, 8);
+         instruction->reg1 = tcirBits(slot, 16, 8);
          break;
       case ADD_regI_regI_sym:
          instruction->symbol = tcirBits(slot, 8, 12);
@@ -336,14 +354,31 @@ static int tcirValidateInstruction(
       case ADD_regI_regI_regI:
       case SUB_regI_regI_regI:
       case MUL_regI_regI_regI:
+      case SHR_regI_regI_regI:
+      case SHL_regI_regI_regI:
+      case USHR_regI_regI_regI:
+      case AND_regI_regI_regI:
+      case OR_regI_regI_regI:
+      case XOR_regI_regI_regI:
          return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg1, "left operand", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg2, "right operand", diagnostic);
       case ADD_regI_s12_regI:
       case SUB_regI_s12_regI:
       case MUL_regI_regI_s12:
+      case SHR_regI_regI_s12:
+      case SHL_regI_regI_s12:
+      case USHR_regI_regI_s12:
+      case AND_regI_regI_s12:
+      case OR_regI_regI_s12:
+      case XOR_regI_regI_s12:
          return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg1, "operand", diagnostic);
+      case CONV_regIb_regI:
+      case CONV_regIc_regI:
+      case CONV_regIs_regI:
+         return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateRegister(method, instruction, instruction->reg1, "source", diagnostic);
       case ADD_regI_regI_sym:
          return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg1, "operand", diagnostic) &&

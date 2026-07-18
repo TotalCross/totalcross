@@ -31,8 +31,8 @@ import tc.tools.converter.tclass.TCCode;
 import tc.tools.converter.tclass.TCMethod;
 
 class TCIRConverterFixtureTest {
-  private static final String[] METHOD_NAMES = {"add", "abs", "sumTo"};
-  private static final String[] METHOD_DESCRIPTORS = {"(II)I", "(I)I", "(I)I"};
+  private static final String[] METHOD_NAMES = {"add", "abs", "sumTo", "pureI32"};
+  private static final String[] METHOD_DESCRIPTORS = {"(II)I", "(I)I", "(I)I", "(II)I"};
 
   @TempDir
   Path workDir;
@@ -91,7 +91,9 @@ class TCIRConverterFixtureTest {
           .append(method.v64Count).append("U, ")
           .append(method.paramCount).append("U },\n");
     }
-    out.append("};\n");
+    out.append("};\n\n")
+        .append("#define TCIR_CONVERTER_FIXTURE_COUNT \\\n")
+        .append("   (sizeof(tcir_converter_fixtures) / sizeof(tcir_converter_fixtures[0]))\n");
     return out.toString();
   }
 
