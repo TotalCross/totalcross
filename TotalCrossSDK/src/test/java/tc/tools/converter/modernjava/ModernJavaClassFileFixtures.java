@@ -385,6 +385,15 @@ final class ModernJavaClassFileFixtures {
         + "    mixed = (mixed << distance) ^ (mixed >> distance) ^ (mixed >>> distance);\n"
         + "    return (byte) mixed ^ (char) mixed ^ (short) mixed;\n"
         + "  }\n"
+        + "  public static long pureI64(long value, int distance) {\n"
+        + "    long shift = distance;\n"
+        + "    long mixed = ((value << shift) & 0x5a5L)\n"
+        + "        ^ ((value >> shift) | 0x123L)\n"
+        + "        ^ (value >>> shift);\n"
+        + "    mixed = (mixed + value) * 3L - shift;\n"
+        + "    mixed ^= (long) (int) mixed;\n"
+        + "    return mixed >= value ? mixed : value;\n"
+        + "  }\n"
         + "}\n";
     return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
         "TCIR POC converter output", className, source);

@@ -6,6 +6,7 @@
 #define TCIR_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -152,6 +153,23 @@ typedef enum TCIROperation
    TCIR_OP_CMP_LE_I32,
    TCIR_OP_CMP_GT_I32,
    TCIR_OP_CMP_GE_I32,
+   TCIR_OP_CONST_I64,
+   TCIR_OP_ADD_I64,
+   TCIR_OP_SUB_I64,
+   TCIR_OP_MUL_I64,
+   TCIR_OP_SHL_I64,
+   TCIR_OP_SHR_I64,
+   TCIR_OP_USHR_I64,
+   TCIR_OP_AND_I64,
+   TCIR_OP_OR_I64,
+   TCIR_OP_XOR_I64,
+   TCIR_OP_TRUNC_I64_I32,
+   TCIR_OP_SEXT_I32_I64,
+   TCIR_OP_CMP_EQ_I64,
+   TCIR_OP_CMP_LT_I64,
+   TCIR_OP_CMP_LE_I64,
+   TCIR_OP_CMP_GT_I64,
+   TCIR_OP_CMP_GE_I64,
    TCIR_OP_LOAD_SLOT,
    TCIR_OP_STORE_SLOT,
    TCIR_OP_NULL_CHECK,
@@ -193,6 +211,7 @@ typedef struct TCIROperationSpec
    const TCIRValue *const *operands;
    size_t operand_count;
    int immediate_i32;
+   int64_t immediate_i64;
    TCIRHomeBank home_bank;
    unsigned int home_index;
    const TCIRSymbol *symbol;
@@ -212,6 +231,7 @@ typedef struct TCIROperationView
    const TCIRValue *const *operands;
    size_t operand_count;
    int immediate_i32;
+   int64_t immediate_i64;
    TCIRHomeBank home_bank;
    unsigned int home_index;
    const TCIRSymbol *symbol;

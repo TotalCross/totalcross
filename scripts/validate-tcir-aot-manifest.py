@@ -12,6 +12,7 @@ EXPECTED_IDENTITIES = (
     "fixtures.TCIRPoc.abs:(I)I",
     "fixtures.TCIRPoc.add:(II)I",
     "fixtures.TCIRPoc.pureI32:(II)I",
+    "fixtures.TCIRPoc.pureI64:(JI)J",
     "fixtures.TCIRPoc.sumTo:(I)I",
 )
 HEX64 = re.compile(r"^[0-9a-f]{16}$")
@@ -32,7 +33,7 @@ def validate(manifest_path, source_path, header_path):
     require(manifest["generator"] == "tcir-portable-c", "unexpected generator")
     require(manifest["generator_version"] == 1, "unexpected generator version")
     require(manifest["ir_version"] == 1, "unexpected IR version")
-    require(manifest["runtime_abi_version"] == 2, "unexpected runtime ABI version")
+    require(manifest["runtime_abi_version"] == 3, "unexpected runtime ABI version")
     require(manifest["input_hash_algorithm"] == "fnv1a64", "unexpected input hash algorithm")
     require(HEX64.fullmatch(manifest["input_hash"]) is not None, "invalid input hash")
     require(manifest["target_options"], "missing target options")

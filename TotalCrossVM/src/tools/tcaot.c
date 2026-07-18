@@ -19,6 +19,9 @@ typedef struct TCIRConverterFixture
    unsigned int ref_count;
    unsigned int v64_count;
    unsigned int parameter_count;
+   const TCIRMethodParameter *parameters;
+   TCIRType return_type;
+   const TCIRType *v64_home_types;
 } TCIRConverterFixture;
 
 #include "fixtures/tcir_converter_fixtures.h"
@@ -74,15 +77,7 @@ static int buildFixtureView(
    TCIRMethodParameter *parameters)
 {
    static const int constants[] = { 0 };
-   size_t index;
-   if (fixture->parameter_count > 2U)
-      return 0;
-   for (index = 0U; index < fixture->parameter_count; ++index)
-   {
-      parameters[index].type = TCIR_TYPE_I32;
-      parameters[index].home_bank = TCIR_HOME_I32;
-      parameters[index].home_index = (unsigned int)index;
-   }
+   (void)parameters;
    memset(view, 0, sizeof(*view));
    view->identity = fixture->identity;
    view->code = fixture->code;
@@ -90,9 +85,10 @@ static int buildFixtureView(
    view->i32_home_count = fixture->i32_count;
    view->ref_home_count = fixture->ref_count;
    view->v64_home_count = fixture->v64_count;
-   view->parameters = parameters;
+   view->v64_home_types = fixture->v64_home_types;
+   view->parameters = fixture->parameters;
    view->parameter_count = fixture->parameter_count;
-   view->return_type = TCIR_TYPE_I32;
+   view->return_type = fixture->return_type;
    view->i32_constants = constants;
    view->i32_constant_count = sizeof(constants) / sizeof(constants[0]);
    view->source_lines = fixture->lines;

@@ -12,6 +12,11 @@ static const int tcir_fixture_add_lines[] = {
    4, 4
 };
 
+static const TCIRMethodParameter tcir_fixture_add_parameters[] = {
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U },
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 1U }
+};
+
 static const unsigned int tcir_fixture_abs_code[] = {
    0x00400076U, 0x00000036U, 0x00000000U, 0x0000027bU,
    0x00000000U, 0x00000085U
@@ -21,6 +26,10 @@ static const int tcir_fixture_abs_lines[] = {
    7, 7, 7, 7, 7, 7
 };
 
+static const TCIRMethodParameter tcir_fixture_abs_parameters[] = {
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }
+};
+
 static const unsigned int tcir_fixture_sumTo_code[] = {
    0x00000107U, 0x00000207U, 0x00500273U, 0x0201012eU,
    0x00000000U, 0x0001022dU, 0xfffffc7bU, 0x00000185U
@@ -28,6 +37,10 @@ static const unsigned int tcir_fixture_sumTo_code[] = {
 
 static const int tcir_fixture_sumTo_lines[] = {
    10, 11, 11, 12, 12, 11, 11, 14
+};
+
+static const TCIRMethodParameter tcir_fixture_sumTo_parameters[] = {
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }
 };
 
 static const unsigned int tcir_fixture_pureI32_code[] = {
@@ -44,11 +57,43 @@ static const int tcir_fixture_pureI32_lines[] = {
    21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22
 };
 
+static const TCIRMethodParameter tcir_fixture_pureI32_parameters[] = {
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U },
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 1U }
+};
+
+static const unsigned int tcir_fixture_pureI64_code[] = {
+   0x00000181U, 0x0001040fU, 0x0004007cU, 0x00000181U,
+   0x0100024bU, 0x01694117U, 0x01020352U, 0x0004007cU,
+   0x00000181U, 0x01000248U, 0x0048c117U, 0x01020155U,
+   0x01030258U, 0x0004007cU, 0x00000181U, 0x0100014eU,
+   0x01020158U, 0x0001020fU, 0x00020234U, 0x0000c117U,
+   0x0102013dU, 0x04010139U, 0x0001020fU, 0x0002007cU,
+   0x00000181U, 0x01020158U, 0x0001020fU, 0x00300268U,
+   0x0002000fU, 0x0000027bU, 0x00000000U, 0x00000087U
+};
+
+static const int tcir_fixture_pureI64_lines[] = {
+   25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+   26, 26, 26, 26, 26, 26, 29, 29, 29, 29, 29, 30,
+   30, 30, 30, 31, 31, 31, 31, 31
+};
+
+static const TCIRMethodParameter tcir_fixture_pureI64_parameters[] = {
+   { TCIR_TYPE_I64, TCIR_HOME_V64, 0U },
+   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }
+};
+
+static const TCIRType tcir_fixture_pureI64_v64_types[] = {
+   TCIR_TYPE_I64, TCIR_TYPE_I64, TCIR_TYPE_I64, TCIR_TYPE_I64, TCIR_TYPE_I64
+};
+
 static const TCIRConverterFixture tcir_converter_fixtures[] = {
-   { "fixtures.TCIRPoc.add:(II)I", tcir_fixture_add_code, tcir_fixture_add_lines, 2U, 2U, 0U, 0U, 2U },
-   { "fixtures.TCIRPoc.abs:(I)I", tcir_fixture_abs_code, tcir_fixture_abs_lines, 6U, 1U, 0U, 0U, 1U },
-   { "fixtures.TCIRPoc.sumTo:(I)I", tcir_fixture_sumTo_code, tcir_fixture_sumTo_lines, 8U, 3U, 0U, 0U, 1U },
-   { "fixtures.TCIRPoc.pureI32:(II)I", tcir_fixture_pureI32_code, tcir_fixture_pureI32_lines, 24U, 4U, 0U, 0U, 2U },
+   { "fixtures.TCIRPoc.add:(II)I", tcir_fixture_add_code, tcir_fixture_add_lines, 2U, 2U, 0U, 0U, 2U, tcir_fixture_add_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
+   { "fixtures.TCIRPoc.abs:(I)I", tcir_fixture_abs_code, tcir_fixture_abs_lines, 6U, 1U, 0U, 0U, 1U, tcir_fixture_abs_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
+   { "fixtures.TCIRPoc.sumTo:(I)I", tcir_fixture_sumTo_code, tcir_fixture_sumTo_lines, 8U, 3U, 0U, 0U, 1U, tcir_fixture_sumTo_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
+   { "fixtures.TCIRPoc.pureI32:(II)I", tcir_fixture_pureI32_code, tcir_fixture_pureI32_lines, 24U, 4U, 0U, 0U, 2U, tcir_fixture_pureI32_parameters, TCIR_TYPE_I32, (const TCIRType *)0 },
+   { "fixtures.TCIRPoc.pureI64:(JI)J", tcir_fixture_pureI64_code, tcir_fixture_pureI64_lines, 32U, 1U, 0U, 5U, 2U, tcir_fixture_pureI64_parameters, TCIR_TYPE_I64, tcir_fixture_pureI64_v64_types },
 };
 
 #define TCIR_CONVERTER_FIXTURE_COUNT \

@@ -121,6 +121,18 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
          instruction->reg0 = tcirBits(slot, 8, 6);
          instruction->immediate = tcirSignExtend(tcirBits(slot, 14, 18), 18);
          break;
+      case MOV_reg64_reg64:
+         instruction->reg0 = tcirBits(slot, 8, 8);
+         instruction->reg1 = tcirBits(slot, 16, 8);
+         break;
+      case MOV_regL_sym:
+         instruction->reg0 = tcirBits(slot, 8, 8);
+         instruction->symbol = tcirBits(slot, 16, 16);
+         break;
+      case MOV_regL_s18:
+         instruction->reg0 = tcirBits(slot, 8, 6);
+         instruction->immediate = tcirSignExtend(tcirBits(slot, 14, 18), 18);
+         break;
       case INC_regI:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->immediate = tcirSignExtend(tcirBits(slot, 16, 16), 16);
@@ -136,6 +148,15 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case AND_regI_regI_regI:
       case OR_regI_regI_regI:
       case XOR_regI_regI_regI:
+      case ADD_regL_regL_regL:
+      case SUB_regL_regL_regL:
+      case MUL_regL_regL_regL:
+      case SHR_regL_regL_regL:
+      case SHL_regL_regL_regL:
+      case USHR_regL_regL_regL:
+      case AND_regL_regL_regL:
+      case OR_regL_regL_regL:
+      case XOR_regL_regL_regL:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->reg1 = tcirBits(slot, 16, 8);
          instruction->reg2 = tcirBits(slot, 24, 8);
@@ -158,6 +179,8 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case CONV_regIb_regI:
       case CONV_regIc_regI:
       case CONV_regIs_regI:
+      case CONV_regI_regL:
+      case CONV_regL_regI:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->reg1 = tcirBits(slot, 16, 8);
          break;
@@ -172,6 +195,12 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case JLE_regI_regI:
       case JGT_regI_regI:
       case JGE_regI_regI:
+      case JEQ_regL_regL:
+      case JNE_regL_regL:
+      case JLT_regL_regL:
+      case JLE_regL_regL:
+      case JGT_regL_regL:
+      case JGE_regL_regL:
          instruction->reg0 = tcirBits(slot, 8, 6);
          instruction->reg1 = tcirBits(slot, 14, 6);
          instruction->target = (int)instruction->pc +
@@ -206,12 +235,15 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
             tcirSignExtend(tcirBits(slot, 8, 24), 24);
          break;
       case RETURN_regI:
+      case RETURN_reg64:
          instruction->reg0 = tcirBits(slot, 8, 8);
          break;
       case RETURN_s24I:
+      case RETURN_s24L:
          instruction->immediate = tcirSignExtend(tcirBits(slot, 8, 24), 24);
          break;
       case RETURN_symI:
+      case RETURN_symL:
          instruction->symbol = tcirBits(slot, 16, 16);
          break;
       default:
@@ -241,6 +273,27 @@ static int tcirValidateRegister(
    return 0;
 }
 
+static int tcirValidateV64Register(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   unsigned int reg,
+   const char *role,
+   TCIRDiagnostic *diagnostic)
+{
+   if (reg < method->v64_home_count && method->v64_home_types[reg] == TCIR_TYPE_I64)
+      return 1;
+   tcirSetDiagnostic(
+      diagnostic,
+      TCIR_DIAGNOSTIC_INVALID_REGISTER,
+      method->identity,
+      instruction->pc,
+      "%s %s uses long register %u but the method does not declare that i64 home",
+      instruction->info->name,
+      role,
+      reg);
+   return 0;
+}
+
 static int tcirValidateSymbol(
    const TCIRMethodView *method,
    const TCIRDecodedInstruction *instruction,
@@ -260,6 +313,25 @@ static int tcirValidateSymbol(
    return 0;
 }
 
+static int tcirValidateI64Symbol(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   TCIRDiagnostic *diagnostic)
+{
+   if (instruction->symbol < method->i64_constant_count)
+      return 1;
+   tcirSetDiagnostic(
+      diagnostic,
+      TCIR_DIAGNOSTIC_INVALID_SYMBOL,
+      method->identity,
+      instruction->pc,
+      "%s uses i64 symbol %u but the pool has %u entries",
+      instruction->info->name,
+      instruction->symbol,
+      (unsigned int)method->i64_constant_count);
+   return 0;
+}
+
 static int tcirIsConditional(unsigned int opcode)
 {
    return opcode == JEQ_regI_regI || opcode == JEQ_regI_s6 || opcode == JEQ_regI_sym ||
@@ -268,6 +340,9 @@ static int tcirIsConditional(unsigned int opcode)
           opcode == JLE_regI_regI || opcode == JLE_regI_s6 ||
           opcode == JGT_regI_regI || opcode == JGT_regI_s6 ||
           opcode == JGE_regI_regI || opcode == JGE_regI_s6 ||
+          opcode == JEQ_regL_regL || opcode == JNE_regL_regL ||
+          opcode == JLT_regL_regL || opcode == JLE_regL_regL ||
+          opcode == JGT_regL_regL || opcode == JGE_regL_regL ||
           opcode == DECJGTZ_regI || opcode == DECJGEZ_regI;
 }
 
@@ -326,7 +401,9 @@ static int tcirValidateInstruction(
 
    if ((opcode == RETURN_void && method->return_type != TCIR_TYPE_VOID) ||
        ((opcode == RETURN_regI || opcode == RETURN_s24I || opcode == RETURN_symI) &&
-        method->return_type != TCIR_TYPE_I32))
+        method->return_type != TCIR_TYPE_I32) ||
+       ((opcode == RETURN_reg64 || opcode == RETURN_s24L || opcode == RETURN_symL) &&
+        method->return_type != TCIR_TYPE_I64))
    {
       tcirSetDiagnostic(
          diagnostic,
@@ -355,6 +432,17 @@ static int tcirValidateInstruction(
          if (!tcirValidateRegister(method, instruction, instruction->reg0, "operand", diagnostic))
             return 0;
          break;
+      case MOV_reg64_reg64:
+         return tcirValidateV64Register(method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateV64Register(method, instruction, instruction->reg1, "source", diagnostic);
+      case MOV_regL_sym:
+         return tcirValidateV64Register(method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateI64Symbol(method, instruction, diagnostic);
+      case MOV_regL_s18:
+      case RETURN_reg64:
+         if (!tcirValidateV64Register(method, instruction, instruction->reg0, "operand", diagnostic))
+            return 0;
+         break;
       case ADD_regI_regI_regI:
       case SUB_regI_regI_regI:
       case MUL_regI_regI_regI:
@@ -369,6 +457,18 @@ static int tcirValidateInstruction(
          return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg1, "left operand", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg2, "right operand", diagnostic);
+      case ADD_regL_regL_regL:
+      case SUB_regL_regL_regL:
+      case MUL_regL_regL_regL:
+      case SHR_regL_regL_regL:
+      case SHL_regL_regL_regL:
+      case USHR_regL_regL_regL:
+      case AND_regL_regL_regL:
+      case OR_regL_regL_regL:
+      case XOR_regL_regL_regL:
+         return tcirValidateV64Register(method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateV64Register(method, instruction, instruction->reg1, "left operand", diagnostic) &&
+                tcirValidateV64Register(method, instruction, instruction->reg2, "right operand", diagnostic);
       case ADD_regI_s12_regI:
       case SUB_regI_s12_regI:
       case MUL_regI_regI_s12:
@@ -387,6 +487,12 @@ static int tcirValidateInstruction(
       case CONV_regIs_regI:
          return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg1, "source", diagnostic);
+      case CONV_regI_regL:
+         return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateV64Register(method, instruction, instruction->reg1, "source", diagnostic);
+      case CONV_regL_regI:
+         return tcirValidateV64Register(method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateRegister(method, instruction, instruction->reg1, "source", diagnostic);
       case ADD_regI_regI_sym:
          return tcirValidateRegister(method, instruction, instruction->reg0, "destination", diagnostic) &&
                 tcirValidateRegister(method, instruction, instruction->reg1, "operand", diagnostic) &&
@@ -399,6 +505,16 @@ static int tcirValidateInstruction(
       case JGE_regI_regI:
          if (!tcirValidateRegister(method, instruction, instruction->reg0, "left operand", diagnostic) ||
              !tcirValidateRegister(method, instruction, instruction->reg1, "right operand", diagnostic))
+            return 0;
+         break;
+      case JEQ_regL_regL:
+      case JNE_regL_regL:
+      case JLT_regL_regL:
+      case JLE_regL_regL:
+      case JGT_regL_regL:
+      case JGE_regL_regL:
+         if (!tcirValidateV64Register(method, instruction, instruction->reg0, "left operand", diagnostic) ||
+             !tcirValidateV64Register(method, instruction, instruction->reg1, "right operand", diagnostic))
             return 0;
          break;
       case JEQ_regI_s6:
@@ -418,6 +534,8 @@ static int tcirValidateInstruction(
          break;
       case RETURN_symI:
          return tcirValidateSymbol(method, instruction, diagnostic);
+      case RETURN_symL:
+         return tcirValidateI64Symbol(method, instruction, diagnostic);
       case SWITCH:
          return tcirValidateSwitchTargets(method, decoded, instruction, diagnostic);
       default:
@@ -445,11 +563,12 @@ static int tcirValidateInstruction(
 static int tcirValidateParameters(const TCIRMethodView *method, TCIRDiagnostic *diagnostic)
 {
    unsigned char *seen;
+   size_t total_homes = (size_t)method->i32_home_count + method->v64_home_count;
    size_t index;
 
    if (method->parameter_count == 0)
       return 1;
-   seen = (unsigned char *)calloc(method->i32_home_count == 0 ? 1U : method->i32_home_count, 1);
+   seen = (unsigned char *)calloc(total_homes == 0U ? 1U : total_homes, 1);
    if (seen == NULL)
    {
       tcirSetDiagnostic(
@@ -459,22 +578,28 @@ static int tcirValidateParameters(const TCIRMethodView *method, TCIRDiagnostic *
    for (index = 0; index < method->parameter_count; index++)
    {
       const TCIRMethodParameter *parameter = &method->parameters[index];
-      if (parameter->type != TCIR_TYPE_I32 || parameter->home_bank != TCIR_HOME_I32 ||
-          parameter->home_index >= method->i32_home_count || seen[parameter->home_index])
+      size_t seen_index = parameter->home_bank == TCIR_HOME_V64
+         ? (size_t)method->i32_home_count + parameter->home_index : parameter->home_index;
+      int valid_i32 = parameter->type == TCIR_TYPE_I32 && parameter->home_bank == TCIR_HOME_I32 &&
+         parameter->home_index < method->i32_home_count;
+      int valid_i64 = parameter->type == TCIR_TYPE_I64 && parameter->home_bank == TCIR_HOME_V64 &&
+         parameter->home_index < method->v64_home_count &&
+         method->v64_home_types[parameter->home_index] == TCIR_TYPE_I64;
+      if ((!valid_i32 && !valid_i64) || seen[seen_index])
       {
          tcirSetDiagnostic(
             diagnostic,
             TCIR_DIAGNOSTIC_TYPE_MERGE,
             method->identity,
             0,
-            "parameter %u cannot seed i32 home %u with type %s",
+            "parameter %u cannot seed home %u with type %s",
             (unsigned int)index,
             parameter->home_index,
             tcirTypeName(parameter->type));
          free(seen);
          return 0;
       }
-      seen[parameter->home_index] = 1;
+      seen[seen_index] = 1;
    }
    free(seen);
    return 1;
@@ -528,6 +653,8 @@ TCIRFrontendResult tcirDecodeMethod(
        method->code_slot_count == 0 || sizeof(unsigned int) != 4U ||
        (method->parameter_count != 0 && method->parameters == NULL) ||
        (method->i32_constant_count != 0 && method->i32_constants == NULL) ||
+       (method->i64_constant_count != 0 && method->i64_constants == NULL) ||
+       (method->v64_home_count != 0 && method->v64_home_types == NULL) ||
        (method->handler_count != 0 && method->handlers == NULL))
    {
       tcirSetDiagnostic(
@@ -604,7 +731,10 @@ TCIRFrontendResult tcirDecodeMethod(
        decoded->instructions[count - 1U].info->value != RETURN_regI &&
        decoded->instructions[count - 1U].info->value != RETURN_void &&
        decoded->instructions[count - 1U].info->value != RETURN_s24I &&
-       decoded->instructions[count - 1U].info->value != RETURN_symI)
+       decoded->instructions[count - 1U].info->value != RETURN_symI &&
+       decoded->instructions[count - 1U].info->value != RETURN_reg64 &&
+       decoded->instructions[count - 1U].info->value != RETURN_s24L &&
+       decoded->instructions[count - 1U].info->value != RETURN_symL)
    {
       tcirSetDiagnostic(
          diagnostic,

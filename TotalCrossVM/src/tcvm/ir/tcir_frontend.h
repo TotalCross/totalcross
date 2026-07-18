@@ -45,11 +45,14 @@ typedef struct TCIRMethodView
    unsigned int i32_home_count;
    unsigned int ref_home_count;
    unsigned int v64_home_count;
+   const TCIRType *v64_home_types;
    const TCIRMethodParameter *parameters;
    size_t parameter_count;
    TCIRType return_type;
    const int *i32_constants;
    size_t i32_constant_count;
+   const int64_t *i64_constants;
+   size_t i64_constant_count;
    const int *source_lines;
    const TCIRMethodHandler *handlers;
    size_t handler_count;

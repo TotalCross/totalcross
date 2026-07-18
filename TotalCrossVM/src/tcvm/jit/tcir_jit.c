@@ -22,6 +22,7 @@ struct TCIRJitArtifact
    size_t value_count;
    size_t edge_value_count;
    unsigned int *parameter_value_ids;
+   TCIRType *parameter_types;
    size_t parameter_count;
    unsigned int i32_home_count;
    unsigned int ref_home_count;
@@ -113,7 +114,7 @@ static int tcirJitUpdateValueCount(const TCIRValue *value, size_t *value_count)
    if (value == NULL)
       return 1;
    candidate = (size_t)tcirValueId(value) + 1U;
-   if (candidate == 0U || candidate > (size_t)PTRDIFF_MAX / sizeof(int32_t))
+   if (candidate == 0U || candidate > (size_t)PTRDIFF_MAX / sizeof(TCIRRuntimeValue))
       return 0;
    if (candidate > *value_count)
       *value_count = candidate;
@@ -126,12 +127,25 @@ static int tcirJitTypeIsI32Like(TCIRType type)
       type == TCIR_TYPE_I16 || type == TCIR_TYPE_I32;
 }
 
+static int tcirJitSupportsI64(void)
+{
+#if defined(SLJIT_64BIT_ARCHITECTURE) && SLJIT_64BIT_ARCHITECTURE
+   return 1;
+#else
+   return 0;
+#endif
+}
+
+static int tcirJitTypeIsSupported(TCIRType type)
+{
+   return tcirJitTypeIsI32Like(type) || (type == TCIR_TYPE_I64 && tcirJitSupportsI64());
+}
+
 static int tcirJitOperationIsEligible(const TCIROperationView *operation)
 {
    switch (operation->opcode)
    {
       case TCIR_OP_CONST_I32:
-      case TCIR_OP_COPY:
       case TCIR_OP_ADD_I32:
       case TCIR_OP_SUB_I32:
       case TCIR_OP_MUL_I32:
@@ -153,12 +167,44 @@ static int tcirJitOperationIsEligible(const TCIROperationView *operation)
       case TCIR_OP_CMP_GE_I32:
          return operation->result != NULL && tcirJitTypeIsI32Like(operation->result_type)
             && operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_COPY:
+         return operation->result != NULL && tcirJitTypeIsSupported(operation->result_type) &&
+            operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_CONST_I64:
+      case TCIR_OP_ADD_I64:
+      case TCIR_OP_SUB_I64:
+      case TCIR_OP_MUL_I64:
+      case TCIR_OP_SHL_I64:
+      case TCIR_OP_SHR_I64:
+      case TCIR_OP_USHR_I64:
+      case TCIR_OP_AND_I64:
+      case TCIR_OP_OR_I64:
+      case TCIR_OP_XOR_I64:
+         return tcirJitSupportsI64() && operation->result != NULL &&
+            operation->result_type == TCIR_TYPE_I64 && operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_TRUNC_I64_I32:
+         return tcirJitSupportsI64() && operation->result != NULL &&
+            operation->result_type == TCIR_TYPE_I32 && operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_SEXT_I32_I64:
+         return tcirJitSupportsI64() && operation->result != NULL &&
+            operation->result_type == TCIR_TYPE_I64 && operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_CMP_EQ_I64:
+      case TCIR_OP_CMP_LT_I64:
+      case TCIR_OP_CMP_LE_I64:
+      case TCIR_OP_CMP_GT_I64:
+      case TCIR_OP_CMP_GE_I64:
+         return tcirJitSupportsI64() && operation->result != NULL &&
+            operation->result_type == TCIR_TYPE_I1 && operation->effects == TCIR_EFFECT_NONE;
       case TCIR_OP_LOAD_SLOT:
-         return operation->result != NULL && operation->result_type == TCIR_TYPE_I32
-            && operation->home_bank == TCIR_HOME_I32 && operation->effects == TCIR_EFFECT_NONE;
+         return operation->result != NULL && operation->effects == TCIR_EFFECT_NONE &&
+            ((operation->result_type == TCIR_TYPE_I32 && operation->home_bank == TCIR_HOME_I32) ||
+             (tcirJitSupportsI64() && operation->result_type == TCIR_TYPE_I64 &&
+              operation->home_bank == TCIR_HOME_V64));
       case TCIR_OP_STORE_SLOT:
          return operation->result == NULL && operation->operand_count == 1U
-            && operation->home_bank == TCIR_HOME_I32 && operation->effects == TCIR_EFFECT_NONE;
+            && operation->effects == TCIR_EFFECT_NONE &&
+            (operation->home_bank == TCIR_HOME_I32 ||
+             (tcirJitSupportsI64() && operation->home_bank == TCIR_HOME_V64));
       default:
          return 0;
    }
@@ -188,21 +234,23 @@ static TCIRJitCompileStatus tcirJitInspectEligibility(
       return TCIR_JIT_COMPILE_VERIFICATION_FAILED;
    }
 
-   if (tcirFunctionReturnType(function) != TCIR_TYPE_I32
-       && tcirFunctionReturnType(function) != TCIR_TYPE_VOID)
+   if (tcirFunctionReturnType(function) != TCIR_TYPE_I32 &&
+       tcirFunctionReturnType(function) != TCIR_TYPE_I64 &&
+       tcirFunctionReturnType(function) != TCIR_TYPE_VOID)
    {
       tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE, TCIR_TCPC_NONE,
-                           "SLJIT baseline supports only i32 and void returns");
+                           "SLJIT baseline supports only i32, i64, and void returns");
       return TCIR_JIT_COMPILE_INELIGIBLE;
    }
 
    for (parameter_index = 0U; parameter_index < tcirFunctionParameterCount(function); ++parameter_index)
    {
       const TCIRValue *parameter = tcirFunctionParameter(function, parameter_index);
-      if (tcirValueType(parameter) != TCIR_TYPE_I32 || !tcirJitUpdateValueCount(parameter, &eligibility->value_count))
+      if (!tcirJitTypeIsSupported(tcirValueType(parameter)) ||
+          !tcirJitUpdateValueCount(parameter, &eligibility->value_count))
       {
          tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE, TCIR_TCPC_NONE,
-                              "SLJIT baseline supports only bounded i32 parameters");
+                              "SLJIT baseline supports only bounded integer parameters");
          return TCIR_JIT_COMPILE_INELIGIBLE;
       }
    }
@@ -227,12 +275,12 @@ static TCIRJitCompileStatus tcirJitInspectEligibility(
       for (argument_index = 0U; argument_index < tcirBlockArgumentCount(block); ++argument_index)
       {
          const TCIRValue *argument = tcirBlockArgumentAt(block, argument_index);
-         if (tcirValueType(argument) != TCIR_TYPE_I32
-             || !tcirJitUpdateValueCount(argument, &eligibility->value_count))
+         if (!tcirJitTypeIsSupported(tcirValueType(argument)) ||
+             !tcirJitUpdateValueCount(argument, &eligibility->value_count))
          {
             tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE,
                                  tcirBlockSource(block).tc_pc,
-                                 "SLJIT baseline supports only bounded i32 block arguments");
+                                 "SLJIT baseline supports only bounded integer block arguments");
             return TCIR_JIT_COMPILE_INELIGIBLE;
          }
       }
@@ -258,11 +306,11 @@ static TCIRJitCompileStatus tcirJitInspectEligibility(
             return TCIR_JIT_COMPILE_INELIGIBLE;
          }
          for (operand_index = 0U; operand_index < operation.operand_count; ++operand_index)
-            if (!tcirJitTypeIsI32Like(tcirValueType(operation.operands[operand_index])))
+            if (!tcirJitTypeIsSupported(tcirValueType(operation.operands[operand_index])))
             {
                tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE,
                                     operation.source.tc_pc,
-                                    "SLJIT baseline operation has a non-integer operand");
+                                    "SLJIT baseline operation has an unsupported operand");
                return TCIR_JIT_COMPILE_INELIGIBLE;
             }
       }
@@ -277,11 +325,11 @@ static TCIRJitCompileStatus tcirJitInspectEligibility(
                               "function contains a terminator unsupported by the SLJIT baseline");
          return TCIR_JIT_COMPILE_INELIGIBLE;
       }
-      if (terminator.value != NULL && !tcirJitTypeIsI32Like(tcirValueType(terminator.value)))
+      if (terminator.value != NULL && !tcirJitTypeIsSupported(tcirValueType(terminator.value)))
       {
          tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE,
                               terminator.source.tc_pc,
-                              "SLJIT baseline terminator has a non-integer value");
+                              "SLJIT baseline terminator has an unsupported value");
          return TCIR_JIT_COMPILE_INELIGIBLE;
       }
       for (edge_index = 0U; edge_index < terminator.edge_count; ++edge_index)
@@ -290,11 +338,12 @@ static TCIRJitCompileStatus tcirJitInspectEligibility(
          for (edge_argument_index = 0U;
               edge_argument_index < terminator.edges[edge_index].argument_count;
               ++edge_argument_index)
-            if (tcirValueType(terminator.edges[edge_index].arguments[edge_argument_index]) != TCIR_TYPE_I32)
+            if (!tcirJitTypeIsSupported(
+                   tcirValueType(terminator.edges[edge_index].arguments[edge_argument_index])))
             {
                tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TYPE,
                                     terminator.source.tc_pc,
-                                    "SLJIT baseline edge has a non-i32 argument");
+                                    "SLJIT baseline edge has an unsupported argument");
                return TCIR_JIT_COMPILE_INELIGIBLE;
             }
       }
@@ -408,18 +457,20 @@ static int tcirJitEmitReturn(TCIRJitEmitter *emitter, sljit_s32 src, sljit_sw sr
 
 static sljit_sw tcirJitValueOffset(const TCIRValue *value)
 {
-   return (sljit_sw)((size_t)tcirValueId(value) * sizeof(int32_t));
+   return (sljit_sw)((size_t)tcirValueId(value) * sizeof(TCIRRuntimeValue));
 }
 
 static int tcirJitLoadValue(TCIRJitEmitter *emitter, sljit_s32 register_id, const TCIRValue *value)
 {
-   return tcirJitEmitOp1(emitter, SLJIT_MOV32, register_id, 0,
+   sljit_s32 move = tcirJitTypeIsI32Like(tcirValueType(value)) ? SLJIT_MOV32 : SLJIT_MOV;
+   return tcirJitEmitOp1(emitter, move, register_id, 0,
                          SLJIT_MEM1(SLJIT_S1), tcirJitValueOffset(value));
 }
 
 static int tcirJitStoreValue(TCIRJitEmitter *emitter, const TCIRValue *value, sljit_s32 register_id)
 {
-   return tcirJitEmitOp1(emitter, SLJIT_MOV32,
+   sljit_s32 move = tcirJitTypeIsI32Like(tcirValueType(value)) ? SLJIT_MOV32 : SLJIT_MOV;
+   return tcirJitEmitOp1(emitter, move,
                          SLJIT_MEM1(SLJIT_S1), tcirJitValueOffset(value), register_id, 0);
 }
 
@@ -479,6 +530,10 @@ static int tcirJitEmitOperation(TCIRJitEmitter *emitter, const TCIROperationView
       case TCIR_OP_CONST_I32:
          return tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_R0, 0,
                                SLJIT_IMM, (sljit_sw)operation->immediate_i32)
+            && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+      case TCIR_OP_CONST_I64:
+         return tcirJitEmitOp1(emitter, SLJIT_MOV, SLJIT_R0, 0,
+                               SLJIT_IMM, (sljit_sw)operation->immediate_i64)
             && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
       case TCIR_OP_COPY:
          return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
@@ -551,18 +606,87 @@ static int tcirJitEmitOperation(TCIRJitEmitter *emitter, const TCIROperationView
          comparison_flag = SLJIT_SET_SIG_GREATER_EQUAL;
          comparison_type = SLJIT_SIG_GREATER_EQUAL;
          goto comparison;
+      case TCIR_OP_ADD_I64:
+         arithmetic_op = SLJIT_ADD;
+         goto arithmetic_i64;
+      case TCIR_OP_SUB_I64:
+         arithmetic_op = SLJIT_SUB;
+         goto arithmetic_i64;
+      case TCIR_OP_MUL_I64:
+         arithmetic_op = SLJIT_MUL;
+         goto arithmetic_i64;
+      case TCIR_OP_SHL_I64:
+         arithmetic_op = SLJIT_MSHL;
+         goto arithmetic_i64;
+      case TCIR_OP_SHR_I64:
+         arithmetic_op = SLJIT_MASHR;
+         goto arithmetic_i64;
+      case TCIR_OP_USHR_I64:
+         arithmetic_op = SLJIT_MLSHR;
+         goto arithmetic_i64;
+      case TCIR_OP_AND_I64:
+         arithmetic_op = SLJIT_AND;
+         goto arithmetic_i64;
+      case TCIR_OP_OR_I64:
+         arithmetic_op = SLJIT_OR;
+         goto arithmetic_i64;
+      case TCIR_OP_XOR_I64:
+         arithmetic_op = SLJIT_XOR;
+         goto arithmetic_i64;
+      case TCIR_OP_TRUNC_I64_I32:
+         return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+            && tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_R0, 0, SLJIT_R0, 0)
+            && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+      case TCIR_OP_SEXT_I32_I64:
+         return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+            && tcirJitEmitOp1(emitter, SLJIT_MOV_S32, SLJIT_R0, 0, SLJIT_R0, 0)
+            && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+      case TCIR_OP_CMP_EQ_I64:
+         comparison_flag = SLJIT_SET_Z;
+         comparison_type = SLJIT_EQUAL;
+         goto comparison_i64;
+      case TCIR_OP_CMP_LT_I64:
+         comparison_flag = SLJIT_SET_SIG_LESS;
+         comparison_type = SLJIT_SIG_LESS;
+         goto comparison_i64;
+      case TCIR_OP_CMP_LE_I64:
+         comparison_flag = SLJIT_SET_SIG_LESS_EQUAL;
+         comparison_type = SLJIT_SIG_LESS_EQUAL;
+         goto comparison_i64;
+      case TCIR_OP_CMP_GT_I64:
+         comparison_flag = SLJIT_SET_SIG_GREATER;
+         comparison_type = SLJIT_SIG_GREATER;
+         goto comparison_i64;
+      case TCIR_OP_CMP_GE_I64:
+         comparison_flag = SLJIT_SET_SIG_GREATER_EQUAL;
+         comparison_type = SLJIT_SIG_GREATER_EQUAL;
+         goto comparison_i64;
       case TCIR_OP_LOAD_SLOT:
+      {
+         size_t pointer_offset = operation->home_bank == TCIR_HOME_I32
+            ? offsetof(TCCompiledFrame, i32_homes) : offsetof(TCCompiledFrame, v64_homes);
+         size_t item_size = operation->home_bank == TCIR_HOME_I32
+            ? sizeof(int32_t) : sizeof(TCIRV64Home);
+         sljit_s32 move = operation->home_bank == TCIR_HOME_I32 ? SLJIT_MOV32 : SLJIT_MOV;
          return tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_R0, 0,
-                               SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, i32_homes))
-            && tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_R1, 0, SLJIT_MEM1(SLJIT_R0),
-                              (sljit_sw)((size_t)operation->home_index * sizeof(int32_t)))
+                               SLJIT_MEM1(SLJIT_S0), (sljit_sw)pointer_offset)
+            && tcirJitEmitOp1(emitter, move, SLJIT_R1, 0, SLJIT_MEM1(SLJIT_R0),
+                              (sljit_sw)((size_t)operation->home_index * item_size))
             && tcirJitStoreValue(emitter, operation->result, SLJIT_R1);
+      }
       case TCIR_OP_STORE_SLOT:
+      {
+         size_t pointer_offset = operation->home_bank == TCIR_HOME_I32
+            ? offsetof(TCCompiledFrame, i32_homes) : offsetof(TCCompiledFrame, v64_homes);
+         size_t item_size = operation->home_bank == TCIR_HOME_I32
+            ? sizeof(int32_t) : sizeof(TCIRV64Home);
+         sljit_s32 move = operation->home_bank == TCIR_HOME_I32 ? SLJIT_MOV32 : SLJIT_MOV;
          return tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_R0, 0,
-                               SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, i32_homes))
+                               SLJIT_MEM1(SLJIT_S0), (sljit_sw)pointer_offset)
             && tcirJitLoadValue(emitter, SLJIT_R1, operation->operands[0])
-            && tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_MEM1(SLJIT_R0),
-                              (sljit_sw)((size_t)operation->home_index * sizeof(int32_t)), SLJIT_R1, 0);
+            && tcirJitEmitOp1(emitter, move, SLJIT_MEM1(SLJIT_R0),
+                              (sljit_sw)((size_t)operation->home_index * item_size), SLJIT_R1, 0);
+      }
       default:
          return 0;
    }
@@ -578,6 +702,19 @@ comparison:
       && tcirJitEmitOp2U(emitter, SLJIT_SUB32 | comparison_flag, SLJIT_R0, 0, SLJIT_R1, 0)
       && tcirJitEmitOpFlags(emitter, SLJIT_MOV32, SLJIT_R0, 0, comparison_type)
       && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+
+arithmetic_i64:
+   return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+      && tcirJitLoadValue(emitter, SLJIT_R1, operation->operands[1])
+      && tcirJitEmitOp2(emitter, arithmetic_op, SLJIT_R0, 0, SLJIT_R0, 0, SLJIT_R1, 0)
+      && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+
+comparison_i64:
+   return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+      && tcirJitLoadValue(emitter, SLJIT_R1, operation->operands[1])
+      && tcirJitEmitOp2U(emitter, SLJIT_SUB | comparison_flag, SLJIT_R0, 0, SLJIT_R1, 0)
+      && tcirJitEmitOpFlags(emitter, SLJIT_MOV32, SLJIT_R0, 0, comparison_type)
+      && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
 }
 
 static int tcirJitEmitEdge(TCIRJitEmitter *emitter, const TCIREdge *edge)
@@ -586,15 +723,23 @@ static int tcirJitEmitEdge(TCIRJitEmitter *emitter, const TCIREdge *edge)
    struct sljit_jump *jump;
 
    for (index = 0U; index < edge->argument_count; ++index)
-      if (!tcirJitLoadValue(emitter, SLJIT_R0, edge->arguments[index])
-          || !tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_MEM1(SLJIT_S2),
-                             (sljit_sw)(index * sizeof(int32_t)), SLJIT_R0, 0))
+   {
+      sljit_s32 move = tcirJitTypeIsI32Like(tcirValueType(edge->arguments[index]))
+         ? SLJIT_MOV32 : SLJIT_MOV;
+      if (!tcirJitLoadValue(emitter, SLJIT_R0, edge->arguments[index]) ||
+          !tcirJitEmitOp1(emitter, move, SLJIT_MEM1(SLJIT_S2),
+                          (sljit_sw)(index * sizeof(TCIRRuntimeValue)), SLJIT_R0, 0))
          return 0;
+   }
    for (index = 0U; index < edge->argument_count; ++index)
-      if (!tcirJitEmitOp1(emitter, SLJIT_MOV32, SLJIT_R0, 0, SLJIT_MEM1(SLJIT_S2),
-                          (sljit_sw)(index * sizeof(int32_t)))
-          || !tcirJitStoreValue(emitter, tcirBlockArgumentAt(edge->target, index), SLJIT_R0))
+   {
+      const TCIRValue *target = tcirBlockArgumentAt(edge->target, index);
+      sljit_s32 move = tcirJitTypeIsI32Like(tcirValueType(target)) ? SLJIT_MOV32 : SLJIT_MOV;
+      if (!tcirJitEmitOp1(emitter, move, SLJIT_R0, 0, SLJIT_MEM1(SLJIT_S2),
+                          (sljit_sw)(index * sizeof(TCIRRuntimeValue))) ||
+          !tcirJitStoreValue(emitter, target, SLJIT_R0))
          return 0;
+   }
 
    jump = tcirJitEmitJump(emitter, SLJIT_JUMP);
    return tcirJitAppendJump(emitter, jump, edge->target);
@@ -627,6 +772,16 @@ static int tcirJitEmitTerminator(TCIRJitEmitter *emitter, const TCIRTerminatorVi
       case TCIR_TERMINATOR_RETURN:
          if (terminator->value == NULL)
             return tcirJitEmitReturn(emitter, SLJIT_IMM, 0);
+         if (tcirValueType(terminator->value) == TCIR_TYPE_I64)
+            return tcirJitLoadValue(emitter, SLJIT_R0, terminator->value)
+               && tcirJitEmitOp1(
+                  emitter,
+                  SLJIT_MOV,
+                  SLJIT_MEM1(SLJIT_S0),
+                  (sljit_sw)offsetof(TCCompiledFrame, jit_return_value),
+                  SLJIT_R0,
+                  0)
+               && tcirJitEmitReturn(emitter, SLJIT_IMM, 0);
          return tcirJitLoadValue(emitter, SLJIT_R0, terminator->value)
             && tcirJitEmitReturn(emitter, SLJIT_R0, 0);
       default:
@@ -642,9 +797,9 @@ static int tcirJitEmitFunction(TCIRJitEmitter *emitter)
    if (!tcirJitBeforeEmission(emitter)
        || sljit_emit_enter(emitter->compiler, 0, SLJIT_ARGS1(32, P), 2, 3, 0) != SLJIT_SUCCESS
        || !tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_S1, 0,
-                          SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, scratch_i32_values))
+                          SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, scratch_values))
        || !tcirJitEmitOp1(emitter, SLJIT_MOV_P, SLJIT_S2, 0,
-                          SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, edge_i32_values)))
+                          SLJIT_MEM1(SLJIT_S0), (sljit_sw)offsetof(TCCompiledFrame, edge_values)))
       return 0;
 
    for (block_index = 0U; block_index < tcirFunctionBlockCount(emitter->function); ++block_index)
@@ -710,10 +865,16 @@ TCIRJitCompileStatus tcirJitCompile(
    created->parameter_value_ids = (unsigned int *)calloc(
       created->parameter_count == 0U ? 1U : created->parameter_count,
       sizeof(*created->parameter_value_ids));
-   if (created->parameter_value_ids == NULL)
+   created->parameter_types = (TCIRType *)calloc(
+      created->parameter_count == 0U ? 1U : created->parameter_count,
+      sizeof(*created->parameter_types));
+   if (created->parameter_value_ids == NULL || created->parameter_types == NULL)
       goto out_of_memory;
    for (parameter_index = 0U; parameter_index < created->parameter_count; ++parameter_index)
+   {
       created->parameter_value_ids[parameter_index] = tcirValueId(tcirFunctionParameter(function, parameter_index));
+      created->parameter_types[parameter_index] = tcirValueType(tcirFunctionParameter(function, parameter_index));
+   }
    created->value_count = eligibility.value_count;
    created->edge_value_count = eligibility.edge_value_count;
    created->i32_home_count = tcirFunctionHomeCount(function, TCIR_HOME_I32);
@@ -778,6 +939,7 @@ void tcirJitArtifactDestroy(TCIRJitArtifact *artifact)
       if (artifact->code != NULL)
          tcirJitExecutableMemoryDispose(artifact->code);
       free(artifact->parameter_value_ids);
+      free(artifact->parameter_types);
       free(artifact);
    }
 }
@@ -804,10 +966,10 @@ TCCompiledStatus tcirJitInvoke(
    TCCompiledResult *result,
    TCIRJitDiagnostic *diagnostic)
 {
-   int32_t *scratch_values;
-   int32_t *edge_values;
-   int32_t *previous_scratch;
-   int32_t *previous_edge;
+   TCIRRuntimeValue *scratch_values;
+   TCIRRuntimeValue *edge_values;
+   TCIRRuntimeValue *previous_scratch;
+   TCIRRuntimeValue *previous_edge;
    size_t previous_scratch_count;
    size_t previous_edge_count;
    sljit_s32 return_value;
@@ -836,10 +998,10 @@ TCCompiledStatus tcirJitInvoke(
       return TC_COMPILED_REJECTED;
    }
 
-   scratch_values = (int32_t *)calloc(artifact->value_count == 0U ? 1U : artifact->value_count,
-                                      sizeof(*scratch_values));
-   edge_values = (int32_t *)calloc(artifact->edge_value_count == 0U ? 1U : artifact->edge_value_count,
-                                   sizeof(*edge_values));
+   scratch_values = (TCIRRuntimeValue *)calloc(
+      artifact->value_count == 0U ? 1U : artifact->value_count, sizeof(*scratch_values));
+   edge_values = (TCIRRuntimeValue *)calloc(
+      artifact->edge_value_count == 0U ? 1U : artifact->edge_value_count, sizeof(*edge_values));
    if (scratch_values == NULL || edge_values == NULL)
    {
       free(edge_values);
@@ -850,22 +1012,29 @@ TCCompiledStatus tcirJitInvoke(
       return TC_COMPILED_OUT_OF_MEMORY;
    }
    for (parameter_index = 0U; parameter_index < artifact->parameter_count; ++parameter_index)
-      scratch_values[artifact->parameter_value_ids[parameter_index]] = frame->arguments[parameter_index].i32;
+   {
+      unsigned int value_id = artifact->parameter_value_ids[parameter_index];
+      if (artifact->parameter_types[parameter_index] == TCIR_TYPE_I64)
+         scratch_values[value_id].i64 = frame->arguments[parameter_index].i64;
+      else
+         scratch_values[value_id].i32 = frame->arguments[parameter_index].i32;
+   }
 
-   previous_scratch = frame->scratch_i32_values;
-   previous_scratch_count = frame->scratch_i32_count;
-   previous_edge = frame->edge_i32_values;
-   previous_edge_count = frame->edge_i32_count;
-   frame->scratch_i32_values = scratch_values;
-   frame->scratch_i32_count = artifact->value_count;
-   frame->edge_i32_values = edge_values;
-   frame->edge_i32_count = artifact->edge_value_count;
+   previous_scratch = frame->scratch_values;
+   previous_scratch_count = frame->scratch_count;
+   previous_edge = frame->edge_values;
+   previous_edge_count = frame->edge_count;
+   frame->scratch_values = scratch_values;
+   frame->scratch_count = artifact->value_count;
+   frame->edge_values = edge_values;
+   frame->edge_count = artifact->edge_value_count;
+   memset(&frame->jit_return_value, 0, sizeof(frame->jit_return_value));
    frame->tc_pc = TCIR_TCPC_NONE;
    return_value = artifact->entry(frame);
-   frame->scratch_i32_values = previous_scratch;
-   frame->scratch_i32_count = previous_scratch_count;
-   frame->edge_i32_values = previous_edge;
-   frame->edge_i32_count = previous_edge_count;
+   frame->scratch_values = previous_scratch;
+   frame->scratch_count = previous_scratch_count;
+   frame->edge_values = previous_edge;
+   frame->edge_count = previous_edge_count;
    free(edge_values);
    free(scratch_values);
 
@@ -874,5 +1043,7 @@ TCCompiledStatus tcirJitInvoke(
    result->tc_pc = frame->tc_pc;
    if (artifact->return_type == TCIR_TYPE_I32)
       result->value.i32 = (int32_t)return_value;
+   else if (artifact->return_type == TCIR_TYPE_I64)
+      result->value.i64 = frame->jit_return_value.i64;
    return TC_COMPILED_RETURNED;
 }
