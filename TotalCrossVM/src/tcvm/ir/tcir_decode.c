@@ -118,6 +118,9 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
       case TEST_regO:
          instruction->reg0 = tcirBits(slot, 8, 8);
          break;
+      case SWITCH:
+         instruction->reg0 = tcirBits(slot, 8, 8);
+         break;
       case MOV_regI_sym:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->symbol = tcirBits(slot, 16, 16);
@@ -732,7 +735,8 @@ static int tcirValidateInstruction(
       case RETURN_symD:
          return tcirValidateF64Symbol(method, instruction, diagnostic);
       case SWITCH:
-         return tcirValidateSwitchTargets(method, decoded, instruction, diagnostic);
+         return tcirValidateRegister(method, instruction, instruction->reg0, "selector", diagnostic) &&
+                tcirValidateSwitchTargets(method, decoded, instruction, diagnostic);
       default:
          break;
    }

@@ -352,6 +352,7 @@ static TCIRJitCompileStatus tcirJitInspectEligibility(
       if (tcirBlockTerminator(block, &terminator) != TCIR_STATUS_OK
           || (terminator.kind != TCIR_TERMINATOR_BRANCH
               && terminator.kind != TCIR_TERMINATOR_BRANCH_IF
+              && terminator.kind != TCIR_TERMINATOR_SWITCH
               && terminator.kind != TCIR_TERMINATOR_RETURN))
       {
          tcirJitSetDiagnostic(diagnostic, TCIR_JIT_DIAGNOSTIC_INELIGIBLE_TERMINATOR,
@@ -934,6 +935,56 @@ static int tcirJitEmitEdge(TCIRJitEmitter *emitter, const TCIREdge *edge)
    return tcirJitAppendJump(emitter, jump, edge->target);
 }
 
+static int tcirJitEmitSwitch(TCIRJitEmitter *emitter, const TCIRTerminatorView *terminator)
+{
+   struct sljit_jump **case_jumps;
+   const TCIREdge *default_edge = NULL;
+   size_t edge_index;
+
+   case_jumps = (struct sljit_jump **)calloc(
+      terminator->edge_count == 0U ? 1U : terminator->edge_count, sizeof(*case_jumps));
+   if (case_jumps == NULL || !tcirJitLoadValue(emitter, SLJIT_R0, terminator->value))
+      goto failed;
+   for (edge_index = 0U; edge_index < terminator->edge_count; ++edge_index)
+   {
+      const TCIREdge *edge = &terminator->edges[edge_index];
+      if (!edge->has_case_value)
+      {
+         default_edge = edge;
+         continue;
+      }
+      case_jumps[edge_index] = tcirJitEmitCompare(
+         emitter,
+         SLJIT_EQUAL | SLJIT_32,
+         SLJIT_R0,
+         0,
+         SLJIT_IMM,
+         (sljit_sw)edge->case_value);
+      if (case_jumps[edge_index] == NULL)
+         goto failed;
+   }
+   if (default_edge == NULL || !tcirJitEmitEdge(emitter, default_edge))
+      goto failed;
+   for (edge_index = 0U; edge_index < terminator->edge_count; ++edge_index)
+   {
+      struct sljit_label *label;
+      if (case_jumps[edge_index] == NULL)
+         continue;
+      label = tcirJitEmitLabel(emitter);
+      if (label == NULL)
+         goto failed;
+      sljit_set_label(case_jumps[edge_index], label);
+      if (!tcirJitEmitEdge(emitter, &terminator->edges[edge_index]))
+         goto failed;
+   }
+   free(case_jumps);
+   return 1;
+
+failed:
+   free(case_jumps);
+   return 0;
+}
+
 static int tcirJitEmitTerminator(TCIRJitEmitter *emitter, const TCIRTerminatorView *terminator)
 {
    if (!tcirJitEmitPC(emitter, terminator->source.tc_pc))
@@ -958,6 +1009,8 @@ static int tcirJitEmitTerminator(TCIRJitEmitter *emitter, const TCIRTerminatorVi
          sljit_set_label(true_jump, true_label);
          return tcirJitEmitEdge(emitter, &terminator->edges[0]);
       }
+      case TCIR_TERMINATOR_SWITCH:
+         return tcirJitEmitSwitch(emitter, terminator);
       case TCIR_TERMINATOR_RETURN:
          if (terminator->value == NULL)
             return tcirJitEmitReturn(emitter, SLJIT_IMM, 0);

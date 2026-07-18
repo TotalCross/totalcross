@@ -76,68 +76,6 @@ static int buildFixtureFunctions(
    return 1;
 }
 
-static TCIRFunction *buildUnsupportedSwitch(TCIRModule *module, TCIRDiagnostic *diagnostic)
-{
-   const TCIRType parameter_types[] = { TCIR_TYPE_I32 };
-   const unsigned char instruction_starts[] = { 1U };
-   TCIRSourceLocation source = { 0U, -1 };
-   TCIRFunction *function = tcirModuleAddFunction(
-      module, "fixtures.TCIRPoc.switchValue:(I)I", parameter_types, 1U, TCIR_TYPE_I32, diagnostic);
-   TCIRBlock *entry;
-   TCIRBlock *case_block;
-   TCIRBlock *default_block;
-   TCIREdge edges[2];
-   TCIRTerminatorSpec terminator;
-   const TCIRValue *parameter;
-   const TCIRValue *case_value;
-   const TCIRValue *default_value;
-   const TCIRValue *case_arguments[1];
-   const TCIRValue *default_arguments[1];
-   if (function == NULL
-       || tcirFunctionSetHomes(function, 1U, 0U, 0U, diagnostic) != TCIR_STATUS_OK
-       || tcirFunctionSetSourceSlots(function, 1U, instruction_starts, diagnostic) != TCIR_STATUS_OK)
-      return NULL;
-   entry = tcirFunctionAppendBlock(function, 0U, source, 0, diagnostic);
-   case_block = tcirFunctionAppendBlock(function, 1U, source, 0, diagnostic);
-   default_block = tcirFunctionAppendBlock(function, 2U, source, 0, diagnostic);
-   if (entry == NULL || case_block == NULL || default_block == NULL)
-      return NULL;
-   parameter = tcirFunctionParameter(function, 0U);
-   case_value = tcirBlockAppendArgument(case_block, TCIR_TYPE_I32, diagnostic);
-   default_value = tcirBlockAppendArgument(default_block, TCIR_TYPE_I32, diagnostic);
-   if (case_value == NULL || default_value == NULL)
-      return NULL;
-   case_arguments[0] = parameter;
-   default_arguments[0] = parameter;
-   memset(edges, 0, sizeof(edges));
-   edges[0].target = case_block;
-   edges[0].arguments = case_arguments;
-   edges[0].argument_count = 1U;
-   edges[0].has_case_value = 1;
-   edges[0].case_value = 0;
-   edges[1].target = default_block;
-   edges[1].arguments = default_arguments;
-   edges[1].argument_count = 1U;
-   memset(&terminator, 0, sizeof(terminator));
-   terminator.kind = TCIR_TERMINATOR_SWITCH;
-   terminator.value = parameter;
-   terminator.edges = edges;
-   terminator.edge_count = 2U;
-   terminator.source = source;
-   if (tcirBlockSetTerminator(entry, &terminator, diagnostic) != TCIR_STATUS_OK)
-      return NULL;
-   memset(&terminator, 0, sizeof(terminator));
-   terminator.kind = TCIR_TERMINATOR_RETURN;
-   terminator.value = case_value;
-   terminator.source = source;
-   if (tcirBlockSetTerminator(case_block, &terminator, diagnostic) != TCIR_STATUS_OK)
-      return NULL;
-   terminator.value = default_value;
-   if (tcirBlockSetTerminator(default_block, &terminator, diagnostic) != TCIR_STATUS_OK)
-      return NULL;
-   return function;
-}
-
 static TCIRFunction *buildUnsupportedNullCheck(TCIRModule *module, TCIRDiagnostic *diagnostic)
 {
    static const unsigned int code[] = { 0x0000007aU, 0x00000088U };
@@ -257,21 +195,6 @@ static int testUnsupportedRejectedBeforeOutput(void)
    const TCIRFunction *input[1];
 
    REQUIRE(module != NULL);
-   function = buildUnsupportedSwitch(module, &ir_diagnostic);
-   REQUIRE(function != NULL);
-   if (!tcirVerifyFunction(function, &ir_diagnostic))
-   {
-      fprintf(stderr, "unsupported-switch fixture did not verify: %s (%s)\n",
-              ir_diagnostic.message, tcirDiagnosticCodeName(ir_diagnostic.code));
-      return 0;
-   }
-   input[0] = function;
-   memset(&output, 0xa5, sizeof(output));
-   REQUIRE(tcirAotGenerate(input, 1U, NULL, &output, &aot_diagnostic)
-           == TCIR_AOT_GENERATE_INELIGIBLE);
-   REQUIRE(aot_diagnostic.code == TCIR_AOT_DIAGNOSTIC_INELIGIBLE_TERMINATOR);
-   REQUIRE(output.source == NULL && output.header == NULL && output.manifest == NULL);
-   REQUIRE(output.input_hash[0] == '\0');
    function = buildUnsupportedNullCheck(module, &ir_diagnostic);
    REQUIRE(function != NULL && tcirVerifyFunction(function, &ir_diagnostic));
    input[0] = function;
