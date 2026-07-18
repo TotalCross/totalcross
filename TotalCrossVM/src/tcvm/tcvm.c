@@ -1,10 +1,14 @@
-// Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2000-2013 SuperWaba Ltda
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda
 // Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
+
+#if defined(TC_ENABLE_COMPILED_DISPATCH)
+#include "tcir_runtime.h"
+#endif
 
 // TRACK_USED_OPCODES needs DIRECT_JUMP to be disabled
 #if !defined(TRACK_USED_OPCODES)
@@ -387,6 +391,40 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       goto nativeMethodCall;
    }
 
+#if defined(TC_ENABLE_COMPILED_DISPATCH)
+   {
+      TCCompiledResult compiledResult;
+      TCIRRuntimeDiagnostic compiledDiagnostic;
+      TCIRRuntimeDispatchStatus compiledStatus = tcirRuntimeTryDispatch(
+         context, method, regI, regO, reg64, &compiledResult, &compiledDiagnostic);
+      if (compiledStatus == TCIR_RUNTIME_DISPATCH_RETURNED)
+      {
+         context->callStack -= 2;
+         switch (compiledResult.type)
+         {
+            case TCIR_TYPE_I32: returnedValue.asInt32 = compiledResult.value.i32; break;
+            case TCIR_TYPE_REF:
+            case TCIR_TYPE_NON_NULL_REF: returnedValue.asObj = (TCObject)compiledResult.value.ref; break;
+            case TCIR_TYPE_F64: returnedValue.asDouble = compiledResult.value.f64; break;
+            case TCIR_TYPE_I64: returnedValue.asInt64 = compiledResult.value.i64; break;
+            default: break;
+         }
+         goto finishMethod;
+      }
+      if (compiledStatus == TCIR_RUNTIME_DISPATCH_THROWN)
+      {
+         if (compiledResult.tc_pc != TCIR_TCPC_NONE)
+            code = method->code + compiledResult.tc_pc;
+         goto handleException;
+      }
+      if (compiledStatus == TCIR_RUNTIME_DISPATCH_OUT_OF_MEMORY)
+      {
+         exceptionMsg = "Preparing compiled dispatch";
+         goto throwOutOfMemoryError;
+      }
+   }
+#endif
+
 #ifndef DIRECT_JUMP // use a direct jump if supported
 mainLoop:
 #endif
@@ -665,6 +703,45 @@ cont:
                }
             }
 noMoreParams:
+#if defined(TC_ENABLE_COMPILED_DISPATCH)
+            if (!newMethod->flags.isNative)
+            {
+               TCCompiledResult compiledResult;
+               TCIRRuntimeDiagnostic compiledDiagnostic;
+               TCIRRuntimeDispatchStatus compiledStatus = tcirRuntimeTryDispatch(
+                  context, newMethod, regI, regO, reg64, &compiledResult, &compiledDiagnostic);
+               if (compiledStatus != TCIR_RUNTIME_DISPATCH_FALLBACK)
+               {
+                  Method compiledMethod = newMethod;
+                  context->regI -= compiledMethod->iCount;
+                  context->regO -= compiledMethod->oCount;
+                  context->reg64 -= compiledMethod->v64Count;
+                  context->callStack -= 2;
+                  regI = context->regI - method->iCount;
+                  regO = context->regO - method->oCount;
+                  reg64 = context->reg64 - method->v64Count;
+                  if (compiledStatus == TCIR_RUNTIME_DISPATCH_RETURNED)
+                  {
+                     if (compiledMethod->cpReturn != 0U)
+                     {
+                        switch (compiledMethod->returnReg)
+                        {
+                           case RegI: regI[code->mtd.retOr1stParam] = compiledResult.value.i32; break;
+                           case RegO: regO[code->mtd.retOr1stParam] = (TCObject)compiledResult.value.ref; break;
+                           case RegD: REGD(reg64)[code->mtd.retOr1stParam] = compiledResult.value.f64; break;
+                           case RegL: REGL(reg64)[code->mtd.retOr1stParam] = compiledResult.value.i64; break;
+                        }
+                     }
+                     code += compiledMethod->paramSkip;
+                     NEXT_OP
+                  }
+                  if (compiledStatus == TCIR_RUNTIME_DISPATCH_THROWN)
+                     goto handleException;
+                  exceptionMsg = "Preparing nested compiled dispatch";
+                  goto throwOutOfMemoryError;
+               }
+            }
+#endif
             if (!newMethod->flags.isNative)
             {
                // replace current variables by the new ones

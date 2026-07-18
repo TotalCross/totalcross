@@ -185,7 +185,7 @@ static int testDeterministicGeneration(void)
    REQUIRE(strcmp(first.input_hash, second.input_hash) == 0);
    REQUIRE(strstr(first.manifest, "\"generator\":\"tcir-portable-c\"") != NULL);
    REQUIRE(strstr(first.manifest, "\"ir_version\":1") != NULL);
-   REQUIRE(strstr(first.manifest, "\"runtime_abi_version\":1") != NULL);
+   REQUIRE(strstr(first.manifest, "\"runtime_abi_version\":2") != NULL);
    REQUIRE(strstr(first.manifest, "\"rejected_methods\":[]") != NULL);
    abs_position = strstr(first.manifest, "fixtures.TCIRPoc.abs:(I)I");
    add_position = strstr(first.manifest, "fixtures.TCIRPoc.add:(II)I");
