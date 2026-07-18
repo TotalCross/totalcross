@@ -43,6 +43,11 @@ typedef int (*TCIRResolveCallShapeFunction)(
    unsigned int symbol,
    TCIRCallShape *shape);
 
+typedef int (*TCIRResolveClassNameFunction)(
+   void *user_data,
+   unsigned int symbol,
+   const char **class_name);
+
 typedef struct TCIRMethodView
 {
    const char *identity;
@@ -66,6 +71,8 @@ typedef struct TCIRMethodView
    size_t handler_count;
    TCIRResolveCallShapeFunction resolve_call_shape;
    void *resolve_call_shape_user_data;
+   TCIRResolveClassNameFunction resolve_class_name;
+   void *resolve_class_name_user_data;
 } TCIRMethodView;
 
 typedef enum TCIRFrontendResult

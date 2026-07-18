@@ -665,6 +665,8 @@ static int buildFixtureView(
    view->source_lines = fixture->lines;
    view->resolve_call_shape = tcirResolveConverterFixtureCall;
    view->resolve_call_shape_user_data = (void *)fixture;
+   view->resolve_class_name = tcirResolveConverterFixtureClass;
+   view->resolve_class_name_user_data = (void *)fixture;
    return 1;
 }
 
@@ -674,15 +676,15 @@ static int testConverterFrontendFixtures(void)
       "frontend-add", "frontend-abs", "frontend-sumTo", "frontend-pureI32", "frontend-pureI64",
       "frontend-pureF64", "frontend-normalizedF32", "frontend-i32ToF64", "frontend-i64ToF64",
       "frontend-selectRef", "frontend-referenceScore", "frontend-nullRef", "frontend-switchScore",
-      "frontend-callStatic"
+      "frontend-callStatic", "frontend-newObject"
    };
-   static const size_t expected_block_counts[] = { 1, 4, 4, 1, 4, 4, 13, 1, 1, 5, 9, 1, 6, 1 };
+   static const size_t expected_block_counts[] = { 1, 4, 4, 1, 4, 4, 13, 1, 1, 5, 9, 1, 6, 1, 1 };
    TCIRDiagnostic diagnostic;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
    size_t fixture_index;
 
    REQUIRE(module != NULL);
-   REQUIRE(TCIR_CONVERTER_FIXTURE_COUNT == 14U);
+   REQUIRE(TCIR_CONVERTER_FIXTURE_COUNT == 15U);
    for (fixture_index = 0; fixture_index < TCIR_CONVERTER_FIXTURE_COUNT; fixture_index++)
    {
       const TCIRConverterFixture *fixture = &tcir_converter_fixtures[fixture_index];
@@ -796,7 +798,7 @@ static int testFrontendDiagnostics(void)
    const unsigned int invalid_register[] = { 7U | (3U << 8), 133U };
    const unsigned int invalid_symbol[] = { 6U | (1U << 16), 133U };
    const unsigned int returns_void[] = { 136U };
-   const unsigned int unsupported[] = { 149U, 136U };
+   const unsigned int unresolved_class[] = { 149U, 136U };
    const unsigned int unsupported_double_remainder[] = { 68U, 136U };
    const unsigned int fallback_call_shape[] = { 154U, 0U, 0U, 136U };
    TCIRMethodView view;
@@ -843,9 +845,10 @@ static int testFrontendDiagnostics(void)
    REQUIRE(expectFrontendDiagnostic(
       &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_TYPE_MERGE, 0));
 
-   view = diagnosticView("Fallback.object:()V", unsupported, 2, TCIR_TYPE_VOID);
+   view = diagnosticView("Invalid.object:()V", unresolved_class, 2, TCIR_TYPE_VOID);
+   view.ref_home_count = 1U;
    REQUIRE(expectFrontendDiagnostic(
-      &view, TCIR_FRONTEND_FALLBACK, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE, 0));
+      &view, TCIR_FRONTEND_ERROR, TCIR_DIAGNOSTIC_INVALID_SYMBOL, 0));
 
    view = diagnosticView("Fallback.doubleRemainder:()V", unsupported_double_remainder, 2, TCIR_TYPE_VOID);
    REQUIRE(expectFrontendDiagnostic(
@@ -1230,6 +1233,139 @@ static void captureRuntimeException(
    capture->tc_pc = tc_pc;
 }
 
+typedef struct TCIRAllocationCapture
+{
+   TCIRObjectAllocationStatus status;
+   void *expected_root;
+   void *allocated;
+   unsigned int calls;
+   unsigned int destination_home;
+   int saw_published_root;
+   int publish_result;
+} TCIRAllocationCapture;
+
+static int resolveObjectClass(
+   void *user_data,
+   unsigned int symbol,
+   const char **class_name)
+{
+   (void)user_data;
+   if (symbol != 11U || class_name == NULL)
+      return 0;
+   *class_name = "java.lang.Object";
+   return 1;
+}
+
+static TCIRObjectAllocationStatus captureObjectAllocation(
+   void *runtime_context,
+   const TCIRSymbol *symbol,
+   void **ref_homes,
+   size_t ref_home_count,
+   unsigned int destination_home,
+   TCIRRuntimeValue *result)
+{
+   TCIRAllocationCapture *capture = (TCIRAllocationCapture *)runtime_context;
+   ++capture->calls;
+   capture->destination_home = destination_home;
+   capture->saw_published_root = symbol != NULL &&
+      tcirSymbolKind(symbol) == TCIR_SYMBOL_CLASS &&
+      tcirSymbolConstantPoolIndex(symbol) == 11U &&
+      ref_home_count == 2U && ref_homes != NULL && ref_homes[0] == capture->expected_root;
+   if (capture->status == TCIR_OBJECT_ALLOCATION_RETURNED && capture->publish_result &&
+       destination_home < ref_home_count && result != NULL)
+   {
+      ref_homes[destination_home] = capture->allocated;
+      result->ref = capture->allocated;
+   }
+   return capture->status;
+}
+
+static int testObjectAllocation(void)
+{
+   static const unsigned int code[] = { 0x000b0195U, 0x00000186U };
+   TCIRMethodParameter parameter;
+   TCIRMethodView view;
+   TCIRDiagnostic diagnostic;
+   TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
+   TCIRFunction *function = NULL;
+   TCIROperationView operation;
+   TCIRRuntimeValue argument;
+   TCIRInterpreterFrame frame;
+   TCIRInterpreterResult result;
+   TCIRAllocationCapture capture;
+   void *homes[2];
+   int root_token;
+   int allocated_token;
+
+   REQUIRE(module != NULL);
+   memset(&parameter, 0, sizeof(parameter));
+   parameter.type = TCIR_TYPE_REF;
+   parameter.home_bank = TCIR_HOME_REF;
+   memset(&view, 0, sizeof(view));
+   view.identity = "Example.newObject:(Ljava/lang/Object;)Ljava/lang/Object;";
+   view.code = code;
+   view.code_slot_count = sizeof(code) / sizeof(code[0]);
+   view.ref_home_count = 2U;
+   view.parameters = &parameter;
+   view.parameter_count = 1U;
+   view.return_type = TCIR_TYPE_REF;
+   view.resolve_class_name = resolveObjectClass;
+   REQUIRE(tcirFrontendBuildFunction(module, &view, &function, &diagnostic) == TCIR_FRONTEND_OK);
+   REQUIRE(function != NULL && tcirVerifyFunction(function, &diagnostic));
+   REQUIRE(tcirBlockOperationAt(tcirFunctionBlockAt(function, 0U), 0U, &operation) == TCIR_STATUS_OK);
+   REQUIRE(operation.opcode == TCIR_OP_NEW_OBJECT);
+   REQUIRE(operation.result_type == TCIR_TYPE_REF && operation.operand_count == 0U);
+   REQUIRE(operation.symbol != NULL && tcirSymbolKind(operation.symbol) == TCIR_SYMBOL_CLASS);
+   REQUIRE(tcirSymbolConstantPoolIndex(operation.symbol) == 11U);
+   REQUIRE(operation.effects == TCIR_OBJECT_ALLOCATION_EFFECTS && operation.propagates_exception);
+   REQUIRE(operation.home_bank == TCIR_HOME_REF && operation.home_index == 1U);
+   REQUIRE(operation.gc_home_count == 1U && operation.gc_homes[0].home_index == 0U);
+
+   memset(&frame, 0, sizeof(frame));
+   memset(&capture, 0, sizeof(capture));
+   argument.ref = &root_token;
+   homes[0] = NULL;
+   homes[1] = NULL;
+   capture.status = TCIR_OBJECT_ALLOCATION_RETURNED;
+   capture.expected_root = &root_token;
+   capture.allocated = &allocated_token;
+   capture.publish_result = 1;
+   frame.ref_homes = homes;
+   frame.ref_home_count = 2U;
+   frame.arguments = &argument;
+   frame.argument_count = 1U;
+   frame.runtime_context = &capture;
+   frame.allocate_object = captureObjectAllocation;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_RETURNED);
+   REQUIRE(result.type == TCIR_TYPE_REF && result.value.ref == &allocated_token);
+   REQUIRE(capture.calls == 1U && capture.saw_published_root && capture.destination_home == 1U);
+   REQUIRE(homes[0] == &root_token && homes[1] == &allocated_token);
+
+   capture.calls = 0U;
+   capture.publish_result = 0;
+   homes[0] = NULL;
+   homes[1] = NULL;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_REJECTED);
+   REQUIRE(capture.calls == 1U && capture.saw_published_root);
+
+   capture.calls = 0U;
+   capture.status = TCIR_OBJECT_ALLOCATION_THROWN;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_THROWN);
+   REQUIRE(result.tc_pc == 0U && capture.calls == 1U);
+
+   capture.calls = 0U;
+   capture.status = TCIR_OBJECT_ALLOCATION_OUT_OF_MEMORY;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic)
+           == TCIR_INTERPRETER_OUT_OF_MEMORY);
+   REQUIRE(result.tc_pc == 0U && capture.calls == 1U);
+
+   tcirModuleDestroy(module);
+   return 1;
+}
+
 static int testCheckedReference(void)
 {
    static const unsigned int code[] = { 0x0000007aU, 0x00000186U };
@@ -1563,6 +1699,7 @@ int main(void)
    passed = testUncheckedArrayProof() && passed;
    passed = testInternalAddressLifetime() && passed;
    passed = testNonNullProof() && passed;
+   passed = testObjectAllocation() && passed;
    passed = testCheckedReference() && passed;
    passed = testCheckedI32Arithmetic() && passed;
    passed = testCheckedI64Arithmetic() && passed;
@@ -1570,6 +1707,6 @@ int main(void)
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
-   printf("TCIR tests passed: reference execution, 14 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
+   printf("TCIR tests passed: reference execution, 15 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
    return 0;
 }

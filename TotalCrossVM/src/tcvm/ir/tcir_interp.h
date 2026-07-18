@@ -58,6 +58,22 @@ typedef TCIRMethodCallStatus (*TCIRMethodCallFunction)(
    size_t argument_count,
    TCIRRuntimeValue *result);
 
+typedef enum TCIRObjectAllocationStatus
+{
+   TCIR_OBJECT_ALLOCATION_RETURNED = 0,
+   TCIR_OBJECT_ALLOCATION_THROWN,
+   TCIR_OBJECT_ALLOCATION_REJECTED,
+   TCIR_OBJECT_ALLOCATION_OUT_OF_MEMORY
+} TCIRObjectAllocationStatus;
+
+typedef TCIRObjectAllocationStatus (*TCIRAllocateObjectFunction)(
+   void *runtime_context,
+   const TCIRSymbol *symbol,
+   void **ref_homes,
+   size_t ref_home_count,
+   unsigned int destination_home,
+   TCIRRuntimeValue *result);
+
 typedef struct TCIRInterpreterFrame
 {
    int32_t *i32_homes;
@@ -72,6 +88,7 @@ typedef struct TCIRInterpreterFrame
    void *runtime_context;
    TCIRRaiseExceptionFunction raise_exception;
    TCIRMethodCallFunction call_method;
+   TCIRAllocateObjectFunction allocate_object;
 } TCIRInterpreterFrame;
 
 typedef struct TCIRInterpreterOptions

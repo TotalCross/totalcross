@@ -175,6 +175,7 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
       case TCIR_OP_NULL_CHECK:
+      case TCIR_OP_NEW_OBJECT:
       case TCIR_OP_METHOD_CALL:
          return 1;
       default:
@@ -287,6 +288,10 @@ static TCIRInterpreterStatus tcirPreflight(
             return tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE,
                               operation.source.tc_pc,
                               "method.call requires a runtime call callback");
+         if (operation.opcode == TCIR_OP_NEW_OBJECT && frame->allocate_object == NULL)
+            return tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_UNSUPPORTED_OPCODE,
+                              operation.source.tc_pc,
+                              "new.object requires a runtime allocation callback");
          if (!tcirUpdateMaximumValue(operation.result, value_count))
             return tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_OUT_OF_MEMORY,
                               operation.source.tc_pc, "TCIR value table is too large");
@@ -707,6 +712,28 @@ static int tcirExecuteOperation(
          if (call_status == TCIR_METHOD_CALL_OUT_OF_MEMORY)
             return -1;
          if (call_status != TCIR_METHOD_CALL_RETURNED)
+            return 0;
+         break;
+      }
+      case TCIR_OP_NEW_OBJECT:
+      {
+         TCIRObjectAllocationStatus allocation_status = frame->allocate_object(
+            frame->runtime_context,
+            operation->symbol,
+            frame->ref_homes,
+            frame->ref_home_count,
+            operation->home_index,
+            &value);
+         if (allocation_status == TCIR_OBJECT_ALLOCATION_THROWN)
+         {
+            *thrown = 1;
+            return 1;
+         }
+         if (allocation_status == TCIR_OBJECT_ALLOCATION_OUT_OF_MEMORY)
+            return -1;
+         if (allocation_status != TCIR_OBJECT_ALLOCATION_RETURNED || value.ref == NULL ||
+             operation->home_index >= frame->ref_home_count ||
+             frame->ref_homes[operation->home_index] != value.ref)
             return 0;
          break;
       }

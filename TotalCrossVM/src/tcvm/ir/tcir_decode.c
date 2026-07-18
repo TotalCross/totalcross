@@ -128,6 +128,7 @@ static void tcirDecodeOperands(TCIRDecodedInstruction *instruction, unsigned int
          instruction->reg1 = tcirBits(slot, 26, 6);
          break;
       case MOV_regI_sym:
+      case NEWOBJ:
          instruction->reg0 = tcirBits(slot, 8, 8);
          instruction->symbol = tcirBits(slot, 16, 16);
          break;
@@ -431,6 +432,28 @@ static int tcirValidateF64Symbol(
       instruction->info->name,
       instruction->symbol,
       (unsigned int)method->f64_constant_count);
+   return 0;
+}
+
+static int tcirValidateClassSymbol(
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   TCIRDiagnostic *diagnostic)
+{
+   const char *class_name = NULL;
+   if (method->resolve_class_name != NULL &&
+       method->resolve_class_name(
+          method->resolve_class_name_user_data, instruction->symbol, &class_name) &&
+       class_name != NULL && class_name[0] != '\0')
+      return 1;
+   tcirSetDiagnostic(
+      diagnostic,
+      TCIR_DIAGNOSTIC_INVALID_SYMBOL,
+      method->identity,
+      instruction->pc,
+      "%s cannot resolve class symbol %u",
+      instruction->info->name,
+      instruction->symbol);
    return 0;
 }
 
@@ -879,6 +902,10 @@ static int tcirValidateInstruction(
       case SWITCH:
          return tcirValidateRegister(method, instruction, instruction->reg0, "selector", diagnostic) &&
                 tcirValidateSwitchTargets(method, decoded, instruction, diagnostic);
+      case NEWOBJ:
+         return tcirValidateRefRegister(
+                   method, instruction, instruction->reg0, "destination", diagnostic) &&
+                tcirValidateClassSymbol(method, instruction, diagnostic);
       case CALL_normal:
          return tcirValidateStaticCall(method, instruction, diagnostic);
       default:
