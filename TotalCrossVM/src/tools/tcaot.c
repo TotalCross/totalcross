@@ -125,8 +125,8 @@ int main(int argument_count, char **arguments)
    TCIRAotOutput output;
    TCIRDiagnostic ir_diagnostic;
    TCIRModule *module;
-   TCIRFunction *functions[3];
-   const TCIRFunction *ordered_functions[3];
+   TCIRFunction *functions[TCIR_CONVERTER_FIXTURE_COUNT];
+   const TCIRFunction *ordered_functions[TCIR_CONVERTER_FIXTURE_COUNT];
    char source_path[1024];
    char header_path[1024];
    size_t index;
@@ -158,7 +158,8 @@ int main(int argument_count, char **arguments)
       ordered_functions[index] = functions[index];
    }
    generate_options.target_options = tool_options.target_options;
-   if (tcirAotGenerate(ordered_functions, 3U, &generate_options, &output, &aot_diagnostic)
+   if (tcirAotGenerate(ordered_functions, TCIR_CONVERTER_FIXTURE_COUNT,
+                       &generate_options, &output, &aot_diagnostic)
        != TCIR_AOT_GENERATE_READY)
    {
       fprintf(stderr, "tcaot: %s for %s: %s\n",
@@ -179,8 +180,10 @@ int main(int argument_count, char **arguments)
       tcirAotOutputDestroy(&output);
       goto cleanup;
    }
-   printf("tcaot generated 3 verified methods with input hash %s under %s.\n",
-          output.input_hash, tool_options.output_directory);
+   printf("tcaot generated %lu verified methods with input hash %s under %s.\n",
+          (unsigned long)TCIR_CONVERTER_FIXTURE_COUNT,
+          output.input_hash,
+          tool_options.output_directory);
    tcirAotOutputDestroy(&output);
    accepted = 1;
 

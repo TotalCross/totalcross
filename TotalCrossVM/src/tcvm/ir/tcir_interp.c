@@ -70,6 +70,25 @@ static int32_t tcirMulI32(int32_t left, int32_t right)
    return tcirI32FromBits((uint32_t)left * (uint32_t)right);
 }
 
+static int32_t tcirShlI32(int32_t value, int32_t distance)
+{
+   return tcirI32FromBits((uint32_t)value << ((uint32_t)distance & UINT32_C(31)));
+}
+
+static int32_t tcirShrI32(int32_t value, int32_t distance)
+{
+   unsigned int shift = (unsigned int)((uint32_t)distance & UINT32_C(31));
+   uint32_t bits = (uint32_t)value;
+   if (shift == 0U || value >= 0)
+      return tcirI32FromBits(bits >> shift);
+   return tcirI32FromBits((bits >> shift) | (UINT32_MAX << (32U - shift)));
+}
+
+static int32_t tcirUshrI32(int32_t value, int32_t distance)
+{
+   return tcirI32FromBits((uint32_t)value >> ((uint32_t)distance & UINT32_C(31)));
+}
+
 static int tcirInterpreterSupportsOperation(TCIROperation opcode)
 {
    switch (opcode)
@@ -79,6 +98,17 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_ADD_I32:
       case TCIR_OP_SUB_I32:
       case TCIR_OP_MUL_I32:
+      case TCIR_OP_SHL_I32:
+      case TCIR_OP_SHR_I32:
+      case TCIR_OP_USHR_I32:
+      case TCIR_OP_AND_I32:
+      case TCIR_OP_OR_I32:
+      case TCIR_OP_XOR_I32:
+      case TCIR_OP_TRUNC_I32_I8:
+      case TCIR_OP_TRUNC_I32_I16:
+      case TCIR_OP_SEXT_I8_I32:
+      case TCIR_OP_SEXT_I16_I32:
+      case TCIR_OP_ZEXT_I16_I32:
       case TCIR_OP_CMP_EQ_I32:
       case TCIR_OP_CMP_LT_I32:
       case TCIR_OP_CMP_LE_I32:
@@ -355,6 +385,47 @@ static int tcirExecuteOperation(
          break;
       case TCIR_OP_MUL_I32:
          value.i32 = tcirMulI32(left.i32, right.i32);
+         break;
+      case TCIR_OP_SHL_I32:
+         value.i32 = tcirShlI32(left.i32, right.i32);
+         break;
+      case TCIR_OP_SHR_I32:
+         value.i32 = tcirShrI32(left.i32, right.i32);
+         break;
+      case TCIR_OP_USHR_I32:
+         value.i32 = tcirUshrI32(left.i32, right.i32);
+         break;
+      case TCIR_OP_AND_I32:
+         value.i32 = tcirI32FromBits((uint32_t)left.i32 & (uint32_t)right.i32);
+         break;
+      case TCIR_OP_OR_I32:
+         value.i32 = tcirI32FromBits((uint32_t)left.i32 | (uint32_t)right.i32);
+         break;
+      case TCIR_OP_XOR_I32:
+         value.i32 = tcirI32FromBits((uint32_t)left.i32 ^ (uint32_t)right.i32);
+         break;
+      case TCIR_OP_TRUNC_I32_I8:
+         value.i32 = (int32_t)((uint32_t)left.i32 & UINT32_C(0xff));
+         break;
+      case TCIR_OP_TRUNC_I32_I16:
+         value.i32 = (int32_t)((uint32_t)left.i32 & UINT32_C(0xffff));
+         break;
+      case TCIR_OP_SEXT_I8_I32:
+      {
+         uint32_t bits = (uint32_t)left.i32 & UINT32_C(0xff);
+         value.i32 = tcirI32FromBits((bits & UINT32_C(0x80)) != 0U
+            ? bits | UINT32_C(0xffffff00) : bits);
+         break;
+      }
+      case TCIR_OP_SEXT_I16_I32:
+      {
+         uint32_t bits = (uint32_t)left.i32 & UINT32_C(0xffff);
+         value.i32 = tcirI32FromBits((bits & UINT32_C(0x8000)) != 0U
+            ? bits | UINT32_C(0xffff0000) : bits);
+         break;
+      }
+      case TCIR_OP_ZEXT_I16_I32:
+         value.i32 = (int32_t)((uint32_t)left.i32 & UINT32_C(0xffff));
          break;
       case TCIR_OP_CMP_EQ_I32:
          value.i1 = left.i32 == right.i32;

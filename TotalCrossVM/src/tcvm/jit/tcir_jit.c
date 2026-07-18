@@ -122,7 +122,8 @@ static int tcirJitUpdateValueCount(const TCIRValue *value, size_t *value_count)
 
 static int tcirJitTypeIsI32Like(TCIRType type)
 {
-   return type == TCIR_TYPE_I1 || type == TCIR_TYPE_I32;
+   return type == TCIR_TYPE_I1 || type == TCIR_TYPE_I8 ||
+      type == TCIR_TYPE_I16 || type == TCIR_TYPE_I32;
 }
 
 static int tcirJitOperationIsEligible(const TCIROperationView *operation)
@@ -134,6 +135,17 @@ static int tcirJitOperationIsEligible(const TCIROperationView *operation)
       case TCIR_OP_ADD_I32:
       case TCIR_OP_SUB_I32:
       case TCIR_OP_MUL_I32:
+      case TCIR_OP_SHL_I32:
+      case TCIR_OP_SHR_I32:
+      case TCIR_OP_USHR_I32:
+      case TCIR_OP_AND_I32:
+      case TCIR_OP_OR_I32:
+      case TCIR_OP_XOR_I32:
+      case TCIR_OP_TRUNC_I32_I8:
+      case TCIR_OP_TRUNC_I32_I16:
+      case TCIR_OP_SEXT_I8_I32:
+      case TCIR_OP_SEXT_I16_I32:
+      case TCIR_OP_ZEXT_I16_I32:
       case TCIR_OP_CMP_EQ_I32:
       case TCIR_OP_CMP_LT_I32:
       case TCIR_OP_CMP_LE_I32:
@@ -480,6 +492,45 @@ static int tcirJitEmitOperation(TCIRJitEmitter *emitter, const TCIROperationView
       case TCIR_OP_MUL_I32:
          arithmetic_op = SLJIT_MUL32;
          break;
+      case TCIR_OP_SHL_I32:
+         arithmetic_op = SLJIT_MSHL32;
+         break;
+      case TCIR_OP_SHR_I32:
+         arithmetic_op = SLJIT_MASHR32;
+         break;
+      case TCIR_OP_USHR_I32:
+         arithmetic_op = SLJIT_MLSHR32;
+         break;
+      case TCIR_OP_AND_I32:
+         arithmetic_op = SLJIT_AND32;
+         break;
+      case TCIR_OP_OR_I32:
+         arithmetic_op = SLJIT_OR32;
+         break;
+      case TCIR_OP_XOR_I32:
+         arithmetic_op = SLJIT_XOR32;
+         break;
+      case TCIR_OP_TRUNC_I32_I8:
+      case TCIR_OP_TRUNC_I32_I16:
+      case TCIR_OP_ZEXT_I16_I32:
+      {
+         sljit_sw mask = operation->opcode == TCIR_OP_TRUNC_I32_I8 ? 0xff : 0xffff;
+         return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+            && tcirJitEmitOp2(emitter, SLJIT_AND32, SLJIT_R0, 0,
+                              SLJIT_R0, 0, SLJIT_IMM, mask)
+            && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+      }
+      case TCIR_OP_SEXT_I8_I32:
+      case TCIR_OP_SEXT_I16_I32:
+      {
+         sljit_sw shift = operation->opcode == TCIR_OP_SEXT_I8_I32 ? 24 : 16;
+         return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+            && tcirJitEmitOp2(emitter, SLJIT_SHL32, SLJIT_R0, 0,
+                              SLJIT_R0, 0, SLJIT_IMM, shift)
+            && tcirJitEmitOp2(emitter, SLJIT_ASHR32, SLJIT_R0, 0,
+                              SLJIT_R0, 0, SLJIT_IMM, shift)
+            && tcirJitStoreValue(emitter, operation->result, SLJIT_R0);
+      }
       case TCIR_OP_CMP_EQ_I32:
          comparison_flag = SLJIT_SET_Z;
          comparison_type = SLJIT_EQUAL;

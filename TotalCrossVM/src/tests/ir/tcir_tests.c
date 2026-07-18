@@ -672,15 +672,17 @@ static int buildFixtureView(
 
 static int testConverterFrontendFixtures(void)
 {
-   static const char *const golden_names[] = { "frontend-add", "frontend-abs", "frontend-sumTo" };
-   static const size_t expected_block_counts[] = { 1, 4, 4 };
+   static const char *const golden_names[] = {
+      "frontend-add", "frontend-abs", "frontend-sumTo", "frontend-pureI32"
+   };
+   static const size_t expected_block_counts[] = { 1, 4, 4, 1 };
    TCIRDiagnostic diagnostic;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
    size_t fixture_index;
 
    REQUIRE(module != NULL);
-   REQUIRE(sizeof(tcir_converter_fixtures) / sizeof(tcir_converter_fixtures[0]) == 3);
-   for (fixture_index = 0; fixture_index < 3; fixture_index++)
+   REQUIRE(TCIR_CONVERTER_FIXTURE_COUNT == 4U);
+   for (fixture_index = 0; fixture_index < TCIR_CONVERTER_FIXTURE_COUNT; fixture_index++)
    {
       const TCIRConverterFixture *fixture = &tcir_converter_fixtures[fixture_index];
       TCIRMethodParameter parameters[2];
@@ -1222,6 +1224,6 @@ int main(void)
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
-   printf("TCIR tests passed: reference execution, 3 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
+   printf("TCIR tests passed: reference execution, 4 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
    return 0;
 }

@@ -160,7 +160,7 @@ static DifferentialResult executeTCode(
    int32_t second)
 {
    enum { FRAME_CAPACITY = 16 };
-   TCode code[16];
+   TCode code[32];
    TMethod method;
    TTCClass class_;
    TConstantPool constant_pool;
@@ -483,12 +483,12 @@ static int testFixtureCorpus(void)
    static const int32_t sum_cases[] = { INT_MIN, -100, -1, 0, 1, 2, 10, 100, 4096, 65537 };
    TCIRDiagnostic diagnostic;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
-   TCIRFunction *functions[3];
-   void *jit_artifacts[3] = { NULL, NULL, NULL };
+   TCIRFunction *functions[TCIR_CONVERTER_FIXTURE_COUNT];
+   void *jit_artifacts[TCIR_CONVERTER_FIXTURE_COUNT] = { NULL };
 #if defined(TCIR_HAS_AOT)
-   static const char *const method_names[] = { "add", "abs", "sumTo" };
-   static const char *const signatures[] = { "(II)I", "(I)I", "(I)I" };
-   TCCompiledEntry aot_entries[3];
+   static const char *const method_names[] = { "add", "abs", "sumTo", "pureI32" };
+   static const char *const signatures[] = { "(II)I", "(I)I", "(I)I", "(II)I" };
+   TCCompiledEntry aot_entries[TCIR_CONVERTER_FIXTURE_COUNT];
 #endif
    uint32_t generated_state = UINT32_C(0x4d595df4);
    size_t case_index;
@@ -496,7 +496,7 @@ static int testFixtureCorpus(void)
 
    REQUIRE(module != NULL);
    REQUIRE(sizeof(TCode) == sizeof(unsigned int));
-   for (fixture_index = 0U; fixture_index < 3U; ++fixture_index)
+   for (fixture_index = 0U; fixture_index < TCIR_CONVERTER_FIXTURE_COUNT; ++fixture_index)
    {
       TCIRMethodParameter parameters[2];
       TCIRMethodView view;
@@ -541,6 +541,13 @@ static int testFixtureCorpus(void)
                            aot_entries[2],
 #endif
                            &diagnostic));
+   for (case_index = 0U; case_index < sizeof(add_cases) / sizeof(add_cases[0]); ++case_index)
+      REQUIRE(compareInput(&tcir_converter_fixtures[3], functions[3], add_cases[case_index][0],
+                           add_cases[case_index][1], jit_artifacts[3],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[3],
+#endif
+                           &diagnostic));
 
    for (case_index = 0U; case_index < 512U; ++case_index)
    {
@@ -558,6 +565,12 @@ static int testFixtureCorpus(void)
                            aot_entries[1],
 #endif
                            &diagnostic));
+      REQUIRE(compareInput(&tcir_converter_fixtures[3], functions[3], first, second,
+                           jit_artifacts[3],
+#if defined(TCIR_HAS_AOT)
+                           aot_entries[3],
+#endif
+                           &diagnostic));
    }
    for (case_index = 0U; case_index < 128U; ++case_index)
    {
@@ -571,7 +584,7 @@ static int testFixtureCorpus(void)
    }
 
 #if defined(TCIR_HAS_SLJIT)
-   for (fixture_index = 0U; fixture_index < 3U; ++fixture_index)
+   for (fixture_index = 0U; fixture_index < TCIR_CONVERTER_FIXTURE_COUNT; ++fixture_index)
       tcirJitArtifactDestroy((TCIRJitArtifact *)jit_artifacts[fixture_index]);
 #endif
    tcirModuleDestroy(module);
@@ -607,17 +620,17 @@ int main(void)
       return 1;
 #if defined(TCIR_HAS_SLJIT)
 #if defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 3 fixtures, 1,179 executeMethod/TCIR/SLJIT/AOT comparisons, "
+   printf("TCIR differential tests passed: 4 fixtures, 1,701 executeMethod/TCIR/SLJIT/AOT comparisons, "
           "fixed seed 0x4d595df4.\n");
 #else
-   printf("TCIR differential tests passed: 3 fixtures, 1,179 executeMethod/TCIR/SLJIT comparisons, "
+   printf("TCIR differential tests passed: 4 fixtures, 1,701 executeMethod/TCIR/SLJIT comparisons, "
           "fixed seed 0x4d595df4.\n");
 #endif
 #elif defined(TCIR_HAS_AOT)
-   printf("TCIR differential tests passed: 3 fixtures, 1,179 executeMethod/TCIR/AOT comparisons, "
+   printf("TCIR differential tests passed: 4 fixtures, 1,701 executeMethod/TCIR/AOT comparisons, "
           "fixed seed 0x4d595df4.\n");
 #else
-   printf("TCIR differential tests passed: 3 fixtures, 1,179 executeMethod comparisons, fixed seed 0x4d595df4.\n");
+   printf("TCIR differential tests passed: 4 fixtures, 1,701 executeMethod comparisons, fixed seed 0x4d595df4.\n");
 #endif
    return 0;
 }

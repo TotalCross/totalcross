@@ -44,6 +44,25 @@ static int tcirFrontendIsReturn(unsigned int opcode)
           opcode == RETURN_s24I || opcode == RETURN_symI;
 }
 
+static int tcirFrontendIsI32Arithmetic(unsigned int opcode)
+{
+   return opcode == INC_regI ||
+          (opcode >= ADD_regI_regI_regI && opcode <= ADD_regI_regI_sym) ||
+          opcode == SUB_regI_s12_regI || opcode == SUB_regI_regI_regI ||
+          opcode == MUL_regI_regI_s12 || opcode == MUL_regI_regI_regI ||
+          opcode == SHR_regI_regI_s12 || opcode == SHR_regI_regI_regI ||
+          opcode == SHL_regI_regI_s12 || opcode == SHL_regI_regI_regI ||
+          opcode == USHR_regI_regI_s12 || opcode == USHR_regI_regI_regI ||
+          opcode == AND_regI_regI_s12 || opcode == AND_regI_regI_regI ||
+          opcode == OR_regI_regI_s12 || opcode == OR_regI_regI_regI ||
+          opcode == XOR_regI_regI_s12 || opcode == XOR_regI_regI_regI;
+}
+
+static int tcirFrontendIsI32Narrowing(unsigned int opcode)
+{
+   return opcode == CONV_regIb_regI || opcode == CONV_regIc_regI || opcode == CONV_regIs_regI;
+}
+
 static void tcirFrontendBlocksDestroy(TCIRFrontendBlocks *blocks)
 {
    if (blocks == NULL)
@@ -336,10 +355,29 @@ static int tcirFrontendTranslateArithmetic(
       return state[instruction->reg0] != NULL;
    }
 
-   operation = (opcode == SUB_regI_s12_regI || opcode == SUB_regI_regI_regI) ?
-      TCIR_OP_SUB_I32 :
-      ((opcode == MUL_regI_regI_s12 || opcode == MUL_regI_regI_regI) ? TCIR_OP_MUL_I32 : TCIR_OP_ADD_I32);
-   if (opcode == ADD_regI_regI_regI || opcode == SUB_regI_regI_regI || opcode == MUL_regI_regI_regI)
+   switch (opcode)
+   {
+      case SUB_regI_s12_regI:
+      case SUB_regI_regI_regI: operation = TCIR_OP_SUB_I32; break;
+      case MUL_regI_regI_s12:
+      case MUL_regI_regI_regI: operation = TCIR_OP_MUL_I32; break;
+      case SHR_regI_regI_s12:
+      case SHR_regI_regI_regI: operation = TCIR_OP_SHR_I32; break;
+      case SHL_regI_regI_s12:
+      case SHL_regI_regI_regI: operation = TCIR_OP_SHL_I32; break;
+      case USHR_regI_regI_s12:
+      case USHR_regI_regI_regI: operation = TCIR_OP_USHR_I32; break;
+      case AND_regI_regI_s12:
+      case AND_regI_regI_regI: operation = TCIR_OP_AND_I32; break;
+      case OR_regI_regI_s12:
+      case OR_regI_regI_regI: operation = TCIR_OP_OR_I32; break;
+      case XOR_regI_regI_s12:
+      case XOR_regI_regI_regI: operation = TCIR_OP_XOR_I32; break;
+      default: operation = TCIR_OP_ADD_I32; break;
+   }
+   if (opcode == ADD_regI_regI_regI || opcode == SUB_regI_regI_regI || opcode == MUL_regI_regI_regI ||
+       opcode == SHR_regI_regI_regI || opcode == SHL_regI_regI_regI || opcode == USHR_regI_regI_regI ||
+       opcode == AND_regI_regI_regI || opcode == OR_regI_regI_regI || opcode == XOR_regI_regI_regI)
    {
       left = state[instruction->reg1];
       right = state[instruction->reg2];
@@ -364,6 +402,39 @@ static int tcirFrontendTranslateArithmetic(
    }
    state[instruction->reg0] = tcirFrontendAppendBinary(
       block, operation, left, right, TCIR_TYPE_I32, source, diagnostic);
+   return state[instruction->reg0] != NULL;
+}
+
+static int tcirFrontendTranslateNarrowing(
+   TCIRBlock *block,
+   const TCIRMethodView *method,
+   const TCIRDecodedInstruction *instruction,
+   const TCIRValue **state,
+   TCIRDiagnostic *diagnostic)
+{
+   const TCIRValue *operand[1];
+   TCIRValue *narrowed;
+   TCIROperation truncate;
+   TCIROperation extend;
+   TCIRType narrow_type;
+   TCIRSourceLocation source = tcirFrontendSource(method, instruction->pc);
+
+   operand[0] = state[instruction->reg1];
+   narrow_type = instruction->info->value == CONV_regIb_regI ? TCIR_TYPE_I8 : TCIR_TYPE_I16;
+   truncate = narrow_type == TCIR_TYPE_I8 ? TCIR_OP_TRUNC_I32_I8 : TCIR_OP_TRUNC_I32_I16;
+   if (instruction->info->value == CONV_regIb_regI)
+      extend = TCIR_OP_SEXT_I8_I32;
+   else if (instruction->info->value == CONV_regIc_regI)
+      extend = TCIR_OP_ZEXT_I16_I32;
+   else
+      extend = TCIR_OP_SEXT_I16_I32;
+   narrowed = tcirFrontendAppendOperation(
+      block, truncate, narrow_type, operand, 1, 0, TCIR_HOME_I32, 0, source, diagnostic);
+   if (narrowed == NULL)
+      return 0;
+   operand[0] = narrowed;
+   state[instruction->reg0] = tcirFrontendAppendOperation(
+      block, extend, TCIR_TYPE_I32, operand, 1, 0, TCIR_HOME_I32, 0, source, diagnostic);
    return state[instruction->reg0] != NULL;
 }
 
@@ -509,11 +580,14 @@ static int tcirFrontendTranslateBlock(
          if (!tcirFrontendTranslateMove(block, method, instruction, state, diagnostic))
             goto failed;
       }
-      else if (opcode == INC_regI || (opcode >= ADD_regI_regI_regI && opcode <= ADD_regI_regI_sym) ||
-               opcode == SUB_regI_s12_regI || opcode == SUB_regI_regI_regI ||
-               opcode == MUL_regI_regI_s12 || opcode == MUL_regI_regI_regI)
+      else if (tcirFrontendIsI32Arithmetic(opcode))
       {
          if (!tcirFrontendTranslateArithmetic(block, method, instruction, state, diagnostic))
+            goto failed;
+      }
+      else if (tcirFrontendIsI32Narrowing(opcode))
+      {
+         if (!tcirFrontendTranslateNarrowing(block, method, instruction, state, diagnostic))
             goto failed;
       }
       else if (tcirFrontendIsConditional(opcode))

@@ -69,7 +69,7 @@ static int buildFixtureFunctions(
    TCIRDiagnostic *diagnostic)
 {
    size_t index;
-   for (index = 0U; index < 3U; ++index)
+   for (index = 0U; index < TCIR_CONVERTER_FIXTURE_COUNT; ++index)
    {
       TCIRMethodParameter parameters[2];
       TCIRMethodView view;
@@ -157,24 +157,23 @@ static int testDeterministicGeneration(void)
    TCIRAotOutput first;
    TCIRAotOutput second;
    TCIRModule *module = tcirModuleCreate(NULL, &ir_diagnostic);
-   TCIRFunction *functions[3];
-   const TCIRFunction *forward[3];
-   const TCIRFunction *reverse[3];
+   TCIRFunction *functions[TCIR_CONVERTER_FIXTURE_COUNT];
+   const TCIRFunction *forward[TCIR_CONVERTER_FIXTURE_COUNT];
+   const TCIRFunction *reverse[TCIR_CONVERTER_FIXTURE_COUNT];
    const char *abs_position;
    const char *add_position;
    size_t index;
 
    REQUIRE(module != NULL);
    REQUIRE(buildFixtureFunctions(module, functions, &ir_diagnostic));
-   for (index = 0U; index < 3U; ++index)
+   for (index = 0U; index < TCIR_CONVERTER_FIXTURE_COUNT; ++index)
       forward[index] = functions[index];
-   reverse[0] = functions[2];
-   reverse[1] = functions[1];
-   reverse[2] = functions[0];
+   for (index = 0U; index < TCIR_CONVERTER_FIXTURE_COUNT; ++index)
+      reverse[index] = functions[TCIR_CONVERTER_FIXTURE_COUNT - index - 1U];
    options.target_options = "host-c11-test";
-   REQUIRE(tcirAotGenerate(forward, 3U, &options, &first, &aot_diagnostic)
+   REQUIRE(tcirAotGenerate(forward, TCIR_CONVERTER_FIXTURE_COUNT, &options, &first, &aot_diagnostic)
            == TCIR_AOT_GENERATE_READY);
-   REQUIRE(tcirAotGenerate(reverse, 3U, &options, &second, &aot_diagnostic)
+   REQUIRE(tcirAotGenerate(reverse, TCIR_CONVERTER_FIXTURE_COUNT, &options, &second, &aot_diagnostic)
            == TCIR_AOT_GENERATE_READY);
    REQUIRE(first.source_size == second.source_size);
    REQUIRE(first.header_size == second.header_size);
@@ -207,7 +206,7 @@ static int testChangedInputChangesIdentity(void)
    TCIRAotOutput original;
    TCIRAotOutput changed;
    TCIRModule *module = tcirModuleCreate(NULL, &ir_diagnostic);
-   TCIRFunction *functions[3];
+   TCIRFunction *functions[TCIR_CONVERTER_FIXTURE_COUNT];
    TCIRFunction *changed_function;
    const TCIRFunction *original_input[1];
    const TCIRFunction *changed_input[1];
