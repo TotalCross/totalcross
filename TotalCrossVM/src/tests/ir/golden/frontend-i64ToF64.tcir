@@ -1,0 +1,11 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.i64ToF64:(J)D"(%v0: i64) -> f64
+  homes i32 0, ref 0, v64 1
+bb0() ; tcpc=0 line=51
+  %v1 = i64.to.f64 %v0 -> f64 ; tcpc=0 line=51
+  ret %v1 ; tcpc=1 line=51
+end

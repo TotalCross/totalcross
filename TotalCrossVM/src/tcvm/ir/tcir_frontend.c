@@ -83,9 +83,10 @@ static int tcirFrontendIsI64Arithmetic(unsigned int opcode)
           opcode == XOR_regL_regL_regL;
 }
 
-static int tcirFrontendIsI64Conversion(unsigned int opcode)
+static int tcirFrontendIsNumericConversion(unsigned int opcode)
 {
-   return opcode == CONV_regI_regL || opcode == CONV_regL_regI;
+   return opcode == CONV_regI_regL || opcode == CONV_regL_regI ||
+          opcode == CONV_regD_regI || opcode == CONV_regD_regL;
 }
 
 static int tcirFrontendIsF64Arithmetic(unsigned int opcode)
@@ -641,7 +642,7 @@ static int tcirFrontendTranslateI64Arithmetic(
    return state[destination] != NULL;
 }
 
-static int tcirFrontendTranslateI64Conversion(
+static int tcirFrontendTranslateNumericConversion(
    TCIRBlock *block,
    const TCIRMethodView *method,
    const TCIRDecodedInstruction *instruction,
@@ -651,7 +652,12 @@ static int tcirFrontendTranslateI64Conversion(
    const TCIRValue *operand[1];
    TCIRSourceLocation source = tcirFrontendSource(method, instruction->pc);
 
-   if (instruction->info->value == CONV_regI_regL)
+   unsigned int opcode = instruction->info->value;
+   TCIROperation operation;
+   TCIRType result_type;
+   size_t destination;
+
+   if (opcode == CONV_regI_regL)
    {
       operand[0] = state[tcirFrontendV64StateIndex(method, instruction->reg1)];
       state[instruction->reg0] = tcirFrontendAppendOperation(
@@ -660,11 +666,30 @@ static int tcirFrontendTranslateI64Conversion(
       return state[instruction->reg0] != NULL;
    }
 
-   operand[0] = state[instruction->reg1];
-   state[tcirFrontendV64StateIndex(method, instruction->reg0)] = tcirFrontendAppendOperation(
-      block, TCIR_OP_SEXT_I32_I64, TCIR_TYPE_I64, operand, 1, 0,
+   destination = tcirFrontendV64StateIndex(method, instruction->reg0);
+   if (opcode == CONV_regL_regI || opcode == CONV_regD_regI)
+      operand[0] = state[instruction->reg1];
+   else
+      operand[0] = state[tcirFrontendV64StateIndex(method, instruction->reg1)];
+   if (opcode == CONV_regL_regI)
+   {
+      operation = TCIR_OP_SEXT_I32_I64;
+      result_type = TCIR_TYPE_I64;
+   }
+   else if (opcode == CONV_regD_regI)
+   {
+      operation = TCIR_OP_I32_TO_F64;
+      result_type = TCIR_TYPE_F64;
+   }
+   else
+   {
+      operation = TCIR_OP_I64_TO_F64;
+      result_type = TCIR_TYPE_F64;
+   }
+   state[destination] = tcirFrontendAppendOperation(
+      block, operation, result_type, operand, 1, 0,
       TCIR_HOME_V64, 0, source, diagnostic);
-   return state[tcirFrontendV64StateIndex(method, instruction->reg0)] != NULL;
+   return state[destination] != NULL;
 }
 
 static int tcirFrontendTranslateF64Arithmetic(
@@ -897,9 +922,9 @@ static int tcirFrontendTranslateBlock(
          if (!tcirFrontendTranslateNarrowing(block, method, instruction, state, diagnostic))
             goto failed;
       }
-      else if (tcirFrontendIsI64Conversion(opcode))
+      else if (tcirFrontendIsNumericConversion(opcode))
       {
-         if (!tcirFrontendTranslateI64Conversion(block, method, instruction, state, diagnostic))
+         if (!tcirFrontendTranslateNumericConversion(block, method, instruction, state, diagnostic))
             goto failed;
       }
       else if (tcirFrontendIsConditional(opcode))

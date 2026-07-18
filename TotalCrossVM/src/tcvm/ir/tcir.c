@@ -354,6 +354,8 @@ const char *tcirOperationName(TCIROperation operation)
       "cmp.le.f64",
       "cmp.gt.f64",
       "cmp.ge.f64",
+      "i32.to.f64",
+      "i64.to.f64",
       "load.slot",
       "store.slot",
       "null.check",

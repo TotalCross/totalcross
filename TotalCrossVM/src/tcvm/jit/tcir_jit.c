@@ -214,6 +214,10 @@ static int tcirJitOperationIsEligible(const TCIROperationView *operation)
       case TCIR_OP_CMP_GE_F64:
          return tcirJitSupportsF64() && operation->result != NULL &&
             operation->result_type == TCIR_TYPE_I1 && operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_I32_TO_F64:
+      case TCIR_OP_I64_TO_F64:
+         return tcirJitSupportsF64() && operation->result != NULL &&
+            operation->result_type == TCIR_TYPE_F64 && operation->effects == TCIR_EFFECT_NONE;
       case TCIR_OP_LOAD_SLOT:
          return operation->result != NULL && operation->effects == TCIR_EFFECT_NONE &&
             ((operation->result_type == TCIR_TYPE_I32 && operation->home_bank == TCIR_HOME_I32) ||
@@ -758,6 +762,16 @@ static int tcirJitEmitOperation(TCIRJitEmitter *emitter, const TCIROperationView
          comparison_flag = SLJIT_SET_ORDERED_GREATER_EQUAL;
          comparison_type = SLJIT_ORDERED_GREATER_EQUAL;
          goto comparison_f64;
+      case TCIR_OP_I32_TO_F64:
+         return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+            && tcirJitEmitFop1(emitter, SLJIT_CONV_F64_FROM_S32,
+                                SLJIT_FR0, 0, SLJIT_R0, 0)
+            && tcirJitStoreF64(emitter, operation->result, SLJIT_FR0);
+      case TCIR_OP_I64_TO_F64:
+         return tcirJitLoadValue(emitter, SLJIT_R0, operation->operands[0])
+            && tcirJitEmitFop1(emitter, SLJIT_CONV_F64_FROM_SW,
+                                SLJIT_FR0, 0, SLJIT_R0, 0)
+            && tcirJitStoreF64(emitter, operation->result, SLJIT_FR0);
       case TCIR_OP_LOAD_SLOT:
       {
          size_t pointer_offset = operation->home_bank == TCIR_HOME_I32
