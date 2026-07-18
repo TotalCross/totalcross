@@ -30,6 +30,16 @@ typedef union TCIRV64Home
    double f64;
 } TCIRV64Home;
 
+typedef enum TCIRRuntimeExceptionKind
+{
+   TCIR_RUNTIME_EXCEPTION_ARITHMETIC = 0
+} TCIRRuntimeExceptionKind;
+
+typedef void (*TCIRRaiseExceptionFunction)(
+   void *runtime_context,
+   TCIRRuntimeExceptionKind kind,
+   unsigned int tc_pc);
+
 typedef struct TCIRInterpreterFrame
 {
    int32_t *i32_homes;
@@ -41,6 +51,8 @@ typedef struct TCIRInterpreterFrame
    const TCIRRuntimeValue *arguments;
    size_t argument_count;
    unsigned int tc_pc;
+   void *runtime_context;
+   TCIRRaiseExceptionFunction raise_exception;
 } TCIRInterpreterFrame;
 
 typedef struct TCIRInterpreterOptions

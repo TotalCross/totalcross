@@ -61,6 +61,19 @@ typedef struct TCIRRuntimeState
 
 static TCIRRuntimeState tcir_runtime_state;
 
+static void tcirRuntimeRaiseException(
+   void *runtime_context,
+   TCIRRuntimeExceptionKind kind,
+   unsigned int tc_pc)
+{
+   Context context = (Context)runtime_context;
+   (void)tc_pc;
+   if (context == null)
+      return;
+   if (kind == TCIR_RUNTIME_EXCEPTION_ARITHMETIC)
+      throwException(context, ArithmeticException, null);
+}
+
 #if defined(_WIN32)
 static volatile LONG tcir_runtime_dispatch_enabled;
 
@@ -769,6 +782,8 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
       interpreter_frame.v64_home_count = frame.v64_home_count;
       interpreter_frame.arguments = frame.arguments;
       interpreter_frame.argument_count = frame.argument_count;
+      interpreter_frame.runtime_context = context;
+      interpreter_frame.raise_exception = tcirRuntimeRaiseException;
       interpreter_status = tcirInterpretFunction(entry->function, &interpreter_frame, NULL,
                                                  &interpreter_result, &ir_diagnostic);
       result->status = interpreter_status == TCIR_INTERPRETER_RETURNED

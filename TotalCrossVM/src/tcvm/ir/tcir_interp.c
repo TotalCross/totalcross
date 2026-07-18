@@ -98,6 +98,8 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_ADD_I32:
       case TCIR_OP_SUB_I32:
       case TCIR_OP_MUL_I32:
+      case TCIR_OP_DIV_I32:
+      case TCIR_OP_MOD_I32:
       case TCIR_OP_SHL_I32:
       case TCIR_OP_SHR_I32:
       case TCIR_OP_USHR_I32:
@@ -349,12 +351,14 @@ static int tcirStoreHome(
 static int tcirExecuteOperation(
    TCIRInterpreterState *state,
    TCIRInterpreterFrame *frame,
-   const TCIROperationView *operation)
+   const TCIROperationView *operation,
+   int *thrown)
 {
    TCIRRuntimeValue left;
    TCIRRuntimeValue right;
    TCIRRuntimeValue value;
 
+   *thrown = 0;
    memset(&value, 0, sizeof(value));
    if (operation->operand_count > 0U && !tcirValueIsDefined(state, operation->operands[0]))
       return 0;
@@ -385,6 +389,30 @@ static int tcirExecuteOperation(
          break;
       case TCIR_OP_MUL_I32:
          value.i32 = tcirMulI32(left.i32, right.i32);
+         break;
+      case TCIR_OP_DIV_I32:
+         if (right.i32 == 0)
+         {
+            if (frame->raise_exception != NULL)
+               frame->raise_exception(
+                  frame->runtime_context, TCIR_RUNTIME_EXCEPTION_ARITHMETIC, operation->source.tc_pc);
+            *thrown = 1;
+            return 1;
+         }
+         value.i32 = left.i32 == INT32_MIN && right.i32 == -1
+            ? INT32_MIN : left.i32 / right.i32;
+         break;
+      case TCIR_OP_MOD_I32:
+         if (right.i32 == 0)
+         {
+            if (frame->raise_exception != NULL)
+               frame->raise_exception(
+                  frame->runtime_context, TCIR_RUNTIME_EXCEPTION_ARITHMETIC, operation->source.tc_pc);
+            *thrown = 1;
+            return 1;
+         }
+         value.i32 = left.i32 == INT32_MIN && right.i32 == -1
+            ? 0 : left.i32 % right.i32;
          break;
       case TCIR_OP_SHL_I32:
          value.i32 = tcirShlI32(left.i32, right.i32);
@@ -547,13 +575,23 @@ TCIRInterpreterStatus tcirInterpretFunction(
       for (operation_index = 0U; operation_index < tcirBlockOperationCount(block); ++operation_index)
       {
          TCIROperationView operation;
+         int operation_threw;
          (void)tcirBlockOperationAt(block, operation_index, &operation);
          if (!tcirConsumeStep(function, &state, frame, result, diagnostic, operation.source.tc_pc))
             goto done;
-         if (!tcirExecuteOperation(&state, frame, &operation))
+         if (!tcirExecuteOperation(&state, frame, &operation, &operation_threw))
          {
             tcirReject(function, result, diagnostic, TCIR_DIAGNOSTIC_UNDEFINED_VALUE, operation.source.tc_pc,
                        "verified TCIR reached an invalid operation state");
+            goto done;
+         }
+         if (operation_threw)
+         {
+            memset(result, 0, sizeof(*result));
+            result->status = TCIR_INTERPRETER_THROWN;
+            result->type = TCIR_TYPE_VOID;
+            result->tc_pc = operation.source.tc_pc;
+            result->steps = state.steps;
             goto done;
          }
       }

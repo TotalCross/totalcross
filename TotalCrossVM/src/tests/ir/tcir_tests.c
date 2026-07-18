@@ -1203,6 +1203,108 @@ static int testOpcodeRegistry(void)
    return 1;
 }
 
+typedef struct TCIRExceptionCapture
+{
+   unsigned int count;
+   TCIRRuntimeExceptionKind kind;
+   unsigned int tc_pc;
+} TCIRExceptionCapture;
+
+static void captureRuntimeException(
+   void *runtime_context,
+   TCIRRuntimeExceptionKind kind,
+   unsigned int tc_pc)
+{
+   TCIRExceptionCapture *capture = (TCIRExceptionCapture *)runtime_context;
+   capture->count++;
+   capture->kind = kind;
+   capture->tc_pc = tc_pc;
+}
+
+static int testCheckedI32Arithmetic(void)
+{
+   static const unsigned int code[] = {
+      0x0100023fU, 0x01000343U, 0x0302022eU, 0x00000285U
+   };
+   static const unsigned int immediate_code[] = {
+      0x0030023eU, 0x00300342U, 0x0302022eU, 0x00000285U
+   };
+   TCIRMethodParameter parameters[2];
+   TCIRMethodView view;
+   TCIRDiagnostic diagnostic;
+   TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
+   TCIRFunction *function = NULL;
+   TCIROperationView operation;
+   TCIRRuntimeValue arguments[2];
+   TCIRInterpreterFrame frame;
+   TCIRInterpreterResult result;
+   TCIRExceptionCapture capture;
+   int32_t homes[4];
+
+   REQUIRE(module != NULL);
+   memset(parameters, 0, sizeof(parameters));
+   parameters[0].type = TCIR_TYPE_I32;
+   parameters[0].home_bank = TCIR_HOME_I32;
+   parameters[1].type = TCIR_TYPE_I32;
+   parameters[1].home_bank = TCIR_HOME_I32;
+   parameters[1].home_index = 1U;
+   memset(&view, 0, sizeof(view));
+   view.identity = "Example.checkedArithmetic:(II)I";
+   view.code = code;
+   view.code_slot_count = sizeof(code) / sizeof(code[0]);
+   view.i32_home_count = 4U;
+   view.parameters = parameters;
+   view.parameter_count = 2U;
+   view.return_type = TCIR_TYPE_I32;
+   REQUIRE(tcirFrontendBuildFunction(module, &view, &function, &diagnostic) == TCIR_FRONTEND_OK);
+   REQUIRE(function != NULL && tcirVerifyFunction(function, &diagnostic));
+   REQUIRE(tcirBlockOperationAt(tcirFunctionBlockAt(function, 0U), 0U, &operation) == TCIR_STATUS_OK);
+   REQUIRE(operation.opcode == TCIR_OP_DIV_I32);
+   REQUIRE(operation.effects == (TCIR_EFFECT_MAY_THROW | TCIR_EFFECT_MAY_GC));
+   REQUIRE(operation.propagates_exception);
+
+   memset(&frame, 0, sizeof(frame));
+   memset(arguments, 0, sizeof(arguments));
+   memset(homes, 0, sizeof(homes));
+   memset(&capture, 0, sizeof(capture));
+   frame.i32_homes = homes;
+   frame.i32_home_count = sizeof(homes) / sizeof(homes[0]);
+   frame.arguments = arguments;
+   frame.argument_count = 2U;
+   frame.runtime_context = &capture;
+   frame.raise_exception = captureRuntimeException;
+
+   arguments[0].i32 = 7;
+   arguments[1].i32 = 3;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic) == TCIR_INTERPRETER_RETURNED);
+   REQUIRE(result.value.i32 == 3 && capture.count == 0U);
+
+   arguments[0].i32 = INT_MIN;
+   arguments[1].i32 = -1;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic) == TCIR_INTERPRETER_RETURNED);
+   REQUIRE(result.value.i32 == INT_MIN && capture.count == 0U);
+
+   arguments[0].i32 = 7;
+   arguments[1].i32 = 0;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic) == TCIR_INTERPRETER_THROWN);
+   REQUIRE(result.tc_pc == 0U && capture.count == 1U);
+   REQUIRE(capture.kind == TCIR_RUNTIME_EXCEPTION_ARITHMETIC && capture.tc_pc == 0U);
+
+   view.identity = "Example.checkedImmediate:(I)I";
+   view.code = immediate_code;
+   view.parameter_count = 1U;
+   function = NULL;
+   REQUIRE(tcirFrontendBuildFunction(module, &view, &function, &diagnostic) == TCIR_FRONTEND_OK);
+   REQUIRE(function != NULL && tcirVerifyFunction(function, &diagnostic));
+   frame.argument_count = 1U;
+   arguments[0].i32 = 7;
+   capture.count = 0U;
+   REQUIRE(tcirInterpretFunction(function, &frame, NULL, &result, &diagnostic) == TCIR_INTERPRETER_RETURNED);
+   REQUIRE(result.value.i32 == 3 && capture.count == 0U);
+   tcirModuleDestroy(module);
+   return 1;
+}
+
 int main(void)
 {
    int passed = 1;
@@ -1221,6 +1323,7 @@ int main(void)
    passed = testUncheckedArrayProof() && passed;
    passed = testInternalAddressLifetime() && passed;
    passed = testNonNullProof() && passed;
+   passed = testCheckedI32Arithmetic() && passed;
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
