@@ -66,7 +66,8 @@ static void tcirRuntimeRaiseException(
    TCIRRuntimeExceptionKind kind,
    unsigned int tc_pc)
 {
-   Context context = (Context)runtime_context;
+   const TCCompiledRuntime *runtime = (const TCCompiledRuntime *)runtime_context;
+   Context context = runtime == NULL ? NULL : (Context)runtime->context;
    (void)tc_pc;
    if (context == null)
       return;
@@ -449,6 +450,103 @@ static int tcirRuntimeBuildArguments(
    return 1;
 }
 
+static TCIRType tcirRuntimeRegisterType(uint8_t register_type)
+{
+   switch (register_type)
+   {
+      case RegI: return TCIR_TYPE_I32;
+      case RegO: return TCIR_TYPE_REF;
+      case RegD: return TCIR_TYPE_F64;
+      case RegL: return TCIR_TYPE_I64;
+      default: return TCIR_TYPE_VOID;
+   }
+}
+
+static int tcirRuntimeMethodReturnType(Method method, TCIRType *type)
+{
+   if (method == NULL || type == NULL)
+      return 0;
+   if (method->cpReturn == 0U)
+   {
+      *type = TCIR_TYPE_VOID;
+      return 1;
+   }
+   *type = tcirRuntimeRegisterType(method->returnReg);
+   return *type != TCIR_TYPE_VOID;
+}
+
+static int tcirRuntimeResolveStaticCall(
+   const TCCompiledRuntime *runtime,
+   unsigned int constant_pool_index,
+   Method *target)
+{
+   Method caller;
+   ConstantPool constant_pool;
+
+   if (target != NULL)
+      *target = NULL;
+   if (runtime == NULL || runtime->abi_version != TC_RUNTIME_ABI_VERSION ||
+       runtime->method_key == NULL || target == NULL)
+      return 0;
+   caller = (Method)runtime->method_key;
+   if (caller->class_ == NULL || caller->class_->cp == NULL)
+      return 0;
+   constant_pool = caller->class_->cp;
+   if (constant_pool->boundNormal == NULL || constant_pool_index == 0U ||
+       constant_pool_index >= constant_pool->mtdCount)
+      return 0;
+   *target = constant_pool->boundNormal[constant_pool_index];
+   return *target != NULL && (*target)->flags.isStatic;
+}
+
+static int tcirRuntimeCallMatchesOperation(
+   const TCCompiledRuntime *runtime,
+   const TCIROperationView *operation)
+{
+   Method target;
+   TCIRType return_type;
+   size_t parameter_index;
+
+   if (operation == NULL || operation->opcode != TCIR_OP_METHOD_CALL ||
+       operation->symbol == NULL || operation->immediate_i32 != TCIR_CALL_STATIC ||
+       tcirSymbolKind(operation->symbol) != TCIR_SYMBOL_METHOD ||
+       !tcirRuntimeResolveStaticCall(
+          runtime, tcirSymbolConstantPoolIndex(operation->symbol), &target) ||
+       target->paramCount != operation->operand_count ||
+       (target->paramCount != 0U && target->paramRegs == NULL) ||
+       !tcirRuntimeMethodReturnType(target, &return_type) ||
+       return_type != operation->result_type)
+      return 0;
+   for (parameter_index = 0U; parameter_index < operation->operand_count; ++parameter_index)
+      if (tcirRuntimeRegisterType(target->paramRegs[parameter_index]) !=
+          tcirValueType(operation->operands[parameter_index]))
+         return 0;
+   return 1;
+}
+
+static int tcirRuntimePreflightCalls(
+   const TCIRRuntimeEntry *entry,
+   const TCCompiledRuntime *runtime)
+{
+   size_t block_index;
+
+   for (block_index = 0U; block_index < tcirFunctionBlockCount(entry->function); ++block_index)
+   {
+      const TCIRBlock *block = tcirFunctionBlockAt(entry->function, block_index);
+      size_t operation_index;
+      for (operation_index = 0U; operation_index < tcirBlockOperationCount(block); ++operation_index)
+      {
+         TCIROperationView operation;
+         if (tcirBlockOperationAt(block, operation_index, &operation) != TCIR_STATUS_OK)
+            return 0;
+         if (operation.opcode == TCIR_OP_METHOD_CALL &&
+             !tcirRuntimeCallMatchesOperation(runtime, &operation))
+            return 0;
+      }
+   }
+   return 1;
+}
+
 static TCCompiledStatus tcirRuntimeDispatchCall(
    void *runtime_context,
    const void *method_key,
@@ -536,6 +634,90 @@ static TCCompiledStatus tcirRuntimeDispatchCall(
    return TC_COMPILED_RETURNED;
 }
 
+static TCCompiledStatus tcirRuntimeInvokeStaticCall(
+   const TCCompiledRuntime *runtime,
+   const TCCompiledCall *call,
+   TCCompiledResult *result)
+{
+   Method target;
+   TCIRType return_type;
+   TCCompiledStatus status;
+
+   if (result != NULL)
+   {
+      memset(result, 0, sizeof(*result));
+      result->status = TC_COMPILED_REJECTED;
+      result->type = TCIR_TYPE_VOID;
+      result->tc_pc = call == NULL ? TCIR_TCPC_NONE : call->tc_pc;
+   }
+   if (runtime == NULL || runtime->dispatch == NULL || call == NULL || result == NULL ||
+       call->kind != TCIR_CALL_STATIC || call->receiver != NULL ||
+       (call->argument_count != 0U && call->arguments == NULL) ||
+       !tcirRuntimeResolveStaticCall(runtime, call->constant_pool_index, &target) ||
+       target->paramCount != call->argument_count ||
+       !tcirRuntimeMethodReturnType(target, &return_type) || return_type != call->result_type)
+      return TC_COMPILED_REJECTED;
+   status = runtime->dispatch(
+      runtime->context,
+      target,
+      NULL,
+      call->arguments,
+      call->argument_count,
+      result);
+   if (status != result->status ||
+       (status == TC_COMPILED_RETURNED && result->type != call->result_type))
+   {
+      result->status = TC_COMPILED_REJECTED;
+      result->type = TCIR_TYPE_VOID;
+      result->tc_pc = call->tc_pc;
+      return TC_COMPILED_REJECTED;
+   }
+   if (status != TC_COMPILED_RETURNED && result->tc_pc == TCIR_TCPC_NONE)
+      result->tc_pc = call->tc_pc;
+   return status;
+}
+
+static TCIRMethodCallStatus tcirRuntimeInvokeInterpretedCall(
+   void *runtime_context,
+   const TCIRSymbol *symbol,
+   TCIRCallKind kind,
+   void *receiver,
+   const TCIRRuntimeValue *arguments,
+   size_t argument_count,
+   TCIRRuntimeValue *value)
+{
+   const TCCompiledRuntime *runtime = (const TCCompiledRuntime *)runtime_context;
+   TCCompiledCall call;
+   TCCompiledResult result;
+   Method target;
+   TCIRType return_type;
+   TCCompiledStatus status;
+
+   if (symbol == NULL || tcirSymbolKind(symbol) != TCIR_SYMBOL_METHOD || value == NULL ||
+       !tcirRuntimeResolveStaticCall(runtime, tcirSymbolConstantPoolIndex(symbol), &target) ||
+       !tcirRuntimeMethodReturnType(target, &return_type))
+      return TCIR_METHOD_CALL_REJECTED;
+   memset(&call, 0, sizeof(call));
+   call.constant_pool_index = tcirSymbolConstantPoolIndex(symbol);
+   call.kind = kind;
+   call.receiver = receiver;
+   call.arguments = arguments;
+   call.argument_count = argument_count;
+   call.result_type = return_type;
+   call.tc_pc = TCIR_TCPC_NONE;
+   status = tcirRuntimeInvokeStaticCall(runtime, &call, &result);
+   if (status == TC_COMPILED_RETURNED)
+   {
+      *value = result.value;
+      return TCIR_METHOD_CALL_RETURNED;
+   }
+   if (status == TC_COMPILED_THROWN)
+      return TCIR_METHOD_CALL_THROWN;
+   if (status == TC_COMPILED_OUT_OF_MEMORY)
+      return TCIR_METHOD_CALL_OUT_OF_MEMORY;
+   return TCIR_METHOD_CALL_REJECTED;
+}
+
 static void tcirRuntimeReleaseOperation(void)
 {
    TCIRRuntimeEntry *dispose = NULL;
@@ -595,6 +777,13 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
    if (!tcirRuntimeInitialize() || context == NULL || method == NULL || result == NULL)
       return TCIR_RUNTIME_DISPATCH_FALLBACK;
 
+   memset(&runtime, 0, sizeof(runtime));
+   runtime.abi_version = TC_RUNTIME_ABI_VERSION;
+   runtime.context = context;
+   runtime.method_key = method;
+   runtime.dispatch = tcirRuntimeDispatchCall;
+   runtime.invoke = tcirRuntimeInvokeStaticCall;
+
    TCIR_RUNTIME_LOCK();
    ++tcir_runtime_state.stats.dispatch_attempts;
    configured_backend = tcir_runtime_state.backend;
@@ -607,6 +796,9 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
    entry = fallback_reason == TCIR_RUNTIME_FALLBACK_NONE ? tcirRuntimeFindEntry(method) : NULL;
    if (fallback_reason == TCIR_RUNTIME_FALLBACK_NONE && entry == NULL)
       fallback_reason = TCIR_RUNTIME_FALLBACK_UNREGISTERED;
+   if (fallback_reason == TCIR_RUNTIME_FALLBACK_NONE &&
+       !tcirRuntimePreflightCalls(entry, &runtime))
+      fallback_reason = TCIR_RUNTIME_FALLBACK_INVOCATION_REJECTED;
 
    if (fallback_reason == TCIR_RUNTIME_FALLBACK_NONE)
    {
@@ -676,8 +868,14 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
 
    if (fallback_reason != TCIR_RUNTIME_FALLBACK_NONE)
    {
-      tcirRuntimeRecordFallback(fallback_reason, method, configured_backend, diagnostic,
-                                "compiled dispatch selected the legacy interpreter");
+      tcirRuntimeRecordFallback(
+         fallback_reason,
+         method,
+         configured_backend,
+         diagnostic,
+         fallback_reason == TCIR_RUNTIME_FALLBACK_INVOCATION_REJECTED
+            ? "compiled dispatch requires pre-bound compatible static call targets"
+            : "compiled dispatch selected the legacy interpreter");
       TCIR_RUNTIME_UNLOCK();
       return TCIR_RUNTIME_DISPATCH_FALLBACK;
    }
@@ -763,9 +961,6 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
    frame.v64_home_count = method->v64Count;
    frame.arguments = arguments;
    frame.argument_count = method->paramCount;
-   runtime.abi_version = TC_RUNTIME_ABI_VERSION;
-   runtime.context = context;
-   runtime.dispatch = tcirRuntimeDispatchCall;
    frame.runtime = &runtime;
 
    if (selected_backend == TCIR_RUNTIME_BACKEND_IR)
@@ -784,8 +979,9 @@ TCIRRuntimeDispatchStatus tcirRuntimeTryDispatch(
       interpreter_frame.v64_home_count = frame.v64_home_count;
       interpreter_frame.arguments = frame.arguments;
       interpreter_frame.argument_count = frame.argument_count;
-      interpreter_frame.runtime_context = context;
+      interpreter_frame.runtime_context = &runtime;
       interpreter_frame.raise_exception = tcirRuntimeRaiseException;
+      interpreter_frame.call_method = tcirRuntimeInvokeInterpretedCall;
       interpreter_status = tcirInterpretFunction(entry->function, &interpreter_frame, NULL,
                                                  &interpreter_result, &ir_diagnostic);
       result->status = interpreter_status == TCIR_INTERPRETER_RETURNED
