@@ -170,6 +170,8 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_CMP_GE_F64:
       case TCIR_OP_I32_TO_F64:
       case TCIR_OP_I64_TO_F64:
+      case TCIR_OP_CONST_REF_NULL:
+      case TCIR_OP_CMP_EQ_REF:
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
          return 1;
@@ -644,6 +646,12 @@ static int tcirExecuteOperation(
          break;
       case TCIR_OP_I64_TO_F64:
          value.f64 = (double)left.i64;
+         break;
+      case TCIR_OP_CONST_REF_NULL:
+         value.ref = NULL;
+         break;
+      case TCIR_OP_CMP_EQ_REF:
+         value.i1 = left.ref == right.ref;
          break;
       case TCIR_OP_LOAD_SLOT:
          if (!tcirLoadHome(frame, operation->home_bank, operation->home_index, operation->result_type, &value))

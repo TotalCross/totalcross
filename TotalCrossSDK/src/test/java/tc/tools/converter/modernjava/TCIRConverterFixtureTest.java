@@ -33,16 +33,17 @@ import tc.tools.converter.tclass.TCMethod;
 class TCIRConverterFixtureTest {
   private static final String[] METHOD_NAMES = {
       "add", "abs", "sumTo", "pureI32", "pureI64", "pureF64", "normalizedF32",
-      "i32ToF64", "i64ToF64"
+      "i32ToF64", "i64ToF64", "selectRef", "referenceScore", "nullRef"
   };
   private static final String[] METHOD_DESCRIPTORS = {
       "(II)I", "(I)I", "(I)I", "(II)I", "(JI)J", "(DD)D", "(F)F",
-      "(I)D", "(J)D"
+      "(I)D", "(J)D", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+      "(Ljava/lang/Object;Ljava/lang/Object;)I", "(Ljava/lang/Object;)Ljava/lang/Object;"
   };
   private static final String[] RETURN_TYPES = {
       "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32", "TCIR_TYPE_I32",
       "TCIR_TYPE_I64", "TCIR_TYPE_F64", "TCIR_TYPE_F64", "TCIR_TYPE_F64",
-      "TCIR_TYPE_F64"
+      "TCIR_TYPE_F64", "TCIR_TYPE_REF", "TCIR_TYPE_I32", "TCIR_TYPE_REF"
   };
 
   @TempDir
@@ -162,6 +163,11 @@ class TCIRConverterFixtureTest {
       out.append("   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }\n");
     } else if ("i64ToF64".equals(name)) {
       out.append("   { TCIR_TYPE_I64, TCIR_HOME_V64, 0U }\n");
+    } else if ("selectRef".equals(name) || "referenceScore".equals(name)) {
+      out.append("   { TCIR_TYPE_REF, TCIR_HOME_REF, 0U },\n")
+          .append("   { TCIR_TYPE_REF, TCIR_HOME_REF, 1U }\n");
+    } else if ("nullRef".equals(name)) {
+      out.append("   { TCIR_TYPE_REF, TCIR_HOME_REF, 0U }\n");
     } else {
       int parameterCount = METHOD_DESCRIPTORS[methodIndex].equals("(II)I") ? 2 : 1;
       for (int parameter = 0; parameter < parameterCount; parameter++) {

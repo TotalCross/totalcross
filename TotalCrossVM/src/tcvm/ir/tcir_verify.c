@@ -698,6 +698,20 @@ static int tcirVerifyOperation(
             return 0;
          break;
 
+      case TCIR_OP_CONST_REF_NULL:
+         if (!tcirRequireOperandCount(function, operation, 0, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_REF, diagnostic))
+            return 0;
+         break;
+
+      case TCIR_OP_CMP_EQ_REF:
+         if (!tcirRequireOperandCount(function, operation, 2, diagnostic) ||
+             !tcirRequireReferenceOperand(function, operation, 0, diagnostic) ||
+             !tcirRequireReferenceOperand(function, operation, 1, diagnostic) ||
+             !tcirRequireResultType(function, operation, TCIR_TYPE_I1, diagnostic))
+            return 0;
+         break;
+
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
          if ((unsigned int)operation->home_bank > (unsigned int)TCIR_HOME_V64)

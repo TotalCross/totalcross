@@ -414,6 +414,23 @@ final class ModernJavaClassFileFixtures {
         + "  public static double i64ToF64(long value) {\n"
         + "    return (double) value;\n"
         + "  }\n"
+        + "  public static Object selectRef(Object left, Object right) {\n"
+        + "    Object selected = null;\n"
+        + "    if (left != null) selected = left;\n"
+        + "    if (selected == null) selected = right;\n"
+        + "    return selected;\n"
+        + "  }\n"
+        + "  public static int referenceScore(Object left, Object right) {\n"
+        + "    int score = 0;\n"
+        + "    if (left == right) score += 1;\n"
+        + "    if (left != right) score += 2;\n"
+        + "    if (left == null) score += 4;\n"
+        + "    if (left != null) score += 8;\n"
+        + "    return score;\n"
+        + "  }\n"
+        + "  public static Object nullRef(Object ignored) {\n"
+        + "    return null;\n"
+        + "  }\n"
         + "}\n";
     return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
         "TCIR POC converter output", className, source);

@@ -1,0 +1,11 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.nullRef:(Ljava/lang/Object;)Ljava/lang/Object;"(%v0: ref) -> ref
+  homes i32 0, ref 1, v64 0
+bb0() ; tcpc=0 line=68
+  %v1 = const.ref.null -> ref ; tcpc=0 line=68
+  ret %v1 ; tcpc=0 line=68
+end

@@ -669,15 +669,16 @@ static int testConverterFrontendFixtures(void)
 {
    static const char *const golden_names[] = {
       "frontend-add", "frontend-abs", "frontend-sumTo", "frontend-pureI32", "frontend-pureI64",
-      "frontend-pureF64", "frontend-normalizedF32", "frontend-i32ToF64", "frontend-i64ToF64"
+      "frontend-pureF64", "frontend-normalizedF32", "frontend-i32ToF64", "frontend-i64ToF64",
+      "frontend-selectRef", "frontend-referenceScore", "frontend-nullRef"
    };
-   static const size_t expected_block_counts[] = { 1, 4, 4, 1, 4, 4, 13, 1, 1 };
+   static const size_t expected_block_counts[] = { 1, 4, 4, 1, 4, 4, 13, 1, 1, 5, 9, 1 };
    TCIRDiagnostic diagnostic;
    TCIRModule *module = tcirModuleCreate(NULL, &diagnostic);
    size_t fixture_index;
 
    REQUIRE(module != NULL);
-   REQUIRE(TCIR_CONVERTER_FIXTURE_COUNT == 9U);
+   REQUIRE(TCIR_CONVERTER_FIXTURE_COUNT == 12U);
    for (fixture_index = 0; fixture_index < TCIR_CONVERTER_FIXTURE_COUNT; fixture_index++)
    {
       const TCIRConverterFixture *fixture = &tcir_converter_fixtures[fixture_index];
@@ -688,9 +689,14 @@ static int testConverterFrontendFixtures(void)
       char *first_dump;
       char *second_dump;
       size_t pc;
+      TCIRFrontendResult frontend_result;
 
       REQUIRE(buildFixtureView(fixture, &view, parameters));
-      REQUIRE(tcirFrontendBuildFunction(module, &view, &first, &diagnostic) == TCIR_FRONTEND_OK);
+      frontend_result = tcirFrontendBuildFunction(module, &view, &first, &diagnostic);
+      if (frontend_result != TCIR_FRONTEND_OK)
+         fprintf(stderr, "frontend rejected %s at tc_pc %u: %s\n",
+                 fixture->identity, diagnostic.tc_pc, diagnostic.message);
+      REQUIRE(frontend_result == TCIR_FRONTEND_OK);
       REQUIRE(first != NULL);
       REQUIRE(tcirVerifyFunction(first, &diagnostic));
       REQUIRE(tcirFunctionBlockCount(first) == expected_block_counts[fixture_index]);
@@ -1487,6 +1493,6 @@ int main(void)
    passed = testOpcodeRegistry() && passed;
    if (!passed)
       return 1;
-   printf("TCIR tests passed: reference execution, 9 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
+   printf("TCIR tests passed: reference execution, 12 converter fixtures, 20 stable diagnostics, 160 opcode dispositions.\n");
    return 0;
 }

@@ -353,7 +353,8 @@ static int tcirAotTypeIsI32Like(TCIRType type)
 
 static int tcirAotTypeIsSupported(TCIRType type)
 {
-   return tcirAotTypeIsI32Like(type) || type == TCIR_TYPE_I64 || type == TCIR_TYPE_F64;
+   return tcirAotTypeIsI32Like(type) || type == TCIR_TYPE_I64 || type == TCIR_TYPE_F64 ||
+      type == TCIR_TYPE_REF;
 }
 
 static int tcirAotOperationIsEligible(const TCIROperationView *operation)
@@ -427,15 +428,23 @@ static int tcirAotOperationIsEligible(const TCIROperationView *operation)
       case TCIR_OP_I64_TO_F64:
          return operation->result != NULL && operation->result_type == TCIR_TYPE_F64 &&
             operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_CONST_REF_NULL:
+         return operation->result != NULL && operation->result_type == TCIR_TYPE_REF &&
+            operation->effects == TCIR_EFFECT_NONE;
+      case TCIR_OP_CMP_EQ_REF:
+         return operation->result != NULL && operation->result_type == TCIR_TYPE_I1 &&
+            operation->effects == TCIR_EFFECT_NONE;
       case TCIR_OP_LOAD_SLOT:
          return operation->result != NULL && operation->effects == TCIR_EFFECT_NONE &&
             ((operation->result_type == TCIR_TYPE_I32 && operation->home_bank == TCIR_HOME_I32) ||
+             (operation->result_type == TCIR_TYPE_REF && operation->home_bank == TCIR_HOME_REF) ||
              ((operation->result_type == TCIR_TYPE_I64 || operation->result_type == TCIR_TYPE_F64) &&
               operation->home_bank == TCIR_HOME_V64));
       case TCIR_OP_STORE_SLOT:
          return operation->result == NULL && operation->operand_count == 1U
             && operation->effects == TCIR_EFFECT_NONE &&
-            (operation->home_bank == TCIR_HOME_I32 || operation->home_bank == TCIR_HOME_V64);
+            (operation->home_bank == TCIR_HOME_I32 || operation->home_bank == TCIR_HOME_REF ||
+             operation->home_bank == TCIR_HOME_V64);
       default:
          return 0;
    }
@@ -473,10 +482,11 @@ static TCIRAotGenerateStatus tcirAotCheckEligibility(
    if (tcirFunctionReturnType(function) != TCIR_TYPE_I32 &&
        tcirFunctionReturnType(function) != TCIR_TYPE_I64 &&
        tcirFunctionReturnType(function) != TCIR_TYPE_F64 &&
+       tcirFunctionReturnType(function) != TCIR_TYPE_REF &&
        tcirFunctionReturnType(function) != TCIR_TYPE_VOID)
    {
       tcirAotSetDiagnostic(diagnostic, TCIR_AOT_DIAGNOSTIC_INELIGIBLE_TYPE, function, TCIR_TCPC_NONE,
-                           "portable-C baseline supports only i32, i64, f64, and void returns");
+                           "portable-C baseline supports only i32, i64, f64, ref, and void returns");
       return TCIR_AOT_GENERATE_INELIGIBLE;
    }
    *value_count = 0U;
@@ -631,6 +641,8 @@ static size_t tcirAotBlockIndex(const TCIRFunction *function, const TCIRBlock *b
 
 static const char *tcirAotValueArray(TCIRType type)
 {
+   if (type == TCIR_TYPE_REF)
+      return "ref_values";
    if (type == TCIR_TYPE_I64)
       return "v64_values";
    if (type == TCIR_TYPE_F64)
@@ -640,6 +652,8 @@ static const char *tcirAotValueArray(TCIRType type)
 
 static const char *tcirAotEdgeValueArray(TCIRType type)
 {
+   if (type == TCIR_TYPE_REF)
+      return "ref_edge_values";
    if (type == TCIR_TYPE_I64)
       return "v64_edge_values";
    if (type == TCIR_TYPE_F64)
@@ -696,6 +710,9 @@ static int tcirAotEmitOperation(TCIRAotBuffer *source, const TCIROperationView *
             "         values[%u] = tc_aot_i32_from_u32(UINT32_C(%u));\n",
             result, (unsigned int)(uint32_t)operation->immediate_i32);
       case TCIR_OP_COPY:
+         if (operation->result_type == TCIR_TYPE_REF)
+            return tcirAotBufferAppendFormat(
+               source, "         ref_values[%u] = ref_values[%u];\n", result, left);
          if (operation->result_type == TCIR_TYPE_I64)
             return tcirAotBufferAppendFormat(
                source, "         v64_values[%u] = v64_values[%u];\n", result, left);
@@ -870,7 +887,17 @@ static int tcirAotEmitOperation(TCIRAotBuffer *source, const TCIROperationView *
       case TCIR_OP_I64_TO_F64:
          return tcirAotBufferAppendFormat(source,
             "         f64_values[%u] = (double)v64_values[%u];\n", result, left);
+      case TCIR_OP_CONST_REF_NULL:
+         return tcirAotBufferAppendFormat(source,
+            "         ref_values[%u] = (void *)0;\n", result);
+      case TCIR_OP_CMP_EQ_REF:
+         return tcirAotBufferAppendFormat(source,
+            "         values[%u] = ref_values[%u] == ref_values[%u];\n", result, left, right);
       case TCIR_OP_LOAD_SLOT:
+         if (operation->home_bank == TCIR_HOME_REF)
+            return tcirAotBufferAppendFormat(source,
+               "         ref_values[%u] = frame->ref_homes[%u];\n",
+               result, operation->home_index);
          if (operation->home_bank == TCIR_HOME_V64)
          {
             if (operation->result_type == TCIR_TYPE_F64)
@@ -884,6 +911,10 @@ static int tcirAotEmitOperation(TCIRAotBuffer *source, const TCIROperationView *
          return tcirAotBufferAppendFormat(source, "         values[%u] = frame->i32_homes[%u];\n",
                                           result, operation->home_index);
       case TCIR_OP_STORE_SLOT:
+         if (operation->home_bank == TCIR_HOME_REF)
+            return tcirAotBufferAppendFormat(source,
+               "         frame->ref_homes[%u] = ref_values[%u];\n",
+               operation->home_index, left);
          if (operation->home_bank == TCIR_HOME_V64)
          {
             if (tcirValueType(operation->operands[0]) == TCIR_TYPE_F64)
@@ -914,12 +945,15 @@ static int tcirAotEmitMethod(TCIRAotBuffer *source, const TCIRAotMethodInfo *met
       "{\n"
       "   int32_t values[%lu] = { 0 };\n"
       "   int32_t edge_values[%lu] = { 0 };\n"
+      "   void *ref_values[%lu] = { 0 };\n"
+      "   void *ref_edge_values[%lu] = { 0 };\n"
       "   int64_t v64_values[%lu] = { 0 };\n"
       "   int64_t v64_edge_values[%lu] = { 0 };\n"
       "   double f64_values[%lu] = { 0 };\n"
       "   double f64_edge_values[%lu] = { 0 };\n"
       "   unsigned int block = 0U;\n\n"
       "   (void)edge_values;\n"
+      "   (void)ref_edge_values;\n"
       "   (void)v64_edge_values;\n"
       "   (void)f64_edge_values;\n"
       "   if (result != NULL)\n"
@@ -947,6 +981,8 @@ static int tcirAotEmitMethod(TCIRAotBuffer *source, const TCIRAotMethodInfo *met
       (unsigned long)edges,
       (unsigned long)values,
       (unsigned long)edges,
+      (unsigned long)values,
+      (unsigned long)edges,
       (unsigned long)tcirFunctionParameterCount(function),
       tcirFunctionHomeCount(function, TCIR_HOME_I32),
       tcirFunctionHomeCount(function, TCIR_HOME_REF),
@@ -958,7 +994,8 @@ static int tcirAotEmitMethod(TCIRAotBuffer *source, const TCIRAotMethodInfo *met
       TCIRType parameter_type = tcirValueType(parameter);
       const char *values_name = tcirAotValueArray(parameter_type);
       const char *member = parameter_type == TCIR_TYPE_I64 ? "i64" :
-         (parameter_type == TCIR_TYPE_F64 ? "f64" : "i32");
+         (parameter_type == TCIR_TYPE_F64 ? "f64" :
+          (parameter_type == TCIR_TYPE_REF ? "ref" : "i32"));
       if (!tcirAotBufferAppendFormat(source, "   %s[%u] = frame->arguments[%lu].%s;\n",
                                      values_name, tcirValueId(parameter),
                                      (unsigned long)parameter_index, member))
@@ -1023,6 +1060,14 @@ static int tcirAotEmitMethod(TCIRAotBuffer *source, const TCIRAotMethodInfo *met
                if (!tcirAotBufferAppendFormat(source,
                   "         result->type = TCIR_TYPE_F64;\n"
                   "         result->value.f64 = f64_values[%u];\n"
+                  "         return TC_COMPILED_RETURNED;\n", tcirValueId(terminator.value)))
+                  return 0;
+            }
+            else if (tcirValueType(terminator.value) == TCIR_TYPE_REF)
+            {
+               if (!tcirAotBufferAppendFormat(source,
+                  "         result->type = TCIR_TYPE_REF;\n"
+                  "         result->value.ref = ref_values[%u];\n"
                   "         return TC_COMPILED_RETURNED;\n", tcirValueId(terminator.value)))
                   return 0;
             }
