@@ -24,6 +24,7 @@ typedef struct TCIROperationData
    const TCIRValue **operands;
    size_t operand_count;
    int immediate_i32;
+   int64_t immediate_i64;
    TCIRHomeBank home_bank;
    unsigned int home_index;
    const TCIRSymbol *symbol;

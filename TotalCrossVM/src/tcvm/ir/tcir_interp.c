@@ -89,6 +89,22 @@ static int32_t tcirUshrI32(int32_t value, int32_t distance)
    return tcirI32FromBits((uint32_t)value >> ((uint32_t)distance & UINT32_C(31)));
 }
 
+static int64_t tcirI64FromBits(uint64_t bits)
+{
+   if (bits <= (uint64_t)INT64_MAX)
+      return (int64_t)bits;
+   return (int64_t)(-1 - (int64_t)(UINT64_MAX - bits));
+}
+
+static int64_t tcirShrI64(int64_t value, int64_t distance)
+{
+   unsigned int shift = (unsigned int)((uint64_t)distance & UINT64_C(63));
+   uint64_t bits = (uint64_t)value;
+   if (shift == 0U || value >= 0)
+      return tcirI64FromBits(bits >> shift);
+   return tcirI64FromBits((bits >> shift) | (UINT64_MAX << (64U - shift)));
+}
+
 static int tcirInterpreterSupportsOperation(TCIROperation opcode)
 {
    switch (opcode)
@@ -116,6 +132,23 @@ static int tcirInterpreterSupportsOperation(TCIROperation opcode)
       case TCIR_OP_CMP_LE_I32:
       case TCIR_OP_CMP_GT_I32:
       case TCIR_OP_CMP_GE_I32:
+      case TCIR_OP_CONST_I64:
+      case TCIR_OP_ADD_I64:
+      case TCIR_OP_SUB_I64:
+      case TCIR_OP_MUL_I64:
+      case TCIR_OP_SHL_I64:
+      case TCIR_OP_SHR_I64:
+      case TCIR_OP_USHR_I64:
+      case TCIR_OP_AND_I64:
+      case TCIR_OP_OR_I64:
+      case TCIR_OP_XOR_I64:
+      case TCIR_OP_TRUNC_I64_I32:
+      case TCIR_OP_SEXT_I32_I64:
+      case TCIR_OP_CMP_EQ_I64:
+      case TCIR_OP_CMP_LT_I64:
+      case TCIR_OP_CMP_LE_I64:
+      case TCIR_OP_CMP_GT_I64:
+      case TCIR_OP_CMP_GE_I64:
       case TCIR_OP_LOAD_SLOT:
       case TCIR_OP_STORE_SLOT:
          return 1;
@@ -469,6 +502,59 @@ static int tcirExecuteOperation(
          break;
       case TCIR_OP_CMP_GE_I32:
          value.i1 = left.i32 >= right.i32;
+         break;
+      case TCIR_OP_CONST_I64:
+         value.i64 = operation->immediate_i64;
+         break;
+      case TCIR_OP_ADD_I64:
+         value.i64 = tcirI64FromBits((uint64_t)left.i64 + (uint64_t)right.i64);
+         break;
+      case TCIR_OP_SUB_I64:
+         value.i64 = tcirI64FromBits((uint64_t)left.i64 - (uint64_t)right.i64);
+         break;
+      case TCIR_OP_MUL_I64:
+         value.i64 = tcirI64FromBits((uint64_t)left.i64 * (uint64_t)right.i64);
+         break;
+      case TCIR_OP_SHL_I64:
+         value.i64 = tcirI64FromBits(
+            (uint64_t)left.i64 << ((uint64_t)right.i64 & UINT64_C(63)));
+         break;
+      case TCIR_OP_SHR_I64:
+         value.i64 = tcirShrI64(left.i64, right.i64);
+         break;
+      case TCIR_OP_USHR_I64:
+         value.i64 = tcirI64FromBits(
+            (uint64_t)left.i64 >> ((uint64_t)right.i64 & UINT64_C(63)));
+         break;
+      case TCIR_OP_AND_I64:
+         value.i64 = tcirI64FromBits((uint64_t)left.i64 & (uint64_t)right.i64);
+         break;
+      case TCIR_OP_OR_I64:
+         value.i64 = tcirI64FromBits((uint64_t)left.i64 | (uint64_t)right.i64);
+         break;
+      case TCIR_OP_XOR_I64:
+         value.i64 = tcirI64FromBits((uint64_t)left.i64 ^ (uint64_t)right.i64);
+         break;
+      case TCIR_OP_TRUNC_I64_I32:
+         value.i32 = tcirI32FromBits((uint32_t)(uint64_t)left.i64);
+         break;
+      case TCIR_OP_SEXT_I32_I64:
+         value.i64 = (int64_t)left.i32;
+         break;
+      case TCIR_OP_CMP_EQ_I64:
+         value.i1 = left.i64 == right.i64;
+         break;
+      case TCIR_OP_CMP_LT_I64:
+         value.i1 = left.i64 < right.i64;
+         break;
+      case TCIR_OP_CMP_LE_I64:
+         value.i1 = left.i64 <= right.i64;
+         break;
+      case TCIR_OP_CMP_GT_I64:
+         value.i1 = left.i64 > right.i64;
+         break;
+      case TCIR_OP_CMP_GE_I64:
+         value.i1 = left.i64 >= right.i64;
          break;
       case TCIR_OP_LOAD_SLOT:
          if (!tcirLoadHome(frame, operation->home_bank, operation->home_index, operation->result_type, &value))

@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-#define TC_RUNTIME_ABI_VERSION 2U
+#define TC_RUNTIME_ABI_VERSION 3U
 
 typedef struct TCCompiledResult TCCompiledResult;
 
@@ -52,10 +52,11 @@ typedef struct TCCompiledFrame
    const TCIRRuntimeValue *arguments;
    size_t argument_count;
    unsigned int tc_pc;
-   int32_t *scratch_i32_values;
-   size_t scratch_i32_count;
-   int32_t *edge_i32_values;
-   size_t edge_i32_count;
+   TCIRRuntimeValue *scratch_values;
+   size_t scratch_count;
+   TCIRRuntimeValue *edge_values;
+   size_t edge_count;
+   TCIRRuntimeValue jit_return_value;
    const TCCompiledRuntime *runtime;
 } TCCompiledFrame;
 

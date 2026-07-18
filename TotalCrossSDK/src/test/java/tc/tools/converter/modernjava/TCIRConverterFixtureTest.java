@@ -31,8 +31,8 @@ import tc.tools.converter.tclass.TCCode;
 import tc.tools.converter.tclass.TCMethod;
 
 class TCIRConverterFixtureTest {
-  private static final String[] METHOD_NAMES = {"add", "abs", "sumTo", "pureI32"};
-  private static final String[] METHOD_DESCRIPTORS = {"(II)I", "(I)I", "(I)I", "(II)I"};
+  private static final String[] METHOD_NAMES = {"add", "abs", "sumTo", "pureI32", "pureI64"};
+  private static final String[] METHOD_DESCRIPTORS = {"(II)I", "(I)I", "(I)I", "(II)I", "(JI)J"};
 
   @TempDir
   Path workDir;
@@ -76,6 +76,8 @@ class TCIRConverterFixtureTest {
       methods[index] = findMethod(converted, METHOD_NAMES[index]);
       appendCodeArray(out, METHOD_NAMES[index], methods[index].code);
       appendLineArray(out, METHOD_NAMES[index], methods[index].code);
+      appendParameterArray(out, index);
+      appendV64TypeArray(out, METHOD_NAMES[index], methods[index].v64Count);
     }
 
     out.append("static const TCIRConverterFixture tcir_converter_fixtures[] = {\n");
@@ -89,7 +91,13 @@ class TCIRConverterFixtureTest {
           .append(method.iCount).append("U, ")
           .append(method.oCount).append("U, ")
           .append(method.v64Count).append("U, ")
-          .append(method.paramCount).append("U },\n");
+          .append(method.paramCount).append("U, tcir_fixture_")
+          .append(METHOD_NAMES[index]).append("_parameters, ")
+          .append(index == METHOD_NAMES.length - 1 ? "TCIR_TYPE_I64" : "TCIR_TYPE_I32")
+          .append(", ")
+          .append(method.v64Count == 0 ? "(const TCIRType *)0" : "tcir_fixture_"
+              + METHOD_NAMES[index] + "_v64_types")
+          .append(" },\n");
     }
     out.append("};\n\n")
         .append("#define TCIR_CONVERTER_FIXTURE_COUNT \\\n")
@@ -124,6 +132,36 @@ class TCIRConverterFixtureTest {
         out.append(index % 12 == 0 ? ",\n   " : ", ");
       }
       out.append(code[index].line);
+    }
+    out.append("\n};\n\n");
+  }
+
+  private static void appendParameterArray(StringBuilder out, int methodIndex) {
+    String name = METHOD_NAMES[methodIndex];
+    out.append("static const TCIRMethodParameter tcir_fixture_").append(name).append("_parameters[] = {\n");
+    if (methodIndex == METHOD_NAMES.length - 1) {
+      out.append("   { TCIR_TYPE_I64, TCIR_HOME_V64, 0U },\n")
+          .append("   { TCIR_TYPE_I32, TCIR_HOME_I32, 0U }\n");
+    } else {
+      int parameterCount = METHOD_DESCRIPTORS[methodIndex].equals("(II)I") ? 2 : 1;
+      for (int parameter = 0; parameter < parameterCount; parameter++) {
+        out.append("   { TCIR_TYPE_I32, TCIR_HOME_I32, ").append(parameter).append("U }")
+            .append(parameter + 1 == parameterCount ? "\n" : ",\n");
+      }
+    }
+    out.append("};\n\n");
+  }
+
+  private static void appendV64TypeArray(StringBuilder out, String name, int count) {
+    if (count == 0) {
+      return;
+    }
+    out.append("static const TCIRType tcir_fixture_").append(name).append("_v64_types[] = {\n   ");
+    for (int index = 0; index < count; index++) {
+      if (index != 0) {
+        out.append(index % 8 == 0 ? ",\n   " : ", ");
+      }
+      out.append("TCIR_TYPE_I64");
     }
     out.append("\n};\n\n");
   }

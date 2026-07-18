@@ -1,0 +1,45 @@
+; Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+;
+; SPDX-License-Identifier: LGPL-2.1-only
+
+tcir 1
+func @"fixtures.TCIRPoc.pureI64:(JI)J"(%v0: i64, %v1: i32) -> i64
+  homes i32 1, ref 0, v64 5
+bb0() ; tcpc=0 line=25
+  %v20 = sext.i32.i64 %v1 -> i64 ; tcpc=0 line=25
+  %v21 = copy %v20 -> i64 ; tcpc=1 line=25
+  %v22 = trunc.i64.i32 %v21 -> i32 ; tcpc=2 line=26
+  %v23 = sext.i32.i64 %v22 -> i64 ; tcpc=3 line=26
+  %v24 = shl.i64 %v0, %v23 -> i64 ; tcpc=4 line=26
+  %v25 = const.i64 1445 -> i64 ; tcpc=5 line=26
+  %v26 = and.i64 %v24, %v25 -> i64 ; tcpc=6 line=26
+  %v27 = trunc.i64.i32 %v21 -> i32 ; tcpc=7 line=26
+  %v28 = sext.i32.i64 %v27 -> i64 ; tcpc=8 line=26
+  %v29 = shr.i64 %v0, %v28 -> i64 ; tcpc=9 line=26
+  %v30 = const.i64 291 -> i64 ; tcpc=10 line=26
+  %v31 = or.i64 %v29, %v30 -> i64 ; tcpc=11 line=26
+  %v32 = xor.i64 %v26, %v31 -> i64 ; tcpc=12 line=26
+  %v33 = trunc.i64.i32 %v21 -> i32 ; tcpc=13 line=26
+  %v34 = sext.i32.i64 %v33 -> i64 ; tcpc=14 line=26
+  %v35 = ushr.i64 %v0, %v34 -> i64 ; tcpc=15 line=26
+  %v36 = xor.i64 %v32, %v35 -> i64 ; tcpc=16 line=26
+  %v37 = copy %v36 -> i64 ; tcpc=17 line=26
+  %v38 = add.i64 %v37, %v0 -> i64 ; tcpc=18 line=29
+  %v39 = const.i64 3 -> i64 ; tcpc=19 line=29
+  %v40 = mul.i64 %v38, %v39 -> i64 ; tcpc=20 line=29
+  %v41 = sub.i64 %v40, %v21 -> i64 ; tcpc=21 line=29
+  %v42 = copy %v41 -> i64 ; tcpc=22 line=29
+  %v43 = trunc.i64.i32 %v42 -> i32 ; tcpc=23 line=30
+  %v44 = sext.i32.i64 %v43 -> i64 ; tcpc=24 line=30
+  %v45 = xor.i64 %v42, %v44 -> i64 ; tcpc=25 line=30
+  %v46 = copy %v45 -> i64 ; tcpc=26 line=30
+  %v47 = cmp.lt.s.i64 %v46, %v0 -> i1 ; tcpc=27 line=31
+  br_if %v47, bb2(%v43, %v0, %v45, %v46, %v26, %v21), bb1(%v43, %v0, %v45, %v46, %v26, %v21) ; tcpc=27 line=31
+bb1(%v2: i32, %v3: i64, %v4: i64, %v5: i64, %v6: i64, %v7: i64) ; tcpc=28 line=31
+  %v48 = copy %v5 -> i64 ; tcpc=28 line=31
+  br bb3(%v2, %v48, %v4, %v5, %v6, %v7) ; tcpc=29 line=31
+bb2(%v8: i32, %v9: i64, %v10: i64, %v11: i64, %v12: i64, %v13: i64) ; tcpc=30 line=31
+  br bb3(%v8, %v9, %v10, %v11, %v12, %v13) ; tcpc=30 line=31
+bb3(%v14: i32, %v15: i64, %v16: i64, %v17: i64, %v18: i64, %v19: i64) ; tcpc=31 line=31
+  ret %v15 ; tcpc=31 line=31
+end
