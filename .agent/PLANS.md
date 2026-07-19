@@ -1,150 +1,231 @@
-# Codex Execution Plans (ExecPlans):
+<!--
+Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 
-This document describes the requirements for an execution plan ("ExecPlan"), a design document that a coding agent can follow to deliver a working feature or system change. Treat the reader as a complete beginner to this repository: they have only the current working tree and the single ExecPlan file you provide. There is no memory of prior plans and no external context.
+SPDX-License-Identifier: LGPL-2.1-only
+-->
 
-## How to use ExecPlans and PLANS.md
+# Codex Execution Plans (ExecPlans)
 
-When authoring an executable specification (ExecPlan), follow PLANS.md _to the letter_. If it is not in your context, refresh your memory by reading the entire PLANS.md file. Be thorough in reading (and re-reading) source material to produce an accurate specification. When creating a spec, start from the skeleton and flesh it out as you do your research.
+An ExecPlan is a living design and execution document for a complex feature or
+significant refactor. It must let a new contributor make the next safe change,
+verify it proportionally, and recover after interruption without reconstructing
+the entire project history.
 
-When implementing an executable specification (ExecPlan), do not prompt the user for "next steps"; simply proceed to the next milestone. Keep all sections up to date, add or split entries in the list at every stopping point to affirmatively state the progress made and next steps. Resolve ambiguities autonomously, and commit frequently.
+## Precedence and scope
 
-When discussing an executable specification (ExecPlan), record decisions in a log in the spec for posterity; it should be unambiguously clear why any change to the specification was made. ExecPlans are living documents, and it should always be possible to restart from _only_ the ExecPlan and no other work.
+Apply instructions in this order:
 
-When researching a design with challenging requirements or significant unknowns, use milestones to implement proof of concepts, "toy implementations", etc., that allow validating whether the user's proposal is feasible. Read the source code of libraries by finding or acquiring them, research deeply, and include prototypes to guide a fuller implementation.
+1. Safety and data-preservation instructions.
+2. Explicit instructions from the user for the current task.
+3. The token, output, and validation budget in `AGENTS.md`.
+4. This document.
+5. Instructions specific to the active ExecPlan.
 
-## Requirements
+An ExecPlan cannot require an expensive validation on every slice merely because
+it recorded that validation at an earlier checkpoint. When a plan and
+`AGENTS.md` differ on cost, use the smallest validation that can prove the
+current change, unless the user requests the larger matrix, the milestone is
+closing, the change directly affects an ABI/platform/measured hot path, or a
+recorded prior failure justifies repetition.
 
-NON-NEGOTIABLE REQUIREMENTS:
+## Resumable plans, not duplicated context
 
-* Every ExecPlan must be fully self-contained. Self-contained means that in its current form it contains all knowledge and instructions needed for a novice to succeed.
-* Every ExecPlan is a living document. Contributors are required to revise it as progress is made, as discoveries occur, and as design decisions are finalized. Each revision must remain fully self-contained.
-* Every ExecPlan must enable a complete novice to implement the feature end-to-end without prior knowledge of this repo.
-* Every ExecPlan must produce a demonstrably working behavior, not merely code changes to "meet a definition".
-* Every ExecPlan must define every term of art in plain language or do not use it.
+An ExecPlan is self-contained when it contains or names stable repository paths
+for the knowledge needed to continue. It does not need to duplicate content
+already held in stable architecture documentation, an active state file, an
+evidence index, milestone history, an editorial report, or a maintained
+interface specification. A reference must state what the file contains and when
+to read it; “see documentation” is not sufficient.
 
-Purpose and intent come first. Begin by explaining, in a few sentences, why the work matters from a user's perspective: what someone can do after this change that they could not do before, and how to see it working. Then guide the reader through the exact steps to achieve that outcome, including what to edit, what to run, and what they should observe.
+For a new plan, read `AGENTS.md` and this file in full, then research only the
+sources necessary to write a concrete plan. For a continuation, read the active
+state file first, locate headings in the plan, and open only the sections needed
+for the next action. Do not routinely reread the complete plan, architecture
+documents, evidence index, or historical archive. Context compaction is not a
+reason to search broadly: restart from state and inspect only active paths.
 
-The agent executing your plan can list files, read files, search, run the project, and run tests. It does not know any prior context and cannot infer what you meant from earlier milestones. Repeat any assumption you rely on. Do not point to external blogs or docs; if knowledge is required, embed it in the plan itself in your own words. If an ExecPlan builds upon a prior ExecPlan and that file is checked in, incorporate it by reference. If it is not, you must include all relevant context from that plan.
+The active plan should normally be about 300–450 lines and its state file about
+100–150 lines. These are soft limits, not a reason to remove necessary safety or
+implementation detail. When the active plan outgrows them, consolidate completed
+material into history and evidence rather than continuing to append it.
 
-## Formatting
+## Required plan structure
 
-Format and envelope are simple and strict. Each ExecPlan must be one single fenced code block labeled as `md` that begins and ends with triple backticks. Do not nest additional triple-backtick code fences inside; when you need to show commands, transcripts, diffs, or code, present them as indented blocks within that single fence. Use indentation for clarity rather than code fences inside an ExecPlan to avoid prematurely closing the ExecPlan's code fence. Use two newlines after every heading, use # and ## and so on, and correct syntax for ordered and unordered lists.
+Every active ExecPlan contains these sections, kept concise and current:
 
-When writing an ExecPlan to a Markdown (.md) file where the content of the file *is only* the single ExecPlan, you should omit the triple backticks.
+- `Purpose / Big Picture`: the observable developer or user outcome.
+- `Working Set and Resume Protocol`: the state, evidence, history, and report
+  paths; their purpose; and the first read for a continuation.
+- `Progress`: significant checkpoints and remaining work.
+- `Current Architecture and Scope`: only context needed for remaining work.
+- `Plan of Work`: completed milestone summaries, active milestone, and next
+  milestones.
+- `Decision Log`: decisions that change future architecture, semantics,
+  compatibility, validation, or operational policy.
+- `Validation and Acceptance`: behavior to prove and the applicable validation
+  level from `AGENTS.md`.
+- `Risks and Open Questions`: unresolved issues that can change implementation.
+- `Idempotence and Recovery`: safe retry and local-change handling.
+- `Outcomes & Retrospective`: a short milestone-level summary, not a diary.
 
-Write in plain prose. Prefer sentences over lists. Avoid checklists, tables, and long enumerations unless brevity would obscure meaning. Checklists are permitted only in the `Progress` section, where they are mandatory. Narrative sections must remain prose-first.
+An active plan may reference a separate editorial report. The report is required
+for a completed plan, but need only be synthesized at important milestone
+checkpoints and at completion. “Possible Article Angles” and “Suggested
+Narrative” are finalization work unless the user explicitly requests editorial
+work earlier.
 
-## Guidelines
+## State, history, evidence, and editorial files
 
-Self-containment and plain language are paramount. If you introduce a phrase that is not ordinary English ("daemon", "middleware", "RPC gateway", "filter graph"), define it immediately and remind the reader how it manifests in this repository (for example, by naming the files or commands where it appears). Do not say "as defined previously" or "according to the architecture doc." Include the needed explanation here, even if you repeat yourself.
+Use these optional supporting files when a plan is long-running or has repeated
+validation. Create them only when they simplify resumption:
 
-Avoid common failure modes. Do not rely on undefined jargon. Do not describe "the letter of a feature" so narrowly that the resulting code compiles but does nothing meaningful. Do not outsource key decisions to the reader. When ambiguity exists, resolve it in the plan itself and explain why you chose that path. Err on the side of over-explaining user-visible effects and under-specifying incidental implementation details.
+- `.agent/state/<plan-name>.md` is rewritten, not appended. It records the
+  active milestone/slice, last commit, active paths, next concrete action,
+  focused validation completed, deferred validation and reason, decisions still
+  active, blockers, deliberate out-of-scope local files, and a resume command.
+  It is the first normal read.
+- `.agent/evidence/<plan-name>.md` or `.jsonl` is append-only. It records
+  compact evidence records: timestamp, revision, milestone/slice, command or
+  wrapper, status, counts, log/artifact paths, necessary hashes, and scope or
+  limitation. It is searched selectively, not read during ordinary resumption.
+- `.agent/archive/<plan-name>-history.md` stores completed milestone detail,
+  retired revision notes, and references to immutable source snapshots. It is
+  not read by default.
+- `.agent/reports/<plan-name>-editorial.md` is a concise factual handoff. It is
+  updated at major milestone completion and final plan completion, not after
+  every slice.
 
-Anchor the plan with observable outcomes. State what the user can do after implementation, the commands to run, and the outputs they should see. Acceptance should be phrased as behavior a human can verify ("after starting the server, navigating to [http://localhost:8080/health](http://localhost:8080/health) returns HTTP 200 with body OK") rather than internal attributes ("added a HealthCheck struct"). If a change is internal, explain how its impact can still be demonstrated (for example, by running tests that fail before and pass after, and by showing a scenario that uses the new behavior).
+References to these files are valid self-containment. Preserve information by
+moving it or recording a stable revision/path; do not copy raw logs, hashes,
+benchmark tables, and the same result into all four documents.
 
-Specify repository context explicitly. Name files with full repository-relative paths, name functions and modules precisely, and describe where new files should be created. If touching multiple areas, include a short orientation paragraph that explains how those parts fit together so a novice can navigate confidently. When running commands, show the working directory and exact command line. When outcomes depend on environment, state the assumptions and provide alternatives when reasonable.
+## Progress, decisions, and checkpoints
 
-Be idempotent and safe. Write the steps so they can be run multiple times without causing damage or drift. If a step can fail halfway, include how to retry or adapt. If a migration or destructive operation is necessary, spell out backups or safe fallbacks. Prefer additive, testable changes that can be validated as you go.
+`Progress` records meaningful checkpoints, not commands or microedits. Use at
+most one concise entry per logical commit, functional slice, material validation
+result, direction change, or completed milestone. It should point to evidence
+instead of repeating counts and hashes.
 
-Validation is not optional. Include instructions to run tests, to start the system if applicable, and to observe it doing something useful. Describe comprehensive testing for any new features or capabilities. Include expected outputs and error messages so a novice can tell success from failure. Where possible, show how to prove that the change is effective beyond compilation (for example, through a small end-to-end scenario, a CLI invocation, or an HTTP request/response transcript). State the exact test commands appropriate to the project’s toolchain and how to interpret their results.
+The `Decision Log` contains only choices that alter future work: architecture,
+semantics, compatibility, operation class, validation strategy, or release
+policy. Do not record mechanical test choices, every target name, or a repeated
+standing rule.
 
-Capture evidence. When your steps produce terminal output, short diffs, or logs, include them inside the single fenced block as indented examples. Keep them concise and focused on what proves success. If you need to include a patch, prefer file-scoped diffs or small excerpts that a reader can recreate by following your instructions rather than pasting large blobs.
+`Surprises & Discoveries` may be retained in a plan when an observation affects
+future work. Move resolved historical observations to the archive. Update
+`Outcomes & Retrospective` when a milestone completes or a discovery materially
+changes interpretation, not after every slice.
 
-## Milestones
+During a slice, keep state current only when it is needed for safe resumption.
+After a logical commit, update state with what changed, commit, focused
+validation, remaining work, and deferrals. Consolidate the active plan after a
+family or ABI checkpoint. At milestone completion, update the plan summary,
+history, evidence, editorial report, and state for the next milestone.
 
-Milestones are narrative, not bureaucracy. If you break the work into milestones, introduce each with a brief paragraph that describes the scope, what will exist at the end of the milestone that did not exist before, the commands to run, and the acceptance you expect to observe. Keep it readable as a story: goal, work, result, proof. Progress and milestones are distinct: milestones tell the story, progress tracks granular work. Both must exist. Never abbreviate a milestone merely for the sake of brevity, do not leave out details that could be crucial to a future implementation.
+## Validation and benchmarks
 
-Each milestone must be independently verifiable and incrementally implement the overall goal of the execution plan.
+Validation is mandatory in proportion to risk. Follow the four validation levels
+in `AGENTS.md`: implementation, functional commit, operation family or ABI, and
+milestone/release gate. Stop at the first sufficient level and record a deferred
+more-expensive level with its reason.
 
-## Living plans and design decisions
+Each milestone describes its observable acceptance behavior and the validation
+level normally required. A plan may name an exact focused command, but it must
+not convert a historical full matrix into a perpetual slice requirement.
+Preserve full tool output in logs; record compact result summaries and paths in
+the evidence index.
 
-* ExecPlans are living documents. As you make key design decisions, update the plan to record both the decision and the thinking behind it. Record all decisions in the `Decision Log` section.
-* ExecPlans must contain and maintain a `Progress` section, a `Surprises & Discoveries` section, a `Decision Log`, and an `Outcomes & Retrospective` section. These are not optional.
-* When you discover optimizer behavior, performance tradeoffs, unexpected bugs, or inverse/unapply semantics that shaped your approach, capture those observations in the `Surprises & Discoveries` section with short evidence snippets (test output is ideal).
-* If you change course mid-implementation, document why in the `Decision Log` and reflect the implications in `Progress`. Plans are guides for the next contributor as much as checklists for you.
-* At completion of a major task or the full plan, write an `Outcomes & Retrospective` entry summarizing what was achieved, what remains, and lessons learned.
+Benchmarking is evidence only for the workload and hot path measured. Do not
+benchmark a newly added semantic operation when the benchmark does not execute
+it and its measured hot path did not change. Use a small smoke benchmark only
+for an affected measured hot path. Run full checkpoints at milestone closure,
+optimization, measurement-regime changes, or explicit user request. Start with
+60 and 200 samples; run more than 200 only for observed variance or an explicit
+request. Raw samples stay in artifacts and their index, not repeated in plans.
 
-# Prototyping milestones and parallel implementations
+## Writing guidance
 
-It is acceptable—-and often encouraged—-to include explicit prototyping milestones when they de-risk a larger change. Examples: adding a low-level operator to a dependency to validate feasibility, or exploring two composition orders while measuring optimizer effects. Keep prototypes additive and testable. Clearly label the scope as “prototyping”; describe how to run and observe results; and state the criteria for promoting or discarding the prototype.
+Use plain language and define non-obvious terms at first use. State the purpose
+and an observable result before implementation detail. Name repository-relative
+paths, modules, functions, working directories, commands, expected concise
+outcomes, and safe retries. Prefer prose to tables and inventories; use a table
+only when it materially clarifies a comparison.
 
-Prefer additive code changes followed by subtractions that keep tests passing. Parallel implementations (e.g., keeping an adapter alongside an older path during migration) are fine when they reduce risk or enable tests to continue passing during a large migration. Describe how to validate both paths and how to retire one safely with tests. When working with multiple new libraries or feature areas, consider creating spikes that evaluate the feasibility of these features _independently_ of one another, proving that the external library performs as expected and implements the features we need in isolation.
+Do not replace key repository knowledge with an external link. Stable local
+documentation may be referenced with a short explanation of its role. Do not
+make a novice infer compatibility, ownership, GC, exception, security, or
+rollback behavior that the plan can state directly.
 
-## Skeleton of a Good ExecPlan
+Do not dump generated code, large logs, raw manifests, full matrices, or every
+differential case into an ExecPlan. Keep evidence reproducible through commands,
+small excerpts, paths, and evidence-index records.
+
+## Milestones and completion
+
+Milestones describe goal, work, result, and proof. Each must make an incremental
+observable contribution and state what is accepted, what remains fallback, and
+which validation level is expected. Prototypes and parallel paths are acceptable
+when explicitly bounded, additive, and independently testable.
+
+At plan completion, reconcile the final state with `Outcomes & Retrospective`
+and the editorial report. The report must distinguish delivered work from plans,
+measurements from estimates, and supported platforms from aspirations. It must
+state limitations and claims requiring human review. It is a factual handoff,
+not an incremental execution diary.
+
+## Minimal skeleton
 
     # <Short, action-oriented description>
 
-    This ExecPlan is a living document. The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work proceeds.
-
-    If PLANS.md file is checked into the repo, reference the path to that file here from the repository root and note that this document must be maintained in accordance with PLANS.md.
+    This ExecPlan follows `.agent/PLANS.md` and `AGENTS.md`.
 
     ## Purpose / Big Picture
 
-    Explain in a few sentences what someone gains after this change and how they can see it working. State the user-visible behavior you will enable.
+    Explain the observable outcome and how a developer can see it.
+
+    ## Working Set and Resume Protocol
+
+    Name the state, evidence, history, and editorial paths; state what each
+    contains and when to read it.
 
     ## Progress
 
-    Use a list with checkboxes to summarize granular steps. Every stopping point must be documented here, even if it requires splitting a partially completed task into two (“done” vs. “remaining”). This section must always reflect the actual current state of the work.
+    - [x] (YYYY-MM-DDThh:mm:ssZ) Significant completed checkpoint.
+    - [ ] Current slice and its next concrete action.
+    - [ ] Remaining milestone or finalization work.
 
-    - [x] (2025-10-01 13:00Z) Example completed step.
-    - [ ] Example incomplete step.
-    - [ ] Example partially completed step (completed: X; remaining: Y).
+    ## Current Architecture and Scope
 
-    Use timestamps to measure rates of progress.
-
-    ## Surprises & Discoveries
-
-    Document unexpected behaviors, bugs, optimizations, or insights discovered during implementation. Provide concise evidence.
-
-    - Observation: …
-      Evidence: …
-
-    ## Decision Log
-
-    Record every decision made while working on the plan in the format:
-
-    - Decision: …
-      Rationale: …
-      Date/Author: …
-
-    ## Outcomes & Retrospective
-
-    Summarize outcomes, gaps, and lessons learned at major milestones or at completion. Compare the result against the original purpose.
-
-    ## Context and Orientation
-
-    Describe the current state relevant to this task as if the reader knows nothing. Name the key files and modules by full path. Define any non-obvious term you will use. Do not refer to prior plans.
+    Explain only the modules and contracts needed for remaining work.
 
     ## Plan of Work
 
-    Describe, in prose, the sequence of edits and additions. For each edit, name the file and location (function, module) and what to insert or change. Keep it concrete and minimal.
+    Describe completed milestones concisely, the active milestone, and next
+    milestones with observable acceptance.
 
-    ## Concrete Steps
+    ## Decision Log
 
-    State the exact commands to run and where to run them (working directory). When a command generates output, show a short expected transcript so the reader can compare. This section must be updated as work proceeds.
+    - Decision: …
+      Rationale: …
+      Date: …
 
     ## Validation and Acceptance
 
-    Describe how to start or exercise the system and what to observe. Phrase acceptance as behavior, with specific inputs and outputs. If tests are involved, say "run <project’s test command> and expect <N> passed; the new test <name> fails before the change and passes after>".
+    Name the validation level, command, expected concise result, and deferred
+    validation with reason.
+
+    ## Risks and Open Questions
+
+    State unresolved implementation, platform, or compatibility questions.
 
     ## Idempotence and Recovery
 
-    If steps can be repeated safely, say so. If a step is risky, provide a safe retry or rollback path. Keep the environment clean after completion.
+    State safe retries and local paths that must remain untouched.
 
-    ## Artifacts and Notes
+    ## Outcomes & Retrospective
 
-    Include the most important transcripts, diffs, or snippets as indented examples. Keep them concise and focused on what proves success.
+    Summarize completed milestone outcomes and point to evidence/history.
 
-    ## Interfaces and Dependencies
+    ## Revision Note
 
-    Be prescriptive. Name the libraries, modules, and services to use and why. Specify the types, traits/interfaces, and function signatures that must exist at the end of the milestone. Prefer stable names and paths such as `crate::module::function` or `package.submodule.Interface`. E.g.:
-
-    In crates/foo/planner.rs, define:
-
-        pub trait Planner {
-            fn plan(&self, observed: &Observed) -> Vec<Action>;
-        }
-
-If you follow the guidance above, a single, stateless agent -- or a human novice -- can read your ExecPlan from top to bottom and produce a working, observable result. That is the bar: SELF-CONTAINED, SELF-SUFFICIENT, NOVICE-GUIDING, OUTCOME-FOCUSED.
-
-When you revise a plan, you must ensure your changes are comprehensively reflected across all sections, including the living document sections, and you must write a note at the bottom of the plan describing the change and the reason why. ExecPlans must describe not just the what but the why for almost everything.
+    Record only a material plan-policy or milestone consolidation and its reason.

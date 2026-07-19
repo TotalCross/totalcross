@@ -3,7 +3,6 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 
 SPDX-License-Identifier: LGPL-2.1-only
 -->
-
 # AGENTS.md
 
 Guidance for automated coding agents working in this repository.
@@ -11,6 +10,26 @@ Guidance for automated coding agents working in this repository.
 # ExecPlans
 
 When writing complex features or significant refactors, use an ExecPlan (as described in .agent/PLANS.md) from design to implementation.
+
+### ExecPlan execution precedence and resumption
+
+For ExecPlan work, apply instructions in this order: safety and data
+preservation; explicit user instructions for the current task; this file's
+token and output budget; `.agent/PLANS.md`; then instructions specific to the
+active ExecPlan. A plan cannot make an expensive validation mandatory for every
+slice merely because it was appropriate at an earlier checkpoint.
+
+Read `AGENTS.md` and `.agent/PLANS.md` in full when creating an ExecPlan, or
+when either file changed since the last read. When resuming an existing plan,
+read its state file first and then only the active-plan sections needed for the
+next action. Use headings, `rg`, and narrow line ranges. Do not automatically
+reread the entire ExecPlan, its architecture documents, append-only evidence,
+or milestone history. After context compaction, resume from the state file and
+inspect only the active paths before expanding the investigation.
+
+The active plan must name its state file, evidence index, history, and editorial
+report. Those references are part of a resumable plan; they do not have to be
+duplicated in every document.
 
 ## Project Overview
 
@@ -353,16 +372,32 @@ revert(sdk): restore legacy deploy option
 
 Operate in token-efficient mode by default.
 
+These rules apply to ExecPlan execution as well as ordinary implementation.
+Preserve evidence in the referenced state, history, and evidence files rather
+than repeatedly reconstructing it in chat, plan sections, or commit messages.
+
 ### Validation strategy
 
-Prefer focused, incremental validation before broad validation.
+Use the smallest validation that proves the current change. Do not run `clean`
+by default; use it only when stale artifacts are suspected.
 
-Use the smallest validation that can prove the current change:
+1. **Level 1 — implementation:** incrementally build the affected target when
+   needed; run the specific operation, golden, negative, or fallback test.
+2. **Level 2 — functional commit:** run focused module tests, differential
+   fixtures affected by the change, `git diff --check`, and only the sanitizer
+   directly relevant to memory or undefined-behavior risk.
+3. **Level 3 — operation family or ABI change:** run the complete differential
+   suite, Release validation, the relevant sanitizer, a default-off build when
+   conditional dispatch changed, and cross-build only platforms directly
+   affected by the change.
+4. **Level 4 — milestone or release gate:** run the available platform matrix,
+   complete sanitizers, packaging validation, and a full benchmark only when its
+   workloads exercise the completed behavior or its measurement regime changed.
 
-1. Run feature-specific tests first.
-2. Run module-level tests only when the affected area requires it.
-3. Run full `dist`, smoke deploys, or expensive builds only when the change affects runtime, deploy, build scripts, packaging, native integration, or when closing an important milestone.
-4. Do not run `clean` by default. Use `clean` only when stale artifacts are suspected.
+Stop at the first sufficient level. Escalate beyond it only when the user asks,
+the milestone is closing, an ABI/platform/hot path changed, or a recorded prior
+failure makes repetition necessary. Record deferred costly validation and its
+reason in the active state file.
 
 Avoid repeating expensive validation after cosmetic-only changes. For formatting, comments, plan edits, or line wrapping, prefer:
 
@@ -395,7 +430,10 @@ Example:
 ```sh
 ./gradlew dist -x test --warning-mode=none --console=plain > /tmp/gradle-dist.log 2>&1
 status=$?
-tail -80 /tmp/gradle-dist.log
+if [ "$status" -ne 0 ]; then
+  tail -80 /tmp/gradle-dist.log
+fi
+printf 'status=%s log=%s\n' "$status" /tmp/gradle-dist.log
 exit $status
 ```
 
@@ -404,6 +442,25 @@ If the command succeeds, summarize success and mention where the full log was sa
 When using the SDK wrapper, prefer the agent summary log for analysis and open the full log only when you need extra context.
 
 If you are building the SDK, use `TotalCrossSDK/gradlew-agent` instead of `TotalCrossSDK/gradlew` so the build emits both a full log and a compact agent log.
+
+### Native tools, long operations, and evidence output
+
+Redirect full CMake, Ninja, CTest, sanitizer, static-analysis, benchmark, and
+Gradle output to a task-specific log. On success, report one structured summary
+with status, counts, duration, and log path. On failure, report the command,
+exit code, first relevant error, short context, at most the final 100 lines,
+and the log path. Do not print one line per differential case or dump generated
+C, manifests, matrices, raw benchmark samples, or logs. Do not use `cat` for
+logs, generated C, large manifests, benchmark data, or evidence archives.
+
+Prefer a single blocking invocation with a suitable timeout for a long command.
+Do not poll merely to state that work continues. When polling is unavoidable,
+use broad intervals and report only a state change. Validation scripts should
+emit a compact human summary and, where useful, a machine-readable result file.
+
+Store artifact paths, hashes that are actually needed for integrity, and concise
+result counts once in an evidence index. Do not copy those raw details into the
+active plan, editorial report, and final response.
 
 ### Deploy and smoke test output
 
@@ -446,6 +503,43 @@ Then open only the files relevant to the current task.
 Do not repeatedly dump large sections of `PLANS.md`, `AGENTS.md`, diffs, logs, or generated files.
 
 Read only the sections needed for the current step. When reporting progress, summarize instead of pasting large excerpts.
+
+For a new or changed ExecPlan policy file, the full-read rule in
+"ExecPlan execution precedence and resumption" takes precedence. For normal
+continuation, use the state-first protocol instead.
+
+### ExecPlan edits and checkpoints
+
+Group coherent edits by file or layer. Avoid many one- or two-line patches when
+one reviewable patch is safe. During a slice, update only the active state file
+when necessary for resumption. After a logical commit, record the change,
+focused validation, remaining work, and any deferred validation there.
+
+Update the active ExecPlan once when a functional family, ABI boundary, material
+direction change, or milestone checkpoint is reached. Do not update Progress,
+Outcomes, the editorial report, and revision notes after each micro-step. Use
+one significant Progress entry per logical commit, functional slice, material
+validation result, direction change, or completed milestone.
+
+Keep architectural decisions that affect future work; do not record mechanical
+test choices, target names, or repetitions of standing policy. Move completed
+detail to the plan's history and evidence references instead of extending the
+active plan indefinitely.
+
+### Benchmark policy
+
+Do not run a benchmark merely because a new operation was added when its
+workloads do not exercise that operation and the measured hot path did not
+change. A smoke benchmark is appropriate only for a changed dispatcher,
+invocation ABI, frame, scratch allocation, backend emission, or other measured
+hot path; use about three warmups and ten samples.
+
+Run a full checkpoint only when closing a milestone, implementing an
+optimization, changing the measurement regime, or when the user explicitly
+asks. Start full checkpoints with 60 and 200 samples. Run more than 200 only
+when observed variance demonstrates the need or the user requests it. Preserve
+raw samples in the artifact directory and record their index once. Never claim
+one workload as performance evidence for an unrelated operation.
 
 ### Failure handling
 
