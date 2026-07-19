@@ -21,15 +21,16 @@ slice merely because it was appropriate at an earlier checkpoint.
 
 Read `AGENTS.md` and `.agent/PLANS.md` in full when creating an ExecPlan, or
 when either file changed since the last read. When resuming an existing plan,
-read its state file first and then only the active-plan sections needed for the
-next action. Use headings, `rg`, and narrow line ranges. Do not automatically
-reread the entire ExecPlan, its architecture documents, append-only evidence,
-or milestone history. After context compaction, resume from the state file and
-inspect only the active paths before expanding the investigation.
+read its state file first when one exists; otherwise locate the active sections
+by heading. Then read only what is needed for the next action. Use headings,
+`rg`, and narrow line ranges. Do not automatically reread the entire ExecPlan,
+its architecture documents, append-only evidence, or milestone history. After
+context compaction, resume from state when present and inspect only the active
+paths before expanding the investigation.
 
-The active plan must name its state file, evidence index, history, and editorial
-report. Those references are part of a resumable plan; they do not have to be
-duplicated in every document.
+A long-running plan that uses supporting state, evidence, history, or editorial
+files must name them and explain when to read them. A small plan may remain a
+single file when auxiliary files would add more process than resumability.
 
 ## Project Overview
 
@@ -373,8 +374,8 @@ revert(sdk): restore legacy deploy option
 Operate in token-efficient mode by default.
 
 These rules apply to ExecPlan execution as well as ordinary implementation.
-Preserve evidence in the referenced state, history, and evidence files rather
-than repeatedly reconstructing it in chat, plan sections, or commit messages.
+When a plan uses supporting records, preserve evidence there rather than
+repeatedly reconstructing it in chat, plan sections, or commit messages.
 
 ### Validation strategy
 
@@ -517,9 +518,9 @@ focused validation, remaining work, and any deferred validation there.
 
 Update the active ExecPlan once when a functional family, ABI boundary, material
 direction change, or milestone checkpoint is reached. Do not update Progress,
-Outcomes, the editorial report, and revision notes after each micro-step. Use
-one significant Progress entry per logical commit, functional slice, material
-validation result, direction change, or completed milestone.
+Outcomes, the editorial report, and revision notes after each micro-step. Use a
+single Progress entry for the highest-level checkpoint reached; do not add
+separate entries for its commit, validation, and documentation.
 
 Keep architectural decisions that affect future work; do not record mechanical
 test choices, target names, or repetitions of standing policy. Move completed

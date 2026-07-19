@@ -10,6 +10,15 @@ milestone, command, or artifact when a claim needs verification. The unabridged
 pre-consolidation checkpoint, including benchmark tables and artifact hashes, is
 preserved at `ba6d2f0c3:.agent/exec-plan-totalcross-ir-jit-aot.md`.
 
+## Record format
+
+Append each future record as a new row at the end of the table, which is kept as
+the final section of this file. Include date/revision, milestone/slice, command
+or wrapper identifier, material result, evidence path when needed, and one short
+scope or limitation statement. Add hashes only when integrity requires them.
+
+## Evidence records
+
 | Date | Milestone / slice | Revision(s) | Compact result | Evidence / limitation |
 | --- | --- | --- | --- | --- |
 | 2026-07-17 | M2 TCIR contract | `96c17be4b`, `a3a5e33fa` | Core/verifier/registry tests and sanitizer evidence passed. | Detailed commands and findings: archive baseline. |
@@ -22,13 +31,3 @@ preserved at `ba6d2f0c3:.agent/exec-plan-totalcross-ir-jit-aot.md`.
 | 2026-07-18 | M8 numeric/reference/switch/call | `da38b7278` through `155c74ebd` | Fourteen-fixture progression reached 6,398 retained legacy four-way comparisons. | Effectful division/null checks remain TCIR-only. |
 | 2026-07-18 | M8 allocation | `e7ea5cb14`, `051800dcd` | Runtime ABI v5; 16 allocation-contract comparisons; Release/ASan/UBSan/default-off and Android compilation passed. | No real TCZ/class-loader/OMM forced-GC proof. |
 | 2026-07-18 | M8 allocation benchmark | `051800dcd6e6` | 60/200/1,000 arithmetic profiles validated. | Workloads do not measure allocation; raw artifact hashes remain in baseline snapshot. |
-
-## Record format for future entries
-
-Add one compact record when an evidence-producing checkpoint is complete:
-
-- Date and revision.
-- Milestone and slice.
-- Command or wrapper identifier, status, and material count.
-- Log and artifact paths, plus hashes only when integrity requires them.
-- One sentence stating scope and limitation.
