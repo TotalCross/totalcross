@@ -12,7 +12,10 @@ It is a compact, rewritten state file, not a chronological log.
 
 - Active milestone: 8, semantic coverage expansion.
 - Last functional checkpoint: object allocation, commits `e7ea5cb14` and
-  `051800dcd`; the plan checkpoint is `ba6d2f0c3`.
+  `051800dcd`. Process checkpoint `2a6fa31cb` created this compact plan and its
+  supporting records; `ba6d2f0c3` is the unabridged historical snapshot.
+- The focused review corrections after `2a6fa31cb` are intentionally
+  uncommitted because the review request prohibited validation.
 - Current next family: fields and class initialization. Do not begin it until
   the field access, class-resolution, initialization, GC, and exception effects
   are traced and a bounded slice is selected.
@@ -56,6 +59,8 @@ Recommended first command:
 - Converter fixtures and native tests:
   `TotalCrossVM/src/tests/ir/` and
   `TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/`.
+- Opcode status and fallback decisions:
+  `docs/architecture/bytecode/compatibility-matrix.md`.
 - Before a field slice, inspect field/class-resolution behavior and all
   transitive effects before declaring any lowering eligible.
 
@@ -90,8 +95,13 @@ Recommended first command:
   local work.
 - Build directories, generated dependency checkouts, logs, and benchmark
   artifacts remain uncommitted unless the user explicitly requests them.
-- The active process documentation is in scope for this checkpoint; preserve
-  unrelated changes while committing only scoped files.
+- The process refactor is complete at `2a6fa31cb`; future implementation must
+  preserve unrelated changes and stage only its selected slice.
+
+## Blocking questions
+
+- No current external blocker is known. Field/class-initialization effects are
+  unresolved design inputs and must be traced before selecting the next slice.
 
 ## Supporting records
 

@@ -42,13 +42,13 @@ searched index of commands, results, logs, artifact locations, and limitations.
 `.agent/archive/exec-plan-totalcross-ir-jit-aot-history.md` contains completed
 milestone summaries and points to the unabridged pre-consolidation snapshot at
 Git revision `ba6d2f0c3`; do not read it by default. The concise factual
-handoff is `.agent/reports/totalcross-ir-jit-aot-editorial.md`; update it at a
-material milestone checkpoint, not after each slice.
+handoff is `.agent/reports/totalcross-ir-jit-aot-editorial.md`; update it when
+Milestone 8 completes or the user requests editorial work, not after each slice.
 
-`AGENTS.md` and `.agent/PLANS.md` are read in full only when creating a plan or
-when either changed. Their precedence is: safety; explicit user request; the
-`AGENTS.md` token/output budget; `.agent/PLANS.md`; this plan. A context
-compaction resumes through the state file, not a broad repository scan.
+Follow the precedence and reading rules in `AGENTS.md` and `.agent/PLANS.md`;
+the process checkpoint recorded in the state file identifies the policy already
+reviewed for this plan. A context compaction resumes through the state file, not
+a broad repository scan.
 
 ## Progress
 
@@ -133,7 +133,9 @@ related headers, and the exact `executeMethod` cases. Identify resolution,
 class-initialization, null/bounds/type checks, read/write, volatile/atomic,
 exception, lock, and GC effects. Record whether each field operation is direct,
 runtime-helper, unsupported-in-POC, future, platform-specific, obsolete, or
-needs investigation in the compatibility matrix; no valid opcode may disappear.
+needs investigation in
+`docs/architecture/bytecode/compatibility-matrix.md`; no valid opcode may
+disappear.
 
 Start with the smallest slice that has a stable oracle and one clear effect
 contract. Add converter-backed fixtures, canonical TCIR, verifier checks,
@@ -184,6 +186,12 @@ workloads, and policy. Run a full benchmark only when it measures changed work
 or a measurement regime changes. Reconcile the evidence index, archive, active
 plan, and editorial report before declaring completion.
 
+LLVM and Cranelift remain optional future-tier evaluations, not initial
+acceptance. If either evaluation starts, first read only the `Interfaces and
+Dependencies` section from the preserved `ba6d2f0c3` plan snapshot and reverify
+its target, 32-bit ABI, licensing, distribution-size, build-scope, stack-map,
+debug/profiler, compile-latency, and product-workload assumptions at that time.
+
 ## Decision Log
 
 - Decision: Keep every backend and mixed-mode dispatch default-off.
@@ -209,14 +217,6 @@ plan, and editorial report before declaring completion.
 - Decision: Retain checked arithmetic/null checks as TCIR-only until compiled
   helper/GC evidence exists.
   Rationale: whole-method rejection avoids partial exception effects.
-
-- Decision: Use state-first continuation, an evidence index, milestone archive,
-  and separate editorial report.
-  Rationale: resumability needs stable references, not repeated historical text.
-
-- Decision: Use proportional validation and benchmark only measured changes.
-  Rationale: confidence must be proportional to risk and a disconnected workload
-  cannot prove performance of a new semantic operation.
 
 ## Validation and Acceptance
 

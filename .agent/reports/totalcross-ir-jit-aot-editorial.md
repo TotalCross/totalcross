@@ -5,8 +5,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 -->
 # Editorial Handoff: TotalCross IR, JIT, and AOT
 
-Status: interim. Reconcile this report when Milestone 8 completes materially and
-finalize it only with Milestone 9. It is not an execution diary.
+Status: interim. Reconcile this report when Milestone 8 completes or when the
+user explicitly requests editorial work; finalize it with Milestone 9. It is
+not an execution diary.
 
 ## Editorial Summary
 

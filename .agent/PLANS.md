@@ -39,10 +39,11 @@ to read it; “see documentation” is not sufficient.
 
 For a new plan, read `AGENTS.md` and this file in full, then research only the
 sources necessary to write a concrete plan. For a continuation, read the active
-state file first, locate headings in the plan, and open only the sections needed
-for the next action. Do not routinely reread the complete plan, architecture
-documents, evidence index, or historical archive. Context compaction is not a
-reason to search broadly: restart from state and inspect only active paths.
+state file first when one exists; otherwise locate headings in the plan. Open
+only the sections needed for the next action. Do not routinely reread the
+complete plan, architecture documents, evidence index, or historical archive.
+Context compaction is not a reason to search broadly: restart from state when
+present and inspect only active paths.
 
 The active plan should normally be about 300–450 lines and its state file about
 100–150 lines. These are soft limits, not a reason to remove necessary safety or
@@ -51,11 +52,13 @@ material into history and evidence rather than continuing to append it.
 
 ## Required plan structure
 
-Every active ExecPlan contains these sections, kept concise and current:
+Every active ExecPlan contains or adapts these sections, kept concise and
+current. A small plan may omit the supporting-file section when it intentionally
+uses no auxiliary files:
 
 - `Purpose / Big Picture`: the observable developer or user outcome.
-- `Working Set and Resume Protocol`: the state, evidence, history, and report
-  paths; their purpose; and the first read for a continuation.
+- `Working Set and Resume Protocol`: for a plan using auxiliary files, their
+  paths, purpose, and the first read for a continuation.
 - `Progress`: significant checkpoints and remaining work.
 - `Current Architecture and Scope`: only context needed for remaining work.
 - `Plan of Work`: completed milestone summaries, active milestone, and next
@@ -101,10 +104,11 @@ benchmark tables, and the same result into all four documents.
 
 ## Progress, decisions, and checkpoints
 
-`Progress` records meaningful checkpoints, not commands or microedits. Use at
-most one concise entry per logical commit, functional slice, material validation
-result, direction change, or completed milestone. It should point to evidence
-instead of repeating counts and hashes.
+`Progress` records meaningful checkpoints, not commands or microedits. Use one
+concise entry for the highest-level checkpoint reached—a logical commit,
+functional slice, material direction change, or completed milestone—and do not
+split its implementation, validation, and documentation into separate entries.
+Point to evidence instead of repeating counts and hashes.
 
 The `Decision Log` contains only choices that alter future work: architecture,
 semantics, compatibility, operation class, validation strategy, or release
@@ -183,7 +187,7 @@ not an incremental execution diary.
 
     Explain the observable outcome and how a developer can see it.
 
-    ## Working Set and Resume Protocol
+    ## Working Set and Resume Protocol (when auxiliary files are used)
 
     Name the state, evidence, history, and editorial paths; state what each
     contains and when to read it.
