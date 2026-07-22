@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-package totalcross.lang;
+package jdkcompat.lang;
 
 public class IllegalStateException4D extends RuntimeException {
   static final long serialVersionUID = -1848914673093119416L;
