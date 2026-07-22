@@ -12,6 +12,7 @@
 #import <QuartzCore/QuartzCore.h>
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
+#include <stdlib.h>
 #import <AVFoundation/AVFoundation.h>
 @import UniformTypeIdentifiers;
 #include "barcode_session_state.h"
@@ -32,7 +33,6 @@ static bool callingDocumentPicker;
 static char documentChars[4096];
 static NSLock *barcodeSessionLock;
 
-static char barcode[2048];
 static NSMutableString *currBarcode;
 extern int32 iosScale;
 extern bool isIpad;
@@ -45,6 +45,7 @@ typedef enum
    TCBarcodeFinishPermissionDenied,
    TCBarcodeFinishConfigurationError,
    TCBarcodeFinishSetupTimeout,
+   TCBarcodeFinishLifecycle,
    TCBarcodeFinishBusy
 } TCBarcodeFinishReason;
 
@@ -220,11 +221,19 @@ bool iosLowMemory;
       [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChanged", @"type", nil]];
 }
 
+- (void)barcodeApplicationDidBecomeInactive:(NSNotification *)notification
+{
+   uint64_t generation = [self activeBarcodeSessionGeneration];
+   if (generation != 0)
+      [self finishBarcodeSessionForGeneration:generation reason:TCBarcodeFinishLifecycle value:nil];
+}
+
 - (void)loadView
 {
    self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(barcodeApplicationDidBecomeInactive:) name:UIApplicationWillResignActiveNotification object:nil];
    kbd = [[UITextView alloc] init];
     kbdDisabled = [[UIView alloc] init];
    kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
@@ -435,8 +444,12 @@ int isShown;
       session->result = [@"*** Camera permission denied" retain];
    else if (reason == TCBarcodeFinishSetupTimeout)
       session->result = [@"*** Scanner setup timed out" retain];
+   else if (reason == TCBarcodeFinishLifecycle)
+      session->result = [@"*** Scanner interrupted" retain];
    else if (reason == TCBarcodeFinishBusy)
       session->result = [@"*** Scanner is already active" retain];
+   else if (reason == TCBarcodeFinishCancelled)
+      session->result = [@"" retain];
    else
       session->result = [@"*** Scanner configuration failed" retain];
    [barcodeSessionLock unlock];
@@ -479,21 +492,12 @@ int isShown;
    return YES;
 }
 
--(void)copyBarcodeSessionResult:(TCBarcodeSession *)session
+-(NSString *)barcodeSessionResult:(TCBarcodeSession *)session
 {
    [barcodeSessionLock lock];
    NSString *result = [session->result retain];
    [barcodeSessionLock unlock];
-
-   const char *asciiResult = [result cStringUsingEncoding:NSASCIIStringEncoding];
-   if (asciiResult != NULL)
-   {
-      strncpy(barcode, asciiResult, sizeof(barcode) - 1);
-      barcode[sizeof(barcode) - 1] = 0;
-   }
-   else
-      barcode[0] = 0;
-   [result release];
+   return [result autorelease];
 }
 
 -(void)releaseBarcodeSession:(TCBarcodeSession *)session
@@ -638,26 +642,21 @@ int isShown;
       [self finishBarcodeSessionForGeneration:session->generation reason:TCBarcodeFinishPermissionDenied value:nil];
 }
 
--(void) readBarcode:(NSString*) mode diagnosticSessionId:(uint64_t)sessionId
+-(NSString *)readBarcode:(NSString*) mode diagnosticSessionId:(uint64_t)sessionId
 {
    if ([NSThread isMainThread])
    {
-      strncpy(barcode, "*** Scanner.readBarcode cannot run on the iOS main thread", sizeof(barcode) - 1);
-      barcode[sizeof(barcode) - 1] = 0;
       NSLog(@"TCBarcode[%llu] rejectedMainThreadCaller", (unsigned long long)sessionId);
-      return;
+      return @"*** Scanner.readBarcode cannot run on the iOS main thread";
    }
    TCBarcodeSession *session = [self beginBarcodeSessionWithMode:mode];
    if (session == nil)
    {
-      strncpy(barcode, "*** Scanner is already active", sizeof(barcode) - 1);
-      barcode[sizeof(barcode) - 1] = 0;
       NSLog(@"TCBarcode[%llu] busy", (unsigned long long)sessionId);
-      return;
+      return @"*** Scanner is already active";
    }
 
    callingBarcode = true;
-   barcode[0] = 0;
    AVAuthorizationStatus authorizationStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
    [self logBarcodeDiagnostic:sessionId event:[NSString stringWithFormat:@"start modePresent=%d authorization=%ld beforeMainDispatch", mode != nil, (long)authorizationStatus]];
     dispatch_async(dispatch_get_main_queue(), ^
@@ -673,9 +672,10 @@ int isShown;
    });
    [self logBarcodeDiagnostic:sessionId event:@"enteredCallerWait"];
    dispatch_semaphore_wait(session->completionSignal, DISPATCH_TIME_FOREVER);
-   [self copyBarcodeSessionResult:session];
+   NSString *result = [[self barcodeSessionResult:session] retain];
    [self releaseBarcodeSession:session];
    [self logBarcodeDiagnostic:sessionId event:@"callerWaitCompleted"];
+   return [result autorelease];
 }
 
 - (void)layoutBarcodeOverlay
@@ -750,10 +750,9 @@ int isShown;
                 NSLog(@"TCBarcode metadataRecognized valuePresent=%d", detectionString != nil);
                 highlightViewRect = barCodeObject.bounds;
                 _highlightView.frame = highlightViewRect;
-                NSString *currBar = [NSString stringWithCString:barcode encoding:NSASCIIStringEncoding];
-                if(![detectionString isEqualToString:currBar]) {
+                if(![detectionString isEqualToString:currBarcode]) {
                     timeSpentReadingTheSameBarCode = ([[NSDate date] timeIntervalSince1970]*1000);
-                    strncpy(barcode, [detectionString cStringUsingEncoding: NSASCIIStringEncoding], MIN([detectionString length], sizeof(barcode)));
+                    [currBarcode setString:detectionString];
                 }
                 else {
                     NSTimeInterval currTime = ([[NSDate date] timeIntervalSince1970]*1000) - timeSpentReadingTheSameBarCode;
@@ -772,7 +771,7 @@ int isShown;
 {
    NSLog(@"TCBarcode closeBarcode session=%d running=%d overlay=%d", _session != nil, _session.isRunning, _barcodeOverlay != nil);
    uint64_t generation = [self activeBarcodeSessionGeneration];
-   [self finishBarcodeSessionForGeneration:generation reason:(sender == nil ? TCBarcodeFinishSuccess : TCBarcodeFinishCancelled) value:[NSString stringWithCString:barcode encoding:NSASCIIStringEncoding]];
+   [self finishBarcodeSessionForGeneration:generation reason:TCBarcodeFinishCancelled value:nil];
    NSLog(@"TCBarcode closeBarcodeComplete calling=%d overlay=%d", callingBarcode, _barcodeOverlay != nil);
 }
 
@@ -1113,9 +1112,13 @@ char* iphone_readBarcode(char* mode)
    uint64_t sessionId = ++barcodeDiagnosticSessionId;
    NSLog(@"TCBarcode[%llu] bridgeEnter main=%d modePresent=%d", (unsigned long long)sessionId, [NSThread isMainThread], mode != NULL);
    NSString* cmode = [NSString stringWithFormat:@"%s", mode];
-   [DEVICE_CTX->_mainview readBarcode:cmode diagnosticSessionId:sessionId];
-   NSLog(@"TCBarcode[%llu] bridgeReturn resultPresent=%d", (unsigned long long)sessionId, barcode[0] != 0);
-   return barcode;
+   NSString* result = [DEVICE_CTX->_mainview readBarcode:cmode diagnosticSessionId:sessionId];
+   NSUInteger byteCount = [result lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+   char* utf8Result = (char*)malloc(byteCount + 1);
+   if (utf8Result != NULL)
+      [result getCString:utf8Result maxLength:byteCount + 1 encoding:NSUTF8StringEncoding];
+   NSLog(@"TCBarcode[%llu] bridgeReturn resultPresent=%d", (unsigned long long)sessionId, byteCount != 0);
+   return utf8Result;
 }
 
 bool iphone_mapsShowAddress(char* addr, int flags)

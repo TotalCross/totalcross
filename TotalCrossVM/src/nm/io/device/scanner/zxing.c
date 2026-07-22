@@ -1,9 +1,11 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
+#include <stdlib.h>
 
 #if defined (darwin)
 #ifdef __cplusplus
@@ -45,7 +47,9 @@ TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scan
     TCObject mode = p->obj[0];
     char* cmode = String2CharP(mode);
     char* ret = iphone_readBarcode(cmode);
-    p->retO = createStringObjectFromCharP(p->currentContext, ret, -1);
+    p->retO = ret == NULL ? null : createStringObjectFromCharP(p->currentContext, ret, -1);
+    if (ret != NULL)
+       free(ret);
     xfree(cmode);
 #else
    p->retO = 0;

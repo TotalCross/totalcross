@@ -67,7 +67,7 @@ A nonzero result from `git merge-base --is-ancestor` means the branch no longer 
 - [x] Milestone 4: made permission and AVFoundation initialization asynchronous and routed each setup failure through the centralized completion path. Physical-device validation was waived by the user.
 - [x] (2026-07-22T12:00:00-03:00) Replaced scanner polling with its session semaphore, queued main-thread start asynchronously, rejected main-thread callers with a controlled error, and added a 15-second setup timeout.
 - [x] Milestone 5: replaced polling and unsafe main-queue dispatch with a safe bridge between the VM thread and the main thread. Physical-device validation was waived by the user.
-- [ ] Milestone 6: correct UTF-8 result handling, lifecycle cleanup, stale callbacks, rotation behavior, and repeated scans.
+- [x] Milestone 6: corrected UTF-8 result handling and lifecycle cleanup; stale generation checks and overlay layout were already covered by milestones 2 and 3. Physical-device validation was waived by the user.
 - [ ] Milestone 7: run focused automated checks, build the iOS target, complete the device matrix, and produce final evidence and retrospective.
 
 ## Current Architecture and Scope
@@ -449,3 +449,5 @@ The final retrospective must distinguish implemented behavior from planned behav
 2026-07-22: milestone 4 made authorization and capture configuration asynchronous, using a session-owned serial queue for AVFoundation work. It filters requested scanner modes against available metadata types and completes denied, unsupported, and configuration-error paths through the existing finalizer. The main-queue dispatch and polling wait remain for milestone 5.
 
 2026-07-22: milestone 5 replaced the scanner's synchronous main-queue work and 100 ms polling loop with asynchronous UI initiation plus one semaphore wait on the VM caller. The setup timeout and main-thread rejection use the documented `***` error convention. No active-scan timeout was added.
+
+2026-07-22: milestone 6 returns a UTF-8 heap copy across the C bridge, releases it after the TotalCross string is created, uses `NSString` for repeated metadata comparison, and cancels active scanning when the app resigns active. Device validation remains waived.
