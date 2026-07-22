@@ -94,6 +94,10 @@ static void initializeBarcodeSessionLock(void)
    });
 }
 
+@interface MainViewController ()
+- (void)layoutBarcodeOverlay;
+@end
+
 @implementation MainViewController
 static bool wasNumeric;
 - (void)logBarcodeDiagnostic:(uint64_t)sessionId event:(NSString *)event
@@ -188,6 +192,7 @@ bool iosLowMemory;
    else
    if (orientationChanged)
       lastOrientationSentToVM = orientation;
+   [self layoutBarcodeOverlay];
 }
 
 - (void)viewSafeAreaInsetsDidChange
@@ -398,8 +403,17 @@ int isShown;
    if (_session != nil)
       [_session stopRunning];
    [_prevLayer removeFromSuperlayer];
-   [_highlightView removeFromSuperview];
-   barwindow.hidden = YES;
+   if (barcodeOverlayGeneration == generation)
+   {
+      [_highlightView removeFromSuperview];
+      [_highlightView release];
+      _highlightView = nil;
+      [_barcodeOverlay removeFromSuperview];
+      [_barcodeOverlay release];
+      _barcodeOverlay = nil;
+      barCodeButton = nil;
+      barcodeOverlayGeneration = 0;
+   }
 
    [barcodeSessionLock lock];
    if (activeBarcodeSession == session && session->state == TCBarcodeSessionFinishing)
@@ -479,11 +493,14 @@ int isShown;
            _prevLayer = [AVCaptureVideoPreviewLayer layerWithSession:_session];
            _prevLayer.frame = self.view.bounds;
            _prevLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-           [self mountBarCodeWindow:_prevLayer];
-           [self logBarcodeDiagnostic:sessionId event:@"beforeStartRunning"];
-           [_session startRunning];
-           [self transitionBarcodeSession:session toState:TCBarcodeSessionRunning];
-           [self logBarcodeDiagnostic:sessionId event:@"afterStartRunning"];
+           [self mountBarcodeOverlay:_prevLayer generation:session->generation];
+           if (![self isBarcodeSessionFinished:session])
+           {
+              [self logBarcodeDiagnostic:sessionId event:@"beforeStartRunning"];
+              [_session startRunning];
+              [self transitionBarcodeSession:session toState:TCBarcodeSessionRunning];
+              [self logBarcodeDiagnostic:sessionId event:@"afterStartRunning"];
+           }
     });
    [self logBarcodeDiagnostic:sessionId event:@"enteredCallerWait"];
    int waitCount = 0;
@@ -498,19 +515,49 @@ int isShown;
    [self logBarcodeDiagnostic:sessionId event:@"callerWaitCompleted"];
 }
 
-- (void)mountBarCodeWindow:(AVCaptureVideoPreviewLayer *) layer{
-    NSLog(@"TCBarcode mountBarCodeWindow window=%d button=%d layer=%d", barwindow != nil, barCodeButton != nil, layer != nil);
-    [barwindow.layer addSublayer: layer];
-    
-    [barwindow bringSubviewToFront:barCodeButton];
-    
+- (void)layoutBarcodeOverlay
+{
+    if (_barcodeOverlay == nil)
+        return;
+    _barcodeOverlay.frame = self.view.bounds;
+    _prevLayer.frame = _barcodeOverlay.bounds;
+    UIEdgeInsets safeArea = _barcodeOverlay.safeAreaInsets;
+    barCodeButton.frame = CGRectMake(safeArea.left + 16, safeArea.top + 16, 96, 44);
+}
+
+- (void)mountBarcodeOverlay:(AVCaptureVideoPreviewLayer *)layer generation:(uint64_t)generation
+{
+    if (_barcodeOverlay != nil)
+        return;
+    if (self.view.window == nil)
+    {
+        NSLog(@"TCBarcode[%llu] overlayPresentationFailed viewWindow=0", (unsigned long long)generation);
+        [self finishBarcodeSessionForGeneration:generation reason:TCBarcodeFinishSetupError value:nil];
+        return;
+    }
+
+    _barcodeOverlay = [[UIView alloc] initWithFrame:self.view.bounds];
+    _barcodeOverlay.backgroundColor = [UIColor blackColor];
+    _barcodeOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    barcodeOverlayGeneration = generation;
+    [_barcodeOverlay.layer addSublayer:layer];
+
+    barCodeButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [barCodeButton setTitle:@"Cancel" forState:UIControlStateNormal];
+    [barCodeButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    barCodeButton.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.55];
+    barCodeButton.accessibilityLabel = @"Cancel barcode scan";
+    [barCodeButton addTarget:self action:@selector(closeBarcode:) forControlEvents:UIControlEventTouchUpInside];
+    [_barcodeOverlay addSubview:barCodeButton];
+
     _highlightView = [[UIView alloc] init];
     _highlightView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
     _highlightView.layer.borderColor = [UIColor greenColor].CGColor;
     _highlightView.layer.borderWidth = 3;
-    [barwindow addSubview:_highlightView];
-    barwindow.hidden = NO;
-    NSLog(@"TCBarcode mountBarCodeWindowComplete previewAttached=%d windowHidden=%d", layer.superlayer != nil, barwindow.hidden);
+    [_barcodeOverlay addSubview:_highlightView];
+    [self.view addSubview:_barcodeOverlay];
+    [self layoutBarcodeOverlay];
+    NSLog(@"TCBarcode[%llu] overlayPresented button=%d previewAttached=%d", (unsigned long long)generation, barCodeButton != nil, layer.superlayer == _barcodeOverlay.layer);
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection
@@ -555,10 +602,10 @@ int isShown;
 
 -(IBAction)closeBarcode:(id)sender
 {
-   NSLog(@"TCBarcode closeBarcode session=%d running=%d window=%d", _session != nil, _session.isRunning, barwindow != nil);
+   NSLog(@"TCBarcode closeBarcode session=%d running=%d overlay=%d", _session != nil, _session.isRunning, _barcodeOverlay != nil);
    uint64_t generation = [self activeBarcodeSessionGeneration];
    [self finishBarcodeSessionForGeneration:generation reason:(sender == nil ? TCBarcodeFinishSuccess : TCBarcodeFinishCancelled) value:[NSString stringWithCString:barcode encoding:NSASCIIStringEncoding]];
-   NSLog(@"TCBarcode closeBarcodeComplete calling=%d windowHidden=%d", callingBarcode, barwindow.hidden);
+   NSLog(@"TCBarcode closeBarcodeComplete calling=%d overlay=%d", callingBarcode, _barcodeOverlay != nil);
 }
 
 -(void) dialNumber:(NSString*) number
