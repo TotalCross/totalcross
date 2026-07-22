@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
@@ -75,7 +80,9 @@ android {
         destinationDirectory = file('src/main/assets')
 
         from("${rootDir}/../../TotalCrossSDK/dist/vm") {
-            include 'TCBase.tcz'
+			include 'tc.base.lang.tcz'
+            include 'tc.base.util.tcz'
+            include 'tc.base.misc.tcz'
             include 'TCUI.tcz'
         }
         from("${rootDir}/../../TotalCrossSDK/etc/fonts") {
