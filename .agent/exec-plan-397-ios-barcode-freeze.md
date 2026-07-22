@@ -68,8 +68,8 @@ A nonzero result from `git merge-base --is-ancestor` means the branch no longer 
 - [x] (2026-07-22T12:00:00-03:00) Replaced scanner polling with its session semaphore, queued main-thread start asynchronously, rejected main-thread callers with a controlled error, and added a 15-second setup timeout.
 - [x] Milestone 5: replaced polling and unsafe main-queue dispatch with a safe bridge between the VM thread and the main thread. Physical-device validation was waived by the user.
 - [x] Milestone 6: corrected UTF-8 result handling and lifecycle cleanup; stale generation checks and overlay layout were already covered by milestones 2 and 3. Physical-device validation was waived by the user.
-- [ ] (2026-07-22T12:00:00-03:00) Milestone 7 iOS simulator build is blocked before scanner compilation: `PBKDF2WithHmacSHA1.c` cannot find `axtls/axtls_pbkdf2.h`.
-- [ ] Milestone 7: run focused automated checks, build the iOS target, complete the device matrix, and produce final evidence and retrospective.
+- [x] (2026-07-22T16:31:00-03:00) Milestone 7 dependency blocker was resolved by the updated depot tools; the supported iPhoneOS archive flow completed successfully.
+- [x] Milestone 7: focused automated checks, iOS archive evidence, and final retrospective are complete. The device matrix is explicitly waived by user direction and is recorded as untested rather than passed.
 
 ## Current Architecture and Scope
 
@@ -419,7 +419,7 @@ If an Xcode build or device run fails halfway, record the command, exit status, 
 
 ## Outcomes & Retrospective
 
-Current state: milestones 1 through 5 are complete. `TCBarcodeSession` owns a serial capture queue and completion semaphore; the VM caller waits on that semaphore while all UI initiation is queued asynchronously on the main thread. Main-thread callers return a documented-style `***` error rather than deadlocking, and setup has a 15-second controlled timeout. The user explicitly waived physical-device reproduction and thread capture, so this plan does not claim device validation. The standalone Objective-C syntax check is blocked before the modified source by the absent `YTPlayerView.h` CocoaPods dependency; no Xcode build was run.
+Final state: milestones 1 through 7 are complete. `TCBarcodeSession` owns a serial capture queue and completion semaphore; the VM caller waits on that semaphore while all UI initiation is queued asynchronously on the main thread. Main-thread callers return a documented-style `***` error rather than deadlocking, setup has a 15-second controlled timeout, results cross the C bridge as UTF-8, and an active scan cancels when the application resigns active. The focused C state test and `git diff --check` passed. The repository-supported iPhoneOS CMake, CocoaPods, dependency-patch, and unsigned archive flow passed after the depot-tools update; its evidence is in `.agent/evidence/397-app-freezes-on-readbarcode.jsonl`. The user explicitly waived physical-device reproduction and testing, so the device matrix remains untested and is not represented as validation. The final handoff is `.agent/reports/397-app-freezes-on-readbarcode-editorial.md`.
 At each milestone boundary, replace this paragraph or append a short factual entry describing the behavior delivered, focused validation executed, evidence path, unresolved limitation, and next boundary. Move large completed detail to the history file when it makes the active plan harder to resume.
 At completion, the editorial report must contain:
 - `Editorial Summary`;
@@ -454,3 +454,5 @@ The final retrospective must distinguish implemented behavior from planned behav
 2026-07-22: milestone 6 returns a UTF-8 heap copy across the C bridge, releases it after the TotalCross string is created, uses `NSString` for repeated metadata comparison, and cancels active scanning when the app resigns active. Device validation remains waived.
 
 2026-07-22: milestone 7 initially stopped in unrelated crypto source because the axtls PBKDF2 header was unavailable. After `totalcross-depot-tools` was updated, the required iOS arm64 header was resolved. The first local CocoaPods integration did not apply tcvm headers because its installed `xcodeproj` did not understand CMake-generated PBXProject attributes; rerunning `pod install` applied the target configuration. The prescribed CMake, CocoaPods, dependency-patch, and iPhoneOS `xcodebuild ... archive` flow then completed successfully, producing the local archive and result bundle. The user explicitly waived device and physical-camera validation, so no device matrix, simulator interaction, or physical-device claim is made.
+
+2026-07-22: the ExecPlan is concluded. Its editorial handoff distinguishes the successful iPhoneOS archive from the waived physical-device matrix and records no claim of observed on-device scanner behavior.
