@@ -68,6 +68,7 @@ A nonzero result from `git merge-base --is-ancestor` means the branch no longer 
 - [x] (2026-07-22T12:00:00-03:00) Replaced scanner polling with its session semaphore, queued main-thread start asynchronously, rejected main-thread callers with a controlled error, and added a 15-second setup timeout.
 - [x] Milestone 5: replaced polling and unsafe main-queue dispatch with a safe bridge between the VM thread and the main thread. Physical-device validation was waived by the user.
 - [x] Milestone 6: corrected UTF-8 result handling and lifecycle cleanup; stale generation checks and overlay layout were already covered by milestones 2 and 3. Physical-device validation was waived by the user.
+- [ ] (2026-07-22T12:00:00-03:00) Milestone 7 iOS simulator build is blocked before scanner compilation: `PBKDF2WithHmacSHA1.c` cannot find `axtls/axtls_pbkdf2.h`.
 - [ ] Milestone 7: run focused automated checks, build the iOS target, complete the device matrix, and produce final evidence and retrospective.
 
 ## Current Architecture and Scope
@@ -451,3 +452,5 @@ The final retrospective must distinguish implemented behavior from planned behav
 2026-07-22: milestone 5 replaced the scanner's synchronous main-queue work and 100 ms polling loop with asynchronous UI initiation plus one semaphore wait on the VM caller. The setup timeout and main-thread rejection use the documented `***` error convention. No active-scan timeout was added.
 
 2026-07-22: milestone 6 returns a UTF-8 heap copy across the C bridge, releases it after the TotalCross string is created, uses `NSString` for repeated metadata comparison, and cancels active scanning when the app resigns active. Device validation remains waived.
+
+2026-07-22: milestone 7 ran the supported CMake, CocoaPods, dependency-patch, and simulator-build flow. The build stopped in unrelated crypto source because the axtls PBKDF2 header is unavailable. No scanner compilation, simulator run, device matrix, retrospective, or final editorial report can be claimed until that dependency blocker is resolved.
