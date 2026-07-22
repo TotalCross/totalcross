@@ -57,8 +57,8 @@ A nonzero result from `git merge-base --is-ancestor` means the branch no longer 
 - [x] (2026-07-22T12:00:00-03:00) The branch `fix/397-app-freezes-on-readbarcode` was confirmed identical to `master` at commit `641a443b68361e78caabbe22ae68436b5809c72d`.
 - [x] (2026-07-22T12:00:00-03:00) This plan was rewritten in English using the resumable ExecPlan structure required by the supplied planning standard.
 - [x] (2026-07-22T12:00:00-03:00) Added bounded diagnostic logging to the iOS barcode bridge, setup, presentation, metadata, cancellation, and caller-wait paths; barcode values are not logged.
-- [ ] (2026-07-22T12:00:00-03:00) Reproduce and capture the physical-device freeze (blocked: no connected iOS device or deployed minimal test application in this workspace).
-- [ ] Milestone 1: reproduce the freeze, capture thread and object state, and add bounded diagnostic instrumentation without changing scanner behavior.
+- [x] (2026-07-22T12:00:00-03:00) Physical-device reproduction and capture were explicitly waived by the user; no physical-device behavior is claimed as validated.
+- [x] Milestone 1: static analysis and bounded diagnostic instrumentation completed without changing scanner behavior; physical reproduction was waived by the user.
 - [ ] Milestone 2: introduce explicit per-session state and one idempotent completion path while preserving the current public API.
 - [ ] Milestone 3: replace the uninitialized window path with a scanner controller or overlay presented from the active TotalCross view controller.
 - [ ] Milestone 4: make permission and AVFoundation initialization asynchronous and route every failure through the centralized completion path.
@@ -324,6 +324,7 @@ Move resolved discoveries that no longer affect future work to the archive at mi
 - Decision: cancel and clean up when the application leaves the active state. Rationale: transparent pause/resume adds more controller and stale-callback risk than is appropriate for the 7.3.0 bug fix. Date/Author: 2026-07-22 / plan revision.
 - Decision: use focused validation first and stop at the first sufficient level. Rationale: `AGENTS.md` requires proportional validation and discourages repeated full iOS or distribution builds after each slice. Date/Author: 2026-07-22 / plan revision.
 - Decision: retain the diagnostic instrumentation until the physical-device reproduction is captured. Rationale: it is the declared output of milestone 1, assigns a monotonically increasing invocation identifier, and distinguishes the main-thread, object-presence, capture-running, preview-attachment, metadata, cancellation, and bridge-return states without logging barcode payloads. Date/Author: 2026-07-22 / milestone 1.
+- Decision: close milestone 1 without a device reproduction. Rationale: the user explicitly waived tests and reproduction on a physical device; static analysis and diagnostic instrumentation are complete, but no physical-device behavior is claimed. Date/Author: 2026-07-22 / user direction.
 - Decision pending: preserve the current approximately 1.5-second stable-read requirement or return the first accepted metadata value. Rationale: this changes user-visible scan latency and must be based on current API intent and device evidence. Date/Author: resolve before milestone 6.
 - Decision pending: exact setup and active-session timeout values and their external error representation. Rationale: a bound prevents permanent waits, but an overly short active timeout may break legitimate workflows. Confirm the existing Java error contract before implementation. Date/Author: resolve in milestone 5.
 
@@ -402,7 +403,7 @@ If an Xcode build or device run fails halfway, record the command, exit status, 
 
 ## Outcomes & Retrospective
 
-Current state: the branch and baseline are confirmed, and static analysis identifies a high-confidence combination of missing UI initialization, unbounded polling, and unsafe main-queue dispatch. Milestone 1 diagnostic instrumentation is present in `TotalCrossVM/src/nm/ui/darwin/mainview.m` and passed `git diff --check`. No scanner behavior has been changed. The physical-device reproduction, thread stacks, and object-state capture remain blocked because no physical iOS device or deployed minimal test application is available in this workspace. No automated test, Xcode build, or device validation has been completed.
+Current state: milestone 1 is complete. Static analysis identifies a high-confidence combination of missing UI initialization, unbounded polling, and unsafe main-queue dispatch, and diagnostic instrumentation is present in `TotalCrossVM/src/nm/ui/darwin/mainview.m`. `git diff --check` passed. No scanner behavior has been changed. The user explicitly waived physical-device reproduction, thread stacks, and object-state capture, so this milestone does not claim device validation. No automated test or Xcode build has been completed.
 At each milestone boundary, replace this paragraph or append a short factual entry describing the behavior delivered, focused validation executed, evidence path, unresolved limitation, and next boundary. Move large completed detail to the history file when it makes the active plan harder to resume.
 At completion, the editorial report must contain:
 - `Editorial Summary`;
@@ -423,3 +424,5 @@ The final retrospective must distinguish implemented behavior from planned behav
 2026-07-22: the previous Portuguese, linear plan was replaced with an English resumable ExecPlan following the supplied planning standard. The revision added a working-set and resume protocol, supporting state/evidence/archive/report paths, risk-proportional validation, seven independently verifiable milestones, explicit recovery behavior, branch policy, and factual baseline status. It preserved the earlier technical findings about `barwindow`, `barCodeButton`, `dispatch_sync`, `callingBarcode`, AVFoundation setup, result encoding, and lifecycle cleanup. All work now explicitly targets `fix/397-app-freezes-on-readbarcode`.
 
 2026-07-22: milestone 1 added diagnostic-only `TCBarcode` logs to the bridge and existing scanner path. The plan now records the physical-device reproduction blocker and its local evidence. No milestone-2-or-later behavior was implemented or validated.
+
+2026-07-22: at user direction, milestone 1 was closed without a physical-device reproduction or test. The plan records the waiver rather than presenting unavailable device evidence as completed validation. Milestone 2 was not started.
