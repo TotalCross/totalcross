@@ -6,19 +6,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Estado do ExecPlan 397
 
-Milestone ativo: 7, evidência de artefato e dispositivo. O milestone está bloqueado antes da compilação do scanner.
+Milestone ativo: nenhum. O milestone 7 está concluído com a validação de archive iPhoneOS; a evidência em aparelho físico continua dispensada por direção explícita do usuário.
 
-Último commit lógico: `test(scanner,ios): record simulator build blocker` (o identificador pode ser obtido com `git rev-parse HEAD`).
+Último commit lógico: `test(scanner,ios): record successful device archive`.
 
 Caminhos ativos: `TotalCrossVM/src/nm/ui/darwin/mainview.m`, `TotalCrossVM/src/nm/ui/darwin/barcode_session_state.h`, `TotalCrossVM/src/nm/ui/darwin/barcode_session_state_test.c`, `.agent/exec-plan-397-ios-barcode-freeze.md`, `.agent/state/exec-plan-397-ios-barcode-freeze.md` e `.agent/evidence/397-app-freezes-on-readbarcode.jsonl`.
 
-Próxima ação concreta: restaurar a dependência axtls que fornece `axtls/axtls_pbkdf2.h` no fluxo CMake/Xcode e repetir `xcodebuild`; não alterar o scanner para contornar uma dependência de crypto ausente.
+Próxima ação concreta: parar no limite do ExecPlan solicitado. Uma retomada posterior pode elaborar o relatório editorial final, sem reexecutar a validação do milestone 7.
 
-Validação concluída: o teste C de estado passou e `git diff --check` passou. A busca estrutural confirmou `dispatch_async` para o início, `dispatch_semaphore_wait` para a thread chamadora e ausência de `Sleep(100)` no caminho de scanner. A sintaxe de `mainview.m` não pôde ser verificada isoladamente: a compilação para no cabeçalho CocoaPods ausente `YTPlayerView.h`, antes do arquivo modificado. Por direção explícita do usuário, testes e reprodução em aparelho físico foram dispensados. Nenhum build Xcode foi executado.
+Validação concluída: o teste C de estado passou e `git diff --check` passou. A busca estrutural confirmou `dispatch_async` para o início, `dispatch_semaphore_wait` para a thread chamadora e ausência de `Sleep(100)` no caminho de scanner. O fluxo iPhoneOS de CMake, CocoaPods, patch e `xcodebuild ... archive` completou com êxito e gerou o archive e o result bundle locais. Por direção explícita do usuário, testes e reprodução em aparelho físico foram dispensados.
 
 Decisões ativas: a chamada da VM aguarda `completionSignal`; a UI inicia por `dispatch_async`; chamada na main thread retorna `***`; setup expira em 15 segundos e scan ativo não expira automaticamente. UTF-8 e lifecycle ainda pertencem ao milestone 6.
 
-Bloqueio: `xcodebuild -workspace TotalCross.xcworkspace -scheme TotalCross -configuration Debug -sdk iphonesimulator build` falhou com `TotalCrossVM/src/nm/crypto/PBKDF2WithHmacSHA1.c:7:10: error: 'axtls/axtls_pbkdf2.h' file not found`. O erro é anterior ao scanner e impede build, simulador e evidência final. A ausência de dispositivo físico permanece dispensada pelo usuário.
+Bloqueio: nenhum para o milestone 7. A primeira tentativa de simulador falhou por falta de `axtls/axtls_pbkdf2.h`; após a atualização de `totalcross-depot-tools`, o header iOS arm64 foi resolvido. A primeira integração do CocoaPods não aplicou os headers do alvo CMake por atributos de projeto não reconhecidos pela versão local de `xcodeproj`; uma segunda execução de `pod install`, seguida do patch previsto, aplicou as configurações e o archive passou. A ausência de dispositivo físico permanece dispensada pelo usuário.
 
 Arquivos deliberadamente fora de escopo: `TotalCrossSDK`, correção de dependência axtls/crypto, arquivos Xcode/CocoaPods gerados pelo build, dependências geradas e artefatos locais.
 
