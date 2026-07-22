@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -24,6 +25,7 @@ void iphone_privateSetSurfaceWillChange(bool willChange);
 static bool callingCamera;
 UIWindow* barwindow;
 static bool callingBarcode;
+static uint64_t barcodeDiagnosticSessionId;
 static bool callingDocumentPicker;
 static char documentChars[4096];
 
@@ -34,6 +36,24 @@ extern bool isIpad;
 
 @implementation MainViewController
 static bool wasNumeric;
+- (void)logBarcodeDiagnostic:(uint64_t)sessionId event:(NSString *)event
+{
+   NSLog(@"TCBarcode[%llu] %@ main=%d calling=%d window=%d button=%d session=%d input=%d output=%d preview=%d viewWindow=%d running=%d previewAttached=%d",
+      (unsigned long long)sessionId,
+      event,
+      [NSThread isMainThread],
+      callingBarcode,
+      barwindow != nil,
+      barCodeButton != nil,
+      _session != nil,
+      _input != nil,
+      _output != nil,
+      _prevLayer != nil,
+      self.view.window != nil,
+      _session.isRunning,
+      _prevLayer.superlayer != nil);
+}
+
 - (BOOL)disablesAutomaticKeyboardDismissal {
     return NO;
 }
@@ -245,12 +265,15 @@ int isShown;
     [kbdDisabled becomeFirstResponder];
 }
 
--(void) readBarcode:(NSString*) mode
+-(void) readBarcode:(NSString*) mode diagnosticSessionId:(uint64_t)sessionId
 {
    callingBarcode = true;
    barcode[0] = 0;
+   AVAuthorizationStatus authorizationStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+   [self logBarcodeDiagnostic:sessionId event:[NSString stringWithFormat:@"start modePresent=%d authorization=%ld beforeMainDispatch", mode != nil, (long)authorizationStatus]];
     dispatch_sync(dispatch_get_main_queue(), ^
     {
+           [self logBarcodeDiagnostic:sessionId event:@"enteredMainDispatch"];
            _session = [[AVCaptureSession alloc] init];
            _device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
            NSError *error = nil;
@@ -258,7 +281,7 @@ int isShown;
            if (_input) {
                [_session addInput:_input];
            } else {
-               NSLog(@"Error: %@", error);
+               NSLog(@"TCBarcode[%llu] inputCreationFailed errorPresent=%d", (unsigned long long)sessionId, error != nil);
            }
            
            _output = [[AVCaptureMetadataOutput alloc] init];
@@ -271,14 +294,23 @@ int isShown;
            _prevLayer.frame = self.view.bounds;
            _prevLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
            [self mountBarCodeWindow:_prevLayer];
+           [self logBarcodeDiagnostic:sessionId event:@"beforeStartRunning"];
            [_session startRunning];
-              
+           [self logBarcodeDiagnostic:sessionId event:@"afterStartRunning"];
     });
+   [self logBarcodeDiagnostic:sessionId event:@"enteredCallerWait"];
+   int waitCount = 0;
    while (callingBarcode)
+   {
       Sleep(100);
+      if (++waitCount % 100 == 0)
+         [self logBarcodeDiagnostic:sessionId event:@"callerWaitHeartbeat"];
+   }
+   [self logBarcodeDiagnostic:sessionId event:@"callerWaitCompleted"];
 }
 
 - (void)mountBarCodeWindow:(AVCaptureVideoPreviewLayer *) layer{
+    NSLog(@"TCBarcode mountBarCodeWindow window=%d button=%d layer=%d", barwindow != nil, barCodeButton != nil, layer != nil);
     [barwindow.layer addSublayer: layer];
     
     [barwindow bringSubviewToFront:barCodeButton];
@@ -289,10 +321,12 @@ int isShown;
     _highlightView.layer.borderWidth = 3;
     [barwindow addSubview:_highlightView];
     barwindow.hidden = NO;
+    NSLog(@"TCBarcode mountBarCodeWindowComplete previewAttached=%d windowHidden=%d", layer.superlayer != nil, barwindow.hidden);
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection
 {
+    NSLog(@"TCBarcode metadataCallback count=%lu session=%d preview=%d", (unsigned long)metadataObjects.count, _session != nil, _prevLayer != nil);
     CGRect highlightViewRect = CGRectZero;
     AVMetadataMachineReadableCodeObject *barCodeObject;
     NSString *detectionString = nil;
@@ -306,6 +340,7 @@ int isShown;
             {
                 barCodeObject = (AVMetadataMachineReadableCodeObject *)[_prevLayer transformedMetadataObjectForMetadataObject:(AVMetadataMachineReadableCodeObject *)metadata];
                 detectionString = [(AVMetadataMachineReadableCodeObject *)metadata stringValue];
+                NSLog(@"TCBarcode metadataRecognized valuePresent=%d", detectionString != nil);
                 highlightViewRect = barCodeObject.bounds;
                 _highlightView.frame = highlightViewRect;
                 NSString *currBar = [NSString stringWithCString:barcode encoding:NSASCIIStringEncoding];
@@ -328,9 +363,11 @@ int isShown;
 
 -(IBAction)closeBarcode:(id)sender
 {
+   NSLog(@"TCBarcode closeBarcode session=%d running=%d window=%d", _session != nil, _session.isRunning, barwindow != nil);
    if(_session != null)[_session stopRunning];
    barwindow.hidden = YES;
    callingBarcode = false;
+   NSLog(@"TCBarcode closeBarcodeComplete calling=%d windowHidden=%d", callingBarcode, barwindow.hidden);
 }
 
 -(void) dialNumber:(NSString*) number
@@ -667,8 +704,11 @@ void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, in
 
 char* iphone_readBarcode(char* mode)
 {
+   uint64_t sessionId = ++barcodeDiagnosticSessionId;
+   NSLog(@"TCBarcode[%llu] bridgeEnter main=%d modePresent=%d", (unsigned long long)sessionId, [NSThread isMainThread], mode != NULL);
    NSString* cmode = [NSString stringWithFormat:@"%s", mode];
-   [DEVICE_CTX->_mainview readBarcode:cmode];
+   [DEVICE_CTX->_mainview readBarcode:cmode diagnosticSessionId:sessionId];
+   NSLog(@"TCBarcode[%llu] bridgeReturn resultPresent=%d", (unsigned long long)sessionId, barcode[0] != 0);
    return barcode;
 }
 
