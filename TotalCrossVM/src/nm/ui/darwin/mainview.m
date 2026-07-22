@@ -44,6 +44,7 @@ typedef enum
    TCBarcodeFinishSetupError,
    TCBarcodeFinishPermissionDenied,
    TCBarcodeFinishConfigurationError,
+   TCBarcodeFinishSetupTimeout,
    TCBarcodeFinishBusy
 } TCBarcodeFinishReason;
 
@@ -393,6 +394,15 @@ int isShown;
    return finished;
 }
 
+-(BOOL)isBarcodeSessionStarting:(TCBarcodeSession *)session
+{
+   [barcodeSessionLock lock];
+   BOOL starting = activeBarcodeSession == session
+      && (session->state == TCBarcodeSessionRequestingPermission || session->state == TCBarcodeSessionPresenting || session->state == TCBarcodeSessionConfiguring);
+   [barcodeSessionLock unlock];
+   return starting;
+}
+
 -(uint64_t)activeBarcodeSessionGeneration
 {
    [barcodeSessionLock lock];
@@ -419,7 +429,16 @@ int isShown;
    session->state = TCBarcodeSessionFinishing;
    session->finishReason = reason;
    [session->result release];
-   session->result = [(value == nil ? @"" : value) copy];
+   if (value != nil)
+      session->result = [value copy];
+   else if (reason == TCBarcodeFinishPermissionDenied)
+      session->result = [@"*** Camera permission denied" retain];
+   else if (reason == TCBarcodeFinishSetupTimeout)
+      session->result = [@"*** Scanner setup timed out" retain];
+   else if (reason == TCBarcodeFinishBusy)
+      session->result = [@"*** Scanner is already active" retain];
+   else
+      session->result = [@"*** Scanner configuration failed" retain];
    [barcodeSessionLock unlock];
 
    [self logBarcodeDiagnostic:generation event:[NSString stringWithFormat:@"finish reason=%d", reason]];
@@ -621,10 +640,18 @@ int isShown;
 
 -(void) readBarcode:(NSString*) mode diagnosticSessionId:(uint64_t)sessionId
 {
+   if ([NSThread isMainThread])
+   {
+      strncpy(barcode, "*** Scanner.readBarcode cannot run on the iOS main thread", sizeof(barcode) - 1);
+      barcode[sizeof(barcode) - 1] = 0;
+      NSLog(@"TCBarcode[%llu] rejectedMainThreadCaller", (unsigned long long)sessionId);
+      return;
+   }
    TCBarcodeSession *session = [self beginBarcodeSessionWithMode:mode];
    if (session == nil)
    {
-      barcode[0] = 0;
+      strncpy(barcode, "*** Scanner is already active", sizeof(barcode) - 1);
+      barcode[sizeof(barcode) - 1] = 0;
       NSLog(@"TCBarcode[%llu] busy", (unsigned long long)sessionId);
       return;
    }
@@ -633,19 +660,19 @@ int isShown;
    barcode[0] = 0;
    AVAuthorizationStatus authorizationStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
    [self logBarcodeDiagnostic:sessionId event:[NSString stringWithFormat:@"start modePresent=%d authorization=%ld beforeMainDispatch", mode != nil, (long)authorizationStatus]];
-    dispatch_sync(dispatch_get_main_queue(), ^
+    dispatch_async(dispatch_get_main_queue(), ^
     {
            [self logBarcodeDiagnostic:sessionId event:@"enteredMainDispatch"];
            [self beginBarcodeCaptureForSession:session];
     });
+   [session retain];
+   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+      if ([self isBarcodeSessionStarting:session])
+         [self finishBarcodeSessionForGeneration:session->generation reason:TCBarcodeFinishSetupTimeout value:nil];
+      [session release];
+   });
    [self logBarcodeDiagnostic:sessionId event:@"enteredCallerWait"];
-   int waitCount = 0;
-   while (![self isBarcodeSessionFinished:session])
-   {
-      Sleep(100);
-      if (++waitCount % 100 == 0)
-         [self logBarcodeDiagnostic:sessionId event:@"callerWaitHeartbeat"];
-   }
+   dispatch_semaphore_wait(session->completionSignal, DISPATCH_TIME_FOREVER);
    [self copyBarcodeSessionResult:session];
    [self releaseBarcodeSession:session];
    [self logBarcodeDiagnostic:sessionId event:@"callerWaitCompleted"];
