@@ -6,13 +6,13 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Estado do ExecPlan 397
 
-Milestone ativo: nenhum. O milestone 7 está concluído com a validação de archive iPhoneOS; a evidência em aparelho físico continua dispensada por direção explícita do usuário.
+Milestone ativo: nenhum. ExecPlan concluído. O milestone 7 terminou com a validação de archive iPhoneOS; a evidência em aparelho físico continua dispensada por direção explícita do usuário e está marcada como não testada.
 
-Último commit lógico: `test(scanner,ios): record successful device archive`.
+Último commit lógico: `docs(scanner,ios): conclude barcode freeze exec plan`.
 
 Caminhos ativos: `TotalCrossVM/src/nm/ui/darwin/mainview.m`, `TotalCrossVM/src/nm/ui/darwin/barcode_session_state.h`, `TotalCrossVM/src/nm/ui/darwin/barcode_session_state_test.c`, `.agent/exec-plan-397-ios-barcode-freeze.md`, `.agent/state/exec-plan-397-ios-barcode-freeze.md` e `.agent/evidence/397-app-freezes-on-readbarcode.jsonl`.
 
-Próxima ação concreta: parar no limite do ExecPlan solicitado. Uma retomada posterior pode elaborar o relatório editorial final, sem reexecutar a validação do milestone 7.
+Próxima ação concreta: nenhuma. Não reabrir ou repetir validações sem uma nova solicitação; qualquer novo trabalho deve começar em um novo plano ou em uma extensão explicitamente autorizada.
 
 Validação concluída: o teste C de estado passou e `git diff --check` passou. A busca estrutural confirmou `dispatch_async` para o início, `dispatch_semaphore_wait` para a thread chamadora e ausência de `Sleep(100)` no caminho de scanner. O fluxo iPhoneOS de CMake, CocoaPods, patch e `xcodebuild ... archive` completou com êxito e gerou o archive e o result bundle locais. Por direção explícita do usuário, testes e reprodução em aparelho físico foram dispensados.
 
