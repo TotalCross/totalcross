@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -16,6 +17,7 @@
 #import <CoreLocation/CLLocationManager.h>
 #import <CoreLocation/CLLocationManagerDelegate.h>
 #import <WebKit/WebKit.h>
+#include <stdint.h>
 #include "GraphicsPrimitives.h"
 #import "childview.h"
 #import "sipargs.h"
@@ -44,7 +46,9 @@
    AVCaptureDeviceInput *_input;
    AVCaptureMetadataOutput *_output;
    AVCaptureVideoPreviewLayer *_prevLayer;
+   UIView *_barcodeOverlay;
    UIButton *barCodeButton;
+   uint64_t barcodeOverlayGeneration;
    UIView *_highlightView;
    NSTimeInterval timeSpentReadingTheSameBarCode;
    // Youtube Player
