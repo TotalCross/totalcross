@@ -59,7 +59,8 @@ A nonzero result from `git merge-base --is-ancestor` means the branch no longer 
 - [x] (2026-07-22T12:00:00-03:00) Added bounded diagnostic logging to the iOS barcode bridge, setup, presentation, metadata, cancellation, and caller-wait paths; barcode values are not logged.
 - [x] (2026-07-22T12:00:00-03:00) Physical-device reproduction and capture were explicitly waived by the user; no physical-device behavior is claimed as validated.
 - [x] Milestone 1: static analysis and bounded diagnostic instrumentation completed without changing scanner behavior; physical reproduction was waived by the user.
-- [ ] Milestone 2: introduce explicit per-session state and one idempotent completion path while preserving the current public API.
+- [x] (2026-07-22T12:00:00-03:00) Added and ran the pure-C barcode session-state test for start, transition, repeated-finalization rejection, stale-generation rejection, concurrent-start rejection, and pre-session finish rejection.
+- [x] Milestone 2: introduced per-session state and one idempotent completion path while preserving the current public API. Physical-device validation was waived by the user.
 - [ ] Milestone 3: replace the uninitialized window path with a scanner controller or overlay presented from the active TotalCross view controller.
 - [ ] Milestone 4: make permission and AVFoundation initialization asynchronous and route every failure through the centralized completion path.
 - [ ] Milestone 5: replace polling and unsafe main-queue dispatch with a safe bridge between the VM thread and the main thread.
@@ -312,6 +313,7 @@ The normal closing validation reaches level 5: an iOS device smoke test. A full 
 - Observation: the result path uses an ASCII-oriented global buffer and `strncpy`. Evidence: UTF-8 byte length can differ from `NSString.length`, creating truncation or missing termination for non-ASCII payloads.
 - Observation: the public API is synchronous while the platform APIs are asynchronous. Evidence: the correction needs a bridge that waits only on the VM thread and lets the main thread continue permission, presentation, and capture work.
 - Observation: this workspace currently exposes only iOS simulators to Xcode tooling, and it has no executable TotalCross app under `TotalCrossVM/xcode/Debug-iphonesimulator` for the requested manual reproduction. Evidence: `xcrun xctrace list devices` listed the host and simulators only; the scoped executable search returned no application binary. A simulator cannot establish physical-camera capture behavior.
+- Observation: the standalone Objective-C syntax check cannot reach `mainview.m` in this workspace because the checked-in source references the absent CocoaPods header `YTPlayerView.h`. Evidence: `xcrun --sdk iphonesimulator clang -fsyntax-only ... mainview.m` exited 1 with `fatal error: 'YTPlayerView.h' file not found`. The new C state helper remains independently compilable and tested.
 Move resolved discoveries that no longer affect future work to the archive at milestone boundaries.
 
 ## Decision Log
@@ -325,6 +327,8 @@ Move resolved discoveries that no longer affect future work to the archive at mi
 - Decision: use focused validation first and stop at the first sufficient level. Rationale: `AGENTS.md` requires proportional validation and discourages repeated full iOS or distribution builds after each slice. Date/Author: 2026-07-22 / plan revision.
 - Decision: retain the diagnostic instrumentation until the physical-device reproduction is captured. Rationale: it is the declared output of milestone 1, assigns a monotonically increasing invocation identifier, and distinguishes the main-thread, object-presence, capture-running, preview-attachment, metadata, cancellation, and bridge-return states without logging barcode payloads. Date/Author: 2026-07-22 / milestone 1.
 - Decision: close milestone 1 without a device reproduction. Rationale: the user explicitly waived tests and reproduction on a physical device; static analysis and diagnostic instrumentation are complete, but no physical-device behavior is claimed. Date/Author: 2026-07-22 / user direction.
+- Decision: make the session transition rules a pure C header used by the Darwin controller and a standalone C test. Rationale: no focused Objective-C test target is available; this provides executable coverage for lifecycle admissibility without adding a test framework or changing the Xcode project. Date/Author: 2026-07-22 / milestone 2.
+- Decision: retain the synchronous dispatch and polling wait until milestone 5. Rationale: milestone 2 centralizes state and finalization first; changing the waiting primitive or main-queue behavior now would combine two planned milestones and make lifecycle regressions harder to isolate. Date/Author: 2026-07-22 / milestone 2.
 - Decision pending: preserve the current approximately 1.5-second stable-read requirement or return the first accepted metadata value. Rationale: this changes user-visible scan latency and must be based on current API intent and device evidence. Date/Author: resolve before milestone 6.
 - Decision pending: exact setup and active-session timeout values and their external error representation. Rationale: a bound prevents permanent waits, but an overly short active timeout may break legitimate workflows. Confirm the existing Java error contract before implementation. Date/Author: resolve in milestone 5.
 
@@ -403,7 +407,7 @@ If an Xcode build or device run fails halfway, record the command, exit status, 
 
 ## Outcomes & Retrospective
 
-Current state: milestone 1 is complete. Static analysis identifies a high-confidence combination of missing UI initialization, unbounded polling, and unsafe main-queue dispatch, and diagnostic instrumentation is present in `TotalCrossVM/src/nm/ui/darwin/mainview.m`. `git diff --check` passed. No scanner behavior has been changed. The user explicitly waived physical-device reproduction, thread stacks, and object-state capture, so this milestone does not claim device validation. No automated test or Xcode build has been completed.
+Current state: milestones 1 and 2 are complete. `TotalCrossVM/src/nm/ui/darwin/mainview.m` now owns one active `TCBarcodeSession`, generation checks, explicit state transitions, and an idempotent finalizer for successful scan, cancellation, setup failure, duplicate finish, and stale callback paths. `TotalCrossVM/src/nm/ui/darwin/barcode_session_state_test.c` passed as a focused unit test. The user explicitly waived physical-device reproduction and thread capture, so this plan does not claim device validation. The standalone Objective-C syntax check is blocked before the modified source by the absent `YTPlayerView.h` CocoaPods dependency; no Xcode build was run.
 At each milestone boundary, replace this paragraph or append a short factual entry describing the behavior delivered, focused validation executed, evidence path, unresolved limitation, and next boundary. Move large completed detail to the history file when it makes the active plan harder to resume.
 At completion, the editorial report must contain:
 - `Editorial Summary`;
@@ -426,3 +430,5 @@ The final retrospective must distinguish implemented behavior from planned behav
 2026-07-22: milestone 1 added diagnostic-only `TCBarcode` logs to the bridge and existing scanner path. The plan now records the physical-device reproduction blocker and its local evidence. No milestone-2-or-later behavior was implemented or validated.
 
 2026-07-22: at user direction, milestone 1 was closed without a physical-device reproduction or test. The plan records the waiver rather than presenting unavailable device evidence as completed validation. Milestone 2 was not started.
+
+2026-07-22: milestone 2 added explicit per-invocation state, a generation gate, and one finalizer while intentionally retaining the existing UI presentation and waiting mechanisms for their later milestones. A standalone C test covers the transition rules. The Objective-C syntax check is limited by an absent pre-existing CocoaPods header, and physical-device validation remains waived.

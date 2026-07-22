@@ -14,6 +14,7 @@
 #include <OpenGLES/ES2/glext.h>
 #import <AVFoundation/AVFoundation.h>
 @import UniformTypeIdentifiers;
+#include "barcode_session_state.h"
 
 #define LKLayer CALayer
 
@@ -26,13 +27,72 @@ static bool callingCamera;
 UIWindow* barwindow;
 static bool callingBarcode;
 static uint64_t barcodeDiagnosticSessionId;
+static uint64_t barcodeSessionGeneration;
 static bool callingDocumentPicker;
 static char documentChars[4096];
+static NSLock *barcodeSessionLock;
 
 static char barcode[2048];
 static NSMutableString *currBarcode;
 extern int32 iosScale;
 extern bool isIpad;
+
+typedef enum
+{
+   TCBarcodeFinishSuccess,
+   TCBarcodeFinishCancelled,
+   TCBarcodeFinishSetupError,
+   TCBarcodeFinishBusy
+} TCBarcodeFinishReason;
+
+@interface TCBarcodeSession : NSObject
+{
+@public
+   uint64_t generation;
+   TCBarcodeSessionState state;
+   TCBarcodeFinishReason finishReason;
+   NSString *result;
+   NSDate *startedAt;
+   dispatch_semaphore_t completionSignal;
+   BOOL cleanupCompleted;
+}
+- (id)initWithGeneration:(uint64_t)sessionGeneration;
+@end
+
+@implementation TCBarcodeSession
+- (id)initWithGeneration:(uint64_t)sessionGeneration
+{
+   self = [super init];
+   if (self)
+   {
+      generation = sessionGeneration;
+      state = TCBarcodeSessionIdle;
+      finishReason = TCBarcodeFinishCancelled;
+      result = [@"" retain];
+      startedAt = [[NSDate date] retain];
+      completionSignal = dispatch_semaphore_create(0);
+      cleanupCompleted = NO;
+   }
+   return self;
+}
+
+- (void)dealloc
+{
+   [result release];
+   [startedAt release];
+   [super dealloc];
+}
+@end
+
+static TCBarcodeSession *activeBarcodeSession;
+
+static void initializeBarcodeSessionLock(void)
+{
+   static dispatch_once_t onceToken;
+   dispatch_once(&onceToken, ^{
+      barcodeSessionLock = [[NSLock alloc] init];
+   });
+}
 
 @implementation MainViewController
 static bool wasNumeric;
@@ -265,8 +325,130 @@ int isShown;
     [kbdDisabled becomeFirstResponder];
 }
 
+-(TCBarcodeSession *)beginBarcodeSession
+{
+   initializeBarcodeSessionLock();
+   [barcodeSessionLock lock];
+   if (activeBarcodeSession != nil)
+   {
+      [barcodeSessionLock unlock];
+      return nil;
+   }
+
+   TCBarcodeSession *session = [[TCBarcodeSession alloc] initWithGeneration:++barcodeSessionGeneration];
+   if (tcBarcodeSessionCanTransition(session->state, TCBarcodeSessionRequestingPermission))
+      session->state = TCBarcodeSessionRequestingPermission;
+   activeBarcodeSession = session;
+   [barcodeSessionLock unlock];
+   return session;
+}
+
+-(BOOL)transitionBarcodeSession:(TCBarcodeSession *)session toState:(TCBarcodeSessionState)state
+{
+   [barcodeSessionLock lock];
+   BOOL transitioned = activeBarcodeSession == session
+      && tcBarcodeSessionMatchesGeneration(session->generation, activeBarcodeSession->generation)
+      && tcBarcodeSessionCanTransition(session->state, state);
+   if (transitioned)
+      session->state = state;
+   [barcodeSessionLock unlock];
+   return transitioned;
+}
+
+-(BOOL)isBarcodeSessionFinished:(TCBarcodeSession *)session
+{
+   [barcodeSessionLock lock];
+   BOOL finished = session->cleanupCompleted;
+   [barcodeSessionLock unlock];
+   return finished;
+}
+
+-(uint64_t)activeBarcodeSessionGeneration
+{
+   [barcodeSessionLock lock];
+   uint64_t generation = activeBarcodeSession != nil && tcBarcodeSessionCanFinish(activeBarcodeSession->state)
+      ? activeBarcodeSession->generation
+      : 0;
+   [barcodeSessionLock unlock];
+   return generation;
+}
+
+-(BOOL)finishBarcodeSessionForGeneration:(uint64_t)generation reason:(TCBarcodeFinishReason)reason value:(NSString *)value
+{
+   [barcodeSessionLock lock];
+   TCBarcodeSession *session = activeBarcodeSession;
+   BOOL accepted = session != nil
+      && tcBarcodeSessionMatchesGeneration(generation, session->generation)
+      && tcBarcodeSessionCanFinish(session->state);
+   if (!accepted)
+   {
+      [barcodeSessionLock unlock];
+      return NO;
+   }
+
+   session->state = TCBarcodeSessionFinishing;
+   session->finishReason = reason;
+   [session->result release];
+   session->result = [(value == nil ? @"" : value) copy];
+   [barcodeSessionLock unlock];
+
+   [self logBarcodeDiagnostic:generation event:[NSString stringWithFormat:@"finish reason=%d", reason]];
+   if (_output != nil)
+      [_output setMetadataObjectsDelegate:nil queue:dispatch_get_main_queue()];
+   if (_session != nil)
+      [_session stopRunning];
+   [_prevLayer removeFromSuperlayer];
+   [_highlightView removeFromSuperview];
+   barwindow.hidden = YES;
+
+   [barcodeSessionLock lock];
+   if (activeBarcodeSession == session && session->state == TCBarcodeSessionFinishing)
+   {
+      session->cleanupCompleted = YES;
+      session->state = TCBarcodeSessionFinished;
+      callingBarcode = false;
+      dispatch_semaphore_signal(session->completionSignal);
+   }
+   [barcodeSessionLock unlock];
+   return YES;
+}
+
+-(void)copyBarcodeSessionResult:(TCBarcodeSession *)session
+{
+   [barcodeSessionLock lock];
+   NSString *result = [session->result retain];
+   [barcodeSessionLock unlock];
+
+   const char *asciiResult = [result cStringUsingEncoding:NSASCIIStringEncoding];
+   if (asciiResult != NULL)
+   {
+      strncpy(barcode, asciiResult, sizeof(barcode) - 1);
+      barcode[sizeof(barcode) - 1] = 0;
+   }
+   else
+      barcode[0] = 0;
+   [result release];
+}
+
+-(void)releaseBarcodeSession:(TCBarcodeSession *)session
+{
+   [barcodeSessionLock lock];
+   if (activeBarcodeSession == session && session->state == TCBarcodeSessionFinished)
+      activeBarcodeSession = nil;
+   [barcodeSessionLock unlock];
+   [session release];
+}
+
 -(void) readBarcode:(NSString*) mode diagnosticSessionId:(uint64_t)sessionId
 {
+   TCBarcodeSession *session = [self beginBarcodeSession];
+   if (session == nil)
+   {
+      barcode[0] = 0;
+      NSLog(@"TCBarcode[%llu] busy", (unsigned long long)sessionId);
+      return;
+   }
+
    callingBarcode = true;
    barcode[0] = 0;
    AVAuthorizationStatus authorizationStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
@@ -274,6 +456,8 @@ int isShown;
     dispatch_sync(dispatch_get_main_queue(), ^
     {
            [self logBarcodeDiagnostic:sessionId event:@"enteredMainDispatch"];
+           [self transitionBarcodeSession:session toState:TCBarcodeSessionPresenting];
+           [self transitionBarcodeSession:session toState:TCBarcodeSessionConfiguring];
            _session = [[AVCaptureSession alloc] init];
            _device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
            NSError *error = nil;
@@ -282,6 +466,8 @@ int isShown;
                [_session addInput:_input];
            } else {
                NSLog(@"TCBarcode[%llu] inputCreationFailed errorPresent=%d", (unsigned long long)sessionId, error != nil);
+               [self finishBarcodeSessionForGeneration:session->generation reason:TCBarcodeFinishSetupError value:nil];
+               return;
            }
            
            _output = [[AVCaptureMetadataOutput alloc] init];
@@ -296,16 +482,19 @@ int isShown;
            [self mountBarCodeWindow:_prevLayer];
            [self logBarcodeDiagnostic:sessionId event:@"beforeStartRunning"];
            [_session startRunning];
+           [self transitionBarcodeSession:session toState:TCBarcodeSessionRunning];
            [self logBarcodeDiagnostic:sessionId event:@"afterStartRunning"];
     });
    [self logBarcodeDiagnostic:sessionId event:@"enteredCallerWait"];
    int waitCount = 0;
-   while (callingBarcode)
+   while (![self isBarcodeSessionFinished:session])
    {
       Sleep(100);
       if (++waitCount % 100 == 0)
          [self logBarcodeDiagnostic:sessionId event:@"callerWaitHeartbeat"];
    }
+   [self copyBarcodeSessionResult:session];
+   [self releaseBarcodeSession:session];
    [self logBarcodeDiagnostic:sessionId event:@"callerWaitCompleted"];
 }
 
@@ -326,6 +515,9 @@ int isShown;
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection
 {
+    uint64_t generation = [self activeBarcodeSessionGeneration];
+    if (generation == 0)
+        return;
     NSLog(@"TCBarcode metadataCallback count=%lu session=%d preview=%d", (unsigned long)metadataObjects.count, _session != nil, _prevLayer != nil);
     CGRect highlightViewRect = CGRectZero;
     AVMetadataMachineReadableCodeObject *barCodeObject;
@@ -351,7 +543,7 @@ int isShown;
                 else {
                     NSTimeInterval currTime = ([[NSDate date] timeIntervalSince1970]*1000) - timeSpentReadingTheSameBarCode;
                     if(currTime > 1500) {
-                        [self closeBarcode:0];
+                        [self finishBarcodeSessionForGeneration:generation reason:TCBarcodeFinishSuccess value:detectionString];
                     }
                 }
                 break;
@@ -364,9 +556,8 @@ int isShown;
 -(IBAction)closeBarcode:(id)sender
 {
    NSLog(@"TCBarcode closeBarcode session=%d running=%d window=%d", _session != nil, _session.isRunning, barwindow != nil);
-   if(_session != null)[_session stopRunning];
-   barwindow.hidden = YES;
-   callingBarcode = false;
+   uint64_t generation = [self activeBarcodeSessionGeneration];
+   [self finishBarcodeSessionForGeneration:generation reason:(sender == nil ? TCBarcodeFinishSuccess : TCBarcodeFinishCancelled) value:[NSString stringWithCString:barcode encoding:NSASCIIStringEncoding]];
    NSLog(@"TCBarcode closeBarcodeComplete calling=%d windowHidden=%d", callingBarcode, barwindow.hidden);
 }
 
