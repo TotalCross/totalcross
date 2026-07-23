@@ -163,18 +163,27 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
 #endif 
 #else
    TCObject img = p->obj[0];
+   int32 id = Image_textureId(img);
+   if (id >= 0) {
+      Image_changed(img) = false;
+      return;
+   }
    int32 frameCount = Image_frameCount(img);
    TCObject pixelsObj = frameCount == 1 ? Image_pixels(img) : Image_pixelsOfAllFrames(img);
    
    if (pixelsObj != NULL) {
       int32 width = (frameCount > 1) ? Image_widthOfAllFrames(img) : Image_width(img);
       int32 height = Image_height(img);
-      int32 id = Image_textureId(img);
       Pixel *pixels = (Pixel *)ARRAYOBJ_START(pixelsObj);
 
-      Image_textureId(img) = skia_makeBitmap(id, pixels, width, height);
+      id = skia_makeBitmap(SKIA_SCREEN_SURFACE_ID, pixels, width, height);
+      if (id >= 0) {
+         Image_textureId(img) = id;
+      }
    }
-   Image_changed(img) = false;
+   if (Image_textureId(img) >= 0) {
+      Image_changed(img) = false;
+   }
 #endif
 }
 //////////////////////////////////////////////////////////////////////////

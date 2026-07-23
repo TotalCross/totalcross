@@ -6,6 +6,10 @@
 
 #include <math.h>
 
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#include "skia/skia.h"
+#endif
+
 static void setCurrentFrame(TCObject obj, int32 nr)
 {
    int32 y,width,widthOfAllFrames;
@@ -588,6 +592,13 @@ static void getAlphaInstance(TCObject thisObj, TCObject newObj, int32 delta) // 
 
 static void getPixelRow(Context currentContext, TCObject obj, TCObject outObj, int32 y)
 {
+#ifdef SKIA_H
+   int32 id = Image_textureId(obj);
+   int32 skiaWidth = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
+   if (id >= 0 && checkArrayRange(currentContext, outObj, 0, skiaWidth * 4) &&
+       skia_getPixelRow(id, ARRAYOBJ_START(outObj), y, skiaWidth))
+      return;
+#endif
    TCObject pixObj = (Image_frameCount(obj) > 1) ? Image_pixelsOfAllFrames(obj) : Image_pixels(obj);
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int8* out = (int8*)ARRAYOBJ_START(outObj);

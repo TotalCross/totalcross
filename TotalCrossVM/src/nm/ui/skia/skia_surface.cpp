@@ -148,30 +148,86 @@ Pixel skia_getPixel(int32 skiaSurface, int32 x, int32 y) {
     if (!targetCanvas->readPixels(pixelBitmap, x, y)) {
         return -1;
     }
-    Pixel pixel = pixelBitmap.getAddr32(0, 0)[0];
-    return (((pixel >> 24) & 0xFF) << 24) |
-        (((pixel & 0xFF) << 16) | ((pixel >> 8) & 0xFF00) | ((pixel >> 16) & 0xFF));
+    return skiaPixelFromColor(pixelBitmap.getColor(0, 0));
+}
+
+int skia_getPixelRow(int32 skiaSurface, void *output, int32 y, int32 width) {
+    SKIA_TRACE()
+    SkCanvas* sourceCanvas = skiaGetCanvas(skiaSurface);
+    const SkImageInfo sourceInfo = sourceCanvas ? sourceCanvas->imageInfo() : SkImageInfo();
+    if (!sourceCanvas || !output || y < 0 || width < 0 || y >= sourceInfo.height() ||
+        width > sourceInfo.width()) {
+        return 0;
+    }
+    SkBitmap rowBitmap;
+    rowBitmap.allocPixels(SkImageInfo::Make(
+        width, 1, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType));
+    if (!sourceCanvas->readPixels(rowBitmap, 0, y)) {
+        return 0;
+    }
+    uint8_t* row = static_cast<uint8_t*>(output);
+    for (int32 x = 0; x < width; ++x) {
+        const uint8_t* rgba = rowBitmap.getAddr8(x, 0);
+        const SkColor color = SkColorSetARGB(rgba[3], rgba[0], rgba[1], rgba[2]);
+        *row++ = SkColorGetR(color);
+        *row++ = SkColorGetG(color);
+        *row++ = SkColorGetB(color);
+        *row++ = SkColorGetA(color);
+    }
+    return 1;
 }
 
 void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel) {
     SKIA_TRACE()
     if (SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface)) {
-        backPaint.setColor(pixel);
+        backPaint.setColor(skiaColorFromPixel(pixel));
         targetCanvas->drawRect(SkRect::MakeXYWH(x, y, 1, 1), backPaint);
     }
 }
 
-int skia_getsetRGB(int32 skiaSurface, void*, int32, int32 x, int32 y,
+int skia_getsetRGB(int32 skiaSurface, void *pixels, int32 offset, int32 x, int32 y,
                    int32 w, int32 h, bool isGet) {
     SKIA_TRACE()
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
     if (!targetCanvas) {
         return 0;
     }
+    if (!pixels || w <= 0 || h <= 0) {
+        return 0;
+    }
     SkBitmap pixelBitmap;
-    pixelBitmap.allocPixels(SkImageInfo::MakeN32Premul(w, h));
+    pixelBitmap.allocPixels(SkImageInfo::Make(
+        w, h, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType));
+    uint8_t* rgba = pixelBitmap.getAddr8(0, 0);
+    Pixel* source = static_cast<Pixel*>(pixels) + offset;
+    if (!isGet) {
+        for (int32 row = 0; row < h; ++row) {
+            for (int32 column = 0; column < w; ++column) {
+                const Pixel pixel = source[row * w + column];
+                const SkColor color = skiaColorFromPixel(pixel);
+                *rgba++ = SkColorGetR(color);
+                *rgba++ = SkColorGetG(color);
+                *rgba++ = SkColorGetB(color);
+                *rgba++ = SkColorGetA(color);
+            }
+        }
+    }
     if (isGet) {
-        return targetCanvas->readPixels(pixelBitmap, x, y);
+        if (!targetCanvas->readPixels(pixelBitmap, x, y)) {
+            return 0;
+        }
+        rgba = pixelBitmap.getAddr8(0, 0);
+        for (int32 row = 0; row < h; ++row) {
+            for (int32 column = 0; column < w; ++column) {
+                const uint8_t red = *rgba++;
+                const uint8_t green = *rgba++;
+                const uint8_t blue = *rgba++;
+                const uint8_t alpha = *rgba++;
+                source[row * w + column] = skiaPixelFromColor(
+                    SkColorSetARGB(alpha, red, green, blue));
+            }
+        }
+        return 1;
     }
     return targetCanvas->writePixels(pixelBitmap, x, y);
 }
