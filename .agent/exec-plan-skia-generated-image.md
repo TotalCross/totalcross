@@ -80,7 +80,12 @@ Resume with:
   entry point, failing flow, and expected output. The APK baseline reproduced
   the blank PNG on the connected Android emulator; the supporting evidence is
   in `.agent/evidence/skia-generated-image.jsonl`.
-- [ ] Move and split sources without intended behavior change.
+- [x] (2026-07-23T03:03:18-03:00) Move and split sources without intended
+  behavior change. Skia now lives under `nm/ui/skia/`; its screen/font glue,
+  surface code, and primitive code are separate translation units, and the
+  graphics primitive header includes mechanical Skia, text, shape, and screen
+  fragments at their original compilation positions. Native and SDK builds
+  passed; no CTest tests are registered in the structural build directory.
 - [ ] Add image-owned bitmap/canvas surfaces and route Skia drawing correctly.
 - [ ] Enforce bitmap authority across reads, writes, image drawing, and output.
 - [ ] Create and pass the smoke test on Java SE, macOS, and Android.
@@ -320,6 +325,11 @@ Acceptance:
   `TotalCrossVM/xcode/tcvm.xcodeproj` is ignored/generated and was not included
   in the relocation commit. CMake regeneration is required before an Xcode
   build observes the new path.
+- Splitting `GraphicsPrimitives_c.h` required preserving an outer
+  `#ifndef SKIA_H` across the CPU-only line-drawing block; moving only the
+  visible function text initially left an unmatched `#else`. The final split
+  keeps the conditional boundary in the main header and the compiler accepted
+  both C and C++ translation units.
 
 Add only discoveries that materially change remaining work.
 
@@ -353,6 +363,13 @@ Add only discoveries that materially change remaining work.
   Rationale: The plan's first unchecked item was the exact attachment
   inspection, and starting source changes without that evidence would violate
   the plan's source-of-truth requirement.
+  Date: 2026-07-23.
+- Decision: Keep the primitive fragments included at their original positions
+  in `GraphicsPrimitives_c.h`.
+  Rationale: The header is compiled as part of the C implementation model and
+  its static helpers depend on declaration order and platform conditionals;
+  preserving positions makes the source organization mechanical and avoids a
+  renderer abstraction or behavior change.
   Date: 2026-07-23.
 
 ## Validation and Acceptance
@@ -475,6 +492,17 @@ expected smoke geometry is therefore a white 576x576 image with a black
 border at the 10-pixel inset and an opaque interior; the current baseline
 instead is blank/transparent. Evidence and command artifacts are recorded in
 `.agent/evidence/skia-generated-image.jsonl`; Milestone 1 remains pending.
+
+Milestone 1 completed on 2026-07-23: `skia.h` and `skia.cpp` moved from
+`TotalCrossVM/src/nm/ui/android/` to `TotalCrossVM/src/nm/ui/skia/`; the CMake
+source list and native includes were updated; `skia_internal.h` centralizes
+C++-only Skia declarations; `skia_surface.cpp` owns the existing bitmap and
+pixel functions; and `skia_primitives.cpp` owns the existing drawing
+primitives. `GraphicsPrimitives_c.h` now includes four mechanically extracted
+fragments for Skia, text, shapes, and screen code. The structural CMake/Ninja
+build and SDK `clean dist` passed. CTest found no registered tests, so no
+runtime graphics assertion was claimed in this milestone. Milestone 2 is the
+next active milestone and was not started or validated.
 
 At completion state whether the issue was reproduced, which attachment code
 became the smoke test, whether the Android baseline failed, whether all three
