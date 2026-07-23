@@ -100,7 +100,10 @@ Resume with:
   evidence, and editorial report. The report records the completed native
   work, the smoke artifact, measured source sizes, and the final matrix as
   unverified/deferred.
-- [ ] Execute the final Java SE, macOS, and Android matrix from one revision.
+- [x] (2026-07-23T04:08:33-03:00) Execute the final Java SE, macOS, and
+  Android matrix from revision `84b618d93` plus native fix `90109883a`.
+  Java SE, macOS, and Android all produced passing issue-derived artifacts;
+  the final evidence is recorded in `.agent/evidence/skia-generated-image.jsonl`.
 
 ## Current Architecture and Scope
 
@@ -348,6 +351,24 @@ Acceptance:
 - No cross-platform smoke harness exists in the repository. The test therefore
   owns its small TotalCross app and a dependency-free host checker, while the
   platform deployment command remains explicit in its README.
+- The native `Pixel` representation is scalar `0xAARRGGBB`; interpreting it
+  through host-endian byte pointers sent the wrong channels to Skia. The macOS
+  smoke run exposed this and the conversion now uses explicit shifts/masks.
+- Skia anti-aliasing makes the sampled inset border non-white but not
+  necessarily exact black on every native target (`0x3F3F` on the macOS
+  headless run). The smoke assertion therefore requires a non-background
+  border while retaining exact white background/interior and RGBA-row checks.
+- The Android deployer required a checked-in SDK AAB template at
+  `TotalCrossSDK/dist/vm/android/TotalCross.aab`; the final matrix supplied it
+  from the successful `assembleStandardRelease` output. That generated file
+  remains untracked.
+- `MainWindow.exit` can race asynchronous Android VM teardown and abort on a
+  destroyed mutex after the result is written. The smoke app leaves Android
+  running for artifact collection and the harness force-stops it afterward;
+  the result JSON and checker remain the assertion boundary.
+- The macOS Ninja CMake configuration defines `linux`/`HEADLESS`, so the
+  result metadata reports `Settings.platform` as `Linux` even though the
+  executable and `libtcvm.dylib` are macOS arm64 and use `native-skia`.
 
 Add only discoveries that materially change remaining work.
 
@@ -388,6 +409,20 @@ Add only discoveries that materially change remaining work.
   its static helpers depend on declaration order and platform conditionals;
   preserving positions makes the source organization mechanical and avoids a
   renderer abstraction or behavior change.
+- Decision: Convert `Pixel` and `SkColor` explicitly as scalar ARGB values.
+  Rationale: Pointer reinterpretation was host-endian dependent and produced
+  incorrect native colors; shifts make the authority path deterministic.
+  Date: 2026-07-23.
+- Decision: Assert that the smoke border is non-background instead of exact
+  black on native targets.
+  Rationale: Skia anti-aliasing changes edge coverage while a blank image still
+  fails the assertion; interior, background, row, and PNG checks remain exact.
+  Date: 2026-07-23.
+- Decision: Use the Android result file as the process boundary.
+  Rationale: `MainWindow.exit` races the Android loader's asynchronous teardown
+  after a successful result; artifact validation is deterministic and the
+  harness stops the app after collection.
+  Date: 2026-07-23.
   Date: 2026-07-23.
 - The earlier mechanical extraction left several new fragments commented out;
   restore the original ranges before routing Milestone 2 calls.
@@ -588,8 +623,17 @@ encoding metadata, and records a CRC32 for the PNG. `check_result.py` verifies
 the result and PNG structure using only the Python standard library. The
 source compiled against the current SDK jars, the checker passed
 `py_compile`, and `git diff --check` passed. The Android blank baseline is
-already recorded in Milestone 0 evidence; runtime execution of this new test
-on Java SE, macOS, and Android remains deferred to the final matrix.
+already recorded in Milestone 0 evidence.
+
+The final matrix completed on 2026-07-23 from one source revision. Java SE
+passed with `implementationPath=java-byte-array`; macOS passed with the
+native Skia dylib and exit code 0; and Android passed with the generated APK,
+`implementationPath=native-skia`, and checker validation on `emulator-5554`.
+The Android process was force-stopped after collection because direct
+`MainWindow.exit` can race the loader teardown; the previous abort was not
+observed after this harness adjustment. The macOS headless Ninja metadata
+reports platform `Linux`, but the executable is a macOS arm64 native-Skia
+build.
 
 At completion state whether the issue was reproduced, which attachment code
 became the smoke test, whether the Android baseline failed, whether all three
@@ -612,8 +656,8 @@ The implementation now gives each generated image an owned `SkBitmap` and
 pixel, RGB, row, and output paths through the Skia representation. A small
 regression app derived directly from the attachment is checked in and emits
 machine-readable pixel and PNG metadata. The Android baseline failure is
-verified; the corrected app has compile-level validation, while final runtime
-passes on Java SE, macOS, and Android remain unverified and deferred.
+verified, and the corrected app passes the final Java SE, macOS, and Android
+matrix.
 
 ### Original Plan versus Actual Outcome
 
@@ -625,11 +669,13 @@ array-only transformations such as scale, rotate, and color transforms because
 they are outside the reachable issue path and rewriting them would expand the
 change unnecessarily.
 
-The final runtime matrix was not run in this continuation because it requires
-platform deployment and is explicitly deferred in the current state. As a
-result, the plan does not claim that all three final targets passed. The
-baseline Android failure is an observed Milestone 0 result, not a replacement
-for corrected-target validation.
+The final runtime matrix ran from the same checked-in smoke source and the
+native color-order fix. All three target assertions passed. Java SE emitted a
+non-fatal optional telemetry `NoClassDefFoundError` for
+`net.harawata.appdirs.AppDirsFactory`; it did not affect the result or exit
+status. The Android result was collected before an explicit harness
+force-stop, avoiding the loader teardown race. The macOS result passed with
+the documented headless-CMake platform metadata limitation.
 
 ### What Changed
 
@@ -646,9 +692,9 @@ attachment's 576x576 drawing flow and adds four pixel assertions, one RGBA row
 assertion, and deterministic PNG/result output. `check_result.py` validates
 the JSON and PNG structure using only Python's standard library.
 
-Measured source sizes at reconciliation were 351 lines for `skia.cpp`, 233
+Measured source sizes after the final matrix are 351 lines for `skia.cpp`, 233
 for `skia_surface.cpp`, 279 for `skia_primitives.cpp`, 1,507 for the main
-graphics header, 418 for its Skia fragment, 161 for the smoke app, and 61 for
+graphics header, 418 for its Skia fragment, 171 for the smoke app, and 65 for
 the checker.
 
 ### Decisions and Trade-offs

@@ -6,46 +6,41 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Estado do ExecPlan Skia Generated Image
 
-Milestone ativo: nenhum; reconciliação documental concluída. Próximo passo:
-executar a matriz final de destinos quando solicitado.
+Milestone ativo: nenhum; a matriz final foi concluída em 2026-07-23.
 
-Commits documentais deste milestone:
+O caminho solicitado no prompt, `.agent/state/exec-plan-skia-generated-image.md`,
+continua ausente. Este arquivo é o estado canônico referenciado pelo próprio
+ExecPlan.
 
-- `f06182cd8 docs(vm): record issue 417 smoke milestone`
-- `3d9127e08 docs(vm): reconcile skia execplan report`
+Commits lógicos desta retomada:
 
-Arquivos principais alterados: `tests/smoke/issue-417-generated-image/Tcsort.java`,
-`check_result.py` e `README.md`.
+- `90109883a fix(vm): correct skia pixel color order`
+- `84b618d93 test(vm): harden generated image smoke test`
 
-Entregue no Milestone 4:
+Resultado da matriz final, executada a partir da mesma revisão do smoke:
 
-- fonte `Tcsort.java` reduzida, mas fiel ao fluxo `MonoImage(576, 576)`,
-  `getGraphics()`, preenchimento branco, borda preta e `createPng()` em
-  `nome.png`;
-- asserções determinísticas de quatro pixels selecionados e uma linha RGBA;
-- `issue-417-result.json` com plataforma, caminho de implementação, dimensões,
-  pixels esperados/observados, tamanho e CRC32 do PNG;
-- `check_result.py` sem dependências externas, validando JSON e estrutura PNG;
-- instruções de compilação/deployment sem depender novamente do ZIP original.
+- Java SE: passou; checker `java-byte-array`, exit 0;
+- macOS arm64: passou; checker `native-skia`, exit 0;
+- Android `emulator-5554`: passou; APK implantado, checker `native-skia` passou.
 
-Validação executada:
+No Android, o app foi parado externamente depois da coleta. `MainWindow.exit`
+podia correr contra o teardown assíncrono do loader e abortar ao bloquear um
+mutex destruído; os artefatos já estavam completos e o novo procedimento não
+produziu novo crash. No macOS headless, o JSON informa `Settings.platform` como
+`Linux` por causa da configuração Ninja/CMake, embora o binário seja macOS
+arm64 e use `native-skia`. Java SE emitiu apenas o erro não fatal de telemetria
+opcional `NoClassDefFoundError: net/harawata/appdirs/AppDirsFactory`.
 
-- `javac -Xlint:none -cp TotalCrossSDK/build/libs/totalcross-sdk-7.2.2.jar:TotalCrossSDK/build/libs/tcui-7.2.2.jar -d <temp> tests/smoke/issue-417-generated-image/Tcsort.java`: passou;
-- `python3 -m py_compile tests/smoke/issue-417-generated-image/check_result.py`: passou;
+Validações executadas nesta retomada:
+
+- build nativo macOS arm64 com CMake/Ninja: passou;
+- `:tcvm:fetchNativeDependencies`: passou;
+- `:tcvm:externalNativeBuildCleanRelease`: passou;
+- `:app:assembleStandardRelease`: passou;
+- compilação/deployment/runtime/checker Java SE: passou;
+- compilação/deployment/runtime/checker macOS: passou;
+- compilação/deployment/runtime/checker Android: passou;
 - `git diff --check`: passou.
 
-Não foi executado deployment/runtime do smoke test neste milestone. O baseline
-Android transparente derivado do anexo já está registrado no Milestone 0; a
-execução do teste corrigido em Java SE, macOS e Android pertence à matriz final
-e não foi iniciada.
-
-Não foram executadas validações posteriores: SDK, Java SE, macOS/Android
-deployment ou a matriz final.
-
-Bloqueios: nenhum bloqueio técnico. O caminho de estado solicitado no prompt,
-`.agent/state/exec-plan-skia-generated-image.md`, continua ausente; este é o
-estado canônico definido pelo ExecPlan.
-
-Próxima ação: somente quando solicitado, executar a matriz final de Java SE,
-macOS e Android a partir de uma revisão única; não iniciar essa matriz nesta
-retomada.
+Logs e artefatos detalhados estão em `.agent/evidence/skia-generated-image.jsonl`.
+Não foram executadas validações de milestones posteriores.
