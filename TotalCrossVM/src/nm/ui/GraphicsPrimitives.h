@@ -11,7 +11,7 @@
 #include "tcclass.h"
 
 #if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
-#include "android/skia.h"
+#include "skia/skia.h"
 #endif
 
 #if defined(WINCE) || defined(WIN32)

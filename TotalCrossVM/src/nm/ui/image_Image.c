@@ -151,7 +151,7 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
 }
 
 #if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
-#include "android/skia.h"
+#include "skia/skia.h"
 #endif
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();

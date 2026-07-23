@@ -524,7 +524,7 @@ endif(NOT MSVC)
 
 if(TCVM_ENABLE_SKIA)
   set(TC_SKIA_SOURCES
-    ${TC_SRCDIR}/nm/ui/android/skia.cpp
+    ${TC_SRCDIR}/nm/ui/skia/skia.cpp
   )
 endif(TCVM_ENABLE_SKIA)
 
