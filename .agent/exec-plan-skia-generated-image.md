@@ -316,6 +316,10 @@ Acceptance:
 - The state file named in the resume protocol was absent at resume time; this
   milestone created `.agent/state/skia-generated-image.md` as the canonical
   state file named by this plan.
+- The checked-in source build uses `TotalCrossVM/CMakeLists.txt`; the local
+  `TotalCrossVM/xcode/tcvm.xcodeproj` is ignored/generated and was not included
+  in the relocation commit. CMake regeneration is required before an Xcode
+  build observes the new path.
 
 Add only discoveries that materially change remaining work.
 

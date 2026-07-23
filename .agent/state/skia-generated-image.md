@@ -9,11 +9,16 @@ SPDX-License-Identifier: LGPL-2.1-only
 Milestone ativo: nenhum; Milestone 0 concluído. Próximo milestone: 1, mover e
 dividir as fontes sem alteração intencional de comportamento.
 
-Último commit lógico: `docs(vm): record skia image baseline` (commit atual).
+Último commit lógico: `9bf9faeb3 refactor(vm): relocate skia sources`.
 
-Caminhos alterados neste milestone: `.agent/exec-plan-skia-generated-image.md`,
-`.agent/state/skia-generated-image.md` e
-`.agent/evidence/skia-generated-image.jsonl`.
+Caminhos alterados neste milestone até agora: `TotalCrossVM/CMakeLists.txt`,
+`TotalCrossVM/src/nm/ui/GraphicsPrimitives.h`,
+`TotalCrossVM/src/nm/ui/PalmFont_c.h`,
+`TotalCrossVM/src/nm/ui/android/gfx_Graphics_c.h`,
+`TotalCrossVM/src/nm/ui/font_Font.c`,
+`TotalCrossVM/src/nm/ui/image_Image.c`,
+`TotalCrossVM/src/nm/ui/linux/gfx_Graphics_c.h`, e os arquivos relocados
+`TotalCrossVM/src/nm/ui/skia/skia.h` e `skia.cpp`.
 
 Anexo inspecionado: `Tcsort.zip`, baixado de
 `https://github.com/user-attachments/files/30019877/Tcsort.zip`, SHA-256
@@ -30,14 +35,16 @@ RGBA decodificado teve `nonzero_bytes=0`, confirmando a saída transparente e
 vazia. A captura de tela, o logcat e o arquivo gerado permanecem em `/tmp`;
 os caminhos e hashes estão no JSONL de evidência.
 
-Validação executada: somente download/listagem/extração do anexo, inspeção da
-fonte, reprodução baseline no Android e `git diff --check`. Não foram
-executados build, testes ou validações do Milestone 1 ou posteriores.
+Validação executada: download/listagem/extração do anexo, inspeção da fonte,
+reprodução baseline no Android e `git diff --check` antes do commit de
+relocação. O build estrutural do Milestone 1 ainda não foi executado; nenhum
+teste ou validação de milestone posterior foi executado.
 
-Bloqueios: nenhum bloqueio técnico para Milestone 0. O arquivo de estado
+Bloqueios: nenhum bloqueio técnico para o Milestone 1. O arquivo de estado
 solicitado no prompt e o nome originalmente citado no plano estavam ausentes;
 este arquivo segue o nome canônico definido na seção “Working Set and Resume
 Protocol” do ExecPlan.
 
-Próxima ação: somente quando solicitado, iniciar Milestone 1 com a relocação e
-divisão mecânica de Skia e dos headers de primitivas.
+Próxima ação: dividir `skia.cpp` em unidades lógicas e separar os blocos de
+`GraphicsPrimitives_c.h`, depois executar somente o build estrutural previsto
+para fechar o Milestone 1.
