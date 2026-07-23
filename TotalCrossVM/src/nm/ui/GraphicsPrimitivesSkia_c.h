@@ -287,65 +287,16 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          }
       }
 
-      if (Graphics_isImageSurface(dstSurf)) {
-         TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(srcSurf) : Image_pixels(srcSurf);
-         Pixel *srcPixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
-         Pixel *dstPixels = getSurfacePixels(dstSurf);
-         int32 srcPitch = frameCount > 1 ? Image_widthOfAllFrames(srcSurf) : Image_width(srcSurf);
-         int32 dstPitch = Graphics_pitch(dstSurf);
-         int32 dstRow, row, col;
-         int32 alphaMask = Image_alphaMask(srcSurf);
-
-         if (frameCount > 1) {
-            frame = Image_currentFrame(srcSurf);
-            if (frame < 0) {
-               frame = 0;
-            }
-            else if (frame >= frameCount) {
-               frame = frameCount - 1;
-            }
-         }
-
-         srcPixels += frame * Image_width(srcSurf);
-         dstPixels += dstY * dstPitch + dstX;
-         dstRow = dstPitch - w;
-
-         for (row = 0; row < h; row++, dstPixels += dstRow) {
-            int32 sourceY = (int32)((srcY + row) / scaleH);
-            PixelConv *srcRow = (PixelConv*)(srcPixels + sourceY * srcPitch);
-            for (col = 0; col < w; col++, dstPixels++) {
-               int32 sourceX = (int32)((srcX + col) / scaleW);
-               PixelConv *ps = srcRow + sourceX;
-               PixelConv *pt = (PixelConv*)dstPixels;
-               int32 a = ps->a * alphaMask;
-               a = (a + 1 + (a >> 8)) >> 8; // alphaMask * a / 255
-               if (a == 0xFF) {
-                  pt->pixel = ps->pixel;
-               }
-               else if (a != 0) {
-                  int32 ma = 0xFF - a;
-                  int32 r = (a * ps->r + ma * pt->r);
-                  int32 g = (a * ps->g + ma * pt->g);
-                  int32 b = (a * ps->b + ma * pt->b);
-                  pt->r = (r + 1 + (r >> 8)) >> 8;
-                  pt->g = (g + 1 + (g >> 8)) >> 8;
-                  pt->b = (b + 1 + (b >> 8)) >> 8;
-               }
-            }
-         }
-
-         markDirty(currentContext, dstSurf, dstX, dstY, w, h);
-         return;
-      }
-
       int32 id = Image_textureId(srcSurf);
-      if (Image_changed(srcSurf) || id == -1) {
+      if (id < 0) {
          TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(srcSurf) : Image_pixels(srcSurf);
          Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
          int32 width = frameCount > 1 ? Image_widthOfAllFrames(srcSurf) : Image_width(srcSurf);
          int32 height = Image_height(srcSurf);
-         Image_textureId(srcSurf) = skia_makeBitmap(id, pixels, width, height);
-         Image_changed(srcSurf) = false;
+         Image_textureId(srcSurf) = skia_makeBitmap(SKIA_SCREEN_SURFACE_ID, pixels, width, height);
+         if (Image_textureId(srcSurf) >= 0) {
+            Image_changed(srcSurf) = false;
+         }
       }
 
       if (doClip) {
