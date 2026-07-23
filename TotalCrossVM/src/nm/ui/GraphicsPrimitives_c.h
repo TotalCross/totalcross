@@ -1369,6 +1369,11 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
    if (translateAndClip(g, &x, &y, &w, &h))
    {
       Pixel* data = ((Pixel*)ARRAYOBJ_START(dataObj)) + offset;
+#ifdef SKIA_H
+      if (skia_getsetRGB(skiaSurfaceForGraphics(g), data, 0, x, y, w, h, isGet) == 1)
+         return w * h;
+      return 0;
+#else
       int32 inc = Graphics_pitch(g), count = w * h;
       Pixel* pixels = getGraphicsPixels(g) + y * inc + x;
       bool markDirty = !currentContext->fullDirty && !Graphics_isImageSurface(g);
@@ -1391,6 +1396,7 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
 #endif
          }
       return count;
+#endif
    }
    return 0;
 }
