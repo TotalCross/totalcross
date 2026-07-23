@@ -6,57 +6,45 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Estado do ExecPlan Skia Generated Image
 
-Milestone ativo: nenhum; Milestone 1 concluído. Próximo milestone: 2, adicionar
-superfícies Skia próprias das imagens e encaminhar o desenho para o canvas
-selecionado.
+Milestone ativo: nenhum; Milestone 2 concluído. Próximo milestone: 3, tornar
+`SkBitmap` autoritativo para leituras, escritas, desenho entre imagens e saída.
 
-Último commit lógico: `refactor(vm): split skia rendering sources` (commit
-atual).
+Commits lógicos deste milestone:
 
-Caminhos alterados neste milestone: `TotalCrossVM/CMakeLists.txt`,
-`TotalCrossVM/src/nm/ui/GraphicsPrimitives.h`,
-`TotalCrossVM/src/nm/ui/GraphicsPrimitives_c.h`,
-`TotalCrossVM/src/nm/ui/GraphicsPrimitivesSkia_c.h`,
-`TotalCrossVM/src/nm/ui/GraphicsPrimitivesText_c.h`,
-`TotalCrossVM/src/nm/ui/GraphicsPrimitivesShapes_c.h`,
-`TotalCrossVM/src/nm/ui/GraphicsPrimitivesScreen_c.h`,
-`TotalCrossVM/src/nm/ui/PalmFont_c.h`,
-`TotalCrossVM/src/nm/ui/android/gfx_Graphics_c.h`,
-`TotalCrossVM/src/nm/ui/font_Font.c`,
-`TotalCrossVM/src/nm/ui/image_Image.c`,
-`TotalCrossVM/src/nm/ui/linux/gfx_Graphics_c.h`, e os arquivos relocados
-`TotalCrossVM/src/nm/ui/skia/skia.h` e `skia.cpp`.
-Também foram criados `skia_internal.h`, `skia_surface.cpp` e
-`skia_primitives.cpp`.
+- `6c840cd41 refactor(vm): own skia image surfaces together`
+- `2a8e8c194 fix(vm): route skia drawing to target surfaces`
 
-Anexo inspecionado: `Tcsort.zip`, baixado de
-`https://github.com/user-attachments/files/30019877/Tcsort.zip`, SHA-256
-`de4df098fc00ff35b419ff616d3a0172f4eb2e17ae7c72b8808a477037c8b641`. A lista
-contém `Tcsort.apk` (22480377 bytes) e `tcsort.java` (1770 bytes). A fonte
-cria `MonoImage(576, 576)`, chama `getGraphics()`, preenche branco, desenha
-uma borda preta em `(10, 10)` com tamanho `556x556`, grava `nome.png` e abre o
-arquivo com `Vm.exec("viewer", ...)`.
+Arquivos principais alterados: `TotalCrossVM/src/nm/ui/skia/skia.h`,
+`skia_internal.h`, `skia.cpp`, `skia_surface.cpp`, `skia_primitives.cpp`,
+`GraphicsPrimitives_c.h`, `GraphicsPrimitivesSkia_c.h`,
+`GraphicsPrimitivesText_c.h`, `GraphicsPrimitivesShapes_c.h` e
+`GraphicsPrimitivesScreen_c.h`.
 
-Baseline Android: o APK instalou e iniciou no emulador `emulator-5554` com
-`totalcross.appphdb/.Loader`. O arquivo `/data/user/0/totalcross.appphdb/nome.png`
-foi extraído para `/tmp/tcsort-baseline-nome.png`; é PNG RGBA 576x576, e o
-RGBA decodificado teve `nonzero_bytes=0`, confirmando a saída transparente e
-vazia. A captura de tela, o logcat e o arquivo gerado permanecem em `/tmp`;
-os caminhos e hashes estão no JSONL de evidência.
+Entregue no Milestone 2:
 
-Validação do milestone: `cmake -S TotalCrossVM -B build-skia-structure
--DCMAKE_BUILD_TYPE=Release -G Ninja` passou; `ninja -C build-skia-structure`
-passou e gerou `libtcvm.dylib`; em `TotalCrossSDK`,
-`./gradlew-agent clean dist --warning-mode=none --console=plain` passou com 0
- tarefas falhas; `ctest --test-dir build-skia-structure --output-on-failure`
-retornou sucesso, mas sem testes registrados. Logs do CMake/Ninja estão em
-`/tmp/skia-m1-*.log`; o resumo completo do SDK está em
-`TotalCrossSDK/agent-logs/20260723-030119-clean-agent.log`.
+- `SkiaImageSurface` possui `SkBitmap` e `std::unique_ptr<SkCanvas>` juntos;
+- `imageSurfaces` mantém IDs zero-based estáveis, com slots deletados nulos;
+- `SKIA_SCREEN_SURFACE_ID` é `-1` e `SKIA_INVALID_SURFACE_ID` é `-2`;
+- `skiaGetCanvas()` e `skiaGetBitmap()` rejeitam IDs inválidos/deletados;
+- clipping, pixels, image drawing e primitivas resolvem o canvas selecionado;
+- o helper C retorna o canvas da tela ou obtém/cria o surface da imagem.
 
-Bloqueios: nenhum bloqueio técnico para o Milestone 1. O arquivo de estado
-solicitado no prompt e o nome originalmente citado no plano estavam ausentes;
-este arquivo segue o nome canônico definido na seção “Working Set and Resume
-Protocol” do ExecPlan.
+Validação executada:
 
-Próxima ação: iniciar somente quando solicitado o Milestone 2, adicionando
-superfícies Skia próprias das imagens; não executar ainda suas validações.
+- `git diff --check`: passou;
+- `ninja -C build-skia-structure`: passou e vinculou `libtcvm.dylib`;
+- probe headless temporário: passou IDs `0/1`, isolamento tela/imagem,
+  clipping e falha segura após deleção/ID inválido.
+
+O primeiro probe usou uma expectativa incorreta para a cor inicial da tela e
+falhou nessa asserção; foi corrigido para comparar o valor antes/depois, e o
+probe final passou. Não foram executadas validações do Milestone 3 ou
+posteriores: SDK, Java SE, macOS/Android deployment e smoke test ficam
+deferidos conforme o plano.
+
+Bloqueios: nenhum bloqueio técnico. O caminho de estado solicitado no prompt,
+`.agent/state/exec-plan-skia-generated-image.md`, continua ausente; este é o
+estado canônico definido pelo ExecPlan.
+
+Próxima ação: iniciar somente quando solicitado o Milestone 3, auditando
+promoção e autoridade do bitmap; não executar ainda suas validações.
