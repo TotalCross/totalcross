@@ -717,7 +717,7 @@ UserFont loadUserFontFromFontObj(Context currentContext, TCObject fontObj, JChar
 }
 
 #if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
-#include "android/skia.h"
+#include "skia/skia.h"
 
 int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch) {
   int32 fontSize = (int)(Font_size(fontObj) * (*tcSettings.screenDensityPtr));

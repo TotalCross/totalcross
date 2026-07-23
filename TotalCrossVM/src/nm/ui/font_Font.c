@@ -8,7 +8,7 @@
 #include "tcvm.h"
 #include "PalmFont_c.h"
 #if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
-#include "android/skia.h"
+#include "skia/skia.h"
 #endif
 
 #define PLAIN 0

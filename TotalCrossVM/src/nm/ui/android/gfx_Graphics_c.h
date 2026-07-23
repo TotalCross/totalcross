@@ -7,7 +7,7 @@
 
 
 #ifdef ANDROID
-#include "skia.h"
+#include "../skia/skia.h"
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
 #include <GLES2/gl2.h>
@@ -128,7 +128,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
 
 
 #ifdef ANDROID
-#include "skia.h"
+#include "../skia/skia.h"
 
 bool initGLES(ScreenSurface screen)
 {
