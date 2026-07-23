@@ -165,7 +165,7 @@ SkFont   skFont;
 sk_sp<SkTypeface> typefaces[TYPEFACE_LEN];
 int typefaceIdx = 0;
 
-std::vector<SkBitmap> textures;
+std::vector<std::unique_ptr<SkiaImageSurface>> imageSurfaces;
 
 std::map<std::string, int> typefaceIndexMap;
 
