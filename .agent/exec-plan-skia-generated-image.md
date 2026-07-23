@@ -86,7 +86,9 @@ Resume with:
   graphics primitive header includes mechanical Skia, text, shape, and screen
   fragments at their original compilation positions. Native and SDK builds
   passed; no CTest tests are registered in the structural build directory.
-- [ ] Add image-owned bitmap/canvas surfaces and route Skia drawing correctly.
+- [x] (2026-07-23T03:20:00-03:00) Add image-owned bitmap/canvas surfaces and
+  route Skia drawing correctly. Focused native build and surface invariant
+  probe passed.
 - [ ] Enforce bitmap authority across reads, writes, image drawing, and output.
 - [ ] Create and pass the smoke test on Java SE, macOS, and Android.
 - [ ] Reconcile implementation, plan, state, evidence, and editorial report.
@@ -371,6 +373,16 @@ Add only discoveries that materially change remaining work.
   preserving positions makes the source organization mechanical and avoids a
   renderer abstraction or behavior change.
   Date: 2026-07-23.
+- The earlier mechanical extraction left several new fragments commented out;
+  restore the original ranges before routing Milestone 2 calls.
+  Rationale: the active C build must compile the real graphics functions while
+  preserving their original declaration order.
+  Date: 2026-07-23.
+- Decision: represent each image surface as a heap-owned bitmap/canvas pair,
+  retain deleted vector slots, and resolve every target through checked helpers.
+  Rationale: stable zero-based IDs and safe deletion are prerequisites for
+  bitmap authority without stale canvas references.
+  Date: 2026-07-23.
 
 ## Validation and Acceptance
 
@@ -501,8 +513,21 @@ pixel functions; and `skia_primitives.cpp` owns the existing drawing
 primitives. `GraphicsPrimitives_c.h` now includes four mechanically extracted
 fragments for Skia, text, shapes, and screen code. The structural CMake/Ninja
 build and SDK `clean dist` passed. CTest found no registered tests, so no
-runtime graphics assertion was claimed in this milestone. Milestone 2 is the
-next active milestone and was not started or validated.
+runtime graphics assertion was claimed in this milestone; the source split
+itself was not a runtime graphics validation.
+
+Milestone 2 completed on 2026-07-23: image surfaces now use stable
+`std::vector<std::unique_ptr<SkiaImageSurface>>` entries containing a bitmap
+and canvas owned together. Screen target `-1`, image IDs `0` and `1`, clipping,
+pixel access, image drawing, and all Skia primitives resolve checked target
+canvases; deleted slots remain inaccessible. The C helper promotes an image
+only to establish its initial target surface, while bitmap authority remains
+Milestone 3 work. `ninja -C build-skia-structure` passed, and a temporary
+headless probe passed ID, isolation, clipping, deletion, and invalid-ID
+assertions. Evidence is appended to
+`.agent/evidence/skia-generated-image.jsonl`; SDK, Android, Java SE, and
+issue-derived smoke validation were intentionally deferred to later
+milestones.
 
 At completion state whether the issue was reproduced, which attachment code
 became the smoke test, whether the Android baseline failed, whether all three
