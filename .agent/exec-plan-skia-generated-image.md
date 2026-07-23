@@ -92,7 +92,10 @@ Resume with:
 - [x] (2026-07-23T03:32:44-03:00) Enforce bitmap authority across reads,
   writes, image drawing, and output. Initial promotion is guarded by the
   surface ID; focused native build and authority probes passed.
-- [ ] Create and pass the smoke test on Java SE, macOS, and Android.
+- [x] (2026-07-23T03:43:31-03:00) Create the issue-derived smoke test. The
+  standalone TotalCross source, result JSON, and dependency-free PNG checker
+  compile and pass focused static checks; runtime deployment remains part of
+  the final target matrix.
 - [ ] Reconcile implementation, plan, state, evidence, and editorial report.
 
 ## Current Architecture and Scope
@@ -338,6 +341,9 @@ Acceptance:
   its canvas. The final implementation reads the selected canvas with
   `readPixels()` into an explicit RGBA transfer row before converting to
   `PixelConv`.
+- No cross-platform smoke harness exists in the repository. The test therefore
+  owns its small TotalCross app and a dependency-free host checker, while the
+  platform deployment command remains explicit in its README.
 
 Add only discoveries that materially change remaining work.
 
@@ -399,6 +405,16 @@ Add only discoveries that materially change remaining work.
   boundaries.
   Rationale: SkBitmap memory layout and PixelConv channel order are not an
   implicit ABI contract.
+  Date: 2026-07-23.
+- Decision: keep `nome.png` as the generated image name and store it as a
+  relative path in `issue-417-result.json`.
+  Rationale: this preserves the attachment's output path while making result
+  files portable when pulled from different platform application directories.
+  Date: 2026-07-23.
+- Decision: implement the host-side checker with Python's standard library
+  only.
+  Rationale: smoke validation should not require Pillow or another optional
+  dependency on CI or a developer workstation.
   Date: 2026-07-23.
 
 ## Validation and Acceptance
@@ -558,6 +574,18 @@ authority probe, and the earlier surface probe passed. Array-only transforms
 such as scale, rotate, and color transforms remain intentionally outside this
 issue path. SDK, Java SE, Android/macOS deployment, and the issue-derived
 smoke test remain deferred to later milestones.
+
+Milestone 4 completed on 2026-07-23: `tests/smoke/issue-417-generated-image/`
+now contains a minimized `Tcsort.java` that preserves the issue's
+`MonoImage(576, 576)`, `getGraphics()`, white fill, black inset border, and
+`createPng()` to `nome.png`. It asserts four selected pixels and one interior
+RGBA row, emits `issue-417-result.json` with platform/path/dimensions/pixel/
+encoding metadata, and records a CRC32 for the PNG. `check_result.py` verifies
+the result and PNG structure using only the Python standard library. The
+source compiled against the current SDK jars, the checker passed
+`py_compile`, and `git diff --check` passed. The Android blank baseline is
+already recorded in Milestone 0 evidence; runtime execution of this new test
+on Java SE, macOS, and Android remains deferred to the final matrix.
 
 At completion state whether the issue was reproduced, which attachment code
 became the smoke test, whether the Android baseline failed, whether all three
