@@ -89,7 +89,9 @@ Resume with:
 - [x] (2026-07-23T03:20:00-03:00) Add image-owned bitmap/canvas surfaces and
   route Skia drawing correctly. Focused native build and surface invariant
   probe passed.
-- [ ] Enforce bitmap authority across reads, writes, image drawing, and output.
+- [x] (2026-07-23T03:32:44-03:00) Enforce bitmap authority across reads,
+  writes, image drawing, and output. Initial promotion is guarded by the
+  surface ID; focused native build and authority probes passed.
 - [ ] Create and pass the smoke test on Java SE, macOS, and Android.
 - [ ] Reconcile implementation, plan, state, evidence, and editorial report.
 
@@ -332,6 +334,10 @@ Acceptance:
   visible function text initially left an unmatched `#else`. The final split
   keeps the conditional boundary in the main header and the compiler accepted
   both C and C++ translation units.
+- Reading `getPixelRow()` directly from the bitmap was stale after drawing via
+  its canvas. The final implementation reads the selected canvas with
+  `readPixels()` into an explicit RGBA transfer row before converting to
+  `PixelConv`.
 
 Add only discoveries that materially change remaining work.
 
@@ -382,6 +388,17 @@ Add only discoveries that materially change remaining work.
   retain deleted vector slots, and resolve every target through checked helpers.
   Rationale: stable zero-based IDs and safe deletion are prerequisites for
   bitmap authority without stale canvas references.
+  Date: 2026-07-23.
+- Decision: after promotion, ignore `Image.changed` and the Java pixel array;
+  route image-to-image drawing through Skia canvases and retain only
+  intentionally array-only image algorithms outside the affected path.
+  Rationale: a single authoritative bitmap prevents stale reuploads and CPU
+  copies while avoiding unrelated algorithm rewrites.
+  Date: 2026-07-23.
+- Decision: convert between `PixelConv` and Skia colors explicitly at native
+  boundaries.
+  Rationale: SkBitmap memory layout and PixelConv channel order are not an
+  implicit ABI contract.
   Date: 2026-07-23.
 
 ## Validation and Acceptance
@@ -503,7 +520,7 @@ created a 576x576 PNG whose decoded RGBA stream had zero non-zero bytes. The
 expected smoke geometry is therefore a white 576x576 image with a black
 border at the 10-pixel inset and an opaque interior; the current baseline
 instead is blank/transparent. Evidence and command artifacts are recorded in
-`.agent/evidence/skia-generated-image.jsonl`; Milestone 1 remains pending.
+`.agent/evidence/skia-generated-image.jsonl`.
 
 Milestone 1 completed on 2026-07-23: `skia.h` and `skia.cpp` moved from
 `TotalCrossVM/src/nm/ui/android/` to `TotalCrossVM/src/nm/ui/skia/`; the CMake
@@ -528,6 +545,19 @@ assertions. Evidence is appended to
 `.agent/evidence/skia-generated-image.jsonl`; SDK, Android, Java SE, and
 issue-derived smoke validation were intentionally deferred to later
 milestones.
+
+Milestone 3 completed on 2026-07-23: `Image.pixels` now initializes a Skia
+surface only while its texture ID is negative; `applyChanges()` and source
+promotion do not reupload an existing bitmap. Pixel, RGB, and row reads use
+the selected Skia canvas/bitmap with explicit channel conversion, and the
+active image-to-image path draws bitmap-to-canvas without copying Java arrays.
+The authority probe covered row reads, `getPixel()`/`getRGB()` read and write,
+image-to-image drawing, mutation of the original Java array after promotion,
+and deletion/recreation without stale content. The focused native build,
+authority probe, and the earlier surface probe passed. Array-only transforms
+such as scale, rotate, and color transforms remain intentionally outside this
+issue path. SDK, Java SE, Android/macOS deployment, and the issue-derived
+smoke test remain deferred to later milestones.
 
 At completion state whether the issue was reproduced, which attachment code
 became the smoke test, whether the Android baseline failed, whether all three
