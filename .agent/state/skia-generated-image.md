@@ -6,12 +6,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Estado do ExecPlan Skia Generated Image
 
-Milestone ativo: nenhum; Milestone 4 concluído. Próximo passo: reconciliar o
-ExecPlan e executar a matriz final de destinos quando solicitado.
+Milestone ativo: nenhum; reconciliação documental concluída. Próximo passo:
+executar a matriz final de destinos quando solicitado.
 
-Commits lógicos deste milestone:
+Último commit lógico deste milestone:
 
-- `3c20258f9 test(vm): add issue 417 image smoke test`
+- `f06182cd8 docs(vm): record issue 417 smoke milestone`
 
 Arquivos principais alterados: `tests/smoke/issue-417-generated-image/Tcsort.java`,
 `check_result.py` e `README.md`.
@@ -45,5 +45,6 @@ Bloqueios: nenhum bloqueio técnico. O caminho de estado solicitado no prompt,
 `.agent/state/exec-plan-skia-generated-image.md`, continua ausente; este é o
 estado canônico definido pelo ExecPlan.
 
-Próxima ação: reconciliar o relatório editorial e, somente quando solicitado,
-executar a matriz final de Java SE, macOS e Android.
+Próxima ação: somente quando solicitado, executar a matriz final de Java SE,
+macOS e Android a partir de uma revisão única; não iniciar essa matriz nesta
+retomada.
