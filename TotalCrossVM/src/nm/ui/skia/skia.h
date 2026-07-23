@@ -39,6 +39,7 @@ void skia_restoreClip(int32 skiaSurface);
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
 void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2);
 Pixel skia_getPixel(int32 skiaSurface, int32 x, int32 y);
+int skia_getPixelRow(int32 skiaSurface, void *output, int32 y, int32 width);
 void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel);
 void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel);
 void skia_drawRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel);

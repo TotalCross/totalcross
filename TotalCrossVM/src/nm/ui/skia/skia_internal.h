@@ -40,6 +40,21 @@
 #include "include/gpu/gl/GrGLTypes.h"
 #include "include/utils/SkRandom.h"
 
+static inline SkColor skiaColorFromPixel(Pixel pixel) {
+    const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&pixel);
+    return SkColorSetARGB(bytes[0], bytes[3], bytes[2], bytes[1]);
+}
+
+static inline Pixel skiaPixelFromColor(SkColor color) {
+    Pixel pixel = 0;
+    uint8_t* bytes = reinterpret_cast<uint8_t*>(&pixel);
+    bytes[0] = SkColorGetA(color);
+    bytes[1] = SkColorGetB(color);
+    bytes[2] = SkColorGetG(color);
+    bytes[3] = SkColorGetR(color);
+    return pixel;
+}
+
 #ifndef USE_COMPUTE_OPAQUE
 #if __APPLE__ || ANDROID
 #define USE_COMPUTE_OPAQUE 0
