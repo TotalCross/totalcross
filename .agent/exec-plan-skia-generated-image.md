@@ -96,7 +96,11 @@ Resume with:
   standalone TotalCross source, result JSON, and dependency-free PNG checker
   compile and pass focused static checks; runtime deployment remains part of
   the final target matrix.
-- [ ] Reconcile implementation, plan, state, evidence, and editorial report.
+- [x] (2026-07-23T03:45:00-03:00) Reconcile the implementation, plan, state,
+  evidence, and editorial report. The report records the completed native
+  work, the smoke artifact, measured source sizes, and the final matrix as
+  unverified/deferred.
+- [ ] Execute the final Java SE, macOS, and Android matrix from one revision.
 
 ## Current Architecture and Scope
 
@@ -592,6 +596,152 @@ became the smoke test, whether the Android baseline failed, whether all three
 targets passed, which operations use bitmap authority, any retained array-only
 paths, final source sizes, limitations, and deferred work. Create the editorial
 report required by `.agent/PLANS.md`.
+
+## Editorial Report
+
+### Editorial Summary
+
+Issue 417 showed a generated `MonoImage` exporting as a fully transparent
+576x576 PNG on the Android baseline, even though the application filled the
+image white and drew a black inset border. The underlying problem was that
+Skia drawing and later image reads could use different representations: a
+canvas held the drawing while Java pixel arrays remained blank or stale.
+
+The implementation now gives each generated image an owned `SkBitmap` and
+`SkCanvas`, promotes the Java array only once, and routes the affected drawing,
+pixel, RGB, row, and output paths through the Skia representation. A small
+regression app derived directly from the attachment is checked in and emits
+machine-readable pixel and PNG metadata. The Android baseline failure is
+verified; the corrected app has compile-level validation, while final runtime
+passes on Java SE, macOS, and Android remain unverified and deferred.
+
+### Original Plan versus Actual Outcome
+
+The plan intended a limited Skia source reorganization, image-owned surfaces,
+bitmap authority, and an issue-derived smoke test followed by a three-target
+runtime matrix. The source relocation, surface ownership, bitmap authority,
+and smoke artifact were implemented as planned. The implementation retained
+array-only transformations such as scale, rotate, and color transforms because
+they are outside the reachable issue path and rewriting them would expand the
+change unnecessarily.
+
+The final runtime matrix was not run in this continuation because it requires
+platform deployment and is explicitly deferred in the current state. As a
+result, the plan does not claim that all three final targets passed. The
+baseline Android failure is an observed Milestone 0 result, not a replacement
+for corrected-target validation.
+
+### What Changed
+
+`TotalCrossVM/src/nm/ui/skia/` now contains the relocated and split Skia
+implementation. `SkiaImageSurface` owns a bitmap/canvas pair with screen ID
+`-1`, zero-based image IDs, and checked access after deletion.
+`TotalCrossVM/src/nm/ui/image_Image.c`, `ImagePrimitives_c.h`,
+`GraphicsPrimitives_c.h`, and `GraphicsPrimitivesSkia_c.h` implement guarded
+promotion and route affected image operations through those surfaces. Native
+color conversion is explicit between `PixelConv` and Skia RGBA colors.
+
+`tests/smoke/issue-417-generated-image/Tcsort.java` preserves the source
+attachment's 576x576 drawing flow and adds four pixel assertions, one RGBA row
+assertion, and deterministic PNG/result output. `check_result.py` validates
+the JSON and PNG structure using only Python's standard library.
+
+Measured source sizes at reconciliation were 351 lines for `skia.cpp`, 233
+for `skia_surface.cpp`, 279 for `skia_primitives.cpp`, 1,507 for the main
+graphics header, 418 for its Skia fragment, 161 for the smoke app, and 61 for
+the checker.
+
+### Decisions and Trade-offs
+
+The bitmap is authoritative after promotion, so later `Image.changed` signals
+cannot trigger stale Java-array uploads. This removes synchronization loops and
+CPU array copies in the affected path, at the cost of making direct Java-array
+mutation after promotion unsupported for Skia images.
+
+Surface IDs remain stable by retaining deleted vector slots. This avoids stale
+references and ID shifts, at the cost of not reusing deleted slots. The smoke
+checker uses relative `nome.png` output paths so pulled artifacts work across
+platform application directories. It deliberately avoids optional Python
+packages so the test is portable.
+
+### Unexpected Problems and Discoveries
+
+The issue archive's exact source was necessary to identify `MonoImage`, the
+576x576 dimensions, the 10-pixel border, and the `nome.png` output. The
+unmodified Android APK produced a PNG with zero non-zero decoded RGBA bytes.
+
+During native work, a direct bitmap read in `getPixelRow()` was stale after a
+canvas draw; reading the selected canvas with `readPixels()` fixed that case.
+The structural split also exposed preprocessor-order constraints, so the
+graphics fragments remain included at their original positions. These details
+are recorded in `Surprises & Discoveries` and the JSONL evidence file.
+
+### Validation and Measurable Results
+
+Observed results include the Android baseline reproduction in Milestone 0,
+successful native structural builds and headless authority probes in
+Milestones 1–3, and successful compilation of the smoke app with the current
+SDK jars. The current smoke artifact passed:
+
+    javac -Xlint:none -cp TotalCrossSDK/build/libs/totalcross-sdk-7.2.2.jar:TotalCrossSDK/build/libs/tcui-7.2.2.jar -d <temporary-output> tests/smoke/issue-417-generated-image/Tcsort.java
+    python3 -m py_compile tests/smoke/issue-417-generated-image/check_result.py
+    git diff --check
+
+No final runtime smoke result, PNG artifact, deployment log, performance
+measurement, or size comparison across targets was produced in this stage.
+
+### Useful Evidence and Examples
+
+The exact attachment hash, source summary, and blank Android PNG are recorded
+in `.agent/evidence/skia-generated-image.jsonl`. The implementation commits
+are `9bf9faeb3`, `627dcf6f7`, `6c840cd41`, `14082b5d1`, and `5973bd890`; the
+smoke and documentation commits are `3c20258f9` and `f06182cd8`.
+The reproducible smoke instructions are in
+`tests/smoke/issue-417-generated-image/README.md`, and the temporary native
+probes used during development were `/tmp/skia-authority-probe` and
+`/tmp/skia-surface-probe`.
+
+### Limitations, Remaining Work, and Open Questions
+
+The Java SE, macOS native deployment, and Android corrected-target runtime
+passes remain to be executed from one revision. Android final acceptance also
+requires a real device; the earlier emulator baseline only establishes the
+reported failure. The current smoke checker validates PNG structure and the
+application's pixel metadata, but does not independently decompress PNG IDAT
+pixels. Direct Java-array mutation after Skia promotion remains intentionally
+unsupported, and array-only image transforms were not rewritten.
+
+### Possible Article Angles
+
+- For runtime engineers: “When a canvas and a pixel array disagree” — use the
+  issue's blank PNG to explain authoritative image representations and stale
+  uploads.
+- For cross-platform SDK maintainers: “Stable surface IDs across native image
+  lifecycles” — explain screen ID `-1`, heap-owned bitmap/canvas pairs, and
+  safe deletion.
+- For test authors: “Turning a customer archive into a deterministic graphics
+  regression test” — show how fixed geometry, row assertions, and portable
+  result metadata make a rendering bug reproducible.
+
+### Suggested Narrative
+
+Begin with the 576x576 white-and-black image that exported blank on Android.
+Show how drawing landed on a Skia canvas while output read stale Java arrays,
+then describe the constraints: preserve Java SE behavior, keep image IDs
+zero-based, and avoid a renderer rewrite. Follow the implementation from
+source relocation to owned surfaces and one-time promotion, including the
+canvas `readPixels()` discovery and explicit channel conversion. End with the
+checked-in smoke app, the observed baseline failure, the focused native
+probes, and the still-pending three-target runtime matrix.
+
+### Claims Requiring Human Review
+
+The issue number, attachment provenance, and baseline failure are supported by
+the recorded archive and emulator evidence, but any public statement about
+customer impact should be reviewed against the original issue. The claim that
+all final targets pass must not be made until the deferred matrix is executed.
+No performance, binary-size, or real-device Android claims are currently
+substantiated.
 
 ## Revision Note
 
