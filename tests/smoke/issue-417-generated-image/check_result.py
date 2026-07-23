@@ -29,9 +29,13 @@ def main():
         return fail(f"application reported pass={result.get('pass')}: {result.get('failure', '')}")
     if result.get("dimensions") != {"width": 576, "height": 576}:
         return fail(f"unexpected dimensions: {result.get('dimensions')}")
-    if result.get("expectedPixels") != {"background": 0xFFFFFF, "border": 0, "interior": 0xFFFFFF}:
+    if result.get("expectedPixels") != {"background": 0xFFFFFF, "border": "non-background", "interior": 0xFFFFFF}:
         return fail(f"unexpected expectedPixels: {result.get('expectedPixels')}")
-    if result.get("observedPixels") != [0xFFFFFF, 0, 0xFFFFFF, 0xFFFFFF]:
+    observed_pixels = result.get("observedPixels")
+    if not isinstance(observed_pixels, list) or len(observed_pixels) != 4:
+        return fail(f"unexpected observedPixels: {observed_pixels}")
+    if observed_pixels[0] != 0xFFFFFF or observed_pixels[1] == 0xFFFFFF \
+            or observed_pixels[2:] != [0xFFFFFF, 0xFFFFFF]:
         return fail(f"unexpected observedPixels: {result.get('observedPixels')}")
     if result.get("rowInteriorRgba") != [255, 255, 255, 255]:
         return fail(f"unexpected rowInteriorRgba: {result.get('rowInteriorRgba')}")

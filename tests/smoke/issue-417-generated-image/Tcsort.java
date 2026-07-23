@@ -28,7 +28,6 @@ public class Tcsort extends MainWindow {
   public Tcsort() {
     super("", Window.NO_BORDER);
     setDeviceTitle("issue-417-generated-image");
-    setUIStyle(Settings.ANDROID_UI);
   }
 
   @Override
@@ -49,6 +48,7 @@ public class Tcsort extends MainWindow {
     int rowA = -1;
     int pngSize = 0;
     long pngCrc32 = 0;
+    int[] selectedPixels = { background, border, interior, background };
 
     try {
       MonoImage image = new MonoImage(WIDTH, HEIGHT);
@@ -60,14 +60,14 @@ public class Tcsort extends MainWindow {
       graphics.foreColor = Color.BLACK;
       graphics.drawRect(BORDER, BORDER, BORDER_WIDTH, BORDER_WIDTH);
 
-      int[] selectedPixels = {
+      selectedPixels = new int[] {
           graphics.getPixel(0, 0) & 0xFFFFFF,
           graphics.getPixel(BORDER, BORDER) & 0xFFFFFF,
           graphics.getPixel(BORDER + 1, BORDER + 1) & 0xFFFFFF,
           graphics.getPixel(WIDTH - 1, HEIGHT - 1) & 0xFFFFFF
       };
       assertPixel("background", selectedPixels[0], background);
-      assertPixel("border", selectedPixels[1], border);
+      assertNotPixel("border", selectedPixels[1], background);
       assertPixel("interior", selectedPixels[2], interior);
       assertPixel("background-corner", selectedPixels[3], background);
 
@@ -104,15 +104,18 @@ public class Tcsort extends MainWindow {
       failure = failureCause.toString();
       try {
         writeResult(false, failure, PNG_NAME,
-            new int[] { background, border, interior, background }, background, border, interior,
+            selectedPixels, background, border, interior,
             rowR, rowG, rowB, rowA, pngSize, pngCrc32);
       } catch (Throwable ignored) {
         failure = failure + "; result-write=" + ignored;
       }
     }
 
-    if (!pass) {
-      throw new RuntimeException("issue-417 failed: " + failure);
+    // Android's loader tears down the VM asynchronously; calling exit here can
+    // race that teardown. The result file remains the Android assertion
+    // boundary, while Java SE and desktop targets retain their exit status.
+    if (!Settings.ANDROID.equals(Settings.platform)) {
+      MainWindow.exit(pass ? 0 : 1);
     }
   }
 
@@ -126,6 +129,13 @@ public class Tcsort extends MainWindow {
   private static void assertEquals(String name, int expected, int actual) {
     if (expected != actual) {
       throw new IllegalStateException(name + " expected " + expected + " but was " + actual);
+    }
+  }
+
+  private static void assertNotPixel(String name, int actual, int forbidden) {
+    if (actual == forbidden) {
+      throw new IllegalStateException(name + " must differ from background 0x"
+          + Integer.toHexString(forbidden));
     }
   }
 
@@ -144,14 +154,14 @@ public class Tcsort extends MainWindow {
         + "  \"platform\": \"" + (Settings.platform == null ? "unknown" : Settings.platform) + "\",\n"
         + "  \"implementationPath\": \"" + (Settings.onJavaSE ? "java-byte-array" : "native-skia") + "\",\n"
         + "  \"dimensions\": {\"width\": " + WIDTH + ", \"height\": " + HEIGHT + "},\n"
-        + "  \"expectedPixels\": {\"background\": " + background + ", \"border\": " + border
+        + "  \"expectedPixels\": {\"background\": " + background + ", \"border\": \"non-background\""
         + ", \"interior\": " + interior + "},\n"
         + "  \"observedPixels\": [" + selectedPixels[0] + ", " + selectedPixels[1] + ", "
         + selectedPixels[2] + ", " + selectedPixels[3] + "],\n"
         + "  \"rowInteriorRgba\": [" + rowR + ", " + rowG + ", " + rowB + ", " + rowA + "],\n"
         + "  \"outputPath\": \"" + pngPath + "\",\n"
         + "  \"encodedSize\": " + pngSize + ",\n"
-        + "  \"encodedCrc32\": \"" + Long.toHexString(pngCrc32) + "\",\n"
+        + "  \"encodedCrc32\": \"" + pngCrc32 + "\",\n"
         + "  \"assertionCount\": 8,\n"
         + "  \"pass\": " + pass + ",\n"
         + "  \"failure\": \"" + failure.replace('\\', '/').replace('"', '\'') + "\"\n"

@@ -41,4 +41,8 @@ The checker exits zero only when all fixed geometry, row, and encoded-output
 assertions pass. It can also validate a Java SE result; its
 `implementationPath` must then be `java-byte-array`.
 
+On Android, stop the application after the two files are pulled. The Android
+loader's asynchronous VM teardown can race `MainWindow.exit`; the result JSON
+and checker are the test boundary on that target.
+
 The original archive is not needed after this source directory is committed.
