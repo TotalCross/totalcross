@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -103,10 +104,19 @@ extern SkPaint alphaPaint;
 extern SkBitmap bitmap;
 extern SkFont skFont;
 
+struct SkiaImageSurface {
+    SkBitmap bitmap;
+    std::unique_ptr<SkCanvas> canvas;
+};
+
+extern std::vector<std::unique_ptr<SkiaImageSurface>> imageSurfaces;
+
+SkCanvas* skiaGetCanvas(int32 surfaceId);
+SkBitmap* skiaGetBitmap(int32 surfaceId);
+
 #define TYPEFACE_LEN 32
 extern sk_sp<SkTypeface> typefaces[TYPEFACE_LEN];
 extern int typefaceIdx;
-extern std::vector<SkBitmap> textures;
 extern std::map<std::string, int> typefaceIndexMap;
 
 sk_sp<SkTypeface> skia_getTypeface(int32 typefaceIndex);

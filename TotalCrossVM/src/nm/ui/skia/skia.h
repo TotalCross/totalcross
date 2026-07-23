@@ -1,10 +1,14 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #ifndef SKIA_H
 #define SKIA_H
+
+#define SKIA_SCREEN_SURFACE_ID (-1)
+#define SKIA_INVALID_SURFACE_ID (-2)
 
 #ifdef __cplusplus
 extern "C"
@@ -29,8 +33,8 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, i
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h);
 void skia_deleteBitmap(int32 id);
 
-void skia_setClip(int32 x1, int32 y1, int32 x2, int32 y2);
-void skia_restoreClip();
+void skia_setClip(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2);
+void skia_restoreClip(int32 skiaSurface);
 
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
 void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2);
