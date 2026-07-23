@@ -9,9 +9,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 Milestone ativo: nenhum; reconciliação documental concluída. Próximo passo:
 executar a matriz final de destinos quando solicitado.
 
-Último commit lógico deste milestone:
+Commits documentais deste milestone:
 
 - `f06182cd8 docs(vm): record issue 417 smoke milestone`
+- `3d9127e08 docs(vm): reconcile skia execplan report`
 
 Arquivos principais alterados: `tests/smoke/issue-417-generated-image/Tcsort.java`,
 `check_result.py` e `README.md`.
