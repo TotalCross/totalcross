@@ -41,18 +41,13 @@
 #include "include/utils/SkRandom.h"
 
 static inline SkColor skiaColorFromPixel(Pixel pixel) {
-    const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&pixel);
-    return SkColorSetARGB(bytes[0], bytes[3], bytes[2], bytes[1]);
+    return SkColorSetARGB((pixel >> 24) & 0xFF, (pixel >> 16) & 0xFF,
+                          (pixel >> 8) & 0xFF, pixel & 0xFF);
 }
 
 static inline Pixel skiaPixelFromColor(SkColor color) {
-    Pixel pixel = 0;
-    uint8_t* bytes = reinterpret_cast<uint8_t*>(&pixel);
-    bytes[0] = SkColorGetA(color);
-    bytes[1] = SkColorGetB(color);
-    bytes[2] = SkColorGetG(color);
-    bytes[3] = SkColorGetR(color);
-    return pixel;
+    return ((Pixel)SkColorGetA(color) << 24) | ((Pixel)SkColorGetR(color) << 16)
+        | ((Pixel)SkColorGetG(color) << 8) | SkColorGetB(color);
 }
 
 #ifndef USE_COMPUTE_OPAQUE
