@@ -1,1 +1,821 @@
-// Copyright (C) 2026 Amalgam Solucoes em TI Ltda//// SPDX-License-Identifier: LGPL-2.1-only#ifndef GRAPHICSPRIMITIVESSHAPES_C_H#define GRAPHICSPRIMITIVESSHAPES_C_Hstatic SurfaceType getSurfaceType(Context currentContext, TCObject surface){   // cache class pointers for performance   return (surface != NULL && areClassesCompatible(currentContext, OBJ_CLASS(surface), "totalcross.ui.image.Image") == 1) == COMPATIBLE ? SURF_IMAGE : SURF_CONTROL;}#ifndef SKIA_H////////////////////////////////////////////////////////////////////////////static void quadPixel(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c){   // draw 4 points using symetry   setPixel(currentContext, g,xc + x, yc + y, c);   setPixel(currentContext, g,xc + x, yc - y, c);   setPixel(currentContext, g,xc - x, yc + y, c);   setPixel(currentContext, g,xc - x, yc - y, c);}static void quadLine(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c){   int32 w = x+x+1; // plus 1 for the drawHLine (draws to width-1)   // draw 2 lines using symetry   drawHLine(currentContext, g,xc - x, yc - y, w, c, c);   drawHLine(currentContext, g,xc - x, yc + y, w, c, c);}// draws an ellipse incrementallystatic void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient){   int32 numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;   PixelConv c,c1,c2;   // intermediate terms to speed up loop   int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;   int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;   int64 t7 = (int64)rx*t5, t8 = t7<<1, t9 = 0L;   int64 d1 = t2 - t7 + (t4>>1);    // error terms   int64 d2 = (t1>>1) - t8 + t5;   int32 x = rx;      // ellipse points   int32 y = 0;       // ellipse points   if (rx < 0 || ry < 0) // guich@501_13      return;   c1.pixel = pc1;   c2.pixel = pc2;   if (gradient)   {      numSteps = ry + ry; // guich@tc110_11: support horizontal gradient      startRed   = c1.r;      startGreen = c1.g;      startBlue = c1.b;      endRed = c2.r;      endGreen = c2.g;      endBlue = c2.b;      redInc = ((endRed - startRed) << 16) / numSteps;      greenInc = ((endGreen - startGreen) << 16) / numSteps;      blueInc = ((endBlue - startBlue) << 16) / numSteps;      red = startRed << 16;      green = startGreen << 16;      blue = startBlue << 16;   }   else c.pixel = c1.pixel;   while (d2 < 0)          // til slope = -1   {      if (gradient)      {         c.r = (red >> 16) & 0xFF;         c.g = (green >> 16) & 0xFF;         c.b = (blue >> 16) & 0xFF;         red += redInc;         green += greenInc;         blue += blueInc;      }      if (fill)         quadLine(currentContext, g,xc,yc,x,y,c.pixel);      else         quadPixel(currentContext, g,xc,yc,x,y,c.pixel);      y++;          // always move up here      t9 += t3;      if (d1 < 0)   // move straight up      {         d1 += t9 + t2;         d2 += t9;      }      else        // move up and left      {         --x;         t8 -= t6;         d1 += t9 + t2 - t8;         d2 += t9 + t5 - t8;      }   }   do             // rest of top right quadrant   {      if (gradient)      {         c.r = (red >> 16) & 0xFF;         c.g = (green >> 16) & 0xFF;         c.b = (blue >> 16) & 0xFF;         red += redInc;         green += greenInc;         blue += blueInc;      }      // draw 4 points using symmetry      if (fill)         quadLine(currentContext, g,xc,yc,x,y,c.pixel);      else         quadPixel(currentContext, g,xc,yc,x,y,c.pixel);      --x;        // always move left here      t8 -= t6;      if (d2 < 0)  // move up and left      {         ++y;         t9 += t3;         d2 += t9 + t5 - t8;      }      else d2 += t5 - t8; // move straight left   } while (x >= 0);}#elsestatic void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient){   xc += Graphics_transX(g);   yc += Graphics_transY(g);   skia_setClip(Get_Clip(g));   skia_ellipseDrawAndFill(0, xc, yc, rx, ry, pc1 | Graphics_alpha(g), pc2 | Graphics_alpha(g), fill, gradient);   skia_restoreClip();   markDirty(currentContext, g, xc - rx, yc + ry, rx * 2, ry * 2);}#endif#ifndef SKIA_H////////////////////////////////////////////////////////////////////////////// Generalized Polygon Fillstatic void qsortInts(int32 *items, int32 first, int32 last){   int32 low = first;   int32 high = last, mid;   if (first >= last)      return;   mid = items[(first+last) >> 1];   while (true)   {      while (high >= low && items[low] < mid) // guich@566_25: added "high > low" here and below - guich@568_5: changed to >=         low++;      while (high >= low && items[high] > mid)         high--;      if (low <= high)      {         int32 temp = items[low];         items[low++] = items[high];         items[high--] = temp;      }      else break;   }   if (first < high)      qsortInts(items, first,high);   if (low < last)      qsortInts(items, low,last);}static TCObject growIntArray(Context currentContext, TCObject oldArrayObj, int32 newLen) // must unlock the returned obj{   TCObject newArrayObj = createArrayObject(currentContext, INT_ARRAY, newLen);   int32 *newArray,*oldArray, oldLen;   if (newArrayObj != null)   {      newArray = (int32*)ARRAYOBJ_START(newArrayObj);      oldArray = (int32*)ARRAYOBJ_START(oldArrayObj);      oldLen = ARRAYOBJ_LEN(oldArrayObj);      xmemmove(newArray, oldArray, oldLen * 4);   }   return newArrayObj;}static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie){   int32 x1, y1, x2, y2,y,n=0,temp, i,j, miny, maxy, a, numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;   int32 *yp;   int32 *axPoints[2], *ayPoints[2], anPoints[2];   TCObject *intsObj = &Graphics_ints(g);   int32 *ints = *intsObj ? (int32*)ARRAYOBJ_START(*intsObj) : null;   PixelConv c;   if (!xPoints1 || !yPoints1 || nPoints1 < 2)      return;#if defined __gl2_h_   if (!gradient && (nPoints1 == 0 || isConvexAndInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1, isPie)) && (nPoints2 == 0 || isConvexAndInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2, isPie)) && Graphics_useOpenGL(g)) // opengl doesnt fills non-convex polygons well   {      if (nPoints1 > 0)         glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);      if (nPoints2 > 0)         glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);      return;   }#endif   axPoints[0] = xPoints1; ayPoints[0] = yPoints1; anPoints[0] = nPoints1;   axPoints[1] = xPoints2; ayPoints[1] = yPoints2; anPoints[1] = nPoints2;   yp = yPoints1;   miny = maxy = *yp++;   for (i = nPoints1; --i > 0; yp++)   {      if (*yp < miny) miny = *yp;      if (*yp > maxy) maxy = *yp;   }   yp = yPoints2;   for (i = nPoints2; --i >= 0; yp++)   {      if (*yp < miny) miny = *yp;      if (*yp > maxy) maxy = *yp;   }   miny += ty;   maxy += ty;   if (ints == null)   {      *intsObj = createArrayObject(currentContext, INT_ARRAY, 2); // 2 is the most used length      if (*intsObj == null)         return;      setObjectLock(*intsObj, UNLOCKED);      ints = (int32*)ARRAYOBJ_START(*intsObj);   }   if (gradient)   {      numSteps = maxy - miny; // guich@tc110_11: support horizontal gradient      if (numSteps == 0) numSteps = 1; // guich@tc115_86: prevent divide by 0      c.pixel = c1;      startRed   = c.r;      startGreen = c.g;      startBlue  = c.b;      c.pixel = c2;      endRed   = c.r;      endGreen = c.g;      endBlue  = c.b;      redInc = ((endRed - startRed) << 16) / numSteps;      greenInc = ((endGreen - startGreen) << 16) / numSteps;      blueInc = ((endBlue - startBlue) << 16) / numSteps;      red = startRed << 16;      green = startGreen << 16;      blue = startBlue << 16;   }   else c.pixel = c1;   for (y = miny; y <= maxy; y++)   {      n = 0;      for (a = 0; a < 2; a++)      {         int32 nPoints = anPoints[a];         int32* xPoints = axPoints[a];         int32* yPoints = ayPoints[a];         j = nPoints-1;         for (i = 0; i < nPoints; j=i,i++)         {            y1 = yPoints[j]+ty;            y2 = yPoints[i]+ty;            if (y1 == y2)               continue;            if (y1 > y2) // invert            {               temp = y1;               y1 = y2;               y2 = temp;            }            // compute next x point            if ( (y1 <= y && y < y2) || (y == maxy && y1 < y && y <= y2) )            {               if (n == (int32)ARRAYOBJ_LEN(*intsObj)) // have to grow the ints array?               {                  TCObject newIntsObj = growIntArray(currentContext, *intsObj, n * 2);                  if (newIntsObj == null)                     return;                  *intsObj = newIntsObj;                  setObjectLock(*intsObj, UNLOCKED);                  ints = (int32*)ARRAYOBJ_START(*intsObj);               }               if (yPoints[j] < yPoints[i])               {                  x1 = xPoints[j]+tx;                  x2 = xPoints[i]+tx;               }               else               {                  x2 = xPoints[j]+tx;                  x1 = xPoints[i]+tx;               }               ints[n++] = (y - y1) * (x2 - x1) / (y2 - y1) + x1;            }         }      }      if (n >= 2)      {         if (gradient)         {            c.r = (red   >> 16) & 0xFF;            c.g = (green >> 16) & 0xFF;            c.b = (blue  >> 16) & 0xFF;            red += redInc;            green += greenInc;            blue += blueInc;         }         if (n == 2) // most of the times         {            if (ints[1] > ints[0])               drawHLine(currentContext, g,ints[0],y,ints[1]-ints[0],c.pixel,c.pixel);            else               drawHLine(currentContext, g,ints[1],y,ints[0]-ints[1],c.pixel,c.pixel);         }         else         {            qsortInts(ints, 0, n-1);            for (n>>=1, yp = ints; --n >= 0; yp+=2)               drawHLine(currentContext, g,yp[0],y,yp[1]-yp[0],c.pixel,c.pixel);         }      }   }}#elsestatic void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie){   skia_setClip(Get_Clip(g));   skia_fillPolygon(0, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1 | Graphics_alpha(g), c2 | Graphics_alpha(g), gradient, isPie);   skia_restoreClip();   // to avoid computing the polygon's bounds, we mark dirty the current clip   markDirty(currentContext, g, Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g) - Graphics_clipX1(g), Graphics_clipY2(g) - Graphics_clipY1(g));}#endif////////////////////////////////////////////////////////////////////////////// draws a polygon. if the polygon is not closed, close it#ifndef SKIA_Hstatic void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel){   if (xPoints1 && yPoints1 && nPoints1 >= 2)   {#if defined __gl2_h_      if (Graphics_useOpenGL(g) && (nPoints1 == 0 || isInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1)) && (nPoints2 == 0 || isInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2)))      {         if (nPoints1 > 0)            glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);         if (nPoints2 > 0)            glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);      }      else#endif      {         int32 i;         for (i=1; i < nPoints1; i++)            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);         for (i=1; i < nPoints2; i++)            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);      }   }}#elsestatic void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel){   skia_setClip(Get_Clip(g));   skia_drawPolygon(0, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel | Graphics_alpha(g));   skia_restoreClip();   // to avoid computing the polygon's bounds, we mark dirty the current clip   markDirty(currentContext, g, Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g) - Graphics_clipX1(g), Graphics_clipY2(g) - Graphics_clipY1(g));}#endif////////////////////////////////////////////////////////////////////////////// draw an elliptical arc from startAngle to endAngle.// c is the fill color and c2 is the outline color// (if in fill mode - otherwise, c = outline color)#ifdef SKIA_Hstatic void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient){   xc += Graphics_transX(g);   yc += Graphics_transY(g);   skia_setClip(Get_Clip(g));   skia_arcPiePointDrawAndFill(0, xc, yc, rx, ry, startAngle, endAngle, c | Graphics_alpha(g), c2 | Graphics_alpha(g), fill, pie, gradient);   skia_restoreClip();   markDirty(currentContext, g, xc - rx, yc + ry, rx * 2, ry * 2);}#elsestatic void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient){   // this algorithm was created by Guilherme Campos Hazan   double ppd;   int32 startIndex,endIndex,index,i,nq,size=0,oldX1=0,oldY1=0,last,oldX2=0,oldY2=0;   bool sameR,startSetTo0 = true;   TCObject *xPointsObj = &Graphics_xPoints(g);   TCObject *yPointsObj = &Graphics_yPoints(g);   int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;   int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;   int32 clipFactor = Graphics_minX(g) * 1000000000 + Graphics_maxX(g) * 10000000 + Graphics_minY(g) * 100000 + Graphics_maxY(g);   bool sameClipFactor = Graphics_lastClipFactor(g) == clipFactor;   if (rx < 0 || ry < 0) // guich@501_13      return;   // make sure the values are -359 <= x <= 359   while (startAngle <= -360) startAngle += 360;   while (endAngle   <= -360) endAngle   += 360;   while (startAngle >   360) startAngle -= 360;   while (endAngle   >   360) endAngle   -= 360;   if (startAngle == endAngle) // guich@501_13      return;   if (startAngle > endAngle) // eg 235 to 45      startAngle -= 360; // set to -45 to 45 so we can handle it correctly   if (startAngle >= 0 && endAngle <= 0) // eg 135 to -135      endAngle += 360; // set to 135 to 225   // step 0: correct angle values   if (startAngle < 0.1 && endAngle > 359.9) // full circle? use the fastest routine instead   {      if (fill)         ellipseDrawAndFill(currentContext, g,xc, yc, rx, ry, c, c2, true, gradient);      ellipseDrawAndFill(currentContext, g,xc, yc, rx, ry, c, c, false, gradient);      return;   }   // step 0: if possible, use cached results   sameR = rx == Graphics_lastRX(g) && ry == Graphics_lastRY(g);   if (!sameClipFactor || !sameR)   {      // step 1: computes how many points the circle has (computes only 45 degrees and mirrors the rest)      // intermediate terms to speed up loop      int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;      int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;      int64 t7 = (int64)rx*t5, t8 = t7<<1, t9 = 0L;      int64 d1 = t2 - t7 + (t4>>1);    // error terms      int64 d2 = (t1>>1) - t8 + t5;      int32 x = rx;                 // ellipse points      int32 y = 0;                  // ellipse points      while (d2 < 0)              // til slope = -1      {         t9 += t3;         if (d1 < 0)             // move straight up         {            d1 += t9 + t2;            d2 += t9;         }         else                   // move up and left         {            --x;            t8 -= t6;            d1 += t9 + t2 - t8;            d2 += t9 + t5 - t8;         }         ++size;      }      do             // rest of top right quadrant      {         --x;         // always move left here         t8 -= t6;         if (d2 < 0)  // move up and left         {            t9 += t3;            d2 += t9 + t5 - t8;         }         else d2 += t5 - t8;  // move straight left         ++size;      } while (x >= 0);      nq = size;      size *= 4;      // step 2: computes how many points per degree      ppd = (double)size / 360.0f;      // step 3: create space in the buffer so it can save all the circle      size+=2;      if (pie) size++;      if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) != (uint32)size) // guich@tc304: changed < to != to fix a glytch when drawing two pies with different radius      {         *xPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));         if (*xPointsObj == null)            return;         *yPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));         if (*yPointsObj == null)         {            setObjectLock(*xPointsObj, UNLOCKED);            return;         }         setObjectLock(*xPointsObj, UNLOCKED);         setObjectLock(*yPointsObj, UNLOCKED);      }      xPoints = (int32*)ARRAYOBJ_START(*xPointsObj);      yPoints = (int32*)ARRAYOBJ_START(*yPointsObj);      if (pie) {xPoints++; yPoints++;} // make sure that startIndex-1 is at a valid pointer      // step 4: stores all the circle in the array. the odd arcs are drawn in reverse order      // intermediate terms to speed up loop      t2 = t1<<1;      t3 = t2<<1;      t8 = t7<<1;      t9 = 0;      d1 = t2 - t7 + (t4>>1); // error terms      d2 = (t1>>1) - t8 + t5;      x = rx;      i=0;      while (d2 < 0)          // til slope = -1      {         // save 4 points using symmetry         index = nq*0+i;      // 0/3         xPoints[index]=+x;         yPoints[index]=-y;         index = (nq<<1)-i-1;    // 1/3         xPoints[index]=-x;         yPoints[index]=-y;         index = (nq<<1)+i;      // 2/3         xPoints[index]=-x;         yPoints[index]=+y;         index = (nq<<2)-i-1;    // 3/3         xPoints[index]=+x;         yPoints[index]=+y;         i++;         y++;        // always move up here         t9 += t3;         if (d1 < 0)  // move straight up         {             d1 += t9 + t2;             d2 += t9;         }         else      // move up and left         {             x--;             t8 -= t6;             d1 += t9 + t2 - t8;             d2 += t9 + t5 - t8;         }      }      do             // rest of top right quadrant      {         // save 4 points using symmetry         index = nq*0+i;    // 0/3         xPoints[index]=+x;         yPoints[index]=-y;         index = (nq<<1)-i-1;  // 1/3         xPoints[index]=-x;         yPoints[index]=-y;         index = (nq<<1)+i;    // 2/3         xPoints[index]=-x;         yPoints[index]=+y;         index = (nq<<2)-i-1;  // 3/3         xPoints[index]=+x;         yPoints[index]=+y;         ++i;         --x;        // always move left here         t8 -= t6;         if (d2 < 0)  // move up and left         {            ++y;            t9 += t3;            d2 += t9 + t5 - t8;         }         else d2 += t5 - t8;   // move straight left      } while (x >= 0);      // save last arguments      //Graphics_lastXC(g)   = xc; no longer      //Graphics_lastYC(g)   = yc;  needed      Graphics_lastRX(g)   = rx;      Graphics_lastRY(g)   = ry;      Graphics_lastPPD(g)  = ppd;      Graphics_lastSize(g) = size;      Graphics_lastClipFactor(g) = clipFactor;   }   else   {      size = Graphics_lastSize(g);      ppd = Graphics_lastPPD(g);   }   // step 5: computes the start and end indexes that will become part of the arc   if (startAngle < 0)      startAngle += 360;   if (endAngle < 0)      endAngle += 360;   startIndex = (int32)(ppd * startAngle);   endIndex = (int32)(ppd * endAngle);   last = size-2;   if (endIndex >= last) // 360?      endIndex--;   // step 6: fill or draw the polygons   endIndex++;   if (pie)   {      // connect two lines from the center to the two edges of the arc      oldX1 = xPoints[endIndex];      oldY1 = yPoints[endIndex];      xPoints[endIndex] = yPoints[endIndex] = 0;      if (xPoints[startIndex] == 0 && yPoints[startIndex] == 0)         startSetTo0 = false;      else      {         startIndex--;         oldX2 = xPoints[startIndex];         oldY2 = yPoints[startIndex];         xPoints[startIndex] = yPoints[startIndex] = 0;      }      endIndex++;   }   if (startIndex > endIndex) // drawing from angle -30 to +30 ? (startIndex = 781, endIndex = 73, size=854)   {      int p1 = last-startIndex;      if (fill)         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, gradient ? c : c2, c2, gradient, true); // lower half, upper half      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1-1, xPoints+1, yPoints+1, endIndex-1, xc,yc, c);   }   else   {      int32 arc = pie ? 0 : 1;      if (fill)         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient, true);      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex+arc, yPoints+startIndex+arc, endIndex-startIndex-arc, 0,0,0, xc,yc, c);   }   if (pie)  // restore saved points   {      if (startSetTo0)      {         xPoints[startIndex] = oldX2;         yPoints[startIndex] = oldY2;      }      endIndex--;      xPoints[endIndex]   = oldX1;      yPoints[endIndex]   = oldY1;#ifdef ANDROID      if (!gradient && endAngle == 360)         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], c);#endif   }}#endif////////////////////////////////////////////////////////////////////////////#ifndef SKIA_Hstatic void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, int32 r, Pixel c){   int32 x1, y1, x2, y2, dec, xx, yy;   int32 w, h;   r = min32(r,min32(width/2,height/2));   w = width - 2*r;   h = height - 2*r;   x1 = x+r;   y1 = y+r;   x2 = x+width-r-1;   y2 = y+height-r-1;   dec = 3-2*r;   drawHLine(currentContext, g,x+r, y, w, c, c); // top   drawHLine(currentContext, g,x+r, y+height-1, w, c, c); // bottom   drawVLine(currentContext, g,x, y+r, h, c, c); // left   drawVLine(currentContext, g,x+width-1, y+r, h, c, c); // right   // draw the round rectangles.   for (xx = 0, yy = r; xx <= yy; xx++)   {      setPixel(currentContext, g,x2+xx, y2+yy, c);      setPixel(currentContext, g,x2+xx, y1-yy, c);      setPixel(currentContext, g,x1-xx, y2+yy, c);      setPixel(currentContext, g,x1-xx, y1-yy, c);      setPixel(currentContext, g,x2+yy, y2+xx, c);      setPixel(currentContext, g,x2+yy, y1-xx, c);      setPixel(currentContext, g,x1-yy, y2+xx, c);      setPixel(currentContext, g,x1-yy, y1-xx, c);      if (dec >= 0)         dec += -4*(yy--)+4;      dec += 4*xx+6;   }}#elsestatic void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c){   x += Graphics_transX(g);   y += Graphics_transY(g);   skia_setClip(Get_Clip(g));   skia_drawRoundRect(0, x, y, w, h, r, c | Graphics_alpha(g));   skia_restoreClip();   markDirty(currentContext, g, x, y, w, h);}#endif#ifndef SKIA_H////////////////////////////////////////////////////////////////////////////static void setPixelA(Context currentContext, TCObject g, int32 x, int32 y, PixelConv color, int32 alpha);////////////////////////////////////////////////////////////////////////////static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy, int32 width, int32 height, int32 r, Pixel c){   int32 px1,px2,py1,py2,xm,ym,x,y=0, i, x2, e2, err;   PixelConv color;   if (r > (width/2) || r > (height/2)) r = min32(width/2,height/2); // guich@200b4_6: correct bug that crashed the device.   x = -r;   err = 2 - 2 * r;   color.pixel = c;   px1 = xx+r;   py1 = yy+r;   px2 = xx+width-r-1;   py2 = yy+height-r-1;   height -= 2*r;   yy += r;   while (height--)      drawHLine(currentContext, g,xx, yy++, width, c, c);   r = 1 - err;   do   {      i = 255 - 255 * abs(err - 2 * (x + y) - 2) / r;      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,c);      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,c);      if (i < 256 && i > 0)      {         xm = px2; ym = py2; setPixelA(currentContext, g, xm - x, ym + y, color, i); // br         xm = px1; ym = py2; setPixelA(currentContext, g, xm - y, ym - x, color, i); // bl         xm = px1; ym = py1; setPixelA(currentContext, g, xm + x, ym - y, color, i); // tl         xm = px2; ym = py1; setPixelA(currentContext, g, xm + y, ym + x, color, i); // tr      }      e2 = err;      x2 = x;      if (err + y > 0)      {         i = 255 - 255 * (err - 2 * x - 1) / r;         if (i < 256 && i > 0)         {            xm = px2; ym = py2; setPixelA(currentContext, g, xm - x, ym + y + 1, color, i);            xm = px1; ym = py2; setPixelA(currentContext, g, xm - y - 1, ym - x, color, i);            xm = px1; ym = py1; setPixelA(currentContext, g, xm + x, ym - y - 1, color, i);            xm = px2; ym = py1; setPixelA(currentContext, g, xm + y + 1, ym + x, color, i);         }         err += ++x * 2 + 1;      }      if (e2 + x2 <= 0)      {         i = 255 - 255 * (2 * y + 3 - e2) / r;         if (i < 256 && i > 0)         {            xm = px2; ym = py2; setPixelA(currentContext, g, xm - x2 - 1, ym + y, color, i);            xm = px1; ym = py2; setPixelA(currentContext, g, xm - y, ym - x2 - 1, color, i);            xm = px1; ym = py1; setPixelA(currentContext, g, xm + x2 + 1, ym - y, color, i);            xm = px2; ym = py1; setPixelA(currentContext, g, xm + y, ym + x2 + 1, color, i);         }         err += ++y * 2 + 1;      }   } while (x < 0);}#elsestatic void fillRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c){   x += Graphics_transX(g);   y += Graphics_transY(g);   skia_setClip(Get_Clip(g));   skia_fillRoundRect(0, x, y, w, h, r, c | Graphics_alpha(g));   skia_restoreClip();   markDirty(currentContext, g, x, y, w, h);}#endif#if 1//ndef SKIA_H// Translates the given coords and returns the intersection between// the clip rect and the coords passed.// Returns: 1 if OK, 0 if the coords are outside the clip rectstatic bool translateAndClip(TCObject g, int32 *pX, int32 *pY, int32 *pWidth, int32 *pHeight){   int32 x = *pX;   int32 y = *pY;   int32 w = *pWidth;   int32 h = *pHeight;   x += Graphics_transX(g);   y += Graphics_transY(g);   if (x < Graphics_clipX1(g))   {      if ((x+w) > Graphics_clipX2(g))         w = Graphics_clipX2(g) - Graphics_clipX1(g);      else         w -= Graphics_clipX1(g)-x;      x = Graphics_clipX1(g);   }   else   if ((x+w) > Graphics_clipX2(g))      w = Graphics_clipX2(g) - x;   if (y < Graphics_clipY1(g))   {      if ((y+h) > Graphics_clipY2(g))         h = Graphics_clipY2(g) - Graphics_clipY1(g);      else         h -= Graphics_clipY1(g)-y;      y = Graphics_clipY1(g);   }   else   if ((y+h) > Graphics_clipY2(g))      h = Graphics_clipY2(g) - y;   if (x < 0 || y < 0 || h <= 0 || w <= 0) return false; // guich@566_42: check the resulting w/h - guich@tc112_34: check also x and y   *pX      = x;   *pY      = y;   *pWidth  = w;   *pHeight = h;   return true;}#endif#endif
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
+static SurfaceType getSurfaceType(Context currentContext, TCObject surface)
+{
+   // cache class pointers for performance
+   return (surface != NULL && areClassesCompatible(currentContext, OBJ_CLASS(surface), "totalcross.ui.image.Image") == 1) == COMPATIBLE ? SURF_IMAGE : SURF_CONTROL;
+}
+
+#ifndef SKIA_H
+////////////////////////////////////////////////////////////////////////////
+static void quadPixel(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
+{
+   // draw 4 points using symetry
+   setPixel(currentContext, g,xc + x, yc + y, c);
+   setPixel(currentContext, g,xc + x, yc - y, c);
+   setPixel(currentContext, g,xc - x, yc + y, c);
+   setPixel(currentContext, g,xc - x, yc - y, c);
+}
+
+static void quadLine(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
+{
+   int32 w = x+x+1; // plus 1 for the drawHLine (draws to width-1)
+   // draw 2 lines using symetry
+   drawHLine(currentContext, g,xc - x, yc - y, w, c, c);
+   drawHLine(currentContext, g,xc - x, yc + y, w, c, c);
+}
+
+// draws an ellipse incrementally
+static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
+{
+   int32 numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
+   PixelConv c,c1,c2;
+   // intermediate terms to speed up loop
+   int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;
+   int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;
+   int64 t7 = (int64)rx*t5, t8 = t7<<1, t9 = 0L;
+   int64 d1 = t2 - t7 + (t4>>1);    // error terms
+   int64 d2 = (t1>>1) - t8 + t5;
+   int32 x = rx;      // ellipse points
+   int32 y = 0;       // ellipse points
+   if (rx < 0 || ry < 0) // guich@501_13
+      return;
+   c1.pixel = pc1;
+   c2.pixel = pc2;
+
+   if (gradient)
+   {
+      numSteps = ry + ry; // guich@tc110_11: support horizontal gradient
+      startRed   = c1.r;
+      startGreen = c1.g;
+      startBlue = c1.b;
+      endRed = c2.r;
+      endGreen = c2.g;
+      endBlue = c2.b;
+      redInc = ((endRed - startRed) << 16) / numSteps;
+      greenInc = ((endGreen - startGreen) << 16) / numSteps;
+      blueInc = ((endBlue - startBlue) << 16) / numSteps;
+      red = startRed << 16;
+      green = startGreen << 16;
+      blue = startBlue << 16;
+   }
+   else c.pixel = c1.pixel;
+
+   while (d2 < 0)          // til slope = -1
+   {
+      if (gradient)
+      {
+         c.r = (red >> 16) & 0xFF;
+         c.g = (green >> 16) & 0xFF;
+         c.b = (blue >> 16) & 0xFF;
+         red += redInc;
+         green += greenInc;
+         blue += blueInc;
+      }
+      if (fill)
+         quadLine(currentContext, g,xc,yc,x,y,c.pixel);
+      else
+         quadPixel(currentContext, g,xc,yc,x,y,c.pixel);
+      y++;          // always move up here
+      t9 += t3;
+      if (d1 < 0)   // move straight up
+      {
+         d1 += t9 + t2;
+         d2 += t9;
+      }
+      else        // move up and left
+      {
+         --x;
+         t8 -= t6;
+         d1 += t9 + t2 - t8;
+         d2 += t9 + t5 - t8;
+      }
+   }
+
+   do             // rest of top right quadrant
+   {
+      if (gradient)
+      {
+         c.r = (red >> 16) & 0xFF;
+         c.g = (green >> 16) & 0xFF;
+         c.b = (blue >> 16) & 0xFF;
+         red += redInc;
+         green += greenInc;
+         blue += blueInc;
+      }
+      // draw 4 points using symmetry
+      if (fill)
+         quadLine(currentContext, g,xc,yc,x,y,c.pixel);
+      else
+         quadPixel(currentContext, g,xc,yc,x,y,c.pixel);
+      --x;        // always move left here
+      t8 -= t6;
+      if (d2 < 0)  // move up and left
+      {
+         ++y;
+         t9 += t3;
+         d2 += t9 + t5 - t8;
+      }
+      else d2 += t5 - t8; // move straight left
+   } while (x >= 0);
+}
+#else
+static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
+{
+   xc += Graphics_transX(g);
+   yc += Graphics_transY(g);
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_ellipseDrawAndFill(skiaSurfaceForGraphics(g), xc, yc, rx, ry, pc1 | Graphics_alpha(g), pc2 | Graphics_alpha(g), fill, gradient);
+   skia_restoreClip(skiaSurfaceForGraphics(g));
+
+   markDirty(currentContext, g, xc - rx, yc + ry, rx * 2, ry * 2);
+}
+#endif
+
+#ifndef SKIA_H
+////////////////////////////////////////////////////////////////////////////
+// Generalized Polygon Fill
+static void qsortInts(int32 *items, int32 first, int32 last)
+{
+   int32 low = first;
+   int32 high = last, mid;
+   if (first >= last)
+      return;
+   mid = items[(first+last) >> 1];
+   while (true)
+   {
+      while (high >= low && items[low] < mid) // guich@566_25: added "high > low" here and below - guich@568_5: changed to >=
+         low++;
+      while (high >= low && items[high] > mid)
+         high--;
+      if (low <= high)
+      {
+         int32 temp = items[low];
+         items[low++] = items[high];
+         items[high--] = temp;
+      }
+      else break;
+   }
+   if (first < high)
+      qsortInts(items, first,high);
+   if (low < last)
+      qsortInts(items, low,last);
+}
+
+static TCObject growIntArray(Context currentContext, TCObject oldArrayObj, int32 newLen) // must unlock the returned obj
+{
+   TCObject newArrayObj = createArrayObject(currentContext, INT_ARRAY, newLen);
+   int32 *newArray,*oldArray, oldLen;
+   if (newArrayObj != null)
+   {
+      newArray = (int32*)ARRAYOBJ_START(newArrayObj);
+      oldArray = (int32*)ARRAYOBJ_START(oldArrayObj);
+      oldLen = ARRAYOBJ_LEN(oldArrayObj);
+      xmemmove(newArray, oldArray, oldLen * 4);
+   }
+   return newArrayObj;
+}
+
+static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie)
+{
+   int32 x1, y1, x2, y2,y,n=0,temp, i,j, miny, maxy, a, numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
+   int32 *yp;
+   int32 *axPoints[2], *ayPoints[2], anPoints[2];
+   TCObject *intsObj = &Graphics_ints(g);
+   int32 *ints = *intsObj ? (int32*)ARRAYOBJ_START(*intsObj) : null;
+   PixelConv c;
+
+   if (!xPoints1 || !yPoints1 || nPoints1 < 2)
+      return;
+
+#if defined __gl2_h_
+   if (!gradient && (nPoints1 == 0 || isConvexAndInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1, isPie)) && (nPoints2 == 0 || isConvexAndInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2, isPie)) && Graphics_useOpenGL(g)) // opengl doesnt fills non-convex polygons well
+   {
+      if (nPoints1 > 0)
+         glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);
+      if (nPoints2 > 0)
+         glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);
+      return;
+   }
+#endif
+
+   axPoints[0] = xPoints1; ayPoints[0] = yPoints1; anPoints[0] = nPoints1;
+   axPoints[1] = xPoints2; ayPoints[1] = yPoints2; anPoints[1] = nPoints2;
+
+   yp = yPoints1;
+   miny = maxy = *yp++;
+   for (i = nPoints1; --i > 0; yp++)
+   {
+      if (*yp < miny) miny = *yp;
+      if (*yp > maxy) maxy = *yp;
+   }
+   yp = yPoints2;
+   for (i = nPoints2; --i >= 0; yp++)
+   {
+      if (*yp < miny) miny = *yp;
+      if (*yp > maxy) maxy = *yp;
+   }
+   miny += ty;
+   maxy += ty;
+
+   if (ints == null)
+   {
+      *intsObj = createArrayObject(currentContext, INT_ARRAY, 2); // 2 is the most used length
+      if (*intsObj == null)
+         return;
+      setObjectLock(*intsObj, UNLOCKED);
+      ints = (int32*)ARRAYOBJ_START(*intsObj);
+   }
+   if (gradient)
+   {
+      numSteps = maxy - miny; // guich@tc110_11: support horizontal gradient
+      if (numSteps == 0) numSteps = 1; // guich@tc115_86: prevent divide by 0
+      c.pixel = c1;
+      startRed   = c.r;
+      startGreen = c.g;
+      startBlue  = c.b;
+      c.pixel = c2;
+      endRed   = c.r;
+      endGreen = c.g;
+      endBlue  = c.b;
+      redInc = ((endRed - startRed) << 16) / numSteps;
+      greenInc = ((endGreen - startGreen) << 16) / numSteps;
+      blueInc = ((endBlue - startBlue) << 16) / numSteps;
+      red = startRed << 16;
+      green = startGreen << 16;
+      blue = startBlue << 16;
+   }
+   else c.pixel = c1;
+   for (y = miny; y <= maxy; y++)
+   {
+      n = 0;
+      for (a = 0; a < 2; a++)
+      {
+         int32 nPoints = anPoints[a];
+         int32* xPoints = axPoints[a];
+         int32* yPoints = ayPoints[a];
+         j = nPoints-1;
+         for (i = 0; i < nPoints; j=i,i++)
+         {
+            y1 = yPoints[j]+ty;
+            y2 = yPoints[i]+ty;
+            if (y1 == y2)
+               continue;
+            if (y1 > y2) // invert
+            {
+               temp = y1;
+               y1 = y2;
+               y2 = temp;
+            }
+            // compute next x point
+            if ( (y1 <= y && y < y2) || (y == maxy && y1 < y && y <= y2) )
+            {
+               if (n == (int32)ARRAYOBJ_LEN(*intsObj)) // have to grow the ints array?
+               {
+                  TCObject newIntsObj = growIntArray(currentContext, *intsObj, n * 2);
+                  if (newIntsObj == null)
+                     return;
+                  *intsObj = newIntsObj;
+                  setObjectLock(*intsObj, UNLOCKED);
+                  ints = (int32*)ARRAYOBJ_START(*intsObj);
+               }
+               if (yPoints[j] < yPoints[i])
+               {
+                  x1 = xPoints[j]+tx;
+                  x2 = xPoints[i]+tx;
+               }
+               else
+               {
+                  x2 = xPoints[j]+tx;
+                  x1 = xPoints[i]+tx;
+               }
+               ints[n++] = (y - y1) * (x2 - x1) / (y2 - y1) + x1;
+            }
+         }
+      }
+      if (n >= 2)
+      {
+         if (gradient)
+         {
+            c.r = (red   >> 16) & 0xFF;
+            c.g = (green >> 16) & 0xFF;
+            c.b = (blue  >> 16) & 0xFF;
+            red += redInc;
+            green += greenInc;
+            blue += blueInc;
+         }
+         if (n == 2) // most of the times
+         {
+            if (ints[1] > ints[0])
+               drawHLine(currentContext, g,ints[0],y,ints[1]-ints[0],c.pixel,c.pixel);
+            else
+               drawHLine(currentContext, g,ints[1],y,ints[0]-ints[1],c.pixel,c.pixel);
+         }
+         else
+         {
+            qsortInts(ints, 0, n-1);
+            for (n>>=1, yp = ints; --n >= 0; yp+=2)
+               drawHLine(currentContext, g,yp[0],y,yp[1]-yp[0],c.pixel,c.pixel);
+         }
+      }
+   }
+}
+#else
+static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie)
+{
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_fillPolygon(skiaSurfaceForGraphics(g), xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1 | Graphics_alpha(g), c2 | Graphics_alpha(g), gradient, isPie);
+   skia_restoreClip(skiaSurfaceForGraphics(g));
+
+   // to avoid computing the polygon's bounds, we mark dirty the current clip
+   markDirty(currentContext, g, Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g) - Graphics_clipX1(g), Graphics_clipY2(g) - Graphics_clipY1(g));
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////
+// draws a polygon. if the polygon is not closed, close it
+#ifndef SKIA_H
+static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel)
+{
+   if (xPoints1 && yPoints1 && nPoints1 >= 2)
+   {
+#if defined __gl2_h_
+      if (Graphics_useOpenGL(g) && (nPoints1 == 0 || isInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1)) && (nPoints2 == 0 || isInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2)))
+      {
+         if (nPoints1 > 0)
+            glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
+         if (nPoints2 > 0)
+            glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
+      }
+      else
+#endif
+      {
+         int32 i;
+         for (i=1; i < nPoints1; i++)
+            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);
+         for (i=1; i < nPoints2; i++)
+            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);
+      }
+   }
+}
+#else
+static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel)
+{
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_drawPolygon(skiaSurfaceForGraphics(g), xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel | Graphics_alpha(g));
+   skia_restoreClip(skiaSurfaceForGraphics(g));
+
+   // to avoid computing the polygon's bounds, we mark dirty the current clip
+   markDirty(currentContext, g, Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g) - Graphics_clipX1(g), Graphics_clipY2(g) - Graphics_clipY1(g));
+}
+#endif
+////////////////////////////////////////////////////////////////////////////
+// draw an elliptical arc from startAngle to endAngle.
+// c is the fill color and c2 is the outline color
+// (if in fill mode - otherwise, c = outline color)
+#ifdef SKIA_H
+static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient)
+{
+   xc += Graphics_transX(g);
+   yc += Graphics_transY(g);
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_arcPiePointDrawAndFill(skiaSurfaceForGraphics(g), xc, yc, rx, ry, startAngle, endAngle, c | Graphics_alpha(g), c2 | Graphics_alpha(g), fill, pie, gradient);
+   skia_restoreClip(skiaSurfaceForGraphics(g));
+
+   markDirty(currentContext, g, xc - rx, yc + ry, rx * 2, ry * 2);
+}
+#else
+static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient)
+{
+   // this algorithm was created by Guilherme Campos Hazan
+   double ppd;
+   int32 startIndex,endIndex,index,i,nq,size=0,oldX1=0,oldY1=0,last,oldX2=0,oldY2=0;
+   bool sameR,startSetTo0 = true;
+   TCObject *xPointsObj = &Graphics_xPoints(g);
+   TCObject *yPointsObj = &Graphics_yPoints(g);
+   int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
+   int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;
+   int32 clipFactor = Graphics_minX(g) * 1000000000 + Graphics_maxX(g) * 10000000 + Graphics_minY(g) * 100000 + Graphics_maxY(g);
+   bool sameClipFactor = Graphics_lastClipFactor(g) == clipFactor;
+
+   if (rx < 0 || ry < 0) // guich@501_13
+      return;
+   // make sure the values are -359 <= x <= 359
+   while (startAngle <= -360) startAngle += 360;
+   while (endAngle   <= -360) endAngle   += 360;
+   while (startAngle >   360) startAngle -= 360;
+   while (endAngle   >   360) endAngle   -= 360;
+
+   if (startAngle == endAngle) // guich@501_13
+      return;
+   if (startAngle > endAngle) // eg 235 to 45
+      startAngle -= 360; // set to -45 to 45 so we can handle it correctly
+   if (startAngle >= 0 && endAngle <= 0) // eg 135 to -135
+      endAngle += 360; // set to 135 to 225
+
+   // step 0: correct angle values
+   if (startAngle < 0.1 && endAngle > 359.9) // full circle? use the fastest routine instead
+   {
+      if (fill)
+         ellipseDrawAndFill(currentContext, g,xc, yc, rx, ry, c, c2, true, gradient);
+      ellipseDrawAndFill(currentContext, g,xc, yc, rx, ry, c, c, false, gradient);
+      return;
+   }
+
+   // step 0: if possible, use cached results
+   sameR = rx == Graphics_lastRX(g) && ry == Graphics_lastRY(g);
+   if (!sameClipFactor || !sameR)
+   {
+      // step 1: computes how many points the circle has (computes only 45 degrees and mirrors the rest)
+      // intermediate terms to speed up loop
+      int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;
+      int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;
+      int64 t7 = (int64)rx*t5, t8 = t7<<1, t9 = 0L;
+      int64 d1 = t2 - t7 + (t4>>1);    // error terms
+      int64 d2 = (t1>>1) - t8 + t5;
+      int32 x = rx;                 // ellipse points
+      int32 y = 0;                  // ellipse points
+
+      while (d2 < 0)              // til slope = -1
+      {
+         t9 += t3;
+         if (d1 < 0)             // move straight up
+         {
+            d1 += t9 + t2;
+            d2 += t9;
+         }
+         else                   // move up and left
+         {
+            --x;
+            t8 -= t6;
+            d1 += t9 + t2 - t8;
+            d2 += t9 + t5 - t8;
+         }
+         ++size;
+      }
+
+      do             // rest of top right quadrant
+      {
+         --x;         // always move left here
+         t8 -= t6;
+         if (d2 < 0)  // move up and left
+         {
+            t9 += t3;
+            d2 += t9 + t5 - t8;
+         }
+         else d2 += t5 - t8;  // move straight left
+         ++size;
+      } while (x >= 0);
+      nq = size;
+      size *= 4;
+      // step 2: computes how many points per degree
+      ppd = (double)size / 360.0f;
+      // step 3: create space in the buffer so it can save all the circle
+      size+=2;
+      if (pie) size++;
+      if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) != (uint32)size) // guich@tc304: changed < to != to fix a glytch when drawing two pies with different radius
+      {
+         *xPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
+         if (*xPointsObj == null)
+            return;
+         *yPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
+         if (*yPointsObj == null)
+         {
+            setObjectLock(*xPointsObj, UNLOCKED);
+            return;
+         }
+         setObjectLock(*xPointsObj, UNLOCKED);
+         setObjectLock(*yPointsObj, UNLOCKED);
+      }
+      xPoints = (int32*)ARRAYOBJ_START(*xPointsObj);
+      yPoints = (int32*)ARRAYOBJ_START(*yPointsObj);
+      if (pie) {xPoints++; yPoints++;} // make sure that startIndex-1 is at a valid pointer
+
+      // step 4: stores all the circle in the array. the odd arcs are drawn in reverse order
+      // intermediate terms to speed up loop
+      t2 = t1<<1;
+      t3 = t2<<1;
+      t8 = t7<<1;
+      t9 = 0;
+      d1 = t2 - t7 + (t4>>1); // error terms
+      d2 = (t1>>1) - t8 + t5;
+      x = rx;
+      i=0;
+      while (d2 < 0)          // til slope = -1
+      {
+         // save 4 points using symmetry
+         index = nq*0+i;      // 0/3
+         xPoints[index]=+x;
+         yPoints[index]=-y;
+
+         index = (nq<<1)-i-1;    // 1/3
+         xPoints[index]=-x;
+         yPoints[index]=-y;
+
+         index = (nq<<1)+i;      // 2/3
+         xPoints[index]=-x;
+         yPoints[index]=+y;
+
+         index = (nq<<2)-i-1;    // 3/3
+         xPoints[index]=+x;
+         yPoints[index]=+y;
+         i++;
+         y++;        // always move up here
+         t9 += t3;
+         if (d1 < 0)  // move straight up
+         {
+             d1 += t9 + t2;
+             d2 += t9;
+         }
+         else      // move up and left
+         {
+             x--;
+             t8 -= t6;
+             d1 += t9 + t2 - t8;
+             d2 += t9 + t5 - t8;
+         }
+      }
+
+      do             // rest of top right quadrant
+      {
+         // save 4 points using symmetry
+         index = nq*0+i;    // 0/3
+         xPoints[index]=+x;
+         yPoints[index]=-y;
+
+         index = (nq<<1)-i-1;  // 1/3
+         xPoints[index]=-x;
+         yPoints[index]=-y;
+
+         index = (nq<<1)+i;    // 2/3
+         xPoints[index]=-x;
+         yPoints[index]=+y;
+
+         index = (nq<<2)-i-1;  // 3/3
+         xPoints[index]=+x;
+         yPoints[index]=+y;
+
+         ++i;
+         --x;        // always move left here
+         t8 -= t6;
+         if (d2 < 0)  // move up and left
+         {
+            ++y;
+            t9 += t3;
+            d2 += t9 + t5 - t8;
+         }
+         else d2 += t5 - t8;   // move straight left
+      } while (x >= 0);
+      // save last arguments
+      //Graphics_lastXC(g)   = xc; no longer
+      //Graphics_lastYC(g)   = yc;  needed
+      Graphics_lastRX(g)   = rx;
+      Graphics_lastRY(g)   = ry;
+      Graphics_lastPPD(g)  = ppd;
+      Graphics_lastSize(g) = size;
+      Graphics_lastClipFactor(g) = clipFactor;
+   }
+   else
+   {
+      size = Graphics_lastSize(g);
+      ppd = Graphics_lastPPD(g);
+   }
+   // step 5: computes the start and end indexes that will become part of the arc
+   if (startAngle < 0)
+      startAngle += 360;
+   if (endAngle < 0)
+      endAngle += 360;
+   startIndex = (int32)(ppd * startAngle);
+   endIndex = (int32)(ppd * endAngle);
+
+   last = size-2;
+   if (endIndex >= last) // 360?
+      endIndex--;
+   // step 6: fill or draw the polygons
+   endIndex++;
+   if (pie)
+   {
+      // connect two lines from the center to the two edges of the arc
+      oldX1 = xPoints[endIndex];
+      oldY1 = yPoints[endIndex];
+      xPoints[endIndex] = yPoints[endIndex] = 0;
+      if (xPoints[startIndex] == 0 && yPoints[startIndex] == 0)
+         startSetTo0 = false;
+      else
+      {
+         startIndex--;
+         oldX2 = xPoints[startIndex];
+         oldY2 = yPoints[startIndex];
+         xPoints[startIndex] = yPoints[startIndex] = 0;
+      }
+      endIndex++;
+   }
+
+   if (startIndex > endIndex) // drawing from angle -30 to +30 ? (startIndex = 781, endIndex = 73, size=854)
+   {
+      int p1 = last-startIndex;
+      if (fill)
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, gradient ? c : c2, c2, gradient, true); // lower half, upper half
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1-1, xPoints+1, yPoints+1, endIndex-1, xc,yc, c);
+   }
+   else
+   {
+      int32 arc = pie ? 0 : 1;
+      if (fill)
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient, true);
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex+arc, yPoints+startIndex+arc, endIndex-startIndex-arc, 0,0,0, xc,yc, c);
+   }
+   if (pie)  // restore saved points
+   {
+      if (startSetTo0)
+      {
+         xPoints[startIndex] = oldX2;
+         yPoints[startIndex] = oldY2;
+      }
+      endIndex--;
+      xPoints[endIndex]   = oldX1;
+      yPoints[endIndex]   = oldY1;
+#ifdef ANDROID
+      if (!gradient && endAngle == 360)
+         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], c);
+#endif
+   }
+}
+#endif
+////////////////////////////////////////////////////////////////////////////
+#ifndef SKIA_H
+static void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, int32 r, Pixel c)
+{
+   int32 x1, y1, x2, y2, dec, xx, yy;
+   int32 w, h;
+   r = min32(r,min32(width/2,height/2));
+   w = width - 2*r;
+   h = height - 2*r;
+   x1 = x+r;
+   y1 = y+r;
+   x2 = x+width-r-1;
+   y2 = y+height-r-1;
+   dec = 3-2*r;
+
+   drawHLine(currentContext, g,x+r, y, w, c, c); // top
+   drawHLine(currentContext, g,x+r, y+height-1, w, c, c); // bottom
+   drawVLine(currentContext, g,x, y+r, h, c, c); // left
+   drawVLine(currentContext, g,x+width-1, y+r, h, c, c); // right
+
+   // draw the round rectangles.
+   for (xx = 0, yy = r; xx <= yy; xx++)
+   {
+      setPixel(currentContext, g,x2+xx, y2+yy, c);
+      setPixel(currentContext, g,x2+xx, y1-yy, c);
+      setPixel(currentContext, g,x1-xx, y2+yy, c);
+      setPixel(currentContext, g,x1-xx, y1-yy, c);
+
+      setPixel(currentContext, g,x2+yy, y2+xx, c);
+      setPixel(currentContext, g,x2+yy, y1-xx, c);
+      setPixel(currentContext, g,x1-yy, y2+xx, c);
+      setPixel(currentContext, g,x1-yy, y1-xx, c);
+      if (dec >= 0)
+         dec += -4*(yy--)+4;
+      dec += 4*xx+6;
+   }
+}
+#else
+static void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c)
+{
+   x += Graphics_transX(g);
+   y += Graphics_transY(g);
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_drawRoundRect(skiaSurfaceForGraphics(g), x, y, w, h, r, c | Graphics_alpha(g));
+   skia_restoreClip(skiaSurfaceForGraphics(g));
+
+   markDirty(currentContext, g, x, y, w, h);
+}
+#endif
+
+#ifndef SKIA_H
+////////////////////////////////////////////////////////////////////////////
+static void setPixelA(Context currentContext, TCObject g, int32 x, int32 y, PixelConv color, int32 alpha);
+
+////////////////////////////////////////////////////////////////////////////
+static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy, int32 width, int32 height, int32 r, Pixel c)
+{
+   int32 px1,px2,py1,py2,xm,ym,x,y=0, i, x2, e2, err;
+   PixelConv color;
+   if (r > (width/2) || r > (height/2)) r = min32(width/2,height/2); // guich@200b4_6: correct bug that crashed the device.
+
+   x = -r;
+   err = 2 - 2 * r;
+   color.pixel = c;
+
+   px1 = xx+r;
+   py1 = yy+r;
+   px2 = xx+width-r-1;
+   py2 = yy+height-r-1;
+
+   height -= 2*r;
+   yy += r;
+   while (height--)
+      drawHLine(currentContext, g,xx, yy++, width, c, c);
+
+   r = 1 - err;
+   do
+   {
+      i = 255 - 255 * abs(err - 2 * (x + y) - 2) / r;
+
+      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,c);
+      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,c);
+
+      if (i < 256 && i > 0)
+      {
+         xm = px2; ym = py2; setPixelA(currentContext, g, xm - x, ym + y, color, i); // br
+         xm = px1; ym = py2; setPixelA(currentContext, g, xm - y, ym - x, color, i); // bl
+         xm = px1; ym = py1; setPixelA(currentContext, g, xm + x, ym - y, color, i); // tl
+         xm = px2; ym = py1; setPixelA(currentContext, g, xm + y, ym + x, color, i); // tr
+      }
+      e2 = err;
+      x2 = x;
+      if (err + y > 0)
+      {
+         i = 255 - 255 * (err - 2 * x - 1) / r;
+         if (i < 256 && i > 0)
+         {
+            xm = px2; ym = py2; setPixelA(currentContext, g, xm - x, ym + y + 1, color, i);
+            xm = px1; ym = py2; setPixelA(currentContext, g, xm - y - 1, ym - x, color, i);
+            xm = px1; ym = py1; setPixelA(currentContext, g, xm + x, ym - y - 1, color, i);
+            xm = px2; ym = py1; setPixelA(currentContext, g, xm + y + 1, ym + x, color, i);
+         }
+         err += ++x * 2 + 1;
+      }
+      if (e2 + x2 <= 0)
+      {
+         i = 255 - 255 * (2 * y + 3 - e2) / r;
+         if (i < 256 && i > 0)
+         {
+            xm = px2; ym = py2; setPixelA(currentContext, g, xm - x2 - 1, ym + y, color, i);
+            xm = px1; ym = py2; setPixelA(currentContext, g, xm - y, ym - x2 - 1, color, i);
+            xm = px1; ym = py1; setPixelA(currentContext, g, xm + x2 + 1, ym - y, color, i);
+            xm = px2; ym = py1; setPixelA(currentContext, g, xm + y, ym + x2 + 1, color, i);
+         }
+         err += ++y * 2 + 1;
+      }
+   } while (x < 0);
+}
+#else
+static void fillRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c)
+{
+   x += Graphics_transX(g);
+   y += Graphics_transY(g);
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_fillRoundRect(skiaSurfaceForGraphics(g), x, y, w, h, r, c | Graphics_alpha(g));
+   skia_restoreClip(skiaSurfaceForGraphics(g));
+
+   markDirty(currentContext, g, x, y, w, h);
+}
+#endif
+
+#if 1//ndef SKIA_H
+// Translates the given coords and returns the intersection between
+// the clip rect and the coords passed.
+// Returns: 1 if OK, 0 if the coords are outside the clip rect
+static bool translateAndClip(TCObject g, int32 *pX, int32 *pY, int32 *pWidth, int32 *pHeight)
+{
+   int32 x = *pX;
+   int32 y = *pY;
+   int32 w = *pWidth;
+   int32 h = *pHeight;
+   x += Graphics_transX(g);
+   y += Graphics_transY(g);
+   if (x < Graphics_clipX1(g))
+   {
+      if ((x+w) > Graphics_clipX2(g))
+         w = Graphics_clipX2(g) - Graphics_clipX1(g);
+      else
+         w -= Graphics_clipX1(g)-x;
+      x = Graphics_clipX1(g);
+   }
+   else
+   if ((x+w) > Graphics_clipX2(g))
+      w = Graphics_clipX2(g) - x;
+   if (y < Graphics_clipY1(g))
+   {
+      if ((y+h) > Graphics_clipY2(g))
+         h = Graphics_clipY2(g) - Graphics_clipY1(g);
+      else
+         h -= Graphics_clipY1(g)-y;
+      y = Graphics_clipY1(g);
+   }
+   else
+   if ((y+h) > Graphics_clipY2(g))
+      h = Graphics_clipY2(g) - y;
+
+   if (x < 0 || y < 0 || h <= 0 || w <= 0) return false; // guich@566_42: check the resulting w/h - guich@tc112_34: check also x and y
+
+   *pX      = x;
+   *pY      = y;
+   *pWidth  = w;
+   *pHeight = h;
+   return true;
+}
+#endif

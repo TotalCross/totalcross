@@ -554,9 +554,9 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
     y1 += Graphics_transY(g);
     x2 += Graphics_transX(g);
     y2 += Graphics_transY(g);
-    skia_setClip(Get_Clip(g));
-    skia_drawDottedLine(0, x1, y1, x2, y2, pixel1 | Graphics_alpha(g), pixel2 | Graphics_alpha(g));
-    skia_restoreClip();
+    skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+    skia_drawDottedLine(skiaSurfaceForGraphics(g), x1, y1, x2, y2, pixel1 | Graphics_alpha(g), pixel2 | Graphics_alpha(g));
+    skia_restoreClip(skiaSurfaceForGraphics(g));
 
     markDirty(currentContext, g, min32(x1, x2), min32(y1, y2), abs(x2 - x1), abs(y2 - y1));
 }
@@ -579,9 +579,9 @@ static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int
    y1 += Graphics_transY(g);
    x2 += Graphics_transX(g);
    y2 += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
-   skia_drawLine(0, x1, y1, x2, y2, pixel | Graphics_alpha(g));
-   skia_restoreClip();
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_drawLine(skiaSurfaceForGraphics(g), x1, y1, x2, y2, pixel | Graphics_alpha(g));
+   skia_restoreClip(skiaSurfaceForGraphics(g));
 
    markDirty(currentContext, g, min32(x1, x2), min32(y1, y2), abs(x2 - x1), abs(y2 - y1));
 }
@@ -601,9 +601,9 @@ static void drawRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
-   skia_drawRect(0, x, y, w, h, pixel | Graphics_alpha(g));
-   skia_restoreClip();
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_drawRect(skiaSurfaceForGraphics(g), x, y, w, h, pixel | Graphics_alpha(g));
+   skia_restoreClip(skiaSurfaceForGraphics(g));
 
    markDirty(currentContext, g, x, y, w, h);
 }
@@ -679,9 +679,9 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(Get_Clip(g));
-   skia_fillRect(0, x, y, w, h, pixel | Graphics_alpha(g));
-   skia_restoreClip();
+   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_fillRect(skiaSurfaceForGraphics(g), x, y, w, h, pixel | Graphics_alpha(g));
+   skia_restoreClip(skiaSurfaceForGraphics(g));
 
    markDirty(currentContext, g, x, y, w, h);
 }
@@ -690,7 +690,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 #ifdef SKIA_H
 // Darkens the screen
 static void fadeScreen(Context currentContext, int32 amount) {
-    skia_fillRect(0, 0, 0, screen.screenW, screen.screenH,  amount << 24);
+    skia_fillRect(SKIA_SCREEN_SURFACE_ID, 0, 0, screen.screenW, screen.screenH,  amount << 24);
     currentContext->dirtyX1 = 0;
     currentContext->dirtyY1 = 0;
     currentContext->dirtyX2 = screen.screenW;
@@ -1348,9 +1348,9 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
     startY += Graphics_transY(g);
     endX += Graphics_transX(g);
     endY += Graphics_transY(g);
-    skia_setClip(Get_Clip(g));
-    skia_drawRoundGradient(0, startX, startY, endX, endY, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius, startColor | Graphics_alpha(g), endColor | Graphics_alpha(g), vertical);
-    skia_restoreClip();
+    skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+    skia_drawRoundGradient(skiaSurfaceForGraphics(g), startX, startY, endX, endY, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius, startColor | Graphics_alpha(g), endColor | Graphics_alpha(g), vertical);
+    skia_restoreClip(skiaSurfaceForGraphics(g));
 
     markDirty(currentContext, g, startX, startY, endX - startX, endY - startY);
 }
@@ -1406,7 +1406,7 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
       Pixel* data = ((Pixel*)ARRAYOBJ_START(dataObj)) + offset;
       int32 count = w * h;
 
-      if (skia_getsetRGB(0, (void*) data, offset, x, y, w, h, isGet) == 1) {
+      if (skia_getsetRGB(skiaSurfaceForGraphics(g), (void*) data, offset, x, y, w, h, isGet) == 1) {
          return count;
       }
    }
