@@ -525,6 +525,8 @@ endif(NOT MSVC)
 if(TCVM_ENABLE_SKIA)
   set(TC_SKIA_SOURCES
     ${TC_SRCDIR}/nm/ui/skia/skia.cpp
+    ${TC_SRCDIR}/nm/ui/skia/skia_surface.cpp
+    ${TC_SRCDIR}/nm/ui/skia/skia_primitives.cpp
   )
 endif(TCVM_ENABLE_SKIA)
 
