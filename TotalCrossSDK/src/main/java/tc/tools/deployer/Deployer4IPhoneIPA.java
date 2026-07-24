@@ -73,6 +73,18 @@ public class Deployer4IPhoneIPA {
 
   public static boolean isUsingMParam;
 
+  public static void resetIosDeploymentState() {
+    buildIPA = false;
+    certStorePath = null;
+    mobileProvision = null;
+    appleCertStore = null;
+    iosKeyStore = null;
+    iosDistributionCertificate = null;
+    Provision = null;
+    Settings.iosCertDate = null;
+    isUsingMParam = false;
+  }
+
   /**
    * Resolves the default iOS signing paths without opening credentials or changing user files.
    * This operation is safe to repeat before conversion and packaging.

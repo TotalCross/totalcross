@@ -67,6 +67,7 @@ public class Deploy {
       configureLogging(args);
       DeployLogger.debug("Command line: " + Utils.toString(args));
       DeploySettings.init();
+      Deployer4IPhoneIPA.resetIosDeploymentState();
 
       checkClasspath();
       addJars();

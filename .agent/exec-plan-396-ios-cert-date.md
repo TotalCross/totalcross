@@ -62,7 +62,7 @@ The `git merge-base --is-ancestor` command must exit with status zero while the 
 - [x] (2026-07-22T00:16:06-03:00) Milestone 1: `IOSCertDateDeploymentTest.writesCertificateDateBeforeTczGeneration` reproduces the missing TCZ value using the versioned dummy materials; the runtime search confirmed that no consumer converts `iosCertDate` into `Settings.iosCertDate`.
 - [x] (2026-07-24T16:52:31-03:00) Milestone 2: preserved the historical provisioning-profile expiration semantics, documented the null behavior for unavailable metadata, and added focused policy tests without changing deployment ordering.
 - [x] (2026-07-24T17:00:06-03:00) Milestone 3: separated iOS metadata discovery from packaging side effects, resolved default paths before conversion, and preserved the selected date during later IPA initialization.
-- [ ] Milestone 4: guarantee serialization, loading, and state cleanup across deployments executed in the same JVM.
+- [x] (2026-07-24T17:09:27-03:00) Milestone 4: added runtime loading of `tcparms.bin`, preserved the existing parameter format, and cleared iOS state across deployments in the same JVM.
 - [ ] Milestone 5: validate the artifact and runtime through an iOS smoke deployment, then consolidate documentation, evidence, and the retrospective.
 
 ## Current Architecture and Scope
@@ -77,7 +77,7 @@ The repository combines the Java SDK, class converter, and native runtime. This 
 
 `TotalCrossSDK/src/main/java/totalcross/sys/Settings.java` declares `public static Time iosCertDate`. `Time` is the TotalCross type used to represent date and time. This fix must preserve the public API and its source and binary compatibility.
 
-The `tcparms.bin` consumer still needs to be confirmed. Search for `tcparms.bin`, `iosCertDate`, `activationServerURI`, `appVersion`, and the routine that parses `key=value` pairs. If loading already exists, the milestone must only prove its behavior. If `iosCertDate` loading is absent, the scope expands to include the smallest possible change in the loader that already handles neighboring parameters.
+The `tcparms.bin` consumer is `totalcross.sys.Settings.loadDeploymentParameters()`, which reads the resource through `Vm.getFile`, parses the existing `key=value` format, and assigns `Settings.iosCertDate`. `MainWindow` invokes it during runtime startup before application-specific constructor logic. Older runtimes and applications without the parameter remain compatible because absence leaves the field `null`.
 
 The probable defective flow is:
 
@@ -236,7 +236,7 @@ This commit may be combined with the functional commit when the documentation is
 
 - Observation: the initial analysis confirmed the producer of `tcparms.bin`, but had not yet confirmed the consumer that assigns `Settings.iosCertDate`. Evidence: this gap initially kept Milestone 1 open and prevented the issue from being considered resolved merely because the key existed in the TCZ.
 
-- Observation: the runtime has no specific `tcparms.bin` consumer and no assignment to `Settings.iosCertDate`. Evidence: searching for `tcparms`, `iosCertDate`, `activationServerURI`, and `appVersion` under `TotalCrossVM/src` found only the generic TCZ resource loader in `TotalCrossVM/src/util/tcz.c` (`tczFindName` and `tczGetFile`); there is no key/value parser, conversion to `Time`, or corresponding field in `TTCSettings`.
+- Observation: the native VM has no specific `tcparms.bin` consumer or `TTCSettings` field for `iosCertDate`; the smallest compatible consumer belongs in the Java SDK layer. Evidence: the search under `TotalCrossVM/src` found only the generic TCZ resource loader, so `Settings.loadDeploymentParameters()` uses the existing `Vm.getFile` bridge and is invoked by `MainWindow`.
 
 - Observation: deployment generates the TCZ before attempting to open the IPA template. Evidence: the focused test wrote `TotalCrossSDK/IOSDateFixture.tcz`; the later packaging attempt stopped because `TotalCrossSDK/dist/vm/ios/TotalCross.ipa` does not exist. The regression assertion reached `tcparms.bin` and failed only because the `iosCertDate` key was absent.
 
@@ -269,6 +269,10 @@ Move resolved discoveries that no longer affect future work to `.agent/archive/3
 - Decision: return `null` when the provisioning profile or its expiration metadata is absent or cannot be converted to `Time`; dummy signing material and external signing must not be represented as a final validity date. Rationale: no reliable profile expiration exists in those cases, and an arbitrary or stale date would be misleading. Date/Author: 2026-07-24 / Milestone 2.
 
 - Decision: resolve default iOS paths and read the provisioning profile before `J2TC.process()`, while retaining PKCS#12 loading and IPA creation after conversion. Rationale: serialization needs the profile date, but conversion must not trigger signing or modify credentials; the later initializer reuses the already-read profile and does not replace the selected date. Date/Author: 2026-07-24 / Milestone 3.
+
+- Decision: load `tcparms.bin` in Java through `Vm.getFile` and `Settings.loadDeploymentParameters()`, invoked from `MainWindow`; accept the existing `Time.toIso8601()` representation, leave the field `null` when absent, and ignore invalid values with a concise debug message. Rationale: the native VM has no neighboring key/value parameter loader or `TTCSettings` field, while the Java resource bridge already supports TCZ entries and preserves compatibility with older artifacts. Date/Author: 2026-07-24 / Milestone 4.
+
+- Decision: clear iOS deployment state before every `Deploy`, including non-iOS targets. Rationale: static deployer fields and `Settings.iosCertDate` otherwise survive sequential deployments in the same JVM and can leak an earlier iOS value. Date/Author: 2026-07-24 / Milestone 4.
 
 ## Validation and Acceptance
 
@@ -371,6 +375,8 @@ Milestone 2 completed: `Deployer4IPhoneIPA` now isolates the historical provisio
 
 Milestone 3 completed: `Deploy` now initializes iOS paths and reads the provisioning profile before `J2TC.process()`, while the PKCS#12 load and IPA packaging remain later. `IOSCertDateDeploymentTest` passed and verified both the `tcparms.bin` value and repeated discovery. The focused command passed on 2026-07-24; the compact log is at `TotalCrossSDK/agent-logs/20260724-170006-test-agent.log`. Runtime loading and cross-deployment state isolation remain deferred to milestones 4–5.
 
+Milestone 4 completed: `Settings.loadDeploymentParameters()` reads `tcparms.bin` through `Vm.getFile`, parses the existing ISO-8601-like representation, assigns a `Time`, and clears/ignores absent or invalid values. `Deploy` now resets iOS state before parsing each execution. Focused runtime-parameter, iOS deployment, state-policy, and SDK `dist -x test` validations passed; logs are `TotalCrossSDK/agent-logs/20260724-170800-test-agent.log`, `TotalCrossSDK/agent-logs/20260724-170822-test-agent.log`, `TotalCrossSDK/agent-logs/20260724-170927-test-agent.log`, and `TotalCrossSDK/agent-logs/20260724-170834-dist-agent.log`. A final iOS runtime smoke deployment remains deferred to milestone 5.
+
 When closing each milestone, record a short factual summary here containing the delivered behavior, validation performed, associated evidence, and any limitation that affects the next milestone. Move completed details to the history file when they begin to make the active plan difficult to resume.
 
 At completion, the editorial report must include:
@@ -398,3 +404,5 @@ The final retrospective must clearly distinguish delivered behavior from merely 
 2026-07-24: Milestone 2 preserved the historical provisioning-profile expiration contract, added null-safe policy coverage, and aligned the public Javadoc. No deployment ordering or runtime validation was performed.
 
 2026-07-24: Milestone 3 moved profile metadata discovery before TCZ conversion without moving PKCS#12 loading or IPA packaging. The focused iOS deployment test passed; runtime loading and broader builds were not run.
+
+2026-07-24: Milestone 4 completed the Java-side runtime consumer and deployment state cleanup. The existing `tcparms.bin` representation was preserved, invalid values are non-fatal, and focused tests plus the SDK distribution build passed. iOS runtime smoke validation remains for milestone 5.
