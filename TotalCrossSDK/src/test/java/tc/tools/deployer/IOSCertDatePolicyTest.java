@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import tc.tools.deployer.ipa.MobileProvision;
+import totalcross.sys.Settings;
 import totalcross.sys.Time;
 
 class IOSCertDatePolicyTest {
@@ -37,6 +38,19 @@ class IOSCertDatePolicyTest {
 
     assertNull(Deployer4IPhoneIPA.getProvisioningProfileExpirationDate(provision));
     assertNull(Deployer4IPhoneIPA.getProvisioningProfileExpirationDate(null));
+  }
+
+  @Test
+  void clearsIosDeploymentState() {
+    Settings.iosCertDate = new Time(20300102, 0);
+    Deployer4IPhoneIPA.certStorePath = "stale";
+    Deployer4IPhoneIPA.mobileProvision = new java.io.File("stale.mobileprovision");
+
+    Deployer4IPhoneIPA.resetIosDeploymentState();
+
+    assertNull(Settings.iosCertDate);
+    assertNull(Deployer4IPhoneIPA.certStorePath);
+    assertNull(Deployer4IPhoneIPA.mobileProvision);
   }
 
   private static String provisioningProfile(String expirationDate) {
