@@ -63,7 +63,7 @@ The `git merge-base --is-ancestor` command must exit with status zero while the 
 - [x] (2026-07-24T16:52:31-03:00) Milestone 2: preserved the historical provisioning-profile expiration semantics, documented the null behavior for unavailable metadata, and added focused policy tests without changing deployment ordering.
 - [x] (2026-07-24T17:00:06-03:00) Milestone 3: separated iOS metadata discovery from packaging side effects, resolved default paths before conversion, and preserved the selected date during later IPA initialization.
 - [x] (2026-07-24T17:09:27-03:00) Milestone 4: added runtime loading of `tcparms.bin`, preserved the existing parameter format, and cleared iOS state across deployments in the same JVM.
-- [ ] Milestone 5: validate the artifact and runtime through an iOS smoke deployment, then consolidate documentation, evidence, and the retrospective.
+- [x] (2026-07-24T17:15:48-03:00) Milestone 5: validated the generated TCZ and runtime loader through a final harness, verified the null case, and consolidated documentation, evidence, and the retrospective; the unavailable IPA template prevented a complete IPA smoke.
 
 ## Current Architecture and Scope
 
@@ -248,6 +248,8 @@ This commit may be combined with the functional commit when the documentation is
 
 - Observation: repeated metadata discovery is deterministic for the same resolved profile. Evidence: `IOSCertDateDeploymentTest` invokes `iosMetadataInit()` a second time and compares the ISO-8601 value after the TCZ has been generated.
 
+- Observation: the final TCZ/runtime harness confirms the complete Java-side path without requiring an IPA template. Evidence: `IOSCertDateArtifactRuntimeTest` generates a TCZ, extracts `tcparms.bin`, passes its bytes through `Settings.loadDeploymentParameters()`, and then verifies that a parameter set without `iosCertDate` leaves the field `null`.
+
 Move resolved discoveries that no longer affect future work to `.agent/archive/396-settingsioscertdate-is-empty-history.md` when closing a milestone.
 
 ## Decision Log
@@ -273,6 +275,8 @@ Move resolved discoveries that no longer affect future work to `.agent/archive/3
 - Decision: load `tcparms.bin` in Java through `Vm.getFile` and `Settings.loadDeploymentParameters()`, invoked from `MainWindow`; accept the existing `Time.toIso8601()` representation, leave the field `null` when absent, and ignore invalid values with a concise debug message. Rationale: the native VM has no neighboring key/value parameter loader or `TTCSettings` field, while the Java resource bridge already supports TCZ entries and preserves compatibility with older artifacts. Date/Author: 2026-07-24 / Milestone 4.
 
 - Decision: clear iOS deployment state before every `Deploy`, including non-iOS targets. Rationale: static deployer fields and `Settings.iosCertDate` otherwise survive sequential deployments in the same JVM and can leak an earlier iOS value. Date/Author: 2026-07-24 / Milestone 4.
+
+- Decision: close the issue with a TCZ/runtime smoke harness when the checked-out IPA template is unavailable, while recording IPA/on-device execution as an environmental limitation. Rationale: the harness traverses the same generated artifact and runtime loader, and no production credentials are required; inventing or fetching a production IPA would exceed the task scope. Date/Author: 2026-07-24 / Milestone 5.
 
 ## Validation and Acceptance
 
@@ -377,6 +381,8 @@ Milestone 3 completed: `Deploy` now initializes iOS paths and reads the provisio
 
 Milestone 4 completed: `Settings.loadDeploymentParameters()` reads `tcparms.bin` through `Vm.getFile`, parses the existing ISO-8601-like representation, assigns a `Time`, and clears/ignores absent or invalid values. `Deploy` now resets iOS state before parsing each execution. Focused runtime-parameter, iOS deployment, state-policy, and SDK `dist -x test` validations passed; logs are `TotalCrossSDK/agent-logs/20260724-170800-test-agent.log`, `TotalCrossSDK/agent-logs/20260724-170822-test-agent.log`, `TotalCrossSDK/agent-logs/20260724-170927-test-agent.log`, and `TotalCrossSDK/agent-logs/20260724-170834-dist-agent.log`. A final iOS runtime smoke deployment remains deferred to milestone 5.
 
+Milestone 5 completed: `IOSCertDateArtifactRuntimeTest` generated `TotalCrossSDK/IOSDateRuntimeFixture.tcz`, extracted `tcparms.bin`, confirmed the historical provisioning profile date, loaded it through `Settings.loadDeploymentParameters()`, and verified the missing-key case remains `null`. The focused command passed on 2026-07-24; compact log: `TotalCrossSDK/agent-logs/20260724-171548-test-agent.log`. The local IPA template `TotalCrossSDK/dist/vm/ios/TotalCross.ipa` is absent, so IPA signing and on-device execution were not observed. The editorial report was added under `.agent/reports/`.
+
 When closing each milestone, record a short factual summary here containing the delivered behavior, validation performed, associated evidence, and any limitation that affects the next milestone. Move completed details to the history file when they begin to make the active plan difficult to resume.
 
 At completion, the editorial report must include:
@@ -406,3 +412,5 @@ The final retrospective must clearly distinguish delivered behavior from merely 
 2026-07-24: Milestone 3 moved profile metadata discovery before TCZ conversion without moving PKCS#12 loading or IPA packaging. The focused iOS deployment test passed; runtime loading and broader builds were not run.
 
 2026-07-24: Milestone 4 completed the Java-side runtime consumer and deployment state cleanup. The existing `tcparms.bin` representation was preserved, invalid values are non-fatal, and focused tests plus the SDK distribution build passed. iOS runtime smoke validation remains for milestone 5.
+
+2026-07-24: Milestone 5 completed the TCZ-to-runtime smoke harness and final documentation. The generated artifact and null case passed; IPA/on-device validation remains unobserved because the local IPA template is absent.
