@@ -4,6 +4,7 @@
 
 package tc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -45,6 +46,11 @@ class IOSCertDateDeploymentTest {
     assertNotNull(DeploySettings.tczs, "Deploy must write the TCZ before attempting to package the IPA");
     assertTrue(DeploySettings.tczs.length > 0, "Deploy must report the generated TCZ");
     assertNotNull(Settings.iosCertDate, "The configured iOS signing material must provide a date");
+
+    String discoveredDate = Settings.iosCertDate.toIso8601();
+    Deployer4IPhoneIPA.iosMetadataInit();
+    assertEquals(discoveredDate, Settings.iosCertDate.toIso8601(),
+        "Repeated iOS metadata discovery must preserve the provisioning profile expiration date");
 
     String parameters = readTczEntry(Path.of(DeploySettings.tczs[0]), "tcparms.bin");
     assertNotNull(parameters, "The generated application TCZ must contain tcparms.bin");

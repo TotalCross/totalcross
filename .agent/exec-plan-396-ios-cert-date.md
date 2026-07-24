@@ -61,7 +61,7 @@ The `git merge-base --is-ancestor` command must exit with status zero while the 
 - [x] (2026-07-21T23:54:34-03:00) This ExecPlan was restructured according to the resumable-plan standard supplied by the user, with a resume protocol, supporting files, milestones, and graduated validation.
 - [x] (2026-07-22T00:16:06-03:00) Milestone 1: `IOSCertDateDeploymentTest.writesCertificateDateBeforeTczGeneration` reproduces the missing TCZ value using the versioned dummy materials; the runtime search confirmed that no consumer converts `iosCertDate` into `Settings.iosCertDate`.
 - [x] (2026-07-24T16:52:31-03:00) Milestone 2: preserved the historical provisioning-profile expiration semantics, documented the null behavior for unavailable metadata, and added focused policy tests without changing deployment ordering.
-- [ ] Milestone 3: separate iOS metadata discovery from packaging side effects and correct the ordering before `J2TC.process()`.
+- [x] (2026-07-24T17:00:06-03:00) Milestone 3: separated iOS metadata discovery from packaging side effects, resolved default paths before conversion, and preserved the selected date during later IPA initialization.
 - [ ] Milestone 4: guarantee serialization, loading, and state cleanup across deployments executed in the same JVM.
 - [ ] Milestone 5: validate the artifact and runtime through an iOS smoke deployment, then consolidate documentation, evidence, and the retrospective.
 
@@ -244,6 +244,10 @@ This commit may be combined with the functional commit when the documentation is
 
 - Observation: the policy can be tested without signing material by constructing a minimal `MobileProvision` plist. Evidence: `IOSCertDatePolicyTest` verifies the profile expiration, a profile without `ExpirationDate`, and an absent profile.
 
+- Observation: the ordering fix does not need to load the PKCS#12 store before conversion. Evidence: `Deploy` resolves the default paths and `iosMetadataInit()` reads only the provisioning profile; `iosKeystoreInit()` remains after `J2TC.process()` for IPA packaging.
+
+- Observation: repeated metadata discovery is deterministic for the same resolved profile. Evidence: `IOSCertDateDeploymentTest` invokes `iosMetadataInit()` a second time and compares the ISO-8601 value after the TCZ has been generated.
+
 Move resolved discoveries that no longer affect future work to `.agent/archive/396-settingsioscertdate-is-empty-history.md` when closing a milestone.
 
 ## Decision Log
@@ -263,6 +267,8 @@ Move resolved discoveries that no longer affect future work to `.agent/archive/3
 - Decision: `Settings.iosCertDate` continues to represent the expiration date from the iOS provisioning profile, preserving the historical producer behavior even when the X.509 certificate has a different validity interval. Rationale: the existing assignment uses `Provision.expirationDate`, repository history provides no contrary consumer contract, and the user-facing requirement is to maintain this behavior. Date/Author: 2026-07-24 / Milestone 2.
 
 - Decision: return `null` when the provisioning profile or its expiration metadata is absent or cannot be converted to `Time`; dummy signing material and external signing must not be represented as a final validity date. Rationale: no reliable profile expiration exists in those cases, and an arbitrary or stale date would be misleading. Date/Author: 2026-07-24 / Milestone 2.
+
+- Decision: resolve default iOS paths and read the provisioning profile before `J2TC.process()`, while retaining PKCS#12 loading and IPA creation after conversion. Rationale: serialization needs the profile date, but conversion must not trigger signing or modify credentials; the later initializer reuses the already-read profile and does not replace the selected date. Date/Author: 2026-07-24 / Milestone 3.
 
 ## Validation and Acceptance
 
@@ -363,6 +369,8 @@ Milestone 1 completed: `TotalCrossSDK/src/test/java/tc/IOSCertDateDeploymentTest
 
 Milestone 2 completed: `Deployer4IPhoneIPA` now isolates the historical provisioning-profile expiration conversion in a null-safe helper, and `Settings.iosCertDate` documents that contract. `IOSCertDatePolicyTest` covers a known profile expiration, missing expiration metadata, and an absent profile. The focused command passed on 2026-07-24; the compact log is at `TotalCrossSDK/agent-logs/20260724-165231-test-agent.log`. Deploy ordering, TCZ serialization, runtime loading, and smoke deployment remain deferred to milestones 3–5.
 
+Milestone 3 completed: `Deploy` now initializes iOS paths and reads the provisioning profile before `J2TC.process()`, while the PKCS#12 load and IPA packaging remain later. `IOSCertDateDeploymentTest` passed and verified both the `tcparms.bin` value and repeated discovery. The focused command passed on 2026-07-24; the compact log is at `TotalCrossSDK/agent-logs/20260724-170006-test-agent.log`. Runtime loading and cross-deployment state isolation remain deferred to milestones 4–5.
+
 When closing each milestone, record a short factual summary here containing the delivered behavior, validation performed, associated evidence, and any limitation that affects the next milestone. Move completed details to the history file when they begin to make the active plan difficult to resume.
 
 At completion, the editorial report must include:
@@ -388,3 +396,5 @@ The final retrospective must clearly distinguish delivered behavior from merely 
 2026-07-22: Milestone 1 was completed with an automated red reproduction and identification of the actual runtime path. The reproduction uses only the dummy materials already versioned under `TotalCrossSDK/etc/tools/ipa`; the missing IPA template prevents later packaging, but the failure occurs after the TCZ is generated and does not prevent inspection of the parameter.
 
 2026-07-24: Milestone 2 preserved the historical provisioning-profile expiration contract, added null-safe policy coverage, and aligned the public Javadoc. No deployment ordering or runtime validation was performed.
+
+2026-07-24: Milestone 3 moved profile metadata discovery before TCZ conversion without moving PKCS#12 loading or IPA packaging. The focused iOS deployment test passed; runtime loading and broader builds were not run.

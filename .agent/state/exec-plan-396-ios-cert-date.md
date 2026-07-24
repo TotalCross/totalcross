@@ -6,18 +6,18 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Estado do ExecPlan 396
 
-Milestone ativo: nenhum; milestone 2 concluído. Próximo milestone: 3, separar descoberta de metadata iOS e corrigir a ordem antes de `J2TC.process()`.
+Milestone ativo: nenhum; milestone 3 concluído. Próximo milestone: 4, completar serialização, leitura e isolamento do estado entre deploys.
 
-Último commit lógico: `fix(deploy,ios): preserve provisioning profile expiration` (HEAD do milestone 2).
+Último commit lógico: `fix(deploy,ios): resolve certificate date before conversion` (HEAD do milestone 3).
 
-Caminhos alterados no milestone 2: `TotalCrossSDK/src/main/java/tc/tools/deployer/Deployer4IPhoneIPA.java`, `TotalCrossSDK/src/main/java/totalcross/sys/Settings.java`, `TotalCrossSDK/src/test/java/tc/tools/deployer/IOSCertDatePolicyTest.java`, `.agent/exec-plan-396-ios-cert-date.md`, `.agent/state/exec-plan-396-ios-cert-date.md` e `.agent/evidence/396-settingsioscertdate-is-empty.jsonl`.
+Caminhos alterados no milestone 3: `TotalCrossSDK/src/main/java/tc/Deploy.java`, `TotalCrossSDK/src/main/java/tc/tools/deployer/Deployer4IPhoneIPA.java`, `TotalCrossSDK/src/test/java/tc/IOSCertDateDeploymentTest.java`, `.agent/exec-plan-396-ios-cert-date.md`, `.agent/state/exec-plan-396-ios-cert-date.md` e `.agent/evidence/396-settingsioscertdate-is-empty.jsonl`.
 
-Validação executada: em `TotalCrossSDK`, `./gradlew-agent test --tests tc.tools.deployer.IOSCertDatePolicyTest --warning-mode=none --console=plain`. Passou; resumo em `TotalCrossSDK/agent-logs/20260724-165231-test-agent.log`.
+Validação executada: em `TotalCrossSDK`, `./gradlew-agent test --tests tc.IOSCertDateDeploymentTest --warning-mode=none --console=plain`. Passou; confirmou a presença de `iosCertDate` em `tcparms.bin` e a idempotência da descoberta; resumo em `TotalCrossSDK/agent-logs/20260724-170006-test-agent.log`.
 
-Validações adiadas: `Deploy.java`, ordem de `J2TC.process()`, serialização do TCZ, leitura no runtime, isolamento entre execuções, build amplo do SDK e smoke deploy iOS pertencem aos milestones posteriores e não foram executados.
+Validações adiadas: leitura de `tcparms.bin` no runtime, isolamento entre execuções, build amplo do SDK e smoke deploy iOS pertencem aos milestones posteriores e não foram executados.
 
-Decisões e descobertas ativas: `Settings.iosCertDate` mantém a semântica histórica de expiração do provisioning profile; profile ausente, expiração ausente ou conversão inválida resultam em `null`; a data ainda é descoberta depois de `J2TC.process()` na baseline; o runtime não tem parser de `tcparms.bin` nem atribuição a `Settings.iosCertDate`.
+Decisões e descobertas ativas: `Settings.iosCertDate` mantém a semântica histórica de expiração do provisioning profile; profile ausente, expiração ausente ou conversão inválida resultam em `null`; a descoberta agora ocorre antes de `J2TC.process()` apenas para iOS; `iosKeystoreInit()` e o empacotamento continuam depois da conversão; o runtime ainda não tem parser de `tcparms.bin` nem atribuição a `Settings.iosCertDate`.
 
-Fora de escopo deliberado: `TotalCrossSDK/src/main/java/tc/Deploy.java` e `J2TC.java` neste milestone; `TotalCrossVM`, sem alteração até o milestone 4; artefatos gerados, incluindo `TotalCrossSDK/IOSDateFixture.tcz`.
+Fora de escopo deliberado: `TotalCrossSDK/src/main/java/tc/tools/converter/J2TC.java` e `TotalCrossVM` neste milestone; carregamento no runtime e isolamento completo de estado ficam para o milestone 4; artefatos gerados, incluindo `TotalCrossSDK/IOSDateFixture.tcz`.
 
 Comando de retomada: `git switch fix/396-settingsioscertdate-is-empty && git status --short -- TotalCrossSDK/src/test/java/tc/IOSCertDateDeploymentTest.java .agent`.
