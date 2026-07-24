@@ -73,6 +73,32 @@ public class Deployer4IPhoneIPA {
 
   public static boolean isUsingMParam;
 
+  /**
+   * Resolves the default iOS signing paths without opening credentials or changing user files.
+   * This operation is safe to repeat before conversion and packaging.
+   */
+  public static void initializeIosPaths(String etcDir) {
+    if (certStorePath == null && etcDir != null) {
+      certStorePath = etcDir + "tools" + File.separator + "ipa";
+      buildIPA = true;
+      mobileProvision = new File(certStorePath, "dummy.mobileprovision");
+      appleCertStore = new File(certStorePath, "dummyStore.p12");
+    }
+  }
+
+  /**
+   * Reads only the already resolved provisioning profile metadata. It does not load the PKCS#12
+   * store, sign an IPA, or modify any input file.
+   */
+  public static void iosMetadataInit() throws Exception {
+    Security.addProvider(new BouncyCastleProvider());
+    Provision = mobileProvision == null ? null : MobileProvision.readFromFile(mobileProvision);
+    Settings.iosCertDate = getProvisioningProfileExpirationDate(Provision);
+    if (Settings.iosCertDate != null) {
+      DeployLogger.verbose("iOS provisioning profile expiration date: " + Settings.iosCertDate.getSQLString());
+    }
+  }
+
   public Deployer4IPhoneIPA() throws Exception {
     if (mobileProvision == null || appleCertStore == null || iosKeyStore == null
         || iosDistributionCertificate == null) {
@@ -371,8 +397,12 @@ public class Deployer4IPhoneIPA {
       }
       iosKeyStore = ks;
       iosDistributionCertificate = new org.bouncycastle.cert.X509CertificateHolder(storecert.getEncoded());
-      Provision = mobileProvision == null ? null : MobileProvision.readFromFile(mobileProvision);
-      Settings.iosCertDate = getProvisioningProfileExpirationDate(Provision);
+      if (Provision == null && mobileProvision != null) {
+        Provision = MobileProvision.readFromFile(mobileProvision);
+      }
+      if (Settings.iosCertDate == null) {
+        Settings.iosCertDate = getProvisioningProfileExpirationDate(Provision);
+      }
       if (Settings.iosCertDate != null) {
         DeployLogger.verbose("iOS provisioning profile expiration date: " + Settings.iosCertDate.getSQLString());
       }

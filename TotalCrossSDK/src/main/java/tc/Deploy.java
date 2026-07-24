@@ -75,7 +75,10 @@ public class Deploy {
       String fileName = args[0];
       int options = parseOptions(args);
 
-      Deployer4IPhoneIPA.iosKeystoreInit();
+      if ((options & BUILD_IPHONE) != 0) {
+        Deployer4IPhoneIPA.initializeIosPaths(DeploySettings.etcDir);
+        Deployer4IPhoneIPA.iosMetadataInit();
+      }
 
       // convert the jar file into a tcz file
       J2TC.process(fileName, options);
@@ -123,14 +126,7 @@ public class Deploy {
           new Deployer4Applet();
         }
         if ((options & BUILD_IPHONE) != 0) {
-          if (Deployer4IPhoneIPA.certStorePath == null) { // Use default
-            Deployer4IPhoneIPA.certStorePath = DeploySettings.etcDir + "tools"+ File.separator + "ipa";
-            Deployer4IPhoneIPA.buildIPA = true;
-            Deployer4IPhoneIPA.mobileProvision =
-                    new File(Deployer4IPhoneIPA.certStorePath, "dummy.mobileprovision");
-            Deployer4IPhoneIPA.appleCertStore =
-                    new File(Deployer4IPhoneIPA.certStorePath, "dummyStore.p12");
-          }
+          Deployer4IPhoneIPA.initializeIosPaths(DeploySettings.etcDir);
           if (Deployer4IPhoneIPA.appleCertStore == null) {
             throw new DeployerException(
                     "Failed to build the ipa for iOS distribution: Couldn't find the certificate store at: "
