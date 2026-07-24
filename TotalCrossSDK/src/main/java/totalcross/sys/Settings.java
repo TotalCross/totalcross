@@ -1054,7 +1054,10 @@ public final class Settings {
   @Deprecated
   public static String pushTokenAndroid;
 
-  /** The due date of the iOS certificate. You can use it to inform your costumers when its time to update the software. */
+  /**
+   * The expiration date of the iOS provisioning profile used during deployment. It is null when
+   * the deployment does not provide reliable provisioning profile metadata.
+   */
   public static Time iosCertDate;
 
   /** Field set to true if the program have aborted on last run. */

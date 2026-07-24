@@ -49,6 +49,7 @@ import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.sys.Time;
 import totalcross.util.Hashtable;
+import totalcross.util.InvalidDateException;
 import totalcross.util.Vector;
 
 /**
@@ -370,9 +371,22 @@ public class Deployer4IPhoneIPA {
       }
       iosKeyStore = ks;
       iosDistributionCertificate = new org.bouncycastle.cert.X509CertificateHolder(storecert.getEncoded());
-      Provision = MobileProvision.readFromFile(mobileProvision);
-      Settings.iosCertDate = new Time(Provision.expirationDate.getDate().getTime(), false);
-      DeployLogger.verbose("iOS Certificate expiration date: " + Settings.iosCertDate.getSQLString());
+      Provision = mobileProvision == null ? null : MobileProvision.readFromFile(mobileProvision);
+      Settings.iosCertDate = getProvisioningProfileExpirationDate(Provision);
+      if (Settings.iosCertDate != null) {
+        DeployLogger.verbose("iOS provisioning profile expiration date: " + Settings.iosCertDate.getSQLString());
+      }
+    }
+  }
+
+  static Time getProvisioningProfileExpirationDate(MobileProvision provision) {
+    if (provision == null || provision.expirationDate == null) {
+      return null;
+    }
+    try {
+      return new Time(provision.expirationDate.getDate().getTime(), false);
+    } catch (InvalidDateException e) {
+      return null;
     }
   }
 }
