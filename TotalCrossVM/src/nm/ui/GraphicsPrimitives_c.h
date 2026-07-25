@@ -125,10 +125,11 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    // post the event to the vm
    if (mainClass != null)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1); //XXX
-   #ifdef ANDROID
+#ifdef ANDROID
    rotationTraceStage("repaint_active_windows", newWidth, newHeight);
-   #endif
+#else
    repaintActiveWindows(mainContext);
+#endif
 #ifdef ANDROID
    rotationTraceStage("screen_change_returned", newWidth, newHeight);
    rotationTraceEmitSummary();
