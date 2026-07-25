@@ -78,6 +78,8 @@ public class RotationRequestCoordinatorTest
 
       assertNotNull(coordinator.accept(2, surface, 1080, 2220, PORTRAIT, true,
             RotationRequestCoordinator.KEYBOARD_VISIBLE, RotationRequestCoordinator.LIFECYCLE_NORMAL));
+      assertEquals(RotationRequestCoordinator.KEYBOARD_VISIBLE,
+            coordinator.getLastAccepted().keyboardCategory);
    }
 
    @Test

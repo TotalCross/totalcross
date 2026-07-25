@@ -414,13 +414,19 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             rDirty.right = request.width;
             rDirty.bottom = request.height;
             
-            traceRotationStage(generation, "sip_hide_requested", request.width, request.height);
-            setSIP(SIP_HIDE,false);
+            if (request.keyboardCategory == RotationRequestCoordinator.KEYBOARD_VISIBLE)
+            {
+               traceRotationStage(generation, "sip_hide_requested", request.width, request.height);
+               setSIP(SIP_HIDE,false);
+            }
             if (isRotationTraceEnabled())
                nativeRotationTraceScreenChanged(generation, request.width, request.height);
             _postEvent(SCREEN_CHANGED, request.width, request.height, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
-            traceRotationStage(generation, "sip_close_event_requested", request.width, request.height);
-            sendCloseSIPEvent(); // makes first screen rotation work
+            if (request.keyboardCategory == RotationRequestCoordinator.KEYBOARD_VISIBLE)
+            {
+               traceRotationStage(generation, "sip_close_event_requested", request.width, request.height);
+               sendCloseSIPEvent(); // makes first screen rotation work
+            }
          }
       });
    }
