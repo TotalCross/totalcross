@@ -106,6 +106,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    private static final String ROTATION_TRACE_TAG = "TotalCrossRotation";
    private static int rotationGeneration;
+   private static final RotationRequestCoordinator rotationRequestCoordinator = new RotationRequestCoordinator();
+   private static int rotationDuplicateDrops;
+   private static int rotationLifecycleGeneration;
 
    public static boolean canQuit = true;
    public static Launcher4A instance;
@@ -298,7 +301,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          lastSurface = surface;
          lastScreenW = w;
          lastScreenH = h;
-         sendScreenChangeEvent(false);
+         sendScreenChangeEvent(false, RotationRequestCoordinator.LIFECYCLE_NORMAL);
       }
    }
    
@@ -310,7 +313,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       Rect rect = holder.getSurfaceFrame();
       int screenHeight = rect.bottom;
       int currentOrientation = getOrientation();
-      boolean rotated = currentOrientation != lastOrientation;
+      boolean orientationChanged = currentOrientation != lastOrientation;
+      boolean rotated = orientationChanged;
       lastOrientation = currentOrientation;
       
       if (h < lastScreenH && Loader.isFullScreen && lastScreenH == screenHeight && appTitleH == 0) // 1: surfaceChanged. 0 -> 480. displayH: 480  =>  2: surfaceChanged. 480 -> 455. displayH: 480
@@ -322,12 +326,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          instance.nativeInitSize(null,-999,0); // signal vm that the keyboard will hide
          android.view.Surface surface = holder == null ? lastSurface : holder.getSurface();
-         if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
+         if (w != lastScreenW || h != lastScreenH || surface != lastSurface || orientationChanged)
          {
             lastSurface = surface;
             lastScreenW = w;
             lastScreenH = h;
-            sendScreenChangeEvent(true);
+            sendScreenChangeEvent(true, RotationRequestCoordinator.LIFECYCLE_NORMAL);
          }
       }
    }
@@ -344,10 +348,26 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                + " ts_ns=" + SystemClock.elapsedRealtimeNanos() + " width=" + width + " height=" + height);
    }
 
-   private void sendScreenChangeEvent(final boolean surfaceCallback)
+   private static int nextLifecycleCategory(int category)
    {
-      if (!loader.isInteractive()) {
+      return category == RotationRequestCoordinator.LIFECYCLE_NORMAL
+            ? category : category * 1000000 + ++rotationLifecycleGeneration;
+   }
+
+   private void sendScreenChangeEvent(final boolean surfaceCallback, final int lifecycleCategory)
+   {
+      boolean interactive = loader.isInteractive();
+      if (!interactive) {
         return;
+      }
+
+      int keyboardCategory = sipVisible ? RotationRequestCoordinator.KEYBOARD_VISIBLE
+            : RotationRequestCoordinator.KEYBOARD_HIDDEN;
+      if (!rotationRequestCoordinator.accept(lastSurface, lastScreenW, lastScreenH, getOrientation(),
+            interactive, keyboardCategory, lifecycleCategory))
+      {
+         rotationDuplicateDrops++;
+         return;
       }
 
       final int generation = ++rotationGeneration;
@@ -950,7 +970,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                 || previousInsets.right != insets.right;
         safeInsets = insets;
         if (changed && eventThread != null && lastSurface != null && lastSurface.isValid() && lastScreenW > 0 && lastScreenH > 0) {
-            sendScreenChangeEvent(false);
+            sendScreenChangeEvent(false, nextLifecycleCategory(RotationRequestCoordinator.LIFECYCLE_SAFE_AREA));
         }
     }
 
@@ -1496,7 +1516,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (eventThread != null && surface != null && surface.isValid() && lastScreenW > 0 && lastScreenH > 0)
       {
          instance.lastSurface = surface;
-         instance.sendScreenChangeEvent(false);
+         instance.sendScreenChangeEvent(false, nextLifecycleCategory(RotationRequestCoordinator.LIFECYCLE_RESUMED));
       }
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
