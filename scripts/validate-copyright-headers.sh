@@ -90,12 +90,14 @@ def list_files_from_environment():
 
 
 def diff_name_status(*args):
-    output = run_git(["diff", "--name-status", "--diff-filter=ACMRT"] + list(args))
+    output = run_git(["diff", "-M", "--name-status", "--diff-filter=ACMRT"] + list(args))
     return parse_name_status(output)
 
 
 def diff_tree_name_status(commit):
-    output = run_git(["diff-tree", "--no-commit-id", "--name-status", "--diff-filter=ACMRT", "-r", commit])
+    output = run_git(
+        ["diff-tree", "-M", "--no-commit-id", "--name-status", "--diff-filter=ACMRT", "-r", commit]
+    )
     return parse_name_status(output)
 
 
