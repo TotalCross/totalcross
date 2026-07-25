@@ -203,6 +203,20 @@ def top_header_lines(body, path):
         return []
 
     suffix = Path(path).suffix
+    if suffix == ".md" and lines[0].strip() == "---":
+        header = []
+        for line in lines[1:]:
+            stripped = line.lstrip()
+            if stripped.strip() == "---":
+                break
+            if stripped.startswith("#") or stripped.strip() == "":
+                header.append(line)
+                if SPDX in line:
+                    return header
+                continue
+            break
+        return header
+
     if suffix in {".md", ".html"} and lines[0].lstrip().startswith("<!--"):
         header = []
         for line in lines:
