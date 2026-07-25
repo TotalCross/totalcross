@@ -139,8 +139,6 @@ def should_check(path):
 
 
 def creation_year(path, status):
-    if status.startswith("A"):
-        return datetime.date.today().year
     output = run_git(
         ["log", "--follow", "--diff-filter=A", "--format=%ad", "--date=format:%Y", "--", path],
         check=False,
@@ -277,7 +275,11 @@ def explain_mismatch(path, status, actual, expected, has_spdx):
         reasons.append(f"expected [{expected_text}] based on creation year {year}")
         return reasons
 
-    if status.startswith("A"):
+    # A path can be reported as added when a rename loses similarity after
+    # subsequent edits. Treat it as genuinely new only when its followed
+    # creation year is the current year; historical paths retain their
+    # original ownership ranges.
+    if status.startswith("A") and year == current_year:
         expected_new = [(current_year, current_year, AMALGAM)]
         if actual != expected_new:
             reasons.append(
