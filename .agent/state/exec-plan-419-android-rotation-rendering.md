@@ -10,6 +10,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Branch: `fix/419-sluggish-interface-rendering-when-rotating-screen`
 - Active milestone: Milestone 1, baseline capture after instrumentation
 - Last logical slice: disabled-by-default structured rotation tracing and trace summarizer
+- Last logical commit: `6faf0224f` (`test(graphics,android): trace rotation rendering stages`)
 - Changed paths: `TotalCrossVM/android/app/src/main/java/totalcross/Launcher4A.java`, `TotalCrossVM/src/event/android/event_c.h`, `TotalCrossVM/src/nm/ui/GraphicsPrimitives_c.h`, `TotalCrossVM/src/nm/ui/android/gfx_Graphics_c.h`, `TotalCrossVM/src/nm/ui/android/rotation_trace.h`, `TotalCrossVM/src/nm/ui/skia/skia.cpp`, `scripts/diagnostics/summarize-rotation-trace.py`
 - Focused validation: synthetic summarizer input passed; `:app:assembleStandardDebug` passed; log `/tmp/tc-rotation-m1-build.log`
 - Device validation: blocked before launch because `adb install -r` returned `INSTALL_FAILED_UID_CHANGED` for the existing `totalcross.android` package; no uninstall or data deletion was performed
