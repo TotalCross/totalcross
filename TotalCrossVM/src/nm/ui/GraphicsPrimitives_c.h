@@ -128,6 +128,7 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    repaintActiveWindows(mainContext);
 #ifdef ANDROID
    rotationTraceStage("screen_change_returned", newWidth, newHeight);
+   rotationTraceEmitSummary();
 #endif
 }
 

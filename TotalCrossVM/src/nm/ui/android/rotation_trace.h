@@ -17,6 +17,7 @@ void rotationTraceEnqueueScreenChanged(int generation, int width, int height);
 int rotationTraceSelectScreenChanged(int width, int height);
 void rotationTraceStage(const char *stage, int width, int height);
 void rotationTraceOnSwap(int width, int height);
+void rotationTraceEmitSummary();
 
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeRotationTraceGeneration
   (JNIEnv *, jobject, jint);

@@ -19,15 +19,12 @@ TRACE_RE = re.compile(
     r"width=(?P<width>-?\d+)\s+height=(?P<height>-?\d+)"
 )
 
-REQUIRED_STAGES = (
+ROTATION_STAGES = (
     "surface_callback_accepted",
     "resize_runnable_scheduled",
     "resize_runnable_started",
     "native_init_size_entered",
     "native_init_size_returned",
-    "native_window_changed",
-    "destroy_egl",
-    "init_gles",
     "init_skia",
     "screen_changed_handled",
     "screen_change_entered",
@@ -71,6 +68,10 @@ def summarize(generations):
             (record["ts_ns"] for record in records if record["stage"] == "first_egl_swap_buffers"),
             None,
         )
+        is_rotation = bool(stages["surface_callback_accepted"])
+        missing_stages = []
+        if is_rotation:
+            missing_stages = [stage for stage in ROTATION_STAGES if not stages[stage]]
         rows.append(
             {
                 "generation": generation,
@@ -80,18 +81,22 @@ def summarize(generations):
                 "first_frame_ms": None if first_frame is None else round((first_frame - first_ts) / 1_000_000, 3),
                 "scheduled": stages["resize_runnable_scheduled"],
                 "completed": int(first_frame is not None),
+                "rotation_callback": int(is_rotation),
                 "stale_tasks": stages["resize_runnable_stale"],
-                "missing_stages": [stage for stage in REQUIRED_STAGES if not stages[stage]],
+                "missing_stages": missing_stages,
                 "stage_counts": dict(sorted(stages.items())),
             }
         )
 
-    first_frames = [row["first_frame_ms"] for row in rows if row["first_frame_ms"] is not None]
+    rotation_rows = [row for row in rows if row["rotation_callback"]]
+    first_frames = [row["first_frame_ms"] for row in rotation_rows if row["first_frame_ms"] is not None]
     return {
         "generations": rows,
         "aggregate": {
             "generations": len(rows),
             "completed": sum(row["completed"] for row in rows),
+            "rotation_callbacks": len(rotation_rows),
+            "rotation_completed": sum(row["completed"] for row in rotation_rows),
             "scheduled": sum(row["scheduled"] for row in rows),
             "stale_tasks": sum(row["stale_tasks"] for row in rows),
             "missing_stage_warnings": sum(bool(row["missing_stages"]) for row in rows),
@@ -120,7 +125,7 @@ def main(argv):
     else:
         fields = (
             "generation", "width", "height", "duration_ms", "first_frame_ms",
-            "scheduled", "completed", "stale_tasks", "missing_stages",
+            "scheduled", "completed", "rotation_callback", "stale_tasks", "missing_stages",
         )
         writer = csv.DictWriter(sys.stdout, fieldnames=fields)
         writer.writeheader()

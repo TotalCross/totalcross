@@ -52,6 +52,9 @@ typedef struct
    int graphicsCreate;
    int repaint;
    int swapCount;
+   bool firstSwapSeen;
+   bool screenChangeReturned;
+   bool summaryEmitted;
 } RotationTraceState;
 
 static RotationTraceState rotationTraceStates[32];
@@ -126,23 +129,23 @@ void rotationTraceEnqueueScreenChanged(int generation, int width, int height)
 
 int rotationTraceSelectScreenChanged(int width, int height)
 {
+   int generation;
    int i;
    if (rotationTraceStateCount == 0)
       return 0;
-   for (i = 0; i < rotationTracePendingCount; i++)
-      if (rotationTracePendingWidth[i] == width && rotationTracePendingHeight[i] == height)
-      {
-         int generation = rotationTracePendingGeneration[i];
-         for (; i + 1 < rotationTracePendingCount; i++)
-         {
-            rotationTracePendingGeneration[i] = rotationTracePendingGeneration[i + 1];
-            rotationTracePendingWidth[i] = rotationTracePendingWidth[i + 1];
-            rotationTracePendingHeight[i] = rotationTracePendingHeight[i + 1];
-         }
-         rotationTracePendingCount--;
-         return generation;
-      }
-   return 0;
+   if (rotationTracePendingCount == 0)
+      return 0;
+   generation = rotationTracePendingGeneration[0];
+   for (i = 0; i + 1 < rotationTracePendingCount; i++)
+   {
+      rotationTracePendingGeneration[i] = rotationTracePendingGeneration[i + 1];
+      rotationTracePendingWidth[i] = rotationTracePendingWidth[i + 1];
+      rotationTracePendingHeight[i] = rotationTracePendingHeight[i + 1];
+   }
+   rotationTracePendingCount--;
+   (void)width;
+   (void)height;
+   return generation;
 }
 
 void rotationTraceStage(const char *stage, int width, int height)
@@ -158,6 +161,7 @@ void rotationTraceStage(const char *stage, int width, int height)
    else if (strEq(stage, "init_skia")) state->initSkia++;
    else if (strEq(stage, "screen_changed_handled")) state->screenChanged++;
    else if (strEq(stage, "screen_change_entered")) state->screenChange++;
+   else if (strEq(stage, "screen_change_returned")) state->screenChangeReturned = true;
    else if (strEq(stage, "graphics_create_screen_surface")) state->graphicsCreate++;
    else if (strEq(stage, "repaint_active_windows")) state->repaint++;
 
@@ -175,7 +179,17 @@ void rotationTraceOnSwap(int width, int height)
    if (!state->awaitingFirstSwap)
       return;
    state->awaitingFirstSwap = false;
+   state->firstSwapSeen = true;
    rotationTraceStage("first_egl_swap_buffers", width, height);
+   rotationTraceEmitSummary();
+}
+
+void rotationTraceEmitSummary()
+{
+   RotationTraceState *state = rotationTraceFindState(rotationTraceCurrentGeneration);
+   if (state == null || !state->firstSwapSeen || !state->screenChangeReturned || state->summaryEmitted)
+      return;
+   state->summaryEmitted = true;
    rotationTracePrint("ROTATION_TRACE_SUMMARY generation=%d window_changes=%d destroy_egl=%d init_gles=%d init_skia=%d screen_changed=%d screen_change=%d graphics_create=%d repaint=%d swaps=%d",
       state->generation, state->windowChanges, state->destroyEgl, state->initGles,
       state->initSkia, state->screenChanged, state->screenChange, state->graphicsCreate,

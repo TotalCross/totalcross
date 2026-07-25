@@ -378,9 +378,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             rDirty.bottom = lastScreenH;
             
             setSIP(SIP_HIDE,false);
-            _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             if (isRotationTraceEnabled())
                nativeRotationTraceScreenChanged(generation, lastScreenW, lastScreenH);
+            _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             sendCloseSIPEvent(); // makes first screen rotation work
          }
       });
