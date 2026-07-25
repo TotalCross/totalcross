@@ -20,18 +20,21 @@ final class RotationRequestCoordinator
    private Request lastAccepted;
    private int duplicateCount;
 
-   boolean accept(Object surface, int width, int height, int orientation, boolean interactive,
+   Request accept(int generation, Object surface, int width, int height, int orientation, boolean interactive,
          int keyboardCategory, int lifecycleCategory)
    {
-      Request candidate = new Request(surface, width, height, orientation, interactive,
+      if (width <= 0 || height <= 0)
+         return null;
+
+      Request candidate = new Request(generation, surface, width, height, orientation, interactive,
             keyboardCategory, lifecycleCategory);
       if (lastAccepted != null && lastAccepted.matches(candidate))
       {
          duplicateCount++;
-         return false;
+         return null;
       }
       lastAccepted = candidate;
-      return true;
+      return candidate;
    }
 
    Request getLastAccepted()
@@ -46,6 +49,7 @@ final class RotationRequestCoordinator
 
    static final class Request
    {
+      final int generation;
       final Object surface;
       final int width;
       final int height;
@@ -54,9 +58,10 @@ final class RotationRequestCoordinator
       final int keyboardCategory;
       final int lifecycleCategory;
 
-      Request(Object surface, int width, int height, int orientation, boolean interactive,
+      Request(int generation, Object surface, int width, int height, int orientation, boolean interactive,
             int keyboardCategory, int lifecycleCategory)
       {
+         this.generation = generation;
          this.surface = surface;
          this.width = width;
          this.height = height;
@@ -75,6 +80,11 @@ final class RotationRequestCoordinator
                && interactive == other.interactive
                && keyboardCategory == other.keyboardCategory
                && lifecycleCategory == other.lifecycleCategory;
+      }
+
+      boolean isCurrent(int latestGeneration)
+      {
+         return generation == latestGeneration;
       }
    }
 }

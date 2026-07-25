@@ -109,6 +109,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final RotationRequestCoordinator rotationRequestCoordinator = new RotationRequestCoordinator();
    private static int rotationDuplicateDrops;
    private static int rotationLifecycleGeneration;
+   private static volatile int latestAcceptedRotationGeneration;
 
    public static boolean canQuit = true;
    public static Launcher4A instance;
@@ -363,29 +364,45 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
       int keyboardCategory = sipVisible ? RotationRequestCoordinator.KEYBOARD_VISIBLE
             : RotationRequestCoordinator.KEYBOARD_HIDDEN;
-      if (!rotationRequestCoordinator.accept(lastSurface, lastScreenW, lastScreenH, getOrientation(),
-            interactive, keyboardCategory, lifecycleCategory))
+      final int generation = rotationGeneration + 1;
+      final RotationRequestCoordinator.Request request = rotationRequestCoordinator.accept(generation,
+            lastSurface, lastScreenW, lastScreenH, getOrientation(), interactive, keyboardCategory,
+            lifecycleCategory);
+      if (request == null)
       {
          rotationDuplicateDrops++;
          return;
       }
 
-      final int generation = ++rotationGeneration;
-      final int width = lastScreenW;
-      final int height = lastScreenH;
-      traceRotationStage(generation, surfaceCallback ? "surface_callback_accepted" : "resize_accepted", width, height);
-      traceRotationStage(generation, "resize_runnable_scheduled", width, height);
+      rotationGeneration = generation;
+      latestAcceptedRotationGeneration = generation;
+      traceRotationStage(generation, surfaceCallback ? "surface_callback_accepted" : "resize_accepted",
+            request.width, request.height);
+      traceRotationStage(generation, "resize_runnable_scheduled", request.width, request.height);
       
       eventThread.invokeInEventThread(false, new Runnable()
       {
          public void run()
          {
-            traceRotationStage(generation, "resize_runnable_started", lastScreenW, lastScreenH);
+            if (!request.isCurrent(latestAcceptedRotationGeneration))
+            {
+               traceRotationStage(generation, "resize_runnable_stale", request.width, request.height);
+               return;
+            }
+
+            android.view.Surface surface = (android.view.Surface) request.surface;
+            if (surface == null || !surface.isValid())
+            {
+               traceRotationStage(generation, "resize_runnable_surface_invalid", request.width, request.height);
+               return;
+            }
+
+            traceRotationStage(generation, "resize_runnable_started", request.width, request.height);
             if (isRotationTraceEnabled())
                nativeRotationTraceGeneration(generation);
-            traceRotationStage(generation, "native_init_size_entered", lastScreenW, lastScreenH);
-            nativeInitSize(lastSurface,lastScreenW,lastScreenH);
-            traceRotationStage(generation, "native_init_size_returned", lastScreenW, lastScreenH);
+            traceRotationStage(generation, "native_init_size_entered", request.width, request.height);
+            nativeInitSize(surface, request.width, request.height);
+            traceRotationStage(generation, "native_init_size_returned", request.width, request.height);
             DisplayMetrics metrics = getResources().getDisplayMetrics();
             final double defaultTextSize = new TextView(getContext()).getTextSize();
             deviceFontHeight = 
@@ -394,13 +411,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                 .intValue();
             
             rDirty.left = rDirty.top = 0;
-            rDirty.right = lastScreenW;
-            rDirty.bottom = lastScreenH;
+            rDirty.right = request.width;
+            rDirty.bottom = request.height;
             
             setSIP(SIP_HIDE,false);
             if (isRotationTraceEnabled())
-               nativeRotationTraceScreenChanged(generation, lastScreenW, lastScreenH);
-            _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+               nativeRotationTraceScreenChanged(generation, request.width, request.height);
+            _postEvent(SCREEN_CHANGED, request.width, request.height, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             sendCloseSIPEvent(); // makes first screen rotation work
          }
       });
