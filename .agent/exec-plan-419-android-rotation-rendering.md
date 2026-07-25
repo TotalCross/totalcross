@@ -92,7 +92,9 @@ The executor must operate in token-efficient mode, especially during tests:
 - [x] Milestone 4: remove measured SIP and repaint duplication in independently committed slices.
 - [x] (2026-07-25T20:20:00-03:00) Milestone 5 gate review found no duplicate or dominant EGL/Skia recreation: M1 and M4 summaries reported at most one `init_skia` per generation and no `window_changes`; no ownership refactor was justified.
 - [x] Milestone 5: review EGL/Skia ownership evidence; defer ownership changes because the entry condition was not met.
-- [ ] Milestone 6: validate lifecycle and resource recovery, remove temporary experiment code, and complete final device evidence.
+- [x] (2026-07-25T20:55:00-03:00) Final M6 AAB/deploy flow passed; 20 idle and 20 fixed-load rotations completed on Android 14, with OpenGL screen-recording evidence and no crash/ANR/ClassNotFoundException.
+- [x] (2026-07-25T21:05:00-03:00) Keyboard, burst, minimize/restore, screen off/on, auxiliary-Activity return, gesture navigation, and three-button navigation cases were exercised; temporary A/B switches were absent and the old `totalcross.android` package was removed.
+- [x] Milestone 6: validate lifecycle and resource recovery, consolidate evidence, and close the plan on the available device.
 
 ## Current Architecture and Scope
 
@@ -305,6 +307,10 @@ Normal validation reaches level 5. A full distribution build is level 6 and may 
 - Observation: one automated Back key event did not immediately clear `mInputShown` on the emulator; a second explicit Back event did. The keyboard was then hidden and rotation settings were restored. Evidence: `/tmp/tc-rotation-m4-sip-keyboard-after-back.log` and the subsequent `mInputShown=false` check; this is retained as an emulator-input caveat.
 - Observation: the native immediate repaint caused two swaps per generation, while the A/B candidate caused one and preserved the rendered frame. Evidence: baseline `/tmp/tc-rotation-m4-idle-closed.log` and `/tmp/tc-rotation-m4-load-closed.log` report `swaps=2`; A/B `/tmp/tc-rotation-m4-ab-idle.log` and `/tmp/tc-rotation-m4-ab-load.log` report `swaps=1`; screen recording `/tmp/tc-rotation-m4-ab-load.mp4` shows the diagnostic content after rotation.
 - Observation: the Milestone 5 entry condition was not met. M1 baseline summaries had 24 generations with `init_skia=1`, 4 startup generations with `init_skia=0`, and no `window_changes` in both idle and load; M4 final summaries had 10 rotation generations with `init_skia=1`, one startup generation with `init_skia=0`, and no `window_changes` in both workloads. Evidence: `/tmp/tc-rotation-m1-baseline-idle-summary.log`, `/tmp/tc-rotation-m1-baseline-load-summary.log`, `/tmp/tc-rotation-m4-final-idle.log`, and `/tmp/tc-rotation-m4-final-load.log`.
+- Observation: Android deployment did not propagate `/c load` into `MainWindow.getCommandLine()` for this single-APK path; the final load workload therefore used a temporary outside-repository `RotationTest` variant with deterministic load enabled at compile time. Evidence: the first `/c load` recording displayed the idle label; the corrected `/tmp/tc-rotation-m6-final-load-fixed.mp4` displays `Android rotation trace load`.
+- Observation: `monkey` did not reliably bring the app back after minimize on this emulator, while explicit `am start -n totalcross.apprtst/.Loader` restored it successfully. Evidence: `/tmp/tc-rotation-m6-lifecycle-explicit.log` and the explicit foreground checks.
+- Observation: the keyboard-open-before-rotation case hid the IME after five rotations; the after-rotation case opened the IME but repeated Back events did not dismiss it in the final attempt. The IME was cleared with `ime hide` before lifecycle testing, and the emulator input caveat remains. Evidence: `/tmp/tc-rotation-m6-keyboard-before.log` and `/tmp/tc-rotation-m6-keyboard-after.log`.
+- Observation: the final trace still reports one stale non-final task in each 20-rotation workload, while all 20 accepted rotation callbacks completed and had zero missing-stage warnings. Evidence: `/tmp/tc-rotation-m6-final-idle-summary.json` and `/tmp/tc-rotation-m6-final-load-fixed-summary.json`.
 Move resolved discoveries that no longer influence future work to the history file at milestone boundaries.
 
 ## Decision Log
@@ -328,6 +334,7 @@ Move resolved discoveries that no longer influence future work to the history fi
 - Decision: remove the Android native immediate repaint and retain the Java `SK_SCREEN_CHANGE` handler repaint. Rationale: A/B traces reduced swaps from two to one per generation, and `screenrecord` showed correct final OpenGL output; non-Android behavior remains unchanged. Date: 2026-07-25.
 - Decision: retain the Java `SK_SCREEN_CHANGE` handler as the single useful full-repaint owner on Android. Rationale: the A/B run showed that the native immediate repaint was redundant and that the Java-handler repaint alone produced one correct swap per generation. Date: 2026-07-25.
 - Decision: defer an EGL/Skia ownership refactor. Rationale: the recorded normal rotations show no more than one `init_skia` per generation and no native-window change requiring EGL recreation, so changing ownership would add risk without measured duplicate work to remove. Date: 2026-07-25.
+- Decision: retain only the disabled-by-default compact rotation trace after M6. Rationale: the A/B switch and temporary load/keyboard variants are outside the repository and removed from the final source path, while the trace remains useful for future diagnosis without normal release logging. Date: 2026-07-25.
 
 ## Validation and Acceptance
 
@@ -411,7 +418,52 @@ Before an authorized push, fetch the remote, confirm the remote branch has not a
 
 ## Outcomes & Retrospective
 
-Current state: Milestones 1–4 are complete. The Milestone 5 EGL/Skia ownership gate is also complete without a code change: M1 and M4 traces show at most one `init_skia` per normal generation and no `window_changes`, so neither duplicate recreation nor dominant EGL recreation was measured. The SIP slice uses the immutable request keyboard category: closed-keyboard rotations no longer call `setSIP(SIP_HIDE)` or `sendCloseSIPEvent`, while a visible-keyboard request preserves one of each. The repaint slice removes only the Android native immediate repaint; the Java `SK_SCREEN_CHANGE` handler remains the repaint owner, and the temporary A/B switch is gone. `RotationRequestCoordinatorTest` has 11 focused cases and `:app:testStandardDebugUnitTest` passed. The final Standard Release AAB was built with `:app:bundleStandardRelease`, copied to `TotalCrossSDK/dist/vm/android/TotalCross.aab`, deployed with `tc.Deploy`, and installed as `totalcross.apprtst`. Final Android 14 emulator evidence: idle `/tmp/tc-rotation-m4-final-idle.log` had 10/10 rotation callbacks completed, p50/p95 189.780/386.853 ms, one stale non-final task, zero missing-stage warnings, zero SIP requests, and one swap per summary; event-thread load `/tmp/tc-rotation-m4-final-load.log` had 10/10 completed, p50/p95 211.108/385.591 ms, one stale non-final task, zero missing-stage warnings, zero SIP requests, and one swap per summary. The keyboard-open-before-rotation run `/tmp/tc-rotation-m4-sip-keyboard-open.log` preserved one hide/close pair and ended with the keyboard hidden. The after-rotation open/Back case was exercised; the emulator required a second explicit Back key event to clear `mInputShown`. A/B screen-recording evidence `/tmp/tc-rotation-m4-ab-load.mp4` shows correct OpenGL content after the repaint change. No Milestone 6 validation was run. The next action belongs to Milestone 6 and is intentionally not executed in this turn.
+Current state: Milestones 1–6 are complete. The final Standard Release AAB was rebuilt with `:app:bundleStandardRelease`, copied to `TotalCrossSDK/dist/vm/android/TotalCross.aab`, deployed through `tc.Deploy`, and installed as `totalcross.apprtst`. On the Android 14 emulator `sdk_gphone64_arm64` (`emulator-5554`), the final idle run `/tmp/tc-rotation-m6-final-idle.log` completed 20/20 accepted rotation callbacks with p50/p95 first-frame times `157.146/256.095 ms`, one stale non-final task, zero missing-stage warnings, and one useful swap per summary. The fixed-load run `/tmp/tc-rotation-m6-final-load-fixed.log` completed 20/20 with p50/p95 `167.915/211.629 ms`, one stale non-final task, zero missing-stage warnings, and one swap per summary. Compared with preserved M1 baselines (`198.587/255.170 ms` idle and `199.846/424.110 ms` load), load p95 improved by about 50%; idle p50 improved by about 21% and idle p95 remained comparable. `/tmp/tc-rotation-m6-final-load-fixed.mp4` and its extracted frame show the correct OpenGL load content. Keyboard-before-rotation hid the IME after five rotations; keyboard-after-rotation opened it but Back dismissal remained an emulator caveat. Explicit lifecycle checks passed for burst rotations, minimize/restore, screen off/on, return from Settings, gesture navigation, and three-button navigation. The old `totalcross.android` package was removed; only `totalcross.apprtst` remained. The compact trace remains disabled by default; no A/B switch or temporary diagnostic source was added to the repository. No additional physical/Android-version/Samsung device was available, and iOS/Windows were deliberately not exercised. No later milestone exists; the ExecPlan is closed.
+
+### Editorial Summary
+
+The Android rotation path now drops exact duplicates and obsolete queued work, avoids redundant closed-keyboard SIP events, performs one useful repaint, and retains the existing EGL/Skia ownership because runtime evidence did not show duplicate recreation. Final 20-rotation idle/load runs completed without crash or ANR on the available Android 14 emulator.
+
+### Original Plan versus Actual Outcome
+
+The planned low-risk sequence was followed through tracing, duplicate suppression, stale-generation coalescing, SIP/repaint measurement, and final lifecycle validation. The conditional EGL/Skia ownership refactor was not implemented because its evidence gate was not met.
+
+### What Changed
+
+`Launcher4A` now uses immutable rotation request snapshots and conditional SIP handling. Android native immediate repaint was removed from `GraphicsPrimitives_c.h`. Disabled-by-default tracing records the final generation summaries, including repaint and first-swap counters.
+
+### Decisions and Trade-offs
+
+The Java `SK_SCREEN_CHANGE` handler owns the single full repaint. EGL and Skia ownership stayed unchanged to avoid an unmeasured native-threading risk. A deterministic temporary load variant was used outside the repository because Android single-APK deployment did not propagate `/c load`.
+
+### Unexpected Problems and Discoveries
+
+The emulator required explicit `am start` for reliable restore after minimize, and Back did not dismiss the keyboard in the final after-rotation attempt. The final traces also retained one stale non-final task per workload while completing every accepted rotation.
+
+### Validation and Measurable Results
+
+The Standard Release AAB build, SDK-template deploy, APK install, focused unit tests, 20 idle rotations, 20 load rotations, lifecycle checks, keyboard checks, and two navigation modes were exercised. Load p95 improved from `424.110 ms` to `211.629 ms` against the preserved M1 baseline.
+
+### Useful Evidence and Examples
+
+Final traces: `/tmp/tc-rotation-m6-final-idle-summary.json` and `/tmp/tc-rotation-m6-final-load-fixed-summary.json`. Visual evidence: `/tmp/tc-rotation-m6-final-load-fixed.mp4`. Lifecycle evidence: `/tmp/tc-rotation-m6-lifecycle-explicit.log`.
+
+### Limitations, Remaining Work, and Open Questions
+
+Evidence covers one Android 14 emulator only. No Samsung, Android 13/15+, physical-device, iOS, Windows, or full distribution validation was performed. The after-rotation keyboard Back behavior needs confirmation on a physical device or a more reliable emulator input sequence.
+
+### Possible Article Angles
+
+Measured duplicate work across Java, JNI, and graphics layers; generation-aware cancellation; and why a conditional EGL/Skia refactor was deliberately avoided are the strongest technical angles.
+
+### Suggested Narrative
+
+Start with the measured rotation trace, show the two-swap and SIP duplication, explain the low-risk fixes, then close with the final 20-rotation evidence and the explicit decision not to change EGL/Skia ownership without proof.
+
+### Claims Requiring Human Review
+
+Confirm the acceptable interpretation of the emulator keyboard caveat, the one stale non-final task, and whether the measured Android 14 improvement is sufficient for issue closure across physical devices.
+
 At each milestone boundary, replace or append a short factual summary containing the behavior delivered, validation performed, aggregate result, evidence path, limitations, and next boundary. Move completed details to the history file when they make the active plan harder to resume.
 At completion, the editorial report must include:
 - `Editorial Summary`;
@@ -431,7 +483,8 @@ Milestone 1 continuation note (2026-07-25): the stale emulator package was remov
 Milestone 2 continuation note (2026-07-25): exact duplicate admission was isolated in `RotationRequestCoordinator`, with eight JUnit cases and a focused Android smoke run on the deployed test application. The implementation preserves same-size new surfaces, orientation changes, interactive-state changes, keyboard transitions, and lifecycle transitions; immutable resize snapshots and stale-task coalescing remain deferred to Milestone 3.
 Milestone 3 continuation note (2026-07-25): accepted requests now carry generation and surface snapshots; stale runnables exit before JNI, while the newest stable generation reaches the native pipeline. Eleven JVM tests, a rapid-load probe, and ten accepted rotations per final workload passed on the Android 14 emulator. No SIP, repaint, EGL/Skia ownership, or later lifecycle validation was performed.
 Milestone 4 continuation note (2026-07-25): redundant closed-keyboard SIP work was removed in one commit, and native immediate repaint was removed in a separate commit after an A/B experiment showed one correct swap instead of two. Final idle/load runs completed 10/10 rotations with one swap per generation; keyboard-open and Back cases were exercised with the emulator input caveat recorded above. The Milestone 5 ownership gate was the next boundary.
-Milestone 5 continuation note (2026-07-25): the ownership gate was reviewed against preserved M1 and M4 traces. Normal generations showed at most one `init_skia` and no `window_changes`, so the planned EGL/Skia ownership refactor was not justified and no native ownership commit was created. Milestone 6 remains pending.
+Milestone 5 continuation note (2026-07-25): the ownership gate was reviewed against preserved M1 and M4 traces. Normal generations showed at most one `init_skia` and no `window_changes`, so the planned EGL/Skia ownership refactor was not justified and no native ownership commit was created. The next boundary was Milestone 6.
+Milestone 6 continuation note (2026-07-25): rebuilt and redeployed the final Standard Release AAB, completed 20 idle and 20 fixed-load rotations with one swap per generation and no missing stages, exercised keyboard/lifecycle/navigation cases, reviewed the final OpenGL recording, and removed the stale `totalcross.android` package. The plan is closed; broader devices and platform builds remain explicitly unexercised.
 
 ## Revision Note
 
@@ -441,3 +494,4 @@ Milestone 5 continuation note (2026-07-25): the ownership gate was reviewed agai
 2026-07-25: Milestone 3 was closed after immutable snapshot checks, rapid-load stale-generation evidence, and ten accepted rotations per workload. The next continuation starts at Milestone 4; no SIP/repaint or later-milestone validation was performed here.
 2026-07-25: Milestone 4 was closed after independent SIP and repaint slices, A/B screen-recording evidence, keyboard cases, final ten-rotation idle/load runs, and the required module build. The next continuation starts at Milestone 5; EGL/Skia ownership validation was deliberately not performed here.
 2026-07-25: Milestone 5 was closed at its entry gate after preserved traces showed no duplicate Skia initialization or EGL window recreation in normal rotations. No ownership change or Milestone 6 validation was performed.
+2026-07-25: Milestone 6 was closed after final AAB/deploy, 20 idle and 20 load rotations, recovery/lifecycle/navigation checks, visual screen-recording review, and editorial consolidation. Broader device and non-Android validation remain outside the available environment.

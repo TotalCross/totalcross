@@ -8,9 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Plan: `.agent/exec-plan-419-android-rotation-rendering.md`
 - Branch: `fix/419-sluggish-interface-rendering-when-rotating-screen`
-- Active milestone: Milestone 5 completed at its evidence gate; Milestone 6 is pending
-- Last logical slice: EGL/Skia ownership gate reviewed; no refactor justified by the trace evidence
-- Last logical commits: `5a773cebc` (`perf(graphics,android): remove duplicate rotation repaint`) and `551be613f` (`test(graphics,android): count rotation repaint calls`); prior SIP slice `c72ca44a9`
+- Active milestone: Milestone 6 completed; ExecPlan closed
+- Last logical slice: final Android matrix, recovery checks, visual evidence, and editorial consolidation
+- Last logical commits: `5a773cebc` (`perf(graphics,android): remove duplicate rotation repaint`), `551be613f` (`test(graphics,android): count rotation repaint calls`), and the final M6 documentation checkpoint
 - Changed paths: `TotalCrossVM/android/app/src/main/java/totalcross/Launcher4A.java`, `TotalCrossVM/src/nm/ui/GraphicsPrimitives_c.h`, `TotalCrossVM/src/nm/ui/android/gfx_Graphics_c.h`, `TotalCrossVM/android/app/src/test/java/totalcross/RotationRequestCoordinatorTest.java`, `.agent/exec-plan-419-android-rotation-rendering.md`, `.agent/state/exec-plan-419-android-rotation-rendering.md`
 - Focused validation: `:app:testStandardDebugUnitTest` passed with 11 tests; copyright-header validation and staged `git diff --check` passed
 - Build/deploy validation: final Standard Release AAB `:app:bundleStandardRelease` passed; `tc.Deploy` and APK installation passed using `TotalCrossSDK/dist/vm/android/TotalCross.aab`
@@ -19,6 +19,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Milestone 2 evidence: `/tmp/tc-rotation-m2-idle-final.log` and `/tmp/tc-rotation-m2-load-final.log`
 - Milestone 3 evidence: rapid `/tmp/tc-rotation-m3-rapid.log`; idle `/tmp/tc-rotation-m3-idle.log`; load `/tmp/tc-rotation-m3-load.log`
 - Milestone 4 evidence: baseline closed `/tmp/tc-rotation-m4-idle-closed.log` and `/tmp/tc-rotation-m4-load-closed.log`; keyboard `/tmp/tc-rotation-m4-sip-keyboard-open.log` and `/tmp/tc-rotation-m4-sip-keyboard-after-back.log`; final idle `/tmp/tc-rotation-m4-final-idle.log` and load `/tmp/tc-rotation-m4-final-load.log`; A/B video `/tmp/tc-rotation-m4-ab-load.mp4`
-- Next concrete action: begin Milestone 6 final lifecycle/resource-recovery validation; do not execute it as part of this continuation
-- Deferred validation: all Milestone 6+ tests, broader device/lifecycle matrix, and native ownership changes remain deferred by instruction
-- Out of scope for the next continuation: all Milestone 6+ validation and final evidence collection
+- Milestone 6 evidence: final idle `/tmp/tc-rotation-m6-final-idle-summary.json`; fixed-load `/tmp/tc-rotation-m6-final-load-fixed-summary.json` and `/tmp/tc-rotation-m6-final-load-fixed.mp4`; keyboard `/tmp/tc-rotation-m6-keyboard-before.log` and `/tmp/tc-rotation-m6-keyboard-after.log`; lifecycle `/tmp/tc-rotation-m6-lifecycle-explicit.log`; three-button `/tmp/tc-rotation-m6-three-button.log`
+- Next concrete action: none; ExecPlan closed
+- Deferred validation: additional physical/Android-version/Samsung devices, iOS, Windows, and full distribution validation were unavailable or deliberately deferred
+- Out of scope: no later milestone exists; broader platform validation remains outside this execution environment
