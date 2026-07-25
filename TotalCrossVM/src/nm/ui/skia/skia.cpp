@@ -138,21 +138,6 @@ float __wrap_exp2f(float x) {
     #define SKIA_TRACE() //LOGD();
 #endif
 
-#if USE_NATIVE_SWAP
-inline uint32_t builtinSwap32(uint32_t val) noexcept {
-        #if defined(__clang__)
-            return  __builtin_bswap32(val);
-        #elif defined(__GNUG__)
-            return  __builtin_bswap32(val);
-        #elif defined(_MSC_VER)
-             return = _byteswap_ulong(val);
-        #endif
-}
-#define SWAP32(n) builtinSwap32(n)
-#else
-#define SWAP32(n) (((n >> 24) & 0xFF)) | ((((n >> 16) & 0xFF) << 8) | (((n >> 8) & 0xFF) << 16) | ((n & 0xFF) << 24))
-#endif
-
 sk_sp<SkSurface> surface;
 SkCanvas *canvas;
 SkPaint forePaint; // used for contours
