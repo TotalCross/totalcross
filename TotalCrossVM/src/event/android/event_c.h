@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -9,6 +10,7 @@
 #include "specialkeys.h"
 #include "GraphicsPrimitives.h"
 #include "startup.h"
+#include "../../nm/ui/android/rotation_trace.h"
 
 bool isEssentialKey(int32 portableKey);
 
@@ -89,6 +91,10 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          int32 hRes = y;
          int32 vRes = modifiers;
          int32 fontHeight = timestamp;
+         int traceGeneration = rotationTraceSelectScreenChanged(w, h);
+         if (traceGeneration > 0)
+            rotationTraceSelectGeneration(traceGeneration);
+         rotationTraceStage("screen_changed_handled", w, h);
          bool starting = lastW == -2; 
          bool changed = w != lastW || h != lastH;
          if (w == -999)

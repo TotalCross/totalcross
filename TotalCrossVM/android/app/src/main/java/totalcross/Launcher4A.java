@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -41,6 +42,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.ResultReceiver;
 import android.os.StatFs;
+import android.os.SystemClock;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.telephony.CellLocation;
@@ -49,6 +51,7 @@ import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.Size;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -100,6 +103,9 @@ import totalcross.android.Scanner4A;
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener
 {
    public static final boolean GENERATE_FONT = false;
+
+   private static final String ROTATION_TRACE_TAG = "TotalCrossRotation";
+   private static int rotationGeneration;
 
    public static boolean canQuit = true;
    public static Launcher4A instance;
@@ -292,7 +298,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          lastSurface = surface;
          lastScreenW = w;
          lastScreenH = h;
-         sendScreenChangeEvent();
+         sendScreenChangeEvent(false);
       }
    }
    
@@ -321,22 +327,45 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             lastSurface = surface;
             lastScreenW = w;
             lastScreenH = h;
-            sendScreenChangeEvent();
+            sendScreenChangeEvent(true);
          }
       }
    }
 
-   private void sendScreenChangeEvent()
+   private static boolean isRotationTraceEnabled()
+   {
+      return Log.isLoggable(ROTATION_TRACE_TAG, Log.DEBUG);
+   }
+
+   private static void traceRotationStage(int generation, String stage, int width, int height)
+   {
+      if (isRotationTraceEnabled())
+         Log.i(ROTATION_TRACE_TAG, "ROTATION_TRACE generation=" + generation + " stage=" + stage
+               + " ts_ns=" + SystemClock.elapsedRealtimeNanos() + " width=" + width + " height=" + height);
+   }
+
+   private void sendScreenChangeEvent(final boolean surfaceCallback)
    {
       if (!loader.isInteractive()) {
         return;
       }
+
+      final int generation = ++rotationGeneration;
+      final int width = lastScreenW;
+      final int height = lastScreenH;
+      traceRotationStage(generation, surfaceCallback ? "surface_callback_accepted" : "resize_accepted", width, height);
+      traceRotationStage(generation, "resize_runnable_scheduled", width, height);
       
       eventThread.invokeInEventThread(false, new Runnable()
       {
          public void run()
          {
+            traceRotationStage(generation, "resize_runnable_started", lastScreenW, lastScreenH);
+            if (isRotationTraceEnabled())
+               nativeRotationTraceGeneration(generation);
+            traceRotationStage(generation, "native_init_size_entered", lastScreenW, lastScreenH);
             nativeInitSize(lastSurface,lastScreenW,lastScreenH);
+            traceRotationStage(generation, "native_init_size_returned", lastScreenW, lastScreenH);
             DisplayMetrics metrics = getResources().getDisplayMetrics();
             final double defaultTextSize = new TextView(getContext()).getTextSize();
             deviceFontHeight = 
@@ -350,6 +379,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             
             setSIP(SIP_HIDE,false);
             _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+            if (isRotationTraceEnabled())
+               nativeRotationTraceScreenChanged(generation, lastScreenW, lastScreenH);
             sendCloseSIPEvent(); // makes first screen rotation work
          }
       });
@@ -788,6 +819,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
    public native void nativeInitSize(Surface surface, int w, int h);
+   private native void nativeRotationTraceGeneration(int generation);
+   private native void nativeRotationTraceScreenChanged(int generation, int width, int height);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    public native static void nativeSmsReceived(String displayOriginatingAddress, String displayMessageBody, byte[] userData);
    public native static void nativeOnMessageReceived(String messageId, String messageType,
@@ -917,7 +950,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                 || previousInsets.right != insets.right;
         safeInsets = insets;
         if (changed && eventThread != null && lastSurface != null && lastSurface.isValid() && lastScreenW > 0 && lastScreenH > 0) {
-            sendScreenChangeEvent();
+            sendScreenChangeEvent(false);
         }
     }
 
@@ -1463,7 +1496,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (eventThread != null && surface != null && surface.isValid() && lastScreenW > 0 && lastScreenH > 0)
       {
          instance.lastSurface = surface;
-         instance.sendScreenChangeEvent();
+         instance.sendScreenChangeEvent(false);
       }
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);

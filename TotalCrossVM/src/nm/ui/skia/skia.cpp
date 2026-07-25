@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "skia_internal.h"
+#ifdef ANDROID
+#include "../android/rotation_trace.h"
+#endif
 
 #define USE_WRITE_PIXELS 1
 
@@ -156,6 +159,9 @@ std::map<std::string, int> typefaceIndexMap;
 
 void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
+#ifdef ANDROID
+    rotationTraceStage("init_skia", w, h);
+#endif
     SKIA_TRACE()
 #ifdef HEADLESS
     bitmap.installPixels(SkImageInfo::Make(w,
