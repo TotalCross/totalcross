@@ -51,6 +51,7 @@ typedef struct
    int screenChange;
    int graphicsCreate;
    int repaint;
+   int repaintCalls;
    int swapCount;
    bool firstSwapSeen;
    bool screenChangeReturned;
@@ -164,6 +165,7 @@ void rotationTraceStage(const char *stage, int width, int height)
    else if (strEq(stage, "screen_change_returned")) state->screenChangeReturned = true;
    else if (strEq(stage, "graphics_create_screen_surface")) state->graphicsCreate++;
    else if (strEq(stage, "repaint_active_windows")) state->repaint++;
+   else if (strEq(stage, "repaint_active_windows_call")) state->repaintCalls++;
 
    now = rotationTraceNowNs();
    rotationTracePrint("ROTATION_TRACE generation=%d stage=%s ts_ns=%lld width=%d height=%d",
@@ -190,10 +192,10 @@ void rotationTraceEmitSummary()
    if (state == null || !state->firstSwapSeen || !state->screenChangeReturned || state->summaryEmitted)
       return;
    state->summaryEmitted = true;
-   rotationTracePrint("ROTATION_TRACE_SUMMARY generation=%d window_changes=%d destroy_egl=%d init_gles=%d init_skia=%d screen_changed=%d screen_change=%d graphics_create=%d repaint=%d swaps=%d",
+   rotationTracePrint("ROTATION_TRACE_SUMMARY generation=%d window_changes=%d destroy_egl=%d init_gles=%d init_skia=%d screen_changed=%d screen_change=%d graphics_create=%d repaint=%d repaint_calls=%d swaps=%d",
       state->generation, state->windowChanges, state->destroyEgl, state->initGles,
       state->initSkia, state->screenChanged, state->screenChange, state->graphicsCreate,
-      state->repaint, state->swapCount);
+      state->repaint, state->repaintCalls, state->swapCount);
 }
 
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeRotationTraceGeneration
