@@ -94,6 +94,9 @@ static Pixel* getGraphicsPixels(TCObject g)
 
 void repaintActiveWindows(Context currentContext)
 {
+#ifdef ANDROID
+   rotationTraceStage("repaint_active_windows_call", screen.screenW, screen.screenH);
+#endif
    static Method repaintActiveWindows;
    if (repaintActiveWindows == null && mainClass != null)
       repaintActiveWindows = getMethod(OBJ_CLASS(mainClass), true, "repaintActiveWindows", 0);
