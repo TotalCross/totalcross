@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import totalcross.preview.PreviewRuntime;
+import totalcross.preview.PreviewFrame;
 import totalcross.sys.Settings;
 
 class LauncherPreviewSurfaceTest {
@@ -34,7 +35,9 @@ class LauncherPreviewSurfaceTest {
   @Test
   void updateScreenPresentsBufferedImageAndKeepsPixelBufferAlias() throws Exception {
     RecordingFrameConsumer surface = new RecordingFrameConsumer();
+    RecordingPreviewFrameConsumer copiedSurface = new RecordingPreviewFrameConsumer();
     Launcher launcher = new Launcher(surface, true);
+    launcher.setPreviewFrameConsumer(copiedSurface);
     setField(launcher, "toScale", 1D);
     setField(launcher, "toBpp", 24);
     Settings.screenWidth = 2;
@@ -48,6 +51,8 @@ class LauncherPreviewSurfaceTest {
     int[] backingPixels = ((DataBufferInt) surface.presentedImage.getRaster().getDataBuffer()).getData();
     assertSame(backingPixels, totalcross.ui.gfx.Graphics.mainWindowPixels);
     assertArrayEquals(originalPixels, backingPixels);
+    backingPixels[0] = 0;
+    assertArrayEquals(originalPixels, copiedSurface.presentedFrame.copyPixels());
   }
 
   private void setField(Object target, String name, Object value) throws Exception {
@@ -62,6 +67,15 @@ class LauncherPreviewSurfaceTest {
     @Override
     public void present(BufferedImage image) {
       presentedImage = image;
+    }
+  }
+
+  private static class RecordingPreviewFrameConsumer implements totalcross.preview.PreviewFrameConsumer {
+    private PreviewFrame presentedFrame;
+
+    @Override
+    public void present(PreviewFrame frame) {
+      presentedFrame = frame;
     }
   }
 }

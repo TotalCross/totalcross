@@ -10,6 +10,7 @@ import java.awt.event.WindowListener;
 import tc.tools.AnonymousUserData;
 import totalcross.preview.AwtWindowBackend;
 import totalcross.preview.PreviewRuntime;
+import totalcross.preview.PreviewFrameConsumer;
 import totalcross.preview.WindowConfig;
 import totalcross.sys.Settings;
 import totalcross.ui.Container;
@@ -28,6 +29,7 @@ public final class LauncherRuntime implements PreviewRuntime {
   private LauncherConfig config;
   private LauncherParsedConfig parsedConfig;
   private PreviewRuntime.FrameConsumer previewSurface;
+  private PreviewFrameConsumer previewFrameSurface;
   private boolean previewMode;
   private ClassLoader appClassLoader;
   private Launcher launcher;
@@ -43,6 +45,16 @@ public final class LauncherRuntime implements PreviewRuntime {
       String... args) {
     LauncherRuntime runtime = new LauncherRuntime();
     runtime.setPreviewSurface(surface);
+    runtime.setAppClassLoader(appClassLoader);
+    runtime.parseArguments(mainWindowClass, args);
+    runtime.startPreview();
+    return runtime;
+  }
+
+  public static LauncherRuntime startPreviewFrames(String mainWindowClass, PreviewFrameConsumer surface,
+      ClassLoader appClassLoader, String... args) {
+    LauncherRuntime runtime = new LauncherRuntime();
+    runtime.setPreviewFrameSurface(surface);
     runtime.setAppClassLoader(appClassLoader);
     runtime.parseArguments(mainWindowClass, args);
     runtime.startPreview();
@@ -80,6 +92,10 @@ public final class LauncherRuntime implements PreviewRuntime {
 
   public void setPreviewSurface(PreviewRuntime.FrameConsumer previewSurface) {
     this.previewSurface = previewSurface;
+  }
+
+  public void setPreviewFrameSurface(PreviewFrameConsumer previewFrameSurface) {
+    this.previewFrameSurface = previewFrameSurface;
   }
 
   public void setAppClassLoader(ClassLoader appClassLoader) {
@@ -235,6 +251,7 @@ public final class LauncherRuntime implements PreviewRuntime {
     Launcher.isApplication = true;
     recordLauncherUsage();
     launcher = new Launcher(previewSurface, preview, appClassLoader);
+    launcher.setPreviewFrameConsumer(previewFrameSurface);
     launcher.setRuntime(this);
     launcher.parseArguments(config.getMainWindowClass(), config.getLauncherArgs());
     launcher.init();
