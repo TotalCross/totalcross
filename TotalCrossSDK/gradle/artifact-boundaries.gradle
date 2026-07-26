@@ -1,0 +1,52 @@
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+// SPDX-License-Identifier: LGPL-2.1-only
+
+def artifactOutput = layout.buildDirectory.dir('libs')
+
+def registerBoundaryJar = { String taskName, String archiveName, Closure content ->
+    tasks.register(taskName, Jar) {
+        archiveBaseName = archiveName
+        destinationDirectory = artifactOutput
+        includeEmptyDirs = false
+        from(sourceSets.main.output, content)
+    }
+}
+
+registerBoundaryJar('totalcrossApiJar', 'totalcross-api') {
+    include 'totalcross/lang/**', 'totalcross/sys/**', 'totalcross/util/**', 'totalcross/ui/**'
+    include 'jdkcompat/**'
+    exclude 'totalcross/preview/**', 'totalcross/Launcher*', 'totalcross/PreviewRunner*'
+}
+
+registerBoundaryJar('totalcrossRuntimeJavaJar', 'totalcross-runtime-java') {
+    include 'totalcross/**', 'jdkcompat/**'
+    exclude 'totalcross/preview/**', 'tc/**', 'totalcross/LauncherApplet*'
+}
+
+registerBoundaryJar('totalcrossConverterJar', 'totalcross-converter') {
+    include 'tc/tools/converter/**'
+}
+
+registerBoundaryJar('totalcrossDeployerJar', 'totalcross-deployer') {
+    include 'tc/Deploy.class', 'tc/Deploy$*.class', 'tc/tools/deployer/**'
+    include 'tc/tools/JarClassPathLoader.class', 'tc/tools/RegisterSDK.class'
+    exclude 'tc/tools/converter/**'
+}
+
+registerBoundaryJar('totalcrossPreviewRuntimeJar', 'totalcross-preview-runtime') {
+    include 'totalcross/preview/**'
+    include 'totalcross/LauncherRuntime.class', 'totalcross/TotalCrossApplication.class'
+}
+
+tasks.register('artifactContentTest', Test) {
+    group = 'verification'
+    description = 'Verifies narrow artifact package boundaries.'
+    dependsOn totalcrossApiJar, totalcrossRuntimeJavaJar, totalcrossConverterJar,
+            totalcrossDeployerJar, totalcrossPreviewRuntimeJar
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    systemProperty 'totalcross.artifact.dir', artifactOutput.get().asFile.absolutePath
+    useJUnitPlatform {
+        includeTags 'artifact-boundary'
+    }
+}
