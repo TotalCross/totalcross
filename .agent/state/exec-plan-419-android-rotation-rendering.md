@@ -8,9 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Plan: `.agent/exec-plan-419-android-rotation-rendering.md`
 - Branch: `fix/419-sluggish-interface-rendering-when-rotating-screen`
-- Active milestone: Milestone 6 follow-up blocked; base M6 validation is complete
-- Last logical slice: repeat of the current-branch two-Edit lower-screen keyboard shift on the newly started AVD
-- Last logical commits: `7d002ee25` (`docs(plan): record current branch shift test`), `bcc048c6c` (`docs(plan): record physical sdk shift test`), and the final M6 documentation checkpoint
+- Active milestone: complete; M6 follow-up closed with documented AVD limitation
+- Last logical slice: final ExecPlan closure after recording the AVD limitation
+- Last logical commits: `db8539b9d` (`docs(plan): record current avd shift test`), `7d002ee25` (`docs(plan): record current branch shift test`), and `bcc048c6c` (`docs(plan): record physical sdk shift test`)
 - Changed paths: `TotalCrossVM/android/app/src/main/java/totalcross/Launcher4A.java`, `TotalCrossVM/src/nm/ui/GraphicsPrimitives_c.h`, `TotalCrossVM/src/nm/ui/android/gfx_Graphics_c.h`, `TotalCrossVM/android/app/src/test/java/totalcross/RotationRequestCoordinatorTest.java`, `.agent/exec-plan-419-android-rotation-rendering.md`, `.agent/state/exec-plan-419-android-rotation-rendering.md`
 - Focused validation: `:app:testStandardDebugUnitTest` passed with 11 tests; checkpoint AAB builds for base, M4 SIP, and M4 repaint passed; copyright-header validation and staged `git diff --check` passed
 - Build/deploy validation: base `b7c25d776`, M4 SIP `c72ca44a9`, and M4 repaint `5a773cebc` Standard Release AABs were generated with `:app:bundleStandardRelease`, substituted into `TotalCrossSDK/dist/vm/android/TotalCross.aab`, deployed with `tc.Deploy`, and installed on the emulator; the cached `/Users/flsobral/.gradle/caches/totalcross/sdk/7.2.2` AAB and `tc.Deploy` were also used successfully; the current-branch `:app:bundleStandardRelease` AAB was substituted, deployed with `tc.Deploy`, and installed on the physical device, with the temporary app compiled using `javac --release 8`
@@ -24,6 +24,6 @@ SPDX-License-Identifier: LGPL-2.1-only
 - SDK 7.2.2 evidence: `/tmp/tc-sdk722-deploy.log`, `/tmp/tc-sdk722-shift-ime.mp4`, `/tmp/tc-sdk722-shift-ime-frame.png`, `/tmp/tc-sdk722-ime.txt`; physical device `/tmp/tc-sdk722-physical-before-ime.png`, `/tmp/tc-sdk722-physical-shift-ime.png`, `/tmp/tc-sdk722-physical-ime.txt`, and `/tmp/tc-sdk722-physical-screenrecord.log`
 - Current-branch evidence: `/tmp/tc-current-branch-bundle.log`, `/tmp/tc-current-branch-deploy.log`, `/tmp/tc-current-branch-before-ime.png`, `/tmp/tc-current-branch-shift-ime-retry.png`, and `/tmp/tc-current-branch-ime.txt`
 - Current-branch AVD evidence: `/tmp/tc-current-branch-avd-before-ime.png`, `/tmp/tc-current-branch-avd-shift-ime.png`, `/tmp/tc-current-branch-avd-shift-ime-frame.png`, `/tmp/tc-current-branch-avd-shift-ime.mp4`, and `/tmp/tc-current-branch-avd-ime.txt`
-- Next concrete action: investigate native OpenGL application of `Window.shiftY` only after explicit authorization; do not implement it as part of this continuation
-- Deferred validation: the two-Edit shift fix, additional physical/Android-version/Samsung devices, iOS, Windows, and full distribution validation
-- Out of scope: no later milestone exists; runtime changes are blocked pending authorization
+- Next concrete action: none; ExecPlan finalized with the AVD limitation recorded
+- Deferred validation: native `Window.shiftY` fix/investigation, additional physical/Android-version/Samsung devices, iOS, Windows, and full distribution validation
+- Out of scope: no later milestone exists; runtime changes were not included in the finalized plan
