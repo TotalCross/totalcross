@@ -422,7 +422,9 @@ int32 graphicsCreateScreenSurface(ScreenSurface screen)
    screen->pixels = (uint8*)1;
  
 #ifdef SKIA_H
+#ifdef ANDROID
    rotationTraceStage("graphics_create_screen_surface", screen->screenW, screen->screenH);
+#endif
    initSkia(screen->screenW, screen->screenH, NULL, screen->pitch, screen->pixelformat);
 #endif
    
