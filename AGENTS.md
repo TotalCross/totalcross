@@ -368,6 +368,16 @@ Avoid deploy modes that list every class or resource unless debugging deploy beh
 
 Run smoke deploys only when the change affects deploy, runtime loading, packaging, class-file handling, or generated artifacts.
 
+### Android smoke tests
+
+For changes that can affect the Android runtime, packaging, deployment, graphics, input, window or IME behavior, or generated Android artifacts, read and follow `.agents/guides/android-smoke-test.md`.
+
+Use minimum sufficient validation by default: one explicitly selected device, one representative test application, build, deploy, launch, and one focused visual or behavioral assertion. Redirect verbose command output to temporary files and report only command status, relevant excerpts, artifact and evidence paths, and observed limitations.
+
+Expand testing to additional devices, Android versions, display configurations, navigation modes, or lifecycle scenarios only when the changed behavior, risk level, or first test result requires it.
+
+Do not run `clean`, uninstall packages, overwrite persistent SDK artifacts without preserving them, run concurrent builds that share generated native-dependency caches, or commit generated AABs, APKs, deployment directories, build outputs, caches, recordings, screenshots, or logs unless explicitly required.
+
 ### Git inspection policy
 
 Do not run broad repository status commands in noisy repositories.

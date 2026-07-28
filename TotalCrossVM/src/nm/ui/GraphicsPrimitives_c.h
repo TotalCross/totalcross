@@ -8,6 +8,9 @@
 #include "PalmFont.h"
 #include "GraphicsPrimitives.h"
 #include "math.h"
+#ifdef ANDROID
+#include "android/rotation_trace.h"
+#endif
 
 #define TRANSITION_NONE  0
 #define TRANSITION_OPEN  1
@@ -91,6 +94,9 @@ static Pixel* getGraphicsPixels(TCObject g)
 
 void repaintActiveWindows(Context currentContext)
 {
+#ifdef ANDROID
+   rotationTraceStage("repaint_active_windows_call", screen.screenW, screen.screenH);
+#endif
    static Method repaintActiveWindows;
    if (repaintActiveWindows == null && mainClass != null)
       repaintActiveWindows = getMethod(OBJ_CLASS(mainClass), true, "repaintActiveWindows", 0);
@@ -100,6 +106,9 @@ void repaintActiveWindows(Context currentContext)
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
+#ifdef ANDROID
+   rotationTraceStage("screen_change_entered", newWidth, newHeight);
+#endif
    // IMPORTANT: this is the only place that changes tcSettings
    screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
    screen.pitch = screen.screenW * screen.bpp / 8;
@@ -116,7 +125,15 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    // post the event to the vm
    if (mainClass != null)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1); //XXX
+#ifdef ANDROID
+   rotationTraceStage("repaint_active_windows", newWidth, newHeight);
+#else
    repaintActiveWindows(mainContext);
+#endif
+#ifdef ANDROID
+   rotationTraceStage("screen_change_returned", newWidth, newHeight);
+   rotationTraceEmitSummary();
+#endif
 }
 
 Pixel makePixelA(int32 a, int32 r, int32 g, int32 b)
