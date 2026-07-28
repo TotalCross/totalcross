@@ -49,6 +49,7 @@ import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.sys.Time;
 import totalcross.util.Hashtable;
+import totalcross.util.InvalidDateException;
 import totalcross.util.Vector;
 
 /**
@@ -71,6 +72,44 @@ public class Deployer4IPhoneIPA {
   static MobileProvision Provision;
 
   public static boolean isUsingMParam;
+
+  public static void resetIosDeploymentState() {
+    buildIPA = false;
+    certStorePath = null;
+    mobileProvision = null;
+    appleCertStore = null;
+    iosKeyStore = null;
+    iosDistributionCertificate = null;
+    Provision = null;
+    Settings.iosCertDate = null;
+    isUsingMParam = false;
+  }
+
+  /**
+   * Resolves the default iOS signing paths without opening credentials or changing user files.
+   * This operation is safe to repeat before conversion and packaging.
+   */
+  public static void initializeIosPaths(String etcDir) {
+    if (certStorePath == null && etcDir != null) {
+      certStorePath = etcDir + "tools" + File.separator + "ipa";
+      buildIPA = true;
+      mobileProvision = new File(certStorePath, "dummy.mobileprovision");
+      appleCertStore = new File(certStorePath, "dummyStore.p12");
+    }
+  }
+
+  /**
+   * Reads only the already resolved provisioning profile metadata. It does not load the PKCS#12
+   * store, sign an IPA, or modify any input file.
+   */
+  public static void iosMetadataInit() throws Exception {
+    Security.addProvider(new BouncyCastleProvider());
+    Provision = mobileProvision == null ? null : MobileProvision.readFromFile(mobileProvision);
+    Settings.iosCertDate = getProvisioningProfileExpirationDate(Provision);
+    if (Settings.iosCertDate != null) {
+      DeployLogger.verbose("iOS provisioning profile expiration date: " + Settings.iosCertDate.getSQLString());
+    }
+  }
 
   public Deployer4IPhoneIPA() throws Exception {
     if (mobileProvision == null || appleCertStore == null || iosKeyStore == null
@@ -370,9 +409,26 @@ public class Deployer4IPhoneIPA {
       }
       iosKeyStore = ks;
       iosDistributionCertificate = new org.bouncycastle.cert.X509CertificateHolder(storecert.getEncoded());
-      Provision = MobileProvision.readFromFile(mobileProvision);
-      Settings.iosCertDate = new Time(Provision.expirationDate.getDate().getTime(), false);
-      DeployLogger.verbose("iOS Certificate expiration date: " + Settings.iosCertDate.getSQLString());
+      if (Provision == null && mobileProvision != null) {
+        Provision = MobileProvision.readFromFile(mobileProvision);
+      }
+      if (Settings.iosCertDate == null) {
+        Settings.iosCertDate = getProvisioningProfileExpirationDate(Provision);
+      }
+      if (Settings.iosCertDate != null) {
+        DeployLogger.verbose("iOS provisioning profile expiration date: " + Settings.iosCertDate.getSQLString());
+      }
+    }
+  }
+
+  static Time getProvisioningProfileExpirationDate(MobileProvision provision) {
+    if (provision == null || provision.expirationDate == null) {
+      return null;
+    }
+    try {
+      return new Time(provision.expirationDate.getDate().getTime(), false);
+    } catch (InvalidDateException e) {
+      return null;
     }
   }
 }

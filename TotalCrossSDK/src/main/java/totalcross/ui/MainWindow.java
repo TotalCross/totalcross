@@ -99,6 +99,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
   {
     super(title, style);
 
+    Settings.loadDeploymentParameters();
     setX = 0;
     setY = 0;
     setW = Settings.screenWidth;

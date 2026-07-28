@@ -82,6 +82,36 @@ public final class Settings {
     return ret;
   }
 
+  /** Loads deployment parameters embedded in the application's TCZ. */
+  public static void loadDeploymentParameters() {
+    loadDeploymentParameters(Vm.getFile("tcparms.bin"));
+  }
+
+  static void loadDeploymentParameters(byte[] parameters) {
+    iosCertDate = null;
+    if (parameters == null) {
+      return;
+    }
+
+    try {
+      Hashtable vmParams = new Hashtable(new String(parameters));
+      String value = (String) vmParams.get("iosCertDate");
+      if (value != null) {
+        iosCertDate = parseDeploymentTime(value);
+      }
+    } catch (Exception e) {
+      iosCertDate = null;
+      Vm.debug("Ignoring invalid iosCertDate deployment parameter");
+    }
+  }
+
+  private static Time parseDeploymentTime(String value) throws InvalidNumberException {
+    if (value.length() == 15 && value.charAt(8) == 'T') {
+      return new Time(Convert.toInt(value.substring(0, 8)), Convert.toInt(value.substring(9)) * 1000);
+    }
+    return new Time(value);
+  }
+
   /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
    * @see #DATE_DMY
    * @see #DATE_MDY
@@ -1054,7 +1084,10 @@ public final class Settings {
   @Deprecated
   public static String pushTokenAndroid;
 
-  /** The due date of the iOS certificate. You can use it to inform your costumers when its time to update the software. */
+  /**
+   * The expiration date of the iOS provisioning profile used during deployment. It is null when
+   * the deployment does not provide reliable provisioning profile metadata.
+   */
   public static Time iosCertDate;
 
   /** Field set to true if the program have aborted on last run. */
