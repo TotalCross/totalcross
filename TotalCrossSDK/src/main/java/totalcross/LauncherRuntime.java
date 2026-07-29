@@ -121,11 +121,23 @@ public final class LauncherRuntime implements PreviewRuntime {
   /** Applies an IDE resize to the active desktop preview. */
   public void resizePreview(int width, int height, double density) {
     if (launcher == null) throw new IllegalStateException("LauncherRuntime has not been started");
-    Settings.screenDensity = density;
-    Settings.screenWidth = width;
-    Settings.screenHeight = height;
-    if (launcher.hasWindowBackend()) launcher.setWindowSize(width, height, true);
-    launcher.updateScreen();
+    runInPreviewEventThread(() -> {
+      Settings.screenDensity = density;
+      Settings.screenWidth = width;
+      Settings.screenHeight = height;
+      if (launcher.hasWindowBackend()) launcher.setWindowSize(width, height, true);
+      launcher.updateScreen();
+    }, "preview resize");
+  }
+
+  private void runInPreviewEventThread(Runnable command, String operation) {
+    if (launcher.eventThread == null) {
+      command.run();
+      return;
+    }
+    if (!launcher.eventThread.invokeInEventThread(true, command, LauncherState.PREVIEW_DESTROY_TIMEOUT_MILLIS)) {
+      throw new IllegalStateException("Timed out waiting for TotalCross " + operation + ".");
+    }
   }
 
   /** Injects a pointer transition from an external preview surface. */
