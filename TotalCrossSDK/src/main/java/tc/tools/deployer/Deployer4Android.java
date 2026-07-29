@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.deployer;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,37 +13,22 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Set;
 import java.util.zip.Adler32;
-import java.util.zip.CRC32;
-import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
-import de.schlichtherle.truezip.zip.ZipEntry;
-import de.schlichtherle.truezip.zip.ZipOutputStream;
 import totalcross.sys.Convert;
 import totalcross.sys.Vm;
-import totalcross.util.Hashtable;
-import totalcross.util.Vector;
 
 /*
     A launcher for Android is placed in a Android PacKage (APK), which is a 
@@ -117,176 +101,6 @@ public class Deployer4Android {
   private final String targetTCZ;
   private String tcFolder;
 
-  abstract static class ProtocExec {
-    final static String NAME = "protoc";
-    final static String VERSION = "21.0";
-    final static String BASE_URL = "https://github.com/protocolbuffers/protobuf/releases/download/v";
-
-    public static String getExecutable() {
-      String osName = null;
-
-      if (DeploySettings.isWindows()) {
-        osName = "win64";
-      } else if (DeploySettings.isMac()) {
-        osName = "osx-universal_binary";
-      } else {
-        String osArch = System.getProperty("os.arch");
-        if (osArch.equals("aarch64") || osArch.equals("arm64")) {
-          osArch = "aarch_64";
-        } else if (osArch.equals("x86_64") || osArch.equals("amd64")) {
-          osArch = "x86_64";
-        } else {
-          DeployLogger.warn("Couldn't detect system architecture, trying with x86_64");
-          osArch = "x86_64";
-        }
-        osName = "linux-" + osArch;
-      }
-
-      final String protocString = NAME + '-' + VERSION + '-' + osName;
-      final File protocBaseFolder = new File(DeploySettings.etcDir, "tools/android/protoc");
-      protocBaseFolder.mkdirs();
-
-      final File protocExecutable = new File(protocBaseFolder, DeploySettings.appendDotExe("bin/protoc"));
-      if (!protocExecutable.exists()) {
-        final String downloadUrl = BASE_URL + VERSION + "/" + protocString + ".zip";
-        // download and unzip protoc
-        try {
-          DeployLogger.normal("Downloading protoc...");
-          downloadAndUnzip(downloadUrl, protocBaseFolder.getAbsolutePath());
-        } catch (Exception e) {
-          throw new RuntimeException("Failed to download protoc at: " + downloadUrl
-              + " ; You may download it yourself and unzip the contents into the folder: "
-              + protocBaseFolder.getAbsolutePath(), e);
-        }
-
-      }
-
-      if (DeploySettings.isMac()) {
-        try {
-          // The attribute is optional; avoid treating its absence as a deployment warning.
-          Process query = new ProcessBuilder("/usr/bin/xattr", "-p", "com.apple.quarantine", protocExecutable.getAbsolutePath()).start();
-          if (query.waitFor() == 0) {
-            Process remove = new ProcessBuilder("/usr/bin/xattr", "-d", "com.apple.quarantine", protocExecutable.getAbsolutePath()).start();
-            if (remove.waitFor() != 0) {
-              DeployLogger.warn("Could not remove the macOS quarantine attribute from protoc; continuing with deployment.");
-            }
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          throw new RuntimeException("Interrupted while removing the macOS quarantine attribute from protoc", e);
-        } catch (IOException e) {
-          DeployLogger.warn("Could not start xattr to remove the macOS quarantine attribute from protoc; continuing with deployment.");
-        }
-      }
-      if (!DeploySettings.isWindows()) {
-        try {
-          // Also repair a protoc executable restored from an existing SDK cache.
-          Files.setPosixFilePermissions(
-              Paths.get(protocExecutable.getAbsolutePath()),
-              PosixFilePermissions.fromString("rwxr-xr-x"));
-        } catch (IOException e) {
-          throw new RuntimeException("Failed to set execution permission to: " + protocExecutable.getAbsolutePath());
-        }
-      }
-
-      final String protocExecutablePath = protocExecutable.getAbsolutePath();
-      if (!protocExecutable.exists()) {
-        throw new RuntimeException("Couldn't find protoc at: " + protocExecutablePath);
-      }
-
-      return protocExecutablePath;
-    }
-
-    public static void downloadAndUnzip(String fileUrl, String outputDir) throws Exception {
-      Path tempZip = Files.createTempFile("download", ".zip");
-
-      downloadFile(fileUrl, tempZip.toFile());
-
-      Files.createDirectories(Paths.get(outputDir));
-
-      unzip(tempZip.toString(), outputDir);
-    }
-
-    static void downloadFile(String fileURL, File outputFile) throws IOException {
-      URL url = new URL(fileURL);
-      HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
-      httpConn.setRequestProperty("User-Agent", "Mozilla/5.0"); // Prevents some servers from blocking the request
-
-      try (InputStream in = httpConn.getInputStream();
-          FileOutputStream out = new FileOutputStream(outputFile)) {
-
-        byte[] buffer = new byte[8192];
-        int len;
-
-        while ((len = in.read(buffer)) != -1) {
-          out.write(buffer, 0, len);
-        }
-      }
-
-      httpConn.disconnect();
-    }
-
-    private static void unzip(String zipFilePath, String destDirectory) throws IOException {
-      try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
-
-        java.util.zip.ZipEntry entry = zipIn.getNextEntry();
-
-        while (entry != null) {
-          String filePath = destDirectory + File.separator + entry.getName();
-
-          if (!entry.isDirectory()) {
-            Files.createDirectories(Paths.get(filePath).getParent());
-
-            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
-              byte[] bytesIn = new byte[4096];
-              int read;
-              while ((read = zipIn.read(bytesIn)) != -1) {
-                bos.write(bytesIn, 0, read);
-              }
-            }
-          } else {
-            Files.createDirectories(Paths.get(filePath));
-          }
-
-          zipIn.closeEntry();
-          entry = zipIn.getNextEntry();
-        }
-      }
-    }
-  }
-
-  abstract static class BundletoolExec {
-    final static String NAME = "bundletool-all";
-    final static String VERSION = "1.10.0";
-    final static String FILE_NAME = NAME + "-" + VERSION + ".jar";
-    final static String DOWNLOAD_URL =
-        "https://github.com/google/bundletool/releases/download/" + VERSION + "/" + FILE_NAME;
-
-    public static String getJarPath() {
-      final File androidToolsFolder = new File(DeploySettings.etcDir, "tools/android");
-      androidToolsFolder.mkdirs();
-
-      final File bundletoolJar = new File(androidToolsFolder, FILE_NAME);
-      if (!bundletoolJar.exists()) {
-        try {
-          DeployLogger.normal("Downloading bundletool...");
-          ProtocExec.downloadFile(DOWNLOAD_URL, bundletoolJar);
-        } catch (Exception e) {
-          throw new RuntimeException("Failed to download bundletool at: " + DOWNLOAD_URL
-              + " ; You may download it yourself and place the jar into the folder: "
-              + androidToolsFolder.getAbsolutePath(), e);
-        }
-      }
-
-      final String bundletoolJarPath = bundletoolJar.getAbsolutePath();
-      if (!bundletoolJar.exists()) {
-        throw new RuntimeException("Couldn't find bundletool at: " + bundletoolJarPath);
-      }
-
-      return bundletoolJarPath;
-    }
-  }
-
   public Deployer4Android() throws Exception {
     try (FileInputStream fis = new FileInputStream(Utils.findPath(DeploySettings.etcDir + "security/android_keystore.properties", false))) {
       signingConfig.load(fis);
@@ -346,7 +160,7 @@ public class Deployer4Android {
     
     // 5. decode the AndroidManifest
     // $PROTO_BIN --decode=aapt.pb.XmlNode --proto_path=tools Configuration.proto Resources.proto < $DEST_FOLDER/base/manifest/AndroidManifest.xml > AndroidManifest_temp.xml
-    final String protocExecutable = ProtocExec.getExecutable();
+    final String protocExecutable = AndroidToolLocator.protoc();
     String[] decodeCmd = { protocExecutable, "--decode=aapt.pb.XmlNode", "--proto_path=tools", "Configuration.proto", "Resources.proto" };
     
     Process process = Runtime.getRuntime().exec(decodeCmd, null, new File(DeploySettings.etcDir, "tools/android"));
@@ -493,7 +307,7 @@ public class Deployer4Android {
     List<String> javaCmdList = new ArrayList<>();
     
     final String javaExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("java"));
-    final String bundletoolJar = BundletoolExec.getJarPath();
+    final String bundletoolJar = AndroidToolLocator.bundletool();
     javaCmdList.add(javaExe);
     javaCmdList.add("-Djava.io.tmpdir=" + new File(targetDir).getAbsolutePath());
     javaCmdList.add("-jar");
@@ -616,114 +430,7 @@ public class Deployer4Android {
   }
 
   private void insertTCFilesZip(OutputStream z) throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(8192);
-
-    // parse the android.pkg
-    Hashtable ht = new Hashtable(13);
-    Utils.processInstallFile("android.pkg", ht);
-
-    Vector vLocals = (Vector) ht.get("[L]");
-    if (vLocals == null) {
-      vLocals = new Vector();
-    }
-    Vector vGlobals = (Vector) ht.get("[G]");
-    if (vGlobals == null) {
-      vGlobals = new Vector();
-    }
-    vLocals.addElements(DeploySettings.tczs);
-    if (vGlobals.size() > 0) {
-      vLocals.addElements(vGlobals.toObjectArray());
-    }
-    // tc is always included
-    // include non-binary files
-    List<File> defaultTczs = DeploySettings.getDefaultTczs();
-    for (File file : defaultTczs) {
-      vLocals.addElement(file.getAbsolutePath());
-    }
-
-    Utils.preprocessPKG(vLocals, true);
-    writeVlocals(baos, vector2set(vLocals, new HashSet<String>()));
-
-    // add the file UNCOMPRESSED
-    baos.writeTo(z);
-  }
-
-  public static <E> Set<E> vector2set(Vector vec, Set<E> set) {
-    for (int i = 0, n = vec.size(); i < n; i++) {
-      @SuppressWarnings("unchecked")
-      E item = (E) vec.items[i];
-      set.add(item);
-    }
-    return set;
-  }
-
-  private void writeVlocals(ByteArrayOutputStream baos, Set<String> vLocals) throws IOException {
-    ZipOutputStream zos = new ZipOutputStream(baos);
-    for (String item : vLocals) {
-      String[] pathnames = Convert.tokenizeString(item, ',');
-      String pathname = pathnames[0];
-      String name = Utils.getFileName(pathname);
-      if (pathnames.length > 1) {
-        name = Convert.appendPath(pathnames[1], name);
-        if (name.startsWith("/")) {
-          name = name.substring(1);
-        }
-      }
-      // tcz's name must match the lowercase sharedid
-      if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) {
-        name = targetTCZ + ".tcz";
-      }
-
-      File f = new File(pathname);
-      if (!f.exists() || !f.isFile() || !f.canRead()) {
-        f = new File(Convert.appendPath(DeploySettings.currentDir, pathname));
-      }
-
-      File file = getFirstReadableFile(pathname, Convert.appendPath(DeploySettings.currentDir, pathname), Utils.findPath(pathname, true));
-      if (file == null) {
-        DeployLogger.warn("File not found: " + pathname);
-        continue;
-      }
-
-      try (FileInputStream fis = new FileInputStream(file)){
-        int avaiable = fis.available();
-
-        ByteArrayOutputStream secondary = new ByteArrayOutputStream(avaiable);
-        IOUtils.copy(fis, secondary);
-        byte[] bytes = secondary.toByteArray();
-        fis.close();
-        ZipEntry zze = new ZipEntry(name);
-        // tcz files will be stored without compression so they can be read directly
-        if (name.endsWith(".tcz")) {
-          setEntryAsStored(zze, bytes);
-        }
-        zos.putNextEntry(zze);
-        zos.write(bytes);
-        zos.closeEntry();
-      }
-    }
-    zos.close();
-  }
-
-  private static void setEntryAsStored(ZipEntry entry, byte[] content) {
-    CRC32 crc = new CRC32();
-    crc.update(content);
-    entry.setCrc(crc.getValue());
-    entry.setMethod(ZipEntry.STORED);
-    entry.setCompressedSize(content.length);
-    entry.setSize(content.length);
-  }
-
-  private static File getFirstReadableFile (String... paths) {
-    for (String path : paths) {
-      if (path != null) {
-        File f = new File(path);
-        if (f.exists() && f.isFile() && f.canRead()) {
-          return f;
-        }
-      }
-    }
-    return null;
+    AndroidPackageFiles.write(z, targetTCZ, tcFolder);
   }
 
   private static PipedOutputStream outputToTFile(TFile file) throws IOException {
