@@ -1,4 +1,5 @@
-// Copyright (C) 2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools;
@@ -26,6 +27,8 @@ import totalcross.sys.Settings;
 
 public class AnonymousUserData {
 
+    private static final boolean TELEMETRY_ENABLED = false;
+
     private String BASE_URL = "https://statistics.totalcross.com/api/v1";
     private static final String GET_UUID = "/users/get-anonymous-uuid";
     private static final String POST_LAUNCHER = "/launch";
@@ -48,7 +51,11 @@ public class AnonymousUserData {
     private AnonymousUserData() throws IOException {
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         responseRequester = new DefaultResponseRequester();
-        loadConfiguration();
+        if (TELEMETRY_ENABLED) {
+            loadConfiguration();
+        } else {
+            config = new JSONObject();
+        }
     }
 
     public static AnonymousUserData instance() throws IOException {
@@ -84,6 +91,10 @@ public class AnonymousUserData {
      * @throws IOException
      */
     public void loadConfiguration() throws IOException {
+        if (!TELEMETRY_ENABLED) {
+            config = new JSONObject();
+            return;
+        }
         config = null;
         File configDir = new File(configDirPath);
         configDir.mkdirs();
@@ -108,6 +119,7 @@ public class AnonymousUserData {
     }
 
     public void launcher(String... args) throws JSONException, IOException {
+        if (!TELEMETRY_ENABLED) return;
         if (!GraphicsEnvironment.isHeadless() && config.isNull("userAcceptedToProvideAnonymousData")) {
             Boolean userAcceptedToContribute = responseRequester.ask();
             config.put("userAcceptedToProvideAnonymousData", userAcceptedToContribute);
@@ -119,6 +131,7 @@ public class AnonymousUserData {
     }
 
     public void deploy(String... args) throws JSONException, IOException {
+        if (!TELEMETRY_ENABLED) return;
         doPost(BASE_URL + POST_DEPLOY, args);
     }
 
@@ -144,6 +157,7 @@ public class AnonymousUserData {
      * @throws JSONException
      */
     public boolean checkUUID(String uuid) throws JSONException, IOException {
+        if (!TELEMETRY_ENABLED) return true;
         JSONObject ret = new HttpJsonConnection(BASE_URL + CHECK_UUID + "?uuid=" + uuid).doGet().getResponse();
         boolean isValid = (boolean) ret.get("isValid");
         if (!isValid) {
