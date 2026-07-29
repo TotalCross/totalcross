@@ -66,6 +66,18 @@ import totalcross.util.zip.TCZ;
 @SuppressWarnings({"deprecation", "removal"})
 abstract class LauncherInput extends LauncherArguments {
 
+  void injectPreviewPointer(int x, int y, int button, boolean pressed) {
+    if (eventThread == null) return;
+    eventThread.pushEvent(pressed ? PenEvent.PEN_DOWN : PenEvent.PEN_UP, button, x, y, modifiers,
+        Vm.getTimeStamp());
+  }
+
+  void injectPreviewKey(int keyCode, boolean pressed, int modifiers) {
+    if (eventThread == null || !pressed) return;
+    eventThread.pushEvent(keyCode < 32 ? KeyEvent.SPECIAL_KEY_PRESS : KeyEvent.KEY_PRESS, keyCode, 0, 0,
+        modifiers, Vm.getTimeStamp());
+  }
+
   @Override
   public void keyPressed(final java.awt.event.KeyEvent event) {
     if (event.getKeyChar() == '1' && event.isControlDown()) {

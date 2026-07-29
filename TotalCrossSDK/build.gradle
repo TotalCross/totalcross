@@ -202,6 +202,26 @@ publishing {
 
             from components.java
         }
+        mavenApi(MavenPublication) {
+            artifactId = 'totalcross-api'
+            artifact tasks.named('totalcrossApiJar')
+        }
+        mavenRuntimeJava(MavenPublication) {
+            artifactId = 'totalcross-runtime-java'
+            artifact tasks.named('totalcrossRuntimeJavaJar')
+        }
+        mavenConverter(MavenPublication) {
+            artifactId = 'totalcross-converter'
+            artifact tasks.named('totalcrossConverterJar')
+        }
+        mavenDeployer(MavenPublication) {
+            artifactId = 'totalcross-deployer'
+            artifact tasks.named('totalcrossDeployerJar')
+        }
+        mavenPreviewRuntime(MavenPublication) {
+            artifactId = 'totalcross-preview-runtime'
+            artifact tasks.named('totalcrossPreviewRuntimeJar')
+        }
     }
 }
 

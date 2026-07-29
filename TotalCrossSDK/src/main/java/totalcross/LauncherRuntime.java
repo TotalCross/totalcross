@@ -118,6 +118,26 @@ public final class LauncherRuntime implements PreviewRuntime {
     }
   }
 
+  /** Applies an IDE resize to the active desktop preview. */
+  public void resizePreview(int width, int height, double density) {
+    if (launcher == null) throw new IllegalStateException("LauncherRuntime has not been started");
+    Settings.screenDensity = density;
+    launcher.setWindowSize(width, height, true);
+    launcher.updateScreen();
+  }
+
+  /** Injects a pointer transition from an external preview surface. */
+  public void injectPreviewPointer(int x, int y, int button, boolean pressed) {
+    if (launcher == null) throw new IllegalStateException("LauncherRuntime has not been started");
+    launcher.injectPreviewPointer(x, y, button, pressed);
+  }
+
+  /** Injects a key transition from an external preview surface. */
+  public void injectPreviewKey(int keyCode, boolean pressed, int modifiers) {
+    if (launcher == null) throw new IllegalStateException("LauncherRuntime has not been started");
+    launcher.injectPreviewKey(keyCode, pressed, modifiers);
+  }
+
   public void stop() {
     if (launcher != null) {
       launcher.destroy();
