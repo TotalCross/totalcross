@@ -5,6 +5,7 @@
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+apply plugin: 'me.champeau.gradle.japicmp'
 
 apply from: file('gradle/artifact-boundaries.gradle')
 
@@ -78,10 +79,12 @@ sourceSets {
 
 buildscript {
     repositories {
+        gradlePluginPortal()
         mavenCentral()
     }
     dependencies {
         classpath 'net.sf.proguard:proguard-gradle:5.3.3'
+        classpath 'me.champeau.gradle.japicmp:me.champeau.gradle.japicmp.gradle.plugin:0.4.6'
     }
 }
 
@@ -132,6 +135,26 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'
 
     implementation 'com.totalcross.annotations:totalcross-annotations:1.0.0'
+}
+
+def aggregateCompatibilityBaseline = providers.gradleProperty('aggregateCompatibilityBaseline')
+tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.JapicmpTask) {
+    dependsOn tasks.named('jar')
+    onlyIf {
+        if (!aggregateCompatibilityBaseline.present) {
+            logger.lifecycle('Skipping aggregateCompatibilityCheck: set -PaggregateCompatibilityBaseline=<old-sdk.jar> to compare releases')
+            return false
+        }
+        true
+    }
+    oldClasspath.from(files(aggregateCompatibilityBaseline.map { it }))
+    newClasspath.from(tasks.named('jar'))
+    onlyModified = true
+    onlyBinaryIncompatibleModified = true
+    failOnModification = providers.gradleProperty('aggregateCompatibilityStrict')
+        .map { it.toBoolean() }.orElse(true).get()
+    ignoreMissingClasses = true
+    txtOutputFile = layout.buildDirectory.file('reports/aggregate-compatibility.txt').get().asFile
 }
 
 test {
