@@ -7,7 +7,6 @@ import java.awt.Color;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowListener;
 
-import tc.tools.AnonymousUserData;
 import totalcross.preview.AwtWindowBackend;
 import totalcross.preview.PreviewRuntime;
 import totalcross.preview.PreviewFrameConsumer;
@@ -74,14 +73,8 @@ public final class LauncherRuntime implements PreviewRuntime {
   }
 
   public void recordLauncherUsage() {
-    final String[] args = getLauncherArgs();
-    new Thread(() -> {
-      try {
-        AnonymousUserData.instance().launcher(args);
-      } catch (Exception e) {
-        // TODO: handle exception in a Log level.
-      }
-    }).start();
+    // Anonymous telemetry is intentionally disabled until its service contract
+    // is replaced with a maintained, opt-in endpoint.
   }
 
   void parseLauncherArguments(Launcher launcher, LauncherConfig config, boolean application, int fallbackWidth,
