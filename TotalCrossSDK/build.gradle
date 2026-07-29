@@ -159,7 +159,7 @@ tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.Japicmp
 
 test {
     useJUnitPlatform ()
-    // Temporarily disabled because it depends on an external endpoint; it will be fixed and re-enabled later.
+    // Anonymous telemetry is disabled until its external service is replaced.
     exclude '**/AnonymousUserDataTest.class'
     testLogging {
         exceptionFormat = 'full'
