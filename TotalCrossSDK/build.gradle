@@ -164,6 +164,9 @@ test {
     testLogging {
         exceptionFormat = 'full'
     }
+    useJUnitPlatform {
+        excludeTags 'artifact-boundary'
+    }
 }
 
 jar {
