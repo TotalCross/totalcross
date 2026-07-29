@@ -122,7 +122,9 @@ public final class LauncherRuntime implements PreviewRuntime {
   public void resizePreview(int width, int height, double density) {
     if (launcher == null) throw new IllegalStateException("LauncherRuntime has not been started");
     Settings.screenDensity = density;
-    launcher.setWindowSize(width, height, true);
+    Settings.screenWidth = width;
+    Settings.screenHeight = height;
+    if (launcher.hasWindowBackend()) launcher.setWindowSize(width, height, true);
     launcher.updateScreen();
   }
 
@@ -278,6 +280,8 @@ public final class LauncherRuntime implements PreviewRuntime {
     if (preview) {
       launcher.startApp();
       launcher.pumpEvents();
+      // A headless consumer has no AWT paint callback to trigger the first frame.
+      launcher.updateScreen();
     }
   }
 
