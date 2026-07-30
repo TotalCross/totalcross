@@ -9,7 +9,7 @@ apply plugin: 'me.champeau.gradle.japicmp'
 
 apply from: file('gradle/artifact-boundaries.gradle')
 
-version = '7.2.2'
+version = '7.2.3'
 group = 'com.totalcross'
 
 java {
