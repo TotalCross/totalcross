@@ -39,8 +39,8 @@ No state, history, or separate evidence file is needed for this bounded investig
 ## Progress
 
 - [x] (2026-07-31) Add the four reported source shapes to the existing Java 8 smoke suite.
-- [ ] (2026-07-31) Build and deploy the aggregate smoke app once with the macOS target (completed: environment capture and SDK build attempt; remaining: deploy was not reached because `dist -x test` failed in `:jar`).
-- [ ] Execute the generated macOS application once and capture its complete output.
+- [x] (2026-07-31) Build and deploy the aggregate smoke app once with the macOS target (SDK build retry exit 0; deploy exit 0).
+- [x] (2026-07-31) Execute the generated macOS application once and capture its complete output (runtime exit 0; the existing Java 8 smoke aborted before the reported cases).
 - [ ] Record class-file metadata and produce the final reproduction report.
 
 ## Current Architecture and Scope
@@ -154,6 +154,12 @@ Record only observations that change the factual interpretation of the run. Keep
 - Observation: The prescribed SDK build failed before smoke compilation or deployment.
   Evidence: `TotalCrossSDK/build/lambda-smoke-reproduction/dist.exitcode` contains `1`; the Gradle agent summary reports `:jar` failed because `TCFont.tcz` is a duplicate with no duplicate handling strategy. Full output is preserved in `TotalCrossSDK/agent-logs/20260731-161339-dist-full.log` and the compact summary in `TotalCrossSDK/agent-logs/20260731-161339-dist-agent.log`.
 
+- Observation: After the environment duplicate was removed, the prescribed SDK build and macOS deploy succeeded.
+  Evidence: `TotalCrossSDK/build/lambda-smoke-reproduction/dist.exitcode` and `deploy.exitcode` contain `0`; the generated executable is `TotalCrossSDK/build/feature-smoke/classes/install/macos/FeatureSmokeApp`.
+
+- Observation: The generated macOS application exited with code 0 but aborted before the four reported cases ran because the existing Java 8 smoke failed in `testPredicateDefaults` with `java.lang.NoSuchMethodError: java.util.function.Predicate and(java.util.function.Predicate,)`.
+  Evidence: `TotalCrossSDK/build/lambda-smoke-reproduction/runtime.exitcode` contains `0`; `runtime.log` also records failures for the existing default and static interface method checks and the unhandled `NoSuchMethodError` at `smoke.Java8FeatureSmokeTest.testPredicateDefaults 134`.
+
 ## Decision Log
 
 - Decision: Reuse the aggregate Java 8 feature smoke instead of creating a separate application.
@@ -174,6 +180,14 @@ Record only observations that change the factual interpretation of the run. Keep
 
 - Decision: Stop the active macOS procedure after the SDK build failure without changing build settings or retrying.
   Rationale: The ExecPlan explicitly requires deploy to be skipped when `dist -x test` fails, and the user requested stopping at the active milestone or a real blocker.
+  Date: 2026-07-31
+
+- Decision: Resume the failed SDK build after the environment correction and continue through the prescribed deploy and single runtime execution.
+  Rationale: The build failure was not reproduced after the duplicate generated `TCFont.tcz` was removed, and the ExecPlan requires the next phase when the preceding command succeeds.
+  Date: 2026-07-31
+
+- Decision: Stop after Milestone 2 without running class-file inspection or generating the report.
+  Rationale: Those activities belong to Milestone 3, while the requested execution boundary is the active milestone only.
   Date: 2026-07-31
 
 ## Validation and Acceptance
@@ -205,7 +219,7 @@ Milestone 1 is complete. `Java8FeatureSmokeTest.java` now contains the four repo
 
 The remaining milestones must be resumed separately to produce the prescribed macOS evidence and final report. Do not add diagnosis or remediation work.
 
-Milestone 2 is blocked at the SDK build phase. The environment capture completed, but `./gradlew-agent dist -x test` exited with code 1 during `:jar` due to the duplicate `TCFont.tcz` entry. Deploy, runtime, class-file inspection, and report generation were not executed.
+Milestone 2 is complete. The environment capture was reused, the corrected SDK build passed with exit code 0, the macOS deploy passed with exit code 0, and the generated executable was run once with exit code 0. The runtime output shows that the existing Java 8 smoke aborted at `testPredicateDefaults` before the four reported cases, so those cases are not reached in this aggregate application. Class-file inspection and report generation remain for Milestone 3.
 
 ## Revision Note
 
