@@ -5,6 +5,8 @@
 package smoke;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.util.function.BiPredicate;
 import java.util.function.DoublePredicate;
@@ -16,6 +18,9 @@ import java.util.function.Supplier;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+
+import totalcross.io.device.scanner.Scanner;
+import totalcross.ui.MainWindow;
 
 public class Java8FeatureSmokeTest extends FeatureSmokeTest {
   private int counter;
@@ -42,6 +47,10 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
     testPredicateDefaults();
     testTypeAnnotationMetadata();
     testRepeatableAnnotationMetadata();
+    testReportedMapMethodReferences();
+    testReportedHashMapPutLambda();
+    testReportedRunOnMainThreadMethodReference();
+    testReportedScannerInitialization();
     finish();
   }
 
@@ -158,6 +167,65 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
     pass("repeatable annotation metadata");
   }
 
+  private void testReportedMapMethodReferences() {
+    String caseName = "reported map method references";
+    System.out.println("[CASE] Java 8 - " + caseName);
+    try {
+      Map<String, ReportedLambdaAction> map = new HashMap<>();
+      map.put("public", this::reportedPublicMethod);
+      map.put("private", this::reportedPrivateMethod);
+      map.get("public").execute();
+      map.get("private").execute();
+      System.out.println("[PASS] Java 8 - " + caseName);
+    } catch (Throwable failure) {
+      System.out.println("[FAIL] Java 8 - " + caseName + " - " + failure.getClass().getName() + ": "
+          + failure.getMessage());
+      failure.printStackTrace();
+    }
+  }
+
+  private void testReportedHashMapPutLambda() {
+    String caseName = "reported HashMap.put lambda";
+    System.out.println("[CASE] Java 8 - " + caseName);
+    try {
+      HashMap<String, Runnable> controlHandlers = new HashMap<>();
+      final String numericPad = "numericPad";
+      controlHandlers.put(numericPad, () -> numericPadClick());
+      controlHandlers.get(numericPad).run();
+      System.out.println("[PASS] Java 8 - " + caseName);
+    } catch (Throwable failure) {
+      System.out.println("[FAIL] Java 8 - " + caseName + " - " + failure.getClass().getName() + ": "
+          + failure.getMessage());
+      failure.printStackTrace();
+    }
+  }
+
+  private void testReportedRunOnMainThreadMethodReference() {
+    String caseName = "reported runOnMainThread method reference";
+    System.out.println("[CASE] Java 8 - " + caseName);
+    try {
+      new Background().exec();
+      System.out.println("[PASS] Java 8 - " + caseName);
+    } catch (Throwable failure) {
+      System.out.println("[FAIL] Java 8 - " + caseName + " - " + failure.getClass().getName() + ": "
+          + failure.getMessage());
+      failure.printStackTrace();
+    }
+  }
+
+  private void testReportedScannerInitialization() {
+    String caseName = "reported Scanner static lambda initialization";
+    System.out.println("[CASE] Java 8 - " + caseName);
+    try {
+      System.out.println("[INFO] Java 8 - Scanner version: " + Scanner.scanManagerVersion);
+      System.out.println("[PASS] Java 8 - " + caseName);
+    } catch (Throwable failure) {
+      System.out.println("[FAIL] Java 8 - " + caseName + " - " + failure.getClass().getName() + ": "
+          + failure.getMessage());
+      failure.printStackTrace();
+    }
+  }
+
   private void increment() {
     counter++;
   }
@@ -176,6 +244,26 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
 
   private static int twice(int value) {
     return value * 2;
+  }
+
+  public void reportedPublicMethod() {
+  }
+
+  private void reportedPrivateMethod() {
+  }
+
+  private void numericPadClick() {
+  }
+
+  private class Background {
+    void exec() {
+      MainWindow.getMainWindow().runOnMainThread(this::postExecute);
+      System.out.println("[INFO] Java 8 - runOnMainThread scheduling returned");
+    }
+
+    private void postExecute() {
+      System.out.println("[CALLBACK] Java 8 - runOnMainThread callback executed");
+    }
   }
 
   interface TextReader {
