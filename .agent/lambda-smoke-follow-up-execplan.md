@@ -38,7 +38,7 @@ No separate state, evidence, or history file is required.
 
 - [x] (2026-07-31) Move the reported runtime cases before the existing `Predicate` smoke.
 - [x] (2026-07-31) Add the isolated inherited-method-reference converter fixture.
-- [ ] Run the converter fixture and aggregate runtime smoke on macOS.
+- [x] (2026-07-31) Run the converter fixture and aggregate runtime smoke on macOS.
 - [ ] Capture bytecode and stack-trace evidence.
 - [ ] Produce the final factual report.
 
@@ -164,6 +164,18 @@ Do not propose a fix or new test matrix in the report.
 
 Record only observations that materially change the interpretation of the prescribed cases. Keep raw output in the log directory.
 
+- Observation: The isolated fixture compiled, but `tc.Deploy` failed in the converter while processing inherited `Control.getGraphics`.
+  Evidence: `TotalCrossSDK/build/lambda-smoke-follow-up/deploy-converter-repro.log` records `tc.tools.converter.ConverterException: Unsupported invokedynamic in totalcross/ui/Control.getGraphics: instance method reference does not expose receiver Ltotalcross/ui/Control;` with exit code `1`.
+
+- Observation: Reordering made the map, `HashMap.put`, and `runOnMainThread` cases reachable and successful in the aggregate runtime.
+  Evidence: `runtime-aggregate.log` contains `[PASS]` for each; it records scheduling returned for `runOnMainThread`, but no callback line before the later failure.
+
+- Observation: Accessing `Scanner.scanManagerVersion` reached a runtime lambda-loading failure before the case could pass.
+  Evidence: `runtime-aggregate.log` records `java.lang.ClassNotFoundException: totalcross.io.device.scanner.Scanner$$TC$$Lambda$1` and the local case stack trace.
+
+- Observation: The pre-existing default/static interface failures and `Predicate.and` failure occurred after the reported cases, so they did not prevent those cases from being reached in this run.
+  Evidence: In `runtime-aggregate.log`, the reported case lines precede the later `[FAIL] Java 8 smoke failed` lines and the unhandled `NoSuchMethodError`.
+
 ## Decision Log
 
 - Decision: Separate the exact `this::getGraphics` fixture from the aggregate smoke.
@@ -184,6 +196,10 @@ Record only observations that materially change the interpretation of the prescr
 
 - Decision: Use `lambda.repro.GraphicsReferenceRepro` and its public `GraphicsAction` interface for the isolated fixture.
   Rationale: The fixture remains outside the aggregate `modernjava/smoke` source set while preserving the exact inherited `map.put("1", this::getGraphics)` operation and a direct invocation path.
+  Date: 2026-07-31
+
+- Decision: Treat the isolated converter failure as the prescribed result and continue to the aggregate runtime path.
+  Rationale: The plan explicitly separates converter evidence from runtime evidence and requires the independent aggregate phase even when the fixture fails during deployment.
   Date: 2026-07-31
 
 ## Validation and Acceptance
@@ -216,6 +232,8 @@ Milestone 1 is complete. The four existing reported runtime cases now execute be
 
 Milestone 2 is complete. `lambda.repro.GraphicsAction` is a public functional interface in its own file, and `lambda.repro.GraphicsReferenceRepro` contains the exact inherited `map.put("1", this::getGraphics)` operation, retrieves and invokes the stored action, and emits local case result output. No compilation, deployment, or runtime validation was performed.
 
+Milestone 3 is complete. The SDK build and fixture compilation passed. The isolated fixture deploy failed with the reported converter exception in `totalcross/ui/Control.getGraphics`; its runtime was therefore not reached. The aggregate deploy passed, and the aggregate runtime reached the map, `HashMap.put`, and `runOnMainThread` cases successfully. Scanner initialization failed with `ClassNotFoundException` for `totalcross.io.device.scanner.Scanner$$TC$$Lambda$1`, then the existing default/static interface failures and `Predicate.and` `NoSuchMethodError` occurred. The bytecode evidence and final report remain for Milestone 4.
+
 ## Revision Note
 
 Initial follow-up plan separating the exact inherited method-reference converter case from the reordered runtime smoke cases.
@@ -223,3 +241,5 @@ Initial follow-up plan separating the exact inherited method-reference converter
 Milestone 1 update: reordered only the existing reported runtime calls so they can execute before the known `Predicate` failure; no fixture or runtime validation was performed.
 
 Milestone 2 update: added only the isolated converter fixture under `TotalCrossSDK/src/test/resources/modernjava/lambda-repro/`; no aggregate source-set wiring or production code was changed.
+
+Milestone 3 update: captured the prescribed macOS build, converter deployment, aggregate deployment, and aggregate runtime results; stopped before bytecode capture and report generation.
