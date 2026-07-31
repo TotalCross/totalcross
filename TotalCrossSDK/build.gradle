@@ -255,8 +255,9 @@ publishing {
 publishing {
     repositories {
         maven {
-            // change to point to your repo, e.g. http://my.org/repo
-            url = uri('build/repo')
+            // Use -PstagingRepo for an isolated release repository; keep the
+            // historical build/repo destination for ordinary local builds.
+            url = uri(project.findProperty('stagingRepo') ?: 'build/repo')
         }
     }
 }
