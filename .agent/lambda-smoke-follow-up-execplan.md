@@ -39,8 +39,8 @@ No separate state, evidence, or history file is required.
 - [x] (2026-07-31) Move the reported runtime cases before the existing `Predicate` smoke.
 - [x] (2026-07-31) Add the isolated inherited-method-reference converter fixture.
 - [x] (2026-07-31) Run the converter fixture and aggregate runtime smoke on macOS.
-- [ ] Capture bytecode and stack-trace evidence.
-- [ ] Produce the final factual report.
+- [x] (2026-07-31) Capture bytecode and stack-trace evidence.
+- [x] (2026-07-31) Produce the final factual report.
 
 ## Current Architecture and Scope
 
@@ -176,6 +176,12 @@ Record only observations that materially change the interpretation of the prescr
 - Observation: The pre-existing default/static interface failures and `Predicate.and` failure occurred after the reported cases, so they did not prevent those cases from being reached in this run.
   Evidence: In `runtime-aggregate.log`, the reported case lines precede the later `[FAIL] Java 8 smoke failed` lines and the unhandled `NoSuchMethodError`.
 
+- Observation: The five prescribed `javap` captures completed successfully and expose the receiver, SAM, and implementation descriptors for the converter, map, `HashMap.put`, `Background`, and Scanner call sites.
+  Evidence: Each `javap-*.exitcode` file contains `0`; the summarized metadata is recorded in `.agent/reports/lambda-smoke-follow-up-report.md`.
+
+- Observation: The deployed runtime generated one observable `$$TC$$Lambda$N` name for the Scanner failure.
+  Evidence: `runtime-aggregate.log` contains `totalcross.io.device.scanner.Scanner$$TC$$Lambda$1`; no other matching name appears in the captured logs or dumps.
+
 ## Decision Log
 
 - Decision: Separate the exact `this::getGraphics` fixture from the aggregate smoke.
@@ -200,6 +206,10 @@ Record only observations that materially change the interpretation of the prescr
 
 - Decision: Treat the isolated converter failure as the prescribed result and continue to the aggregate runtime path.
   Rationale: The plan explicitly separates converter evidence from runtime evidence and requires the independent aggregate phase even when the fixture fails during deployment.
+  Date: 2026-07-31
+
+- Decision: Complete the investigation with the captured `javap` outputs and factual report without attempting to resolve the converter or runtime failures.
+  Rationale: The plan is diagnostic only, and all prescribed evidence phases have completed.
   Date: 2026-07-31
 
 ## Validation and Acceptance
@@ -234,6 +244,8 @@ Milestone 2 is complete. `lambda.repro.GraphicsAction` is a public functional in
 
 Milestone 3 is complete. The SDK build and fixture compilation passed. The isolated fixture deploy failed with the reported converter exception in `totalcross/ui/Control.getGraphics`; its runtime was therefore not reached. The aggregate deploy passed, and the aggregate runtime reached the map, `HashMap.put`, and `runOnMainThread` cases successfully. Scanner initialization failed with `ClassNotFoundException` for `totalcross.io.device.scanner.Scanner$$TC$$Lambda$1`, then the existing default/static interface failures and `Predicate.and` `NoSuchMethodError` occurred. The bytecode evidence and final report remain for Milestone 4.
 
+Milestone 4 is complete. All prescribed bytecode captures passed, and `.agent/reports/lambda-smoke-follow-up-report.md` records the environment, phase exit codes, converter and runtime stack traces, case results, receiver/SAM/implementation descriptors, callback observation, Scanner initialization result, generated lambda name, limitations, and factual conclusion. No production fix or exploratory matrix was added.
+
 ## Revision Note
 
 Initial follow-up plan separating the exact inherited method-reference converter case from the reordered runtime smoke cases.
@@ -243,3 +255,5 @@ Milestone 1 update: reordered only the existing reported runtime calls so they c
 Milestone 2 update: added only the isolated converter fixture under `TotalCrossSDK/src/test/resources/modernjava/lambda-repro/`; no aggregate source-set wiring or production code was changed.
 
 Milestone 3 update: captured the prescribed macOS build, converter deployment, aggregate deployment, and aggregate runtime results; stopped before bytecode capture and report generation.
+
+Milestone 4 update: captured the five prescribed `javap` outputs and created the final follow-up report from the preserved logs; no additional execution path was added.
