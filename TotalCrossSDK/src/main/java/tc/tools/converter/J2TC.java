@@ -925,6 +925,7 @@ public final class J2TC implements JConstants, TCConstants {
         s += len;
         if (nameLow.endsWith(".class")) // is this a class file?
         {
+          addSyntheticLambdaAdapters(vin, (JavaClass) fe.extra);
           GlobalConstantPool.saveState();
           // start the job
           J2TC j2 = new J2TC((JavaClass) fe.extra);
@@ -1059,7 +1060,6 @@ public final class J2TC implements JConstants, TCConstants {
   }
 
   private static void expandClass(Vector vin, JavaClass jc) throws Exception {
-    addSyntheticLambdaAdapters(vin, jc);
     JavaConstantPool jcp = jc.cp;
     for (int i = 1; i < jcp.numConstants; i++) {
       if (jcp.constants[i] instanceof JavaConstantInfo) {
@@ -1086,7 +1086,7 @@ public final class J2TC implements JConstants, TCConstants {
     }
   }
 
-  private static void addSyntheticLambdaAdapters(Vector vin, JavaClass jc) throws Exception {
+  public static void addSyntheticLambdaAdapters(Vector vin, JavaClass jc) throws Exception {
     if (!Java8LambdaLowering.hasLambdaSites(jc)) {
       return;
     }
@@ -1147,6 +1147,7 @@ public final class J2TC implements JConstants, TCConstants {
     String cn = null;
     fName = fName.replace('\\', '/');
     ByteCode.initClasses();
+    Java8LambdaLowering.beginConversionRun();
     Vector vin = new Vector(200);
     DeploySettings.entriesList = vin; // keep track of input files
     setupHt();

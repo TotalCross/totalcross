@@ -207,6 +207,53 @@ final class ModernJavaClassFileFixtures {
         "java 8 primitive adaptation", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileJava8InheritedVoidMethodReferenceFixture(Path workDir)
+      throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8InheritedVoidMethodReference";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "class InheritedMiddle {\n"
+        + "  public String inherited() { return \"inherited\"; }\n" + "}\n"
+        + "class InheritedBase extends InheritedMiddle { }\n"
+        + "public class " + simpleName + " extends InheritedBase {\n"
+        + "  public interface VoidAction { void execute(); }\n"
+        + "  public VoidAction action() { return this::inherited; }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 inherited void method reference", className, source);
+  }
+
+  static Optional<ModernJavaClassFileFixture> compileJava8ReturnDiscardFixture(Path workDir) throws IOException {
+    String packageName = "fixtures";
+    String simpleName = "CompiledJava8ReturnDiscard";
+    String className = packageName + "." + simpleName;
+    String source = "package " + packageName + ";\n" + "public class " + simpleName + " {\n"
+        + "  public interface ReturnDiscardAction { void execute(); }\n"
+        + "  public ReturnDiscardAction voidReference() { return this::returnVoid; }\n"
+        + "  public ReturnDiscardAction booleanReference() { return this::returnBoolean; }\n"
+        + "  public ReturnDiscardAction byteReference() { return this::returnByte; }\n"
+        + "  public ReturnDiscardAction charReference() { return this::returnChar; }\n"
+        + "  public ReturnDiscardAction shortReference() { return this::returnShort; }\n"
+        + "  public ReturnDiscardAction intReference() { return this::returnInt; }\n"
+        + "  public ReturnDiscardAction longReference() { return this::returnLong; }\n"
+        + "  public ReturnDiscardAction floatReference() { return this::returnFloat; }\n"
+        + "  public ReturnDiscardAction doubleReference() { return this::returnDouble; }\n"
+        + "  public ReturnDiscardAction objectReference() { return this::returnObject; }\n"
+        + "  public ReturnDiscardAction arrayReference() { return this::returnArray; }\n"
+        + "  public void returnVoid() { }\n"
+        + "  public boolean returnBoolean() { return true; }\n"
+        + "  public byte returnByte() { return 7; }\n"
+        + "  public char returnChar() { return 'c'; }\n"
+        + "  public short returnShort() { return 8; }\n"
+        + "  public int returnInt() { return 9; }\n"
+        + "  public long returnLong() { return 10L; }\n"
+        + "  public float returnFloat() { return 1.5F; }\n"
+        + "  public double returnDouble() { return 2.5D; }\n"
+        + "  public String returnObject() { return \"object\"; }\n"
+        + "  public int[] returnArray() { return new int[] { 11 }; }\n" + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "java 8 return discard", className, source);
+  }
+
   static Optional<ModernJavaClassFileFixture> compileJava8RetrolambdaRemovalFixture(Path workDir)
       throws IOException {
     String packageName = "fixtures";
