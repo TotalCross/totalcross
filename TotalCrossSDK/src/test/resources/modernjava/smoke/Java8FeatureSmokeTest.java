@@ -43,14 +43,14 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
     testReferenceReturnAdaptation();
     testReferenceArgumentAdaptation();
     testPrimitiveAdaptation();
-    testDefaultAndStaticInterfaceMethods();
-    testPredicateDefaults();
-    testTypeAnnotationMetadata();
-    testRepeatableAnnotationMetadata();
     testReportedMapMethodReferences();
     testReportedHashMapPutLambda();
     testReportedRunOnMainThreadMethodReference();
     testReportedScannerInitialization();
+    testDefaultAndStaticInterfaceMethods();
+    testPredicateDefaults();
+    testTypeAnnotationMetadata();
+    testRepeatableAnnotationMetadata();
     finish();
   }
 
