@@ -41,7 +41,7 @@ No state, history, or separate evidence file is needed for this bounded investig
 - [x] (2026-07-31) Add the four reported source shapes to the existing Java 8 smoke suite.
 - [x] (2026-07-31) Build and deploy the aggregate smoke app once with the macOS target (SDK build retry exit 0; deploy exit 0).
 - [x] (2026-07-31) Execute the generated macOS application once and capture its complete output (runtime exit 0; the existing Java 8 smoke aborted before the reported cases).
-- [ ] Record class-file metadata and produce the final reproduction report.
+- [x] (2026-07-31) Record class-file metadata and produce the final reproduction report.
 
 ## Current Architecture and Scope
 
@@ -160,6 +160,9 @@ Record only observations that change the factual interpretation of the run. Keep
 - Observation: The generated macOS application exited with code 0 but aborted before the four reported cases ran because the existing Java 8 smoke failed in `testPredicateDefaults` with `java.lang.NoSuchMethodError: java.util.function.Predicate and(java.util.function.Predicate,)`.
   Evidence: `TotalCrossSDK/build/lambda-smoke-reproduction/runtime.exitcode` contains `0`; `runtime.log` also records failures for the existing default and static interface method checks and the unhandled `NoSuchMethodError` at `smoke.Java8FeatureSmokeTest.testPredicateDefaults 134`.
 
+- Observation: Class-file inspection found the requested method-reference and lambda bootstrap metadata, but no generated class name matching `$$TC$$Lambda$N`.
+  Evidence: The outer smoke class, `Java8FeatureSmokeTest$Background`, and `Scanner` dumps all completed with exit code `0`; searches across those dumps and the captured runtime/build logs found no `$$TC$$Lambda$` occurrence.
+
 ## Decision Log
 
 - Decision: Reuse the aggregate Java 8 feature smoke instead of creating a separate application.
@@ -188,6 +191,14 @@ Record only observations that change the factual interpretation of the run. Keep
 
 - Decision: Stop after Milestone 2 without running class-file inspection or generating the report.
   Rationale: Those activities belong to Milestone 3, while the requested execution boundary is the active milestone only.
+  Date: 2026-07-31
+
+- Decision: Inspect `Java8FeatureSmokeTest$Background` in an additional `javap` capture.
+  Rationale: The prescribed outer-class dump does not contain the inner class method body, while the report requires the bootstrap and implementation handle for `this::postExecute`.
+  Date: 2026-07-31
+
+- Decision: Mark the four reported cases as not reached rather than inferred failures or passes.
+  Rationale: The aggregate runtime aborted in the pre-existing `testPredicateDefaults` case before emitting any new `[CASE]` line.
   Date: 2026-07-31
 
 ## Validation and Acceptance
@@ -219,7 +230,9 @@ Milestone 1 is complete. `Java8FeatureSmokeTest.java` now contains the four repo
 
 The remaining milestones must be resumed separately to produce the prescribed macOS evidence and final report. Do not add diagnosis or remediation work.
 
-Milestone 2 is complete. The environment capture was reused, the corrected SDK build passed with exit code 0, the macOS deploy passed with exit code 0, and the generated executable was run once with exit code 0. The runtime output shows that the existing Java 8 smoke aborted at `testPredicateDefaults` before the four reported cases, so those cases are not reached in this aggregate application. Class-file inspection and report generation remain for Milestone 3.
+Milestone 2 is complete. The environment capture was reused, the corrected SDK build passed with exit code 0, the macOS deploy passed with exit code 0, and the generated executable was run once with exit code 0. The runtime output shows that the existing Java 8 smoke aborted at `testPredicateDefaults` before the four reported cases, so those cases are not reached in this aggregate application.
+
+Milestone 3 is complete. The prescribed `javap` captures and a supplemental inner-class capture passed, and `.agent/reports/lambda-smoke-reproduction-report.md` summarizes the environment, phase results, not-reached cases, exception stack trace, lambda bootstrap metadata, and the absence of observed `$$TC$$Lambda$N` names. No reported failure was reproduced; the cases were not reached under the exact procedure. No diagnosis or remediation was added.
 
 ## Revision Note
 
