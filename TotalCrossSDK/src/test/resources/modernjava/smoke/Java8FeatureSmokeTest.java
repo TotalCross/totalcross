@@ -129,32 +129,40 @@ public class Java8FeatureSmokeTest extends FeatureSmokeTest {
   }
 
   private void testPredicateDefaults() {
-    Predicate<String> startsWithJava = value -> value.startsWith("java");
-    Predicate<String> endsWithEight = value -> value.endsWith("8");
-    Predicate<String> composed = startsWithJava.and(endsWithEight);
-    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(composed.test("java8")), "predicate default and");
-    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(startsWithJava.or(endsWithEight).test("totalcross8")),
-        "predicate default or");
-    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(startsWithJava.negate().test("totalcross")),
-        "predicate default negate");
-    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(Predicate.isEqual("java8").test("java8")),
-        "predicate static isEqual");
+    String caseName = "Predicate default methods";
+    System.out.println("[CASE] Java 8 - " + caseName);
+    try {
+      Predicate<String> startsWithJava = value -> value.startsWith("java");
+      Predicate<String> endsWithEight = value -> value.endsWith("8");
+      Predicate<String> composed = startsWithJava.and(endsWithEight);
+      checkPredicate(composed.test("java8"), "predicate default and");
+      checkPredicate(startsWithJava.or(endsWithEight).test("totalcross8"), "predicate default or");
+      checkPredicate(startsWithJava.negate().test("totalcross"), "predicate default negate");
+      checkPredicate(Predicate.isEqual("java8").test("java8"), "predicate static isEqual");
 
-    BiPredicate<String, String> sameLength = (left, right) -> left.length() == right.length();
-    BiPredicate<String, String> sameStart = (left, right) -> left.charAt(0) == right.charAt(0);
-    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(sameLength.and(sameStart).test("java", "jvm!")),
-        "biPredicate default and");
+      BiPredicate<String, String> sameLength = (left, right) -> left.length() == right.length();
+      BiPredicate<String, String> sameStart = (left, right) -> left.charAt(0) == right.charAt(0);
+      checkPredicate(sameLength.and(sameStart).test("java", "jvm!"), "biPredicate default and");
 
-    IntPredicate positive = value -> value > 0;
-    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(positive.and(value -> value < 10).test(8)),
-        "intPredicate default and");
+      IntPredicate positive = value -> value > 0;
+      checkPredicate(positive.and(value -> value < 10).test(8), "intPredicate default and");
 
-    LongPredicate large = value -> value > 100L;
-    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(large.or(value -> value == 8L).test(8L)),
-        "longPredicate default or");
+      LongPredicate large = value -> value > 100L;
+      checkPredicate(large.or(value -> value == 8L).test(8L), "longPredicate default or");
 
-    DoublePredicate whole = value -> value == (long) value;
-    checkEquals(Boolean.TRUE, () -> Boolean.valueOf(whole.negate().test(8.5D)), "doublePredicate default negate");
+      DoublePredicate whole = value -> value == (long) value;
+      checkPredicate(whole.negate().test(8.5D), "doublePredicate default negate");
+      System.out.println("[PASS] Java 8 - " + caseName);
+    } catch (Throwable failure) {
+      failCase(caseName, failure);
+    }
+  }
+
+  private void checkPredicate(boolean condition, String feature) {
+    if (!condition) {
+      throw new AssertionError("condition was false: " + feature);
+    }
+    pass(feature);
   }
 
   private void testTypeAnnotationMetadata() {

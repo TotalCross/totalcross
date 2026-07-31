@@ -393,6 +393,16 @@ def featureSmokeSdkJar = file('dist/totalcross-sdk.jar')
 def featureSmokeSources = fileTree('src/test/resources/modernjava/smoke') {
 	include '*.java'
 }
+def lambdaLoweringFixesClassesDir = layout.buildDirectory.dir('lambda-lowering-fixes/classes')
+def lambdaLoweringFixesSdkJar = file('dist/totalcross-sdk.jar')
+def lambdaLoweringFixesSources = fileTree('src/test/resources/modernjava/lambda-repro') {
+	include '*.java'
+}
+def lambdaReturnTypesClassesDir = layout.buildDirectory.dir('lambda-return-types-regression/classes')
+def lambdaReturnTypesSdkJar = file('dist/totalcross-sdk.jar')
+def lambdaReturnTypesSources = fileTree('src/test/resources/modernjava/lambda-repro') {
+	include '*.java'
+}
 def axtlsProviderSmokeClassesDir = layout.buildDirectory.dir('axtls-provider-smoke/classes')
 def axtlsProviderSmokeSdkJar = file('dist/totalcross-sdk.jar')
 def axtlsProviderSmokeSources = fileTree('src/test/resources/axtls') {
@@ -461,6 +471,158 @@ tasks.register('compileAxtlsProviderSmoke', JavaCompile) {
 	doFirst {
 		if (!axtlsProviderSmokeSdkJar.isFile()) {
 			throw new GradleException('Run ./gradlew-agent dist -x test before compiling the axTLS provider smoke app.')
+		}
+	}
+}
+
+tasks.register('compileLambdaLoweringFixesRepro', JavaCompile) {
+	group = 'verification'
+	description = 'Compiles the inherited lambda receiver regression app against the generated SDK.'
+
+	source lambdaLoweringFixesSources
+	classpath = files(lambdaLoweringFixesSdkJar)
+	destinationDirectory = lambdaLoweringFixesClassesDir
+	options.encoding = 'UTF-8'
+	options.release.set(17)
+
+	doFirst {
+		if (!lambdaLoweringFixesSdkJar.isFile()) {
+			throw new GradleException('Run ./gradlew dist -x test before compiling the lambda lowering regression app.')
+		}
+	}
+}
+
+tasks.register('deployLambdaLoweringFixesRepro', JavaExec) {
+	group = 'verification'
+	description = 'Deploys the inherited lambda receiver regression app for macOS.'
+	dependsOn 'copySdkDependencies', 'compileLambdaLoweringFixesRepro'
+
+	mainClass = 'tc.Deploy'
+	classpath = files(lambdaLoweringFixesSdkJar) + fileTree('dist/libs') {
+		include '*.jar'
+	}
+	workingDir lambdaLoweringFixesClassesDir.get().asFile
+	args = [
+		'lambda/repro/GraphicsReferenceRepro.class',
+		'-macos'
+	]
+}
+
+tasks.register('runLambdaLoweringFixesRepro', Exec) {
+	group = 'verification'
+	description = 'Runs the generated macOS inherited lambda receiver regression executable.'
+	dependsOn 'deployLambdaLoweringFixesRepro'
+	doFirst {
+		def nativeRuntime = project.findProperty('tcvmDylib')
+		if (nativeRuntime) {
+			def nativeRuntimeFile = file(nativeRuntime)
+			if (!nativeRuntimeFile.isFile()) {
+				throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+			}
+			copy {
+				from nativeRuntimeFile
+				into lambdaLoweringFixesClassesDir.get().dir('install/macos').asFile
+				rename { 'libtcvm.dylib' }
+			}
+		}
+		commandLine lambdaLoweringFixesClassesDir.get().file('install/macos/GraphicsReferenceRepro').asFile
+	}
+	workingDir lambdaLoweringFixesClassesDir.map { it.dir('install/macos').asFile }
+}
+
+tasks.register('compileLambdaReturnTypesSmoke', JavaCompile) {
+	group = 'verification'
+	description = 'Compiles the all-return-kinds lambda discard smoke app against the generated SDK.'
+
+	source lambdaReturnTypesSources
+	classpath = files(lambdaReturnTypesSdkJar)
+	destinationDirectory = lambdaReturnTypesClassesDir
+	options.encoding = 'UTF-8'
+	options.release.set(17)
+
+	doFirst {
+		if (!lambdaReturnTypesSdkJar.isFile()) {
+			throw new GradleException('Run ./gradlew dist -x test before compiling the lambda return discard smoke app.')
+		}
+	}
+}
+
+tasks.register('deployLambdaReturnTypesSmoke', JavaExec) {
+	group = 'verification'
+	description = 'Deploys the all-return-kinds lambda discard smoke app for macOS.'
+	dependsOn 'copySdkDependencies', 'compileLambdaReturnTypesSmoke'
+
+	mainClass = 'tc.Deploy'
+	classpath = files(lambdaReturnTypesSdkJar) + fileTree('dist/libs') {
+		include '*.jar'
+	}
+	workingDir lambdaReturnTypesClassesDir.get().asFile
+	args = [
+		'lambda/repro/LambdaReturnDiscardRepro.class',
+		'-macos'
+	]
+}
+
+tasks.register('runLambdaReturnTypesSmoke', Exec) {
+	group = 'verification'
+	description = 'Runs the generated macOS all-return-kinds lambda discard smoke executable.'
+	dependsOn 'deployLambdaReturnTypesSmoke'
+	doFirst {
+		def nativeRuntime = project.findProperty('tcvmDylib')
+		if (nativeRuntime) {
+			def nativeRuntimeFile = file(nativeRuntime)
+			if (!nativeRuntimeFile.isFile()) {
+				throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+			}
+			copy {
+				from nativeRuntimeFile
+				into lambdaReturnTypesClassesDir.get().dir('install/macos').asFile
+				rename { 'libtcvm.dylib' }
+			}
+		}
+		commandLine lambdaReturnTypesClassesDir.get().file('install/macos/LambdaReturnDiscardRepro').asFile
+	}
+	workingDir lambdaReturnTypesClassesDir.map { it.dir('install/macos').asFile }
+}
+
+tasks.register('runModernJavaFeatureSmoke', Exec) {
+	group = 'verification'
+	description = 'Runs the generated macOS aggregate modern Java feature smoke executable.'
+	dependsOn 'deployModernJavaFeatureSmoke'
+	ignoreExitValue = true
+	def smokeOutput = new ByteArrayOutputStream()
+	doFirst {
+		def nativeRuntime = project.findProperty('tcvmDylib')
+		if (nativeRuntime) {
+			def nativeRuntimeFile = file(nativeRuntime)
+			if (!nativeRuntimeFile.isFile()) {
+				throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+			}
+			copy {
+				from nativeRuntimeFile
+				into featureSmokeClassesDir.get().dir('install/macos').asFile
+				rename { 'libtcvm.dylib' }
+			}
+		}
+		commandLine featureSmokeClassesDir.get().file('install/macos/FeatureSmokeApp').asFile
+		smokeOutput.reset()
+		standardOutput = smokeOutput
+		errorOutput = smokeOutput
+	}
+	workingDir featureSmokeClassesDir.map { it.dir('install/macos').asFile }
+	doLast {
+		String output = smokeOutput.toString('UTF-8')
+		logger.lifecycle(output)
+		int exitCode = executionResult.get().exitValue
+		boolean predicatePass = output.contains('[PASS] Java 8 - Predicate default methods')
+		boolean predicateFail = output.contains('[FAIL] Java 8 - Predicate default methods')
+		boolean predicateNoSuchMethod = output.contains('NoSuchMethodError')
+			&& output.contains('java.util.function.Predicate')
+		boolean aborted = output.contains('Aborting program')
+		if (exitCode != 0 || !predicatePass || predicateFail || predicateNoSuchMethod || aborted) {
+			throw new GradleException('Modern Java feature smoke validation failed: exitCode=' + exitCode
+					+ ', predicatePass=' + predicatePass + ', predicateFail=' + predicateFail
+					+ ', predicateNoSuchMethod=' + predicateNoSuchMethod + ', aborted=' + aborted)
 		}
 	}
 }

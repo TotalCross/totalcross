@@ -10,6 +10,7 @@ import totalcross.ui.Label;
 abstract class FeatureSmokeTest extends Container {
   private final String suiteName;
   private int passed;
+  private int failed;
 
   FeatureSmokeTest(String suiteName) {
     this.suiteName = suiteName;
@@ -63,9 +64,22 @@ abstract class FeatureSmokeTest extends Container {
   }
 
   protected void finish() {
-    String result = suiteName + " smoke OK (" + passed + " tests)";
-    System.out.println("[PASS] " + result);
+    if (failed == 0) {
+      String result = suiteName + " smoke OK (" + passed + " tests)";
+      System.out.println("[PASS] " + result);
+      add(new Label(result), LEFT + 8, TOP + 4);
+      return;
+    }
+    String result = suiteName + " smoke FAILED (" + passed + " tests, " + failed + " failed)";
+    System.out.println("[FAIL] " + result);
     add(new Label(result), LEFT + 8, TOP + 4);
+  }
+
+  protected void failCase(String feature, Throwable reason) {
+    failed++;
+    System.out.println("[FAIL] " + suiteName + " - " + feature + " - " + reason.getClass().getName() + ": "
+        + reason.getMessage());
+    reason.printStackTrace();
   }
 
   protected void fail(String feature, Exception reason) {
@@ -74,6 +88,7 @@ abstract class FeatureSmokeTest extends Container {
   }
 
   private void fail(String feature, String reason) {
+    failed++;
     String message = suiteName + " smoke failed: " + feature + " - " + reason;
     System.out.println("[FAIL] " + message);
   }
