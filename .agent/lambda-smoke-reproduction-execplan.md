@@ -39,7 +39,7 @@ No state, history, or separate evidence file is needed for this bounded investig
 ## Progress
 
 - [x] (2026-07-31) Add the four reported source shapes to the existing Java 8 smoke suite.
-- [ ] Build and deploy the aggregate smoke app once with the macOS target.
+- [ ] (2026-07-31) Build and deploy the aggregate smoke app once with the macOS target (completed: environment capture and SDK build attempt; remaining: deploy was not reached because `dist -x test` failed in `:jar`).
 - [ ] Execute the generated macOS application once and capture its complete output.
 - [ ] Record class-file metadata and produce the final reproduction report.
 
@@ -151,6 +151,9 @@ Record only observations that change the factual interpretation of the run. Keep
 - Observation: The requested `.agent/state/lambda-smoke-reproduction-execplan.md` file is absent from the checkout. The ExecPlan itself states that this investigation has no separate state file, so Milestone 1 was treated as active from the unchecked progress list.
   Evidence: `find .agent -maxdepth 3 -type f` listed no matching state file; all four progress items were unchecked before this milestone.
 
+- Observation: The prescribed SDK build failed before smoke compilation or deployment.
+  Evidence: `TotalCrossSDK/build/lambda-smoke-reproduction/dist.exitcode` contains `1`; the Gradle agent summary reports `:jar` failed because `TCFont.tcz` is a duplicate with no duplicate handling strategy. Full output is preserved in `TotalCrossSDK/agent-logs/20260731-161339-dist-full.log` and the compact summary in `TotalCrossSDK/agent-logs/20260731-161339-dist-agent.log`.
+
 ## Decision Log
 
 - Decision: Reuse the aggregate Java 8 feature smoke instead of creating a separate application.
@@ -167,6 +170,10 @@ Record only observations that change the factual interpretation of the run. Keep
 
 - Decision: Stop after the smoke-source milestone and do not run compilation, deployment, runtime, or bytecode inspection.
   Rationale: Those commands belong to later milestones, and the requested execution boundary is the active milestone only.
+  Date: 2026-07-31
+
+- Decision: Stop the active macOS procedure after the SDK build failure without changing build settings or retrying.
+  Rationale: The ExecPlan explicitly requires deploy to be skipped when `dist -x test` fails, and the user requested stopping at the active milestone or a real blocker.
   Date: 2026-07-31
 
 ## Validation and Acceptance
@@ -197,6 +204,8 @@ The source edits and report are safe to resume. Do not run `clean`, delete cache
 Milestone 1 is complete. `Java8FeatureSmokeTest.java` now contains the four reported source shapes: public/private method references stored in a map, a lambda passed directly to `HashMap.put`, a bound private callback passed to `runOnMainThread`, and access to `Scanner.scanManagerVersion` for static initialization. The public `ReportedLambdaAction` interface is in its own source file. No build, deploy, runtime, or bytecode evidence was collected because those are later milestones and were intentionally not executed.
 
 The remaining milestones must be resumed separately to produce the prescribed macOS evidence and final report. Do not add diagnosis or remediation work.
+
+Milestone 2 is blocked at the SDK build phase. The environment capture completed, but `./gradlew-agent dist -x test` exited with code 1 during `:jar` due to the duplicate `TCFont.tcz` entry. Deploy, runtime, class-file inspection, and report generation were not executed.
 
 ## Revision Note
 
