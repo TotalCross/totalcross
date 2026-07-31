@@ -37,7 +37,7 @@ No separate state, evidence, or history file is required.
 ## Progress
 
 - [x] (2026-07-31) Move the reported runtime cases before the existing `Predicate` smoke.
-- [ ] Add the isolated inherited-method-reference converter fixture.
+- [x] (2026-07-31) Add the isolated inherited-method-reference converter fixture.
 - [ ] Run the converter fixture and aggregate runtime smoke on macOS.
 - [ ] Capture bytecode and stack-trace evidence.
 - [ ] Produce the final factual report.
@@ -182,6 +182,10 @@ Record only observations that materially change the interpretation of the prescr
   Rationale: The cases already preserve the required source shapes and local failure handling; changing anything else would exceed Milestone 1 and could alter the behavior under investigation.
   Date: 2026-07-31
 
+- Decision: Use `lambda.repro.GraphicsReferenceRepro` and its public `GraphicsAction` interface for the isolated fixture.
+  Rationale: The fixture remains outside the aggregate `modernjava/smoke` source set while preserving the exact inherited `map.put("1", this::getGraphics)` operation and a direct invocation path.
+  Date: 2026-07-31
+
 ## Validation and Acceptance
 
 The plan is complete when:
@@ -210,8 +214,12 @@ Do not reset unrelated changes or delete caches. Reuse successful build outputs 
 
 Milestone 1 is complete. The four existing reported runtime cases now execute before `testDefaultAndStaticInterfaceMethods()` and `testPredicateDefaults()`, while the existing tests remain unchanged. The isolated converter fixture, macOS execution, bytecode capture, and final report remain for later milestones.
 
+Milestone 2 is complete. `lambda.repro.GraphicsAction` is a public functional interface in its own file, and `lambda.repro.GraphicsReferenceRepro` contains the exact inherited `map.put("1", this::getGraphics)` operation, retrieves and invokes the stored action, and emits local case result output. No compilation, deployment, or runtime validation was performed.
+
 ## Revision Note
 
 Initial follow-up plan separating the exact inherited method-reference converter case from the reordered runtime smoke cases.
 
 Milestone 1 update: reordered only the existing reported runtime calls so they can execute before the known `Predicate` failure; no fixture or runtime validation was performed.
+
+Milestone 2 update: added only the isolated converter fixture under `TotalCrossSDK/src/test/resources/modernjava/lambda-repro/`; no aggregate source-set wiring or production code was changed.
