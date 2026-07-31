@@ -54,4 +54,9 @@ Key evidence:
 - Full suite: `TotalCrossSDK/build/lambda-return-types-regression/full-sdk-tests.log`
 - XML results: `TotalCrossSDK/build/test-results/test/`
 
+Logical commits:
+
+- `da7a45c77` — `test(sdk): harden modern Java smoke validation`
+- `ee7520fda` — `fix(sdk): lower lambda method references safely`
+
 Next command: none; the execution plan is complete.
