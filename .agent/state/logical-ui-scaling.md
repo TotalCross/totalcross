@@ -15,25 +15,26 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `28b67e719f76338e5cbec71804b6bdeb1398d94f`.
+- Last logical commit: `85e19a7090de493db5bf78582b14986ea83f7500`.
 
 ## Active Milestone
 
-Milestone 3: add macOS Retina detection and logical text.
+Milestone 4: implement scaled-image semantics.
 
 ## Active Slice
 
-Add focused peer-aware scale tests where the desktop harness permits, then assess
-whether the remaining metric work can close the milestone without image changes.
+Read the image design and implement explicit logical versus physical image
+dimensions without changing ordinary scale-1 image behavior.
 
 ## Next Concrete Action
 
-Inspect the existing JavaSE launcher test seams for the frame configuration path.
+Read the Milestone 4 section and the image design, then inspect Image and its
+native synchronization path.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 3 only.
-- `.agent/design/logical-ui-scaling-text.md`.
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 4 only.
+- `.agent/design/logical-ui-scaling-images.md`.
 
 Do not read all design guides yet.
 

@@ -84,8 +84,10 @@ both limits. Audit changed files at each milestone closure.
 - [x] (2026-08-01 22:05Z) Applied a per-Graphics Skia base transform, removed
       a scale-bypassing image fast path, preserved raw pixel coordinates, and
       compiled the macOS native target.
-- [ ] Add macOS Retina scale detection and scale-change handling.
-- [ ] Implement logical shaping, metrics, and control preferred sizes.
+- [x] (2026-08-01 22:30Z) Added peer-aware AWT backing-scale refresh and
+      removed Skia text and metric dependence on global screen density.
+- [x] (2026-08-01 22:30Z) Added double-precision FontMetrics accessors while
+      preserving integer logical compatibility fields.
 - [ ] Implement scaled images and explicit logical versus physical dimensions.
 - [ ] Make the Java renderer logically equivalent to Skia.
 - [ ] Make the non-Skia native renderer logically equivalent.
