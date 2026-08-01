@@ -6,52 +6,70 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Logical UI scaling editorial report
 
-Update this report at major milestone closure and final completion. Keep claims
-factual and point to evidence rather than copying logs.
-
 ## Editorial Summary
 
-Not implemented yet.
+The branch contains useful implementation scaffolding but is under corrective
+review. No final outcome is claimed.
 
 ## Original Plan versus Actual Outcome
 
-Record delivered milestones, deferred work, and material deviations.
+The original plan expected complete layout behavior, three-renderer equivalence,
+native macOS and Android proof, native synchronization, and a complete
+text-bearing DANFE.
+
+The reviewed branch currently proves API scaffolding, selected Java image
+behavior, PNG dimensions, barcode runs, native compilation, and Java Launcher
+startup. It does not yet prove the complete behavioral acceptance.
 
 ## What Changed
 
-Summarize public API, layout, renderer, image, font, and platform changes.
+Update after corrective milestones. Keep JavaSE/AWT and native macOS changes in
+separate subsections.
 
 ## Decisions and Trade-offs
 
-Summarize decisions that affected compatibility, performance, or migration.
+- Existing branch history is preserved.
+- `USE_WRITE_PIXELS` must be restored with scale-aware eligibility.
+- Native implementation validation uses macOS until final platform validation.
+- Java Launcher execution is not native evidence.
+- Screenshots use CoreGraphics window IDs and `screencapture -l`.
 
 ## Unexpected Problems and Discoveries
 
-Record only discoveries supported by evidence.
+- Prior progress reporting confused compilation and Java host execution with
+  native runtime validation.
+- The embedded direct-write branch was removed unnecessarily.
+- Layout-unit metadata was not connected to layout behavior.
 
 ## Validation and Measurable Results
 
-Include test counts, platforms, scales, logical and physical dimensions, renderer
-equivalence, DANFE assertions, and build results.
+Do not promote existing Java-only or compile-only results into native proof.
+Populate this section as corrected milestones pass.
 
 ## Useful Evidence and Examples
 
-Reference repository-relative artifact and evidence paths.
+Use repository-relative paths under:
+
+    artifacts/logical-ui-scaling/
 
 ## Limitations, Remaining Work, and Open Questions
 
-Distinguish blockers from optional future improvements.
+See `.agent/reviews/logical-ui-scaling-branch-review.md` and the current state.
 
 ## Possible Article Angles
 
-List concise technical narratives only after implementation.
+Defer until implementation is complete.
 
 ## Suggested Narrative
 
-Explain the user problem, the mixed-unit root cause, the surface-owned scale
-model, staged renderer migration, and measurable outcome.
+Explain the original mixed-unit bug, the difference between Java and native
+rendering, the surface-owned scale model, preservation of embedded
+specializations, and the final cross-platform proof.
 
 ## Claims Requiring Human Review
 
-List any visual equivalence, compatibility, accessibility, performance, or
-platform-support claim that needs maintainer confirmation.
+- visual equivalence;
+- public compatibility of Image dimension semantics;
+- non-Skia macOS support status;
+- embedded fast-path performance;
+- optional iOS support conclusion.

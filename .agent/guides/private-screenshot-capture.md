@@ -4,147 +4,172 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Private and deterministic application screenshot capture
+# Deterministic private macOS window screenshots
 
-Read this guide before taking screenshots or packaging visual evidence.
+Use `/usr/sbin/screencapture` with a CoreGraphics window ID owned by the launched
+process. Do not use Computer Use as the primary capture method.
 
-## Goal
+## Launch without losing the owner PID
 
-Capture only the TotalCross application window launched for the current test.
-Avoid leaking browser tabs, email subjects, chat titles, Finder paths, usernames,
-other application names, notifications, or desktop content.
+Launch the executable directly:
 
-## Window selection
+    "$APP_EXECUTABLE" >"$APP_LOG" 2>&1 &
+    APP_PID=$!
 
-Prefer selection by the launched process identifier and a window owned by that
-process. A valid alternative is an explicitly known application window handle or
-ID returned directly by the launcher.
+For Java:
 
-Do not choose a window by globally dumping all titles and manually matching a
-string. Do not persist a list of unrelated windows in logs or evidence.
+    java <arguments> totalcross.Launcher <fixture arguments> \
+      >"$APP_LOG" 2>&1 &
+    APP_PID=$!
 
-The capture helper may inspect windows internally, but normal output must contain
-only sanitized data for the selected target:
+For a native `.app`, execute:
 
-    target process ID
-    target window ID
-    application identifier
-    bounds
-    capture status
+    Fixture.app/Contents/MacOS/Fixture
 
-Do not print the full target title unless the fixture sets a deterministic,
-non-private title. Detailed enumeration is allowed only behind an explicit local
-debug flag, and its output must never be copied into artifacts or evidence.
+Do not use `open`, because its PID may not own the window.
 
-## Launch and capture sequence
+## CoreGraphics window-ID helper
 
-1. Build the exact tested commit.
-2. Launch the fixture with a deterministic non-private window title.
-3. Record the launched process ID directly.
-4. Wait for the expected window and rendered-ready signal rather than sleeping an
-   arbitrary long interval.
-5. Resolve a visible window owned by that process.
-6. Verify bounds are positive and plausible.
-7. Capture that window only.
-8. Verify the image decodes and has the expected dimensions.
-9. Crop decorative borders only when the crop rule is deterministic and recorded.
-10. Inspect and sanitize before hashing.
+Create a small helper such as:
 
-If process-based capture is unavailable, use a dedicated clean desktop or virtual
-display and crop to an explicitly selected region. Record the limitation.
+    .agent/tools/macos-window-id.swift
 
-## macOS considerations
+with this behavior:
 
-Use the platform screenshot API or a small helper that accepts a window ID.
-Request Screen Recording permission manually if required; do not work around OS
-privacy protections.
+```swift
+import Foundation
+import CoreGraphics
 
-A Retina capture may have physical dimensions larger than logical window bounds.
-Record both and the reported `contentScale`. Do not resize the evidence before
-dimension metadata is recorded.
+guard CommandLine.arguments.count == 2,
+      let requestedPID = Int32(CommandLine.arguments[1]) else {
+  fputs("usage: macos-window-id <pid>\n", stderr)
+  exit(2)
+}
 
-If the application moves between displays, capture after the scale-change render
-is complete. Reject a frame containing stale content from the previous backing
-scale.
+let options: CGWindowListOption = [
+  .optionOnScreenOnly,
+  .excludeDesktopElements
+]
 
-## Android considerations
+guard let windows =
+    CGWindowListCopyWindowInfo(options, kCGNullWindowID)
+      as? [[String: Any]] else {
+  exit(3)
+}
 
-Prefer application-native screenshot or device screenshot cropped to the fixture
-activity. Hide notifications and use deterministic status/navigation-bar handling.
-Record whether system bars are included.
+var best: (id: CGWindowID, bounds: CGRect, area: CGFloat)?
 
-Do not include other recent-app thumbnails, notification shade content, or
-developer-machine windows in Android evidence.
+for window in windows {
+  guard
+    let owner = window[kCGWindowOwnerPID as String] as? NSNumber,
+    owner.int32Value == requestedPID,
+    let number = window[kCGWindowNumber as String] as? NSNumber,
+    let layer = window[kCGWindowLayer as String] as? NSNumber,
+    layer.intValue == 0,
+    let alpha = window[kCGWindowAlpha as String] as? NSNumber,
+    alpha.doubleValue > 0,
+    let boundsObject = window[kCGWindowBounds as String] as? NSDictionary
+  else {
+    continue
+  }
 
-## Privacy inspection
+  var bounds = CGRect.zero
+  guard CGRectMakeWithDictionaryRepresentation(
+          boundsObject as CFDictionary, &bounds),
+        bounds.width > 0,
+        bounds.height > 0 else {
+    continue
+  }
 
-Before accepting an image:
+  let area = bounds.width * bounds.height
+  if best == nil || area > best!.area {
+    best = (CGWindowID(number.uint32Value), bounds, area)
+  }
+}
 
-- open it and visually inspect every edge;
-- confirm only the fixture application is visible;
-- remove unrelated desktop background where practical;
-- check for notifications, menu extras, dock previews, browser windows, terminal
-  paths, email, messaging, and personal filenames;
-- ensure the DANFE uses synthetic data;
-- inspect embedded comments or metadata if the format can carry them.
+guard let selected = best else {
+  exit(4)
+}
 
-Before accepting logs:
+print("\(selected.id)\t\(Int(selected.bounds.origin.x))\t" +
+      "\(Int(selected.bounds.origin.y))\t" +
+      "\(Int(selected.bounds.width))\t" +
+      "\(Int(selected.bounds.height))")
+```
 
-    rg -n -i \
-      "private-user-images|authorization:|bearer |token=|password|/Users/|C:\\\\Users\\\\" \
-      artifacts/logical-ui-scaling
+The helper must not read or print window titles, other application names, or
+unrelated PIDs.
 
-Also search for known local usernames and unrelated application titles discovered
-during the run, without committing those search terms to public evidence.
+Compile it:
 
-## Integrity checks
+    xcrun swiftc .agent/tools/macos-window-id.swift \
+      -o artifacts/logical-ui-scaling/tools/macos-window-id
 
-For every accepted screenshot:
+The helper file remains below the plan's file-size limit.
 
-- file exists and size is greater than zero;
-- decoder succeeds;
-- dimensions are recorded;
-- expected application region is present;
-- capture is not fully blank, transparent, or one color;
-- no unrelated window is visible;
-- hash is computed after final crop and sanitization.
+## Wait for the target window
 
-Do not record a hash for a failed, empty, or rejected screenshot. Delete rejected
-copies from the artifact package after recording only a sanitized failure reason.
+Poll only the target PID:
 
-## Evidence metadata
+    WINDOW_INFO=""
+    for attempt in $(seq 1 100); do
+      if WINDOW_INFO=$(
+        artifacts/logical-ui-scaling/tools/macos-window-id "$APP_PID"
+      ); then
+        break
+      fi
+      sleep 0.1
+    done
 
-Use a small JSON or Markdown record containing:
+    test -n "$WINDOW_INFO"
+    WINDOW_ID=${WINDOW_INFO%%$'\t'*}
 
-    commit
-    platform
-    renderer
-    process ID if safe for local evidence
-    sanitized application identifier
-    window logical bounds
-    screenshot physical dimensions
-    contentScale
-    capture method
-    crop method
-    privacy review status
-    file hash
-    known limitation
+Do not dump global window lists while waiting.
 
-Do not include absolute local paths in the final editorial report. Repository-
-relative artifact paths are sufficient.
+## Capture
 
-## Failure handling
+Pass the numeric CoreGraphics window ID to:
 
-If the target window cannot be resolved, stop and record:
+    /usr/sbin/screencapture -x -l "$WINDOW_ID" "$OUTPUT_PNG"
 
-- attempted capture method;
-- whether the process launched;
-- whether a target-owned visible window was found;
-- the sanitized error;
-- the log path.
+The lowercase `-l` option is followed by the window ID.
 
-Do not fall back automatically to a full-desktop screenshot.
+Check command status and verify that the PNG exists, decodes, is non-empty, and
+has plausible dimensions.
 
-If permissions block capture, document the permission requirement and perform
-manual capture in a clean environment. The implementation may still proceed, but
-final visual acceptance remains incomplete until a safe window capture exists.
+## Screen Recording permission
+
+If `screencapture` reports a permission failure, ask the user to grant Screen
+Recording access to the terminal, IDE, or agent host that runs the command.
+
+An unavailable OS permission is a genuine external blocker. Failure of a
+Computer Use targeting integration is not a blocker until this direct
+`screencapture` path has been attempted.
+
+## Java and native captures
+
+Capture both independently:
+
+- Java Launcher process PID and window ID;
+- deployed native macOS executable PID and window ID.
+
+Label artifacts clearly. A Java screenshot cannot substitute for the native
+application screenshot.
+
+## Privacy
+
+The fixture uses a deterministic non-private title and synthetic DANFE content.
+
+Before accepting a screenshot:
+
+- inspect every edge;
+- ensure only the target application window is present;
+- verify no notification, menu, browser, terminal, Finder, or desktop content;
+- inspect image metadata;
+- crop only by a deterministic recorded rule;
+- hash only the final sanitized file.
+
+Do not fall back to full-desktop capture. Do not retain rejected screenshots.
+
+Scan logs and artifacts for local usernames, absolute paths, tokens,
+authenticated URLs, and unrelated titles before packaging evidence.
