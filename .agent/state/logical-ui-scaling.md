@@ -90,6 +90,9 @@ Do not read later image or renderer guides yet.
 - Native integer text widths now round positive fractional advances upward,
   matching the documented compatibility policy; the deployed macOS fixture
   still reports the expected Label and Edit scale triples.
+- The deployed fixture rejects invalid vertical metrics, DANFE, accented, or
+  typographic-pair advances, and control scale invariants. It passed with
+  real fractional metrics and nonzero accents/pair advances.
 
 These are foundations, not completion of their behavioral milestones.
 
