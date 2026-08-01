@@ -23,15 +23,18 @@ Milestone 7: run end-to-end DANFE and platform validation.
 
 ## Active Slice
 
-Perform the final source and documentation audits. The headless fixture covers
-logical/physical image dimensions, PNG dimensions, scaled barcode structure, and
-Java-side raw-pixel preservation; the deployed fixture starts at simulated
-macOS scales 1 and 2.
+Remove the remaining control-level `Settings.screenDensity` layout and rendering
+dependencies found by the final audit, then complete the documentation and
+validation closure. The headless fixture covers logical/physical image
+dimensions, PNG dimensions, scaled barcode structure, and Java-side raw-pixel
+preservation; the deployed fixture starts at simulated macOS scales 1 and 2.
 
 ## Next Concrete Action
 
-Read Milestone 8 and its explicitly required supporting material, then perform
-the scoped deprecation, Javadoc, file-size, and validation audits.
+Inspect only the control-level hits from the scoped density audit and replace
+their logical layout calculations with scale-independent values. Preserve
+platform initialization and Launcher compatibility mirroring for a later,
+explicit compatibility decision.
 
 ## Files to Read Now
 
@@ -78,6 +81,15 @@ pixel readback, and a sanitized window-only screenshot are not independently
 proven. The user explicitly directed macOS-only platform validation; Android and
 iOS workspace validation are deferred to final validation rather than treated
 as Milestone 7 gates.
+
+## Audit Observations
+
+- Milestone 8's scoped audit found remaining control-level global-density reads
+  in `Button`, `TopMenu`, `Edit`, `ListContainer`, `Toast`, and
+  `SideMenuContainer`. These must not remain as hidden logical-layout or
+  rendering dependencies. Platform initialization reads in `Launcher` and
+  native settings remain compatibility mirrors and are intentionally out of
+  this focused control slice.
 
 ## Active Decisions
 
