@@ -171,6 +171,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_stringWidthAtSizeD_sd"), &tufFM_stringWidthAtSizeD_sd);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_lineHeightAtSizeD_d"), &tufFM_lineHeightAtSizeD_d);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_descentAtSizeD_d"), &tufFM_descentAtSizeD_d);
+   htPutPtr(&htNativeProcAddresses, hashCode("tufFM_ascentAtSizeD_d"), &tufFM_ascentAtSizeD_d);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_stringWidth_Cii"), &tufFM_stringWidth_Cii);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_sbWidth_s"), &tufFM_sbWidth_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_sbWidth_sii"), &tufFM_sbWidth_sii);

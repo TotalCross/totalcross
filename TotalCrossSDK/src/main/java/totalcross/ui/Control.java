@@ -651,6 +651,11 @@ public class Control extends GfxSurface {
     return (int) Math.ceil(fm.lineHeightAtSizeD(font.size * gfx.getFontScale()));
   }
 
+  /** Returns the logical ascent of this control's destination font. */
+  protected int getFontAscentForLayout() {
+    return (int) Math.ceil(fm.ascentAtSizeD(font.size * gfx.getFontScale()));
+  }
+
   /** Returns the logical layout advance of {@code text} for this control's destination. */
   protected int getFontWidthForLayout(String text) {
     return (int) Math.ceil(fm.stringWidthAtSizeD(text, font.size * gfx.getFontScale()));
