@@ -471,6 +471,9 @@ Update this section after each corrected behavioral milestone.
 - 2026-08-01: Updated `MultiEdit` cached line height and masked preferred width
   for destination font scale. Focused Java `LogicalTextScaleTest` passed; log:
   `artifacts/logical-ui-scaling/logs/logical-text-multiedit-test.log`.
+  Native deployed fixture passed with `multiEditHeights=42,42,58`; logs:
+  `sdk-dist-multiedit-scale.log`, `deploy-multiedit-scale.log`, and
+  `native-multiedit-scale.log`.
 
 ## Revision Note
 

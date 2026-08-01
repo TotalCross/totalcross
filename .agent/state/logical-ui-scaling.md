@@ -107,6 +107,8 @@ Do not read later image or renderer guides yet.
   all reported `82` in the deployed native macOS app.
 - `MultiEdit` now derives cached line height and masked preferred width from
   destination-scaled logical metrics; its focused Java scale test passes.
+- The deployed native fixture also verifies `MultiEdit` height (`42,42,58`)
+  across content and font scale changes.
 
 These are foundations, not completion of their behavioral milestones.
 
