@@ -355,3 +355,15 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Status: passed
 - Result: `FontMetrics.stringWidthD("DANFE 25,00")` resolved through the VM
   native-method table and returned the fractional advance `81.6484375`.
+
+## Milestone 3R: native font-scale drawing path
+
+- Timestamp: 2026-08-01T21:23:00Z
+- Commit: `f6655680a`
+- Command: `ninja -C build-logical-ui tcvm`
+- Renderer/platform: native macOS Skia compile
+- Status: passed
+- Result: text uses `Font.size * Graphics.fontScale` for the Skia font and
+  actual baseline/damage metrics; canvas contentScale is not reapplied.
+- Limitation: deployed preferred-size and fontScale invalidation assertions are
+  the next slice.

@@ -26,13 +26,13 @@ Milestone 3R: complete logical text and FontMetrics.
 
 ## Active Slice
 
-Bind per-destination `fontScale` to measurement and drawing without changing
-logical layout for contentScale.
+Validate per-destination `fontScale` in the deployed fixture, then connect the
+logical metrics used by preferred-size layout to the same effective scale.
 
 ## Next Concrete Action
 
-Trace Graphics text calls and define the smallest per-destination font-scale
-context that keeps Font logical and contentScale-independent.
+Run the native fontScale fixture and inspect preferred-size consumers before
+making fontScale invalidate their logical metrics.
 
 ## Files to Read Now
 
@@ -60,6 +60,8 @@ Do not read later image or renderer guides yet.
   height while retaining upward-rounded integer compatibility metrics.
 - Native Skia exposes fractional character and string advances through
   `FontMetrics` deployed-method bindings.
+- Native Skia text drawing and damage use the destination Graphics.fontScale;
+  the base canvas contentScale remains the sole physical scale.
 
 These are foundations, not completion of their behavioral milestones.
 
