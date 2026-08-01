@@ -221,7 +221,12 @@ public class Control extends GfxSurface {
    */
   public static final int FONTSIZE = 22 * UICONST;
   
-  public static final int DP = 23 * UICONST;
+  /**
+   * @deprecated Layout values are logical by default. Recompile applications so
+   *             expressions such as {@code DP + 16} become {@code 16}.
+   */
+  @Deprecated
+  public static final int DP = 0;
   /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
    * Sample:
    * <pre>
@@ -848,9 +853,6 @@ public class Control extends GfxSurface {
           } else {
             width = width * fmH / 100;
           }
-        } else if ((DP - RANGE) <= width && width <= (DP + RANGE)) {
-          width -= DP;
-          width *= Settings.screenDensity;
         }
         tempW = width;
         // non-dependant height
@@ -923,9 +925,6 @@ public class Control extends GfxSurface {
           } else {
             height = height * fmH / 100;
           }
-        } else if ((DP - RANGE) <= height && height <= (DP + RANGE)) {
-          height -= DP;
-          height *= Settings.screenDensity;
         }
         // x
         if (x < MAXABSOLUTECOORD) {
@@ -1116,9 +1115,6 @@ public class Control extends GfxSurface {
           } else {
             width = width * fmH / 100;
           }
-        } else if ((DP - RANGE) <= width && width <= (DP + RANGE)) {
-          width -= DP;
-          width *= Settings.screenDensity;
         }
         tempW = width;
         // non-dependant height
@@ -1191,9 +1187,6 @@ public class Control extends GfxSurface {
           } else {
             height = height * fmH / 100;
           }
-        } else if ((DP - RANGE) <= height && height <= (DP + RANGE)) {
-          height -= DP;
-          height *= Settings.screenDensity;
         }
         // x
         if (x < MAXABSOLUTECOORD) {
