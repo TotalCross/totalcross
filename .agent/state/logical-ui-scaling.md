@@ -26,13 +26,13 @@ Milestone 2R: complete Skia and native macOS surface scaling.
 
 ## Active Slice
 
-Identify the native macOS screen creation path and initialize each screen
-Graphics instance with its actual backing scale.
+Build the matching SDK and deploy the logical UI fixture with the focused macOS
+task before adding machine-readable native assertions.
 
 ## Next Concrete Action
 
-Read Milestone 2R and the native macOS runtime guide, then trace surface scale
-from native window creation to Graphics initialization.
+Run the focused deployment task with a freshly built SDK, then add the smallest
+native assertion mode required to report the runtime scale and dimensions.
 
 ## Files to Read Now
 
