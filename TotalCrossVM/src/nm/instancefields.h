@@ -142,6 +142,8 @@
 #define Graphics_lastClipFactor(o)  FIELD_I32(o, 23)
 
 #define Graphics_lastPPD(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Graphics_contentScale(o)    FIELD_DBL(o, OBJ_CLASS(o), 2)
+#define Graphics_fontScale(o)       FIELD_DBL(o, OBJ_CLASS(o), 3)
 
 #define Graphics_surface(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Graphics_font(o)            FIELD_OBJ(o, OBJ_CLASS(o), 1)

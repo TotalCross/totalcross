@@ -4,6 +4,8 @@
 
 #include "skia_internal.h"
 
+#include <cmath>
+
 static void releaseProc(void* addr, void*) {
     delete[] static_cast<int32*>(addr);
 }
@@ -102,6 +104,15 @@ void skia_restoreClip(int32 skiaSurface) {
     if (SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface)) {
         targetCanvas->restore();
     }
+}
+
+void skia_setSurfaceScale(int32 skiaSurface, double contentScale) {
+    SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
+    if (!targetCanvas || !std::isfinite(contentScale) || contentScale <= 0) {
+        return;
+    }
+    targetCanvas->resetMatrix();
+    targetCanvas->scale(static_cast<SkScalar>(contentScale), static_cast<SkScalar>(contentScale));
 }
 
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
