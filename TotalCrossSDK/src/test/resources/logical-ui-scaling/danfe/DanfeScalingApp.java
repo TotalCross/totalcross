@@ -8,6 +8,7 @@ import totalcross.ui.ImageControl;
 import totalcross.ui.Label;
 import totalcross.ui.Edit;
 import totalcross.ui.MainWindow;
+import totalcross.ui.MultiEdit;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.font.FontMetrics;
@@ -53,6 +54,15 @@ public class DanfeScalingApp extends MainWindow {
       int editWidthAtDoubleContentScale = metricEdit.getPreferredWidth();
       editGraphics.setScales(contentScale, 1.5);
       int editWidthAtFontScale = metricEdit.getPreferredWidth();
+      MultiEdit metricMultiEdit = new MultiEdit("99999", 2, 1);
+      add(metricMultiEdit, 0, 50, PREFERRED, PREFERRED);
+      Graphics multiEditGraphics = metricMultiEdit.getGraphics();
+      multiEditGraphics.setScales(contentScale, 1.0);
+      int multiEditHeightAtOne = metricMultiEdit.getPreferredHeight();
+      multiEditGraphics.setScales(contentScale * 2.0, 1.0);
+      int multiEditHeightAtDoubleContentScale = metricMultiEdit.getPreferredHeight();
+      multiEditGraphics.setScales(contentScale, 1.5);
+      int multiEditHeightAtFontScale = metricMultiEdit.getPreferredHeight();
       double danfeAdvance = metrics.stringWidthD("DANFE 25,00");
       double accentedAdvance = metrics.stringWidthD("Comércio São Paulo");
       double kerningAdvance = metrics.stringWidthD("AV");
@@ -66,7 +76,9 @@ public class DanfeScalingApp extends MainWindow {
           && compatibleDanfeAdvance == (int) Math.ceil(danfeAdvance)
           && arrayDanfeAdvance == compatibleDanfeAdvance && bufferDanfeAdvance == compatibleDanfeAdvance
           && widthAtOne == widthAtDoubleContentScale && widthAtFontScale > widthAtOne
-          && editWidthAtOne == editWidthAtDoubleContentScale && editWidthAtFontScale > editWidthAtOne)) {
+          && editWidthAtOne == editWidthAtDoubleContentScale && editWidthAtFontScale > editWidthAtOne
+          && multiEditHeightAtOne == multiEditHeightAtDoubleContentScale
+          && multiEditHeightAtFontScale > multiEditHeightAtOne)) {
         throw new IllegalStateException("Logical text metric assertion failed");
       }
       System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
@@ -77,7 +89,8 @@ public class DanfeScalingApp extends MainWindow {
           + " kerningAdvanceD=" + kerningAdvance + " compatibleAdvance=" + compatibleDanfeAdvance
           + " arrayAdvance=" + arrayDanfeAdvance + " bufferAdvance=" + bufferDanfeAdvance
           + " labelWidths=" + widthAtOne + "," + widthAtDoubleContentScale + "," + widthAtFontScale
-          + " editWidths=" + editWidthAtOne + "," + editWidthAtDoubleContentScale + "," + editWidthAtFontScale);
+          + " editWidths=" + editWidthAtOne + "," + editWidthAtDoubleContentScale + "," + editWidthAtFontScale
+          + " multiEditHeights=" + multiEditHeightAtOne + "," + multiEditHeightAtDoubleContentScale + "," + multiEditHeightAtFontScale);
       exit(0);
     }
   }
