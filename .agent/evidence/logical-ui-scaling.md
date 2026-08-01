@@ -169,3 +169,46 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   2x2 physical pixels.
 - Limitation: this proves the Java-side ownership boundary only; native-to-Java
   readback still requires a native runtime fixture.
+
+## Milestone 8: control density audit slice
+
+- Timestamp: 2026-08-01T19:32:06Z
+- Commit: `3c119d17b`
+- Command: `TotalCrossSDK/gradlew-agent test --tests
+  totalcross.ui.LogicalLayoutUnitTest --tests totalcross.ui.gfx.GraphicsScaleTest
+  --tests totalcross.ui.image.DanfeScalingTest`
+- Status: passed (6 focused tests)
+- Result: removed global-density layout and rendering calculations from Button,
+  TopMenu, Edit, ListContainer, Toast, and SideMenuContainer. Their values are
+  now logical values; platform initialization continues to mirror the deprecated
+  compatibility setting without being used by this slice.
+
+## Milestone 8: final SDK distribution validation
+
+- Timestamp: 2026-08-01T19:35:21Z
+- Command: `TotalCrossSDK/gradlew-agent dist -x test --warning-mode=none
+  --console=plain`
+- Renderer/platform: SDK distribution build
+- Status: passed (35 seconds)
+- Result: final SDK packaging and deployment completed after the control density
+  audit. Agent summary: `TotalCrossSDK/agent-logs/20260801-163521-dist-agent.log`.
+
+## Milestone 8: final static audit
+
+- Timestamp: 2026-08-01T19:36:00Z
+- Commands: scoped `rg` audits for `Settings.screenDensity` and DP comparisons;
+  size audit against the recorded base commit.
+- Status: passed
+- Result: only the two deprecated compatibility assignments in `Launcher` retain
+  `Settings.screenDensity`; no control code reads it. No old DP-marker comparison
+  was found. All added files are below 20 KiB and approximately 600 lines.
+
+## Milestone 8: repeated safe-capture attempt
+
+- Timestamp: 2026-08-01T19:37:00Z
+- Command: launched the deterministic fixture at simulated macOS scale 2 and
+  requested a process-targeted Computer Use window state.
+- Status: external capture blocker repeated
+- Result: the fixture launched successfully, but the installed integration again
+  rejected the Java process application identity as an unsupported target. No
+  fallback capture containing the desktop was attempted or retained.

@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.res.Resources;
@@ -147,7 +152,7 @@ public class Toast {
 	        	  if(twoLines && !bigButton) {
 	        		  paddingTop = paddingBottom = paddingLeft = UnitsConverter.toPixels(16 + Control.DP);
 	        		  paddingRight = UnitsConverter.toPixels(8 + Control.DP);
-	    	          cnt.setRect(posX, posY - (int) (Font.getDefaultFontSize()*2*Settings.screenDensity),
+              cnt.setRect(posX, posY - Font.getDefaultFontSize() * 2,
 	    	        		  Math.min(Settings.screenWidth - 5, MAX_HEIGHT), 48 + Control.DP);
 
 	        	  }
@@ -174,7 +179,7 @@ public class Toast {
 	        	  if(twoLines) {
 	        		  paddingTop = paddingBottom = paddingLeft = UnitsConverter.toPixels(16 + Control.DP);
 	        		  paddingRight = UnitsConverter.toPixels(8 + Control.DP);
-	    	          cnt.setRect(posX, posY - (int) (Font.getDefaultFontSize()*2*Settings.screenDensity),
+              cnt.setRect(posX, posY - Font.getDefaultFontSize() * 2,
 	    	        		  Math.min(Settings.screenWidth - 5, MAX_HEIGHT), 48 + Control.DP);
 	        	  }
 	        	  cnt.add(labels[0], paddingLeft, twoLines ? paddingTop : Control.CENTER, textWidth, cnt.fmH);
