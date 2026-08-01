@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -18,6 +19,19 @@ TC_API void tufFM_fontMetricsCreate(NMParams p) // totalcross/ui/font/FontMetric
       FontMetrics_ascent(fm)  = uf->fontP.ascent;
       FontMetrics_descent(fm) = uf->fontP.descent;
    }
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   else
+   {
+      double ascent, descent, leading;
+      skia_fontMetrics(Font_skiaIndex(font), Font_size(font), &ascent, &descent, &leading);
+      FontMetrics_ascentD(fm) = ascent;
+      FontMetrics_descentD(fm) = descent;
+      FontMetrics_leadingD(fm) = leading;
+      FontMetrics_heightD(fm) = ascent + descent + leading;
+      FontMetrics_ascent(fm) = (int32)ceil(ascent);
+      FontMetrics_descent(fm) = (int32)ceil(descent + leading);
+   }
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_charWidth_c(NMParams p) // totalcross/ui/font/FontMetrics native public int charWidth(char c);
