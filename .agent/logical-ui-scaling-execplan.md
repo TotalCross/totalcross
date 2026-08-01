@@ -364,6 +364,13 @@ credentials unless explicitly requested.
   by the layout engine.
   Evidence: no effective-unit use in child placement or `Control.setRect`.
 
+- Observation: the pinned Skia package exposes `SkFont` but not `SkShaper` or
+  `SkParagraph` headers.
+  Evidence: scoped file audit of
+  `TotalCrossVM/deps/totalcross-depot-tools/skia/local/include` on 2026-08-01.
+  The current measurement/drawing path can be kept equivalent, but this does
+  not by itself prove full script shaping, fallback, or ligature behavior.
+
 Add only discoveries that change remaining work.
 
 ## Decision Log
@@ -426,6 +433,10 @@ Update this section after each corrected behavioral milestone.
   destination-scaled advances. Evidence: focused Java `LogicalTextScaleTest`
   passed after materializing the edit through its normal layout cycle; full log:
   `artifacts/logical-ui-scaling/logs/logical-text-edit-cursor-test.log`.
+- 2026-08-01: Added deployed native macOS `Edit` preferred-width evidence. The
+  fixture reports `editWidths=48,48,67` at content scales 2 and 4 then font
+  scale 1.5. Full logs: `sdk-dist-edit-scale.log`, `deploy-edit-scale.log`, and
+  `native-edit-scale.log` under `artifacts/logical-ui-scaling/logs/`.
 
 ## Revision Note
 
