@@ -269,3 +269,16 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Status: passed
 - Result: the fixture now verifies that the base scale applies to primitive
   destinations and clips while raw pixel access remains physical.
+
+## Milestone 2R: deployable fixture task
+
+- Timestamp: 2026-08-01T20:54:00Z
+- Commit: `876e0735b`
+- Command: `TotalCrossSDK/gradlew-agent compileLogicalUiScalingSmoke
+  --warning-mode=none --console=plain`
+- Renderer/platform: Java SDK fixture compilation on macOS
+- Status: passed
+- Result: the build now has focused compile and macOS deploy tasks for the
+  logical UI fixture, following the repository's native-runtime smoke pattern.
+- Limitation: deployment and direct native execution require the matching SDK
+  distribution and freshly built dylib; they remain the next slice.
