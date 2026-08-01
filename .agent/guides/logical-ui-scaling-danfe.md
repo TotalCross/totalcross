@@ -6,167 +6,144 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Complete DANFE validation
 
-The existing rectangle and barcode test is retained as low-level coverage. It is
-not the complete DANFE acceptance test because it does not draw or measure text.
+## Scope
+
+The DANFE fixture validates logical scaling with the existing text engines.
+
+It must not require SkShaper, HarfBuzz, ICU, or SkParagraph. TotalCross remains
+responsible for line breaking and multiline layout.
 
 ## Common fixture
 
-Use deterministic synthetic data and one logical document specification for all
-renderers. It contains:
+Use deterministic synthetic data and one logical document specification:
 
 - 360 by 540 logical document;
-- title and document identifier;
-- accented Portuguese issuer and recipient data;
-- address and tax-like synthetic fields;
-- product table with long descriptions;
-- quantities, prices, totals, bold and regular text;
-- lines, rectangles, filled headers;
-- footer near the lower boundary;
+- accented Portuguese issuer and recipient text;
+- title, totals, product descriptions, address, and footer;
+- regular and bold styles already supported;
+- table rules and filled headers;
 - barcode with exactly 31 dark runs.
 
-No real customer, company, tax, address, email, or phone data is allowed.
+No real private data is allowed.
 
-Split data, renderer, assertions, and native application files when needed to
-remain below the file-size limit.
-
-## Required image variants
+## Images
 
 Default image:
 
-    logical: 360 x 540
-    physical: 360 x 540
-    contentScale: 1
+    logical 360 x 540
+    physical 360 x 540
+    contentScale 1
 
-Explicit scale-two logical image:
+Explicit scale-two image:
 
-    logical: 360 x 540
-    physical: 720 x 1080
-    contentScale: 2
+    logical 360 x 540
+    physical 720 x 1080
+    contentScale 2
 
 Use the same logical drawing commands.
 
 ## Java lane
 
-Run the fixture through JavaSE/AWT. This proves the Java renderer only.
-
-Generate:
+Run through JavaSE/AWT and produce:
 
     danfe-java-default.png
     danfe-java-scale2.png
     danfe-java-assertions.json
 
-Capture the Java application window separately using its Java PID and the
-screenshot guide.
+This is Java proof only.
 
 ## Native macOS lane
 
-Compile the fixture against the current SDK, deploy it for macOS, and execute the
-generated native application with the exact current `libtcvm.dylib`.
+Compile against the current SDK, deploy for macOS, and run with the exact freshly
+built matching `libtcvm.dylib`.
 
-Generate:
+Produce:
 
     danfe-native-default.png
     danfe-native-scale2.png
     danfe-native-assertions.json
 
-The native executable must perform or emit enough data for assertions without
-depending on the Java Launcher.
-
-Capture the native application window using the native process PID.
-
 ## Text assertions
 
-For title, issuer, recipient, long product description, totals, and footer,
-record and assert:
+For representative strings, record:
 
-- shaped logical advance;
+- effective logical font size;
+- measured logical advance;
 - ascent, descent, leading, and line height;
-- expected line count or approved range;
-- baseline positions;
-- logical ink bounds;
-- containment within the assigned rectangle.
+- baseline;
+- assigned logical rectangle;
+- containment;
+- TotalCross line count and break positions where wrapping applies.
 
-Containment alone is insufficient. Add approved minimum and maximum ranges for:
+Require approved minimum and maximum ranges for title and body height, line
+height, and selected string advances so globally shrinking text cannot pass.
 
-- title glyph height;
-- body glyph height;
-- known string advance;
-- line height;
-- bold versus regular distinction.
+Measurement must occur at `Font.size * fontScale`, not by scaling an earlier
+measurement.
 
-A change that shrinks all text to fit must fail.
+Do not label an `"AV"` or accented-string check as proof of kerning, shaping,
+fallback, ligatures, bidi, or complex-script support.
 
-## Geometry assertions
+## Multiline assertions
 
-Assert:
+Use the existing TotalCross line-breaking and multiline implementation.
 
-- exact logical and physical dimensions;
-- shared rules align with text and table cells;
-- footer remains inside the document;
-- scale-two physical geometry is twice the default while logical geometry is
-  unchanged;
-- no primitive or text is scaled twice.
+Require:
 
-## Barcode assertions
+- explicit newlines produce the expected lines;
+- automatic wrapping is unchanged by contentScale;
+- fontScale can change line breaks;
+- every accepted line fits its logical width when drawn;
+- vertical placement uses effective-size line metrics;
+- no SkParagraph dependency is present.
 
-Analyze a selected physical scan line and require:
+## Geometry and barcode
 
-- exactly 31 dark runs;
-- expected quiet zones;
-- no clipped first or last run;
-- equal logical structure at scale one and scale two.
+Assert exact logical and physical dimensions, aligned table edges, contained
+footer, no double scaling, 31 barcode runs, quiet zones, and unclipped endpoints.
 
 ## Density independence
 
-For one renderer and font set, changing only the host or window content scale must
-not change a default scale-one image.
+For the same renderer and font inputs, changing only destination contentScale
+must not change logical metrics, TotalCross wrapping, or the default scale-one
+image.
 
-Require equal dimensions, logical metrics, and PNG hash when raster inputs are
-otherwise identical.
+Native Retina proof comes from the deployed native application, not a simulated
+Java `/scale`.
 
-Do not use a simulated Java `/scale` result as native Retina proof. Native Retina
-proof comes from the deployed native application and native backing scale.
+## Synchronization
 
-## Synchronization assertions
+In the native app, prove:
 
-In the native app:
-
-- modify an alpha-128 Java pixel at an odd row width;
-- upload and verify it in native output;
-- draw a known native mark;
-- read back and verify the Java pixel;
-- alternate ownership and repeat;
-- preserve failure state when a native copy fails.
+- alpha-128 Java pixel upload at an odd row width;
+- native drawing visible in Java readback;
+- alternating ownership;
+- preserved failure state.
 
 ## Renderer equivalence
 
-Require equivalent logical semantics between Java, native Skia, and supported
-native non-Skia paths:
+Compare Java, native Skia, and supported native non-Skia behavior for:
 
+- logical bounds;
 - integer compatibility metrics;
-- line counts and approved wraps;
+- TotalCross line breaks;
 - baselines and containment;
-- logical and physical image dimensions;
+- image dimensions;
 - barcode structure.
 
-Do not require cross-engine antialiasing pixel identity.
+Fractional metrics and antialiasing pixels may differ within documented
+tolerances.
 
 ## Final Android lane
 
-Run only after Java and native macOS pass. Deploy the same fixture on a
-high-density Android target and require the same semantic and synchronization
-assertions.
+After Java and native macOS pass, deploy the same fixture to a high-density
+Android target and run the same semantic and synchronization assertions.
 
-iOS is optional final validation unless explicitly required.
-
-## Evidence package
+## Evidence
 
 Store under:
 
     artifacts/logical-ui-scaling/danfe/
 
-Include assertion JSON, PNGs, logs, runtime identity, dylib hash for native
-macOS, Android metadata, screenshots, comparison images, and privacy review.
-
-Label every artifact with its lane. Never call a Java Launcher PNG or screenshot
-native macOS evidence.
+Label every result by lane and include assertion JSON, PNGs, logs, runtime
+identity, native hashes, screenshots, comparison images, and privacy review.

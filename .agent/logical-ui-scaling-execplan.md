@@ -4,40 +4,54 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Complete logical UI scaling from the reviewed branch
+# Complete logical UI scaling with core SkFont metrics
 
-This ExecPlan is a living document. Keep `Progress`, `Surprises & Discoveries`,
-`Decision Log`, `Outcomes & Retrospective`, state, and evidence synchronized.
+This living ExecPlan continues `feat/logical-ui-scaling`. Preserve branch history,
+state, evidence, and validated implementation.
 
-This revision continues branch `feat/logical-ui-scaling`. It does not restart from
-master and does not discard useful committed work. Read
-`.agent/reviews/logical-ui-scaling-branch-review.md` before the first resumed
-slice.
+## Purpose
 
-## Purpose / Big Picture
+Make public layout, drawing, font metrics, and natural image dimensions logical,
+while framebuffers, backing stores, codecs, and raw pixels remain physical.
 
-Finish a coherent logical-coordinate API in which layout, drawing, fonts, and
-images are independent of display density, while physical buffers and raw pixel
-operations remain explicit.
+Text scaling uses only the pinned core Skia APIs. TotalCross continues to own
+line breaking and multiline layout.
 
-The final user-visible proof is a complete synthetic DANFE rendered:
+## Final Text Scope
 
-- through JavaSE/AWT for the Java renderer;
-- through a deployed application using the freshly built native macOS VM;
-- at default image scale one and explicit logical image scale two;
-- finally on Android after the implementation is stable.
+Required:
 
-A Java process running on macOS is not native macOS validation.
+- `SkFont::getMetrics`;
+- `SkFont::measureText`;
+- `SkTextBlob::MakeFromText` or the existing equivalent core path;
+- destination `fontScale`;
+- canvas `contentScale`;
+- TotalCross wrapping, multiline layout, preferred sizes, cursors, selection,
+  alignment, and ellipsis.
 
-## Working Set and Resume Protocol
+Out of scope:
+
+- SkShaper;
+- HarfBuzz;
+- ICU;
+- SkParagraph;
+- a new text engine;
+- guaranteed bidi, complex-script shaping, ligatures, font fallback, or cluster
+  semantics beyond existing behavior.
+
+Do not modify depot-tools or the Skia package for text-engine support.
+
+## Resume Protocol
 
 Read first:
 
     .agent/state/logical-ui-scaling.md
 
-Then read only the active section of this plan and its named guide. Use:
+Then read only the active checkpoint and named support files.
 
-    .agent/reviews/logical-ui-scaling-branch-review.md
+Use:
+
+    .agent/reviews/logical-ui-scaling-current-review.md
     .agent/design/logical-ui-scaling-api.md
     .agent/design/logical-ui-scaling-images.md
     .agent/design/logical-ui-scaling-text.md
@@ -46,445 +60,334 @@ Then read only the active section of this plan and its named guide. Use:
     .agent/guides/logical-ui-scaling-danfe.md
     .agent/guides/private-screenshot-capture.md
     .agent/evidence/logical-ui-scaling.md
-    .agent/archive/logical-ui-scaling-history.md
     .agent/reports/logical-ui-scaling-editorial.md
 
-Do not reread the full bundle on each resume. Search evidence selectively and
-store verbose output under `artifacts/logical-ui-scaling/`.
+Store verbose logs under `artifacts/logical-ui-scaling/`.
 
-## Execution and Platform Policy
+## Execution Policy
 
-Use focused Java tests and native macOS tests while implementing.
+During implementation:
 
-During corrective and implementation milestones:
+- JavaSE/AWT is Java proof;
+- native code is compiled and executed through a deployed macOS application
+  using the matching freshly built dylib;
+- do not run Android or iOS.
 
-- JavaSE/AWT tests may run on macOS but count only as Java renderer proof;
-- native code must be compiled and executed through a deployed native macOS app;
-- do not start iOS or Android builds, deploys, or runtime tests;
-- do not interpret `totalcross.Launcher` execution as native proof.
+At final validation:
 
-At final cross-platform validation only:
+- Android is required;
+- iOS is optional;
+- embedded target validation is optional when available.
 
-- Android validation is required because issue #433 reports Android;
-- iOS validation is optional unless separately requested or needed to resolve a
-  platform-specific concern;
-- embedded Linux validation may be performed for the `USE_WRITE_PIXELS`
-  configuration when target access is available, but its code path must already
-  have been compiled and focused-tested on macOS.
+A command, test, build, commit, slice, or milestone is not a stopping point.
+Continue until the plan is complete or a genuine external blocker exists.
+
+Do not push, open a pull request, update the issue, publish, or use credentials.
 
 ## Token and File Budget
 
-Use exact symbol searches, relevant file ranges, scoped status, diff stats, and
-focused tests. Redirect verbose commands to logs and inspect concise tails.
+Use focused searches, scoped diffs, concise tails, and milestone-specific tests.
 
-Do not run `clean` unless stale output is demonstrated. Do not front-load final
-platform validation.
+Do not use `clean` without evidence of stale output.
 
-Every new source, test, helper, guide, or support file must remain below 20 KiB
-and approximately 600 lines. Extract cohesive logic from oversized existing
-files instead of adding large implementations inline.
+Every new source, test, helper, guide, or support file remains below 20 KiB and
+approximately 600 lines.
 
 ## Progress
 
-- [x] Established the branch directly from the recorded master and captured the
-      original global-density coupling.
-- [x] Added useful API scaffolding for layout units, graphics scales, logical
-      images, and compatibility deprecations.
-- [x] Restored scale-aware `USE_WRITE_PIXELS` eligibility, compiled both macro
-      configurations on macOS, and exercised the native Skia surface fixture.
-- [x] Connect `LayoutUnit` to real child placement and prove the root PIXEL
-      migration path in focused Java layout tests.
-- [ ] Validate the root PIXEL migration fixture in the deployed native macOS
-      application during the runtime milestone.
-- [x] Complete Skia logical drawing and native macOS content-scale initialization.
-- [ ] Complete logical text shaping, fontScale, metrics, preferred sizes, and
-      cache behavior.
-- [ ] Complete image codecs, transformations, cache ownership, and bidirectional
-      Java/native synchronization.
-- [ ] Complete Java renderer semantic equivalence.
-- [ ] Complete non-Skia native semantic equivalence on macOS.
-- [ ] Deploy and run the complete DANFE through both Java and native macOS lanes,
-      including deterministic screenshots.
-- [ ] Run final Android validation, optional iOS validation, audits,
-      documentation, and editorial handoff.
+- [x] Establish clean recorded base and identify global-density coupling.
+- [x] Add logical API and image scaffolding.
+- [x] Restore and validate guarded `USE_WRITE_PIXELS`.
+- [ ] Finish layout behavior: correct nonzero PIXEL client origins and run native
+      root-PIXEL migration proof.
+- [x] Establish native macOS high-DPI backing and core Skia base transforms.
+- [ ] Complete SkFont-only logical text and TotalCross multiline behavior.
+- [ ] Complete image codecs, transforms, cache ownership, and bidirectional sync.
+- [ ] Complete Java renderer semantics.
+- [ ] Complete supported non-Skia native semantics.
+- [ ] Complete DANFE Java and native macOS lanes and screenshots.
+- [ ] Run final Android validation and complete handoff.
 
-## Current Architecture and Scope
+## Current Branch Review
 
-The branch contains 37 commits above its recorded base. Preserve history and
-correct behavior with new commits.
+Reviewed head before this revision:
 
-API scaffolding already present includes:
+    c8a3152c482d6f3ac511e8295cc400b555aeecae
 
-- `LayoutUnit`;
-- root DP configuration;
-- `DP = 0`;
-- identity `UnitsConverter.toPixels`;
-- deprecated `Settings.screenDensity`;
-- `Graphics.contentScale` and `fontScale`;
-- logical and physical `Image` dimensions.
+The branch is 82 commits ahead of the recorded base.
 
-Do not treat the presence of a field, getter, build pass, or Java fixture launch
-as proof that its behavioral milestone is complete.
-
-Do not modify the deployer for DP compatibility. Deployment is used only to
-produce the native macOS test application from the matching SDK.
+Useful work must be preserved. The shaping blocker recorded at the reviewed head
+is resolved by the final text scope above.
 
 ## Plan of Work
 
-### Corrective checkpoint R0: reconcile the existing branch
+### Reconciliation checkpoint R1
 
-Read the branch review in full.
+Apply and commit this plan revision.
 
-Restore the `USE_WRITE_PIXELS` fast path removed by `fd7e5d358`, while preventing
-it from bypassing a non-identity destination transform. Preserve its original
-opaque/full-source/same-size/full-alpha requirements. Add a focused eligibility
-helper if this keeps the code testable and below the file-size limit.
+Correct `Control.setRect` PIXEL client bounds. Preserve original logical left,
+top, right, and bottom before converting each edge exactly once. Add nonzero
+insets/client-origin tests at scales 1.5, 2, and 3.
 
-Locate the repository definition that enables `USE_WRITE_PIXELS`. Compile both
-enabled and disabled configurations on macOS. Do not invent a new build option if
-the repository already has one. Add a focused test or native fixture proving:
+Synchronize living records:
 
-- identity-scale eligible copies may use direct writes;
-- scaled or transformed destinations use `drawBitmapRect`;
-- raw `setPixel`, `getPixel`, and RGB APIs remain physical;
-- output is equal for the eligible direct and fallback cases.
+- actual reviewed head;
+- no external text-engine blocker;
+- append-only evidence for later claims only after checking logs;
+- accurate Java/native compile/native runtime labels;
+- no invented evidence.
 
-Review the public visibility of `Graphics.setScales`. Make scale mutation internal
-unless a public lifecycle API is deliberately approved.
+Review the public visibility of `Graphics.setScales`. Record a decision to expose
+a documented lifecycle API or replace public mutation with an internal runtime
+and test bridge before final API acceptance.
 
-Update state and evidence to distinguish Java, native compile, and native runtime
-results.
+Rename unsupported typography claims such as `kerningAdvance` to neutral
+representative-string terminology.
 
-Acceptance: the embedded specialization is preserved, both build configurations
-compile, focused output matches, and no unrelated cleanup is included.
+Acceptance:
 
-### Milestone 1R: complete actual logical layout behavior
+- nonzero PIXEL client-origin regression passes;
+- root PIXEL native fixture passes;
+- plan, state, outcomes, and evidence agree;
+- no text-engine blocker remains;
+- no production text-engine dependency is added.
 
-Read the API design.
+### Milestone 2R residual: native surface lifecycle
 
-Connect the effective parent `LayoutUnit` to child placement. DP values are
-logical. PIXEL values represent physical pixels and must be converted into the
-parent's logical coordinate space at the layout boundary.
+The established base transform and Retina initialization remain valid.
 
-Prove:
+Audit remaining scale-change lifecycle:
 
-- MainWindow DP default;
-- Container INHERIT behavior;
-- the parent controls placement of the child;
-- a child container's explicit unit controls only its descendants;
-- one root `setLayoutUnit(LayoutUnit.PIXEL)` preserves a legacy layout;
-- semantic constants and offsets use the correct unit;
-- shared rectangle edges do not create rounding gaps at 1.5, 2, and 3;
-- event and hit-test coordinates are converted exactly once;
-- native screen logical dimensions do not remain accidental physical dimensions.
+- framebuffer and drawable resize;
+- monitor/backing-scale changes where supported;
+- raster and image cache invalidation;
+- dirty bounds after a scale transition;
+- logical layout remains unchanged when only contentScale changes.
 
-Do not mark this milestone complete based only on resolver tests.
+Validate through the deployed native macOS lane.
 
-Acceptance: behavioral placement tests and a small migration application pass in
-Java and in a deployed native macOS run.
+Acceptance: initial and changed surface scales preserve logical geometry and
+physical backing correctness without stale caches.
 
-### Milestone 2R: complete Skia and native macOS surface scaling
+### Milestone 3R: SkFont-only logical text
 
-Complete the coherent Skia base transform for coordinates, clips, paths, strokes,
-image destinations, text positions, and dirty bounds. Keep image source
-rectangles and raw pixel APIs physical.
+Read the updated text design.
 
-Implement native macOS backing-scale acquisition from the actual native window or
-view and initialize the native screen `Graphics`. Do not use the AWT
-`GraphicsConfiguration` as evidence for this path.
+#### Effective-size measurement
 
-Validate through the procedure in
-`.agent/guides/macos-native-runtime-validation.md`. Run scales 1, 1.5 where
-supported, 2, and 3 through offscreen fixtures. Test a real Retina scale through
-the native application.
+Keep public FontMetrics as scale-one logical compatibility metrics.
 
-Acceptance: the deployed native macOS app reports the expected logical and
-physical dimensions and exercises the freshly built Skia code.
+Add an internal destination-aware path that configures the renderer font at:
 
-### Milestone 3R: complete logical text and FontMetrics
+    Font.size * Graphics.fontScale
 
-Read the text design.
+before measuring.
 
-Implement and test:
+For Skia:
 
-- `Font.size` and `fontScale` in logical units;
-- actual double metrics rather than integer delegation;
-- shared shaping or equivalent measurement/drawing results;
-- ascent, descent, leading, line height, and shaped advances;
-- preferred sizes and baselines;
-- fallback, accents, kerning, ligatures, and multiline wrapping;
-- separation of logical layout caches from physical raster caches;
-- raster invalidation on content-scale change;
-- layout invalidation on font-scale change.
+- `SkFont::getMetrics` receives the effective logical size;
+- `SkFont::measureText` receives the effective logical size;
+- drawing uses the same typeface, effective size, and UTF-16 input;
+- canvas contentScale is the only physical scale;
+- integer rounding occurs after effective-size measurement.
 
-Use the same tests in Java and deployed native macOS lanes. Pixel-identical output
-is not required across engines, but semantic metrics, wrapping, containment, and
-preferred bounds must satisfy the documented tolerances.
+Replace helpers that calculate:
 
-Acceptance: DANFE text metrics and ordinary text controls remain logically stable
-across content scales without over-shrinking.
+    fm.metric * fontScale
 
-### Milestone 4R: complete Image behavior and synchronization
+with the destination-aware measurement result.
 
-Read the image design.
+#### TotalCross wrapping and multiline
 
-Audit every logical/physical boundary: constructors, loaders, codecs, PNG/JPEG,
-frames, row pitch, transforms, hardware scale, texture upload, native readback,
-caches, and natural-size drawing.
+TotalCross keeps all line-breaking and multiline responsibility.
 
-Preserve established `applyChanges` direction and make ownership explicit.
-Validate Java-to-native upload, native-to-Java readback, alternating ownership,
-alpha 128, odd row widths, failures, and multiframe images in a deployed native
-macOS fixture.
+Adapt `Convert.insertLineBreak` or introduce an internal overload/measurement
+adapter so Label autoSplit and every current multiline consumer measure candidate
+lines through the destination-aware path.
 
-Acceptance: default and scaled images follow their public dimension contract in
-Java and native macOS, and no synchronization result is inferred from a Java-only
-test.
+Preserve explicit newline behavior and existing public APIs.
 
-### Milestone 5R: complete the Java renderer
+Do not call or add SkParagraph.
 
-Apply the logical model to all Java primitives, clips, translations, text, image
-destinations, source rectangles, and dirty bounds. Do not limit scaling to
-`fillRect` and natural-size image drawing.
+#### Controls and caches
 
-Run the common semantic fixture matrix. Record renderer-specific antialiasing
-differences separately from logical failures.
+Audit Label, Button, Edit, MultiEdit, and other direct uses of:
 
-Acceptance: the Java renderer satisfies the complete logical fixture and DANFE
-semantic assertions.
+    fmH
+    fm.height
+    fm.ascent
+    fm.descent
+    fm.stringWidth
+    fm.charWidth
 
-### Milestone 6R: complete the non-Skia native renderer
+Classify each use as scale-one compatibility, destination layout, drawing,
+cursor, selection, wrapping, or raw allocation.
 
-Build the repository-supported non-Skia configuration on macOS. Adapt native font,
-primitive, image, clip, event, and cache behavior to the same surface-owned scale
-contract.
+Ensure fontScale changes invalidate preferred bounds, wrapping, line widths,
+cursor and selection geometry, and relevant text caches. ContentScale changes
+must not change logical text layout.
 
-Do not attempt other native platforms during this milestone.
+#### Renderer behavior
 
-Acceptance: a deployed native macOS app using the non-Skia configuration satisfies
-the common semantic matrix, or the plan records a concrete unsupported
-configuration with maintainer review rather than claiming equivalence.
+Java and supported non-Skia paths follow the same order: apply fontScale before
+measurement and drawing. Quantization is allowed only at the documented backend
+boundary.
 
-### Milestone 7R: native macOS DANFE and screenshots
+Do not claim advanced shaping or fallback.
 
-Read the native runtime, DANFE, and screenshot guides.
+#### Tests
 
-The same deterministic fixture must run in two distinct lanes:
+Cover:
 
-- JavaSE/AWT through `totalcross.Launcher`;
-- deployed native macOS executable through the exact freshly built
-  `libtcvm.dylib`.
+- content scales 1, 1.5, 2, and 3;
+- font scales 1 and 1.5;
+- Label, Button, Edit, and MultiEdit;
+- explicit newline and automatic TotalCross wrapping;
+- Portuguese accents and DANFE strings;
+- empty and whitespace strings;
+- baseline, alignment, cursor, and selection;
+- same Font on simultaneous destinations;
+- cache invalidation;
+- measurement/drawing effective-size equality;
+- integer compatibility rounding.
 
-Both lanes produce PNGs and machine-readable metrics. The native lane is the
-required proof for changed C/C++ and Skia code.
+Acceptance:
 
-Resolve each process-owned CoreGraphics window ID and call:
+- logical metrics and wrapping are invariant under contentScale;
+- fontScale changes effective metrics and wrapping;
+- measured accepted lines fit when drawn;
+- native deployed macOS fixture passes;
+- no SkShaper, HarfBuzz, ICU, or SkParagraph dependency exists.
+
+### Milestone 4R: Image behavior and synchronization
+
+Audit constructors, loaders, PNG/JPEG, frames, row pitch, transforms, natural
+drawing, source rectangles, textures, caches, and readback.
+
+Preserve explicit Java/native ownership. Validate upload, native readback,
+alternating ownership, alpha 128, odd widths, failure state, and multiframe
+images in deployed native macOS.
+
+Acceptance: default and scaled images honor logical/public and physical/internal
+dimensions in Java and native macOS.
+
+### Milestone 5R: Java renderer
+
+Apply logical units to Java primitives, clips, translations, text, images, source
+rectangles, and dirty bounds.
+
+For Java text, derive the font at `Font.size * fontScale` before measuring and
+drawing. Use the same Java rendering context where possible. Document any
+integer-only double metric limitation.
+
+Acceptance: Java common fixtures and DANFE semantic assertions pass.
+
+### Milestone 6R: supported non-Skia native renderer
+
+Build the repository-supported non-Skia macOS configuration. Apply fontScale
+before selecting/resizing fonts and preserve logical coordinates for primitives,
+images, clips, events, and controls.
+
+No other platform is attempted during this milestone.
+
+Acceptance: the common semantic matrix passes, or a concrete unsupported macOS
+configuration is recorded for maintainer review without a false equivalence
+claim.
+
+### Milestone 7R: complete DANFE and screenshots
+
+Run the same deterministic fixture in separate lanes:
+
+- JavaSE/AWT;
+- deployed native macOS with the exact matching dylib.
+
+The DANFE validates SkFont-only metrics and TotalCross wrapping. It does not claim
+advanced shaping.
+
+Produce PNGs, machine-readable assertions, logs, and process-specific screenshots.
+
+Resolve a CoreGraphics window ID owned by the launched PID and execute:
 
     /usr/sbin/screencapture -x -l "$WINDOW_ID" "$OUTPUT_PNG"
 
-Do not use a Computer Use integration as the primary capture path and do not fall
-back to a desktop screenshot.
+Acceptance: text containment, size ranges, TotalCross wraps, geometry, barcode,
+runtime identity, synchronization, and privacy checks pass in both lanes.
 
-Acceptance: all DANFE assertions pass, the exact native runtime is verified,
-screenshots are sanitized, and Java results are not mislabeled as native.
+### Milestone 8R: final Android and handoff
 
-### Milestone 8R: final cross-platform validation and handoff
+Only after Java and native macOS pass:
 
-Only now run Android validation. Use at least one high-density Android device or
-emulator and execute the complete DANFE and image synchronization fixture.
+- run a high-density Android fixture;
+- validate logical text, TotalCross wrapping, images, synchronization, and
+  barcode;
+- run optional iOS or embedded validation when available;
+- finish Javadocs, compatibility notes, audits, evidence, and editorial report.
 
-Run iOS validation only if available, requested, or necessary to resolve a
-specific platform concern. Do not make an unavailable iOS environment block the
-Android issue fix unless iOS is explicitly promoted to a required target.
+Acceptance: required Java, native macOS, and Android rows pass and every optional
+or unavailable platform is labeled accurately.
 
-When target access exists, validate the embedded `USE_WRITE_PIXELS` build without
-changing its semantics merely to make another backend pass.
-
-Complete Javadocs, compatibility notes, source audits, file-size audits, evidence,
-and the editorial report.
-
-Acceptance: required Java, native macOS, and Android proof passes; optional
-platform results are labeled accurately; no core validation remains hidden under
-documentation status.
-
-## Validation and Acceptance
-
-Follow `.agent/guides/logical-ui-scaling-validation.md`.
+## Final Acceptance
 
 The task is complete only when:
 
-1. actual layout semantics, not only API metadata, pass;
-2. `USE_WRITE_PIXELS` remains supported;
-3. Java and native macOS validation are recorded separately;
-4. native macOS backing scale is proven in a deployed app;
-5. fontScale and real double metrics work;
-6. image synchronization passes in both directions natively;
-7. Java, Skia, and supported non-Skia behavior meet semantic equivalence;
-8. the complete text-bearing DANFE passes;
-9. deterministic window screenshots use `screencapture -l`;
-10. Android final validation passes;
-11. file-size, privacy, compatibility, and source audits pass.
+1. `USE_WRITE_PIXELS` remains supported;
+2. DP and PIXEL layout pass, including nonzero client origins;
+3. native high-DPI backing is proven;
+4. text is measured and drawn at `Font.size * fontScale`;
+5. contentScale is applied only by destination rendering;
+6. TotalCross line breaking and multiline layout use destination-aware metrics;
+7. no new shaping/paragraph dependency is introduced;
+8. images synchronize in both directions;
+9. Java, native Skia, and supported non-Skia semantic fixtures pass;
+10. complete DANFE Java and native macOS lanes pass;
+11. deterministic screenshots pass;
+12. final Android validation passes;
+13. records, privacy, compatibility, and file-size audits pass.
 
-## Risks and Open Questions
+## Risks
 
-The current branch may contain changes that compile but are not reached by its
-tests. Prefer behavioral tests at public and native runtime boundaries.
+The current text layout helpers may appear correct because font advances scale
+approximately linearly. Tests must prove effective-size measurement directly.
 
-A global scale mirror may remain for compatibility, but no renderer or layout
-decision may read it.
+Legacy TotalCross line breaking accepts FontMetrics rather than a destination.
+Prefer a small internal adapter or overload over a new generalized text engine.
 
-A native macOS test requires a matching SDK, deployed application, and dylib.
-Treat any stale packaged runtime as invalid evidence.
-
-Current blocker: the pinned Skia package has no `SkShaper` or `SkParagraph`
-headers, while M3R requires general shaping/fallback/ligature support and the
-text design prohibits introducing another engine without a separate decision.
-The simple-text path has been made measurement/drawing-consistent, but cannot
-close that requirement. A maintainer must provide a shaping-enabled Skia package
-or approve an alternative engine before execution can continue past M3R.
-
-`USE_WRITE_PIXELS` may have backend-specific restrictions. Preserve the feature
-and make eligibility explicit rather than deleting it.
-
-## Idempotence and Recovery
-
-Continue in the existing worktree and branch. Do not reset, rebase, rewrite, or
-drop the existing commits as part of this review correction.
-
-A failed test is not a reason to switch platforms. Fix or record the smallest
-blocking cause on macOS.
-
-Do not push, open a pull request, update the issue, publish artifacts, or use
-credentials unless explicitly requested.
-
-## Surprises & Discoveries
-
-- Observation: the prior execution labeled an AWT Launcher run as macOS platform
-  proof.
-  Evidence: branch evidence records `totalcross.Launcher` with `/scale`.
-
-- Observation: `USE_WRITE_PIXELS` was removed even though the new code differs
-  only in builds where that specialization is enabled.
-  Evidence: commit `fd7e5d358`.
-
-- Observation: `LayoutUnit` is stored and tested as metadata but is not consumed
-  by the layout engine.
-  Evidence: no effective-unit use in child placement or `Control.setRect`.
-
-- Observation: the pinned Skia package exposes `SkFont` but not `SkShaper` or
-  `SkParagraph` headers.
-  Evidence: scoped file audit of
-  `TotalCrossVM/deps/totalcross-depot-tools/skia/local/include` on 2026-08-01.
-  The current measurement/drawing path can be kept equivalent, but this does
-  not by itself prove full script shaping, fallback, or ligature behavior.
-
-Add only discoveries that change remaining work.
+The current branch may contain claims not represented in append-only evidence.
+Revalidate or downgrade those claims rather than reconstructing results from
+memory.
 
 ## Decision Log
 
-- Decision: preserve the existing branch and correct it with new commits.
-  Rationale: useful scaffolding is present, while history remains auditable.
+- Decision: continue existing branch and preserve history.
   Date: 2026-08-01.
 
-- Decision: native implementation validation uses macOS only until final
-  cross-platform validation.
-  Rationale: it gives a fast, matching native VM loop without premature iOS or
-  Android build work.
+- Decision: preserve `USE_WRITE_PIXELS` with scale-aware eligibility.
   Date: 2026-08-01.
 
-- Decision: JavaSE/AWT and native macOS are separate proof lanes.
-  Rationale: Java methods do not execute native replacements or Skia C++ code.
+- Decision: keep Java and native macOS proof separate.
   Date: 2026-08-01.
 
-- Decision: restore `USE_WRITE_PIXELS` with scale-aware eligibility.
-  Rationale: preserving an embedded specialization is safer than unrelated
-  deletion.
+- Decision: native implementation validation uses macOS until final Android.
   Date: 2026-08-01.
 
-- Decision: use CoreGraphics process ownership and `screencapture -l`.
-  Rationale: it is deterministic, avoids title enumeration, and captures only the
-  target window.
+- Decision: use CoreGraphics owner PID and `screencapture -l`.
   Date: 2026-08-01.
 
-## Outcomes & Retrospective
+- Decision: logical text scaling uses core SkFont only.
+  Rationale: logical units require effective-size measurement and a canvas
+  transform, not a new shaping or paragraph engine.
+  Date: 2026-08-01.
 
-The branch review found useful foundations but no final accepted outcome yet.
-Update this section after each corrected behavioral milestone.
+- Decision: TotalCross retains wrapping and multiline layout.
+  Rationale: this task changes unit and scale semantics, not text-layout
+  ownership.
+  Date: 2026-08-01.
 
-- 2026-08-01: Milestone 3R's first layout slice connected destination
-  `fontScale` to `Control` and `Label` preferred measurements, while preserving
-  logical dimensions across content-scale changes. `Label` refreshes cached
-  line widths when its destination font scale changes. Evidence: focused Java
-  `LogicalTextScaleTest` passed; the freshly deployed native macOS fixture
-  reported `labelWidths=84,84,125` at content scales 2 and 4, then font scale
-  1.5, respectively. Full logs: `artifacts/logical-ui-scaling/logs/`
-  `logical-text-scale-test.log`, `sdk-dist-logical-text-scale.log`,
-  `deploy-logical-text-scale-after-dist.log`, and
-  `native-logical-text-scale-after-dist.log`.
-- 2026-08-01: Extended the same preferred-size contract to `Button`, including
-  its cached multiline widths. Evidence: focused Java
-  `LogicalTextScaleTest` passed; full log:
-  `artifacts/logical-ui-scaling/logs/logical-text-scale-button-test.log`.
-- 2026-08-01: Extended non-material `Edit` preferred measurements to the
-  destination font scale. Evidence: focused Java `LogicalTextScaleTest` passed;
-  full log: `artifacts/logical-ui-scaling/logs/logical-text-scale-edit-test.log`.
-- 2026-08-01: Corrected `Label` and `Button` vertical line placement to use
-  destination-scaled logical line height. Evidence: focused Java
-  `LogicalTextScaleTest` passed; full log:
-  `artifacts/logical-ui-scaling/logs/logical-text-vertical-scale-test.log`.
-- 2026-08-01: Corrected `Edit` text, selection, and cursor vertical geometry
-  to use destination-scaled line metrics. Evidence: focused Java
-  `LogicalTextScaleTest` passed; full log:
-  `artifacts/logical-ui-scaling/logs/logical-text-edit-vertical-test.log`.
-- 2026-08-01: Corrected `Edit` horizontal layout and caret calculations to use
-  destination-scaled advances. Evidence: focused Java `LogicalTextScaleTest`
-  passed after materializing the edit through its normal layout cycle; full log:
-  `artifacts/logical-ui-scaling/logs/logical-text-edit-cursor-test.log`.
-- 2026-08-01: Added deployed native macOS `Edit` preferred-width evidence. The
-  fixture reports `editWidths=48,48,67` at content scales 2 and 4 then font
-  scale 1.5. Full logs: `sdk-dist-edit-scale.log`, `deploy-edit-scale.log`, and
-  `native-edit-scale.log` under `artifacts/logical-ui-scaling/logs/`.
-- 2026-08-01: Changed native integer Skia text widths from truncation to upward
-  rounding of their fractional advance, preserving the compatibility rule that
-  preferred extents must not clip. Native compile and deployed macOS fixture
-  passed; logs: `native-font-width-rounding-build.log`,
-  `deploy-font-width-rounding.log`, and `native-font-width-rounding.log`.
-- 2026-08-01: Added machine-checked deployed text metrics for DANFE, accented
-  Portuguese text, and `AV`, plus vertical metric and control-scale invariants.
-  Native macOS runtime passed with fractional values. Logs:
-  `sdk-dist-text-assertions.log`, `deploy-text-assertions.log`, and
-  `native-text-assertions.log`.
-- 2026-08-01: Made destination font-scale transitions reposition control
-  surfaces and invalidate painting. The focused Java test asserts actual
-  preferred control bounds grow after a font-scale change; full log:
-  `artifacts/logical-ui-scaling/logs/logical-text-font-invalidation-test.log`.
-  The freshly deployed native macOS fixture also passed; logs:
-  `sdk-dist-font-invalidation.log`, `deploy-font-invalidation.log`, and
-  `native-font-invalidation.log`.
-- 2026-08-01: Unified native Skia `FontMetrics` integer overloads (character,
-  String, char array, and StringBuffer) with the same Skia measurement path as
-  drawing and fractional String advances. Native compile and deployed macOS
-  runtime passed; logs: `native-font-overload-consistency-build.log`,
-  `deploy-font-overload-consistency.log`, and
-  `native-font-overload-consistency.log`.
-- 2026-08-01: Added deployed assertion that the compatibility integer String
-  width equals the upward-rounded fractional advance. Native macOS passed with
-  `81.6484375 -> 82`; logs: `sdk-dist-font-compatibility.log`,
-  `deploy-font-compatibility.log`, and `native-font-compatibility.log`.
-- 2026-08-01: Extended deployed compatibility assertions to char-array and
-  StringBuffer widths; all overloads returned `82`. Logs:
-  `sdk-dist-font-overloads.log`, `deploy-font-overloads.log`, and
-  `native-font-overloads.log`.
-- 2026-08-01: Updated `MultiEdit` cached line height and masked preferred width
-  for destination font scale. Focused Java `LogicalTextScaleTest` passed; log:
-  `artifacts/logical-ui-scaling/logs/logical-text-multiedit-test.log`.
-  Native deployed fixture passed with `multiEditHeights=42,42,58`; logs:
-  `sdk-dist-multiedit-scale.log`, `deploy-multiedit-scale.log`, and
-  `native-multiedit-scale.log`.
+## Outcomes
 
-## Revision Note
+The branch has completed valuable foundations, including guarded embedded
+drawing, native Retina initialization, fractional Skia metrics, native runtime
+identity, and selected control scaling.
 
-2026-08-01: Rebased the living plan's reported progress on reviewed behavior,
-restored embedded-platform scope, separated Java from native macOS validation,
-deferred other native platforms until final validation, and specified a
-deterministic screenshot path.
+The plan remains incomplete. Update this section only after R1 and each remaining
+milestone meet their acceptance criteria.

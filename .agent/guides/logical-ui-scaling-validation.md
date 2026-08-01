@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Proof categories
 
-Every result must be labeled as exactly one of:
+Label every result as one of:
 
 - static source audit;
 - Java unit or integration test;
@@ -19,139 +19,167 @@ Every result must be labeled as exactly one of:
 - optional final iOS or embedded runtime;
 - manual visual review.
 
-Do not promote one category into another.
-
-A CMake/Ninja pass is native compile proof, not runtime proof. A
-`totalcross.Launcher` run is JavaSE/AWT proof, even when the host OS is macOS.
+A native build is not runtime proof. A Java Launcher run on macOS is not native
+macOS proof.
 
 ## Escalation order
 
-Within the active milestone:
+Within an implementation milestone:
 
 1. diff and static checks;
 2. focused Java tests;
-3. focused native helper or unit test;
-4. SDK module build;
-5. native macOS compile;
+3. focused native helper;
+4. SDK build;
+5. native macOS build;
 6. deployed native macOS fixture;
-7. full SDK/native build at milestone closure.
+7. milestone audit.
 
-Do not run Android or iOS during implementation milestones.
+Run Android only in the final cross-platform milestone. iOS remains optional.
 
-At final cross-platform validation:
+## R1 reconciliation gate
 
-1. rerun the complete Java matrix;
-2. rerun deployed native macOS Skia;
-3. rerun deployed native macOS non-Skia when supported;
-4. run Android;
-5. run optional iOS or embedded target validation.
+Before resuming M3R:
 
-## Corrective USE_WRITE_PIXELS gate
+- update state to the actual branch head;
+- remove the shaping-engine blocker;
+- append only verified missing evidence;
+- correct PIXEL conversion with a nonzero client origin;
+- add a deployed native PIXEL migration assertion;
+- record the intended visibility/lifecycle of scale mutation.
 
-Preserve the build path. Locate its actual preprocessor and build configuration.
+## USE_WRITE_PIXELS gate
 
-Compile with the path disabled and enabled. Test:
+Preserve both enabled and disabled configurations.
 
-- eligible opaque full-source same-size alpha-255 copy at identity scale;
-- the same visual output through the fallback;
-- contentScale greater than one rejects direct write;
-- destination translation or non-identity transform rejects direct write;
-- filtered or alpha copies use canvas drawing;
-- raw pixel methods still address physical pixels.
-
-No Linux embedded execution is required until the final platform checkpoint.
+Require direct writes only for eligible identity-transform copies. Scaled,
+clipped, filtered, translucent, or transformed copies use canvas drawing. Raw
+pixel APIs remain physical.
 
 ## Logical layout gate
 
-Tests must call real layout APIs and inspect resulting bounds. Resolver-only tests
-are insufficient.
+Exercise actual layout APIs at scales 1, 1.5, 2, and 3.
 
-Cover root DP, root PIXEL, nested inheritance, child override, semantic constants,
-preferred sizes, shared edges, events, and hit testing at scales 1, 1.5, 2, and 3.
+Cover:
 
-Run the migration fixture in Java and in a deployed native macOS application.
+- root DP and root PIXEL;
+- inheritance and child override;
+- semantic constants;
+- shared edges;
+- nonzero insets/client origin;
+- events and hit testing;
+- root PIXEL migration in a deployed native macOS app.
+
+## SkFont-only text gate
+
+No test or build may require SkShaper, HarfBuzz, ICU, or SkParagraph.
+
+For each destination, prove:
+
+    effective size = Font.size * fontScale
+
+is passed to both measurement and drawing before either operation.
+
+Require:
+
+- `SkFont::measureText` at the effective logical size;
+- `SkFont::getMetrics` at the effective logical size;
+- drawing with the same typeface, size, and UTF-16 input;
+- contentScale applied only by the canvas;
+- integer rounding after effective-size measurement;
+- content-scale invariance of logical metrics;
+- font-scale changes reflected in metrics and layout;
+- actual double values on the Skia path.
+
+Do not accept a test that only proves:
+
+    measureAtScaleOne * fontScale
+
+because it does not prove equal measurement and drawing configuration.
+
+## TotalCross wrapping gate
+
+TotalCross must continue to perform line breaking and multiline layout.
+
+Test:
+
+- `Convert.insertLineBreak` or its replacement/overload uses a
+  destination-aware measurement path;
+- explicit newlines remain unchanged;
+- only fontScale changes wrap points;
+- contentScale does not change wrap points;
+- accepted lines fit when drawn;
+- Label autoSplit, MultiEdit, and other current multiline controls remain under
+  TotalCross ownership;
+- no SkParagraph call or dependency exists.
+
+## Typography scope boundary
+
+Accented Portuguese, `"AV"`, digits, punctuation, and long DANFE strings are
+representative text inputs.
+
+Do not claim these tests prove:
+
+- HarfBuzz shaping;
+- ligatures;
+- bidi;
+- complex scripts;
+- fallback;
+- Unicode cluster semantics.
 
 ## Renderer matrix
 
-Use the same semantic fixture for:
+Use common semantic fixtures for Java, native macOS Skia, and the supported
+native non-Skia path.
 
-- Java renderer;
-- native macOS Skia renderer;
-- native macOS non-Skia renderer when supported.
-
-Require equivalent logical bounds, integer compatibility metrics, wrapping,
+Compare logical bounds, integer compatibility metrics, TotalCross wrapping,
 baseline ordering, containment, image dimensions, and barcode structure.
 
-Allow documented fractional metric and antialiasing differences. Do not allow a
-renderer to skip fontScale, source/destination unit rules, or synchronization.
-
-## Text gate
-
-Require actual double values, not integer values returned as double.
-
-Cover ascent, descent, leading, line height, shaped advance, fallback, accents,
-kerning or ligature behavior, multiline wrapping, preferred sizes, and baseline.
-
-Verify contentScale does not change logical text layout. Verify fontScale does.
+Do not require identical antialiasing pixels or identical fractional values from
+a renderer that documents integer-only metrics.
 
 ## Image and synchronization gate
 
-Test constructors, loaders, codecs, export, frames, transforms, caches, natural
-drawing size, physical source rectangles, row pitch, alpha, and odd widths.
+Test constructors, loaders, codecs, export, frames, transforms, cache ownership,
+natural drawing size, physical source rectangles, row pitch, alpha, and odd
+widths.
 
-In native macOS runtime, test both directions:
-
-- Java pixels uploaded to native/Skia;
-- native/Skia drawing read back into Java pixels.
-
-Test repeated and alternating ownership. A Java-only `applyChanges` test is not
-native synchronization proof.
+The deployed native macOS fixture must prove Java-to-native upload and
+native-to-Java readback, including alternating ownership.
 
 ## DANFE gate
 
 Follow `.agent/guides/logical-ui-scaling-danfe.md`.
 
-The final fixture includes text and automated text assertions. A rectangle and
-barcode-only test remains low-level coverage, not DANFE acceptance.
+The complete fixture includes text and automated containment and size assertions.
+The rectangle/barcode-only test remains low-level coverage.
 
 ## Native macOS gate
 
 Follow `.agent/guides/macos-native-runtime-validation.md`.
 
-Require matching SDK, deployed application, matching dylib, native execution,
-machine-readable assertions, output PNGs, and target-window screenshot.
+Require matching SDK, deployed app, matching dylib hash, native execution,
+machine-readable assertions, PNGs, and target-window screenshot.
 
 ## Screenshot gate
 
-Follow `.agent/guides/private-screenshot-capture.md`.
-
-Use a CoreGraphics window ID owned by the launched PID and pass it to:
+Resolve a CoreGraphics window ID owned by the launched PID and execute:
 
     /usr/sbin/screencapture -x -l "$WINDOW_ID" "$OUTPUT_PNG"
 
-Computer Use targeting is not the primary path. Full-desktop fallback is
-forbidden.
+Do not use full-desktop fallback.
 
 ## Final Android gate
 
-Run only after native macOS milestones pass. Use at least one Android device or
-emulator with density greater than one.
+After Java and native macOS pass, run the same fixture on a high-density Android
+target.
 
-Deploy and run the complete fixture. Require:
+Require logical text stability, correct physical image sizes, TotalCross
+wrapping, barcode structure, synchronization, and absence of global-density
+layout decisions.
 
-- default image remains 360 by 540 physical pixels;
-- scale-two logical image is 720 by 1080;
-- text metrics and containment pass;
-- 31 barcode runs remain;
-- upload and readback assertions pass;
-- no global screen-density dependency returns.
+## Audit commands
 
-iOS is optional unless explicitly requested. Do not let an unavailable iOS
-environment replace or block the Android issue proof.
-
-## Build and audit commands
-
-Use the smallest current task names. Typical commands are:
+Use focused tasks and redirect verbose logs:
 
     cd TotalCrossSDK
     ./gradlew-agent test --tests '<focused test>'
@@ -165,24 +193,23 @@ Use the smallest current task names. Typical commands are:
 At each milestone closure:
 
     git diff --check
-    git diff --stat
     git status --short -- <active paths>
+    git diff --stat
     wc -c <new files>
     wc -l <new files>
-
-Redirect verbose output to `artifacts/logical-ui-scaling/logs/`.
 
 ## Final acceptance
 
 Completion requires:
 
-- corrected embedded fast path;
-- real layout behavior;
-- Java and native macOS proof kept separate;
+- preserved embedded fast path;
+- correct DP and PIXEL layout, including nonzero client origins;
 - native backing scale;
-- complete text and image contracts;
-- bidirectional native synchronization;
+- SkFont-only destination-aware text metrics;
+- TotalCross-owned line breaking and multiline layout;
+- complete image ownership and synchronization;
+- Java, Skia, and supported non-Skia semantic results;
 - complete DANFE in Java and native macOS;
 - deterministic window screenshots;
 - final Android proof;
-- privacy, file-size, deprecation, and source audits.
+- privacy, compatibility, file-size, and source audits.

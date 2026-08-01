@@ -8,68 +8,65 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Editorial Summary
 
-The branch contains useful implementation scaffolding but is under corrective
-review. No final outcome is claimed.
+Implementation is in progress on `feat/logical-ui-scaling`. Useful native and
+control foundations are present. No final completion claim is made.
 
-## Original Plan versus Actual Outcome
+## Scope
 
-The original plan expected complete layout behavior, three-renderer equivalence,
-native macOS and Android proof, native synchronization, and a complete
-text-bearing DANFE.
+Logical text scaling uses core SkFont measurement and metrics. TotalCross retains
+line breaking and multiline layout.
 
-The reviewed branch currently proves API scaffolding, selected Java image
-behavior, PNG dimensions, barcode runs, native compilation, and Java Launcher
-startup. It does not yet prove the complete behavioral acceptance.
+SkShaper, HarfBuzz, ICU, SkParagraph, bidi, complex shaping, guaranteed
+ligatures, engine-level fallback, and paragraph-engine migration are outside this
+task.
 
-## What Changed
+## Original Plan versus Current Outcome
 
-Update after corrective milestones. Keep JavaSE/AWT and native macOS changes in
-separate subsections.
+Completed foundations include:
+
+- logical API scaffolding;
+- guarded embedded direct writes;
+- native macOS high-DPI backing;
+- deployed Retina runtime identity;
+- fractional native Skia metrics;
+- selected Label, Button, Edit, and MultiEdit scaling work.
+
+Remaining corrections include effective-size measurement before layout,
+destination-aware TotalCross wrapping, nonzero PIXEL client origins, synchronized
+evidence, images, renderer equivalence, full DANFE, screenshots, and Android.
 
 ## Decisions and Trade-offs
 
 - Existing branch history is preserved.
-- `USE_WRITE_PIXELS` must be restored with scale-aware eligibility.
-- Native implementation validation uses macOS until final platform validation.
-- Java Launcher execution is not native evidence.
-- Screenshots use CoreGraphics window IDs and `screencapture -l`.
-
-## Unexpected Problems and Discoveries
-
-- Prior progress reporting confused compilation and Java host execution with
-  native runtime validation.
-- The embedded direct-write branch was removed unnecessarily.
-- Layout-unit metadata was not connected to layout behavior.
+- Core SkFont is sufficient for logical scaling.
+- TotalCross text-layout ownership remains unchanged.
+- Advanced typography is not silently promised by this feature.
+- Java and native macOS validation remain distinct.
+- Android is final required platform proof.
 
 ## Validation and Measurable Results
 
-Do not promote existing Java-only or compile-only results into native proof.
-Populate this section as corrected milestones pass.
+Populate from append-only evidence only. Separate:
 
-## Useful Evidence and Examples
+- Java tests;
+- JavaSE/AWT runtime;
+- native macOS compile;
+- deployed native macOS runtime;
+- final Android runtime;
+- manual visual review.
 
-Use repository-relative paths under:
+Do not describe a representative `"AV"` width as proof of kerning or shaping.
 
-    artifacts/logical-ui-scaling/
+## Limitations and Remaining Work
 
-## Limitations, Remaining Work, and Open Questions
-
-See `.agent/reviews/logical-ui-scaling-branch-review.md` and the current state.
-
-## Possible Article Angles
-
-Defer until implementation is complete.
-
-## Suggested Narrative
-
-Explain the original mixed-unit bug, the difference between Java and native
-rendering, the surface-owned scale model, preservation of embedded
-specializations, and the final cross-platform proof.
+Use the current state and branch review. Do not state that the work is complete
+until all final acceptance items pass.
 
 ## Claims Requiring Human Review
 
+- public scale mutation API;
 - visual equivalence;
-- public compatibility of Image dimension semantics;
-- non-Skia macOS support status;
-- embedded fast-path performance;
-- optional iOS support conclusion.
+- non-Skia support status;
+- compatibility of logical Image dimensions;
+- optional iOS result;
+- embedded fast-path performance.
