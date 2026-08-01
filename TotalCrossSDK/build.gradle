@@ -471,6 +471,11 @@ tasks.named('compileSmokeTestJava', JavaCompile) {
         }
     }
 }
+def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
+def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')
+def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scaling/danfe') {
+	include '*.java'
+}
 
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -522,6 +527,39 @@ tasks.register('compileAxtlsProviderSmoke', Sync) {
     }
     from(smokeTestResourcesDir)
     into axtlsProviderSmokeClassesDir
+}
+
+tasks.register('compileLogicalUiScalingSmoke', JavaCompile) {
+	group = 'verification'
+	description = 'Compiles the logical UI scaling fixture against the generated SDK.'
+
+	source logicalUiScalingSmokeSources
+	classpath = files(logicalUiScalingSmokeSdkJar)
+	destinationDirectory = logicalUiScalingSmokeClassesDir
+	options.encoding = 'UTF-8'
+	options.release.set(17)
+
+	doFirst {
+		if (!logicalUiScalingSmokeSdkJar.isFile()) {
+			throw new GradleException('Run ./gradlew-agent dist -x test before compiling the logical UI scaling fixture.')
+		}
+	}
+}
+
+tasks.register('deployLogicalUiScalingSmokeMacOS', JavaExec) {
+	group = 'verification'
+	description = 'Deploys the logical UI scaling fixture for native macOS validation.'
+	dependsOn 'copySdkDependencies', 'compileLogicalUiScalingSmoke'
+
+	mainClass = 'tc.Deploy'
+	classpath = files(logicalUiScalingSmokeSdkJar) + fileTree('dist/libs') {
+		include '*.jar'
+	}
+	workingDir logicalUiScalingSmokeClassesDir.get().asFile
+	args = [
+		'danfe/fixture/DanfeScalingApp.class',
+		'-macos'
+	]
 }
 
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
