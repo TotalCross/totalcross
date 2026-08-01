@@ -37,6 +37,7 @@ void skia_deleteBitmap(int32 id);
 
 void skia_setClip(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2);
 void skia_restoreClip(int32 skiaSurface);
+void skia_setSurfaceScale(int32 skiaSurface, double contentScale);
 
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
 void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2);

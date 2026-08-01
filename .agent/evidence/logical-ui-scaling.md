@@ -54,3 +54,13 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: `DP == 0`, `UnitsConverter.toPixels` is identity, inheritance resolves
   from explicit ancestor units, and Graphics accepts only finite positive scales.
 - Full log: `TotalCrossSDK/agent-logs/20260801-153028-test-full.log`
+
+## Milestone 2: Skia base transform slice
+
+- Timestamp: 2026-08-01T21:50:00Z
+- Commit: `702793faaf65b87af7819efc66760633e8267623`
+- Status: implementation committed; native build pending
+- Result: every Graphics-selected Skia canvas resets to, then receives, its
+  finite positive `contentScale` base transform. The CMake configuration began
+  fetching the required Skia artifact and did not reach generation; no native
+  build result is recorded yet.
