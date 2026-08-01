@@ -440,3 +440,17 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   the matching current dylib, and directly ran `DanfeScalingApp /logical-ui-assert`.
   It passed with Retina `contentScale=2.0`; logs: `m3-choice-dist.log`,
   `m3-choice-deploy.log`, and `m3-choice-native.log`.
+
+## Milestone 3R: DANFE text-control matrix
+
+- Timestamp: 2026-08-01T23:30:00Z
+- Commands: rebuilt SDK distribution, focused macOS fixture deployment with the
+  matching dylib, and direct `DanfeScalingApp /logical-ui-assert` execution.
+- Renderer/platform: deployed native macOS SDL/Skia application.
+- Status: passed.
+- Result: the fixture verifies content-scale invariance and font-scale growth
+  for Label, Button, Edit, MultiEdit, Check, and Radio. It reports
+  `buttonWidths=86,86,127`, `checkWidths=49,49,53`, and
+  `radioWidths=103,103,152` without any advanced-typography claim.
+- Logs: `m3-danfe-dist.log`, `m3-danfe-deploy.log`, and
+  `m3-danfe-native.log` under `artifacts/logical-ui-scaling/logs/`.

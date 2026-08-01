@@ -6,6 +6,9 @@ package danfe.fixture;
 
 import totalcross.ui.ImageControl;
 import totalcross.ui.Label;
+import totalcross.ui.Button;
+import totalcross.ui.Check;
+import totalcross.ui.Radio;
 import totalcross.ui.Edit;
 import totalcross.ui.Container;
 import totalcross.ui.LayoutUnit;
@@ -65,6 +68,32 @@ public class DanfeScalingApp extends MainWindow {
       int multiEditHeightAtDoubleContentScale = metricMultiEdit.getPreferredHeight();
       multiEditGraphics.setScales(contentScale, 1.5);
       int multiEditHeightAtFontScale = metricMultiEdit.getPreferredHeight();
+      Button metricButton = new Button("DANFE 25,00");
+      add(metricButton, 0, 70, PREFERRED, PREFERRED);
+      metricButton.getGraphics().setScales(contentScale, 1.0);
+      int buttonWidthAtOne = metricButton.getPreferredWidth();
+      metricButton.getGraphics().setScales(contentScale * 2.0, 1.0);
+      int buttonWidthAtDoubleContentScale = metricButton.getPreferredWidth();
+      metricButton.getGraphics().setScales(contentScale, 1.5);
+      int buttonWidthAtFontScale = metricButton.getPreferredWidth();
+      Check metricCheck = new Check("DANFE texto longo para quebrar linhas");
+      add(metricCheck, 0, 100, PREFERRED, PREFERRED);
+      metricCheck.getGraphics().setScales(contentScale, 1.0);
+      metricCheck.split(50);
+      int checkWidthAtOne = metricCheck.getMaxTextWidth();
+      metricCheck.getGraphics().setScales(contentScale * 2.0, 1.0);
+      int checkWidthAtDoubleContentScale = metricCheck.getMaxTextWidth();
+      metricCheck.getGraphics().setScales(contentScale, 1.5);
+      metricCheck.split(50);
+      int checkWidthAtFontScale = metricCheck.getMaxTextWidth();
+      Radio metricRadio = new Radio("DANFE 25,00");
+      add(metricRadio, 0, 130, PREFERRED, PREFERRED);
+      metricRadio.getGraphics().setScales(contentScale, 1.0);
+      int radioWidthAtOne = metricRadio.getPreferredWidth();
+      metricRadio.getGraphics().setScales(contentScale * 2.0, 1.0);
+      int radioWidthAtDoubleContentScale = metricRadio.getPreferredWidth();
+      metricRadio.getGraphics().setScales(contentScale, 1.5);
+      int radioWidthAtFontScale = metricRadio.getPreferredWidth();
       Container pixelRoot = new Container();
       pixelRoot.setLayoutUnit(LayoutUnit.PIXEL);
       add(pixelRoot, 0, 80, 200, 100);
@@ -87,6 +116,9 @@ public class DanfeScalingApp extends MainWindow {
           && editWidthAtOne == editWidthAtDoubleContentScale && editWidthAtFontScale > editWidthAtOne
           && multiEditHeightAtOne == multiEditHeightAtDoubleContentScale
           && multiEditHeightAtFontScale > multiEditHeightAtOne
+          && buttonWidthAtOne == buttonWidthAtDoubleContentScale && buttonWidthAtFontScale > buttonWidthAtOne
+          && checkWidthAtOne == checkWidthAtDoubleContentScale && checkWidthAtFontScale > checkWidthAtOne
+          && radioWidthAtOne == radioWidthAtDoubleContentScale && radioWidthAtFontScale > radioWidthAtOne
           && pixelChild.getX() == 10 && pixelChild.getY() == 5 && pixelChild.getWidth() == 50 && pixelChild.getHeight() == 20)) {
         throw new IllegalStateException("Logical text metric assertion failed");
       }
@@ -100,6 +132,9 @@ public class DanfeScalingApp extends MainWindow {
           + " labelWidths=" + widthAtOne + "," + widthAtDoubleContentScale + "," + widthAtFontScale
           + " editWidths=" + editWidthAtOne + "," + editWidthAtDoubleContentScale + "," + editWidthAtFontScale
           + " multiEditHeights=" + multiEditHeightAtOne + "," + multiEditHeightAtDoubleContentScale + "," + multiEditHeightAtFontScale
+          + " buttonWidths=" + buttonWidthAtOne + "," + buttonWidthAtDoubleContentScale + "," + buttonWidthAtFontScale
+          + " checkWidths=" + checkWidthAtOne + "," + checkWidthAtDoubleContentScale + "," + checkWidthAtFontScale
+          + " radioWidths=" + radioWidthAtOne + "," + radioWidthAtDoubleContentScale + "," + radioWidthAtFontScale
           + " pixelChild=" + pixelChild.getX() + "," + pixelChild.getY() + "," + pixelChild.getWidth() + "," + pixelChild.getHeight());
       exit(0);
     }
