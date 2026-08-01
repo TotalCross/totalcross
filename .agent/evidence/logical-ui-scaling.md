@@ -64,3 +64,11 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   finite positive `contentScale` base transform. The CMake configuration began
   fetching the required Skia artifact and did not reach generation; no native
   build result is recorded yet.
+
+- Timestamp: 2026-08-01T22:05:00Z
+- Command: `cmake -S TotalCrossVM -B build-logical-ui -DCMAKE_BUILD_TYPE=Release -G Ninja`; `ninja -C build-logical-ui`
+- Renderer/platform: Skia, macOS arm64
+- Status: passed
+- Result: generated and linked `libtcvm.dylib`; the Skia transform and raw-pixel
+  boundary changes compile successfully. Logs: `/tmp/logical-ui-m2-cmake-resume.log`,
+  `/tmp/logical-ui-m2-ninja-raw.log`.
