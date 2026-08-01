@@ -332,3 +332,15 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Status: passed
 - Result: the fixture covers logical primitive destination mapping at scales 1,
   1.5, 2, and 3, as well as scaled clipping, image fallback, and raw pixels.
+
+## Milestone 3R: fractional native vertical metrics
+
+- Timestamp: 2026-08-01T21:14:00Z
+- Commits: `061fb98f5`, `4d90cc929`
+- Commands: `ninja -C build-logical-ui tcvm`; rebuilt SDK distribution,
+  deployed `DanfeScalingApp`, and directly ran `/logical-ui-assert`.
+- Renderer/platform: deployed native macOS SDL/Skia application
+- Status: passed
+- Result: the native fixture reports fractional Skia metrics
+  `ascentD=12.98828125`, `descentD=3.41796875`, and `heightD=16.40625`.
+  Integer compatibility fields use conservative upward rounding.
