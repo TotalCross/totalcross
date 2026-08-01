@@ -131,6 +131,8 @@ deployed native root fixture pass, and no external text-engine blocker remains.
   logs: `effective-multiedit-wrap-dist.log`,
   `effective-multiedit-wrap-deploy.log`, and
   `effective-multiedit-wrap-native.log`.
+- `Label` cached line widths exclude contentScale and refresh when fontScale
+  changes; focused Java cache validation passed.
 
 ## Remaining Major Work
 

@@ -194,6 +194,10 @@ The deployed native macOS fixture passed; logs:
 `effective-multiedit-wrap-dist.log`, `effective-multiedit-wrap-deploy.log`,
 and `effective-multiedit-wrap-native.log`.
 
+Progress 2026-08-01: added a focused Label cache regression proving logical
+line widths ignore contentScale and refresh for fontScale; log:
+`artifacts/logical-ui-scaling/logs/text-layout-cache-test.log`.
+
 ### Milestone 2R residual: native surface lifecycle
 
 The established base transform and Retina initialization remain valid.
