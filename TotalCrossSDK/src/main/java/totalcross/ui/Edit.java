@@ -626,6 +626,7 @@ protected int gap;
   }
 
   protected int getX0() {
+	int fontHeight = getFontHeightForLayout();
 	int textStartX = 0;
 	StringBuffer s;
 	s = isMaskedEdit ? masked : chars;
@@ -633,23 +634,23 @@ protected int gap;
 	case RIGHT:
 		textStartX = this.width - getFontWidthForLayout(s, 0, s.length()) - 2*xOffset;
 		if(captionIcon != null) {
-			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
+			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4);
 		}
 		break;
 	case CENTER:
 		textStartX = (this.width - getFontWidthForLayout(s, 0, s.length())) / 2 - xOffset;
 		if(captionIcon != null) {
-			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
+			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4);
 		}
-		if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4)) {
+		if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4)) {
 			textStartX = this.width - getFontWidthForLayout(s, 0, s.length()) - 2*xOffset;
 			if(captionIcon != null) {
-				textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
+				textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4);
 			}
 		}
 		break;
 	}
-    return (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4) + textStartX;
+    return (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4) + textStartX;
   }
 
   protected int charPos2x(int n) {
@@ -903,7 +904,7 @@ protected int gap;
     	oldBounds = this.getRect();
 	    if (materialCaption != null) {
 	      materialCaption.xcap0 = materialCaption.xcap = chars.length() == 0 ? xMin : 0;
-	      materialCaption.ycap0 = materialCaption.ycap = uiMaterial ? this.height/2  - this.fmH/2 : chars.length() == 0 ?  getTextY() : 0;
+	      materialCaption.ycap0 = materialCaption.ycap = uiMaterial ? this.height/2  - getFontHeightForLayout()/2 : chars.length() == 0 ?  getTextY() : 0;
 	      if (this instanceof OutlinedEdit) {
 	    	  OutlinedEdit oe = (OutlinedEdit)this;
 			int labelAscentMiddleY = (materialCaption.getCaptionFontSmall().fm.ascent - oe.borderHeight)/2;
@@ -928,7 +929,7 @@ protected int gap;
     int ret = getFontHeightForLayout() + prefH;
     if (uiMaterial) {
       if(caption != null) {
-    	  ret = fmH + prefH > UnitsConverter.toPixels(DP + 56) ? ret + materialCaption.getExtraHeight() : UnitsConverter.toPixels(DP + 56);
+	      ret = getFontHeightForLayout() + prefH > UnitsConverter.toPixels(DP + 56) ? ret + materialCaption.getExtraHeight() : UnitsConverter.toPixels(DP + 56);
       } else {
     	  ret = UnitsConverter.toPixels(DP + 56);
       }
@@ -1019,7 +1020,7 @@ protected int gap;
 	      if(drawLine) {
 			if (uiMaterial) {
 				final int lineHeight = Math.max(UnitsConverter.toPixels(DP + (hasFocus ? 2 : 1)), 1);
-				int h = fmH / 10;
+				int h = getFontHeightForLayout() / 10;
 				if (h < 2) {
 					h = 2;
 				}
@@ -1117,7 +1118,7 @@ protected int gap;
 	            break;
 	          case CENTER:
 	            xx = (this.width - getTotalCharWidth()) >> 1;
-					if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4)) {
+					if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + getFontHeightForLayout() / 4)) {
 						xx = this.width - getTotalCharWidth() - xOffset;
 					}
 	            break;
@@ -1185,7 +1186,7 @@ protected int gap;
 					g.clearClip();
 					g.backColor = Color.interpolate(backColor, foreColor);
 					g.fillRect(cursorX - 1 + (uiMaterial ? UnitsConverter.toPixels(DP + 2) : 0),
-							uiMaterial ? materialCaption.ycap0 + font.fm.descent : y, cursorThickness,
+							uiMaterial ? materialCaption.ycap0 + (int) Math.ceil(font.fm.descentAtSizeD(font.size * g.getFontScale())) : y, cursorThickness,
 							fontHeight - (int) Math.ceil(font.fm.descentAtSizeD(font.size * g.getFontScale())));
 				}
 			}
@@ -1203,7 +1204,7 @@ protected int gap;
 			}
 			g.foreColor = c;
 			g.setFont(materialCaption.getFcap());
-			g.drawText(caption, materialCaption.xcap + (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4), materialCaption.ycap);
+			g.drawText(caption, materialCaption.xcap + (captionIcon == null ? 0 : captionIcon.getWidth() + getFontHeightForLayout() / 4), materialCaption.ycap);
 		}
 	}
 
@@ -1821,18 +1822,18 @@ protected int gap;
       }
       if (x - 3 < xMin) {
         // characters hidden on left - jump
-        xOffset += (xMin - x) + fmH;
+        xOffset += (xMin - x) + getFontHeightForLayout();
         if (xOffset > xMin) {
           xOffset = xMin;
         }
       }
 			if (alignment == LEFT) {
       int totalCharWidth = getTotalCharWidth();
-      int cw = captionIcon != null ? captionIcon.getWidth() + fmH / 4 : 0;
+      int cw = captionIcon != null ? captionIcon.getWidth() + getFontHeightForLayout() / 4 : 0;
       int xMax = this.xMax - cw;
       if (x > xMax) {
         // characters hidden on right - jump
-        xOffset -= (x - xMax) + fmH;
+        xOffset -= (x - xMax) + getFontHeightForLayout();
         int minOfs = xMax - totalCharWidth;
         if (xOffset < minOfs) {
           xOffset = minOfs;
