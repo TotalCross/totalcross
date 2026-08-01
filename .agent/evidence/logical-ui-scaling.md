@@ -492,3 +492,18 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   physical backing remains selected by contentScale.
 - Log: `m4-image-graphics-test.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 4R: native logical-image ABI
+
+- Timestamp: 2026-08-02T00:10:00Z
+- Commands: rebuilt `tcvm`; redeployed `TCUI.tcz`, SDK distribution, and the
+  focused macOS fixture with the matching dylib; directly ran
+  `DanfeScalingApp /logical-ui-assert`.
+- Renderer/platform: deployed native macOS SDL/Skia application.
+- Status: passed.
+- Result: native `Image4D.createLogical(3, 2, 2)` reports logical `3x2` and
+  physical `6x4`. The VM instance-field map preserves legacy image fields and
+  places logical dimensions after `lastAccess` and `textureId`.
+- Logs: `m4-image4d-abi-build.log`, `m4-image4d-tcui.log`,
+  `m4-image4d-dist.log`, `m4-image4d-deploy.log`, and
+  `m4-image4d-native.log` under `artifacts/logical-ui-scaling/logs/`.

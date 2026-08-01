@@ -94,6 +94,21 @@ public class DanfeScalingApp extends MainWindow {
       int radioWidthAtDoubleContentScale = metricRadio.getPreferredWidth();
       metricRadio.getGraphics().setScales(contentScale, 1.5);
       int radioWidthAtFontScale = metricRadio.getPreferredWidth();
+      Image logicalImage;
+      try {
+        logicalImage = Image.createLogical(3, 2, 2);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to create logical image assertion", exception);
+      }
+      logicalImage.getGraphics().backColor = Color.BLACK;
+      logicalImage.getGraphics().fillRect(1, 0, 1, 1);
+      logicalImage.applyChanges();
+      if (logicalImage.getWidth() != 3 || logicalImage.getHeight() != 2
+          || logicalImage.getPixelWidth() != 6 || logicalImage.getPixelHeight() != 4) {
+        throw new IllegalStateException("Logical image dimension assertion failed: "
+            + logicalImage.getWidth() + "x" + logicalImage.getHeight() + "/"
+            + logicalImage.getPixelWidth() + "x" + logicalImage.getPixelHeight());
+      }
       Container pixelRoot = new Container();
       pixelRoot.setLayoutUnit(LayoutUnit.PIXEL);
       add(pixelRoot, 0, 80, 200, 100);
@@ -107,6 +122,8 @@ public class DanfeScalingApp extends MainWindow {
       char[] danfeChars = "DANFE 25,00".toCharArray();
       int arrayDanfeAdvance = metrics.stringWidth(danfeChars, 0, danfeChars.length);
       int bufferDanfeAdvance = metrics.sbWidth(new StringBuffer("DANFE 25,00"));
+      System.out.println("LOGICAL_UI_IMAGE logical=" + logicalImage.getWidth() + "x" + logicalImage.getHeight()
+          + " physical=" + logicalImage.getPixelWidth() + "x" + logicalImage.getPixelHeight());
       if (!(metrics.getAscentD() > 0 && metrics.getDescentD() >= 0 && metrics.getLeadingD() >= 0
           && metrics.getHeightD() >= metrics.getAscentD() + metrics.getDescentD()
           && danfeAdvance > 0 && accentedAdvance > 0 && representativePairAdvance > 0
@@ -135,6 +152,7 @@ public class DanfeScalingApp extends MainWindow {
           + " buttonWidths=" + buttonWidthAtOne + "," + buttonWidthAtDoubleContentScale + "," + buttonWidthAtFontScale
           + " checkWidths=" + checkWidthAtOne + "," + checkWidthAtDoubleContentScale + "," + checkWidthAtFontScale
           + " radioWidths=" + radioWidthAtOne + "," + radioWidthAtDoubleContentScale + "," + radioWidthAtFontScale
+          + " logicalImage=3x2/6x4"
           + " pixelChild=" + pixelChild.getX() + "," + pixelChild.getY() + "," + pixelChild.getWidth() + "," + pixelChild.getHeight());
       exit(0);
     }
