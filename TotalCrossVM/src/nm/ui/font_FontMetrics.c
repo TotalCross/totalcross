@@ -108,12 +108,23 @@ TC_API void tufFM_lineHeightAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetr
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_descentAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics native public double descentAtSizeD(double fontSize);
 {
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if TC_RENDERER_SKIA
    double ascent, descent, leading;
    skia_fontMetrics(Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0], &ascent, &descent, &leading);
    p->retD = descent;
 #else
    p->retD = FontMetrics_descentD(p->obj[0]) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_ascentAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics native public double ascentAtSizeD(double fontSize);
+{
+#if TC_RENDERER_SKIA
+   double ascent, descent, leading;
+   skia_fontMetrics(Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0], &ascent, &descent, &leading);
+   p->retD = ascent;
+#else
+   p->retD = FontMetrics_ascentD(p->obj[0]) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
 #endif
 }
 //////////////////////////////////////////////////////////////////////////

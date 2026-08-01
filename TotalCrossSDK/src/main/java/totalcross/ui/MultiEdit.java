@@ -1278,18 +1278,18 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
       g.backColor = g.backColor = back1 == backColor ? Color.brighter(back1) : back1;
       ;
       if (z1.y == z2.y) {
-        g.fillRect(z1.x, z1.y, z2.x - z1.x, fmH);
+        g.fillRect(z1.x, z1.y, z2.x - z1.x, getFontHeightForLayout());
       } else {
         g.fillRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine);
         if (z2.y > z1.y) {
           g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
         }
-        g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
+        g.fillRect(textRect.x, z2.y, z2.x - textRect.x, getFontHeightForLayout());
       }
     }
     int i = firstToDraw;
     int h = textRect.y;
-    int dh = textRect.y + fm.ascent;
+    int dh = textRect.y + getFontAscentForLayout();
     int maxh = h + textRect.height;
     g.foreColor = fColor;
     g.backColor = back0;

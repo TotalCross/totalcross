@@ -188,6 +188,7 @@ TC_API void tufFM_stringWidthD_s(NMParams p);
 TC_API void tufFM_stringWidthAtSizeD_sd(NMParams p);
 TC_API void tufFM_lineHeightAtSizeD_d(NMParams p);
 TC_API void tufFM_descentAtSizeD_d(NMParams p);
+TC_API void tufFM_ascentAtSizeD_d(NMParams p);
 TC_API void tufFM_stringWidth_Cii(NMParams p);
 TC_API void tufFM_sbWidth_s(NMParams p);
 TC_API void tufFM_sbWidth_sii(NMParams p);
