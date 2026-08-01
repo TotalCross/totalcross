@@ -15,7 +15,7 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: none.
+- Last logical commit: `702793faaf65b87af7819efc66760633e8267623`.
 
 ## Active Milestone
 
@@ -23,13 +23,13 @@ Milestone 2: implement logical drawing in Skia.
 
 ## Active Slice
 
-Read the Milestone 2 API design continuation and the Skia-specific source paths;
-implement one coherent logical-to-physical transform before other renderers.
+Complete focused native validation for the Skia base transform, then audit raw
+pixel calls so they remain physical before closing the milestone.
 
 ## Next Concrete Action
 
-Read the Milestone 2 section of the ExecPlan and inspect its explicitly named
-Skia files.
+Resume the CMake configuration after the depot Skia artifact is available, then
+build the smallest native target.
 
 ## Files to Read Now
 
@@ -73,4 +73,4 @@ None recorded.
 ## Resume Command
 
 cd /Users/flsobral/repos/totalcross-logical-ui
-sed -n '166,205p' .agent/logical-ui-scaling-execplan.md
+cmake -S TotalCrossVM -B build-logical-ui -DCMAKE_BUILD_TYPE=Release -G Ninja
