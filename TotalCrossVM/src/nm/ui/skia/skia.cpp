@@ -266,7 +266,7 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, d
     if(skFont.getSize() != fontSize) {
         skFont.setSize(fontSize);
     }
-    return (int32)skia_stringWidthD(text, charCount, typefaceIndex, fontSize);
+    return (int32)ceil(skia_stringWidthD(text, charCount, typefaceIndex, fontSize));
 }
 
 double skia_stringWidthD(const void *text, int32 charCount, int32 typefaceIndex, double fontSize)

@@ -437,6 +437,11 @@ Update this section after each corrected behavioral milestone.
   fixture reports `editWidths=48,48,67` at content scales 2 and 4 then font
   scale 1.5. Full logs: `sdk-dist-edit-scale.log`, `deploy-edit-scale.log`, and
   `native-edit-scale.log` under `artifacts/logical-ui-scaling/logs/`.
+- 2026-08-01: Changed native integer Skia text widths from truncation to upward
+  rounding of their fractional advance, preserving the compatibility rule that
+  preferred extents must not clip. Native compile and deployed macOS fixture
+  passed; logs: `native-font-width-rounding-build.log`,
+  `deploy-font-width-rounding.log`, and `native-font-width-rounding.log`.
 
 ## Revision Note
 
