@@ -1,6 +1,7 @@
 // Copyright (C) 2001 Jean Rissoto
 // Copyright (C) 2001-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui;
@@ -341,6 +342,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 
   @Override
   public int getPreferredHeight() {
+    ensureLineHeight();
     if (rowCount0 == -1) {
       rowCount0 = rowCount;
     }
@@ -354,7 +356,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
   @Override
   public int getPreferredWidth() {
     return (mask == null ? (totalcross.sys.Settings.screenWidth >> 2)
-        : (mask.length() == 0) ? FILL : (fm.stringWidth(mask) + 10)) + insets.left + insets.right; // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL
+        : (mask.length() == 0) ? FILL : (getFontWidthForLayout(mask) + 10)) + insets.left + insets.right; // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL
   }
 
   /** Sets the desired maximum length for text entered in the Edit.
@@ -529,6 +531,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 
   @Override
   protected void onBoundsChanged(boolean screenChanged) {
+    ensureLineHeight();
     int zOffset = uiFlat ? 0 : 2; // size of borders
     boardRect = new Rect(zOffset, zOffset,
         this.width - 2 * zOffset - (Settings.fingerTouch ? 0 : sb.getPreferredWidth()), this.height - 2 * zOffset); //JR @0.5
@@ -1214,6 +1217,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
   }
 
   protected void draw(Graphics g) {
+    ensureLineHeight();
     if (g == null || !isDisplayed() || boardRect == null) {
       return; // guich@tc114_65: check if its displayed
     }
@@ -1374,6 +1378,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 
   @Override
   public void onPaint(Graphics g) {
+    ensureLineHeight();
     draw(g);
   }
 
@@ -1430,7 +1435,11 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
   @Override
   protected void onFontChanged() // guich@320_28
   {
-    hLine = fmH + spaceBetweenLines;
+    ensureLineHeight();
+  }
+
+  private void ensureLineHeight() {
+    hLine = getFontHeightForLayout() + spaceBetweenLines;
   }
 
   /** Clears the text of this control. */

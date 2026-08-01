@@ -105,6 +105,8 @@ Do not read later image or renderer guides yet.
   rounded fractional advance; it passed with `81.6484375 -> 82`.
 - It also asserts String, char-array, and StringBuffer width overloads agree;
   all reported `82` in the deployed native macOS app.
+- `MultiEdit` now derives cached line height and masked preferred width from
+  destination-scaled logical metrics; its focused Java scale test passes.
 
 These are foundations, not completion of their behavioral milestones.
 

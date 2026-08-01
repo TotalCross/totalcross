@@ -49,6 +49,22 @@ class LogicalTextScaleTest {
   }
 
   @Test
+  void multiEditPreferredSizeUsesFontScaleButNotContentScale() {
+    MultiEdit edit = new MultiEdit("99999", 2, 1);
+    edit.gfx.setScales(1.0, 1.0);
+    int widthAtOne = edit.getPreferredWidth();
+    int heightAtOne = edit.getPreferredHeight();
+
+    edit.gfx.setScales(2.0, 1.0);
+    assertEquals(widthAtOne, edit.getPreferredWidth());
+    assertEquals(heightAtOne, edit.getPreferredHeight());
+
+    edit.gfx.setScales(1.0, 1.5);
+    assertTrue(edit.getPreferredWidth() > widthAtOne);
+    assertTrue(edit.getPreferredHeight() > heightAtOne);
+  }
+
+  @Test
   void buttonPreferredSizeUsesFontScaleButNotContentScale() {
     Button button = new Button("DANFE");
 
