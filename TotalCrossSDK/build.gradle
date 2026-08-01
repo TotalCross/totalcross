@@ -560,6 +560,32 @@ tasks.register('deployLogicalUiScalingSmokeMacOS', JavaExec) {
 		'danfe/fixture/DanfeScalingApp.class',
 		'-macos'
 	]
+	doFirst {
+		def launcher = project.findProperty('tcvmLauncher')
+		if (launcher) {
+			def launcherFile = file(launcher)
+			if (!launcherFile.isFile()) {
+				throw new GradleException("Native macOS launcher not found: ${launcherFile}")
+			}
+			copy {
+				from launcherFile
+				into file('etc/launchers/macos')
+				rename { 'Launcher' }
+			}
+		}
+		def nativeRuntime = project.findProperty('tcvmDylib')
+		if (nativeRuntime) {
+			def nativeRuntimeFile = file(nativeRuntime)
+			if (!nativeRuntimeFile.isFile()) {
+				throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+			}
+			copy {
+				from nativeRuntimeFile
+				into file('dist/vm/macos')
+				rename { 'libtcvm.dylib' }
+			}
+		}
+	}
 }
 
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
