@@ -165,8 +165,8 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
    TCObject img = p->obj[0];
    int32 id = Image_textureId(img);
    if (id >= 0) {
-      Image_changed(img) = false;
-      return;
+      skia_deleteBitmap(id);
+      Image_textureId(img) = -1;
    }
    int32 frameCount = Image_frameCount(img);
    TCObject pixelsObj = frameCount == 1 ? Image_pixels(img) : Image_pixelsOfAllFrames(img);
