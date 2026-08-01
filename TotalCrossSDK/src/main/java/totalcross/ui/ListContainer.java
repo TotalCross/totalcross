@@ -162,10 +162,10 @@ public class ListContainer extends ScrollContainer {
         lineCount++;
       }
       insets = new Insets(
-          (int) (Settings.screenDensity * 16), 
-          (int) (Settings.screenDensity * 16), 
-          (int) (Settings.screenDensity * 8), 
-          (int) (Settings.screenDensity * 16));
+          16,
+          16,
+          8,
+          16);
     }
     
     int lineCount;
@@ -218,7 +218,7 @@ public class ListContainer extends ScrollContainer {
     }
 
     private Image resizeImage(Image img, boolean imageEnlargeIfSmaller) {
-      int imgH = (int) (Settings.screenDensity * (lineCount > 1 ? 40 : 56));
+      int imgH = lineCount > 1 ? 40 : 56;
       int ih = img.getHeight();
       if (ih > imgH || (imageEnlargeIfSmaller && ih < imgH)) {
         try {
@@ -428,7 +428,7 @@ public class ListContainer extends ScrollContainer {
       int x1 = 0;
       if (leftControl != null) {
         x1 += (leftControl instanceof Control ? ((Control) leftControl).getWidth() : layout.defaultLeftImageW)
-            + (int) (Settings.screenDensity * 16);
+            + 16;
       }
       return x1;
     }
@@ -580,7 +580,7 @@ public class ListContainer extends ScrollContainer {
 
     c.containerId = vc.size() + 1;
     vc.addElement(c);
-    add(c, LEFT, AFTER, FILL, Math.max(c.getPreferredHeight(), (int) (Settings.screenDensity * 56)));
+    add(c, LEFT, AFTER, FILL, Math.max(c.getPreferredHeight(), 56));
     if (isSC) {
       c.resize();
     }
@@ -646,7 +646,7 @@ public class ListContainer extends ScrollContainer {
         c.x = LEFT;
         c.y = AFTER;
         c.width = FILL;
-        c.height = Math.max(c.getPreferredHeight(), (int) (Settings.screenDensity * 56)); // positions will be set later on resize
+        c.height = Math.max(c.getPreferredHeight(), 56); // positions will be set later on resize
         if (isSC) {
           c.resize();
         }

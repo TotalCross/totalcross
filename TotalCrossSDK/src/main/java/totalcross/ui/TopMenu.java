@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.io.IOException;
@@ -137,8 +142,7 @@ public class TopMenu extends Window {
            * 72dp left spacing and 16 dp right spacing
            * https://material.io/guidelines/patterns/navigation-drawer.html#navigation-drawer-specs
            */
-          this.setInsets((int) ((Settings.screenWidth < 320 ? 64 : 72) * Settings.screenDensity),
-              (int) ((Settings.screenWidth < 320 ? 8 : 16) * Settings.screenDensity), 0, 0);
+          this.setInsets(Settings.screenWidth < 320 ? 64 : 72, Settings.screenWidth < 320 ? 8 : 16, 0, 0);
           add(tit, LEFT, CENTER, FILL, PREFERRED);
         }
       }, LEFT, CENTER, FILL, PREFERRED);
@@ -220,7 +224,7 @@ public class TopMenu extends Window {
     default:
       resetSetPositions(); // required to make sure the height gets updated by the following setRect
       setRect(LEFT, animDir, ww,
-          (int) Math.min(Settings.screenHeight * 3 / 4, Settings.screenDensity * items.length * 50), null,
+          Math.min(Settings.screenHeight * 3 / 4, items.length * 50), null,
           screenResized);
       break;
     }
