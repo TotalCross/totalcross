@@ -661,6 +661,14 @@ public final class Graphics {
       if (x < 0 || y < 0 || w <= 0 || h <= 0) {
         return;
       }
+      if (surface instanceof Image && contentScale != 1) {
+        int x2 = scaleImageEdge(x + w);
+        int y2 = scaleImageEdge(y + h);
+        x = scaleImageEdge(x);
+        y = scaleImageEdge(y);
+        w = x2 - x;
+        h = y2 - y;
+      }
       int[] pix = getSurfacePixels(surface);
       for (x += y * pitch; h-- > 0; x += pitch) {
         Convert.fill(pix, x, x + w, backColor | alpha);
@@ -669,6 +677,10 @@ public final class Graphics {
         needsUpdate = true;
       }
     }
+  }
+
+  private int scaleImageEdge(int logicalEdge) {
+    return (int) Math.round(logicalEdge * contentScale);
   }
 
   /**
