@@ -282,3 +282,18 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   logical UI fixture, following the repository's native-runtime smoke pattern.
 - Limitation: deployment and direct native execution require the matching SDK
   distribution and freshly built dylib; they remain the next slice.
+
+## Milestone 2R: deployed native macOS startup
+
+- Timestamp: 2026-08-01T20:56:00Z
+- Commit: `93ee35201`
+- Commands: `TotalCrossSDK/gradlew-agent dist -x test --no-daemon`; focused
+  `deployLogicalUiScalingSmokeMacOS` with the freshly built dylib and a local
+  macOS launcher; direct execution of `DanfeScalingApp`.
+- Renderer/platform: deployed native macOS SDL/Skia application
+- Status: startup passed; scale assertion not yet implemented
+- Result: the generated executable selected SDL Cocoa and software rendering;
+  the deployed `libtcvm.dylib` SHA-256 exactly matched
+  `build-logical-ui/libtcvm.dylib`.
+- Limitation: this confirms the native launch lane and runtime identity but does
+  not yet emit the required logical/physical scale assertion.

@@ -26,13 +26,13 @@ Milestone 2R: complete Skia and native macOS surface scaling.
 
 ## Active Slice
 
-Build the matching SDK and deploy the logical UI fixture with the focused macOS
-task before adding machine-readable native assertions.
+Add a machine-readable native assertion mode to the deployed fixture so it can
+report its screen scale and logical/physical dimensions without a Java fallback.
 
 ## Next Concrete Action
 
-Run the focused deployment task with a freshly built SDK, then add the smallest
-native assertion mode required to report the runtime scale and dimensions.
+Extend the fixture's native-only assertion mode, then deploy and run it against
+the matching dylib to validate the reported screen scale and dimensions.
 
 ## Files to Read Now
 
