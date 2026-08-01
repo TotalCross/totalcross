@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -1882,7 +1883,7 @@ public class Grid extends Container implements Scrollable {
       } else {
         tip.setEnabled(true);
         rTemp.set(absRect.x + 2, absRect.y + (ge.row - gridOffset + 1) * lineH, absRect.width - 10, lineH); // guich@557_10: sub gridOffset in case the grid was scrolled.
-        tip.setText(Convert.insertLineBreak(rTemp.width, fm, s));
+        tip.setText(Convert.insertLineBreak(rTemp.width, tip.fm, tip.font.size * tip.gfx.getFontScale(), s));
         tip.setControlRect(rTemp);
       }
     }

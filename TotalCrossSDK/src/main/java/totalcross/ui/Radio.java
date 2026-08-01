@@ -462,7 +462,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
    * @see #autoSplit
    */
   public void split(int maxWidth) {
-    displayedText = Convert.insertLineBreak(maxWidth, fm, text); // text cannot be assigned here or originalText will be overwritten
+    displayedText = Convert.insertLineBreak(maxWidth, fm, font.size * gfx.getFontScale(), text); // text cannot be assigned here or originalText will be overwritten
     lines = text.equals("") ? new String[] { "" } : Convert.tokenizeString(displayedText, '\n');
   }
   

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -686,7 +687,8 @@ public class MessageBox extends Window {
       Vm.debug(msg);
     }
     MessageBox mb = new MessageBox(showExceptionTitle, "");
-    mb.originalText = Convert.insertLineBreak(Settings.screenWidth - mb.fmH, mb.font.fm, msg);
+    mb.originalText = Convert.insertLineBreak(Settings.screenWidth - mb.getFontHeightForLayout(), mb.font.fm,
+        mb.font.size * mb.getGraphics().getFontScale(), msg);
     mb.labelAlign = LEFT;
     mb.popup();
   }

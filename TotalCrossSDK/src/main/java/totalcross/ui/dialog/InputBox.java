@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -122,8 +123,8 @@ public class InputBox extends Window {
   protected void onPopup() {
     removeAll();
     String text = originalText;
-    if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth - 6) {
-      text = Convert.insertLineBreak(Settings.screenWidth - 6, fm, text.replace('\n', ' '));
+    if (text.indexOf('\n') < 0 && getFontWidthForLayout(text) > Settings.screenWidth - 6) {
+      text = Convert.insertLineBreak(Settings.screenWidth - 6, fm, font.size * getGraphics().getFontScale(), text.replace('\n', ' '));
     }
     msg = new Label(text, labelAlign);
     msg.setFont(font);
