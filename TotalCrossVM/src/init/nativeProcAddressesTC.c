@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 #include "tcvm.h"
 #include "nm/NativeMethods.h"
 #include "utils.h"
@@ -160,7 +165,9 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tufF_fontCreate"), &tufF_fontCreate);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_fontMetricsCreate"), &tufFM_fontMetricsCreate);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_charWidth_c"), &tufFM_charWidth_c);
+   htPutPtr(&htNativeProcAddresses, hashCode("tufFM_charWidthD_c"), &tufFM_charWidthD_c);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_stringWidth_s"), &tufFM_stringWidth_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tufFM_stringWidthD_s"), &tufFM_stringWidthD_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_stringWidth_Cii"), &tufFM_stringWidth_Cii);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_sbWidth_s"), &tufFM_sbWidth_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_sbWidth_sii"), &tufFM_sbWidth_sii);

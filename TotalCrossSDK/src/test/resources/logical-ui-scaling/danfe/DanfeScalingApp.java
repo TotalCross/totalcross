@@ -36,7 +36,8 @@ public class DanfeScalingApp extends MainWindow {
       System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
           + " physical=" + physicalWidth + "x" + physicalHeight + " contentScale=" + contentScale
           + " ascentD=" + metrics.getAscentD() + " descentD=" + metrics.getDescentD()
-          + " leadingD=" + metrics.getLeadingD() + " heightD=" + metrics.getHeightD());
+          + " leadingD=" + metrics.getLeadingD() + " heightD=" + metrics.getHeightD()
+          + " advanceD=" + metrics.stringWidthD("DANFE 25,00"));
       exit(0);
     }
   }

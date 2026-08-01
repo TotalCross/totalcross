@@ -264,7 +264,19 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, i
     if(skFont.getSize() != fontSize) {
         skFont.setSize(fontSize);
     }
-    return skFont.measureText(text,charCount,SkTextEncoding::kUTF16);
+    return (int32)skia_stringWidthD(text, charCount, typefaceIndex, fontSize);
+}
+
+double skia_stringWidthD(const void *text, int32 charCount, int32 typefaceIndex, int32 fontSize)
+{
+    const auto newTypeFace = skia_getTypeface(typefaceIndex);
+    if (skFont.getTypeface() != newTypeFace.get()) {
+        skFont.setTypeface(newTypeFace);
+    }
+    if (skFont.getSize() != fontSize) {
+        skFont.setSize(fontSize);
+    }
+    return skFont.measureText(text, charCount, SkTextEncoding::kUTF16);
 }
 
 void skia_fontMetrics(int32 typefaceIndex, int32 fontSize, double* ascent, double* descent, double* leading)

@@ -85,6 +85,7 @@ public final class FontMetrics {
     return Launcher.instance.getCharWidth(this.font, c);
   }
 
+  @ReplacedByNativeOnDeploy
   public double charWidthD(char c) { return charWidth(c); }
 
   /** Returns the width in pixels of the given text string. */
@@ -97,6 +98,7 @@ public final class FontMetrics {
     return sum;
   }
 
+  @ReplacedByNativeOnDeploy
   public double stringWidthD(String s) { return stringWidth(s); }
 
   /**
