@@ -54,6 +54,12 @@ logical dimensions, retaining physical backing only behind its content-scale
 transform. Focused Java image/graphics scale tests passed; native image
 synchronization validation remains pending.
 
+Progress 2026-08-02: ported the logical-image construction contract to
+`Image4D`, the class emitted for native VM deployment. It now has immutable
+logical dimensions, physical backing dimensions, contentScale, and a native
+factory surface matching `Image`; Java compilation passed. Native factory and
+synchronization validation remain next.
+
 ## Files to Read Now
 
 - `.agent/reviews/logical-ui-scaling-current-review.md`
