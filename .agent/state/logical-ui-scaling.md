@@ -38,25 +38,21 @@ decision and must be removed from the living plan.
 
 ## Active Milestone
 
-Reconciliation checkpoint R1, then resume Milestone 3R.
+Milestone 3R: SkFont-only logical text.
 
 ## Active Slice
 
-Correct destination text measurement so `fontScale` is applied to the SkFont
-size before measurement, and make TotalCross wrapping use the same
-destination-aware path.
+Complete the remaining M3R text-control matrix, cache behavior, and native
+runtime assertions under the SkFont-only scope.
 
 ## Next Concrete Actions
 
-1. Commit this plan update.
-2. Correct the PIXEL client-rectangle conversion using original edges and add a
-   nonzero-inset regression test.
-3. Append verified evidence for commits after the current evidence endpoint.
-4. Replace `fm.metric * fontScale` helpers with destination-aware measurement at
-   `Font.size * fontScale`.
-5. Route Label autoSplit and other TotalCross multiline users through that path.
-6. Re-run focused Java tests and the deployed native macOS fixture.
-7. Continue through the rest of M3R without text-engine dependency work.
+1. Audit remaining text controls and effective-size baseline/cursor/selection
+   uses.
+2. Validate content-scale and font-scale cache behavior in Java and deployed
+   native macOS lanes.
+3. Complete the text-bearing DANFE M3R assertions without claiming unsupported
+   typography behavior.
 
 ## Files to Read Now
 
@@ -117,6 +113,9 @@ destination-aware path.
 - The freshly deployed native macOS fixture also passed after the wrapping
   change; logs: `effective-wrap-dist.log`, `effective-wrap-deploy.log`, and
   `effective-wrap-native.log`.
+
+R1 is complete: plan/state/evidence are synchronized, the PIXEL regression and
+deployed native root fixture pass, and no external text-engine blocker remains.
 - `Graphics.setScales` remains the documented destination lifecycle API used by
   native runtime initialization, Image surfaces, and fixtures. It preserves
   logical layout for content-scale changes, repositions controls for font-scale
