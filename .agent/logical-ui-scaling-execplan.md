@@ -92,7 +92,8 @@ both limits. Audit changed files at each milestone closure.
       physical dimension accessors, and Skia upload refresh behavior.
 - [x] (2026-08-01 23:00Z) Made Java natural image drawing reduce scaled backing
       buffers to logical size and covered it with the Graphics scale fixture.
-- [ ] Make the non-Skia native renderer logically equivalent.
+- [x] (2026-08-01 23:10Z) Removed the legacy bitmap-font global density factor
+      and compiled the native target.
 - [ ] Run the full DANFE, macOS, Android, synchronization, and privacy validation.
 - [ ] Complete deprecations, Javadocs, audits, evidence, and editorial handoff.
 
