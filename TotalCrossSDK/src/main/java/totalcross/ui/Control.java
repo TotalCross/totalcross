@@ -648,17 +648,17 @@ public class Control extends GfxSurface {
    * separate logical text scale, which changes layout but never its backing-pixel density.</p>
    */
   protected int getFontHeightForLayout() {
-    return (int) Math.ceil(fm.getHeightD() * gfx.getFontScale());
+    return (int) Math.ceil(fm.lineHeightAtSizeD(font.size * gfx.getFontScale()));
   }
 
   /** Returns the logical layout advance of {@code text} for this control's destination. */
   protected int getFontWidthForLayout(String text) {
-    return (int) Math.ceil(fm.stringWidthD(text) * gfx.getFontScale());
+    return (int) Math.ceil(fm.stringWidthAtSizeD(text, font.size * gfx.getFontScale()));
   }
 
   /** Returns the logical layout advance of a character for this control's destination. */
   protected int getFontCharWidthForLayout(char value) {
-    return (int) Math.ceil(fm.charWidthD(value) * gfx.getFontScale());
+    return (int) Math.ceil(fm.stringWidthAtSizeD(String.valueOf(value), font.size * gfx.getFontScale()));
   }
 
   /** Returns the logical layout advance of a StringBuffer range for this control's destination. */

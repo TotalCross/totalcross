@@ -154,6 +154,8 @@ totalcross/ui/font/FontMetrics|native public int charWidth(char c);
 totalcross/ui/font/FontMetrics|native public double charWidthD(char c);
 totalcross/ui/font/FontMetrics|native public int stringWidth(String s);
 totalcross/ui/font/FontMetrics|native public double stringWidthD(String s);
+totalcross/ui/font/FontMetrics|native public double stringWidthAtSizeD(String s, double fontSize);
+totalcross/ui/font/FontMetrics|native public double lineHeightAtSizeD(double fontSize);
 totalcross/ui/font/FontMetrics|native public int stringWidth(char []chars, int start, int count);
 totalcross/ui/font/FontMetrics|native public int sbWidth(StringBuffer s);
 totalcross/ui/font/FontMetrics|native public int sbWidth(StringBuffer s, int start, int count);
