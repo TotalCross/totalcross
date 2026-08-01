@@ -98,6 +98,9 @@ Do not read later image or renderer guides yet.
   left at the previous font scale. Focused Java bounds assertions pass.
 - The same font-scale transition path passed in the freshly deployed native
   macOS fixture without changing the established metric assertions.
+- Native Skia now serves `charWidth`, String, char-array, and StringBuffer
+  integer measurement overloads through the same measurement path as drawing
+  and fractional String measurement; native compile and deployed runtime pass.
 
 These are foundations, not completion of their behavioral milestones.
 
