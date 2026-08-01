@@ -407,6 +407,10 @@ Update this section after each corrected behavioral milestone.
   `logical-text-scale-test.log`, `sdk-dist-logical-text-scale.log`,
   `deploy-logical-text-scale-after-dist.log`, and
   `native-logical-text-scale-after-dist.log`.
+- 2026-08-01: Extended the same preferred-size contract to `Button`, including
+  its cached multiline widths. Evidence: focused Java
+  `LogicalTextScaleTest` passed; full log:
+  `artifacts/logical-ui-scaling/logs/logical-text-scale-button-test.log`.
 
 ## Revision Note
 

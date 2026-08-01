@@ -27,12 +27,13 @@ Milestone 3R: complete logical text and FontMetrics.
 ## Active Slice
 
 Extend the same effective logical font scale through the remaining ordinary text
-controls, line layout, and cached layout invalidation.
+controls, line layout, and cached layout invalidation. `Label` and `Button` are
+covered; `Edit` is next.
 
 ## Next Concrete Action
 
-Audit the next ordinary text control and keep its preferred measurements and
-painting aligned with the `Graphics.fontScale` contract.
+Audit `Edit` preferred measurements and keep its text geometry aligned with the
+`Graphics.fontScale` contract.
 
 ## Files to Read Now
 
@@ -67,6 +68,9 @@ Do not read later image or renderer guides yet.
   destination font scale changes. Focused Java tests pass, and the deployed
   native macOS fixture reports equal widths at content scales 2 and 4 with a
   larger width at font scale 1.5.
+- `Button` refreshes its cached line widths when the destination font scale
+  changes and uses the scaled logical metrics for preferred size. Its focused
+  Java preferred-size test passes.
 
 These are foundations, not completion of their behavioral milestones.
 
