@@ -244,3 +244,17 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   descendants, `AFTER` offsets, and shared edges at 1.5, 2, and 3.
 - Limitation: deployed native macOS migration-fixture validation is intentionally
   deferred to the native runtime milestone; this Java result is not native proof.
+
+## Milestone 2R: native SDL content-scale initialization
+
+- Timestamp: 2026-08-01T20:48:00Z
+- Commit: `8bba4c732`
+- Command: `ninja -C build-logical-ui tcvm`
+- Renderer/platform: native macOS compile
+- Status: passed
+- Result: the SDL macOS window requests high-DPI backing, obtains its physical
+  drawable dimensions, stores the resulting scale on `ScreenSurface`, reports
+  logical dimensions through `Settings`, and assigns that scale to native screen
+  `Graphics` instances. Image Graphics retain their image-owned scale.
+- Limitation: a freshly deployed native macOS application must still report and
+  exercise this value on a real Retina screen before it is runtime proof.

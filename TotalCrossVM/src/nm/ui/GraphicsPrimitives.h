@@ -62,6 +62,7 @@ typedef struct TScreenSurface // represents a device-dependant surface, there's 
    uint32 bpp;
    int32 screenX, screenY, screenW, screenH,minScreenW,minScreenH;
    int32 hRes, vRes;
+   double contentScale; // physical pixels represented by one logical screen unit
    void *extension; // platform specific data
    int32 shiftY;
    uint32 pixelformat;

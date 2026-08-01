@@ -101,9 +101,11 @@ void repaintActiveWindows(Context currentContext)
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
    // IMPORTANT: this is the only place that changes tcSettings
-   screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
+   screen.screenW = newWidth;
+   *tcSettings.screenWidthPtr = (int32)(newWidth / (screen.contentScale > 0 ? screen.contentScale : 1) + 0.5);
    screen.pitch = screen.screenW * screen.bpp / 8;
-   screen.screenH = *tcSettings.screenHeightPtr = newHeight;
+   screen.screenH = newHeight;
+   *tcSettings.screenHeightPtr = (int32)(newHeight / (screen.contentScale > 0 ? screen.contentScale : 1) + 0.5);
    screen.hRes = *tcSettings.screenWidthInDPIPtr = hRes;
    screen.vRes = *tcSettings.screenHeightInDPIPtr = vRes;
    markWholeScreenDirty(currentContext);
