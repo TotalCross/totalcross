@@ -460,6 +460,10 @@ Update this section after each corrected behavioral milestone.
   runtime passed; logs: `native-font-overload-consistency-build.log`,
   `deploy-font-overload-consistency.log`, and
   `native-font-overload-consistency.log`.
+- 2026-08-01: Added deployed assertion that the compatibility integer String
+  width equals the upward-rounded fractional advance. Native macOS passed with
+  `81.6484375 -> 82`; logs: `sdk-dist-font-compatibility.log`,
+  `deploy-font-compatibility.log`, and `native-font-compatibility.log`.
 
 ## Revision Note
 

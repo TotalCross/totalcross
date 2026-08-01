@@ -101,6 +101,8 @@ Do not read later image or renderer guides yet.
 - Native Skia now serves `charWidth`, String, char-array, and StringBuffer
   integer measurement overloads through the same measurement path as drawing
   and fractional String measurement; native compile and deployed runtime pass.
+- The deployed fixture asserts the integer String width is exactly the upward
+  rounded fractional advance; it passed with `81.6484375 -> 82`.
 
 These are foundations, not completion of their behavioral milestones.
 
