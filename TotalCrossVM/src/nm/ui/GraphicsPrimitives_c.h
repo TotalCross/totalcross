@@ -209,7 +209,7 @@ static void markScreenDirty(Context currentContext, int32 x, int32 y, int32 w, i
 #define LOGD(...) debug(__VA_ARGS__)
 #endif
 
-void markDirty(Context currentContext, TCObject surface, int x, int y, int w, int h) {
+static void markPhysicalDirty(Context currentContext, TCObject surface, int x, int y, int w, int h) {
     if (Graphics_isImageSurface(surface)) {
         Image_changed(Graphics_surface(surface)) = true;
     } else {
@@ -218,6 +218,21 @@ void markDirty(Context currentContext, TCObject surface, int x, int y, int w, in
         currentContext->dirtyX2 = max32(currentContext->dirtyX2, x + w);
         currentContext->dirtyY2 = max32(currentContext->dirtyY2, y + h);
     }
+}
+
+void markDirty(Context currentContext, TCObject surface, int x, int y, int w, int h) {
+    if (!Graphics_isImageSurface(surface)) {
+        double scale = Graphics_contentScale(surface);
+        if (scale > 0 && scale != 1) {
+            int right = (int)(scale * (x + w) + 0.5);
+            int bottom = (int)(scale * (y + h) + 0.5);
+            x = (int)(scale * x + 0.5);
+            y = (int)(scale * y + 0.5);
+            w = right - x;
+            h = bottom - y;
+        }
+    }
+    markPhysicalDirty(currentContext, surface, x, y, w, h);
 }
 
 // This is the main routine that draws a surface (a Control or an Image) in the destination GfxSurface.
