@@ -38,6 +38,22 @@ int main() {
         return 1;
     }
 
+    Pixel primitivePixels[16] = {};
+    const int primitiveDestination = skia_makeBitmap(-1, primitivePixels, 4, 4);
+    skia_setSurfaceScale(primitiveDestination, 2);
+    skia_fillRect(primitiveDestination, 1, 1, 1, 1, 0xFF223344);
+    if (!expectEqual(skia_getPixel(primitiveDestination, 3, 3), 0xFF223344,
+                     "scaled primitive destination")) {
+        return 1;
+    }
+    skia_setClip(primitiveDestination, 0, 0, 1, 1);
+    skia_fillRect(primitiveDestination, 1, 1, 1, 1, 0xFF556677);
+    skia_restoreClip(primitiveDestination);
+    if (!expectEqual(skia_getPixel(primitiveDestination, 3, 3), 0xFF223344,
+                     "scaled logical clip")) {
+        return 1;
+    }
+
     skia_setPixel(destination, 3, 3, 0xFF010203);
     if (!expectEqual(skia_getPixel(destination, 3, 3), 0xFF010203, "physical raw pixel")) {
         return 1;
@@ -54,6 +70,7 @@ int main() {
 
     skia_deleteBitmap(source);
     skia_deleteBitmap(destination);
+    skia_deleteBitmap(primitiveDestination);
     skia_deleteBitmap(clippedDestination);
     std::puts("skia surface copy assertions passed");
     return 0;
