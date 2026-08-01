@@ -15,30 +15,30 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Reviewed branch:
   `feat/logical-ui-scaling`
 - Reviewed head:
-  `7d300c9da`
+  `a629ec0d8`
 - Worktree:
   `/Users/flsobral/repos/totalcross-logical-ui`
 - History policy: preserve existing commits; correct with new commits.
 
 ## Active Milestone
 
-Milestone 1R: complete actual logical layout behavior.
+Milestone 2R: complete Skia and native macOS surface scaling.
 
 ## Active Slice
 
-Connect effective `LayoutUnit` values to actual child placement and prove the
-root PIXEL migration behavior.
+Identify the native macOS screen creation path and initialize each screen
+Graphics instance with its actual backing scale.
 
 ## Next Concrete Action
 
-Read Milestone 1R and the API design, then identify the existing layout boundary
-where parent unit and surface scale can convert child placement.
+Read Milestone 2R and the native macOS runtime guide, then trace surface scale
+from native window creation to Graphics initialization.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 1R only
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 2R only
 - `.agent/design/logical-ui-scaling-api.md`
-- `.agent/guides/logical-ui-scaling-validation.md`, logical layout gate
+- `.agent/guides/macos-native-runtime-validation.md`
 
 Do not read later renderer or text guides yet.
 
@@ -57,7 +57,6 @@ These are foundations, not completion of their behavioral milestones.
 
 ## Incomplete or Unproven
 
-- `LayoutUnit` is not connected to real placement.
 - native macOS backing scale is not proven;
 - fontScale and true double metrics are incomplete;
 - Java renderer coverage is partial;
@@ -89,6 +88,5 @@ workflow. It belongs to Milestone 7R, not the active layout slice.
 ## Resume Command
 
     cd /Users/flsobral/repos/totalcross-logical-ui
-    git status --short -- \
-      TotalCrossVM/src/nm/ui/skia \
-      .agent
+    cd /Users/flsobral/repos/totalcross-logical-ui
+    rg -n "contentScale|Graphics_contentScale" TotalCrossVM/src/nm

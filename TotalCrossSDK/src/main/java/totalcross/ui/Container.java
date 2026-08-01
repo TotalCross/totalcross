@@ -175,6 +175,14 @@ public class Container extends Control {
     return configured == LayoutUnit.INHERIT ? inherited : configured;
   }
 
+  int toLayoutPixels(int logicalEdge) {
+    return (int) Math.round(logicalEdge * gfx.getContentScale());
+  }
+
+  int toLogicalLayoutEdge(int pixelEdge) {
+    return (int) Math.round(pixelEdge / gfx.getContentScale());
+  }
+
   public void setPressColor(int color) {
     this.pressColor = color;
     if (color == -1 && pe != null) {
