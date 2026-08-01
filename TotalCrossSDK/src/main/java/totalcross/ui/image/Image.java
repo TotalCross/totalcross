@@ -74,6 +74,9 @@ public class Image extends GfxSurface {
   public int surfaceType = 1; // don't move from here! must be static at position 0
   protected int width;
   protected int height;
+  private int logicalWidth;
+  private int logicalHeight;
+  private double contentScale = 1;
 
   /** Contains the pixels of this image. */
   int[] pixels;
@@ -176,14 +179,34 @@ public class Image extends GfxSurface {
    * </pre>
    */
   public Image(int width, int height) throws ImageException {
-    this.width = width;
-    this.height = height;
+    this(width, height, 1);
+  }
+
+  private Image(int logicalWidth, int logicalHeight, double contentScale) throws ImageException {
+    if (!Double.isFinite(contentScale) || contentScale <= 0 || logicalWidth <= 0 || logicalHeight <= 0) {
+      throw new ImageException("Image dimensions and content scale must be positive.");
+    }
+    long pixelWidth = (long) Math.ceil(logicalWidth * contentScale);
+    long pixelHeight = (long) Math.ceil(logicalHeight * contentScale);
+    if (pixelWidth > Integer.MAX_VALUE || pixelHeight > Integer.MAX_VALUE || pixelWidth * pixelHeight > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    this.logicalWidth = logicalWidth;
+    this.logicalHeight = logicalHeight;
+    this.contentScale = contentScale;
+    width = (int) pixelWidth;
+    height = (int) pixelHeight;
     try {
       pixels = new int[height * width]; // just create the pixels array
     } catch (OutOfMemoryError oome) {
       throw new ImageException("Out of memory: cannot allocate " + width + "x" + height + " offscreen image.");
     }
     init();
+  }
+
+  /** Creates a logical image with an immutable physical backing scale. */
+  public static Image createLogical(int width, int height, double contentScale) throws ImageException {
+    return new Image(width, height, contentScale);
   }
 
   /** Used only at desktop to get the image's pixels. */
@@ -318,6 +341,10 @@ public class Image extends GfxSurface {
   }
 
   private void init() throws IllegalArgumentException, IllegalStateException, ImageException {
+    if (logicalWidth == 0) {
+      logicalWidth = width;
+      logicalHeight = height;
+    }
     // frame count information?
     if (comment != null && comment.startsWith("FC=")) {
       try {
@@ -327,6 +354,7 @@ public class Image extends GfxSurface {
     }
     // init the Graphics
     gfx = new Graphics(this);
+    gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, width, height, 0, 0, null);
   }
 
@@ -416,14 +444,18 @@ public class Image extends GfxSurface {
   /** Returns the height of the image. You can check if the image is ok comparing this with zero. */
   @Override
   public int getHeight() {
-    return (int) (height * hwScaleH);
+    return (int) (logicalHeight * hwScaleH);
   }
 
   /** Returns the width of the image. You can check if the image is ok comparing this with zero. */
   @Override
   public int getWidth() {
-    return (int) (width * hwScaleW);
+    return (int) (logicalWidth * hwScaleW);
   }
+
+  public int getPixelWidth() { return width; }
+  public int getPixelHeight() { return height; }
+  public double getContentScale() { return contentScale; }
 
   /** Returns a new Graphics instance that can be used to drawing in this image. */
   public Graphics getGraphics() {
