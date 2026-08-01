@@ -94,12 +94,18 @@ destination-aware path.
 - Current control helpers multiply scale-one measured results by fontScale rather
   than measuring at the effective SkFont size.
 - TotalCross line breaking still receives scale-one FontMetrics in Label paths.
-- PIXEL layout conversion mishandles a nonzero client origin.
 - State, outcomes, and append-only evidence are not synchronized.
 - `Graphics.setScales` public lifecycle is not yet an approved final API.
 - Existing `"kerning"` terminology overstates what the core SkFont path proves.
 - Java double text metrics remain integer-valued and need an approved renderer
   treatment.
+
+## R1 Evidence
+
+- PIXEL client-rectangle conversion preserves original logical left, top, right,
+  and bottom before converting each edge. `LogicalLayoutUnitTest` verifies
+  nonzero insets at content scales 1.5, 2, and 3; Java unit validation passed
+  in `artifacts/logical-ui-scaling/logs/pixel-client-origin-test.log`.
 
 ## Remaining Major Work
 

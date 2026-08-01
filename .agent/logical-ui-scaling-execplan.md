@@ -152,6 +152,11 @@ Acceptance:
 - no text-engine blocker remains;
 - no production text-engine dependency is added.
 
+Progress 2026-08-01: corrected client-rectangle conversion to preserve logical
+edges before applying PIXEL conversion. Focused Java
+`LogicalLayoutUnitTest` passed at 1.5, 2, and 3 with nonzero insets; log:
+`artifacts/logical-ui-scaling/logs/pixel-client-origin-test.log`.
+
 ### Milestone 2R residual: native surface lifecycle
 
 The established base transform and Retina initialization remain valid.
