@@ -92,7 +92,6 @@ public class Image4D extends GfxSurface {
   private String path;
   private int logicalWidth;
   private int logicalHeight;
-  private double contentScale = 1;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
@@ -111,6 +110,7 @@ public class Image4D extends GfxSurface {
    * @since TotalCross 2.0
    */
   public double hwScaleW = 1, hwScaleH = 1;
+  private double contentScale = 1;
 
   // statics
   /** Dumb field to keep compilation compatibility with TC 1 */
@@ -139,6 +139,8 @@ public class Image4D extends GfxSurface {
     this.logicalWidth = logicalWidth;
     this.logicalHeight = logicalHeight;
     this.contentScale = contentScale;
+    this.hwScaleW = 1;
+    this.hwScaleH = 1;
     width = (int) pixelWidth;
     height = (int) pixelHeight;
     try {

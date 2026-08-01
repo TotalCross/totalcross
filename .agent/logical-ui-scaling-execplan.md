@@ -9,6 +9,17 @@ SPDX-License-Identifier: LGPL-2.1-only
 This living ExecPlan continues `feat/logical-ui-scaling`. Preserve branch history,
 state, evidence, and validated implementation.
 
+## Execution efficiency
+
+- Keep state short and operational; read only its active checkpoint when resuming.
+- Do not reread review/history/completed milestones or old evidence routinely.
+- Read exact symbols and narrow ranges; track audited and pending files.
+- Redirect verbose commands to artifact logs and inspect only tails or errors.
+- Batch coherent changes before SDK distribution and native deployment.
+- Verify deployed artifacts with hashes and machine-readable assertions.
+- Update state and evidence once per validated slice; review token consumption only
+  at milestone boundaries.
+
 ## Purpose
 
 Make public layout, drawing, font metrics, and natural image dimensions logical,
