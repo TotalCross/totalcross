@@ -310,3 +310,14 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: the native process exited 0 and reported `logical=1728x976`,
   `physical=3456x1952`, and `contentScale=2.0`; source and deployed dylib
   SHA-256 values matched exactly.
+
+## Milestone 2R: Skia logical dirty bounds
+
+- Timestamp: 2026-08-01T21:02:00Z
+- Commit: `d58ebeef3`
+- Command: `ninja -C build-logical-ui tcvm`
+- Renderer/platform: native macOS Skia compile
+- Status: passed
+- Result: logical drawing damage now converts rounded rectangle edges through
+  the destination content scale before it is accumulated for the physical
+  framebuffer. Raw `setPixel` damage remains physical.

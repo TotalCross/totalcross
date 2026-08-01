@@ -419,6 +419,6 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
    skia_setPixel(skiaSurfaceForGraphics(g), x, y, pixel | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
-   markDirty(currentContext, g, x, y, 1, 1);
+   markPhysicalDirty(currentContext, g, x, y, 1, 1);
 }
 #endif
