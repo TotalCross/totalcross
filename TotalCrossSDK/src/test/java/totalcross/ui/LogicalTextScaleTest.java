@@ -85,6 +85,19 @@ class LogicalTextScaleTest {
   }
 
   @Test
+  void labelLineWidthCacheIgnoresContentScaleAndTracksFontScale() {
+    Label label = new Label("DANFE 25,00");
+    label.gfx.setScales(1.0, 1.0);
+    int widthAtOne = label.getMaxTextWidth();
+
+    label.gfx.setScales(3.0, 1.0);
+    assertEquals(widthAtOne, label.getMaxTextWidth());
+
+    label.gfx.setScales(1.0, 1.5);
+    assertTrue(label.getMaxTextWidth() > widthAtOne);
+  }
+
+  @Test
   void buttonPreferredSizeUsesFontScaleButNotContentScale() {
     Button button = new Button("DANFE");
 
