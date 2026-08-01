@@ -98,7 +98,7 @@ approximately 600 lines.
 - [x] Establish clean recorded base and identify global-density coupling.
 - [x] Add logical API and image scaffolding.
 - [x] Restore and validate guarded `USE_WRITE_PIXELS`.
-- [ ] Finish layout behavior: correct nonzero PIXEL client origins and run native
+- [x] Finish layout behavior: correct nonzero PIXEL client origins and run native
       root-PIXEL migration proof.
 - [x] Establish native macOS high-DPI backing and core Skia base transforms.
 - [ ] Complete SkFont-only logical text and TotalCross multiline behavior.
@@ -197,6 +197,17 @@ and `effective-multiedit-wrap-native.log`.
 Progress 2026-08-01: added a focused Label cache regression proving logical
 line widths ignore contentScale and refresh for fontScale; log:
 `artifacts/logical-ui-scaling/logs/text-layout-cache-test.log`.
+
+Progress 2026-08-01: completed the remaining Button and MultiEdit direct
+text-geometry audit. Button ellipsis, material preferred bounds, image/text
+placement, relative-label alignment, and underline geometry now use the
+destination effective-size measurement. MultiEdit selection height and dotted
+baseline use effective line-height and ascent. The native `FontMetrics`
+adapter now exposes effective ascent from `SkFont::getMetrics`. Focused Java,
+native compile, and deployed native macOS fixture validation passed; logs:
+`effective-text-controls-test.log`, `effective-text-controls-native-build.log`,
+`effective-text-controls-dist.log`, `effective-text-controls-deploy.log`, and
+`effective-text-controls-native.log`.
 
 ### Milestone 2R residual: native surface lifecycle
 

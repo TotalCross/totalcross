@@ -87,10 +87,8 @@ runtime assertions under the SkFont-only scope.
 
 ## Corrections Required Before Closing M3R
 
-- State, outcomes, and append-only evidence are not synchronized.
-- Existing `"kerning"` terminology overstates what the core SkFont path proves.
 - Java double text metrics remain integer-valued and need an approved renderer
-  treatment.
+  treatment in Milestone 5R.
 
 ## R1 Evidence
 
@@ -133,6 +131,14 @@ deployed native root fixture pass, and no external text-engine blocker remains.
   `effective-multiedit-wrap-native.log`.
 - `Label` cached line widths exclude contentScale and refresh when fontScale
   changes; focused Java cache validation passed.
+- Button and MultiEdit direct text geometry now use destination effective-size
+  measurements for placement, selection, dotted baselines, and underlines.
+  Effective ascent is read from the same SkFont metrics configuration used for
+  drawing. Focused Java validation, native compile, and the deployed native
+  macOS fixture passed; logs: `effective-text-controls-test.log`,
+  `effective-text-controls-native-build.log`, `effective-text-controls-dist.log`,
+  `effective-text-controls-deploy.log`, and
+  `effective-text-controls-native.log`.
 
 ## Remaining Major Work
 

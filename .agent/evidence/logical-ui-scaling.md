@@ -385,3 +385,25 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `effective-wrap-native.log`, `effective-multiedit-wrap-native.log`, and
   `root-pixel-fixture-native-final.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 3R: effective text-control geometry
+
+- Timestamp: 2026-08-01T23:00:00Z
+- Commands: `TotalCrossSDK/gradlew-agent test --tests
+  totalcross.ui.LogicalTextScaleTest`; `ninja -C build-logical-ui tcvm`;
+  `TotalCrossSDK/gradlew-agent dist -x test`; focused
+  `deployLogicalUiScalingSmokeMacOS` with the current dylib; direct
+  `DanfeScalingApp /logical-ui-assert` execution.
+- Renderer/platform: Java tests and deployed native macOS SDL/Skia application.
+- Status: passed.
+- Result: Button's destination-dependent ellipsis, preferred bounds, placement,
+  alignment, and underline use effective-size metrics. MultiEdit selection and
+  dotted-baseline geometry use effective line-height and ascent. Native effective
+  ascent comes from `SkFont::getMetrics` at `Font.size * fontScale`; the fixture
+  passed with Retina `contentScale=2.0` and all existing text and PIXEL
+  assertions.
+- Logs: `effective-text-controls-test.log`,
+  `effective-text-controls-native-build.log`, `effective-text-controls-dist.log`,
+  `effective-text-controls-deploy.log`, and
+  `effective-text-controls-native.log` under
+  `artifacts/logical-ui-scaling/logs/`.
