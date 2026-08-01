@@ -297,3 +297,16 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `build-logical-ui/libtcvm.dylib`.
 - Limitation: this confirms the native launch lane and runtime identity but does
   not yet emit the required logical/physical scale assertion.
+
+## Milestone 2R: deployed native Retina scale assertion
+
+- Timestamp: 2026-08-01T20:58:00Z
+- Commit: `bce0f6865`
+- Commands: focused `deployLogicalUiScalingSmokeMacOS` with
+  `-PtcvmDylib=/Users/flsobral/repos/totalcross-logical-ui/build-logical-ui/libtcvm.dylib`,
+  then direct `DanfeScalingApp /logical-ui-assert` execution.
+- Renderer/platform: deployed native macOS SDL/Skia application
+- Status: passed
+- Result: the native process exited 0 and reported `logical=1728x976`,
+  `physical=3456x1952`, and `contentScale=2.0`; source and deployed dylib
+  SHA-256 values matched exactly.

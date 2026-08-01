@@ -26,13 +26,13 @@ Milestone 2R: complete Skia and native macOS surface scaling.
 
 ## Active Slice
 
-Add a machine-readable native assertion mode to the deployed fixture so it can
-report its screen scale and logical/physical dimensions without a Java fallback.
+Audit remaining Skia coordinate paths for base-transform coverage, retaining
+physical source rectangles and raw pixel access.
 
 ## Next Concrete Action
 
-Extend the fixture's native-only assertion mode, then deploy and run it against
-the matching dylib to validate the reported screen scale and dimensions.
+Read the affected Skia primitive and dirty-bound paths, then add only focused
+coverage required for any remaining transform gap.
 
 ## Files to Read Now
 
@@ -54,13 +54,13 @@ Do not read later renderer or text guides yet.
   clipping, and physical raw-pixel assertions.
 - The native SDL screen path now records its physical drawable dimensions and
   content scale, exposes logical screen dimensions through Settings, and assigns
-  the scale to newly created screen Graphics objects. This has compile proof only.
+  the scale to newly created screen Graphics objects. A deployed native macOS
+  fixture reports a real Retina scale of 2 with matching logical/physical sizes.
 
 These are foundations, not completion of their behavioral milestones.
 
 ## Incomplete or Unproven
 
-- native macOS backing scale is not proven;
 - fontScale and true double metrics are incomplete;
 - Java renderer coverage is partial;
 - native-to-Java image readback is unproven;
