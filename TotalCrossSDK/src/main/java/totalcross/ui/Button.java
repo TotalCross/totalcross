@@ -955,10 +955,10 @@ public class Button extends Control implements TextControl {
 
 		// compute where to draw each item to keep it centered
 		if (text != null) {
-			th = fmH * lines.length;
+			th = getFontHeightForLayout() * lines.length;
 			if(uiMaterial) {
 				tx0 = (this.width - fm.stringWidth(text)) >> 1;
-				ty0 = (this.height - fmH) >> 1;
+				ty0 = (this.height - getFontHeightForLayout()) >> 1;
 			} else {
 				tx0 = (width - maxTW) / 2;
 				ty0 = (height - th) / 2;
@@ -976,7 +976,7 @@ public class Button extends Control implements TextControl {
 						tx0 = this.paddingLeft + img.getWidth() + this.tiGap;
 						break;
 					case TOP:
-						iy0 = this.paddingTop + fmH + this.tiGap;
+				iy0 = this.paddingTop + getFontHeightForLayout() + this.tiGap;
 						ix0 = (this.width - img.getWidth()) >> 1;
 						tx0 = (this.width - fm.stringWidth(text)) >> 1;
 						ty0 = paddingTop;
@@ -991,13 +991,13 @@ public class Button extends Control implements TextControl {
 						ix0 = (this.width - img.getWidth()) >> 1;
 						iy0 = (this.height - img.getHeight()) >> 1;
 						tx0 = (this.width - fm.stringWidth(text)) >> 1;
-						ty0 = (this.height - fmH) >> 1;
+				ty0 = (this.height - getFontHeightForLayout()) >> 1;
 						break;
 					case CENTRALIZE:
 						ix0 = (this.width - img.getWidth() - this.tiGap - fm.stringWidth(text)) >> 1;
 						iy0 = (this.height - img.getHeight()) >> 1;
 						tx0 = ix0 + img.getWidth() + this.tiGap;
-						ty0 = (this.height - fmH) >> 1;
+				ty0 = (this.height - getFontHeightForLayout()) >> 1;
 						break;
 					case RIGHT_OF:
 						if (relativeToText == null) {
@@ -1171,7 +1171,7 @@ public class Button extends Control implements TextControl {
 		} else {
 			g.foreColor = foreColor;
 		}
-		for (int i = 0; i < lines.length; i++, ty += fmH) {
+		for (int i = 0; i < lines.length; i++, ty += getFontHeightForLayout()) {
 			int txx = tx + ((maxTW - linesW[i]) >> 1);
 			g.drawText(lines[i], txx, ty, shade != -1, shade);
 			if (underlinedText) {

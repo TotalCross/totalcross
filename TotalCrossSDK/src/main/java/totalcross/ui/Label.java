@@ -438,7 +438,7 @@ public class Label extends Control implements TextControl {
         setRect(KEEP, KEEP, KEEP, getPreferredHeight() + setH - PREFERRED);
       }
     }
-    linesPerPage = height / fmH;
+    linesPerPage = height / getFontHeightForLayout();
     if (linesPerPage < 1) {
       linesPerPage = 1;
     }
@@ -561,10 +561,10 @@ public class Label extends Control implements TextControl {
         y = (insets == null ? 0 : insets.top);
         break;
       case BOTTOM:
-        y = this.height - fmH * Math.min(lines.length, linesPerPage) - (insets == null ? 0 : insets.bottom);
+        y = this.height - getFontHeightForLayout() * Math.min(lines.length, linesPerPage) - (insets == null ? 0 : insets.bottom);
         break;
       default:
-        y = ((this.height - fmH * Math.min(lines.length, linesPerPage)) >> 1)/* + (insets == null ? 0 : insets.top)*/;
+        y = ((this.height - getFontHeightForLayout() * Math.min(lines.length, linesPerPage)) >> 1)/* + (insets == null ? 0 : insets.top)*/;
         break; // guich@tc115_34: min of lines.length and linesPerPage
       }
       if (marqueeStep != 0) {
@@ -590,7 +590,7 @@ public class Label extends Control implements TextControl {
         int n = Math.min(currentLine + linesPerPage, lines.length);
         int x0 = (insets == null ? 0 : insets.left);
         int xx = invert || highlighted ? 1 : 0/* + x0*/;
-        int fmH = this.fmH; // guich@450_36: use local var
+        int fmH = getFontHeightForLayout();
         int[] linesW = this.linesW; // same
         for (int i = currentLine; i < n; i++, y += fmH) {
           int justify = align == FILL && (i < lines.length - 1)

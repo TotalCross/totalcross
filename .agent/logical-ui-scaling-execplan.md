@@ -414,6 +414,10 @@ Update this section after each corrected behavioral milestone.
 - 2026-08-01: Extended non-material `Edit` preferred measurements to the
   destination font scale. Evidence: focused Java `LogicalTextScaleTest` passed;
   full log: `artifacts/logical-ui-scaling/logs/logical-text-scale-edit-test.log`.
+- 2026-08-01: Corrected `Label` and `Button` vertical line placement to use
+  destination-scaled logical line height. Evidence: focused Java
+  `LogicalTextScaleTest` passed; full log:
+  `artifacts/logical-ui-scaling/logs/logical-text-vertical-scale-test.log`.
 
 ## Revision Note
 
