@@ -26,13 +26,13 @@ Milestone 3R: complete logical text and FontMetrics.
 
 ## Active Slice
 
-Read the text design and identify the current measurement and drawing paths that
-still expose integer-only metrics or bypass fontScale.
+Add fractional horizontal metrics and then bind per-destination `fontScale` to
+measurement and drawing without changing logical layout for contentScale.
 
 ## Next Concrete Action
 
-Read Milestone 3R and the text design, then trace FontMetrics and native Skia
-text from logical font size through measurement and drawing.
+Trace horizontal measurement through Java and native Skia, then introduce a
+shared fractional width path before applying fontScale.
 
 ## Files to Read Now
 
@@ -56,6 +56,8 @@ Do not read later image or renderer guides yet.
   content scale, exposes logical screen dimensions through Settings, and assigns
   the scale to newly created screen Graphics objects. A deployed native macOS
   fixture reports a real Retina scale of 2 with matching logical/physical sizes.
+- Native Skia FontMetrics now exposes actual fractional ascent, descent, and
+  height while retaining upward-rounded integer compatibility metrics.
 
 These are foundations, not completion of their behavioral milestones.
 
