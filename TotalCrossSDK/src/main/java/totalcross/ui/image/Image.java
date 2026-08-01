@@ -355,7 +355,7 @@ public class Image extends GfxSurface {
     // init the Graphics
     gfx = new Graphics(this);
     gfx.setScales(contentScale, 1);
-    gfx.refresh(0, 0, width, height, 0, 0, null);
+    gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
   }
 
   /**
