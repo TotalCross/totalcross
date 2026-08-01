@@ -15,7 +15,7 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `dfe85c526ea3cc44c0e8fe46f399e6a9a914e6a4`.
+- Last logical commit: `21d6958a3a250dd435655319b7cd24071d7af1f3`.
 
 ## Active Milestone
 
@@ -23,12 +23,15 @@ Milestone 7: run end-to-end DANFE and platform validation.
 
 ## Active Slice
 
-Run required SDK/native/platform validations and determine which external
-platform evidence is available locally.
+Run the remaining full DANFE assertions in a deployed application, then record
+the platform evidence available locally. The headless fixture now proves logical
+and physical image dimensions, PNG dimensions, and scaled barcode structure.
 
 ## Next Concrete Action
 
-Read the Milestone 7 plan section and its explicitly required validation guides.
+Build the deployed DANFE fixture required for text, synchronization, and safe
+window-capture assertions; do not treat the headless barcode check as platform
+proof.
 
 ## Files to Read Now
 
@@ -52,11 +55,14 @@ Do not read all design guides yet.
 - `ninja -C build-logical-ui`: passed after logical Skia font sizing.
 - `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.gfx.GraphicsScaleTest`:
   passed (3 tests), including scale-1.5 logical-image rounding.
+- `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.image.DanfeScalingTest
+  --tests totalcross.ui.gfx.GraphicsScaleTest`: passed. The fixture checks 360x540
+  and 720x1080 PNG dimensions and 31 physical barcode runs at scale 1 and 2.
 
 ## Deferred Validation
 
-All implementation, renderer, platform, and DANFE validation remains deferred
-until its corresponding milestone.
+Deployed text containment, Java/Skia and non-Skia equivalence, two-way pixel
+synchronization, safe macOS window capture, and Android export remain required.
 
 ## Active Decisions
 
@@ -68,7 +74,10 @@ until its corresponding milestone.
 
 ## Blockers
 
-None recorded.
+- Android validation is unavailable locally: `adb devices -l` reports no device
+  or emulator and `ANDROID_HOME` is unset, so the Android Gradle module cannot
+  locate an SDK. This is external platform evidence only; source/test work can
+  still continue.
 
 ## Deliberately Out of Scope
 
