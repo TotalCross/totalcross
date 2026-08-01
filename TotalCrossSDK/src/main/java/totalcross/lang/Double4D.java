@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -76,11 +77,15 @@ public class Double4D extends Number4D implements Comparable<Double4D> {
   }
 
   public static boolean isNaN(double v) {
-    return v == Convert.DOUBLE_NAN_VALUE;
+    return v != v;
   }
 
   public static boolean isInfinite(double v) {
     return v == Convert.DOUBLE_POSITIVE_INFINITY_VALUE || v == Convert.DOUBLE_NEGATIVE_INFINITY_VALUE;
+  }
+
+  public static boolean isFinite(double v) {
+    return !isNaN(v) && !isInfinite(v);
   }
 
   public static String toString(double d) {
@@ -92,7 +97,7 @@ public class Double4D extends Number4D implements Comparable<Double4D> {
   }
 
   public boolean isNaN() {
-    return v == Convert.DOUBLE_NAN_VALUE;
+    return v != v;
   }
 
   /**
