@@ -15,26 +15,25 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `0ea5f820b6cebd2cf7ca22852f0e7a19ca88f512`.
+- Last logical commit: `c577d9ff65228dc023458b974b6e3536cfb90a03`.
 
 ## Active Milestone
 
-Milestone 4: implement scaled-image semantics.
+Milestone 5: make the Java renderer equivalent.
 
 ## Active Slice
 
-Audit image synchronization direction and make native image surfaces use the
-physical backing dimensions while public sizes remain logical.
+Read the Java renderer milestone and make its logical drawing path consume the
+same image scale and logical font contract as Skia.
 
 ## Next Concrete Action
 
-Inspect `applyChanges`, native texture creation, and readback calls for the
-new logical-image fields.
+Inspect Graphics Java drawing primitives and image-copy paths.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 4 only.
-- `.agent/design/logical-ui-scaling-images.md`.
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 5 only.
+- `.agent/design/logical-ui-scaling-text.md` and image sections needed by Java Graphics.
 
 Do not read all design guides yet.
 
