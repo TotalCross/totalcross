@@ -23,15 +23,15 @@ Milestone 7: run end-to-end DANFE and platform validation.
 
 ## Active Slice
 
-Run the remaining full DANFE assertions in a deployed application, then record
-the platform evidence available locally. The headless fixture now proves logical
-and physical image dimensions, PNG dimensions, and scaled barcode structure.
+Finish the remaining headless semantic assertions and finalize the macOS-focused
+validation agreed by the user. The deployed fixture starts at simulated scales 1
+and 2; the headless fixture proves logical and physical image dimensions, PNG
+dimensions, and scaled barcode structure.
 
 ## Next Concrete Action
 
-Build the deployed DANFE fixture required for text, synchronization, and safe
-window-capture assertions; do not treat the headless barcode check as platform
-proof.
+Add the remaining bounded headless assertions for pixel synchronization and
+renderer semantics, then begin Milestone 8 documentation and audits.
 
 ## Files to Read Now
 
@@ -69,8 +69,10 @@ Do not read all design guides yet.
 
 ## Deferred Validation
 
-Deployed text containment, Java/Skia and non-Skia equivalence, two-way pixel
-synchronization, safe macOS window capture, and Android export remain required.
+Deployed text containment, Java/Skia and non-Skia equivalence, and two-way
+pixel synchronization remain required. The user explicitly directed macOS-only
+platform validation; Android and iOS workspace validation are deferred to final
+validation rather than treated as Milestone 7 gates.
 
 ## Active Decisions
 
@@ -82,10 +84,9 @@ synchronization, safe macOS window capture, and Android export remain required.
 
 ## Blockers
 
-- Android validation is unavailable locally: `adb devices -l` reports no device
-  or emulator and `ANDROID_HOME` is unset, so the Android Gradle module cannot
-  locate an SDK. This is external platform evidence only; source/test work can
-  still continue.
+- Safe macOS window capture is currently unavailable through the installed
+  Computer Use integration: it cannot target the launched Java process by its
+  process-specific application identity. No desktop-wide fallback was used.
 
 ## Deliberately Out of Scope
 
