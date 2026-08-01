@@ -638,7 +638,22 @@ public class Control extends GfxSurface {
 
   /** Returns the preferred height of this control. */
   public int getPreferredHeight() {
-    return fmH;
+    return getFontHeightForLayout();
+  }
+
+  /**
+   * Returns this control's font height in destination logical units.
+   *
+   * <p>The font metrics themselves are logical at a scale of one. A destination may apply a
+   * separate logical text scale, which changes layout but never its backing-pixel density.</p>
+   */
+  protected int getFontHeightForLayout() {
+    return (int) Math.ceil(fm.getHeightD() * gfx.getFontScale());
+  }
+
+  /** Returns the logical layout advance of {@code text} for this control's destination. */
+  protected int getFontWidthForLayout(String text) {
+    return (int) Math.ceil(fm.stringWidthD(text) * gfx.getFontScale());
   }
 
   /** Sets or changes a control's position and size.
