@@ -187,6 +187,9 @@ The deployed native macOS fixture passed; logs: `effective-descent-dist.log`,
 Progress 2026-08-01: routed MultiEdit's TotalCross break-position calls through
 the effective-size overload. Focused Java validation passed; log:
 `artifacts/logical-ui-scaling/logs/effective-multiedit-wrap-test.log`.
+The deployed native macOS fixture passed; logs:
+`effective-multiedit-wrap-dist.log`, `effective-multiedit-wrap-deploy.log`,
+and `effective-multiedit-wrap-native.log`.
 
 ### Milestone 2R residual: native surface lifecycle
 
