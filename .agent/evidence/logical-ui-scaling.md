@@ -367,3 +367,21 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   actual baseline/damage metrics; canvas contentScale is not reapplied.
 - Limitation: deployed preferred-size and fontScale invalidation assertions are
   the next slice.
+
+## Reconciliation R1: PIXEL edges and destination text metrics
+
+- Timestamp: 2026-08-01T22:00:00Z
+- Commits: `4f7f66e82`, `3363461fc`, `472430042`, `2011c07aa`, `9bdf26a9c`
+- Java validation: `LogicalLayoutUnitTest` passed nonzero-inset PIXEL client
+  edges at scales 1.5, 2, and 3; `LogicalTextScaleTest` passed destination
+  effective-size control and wrapping assertions.
+- Native macOS compile: `ninja -C build-logical-ui tcvm` passed after adding
+  effective-size `SkFont::measureText`, line-height, and descent bindings.
+- Deployed native macOS runtime: direct `DanfeScalingApp /logical-ui-assert`
+  passed with the current dylib. It reported fractional metrics, scale-stable
+  Label/Edit/MultiEdit results, and root PIXEL conversion
+  `pixelChild=10,5,50,20` from physical input `20,10,100,40` at Retina scale 2.
+- Logs: `pixel-client-origin-test.log`, `effective-font-measurement-native-retry.log`,
+  `effective-wrap-native.log`, `effective-multiedit-wrap-native.log`, and
+  `root-pixel-fixture-native-final.log` under
+  `artifacts/logical-ui-scaling/logs/`.

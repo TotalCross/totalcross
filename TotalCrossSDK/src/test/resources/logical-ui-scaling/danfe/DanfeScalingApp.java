@@ -7,6 +7,8 @@ package danfe.fixture;
 import totalcross.ui.ImageControl;
 import totalcross.ui.Label;
 import totalcross.ui.Edit;
+import totalcross.ui.Container;
+import totalcross.ui.LayoutUnit;
 import totalcross.ui.MainWindow;
 import totalcross.ui.MultiEdit;
 import totalcross.ui.gfx.Color;
@@ -63,6 +65,12 @@ public class DanfeScalingApp extends MainWindow {
       int multiEditHeightAtDoubleContentScale = metricMultiEdit.getPreferredHeight();
       multiEditGraphics.setScales(contentScale, 1.5);
       int multiEditHeightAtFontScale = metricMultiEdit.getPreferredHeight();
+      Container pixelRoot = new Container();
+      pixelRoot.setLayoutUnit(LayoutUnit.PIXEL);
+      add(pixelRoot, 0, 80, 200, 100);
+      pixelRoot.getGraphics().setScales(contentScale, 1.0);
+      Container pixelChild = new Container();
+      pixelRoot.add(pixelChild, 20, 10, 100, 40);
       double danfeAdvance = metrics.stringWidthD("DANFE 25,00");
       double accentedAdvance = metrics.stringWidthD("Comércio São Paulo");
       double representativePairAdvance = metrics.stringWidthD("AV");
@@ -78,7 +86,8 @@ public class DanfeScalingApp extends MainWindow {
           && widthAtOne == widthAtDoubleContentScale && widthAtFontScale > widthAtOne
           && editWidthAtOne == editWidthAtDoubleContentScale && editWidthAtFontScale > editWidthAtOne
           && multiEditHeightAtOne == multiEditHeightAtDoubleContentScale
-          && multiEditHeightAtFontScale > multiEditHeightAtOne)) {
+          && multiEditHeightAtFontScale > multiEditHeightAtOne
+          && pixelChild.getX() == 10 && pixelChild.getY() == 5 && pixelChild.getWidth() == 50 && pixelChild.getHeight() == 20)) {
         throw new IllegalStateException("Logical text metric assertion failed");
       }
       System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
@@ -90,7 +99,8 @@ public class DanfeScalingApp extends MainWindow {
           + " arrayAdvance=" + arrayDanfeAdvance + " bufferAdvance=" + bufferDanfeAdvance
           + " labelWidths=" + widthAtOne + "," + widthAtDoubleContentScale + "," + widthAtFontScale
           + " editWidths=" + editWidthAtOne + "," + editWidthAtDoubleContentScale + "," + editWidthAtFontScale
-          + " multiEditHeights=" + multiEditHeightAtOne + "," + multiEditHeightAtDoubleContentScale + "," + multiEditHeightAtFontScale);
+          + " multiEditHeights=" + multiEditHeightAtOne + "," + multiEditHeightAtDoubleContentScale + "," + multiEditHeightAtFontScale
+          + " pixelChild=" + pixelChild.getX() + "," + pixelChild.getY() + "," + pixelChild.getWidth() + "," + pixelChild.getHeight());
       exit(0);
     }
   }
