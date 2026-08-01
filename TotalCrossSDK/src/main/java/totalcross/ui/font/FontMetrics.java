@@ -1,6 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -39,6 +39,11 @@ public final class FontMetrics {
   /** READ-ONLY member: total height of this font (ascent+descent). */
   public int height;
 
+  public double getAscentD() { return ascent; }
+  public double getDescentD() { return descent; }
+  public double getLeadingD() { return 0; }
+  public double getHeightD() { return height; }
+
   /**
    * Constructs a font metrics object referencing the given font.
    */
@@ -70,6 +75,8 @@ public final class FontMetrics {
     return Launcher.instance.getCharWidth(this.font, c);
   }
 
+  public double charWidthD(char c) { return charWidth(c); }
+
   /** Returns the width in pixels of the given text string. */
   @ReplacedByNativeOnDeploy
   public int stringWidth(String s) {
@@ -79,6 +86,8 @@ public final class FontMetrics {
     }
     return sum;
   }
+
+  public double stringWidthD(String s) { return stringWidth(s); }
 
   /**
    * Returns the width in pixels of the given char array range.

@@ -72,3 +72,13 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: generated and linked `libtcvm.dylib`; the Skia transform and raw-pixel
   boundary changes compile successfully. Logs: `/tmp/logical-ui-m2-cmake-resume.log`,
   `/tmp/logical-ui-m2-ninja-raw.log`.
+
+## Milestone 3: AWT backing scale and logical metrics slice
+
+- Timestamp: 2026-08-01T22:20:00Z
+- Commit: `28b67e719f76338e5cbec71804b6bdeb1398d94f`
+- Commands: focused SDK tests and `ninja -C build-logical-ui`
+- Status: passed
+- Result: the visible AWT `LauncherFrame` obtains the backing scale from its
+  `GraphicsConfiguration` after peer creation and on moves/resizes. Skia font
+  size no longer reads global density; FontMetrics exposes logical double APIs.

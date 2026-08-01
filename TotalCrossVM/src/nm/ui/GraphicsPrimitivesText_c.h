@@ -375,7 +375,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x, int32 y, Pixel foreColor, int32 justifyWidth)
 {
    TCObject fontObj = Graphics_font(g);
-   int32 fontSize = (int)(Font_size(fontObj) * (*tcSettings.screenDensityPtr));
+   int32 fontSize = Font_size(fontObj);
    int32 typefaceIndex = Font_skiaIndex(fontObj);
 
    x += Graphics_transX(g);

@@ -181,7 +181,8 @@ public final class Graphics {
     return fontScale;
   }
 
-  void setScales(double contentScale, double fontScale) {
+  /** Updates the destination-owned scales after a surface configuration change. */
+  public void setScales(double contentScale, double fontScale) {
     if (!Double.isFinite(contentScale) || contentScale <= 0 || !Double.isFinite(fontScale) || fontScale <= 0) {
       throw new IllegalArgumentException("graphics scales must be finite and positive");
     }

@@ -15,7 +15,7 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `fd7e5d358cd3e19ef4c57e1a4a7ba5622ee0ea33`.
+- Last logical commit: `28b67e719f76338e5cbec71804b6bdeb1398d94f`.
 
 ## Active Milestone
 
@@ -23,13 +23,12 @@ Milestone 3: add macOS Retina detection and logical text.
 
 ## Active Slice
 
-Identify the actual macOS desktop window path and implement peer-aware backing
-scale detection plus the first logical text changes required by the milestone.
+Add focused peer-aware scale tests where the desktop harness permits, then assess
+whether the remaining metric work can close the milestone without image changes.
 
 ## Next Concrete Action
 
-Read the Milestone 3 plan section and the text design, then inspect only the
-macOS desktop and font paths they name.
+Inspect the existing JavaSE launcher test seams for the frame configuration path.
 
 ## Files to Read Now
 
@@ -47,6 +46,9 @@ Do not read all design guides yet.
   totalcross.ui.gfx.GraphicsScaleTest`: passed (5 tests).
 - `cmake -S TotalCrossVM -B build-logical-ui -DCMAKE_BUILD_TYPE=Release -G Ninja`
   and `ninja -C build-logical-ui`: passed.
+- `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.LogicalLayoutUnitTest
+  --tests totalcross.ui.gfx.GraphicsScaleTest`: passed (5 tests).
+- `ninja -C build-logical-ui`: passed after logical Skia font sizing.
 
 ## Deferred Validation
 
