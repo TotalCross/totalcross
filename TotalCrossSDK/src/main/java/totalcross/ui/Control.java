@@ -1,7 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -723,6 +723,8 @@ public class Control extends GfxSurface {
    * @see Container#add(Control, int, int, Control)
    */
   public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged) {
+    Container parent = this.parent; // guich@450_36: use local var instead of field
+    boolean pixelLayout = parent != null && parent.getEffectiveLayoutUnit() == LayoutUnit.PIXEL;
     if (setX == SETX_NOT_SET) {
       setX = x;
       setY = y;
@@ -748,7 +750,6 @@ public class Control extends GfxSurface {
 
       repositionAllowed = true;
       int lpx = 0, lpy = 0;
-      Container parent = this.parent; // guich@450_36: use local var instead of field
       Rect cli = this.cli; // guich@450_36: avoid recreating Rects
       // relative placement
       if (parent != null) {
@@ -762,12 +763,26 @@ public class Control extends GfxSurface {
 
         lpx = parent.lastX;
         lpy = parent.lastY;
+        if (pixelLayout) {
+          cli.x = parent.toLayoutPixels(cli.x);
+          cli.y = parent.toLayoutPixels(cli.y);
+          cli.width = parent.toLayoutPixels(cli.x + cli.width) - cli.x;
+          cli.height = parent.toLayoutPixels(cli.y + cli.height) - cli.y;
+          lpx = parent.toLayoutPixels(lpx);
+          lpy = parent.toLayoutPixels(lpy);
+          if (parent.lastX != -999999) {
+            parent.lastX = parent.toLayoutPixels(parent.lastX);
+            parent.lastY = parent.toLayoutPixels(parent.lastY);
+            parent.lastW = parent.toLayoutPixels(parent.lastW);
+            parent.lastH = parent.toLayoutPixels(parent.lastH);
+          }
+        }
         if (relative != null) {
           // use the given control's coords instead of parent's ones.
-          parent.lastX = relative.x;
-          parent.lastY = relative.y;
-          parent.lastW = relative.width;
-          parent.lastH = relative.height;
+          parent.lastX = pixelLayout ? parent.toLayoutPixels(relative.x) : relative.x;
+          parent.lastY = pixelLayout ? parent.toLayoutPixels(relative.y) : relative.y;
+          parent.lastW = pixelLayout ? parent.toLayoutPixels(relative.x + relative.width) - parent.lastX : relative.width;
+          parent.lastH = pixelLayout ? parent.toLayoutPixels(relative.y + relative.height) - parent.lastY : relative.height;
         } else if (parent.lastX == -999999) // first control being added? - guich@450_36: only one check is enough
         {
           parent.lastX = cli.x;
@@ -1360,6 +1375,15 @@ public class Control extends GfxSurface {
           throw new RuntimeException("Invalid resulting values in height for control " + toString() + ": " + height);
         }
       }
+    }
+
+    if (pixelLayout) {
+      int logicalRight = parent.toLogicalLayoutEdge(x + width);
+      int logicalBottom = parent.toLogicalLayoutEdge(y + height);
+      x = parent.toLogicalLayoutEdge(x);
+      y = parent.toLogicalLayoutEdge(y);
+      width = logicalRight - x;
+      height = logicalBottom - y;
     }
 
     this.x = x;

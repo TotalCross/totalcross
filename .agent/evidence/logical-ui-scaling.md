@@ -229,3 +229,18 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   physical destination coordinates. The fixture verifies identity copy, scaled
   fallback, clipped fallback, and physical raw pixels across enabled and disabled
   variants.
+
+## Milestone 1R: parent layout-unit placement
+
+- Timestamp: 2026-08-01T20:36:01Z
+- Commit: `a629ec0d8`
+- Command: `TotalCrossSDK/gradlew-agent test --tests
+  totalcross.ui.LogicalLayoutUnitTest --warning-mode=none --console=plain`
+- Renderer/platform: Java SDK test runtime on macOS
+- Status: passed (7 tests)
+- Result: `Control.setRect` now resolves child rectangles in a PIXEL parent's
+  physical coordinates, then converts rounded edges once into public logical
+  geometry. The behavioral tests cover parent ownership, child override for
+  descendants, `AFTER` offsets, and shared edges at 1.5, 2, and 3.
+- Limitation: deployed native macOS migration-fixture validation is intentionally
+  deferred to the native runtime milestone; this Java result is not native proof.

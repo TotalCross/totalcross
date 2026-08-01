@@ -92,8 +92,10 @@ files instead of adding large implementations inline.
       images, and compatibility deprecations.
 - [x] Restored scale-aware `USE_WRITE_PIXELS` eligibility, compiled both macro
       configurations on macOS, and exercised the native Skia surface fixture.
-- [ ] Connect `LayoutUnit` to real child placement and prove the root PIXEL
-      migration path.
+- [x] Connect `LayoutUnit` to real child placement and prove the root PIXEL
+      migration path in focused Java layout tests.
+- [ ] Validate the root PIXEL migration fixture in the deployed native macOS
+      application during the runtime milestone.
 - [ ] Complete Skia logical drawing and native macOS content-scale initialization.
 - [ ] Complete logical text shaping, fontScale, metrics, preferred sizes, and
       cache behavior.
