@@ -182,7 +182,6 @@ protected int gap;
   private boolean wasFocusIn, wasFocusInOnPenDown; // jairocg@450_31: used to verify if the event was focusIn
   private int oldTabIndex = -1;
   private boolean ignoreSelect;
-  private int wildW;
   protected boolean useFillAsPreferred;
   protected StringBuffer masked = new StringBuffer(20);
   private boolean isNegative;
@@ -476,11 +475,6 @@ protected int gap;
     return kbdType;
   }
 
-  @Override
-  protected void onFontChanged() {
-    wildW = fm.charWidth('*');
-  }
-
   /** Returns the mask passed on the constructor. */
   public String getMask() {
     return mask == null ? "" : new String(mask);
@@ -637,18 +631,18 @@ protected int gap;
 	s = isMaskedEdit ? masked : chars;
 	switch(alignment) {
 	case RIGHT:
-		textStartX = this.width - fm.sbWidth(s, 0, s.length() ) - 2*xOffset;
+		textStartX = this.width - getFontWidthForLayout(s, 0, s.length()) - 2*xOffset;
 		if(captionIcon != null) {
 			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
 		}
 		break;
 	case CENTER:
-		textStartX = (this.width - fm.sbWidth(s, 0, s.length())) / 2 - xOffset;
+		textStartX = (this.width - getFontWidthForLayout(s, 0, s.length())) / 2 - xOffset;
 		if(captionIcon != null) {
 			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
 		}
 		if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4)) {
-			textStartX = this.width - fm.sbWidth(s, 0, s.length() ) - 2*xOffset;
+			textStartX = this.width - getFontWidthForLayout(s, 0, s.length()) - 2*xOffset;
 			if(captionIcon != null) {
 				textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
 			}
@@ -672,9 +666,9 @@ protected int gap;
     }
     switch (mode) {
     case PASSWORD_ALL:
-      return extra + xOffset + wildW * n;
+      return extra + xOffset + getFontCharWidthForLayout('*') * n;
     case PASSWORD:
-      return extra + xOffset + wildW * (n - 1) + fm.charWidth(chars, chars.length() - 1);
+      return extra + xOffset + getFontCharWidthForLayout('*') * (n - 1) + getFontCharWidthForLayout(chars.charAt(chars.length() - 1));
     case CURRENCY:
       if (isMaskedEdit) // in currency, we go from right to left
       {
@@ -682,7 +676,7 @@ protected int gap;
         n = chars.length() - n;
         for (i = n; i > 0 && --pos >= 0;) {
           char c = masked.charAt(pos);
-          xx -= fm.charWidth(c);
+          xx -= getFontCharWidthForLayout(c);
           if ('0' <= c && c <= '9') {
             i--;
           }
@@ -707,10 +701,10 @@ protected int gap;
         	  masked.append(" ");
           }
         }
-        return extra + xOffset + fm.sbWidth(masked, 0, Math.min(pos, masked.length()));//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
+        return extra + xOffset + getFontWidthForLayout(masked, 0, Math.min(pos, masked.length()));//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
       }
     }
-    return extra + xOffset + fm.sbWidth(chars, 0, n);
+    return extra + xOffset + getFontWidthForLayout(chars, 0, n);
   }
 
   /** Returns the text displayed in the edit control. If masking is enabled, the text with the mask is returned;
@@ -892,8 +886,8 @@ protected int gap;
     if (captionIconHeightFactor != 0 && captionIcon != null) {
 		try {
 			captionIcon = captionIcon.hwScaledFixedAspectRatio(height * captionIconHeightFactor / 100, true);
-			if (captionIcon.getWidth() > this.width - fm.stringWidth(chars.toString())) {
-				captionIcon = captionIcon.hwScaledFixedAspectRatio(width - fm.stringWidth(chars.toString()), false);
+			if (captionIcon.getWidth() > this.width - getFontWidthForLayout(chars, 0, chars.length())) {
+				captionIcon = captionIcon.hwScaledFixedAspectRatio(width - getFontWidthForLayout(chars, 0, chars.length()), false);
 			}
 		} catch (Throwable t) {
 		}
@@ -958,9 +952,9 @@ protected int gap;
     int len = chars.length();
     switch (mode) {
     case PASSWORD_ALL:
-      return len == 0 ? 0 : wildW * len;
+      return len == 0 ? 0 : getFontCharWidthForLayout('*') * len;
     case PASSWORD:
-      return len == 0 ? 0 : wildW * (len - 1) + fm.charWidth(chars, len - 1);
+      return len == 0 ? 0 : getFontCharWidthForLayout('*') * (len - 1) + getFontCharWidthForLayout(chars.charAt(len - 1));
     default:
       if (isMaskedEdit) {
         int pos = masked.length();
@@ -968,14 +962,14 @@ protected int gap;
         int ww = 0;
         for (i = n; i > 0 && --pos >= 0;) {
           char c = masked.charAt(pos);
-          ww += fm.charWidth(c);
+          ww += getFontCharWidthForLayout(c);
           if ('0' <= c && c <= '9') {
             i--;
           }
         }
         return ww;
       } else {
-        return fm.sbWidth(chars, 0, len);
+        return getFontWidthForLayout(chars, 0, len);
       }
     }
   }

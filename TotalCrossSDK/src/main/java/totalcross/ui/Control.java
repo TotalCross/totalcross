@@ -656,6 +656,16 @@ public class Control extends GfxSurface {
     return (int) Math.ceil(fm.stringWidthD(text) * gfx.getFontScale());
   }
 
+  /** Returns the logical layout advance of a character for this control's destination. */
+  protected int getFontCharWidthForLayout(char value) {
+    return (int) Math.ceil(fm.charWidthD(value) * gfx.getFontScale());
+  }
+
+  /** Returns the logical layout advance of a StringBuffer range for this control's destination. */
+  protected int getFontWidthForLayout(StringBuffer text, int start, int count) {
+    return getFontWidthForLayout(text.substring(start, start + count));
+  }
+
   /** Sets or changes a control's position and size.
    * <pre>
    * setRect(r.x,r.y,r.width,r.height,null,false)

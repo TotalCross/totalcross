@@ -422,6 +422,10 @@ Update this section after each corrected behavioral milestone.
   to use destination-scaled line metrics. Evidence: focused Java
   `LogicalTextScaleTest` passed; full log:
   `artifacts/logical-ui-scaling/logs/logical-text-edit-vertical-test.log`.
+- 2026-08-01: Corrected `Edit` horizontal layout and caret calculations to use
+  destination-scaled advances. Evidence: focused Java `LogicalTextScaleTest`
+  passed after materializing the edit through its normal layout cycle; full log:
+  `artifacts/logical-ui-scaling/logs/logical-text-edit-cursor-test.log`.
 
 ## Revision Note
 
