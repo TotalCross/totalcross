@@ -51,4 +51,21 @@ class LogicalTextScaleTest {
     assertTrue(button.getPreferredWidth() > widthAtOne);
     assertTrue(button.getPreferredHeight() > heightAtOne);
   }
+
+  @Test
+  void editPreferredSizeUsesFontScaleButNotContentScale() {
+    Edit edit = new Edit("99999");
+
+    edit.gfx.setScales(1.0, 1.0);
+    int widthAtOne = edit.getPreferredWidth();
+    int heightAtOne = edit.getPreferredHeight();
+
+    edit.gfx.setScales(2.0, 1.0);
+    assertEquals(widthAtOne, edit.getPreferredWidth());
+    assertEquals(heightAtOne, edit.getPreferredHeight());
+
+    edit.gfx.setScales(1.0, 1.5);
+    assertTrue(edit.getPreferredWidth() > widthAtOne);
+    assertTrue(edit.getPreferredHeight() > heightAtOne);
+  }
 }

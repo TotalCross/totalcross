@@ -926,12 +926,12 @@ protected int gap;
 		return UnitsConverter.toPixels(DP + 280);
 	}
     return (mask == null || useFillAsPreferred) ? FILL
-        : (fm.stringWidth(new String(mask)) + (uiAndroid ? 10 : (uiFlat || uiVista) ? 8 : 4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
+        : (getFontWidthForLayout(new String(mask)) + (uiAndroid ? 10 : (uiFlat || uiVista) ? 8 : 4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
   }
 
   @Override
   public int getPreferredHeight() {
-    int ret = fmH + prefH;
+    int ret = getFontHeightForLayout() + prefH;
     if (uiMaterial) {
       if(caption != null) {
     	  ret = fmH + prefH > UnitsConverter.toPixels(DP + 56) ? ret + materialCaption.getExtraHeight() : UnitsConverter.toPixels(DP + 56);
