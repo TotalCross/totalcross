@@ -164,6 +164,11 @@ post-measure multiplication. Java focused test, native compile, and deployed
 native macOS fixture passed. `AV` is recorded only as a representative string,
 not a kerning assertion.
 
+Progress 2026-08-01: `Convert.insertLineBreak` gained an effective-size
+measurement overload and Label uses it for autoSplit and explicit split. Focused
+Java wrapping assertions pass; log:
+`artifacts/logical-ui-scaling/logs/effective-wrap-test.log`.
+
 ### Milestone 2R residual: native surface lifecycle
 
 The established base transform and Retina initialization remain valid.

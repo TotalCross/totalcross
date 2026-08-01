@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>   
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -973,10 +974,16 @@ public final class Convert {
    */
   public static String insertLineBreak(int maxWidth, totalcross.ui.font.FontMetrics fm, String text) // guich@200b4_30 - guich@tc100: changed to use the new StringBuffer functions
   {
+    return insertLineBreak(maxWidth, fm, 0, text);
+  }
+
+  /** Inserts TotalCross line breaks using an optional destination effective font size. */
+  public static String insertLineBreak(int maxWidth, totalcross.ui.font.FontMetrics fm, double effectiveFontSize, String text)
+  {
     StringBuffer chars = new StringBuffer(text); // guich@tc114_76: change | to \n before applying our algorithm.
     int last = chars.length() - 1;
     for (int pos = 0; pos <= last; pos++) {
-      pos = getBreakPos(fm, chars, pos, maxWidth, true);
+      pos = getBreakPos(fm, chars, pos, maxWidth, true, effectiveFontSize);
       if (pos < 0 || pos > last) {
         break;
       }
@@ -1047,6 +1054,11 @@ public final class Convert {
    */
   @ReplacedByNativeOnDeploy
   public static int getBreakPos(FontMetrics fm, StringBuffer sb, int start, int width, boolean doWordWrap) {
+    return getBreakPos(fm, sb, start, width, doWordWrap, 0);
+  }
+
+  private static int getBreakPos(FontMetrics fm, StringBuffer sb, int start, int width, boolean doWordWrap,
+      double effectiveFontSize) {
     int oldStart = start;
     if (fm == null) {
       throw new java.lang.NullPointerException("Argument 'fm' cannot have a null value");
@@ -1071,7 +1083,7 @@ public final class Convert {
         if (c == ' ') {
           lastSpace = start;
         }
-        width -= fm.charWidth(c);
+        width -= effectiveFontSize == 0 ? fm.charWidth(c) : (int) Math.ceil(fm.stringWidthAtSizeD(String.valueOf(c), effectiveFontSize));
       }
       start--; // stop at the previous letter
       if (((n > 0 || width < 0) || (width == 0 && sb.charAt(start) != ' ')) && lastSpace >= 0) {
@@ -1082,7 +1094,8 @@ public final class Convert {
       return start + 1;
     } else {
       for (; n-- > 0 && width > 0; start++) {
-        width -= fm.charWidth(sb.charAt(start));
+        char c = sb.charAt(start);
+        width -= effectiveFontSize == 0 ? fm.charWidth(c) : (int) Math.ceil(fm.stringWidthAtSizeD(String.valueOf(c), effectiveFontSize));
       }
       if (width < 0) {
         start--;

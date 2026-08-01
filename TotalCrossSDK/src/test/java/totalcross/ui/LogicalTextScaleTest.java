@@ -65,6 +65,26 @@ class LogicalTextScaleTest {
   }
 
   @Test
+  void labelAutoSplitUsesDestinationFontMeasurement() {
+    Label label = new Label();
+    label.autoSplit = true;
+    label.setRect(0, 0, 50, 100);
+    String text = "DANFE texto longo para quebrar linhas";
+
+    label.gfx.setScales(1.0, 1.0);
+    label.setText(text);
+    String linesAtOne = label.getText();
+
+    label.gfx.setScales(2.0, 1.0);
+    label.setText(text);
+    assertEquals(linesAtOne, label.getText());
+
+    label.gfx.setScales(1.0, 1.5);
+    label.setText(text);
+    assertTrue(label.getText().split("\\n").length > linesAtOne.split("\\n").length);
+  }
+
+  @Test
   void buttonPreferredSizeUsesFontScaleButNotContentScale() {
     Button button = new Button("DANFE");
 
