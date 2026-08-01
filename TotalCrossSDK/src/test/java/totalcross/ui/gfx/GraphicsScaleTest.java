@@ -31,4 +31,16 @@ class GraphicsScaleTest {
     assertThrows(IllegalArgumentException.class, () -> graphics.setScales(0, 1));
     assertThrows(IllegalArgumentException.class, () -> graphics.setScales(1, Double.NaN));
   }
+
+  @Test
+  void logicalImagesKeepLogicalAndPhysicalDimensionsSeparate() throws Exception {
+    Image image = Image.createLogical(3, 7, 1.5);
+
+    assertEquals(3, image.getWidth());
+    assertEquals(7, image.getHeight());
+    assertEquals(5, image.getPixelWidth());
+    assertEquals(11, image.getPixelHeight());
+    assertEquals(55, image.getPixels().length);
+    assertEquals(1.5, image.getContentScale());
+  }
 }
