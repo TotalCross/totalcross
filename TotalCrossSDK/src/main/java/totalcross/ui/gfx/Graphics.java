@@ -186,8 +186,15 @@ public final class Graphics {
     if (!Double.isFinite(contentScale) || contentScale <= 0 || !Double.isFinite(fontScale) || fontScale <= 0) {
       throw new IllegalArgumentException("graphics scales must be finite and positive");
     }
+    boolean fontScaleChanged = this.fontScale != fontScale;
     this.contentScale = contentScale;
     this.fontScale = fontScale;
+    if (surface instanceof Control) {
+      if (fontScaleChanged) {
+        ((Control) surface).reposition();
+      }
+      Window.needsPaint = true;
+    }
   }
 
   @ReplacedByNativeOnDeploy

@@ -447,6 +447,13 @@ Update this section after each corrected behavioral milestone.
   Native macOS runtime passed with fractional values. Logs:
   `sdk-dist-text-assertions.log`, `deploy-text-assertions.log`, and
   `native-text-assertions.log`.
+- 2026-08-01: Made destination font-scale transitions reposition control
+  surfaces and invalidate painting. The focused Java test asserts actual
+  preferred control bounds grow after a font-scale change; full log:
+  `artifacts/logical-ui-scaling/logs/logical-text-font-invalidation-test.log`.
+  The freshly deployed native macOS fixture also passed; logs:
+  `sdk-dist-font-invalidation.log`, `deploy-font-invalidation.log`, and
+  `native-font-invalidation.log`.
 
 ## Revision Note
 

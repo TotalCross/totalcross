@@ -36,6 +36,19 @@ class LogicalTextScaleTest {
   }
 
   @Test
+  void fontScaleChangeRepositionsPreferredControl() {
+    Label label = new Label("DANFE");
+    label.setRect(0, 0, Control.PREFERRED, Control.PREFERRED);
+    int widthAtOne = label.width;
+    int heightAtOne = label.height;
+
+    label.gfx.setScales(1.0, 1.5);
+
+    assertTrue(label.width > widthAtOne);
+    assertTrue(label.height > heightAtOne);
+  }
+
+  @Test
   void buttonPreferredSizeUsesFontScaleButNotContentScale() {
     Button button = new Button("DANFE");
 
