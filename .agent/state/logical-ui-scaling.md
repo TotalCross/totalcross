@@ -123,6 +123,12 @@ destination-aware path.
 - The freshly deployed macOS fixture also passed the effective descent binding;
   logs: `effective-descent-dist.log`, `effective-descent-deploy.log`, and
   `effective-descent-native.log`.
+- `MultiEdit` now passes its destination effective font size to both wrapping
+  and cursor break-position calls; focused Java validation passed.
+- The deployed native macOS fixture passed after the MultiEdit wrapping change;
+  logs: `effective-multiedit-wrap-dist.log`,
+  `effective-multiedit-wrap-deploy.log`, and
+  `effective-multiedit-wrap-native.log`.
 
 ## Remaining Major Work
 
