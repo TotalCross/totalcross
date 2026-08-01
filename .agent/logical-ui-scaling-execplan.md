@@ -96,7 +96,7 @@ files instead of adding large implementations inline.
       migration path in focused Java layout tests.
 - [ ] Validate the root PIXEL migration fixture in the deployed native macOS
       application during the runtime milestone.
-- [ ] Complete Skia logical drawing and native macOS content-scale initialization.
+- [x] Complete Skia logical drawing and native macOS content-scale initialization.
 - [ ] Complete logical text shaping, fontScale, metrics, preferred sizes, and
       cache behavior.
 - [ ] Complete image codecs, transformations, cache ownership, and bidirectional

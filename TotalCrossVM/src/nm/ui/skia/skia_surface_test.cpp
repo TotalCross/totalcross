@@ -54,6 +54,20 @@ int main() {
         return 1;
     }
 
+    const double scales[] = {1.0, 1.5, 2.0, 3.0};
+    for (double scale : scales) {
+        Pixel scalePixels[576] = {};
+        const int scaleDestination = skia_makeBitmap(-1, scalePixels, 24, 24);
+        skia_setSurfaceScale(scaleDestination, scale);
+        skia_fillRect(scaleDestination, 2, 2, 4, 4, 0xFF778899);
+        const int inside = static_cast<int>(3 * scale);
+        if (!expectEqual(skia_getPixel(scaleDestination, inside, inside), 0xFF778899,
+                         "scaled primitive coverage")) {
+            return 1;
+        }
+        skia_deleteBitmap(scaleDestination);
+    }
+
     skia_setPixel(destination, 3, 3, 0xFF010203);
     if (!expectEqual(skia_getPixel(destination, 3, 3), 0xFF010203, "physical raw pixel")) {
         return 1;
