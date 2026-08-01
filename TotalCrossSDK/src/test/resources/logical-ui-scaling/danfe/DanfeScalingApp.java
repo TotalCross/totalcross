@@ -56,9 +56,11 @@ public class DanfeScalingApp extends MainWindow {
       double danfeAdvance = metrics.stringWidthD("DANFE 25,00");
       double accentedAdvance = metrics.stringWidthD("Comércio São Paulo");
       double kerningAdvance = metrics.stringWidthD("AV");
+      int compatibleDanfeAdvance = metrics.stringWidth("DANFE 25,00");
       if (!(metrics.getAscentD() > 0 && metrics.getDescentD() >= 0 && metrics.getLeadingD() >= 0
           && metrics.getHeightD() >= metrics.getAscentD() + metrics.getDescentD()
           && danfeAdvance > 0 && accentedAdvance > 0 && kerningAdvance > 0
+          && compatibleDanfeAdvance == (int) Math.ceil(danfeAdvance)
           && widthAtOne == widthAtDoubleContentScale && widthAtFontScale > widthAtOne
           && editWidthAtOne == editWidthAtDoubleContentScale && editWidthAtFontScale > editWidthAtOne)) {
         throw new IllegalStateException("Logical text metric assertion failed");
@@ -68,7 +70,7 @@ public class DanfeScalingApp extends MainWindow {
           + " ascentD=" + metrics.getAscentD() + " descentD=" + metrics.getDescentD()
           + " leadingD=" + metrics.getLeadingD() + " heightD=" + metrics.getHeightD()
           + " advanceD=" + danfeAdvance + " accentedAdvanceD=" + accentedAdvance
-          + " kerningAdvanceD=" + kerningAdvance
+          + " kerningAdvanceD=" + kerningAdvance + " compatibleAdvance=" + compatibleDanfeAdvance
           + " labelWidths=" + widthAtOne + "," + widthAtDoubleContentScale + "," + widthAtFontScale
           + " editWidths=" + editWidthAtOne + "," + editWidthAtDoubleContentScale + "," + editWidthAtFontScale);
       exit(0);
