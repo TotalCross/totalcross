@@ -426,6 +426,10 @@ Update this section after each corrected behavioral milestone.
   destination-scaled advances. Evidence: focused Java `LogicalTextScaleTest`
   passed after materializing the edit through its normal layout cycle; full log:
   `artifacts/logical-ui-scaling/logs/logical-text-edit-cursor-test.log`.
+- 2026-08-01: Added deployed native macOS `Edit` preferred-width evidence. The
+  fixture reports `editWidths=48,48,67` at content scales 2 and 4 then font
+  scale 1.5. Full logs: `sdk-dist-edit-scale.log`, `deploy-edit-scale.log`, and
+  `native-edit-scale.log` under `artifacts/logical-ui-scaling/logs/`.
 
 ## Revision Note
 

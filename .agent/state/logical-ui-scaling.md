@@ -84,6 +84,9 @@ Do not read later image or renderer guides yet.
 - `Edit` horizontal alignment, cursor positions, masks, password text, and
   caption-image fitting now use destination-scaled advances. The focused test
   exercises materialized text, content-scale invariance, and font-scale growth.
+- The deployed native macOS fixture now verifies the `Edit` preferred-width
+  contract alongside `Label`; it reports `editWidths=48,48,67` at content
+  scales 2 and 4 followed by font scale 1.5.
 
 These are foundations, not completion of their behavioral milestones.
 
