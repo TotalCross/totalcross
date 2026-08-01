@@ -146,6 +146,11 @@ deployed native root fixture pass, and no external text-engine blocker remains.
   Focused Java cache validation and the refreshed deployed native macOS fixture
   passed; logs: `m3-choice-dist.log`, `m3-choice-deploy.log`, and
   `m3-choice-native.log`.
+- The deployed native macOS DANFE fixture now covers Label, Button, Edit,
+  MultiEdit, Check, and Radio content-scale invariance and font-scale growth.
+  It passed with `buttonWidths=86,86,127`, `checkWidths=49,49,53`, and
+  `radioWidths=103,103,152`; logs: `m3-danfe-dist.log`,
+  `m3-danfe-deploy.log`, and `m3-danfe-native.log`.
 
 ## Remaining Major Work
 
