@@ -15,26 +15,26 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `702793faaf65b87af7819efc66760633e8267623`.
+- Last logical commit: `fd7e5d358cd3e19ef4c57e1a4a7ba5622ee0ea33`.
 
 ## Active Milestone
 
-Milestone 2: implement logical drawing in Skia.
+Milestone 3: add macOS Retina detection and logical text.
 
 ## Active Slice
 
-Complete focused native validation for the Skia base transform, then audit raw
-pixel calls so they remain physical before closing the milestone.
+Identify the actual macOS desktop window path and implement peer-aware backing
+scale detection plus the first logical text changes required by the milestone.
 
 ## Next Concrete Action
 
-Resume the CMake configuration after the depot Skia artifact is available, then
-build the smallest native target.
+Read the Milestone 3 plan section and the text design, then inspect only the
+macOS desktop and font paths they name.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 2 only.
-- `.agent/design/logical-ui-scaling-api.md`, Graphics scale sections.
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 3 only.
+- `.agent/design/logical-ui-scaling-text.md`.
 
 Do not read all design guides yet.
 
@@ -45,6 +45,8 @@ Do not read all design guides yet.
   Skia metric width paths multiply font size by `Settings.screenDensity`.
 - `./gradlew-agent test --tests totalcross.ui.LogicalLayoutUnitTest --tests
   totalcross.ui.gfx.GraphicsScaleTest`: passed (5 tests).
+- `cmake -S TotalCrossVM -B build-logical-ui -DCMAKE_BUILD_TYPE=Release -G Ninja`
+  and `ninja -C build-logical-ui`: passed.
 
 ## Deferred Validation
 

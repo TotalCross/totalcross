@@ -81,7 +81,9 @@ both limits. Audit changed files at each milestone closure.
 - [x] (2026-08-01 21:35Z) Added layout-unit configuration and inheritance,
       deprecated the encoded DP and global converter path, and established
       per-Graphics scale accessors with focused SDK tests.
-- [ ] Implement the complete logical drawing model in the Skia path.
+- [x] (2026-08-01 22:05Z) Applied a per-Graphics Skia base transform, removed
+      a scale-bypassing image fast path, preserved raw pixel coordinates, and
+      compiled the macOS native target.
 - [ ] Add macOS Retina scale detection and scale-change handling.
 - [ ] Implement logical shaping, metrics, and control preferred sizes.
 - [ ] Implement scaled images and explicit logical versus physical dimensions.
