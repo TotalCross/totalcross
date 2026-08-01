@@ -43,4 +43,17 @@ class GraphicsScaleTest {
     assertEquals(55, image.getPixels().length);
     assertEquals(1.5, image.getContentScale());
   }
+
+  @Test
+  void javaRendererDrawsScaledImagesAtNaturalLogicalSize() throws Exception {
+    Image source = Image.createLogical(2, 2, 2);
+    java.util.Arrays.fill(source.getPixels(), 0xFFFF0000);
+    Image destination = new Image(2, 2);
+
+    destination.getGraphics().drawImage(source, 0, 0);
+
+    for (int pixel : destination.getPixels()) {
+      assertEquals(0xFFFF0000, pixel);
+    }
+  }
 }
