@@ -28,7 +28,8 @@ Milestone 3R: complete logical text and FontMetrics.
 
 Extend the same effective logical font scale through the remaining ordinary text
 controls, line layout, and cached layout invalidation. `Label`, `Button`, and
-`Edit` preferred sizes are covered; editing geometry is next.
+`Edit` preferred sizes are covered. `Label` and `Button` line placement now
+uses scaled logical line height; editing geometry is next.
 
 ## Next Concrete Action
 
@@ -74,6 +75,8 @@ Do not read later image or renderer guides yet.
 - `Edit` now uses destination-scaled logical text metrics for its non-material
   preferred width and preferred height. The focused Java test covers all three
   ordinary controls against content and font scale changes.
+- `Label` pagination/vertical alignment and `Button` multiline placement use
+  the same scaled logical line height as their preferred-size calculations.
 
 These are foundations, not completion of their behavioral milestones.
 
