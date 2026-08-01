@@ -1443,7 +1443,7 @@ protected int gap;
     if (Settings.unmovableSIP && (force || !Window.isSipShown())) { // guich@tc126_21
       Window ww = getParentWindow();
       if (ww != null) {
-        ww.shiftScreen(this, this.height - (fmH + prefH));
+        ww.shiftScreen(this, this.height - (getFontHeightForLayout() + prefH));
       }
     }
   }

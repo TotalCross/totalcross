@@ -101,7 +101,7 @@ approximately 600 lines.
 - [x] Finish layout behavior: correct nonzero PIXEL client origins and run native
       root-PIXEL migration proof.
 - [x] Establish native macOS high-DPI backing and core Skia base transforms.
-- [ ] Complete SkFont-only logical text and TotalCross multiline behavior.
+- [x] Complete SkFont-only logical text and TotalCross multiline behavior.
 - [ ] Complete image codecs, transforms, cache ownership, and bidirectional sync.
 - [ ] Complete Java renderer semantics.
 - [ ] Complete supported non-Skia native semantics.

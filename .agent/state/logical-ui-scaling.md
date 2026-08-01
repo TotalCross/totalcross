@@ -38,19 +38,16 @@ decision and must be removed from the living plan.
 
 ## Active Milestone
 
-Milestone 3R: SkFont-only logical text.
+Milestone 4R: Image behavior and synchronization.
 
 ## Active Slice
 
-Complete the remaining M3R text-control matrix, cache behavior, and native
-runtime assertions under the SkFont-only scope.
+Audit image ownership, codec paths, transforms, and Java/native synchronization.
 
 ## Next Concrete Actions
 
-1. Audit remaining text controls and effective-size baseline/cursor/selection
-   uses.
-2. Complete the text-bearing DANFE M3R assertions without claiming unsupported
-   typography behavior.
+1. Read the M4R image design and validation gates.
+2. Audit Image constructors, loading, dimensions, transforms, and ownership.
 
 ## Files to Read Now
 
@@ -158,10 +155,13 @@ deployed native root fixture pass, and no external text-engine blocker remains.
   horizontal cursor scrolling now use destination effective metrics. Focused
   Java validation and the deployed native macOS fixture passed; logs:
   `m3-edit-dist.log`, `m3-edit-deploy.log`, and `m3-edit-native.log`.
+- The remaining direct uses in the primary control audit are either local
+  effective-height variables or compatibility/style keys. MultiEdit caption
+  spacing, Check/Radio autosplit thresholds, and Edit keyboard shifting now
+  use effective destination height; focused Java validation passed.
 
 ## Remaining Major Work
 
-- complete M3R under the SkFont-only contract;
 - complete image codecs, transformations, and bidirectional native sync;
 - complete Java renderer semantics;
 - complete supported non-Skia native semantics;
@@ -169,6 +169,15 @@ deployed native root fixture pass, and no external text-engine blocker remains.
 - capture deterministic target-window screenshots;
 - run final Android validation;
 - complete audits, docs, evidence, and final report.
+
+## Milestone 3R Completion
+
+M3R is complete under the approved SkFont-only contract. Effective-size SkFont
+measurement and drawing use `Font.size * Graphics.fontScale`, TotalCross retains
+wrapping, text-control caches exclude contentScale, and the deployed macOS DANFE
+matrix passes for Label, Button, Edit, MultiEdit, Check, and Radio. The final
+native run is recorded in `m3-final-dist.log`, `m3-final-deploy.log`, and
+`m3-final-native.log`.
 
 ## Platform Policy
 
