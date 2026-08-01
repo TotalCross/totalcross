@@ -31,6 +31,7 @@ void flushSkia();
 int skia_makeTypeface(char* name, void *data, int32 size);
 int32 skia_getTypefaceIndex(char* name);
 int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, int32 fontSize);
+void skia_fontMetrics(int32 typefaceIndex, int32 fontSize, double* ascent, double* descent, double* leading);
 
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h);
 void skia_deleteBitmap(int32 id);

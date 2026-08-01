@@ -269,6 +269,16 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, i
     return skFont.measureText(text,charCount,SkTextEncoding::kUTF16);
 }
 
+void skia_fontMetrics(int32 typefaceIndex, int32 fontSize, double* ascent, double* descent, double* leading)
+{
+    SkFont metricsFont(skia_getTypeface(typefaceIndex), fontSize);
+    SkFontMetrics metrics;
+    metricsFont.getMetrics(&metrics);
+    *ascent = -metrics.fAscent;
+    *descent = metrics.fDescent;
+    *leading = metrics.fLeading;
+}
+
 
 
 void skia_shiftScreen(float w, float h, float glShiftY) {
