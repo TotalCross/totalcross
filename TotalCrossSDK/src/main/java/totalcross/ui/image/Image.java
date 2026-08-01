@@ -1458,8 +1458,11 @@ public class Image extends GfxSurface {
 
   /** Internal use only. */
   private void copyFrom(Image img) {
-    this.width = img.getWidth();
-    this.height = img.getHeight();
+    this.width = img.width;
+    this.height = img.height;
+    this.logicalWidth = img.logicalWidth;
+    this.logicalHeight = img.logicalHeight;
+    this.contentScale = img.contentScale;
     this.pixels = img.pixels;
     this.frameCount = img.frameCount;
     this.comment = img.comment;

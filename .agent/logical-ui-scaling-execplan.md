@@ -88,7 +88,8 @@ both limits. Audit changed files at each milestone closure.
       removed Skia text and metric dependence on global screen density.
 - [x] (2026-08-01 22:30Z) Added double-precision FontMetrics accessors while
       preserving integer logical compatibility fields.
-- [ ] Implement scaled images and explicit logical versus physical dimensions.
+- [x] (2026-08-01 22:50Z) Added immutable logical-image backing scales,
+      physical dimension accessors, and Skia upload refresh behavior.
 - [ ] Make the Java renderer logically equivalent to Skia.
 - [ ] Make the non-Skia native renderer logically equivalent.
 - [ ] Run the full DANFE, macOS, Android, synchronization, and privacy validation.
