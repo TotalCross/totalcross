@@ -120,6 +120,9 @@ destination-aware path.
   changes, and does not expose a global density setting.
 - `Edit` cursor descent now comes from effective-size SkFont metrics rather
   than scaling a scale-one value; native compile and focused Java test pass.
+- The freshly deployed macOS fixture also passed the effective descent binding;
+  logs: `effective-descent-dist.log`, `effective-descent-deploy.log`, and
+  `effective-descent-native.log`.
 
 ## Remaining Major Work
 

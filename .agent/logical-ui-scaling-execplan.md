@@ -181,6 +181,8 @@ Progress 2026-08-01: added effective-size SkFont descent for Edit cursor
 geometry, removing the final post-measure scale multiplication found in the
 text-control audit. Native compile and focused Java test passed; logs:
 `effective-descent-build.log` and `effective-descent-java-test.log`.
+The deployed native macOS fixture passed; logs: `effective-descent-dist.log`,
+`effective-descent-deploy.log`, and `effective-descent-native.log`.
 
 ### Milestone 2R residual: native surface lifecycle
 
