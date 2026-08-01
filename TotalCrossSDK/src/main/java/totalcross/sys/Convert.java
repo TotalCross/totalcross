@@ -1057,7 +1057,7 @@ public final class Convert {
     return getBreakPos(fm, sb, start, width, doWordWrap, 0);
   }
 
-  private static int getBreakPos(FontMetrics fm, StringBuffer sb, int start, int width, boolean doWordWrap,
+  public static int getBreakPos(FontMetrics fm, StringBuffer sb, int start, int width, boolean doWordWrap,
       double effectiveFontSize) {
     int oldStart = start;
     if (fm == null) {
