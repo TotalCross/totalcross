@@ -169,3 +169,16 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   2x2 physical pixels.
 - Limitation: this proves the Java-side ownership boundary only; native-to-Java
   readback still requires a native runtime fixture.
+
+## Milestone 8: control density audit slice
+
+- Timestamp: 2026-08-01T19:32:06Z
+- Commit: `3c119d17b`
+- Command: `TotalCrossSDK/gradlew-agent test --tests
+  totalcross.ui.LogicalLayoutUnitTest --tests totalcross.ui.gfx.GraphicsScaleTest
+  --tests totalcross.ui.image.DanfeScalingTest`
+- Status: passed (6 focused tests)
+- Result: removed global-density layout and rendering calculations from Button,
+  TopMenu, Edit, ListContainer, Toast, and SideMenuContainer. Their values are
+  now logical values; platform initialization continues to mirror the deprecated
+  compatibility setting without being used by this slice.

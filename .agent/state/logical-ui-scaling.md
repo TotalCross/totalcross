@@ -15,7 +15,7 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `21d6958a3a250dd435655319b7cd24071d7af1f3`.
+- Last logical commit: `3c119d17b`.
 
 ## Active Milestone
 
@@ -23,18 +23,13 @@ Milestone 7: run end-to-end DANFE and platform validation.
 
 ## Active Slice
 
-Remove the remaining control-level `Settings.screenDensity` layout and rendering
-dependencies found by the final audit, then complete the documentation and
-validation closure. The headless fixture covers logical/physical image
-dimensions, PNG dimensions, scaled barcode structure, and Java-side raw-pixel
-preservation; the deployed fixture starts at simulated macOS scales 1 and 2.
+Continue the scoped final audit for remaining control-level global-density
+dependencies, then complete the documentation and validation closure.
 
 ## Next Concrete Action
 
-Inspect only the control-level hits from the scoped density audit and replace
-their logical layout calculations with scale-independent values. Preserve
-platform initialization and Launcher compatibility mirroring for a later,
-explicit compatibility decision.
+Inspect the remaining control-level hits from the scoped density audit and
+replace their logical layout calculations with scale-independent values.
 
 ## Files to Read Now
 
@@ -73,6 +68,10 @@ Do not read all design guides yet.
   odd-row raw-pixel preservation assertion and logical-to-physical fill check.
 - `ninja -C build-logical-ui`: passed (no work required after the Java-only
   synchronization fixture update).
+- `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.LogicalLayoutUnitTest
+  --tests totalcross.ui.gfx.GraphicsScaleTest --tests
+  totalcross.ui.image.DanfeScalingTest`: passed after removing six initial
+  control-level density dependency groups (6 focused tests).
 
 ## Deferred Validation
 
@@ -90,6 +89,8 @@ as Milestone 7 gates.
   rendering dependencies. Platform initialization reads in `Launcher` and
   native settings remain compatibility mirrors and are intentionally out of
   this focused control slice.
+- `Button`, `TopMenu`, `Edit`, `ListContainer`, `Toast`, and
+  `SideMenuContainer` were removed from the audit set in `3c119d17b`.
 
 ## Active Decisions
 
