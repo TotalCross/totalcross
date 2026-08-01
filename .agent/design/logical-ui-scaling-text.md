@@ -4,208 +4,214 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Logical text and FontMetrics design
+# Logical text and FontMetrics design — SkFont-only scope
 
-Read this file before Milestone 3. It defines shaping, metrics, compatibility,
-control sizing, renderer equivalence, and cache ownership.
+Read this file before Milestone 3R.
+
+## Scope decision
+
+Logical text scaling uses only text facilities already present in the pinned
+Skia core build:
+
+- `SkFont::getMetrics`;
+- `SkFont::measureText`;
+- `SkTextBlob::MakeFromText`;
+- `SkCanvas` drawing and its base transform.
+
+This task must not add, build, package, or require:
+
+- SkShaper;
+- HarfBuzz;
+- ICU;
+- SkParagraph;
+- another text-layout engine.
+
+The task does not transfer line breaking or multiline layout responsibility out
+of TotalCross.
 
 ## Font model
 
-`Font` is a scale-independent logical descriptor. Its size is a logical text size.
-It does not store screen density or image scale. The same `Font` can be drawn into
-a scale-1 image and a scale-2 window simultaneously.
+`Font` is a scale-independent descriptor. `Font.size` is a logical size.
 
-The effective logical size is:
+For one destination:
+
+    effectiveLogicalFontSize = Font.size * Graphics.fontScale
+
+Physical rasterization is produced by:
+
+    effectiveLogicalFontSize * Graphics.contentScale
+
+through the canvas base transform. Do not multiply the SkFont size or measured
+advance by `contentScale`.
+
+## Measurement order
+
+The destination-aware path must create or configure `SkFont` at:
 
     Font.size * Graphics.fontScale
 
-The physical raster size is:
+before calling `measureText` or `getMetrics`.
 
-    Font.size * Graphics.fontScale * Graphics.contentScale
+Do not implement destination measurement as:
 
-Use `double` in Java APIs and calculations. Skia may require `SkScalar` internally,
-but do not expose new TotalCross `float` APIs or round before the renderer boundary.
+    measureText(Font.size) * fontScale
 
-## Shaping and logical metrics
+even when the result appears approximately linear. Measurement and drawing must
+receive the same effective size.
 
-For general text, width must come from shaping rather than summing independent
-character widths. Shaping resolves glyph selection, ligatures, kerning, script,
-direction, language, clusters, and fallback fonts.
+## Public FontMetrics compatibility
 
-With Skia, create fonts at effective logical size and shape with logical width
-constraints. Keep linear or fractional metrics so device hinting does not alter
-layout. Store glyph positions and run advances in logical coordinates. Apply
-`contentScale` through the canvas base transform at draw time.
+The existing `FontMetrics` object may remain associated with `Font` and represent
+scale-one logical metrics.
 
-For multiline text, use the pinned Skia paragraph or shaping facilities already
-available in the repository. Do not add a new external text engine without a
-separate decision.
+Public compatibility fields and methods remain source and binary compatible:
 
-The layout width is shaped advance, not painted bounds. Painted or ink bounds are
-used for clipping, damage, and diagnostics, not ordinary preferred width.
+    ascent
+    descent
+    height
+    charWidth
+    stringWidth
+    sbWidth
 
-Vertical line metrics use the most demanding run in the line:
+Integer extents use conservative upward rounding where positive size is being
+reported, so preferred sizes do not clip.
 
-    ascent = positive distance above baseline
-    descent = positive distance below baseline
-    leading = recommended extra line spacing
-    lineHeight = ascent + descent + leading
+Double accessors expose the renderer's available logical precision. A renderer
+that cannot supply fractional metrics may return an integer-valued double, but
+this limitation must be labeled and tested.
 
-The text `"ABC"` and `"gjpq"` normally produce the same line height for the same
-font runs even though their painted bounds differ.
+## Destination-aware internal metrics
 
-## FontMetrics compatibility
+Controls and drawing code require an internal path that accepts both the Font and
+the destination Graphics, or equivalently the effective logical size.
 
-Keep current integer fields and methods where binary and source compatibility
-requires them. They return logical values using a documented conservative
-rounding policy. Add `double` accessors, for example:
+It returns at least:
 
-    double getAscentD();
-    double getDescentD();
-    double getLeadingD();
-    double getHeightD();
-    double charWidthD(char value);
-    double stringWidthD(String value);
+    ascent
+    descent
+    leading
+    lineHeight
+    string advance
+    character advance where required by existing controls
 
-Names may follow repository conventions, but all fractional public additions use
-`double`.
+On Skia, all values come from an SkFont configured with the destination's
+effective logical size.
 
-A safe compatibility rule is to round positive extents upward so preferred sizes
-do not clip. Preserve signed semantics where existing fields require them. Add
-tests that freeze the chosen rule.
+## Measurement and drawing equivalence
 
-`font.fm` may remain as the logical metric object associated with a `Font`.
-It must not represent one physical surface. Any device-pixel helper belongs to
-`Graphics` or an internal renderer context.
+For this task, equivalence means:
+
+- same typeface;
+- same effective logical SkFont size;
+- same UTF-16 code-unit input;
+- same SkFont text-to-glyph behavior;
+- same rounding policy at the public integer boundary.
+
+Measurement uses `SkFont::measureText`. Drawing uses
+`SkTextBlob::MakeFromText` or the equivalent existing SkFont path.
+
+The task does not guarantee advanced shaping, bidi, fallback, ligatures, or
+cluster behavior beyond what the current core SkFont path already provides.
+
+## TotalCross line breaking and multiline layout
+
+TotalCross remains responsible for:
+
+- explicit newline handling;
+- automatic line breaking;
+- multiline line construction;
+- alignment and justification;
+- line spacing;
+- ellipsis where currently supported;
+- cursor and selection placement;
+- preferred width and height.
+
+The line-breaking algorithm must receive a destination-aware measurement
+function. It must not rely only on a scale-one `FontMetrics` when
+`Graphics.fontScale != 1`.
+
+Do not replace `Convert.insertLineBreak` with SkParagraph. Either adapt it or add
+an internal overload/measurement adapter while preserving its TotalCross
+behavior.
 
 ## Control preferred sizes
 
-`fm.height`, `fm.stringWidth`, and `fmH` become logical. Code that computes
-preferred size may continue to use them directly:
+A control's preferred text dimensions use destination-aware metrics:
 
-    preferredWidth = fm.stringWidth(text) + logicalPadding;
-    preferredHeight = fm.height + logicalPadding;
+    preferredWidth = ceil(measureAtEffectiveSize(text)) + logicalPadding
+    preferredHeight = ceil(lineHeightAtEffectiveSize) + logicalPadding
 
-Do not mix logical metrics with physical control bounds. In the new complete
-logical drawing model, `Control.width`, `Control.height`, and coordinates exposed
-to `onPaint` should be logical, while the backend owns physical bounds. If an
-incremental bridge temporarily stores physical bounds, introduce explicit
-logical accessors and device conversion helpers; do not silently mix units.
+Changing only `contentScale` must not change preferred size, wrapping, cursor
+positions, or line count.
 
-Audit every use of:
+Changing `fontScale` must update metrics, preferred bounds, wrapping where
+applicable, cursor positions, selection geometry, and cached line layout.
 
-    fmH
-    fm.height
-    fm.ascent
-    fm.descent
-    fm.stringWidth
-    fm.charWidth
+## Baseline and damage
 
-Classify each use as layout, drawing, clipping, cursor placement, selection,
-scrolling, cache sizing, or raw pixel allocation. Migrate according to unit.
+Use actual effective-size ascent, descent, and leading.
 
-## Measurement and drawing reuse
+Draw at the logical baseline under the canvas transform. Compute logical damage
+from the same effective-size metrics and advance, then convert damage edges to
+physical bounds once.
 
-Measurement and drawing must use the same shaped result or equivalent cache entry.
-Do not call a simplistic width function for layout and a separate shaper for
-drawing.
+Do not approximate baseline or dirty height from `Font.size`.
 
-An internal text layout object may contain:
+## Caches
 
-    logical advance
-    ascent, descent, leading, line height
-    line boundaries
-    glyph IDs and logical positions
-    font runs and fallback typefaces
-    clusters for hit testing
-    logical ink bounds
-    optional SkTextBlob or paragraph object
+Logical text cache keys include values that affect the current simple text path:
 
-The public API need not expose this object in the minimal issue fix, but internal
-reuse must prevent measurement/drawing drift.
-
-## Cache separation
-
-Logical layout cache keys include values that change shaping:
-
-    typeface and fallback set
-    logical font size
+    typeface
+    Font.size
     fontScale
     text
-    language, script, direction
-    OpenType features
-    letter spacing
-    logical width constraint
+    width constraint
+    relevant TotalCross layout options
 
 They do not include `contentScale`.
 
-Raster and glyph-atlas cache keys include values that change device pixels:
-
-    typeface and glyph ID
-    effective physical size
-    contentScale
-    hinting and subpixel mode
-    backend and pixel format
-
-A content-scale change invalidates raster caches, not logical shaping. A font-scale
-change invalidates both logical metrics and raster output.
-
-## Skia path
-
-Use `SkFont` at effective logical size for metrics and shaping. Enable linear
-metrics and subpixel positions where supported. Do not multiply the font size by
-screen density before shaping.
-
-When drawing a stored logical layout, draw it under the surface base transform.
-Avoid an additional text-only scale.
-
-Use actual font metrics for baseline and damage; do not approximate baseline as
-`y + fontSize` or dirty height as `fontSize`.
+Raster or glyph caches include effective physical size and renderer-specific
+state. A content-scale change invalidates physical raster state but not
+TotalCross logical wrapping. A font-scale change invalidates both logical text
+layout and physical raster state.
 
 ## Java renderer
 
-The Java path uses the same logical size and width constraints. Java font APIs may
-produce slightly different fractional values from Skia. Equivalence requires:
+The Java lane follows the same order:
 
-- equal integer compatibility metrics where the approved rounding permits;
-- equal component preferred sizes;
-- equal line count and wrapping points for the test fonts and fixtures;
-- equal baseline ordering and containment;
-- double metrics within a documented tolerance;
-- no dependency on display scale for default-image layout.
+1. create or derive the Java font at `Font.size * fontScale`;
+2. measure with the rendering context used for drawing;
+3. keep results in logical units;
+4. let the Java backing transform apply contentScale.
 
-Do not require identical antialiasing pixels across engines.
+Where the Java implementation cannot return fractional values, document the
+rounding boundary and compare semantic results rather than requiring identical
+fractions to Skia.
 
-## Non-Skia native path
+## Non-Skia native renderer
 
-The legacy native rasterizer may quantize physical sizes. Preserve logical metrics
-as the API source of truth and include resolved physical size in raster cache
-keys. If the backend cannot support fractional raster size, document and test the
-rounding at the final physical boundary.
-
-Do not let a bitmap font cache keyed only by `Font` reuse scale-1 glyphs at scale
-2 or vice versa.
+The legacy renderer may quantize the effective logical or physical font size.
+Apply fontScale before selecting or resizing the font. Keep the rounding at the
+final backend boundary and test the documented result.
 
 ## Required tests
 
 Cover:
 
-- plain, bold, and italic styles;
-- digits and punctuation used by DANFE;
-- accented Portuguese text;
+- plain, bold, and italic styles already supported;
+- digits, punctuation, and accented Portuguese used by DANFE;
 - ascenders and descenders;
-- kerning or ligature examples;
-- fallback fonts;
 - empty string and whitespace;
-- single-line preferred sizes;
-- multiline wrapping and ellipsis where supported;
-- baseline alignment between adjacent controls;
-- logical metrics across scales `1`, `1.5`, `2`, and `3`;
-- fontScale changes;
-- simultaneous drawing of one `Font` on surfaces with different scales;
-- cache invalidation on fontScale and contentScale changes;
-- equivalence between measurement and painted placement.
+- preferred sizes for Label, Button, Edit, and MultiEdit;
+- TotalCross explicit and automatic multiline layout;
+- wrapping at fontScale 1 and 1.5;
+- content scales 1, 1.5, 2, and 3;
+- simultaneous destinations with different scales;
+- cursor, selection, alignment, and baseline;
+- cache invalidation on fontScale;
+- physical raster invalidation on contentScale;
+- equality between the effective-size measurement used for layout and the one
+  used for drawing.
 
-For the DANFE, also assert approved minimum and maximum glyph-height and advance
-ranges. Containment alone is insufficient because an implementation could
-incorrectly shrink all text.
+Do not add acceptance tests that require SkShaper, HarfBuzz, ICU, SkParagraph,
+bidi, complex-script shaping, engine-level fallback, or guaranteed ligatures.
