@@ -90,7 +90,8 @@ both limits. Audit changed files at each milestone closure.
       preserving integer logical compatibility fields.
 - [x] (2026-08-01 22:50Z) Added immutable logical-image backing scales,
       physical dimension accessors, and Skia upload refresh behavior.
-- [ ] Make the Java renderer logically equivalent to Skia.
+- [x] (2026-08-01 23:00Z) Made Java natural image drawing reduce scaled backing
+      buffers to logical size and covered it with the Graphics scale fixture.
 - [ ] Make the non-Skia native renderer logically equivalent.
 - [ ] Run the full DANFE, macOS, Android, synchronization, and privacy validation.
 - [ ] Complete deprecations, Javadocs, audits, evidence, and editorial handoff.
