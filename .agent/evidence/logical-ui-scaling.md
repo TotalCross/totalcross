@@ -192,3 +192,13 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Status: passed (35 seconds)
 - Result: final SDK packaging and deployment completed after the control density
   audit. Agent summary: `TotalCrossSDK/agent-logs/20260801-163521-dist-agent.log`.
+
+## Milestone 8: final static audit
+
+- Timestamp: 2026-08-01T19:36:00Z
+- Commands: scoped `rg` audits for `Settings.screenDensity` and DP comparisons;
+  size audit against the recorded base commit.
+- Status: passed
+- Result: only the two deprecated compatibility assignments in `Launcher` retain
+  `Settings.screenDensity`; no control code reads it. No old DP-marker comparison
+  was found. All added files are below 20 KiB and approximately 600 lines.

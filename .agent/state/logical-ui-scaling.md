@@ -15,7 +15,7 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `3c119d17b`.
+- Last logical commit: `8f5f60089`.
 
 ## Active Milestone
 
@@ -23,13 +23,14 @@ Milestone 8: finalize documentation and handoff.
 
 ## Active Slice
 
-Continue the scoped final audit for remaining control-level global-density
-dependencies, then complete the documentation and validation closure.
+Complete the final acceptance audit. The source audit has no remaining
+control-level global-density reads or old DP-marker comparisons.
 
 ## Next Concrete Action
 
-Inspect the remaining control-level hits from the scoped density audit and
-replace their logical layout calculations with scale-independent values.
+Attempt the remaining safe macOS window capture only through a process-targeted
+path; preserve the current external blocker if the installed integration cannot
+target the Java process.
 
 ## Files to Read Now
 
@@ -75,6 +76,9 @@ Do not read all design guides yet.
 - `TotalCrossSDK/gradlew-agent dist -x test --warning-mode=none --console=plain`:
   passed after the final density audit slice (35 seconds; agent log
   `TotalCrossSDK/agent-logs/20260801-163521-dist-agent.log`).
+- Final static audits: no `Settings.screenDensity` reads remain outside the two
+  deprecated compatibility assignments in `Launcher`; no old DP-marker
+  comparisons were found; every added file is below 20 KiB and 600 lines.
 
 ## Deferred Validation
 
@@ -94,6 +98,8 @@ as Milestone 7 gates.
   this focused control slice.
 - `Button`, `TopMenu`, `Edit`, `ListContainer`, `Toast`, and
   `SideMenuContainer` were removed from the audit set in `3c119d17b`.
+- The final source scan leaves only `Launcher` assignments to the deprecated
+  compatibility mirror; it is not a rendering or layout read.
 
 ## Active Decisions
 
