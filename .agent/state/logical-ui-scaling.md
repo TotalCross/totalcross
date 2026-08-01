@@ -93,6 +93,9 @@ Do not read later image or renderer guides yet.
 - The deployed fixture rejects invalid vertical metrics, DANFE, accented, or
   typographic-pair advances, and control scale invariants. It passed with
   real fractional metrics and nonzero accents/pair advances.
+- A `Graphics.fontScale` transition now repositions control surfaces using their
+  recorded layout expressions and requests repaint, so preferred bounds are not
+  left at the previous font scale. Focused Java bounds assertions pass.
 
 These are foundations, not completion of their behavioral milestones.
 
