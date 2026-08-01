@@ -177,6 +177,11 @@ destination-owned surface lifecycle API. It is used by the runtime, Image, and
 test fixtures; documentation freezes its invalidation behavior and explicitly
 rejects global-density semantics.
 
+Progress 2026-08-01: added effective-size SkFont descent for Edit cursor
+geometry, removing the final post-measure scale multiplication found in the
+text-control audit. Native compile and focused Java test passed; logs:
+`effective-descent-build.log` and `effective-descent-java-test.log`.
+
 ### Milestone 2R residual: native surface lifecycle
 
 The established base transform and Retina initialization remain valid.

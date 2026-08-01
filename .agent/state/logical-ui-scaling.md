@@ -118,6 +118,8 @@ destination-aware path.
   native runtime initialization, Image surfaces, and fixtures. It preserves
   logical layout for content-scale changes, repositions controls for font-scale
   changes, and does not expose a global density setting.
+- `Edit` cursor descent now comes from effective-size SkFont metrics rather
+  than scaling a scale-one value; native compile and focused Java test pass.
 
 ## Remaining Major Work
 
