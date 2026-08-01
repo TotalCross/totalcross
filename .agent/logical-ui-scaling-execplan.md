@@ -442,6 +442,11 @@ Update this section after each corrected behavioral milestone.
   preferred extents must not clip. Native compile and deployed macOS fixture
   passed; logs: `native-font-width-rounding-build.log`,
   `deploy-font-width-rounding.log`, and `native-font-width-rounding.log`.
+- 2026-08-01: Added machine-checked deployed text metrics for DANFE, accented
+  Portuguese text, and `AV`, plus vertical metric and control-scale invariants.
+  Native macOS runtime passed with fractional values. Logs:
+  `sdk-dist-text-assertions.log`, `deploy-text-assertions.log`, and
+  `native-text-assertions.log`.
 
 ## Revision Note
 
