@@ -19,7 +19,7 @@ Rewrite this file instead of appending. It is the first read when resuming.
 
 ## Active Milestone
 
-Milestone 7: run end-to-end DANFE and platform validation.
+Milestone 8: finalize documentation and handoff.
 
 ## Active Slice
 
