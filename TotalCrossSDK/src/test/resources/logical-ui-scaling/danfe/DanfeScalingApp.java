@@ -5,6 +5,7 @@
 package danfe.fixture;
 
 import totalcross.ui.ImageControl;
+import totalcross.ui.Label;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
@@ -33,11 +34,21 @@ public class DanfeScalingApp extends MainWindow {
       int physicalWidth = (int) Math.round(Settings.screenWidth * contentScale);
       int physicalHeight = (int) Math.round(Settings.screenHeight * contentScale);
       FontMetrics metrics = getFont().fm;
+      Label metricLabel = new Label("DANFE 25,00");
+      add(metricLabel, 0, 0, PREFERRED, PREFERRED);
+      Graphics labelGraphics = metricLabel.getGraphics();
+      labelGraphics.setScales(contentScale, 1.0);
+      int widthAtOne = metricLabel.getPreferredWidth();
+      labelGraphics.setScales(contentScale * 2.0, 1.0);
+      int widthAtDoubleContentScale = metricLabel.getPreferredWidth();
+      labelGraphics.setScales(contentScale, 1.5);
+      int widthAtFontScale = metricLabel.getPreferredWidth();
       System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
           + " physical=" + physicalWidth + "x" + physicalHeight + " contentScale=" + contentScale
           + " ascentD=" + metrics.getAscentD() + " descentD=" + metrics.getDescentD()
           + " leadingD=" + metrics.getLeadingD() + " heightD=" + metrics.getHeightD()
-          + " advanceD=" + metrics.stringWidthD("DANFE 25,00"));
+          + " advanceD=" + metrics.stringWidthD("DANFE 25,00")
+          + " labelWidths=" + widthAtOne + "," + widthAtDoubleContentScale + "," + widthAtFontScale);
       exit(0);
     }
   }

@@ -15,7 +15,7 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Reviewed branch:
   `feat/logical-ui-scaling`
 - Reviewed head:
-  `510f30540`
+  `f820d4540`
 - Worktree:
   `/Users/flsobral/repos/totalcross-logical-ui`
 - History policy: preserve existing commits; correct with new commits.
@@ -26,13 +26,13 @@ Milestone 3R: complete logical text and FontMetrics.
 
 ## Active Slice
 
-Validate per-destination `fontScale` in the deployed fixture, then connect the
-logical metrics used by preferred-size layout to the same effective scale.
+Extend the same effective logical font scale through the remaining ordinary text
+controls, line layout, and cached layout invalidation.
 
 ## Next Concrete Action
 
-Run the native fontScale fixture and inspect preferred-size consumers before
-making fontScale invalidate their logical metrics.
+Audit the next ordinary text control and keep its preferred measurements and
+painting aligned with the `Graphics.fontScale` contract.
 
 ## Files to Read Now
 
@@ -62,12 +62,18 @@ Do not read later image or renderer guides yet.
   `FontMetrics` deployed-method bindings.
 - Native Skia text drawing and damage use the destination Graphics.fontScale;
   the base canvas contentScale remains the sole physical scale.
+- `Control` exposes logical font measurement helpers and `Label` uses them for
+  preferred size and line widths. Its cached widths are recomputed when the
+  destination font scale changes. Focused Java tests pass, and the deployed
+  native macOS fixture reports equal widths at content scales 2 and 4 with a
+  larger width at font scale 1.5.
 
 These are foundations, not completion of their behavioral milestones.
 
 ## Incomplete or Unproven
 
-- fontScale and true double metrics are incomplete;
+- fontScale coverage beyond `Label` and true double metrics in all renderers
+  are incomplete;
 - Java renderer coverage is partial;
 - native-to-Java image readback is unproven;
 - non-Skia native equivalence is unproven;
@@ -97,5 +103,4 @@ workflow. It belongs to Milestone 7R, not the active layout slice.
 ## Resume Command
 
     cd /Users/flsobral/repos/totalcross-logical-ui
-    cd /Users/flsobral/repos/totalcross-logical-ui
-    rg -n "fontScale|double.*Width|FontMetrics" TotalCrossSDK/src/main/java
+    rg -n "getPreferred(Width|Height)|fm\.stringWidth|fmH" TotalCrossSDK/src/main/java/totalcross/ui
