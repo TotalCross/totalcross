@@ -425,3 +425,14 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `effective-multiline-consumers-deploy.log`, and
   `effective-multiline-consumers-native.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 3R: Check and Radio scale caches
+
+- Timestamp: 2026-08-01T23:20:00Z
+- Command: focused `TotalCrossSDK/gradlew-agent test --tests
+  totalcross.ui.LogicalTextScaleTest`.
+- Renderer/platform: Java test lane.
+- Status: passed.
+- Result: Check cached line widths stay invariant across contentScale and refresh
+  at fontScale 1.5; Radio preferred geometry measures at the destination
+  effective size. Deployed native validation is pending.
