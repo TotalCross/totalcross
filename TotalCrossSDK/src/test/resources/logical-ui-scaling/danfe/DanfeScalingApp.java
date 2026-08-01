@@ -8,6 +8,7 @@ import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
+import totalcross.ui.font.FontMetrics;
 import totalcross.ui.image.Image;
 import totalcross.sys.Settings;
 
@@ -31,8 +32,11 @@ public class DanfeScalingApp extends MainWindow {
       double contentScale = screen.getContentScale();
       int physicalWidth = (int) Math.round(Settings.screenWidth * contentScale);
       int physicalHeight = (int) Math.round(Settings.screenHeight * contentScale);
+      FontMetrics metrics = getFont().fm;
       System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
-          + " physical=" + physicalWidth + "x" + physicalHeight + " contentScale=" + contentScale);
+          + " physical=" + physicalWidth + "x" + physicalHeight + " contentScale=" + contentScale
+          + " ascentD=" + metrics.getAscentD() + " descentD=" + metrics.getDescentD()
+          + " leadingD=" + metrics.getLeadingD() + " heightD=" + metrics.getHeightD());
       exit(0);
     }
   }

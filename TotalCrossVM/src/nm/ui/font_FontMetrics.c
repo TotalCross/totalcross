@@ -13,23 +13,21 @@
 TC_API void tufFM_fontMetricsCreate(NMParams p) // totalcross/ui/font/FontMetrics native void fontMetricsCreate();
 {
    TCObject fm = p->obj[0],font = FontMetrics_font(fm);
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   double ascent, descent, leading;
+   skia_fontMetrics(Font_skiaIndex(font), Font_size(font), &ascent, &descent, &leading);
+   FontMetrics_ascentD(fm) = ascent;
+   FontMetrics_descentD(fm) = descent;
+   FontMetrics_leadingD(fm) = leading;
+   FontMetrics_heightD(fm) = ascent + descent + leading;
+   FontMetrics_ascent(fm) = (int32)ceil(ascent);
+   FontMetrics_descent(fm) = (int32)ceil(descent + leading);
+#else
    UserFont uf = loadUserFontFromFontObj(p->currentContext, font, ' ');
    if (uf != null)
    {
       FontMetrics_ascent(fm)  = uf->fontP.ascent;
       FontMetrics_descent(fm) = uf->fontP.descent;
-   }
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
-   else
-   {
-      double ascent, descent, leading;
-      skia_fontMetrics(Font_skiaIndex(font), Font_size(font), &ascent, &descent, &leading);
-      FontMetrics_ascentD(fm) = ascent;
-      FontMetrics_descentD(fm) = descent;
-      FontMetrics_leadingD(fm) = leading;
-      FontMetrics_heightD(fm) = ascent + descent + leading;
-      FontMetrics_ascent(fm) = (int32)ceil(ascent);
-      FontMetrics_descent(fm) = (int32)ceil(descent + leading);
    }
 #endif
 }
