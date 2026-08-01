@@ -19,22 +19,22 @@ Rewrite this file instead of appending. It is the first read when resuming.
 
 ## Active Milestone
 
-Milestone 1: introduce the logical API and layout contract.
+Milestone 2: implement logical drawing in Skia.
 
 ## Active Slice
 
-Read the Milestone 1 API design and make the smallest coherent logical-layout
-contract change with focused tests.
+Read the Milestone 2 API design continuation and the Skia-specific source paths;
+implement one coherent logical-to-physical transform before other renderers.
 
 ## Next Concrete Action
 
-Read `.agent/design/logical-ui-scaling-api.md` in full, then inspect only its
-named source files and existing test layout.
+Read the Milestone 2 section of the ExecPlan and inspect its explicitly named
+Skia files.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 1 only.
-- `.agent/design/logical-ui-scaling-api.md`.
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 2 only.
+- `.agent/design/logical-ui-scaling-api.md`, Graphics scale sections.
 
 Do not read all design guides yet.
 
@@ -43,6 +43,8 @@ Do not read all design guides yet.
 - `git fetch origin master` and isolated worktree creation: passed.
 - Static baseline audit: passed. `Launcher.getFont`, Skia text drawing, and
   Skia metric width paths multiply font size by `Settings.screenDensity`.
+- `./gradlew-agent test --tests totalcross.ui.LogicalLayoutUnitTest --tests
+  totalcross.ui.gfx.GraphicsScaleTest`: passed (5 tests).
 
 ## Deferred Validation
 
@@ -71,4 +73,4 @@ None recorded.
 ## Resume Command
 
 cd /Users/flsobral/repos/totalcross-logical-ui
-sed -n '1,260p' .agent/design/logical-ui-scaling-api.md
+sed -n '166,205p' .agent/logical-ui-scaling-execplan.md

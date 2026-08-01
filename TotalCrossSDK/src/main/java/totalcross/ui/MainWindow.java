@@ -99,6 +99,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
   public MainWindow(String title, byte style) // guich@112
   {
     super(title, style);
+    setLayoutUnit(LayoutUnit.DP);
 
     Settings.loadDeploymentParameters();
     setX = 0;

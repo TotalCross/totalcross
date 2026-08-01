@@ -78,7 +78,9 @@ both limits. Audit changed files at each milestone closure.
 - [x] (2026-08-01 21:00Z) Created `feat/logical-ui-scaling` directly from
       `origin/master` at `d480df074e7fb6f5a32dfcc2f1f30c3949095e73` and recorded
       static baseline evidence of the density-coupled image text path.
-- [ ] Introduce the logical layout and scale contracts with focused tests.
+- [x] (2026-08-01 21:35Z) Added layout-unit configuration and inheritance,
+      deprecated the encoded DP and global converter path, and established
+      per-Graphics scale accessors with focused SDK tests.
 - [ ] Implement the complete logical drawing model in the Skia path.
 - [ ] Add macOS Retina scale detection and scale-change handling.
 - [ ] Implement logical shaping, metrics, and control preferred sizes.

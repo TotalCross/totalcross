@@ -42,3 +42,15 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   multiply font size by global `Settings.screenDensity`; a normal Image has no
   independent content scale. This proves the density-dependent text-image path
   on the untouched base. Device execution is deferred to the Android milestone.
+
+## Milestone 1: logical API and layout contract
+
+- Timestamp: 2026-08-01T21:35:00Z
+- Base and tested commit: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
+- Command: `TotalCrossSDK/gradlew-agent test --tests
+  totalcross.ui.LogicalLayoutUnitTest --tests totalcross.ui.gfx.GraphicsScaleTest`
+- Renderer/platform: Java SDK test runtime
+- Status: passed, 5 tests
+- Result: `DP == 0`, `UnitsConverter.toPixels` is identity, inheritance resolves
+  from explicit ancestor units, and Graphics accepts only finite positive scales.
+- Full log: `TotalCrossSDK/agent-logs/20260801-153028-test-full.log`

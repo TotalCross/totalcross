@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -27,6 +28,7 @@ import totalcross.util.Vector;
  */
 
 public class Container extends Control {
+  private LayoutUnit layoutUnit = LayoutUnit.INHERIT;
   /** The children of the container. */
   protected Control children;
   /** The tail of the children list. */
@@ -143,6 +145,34 @@ public class Container extends Control {
   public Container() {
     asContainer = this;
     focusTraversable = false; // kmeehl@tc100: Container is now not focusTraversable by default. Controls extending Container will set focusTraversable explicitly.
+  }
+
+  /** Configures the unit used to place this container's children. */
+  public void setLayoutUnit(LayoutUnit unit) {
+    if (unit == null) {
+      throw new IllegalArgumentException("layout unit must not be null");
+    }
+    layoutUnit = unit;
+  }
+
+  /** Returns this container's configured layout unit. */
+  public LayoutUnit getLayoutUnit() {
+    return layoutUnit;
+  }
+
+  LayoutUnit getEffectiveLayoutUnit() {
+    LayoutUnit inherited = LayoutUnit.DP;
+    for (Container ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
+      if (ancestor.layoutUnit != LayoutUnit.INHERIT) {
+        inherited = ancestor.layoutUnit;
+        break;
+      }
+    }
+    return resolveLayoutUnit(layoutUnit, inherited);
+  }
+
+  static LayoutUnit resolveLayoutUnit(LayoutUnit configured, LayoutUnit inherited) {
+    return configured == LayoutUnit.INHERIT ? inherited : configured;
   }
 
   public void setPressColor(int color) {

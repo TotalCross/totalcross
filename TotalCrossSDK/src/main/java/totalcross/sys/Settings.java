@@ -1169,14 +1169,10 @@ public final class Settings {
   public static final String ANDROID_ID = null;
   
   /**
-   * The logical density of the display, used as a scaling factor for density
-   * independent pixels (dp) and scaleable pixels (sp).
-   * 
-   * On WinCE based devices the screen density is set to 0.75 if the largest
-   * screen component (width or height) is smaller than 240 pixels.
-   * 
-   * https://material.io/guidelines/layout/units-measurements.htm
+   * @deprecated Surface-owned graphics scales now control layout and drawing.
+   *             This legacy value remains readable for compatibility only.
    */
+  @Deprecated
   public static double screenDensity = 1;
   /**
    * Minimal interval between two Update events

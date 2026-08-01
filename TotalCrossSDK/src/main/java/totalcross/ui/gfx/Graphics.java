@@ -1,6 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -94,6 +94,9 @@ public final class Graphics {
   // instance doubles
   private double lastPPD, lastcPPD; // used by arcPiePointDrawAndFill
 
+  private double contentScale = 1;
+  private double fontScale = 1;
+
   // instance objects
   /** The surface where this Graphics will draw on. */
   protected GfxSurface surface;
@@ -166,6 +169,24 @@ public final class Graphics {
       isControlSurface = true;
     }
     create(surface);
+  }
+
+  /** Returns the physical pixels represented by one logical coordinate unit. */
+  public double getContentScale() {
+    return contentScale;
+  }
+
+  /** Returns the logical text scaling factor for this destination surface. */
+  public double getFontScale() {
+    return fontScale;
+  }
+
+  void setScales(double contentScale, double fontScale) {
+    if (!Double.isFinite(contentScale) || contentScale <= 0 || !Double.isFinite(fontScale) || fontScale <= 0) {
+      throw new IllegalArgumentException("graphics scales must be finite and positive");
+    }
+    this.contentScale = contentScale;
+    this.fontScale = fontScale;
   }
 
   @ReplacedByNativeOnDeploy
