@@ -9,6 +9,7 @@ import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.sys.Settings;
 
 /** Deterministic, non-private macOS visual fixture for logical image scaling. */
 public class DanfeScalingApp extends MainWindow {
@@ -25,6 +26,15 @@ public class DanfeScalingApp extends MainWindow {
     }
     render(document.getGraphics());
     add(new ImageControl(document), CENTER, CENTER, PREFERRED, PREFERRED);
+    if (getCommandLine().indexOf("/logical-ui-assert") >= 0) {
+      Graphics screen = getGraphics();
+      double contentScale = screen.getContentScale();
+      int physicalWidth = (int) Math.round(Settings.screenWidth * contentScale);
+      int physicalHeight = (int) Math.round(Settings.screenHeight * contentScale);
+      System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
+          + " physical=" + physicalWidth + "x" + physicalHeight + " contentScale=" + contentScale);
+      exit(0);
+    }
   }
 
   private static void render(Graphics graphics) {
