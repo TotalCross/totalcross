@@ -53,11 +53,22 @@ public class DanfeScalingApp extends MainWindow {
       int editWidthAtDoubleContentScale = metricEdit.getPreferredWidth();
       editGraphics.setScales(contentScale, 1.5);
       int editWidthAtFontScale = metricEdit.getPreferredWidth();
+      double danfeAdvance = metrics.stringWidthD("DANFE 25,00");
+      double accentedAdvance = metrics.stringWidthD("Comércio São Paulo");
+      double kerningAdvance = metrics.stringWidthD("AV");
+      if (!(metrics.getAscentD() > 0 && metrics.getDescentD() >= 0 && metrics.getLeadingD() >= 0
+          && metrics.getHeightD() >= metrics.getAscentD() + metrics.getDescentD()
+          && danfeAdvance > 0 && accentedAdvance > 0 && kerningAdvance > 0
+          && widthAtOne == widthAtDoubleContentScale && widthAtFontScale > widthAtOne
+          && editWidthAtOne == editWidthAtDoubleContentScale && editWidthAtFontScale > editWidthAtOne)) {
+        throw new IllegalStateException("Logical text metric assertion failed");
+      }
       System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
           + " physical=" + physicalWidth + "x" + physicalHeight + " contentScale=" + contentScale
           + " ascentD=" + metrics.getAscentD() + " descentD=" + metrics.getDescentD()
           + " leadingD=" + metrics.getLeadingD() + " heightD=" + metrics.getHeightD()
-          + " advanceD=" + metrics.stringWidthD("DANFE 25,00")
+          + " advanceD=" + danfeAdvance + " accentedAdvanceD=" + accentedAdvance
+          + " kerningAdvanceD=" + kerningAdvance
           + " labelWidths=" + widthAtOne + "," + widthAtDoubleContentScale + "," + widthAtFontScale
           + " editWidths=" + editWidthAtOne + "," + editWidthAtDoubleContentScale + "," + editWidthAtFontScale);
       exit(0);
