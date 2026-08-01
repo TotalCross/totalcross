@@ -454,3 +454,16 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `radioWidths=103,103,152` without any advanced-typography claim.
 - Logs: `m3-danfe-dist.log`, `m3-danfe-deploy.log`, and
   `m3-danfe-native.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 3R: Edit effective caption geometry
+
+- Timestamp: 2026-08-01T23:40:00Z
+- Commands: rebuilt SDK distribution, focused macOS fixture deployment with the
+  matching dylib, and direct `DanfeScalingApp /logical-ui-assert` execution.
+- Renderer/platform: deployed native macOS SDL/Skia application.
+- Status: passed.
+- Result: Edit caption-icon spacing, material preferred height, cursor descent,
+  and horizontal cursor scrolling use destination effective metrics. The DANFE
+  fixture retained all text-control and PIXEL assertions at Retina scale 2.
+- Logs: `m3-edit-dist.log`, `m3-edit-deploy.log`, and `m3-edit-native.log`
+  under `artifacts/logical-ui-scaling/logs/`.
