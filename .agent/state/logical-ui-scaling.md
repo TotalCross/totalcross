@@ -100,6 +100,9 @@ These are foundations, not completion of their behavioral milestones.
 - complete text-bearing DANFE assertions are absent;
 - Java and native macOS runtime proof were conflated;
 - no accepted screenshot exists.
+- The pinned Skia package has no `SkShaper` or `SkParagraph` headers; preserve
+  the shared simple-text measurement/drawing path while treating complete
+  shaping, fallback, and ligature proof as still open M3R work.
 
 ## Platform Policy
 

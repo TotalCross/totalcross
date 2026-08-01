@@ -364,6 +364,13 @@ credentials unless explicitly requested.
   by the layout engine.
   Evidence: no effective-unit use in child placement or `Control.setRect`.
 
+- Observation: the pinned Skia package exposes `SkFont` but not `SkShaper` or
+  `SkParagraph` headers.
+  Evidence: scoped file audit of
+  `TotalCrossVM/deps/totalcross-depot-tools/skia/local/include` on 2026-08-01.
+  The current measurement/drawing path can be kept equivalent, but this does
+  not by itself prove full script shaping, fallback, or ligature behavior.
+
 Add only discoveries that change remaining work.
 
 ## Decision Log
