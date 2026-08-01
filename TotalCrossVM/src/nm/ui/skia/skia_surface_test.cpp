@@ -1,0 +1,60 @@
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
+#include "skia.h"
+
+#include <cstdio>
+#include <cstring>
+
+static bool expectEqual(Pixel actual, Pixel expected, const char* message) {
+    if (actual == expected) {
+        return true;
+    }
+    std::fprintf(stderr, "%s: expected %#x, got %#x\n", message, expected, actual);
+    return false;
+}
+
+int main() {
+    Pixel sourcePixels[4] = { 0xFF102030, 0xFF405060, 0xFF708090, 0xFFA0B0C0 };
+    Pixel destinationPixels[16] = {};
+    const int source = skia_makeBitmap(-1, sourcePixels, 2, 2);
+    const int destination = skia_makeBitmap(-1, destinationPixels, 4, 4);
+    if (source < 0 || destination < 0) {
+        std::fputs("unable to create Skia test surfaces\n", stderr);
+        return 1;
+    }
+
+    const Pixel expected = skia_getPixel(source, 0, 0);
+    skia_drawSurface(destination, source, 0, 0, 2, 2, 1, 1, 3, 3, 255);
+    if (!expectEqual(skia_getPixel(destination, 1, 1), expected, "identity copy")) {
+        return 1;
+    }
+
+    skia_setSurfaceScale(destination, 2);
+    skia_drawSurface(destination, source, 0, 0, 2, 2, 0, 0, 2, 2, 255);
+    if (!expectEqual(skia_getPixel(destination, 3, 3), skia_getPixel(source, 1, 1),
+                     "scaled fallback copy")) {
+        return 1;
+    }
+
+    skia_setPixel(destination, 3, 3, 0xFF010203);
+    if (!expectEqual(skia_getPixel(destination, 3, 3), 0xFF010203, "physical raw pixel")) {
+        return 1;
+    }
+
+    Pixel clippedPixels[16] = {};
+    const int clippedDestination = skia_makeBitmap(-1, clippedPixels, 4, 4);
+    skia_setClip(clippedDestination, 0, 0, 1, 1);
+    skia_drawSurface(clippedDestination, source, 0, 0, 2, 2, 1, 1, 3, 3, 255);
+    skia_restoreClip(clippedDestination);
+    if (!expectEqual(skia_getPixel(clippedDestination, 1, 1), 0, "clipped fallback copy")) {
+        return 1;
+    }
+
+    skia_deleteBitmap(source);
+    skia_deleteBitmap(destination);
+    skia_deleteBitmap(clippedDestination);
+    std::puts("skia surface copy assertions passed");
+    return 0;
+}
