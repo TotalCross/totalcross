@@ -981,12 +981,13 @@ protected int gap;
   }
 
   protected int getTextY() {
-    int y = this.height - fmH - gap;
+    int fontHeight = getFontHeightForLayout();
+    int y = this.height - fontHeight - gap;
     if (uiAndroid) {
       y--;
     }
     if (uiHolo) {
-      y = (height - fmH - gap) / 2;
+      y = (height - fontHeight - gap) / 2;
     }
     if (uiMaterial) {
       y = materialCaption.ycap0;
@@ -1001,6 +1002,7 @@ protected int gap;
 
 		boolean uiAndroid = Control.uiAndroid || uiHolo;
 		int y = getTextY();
+		int fontHeight = getFontHeightForLayout();
 
 		// background
 		g.backColor = back0;
@@ -1101,7 +1103,7 @@ protected int gap;
 				if (sel1X != sel2X) {
 					int old = g.backColor;
 					g.backColor = back1 == backColor ? Color.brighter(back1) : back1;
-					g.fillRect(sel1X, y, sel2X - sel1X + 1, fmH);
+					g.fillRect(sel1X, y, sel2X - sel1X + 1, fontHeight);
 					g.backColor = old;
 				}
 			}
@@ -1110,7 +1112,7 @@ protected int gap;
 			int xx = xOffset;
 			if (captionIcon != null) {
 				xx += getX0();
-				g.drawImage(captionIcon, uiMaterial ? captionIconPadding : fmH,
+				g.drawImage(captionIcon, uiMaterial ? captionIconPadding : fontHeight,
 						captionIconHeightFactor == 0 ? y : height / 2 - captionIcon.getHeight() / 2);
 			}
 
@@ -1190,7 +1192,7 @@ protected int gap;
 					g.backColor = Color.interpolate(backColor, foreColor);
 					g.fillRect(cursorX - 1 + (uiMaterial ? UnitsConverter.toPixels(DP + 2) : 0),
 							uiMaterial ? materialCaption.ycap0 + font.fm.descent : y, cursorThickness,
-							fmH - font.fm.descent);
+							fontHeight - (int) Math.ceil(font.fm.getDescentD() * g.getFontScale()));
 				}
 			}
 		} else {

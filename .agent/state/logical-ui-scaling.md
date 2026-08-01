@@ -29,12 +29,13 @@ Milestone 3R: complete logical text and FontMetrics.
 Extend the same effective logical font scale through the remaining ordinary text
 controls, line layout, and cached layout invalidation. `Label`, `Button`, and
 `Edit` preferred sizes are covered. `Label` and `Button` line placement now
-uses scaled logical line height; editing geometry is next.
+uses scaled logical line height; `Edit` vertical text, selection, and cursor
+geometry now use it too. Horizontal editing geometry is next.
 
 ## Next Concrete Action
 
-Audit text drawing, baseline placement, selection, cursor, and multiline layout
-against the `Graphics.fontScale` contract.
+Audit `Edit` horizontal text measurement and cursor placement against the
+`Graphics.fontScale` contract.
 
 ## Files to Read Now
 
@@ -77,6 +78,8 @@ Do not read later image or renderer guides yet.
   ordinary controls against content and font scale changes.
 - `Label` pagination/vertical alignment and `Button` multiline placement use
   the same scaled logical line height as their preferred-size calculations.
+- `Edit` selection, caption-icon placement, and cursor height now use scaled
+  logical vertical metrics.
 
 These are foundations, not completion of their behavioral milestones.
 
