@@ -464,6 +464,10 @@ Update this section after each corrected behavioral milestone.
   width equals the upward-rounded fractional advance. Native macOS passed with
   `81.6484375 -> 82`; logs: `sdk-dist-font-compatibility.log`,
   `deploy-font-compatibility.log`, and `native-font-compatibility.log`.
+- 2026-08-01: Extended deployed compatibility assertions to char-array and
+  StringBuffer widths; all overloads returned `82`. Logs:
+  `sdk-dist-font-overloads.log`, `deploy-font-overloads.log`, and
+  `native-font-overloads.log`.
 
 ## Revision Note
 
