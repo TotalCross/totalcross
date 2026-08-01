@@ -418,6 +418,10 @@ Update this section after each corrected behavioral milestone.
   destination-scaled logical line height. Evidence: focused Java
   `LogicalTextScaleTest` passed; full log:
   `artifacts/logical-ui-scaling/logs/logical-text-vertical-scale-test.log`.
+- 2026-08-01: Corrected `Edit` text, selection, and cursor vertical geometry
+  to use destination-scaled line metrics. Evidence: focused Java
+  `LogicalTextScaleTest` passed; full log:
+  `artifacts/logical-ui-scaling/logs/logical-text-edit-vertical-test.log`.
 
 ## Revision Note
 
