@@ -74,7 +74,9 @@ static inline Pixel skiaPixelFromColor(SkColor color) {
 #endif
 #endif
 
+#ifndef USE_WRITE_PIXELS
 #define USE_WRITE_PIXELS 1
+#endif
 
 #define SKIA_DEBUG
 
