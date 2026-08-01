@@ -34,7 +34,13 @@ TC_API void tufFM_fontMetricsCreate(NMParams p) // totalcross/ui/font/FontMetric
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_charWidth_c(NMParams p) // totalcross/ui/font/FontMetrics native public int charWidth(char c);
 {
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   TCObject font = FontMetrics_font(p->obj[0]);
+   JChar ch = (JChar)p->i32[0];
+   p->retI = skia_stringWidth(&ch, sizeof(JChar), Font_skiaIndex(font), Font_size(font));
+#else
    p->retI = getJCharWidth(p->currentContext, FontMetrics_font(p->obj[0]), (JChar)p->i32[0]);
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_charWidthD_c(NMParams p) // totalcross/ui/font/FontMetrics native public double charWidthD(char c);
@@ -52,8 +58,13 @@ TC_API void tufFM_stringWidth_s(NMParams p) // totalcross/ui/font/FontMetrics na
    TCObject s = p->obj[1];
    if (s == null)
       throwNullArgumentException(p->currentContext, "s");
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   else
+      p->retI = skia_stringWidth(String_charsStart(s), String_charsLen(s) * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+#else
    else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), String_charsStart(s), String_charsLen(s));
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidthD_s(NMParams p) // totalcross/ui/font/FontMetrics native public double stringWidthD(String s);
@@ -79,7 +90,11 @@ TC_API void tufFM_stringWidth_Cii(NMParams p) // totalcross/ui/font/FontMetrics 
       throwNullArgumentException(p->currentContext, "chars");
    else
    if (checkArrayRange(p->currentContext, charArray, start, count))
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+      p->retI = skia_stringWidth(((JCharP)ARRAYOBJ_START(charArray))+start, count * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+#else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), ((JCharP)ARRAYOBJ_START(charArray))+start, count);
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_sbWidth_s(NMParams p) // totalcross/ui/font/FontMetrics native public int sbWidth(StringBuffer s);
@@ -87,8 +102,13 @@ TC_API void tufFM_sbWidth_s(NMParams p) // totalcross/ui/font/FontMetrics native
    TCObject s = p->obj[1];
    if (s == null)
       throwNullArgumentException(p->currentContext, "s"); // throw NPE
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   else
+      p->retI = skia_stringWidth(StringBuffer_charsStart(s), StringBuffer_count(s) * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+#else
    else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), StringBuffer_charsStart(s), StringBuffer_count(s));
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_sbWidth_sii(NMParams p) // totalcross/ui/font/FontMetrics native public int sbWidth(StringBuffer s, int start, int count);
@@ -100,7 +120,11 @@ TC_API void tufFM_sbWidth_sii(NMParams p) // totalcross/ui/font/FontMetrics nati
       throwNullArgumentException(p->currentContext, "s"); // throw NPE
    else
    if (checkArrayRange(p->currentContext, StringBuffer_chars(s), start, count))
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+      p->retI = skia_stringWidth(StringBuffer_charsStart(s)+start, count * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+#else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), StringBuffer_charsStart(s)+start, count);
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_charWidth_si(NMParams p) // totalcross/ui/font/FontMetrics native public int charWidth(StringBuffer s, int i);
@@ -111,7 +135,11 @@ TC_API void tufFM_charWidth_si(NMParams p) // totalcross/ui/font/FontMetrics nat
       throwNullArgumentException(p->currentContext, "s"); // throw NPE
    else
    if (checkArrayRange(p->currentContext, StringBuffer_chars(s), i, 1)) // check only index "i"
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+      p->retI = skia_stringWidth(StringBuffer_charsStart(s)+i, sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+#else
       p->retI = getJCharWidth(p->currentContext, FontMetrics_font(p->obj[0]), StringBuffer_charsStart(s)[i]);
+#endif
 }
 
 #ifdef ENABLE_TEST_SUITE

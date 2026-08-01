@@ -454,6 +454,12 @@ Update this section after each corrected behavioral milestone.
   The freshly deployed native macOS fixture also passed; logs:
   `sdk-dist-font-invalidation.log`, `deploy-font-invalidation.log`, and
   `native-font-invalidation.log`.
+- 2026-08-01: Unified native Skia `FontMetrics` integer overloads (character,
+  String, char array, and StringBuffer) with the same Skia measurement path as
+  drawing and fractional String advances. Native compile and deployed macOS
+  runtime passed; logs: `native-font-overload-consistency-build.log`,
+  `deploy-font-overload-consistency.log`, and
+  `native-font-overload-consistency.log`.
 
 ## Revision Note
 
