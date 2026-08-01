@@ -106,6 +106,17 @@ TC_API void tufFM_lineHeightAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetr
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_descentAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics native public double descentAtSizeD(double fontSize);
+{
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   double ascent, descent, leading;
+   skia_fontMetrics(Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0], &ascent, &descent, &leading);
+   p->retD = descent;
+#else
+   p->retD = FontMetrics_descentD(p->obj[0]) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidth_Cii(NMParams p) // totalcross/ui/font/FontMetrics native public int stringWidth(char []chars, int start, int count);
 {
    TCObject charArray = p->obj[1];
