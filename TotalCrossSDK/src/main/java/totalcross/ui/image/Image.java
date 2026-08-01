@@ -183,8 +183,7 @@ public class Image extends GfxSurface {
   }
 
   private Image(int logicalWidth, int logicalHeight, double contentScale) throws ImageException {
-    if (contentScale != contentScale || contentScale <= 0 || contentScale >= Double.MAX_VALUE
-        || logicalWidth <= 0 || logicalHeight <= 0) {
+    if (!Double.isFinite(contentScale) || contentScale <= 0 || logicalWidth <= 0 || logicalHeight <= 0) {
       throw new ImageException("Image dimensions and content scale must be positive.");
     }
     long pixelWidth = (long) Math.ceil(logicalWidth * contentScale);
