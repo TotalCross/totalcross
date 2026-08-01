@@ -14,6 +14,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 
 /**
  * AWT window backend for the desktop simulator.
@@ -95,6 +96,15 @@ public class AwtWindow implements SimulatorWindow {
 
   public double getScale() {
     return scale;
+  }
+
+  public double getContentScale() {
+    if (!frame.isDisplayable() || frame.getGraphicsConfiguration() == null) {
+      return Double.NaN;
+    }
+    AffineTransform transform = frame.getGraphicsConfiguration().getDefaultTransform();
+    double contentScale = transform.getScaleX();
+    return Double.isFinite(contentScale) && contentScale > 0 ? contentScale : Double.NaN;
   }
 
   static double resolveScale(WindowConfiguration config) {
