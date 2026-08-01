@@ -411,6 +411,9 @@ Update this section after each corrected behavioral milestone.
   its cached multiline widths. Evidence: focused Java
   `LogicalTextScaleTest` passed; full log:
   `artifacts/logical-ui-scaling/logs/logical-text-scale-button-test.log`.
+- 2026-08-01: Extended non-material `Edit` preferred measurements to the
+  destination font scale. Evidence: focused Java `LogicalTextScaleTest` passed;
+  full log: `artifacts/logical-ui-scaling/logs/logical-text-scale-edit-test.log`.
 
 ## Revision Note
 
