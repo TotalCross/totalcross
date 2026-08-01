@@ -314,7 +314,7 @@ public class Label extends Control implements TextControl {
   public void split(int maxWidth) // guich@tc114_73
   {
     String text = originalText; // originalText will be changed by setText
-    setText(Convert.insertLineBreak(maxWidth, fm, text)); // guich@tc126_18: text cannot be assigned here or originalText will be overwritten
+    setText(Convert.insertLineBreak(maxWidth, fm, font.size * gfx.getFontScale(), text)); // guich@tc126_18: text cannot be assigned here or originalText will be overwritten
     originalText = text;
   }
 
@@ -325,7 +325,7 @@ public class Label extends Control implements TextControl {
     if (marqueeTimer != null) {
       stopMarquee();
     }
-    this.text = autoSplit && width > 0 ? Convert.insertLineBreak(this.width, fm, text) : text;
+    this.text = autoSplit && width > 0 ? Convert.insertLineBreak(this.width, fm, font.size * gfx.getFontScale(), text) : text;
     lines = this.text.equals("") ? new String[] { "" } : Convert.tokenizeString(this.text, '\n'); // guich@tc100: now we use \n
     currentLine = 0;
     onFontChanged();

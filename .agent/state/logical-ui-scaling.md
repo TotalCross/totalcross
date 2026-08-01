@@ -91,7 +91,6 @@ destination-aware path.
 
 ## Corrections Required Before Closing M3R
 
-- TotalCross line breaking still receives scale-one FontMetrics in Label paths.
 - State, outcomes, and append-only evidence are not synchronized.
 - `Graphics.setScales` public lifecycle is not yet an approved final API.
 - Existing `"kerning"` terminology overstates what the core SkFont path proves.
@@ -110,6 +109,12 @@ destination-aware path.
   `effective-font-measurement-build.log`,
   `effective-font-measurement-java-test.log`,
   `effective-font-measurement-native-retry.log`.
+- `Label` routes TotalCross automatic and explicit line breaking through the
+  effective-size measurement path. Focused Java wrapping validation confirms
+  content-scale invariance and font-scale-dependent break count.
+- The freshly deployed native macOS fixture also passed after the wrapping
+  change; logs: `effective-wrap-dist.log`, `effective-wrap-deploy.log`, and
+  `effective-wrap-native.log`.
 
 ## Remaining Major Work
 
