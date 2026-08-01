@@ -1212,16 +1212,17 @@ public class Window extends Container {
         title = uiAndroid ? "" : " ";
       }
       String tit = title;
-      int ww = titleFont.fm.stringWidth(tit);
+      double titleFontSize = titleFont.size * gfx.getFontScale();
+      int ww = (int) Math.ceil(titleFont.fm.stringWidthAtSizeD(tit, titleFontSize));
       if (ww > this.width - 6) {
-        int idx = Convert.getBreakPos(titleFont.fm, new StringBuffer(tit), 0, this.width - 6, false);
+        int idx = Convert.getBreakPos(titleFont.fm, new StringBuffer(tit), 0, this.width - 6, false, titleFontSize);
         tit = tit.substring(0, idx);
-        ww = titleFont.fm.stringWidth(tit);
+        ww = (int) Math.ceil(titleFont.fm.stringWidthAtSizeD(tit, titleFontSize));
       }
       int hh = borderStyle == NO_BORDER && tit.length() == 0 ? 0
-          : titleFont.fm.height + (borderStyle == ROUND_BORDER ? 2 : 0);
+          : (int) Math.ceil(titleFont.fm.lineHeightAtSizeD(titleFontSize)) + (borderStyle == ROUND_BORDER ? 2 : 0);
       hh += titleGap;
-      int xx = titleAlign, yy = (hh - titleFont.fm.height) / 2;
+      int xx = titleAlign, yy = (hh - (int) Math.ceil(titleFont.fm.lineHeightAtSizeD(titleFontSize))) / 2;
       if ((CENTER - RANGE) <= titleAlign && titleAlign <= (CENTER + RANGE)) {
         xx += (this.width - ww) / 2 - CENTER;
       } else if ((LEFT - RANGE) <= titleAlign && titleAlign <= (LEFT + RANGE)) {

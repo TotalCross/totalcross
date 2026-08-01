@@ -407,3 +407,21 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `effective-text-controls-deploy.log`, and
   `effective-text-controls-native.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 3R: remaining multiline consumers
+
+- Timestamp: 2026-08-01T23:10:00Z
+- Commands: focused `LogicalTextScaleTest`; rebuilt SDK distribution; focused
+  `deployLogicalUiScalingSmokeMacOS` with the current dylib; direct
+  `DanfeScalingApp /logical-ui-assert` execution.
+- Renderer/platform: Java tests and deployed native macOS SDL/Skia application.
+- Status: passed.
+- Result: live Window, dialog, popup, list, tooltip, Check, Radio, and Grid
+  multiline paths route candidate-line measurement through the destination
+  effective-size adapter. The fixture retained its Retina scale and existing
+  text and PIXEL assertions.
+- Logs: `effective-multiline-consumers-test.log`,
+  `effective-multiline-consumers-dist.log`,
+  `effective-multiline-consumers-deploy.log`, and
+  `effective-multiline-consumers-native.log` under
+  `artifacts/logical-ui-scaling/logs/`.

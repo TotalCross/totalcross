@@ -85,6 +85,23 @@ class LogicalTextScaleTest {
   }
 
   @Test
+  void checkSplitUsesDestinationFontMeasurementAndPreservesNewlines() {
+    Check check = new Check("DANFE texto longo\\npara quebrar linhas");
+
+    check.gfx.setScales(1.0, 1.0);
+    check.split(50);
+    String linesAtOne = check.getText();
+
+    check.gfx.setScales(3.0, 1.0);
+    check.split(50);
+    assertEquals(linesAtOne, check.getText());
+
+    check.gfx.setScales(1.0, 1.5);
+    check.split(50);
+    assertTrue(check.getText().split("\\n").length > linesAtOne.split("\\n").length);
+  }
+
+  @Test
   void labelLineWidthCacheIgnoresContentScaleAndTracksFontScale() {
     Label label = new Label("DANFE 25,00");
     label.gfx.setScales(1.0, 1.0);
