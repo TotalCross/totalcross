@@ -183,8 +183,7 @@ public final class Graphics {
 
   /** Updates the destination-owned scales after a surface configuration change. */
   public void setScales(double contentScale, double fontScale) {
-    if (contentScale != contentScale || contentScale <= 0 || contentScale >= Double.MAX_VALUE
-        || fontScale != fontScale || fontScale <= 0 || fontScale >= Double.MAX_VALUE) {
+    if (!Double.isFinite(contentScale) || contentScale <= 0 || !Double.isFinite(fontScale) || fontScale <= 0) {
       throw new IllegalArgumentException("graphics scales must be finite and positive");
     }
     this.contentScale = contentScale;
