@@ -49,9 +49,7 @@ runtime assertions under the SkFont-only scope.
 
 1. Audit remaining text controls and effective-size baseline/cursor/selection
    uses.
-2. Validate Radio and Check scale-change cache behavior in the deployed native
-   macOS lane.
-3. Complete the text-bearing DANFE M3R assertions without claiming unsupported
+2. Complete the text-bearing DANFE M3R assertions without claiming unsupported
    typography behavior.
 
 ## Files to Read Now
@@ -145,7 +143,9 @@ deployed native root fixture pass, and no external text-engine blocker remains.
   M3R can close.
 - Check refreshes its cached line widths when fontScale changes, while Radio
   now derives layout widths and heights from the destination effective metrics.
-  Focused Java cache validation passed; deployed native validation remains next.
+  Focused Java cache validation and the refreshed deployed native macOS fixture
+  passed; logs: `m3-choice-dist.log`, `m3-choice-deploy.log`, and
+  `m3-choice-native.log`.
 
 ## Remaining Major Work
 

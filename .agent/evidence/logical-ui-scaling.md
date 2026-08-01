@@ -435,4 +435,8 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Status: passed.
 - Result: Check cached line widths stay invariant across contentScale and refresh
   at fontScale 1.5; Radio preferred geometry measures at the destination
-  effective size. Deployed native validation is pending.
+  effective size.
+- Native macOS validation: rebuilt SDK distribution, deployed the fixture with
+  the matching current dylib, and directly ran `DanfeScalingApp /logical-ui-assert`.
+  It passed with Retina `contentScale=2.0`; logs: `m3-choice-dist.log`,
+  `m3-choice-deploy.log`, and `m3-choice-native.log`.
