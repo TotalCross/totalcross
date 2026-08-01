@@ -138,3 +138,19 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   fixed Java `fillRect` using logical dimensions as physical pixel bounds.
 - Limitation: deployed text, renderer equivalence, synchronization, macOS, and
   Android proof are not covered by this headless assertion.
+
+## Milestone 7: macOS fixture launch
+
+- Timestamp: 2026-08-01T19:26:00Z
+- Command: compiled `DanfeScalingApp` against the generated SDK, then launched
+  it through `totalcross.Launcher` with `/scale 1` and `/scale 2`.
+- Renderer/platform: macOS Java launcher, deterministic synthetic DANFE fixture
+- Status: passed for launch at both scales
+- Result: the application initialized a 480x620 logical screen at the requested
+  scale and rendered the synthetic fixture without startup exceptions.
+- Capture result: no artifact accepted. The process-specific Computer Use
+  capture path could not target the Java application; a full-desktop fallback
+  was deliberately not used.
+- Scope decision: per user direction, macOS is the platform proof for this
+  milestone. Android and iOS workspace execution are deferred to final
+  validation.
