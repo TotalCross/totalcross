@@ -100,3 +100,12 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: native ABI field offsets preserve existing image fields; Java pixel
   changes recreate the Skia bitmap before dirty state is cleared; copies retain
   physical dimensions and backing metadata.
+
+## Milestone 5: Java logical image drawing slice
+
+- Timestamp: 2026-08-01T23:00:00Z
+- Commits: `01628a56e6b55f6490c833b0af3491c78ba54a2e`, `b18dde1d7bedfdf5c519a8b90ac3078d0002ec0c`
+- Command: `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.gfx.GraphicsScaleTest`
+- Status: passed, 4 tests
+- Result: Java Graphics renders a scale-2 physical backing at its logical
+  natural size; all destination pixels in the fixture receive the expected color.
