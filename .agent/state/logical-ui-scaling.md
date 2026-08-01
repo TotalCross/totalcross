@@ -151,6 +151,9 @@ deployed native root fixture pass, and no external text-engine blocker remains.
   It passed with `buttonWidths=86,86,127`, `checkWidths=49,49,53`, and
   `radioWidths=103,103,152`; logs: `m3-danfe-dist.log`,
   `m3-danfe-deploy.log`, and `m3-danfe-native.log`.
+- Check paint geometry and Radio indicator sizing now derive their font-relative
+  dimensions from effective destination metrics. Focused Java validation passed;
+  the remaining M3R audit is concentrated in Edit material-caption geometry.
 
 ## Remaining Major Work
 

@@ -89,7 +89,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
   /** Creates a radio control displaying the given text. */
   public Radio(String text) {
     this.displayedText = this.text = text;
-    textW = fm.stringWidth(text);
+    textW = getFontWidthForLayout(text);
     effect = UIEffects.get(this);
     radioTextGap = UnitsConverter.toPixels(10 + DP);
   }
@@ -288,13 +288,14 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
       g.backColor = backColor;
       g.fillRect(0, 0, width, height);
     }
-    boolean big = fmH >= 20;
+    int fontHeight = getFontHeightForLayout();
+    boolean big = fontHeight >= 20;
 
     if (getDoEffect() && effect != null) {
       effect.paintEffect(g);
     }
 
-    int hh = Math.min(width - (textW + (lines.length > 1 ? 2 : -6)), uiMaterial ? (fmH - UnitsConverter.toPixels(4 + DP))*lines.length : height);
+    int hh = Math.min(width - (getMaxTextWidth() + (lines.length > 1 ? 2 : -6)), uiMaterial ? (fontHeight - UnitsConverter.toPixels(4 + DP))*lines.length : height);
     if (hh == height) {
     	hh -= Edit.prefH;
     }
@@ -325,7 +326,6 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     }
 
     // draw label
-    int fontHeight = getFontHeightForLayout();
     yy = (this.height - fontHeight * lines.length) >> 1;
     xx = hh + (uiFlat ? fontHeight / 2 + 4 : radioTextGap);
     g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor, backColor)) : cColor;

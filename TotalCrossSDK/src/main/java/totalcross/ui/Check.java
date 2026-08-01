@@ -220,7 +220,8 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   /**Returns the preferred height of this control.*/
   @Override
   public int getPreferredHeight() {
-    return (uiMaterial ? checkSize : (fmH*lines.length > checkSize ? fmH*lines.length : checkSize)) + insets.top + insets.bottom;
+    int fontHeight = getFontHeightForLayout();
+    return (uiMaterial ? checkSize : (fontHeight * lines.length > checkSize ? fontHeight * lines.length : checkSize)) + insets.top + insets.bottom;
   }
   
   @Override
@@ -293,15 +294,16 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
     g.foreColor = checkColor != -1 ? checkColor : uiAndroid ? foreColor : cfColor;
 
     if (!uiAndroid && checked) {
-      paintCheck(g, fmH, checkSize);
+      paintCheck(g, getFontHeightForLayout(), checkSize);
     }
 
     // draw label
     //TODO
-    yy = height/2 - (fmH*lines.length)/2;
+    int fontHeight = getFontHeightForLayout();
+    yy = height/2 - (fontHeight * lines.length)/2;
     int xx = insets.left + checkSize + textLeftGap; // guich@300_69
     g.foreColor = textColor != -1 ? textColor : foreColor;
-    for (int i = 0; i < lines.length; i++, yy += fmH) {
+    for (int i = 0; i < lines.length; i++, yy += fontHeight) {
       String text = StringUtils.shortText(lines[i], font.fm, this.width - xx - insets.right);
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
     }
