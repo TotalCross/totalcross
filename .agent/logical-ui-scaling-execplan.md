@@ -336,6 +336,13 @@ decision may read it.
 A native macOS test requires a matching SDK, deployed application, and dylib.
 Treat any stale packaged runtime as invalid evidence.
 
+Current blocker: the pinned Skia package has no `SkShaper` or `SkParagraph`
+headers, while M3R requires general shaping/fallback/ligature support and the
+text design prohibits introducing another engine without a separate decision.
+The simple-text path has been made measurement/drawing-consistent, but cannot
+close that requirement. A maintainer must provide a shaping-enabled Skia package
+or approve an alternative engine before execution can continue past M3R.
+
 `USE_WRITE_PIXELS` may have backend-specific restrictions. Preserve the feature
 and make eligibility explicit rather than deleting it.
 

@@ -126,6 +126,17 @@ These are foundations, not completion of their behavioral milestones.
   the shared simple-text measurement/drawing path while treating complete
   shaping, fallback, and ligature proof as still open M3R work.
 
+## External Blocker
+
+Milestone 3R requires general shaping, fallback, and ligature behavior. The
+pinned depot-tools Skia headers contain neither `SkShaper` nor `SkParagraph`
+(verified with `rg --files ... | rg '(SkShaper|SkParagraph|skshaper|skparagraph)'`
+on 2026-08-01). The ExecPlan explicitly prohibits adding a new external text
+engine without a separate decision. Existing `SkFont` keeps measurement and
+drawing equivalent for simple text, but cannot prove the required general
+shaping contract. Resolution requires a maintainer decision to provide a Skia
+build with shaping/paragraph support or approve a text-engine dependency.
+
 ## Platform Policy
 
 Until final validation:
