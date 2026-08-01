@@ -52,6 +52,9 @@ Do not read later renderer or text guides yet.
 - R0 restored guarded direct writes. Default, disabled, and opaque-enabled macro
   builds compile; the native Skia fixture passes identity, scaled fallback,
   clipping, and physical raw-pixel assertions.
+- The native SDL screen path now records its physical drawable dimensions and
+  content scale, exposes logical screen dimensions through Settings, and assigns
+  the scale to newly created screen Graphics objects. This has compile proof only.
 
 These are foundations, not completion of their behavioral milestones.
 
