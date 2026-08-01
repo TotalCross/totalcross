@@ -4,383 +4,400 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Implement logical UI units and surface-aware rendering scales
+# Complete logical UI scaling from the reviewed branch
 
 This ExecPlan is a living document. Keep `Progress`, `Surprises & Discoveries`,
-`Decision Log`, `Outcomes & Retrospective`, and the resume state current. Follow
-`AGENTS.md`, `.agent/PLANS.md`, and the token-efficient, resumable-plan principles
-described by `totalcross-depot-tools/.agent/PLANS.md`.
+`Decision Log`, `Outcomes & Retrospective`, state, and evidence synchronized.
+
+This revision continues branch `feat/logical-ui-scaling`. It does not restart from
+master and does not discard useful committed work. Read
+`.agent/reviews/logical-ui-scaling-branch-review.md` before the first resumed
+slice.
 
 ## Purpose / Big Picture
 
-After this change, TotalCross UI geometry and font sizes are logical rather than
-device-pixel values. A `Graphics` object owns the scale that maps its logical
-coordinate space to its physical buffer. Text additionally uses a font scale.
-A normal `Image` has scale `1`, so rendering a fixed-size document into an image
-does not inherit Android density or macOS Retina scale.
+Finish a coherent logical-coordinate API in which layout, drawing, fonts, and
+images are independent of display density, while physical buffers and raw pixel
+operations remain explicit.
 
-The user-visible proof is issue #433: a DANFE drawn into a default
-`360 x 540` image exports exactly `360 x 540` pixels with correctly sized,
-undistorted text on both standard- and high-density displays. An explicitly
-scaled logical image can export a larger physical buffer while keeping the same
-logical layout. Skia is implemented first, then the Java renderer, then the
-non-Skia native renderer, and the three paths must be logically equivalent.
+The final user-visible proof is a complete synthetic DANFE rendered:
+
+- through JavaSE/AWT for the Java renderer;
+- through a deployed application using the freshly built native macOS VM;
+- at default image scale one and explicit logical image scale two;
+- finally on Android after the implementation is stable.
+
+A Java process running on macOS is not native macOS validation.
 
 ## Working Set and Resume Protocol
 
-Use these files:
+Read first:
 
-    .agent/logical-ui-scaling-execplan.md
+    .agent/state/logical-ui-scaling.md
+
+Then read only the active section of this plan and its named guide. Use:
+
+    .agent/reviews/logical-ui-scaling-branch-review.md
     .agent/design/logical-ui-scaling-api.md
     .agent/design/logical-ui-scaling-images.md
     .agent/design/logical-ui-scaling-text.md
     .agent/guides/logical-ui-scaling-validation.md
+    .agent/guides/macos-native-runtime-validation.md
     .agent/guides/logical-ui-scaling-danfe.md
     .agent/guides/private-screenshot-capture.md
-    .agent/state/logical-ui-scaling.md
     .agent/evidence/logical-ui-scaling.md
     .agent/archive/logical-ui-scaling-history.md
     .agent/reports/logical-ui-scaling-editorial.md
 
-On resume, read the state file first. Then read only this plan's active milestone
-and the supporting file explicitly named by that milestone. Search evidence only
-for the current milestone, command, or artifact. Do not routinely reread all
-design files, old logs, the archive, or completed milestone detail.
+Do not reread the full bundle on each resume. Search evidence selectively and
+store verbose output under `artifacts/logical-ui-scaling/`.
 
-Read the API design before Milestones 1 and 2. Read the text design before
-Milestone 3. Read the image design before Milestone 4. Read the validation guide
-before closing any milestone. Read the DANFE and screenshot guides only when
-building or capturing the end-to-end proof.
+## Execution and Platform Policy
 
-Store generated logs and artifacts outside Git tracking under:
+Use focused Java tests and native macOS tests while implementing.
 
-    artifacts/logical-ui-scaling/
+During corrective and implementation milestones:
 
-## Token and File-Size Budget
+- JavaSE/AWT tests may run on macOS but count only as Java renderer proof;
+- native code must be compiled and executed through a deployed native macOS app;
+- do not start iOS or Android builds, deploys, or runtime tests;
+- do not interpret `totalcross.Launcher` execution as native proof.
 
-Operate economically in tokens:
+At final cross-platform validation only:
 
-- prefer `rg`, `rg --files`, file ranges, and exact symbols;
-- inspect `git diff --stat` before reading a diff;
-- use scoped `git status --short -- <paths>`;
-- redirect verbose builds and inspect only failures or a short tail;
-- run focused tests before module or full builds;
-- do not repeat expensive validation after comments or formatting;
-- finish and commit one coherent slice before opening a broad investigation.
+- Android validation is required because issue #433 reports Android;
+- iOS validation is optional unless separately requested or needed to resolve a
+  platform-specific concern;
+- embedded Linux validation may be performed for the `USE_WRITE_PIXELS`
+  configuration when target access is available, but its code path must already
+  have been compiled and focused-tested on macOS.
 
-No new source, test, helper, documentation, plan-support, or script file may
-exceed 20 KiB or approximately 600 lines. Existing oversized files may receive
-only small bridge edits. Extract substantive new logic into cohesive files below
-both limits. Audit changed files at each milestone closure.
+## Token and File Budget
+
+Use exact symbol searches, relevant file ranges, scoped status, diff stats, and
+focused tests. Redirect verbose commands to logs and inspect concise tails.
+
+Do not run `clean` unless stale output is demonstrated. Do not front-load final
+platform validation.
+
+Every new source, test, helper, guide, or support file must remain below 20 KiB
+and approximately 600 lines. Extract cohesive logic from oversized existing
+files instead of adding large implementations inline.
 
 ## Progress
 
-- [x] (2026-08-01 21:00Z) Created `feat/logical-ui-scaling` directly from
-      `origin/master` at `d480df074e7fb6f5a32dfcc2f1f30c3949095e73` and recorded
-      static baseline evidence of the density-coupled image text path.
-- [x] (2026-08-01 21:35Z) Added layout-unit configuration and inheritance,
-      deprecated the encoded DP and global converter path, and established
-      per-Graphics scale accessors with focused SDK tests.
-- [x] (2026-08-01 22:05Z) Applied a per-Graphics Skia base transform, removed
-      a scale-bypassing image fast path, preserved raw pixel coordinates, and
-      compiled the macOS native target.
-- [x] (2026-08-01 22:30Z) Added peer-aware AWT backing-scale refresh and
-      removed Skia text and metric dependence on global screen density.
-- [x] (2026-08-01 22:30Z) Added double-precision FontMetrics accessors while
-      preserving integer logical compatibility fields.
-- [x] (2026-08-01 22:50Z) Added immutable logical-image backing scales,
-      physical dimension accessors, and Skia upload refresh behavior.
-- [x] (2026-08-01 23:00Z) Made Java natural image drawing reduce scaled backing
-      buffers to logical size and covered it with the Graphics scale fixture.
-- [x] (2026-08-01 23:10Z) Removed the legacy bitmap-font global density factor
-      and compiled the native target.
-- [ ] Run the full DANFE, macOS, Android, synchronization, and privacy validation.
-- [ ] Complete deprecations, Javadocs, audits, evidence, and editorial handoff.
+- [x] Established the branch directly from the recorded master and captured the
+      original global-density coupling.
+- [x] Added useful API scaffolding for layout units, graphics scales, logical
+      images, and compatibility deprecations.
+- [ ] Correct the reviewed branch, beginning with `USE_WRITE_PIXELS`, and reset
+      evidence so compilation is not confused with runtime proof.
+- [ ] Connect `LayoutUnit` to real child placement and prove the root PIXEL
+      migration path.
+- [ ] Complete Skia logical drawing and native macOS content-scale initialization.
+- [ ] Complete logical text shaping, fontScale, metrics, preferred sizes, and
+      cache behavior.
+- [ ] Complete image codecs, transformations, cache ownership, and bidirectional
+      Java/native synchronization.
+- [ ] Complete Java renderer semantic equivalence.
+- [ ] Complete non-Skia native semantic equivalence on macOS.
+- [ ] Deploy and run the complete DANFE through both Java and native macOS lanes,
+      including deterministic screenshots.
+- [ ] Run final Android validation, optional iOS validation, audits,
+      documentation, and editorial handoff.
 
 ## Current Architecture and Scope
 
-At plan authoring time, `master` was observed at
-`d480df074e7fb6f5a32dfcc2f1f30c3949095e73`. Execution must fetch
-`origin/master` and record the actual current commit instead of assuming this SHA.
+The branch contains 37 commits above its recorded base. Preserve history and
+correct behavior with new commits.
 
-Start in a new worktree created from that fetched commit. Do not reuse, merge,
-cherry-pick, or copy source changes, branches, patches, generated binaries, or
-worktrees created by earlier plans in this session. Earlier screenshots and PNGs
-may be used only as optional human references after provenance and privacy review;
-they are not implementation inputs or fresh validation evidence.
+API scaffolding already present includes:
 
-The relevant areas include:
+- `LayoutUnit`;
+- root DP configuration;
+- `DP = 0`;
+- identity `UnitsConverter.toPixels`;
+- deprecated `Settings.screenDensity`;
+- `Graphics.contentScale` and `fontScale`;
+- logical and physical `Image` dimensions.
 
-- `TotalCrossSDK/src/main/java/totalcross/ui/Control.java`;
-- `TotalCrossSDK/src/main/java/totalcross/ui/Container.java`;
-- `TotalCrossSDK/src/main/java/totalcross/ui/MainWindow.java`;
-- `TotalCrossSDK/src/main/java/totalcross/ui/gfx/Graphics.java`;
-- `TotalCrossSDK/src/main/java/totalcross/ui/font/Font.java`;
-- `TotalCrossSDK/src/main/java/totalcross/ui/font/FontMetrics.java`;
-- `TotalCrossSDK/src/main/java/totalcross/ui/image/Image.java`;
-- `TotalCrossSDK/src/main/java/totalcross/util/UnitsConverter.java`;
-- `TotalCrossSDK/src/main/java/totalcross/sys/Settings.java`;
-- `TotalCrossSDK/src/main/java/totalcross/Launcher.java`;
-- Skia graphics and text code under `TotalCrossVM/src/nm/ui`;
-- legacy native graphics and font code under `TotalCrossVM/src`.
+Do not treat the presence of a field, getter, build pass, or Java fixture launch
+as proof that its behavioral milestone is complete.
 
-Inspect the current tree before finalizing exact edit paths. Do not change the
-deployer. Compilation, SDK, deployer, and runtime are expected to come from the
-same release, and applications or libraries using inlined constants must be
-recompiled.
+Do not modify the deployer for DP compatibility. Deployment is used only to
+produce the native macOS test application from the matching SDK.
 
 ## Plan of Work
 
-### Milestone 0: Establish a clean base and fresh failure evidence
+### Corrective checkpoint R0: reconcile the existing branch
 
-Fetch `origin/master`, record its SHA, and create a separate branch and worktree.
-Abort instead of overwriting an existing branch or directory. A safe pattern is:
+Read the branch review in full.
 
-    git fetch origin master
-    base=$(git rev-parse origin/master)
-    git worktree add -b feat/logical-ui-scaling ../totalcross-logical-ui "$base"
+Restore the `USE_WRITE_PIXELS` fast path removed by `fd7e5d358`, while preventing
+it from bypassing a non-identity destination transform. Preserve its original
+opaque/full-source/same-size/full-alpha requirements. Add a focused eligibility
+helper if this keeps the code testable and below the file-size limit.
 
-Record the SHA and scoped clean status in state and evidence. Inventory current
-uses of `Control.DP`, `UnitsConverter.toPixels`, `Settings.screenDensity`,
-`FontMetrics`, `fmH`, image dimensions, pixel arrays, Skia surface creation, and
-Java/native image synchronization.
+Locate the repository definition that enables `USE_WRITE_PIXELS`. Compile both
+enabled and disabled configurations on macOS. Do not invent a new build option if
+the repository already has one. Add a focused test or native fixture proving:
 
-Build a deterministic issue reproducer from current master. Prove that text drawn
-into an image incorrectly depends on screen density, or record the closest
-reproducible failure if the host path differs. Save only sanitized baseline
-metrics and images.
+- identity-scale eligible copies may use direct writes;
+- scaled or transformed destinations use `drawBitmapRect`;
+- raw `setPixel`, `getPixel`, and RGB APIs remain physical;
+- output is equal for the eligible direct and fallback cases.
 
-Read: validation guide, baseline sections only.
+Review the public visibility of `Graphics.setScales`. Make scale mutation internal
+unless a public lifecycle API is deliberately approved.
 
-Acceptance: the implementation worktree is based directly on the recorded current
-master, contains no source from previous plans, and has reproducible baseline
-evidence for issue #433.
+Update state and evidence to distinguish Java, native compile, and native runtime
+results.
 
-### Milestone 1: Introduce the logical API and layout contract
+Acceptance: the embedded specialization is preserved, both build configurations
+compile, focused output matches, and no unrelated cleanup is included.
 
-Read `.agent/design/logical-ui-scaling-api.md` in full. Add `LayoutUnit`, root DP
-default, container inheritance, explicit pixel mode, scale ownership on
-`Graphics`, `DP = 0`, identity `UnitsConverter.toPixels`, and deprecation of
-`Settings.screenDensity`.
+### Milestone 1R: complete actual logical layout behavior
 
-Keep public integer APIs where compatibility requires them, but use `double` for
-fractional calculations. Convert rectangle edges and derive physical widths and
-heights from converted edges. Add focused tests for inheritance, semantic layout
-constants, `PREFERRED`, fractional scales, `DP + n`, identity conversion, and the
-single-line root pixel opt-out.
+Read the API design.
 
-Acceptance: API and layout tests pass, and adding only
-`setLayoutUnit(LayoutUnit.PIXEL)` to a root window preserves the old pixel layout
-for the migration sample.
+Connect the effective parent `LayoutUnit` to child placement. DP values are
+logical. PIXEL values represent physical pixels and must be converted into the
+parent's logical coordinate space at the layout boundary.
 
-### Milestone 2: Implement logical drawing in Skia
+Prove:
 
-Use the surface's `contentScale` as the Skia canvas base transform. Do not fix only
-text size. Coordinates, clips, translations, paths, strokes, image destinations,
-glyph positions, and dirty bounds must use one coherent logical space. Physical
-framebuffer dimensions, raw pixel operations, and image source rectangles remain
-explicitly physical.
+- MainWindow DP default;
+- Container INHERIT behavior;
+- the parent controls placement of the child;
+- a child container's explicit unit controls only its descendants;
+- one root `setLayoutUnit(LayoutUnit.PIXEL)` preserves a legacy layout;
+- semantic constants and offsets use the correct unit;
+- shared rectangle edges do not create rounding gaps at 1.5, 2, and 3;
+- event and hit-test coordinates are converted exactly once;
+- native screen logical dimensions do not remain accidental physical dimensions.
 
-Ensure reset-transform returns to the logical base transform. Avoid double
-scaling, especially where existing code already multiplies by screen density.
-Add scale tests for `1`, `1.5`, `2`, and `3`.
+Do not mark this milestone complete based only on resolver tests.
 
-Read: API design; relevant validation sections.
+Acceptance: behavioral placement tests and a small migration application pass in
+Java and in a deployed native macOS run.
 
-Acceptance: Skia renders the same logical geometry at all test scales, with the
-expected physical buffer size and no screen-global density dependency.
+### Milestone 2R: complete Skia and native macOS surface scaling
 
-### Milestone 3: Add macOS Retina detection and logical text
+Complete the coherent Skia base transform for coordinates, clips, paths, strokes,
+image destinations, text positions, and dirty bounds. Keep image source
+rectangles and raw pixel APIs physical.
 
-First identify the current macOS desktop window path. For JavaSE/AWT, use the
-visible window's `GraphicsConfiguration` default transform after peer creation.
-If an AppKit desktop path exists, use its backing scale. Do not mistake the iOS
-Darwin implementation for macOS desktop support.
+Implement native macOS backing-scale acquisition from the actual native window or
+view and initialize the native screen `Graphics`. Do not use the AWT
+`GraphicsConfiguration` as evidence for this path.
 
-Update scale when a window moves between displays. A scale change recreates or
-invalidates physical buffers, glyph atlases, raster caches, screenshots, and
-paint, but must not change logical component bounds or line wrapping.
+Validate through the procedure in
+`.agent/guides/macos-native-runtime-validation.md`. Run scales 1, 1.5 where
+supported, 2, and 3 through offscreen fixtures. Test a real Retina scale through
+the native application.
 
-Read `.agent/design/logical-ui-scaling-text.md` in full. Implement logical
-`Font.size`, shaped logical advances, logical vertical metrics, integer
-compatibility metrics, and `double` accessors. Preferred sizes and `fmH` use
-logical values. Drawing uses the same shaping result under the Skia base
-transform.
+Acceptance: the deployed native macOS app reports the expected logical and
+physical dimensions and exercises the freshly built Skia code.
 
-Acceptance: a Retina window reports and uses its actual scale; logical bounds and
-text wrapping remain stable across scale changes; text-based controls fit their
-content at all tested scales.
+### Milestone 3R: complete logical text and FontMetrics
 
-### Milestone 4: Implement scaled-image semantics
+Read the text design.
 
-Read `.agent/design/logical-ui-scaling-images.md` in full. Add immutable image
-scale and separate logical and physical dimensions. The normal constructor and
-ordinary file loading use scale `1`. An explicit factory creates a logical image
-with a larger backing buffer.
+Implement and test:
 
-Audit codecs, row pitch, frames, transformations, texture upload, readback,
-`applyChanges`, dirty ownership, and pixel arrays. Preserve established upload
-versus readback direction. Do not clear dirty state after a failed native copy.
+- `Font.size` and `fontScale` in logical units;
+- actual double metrics rather than integer delegation;
+- shared shaping or equivalent measurement/drawing results;
+- ascent, descent, leading, line height, and shaped advances;
+- preferred sizes and baselines;
+- fallback, accents, kerning, ligatures, and multiline wrapping;
+- separation of logical layout caches from physical raster caches;
+- raster invalidation on content-scale change;
+- layout invalidation on font-scale change.
 
-Acceptance: a default `360 x 540` image owns exactly `360 x 540` pixels; a logical
-scale-2 image owns `720 x 1080` pixels while retaining `360 x 540` logical
-dimensions; export and natural-size drawing follow the documented contract.
+Use the same tests in Java and deployed native macOS lanes. Pixel-identical output
+is not required across engines, but semantic metrics, wrapping, containment, and
+preferred bounds must satisfy the documented tolerances.
 
-### Milestone 5: Make the Java renderer equivalent
+Acceptance: DANFE text metrics and ordinary text controls remain logically stable
+across content scales without over-shrinking.
 
-Implement the same logical coordinate, clipping, image, font metric, preferred
-size, and scale contracts in the Java renderer. Share semantic fixtures with
-Skia. Exact antialiasing pixels may differ, but integer compatibility results,
-logical bounds, line breaks, baselines, containment, and image dimensions must
-match. Double metrics may use a documented small tolerance.
+### Milestone 4R: complete Image behavior and synchronization
 
-Acceptance: the same focused test matrix passes against both Skia and Java, and
-the DANFE semantic assertions are equivalent.
+Read the image design.
 
-### Milestone 6: Make the non-Skia native renderer equivalent
+Audit every logical/physical boundary: constructors, loaders, codecs, PNG/JPEG,
+frames, row pitch, transforms, hardware scale, texture upload, native readback,
+caches, and natural-size drawing.
 
-Adapt the legacy native graphics and bitmap font paths last. Pass logical and
-physical sizes explicitly. Logical metric caches must be independent of display
-density; raster caches must include effective physical size and other values that
-change raster output.
+Preserve established `applyChanges` direction and make ownership explicit.
+Validate Java-to-native upload, native-to-Java readback, alternating ownership,
+alpha 128, odd row widths, failures, and multiframe images in a deployed native
+macOS fixture.
 
-Reuse public tests and add backend-specific tests only for unavoidable integer
-behavior. Do not weaken the API contract to accommodate an implementation detail.
+Acceptance: default and scaled images follow their public dimension contract in
+Java and native macOS, and no synchronization result is inferred from a Java-only
+test.
 
-Acceptance: the non-Skia path matches Skia and Java in logical metrics, preferred
-bounds, wrapping, containment, and physical image dimensions.
+### Milestone 5R: complete the Java renderer
 
-### Milestone 7: Run end-to-end DANFE and platform validation
+Apply the logical model to all Java primitives, clips, translations, text, image
+destinations, source rectangles, and dirty bounds. Do not limit scaling to
+`fillRect` and natural-size image drawing.
 
-Read the DANFE, screenshot, and full validation guides. Recreate the DANFE
-fixture from this plan and current master, not from earlier implementation
-patches. Run automated assertions, macOS Retina validation, Android device or
-emulator validation, Java/Skia equivalence, and image synchronization tests.
+Run the common semantic fixture matrix. Record renderer-specific antialiasing
+differences separately from logical failures.
 
-Capture the launched application window by process identity or an explicitly
-selected known window. Do not enumerate or persist unrelated window titles.
-Inspect, crop, and sanitize every artifact before acceptance.
+Acceptance: the Java renderer satisfies the complete logical fixture and DANFE
+semantic assertions.
 
-Acceptance: the default-image DANFE is independent of display scale, has the
-required dimensions and barcode structure, keeps text within approved bounds,
-passes on macOS and Android, and produces private-data-safe evidence.
+### Milestone 6R: complete the non-Skia native renderer
 
-### Milestone 8: Finalize documentation and handoff
+Build the repository-supported non-Skia configuration on macOS. Adapt native font,
+primitive, image, clip, event, and cache behavior to the same surface-owned scale
+contract.
 
-Update Javadocs for logical units, scale ownership, image dimensions, pixel APIs,
-metric rounding, root pixel migration, recompilation requirements, and
-deprecations. Search for remaining internal dependencies on
-`Settings.screenDensity`, old DP-marker detection, and implicit image
-logical-equals-physical assumptions.
+Do not attempt other native platforms during this milestone.
 
-Run focused tests, then module builds and final distribution validation as
-required by the validation guide. Audit file sizes and extract logic from any
-oversized new file. Complete the editorial report and distinguish delivered proof
-from tolerated renderer differences or remaining limitations.
+Acceptance: a deployed native macOS app using the non-Skia configuration satisfies
+the common semantic matrix, or the plan records a concrete unsupported
+configuration with maintainer review rather than claiming equivalence.
 
-Acceptance: all required validation passes, evidence is reproducible and
-sanitized, documentation matches behavior, and issue #433 has Android as well as
-macOS proof before it is considered ready to close.
+### Milestone 7R: native macOS DANFE and screenshots
+
+Read the native runtime, DANFE, and screenshot guides.
+
+The same deterministic fixture must run in two distinct lanes:
+
+- JavaSE/AWT through `totalcross.Launcher`;
+- deployed native macOS executable through the exact freshly built
+  `libtcvm.dylib`.
+
+Both lanes produce PNGs and machine-readable metrics. The native lane is the
+required proof for changed C/C++ and Skia code.
+
+Resolve each process-owned CoreGraphics window ID and call:
+
+    /usr/sbin/screencapture -x -l "$WINDOW_ID" "$OUTPUT_PNG"
+
+Do not use a Computer Use integration as the primary capture path and do not fall
+back to a desktop screenshot.
+
+Acceptance: all DANFE assertions pass, the exact native runtime is verified,
+screenshots are sanitized, and Java results are not mislabeled as native.
+
+### Milestone 8R: final cross-platform validation and handoff
+
+Only now run Android validation. Use at least one high-density Android device or
+emulator and execute the complete DANFE and image synchronization fixture.
+
+Run iOS validation only if available, requested, or necessary to resolve a
+specific platform concern. Do not make an unavailable iOS environment block the
+Android issue fix unless iOS is explicitly promoted to a required target.
+
+When target access exists, validate the embedded `USE_WRITE_PIXELS` build without
+changing its semantics merely to make another backend pass.
+
+Complete Javadocs, compatibility notes, source audits, file-size audits, evidence,
+and the editorial report.
+
+Acceptance: required Java, native macOS, and Android proof passes; optional
+platform results are labeled accurately; no core validation remains hidden under
+documentation status.
 
 ## Validation and Acceptance
 
-The detailed matrix, commands, tolerances, evidence format, and escalation policy
-are in `.agent/guides/logical-ui-scaling-validation.md`. Each milestone closes at
-the smallest sufficient validation level. The full task closes only when:
+Follow `.agent/guides/logical-ui-scaling-validation.md`.
 
-1. root DP, inherited container layout, and explicit root pixel mode work;
-2. `Graphics.contentScale` and `fontScale` govern their own surface;
-3. logical fonts, metrics, preferred sizes, events, clips, and drawing agree;
-4. default and explicitly scaled images follow their logical/physical contract;
-5. `DP`, `UnitsConverter.toPixels`, and `Settings.screenDensity` are deprecated
-   without hidden internal rendering dependencies;
-6. Skia, Java, and non-Skia native paths meet the equivalence rules;
-7. macOS Retina and scale changes are proven;
-8. DANFE passes on macOS and Android;
-9. synchronization, screenshot selection, and privacy checks pass;
-10. every new file remains below 20 KiB and approximately 600 lines.
+The task is complete only when:
+
+1. actual layout semantics, not only API metadata, pass;
+2. `USE_WRITE_PIXELS` remains supported;
+3. Java and native macOS validation are recorded separately;
+4. native macOS backing scale is proven in a deployed app;
+5. fontScale and real double metrics work;
+6. image synchronization passes in both directions natively;
+7. Java, Skia, and supported non-Skia behavior meet semantic equivalence;
+8. the complete text-bearing DANFE passes;
+9. deterministic window screenshots use `screencapture -l`;
+10. Android final validation passes;
+11. file-size, privacy, compatibility, and source audits pass.
 
 ## Risks and Open Questions
 
-The largest compatibility risk is code that treats component or image dimensions
-as raw pixel counts. Keep physical access explicit and audit every internal pixel
-boundary.
+The current branch may contain changes that compile but are not reached by its
+tests. Prefer behavioral tests at public and native runtime boundaries.
 
-Changing `DP` to zero requires recompilation. Do not add deployer rewriting or a
-runtime marker compatibility layer.
+A global scale mirror may remain for compatibility, but no renderer or layout
+decision may read it.
 
-Font engines may differ in antialiasing and slightly in fractional metrics.
-Require equal logical behavior and semantic containment rather than cross-engine
-PNG identity. Within one renderer and font set, a default-image export must be
-identical across display scales.
+A native macOS test requires a matching SDK, deployed application, and dylib.
+Treat any stale packaged runtime as invalid evidence.
 
-Image upload/readback ownership can corrupt pixels if direction is ambiguous.
-Treat synchronization semantics as a blocking decision before changing
-`applyChanges`.
-
-Fractional and multi-monitor scale changes may expose rounding gaps. Use `double`,
-convert rectangle edges, and centralize rounding.
+`USE_WRITE_PIXELS` may have backend-specific restrictions. Preserve the feature
+and make eligibility explicit rather than deleting it.
 
 ## Idempotence and Recovery
 
-The isolated worktree is the primary protection against previous-session changes.
-Never use destructive reset or checkout commands on an existing worktree. If a
-milestone fails, preserve its log, update state with the exact blocker, correct
-the smallest cause, and rerun only the focused command.
+Continue in the existing worktree and branch. Do not reset, rebase, rewrite, or
+drop the existing commits as part of this review correction.
 
-Generated artifacts may be recreated. Evidence and history are append-only.
-State and editorial files may be rewritten. Do not delete unrelated caches or
-local files. Before each commit, inspect only active paths and ensure that no
-private screenshot, verbose log, or generated binary is staged.
+A failed test is not a reason to switch platforms. Fix or record the smallest
+blocking cause on macOS.
 
-Commits follow `CONTRIBUTING.md`. Use English Conventional Commit titles with a
-required scope. Use `!` and a `BREAKING CHANGE:` footer when the default logical
-layout or public dimension semantics require it. Do not push, open a pull request,
-close the issue, or publish artifacts without explicit user instruction.
+Do not push, open a pull request, update the issue, publish artifacts, or use
+credentials unless explicitly requested.
 
 ## Surprises & Discoveries
 
-No implementation discoveries are recorded yet. Add only observations that alter
-remaining architecture, compatibility, validation, or recovery work.
+- Observation: the prior execution labeled an AWT Launcher run as macOS platform
+  proof.
+  Evidence: branch evidence records `totalcross.Launcher` with `/scale`.
+
+- Observation: `USE_WRITE_PIXELS` was removed even though the new code differs
+  only in builds where that specialization is enabled.
+  Evidence: commit `fd7e5d358`.
+
+- Observation: `LayoutUnit` is stored and tested as metadata but is not consumed
+  by the layout engine.
+  Evidence: no effective-unit use in child placement or `Control.setRect`.
+
+Add only discoveries that change remaining work.
 
 ## Decision Log
 
-- Decision: Start from freshly fetched current `origin/master` in an isolated
-  worktree and ignore source changes from earlier plans.
-  Rationale: The implementation and evidence must stand independently.
-  Date/Author: 2026-08-01 / plan author.
+- Decision: preserve the existing branch and correct it with new commits.
+  Rationale: useful scaffolding is present, while history remains auditable.
+  Date: 2026-08-01.
 
-- Decision: Use logical units throughout public UI drawing and keep physical
-  dimensions explicit at surface and pixel-buffer boundaries.
-  Rationale: A text-only scale fix would preserve the mixed model behind issue
-  #433.
-  Date/Author: 2026-08-01 / plan author.
+- Decision: native implementation validation uses macOS only until final
+  cross-platform validation.
+  Rationale: it gives a fast, matching native VM loop without premature iOS or
+  Android build work.
+  Date: 2026-08-01.
 
-- Decision: Use `double`, never new `float` API, for fractional calculations.
-  Rationale: This matches TotalCross constraints and reduces rounding drift.
-  Date/Author: 2026-08-01 / plan author.
+- Decision: JavaSE/AWT and native macOS are separate proof lanes.
+  Rationale: Java methods do not execute native replacements or Skia C++ code.
+  Date: 2026-08-01.
 
-- Decision: Deprecate `DP` with value zero and make `toPixels` an identity.
-  Rationale: Recompiled source migrates without marker detection or deployer work.
-  Date/Author: 2026-08-01 / plan author.
+- Decision: restore `USE_WRITE_PIXELS` with scale-aware eligibility.
+  Rationale: preserving an embedded specialization is safer than unrelated
+  deletion.
+  Date: 2026-08-01.
 
-- Decision: Make root layout DP by default and require one explicit root setting
-  to preserve pixel layout.
-  Rationale: Migration is encouraged while the opt-out remains minimal.
-  Date/Author: 2026-08-01 / plan author.
-
-- Decision: Implement Skia first, Java second, and non-Skia native last.
-  Rationale: Skia establishes the reference transform and shaping contract.
-  Date/Author: 2026-08-01 / plan author.
+- Decision: use CoreGraphics process ownership and `screencapture -l`.
+  Rationale: it is deterministic, avoids title enumeration, and captures only the
+  target window.
+  Date: 2026-08-01.
 
 ## Outcomes & Retrospective
 
-No implementation outcome exists yet. At each milestone, record delivered
-behavior, exact proof, deviations, and remaining risk without duplicating logs.
+The branch review found useful foundations but no final accepted outcome yet.
+Update this section after each corrected behavioral milestone.
 
 ## Revision Note
 
-2026-08-01: Replaced the original near-limit single-file plan with a compact
-living ExecPlan plus scoped design and validation files. The split preserves
-detail, resume efficiency, and room for implementation updates while keeping each
-file below the requested size limit.
+2026-08-01: Rebased the living plan's reported progress on reviewed behavior,
+restored embedded-platform scope, separated Java from native macOS validation,
+deferred other native platforms until final validation, and specified a
+deterministic screenshot path.

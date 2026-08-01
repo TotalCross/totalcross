@@ -6,80 +6,70 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Logical UI scaling editorial report
 
-Update this report at major milestone closure and final completion. Keep claims
-factual and point to evidence rather than copying logs.
-
 ## Editorial Summary
 
-Logical layout units are now explicit, image backing scale is independent from
-logical image dimensions, and Graphics owns content and font scale. The worktree
-also removes control-level dependence on the deprecated global density setting.
+The branch contains useful implementation scaffolding but is under corrective
+review. No final outcome is claimed.
 
 ## Original Plan versus Actual Outcome
 
-The implementation started directly from the recorded master revision. The
-macOS proof uses a deterministic synthetic DANFE fixture at simulated scales 1
-and 2, following the user's macOS-first validation direction. Android and iOS
-workspace validation remain deferred; no issue or external artifact was updated.
+The original plan expected complete layout behavior, three-renderer equivalence,
+native macOS and Android proof, native synchronization, and a complete
+text-bearing DANFE.
+
+The reviewed branch currently proves API scaffolding, selected Java image
+behavior, PNG dimensions, barcode runs, native compilation, and Java Launcher
+startup. It does not yet prove the complete behavioral acceptance.
 
 ## What Changed
 
-- Added `LayoutUnit` with explicit DP, PIXEL, and inheritance semantics.
-- Deprecated the density marker and converter as logical identity APIs.
-- Added surface-owned `Graphics` scales and logical/physical Image dimensions.
-- Added `Double4D.isFinite` for deployable scale validation.
-- Added headless DANFE image dimensions, barcode, and Java synchronization tests.
+Update after corrective milestones. Keep JavaSE/AWT and native macOS changes in
+separate subsections.
 
 ## Decisions and Trade-offs
 
-Applications that inlined the old `Control.DP` marker require recompilation.
-Default images retain scale 1 and raw pixels remain accessible only through the
-explicit physical-dimension APIs. The deprecated compatibility density value is
-still mirrored by launcher/platform initialization but no UI control reads it.
+- Existing branch history is preserved.
+- `USE_WRITE_PIXELS` must be restored with scale-aware eligibility.
+- Native implementation validation uses macOS until final platform validation.
+- Java Launcher execution is not native evidence.
+- Screenshots use CoreGraphics window IDs and `screencapture -l`.
 
 ## Unexpected Problems and Discoveries
 
-`Double.isFinite` initially failed at deployment because the device substitute
-`Double4D` lacked the API; the substitute now provides it and deployment passes.
-The initial DANFE fixture exposed Java `fillRect` using logical dimensions as
-physical bounds for scaled images; it now converts rectangle edges at the image
-backing boundary.
+- Prior progress reporting confused compilation and Java host execution with
+  native runtime validation.
+- The embedded direct-write branch was removed unnecessarily.
+- Layout-unit metadata was not connected to layout behavior.
 
 ## Validation and Measurable Results
 
-Focused SDK tests pass for layout units, scale validation, DANFE dimensions,
-barcode runs, and Java-side synchronization. SDK distribution and the macOS
-native Ninja tree build pass. The macOS Java fixture started at scale 1 and 2.
-Evidence records exact commands and limits in `.agent/evidence/logical-ui-scaling.md`.
+Do not promote existing Java-only or compile-only results into native proof.
+Populate this section as corrected milestones pass.
 
 ## Useful Evidence and Examples
 
-Use `.agent/evidence/logical-ui-scaling.md` and
-`artifacts/logical-ui-scaling/` for sanitized, repository-relative evidence.
+Use repository-relative paths under:
+
+    artifacts/logical-ui-scaling/
 
 ## Limitations, Remaining Work, and Open Questions
 
-Native-to-Java readback, renderer-equivalence measurements, deployed text
-containment, and a window-only macOS screenshot are not independently proven.
-The installed capture integration cannot target the launched Java process, and
-no desktop-wide capture was accepted. Android and iOS workspace validation are
-deferred per the current platform-validation direction. These limitations mean
-issue #433 must not be described as ready to close.
+See `.agent/reviews/logical-ui-scaling-branch-review.md` and the current state.
 
 ## Possible Article Angles
 
-- Moving density from a global setting to a destination-surface contract.
-- Separating image logical size from backing-pixel ownership.
+Defer until implementation is complete.
 
 ## Suggested Narrative
 
-The original density-dependent image path mixed global display information with
-image drawing. The delivered surface-owned scale model establishes logical units
-at the API boundary and preserves explicit access to physical pixels.
+Explain the original mixed-unit bug, the difference between Java and native
+rendering, the surface-owned scale model, preservation of embedded
+specializations, and the final cross-platform proof.
 
 ## Claims Requiring Human Review
 
-- Native renderer equivalence and bidirectional synchronization require a
-  runtime fixture.
-- A privacy-sanitized window-only macOS capture requires a compatible capture
-  path or manual maintainer capture.
+- visual equivalence;
+- public compatibility of Image dimension semantics;
+- non-Skia macOS support status;
+- embedded fast-path performance;
+- optional iOS support conclusion.

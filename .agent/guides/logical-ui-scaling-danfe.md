@@ -4,260 +4,169 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# DANFE end-to-end validation fixture
+# Complete DANFE validation
 
-Read this file only when creating or running the final document-rendering proof.
-The fixture must be implemented from current master and this specification, not
-copied from source changes created by earlier plans.
+The existing rectangle and barcode test is retained as low-level coverage. It is
+not the complete DANFE acceptance test because it does not draw or measure text.
 
-## Purpose
+## Common fixture
 
-The fixture proves the original failure mode: text drawn into a default image must
-not inherit screen density. It also proves that the broader logical-unit API does
-not fix the issue by merely shrinking text or by breaking shapes, barcodes, pixel
-synchronization, or exports.
+Use deterministic synthetic data and one logical document specification for all
+renderers. It contains:
 
-## Document variants
+- 360 by 540 logical document;
+- title and document identifier;
+- accented Portuguese issuer and recipient data;
+- address and tax-like synthetic fields;
+- product table with long descriptions;
+- quantities, prices, totals, bold and regular text;
+- lines, rectangles, filled headers;
+- footer near the lower boundary;
+- barcode with exactly 31 dark runs.
 
-Render at least these variants with the same logical drawing commands:
+No real customer, company, tax, address, email, or phone data is allowed.
 
-1. default fixed-pixel image:
+Split data, renderer, assertions, and native application files when needed to
+remain below the file-size limit.
 
-       new Image(360, 540)
+## Required image variants
 
-   Expected logical size: `360 x 540`.
-   Expected physical size and PNG: `360 x 540`.
+Default image:
 
-2. explicit logical scale-2 image:
+    logical: 360 x 540
+    physical: 360 x 540
+    contentScale: 1
 
-       Image.createLogical(360, 540, 2)
+Explicit scale-two logical image:
 
-   Expected logical size: `360 x 540`.
-   Expected physical size and PNG: `720 x 1080`.
+    logical: 360 x 540
+    physical: 720 x 1080
+    contentScale: 2
 
-3. default image while the application window runs at scale `1`.
+Use the same logical drawing commands.
 
-4. default image while the application window runs at scale `2` or the actual
-   Retina/high-density scale.
+## Java lane
 
-The two default-image exports must be identical when renderer, fonts, locale, and
-fixture data are the same.
+Run the fixture through JavaSE/AWT. This proves the Java renderer only.
 
-## Required content
+Generate:
 
-Use deterministic, non-private sample values. Include:
+    danfe-java-default.png
+    danfe-java-scale2.png
+    danfe-java-assertions.json
 
-- a DANFE title and document identifier;
-- issuer and recipient blocks;
-- accented Portuguese labels and values;
-- a long company name that approaches its assigned width;
-- address, city, state, postal code, and tax identifiers;
-- a product table with several rows;
-- quantities, unit prices, totals, and decimal punctuation;
-- bold and regular text;
-- horizontal and vertical rules;
-- outlined rectangles and filled headers;
-- a footer close to the lower document edge;
-- a deterministic barcode containing exactly 31 dark runs.
+Capture the Java application window separately using its Java PID and the
+screenshot guide.
 
-Do not use real customer, company, invoice, tax, email, phone, or address data.
+## Native macOS lane
 
-Keep each fixture or helper file below 20 KiB and approximately 600 lines. Split
-data, renderer, barcode analysis, and assertions into separate focused files when
-needed.
+Compile the fixture against the current SDK, deploy it for macOS, and execute the
+generated native application with the exact current `libtcvm.dylib`.
 
-## Layout rules
+Generate:
 
-All fixture geometry is logical. The default image's scale `1` makes one logical
-unit equal one pixel. The scale-2 variant uses the same logical coordinates under
-a larger backing buffer.
+    danfe-native-default.png
+    danfe-native-scale2.png
+    danfe-native-assertions.json
 
-Use fixed logical font sizes approved in the fixture. Do not dynamically reduce
-font size merely to satisfy containment. Where wrapping is intended, specify the
-maximum logical width and expected line count or range.
+The native executable must perform or emit enough data for assertions without
+depending on the Java Launcher.
 
-Save key rectangles in fixture metadata so automated tests can compare text
-metrics and painted bounds against their assigned regions.
+Capture the native application window using the native process PID.
 
-## Automated assertions
+## Text assertions
 
-### Dimensions
+For title, issuer, recipient, long product description, totals, and footer,
+record and assert:
+
+- shaped logical advance;
+- ascent, descent, leading, and line height;
+- expected line count or approved range;
+- baseline positions;
+- logical ink bounds;
+- containment within the assigned rectangle.
+
+Containment alone is insufficient. Add approved minimum and maximum ranges for:
+
+- title glyph height;
+- body glyph height;
+- known string advance;
+- line height;
+- bold versus regular distinction.
+
+A change that shrinks all text to fit must fail.
+
+## Geometry assertions
 
 Assert:
 
-    default.getWidth() == 360
-    default.getHeight() == 540
-    default.getPixelWidth() == 360
-    default.getPixelHeight() == 540
+- exact logical and physical dimensions;
+- shared rules align with text and table cells;
+- footer remains inside the document;
+- scale-two physical geometry is twice the default while logical geometry is
+  unchanged;
+- no primitive or text is scaled twice.
 
-For scale 2:
+## Barcode assertions
 
-    logical width and height == 360 x 540
-    physical width and height == 720 x 1080
+Analyze a selected physical scan line and require:
 
-Decode exported PNGs independently and assert their physical dimensions.
-
-### Text containment
-
-For each critical text block, assert shaped logical advance, line height, line
-count, baseline positions, and logical ink bounds against its assigned rectangle.
-
-Required critical blocks:
-
-- title;
-- issuer name;
-- recipient name;
-- long product description;
-- totals;
-- footer.
-
-Allow a small approved margin for antialiasing. Fail when text crosses its box,
-the footer leaves the image, or baselines overlap.
-
-### Anti-over-shrinking checks
-
-Containment alone is not sufficient. Record approved ranges for:
-
-- title glyph height;
-- regular body glyph height;
-- bold body glyph height;
-- known string advance;
-- line height;
-- bold-to-regular advance or weight distinction.
-
-The fixed output must remain visually comparable to the reference design. A patch
-that reduces all font sizes to fit must fail these ranges.
-
-### Barcode structure
-
-Generate deterministic bars with exactly 31 dark runs along the selected scan
-line. Decode or analyze the exported pixel row and assert:
-
-- 31 dark runs;
+- exactly 31 dark runs;
 - expected quiet zones;
 - no clipped first or last run;
-- scale-2 output preserves the same logical run structure;
-- alpha and background values remain correct.
+- equal logical structure at scale one and scale two.
 
-Do not rely only on visual inspection.
+## Density independence
 
-### Density independence
+For one renderer and font set, changing only the host or window content scale must
+not change a default scale-one image.
 
-Render the default image with application/window `contentScale` values `1` and
-`2` or the closest available high-density value. Assert:
+Require equal dimensions, logical metrics, and PNG hash when raster inputs are
+otherwise identical.
 
-- PNG dimensions remain `360 x 540`;
-- logical metrics are equal;
-- physical pixels and PNG hash are equal within the same renderer and font set;
-- no font size reads the window's scale through a global setting.
+Do not use a simulated Java `/scale` result as native Retina proof. Native Retina
+proof comes from the deployed native application and native backing scale.
 
-### Scaled-image behavior
+## Synchronization assertions
 
-Render the same fixture into the scale-2 logical image. Assert:
+In the native app:
 
-- logical metrics and line wrapping match the default image;
-- physical output doubles in each dimension;
-- selected logical coordinates map to expected physical positions;
-- no shape or text is scaled twice.
+- modify an alpha-128 Java pixel at an odd row width;
+- upload and verify it in native output;
+- draw a known native mark;
+- read back and verify the Java pixel;
+- alternate ownership and repeat;
+- preserve failure state when a native copy fails.
 
-### Renderer equivalence
+## Renderer equivalence
 
-Run the semantic fixture against Skia and Java. Require equal:
+Require equivalent logical semantics between Java, native Skia, and supported
+native non-Skia paths:
 
-- integer FontMetrics compatibility values;
-- preferred component sizes used by any fixture UI;
-- logical line counts and approved wrapping points;
-- barcode run count;
-- logical containment;
-- image logical and physical dimensions.
+- integer compatibility metrics;
+- line counts and approved wraps;
+- baselines and containment;
+- logical and physical image dimensions;
+- barcode structure.
 
-Permit documented small double-metric tolerance and antialiasing differences.
-After the non-Skia native path is implemented, run the same assertions there.
+Do not require cross-engine antialiasing pixel identity.
 
-### Pixel synchronization
+## Final Android lane
 
-Before export, exercise both directions:
+Run only after Java and native macOS pass. Deploy the same fixture on a
+high-density Android target and require the same semantic and synchronization
+assertions.
 
-- modify a known Java pixel and ensure it reaches the exported/native image;
-- draw a known native/Skia mark and ensure Java readback sees it;
-- repeat synchronization and ensure neither change is lost;
-- include an alpha-128 pixel;
-- use an odd-width auxiliary image to test row pitch.
-
-## macOS run
-
-Launch the fixture in a real TotalCross window on macOS. Record sanitized metadata:
-
-    commit
-    renderer
-    macOS and Java versions
-    logical window size
-    physical framebuffer size
-    contentScale
-    fontScale
-    default PNG hash
-    scale-2 PNG hash
-
-Capture only the application window according to the screenshot guide. Include a
-side-by-side comparison generated from the two DANFE PNGs rather than exposing the
-desktop.
-
-## Android run
-
-Run the same fixture on at least one Android device or emulator with density above
-`1`. Record:
-
-    device or emulator profile
-    Android version
-    density/contentScale
-    renderer
-    commit
-    PNG dimensions and hashes
-    assertion summary
-
-Copy the generated PNG through a documented, non-destructive path. Do not rely on
-a desktop re-render as Android proof.
-
-## Human visual review
-
-Create sanitized comparisons for:
-
-- approved reference versus fixed default image;
-- scale-1 window versus scale-2 window default export;
-- default image versus scale-2 logical image, displayed at equal logical size;
-- application window on macOS Retina.
-
-Review:
-
-- text size and clarity;
-- baseline alignment;
-- bold distinction;
-- clipping and overdraw;
-- footer position;
-- barcode integrity;
-- shape and text alignment.
-
-Record a factual conclusion. Do not call the output equivalent solely because all
-text is contained.
+iOS is optional final validation unless explicitly required.
 
 ## Evidence package
 
-Place under:
+Store under:
 
     artifacts/logical-ui-scaling/danfe/
 
-Include:
+Include assertion JSON, PNGs, logs, runtime identity, dylib hash for native
+macOS, Android metadata, screenshots, comparison images, and privacy review.
 
-    default-scale1.png
-    default-scale2-window.png
-    logical-image-scale2.png
-    comparison-default-density.png
-    comparison-reference.png
-    danfe-assertions.json
-    danfe-run-metadata.json
-    concise test logs
-
-Names may change, but metadata must map each artifact to commit, platform,
-renderer, logical size, physical size, contentScale, fontScale, and hash.
-
-Run the privacy and integrity checks before recording final hashes.
+Label every artifact with its lane. Never call a Java Launcher PNG or screenshot
+native macOS evidence.
