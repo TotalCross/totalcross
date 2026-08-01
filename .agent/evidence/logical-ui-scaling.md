@@ -258,3 +258,14 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `Graphics` instances. Image Graphics retain their image-owned scale.
 - Limitation: a freshly deployed native macOS application must still report and
   exercise this value on a real Retina screen before it is runtime proof.
+
+## Milestone 2R: scaled Skia primitive fixture
+
+- Timestamp: 2026-08-01T20:52:00Z
+- Commit: `765a1352d`
+- Command: compiled `skia_surface_test.cpp` against
+  `build-logical-ui/libtcvm.dylib` and ran `/tmp/logical-ui-m2-skia-test`
+- Renderer/platform: native macOS Skia helper runtime
+- Status: passed
+- Result: the fixture now verifies that the base scale applies to primitive
+  destinations and clips while raw pixel access remains physical.
