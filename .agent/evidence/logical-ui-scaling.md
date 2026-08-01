@@ -1,0 +1,44 @@
+<!--
+Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+
+SPDX-License-Identifier: LGPL-2.1-only
+-->
+
+# Logical UI scaling evidence
+
+This file is append-only. Add compact records; keep raw logs and artifacts under
+`artifacts/logical-ui-scaling/`.
+
+## Plan authoring
+
+- Timestamp: 2026-08-01T18:07:00Z
+- Revision: plan bundle only
+- Status: created
+- Observed upstream master:
+  `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
+- Limitation: execution must fetch and record the actual current master.
+
+## Milestone 0: source identity
+
+- Timestamp: 2026-08-01T21:00:00Z
+- Base and tested commit: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
+- Branch/worktree: `feat/logical-ui-scaling` at `totalcross-logical-ui`
+- Command: `git fetch origin master`; `git worktree add -b feat/logical-ui-scaling …`
+- Status: passed
+- Result: worktree starts directly at the fetched `origin/master`; only the
+  supplied plan-support files are untracked and no previous-plan source changes
+  are present.
+
+## Milestone 0: issue #433 baseline
+
+- Timestamp: 2026-08-01T21:05:00Z
+- Base and tested commit: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
+- Milestone and slice: 0, baseline source-path reproduction
+- Command: focused `rg` audit saved to
+  `artifacts/logical-ui-scaling/logs/m0-density-coupling.txt`
+- Renderer/platform: JavaSE source path and Skia native source path
+- Status: passed (static reproduction)
+- Result: both `Launcher.getFont` and Skia `drawText`/string-width calculations
+  multiply font size by global `Settings.screenDensity`; a normal Image has no
+  independent content scale. This proves the density-dependent text-image path
+  on the untouched base. Device execution is deferred to the Android milestone.
