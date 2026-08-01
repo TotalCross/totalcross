@@ -102,6 +102,24 @@ class LogicalTextScaleTest {
   }
 
   @Test
+  void checkAndRadioMetricsIgnoreContentScaleAndTrackFontScale() {
+    Check check = new Check("DANFE 25,00");
+    Radio radio = new Radio("DANFE 25,00");
+    check.gfx.setScales(1.0, 1.0);
+    radio.gfx.setScales(1.0, 1.0);
+    int checkAtOne = check.getMaxTextWidth();
+    int radioAtOne = radio.getPreferredWidth();
+    check.gfx.setScales(3.0, 1.0);
+    radio.gfx.setScales(3.0, 1.0);
+    assertEquals(checkAtOne, check.getMaxTextWidth());
+    assertEquals(radioAtOne, radio.getPreferredWidth());
+    check.gfx.setScales(1.0, 1.5);
+    radio.gfx.setScales(1.0, 1.5);
+    assertTrue(check.getMaxTextWidth() > checkAtOne);
+    assertTrue(radio.getPreferredWidth() > radioAtOne);
+  }
+
+  @Test
   void labelLineWidthCacheIgnoresContentScaleAndTracksFontScale() {
     Label label = new Label("DANFE 25,00");
     label.gfx.setScales(1.0, 1.0);

@@ -111,11 +111,11 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     if (autoSplit) {
       int max = 0;
       for (int i = lines.length - 1; i >= 0; i--) {
-        max = Math.max(fm.stringWidth(lines[i]), max);
+        max = Math.max(getFontWidthForLayout(lines[i]), max);
       }
       return max;
     }
-    return textW;
+    return getFontWidthForLayout(displayedText);
   }
   
   /** "Merge" the colors between the original grayscale image and the current foreground. */
@@ -187,13 +187,13 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
   /** returns the preferred width of this control. */
   @Override
   public int getPreferredWidth() {
-    return getFont().fm.stringWidth(text) + /*Radio symbol width*/ fmH + Edit.prefH + 2;
+    return getFontWidthForLayout(text) + /*Radio symbol width*/ getFontHeightForLayout() + Edit.prefH + 2;
   }
 
   /** returns the preferred height of this control. */
   @Override
   public int getPreferredHeight() {
-    return fmH * lines.length + Edit.prefH;
+    return getFontHeightForLayout() * lines.length + Edit.prefH;
   }
 
   /** Called by the system to pass events to the radio control. */
@@ -274,7 +274,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
 
   @Override
   protected void onFontChanged() {
-    textW = fm.stringWidth(this.displayedText);
+    textW = getFontWidthForLayout(this.displayedText);
     onColorsChanged(false);
   }
 
@@ -325,16 +325,17 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     }
 
     // draw label
-    yy = (this.height - fmH * lines.length) >> 1;
-    xx = hh + (uiFlat ? fmH / 2 + 4 : radioTextGap);
+    int fontHeight = getFontHeightForLayout();
+    yy = (this.height - fontHeight * lines.length) >> 1;
+    xx = hh + (uiFlat ? fontHeight / 2 + 4 : radioTextGap);
     g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor, backColor)) : cColor;
-    for (int i = 0; i < lines.length; i++, yy += fmH) {
+    for (int i = 0; i < lines.length; i++, yy += fontHeight) {
       int textMaxWidth = this.width - xx;
       String text = textMaxWidth > 0 && leftJustify ? StringUtils.shortText(lines[i], font.fm, textMaxWidth) : lines[i];
 
       g.drawText(
           text,
-          leftJustify ? xx : (this.width - fm.stringWidth(lines[i])),
+          leftJustify ? xx : (this.width - getFontWidthForLayout(lines[i])),
           yy,
           textShadowColor != -1,
           textShadowColor);
