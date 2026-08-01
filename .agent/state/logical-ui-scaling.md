@@ -154,6 +154,10 @@ deployed native root fixture pass, and no external text-engine blocker remains.
 - Check paint geometry and Radio indicator sizing now derive their font-relative
   dimensions from effective destination metrics. Focused Java validation passed;
   the remaining M3R audit is concentrated in Edit material-caption geometry.
+- Edit caption-icon spacing, preferred material height, cursor descent, and
+  horizontal cursor scrolling now use destination effective metrics. Focused
+  Java validation and the deployed native macOS fixture passed; logs:
+  `m3-edit-dist.log`, `m3-edit-deploy.log`, and `m3-edit-native.log`.
 
 ## Remaining Major Work
 
