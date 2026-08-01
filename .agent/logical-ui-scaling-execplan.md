@@ -209,6 +209,16 @@ native compile, and deployed native macOS fixture validation passed; logs:
 `effective-text-controls-dist.log`, `effective-text-controls-deploy.log`, and
 `effective-text-controls-native.log`.
 
+Progress 2026-08-01: routed the remaining live `Convert.insertLineBreak` and
+`getBreakPos` UI consumers through destination effective font sizes, including
+dialogs, popup/menu titles, lists, tooltips, Check, Radio, and Grid tooltips.
+The compatibility-only static ToolTip helper remains scale-one by signature.
+Focused Java and deployed native macOS fixture validation passed; logs:
+`effective-multiline-consumers-test.log`,
+`effective-multiline-consumers-dist.log`,
+`effective-multiline-consumers-deploy.log`, and
+`effective-multiline-consumers-native.log`.
+
 ### Milestone 2R residual: native surface lifecycle
 
 The established base transform and Retina initialization remain valid.

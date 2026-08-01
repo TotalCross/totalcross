@@ -1,5 +1,7 @@
 // Copyright (C) 2003 Arnaud Farine
 // Copyright (C) 2003-2013 SuperWaba Ltda. 
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -147,12 +149,12 @@ public class ToolTip extends Label implements PenListener, MouseListener {
     w.add(this); // guich@tc100b4_19: must always be (re)added to the parent container to make sure we will be the last control that will be painted
     Coord size = w.getSize();
 
-    int ww = msg0lines != null ? fm.getMaxWidth(msg0lines, 0, msg0lines.length) : fm.stringWidth(msg0); // guich@tc120_2: moved to after w.add(this)
+    int ww = msg0lines != null ? getMaxTextWidth() : getFontWidthForLayout(msg0); // guich@tc120_2: moved to after w.add(this)
     if (ww == 0) {
       ww = getMaxTextWidth() + insideGap;
     }
     if (ww > Settings.screenWidth) {
-      super.setText(Convert.insertLineBreakBalanced(Settings.screenWidth * 9 / 10, fm, msg0));
+      super.setText(Convert.insertLineBreakBalanced(Settings.screenWidth * 9 / 10, fm, font.size * gfx.getFontScale(), msg0));
       ww = super.getMaxTextWidth();
     }
     int hh = getPreferredHeight() + insideGap;

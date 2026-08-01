@@ -360,7 +360,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   public void split(int maxWidth) // guich@tc114_73
   {
     String text = originalText; // originalText will be changed by setText
-    setText(Convert.insertLineBreak(maxWidth, fm, text)); // guich@tc126_18: text cannot be assigned here or originalText will be overwritten
+    setText(Convert.insertLineBreak(maxWidth, fm, font.size * gfx.getFontScale(), text)); // guich@tc126_18: text cannot be assigned here or originalText will be overwritten
     originalText = text;
   }
 
@@ -372,7 +372,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
     }
     int[] linesW = this.linesW; // guich@450_36: use local var
     for (i = lines.length - 1; i >= 0; i--) {
-      linesW[i] = fm.stringWidth(lines[i]);
+      linesW[i] = getFontWidthForLayout(lines[i]);
     }
   }
 

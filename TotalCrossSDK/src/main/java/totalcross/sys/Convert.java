@@ -997,11 +997,16 @@ public final class Convert {
 
   private static int getLineCount(int maxWidth, totalcross.ui.font.FontMetrics fm, String text) // guich@200b4_30 - guich@tc100: changed to use the new StringBuffer functions
   {
+    return getLineCount(maxWidth, fm, 0, text);
+  }
+
+  private static int getLineCount(int maxWidth, totalcross.ui.font.FontMetrics fm, double effectiveFontSize, String text)
+  {
     StringBuffer chars = new StringBuffer(text); // guich@tc114_76: change | to \n before applying our algorithm.
     int last = chars.length() - 1;
     int lines = 1;
     for (int pos = 0; pos <= last; pos++) {
-      pos = getBreakPos(fm, chars, pos, maxWidth, true);
+      pos = getBreakPos(fm, chars, pos, maxWidth, true, effectiveFontSize);
       if (pos < 0 || pos > last) {
         break;
       }
@@ -1020,8 +1025,14 @@ public final class Convert {
    */
   public static String insertLineBreakBalanced(int maxWidth, totalcross.ui.font.FontMetrics fm, String text) // guich@200b4_30 - guich@tc100: changed to use the new StringBuffer functions
   {
+    return insertLineBreakBalanced(maxWidth, fm, 0, text);
+  }
+
+  /** Inserts balanced TotalCross line breaks using an optional destination effective font size. */
+  public static String insertLineBreakBalanced(int maxWidth, totalcross.ui.font.FontMetrics fm, double effectiveFontSize, String text)
+  {
     // check if the string already fits
-    if (fm.stringWidth(text) <= maxWidth) {
+    if ((effectiveFontSize == 0 ? fm.stringWidth(text) : fm.stringWidthAtSizeD(text, effectiveFontSize)) <= maxWidth) {
       return text;
     }
     int parts = 2;
@@ -1029,24 +1040,26 @@ public final class Convert {
     int lt = text.length();
     for (int i = 0; i < lt; i++, parts++) {
       int l = lt / parts; // finds the number of parts
-      int ww = fm.sbWidth(sb, 0, l);
+      int ww = effectiveFontSize == 0 ? fm.sbWidth(sb, 0, l)
+          : (int) Math.ceil(fm.stringWidthAtSizeD(sb.substring(0, l), effectiveFontSize));
       if (ww < maxWidth) // does the first string already fits in the desired max width?
       {
         while (l < lt) // checks if the number of lines equals to the number of parts; if not, skip to next word and try again
         {
-          int lines = getLineCount(ww + fm.height / 4, fm, text);
+          int lines = getLineCount(ww + (effectiveFontSize == 0 ? fm.height : (int) Math.ceil(fm.lineHeightAtSizeD(effectiveFontSize))) / 4, fm, effectiveFontSize, text);
           if (lines == parts) {
-            return insertLineBreak(ww + fm.height / 4, fm, text);
+            return insertLineBreak(ww + (effectiveFontSize == 0 ? fm.height : (int) Math.ceil(fm.lineHeightAtSizeD(effectiveFontSize))) / 4, fm, effectiveFontSize, text);
           }
           l++;
           while (l < lt && sb.charAt(l) != ' ') {
             l++;
           }
-          ww = fm.sbWidth(sb, 0, l);
+          ww = effectiveFontSize == 0 ? fm.sbWidth(sb, 0, l)
+              : (int) Math.ceil(fm.stringWidthAtSizeD(sb.substring(0, l), effectiveFontSize));
         }
       }
     }
-    return insertLineBreak(maxWidth, fm, text);
+    return insertLineBreak(maxWidth, fm, effectiveFontSize, text);
   }
 
   /** Finds the best position to break the line, with word-wrap and respecting \n.
