@@ -68,4 +68,33 @@ class LogicalTextScaleTest {
     assertTrue(edit.getPreferredWidth() > widthAtOne);
     assertTrue(edit.getPreferredHeight() > heightAtOne);
   }
+
+  @Test
+  void editCursorGeometryUsesFontScaleButNotContentScale() {
+    ExposedEdit edit = new ExposedEdit();
+    edit.setRect(0, 0, 200, 50);
+    edit.setText("DANFE");
+
+    edit.gfx.setScales(1.0, 1.0);
+    int widthAtOne = edit.totalWidth();
+    int cursorAtOne = edit.cursorAtEnd();
+
+    edit.gfx.setScales(2.0, 1.0);
+    assertEquals(widthAtOne, edit.totalWidth());
+    assertEquals(cursorAtOne, edit.cursorAtEnd());
+
+    edit.gfx.setScales(1.0, 1.5);
+    assertTrue(edit.totalWidth() > widthAtOne);
+    assertTrue(edit.cursorAtEnd() > cursorAtOne);
+  }
+
+  private static final class ExposedEdit extends Edit {
+    int totalWidth() {
+      return getTotalCharWidth();
+    }
+
+    int cursorAtEnd() {
+      return charPos2x(getText().length());
+    }
+  }
 }

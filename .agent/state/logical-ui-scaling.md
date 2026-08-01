@@ -30,12 +30,13 @@ Extend the same effective logical font scale through the remaining ordinary text
 controls, line layout, and cached layout invalidation. `Label`, `Button`, and
 `Edit` preferred sizes are covered. `Label` and `Button` line placement now
 uses scaled logical line height; `Edit` vertical text, selection, and cursor
-geometry now use it too. Horizontal editing geometry is next.
+geometry now use it too. Its horizontal measurement and caret placement now
+use destination-scaled advances; remaining text drawing equivalence is next.
 
 ## Next Concrete Action
 
-Audit `Edit` horizontal text measurement and cursor placement against the
-`Graphics.fontScale` contract.
+Audit measurement/drawing equivalence and the remaining baseline behavior for
+text controls against the `Graphics.fontScale` contract.
 
 ## Files to Read Now
 
@@ -80,6 +81,9 @@ Do not read later image or renderer guides yet.
   the same scaled logical line height as their preferred-size calculations.
 - `Edit` selection, caption-icon placement, and cursor height now use scaled
   logical vertical metrics.
+- `Edit` horizontal alignment, cursor positions, masks, password text, and
+  caption-image fitting now use destination-scaled advances. The focused test
+  exercises materialized text, content-scale invariance, and font-scale growth.
 
 These are foundations, not completion of their behavioral milestones.
 
