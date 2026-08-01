@@ -92,7 +92,6 @@ destination-aware path.
 ## Corrections Required Before Closing M3R
 
 - State, outcomes, and append-only evidence are not synchronized.
-- `Graphics.setScales` public lifecycle is not yet an approved final API.
 - Existing `"kerning"` terminology overstates what the core SkFont path proves.
 - Java double text metrics remain integer-valued and need an approved renderer
   treatment.
@@ -115,6 +114,10 @@ destination-aware path.
 - The freshly deployed native macOS fixture also passed after the wrapping
   change; logs: `effective-wrap-dist.log`, `effective-wrap-deploy.log`, and
   `effective-wrap-native.log`.
+- `Graphics.setScales` remains the documented destination lifecycle API used by
+  native runtime initialization, Image surfaces, and fixtures. It preserves
+  logical layout for content-scale changes, repositions controls for font-scale
+  changes, and does not expose a global density setting.
 
 ## Remaining Major Work
 

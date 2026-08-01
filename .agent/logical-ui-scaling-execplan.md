@@ -172,6 +172,11 @@ The deployed native macOS fixture passed as well; logs:
 `effective-wrap-dist.log`, `effective-wrap-deploy.log`, and
 `effective-wrap-native.log`.
 
+Decision 2026-08-01: retain `Graphics.setScales` as the public,
+destination-owned surface lifecycle API. It is used by the runtime, Image, and
+test fixtures; documentation freezes its invalidation behavior and explicitly
+rejects global-density semantics.
+
 ### Milestone 2R residual: native surface lifecycle
 
 The established base transform and Retina initialization remain valid.
