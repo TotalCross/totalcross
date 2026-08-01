@@ -468,6 +468,9 @@ Update this section after each corrected behavioral milestone.
   StringBuffer widths; all overloads returned `82`. Logs:
   `sdk-dist-font-overloads.log`, `deploy-font-overloads.log`, and
   `native-font-overloads.log`.
+- 2026-08-01: Updated `MultiEdit` cached line height and masked preferred width
+  for destination font scale. Focused Java `LogicalTextScaleTest` passed; log:
+  `artifacts/logical-ui-scaling/logs/logical-text-multiedit-test.log`.
 
 ## Revision Note
 
