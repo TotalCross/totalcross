@@ -92,3 +92,11 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: default images remain scale 1; `Image.createLogical(3, 7, 1.5)` has
   logical dimensions 3x7 and a 5x11 physical buffer. Graphics uses physical
   pitch for image buffers.
+
+- Timestamp: 2026-08-01T22:50:00Z
+- Commits: `b76ef5f70522b4a70a2797d2892fd3598c1ba8d5`, `3e868044cf1d203f86aef6a439faceeb3c7b8b2f`, `c577d9ff65228dc023458b974b6e3536cfb90a03`
+- Command: `ninja -C build-logical-ui`; focused GraphicsScaleTest
+- Status: passed
+- Result: native ABI field offsets preserve existing image fields; Java pixel
+  changes recreate the Skia bitmap before dirty state is cleared; copies retain
+  physical dimensions and backing metadata.
