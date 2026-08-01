@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -351,7 +352,7 @@ public class Label extends Control implements TextControl {
   @Override
   public int getPreferredWidth() {
     int ret = useFillAsPreferred ? FILL
-        : preferredWidthText != null ? fm.stringWidth(preferredWidthText)
+        : preferredWidthText != null ? getFontWidthForLayout(preferredWidthText)
             : (getMaxTextWidth() + (insets == null ? 0 : insets.left + insets.right)) + (borderColor == -1 ? 0 : 4);
     if (highlighted || textShadowColor != 0) {
       ret += 2;
@@ -361,6 +362,7 @@ public class Label extends Control implements TextControl {
 
   /** Returns the maximum text width for the lines of this Label. */
   public int getMaxTextWidth() {
+    ensureLineWidths();
     int w = 0;
     for (int i = lines.length - 1; i >= 0; i--) {
       if (linesW[i] > w) {
@@ -373,7 +375,7 @@ public class Label extends Control implements TextControl {
   /** Returns the preffered height of this control. */
   @Override
   public int getPreferredHeight() {
-    return fmH * lines.length + Edit.prefH + (highlighted ? 2 : 0) + (insets == null ? 0 : insets.top + insets.bottom)
+    return getFontHeightForLayout() * lines.length + Edit.prefH + (highlighted ? 2 : 0) + (insets == null ? 0 : insets.top + insets.bottom)
         + (borderColor == -1 ? 0 : 4); // if inverted, make sure the string is surrounded by the black box - guich@401_18: added commonVGap
   }
   
@@ -402,6 +404,17 @@ public class Label extends Control implements TextControl {
 
   @Override
   protected void onFontChanged() {
+    layoutFontScale = Double.NaN;
+    ensureLineWidths();
+  }
+
+  private double layoutFontScale = Double.NaN;
+
+  private void ensureLineWidths() {
+    double fontScale = gfx.getFontScale();
+    if (layoutFontScale == fontScale && linesW != null && linesW.length == lines.length) {
+      return;
+    }
     int i;
     if (linesW == null || linesW.length != lines.length) {
       linesW = new int[lines.length];
@@ -409,12 +422,14 @@ public class Label extends Control implements TextControl {
     int inv = (invert && align == RIGHT) ? 1 : 0; // guich@400_88
     int[] linesW = this.linesW; // guich@450_36: use local var
     for (i = lines.length - 1; i >= 0; i--) {
-      linesW[i] = fm.stringWidth(lines[i]) + inv;
+      linesW[i] = getFontWidthForLayout(lines[i]) + inv;
     }
+    layoutFontScale = fontScale;
   }
 
   @Override
   protected void onBoundsChanged(boolean screenChanged) {
+    ensureLineWidths();
     if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
     {
       lastASW = this.width;
@@ -514,6 +529,7 @@ public class Label extends Control implements TextControl {
   /** Called by the system to draw the button. */
   @Override
   public void onPaint(Graphics g) {
+    ensureLineWidths();
     // draw label
     if (invert) {
       g.foreColor = backColor;

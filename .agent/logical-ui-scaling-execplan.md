@@ -397,6 +397,17 @@ Add only discoveries that change remaining work.
 The branch review found useful foundations but no final accepted outcome yet.
 Update this section after each corrected behavioral milestone.
 
+- 2026-08-01: Milestone 3R's first layout slice connected destination
+  `fontScale` to `Control` and `Label` preferred measurements, while preserving
+  logical dimensions across content-scale changes. `Label` refreshes cached
+  line widths when its destination font scale changes. Evidence: focused Java
+  `LogicalTextScaleTest` passed; the freshly deployed native macOS fixture
+  reported `labelWidths=84,84,125` at content scales 2 and 4, then font scale
+  1.5, respectively. Full logs: `artifacts/logical-ui-scaling/logs/`
+  `logical-text-scale-test.log`, `sdk-dist-logical-text-scale.log`,
+  `deploy-logical-text-scale-after-dist.log`, and
+  `native-logical-text-scale-after-dist.log`.
+
 ## Revision Note
 
 2026-08-01: Rebased the living plan's reported progress on reviewed behavior,
