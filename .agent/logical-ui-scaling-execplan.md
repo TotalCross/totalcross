@@ -90,8 +90,8 @@ files instead of adding large implementations inline.
       original global-density coupling.
 - [x] Added useful API scaffolding for layout units, graphics scales, logical
       images, and compatibility deprecations.
-- [ ] Correct the reviewed branch, beginning with `USE_WRITE_PIXELS`, and reset
-      evidence so compilation is not confused with runtime proof.
+- [x] Restored scale-aware `USE_WRITE_PIXELS` eligibility, compiled both macro
+      configurations on macOS, and exercised the native Skia surface fixture.
 - [ ] Connect `LayoutUnit` to real child placement and prove the root PIXEL
       migration path.
 - [ ] Complete Skia logical drawing and native macOS content-scale initialization.
