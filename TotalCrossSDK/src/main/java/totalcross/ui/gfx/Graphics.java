@@ -2079,6 +2079,16 @@ public final class Graphics {
     boolean isScaled = false;
     if (srcSurface instanceof Image) {
       Image img = (Image) srcSurface;
+      if (img.getContentScale() != 1) {
+        try {
+          img = img.getScaledInstance(img.getWidth(), img.getHeight());
+          srcSurface = img;
+          pixels = img.getPixels();
+          isScaled = true;
+        } catch (ImageException ignored) {
+          return;
+        }
+      }
       if (img.hwScaleH != 1 || img.hwScaleW != 1) {
         try {
           img = img.hwScaleW < 1 && img.hwScaleH < 1 ? img.smoothScaledBy(img.hwScaleW, img.hwScaleH)
