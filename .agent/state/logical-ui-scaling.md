@@ -113,7 +113,9 @@ as Milestone 7 gates.
 
 - Safe macOS window capture is currently unavailable through the installed
   Computer Use integration: it cannot target the launched Java process by its
-  process-specific application identity. No desktop-wide fallback was used.
+  process-specific application identity. A second process-targeted attempt at
+  simulated scale 2 returned the same unsupported-target result. No desktop-wide
+  fallback was used.
 
 ## Deliberately Out of Scope
 

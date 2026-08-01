@@ -202,3 +202,13 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: only the two deprecated compatibility assignments in `Launcher` retain
   `Settings.screenDensity`; no control code reads it. No old DP-marker comparison
   was found. All added files are below 20 KiB and approximately 600 lines.
+
+## Milestone 8: repeated safe-capture attempt
+
+- Timestamp: 2026-08-01T19:37:00Z
+- Command: launched the deterministic fixture at simulated macOS scale 2 and
+  requested a process-targeted Computer Use window state.
+- Status: external capture blocker repeated
+- Result: the fixture launched successfully, but the installed integration again
+  rejected the Java process application identity as an unsupported target. No
+  fallback capture containing the desktop was attempted or retained.
