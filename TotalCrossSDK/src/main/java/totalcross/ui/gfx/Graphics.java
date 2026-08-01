@@ -194,7 +194,7 @@ public final class Graphics {
   private void create(GfxSurface surface) {
     alpha = 0xFF000000; // On Java, alpha is always initialized with opaque
     if (surface instanceof Image) {
-      pitch = ((Image) surface).getWidth();
+      pitch = ((Image) surface).getPixelWidth();
     } else if (surface instanceof Control) {
       if (mainWindowPixels == null || mainWindowPixels.length < Settings.screenWidth * Settings.screenHeight) {
         mainWindowPixels = new int[Settings.screenWidth * Settings.screenHeight]; // create the pixels
