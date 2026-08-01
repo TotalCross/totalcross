@@ -550,7 +550,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
       materialCaption.xcap0 = materialCaption.xcap = chars.length() == 0 ? zOffset : 0;
       materialCaption.ycap0 = materialCaption.ycap = chars.length() == 0 ? textRect.y : 0;
     }
-    iconX0 = captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4;
+    iconX0 = captionIcon == null ? 0 : captionIcon.getWidth() + getFontHeightForLayout() / 4;
   }
 
   /** Compute the index of the first character of each line */
@@ -1237,7 +1237,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 	  else {
 	      if (uiMaterial) {
 	        int c = hasFocus ? backColor : Color.getGray(backColor);
-	        int h = fmH / 10;
+	        int h = getFontHeightForLayout() / 10;
 	        if (isEnabled()) {
 	          if (fillColor != -1) {
 	            g.backColor = fillColor;

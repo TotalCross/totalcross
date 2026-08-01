@@ -158,6 +158,10 @@ deployed native root fixture pass, and no external text-engine blocker remains.
   horizontal cursor scrolling now use destination effective metrics. Focused
   Java validation and the deployed native macOS fixture passed; logs:
   `m3-edit-dist.log`, `m3-edit-deploy.log`, and `m3-edit-native.log`.
+- The remaining direct uses in the primary control audit are either local
+  effective-height variables or compatibility/style keys. MultiEdit caption
+  spacing, Check/Radio autosplit thresholds, and Edit keyboard shifting now
+  use effective destination height; focused Java validation passed.
 
 ## Remaining Major Work
 
