@@ -15,25 +15,25 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `c577d9ff65228dc023458b974b6e3536cfb90a03`.
+- Last logical commit: `b18dde1d7bedfdf5c519a8b90ac3078d0002ec0c`.
 
 ## Active Milestone
 
-Milestone 5: make the Java renderer equivalent.
+Milestone 6: make the non-Skia native renderer equivalent.
 
 ## Active Slice
 
-Read the Java renderer milestone and make its logical drawing path consume the
-same image scale and logical font contract as Skia.
+Inspect the legacy native graphics and font paths for remaining global-density
+decisions, then apply the smallest coherent logical metric bridge.
 
 ## Next Concrete Action
 
-Inspect Graphics Java drawing primitives and image-copy paths.
+Read the Milestone 6 section and inspect `GraphicsPrimitives_c.h` and PalmFont.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 5 only.
-- `.agent/design/logical-ui-scaling-text.md` and image sections needed by Java Graphics.
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 6 only.
+- `.agent/design/logical-ui-scaling-text.md`, non-Skia section.
 
 Do not read all design guides yet.
 
