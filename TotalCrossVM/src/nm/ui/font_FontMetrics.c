@@ -81,6 +81,31 @@ TC_API void tufFM_stringWidthD_s(NMParams p) // totalcross/ui/font/FontMetrics n
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_stringWidthAtSizeD_sd(NMParams p) // totalcross/ui/font/FontMetrics native public double stringWidthAtSizeD(String s, double fontSize);
+{
+   TCObject s = p->obj[1];
+   if (s == null)
+      throwNullArgumentException(p->currentContext, "s");
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   else
+      p->retD = skia_stringWidthD(String_charsStart(s), String_charsLen(s) * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0]);
+#else
+   else
+      p->retD = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), String_charsStart(s), String_charsLen(s)) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_lineHeightAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics native public double lineHeightAtSizeD(double fontSize);
+{
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   double ascent, descent, leading;
+   skia_fontMetrics(Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0], &ascent, &descent, &leading);
+   p->retD = ascent + descent + leading;
+#else
+   p->retD = (FontMetrics_heightD(p->obj[0]) ? FontMetrics_heightD(p->obj[0]) : FontMetrics_ascent(p->obj[0]) + FontMetrics_descent(p->obj[0])) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidth_Cii(NMParams p) // totalcross/ui/font/FontMetrics native public int stringWidth(char []chars, int start, int count);
 {
    TCObject charArray = p->obj[1];

@@ -65,14 +65,14 @@ public class DanfeScalingApp extends MainWindow {
       int multiEditHeightAtFontScale = metricMultiEdit.getPreferredHeight();
       double danfeAdvance = metrics.stringWidthD("DANFE 25,00");
       double accentedAdvance = metrics.stringWidthD("Comércio São Paulo");
-      double kerningAdvance = metrics.stringWidthD("AV");
+      double representativePairAdvance = metrics.stringWidthD("AV");
       int compatibleDanfeAdvance = metrics.stringWidth("DANFE 25,00");
       char[] danfeChars = "DANFE 25,00".toCharArray();
       int arrayDanfeAdvance = metrics.stringWidth(danfeChars, 0, danfeChars.length);
       int bufferDanfeAdvance = metrics.sbWidth(new StringBuffer("DANFE 25,00"));
       if (!(metrics.getAscentD() > 0 && metrics.getDescentD() >= 0 && metrics.getLeadingD() >= 0
           && metrics.getHeightD() >= metrics.getAscentD() + metrics.getDescentD()
-          && danfeAdvance > 0 && accentedAdvance > 0 && kerningAdvance > 0
+          && danfeAdvance > 0 && accentedAdvance > 0 && representativePairAdvance > 0
           && compatibleDanfeAdvance == (int) Math.ceil(danfeAdvance)
           && arrayDanfeAdvance == compatibleDanfeAdvance && bufferDanfeAdvance == compatibleDanfeAdvance
           && widthAtOne == widthAtDoubleContentScale && widthAtFontScale > widthAtOne
@@ -86,7 +86,7 @@ public class DanfeScalingApp extends MainWindow {
           + " ascentD=" + metrics.getAscentD() + " descentD=" + metrics.getDescentD()
           + " leadingD=" + metrics.getLeadingD() + " heightD=" + metrics.getHeightD()
           + " advanceD=" + danfeAdvance + " accentedAdvanceD=" + accentedAdvance
-          + " kerningAdvanceD=" + kerningAdvance + " compatibleAdvance=" + compatibleDanfeAdvance
+          + " representativePairAdvanceD=" + representativePairAdvance + " compatibleAdvance=" + compatibleDanfeAdvance
           + " arrayAdvance=" + arrayDanfeAdvance + " bufferAdvance=" + bufferDanfeAdvance
           + " labelWidths=" + widthAtOne + "," + widthAtDoubleContentScale + "," + widthAtFontScale
           + " editWidths=" + editWidthAtOne + "," + editWidthAtDoubleContentScale + "," + editWidthAtFontScale

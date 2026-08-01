@@ -91,8 +91,6 @@ destination-aware path.
 
 ## Corrections Required Before Closing M3R
 
-- Current control helpers multiply scale-one measured results by fontScale rather
-  than measuring at the effective SkFont size.
 - TotalCross line breaking still receives scale-one FontMetrics in Label paths.
 - State, outcomes, and append-only evidence are not synchronized.
 - `Graphics.setScales` public lifecycle is not yet an approved final API.
@@ -106,6 +104,12 @@ destination-aware path.
   and bottom before converting each edge. `LogicalLayoutUnitTest` verifies
   nonzero insets at content scales 1.5, 2, and 3; Java unit validation passed
   in `artifacts/logical-ui-scaling/logs/pixel-client-origin-test.log`.
+- Destination-aware `FontMetrics` methods now pass the effective logical size
+  directly to native Skia measurement and metrics. The deployed macOS fixture
+  passed after symbol registration correction; logs:
+  `effective-font-measurement-build.log`,
+  `effective-font-measurement-java-test.log`,
+  `effective-font-measurement-native-retry.log`.
 
 ## Remaining Major Work
 

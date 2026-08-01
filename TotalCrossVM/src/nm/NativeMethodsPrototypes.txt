@@ -156,6 +156,8 @@ TC_API void tufFM_charWidth_c(NMParams p);
 TC_API void tufFM_charWidthD_c(NMParams p);
 TC_API void tufFM_stringWidth_s(NMParams p);
 TC_API void tufFM_stringWidthD_s(NMParams p);
+TC_API void tufFM_stringWidthAtSizeD_sd(NMParams p);
+TC_API void tufFM_lineHeightAtSizeD_d(NMParams p);
 TC_API void tufFM_stringWidth_Cii(NMParams p);
 TC_API void tufFM_sbWidth_s(NMParams p);
 TC_API void tufFM_sbWidth_sii(NMParams p);
@@ -1173,6 +1175,14 @@ TC_API void tufFM_stringWidth_s(NMParams p) // totalcross/ui/font/FontMetrics na
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidthD_s(NMParams p) // totalcross/ui/font/FontMetrics native public double stringWidthD(String s);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_stringWidthAtSizeD_sd(NMParams p) // totalcross/ui/font/FontMetrics native public double stringWidthAtSizeD(String s, double fontSize);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_lineHeightAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics native public double lineHeightAtSizeD(double fontSize);
 {
 }
 //////////////////////////////////////////////////////////////////////////

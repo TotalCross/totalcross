@@ -157,6 +157,13 @@ edges before applying PIXEL conversion. Focused Java
 `LogicalLayoutUnitTest` passed at 1.5, 2, and 3 with nonzero insets; log:
 `artifacts/logical-ui-scaling/logs/pixel-client-origin-test.log`.
 
+Progress 2026-08-01: added internal destination-aware FontMetrics measurement
+and line-height methods. On Skia they configure metrics and `measureText` at
+`Font.size * Graphics.fontScale`; controls now consume that path rather than
+post-measure multiplication. Java focused test, native compile, and deployed
+native macOS fixture passed. `AV` is recorded only as a representative string,
+not a kerning assertion.
+
 ### Milestone 2R residual: native surface lifecycle
 
 The established base transform and Retina initialization remain valid.

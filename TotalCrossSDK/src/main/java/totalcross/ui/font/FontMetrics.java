@@ -101,6 +101,18 @@ public final class FontMetrics {
   @ReplacedByNativeOnDeploy
   public double stringWidthD(String s) { return stringWidth(s); }
 
+  /** Internal destination-aware measurement at an effective logical font size. */
+  @ReplacedByNativeOnDeploy
+  public double stringWidthAtSizeD(String s, double fontSize) {
+    return stringWidthD(s) * fontSize / font.size;
+  }
+
+  /** Internal destination-aware line height at an effective logical font size. */
+  @ReplacedByNativeOnDeploy
+  public double lineHeightAtSizeD(double fontSize) {
+    return getHeightD() * fontSize / font.size;
+  }
+
   /**
    * Returns the width in pixels of the given char array range.
    * @param chars the text character array
