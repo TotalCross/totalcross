@@ -103,6 +103,8 @@ Do not read later image or renderer guides yet.
   and fractional String measurement; native compile and deployed runtime pass.
 - The deployed fixture asserts the integer String width is exactly the upward
   rounded fractional advance; it passed with `81.6484375 -> 82`.
+- It also asserts String, char-array, and StringBuffer width overloads agree;
+  all reported `82` in the deployed native macOS app.
 
 These are foundations, not completion of their behavioral milestones.
 
