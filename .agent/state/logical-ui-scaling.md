@@ -15,41 +15,32 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Reviewed branch:
   `feat/logical-ui-scaling`
 - Reviewed head:
-  `ef3b3dec8f15e409597b552ee13db09fd98f3fca`
+  `7d300c9da`
 - Worktree:
   `/Users/flsobral/repos/totalcross-logical-ui`
 - History policy: preserve existing commits; correct with new commits.
 
 ## Active Milestone
 
-Corrective checkpoint R0: reconcile reviewed implementation and restore
-`USE_WRITE_PIXELS`.
+Milestone 1R: complete actual logical layout behavior.
 
 ## Active Slice
 
-Restore the embedded direct-write specialization removed by
-`fd7e5d358cd3e19ef4c57e1a4a7ba5622ee0ea33`, adding scale-aware eligibility
-rather than reverting the commit wholesale.
+Connect effective `LayoutUnit` values to actual child placement and prove the
+root PIXEL migration behavior.
 
 ## Next Concrete Action
 
-1. Read `.agent/reviews/logical-ui-scaling-branch-review.md`.
-2. Read Corrective checkpoint R0 in the main ExecPlan.
-3. Inspect the original and current `skia_drawSurface`.
-4. Locate the real build definition for `USE_WRITE_PIXELS`.
-5. Restore the guarded path and add focused enabled/disabled validation.
-6. Keep `skia_setPixel` physical-coordinate handling unless a focused test
-   disproves it.
+Read Milestone 1R and the API design, then identify the existing layout boundary
+where parent unit and surface scale can convert child placement.
 
 ## Files to Read Now
 
-- `.agent/reviews/logical-ui-scaling-branch-review.md`
-- `.agent/logical-ui-scaling-execplan.md`, R0 only
-- `.agent/guides/logical-ui-scaling-validation.md`, USE_WRITE_PIXELS section
-- `TotalCrossVM/src/nm/ui/skia/skia_surface.cpp`
-- the build file that defines `USE_WRITE_PIXELS`
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 1R only
+- `.agent/design/logical-ui-scaling-api.md`
+- `.agent/guides/logical-ui-scaling-validation.md`, logical layout gate
 
-Do not read all design files yet.
+Do not read later renderer or text guides yet.
 
 ## Verified Foundations
 
@@ -58,6 +49,9 @@ Do not read all design files yet.
 - `LayoutUnit`, Graphics scale fields, and logical Image fields exist.
 - Focused Java API/image tests pass.
 - Current native macOS target compiles and links.
+- R0 restored guarded direct writes. Default, disabled, and opaque-enabled macro
+  builds compile; the native Skia fixture passes identity, scaled fallback,
+  clipping, and physical raw-pixel assertions.
 
 These are foundations, not completion of their behavioral milestones.
 
@@ -89,12 +83,8 @@ At final validation:
 
 ## Screenshot Status
 
-The previous execution used a Computer Use targeting attempt. It did not use the
-required CoreGraphics window-ID plus `/usr/sbin/screencapture -l` workflow.
-
-There is no established screenshot blocker until the direct workflow in
-`.agent/guides/private-screenshot-capture.md` has been attempted. Screen
-Recording permission may become a genuine external blocker.
+No screenshot validation has been attempted under the updated direct CoreGraphics
+workflow. It belongs to Milestone 7R, not the active layout slice.
 
 ## Resume Command
 

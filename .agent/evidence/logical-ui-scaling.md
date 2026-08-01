@@ -212,3 +212,20 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: the fixture launched successfully, but the installed integration again
   rejected the Java process application identity as an unsupported target. No
   fallback capture containing the desktop was attempted or retained.
+
+## Corrective checkpoint R0: guarded Skia direct writes
+
+- Timestamp: 2026-08-01T20:00:00Z
+- Commits: `2a27fa5f5`, `7d300c9da`
+- Commands: `ninja -C build-logical-ui`; configured and built
+  `build-logical-ui-no-write` with `-DUSE_WRITE_PIXELS=0`; configured and built
+  `build-logical-ui-write-opaque` with `-DUSE_WRITE_PIXELS=1
+  -DUSE_COMPUTE_OPAQUE=1`; compiled and ran `skia_surface_test.cpp` against all
+  three freshly built dylibs.
+- Renderer/platform: native macOS compile and native Skia helper runtime
+- Status: passed
+- Result: direct writes are eligible only for an opaque, complete, same-size,
+  alpha-255 copy at an identity matrix with no saved clip and integral, in-bounds
+  physical destination coordinates. The fixture verifies identity copy, scaled
+  fallback, clipped fallback, and physical raw pixels across enabled and disabled
+  variants.
