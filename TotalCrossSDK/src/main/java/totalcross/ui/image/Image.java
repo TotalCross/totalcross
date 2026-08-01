@@ -74,9 +74,6 @@ public class Image extends GfxSurface {
   public int surfaceType = 1; // don't move from here! must be static at position 0
   protected int width;
   protected int height;
-  private int logicalWidth;
-  private int logicalHeight;
-  private double contentScale = 1;
 
   /** Contains the pixels of this image. */
   int[] pixels;
@@ -100,6 +97,9 @@ public class Image extends GfxSurface {
   /** A global alpha mask to be applied to the whole image when drawing it, ranging from 0 to 255.
    */
   public int alphaMask = 255;
+  private int logicalWidth;
+  private int logicalHeight;
+  private double contentScale = 1;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down

@@ -160,8 +160,10 @@
 #define Image_transparentColor(o)   FIELD_I32(o, 6)
 #define Image_useAlpha(o)           FIELD_I32(o, 7)
 #define Image_alphaMask(o)          FIELD_I32(o, 8)
-#define Image_lastAccess(o)         FIELD_I32(o, 9)
-#define Image_textureId(o)          FIELD_I32(o, 10)
+#define Image_logicalWidth(o)       FIELD_I32(o, 9)
+#define Image_logicalHeight(o)      FIELD_I32(o, 10)
+#define Image_lastAccess(o)         FIELD_I32(o, 11)
+#define Image_textureId(o)          FIELD_I32(o, 12)
 
 #define Image_changedObj(o)         FIELD_OBJ(o, OBJ_CLASS(o), 4)
 #define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
@@ -173,6 +175,7 @@
 
 #define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 #define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
+#define Image_contentScale(o)      FIELD_DBL(o, OBJ_CLASS(o), 2)
 
 #define ImageOrControl_surfaceType(o) FIELD_I32(o, 0)
 

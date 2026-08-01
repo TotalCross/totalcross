@@ -15,7 +15,7 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `85e19a7090de493db5bf78582b14986ea83f7500`.
+- Last logical commit: `0ea5f820b6cebd2cf7ca22852f0e7a19ca88f512`.
 
 ## Active Milestone
 
@@ -23,13 +23,13 @@ Milestone 4: implement scaled-image semantics.
 
 ## Active Slice
 
-Read the image design and implement explicit logical versus physical image
-dimensions without changing ordinary scale-1 image behavior.
+Audit image synchronization direction and make native image surfaces use the
+physical backing dimensions while public sizes remain logical.
 
 ## Next Concrete Action
 
-Read the Milestone 4 section and the image design, then inspect Image and its
-native synchronization path.
+Inspect `applyChanges`, native texture creation, and readback calls for the
+new logical-image fields.
 
 ## Files to Read Now
 
@@ -50,6 +50,8 @@ Do not read all design guides yet.
 - `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.LogicalLayoutUnitTest
   --tests totalcross.ui.gfx.GraphicsScaleTest`: passed (5 tests).
 - `ninja -C build-logical-ui`: passed after logical Skia font sizing.
+- `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.gfx.GraphicsScaleTest`:
+  passed (3 tests), including scale-1.5 logical-image rounding.
 
 ## Deferred Validation
 
