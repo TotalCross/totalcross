@@ -54,6 +54,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   private int fourColors[] = new int[4];
   private String[] lines = Label.emptyStringArray;
   private int[] linesW;
+  private double layoutFontScale = Double.NaN;
   private int lastASW;
   private String originalText;
   private int alphaSel = 255;
@@ -198,6 +199,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
 
   /** Returns the maximum text width for the lines of this Label. */
   public int getMaxTextWidth() {
+    ensureTextWidths();
     int w = 0;
     for (int i = lines.length - 1; i >= 0; i--) {
       if (linesW[i] > w) {
@@ -366,6 +368,14 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
 
   @Override
   protected void onFontChanged() {
+    layoutFontScale = Double.NaN;
+    ensureTextWidths();
+  }
+
+  private void ensureTextWidths() {
+    if (layoutFontScale == gfx.getFontScale()) {
+      return;
+    }
     int i;
     if (linesW == null || linesW.length != lines.length) {
       linesW = new int[lines.length];
@@ -374,6 +384,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
     for (i = lines.length - 1; i >= 0; i--) {
       linesW[i] = getFontWidthForLayout(lines[i]);
     }
+    layoutFontScale = gfx.getFontScale();
   }
 
   @Override
