@@ -39,10 +39,15 @@ public final class FontMetrics {
   /** READ-ONLY member: total height of this font (ascent+descent). */
   public int height;
 
-  public double getAscentD() { return ascent; }
-  public double getDescentD() { return descent; }
-  public double getLeadingD() { return 0; }
-  public double getHeightD() { return height; }
+  private double ascentD;
+  private double descentD;
+  private double leadingD;
+  private double heightD;
+
+  public double getAscentD() { return ascentD; }
+  public double getDescentD() { return descentD; }
+  public double getLeadingD() { return leadingD; }
+  public double getHeightD() { return heightD; }
 
   /**
    * Constructs a font metrics object referencing the given font.
@@ -51,6 +56,11 @@ public final class FontMetrics {
     this.font = font;
     fontMetricsCreate();
     this.height = ascent + descent;
+    if (heightD == 0) {
+      ascentD = ascent;
+      descentD = descent;
+      heightD = height;
+    }
   }
 
   @ReplacedByNativeOnDeploy

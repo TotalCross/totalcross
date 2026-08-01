@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -101,6 +102,10 @@
 #define FontMetrics_font(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define FontMetrics_ascent(o)       FIELD_I32(o, 0)
 #define FontMetrics_descent(o)      FIELD_I32(o, 1)
+#define FontMetrics_ascentD(o)      FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define FontMetrics_descentD(o)     FIELD_DBL(o, OBJ_CLASS(o), 1)
+#define FontMetrics_leadingD(o)     FIELD_DBL(o, OBJ_CLASS(o), 2)
+#define FontMetrics_heightD(o)      FIELD_DBL(o, OBJ_CLASS(o), 3)
 
 // totalcross.ui.gfx.Rect
 #define Rect_x(o)                   FIELD_I32(o, 0)
