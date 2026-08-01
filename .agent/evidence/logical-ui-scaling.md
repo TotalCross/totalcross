@@ -467,3 +467,16 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   fixture retained all text-control and PIXEL assertions at Retina scale 2.
 - Logs: `m3-edit-dist.log`, `m3-edit-deploy.log`, and `m3-edit-native.log`
   under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 3R: final SkFont-only text gate
+
+- Timestamp: 2026-08-01T23:50:00Z
+- Commands: rebuilt SDK distribution, focused macOS fixture deployment with the
+  matching dylib, and direct `DanfeScalingApp /logical-ui-assert` execution.
+- Renderer/platform: deployed native macOS SDL/Skia application.
+- Status: passed.
+- Result: final primary-control geometry audit passed. The deployed DANFE
+  fixture confirms the SkFont-only effective-size text contract and TotalCross
+  wrapping without an advanced-typography claim.
+- Logs: `m3-final-dist.log`, `m3-final-deploy.log`, and `m3-final-native.log`
+  under `artifacts/logical-ui-scaling/logs/`.

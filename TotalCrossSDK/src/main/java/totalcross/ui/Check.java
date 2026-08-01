@@ -394,7 +394,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
     if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
     {
       lastASW = this.width;
-      int wh = lines.length == 1 ? height : fmH + Edit.prefH;
+      int wh = lines.length == 1 ? height : getFontHeightForLayout() + Edit.prefH;
       split((this.width < wh - 2 ? getPreferredWidth() : this.width) - wh - 2);
       if (PREFERRED - RANGE <= setH && setH <= PREFERRED + RANGE) {;
         setRect(KEEP, KEEP, KEEP, getPreferredHeight() + setH - PREFERRED);
