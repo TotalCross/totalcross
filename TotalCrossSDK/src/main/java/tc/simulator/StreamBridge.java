@@ -130,6 +130,7 @@ class StreamBridge extends SettingsBridge {
 
   @Override
   public void componentMoved(ComponentEvent arg0) {
+    updateContentScale();
   }
 
   @Override
@@ -140,6 +141,7 @@ class StreamBridge extends SettingsBridge {
 
   @Override
   public void componentResized(ComponentEvent ev) {
+    updateContentScale();
     if (ignoreNextResize) {
       ignoreNextResize = false;
       return;

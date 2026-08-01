@@ -339,7 +339,7 @@ abstract class SettingsBridge extends StorageBridge {
     try {
       // verify if its in the cache.
       String fontName = f.name;
-      int size = (int) (Math.max(f.size, totalcross.ui.font.Font.MIN_FONT_SIZE) * Settings.screenDensity); // guich@tc122_15: don't check for the maximum font size here
+      int size = Math.max(f.size, totalcross.ui.font.Font.MIN_FONT_SIZE);
 
       char faceType = c < 0x3000 && f.style == 1 ? 'b' : 'p';
       int uIndex = ((int) c >> 8) << 8;
