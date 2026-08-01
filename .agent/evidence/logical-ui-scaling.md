@@ -82,3 +82,13 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: the visible AWT `LauncherFrame` obtains the backing scale from its
   `GraphicsConfiguration` after peer creation and on moves/resizes. Skia font
   size no longer reads global density; FontMetrics exposes logical double APIs.
+
+## Milestone 4: logical image dimensions slice
+
+- Timestamp: 2026-08-01T22:40:00Z
+- Commits: `3e106909da3baab44d0c0220f08c84ab0371b008`, `0ea5f820b6cebd2cf7ca22852f0e7a19ca88f512`
+- Command: `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.gfx.GraphicsScaleTest`
+- Status: passed, 3 tests
+- Result: default images remain scale 1; `Image.createLogical(3, 7, 1.5)` has
+  logical dimensions 3x7 and a 5x11 physical buffer. Graphics uses physical
+  pitch for image buffers.
