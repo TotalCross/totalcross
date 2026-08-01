@@ -15,25 +15,26 @@ Rewrite this file instead of appending. It is the first read when resuming.
 - Actual fetched base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`.
 - Worktree: `/Users/flsobral/repos/totalcross-logical-ui`.
 - Branch: `feat/logical-ui-scaling`.
-- Last logical commit: `b18dde1d7bedfdf5c519a8b90ac3078d0002ec0c`.
+- Last logical commit: `dfe85c526ea3cc44c0e8fe46f399e6a9a914e6a4`.
 
 ## Active Milestone
 
-Milestone 6: make the non-Skia native renderer equivalent.
+Milestone 7: run end-to-end DANFE and platform validation.
 
 ## Active Slice
 
-Inspect the legacy native graphics and font paths for remaining global-density
-decisions, then apply the smallest coherent logical metric bridge.
+Run required SDK/native/platform validations and determine which external
+platform evidence is available locally.
 
 ## Next Concrete Action
 
-Read the Milestone 6 section and inspect `GraphicsPrimitives_c.h` and PalmFont.
+Read the Milestone 7 plan section and its explicitly required validation guides.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 6 only.
-- `.agent/design/logical-ui-scaling-text.md`, non-Skia section.
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 7 only.
+- `.agent/guides/logical-ui-scaling-validation.md`, final acceptance section.
+- `.agent/guides/logical-ui-scaling-danfe.md`.
 
 Do not read all design guides yet.
 
