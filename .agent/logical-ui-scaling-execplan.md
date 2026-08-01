@@ -168,6 +168,9 @@ Progress 2026-08-01: `Convert.insertLineBreak` gained an effective-size
 measurement overload and Label uses it for autoSplit and explicit split. Focused
 Java wrapping assertions pass; log:
 `artifacts/logical-ui-scaling/logs/effective-wrap-test.log`.
+The deployed native macOS fixture passed as well; logs:
+`effective-wrap-dist.log`, `effective-wrap-deploy.log`, and
+`effective-wrap-native.log`.
 
 ### Milestone 2R residual: native surface lifecycle
 

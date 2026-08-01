@@ -112,6 +112,9 @@ destination-aware path.
 - `Label` routes TotalCross automatic and explicit line breaking through the
   effective-size measurement path. Focused Java wrapping validation confirms
   content-scale invariance and font-scale-dependent break count.
+- The freshly deployed native macOS fixture also passed after the wrapping
+  change; logs: `effective-wrap-dist.log`, `effective-wrap-deploy.log`, and
+  `effective-wrap-native.log`.
 
 ## Remaining Major Work
 
