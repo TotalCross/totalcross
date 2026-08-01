@@ -23,21 +23,20 @@ Milestone 7: run end-to-end DANFE and platform validation.
 
 ## Active Slice
 
-Finish the remaining headless semantic assertions and finalize the macOS-focused
-validation agreed by the user. The deployed fixture starts at simulated scales 1
-and 2; the headless fixture proves logical and physical image dimensions, PNG
-dimensions, and scaled barcode structure.
+Perform the final source and documentation audits. The headless fixture covers
+logical/physical image dimensions, PNG dimensions, scaled barcode structure, and
+Java-side raw-pixel preservation; the deployed fixture starts at simulated
+macOS scales 1 and 2.
 
 ## Next Concrete Action
 
-Add the remaining bounded headless assertions for pixel synchronization and
-renderer semantics, then begin Milestone 8 documentation and audits.
+Read Milestone 8 and its explicitly required supporting material, then perform
+the scoped deprecation, Javadoc, file-size, and validation audits.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 7 only.
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 8 only.
 - `.agent/guides/logical-ui-scaling-validation.md`, final acceptance section.
-- `.agent/guides/logical-ui-scaling-danfe.md`.
 
 Do not read all design guides yet.
 
@@ -66,13 +65,19 @@ Do not read all design guides yet.
 - `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.image.DanfeScalingTest
   --tests totalcross.ui.gfx.GraphicsScaleTest`: passed. The fixture checks 360x540
   and 720x1080 PNG dimensions and 31 physical barcode runs at scale 1 and 2.
+- `TotalCrossSDK/gradlew-agent test --tests totalcross.ui.image.DanfeScalingTest
+  --tests totalcross.ui.gfx.GraphicsScaleTest`: passed after the added alpha-128,
+  odd-row raw-pixel preservation assertion and logical-to-physical fill check.
+- `ninja -C build-logical-ui`: passed (no work required after the Java-only
+  synchronization fixture update).
 
 ## Deferred Validation
 
-Deployed text containment, Java/Skia and non-Skia equivalence, and two-way
-pixel synchronization remain required. The user explicitly directed macOS-only
-platform validation; Android and iOS workspace validation are deferred to final
-validation rather than treated as Milestone 7 gates.
+Deployed text containment, Java/Skia and non-Skia equivalence, native-to-Java
+pixel readback, and a sanitized window-only screenshot are not independently
+proven. The user explicitly directed macOS-only platform validation; Android and
+iOS workspace validation are deferred to final validation rather than treated
+as Milestone 7 gates.
 
 ## Active Decisions
 
