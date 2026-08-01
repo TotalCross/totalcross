@@ -494,6 +494,7 @@ public class Button extends Control implements TextControl {
 	/** Returns the preffered width of this control. */
 	@Override
 	public int getPreferredWidth() {
+		ensureTextWidths();
 		if (uiMaterial) {
 			return getPrefferedMaterialWidth();
 		}
@@ -587,6 +588,7 @@ public class Button extends Control implements TextControl {
 	/** Returns the preffered height of this control. */
 	@Override
 	public int getPreferredHeight() {
+		ensureTextWidths();
 		if (uiMaterial) {
 			return getPreferredMaterialHeight();
 		}
@@ -595,7 +597,7 @@ public class Button extends Control implements TextControl {
 		}
 		int border = this.border < 2 ? this.border : 2; // guich@tc112_31
 		int prefH;
-		int th = text == null ? 0 : ((uiVista ? 1 : 0) + fmH * lines.length);
+		int th = text == null ? 0 : ((uiVista ? 1 : 0) + getFontHeightForLayout() * lines.length);
 		int ih = (this.border == BORDER_GRAY_IMAGE || img == null) ? 0 : img.getHeight(); // guich@tc120_1: using a gray
 																							// image does not take the
 																							// image into consideration
@@ -892,6 +894,17 @@ public class Button extends Control implements TextControl {
 
 	@Override
 	protected void onFontChanged() {
+		layoutFontScale = Double.NaN;
+		ensureTextWidths();
+	}
+
+	private double layoutFontScale = Double.NaN;
+
+	private void ensureTextWidths() {
+		double fontScale = gfx.getFontScale();
+		if (layoutFontScale == fontScale) {
+			return;
+		}
 		int oldMaxTW = maxTW;
 		if (text != null) {
 			if (linesW == null || linesW.length != lines.length) {
@@ -900,10 +913,11 @@ public class Button extends Control implements TextControl {
 			int[] linesW = this.linesW;
 			maxTW = 0;
 			for (int i = lines.length - 1; i >= 0; i--) {
-				linesW[i] = fm.stringWidth(lines[i]);
+				linesW[i] = getFontWidthForLayout(lines[i]);
 				maxTW = Math.max(maxTW, linesW[i]);
 			}
 		}
+		layoutFontScale = fontScale;
 		if (oldMaxTW != maxTW) {
 			onBoundsChanged(false);
 		}
