@@ -34,6 +34,25 @@ class DanfeScalingTest {
     assertEquals(31, countDarkRuns(scaledImage, BARCODE_Y * 2));
   }
 
+  @Test
+  void preservesPhysicalPixelsAndLogicalDrawingAcrossSynchronization() throws Exception {
+    Image image = Image.createLogical(3, 2, 2);
+    int[] pixels = image.getPixels();
+    pixels[3 * image.getPixelWidth() + 5] = 0x80A0B0C0;
+    image.applyChanges();
+
+    Graphics graphics = image.getGraphics();
+    graphics.backColor = Color.BLACK;
+    graphics.fillRect(1, 0, 1, 1);
+    image.applyChanges();
+
+    assertEquals(0x80A0B0C0, image.getPixels()[3 * image.getPixelWidth() + 5]);
+    assertEquals(0xFF000000, image.getPixels()[2]);
+    assertEquals(0xFF000000, image.getPixels()[3]);
+    assertEquals(0xFF000000, image.getPixels()[8]);
+    assertEquals(0xFF000000, image.getPixels()[9]);
+  }
+
   private static Image render(Image image) {
     Graphics graphics = image.getGraphics();
     graphics.backColor = Color.WHITE;
