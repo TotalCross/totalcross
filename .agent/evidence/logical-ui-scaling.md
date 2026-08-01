@@ -182,3 +182,13 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   TopMenu, Edit, ListContainer, Toast, and SideMenuContainer. Their values are
   now logical values; platform initialization continues to mirror the deprecated
   compatibility setting without being used by this slice.
+
+## Milestone 8: final SDK distribution validation
+
+- Timestamp: 2026-08-01T19:35:21Z
+- Command: `TotalCrossSDK/gradlew-agent dist -x test --warning-mode=none
+  --console=plain`
+- Renderer/platform: SDK distribution build
+- Status: passed (35 seconds)
+- Result: final SDK packaging and deployment completed after the control density
+  audit. Agent summary: `TotalCrossSDK/agent-logs/20260801-163521-dist-agent.log`.

@@ -72,6 +72,9 @@ Do not read all design guides yet.
   --tests totalcross.ui.gfx.GraphicsScaleTest --tests
   totalcross.ui.image.DanfeScalingTest`: passed after removing six initial
   control-level density dependency groups (6 focused tests).
+- `TotalCrossSDK/gradlew-agent dist -x test --warning-mode=none --console=plain`:
+  passed after the final density audit slice (35 seconds; agent log
+  `TotalCrossSDK/agent-logs/20260801-163521-dist-agent.log`).
 
 ## Deferred Validation
 
