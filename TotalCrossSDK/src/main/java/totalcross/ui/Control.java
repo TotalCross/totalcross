@@ -789,10 +789,14 @@ public class Control extends GfxSurface {
         lpx = parent.lastX;
         lpy = parent.lastY;
         if (pixelLayout) {
-          cli.x = parent.toLayoutPixels(cli.x);
-          cli.y = parent.toLayoutPixels(cli.y);
-          cli.width = parent.toLayoutPixels(cli.x + cli.width) - cli.x;
-          cli.height = parent.toLayoutPixels(cli.y + cli.height) - cli.y;
+          int logicalLeft = cli.x;
+          int logicalTop = cli.y;
+          int logicalRight = logicalLeft + cli.width;
+          int logicalBottom = logicalTop + cli.height;
+          cli.x = parent.toLayoutPixels(logicalLeft);
+          cli.y = parent.toLayoutPixels(logicalTop);
+          cli.width = parent.toLayoutPixels(logicalRight) - cli.x;
+          cli.height = parent.toLayoutPixels(logicalBottom) - cli.y;
           lpx = parent.toLayoutPixels(lpx);
           lpy = parent.toLayoutPixels(lpy);
           if (parent.lastX != -999999) {
