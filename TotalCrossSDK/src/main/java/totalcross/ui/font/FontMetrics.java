@@ -113,6 +113,12 @@ public final class FontMetrics {
     return getHeightD() * fontSize / font.size;
   }
 
+  /** Internal destination-aware descent at an effective logical font size. */
+  @ReplacedByNativeOnDeploy
+  public double descentAtSizeD(double fontSize) {
+    return getDescentD() * fontSize / font.size;
+  }
+
   /**
    * Returns the width in pixels of the given char array range.
    * @param chars the text character array

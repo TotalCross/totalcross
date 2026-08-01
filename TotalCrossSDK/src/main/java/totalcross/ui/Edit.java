@@ -1186,7 +1186,7 @@ protected int gap;
 					g.backColor = Color.interpolate(backColor, foreColor);
 					g.fillRect(cursorX - 1 + (uiMaterial ? UnitsConverter.toPixels(DP + 2) : 0),
 							uiMaterial ? materialCaption.ycap0 + font.fm.descent : y, cursorThickness,
-							fontHeight - (int) Math.ceil(font.fm.getDescentD() * g.getFontScale()));
+							fontHeight - (int) Math.ceil(font.fm.descentAtSizeD(font.size * g.getFontScale())));
 				}
 			}
 		} else {
