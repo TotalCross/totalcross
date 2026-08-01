@@ -154,3 +154,18 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Scope decision: per user direction, macOS is the platform proof for this
   milestone. Android and iOS workspace execution are deferred to final
   validation.
+
+## Milestone 7: Java image synchronization assertions
+
+- Timestamp: 2026-08-01T19:29:24Z
+- Commit: `8f8e11bf2`
+- Commands: `TotalCrossSDK/gradlew-agent test --tests
+  totalcross.ui.image.DanfeScalingTest --tests totalcross.ui.gfx.GraphicsScaleTest`;
+  `ninja -C build-logical-ui`
+- Renderer/platform: Java SDK test runtime; macOS native build tree
+- Status: passed (6 SDK tests; native tree required no rebuild)
+- Result: the scale-2 fixture preserves an alpha-128 pixel at an odd physical
+  row across `applyChanges` and paints a logical 1x1 rectangle into the expected
+  2x2 physical pixels.
+- Limitation: this proves the Java-side ownership boundary only; native-to-Java
+  readback still requires a native runtime fixture.
