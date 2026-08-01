@@ -480,3 +480,15 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   wrapping without an advanced-typography claim.
 - Logs: `m3-final-dist.log`, `m3-final-deploy.log`, and `m3-final-native.log`
   under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 4R: logical image graphics surface
+
+- Timestamp: 2026-08-02T00:00:00Z
+- Command: focused `GraphicsScaleTest` and `DanfeScalingTest` through
+  `TotalCrossSDK/gradlew-agent test`.
+- Renderer/platform: Java test lane.
+- Status: passed.
+- Result: `Image.getGraphics()` now retains logical surface dimensions while the
+  physical backing remains selected by contentScale.
+- Log: `m4-image-graphics-test.log` under
+  `artifacts/logical-ui-scaling/logs/`.
