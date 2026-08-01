@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -97,7 +98,7 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 
 	uint32 flags; 
 #ifdef __APPLE__
-	flags = SDL_WINDOW_SHOWN;
+	flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 #else
 	if(getenv("TC_FULLSCREEN") == NULL) {
 		flags = SDL_WINDOW_FULLSCREEN;
@@ -167,6 +168,19 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 	std::cout << "SDL_PIXEL_FORMAT: " << SDL_GetPixelFormatName(windowPixelFormat) << '\n';
 
 	usesTexture = std::string(rendererInfo.name).compare(std::string("software"));
+	int physicalWidth = viewport.w;
+	int physicalHeight = viewport.h;
+	if (usesTexture) {
+		SDL_GetRendererOutputSize(renderer, &physicalWidth, &physicalHeight);
+	} else {
+		surface = SDL_GetWindowSurface(window);
+		physicalWidth = surface->w;
+		physicalHeight = surface->h;
+	}
+	if (physicalWidth <= 0 || physicalHeight <= 0) {
+		std::cerr << "SDL returned an invalid drawable size" << '\n';
+		return false;
+	}
 
 	if(usesTexture) {
 		// MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
@@ -174,8 +188,8 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 								renderer,
 								windowPixelFormat,
 								SDL_TEXTUREACCESS_STREAMING,
-								viewport.w,
-								viewport.h))) {
+								physicalWidth,
+								physicalHeight))) {
 			std::cerr << "SDL_CreateTexturet(): " << SDL_GetError() << '\n';
 			return false;
 		}
@@ -190,10 +204,11 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 		return false;
 	}
 
-	// Adjusts screen width to the viewport
-	screen->screenW = viewport.w;
-	// Adjusts screen height to the viewport
-	screen->screenH = viewport.h;
+	// The backing store is physical; Java-facing dimensions are derived from
+	// contentScale when Settings is initialized.
+	screen->screenW = physicalWidth;
+	screen->screenH = physicalHeight;
+	screen->contentScale = (double)physicalWidth / viewport.w;
 	// Adjusts screen's BPP
 	screen->bpp = pixelformat->BitsPerPixel;
 	// Set surface pitch
@@ -295,6 +310,7 @@ void TCSDL_GetWindowSize(ScreenSurface screen, int32* width, int32* height) {
 
 void TCSDL_WindowSizeChanged(ScreenSurface screen, int32 width, int32 height) {
 	SCREEN_EX(screen)->surface = surface = SDL_GetWindowSurface(SCREEN_EX(screen)->window);
-	screen->screenW = width;
-	screen->screenH = height;
+	screen->screenW = surface->w;
+	screen->screenH = surface->h;
+	screen->contentScale = width > 0 ? (double)surface->w / width : 1;
 }
