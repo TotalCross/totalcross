@@ -96,6 +96,8 @@ Do not read later image or renderer guides yet.
 - A `Graphics.fontScale` transition now repositions control surfaces using their
   recorded layout expressions and requests repaint, so preferred bounds are not
   left at the previous font scale. Focused Java bounds assertions pass.
+- The same font-scale transition path passed in the freshly deployed native
+  macOS fixture without changing the established metric assertions.
 
 These are foundations, not completion of their behavioral milestones.
 
