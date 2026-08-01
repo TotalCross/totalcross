@@ -321,3 +321,14 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: logical drawing damage now converts rounded rectangle edges through
   the destination content scale before it is accumulated for the physical
   framebuffer. Raw `setPixel` damage remains physical.
+
+## Milestone 2R: offscreen scale matrix
+
+- Timestamp: 2026-08-01T21:05:00Z
+- Commit: `510f30540`
+- Command: compiled and ran `skia_surface_test.cpp` against the current
+  `build-logical-ui/libtcvm.dylib`
+- Renderer/platform: native macOS Skia helper runtime
+- Status: passed
+- Result: the fixture covers logical primitive destination mapping at scales 1,
+  1.5, 2, and 3, as well as scaled clipping, image fallback, and raw pixels.

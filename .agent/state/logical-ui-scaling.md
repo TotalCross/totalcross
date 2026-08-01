@@ -15,32 +15,32 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Reviewed branch:
   `feat/logical-ui-scaling`
 - Reviewed head:
-  `a629ec0d8`
+  `510f30540`
 - Worktree:
   `/Users/flsobral/repos/totalcross-logical-ui`
 - History policy: preserve existing commits; correct with new commits.
 
 ## Active Milestone
 
-Milestone 2R: complete Skia and native macOS surface scaling.
+Milestone 3R: complete logical text and FontMetrics.
 
 ## Active Slice
 
-Audit remaining Skia coordinate paths for base-transform coverage, retaining
-physical source rectangles and raw pixel access.
+Read the text design and identify the current measurement and drawing paths that
+still expose integer-only metrics or bypass fontScale.
 
 ## Next Concrete Action
 
-Read the affected Skia primitive and dirty-bound paths, then add only focused
-coverage required for any remaining transform gap.
+Read Milestone 3R and the text design, then trace FontMetrics and native Skia
+text from logical font size through measurement and drawing.
 
 ## Files to Read Now
 
-- `.agent/logical-ui-scaling-execplan.md`, Milestone 2R only
-- `.agent/design/logical-ui-scaling-api.md`
-- `.agent/guides/macos-native-runtime-validation.md`
+- `.agent/logical-ui-scaling-execplan.md`, Milestone 3R only
+- `.agent/design/logical-ui-scaling-text.md`
+- `.agent/guides/logical-ui-scaling-validation.md`, text gate
 
-Do not read later renderer or text guides yet.
+Do not read later image or renderer guides yet.
 
 ## Verified Foundations
 
@@ -92,4 +92,4 @@ workflow. It belongs to Milestone 7R, not the active layout slice.
 
     cd /Users/flsobral/repos/totalcross-logical-ui
     cd /Users/flsobral/repos/totalcross-logical-ui
-    rg -n "contentScale|Graphics_contentScale" TotalCrossVM/src/nm
+    rg -n "fontScale|double.*Width|FontMetrics" TotalCrossSDK/src/main/java
