@@ -87,6 +87,9 @@ Do not read later image or renderer guides yet.
 - The deployed native macOS fixture now verifies the `Edit` preferred-width
   contract alongside `Label`; it reports `editWidths=48,48,67` at content
   scales 2 and 4 followed by font scale 1.5.
+- Native integer text widths now round positive fractional advances upward,
+  matching the documented compatibility policy; the deployed macOS fixture
+  still reports the expected Label and Edit scale triples.
 
 These are foundations, not completion of their behavioral milestones.
 
