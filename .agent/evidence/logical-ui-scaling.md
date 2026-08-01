@@ -109,3 +109,32 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Status: passed, 4 tests
 - Result: Java Graphics renders a scale-2 physical backing at its logical
   natural size; all destination pixels in the fixture receive the expected color.
+
+## Milestone 7: deployable finite-scale validation
+
+- Timestamp: 2026-08-01T19:13:12Z
+- Commit: `5d0e66ed12e74b96ffb8909d98b25fe0dfd21749`
+- Commands: `TotalCrossSDK/gradlew-agent test --tests totalcross.lang.Double4DTest
+  --tests totalcross.ui.gfx.GraphicsScaleTest`; `TotalCrossSDK/gradlew-agent
+  dist -x test --warning-mode=none --console=plain`
+- Renderer/platform: Java SDK test runtime and deployed SDK distribution
+- Status: passed (5 tests; distribution 29 seconds)
+- Result: `Double4D.isFinite` accepts finite values and rejects NaN and both
+  infinities. The distribution deploy resolved the Java `Double.isFinite` calls
+  in the logical scale checks through `Double4D`; this also corrected the
+  existing equality-based `Double4D.isNaN` behavior.
+
+## Milestone 7: headless DANFE image assertions
+
+- Timestamp: 2026-08-01T19:20:33Z
+- Commit: `21d6958a3a250dd435655319b7cd24071d7af1f3`
+- Command: `TotalCrossSDK/gradlew-agent test --tests
+  totalcross.ui.image.DanfeScalingTest --tests totalcross.ui.gfx.GraphicsScaleTest`
+- Renderer/platform: Java SDK test runtime
+- Status: passed (5 tests total)
+- Result: a deterministic synthetic DANFE image has logical dimensions 360x540;
+  its default PNG is 360x540 and scale-2 PNG is 720x1080. Both backing scales
+  retain exactly 31 dark barcode runs. The test exposed and the implementation
+  fixed Java `fillRect` using logical dimensions as physical pixel bounds.
+- Limitation: deployed text, renderer equivalence, synchronization, macOS, and
+  Android proof are not covered by this headless assertion.
