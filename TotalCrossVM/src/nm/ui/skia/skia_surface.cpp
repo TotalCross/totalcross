@@ -115,6 +115,30 @@ void skia_setSurfaceScale(int32 skiaSurface, double contentScale) {
     targetCanvas->scale(static_cast<SkScalar>(contentScale), static_cast<SkScalar>(contentScale));
 }
 
+static bool skia_canWritePixels(const SkCanvas* targetCanvas, const SkBitmap* texture,
+                                float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                float dstLeft, float dstTop, float dstRight, float dstBottom,
+                                int32 alphaMask) {
+#if USE_WRITE_PIXELS
+    if (!targetCanvas || !texture || !texture->isOpaque() || alphaMask != 255 ||
+        !targetCanvas->getTotalMatrix().isIdentity() || targetCanvas->getSaveCount() != 1 ||
+        srcLeft != 0.0f || srcTop != 0.0f || srcRight != texture->width() ||
+        srcBottom != texture->height() || (srcRight - srcLeft) != (dstRight - dstLeft) ||
+        (srcBottom - srcTop) != (dstBottom - dstTop) ||
+        std::floor(dstLeft) != dstLeft || std::floor(dstTop) != dstTop) {
+        return false;
+    }
+
+    const int dstX = static_cast<int>(dstLeft);
+    const int dstY = static_cast<int>(dstTop);
+    const SkImageInfo targetInfo = targetCanvas->imageInfo();
+    return dstX >= 0 && dstY >= 0 && dstX + texture->width() <= targetInfo.width() &&
+        dstY + texture->height() <= targetInfo.height();
+#else
+    return false;
+#endif
+}
+
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
                      float srcRight, float srcBottom, float dstLeft, float dstTop,
                      float dstRight, float dstBottom, int32 alphaMask) {
@@ -132,11 +156,18 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
     const bool sameSize = (srcRight - srcLeft) == (dstRight - dstLeft) &&
         (srcBottom - srcTop) == (dstBottom - dstTop);
 
-    alphaPaint.setAlpha(alphaMask);
-    alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
-    targetCanvas->drawBitmapRect(
-        *texture, srcRect, dstRect, &alphaPaint,
-        fullSource ? SkCanvas::kFast_SrcRectConstraint : SkCanvas::kStrict_SrcRectConstraint);
+    if (skia_canWritePixels(targetCanvas, texture, srcLeft, srcTop, srcRight, srcBottom,
+                            dstLeft, dstTop, dstRight, dstBottom, alphaMask)) {
+        targetCanvas->writePixels(
+            texture->info(), texture->getPixels(), texture->rowBytes(),
+            static_cast<int>(dstLeft), static_cast<int>(dstTop));
+    } else {
+        alphaPaint.setAlpha(alphaMask);
+        alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
+        targetCanvas->drawBitmapRect(
+            *texture, srcRect, dstRect, &alphaPaint,
+            fullSource ? SkCanvas::kFast_SrcRectConstraint : SkCanvas::kStrict_SrcRectConstraint);
+    }
 }
 
 Pixel skia_getPixel(int32 skiaSurface, int32 x, int32 y) {

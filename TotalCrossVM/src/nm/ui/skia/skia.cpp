@@ -6,8 +6,6 @@
 
 #include "skia_internal.h"
 
-#define USE_WRITE_PIXELS 1
-
 #ifndef USE_COMPUTE_OPAQUE
 #if __APPLE__ || ANDROID
 #define USE_COMPUTE_OPAQUE 0
