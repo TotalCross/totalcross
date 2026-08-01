@@ -344,3 +344,14 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Result: the native fixture reports fractional Skia metrics
   `ascentD=12.98828125`, `descentD=3.41796875`, and `heightD=16.40625`.
   Integer compatibility fields use conservative upward rounding.
+
+## Milestone 3R: fractional native text advances
+
+- Timestamp: 2026-08-01T21:19:00Z
+- Commit: `8e32f006a`
+- Commands: rebuilt `build-logical-ui/libtcvm.dylib`; focused fixture deploy and
+  direct native `/logical-ui-assert` execution.
+- Renderer/platform: deployed native macOS SDL/Skia application
+- Status: passed
+- Result: `FontMetrics.stringWidthD("DANFE 25,00")` resolved through the VM
+  native-method table and returned the fractional advance `81.6484375`.

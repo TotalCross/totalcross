@@ -37,6 +37,16 @@ TC_API void tufFM_charWidth_c(NMParams p) // totalcross/ui/font/FontMetrics nati
    p->retI = getJCharWidth(p->currentContext, FontMetrics_font(p->obj[0]), (JChar)p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_charWidthD_c(NMParams p) // totalcross/ui/font/FontMetrics native public double charWidthD(char c);
+{
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   JChar ch = (JChar)p->i32[0];
+   p->retD = skia_stringWidthD(&ch, sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+#else
+   p->retD = getJCharWidth(p->currentContext, FontMetrics_font(p->obj[0]), (JChar)p->i32[0]);
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidth_s(NMParams p) // totalcross/ui/font/FontMetrics native public int stringWidth(String s);
 {
    TCObject s = p->obj[1];
@@ -44,6 +54,20 @@ TC_API void tufFM_stringWidth_s(NMParams p) // totalcross/ui/font/FontMetrics na
       throwNullArgumentException(p->currentContext, "s");
    else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), String_charsStart(s), String_charsLen(s));
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_stringWidthD_s(NMParams p) // totalcross/ui/font/FontMetrics native public double stringWidthD(String s);
+{
+   TCObject s = p->obj[1];
+   if (s == null)
+      throwNullArgumentException(p->currentContext, "s");
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+   else
+      p->retD = skia_stringWidthD(String_charsStart(s), String_charsLen(s) * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+#else
+   else
+      p->retD = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), String_charsStart(s), String_charsLen(s));
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidth_Cii(NMParams p) // totalcross/ui/font/FontMetrics native public int stringWidth(char []chars, int start, int count);

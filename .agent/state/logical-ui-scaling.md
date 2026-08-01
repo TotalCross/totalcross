@@ -26,13 +26,13 @@ Milestone 3R: complete logical text and FontMetrics.
 
 ## Active Slice
 
-Add fractional horizontal metrics and then bind per-destination `fontScale` to
-measurement and drawing without changing logical layout for contentScale.
+Bind per-destination `fontScale` to measurement and drawing without changing
+logical layout for contentScale.
 
 ## Next Concrete Action
 
-Trace horizontal measurement through Java and native Skia, then introduce a
-shared fractional width path before applying fontScale.
+Trace Graphics text calls and define the smallest per-destination font-scale
+context that keeps Font logical and contentScale-independent.
 
 ## Files to Read Now
 
@@ -58,6 +58,8 @@ Do not read later image or renderer guides yet.
   fixture reports a real Retina scale of 2 with matching logical/physical sizes.
 - Native Skia FontMetrics now exposes actual fractional ascent, descent, and
   height while retaining upward-rounded integer compatibility metrics.
+- Native Skia exposes fractional character and string advances through
+  `FontMetrics` deployed-method bindings.
 
 These are foundations, not completion of their behavioral milestones.
 
