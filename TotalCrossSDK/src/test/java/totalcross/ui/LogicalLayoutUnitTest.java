@@ -86,6 +86,25 @@ class LogicalLayoutUnitTest {
     }
   }
 
+  @Test
+  void pixelClientEdgesPreserveNonzeroInsetsAtAllScales() {
+    for (double scale : new double[] { 1.5, 2, 3 }) {
+      Container parent = sizedContainer(240, 120, LayoutUnit.PIXEL, scale);
+      parent.setInsets(30, 30, 15, 15);
+      Container child = new Container();
+
+      parent.add(child, Control.LEFT, Control.TOP, Control.FILL, Control.FILL);
+
+      int physicalLeft = parent.toLayoutPixels(30);
+      int physicalTop = parent.toLayoutPixels(15);
+      int physicalRight = parent.toLayoutPixels(210);
+      int physicalBottom = parent.toLayoutPixels(105);
+      assertBounds(child, parent.toLogicalLayoutEdge(physicalLeft), parent.toLogicalLayoutEdge(physicalTop),
+          parent.toLogicalLayoutEdge(physicalRight) - parent.toLogicalLayoutEdge(physicalLeft),
+          parent.toLogicalLayoutEdge(physicalBottom) - parent.toLogicalLayoutEdge(physicalTop));
+    }
+  }
+
   private static Container sizedContainer(int width, int height, LayoutUnit unit, double scale) {
     Container container = new Container();
     container.setRect(0, 0, width, height);
