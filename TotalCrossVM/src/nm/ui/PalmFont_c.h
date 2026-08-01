@@ -721,12 +721,12 @@ UserFont loadUserFontFromFontObj(Context currentContext, TCObject fontObj, JChar
 #include "skia/skia.h"
 
 int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch) {
-  int32 fontSize = (int)(Font_size(fontObj) * (*tcSettings.screenDensityPtr));
+  int32 fontSize = Font_size(fontObj);
   return skia_stringWidth(&ch, sizeof(JChar), Font_skiaIndex(fontObj), fontSize);
 }
 
 int32 getJCharPWidth(Context currentContext, TCObject fontObj, JCharP s, int32 len) {
-   int32 fontSize = (int)(Font_size(fontObj) * (*tcSettings.screenDensityPtr));
+   int32 fontSize = Font_size(fontObj);
     return len == 0? 0: skia_stringWidth(s, len * sizeof(JChar), Font_skiaIndex(fontObj), fontSize);
 }
 #else
