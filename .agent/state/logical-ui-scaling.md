@@ -102,6 +102,9 @@ destination-aware path.
   and bottom before converting each edge. `LogicalLayoutUnitTest` verifies
   nonzero insets at content scales 1.5, 2, and 3; Java unit validation passed
   in `artifacts/logical-ui-scaling/logs/pixel-client-origin-test.log`.
+- The deployed native macOS fixture exercises a PIXEL root container at Retina
+  scale and reports `pixelChild=10,5,50,20` for physical input
+  `20,10,100,40`; log: `root-pixel-fixture-native-final.log`.
 - Destination-aware `FontMetrics` methods now pass the effective logical size
   directly to native Skia measurement and metrics. The deployed macOS fixture
   passed after symbol registration correction; logs:

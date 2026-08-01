@@ -156,6 +156,9 @@ Progress 2026-08-01: corrected client-rectangle conversion to preserve logical
 edges before applying PIXEL conversion. Focused Java
 `LogicalLayoutUnitTest` passed at 1.5, 2, and 3 with nonzero insets; log:
 `artifacts/logical-ui-scaling/logs/pixel-client-origin-test.log`.
+The freshly deployed native macOS fixture also passed the root PIXEL assertion,
+reporting `pixelChild=10,5,50,20`; log:
+`artifacts/logical-ui-scaling/logs/root-pixel-fixture-native-final.log`.
 
 Progress 2026-08-01: added internal destination-aware FontMetrics measurement
 and line-height methods. On Skia they configure metrics and `measureText` at
