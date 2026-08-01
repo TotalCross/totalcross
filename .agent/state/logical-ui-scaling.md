@@ -49,6 +49,11 @@ Audit image ownership, codec paths, transforms, and Java/native synchronization.
 1. Read the M4R image design and validation gates.
 2. Audit Image constructors, loading, dimensions, transforms, and ownership.
 
+Progress 2026-08-01: `Image.getGraphics()` now refreshes against the image's
+logical dimensions, retaining physical backing only behind its content-scale
+transform. Focused Java image/graphics scale tests passed; native image
+synchronization validation remains pending.
+
 ## Files to Read Now
 
 - `.agent/reviews/logical-ui-scaling-current-review.md`

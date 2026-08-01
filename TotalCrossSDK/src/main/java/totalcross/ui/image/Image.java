@@ -462,7 +462,7 @@ public class Image extends GfxSurface {
     if (Launcher.instance != null && Launcher.instance.mainWindow != null) {
       gfx.setFont(MainWindow.getDefaultFont()); // avoid loading the font if running from tc.Deploy
     }
-    gfx.refresh(0, 0, width, height, 0, 0, null);
+    gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
     return gfx;
   }
 
