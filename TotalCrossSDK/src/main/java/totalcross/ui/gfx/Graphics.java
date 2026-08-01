@@ -181,7 +181,13 @@ public final class Graphics {
     return fontScale;
   }
 
-  /** Updates the destination-owned scales after a surface configuration change. */
+  /**
+   * Updates destination-owned scales after a runtime surface configuration change.
+   *
+   * <p>This is not a global display-density setting. Changing {@code contentScale} preserves
+   * logical layout and requests repaint; changing {@code fontScale} also repositions controls
+   * using their recorded layout expressions.</p>
+   */
   public void setScales(double contentScale, double fontScale) {
     if (!Double.isFinite(contentScale) || contentScale <= 0 || !Double.isFinite(fontScale) || fontScale <= 0) {
       throw new IllegalArgumentException("graphics scales must be finite and positive");
