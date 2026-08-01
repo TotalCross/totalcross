@@ -8,28 +8,34 @@
 #ifdef SKIA_H
 static int32 skiaSurfaceForGraphics(TCObject g)
 {
+   int32 surfaceId;
    if (!Graphics_isImageSurface(g))
-      return SKIA_SCREEN_SURFACE_ID;
+      surfaceId = SKIA_SCREEN_SURFACE_ID;
+   else
+   {
+      TCObject image = Graphics_surface(g);
+      if (image == null)
+         return SKIA_INVALID_SURFACE_ID;
 
-   TCObject image = Graphics_surface(g);
-   if (image == null)
-      return SKIA_INVALID_SURFACE_ID;
-
-   int32 id = Image_textureId(image);
-   if (id >= 0)
-      return id;
-
-   int32 frameCount = Image_frameCount(image);
-   TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(image) : Image_pixels(image);
-   Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
-   int32 width = frameCount > 1 ? Image_widthOfAllFrames(image) : Image_width(image);
-   int32 height = Image_height(image);
-   id = skia_makeBitmap(SKIA_SCREEN_SURFACE_ID, pixels, width, height);
-   if (id >= 0) {
-      Image_textureId(image) = id;
-      Image_changed(image) = false;
+      surfaceId = Image_textureId(image);
+      if (surfaceId < 0)
+      {
+         int32 frameCount = Image_frameCount(image);
+         TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(image) : Image_pixels(image);
+         Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+         int32 width = frameCount > 1 ? Image_widthOfAllFrames(image) : Image_width(image);
+         int32 height = Image_height(image);
+         surfaceId = skia_makeBitmap(SKIA_SCREEN_SURFACE_ID, pixels, width, height);
+         if (surfaceId >= 0) {
+            Image_textureId(image) = surfaceId;
+            Image_changed(image) = false;
+         }
+      }
    }
-   return id;
+
+   if (surfaceId >= SKIA_SCREEN_SURFACE_ID)
+      skia_setSurfaceScale(surfaceId, Graphics_contentScale(g));
+   return surfaceId;
 }
 #endif
 
