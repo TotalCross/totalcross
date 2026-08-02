@@ -590,3 +590,23 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `m4-image-texture-tcui.log`, `m4-image-texture-dist.log`,
   `m4-image-texture-deploy.log`, `m4-image-texture-hashes.log`, and
   `m4-image-texture-native.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 4R: texture-refresh correction
+
+- Timestamp: 2026-08-02T01:10:00Z
+- Status: superseded before milestone completion.
+- Result: the shared `changed` flag also follows native canvas writes, while a
+  Skia image surface owns a copied bitmap. Recreating a texture solely from
+  that flag could discard native-canvas pixels, so the provisional invalidation
+  is removed pending an explicit ownership boundary and executable transition
+  proof. The preceding loader/readback evidence remains valid.
+
+## Milestone 4R: image ownership and cache audit
+
+- Timestamp: 2026-08-02T01:20:00Z
+- Status: passed.
+- Result: no further scale-specific cache or copy defect was found. Frame-copy
+  and transform results use fresh physical backing under their fixed-pixel
+  scale-1 contract. Legacy shared texture lifetime has no logical-dimension
+  conversion. Java backing tests and the deployed macOS native-canvas/readback
+  fixture jointly cover the documented ownership boundaries.
