@@ -12,9 +12,9 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
-- Active milestone: 6R — supported non-Skia native renderer.
-- Active slice: identify the supported macOS non-Skia configuration and audit
-  its logical coordinate, font, and surface-scale behavior.
+- Active milestone: 7R — complete DANFE and screenshots.
+- Active slice: run the deterministic fixture in the Java and matching native
+  macOS Skia lanes; retain only process-specific capture artifacts.
 
 ## Execution rules
 
@@ -54,7 +54,15 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 ## Next concrete action
 
-Identify the supported macOS non-Skia configuration before editing its backend.
+Run the deterministic fixture in the Java and matching native macOS Skia lanes.
+
+## M6R audit
+
+- Audited: the repository-supported `-DUSE_SKIA=OFF` macOS build and deployed
+  fixture with a hash-matched dylib.
+- Unsupported: image-backed primitive coordinates are not mapped from logical
+  to physical backing; a scale-two source paints only its first physical pixel.
+  Do not represent this configuration as semantically equivalent to Skia.
 
 ## M5R audit
 

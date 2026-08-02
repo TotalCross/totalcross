@@ -698,3 +698,19 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Logs: `m4r-transform-java-tests.log`, `m4r-transform-native-build.log`,
   `m4r-transform-sdk-dist.log`, `m4r-transform-deploy.log`, and
   `m4r-transform-native-fixture.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 6R: non-Skia macOS audit
+
+- Timestamp: 2026-08-01T22:15:00Z
+- Commands: configured/built `build-logical-ui-nonskia` with `-DUSE_SKIA=OFF`;
+  redeployed the smoke app; compared SHA-256; directly ran the fixture.
+- Renderer/platform: deployed native macOS SDL non-Skia app.
+- Status: unsupported configuration recorded.
+- Result: the build and hash check pass, but a scale-two image-backed primitive
+  paints only the first physical pixel (`red, black` instead of the expected
+  replicated logical backing). Its generic pixel renderer has no destination
+  content-scale mapping, so it is not semantically equivalent to Skia.
+- Deployed dylib SHA-256: `a3d6ecc41d612fbe5ba942325aa7b89cbf4bfc52c4f7a24739cec5916fab4898`.
+- Logs: `m6-nonskia-build.log`, `m6-nonskia-deploy-after-transform.log`, and
+  `m6-nonskia-native-after-transform.log` under
+  `artifacts/logical-ui-scaling/logs/`.
