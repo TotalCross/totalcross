@@ -633,3 +633,15 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   rasterize their source at the destination image backing scale. The regression
   covers natural drawing and a partial source rectangle into scale-2 backing.
 - Log: `m5-java-blit-test.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 5R: Java effective text font selection
+
+- Timestamp: 2026-08-02T01:50:00Z
+- Command: focused `GraphicsScaleTest` through `TotalCrossSDK/gradlew-agent`.
+- Renderer/platform: Java renderer test lane.
+- Status: passed.
+- Result: Java text uses a local integer-rounded effective font for glyph
+  selection, justification, and fallback. This preserves public `FontMetrics`
+  compatibility; raster-size proof remains pending an initialized Java font
+  fixture because raw image graphics intentionally has no default font.
+- Log: `m5-java-text-test.log` under `artifacts/logical-ui-scaling/logs/`.
