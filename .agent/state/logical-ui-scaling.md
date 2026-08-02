@@ -12,9 +12,9 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
-- Active milestone: 7R — complete DANFE and screenshots.
-- Active slice: run the deterministic fixture in the Java and matching native
-  macOS Skia lanes; retain only process-specific capture artifacts.
+- Active milestone: 8R — final Android and handoff.
+- Active slice: run the required high-density Android semantic fixture after
+  the Java and native macOS lanes; iOS remains optional and deferred.
 
 ## Execution rules
 
@@ -54,7 +54,14 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 ## Next concrete action
 
-Run the deterministic fixture in the Java and matching native macOS Skia lanes.
+Run the required high-density Android semantic fixture and final focused audits.
+
+## M7R audit
+
+- Validated: Java Launcher and hash-matched native macOS Skia fixture both pass
+  the deterministic semantic assertions.
+- Captured: process-owned native window only, with fixed public fixture data;
+  no desktop-wide screenshot was retained.
 
 ## M6R audit
 

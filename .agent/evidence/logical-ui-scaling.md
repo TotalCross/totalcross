@@ -714,3 +714,21 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Logs: `m6-nonskia-build.log`, `m6-nonskia-deploy-after-transform.log`, and
   `m6-nonskia-native-after-transform.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 7R: DANFE semantic lanes and native capture
+
+- Timestamp: 2026-08-01T22:20:00Z
+- Commands: Java Launcher with `/logical-ui-assert`; direct deployed native
+  macOS Skia fixture; CoreGraphics owner-PID window lookup and
+  `screencapture -l`.
+- Renderer/platform: Java Launcher and deployed native macOS SDL/Skia app.
+- Status: passed.
+- Result: both lanes passed the deterministic image, alpha, source-rectangle,
+  frame, geometry, text-metric, and control assertions. The native capture is
+  restricted to the `DanfeScalingApp` window owned by its PID and contains only
+  the public synthetic fixture.
+- Native dylib SHA-256: `b4e7c140717fb4bf6e0f1eada365f5c1aea97067907ad280fb99430bedb58a5a`.
+- Capture: `artifacts/logical-ui-scaling/m7-native-danfe.png`, SHA-256
+  `5959d1ad07dd0a43895b670f5f2ed7b4efb02e5e6c943cec360ab67ffc9ab4c6`.
+- Logs: `m7-java-launcher.log` and `m4r-transform-native-fixture.log` under
+  `artifacts/logical-ui-scaling/logs/`.
