@@ -921,7 +921,8 @@ public final class Graphics {
     byte[] bitmapTable; // pgr@402_50
     int rowWIB;
     // speed-up
-    tc.simulator.Launcher.UserFont font = (tc.simulator.Launcher.UserFont) this.font.hv_UserFont;
+    Font textFont = effectiveTextFont();
+    tc.simulator.Launcher.UserFont font = (tc.simulator.Launcher.UserFont) textFont.hv_UserFont;
     totalcross.Launcher.CharBits bits = new totalcross.Launcher.CharBits();
     int height = font.maxHeight;
     int chrStart = 0;
@@ -937,7 +938,7 @@ public final class Graphics {
       if (chrCount == 0) {
         return;
       }
-      rem = justifyWidth - this.font.fm.stringWidth(text.toCharArray(), 0, chrCount);
+      rem = justifyWidth - textFont.fm.stringWidth(text.toCharArray(), 0, chrCount);
       if (rem > 0) {
         extraPixelsPerChar = rem / chrCount;
         extraPixelsRemaining = rem % chrCount;
@@ -965,7 +966,7 @@ public final class Graphics {
           if (isVert) {
             y += ch == '\t' ? incY * Font.TAB_SIZE : incY;
           } else {
-            x0 += Launcher.instance.getCharWidth(this.font, ch) + extraPixelsPerChar;
+            x0 += Launcher.instance.getCharWidth(textFont, ch) + extraPixelsPerChar;
             if (k <= extraPixelsRemaining) {
               x0++;
             }
@@ -974,7 +975,7 @@ public final class Graphics {
         continue; // for all other control chars, just skip to next
       }
       if (font.ubase == null || ch < font.firstChar || ch > font.lastChar) {
-        this.font.hv_UserFont = font = Launcher.instance.getFont(this.font, ch);
+        textFont.hv_UserFont = font = Launcher.instance.getFont(textFont, ch);
       }
       font.setCharBits(ch, bits);
       if (bits.offset == -1) {
@@ -1103,6 +1104,13 @@ public final class Graphics {
         }
       }
     }
+  }
+
+  private Font effectiveTextFont() {
+    if (fontScale == 1) {
+      return font;
+    }
+    return Font.getFont(font.name, font.isBold(), Math.max(1, (int) Math.round(font.size * fontScale)));
   }
 
   
