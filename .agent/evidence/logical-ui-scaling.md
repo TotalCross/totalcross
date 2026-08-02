@@ -671,3 +671,12 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   native macOS evidence.
 - Logs: `m5-java-final-test.log`, `m5-java-final-compile.log`, and
   `m5-java-final-launcher.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 5R: Java renderer completion audit
+
+- Timestamp: 2026-08-02T02:20:00Z
+- Status: passed.
+- Result: primitive, clip/translation, image/source-rectangle, effective text,
+  scaled text backing, and Java Launcher DANFE lanes pass. Java dirty state is a
+  repaint boolean and has no coordinate conversion. The Java renderer retains
+  integer font-raster metrics as its documented rounding boundary.

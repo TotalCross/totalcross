@@ -12,9 +12,9 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
-- Active milestone: 5R — Java renderer.
-- Active slice: audit remaining Java dirty bounds and close M5R without
-  expanding into the non-Skia renderer.
+- Active milestone: 6R — supported non-Skia native renderer.
+- Active slice: identify the supported macOS non-Skia configuration and audit
+  its logical coordinate, font, and surface-scale behavior.
 
 ## Execution rules
 
@@ -52,7 +52,7 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 ## Next concrete action
 
-Audit remaining Java dirty bounds, then close M5R on its Java proof.
+Identify the supported macOS non-Skia configuration before editing its backend.
 
 ## M5R audit
 
@@ -70,6 +70,8 @@ Audit remaining Java dirty bounds, then close M5R on its Java proof.
   and translation.
 - Validated: the initialized Java Launcher DANFE fixture passes with scale-one
   backing; logical PIXEL expectations derive from destination contentScale.
+- Audited: Java dirty state is a control-surface repaint boolean, not a
+  coordinate-bearing dirty rectangle; it requires no additional scale mapping.
 
 ## Stable foundations
 
