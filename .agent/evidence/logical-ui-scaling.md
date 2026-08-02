@@ -544,3 +544,16 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `m4-readback-corrective-deploy.log`, `m4-readback-corrective-hashes.log`,
   and `m4-readback-corrective-native.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 4R: image transform and PNG dimensions
+
+- Timestamp: 2026-08-02T00:40:00Z
+- Commands: focused Java image/graphics tests; TCUI/SDK deployment; deployed
+  macOS fixture and direct assertion execution.
+- Status: passed.
+- Result: a scale-2 `3x2` image encodes a physical `6x4` PNG. Existing scaling
+  transforms retain their fixed-pixel result contract: `6x4`, scale `1`.
+- Deployed dylib SHA-256: `b4e7c140717fb4bf6e0f1eada365f5c1aea97067907ad280fb99430bedb58a5a`.
+- Logs: `m4-image-transform-test.log`, `m4-image-transform-tcui.log`,
+  `m4-image-transform-dist.log`, `m4-image-transform-deploy.log`,
+  `m4-image-transform-hashes.log`, and `m4-image-transform-native.log`.

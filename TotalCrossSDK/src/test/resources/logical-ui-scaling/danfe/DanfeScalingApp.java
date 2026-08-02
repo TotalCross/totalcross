@@ -4,6 +4,7 @@
 
 package danfe.fixture;
 
+import totalcross.io.ByteArrayStream;
 import totalcross.ui.ImageControl;
 import totalcross.ui.Label;
 import totalcross.ui.Button;
@@ -108,6 +109,17 @@ public class DanfeScalingApp extends MainWindow {
         throw new IllegalStateException("Logical image dimension assertion failed: "
             + logicalImage.getWidth() + "x" + logicalImage.getHeight() + "/"
             + logicalImage.getPixelWidth() + "x" + logicalImage.getPixelHeight());
+      }
+      ByteArrayStream logicalPng = new ByteArrayStream(128);
+      logicalImage.createPng(logicalPng);
+      if (pngDimension(logicalPng.getBuffer(), 16) != 6 || pngDimension(logicalPng.getBuffer(), 20) != 4) {
+        throw new IllegalStateException("Logical image PNG physical-dimension assertion failed");
+      }
+      Image transformedImage = logicalImage.getScaledInstance(6, 4);
+      if (transformedImage.getWidth() != 6 || transformedImage.getHeight() != 4
+          || transformedImage.getPixelWidth() != 6 || transformedImage.getPixelHeight() != 4
+          || transformedImage.getContentScale() != 1) {
+        throw new IllegalStateException("Logical image transformation assertion failed");
       }
       Image sourceImage;
       Image destinationImage;
@@ -251,5 +263,10 @@ public class DanfeScalingApp extends MainWindow {
 
   private static boolean isHalf(int value) {
     return value >= 127 && value <= 128;
+  }
+
+  private static int pngDimension(byte[] png, int offset) {
+    return ((png[offset] & 0xFF) << 24) | ((png[offset + 1] & 0xFF) << 16)
+        | ((png[offset + 2] & 0xFF) << 8) | (png[offset + 3] & 0xFF);
   }
 }
