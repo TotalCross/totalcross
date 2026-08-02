@@ -524,3 +524,23 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Logs: `m4-image-ownership-test.log`, `m4-image-ownership-build.log`,
   `m4-image-ownership-deploy.log`, `m4-image-ownership-native.log`, and
   `m4-image-ownership-hashes.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 4R: corrective native image readback
+
+- Timestamp: 2026-08-02T00:30:00Z
+- Commands: focused Java image/graphics tests; macOS `tcvm` build; TCUI and SDK
+  deployment; smoke deployment; SHA-256 comparison; direct native fixture.
+- Renderer/platform: Java test lane and deployed native macOS SDL/Skia app.
+- Status: passed.
+- Result: the prior defect was incorrect byte access to a temporary RGBA_8888
+  bitmap. One `readPixels` call now fills a row bitmap and `getColor(x, 0)`
+  supplies RGBA bytes in order. The macOS fixture proves red/green and
+  blue/white rows, partial source origin, alpha-mask 128 compositing tolerance,
+  and multiframe visible dimensions. Direct Image ABI field offsets and the
+  fast/strict source-rect policy are restored.
+- Deployed dylib SHA-256: `b4e7c140717fb4bf6e0f1eada365f5c1aea97067907ad280fb99430bedb58a5a`.
+- Logs: `m4-readback-corrective-test.log`, `m4-readback-corrective-build.log`,
+  `m4-readback-corrective-tcui.log`, `m4-readback-corrective-dist.log`,
+  `m4-readback-corrective-deploy.log`, `m4-readback-corrective-hashes.log`,
+  and `m4-readback-corrective-native.log` under
+  `artifacts/logical-ui-scaling/logs/`.

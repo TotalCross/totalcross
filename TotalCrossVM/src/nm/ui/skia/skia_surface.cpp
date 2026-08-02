@@ -165,7 +165,7 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
         alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
         targetCanvas->drawBitmapRect(
             *texture, srcRect, dstRect, &alphaPaint,
-            SkCanvas::kStrict_SrcRectConstraint);
+            fullSource ? SkCanvas::kFast_SrcRectConstraint : SkCanvas::kStrict_SrcRectConstraint);
     }
 }
 
