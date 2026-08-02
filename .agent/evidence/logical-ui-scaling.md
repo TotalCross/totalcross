@@ -573,3 +573,20 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `m4-image-loader-dist.log`, `m4-image-loader-deploy.log`,
   `m4-image-loader-hashes.log`, and `m4-image-loader-native.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 4R: texture refresh after backing writes
+
+- Timestamp: 2026-08-02T01:00:00Z
+- Commands: macOS `tcvm` build; focused `GraphicsScaleTest` and
+  `DanfeScalingTest`; TCUI and SDK deployment; smoke deployment; SHA-256
+  comparison; direct native fixture.
+- Renderer/platform: Java test lane and deployed native macOS SDL/Skia app.
+- Status: passed.
+- Result: when Java-side image drawing marks a cached Skia texture changed, the
+  native painter deletes and recreates that texture before drawing. The native
+  fixture proves the updated black/green pixels after a prior texture upload.
+- Deployed dylib SHA-256: `ef6b9ec5f10ed1ff79f2a5dc59efe3cc45685422bc7dac9530e4abe831624e7e`.
+- Logs: `m4-image-texture-build.log`, `m4-image-texture-java.log`,
+  `m4-image-texture-tcui.log`, `m4-image-texture-dist.log`,
+  `m4-image-texture-deploy.log`, `m4-image-texture-hashes.log`, and
+  `m4-image-texture-native.log` under `artifacts/logical-ui-scaling/logs/`.
