@@ -12,9 +12,9 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
-- Active milestone: 5R — Java renderer.
-- Active slice: validate Java text raster and dirty bounds with an initialized
-  Java font context.
+- Active milestone: 6R — supported non-Skia native renderer.
+- Active slice: identify the supported macOS non-Skia configuration and audit
+  its logical coordinate, font, and surface-scale behavior.
 
 ## Execution rules
 
@@ -52,8 +52,7 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 ## Next concrete action
 
-Add an initialized Java font-context fixture for text raster and audit dirty
-updates.
+Identify the supported macOS non-Skia configuration before editing its backend.
 
 ## M5R audit
 
@@ -69,6 +68,10 @@ updates.
 - Corrected: scaled Java image text is rasterized in a logical temporary image
   and composed through the validated scaled blit path, preserving logical clip
   and translation.
+- Validated: the initialized Java Launcher DANFE fixture passes with scale-one
+  backing; logical PIXEL expectations derive from destination contentScale.
+- Audited: Java dirty state is a control-surface repaint boolean, not a
+  coordinate-bearing dirty rectangle; it requires no additional scale mapping.
 
 ## Stable foundations
 
