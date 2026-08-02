@@ -13,8 +13,8 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
 - Active milestone: 5R — Java renderer.
-- Active slice: audit Java primitive, clip, translation, image, text, and dirty
-  bounds scale ownership before implementation.
+- Active slice: complete Java image blits, text, and dirty-bound ownership after
+  the primitive edge conversion.
 
 ## Execution rules
 
@@ -52,7 +52,14 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 ## Next concrete action
 
-Map Java renderer coordinate and dirty-bound conversions before editing.
+Audit Java `drawSurface` source/destination edges and text raster bounds; retain
+logical clip and translation until each physical backing write.
+
+## M5R audit
+
+- Validated: Java image-backed point, horizontal/vertical line, rectangle, and
+  outline paths convert logical edges once to physical backing edges. Fractional
+  scale `1.5` has focused physical-pixel coverage.
 
 ## Stable foundations
 
