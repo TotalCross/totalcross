@@ -225,8 +225,22 @@ public class DanfeScalingApp extends MainWindow {
           && buttonWidthAtOne == buttonWidthAtDoubleContentScale && buttonWidthAtFontScale > buttonWidthAtOne
           && checkWidthAtOne == checkWidthAtDoubleContentScale && checkWidthAtFontScale > checkWidthAtOne
           && radioWidthAtOne == radioWidthAtDoubleContentScale && radioWidthAtFontScale > radioWidthAtOne
-          && pixelChild.getX() == 10 && pixelChild.getY() == 5 && pixelChild.getWidth() == 50 && pixelChild.getHeight() == 20)) {
-        throw new IllegalStateException("Logical text metric assertion failed");
+          && pixelChild.getX() == (int) Math.round(20 / contentScale)
+          && pixelChild.getY() == (int) Math.round(10 / contentScale)
+          && pixelChild.getWidth() == (int) Math.round(100 / contentScale)
+          && pixelChild.getHeight() == (int) Math.round(40 / contentScale))) {
+        throw new IllegalStateException("Logical text metric assertion failed: label=" + widthAtOne + ","
+            + widthAtDoubleContentScale + "," + widthAtFontScale + " edit=" + editWidthAtOne + ","
+            + editWidthAtDoubleContentScale + "," + editWidthAtFontScale + " multi=" + multiEditHeightAtOne + ","
+            + multiEditHeightAtDoubleContentScale + "," + multiEditHeightAtFontScale + " button=" + buttonWidthAtOne
+            + "," + buttonWidthAtDoubleContentScale + "," + buttonWidthAtFontScale + " check=" + checkWidthAtOne
+            + "," + checkWidthAtDoubleContentScale + "," + checkWidthAtFontScale + " radio=" + radioWidthAtOne
+            + "," + radioWidthAtDoubleContentScale + "," + radioWidthAtFontScale + " metrics="
+            + metrics.getAscentD() + "," + metrics.getDescentD() + "," + metrics.getLeadingD() + ","
+            + metrics.getHeightD() + " advances=" + danfeAdvance + "," + accentedAdvance + ","
+            + representativePairAdvance + "," + compatibleDanfeAdvance + "," + arrayDanfeAdvance + ","
+            + bufferDanfeAdvance + " pixel=" + pixelChild.getX() + "," + pixelChild.getY() + ","
+            + pixelChild.getWidth() + "," + pixelChild.getHeight());
       }
       System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
           + " physical=" + physicalWidth + "x" + physicalHeight + " contentScale=" + contentScale

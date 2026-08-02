@@ -2131,6 +2131,7 @@ public final class Graphics {
   private void drawSurface(int[] pixels, Object srcSurface, int x, int y, int width, int height, int dstX, int dstY,
       boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH) {
     boolean isScaled = false;
+    int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
     if (srcSurface instanceof Image) {
       Image img = (Image) srcSurface;
       if (img.getContentScale() != 1) {
@@ -2243,7 +2244,6 @@ public final class Graphics {
       int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
       int psrc = (bmpY + y) * scrPitch + bmpX + x;
       int pdst = dstY * pitch + dstX;
-      int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
       for (j = height; --j >= 0; psrc += scrPitch, pdst += pitch) {
         int srcIdx = psrc; // guich@450_1
         int dstIdx = pdst;

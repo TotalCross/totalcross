@@ -657,3 +657,17 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   Visual raster-size proof remains pending an initialized Java font fixture.
 - Log: `m5-java-text-backing-test.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 5R: Java Launcher DANFE semantic lane
+
+- Timestamp: 2026-08-02T02:10:00Z
+- Commands: focused `GraphicsScaleTest`; compiled the smoke fixture; launched
+  `totalcross.Launcher` with `/logical-ui-assert`.
+- Renderer/platform: Java Launcher renderer lane.
+- Status: passed.
+- Result: the initialized Java fixture passes logical image, alpha composition,
+  text metric/control, and destination-relative PIXEL assertions at
+  `contentScale=1`. The fixture reports its physical backing separately from
+  native macOS evidence.
+- Logs: `m5-java-final-test.log`, `m5-java-final-compile.log`, and
+  `m5-java-final-launcher.log` under `artifacts/logical-ui-scaling/logs/`.
