@@ -56,4 +56,32 @@ class GraphicsScaleTest {
       assertEquals(0xFFFF0000, pixel);
     }
   }
+
+  @Test
+  void framesExposeTheirVisibleLogicalWidth() throws Exception {
+    Image image = new Image(6, 1);
+
+    image.setFrameCount(2);
+
+    assertEquals(3, image.getWidth());
+    assertEquals(3, image.getPixelWidth());
+  }
+
+  @Test
+  void javaRendererSamplesTheWholePhysicalBackingAtNaturalLogicalSize() throws Exception {
+    Image source = Image.createLogical(2, 2, 2);
+    int[] pixels = source.getPixels();
+    pixels[0] = pixels[1] = pixels[4] = pixels[5] = 0xFFFF0000;
+    pixels[2] = pixels[3] = pixels[6] = pixels[7] = 0xFF00FF00;
+    pixels[8] = pixels[9] = pixels[12] = pixels[13] = 0xFF0000FF;
+    pixels[10] = pixels[11] = pixels[14] = pixels[15] = 0xFFFFFFFF;
+    Image destination = new Image(2, 2);
+
+    destination.getGraphics().drawImage(source, 0, 0);
+
+    assertEquals(0xFFFF0000, destination.getPixels()[0]);
+    assertEquals(0xFF00FF00, destination.getPixels()[1]);
+    assertEquals(0xFF0000FF, destination.getPixels()[2]);
+    assertEquals(0xFFFFFFFF, destination.getPixels()[3]);
+  }
 }

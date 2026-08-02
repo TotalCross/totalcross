@@ -381,6 +381,7 @@ public class Image extends GfxSurface {
         comment = "FC=" + n;
         widthOfAllFrames = width;
         width /= frameCount;
+        logicalWidth = (int) Math.ceil(width / contentScale);
         // the pixels will hold the pixel of a single frame
         pixelsOfAllFrames = pixels;
         pixels = new int[width * height];

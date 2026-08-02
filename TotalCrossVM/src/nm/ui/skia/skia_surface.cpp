@@ -148,7 +148,6 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
     if (!targetCanvas || !texture) {
         return;
     }
-
     const SkRect srcRect = SkRect::MakeLTRB(srcLeft, srcTop, srcRight, srcBottom);
     const SkRect dstRect = SkRect::MakeLTRB(dstLeft, dstTop, dstRight, dstBottom);
     const bool fullSource = srcLeft == 0.0f && srcTop == 0.0f &&
@@ -166,7 +165,7 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
         alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
         targetCanvas->drawBitmapRect(
             *texture, srcRect, dstRect, &alphaPaint,
-            fullSource ? SkCanvas::kFast_SrcRectConstraint : SkCanvas::kStrict_SrcRectConstraint);
+            SkCanvas::kStrict_SrcRectConstraint);
     }
 }
 
