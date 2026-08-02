@@ -225,14 +225,22 @@ end:
 static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSurf, int32 srcX, int32 srcY, int32 w, int32 h,
    int32 dstX, int32 dstY, int32 doClip) {
    if (Surface_isImage(srcSurf)) {
-      int32 srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
-      int32 srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
-      double scaleW = Image_hwScaleW(srcSurf);
-      double scaleH = Image_hwScaleH(srcSurf);
+      double contentScale = Image_contentScale(srcSurf);
+      double scaleW;
+      double scaleH;
+      int32 srcWidth;
+      int32 srcHeight;
       int32 frameCount = Image_frameCount(srcSurf);
       int32 frame = 0;
       bool clipSet = false;
 
+      if (contentScale <= 0) {
+         contentScale = 1;
+      }
+      srcWidth = (int32)ceil(Image_width(srcSurf) * Image_hwScaleW(srcSurf) / contentScale);
+      srcHeight = (int32)ceil(Image_height(srcSurf) * Image_hwScaleH(srcSurf) / contentScale);
+      scaleW = Image_hwScaleW(srcSurf) / contentScale;
+      scaleH = Image_hwScaleH(srcSurf) / contentScale;
       if (scaleW <= 0 || scaleH <= 0 || w <= 0 || h <= 0 || srcWidth <= 0 || srcHeight <= 0) {
          return;
       }

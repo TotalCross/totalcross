@@ -164,9 +164,9 @@
 #define Image_widthOfAllFrames(o)   FIELD_I32(o, 5)
 #define Image_transparentColor(o)   FIELD_I32(o, 6)
 #define Image_useAlpha(o)           FIELD_I32(o, 7)
-#define Image_alphaMask(o)          FIELD_I32(o, 8)
+#define Image_alphaMask(o)          *getInstanceFieldInt(o, "alphaMask", "totalcross.ui.image.Image")
 #define Image_lastAccess(o)         FIELD_I32(o, 9)
-#define Image_textureId(o)          FIELD_I32(o, 10)
+#define Image_textureId(o)          *getInstanceFieldInt(o, "textureId", "totalcross.ui.image.Image")
 #define Image_logicalWidth(o)       FIELD_I32(o, 11)
 #define Image_logicalHeight(o)      FIELD_I32(o, 12)
 
@@ -178,9 +178,9 @@
 #define Image_changed(o)            *((int32*)ARRAYOBJ_START(Image_changedObj(o)))
 #define Image_instanceCount(o)      *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))
 
-#define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
-#define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
-#define Image_contentScale(o)      FIELD_DBL(o, OBJ_CLASS(o), 2)
+#define Image_contentScale(o)      *getInstanceFieldDouble(o, "contentScale", "totalcross.ui.image.Image")
+#define Image_hwScaleW(o)         *getInstanceFieldDouble(o, "hwScaleW", "totalcross.ui.image.Image")
+#define Image_hwScaleH(o)         *getInstanceFieldDouble(o, "hwScaleH", "totalcross.ui.image.Image")
 
 #define ImageOrControl_surfaceType(o) FIELD_I32(o, 0)
 
