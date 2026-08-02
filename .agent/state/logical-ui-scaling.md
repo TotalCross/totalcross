@@ -12,13 +12,14 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
-- Active milestone: 4R — image behavior and synchronization.
-- Active slice: establish native/Java backing ownership before changing cache
-  invalidation or closing M4R.
+- Active milestone: 5R — Java renderer.
+- Active slice: audit Java primitive, clip, translation, image, text, and dirty
+  bounds scale ownership before implementation.
 
 ## Execution rules
 
-- Read only M4R design/gate, audited and pending symbols, and narrow ranges.
+- Read only the active design/gate, audited and pending symbols, and narrow
+  ranges.
 - Redirect verbose output to artifact logs; inspect concise tails/errors only.
 - Batch coherent M4R changes before SDK distribution and macOS native deploy.
 - Verify deployed output with hashes and machine-readable assertions.
@@ -42,13 +43,16 @@ Rewrite this file instead of appending. Read it first when resuming.
   deliberately produce fixed-pixel scale-1 images using physical dimensions.
 - Validated: ordinary PNG decoding preserves encoded physical dimensions and
   creates the existing scale-1 image contract in Java and native macOS.
-- Pending: cache and alternating Java/native ownership. Skia image canvases use
-  copied backing; the current shared changed flag cannot identify its writer.
+- Audited: frame copies and transforms allocate fresh physical backing with the
+  established fixed-pixel scale-1 result; legacy shared texture/cache lifetime
+  has no logical-dimension branch.
+- Validated ownership boundaries: Java backing writes are covered by focused
+  Java tests; native image-canvas writes/readback, alpha, source rectangles,
+  frames, codecs, and texture reuse are covered by the deployed macOS fixture.
 
 ## Next concrete action
 
-Map writer ownership and synchronization boundaries before changing cache reuse
-or image-copy lifecycle.
+Map Java renderer coordinate and dirty-bound conversions before editing.
 
 ## Stable foundations
 

@@ -600,3 +600,13 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   that flag could discard native-canvas pixels, so the provisional invalidation
   is removed pending an explicit ownership boundary and executable transition
   proof. The preceding loader/readback evidence remains valid.
+
+## Milestone 4R: image ownership and cache audit
+
+- Timestamp: 2026-08-02T01:20:00Z
+- Status: passed.
+- Result: no further scale-specific cache or copy defect was found. Frame-copy
+  and transform results use fresh physical backing under their fixed-pixel
+  scale-1 contract. Legacy shared texture lifetime has no logical-dimension
+  conversion. Java backing tests and the deployed macOS native-canvas/readback
+  fixture jointly cover the documented ownership boundaries.
