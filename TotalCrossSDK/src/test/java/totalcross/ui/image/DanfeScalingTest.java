@@ -53,6 +53,22 @@ class DanfeScalingTest {
     assertEquals(0xFF000000, image.getPixels()[9]);
   }
 
+  @Test
+  void ordinaryPngLoadsAtFixedPixelScale() throws Exception {
+    Image source = Image.createLogical(3, 2, 2);
+    ByteArrayStream png = new ByteArrayStream(128);
+    source.createPng(png);
+    png.setPos(0);
+
+    Image loaded = new Image(png);
+
+    assertEquals(6, loaded.getWidth());
+    assertEquals(4, loaded.getHeight());
+    assertEquals(6, loaded.getPixelWidth());
+    assertEquals(4, loaded.getPixelHeight());
+    assertEquals(1, loaded.getContentScale());
+  }
+
   private static Image render(Image image) {
     Graphics graphics = image.getGraphics();
     graphics.backColor = Color.WHITE;

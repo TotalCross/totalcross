@@ -111,11 +111,23 @@ public class DanfeScalingApp extends MainWindow {
             + logicalImage.getPixelWidth() + "x" + logicalImage.getPixelHeight());
       }
       ByteArrayStream logicalPng = new ByteArrayStream(128);
-      logicalImage.createPng(logicalPng);
-      if (pngDimension(logicalPng.getBuffer(), 16) != 6 || pngDimension(logicalPng.getBuffer(), 20) != 4) {
-        throw new IllegalStateException("Logical image PNG physical-dimension assertion failed");
+      Image loadedImage;
+      Image transformedImage;
+      try {
+        logicalImage.createPng(logicalPng);
+        if (pngDimension(logicalPng.getBuffer(), 16) != 6 || pngDimension(logicalPng.getBuffer(), 20) != 4) {
+          throw new IllegalStateException("Logical image PNG physical-dimension assertion failed");
+        }
+        logicalPng.setPos(0);
+        loadedImage = new Image(logicalPng);
+        transformedImage = logicalImage.getScaledInstance(6, 4);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to encode, load, or transform logical image assertion", exception);
       }
-      Image transformedImage = logicalImage.getScaledInstance(6, 4);
+      if (loadedImage.getWidth() != 6 || loadedImage.getHeight() != 4 || loadedImage.getPixelWidth() != 6
+          || loadedImage.getPixelHeight() != 4 || loadedImage.getContentScale() != 1) {
+        throw new IllegalStateException("Loaded image scale assertion failed");
+      }
       if (transformedImage.getWidth() != 6 || transformedImage.getHeight() != 4
           || transformedImage.getPixelWidth() != 6 || transformedImage.getPixelHeight() != 4
           || transformedImage.getContentScale() != 1) {

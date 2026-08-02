@@ -557,3 +557,19 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Logs: `m4-image-transform-test.log`, `m4-image-transform-tcui.log`,
   `m4-image-transform-dist.log`, `m4-image-transform-deploy.log`,
   `m4-image-transform-hashes.log`, and `m4-image-transform-native.log`.
+
+## Milestone 4R: ordinary image loading
+
+- Timestamp: 2026-08-02T00:50:00Z
+- Commands: focused `GraphicsScaleTest` and `DanfeScalingTest`; TCUI and SDK
+  deployment; deployed macOS fixture and direct assertion execution.
+- Renderer/platform: Java test lane and deployed native macOS SDL/Skia app.
+- Status: passed.
+- Result: a PNG encoded from a scale-2 `3x2` image retains its `6x4` physical
+  dimensions when decoded. Decoding creates the established fixed-pixel,
+  scale-1 image in both Java and the macOS runtime fixture.
+- Deployed dylib SHA-256: `b4e7c140717fb4bf6e0f1eada365f5c1aea97067907ad280fb99430bedb58a5a`.
+- Logs: `m4-image-loader-java.log`, `m4-image-loader-tcui.log`,
+  `m4-image-loader-dist.log`, `m4-image-loader-deploy.log`,
+  `m4-image-loader-hashes.log`, and `m4-image-loader-native.log` under
+  `artifacts/logical-ui-scaling/logs/`.
