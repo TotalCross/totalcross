@@ -13,8 +13,8 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
 - Active milestone: 5R — Java renderer.
-- Active slice: complete Java text raster and dirty-bound ownership after
-  primitive and image-blit edge conversion.
+- Active slice: validate Java text raster backing edges and dirty bounds with an
+  initialized Java font context.
 
 ## Execution rules
 
@@ -52,8 +52,8 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 ## Next concrete action
 
-Audit Java text raster bounds and dirty updates; retain logical clip and
-translation until each physical backing write.
+Add an initialized Java font-context fixture for text raster backing edges and
+audit dirty updates.
 
 ## M5R audit
 
@@ -62,6 +62,10 @@ translation until each physical backing write.
   scale `1.5` has focused physical-pixel coverage.
 - Validated: Java image blits and source rectangles resolve clip/source/dest in
   logical coordinates, then rasterize the source at destination backing scale.
+- Corrected: Java text rasterization selects a local effective `Font` at
+  `Font.size * fontScale`; justification and glyph fallback use that same font.
+  The raw-image unit harness has no initialized Java font and cannot itself
+  prove raster coverage.
 
 ## Stable foundations
 
