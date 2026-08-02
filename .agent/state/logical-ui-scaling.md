@@ -12,9 +12,9 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
-- Active milestone: 6R — supported non-Skia native renderer.
-- Active slice: identify the supported macOS non-Skia configuration and audit
-  its logical coordinate, font, and surface-scale behavior.
+- Active milestone: execution stopped at user request.
+- Active slice: Android high-density fixture builds and installs, but cannot
+  reach its assertions because Android UI resources in `TCUI.tcz` are unresolved.
 
 ## Execution rules
 
@@ -49,10 +49,39 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Validated ownership boundaries: Java backing writes are covered by focused
   Java tests; native image-canvas writes/readback, alpha, source rectangles,
   frames, codecs, and texture reuse are covered by the deployed macOS fixture.
+- Corrected: `Image4D` only reuses a same-sized transform when its backing is
+  scale-one; logical scale-two transforms now produce the fixed-pixel result.
 
 ## Next concrete action
 
-Identify the supported macOS non-Skia configuration before editing its backend.
+Resolve Android runtime access to `totalcross/res/android/*.png` from `TCUI.tcz`,
+then redeploy and run the high-density semantic fixture.
+
+## M8R stopped state
+
+- Android SDK `/Users/flsobral/Library/Android/sdk` and emulator `emulator-5554`
+  are available. Native dependencies and the standard release build pass; the
+  generated fixture AAB installs successfully.
+- Runtime failure: `Resources.multiedit` is null although the packaged `TCUI.tcz`
+  contains `totalcross/res/android/multiedit.png`. Constructing `MultiEdit`
+  then throws from `NinePatch$ScalableImage.hashCode`, before any logical-scale
+  assertion. The experimental Android bootstrap change was reverted.
+- iOS workspace validation remains optional and was not run.
+
+## M7R audit
+
+- Validated: Java Launcher and hash-matched native macOS Skia fixture both pass
+  the deterministic semantic assertions.
+- Captured: process-owned native window only, with fixed public fixture data;
+  no desktop-wide screenshot was retained.
+
+## M6R audit
+
+- Audited: the repository-supported `-DUSE_SKIA=OFF` macOS build and deployed
+  fixture with a hash-matched dylib.
+- Unsupported: image-backed primitive coordinates are not mapped from logical
+  to physical backing; a scale-two source paints only its first physical pixel.
+  Do not represent this configuration as semantically equivalent to Skia.
 
 ## M5R audit
 

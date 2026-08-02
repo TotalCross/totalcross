@@ -680,3 +680,87 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   scaled text backing, and Java Launcher DANFE lanes pass. Java dirty state is a
   repaint boolean and has no coordinate conversion. The Java renderer retains
   integer font-raster metrics as its documented rounding boundary.
+
+## Milestone 4R: corrective transform identity guard
+
+- Timestamp: 2026-08-01T22:10:00Z
+- Commands: focused `GraphicsScaleTest` and `DanfeScalingTest`; macOS `tcvm`
+  build; SDK/smoke deployment; SHA-256 comparison; direct fixture execution.
+- Renderer/platform: Java test lane and deployed native macOS SDL/Skia app.
+- Status: passed.
+- Result: the native `Image4D` identity shortcut incorrectly treated physical
+  `6x4` arguments as an identity for a logical `3x2` scale-two image. The
+  shortcut now applies only to scale-one backing, so transforms retain the
+  established fixed-pixel scale-one `6x4` result. The fixture also passed its
+  four-color row readback, alpha-128 partial source rectangle, and frame-width
+  assertions.
+- Deployed dylib SHA-256: `b4e7c140717fb4bf6e0f1eada365f5c1aea97067907ad280fb99430bedb58a5a`.
+- Logs: `m4r-transform-java-tests.log`, `m4r-transform-native-build.log`,
+  `m4r-transform-sdk-dist.log`, `m4r-transform-deploy.log`, and
+  `m4r-transform-native-fixture.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 6R: non-Skia macOS audit
+
+- Timestamp: 2026-08-01T22:15:00Z
+- Commands: configured/built `build-logical-ui-nonskia` with `-DUSE_SKIA=OFF`;
+  redeployed the smoke app; compared SHA-256; directly ran the fixture.
+- Renderer/platform: deployed native macOS SDL non-Skia app.
+- Status: unsupported configuration recorded.
+- Result: the build and hash check pass, but a scale-two image-backed primitive
+  paints only the first physical pixel (`red, black` instead of the expected
+  replicated logical backing). Its generic pixel renderer has no destination
+  content-scale mapping, so it is not semantically equivalent to Skia.
+- Deployed dylib SHA-256: `a3d6ecc41d612fbe5ba942325aa7b89cbf4bfc52c4f7a24739cec5916fab4898`.
+- Logs: `m6-nonskia-build.log`, `m6-nonskia-deploy-after-transform.log`, and
+  `m6-nonskia-native-after-transform.log` under
+  `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 7R: DANFE semantic lanes and native capture
+
+- Timestamp: 2026-08-01T22:20:00Z
+- Commands: Java Launcher with `/logical-ui-assert`; direct deployed native
+  macOS Skia fixture; CoreGraphics owner-PID window lookup and
+  `screencapture -l`.
+- Renderer/platform: Java Launcher and deployed native macOS SDL/Skia app.
+- Status: passed.
+- Result: both lanes passed the deterministic image, alpha, source-rectangle,
+  frame, geometry, text-metric, and control assertions. The native capture is
+  restricted to the `DanfeScalingApp` window owned by its PID and contains only
+  the public synthetic fixture.
+- Native dylib SHA-256: `b4e7c140717fb4bf6e0f1eada365f5c1aea97067907ad280fb99430bedb58a5a`.
+- Capture: `artifacts/logical-ui-scaling/m7-native-danfe.png`, SHA-256
+  `5959d1ad07dd0a43895b670f5f2ed7b4efb02e5e6c943cec360ab67ffc9ab4c6`.
+- Logs: `m7-java-launcher.log` and `m4r-transform-native-fixture.log` under
+  `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 8R: Android validation blocker
+
+- Timestamp: 2026-08-01T22:25:00Z
+- Commands: `adb devices`; Android Gradle native-dependency fetch and standard
+  release assembly.
+- Status: blocked externally.
+- Result: no attached/emulated Android device is available. Gradle cannot
+  configure `:tcvm` because the host has neither `ANDROID_HOME` nor
+  `TotalCrossVM/android/local.properties:sdk.dir`. No Android deployment or
+  semantic assertion is claimed. iOS workspace validation remains deferred by
+  user direction.
+- Log: `m8-android-build.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 8R: Android retry and stopped runtime investigation
+
+- Timestamp: 2026-08-01T22:30:00Z
+- Commands: built `:tcvm:fetchNativeDependencies :app:assembleStandardRelease`
+  and `:app:bundleStandardRelease` with the available Android SDK; deployed the
+  fixture AAB; built/installed device APKs with bundletool; launched Loader with
+  `/logical-ui-assert` on `emulator-5554` (440 dpi).
+- Status: stopped at user request; Android semantic assertions remain unproved.
+- Result: build, AAB generation, installation, and launch pass. Runtime aborts
+  before assertions because `Resources.multiedit` is null and
+  `NinePatch$ScalableImage.hashCode` dereferences it. The AAB's `TCUI.tcz`
+  matches `dist/vm/TCUI.tcz` by SHA-256 and its TCZ directory contains
+  `totalcross/res/android/multiedit.png`; the unresolved fault is runtime
+  resource lookup. A rejected bootstrap experiment to load `TCUI.tcz` was
+  reverted and is not part of the worktree.
+- Logs: `m8-android-build-retry.log`, `m8-android-bundle.log`,
+  `m8-android-deploy-retry.log`, `m8-android-resource-build.log`, and
+  `m8-android-resource-install.log` under `artifacts/logical-ui-scaling/logs/`.
