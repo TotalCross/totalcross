@@ -44,11 +44,13 @@ class ArtifactBoundariesTest {
     void simulatorArtifactContainsLauncherSimulatorAndPreviewContract() throws Exception {
         Set<String> simulator = entries("totalcross-simulator");
         assertTrue(simulator.contains("totalcross/Launcher.class"));
+        assertTrue(simulator.contains("tc/simulator/EventLoop.class"));
         assertTrue(simulator.stream().anyMatch(name -> name.startsWith("tc/simulator/")));
         assertTrue(simulator.stream().anyMatch(name -> name.startsWith("tc/preview/")));
         assertFalse(simulator.stream().anyMatch(name -> name.startsWith("totalcross/preview/")));
         assertFalse(simulator.stream().anyMatch(name -> name.startsWith("tc/tools/converter/")));
         assertFalse(simulator.stream().anyMatch(name -> name.startsWith("tc/tools/deployer/")));
+        assertFalse(simulator.contains("totalcross/TCEventThread.class"));
     }
 
     private static Set<String> entries(String prefix) throws IOException {

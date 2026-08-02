@@ -7,8 +7,6 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.simulator;
 
-import totalcross.TCEventThread;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -72,7 +70,7 @@ abstract class RuntimeState extends SimulatorSupport {
       return;
     }
     destroyed = true;
-    boolean ended = eventThread == null || eventThread.invokeInEventThread(true, new Runnable() {
+    boolean ended = eventLoop == null || eventLoop.invoke(new Runnable() {
       @Override
       public void run() {
         mainWindow.appEnding();
@@ -84,11 +82,11 @@ abstract class RuntimeState extends SimulatorSupport {
       System.err.println("Timed out waiting for TotalCross preview appEnding during reload.");
     }
     if (winTimer != null) {
-      winTimer.stopGracefully(); // timer must be running when appEnding is called
+      winTimer.shutdown(); // timer must be running when appEnding is called
     }
-    if (eventThread != null) {
-      eventThread.stopGracefully();
-      eventThread = null;
+    if (eventLoop != null) {
+      eventLoop.shutdown();
+      eventLoop = null;
     }
     stopWindowBackend();
   }
@@ -266,8 +264,8 @@ abstract class RuntimeState extends SimulatorSupport {
             break; // guich@230_4
           }
         }
-        if (doTick && eventThread != null) {
-          eventThread.invokeInEventThread(false, new Runnable() {
+        if (doTick && eventLoop != null) {
+          eventLoop.post(new Runnable() {
             @Override
             public void run() {
               synchronized (instance) // guich@510_2: synchronize the repaint with the timer
@@ -286,7 +284,7 @@ abstract class RuntimeState extends SimulatorSupport {
       interrupt();
     }
 
-    void stopGracefully() {
+    void shutdown() {
       // NOTE: It's not a good idea to call stop() on threads since
       // it can cause the JVM to crash.
       shouldStop = true;
@@ -295,15 +293,15 @@ abstract class RuntimeState extends SimulatorSupport {
   }
 
   public boolean eventIsAvailable() {
-    return eventThread.eventAvailable();
+    return eventLoop != null && eventLoop.hasPendingEvents();
   }
 
   void startApp() {
-    eventThread = new TCEventThread(mainWindow);
+    eventLoop = new EventLoop(mainWindow);
     if (!started) // guich@120 - make sure that the component is available for drawing when starting the application. called by paint.
     {
       try {
-        eventThread.invokeInEventThread(true, new Runnable() {
+        eventLoop.invoke(new Runnable() {
           @Override
           public void run() {
             while (mainWindow == null) {

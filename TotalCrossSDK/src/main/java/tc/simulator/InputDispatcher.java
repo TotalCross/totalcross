@@ -67,14 +67,14 @@ import totalcross.util.zip.TCZ;
 abstract class InputDispatcher extends ApplicationLoader {
 
   void injectPreviewPointer(int x, int y, int button, boolean pressed) {
-    if (eventThread == null) return;
-    eventThread.pushEvent(pressed ? PenEvent.PEN_DOWN : PenEvent.PEN_UP, button, x, y, modifiers,
+    if (eventLoop == null) return;
+    eventLoop.postEvent(pressed ? PenEvent.PEN_DOWN : PenEvent.PEN_UP, button, x, y, modifiers,
         Vm.getTimeStamp());
   }
 
   void injectPreviewKey(int keyCode, boolean pressed, int modifiers) {
-    if (eventThread == null || !pressed) return;
-    eventThread.pushEvent(keyCode < 32 ? KeyEvent.SPECIAL_KEY_PRESS : KeyEvent.KEY_PRESS, keyCode, 0, 0,
+    if (eventLoop == null || !pressed) return;
+    eventLoop.postEvent(keyCode < 32 ? KeyEvent.SPECIAL_KEY_PRESS : KeyEvent.KEY_PRESS, keyCode, 0, 0,
         modifiers, Vm.getTimeStamp());
   }
 
@@ -164,7 +164,7 @@ abstract class InputDispatcher extends ApplicationLoader {
         break;
       case java.awt.event.KeyEvent.VK_F9:
         if (isApplication && !Settings.disableScreenRotation && Settings.screenWidth != Settings.screenHeight
-            && eventThread != null) // guich@tc: changed orientation?
+            && eventLoop != null) // guich@tc: changed orientation?
         {
           int t = toWidth;
           toWidth = toHeight;
@@ -178,11 +178,11 @@ abstract class InputDispatcher extends ApplicationLoader {
         key = 0;
         break;
       }
-      if (key != 0 && eventThread != null) // sometimes, when debugging in applet, eventThread can be null
+      if (key != 0 && eventLoop != null) // sometimes, when debugging in applet, eventLoop can be null
       {
-        eventThread.pushEvent(KeyEvent.SPECIAL_KEY_PRESS, key, 0, 0, modifiers, Vm.getTimeStamp());
+        eventLoop.postEvent(KeyEvent.SPECIAL_KEY_PRESS, key, 0, 0, modifiers, Vm.getTimeStamp());
       }
-      if (showKeyCodes && eventThread != null) {
+      if (showKeyCodes && eventLoop != null) {
         final String msg = "Key code: " + (key == 0 ? event.getKeyCode() : key) + ", Modifier: " + modifiers;
         new Thread() {
           @Override
@@ -215,15 +215,15 @@ abstract class InputDispatcher extends ApplicationLoader {
     Settings.screenHeight = h;
     setWindowSize(w, h, setframe);
     screenImg = null; // force the creation of a new screen image
-    eventThread.pushEvent(KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.SCREEN_CHANGE, 0, 0, modifiers, Vm.getTimeStamp());
+    eventLoop.postEvent(KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.SCREEN_CHANGE, 0, 0, modifiers, Vm.getTimeStamp());
   }
 
   @Override
   public void transferFocus() // guich@512_1: handle the tab key.
   {
     super.transferFocus();
-    if (eventThread != null) {
-      eventThread.pushEvent(KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.TAB, 0, 0, modifiers, Vm.getTimeStamp());
+    if (eventLoop != null) {
+      eventLoop.postEvent(KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.TAB, 0, 0, modifiers, Vm.getTimeStamp());
     }
   }
 
@@ -249,7 +249,7 @@ abstract class InputDispatcher extends ApplicationLoader {
   @Override
   public void keyTyped(java.awt.event.KeyEvent event) {
     updateModifiers(event);
-    if (!event.isActionKey() && eventThread != null) {
+    if (!event.isActionKey() && eventLoop != null) {
       int key = event.getKeyChar(), orig = key;
       switch (key) {
       case 8:
@@ -265,7 +265,7 @@ abstract class InputDispatcher extends ApplicationLoader {
         key = SpecialKeys.ESCAPE;
         break; // guich@tc110_79
       }
-      eventThread.pushEvent(orig < 32 ? KeyEvent.SPECIAL_KEY_PRESS : KeyEvent.KEY_PRESS, key, 0, 0, modifiers,
+      eventLoop.postEvent(orig < 32 ? KeyEvent.SPECIAL_KEY_PRESS : KeyEvent.KEY_PRESS, key, 0, 0, modifiers,
           Vm.getTimeStamp());
     }
   }
@@ -277,11 +277,11 @@ abstract class InputDispatcher extends ApplicationLoader {
   public void mousePressed(java.awt.event.MouseEvent event) {
     int px = (int) (event.getX() / toScale);
     int py = (int) (event.getY() / toScale);
-    if (eventThread != null) {
-      eventThread.pushEvent(PenEvent.PEN_DOWN, 0, px, py, modifiers, Vm.getTimeStamp());
+    if (eventLoop != null) {
+      eventLoop.postEvent(PenEvent.PEN_DOWN, 0, px, py, modifiers, Vm.getTimeStamp());
     }
     if (isRightButton = (event.getButton() & 2) != 0) {
-      eventThread.pushEvent(MultiTouchEvent.SCALE, 1, px, startPY = py, modifiers, Vm.getTimeStamp());
+      eventLoop.postEvent(MultiTouchEvent.SCALE, 1, px, startPY = py, modifiers, Vm.getTimeStamp());
     }
   }
 
@@ -289,11 +289,11 @@ abstract class InputDispatcher extends ApplicationLoader {
   public void mouseReleased(java.awt.event.MouseEvent event) {
     int px = (int) (event.getX() / toScale);
     int py = (int) (event.getY() / toScale);
-    if (eventThread != null) {
-      eventThread.pushEvent(PenEvent.PEN_UP, 0, px, py, modifiers, Vm.getTimeStamp());
+    if (eventLoop != null) {
+      eventLoop.postEvent(PenEvent.PEN_UP, 0, px, py, modifiers, Vm.getTimeStamp());
     }
     if ((event.getButton() & 2) != 0) {
-      eventThread.pushEvent(MultiTouchEvent.SCALE, 2, px, py, modifiers, Vm.getTimeStamp());
+      eventLoop.postEvent(MultiTouchEvent.SCALE, 2, px, py, modifiers, Vm.getTimeStamp());
     }
   }
 
@@ -301,31 +301,31 @@ abstract class InputDispatcher extends ApplicationLoader {
   public void mouseDragged(java.awt.event.MouseEvent event) {
     int px = (int) (event.getX() / toScale);
     int py = (int) (event.getY() / toScale);
-    if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
+    if (eventLoop != null) // sometimes, when debugging in applet, eventLoop can be null
     {
       if ((event.getButton() & 2) != 0 || isRightButton) {
         double scale = py < startPY ? 1.05 : 0.95;
         long l = Double.doubleToLongBits(scale);
         int x = (int) (l >>> 32);
         int y = (int) l;
-        if (!eventThread.hasEvent(MultiTouchEvent.SCALE)) {
-          eventThread.pushEvent(MultiTouchEvent.SCALE, 0, x, y, modifiers, Vm.getTimeStamp());
+        if (!eventLoop.hasPendingEvent(MultiTouchEvent.SCALE)) {
+          eventLoop.postEvent(MultiTouchEvent.SCALE, 0, x, y, modifiers, Vm.getTimeStamp());
         }
-      } else if (!eventThread.hasEvent(PenEvent.PEN_DRAG)) {
-        eventThread.pushEvent(PenEvent.PEN_DRAG, 0, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+      } else if (!eventLoop.hasPendingEvent(PenEvent.PEN_DRAG)) {
+        eventLoop.postEvent(PenEvent.PEN_DRAG, 0, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
       }
     }
   }
 
   @Override
   public void mouseWheelMoved(MouseWheelEvent e) {
-    if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
+    if (eventLoop != null) // sometimes, when debugging in applet, eventLoop can be null
     {
       int ev = totalcross.ui.event.MouseEvent.MOUSE_WHEEL;
-      if (!eventThread.hasEvent(ev)) {
+      if (!eventLoop.hasPendingEvent(ev)) {
         int px = (int) (e.getX() / toScale);
         int py = (int) (e.getY() / toScale);
-        eventThread.pushEvent(ev,
+        eventLoop.postEvent(ev,
             e.getWheelRotation() < 0 ? totalcross.ui.event.DragEvent.UP : totalcross.ui.event.DragEvent.DOWN, px, py,
             modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
       }
@@ -335,7 +335,7 @@ abstract class InputDispatcher extends ApplicationLoader {
   @Override
   public void windowClosing(java.awt.event.WindowEvent event) {
     if (Settings.closeButtonType == Settings.NO_BUTTON) {
-      eventThread.pushEvent(totalcross.ui.event.KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.MENU, 0, 0, 0,
+      eventLoop.postEvent(totalcross.ui.event.KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.MENU, 0, 0, 0,
           Vm.getTimeStamp());
     } else {
       destroy();
@@ -390,8 +390,8 @@ abstract class InputDispatcher extends ApplicationLoader {
 
   @Override
   public void mouseMoved(java.awt.event.MouseEvent event) {
-    if (eventThread != null) {
-      eventThread.pushEvent(totalcross.ui.event.MouseEvent.MOUSE_MOVE, 0, (int) (event.getX() / toScale),
+    if (eventLoop != null) {
+      eventLoop.postEvent(totalcross.ui.event.MouseEvent.MOUSE_MOVE, 0, (int) (event.getX() / toScale),
           (int) (event.getY() / toScale), modifiers, Vm.getTimeStamp());
     }
     if (hasWindowBackend() && Settings.showMousePosition) // guich@tc115_48
@@ -417,7 +417,7 @@ abstract class InputDispatcher extends ApplicationLoader {
     if (!started) {
       startApp();
     } else {
-      eventThread.invokeInEventThread(false, new Runnable() {
+      eventLoop.post(new Runnable() {
         @Override
         public void run() {
           try {
@@ -432,8 +432,8 @@ abstract class InputDispatcher extends ApplicationLoader {
   }
 
   public void pumpEvents() {
-    if (eventThread != null) {
-      eventThread.pumpEvents();
+    if (eventLoop != null) {
+      eventLoop.dispatchNext();
     }
   }
 
@@ -454,7 +454,7 @@ abstract class InputDispatcher extends ApplicationLoader {
   {
     commandLine = args; // guich@200b3: added command line support for desktop classes.
     if (winTimer != null) {
-      winTimer.stopGracefully(); // guich@120
+      winTimer.shutdown(); // guich@120
       winTimer = null;
     }
     Window.destroyZStack();
@@ -464,7 +464,7 @@ abstract class InputDispatcher extends ApplicationLoader {
 
   void preparePreviewMainWindowReload() {
     if (winTimer != null) {
-      winTimer.stopGracefully();
+      winTimer.shutdown();
       winTimer = null;
     }
     MainWindow.resetPreviewState();
@@ -473,9 +473,9 @@ abstract class InputDispatcher extends ApplicationLoader {
   void replacePreviewMainWindow(MainWindow newInstance, String args) {
     commandLine = args;
     mainWindow = newInstance;
-    if (eventThread != null) {
-      eventThread.setMainClass(newInstance);
-      boolean started = eventThread.invokeInEventThread(true, new Runnable() {
+    if (eventLoop != null) {
+      eventLoop.setTarget(newInstance);
+      boolean started = eventLoop.invoke(new Runnable() {
         @Override
         public void run() {
           mainWindow.appStarting(isDemo ? 80 : -1);
@@ -509,8 +509,8 @@ abstract class InputDispatcher extends ApplicationLoader {
   }
 
   protected void runInPreviewEventThread(Runnable runnable, String operation) {
-    if (eventThread != null) {
-      boolean completed = eventThread.invokeInEventThread(true, runnable, PREVIEW_DESTROY_TIMEOUT_MILLIS);
+    if (eventLoop != null) {
+      boolean completed = eventLoop.invoke(runnable, PREVIEW_DESTROY_TIMEOUT_MILLIS);
       if (!completed) {
         System.err.println("Timed out waiting for TotalCross " + operation + ".");
       }

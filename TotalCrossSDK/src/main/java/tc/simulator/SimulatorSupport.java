@@ -49,7 +49,6 @@ import tc.simulator.awt.AppletPreviewSurface;
 import tc.simulator.awt.AwtRenderSurface;
 import tc.simulator.awt.AwtWindow;
 import tc.preview.PreviewFrameSink;
-import totalcross.TCEventThread;
 import totalcross.sys.Settings;
 import totalcross.sys.SpecialKeys;
 import totalcross.sys.Time;
@@ -101,7 +100,7 @@ abstract class SimulatorSupport extends FontRegistry {
   protected String frameTitle;
   protected String crid4settings; // prevent from having two different crids for loading and storing the settings.
   protected StringBuffer mmsb = new StringBuffer(32);
-  protected TCEventThread eventThread;
+  EventLoop eventLoop;
   protected static final long PREVIEW_DESTROY_TIMEOUT_MILLIS = 10000;
   protected boolean isDemo;
   protected boolean fastScale;

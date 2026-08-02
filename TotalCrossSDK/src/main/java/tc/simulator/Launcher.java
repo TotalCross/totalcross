@@ -141,11 +141,11 @@ public class Launcher extends SimulatorCore implements PreviewSession {
   }
 
   private void runPreviewCommand(Runnable command, String operation) {
-    if (launcher.eventThread == null) {
+    if (launcher.eventLoop == null) {
       command.run();
       return;
     }
-    if (!launcher.eventThread.invokeInEventThread(true, command, RuntimeState.PREVIEW_DESTROY_TIMEOUT_MILLIS)) {
+    if (!launcher.eventLoop.invoke(command, RuntimeState.PREVIEW_DESTROY_TIMEOUT_MILLIS)) {
       throw new IllegalStateException("Timed out waiting for TotalCross " + operation + ".");
     }
   }
