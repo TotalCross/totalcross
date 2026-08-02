@@ -8,8 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Editorial Summary
 
-Implementation is in progress on `feat/logical-ui-scaling`. Useful native and
-control foundations are present. No final completion claim is made.
+Execution stopped at user request on `feat/logical-ui-scaling`. The branch
+contains validated logical-scaling work through Java and deployed native macOS;
+final Android semantic acceptance remains unresolved.
 
 ## Scope
 
@@ -22,18 +23,24 @@ task.
 
 ## Original Plan versus Current Outcome
 
-Completed foundations include:
+Validated work includes:
 
 - logical API scaffolding;
 - guarded embedded direct writes;
 - native macOS high-DPI backing;
 - deployed Retina runtime identity;
 - fractional native Skia metrics;
-- selected Label, Button, Edit, and MultiEdit scaling work.
+- selected Label, Button, Edit, and MultiEdit scaling work;
+- scale-aware image primitives, source rectangles, alpha composition, frame
+  dimensions, transforms, PNG loading, and texture ownership;
+- Java renderer backing-scale primitives, blits, and text composition;
+- direct native macOS DANFE assertions with a matching dylib and a
+  process-owned screenshot.
 
-Remaining corrections include effective-size measurement before layout,
-destination-aware TotalCross wrapping, nonzero PIXEL client origins, synchronized
-evidence, images, renderer equivalence, full DANFE, screenshots, and Android.
+The remaining required correction is Android runtime resource lookup. The final
+fixture AAB builds and installs on a 440-dpi emulator, but `Resources.multiedit`
+is null even though `TCUI.tcz` contains the corresponding PNG. `MultiEdit`
+therefore aborts in `NinePatch` before semantic assertions execute.
 
 ## Decisions and Trade-offs
 
@@ -46,27 +53,26 @@ evidence, images, renderer equivalence, full DANFE, screenshots, and Android.
 
 ## Validation and Measurable Results
 
-Populate from append-only evidence only. Separate:
-
-- Java tests;
-- JavaSE/AWT runtime;
-- native macOS compile;
-- deployed native macOS runtime;
-- final Android runtime;
-- manual visual review.
+Focused Java `GraphicsScaleTest` and `DanfeScalingTest` passed. Java Launcher
+passed the deterministic fixture at scale one. Native macOS Skia build, deploy,
+hash comparison, and direct fixture passed; deployed dylib SHA-256 was
+`b4e7c140717fb4bf6e0f1eada365f5c1aea97067907ad280fb99430bedb58a5a`.
+The non-Skia macOS configuration compiles but is recorded unsupported because it
+does not map image-backed logical primitives to physical backing. Android native
+dependency fetch, standard release build, bundle, AAB deploy, and install pass;
+Android semantic runtime does not.
 
 Do not describe a representative `"AV"` width as proof of kerning or shaping.
 
 ## Limitations and Remaining Work
 
-Use the current state and branch review. Do not state that the work is complete
-until all final acceptance items pass.
+Restart at the Android TCZ-resource lookup. Verify why an entry demonstrably
+present in `TCUI.tcz` is unavailable through `Vm.getFile`/image loading, then
+rerun the installed high-density fixture. iOS remains optional and was not run.
 
 ## Claims Requiring Human Review
 
-- public scale mutation API;
-- visual equivalence;
-- non-Skia support status;
-- compatibility of logical Image dimensions;
+- Android TCZ resource lookup and final high-density semantics;
+- public scale-mutation lifecycle API;
 - optional iOS result;
-- embedded fast-path performance.
+- non-Skia renderer support remains deliberately unsupported.

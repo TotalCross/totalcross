@@ -113,11 +113,13 @@ approximately 600 lines.
       root-PIXEL migration proof.
 - [x] Establish native macOS high-DPI backing and core Skia base transforms.
 - [x] Complete SkFont-only logical text and TotalCross multiline behavior.
-- [ ] Complete image codecs, transforms, cache ownership, and bidirectional sync.
-- [ ] Complete Java renderer semantics.
-- [ ] Complete supported non-Skia native semantics.
-- [ ] Complete DANFE Java and native macOS lanes and screenshots.
-- [ ] Run final Android validation and complete handoff.
+- [x] Complete image codecs, transforms, cache ownership, and bidirectional sync.
+- [x] Complete Java renderer semantics.
+- [x] Audit supported non-Skia native semantics; macOS `USE_SKIA=OFF` is recorded
+      as unsupported rather than falsely equivalent.
+- [x] Complete DANFE Java and native macOS lanes and process-specific screenshot.
+- [ ] Run final Android semantic validation and complete handoff (stopped: the
+      installed fixture aborts during Android UI-resource lookup).
 
 ## Current Branch Review
 
@@ -467,5 +469,9 @@ The branch has completed valuable foundations, including guarded embedded
 drawing, native Retina initialization, fractional Skia metrics, native runtime
 identity, and selected control scaling.
 
-The plan remains incomplete. Update this section only after R1 and each remaining
-milestone meet their acceptance criteria.
+The plan is stopped by user request with Android as the only required acceptance
+lane not proven. The Android build, packaging, install, and launch are proven;
+the fixture aborts before assertions because an image resource contained in
+`TCUI.tcz` is not resolved by the Android runtime. The editorial and token-use
+reports at `.agent/reports/` record validated results and the efficient restart
+point.
