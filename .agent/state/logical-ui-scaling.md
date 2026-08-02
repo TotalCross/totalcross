@@ -12,9 +12,9 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
-- Active milestone: 8R — final Android and handoff (external blocker).
-- Active slice: Android high-density fixture requires an SDK-configured host
-  and an attached/emulated device; iOS remains optional and deferred.
+- Active milestone: execution stopped at user request.
+- Active slice: Android high-density fixture builds and installs, but cannot
+  reach its assertions because Android UI resources in `TCUI.tcz` are unresolved.
 
 ## Execution rules
 
@@ -54,14 +54,19 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 ## Next concrete action
 
-Provide Android SDK configuration and an attached/emulated device, then run the
-required high-density semantic fixture.
+Resolve Android runtime access to `totalcross/res/android/*.png` from `TCUI.tcz`,
+then redeploy and run the high-density semantic fixture.
 
-## M8R blocker
+## M8R stopped state
 
-- `adb devices` reports no devices, and Android Gradle configuration fails
-  because neither `ANDROID_HOME` nor `android/local.properties:sdk.dir` is
-  available. No Android artifact or deployment was produced.
+- Android SDK `/Users/flsobral/Library/Android/sdk` and emulator `emulator-5554`
+  are available. Native dependencies and the standard release build pass; the
+  generated fixture AAB installs successfully.
+- Runtime failure: `Resources.multiedit` is null although the packaged `TCUI.tcz`
+  contains `totalcross/res/android/multiedit.png`. Constructing `MultiEdit`
+  then throws from `NinePatch$ScalableImage.hashCode`, before any logical-scale
+  assertion. The experimental Android bootstrap change was reverted.
+- iOS workspace validation remains optional and was not run.
 
 ## M7R audit
 

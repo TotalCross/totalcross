@@ -745,3 +745,22 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   semantic assertion is claimed. iOS workspace validation remains deferred by
   user direction.
 - Log: `m8-android-build.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 8R: Android retry and stopped runtime investigation
+
+- Timestamp: 2026-08-01T22:30:00Z
+- Commands: built `:tcvm:fetchNativeDependencies :app:assembleStandardRelease`
+  and `:app:bundleStandardRelease` with the available Android SDK; deployed the
+  fixture AAB; built/installed device APKs with bundletool; launched Loader with
+  `/logical-ui-assert` on `emulator-5554` (440 dpi).
+- Status: stopped at user request; Android semantic assertions remain unproved.
+- Result: build, AAB generation, installation, and launch pass. Runtime aborts
+  before assertions because `Resources.multiedit` is null and
+  `NinePatch$ScalableImage.hashCode` dereferences it. The AAB's `TCUI.tcz`
+  matches `dist/vm/TCUI.tcz` by SHA-256 and its TCZ directory contains
+  `totalcross/res/android/multiedit.png`; the unresolved fault is runtime
+  resource lookup. A rejected bootstrap experiment to load `TCUI.tcz` was
+  reverted and is not part of the worktree.
+- Logs: `m8-android-build-retry.log`, `m8-android-bundle.log`,
+  `m8-android-deploy-retry.log`, `m8-android-resource-build.log`, and
+  `m8-android-resource-install.log` under `artifacts/logical-ui-scaling/logs/`.
