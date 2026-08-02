@@ -69,11 +69,6 @@ sourceSets {
             exclude 'tc/SSLSocketTest.java', 'tc/RunSSLSocketTestApplication.java'
         }
     }
-    test {
-        java {
-            exclude 'totalcross/TCEventThreadTest.java'
-        }
-    }
 }
 
 buildscript {
@@ -304,7 +299,7 @@ task tcbaseutilJar(type: Jar) {
 task tcbasemiscJar(type: Jar) {
     archiveBaseName = "tc.base.misc"
     from(sourceSets.main.output) {
-        exclude 'jdkcompat/lang/**', 'totalcross/lang/**', 'jdkcompat/util/**', 'totalcross/util/**', '**/*4A.*', 'totalcross/Launcher*', 'totalcross/TCEventThread*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA*'
+        exclude 'jdkcompat/lang/**', 'totalcross/lang/**', 'jdkcompat/util/**', 'totalcross/util/**', '**/*4A.*', 'totalcross/Launcher*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA*'
     }
 }
 
