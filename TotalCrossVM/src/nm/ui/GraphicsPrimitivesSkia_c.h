@@ -302,11 +302,6 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       }
 
       int32 id = Image_textureId(srcSurf);
-      if (id >= 0 && Image_changed(srcSurf)) {
-         skia_deleteBitmap(id);
-         Image_textureId(srcSurf) = -1;
-         id = -1;
-      }
       if (id < 0) {
          TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(srcSurf) : Image_pixels(srcSurf);
          Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);

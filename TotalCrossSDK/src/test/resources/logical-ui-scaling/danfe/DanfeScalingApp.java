@@ -168,21 +168,6 @@ public class DanfeScalingApp extends MainWindow {
           || !matches(secondRow, 0, 0, 0, 255, 255) || !matches(secondRow, 4, 255, 255, 255, 255)) {
         throw new IllegalStateException("Logical image row readback assertion failed");
       }
-      Image refreshedImage;
-      try {
-        refreshedImage = new Image(2, 2);
-      } catch (Exception exception) {
-        throw new IllegalStateException("Unable to create refreshed image assertion", exception);
-      }
-      sourceGraphics.backColor = Color.BLACK;
-      sourceGraphics.fillRect(0, 0, 1, 1);
-      refreshedImage.getGraphics().drawImage(sourceImage, 0, 0);
-      byte[] refreshedFirstRow = new byte[8];
-      refreshedImage.getPixelRow(refreshedFirstRow, 0);
-      if (!matches(refreshedFirstRow, 0, 0, 0, 0, 255)
-          || !matches(refreshedFirstRow, 4, 0, 255, 0, 255)) {
-        throw new IllegalStateException("Logical image texture refresh assertion failed");
-      }
       Image partialImage;
       try {
         partialImage = new Image(1, 2);

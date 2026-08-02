@@ -13,8 +13,8 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
 - Active milestone: 4R — image behavior and synchronization.
-- Active slice: finish the narrow ownership/cache audit and decide whether M4R
-  is complete without widening into renderer work.
+- Active slice: establish native/Java backing ownership before changing cache
+  invalidation or closing M4R.
 
 ## Execution rules
 
@@ -42,15 +42,13 @@ Rewrite this file instead of appending. Read it first when resuming.
   deliberately produce fixed-pixel scale-1 images using physical dimensions.
 - Validated: ordinary PNG decoding preserves encoded physical dimensions and
   creates the existing scale-1 image contract in Java and native macOS.
-- Validated: an existing native Skia texture is discarded and recreated when
-  Java-side image writes mark its backing changed; deployed macOS redraw sees
-  the refreshed pixels.
-- Pending: narrow cache/copy ownership audit only.
+- Pending: cache and alternating Java/native ownership. Skia image canvases use
+  copied backing; the current shared changed flag cannot identify its writer.
 
 ## Next concrete action
 
-Inspect copy and texture-release ownership for a scaling-specific defect; if
-none is found, close M4R with the audited ownership matrix.
+Map writer ownership and synchronization boundaries before changing cache reuse
+or image-copy lifecycle.
 
 ## Stable foundations
 
