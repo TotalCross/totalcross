@@ -32,8 +32,11 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Validated: `Image4D.createLogical(3, 2, 2)` is deployed to macOS and reports
   logical `3x2`, physical `6x4`. ABI macros retain legacy `lastAccess` and
   `textureId` offsets before the new logical dimensions.
+- Validated: native Skia reads image rows through physical per-pixel readback;
+  a scale-2 `2x2` source copies its four colors at natural logical size and a
+  two-frame image exposes a physical and logical visible width of `3`.
 - Pending: codecs/loaders, frame offsets, transforms, texture/cache ownership,
-  native readback, and alternating Java/native dirty ownership.
+  alternating Java/native dirty ownership, and alpha/export coverage.
 
 ## Next concrete action
 

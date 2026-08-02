@@ -109,6 +109,53 @@ public class DanfeScalingApp extends MainWindow {
             + logicalImage.getWidth() + "x" + logicalImage.getHeight() + "/"
             + logicalImage.getPixelWidth() + "x" + logicalImage.getPixelHeight());
       }
+      Image sourceImage;
+      Image destinationImage;
+      try {
+        sourceImage = Image.createLogical(2, 2, 2);
+        destinationImage = new Image(2, 2);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to create source-rectangle assertion", exception);
+      }
+      sourceImage.applyChanges();
+      Graphics sourceGraphics = sourceImage.getGraphics();
+      sourceGraphics.backColor = Color.RED;
+      sourceGraphics.fillRect(0, 0, 1, 1);
+      sourceGraphics.backColor = Color.GREEN;
+      sourceGraphics.fillRect(1, 0, 1, 1);
+      sourceGraphics.backColor = Color.BLUE;
+      sourceGraphics.fillRect(0, 1, 1, 1);
+      sourceGraphics.backColor = Color.WHITE;
+      sourceGraphics.fillRect(1, 1, 1, 1);
+      byte[] sourceFirstRow = new byte[16];
+      sourceImage.getPixelRow(sourceFirstRow, 0);
+      if ((sourceFirstRow[0] & 0xFF) != 255 || (sourceFirstRow[1] & 0xFF) != 0
+          || (sourceFirstRow[8] & 0xFF) != 0 || (sourceFirstRow[9] & 0xFF) != 255) {
+        throw new IllegalStateException("Logical image backing assertion failed: " + (sourceFirstRow[0] & 0xFF)
+            + "," + (sourceFirstRow[1] & 0xFF) + "," + (sourceFirstRow[2] & 0xFF) + ";"
+            + (sourceFirstRow[8] & 0xFF) + "," + (sourceFirstRow[9] & 0xFF) + "," + (sourceFirstRow[10] & 0xFF));
+      }
+      destinationImage.getGraphics().drawImage(sourceImage, 0, 0);
+      byte[] firstRow = new byte[8];
+      destinationImage.getPixelRow(firstRow, 0);
+      if ((firstRow[0] & 0xFF) != 255 || (firstRow[1] & 0xFF) != 0 || (firstRow[4] & 0xFF) != 0
+          || (firstRow[5] & 0xFF) != 255) {
+        throw new IllegalStateException("Logical image source sampling assertion failed: " + (firstRow[0] & 0xFF)
+            + "," + (firstRow[1] & 0xFF) + "," + (firstRow[2] & 0xFF) + ";" + (firstRow[4] & 0xFF)
+            + "," + (firstRow[5] & 0xFF) + "," + (firstRow[6] & 0xFF) + " alpha="
+            + sourceImage.alphaMask + " sourceScale=" + sourceImage.getContentScale() + " destinationScale="
+            + destinationImage.getContentScale());
+      }
+      Image frameImage;
+      try {
+        frameImage = new Image(6, 1);
+        frameImage.setFrameCount(2);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to create frame assertion", exception);
+      }
+      if (frameImage.getWidth() != 3 || frameImage.getPixelWidth() != 3) {
+        throw new IllegalStateException("Logical image frame width assertion failed");
+      }
       Container pixelRoot = new Container();
       pixelRoot.setLayoutUnit(LayoutUnit.PIXEL);
       add(pixelRoot, 0, 80, 200, 100);

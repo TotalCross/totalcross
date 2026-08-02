@@ -212,6 +212,10 @@ public class Image4D extends GfxSurface {
     this.surfaceType = src.surfaceType;
     this.width = src.width;
     this.height = src.height;
+    this.logicalWidth = src.logicalWidth;
+    this.logicalHeight = src.logicalHeight;
+    this.contentScale = src.contentScale;
+    this.alphaMask = src.alphaMask;
     this.frameCount = src.frameCount;
     this.currentFrame = -1;
     this.widthOfAllFrames = src.widthOfAllFrames;
@@ -238,7 +242,20 @@ public class Image4D extends GfxSurface {
   }
 
   private void init() throws ImageException {
-	textureId = -1;
+    surfaceType = 1;
+    textureId = -1;
+    if (hwScaleW == 0) {
+      hwScaleW = 1;
+    }
+    if (hwScaleH == 0) {
+      hwScaleH = 1;
+    }
+    if (contentScale == 0) {
+      contentScale = 1;
+    }
+    if (alphaMask == 0) {
+      alphaMask = 255;
+    }
     if (logicalWidth == 0) {
       logicalWidth = width;
       logicalHeight = height;
@@ -273,6 +290,7 @@ public class Image4D extends GfxSurface {
         comment = "FC=" + n;
         widthOfAllFrames = width;
         width /= frameCount;
+        logicalWidth = (int) Math.ceil(width / contentScale);
         // the pixels will hold the pixel of a single frame
         pixelsOfAllFrames = pixels;
         pixels = new int[width * height];

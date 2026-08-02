@@ -507,3 +507,20 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
 - Logs: `m4-image4d-abi-build.log`, `m4-image4d-tcui.log`,
   `m4-image4d-dist.log`, `m4-image4d-deploy.log`, and
   `m4-image4d-native.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 4R: native image source sampling and readback
+
+- Timestamp: 2026-08-02T00:20:00Z
+- Commands: focused `GraphicsScaleTest` and `DanfeScalingTest`; rebuilt `tcvm`;
+  redeployed and directly ran `DanfeScalingApp /logical-ui-assert` on macOS.
+- Renderer/platform: Java test lane and deployed native macOS SDL/Skia app.
+- Status: passed.
+- Result: source rectangles convert logical image coordinates to physical backing
+  coordinates. The native row readback now returns physical Skia pixels
+  correctly, preserving a scale-2 four-color source, alpha mask, and natural
+  logical destination. Multiframe visible width remains physical internally and
+  logical publicly.
+- Deployed dylib SHA-256: `39eea86827ed02162de5355f0a3ce88e245a19577bf02ca862d7e93dc09f0fe7`.
+- Logs: `m4-image-ownership-test.log`, `m4-image-ownership-build.log`,
+  `m4-image-ownership-deploy.log`, `m4-image-ownership-native.log`, and
+  `m4-image-ownership-hashes.log` under `artifacts/logical-ui-scaling/logs/`.
