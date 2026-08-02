@@ -696,6 +696,10 @@ public final class Graphics {
     return (int) Math.round(logicalEdge * contentScale);
   }
 
+  private boolean hasScaledImageBacking() {
+    return surface instanceof Image && contentScale != 1;
+  }
+
   /**
    * Fills a polygon, using the current background color as the fill color. The polygon can be convex or concave.
    * 
@@ -2396,7 +2400,17 @@ public final class Graphics {
         return;
       }
       int[] pixels = getSurfacePixels(surface);
-      pixels[y * pitch + x] = color;
+      if (hasScaledImageBacking()) {
+        int x2 = scaleImageEdge(x + 1);
+        int y2 = scaleImageEdge(y + 1);
+        x = scaleImageEdge(x);
+        y = scaleImageEdge(y);
+        for (; y < y2; y++) {
+          Convert.fill(pixels, y * pitch + x, y * pitch + x2, color);
+        }
+      } else {
+        pixels[y * pitch + x] = color;
+      }
       if (isControlSurface) {
         needsUpdate = true;
       }
@@ -2421,6 +2435,12 @@ public final class Graphics {
         return;
       }
       int[] pix = getSurfacePixels(surface);
+      if (hasScaledImageBacking()) {
+        int x2 = scaleImageEdge(x + w);
+        y = scaleImageEdge(y);
+        x = scaleImageEdge(x);
+        w = x2 - x;
+      }
       x += y * pitch;
       Convert.fill(pix, x, x + w, color);
       if (isControlSurface) {
@@ -2447,6 +2467,12 @@ public final class Graphics {
         return;
       }
       int[] pixels = getSurfacePixels(surface);
+      if (hasScaledImageBacking()) {
+        int y2 = scaleImageEdge(y + h);
+        x = scaleImageEdge(x);
+        y = scaleImageEdge(y);
+        h = y2 - y;
+      }
       for (x += y * pitch; h-- > 0; x += pitch) {
         pixels[x] = color;
       }

@@ -610,3 +610,15 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   scale-1 contract. Legacy shared texture lifetime has no logical-dimension
   conversion. Java backing tests and the deployed macOS native-canvas/readback
   fixture jointly cover the documented ownership boundaries.
+
+## Milestone 5R: Java primitive backing edges
+
+- Timestamp: 2026-08-02T01:30:00Z
+- Command: focused `GraphicsScaleTest` through `TotalCrossSDK/gradlew-agent`.
+- Renderer/platform: Java renderer test lane.
+- Status: passed.
+- Result: Java image-backed points and line/rectangle primitives preserve
+  logical clip/translation then convert each raster edge once. The scale-1.5
+  regression proves expected physical coverage without fractional edge gaps.
+- Log: `m5-java-primitives-test.log` under
+  `artifacts/logical-ui-scaling/logs/`.
