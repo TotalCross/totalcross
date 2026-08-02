@@ -42,6 +42,7 @@ extern int32 deviceFontHeight,iosScale;
    iosScale = [UIScreen mainScreen].scale;
    screen->screenW = (int32)lround(self.bounds.size.width * iosScale);
    screen->screenH = (int32)lround(self.bounds.size.height * iosScale);
+   screen->contentScale = iosScale;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
