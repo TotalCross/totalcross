@@ -84,4 +84,17 @@ class GraphicsScaleTest {
     assertEquals(0xFF0000FF, destination.getPixels()[2]);
     assertEquals(0xFFFFFFFF, destination.getPixels()[3]);
   }
+
+  @Test
+  void imageTransformationsKeepTheirExistingFixedPixelResultContract() throws Exception {
+    Image source = Image.createLogical(3, 2, 2);
+
+    Image transformed = source.getScaledInstance(6, 4);
+
+    assertEquals(6, transformed.getWidth());
+    assertEquals(4, transformed.getHeight());
+    assertEquals(6, transformed.getPixelWidth());
+    assertEquals(4, transformed.getPixelHeight());
+    assertEquals(1, transformed.getContentScale());
+  }
 }

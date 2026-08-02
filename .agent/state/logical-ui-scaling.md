@@ -38,8 +38,10 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Corrected: native row readback uses one RGBA_8888 bitmap/readPixels operation
   and `getColor`; temporary per-pixel readback and diagnostic field lookups are
   removed. Direct Image ABI offsets are proven again by the deployed fixture.
-- Pending: codecs/loaders, frame offsets, transforms, texture/cache ownership,
-  alternating Java/native dirty ownership, and alpha/export coverage.
+- Validated: logical images export physical PNG dimensions. Existing transforms
+  deliberately produce fixed-pixel scale-1 images using physical dimensions.
+- Pending: loaders, texture/cache ownership, and alternating Java/native dirty
+  ownership.
 
 ## Next concrete action
 
