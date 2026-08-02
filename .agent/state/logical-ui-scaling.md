@@ -13,8 +13,8 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
 - Active milestone: 4R — image behavior and synchronization.
-- Active slice: audit codec, frame, transform, cache, and bidirectional
-  Java/native ownership paths before batching the next implementation.
+- Active slice: audit texture/cache and bidirectional Java/native ownership
+  paths before batching the next implementation.
 
 ## Execution rules
 
@@ -32,21 +32,22 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Validated: `Image4D.createLogical(3, 2, 2)` is deployed to macOS and reports
   logical `3x2`, physical `6x4`. ABI macros retain legacy `lastAccess` and
   `textureId` offsets before the new logical dimensions.
-- Validated: native Skia reads image rows through physical per-pixel readback;
-  a scale-2 `2x2` source copies its four colors at natural logical size and a
-  two-frame image exposes a physical and logical visible width of `3`.
+- Validated: native Skia reads image rows in one physical readback; a scale-2
+  `2x2` source copies its four colors at natural logical size and a two-frame
+  image exposes a physical and logical visible width of `3`.
 - Corrected: native row readback uses one RGBA_8888 bitmap/readPixels operation
   and `getColor`; temporary per-pixel readback and diagnostic field lookups are
   removed. Direct Image ABI offsets are proven again by the deployed fixture.
 - Validated: logical images export physical PNG dimensions. Existing transforms
   deliberately produce fixed-pixel scale-1 images using physical dimensions.
-- Pending: loaders, texture/cache ownership, and alternating Java/native dirty
-  ownership.
+- Validated: ordinary PNG decoding preserves encoded physical dimensions and
+  creates the existing scale-1 image contract in Java and native macOS.
+- Pending: texture/cache ownership and alternating Java/native dirty ownership.
 
 ## Next concrete action
 
-Map `applyChanges`, native drawing/readback, and the narrow image codec/frame
-callers to their physical-versus-logical dimension ownership before editing.
+Map `applyChanges`, texture/cache lifecycle, and native drawing/readback to
+their physical-versus-logical dimension ownership before editing.
 
 ## Stable foundations
 
