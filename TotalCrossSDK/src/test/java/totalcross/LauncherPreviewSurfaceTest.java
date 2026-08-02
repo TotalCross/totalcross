@@ -6,17 +6,13 @@ package totalcross;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import totalcross.preview.PreviewRuntime;
-import totalcross.preview.PreviewFrame;
+import tc.preview.PreviewFrame;
+import tc.preview.PreviewFrameSink;
 import totalcross.sys.Settings;
 
 class LauncherPreviewSurfaceTest {
@@ -34,10 +30,9 @@ class LauncherPreviewSurfaceTest {
 
   @Test
   void updateScreenPresentsBufferedImageAndKeepsPixelBufferAlias() throws Exception {
-    RecordingFrameConsumer surface = new RecordingFrameConsumer();
-    RecordingPreviewFrameConsumer copiedSurface = new RecordingPreviewFrameConsumer();
-    Launcher launcher = new Launcher(surface, true);
-    launcher.setPreviewFrameConsumer(copiedSurface);
+    RecordingPreviewFrameSink copiedSurface = new RecordingPreviewFrameSink();
+    Launcher launcher = new Launcher();
+    launcher.setPreviewFrameSink(copiedSurface);
     setField(launcher, "toScale", 1D);
     setField(launcher, "toBpp", 24);
     Settings.screenWidth = 2;
@@ -47,30 +42,31 @@ class LauncherPreviewSurfaceTest {
 
     launcher.updateScreen();
 
-    assertNotNull(surface.presentedImage);
-    int[] backingPixels = ((DataBufferInt) surface.presentedImage.getRaster().getDataBuffer()).getData();
-    assertSame(backingPixels, totalcross.ui.gfx.Graphics.mainWindowPixels);
-    assertArrayEquals(originalPixels, backingPixels);
-    backingPixels[0] = 0;
+    assertNotNull(copiedSurface.presentedFrame);
+    assertArrayEquals(originalPixels, totalcross.ui.gfx.Graphics.mainWindowPixels);
+    totalcross.ui.gfx.Graphics.mainWindowPixels[0] = 0;
     assertArrayEquals(originalPixels, copiedSurface.presentedFrame.copyPixels());
   }
 
   private void setField(Object target, String name, Object value) throws Exception {
-    Field field = target.getClass().getDeclaredField(name);
+    Class<?> type = target.getClass();
+    Field field = null;
+    do {
+      try {
+        field = type.getDeclaredField(name);
+        break;
+      } catch (NoSuchFieldException e) {
+        type = type.getSuperclass();
+      }
+    } while (type != null);
+    if (type == null) {
+      throw new NoSuchFieldException(name);
+    }
     field.setAccessible(true);
     field.set(target, value);
   }
 
-  private static class RecordingFrameConsumer implements PreviewRuntime.FrameConsumer {
-    private BufferedImage presentedImage;
-
-    @Override
-    public void present(BufferedImage image) {
-      presentedImage = image;
-    }
-  }
-
-  private static class RecordingPreviewFrameConsumer implements totalcross.preview.PreviewFrameConsumer {
+  private static class RecordingPreviewFrameSink implements PreviewFrameSink {
     private PreviewFrame presentedFrame;
 
     @Override

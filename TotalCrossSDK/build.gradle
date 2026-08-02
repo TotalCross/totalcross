@@ -71,7 +71,6 @@ sourceSets {
     }
     test {
         java {
-            exclude 'totalcross/LauncherRuntimeTest.java'
             exclude 'totalcross/TCEventThreadTest.java'
         }
     }
@@ -140,6 +139,9 @@ dependencies {
 def aggregateCompatibilityBaseline = providers.gradleProperty('aggregateCompatibilityBaseline')
 tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.JapicmpTask) {
     dependsOn tasks.named('jar')
+    if (aggregateCompatibilityBaseline.present) {
+        oldClasspath.from(aggregateCompatibilityBaseline.get())
+    }
     onlyIf {
         if (!aggregateCompatibilityBaseline.present) {
             logger.lifecycle('Skipping aggregateCompatibilityCheck: set -PaggregateCompatibilityBaseline=<old-sdk.jar> to compare releases')
@@ -147,7 +149,6 @@ tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.Japicmp
         }
         true
     }
-    oldClasspath.from(files(aggregateCompatibilityBaseline.map { it }))
     newClasspath.from(tasks.named('jar'))
     onlyModified = true
     onlyBinaryIncompatibleModified = true
@@ -244,9 +245,9 @@ publishing {
             artifactId = 'totalcross-deployer'
             artifact tasks.named('totalcrossDeployerJar')
         }
-        mavenPreviewRuntime(MavenPublication) {
-            artifactId = 'totalcross-preview-runtime'
-            artifact tasks.named('totalcrossPreviewRuntimeJar')
+        mavenSimulator(MavenPublication) {
+            artifactId = 'totalcross-simulator'
+            artifact tasks.named('totalcrossSimulatorJar')
         }
     }
 }
@@ -303,7 +304,7 @@ task tcbaseutilJar(type: Jar) {
 task tcbasemiscJar(type: Jar) {
     archiveBaseName = "tc.base.misc"
     from(sourceSets.main.output) {
-        exclude 'jdkcompat/lang/**', 'totalcross/lang/**', 'jdkcompat/util/**', 'totalcross/util/**', '**/*4A.*', 'totalcross/Launcher*', 'totalcross/PreviewRunner*', 'totalcross/preview/**', 'totalcross/TCEventThread*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA*'
+        exclude 'jdkcompat/lang/**', 'totalcross/lang/**', 'jdkcompat/util/**', 'totalcross/util/**', '**/*4A.*', 'totalcross/Launcher*', 'totalcross/TCEventThread*', 'totalcross/TotalCrossApplication.*', 'tc/**', 'totalcross/res/**', 'totalcross/ui/**', 'totalcross/sql/sqlite4j/**', 'totalcross/android/**', 'totalcross/zxing/**', 'tc/tools/InvalidateIPA*'
     }
 }
 

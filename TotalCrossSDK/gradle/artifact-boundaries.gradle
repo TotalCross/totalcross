@@ -33,16 +33,16 @@ registerBoundaryJar('totalcrossDeployerJar', 'totalcross-deployer') {
     exclude 'tc/tools/converter/**'
 }
 
-registerBoundaryJar('totalcrossPreviewRuntimeJar', 'totalcross-preview-runtime') {
-    include 'totalcross/preview/**'
-    include 'totalcross/LauncherRuntime.class', 'totalcross/TotalCrossApplication.class'
+registerBoundaryJar('totalcrossSimulatorJar', 'totalcross-simulator') {
+    include 'totalcross/Launcher.class', 'totalcross/Launcher$*.class'
+    include 'tc/simulator/**', 'tc/preview/**'
 }
 
 tasks.register('artifactContentTest', Test) {
     group = 'verification'
     description = 'Verifies narrow artifact package boundaries.'
     dependsOn totalcrossApiJar, totalcrossRuntimeJavaJar, totalcrossConverterJar,
-            totalcrossDeployerJar, totalcrossPreviewRuntimeJar
+            totalcrossDeployerJar, totalcrossSimulatorJar
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     systemProperty 'totalcross.artifact.dir', artifactOutput.get().asFile.absolutePath

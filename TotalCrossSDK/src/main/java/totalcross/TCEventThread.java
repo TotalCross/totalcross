@@ -41,17 +41,17 @@ public class TCEventThread extends Thread {
     }
   }
 
-  boolean eventAvailable() {
+  public boolean eventAvailable() {
     return eventQueue.getSize() > 0;
   }
 
-  void pumpEvents() {
+  public void pumpEvents() {
     if (Thread.currentThread() == this) {
       privatePumpEvents();
     }
   }
 
-  void stopGracefully() {
+  public void stopGracefully() {
     running = false;
     eventQueue.push(new TCEvent(INVOKE_IN_EVENT_THREAD, new Runnable() {
       @Override
@@ -61,7 +61,7 @@ public class TCEventThread extends Thread {
     interrupt();
   }
 
-  void setMainClass(MainClass win) {
+  public void setMainClass(MainClass win) {
     this.win = win;
   }
 
@@ -92,7 +92,7 @@ public class TCEventThread extends Thread {
     eventQueue.push(new TCEvent(type, key, x, y, modifiers, timestamp));
   }
 
-  boolean hasEvent(int type) {
+  public boolean hasEvent(int type) {
     Node n = eventQueue.queue;
     while (n != null) {
       TCEvent ev = (TCEvent) n.o;
