@@ -907,6 +907,23 @@ public final class Graphics {
    */
   @ReplacedByNativeOnDeploy
   public void drawText(String text, int x, int y, int justifyWidth) {
+    if (hasScaledImageBacking()) {
+      try {
+        Image raster = new Image(surface.getWidth(), surface.getHeight());
+        Graphics graphics = raster.getGraphics();
+        graphics.foreColor = foreColor;
+        graphics.backColor = backColor;
+        graphics.alpha = alpha;
+        graphics.setFont(font);
+        graphics.setScales(1, fontScale);
+        graphics.translate(transX, transY);
+        graphics.setClip(clipX1 - transX, clipY1 - transY, clipX2 - clipX1, clipY2 - clipY1);
+        graphics.drawText(text, x, y, justifyWidth);
+        drawImage(raster, 0, 0, true);
+      } catch (ImageException ignored) {
+      }
+      return;
+    }
     int x0 = x;
     int y0 = y;
     int chrCount;
