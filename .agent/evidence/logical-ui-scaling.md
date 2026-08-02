@@ -645,3 +645,15 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   compatibility; raster-size proof remains pending an initialized Java font
   fixture because raw image graphics intentionally has no default font.
 - Log: `m5-java-text-test.log` under `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 5R: Java scaled text backing
+
+- Timestamp: 2026-08-02T02:00:00Z
+- Command: focused `GraphicsScaleTest` through `TotalCrossSDK/gradlew-agent`.
+- Renderer/platform: Java renderer test lane.
+- Status: passed.
+- Result: scaled image text keeps logical clipping and translation while its
+  temporary logical raster is composed through the destination-scaled blit path.
+  Visual raster-size proof remains pending an initialized Java font fixture.
+- Log: `m5-java-text-backing-test.log` under
+  `artifacts/logical-ui-scaling/logs/`.
