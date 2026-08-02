@@ -622,3 +622,14 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   regression proves expected physical coverage without fractional edge gaps.
 - Log: `m5-java-primitives-test.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 5R: Java image blits into scaled backing
+
+- Timestamp: 2026-08-02T01:40:00Z
+- Command: focused `GraphicsScaleTest` through `TotalCrossSDK/gradlew-agent`.
+- Renderer/platform: Java renderer test lane.
+- Status: passed.
+- Result: Java `drawImage` and `copyImageRect` clip in logical coordinates then
+  rasterize their source at the destination image backing scale. The regression
+  covers natural drawing and a partial source rectangle into scale-2 backing.
+- Log: `m5-java-blit-test.log` under `artifacts/logical-ui-scaling/logs/`.

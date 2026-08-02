@@ -106,6 +106,29 @@ class GraphicsScaleTest {
   }
 
   @Test
+  void javaRendererDrawsIntoScaledDestinationAtLogicalCoordinates() throws Exception {
+    Image source = new Image(2, 1);
+    source.getPixels()[0] = 0xFFFF0000;
+    source.getPixels()[1] = 0xFF00FF00;
+    Image destination = Image.createLogical(2, 1, 2);
+
+    destination.getGraphics().drawImage(source, 0, 0);
+
+    assertEquals(0xFFFF0000, destination.getPixels()[0]);
+    assertEquals(0xFFFF0000, destination.getPixels()[1]);
+    assertEquals(0xFF00FF00, destination.getPixels()[2]);
+    assertEquals(0xFF00FF00, destination.getPixels()[3]);
+    assertEquals(0xFFFF0000, destination.getPixels()[4]);
+    assertEquals(0xFF00FF00, destination.getPixels()[6]);
+
+    Image clippedDestination = Image.createLogical(1, 1, 2);
+    clippedDestination.getGraphics().copyImageRect(source, 1, 0, 1, 1, true);
+    for (int pixel : clippedDestination.getPixels()) {
+      assertEquals(0xFF00FF00, pixel);
+    }
+  }
+
+  @Test
   void imageTransformationsKeepTheirExistingFixedPixelResultContract() throws Exception {
     Image source = Image.createLogical(3, 2, 2);
 

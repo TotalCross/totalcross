@@ -2193,6 +2193,26 @@ public final class Graphics {
         }
       }
 
+      if (hasScaledImageBacking()) {
+        Image scaled = ((Image) srcSurface).getScaledInstance(scaleImageEdge(bmpW), scaleImageEdge(bmpH));
+        int srcX2 = scaleImageEdge(x + width);
+        int srcY2 = scaleImageEdge(y + height);
+        int dstX2 = scaleImageEdge(dstX + width);
+        int dstY2 = scaleImageEdge(dstY + height);
+        srcSurface = scaled;
+        pixels = scaled.getPixels();
+        x = scaleImageEdge(x);
+        y = scaleImageEdge(y);
+        width = srcX2 - x;
+        height = srcY2 - y;
+        dstX = scaleImageEdge(dstX);
+        dstY = scaleImageEdge(dstY);
+        bmpX = scaleImageEdge(bmpX);
+        bmpY = scaleImageEdge(bmpY);
+        bmpW = scaled.getPixelWidth();
+        bmpH = scaled.getPixelHeight();
+      }
+
       int[] dst = getSurfacePixels(surface);
       boolean isSrcScreen = !(srcSurface instanceof Image);
       int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
