@@ -58,6 +58,26 @@ class GraphicsScaleTest {
   }
 
   @Test
+  void javaPrimitivesCoverPhysicalImageBackingFromLogicalEdges() throws Exception {
+    Image image = Image.createLogical(2, 2, 1.5);
+    Graphics graphics = image.getGraphics();
+
+    graphics.backColor = Color.RED;
+    graphics.fillRect(1, 0, 1, 1);
+    graphics.foreColor = Color.BLUE;
+    graphics.setPixel(0, 1);
+    graphics.foreColor = Color.GREEN;
+    graphics.drawLine(0, 0, 0, 0);
+
+    int[] pixels = image.getPixels();
+    assertEquals(0xFF00FF00, pixels[0]);
+    assertEquals(0xFF00FF00, pixels[1]);
+    assertEquals(0xFFFF0000, pixels[2]);
+    assertEquals(0xFF0000FF, pixels[6]);
+    assertEquals(0xFF0000FF, pixels[7]);
+  }
+
+  @Test
   void framesExposeTheirVisibleLogicalWidth() throws Exception {
     Image image = new Image(6, 1);
 
