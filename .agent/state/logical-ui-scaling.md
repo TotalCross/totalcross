@@ -49,6 +49,8 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Validated ownership boundaries: Java backing writes are covered by focused
   Java tests; native image-canvas writes/readback, alpha, source rectangles,
   frames, codecs, and texture reuse are covered by the deployed macOS fixture.
+- Corrected: `Image4D` only reuses a same-sized transform when its backing is
+  scale-one; logical scale-two transforms now produce the fixed-pixel result.
 
 ## Next concrete action
 

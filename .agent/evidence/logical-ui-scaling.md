@@ -680,3 +680,21 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   scaled text backing, and Java Launcher DANFE lanes pass. Java dirty state is a
   repaint boolean and has no coordinate conversion. The Java renderer retains
   integer font-raster metrics as its documented rounding boundary.
+
+## Milestone 4R: corrective transform identity guard
+
+- Timestamp: 2026-08-01T22:10:00Z
+- Commands: focused `GraphicsScaleTest` and `DanfeScalingTest`; macOS `tcvm`
+  build; SDK/smoke deployment; SHA-256 comparison; direct fixture execution.
+- Renderer/platform: Java test lane and deployed native macOS SDL/Skia app.
+- Status: passed.
+- Result: the native `Image4D` identity shortcut incorrectly treated physical
+  `6x4` arguments as an identity for a logical `3x2` scale-two image. The
+  shortcut now applies only to scale-one backing, so transforms retain the
+  established fixed-pixel scale-one `6x4` result. The fixture also passed its
+  four-color row readback, alpha-128 partial source rectangle, and frame-width
+  assertions.
+- Deployed dylib SHA-256: `b4e7c140717fb4bf6e0f1eada365f5c1aea97067907ad280fb99430bedb58a5a`.
+- Logs: `m4r-transform-java-tests.log`, `m4r-transform-native-build.log`,
+  `m4r-transform-sdk-dist.log`, `m4r-transform-deploy.log`, and
+  `m4r-transform-native-fixture.log` under `artifacts/logical-ui-scaling/logs/`.

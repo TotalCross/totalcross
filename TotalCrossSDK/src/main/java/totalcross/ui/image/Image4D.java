@@ -487,8 +487,8 @@ public class Image4D extends GfxSurface {
 
   private totalcross.ui.image.Image4D getModifiedInstance(int newW, int newH, int angle, int percScale, int color,
       int brightness, int contrast, int type) throws totalcross.ui.image.ImageException {
-    if (type != ALPHA_INSTANCE && type != FADED_INSTANCE && newW == width && newH == height && (angle % 360) == 0
-        && brightness == 0 && contrast == 0) {
+    if (type != ALPHA_INSTANCE && type != FADED_INSTANCE && contentScale == 1 && newW == width && newH == height
+        && (angle % 360) == 0 && brightness == 0 && contrast == 0) {
       return this;
     }
 
