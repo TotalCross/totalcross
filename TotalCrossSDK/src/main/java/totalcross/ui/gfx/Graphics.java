@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -869,7 +870,7 @@ public final class Graphics {
     byte[] bitmapTable; // pgr@402_50
     int rowWIB;
     // speed-up
-    totalcross.Launcher.UserFont font = (totalcross.Launcher.UserFont) this.font.hv_UserFont;
+    tc.simulator.Launcher.UserFont font = (tc.simulator.Launcher.UserFont) this.font.hv_UserFont;
     totalcross.Launcher.CharBits bits = new totalcross.Launcher.CharBits();
     int height = font.maxHeight;
     int chrStart = 0;

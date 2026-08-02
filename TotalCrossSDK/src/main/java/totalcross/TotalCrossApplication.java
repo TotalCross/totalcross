@@ -47,8 +47,8 @@ public class TotalCrossApplication {
       clazz = Help.class;
       args = new String[] { "/scr", "android", "/fontsize", "20", "/fingertouch" };
     }
-    LauncherRuntime runtime = new LauncherRuntime();
-    runtime.configure(new LauncherConfig(clazz.getCanonicalName(), args));
+    tc.simulator.Launcher runtime = new tc.simulator.Launcher();
+    runtime.configure(new tc.simulator.SimulatorConfiguration(clazz.getCanonicalName(), args));
     runtime.startApplication();
   }
 }

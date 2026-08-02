@@ -41,11 +41,14 @@ class ArtifactBoundariesTest {
     }
 
     @Test
-    void previewArtifactContainsOnlyPreviewSurface() throws Exception {
-        Set<String> preview = entries("totalcross-preview-runtime");
-        assertTrue(preview.stream().anyMatch(name -> name.startsWith("totalcross/preview/")));
-        assertFalse(preview.stream().anyMatch(name -> name.startsWith("tc/tools/converter/")));
-        assertFalse(preview.stream().anyMatch(name -> name.startsWith("tc/tools/deployer/")));
+    void simulatorArtifactContainsLauncherSimulatorAndPreviewContract() throws Exception {
+        Set<String> simulator = entries("totalcross-simulator");
+        assertTrue(simulator.contains("totalcross/Launcher.class"));
+        assertTrue(simulator.stream().anyMatch(name -> name.startsWith("tc/simulator/")));
+        assertTrue(simulator.stream().anyMatch(name -> name.startsWith("tc/preview/")));
+        assertFalse(simulator.stream().anyMatch(name -> name.startsWith("totalcross/preview/")));
+        assertFalse(simulator.stream().anyMatch(name -> name.startsWith("tc/tools/converter/")));
+        assertFalse(simulator.stream().anyMatch(name -> name.startsWith("tc/tools/deployer/")));
     }
 
     private static Set<String> entries(String prefix) throws IOException {
