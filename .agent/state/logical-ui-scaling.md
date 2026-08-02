@@ -35,6 +35,9 @@ Rewrite this file instead of appending. Read it first when resuming.
 - Validated: native Skia reads image rows through physical per-pixel readback;
   a scale-2 `2x2` source copies its four colors at natural logical size and a
   two-frame image exposes a physical and logical visible width of `3`.
+- Corrected: native row readback uses one RGBA_8888 bitmap/readPixels operation
+  and `getColor`; temporary per-pixel readback and diagnostic field lookups are
+  removed. Direct Image ABI offsets are proven again by the deployed fixture.
 - Pending: codecs/loaders, frame offsets, transforms, texture/cache ownership,
   alternating Java/native dirty ownership, and alpha/export coverage.
 
