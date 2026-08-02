@@ -137,14 +137,32 @@ public class DanfeScalingApp extends MainWindow {
       }
       destinationImage.getGraphics().drawImage(sourceImage, 0, 0);
       byte[] firstRow = new byte[8];
+      byte[] secondRow = new byte[8];
       destinationImage.getPixelRow(firstRow, 0);
-      if ((firstRow[0] & 0xFF) != 255 || (firstRow[1] & 0xFF) != 0 || (firstRow[4] & 0xFF) != 0
-          || (firstRow[5] & 0xFF) != 255) {
-        throw new IllegalStateException("Logical image source sampling assertion failed: " + (firstRow[0] & 0xFF)
-            + "," + (firstRow[1] & 0xFF) + "," + (firstRow[2] & 0xFF) + ";" + (firstRow[4] & 0xFF)
-            + "," + (firstRow[5] & 0xFF) + "," + (firstRow[6] & 0xFF) + " alpha="
-            + sourceImage.alphaMask + " sourceScale=" + sourceImage.getContentScale() + " destinationScale="
-            + destinationImage.getContentScale());
+      destinationImage.getPixelRow(secondRow, 1);
+      if (!matches(firstRow, 0, 255, 0, 0, 255) || !matches(firstRow, 4, 0, 255, 0, 255)
+          || !matches(secondRow, 0, 0, 0, 255, 255) || !matches(secondRow, 4, 255, 255, 255, 255)) {
+        throw new IllegalStateException("Logical image row readback assertion failed");
+      }
+      Image partialImage;
+      try {
+        partialImage = new Image(1, 2);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to create partial source assertion", exception);
+      }
+      partialImage.getGraphics().backColor = Color.BLACK;
+      partialImage.getGraphics().fillRect(0, 0, 1, 2);
+      sourceImage.alphaMask = 128;
+      partialImage.getGraphics().copyImageRect(sourceImage, 1, 0, 1, 2, true);
+      byte[] partialFirstRow = new byte[4];
+      byte[] partialSecondRow = new byte[4];
+      partialImage.getPixelRow(partialFirstRow, 0);
+      partialImage.getPixelRow(partialSecondRow, 1);
+      if (!isHalf(partialFirstRow[1] & 0xFF) || (partialFirstRow[0] & 0xFF) != 0
+          || (partialFirstRow[2] & 0xFF) != 0 || (partialFirstRow[3] & 0xFF) != 255
+          || !isHalf(partialSecondRow[0] & 0xFF) || !isHalf(partialSecondRow[1] & 0xFF)
+          || !isHalf(partialSecondRow[2] & 0xFF) || (partialSecondRow[3] & 0xFF) != 255) {
+        throw new IllegalStateException("Logical image partial alpha assertion failed");
       }
       Image frameImage;
       try {
@@ -224,5 +242,14 @@ public class DanfeScalingApp extends MainWindow {
       graphics.fillRect(20 + run * 10, 460, 4, 40);
     }
     graphics.drawText("Documento de demonstração sem dados privados", 20, 520);
+  }
+
+  private static boolean matches(byte[] row, int offset, int red, int green, int blue, int alpha) {
+    return (row[offset] & 0xFF) == red && (row[offset + 1] & 0xFF) == green
+        && (row[offset + 2] & 0xFF) == blue && (row[offset + 3] & 0xFF) == alpha;
+  }
+
+  private static boolean isHalf(int value) {
+    return value >= 127 && value <= 128;
   }
 }
