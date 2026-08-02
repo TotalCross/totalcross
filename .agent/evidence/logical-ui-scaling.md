@@ -732,3 +732,16 @@ This file is append-only. Add compact records; keep raw logs and artifacts under
   `5959d1ad07dd0a43895b670f5f2ed7b4efb02e5e6c943cec360ab67ffc9ab4c6`.
 - Logs: `m7-java-launcher.log` and `m4r-transform-native-fixture.log` under
   `artifacts/logical-ui-scaling/logs/`.
+
+## Milestone 8R: Android validation blocker
+
+- Timestamp: 2026-08-01T22:25:00Z
+- Commands: `adb devices`; Android Gradle native-dependency fetch and standard
+  release assembly.
+- Status: blocked externally.
+- Result: no attached/emulated Android device is available. Gradle cannot
+  configure `:tcvm` because the host has neither `ANDROID_HOME` nor
+  `TotalCrossVM/android/local.properties:sdk.dir`. No Android deployment or
+  semantic assertion is claimed. iOS workspace validation remains deferred by
+  user direction.
+- Log: `m8-android-build.log` under `artifacts/logical-ui-scaling/logs/`.

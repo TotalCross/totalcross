@@ -12,9 +12,9 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 - Base: `d480df074e7fb6f5a32dfcc2f1f30c3949095e73`
 - Branch: `feat/logical-ui-scaling`; preserve history and user changes.
-- Active milestone: 8R — final Android and handoff.
-- Active slice: run the required high-density Android semantic fixture after
-  the Java and native macOS lanes; iOS remains optional and deferred.
+- Active milestone: 8R — final Android and handoff (external blocker).
+- Active slice: Android high-density fixture requires an SDK-configured host
+  and an attached/emulated device; iOS remains optional and deferred.
 
 ## Execution rules
 
@@ -54,7 +54,14 @@ Rewrite this file instead of appending. Read it first when resuming.
 
 ## Next concrete action
 
-Run the required high-density Android semantic fixture and final focused audits.
+Provide Android SDK configuration and an attached/emulated device, then run the
+required high-density semantic fixture.
+
+## M8R blocker
+
+- `adb devices` reports no devices, and Android Gradle configuration fails
+  because neither `ANDROID_HOME` nor `android/local.properties:sdk.dir` is
+  available. No Android artifact or deployment was produced.
 
 ## M7R audit
 
