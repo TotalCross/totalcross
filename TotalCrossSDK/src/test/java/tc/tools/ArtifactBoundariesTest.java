@@ -44,6 +44,7 @@ class ArtifactBoundariesTest {
     void simulatorArtifactContainsLauncherSimulatorAndPreviewContract() throws Exception {
         Set<String> simulator = entries("totalcross-simulator");
         assertTrue(simulator.contains("totalcross/Launcher.class"));
+        assertTrue(simulator.contains("totalcross/TotalCrossApplication.class"));
         assertTrue(simulator.contains("tc/simulator/EventLoop.class"));
         assertTrue(simulator.stream().anyMatch(name -> name.startsWith("tc/simulator/")));
         assertTrue(simulator.stream().anyMatch(name -> name.startsWith("tc/preview/")));
@@ -51,6 +52,20 @@ class ArtifactBoundariesTest {
         assertFalse(simulator.stream().anyMatch(name -> name.startsWith("tc/tools/converter/")));
         assertFalse(simulator.stream().anyMatch(name -> name.startsWith("tc/tools/deployer/")));
         assertFalse(simulator.contains("totalcross/TCEventThread.class"));
+    }
+
+    @Test
+    void runtimeJavaExcludesSimulatorApplicationEntryPoints() throws Exception {
+        Set<String> runtimeJava = entries("totalcross-runtime-java");
+        assertFalse(runtimeJava.contains("totalcross/Launcher.class"));
+        assertFalse(runtimeJava.stream().anyMatch(name -> name.startsWith("totalcross/Launcher$")
+                && name.endsWith(".class")));
+        assertFalse(runtimeJava.contains("totalcross/TotalCrossApplication.class"));
+    }
+
+    @Test
+    void aggregateSdkContainsTotalCrossApplication() throws Exception {
+        assertTrue(entries("totalcross-sdk").contains("totalcross/TotalCrossApplication.class"));
     }
 
     private static Set<String> entries(String prefix) throws IOException {
