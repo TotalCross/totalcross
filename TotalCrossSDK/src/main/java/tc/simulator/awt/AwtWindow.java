@@ -10,8 +10,10 @@ package tc.simulator.awt;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * AWT window backend for the desktop simulator.
@@ -43,7 +45,7 @@ public class AwtWindow implements SimulatorWindow {
 
   @Override
   public void start(WindowConfiguration config) {
-    scale = config.scaleFactor;
+    scale = resolveScale(config);
     if (config.fullscreen) {
       frame.setExtendedState(Frame.MAXIMIZED_BOTH);
       frame.setUndecorated(true);
@@ -89,6 +91,37 @@ public class AwtWindow implements SimulatorWindow {
   @Override
   public RenderSurface getRenderSurface() {
     return renderSurface;
+  }
+
+  public double getScale() {
+    return scale;
+  }
+
+  static double resolveScale(WindowConfiguration config) {
+    Rectangle bounds = null;
+    if (!GraphicsEnvironment.isHeadless()) {
+      bounds = GraphicsEnvironment.getLocalGraphicsEnvironment()
+          .getDefaultScreenDevice()
+          .getDefaultConfiguration()
+          .getBounds();
+    }
+    return resolveScale(config, bounds);
+  }
+
+  static double resolveScale(WindowConfiguration config, Rectangle displayBounds) {
+    if (config.scaleValue != -1) {
+      return Math.abs(config.scaleValue) / config.densityValue;
+    }
+    if (displayBounds == null) {
+      return 1 / config.densityValue;
+    }
+
+    int viewportWidth = (int) (config.width / config.densityValue);
+    int viewportHeight = (int) (config.height / config.densityValue);
+    double maxRatio = Math.max((double) viewportWidth / displayBounds.width,
+        (double) viewportHeight / displayBounds.height);
+    double usableArea = 0.88;
+    return maxRatio > usableArea ? usableArea / maxRatio / config.densityValue : 1 / config.densityValue;
   }
 
   public void setContentSize(int width, int height, boolean resizeFrame) {
