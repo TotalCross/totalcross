@@ -4,67 +4,130 @@
 # SPDX-License-Identifier: LGPL-2.1-only
 
 name: validate-headers
-description: Validate the repository's LGPL-2.1-only copyright headers on changed or staged first-party files before a commit; use for new files, header fixes, or copyright-check failures, not for generated or vendored artifacts.
+description: Validate or fix LGPL-2.1-only headers, apply approved copyright provenance, and prepare provenance audits for renamed, split, copied, or extracted first-party code.
 ---
 
-# Validate changed-file headers
+# Validate headers and copyright provenance
 
-Use the repository validator from the repository root and the narrowest file set
-that matches the intended commit. This repository uses LGPL-2.1-only headers;
-do not introduce a different license identifier in first-party files.
+Use the repository tools from the repository root. The validator is the source
+of truth; do not derive a header from the current pathname when an approved
+active provenance audit applies.
 
-1. Identify the scope without dumping the whole worktree:
+## 1. Identify the intended scope
 
-       git diff --name-only --diff-filter=ACMR --cached -- <task paths>
+Avoid dumping a noisy worktree. Prefer:
 
-   If nothing is staged, inspect the intended working-tree paths with:
+```sh
+git diff --name-only --diff-filter=ACMR --cached -- <task paths>
+```
 
-       git diff --name-only --diff-filter=ACMR -- <task paths>
+When nothing is staged:
 
-2. Respect the exclusions implemented by
-   `scripts/validate-copyright-headers.sh` and documented in `AGENTS.md`.
-   In particular, skip `TotalCrossVM/deps/`, `build/`,
-   `TotalCrossSDK/src/main/java/totalcross/util/regex/`, and
-   `TotalCrossSDK/src/main/java/totalcross/db/sqlite/`, except for
-   `SQLiteUtil.java` and `ui/DBListBox.java`. The validator also ignores
-   unsupported file types and `.agent/PLANS.md`. Do not add repository headers
-   to upstream, vendored, generated, or exempt files merely to make validation
-   pass.
+```sh
+git diff --name-only --diff-filter=ACMR -- <task paths>
+```
 
-3. Prefer changed-file validation when the validator supports it:
+Do not add repository headers to upstream, vendored, generated, or exempt files
+merely to make validation pass. Respect the exclusions implemented by
+`scripts/validate-copyright-headers.sh` and documented in `AGENTS.md`.
+Generated evidence under `legal/copyright-provenance/audits/` is intentionally
+excluded from ordinary header validation.
 
-       python3 scripts/validate-copyright-headers.sh --files <changed files>
+## 2. Validate the smallest useful file set
 
-   For staged changes, omit `--files` so the validator discovers the staged
-   paths (or the working-tree diff when nothing is staged):
+For explicit files:
 
-       python3 scripts/validate-copyright-headers.sh
+```sh
+python3 scripts/validate-copyright-headers.sh --files <changed files>
+```
 
-   It also accepts `--commit <commit>`, or a base and head commit as positional
-   arguments. Save verbose output to a temporary log when the file set is
-   broad, and report only failures relevant to the intended change.
+For staged changes, omit `--files`; when nothing is staged, the validator uses
+the working-tree diff:
 
-4. Fix headers with the comment style appropriate to the file. New
-   first-party files use the current year and:
+```sh
+python3 scripts/validate-copyright-headers.sh
+```
 
-       // Copyright (C) 2026 Amalgam Solucoes em TI Ltda
-       //
-       // SPDX-License-Identifier: LGPL-2.1-only
+The validator also accepts:
 
-   Use `#` for shell, Python, Ruby, and YAML files, and an HTML comment for
-   Markdown and HTML files. A Markdown skill with YAML frontmatter keeps the
-   repository header as YAML comments inside the frontmatter so the metadata
-   remains valid.
+```sh
+python3 scripts/validate-copyright-headers.sh --commit <commit>
+python3 scripts/validate-copyright-headers.sh <base> <head>
+```
 
-   For existing files, preserve historical ownership: SuperWaba ranges end in
-   2013, TotalCross ranges end in 2021, and Amalgam covers 2022 through the
-   current year. For files created from 2014 through 2021, the TotalCross range
-   starts in the Git creation year. For files created from 2000 through 2013,
-   retain the SuperWaba, TotalCross, and Amalgam sequence required by
-   `AGENTS.md`.
+Approved manifests listed in
+`legal/copyright-provenance/active-audits.json` take precedence over Git
+pathname creation dates. For covered files, the validator checks the code
+fingerprint and historical source before validating the inherited header. Treat
+a stale-audit error as a request for a new audit; never bypass it with a
+current-year-only header.
 
-5. Rerun the focused check and `git diff --check -- <task paths>`.
+## 3. Fix ordinary or provenance-backed headers
 
-6. Report only the files checked, pass/fail status, and log path. Do not paste the full repository validation output.
+Use the validator instead of manually reconstructing ranges:
 
-Do not stage, commit, amend, or push unless the user explicitly requests those actions or the active ExecPlan requires a commit checkpoint.
+```sh
+python3 scripts/validate-copyright-headers.sh \
+  --fix --files <changed files>
+```
+
+New first-party files normally use the current-year Amalgam header. Existing
+files preserve the applicable SuperWaba, TotalCross, and Amalgam ranges.
+Provenance-backed files inherit the chain from the approved audit.
+
+After fixing, rerun the focused validation and:
+
+```sh
+git diff --check -- <task paths>
+```
+
+## 4. Audit substantial code movement
+
+Create an audit when a refactor renames, splits, merges, copies, or extracts
+substantial code and the destination pathname no longer represents the source
+history:
+
+```sh
+python3 legal/copyright-provenance/audit-code-provenance.py \
+  <initial-commit> <final-commit> [source-path]
+```
+
+Omit `source-path` for automatic source discovery. Review `summary.md` and the
+per-source reports. Confirm that final targets are real descendants, unrelated
+generic code is absent, and intermediate deleted paths appear only as lineage
+evidence.
+
+Do not edit generated evidence or reports to alter the conclusion. Correct the
+audit tool and run a new audit when the result is wrong.
+
+## 5. Approve or reject an audit
+
+Audit review is a maintainer operation:
+
+```sh
+python3 legal/copyright-provenance/review-audit.py <audit-id>
+```
+
+The command asks whether to approve, reject, or cancel. Approval can optionally
+append the manifest to `active-audits.json` without removing existing entries.
+When activated, it verifies the audit tool hash and covered code fingerprints,
+fixes the covered headers, runs validation, stages only the audit-related
+changes, and creates one signed atomic commit.
+
+Because the review command can stage and commit, do not run it unless the user
+explicitly requested the review and authorized the resulting commit. Do not
+manually mark a manifest approved or edit `active-audits.json` as a substitute
+for this workflow.
+
+## 6. Report results efficiently
+
+Report:
+
+- files checked or fixed;
+- whether active provenance was applied;
+- validation pass or failure;
+- stale audits or manual-review findings;
+- the commit created by `review-audit.py`, when explicitly authorized.
+
+Do not paste full generated reports or broad validator output. Show only the
+relevant errors and paths.

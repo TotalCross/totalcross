@@ -49,9 +49,15 @@ Important top-level areas:
 - For package layout changes, compare with the relevant script in `scripts/`
   before changing only the workflow.
 
-## Copyright Headers
+## Copyright Headers And Provenance
 
-- New repository files must start with the current-year Amalgam header:
+Use `python3 scripts/validate-copyright-headers.sh` as the source of truth for
+first-party copyright headers. Do not infer the required header from the current
+pathname alone when code was renamed, split, copied, or substantially extracted
+from an older file.
+
+- New first-party files use the current-year Amalgam header unless an approved
+  active provenance audit identifies inherited code:
 
 ```text
 // Copyright (C) <current year> Amalgam Solucoes em TI Ltda
@@ -61,24 +67,63 @@ Important top-level areas:
 
 - For HTML or Markdown files, use the equivalent comment syntax for the file
   type while keeping the same copyright and SPDX text.
-- When updating an existing file, update its copyright header through the
-  current year. For example, in 2027 an existing Amalgam range should end in
-  2027.
-- If the last copyright entry belongs to TotalCross, change its end year to
-  2021 and add `Copyright (C) 2022-<current year> Amalgam Solucoes em TI Ltda`.
-- If an existing file has no header, use its creation date in Git to choose the
-  first copyright year:
+- When updating an existing file, extend its Amalgam copyright range through the
+  current year.
+- If the last copyright entry belongs to TotalCross, end that range in 2021 and
+  add `Copyright (C) 2022-<current year> Amalgam Solucoes em TI Ltda`.
+- When no active provenance audit applies, use the Git creation year:
   - files created from 2014 through 2021 use
     `Copyright (C) <creation year>-2021 TotalCross Global Mobile Platform Ltda`,
-    followed by the Amalgam entry from 2022 through the current year.
+    followed by the Amalgam entry from 2022 through the current year;
   - files created from 2000 through 2013 use
     `Copyright (C) <creation year>-2013 SuperWaba Ltda`, followed by
     `Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda`, then the
-    Amalgam entry from 2022 through the current year.
+    Amalgam entry from 2022 through the current year;
   - files created in 2022 or later use Amalgam from the creation year through
     the current year, or only the creation year when it equals the current year.
-- Do not validate copyright headers for `TotalCrossSDK/src/main/java/totalcross/util/regex/**`
-  or `TotalCrossSDK/src/main/java/totalcross/db/sqlite/**`, except
+- Approved manifests listed in
+  `legal/copyright-provenance/active-audits.json` take precedence over pathname
+  creation dates. The validator checks each covered file's code fingerprint and
+  applies the historical chain recorded by the audit. A fingerprint mismatch is
+  a stale-audit failure; do not fall back silently to a new-file header.
+- `legal/copyright-provenance/audits/` contains generated, immutable audit
+  evidence and reports. These files are intentionally ignored by ordinary
+  header validation. Do not edit generated evidence to change a conclusion;
+  create a new audit instead.
+- Use the focused validator during normal work:
+
+```bash
+python3 scripts/validate-copyright-headers.sh --files <changed files>
+python3 scripts/validate-copyright-headers.sh --fix --files <changed files>
+```
+
+- Refactors that rename, split, merge, copy, or extract substantial code should
+  be audited from the last known pre-refactor revision through the resulting
+  revision:
+
+```bash
+python3 legal/copyright-provenance/audit-code-provenance.py \
+  <initial-commit> <final-commit> [source-path]
+```
+
+  Omit `source-path` to discover affected sources automatically. Review the
+  generated reports before approval.
+- Maintainers approve or reject an audit with:
+
+```bash
+python3 legal/copyright-provenance/review-audit.py <audit-id>
+```
+
+  Approval may add the manifest to `active-audits.json`, verify the audit tool
+  hash and code fingerprints, fix covered headers, run validation, stage only
+  the audit-related changes, and create one signed atomic commit. Because this
+  command can commit, agents must not run it without explicit user approval.
+- Do not hand-edit `active-audits.json` as a substitute for review. An active
+  audit must have an approved manifest and must pass the tool-hash and
+  fingerprint checks.
+- Do not validate copyright headers for
+  `TotalCrossSDK/src/main/java/totalcross/util/regex/**` or
+  `TotalCrossSDK/src/main/java/totalcross/db/sqlite/**`, except
   `TotalCrossSDK/src/main/java/totalcross/db/sqlite/SQLiteUtil.java` and
   `TotalCrossSDK/src/main/java/totalcross/db/sqlite/ui/DBListBox.java`, which
   must still be validated normally.

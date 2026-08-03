@@ -22,6 +22,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   - [Feedback](#feedback)
   - [Code](#code)
     - [Environment](#environment)
+    - [Copyright headers and code provenance](#copyright-headers-and-code-provenance)
   - [Commit Message Guidelines](#commit-message-guidelines)
   - [Why all these rules?](#why-all-these-rules)
 - [Submitting a pull request](#submitting-a-pull-request)
@@ -127,6 +128,67 @@ To build TotalCross for each system below, you will need::
 | Docker | Docker | NDK 21 | XCode and CocoaPods 1.10.0.beta.1 | XCode | MSVC _X_|MSVC 9 |
 
 With these prerequisites, you may need to clone this repository, as well as have a ready SDK and a [sample code](https://github.com/TotalCross/hello-world) to get started.
+
+### Copyright headers and code provenance
+
+First-party source and documentation files use
+`SPDX-License-Identifier: LGPL-2.1-only` and must pass the repository header
+validator before a pull request is submitted.
+
+Run the validator from the repository root. Prefer a focused file list while
+developing:
+
+```sh
+python3 scripts/validate-copyright-headers.sh --files <changed files>
+```
+
+To apply safe automatic corrections:
+
+```sh
+python3 scripts/validate-copyright-headers.sh --fix --files <changed files>
+```
+
+With no `--files` argument, the validator checks staged changes, or working-tree
+changes when nothing is staged. It also accepts `--commit <commit>` or a base
+and head revision as positional arguments.
+
+A file's current pathname does not always determine its copyright history.
+When a change renames, splits, merges, copies, or extracts substantial code, the
+original ownership chain must be preserved. Approved provenance manifests
+listed in `legal/copyright-provenance/active-audits.json` take precedence over
+the pathname creation date. The validator verifies the recorded code
+fingerprint and fails when an active audit has become stale.
+
+For a substantial refactor, generate an audit covering the complete interval:
+
+```sh
+python3 legal/copyright-provenance/audit-code-provenance.py \
+  <initial-commit> <final-commit> [source-path]
+```
+
+Omit `source-path` to discover changed historical sources automatically.
+Generated manifests, evidence, and reports are stored under
+`legal/copyright-provenance/audits/<audit-id>/`. Do not edit generated evidence
+to force a result. Incorrect or outdated evidence must be replaced by a new
+audit.
+
+Audit approval is a maintainer operation:
+
+```sh
+python3 legal/copyright-provenance/review-audit.py <audit-id>
+```
+
+The review command asks whether to approve or reject the audit. When an approved
+audit is activated, the command can verify the audit tool hash and covered code
+fingerprints, add the manifest without removing other active audits, fix the
+covered headers, validate the result, and create one signed atomic commit.
+Contributors should not edit `active-audits.json` or mark manifests approved by
+hand.
+
+Audit output under `legal/copyright-provenance/audits/` is generated legal
+evidence and is excluded from ordinary header validation. Vendored, generated,
+and repository-exempt paths must remain unmodified merely to satisfy the
+validator.
 
 ### Commit Message Guidelines
 
@@ -361,6 +423,9 @@ Before submitting a pull request, please make sure the following is done:
   - Example: `feature/my-awesome-feature` or `fix/annoying-bug`;
 - Build your changes;
 - If you’ve fixed a bug or added code that should be tested, **add tests**;
+- Run `python3 scripts/validate-copyright-headers.sh` for the intended changes;
+- For substantial renames, splits, copies, or extractions, include the required
+  provenance audit for maintainer review;
 - Ensure your commit is validated;
 
 ### What happens next?
