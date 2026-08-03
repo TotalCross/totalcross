@@ -8,8 +8,6 @@
 
 package tc.simulator;
 
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
 import java.math.BigDecimal;
 
 import totalcross.sys.Settings;
@@ -130,21 +128,11 @@ final class CommandLineParser {
     scaleInsets(result.insetsPortrait, result.densityValue);
     scaleInsets(result.insetsLandscape, result.densityValue);
 
-    if (result.scaleValue == -1) {
-      Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment()
-          .getDefaultScreenDevice()
-          .getDefaultConfiguration()
-          .getBounds();
-
-      double useableArea = 0.88;
-      int viewportW = (int) (result.width / result.densityValue);
-      int viewportH = (int) (result.height / result.densityValue);
-      double maxRatio = Math.max((double) viewportW / r.width, (double) viewportH / r.height);
-      if (maxRatio > useableArea) {
-        result.scaleValue = useableArea / maxRatio;
-      }
-    }
-    result.scale = Math.abs(result.scaleValue) / result.densityValue;
+    // An omitted scale is resolved by the AWT presentation layer. Keeping the
+    // sentinel here makes parsing independent of the host display (and safe in
+    // headless processes).
+    result.scale = result.scaleValue == -1 ? 1 / result.densityValue
+        : Math.abs(result.scaleValue) / result.densityValue;
     return result;
   }
 

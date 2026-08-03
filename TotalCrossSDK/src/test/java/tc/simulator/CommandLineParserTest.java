@@ -29,6 +29,16 @@ class CommandLineParserTest {
   }
 
   @Test
+  void leavesAutomaticScaleUnresolved() throws Exception {
+    SimulatorConfiguration config = new SimulatorConfiguration("com.example.App", "/scr", "1920x1080x32");
+
+    LaunchOptions result = CommandLineParser.parse(config, true, 0, 0);
+
+    assertEquals(-1, result.scaleValue);
+    assertEquals(1, result.scale);
+  }
+
+  @Test
   void storesSettingsFlagsWithoutApplyingThem() throws Exception {
     SimulatorConfiguration config = new SimulatorConfiguration("com.example.App", "/scr", "320x480x16", "/fingertouch",
         "/geofocus", "/virtualKeyboard", "/showmousepos", "/dbginfo");

@@ -280,12 +280,17 @@ public class Launcher extends SimulatorCore implements PreviewSession {
     if (parsedConfig == null) {
       throw new IllegalStateException("Launcher arguments must be parsed before starting the window backend");
     }
-    WindowConfiguration config = new WindowConfiguration(parsedConfig.width, parsedConfig.height, parsedConfig.scale, title,
-        parsedConfig.x, parsedConfig.y, parsedConfig.fullscreen, Settings.resizableWindow, background, windowListener,
-        componentListener);
+    WindowConfiguration config = new WindowConfiguration(parsedConfig.width, parsedConfig.height, parsedConfig.scaleValue,
+        parsedConfig.densityValue, title, parsedConfig.x, parsedConfig.y, parsedConfig.fullscreen,
+        Settings.resizableWindow, background, windowListener, componentListener);
     AwtWindow backend = new AwtWindow(launcher);
     backend.start(config);
+    launcher.setPresentationScale(backend.getScale());
     return backend;
+  }
+
+  void setPresentationScale(double scale) {
+    toScale = scale;
   }
 
   Launcher getSimulatorCore() {

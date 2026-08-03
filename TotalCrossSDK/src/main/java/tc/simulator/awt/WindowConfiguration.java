@@ -16,6 +16,10 @@ public class WindowConfiguration {
   public final int scale;
   public final String title;
   public final double scaleFactor;
+  /** Raw command-line scale value; {@code -1} means fit the host display. */
+  public final double scaleValue;
+  /** Device density used to convert the raw scale value to a presentation scale. */
+  public final double densityValue;
   public final int x;
   public final int y;
   public final boolean fullscreen;
@@ -25,22 +29,31 @@ public class WindowConfiguration {
   public final ComponentListener componentListener;
 
   public WindowConfiguration(int width, int height, int scale, String title) {
-    this(width, height, scale, scale, title, 0, 0, false, true, null, null, null);
+    this(width, height, scale, scale, title, 0, 0, false, true, null, null, null, scale, 1);
   }
 
   public WindowConfiguration(int width, int height, double scaleFactor, String title, int x, int y, boolean fullscreen,
       boolean resizable, Color background, WindowListener windowListener, ComponentListener componentListener) {
     this(width, height, (int) scaleFactor, scaleFactor, title, x, y, fullscreen, resizable, background, windowListener,
-        componentListener);
+        componentListener, scaleFactor, 1);
+  }
+
+  public WindowConfiguration(int width, int height, double scaleValue, double densityValue, String title, int x, int y,
+      boolean fullscreen, boolean resizable, Color background, WindowListener windowListener,
+      ComponentListener componentListener) {
+    this(width, height, (int) scaleValue, scaleValue == -1 ? -1 : Math.abs(scaleValue) / densityValue, title, x, y,
+        fullscreen, resizable, background, windowListener, componentListener, scaleValue, densityValue);
   }
 
   private WindowConfiguration(int width, int height, int scale, double scaleFactor, String title, int x, int y,
       boolean fullscreen, boolean resizable, Color background, WindowListener windowListener,
-      ComponentListener componentListener) {
+      ComponentListener componentListener, double scaleValue, double densityValue) {
     this.width = width;
     this.height = height;
     this.scale = scale;
     this.scaleFactor = scaleFactor;
+    this.scaleValue = scaleValue;
+    this.densityValue = densityValue;
     this.title = title;
     this.x = x;
     this.y = y;
