@@ -1,0 +1,1034 @@
+{
+  "schemaVersion": 4,
+  "source": {
+    "commit": "d480df074e7fb6f5a32dfcc2f1f30c3949095e73",
+    "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+    "blob": "4fb8eb663a33b25e4c3fb6a7128f6f84ea44bf07"
+  },
+  "sourceCodeFingerprint": "ce7803792bd8fd42bffc7516ca2ac4865d8442686c46777a3e2aff36ca24a57f",
+  "sourceHeader": {
+    "status": "preserved",
+    "sourceNotices": [
+      {
+        "years": "2000",
+        "owner": "Dave Slaughter"
+      },
+      {
+        "years": "2000-2010",
+        "owner": "SuperWaba Ltda"
+      },
+      {
+        "years": "2014-2020",
+        "owner": "TotalCross Global Mobile Platform Ltda"
+      }
+    ],
+    "targetNotices": [
+      {
+        "years": "2000",
+        "owner": "Dave Slaughter"
+      },
+      {
+        "years": "2000-2010",
+        "owner": "SuperWaba Ltda"
+      },
+      {
+        "years": "2014-2020",
+        "owner": "TotalCross Global Mobile Platform Ltda"
+      }
+    ],
+    "missingNotices": [],
+    "spdx": true
+  },
+  "targets": [
+    {
+      "path": "TotalCrossSDK/src/main/java/tc/simulator/EventLoop.java",
+      "blob": "0ab4dfd76abe0510227059b66075acbe630eb381",
+      "codeFingerprint": "8e608122e3284b2a1ee3b6713beb26ab25ea99ee010a37e6e5ed5ad987655463",
+      "classification": "partial-inherited",
+      "confidence": "medium",
+      "evidenceBasis": "direct",
+      "evidenceScore": 0.335211,
+      "assignmentRole": "primary",
+      "headerStatus": "preserved",
+      "effectiveEvidence": {
+        "classification": "partial-inherited",
+        "confidence": "medium",
+        "basis": "direct",
+        "score": 0.3352107183992128
+      },
+      "directEvidence": {
+        "classification": "partial-inherited",
+        "confidence": "medium",
+        "score": 0.335211,
+        "sourceCoverage": 0.170732,
+        "targetCoverage": 0.158153,
+        "sourceTokens": 738,
+        "targetTokens": 1018,
+        "matchedSourceTokens": 126,
+        "matchedTargetTokens": 161,
+        "matches": [
+          {
+            "kind": "copied-fragment",
+            "confidence": "medium",
+            "score": 0.802817,
+            "estimatedMatchedTokens": 38,
+            "exactRatio": 0.863636,
+            "structuralRatio": 0.931818,
+            "longestExactBlock": 20,
+            "longestStructuralBlock": 23,
+            "source": {
+              "first": 72,
+              "last": 74,
+              "signature": "TCEventThread: public void pushEvent ( int type , int key , int x , int y ,",
+              "tokens": 45
+            },
+            "target": {
+              "first": 89,
+              "last": 91,
+              "signature": "EventLoop: void postEvent ( int type , int key , int x , int y , int",
+              "tokens": 43
+            }
+          },
+          {
+            "kind": "copied-fragment",
+            "confidence": "high",
+            "score": 0.728484,
+            "estimatedMatchedTokens": 31,
+            "exactRatio": 0.681319,
+            "structuralRatio": 0.703297,
+            "longestExactBlock": 29,
+            "longestStructuralBlock": 29,
+            "source": {
+              "first": 29,
+              "last": 41,
+              "signature": "TCEventThread: @ Override public void run ( )",
+              "tokens": 57
+            },
+            "target": {
+              "first": 162,
+              "last": 167,
+              "signature": "EventLoop: private static void reportFailure ( Throwable t )",
+              "tokens": 34
+            }
+          },
+          {
+            "kind": "copied-fragment",
+            "confidence": "medium",
+            "score": 0.726232,
+            "estimatedMatchedTokens": 57,
+            "exactRatio": 0.745098,
+            "structuralRatio": 0.75817,
+            "longestExactBlock": 36,
+            "longestStructuralBlock": 39,
+            "source": {
+              "first": 191,
+              "last": 198,
+              "signature": "TCEventThread.TCEvent: TCEvent ( int type , int key , int x , int y , int modifiers",
+              "tokens": 58
+            },
+            "target": {
+              "first": 182,
+              "last": 194,
+              "signature": "EventLoop.QueuedItem: private QueuedItem ( boolean shutdown , boolean commandItem , int type , int key , int",
+              "tokens": 95
+            }
+          },
+          {
+            "kind": "copied-fragment",
+            "confidence": "medium",
+            "score": 0.693918,
+            "estimatedMatchedTokens": 35,
+            "exactRatio": 0.736842,
+            "structuralRatio": 0.8,
+            "longestExactBlock": 20,
+            "longestStructuralBlock": 21,
+            "source": {
+              "first": 72,
+              "last": 74,
+              "signature": "TCEventThread: public void pushEvent ( int type , int key , int x , int y ,",
+              "tokens": 45
+            },
+            "target": {
+              "first": 196,
+              "last": 198,
+              "signature": "EventLoop.QueuedItem: private static QueuedItem event ( int type , int key , int x , int y",
+              "tokens": 50
+            }
+          }
+        ]
+      },
+      "reviewSignal": null,
+      "header": {
+        "status": "preserved",
+        "sourceNotices": [
+          {
+            "years": "2000",
+            "owner": "Dave Slaughter"
+          },
+          {
+            "years": "2000-2010",
+            "owner": "SuperWaba Ltda"
+          },
+          {
+            "years": "2014-2020",
+            "owner": "TotalCross Global Mobile Platform Ltda"
+          }
+        ],
+        "targetNotices": [
+          {
+            "years": "2000",
+            "owner": "Dave Slaughter"
+          },
+          {
+            "years": "2000-2013",
+            "owner": "SuperWaba Ltda"
+          },
+          {
+            "years": "2014-2021",
+            "owner": "TotalCross Global Mobile Platform Ltda"
+          },
+          {
+            "years": "2022-2026",
+            "owner": "Amalgam Solucoes em TI Ltda"
+          }
+        ],
+        "missingNotices": [],
+        "spdx": true
+      },
+      "lineage": {
+        "nodes": [
+          {
+            "commit": "d480df074e7fb6f5a32dfcc2f1f30c3949095e73",
+            "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+            "blob": "4fb8eb663a33b25e4c3fb6a7128f6f84ea44bf07"
+          },
+          {
+            "commit": "7d90859726892fd223fc388e8531653a945234fb",
+            "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+            "blob": "a73da107abf28315a8c02a2d423f6d50e14d7dea"
+          },
+          {
+            "commit": "9e4bdbd8b3a22418b61f6cecc95f927e3205a557",
+            "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+            "blob": "f683bcd43e243cb3ff97804a65a73228a6b3600c"
+          },
+          {
+            "commit": "07b9cd3b3bf154ab7ed7498b7a51a5b9e75c3cda",
+            "path": "TotalCrossSDK/src/main/java/tc/simulator/EventLoop.java",
+            "blob": "0ab4dfd76abe0510227059b66075acbe630eb381"
+          }
+        ],
+        "edges": [
+          {
+            "source": {
+              "commit": "d480df074e7fb6f5a32dfcc2f1f30c3949095e73",
+              "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+              "blob": "4fb8eb663a33b25e4c3fb6a7128f6f84ea44bf07"
+            },
+            "target": {
+              "commit": "7d90859726892fd223fc388e8531653a945234fb",
+              "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+              "blob": "a73da107abf28315a8c02a2d423f6d50e14d7dea"
+            },
+            "reason": "same-path",
+            "supportsLineage": true,
+            "similarity": {
+              "classification": "inherited",
+              "confidence": "high",
+              "score": 0.817907,
+              "sourceCoverage": 0.841463,
+              "targetCoverage": 0.692308,
+              "sourceTokens": 738,
+              "targetTokens": 897,
+              "matchedSourceTokens": 621,
+              "matchedTargetTokens": 621,
+              "matches": [
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 30,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 30,
+                  "longestStructuralBlock": 30,
+                  "source": {
+                    "first": 16,
+                    "last": 21,
+                    "signature": "TCEventThread: public TCEventThread ( MainClass win )",
+                    "tokens": 30
+                  },
+                  "target": {
+                    "first": 17,
+                    "last": 22,
+                    "signature": "TCEventThread: public TCEventThread ( MainClass win )",
+                    "tokens": 30
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 22,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 22,
+                  "longestStructuralBlock": 22,
+                  "source": {
+                    "first": 23,
+                    "last": 27,
+                    "signature": "TCEventThread: void nativeCreate ( )",
+                    "tokens": 22
+                  },
+                  "target": {
+                    "first": 24,
+                    "last": 28,
+                    "signature": "TCEventThread: void nativeCreate ( )",
+                    "tokens": 22
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 57,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 57,
+                  "longestStructuralBlock": 57,
+                  "source": {
+                    "first": 29,
+                    "last": 41,
+                    "signature": "TCEventThread: @ Override public void run ( )",
+                    "tokens": 57
+                  },
+                  "target": {
+                    "first": 30,
+                    "last": 42,
+                    "signature": "TCEventThread: @ Override public void run ( )",
+                    "tokens": 57
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 22,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 22,
+                  "longestStructuralBlock": 22,
+                  "source": {
+                    "first": 47,
+                    "last": 51,
+                    "signature": "TCEventThread: void pumpEvents ( )",
+                    "tokens": 22
+                  },
+                  "target": {
+                    "first": 48,
+                    "last": 52,
+                    "signature": "TCEventThread: void pumpEvents ( )",
+                    "tokens": 22
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 0.826798,
+                  "estimatedMatchedTokens": 117,
+                  "exactRatio": 0.95122,
+                  "structuralRatio": 0.95122,
+                  "longestExactBlock": 48,
+                  "longestStructuralBlock": 48,
+                  "source": {
+                    "first": 53,
+                    "last": 70,
+                    "signature": "TCEventThread: void privatePumpEvents ( )",
+                    "tokens": 117
+                  },
+                  "target": {
+                    "first": 68,
+                    "last": 89,
+                    "signature": "TCEventThread: void privatePumpEvents ( )",
+                    "tokens": 129
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 45,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 45,
+                  "longestStructuralBlock": 45,
+                  "source": {
+                    "first": 72,
+                    "last": 74,
+                    "signature": "TCEventThread: public void pushEvent ( int type , int key , int x , int y ,",
+                    "tokens": 45
+                  },
+                  "target": {
+                    "first": 91,
+                    "last": 93,
+                    "signature": "TCEventThread: public void pushEvent ( int type , int key , int x , int y ,",
+                    "tokens": 45
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 55,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 55,
+                  "longestStructuralBlock": 55,
+                  "source": {
+                    "first": 76,
+                    "last": 86,
+                    "signature": "TCEventThread: boolean hasEvent ( int type )",
+                    "tokens": 55
+                  },
+                  "target": {
+                    "first": 95,
+                    "last": 105,
+                    "signature": "TCEventThread: boolean hasEvent ( int type )",
+                    "tokens": 55
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 52,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 52,
+                  "longestStructuralBlock": 52,
+                  "source": {
+                    "first": 134,
+                    "last": 144,
+                    "signature": "TCEventThread.Queue: synchronized void push ( Object o )",
+                    "tokens": 52
+                  },
+                  "target": {
+                    "first": 172,
+                    "last": 182,
+                    "signature": "TCEventThread.Queue: synchronized void push ( Object o )",
+                    "tokens": 52
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 41,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 41,
+                  "longestStructuralBlock": 41,
+                  "source": {
+                    "first": 147,
+                    "last": 156,
+                    "signature": "TCEventThread.Queue: synchronized Object pop ( )",
+                    "tokens": 41
+                  },
+                  "target": {
+                    "first": 185,
+                    "last": 194,
+                    "signature": "TCEventThread.Queue: synchronized Object pop ( )",
+                    "tokens": 41
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 74,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 74,
+                  "longestStructuralBlock": 74,
+                  "source": {
+                    "first": 161,
+                    "last": 174,
+                    "signature": "TCEventThread.Queue: synchronized Object popWait ( int maxTime )",
+                    "tokens": 74
+                  },
+                  "target": {
+                    "first": 199,
+                    "last": 212,
+                    "signature": "TCEventThread.Queue: synchronized Object popWait ( int maxTime )",
+                    "tokens": 74
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 58,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 58,
+                  "longestStructuralBlock": 58,
+                  "source": {
+                    "first": 191,
+                    "last": 198,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , int key , int x , int y , int modifiers",
+                    "tokens": 58
+                  },
+                  "target": {
+                    "first": 230,
+                    "last": 237,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , int key , int x , int y , int modifiers",
+                    "tokens": 58
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 22,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 22,
+                  "longestStructuralBlock": 22,
+                  "source": {
+                    "first": 200,
+                    "last": 203,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , Runnable r )",
+                    "tokens": 22
+                  },
+                  "target": {
+                    "first": 239,
+                    "last": 242,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , Runnable r )",
+                    "tokens": 22
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 26,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 26,
+                  "longestStructuralBlock": 26,
+                  "source": {
+                    "first": 205,
+                    "last": 208,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , Runnable r , Object synch )",
+                    "tokens": 26
+                  },
+                  "target": {
+                    "first": 244,
+                    "last": 247,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , Runnable r , Object synch )",
+                    "tokens": 26
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "source": {
+              "commit": "7d90859726892fd223fc388e8531653a945234fb",
+              "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+              "blob": "a73da107abf28315a8c02a2d423f6d50e14d7dea"
+            },
+            "target": {
+              "commit": "9e4bdbd8b3a22418b61f6cecc95f927e3205a557",
+              "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+              "blob": "f683bcd43e243cb3ff97804a65a73228a6b3600c"
+            },
+            "reason": "same-path",
+            "supportsLineage": true,
+            "similarity": {
+              "classification": "inherited",
+              "confidence": "high",
+              "score": 0.997875,
+              "sourceCoverage": 1.0,
+              "targetCoverage": 0.996667,
+              "sourceTokens": 897,
+              "targetTokens": 900,
+              "matchedSourceTokens": 897,
+              "matchedTargetTokens": 897,
+              "matches": [
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 30,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 30,
+                  "longestStructuralBlock": 30,
+                  "source": {
+                    "first": 17,
+                    "last": 22,
+                    "signature": "TCEventThread: public TCEventThread ( MainClass win )",
+                    "tokens": 30
+                  },
+                  "target": {
+                    "first": 17,
+                    "last": 22,
+                    "signature": "TCEventThread: public TCEventThread ( MainClass win )",
+                    "tokens": 30
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 22,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 22,
+                  "longestStructuralBlock": 22,
+                  "source": {
+                    "first": 24,
+                    "last": 28,
+                    "signature": "TCEventThread: void nativeCreate ( )",
+                    "tokens": 22
+                  },
+                  "target": {
+                    "first": 24,
+                    "last": 28,
+                    "signature": "TCEventThread: void nativeCreate ( )",
+                    "tokens": 22
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 57,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 57,
+                  "longestStructuralBlock": 57,
+                  "source": {
+                    "first": 30,
+                    "last": 42,
+                    "signature": "TCEventThread: @ Override public void run ( )",
+                    "tokens": 57
+                  },
+                  "target": {
+                    "first": 30,
+                    "last": 42,
+                    "signature": "TCEventThread: @ Override public void run ( )",
+                    "tokens": 57
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 0.982889,
+                  "estimatedMatchedTokens": 22,
+                  "exactRatio": 0.977778,
+                  "structuralRatio": 0.977778,
+                  "longestExactBlock": 22,
+                  "longestStructuralBlock": 22,
+                  "source": {
+                    "first": 48,
+                    "last": 52,
+                    "signature": "TCEventThread: void pumpEvents ( )",
+                    "tokens": 22
+                  },
+                  "target": {
+                    "first": 48,
+                    "last": 52,
+                    "signature": "TCEventThread: public void pumpEvents ( )",
+                    "tokens": 23
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 0.990723,
+                  "estimatedMatchedTokens": 41,
+                  "exactRatio": 0.987952,
+                  "structuralRatio": 0.987952,
+                  "longestExactBlock": 41,
+                  "longestStructuralBlock": 41,
+                  "source": {
+                    "first": 54,
+                    "last": 62,
+                    "signature": "TCEventThread: void stopGracefully ( )",
+                    "tokens": 41
+                  },
+                  "target": {
+                    "first": 54,
+                    "last": 62,
+                    "signature": "TCEventThread: public void stopGracefully ( )",
+                    "tokens": 42
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 129,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 129,
+                  "longestStructuralBlock": 129,
+                  "source": {
+                    "first": 68,
+                    "last": 89,
+                    "signature": "TCEventThread: void privatePumpEvents ( )",
+                    "tokens": 129
+                  },
+                  "target": {
+                    "first": 68,
+                    "last": 89,
+                    "signature": "TCEventThread: void privatePumpEvents ( )",
+                    "tokens": 129
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 45,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 45,
+                  "longestStructuralBlock": 45,
+                  "source": {
+                    "first": 91,
+                    "last": 93,
+                    "signature": "TCEventThread: public void pushEvent ( int type , int key , int x , int y ,",
+                    "tokens": 45
+                  },
+                  "target": {
+                    "first": 91,
+                    "last": 93,
+                    "signature": "TCEventThread: public void pushEvent ( int type , int key , int x , int y ,",
+                    "tokens": 45
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 0.993063,
+                  "estimatedMatchedTokens": 55,
+                  "exactRatio": 0.990991,
+                  "structuralRatio": 0.990991,
+                  "longestExactBlock": 55,
+                  "longestStructuralBlock": 55,
+                  "source": {
+                    "first": 95,
+                    "last": 105,
+                    "signature": "TCEventThread: boolean hasEvent ( int type )",
+                    "tokens": 55
+                  },
+                  "target": {
+                    "first": 95,
+                    "last": 105,
+                    "signature": "TCEventThread: public boolean hasEvent ( int type )",
+                    "tokens": 56
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 21,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 21,
+                  "longestStructuralBlock": 21,
+                  "source": {
+                    "first": 107,
+                    "last": 109,
+                    "signature": "TCEventThread: public void invokeInEventThread ( boolean wait , Runnable r )",
+                    "tokens": 21
+                  },
+                  "target": {
+                    "first": 107,
+                    "last": 109,
+                    "signature": "TCEventThread: public void invokeInEventThread ( boolean wait , Runnable r )",
+                    "tokens": 21
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 202,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 202,
+                  "longestStructuralBlock": 202,
+                  "source": {
+                    "first": 111,
+                    "last": 153,
+                    "signature": "TCEventThread: public boolean invokeInEventThread ( boolean wait , Runnable r , long timeoutMillis )",
+                    "tokens": 202
+                  },
+                  "target": {
+                    "first": 111,
+                    "last": 153,
+                    "signature": "TCEventThread: public boolean invokeInEventThread ( boolean wait , Runnable r , long timeoutMillis )",
+                    "tokens": 202
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 52,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 52,
+                  "longestStructuralBlock": 52,
+                  "source": {
+                    "first": 172,
+                    "last": 182,
+                    "signature": "TCEventThread.Queue: synchronized void push ( Object o )",
+                    "tokens": 52
+                  },
+                  "target": {
+                    "first": 172,
+                    "last": 182,
+                    "signature": "TCEventThread.Queue: synchronized void push ( Object o )",
+                    "tokens": 52
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 41,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 41,
+                  "longestStructuralBlock": 41,
+                  "source": {
+                    "first": 185,
+                    "last": 194,
+                    "signature": "TCEventThread.Queue: synchronized Object pop ( )",
+                    "tokens": 41
+                  },
+                  "target": {
+                    "first": 185,
+                    "last": 194,
+                    "signature": "TCEventThread.Queue: synchronized Object pop ( )",
+                    "tokens": 41
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 74,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 74,
+                  "longestStructuralBlock": 74,
+                  "source": {
+                    "first": 199,
+                    "last": 212,
+                    "signature": "TCEventThread.Queue: synchronized Object popWait ( int maxTime )",
+                    "tokens": 74
+                  },
+                  "target": {
+                    "first": 199,
+                    "last": 212,
+                    "signature": "TCEventThread.Queue: synchronized Object popWait ( int maxTime )",
+                    "tokens": 74
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 58,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 58,
+                  "longestStructuralBlock": 58,
+                  "source": {
+                    "first": 230,
+                    "last": 237,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , int key , int x , int y , int modifiers",
+                    "tokens": 58
+                  },
+                  "target": {
+                    "first": 230,
+                    "last": 237,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , int key , int x , int y , int modifiers",
+                    "tokens": 58
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 22,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 22,
+                  "longestStructuralBlock": 22,
+                  "source": {
+                    "first": 239,
+                    "last": 242,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , Runnable r )",
+                    "tokens": 22
+                  },
+                  "target": {
+                    "first": 239,
+                    "last": 242,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , Runnable r )",
+                    "tokens": 22
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 1.0,
+                  "estimatedMatchedTokens": 26,
+                  "exactRatio": 1.0,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 26,
+                  "longestStructuralBlock": 26,
+                  "source": {
+                    "first": 244,
+                    "last": 247,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , Runnable r , Object synch )",
+                    "tokens": 26
+                  },
+                  "target": {
+                    "first": 244,
+                    "last": 247,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , Runnable r , Object synch )",
+                    "tokens": 26
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "source": {
+              "commit": "9e4bdbd8b3a22418b61f6cecc95f927e3205a557",
+              "path": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+              "blob": "f683bcd43e243cb3ff97804a65a73228a6b3600c"
+            },
+            "target": {
+              "commit": "07b9cd3b3bf154ab7ed7498b7a51a5b9e75c3cda",
+              "path": "TotalCrossSDK/src/main/java/tc/simulator/EventLoop.java",
+              "blob": "0ab4dfd76abe0510227059b66075acbe630eb381"
+            },
+            "reason": "similarity",
+            "supportsLineage": true,
+            "similarity": {
+              "classification": "partial-inherited",
+              "confidence": "medium",
+              "score": 0.327528,
+              "sourceCoverage": 0.14,
+              "targetCoverage": 0.158153,
+              "sourceTokens": 900,
+              "targetTokens": 1018,
+              "matchedSourceTokens": 126,
+              "matchedTargetTokens": 161,
+              "matches": [
+                {
+                  "kind": "copied-fragment",
+                  "confidence": "medium",
+                  "score": 0.802817,
+                  "estimatedMatchedTokens": 38,
+                  "exactRatio": 0.863636,
+                  "structuralRatio": 0.931818,
+                  "longestExactBlock": 20,
+                  "longestStructuralBlock": 23,
+                  "source": {
+                    "first": 91,
+                    "last": 93,
+                    "signature": "TCEventThread: public void pushEvent ( int type , int key , int x , int y ,",
+                    "tokens": 45
+                  },
+                  "target": {
+                    "first": 89,
+                    "last": 91,
+                    "signature": "EventLoop: void postEvent ( int type , int key , int x , int y , int",
+                    "tokens": 43
+                  }
+                },
+                {
+                  "kind": "copied-fragment",
+                  "confidence": "high",
+                  "score": 0.728484,
+                  "estimatedMatchedTokens": 31,
+                  "exactRatio": 0.681319,
+                  "structuralRatio": 0.703297,
+                  "longestExactBlock": 29,
+                  "longestStructuralBlock": 29,
+                  "source": {
+                    "first": 30,
+                    "last": 42,
+                    "signature": "TCEventThread: @ Override public void run ( )",
+                    "tokens": 57
+                  },
+                  "target": {
+                    "first": 162,
+                    "last": 167,
+                    "signature": "EventLoop: private static void reportFailure ( Throwable t )",
+                    "tokens": 34
+                  }
+                },
+                {
+                  "kind": "copied-fragment",
+                  "confidence": "medium",
+                  "score": 0.726232,
+                  "estimatedMatchedTokens": 57,
+                  "exactRatio": 0.745098,
+                  "structuralRatio": 0.75817,
+                  "longestExactBlock": 36,
+                  "longestStructuralBlock": 39,
+                  "source": {
+                    "first": 230,
+                    "last": 237,
+                    "signature": "TCEventThread.TCEvent: TCEvent ( int type , int key , int x , int y , int modifiers",
+                    "tokens": 58
+                  },
+                  "target": {
+                    "first": 182,
+                    "last": 194,
+                    "signature": "EventLoop.QueuedItem: private QueuedItem ( boolean shutdown , boolean commandItem , int type , int key , int",
+                    "tokens": 95
+                  }
+                },
+                {
+                  "kind": "copied-fragment",
+                  "confidence": "medium",
+                  "score": 0.693918,
+                  "estimatedMatchedTokens": 35,
+                  "exactRatio": 0.736842,
+                  "structuralRatio": 0.8,
+                  "longestExactBlock": 20,
+                  "longestStructuralBlock": 21,
+                  "source": {
+                    "first": 91,
+                    "last": 93,
+                    "signature": "TCEventThread: public void pushEvent ( int type , int key , int x , int y ,",
+                    "tokens": 45
+                  },
+                  "target": {
+                    "first": 196,
+                    "last": 198,
+                    "signature": "EventLoop.QueuedItem: private static QueuedItem event ( int type , int key , int x , int y",
+                    "tokens": 50
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "rejectedAlternatives": []
+    }
+  ]
+}

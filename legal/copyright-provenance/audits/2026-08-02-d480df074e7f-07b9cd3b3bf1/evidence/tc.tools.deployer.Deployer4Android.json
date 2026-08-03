@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 4,
+  "source": {
+    "commit": "d480df074e7fb6f5a32dfcc2f1f30c3949095e73",
+    "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/Deployer4Android.java",
+    "blob": "8d3440688792442f14e69f75cd96e42d778f43b1"
+  },
+  "sourceCodeFingerprint": "4cd18a6ffd013529856c639df2b13492e9dd1d058782e7d5fed1e47c6e9922db",
+  "sourceHeader": {
+    "status": "preserved",
+    "sourceNotices": [
+      {
+        "years": "2000-2013",
+        "owner": "SuperWaba Ltda"
+      },
+      {
+        "years": "2014-2021",
+        "owner": "TotalCross Global Mobile Platform Ltda"
+      },
+      {
+        "years": "2022-2026",
+        "owner": "Amalgam Solucoes em TI Ltda"
+      }
+    ],
+    "targetNotices": [
+      {
+        "years": "2000-2013",
+        "owner": "SuperWaba Ltda"
+      },
+      {
+        "years": "2014-2021",
+        "owner": "TotalCross Global Mobile Platform Ltda"
+      },
+      {
+        "years": "2022-2026",
+        "owner": "Amalgam Solucoes em TI Ltda"
+      }
+    ],
+    "missingNotices": [],
+    "spdx": true
+  },
+  "targets": [
+    {
+      "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/AndroidPackageFiles.java",
+      "blob": "631253cc25ec73ab37564b576dfd7ce3c13b0b09",
+      "codeFingerprint": "f8ee5bfcb2c0b0e8b7673b838cf3d73bc762b903e6975b369680491e46e43b72",
+      "classification": "inherited",
+      "confidence": "high",
+      "evidenceBasis": "direct",
+      "evidenceScore": 0.503495,
+      "assignmentRole": "primary",
+      "headerStatus": "preserved",
+      "effectiveEvidence": {
+        "classification": "inherited",
+        "confidence": "high",
+        "basis": "direct",
+        "score": 0.5034949496128647
+      },
+      "directEvidence": {
+        "classification": "inherited",
+        "confidence": "high",
+        "score": 0.503495,
+        "sourceCoverage": 0.080732,
+        "targetCoverage": 0.506627,
+        "sourceTokens": 4261,
+        "targetTokens": 679,
+        "matchedSourceTokens": 344,
+        "matchedTargetTokens": 344,
+        "matches": [
+          {
+            "kind": "adapted",
+            "confidence": "medium",
+            "score": 0.678154,
+            "estimatedMatchedTokens": 146,
+            "exactRatio": 0.772487,
+            "structuralRatio": 0.904762,
+            "longestExactBlock": 13,
+            "longestStructuralBlock": 52,
+            "source": {
+              "first": 618,
+              "last": 649,
+              "signature": "Deployer4Android: private void insertTCFilesZip ( OutputStream z ) throws Exception",
+              "tokens": 192
+            },
+            "target": {
+              "first": 29,
+              "last": 43,
+              "signature": "AndroidPackageFiles: static void write ( OutputStream output , String targetTCZ , String tcFolder ) throws Exception",
+              "tokens": 186
+            }
+          },
+          {
+            "kind": "copied",
+            "confidence": "high",
+            "score": 0.890359,
+            "estimatedMatchedTokens": 73,
+            "exactRatio": 0.952381,
+            "structuralRatio": 0.993197,
+            "longestExactBlock": 24,
+            "longestStructuralBlock": 73,
+            "source": {
+              "first": 651,
+              "last": 658,
+              "signature": "Deployer4Android: public static < E > Set < E > vector2set ( Vector vec , Set <",
+              "tokens": 74
+            },
+            "target": {
+              "first": 45,
+              "last": 51,
+              "signature": "AndroidPackageFiles: static < E > Set < E > vector2set ( Vector vector , Set < E",
+              "tokens": 73
+            }
+          },
+          {
+            "kind": "copied",
+            "confidence": "high",
+            "score": 0.986176,
+            "estimatedMatchedTokens": 68,
+            "exactRatio": 0.985294,
+            "structuralRatio": 1.0,
+            "longestExactBlock": 64,
+            "longestStructuralBlock": 68,
+            "source": {
+              "first": 708,
+              "last": 715,
+              "signature": "Deployer4Android: private static void setEntryAsStored ( ZipEntry entry , byte [ ] content )",
+              "tokens": 68
+            },
+            "target": {
+              "first": 84,
+              "last": 91,
+              "signature": "AndroidPackageFiles: private static void stored ( ZipEntry entry , byte [ ] content )",
+              "tokens": 68
+            }
+          },
+          {
+            "kind": "adapted",
+            "confidence": "high",
+            "score": 0.849705,
+            "estimatedMatchedTokens": 57,
+            "exactRatio": 0.890625,
+            "structuralRatio": 0.984375,
+            "longestExactBlock": 22,
+            "longestStructuralBlock": 54,
+            "source": {
+              "first": 717,
+              "last": 727,
+              "signature": "Deployer4Android: private static File getFirstReadableFile ( String ... paths )",
+              "tokens": 65
+            },
+            "target": {
+              "first": 93,
+              "last": 101,
+              "signature": "AndroidPackageFiles: private static File readable ( String ... paths )",
+              "tokens": 63
+            }
+          }
+        ]
+      },
+      "reviewSignal": null,
+      "header": {
+        "status": "preserved",
+        "sourceNotices": [
+          {
+            "years": "2000-2013",
+            "owner": "SuperWaba Ltda"
+          },
+          {
+            "years": "2014-2021",
+            "owner": "TotalCross Global Mobile Platform Ltda"
+          },
+          {
+            "years": "2022-2026",
+            "owner": "Amalgam Solucoes em TI Ltda"
+          }
+        ],
+        "targetNotices": [
+          {
+            "years": "2000-2013",
+            "owner": "SuperWaba Ltda"
+          },
+          {
+            "years": "2014-2021",
+            "owner": "TotalCross Global Mobile Platform Ltda"
+          },
+          {
+            "years": "2022-2026",
+            "owner": "Amalgam Solucoes em TI Ltda"
+          }
+        ],
+        "missingNotices": [],
+        "spdx": true
+      },
+      "lineage": {
+        "nodes": [
+          {
+            "commit": "d480df074e7fb6f5a32dfcc2f1f30c3949095e73",
+            "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/Deployer4Android.java",
+            "blob": "8d3440688792442f14e69f75cd96e42d778f43b1"
+          },
+          {
+            "commit": "71aa9e30b61110c9843f43615b51e4718d74c7ce",
+            "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/AndroidPackageFiles.java",
+            "blob": "631253cc25ec73ab37564b576dfd7ce3c13b0b09"
+          },
+          {
+            "commit": "07b9cd3b3bf154ab7ed7498b7a51a5b9e75c3cda",
+            "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/AndroidPackageFiles.java",
+            "blob": "631253cc25ec73ab37564b576dfd7ce3c13b0b09"
+          }
+        ],
+        "edges": [
+          {
+            "source": {
+              "commit": "d480df074e7fb6f5a32dfcc2f1f30c3949095e73",
+              "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/Deployer4Android.java",
+              "blob": "8d3440688792442f14e69f75cd96e42d778f43b1"
+            },
+            "target": {
+              "commit": "71aa9e30b61110c9843f43615b51e4718d74c7ce",
+              "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/AndroidPackageFiles.java",
+              "blob": "631253cc25ec73ab37564b576dfd7ce3c13b0b09"
+            },
+            "reason": "similarity",
+            "supportsLineage": true,
+            "similarity": {
+              "classification": "inherited",
+              "confidence": "high",
+              "score": 0.503495,
+              "sourceCoverage": 0.080732,
+              "targetCoverage": 0.506627,
+              "sourceTokens": 4261,
+              "targetTokens": 679,
+              "matchedSourceTokens": 344,
+              "matchedTargetTokens": 344,
+              "matches": [
+                {
+                  "kind": "adapted",
+                  "confidence": "medium",
+                  "score": 0.678154,
+                  "estimatedMatchedTokens": 146,
+                  "exactRatio": 0.772487,
+                  "structuralRatio": 0.904762,
+                  "longestExactBlock": 13,
+                  "longestStructuralBlock": 52,
+                  "source": {
+                    "first": 618,
+                    "last": 649,
+                    "signature": "Deployer4Android: private void insertTCFilesZip ( OutputStream z ) throws Exception",
+                    "tokens": 192
+                  },
+                  "target": {
+                    "first": 29,
+                    "last": 43,
+                    "signature": "AndroidPackageFiles: static void write ( OutputStream output , String targetTCZ , String tcFolder ) throws Exception",
+                    "tokens": 186
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 0.890359,
+                  "estimatedMatchedTokens": 73,
+                  "exactRatio": 0.952381,
+                  "structuralRatio": 0.993197,
+                  "longestExactBlock": 24,
+                  "longestStructuralBlock": 73,
+                  "source": {
+                    "first": 651,
+                    "last": 658,
+                    "signature": "Deployer4Android: public static < E > Set < E > vector2set ( Vector vec , Set <",
+                    "tokens": 74
+                  },
+                  "target": {
+                    "first": 45,
+                    "last": 51,
+                    "signature": "AndroidPackageFiles: static < E > Set < E > vector2set ( Vector vector , Set < E",
+                    "tokens": 73
+                  }
+                },
+                {
+                  "kind": "copied",
+                  "confidence": "high",
+                  "score": 0.986176,
+                  "estimatedMatchedTokens": 68,
+                  "exactRatio": 0.985294,
+                  "structuralRatio": 1.0,
+                  "longestExactBlock": 64,
+                  "longestStructuralBlock": 68,
+                  "source": {
+                    "first": 708,
+                    "last": 715,
+                    "signature": "Deployer4Android: private static void setEntryAsStored ( ZipEntry entry , byte [ ] content )",
+                    "tokens": 68
+                  },
+                  "target": {
+                    "first": 84,
+                    "last": 91,
+                    "signature": "AndroidPackageFiles: private static void stored ( ZipEntry entry , byte [ ] content )",
+                    "tokens": 68
+                  }
+                },
+                {
+                  "kind": "adapted",
+                  "confidence": "high",
+                  "score": 0.849705,
+                  "estimatedMatchedTokens": 57,
+                  "exactRatio": 0.890625,
+                  "structuralRatio": 0.984375,
+                  "longestExactBlock": 22,
+                  "longestStructuralBlock": 54,
+                  "source": {
+                    "first": 717,
+                    "last": 727,
+                    "signature": "Deployer4Android: private static File getFirstReadableFile ( String ... paths )",
+                    "tokens": 65
+                  },
+                  "target": {
+                    "first": 93,
+                    "last": 101,
+                    "signature": "AndroidPackageFiles: private static File readable ( String ... paths )",
+                    "tokens": 63
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "source": {
+              "commit": "71aa9e30b61110c9843f43615b51e4718d74c7ce",
+              "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/AndroidPackageFiles.java",
+              "blob": "631253cc25ec73ab37564b576dfd7ce3c13b0b09"
+            },
+            "target": {
+              "commit": "07b9cd3b3bf154ab7ed7498b7a51a5b9e75c3cda",
+              "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/AndroidPackageFiles.java",
+              "blob": "631253cc25ec73ab37564b576dfd7ce3c13b0b09"
+            },
+            "reason": "unchanged-to-final",
+            "supportsLineage": false,
+            "similarity": null
+          }
+        ]
+      },
+      "rejectedAlternatives": []
+    }
+  ]
+}
