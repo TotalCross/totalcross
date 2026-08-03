@@ -47,6 +47,11 @@ public class SimulatorCore extends StreamBridge {
 
   @Override
   public void updateScreen() {
+    if (toScale == -1) {
+      // Preview/headless runs have no AWT window to resolve the presentation
+      // scale. Use the density baseline until a graphical backend is present.
+      toScale = 1 / toDensityValue;
+    }
     if (toScale != -1 || super.toScale == -1) {
       super.toScale = toScale;
     }

@@ -22,7 +22,7 @@ class CommandLineParserTest {
     assertEquals(480, result.height);
     assertEquals(16, result.bpp);
     assertEquals(1, result.scaleValue);
-    assertEquals(1, result.scale);
+    assertEquals(1, result.densityValue);
     assertTrue(result.fastScale);
     assertTrue(result.demo);
     assertEquals("one two", result.commandLine);
@@ -35,7 +35,7 @@ class CommandLineParserTest {
     LaunchOptions result = CommandLineParser.parse(config, true, 0, 0);
 
     assertEquals(-1, result.scaleValue);
-    assertEquals(1, result.scale);
+    assertEquals(1, result.densityValue);
   }
 
   @Test

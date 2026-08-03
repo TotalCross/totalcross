@@ -29,7 +29,6 @@ final class LaunchOptions {
   String dataPath;
   double scaleValue = -1;
   double densityValue = 1;
-  double scale;
   totalcross.ui.Insets insetsPortrait;
   totalcross.ui.Insets insetsLandscape;
 
