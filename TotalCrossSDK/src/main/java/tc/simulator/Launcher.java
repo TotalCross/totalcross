@@ -127,10 +127,16 @@ public class Launcher extends SimulatorCore implements PreviewSession {
     start(true);
   }
 
+  @Override
   public void pumpEvents() {
-    if (launcher != null) {
-      launcher.pumpEvents();
+    Launcher activeLauncher = launcher;
+
+    if (activeLauncher == null) {
+      super.pumpEvents();
+      return;
     }
+
+    activeLauncher.pumpEvents();
   }
 
   /** Applies an IDE resize to the active desktop preview. */
