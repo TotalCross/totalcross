@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-package smoke;
+package modernjava;
 
 import totalcross.ui.Label;
 import totalcross.ui.MainWindow;

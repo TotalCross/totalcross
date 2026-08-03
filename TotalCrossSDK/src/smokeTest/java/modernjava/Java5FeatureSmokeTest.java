@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-package smoke;
+package modernjava;
 
 @Java5FeatureSmokeTest.FeatureAnnotation("java5")
 public class Java5FeatureSmokeTest extends FeatureSmokeTest {

@@ -25,12 +25,12 @@ base {
 compileJava.options.encoding = 'UTF-8'
 
 javadoc {
-	failOnError = false
-	options.encoding = 'UTF-8'
+    failOnError = false
+    options.encoding = 'UTF-8'
 }
 
-configurations { 
-	obfuscatedArchive
+configurations {
+    obfuscatedArchive
 }
 
 def depotToolsFetchScript = file("${rootDir}/../TotalCrossVM/deps/fetch-depot-tools.sh")
@@ -69,6 +69,15 @@ sourceSets {
             exclude 'tc/SSLSocketTest.java', 'tc/RunSSLSocketTestApplication.java'
         }
     }
+
+    smokeTest {
+        java {
+            srcDir 'src/smokeTest/java'
+        }
+        resources {
+            srcDir 'src/smokeTest/resources'
+        }
+    }
 }
 
 buildscript {
@@ -93,8 +102,8 @@ repositories {
 dependencies {
     // https://mvnrepository.com/artifact/org.vafer/jdeb
     implementation('org.vafer:jdeb:1.14') {
-		exclude group: 'org.bouncycastle'
-	}
+        exclude group: 'org.bouncycastle'
+    }
     // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-bcpkix-lts8on
     implementation("org.bouncycastle:bcpkix-lts8on:2.73.11")
     // https://mvnrepository.com/artifact/com.googlecode.plist/dd-plist
@@ -105,8 +114,8 @@ dependencies {
     implementation 'de.schlichtherle.truezip:truezip-file:7.5.1'
     // https://mvnrepository.com/artifact/de.schlichtherle.truezip/truezip-driver-zip
     implementation('de.schlichtherle.truezip:truezip-driver-zip:7.5.1') {
-		exclude group: 'org.bouncycastle'
-	}
+        exclude group: 'org.bouncycastle'
+    }
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.2'
 
@@ -117,18 +126,22 @@ dependencies {
 
     // https://mvnrepository.com/artifact/net.harawata/appdirs
     implementation 'net.harawata:appdirs:1.2.0'
-	// https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
-	runtimeOnly 'net.java.dev.jna:jna-platform:4.2.2'
-	
-	// https://mvnrepository.com/artifact/net.coobird/thumbnailator
-	implementation 'net.coobird:thumbnailator:0.4.20'
+    // https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
+    runtimeOnly 'net.java.dev.jna:jna-platform:4.2.2'
 
-	// https://mvnrepository.com/artifact/junit/junit
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    // https://mvnrepository.com/artifact/net.coobird/thumbnailator
+    implementation 'net.coobird:thumbnailator:0.4.20'
+
+    // https://mvnrepository.com/artifact/junit/junit
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'
 
     implementation 'com.totalcross.annotations:totalcross-annotations:1.0.0'
+
+    // Smoke tests deliberately compile against the generated SDK artifact rather
+    // than against sourceSets.main.output, so they validate the distributable JAR.
+    smokeTestImplementation files('dist/totalcross-sdk.jar')
 }
 
 def aggregateCompatibilityBaseline = providers.gradleProperty('aggregateCompatibilityBaseline')
@@ -154,7 +167,7 @@ tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.Japicmp
 }
 
 test {
-    useJUnitPlatform ()
+    useJUnitPlatform()
     // Anonymous telemetry is disabled until its external service is replaced.
     exclude '**/AnonymousUserDataTest.class'
     testLogging {
@@ -177,44 +190,46 @@ jar {
     }
 
     // collect all runtime dependencies shipped in dist/libs
-    int i = 0;
-    String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++ == 0 ? String.format("%-50s", it.getName()) : String.format("%-62s", it.getName())) }.join(" ");
+    int i = 0
+    String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++ == 0 ? String.format("%-50s", it.getName()) : String.format("%-62s", it.getName())) }.join(" ")
     manifest {
         attributes('Main-Class': 'totalcross.Launcher')
         manifest {
             attributes(
-            "Class-Path": classpathVar)
+                "Class-Path": classpathVar
+            )
         }
     }
 }
+
 publishing {
     publications {
         mavenCustom(MavenPublication) {
             artifactId = 'totalcross-sdk'
-			pom.packaging = 'jar'
-			
-			// workaround - maven-publish lists all dependencies as runtime regardless of the original scope
-			pom.withXml {
-				// use instead of 'asNode()' - workaround to avoid duplicating the dependencies node by getting index 0
-				def dependenciesNode = asNode().getAt("dependencies")[0]
-			
-				dependenciesNode.dependencies.'*'.findAll() {
-					it.scope.text() == 'runtime' && project.configurations.implementation.allDependencies.find { dep ->
-						dep.name == it.artifactId.text()
-					}
-				}.each { it.scope*.value = 'compile'}
-				
-				// manually add test dependencies because they are ignored by maven-publish
-		        configurations.testImplementation.dependencies.each {
-		            def dependencyNode = dependenciesNode.appendNode('dependency')
-		            dependencyNode.appendNode('groupId', it.group)
-		            dependencyNode.appendNode('artifactId', it.name)
-		            dependencyNode.appendNode('version', it.version)
-		            dependencyNode.appendNode('scope', 'test')
-				}
-        	}
+            pom.packaging = 'jar'
 
-			// kept as reference
+            // workaround - maven-publish lists all dependencies as runtime regardless of the original scope
+            pom.withXml {
+                // use instead of 'asNode()' - workaround to avoid duplicating the dependencies node by getting index 0
+                def dependenciesNode = asNode().getAt("dependencies")[0]
+
+                dependenciesNode.dependencies.'*'.findAll() {
+                    it.scope.text() == 'runtime' && project.configurations.implementation.allDependencies.find { dep ->
+                        dep.name == it.artifactId.text()
+                    }
+                }.each { it.scope*.value = 'compile' }
+
+                // manually add test dependencies because they are ignored by maven-publish
+                configurations.testImplementation.dependencies.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                    dependencyNode.appendNode('scope', 'test')
+                }
+            }
+
+            // kept as reference
             /*
             pom.withXml {
                 asNode().appendNode('description',
@@ -258,20 +273,19 @@ publishing {
     }
 }
 
-
 task signJar {
     doLast {
         try {
             ant.signjar(
                 jar: jar.archiveFile.get().asFile,
                 signedJar: jar.archiveFile.get().asFile,
-                alias:'tcandroidkey',
-                storetype:"jks",
+                alias: 'tcandroidkey',
+                storetype: "jks",
                 keystore: "$System.env.TC_PATH_TO_KEY_STORE",
                 storepass: "$System.env.TC_STORE_PASSWORD",
                 keypass: "$System.env.TC_STORE_KEY",
-                verbose:true,
-                preservelastmodified:"true"
+                verbose: true,
+                preservelastmodified: "true"
             )
         } catch (Exception e) {
             logger.warn("TC_PATH_TO_KEY_STORE or TC_STORE_PASSWORD or TC_STORE_KEY not defined! Jar won't be signed")
@@ -315,171 +329,212 @@ tasks.withType(Jar) {
     includeEmptyDirs = false
 }
 
-task deployTcbaselang(type:JavaExec, dependsOn: [jar, tcbaselangJar]) {
-	mainClass = 'tc.Deploy'
-	args = [
-		tcbaselangJar.archiveFile.get().asFile,
-		'/n', 'tc.base.lang',
-		'/a', 'TCvm'
-		]
-	classpath = files(
+task deployTcbaselang(type: JavaExec, dependsOn: [jar, tcbaselangJar]) {
+    mainClass = 'tc.Deploy'
+    args = [
+        tcbaselangJar.archiveFile.get().asFile,
+        '/n', 'tc.base.lang',
+        '/a', 'TCvm'
+    ]
+    classpath = files(
         jar.archiveFile,
-        configurations.runtimeClasspath)
+        configurations.runtimeClasspath
+    )
 }
 
-task deployTcbaseutil(type:JavaExec, dependsOn: [jar, tcbaseutilJar]) {
-	mainClass = 'tc.Deploy'
-	args = [
-		tcbaseutilJar.archiveFile.get().asFile,
-		'/n', 'tc.base.util',
-		'/a', 'TCvm'
-		]
-	classpath = files(
+task deployTcbaseutil(type: JavaExec, dependsOn: [jar, tcbaseutilJar]) {
+    mainClass = 'tc.Deploy'
+    args = [
+        tcbaseutilJar.archiveFile.get().asFile,
+        '/n', 'tc.base.util',
+        '/a', 'TCvm'
+    ]
+    classpath = files(
         jar.archiveFile,
-        configurations.runtimeClasspath)
+        configurations.runtimeClasspath
+    )
 }
 
-task deployTcbasemisc(type:JavaExec, dependsOn: [jar, tcbasemiscJar]) {
-	mainClass = 'tc.Deploy'
-	args = [
-		tcbasemiscJar.archiveFile.get().asFile,
-		'/n', 'tc.base.misc',
-		'/a', 'TCvm'
-		]
-	classpath = files(
+task deployTcbasemisc(type: JavaExec, dependsOn: [jar, tcbasemiscJar]) {
+    mainClass = 'tc.Deploy'
+    args = [
+        tcbasemiscJar.archiveFile.get().asFile,
+        '/n', 'tc.base.misc',
+        '/a', 'TCvm'
+    ]
+    classpath = files(
         jar.archiveFile,
-        configurations.runtimeClasspath)
+        configurations.runtimeClasspath
+    )
 }
 
-task deployTcui(type:JavaExec, dependsOn: [jar, tcuiJar]) {
-	mainClass = 'tc.Deploy'
-	args = [
-		tcuiJar.archiveFile.get().asFile,
-		'/n', 'TCUI',
-		'/a', 'TCvm'
-		]
-	classpath = files(
+task deployTcui(type: JavaExec, dependsOn: [jar, tcuiJar]) {
+    mainClass = 'tc.Deploy'
+    args = [
+        tcuiJar.archiveFile.get().asFile,
+        '/n', 'TCUI',
+        '/a', 'TCvm'
+    ]
+    classpath = files(
         jar.archiveFile,
-        configurations.runtimeClasspath)
+        configurations.runtimeClasspath
+    )
 }
 
 task fetchSdkNativeRuntime {
-	group = 'build setup'
-	description = 'Fetches native runtime DLLs distributed with the SDK.'
+    group = 'build setup'
+    description = 'Fetches native runtime DLLs distributed with the SDK.'
 
-	inputs.file(depotToolsFetchScript)
-	inputs.file(depotToolsRefFile).optional()
-	inputs.property('vcruntimeReleaseTag', optionalInput(vcruntimeReleaseTag))
-	inputs.property('vcruntimeGithubRepo', optionalInput(vcruntimeGithubRepo))
-	outputs.file(vcruntimeDll)
+    inputs.file(depotToolsFetchScript)
+    inputs.file(depotToolsRefFile).optional()
+    inputs.property('vcruntimeReleaseTag', optionalInput(vcruntimeReleaseTag))
+    inputs.property('vcruntimeGithubRepo', optionalInput(vcruntimeGithubRepo))
+    outputs.file(vcruntimeDll)
 
-	doLast {
-		providers.exec {
-			commandLine 'bash', depotToolsFetchScript.absolutePath
-		}.result.get().assertNormalExitValue()
+    doLast {
+        providers.exec {
+            commandLine 'bash', depotToolsFetchScript.absolutePath
+        }.result.get().assertNormalExitValue()
 
-		if (!vcruntimeFetchScript.isFile()) {
-			throw GradleException("Could not find vcruntime fetch script at ${vcruntimeFetchScript}")
-		}
+        if (!vcruntimeFetchScript.isFile()) {
+            throw GradleException("Could not find vcruntime fetch script at ${vcruntimeFetchScript}")
+        }
 
-		providers.exec {
-			def fetchArgs = [
-				'bash',
-				vcruntimeFetchScript.absolutePath,
-				'--platform', 'windows',
-				'--arch', 'x86',
-				'--github-token-env', 'VCRUNTIME_GITHUB_TOKEN'
-			]
-			addOptionalArg(fetchArgs, '--release-tag', vcruntimeReleaseTag)
-			addOptionalArg(fetchArgs, '--github-repo', vcruntimeGithubRepo)
+        providers.exec {
+            def fetchArgs = [
+                'bash',
+                vcruntimeFetchScript.absolutePath,
+                '--platform', 'windows',
+                '--arch', 'x86',
+                '--github-token-env', 'VCRUNTIME_GITHUB_TOKEN'
+            ]
+            addOptionalArg(fetchArgs, '--release-tag', vcruntimeReleaseTag)
+            addOptionalArg(fetchArgs, '--github-repo', vcruntimeGithubRepo)
 
-			commandLine fetchArgs
-		}.result.get().assertNormalExitValue()
-	}
+            commandLine fetchArgs
+        }.result.get().assertNormalExitValue()
+    }
 }
 
 task copySdkDependencies(type: Copy, dependsOn: fetchSdkNativeRuntime) {
-	doFirst {
-		delete destinationDir
-	}
-	from({ configurations.runtimeClasspath.findAll { it.name.endsWith('.jar') } })
-	from(vcruntimeLocalDir) {
-		include '*.dll'
-	}
-	into 'dist/libs'
+    doFirst {
+        delete destinationDir
+    }
+    from({ configurations.runtimeClasspath.findAll { it.name.endsWith('.jar') } })
+    from(vcruntimeLocalDir) {
+        include '*.dll'
+    }
+    into 'dist/libs'
 }
 
 task dist(dependsOn: [build, copySdkDependencies, 'sourcesJar', 'javadocJar']) {
-
-	doLast{
-		copy { 
-			from 'etc/fonts/TCFont.tcz'
-			from 'build/libs/TCUI.tcz'
-			from 'build/libs/tc.base.lang.tcz'
+    doLast {
+        copy {
+            from 'etc/fonts/TCFont.tcz'
+            from 'build/libs/TCUI.tcz'
+            from 'build/libs/tc.base.lang.tcz'
             from 'build/libs/tc.base.util.tcz'
             from 'build/libs/tc.base.misc.tcz'
-			into 'dist/vm/'
-		}
-	
-		copy { 
-			from jar.archiveFile
-			into 'dist/'
-			rename  { String fileName ->
-	    				fileName.replace('-' + project.version, '')
-	  		}
-		}
-	}
+            into 'dist/vm/'
+        }
+
+        copy {
+            from jar.archiveFile
+            into 'dist/'
+            rename { String fileName ->
+                fileName.replace('-' + project.version, '')
+            }
+        }
+    }
 }
 
+// All smoke applications are normal Java sources under src/smokeTest/java.
+// The built-in compileSmokeTestJava task compiles them once against the
+// generated SDK. Compatibility tasks below stage only the package needed by
+// each deploy scenario into its historical isolated working directory.
+def smokeTestSdkJar = file('dist/totalcross-sdk.jar')
+def smokeTestClassesDir = layout.buildDirectory.dir('classes/java/smokeTest')
+def smokeTestResourcesDir = layout.buildDirectory.dir('resources/smokeTest')
 def featureSmokeClassesDir = layout.buildDirectory.dir('feature-smoke/classes')
-def featureSmokeSdkJar = file('dist/totalcross-sdk.jar')
-def featureSmokeSources = fileTree('src/test/resources/modernjava/smoke') {
-	include '*.java'
-}
 def lambdaLoweringFixesClassesDir = layout.buildDirectory.dir('lambda-lowering-fixes/classes')
-def lambdaLoweringFixesSdkJar = file('dist/totalcross-sdk.jar')
-def lambdaLoweringFixesSources = fileTree('src/test/resources/modernjava/lambda-repro') {
-	include '*.java'
-}
 def lambdaReturnTypesClassesDir = layout.buildDirectory.dir('lambda-return-types-regression/classes')
-def lambdaReturnTypesSdkJar = file('dist/totalcross-sdk.jar')
-def lambdaReturnTypesSources = fileTree('src/test/resources/modernjava/lambda-repro') {
-	include '*.java'
-}
 def axtlsProviderSmokeClassesDir = layout.buildDirectory.dir('axtls-provider-smoke/classes')
-def axtlsProviderSmokeSdkJar = file('dist/totalcross-sdk.jar')
-def axtlsProviderSmokeSources = fileTree('src/test/resources/axtls') {
-	include '*.java'
+
+tasks.named('compileSmokeTestJava', JavaCompile) {
+    destinationDirectory = smokeTestClassesDir
+    options.encoding = 'UTF-8'
+    options.release.set(17)
+
+    doFirst {
+        if (!smokeTestSdkJar.isFile()) {
+            throw new GradleException('Run ./gradlew dist -x test before compiling the smoke tests.')
+        }
+    }
 }
 
-tasks.register('compileModernJavaFeatureSmoke', JavaCompile) {
-	group = 'verification'
-	description = 'Compiles the aggregate modern Java feature smoke app against the generated SDK.'
+tasks.named('processSmokeTestResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
 
-	source featureSmokeSources
-	classpath = files(featureSmokeSdkJar)
-	destinationDirectory = featureSmokeClassesDir
-	options.encoding = 'UTF-8'
-	options.release.set(17)
+tasks.register('compileModernJavaFeatureSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the aggregate modern Java feature smoke app against the generated SDK.'
+    dependsOn sourceSets.smokeTest.classesTaskName
 
-	doFirst {
-		if (!featureSmokeSdkJar.isFile()) {
-			throw new GradleException('Run ./gradlew dist -x test before compiling the feature smoke app.')
-		}
-	}
+    from(smokeTestClassesDir) {
+        include 'modernjava/**'
+    }
+    from(smokeTestResourcesDir)
+    into featureSmokeClassesDir
+}
+
+tasks.register('compileLambdaLoweringFixesRepro', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the inherited lambda receiver regression app against the generated SDK.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'lambda/repro/**'
+    }
+    from(smokeTestResourcesDir)
+    into lambdaLoweringFixesClassesDir
+}
+
+tasks.register('compileLambdaReturnTypesSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the all-return-kinds lambda discard smoke app against the generated SDK.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'lambda/repro/**'
+    }
+    from(smokeTestResourcesDir)
+    into lambdaReturnTypesClassesDir
+}
+
+tasks.register('compileAxtlsProviderSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the axTLS/default-provider TLS smoke app against the generated SDK.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'axtls/**'
+    }
+    from(smokeTestResourcesDir)
+    into axtlsProviderSmokeClassesDir
 }
 
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
-	group = 'verification'
-	description = 'Deploys the aggregate modern Java feature smoke app with the generated SDK.'
-	dependsOn 'copySdkDependencies', 'compileModernJavaFeatureSmoke'
+    group = 'verification'
+    description = 'Deploys the aggregate modern Java feature smoke app with the generated SDK.'
+    dependsOn 'copySdkDependencies', 'compileModernJavaFeatureSmoke'
 
-	mainClass = 'tc.Deploy'
-	classpath = files(featureSmokeSdkJar) + fileTree('dist/libs') {
-		include '*.jar'
-	}
-	workingDir featureSmokeClassesDir.get().asFile
-    
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir featureSmokeClassesDir.get().asFile
+
     doFirst {
         def os = System.getProperty("os.name").toLowerCase()
         def platformArg
@@ -495,211 +550,161 @@ tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
         }
 
         args = [
-            'smoke/FeatureSmokeApp.class',
+            'modernjava/FeatureSmokeApp.class',
             platformArg
         ]
     }
 }
 
-tasks.register('compileAxtlsProviderSmoke', JavaCompile) {
-	group = 'verification'
-	description = 'Compiles the axTLS/default-provider TLS smoke app against the generated SDK.'
-
-	source axtlsProviderSmokeSources
-	classpath = files(axtlsProviderSmokeSdkJar)
-	destinationDirectory = axtlsProviderSmokeClassesDir
-	options.encoding = 'UTF-8'
-	options.release.set(17)
-
-	doFirst {
-		if (!axtlsProviderSmokeSdkJar.isFile()) {
-			throw new GradleException('Run ./gradlew-agent dist -x test before compiling the axTLS provider smoke app.')
-		}
-	}
-}
-
-tasks.register('compileLambdaLoweringFixesRepro', JavaCompile) {
-	group = 'verification'
-	description = 'Compiles the inherited lambda receiver regression app against the generated SDK.'
-
-	source lambdaLoweringFixesSources
-	classpath = files(lambdaLoweringFixesSdkJar)
-	destinationDirectory = lambdaLoweringFixesClassesDir
-	options.encoding = 'UTF-8'
-	options.release.set(17)
-
-	doFirst {
-		if (!lambdaLoweringFixesSdkJar.isFile()) {
-			throw new GradleException('Run ./gradlew dist -x test before compiling the lambda lowering regression app.')
-		}
-	}
-}
 
 tasks.register('deployLambdaLoweringFixesRepro', JavaExec) {
-	group = 'verification'
-	description = 'Deploys the inherited lambda receiver regression app for macOS.'
-	dependsOn 'copySdkDependencies', 'compileLambdaLoweringFixesRepro'
+    group = 'verification'
+    description = 'Deploys the inherited lambda receiver regression app for macOS.'
+    dependsOn 'copySdkDependencies', 'compileLambdaLoweringFixesRepro'
 
-	mainClass = 'tc.Deploy'
-	classpath = files(lambdaLoweringFixesSdkJar) + fileTree('dist/libs') {
-		include '*.jar'
-	}
-	workingDir lambdaLoweringFixesClassesDir.get().asFile
-	args = [
-		'lambda/repro/GraphicsReferenceRepro.class',
-		'-macos'
-	]
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir lambdaLoweringFixesClassesDir.get().asFile
+    args = [
+        'lambda/repro/GraphicsReferenceRepro.class',
+        '-macos'
+    ]
 }
 
 tasks.register('runLambdaLoweringFixesRepro', Exec) {
-	group = 'verification'
-	description = 'Runs the generated macOS inherited lambda receiver regression executable.'
-	dependsOn 'deployLambdaLoweringFixesRepro'
-	doFirst {
-		def nativeRuntime = project.findProperty('tcvmDylib')
-		if (nativeRuntime) {
-			def nativeRuntimeFile = file(nativeRuntime)
-			if (!nativeRuntimeFile.isFile()) {
-				throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
-			}
-			copy {
-				from nativeRuntimeFile
-				into lambdaLoweringFixesClassesDir.get().dir('install/macos').asFile
-				rename { 'libtcvm.dylib' }
-			}
-		}
-		commandLine lambdaLoweringFixesClassesDir.get().file('install/macos/GraphicsReferenceRepro').asFile
-	}
-	workingDir lambdaLoweringFixesClassesDir.map { it.dir('install/macos').asFile }
-}
-
-tasks.register('compileLambdaReturnTypesSmoke', JavaCompile) {
-	group = 'verification'
-	description = 'Compiles the all-return-kinds lambda discard smoke app against the generated SDK.'
-
-	source lambdaReturnTypesSources
-	classpath = files(lambdaReturnTypesSdkJar)
-	destinationDirectory = lambdaReturnTypesClassesDir
-	options.encoding = 'UTF-8'
-	options.release.set(17)
-
-	doFirst {
-		if (!lambdaReturnTypesSdkJar.isFile()) {
-			throw new GradleException('Run ./gradlew dist -x test before compiling the lambda return discard smoke app.')
-		}
-	}
+    group = 'verification'
+    description = 'Runs the generated macOS inherited lambda receiver regression executable.'
+    dependsOn 'deployLambdaLoweringFixesRepro'
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (nativeRuntime) {
+            def nativeRuntimeFile = file(nativeRuntime)
+            if (!nativeRuntimeFile.isFile()) {
+                throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+            }
+            copy {
+                from nativeRuntimeFile
+                into lambdaLoweringFixesClassesDir.get().dir('install/macos').asFile
+                rename { 'libtcvm.dylib' }
+            }
+        }
+        commandLine lambdaLoweringFixesClassesDir.get().file('install/macos/GraphicsReferenceRepro').asFile
+    }
+    workingDir lambdaLoweringFixesClassesDir.map { it.dir('install/macos').asFile }
 }
 
 tasks.register('deployLambdaReturnTypesSmoke', JavaExec) {
-	group = 'verification'
-	description = 'Deploys the all-return-kinds lambda discard smoke app for macOS.'
-	dependsOn 'copySdkDependencies', 'compileLambdaReturnTypesSmoke'
+    group = 'verification'
+    description = 'Deploys the all-return-kinds lambda discard smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'compileLambdaReturnTypesSmoke'
 
-	mainClass = 'tc.Deploy'
-	classpath = files(lambdaReturnTypesSdkJar) + fileTree('dist/libs') {
-		include '*.jar'
-	}
-	workingDir lambdaReturnTypesClassesDir.get().asFile
-	args = [
-		'lambda/repro/LambdaReturnDiscardRepro.class',
-		'-macos'
-	]
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir lambdaReturnTypesClassesDir.get().asFile
+    args = [
+        'lambda/repro/LambdaReturnDiscardRepro.class',
+        '-macos'
+    ]
 }
 
 tasks.register('runLambdaReturnTypesSmoke', Exec) {
-	group = 'verification'
-	description = 'Runs the generated macOS all-return-kinds lambda discard smoke executable.'
-	dependsOn 'deployLambdaReturnTypesSmoke'
-	doFirst {
-		def nativeRuntime = project.findProperty('tcvmDylib')
-		if (nativeRuntime) {
-			def nativeRuntimeFile = file(nativeRuntime)
-			if (!nativeRuntimeFile.isFile()) {
-				throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
-			}
-			copy {
-				from nativeRuntimeFile
-				into lambdaReturnTypesClassesDir.get().dir('install/macos').asFile
-				rename { 'libtcvm.dylib' }
-			}
-		}
-		commandLine lambdaReturnTypesClassesDir.get().file('install/macos/LambdaReturnDiscardRepro').asFile
-	}
-	workingDir lambdaReturnTypesClassesDir.map { it.dir('install/macos').asFile }
+    group = 'verification'
+    description = 'Runs the generated macOS all-return-kinds lambda discard smoke executable.'
+    dependsOn 'deployLambdaReturnTypesSmoke'
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (nativeRuntime) {
+            def nativeRuntimeFile = file(nativeRuntime)
+            if (!nativeRuntimeFile.isFile()) {
+                throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+            }
+            copy {
+                from nativeRuntimeFile
+                into lambdaReturnTypesClassesDir.get().dir('install/macos').asFile
+                rename { 'libtcvm.dylib' }
+            }
+        }
+        commandLine lambdaReturnTypesClassesDir.get().file('install/macos/LambdaReturnDiscardRepro').asFile
+    }
+    workingDir lambdaReturnTypesClassesDir.map { it.dir('install/macos').asFile }
 }
 
 tasks.register('runModernJavaFeatureSmoke', Exec) {
-	group = 'verification'
-	description = 'Runs the generated macOS aggregate modern Java feature smoke executable.'
-	dependsOn 'deployModernJavaFeatureSmoke'
-	ignoreExitValue = true
-	def smokeOutput = new ByteArrayOutputStream()
-	doFirst {
-		def nativeRuntime = project.findProperty('tcvmDylib')
-		if (nativeRuntime) {
-			def nativeRuntimeFile = file(nativeRuntime)
-			if (!nativeRuntimeFile.isFile()) {
-				throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
-			}
-			copy {
-				from nativeRuntimeFile
-				into featureSmokeClassesDir.get().dir('install/macos').asFile
-				rename { 'libtcvm.dylib' }
-			}
-		}
-		commandLine featureSmokeClassesDir.get().file('install/macos/FeatureSmokeApp').asFile
-		smokeOutput.reset()
-		standardOutput = smokeOutput
-		errorOutput = smokeOutput
-	}
-	workingDir featureSmokeClassesDir.map { it.dir('install/macos').asFile }
-	doLast {
-		String output = smokeOutput.toString('UTF-8')
-		logger.lifecycle(output)
-		int exitCode = executionResult.get().exitValue
-		boolean predicatePass = output.contains('[PASS] Java 8 - Predicate default methods')
-		boolean predicateFail = output.contains('[FAIL] Java 8 - Predicate default methods')
-		boolean predicateNoSuchMethod = output.contains('NoSuchMethodError')
-			&& output.contains('java.util.function.Predicate')
-		boolean aborted = output.contains('Aborting program')
-		if (exitCode != 0 || !predicatePass || predicateFail || predicateNoSuchMethod || aborted) {
-			throw new GradleException('Modern Java feature smoke validation failed: exitCode=' + exitCode
-					+ ', predicatePass=' + predicatePass + ', predicateFail=' + predicateFail
-					+ ', predicateNoSuchMethod=' + predicateNoSuchMethod + ', aborted=' + aborted)
-		}
-	}
+    group = 'verification'
+    description = 'Runs the generated macOS aggregate modern Java feature smoke executable.'
+    dependsOn 'deployModernJavaFeatureSmoke'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (nativeRuntime) {
+            def nativeRuntimeFile = file(nativeRuntime)
+            if (!nativeRuntimeFile.isFile()) {
+                throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+            }
+            copy {
+                from nativeRuntimeFile
+                into featureSmokeClassesDir.get().dir('install/macos').asFile
+                rename { 'libtcvm.dylib' }
+            }
+        }
+        commandLine featureSmokeClassesDir.get().file('install/macos/FeatureSmokeApp').asFile
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir featureSmokeClassesDir.map { it.dir('install/macos').asFile }
+    doLast {
+        String output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output)
+        int exitCode = executionResult.get().exitValue
+        boolean predicatePass = output.contains('[PASS] Java 8 - Predicate default methods')
+        boolean predicateFail = output.contains('[FAIL] Java 8 - Predicate default methods')
+        boolean predicateNoSuchMethod = output.contains('NoSuchMethodError')
+            && output.contains('java.util.function.Predicate')
+        boolean aborted = output.contains('Aborting program')
+        if (exitCode != 0 || !predicatePass || predicateFail || predicateNoSuchMethod || aborted) {
+            throw new GradleException('Modern Java feature smoke validation failed: exitCode=' + exitCode
+                + ', predicatePass=' + predicatePass + ', predicateFail=' + predicateFail
+                + ', predicateNoSuchMethod=' + predicateNoSuchMethod + ', aborted=' + aborted)
+        }
+    }
 }
 
 tasks.register('deployAxtlsProviderSmoke', JavaExec) {
-	group = 'verification'
-	description = 'Deploys the axTLS/default-provider TLS smoke app with the generated SDK.'
-	dependsOn 'copySdkDependencies', 'compileAxtlsProviderSmoke'
+    group = 'verification'
+    description = 'Deploys the axTLS/default-provider TLS smoke app with the generated SDK.'
+    dependsOn 'copySdkDependencies', 'compileAxtlsProviderSmoke'
 
-	mainClass = 'tc.Deploy'
-	classpath = files(axtlsProviderSmokeSdkJar) + fileTree('dist/libs') {
-		include '*.jar'
-	}
-	workingDir axtlsProviderSmokeClassesDir.get().asFile
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir axtlsProviderSmokeClassesDir.get().asFile
 
-	doFirst {
-		def os = System.getProperty('os.name').toLowerCase()
-		def platformArg
+    doFirst {
+        def os = System.getProperty('os.name').toLowerCase()
+        def platformArg
 
-		if (os.contains('win')) {
-			platformArg = '-win32'
-		} else if (os.contains('mac')) {
-			platformArg = '-macos'
-		} else if (os.contains('linux')) {
-			platformArg = '-linux'
-		} else {
-			throw new GradleException("Unsupported operating system: ${System.getProperty('os.name')}")
-		}
+        if (os.contains('win')) {
+            platformArg = '-win32'
+        } else if (os.contains('mac')) {
+            platformArg = '-macos'
+        } else if (os.contains('linux')) {
+            platformArg = '-linux'
+        } else {
+            throw new GradleException("Unsupported operating system: ${System.getProperty('os.name')}")
+        }
 
-		args = [
-			'axtls/AxTLSProviderSmoke.class',
-			platformArg
-		]
-	}
+        args = [
+            'axtls/AxTLSProviderSmoke.class',
+            platformArg
+        ]
+    }
 }
 
 build.finalizedBy(deployTcbaselang, deployTcbaseutil, deployTcbasemisc, deployTcui)
@@ -709,19 +714,19 @@ build.finalizedBy(deployTcbaselang, deployTcbaseutil, deployTcbasemisc, deployTc
 */
 task sourcesJar(type: Jar) {
     archiveClassifier = 'sources'
-    from (sourceSets.main.allSource) { 
-    	exclude 'tc/**', '**/*4A.java', '**/*4D.java'
+    from(sourceSets.main.allSource) {
+        exclude 'tc/**', '**/*4A.java', '**/*4D.java'
     }
 }
 javadoc.finalizedBy(sourcesJar)
 
-/** 
+/**
     Javadoc
  */
 task javadocJar(type: Jar) {
     archiveClassifier = 'javadoc'
     from javadoc {
-    	exclude 'jdkcompat*/**', 'tc/**', '**/*4A.java', '**/*4D.java'
+        exclude 'jdkcompat*/**', 'tc/**', '**/*4A.java', '**/*4D.java'
     }
 }
 javadoc.finalizedBy(javadocJar)

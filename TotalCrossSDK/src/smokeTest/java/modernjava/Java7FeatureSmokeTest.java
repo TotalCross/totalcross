@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-package smoke;
+package modernjava;
 
 public class Java7FeatureSmokeTest extends FeatureSmokeTest {
   private final int javaVersion = 7;
