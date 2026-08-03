@@ -1,4 +1,6 @@
 {
   "schemaVersion": 1,
-  "active": []
+  "active": [
+    "audits/2026-08-02-d480df074e7f-07b9cd3b3bf1/manifest.json"
+  ]
 }

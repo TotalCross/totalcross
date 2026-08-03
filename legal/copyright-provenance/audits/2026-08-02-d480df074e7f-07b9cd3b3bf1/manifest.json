@@ -1,0 +1,393 @@
+{
+  "schemaVersion": 4,
+  "auditId": "2026-08-02-d480df074e7f-07b9cd3b3bf1",
+  "reviewStatus": "approved",
+  "createdAt": "2026-08-02T13:48:51.606331-03:00",
+  "initialRevision": "d480df074e7fb6f5a32dfcc2f1f30c3949095e73",
+  "finalRevision": "07b9cd3b3bf154ab7ed7498b7a51a5b9e75c3cda",
+  "mode": "automatic",
+  "requestedSourcePath": null,
+  "automaticSourcePolicy": "changed-or-removed-only",
+  "responsibilityTransferPolicy": "disabled",
+  "tool": {
+    "path": "legal/copyright-provenance/audit-code-provenance.py",
+    "sha256": "494d22bee93de217cba5626eb8c1c36ebacd9b31a5fafe0c12c2b82331b5adc8",
+    "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 legal/copyright-provenance/audit-code-provenance.py d480df074 07b9cd3b3"
+  },
+  "targetAssignments": [
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/ApplicationLoader.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/CommandLineParser.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/EventLoop.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/FontRegistry.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/FrameRenderer.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/InputDispatcher.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/Launcher.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/RuntimeState.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/SettingsBridge.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/SimulatorCore.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/SimulatorSupport.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/StorageBridge.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/StreamBridge.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/StreamTypes.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/simulator/awt/AwtWindow.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/main/java/tc/tools/deployer/AndroidPackageFiles.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/main/java/tc/tools/deployer/Deployer4Android.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    }
+  ],
+  "results": [
+    {
+      "sourcePath": "TotalCrossSDK/src/main/java/tc/tools/deployer/Deployer4Android.java",
+      "sourceBlob": "8d3440688792442f14e69f75cd96e42d778f43b1",
+      "sourceCodeFingerprint": "4cd18a6ffd013529856c639df2b13492e9dd1d058782e7d5fed1e47c6e9922db",
+      "evidence": "evidence/tc.tools.deployer.Deployer4Android.json",
+      "report": "reports/tc.tools.deployer.Deployer4Android.md",
+      "finalTargets": [
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/tools/deployer/AndroidPackageFiles.java",
+          "blob": "631253cc25ec73ab37564b576dfd7ce3c13b0b09",
+          "codeFingerprint": "f8ee5bfcb2c0b0e8b7673b838cf3d73bc762b903e6975b369680491e46e43b72",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.503495,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        }
+      ],
+      "reviewCandidates": []
+    },
+    {
+      "sourcePath": "TotalCrossSDK/src/main/java/totalcross/Launcher.java",
+      "sourceBlob": "79960a1de607da82d22ecee40d929ee2d72fc05b",
+      "sourceCodeFingerprint": "fcfc6935e1effc417ac46a1cceca297ed1f95ae41910ffc3529efa8c25e46476",
+      "evidence": "evidence/totalcross.Launcher.json",
+      "report": "reports/totalcross.Launcher.md",
+      "finalTargets": [
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/ApplicationLoader.java",
+          "blob": "b3b8825c1faa0b3c27f1598c473b91ad7b0523da",
+          "codeFingerprint": "17a9b461e351dd981c92da53aaf1e900b2147093efce1486e3a35644678e6797",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.611427,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/CommandLineParser.java",
+          "blob": "76c4bfdde1499f86b0ec505137a81a5ab28daf8d",
+          "codeFingerprint": "dc774c94b0766338094741f2fed381664ef55cea042fe05e416ee5199f050f9f",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.227902,
+          "assignmentRole": "primary",
+          "headerStatus": "incomplete"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/FontRegistry.java",
+          "blob": "4d0024ee218ad6130c3d72a1ab573827263021ed",
+          "codeFingerprint": "d0ce9858a0eaf6f86999c4d17ba50a41646ed00e986e7bd3f38b5b2fc89f8423",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.76008,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/FrameRenderer.java",
+          "blob": "388d5df275270ba0bc1b479667b2adc37285abb4",
+          "codeFingerprint": "9b03fcc9cb7ae589c00301eb4ffbb93c672a6b4f85cca2dfc596a992c9cd613a",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.712977,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/InputDispatcher.java",
+          "blob": "812f1bdef7ec5101d3ba9a6cb2b47514d1e456e4",
+          "codeFingerprint": "a71a287bf59607d54b287aa9ec7d50eb969265afa820ce728af625df3ef92c73",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.675949,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/Launcher.java",
+          "blob": "ac74d8f6ed74cc6c3f0a9778eb02753fe2fadaa3",
+          "codeFingerprint": "825ddb68a9acdd1805f11354081dcfff8a8f1806caf291e122210ed53e3eac91",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.296396,
+          "assignmentRole": "primary",
+          "headerStatus": "incomplete"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/RuntimeState.java",
+          "blob": "8a376f964c48e4cb8886138c9dfbe88c040ea6cb",
+          "codeFingerprint": "66cbf532e90180186622ab0aa9fe5d3dc0e7523fad2ef4e1fd57a7f23632c388",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.562961,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/SettingsBridge.java",
+          "blob": "22e832f8a359996207c6104ffb020df1cdc39916",
+          "codeFingerprint": "10273b5a0ab89274c510e43e161ab287f907bd7d1932dd7d67dfd45eb7566a15",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.782351,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/SimulatorCore.java",
+          "blob": "558685442b5a3127ed4dcf3c74b42241937cf0db",
+          "codeFingerprint": "47bec44e0eb51a8a6cf78f5b06e32e69148a96313cc3ed5f25df29ec1e372537",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "transitive",
+          "evidenceScore": 0.818186,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/SimulatorSupport.java",
+          "blob": "dad748b5475f06fc931b79c477d1a8296a702255",
+          "codeFingerprint": "9d5cea6a45843eff03089c6d0916f1b1c67a8ac256359e1056026f601f02496c",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.512336,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/StorageBridge.java",
+          "blob": "c29c89d756b51523a3b61c97930cbe188f6c5209",
+          "codeFingerprint": "cf7d20a5e3807d46b60a0c308538d4bad279c9fa81ba16298bb0f9670f9dfd15",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.786017,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/StreamBridge.java",
+          "blob": "a5c2b737a71f4310b0fd8021b96feeb43383d330",
+          "codeFingerprint": "780cc620a9d76e8133caaa5c68957a53b82bdd373012375d625d024274aaee7c",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.687467,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/StreamTypes.java",
+          "blob": "eae394a64f3c3898fa26f608b190c8957451ea73",
+          "codeFingerprint": "c2ffa5074514dfc8d35231e58fe638f9858dec963be5df08bba7c3759164e5ae",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.765301,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/awt/AwtWindow.java",
+          "blob": "41b0cb7089ec08874891f7a918dc2b81f487894e",
+          "codeFingerprint": "2bc756861e3b0d41d3f6b3686f8970f16bf7971fdb05e4d0c625914773b6cbd8",
+          "classification": "partial-inherited",
+          "confidence": "medium",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.312882,
+          "assignmentRole": "primary",
+          "headerStatus": "incomplete"
+        }
+      ],
+      "reviewCandidates": []
+    },
+    {
+      "sourcePath": "TotalCrossSDK/src/main/java/totalcross/TCEventThread.java",
+      "sourceBlob": "4fb8eb663a33b25e4c3fb6a7128f6f84ea44bf07",
+      "sourceCodeFingerprint": "ce7803792bd8fd42bffc7516ca2ac4865d8442686c46777a3e2aff36ca24a57f",
+      "evidence": "evidence/totalcross.TCEventThread.json",
+      "report": "reports/totalcross.TCEventThread.md",
+      "finalTargets": [
+        {
+          "path": "TotalCrossSDK/src/main/java/tc/simulator/EventLoop.java",
+          "blob": "0ab4dfd76abe0510227059b66075acbe630eb381",
+          "codeFingerprint": "8e608122e3284b2a1ee3b6713beb26ab25ea99ee010a37e6e5ed5ad987655463",
+          "classification": "partial-inherited",
+          "confidence": "medium",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.335211,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        }
+      ],
+      "reviewCandidates": []
+    }
+  ],
+  "supersedes": [],
+  "reviewedAt": "2026-08-03T00:53:43.003676-03:00",
+  "reviewedBy": {
+    "name": "Fabio Sobral",
+    "email": "flsobral@gmail.com"
+  }
+}
