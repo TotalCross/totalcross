@@ -664,8 +664,10 @@ tasks.register('runModernJavaFeatureSmoke', Exec) {
         int exitCode = executionResult.get().exitValue
         boolean predicatePass = output.contains('[PASS] Java 8 - Predicate default methods')
         boolean predicateFail = output.contains('[FAIL] Java 8 - Predicate default methods')
-        boolean predicateNoSuchMethod = output.contains('NoSuchMethodError')
-            && output.contains('java.util.function.Predicate')
+        boolean predicateNoSuchMethod = (
+            output.contains('NoSuchMethodError') &&
+            output.contains('java.util.function.Predicate')
+        )
         boolean aborted = output.contains('Aborting program')
         if (exitCode != 0 || !predicatePass || predicateFail || predicateNoSuchMethod || aborted) {
             throw new GradleException('Modern Java feature smoke validation failed: exitCode=' + exitCode
