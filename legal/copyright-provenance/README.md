@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 This directory keeps the tooling, immutable evidence, and reviewed decisions used to preserve copyright notices when source files are renamed, split, copied, or substantially adapted.
 
-The audit is based on code provenance, not merely the Git creation date of a pathname. A file introduced in 2026 can legitimately retain older notices when its implementation descends from an older file.
+The policy is based on code provenance, not only on the Git creation date of a pathname. A file introduced recently can legitimately retain older notices when its implementation descends from an older source file.
 
 ## Layout
 
@@ -16,6 +16,8 @@ The audit is based on code provenance, not merely the Git creation date of a pat
 legal/copyright-provenance/
 ├── README.md
 ├── audit-code-provenance.py
+├── review-audit.py
+├── provenance.py
 ├── active-audits.json
 └── audits/
     └── <audit-id>/
@@ -28,18 +30,16 @@ legal/copyright-provenance/
 ```
 
 - `audit-code-provenance.py` performs the technical analysis.
-- `audits/<audit-id>/manifest.json` records the immutable commit interval and final classifications.
-- `evidence/*.json` contains detailed member matches and transitive lineage.
-- `reports/*.md` presents the same evidence for human review.
-- `active-audits.json` lists reviewed manifests that header validation may consume.
+- `review-audit.py` records approval or rejection and creates the review commit.
+- `provenance.py` provides stable manifest, fingerprint, and header helpers.
+- `active-audits.json` selects approved manifests consumed by header validation.
+- `audits/<audit-id>/` stores the immutable technical evidence.
 
-Generated audits start as `pending-review`. Do not activate one automatically.
+Generated audits start as `pending-review`. Never add one to `active-audits.json` manually before reviewing its reports.
 
-## Usage
+## Generate an audit
 
-Run the script from any location inside the repository.
-
-### Audit one historical file
+Audit one historical source:
 
 ```bash
 python3 legal/copyright-provenance/audit-code-provenance.py \
@@ -48,9 +48,7 @@ python3 legal/copyright-provenance/audit-code-provenance.py \
   TotalCrossSDK/src/main/java/totalcross/Launcher.java
 ```
 
-The source path is interpreted at the initial commit. The initial commit must be an ancestor of the final commit.
-
-### Discover refactorings automatically
+Discover refactorings automatically:
 
 ```bash
 python3 legal/copyright-provenance/audit-code-provenance.py \
@@ -58,29 +56,16 @@ python3 legal/copyright-provenance/audit-code-provenance.py \
   <final-commit>
 ```
 
-Automatic mode considers supported files that were modified, deleted, renamed, or used as Git copy sources during the interval. It emits reports only when material lineage reaches a file present at the final commit.
+Automatic mode seeds only files materially modified, removed, or renamed in the interval. Unchanged files are not treated as sources merely because aggressive Git copy detection considers them similar.
 
-By default only `.java` files are analyzed. Use `--extensions` to change the set:
-
-```bash
---extensions .java,.kt
-```
-
-### Fail when an inherited header is missing
+Optional modes:
 
 ```bash
-python3 legal/copyright-provenance/audit-code-provenance.py \
-  <initial-commit> <final-commit> \
-  --fail-on-missing-notice
+--include-unchanged-copy-sources
+--include-responsibility-transfer
 ```
 
-Exit code `2` means material inherited code was detected in a final file whose header did not preserve all source copyright holders or the LGPL SPDX identifier.
-
-### Choose the output directory
-
-```bash
---output /tmp/provenance-audit
-```
+`responsibility-transfer` is disabled by default. When enabled, it emits only `manual-review` candidates and never establishes inherited copyright automatically.
 
 The default output is:
 
@@ -88,97 +73,140 @@ The default output is:
 legal/copyright-provenance/audits/<date>-<initial-sha>-<final-sha>/
 ```
 
-Use `--audit-id` when a stable descriptive identifier is preferred. Existing non-empty output is protected unless `--overwrite` is supplied.
+Use `--audit-id` to choose a stable identifier.
 
-## How lineage is determined
+## Review an audit
 
-The script combines four signals:
+The review framework itself must already be committed. The Git index must be empty before starting.
 
-1. Git rename and copy hints from `git diff -M -C --find-copies-harder`.
-2. Commit-by-commit propagation across the ancestry path from the initial commit to the final commit.
-3. Java member comparison using exact tokens and normalized structural tokens.
-4. Direct initial-to-final comparison to recover relationships obscured by heavy intermediate edits or a squashed history.
-
-For example, the technical lineage may be:
-
-```text
-totalcross/Launcher.java
-  → totalcross/LauncherArguments.java
-  → tc/simulator/ApplicationLoader.java
-```
-
-If `LauncherArguments.java` no longer exists at the final commit, it is retained only inside the evidence lineage. The report lists `ApplicationLoader.java` as the final target.
-
-The script also handles splits: one historical source can produce several final targets. A small `sourceCoverage` with high `targetCoverage` is expected when a focused helper class was extracted from a very large source file.
-
-## Classifications
-
-- `inherited`: strong evidence that a material portion of the final file descends from the historical source.
-- `partial-inherited`: material extracted or adapted code was detected, but it represents only part of one or both files.
-- `manual-review`: similarity exists but does not meet the material thresholds.
-- `no-material-lineage`: no significant relationship was detected; these pairs are not emitted as final results.
-
-Both `inherited` and `partial-inherited` normally require preserving the applicable source copyright chain.
-
-The classifications are technical evidence, not an independent legal opinion. A person must review the generated report and confirm the final policy.
-
-## Review and commit workflow
-
-Use two commits so that the evidence refers to an immutable code revision without circularity.
-
-### 1. Commit the code and header decisions
-
-Include the refactoring, corrected headers, validator integration, and any tool changes. Record the resulting SHA as the audit final revision.
+Run:
 
 ```bash
-FINAL_SHA=$(git rev-parse HEAD)
+python3 legal/copyright-provenance/review-audit.py <audit-id>
 ```
 
-Choose an initial SHA that contains the historical source before the refactoring began.
+The script asks whether to approve, reject, or cancel.
 
-### 2. Generate and review the audit
+### Approval without activation
 
-```bash
-python3 legal/copyright-provenance/audit-code-provenance.py \
-  "$INITIAL_SHA" "$FINAL_SHA"
-```
-
-Review:
-
-- every final target;
-- the intermediate lineage;
-- member-level matches and coverage;
-- header status;
-- false positives caused by boilerplate or trivial members;
-- possible false negatives after extensive rewrites.
-
-Edit only human-review fields deliberately added to the manifest schema. Do not rewrite raw evidence to make a result appear stronger.
-
-### 3. Commit the audit separately
-
-Commit the complete audit directory in a documentation/legal commit, for example:
+When an audit is approved, the script asks:
 
 ```text
-docs(legal): record code provenance audit
+Add this audit to active-audits.json without removing existing entries? [y/N]
 ```
 
-The first commit remains the exact code revision audited; the second commit adds its evidence.
+Answering no:
 
-## Activating an audit
+- marks the manifest as `approved`;
+- records reviewer identity and timestamp;
+- does not alter headers;
+- does not activate the audit;
+- creates one signed documentation commit.
 
-After human review, change the audit manifest from:
+### Approval with activation
 
-```json
-"reviewStatus": "pending-review"
+Answering yes performs one transactional workflow:
+
+1. Verify the SHA-256 of the exact audit tool recorded by the manifest.
+2. Mark the manifest as `approved`.
+3. Append the manifest to `active-audits.json` without removing existing entries.
+4. Load the approved audit through the header validator.
+5. Verify each audited target's code fingerprint.
+6. Repair inherited headers for all material targets.
+7. Run focused header validation again.
+8. Verify the audit tool hash again.
+9. Stage only the audit directory, active index, and affected headers.
+10. Create one signed atomic commit.
+
+Default commit subject:
+
+```text
+fix(legal): activate copyright provenance audit
 ```
 
-to an approved project-defined state such as:
+Use `--no-sign` only where signed commits are unavailable:
 
-```json
-"reviewStatus": "approved"
+```bash
+python3 legal/copyright-provenance/review-audit.py <audit-id> --no-sign
 ```
 
-Then add its relative manifest path to `active-audits.json`:
+### Rejection
+
+A rejected audit is marked `rejected` and committed as historical evidence. If it was already active, only that manifest is removed from the active index; all other active audits are preserved.
+
+Default commit subject:
+
+```text
+docs(legal): reject copyright provenance audit
+```
+
+### Transaction safety
+
+Before modifying files, the review script snapshots:
+
+- the manifest;
+- `active-audits.json`;
+- every target header that may be repaired.
+
+If hash verification, fingerprint validation, header repair, staging, or commit fails, those files are restored and the intended paths are unstaged. The generated audit evidence itself is left available for inspection.
+
+The script refuses to run when:
+
+- unrelated files are already staged;
+- the audit framework has uncommitted changes;
+- the manifest tool hash does not match;
+- an audited target is missing;
+- a target code fingerprint changed;
+- the audit contains macOS `__MACOSX` or `._*` metadata.
+
+## Header validation
+
+The repository validator is:
+
+```bash
+python3 scripts/validate-copyright-headers.sh
+```
+
+Repair explicit files:
+
+```bash
+python3 scripts/validate-copyright-headers.sh --fix --files \
+  path/to/First.java \
+  path/to/Second.java
+```
+
+Validate only one active audit:
+
+```bash
+python3 scripts/validate-copyright-headers.sh \
+  --audit-id <audit-id> \
+  --files <audited-targets>
+```
+
+For a covered file, validation uses this precedence:
+
+1. Locate the target in approved manifests listed by `active-audits.json`.
+2. Verify its code fingerprint.
+3. Read each historical source from the immutable initial revision.
+4. Build the inherited copyright chain.
+5. Apply the current Amalgam end year.
+6. Validate or repair the target header.
+
+Only files without an active provenance rule fall back to the ordinary Git creation-year policy.
+
+A fingerprint mismatch fails as a stale audit. The validator never silently falls back to a new-file header for a changed audited target.
+
+Generated evidence under:
+
+```text
+legal/copyright-provenance/audits/
+```
+
+is excluded from ordinary header validation. The audit tool, review tool, shared helper, and this README remain normal first-party files and must carry repository headers.
+
+## Active audit index
+
+`active-audits.json` is the only mutable index:
 
 ```json
 {
@@ -189,41 +217,38 @@ Then add its relative manifest path to `active-audits.json`:
 }
 ```
 
-Header validation should consume only approved manifests listed there. Historical audits remain immutable even after a newer audit supersedes them. A new manifest can identify older audit IDs in its `supersedes` array.
+Each audit keeps its own manifest because it represents a specific immutable interval, tool version, and review decision. Older evidence is not overwritten when a later audit supersedes it.
 
-## Multiple manifests
+## Inherited header normalization
 
-Each audit has its own manifest because it represents a specific immutable interval, tool version, and review decision. This is preferable to one global provenance file that is repeatedly rewritten.
+For historical sources, the validator preserves named early holders and normalizes repository-era ranges:
 
-`active-audits.json` is the small mutable index that selects the currently applicable reviewed manifests. The audit directories themselves form the permanent history.
+- Wabasoft notices retain their source years.
+- Dave Slaughter notices retain their source years.
+- SuperWaba ranges end in 2013.
+- TotalCross ranges end in 2021.
+- Amalgam covers 2022 through the current year for historical files.
 
-## Staleness
+Distinct additional holders already present in a target are retained during automatic repair.
 
-Each historical source and final target records both its Git blob SHA and a code fingerprint calculated from Java tokens after comments and whitespace are removed. A validator can therefore distinguish:
+## Evidence and limitations
 
-- exact blob equality;
-- header or formatting changes with the same code fingerprint;
-- material code changes that invalidate the reviewed evidence.
+The audit combines Git rename/copy hints, commit-by-commit lineage, direct initial-to-final comparison, and Java member token similarity. Intermediate files removed before the final commit remain in evidence but are not listed as final targets.
 
-Rerun or explicitly review the audit whenever a covered final file's code fingerprint changes.
+Classifications:
 
-## Limitations
+- `inherited`: strong material lineage.
+- `partial-inherited`: material lineage affecting part of one or both files.
+- `manual-review`: optional semantic signal requiring a human decision.
+- `no-material-lineage`: omitted from final results.
 
-- Similarity thresholds are heuristic and must be reviewed.
-- Git history that was rewritten before the selected initial commit cannot be reconstructed.
-- Reflection, generated code, macros, and cross-language rewrites may require manual evidence.
-- Very small files and boilerplate may be ambiguous.
-- The current member parser is intentionally lightweight and optimized for ordinary Java source, not every possible syntax edge case.
-- Automatic mode analyzes changed source candidates, not every file in repository history.
+The result is technical evidence, not an independent legal opinion. Review every final target, lineage route, match, coverage value, and header status before approving an audit.
 
-## Reproducibility
+## Recommended repository sequence
 
-The manifest records:
-
-- full initial and final commit SHAs;
-- execution timestamp;
-- command line;
-- script path and SHA-256;
-- source and final-target blob SHAs.
-
-Use full commit SHAs when publishing or reviewing an audit. Branch names are useful for navigation but are not immutable evidence.
+1. Commit the refactoring and audit framework.
+2. Record the resulting immutable final SHA.
+3. Generate the audit against that SHA.
+4. Review reports and evidence.
+5. Run `review-audit.py`.
+6. Let the script activate, repair, validate, and commit the reviewed result atomically.
