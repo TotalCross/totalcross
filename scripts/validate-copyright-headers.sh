@@ -2,7 +2,7 @@
 # Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 #
 # SPDX-License-Identifier: LGPL-2.1-only
-"""Validate and optionally repair repository copyright headers."""
+"""Validate and optionally repair headers using conservative provenance rules."""
 from __future__ import annotations
 
 import argparse
@@ -138,17 +138,20 @@ def ordinary_expected(path: str, status: str, actual: list) -> tuple[list, bool]
     return (canonical_inherited(actual) if historical else creation_notices(year)), False
 
 
-def validate_text(path: str, status: str, text: str, rule: Rule | None) -> tuple[list[str], list, bool]:
+def validate_text(path: str, status: str, text: str, rule: Rule | None,
+                  require_snapshot: bool = False) -> tuple[list[str], list, bool]:
     actual = parse_notices(text)
     reasons: list[str] = []
     strict_owners = False
     if rule is not None:
+        # An approved provenance audit permanently establishes the minimum
+        # historical notices required by this path. Code changes after the
+        # audited snapshot do not invalidate that obligation; reducing notices
+        # requires a separate, explicitly approved removal audit.
         expected = rule.notices
-        fingerprint = java_fingerprint(text)
-        if fingerprint != rule.fingerprint:
+        if require_snapshot and java_fingerprint(text) != rule.fingerprint:
             reasons.append(
-                "provenance audit is stale: code fingerprint differs from "
-                + ", ".join(rule.audit_ids)
+                "provenance snapshot mismatch for " + ", ".join(rule.audit_ids)
             )
     else:
         expected, strict_owners = ordinary_expected(path, status, actual)
@@ -167,18 +170,24 @@ def validate_text(path: str, status: str, text: str, rule: Rule | None) -> tuple
 
 
 def validate_file(root: Path, status: str, path: str, rule: Rule | None,
-                  fix: bool) -> tuple[list[str], bool]:
+                  fix: bool, require_snapshot: bool = False) -> tuple[list[str], bool]:
     file_path = root / path
     text = file_path.read_text(encoding="utf-8")
-    reasons, expected, strict_owners = validate_text(path, status, text, rule)
-    stale = any(reason.startswith("provenance audit is stale") for reason in reasons)
+    reasons, expected, strict_owners = validate_text(
+        path, status, text, rule, require_snapshot
+    )
+    snapshot_mismatch = any(
+        reason.startswith("provenance snapshot mismatch") for reason in reasons
+    )
     changed = False
-    if fix and reasons and not stale:
+    if fix and reasons and not snapshot_mismatch:
         updated = replace_header(text, path, expected, preserve_extras=not strict_owners)
         if updated != text:
             file_path.write_text(updated, encoding="utf-8")
             changed = True
-        reasons, _, _ = validate_text(path, status, updated, rule)
+        reasons, _, _ = validate_text(
+            path, status, updated, rule, require_snapshot
+        )
     return reasons, changed
 
 
@@ -190,9 +199,15 @@ def main() -> int:
     parser.add_argument("--files", nargs="*", help="validate explicit files")
     parser.add_argument("--fix", action="store_true", help="repair header mismatches")
     parser.add_argument("--audit-id", action="append", default=[], help="restrict to one active audit")
+    parser.add_argument(
+        "--require-provenance-snapshots", action="store_true",
+        help="require audited code fingerprints; intended for audit activation",
+    )
     args = parser.parse_args()
     if bool(args.base) != bool(args.head):
         parser.error("base and head must be provided together")
+    if args.require_provenance_snapshots and not args.audit_id:
+        parser.error("--require-provenance-snapshots requires --audit-id")
 
     try:
         root = repo_root()
@@ -206,7 +221,10 @@ def main() -> int:
                 continue
             seen.add(path)
             checked += 1
-            reasons, changed = validate_file(root, status, path, rules.get(path), args.fix)
+            reasons, changed = validate_file(
+                root, status, path, rules.get(path), args.fix,
+                args.require_provenance_snapshots,
+            )
             fixed += int(changed)
             if changed:
                 print(f"Fixed copyright header: {path}")

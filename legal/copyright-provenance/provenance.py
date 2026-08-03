@@ -330,9 +330,12 @@ def load_rules(root: Path, audit_filter: set[str] | None = None) -> dict[str, Ru
                 rule = rules.get(target_path)
                 if rule is None:
                     rules[target_path] = Rule(target_path, fingerprint, list(notices), [audit_id])
-                elif rule.fingerprint != fingerprint:
-                    raise ProvenanceError(f"conflicting active fingerprints for {target_path}")
                 else:
+                    # Approved provenance establishes a permanent, conservative
+                    # notice requirement. Later snapshots may legitimately have
+                    # different fingerprints after ordinary code evolution; merge
+                    # their required notices instead of treating the snapshots as
+                    # conflicting active rules.
                     merged = merge_years([*rule.notices, *notices])
                     rule.notices = [Notice(frozenset(years), owner) for owner, years in merged.items()]
                     rule.audit_ids.append(audit_id)
