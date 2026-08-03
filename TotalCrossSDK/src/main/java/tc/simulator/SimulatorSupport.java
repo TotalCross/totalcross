@@ -112,7 +112,6 @@ abstract class SimulatorSupport extends FontRegistry {
   protected URL appletCodeBase;
   protected final Map<String, String> appletParameters = new HashMap<String, String>();
 
-  protected double toScaleValue = -1;
   protected double toDensityValue = 1;
   public totalcross.ui.Insets toInsetsPortrait;
   public totalcross.ui.Insets toInsetsLandscape;

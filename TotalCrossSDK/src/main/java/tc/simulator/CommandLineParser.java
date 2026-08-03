@@ -128,11 +128,6 @@ final class CommandLineParser {
     scaleInsets(result.insetsPortrait, result.densityValue);
     scaleInsets(result.insetsLandscape, result.densityValue);
 
-    // An omitted scale is resolved by the AWT presentation layer. Keeping the
-    // sentinel here makes parsing independent of the host display (and safe in
-    // headless processes).
-    result.scale = result.scaleValue == -1 ? 1 / result.densityValue
-        : Math.abs(result.scaleValue) / result.densityValue;
     return result;
   }
 

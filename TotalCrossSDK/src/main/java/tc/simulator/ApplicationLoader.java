@@ -148,9 +148,7 @@ abstract class ApplicationLoader extends RuntimeState {
     toBpp = result.bpp;
     commandLine = result.commandLine;
     toUI = result.uiStyle;
-    toScaleValue = result.scaleValue;
     toDensityValue = result.densityValue;
-    toScale = result.scale;
     fastScale = result.fastScale;
     isDemo = result.demo;
     toInsetsPortrait = result.insetsPortrait;
