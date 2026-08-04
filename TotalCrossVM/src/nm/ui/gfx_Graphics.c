@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined TC_WINDOWING_SDL)
 #define Graphics_forePixel(o) (Graphics_foreColor(o) | 0xFF000000)
 #define Graphics_backPixel(o) (Graphics_backColor(o) | 0xFF000000)
 #else
@@ -16,10 +16,10 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/gfx_Graphics_c.h"
-#elif defined(ANDROID) || defined(darwin)
- #include "android/gfx_Graphics_c.h"
-#elif defined(linux) && !defined(darwin)
- #include "linux/gfx_Graphics_c.h"
+#elif TC_GRAPHICS_GLES
+ #include "backend/graphics/gles/gfx_Graphics_c.h"
+#elif TC_GRAPHICS_SOFTWARE
+ #include "backend/graphics/software/gfx_Graphics_c.h"
 #endif
 
 bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr) // no thread are running at this point

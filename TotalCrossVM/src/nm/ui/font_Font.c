@@ -8,7 +8,7 @@
 
 #include "tcvm.h"
 #include "PalmFont_c.h"
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if TC_RENDERER_SKIA
 #include "skia/skia.h"
 #endif
 

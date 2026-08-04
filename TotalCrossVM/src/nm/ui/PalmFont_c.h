@@ -709,7 +709,7 @@ UserFont loadUserFontFromFontObj(Context currentContext, TCObject fontObj, JChar
    }
 }
 
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if TC_RENDERER_SKIA
 #include "skia/skia.h"
 
 int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch) {

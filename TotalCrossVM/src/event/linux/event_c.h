@@ -1,19 +1,19 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
-#ifndef HEADLESS
-#include <directfb.h>
+#if TC_WINDOWING_SDL
+ #if __APPLE__
+  #include "SDL.h"
+ #else
+  #include "SDL2/SDL.h"
+ #endif
+ #include "../../init/tcsdl.h"
 #else
-#if __APPLE__
-#include "SDL.h"
-#else
-#include "SDL2/SDL.h"
+ #include <directfb.h>
 #endif
-#include "../../init/tcsdl.h"
 
 #define MAX_SCALE_FINGERS 2
 
@@ -93,14 +93,13 @@ static void endScaleGesture() {
       postEvent(mainContext, MULTITOUCHEVENT_SCALE, 2, 0, 0, -1);
    }
 }
-#endif
 
 bool privateIsEventAvailable()
 {
-#ifndef HEADLESS
-	return (DEVICE_CTX->events->HasEvent(DEVICE_CTX->events) == DFB_OK);
+#if TC_WINDOWING_SDL
+   return SDL_PollEvent(NULL) != 0;
 #else
-   return SDL_PollEvent(NULL);
+	return (DEVICE_CTX->events->HasEvent(DEVICE_CTX->events) == DFB_OK);
 #endif
 }
 
@@ -255,7 +254,39 @@ void handleTextInputEvent(SDL_Event event) {
 
 void privatePumpEvent(Context currentContext)
 {
-#ifndef HEADLESS
+#if TC_WINDOWING_SDL
+   SDL_Event event;
+   if(SDL_PollEvent(&event)) {
+      if(event.type == SDL_WINDOWEVENT) {
+         if(event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            int width = event.window.data1;
+            int height = event.window.data2;
+            // SDL_Surface must be refreshed after a SDL_WINDOWEVENT_SIZE_CHANGED event
+            TCSDL_WindowSizeChanged(&screen, width, height);
+            // screenChange(mainContext, width, height, 0, 0, false);
+         }
+         TCSDL_Present();
+      }
+      if(event.type >= SDL_FINGERDOWN && event.type <= SDL_FINGERMOTION) { // Finger Touch Events
+         handleFingerTouchEvent(event);
+      }
+      else if(event.type >= SDL_MOUSEMOTION && event.type <= SDL_MOUSEWHEEL) { //Mouse events
+         handleMouseEvent(event);
+      }
+      if(event.type >= SDL_KEYDOWN) { // KeyBoard events
+        handleKeyboardEvent(event);
+      }
+      if(event.type == SDL_TEXTINPUT) { // Text Input Events
+         handleTextInputEvent(event);
+      }
+      if(event.type == SDL_MOUSEWHEEL) { // Wheel Events
+         handleWheelEvent(event);
+      }
+      if(event.type == SDL_QUIT) {
+         keepRunning = false;
+      }
+   }
+#else
    DFBInputEvent evt;
    int x, y;
    int key;
@@ -314,44 +345,14 @@ void privatePumpEvent(Context currentContext)
          break;
       }
    }
-#else
-   SDL_Event event;
-   if(SDL_PollEvent(&event)) {
-      if(event.type == SDL_WINDOWEVENT) {
-         if(event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            int width = event.window.data1;
-            int height = event.window.data2;
-            // SDL_Surface must be refreshed after a SDL_WINDOWEVENT_SIZE_CHANGED event
-            TCSDL_WindowSizeChanged(&screen, width, height);
-            // screenChange(mainContext, width, height, 0, 0, false);
-         }
-         TCSDL_Present();
-      }
-      if(event.type >= SDL_FINGERDOWN && event.type <= SDL_FINGERMOTION) { // Finger Touch Events
-         handleFingerTouchEvent(event);
-      }
-      else if(event.type >= SDL_MOUSEMOTION && event.type <= SDL_MOUSEWHEEL) { //Mouse events
-         handleMouseEvent(event);
-      }
-      if(event.type >= SDL_KEYDOWN) { // KeyBoard events
-        handleKeyboardEvent(event);
-      }
-      if(event.type == SDL_TEXTINPUT) { // Text Input Events
-         handleTextInputEvent(event);
-      }
-      if(event.type == SDL_MOUSEWHEEL) { // Wheel Events
-         handleWheelEvent(event);
-      }
-      if(event.type == SDL_QUIT) {
-         keepRunning = false;
-      }      
-   }   
 #endif
 }
 
 bool privateInitEvent()
 {
-#ifndef HEADLESS
+#if TC_WINDOWING_SDL
+   return true;
+#else
    DFBResult err;
 
    deviceCtx = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
@@ -363,21 +364,19 @@ bool privateInitEvent()
 
    DFBResult res = DEVICE_CTX->dfb->CreateInputEventBuffer(DEVICE_CTX->dfb, DICAPS_ALL, DFB_TRUE, &DEVICE_CTX->events);
    return (res == DFB_OK && DEVICE_CTX->events);
-#else
-    return true;
 #endif
 }
 
 void privateDestroyEvent()
 {
-#ifndef HEADLESS
+#if TC_WINDOWING_SDL
+   SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+#else
    if (DEVICE_CTX->dfb)
    {
       DEVICE_CTX->dfb->Release(DEVICE_CTX->dfb);
       DEVICE_CTX->dfb = NULL;
    }
    //xfree(deviceCtx); todo@ crashes since another access is done yet
-#else
-   SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 #endif
 }

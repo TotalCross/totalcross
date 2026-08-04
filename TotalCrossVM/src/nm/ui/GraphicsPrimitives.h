@@ -11,7 +11,7 @@
 
 #include "tcclass.h"
 
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if TC_RENDERER_SKIA
 #include "skia/skia.h"
 #endif
 
@@ -21,7 +21,7 @@
  #include "darwin/gfx_ex.h"
 #elif defined(ANDROID)
  #include "android/gfx_ex.h"
-#elif defined(linux) || defined HEADLESS
+#elif defined(linux) || defined TC_WINDOWING_SDL
  #include "linux/gfx_ex.h"
 #endif
 #include "xtypes.h"
