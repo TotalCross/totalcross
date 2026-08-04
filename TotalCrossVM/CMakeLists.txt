@@ -83,6 +83,31 @@ target_compile_definitions(
     TC_PLATFORM_CONFIGURED=1
 )
 
+# Android fail-fast
+if(TC_TARGET_ANDROID)
+  if(NOT DEFINED TC_JNI_HEADER_DIR)
+    message(
+      FATAL_ERROR
+      "TC_JNI_HEADER_DIR must be provided for Android builds"
+    )
+  endif()
+
+  if(NOT EXISTS
+     "${TC_JNI_HEADER_DIR}/jni/totalcross_Launcher4A.h")
+    message(
+      FATAL_ERROR
+      "Generated Launcher4A JNI header not found: "
+      "${TC_JNI_HEADER_DIR}/jni/totalcross_Launcher4A.h"
+    )
+  endif()
+
+  target_include_directories(
+    tcvm
+    PRIVATE
+      "${TC_JNI_HEADER_DIR}"
+  )
+endif()
+
 # qrcodegen is the default backend and is mandatory for _MSC_VER.
 set(TC_QRCODE_MSVC_COMPATIBLE OFF)
 set(TC_QRCODE_USE_QRCODEGEN_DEFAULT ON)
@@ -823,13 +848,13 @@ if(TC_TARGET_ANDROID)
       ${log-lib}
       ${jnigraphics-lib})
   target_link_libraries(# Specifies the target library.
-                        tcvm
+                        tcvm PRIVATE
                         ${TCVM_ANDROID_LIBRARIES})
 elseif(MSVC)
   if(TC_TARGET_WINCE)
-    target_link_libraries(tcvm secchk.lib coredll.lib corelibc.lib ole32.lib oleaut32.lib uuid.lib commctrl.lib)
+    target_link_libraries(tcvm PRIVATE secchk.lib coredll.lib corelibc.lib ole32.lib oleaut32.lib uuid.lib commctrl.lib)
   else()
-    target_link_libraries(tcvm winmm.lib ws2_32.lib imm32.lib Rasapi32.lib)
+    target_link_libraries(tcvm PRIVATE winmm.lib ws2_32.lib imm32.lib Rasapi32.lib)
   endif()
 else()
   if(NOT TC_GENERATOR_XCODE)

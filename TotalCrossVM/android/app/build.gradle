@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
+import org.gradle.api.tasks.compile.JavaCompile
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
@@ -80,7 +82,7 @@ android {
         destinationDirectory = file('src/main/assets')
 
         from("${rootDir}/../../TotalCrossSDK/dist/vm") {
-			include 'tc.base.lang.tcz'
+            include 'tc.base.lang.tcz'
             include 'tc.base.util.tcz'
             include 'tc.base.misc.tcz'
             include 'TCUI.tcz'
@@ -104,7 +106,55 @@ android {
     //             }
     //         }
     //     }
-	// }
+    // }
+}
+
+def jniVariant = 'standardDebug'
+def jniHeaderCompileTaskName =
+    "compile${jniVariant.capitalize()}JavaWithJavac"
+def jniHeadersDirectory =
+    layout.buildDirectory.dir("generated/jni")
+
+def jniHeaderCompileTasks =
+    tasks.withType(JavaCompile).matching {
+        it.name == jniHeaderCompileTaskName
+    }
+
+jniHeaderCompileTasks.configureEach { JavaCompile task ->
+    task.options.headerOutputDirectory.set(
+        jniHeadersDirectory
+    )
+}
+
+tasks.register('generateJniHeaders') {
+    group = 'build setup'
+    description = 'Generates JNI headers using javac -h.'
+
+    dependsOn(jniHeaderCompileTasks)
+
+    outputs.dir(jniHeadersDirectory)
+
+    doLast {
+        File outputDirectory =
+            jniHeadersDirectory.get().asFile
+
+        def generatedHeaders =
+            fileTree(outputDirectory) {
+                include '**/*.h'
+            }.files
+
+        if (generatedHeaders.isEmpty()) {
+            throw new GradleException(
+                "No JNI headers were generated in: " +
+                outputDirectory
+            )
+        }
+
+        logger.lifecycle(
+            "Generated ${generatedHeaders.size()} JNI header(s) in " +
+            outputDirectory
+        )
+    }
 }
 
 dependencies {
