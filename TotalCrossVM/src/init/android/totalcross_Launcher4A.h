@@ -98,7 +98,7 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_initializeVM
 /*
  * Class:     totalcross_Launcher4A
  * Method:    nativeInitSize
- * Signature: (Landroid/graphics/Bitmap;)V
+ * Signature: (Landroid/view/Surface;II)V
  */
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeInitSize
   (JNIEnv *, jobject, jint, jint);
@@ -121,22 +121,22 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSmsReceived
 
 /*
  * Class:     totalcross_Launcher4A
- * Method:    native
- * Signature: (Ljava/lang/String;Ljava/lang/String;[java/lang/String;[java/lang/String;[java/lang/String;int 
+ * Method:    nativeOnMessageReceived
+ * Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;I)V
   */
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeOnMessageReceived
   (jstring, jstring, jobjectArray, jobjectArray, jstring, int32);  
 
 /*
  * Class:     totalcross_Launcher4A
- * Method:    native
- * Signature:  
+ * Method:    nativeOnTokenRefresh
+ * Signature: ()V
   */
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeOnTokenRefresh(JNIEnv *, jclass);
 
 /*
  * Class:     totalcross_Launcher4A
- * Method:    native
+ * Method:    nativeYoutubeCallback
  * Signature: (I)V
   */
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeYoutubeCallback(JNIEnv *, jclass, jint);
