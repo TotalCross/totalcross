@@ -10,6 +10,8 @@ include(FetchContent)
 # set the project name
 project(tcvm VERSION 7.2.2)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(cmake/TCPlatform.cmake)
 include(cmake/TCGraphics.cmake)
 
