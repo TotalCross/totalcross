@@ -26,4 +26,13 @@
 
 #define TC_CONFIG_OS_NAME "@TC_TARGET_OS_NAME@"
 
+#cmakedefine01 TC_GRAPHICS_GLES
+#cmakedefine01 TC_GRAPHICS_SOFTWARE
+
+#cmakedefine01 TC_RENDERER_SKIA
+#cmakedefine01 TC_RENDERER_LEGACY
+
+#cmakedefine01 TC_WINDOWING_SDL
+#cmakedefine01 TC_WINDOWING_NATIVE
+
 #endif

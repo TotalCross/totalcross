@@ -139,11 +139,13 @@ file(
   "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
 )
 
-configure_file(
-  "${CMAKE_CURRENT_LIST_DIR}/../src/tcvm/tc_platform_config.h.in"
-  "${TC_PLATFORM_GENERATED_INCLUDE_DIR}/tc_platform_config.h"
-  @ONLY
-)
+function(tc_generate_platform_config)
+  configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/src/tcvm/tc_platform_config.h.in"
+    "${TC_PLATFORM_GENERATED_INCLUDE_DIR}/tc_platform_config.h"
+    @ONLY
+  )
+endfunction()
 
 message(STATUS "TotalCross target OS: ${TC_TARGET_OS_NAME}")
 message(STATUS "TotalCross CMake system: ${CMAKE_SYSTEM_NAME}")
