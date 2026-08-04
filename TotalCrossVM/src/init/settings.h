@@ -1,9 +1,8 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
-
-
 
 #ifndef __SETTINGS_H
 #define __SETTINGS_H
@@ -117,7 +116,7 @@ typedef TCSettings (*getSettingsPtrFunc)(); // to be called by another dll to ge
 
 TC_API int32 getDataPath(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
 typedef int32 (*getDataPathFunc)(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
-void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp); // updates Settings.screenWidth/screenHeight
+void updateScreenSettings(ScreenSurface screen); // updates Settings.screenWidth/screenHeight
 
 TC_API void getRomSerialNumber(CharP outBuf); // stores the rom serial number in the given buffer of size 128.
 typedef void (*getRomSerialNumberFunc)(CharP outBuf);
