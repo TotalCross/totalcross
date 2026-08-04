@@ -36,10 +36,7 @@ void destroyGraphics()
 
 bool initGraphicsAfterSettings(Context currentContext)
 {
-   double contentScale = screen.contentScale > 0 ? screen.contentScale : 1;
-   updateScreenSettings((int32)(screen.screenW / contentScale + 0.5),
-                        (int32)(screen.screenH / contentScale + 0.5),
-                        screen.hRes, screen.vRes, screen.bpp);
+   updateScreenSettings(&screen);
    if (!fontInit(currentContext))
    {
       destroyGraphics();
