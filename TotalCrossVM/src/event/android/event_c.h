@@ -1,11 +1,10 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
-#include "../init/android/totalcross_Launcher4A.h"
+#include "jni/totalcross_Launcher4A.h"
 #include "specialkeys.h"
 #include "GraphicsPrimitives.h"
 #include "startup.h"
