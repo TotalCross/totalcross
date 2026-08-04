@@ -33,7 +33,8 @@ extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
 #endif
 #if defined(ANDROID) || defined(darwin)
-extern int32 deviceFontHeight,iosScale;
+extern int32 deviceFontHeight;
+extern double screenContentScale;
 #endif
 
 // GoogleMaps.c
