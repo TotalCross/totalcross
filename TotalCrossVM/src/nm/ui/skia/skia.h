@@ -7,6 +7,8 @@
 #ifndef SKIA_H
 #define SKIA_H
 
+#include "tc_platform.h"
+
 #define SKIA_SCREEN_SURFACE_ID (-1)
 #define SKIA_INVALID_SURFACE_ID (-2)
 
@@ -20,7 +22,7 @@ typedef unsigned int uint32;
 typedef uint32 Pixel32; // 32 bpp
 typedef Pixel32 Pixel;
 
-#ifdef HEADLESS
+#if TC_WINDOWING_SDL
 int32 colorType(uint32 pixelformat);
 #endif
 void initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
