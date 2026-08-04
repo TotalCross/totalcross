@@ -199,15 +199,6 @@ if(TC_TARGET_ANDROID)
     )
   endif()
 
-  if(NOT EXISTS
-     "${TC_JNI_HEADER_DIR}/jni/totalcross_Launcher4A.h")
-    message(
-      FATAL_ERROR
-      "Generated Launcher4A JNI header not found: "
-      "${TC_JNI_HEADER_DIR}/jni/totalcross_Launcher4A.h"
-    )
-  endif()
-
   target_include_directories(
     tcvm
     PRIVATE
