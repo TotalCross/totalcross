@@ -34,7 +34,7 @@ bool appPaused = false;
 #endif
 #if defined(ANDROID) || defined(darwin)
 int32 deviceFontHeight = 0;
-int32 iosScale = 0;
+double screenContentScale = 0;
 #endif
 
 // GoogleMaps.c

@@ -29,7 +29,7 @@ static char documentChars[4096];
 
 static char barcode[2048];
 static NSMutableString *currBarcode;
-extern int32 iosScale;
+extern double screenContentScale;
 extern bool isIpad;
 
 @implementation MainViewController
@@ -227,7 +227,7 @@ int isShown;
    NSDictionary* info = [notif userInfo];
    NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
    CGSize keyboardSize = [aValue CGRectValue].size;
-   keyboardH = keyboardSize.height * iosScale;
+   keyboardH = (int32) lround(keyboardSize.height * screenContentScale);
 }
 
 -(void) keyboardDidHide: (NSNotification *)notif

@@ -61,8 +61,8 @@ void setEditText(Context currentContext, TCObject control, NSString *str)
 
 void windowGetSafeAreaInsets(int32* top, int32* left, int32* bottom, int32* right) {
     UIEdgeInsets insets = DEVICE_CTX->_mainview.view.safeAreaInsets;
-    *left = insets.left * iosScale;
-    *top = insets.top * iosScale;
-    *right = insets.right * iosScale;
-    *bottom = insets.bottom * iosScale;
+    *left = (int32) lround(insets.left * screenContentScale);
+    *top = (int32) lround(insets.top * screenContentScale);
+    *right = (int32) lround(insets.right * screenContentScale);
+    *bottom = (int32) lround(insets.bottom * screenContentScale);
 }
