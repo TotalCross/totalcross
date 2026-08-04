@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 
-#if defined ANDROID || defined darwin || defined HEADLESS
+#if defined ANDROID || defined darwin || TC_WINDOWING_SDL
 #include <tcvm/tcclass.h>
 #endif
 #include "tcvm.h"
@@ -150,7 +150,7 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
    p->retO = thisObj;
 }
 
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if TC_RENDERER_SKIA
 #include "skia/skia.h"
 #endif
 //////////////////////////////////////////////////////////////////////////
