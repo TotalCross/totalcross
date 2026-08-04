@@ -11,6 +11,9 @@ include(FetchContent)
 project(tcvm VERSION 7.2.2)
 
 include(cmake/TCPlatform.cmake)
+include(cmake/TCGraphics.cmake)
+
+tc_generate_platform_config()
 
 option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
 option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
@@ -122,16 +125,6 @@ if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
   else() # others
     set(TCVM_SHARED ON) 
   endif()
-endif()
-
-# Use skia
-if (NOT DEFINED USE_SKIA)
-  set(USE_SKIA ON)
-endif()
-
-set(TCVM_ENABLE_SKIA OFF)
-if(USE_SKIA AND NOT (WIN32 OR TC_TARGET_WINDOWS OR TC_TARGET_WINCE))
-  set(TCVM_ENABLE_SKIA ON)
 endif()
 
 if (NOT DEFINED SKIA_AUTO_FETCH)
@@ -272,8 +265,6 @@ set(CMAKE_MODULE_PATH
   "${TCVM_DEPOT_TOOLS_DIR}/skia/cmake"
   "${CMAKE_SOURCE_DIR}/modules"
 )
-
-set(SKIA_DIR "${TCVM_DEPOT_TOOLS_DIR}/skia/local" CACHE PATH "Skia directory" FORCE)
 
 foreach(TCVM_DEP_CACHE_VAR
     ZLIB_DIR
@@ -463,15 +454,15 @@ if(TC_GENERATOR_XCODE)
     )
   endif()
 else()
-  target_link_libraries(tcvm zlibstatic)
-  target_link_libraries(tcvm ${TC_QRCODE_LIBRARY})
-  target_link_libraries(tcvm MINIZIP::MINIZIP)
-  target_link_libraries(tcvm AxTLS::AxTLS)
-  target_link_libraries(tcvm png_static)
-  target_link_libraries(tcvm JPEG::JPEG)
-  target_link_libraries(tcvm ${SQLITE3_LIBRARIES})
+  target_link_libraries(tcvm PRIVATE zlibstatic)
+  target_link_libraries(tcvm PRIVATE ${TC_QRCODE_LIBRARY})
+  target_link_libraries(tcvm PRIVATE MINIZIP::MINIZIP)
+  target_link_libraries(tcvm PRIVATE AxTLS::AxTLS)
+  target_link_libraries(tcvm PRIVATE png_static)
+  target_link_libraries(tcvm PRIVATE JPEG::JPEG)
+  target_link_libraries(tcvm PRIVATE ${SQLITE3_LIBRARIES})
   if(NOT TC_TARGET_WINCE)
-    target_link_libraries(tcvm MbedTLS::mbedtls)
+    target_link_libraries(tcvm PRIVATE MbedTLS::mbedtls)
   endif()
 endif()
 
@@ -484,15 +475,12 @@ if(TC_TARGET_APPLE)
       "${TCVM_SECURITY_FRAMEWORK}"
     )
   else()
-    target_link_libraries(tcvm
+    target_link_libraries(tcvm PRIVATE
       "${TCVM_COREFOUNDATION_FRAMEWORK}"
       "${TCVM_SECURITY_FRAMEWORK}"
     )
   endif()
 endif()
-
-# Find SDL2 and Skia
-include("${TCVM_DEPOT_TOOLS_DIR}/skia/cmake/AutoFetchSkia.cmake")
 
 # Find SDL2
 IF (NOT (TC_TARGET_ANDROID OR MSVC OR TC_GENERATOR_XCODE))
@@ -502,13 +490,16 @@ IF (NOT (TC_TARGET_ANDROID OR MSVC OR TC_GENERATOR_XCODE))
 ENDIF (NOT (TC_TARGET_ANDROID OR MSVC OR TC_GENERATOR_XCODE))
 
 # Find Skia
-if(TCVM_ENABLE_SKIA)
+include("${TCVM_DEPOT_TOOLS_DIR}/skia/cmake/AutoFetchSkia.cmake")
+if(TC_RENDERER_SKIA)
   if(SKIA_AUTO_FETCH)
     tcvm_auto_fetch_skia()
   endif()
   find_package(Skia REQUIRED)
   add_definitions(-DUSE_SKIA)
-endif(TCVM_ENABLE_SKIA)
+  set(SKIA_DIR "${TCVM_DEPOT_TOOLS_DIR}/skia/local" CACHE PATH "Skia directory" FORCE)
+  target_link_libraries(tcvm PRIVATE Skia::Skia)
+endif(TC_RENDERER_SKIA)
 
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
@@ -655,13 +646,13 @@ if(NOT MSVC)
   )
 endif(NOT MSVC)
 
-if(TCVM_ENABLE_SKIA)
+if(TC_RENDERER_SKIA)
   set(TC_SKIA_SOURCES
     ${TC_SRCDIR}/nm/ui/skia/skia.cpp
     ${TC_SRCDIR}/nm/ui/skia/skia_surface.cpp
     ${TC_SRCDIR}/nm/ui/skia/skia_primitives.cpp
   )
-endif(TCVM_ENABLE_SKIA)
+endif(TC_RENDERER_SKIA)
 
 if(TC_GENERATOR_XCODE)
   set(TCVM_iOS_FILES
@@ -779,7 +770,7 @@ endif()
 # add_definitions
 if(TC_TARGET_ANDROID)
   add_definitions(-DANDROID)
-  if ("${ANDROID_ABI}" MATCHES "arm64-v8a" OR USE_SKIA)
+  if ("${ANDROID_ABI}" MATCHES "arm64-v8a" OR TC_RENDERER_SKIA)
 	  add_definitions(-DFORCE_LIBC_ALLOC)
   endif()
 elseif(TC_TARGET_WINCE)
@@ -879,7 +870,7 @@ if(TC_GENERATOR_XCODE)
     "${AXTLS_LIBRARY}"
     "${TC_QRCODE_LIBRARY_PATH}"
   )
-  if(TCVM_ENABLE_SKIA)
+  if(TC_RENDERER_SKIA)
     set(TCVM_XCODE_ARCHIVE_DEPENDENCIES
       "${SKIA_LIBRARIES}"
       ${TCVM_XCODE_ARCHIVE_DEPENDENCIES}
@@ -903,7 +894,7 @@ if(TC_GENERATOR_XCODE)
   # adds $(inherited) to HEADER_SEARCH_PATHS in order to get pod libraries headers
   get_target_property(INCLUDED_HEADERS tcvm INCLUDE_DIRECTORIES)
   set(INCLUDED_HEADERS "$(inherited)" ${INCLUDED_HEADERS})
-  if(TCVM_ENABLE_SKIA)
+  if(TC_RENDERER_SKIA)
     get_target_property(TCVM_SKIA_INCLUDED_HEADERS Skia::Skia INTERFACE_INCLUDE_DIRECTORIES)
     list(APPEND INCLUDED_HEADERS ${TCVM_SKIA_INCLUDED_HEADERS})
   endif()
@@ -928,7 +919,7 @@ if(TC_GENERATOR_XCODE)
 endif()
 
 if(DEFINED SDL2_LIBRARY)
-  target_link_libraries(tcvm ${SDL2_LIBRARY})
+  target_link_libraries(tcvm PRIVATE ${SDL2_LIBRARY})
 
   if(TC_TARGET_APPLE)
     set_target_properties(tcvm PROPERTIES
@@ -996,11 +987,6 @@ if(TC_TARGET_ANDROID)
       android
       ${log-lib}
       ${jnigraphics-lib})
-  if(TCVM_ENABLE_SKIA)
-    set(TCVM_ANDROID_LIBRARIES
-        Skia::Skia
-        ${TCVM_ANDROID_LIBRARIES})
-  endif()
   target_link_libraries(# Specifies the target library.
                         tcvm
                         ${TCVM_ANDROID_LIBRARIES})
@@ -1011,21 +997,13 @@ elseif(MSVC)
     target_link_libraries(tcvm winmm.lib ws2_32.lib imm32.lib Rasapi32.lib)
   endif()
 else()
-  if(TC_GENERATOR_XCODE)
-    if(TCVM_ENABLE_SKIA)
-      target_link_libraries(tcvm PRIVATE Skia::Skia)
-    endif()
-  else()
-    if(TCVM_ENABLE_SKIA)
-      target_link_libraries(tcvm Skia::Skia pthread stdc++)
-    else()
-      target_link_libraries(tcvm pthread stdc++)
-    endif()
+  if(NOT TC_GENERATOR_XCODE)
+    target_link_libraries(tcvm PRIVATE pthread stdc++)
   endif()
   if(NOT TC_TARGET_APPLE AND UNIX)
-    target_link_libraries(tcvm fontconfig)
+    target_link_libraries(tcvm PRIVATE fontconfig)
     if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
-      target_link_libraries(tcvm -Wl,--wrap=log2f,--wrap=powf,--wrap=expf,--wrap=exp2f) # Avoid glibc dependencies
+      target_link_libraries(tcvm PRIVATE -Wl,--wrap=log2f,--wrap=powf,--wrap=expf,--wrap=exp2f) # Avoid glibc dependencies
     endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
   endif(NOT TC_TARGET_APPLE AND UNIX)
 endif(TC_TARGET_ANDROID)
