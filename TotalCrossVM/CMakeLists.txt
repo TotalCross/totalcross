@@ -10,6 +10,8 @@ include(FetchContent)
 # set the project name
 project(tcvm VERSION 7.2.2)
 
+include(cmake/TCPlatform.cmake)
+
 option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
 option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
 option(TC_ENABLE_C_AOT "Build the experimental portable-C TCIR backend" OFF)
@@ -112,28 +114,9 @@ if(TC_BUILD_IR_TESTS)
   )
 endif()
 
-if(MSVC)
-  if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Pocket PC 2003 (ARMV4)")
-    set(TARGET_WINCE ON)
-  else()
-    set(TARGET_WIN32 ON)
-  endif()
-elseif(DEFINED ANDROID_ABI)
-  set(TARGET_ANDROID ON)
-elseif(CMAKE_GENERATOR STREQUAL Xcode)
-  set(TARGET_XCODE ON)
-elseif(WIN32)
-  set(TARGET_WIN32 ON)
-elseif(APPLE)
-  set(TARGET_MACOSX ON)
-elseif(UNIX)
-  set(TARGET_UNIX ON)
-else()
-  message(FATAL_ERROR "Unable to detect target platform")
-endif()
 
 if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
-  if(CMAKE_GENERATOR STREQUAL Xcode)
+  if(TC_GENERATOR_XCODE)
     set(TCVM_SHARED OFF) 
     message("tcvm: ${TCVM_SHARED}")  
   else() # others
@@ -147,7 +130,7 @@ if (NOT DEFINED USE_SKIA)
 endif()
 
 set(TCVM_ENABLE_SKIA OFF)
-if(USE_SKIA AND NOT (WIN32 OR TARGET_WIN32 OR TARGET_WINCE))
+if(USE_SKIA AND NOT (WIN32 OR TC_TARGET_WINDOWS OR TC_TARGET_WINCE))
   set(TCVM_ENABLE_SKIA ON)
 endif()
 
@@ -201,6 +184,19 @@ else()
   add_library(tcvm STATIC)
 endif()
 
+target_include_directories(
+  tcvm
+  PRIVATE
+    "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm"
+)
+
+target_compile_definitions(
+  tcvm
+  PRIVATE
+    TC_PLATFORM_CONFIGURED=1
+)
+
 # qrcodegen is the default backend and is mandatory for _MSC_VER.
 set(TC_QRCODE_MSVC_COMPATIBLE OFF)
 set(TC_QRCODE_USE_QRCODEGEN_DEFAULT ON)
@@ -224,7 +220,7 @@ endif()
 
 # Force using madler zlib on wince instead of zlib-ng, which isn't supported
 if(NOT DEFINED USE_MADLER_ZLIB)
-  if(TARGET_WINCE)
+  if(TC_TARGET_WINCE)
     set(USE_MADLER_ZLIB ON)
   endif()
 endif()
@@ -382,7 +378,7 @@ else()
   set(TC_QRCODE_LIBRARY QRCode::QRCode)
 endif()
 
-if(TARGET_WINCE)
+if(TC_TARGET_WINCE)
   if(NOT DEFINED MINIZIP_DIR)
     message(FATAL_ERROR
       "WinCE requires an externally supplied minizip-ng prebuilt. "
@@ -398,7 +394,7 @@ endif()
 find_package(MINIZIP REQUIRED)
 
 # Find libpng
-if(NOT TARGET_WINCE)
+if(NOT TC_TARGET_WINCE)
   include("${TCVM_DEPOT_TOOLS_DIR}/libpng/cmake/AutoFetchLibPng.cmake")
   if(LIBPNG_AUTO_FETCH)
     tcvm_auto_fetch_libpng()
@@ -444,7 +440,7 @@ get_filename_component(SQLITE3_LIBRARY_DIR "${SQLite3_LIBRARY}" DIRECTORY)
 include_directories("${SQLite3_INCLUDE_DIR}")
 
 # Find mbedTLS
-if(NOT TARGET_WINCE)
+if(NOT TC_TARGET_WINCE)
   include("${TCVM_DEPOT_TOOLS_DIR}/mbedtls/cmake/AutoFetchMbedTLS.cmake")
   if(MBEDTLS_AUTO_FETCH)
     tcvm_auto_fetch_mbedtls()
@@ -457,9 +453,9 @@ endif()
 
 add_subdirectory(third_party) 
 
-if(CMAKE_GENERATOR STREQUAL Xcode)
+if(TC_GENERATOR_XCODE)
   target_link_libraries(tcvm PRIVATE zlibstatic png_static JPEG::JPEG SQLite::SQLite3 MINIZIP::MINIZIP AxTLS::AxTLS ${TC_QRCODE_LIBRARY})
-  if(NOT TARGET_WINCE)
+  if(NOT TC_TARGET_WINCE)
     target_link_libraries(tcvm PRIVATE
       MbedTLS::mbedtls
       MbedTLS::mbedx509
@@ -474,15 +470,15 @@ else()
   target_link_libraries(tcvm png_static)
   target_link_libraries(tcvm JPEG::JPEG)
   target_link_libraries(tcvm ${SQLITE3_LIBRARIES})
-  if(NOT TARGET_WINCE)
+  if(NOT TC_TARGET_WINCE)
     target_link_libraries(tcvm MbedTLS::mbedtls)
   endif()
 endif()
 
-if(APPLE)
+if(TC_TARGET_APPLE)
   find_library(TCVM_COREFOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
   find_library(TCVM_SECURITY_FRAMEWORK Security REQUIRED)
-  if(CMAKE_GENERATOR STREQUAL Xcode)
+  if(TC_GENERATOR_XCODE)
     target_link_libraries(tcvm PRIVATE
       "${TCVM_COREFOUNDATION_FRAMEWORK}"
       "${TCVM_SECURITY_FRAMEWORK}"
@@ -499,11 +495,11 @@ endif()
 include("${TCVM_DEPOT_TOOLS_DIR}/skia/cmake/AutoFetchSkia.cmake")
 
 # Find SDL2
-IF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
+IF (NOT (TC_TARGET_ANDROID OR MSVC OR TC_GENERATOR_XCODE))
   set(SDL2_BUILDING_LIBRARY TRUE)
   find_package(SDL2 2.0.12 REQUIRED)
   include_directories(${SDL2_INCLUDE_DIR})
-ENDIF (NOT (DEFINED ANDROID_ABI OR MSVC OR CMAKE_GENERATOR STREQUAL Xcode))
+ENDIF (NOT (TC_TARGET_ANDROID OR MSVC OR TC_GENERATOR_XCODE))
 
 # Find Skia
 if(TCVM_ENABLE_SKIA)
@@ -640,12 +636,12 @@ set(SOURCES
 
     )
 
-if(UNIX AND NOT (DEFINED ANDROID_ABI OR APPLE))
+if(UNIX AND NOT (TC_TARGET_ANDROID OR TC_TARGET_APPLE))
   set(SOURCES
     ${SOURCES}
     ${TC_SRCDIR}/nm/io/device/gpiod/posix/gpiodLib.c
   )
-endif(UNIX AND NOT (DEFINED ANDROID_ABI OR APPLE))
+endif(UNIX AND NOT (TC_TARGET_ANDROID OR TC_TARGET_APPLE))
 
 if(MSVC)
   set(TC_MSVC_SOURCES
@@ -667,7 +663,7 @@ if(TCVM_ENABLE_SKIA)
   )
 endif(TCVM_ENABLE_SKIA)
 
-if(CMAKE_GENERATOR STREQUAL Xcode)
+if(TC_GENERATOR_XCODE)
   set(TCVM_iOS_FILES
     ${IOS_BUNDLE_SRCDIR}/tcvm/libtcvm.h
     ${IOS_BUNDLE_SRCDIR}/tcvm/libtcvm.m
@@ -722,13 +718,13 @@ if(DEFINED SDL2_LIBRARY)
   )
 endif(DEFINED SDL2_LIBRARY)
 
-if(DEFINED ANDROID_ABI)
+if(TC_TARGET_ANDROID)
   set(TC_ANDROID_SOURCES
     ${TC_SRCDIR}/nm/money/money.c
   )
-endif(DEFINED ANDROID_ABI)
+endif(TC_TARGET_ANDROID)
 
-if(TARGET_WINCE)
+if(TC_TARGET_WINCE)
   set(TC_WCE_SOURCES
     ${TC_SRCDIR}/util/win/aygshellLib.c
   )
@@ -772,7 +768,7 @@ include_directories(${TC_SRCDIR}/tcvm)
 include_directories(${TC_SRCDIR}/util)
 include_directories(${TC_SRCDIR}/util/android)
 
-if(MSVC AND TARGET_WINCE)
+if(MSVC AND TC_TARGET_WINCE)
   include_directories(${TC_SRCDIR}/core/wince) # Only include this folder for WinCE!
 endif()
 
@@ -781,17 +777,17 @@ if(NOT MSVC)
 endif()
 
 # add_definitions
-if(DEFINED ANDROID_ABI)
+if(TC_TARGET_ANDROID)
   add_definitions(-DANDROID)
   if ("${ANDROID_ABI}" MATCHES "arm64-v8a" OR USE_SKIA)
 	  add_definitions(-DFORCE_LIBC_ALLOC)
   endif()
-elseif(TARGET_WINCE)
+elseif(TC_TARGET_WINCE)
   add_definitions(-DUNICODE -D_WIN32_WCE=$(CEVER) -D_MSC_VER=1200 -D_REENTRANT -DLITTLE_ENDIAN)
 elseif(MSVC)
   add_definitions(-DFORCE_LIBC_ALLOC -DWIN32 -D_REENTRANT -DHAVE_MREMAP=0 -DLITTLE_ENDIAN)
 else()
-  if(CMAKE_GENERATOR STREQUAL Xcode)
+  if(TC_GENERATOR_XCODE)
     add_definitions(-Ddarwin -DSK_GL)
     set(CMAKE_OSX_SYSROOT iphoneos)
     set(CMAKE_OSX_ARCHITECTURES "arm64")
@@ -799,7 +795,7 @@ else()
     add_definitions(-DHEADLESS)
   endif()
   add_definitions(-Dlinux -DFORCE_LIBC_ALLOC -D_REENTRANT -DPOSIX -DHAVE_MREMAP=0 -fPIC -Wunused-function -Wno-import -fno-strict-aliasing)
-endif(DEFINED ANDROID_ABI)
+endif(TC_TARGET_ANDROID)
 add_definitions(-DTOTALCROSS -DTC_EXPORTS)
 
 link_directories(${PROJECT_SOURCE_DIR})
@@ -867,7 +863,7 @@ else()
   target_compile_features(tcvm PUBLIC cxx_std_17)
 endif()
 # XCode Properties
-if(CMAKE_GENERATOR STREQUAL Xcode)
+if(TC_GENERATOR_XCODE)
   # Fold prebuilt native dependencies into libtcvm.a at archive creation time.
   get_target_property(TC_QRCODE_LIBRARY_PATH ${TC_QRCODE_LIBRARY} IMPORTED_LOCATION)
   if(NOT TC_QRCODE_LIBRARY_PATH)
@@ -934,7 +930,7 @@ endif()
 if(DEFINED SDL2_LIBRARY)
   target_link_libraries(tcvm ${SDL2_LIBRARY})
 
-  if(APPLE)
+  if(TC_TARGET_APPLE)
     set_target_properties(tcvm PROPERTIES
       MACOSX_RPATH ON
       BUILD_WITH_INSTALL_RPATH TRUE
@@ -971,7 +967,7 @@ if(DEFINED SDL2_LIBRARY)
   endif()
 endif()
 
-if(DEFINED ANDROID_ABI)
+if(TC_TARGET_ANDROID)
   # Searches for a specified prebuilt library and stores the path as a
   # variable. Because CMake includes system libraries in the search path by
   # default, you only need to specify the name of the public NDK library
@@ -1009,13 +1005,13 @@ if(DEFINED ANDROID_ABI)
                         tcvm
                         ${TCVM_ANDROID_LIBRARIES})
 elseif(MSVC)
-  if(TARGET_WINCE)
+  if(TC_TARGET_WINCE)
     target_link_libraries(tcvm secchk.lib coredll.lib corelibc.lib ole32.lib oleaut32.lib uuid.lib commctrl.lib)
   else()
     target_link_libraries(tcvm winmm.lib ws2_32.lib imm32.lib Rasapi32.lib)
   endif()
 else()
-  if(CMAKE_GENERATOR STREQUAL Xcode)
+  if(TC_GENERATOR_XCODE)
     if(TCVM_ENABLE_SKIA)
       target_link_libraries(tcvm PRIVATE Skia::Skia)
     endif()
@@ -1026,13 +1022,13 @@ else()
       target_link_libraries(tcvm pthread stdc++)
     endif()
   endif()
-  if(NOT APPLE AND UNIX)
+  if(NOT TC_TARGET_APPLE AND UNIX)
     target_link_libraries(tcvm fontconfig)
     if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
       target_link_libraries(tcvm -Wl,--wrap=log2f,--wrap=powf,--wrap=expf,--wrap=exp2f) # Avoid glibc dependencies
     endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
-  endif(NOT APPLE AND UNIX)
-endif(DEFINED ANDROID_ABI)
+  endif(NOT TC_TARGET_APPLE AND UNIX)
+endif(TC_TARGET_ANDROID)
 
 if(TC_BUILD_IR_TESTS)
   if(TC_ENABLE_C_AOT)
@@ -1335,13 +1331,13 @@ else()
 endif(MSVC)
 
 # add the executable
-if(NOT CMAKE_GENERATOR STREQUAL Xcode)
+if(NOT TC_GENERATOR_XCODE)
 add_executable(Launcher 
   ${TC_SRCDIR}/launchers/${LAUNCHER_PATH}/Launcher.c
   ${LAUNCHER_RESOURCES}
 )
 
-if(TARGET_WINCE)
+if(TC_TARGET_WINCE)
   target_compile_options(Launcher PRIVATE /GS-)
   target_link_options(Launcher PRIVATE /STACK:0x200000 /ENTRY:)
 endif()
@@ -1358,7 +1354,7 @@ endif()
 
 # Disabled for the time being
 # if(MSVC)
-#   if(TARGET_WINCE)
+#   if(TC_TARGET_WINCE)
 #     INCLUDE_EXTERNAL_MSPROJECT(Datalogic ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Datalogic.vcproj)
 #     INCLUDE_EXTERNAL_MSPROJECT(Dolphin ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Dolphin.vcproj)
 #     INCLUDE_EXTERNAL_MSPROJECT(Intermec ${CMAKE_CURRENT_SOURCE_DIR}/vc2008/Intermec.vcproj)
