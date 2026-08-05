@@ -297,6 +297,8 @@ public class Window extends Container {
   public static KeyListener keyHook;
 
   private static Insets safeAreaInsets = new Insets();
+  private SafeAreaMode safeAreaMode = SafeAreaMode.AUTO;
+  private int safeAreaEdges = SafeAreaEdges.ALL;
 
   ////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////
@@ -1163,17 +1165,94 @@ public class Window extends Container {
 
   @ReplacedByNativeOnDeploy
   public static Insets getSafeAreaInsets() {
-    Insets preset = Settings.isLandscape() ? Launcher.instance.toInsetsLandscape : Launcher.instance.toInsetsPortrait;
+    Insets preset = Launcher.instance == null ? null
+        : Settings.isLandscape() ? Launcher.instance.toInsetsLandscape : Launcher.instance.toInsetsPortrait;
     return preset != null ? preset : safeAreaInsets;
   }
 
-  ////////////////////////////////////////////////////////////////////////////////////
-  /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
-   * In this version, you provide the created Rect to be filled with the coords.
-   */
-  @Override
-  protected void getClientRect(Rect r) // guich@450_36
-  {
+  /** Sets how this window applies platform safe-area insets. */
+  public void setSafeAreaMode(SafeAreaMode mode) {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
+    if (safeAreaMode != mode) {
+      safeAreaMode = mode;
+      repositionChildren();
+      repaint();
+    }
+  }
+
+  /** Returns this window's safe-area mode. The default is {@link SafeAreaMode#AUTO}. */
+  public SafeAreaMode getSafeAreaMode() {
+    return safeAreaMode;
+  }
+
+  /** Sets the safe-area edges selected by this window. */
+  public void setSafeAreaEdges(int edges) {
+    edges = SafeAreaEdges.validate(edges);
+    if (safeAreaEdges != edges) {
+      safeAreaEdges = edges;
+      repositionChildren();
+      repaint();
+    }
+  }
+
+  /** Returns the safe-area edges selected by this window. */
+  public int getSafeAreaEdges() {
+    return safeAreaEdges;
+  }
+
+  static boolean _updateSafeAreaInsets(int top, int left, int bottom, int right) {
+    if (safeAreaInsets.top == top && safeAreaInsets.left == left && safeAreaInsets.bottom == bottom
+        && safeAreaInsets.right == right) {
+      return false;
+    }
+
+    Insets previous = new Insets(safeAreaInsets.top, safeAreaInsets.left, safeAreaInsets.bottom, safeAreaInsets.right);
+    safeAreaInsets.set(top, left, bottom, right);
+    Insets current = new Insets(top, left, bottom, right);
+    Object[] active = zStack.items;
+    int count = zStack.size();
+    for (int i = 0; i < count; i++) {
+      Window window = (Window) active[i];
+      if (window != null) {
+        window.safeAreaInsetsChanged(new Insets(previous.top, previous.left, previous.bottom, previous.right),
+            new Insets(current.top, current.left, current.bottom, current.right));
+        window.repositionChildren();
+      }
+    }
+    repaint();
+    return true;
+  }
+
+  /** Called once on each active window after the platform safe area changes. */
+  protected void safeAreaInsetsChanged(Insets previous, Insets current) {
+  }
+
+  private int getAppliedSafeAreaEdges() {
+    if (safeAreaMode == SafeAreaMode.DISABLED) {
+      return SafeAreaEdges.NONE;
+    }
+    if (safeAreaMode == SafeAreaMode.ENABLED || this instanceof MainWindow) {
+      return safeAreaEdges;
+    }
+    int touched = SafeAreaEdges.NONE;
+    if (x <= 0) {
+      touched |= SafeAreaEdges.LEFT;
+    }
+    if (y <= 0) {
+      touched |= SafeAreaEdges.TOP;
+    }
+    if (x + width >= Settings.screenWidth) {
+      touched |= SafeAreaEdges.RIGHT;
+    }
+    if (y + height >= Settings.screenHeight) {
+      touched |= SafeAreaEdges.BOTTOM;
+    }
+    return safeAreaEdges & touched;
+  }
+
+  private void getBaseClientRect(Rect r) {
     int m = (borderStyle < NO_BORDER || borderStyle > VERTICAL_GRADIENT) ? 0 : borderGaps[borderStyle];
     boolean onlyBorder = borderStyle <= NO_BORDER
         || ((title == null || title.isEmpty()) && (borderStyle == ROUND_BORDER && uiAndroid));
@@ -1188,8 +1267,63 @@ public class Window extends Container {
       r.y--;
       break;
     }
-    r.width = this.width - m - m;
-    r.height = this.height - r.y - m;
+    r.width = width - m - m;
+    r.height = height - r.y - m;
+
+    Insets effective = new Insets();
+    getEffectiveInsets(effective);
+    r.x += effective.left;
+    r.y += effective.top;
+    r.width -= effective.left + effective.right;
+    r.height -= effective.top + effective.bottom;
+  }
+
+  private void getSafeClientRect(Rect r, int applied) {
+    getBaseClientRect(r);
+    Insets safe = getSafeAreaInsets();
+    if ((applied & SafeAreaEdges.LEFT) != 0) {
+      r.x += safe.left;
+      r.width -= safe.left;
+    }
+    if ((applied & SafeAreaEdges.TOP) != 0) {
+      r.y += safe.top;
+      r.height -= safe.top;
+    }
+    if ((applied & SafeAreaEdges.RIGHT) != 0) {
+      r.width -= safe.right;
+    }
+    if ((applied & SafeAreaEdges.BOTTOM) != 0) {
+      r.height -= safe.bottom;
+    }
+  }
+
+  @Override
+  void getClientRectForChild(Control child, Rect r) {
+    SafeAreaLayout layout = child.getSafeAreaLayout();
+    boolean safe = layout == SafeAreaLayout.SAFE
+        || (layout == SafeAreaLayout.INHERIT && safeAreaMode != SafeAreaMode.DISABLED);
+    if (safe) {
+      int applied = layout == SafeAreaLayout.SAFE ? safeAreaEdges : getAppliedSafeAreaEdges();
+      getSafeClientRect(r, applied);
+      child.safeAreaConsumedEdges = applied | getSafeAreaPaddingEdges();
+    } else {
+      getBaseClientRect(r);
+      child.safeAreaConsumedEdges = getSafeAreaPaddingEdges();
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////
+  /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
+   * In this version, you provide the created Rect to be filled with the coords.
+   */
+  @Override
+  protected void getClientRect(Rect r) // guich@450_36
+  {
+    if (safeAreaMode == SafeAreaMode.DISABLED) {
+      getBaseClientRect(r);
+    } else {
+      getSafeClientRect(r, getAppliedSafeAreaEdges());
+    }
   }
   
   ////////////////////////////////////////////////////////////////////////////////////

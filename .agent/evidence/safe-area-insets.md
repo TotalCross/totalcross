@@ -21,3 +21,16 @@ This file is append-only. Store verbose logs under `build/safe-area-insets/`.
   maps `viewSafeAreaInsetsDidChange` to `screenChanged`/`SK_SCREEN_CHANGE`.
 - Objective update: focused local milestone commits are explicitly required;
   remote publication remains prohibited.
+
+## Milestone 1: core SDK safe-area model
+
+- Timestamp: 2026-08-05T05:48:20Z
+- Command: `TotalCrossSDK/gradlew-agent test --tests
+  'totalcross.ui.SafeAreaLayoutTest'`
+- Status: passed, 7 tests, 0 failures, 0 errors.
+- Full log: `TotalCrossSDK/agent-logs/20260805-024752-test-full.log`.
+- Result: window modes and selected/touched edges, forced safe/full-bleed child
+  placement, declared inset preservation and negative cancellation, safe-padding
+  deduplication, invalid-input rejection, and one callback per changed update are
+  covered. Identical updates return false and do not notify.
+- Build status: not run, as required before the milestone-3 SDK checkpoint.

@@ -8,8 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Editorial Summary
 
-Execution is in progress on `feat/logical-ui-scaling`. Milestone 0 established
-the clean scoped baseline; implementation begins with the core SDK model.
+Execution is in progress on `feat/logical-ui-scaling`. Milestone 1 delivered
+the core SDK model; scroll content insets are the active slice.
 
 ## Scope
 
@@ -20,21 +20,24 @@ insets, packaging, and unrelated layout changes remain excluded.
 
 ## Original Plan versus Current Outcome
 
-The baseline matches the plan. No feature implementation has completed yet.
+The baseline matched the plan. Window policy, control safe/full-bleed override,
+container safe padding, and dynamic SDK cache transition are implemented.
 
 ## Decisions and Trade-offs
 
-Declared user insets will remain distinct from effective safe-area insets, and
-platform changes will use a dedicated internal transition rather than surface
-resize events.
+Declared user insets remain distinct from effective safe-area insets. A
+consumed-edge mask prevents nested safe padding from duplicating already applied
+window exclusion. Platform work will call the dedicated transition rather than
+surface resize events.
 
 ## Validation and Measurable Results
 
-Milestone 0 used scoped status and source inventories only. No build was run.
+`SafeAreaLayoutTest` passed 7 tests with no failures. No build was run, matching
+the milestone gate.
 
 ## Limitations and Remaining Work
 
-Milestones 1 through 5 remain.
+Milestones 2 through 5 remain.
 
 ## Claims Requiring Human Review
 

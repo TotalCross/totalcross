@@ -63,7 +63,8 @@ Do not resize existing files through unrelated refactoring.
   agreed API model.
 - [x] (2026-08-05T05:42:31Z) Milestone 0: recorded the scoped baseline without
   building; initialized state, evidence, history, and editorial files.
-- [ ] Milestone 1: implement core SDK safe-area layout and focused tests.
+- [x] (2026-08-05T05:48:20Z) Milestone 1: implemented the core SDK safe-area
+  model and passed all 7 focused layout tests.
 - [ ] Milestone 2: implement scroll content insets and focused tests.
 - [ ] Milestone 3: adapt menus and run the only SDK checkpoint build.
 - [ ] Milestone 4: implement Android/iOS updates and run the only Android build.
@@ -390,6 +391,12 @@ required by `.agent/PLANS.md`, including validation and limitations.
   `TotalCrossVM/src/event/android/event_c.h` and `SK_SCREEN_CHANGE` dispatch in
   `TotalCrossVM/src/event/darwin/event.m`.
 
+- Observation: `Window.getClientRect` did not include its inherited declared
+  `Container.insets`, even though the compatibility contract exposes them.
+  Evidence: the original override computed only title/border gaps; the focused
+  negative-cancellation test now proves declared values remain separate and
+  additive with safe exclusion.
+
 Record only findings that materially change remaining work; keep raw output in the
 log/evidence paths.
 
@@ -428,6 +435,13 @@ log/evidence paths.
   focused local commit at every completed milestone.
   Rationale: The updated goal objective explicitly authorizes and requires local
   milestone commits while still prohibiting pushes or remote-branch changes.
+  Date: 2026-08-05
+
+- Decision: Propagate a consumed-edge mask through the central parent client
+  rectangle selection used by `Control.setRect`.
+  Rationale: This keeps safe/full-bleed selection at the direct window-child
+  boundary while allowing nested container safe padding to avoid adding the
+  same edge twice.
   Date: 2026-08-05
 
 ## Validation and Acceptance
@@ -487,6 +501,13 @@ only pre-existing scoped change was this untracked ExecPlan. The baseline
 confirmed that logical scaling and platform safe-area queries exist, but dynamic
 safe-area ownership is not yet separated from surface-change behavior.
 
+Milestone 1 delivered `SafeAreaMode`, `SafeAreaLayout`, `SafeAreaEdges`, window
+edge policy, direct-child safe/full-bleed placement, additive container safe
+padding, and the deduplicating SDK update transition. Seven focused tests pass,
+including selected modes, touched edges, declared inset preservation, negative
+cancellation, padding deduplication, update deduplication, and callbacks. No
+distribution build ran.
+
 ## Revision Note
 
 Initial plan created on 2026-08-05. It limits work to safe-area and inset
@@ -503,3 +524,7 @@ the next implementation slice.
 Objective-reconciliation update on 2026-08-05 records the newly explicit local
 commit requirement. It changes checkpoint mechanics only; feature scope,
 validation gates, and platform-build limits are unchanged.
+
+Milestone 1 update on 2026-08-05 records the implemented core APIs, the
+consumed-edge propagation design, the declared-window-inset compatibility fix,
+and the passing focused validation. Milestone 2 is now active.
