@@ -10,10 +10,10 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 
 ## Active checkpoint
 
-- Base: `9ae29ec2e` after the milestone-0 commit.
+- Base: `6b79c8ad0` after the milestone-1 commit.
 - Branch: `feat/logical-ui-scaling`.
-- Completed milestone: 1, core SDK safe-area model and focused tests.
-- Active milestone: 2, `ScrollContainer` content insets.
+- Completed milestone: 2, `ScrollContainer` content insets and focused tests.
+- Active milestone: 3, menu integration and the SDK checkpoint build.
 - Protected task input: `.agent/safe-area-insets-execplan.md`; preserve its
   intent and living history while committing milestone updates locally.
 
@@ -28,12 +28,16 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 - `SafeAreaLayoutTest`: 7 tests passed in
   `TotalCrossSDK/agent-logs/20260805-024752-test-full.log`.
 - New public types are 20, 21, and 31 lines; the new test is 175 lines.
+- `ScrollContainerContentInsetsTest`: 5 tests passed in
+  `TotalCrossSDK/agent-logs/20260805-025313-test-full.log`.
+- Its new test file is 120 lines; content insets preserve the viewport and
+  origin/middle/trailing anchors.
 
 ## Next exact action
 
-Inspect only `ScrollContainer` viewport/content extent and scroll-position
-methods, then implement non-negative content insets with anchor preservation and
-`ScrollContainerContentInsetsTest`.
+Inspect only `TopMenu` and `SideMenuContainer` construction/layout paths. Add
+fixed bars, reserve/overlay behavior, forwarding APIs, and focused tests, then
+run the milestone-3 focused suite and the sole SDK distribution checkpoint.
 
 ## Blockers
 

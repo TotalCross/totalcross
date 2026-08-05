@@ -8,8 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Editorial Summary
 
-Execution is in progress on `feat/logical-ui-scaling`. Milestone 1 delivered
-the core SDK model; scroll content insets are the active slice.
+Execution is in progress on `feat/logical-ui-scaling`. Milestones 1 and 2
+delivered the core SDK and scrolling models; menu integration is active.
 
 ## Scope
 
@@ -22,6 +22,8 @@ insets, packaging, and unrelated layout changes remain excluded.
 
 The baseline matched the plan. Window policy, control safe/full-bleed override,
 container safe padding, and dynamic SDK cache transition are implemented.
+`ScrollContainer` content insets now extend scrollable content independently of
+the viewport and preserve origin, visible-content, and trailing-edge anchors.
 
 ## Decisions and Trade-offs
 
@@ -33,11 +35,12 @@ surface resize events.
 ## Validation and Measurable Results
 
 `SafeAreaLayoutTest` passed 7 tests with no failures. No build was run, matching
-the milestone gate.
+the milestone-1 gate. `ScrollContainerContentInsetsTest` passed 5 tests with no
+failures; the SDK checkpoint remains reserved for milestone 3.
 
 ## Limitations and Remaining Work
 
-Milestones 2 through 5 remain.
+Milestones 3 through 5 remain.
 
 ## Claims Requiring Human Review
 
