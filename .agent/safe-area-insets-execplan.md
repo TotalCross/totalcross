@@ -65,7 +65,8 @@ Do not resize existing files through unrelated refactoring.
   building; initialized state, evidence, history, and editorial files.
 - [x] (2026-08-05T05:48:20Z) Milestone 1: implemented the core SDK safe-area
   model and passed all 7 focused layout tests.
-- [ ] Milestone 2: implement scroll content insets and focused tests.
+- [x] (2026-08-05T05:53:20Z) Milestone 2: implemented scroll content insets
+  with preserved anchors and passed all 5 focused tests.
 - [ ] Milestone 3: adapt menus and run the only SDK checkpoint build.
 - [ ] Milestone 4: implement Android/iOS updates and run the only Android build.
 - [ ] Milestone 5: final focused validation, optional smoke tests, and reporting.
@@ -397,6 +398,12 @@ required by `.agent/PLANS.md`, including validation and limitations.
   negative-cancellation test now proves declared values remain separate and
   additive with safe exclusion.
 
+- Observation: `ScrollContainer.resize` reset scrollbar tracking values when
+  re-adding bars, while bag coordinates retained the prior visual offset.
+  Evidence: the original method assigned `lastH = 0` and `lastV = 0`; content
+  inset resizing now restores clamped scrollbar values and positions the bag
+  from one source of truth.
+
 Record only findings that materially change remaining work; keep raw output in the
 log/evidence paths.
 
@@ -442,6 +449,13 @@ log/evidence paths.
   Rationale: This keeps safe/full-bleed selection at the direct window-child
   boundary while allowing nested container safe padding to avoid adding the
   same edge twice.
+  Date: 2026-08-05
+
+- Decision: Model leading content insets as the scrolling bag origin and model
+  both leading and trailing values in scrollbar extent.
+  Rationale: Existing child coordinates and viewport bounds remain unchanged,
+  while the first and last content edges become reachable with exactly one
+  addition to each axis maximum.
   Date: 2026-08-05
 
 ## Validation and Acceptance
@@ -508,6 +522,11 @@ including selected modes, touched edges, declared inset preservation, negative
 cancellation, padding deduplication, update deduplication, and callbacks. No
 distribution build ran.
 
+Milestone 2 delivered non-negative `ScrollContainer.contentInsets`. Five focused
+tests prove viewport stability, exact extent growth, reachable first/last
+content, idempotence, invalid-value rejection, middle-anchor preservation, and
+trailing-edge anchoring. No distribution build ran.
+
 ## Revision Note
 
 Initial plan created on 2026-08-05. It limits work to safe-area and inset
@@ -528,3 +547,7 @@ validation gates, and platform-build limits are unchanged.
 Milestone 1 update on 2026-08-05 records the implemented core APIs, the
 consumed-edge propagation design, the declared-window-inset compatibility fix,
 and the passing focused validation. Milestone 2 is now active.
+
+Milestone 2 update on 2026-08-05 records the bag-origin/extent representation,
+the scrollbar-state correction discovered during implementation, and the five
+passing focused tests. Milestone 3 menu integration is now active.

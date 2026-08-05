@@ -34,3 +34,16 @@ This file is append-only. Store verbose logs under `build/safe-area-insets/`.
   deduplication, invalid-input rejection, and one callback per changed update are
   covered. Identical updates return false and do not notify.
 - Build status: not run, as required before the milestone-3 SDK checkpoint.
+
+## Milestone 2: scroll content insets
+
+- Timestamp: 2026-08-05T05:53:20Z
+- Command: `TotalCrossSDK/gradlew-agent test --tests
+  'totalcross.ui.ScrollContainerContentInsetsTest'`
+- Status: passed, 5 tests, 0 failures, 0 errors.
+- Full log: `TotalCrossSDK/agent-logs/20260805-025313-test-full.log`.
+- Result: viewport bounds remain unchanged; maxima grow by leading plus trailing
+  insets exactly once; first and last content are reachable; origin, middle, and
+  trailing anchors survive changes; identical values are inert and negatives
+  are rejected.
+- Build status: not run, as required before the milestone-3 SDK checkpoint.
