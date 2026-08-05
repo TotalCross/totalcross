@@ -144,26 +144,6 @@ public class MainWindow extends Window implements totalcross.MainClass {
   }
 
   @Override
-  protected void getClientRect(Rect r) // guich@450_36
-  {
-    super.getClientRect(r);
-
-    Insets i = MainWindow.getSafeAreaInsets();
-    if (this.y >= 0 && this.y < i.top) {
-      r.y += i.top;
-    }
-    if (this.height > Settings.screenHeight - (i.top + i.bottom)) {
-      r.height -= i.top + i.bottom;
-    }
-    if (this.x >= 0 && this.x < i.left) {
-      r.x += i.left;
-    }
-    if (this.width > Settings.screenWidth - (i.left + i.right)) {
-      r.width -= i.left + i.right;
-    }
-  }
-
-  @Override
   protected void fillBackground(Graphics g, int b) {
     g.backColor = UIColors.unsafeAreaColor;
     g.fillRect(0, 0, width, height);

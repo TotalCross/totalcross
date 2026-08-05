@@ -117,6 +117,7 @@ public class Container extends Control {
    * @see #setInsets
    */
   protected Insets insets = new Insets(); // guich@tc110_87
+  private int safeAreaPaddingEdges = SafeAreaEdges.NONE;
 
   /** Set to true to always erase the background when repainting this container.
    * @since TotalCross 1.0
@@ -252,6 +253,57 @@ public class Container extends Control {
     copyInto.right = insets.right;
     copyInto.top = insets.top;
     copyInto.bottom = insets.bottom;
+  }
+
+  /**
+   * Selects safe-area edges to add as internal padding. Only edges not already
+   * consumed while positioning this container are added. Values are expressed
+   * in logical layout units.
+   */
+  public void setSafeAreaPaddingEdges(int edges) {
+    edges = SafeAreaEdges.validate(edges);
+    if (safeAreaPaddingEdges != edges) {
+      safeAreaPaddingEdges = edges;
+      repositionChildren();
+      repaint();
+    }
+  }
+
+  /** Returns the safe-area edges used as internal padding. */
+  public int getSafeAreaPaddingEdges() {
+    return safeAreaPaddingEdges;
+  }
+
+  /**
+   * Copies declared insets plus unconsumed selected safe-area padding into the
+   * supplied object. Additive values are deliberately not clamped, so negative
+   * declared insets can cancel safe-area padding.
+   */
+  protected void getEffectiveInsets(Insets copyInto) {
+    copyInto.copyFrom(insets);
+    Insets safe = Window.getSafeAreaInsets();
+    int applied = getAppliedSafeAreaPaddingEdges();
+    if ((applied & SafeAreaEdges.LEFT) != 0) {
+      copyInto.left += safe.left;
+    }
+    if ((applied & SafeAreaEdges.TOP) != 0) {
+      copyInto.top += safe.top;
+    }
+    if ((applied & SafeAreaEdges.RIGHT) != 0) {
+      copyInto.right += safe.right;
+    }
+    if ((applied & SafeAreaEdges.BOTTOM) != 0) {
+      copyInto.bottom += safe.bottom;
+    }
+  }
+
+  private int getAppliedSafeAreaPaddingEdges() {
+    return safeAreaPaddingEdges & ~safeAreaConsumedEdges;
+  }
+
+  void getClientRectForChild(Control child, Rect r) {
+    getClientRect(r);
+    child.safeAreaConsumedEdges = safeAreaConsumedEdges | getAppliedSafeAreaPaddingEdges();
   }
 
   /** Adds the control to this container, using the given bounds, relative to the last control added
@@ -599,7 +651,10 @@ public class Container extends Control {
    */
   protected void getClientRect(Rect r) // guich@450_36
   {
-    r.set(insets.left, insets.top, width - insets.left - insets.right, height - insets.top - insets.bottom);
+    Insets effective = new Insets();
+    getEffectiveInsets(effective);
+    r.set(effective.left, effective.top, width - effective.left - effective.right,
+        height - effective.top - effective.bottom);
   }
 
   @Override
