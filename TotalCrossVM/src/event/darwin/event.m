@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -9,6 +10,7 @@
 #include "../../nm/ui/darwin/mainview.h"
 #define Class __Class
 #include "GraphicsPrimitives.h"
+#include "Window.h"
 #define Context id
 #include "event.h"
 #undef Class
@@ -68,10 +70,14 @@ void iphone_privatePumpEvent(Context currentContext)
          postEvent(currentContext, CONTROLEVENT_SIP_CLOSED, 0,0,0,0);
       }
       else
-      if([type isEqualToString:@"screenChanged"])
+      if([type isEqualToString:@"safeAreaChanged"])
       {
-         #define SK_SCREEN_CHANGE -1030
-         postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
+         windowUpdateSafeAreaInsetsPhysical(
+            currentContext,
+            [[event objectForKey:@"top"] intValue],
+            [[event objectForKey:@"left"] intValue],
+            [[event objectForKey:@"bottom"] intValue],
+            [[event objectForKey:@"right"] intValue]);
       }
       else
       if([type isEqualToString:@"screenChange"])

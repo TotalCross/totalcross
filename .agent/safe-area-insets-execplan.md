@@ -69,8 +69,10 @@ Do not resize existing files through unrelated refactoring.
   with preserved anchors and passed all 5 focused tests.
 - [x] (2026-08-05T06:01:15Z) Milestone 3: adapted fixed menu bars and all four
   scroll-under modes; 19 focused tests and the sole SDK checkpoint build passed.
-- [ ] Milestone 4: implement Android/iOS updates and run the only Android build.
-- [ ] Milestone 5: final focused validation, optional smoke tests, and reporting.
+- [x] (2026-08-05T06:09:40Z) Milestone 4: implemented dedicated Android/iOS
+  dynamic delivery; 14 focused tests and the sole Android checkpoint passed.
+- [x] (2026-08-05T06:12:30Z) Milestone 5: passed final focused/static/header
+  validation, attempted smoke availability checks, and completed reporting.
 
 ## Current Architecture and Scope
 
@@ -417,6 +419,26 @@ required by `.agent/PLANS.md`, including validation and limitations.
   Evidence: the initial menu test produced negative `-20,-10` child dimensions;
   sizing the host before adding the bar resolved it.
 
+- Observation: Android's first `SCREEN_CHANGED` native event calls
+  `callExecuteProgram`, which owns the VM event loop for the application's
+  lifetime rather than returning immediately to the Java runnable.
+  Evidence: `TotalCrossVM/src/event/android/event_c.h` documents the blocking
+  call. The dedicated JNI entry therefore retains the latest physical values
+  natively until that event marks the program started and flushes the SDK cache.
+
+- Observation: The header validator covers the changed Java/C/header files but
+  does not count Objective-C `.m` inputs.
+  Evidence: the focused seven-file invocation reported five checked files; the
+  two changed `.m` headers were updated to the repository-required historical
+  chain and checked with `git diff --check`.
+
+- Observation: No Android device is attached and no pre-existing runnable iOS
+  application artifact exists in the scoped workspace.
+  Evidence: `adb devices -l` returned an empty device list; the artifact search
+  found only the generic Android checkpoint APK/AAB and no `.app` or safe-area
+  demo fixture. Device smoke assertions therefore cannot run without creating a
+  new fixture/build, which this plan forbids.
+
 Record only findings that materially change remaining work; keep raw output in the
 log/evidence paths.
 
@@ -479,6 +501,25 @@ log/evidence paths.
   not incorrectly add its bottom inset to the top bar.
   Date: 2026-08-05
 
+- Decision: Retain pending Android values at both the Java pre-ready boundary
+  and the native pre-program boundary.
+  Rationale: Insets may arrive before a valid surface or before TotalCross SDK
+  classes can receive the update. Two small latest-value caches make startup
+  deterministic without routing safe changes through surface recreation.
+  Date: 2026-08-05
+
+- Decision: Keep platform queries as a one-time native startup fallback and set
+  the same logical Java cache as steady-state ownership.
+  Rationale: Existing launchers remain source-compatible while pushed changes
+  no longer overwrite user/layout state on every getter call.
+  Date: 2026-08-05
+
+- Decision: Complete the plan with device smoke coverage explicitly deferred.
+  Rationale: All implementation, focused behavioral tests, static iOS checks,
+  SDK build, and Android build pass; missing device/artifact access is an allowed
+  limitation and generating another fixture would violate the build constraints.
+  Date: 2026-08-05
+
 ## Validation and Acceptance
 
 Use the escalation order in `AGENTS.md`. Acceptance requires:
@@ -496,6 +537,17 @@ Use the escalation order in `AGENTS.md`. Acceptance requires:
 - iOS is statically reconciled and smoke-tested only when possible without build.
 
 Missing device access is a reported limitation, not a feature failure.
+
+Final results: `SafeAreaLayoutTest` passed 7 tests,
+`ScrollContainerContentInsetsTest` passed 5, and `TopMenuSafeAreaTest` passed 7.
+The sole `dist -x test` SDK checkpoint passed in 25 seconds, and the sole Android
+`:app:assembleStandardDebug` checkpoint passed in 28 seconds. Focused copyright
+validation passed for all 22 supported changed inputs; the two Objective-C files
+were updated to the required historical chain because the validator does not
+count `.m` files. `git diff --check 0ec107e0b9e3..HEAD` passed. Android smoke was
+unavailable because `adb devices -l` listed no device and no safe-area demo
+fixture exists; iOS smoke was unavailable because no pre-existing `.app` exists.
+No prohibited platform, clean, packaging, or repeat checkpoint build ran.
 
 ## Risks and Open Questions
 
@@ -554,6 +606,20 @@ four Reddit/ChatGPT/Gmail/dual-overlay presets, dynamic recalculation, and
 The combined 19 focused tests passed, followed by the only SDK distribution
 checkpoint in 25 seconds.
 
+Milestone 4 delivered Android root-inset changes through a dedicated event-thread
+JNI method and iOS changes through a dedicated queued dictionary event. Both
+paths convert physical values in one common native helper and invoke the SDK
+cache transition without screen-resize or graphics lifecycle calls. Fourteen
+focused tests passed, and `assembleStandardDebug` passed in 28 seconds. iOS was
+statically reconciled and deliberately not built.
+
+Milestone 5 completed the full plan. The final 19-test suite, focused header
+validation, committed-diff whitespace check, size limits, JNI generation check,
+and scoped diff review passed. Android and iOS smoke availability was checked
+last; neither could run because no device or runnable iOS artifact was available.
+The requested behavior is implemented and checkpoint-built, with only runtime
+device observation remaining for human/platform follow-up.
+
 ## Revision Note
 
 Initial plan created on 2026-08-05. It limits work to safe-area and inset
@@ -583,3 +649,13 @@ Milestone 3 update on 2026-08-05 records fixed-bar host composition, the saved
 position and zero-sized-host discoveries, 19 passing focused tests, and the
 successful sole SDK distribution checkpoint. Milestone 4 platform delivery is
 now active.
+
+Milestone 4 update on 2026-08-05 records the dual Android startup retention,
+bounded pull fallback, dedicated iOS event, common logical conversion, passing
+focused tests, and successful sole Android checkpoint. Final validation and
+smoke-test attempts are now active.
+
+Milestone 5 completion update on 2026-08-05 records the final 19 passing tests,
+22-file supported-header validation, Objective-C header reconciliation, clean
+committed diff, file-size compliance, unavailable device smoke conditions, and
+the completed factual reports.

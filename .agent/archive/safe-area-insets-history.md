@@ -40,3 +40,23 @@ adds that height to content insets. `ScrollUnderMode` exposes the Reddit,
 ChatGPT, Gmail, and both-edge combinations, and `SideMenuContainer` forwards the
 configuration. Nineteen focused tests and the one SDK distribution checkpoint
 passed.
+
+## Milestone 4
+
+Android reuses the decor-view `WindowInsetsCompat` listener, excluding IME and
+never applying view padding. Changed physical values are retained until the VM
+is ready, sent through a generated JNI method on the TotalCross event thread,
+and guarded once more across program startup. iOS emits a dedicated physical
+safe-area event after valid layout and on subsequent changes. Both converge on
+`windowUpdateSafeAreaInsetsPhysical`, which converts by content scale and invokes
+the SDK transition. Fourteen focused tests and the sole Android build passed;
+iOS received static reconciliation only, as required.
+
+## Milestone 5
+
+The final focused suite passed all 19 tests. Exact changed-file header and
+whitespace validation passed, generated JNI evidence was confirmed, and new-file
+size limits were satisfied. Smoke checks ran last: no Android device was attached
+and no runnable iOS artifact or safe-area demo fixture existed, so no device was
+mutated and no additional build was created. Final reports distinguish this
+environment limitation from the completed implementation.

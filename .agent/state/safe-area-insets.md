@@ -10,10 +10,10 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 
 ## Active checkpoint
 
-- Base: `24414c985` after the milestone-2 commit.
+- Base: `2677c8ffc` after the milestone-4 commit.
 - Branch: `feat/logical-ui-scaling`.
-- Completed milestone: 3, menu integration, focused tests, and SDK checkpoint.
-- Active milestone: 4, dynamic Android/iOS delivery and Android checkpoint.
+- Completed milestone: 5; every implementation and available validation gate is complete.
+- Active milestone: none.
 - Protected task input: `.agent/safe-area-insets-execplan.md`; preserve its
   intent and living history while committing milestone updates locally.
 
@@ -37,16 +37,32 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 - Sole SDK distribution checkpoint: passed in 25 seconds; concise/full logs are
   `TotalCrossSDK/agent-logs/20260805-030050-dist-agent.log` and
   `TotalCrossSDK/agent-logs/20260805-030050-dist-full.log`.
+- Milestone-4 focused subset: 14 tests passed in
+  `TotalCrossSDK/agent-logs/20260805-030820-test-full.log`.
+- Sole Android checkpoint: `:app:assembleStandardDebug` passed in 28 seconds;
+  full log is `build/safe-area-insets/android-build.log`.
+- Generated JNI header contains `nativeSafeAreaInsetsChanged`; it remains a
+  generated build file and is not staged.
+- Final suite: 19 tests passed in
+  `TotalCrossSDK/agent-logs/20260805-031147-test-full.log`.
+- Final changed-file copyright validation passed for 22 supported files;
+  Objective-C headers were reconciled separately to the required 2026 chain.
+- Committed task diff from `0ec107e0b9e3` contains 24 files and passes
+  `git diff --check`.
+- Every newly created source/test/state/evidence/history/editorial file is below
+  20 KB and 600 lines. The supplied authoritative ExecPlan is excluded from the
+  new-file limit and remains self-contained.
 
 ## Next exact action
 
-Inspect the Android root-insets listener/JNI path and iOS main-view/event queue,
-then add the common native physical-to-logical helper and dedicated push events.
-Run only the prescribed focused SDK subset and the sole Android checkpoint.
+No implementation action remains. When a configured Android device and a
+launchable safe-area demo become available, run the prescribed portrait and
+landscape smoke observations. Run iOS smoke only with a pre-existing runnable
+artifact; do not infer a need for another build from this completed plan.
 
 ## Blockers
 
-None.
+None. Device smoke is an environment limitation, not an implementation blocker.
 
 ## Resume command
 

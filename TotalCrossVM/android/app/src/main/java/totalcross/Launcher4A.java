@@ -360,6 +360,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                return;
             }
 
+            safeAreaVmReady = true;
+            flushPendingSafeAreaInsetsInEventThread();
+
             rDirty.left = rDirty.top = 0;
             rDirty.right = width;
             rDirty.bottom = height;
@@ -811,6 +814,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public native void nativeSetKeyboardShift(int percentage);
    public native void nativePrepareForPause();
    public native void nativePrepareForResume();
+   private native void nativeSafeAreaInsetsChanged(int top, int left, int bottom, int right);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    public native static void nativeSmsReceived(String displayOriginatingAddress, String displayMessageBody, byte[] userData);
    public native static void nativeOnMessageReceived(String messageId, String messageType,
@@ -930,18 +934,43 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    
     private Insets safeInsets;
+    private boolean safeAreaInsetsPending;
+    private volatile boolean safeAreaVmReady;
 
     public void onSafeAreaChanged(Insets insets) {
-        Insets previousInsets = safeInsets;
-        boolean changed = previousInsets == null
-                || previousInsets.top != insets.top
-                || previousInsets.left != insets.left
-                || previousInsets.bottom != insets.bottom
-                || previousInsets.right != insets.right;
-        safeInsets = insets;
-        if (changed && eventThread != null && lastSurface != null && lastSurface.isValid() && lastScreenW > 0 && lastScreenH > 0) {
-            sendScreenChangeEvent();
+        boolean changed;
+        synchronized (this) {
+            Insets previousInsets = safeInsets;
+            changed = previousInsets == null
+                    || previousInsets.top != insets.top
+                    || previousInsets.left != insets.left
+                    || previousInsets.bottom != insets.bottom
+                    || previousInsets.right != insets.right;
+            if (changed) {
+                safeInsets = Insets.of(insets.left, insets.top, insets.right, insets.bottom);
+                safeAreaInsetsPending = true;
+            }
         }
+        if (changed && safeAreaVmReady && eventThread != null) {
+            eventThread.invokeInEventThread(false, new Runnable() {
+                @Override
+                public void run() {
+                    flushPendingSafeAreaInsetsInEventThread();
+                }
+            });
+        }
+    }
+
+    private void flushPendingSafeAreaInsetsInEventThread() {
+        Insets pending;
+        synchronized (this) {
+            if (!safeAreaInsetsPending || safeInsets == null) {
+                return;
+            }
+            pending = safeInsets;
+            safeAreaInsetsPending = false;
+        }
+        nativeSafeAreaInsetsChanged(pending.top, pending.left, pending.bottom, pending.right);
     }
 
     @Nullable
