@@ -1,9 +1,8 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
-
-
 
 package totalcross;
 
@@ -80,8 +79,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -280,6 +277,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    
    private android.view.Surface lastSurface;
+   private int surfaceGeneration;
 
    private void tryBootstrapSurface(SurfaceHolder holder)
    {
@@ -311,10 +309,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          appTitleH = lastScreenH - h; 
       
       if (sipVisible && !rotated) // sip changed and no rotation occured?
-         instance.nativeInitSize(null,-999,100); // signal vm that the keyboard will appear at 100%
+         instance.nativeSetKeyboardShift(100);
       else
       {
-         instance.nativeInitSize(null,-999,0); // signal vm that the keyboard will hide
+         instance.nativeSetKeyboardShift(0);
          android.view.Surface surface = holder == null ? lastSurface : holder.getSurface();
          if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
          {
@@ -328,28 +326,46 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    private void sendScreenChangeEvent()
    {
-      if (!loader.isInteractive()) {
-        return;
+      final Surface surface = lastSurface;
+      final int width = lastScreenW;
+      final int height = lastScreenH;
+
+      if (!loader.isInteractive() || surface == null || !surface.isValid()
+          || width <= 0 || height <= 0) {
+         return;
       }
-      
+
+      final int generation = ++surfaceGeneration;
       eventThread.invokeInEventThread(false, new Runnable()
       {
          public void run()
          {
-            nativeInitSize(lastSurface,lastScreenW,lastScreenH);
             DisplayMetrics metrics = getResources().getDisplayMetrics();
+            Configuration configuration = getResources().getConfiguration();
+            double contentScale = metrics.density > 0 ? metrics.density : 1;
+            double fontScale = configuration.fontScale > 0 ? configuration.fontScale : 1;
             final double defaultTextSize = new TextView(getContext()).getTextSize();
-            deviceFontHeight = 
-                BigDecimal.valueOf(defaultTextSize)
-                .divide(BigDecimal.valueOf(metrics.density), 0, RoundingMode.HALF_UP)
-                .intValue();
-            
+            deviceFontHeight = (int)(defaultTextSize / contentScale + 0.5);
+
+            if (!nativeSurfaceChanged(
+                  surface,
+                  width,
+                  height,
+                  contentScale,
+                  fontScale,
+                  (int)(metrics.xdpi + 0.5),
+                  (int)(metrics.ydpi + 0.5),
+                  deviceFontHeight,
+                  generation)) {
+               return;
+            }
+
             rDirty.left = rDirty.top = 0;
-            rDirty.right = lastScreenW;
-            rDirty.bottom = lastScreenH;
-            
+            rDirty.right = width;
+            rDirty.bottom = height;
+
             setSIP(SIP_HIDE,false);
-            _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+            _postEvent(SCREEN_CHANGED, 0, 0, 0, 0, 0);
             sendCloseSIPEvent(); // makes first screen rotation work
          }
       });
@@ -425,7 +441,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public void surfaceDestroyed(SurfaceHolder holder)
    {
-      instance.nativeInitSize(null,0,0); // signal vm that the surface will change
+      lastSurface = null;
+      nativeSurfaceDestroyed(++surfaceGeneration);
    }
 
    private static final int PEN_DOWN  = 1;
@@ -787,7 +804,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   public native void nativeInitSize(Surface surface, int w, int h);
+   public native boolean nativeSurfaceChanged(Surface surface, int width, int height,
+      double contentScale, double fontScale, int hRes, int vRes,
+      int deviceFontHeight, int generation);
+   public native void nativeSurfaceDestroyed(int generation);
+   public native void nativeSetKeyboardShift(int percentage);
+   public native void nativePrepareForPause();
+   public native void nativePrepareForResume();
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    public native static void nativeSmsReceived(String displayOriginatingAddress, String displayMessageBody, byte[] userData);
    public native static void nativeOnMessageReceived(String messageId, String messageType,
@@ -1447,7 +1470,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static void appPaused()
    {
       appPaused = true;
-      instance.nativeInitSize(null,-998,0); // signal vm to delete the textures while the context is valid
+      instance.nativePrepareForPause();
       if (eventThread != null)
       {
          setSIP(SIP_HIDE,false);
@@ -1459,7 +1482,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       SurfaceHolder holder = instance == null ? null : instance.getHolder();
       Surface surface = holder == null ? null : holder.getSurface();
-      instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
+      instance.nativePrepareForResume();
       if (eventThread != null && surface != null && surface.isValid() && lastScreenW > 0 && lastScreenH > 0)
       {
          instance.lastSurface = surface;
