@@ -6,39 +6,30 @@
 
 #include "gfx_ex.h"
 
-
-#ifdef ANDROID
-#include "../skia/skia.h"
-#include <android/native_window.h> // requires ndk r5 or newer
-#include <android/native_window_jni.h> // requires ndk r5 or newer
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
+#if defined(ANDROID) || (defined(TC_OS_ANDROID) && TC_OS_ANDROID)
+ #define TC_GLES_ANDROID 1
+ #include "../skia/skia.h"
+ #include <android/native_window.h>
+ #include <android/native_window_jni.h>
+ #include <GLES2/gl2.h>
+ #include <GLES2/gl2ext.h>
+ #include <EGL/egl.h>
 #else
-//#include <OpenGLES/gltypes.h>
-#include <OpenGLES/ES2/gl.h>
-#include <OpenGLES/ES2/glext.h>
-#define __gl2_h_
+ #define TC_GLES_ANDROID 0
+ #include <OpenGLES/ES2/gl.h>
+ #include <OpenGLES/ES2/glext.h>
+ #define __gl2_h_
 #endif
 
-
-#ifdef darwin
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
 bool isIpad;
 #else
 bool isIpad = false;
 #endif
 
-
-#ifdef ANDROID
-static ANativeWindow *window,*lastWindow;
-static EGLDisplay _display;
-static EGLSurface _surface;
-static EGLContext _context;
-static void destroyEGL();
-#endif
 static bool surfaceWillChange;
 
-#ifdef darwin
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
 void iphone_privateSetSurfaceWillChange(bool willChange)
 {
    surfaceWillChange = willChange;
@@ -55,213 +46,387 @@ static void resetGlobals()
    lastAlphaMask = -1;
 }
 
-bool initGLES(ScreenSurface screen);
+bool initGLES(ScreenSurface screenSurface);
 
 void setTimerInterval(int32 t);
 int32 desiredglShiftY;
 int32 setShiftYonNextUpdateScreen;
-#ifdef ANDROID
-void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
-{
-   if (!screen.extension)
-      screen.extension = xmalloc(4);//newX(ScreenSurfaceEx);
 
-   if (surface == null) // passed null when the surface is destroyed
+#if TC_GLES_ANDROID
+static ScreenSurfaceEx androidGetScreenExtension(ScreenSurface screenSurface)
+{
+   ScreenSurfaceEx extension = SCREEN_EX(screenSurface);
+   if (extension == null)
    {
-      if (width == -999)
-      {
-         if (needsPaint != null)
-         {
-            desiredglShiftY = height == 0 ? 0 : height; // change only after the next screen update, since here we are running in a different thread
-            setShiftYonNextUpdateScreen = true;
-            *needsPaint = true; // schedule a screen paint to update the shiftY values
-            setTimerInterval(1);
-         }
-      }
-      else
-      if (width == -998)
-      {
-         if (ENABLE_TEXTURE_TRACE) debug("deleting textures due to screen change");
-         if (glShiftY != 0) // fixes green screen that occurs when the keyboard is open and the user turns off the device
-         {
-            desiredglShiftY = 0; // change only after the next screen update, since here we are running in a different thread
-            setShiftYonNextUpdateScreen = true;
-            *needsPaint = true; // schedule a screen paint to update the shiftY values
-            setTimerInterval(1);
-         }
-      }
-      else
-      if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
-      {
-         if (lastWindow)
-         {
-            if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 1");
-         }
-      }
-      else
-         surfaceWillChange = true; // block all screen updates
-      return;
+      extension = (ScreenSurfaceEx)xmalloc(sizeof(TScreenSurfaceEx));
+      if (extension == null)
+         return null;
+
+      memset(extension, 0, sizeof(TScreenSurfaceEx));
+      extension->display = EGL_NO_DISPLAY;
+      extension->surface = EGL_NO_SURFACE;
+      extension->context = EGL_NO_CONTEXT;
+      screenSurface->extension = extension;
    }
+   return extension;
+}
+
+static void androidDestroyEGL(ScreenSurfaceEx extension)
+{
+   if (extension == null)
+      return;
+
+   if (extension->display != EGL_NO_DISPLAY)
+   {
+      eglMakeCurrent(extension->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+      if (extension->context != EGL_NO_CONTEXT)
+         eglDestroyContext(extension->display, extension->context);
+      if (extension->surface != EGL_NO_SURFACE)
+         eglDestroySurface(extension->display, extension->surface);
+      eglTerminate(extension->display);
+   }
+
+   extension->display = EGL_NO_DISPLAY;
+   extension->surface = EGL_NO_SURFACE;
+   extension->context = EGL_NO_CONTEXT;
+   extension->graphicsInitialized = false;
+}
+
+static void androidReleaseNativeWindow(ScreenSurfaceEx extension)
+{
+   if (extension != null && extension->window != null)
+   {
+      ANativeWindow_release(extension->window);
+      extension->window = null;
+   }
+}
+
+static bool androidApplySurfaceChange(JNIEnv *env, jobject javaSurface,
+                                      int32 width, int32 height,
+                                      double contentScale, double fontScale,
+                                      int32 hRes, int32 vRes,
+                                      int32 fontHeight, uint32 generation)
+{
+   ScreenSurfaceEx extension;
+   ANativeWindow *newWindow;
+   bool nativeSurfaceChanged;
+   bool hadGraphics;
+   TScreenConfiguration configuration;
+
+   if (javaSurface == null || width <= 0 || height <= 0)
+      return false;
+   if (generation < screen.surfaceGeneration)
+      return false;
+
+   extension = androidGetScreenExtension(&screen);
+   if (extension == null)
+      return false;
+
+   newWindow = ANativeWindow_fromSurface(env, javaSurface);
+   if (newWindow == null)
+      return false;
+
+   nativeSurfaceChanged = extension->window != newWindow;
+   hadGraphics = extension->graphicsInitialized;
+
+   if (nativeSurfaceChanged)
+   {
+      if (hadGraphics)
+         androidDestroyEGL(extension);
+      androidReleaseNativeWindow(extension);
+      extension->window = newWindow;
+   }
+   else
+   {
+      // ANativeWindow_fromSurface returns a retained reference.
+      ANativeWindow_release(newWindow);
+   }
+
+   memset(&configuration, 0, sizeof(configuration));
+   configuration.width = width;
+   configuration.height = height;
+   configuration.hRes = hRes;
+   configuration.vRes = vRes;
+   configuration.contentScale = contentScale > 0 ? contentScale : 1;
+   configuration.fontScale = fontScale > 0 ? fontScale : 1;
+   configuration.deviceFontHeight = fontHeight;
+   configuration.generation = generation;
+   configuration.surfaceReady = true;
+   configuration.nativeSurfaceChanged = nativeSurfaceChanged;
+
+   screen.bpp = ANDROID_BPP;
+   screenApplyConfiguration(&screen, &configuration);
+
    desiredglShiftY = glShiftY = 0;
    setShiftYonNextUpdateScreen = true;
    appW = width;
    appH = height;
    surfaceWillChange = false;
-   if (window) // fixed memory leak
-      ANativeWindow_release(window);
-
-   window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
-   if (lastWindow && lastWindow != window)
+
+   if (nativeSurfaceChanged && hadGraphics && !initGLES(&screen))
    {
-      if (window == null) {debug("window is null. surface is %p. app will likely crash...", (void*)surface);}
-      destroyEGL();
-      initGLES(&screen);
-      if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 2");
+      screen.surfaceReady = false;
+      surfaceWillChange = true;
+      return false;
    }
-   lastWindow = window;
-}
-#endif
-
-
-
-
-
-
-#ifdef ANDROID
-#include "../skia/skia.h"
-
-bool initGLES(ScreenSurface screen)
-{
-	   int32 i;
-	   const EGLint attribs[] = {
-	      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-	      EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-	      EGL_BLUE_SIZE, 8,
-	      EGL_GREEN_SIZE, 8,
-	      EGL_RED_SIZE, 8,
-	      EGL_ALPHA_SIZE, 8,
-	      EGL_STENCIL_SIZE, 8,
-	      EGL_NONE
-	   };
-	   EGLint context_attribs[] = { 
-	      EGL_CONTEXT_CLIENT_VERSION, 2, 
-	      EGL_NONE 
-	   };
-	   const EGLint surfaceAttribs[] = {
-	      EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-	      EGL_NONE
-	   };
-	   
-	   EGLDisplay display;
-	   EGLConfig config;
-	   EGLint numConfigs;
-	   EGLint format;
-	   EGLSurface surface;
-	   EGLContext context;
-	   EGLint width;
-	   EGLint height;
-
-	   if (!window)                                                             {debug("window is null"); return false;}
-	   if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)    {debug("eglGetDisplay() returned error %d", eglGetError()); return false;}
-	   if (!eglInitialize(display, 0, 0))                                       {debug("eglInitialize() returned error %d", eglGetError()); return false;}
-	   if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs))         {debug("eglChooseConfig() returned error %d", eglGetError()); destroyEGL(); return false;}
-	   if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format)) {debug("eglGetConfigAttrib() returned error %d", eglGetError()); destroyEGL(); return false;}
-
-	   ANativeWindow_setBuffersGeometry(window, 0, 0, format);
-
-	   if (!(surface = eglCreateWindowSurface(display, config, window, surfaceAttribs)))     {debug("eglCreateWindowSurface() returned error %d", eglGetError()); destroyEGL(); return false;}
-	   if (!(context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attribs))) {debug("eglCreateContext() returned error %d", eglGetError()); destroyEGL(); return false;}
-	   if (!eglMakeCurrent(display, surface, surface, context))                 {debug("eglMakeCurrent() returned error %d", eglGetError()); destroyEGL(); return false;}
-	   if (!eglQuerySurface(display, surface, EGL_WIDTH, &width) || !eglQuerySurface(display, surface, EGL_HEIGHT, &height)) {debug("eglQuerySurface() returned error %d", eglGetError()); destroyEGL(); return false;}
-
-	   _display = display;
-	   _surface = surface;
-	   _context = context;
-	   
-	    glViewport(0, 0, (GLsizei) width, (GLsizei) height);
-	    glClearColor(1, 0, 0, 1);
-	    glClearStencil(0);
-	    glStencilMask(0xffffffff);
-	    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	
-   initSkia(width, height, NULL, screen->pitch, screen->pixelformat);
 
    return true;
 }
 
-static void destroyEGL()
+JNIEXPORT jboolean JNICALL Java_totalcross_Launcher4A_nativeSurfaceChanged(
+      JNIEnv *env, jobject thisObject, jobject javaSurface,
+      jint width, jint height, jdouble contentScale, jdouble fontScale,
+      jint hRes, jint vRes, jint fontHeight, jint generation)
 {
-   eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-   eglDestroyContext(_display, _context);
-   eglDestroySurface(_display, _surface);
-   eglTerminate(_display);
+   UNUSED(thisObject);
+   return androidApplySurfaceChange(env, javaSurface, width, height,
+         contentScale, fontScale, hRes, vRes, fontHeight,
+         (uint32)generation) ? JNI_TRUE : JNI_FALSE;
+}
 
-   _display = EGL_NO_DISPLAY;
-   _surface = EGL_NO_SURFACE;
-   _context = EGL_NO_CONTEXT;
+JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSurfaceDestroyed(
+      JNIEnv *env, jobject thisObject, jint generation)
+{
+   UNUSED(env);
+   UNUSED(thisObject);
+
+   if ((uint32)generation < screen.surfaceGeneration)
+      return;
+
+   screen.surfaceGeneration = (uint32)generation;
+   screen.surfaceReady = false;
+   screen.pendingChangeFlags = SCREEN_CHANGE_NONE;
+   surfaceWillChange = true;
+}
+
+JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSetKeyboardShift(
+      JNIEnv *env, jobject thisObject, jint percentage)
+{
+   UNUSED(env);
+   UNUSED(thisObject);
+
+   if (needsPaint != null)
+   {
+      desiredglShiftY = percentage == 0 ? 0 : percentage;
+      setShiftYonNextUpdateScreen = true;
+      *needsPaint = true;
+      setTimerInterval(1);
+   }
+}
+
+JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativePrepareForPause(
+      JNIEnv *env, jobject thisObject)
+{
+   UNUSED(env);
+   UNUSED(thisObject);
+
+   if (ENABLE_TEXTURE_TRACE)
+      debug("preparing graphics for application pause");
+
+   if (glShiftY != 0 && needsPaint != null)
+   {
+      desiredglShiftY = 0;
+      setShiftYonNextUpdateScreen = true;
+      *needsPaint = true;
+      setTimerInterval(1);
+   }
+}
+
+JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativePrepareForResume(
+      JNIEnv *env, jobject thisObject)
+{
+   UNUSED(env);
+   UNUSED(thisObject);
+   surfaceWillChange = true;
+}
+#endif
+
+#if TC_GLES_ANDROID
+bool initGLES(ScreenSurface screenSurface)
+{
+   const EGLint attribs[] = {
+      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+      EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+      EGL_BLUE_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_RED_SIZE, 8,
+      EGL_ALPHA_SIZE, 8,
+      EGL_STENCIL_SIZE, 8,
+      EGL_NONE
+   };
+   const EGLint contextAttribs[] = {
+      EGL_CONTEXT_CLIENT_VERSION, 2,
+      EGL_NONE
+   };
+   const EGLint surfaceAttribs[] = {
+      EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
+      EGL_NONE
+   };
+   ScreenSurfaceEx extension = androidGetScreenExtension(screenSurface);
+   EGLDisplay display;
+   EGLConfig config;
+   EGLint numConfigs;
+   EGLint format;
+   EGLSurface surface;
+   EGLContext context;
+   EGLint width;
+   EGLint height;
+
+   if (extension == null || extension->window == null)
+   {
+      debug("window is null");
+      return false;
+   }
+   if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)
+   {
+      debug("eglGetDisplay() returned error %d", eglGetError());
+      return false;
+   }
+   if (!eglInitialize(display, 0, 0))
+   {
+      debug("eglInitialize() returned error %d", eglGetError());
+      return false;
+   }
+   if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs))
+   {
+      debug("eglChooseConfig() returned error %d", eglGetError());
+      eglTerminate(display);
+      return false;
+   }
+   if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format))
+   {
+      debug("eglGetConfigAttrib() returned error %d", eglGetError());
+      eglTerminate(display);
+      return false;
+   }
+
+   ANativeWindow_setBuffersGeometry(extension->window, 0, 0, format);
+
+   surface = eglCreateWindowSurface(display, config, extension->window, surfaceAttribs);
+   if (surface == EGL_NO_SURFACE)
+   {
+      debug("eglCreateWindowSurface() returned error %d", eglGetError());
+      eglTerminate(display);
+      return false;
+   }
+
+   context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
+   if (context == EGL_NO_CONTEXT)
+   {
+      debug("eglCreateContext() returned error %d", eglGetError());
+      eglDestroySurface(display, surface);
+      eglTerminate(display);
+      return false;
+   }
+
+   if (!eglMakeCurrent(display, surface, surface, context))
+   {
+      debug("eglMakeCurrent() returned error %d", eglGetError());
+      eglDestroyContext(display, context);
+      eglDestroySurface(display, surface);
+      eglTerminate(display);
+      return false;
+   }
+
+   if (!eglQuerySurface(display, surface, EGL_WIDTH, &width)
+       || !eglQuerySurface(display, surface, EGL_HEIGHT, &height))
+   {
+      debug("eglQuerySurface() returned error %d", eglGetError());
+      eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+      eglDestroyContext(display, context);
+      eglDestroySurface(display, surface);
+      eglTerminate(display);
+      return false;
+   }
+
+   extension->display = display;
+   extension->surface = surface;
+   extension->context = context;
+   extension->graphicsInitialized = true;
+
+   glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+   glClearColor(1, 0, 0, 1);
+   glClearStencil(0);
+   glStencilMask(0xffffffff);
+   glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+   initSkia(width, height, NULL, screenSurface->pitch, screenSurface->pixelformat);
+   return true;
 }
 #endif
 
 static void setProjectionMatrix(float w, float h)
 {
-    skia_shiftScreen(w, h, glShiftY);
+   skia_shiftScreen(w, h, glShiftY);
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 void privateScreenChange(int32 w, int32 h)
 {
-#ifdef darwin
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
    surfaceWillChange = false;
 #endif
+
    appW = w;
    appH = h;
    setProjectionMatrix(w,h);
 }
 
-int32 graphicsStartup(ScreenSurface screen, int16 appTczAttr)
+int32 graphicsStartup(ScreenSurface screenSurface, int16 appTczAttr)
 {
-   screen->bpp = 32;
-   screen->screenX = screen->screenY = 0;
-   screen->screenW = lastW;
-   screen->screenH = lastH;
-   screen->hRes = ascrHRes;
-   screen->vRes = ascrVRes;
+   UNUSED(appTczAttr);
 
-   return initGLES(screen);
+   screenSurface->bpp = 32;
+   screenSurface->screenX = screenSurface->screenY = 0;
+   if (screenSurface->contentScale <= 0)
+      screenSurface->contentScale = 1;
+   if (screenSurface->fontScale <= 0)
+      screenSurface->fontScale = 1;
+
+   if (!screenSurface->surfaceReady || screenSurface->screenW <= 0 || screenSurface->screenH <= 0)
+      return false;
+
+   screenSurface->pitch = screenSurface->screenW * screenSurface->bpp / 8;
+   return initGLES(screenSurface);
 }
 
-int32 graphicsCreateScreenSurface(ScreenSurface screen)
+int32 graphicsCreateScreenSurface(ScreenSurface screenSurface)
 {
-#ifndef ANDROID
-   screen->extension = deviceCtx;
+#if !TC_GLES_ANDROID
+   screenSurface->extension = deviceCtx;
 #endif
-   screen->pitch = screen->screenW * screen->bpp / 8;
-   screen->pixels = (uint8*)1;
- 
+   screenSurface->pitch = screenSurface->screenW * screenSurface->bpp / 8;
+   screenSurface->pixels = (uint8*)1;
+
 #ifdef SKIA_H
-   initSkia(screen->screenW, screen->screenH, NULL, screen->pitch, screen->pixelformat);
+   initSkia(screenSurface->screenW, screenSurface->screenH, NULL,
+         screenSurface->pitch, screenSurface->pixelformat);
 #endif
-   
-   return screen->pixels != null;
+
+   return screenSurface->pixels != null;
 }
 
-void graphicsDestroy(ScreenSurface screen, int32 isScreenChange)
+void graphicsDestroy(ScreenSurface screenSurface, int32 isScreenChange)
 {
-#ifdef ANDROID
+#if TC_GLES_ANDROID
    if (!isScreenChange)
    {
-      xfree(screen->extension);
+      ScreenSurfaceEx extension = SCREEN_EX(screenSurface);
+      androidDestroyEGL(extension);
+      androidReleaseNativeWindow(extension);
+      xfree(screenSurface->extension);
+      screenSurface->extension = null;
    }
 #else
    if (isScreenChange)
-       screen->extension = NULL;
+      screenSurface->extension = NULL;
    else
    {
-      if (screen->extension)
-         free(screen->extension);
-      deviceCtx = screen->extension = NULL;
+      if (screenSurface->extension)
+         free(screenSurface->extension);
+      deviceCtx = screenSurface->extension = NULL;
    }
 #endif
 }
@@ -272,33 +437,42 @@ void setShiftYgl(int32 shiftY)
    if (setShiftYonNextUpdateScreen && needsPaint != null)
    {
       setShiftYonNextUpdateScreen = false;
-#ifdef ANDROID
-       if (shiftY == 0) { // keyboard is closing
-           if (desiredglShiftY == 0) { // keyboard animation has finished
-               lastShiftY = 0; // reset lastShiftY when the animation has finished
-           }
-           shiftY = lastShiftY; // keep using lastShiftY for smooth slide down animation
-       }
-       glShiftY = desiredglShiftY > 0 ? -shiftY * desiredglShiftY / 100 : 0;
+#if TC_GLES_ANDROID
+      if (shiftY == 0)
+      {
+         if (desiredglShiftY == 0)
+            lastShiftY = 0;
+         shiftY = lastShiftY;
+      }
+      glShiftY = desiredglShiftY > 0 ? -shiftY * desiredglShiftY / 100 : 0;
 #else
       glShiftY = -shiftY;
 #endif
       setProjectionMatrix(appW,appH);
       screen.shiftY = shiftY;
-      *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
-      setTimerInterval(1); // needed, dont remove!
+      *needsPaint = true;
+      setTimerInterval(1);
    }
 }
+
 void graphicsUpdateScreenIOS();
-void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screenSurface)
 {
-   if (surfaceWillChange) return;
+   UNUSED(currentContext);
+   if (surfaceWillChange || !screenSurface->surfaceReady)
+      return;
 #ifdef SKIA_H
    flushSkia();
 #endif
-#if defined (ANDROID)
-   eglSwapBuffers(_display, _surface);
-#elif defined (darwin)
+#if TC_GLES_ANDROID
+   {
+      ScreenSurfaceEx extension = SCREEN_EX(screenSurface);
+      if (extension != null
+          && extension->display != EGL_NO_DISPLAY
+          && extension->surface != EGL_NO_SURFACE)
+         eglSwapBuffers(extension->display, extension->surface);
+   }
+#elif defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
    graphicsUpdateScreenIOS();
 #endif
 

@@ -58,6 +58,7 @@ TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native prote
       w = *getInstanceFieldInt(surface, "width",  "totalcross.ui.image.Image");
       h = *getInstanceFieldInt(surface, "height", "totalcross.ui.image.Image");
       Graphics_contentScale(g) = Image_contentScale(surface);
+      Graphics_fontScale(g) = 1;
    }
    else
    {
@@ -69,6 +70,7 @@ TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native prote
       h = *getInstanceFieldInt(surface, "height", "totalcross.ui.Control");
 #endif
       Graphics_contentScale(g) = screen.contentScale > 0 ? screen.contentScale : 1;
+      Graphics_fontScale(g) = screen.fontScale > 0 ? screen.fontScale : 1;
    }
    createGfxSurface(w, h, g, stype);
 }

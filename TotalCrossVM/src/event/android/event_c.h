@@ -19,7 +19,22 @@ static bool keysMatch(int32 tcK, int32 sysK) // verifies if the given user key m
    return k == tcK;
 }
 
+static int32 androidPhysicalToLogical(int32 value)
+{
+   double scale = screen.contentScale > 0
+      ? screen.contentScale
+      : 1;
+
+   double logical = value / scale;
+
+   return logical >= 0
+      ? (int32)(logical + 0.5)
+      : (int32)(logical - 0.5);
+}
+
 extern int32 *shiftYfield, glShiftY;
+static bool programStarted;
+
 /*
  * The argument 'x' is actually the keyCode when the pressed key cannot be translated to an unicode char.
  *
@@ -27,8 +42,12 @@ extern int32 *shiftYfield, glShiftY;
  * Method:    nativeOnEvent
  * Signature: (IIIIII)V
  */
-void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this, jint type, jint key, jint x, jint y, jint modifiers, jint timestamp)
-{                                
+void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject thisObject, jint type, jint key, jint x, jint y, jint modifiers, jint timestamp)
+{
+   UNUSED(env);
+   UNUSED(thisObject);
+   UNUSED(timestamp);
+
    switch (type)
    {
       case totalcross_Launcher4A_SIP_CLOSED:
@@ -41,7 +60,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
       case totalcross_Launcher4A_KEY_PRESS:
       {
          int32 key2 = keyDevice2Portable(x);
-         if (key2 == x) // no change?                  
+         if (key2 == x) // no change?
             postEvent(mainContext, key == 0 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key == 0 ? key2 : key, 0,0, modifiers == 18 ? 0 : modifiers); // check if user is pressing the ALT key and pass 0, otherwise characters that are accessed using the alt key won't appear on screen
          else
          {
@@ -60,19 +79,19 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          break;
       }
       case totalcross_Launcher4A_PEN_DOWN:
-         postEvent(mainContext, PENEVENT_PEN_DOWN, 0, x, y, modifiers);
+         postEvent(mainContext, PENEVENT_PEN_DOWN, 0, androidPhysicalToLogical(x), androidPhysicalToLogical(y), modifiers);
          break;
       case totalcross_Launcher4A_PEN_UP:
-         postEvent(mainContext, PENEVENT_PEN_UP, 0, x, y, modifiers);
+         postEvent(mainContext, PENEVENT_PEN_UP, 0, androidPhysicalToLogical(x), androidPhysicalToLogical(y), modifiers);
          break;
       case totalcross_Launcher4A_PEN_DRAG:
-         postEvent(mainContext, PENEVENT_PEN_DRAG, 0, x, y, modifiers);
+         postEvent(mainContext, PENEVENT_PEN_DRAG, 0, androidPhysicalToLogical(x), androidPhysicalToLogical(y), modifiers);
          break;
       case totalcross_Launcher4A_MULTITOUCHEVENT_SCALE:
          postEvent(mainContext, MULTITOUCHEVENT_SCALE, 0, x, y, modifiers);
          break;
       case totalcross_Launcher4A_APP_PAUSED:
-         postOnMinimizeOrRestore(true);                 
+         postOnMinimizeOrRestore(true);
          glShiftY = 0;
          break;
       case totalcross_Launcher4A_APP_RESUMED:
@@ -83,32 +102,23 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          break;
       case totalcross_Launcher4A_SCREEN_CHANGED:
       {
-         int32 w = key;
-         int32 h = x;
-         int32 hRes = y;
-         int32 vRes = modifiers;
-         int32 fontHeight = timestamp;
-         bool starting = lastW == -2; 
-         bool changed = w != lastW || h != lastH;
-         if (w == -999)
+         ScreenChangeFlags changes = screenConsumePendingChanges(&screen);
+
+         // Surface values are committed by nativeSurfaceChanged before this
+         // notification reaches the event layer. Event arguments are not part
+         // of the surface lifecycle protocol anymore.
+         if (!screen.surfaceReady)
+            break;
+
+         if (!programStarted)
          {
-            if (starting) // called when app is being installed
-               return;
-            w = lastW;
-            h = lastH;
-            hRes = ascrHRes;
-            vRes = ascrVRes;
+            programStarted = true;
+            callExecuteProgram(); // blocks until the program has finished
          }
-         if (deviceFontHeight == 0 && fontHeight > 0)
-            deviceFontHeight = fontHeight;
-         lastW = w;
-         lastH = h;
-         ascrHRes = hRes;
-         ascrVRes = vRes;
-         if (starting)
-            callExecuteProgram(); // note that this will block until the program has finished
-         else
-            screenChange(mainContext, w, h, hRes, vRes, !changed); // guich@tc126_14: passing true here solves the problem - guich@tc130: prevent program from not recreating the mainPixels array when rotating the screen.
+         else if (changes != SCREEN_CHANGE_NONE)
+         {
+            screenChangeCommitted(mainContext, changes);
+         }
          break;
       }
       case totalcross_Launcher4A_BARCODE_READ:
@@ -122,7 +132,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          executeMethod(cont, scannerPostEvent, 1);
          break;
       }
-      case totalcross_Launcher4A_TOKEN_RECEIVED:                               
+      case totalcross_Launcher4A_TOKEN_RECEIVED:
          postEvent(mainContext, PUSHNOTIFICATIONEVENT_TOKEN_RECEIVED, 0, x, y, modifiers);
          break;
       case totalcross_Launcher4A_MESSAGE_RECEIVED:
@@ -139,6 +149,7 @@ bool privateIsEventAvailable()
 
 void privatePumpEvent(Context currentContext)
 {
+   UNUSED(currentContext);
    if (privateIsEventAvailable())
    {
       JNIEnv *env = getJNIEnv();
