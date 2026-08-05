@@ -30,3 +30,13 @@ insets offset the scrolling bag, while the full leading/content/trailing extent
 drives scrollbar ranges. Resize restores scrollbar values before positioning
 the bag, and the setter distinguishes origin, middle, and trailing anchors.
 Five focused tests passed; no build ran.
+
+## Milestone 3
+
+`TopMenu` retains one scrolling body and legacy `header`, then adds optional
+fixed bars through full-bleed, safe-padded hosts. Reserve mode subtracts the full
+safe-padded bar height from the viewport; overlay mode keeps the viewport and
+adds that height to content insets. `ScrollUnderMode` exposes the Reddit,
+ChatGPT, Gmail, and both-edge combinations, and `SideMenuContainer` forwards the
+configuration. Nineteen focused tests and the one SDK distribution checkpoint
+passed.

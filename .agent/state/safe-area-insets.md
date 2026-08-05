@@ -10,10 +10,10 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 
 ## Active checkpoint
 
-- Base: `6b79c8ad0` after the milestone-1 commit.
+- Base: `24414c985` after the milestone-2 commit.
 - Branch: `feat/logical-ui-scaling`.
-- Completed milestone: 2, `ScrollContainer` content insets and focused tests.
-- Active milestone: 3, menu integration and the SDK checkpoint build.
+- Completed milestone: 3, menu integration, focused tests, and SDK checkpoint.
+- Active milestone: 4, dynamic Android/iOS delivery and Android checkpoint.
 - Protected task input: `.agent/safe-area-insets-execplan.md`; preserve its
   intent and living history while committing milestone updates locally.
 
@@ -32,12 +32,17 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
   `TotalCrossSDK/agent-logs/20260805-025313-test-full.log`.
 - Its new test file is 120 lines; content insets preserve the viewport and
   origin/middle/trailing anchors.
+- Combined milestone-3 suite: 19 tests passed in
+  `TotalCrossSDK/agent-logs/20260805-030018-test-full.log`.
+- Sole SDK distribution checkpoint: passed in 25 seconds; concise/full logs are
+  `TotalCrossSDK/agent-logs/20260805-030050-dist-agent.log` and
+  `TotalCrossSDK/agent-logs/20260805-030050-dist-full.log`.
 
 ## Next exact action
 
-Inspect only `TopMenu` and `SideMenuContainer` construction/layout paths. Add
-fixed bars, reserve/overlay behavior, forwarding APIs, and focused tests, then
-run the milestone-3 focused suite and the sole SDK distribution checkpoint.
+Inspect the Android root-insets listener/JNI path and iOS main-view/event queue,
+then add the common native physical-to-logical helper and dedicated push events.
+Run only the prescribed focused SDK subset and the sole Android checkpoint.
 
 ## Blockers
 

@@ -35,6 +35,28 @@ This file is append-only. Store verbose logs under `build/safe-area-insets/`.
   covered. Identical updates return false and do not notify.
 - Build status: not run, as required before the milestone-3 SDK checkpoint.
 
+## Milestone 3: fixed menu bars and layout models
+
+- Timestamp: 2026-08-05T06:01:15Z
+- Focused command: `TotalCrossSDK/gradlew-agent test --tests
+  'totalcross.ui.SafeAreaLayoutTest' --tests
+  'totalcross.ui.ScrollContainerContentInsetsTest' --tests
+  'totalcross.ui.TopMenuSafeAreaTest'`
+- Status: passed, 19 tests, 0 failures, 0 errors.
+- Full test log: `TotalCrossSDK/agent-logs/20260805-030018-test-full.log`.
+- SDK checkpoint command: `TotalCrossSDK/gradlew-agent dist -x test
+  --warning-mode=none --console=plain`.
+- SDK checkpoint status: passed in 25 seconds.
+- Checkpoint log: `build/safe-area-insets/sdk-dist.log`; wrapper logs:
+  `TotalCrossSDK/agent-logs/20260805-030050-dist-agent.log` and
+  `TotalCrossSDK/agent-logs/20260805-030050-dist-full.log`.
+- Result: attached-edge selection, fixed safe-padded bars, reserve/overlay
+  viewport bounds, content insets, all four presets, dynamic updates without
+  body recreation, and side-menu forwarding are covered.
+- Corrected preliminary failures: test-only timer backend initialization,
+  zero-sized hosts before `FILL`, and stale saved bounds during dynamic
+  reposition. The final suite is clean.
+
 ## Milestone 2: scroll content insets
 
 - Timestamp: 2026-08-05T05:53:20Z

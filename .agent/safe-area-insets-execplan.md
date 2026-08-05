@@ -67,7 +67,8 @@ Do not resize existing files through unrelated refactoring.
   model and passed all 7 focused layout tests.
 - [x] (2026-08-05T05:53:20Z) Milestone 2: implemented scroll content insets
   with preserved anchors and passed all 5 focused tests.
-- [ ] Milestone 3: adapt menus and run the only SDK checkpoint build.
+- [x] (2026-08-05T06:01:15Z) Milestone 3: adapted fixed menu bars and all four
+  scroll-under modes; 19 focused tests and the sole SDK checkpoint build passed.
 - [ ] Milestone 4: implement Android/iOS updates and run the only Android build.
 - [ ] Milestone 5: final focused validation, optional smoke tests, and reporting.
 
@@ -404,6 +405,18 @@ required by `.agent/PLANS.md`, including validation and limitations.
   inset resizing now restores clamped scrollbar values and positions the bag
   from one source of truth.
 
+- Observation: `Control.setRect` preserves its first semantic bounds for later
+  reposition, so a dynamic menu layout that only changes current bounds is
+  reverted by the next recursive reposition.
+  Evidence: the first dynamic menu test observed body `y=0` after a safe-area
+  callback; resetting saved positions before each calculated menu bound made the
+  new `y=45` stable.
+
+- Observation: A fixed bar cannot be added with `FILL` before its safe-padded
+  host has nonzero bounds.
+  Evidence: the initial menu test produced negative `-20,-10` child dimensions;
+  sizing the host before adding the bar resolved it.
+
 Record only findings that materially change remaining work; keep raw output in the
 log/evidence paths.
 
@@ -456,6 +469,14 @@ log/evidence paths.
   Rationale: Existing child coordinates and viewport bounds remain unchanged,
   while the first and last content edges become reachable with exactly one
   addition to each axis maximum.
+  Date: 2026-08-05
+
+- Decision: Wrap each optional fixed bar in a full-bleed host whose internal
+  safe padding is limited to the menu's attached lateral edge and the bar's own
+  top or bottom edge.
+  Rationale: The bar background can extend through unsafe space while arbitrary
+  `Control` implementations receive safe content bounds, and a side menu does
+  not incorrectly add its bottom inset to the top bar.
   Date: 2026-08-05
 
 ## Validation and Acceptance
@@ -527,6 +548,12 @@ tests prove viewport stability, exact extent growth, reachable first/last
 content, idempotence, invalid-value rejection, middle-anchor preservation, and
 trailing-edge anchoring. No distribution build ran.
 
+Milestone 3 delivered fixed top/bottom bars, reserve/overlay layout modes, all
+four Reddit/ChatGPT/Gmail/dual-overlay presets, dynamic recalculation, and
+`SideMenuContainer` forwarding while retaining the legacy scrolling header.
+The combined 19 focused tests passed, followed by the only SDK distribution
+checkpoint in 25 seconds.
+
 ## Revision Note
 
 Initial plan created on 2026-08-05. It limits work to safe-area and inset
@@ -551,3 +578,8 @@ and the passing focused validation. Milestone 2 is now active.
 Milestone 2 update on 2026-08-05 records the bag-origin/extent representation,
 the scrollbar-state correction discovered during implementation, and the five
 passing focused tests. Milestone 3 menu integration is now active.
+
+Milestone 3 update on 2026-08-05 records fixed-bar host composition, the saved
+position and zero-sized-host discoveries, 19 passing focused tests, and the
+successful sole SDK distribution checkpoint. Milestone 4 platform delivery is
+now active.

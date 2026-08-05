@@ -8,8 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Editorial Summary
 
-Execution is in progress on `feat/logical-ui-scaling`. Milestones 1 and 2
-delivered the core SDK and scrolling models; menu integration is active.
+Execution is in progress on `feat/logical-ui-scaling`. Milestones 1 through 3
+delivered SDK, scrolling, and menu models; platform push delivery is active.
 
 ## Scope
 
@@ -24,6 +24,9 @@ The baseline matched the plan. Window policy, control safe/full-bleed override,
 container safe padding, and dynamic SDK cache transition are implemented.
 `ScrollContainer` content insets now extend scrollable content independently of
 the viewport and preserve origin, visible-content, and trailing-edge anchors.
+`TopMenu` supports fixed safe-padded bars with Reddit (`NONE`), ChatGPT (`TOP`),
+Gmail (`BOTTOM`), and dual-overlay (`BOTH`) behavior; `SideMenuContainer`
+forwards those APIs.
 
 ## Decisions and Trade-offs
 
@@ -36,11 +39,12 @@ surface resize events.
 
 `SafeAreaLayoutTest` passed 7 tests with no failures. No build was run, matching
 the milestone-1 gate. `ScrollContainerContentInsetsTest` passed 5 tests with no
-failures; the SDK checkpoint remains reserved for milestone 3.
+failures. The combined milestone-3 suite passed 19 tests, and the sole SDK
+distribution checkpoint passed in 25 seconds.
 
 ## Limitations and Remaining Work
 
-Milestones 3 through 5 remain.
+Milestones 4 and 5 remain. No additional SDK build is permitted.
 
 ## Claims Requiring Human Review
 

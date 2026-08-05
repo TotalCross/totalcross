@@ -159,6 +159,41 @@ public class SideMenuContainer extends Container implements PenListener {
     topMenu.unpop();
   }
 
+  /** Forwards the fixed top bar to the underlying menu. */
+  public void setTopBar(Control bar) {
+    topMenu.setTopBar(bar);
+  }
+
+  /** Returns the fixed top bar from the underlying menu. */
+  public Control getTopBar() {
+    return topMenu.getTopBar();
+  }
+
+  /** Forwards the fixed bottom bar to the underlying menu. */
+  public void setBottomBar(Control bar) {
+    topMenu.setBottomBar(bar);
+  }
+
+  /** Returns the fixed bottom bar from the underlying menu. */
+  public Control getBottomBar() {
+    return topMenu.getBottomBar();
+  }
+
+  /** Forwards the top fixed-bar layout mode to the underlying menu. */
+  public void setTopBarLayoutMode(TopMenu.BarLayoutMode mode) {
+    topMenu.setTopBarLayoutMode(mode);
+  }
+
+  /** Forwards the bottom fixed-bar layout mode to the underlying menu. */
+  public void setBottomBarLayoutMode(TopMenu.BarLayoutMode mode) {
+    topMenu.setBottomBarLayoutMode(mode);
+  }
+
+  /** Forwards the requested ChatGPT, Reddit, Gmail, or dual-overlay model. */
+  public void setScrollUnderMode(TopMenu.ScrollUnderMode mode) {
+    topMenu.setScrollUnderMode(mode);
+  }
+
   /**
    * Presents the given SideMenuContainer.Item, swapping the caption and the
    * contents of this SideMenu.
