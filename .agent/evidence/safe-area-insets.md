@@ -81,6 +81,30 @@ This file is append-only. Store verbose logs under `build/safe-area-insets/`.
   screen resize, or graphics recreation.
 - iOS build status: not run, prohibited by the plan.
 
+## Milestone 5: final validation and smoke availability
+
+- Timestamp: 2026-08-05T06:12:30Z
+- Final focused command: `TotalCrossSDK/gradlew-agent test --tests
+  'totalcross.ui.SafeAreaLayoutTest' --tests
+  'totalcross.ui.ScrollContainerContentInsetsTest' --tests
+  'totalcross.ui.TopMenuSafeAreaTest'`.
+- Status: passed in 2 seconds, 19 tests, 0 failures, 0 errors.
+- Full log: `TotalCrossSDK/agent-logs/20260805-031147-test-full.log`.
+- Header status: 22 supported changed files passed; `.m` files are not counted
+  by the validator and were reconciled to the required SuperWaba 2000-2013,
+  TotalCross 2014-2021, and Amalgam 2022-2026 chain.
+- Static status: committed task diff from `0ec107e0b9e3` passes
+  `git diff --check`; 24 scoped files changed. New source, test, and support
+  files created during execution are below 20 KB and 600 lines.
+- Android smoke availability: not runnable. `adb devices -l` returned no
+  attached device. The generic `app-standard-debug.apk` exists, but no launchable
+  safe-area demo fixture exists and creating one would require a prohibited
+  additional build.
+- iOS smoke availability: not runnable. No pre-existing `.app` artifact was
+  found under `TotalCrossVM/xcode`; an iOS build is prohibited.
+- Skipped by design: full SDK tests, SDK rebuild, Android rebuild, all other
+  platform builds, clean tasks, packaging, publishing, and remote operations.
+
 ## Milestone 2: scroll content insets
 
 - Timestamp: 2026-08-05T05:53:20Z

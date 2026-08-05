@@ -10,10 +10,10 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 
 ## Active checkpoint
 
-- Base: `e73443c44` after the milestone-3 commit.
+- Base: `2677c8ffc` after the milestone-4 commit.
 - Branch: `feat/logical-ui-scaling`.
-- Completed milestone: 4, Android/iOS delivery, focused tests, and Android checkpoint.
-- Active milestone: 5, final validation, smoke attempts, and reporting.
+- Completed milestone: 5; every implementation and available validation gate is complete.
+- Active milestone: none.
 - Protected task input: `.agent/safe-area-insets-execplan.md`; preserve its
   intent and living history while committing milestone updates locally.
 
@@ -43,17 +43,26 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
   full log is `build/safe-area-insets/android-build.log`.
 - Generated JNI header contains `nativeSafeAreaInsetsChanged`; it remains a
   generated build file and is not staged.
+- Final suite: 19 tests passed in
+  `TotalCrossSDK/agent-logs/20260805-031147-test-full.log`.
+- Final changed-file copyright validation passed for 22 supported files;
+  Objective-C headers were reconciled separately to the required 2026 chain.
+- Committed task diff from `0ec107e0b9e3` contains 24 files and passes
+  `git diff --check`.
+- Every newly created source/test/state/evidence/history/editorial file is below
+  20 KB and 600 lines. The supplied authoritative ExecPlan is excluded from the
+  new-file limit and remains self-contained.
 
 ## Next exact action
 
-Run the complete focused Java set once, focused copyright validation, scoped
-diff/static checks, and smoke-test availability checks using existing artifacts
-only. Finish all plan, state, evidence, history, and editorial outcomes without
-rerunning either checkpoint build.
+No implementation action remains. When a configured Android device and a
+launchable safe-area demo become available, run the prescribed portrait and
+landscape smoke observations. Run iOS smoke only with a pre-existing runnable
+artifact; do not infer a need for another build from this completed plan.
 
 ## Blockers
 
-None.
+None. Device smoke is an environment limitation, not an implementation blocker.
 
 ## Resume command
 

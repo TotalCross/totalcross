@@ -71,7 +71,8 @@ Do not resize existing files through unrelated refactoring.
   scroll-under modes; 19 focused tests and the sole SDK checkpoint build passed.
 - [x] (2026-08-05T06:09:40Z) Milestone 4: implemented dedicated Android/iOS
   dynamic delivery; 14 focused tests and the sole Android checkpoint passed.
-- [ ] Milestone 5: final focused validation, optional smoke tests, and reporting.
+- [x] (2026-08-05T06:12:30Z) Milestone 5: passed final focused/static/header
+  validation, attempted smoke availability checks, and completed reporting.
 
 ## Current Architecture and Scope
 
@@ -431,6 +432,13 @@ required by `.agent/PLANS.md`, including validation and limitations.
   two changed `.m` headers were updated to the repository-required historical
   chain and checked with `git diff --check`.
 
+- Observation: No Android device is attached and no pre-existing runnable iOS
+  application artifact exists in the scoped workspace.
+  Evidence: `adb devices -l` returned an empty device list; the artifact search
+  found only the generic Android checkpoint APK/AAB and no `.app` or safe-area
+  demo fixture. Device smoke assertions therefore cannot run without creating a
+  new fixture/build, which this plan forbids.
+
 Record only findings that materially change remaining work; keep raw output in the
 log/evidence paths.
 
@@ -506,6 +514,12 @@ log/evidence paths.
   no longer overwrite user/layout state on every getter call.
   Date: 2026-08-05
 
+- Decision: Complete the plan with device smoke coverage explicitly deferred.
+  Rationale: All implementation, focused behavioral tests, static iOS checks,
+  SDK build, and Android build pass; missing device/artifact access is an allowed
+  limitation and generating another fixture would violate the build constraints.
+  Date: 2026-08-05
+
 ## Validation and Acceptance
 
 Use the escalation order in `AGENTS.md`. Acceptance requires:
@@ -523,6 +537,17 @@ Use the escalation order in `AGENTS.md`. Acceptance requires:
 - iOS is statically reconciled and smoke-tested only when possible without build.
 
 Missing device access is a reported limitation, not a feature failure.
+
+Final results: `SafeAreaLayoutTest` passed 7 tests,
+`ScrollContainerContentInsetsTest` passed 5, and `TopMenuSafeAreaTest` passed 7.
+The sole `dist -x test` SDK checkpoint passed in 25 seconds, and the sole Android
+`:app:assembleStandardDebug` checkpoint passed in 28 seconds. Focused copyright
+validation passed for all 22 supported changed inputs; the two Objective-C files
+were updated to the required historical chain because the validator does not
+count `.m` files. `git diff --check 0ec107e0b9e3..HEAD` passed. Android smoke was
+unavailable because `adb devices -l` listed no device and no safe-area demo
+fixture exists; iOS smoke was unavailable because no pre-existing `.app` exists.
+No prohibited platform, clean, packaging, or repeat checkpoint build ran.
 
 ## Risks and Open Questions
 
@@ -588,6 +613,13 @@ cache transition without screen-resize or graphics lifecycle calls. Fourteen
 focused tests passed, and `assembleStandardDebug` passed in 28 seconds. iOS was
 statically reconciled and deliberately not built.
 
+Milestone 5 completed the full plan. The final 19-test suite, focused header
+validation, committed-diff whitespace check, size limits, JNI generation check,
+and scoped diff review passed. Android and iOS smoke availability was checked
+last; neither could run because no device or runnable iOS artifact was available.
+The requested behavior is implemented and checkpoint-built, with only runtime
+device observation remaining for human/platform follow-up.
+
 ## Revision Note
 
 Initial plan created on 2026-08-05. It limits work to safe-area and inset
@@ -622,3 +654,8 @@ Milestone 4 update on 2026-08-05 records the dual Android startup retention,
 bounded pull fallback, dedicated iOS event, common logical conversion, passing
 focused tests, and successful sole Android checkpoint. Final validation and
 smoke-test attempts are now active.
+
+Milestone 5 completion update on 2026-08-05 records the final 19 passing tests,
+22-file supported-header validation, Objective-C header reconciliation, clean
+committed diff, file-size compliance, unavailable device smoke conditions, and
+the completed factual reports.
