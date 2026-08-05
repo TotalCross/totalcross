@@ -78,6 +78,9 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   private int targetY = 0;
   private boolean isFromFlick = false;
   private boolean hasScrolled = false;
+  private final Insets contentInsets = new Insets();
+  private int contentExtentWidth;
+  private int contentExtentHeight;
 
   /** Automatically scrolls the container when an item is clicked.
    * @see #hsIgnoreAutoScroll 
@@ -147,6 +150,78 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       flick = new Flick(this);
     }
     MainWindow.mainWindowInstance.addUpdateListener(this);
+  }
+
+  /**
+   * Sets non-negative logical insets around the scrolling content without
+   * changing the viewport size. A leading-inset change preserves the visible
+   * content anchor; origin and trailing-edge anchors remain at their edges.
+   */
+  public void setContentInsets(int left, int right, int top, int bottom) {
+    if (left < 0 || right < 0 || top < 0 || bottom < 0) {
+      throw new IllegalArgumentException("Content insets must be non-negative");
+    }
+    if (contentInsets.left == left && contentInsets.right == right && contentInsets.top == top
+        && contentInsets.bottom == bottom) {
+      return;
+    }
+
+    int oldLeft = contentInsets.left;
+    int oldTop = contentInsets.top;
+    int oldH = sbH == null ? 0 : sbH.value;
+    int oldV = sbV == null ? 0 : sbV.value;
+    boolean atLeft = oldH == 0;
+    boolean atTop = oldV == 0;
+    boolean atRight = isTrailingEdge(sbH);
+    boolean atBottom = isTrailingEdge(sbV);
+
+    contentInsets.left = left;
+    contentInsets.right = right;
+    contentInsets.top = top;
+    contentInsets.bottom = bottom;
+
+    if (width > 0 && height > 0) {
+      resize();
+      restoreAnchor(sbH, oldH, left - oldLeft, atLeft, atRight, true);
+      restoreAnchor(sbV, oldV, top - oldTop, atTop, atBottom, false);
+      positionBagAtScroll();
+    } else {
+      changed = true;
+    }
+    repaint();
+  }
+
+  /** Copies the logical content insets into the supplied object. */
+  public void getContentInsets(Insets copyInto) {
+    if (copyInto == null) {
+      throw new NullPointerException("copyInto");
+    }
+    copyInto.copyFrom(contentInsets);
+  }
+
+  private static boolean isTrailingEdge(ScrollBar scrollBar) {
+    return scrollBar != null && scrollBar.maximum > scrollBar.visibleItems
+        && scrollBar.value >= scrollBar.maximum - scrollBar.visibleItems;
+  }
+
+  private void restoreAnchor(ScrollBar scrollBar, int oldValue, int leadingDelta, boolean atLeading,
+      boolean atTrailing, boolean horizontal) {
+    if (scrollBar == null) {
+      return;
+    }
+    int value = atLeading ? 0
+        : atTrailing ? Math.max(scrollBar.minimum, scrollBar.maximum - scrollBar.visibleItems)
+            : oldValue + leadingDelta;
+    scrollBar.setValue(value);
+    if (horizontal) {
+      lastH = scrollBar.value;
+    } else {
+      lastV = scrollBar.value;
+    }
+  }
+
+  private void positionBagAtScroll() {
+    bagSetRect(contentInsets.left - lastH, contentInsets.top - lastV, KEEP, KEEP, false);
   }
 
   protected void setScrollBars(boolean allowHScrollBar, boolean allowVScrollBar) {
@@ -332,7 +407,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       lastH = sbH.value;
 
       if (oldValue != lastH) {
-        bagSetRect(LEFT - lastH, KEEP, KEEP, KEEP, false);
+        bagSetRect(contentInsets.left - lastH, KEEP, KEEP, KEEP, false);
         scrolled = true;
         if (!fromFlick) {
           sbH.tempShow();
@@ -345,7 +420,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       lastV = sbV.value;
 
       if (oldValue != lastV) {
-        bagSetRect(KEEP, TOP - lastV, KEEP, KEEP, false);
+        bagSetRect(KEEP, contentInsets.top - lastV, KEEP, KEEP, false);
         scrolled = true;
         if (!fromFlick) {
           sbV.tempShow();
@@ -391,7 +466,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   @Override
   protected void onBoundsChanged(boolean screenChanged) {
     bag0.setRect(LEFT, TOP, FILL, FILL, null, screenChanged);
-    bagSetRect(LEFT, TOP, FILL, FILL, screenChanged);
+    bagSetRect(contentInsets.left - lastH, contentInsets.top - lastV, FILL, FILL, screenChanged);
   }
 
   @Override
@@ -456,7 +531,11 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
 
   /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
   public void resize(int maxX, int maxY) {
-    bagSetRect(bag.x, bag.y, maxX, maxY, false);
+    int oldH = sbH == null ? 0 : sbH.value;
+    int oldV = sbV == null ? 0 : sbV.value;
+    bagSetRect(contentInsets.left - oldH, contentInsets.top - oldV, maxX, maxY, false);
+    contentExtentWidth = bag.width + contentInsets.left + contentInsets.right;
+    contentExtentHeight = bag.height + contentInsets.top + contentInsets.bottom;
     if (sbV != null) {
       super.remove(sbV);
     }
@@ -472,13 +551,13 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     if (sbH != null || sbV != null) {
       do {
         changed = false;
-        if (!needY && maxY > availY) {
+        if (!needY && contentExtentHeight > availY) {
           changed = needY = true;
           if (finger && sbH != null && sbV != null) {
             availX -= sbV.getPreferredWidth();
           }
         }
-        if (!needX && maxX > availX) // do we need an horizontal scrollbar?
+        if (!needX && contentExtentWidth > availX) // do we need an horizontal scrollbar?
         {
           changed = needX = true;
           if (finger && sbV != null && sbH != null) {
@@ -494,29 +573,36 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     if (sbH != null || sbV != null || !shrink2size) {
       bag0.setRect(r.x, r.y, r.width - sbVsize, r.height - sbHsize);
     } else {
-      bag0.setRect(r.x, r.y, maxX, maxY);
-      setRect(this.x, this.y, maxX, maxY);
+      bag0.setRect(r.x, r.y, contentExtentWidth, contentExtentHeight);
+      setRect(this.x, this.y, contentExtentWidth, contentExtentHeight);
     }
     if (needX && sbH != null && canShowScrollBars(false)) {
       super.add(sbH);
-      sbH.setMaximum(maxX);
+      sbH.setMaximum(contentExtentWidth);
       sbH.setVisibleItems(bag0.width);
+      sbH.setValue(oldH);
       sbH.setRect(LEFT, BOTTOM, FILL - sbVsize, PREFERRED);
       sbH.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fm.charWidth('@'));
-      lastH = 0;
+      lastH = sbH.value;
     } else if (sbH != null) {
       sbH.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
+      sbH.setValue(0);
+      lastH = 0;
     }
     if (needY && sbV != null && canShowScrollBars(true)) {
       super.add(sbV);
-      sbV.setMaximum(maxY);
+      sbV.setMaximum(contentExtentHeight);
       sbV.setVisibleItems(bag0.height);
+      sbV.setValue(oldV);
       sbV.setRect(RIGHT, TOP, PREFERRED, FILL);
       sbV.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fmH + Edit.prefH);
-      lastV = 0;
+      lastV = sbV.value;
     } else if (sbV != null) {
       sbV.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
+      sbV.setValue(0);
+      lastV = 0;
     }
+    positionBagAtScroll();
     Window.needsPaint = true;
   }
 
@@ -531,7 +617,8 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
 
   @Override
   public void reposition() {
-    int vx = bag.x, vy = bag.y; // keep position when changing size
+    int oldH = sbH == null ? 0 : sbH.value;
+    int oldV = sbV == null ? 0 : sbV.value;
     int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
     super.reposition();
     resize();
@@ -542,13 +629,14 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       scrollToPage(curPage);
     } else {
       if (sbH != null) {
-        sbH.setValue(sbH.maximum == 0 ? 0 : -vx);
-        bag.x = -sbH.getValue();
+        sbH.setValue(sbH.maximum == 0 ? 0 : oldH);
+        lastH = sbH.getValue();
       }
       if (sbV != null) {
-        sbV.setValue(sbV.maximum == 0 ? 0 : -vy); // if we're scrolled but we don't need scroll, move to origin
-        bag.y = -sbV.getValue();
+        sbV.setValue(sbV.maximum == 0 ? 0 : oldV); // if we no longer need scroll, move to origin
+        lastV = sbV.getValue();
       }
+      positionBagAtScroll();
     }
   }
 
@@ -559,7 +647,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   @Override
   public int getPreferredWidth() {
     int horizontalMax = sbH == null ? 0 : sbH.maximum;
-    return sbV == null ? bag.width : horizontalMax + (sbV.maximum == 0 ? 0 : sbV.getPreferredWidth());
+    return sbV == null ? contentExtentWidth : horizontalMax + (sbV.maximum == 0 ? 0 : sbV.getPreferredWidth());
   }
 
   /**
@@ -569,7 +657,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   @Override
   public int getPreferredHeight() {
     int verticalMax = sbV == null ? 0 : sbV.maximum;
-    return sbH == null ? bag.height : verticalMax + (sbH.maximum == 0 ? 0 : sbH.getPreferredWidth());
+    return sbH == null ? contentExtentHeight : verticalMax + (sbH.maximum == 0 ? 0 : sbH.getPreferredWidth());
   }
 
   @Override
@@ -587,11 +675,11 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     case ControlEvent.PRESSED:
       if (event.target == sbV && sbV.value != lastV) {
         lastV = sbV.value;
-        bagSetRect(bag.x, TOP - lastV, bag.width, bag.height, false);
+        bagSetRect(bag.x, contentInsets.top - lastV, bag.width, bag.height, false);
         targetY = sbV.value;
       } else if (event.target == sbH && sbH.value != lastH) {
         lastH = sbH.value;
-        bagSetRect(LEFT - lastH, bag.y, bag.width, bag.height, false);
+        bagSetRect(contentInsets.left - lastH, bag.y, bag.width, bag.height, false);
         targetX = sbH.value;
       }
       break;
@@ -706,14 +794,14 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       sbH.setValue(val);
       if (lastH != sbH.value) {
         lastH = sbH.value;
-        bagSetRect(LEFT - lastH, bag.y, bag.width, bag.height, false);
+        bagSetRect(contentInsets.left - lastH, bag.y, bag.width, bag.height, false);
       }
     } else {
       lastV = sbV.value;
       sbV.setValue(val);
       if (lastV != sbV.value) {
         lastV = sbV.value;
-        bagSetRect(bag.x, TOP - lastV, bag.width, bag.height, false);
+        bagSetRect(bag.x, contentInsets.top - lastV, bag.width, bag.height, false);
       }
     }
     if (flick != null && flick.pagepos != null) {
@@ -781,7 +869,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       }
       if (lastV != sbV.value) {
         lastV = sbV.value;
-        bagSetRect(bag.x, TOP - lastV, bag.width, bag.height, false);
+        bagSetRect(bag.x, contentInsets.top - lastV, bag.width, bag.height, false);
       }
     }
   }
@@ -795,7 +883,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       sbH.setValue(val);
       if (lastH != sbH.value) {
         lastH = sbH.value;
-        bagSetRect(LEFT - lastH, bag.y, bag.width, bag.height, false);
+        bagSetRect(contentInsets.left - lastH, bag.y, bag.width, bag.height, false);
       }
     }
   }

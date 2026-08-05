@@ -22,3 +22,11 @@ safe, or full-bleed client bounds; consumed-edge masks prevent container padding
 from duplicating exclusion. The single static update cache deduplicates values,
 notifies each active window, repositions children, and schedules repaint without
 entering screen-resize code. Seven focused tests passed; no build ran.
+
+## Milestone 2
+
+`ScrollContainer` now owns independent non-negative content insets. Leading
+insets offset the scrolling bag, while the full leading/content/trailing extent
+drives scrollbar ranges. Resize restores scrollbar values before positioning
+the bag, and the setter distinguishes origin, middle, and trailing anchors.
+Five focused tests passed; no build ran.
