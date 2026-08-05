@@ -10,10 +10,10 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 
 ## Active checkpoint
 
-- Base: `0ec107e0b9e3`.
+- Base: `9ae29ec2e` after the milestone-0 commit.
 - Branch: `feat/logical-ui-scaling`.
-- Completed milestone: 0, scoped baseline and support-file initialization.
-- Active milestone: 1, core SDK safe-area model.
+- Completed milestone: 1, core SDK safe-area model and focused tests.
+- Active milestone: 2, `ScrollContainer` content insets.
 - Protected task input: `.agent/safe-area-insets-execplan.md`; preserve its
   intent and living history while committing milestone updates locally.
 
@@ -25,12 +25,15 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
   `screenChanged`, which must be replaced by the dedicated safe-area event.
 - Milestone-0 `git diff --check` is the next boundary check after these support
   files are written.
+- `SafeAreaLayoutTest`: 7 tests passed in
+  `TotalCrossSDK/agent-logs/20260805-024752-test-full.log`.
+- New public types are 20, 21, and 31 lines; the new test is 175 lines.
 
 ## Next exact action
 
-Inspect the narrow layout methods in `Control.java`, `Container.java`,
-`Window.java`, and `MainWindow.java`, then implement the three public safe-area
-types and the window/control/container policy with `SafeAreaLayoutTest`.
+Inspect only `ScrollContainer` viewport/content extent and scroll-position
+methods, then implement non-negative content insets with anchor preservation and
+`ScrollContainerContentInsetsTest`.
 
 ## Blockers
 

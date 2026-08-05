@@ -243,6 +243,32 @@ public class Control extends GfxSurface {
   /** Set to true to ignore parent's insets when placing this control on screen. */
   public boolean ignoreInsets;
 
+  private SafeAreaLayout safeAreaLayout = SafeAreaLayout.INHERIT;
+  int safeAreaConsumedEdges;
+
+  /**
+   * Selects whether this control inherits, forces, or bypasses safe-area
+   * exclusion when it is positioned directly in a window. The default is
+   * {@link SafeAreaLayout#INHERIT}.
+   *
+   * @param layout the safe-area layout policy; must not be {@code null}
+   */
+  public void setSafeAreaLayout(SafeAreaLayout layout) {
+    if (layout == null) {
+      throw new NullPointerException("layout");
+    }
+    if (safeAreaLayout != layout) {
+      safeAreaLayout = layout;
+      reposition();
+      repaint();
+    }
+  }
+
+  /** Returns this control's safe-area layout policy. */
+  public SafeAreaLayout getSafeAreaLayout() {
+    return safeAreaLayout;
+  }
+
   private ControlEvent pressedEvent; // guich@tc100: share the same event across all controls - guich@tc114_42: no longer share
 
   /** Allows to disable the ui adjustments based on font height for a single control.
@@ -784,11 +810,12 @@ public class Control extends GfxSurface {
       // relative placement
       if (parent != null) {
         if (!ignoreInsets) {
-          parent.getClientRect(cli);
+          parent.getClientRectForChild(this, cli);
         } else {
           cli.x = cli.y = 0;
           cli.width = parent.width;
           cli.height = parent.height;
+          safeAreaConsumedEdges = SafeAreaEdges.NONE;
         }
 
         lpx = parent.lastX;
