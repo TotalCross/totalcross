@@ -10,10 +10,10 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 
 ## Active checkpoint
 
-- Base: `24414c985` after the milestone-2 commit.
+- Base: `e73443c44` after the milestone-3 commit.
 - Branch: `feat/logical-ui-scaling`.
-- Completed milestone: 3, menu integration, focused tests, and SDK checkpoint.
-- Active milestone: 4, dynamic Android/iOS delivery and Android checkpoint.
+- Completed milestone: 4, Android/iOS delivery, focused tests, and Android checkpoint.
+- Active milestone: 5, final validation, smoke attempts, and reporting.
 - Protected task input: `.agent/safe-area-insets-execplan.md`; preserve its
   intent and living history while committing milestone updates locally.
 
@@ -37,12 +37,19 @@ Rewrite this file at each milestone boundary. Read it first when resuming.
 - Sole SDK distribution checkpoint: passed in 25 seconds; concise/full logs are
   `TotalCrossSDK/agent-logs/20260805-030050-dist-agent.log` and
   `TotalCrossSDK/agent-logs/20260805-030050-dist-full.log`.
+- Milestone-4 focused subset: 14 tests passed in
+  `TotalCrossSDK/agent-logs/20260805-030820-test-full.log`.
+- Sole Android checkpoint: `:app:assembleStandardDebug` passed in 28 seconds;
+  full log is `build/safe-area-insets/android-build.log`.
+- Generated JNI header contains `nativeSafeAreaInsetsChanged`; it remains a
+  generated build file and is not staged.
 
 ## Next exact action
 
-Inspect the Android root-insets listener/JNI path and iOS main-view/event queue,
-then add the common native physical-to-logical helper and dedicated push events.
-Run only the prescribed focused SDK subset and the sole Android checkpoint.
+Run the complete focused Java set once, focused copyright validation, scoped
+diff/static checks, and smoke-test availability checks using existing artifacts
+only. Finish all plan, state, evidence, history, and editorial outcomes without
+rerunning either checkpoint build.
 
 ## Blockers
 

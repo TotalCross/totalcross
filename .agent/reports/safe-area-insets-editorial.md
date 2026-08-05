@@ -8,8 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Editorial Summary
 
-Execution is in progress on `feat/logical-ui-scaling`. Milestones 1 through 3
-delivered SDK, scrolling, and menu models; platform push delivery is active.
+Execution is in final validation on `feat/logical-ui-scaling`. Milestones 1
+through 4 delivered SDK, scrolling, menu, and platform push behavior.
 
 ## Scope
 
@@ -27,6 +27,9 @@ the viewport and preserve origin, visible-content, and trailing-edge anchors.
 `TopMenu` supports fixed safe-padded bars with Reddit (`NONE`), ChatGPT (`TOP`),
 Gmail (`BOTTOM`), and dual-overlay (`BOTH`) behavior; `SideMenuContainer`
 forwards those APIs.
+Android and iOS now deliver physical safe-area changes through dedicated event
+paths to one logical native helper; neither path reports a graphics-surface
+change.
 
 ## Decisions and Trade-offs
 
@@ -41,10 +44,14 @@ surface resize events.
 the milestone-1 gate. `ScrollContainerContentInsetsTest` passed 5 tests with no
 failures. The combined milestone-3 suite passed 19 tests, and the sole SDK
 distribution checkpoint passed in 25 seconds.
+The milestone-4 focused subset passed 14 tests, and the sole Android
+`assembleStandardDebug` checkpoint passed in 28 seconds. iOS was statically
+reconciled and not built, as required.
 
 ## Limitations and Remaining Work
 
-Milestones 4 and 5 remain. No additional SDK build is permitted.
+Milestone 5 final validation, device-smoke availability checks, and factual
+handoff remain. No additional SDK or Android build is permitted.
 
 ## Claims Requiring Human Review
 

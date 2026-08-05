@@ -57,6 +57,30 @@ This file is append-only. Store verbose logs under `build/safe-area-insets/`.
   zero-sized hosts before `FILL`, and stale saved bounds during dynamic
   reposition. The final suite is clean.
 
+## Milestone 4: dynamic Android and iOS delivery
+
+- Timestamp: 2026-08-05T06:09:40Z
+- Focused command: `TotalCrossSDK/gradlew-agent test --tests
+  'totalcross.ui.SafeAreaLayoutTest' --tests
+  'totalcross.ui.TopMenuSafeAreaTest'`.
+- Status: passed, 14 tests, 0 failures, 0 errors.
+- Full test log: `TotalCrossSDK/agent-logs/20260805-030820-test-full.log`.
+- Android command: `TotalCrossVM/android/gradlew
+  :app:assembleStandardDebug --warning-mode=none --console=plain`.
+- Android status: passed in 28 seconds; 56 actionable tasks, 29 executed and 27
+  up-to-date.
+- Android log: `build/safe-area-insets/android-build.log`.
+- Generated evidence: ignored
+  `TotalCrossVM/android/app/build/generated/jni/totalcross_Launcher4A.h`
+  contains `Java_totalcross_Launcher4A_nativeSafeAreaInsetsChanged`.
+- Static iOS result: `mainview.m` emits initial and changed physical inset
+  events after valid layout; `event.m` calls the common helper. No
+  `screenChanged`/`SK_SCREEN_CHANGE` safe-area path remains.
+- Lifecycle result: the common helper converts with `screen.contentScale` and
+  invokes `Window._updateSafeAreaInsets`; no safe-area path calls surface change,
+  screen resize, or graphics recreation.
+- iOS build status: not run, prohibited by the plan.
+
 ## Milestone 2: scroll content insets
 
 - Timestamp: 2026-08-05T05:53:20Z

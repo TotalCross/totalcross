@@ -1202,6 +1202,7 @@ public class Window extends Container {
     return safeAreaEdges;
   }
 
+  /** Internal VM-thread entry point for logical platform safe-area updates. */
   static boolean _updateSafeAreaInsets(int top, int left, int bottom, int right) {
     if (safeAreaInsets.top == top && safeAreaInsets.left == left && safeAreaInsets.bottom == bottom
         && safeAreaInsets.right == right) {

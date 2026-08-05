@@ -8,6 +8,7 @@
 #include "specialkeys.h"
 #include "GraphicsPrimitives.h"
 #include "startup.h"
+#include "Window.h"
 
 bool isEssentialKey(int32 portableKey);
 
@@ -34,6 +35,40 @@ static int32 androidPhysicalToLogical(int32 value)
 
 extern int32 *shiftYfield, glShiftY;
 static bool programStarted;
+static bool hasPendingSafeAreaInsets;
+static int32 pendingSafeAreaTop;
+static int32 pendingSafeAreaLeft;
+static int32 pendingSafeAreaBottom;
+static int32 pendingSafeAreaRight;
+
+/*
+ * Class:     totalcross_Launcher4A
+ * Method:    nativeSafeAreaInsetsChanged
+ * Signature: (IIII)V
+ */
+void JNICALL Java_totalcross_Launcher4A_nativeSafeAreaInsetsChanged(
+   JNIEnv *env,
+   jobject thisObject,
+   jint top,
+   jint left,
+   jint bottom,
+   jint right)
+{
+   UNUSED(env);
+   UNUSED(thisObject);
+
+   if (!programStarted)
+   {
+      pendingSafeAreaTop = top;
+      pendingSafeAreaLeft = left;
+      pendingSafeAreaBottom = bottom;
+      pendingSafeAreaRight = right;
+      hasPendingSafeAreaInsets = true;
+      return;
+   }
+
+   windowUpdateSafeAreaInsetsPhysical(mainContext, top, left, bottom, right);
+}
 
 /*
  * The argument 'x' is actually the keyCode when the pressed key cannot be translated to an unicode char.
@@ -113,6 +148,16 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject thisO
          if (!programStarted)
          {
             programStarted = true;
+            if (hasPendingSafeAreaInsets)
+            {
+               windowUpdateSafeAreaInsetsPhysical(
+                  mainContext,
+                  pendingSafeAreaTop,
+                  pendingSafeAreaLeft,
+                  pendingSafeAreaBottom,
+                  pendingSafeAreaRight);
+               hasPendingSafeAreaInsets = false;
+            }
             callExecuteProgram(); // blocks until the program has finished
          }
          else if (changes != SCREEN_CHANGE_NONE)
