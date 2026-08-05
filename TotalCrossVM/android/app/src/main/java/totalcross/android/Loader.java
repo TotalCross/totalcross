@@ -509,7 +509,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                 intent.putExtra("height", height);
                 intent.putExtra("allowRotation", allowRotation);
                 startActivityForResult(intent, TAKE_PHOTO);
-                Launcher4A.instance.nativeInitSize(null, -998, 0);
+                Launcher4A.instance.nativePrepareForPause();
             }
             AndroidUtils.debug("Launched photo");
         } catch (Throwable e) {
@@ -691,7 +691,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                        // % of the keyboard shown, calculated using our cached SIP height
                        int h = (int) ((double) bottom * 100) / Launcher4A.instance.sipInsetBottom;
 
-                       Launcher4A.instance.nativeInitSize(null, -999, h); // signal vm that the keyboard will appear
+                       Launcher4A.instance.nativeSetKeyboardShift(h); // signal vm that the keyboard will appear
 
                        return insets;
                    }

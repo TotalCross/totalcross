@@ -19,10 +19,6 @@ CharP throwableAsCharP[(int32)ThrowableCount] = { 0 };
 int32 lastPenX = 0;
 int32 lastPenY = 0;
 int32 actionStart = 0;
-int32 lastW = -2;
-int32 lastH = 0;
-int32 ascrHRes = 0;
-int32 ascrVRes = 0;
 #if defined(WIN32)
 uint8 keyIsDown[256] = { 0 };
 bool dontPostOnChar = false;
@@ -32,8 +28,7 @@ jmethodID jeventIsAvailable;
 jmethodID jpumpEvents;
 bool appPaused = false;
 #endif
-#if defined(ANDROID) || defined(darwin)
-int32 deviceFontHeight = 0;
+#if defined(darwin)
 double screenContentScale = 0;
 #endif
 

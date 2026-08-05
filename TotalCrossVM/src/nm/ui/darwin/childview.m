@@ -34,7 +34,6 @@ bool setupGL(int width, int height);
    return self;
 }
 
-extern int32 deviceFontHeight;
 extern double screenContentScale;
 
 - (void)setScreenValues: (void*)scr
@@ -44,10 +43,12 @@ extern double screenContentScale;
    screen->screenW = (int32)lround(self.bounds.size.width * screenContentScale);
    screen->screenH = (int32)lround(self.bounds.size.height * screenContentScale);
    screen->contentScale = screenContentScale;
+   screen->fontScale = 1;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
-   deviceFontHeight = [UIFont labelFontSize];
+   screen->deviceFontHeight = (int32)[UIFont labelFontSize];
+   screen->surfaceReady = true;
    // if ((deviceFontHeight&1) == 1) deviceFontHeight++; // even size fonts are better
 }
 

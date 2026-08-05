@@ -4,8 +4,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #ifndef GRAPHICSPRIMITIVES_H
 #define GRAPHICSPRIMITIVES_H
 
@@ -29,6 +27,7 @@
 extern "C"
 {
 #endif
+
 typedef uint32 Pixel32; // 32 bpp
 #ifndef SKIA_H
 typedef uint16 Pixel565; // 16 bpp
@@ -54,6 +53,35 @@ typedef enum
    SURF_CONTROL
 } SurfaceType;
 
+typedef enum
+{
+   SCREEN_CHANGE_NONE           = 0,
+   SCREEN_CHANGE_INITIAL        = 1 << 0,
+   SCREEN_CHANGE_SIZE           = 1 << 1,
+   SCREEN_CHANGE_DPI            = 1 << 2,
+   SCREEN_CHANGE_CONTENT_SCALE  = 1 << 3,
+   SCREEN_CHANGE_FONT_SCALE     = 1 << 4,
+   SCREEN_CHANGE_DEVICE_FONT    = 1 << 5,
+   SCREEN_CHANGE_NATIVE_SURFACE = 1 << 6
+} ScreenChangeFlags;
+
+#define SCREEN_CHANGE_RECREATE_SURFACE \
+   (SCREEN_CHANGE_SIZE | SCREEN_CHANGE_CONTENT_SCALE)
+
+typedef struct TScreenConfiguration
+{
+   int32 width;
+   int32 height;
+   int32 hRes;
+   int32 vRes;
+   double contentScale;
+   double fontScale;
+   int32 deviceFontHeight;
+   uint32 generation;
+   bool surfaceReady;
+   bool nativeSurfaceChanged;
+} TScreenConfiguration;
+
 typedef struct TScreenSurface // represents a device-dependant surface, there's only ONE per application
 {
    uint8* pixels; // pixels in native format
@@ -63,11 +91,15 @@ typedef struct TScreenSurface // represents a device-dependant surface, there's 
    int32 screenX, screenY, screenW, screenH,minScreenW,minScreenH;
    int32 hRes, vRes;
    double contentScale; // physical pixels represented by one logical screen unit
+   double fontScale; // logical text scaling for this surface
+   int32 deviceFontHeight;
+   uint32 surfaceGeneration;
+   uint32 pendingChangeFlags;
+   bool surfaceReady;
    void *extension; // platform specific data
    int32 shiftY;
    uint32 pixelformat;
 } *ScreenSurface, TScreenSurface;
-
 
 Pixel makePixelA(int32 a, int32 r, int32 g, int32 b);
 Pixel makePixel(int32 r, int32 g, int32 b);
@@ -76,6 +108,9 @@ Pixel makePixelRGB(int32 rgb);
 PixelConv makePixelConvRGB(int32 rgb);
 
 void repaintActiveWindows(Context currentContext);
+ScreenChangeFlags screenApplyConfiguration(ScreenSurface screenSurface, const TScreenConfiguration *configuration);
+ScreenChangeFlags screenConsumePendingChanges(ScreenSurface screenSurface);
+void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes);
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged);
 
 /**

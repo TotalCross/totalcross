@@ -258,7 +258,7 @@ void updateScreenSettings(ScreenSurface screen) // will be called from initGraph
    *tcSettings.isOpenGL = true;
 #endif
 #if defined(ANDROID) || defined(darwin)
-   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
+   *tcSettings.deviceFontHeightPtr = screen->deviceFontHeight;
 #endif
 }
 

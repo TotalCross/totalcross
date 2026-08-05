@@ -98,27 +98,112 @@ void repaintActiveWindows(Context currentContext)
       executeMethod(currentContext, repaintActiveWindows);
 }
 
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
+ScreenChangeFlags screenApplyConfiguration(ScreenSurface screenSurface, const TScreenConfiguration *configuration)
 {
-   // IMPORTANT: this is the only place that changes tcSettings
-   screen.screenW = newWidth;
-   *tcSettings.screenWidthPtr = (int32)(newWidth / (screen.contentScale > 0 ? screen.contentScale : 1) + 0.5);
+   ScreenChangeFlags changes = SCREEN_CHANGE_NONE;
+   bool wasReady;
+
+   if (screenSurface == null || configuration == null)
+      return SCREEN_CHANGE_NONE;
+
+   wasReady = screenSurface->surfaceReady;
+   if (!wasReady)
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_INITIAL);
+   if (screenSurface->screenW != configuration->width
+       || screenSurface->screenH != configuration->height)
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_SIZE);
+   if (screenSurface->hRes != configuration->hRes
+       || screenSurface->vRes != configuration->vRes)
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_DPI);
+   if (screenSurface->contentScale != configuration->contentScale)
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_CONTENT_SCALE);
+   if (screenSurface->fontScale != configuration->fontScale)
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_FONT_SCALE);
+   if (screenSurface->deviceFontHeight != configuration->deviceFontHeight)
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_DEVICE_FONT);
+   if (configuration->nativeSurfaceChanged)
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_NATIVE_SURFACE);
+
+   screenSurface->screenW = configuration->width;
+   screenSurface->screenH = configuration->height;
+   screenSurface->hRes = configuration->hRes;
+   screenSurface->vRes = configuration->vRes;
+   screenSurface->contentScale = configuration->contentScale > 0 ? configuration->contentScale : 1;
+   screenSurface->fontScale = configuration->fontScale > 0 ? configuration->fontScale : 1;
+   screenSurface->deviceFontHeight = configuration->deviceFontHeight;
+   screenSurface->surfaceGeneration = configuration->generation;
+   screenSurface->surfaceReady = configuration->surfaceReady;
+   if (screenSurface->bpp != 0)
+      screenSurface->pitch = screenSurface->screenW * screenSurface->bpp / 8;
+   screenSurface->pendingChangeFlags |= (uint32)changes;
+
+   return changes;
+}
+
+ScreenChangeFlags screenConsumePendingChanges(ScreenSurface screenSurface)
+{
+   ScreenChangeFlags changes;
+
+   if (screenSurface == null)
+      return SCREEN_CHANGE_NONE;
+
+   changes = (ScreenChangeFlags)screenSurface->pendingChangeFlags;
+   screenSurface->pendingChangeFlags = SCREEN_CHANGE_NONE;
+   return changes;
+}
+
+void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes)
+{
+   double contentScale;
+
+   if (changes == SCREEN_CHANGE_NONE || !screen.surfaceReady)
+      return;
+
+   // IMPORTANT: this is the only place that changes screen-related tcSettings
+   contentScale = screen.contentScale > 0 ? screen.contentScale : 1;
    screen.pitch = screen.screenW * screen.bpp / 8;
-   screen.screenH = newHeight;
-   *tcSettings.screenHeightPtr = (int32)(newHeight / (screen.contentScale > 0 ? screen.contentScale : 1) + 0.5);
-   screen.hRes = *tcSettings.screenWidthInDPIPtr = hRes;
-   screen.vRes = *tcSettings.screenHeightInDPIPtr = vRes;
+   *tcSettings.screenWidthPtr = (int32)(screen.screenW / contentScale + 0.5);
+   *tcSettings.screenHeightPtr = (int32)(screen.screenH / contentScale + 0.5);
+   *tcSettings.screenWidthInDPIPtr = screen.hRes;
+   *tcSettings.screenHeightInDPIPtr = screen.vRes;
+   *tcSettings.screenDensityPtr = contentScale;
+   *tcSettings.deviceFontHeightPtr = screen.deviceFontHeight;
+
    markWholeScreenDirty(currentContext);
-   privateScreenChange(newWidth, newHeight);
-   if (!nothingChanged)
+   privateScreenChange(screen.screenW, screen.screenH);
+
+   if ((changes & SCREEN_CHANGE_RECREATE_SURFACE) != 0)
    {
       graphicsDestroy(&screen, true);
       createScreenSurface(currentContext, true);
    }
-   // post the event to the vm
+
    if (mainClass != null)
-      postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1); //XXX
+      postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
    repaintActiveWindows(mainContext);
+}
+
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
+{
+   TScreenConfiguration configuration;
+   ScreenChangeFlags changes;
+
+   memset(&configuration, 0, sizeof(configuration));
+   configuration.width = newWidth;
+   configuration.height = newHeight;
+   configuration.hRes = hRes;
+   configuration.vRes = vRes;
+   configuration.contentScale = screen.contentScale > 0 ? screen.contentScale : 1;
+   configuration.fontScale = screen.fontScale > 0 ? screen.fontScale : 1;
+   configuration.deviceFontHeight = screen.deviceFontHeight;
+   configuration.generation = screen.surfaceGeneration;
+   configuration.surfaceReady = true;
+
+   changes = screenApplyConfiguration(&screen, &configuration);
+   if (nothingChanged)
+      changes = (ScreenChangeFlags)(changes & ~SCREEN_CHANGE_RECREATE_SURFACE);
+   screenConsumePendingChanges(&screen);
+   screenChangeCommitted(currentContext, changes);
 }
 
 Pixel makePixelA(int32 a, int32 r, int32 g, int32 b)
