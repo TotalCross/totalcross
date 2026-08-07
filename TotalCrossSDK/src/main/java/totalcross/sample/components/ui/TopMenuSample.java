@@ -71,11 +71,11 @@ public class TopMenuSample extends BaseScreen {
 				new TopMenu.Item("Add subject", Resources.exit), new TopMenu.Item("Add persons", Resources.back),
 				new TopMenu.Item("Programmed messages", Resources.menu),
 				new TopMenu.Item("Add to the phone book", Resources.warning), };
-		
+
 		Label message = new Label("Click on the buttons to show the TopMenu", CENTER);
 		message.autoSplit = true;
 		content.add(message, LEFT + gap, TOP + gap, FILL - gap, PREFERRED);
-		
+
 		Button[] tmBtn = new Button[4];
 		Button[] filterBtn = new Button[2];
 		tmBtn[0] = new Button("TOP");
@@ -106,14 +106,14 @@ public class TopMenuSample extends BaseScreen {
 			topMenu.setFadeOnPopAndUnpop(false);
 			topMenu.popup();
 		});
-		
+
 		tmBtn[2] = new Button("BOTTOM");
 		content.add(tmBtn[2], CENTER, BOTTOM - gap);
 		tmBtn[2].addPressListener(e -> {
 			topMenu = new TopMenu(items, BOTTOM);
-			topMenu.popup();		
+			topMenu.popup();
 		});
-		
+
 		tmBtn[3] = new Button("LEFT");
 		content.add(tmBtn[3], LEFT + gap, CENTER);
 		tmBtn[3].addPressListener(e -> {
@@ -135,7 +135,7 @@ public class TopMenuSample extends BaseScreen {
 			topMenu.setFadeOnPopAndUnpop(false);
 			topMenu.popup();
 		});
-		
+
 		for (Button btn : tmBtn)
 			btn.setBackForeColors(Colors.P_600, Colors.ON_P_600);
 		for (Button btn : filterBtn)
