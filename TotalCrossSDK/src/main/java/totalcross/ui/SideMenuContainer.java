@@ -105,9 +105,7 @@ public class SideMenuContainer extends Container implements PenListener {
     if (direction == BOTTOM || direction == TOP) {
       topMenu.percWidth = 100;
     } else {
-      // navigation drawer width - https://material.io/guidelines/patterns/navigation-drawer.html#navigation-drawer-specs
-      int screenWidthInDp = Settings.screenWidth;
-      topMenu.widthInPixels = Math.min(320, screenWidthInDp - BAR_HEIGHT_IN_DP);
+      topMenu.useSafeDrawerWidth();
     }
     topMenu.totalTime = 400;
     topMenu.autoClose = true;
@@ -120,6 +118,8 @@ public class SideMenuContainer extends Container implements PenListener {
       topMenu.titleAlign = LEFT + 25;
     }
     topMenu.setFont(this.getFont());
+    addPenListener(this);
+    callListenersOnAllTargets = true;
 
     bar.addPressListener(new PressListener() {
       @Override
@@ -143,8 +143,6 @@ public class SideMenuContainer extends Container implements PenListener {
       swap(((SideMenuContainer.Item) home));
     }
 
-    content.getParentWindow().addPenListener(this);
-    content.getParentWindow().callListenersOnAllTargets = true;
   }
 
   public void setBarFont(Font f) {
@@ -343,9 +341,9 @@ public class SideMenuContainer extends Container implements PenListener {
 
     @Override
     public void onAnimationFinished(ControlAnimation anim) {
-      Window w = getParentWindow();
-      if (w != null) {
-        w.reposition();
+      TopMenu menu = getTopMenu();
+      if (menu != null) {
+        menu.reposition();
       }
       Settings.showUIErrors = showUIErrorsOld;
     }
@@ -354,10 +352,19 @@ public class SideMenuContainer extends Container implements PenListener {
     public void setPos(int x, int y) {
       this.height = setH = y;
       Window.needsPaint = true;
-      Window w = getParentWindow();
-      if (w != null) {
-        w.reposition();
+      TopMenu menu = getTopMenu();
+      if (menu != null) {
+        menu.reposition();
       }
+    }
+
+    private TopMenu getTopMenu() {
+      for (Control control = this; control != null; control = control.parent) {
+        if (control instanceof TopMenu) {
+          return (TopMenu) control;
+        }
+      }
+      return null;
     }
 
     private int getMaxHeight() {
