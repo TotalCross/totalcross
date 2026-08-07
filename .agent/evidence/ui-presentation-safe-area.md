@@ -33,6 +33,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 | 4 | `TopMenuSafeAreaTest` | PASS; 2 tests |
 | 4 | `SideMenuPresentationTest`, `TopMenuSafeAreaTest` | PASS; 4 tests |
 | 4 | focused header/static/new-file size checks | PASS |
+| 5 | final focused Java suite | PASS; 16 tests |
+| 5 | non-clean `dist -x test` | PASS |
+| 5 | `smokeTestClasses` | PASS |
+| 5 | JavaSE smoke | PASS; `final=PASS` |
+| 5 | macOS CMake configure and `tcvm` build | PASS |
+| 5 | macOS jar deploy and direct native run | PASS; `final=PASS` |
+| 5 | source/deployed dylib SHA-256 comparison | PASS; hashes identical |
+| 5 | final copyright, static, compatibility, and file-size checks | PASS |
 
 Milestone 1 commits are `536a7984c` (explicit default clipping) and
 `c6e2f90bc` (visibility search and sentinel correctness). The initial two test
@@ -54,5 +62,40 @@ geometry without repeated safe insets, retained body identity, outside
 dismissal, 204-unit safe drawer sizing, 180-unit explicit override, local
 gesture propagation, and successful compilation after the superclass change.
 
-Verbose logs for later Gradle and smoke commands are stored under
-`artifacts/ui-presentation-safe-area/logs/`.
+Milestone 5 commit `f1601b2e6` adds the smoke fixture. The final focused command
+ran `ContainerClippingTest`, `ClippedContainerTest`, `PresentationHostTest`,
+`SlidingWindowPresentationTest`, `TopMenuSafeAreaTest`,
+`SideMenuPresentationTest`, and `SafeAreaLayoutTest`; all 16 tests passed.
+
+The JavaSE smoke reported:
+
+    ownerWindowUnchanged=true
+    zStackDelta=0
+    safeViewport=20,10,260,600
+    slidingFinal=0,0,260,600
+    topMenuFinal=0,0,204,600
+    clippingPass=true
+    final=PASS
+
+The macOS smoke was packaged as a jar because `tc.Deploy` correctly rejected a
+single class in the reserved `totalcross.*` package. The jar retry deployed
+successfully. The current and deployed dylib SHA-256 values were both
+`fccd8da2a253d409611b11822606e9521f92d5771e762f1613c0fe0c38986db5`.
+The direct native run reported:
+
+    ownerWindowUnchanged=true
+    zStackDelta=0
+    safeViewport=20,10,1668,941
+    slidingFinal=0,0,1668,941
+    topMenuFinal=0,0,320,941
+    clippingPass=true
+    final=PASS
+
+Verbose Gradle, CMake, deploy, and smoke logs are stored under
+`artifacts/ui-presentation-safe-area/logs/`. Wrapper logs are under
+`TotalCrossSDK/agent-logs/`.
+
+The final compatibility evidence is the successful SDK distribution, which
+compiles repository consumers after the superclass changes. The existing
+`TopMenuSample.java` local source had to become tracked so its close action
+could call `topMenu.unpop()` without an invalid `Window` cast.

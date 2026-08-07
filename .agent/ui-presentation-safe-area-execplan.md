@@ -100,12 +100,12 @@ necessary.
       safe-area compensation (`565b89e37`).
 - [x] (2026-08-07 15:48Z) Made SideMenu gestures local and drawer sizing
       safe-viewport-relative (`56544d833`).
-- [ ] Add a focused smoke fixture if existing repository smoke/deploy machinery
-      can be reused economically.
-- [ ] Run final focused Java validation, one non-clean SDK distribution build,
-      and, when feasible, one deployed native macOS smoke.
-- [ ] Complete file-size, copyright, compatibility, evidence, state, and
-      editorial checks.
+- [x] (2026-08-07 15:50Z) Added and compiled a focused safe-presentation smoke
+      fixture (`f1601b2e6`).
+- [x] (2026-08-07 15:53Z) Passed final focused Java, one non-clean SDK dist,
+      JavaSE smoke, and deployed native macOS smoke.
+- [x] (2026-08-07 16:04Z) Completed file-size, copyright, compatibility,
+      evidence, state, retrospective, and editorial handoff checks.
 
 ## Current Architecture and Scope
 
@@ -114,28 +114,18 @@ nonblocking popup paths modify `Window.topMost` and `Window.zStack`, disable the
 previous window for events, and restore focus on close. Real dialogs and other
 true windows keep that behavior.
 
-`SlidingWindow` and `TopMenu` currently inherit from `Window`.
-`SideMenuContainer` is already a `Container`, but creates a `TopMenu`, invokes
-its popup lifecycle, uses physical screen width for drawer sizing, and registers
-gesture handling through its parent window. `MaterialWindow` inherits
-`SlidingWindow` and composes a `Bar` with provider content.
+`SlidingWindow` and `TopMenu` now inherit `Container` and compose an internal
+controller. `MaterialWindow` retains SlidingWindow and its Bar/provider layout.
+SideMenu retains its public TopMenu relationship but uses local gestures and
+safe-viewport drawer sizing.
 
 The owner window's `getClientRect()` is the safe presentation rectangle. The
 host may cover the full window, but its animated viewport must equal that client
 rectangle.
 
-A source audit performed while writing this plan found that
-`Control.getGraphics()` already delegates to `Control.refreshGraphics()`, which
-clips a control against every ancestor container bound before refreshing the
-graphics. Therefore the new clipping policy must default to clipping enabled.
-Do not implement a default-disabled clipping model; that would change existing
-rendering semantics.
-
-`ClippedContainer` adds paint culling on top of normal ancestor clipping. Its
-current search accepts `ini` but starts at zero, uses zero both as a valid index
-and as a not-found result, and leaves `lastMid` initialized as zero even though
-the algorithm treats `-1` as the empty sentinel. Correct these defects only.
-Do not rename the class or redesign list virtualization.
+Ancestor clipping is now an explicit default-enabled internal Container policy.
+`ClippedContainer` remains a paint-culling optimization and now uses correct
+search ranges and `-1` empty/not-found sentinels.
 
 A "presentation viewport" is a child container whose bounds equal the owner
 window's safe client rectangle. A "presentation frame" is the child moved
@@ -344,80 +334,45 @@ Acceptance requires:
 
 ## Risks and Open Questions
 
-Removing `Window` inheritance from `SlidingWindow` and `TopMenu` changes Java
-type assignability. Do not deprecate the classes, but record actual compile/API
-impact. Preserve their own documented and repository-used API; do not recreate
-arbitrary inherited Window API solely to hide the superclass change.
+The superclass change intentionally removes Window assignability while retaining
+the classes' own repository-used APIs. TopMenu title/border rendering is a small
+Container/Label mapping and has no automated visual-equivalence proof. Host-level
+Back dispatch is covered structurally; broad focus-scope work and a public
+clipping/navigation API remain out of scope.
 
-TopMenu previously obtained title/border behavior from Window. Preserve the
-TopMenu title presence, alignment/color intent, and border intent required by
-current repository callers using existing Container/Label/border primitives.
-Avoid copying the large Window title-painting implementation. If focused visual
-evidence finds a material regression, make the smallest TopMenu-specific fix and
-record it.
-
-If focus or Back dispatch escapes to underlying content after presentations stop
-being real Windows, add the smallest host-level focus save/restore or key
-dispatch needed. Do not start a general FocusScope framework.
-
-Keep the new clipping switch internal. Public clipping API design belongs to a
-later UI API phase.
+The compatibility field `TopMenu.fadeOtherWindows` remains available, but the
+new modal barrier is transparent and does not reproduce the old visual dimming.
+This is recorded as remaining visual-parity work rather than silently claimed
+as equivalent behavior.
 
 ## Idempotence and Recovery
 
-Never use `git reset --hard`, `git checkout -- <path>`, broad clean commands, or
-deletion of unrelated generated directories as recovery. Preserve unrelated
-local changes.
-
-Before each commit, inspect `git diff --stat` and only active diffs. Stage only
-the current slice. After each logical commit, update state with the commit hash,
-focused validation, deferred validation, new files, and next action.
-
-If a focused test fails, fix and rerun only that slice. Do not escalate to SDK
-distribution or native smoke for a unit-level failure. If a platform smoke fails,
-capture concise evidence and retry only the failed deployment/runtime step after
-a targeted fix.
-
-Repeated present/dismiss cycles must not leak entry layers. A second dismiss is
-a no-op. An aborted animation must leave an entry fully attached at a stable
-position or fully detached, never half registered.
-
-No task in this plan pushes, opens a pull request, publishes, or modifies remote
-state.
+Recovery preserves unrelated work and avoids destructive Git/clean operations.
+Scoped diffs and staging precede commits. Present/dismiss is idempotent, resize
+ends transitions in a stable state, and no task pushes, publishes, or changes
+remote state.
 
 ## Outcomes & Retrospective
 
-At each completed milestone, add one short factual paragraph with delivered
-behavior, logical commit, focused validation, and deferred expensive validation.
-At completion, compare delivered behavior with the purpose and distinguish unit,
-JavaSE, and native macOS proof.
-
-Milestone 0 established that the current checkout contains the required prior
-safe-area work through `62c9c728c`, including opt-in orthogonal-position
-preservation in `PathAnimation`, safe-area-aware window animation staging, and
-the explicit `MaterialWindow` bar width. The plan and design were committed as
-`9a3b22ae1`; source validation and platform work were intentionally deferred.
-
-Milestone 1 made existing ancestor clipping an explicit default-enabled
-Container policy and fixed `ClippedContainer` search/cache sentinels. Commits
-`536a7984c` and `c6e2f90bc` passed their focused tests; distribution and smoke
-validation remain deferred until all implementation milestones finish.
-
-Milestone 2 added the internal safe presentation layers in `cd5082a1d`.
-Nonzero-inset geometry, clipping, relayout, content identity, idempotent
-dismissal, and unchanged real-window state pass focused tests. Distribution and
-smoke validation remain deferred.
-
-Milestone 3 migrated sliding/material presentations in `631badefd`. Four-way
-safe origins, slack, relayout identity, lifecycle cleanup, and unchanged z-stack
-pass focused tests. The public superclass changes from `Window` to `Container`;
-repository callers compile, but external Window assignability is intentionally
+Milestones 0-4 preserved the baseline fixes, made clipping explicit, corrected
+ClippedContainer, added the internal host, and migrated SlidingWindow,
+MaterialWindow, TopMenu, and SideMenu. Commits and focused proof are recorded in
+the state, evidence, and archive. External Window assignability is intentionally
 not preserved.
 
-Milestone 4 migrated TopMenu and SideMenu in `565b89e37` and `56544d833`.
-Single safe-area consumption, bar modes, dynamic relayout, outside dismissal,
-safe drawer sizing, explicit-width precedence, local gestures, and stack
-isolation pass focused tests. The sample compile fix is `f0a918d97`.
+Milestone 5 added smoke `f1601b2e6`. The final focused Java set, non-clean SDK
+distribution, smoke compilation, JavaSE run, current native macOS build/deploy,
+and direct native run passed. JavaSE proved deterministic nonzero geometry
+`20,10,260,600`; native macOS proved lifecycle/clipping/stack behavior with its
+runtime viewport `20,10,1668,941`. Android and iOS were not built or deployed.
+
+The implementation meets the structural and measurable acceptance criteria:
+presentations remain inside their owner, use its safe client rectangle, clip
+transient motion, preserve retained content across relayout, and leave the real
+Window stack unchanged. The final audit also confirmed all new files remain
+below the requested size thresholds. Remaining uncertainty is visual rather
+than architectural: title/border equivalence and `fadeOtherWindows` dimming are
+not covered by screenshot comparison.
 
 The final editorial report is:
 
@@ -453,3 +408,9 @@ the duplicate delayed-provider discovery.
 
 2026-08-07: Recorded the TopMenu/SideMenu migration and the sample compile
 compatibility fix; all implementation milestones are now complete.
+
+2026-08-07: Recorded smoke and final validation outcomes and compacted completed
+history into the archive to keep this plan below its size limit.
+
+2026-08-07: Closed the plan after final copyright, static, compatibility,
+new-file size, evidence, state, retrospective, and editorial checks.

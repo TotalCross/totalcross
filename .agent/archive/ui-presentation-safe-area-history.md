@@ -46,3 +46,16 @@ padding, preserved fixed-bar/scroll modes, and added local title/border state.
 `f0a918d97` updated the sample close action required by lost Window assignability.
 `56544d833` made SideMenu gesture handling local, deferred drawer width to safe
 viewport layout, and relayouted expanding submenus through their TopMenu.
+
+## Milestone 5 — smoke, final validation, and handoff
+
+`f1601b2e6` added a compact programmatic smoke fixture. The seven-class focused
+suite passed 16 tests, the one final non-clean SDK distribution passed, and the
+fixture compiled and passed under JavaSE with deterministic nonzero safe insets.
+
+The existing macOS path was reusable. CMake configuration and the `tcvm` target
+build passed, the fixture deployed from a jar, the deployed dylib matched the
+built dylib byte-for-byte by SHA-256, and the direct native executable reported
+`final=PASS`. No Android or iOS build/deploy was attempted. Final checks covered
+scoped diffs, copyrights, new-file sizes, and repository compilation. Detailed
+claims and limitations are preserved in the evidence and editorial report.

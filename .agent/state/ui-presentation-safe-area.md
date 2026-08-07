@@ -8,10 +8,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current position
 
-- Status: active
-- Active milestone: Milestone 5, smoke, final validation, and handoff
-- Design section: `Smoke design and execution boundary`
-- Next action: run the final focused Java set, then add/compile economical smoke coverage
+- Status: complete
+- Active milestone: none; implementation and handoff are complete
+- Design section: all implementation-guide sections completed
+- Next action: none; retain this file as the resumable final state
 - Base commit: `62c9c728cd0570c1e1a8219b42dfd72c6fedd355`
 - Current branch: `feat/logical-ui-scaling2`
 - Planning commit: `9a3b22ae1`
@@ -21,6 +21,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - TopMenu commit: `565b89e37`
 - TopMenu sample compile fix: `f0a918d97`
 - SideMenu commit: `56544d833`
+- Menu milestone record: `b843b64f0`
+- Smoke commit: `f1601b2e6`
 
 ## Preserved baseline
 
@@ -50,11 +52,26 @@ other plans. It is outside this task and must remain unstaged.
 - `SideMenuPresentationTest` plus `TopMenuSafeAreaTest`: passed; log
   `m4-side-menu.log`.
 - focused Milestone 4 copyright, static, and new-file size checks: passed.
+- final focused suite: passed, 16 tests; log `final-focused-tests.log`.
+- non-clean `dist -x test`: passed; log `sdk-dist.log`.
+- smoke compilation: passed; log `smoke-compile.log`.
+- JavaSE smoke: passed with safe viewport `20,10,260,600`; log
+  `javase-smoke.log`.
+- macOS CMake configure and `tcvm` build: passed; logs `macos-cmake.log` and
+  `macos-tcvm.log`.
+- macOS deploy and direct native smoke: passed with safe viewport
+  `20,10,1668,941`; logs `native-deploy.log` and `native-macos-smoke.log`.
+- source and deployed `libtcvm.dylib` SHA-256 matched:
+  `fccd8da2a253d409611b11822606e9521f92d5771e762f1613c0fe0c38986db5`.
+- final changed-file copyright, static, compatibility, and new-file size
+  checks: passed; see the evidence ledger.
 
 ## Deferred validation
 
-SDK distribution, smoke compilation, and any macOS native smoke remain
-prohibited until Milestones 1-4 are complete.
+Android and iOS builds and deployments were intentionally not run. The request
+excluded both platforms. No clean/full distribution was run because the
+non-clean SDK distribution plus focused and native smoke validation was
+sufficient under the repository escalation policy.
 
 ## New files
 
@@ -72,6 +89,19 @@ prohibited until Milestones 1-4 are complete.
 - `TotalCrossSDK/src/test/java/totalcross/ui/SlidingWindowPresentationTest.java`
 - `TotalCrossSDK/src/test/java/totalcross/ui/SideMenuPresentationTest.java`
 - `TotalCrossSDK/src/main/java/totalcross/sample/components/ui/TopMenuSample.java`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/PresentationSafeAreaSmoke.java`
+- `.agent/reports/ui-presentation-safe-area-editorial.md`
+
+## Final limitations
+
+- `SlidingWindow` and `TopMenu` are no longer assignable to `Window`; their
+  repository-used source APIs compile and the affected sample was updated.
+- TopMenu title/border styling has focused state/layout tests but no screenshot
+  equivalence test.
+- `fadeOtherWindows` remains as compatibility state, while the new presentation
+  barrier is transparent; equivalent visual dimming remains future work.
+- Native macOS smoke uses programmatically injected nonzero insets and proves
+  runtime behavior, not physical-notch integration.
 
 ## Resume rule
 
