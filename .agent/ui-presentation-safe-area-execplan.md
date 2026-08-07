@@ -90,8 +90,9 @@ necessary.
 
 ## Progress
 
-- [ ] Record the local baseline, local-only changes, and earlier animation fixes
-      that must be preserved.
+- [x] (2026-08-07 15:10Z) Recorded baseline `62c9c728c`, branch
+      `feat/logical-ui-scaling2`, unrelated local files, and the earlier
+      animation/safe-area fixes that must be preserved.
 - [ ] Make ancestor clipping explicit without changing its default behavior.
 - [ ] Correct `ClippedContainer` visibility-search edge cases.
 - [ ] Add the internal presentation host, entry/handle, viewport/frame, and
@@ -442,6 +443,12 @@ behavior, logical commit, focused validation, and deferred expensive validation.
 At completion, compare delivered behavior with the purpose and distinguish unit,
 JavaSE, and native macOS proof.
 
+Milestone 0 established that the current checkout contains the required prior
+safe-area work through `62c9c728c`, including opt-in orthogonal-position
+preservation in `PathAnimation`, safe-area-aware window animation staging, and
+the explicit `MaterialWindow` bar width. The plan and design were committed as
+`9a3b22ae1`; source validation and platform work were intentionally deferred.
+
 The final editorial report is:
 
     .agent/reports/ui-presentation-safe-area-editorial.md
@@ -461,3 +468,6 @@ fixes, migration of `SlidingWindow`/`MaterialWindow` and
 `TopMenu`/`SideMenuContainer`, new-file size limits, token-efficient validation,
 frequent local commits with no push, and macOS-only native smoke after
 implementation completion.
+
+2026-08-07: Recorded the reconciled local baseline and Milestone 0 outcome so a
+resume begins from the verified branch and preserves the existing fixes.
