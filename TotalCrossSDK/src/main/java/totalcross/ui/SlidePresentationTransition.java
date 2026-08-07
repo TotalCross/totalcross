@@ -6,14 +6,21 @@ package totalcross.ui;
 
 import totalcross.ui.anim.ControlAnimation;
 import totalcross.ui.anim.ControlAnimation.AnimationFinished;
+import totalcross.ui.anim.FadeAnimation;
 import totalcross.ui.anim.PathAnimation;
 import totalcross.ui.gfx.Rect;
 
 final class SlidePresentationTransition implements PresentationTransition {
   private final int direction;
+  private final boolean fade;
 
   SlidePresentationTransition(int direction) {
+    this(direction, false);
+  }
+
+  SlidePresentationTransition(int direction, boolean fade) {
     this.direction = direction;
+    this.fade = fade;
   }
 
   void getOutsideBounds(Rect viewport, Rect finalBounds, Rect outside) {
@@ -63,6 +70,9 @@ final class SlidePresentationTransition implements PresentationTransition {
         handle.setFramePosition(x, y);
       }
     };
+    if (fade) {
+      animation.with(FadeAnimation.create(handle.frame(), entering, null, duration));
+    }
     animation.start();
     return animation;
   }

@@ -7,10 +7,6 @@ package totalcross.ui;
 
 import totalcross.io.IOException;
 import totalcross.sys.Settings;
-import totalcross.ui.anim.ControlAnimation;
-import totalcross.ui.anim.ControlAnimation.AnimationFinished;
-import totalcross.ui.anim.FadeAnimation;
-import totalcross.ui.anim.PathAnimation;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.DragEvent;
 import totalcross.ui.event.Event;
@@ -26,7 +22,7 @@ import totalcross.ui.image.ImageException;
  * 
  * @since TotalCross 3.03
  */
-public class TopMenu extends Window {
+public class TopMenu extends Container implements PresentationController.Delegate {
   /** Controls whether a fixed bar reserves viewport space or overlays it. */
   public enum BarLayoutMode {
     /** Remove the complete bar height from the scrolling viewport. */
@@ -86,7 +82,6 @@ public class TopMenu extends Window {
 
   public boolean showElevation = false;
 
-  private ControlAnimation currentAnimation;
   private boolean fadeOnPopAndUnpop;
   private Control topBar;
   private Control bottomBar;
@@ -96,6 +91,15 @@ public class TopMenu extends Window {
   ScrollContainer bodyScroller;
   Container topBarHost;
   Container bottomBarHost;
+  protected boolean canDrag = true;
+  public boolean fadeOtherWindows;
+  public int titleColor = -1;
+  public int titleGap;
+  public int titleAlign = CENTER;
+  private String title;
+  private Label titleLabel;
+  private boolean safeDrawerWidth;
+  private final PresentationController presentationController;
 
   public static class Item extends Container {
     Control tit;
@@ -136,7 +140,12 @@ public class TopMenu extends Window {
     }
 
     private TopMenu getTopMenu() {
-      return (TopMenu) getParentWindow();
+      for (Control control = this; control != null; control = control.parent) {
+        if (control instanceof TopMenu) {
+          return (TopMenu) control;
+        }
+      }
+      return null;
     }
 
     @Override
@@ -180,7 +189,8 @@ public class TopMenu extends Window {
     public void onEvent(Event e) {
       if (e.type == PenEvent.PEN_UP && !hadParentScrolled()) {
         // Should not accept clicks if the TopMenu animation is playing
-        if (getTopMenu().currentAnimation != null) {
+        TopMenu menu = getTopMenu();
+        if (menu == null || menu.isTransitioning()) {
           return;
         }
 
@@ -213,18 +223,20 @@ public class TopMenu extends Window {
    *          LEFT, RIGHT, TOP, BOTTOM, CENTER
    */
   public TopMenu(Control[] items, int animDir, byte borderStyle) {
-    super(null, borderStyle);
     this.items = items;
     this.animDir = animDir;
+    presentationController = new PresentationController(this);
     titleGap = 0;
-    sameBackgroundColor = fadeOtherWindows = false;
+    fadeOtherWindows = false;
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
     borderColor = UIColors.separatorFore;
+    setBorderStyle(toContainerBorder(borderStyle));
     setBackForeColors(UIColors.separatorFore, UIColors.topmenuFore);
     fadeOnPopAndUnpop = true;
-    setSafeAreaMode(SafeAreaMode.DISABLED);
-    
-    MainWindow.getMainWindow().addTimer(1000);
+    MainWindow main = MainWindow.getMainWindow();
+    if (main != null) {
+      main.addTimer(1000);
+    }
   }
 
   /**
@@ -232,32 +244,26 @@ public class TopMenu extends Window {
    *          LEFT, RIGHT, TOP, BOTTOM, CENTER
    */
   public TopMenu(Control[] items, int animDir) {
-    this(items, animDir, ROUND_BORDER);
+    this(items, animDir, Window.ROUND_BORDER);
   }
 
-  @Override
   public void popup() {
-    setRect(false);
-    super.popup();
+    presentationController.popup();
   }
 
-  protected void setRect(boolean screenResized) {
-    int ww = setW = widthInPixels != 0 ? widthInPixels : SCREENSIZE + (percWidth > 0 ? percWidth : 50);
-    switch (animDir) {
-    case LEFT:
-      setRect(0 - ww, TOP, ww, FILL, null, screenResized);
-      break;
-    case RIGHT:
-      setRect(RIGHT + ww, TOP, ww, FILL, null, screenResized);
-      break;
+  public void popupNonBlocking() {
+    presentationController.popupNonBlocking();
+  }
+
+  private static byte toContainerBorder(byte windowBorder) {
+    switch (windowBorder) {
+    case Window.RECT_BORDER:
+      return BORDER_SIMPLE;
+    case Window.ROUND_BORDER:
+      return BORDER_ROUNDED;
     default:
-      resetSetPositions(); // required to make sure the height gets updated by the following setRect
-      setRect(LEFT, animDir, ww,
-          Math.min(Settings.screenHeight * 3 / 4, items.length * 50), null,
-          screenResized);
-      break;
+      return BORDER_NONE;
     }
-    Window.needsPaint = true;
   }
 
   public double itemHeightFactor = 2;
@@ -336,40 +342,63 @@ public class TopMenu extends Window {
         : bottom ? ScrollUnderMode.BOTTOM : ScrollUnderMode.NONE;
   }
 
-  int getAttachedSafeAreaEdges() {
-    switch (animDir) {
-    case LEFT:
-      return SafeAreaEdges.TOP | SafeAreaEdges.LEFT | SafeAreaEdges.BOTTOM;
-    case RIGHT:
-      return SafeAreaEdges.TOP | SafeAreaEdges.RIGHT | SafeAreaEdges.BOTTOM;
-    case TOP:
-      return SafeAreaEdges.TOP | SafeAreaEdges.LEFT | SafeAreaEdges.RIGHT;
-    case BOTTOM:
-      return SafeAreaEdges.BOTTOM | SafeAreaEdges.LEFT | SafeAreaEdges.RIGHT;
-    default:
-      return SafeAreaEdges.ALL;
+  void useSafeDrawerWidth() {
+    safeDrawerWidth = true;
+  }
+
+  public void setTitle(String title) {
+    this.title = title == null || title.length() == 0 ? null : title;
+    if (titleLabel != null) {
+      titleLabel.setText(this.title == null ? "" : this.title);
+      layoutMenu();
     }
   }
 
-  private int getBarPaddingEdges(boolean top) {
-    return getAttachedSafeAreaEdges()
-        & (SafeAreaEdges.LEFT | SafeAreaEdges.RIGHT | (top ? SafeAreaEdges.TOP : SafeAreaEdges.BOTTOM));
+  public String getTitle() {
+    return title;
   }
 
-  private int getBarHeight(Control bar, boolean top) {
-    if (bar == null) {
-      return 0;
+  public void makeUnmovable() {
+    canDrag = false;
+  }
+
+  private int getTitleHeight() {
+    return title == null ? 0 : fmH + Math.max(0, titleGap);
+  }
+
+  private Rect getMenuClientRect() {
+    Rect client = getClientRect();
+    int titleHeight = getTitleHeight();
+    client.y += titleHeight;
+    client.height = Math.max(0, client.height - titleHeight);
+    return client;
+  }
+
+  private int getBarHeight(Control bar) {
+    return bar == null ? 0 : bar.getPreferredHeight();
+  }
+
+  private void rebuildTitle() {
+    if (title == null || bodyScroller == null) {
+      return;
     }
-    int height = bar.getPreferredHeight();
-    Insets safe = getSafeAreaInsets();
-    int edges = getBarPaddingEdges(top);
-    if (top && (edges & SafeAreaEdges.TOP) != 0) {
-      height += safe.top;
+    if (titleLabel == null) {
+      titleLabel = new Label(title, LEFT);
+      super.add(titleLabel);
     }
-    if (!top && (edges & SafeAreaEdges.BOTTOM) != 0) {
-      height += safe.bottom;
+    titleLabel.setForeColor(titleColor < 0 ? foreColor : titleColor);
+    titleLabel.resetSetPositions();
+    titleLabel.setRect(titleAlign, TOP, PREFERRED, getTitleHeight());
+  }
+
+  private int resolveWidth(Rect viewport) {
+    if (widthInPixels != 0) {
+      return Math.min(widthInPixels, viewport.width);
     }
-    return height;
+    if (safeDrawerWidth && (animDir == LEFT || animDir == RIGHT)) {
+      return Math.min(320, Math.max(0, viewport.width - 56));
+    }
+    return viewport.width * (percWidth > 0 ? percWidth : 50) / 100;
   }
 
   private void rebuildBarHost(boolean top) {
@@ -384,12 +413,10 @@ public class TopMenu extends Window {
         bar.parent.remove(bar);
       }
       host = new Container();
-      host.setSafeAreaLayout(SafeAreaLayout.FULL_BLEED);
-      host.setSafeAreaPaddingEdges(getBarPaddingEdges(top));
       host.setBackColor(bar.getBackColor());
       super.add(host);
-      Rect client = getClientRect();
-      int barHeight = getBarHeight(bar, top);
+      Rect client = getMenuClientRect();
+      int barHeight = getBarHeight(bar);
       host.setRect(client.x, top ? client.y : client.y + client.height - barHeight, client.width, barHeight);
       host.add(bar, LEFT, TOP, FILL, FILL);
     }
@@ -404,13 +431,14 @@ public class TopMenu extends Window {
     if (bodyScroller == null || width <= 0 || height <= 0) {
       return;
     }
-    Rect client = getClientRect();
+    rebuildTitle();
+    Rect client = getMenuClientRect();
     int bodyX = client.x + scInsets.left;
     int bodyY = client.y + scInsets.top;
     int bodyWidth = client.width - scInsets.left - scInsets.right;
     int bodyHeight = client.height - scInsets.top - scInsets.bottom;
-    int topHeight = getBarHeight(topBar, true);
-    int bottomHeight = getBarHeight(bottomBar, false);
+    int topHeight = getBarHeight(topBar);
+    int bottomHeight = getBarHeight(bottomBar);
 
     if (topBar != null && topBarLayoutMode == BarLayoutMode.RESERVE_SPACE) {
       bodyY += topHeight;
@@ -426,12 +454,10 @@ public class TopMenu extends Window {
         bottomBar != null && bottomBarLayoutMode == BarLayoutMode.OVERLAY ? bottomHeight : 0);
 
     if (topBarHost != null) {
-      topBarHost.setSafeAreaPaddingEdges(getBarPaddingEdges(true));
       topBarHost.resetSetPositions();
       topBarHost.setRect(client.x, client.y, client.width, topHeight);
     }
     if (bottomBarHost != null) {
-      bottomBarHost.setSafeAreaPaddingEdges(getBarPaddingEdges(false));
       bottomBarHost.resetSetPositions();
       bottomBarHost.setRect(client.x, client.y + client.height - bottomHeight, client.width, bottomHeight);
     }
@@ -516,11 +542,6 @@ public class TopMenu extends Window {
   }
 
   @Override
-  protected void safeAreaInsetsChanged(Insets previous, Insets current) {
-    layoutMenu();
-  }
-
-  @Override
   public void onEvent(Event e) {
     switch (e.type) {
     case ControlEvent.PRESSED:
@@ -548,24 +569,13 @@ public class TopMenu extends Window {
         || (dragDir == DragEvent.UP && animDir == TOP) || (dragDir == DragEvent.DOWN && animDir == BOTTOM);
   }
 
-  @Override
   public void screenResized() {
-    setRect(true);
-    reposition(true);
-  }
-
-  @Override
-  protected boolean onClickedOutside(PenEvent event) {
-    if (event.type == PenEvent.PEN_DOWN) {
-      unpop();
-    }
-    return true;
+    presentationController.relayout();
   }
 
   /**
    * Unpops the current TopMenu
    */
-  @Override
   public void unpop() {
     unpop(null);
   }
@@ -577,66 +587,61 @@ public class TopMenu extends Window {
    * @param alist
    */
   public void unpop(AnimationListener alist) {
-    if (currentAnimation != null) {
-      return;
-    }
-
     this.alist = alist;
-    if (animDir == CENTER) {
-      currentAnimation = FadeAnimation.create(this, false, null, totalTime);
-    } else {
-      currentAnimation = PathAnimation.create(this, -animDir, null, totalTime, 0, true);
-      if (fadeOnPopAndUnpop) {
-        currentAnimation.with(FadeAnimation.create(this, false, null, totalTime));
-      }
-    }
-    currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
-      @Override
-      public void onAnimationFinished(ControlAnimation anim) {
-        currentAnimation = null;
-        TopMenu.super.unpop();
-      }
-    });
-    currentAnimation.start();
+    presentationController.unpop();
   }
 
   @Override
-  public void postUnpop() {
-    super.postUnpop();
-    if (alist != null) {
-      alist.onAnimationFinished();
-    }
+  public PresentationEntry createPresentationEntry() {
+    PresentationTransition transition = animDir == CENTER
+        ? new FadePresentationTransition()
+        : new SlidePresentationTransition(animDir, fadeOnPopAndUnpop);
+    return new PresentationEntry(this, PresentationEntry.Layer.OVERLAY,
+        new PresentationEntry.BoundsResolver() {
+          @Override
+          public void resolve(Rect viewport, Rect bounds) {
+            int menuWidth = resolveWidth(viewport);
+            int menuHeight = animDir == LEFT || animDir == RIGHT ? viewport.height
+                : Math.min(viewport.height * 3 / 4, items.length * 50);
+            int x = animDir == RIGHT ? viewport.width - menuWidth
+                : animDir == CENTER ? (viewport.width - menuWidth) / 2 : 0;
+            int y = animDir == BOTTOM ? viewport.height - menuHeight
+                : animDir == CENTER ? (viewport.height - menuHeight) / 2 : 0;
+            bounds.set(x, y, menuWidth, menuHeight);
+          }
+        }, transition, true, true, true, -1, totalTime);
   }
 
   @Override
-  public void onPopup() {
-    if (currentAnimation != null) {
-      return;
-    }
-
+  public void onPresentationPopup() {
     selected = -1;
-    if (animDir == CENTER) {
-      resetSetPositions();
-      setRect(CENTER, CENTER, KEEP, KEEP);
-      currentAnimation = FadeAnimation.create(this, true, null, totalTime);
-    } else {
-      currentAnimation = PathAnimation.create(this, animDir, null, totalTime, 0, true);
-      if (fadeOnPopAndUnpop) {
-        currentAnimation.with(FadeAnimation.create(this, true, null, totalTime));
-      }
-    }
-    currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
-      @Override
-      public void onAnimationFinished(ControlAnimation anim) {
-        currentAnimation = null;
-      }
-    });
-    currentAnimation.start();
   }
 
   @Override
-  protected void postPopup() {
-    super.postPopup();
+  public void postPresentationPopup() {
+  }
+
+  @Override
+  public void onPresentationUnpop() {
+  }
+
+  @Override
+  public void postPresentationUnpop() {
+    if (alist != null) {
+      AnimationListener listener = alist;
+      alist = null;
+      listener.onAnimationFinished();
+    }
+  }
+
+  private boolean isTransitioning() {
+    PresentationHandle handle = presentationController.handle();
+    return handle != null && (handle.state() == PresentationHandle.State.PRESENTING
+        || handle.state() == PresentationHandle.State.DISMISSING);
+  }
+
+  PresentationHandle presentationHandle() {
+    return presentationController.handle();
   }
 
   public int getSelectedIndex() {
