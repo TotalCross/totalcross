@@ -23,6 +23,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 | 0 | scoped plan/design `git diff --check` | PASS |
 | 0 | copyright validator for plan/design | PASS (2 files) |
 | 0 | `wc -lc` for plan/design | PASS; both below 20 KiB and 600 lines |
+| 1 | `ContainerClippingTest` | PASS; 1 test |
+| 1 | `ClippedContainerTest` | PASS; 2 tests |
+| 1 | focused header/static checks | PASS |
+
+Milestone 1 commits are `536a7984c` (explicit default clipping) and
+`c6e2f90bc` (visibility search and sentinel correctness). The initial two test
+runs failed only because their fixtures lacked deterministic launcher/screen
+initialization; the corrected fixtures passed without production-code changes.
 
 Verbose logs for later Gradle and smoke commands are stored under
 `artifacts/ui-presentation-safe-area/logs/`.

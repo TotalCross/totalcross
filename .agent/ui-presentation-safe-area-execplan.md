@@ -88,8 +88,10 @@ necessary.
 - [x] (2026-08-07 15:10Z) Recorded baseline `62c9c728c`, branch
       `feat/logical-ui-scaling2`, unrelated local files, and the earlier
       animation/safe-area fixes that must be preserved.
-- [ ] Make ancestor clipping explicit without changing its default behavior.
-- [ ] Correct `ClippedContainer` visibility-search edge cases.
+- [x] (2026-08-07 15:25Z) Made ancestor clipping explicit without changing its
+      default behavior (`536a7984c`).
+- [x] (2026-08-07 15:26Z) Corrected `ClippedContainer` visibility-search edge
+      cases (`c6e2f90bc`).
 - [ ] Add the internal presentation host, entry/handle, viewport/frame, and
       transition foundation.
 - [ ] Move `SlidingWindow` and `MaterialWindow` off top-level Window
@@ -149,48 +151,15 @@ Detailed type responsibilities and migration rules are in
 
 ### Milestone 0: Reconcile the local checkout
 
-Record:
-
-    git branch --show-current
-    git rev-parse HEAD
-    git log -8 --oneline
-
-Use scoped status/diff commands for active paths. Confirm the current branch is
-the intended local `logical-ui-scaling` checkout or its existing
-`feat/logical-ui-scaling` name. Do not switch branches just to normalize naming.
-
-Inspect local `PathAnimation`, `SlidingWindow`, `TopMenu`,
-`SideMenuContainer`, `Control`, `Container`, and `ClippedContainer`. Record in
-state which previous safe-area/animation fixes already exist. Preserve the
-opt-in orthogonal-position behavior in `PathAnimation` if present. Capture the
-starting commit as `BASE_COMMIT` and record unrelated dirty files.
-
-If this plan is newly added and uncommitted, commit the plan/supporting design
-separately before source work:
-
-    docs(sdk): add safe presentation exec plan
-
-Do not amend unrelated commits and do not push.
+Completed at baseline `62c9c728c` on `feat/logical-ui-scaling2`. The state and
+archive record preserved fixes and unrelated local files; planning commit is
+`9a3b22ae1`. Do not switch, fetch, overwrite local work, amend, or push.
 
 ### Milestone 1: Clipping contract and ClippedContainer correctness
 
-Follow the implementation design section `Clipping and ClippedContainer`.
-
-Make clipping an internal Container policy whose default matches today's
-ancestor clipping. Update `Control.refreshGraphics` to consult that policy while
-preserving translation, `topParent`, offscreen, scale, and font behavior.
-
-Add focused `ContainerClippingTest`.
-
-Fix `ClippedContainer` search/sentinel handling without renaming it or changing
-its public role. Add focused `ClippedContainerTest`.
-
-Run only these two tests and static diff checks.
-
-Preferred commits:
-
-    refactor(sdk): make container child clipping explicit
-    fix(sdk): correct clipped container visibility search
+Completed in `536a7984c` and `c6e2f90bc`. Default ancestor clipping is explicit,
+one ancestor may opt out internally, and `ClippedContainer` uses correct ranges
+and sentinels. Both focused tests and static checks passed.
 
 ### Milestone 2: Internal presentation foundation
 
@@ -443,6 +412,11 @@ preservation in `PathAnimation`, safe-area-aware window animation staging, and
 the explicit `MaterialWindow` bar width. The plan and design were committed as
 `9a3b22ae1`; source validation and platform work were intentionally deferred.
 
+Milestone 1 made existing ancestor clipping an explicit default-enabled
+Container policy and fixed `ClippedContainer` search/cache sentinels. Commits
+`536a7984c` and `c6e2f90bc` passed their focused tests; distribution and smoke
+validation remain deferred until all implementation milestones finish.
+
 The final editorial report is:
 
     .agent/reports/ui-presentation-safe-area-editorial.md
@@ -465,3 +439,6 @@ implementation completion.
 
 2026-08-07: Recorded the reconciled local baseline and Milestone 0 outcome so a
 resume begins from the verified branch and preserves the existing fixes.
+
+2026-08-07: Recorded Milestone 1 results and compacted completed milestone text
+into factual outcomes to keep this living plan within its file-size limit.

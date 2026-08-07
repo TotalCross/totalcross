@@ -14,3 +14,11 @@ contains the earlier safe-area/animation fixes and is ahead of the separate
 `.agent/` files were recorded and left untouched. The new ExecPlan and design
 guide passed focused static, header, and size checks and were committed as
 `9a3b22ae1`.
+
+## Milestone 1 — clipping contract and culling correctness
+
+`536a7984c` added a package-private, default-enabled clipping policy and taught
+`Control.refreshGraphics` to consult it without changing translation.
+`ContainerClippingTest` proves opt-out at one ancestor remains bounded by the
+next clipping ancestor. `c6e2f90bc` fixed `ClippedContainer` range handling,
+`-1` sentinels, and empty/offscreen cache behavior. Its two focused tests pass.
