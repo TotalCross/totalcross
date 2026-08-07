@@ -585,7 +585,7 @@ public class TopMenu extends Window {
     if (animDir == CENTER) {
       currentAnimation = FadeAnimation.create(this, false, null, totalTime);
     } else {
-      currentAnimation = PathAnimation.create(this, -animDir, null, totalTime);
+      currentAnimation = PathAnimation.create(this, -animDir, null, totalTime, 0, true);
       if (fadeOnPopAndUnpop) {
         currentAnimation.with(FadeAnimation.create(this, false, null, totalTime));
       }
@@ -620,7 +620,7 @@ public class TopMenu extends Window {
       setRect(CENTER, CENTER, KEEP, KEEP);
       currentAnimation = FadeAnimation.create(this, true, null, totalTime);
     } else {
-      currentAnimation = PathAnimation.create(this, animDir, null, totalTime);
+      currentAnimation = PathAnimation.create(this, animDir, null, totalTime, 0, true);
       if (fadeOnPopAndUnpop) {
         currentAnimation.with(FadeAnimation.create(this, true, null, totalTime));
       }
