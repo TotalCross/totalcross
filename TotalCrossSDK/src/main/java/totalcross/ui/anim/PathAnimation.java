@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -180,58 +181,133 @@ public class PathAnimation extends ControlAnimation {
    * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
    */
   public static PathAnimation create(Control c, int direction, AnimationFinished animFinish, int totalTime) {
-	  return PathAnimation.create(c, direction, animFinish, totalTime, 0);
+    return PathAnimation.create(c, direction, animFinish, totalTime, 0, false);
   }
-  
-  /** Creates a path animation, moving the control in a direction.
-   * @param c The control to be moved
-   * @param direction One of BOTTOM, -BOTTOM, TOP, -TOP, LEFT, -LEFT, RIGHT, -RIGHT. Any other value will return null.
-   * @param animFinish An interface method to be called when the animation finished, or null if none.
-   * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
+
+  /**
+   * Creates a path animation moving the control in the given direction.
+   * @param c the control to move
+   * @param direction one of BOTTOM, -BOTTOM, TOP, -TOP, LEFT, -LEFT,
+   *                  RIGHT or -RIGHT
+   * @param animFinish callback invoked when the animation finishes
+   * @param totalTime total animation time in milliseconds
+   * @param slack offset applied to the final animated position
    */
   public static PathAnimation create(Control c, int direction, AnimationFinished animFinish, int totalTime, int slack) {
+    return PathAnimation.create(c, direction, animFinish, totalTime, slack, false);
+  }
+
+  /**
+   * Creates a path animation moving the control in the given direction.
+   *
+   * @param c the control to move
+   * @param direction one of BOTTOM, -BOTTOM, TOP, -TOP, LEFT, -LEFT,
+   *                  RIGHT or -RIGHT
+   * @param animFinish callback invoked when the animation finishes
+   * @param totalTime total animation time in milliseconds
+   * @param slack offset applied to the final animated position
+   * @param preserveOrthogonalPosition if true, preserves the control's current
+   *        position on the axis perpendicular to the animation; if false,
+   *        preserves the historical behavior of centering that axis
+   */
+  public static PathAnimation create(Control c, int direction, AnimationFinished animFinish, int totalTime, int slack,
+      boolean preserveOrthogonalPosition) {
     PathAnimation anim = new PathAnimation(c, animFinish, totalTime);
     anim.dir = direction;
-    int x0, y0, xf, yf;
-    int pw = c instanceof Window ? Settings.screenWidth : c.getParent().getWidth();
-    int ph = c instanceof Window ? Settings.screenHeight : c.getParent().getHeight();
+
+    int pw = c instanceof Window
+        ? Settings.screenWidth
+        : c.getParent().getWidth();
+
+    int ph = c instanceof Window
+        ? Settings.screenHeight
+        : c.getParent().getHeight();
+
     int cw = c.getWidth();
     int ch = c.getHeight();
-    xf = x0 = (pw - cw) / 2;
-    y0 = yf = (ph - ch) / 2;
+
+    // Historical behavior: center the control on the axis that is not animated.
+    int centeredX = (pw - cw) / 2;
+    int centeredY = (ph - ch) / 2;
+
+    int x0 = centeredX;
+    int xf = centeredX;
+    int y0 = centeredY;
+    int yf = centeredY;
+
     switch (direction) {
     case -Control.BOTTOM:
+      if (preserveOrthogonalPosition) {
+        x0 = xf = c.getX();
+      }
+
       y0 = c.getY();
       yf = ph;
       break;
+
     case Control.BOTTOM:
+      if (preserveOrthogonalPosition) {
+        x0 = xf = c.getX();
+      }
+
       y0 = ph;
       yf = ph - ch + slack;
       break;
+
     case -Control.TOP:
+      if (preserveOrthogonalPosition) {
+        x0 = xf = c.getX();
+      }
+
       y0 = c.getY();
       yf = -ch;
       break;
+
     case Control.TOP:
+      if (preserveOrthogonalPosition) {
+        x0 = xf = c.getX();
+      }
+
       y0 = -ch;
       yf = -slack;
       break;
+
     case -Control.LEFT:
+      if (preserveOrthogonalPosition) {
+        y0 = yf = c.getY();
+      }
+
       x0 = c.getX();
       xf = -cw;
       break;
+
     case Control.LEFT:
+      if (preserveOrthogonalPosition) {
+        y0 = yf = c.getY();
+      }
+
       x0 = -cw;
       xf = -slack;
       break;
+
     case -Control.RIGHT:
+      if (preserveOrthogonalPosition) {
+        y0 = yf = c.getY();
+      }
+
       x0 = c.getX();
       xf = pw;
       break;
+
     case Control.RIGHT:
+      if (preserveOrthogonalPosition) {
+        y0 = yf = c.getY();
+      }
+
       x0 = pw;
       xf = pw - cw + slack;
       break;
+
     default:
       return null;
     }
