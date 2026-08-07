@@ -30,6 +30,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 | 2 | focused header/static/new-file size checks | PASS |
 | 3 | `SlidingWindowPresentationTest`, `PresentationHostTest` | PASS; 2 tests |
 | 3 | focused header/static/new-file size checks | PASS |
+| 4 | `TopMenuSafeAreaTest` | PASS; 2 tests |
+| 4 | `SideMenuPresentationTest`, `TopMenuSafeAreaTest` | PASS; 4 tests |
+| 4 | focused header/static/new-file size checks | PASS |
 
 Milestone 1 commits are `536a7984c` (explicit default clipping) and
 `c6e2f90bc` (visibility search and sentinel correctness). The initial two test
@@ -45,6 +48,11 @@ the corrected deferred layout passed.
 Milestone 3 commit `631badefd` proves LEFT/RIGHT/TOP/BOTTOM origins from the
 safe viewport, 7-unit relative slack, one provider creation across relayout,
 ordered popup/unpop callbacks, idempotent dismissal, and unchanged z-stack.
+
+Milestone 4 commits `565b89e37`, `f0a918d97`, and `56544d833` prove local bar
+geometry without repeated safe insets, retained body identity, outside
+dismissal, 204-unit safe drawer sizing, 180-unit explicit override, local
+gesture propagation, and successful compilation after the superclass change.
 
 Verbose logs for later Gradle and smoke commands are stored under
 `artifacts/ui-presentation-safe-area/logs/`.

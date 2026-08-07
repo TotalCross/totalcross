@@ -38,3 +38,11 @@ with the internal controller. Explicit local slide/fade transitions replace
 screen staging. `MaterialWindow` preserves its bar layout and now loads delayed
 provider content once through an insertion hook. Focused tests cover four
 directions, slack, lifecycle, relayout identity, and stack isolation.
+
+## Milestone 4 — TopMenu and SideMenuContainer
+
+`565b89e37` moved TopMenu into overlay presentation, removed internal safe-area
+padding, preserved fixed-bar/scroll modes, and added local title/border state.
+`f0a918d97` updated the sample close action required by lost Window assignability.
+`56544d833` made SideMenu gesture handling local, deferred drawer width to safe
+viewport layout, and relayouted expanding submenus through their TopMenu.

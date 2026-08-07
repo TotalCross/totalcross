@@ -96,10 +96,10 @@ necessary.
       viewport/frame, controller, and transition foundation (`cd5082a1d`).
 - [x] (2026-08-07 15:39Z) Moved `SlidingWindow` and `MaterialWindow` off
       top-level Window presentation (`631badefd`).
-- [ ] Move `TopMenu` off top-level Window presentation and simplify its internal
-      safe-area handling.
-- [ ] Update `SideMenuContainer` to use local gesture/presentation behavior and
-      safe-viewport sizing.
+- [x] (2026-08-07 15:47Z) Moved `TopMenu` to a safe overlay and removed duplicate
+      safe-area compensation (`565b89e37`).
+- [x] (2026-08-07 15:48Z) Made SideMenu gestures local and drawer sizing
+      safe-viewport-relative (`56544d833`).
 - [ ] Add a focused smoke fixture if existing repository smoke/deploy machinery
       can be reused economically.
 - [ ] Run final focused Java validation, one non-clean SDK distribution build,
@@ -177,25 +177,11 @@ bar/provider layout. Its focused test and `PresentationHostTest` pass.
 
 ### Milestone 4: TopMenu and SideMenuContainer migration
 
-Follow `TopMenu and SideMenuContainer migration` in the design file.
-
-`TopMenu` must stop being presented as a top-level Window. Keep its own current
-constructors, item/selection API, popup/unpop behavior, sizing controls, fixed
-bars, scroll-under modes, header/background/separator/elevation intent, and
-animation listener. Safe area is consumed by the presentation viewport once;
-remove the old second layer of TopMenu safe-inset compensation.
-
-`SideMenuContainer` keeps its public API, Bar/content composition, and
-`topMenu` relationship. Its gestures become local and its drawer sizing is
-resolved from safe viewport width at presentation time.
-
-Rewrite existing `TopMenuSafeAreaTest` for the new model and add a separate
-SideMenu test only if needed for clarity/file-size limits.
-
-Preferred commits:
-
-    refactor(sdk): present top menu as safe overlay
-    refactor(sdk): detach side menu from window presentation
+Completed in `565b89e37` and `56544d833`. TopMenu now composes the overlay
+controller, consumes safe area once, and retains its own menu/bar/title/sizing
+APIs. SideMenu gestures are local and drawer width is resolved from the safe
+viewport. Focused TopMenu and SideMenu tests pass. `f0a918d97` updates the local
+sample required by the superclass change.
 
 ### Milestone 5: Smoke, final validation, and handoff
 
@@ -284,6 +270,11 @@ Do not squash the logical commits and do not push.
 - Observation: `MaterialWindow` previously started two delayed provider loads.
   Evidence: its override called `super.postPopup()` and then launched a second
   provider thread. A placement hook now performs one load below the bar.
+
+- Observation: the previously untracked TopMenu sample became uncompilable when
+  TopMenu stopped extending Window.
+  Evidence: Java rejected its `getParentWindow()` cast; using the enclosing
+  TopMenu reference restored compilation in `f0a918d97`.
 
 Add only discoveries that materially alter remaining work.
 
@@ -423,6 +414,11 @@ pass focused tests. The public superclass changes from `Window` to `Container`;
 repository callers compile, but external Window assignability is intentionally
 not preserved.
 
+Milestone 4 migrated TopMenu and SideMenu in `565b89e37` and `56544d833`.
+Single safe-area consumption, bar modes, dynamic relayout, outside dismissal,
+safe drawer sizing, explicit-width precedence, local gestures, and stack
+isolation pass focused tests. The sample compile fix is `f0a918d97`.
+
 The final editorial report is:
 
     .agent/reports/ui-presentation-safe-area-editorial.md
@@ -454,3 +450,6 @@ discovery, and deterministic resize decision.
 
 2026-08-07: Recorded the sliding/material migration, compatibility impact, and
 the duplicate delayed-provider discovery.
+
+2026-08-07: Recorded the TopMenu/SideMenu migration and the sample compile
+compatibility fix; all implementation milestones are now complete.
