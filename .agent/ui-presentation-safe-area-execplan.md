@@ -118,10 +118,9 @@ its popup lifecycle, uses physical screen width for drawer sizing, and registers
 gesture handling through its parent window. `MaterialWindow` inherits
 `SlidingWindow` and composes a `Bar` with provider content.
 
-The owner window's `getClientRect()` is the authoritative safe client rectangle
-for presentations. The internal presentation host may cover the owner window's
-full usable surface, but the animated presentation viewport must equal that safe
-client rectangle.
+The owner window's `getClientRect()` is the safe presentation rectangle. The
+host may cover the full window, but its animated viewport must equal that client
+rectangle.
 
 A source audit performed while writing this plan found that
 `Control.getGraphics()` already delegates to `Control.refreshGraphics()`, which
