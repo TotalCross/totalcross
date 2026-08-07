@@ -28,6 +28,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 | 1 | focused header/static checks | PASS |
 | 2 | `PresentationHostTest`, `SafeAreaLayoutTest` | PASS; 8 tests |
 | 2 | focused header/static/new-file size checks | PASS |
+| 3 | `SlidingWindowPresentationTest`, `PresentationHostTest` | PASS; 2 tests |
+| 3 | focused header/static/new-file size checks | PASS |
 
 Milestone 1 commits are `536a7984c` (explicit default clipping) and
 `c6e2f90bc` (visibility search and sentinel correctness). The initial two test
@@ -39,6 +41,10 @@ Milestone 2 commit `cd5082a1d` proves a safe viewport of
 dynamic relayout to `24,12,252,596`, retained content identity, and clean
 idempotent dismissal. The first run exposed the parent-bounds requirement and
 the corrected deferred layout passed.
+
+Milestone 3 commit `631badefd` proves LEFT/RIGHT/TOP/BOTTOM origins from the
+safe viewport, 7-unit relative slack, one provider creation across relayout,
+ordered popup/unpop callbacks, idempotent dismissal, and unchanged z-stack.
 
 Verbose logs for later Gradle and smoke commands are stored under
 `artifacts/ui-presentation-safe-area/logs/`.

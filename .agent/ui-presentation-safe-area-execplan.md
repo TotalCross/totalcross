@@ -94,8 +94,8 @@ necessary.
       cases (`c6e2f90bc`).
 - [x] (2026-08-07 15:35Z) Added the internal presentation host, entry/handle,
       viewport/frame, controller, and transition foundation (`cd5082a1d`).
-- [ ] Move `SlidingWindow` and `MaterialWindow` off top-level Window
-      presentation.
+- [x] (2026-08-07 15:39Z) Moved `SlidingWindow` and `MaterialWindow` off
+      top-level Window presentation (`631badefd`).
 - [ ] Move `TopMenu` off top-level Window presentation and simplify its internal
       safe-area handling.
 - [ ] Update `SideMenuContainer` to use local gesture/presentation behavior and
@@ -170,24 +170,10 @@ barrier, and transient frame movement without changing the real window stack.
 
 ### Milestone 3: SlidingWindow and MaterialWindow migration
 
-Follow `SlidingWindow and MaterialWindow migration` in the design file.
-
-`SlidingWindow` must stop being presented as a top-level Window. Prefer direct
-`Container` inheritance plus internal presentation composition rather than
-making a new public presentation superclass. Keep its own current constructors,
-popup/unpop methods, slack, direction, delayed provider behavior, gestures, and
-Back/Escape behavior.
-
-`MaterialWindow` keeps its current Bar/provider composition but makes Bar width
-explicit with `FILL`.
-
-Add focused deterministic `SlidingWindowPresentationTest`. Run only that test,
-`PresentationHostTest`, and `PathAnimation` focused tests if `PathAnimation`
-itself changed.
-
-Commit:
-
-    refactor(sdk): present sliding windows inside safe viewport
+Completed in `631badefd`. `SlidingWindow` now inherits `Container`, composes the
+controller, retains its own popup, provider, slack, gesture, resize, and key
+behavior, and uses local slide/fade transitions. `MaterialWindow` retains its
+bar/provider layout. Its focused test and `PresentationHostTest` pass.
 
 ### Milestone 4: TopMenu and SideMenuContainer migration
 
@@ -295,6 +281,10 @@ Do not squash the logical commits and do not push.
   Evidence: the first host test failed at `Container.add`; deferring internal
   `FILL` layout until attachment made the focused test pass.
 
+- Observation: `MaterialWindow` previously started two delayed provider loads.
+  Evidence: its override called `super.postPopup()` and then launched a second
+  provider thread. A placement hook now performs one load below the bar.
+
 Add only discoveries that materially alter remaining work.
 
 ## Decision Log
@@ -327,6 +317,11 @@ Add only discoveries that materially alter remaining work.
   before relayout.
   Rationale: it avoids carrying fractional progress across viewport geometries
   and matches the design's preferred deterministic behavior.
+  Date/Author: 2026-08-07 / Codex.
+
+- Decision: Keep delayed provider loading in `SlidingWindow` and specialize only
+  insertion position in `MaterialWindow`.
+  Rationale: one shared load preserves behavior and prevents duplicate views.
   Date/Author: 2026-08-07 / Codex.
 
 ## Validation and Acceptance
@@ -422,6 +417,12 @@ Nonzero-inset geometry, clipping, relayout, content identity, idempotent
 dismissal, and unchanged real-window state pass focused tests. Distribution and
 smoke validation remain deferred.
 
+Milestone 3 migrated sliding/material presentations in `631badefd`. Four-way
+safe origins, slack, relayout identity, lifecycle cleanup, and unchanged z-stack
+pass focused tests. The public superclass changes from `Window` to `Container`;
+repository callers compile, but external Window assignability is intentionally
+not preserved.
+
 The final editorial report is:
 
     .agent/reports/ui-presentation-safe-area-editorial.md
@@ -450,3 +451,6 @@ into factual outcomes to keep this living plan within its file-size limit.
 
 2026-08-07: Recorded the completed host foundation, its bounds-initialization
 discovery, and deterministic resize decision.
+
+2026-08-07: Recorded the sliding/material migration, compatibility impact, and
+the duplicate delayed-provider discovery.

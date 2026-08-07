@@ -30,3 +30,11 @@ viewports, frames, handles, a controller, and explicit-coordinate slide
 transitions. `Window` lazily owns the host and relayouts it on safe-area changes.
 Focused tests prove geometry, lifecycle cleanup, content retention, and no
 top-level window-stack mutation.
+
+## Milestone 3 — SlidingWindow and MaterialWindow
+
+`631badefd` changed `SlidingWindow` from `Window` to `Container` and composed it
+with the internal controller. Explicit local slide/fade transitions replace
+screen staging. `MaterialWindow` preserves its bar layout and now loads delayed
+provider content once through an insertion hook. Focused tests cover four
+directions, slack, lifecycle, relayout identity, and stack isolation.
