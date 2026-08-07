@@ -51,14 +51,20 @@ final class PresentationController {
     if (handle == null || !handle.isActive()) {
       return;
     }
-    delegate.onPresentationUnpop();
     handle.setDismissedAction(new Runnable() {
       @Override
       public void run() {
+        delegate.onPresentationUnpop();
         delegate.postPresentationUnpop();
       }
     });
     handle.dismiss();
+  }
+
+  void relayout() {
+    if (handle != null && handle.isActive()) {
+      handle.requestRelayout();
+    }
   }
 
   PresentationHandle handle() {

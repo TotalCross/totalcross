@@ -121,6 +121,10 @@ final class PresentationHandle {
     dismissedAction = action;
   }
 
+  void requestRelayout() {
+    host.ownerLayoutChanged();
+  }
+
   boolean isActive() {
     return state != State.DISMISSED;
   }
