@@ -118,6 +118,7 @@ public class Container extends Control {
    */
   protected Insets insets = new Insets(); // guich@tc110_87
   private int safeAreaPaddingEdges = SafeAreaEdges.NONE;
+  private boolean clipChildrenToBounds = true;
 
   /** Set to true to always erase the background when repainting this container.
    * @since TotalCross 1.0
@@ -272,6 +273,14 @@ public class Container extends Control {
   /** Returns the safe-area edges used as internal padding. */
   public int getSafeAreaPaddingEdges() {
     return safeAreaPaddingEdges;
+  }
+
+  boolean clipsChildrenToBounds() {
+    return clipChildrenToBounds;
+  }
+
+  void setClipChildrenToBounds(boolean clip) {
+    clipChildrenToBounds = clip;
   }
 
   /**

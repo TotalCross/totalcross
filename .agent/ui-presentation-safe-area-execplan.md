@@ -12,10 +12,8 @@ checkout. It follows `AGENTS.md` and the ExecPlan policy from
 `Surprises & Discoveries`, `Decision Log`, `Outcomes & Retrospective`, and the
 state file current while executing it.
 
-Use token-efficient validation, make frequent logical commits, and never push.
-Every new source, test, helper, plan, state, evidence, or report file must remain
-below 20 KiB and approximately 600 lines. Existing files do not need to be split
-or refactored merely to meet this limit.
+Make frequent logical commits and never push. New files must remain below 20 KiB
+and approximately 600 lines; existing files need not be split for this limit.
 
 ## Purpose / Big Picture
 
@@ -41,10 +39,9 @@ name `ClippedContainer`; naming cleanup is out of scope.
 
 ## Working Set and Resume Protocol
 
-The local checkout is the source of truth. It may contain unpushed commits or
-working-tree changes for the earlier `PathAnimation`, `SlidingWindow`, and
-`TopMenu` safe-area fixes. Do not fetch, reset, checkout over, or reconstruct
-those changes from the remote branch.
+The local checkout is the source of truth. Preserve its earlier `PathAnimation`,
+`SlidingWindow`, and `TopMenu` fixes; do not fetch, reset, or reconstruct them
+from the remote branch.
 
 Read first on initial execution:
 
@@ -59,9 +56,7 @@ Create and maintain:
     .agent/archive/ui-presentation-safe-area-history.md
     .agent/reports/ui-presentation-safe-area-editorial.md
 
-On resume, read the state file first, then only the active milestone in this plan
-and the exact implementation section named in the state file. Do not routinely
-reread the full plan, old evidence, or completed milestone history.
+On resume, read the state file, active milestone, and named design section only.
 
 Store verbose command output under:
 

@@ -1723,26 +1723,28 @@ public class Control extends GfxSurface {
         sx += cx;
         sy += cy;
 
-        // before?
-        delta = sx - cx;
-        if (delta < 0) {
-          sw += delta;
-          sx = cx;
-        }
-        delta = sy - cy;
-        if (delta < 0) {
-          sh += delta;
-          sy = cy;
-        }
+        if (c.clipsChildrenToBounds()) {
+          // before?
+          delta = sx - cx;
+          if (delta < 0) {
+            sw += delta;
+            sx = cx;
+          }
+          delta = sy - cy;
+          if (delta < 0) {
+            sh += delta;
+            sy = cy;
+          }
 
-        // after?
-        delta = (sx + sw) - (cx + c.width);
-        if (delta > 0) {
-          sw -= delta;
-        }
-        delta = (sy + sh) - (cy + c.height);
-        if (delta > 0) {
-          sh -= delta;
+          // after?
+          delta = (sx + sw) - (cx + c.width);
+          if (delta > 0) {
+            sw -= delta;
+          }
+          delta = (sy + sh) - (cy + c.height);
+          if (delta > 0) {
+            sh -= delta;
+          }
         }
       }
     }
