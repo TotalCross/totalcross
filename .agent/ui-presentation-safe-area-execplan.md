@@ -92,8 +92,8 @@ necessary.
       default behavior (`536a7984c`).
 - [x] (2026-08-07 15:26Z) Corrected `ClippedContainer` visibility-search edge
       cases (`c6e2f90bc`).
-- [ ] Add the internal presentation host, entry/handle, viewport/frame, and
-      transition foundation.
+- [x] (2026-08-07 15:35Z) Added the internal presentation host, entry/handle,
+      viewport/frame, controller, and transition foundation (`cd5082a1d`).
 - [ ] Move `SlidingWindow` and `MaterialWindow` off top-level Window
       presentation.
 - [ ] Move `TopMenu` off top-level Window presentation and simplify its internal
@@ -163,20 +163,10 @@ and sentinels. Both focused tests and static checks passed.
 
 ### Milestone 2: Internal presentation foundation
 
-Follow `Internal presentation foundation` in the design file.
-
-Create small package-private presentation types in `totalcross.ui`; do not create
-a public widget package. Add only the smallest package-private integration hook
-needed in `Window` to own a presentation host.
-
-The host must use the owner safe client rectangle for each presentation
-viewport, keep a full-host barrier, clip the viewport, animate only a frame's
-transient position, and leave `Window.zStack`/`Window.topMost` unchanged.
-
-Add focused `PresentationHostTest` with nonzero safe insets. Run it plus the
-existing `SafeAreaLayoutTest`, then commit:
-
-    refactor(sdk): add internal presentation host foundation
+Completed in `cd5082a1d`. Package-private host/entry/handle/controller and slide
+transition types use the owner's safe client rectangle, a clipped viewport, a
+barrier, and transient frame movement without changing the real window stack.
+`PresentationHostTest` and `SafeAreaLayoutTest` pass.
 
 ### Milestone 3: SlidingWindow and MaterialWindow migration
 
@@ -301,6 +291,10 @@ Do not squash the logical commits and do not push.
   Consequence: preserve local earlier animation fixes and never overwrite them
   from remote source.
 
+- Observation: TotalCross rejects `FILL` child layout before a parent has bounds.
+  Evidence: the first host test failed at `Container.add`; deferring internal
+  `FILL` layout until attachment made the focused test pass.
+
 Add only discoveries that materially alter remaining work.
 
 ## Decision Log
@@ -328,6 +322,12 @@ Add only discoveries that materially alter remaining work.
   Rationale: minimize expensive platform validation and honor the requested
   platform boundary.
   Date/Author: 2026-08-07 / user requirement.
+
+- Decision: A safe-area change ends an active transition at a stable state
+  before relayout.
+  Rationale: it avoids carrying fractional progress across viewport geometries
+  and matches the design's preferred deterministic behavior.
+  Date/Author: 2026-08-07 / Codex.
 
 ## Validation and Acceptance
 
@@ -417,6 +417,11 @@ Container policy and fixed `ClippedContainer` search/cache sentinels. Commits
 `536a7984c` and `c6e2f90bc` passed their focused tests; distribution and smoke
 validation remain deferred until all implementation milestones finish.
 
+Milestone 2 added the internal safe presentation layers in `cd5082a1d`.
+Nonzero-inset geometry, clipping, relayout, content identity, idempotent
+dismissal, and unchanged real-window state pass focused tests. Distribution and
+smoke validation remain deferred.
+
 The final editorial report is:
 
     .agent/reports/ui-presentation-safe-area-editorial.md
@@ -442,3 +447,6 @@ resume begins from the verified branch and preserves the existing fixes.
 
 2026-08-07: Recorded Milestone 1 results and compacted completed milestone text
 into factual outcomes to keep this living plan within its file-size limit.
+
+2026-08-07: Recorded the completed host foundation, its bounds-initialization
+discovery, and deterministic resize decision.

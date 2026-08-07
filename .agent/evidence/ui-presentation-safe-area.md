@@ -26,11 +26,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 | 1 | `ContainerClippingTest` | PASS; 1 test |
 | 1 | `ClippedContainerTest` | PASS; 2 tests |
 | 1 | focused header/static checks | PASS |
+| 2 | `PresentationHostTest`, `SafeAreaLayoutTest` | PASS; 8 tests |
+| 2 | focused header/static/new-file size checks | PASS |
 
 Milestone 1 commits are `536a7984c` (explicit default clipping) and
 `c6e2f90bc` (visibility search and sentinel correctness). The initial two test
 runs failed only because their fixtures lacked deterministic launcher/screen
 initialization; the corrected fixtures passed without production-code changes.
+
+Milestone 2 commit `cd5082a1d` proves a safe viewport of
+`20,10,260,600`, bottom outside origin `0,600,260,600`, unchanged owner/z-stack,
+dynamic relayout to `24,12,252,596`, retained content identity, and clean
+idempotent dismissal. The first run exposed the parent-bounds requirement and
+the corrected deferred layout passed.
 
 Verbose logs for later Gradle and smoke commands are stored under
 `artifacts/ui-presentation-safe-area/logs/`.

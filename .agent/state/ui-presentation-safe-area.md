@@ -9,13 +9,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Current position
 
 - Status: active
-- Active milestone: Milestone 2, internal presentation foundation
-- Design section: `Internal presentation foundation`
-- Next action: add the package-private host, entry, handle, controller, and transition types
+- Active milestone: Milestone 3, SlidingWindow and MaterialWindow migration
+- Design section: `SlidingWindow and MaterialWindow migration`
+- Next action: move `SlidingWindow` to Container inheritance and presentation composition
 - Base commit: `62c9c728cd0570c1e1a8219b42dfd72c6fedd355`
 - Current branch: `feat/logical-ui-scaling2`
 - Planning commit: `9a3b22ae1`
 - Clipping commits: `536a7984c`, `c6e2f90bc`
+- Presentation foundation commit: `cd5082a1d`
 
 ## Preserved baseline
 
@@ -35,6 +36,9 @@ other plans. It is outside this task and must remain unstaged.
 - `ContainerClippingTest`: passed; log `m1-container-clipping.log`.
 - `ClippedContainerTest`: passed; log `m1-clipped-container.log`.
 - focused Milestone 1 copyright and static checks: passed.
+- `PresentationHostTest` plus `SafeAreaLayoutTest`: passed; log
+  `m2-presentation-host.log`.
+- focused Milestone 2 copyright, static, and new-file size checks: passed.
 
 ## Deferred validation
 
@@ -50,6 +54,9 @@ prohibited until Milestones 1-4 are complete.
 - `.agent/archive/ui-presentation-safe-area-history.md`
 - `TotalCrossSDK/src/test/java/totalcross/ui/ContainerClippingTest.java`
 - `TotalCrossSDK/src/test/java/totalcross/ui/ClippedContainerTest.java`
+- `TotalCrossSDK/src/main/java/totalcross/ui/Presentation*.java`
+- `TotalCrossSDK/src/main/java/totalcross/ui/SlidePresentationTransition.java`
+- `TotalCrossSDK/src/test/java/totalcross/ui/PresentationHostTest.java`
 
 ## Resume rule
 

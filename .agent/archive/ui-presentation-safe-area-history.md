@@ -22,3 +22,11 @@ guide passed focused static, header, and size checks and were committed as
 `ContainerClippingTest` proves opt-out at one ancestor remains bounded by the
 next clipping ancestor. `c6e2f90bc` fixed `ClippedContainer` range handling,
 `-1` sentinels, and empty/offscreen cache behavior. Its two focused tests pass.
+
+## Milestone 2 — internal presentation foundation
+
+`cd5082a1d` added package-private route/overlay layers, barriers, clipped safe
+viewports, frames, handles, a controller, and explicit-coordinate slide
+transitions. `Window` lazily owns the host and relayouts it on safe-area changes.
+Focused tests prove geometry, lifecycle cleanup, content retention, and no
+top-level window-stack mutation.
