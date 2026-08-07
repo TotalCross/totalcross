@@ -102,7 +102,7 @@ public class MaterialWindow extends SlidingWindow {
   
   @Override
   public void initUI() {
-    add(bar, LEFT, TOP);
+    add(bar, LEFT, TOP, FILL, PREFERRED);
     if (!delayInitUI) {
 	    add(provider.getView(), LEFT, AFTER, FILL, FILL, bar);
 	} else {
