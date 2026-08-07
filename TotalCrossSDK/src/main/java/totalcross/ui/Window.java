@@ -299,6 +299,22 @@ public class Window extends Container {
   private static Insets safeAreaInsets = new Insets();
   private SafeAreaMode safeAreaMode = SafeAreaMode.AUTO;
   private int safeAreaEdges = SafeAreaEdges.ALL;
+  private PresentationHost presentationHost;
+
+  PresentationHost presentationHost() {
+    if (presentationHost == null) {
+      presentationHost = new PresentationHost(this);
+    }
+    return presentationHost;
+  }
+
+  @Override
+  protected void repositionChildren() {
+    super.repositionChildren();
+    if (presentationHost != null) {
+      presentationHost.ownerLayoutChanged();
+    }
+  }
 
   ////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////
