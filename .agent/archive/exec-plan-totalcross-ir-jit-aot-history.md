@@ -5,10 +5,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 -->
 # Archived History: TotalCross IR, JIT, and AOT
 
-This file contains retired execution detail for
-`.agent/exec-plan-totalcross-ir-jit-aot.md`. Do not read it during an ordinary
-continuation. Search it when a past decision, validation result, artifact hash,
-or milestone rationale is needed.
+This file contains retired execution detail for the completed
+`.agent/exec-plan-totalcross-ir-jit-aot.md`. Search it when a past decision,
+validation result, artifact hash, or milestone rationale is needed. Future
+implementation resumes from the separate continuation plan, not from this
+history.
 
 ## Preservation reference
 
@@ -65,14 +66,31 @@ Commits `35b14388b` and `3cdfd6974` added default-off runtime dispatch,
 side-table registration, policy/diagnostics, mixed-mode tests, and a disabled
 policy fast path. This was intentionally a static-i32 slice.
 
-### Milestone 8 — partial semantic coverage
+### Milestone 8 — representative semantic coverage
 
 Commits `da38b7278`, `a7af114e8`, `e305e0d89`, `fedb32c8a`, `eade23ce0`,
 `cc78ad5aa`, `64a8bec8c`, `a57eace1a`, `0feb15e29`, `891eb84bc`,
 `4115f2f95`, `155c74ebd`, `e7ea5cb14`, and `051800dcd` added the current
-numeric, reference, switch, static-call, and allocation coverage. The active
-plan states only what remains relevant to fields, class initialization, arrays,
-handlers, dispatch, monitors, and special cases.
+numeric, reference, switch, static-call, and allocation coverage. This was the
+final implementation phase of the architectural proof. It was never exhaustive:
+fields, class initialization, arrays, handlers, virtual calls, monitors, and
+special cases remained legacy fallback.
+
+## Plan closure and transferred scope
+
+On 2026-08-08 the plan was formally closed as a successful architectural
+validation. The delivered work proved that verified TCIR can sit after
+TotalCross bytecode, feed a reference interpreter, SLJIT, and deterministic C,
+and participate in default-off mixed execution while unsupported methods remain
+whole-method interpreter fallback.
+
+The prospective remainder of Milestone 8 and all former Milestone 9 work were
+not claimed complete. They were editorially transferred to
+`.agent/exec-plan-expand-tcir-semantic-coverage-and-production-readiness.md`.
+That continuation also records the decision gate created by upcoming
+Java-level whole-program optimization/HIR investigation. The definitive final
+outcome is in `.agent/reports/totalcross-ir-jit-aot-editorial.md`; the compact
+completed state is `.agent/state/totalcross-ir-jit-aot.md`.
 
 ## Retired process rules
 

@@ -5,303 +5,320 @@ SPDX-License-Identifier: LGPL-2.1-only
 -->
 # Build a verified TotalCross IR with baseline JIT and portable AOT backends
 
-This ExecPlan follows `.agent/PLANS.md` and `AGENTS.md`. It is the active,
-compact plan for remaining work. It names the state, evidence, archive, and
-editorial records needed to resume safely without rereading completed detail.
+Status: complete as an architectural validation plan on 2026-08-08.
+
+This ExecPlan follows `.agent/PLANS.md` and `AGENTS.md`. Its objective was to
+determine whether TotalCross bytecode could feed a verified, backend-neutral
+intermediate representation with JIT and AOT execution without replacing the
+legacy interpreter or TCZ format. That objective is complete. Exhaustive opcode
+coverage and production readiness are deliberately outside final acceptance.
 
 ## Purpose / Big Picture
 
-TotalCross converts Java classes to compact register bytecode and executes that
-bytecode in the C `executeMethod` interpreter. This work inserts a typed,
-backend-neutral TotalCross intermediate representation (TCIR) after that
-bytecode. TCIR has a reference interpreter, an optional SLJIT baseline backend,
-and a deterministic portable-C AOT backend; the legacy interpreter remains the
-compatibility oracle and permanent fallback.
+TotalCross converts Java classes to compact register bytecode and normally
+executes that bytecode in the C `executeMethod` interpreter. This work inserted
+a typed, backend-neutral TotalCross intermediate representation (TCIR) after
+TotalCross bytecode. TCIR can execute through a reference interpreter, an
+optional SLJIT baseline backend, and deterministic portable C generated ahead
+of time. The legacy interpreter remains the semantic authority and whole-method
+fallback.
 
-At completion, a supported method can run through the legacy interpreter, TCIR,
-SLJIT, or generated C and preserve results, exceptions, managed-reference
-behavior, and advertised runtime effects. An experimental default-off runtime
-policy selects only eligible methods. Unsupported or failed methods remain in
-the legacy interpreter without changing TCZ files or default VM behavior.
+The principal objective was architectural validation, not exhaustive
+production coverage of every TotalCross opcode. Representative semantic
+families were sufficient to prove that bounded bytecode can be translated,
+verified, interpreted, compiled, and integrated without changing TCZ files or
+default VM behavior. Unsupported methods are rejected before a compiled path
+produces effects and remain wholly interpreted.
 
-Correctness, portability, diagnostics, and safe fallback take priority over
-performance. Performance evidence is collected only when a workload exercises
-the changed behavior or a measured hot path changes.
+The observable completed result is a default-off four-path architecture for the
+implemented subset: legacy `executeMethod`, TCIR interpretation, SLJIT machine
+code, and generated C agree under differential and contract testing. Broader
+semantic coverage, platform qualification, packaging, publication, and default
+selection are product-expansion work in
+`.agent/exec-plan-expand-tcir-semantic-coverage-and-production-readiness.md`.
 
-## Working Set and Resume Protocol
+## Working Set and Completed-State Protocol
 
-Normal continuation starts with
-`.agent/state/totalcross-ir-jit-aot.md`. It identifies the active slice, last
-functional checkpoint, next action, focused validation, deferrals, active paths,
-and deliberate local exclusions. After reading it, locate headings in this file
-and read only the active milestone, validation, and risk sections needed for the
-next action.
+`.agent/state/totalcross-ir-jit-aot.md` is the completed-state record. It names
+the final revision, delivered boundary, validation summary, limitations, and
+the separate continuation plan. There is no active slice or resume command for
+this completed plan.
 
-`.agent/evidence/totalcross-ir-jit-aot.md` is an append-only, selectively
-searched index of commands, results, logs, artifact locations, and limitations.
-`.agent/archive/exec-plan-totalcross-ir-jit-aot-history.md` contains completed
-milestone summaries and points to the unabridged pre-consolidation snapshot at
-Git revision `ba6d2f0c3`; do not read it by default. The concise factual
-handoff is `.agent/reports/totalcross-ir-jit-aot-editorial.md`; update it when
-Milestone 8 completes or the user requests editorial work, not after each slice.
+`.agent/evidence/totalcross-ir-jit-aot.md` is the append-only index of compact
+validation checkpoints. `.agent/archive/exec-plan-totalcross-ir-jit-aot-history.md`
+preserves milestone detail and points to the unabridged pre-consolidation plan
+at revision `ba6d2f0c3`. The definitive factual handoff is
+`.agent/reports/totalcross-ir-jit-aot-editorial.md`.
 
-Follow the precedence and reading rules in `AGENTS.md` and `.agent/PLANS.md`;
-the process checkpoint recorded in the state file identifies the policy already
-reviewed for this plan. A context compaction resumes through the state file, not
-a broad repository scan.
+Future semantic or production work starts with the new continuation ExecPlan;
+it must not reopen this plan or reinterpret unsupported families as missing
+acceptance criteria here.
 
 ## Progress
 
-- [x] Milestones 1–4: documented the bytecode/runtime architecture, implemented
-  the owned TCIR contract and frontend, and established a reference interpreter
-  plus real-`executeMethod` differential oracle. See archive and evidence.
-- [x] Milestone 5: integrated pinned optional SLJIT, W^X code management, and
-  Android arm64-v8a/API 23 compilation without changing runtime dispatch.
-- [x] Milestone 6: implemented deterministic portable-C AOT, host generation,
-  identity registry/manifest, and four-way differential execution.
-- [x] Milestone 7: added default-off mixed-mode dispatch, a runtime side table,
-  policy/lifecycle diagnostics, and a measured disabled-policy fast path.
-- [x] Milestone 8: added selected i32/i64/f64 operations, reference transport,
-  null checking, switch control flow, pre-bound static calls, and allocation.
-- [x] (2026-07-18) Allocation checkpoint: commits `e7ea5cb14` and `051800dcd`
-  added `NEWOBJ`, runtime ABI v5 allocation thunks, publication-before-unlock,
-  and class preflight. See state and evidence for scope and validation.
-- [x] (2026-07-18) Consolidated the ExecPlan process: state-first resumption,
-  proportional validation, evidence index, history, and separate editorial
-  handoff replace repeated slice narratives and mandatory disconnected
-  benchmarks.
-- [ ] Milestone 8 next slice: trace fields and class initialization, select a
-  bounded lowering/fallback decision, and implement only after effects and GC
-  roots are understood.
-- [ ] Milestone 8 remaining families: arrays; exceptions/handlers;
-  virtual/interface calls; monitors; legacy/special/reflection cases; explicit
-  fallback decisions for every valid opcode.
-- [ ] Milestone 9: platform, security, performance, publication, packaging, and
-  final editorial/release evidence.
+- [x] Documented the existing Java-to-TotalCross conversion, TCZ/class format,
+  all 160 bytecode dispositions, `executeMethod`, frames, calls, exceptions,
+  monitors, memory management, and GC-root model.
+- [x] Designed and implemented the owned, typed, backend-neutral TCIR contract,
+  deterministic text form, opcode registry, verifier, bounded decoder, and
+  bytecode frontend.
+- [x] Implemented a TCIR reference interpreter and a fresh-state differential
+  oracle against the real legacy `executeMethod` path.
+- [x] Implemented the optional SLJIT baseline backend with whole-function
+  eligibility, artifact lifecycle management, and centralized W^X handling.
+- [x] Implemented deterministic portable-C AOT generation, exact identity
+  registry/manifest handling, clean regeneration, and compiled execution.
+- [x] Integrated default-off mixed interpreted/compiled execution through a
+  runtime-owned method side table without changing serialized `TMethod` or TCZ
+  layouts.
+- [x] Proved representative i32, i64, normalized-f64, reference transport,
+  switch, pre-bound static-call, checked-failure, and object-allocation
+  semantics while retaining whole-method fallback for unsupported operations.
+- [x] Established versioned runtime ABI, GC-visible root-home, TC-PC,
+  exception-status, call, allocation, preflight, and fallback contracts.
+- [x] Reconciled evidence, history, architecture documentation, completed state,
+  final retrospective, and the editorial report.
+- [x] Transferred semantic expansion and production readiness to a separate
+  continuation ExecPlan whose sequencing is gated by future Java-level
+  whole-program optimization/HIR decisions.
 
-## Current Architecture and Scope
+The former “Milestone 8 complete semantic coverage” and “Milestone 9 release
+readiness” were prospective expansion phases. They are not presented as
+implemented. Their unimplemented portions have been reclassified as follow-up
+scope because they are not necessary to answer this plan's architectural
+question.
 
-The native TCIR implementation is under `TotalCrossVM/src/tcvm/ir/`. Its owned
-C API models functions, blocks, typed values, source TC PCs, declared effects,
-and GC-visible reference homes. The verifier is the canonical structural and
-type boundary; the frontend accepts only a bounded bytecode method view and
-rejects unsupported methods before execution.
+## Current Architecture and Delivered Scope
 
-The reference interpreter evaluates verified TCIR through typed homes. The SLJIT
-backend at `TotalCrossVM/src/tcvm/jit/tcir_jit.c` and generated-C backend at
-`TotalCrossVM/src/tcvm/aot/tcir_aot.c` compile only whole functions they can
-preflight. They never start an effectful function and then fall back. Generated
-C remains build-directory output produced by `TotalCrossVM/src/tools/tcaot.c`.
+The native TCIR implementation is under `TotalCrossVM/src/tcvm/ir/`. A
+`TCIRModule` owns stable symbols and typed functions; functions contain explicit
+basic blocks, immutable values, block arguments, TotalCross register homes,
+source TC PCs, and declared effects. The canonical model is simplified SSA:
+mutable bytecode-register traffic is a construction boundary, while promoted
+values and block arguments make control-flow merges explicit without requiring
+a full optimizing SSA framework.
 
-`TotalCrossVM/src/tcvm/ir/tcir_runtime.c` owns optional mixed-mode registration,
-policy, diagnostics, and dispatch. `TC_ENABLE_COMPILED_DISPATCH`,
-`TC_ENABLE_SLJIT_JIT`, and `TC_ENABLE_C_AOT` are independent default-off build
-options. Runtime state remains outside `TMethod`; `executeMethod` stays the
-facade for interpreted, compiled, and native calls.
+`tcirVerifyFunction` is the mandatory boundary before interpretation or backend
+entry. It checks graph structure, value/type ownership, block arguments,
+terminators, logical bytecode targets, result types, effect declarations,
+non-null and unchecked-access proofs, exceptional destinations, and GC-visible
+homes at `may_gc` operations. Unsupported or malformed input produces stable
+diagnostics and pre-execution rejection.
 
-Runtime ABI v5 supplies direct dispatch, pre-bound call, and allocation thunks.
-The allocation thunk receives class identity, live reference homes, destination
-home, and TC PC. It may resolve/load/initialize a class, allocate, collect,
-lock, throw, or grow arenas, so it has the full conservative effect boundary.
-A successful allocation must be written to the destination `regO` home before
-unlock. The standalone allocation harness proves that contract but does not
-initialize a real TCZ/class-loader/object-memory-manager environment.
+The reference interpreter in `tcir_interp.c` is the semantic isolation layer
+and backend oracle. `TotalCrossVM/src/tcvm/jit/tcir_jit.c` consumes only verified
+eligible functions and produces optional SLJIT artifacts. The AOT implementation
+in `TotalCrossVM/src/tcvm/aot/tcir_aot.c` produces deterministic C and manifests
+in build directories; generated C is not a new shipping bytecode or runtime C
+compiler.
 
-Converter fixtures live under `TotalCrossSDK/src/test/java/tc/tools/converter/
-modernjava/` and `TotalCrossVM/src/tests/ir/`. Existing fixtures cover selected
-numeric, reference, switch, static-call, and allocation behavior. The legacy
-oracle remains applicable only where its real runtime setup exists; opaque-token
-contract tests are explicitly labeled as such.
+`TotalCrossVM/src/tcvm/ir/tcir_runtime.c` owns experimental registration,
+policy, diagnostics, lifecycle, and dispatch. `TC_ENABLE_COMPILED_DISPATCH`,
+`TC_ENABLE_SLJIT_JIT`, and `TC_ENABLE_C_AOT` remain independent default-off
+controls. `executeMethod` remains the facade, and runtime state remains outside
+`TMethod`.
 
-## Plan of Work
+Runtime ABI version 5 carries typed frame storage plus direct dispatch,
+pre-bound call, and allocation thunks. Helper-bearing operations publish the
+originating TC PC and materialize live managed references in `regO` homes. The
+implemented allocation contract publishes a newly allocated object in its
+destination home before unlock. Whole-method backend preflight prevents a late
+fallback from repeating an observable call or allocation effect.
 
-### Completed milestone summary
+Implemented representative coverage includes pure and checked i32/i64
+arithmetic where the recorded semantics are stable, pure normalized-f64
+arithmetic and stable integer-to-f64 conversions, managed-reference
+transport/identity, null checking, keyed switch control flow, pre-bound static
+`CALL_normal`, and `NEWOBJ`. Checked division/remainder and `TEST_regO` are
+effectful TCIR paths for which compiled backends deliberately reject the whole
+function. Exact per-opcode status remains in
+`docs/architecture/bytecode/compatibility-matrix.md` and
+`TotalCrossVM/src/tcvm/ir/tcir_opcode_registry.def`.
 
-Milestone 1 produced architecture and compatibility documentation. Milestone 2
-produced TCIR and validation infrastructure. Milestone 3 lowered a bounded
-bytecode subset. Milestone 4 provided reference execution and differential
-comparison. Milestone 5 added optional SLJIT. Milestone 6 added deterministic
-portable C. Milestone 7 added controlled default-off dispatch. Completed
-implementation, validation, benchmark, and decision detail is retained in the
-archive and evidence index rather than repeated here.
+Not implemented as general TCIR/backend coverage are fields and class
+initialization, arrays, complete throw/handler execution, virtual/interface or
+lazy calls, monitors, legacy indirect control flow, reflection-sensitive and
+other special cases, full opcode coverage, automatic class-loader publication,
+and production platform/release policy. Those methods remain safe because the
+legacy interpreter handles them through method-atomic fallback.
 
-### Milestone 8: complete semantic coverage incrementally
+## Plan of Work — Completed Architectural Outcome
 
-The next family is fields and class initialization. Before writing a lowering,
-trace `TotalCrossVM/src/tcvm/tcfield.c`, `TotalCrossVM/src/tcvm/tcclass.c`, the
-related headers, and the exact `executeMethod` cases. Identify resolution,
-class-initialization, null/bounds/type checks, read/write, volatile/atomic,
-exception, lock, and GC effects. Record whether each field operation is direct,
-runtime-helper, unsupported-in-POC, future, platform-specific, obsolete, or
-needs investigation in
-`docs/architecture/bytecode/compatibility-matrix.md`; no valid opcode may
-disappear.
+The work proceeded through architecture inventory, TCIR contract, bounded
+frontend, reference execution, SLJIT, portable-C AOT, conditional mixed-mode
+dispatch, and representative semantic families. The archive contains the
+milestone-by-milestone implementation and validation history.
 
-Start with the smallest slice that has a stable oracle and one clear effect
-contract. Add converter-backed fixtures, canonical TCIR, verifier checks,
-reference execution, whole-method backend eligibility, negative/fallback tests,
-and only the runtime boundary the slice requires. Do not access object layouts
-directly until the GC/layout contract is demonstrated. If class initialization
-or helper effects cannot be proven, retain method-atomic fallback and record the
-reason rather than approximating legacy behavior.
+Final acceptance is architectural:
 
-After fields, use the same approach for arrays, exceptions/handlers,
-virtual/interface calls, monitors, and legacy/special cases. Calls move before
-direct heap access because helper-based calls exercise the ABI without assuming
-heap layout. `THROW` remains fallback until stack-trace creation, live roots,
-pending-exception transfer, and handler selection can be modeled together.
+1. TotalCross bytecode has a verified backend-neutral IR boundary after its
+   existing Java-to-bytecode lowering.
+2. The same verified TCIR can drive an interpreter, a baseline machine-code
+   backend, and deterministic generated C.
+3. Runtime integration can mix interpreted, compiled, and native calls behind
+   default-off policy while preserving `executeMethod` as the facade.
+4. Effects, GC roots, exceptions, calls, allocation, diagnostics, and fallback
+   have explicit contracts sufficient for the implemented evidence.
+5. Unsupported methods retain legacy behavior through whole-method fallback.
 
-Coverage completes only when every valid opcode has a documented lowering or
-fallback class, effects and exception edges are explicit, representative boundary
-tests exist, and fallback is a conscious product/platform decision rather than
-missing implementation.
-
-### Next-slice procedure
-
-1. Record the selected field/class-initialization opcode family and the exact
-   uncertainty in the state file before editing source.
-2. Trace only the legacy interpreter/helper paths needed to classify effects and
-   choose one bounded fixture. Stop and retain fallback if the contract remains
-   ambiguous.
-3. Implement the frontend, verifier, reference interpreter, and focused tests
-   together. Add a compiled backend only after whole-method eligibility and
-   helper ABI requirements are explicit.
-4. Run Level 1 while iterating and Level 2 before the functional commit. Update
-   state with results and deferrals; do not update this plan yet.
-5. At a family or ABI boundary, run the justified Level 3 checks, append one
-   evidence record, consolidate this plan once, and archive retired detail.
-
-### Milestone 9: platform, security, performance, and release readiness
-
-Validate available macOS arm64, Linux x86-64/aarch64, Windows x86/x86-64,
-Android arm64-v8a, Linux armv7 where supported, and iOS arm64 AOT paths. Record
-unavailable targets with reasons. Do not enable JIT on iOS. For macOS and Android
-record platform-security and distribution constraints; native integration remains
-in `TotalCrossVM/CMakeLists.txt`, not legacy `Android.mk` or checked-in
-`TCVM.xcodeproj`.
-
-Only after semantic/platform correctness passes, evaluate backend defaults using
-startup, compile latency, steady-state execution, memory/code size, product
-workloads, and policy. Run a full benchmark only when it measures changed work
-or a measurement regime changes. Reconcile the evidence index, archive, active
-plan, and editorial report before declaring completion.
-
-LLVM and Cranelift remain optional future-tier evaluations, not initial
-acceptance. If either evaluation starts, first read only the `Interfaces and
-Dependencies` section from the preserved `ba6d2f0c3` plan snapshot and reverify
-its target, 32-bit ABI, licensing, distribution-size, build-scope, stack-map,
-debug/profiler, compile-latency, and product-workload assumptions at that time.
+The result does not assert exhaustive opcode semantics, production performance,
+or release readiness. Those are separate outcomes requiring separate evidence.
 
 ## Decision Log
+
+- Decision: Close this plan on architectural proof rather than exhaustive
+  opcode and platform coverage.
+  Rationale: the original architecture question is answered by representative
+  end-to-end families; treating product expansion as a prerequisite would hide
+  the completed result and conflate proof with rollout.
+  Date: 2026-08-08.
 
 - Decision: Keep every backend and mixed-mode dispatch default-off.
   Rationale: experimental compilation must not alter ordinary VM behavior.
 
-- Decision: Preserve `executeMethod` as facade and the legacy interpreter as
-  permanent compatibility fallback.
-  Rationale: compiled paths reuse established call/native behavior and unsupported
-  methods retain known semantics.
+- Decision: Preserve `executeMethod` and the legacy interpreter as the semantic
+  authority and permanent compatibility fallback.
+  Rationale: unsupported or rejected methods keep established behavior without
+  changing TCZ or serialized method layouts.
 
-- Decision: Make backend selection and fallback whole-method and preflighted.
-  Rationale: no observable effect may execute twice after a late rejection.
+- Decision: Make backend eligibility and fallback whole-method and preflighted.
+  Rationale: no call, allocation, throw, lock, or mutation may execute twice
+  because a backend rejects later.
 
-- Decision: Model helper-bearing calls and allocation with conservative effects,
-  live `regO` homes, TC-PC publication, and arena-base reload requirements.
-  Rationale: correctness precedes direct layout access or optimization.
+- Decision: Use explicit typed homes and conservative helper effects at GC and
+  exception boundaries.
+  Rationale: correctness can be proven without exposing private heap layouts or
+  relying on native-stack root discovery.
 
-- Decision: Require allocation publication in the destination home before
-  unlock, and treat opaque allocation tests as contract evidence only.
-  Rationale: a helper result alone is not a collector-visible root; no full OMM
-  setup exists in the standalone harness.
+- Decision: Position TCIR after TotalCross bytecode.
+  Rationale: TCIR captures TotalCross runtime semantics and native execution
+  contracts; it does not retain all Java information needed for a possible
+  future Java-aware whole-program optimization layer.
 
-- Decision: Retain checked arithmetic/null checks as TCIR-only until compiled
-  helper/GC evidence exists.
-  Rationale: whole-method rejection avoids partial exception effects.
+- Decision: Transfer the former remaining Milestone 8/9 scope to a new plan.
+  Rationale: semantic/product expansion must start from the proven foundation
+  and may be reprioritized after Java-level optimization/HIR investigation.
 
 ## Validation and Acceptance
 
-Use the four validation levels in `AGENTS.md`. During implementation, run the
-smallest affected build/test/golden/negative case. Before a functional commit,
-run focused module tests, affected differential fixtures, `git diff --check`,
-and only the relevant sanitizer. At a field-family boundary or ABI change, run
-the complete differential suite, Release, relevant sanitizer, default-off
-isolation when dispatch changes, and only directly affected cross-builds. Save
-full output to logs and record compact results in the evidence index.
+The implementation checkpoints recorded in the evidence index include:
 
-For fields and class initialization, acceptance must include the legacy oracle
-where a real setup is available; precise TC PC for exceptions; correct reference
-home materialization at every `may_gc` helper; class-resolution and initializer
-ordering; and method-atomic fallback for unsupported bindings. Do not claim
-moving/forced GC, class initialization, or layout correctness from an opaque
-contract harness.
+- 15 converter-backed fixtures and 6,398 fresh-state comparisons across legacy
+  `executeMethod`, TCIR, SLJIT, and generated C for eligible paths;
+- 16 TCIR/SLJIT/AOT allocation-contract comparisons, explicitly separate from
+  a real TCZ/class-loader/object-memory-manager proof;
+- host macOS arm64 Release and ASan 8/8 focused CTest results, focused UBSan
+  runtime execution, converter fixture validation, deterministic AOT checks,
+  W^X/lifecycle checks, and a dispatch-disabled 7/7 isolation build;
+- Android arm64-v8a/API 23 compilation of TCIR, JIT, AOT, runtime integration,
+  and the conditional VM hook; and
+- historical benchmark checkpoints that caught and verified removal of a
+  disabled-policy mutex cost, without claiming performance for later semantic
+  families the workloads did not execute.
 
-Run a default-off build only when a conditional build/runtime boundary changes.
-Run Android or another cross-build only when the edited code is compiled for that
-platform or the user requests it. Device execution, full platform matrices,
-packaging, and broad sanitizers are Milestone 9/release work unless the user
-requests them or a specific change requires them.
+These results satisfy this plan because they demonstrate the architecture and
+fallback contracts for representative families. Linux and Windows execution,
+full iOS application linkage, device execution, forced/moving-GC stress, real
+class initialization, handler/stack-trace equivalence, application benchmarks,
+packaging, signing, and distribution policy were not observed and are not part
+of final acceptance.
 
-The historical `add`, `abs`, and `sumTo` benchmark does not measure fields,
-references, calls, switches, or allocation. Do not run it for such slices unless
-their dispatcher, invocation ABI, frame, scratch allocation, or backend-emission
-hot path changes. For an affected hot path, use a smoke benchmark with about
-three warmups and ten samples. Full checkpoints begin at 60 and 200 samples;
-more than 200 requires observed variance or an explicit user request.
+The closure itself changes documentation/process artifacts only. Its validation
+is therefore limited to plan structure, local references, opcode/document
+consistency, copyright headers, whitespace, contradictory continuation wording,
+and a scoped diff confirming that no runtime source changed. Full native,
+sanitizer, benchmark, platform, and packaging matrices are intentionally not
+repeated because the closure does not change runtime behavior.
 
-## Risks and Open Questions
+## Risks and Open Questions — Transferred, Not Blocking Closure
 
-Fields may implicitly resolve symbols, initialize classes, allocate exceptions,
-trigger GC, or use platform-specific volatile/atomic behavior. The next slice
-must trace those paths instead of assuming a raw offset load/store is safe.
+Future work must still resolve transitive helper effects, class initialization,
+field/array layout and checks, forced or moving GC, arena growth, arbitrary
+native suspension, exception stack traces and handler selection, monitor
+semantics, class/method unloading, legacy `JUMP_regI`, and production artifact
+identity/security.
 
-The current runtime still lacks forced/moving GC, arena-growth, and thread
-suspension evidence inside arbitrary native helpers. Every helper-bearing slice
-must define what it proves and leave unproven dynamic behavior open.
+Platform support remains evidence-specific. macOS arm64 host execution and
+Android arm64 compilation do not establish Linux, Windows, iOS, device,
+entitlement, signing, or distribution readiness. SLJIT CPU support does not by
+itself establish executable-memory policy. Generated C compilation does not by
+itself establish archive publication or dead-strip-safe registration.
 
-Class/method unloading, replacement, and redefinition lifetime guarantees remain
-unknown. Do not add persistent direct bindings or embedded compiled-entry fields
-without resolving them. Likewise, inspect monitor semantics, `JUMP_regI`/`jsr`/
-`ret` artifacts, and iOS publication/dead-strip/signing before promotion.
-
-Supported Windows/embedded target policy, iOS registration/linking, Android
-device/security behavior, and non-host CI runners are Milestone 9 questions. Do
-not infer support from a CPU backend or cross-compiled object alone.
+These are limitations of product coverage, not unresolved questions about
+whether TCIR is a viable TotalCross bytecode/runtime IR. They are recorded in
+the continuation plan and editorial report.
 
 ## Idempotence and Recovery
 
-Feature flags are default-off; rerun focused commands in an existing build
-directory unless stale output is suspected. Do not delete generated dependency
-checkouts, build directories, logs, or user-local artifacts merely to clean
-status. Preserve unrelated work, especially
+This plan has no next implementation action. Its feature flags remain
+default-off and its evidence/history are preserved. Revalidating or editing the
+completed record must not delete build directories, generated dependency
+checkouts, user logs, or unrelated local work such as
 `.agent/sljit-depot-tools-execplan.md`.
 
-Before a commit, inspect scoped status/diff, run `git diff --check`, stage only
-the intended files, and run `python3 scripts/staged-copyright-headers.py`. Keep
-functional changes, checkpoint documentation, and process-policy changes in
-logical commits with descriptive English titles and bodies.
-
-If context compacts or work stops, rewrite the state file with the active slice,
-last commit, exact next action, validations completed, deferrals, and local
-exclusions. Do not append a chat transcript or regenerate historical evidence.
+Any continuation begins from
+`.agent/exec-plan-expand-tcir-semantic-coverage-and-production-readiness.md`.
+That plan must create its own active state/evidence records when execution is
+authorized; it must not rewrite this completed state into a resume document.
 
 ## Outcomes & Retrospective
 
-The project has a bounded, verifiable TCIR boundary with reference, SLJIT, and
-portable-C execution plus optional mixed-mode dispatch. Milestone 8 has advanced
-through allocation but remains incomplete. The allocation checkpoint establishes
-ABI-v5 publication/status/root transport, not full object-memory-manager or
-class-loader behavior. The evidence index and archive preserve the detailed
-commands, counts, benchmark artifacts, hashes, and limitations.
+The original intent was to learn whether a verified intermediate form could sit
+between TotalCross bytecode and native execution, support both JIT and AOT, and
+coexist safely with the current interpreter and TCZ format. The branch delivered
+that architecture. TCIR now occupies the boundary immediately after
+TotalCross-bytecode decoding, where TotalCross register, control-flow,
+exception-PC, runtime-helper, and GC-home semantics are still explicit.
 
-The execution process now uses state-first resumption and proportional
-validation. This removes the prior requirement to reread a 900-plus-line plan,
-duplicate every result across living sections, rerun 1,000-sample arithmetic
-benchmarks for unrelated slices, or poll silent long-running commands for
-progress.
+The implemented model uses typed immutable values, explicit CFG blocks and
+edges, simplified-SSA block arguments, and mutable typed homes where the legacy
+frame and collector require them. The canonical verifier makes malformed
+graphs, unsupported operations, mismatched effects, invalid edges, hidden roots,
+and other unsafe states rejectable before execution. Stable diagnostics and
+deterministic dumps make this a testable compiler contract rather than a
+backend-specific instruction list.
+
+The TCIR interpreter supplied an independent semantic oracle between the legacy
+VM and native backends. Differential testing then confirmed that representative
+numeric, reference, switch, static-call, and allocation paths could preserve
+the existing behavior. SLJIT demonstrated a fast-compiling baseline backend
+with controlled executable-memory lifecycle. The portable-C backend
+demonstrated deterministic AOT generation, exact registry identity, reproducible
+output, and execution through the same frame/runtime ABI.
+
+Mixed-mode integration proved that interpreted, compiled, and native paths can
+coexist behind opt-in registration and policy without changing `TMethod` or TCZ.
+The established contracts require precise TC-PC publication, visible reference
+homes at `may_gc`, immediate pending-exception status transfer, typed call
+arguments/results, allocation publication before unlock, and pre-execution
+backend rejection. The legacy interpreter remains the safe answer for every
+unsupported family.
+
+The evidence is intentionally bounded. Opaque-reference and allocation harnesses
+prove identity, root transport, status, and publication contracts; they do not
+prove arbitrary real-heap mutation, class initialization, moving GC, exception
+handlers, or stack traces. Host and cross-compilation checkpoints do not equal a
+production platform matrix. Historical arithmetic measurements do not support
+performance claims for calls, allocation, or unimplemented families.
+
+The central hypotheses were confirmed: TC bytecode can be translated into a
+verified semantic IR; one IR can support reference interpretation, baseline JIT,
+and portable AOT; mixed execution can preserve the existing VM facade; and
+whole-method fallback permits incremental coverage without weakening
+compatibility. The plan's architectural goal is therefore complete.
+
+The most important lesson for later compiler work is boundary discipline. TCIR
+is a valid backend/runtime IR for TotalCross bytecode and native execution, but
+it begins after Java-level information has already been lowered or normalized.
+It should not be stretched into a substitute for a future Java-aware
+whole-program optimization layer. Future work should decide that higher-level
+strategy first, then add TCIR operations, helpers, and optimizations only when a
+measured product need and an executable semantic contract justify them.
 
 ## Revision Note
 
-2026-07-18: consolidated the active ExecPlan around remaining Milestone 8/9
-work. Completed milestone detail, repeated revision notes, benchmark tables, and
-editorial material were moved to stable referenced records so continuation stays
-safe, traceable, and token-efficient.
+2026-08-08: formally concluded the architectural plan. Representative semantic
+coverage and runtime/backend evidence satisfy its purpose; exhaustive opcode
+coverage and production readiness were moved, without being claimed complete,
+to a new continuation ExecPlan gated by future Java-level optimization/HIR
+priorities.

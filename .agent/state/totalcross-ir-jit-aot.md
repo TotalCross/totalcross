@@ -3,109 +3,100 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 
 SPDX-License-Identifier: LGPL-2.1-only
 -->
-# Active State: TotalCross IR, JIT, and AOT
+# Completed State: TotalCross IR, JIT, and AOT
 
-Read this file first when resuming `.agent/exec-plan-totalcross-ir-jit-aot.md`.
-It is a compact, rewritten state file, not a chronological log.
+## Status
 
-## Current position
+- Plan status: complete as an architectural validation plan on 2026-08-08.
+- Last implementation checkpoint: object allocation at rebased branch commits
+  `8e5b31bfe` and `f593d24d2`; `ab28d1d59` recorded its evidence.
+- Process checkpoint before closure: `201537cd2`.
+- Default production behavior is unchanged: `TC_ENABLE_COMPILED_DISPATCH`,
+  `TC_ENABLE_SLJIT_JIT`, and `TC_ENABLE_C_AOT` remain opt-in.
+- There is no active milestone, next slice, or resume command for this plan.
 
-- Active milestone: 8, semantic coverage expansion.
-- Last functional checkpoint: object allocation, commits `e7ea5cb14` and
-  `051800dcd`. Process checkpoint `2a6fa31cb` created this compact plan and its
-  supporting records; `ba6d2f0c3` is the unabridged historical snapshot.
-- The focused review corrections after `2a6fa31cb` are intentionally
-  uncommitted because the review request prohibited validation.
-- Current next family: fields and class initialization. Do not begin it until
-  the field access, class-resolution, initialization, GC, and exception effects
-  are traced and a bounded slice is selected.
-- Default production behavior remains unchanged: `TC_ENABLE_COMPILED_DISPATCH`,
-  `TC_ENABLE_SLJIT_JIT`, and `TC_ENABLE_C_AOT` are opt-in.
+The request's original starting revision `739dda5f2` is the pre-rebase form of
+current-branch commit `3496c035f`; the two commits have the same stable patch ID.
+The final review used the rebased branch history through `201537cd2` plus the
+documentation-only closure worktree.
 
-## Read next
+## Completed architectural outcome
 
-1. Read the active plan's `Working Set and Resume Protocol`, `Milestone 8`,
-   `Validation and Acceptance`, and `Risks and Open Questions` sections.
-2. Inspect only the paths for the selected slice. For fields, start with the
-   plan's named VM field/class-resolution paths and relevant TCIR interfaces.
-3. Search the evidence index only if a prior command, result, artifact, or
-   limitation is needed. Do not read the archive or editorial report by default.
+- The existing converter, TCZ/bytecode, `executeMethod`, frame, exception, call,
+  monitor, memory, and GC-root architecture is documented under
+  `docs/architecture/bytecode/`.
+- TCIR version 1 provides an owned backend-neutral module/function/value/CFG
+  model, simplified SSA with explicit typed homes, canonical verification,
+  deterministic dumps, and a complete opcode disposition registry.
+- A bounded frontend translates supported TotalCross bytecode to verified TCIR.
+- A reference interpreter, optional SLJIT backend, and deterministic portable-C
+  AOT backend consume the same verified representation.
+- Default-off runtime registration and dispatch prove mixed interpreted,
+  compiled, and native execution without changing TCZ or `TMethod` layout.
+- Runtime ABI version 5 establishes typed frame, dispatch, pre-bound call,
+  allocation, TC-PC, exception-status, live-root-home, and
+  publication-before-unlock contracts.
+- Representative i32/i64/normalized-f64, reference identity/transport, null
+  check, switch, static-call, and object-allocation families prove the
+  architecture. Unsupported families remain whole-method legacy fallback.
 
-Recommended first command:
+## Final evidence boundary
 
-    rg -n '^#{1,3} |Milestone 8|Validation and Acceptance|Open Questions' \
-      .agent/exec-plan-totalcross-ir-jit-aot.md
+- 15 converter-backed fixtures retained 6,398 fresh-state legacy
+  `executeMethod`/TCIR/SLJIT/AOT comparisons for eligible paths.
+- 16 TCIR/SLJIT/AOT allocation-contract comparisons proved status, root
+  transport, and destination publication in the isolated harness.
+- The final implementation checkpoint passed macOS arm64 Release and ASan 8/8,
+  focused UBSan runtime execution, the SDK converter fixture, dispatch-disabled
+  7/7 isolation, and Android arm64-v8a/API 23 compilation of the TCIR stack and
+  conditional VM hook.
+- Historical benchmark evidence caught and verified removal of a disabled
+  dispatch mutex cost. Its arithmetic workloads do not measure later semantic
+  families.
 
-## Implemented Milestone 8 coverage
+Detailed checkpoints are indexed in
+`.agent/evidence/totalcross-ir-jit-aot.md`; historical milestone detail and raw
+artifact references remain in
+`.agent/archive/exec-plan-totalcross-ir-jit-aot-history.md` and the preserved
+`ba6d2f0c3` plan snapshot.
 
-- Pure i32, i64, normalized f64, conversions with stable semantics, reference
-  transport/identity, switch control flow, pre-bound static calls, and `NEWOBJ`
-  have TCIR, portable-C AOT, and 64-bit SLJIT coverage where eligible.
-- Checked division/remainder and `TEST_regO` are TCIR-only effectful operations;
-  compiled backends reject them before execution.
-- `NEWOBJ` uses runtime ABI version 5. A helper receives class identity, live
-  reference homes, destination home, and TC PC. A successful object must be
-  published in the destination `regO` home before it is unlocked.
-- The standalone allocation harness proves contract, status, root transport, and
-  publication. It does not initialize the real TCZ/class-loader/object-memory
-  manager path or prove moving/forced GC, arena growth, or class initialization.
+## Explicit limitations
 
-## Active paths and contracts
+This completed plan does not claim general fields or class initialization,
+arrays, full throw/handler behavior, virtual/interface or lazy calls, monitors,
+legacy/special/reflection-sensitive cases, full opcode coverage, real
+class-loader/object-memory-manager forced or moving GC, automatic publication,
+Linux/Windows execution, full iOS linkage, device validation, packaging,
+security/distribution approval, production performance, or backend enablement.
 
-- TCIR contracts and frontend: `TotalCrossVM/src/tcvm/ir/`.
-- Backends: `TotalCrossVM/src/tcvm/jit/tcir_jit.c` and
-  `TotalCrossVM/src/tcvm/aot/tcir_aot.c`.
-- Conditional runtime adapter: `TotalCrossVM/src/tcvm/ir/tcir_runtime.c`.
-- Converter fixtures and native tests:
-  `TotalCrossVM/src/tests/ir/` and
-  `TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/`.
-- Opcode status and fallback decisions:
-  `docs/architecture/bytecode/compatibility-matrix.md`.
-- Before a field slice, inspect field/class-resolution behavior and all
-  transitive effects before declaring any lowering eligible.
+Those limitations do not reopen the architectural result. Methods containing
+unsupported semantics remain wholly interpreted, and all compiler/runtime flags
+remain default-off.
 
-## Validation status
+## Continuation
 
-- The allocation family completed Level 3 validation: focused host Release and
-  ASan suites, focused UBSan runtime execution, default-off isolation, Android
-  arm64-v8a/API 23 compilation, converter fixture verification, 6,398 retained
-  legacy comparisons, and 16 allocation-contract comparisons.
-- Do not repeat that matrix for a documentation-only change or an unrelated
-  semantic slice. Select Level 1 or 2 during implementation; escalate to Level
-  3 only for a family boundary, ABI change, or directly affected platform.
-- The historical arithmetic benchmark does not exercise fields or allocation.
-  Do not run it for a field slice unless the dispatcher, invocation ABI, frame,
-  scratch allocation, or backend-emission hot path changes. Record any deferred
-  broader validation in this file.
+Future work belongs to the separate plan:
 
-## Decisions still active
+`.agent/exec-plan-expand-tcir-semantic-coverage-and-production-readiness.md`
 
-- Preserve whole-method fallback; never execute partially compiled effects.
-- Preflight bindings and class symbols before backend entry when later fallback
-  would repeat observable effects.
-- Materialize live reference homes at every `may_gc` helper boundary and reload
-  arena bases after helpers that can grow them.
-- Keep unresolved lazy resolution, virtual/interface calls, fields, arrays,
-  handlers, monitors, and special/legacy cases explicit fallback until their
-  effects and tests exist.
+That plan begins with a priority/architecture decision gate because upcoming
+Java-level whole-program optimization and possible high-level IR investigation
+may change which TCIR semantic or production work should be done first. No field
+or other semantic-family implementation was started during closure.
 
 ## Deliberate local scope
 
-- Do not modify or stage `.agent/sljit-depot-tools-execplan.md`; it is unrelated
-  local work.
+- `.agent/sljit-depot-tools-execplan.md` is unrelated untracked local work and
+  must not be modified or staged as part of this closure.
 - Build directories, generated dependency checkouts, logs, and benchmark
-  artifacts remain uncommitted unless the user explicitly requests them.
-- The process refactor is complete at `2a6fa31cb`; future implementation must
-  preserve unrelated changes and stage only its selected slice.
-
-## Blocking questions
-
-- No current external blocker is known. Field/class-initialization effects are
-  unresolved design inputs and must be traced before selecting the next slice.
+  artifacts remain local unless a user explicitly requests otherwise.
 
 ## Supporting records
 
-- Active plan: `.agent/exec-plan-totalcross-ir-jit-aot.md`.
+- Completed plan: `.agent/exec-plan-totalcross-ir-jit-aot.md`.
 - Evidence index: `.agent/evidence/totalcross-ir-jit-aot.md`.
 - Historical detail: `.agent/archive/exec-plan-totalcross-ir-jit-aot-history.md`.
-- Editorial handoff: `.agent/reports/totalcross-ir-jit-aot-editorial.md`.
+- Final editorial report:
+  `.agent/reports/totalcross-ir-jit-aot-editorial.md`.
+- Future continuation:
+  `.agent/exec-plan-expand-tcir-semantic-coverage-and-production-readiness.md`.

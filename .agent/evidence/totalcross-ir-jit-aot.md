@@ -5,17 +5,18 @@ SPDX-License-Identifier: LGPL-2.1-only
 -->
 # Evidence Index: TotalCross IR, JIT, and AOT
 
-This append-only index is not a normal continuation read. Search it by revision,
-milestone, command, or artifact when a claim needs verification. The unabridged
-pre-consolidation checkpoint, including benchmark tables and artifact hashes, is
-preserved at `ba6d2f0c3:.agent/exec-plan-totalcross-ir-jit-aot.md`.
+This completed append-only index is not a continuation record. Search it by
+revision, milestone, command, or artifact when a claim from the completed plan
+needs verification. The unabridged pre-consolidation checkpoint, including
+benchmark tables and artifact hashes, is preserved at
+`ba6d2f0c3:.agent/exec-plan-totalcross-ir-jit-aot.md`. Future continuation work
+uses its own evidence index.
 
 ## Record format
 
-Append each future record as a new row at the end of the table, which is kept as
-the final section of this file. Include date/revision, milestone/slice, command
-or wrapper identifier, material result, evidence path when needed, and one short
-scope or limitation statement. Add hashes only when integrity requires them.
+Each row records date/revision, milestone or slice, material result, evidence
+location when needed, and one concise scope or limitation statement. Hashes are
+retained only where integrity requires them.
 
 ## Evidence records
 
@@ -31,3 +32,4 @@ scope or limitation statement. Add hashes only when integrity requires them.
 | 2026-07-18 | M8 numeric/reference/switch/call | `da38b7278` through `155c74ebd` | Fourteen-fixture progression reached 6,398 retained legacy four-way comparisons. | Effectful division/null checks remain TCIR-only. |
 | 2026-07-18 | M8 allocation | `e7ea5cb14`, `051800dcd` | Runtime ABI v5; 16 allocation-contract comparisons; Release/ASan/UBSan/default-off and Android compilation passed. | No real TCZ/class-loader/OMM forced-GC proof. |
 | 2026-07-18 | M8 allocation benchmark | `051800dcd6e6` | 60/200/1,000 arithmetic profiles validated. | Workloads do not measure allocation; raw artifact hashes remain in baseline snapshot. |
+| 2026-08-08 | Architectural plan closure | `201537cd2` + closure worktree | Required plan sections, 36 local references, all 160 opcode sources, 11 copyright headers, whitespace, closure wording, and documentation-only scope passed focused validation. | No runtime source changed; native/platform/sanitizer/benchmark matrices were not repeated for documentation-only closure. |
