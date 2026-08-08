@@ -47,7 +47,7 @@ Real `Window.fadeOtherWindows` must remain unchanged.
 - [x] (2026-08-08 20:51Z) Made the presentation frame transparent and verified it as the common direct/composite fade target with owned snapshot cleanup.
 - [x] (2026-08-08 20:51Z) Restored `fadeOtherWindows` through a full-host translucent `PresentationBarrier`; `Window.fadeValue` pixel mapping and SideMenu full-opacity behavior pass.
 - [x] (2026-08-08 20:51Z) Added nonzero-duration presentation fade coverage for directional, centered, relayout-abort, repeated, and SideMenu transitions; full log: `TotalCrossSDK/agent-logs/20260808-005111-test-full.log`.
-- [ ] Audit existing fade consumers.
+- [x] (2026-08-08 20:54Z) Audited TopMenu, SlidingWindow, Toast, VirtualKeyboard, TabbedContainer, and ScrollContainer. No consumer-specific production change was needed; added a generic nonzero partial-fade reuse assertion for Toast's `maxFade` contract.
 - [ ] Run focused Java validation, one non-clean SDK build, JavaSE smoke, and one macOS native smoke if the existing path remains usable.
 - [ ] Complete evidence, static checks, file-size checks, and retrospective.
 
@@ -482,6 +482,7 @@ far, in order, are:
     8669e03cd  fix(ui): correct composite fade lifecycle
     d9cc9e9f5  fix(ui): preserve fade snapshot geometry and scale
     87ec52e21  fix(ui): restore presentation background dimming
+    d3a4950f9  test(ui): cover presentation fade behavior
 
 ## Suggested Commit Boundaries
 
@@ -522,6 +523,12 @@ screenshots.
 
 - Observation: The first focused execution produced five animation lifecycle/ownership failures and two screenshot failures, while the transparent-root guard already passed.
   Evidence: `ControlAnimationFadeTest` failed all five cases; `ControlScreenshotTest` failed target-local red-pixel capture (`expected 0xFF0000, was 0`) and physical scale (`expected 36, was 12`).
+
+- Observation: Existing consumers split into animation-owned snapshots (TopMenu, SlidingWindow, VirtualKeyboard), explicit caller-owned snapshots (TabbedContainer, ScrollContainer), and retained partial-fade snapshots (Toast).
+  Evidence: only animation code and presentation transitions use `.with(FadeAnimation...)`; TabbedContainer and ScrollContainer explicitly pair screenshot creation/release; Toast sets `maxFade < 255` and intentionally reuses the retained image for fade-out.
+
+- Observation: The Toast-style retained partial fade exposed a final-frame ordering bug: `FadeAnimation` assigned `a = af` only after writing the screenshot alpha.
+  Evidence: the new nonzero partial-fade test retained `alphaMask=88` when the expected final `maxFade` was 128. The fix remains generic by writing the final value before either screenshot slot is updated.
 
 - Observation: `.with(...)` can prevent slave FadeAnimation offscreen preparation.
   Consequence: fix generic animation lifecycle, not PresentationHost.
@@ -620,3 +627,10 @@ logical-scale screenshot capture without clipping to live ancestor position.
 
 2026-08-08 20:51Z: Completed presentation-frame transparency and barrier dimming,
 then passed the first nonzero presentation lifecycle and pixel suite.
+
+2026-08-08 20:54Z: Audited legacy fade and screenshot consumers and added a
+generic retained-partial-fade regression without changing consumer code.
+
+2026-08-08 20:55Z: The retained-partial-fade regression exposed and verified a
+generic final-alpha ordering repair; focused log:
+`TotalCrossSDK/agent-logs/20260808-005436-test-full.log`.

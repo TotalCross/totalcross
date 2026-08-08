@@ -4,6 +4,7 @@
 
 package totalcross.ui.anim;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -129,5 +130,27 @@ class ControlAnimationFadeTest {
 
     assertSame(initial, target.offscreen0);
     assertNull(target.offscreen);
+  }
+
+  @Test
+  void partialFadeRetainsAndReusesItsScreenshot() {
+    FadeAnimation.maxFade = 128;
+    FadeAnimation fadeIn = FadeAnimation.create(target, true, null, 100);
+
+    fadeIn.start();
+    Image screenshot = target.offscreen;
+    fadeIn.updateListenerTriggered(10);
+    fadeIn.updateListenerTriggered(90);
+
+    assertSame(screenshot, target.offscreen);
+    assertEquals(128, target.offscreen.alphaMask);
+
+    FadeAnimation fadeOut = FadeAnimation.create(target, false, null, 100);
+    fadeOut.start();
+    fadeOut.updateListenerTriggered(10);
+    fadeOut.updateListenerTriggered(90);
+
+    assertSame(screenshot, target.offscreen);
+    assertEquals(0, target.offscreen.alphaMask);
   }
 }

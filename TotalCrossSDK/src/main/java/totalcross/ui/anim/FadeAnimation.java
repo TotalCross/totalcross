@@ -46,6 +46,9 @@ public class FadeAnimation extends ControlAnimation {
     } else if (a < 0) {
       a = 0;
     }
+    if (a == af || speed == 0) {
+      a = af;
+    }
     if (c.offscreen != null) {
       c.offscreen.alphaMask = a;
     }
@@ -53,8 +56,7 @@ public class FadeAnimation extends ControlAnimation {
       c.offscreen0.alphaMask = _maxFade - a;
     }
     Window.needsPaint = true;
-    if (a == af || speed == 0) {
-      a = af;
+    if (a == af) {
       stop(false);
     }
   }
