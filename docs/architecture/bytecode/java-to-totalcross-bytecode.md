@@ -23,7 +23,10 @@ Java .class
 
 `J2TC` coordinates conversion. For each method, `Bytecode2TCCode` walks Java bytecodes, simulates the operand stack, and produces register-oriented instructions. `CFG` builds blocks over those instructions; `RegAllocation` computes liveness and replaces virtual registers with typed physical registers; `generateCode` serializes the slots.
 
-The Java package named `converter.ir` is an implementation-level intermediate form, but it remains coupled to TotalCross opcodes, layouts, and compact-encoding restrictions. It is not the independent IR proposed for JIT/AOT.
+The Java package named `converter.ir` is an implementation-level intermediate
+form, but it remains coupled to TotalCross opcodes, layouts, and compact-encoding
+restrictions. It is not the backend-neutral TCIR now implemented after
+TotalCross-bytecode lowering for interpretation, JIT, and AOT.
 
 ## Java input
 
@@ -107,7 +110,10 @@ An `invokedynamic` outside known patterns produces a deterministic conversion er
 
 ## Requirements for the bytecode-to-IR frontend
 
-The new frontend consumes a bounded view of `TMethod` metadata and TotalCross slots rather than repeating `.class` conversion. `TMethod` itself does not retain the serialized code-slot count, so Milestone 3 uses `TCIRMethodView` to make that bound and the required pool/debug metadata explicit. It must:
+The implemented TCIR frontend consumes a bounded view of `TMethod` metadata and
+TotalCross slots rather than repeating `.class` conversion. `TMethod` itself
+does not retain the serialized code-slot count, so `TCIRMethodView` makes that
+bound and the required pool/debug metadata explicit. The frontend must:
 
 1. decode instructions and every continuation slot;
 2. reject a target in the middle of an instruction;
@@ -121,7 +127,11 @@ The new frontend consumes a bounded view of `TMethod` metadata and TotalCross sl
 
 The independent frontend starts after Java compatibility has already been reduced to TotalCross semantics. Differential tests should therefore compare the TotalCross bytecode interpreter with the IR interpreter, while converter tests continue covering `.class -> TCZ` behavior.
 
-Milestone 3's `TCIRConverterFixtureTest` compiles `add`, `abs`, and `sumTo`, runs the production `J2TC` path, and compares the exact emitted TCode words and source lines with the native fixture header. This proves the frontend integration inputs are converter-backed; it does not yet prove interpreter equivalence, because TCIR execution begins in Milestone 4.
+`TCIRConverterFixtureTest` began with `add`, `abs`, and `sumTo` and now generates
+the 15 representative fixtures through the production `J2TC` path, comparing
+exact emitted TCode words and source lines with the native fixture header. The
+native differential harness separately supplies legacy-interpreter, TCIR,
+SLJIT, and generated-C equivalence evidence for eligible paths.
 
 ## Preservation rule
 

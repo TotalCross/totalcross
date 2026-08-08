@@ -13,11 +13,15 @@ The VM is register-based: no instruction consumes or produces a runtime operand 
 
 `arc` performs null and bounds checks and falls through to the `aru` implementation; `aru` assumes that the access was already checked or proven safe. Field operations may throw null/class/field errors; static operations may resolve classes/fields; integer division/remainder may throw on zero; allocation, calls, type operations, monitors, and `THROW` use runtime helpers. A compiler must treat helper calls as potential GC points according to the runtime ABI.
 
-Every entry occupies one 4-byte slot, except that calls, switch, and multidimensional arrays have additional data slots. The IR column names the proposed canonical operation; it is not an existing implementation.
+Every entry occupies one 4-byte slot, except that calls, switch, and
+multidimensional arrays have additional data slots. The IR column names the
+canonical TCIR design operation. It is not by itself an implementation claim;
+current frontend/backend support and fallback are authoritative in
+`compatibility-matrix.md` and `tcir_opcode_registry.def`.
 
 ## 0–44: moves, fields, and arrays
 
-| No. | Opcode | Operands and effect | Check/exception | Proposed IR |
+| No. | Opcode | Operands and effect | Check/exception | Canonical TCIR operation |
 |---:|---|---|---|---|
 | 0 | `BREAK` | no operands; production NOP, controlled test termination | none | `nop`/debug trap |
 | 1 | `MOV_regI_regI` | `dI = sI` | none | `copy i32` |
@@ -67,7 +71,7 @@ Every entry occupies one 4-byte slot, except that calls, switch, and multidimens
 
 ## 45–88: arithmetic and bit operations
 
-| No. | Opcode | Operands and effect | Check/exception | Proposed IR |
+| No. | Opcode | Operands and effect | Check/exception | Canonical TCIR operation |
 |---:|---|---|---|---|
 | 45 | `INC_regI` | `rI += imm16` | Java modular overflow | `add i32` |
 | 46 | `ADD_regI_regI_regI` | `dI = s1I + s2I` | none | `add i32` |
@@ -118,7 +122,7 @@ Every entry occupies one 4-byte slot, except that calls, switch, and multidimens
 
 Conditional branches set `PC = PC + Δ` when true and advance when false. Double comparisons must preserve NaN behavior already selected by Java conversion.
 
-| No. | Opcode | Condition/effect | Proposed IR |
+| No. | Opcode | Condition/effect | Canonical TCIR operation |
 |---:|---|---|---|
 | 89 | `JEQ_regO_regO` | `s1O == s2O` | `cmp.eq ref; br` |
 | 90 | `JEQ_regO_null` | `sO == null` | `is.null; br` |
@@ -158,7 +162,7 @@ Conditional branches set `PC = PC + Δ` when true and advance when false. Double
 
 ## 124–159: conversions, returns, and runtime operations
 
-| No. | Opcode | Operands and effect | Check/exception | Proposed IR |
+| No. | Opcode | Operands and effect | Check/exception | Canonical TCIR operation |
 |---:|---|---|---|---|
 | 124 | `CONV_regI_regL` | `dI = (i32)sL` | none | `trunc i64` |
 | 125 | `CONV_regI_regD` | Java double-to-int conversion | NaN/range rules | `fptosi.java i32` |

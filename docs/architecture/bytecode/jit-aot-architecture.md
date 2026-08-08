@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Architecture boundary
 
-The proposed execution pipeline is:
+The implemented architectural pipeline is:
 
 ```text
 TCZ / TotalCross class record
@@ -26,6 +26,11 @@ backend-neutral TCIR  -----> TCIR interpreter
 ```
 
 The bytecode interpreter remains available for every valid existing method. Compilation is an optional execution choice and must not change serialization, class loading, native method lookup, GC, or exception semantics.
+
+TCIR is the backend/runtime IR after Java-to-TotalCross lowering. It is not a
+replacement for a possible future Java-aware whole-program optimization layer,
+which would own information no longer present in TotalCross bytecode. The
+relationship and sequencing of such a layer is a separate future decision.
 
 ## Why SLJIT for the baseline
 
@@ -59,7 +64,14 @@ TCCompiledStatus tcCompiledInvoke(
     TValue *result);
 ```
 
-Milestone 5 implements the JIT side of this boundary as `TCIRJitArtifact`, `tcirJitCompile`, `tcirJitInvoke`, and explicit artifact disposal under `TotalCrossVM/src/tcvm/jit`. Milestone 6 moves `TCCompiledFrame`, `TCCompiledResult`, `TCCompiledStatus`, `TCCompiledEntry`, and `TC_RUNTIME_ABI_VERSION` into backend-neutral `TotalCrossVM/src/tcvm/ir/tcir_compiled.h`; generated C uses that exact entry signature. Milestone 7 advances the runtime ABI to version 2 and appends `TCCompiledRuntime`, whose opaque context plus dispatch thunk is the only supported compiled-call path. These properties remain required:
+The JIT side of this boundary is implemented as `TCIRJitArtifact`,
+`tcirJitCompile`, `tcirJitInvoke`, and explicit artifact disposal under
+`TotalCrossVM/src/tcvm/jit`. `TCCompiledFrame`, `TCCompiledResult`,
+`TCCompiledStatus`, `TCCompiledEntry`, and `TC_RUNTIME_ABI_VERSION` live in
+backend-neutral `TotalCrossVM/src/tcvm/ir/tcir_compiled.h`; generated C uses that
+exact entry signature. Runtime ABI versions 2–5 added the opaque dispatch thunk,
+typed mixed-value storage, pre-bound call thunk, and allocation thunk. These
+properties remain required:
 
 - compile failure is structured and non-fatal;
 - an artifact records IR version, runtime ABI version, target, feature flags, code ownership and entry address;
@@ -104,7 +116,13 @@ Helpers must document argument ownership, whether they may allocate/GC/throw/loc
 6. Other threads continue interpreting while compilation occurs, then observe either `ready` or a cached failure.
 7. The dispatcher invokes ready code through the frame ABI.
 
-The POC supports integer constants/copies, integer arithmetic, comparisons, conditional/unconditional branches, loops, and integer/void return. Direct calls may be the next slice. Unsupported methods remain entirely interpreted.
+The validated baseline supports representative i32/i64/normalized-f64
+constants, arithmetic, comparisons, conversions, branches, loops, switches and
+returns; managed-reference identity/transport; pre-bound static calls; and
+object allocation. Checked division/remainder and null-check effects can execute
+through TCIR while SLJIT/AOT reject the whole function. Fields, arrays,
+handlers, virtual/lazy calls, monitors, and other unsupported families remain
+entirely interpreted.
 
 Milestone 5 implements steps 3–6 as a standalone backend and test cache. Milestone 7 adds an explicit-registration runtime side table and step 7 behind `TC_ENABLE_COMPILED_DISPATCH`, with policy values `off`, `ir`, `jit`, `aot`, and `auto`. Registration constructs verified TCIR method-atomically; JIT preparation is lazy and only one caller compiles while competitors remain interpreted; `auto` selects exact AOT first, then ready/lazy JIT, then IR. No production hotness threshold or automatic TCZ/class-loader registration exists yet.
 
@@ -139,7 +157,14 @@ Generated artifacts live in the build directory and include:
 
 The Milestone 6 POC emits restricted C11 as an explicit block-state machine. Generated functions use `TCCompiledFrame`, modular `uint32_t` arithmetic for Java/TotalCross i32 wrap, bounded scratch/home access, and explicit result/status publication. Names derive from readable escaped class/method/signature components plus a 64-bit semantic content hash, never addresses or insertion order. Inputs and registry entries are sorted lexically, so two clean identical invocations and reversed fixture input order produce byte-identical C, header, and manifest.
 
-`tcaot --input poc-fixtures --output <build-directory> --manifest <manifest.json> --target-options <options>` currently builds only the three canonical converter-backed POC functions. This input selector is not a TCZ reader. The generator verifies and preflights the complete set before creating output; a valid unsupported operation returns a structured diagnostic without partial C/header/manifest files. The manifest records schema, generator, TCIR and runtime ABI versions, target options, aggregate input hash, supported methods, content hashes, entry symbols, and rejected methods.
+`tcaot --input poc-fixtures --output <build-directory> --manifest <manifest.json>
+--target-options <options>` currently builds the 15 canonical converter-backed
+architectural fixtures. This input selector is not a TCZ reader. The generator
+verifies and preflights the complete set before creating output; a valid
+unsupported operation returns a structured diagnostic without partial
+C/header/manifest files. The manifest records schema, generator, TCIR and
+runtime ABI versions, target options, aggregate input hash, supported methods,
+content hashes, entry symbols, and rejected methods.
 
 The generated static registry matches class name, method name, signature, and semantic content hash exactly. A mismatch leaves no usable entry. The POC hash is deterministic FNV-1a identity, not a cryptographic signature or artifact trust mechanism. Production class loading, archive publication, dead-strip retention, and integrity/signing policy remain part of runtime integration.
 
@@ -152,13 +177,33 @@ Milestone 7 implements the dispatch mechanics for all directions:
 - compiled → compiled: initially through the same thunk, optionally direct after stable publication/invalidation rules;
 - compiled → native: through the runtime native-call helper and `NMParams` contract.
 
-The runtime thunk uses the existing `Context`, converts typed compiled arguments into the internal `TValue` call form, and calls `executeMethod`, so normal native lookup/`NMParams` behavior is retained. Focused tests exercise interpreter-to-compiled entry and synthetic generated-entry calls to unregistered interpreted, registered generated-C, and native targets. This validates the primitive result, frame, and usage-lock protocol but is not an implementation of TCIR `CALL_normal`; real reference, exception-handler, and `may_gc` call operations remain Milestone 8 coverage. Direct-call patching and inline caches are later optimizations with explicit invalidation rules.
+The runtime thunk uses the existing `Context`, converts typed compiled arguments
+into the internal `TValue` call form, and calls `executeMethod`, so normal native
+lookup/`NMParams` behavior is retained. Focused tests exercise
+interpreter-to-compiled entry and generated-entry calls to unregistered
+interpreted, registered generated-C, and native targets. A converter-backed
+pre-bound static `CALL_normal` slice additionally validates typed arguments,
+results, conservative effects, live-root spill/reload, and method-atomic
+preflight through TCIR, SLJIT, portable C, and the conditional VM adapter. Lazy
+resolution, virtual/interface dispatch, arbitrary-native forced GC/suspension,
+handlers, and reference-heavy calls remain future coverage. Direct-call
+patching and inline caches are later optimizations with explicit invalidation
+rules.
 
 ## Exception and GC contract
 
 Before every helper that may throw or collect, generated code must publish TC PC and spill every live managed reference to its `regO` home. It then calls the helper and immediately checks `context->thrownException`. On exception it returns `TC_COMPILED_THROWN`; the shared dispatcher searches handlers/unwinds using TotalCross method and PC metadata.
 
-The runtime adapter already returns a non-null pending exception and compiled TC PC to the existing handler path, and a focused synthetic entry verifies the status handoff. The baseline does not use native unwinding, conservative stack scanning or hidden references in callee-saved CPU registers. Because the implemented frontend subset has no helper-bearing or managed-reference operation, forced GC, arena relocation/reload, handler selection, and stack-trace equivalence are still unexecuted requirements rather than inferred properties. A future stack-map mode is a separate ABI version.
+The runtime adapter returns a non-null pending exception and compiled TC PC to
+the existing handler path, and focused entries verify the status handoff. The
+baseline does not use native unwinding, conservative stack scanning, or hidden
+managed references in callee-saved CPU registers. Reference/null, pre-bound
+call, and allocation slices establish live-home materialization, typed helper
+transport, arena-base reload requirements, and publication-before-unlock. The
+allocation harness uses opaque tokens; forced/moving GC, real arena growth,
+arbitrary-native suspension, handler selection, and stack-trace equivalence are
+still unexecuted requirements rather than inferred properties. A future
+stack-map mode is a separate ABI version.
 
 ## Cache, invalidation and lifecycle
 
@@ -179,11 +224,32 @@ Every supported operation needs:
 
 The runtime API now exposes registration, return/throw/backend invocation, lazy-JIT time/code-size, call-thunk, forced-method, and enumerated fallback counters plus an explicit IR-file dump. The VM hot path passes no diagnostic and emits no log; explicit callers can request bounded structured method/backend/reason/TC-PC diagnostics. Per-method runtime timing and production unsupported-opcode aggregation remain future work.
 
-The current forced tests compile converter-produced `add`, `abs`, and `sumTo` and fail on any fallback. With both optional backends enabled, the corpus performs 1,179 fresh-state comparisons across `executeMethod`, TCIR interpretation, SLJIT, and linked generated C. Separate JIT tests cover invalid/unsupported rejection, deterministic emission failure, repeated create/dispose, competing lookup plus interpreter progress, publication, shutdown with an outstanding claim, and W^X permissions. AOT tests cover reversed input order, clean byte-for-byte regeneration, semantic-input invalidation, exact registry mismatches, manifest consistency, and unsupported valid TCIR rejection before output.
+The current corpus contains 15 converter-produced fixtures and fails when an
+expected backend silently falls back. Eligible paths perform 6,398 fresh-state
+comparisons across `executeMethod`, TCIR interpretation, SLJIT, and linked
+generated C; allocation adds 16 separate TCIR/SLJIT/AOT contract comparisons.
+Separate JIT tests cover invalid/unsupported rejection, deterministic emission
+failure, repeated create/dispose, competing lookup plus interpreter progress,
+publication, shutdown with an outstanding claim, and W^X permissions. AOT tests
+cover reversed input order, clean byte-for-byte regeneration, semantic-input
+invalidation, exact registry mismatches, manifest consistency, and unsupported
+valid TCIR rejection before output.
 
 Eight focused CTest entries pass on the macOS arm64 host when both backends and `TC_ENABLE_COMPILED_DISPATCH` are enabled: the previous seven plus `tcir-runtime`. An integration-on IR-only configuration passes 4/4 without either native backend. A Release configuration with the backend libraries enabled but dispatcher disabled passes 7/7, exposes no `tcir_runtime` target, and contains no `tcirRuntime*` symbol in `libtcvm`; this is the pre-integration path. Debug and Release pass 8/8, ASan passes 8/8 with unsupported Apple leak detection disabled, the runtime test passes focused UBSan, and focused Clang analysis reports no bug. Android arm64-v8a/API 23 compiles the new runtime library and `tcvm.c` hook. Linux/GCC, Windows/MSVC, full iOS application linkage, and device execution remain unvalidated.
 
-An additional macOS checkpoint is available through the off-by-default `TC_BUILD_IR_BENCHMARKS` option and `run-tcir-jit-benchmark` target. It requires Release plus SLJIT and sequentially runs 60-, 200-, and 1,000-sample profiles after 5, 10, and 20 warmups. Each profile rotates through all six backend orders with occurrence counts differing by at most one, excludes no outliers, and validates every batch against the `executeMethod` checksum. The paired JSON/CSV validator independently recomputes statistics and checks all 720, 2,400, and 12,000 CSV rows. Milestone 7 first measured a 159–161 ns disabled-dispatch `add` path at revision `35b14388b690`, exposing an unintended mutex on every call. The lock-free backend-off fast path in `3cdfd6974027` reduced that path to 53.989/54.567/54.729 ns across 60/200/1,000 samples; `abs` returned to 59.193/59.011/59.639 ns. `sumTo(65537)` retained SLJIT speedups of 17.380%–21.864% (1.188x–1.219x). Both complete matrices and all twelve artifacts are retained in the ignored build directory and recorded in the ExecPlan. This remains the historical three-way standalone-API regime and deliberately excludes generated C, whose performance requires a separately named four-way protocol. Future checkpoints must repeat the three historical profiles even when a new AOT regime is added.
+An additional macOS checkpoint is available through the off-by-default
+`TC_BUILD_IR_BENCHMARKS` option and `run-tcir-jit-benchmark` target. The
+historical profiles used 60, 200, and 1,000 samples after 5, 10, and 20 warmups,
+rotated all backend orders, retained every sample, and validated checksums and
+paired JSON/CSV data. Milestone 7 first measured a 159–161 ns disabled-dispatch
+`add` path, exposing an unintended mutex on every call. The lock-free
+backend-off fast path reduced that path to 53.989/54.567/54.729 ns across the
+three profiles; `abs` returned to 59.193/59.011/59.639 ns, and
+`sumTo(65537)` retained SLJIT speedups of 1.188x–1.219x. This remains a
+historical three-way arithmetic regime and excludes generated-C performance.
+Future benchmarks run only when the workload exercises changed work or the
+measurement regime changes; unrelated semantic slices do not repeat the matrix
+by default.
 
 ## Readiness for an optimizing backend
 
