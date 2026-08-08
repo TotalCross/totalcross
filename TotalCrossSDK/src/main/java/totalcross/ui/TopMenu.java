@@ -596,6 +596,8 @@ public class TopMenu extends Container implements PresentationController.Delegat
     PresentationTransition transition = animDir == CENTER
         ? new FadePresentationTransition()
         : new SlidePresentationTransition(animDir, fadeOnPopAndUnpop);
+    int clampedFadeValue = Math.max(0, Math.min(255, Window.fadeValue));
+    int barrierAlpha = fadeOtherWindows ? 255 - clampedFadeValue : 0;
     return new PresentationEntry(this, PresentationEntry.Layer.OVERLAY,
         new PresentationEntry.BoundsResolver() {
           @Override
@@ -609,7 +611,7 @@ public class TopMenu extends Container implements PresentationController.Delegat
                 : animDir == CENTER ? (viewport.height - menuHeight) / 2 : 0;
             bounds.set(x, y, menuWidth, menuHeight);
           }
-        }, transition, true, true, true, -1, totalTime);
+        }, transition, true, true, true, Color.BLACK, barrierAlpha, totalTime);
   }
 
   @Override

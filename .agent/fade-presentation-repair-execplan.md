@@ -44,9 +44,9 @@ Real `Window.fadeOtherWindows` must remain unchanged.
 - [x] (2026-08-08 20:42Z) Added and ran focused pre-fix tests for nonzero standalone/composite fades, immediate abort, caller-owned snapshots, nested target-local painting, transparency, and logical scales. The suite failed in the expected lifecycle, ownership, coordinate, and scale areas; full log: `TotalCrossSDK/agent-logs/20260808-004136-test-full.log`.
 - [x] (2026-08-08 20:44Z) Repaired `ControlAnimation` composition, per-animation screenshot ownership, slave cleanup, immediate initial alpha, and bounded exception-safe update suppression. `ControlAnimationFadeTest` passed; full log: `TotalCrossSDK/agent-logs/20260808-004424-test-full.log`.
 - [x] (2026-08-08 20:46Z) Repaired target-local screenshot traversal and preserved destination content/font scales with logical image backing. Screenshot, fade, graphics-scale, and logical-text-scale tests passed; full log: `TotalCrossSDK/agent-logs/20260808-004551-test-full.log`.
-- [ ] Make the presentation frame a correct fade target.
-- [ ] Restore `fadeOtherWindows` through `PresentationBarrier`.
-- [ ] Add nonzero-duration presentation fade coverage.
+- [x] (2026-08-08 20:51Z) Made the presentation frame transparent and verified it as the common direct/composite fade target with owned snapshot cleanup.
+- [x] (2026-08-08 20:51Z) Restored `fadeOtherWindows` through a full-host translucent `PresentationBarrier`; `Window.fadeValue` pixel mapping and SideMenu full-opacity behavior pass.
+- [x] (2026-08-08 20:51Z) Added nonzero-duration presentation fade coverage for directional, centered, relayout-abort, repeated, and SideMenu transitions; full log: `TotalCrossSDK/agent-logs/20260808-005111-test-full.log`.
 - [ ] Audit existing fade consumers.
 - [ ] Run focused Java validation, one non-clean SDK build, JavaSE smoke, and one macOS native smoke if the existing path remains usable.
 - [ ] Complete evidence, static checks, file-size checks, and retrospective.
@@ -539,6 +539,10 @@ Add only discoveries that materially change remaining work.
   Rationale: absolute prefiltering mixes coordinate spaces and clips frames based on their live ancestor position; the image surface already bounds painting to the target-local snapshot.
   Date/Author: 2026-08-08 / Codex.
 
+- Decision: Ignore dismissal while a presentation is actively entering.
+  Rationale: this preserves the legacy non-reversing behavior required by the plan; relayout remains the explicit abort-and-stabilize path.
+  Date/Author: 2026-08-08 / Codex.
+
 - Decision: Keep screenshot-based FadeAnimation.
   Rationale: renderer-level subtree opacity is outside this repair.
   Date/Author: 2026-08-08 / plan author.
@@ -602,3 +606,6 @@ and screenshot ownership repair, including immediate-abort cleanup.
 
 2026-08-08 20:46Z: Completed and focused-tested target-local, transparent,
 logical-scale screenshot capture without clipping to live ancestor position.
+
+2026-08-08 20:51Z: Completed presentation-frame transparency and barrier dimming,
+then passed the first nonzero presentation lifecycle and pixel suite.

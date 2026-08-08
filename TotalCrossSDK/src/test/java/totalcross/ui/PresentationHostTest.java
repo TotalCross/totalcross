@@ -61,7 +61,7 @@ class PresentationHostTest {
     Container content = new Container();
     SlidePresentationTransition transition = new SlidePresentationTransition(Control.BOTTOM);
     PresentationEntry entry = new PresentationEntry(content, PresentationEntry.Layer.ROUTE,
-        PresentationEntry.fillViewport(), transition, true, false, true, -1, 0);
+        PresentationEntry.fillViewport(), transition, true, false, true, 0, 0, 0);
     PresentationHandle handle = owner.presentationHost().present(entry);
 
     assertEquals(stackSize, Window.zStack.size());

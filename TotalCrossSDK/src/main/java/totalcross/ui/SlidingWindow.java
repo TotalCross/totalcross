@@ -136,7 +136,7 @@ public class SlidingWindow extends Container
               break;
             }
           }
-        }, transition, true, false, true, -1, totalTime);
+        }, transition, true, false, true, 0, 0, totalTime);
   }
 
   @Override

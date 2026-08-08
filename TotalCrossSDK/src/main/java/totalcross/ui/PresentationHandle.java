@@ -33,6 +33,7 @@ final class PresentationHandle {
     this.entry = entry;
     barrier = new PresentationBarrier(this, entry);
     viewport.setClipChildrenToBounds(true);
+    frame.transparentBackground = true;
     entryHost.add(barrier);
     entryHost.add(viewport);
     viewport.add(frame);
@@ -88,6 +89,9 @@ final class PresentationHandle {
     if (state == State.DISMISSED || state == State.DISMISSING) {
       return;
     }
+    if (state == State.PRESENTING && animation != null) {
+      return;
+    }
     if (animation != null) {
       animation.setAnimationFinishedAction(null);
       animation.stop(true);
@@ -131,6 +135,10 @@ final class PresentationHandle {
 
   State state() {
     return state;
+  }
+
+  ControlAnimation animation() {
+    return animation;
   }
 
   Container frame() {

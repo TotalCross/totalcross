@@ -7,6 +7,7 @@ package totalcross.ui;
 import totalcross.ui.event.DragEvent;
 import totalcross.ui.event.PenEvent;
 import totalcross.ui.event.PenListener;
+import totalcross.ui.gfx.Graphics;
 
 final class PresentationBarrier extends Control implements PenListener {
   private final PresentationHandle handle;
@@ -15,11 +16,18 @@ final class PresentationBarrier extends Control implements PenListener {
   PresentationBarrier(PresentationHandle handle, PresentationEntry entry) {
     this.handle = handle;
     dismissOnOutsidePress = entry.dismissOnOutsidePress;
-    transparentBackground = entry.barrierColor < 0;
-    if (!transparentBackground) {
+    transparentBackground = true;
+    if (entry.barrierAlpha > 0) {
+      setTranslucent(TranslucentShape.RECT);
       setBackColor(entry.barrierColor);
+      alphaValue = entry.barrierAlpha;
     }
     addPenListener(this);
+  }
+
+  @Override
+  public void onPaint(Graphics g) {
+    drawTranslucentBackground(g, alphaValue);
   }
 
   @Override

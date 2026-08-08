@@ -24,11 +24,12 @@ final class PresentationEntry {
   final boolean dismissOnOutsidePress;
   final boolean dismissOnBack;
   final int barrierColor;
+  final int barrierAlpha;
   final int duration;
 
   PresentationEntry(Control content, Layer layer, BoundsResolver boundsResolver,
       PresentationTransition transition, boolean blocksInput, boolean dismissOnOutsidePress,
-      boolean dismissOnBack, int barrierColor, int duration) {
+      boolean dismissOnBack, int barrierColor, int barrierAlpha, int duration) {
     if (content == null || layer == null || boundsResolver == null || transition == null) {
       throw new NullPointerException();
     }
@@ -40,6 +41,7 @@ final class PresentationEntry {
     this.dismissOnOutsidePress = dismissOnOutsidePress;
     this.dismissOnBack = dismissOnBack;
     this.barrierColor = barrierColor;
+    this.barrierAlpha = barrierAlpha;
     this.duration = duration;
   }
 
