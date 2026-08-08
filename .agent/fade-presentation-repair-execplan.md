@@ -43,7 +43,7 @@ Real `Window.fadeOtherWindows` must remain unchanged.
 - [x] (2026-08-08 20:18Z) Classified `ControlAnimation` and `FadeAnimation` lifecycle defects as inherited unchanged from `master`; classified screenshot scaling and presentation integration as branch-exposed work because `Control.java` differs from `master`.
 - [x] (2026-08-08 20:42Z) Added and ran focused pre-fix tests for nonzero standalone/composite fades, immediate abort, caller-owned snapshots, nested target-local painting, transparency, and logical scales. The suite failed in the expected lifecycle, ownership, coordinate, and scale areas; full log: `TotalCrossSDK/agent-logs/20260808-004136-test-full.log`.
 - [x] (2026-08-08 20:44Z) Repaired `ControlAnimation` composition, per-animation screenshot ownership, slave cleanup, immediate initial alpha, and bounded exception-safe update suppression. `ControlAnimationFadeTest` passed; full log: `TotalCrossSDK/agent-logs/20260808-004424-test-full.log`.
-- [ ] Repair `Control` screenshot coordinates and scaling.
+- [x] (2026-08-08 20:46Z) Repaired target-local screenshot traversal and preserved destination content/font scales with logical image backing. Screenshot, fade, graphics-scale, and logical-text-scale tests passed; full log: `TotalCrossSDK/agent-logs/20260808-004551-test-full.log`.
 - [ ] Make the presentation frame a correct fade target.
 - [ ] Restore `fadeOtherWindows` through `PresentationBarrier`.
 - [ ] Add nonzero-duration presentation fade coverage.
@@ -535,6 +535,10 @@ Add only discoveries that materially change remaining work.
   Rationale: identity checking prevents an animation from clearing a caller replacement and permits `offscreen0` to remain entirely independent without adding public API.
   Date/Author: 2026-08-08 / Codex.
 
+- Decision: Remove absolute-rectangle prefiltering from screenshot descendant traversal and rely on the screenshot graphics clip plus descendant-local `refreshGraphics` offsets.
+  Rationale: absolute prefiltering mixes coordinate spaces and clips frames based on their live ancestor position; the image surface already bounds painting to the target-local snapshot.
+  Date/Author: 2026-08-08 / Codex.
+
 - Decision: Keep screenshot-based FadeAnimation.
   Rationale: renderer-level subtree opacity is outside this repair.
   Date/Author: 2026-08-08 / plan author.
@@ -595,3 +599,6 @@ tests and recorded exact expected failure evidence before production changes.
 
 2026-08-08 20:44Z: Completed and focused-tested the generic composite lifecycle
 and screenshot ownership repair, including immediate-abort cleanup.
+
+2026-08-08 20:46Z: Completed and focused-tested target-local, transparent,
+logical-scale screenshot capture without clipping to live ancestor position.

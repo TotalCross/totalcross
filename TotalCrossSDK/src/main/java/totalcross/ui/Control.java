@@ -437,8 +437,11 @@ public class Control extends GfxSurface {
       } else {
         offscreen0 = null;
       }
-      Image offscreen = new Image(width, height);
-      paint2shot(offscreen.getGraphics(), false);
+      double contentScale = gfx.getContentScale();
+      Image offscreen = Image.createLogical(width, height, contentScale);
+      Graphics screenshotGraphics = offscreen.getGraphics();
+      screenshotGraphics.setScales(contentScale, gfx.getFontScale());
+      paint2shot(screenshotGraphics, false);
       if (nr == 1) {
         this.offscreen = offscreen;
       } else {
@@ -495,17 +498,13 @@ public class Control extends GfxSurface {
     Window w = getParentWindow();
     int x0 = shift ? w.x : 0;
     int y0 = shift ? w.y : 0;
-    Rect rtop = top.getRect();
     if (asContainer != null) {
       for (Control child = asContainer.children; child != null; child = child.next) {
         if (child.visible) {
-          Rect r = child.getAbsoluteRect();
-          if (rtop.intersects(r)) {
-            child.refreshGraphics(g, 0, top, x0, y0);
-            child.onPaint(g);
-            if (child.asContainer != null) {
-              child.asContainer.paint2shot(g, top, shift);
-            }
+          child.refreshGraphics(g, 0, top, x0, y0);
+          child.onPaint(g);
+          if (child.asContainer != null) {
+            child.asContainer.paint2shot(g, top, shift);
           }
         }
       }
