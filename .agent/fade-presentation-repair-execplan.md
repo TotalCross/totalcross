@@ -41,7 +41,7 @@ Real `Window.fadeOtherWindows` must remain unchanged.
 
 - [x] (2026-08-08 20:18Z) Recorded baseline at `91616c934fe547c7b1b01c4a2990cb17ac865241` on the actual current branch `feat/logical-ui-scaling2`; preserved the unrelated dirty worktree.
 - [x] (2026-08-08 20:18Z) Classified `ControlAnimation` and `FadeAnimation` lifecycle defects as inherited unchanged from `master`; classified screenshot scaling and presentation integration as branch-exposed work because `Control.java` differs from `master`.
-- [x] (2026-08-08 20:42Z) Added and ran focused pre-fix tests for nonzero standalone/composite fades, immediate abort, caller-owned snapshots, nested target-local painting, transparency, and logical scales. The suite failed in the expected lifecycle, ownership, coordinate, and scale areas; full log: `TotalCrossSDK/agent-logs/20260808-004136-test-full.log`.
+- [x] (2026-08-08 20:42Z) Added and ran focused pre-fix tests for nonzero standalone/composite fades, immediate abort, caller-owned snapshots, nested target-local painting, transparency, and logical scales. The suite failed in the expected lifecycle, ownership, coordinate, and scale areas; final pre-fix log: `TotalCrossSDK/agent-logs/20260808-004228-test-full.log`.
 - [x] (2026-08-08 20:44Z) Repaired `ControlAnimation` composition, per-animation screenshot ownership, slave cleanup, immediate initial alpha, and bounded exception-safe update suppression. `ControlAnimationFadeTest` passed; full log: `TotalCrossSDK/agent-logs/20260808-004424-test-full.log`.
 - [x] (2026-08-08 20:46Z) Repaired target-local screenshot traversal and preserved destination content/font scales with logical image backing. Screenshot, fade, graphics-scale, and logical-text-scale tests passed; full log: `TotalCrossSDK/agent-logs/20260808-004551-test-full.log`.
 - [x] (2026-08-08 20:51Z) Made the presentation frame transparent and verified it as the common direct/composite fade target with owned snapshot cleanup.
@@ -471,6 +471,17 @@ Complete only when:
 - `setFadeOnPopAndUnpop(false)` affects self-fade only;
 - real Window fade behavior remains unchanged;
 - safe-area, clipping, z-stack, and logical-scaling regressions remain green.
+
+## Validation Evidence and Commits
+
+The complete Milestone 6 focused suite passed on 2026-08-08 at
+`TotalCrossSDK/agent-logs/20260808-005210-test-full.log`. Local commits created so
+far, in order, are:
+
+    1d1957c56  test(ui): cover fade animation lifecycle
+    8669e03cd  fix(ui): correct composite fade lifecycle
+    d9cc9e9f5  fix(ui): preserve fade snapshot geometry and scale
+    87ec52e21  fix(ui): restore presentation background dimming
 
 ## Suggested Commit Boundaries
 
