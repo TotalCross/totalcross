@@ -34,18 +34,21 @@ bool setupGL(int width, int height);
    return self;
 }
 
-extern int32 deviceFontHeight,iosScale;
+extern double screenContentScale;
 
 - (void)setScreenValues: (void*)scr
 {
    ScreenSurface screen = gscreen == null ? gscreen = scr : gscreen;
-   iosScale = [UIScreen mainScreen].scale;
-   screen->screenW = (int32)lround(self.bounds.size.width * iosScale);
-   screen->screenH = (int32)lround(self.bounds.size.height * iosScale);
+   screenContentScale = [UIScreen mainScreen].scale;
+   screen->screenW = (int32)lround(self.bounds.size.width * screenContentScale);
+   screen->screenH = (int32)lround(self.bounds.size.height * screenContentScale);
+   screen->contentScale = screenContentScale;
+   screen->fontScale = 1;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
-   deviceFontHeight = [UIFont labelFontSize];
+   screen->deviceFontHeight = (int32)[UIFont labelFontSize];
+   screen->surfaceReady = true;
    // if ((deviceFontHeight&1) == 1) deviceFontHeight++; // even size fonts are better
 }
 
@@ -70,7 +73,7 @@ void graphicsSetupIOS()
    UIScreen *screen = [UIScreen mainScreen];
    CGSize viewSize = self.bounds.size;
    CGFloat scale = self.contentScaleFactor > 0 ? self.contentScaleFactor : screen.scale;
-   iosScale = (int32)lround(scale);
+   screenContentScale = (double) scale;
    CGSize resolution = CGSizeMake(lround(viewSize.width * scale), lround(viewSize.height * scale));
    return resolution;
 }
@@ -154,8 +157,8 @@ void graphicsSetupIOS()
          [ (MainViewController*)controller addEvent:
           [[NSDictionary alloc] initWithObjectsAndKeys:
            touch.phase == UITouchPhaseBegan ? @"mouseDown" : touch.phase == UITouchPhaseMoved ? @"mouseMoved" : @"mouseUp", @"type",
-           [NSNumber numberWithInt:(int)lround(point.x * iosScale)], @"x",
-           [NSNumber numberWithInt:(int)lround(point.y * iosScale)], @"y", nil]
+           [NSNumber numberWithInt:(int)lround(point.x * screenContentScale)], @"x",
+           [NSNumber numberWithInt:(int)lround(point.y * screenContentScale)], @"y", nil]
           ];
       }
    }

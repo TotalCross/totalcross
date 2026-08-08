@@ -7,6 +7,8 @@
 #ifndef SKIA_H
 #define SKIA_H
 
+#include "tc_platform.h"
+
 #define SKIA_SCREEN_SURFACE_ID (-1)
 #define SKIA_INVALID_SURFACE_ID (-2)
 
@@ -20,7 +22,7 @@ typedef unsigned int uint32;
 typedef uint32 Pixel32; // 32 bpp
 typedef Pixel32 Pixel;
 
-#ifdef HEADLESS
+#if TC_WINDOWING_SDL
 int32 colorType(uint32 pixelformat);
 #endif
 void initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
@@ -28,13 +30,16 @@ void flushSkia();
 
 int skia_makeTypeface(char* name, void *data, int32 size);
 int32 skia_getTypefaceIndex(char* name);
-int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, int32 fontSize);
+int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, double fontSize);
+double skia_stringWidthD(const void *text, int32 charCount, int32 typefaceIndex, double fontSize);
+void skia_fontMetrics(int32 typefaceIndex, double fontSize, double* ascent, double* descent, double* leading);
 
 int skia_makeBitmap(int32 id, void *data, int32 w, int32 h);
 void skia_deleteBitmap(int32 id);
 
 void skia_setClip(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2);
 void skia_restoreClip(int32 skiaSurface);
+void skia_setSurfaceScale(int32 skiaSurface, double contentScale);
 
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
 void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2);
@@ -44,7 +49,7 @@ void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel);
 void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel);
 void skia_drawRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel);
 void skia_fillRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel);
-void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth, int32 fontSize, int32 typefaceIndex);
+void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x0, double y0, Pixel foreColor, int32 justifyWidth, double fontSize, int32 typefaceIndex);
 void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient);
 void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 nPoints, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie);
 void skia_drawPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 nPoints, int32 tx, int32 ty, Pixel pixel);

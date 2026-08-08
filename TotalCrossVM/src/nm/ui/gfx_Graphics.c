@@ -1,10 +1,11 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if defined USE_SKIA && (defined ANDROID || defined darwin || defined TC_WINDOWING_SDL)
 #define Graphics_forePixel(o) (Graphics_foreColor(o) | 0xFF000000)
 #define Graphics_backPixel(o) (Graphics_backColor(o) | 0xFF000000)
 #else
@@ -15,10 +16,10 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/gfx_Graphics_c.h"
-#elif defined(ANDROID) || defined(darwin)
- #include "android/gfx_Graphics_c.h"
-#elif defined(linux) && !defined(darwin)
- #include "linux/gfx_Graphics_c.h"
+#elif TC_GRAPHICS_GLES
+ #include "backend/graphics/gles/gfx_Graphics_c.h"
+#elif TC_GRAPHICS_SOFTWARE
+ #include "backend/graphics/software/gfx_Graphics_c.h"
 #endif
 
 bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr) // no thread are running at this point
@@ -35,7 +36,7 @@ void destroyGraphics()
 
 bool initGraphicsAfterSettings(Context currentContext)
 {
-   updateScreenSettings(screen.screenW, screen.screenH, screen.hRes, screen.vRes, screen.bpp);
+   updateScreenSettings(&screen);
    if (!fontInit(currentContext))
    {
       destroyGraphics();
@@ -56,6 +57,8 @@ TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native prote
    {
       w = *getInstanceFieldInt(surface, "width",  "totalcross.ui.image.Image");
       h = *getInstanceFieldInt(surface, "height", "totalcross.ui.image.Image");
+      Graphics_contentScale(g) = Image_contentScale(surface);
+      Graphics_fontScale(g) = 1;
    }
    else
    {
@@ -66,6 +69,8 @@ TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native prote
       w = *getInstanceFieldInt(surface, "width",  "totalcross.ui.Control");
       h = *getInstanceFieldInt(surface, "height", "totalcross.ui.Control");
 #endif
+      Graphics_contentScale(g) = screen.contentScale > 0 ? screen.contentScale : 1;
+      Graphics_fontScale(g) = screen.fontScale > 0 ? screen.fontScale : 1;
    }
    createGfxSurface(w, h, g, stype);
 }

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda. 
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -29,7 +30,7 @@ static char documentChars[4096];
 
 static char barcode[2048];
 static NSMutableString *currBarcode;
-extern int32 iosScale;
+extern double screenContentScale;
 extern bool isIpad;
 
 @implementation MainViewController
@@ -82,6 +83,28 @@ bool iosLowMemory;
    iosLowMemory = true;
 }
 
+- (void)sendSafeAreaInsetsIfChanged
+{
+   if (self.view == nil || self.view.bounds.size.width <= 0 || self.view.bounds.size.height <= 0)
+      return;
+
+   UIEdgeInsets insets = self.view.safeAreaInsets;
+   BOOL changed = !hasLastSafeAreaInsetsSentToVM || !UIEdgeInsetsEqualToEdgeInsets(insets, lastSafeAreaInsetsSentToVM);
+   if (!changed)
+      return;
+
+   lastSafeAreaInsetsSentToVM = insets;
+   hasLastSafeAreaInsetsSentToVM = YES;
+   CGFloat scale = self.view.contentScaleFactor > 0 ? self.view.contentScaleFactor : [UIScreen mainScreen].scale;
+   [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys:
+      @"safeAreaChanged", @"type",
+      [NSNumber numberWithInt: (int)(insets.top * scale + 0.5)], @"top",
+      [NSNumber numberWithInt: (int)(insets.left * scale + 0.5)], @"left",
+      [NSNumber numberWithInt: (int)(insets.bottom * scale + 0.5)], @"bottom",
+      [NSNumber numberWithInt: (int)(insets.right * scale + 0.5)], @"right",
+      nil]];
+}
+
 - (void)viewDidLayoutSubviews
 {
    //NSLog(@"*** view will layout subviews");
@@ -108,17 +131,13 @@ bool iosLowMemory;
    else
    if (orientationChanged)
       lastOrientationSentToVM = orientation;
+   [self sendSafeAreaInsetsIfChanged];
 }
 
 - (void)viewSafeAreaInsetsDidChange
 {
    [super viewSafeAreaInsetsDidChange];
-   UIEdgeInsets insets = self.view.safeAreaInsets;
-   BOOL changed = !hasLastSafeAreaInsetsSentToVM || !UIEdgeInsetsEqualToEdgeInsets(insets, lastSafeAreaInsetsSentToVM);
-   lastSafeAreaInsetsSentToVM = insets;
-   hasLastSafeAreaInsetsSentToVM = YES;
-   if (changed)
-      [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChanged", @"type", nil]];
+   [self sendSafeAreaInsetsIfChanged];
 }
 
 - (void)loadView
@@ -227,7 +246,7 @@ int isShown;
    NSDictionary* info = [notif userInfo];
    NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
    CGSize keyboardSize = [aValue CGRectValue].size;
-   keyboardH = keyboardSize.height * iosScale;
+   keyboardH = (int32) lround(keyboardSize.height * screenContentScale);
 }
 
 -(void) keyboardDidHide: (NSNotification *)notif

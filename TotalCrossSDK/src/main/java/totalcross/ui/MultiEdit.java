@@ -1,6 +1,7 @@
 // Copyright (C) 2001 Jean Rissoto
 // Copyright (C) 2001-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui;
@@ -341,6 +342,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 
   @Override
   public int getPreferredHeight() {
+    ensureLineHeight();
     if (rowCount0 == -1) {
       rowCount0 = rowCount;
     }
@@ -354,7 +356,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
   @Override
   public int getPreferredWidth() {
     return (mask == null ? (totalcross.sys.Settings.screenWidth >> 2)
-        : (mask.length() == 0) ? FILL : (fm.stringWidth(mask) + 10)) + insets.left + insets.right; // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL
+        : (mask.length() == 0) ? FILL : (getFontWidthForLayout(mask) + 10)) + insets.left + insets.right; // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL
   }
 
   /** Sets the desired maximum length for text entered in the Edit.
@@ -497,7 +499,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
       line = Math.max(numberTextLines - 1, 0);
     }
     z.x = Math.max(0, Math.min(fm.sbWidth(chars, first.items[line], first.items[line + 1] - first.items[line]), z.x));
-    return Convert.getBreakPos(fm, chars, first.items[line], z.x, false);
+    return Convert.getBreakPos(fm, chars, first.items[line], z.x, false, font.size * gfx.getFontScale());
   }
 
   private void charPosToZ(int n, Coord z) {
@@ -529,6 +531,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 
   @Override
   protected void onBoundsChanged(boolean screenChanged) {
+    ensureLineHeight();
     int zOffset = uiFlat ? 0 : 2; // size of borders
     boardRect = new Rect(zOffset, zOffset,
         this.width - 2 * zOffset - (Settings.fingerTouch ? 0 : sb.getPreferredWidth()), this.height - 2 * zOffset); //JR @0.5
@@ -547,7 +550,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
       materialCaption.xcap0 = materialCaption.xcap = chars.length() == 0 ? zOffset : 0;
       materialCaption.ycap0 = materialCaption.ycap = chars.length() == 0 ? textRect.y : 0;
     }
-    iconX0 = captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4;
+    iconX0 = captionIcon == null ? 0 : captionIcon.getWidth() + getFontHeightForLayout() / 4;
   }
 
   /** Compute the index of the first character of each line */
@@ -562,7 +565,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
     int pos = 0;
     for (; pos < n; pos++) {
       int pos0 = pos == 0 || chars.charAt(pos - 1) < ' ' ? pos : pos - 1; // guich@tc113_37: when parsing "Update of /pcvsroot/src/native/parser", it was breaking in the first /, but in the next loop iteration, it was skipping the first /, and, thus, computing a character less
-      first.addElement(pos = Convert.getBreakPos(fm, chars, pos0, tw, true)); // guich@tc166: we'll take care of the initial space/ENTER during drawing 
+      first.addElement(pos = Convert.getBreakPos(fm, chars, pos0, tw, true, font.size * gfx.getFontScale())); // guich@tc166: we'll take care of the initial space/ENTER during drawing
     }
     first.addElement(n);
     numberTextLines = first.size() - 1;
@@ -1214,6 +1217,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
   }
 
   protected void draw(Graphics g) {
+    ensureLineHeight();
     if (g == null || !isDisplayed() || boardRect == null) {
       return; // guich@tc114_65: check if its displayed
     }
@@ -1233,7 +1237,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 	  else {
 	      if (uiMaterial) {
 	        int c = hasFocus ? backColor : Color.getGray(backColor);
-	        int h = fmH / 10;
+	        int h = getFontHeightForLayout() / 10;
 	        if (isEnabled()) {
 	          if (fillColor != -1) {
 	            g.backColor = fillColor;
@@ -1274,18 +1278,18 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
       g.backColor = g.backColor = back1 == backColor ? Color.brighter(back1) : back1;
       ;
       if (z1.y == z2.y) {
-        g.fillRect(z1.x, z1.y, z2.x - z1.x, fmH);
+        g.fillRect(z1.x, z1.y, z2.x - z1.x, getFontHeightForLayout());
       } else {
         g.fillRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine);
         if (z2.y > z1.y) {
           g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
         }
-        g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
+        g.fillRect(textRect.x, z2.y, z2.x - textRect.x, getFontHeightForLayout());
       }
     }
     int i = firstToDraw;
     int h = textRect.y;
-    int dh = textRect.y + fm.ascent;
+    int dh = textRect.y + getFontAscentForLayout();
     int maxh = h + textRect.height;
     g.foreColor = fColor;
     g.backColor = back0;
@@ -1374,6 +1378,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
 
   @Override
   public void onPaint(Graphics g) {
+    ensureLineHeight();
     draw(g);
   }
 
@@ -1430,7 +1435,11 @@ public class MultiEdit extends Container implements Scrollable, TextControl, Has
   @Override
   protected void onFontChanged() // guich@320_28
   {
-    hLine = fmH + spaceBetweenLines;
+    ensureLineHeight();
+  }
+
+  private void ensureLineHeight() {
+    hLine = getFontHeightForLayout() + spaceBetweenLines;
   }
 
   /** Clears the text of this control. */

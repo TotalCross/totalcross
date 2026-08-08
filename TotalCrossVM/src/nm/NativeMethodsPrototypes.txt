@@ -153,7 +153,13 @@ TC_API void tugG_fadeScreen_i(NMParams p);
 TC_API void tufF_fontCreate(NMParams p);
 TC_API void tufFM_fontMetricsCreate(NMParams p);
 TC_API void tufFM_charWidth_c(NMParams p);
+TC_API void tufFM_charWidthD_c(NMParams p);
 TC_API void tufFM_stringWidth_s(NMParams p);
+TC_API void tufFM_stringWidthD_s(NMParams p);
+TC_API void tufFM_stringWidthAtSizeD_sd(NMParams p);
+TC_API void tufFM_lineHeightAtSizeD_d(NMParams p);
+TC_API void tufFM_descentAtSizeD_d(NMParams p);
+TC_API void tufFM_ascentAtSizeD_d(NMParams p);
 TC_API void tufFM_stringWidth_Cii(NMParams p);
 TC_API void tufFM_sbWidth_s(NMParams p);
 TC_API void tufFM_sbWidth_sii(NMParams p);
@@ -1162,7 +1168,31 @@ TC_API void tufFM_charWidth_c(NMParams p) // totalcross/ui/font/FontMetrics nati
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_charWidthD_c(NMParams p) // totalcross/ui/font/FontMetrics native public double charWidthD(char c);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidth_s(NMParams p) // totalcross/ui/font/FontMetrics native public int stringWidth(String s);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_stringWidthD_s(NMParams p) // totalcross/ui/font/FontMetrics native public double stringWidthD(String s);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_stringWidthAtSizeD_sd(NMParams p) // totalcross/ui/font/FontMetrics native public double stringWidthAtSizeD(String s, double fontSize);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_lineHeightAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics native public double lineHeightAtSizeD(double fontSize);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_descentAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics native public double descentAtSizeD(double fontSize);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tufFM_ascentAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics native public double ascentAtSizeD(double fontSize);
 {
 }
 //////////////////////////////////////////////////////////////////////////

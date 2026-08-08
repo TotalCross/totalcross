@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.ui.event.ControlEvent;
@@ -6,7 +11,7 @@ import totalcross.ui.font.Font;
 import totalcross.ui.icon.Icon;
 import totalcross.ui.icon.MaterialIcons;
 
-/** A window with a top bar + return button supporting slide-in animations. */
+/** A presentation with a top bar + return button supporting slide-in animations. */
 public class MaterialWindow extends SlidingWindow {
   private Bar bar;
 
@@ -80,7 +85,6 @@ public class MaterialWindow extends SlidingWindow {
     bar.setBackColor(color);
   }
 
-  @Override
   public void setTitle(String title) {
     if (title != null) {
       bar.setTitle(title);
@@ -102,7 +106,7 @@ public class MaterialWindow extends SlidingWindow {
   
   @Override
   public void initUI() {
-    add(bar, LEFT, TOP);
+    add(bar, LEFT, TOP, FILL, PREFERRED);
     if (!delayInitUI) {
 	    add(provider.getView(), LEFT, AFTER, FILL, FILL, bar);
 	} else {
@@ -113,23 +117,7 @@ public class MaterialWindow extends SlidingWindow {
   }
   
   @Override
-	protected void postPopup() {
-		super.postPopup();
-		if (delayInitUI) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					Container view = provider.getView();
-					MainWindow.mainWindowInstance.runOnMainThread(new Runnable() {
-						@Override
-						public void run() {
-							add(view, LEFT, AFTER, FILL, FILL, bar);
-							remove(delayedUiSpinner);
-							delayedUiSpinner.stop();
-						}
-					});
-				}
-			}).start();
-		}
-	}
+  protected void addDelayedView(Container view) {
+    add(view, LEFT, AFTER, FILL, FILL, bar);
+  }
 }

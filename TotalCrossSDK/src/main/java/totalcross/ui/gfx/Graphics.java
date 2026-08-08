@@ -1,6 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -94,6 +94,9 @@ public final class Graphics {
   // instance doubles
   private double lastPPD, lastcPPD; // used by arcPiePointDrawAndFill
 
+  private double contentScale = 1;
+  private double fontScale = 1;
+
   // instance objects
   /** The surface where this Graphics will draw on. */
   protected GfxSurface surface;
@@ -168,11 +171,43 @@ public final class Graphics {
     create(surface);
   }
 
+  /** Returns the physical pixels represented by one logical coordinate unit. */
+  public double getContentScale() {
+    return contentScale;
+  }
+
+  /** Returns the logical text scaling factor for this destination surface. */
+  public double getFontScale() {
+    return fontScale;
+  }
+
+  /**
+   * Updates destination-owned scales after a runtime surface configuration change.
+   *
+   * <p>This is not a global display-density setting. Changing {@code contentScale} preserves
+   * logical layout and requests repaint; changing {@code fontScale} also repositions controls
+   * using their recorded layout expressions.</p>
+   */
+  public void setScales(double contentScale, double fontScale) {
+    if (!Double.isFinite(contentScale) || contentScale <= 0 || !Double.isFinite(fontScale) || fontScale <= 0) {
+      throw new IllegalArgumentException("graphics scales must be finite and positive");
+    }
+    boolean fontScaleChanged = this.fontScale != fontScale;
+    this.contentScale = contentScale;
+    this.fontScale = fontScale;
+    if (surface instanceof Control) {
+      if (fontScaleChanged) {
+        ((Control) surface).reposition();
+      }
+      Window.needsPaint = true;
+    }
+  }
+
   @ReplacedByNativeOnDeploy
   private void create(GfxSurface surface) {
     alpha = 0xFF000000; // On Java, alpha is always initialized with opaque
     if (surface instanceof Image) {
-      pitch = ((Image) surface).getWidth();
+      pitch = ((Image) surface).getPixelWidth();
     } else if (surface instanceof Control) {
       if (mainWindowPixels == null || mainWindowPixels.length < Settings.screenWidth * Settings.screenHeight) {
         mainWindowPixels = new int[Settings.screenWidth * Settings.screenHeight]; // create the pixels
@@ -639,6 +674,14 @@ public final class Graphics {
       if (x < 0 || y < 0 || w <= 0 || h <= 0) {
         return;
       }
+      if (surface instanceof Image && contentScale != 1) {
+        int x2 = scaleImageEdge(x + w);
+        int y2 = scaleImageEdge(y + h);
+        x = scaleImageEdge(x);
+        y = scaleImageEdge(y);
+        w = x2 - x;
+        h = y2 - y;
+      }
       int[] pix = getSurfacePixels(surface);
       for (x += y * pitch; h-- > 0; x += pitch) {
         Convert.fill(pix, x, x + w, backColor | alpha);
@@ -647,6 +690,14 @@ public final class Graphics {
         needsUpdate = true;
       }
     }
+  }
+
+  private int scaleImageEdge(int logicalEdge) {
+    return (int) Math.round(logicalEdge * contentScale);
+  }
+
+  private boolean hasScaledImageBacking() {
+    return surface instanceof Image && contentScale != 1;
   }
 
   /**
@@ -856,6 +907,23 @@ public final class Graphics {
    */
   @ReplacedByNativeOnDeploy
   public void drawText(String text, int x, int y, int justifyWidth) {
+    if (hasScaledImageBacking()) {
+      try {
+        Image raster = new Image(surface.getWidth(), surface.getHeight());
+        Graphics graphics = raster.getGraphics();
+        graphics.foreColor = foreColor;
+        graphics.backColor = backColor;
+        graphics.alpha = alpha;
+        graphics.setFont(font);
+        graphics.setScales(1, fontScale);
+        graphics.translate(transX, transY);
+        graphics.setClip(clipX1 - transX, clipY1 - transY, clipX2 - clipX1, clipY2 - clipY1);
+        graphics.drawText(text, x, y, justifyWidth);
+        drawImage(raster, 0, 0, true);
+      } catch (ImageException ignored) {
+      }
+      return;
+    }
     int x0 = x;
     int y0 = y;
     int chrCount;
@@ -870,7 +938,8 @@ public final class Graphics {
     byte[] bitmapTable; // pgr@402_50
     int rowWIB;
     // speed-up
-    tc.simulator.Launcher.UserFont font = (tc.simulator.Launcher.UserFont) this.font.hv_UserFont;
+    Font textFont = effectiveTextFont();
+    tc.simulator.Launcher.UserFont font = (tc.simulator.Launcher.UserFont) textFont.hv_UserFont;
     totalcross.Launcher.CharBits bits = new totalcross.Launcher.CharBits();
     int height = font.maxHeight;
     int chrStart = 0;
@@ -886,7 +955,7 @@ public final class Graphics {
       if (chrCount == 0) {
         return;
       }
-      rem = justifyWidth - this.font.fm.stringWidth(text.toCharArray(), 0, chrCount);
+      rem = justifyWidth - textFont.fm.stringWidth(text.toCharArray(), 0, chrCount);
       if (rem > 0) {
         extraPixelsPerChar = rem / chrCount;
         extraPixelsRemaining = rem % chrCount;
@@ -914,7 +983,7 @@ public final class Graphics {
           if (isVert) {
             y += ch == '\t' ? incY * Font.TAB_SIZE : incY;
           } else {
-            x0 += Launcher.instance.getCharWidth(this.font, ch) + extraPixelsPerChar;
+            x0 += Launcher.instance.getCharWidth(textFont, ch) + extraPixelsPerChar;
             if (k <= extraPixelsRemaining) {
               x0++;
             }
@@ -923,7 +992,7 @@ public final class Graphics {
         continue; // for all other control chars, just skip to next
       }
       if (font.ubase == null || ch < font.firstChar || ch > font.lastChar) {
-        this.font.hv_UserFont = font = Launcher.instance.getFont(this.font, ch);
+        textFont.hv_UserFont = font = Launcher.instance.getFont(textFont, ch);
       }
       font.setCharBits(ch, bits);
       if (bits.offset == -1) {
@@ -1052,6 +1121,13 @@ public final class Graphics {
         }
       }
     }
+  }
+
+  private Font effectiveTextFont() {
+    if (fontScale == 1) {
+      return font;
+    }
+    return Font.getFont(font.name, font.isBold(), Math.max(1, (int) Math.round(font.size * fontScale)));
   }
 
   
@@ -2055,8 +2131,19 @@ public final class Graphics {
   private void drawSurface(int[] pixels, Object srcSurface, int x, int y, int width, int height, int dstX, int dstY,
       boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH) {
     boolean isScaled = false;
+    int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
     if (srcSurface instanceof Image) {
       Image img = (Image) srcSurface;
+      if (img.getContentScale() != 1) {
+        try {
+          img = img.getScaledInstance(img.getWidth(), img.getHeight());
+          srcSurface = img;
+          pixels = img.getPixels();
+          isScaled = true;
+        } catch (ImageException ignored) {
+          return;
+        }
+      }
       if (img.hwScaleH != 1 || img.hwScaleW != 1) {
         try {
           img = img.hwScaleW < 1 && img.hwScaleH < 1 ? img.smoothScaledBy(img.hwScaleW, img.hwScaleH)
@@ -2132,12 +2219,31 @@ public final class Graphics {
         }
       }
 
+      if (hasScaledImageBacking()) {
+        Image scaled = ((Image) srcSurface).getScaledInstance(scaleImageEdge(bmpW), scaleImageEdge(bmpH));
+        int srcX2 = scaleImageEdge(x + width);
+        int srcY2 = scaleImageEdge(y + height);
+        int dstX2 = scaleImageEdge(dstX + width);
+        int dstY2 = scaleImageEdge(dstY + height);
+        srcSurface = scaled;
+        pixels = scaled.getPixels();
+        x = scaleImageEdge(x);
+        y = scaleImageEdge(y);
+        width = srcX2 - x;
+        height = srcY2 - y;
+        dstX = scaleImageEdge(dstX);
+        dstY = scaleImageEdge(dstY);
+        bmpX = scaleImageEdge(bmpX);
+        bmpY = scaleImageEdge(bmpY);
+        bmpW = scaled.getPixelWidth();
+        bmpH = scaled.getPixelHeight();
+      }
+
       int[] dst = getSurfacePixels(surface);
       boolean isSrcScreen = !(srcSurface instanceof Image);
       int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
       int psrc = (bmpY + y) * scrPitch + bmpX + x;
       int pdst = dstY * pitch + dstX;
-      int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
       for (j = height; --j >= 0; psrc += scrPitch, pdst += pitch) {
         int srcIdx = psrc; // guich@450_1
         int dstIdx = pdst;
@@ -2339,7 +2445,17 @@ public final class Graphics {
         return;
       }
       int[] pixels = getSurfacePixels(surface);
-      pixels[y * pitch + x] = color;
+      if (hasScaledImageBacking()) {
+        int x2 = scaleImageEdge(x + 1);
+        int y2 = scaleImageEdge(y + 1);
+        x = scaleImageEdge(x);
+        y = scaleImageEdge(y);
+        for (; y < y2; y++) {
+          Convert.fill(pixels, y * pitch + x, y * pitch + x2, color);
+        }
+      } else {
+        pixels[y * pitch + x] = color;
+      }
       if (isControlSurface) {
         needsUpdate = true;
       }
@@ -2364,6 +2480,12 @@ public final class Graphics {
         return;
       }
       int[] pix = getSurfacePixels(surface);
+      if (hasScaledImageBacking()) {
+        int x2 = scaleImageEdge(x + w);
+        y = scaleImageEdge(y);
+        x = scaleImageEdge(x);
+        w = x2 - x;
+      }
       x += y * pitch;
       Convert.fill(pix, x, x + w, color);
       if (isControlSurface) {
@@ -2390,6 +2512,12 @@ public final class Graphics {
         return;
       }
       int[] pixels = getSurfacePixels(surface);
+      if (hasScaledImageBacking()) {
+        int y2 = scaleImageEdge(y + h);
+        x = scaleImageEdge(x);
+        y = scaleImageEdge(y);
+        h = y2 - y;
+      }
       for (x += y * pitch; h-- > 0; x += pitch) {
         pixels[x] = color;
       }

@@ -1,192 +1,214 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.sys.SpecialKeys;
 import totalcross.ui.anim.ControlAnimation;
-import totalcross.ui.anim.ControlAnimation.AnimationFinished;
-import totalcross.ui.anim.FadeAnimation;
-import totalcross.ui.anim.PathAnimation;
 import totalcross.ui.event.DragEvent;
 import totalcross.ui.event.KeyEvent;
 import totalcross.ui.event.KeyListener;
 import totalcross.ui.event.PenEvent;
 import totalcross.ui.event.PenListener;
+import totalcross.ui.gfx.Rect;
 
-/** A window with a top bar + return button supporting slide-in animations. */
-public class SlidingWindow extends Window implements PenListener, KeyListener {
-	protected Presenter<Container> provider;
-	protected ControlAnimation currentAnimation;
-	protected int animDir;
-	protected int slackSpace;
-	protected int totalTime = 400;
-	protected Spinner delayedUiSpinner;
+/** A container with a top bar + return button supporting slide-in animations. */
+public class SlidingWindow extends Container
+    implements PenListener, KeyListener, PresentationController.Delegate {
+  protected Presenter<Container> provider;
+  protected ControlAnimation currentAnimation;
+  protected int animDir;
+  protected int slackSpace;
+  protected int totalTime = 400;
+  protected Spinner delayedUiSpinner;
+  protected boolean delayInitUI;
 
-	protected boolean delayInitUI;
+  private final PresentationController presentationController;
 
-	public SlidingWindow(Presenter<Container> provider) {
-		this(false, provider);
-	}
+  public SlidingWindow(Presenter<Container> provider) {
+    this(false, provider);
+  }
 
-	public SlidingWindow(boolean delayInitUI, Presenter<Container> provider) {
-		super(null, Window.NO_BORDER);
-		this.provider = provider;
-		this.delayInitUI = delayInitUI;
-		fadeOtherWindows = false;
-		animDir = BOTTOM;
-		slackSpace = 0;
-		
-		this.addPenListener(this);
-		this.addKeyListener(this);
-		this.callListenersOnAllTargets = true;
-	}
+  public SlidingWindow(boolean delayInitUI, Presenter<Container> provider) {
+    this.provider = provider;
+    this.delayInitUI = delayInitUI;
+    animDir = BOTTOM;
+    presentationController = new PresentationController(this);
+    addPenListener(this);
+    addKeyListener(this);
+    callListenersOnAllTargets = true;
+  }
 
-	protected void setRect(boolean screenResized) {
-		switch (animDir) {
-		case LEFT:
-		case RIGHT:
-			setRect(animDir, TOP, SCREENSIZE, SCREENSIZE, null, screenResized);
-			break;
-		default:
-			setRect(100000, 100000, SCREENSIZE, SCREENSIZE, null, screenResized);
-			break;
-		}
-	}
+  public void popup() {
+    presentationController.popup();
+  }
 
-	@Override
-	public void unpop() {
-		if (currentAnimation != null) {
-			return;
-		}
+  public void popupNonBlocking() {
+    presentationController.popupNonBlocking();
+  }
 
-		if (animDir == CENTER) {
-			currentAnimation = FadeAnimation.create(this, false, null, totalTime);
-		} else {
-			currentAnimation = PathAnimation.create(this, -animDir, null, totalTime, slackSpace);
-		}
-		currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
-			@Override
-			public void onAnimationFinished(ControlAnimation anim) {
-				currentAnimation = null;
-				SlidingWindow.super.unpop();
-			}
-		});
-		currentAnimation.start();
-	}
+  public void unpop() {
+    presentationController.unpop();
+  }
 
-	@Override
-	public void popup() {
-		setRect(false);
-		super.popup();
-	}
+  @Override
+  public void initUI() {
+    if (!delayInitUI) {
+      add(provider.getView(), LEFT, TOP, FILL, FILL);
+    } else {
+      delayedUiSpinner = new Spinner();
+      add(delayedUiSpinner, CENTER, CENTER);
+      delayedUiSpinner.start();
+    }
+  }
 
-	@Override
-	public void initUI() {
-		if (!delayInitUI) {
-			Container c = provider.getView();
-			add(c, LEFT, TOP, FILL, FILL, this);
-		} else {
-			delayedUiSpinner = new Spinner();
-			add(delayedUiSpinner, CENTER, CENTER);
-			delayedUiSpinner.start();
-		}
-	}
-	
-	@Override
-	protected void postPopup() {
-		if (delayInitUI) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					Container view = provider.getView();
-					MainWindow.mainWindowInstance.runOnMainThread(new Runnable() {
-						@Override
-						public void run() {
-							add(view, LEFT, AFTER, FILL, FILL, SlidingWindow.this);
-							remove(delayedUiSpinner);
-							delayedUiSpinner.stop();
-						}
-					});
-				}
-			}).start();
-		}
-	}
+  protected void postPopup() {
+    if (delayInitUI) {
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          final Container view = provider.getView();
+          MainWindow.mainWindowInstance.runOnMainThread(new Runnable() {
+            @Override
+            public void run() {
+              addDelayedView(view);
+              remove(delayedUiSpinner);
+              delayedUiSpinner.stop();
+            }
+          });
+        }
+      }).start();
+    }
+  }
 
-	@Override
-	public void onPopup() {
-		if (currentAnimation != null) {
-			return;
-		}
+  protected void addDelayedView(Container view) {
+    add(view, LEFT, TOP, FILL, FILL);
+  }
 
-		screenResized(); // fix problem when the container is on portrait, then landscape, then closed,
-							// then portrait, then open
-		if (animDir == CENTER) {
-			resetSetPositions();
-			setRect(CENTER, CENTER, KEEP, KEEP);
-			currentAnimation = FadeAnimation.create(this, true, null, totalTime);
-		} else {
-			currentAnimation = PathAnimation.create(this, animDir, null, totalTime, slackSpace);
-		}
-		currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
-			@Override
-			public void onAnimationFinished(ControlAnimation anim) {
-				currentAnimation = null;
-			}
-		});
-		currentAnimation.start();
-	}
+  public void onPopup() {
+  }
 
-	@Override
-	public void screenResized() {
-		/* needed to void the original 'screenResized' implementation */
-		reposition();
-	}
+  protected void onUnpop() {
+  }
 
-	/** Gets the slack space left by this window on pop-up */
-	public int getSlackSpace() {
-		return slackSpace;
-	}
+  protected void postUnpop() {
+  }
 
-	/** Sets the slack space left by this window on pop-up */
-	public void setSlackSpace(int slackSpace) {
-		this.slackSpace = slackSpace;
-	}
+  public void screenResized() {
+    presentationController.relayout();
+  }
 
-	@Override
-	public void penDrag(DragEvent e) {
-		double margin = 0.20;
-		if (animDir == RIGHT && e.direction == DragEvent.RIGHT && e.xTotal > 150
-				&& (e.x - e.xTotal) < width * (margin)) {
-			SlidingWindow.this.unpop();
-		}
-		if (animDir == BOTTOM && e.direction == DragEvent.DOWN && e.yTotal > 150 && (e.y - e.yTotal) < height * (margin)) {
-			SlidingWindow.this.unpop();
-		}
-		if (animDir == LEFT && e.direction == DragEvent.LEFT && e.xTotal < -150
-				&& (e.x - e.xTotal) > width * (1 - margin)) {
-			SlidingWindow.this.unpop();
-		}
-		if (animDir == TOP && e.direction == DragEvent.UP && e.yTotal < -150
-				&& (e.y - e.yTotal) > height * (1 - margin)) {
-			SlidingWindow.this.unpop();
-		}
-	}
+  /** Gets the slack space left by this presentation on pop-up. */
+  public int getSlackSpace() {
+    return slackSpace;
+  }
 
-	@Override
-	public void penDown(PenEvent e) { } 
-	@Override
-	public void penUp(PenEvent e) { } 
-	@Override
-	public void penDragStart(DragEvent e) { } 
-	@Override
-	public void penDragEnd(DragEvent e) { }
+  /** Sets the slack space left by this presentation on pop-up. */
+  public void setSlackSpace(int slackSpace) {
+    this.slackSpace = slackSpace;
+  }
 
-	@Override
-	public void specialkeyPressed(KeyEvent e) {
-		if (e.key == SpecialKeys.ESCAPE) {
-			SlidingWindow.this.unpop();
-		}
-	}
-	@Override
-	public void keyPressed(KeyEvent e) { }
-	@Override
-	public void actionkeyPressed(KeyEvent e) { }
+  @Override
+  public PresentationEntry createPresentationEntry() {
+    PresentationTransition transition = animDir == CENTER
+        ? new FadePresentationTransition() : new SlidePresentationTransition(animDir);
+    return new PresentationEntry(this, PresentationEntry.Layer.ROUTE,
+        new PresentationEntry.BoundsResolver() {
+          @Override
+          public void resolve(Rect viewport, Rect bounds) {
+            bounds.set(0, 0, viewport.width, viewport.height);
+            switch (animDir) {
+            case LEFT:
+              bounds.x = -slackSpace;
+              break;
+            case RIGHT:
+              bounds.x = slackSpace;
+              break;
+            case TOP:
+              bounds.y = -slackSpace;
+              break;
+            case BOTTOM:
+              bounds.y = slackSpace;
+              break;
+            default:
+              break;
+            }
+          }
+        }, transition, true, false, true, 0, 0, totalTime);
+  }
+
+  @Override
+  public void onPresentationPopup() {
+    onPopup();
+  }
+
+  @Override
+  public void postPresentationPopup() {
+    postPopup();
+  }
+
+  @Override
+  public void onPresentationUnpop() {
+    onUnpop();
+  }
+
+  @Override
+  public void postPresentationUnpop() {
+    postUnpop();
+  }
+
+  PresentationHandle presentationHandle() {
+    return presentationController.handle();
+  }
+
+  @Override
+  public void penDrag(DragEvent event) {
+    double margin = 0.20;
+    if (animDir == RIGHT && event.direction == DragEvent.RIGHT && event.xTotal > 150
+        && event.x - event.xTotal < width * margin) {
+      unpop();
+    } else if (animDir == BOTTOM && event.direction == DragEvent.DOWN && event.yTotal > 150
+        && event.y - event.yTotal < height * margin) {
+      unpop();
+    } else if (animDir == LEFT && event.direction == DragEvent.LEFT && event.xTotal < -150
+        && event.x - event.xTotal > width * (1 - margin)) {
+      unpop();
+    } else if (animDir == TOP && event.direction == DragEvent.UP && event.yTotal < -150
+        && event.y - event.yTotal > height * (1 - margin)) {
+      unpop();
+    }
+  }
+
+  @Override
+  public void specialkeyPressed(KeyEvent event) {
+    if (event.key == SpecialKeys.ESCAPE) {
+      unpop();
+    }
+  }
+
+  @Override
+  public void penDown(PenEvent event) {
+  }
+
+  @Override
+  public void penUp(PenEvent event) {
+  }
+
+  @Override
+  public void penDragStart(DragEvent event) {
+  }
+
+  @Override
+  public void penDragEnd(DragEvent event) {
+  }
+
+  @Override
+  public void keyPressed(KeyEvent event) {
+  }
+
+  @Override
+  public void actionkeyPressed(KeyEvent event) {
+  }
 }

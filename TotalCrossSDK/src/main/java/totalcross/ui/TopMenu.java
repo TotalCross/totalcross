@@ -1,11 +1,12 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.io.IOException;
 import totalcross.sys.Settings;
-import totalcross.ui.anim.ControlAnimation;
-import totalcross.ui.anim.ControlAnimation.AnimationFinished;
-import totalcross.ui.anim.FadeAnimation;
-import totalcross.ui.anim.PathAnimation;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.DragEvent;
 import totalcross.ui.event.Event;
@@ -21,7 +22,27 @@ import totalcross.ui.image.ImageException;
  * 
  * @since TotalCross 3.03
  */
-public class TopMenu extends Window {
+public class TopMenu extends Container implements PresentationController.Delegate {
+  /** Controls whether a fixed bar reserves viewport space or overlays it. */
+  public enum BarLayoutMode {
+    /** Remove the complete bar height from the scrolling viewport. */
+    RESERVE_SPACE,
+    /** Keep the viewport behind the bar and reserve its height in scroll content. */
+    OVERLAY
+  }
+
+  /** Selects which fixed bars the menu body may scroll beneath. */
+  public enum ScrollUnderMode {
+    /** Reserve both fixed bars, matching the Reddit layout model. */
+    NONE,
+    /** Scroll below the top bar and reserve the bottom bar, matching ChatGPT. */
+    TOP,
+    /** Reserve the top bar and scroll below the bottom bar, matching Gmail. */
+    BOTTOM,
+    /** Scroll below both fixed bars. */
+    BOTH
+  }
+
   public static interface AnimationListener {
     public void onAnimationFinished();
   }
@@ -61,8 +82,24 @@ public class TopMenu extends Window {
 
   public boolean showElevation = false;
 
-  private ControlAnimation currentAnimation;
   private boolean fadeOnPopAndUnpop;
+  private Control topBar;
+  private Control bottomBar;
+  private BarLayoutMode topBarLayoutMode = BarLayoutMode.RESERVE_SPACE;
+  private BarLayoutMode bottomBarLayoutMode = BarLayoutMode.RESERVE_SPACE;
+  private ScrollUnderMode scrollUnderMode = ScrollUnderMode.NONE;
+  ScrollContainer bodyScroller;
+  Container topBarHost;
+  Container bottomBarHost;
+  protected boolean canDrag = true;
+  public boolean fadeOtherWindows;
+  public int titleColor = -1;
+  public int titleGap;
+  public int titleAlign = CENTER;
+  private String title;
+  private Label titleLabel;
+  private boolean safeDrawerWidth;
+  private final PresentationController presentationController;
 
   public static class Item extends Container {
     Control tit;
@@ -103,7 +140,12 @@ public class TopMenu extends Window {
     }
 
     private TopMenu getTopMenu() {
-      return (TopMenu) getParentWindow();
+      for (Control control = this; control != null; control = control.parent) {
+        if (control instanceof TopMenu) {
+          return (TopMenu) control;
+        }
+      }
+      return null;
     }
 
     @Override
@@ -137,8 +179,7 @@ public class TopMenu extends Window {
            * 72dp left spacing and 16 dp right spacing
            * https://material.io/guidelines/patterns/navigation-drawer.html#navigation-drawer-specs
            */
-          this.setInsets((int) ((Settings.screenWidth < 320 ? 64 : 72) * Settings.screenDensity),
-              (int) ((Settings.screenWidth < 320 ? 8 : 16) * Settings.screenDensity), 0, 0);
+          this.setInsets(Settings.screenWidth < 320 ? 64 : 72, Settings.screenWidth < 320 ? 8 : 16, 0, 0);
           add(tit, LEFT, CENTER, FILL, PREFERRED);
         }
       }, LEFT, CENTER, FILL, PREFERRED);
@@ -148,7 +189,8 @@ public class TopMenu extends Window {
     public void onEvent(Event e) {
       if (e.type == PenEvent.PEN_UP && !hadParentScrolled()) {
         // Should not accept clicks if the TopMenu animation is playing
-        if (getTopMenu().currentAnimation != null) {
+        TopMenu menu = getTopMenu();
+        if (menu == null || menu.isTransitioning()) {
           return;
         }
 
@@ -181,17 +223,20 @@ public class TopMenu extends Window {
    *          LEFT, RIGHT, TOP, BOTTOM, CENTER
    */
   public TopMenu(Control[] items, int animDir, byte borderStyle) {
-    super(null, borderStyle);
     this.items = items;
     this.animDir = animDir;
+    presentationController = new PresentationController(this);
     titleGap = 0;
-    sameBackgroundColor = fadeOtherWindows = false;
+    fadeOtherWindows = false;
     uiAdjustmentsBasedOnFontHeightIsSupported = false;
     borderColor = UIColors.separatorFore;
+    setBorderStyle(toContainerBorder(borderStyle));
     setBackForeColors(UIColors.separatorFore, UIColors.topmenuFore);
     fadeOnPopAndUnpop = true;
-    
-    MainWindow.getMainWindow().addTimer(1000);
+    MainWindow main = MainWindow.getMainWindow();
+    if (main != null) {
+      main.addTimer(1000);
+    }
   }
 
   /**
@@ -199,37 +244,224 @@ public class TopMenu extends Window {
    *          LEFT, RIGHT, TOP, BOTTOM, CENTER
    */
   public TopMenu(Control[] items, int animDir) {
-    this(items, animDir, ROUND_BORDER);
+    this(items, animDir, Window.ROUND_BORDER);
   }
 
-  @Override
   public void popup() {
-    setRect(false);
-    super.popup();
+    presentationController.popup();
   }
 
-  protected void setRect(boolean screenResized) {
-    int ww = setW = widthInPixels != 0 ? widthInPixels : SCREENSIZE + (percWidth > 0 ? percWidth : 50);
-    switch (animDir) {
-    case LEFT:
-      setRect(0 - ww, TOP, ww, FILL, null, screenResized);
-      break;
-    case RIGHT:
-      setRect(RIGHT + ww, TOP, ww, FILL, null, screenResized);
-      break;
+  public void popupNonBlocking() {
+    presentationController.popupNonBlocking();
+  }
+
+  private static byte toContainerBorder(byte windowBorder) {
+    switch (windowBorder) {
+    case Window.RECT_BORDER:
+      return BORDER_SIMPLE;
+    case Window.ROUND_BORDER:
+      return BORDER_ROUNDED;
     default:
-      resetSetPositions(); // required to make sure the height gets updated by the following setRect
-      setRect(LEFT, animDir, ww,
-          (int) Math.min(Settings.screenHeight * 3 / 4, Settings.screenDensity * items.length * 50), null,
-          screenResized);
-      break;
+      return BORDER_NONE;
     }
-    Window.needsPaint = true;
   }
 
   public double itemHeightFactor = 2;
 
   public Container header = null;
+
+  /** Sets the optional fixed top bar. The legacy {@link #header} still scrolls. */
+  public void setTopBar(Control bar) {
+    if (topBar != bar) {
+      topBar = bar;
+      rebuildBarHost(true);
+      layoutMenu();
+    }
+  }
+
+  /** Returns the optional fixed top bar. */
+  public Control getTopBar() {
+    return topBar;
+  }
+
+  /** Sets the optional fixed bottom bar. */
+  public void setBottomBar(Control bar) {
+    if (bottomBar != bar) {
+      bottomBar = bar;
+      rebuildBarHost(false);
+      layoutMenu();
+    }
+  }
+
+  /** Returns the optional fixed bottom bar. */
+  public Control getBottomBar() {
+    return bottomBar;
+  }
+
+  /** Sets whether the top bar reserves viewport space or overlays scrolling content. */
+  public void setTopBarLayoutMode(BarLayoutMode mode) {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
+    if (topBarLayoutMode != mode) {
+      topBarLayoutMode = mode;
+      updateScrollUnderModeFromBars();
+      layoutMenu();
+    }
+  }
+
+  /** Sets whether the bottom bar reserves viewport space or overlays scrolling content. */
+  public void setBottomBarLayoutMode(BarLayoutMode mode) {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
+    if (bottomBarLayoutMode != mode) {
+      bottomBarLayoutMode = mode;
+      updateScrollUnderModeFromBars();
+      layoutMenu();
+    }
+  }
+
+  /** Applies one of the four fixed-bar scrolling models. */
+  public void setScrollUnderMode(ScrollUnderMode mode) {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
+    scrollUnderMode = mode;
+    topBarLayoutMode = mode == ScrollUnderMode.TOP || mode == ScrollUnderMode.BOTH
+        ? BarLayoutMode.OVERLAY : BarLayoutMode.RESERVE_SPACE;
+    bottomBarLayoutMode = mode == ScrollUnderMode.BOTTOM || mode == ScrollUnderMode.BOTH
+        ? BarLayoutMode.OVERLAY : BarLayoutMode.RESERVE_SPACE;
+    layoutMenu();
+  }
+
+  private void updateScrollUnderModeFromBars() {
+    boolean top = topBarLayoutMode == BarLayoutMode.OVERLAY;
+    boolean bottom = bottomBarLayoutMode == BarLayoutMode.OVERLAY;
+    scrollUnderMode = top ? bottom ? ScrollUnderMode.BOTH : ScrollUnderMode.TOP
+        : bottom ? ScrollUnderMode.BOTTOM : ScrollUnderMode.NONE;
+  }
+
+  void useSafeDrawerWidth() {
+    safeDrawerWidth = true;
+  }
+
+  public void setTitle(String title) {
+    this.title = title == null || title.length() == 0 ? null : title;
+    if (titleLabel != null) {
+      titleLabel.setText(this.title == null ? "" : this.title);
+      layoutMenu();
+    }
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void makeUnmovable() {
+    canDrag = false;
+  }
+
+  private int getTitleHeight() {
+    return title == null ? 0 : fmH + Math.max(0, titleGap);
+  }
+
+  private Rect getMenuClientRect() {
+    Rect client = getClientRect();
+    int titleHeight = getTitleHeight();
+    client.y += titleHeight;
+    client.height = Math.max(0, client.height - titleHeight);
+    return client;
+  }
+
+  private int getBarHeight(Control bar) {
+    return bar == null ? 0 : bar.getPreferredHeight();
+  }
+
+  private void rebuildTitle() {
+    if (title == null || bodyScroller == null) {
+      return;
+    }
+    if (titleLabel == null) {
+      titleLabel = new Label(title, LEFT);
+      super.add(titleLabel);
+    }
+    titleLabel.setForeColor(titleColor < 0 ? foreColor : titleColor);
+    titleLabel.resetSetPositions();
+    titleLabel.setRect(titleAlign, TOP, PREFERRED, getTitleHeight());
+  }
+
+  private int resolveWidth(Rect viewport) {
+    if (widthInPixels != 0) {
+      return Math.min(widthInPixels, viewport.width);
+    }
+    if (safeDrawerWidth && (animDir == LEFT || animDir == RIGHT)) {
+      return Math.min(320, Math.max(0, viewport.width - 56));
+    }
+    return viewport.width * (percWidth > 0 ? percWidth : 50) / 100;
+  }
+
+  private void rebuildBarHost(boolean top) {
+    Container oldHost = top ? topBarHost : bottomBarHost;
+    if (oldHost != null && oldHost.parent == this) {
+      super.remove(oldHost);
+    }
+    Control bar = top ? topBar : bottomBar;
+    Container host = null;
+    if (bar != null && bodyScroller != null) {
+      if (bar.parent != null) {
+        bar.parent.remove(bar);
+      }
+      host = new Container();
+      host.setBackColor(bar.getBackColor());
+      super.add(host);
+      Rect client = getMenuClientRect();
+      int barHeight = getBarHeight(bar);
+      host.setRect(client.x, top ? client.y : client.y + client.height - barHeight, client.width, barHeight);
+      host.add(bar, LEFT, TOP, FILL, FILL);
+    }
+    if (top) {
+      topBarHost = host;
+    } else {
+      bottomBarHost = host;
+    }
+  }
+
+  private void layoutMenu() {
+    if (bodyScroller == null || width <= 0 || height <= 0) {
+      return;
+    }
+    rebuildTitle();
+    Rect client = getMenuClientRect();
+    int bodyX = client.x + scInsets.left;
+    int bodyY = client.y + scInsets.top;
+    int bodyWidth = client.width - scInsets.left - scInsets.right;
+    int bodyHeight = client.height - scInsets.top - scInsets.bottom;
+    int topHeight = getBarHeight(topBar);
+    int bottomHeight = getBarHeight(bottomBar);
+
+    if (topBar != null && topBarLayoutMode == BarLayoutMode.RESERVE_SPACE) {
+      bodyY += topHeight;
+      bodyHeight -= topHeight;
+    }
+    if (bottomBar != null && bottomBarLayoutMode == BarLayoutMode.RESERVE_SPACE) {
+      bodyHeight -= bottomHeight;
+    }
+    bodyScroller.resetSetPositions();
+    bodyScroller.setRect(bodyX, bodyY, Math.max(0, bodyWidth), Math.max(0, bodyHeight));
+    bodyScroller.setContentInsets(0, 0,
+        topBar != null && topBarLayoutMode == BarLayoutMode.OVERLAY ? topHeight : 0,
+        bottomBar != null && bottomBarLayoutMode == BarLayoutMode.OVERLAY ? bottomHeight : 0);
+
+    if (topBarHost != null) {
+      topBarHost.resetSetPositions();
+      topBarHost.setRect(client.x, client.y, client.width, topHeight);
+    }
+    if (bottomBarHost != null) {
+      bottomBarHost.resetSetPositions();
+      bottomBarHost.setRect(client.x, client.y + client.height - bottomHeight, client.width, bottomHeight);
+    }
+  }
 
   @Override
   public void initUI() {
@@ -259,7 +491,7 @@ public class TopMenu extends Window {
       }
     }
 
-    ScrollContainer sc = new ScrollContainer(false, true);
+    ScrollContainer sc = bodyScroller = new ScrollContainer(false, true);
     if (backImage != null) {
       try {
         sc.transparentBackground = true;
@@ -272,8 +504,7 @@ public class TopMenu extends Window {
         t.printStackTrace(); // don't add the image
       }
     }
-    add(sc, LEFT + scInsets.left, TOP + scInsets.top, (showElevation && animDir == LEFT ? FIT : FILL) - scInsets.right,
-        FILL);
+    add(sc, LEFT, TOP, FILL, FILL);
     sc.setBackColor(backColor);
     if (header != null) {
       /*
@@ -298,6 +529,16 @@ public class TopMenu extends Window {
         sc.add(r, LEFT, AFTER, FILL, gap);
       }
     }
+    rebuildBarHost(true);
+    rebuildBarHost(false);
+    sc.resize();
+    layoutMenu();
+  }
+
+  @Override
+  protected void onBoundsChanged(boolean screenChanged) {
+    super.onBoundsChanged(screenChanged);
+    layoutMenu();
   }
 
   @Override
@@ -328,24 +569,13 @@ public class TopMenu extends Window {
         || (dragDir == DragEvent.UP && animDir == TOP) || (dragDir == DragEvent.DOWN && animDir == BOTTOM);
   }
 
-  @Override
   public void screenResized() {
-    setRect(true);
-    reposition(true);
-  }
-
-  @Override
-  protected boolean onClickedOutside(PenEvent event) {
-    if (event.type == PenEvent.PEN_DOWN) {
-      unpop();
-    }
-    return true;
+    presentationController.relayout();
   }
 
   /**
    * Unpops the current TopMenu
    */
-  @Override
   public void unpop() {
     unpop(null);
   }
@@ -357,66 +587,63 @@ public class TopMenu extends Window {
    * @param alist
    */
   public void unpop(AnimationListener alist) {
-    if (currentAnimation != null) {
-      return;
-    }
-
     this.alist = alist;
-    if (animDir == CENTER) {
-      currentAnimation = FadeAnimation.create(this, false, null, totalTime);
-    } else {
-      currentAnimation = PathAnimation.create(this, -animDir, null, totalTime);
-      if (fadeOnPopAndUnpop) {
-        currentAnimation.with(FadeAnimation.create(this, false, null, totalTime));
-      }
-    }
-    currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
-      @Override
-      public void onAnimationFinished(ControlAnimation anim) {
-        currentAnimation = null;
-        TopMenu.super.unpop();
-      }
-    });
-    currentAnimation.start();
+    presentationController.unpop();
   }
 
   @Override
-  public void postUnpop() {
-    super.postUnpop();
-    if (alist != null) {
-      alist.onAnimationFinished();
-    }
+  public PresentationEntry createPresentationEntry() {
+    PresentationTransition transition = animDir == CENTER
+        ? new FadePresentationTransition()
+        : new SlidePresentationTransition(animDir, fadeOnPopAndUnpop);
+    int clampedFadeValue = Math.max(0, Math.min(255, Window.fadeValue));
+    int barrierAlpha = fadeOtherWindows ? 255 - clampedFadeValue : 0;
+    return new PresentationEntry(this, PresentationEntry.Layer.OVERLAY,
+        new PresentationEntry.BoundsResolver() {
+          @Override
+          public void resolve(Rect viewport, Rect bounds) {
+            int menuWidth = resolveWidth(viewport);
+            int menuHeight = animDir == LEFT || animDir == RIGHT ? viewport.height
+                : Math.min(viewport.height * 3 / 4, items.length * 50);
+            int x = animDir == RIGHT ? viewport.width - menuWidth
+                : animDir == CENTER ? (viewport.width - menuWidth) / 2 : 0;
+            int y = animDir == BOTTOM ? viewport.height - menuHeight
+                : animDir == CENTER ? (viewport.height - menuHeight) / 2 : 0;
+            bounds.set(x, y, menuWidth, menuHeight);
+          }
+        }, transition, true, true, true, Color.BLACK, barrierAlpha, totalTime);
   }
 
   @Override
-  public void onPopup() {
-    if (currentAnimation != null) {
-      return;
-    }
-
+  public void onPresentationPopup() {
     selected = -1;
-    if (animDir == CENTER) {
-      resetSetPositions();
-      setRect(CENTER, CENTER, KEEP, KEEP);
-      currentAnimation = FadeAnimation.create(this, true, null, totalTime);
-    } else {
-      currentAnimation = PathAnimation.create(this, animDir, null, totalTime);
-      if (fadeOnPopAndUnpop) {
-        currentAnimation.with(FadeAnimation.create(this, true, null, totalTime));
-      }
-    }
-    currentAnimation.setAnimationFinishedAction(new AnimationFinished() {
-      @Override
-      public void onAnimationFinished(ControlAnimation anim) {
-        currentAnimation = null;
-      }
-    });
-    currentAnimation.start();
   }
 
   @Override
-  protected void postPopup() {
-    super.postPopup();
+  public void postPresentationPopup() {
+  }
+
+  @Override
+  public void onPresentationUnpop() {
+  }
+
+  @Override
+  public void postPresentationUnpop() {
+    if (alist != null) {
+      AnimationListener listener = alist;
+      alist = null;
+      listener.onAnimationFinished();
+    }
+  }
+
+  private boolean isTransitioning() {
+    PresentationHandle handle = presentationController.handle();
+    return handle != null && (handle.state() == PresentationHandle.State.PRESENTING
+        || handle.state() == PresentationHandle.State.DISMISSING);
+  }
+
+  PresentationHandle presentationHandle() {
+    return presentationController.handle();
   }
 
   public int getSelectedIndex() {

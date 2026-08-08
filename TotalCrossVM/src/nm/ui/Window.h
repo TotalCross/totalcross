@@ -1,9 +1,8 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
-
-
 
 #ifndef WINDOW_H
 #define WINDOW_H
@@ -19,5 +18,12 @@ enum TCSIP
    SIP_ENABLE_NUMERICPAD = 10004,
    SIP_DISABLE_NUMERICPAD = 10005
 };
+
+void windowUpdateSafeAreaInsetsPhysical(
+   Context currentContext,
+   int32 top,
+   int32 left,
+   int32 bottom,
+   int32 right);
 
 #endif

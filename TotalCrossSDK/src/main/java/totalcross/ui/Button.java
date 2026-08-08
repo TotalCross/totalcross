@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -331,12 +332,12 @@ public class Button extends Control implements TextControl {
 			this.paddingTop = UnitsConverter.toPixels(DP + 11);
 			this.paddingBottom = UnitsConverter.toPixels(DP + 11);
 			if (text != null) {
-				int textWidth = this.fm.stringWidth(text);
+				int textWidth = getFontWidthForLayout(text);
 				String auxText = text;
 				for (int i = 0; textWidth > Settings.screenWidth - (this.paddingRight + this.paddingLeft); i++) {
 					auxText = text.substring(0, text.length() - i);
 					auxText += "...";
-					textWidth = fm.stringWidth(auxText);
+					textWidth = getFontWidthForLayout(auxText);
 				}
 				text = auxText;
 			}
@@ -493,6 +494,7 @@ public class Button extends Control implements TextControl {
 	/** Returns the preffered width of this control. */
 	@Override
 	public int getPreferredWidth() {
+		ensureTextWidths();
 		if (uiMaterial) {
 			return getPrefferedMaterialWidth();
 		}
@@ -557,12 +559,12 @@ public class Button extends Control implements TextControl {
 							: this.paddingRight;
 				}
 			}
-			int textWidth = this.fm.stringWidth(this.text);
+			int textWidth = getFontWidthForLayout(this.text);
 			String auxText = this.text;
 			for (int i = 0; textWidth > Settings.screenWidth - (paddingRight + paddingLeft); i++) {
 				auxText = this.text.substring(0, this.text.length() - i);
 				auxText += "...";
-				textWidth = fm.stringWidth(auxText);
+				textWidth = getFontWidthForLayout(auxText);
 			}
 			this.text = auxText;
 			final int textWithPadding = this.paddingLeft + this.paddingRight + textWidth
@@ -579,8 +581,6 @@ public class Button extends Control implements TextControl {
 					: UnitsConverter.toPixels(DP + 12);
 			returnValue = this.img.getWidth() + paddingLeft + paddingRight;
 			System.out.println(this.text + ": " + returnValue);
-			System.out.println("Density: " + Settings.screenDensity);
-
 		}
 		return returnValue;
 	}
@@ -588,6 +588,7 @@ public class Button extends Control implements TextControl {
 	/** Returns the preffered height of this control. */
 	@Override
 	public int getPreferredHeight() {
+		ensureTextWidths();
 		if (uiMaterial) {
 			return getPreferredMaterialHeight();
 		}
@@ -596,7 +597,7 @@ public class Button extends Control implements TextControl {
 		}
 		int border = this.border < 2 ? this.border : 2; // guich@tc112_31
 		int prefH;
-		int th = text == null ? 0 : ((uiVista ? 1 : 0) + fmH * lines.length);
+		int th = text == null ? 0 : ((uiVista ? 1 : 0) + getFontHeightForLayout() * lines.length);
 		int ih = (this.border == BORDER_GRAY_IMAGE || img == null) ? 0 : img.getHeight(); // guich@tc120_1: using a gray
 																							// image does not take the
 																							// image into consideration
@@ -638,12 +639,12 @@ public class Button extends Control implements TextControl {
 					: UnitsConverter.toPixels(DP + 11);
 			if (this.img != null) {
 				if (this.txtPos == TOP || this.txtPos == BOTTOM) {
-					returnValue = this.img.getHeight() + this.getFont().fm.height + paddingTop + paddingBottom + tiGap;
+					returnValue = this.img.getHeight() + getFontHeightForLayout() + paddingTop + paddingBottom + tiGap;
 				} else {
-					returnValue = Math.max(this.img.getHeight(), this.getFont().fm.height) + paddingTop + paddingBottom;
+					returnValue = Math.max(this.img.getHeight(), getFontHeightForLayout()) + paddingTop + paddingBottom;
 				}
 			} else {
-				returnValue = this.getFont().fm.height + paddingTop + paddingBottom;
+				returnValue = getFontHeightForLayout() + paddingTop + paddingBottom;
 			}
 
 		} else if (this.img != null) {
@@ -893,6 +894,17 @@ public class Button extends Control implements TextControl {
 
 	@Override
 	protected void onFontChanged() {
+		layoutFontScale = Double.NaN;
+		ensureTextWidths();
+	}
+
+	private double layoutFontScale = Double.NaN;
+
+	private void ensureTextWidths() {
+		double fontScale = gfx.getFontScale();
+		if (layoutFontScale == fontScale) {
+			return;
+		}
 		int oldMaxTW = maxTW;
 		if (text != null) {
 			if (linesW == null || linesW.length != lines.length) {
@@ -901,10 +913,11 @@ public class Button extends Control implements TextControl {
 			int[] linesW = this.linesW;
 			maxTW = 0;
 			for (int i = lines.length - 1; i >= 0; i--) {
-				linesW[i] = fm.stringWidth(lines[i]);
+				linesW[i] = getFontWidthForLayout(lines[i]);
 				maxTW = Math.max(maxTW, linesW[i]);
 			}
 		}
+		layoutFontScale = fontScale;
 		if (oldMaxTW != maxTW) {
 			onBoundsChanged(false);
 		}
@@ -942,10 +955,10 @@ public class Button extends Control implements TextControl {
 
 		// compute where to draw each item to keep it centered
 		if (text != null) {
-			th = fmH * lines.length;
+			th = getFontHeightForLayout() * lines.length;
 			if(uiMaterial) {
-				tx0 = (this.width - fm.stringWidth(text)) >> 1;
-				ty0 = (this.height - fmH) >> 1;
+				tx0 = (this.width - getFontWidthForLayout(text)) >> 1;
+				ty0 = (this.height - getFontHeightForLayout()) >> 1;
 			} else {
 				tx0 = (width - maxTW) / 2;
 				ty0 = (height - th) / 2;
@@ -955,7 +968,7 @@ public class Button extends Control implements TextControl {
 				iy0 = (this.height - img.getHeight()) >> 1;
 				switch (txtPos) {
 					case LEFT:
-						ix0 = this.paddingLeft + fm.stringWidth(text) + this.tiGap;
+						ix0 = this.paddingLeft + getFontWidthForLayout(text) + this.tiGap;
 						tx0 = this.paddingLeft;
 						break;
 					case RIGHT:
@@ -963,35 +976,35 @@ public class Button extends Control implements TextControl {
 						tx0 = this.paddingLeft + img.getWidth() + this.tiGap;
 						break;
 					case TOP:
-						iy0 = this.paddingTop + fmH + this.tiGap;
+				iy0 = this.paddingTop + getFontHeightForLayout() + this.tiGap;
 						ix0 = (this.width - img.getWidth()) >> 1;
-						tx0 = (this.width - fm.stringWidth(text)) >> 1;
+						tx0 = (this.width - getFontWidthForLayout(text)) >> 1;
 						ty0 = paddingTop;
 						break;
 					case BOTTOM:
 						iy0 = this.paddingTop;
 						ix0 = (this.width - img.getWidth()) >> 1;
-						tx0 = (this.width - fm.stringWidth(text)) >> 1;
+						tx0 = (this.width - getFontWidthForLayout(text)) >> 1;
 						ty0 = this.paddingTop + img.getHeight() + this.tiGap;
 						break;
 					case CENTER:
 						ix0 = (this.width - img.getWidth()) >> 1;
 						iy0 = (this.height - img.getHeight()) >> 1;
-						tx0 = (this.width - fm.stringWidth(text)) >> 1;
-						ty0 = (this.height - fmH) >> 1;
+						tx0 = (this.width - getFontWidthForLayout(text)) >> 1;
+				ty0 = (this.height - getFontHeightForLayout()) >> 1;
 						break;
 					case CENTRALIZE:
-						ix0 = (this.width - img.getWidth() - this.tiGap - fm.stringWidth(text)) >> 1;
+						ix0 = (this.width - img.getWidth() - this.tiGap - getFontWidthForLayout(text)) >> 1;
 						iy0 = (this.height - img.getHeight()) >> 1;
 						tx0 = ix0 + img.getWidth() + this.tiGap;
-						ty0 = (this.height - fmH) >> 1;
+				ty0 = (this.height - getFontHeightForLayout()) >> 1;
 						break;
 					case RIGHT_OF:
 						if (relativeToText == null) {
 							throw new NullPointerException(
 									"When using RIGHT_OF, you must set the Button's relativeToText field.");
 						}
-						int ix0 = (this.width - img.getWidth() - fm.stringWidth(relativeToText)) >> 1;
+						int ix0 = (this.width - img.getWidth() - getFontWidthForLayout(relativeToText)) >> 1;
 						this.ix0 = ix0 < paddingLeft ? paddingLeft : ix0;
 						tx0 = this.ix0 + img.getWidth() + this.tiGap;
 						break;
@@ -1043,10 +1056,12 @@ public class Button extends Control implements TextControl {
 					}
 					int rw = 0;
 					if (relativeToText.indexOf('\n') == -1) {
-						rw = fm.stringWidth(relativeToText);
+						rw = getFontWidthForLayout(relativeToText);
 					} else {
 						String[] relToLines = Convert.tokenizeString(relativeToText, '\n');
-						rw = fm.getMaxWidth(relToLines, 0, relToLines.length);
+						for (int i = 0; i < relToLines.length; i++) {
+							rw = Math.max(rw, getFontWidthForLayout(relToLines[i]));
+						}
 					}
 					ix0 = (width - (iw + tiGap + rw)) >> 1;
 					;
@@ -1158,11 +1173,11 @@ public class Button extends Control implements TextControl {
 		} else {
 			g.foreColor = foreColor;
 		}
-		for (int i = 0; i < lines.length; i++, ty += fmH) {
+		for (int i = 0; i < lines.length; i++, ty += getFontHeightForLayout()) {
 			int txx = tx + ((maxTW - linesW[i]) >> 1);
 			g.drawText(lines[i], txx, ty, shade != -1, shade);
 			if (underlinedText) {
-				g.fillRect(txx, ty + fm.ascent + 1, linesW[i], (fmH - 1) >> 3);
+				g.fillRect(txx, ty + getFontAscentForLayout() + 1, linesW[i], (getFontHeightForLayout() - 1) >> 3);
 			}
 		}
 	}

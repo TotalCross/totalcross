@@ -1,6 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -39,6 +39,16 @@ public final class FontMetrics {
   /** READ-ONLY member: total height of this font (ascent+descent). */
   public int height;
 
+  private double ascentD;
+  private double descentD;
+  private double leadingD;
+  private double heightD;
+
+  public double getAscentD() { return ascentD; }
+  public double getDescentD() { return descentD; }
+  public double getLeadingD() { return leadingD; }
+  public double getHeightD() { return heightD; }
+
   /**
    * Constructs a font metrics object referencing the given font.
    */
@@ -46,6 +56,11 @@ public final class FontMetrics {
     this.font = font;
     fontMetricsCreate();
     this.height = ascent + descent;
+    if (heightD == 0) {
+      ascentD = ascent;
+      descentD = descent;
+      heightD = height;
+    }
   }
 
   @ReplacedByNativeOnDeploy
@@ -70,6 +85,9 @@ public final class FontMetrics {
     return Launcher.instance.getCharWidth(this.font, c);
   }
 
+  @ReplacedByNativeOnDeploy
+  public double charWidthD(char c) { return charWidth(c); }
+
   /** Returns the width in pixels of the given text string. */
   @ReplacedByNativeOnDeploy
   public int stringWidth(String s) {
@@ -78,6 +96,33 @@ public final class FontMetrics {
       sum += Launcher.instance.getCharWidth(this.font, s.charAt(i));
     }
     return sum;
+  }
+
+  @ReplacedByNativeOnDeploy
+  public double stringWidthD(String s) { return stringWidth(s); }
+
+  /** Internal destination-aware measurement at an effective logical font size. */
+  @ReplacedByNativeOnDeploy
+  public double stringWidthAtSizeD(String s, double fontSize) {
+    return stringWidthD(s) * fontSize / font.size;
+  }
+
+  /** Internal destination-aware line height at an effective logical font size. */
+  @ReplacedByNativeOnDeploy
+  public double lineHeightAtSizeD(double fontSize) {
+    return getHeightD() * fontSize / font.size;
+  }
+
+  /** Internal destination-aware descent at an effective logical font size. */
+  @ReplacedByNativeOnDeploy
+  public double descentAtSizeD(double fontSize) {
+    return getDescentD() * fontSize / font.size;
+  }
+
+  /** Internal destination-aware ascent at an effective logical font size. */
+  @ReplacedByNativeOnDeploy
+  public double ascentAtSizeD(double fontSize) {
+    return getAscentD() * fontSize / font.size;
   }
 
   /**

@@ -89,7 +89,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
   /** Creates a radio control displaying the given text. */
   public Radio(String text) {
     this.displayedText = this.text = text;
-    textW = fm.stringWidth(text);
+    textW = getFontWidthForLayout(text);
     effect = UIEffects.get(this);
     radioTextGap = UnitsConverter.toPixels(10 + DP);
   }
@@ -111,11 +111,11 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     if (autoSplit) {
       int max = 0;
       for (int i = lines.length - 1; i >= 0; i--) {
-        max = Math.max(fm.stringWidth(lines[i]), max);
+        max = Math.max(getFontWidthForLayout(lines[i]), max);
       }
       return max;
     }
-    return textW;
+    return getFontWidthForLayout(displayedText);
   }
   
   /** "Merge" the colors between the original grayscale image and the current foreground. */
@@ -187,13 +187,13 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
   /** returns the preferred width of this control. */
   @Override
   public int getPreferredWidth() {
-    return getFont().fm.stringWidth(text) + /*Radio symbol width*/ fmH + Edit.prefH + 2;
+    return getFontWidthForLayout(text) + /*Radio symbol width*/ getFontHeightForLayout() + Edit.prefH + 2;
   }
 
   /** returns the preferred height of this control. */
   @Override
   public int getPreferredHeight() {
-    return fmH * lines.length + Edit.prefH;
+    return getFontHeightForLayout() * lines.length + Edit.prefH;
   }
 
   /** Called by the system to pass events to the radio control. */
@@ -274,7 +274,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
 
   @Override
   protected void onFontChanged() {
-    textW = fm.stringWidth(this.displayedText);
+    textW = getFontWidthForLayout(this.displayedText);
     onColorsChanged(false);
   }
 
@@ -288,13 +288,14 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
       g.backColor = backColor;
       g.fillRect(0, 0, width, height);
     }
-    boolean big = fmH >= 20;
+    int fontHeight = getFontHeightForLayout();
+    boolean big = fontHeight >= 20;
 
     if (getDoEffect() && effect != null) {
       effect.paintEffect(g);
     }
 
-    int hh = Math.min(width - (textW + (lines.length > 1 ? 2 : -6)), uiMaterial ? (fmH - UnitsConverter.toPixels(4 + DP))*lines.length : height);
+    int hh = Math.min(width - (getMaxTextWidth() + (lines.length > 1 ? 2 : -6)), uiMaterial ? (fontHeight - UnitsConverter.toPixels(4 + DP))*lines.length : height);
     if (hh == height) {
     	hh -= Edit.prefH;
     }
@@ -325,16 +326,16 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
     }
 
     // draw label
-    yy = (this.height - fmH * lines.length) >> 1;
-    xx = hh + (uiFlat ? fmH / 2 + 4 : radioTextGap);
+    yy = (this.height - fontHeight * lines.length) >> 1;
+    xx = hh + (uiFlat ? fontHeight / 2 + 4 : radioTextGap);
     g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor, backColor)) : cColor;
-    for (int i = 0; i < lines.length; i++, yy += fmH) {
+    for (int i = 0; i < lines.length; i++, yy += fontHeight) {
       int textMaxWidth = this.width - xx;
       String text = textMaxWidth > 0 && leftJustify ? StringUtils.shortText(lines[i], font.fm, textMaxWidth) : lines[i];
 
       g.drawText(
           text,
-          leftJustify ? xx : (this.width - fm.stringWidth(lines[i])),
+          leftJustify ? xx : (this.width - getFontWidthForLayout(lines[i])),
           yy,
           textShadowColor != -1,
           textShadowColor);
@@ -447,7 +448,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
   protected void onBoundsChanged(boolean screenChanged) {
     if (autoSplit && this.width > 0 && this.width != lastASW) { // only if PREFERRED was choosen in first setRect
       lastASW = this.width;
-      int wh = fmH + Edit.prefH;
+      int wh = getFontHeightForLayout() + Edit.prefH;
       split(this.width - wh);
       if (PREFERRED - RANGE <= setH && setH <= PREFERRED + RANGE) {
         setRect(KEEP, KEEP, KEEP, getPreferredHeight() + setH - PREFERRED);
@@ -462,7 +463,7 @@ public class Radio extends Control implements TextControl, MaterialEffect.SideEf
    * @see #autoSplit
    */
   public void split(int maxWidth) {
-    displayedText = Convert.insertLineBreak(maxWidth, fm, text); // text cannot be assigned here or originalText will be overwritten
+    displayedText = Convert.insertLineBreak(maxWidth, fm, font.size * gfx.getFontScale(), text); // text cannot be assigned here or originalText will be overwritten
     lines = text.equals("") ? new String[] { "" } : Convert.tokenizeString(displayedText, '\n');
   }
   

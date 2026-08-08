@@ -4,6 +4,8 @@
 
 #include "skia_internal.h"
 
+#include <cmath>
+
 static void releaseProc(void* addr, void*) {
     delete[] static_cast<int32*>(addr);
 }
@@ -104,6 +106,39 @@ void skia_restoreClip(int32 skiaSurface) {
     }
 }
 
+void skia_setSurfaceScale(int32 skiaSurface, double contentScale) {
+    SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
+    if (!targetCanvas || !std::isfinite(contentScale) || contentScale <= 0) {
+        return;
+    }
+    targetCanvas->resetMatrix();
+    targetCanvas->scale(static_cast<SkScalar>(contentScale), static_cast<SkScalar>(contentScale));
+}
+
+static bool skia_canWritePixels(const SkCanvas* targetCanvas, const SkBitmap* texture,
+                                float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                float dstLeft, float dstTop, float dstRight, float dstBottom,
+                                int32 alphaMask) {
+#if USE_WRITE_PIXELS
+    if (!targetCanvas || !texture || !texture->isOpaque() || alphaMask != 255 ||
+        !targetCanvas->getTotalMatrix().isIdentity() || targetCanvas->getSaveCount() != 1 ||
+        srcLeft != 0.0f || srcTop != 0.0f || srcRight != texture->width() ||
+        srcBottom != texture->height() || (srcRight - srcLeft) != (dstRight - dstLeft) ||
+        (srcBottom - srcTop) != (dstBottom - dstTop) ||
+        std::floor(dstLeft) != dstLeft || std::floor(dstTop) != dstTop) {
+        return false;
+    }
+
+    const int dstX = static_cast<int>(dstLeft);
+    const int dstY = static_cast<int>(dstTop);
+    const SkImageInfo targetInfo = targetCanvas->imageInfo();
+    return dstX >= 0 && dstY >= 0 && dstX + texture->width() <= targetInfo.width() &&
+        dstY + texture->height() <= targetInfo.height();
+#else
+    return false;
+#endif
+}
+
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
                      float srcRight, float srcBottom, float dstLeft, float dstTop,
                      float dstRight, float dstBottom, int32 alphaMask) {
@@ -113,7 +148,6 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
     if (!targetCanvas || !texture) {
         return;
     }
-
     const SkRect srcRect = SkRect::MakeLTRB(srcLeft, srcTop, srcRight, srcBottom);
     const SkRect dstRect = SkRect::MakeLTRB(dstLeft, dstTop, dstRight, dstBottom);
     const bool fullSource = srcLeft == 0.0f && srcTop == 0.0f &&
@@ -121,14 +155,12 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
     const bool sameSize = (srcRight - srcLeft) == (dstRight - dstLeft) &&
         (srcBottom - srcTop) == (dstBottom - dstTop);
 
-#if USE_WRITE_PIXELS
-    if (texture->isOpaque() && alphaMask == 255 && fullSource && sameSize) {
+    if (skia_canWritePixels(targetCanvas, texture, srcLeft, srcTop, srcRight, srcBottom,
+                            dstLeft, dstTop, dstRight, dstBottom, alphaMask)) {
         targetCanvas->writePixels(
             texture->info(), texture->getPixels(), texture->rowBytes(),
             static_cast<int>(dstLeft), static_cast<int>(dstTop));
-    } else
-#endif
-    {
+    } else {
         alphaPaint.setAlpha(alphaMask);
         alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
         targetCanvas->drawBitmapRect(
@@ -167,8 +199,7 @@ int skia_getPixelRow(int32 skiaSurface, void *output, int32 y, int32 width) {
     }
     uint8_t* row = static_cast<uint8_t*>(output);
     for (int32 x = 0; x < width; ++x) {
-        const uint8_t* rgba = rowBitmap.getAddr8(x, 0);
-        const SkColor color = SkColorSetARGB(rgba[3], rgba[0], rgba[1], rgba[2]);
+        const SkColor color = rowBitmap.getColor(x, 0);
         *row++ = SkColorGetR(color);
         *row++ = SkColorGetG(color);
         *row++ = SkColorGetB(color);
@@ -181,53 +212,79 @@ void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel) {
     SKIA_TRACE()
     if (SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface)) {
         backPaint.setColor(skiaColorFromPixel(pixel));
+        targetCanvas->save();
+        targetCanvas->resetMatrix();
         targetCanvas->drawRect(SkRect::MakeXYWH(x, y, 1, 1), backPaint);
+        targetCanvas->restore();
     }
 }
 
-int skia_getsetRGB(int32 skiaSurface, void *pixels, int32 offset, int32 x, int32 y,
-                   int32 w, int32 h, bool isGet) {
+int skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
+                   int32 x, int32 y, int32 w, int32 h, bool isGet) {
     SKIA_TRACE()
+
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
-    if (!targetCanvas) {
+    if (!targetCanvas || !pixels || offset < 0 || w <= 0 || h <= 0) {
         return 0;
     }
-    if (!pixels || w <= 0 || h <= 0) {
-        return 0;
-    }
+
     SkBitmap pixelBitmap;
-    pixelBitmap.allocPixels(SkImageInfo::Make(
-        w, h, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType));
-    uint8_t* rgba = pixelBitmap.getAddr8(0, 0);
-    Pixel* source = static_cast<Pixel*>(pixels) + offset;
-    if (!isGet) {
-        for (int32 row = 0; row < h; ++row) {
-            for (int32 column = 0; column < w; ++column) {
-                const Pixel pixel = source[row * w + column];
-                const SkColor color = skiaColorFromPixel(pixel);
-                *rgba++ = SkColorGetR(color);
-                *rgba++ = SkColorGetG(color);
-                *rgba++ = SkColorGetB(color);
-                *rgba++ = SkColorGetA(color);
-            }
-        }
+    const SkImageInfo imageInfo = SkImageInfo::Make(
+        w,
+        h,
+        kRGBA_8888_SkColorType,
+        kUnpremul_SkAlphaType);
+
+    if (!pixelBitmap.tryAllocPixels(imageInfo)) {
+        return 0;
     }
+
+    Pixel* pixelBuffer = static_cast<Pixel*>(pixels) + offset;
+
     if (isGet) {
         if (!targetCanvas->readPixels(pixelBitmap, x, y)) {
             return 0;
         }
-        rgba = pixelBitmap.getAddr8(0, 0);
+
         for (int32 row = 0; row < h; ++row) {
+            const uint8_t* rgba =
+                static_cast<const uint8_t*>(pixelBitmap.getAddr(0, row));
+
+            Pixel* destinationRow = pixelBuffer + row * w;
+
             for (int32 column = 0; column < w; ++column) {
-                const uint8_t red = *rgba++;
-                const uint8_t green = *rgba++;
-                const uint8_t blue = *rgba++;
-                const uint8_t alpha = *rgba++;
-                source[row * w + column] = skiaPixelFromColor(
+                const uint8_t red   = rgba[0];
+                const uint8_t green = rgba[1];
+                const uint8_t blue  = rgba[2];
+                const uint8_t alpha = rgba[3];
+
+                destinationRow[column] = skiaPixelFromColor(
                     SkColorSetARGB(alpha, red, green, blue));
+
+                rgba += 4;
             }
         }
+
         return 1;
     }
-    return targetCanvas->writePixels(pixelBitmap, x, y);
+
+    for (int32 row = 0; row < h; ++row) {
+        uint8_t* rgba =
+            static_cast<uint8_t*>(pixelBitmap.getAddr(0, row));
+
+        const Pixel* sourceRow = pixelBuffer + row * w;
+
+        for (int32 column = 0; column < w; ++column) {
+            const SkColor color = skiaColorFromPixel(sourceRow[column]);
+
+            rgba[0] = SkColorGetR(color);
+            rgba[1] = SkColorGetG(color);
+            rgba[2] = SkColorGetB(color);
+            rgba[3] = SkColorGetA(color);
+
+            rgba += 4;
+        }
+    }
+
+    return targetCanvas->writePixels(pixelBitmap, x, y) ? 1 : 0;
 }

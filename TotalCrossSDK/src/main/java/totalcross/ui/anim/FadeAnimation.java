@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -29,10 +30,10 @@ public class FadeAnimation extends ControlAnimation {
   }
 
   @Override
-  public void start() {
-    super.start();
-    if(c.offscreen != null)
+  protected void onStart() {
+    if (c.offscreen != null) {
       c.offscreen.alphaMask = a;
+    }
   }
 
   @Override
@@ -45,6 +46,9 @@ public class FadeAnimation extends ControlAnimation {
     } else if (a < 0) {
       a = 0;
     }
+    if (a == af || speed == 0) {
+      a = af;
+    }
     if (c.offscreen != null) {
       c.offscreen.alphaMask = a;
     }
@@ -52,8 +56,7 @@ public class FadeAnimation extends ControlAnimation {
       c.offscreen0.alphaMask = _maxFade - a;
     }
     Window.needsPaint = true;
-    if (a == af || speed == 0) {
-      a = af;
+    if (a == af) {
       stop(false);
     }
   }

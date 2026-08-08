@@ -179,6 +179,21 @@ abstract class RuntimeState extends SimulatorSupport {
     windowBackend = getRuntime().startWindowBackend(instance,
         frameTitle != null ? frameTitle : mainWindow.getClass().getName(),
         new java.awt.Color(getScreenColor(mainWindow.getBackColor())), instance, instance);
+    updateContentScale();
+  }
+
+  protected void updateContentScale() {
+    if (!hasWindowBackend()) {
+      return;
+    }
+    double scale = windowBackend.getContentScale();
+    if (Double.isFinite(scale) && scale > 0) {
+      Settings.screenDensity = scale;
+      totalcross.ui.gfx.Graphics graphics = mainWindow.getGraphics();
+      if (graphics != null) {
+        graphics.setScales(scale, graphics.getFontScale());
+      }
+    }
   }
 
   protected boolean hasWindowBackend() {

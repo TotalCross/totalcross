@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -181,7 +182,6 @@ protected int gap;
   private boolean wasFocusIn, wasFocusInOnPenDown; // jairocg@450_31: used to verify if the event was focusIn
   private int oldTabIndex = -1;
   private boolean ignoreSelect;
-  private int wildW;
   protected boolean useFillAsPreferred;
   protected StringBuffer masked = new StringBuffer(20);
   private boolean isNegative;
@@ -350,7 +350,7 @@ protected int gap;
 	captionIconPadding = UnitsConverter.toPixels(DP + 12);
 	if(uiAndroid) {
 		try {
-			setNinePatch(Resources.edit.scaledBy(Settings.screenDensity/4, Settings.screenDensity/4));
+      setNinePatch(Resources.edit.scaledBy(0.25, 0.25));
 		} catch (ImageException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -473,11 +473,6 @@ protected int gap;
   public byte getKeyboardType() // guich@567_6
   {
     return kbdType;
-  }
-
-  @Override
-  protected void onFontChanged() {
-    wildW = fm.charWidth('*');
   }
 
   /** Returns the mask passed on the constructor. */
@@ -631,30 +626,31 @@ protected int gap;
   }
 
   protected int getX0() {
+	int fontHeight = getFontHeightForLayout();
 	int textStartX = 0;
 	StringBuffer s;
 	s = isMaskedEdit ? masked : chars;
 	switch(alignment) {
 	case RIGHT:
-		textStartX = this.width - fm.sbWidth(s, 0, s.length() ) - 2*xOffset;
+		textStartX = this.width - getFontWidthForLayout(s, 0, s.length()) - 2*xOffset;
 		if(captionIcon != null) {
-			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
+			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4);
 		}
 		break;
 	case CENTER:
-		textStartX = (this.width - fm.sbWidth(s, 0, s.length())) / 2 - xOffset;
+		textStartX = (this.width - getFontWidthForLayout(s, 0, s.length())) / 2 - xOffset;
 		if(captionIcon != null) {
-			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
+			textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4);
 		}
-		if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4)) {
-			textStartX = this.width - fm.sbWidth(s, 0, s.length() ) - 2*xOffset;
+		if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4)) {
+			textStartX = this.width - getFontWidthForLayout(s, 0, s.length()) - 2*xOffset;
 			if(captionIcon != null) {
-				textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4);
+				textStartX -= (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4);
 			}
 		}
 		break;
 	}
-    return (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4) + textStartX;
+    return (captionIcon == null ? 0 : captionIcon.getWidth() + fontHeight / 4) + textStartX;
   }
 
   protected int charPos2x(int n) {
@@ -671,9 +667,9 @@ protected int gap;
     }
     switch (mode) {
     case PASSWORD_ALL:
-      return extra + xOffset + wildW * n;
+      return extra + xOffset + getFontCharWidthForLayout('*') * n;
     case PASSWORD:
-      return extra + xOffset + wildW * (n - 1) + fm.charWidth(chars, chars.length() - 1);
+      return extra + xOffset + getFontCharWidthForLayout('*') * (n - 1) + getFontCharWidthForLayout(chars.charAt(chars.length() - 1));
     case CURRENCY:
       if (isMaskedEdit) // in currency, we go from right to left
       {
@@ -681,7 +677,7 @@ protected int gap;
         n = chars.length() - n;
         for (i = n; i > 0 && --pos >= 0;) {
           char c = masked.charAt(pos);
-          xx -= fm.charWidth(c);
+          xx -= getFontCharWidthForLayout(c);
           if ('0' <= c && c <= '9') {
             i--;
           }
@@ -706,10 +702,10 @@ protected int gap;
         	  masked.append(" ");
           }
         }
-        return extra + xOffset + fm.sbWidth(masked, 0, Math.min(pos, masked.length()));//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
+        return extra + xOffset + getFontWidthForLayout(masked, 0, Math.min(pos, masked.length()));//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
       }
     }
-    return extra + xOffset + fm.sbWidth(chars, 0, n);
+    return extra + xOffset + getFontWidthForLayout(chars, 0, n);
   }
 
   /** Returns the text displayed in the edit control. If masking is enabled, the text with the mask is returned;
@@ -891,8 +887,8 @@ protected int gap;
     if (captionIconHeightFactor != 0 && captionIcon != null) {
 		try {
 			captionIcon = captionIcon.hwScaledFixedAspectRatio(height * captionIconHeightFactor / 100, true);
-			if (captionIcon.getWidth() > this.width - fm.stringWidth(chars.toString())) {
-				captionIcon = captionIcon.hwScaledFixedAspectRatio(width - fm.stringWidth(chars.toString()), false);
+			if (captionIcon.getWidth() > this.width - getFontWidthForLayout(chars, 0, chars.length())) {
+				captionIcon = captionIcon.hwScaledFixedAspectRatio(width - getFontWidthForLayout(chars, 0, chars.length()), false);
 			}
 		} catch (Throwable t) {
 		}
@@ -908,7 +904,7 @@ protected int gap;
     	oldBounds = this.getRect();
 	    if (materialCaption != null) {
 	      materialCaption.xcap0 = materialCaption.xcap = chars.length() == 0 ? xMin : 0;
-	      materialCaption.ycap0 = materialCaption.ycap = uiMaterial ? this.height/2  - this.fmH/2 : chars.length() == 0 ?  getTextY() : 0;
+	      materialCaption.ycap0 = materialCaption.ycap = uiMaterial ? this.height/2  - getFontHeightForLayout()/2 : chars.length() == 0 ?  getTextY() : 0;
 	      if (this instanceof OutlinedEdit) {
 	    	  OutlinedEdit oe = (OutlinedEdit)this;
 			int labelAscentMiddleY = (materialCaption.getCaptionFontSmall().fm.ascent - oe.borderHeight)/2;
@@ -925,15 +921,15 @@ protected int gap;
 		return UnitsConverter.toPixels(DP + 280);
 	}
     return (mask == null || useFillAsPreferred) ? FILL
-        : (fm.stringWidth(new String(mask)) + (uiAndroid ? 10 : (uiFlat || uiVista) ? 8 : 4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
+        : (getFontWidthForLayout(new String(mask)) + (uiAndroid ? 10 : (uiFlat || uiVista) ? 8 : 4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
   }
 
   @Override
   public int getPreferredHeight() {
-    int ret = fmH + prefH;
+    int ret = getFontHeightForLayout() + prefH;
     if (uiMaterial) {
       if(caption != null) {
-    	  ret = fmH + prefH > UnitsConverter.toPixels(DP + 56) ? ret + materialCaption.getExtraHeight() : UnitsConverter.toPixels(DP + 56);
+	      ret = getFontHeightForLayout() + prefH > UnitsConverter.toPixels(DP + 56) ? ret + materialCaption.getExtraHeight() : UnitsConverter.toPixels(DP + 56);
       } else {
     	  ret = UnitsConverter.toPixels(DP + 56);
       }
@@ -957,9 +953,9 @@ protected int gap;
     int len = chars.length();
     switch (mode) {
     case PASSWORD_ALL:
-      return len == 0 ? 0 : wildW * len;
+      return len == 0 ? 0 : getFontCharWidthForLayout('*') * len;
     case PASSWORD:
-      return len == 0 ? 0 : wildW * (len - 1) + fm.charWidth(chars, len - 1);
+      return len == 0 ? 0 : getFontCharWidthForLayout('*') * (len - 1) + getFontCharWidthForLayout(chars.charAt(len - 1));
     default:
       if (isMaskedEdit) {
         int pos = masked.length();
@@ -967,25 +963,26 @@ protected int gap;
         int ww = 0;
         for (i = n; i > 0 && --pos >= 0;) {
           char c = masked.charAt(pos);
-          ww += fm.charWidth(c);
+          ww += getFontCharWidthForLayout(c);
           if ('0' <= c && c <= '9') {
             i--;
           }
         }
         return ww;
       } else {
-        return fm.sbWidth(chars, 0, len);
+        return getFontWidthForLayout(chars, 0, len);
       }
     }
   }
 
   protected int getTextY() {
-    int y = this.height - fmH - gap;
+    int fontHeight = getFontHeightForLayout();
+    int y = this.height - fontHeight - gap;
     if (uiAndroid) {
       y--;
     }
     if (uiHolo) {
-      y = (height - fmH - gap) / 2;
+      y = (height - fontHeight - gap) / 2;
     }
     if (uiMaterial) {
       y = materialCaption.ycap0;
@@ -1000,6 +997,7 @@ protected int gap;
 
 		boolean uiAndroid = Control.uiAndroid || uiHolo;
 		int y = getTextY();
+		int fontHeight = getFontHeightForLayout();
 
 		// background
 		g.backColor = back0;
@@ -1022,7 +1020,7 @@ protected int gap;
 	      if(drawLine) {
 			if (uiMaterial) {
 				final int lineHeight = Math.max(UnitsConverter.toPixels(DP + (hasFocus ? 2 : 1)), 1);
-				int h = fmH / 10;
+				int h = getFontHeightForLayout() / 10;
 				if (h < 2) {
 					h = 2;
 				}
@@ -1100,7 +1098,7 @@ protected int gap;
 				if (sel1X != sel2X) {
 					int old = g.backColor;
 					g.backColor = back1 == backColor ? Color.brighter(back1) : back1;
-					g.fillRect(sel1X, y, sel2X - sel1X + 1, fmH);
+					g.fillRect(sel1X, y, sel2X - sel1X + 1, fontHeight);
 					g.backColor = old;
 				}
 			}
@@ -1109,7 +1107,7 @@ protected int gap;
 			int xx = xOffset;
 			if (captionIcon != null) {
 				xx += getX0();
-				g.drawImage(captionIcon, uiMaterial ? captionIconPadding : fmH,
+				g.drawImage(captionIcon, uiMaterial ? captionIconPadding : fontHeight,
 						captionIconHeightFactor == 0 ? y : height / 2 - captionIcon.getHeight() / 2);
 			}
 
@@ -1120,7 +1118,7 @@ protected int gap;
 	            break;
 	          case CENTER:
 	            xx = (this.width - getTotalCharWidth()) >> 1;
-					if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4)) {
+					if(getTotalCharWidth() > xMax - xMin - (captionIcon == null ? 0 : captionIcon.getWidth() + getFontHeightForLayout() / 4)) {
 						xx = this.width - getTotalCharWidth() - xOffset;
 					}
 	            break;
@@ -1188,8 +1186,8 @@ protected int gap;
 					g.clearClip();
 					g.backColor = Color.interpolate(backColor, foreColor);
 					g.fillRect(cursorX - 1 + (uiMaterial ? UnitsConverter.toPixels(DP + 2) : 0),
-							uiMaterial ? materialCaption.ycap0 + font.fm.descent : y, cursorThickness,
-							fmH - font.fm.descent);
+							uiMaterial ? materialCaption.ycap0 + (int) Math.ceil(font.fm.descentAtSizeD(font.size * g.getFontScale())) : y, cursorThickness,
+							fontHeight - (int) Math.ceil(font.fm.descentAtSizeD(font.size * g.getFontScale())));
 				}
 			}
 		} else {
@@ -1206,7 +1204,7 @@ protected int gap;
 			}
 			g.foreColor = c;
 			g.setFont(materialCaption.getFcap());
-			g.drawText(caption, materialCaption.xcap + (captionIcon == null ? 0 : captionIcon.getWidth() + fmH / 4), materialCaption.ycap);
+			g.drawText(caption, materialCaption.xcap + (captionIcon == null ? 0 : captionIcon.getWidth() + getFontHeightForLayout() / 4), materialCaption.ycap);
 		}
 	}
 
@@ -1445,7 +1443,7 @@ protected int gap;
     if (Settings.unmovableSIP && (force || !Window.isSipShown())) { // guich@tc126_21
       Window ww = getParentWindow();
       if (ww != null) {
-        ww.shiftScreen(this, this.height - (fmH + prefH));
+        ww.shiftScreen(this, this.height - (getFontHeightForLayout() + prefH));
       }
     }
   }
@@ -1824,18 +1822,18 @@ protected int gap;
       }
       if (x - 3 < xMin) {
         // characters hidden on left - jump
-        xOffset += (xMin - x) + fmH;
+        xOffset += (xMin - x) + getFontHeightForLayout();
         if (xOffset > xMin) {
           xOffset = xMin;
         }
       }
 			if (alignment == LEFT) {
       int totalCharWidth = getTotalCharWidth();
-      int cw = captionIcon != null ? captionIcon.getWidth() + fmH / 4 : 0;
+      int cw = captionIcon != null ? captionIcon.getWidth() + getFontHeightForLayout() / 4 : 0;
       int xMax = this.xMax - cw;
       if (x > xMax) {
         // characters hidden on right - jump
-        xOffset -= (x - xMax) + fmH;
+        xOffset -= (x - xMax) + getFontHeightForLayout();
         int minOfs = xMax - totalCharWidth;
         if (xOffset < minOfs) {
           xOffset = minOfs;
