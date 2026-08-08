@@ -5,8 +5,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 -->
 # Expand TCIR semantic coverage and production readiness
 
-Status: proposed continuation; execution has not started. Activate only after
-the priority and Java-level optimization decision gate in Milestone 0.
+Status: Milestone 0 decision gate resolved; continuation implementation has not
+started. Activate it only for a separately authorized, evidence-backed TCIR
+product or runtime objective.
 
 This ExecPlan follows `.agent/PLANS.md` and `AGENTS.md`. It is a new plan built
 on the completed architectural foundation in
@@ -27,12 +28,15 @@ execute through TCIR and eligible native backends with legacy-equivalent
 results, exceptions, GC behavior, calls, synchronization, lifecycle, and
 diagnostics on the platforms the project decides to support.
 
-Execution order is intentionally undecided. Separate work is expected to
-evaluate Java-level whole-program optimization and a possible high-level IR
-(HIR). That investigation may make Java-level optimization, a particular TCIR
-family, AOT productionization, or platform work more valuable than exhaustive
-TCIR opcode coverage. Milestone 0 must record the decision before any field,
-array, handler, call, monitor, optimizer, or rollout implementation begins.
+The completed ProGuard-before-J2TC experiment resolved the first sequencing
+gate. Its SDK-runtime TCZ evidence selects bounded field propagation, marking,
+and removal immediately before or within J2TC as the next compiler experiment,
+independent of this TCIR continuation. It does not justify a whole-program HIR,
+production ProGuard, tree shaking, or a TCIR/JIT/AOT priority. Representative
+application evidence is required before broadening the Java-level investment,
+and execution-time workload evidence is required to prioritize TCIR or its
+native backends. No field, array, handler, call, monitor, optimizer, or rollout
+implementation begins in this plan merely because the gate is resolved.
 
 Throughout this plan, the legacy interpreter remains the semantic authority and
 whole-method fallback. `TC_ENABLE_COMPILED_DISPATCH`, `TC_ENABLE_SLJIT_JIT`, and
@@ -42,7 +46,8 @@ policy justify a change.
 ## Working Set and Resume Protocol
 
 Until activation, this file is the only live record for this continuation. Its
-first resume action is Milestone 0, not implementation. When execution is
+first resume action is to identify a concrete TCIR product/runtime objective and
+representative workload, not implementation by default. When execution is
 authorized, create supporting records under `.agent/state/`, `.agent/evidence/`,
 `.agent/archive/`, and `.agent/reports/` using the plan stem
 `expand-tcir-semantic-coverage-and-production-readiness`. The state is the
@@ -82,10 +87,13 @@ completed plan, archive, or raw evidence by default.
   delivered and accepted by the completed predecessor plan.
 - [x] Continuation boundary: exhaustive semantic coverage and production
   readiness were separated from the completed architecture proof.
-- [ ] Milestone 0: decide priority and boundaries relative to Java-level
-  whole-program optimization/HIR work; choose one authorized first workstream.
-- [ ] Milestone 1: refresh the application corpus, opcode/fallback telemetry,
-  helper-effect map, and platform/product requirements needed by that workstream.
+- [x] Milestone 0: resolve priority and boundaries relative to Java-level
+  whole-program optimization/HIR work. The selected first compiler workstream
+  is bounded pre-J2TC/J2TC field optimization outside this continuation; no
+  TCIR implementation workstream is authorized yet.
+- [ ] Milestone 1: after separate authorization, refresh the application corpus,
+  opcode/fallback telemetry, helper-effect map, and platform/product requirements
+  needed by the selected TCIR workstream.
 - [ ] Milestones 2–6: implement only the semantic families selected by the
   priority decision, using one bounded effect contract at a time.
 - [ ] Milestone 7: improve TCIR optimization readiness only where a selected
@@ -95,8 +103,9 @@ completed plan, archive, or raw evidence by default.
 - [ ] Milestone 9: decide packaging, publication, defaults, and release scope
   from measured product evidence; complete the report and retrospective.
 
-No semantic-family implementation is active. Fields and class initialization
-are candidates, not an assumed next slice.
+No TCIR semantic-family implementation is active. Fields and class
+initialization remain possible runtime-semantic candidates, but the Java-level
+field-optimization result does not select them as this plan's next slice.
 
 ## Current Architecture and Scope
 
@@ -141,6 +150,32 @@ Record the current product/compiler objective, representative applications,
 target platforms, acceptable fallback rate, deployment constraints, and why the
 selected first workstream has priority. Obtain or reference the separate
 Java-level whole-program optimization/HIR conclusion when available.
+
+Gate resolution on 2026-08-08: the separate experiment in
+`.agent/exec-plan-evaluate-proguard-before-j2tc.md` and its editorial report in
+`.agent/reports/evaluate-proguard-before-j2tc-editorial.md` found that compatible
+whole-runtime field optimization reduces TC code slots by 3.495%, while the
+same module-local family reduces them by 3.397%. The 0.097 percentage-point
+whole-runtime advantage does not justify a new whole-program layer. The first
+selected compiler workstream is therefore bounded field propagation, marking,
+and removal immediately before or inside J2TC, retaining ProGuard only as an
+external oracle. That work is independent of TCIR and is not authorized for
+implementation by this plan.
+
+Facts used by that selected workstream still exist above TCIR: Java field
+declarations and modifiers, constants, class/module ownership, replacement
+class naming, reflection roots, native descriptors, and Java bytecode data
+flow. By the TCIR boundary, Java has already become TotalCross register
+bytecode; TCIR sees resolved TotalCross symbols, typed homes, CFG/effects, and
+runtime ABI obligations, but not the original Java-level ownership and
+reachability model. TCIR therefore must not be retrofitted to perform the
+selected Java-aware field analysis.
+
+Explicitly deferred by this gate are a broad HIR, ProGuard production
+integration, reachability/tree shaking, general TCIR optimization, additional
+TCIR semantic breadth, and JIT/AOT productionization. A future TCIR activation
+must name an application blocker, execution-time objective, platform gate, or
+deployment requirement and supply representative workload evidence.
 
 The gate must answer only what this continuation needs:
 
@@ -340,6 +375,22 @@ and preserve every intentional fallback.
   Rationale: opaque tokens and signatures cannot establish collector, class
   initialization, handler, lock, or lifecycle behavior.
 
+- Decision: Resolve Milestone 0 in favor of bounded field optimization near
+  J2TC, outside this continuation.
+  Rationale: whole-runtime ProGuard field optimization reduced TC code slots by
+  3.495%, but module-local optimization already achieved 3.397%; the compatible
+  value is predominantly local and does not require a Java whole-program HIR or
+  a TCIR change. ProGuard remains an oracle, not a production dependency.
+  Date: 2026-08-08.
+
+- Decision: Keep the TCIR continuation inactive until it has independent
+  application and execution-time evidence.
+  Rationale: the ProGuard experiment measured TCZ structure, not runtime speed,
+  and therefore cannot rank semantic expansion, JIT, or AOT work. Broad Java
+  optimization also requires representative application evidence beyond the
+  SDK runtime corpus.
+  Date: 2026-08-08.
+
 ## Validation and Acceptance
 
 Follow the four levels in `AGENTS.md` and stop at the first sufficient level.
@@ -423,17 +474,25 @@ Do not append a diary or mutate the predecessor's completed state.
 
 ## Outcomes & Retrospective
 
-No continuation implementation has started. The plan currently records a safe,
-resumable expansion path and, most importantly, prevents the predecessor's old
-“fields next” ordering from outrunning the Java-level optimization/HIR and
-product-priority decisions.
+Milestone 0 is complete, and no continuation implementation has started. The
+decision gate replaced the predecessor's old “fields next” ordering with a
+measured boundary: the next compiler experiment is bounded field propagation,
+marking, and removal before or inside J2TC, outside this plan. A broad HIR,
+production ProGuard, tree shaking, and TCIR/JIT/AOT are not selected by the SDK
+runtime TCZ evidence.
+
+The gate also clarified ownership. Java declarations, ownership, constants,
+and reachability belong above the TCIR boundary; TCIR remains responsible for
+lowered TotalCross runtime semantics and backend contracts. A future activation
+of this continuation must bring an independent product/runtime objective and
+representative application or execution-time evidence. This preserves the
+architecture proof without inventing work from structural byte-count results.
 
 The inherited foundation is complete and remains usable independently: TCIR is
 a proven backend/runtime IR with interpreter, SLJIT, portable-C AOT, mixed-mode
 integration, representative semantic coverage, explicit effects, and safe
-fallback. This plan will record its own outcomes only after Milestone 0 selects
-an authorized objective and evidence demonstrates the resulting semantic or
-production behavior.
+fallback. This plan will record further outcomes only after a separately
+authorized TCIR objective demonstrates semantic or production behavior.
 
 ## Revision Note
 
@@ -441,3 +500,8 @@ production behavior.
 TCIR/JIT/AOT ExecPlan was closed successfully. The plan preserves future
 semantic and production work without assuming it outranks upcoming Java-level
 whole-program optimization/HIR investigation.
+
+2026-08-08: resolved Milestone 0 from the completed ProGuard-before-J2TC TCZ
+experiment. Bounded field optimization near J2TC is the selected independent
+compiler workstream; this TCIR continuation remains inactive pending its own
+application and execution-time objective.
