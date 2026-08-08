@@ -1,0 +1,82 @@
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
+configurations {
+    proguardTczExperimentEngine {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+}
+
+dependencies {
+    proguardTczExperimentEngine 'com.guardsquare:proguard-base:7.9.1'
+}
+
+def proguardTczExperimentScript = file('gradle/proguard_tcz_experiment.py')
+def proguardTczDeployTasks = [
+    tasks.named('deployTcbaselang'),
+    tasks.named('deployTcbaseutil'),
+    tasks.named('deployTcbasemisc'),
+    tasks.named('deployTcui')
+]
+
+def registerProguardTczStage = { String taskName, String stage, Object stageDependencies ->
+    tasks.register(taskName, Exec) {
+        group = 'verification'
+        description = "Runs the ${stage} stage of the isolated ProGuard-before-J2TC experiment."
+        dependsOn stageDependencies
+
+        inputs.file(proguardTczExperimentScript)
+        inputs.files(
+            tasks.named('jar').flatMap { it.archiveFile },
+            tasks.named('tcbaselangJar').flatMap { it.archiveFile },
+            tasks.named('tcbaseutilJar').flatMap { it.archiveFile },
+            tasks.named('tcbasemiscJar').flatMap { it.archiveFile },
+            tasks.named('tcuiJar').flatMap { it.archiveFile }
+        )
+
+        doFirst {
+            def javaExecutable = new File(System.getProperty('java.home'), 'bin/java')
+            def deployClasspath = files(
+                tasks.named('jar').flatMap { it.archiveFile },
+                configurations.runtimeClasspath
+            ).asPath
+            def commonArguments = [
+                'python3', proguardTczExperimentScript.absolutePath,
+                stage,
+                '--project-dir', rootDir.absolutePath,
+                '--repository-root', rootDir.parentFile.absolutePath,
+                '--java', javaExecutable.absolutePath,
+                '--java-home', System.getProperty('java.home'),
+                '--proguard-classpath', configurations.proguardTczExperimentEngine.asPath,
+                '--deploy-classpath', deployClasspath,
+                '--sdk-jar', tasks.named('jar').get().archiveFile.get().asFile.absolutePath,
+                '--module', "lang|${tasks.named('tcbaselangJar').get().archiveFile.get().asFile.absolutePath}|${file('build/libs/tc.base.lang.tcz').absolutePath}|tc.base.lang",
+                '--module', "util|${tasks.named('tcbaseutilJar').get().archiveFile.get().asFile.absolutePath}|${file('build/libs/tc.base.util.tcz').absolutePath}|tc.base.util",
+                '--module', "misc|${tasks.named('tcbasemiscJar').get().archiveFile.get().asFile.absolutePath}|${file('build/libs/tc.base.misc.tcz').absolutePath}|tc.base.misc",
+                '--module', "ui|${tasks.named('tcuiJar').get().archiveFile.get().asFile.absolutePath}|${file('build/libs/TCUI.tcz').absolutePath}|TCUI"
+            ]
+            commandLine commonArguments
+        }
+    }
+}
+
+def proguardTczBaseline = registerProguardTczStage(
+    'proguardTczBaseline', 'baseline', proguardTczDeployTasks)
+def proguardTczModuleOptimize = registerProguardTczStage(
+    'proguardTczModuleOptimize', 'module-opt', proguardTczBaseline)
+def proguardTczWholeOptimize = registerProguardTczStage(
+    'proguardTczWholeOptimize', 'whole-opt', proguardTczModuleOptimize)
+def proguardTczAblations = registerProguardTczStage(
+    'proguardTczAblations', 'ablations', proguardTczWholeOptimize)
+def proguardTczSafeShrink = registerProguardTczStage(
+    'proguardTczSafeShrink', 'safe-shrink', proguardTczWholeOptimize)
+def proguardTczAnalyze = registerProguardTczStage(
+    'proguardTczAnalyze', 'analyze', [proguardTczAblations, proguardTczSafeShrink])
+
+tasks.register('proguardTczExperiment') {
+    group = 'verification'
+    description = 'Produces the complete isolated ProGuard-before-J2TC TCZ experiment.'
+    dependsOn proguardTczAnalyze
+}
