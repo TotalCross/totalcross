@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -145,7 +146,7 @@ TC_API void tugG_fillCircle_iii(NMParams p);
 TC_API void tugG_getPixel_ii(NMParams p);
 TC_API void tugG_setPixel_ii(NMParams p);
 TC_API void tugG_drawLine_iiii(NMParams p);
-TC_API void tugG_drawLine_iiiii(NMParams p);
+TC_API void tugG_drawLine_iiiip(NMParams p);
 TC_API void tugG_drawDots_iiii(NMParams p);
 TC_API void tugG_drawRect_iiii(NMParams p);
 TC_API void tugG_fillRect_iiii(NMParams p);
@@ -157,6 +158,13 @@ TC_API void tugG_drawText_Ciiii(NMParams p);
 TC_API void tugG_drawText_siii(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
 TC_API void tugG_fillRoundRect_iiiii(NMParams p);
+TC_API void tugG_drawRRect_rib(NMParams p);
+TC_API void tugRR_containsCorner_ddddddi(NMParams p);
+TC_API void tugRR_leftBoundForY_dddddddd(NMParams p);
+TC_API void tugRR_rightBoundForY_dddddddd(NMParams p);
+TC_API void tugRR_ellipseLeftBound_ddddd(NMParams p);
+TC_API void tugRR_ellipseRightBound_ddddd(NMParams p);
+TC_API void tugRR_ellipseDx_ddd(NMParams p);
 TC_API void tugG_copyRect_giiiiii(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
 TC_API void tugG_drawImage_iiib(NMParams p);

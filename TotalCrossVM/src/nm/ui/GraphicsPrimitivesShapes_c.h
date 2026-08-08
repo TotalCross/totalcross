@@ -126,7 +126,7 @@ static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int
 {
    xc += Graphics_transX(g);
    yc += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_ellipseDrawAndFill(skiaSurfaceForGraphics(g), xc, yc, rx, ry, pc1 | Graphics_alpha(g), pc2 | Graphics_alpha(g), fill, gradient);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -325,7 +325,7 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #else
 static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie)
 {
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_fillPolygon(skiaSurfaceForGraphics(g), xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1 | Graphics_alpha(g), c2 | Graphics_alpha(g), gradient, isPie);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -353,17 +353,18 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #endif
       {
          int32 i;
+         GfxPaint paint = gfxPaintFromColor(&pixel);
          for (i=1; i < nPoints1; i++)
-            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);
+            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], paint);
          for (i=1; i < nPoints2; i++)
-            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);
+            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], paint);
       }
    }
 }
 #else
 static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel)
 {
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_drawPolygon(skiaSurfaceForGraphics(g), xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -380,7 +381,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
 {
    xc += Graphics_transX(g);
    yc += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_arcPiePointDrawAndFill(skiaSurfaceForGraphics(g), xc, yc, rx, ry, startAngle, endAngle, c | Graphics_alpha(g), c2 | Graphics_alpha(g), fill, pie, gradient);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
@@ -397,7 +398,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
    int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;
-   int32 clipFactor = Graphics_minX(g) * 1000000000 + Graphics_maxX(g) * 10000000 + Graphics_minY(g) * 100000 + Graphics_maxY(g);
+   int32 clipFactor = 0;
    bool sameClipFactor = Graphics_lastClipFactor(g) == clipFactor;
 
    if (rx < 0 || ry < 0) // guich@501_13
@@ -639,7 +640,10 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       yPoints[endIndex]   = oldY1;
 #ifdef ANDROID
       if (!gradient && endAngle == 360)
-         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], c);
+      {
+         Pixel lineColor = c;
+         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], gfxPaintFromColor(&lineColor));
+      }
 #endif
    }
 }
@@ -686,9 +690,83 @@ static void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, 
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_drawRoundRect(skiaSurfaceForGraphics(g), x, y, w, h, r, c | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
+
+   markDirty(currentContext, g, x, y, w, h);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////
+#ifndef SKIA_H
+static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+   int32 top = y;
+   int32 bottom = y + h - 1;
+   int32 yy;
+   int32 start, end;
+   int32 previousStart = 0x7FFFFFFF;
+   int32 previousEnd = 0x7FFFFFFF;
+   Pixel lineColor = c;
+   GfxPaint paint = gfxPaintFromColor(&lineColor);
+
+   if (w <= 0 || h <= 0)
+      return;
+
+   if (radii == null)
+   {
+      if (filled)
+         fillRect(currentContext, g, x, y, w, h, c);
+      else
+         drawRect(currentContext, g, x, y, w, h, c);
+      return;
+   }
+
+   for (yy = top; yy <= bottom; yy++)
+   {
+      if (!gfxComputeRRectSpan(x, y, w, h, radii, yy, &start, &end))
+         continue;
+
+      if (filled)
+         drawLine(currentContext, g, start, yy, end, yy, paint);
+      else
+      {
+         if (previousStart == 0x7FFFFFFF)
+            drawLine(currentContext, g, start, yy, end, yy, paint);
+         else
+         {
+            if (start < previousStart)
+               drawLine(currentContext, g, start, yy, previousStart, yy, paint);
+            else if (start > previousStart)
+               drawLine(currentContext, g, previousStart, yy - 1, start, yy - 1, paint);
+
+            if (end > previousEnd)
+               drawLine(currentContext, g, previousEnd, yy, end, yy, paint);
+            else if (end < previousEnd)
+               drawLine(currentContext, g, end, yy - 1, previousEnd, yy - 1, paint);
+         }
+         setPixel(currentContext, g, start, yy, c);
+         setPixel(currentContext, g, end, yy, c);
+      }
+
+      previousStart = start;
+      previousEnd = end;
+   }
+
+   if (!filled && previousStart != 0x7FFFFFFF)
+      drawLine(currentContext, g, previousStart, bottom, previousEnd, bottom, paint);
+}
+#else
+static void drawRRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+   int32 skiaSurface = skiaSurfaceForGraphics(g);
+
+   x += Graphics_transX(g);
+   y += Graphics_transY(g);
+   skia_applyClip(skiaSurface, g);
+   skia_drawRRect(skiaSurface, x, y, w, h, radii, c | Graphics_alpha(g), filled);
+   skia_restoreClip(skiaSurface);
 
    markDirty(currentContext, g, x, y, w, h);
 }
@@ -703,6 +781,8 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy
 {
    int32 px1,px2,py1,py2,xm,ym,x,y=0, i, x2, e2, err;
    PixelConv color;
+   Pixel lineColor = c;
+   GfxPaint gfxPaint = gfxPaintFromColor(&lineColor);
    if (r > (width/2) || r > (height/2)) r = min32(width/2,height/2); // guich@200b4_6: correct bug that crashed the device.
 
    x = -r;
@@ -724,8 +804,8 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy
    {
       i = 255 - 255 * abs(err - 2 * (x + y) - 2) / r;
 
-      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,c);
-      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,c);
+      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,gfxPaint);
+      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,gfxPaint);
 
       if (i < 256 && i > 0)
       {
@@ -767,7 +847,7 @@ static void fillRoundRect(Context currentContext, TCObject g, int32 x, int32 y, 
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_fillRoundRect(skiaSurfaceForGraphics(g), x, y, w, h, r, c | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
 

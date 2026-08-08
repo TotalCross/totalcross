@@ -43,6 +43,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    Pixel * srcPixels;
    Pixel * dstPixels;
    int32 srcPitch, srcWidth, srcHeight, alphaMask = 0;
+   TCObject roundClip = Graphics_roundClip(dstSurf);
    bool isSrcScreen = !Surface_isImage(srcSurf);
    bool unlockSrc = false;
    if (Surface_isImage(srcSurf))
@@ -172,9 +173,39 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 #endif
    for (i=0; i < (uint32)height; i++) // in opengl, only case of image drawing on image
    {
-      PixelConv *ps = (PixelConv*)srcPixels;
-      PixelConv *pt = (PixelConv*)dstPixels;
-      uint32 count = width;
+      int32 currentY = dstY + (int32)i;
+      int32 rowStart = dstX;
+      int32 rowEnd = dstX + width - 1;
+      int32 rowWidth;
+      PixelConv *ps;
+      PixelConv *pt;
+      uint32 count;
+
+      if (roundClip != null)
+      {
+         int32 spanStart, spanEnd;
+         if (!gfxClipHorizontalSpan(dstSurf, currentY, &spanStart, &spanEnd))
+         {
+            srcPixels += srcPitch;
+            dstPixels += Graphics_pitch(dstSurf);
+            continue;
+         }
+         if (rowStart < spanStart)
+            rowStart = spanStart;
+         if (rowEnd > spanEnd)
+            rowEnd = spanEnd;
+         if (rowEnd < rowStart)
+         {
+            srcPixels += srcPitch;
+            dstPixels += Graphics_pitch(dstSurf);
+            continue;
+         }
+      }
+
+      rowWidth = rowEnd - rowStart + 1;
+      ps = (PixelConv*)srcPixels + (rowStart - dstX);
+      pt = (PixelConv*)dstPixels + (rowStart - dstX);
+      count = (uint32)rowWidth;
       if (isSrcScreen)
          for (;count != 0; pt++,ps++, count--)
          {
@@ -300,7 +331,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       }
 
       if (doClip) {
-         skia_setClip(skiaSurfaceForGraphics(dstSurf), Get_Clip(dstSurf));
+         skia_applyClip(skiaSurfaceForGraphics(dstSurf), dstSurf);
          clipSet = true;
       }
       if (frameCount > 1) {
@@ -340,7 +371,7 @@ static int32 getPixel(TCObject g, int32 x, int32 y)
    int32 ret = -1;
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
+   if (gfxClipContains(g, x, y))
    {
       PixelConv p;
 #ifdef SKIA_H
@@ -365,7 +396,7 @@ static PixelConv getPixelConv(TCObject g, int32 x, int32 y)
    p.pixel = -1;
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
+   if (gfxClipContains(g, x, y))
    {
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
@@ -385,7 +416,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
+   if (gfxClipContains(g, x, y))
    {
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
@@ -409,7 +440,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_setPixel(skiaSurfaceForGraphics(g), x, y, pixel | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
