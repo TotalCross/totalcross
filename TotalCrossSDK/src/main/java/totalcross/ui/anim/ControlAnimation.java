@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -24,6 +25,7 @@ public abstract class ControlAnimation implements UpdateListener {
   private boolean isPlaying;
   private boolean isWaiting;
   private boolean slave;
+  private totalcross.ui.image.Image ownedOffscreen;
   protected boolean releaseScreenShot = true;
 
   /** A delay issued right after the animation finishes */
@@ -51,36 +53,49 @@ public abstract class ControlAnimation implements UpdateListener {
   }
 
   public void start() {
-	executedTime = 0;
+    executedTime = 0;
+    isPlaying = true;
+    ownedOffscreen = null;
+    boolean previousEnableUpdateScreen = Control.enableUpdateScreen;
+    try {
+      if (useOffscreen && c.offscreen == null) {
+        Control.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
+        c.takeScreenShot();
+        ownedOffscreen = c.offscreen;
+        Window.needsPaint = true;
+      }
+      onStart();
+    } finally {
+      Control.enableUpdateScreen = previousEnableUpdateScreen;
+    }
+    if (with != null) {
+      with.start();
+    }
     if (!slave) {
       if (totalTime == 0) {
         internalAnimate();
         return;
       }
       MainWindow.getMainWindow().addUpdateListener(this);
-      isPlaying = true;
-      if (useOffscreen && c.offscreen == null) {
-        Control.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
-        c.takeScreenShot();
-        Window.needsPaint = true;
-      }
-    }
-    if (with != null) {
-      with.start();
     }
   }
 
   public void stop(boolean abort) {
     if (isPlaying) {
-       isPlaying = false;
-       if (releaseScreenShot) {
-         c.releaseScreenShot();
-       }
-       
-       if (animFinish != null) {
-         animFinish.onAnimationFinished(this);
-         animFinish = null;
-       }
+      isPlaying = false;
+      if (with != null) {
+        with.stop(abort);
+      }
+      if (releaseScreenShot && ownedOffscreen != null && c.offscreen == ownedOffscreen) {
+        c.offscreen = null;
+        Window.needsPaint = true;
+      }
+      ownedOffscreen = null;
+
+      if (animFinish != null) {
+        animFinish.onAnimationFinished(this);
+        animFinish = null;
+      }
     }
     
     if (!abort) {
@@ -95,7 +110,7 @@ public abstract class ControlAnimation implements UpdateListener {
        }
     }
     
-    if (!isWaiting) {
+    if (!slave && !isWaiting) {
        MainWindow.getMainWindow().removeUpdateListener(this);
     }
   }
@@ -144,10 +159,13 @@ public abstract class ControlAnimation implements UpdateListener {
 
   private void internalAnimate() { 
     animate();
-    if (with != null) {
+    if (with != null && with.isPlaying) {
       with.internalAnimate();
     }
-    Control.enableUpdateScreen = true;
+  }
+
+  /** Initializes subclass state after any requested offscreen image exists. */
+  protected void onStart() {
   }
 
   protected abstract void animate();
