@@ -34,6 +34,9 @@ import tc.tools.converter.java.JavaConstantPool;
 import tc.tools.converter.java.JavaException;
 import tc.tools.converter.java.JavaField;
 import tc.tools.converter.java.JavaMethod;
+import tc.tools.converter.metadata.CompilationMetadata;
+import tc.tools.converter.metadata.CompilationMetadataCollector;
+import tc.tools.converter.metadata.CompilationMetadataCollector.SiteCapture;
 import tc.tools.converter.oper.Operand;
 import tc.tools.converter.oper.OperandConstant32;
 import tc.tools.converter.oper.OperandConstant64;
@@ -92,6 +95,7 @@ public final class J2TC implements JConstants, TCConstants {
   public static Vector callForName = new Vector(4);
   public static boolean notResolvedForNameFound;
   public static String currentClass, currentMethod;
+  private static CompilationMetadataCollector metadataCollector = new CompilationMetadataCollector();
 
   private static ByteArrayStream tcbas = new ByteArrayStream(16000);
   private static ByteArrayStream tcbasz = new ByteArrayStream(16000);
@@ -110,6 +114,7 @@ public final class J2TC implements JConstants, TCConstants {
         return;
       }
       jc.className = Bytecode2TCCode.removeSuffix4D(jc.className);
+      metadataCollector.captureClass(jc, jc.className);
       converted = convertJClass2TClass(jc);
       tcbas.reset();
       tcbasz.reset();
@@ -142,6 +147,7 @@ public final class J2TC implements JConstants, TCConstants {
 
   //This constructor was created solely to perform the test cases of conversion Bytecode2TCCode. After that, it could be removed.
   public J2TC(JavaClass jc, boolean dummy) throws IOException, Exception {
+    metadataCollector.captureClass(jc, jc.className);
     converted = convertJClass2TClass(jc);
     if (DeploySettings.testClass) {
       return;
@@ -455,6 +461,7 @@ public final class J2TC implements JConstants, TCConstants {
       tcm.flags = convertFlags(jm);
       tcm.cpName = GlobalConstantPool.putMethodOrFieldName(jm.name);
       tcm.tcclass = tc;
+      metadataCollector.captureMethodHeader(jm, tcm);
       // setup the parameters
       tcm.paramCount = jm.paramCount;
       // tcm.paramRegs - computed on class load
@@ -529,7 +536,10 @@ public final class J2TC implements JConstants, TCConstants {
           DeployLogger.debug(jc.className + "." + jm.name);
         }
         for (int j = 0; j < bc.length; j++) {
+          SiteCapture site = metadataCollector.beginBytecode(jc, jm, bc[j]);
+          int firstInstruction = vcode.size();
           Instruction tccode = Bytecode2TCCode.convert(bc, bc[j], stack, vcode, isStaticInitializer, jm.signature);
+          metadataCollector.endBytecode(site, vcode, firstInstruction);
           if (dumpBytecodes) {
             DeployLogger.debug(bc[j] + " -> " + tccode); // dump
           }
@@ -537,6 +547,7 @@ public final class J2TC implements JConstants, TCConstants {
         Bytecode2TCCode.updateBranchs(vcode);
         tcm.exceptionHandlers = Bytecode2TCCode.updatePCsOfExceptionHandler(tcm.exceptionHandlers);
         tcm.insts = vcode;
+        metadataCollector.finishMethod(jm, tcm);
       }
 
       tcm.iCount = OperandReg.nextRegI;
@@ -727,6 +738,7 @@ public final class J2TC implements JConstants, TCConstants {
             Convert.toInt(normalized); // ignore numeric-only classes
           } catch (InvalidNumberException ine) {
             callForName.addElement(normalized);
+            metadataCollector.recordResolvedClassForName(normalized);
           }
         }
 
@@ -760,6 +772,7 @@ public final class J2TC implements JConstants, TCConstants {
       }
       // set the index to access the field in the constant pool (class name + field name)
       ((TCField) o).cpField = index;
+      metadataCollector.captureField(jc, f, index);
     }
 
     nextRegIStatic = OperandReg.nextRegI;
@@ -1147,6 +1160,7 @@ public final class J2TC implements JConstants, TCConstants {
     fName = fName.replace('\\', '/');
     ByteCode.initClasses();
     Java8LambdaLowering.beginConversionRun();
+    metadataCollector = new CompilationMetadataCollector();
     Vector vin = new Vector(200);
     DeploySettings.entriesList = vin; // keep track of input files
     setupHt();
@@ -1471,6 +1485,22 @@ public final class J2TC implements JConstants, TCConstants {
         }
       }
     }
+  }
+
+  public static CompilationMetadata getCompilationMetadata() {
+    return metadataCollector.snapshot();
+  }
+
+  public static void resetCompilationMetadata() {
+    metadataCollector = new CompilationMetadataCollector();
+  }
+
+  static void recordResolvedClassForName(String className) {
+    metadataCollector.recordResolvedClassForName(className);
+  }
+
+  static void recordUnresolvedClassForName() {
+    metadataCollector.recordUnresolvedClassForName();
   }
 
   private static boolean isEmpty(Vector v) {

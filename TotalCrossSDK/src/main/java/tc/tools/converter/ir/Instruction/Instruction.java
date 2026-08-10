@@ -1,7 +1,9 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
+
 package tc.tools.converter.ir.Instruction;
 
 import tc.tools.converter.ConverterException;
@@ -17,6 +19,9 @@ public class Instruction implements TCConstants {
   public int line; // line number in the original source file.
   public int opcode;
   public boolean belongsTry;
+  /** Converter-only source origin. These fields are not serialized into TCCode. */
+  public int javaPc = -1;
+  public int javaOpcode = -1;
 
   public Instruction(int op, int line) {
     opcode = op;
