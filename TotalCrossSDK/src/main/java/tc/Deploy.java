@@ -140,7 +140,7 @@ public class Deploy {
           Deployer4IPhoneIPA.iosKeystoreInit();
           new Deployer4IPhoneIPA();
         }
-        if (!DeploySettings.inputFileWasTCZ) {
+        if (!DeploySettings.inputFileWasTCZ && DeploySettings.tcmMode == DeploySettings.TcmMode.NONE) {
           try {
             for (int i = 0; i < DeploySettings.tczs.length; i++) {
               new totalcross.io.File((String) DeploySettings.tczs[i]).delete();
