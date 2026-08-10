@@ -143,10 +143,20 @@ public class Launcher extends SimulatorCore implements PreviewSession {
   public void resizePreview(int width, int height, double density) {
     if (launcher == null) throw new IllegalStateException("Launcher has not been started");
     runPreviewCommand(() -> {
+      if (width < 0 || height < 0 || !Double.isFinite(density) || density <= 0) {
+        throw new IllegalArgumentException("invalid preview surface configuration");
+      }
+      launcher.toWidth = width;
+      launcher.toHeight = height;
+      launcher.toDensityValue = density;
       Settings.screenDensity = density;
       Settings.screenWidth = width;
       Settings.screenHeight = height;
+      totalcross.ui.gfx.Graphics.configureMainWindowSurface(width, height, density);
+      launcher.screenImg = null;
+      launcher.previewSurface = null;
       if (launcher.hasWindowBackend()) launcher.setWindowSize(width, height, true);
+      totalcross.ui.Window.repaintActiveWindows();
       launcher.updateScreen();
     }, "preview resize");
   }
@@ -287,7 +297,7 @@ public class Launcher extends SimulatorCore implements PreviewSession {
       throw new IllegalStateException("Launcher arguments must be parsed before starting the window backend");
     }
     WindowConfiguration config = new WindowConfiguration(parsedConfig.width, parsedConfig.height, parsedConfig.scaleValue,
-        parsedConfig.densityValue, title, parsedConfig.x, parsedConfig.y, parsedConfig.fullscreen,
+        title, parsedConfig.x, parsedConfig.y, parsedConfig.fullscreen,
         Settings.resizableWindow, background, windowListener, componentListener);
     AwtWindow backend = new AwtWindow(launcher);
     backend.start(config);
@@ -297,6 +307,7 @@ public class Launcher extends SimulatorCore implements PreviewSession {
 
   void setPresentationScale(double scale) {
     toScale = scale;
+    setInputPresentationScale(scale);
   }
 
   Launcher getSimulatorCore() {

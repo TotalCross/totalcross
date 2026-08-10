@@ -98,13 +98,23 @@ public class AwtWindow implements SimulatorWindow {
     return scale;
   }
 
-  public double getContentScale() {
+  /**
+   * Returns the host monitor's AWT presentation scale when it is available.
+   * This value never configures the simulated TotalCross surface.
+   */
+  public double getHostPresentationScale() {
     if (!frame.isDisplayable() || frame.getGraphicsConfiguration() == null) {
       return Double.NaN;
     }
-    AffineTransform transform = frame.getGraphicsConfiguration().getDefaultTransform();
-    double contentScale = transform.getScaleX();
-    return Double.isFinite(contentScale) && contentScale > 0 ? contentScale : Double.NaN;
+    return resolveHostPresentationScale(frame.getGraphicsConfiguration().getDefaultTransform());
+  }
+
+  static double resolveHostPresentationScale(AffineTransform transform) {
+    if (transform == null) {
+      return Double.NaN;
+    }
+    double hostScale = transform.getScaleX();
+    return Double.isFinite(hostScale) && hostScale > 0 ? hostScale : Double.NaN;
   }
 
   static double resolveScale(WindowConfiguration config) {
@@ -120,18 +130,16 @@ public class AwtWindow implements SimulatorWindow {
 
   static double resolveScale(WindowConfiguration config, Rectangle displayBounds) {
     if (config.scaleValue != -1) {
-      return Math.abs(config.scaleValue) / config.densityValue;
+      return Math.abs(config.scaleValue);
     }
     if (displayBounds == null) {
-      return 1 / config.densityValue;
+      return 1;
     }
 
-    int viewportWidth = (int) (config.width / config.densityValue);
-    int viewportHeight = (int) (config.height / config.densityValue);
-    double maxRatio = Math.max((double) viewportWidth / displayBounds.width,
-        (double) viewportHeight / displayBounds.height);
+    double maxRatio = Math.max((double) config.width / displayBounds.width,
+        (double) config.height / displayBounds.height);
     double usableArea = 0.88;
-    return maxRatio > usableArea ? usableArea / maxRatio / config.densityValue : 1 / config.densityValue;
+    return maxRatio > usableArea ? usableArea / maxRatio : 1;
   }
 
   public void setContentSize(int width, int height, boolean resizeFrame) {
