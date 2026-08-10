@@ -36,7 +36,8 @@ import tc.tools.converter.java.JavaField;
 import tc.tools.converter.java.JavaMethod;
 import tc.tools.converter.metadata.CompilationMetadata;
 import tc.tools.converter.metadata.CompilationMetadataCollector;
-import tc.tools.converter.metadata.CompilationMetadataCollector.SiteCapture;
+import tc.tools.converter.metadata.CompilationMetadataCapture;
+import tc.tools.converter.metadata.CompilationMetadataCapture.SiteCapture;
 import tc.tools.converter.metadata.TcmWriter;
 import tc.tools.converter.oper.Operand;
 import tc.tools.converter.oper.OperandConstant32;
@@ -96,7 +97,7 @@ public final class J2TC implements JConstants, TCConstants {
   public static Vector callForName = new Vector(4);
   public static boolean notResolvedForNameFound;
   public static String currentClass, currentMethod;
-  private static CompilationMetadataCollector metadataCollector = new CompilationMetadataCollector();
+  private static CompilationMetadataCapture metadataCapture = CompilationMetadataCapture.NONE;
 
   private static ByteArrayStream tcbas = new ByteArrayStream(16000);
   private static ByteArrayStream tcbasz = new ByteArrayStream(16000);
@@ -115,7 +116,7 @@ public final class J2TC implements JConstants, TCConstants {
         return;
       }
       jc.className = Bytecode2TCCode.removeSuffix4D(jc.className);
-      metadataCollector.captureClass(jc, jc.className);
+      metadataCapture.captureClass(jc, jc.className);
       converted = convertJClass2TClass(jc);
       tcbas.reset();
       tcbasz.reset();
@@ -148,7 +149,7 @@ public final class J2TC implements JConstants, TCConstants {
 
   //This constructor was created solely to perform the test cases of conversion Bytecode2TCCode. After that, it could be removed.
   public J2TC(JavaClass jc, boolean dummy) throws IOException, Exception {
-    metadataCollector.captureClass(jc, jc.className);
+    metadataCapture.captureClass(jc, jc.className);
     converted = convertJClass2TClass(jc);
     if (DeploySettings.testClass) {
       return;
@@ -462,7 +463,7 @@ public final class J2TC implements JConstants, TCConstants {
       tcm.flags = convertFlags(jm);
       tcm.cpName = GlobalConstantPool.putMethodOrFieldName(jm.name);
       tcm.tcclass = tc;
-      metadataCollector.captureMethodHeader(jm, tcm);
+      metadataCapture.captureMethodHeader(jm, tcm);
       // setup the parameters
       tcm.paramCount = jm.paramCount;
       // tcm.paramRegs - computed on class load
@@ -537,10 +538,10 @@ public final class J2TC implements JConstants, TCConstants {
           DeployLogger.debug(jc.className + "." + jm.name);
         }
         for (int j = 0; j < bc.length; j++) {
-          SiteCapture site = metadataCollector.beginBytecode(jc, jm, bc[j]);
+          SiteCapture site = metadataCapture.beginBytecode(jc, jm, bc[j]);
           int firstInstruction = vcode.size();
           Instruction tccode = Bytecode2TCCode.convert(bc, bc[j], stack, vcode, isStaticInitializer, jm.signature);
-          metadataCollector.endBytecode(site, vcode, firstInstruction);
+          metadataCapture.endBytecode(site, vcode, firstInstruction);
           if (dumpBytecodes) {
             DeployLogger.debug(bc[j] + " -> " + tccode); // dump
           }
@@ -548,7 +549,7 @@ public final class J2TC implements JConstants, TCConstants {
         Bytecode2TCCode.updateBranchs(vcode);
         tcm.exceptionHandlers = Bytecode2TCCode.updatePCsOfExceptionHandler(tcm.exceptionHandlers);
         tcm.insts = vcode;
-        metadataCollector.finishMethod(jm, tcm);
+        metadataCapture.finishMethod(jm, tcm);
       }
 
       tcm.iCount = OperandReg.nextRegI;
@@ -739,7 +740,7 @@ public final class J2TC implements JConstants, TCConstants {
             Convert.toInt(normalized); // ignore numeric-only classes
           } catch (InvalidNumberException ine) {
             callForName.addElement(normalized);
-            metadataCollector.recordResolvedClassForName(normalized);
+            metadataCapture.recordResolvedClassForName(normalized);
           }
         }
 
@@ -773,7 +774,7 @@ public final class J2TC implements JConstants, TCConstants {
       }
       // set the index to access the field in the constant pool (class name + field name)
       ((TCField) o).cpField = index;
-      metadataCollector.captureField(jc, f, index);
+      metadataCapture.captureField(jc, f, index);
     }
 
     nextRegIStatic = OperandReg.nextRegI;
@@ -903,7 +904,7 @@ public final class J2TC implements JConstants, TCConstants {
         byte[] bytes = nb.bytes;
         if (name.endsWith(".class")) {
           jc = classes.get(name.substring(0, name.length() - 6));
-          jc = jc.parse(bytes, false);
+          jc = jc.parse(bytes, false, metadataCapture.isEnabled());
           if (Utils.getFileName(jc.className).equals(mainCandidate)) {
             setApplicationProperties(jc);
           }
@@ -1040,7 +1041,7 @@ public final class J2TC implements JConstants, TCConstants {
       return;
     }
     if (isClass) {
-      jc = new JavaClass(bytes, false);
+      jc = new JavaClass(bytes, false, metadataCapture.isEnabled());
       name = jc.className + ".class";
     } else {
       jc = null;
@@ -1161,7 +1162,8 @@ public final class J2TC implements JConstants, TCConstants {
     fName = fName.replace('\\', '/');
     ByteCode.initClasses();
     Java8LambdaLowering.beginConversionRun();
-    metadataCollector = new CompilationMetadataCollector();
+    metadataCapture = DeploySettings.tcmMode == DeploySettings.TcmMode.AOT
+        ? new CompilationMetadataCollector() : CompilationMetadataCapture.NONE;
     Vector vin = new Vector(200);
     DeploySettings.entriesList = vin; // keep track of input files
     setupHt();
@@ -1228,7 +1230,7 @@ public final class J2TC implements JConstants, TCConstants {
                   byte[] bytes = new byte[f.getSize()];
                   f.readBytes(bytes, 0, bytes.length);
                   f.close();
-                  JavaClass jc = new JavaClass(bytes, true);
+                  JavaClass jc = new JavaClass(bytes, true, metadataCapture.isEnabled());
                   if (isMain(jc) && !jc.className.contains("$")) {
                     if (found) {
                       throw new IllegalArgumentException(
@@ -1261,7 +1263,7 @@ public final class J2TC implements JConstants, TCConstants {
             fLow += ".class";
           }
           byte[] bytes = Utils.loadFile(fName, true);
-          JavaClass jc = new JavaClass(bytes, false);
+          JavaClass jc = new JavaClass(bytes, false, metadataCapture.isEnabled());
           if (jc.className.indexOf("totalcross/") >= 0 && jc.className.indexOf("test/") == -1) {
             throw new IllegalArgumentException(
                 "You can't deploy totalcross packages using a single .class. Add it to a "
@@ -1498,19 +1500,23 @@ public final class J2TC implements JConstants, TCConstants {
   }
 
   public static CompilationMetadata getCompilationMetadata() {
-    return metadataCollector.snapshot();
+    return metadataCapture.snapshot();
   }
 
   public static void resetCompilationMetadata() {
-    metadataCollector = new CompilationMetadataCollector();
+    metadataCapture = new CompilationMetadataCollector();
+  }
+
+  public static void disableCompilationMetadata() {
+    metadataCapture = CompilationMetadataCapture.NONE;
   }
 
   static void recordResolvedClassForName(String className) {
-    metadataCollector.recordResolvedClassForName(className);
+    metadataCapture.recordResolvedClassForName(className);
   }
 
   static void recordUnresolvedClassForName() {
-    metadataCollector.recordUnresolvedClassForName();
+    metadataCapture.recordUnresolvedClassForName();
   }
 
   private static boolean isEmpty(Vector v) {
@@ -1552,7 +1558,8 @@ public final class J2TC implements JConstants, TCConstants {
       if (entryName.endsWith(".class")) {
         InputStream classFileInputStream = jarFile.getInputStream(entry);
         try {
-          JavaClass javaClass = new JavaClass(readAllBytes(classFileInputStream), false);
+          JavaClass javaClass = new JavaClass(readAllBytes(classFileInputStream), false,
+              metadataCapture.isEnabled());
           ret.put(javaClass.className, javaClass);
         } finally {
           classFileInputStream.close();

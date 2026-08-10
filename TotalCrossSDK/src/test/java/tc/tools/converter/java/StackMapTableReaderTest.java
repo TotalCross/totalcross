@@ -5,6 +5,7 @@ package tc.tools.converter.java;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -43,7 +44,7 @@ class StackMapTableReaderTest {
     assertDoesNotThrow(() -> fixture.getMethod("objectFrame", Object.class).invoke(null, new Object()));
     assertDoesNotThrow(() -> fixture.getMethod("uninitialized").invoke(null));
 
-    JavaClass parsed = new JavaClass(bytes, false);
+    JavaClass parsed = new JavaClass(bytes, false, true);
     assertEquals(1, method(parsed, "same").code.stackMapFrames.length);
     assertEquals(1, method(parsed, "sameOne").code.stackMapFrames[0].stack.length);
     assertEquals(1, method(parsed, "appendChop").code.stackMapFrames[0].locals.length);
@@ -76,9 +77,20 @@ class StackMapTableReaderTest {
   @Test
   void reportsMalformedFrameTypeWithMethodContext() throws Exception {
     totalcross.io.IOException error = assertThrows(totalcross.io.IOException.class,
-        () -> new JavaClass(malformedFixture(), false));
+        () -> new JavaClass(malformedFixture(), false, true));
     assertTrue(error.getMessage().startsWith("Malformed StackMapTable in fixtures/MalformedFrames.run()"));
     assertTrue(error.getMessage().contains("reserved frame type 200"));
+  }
+
+  @Test
+  void skipsStackMapMaterializationWhenSemanticMetadataIsDisabled() throws Exception {
+    JavaClass parsed = new JavaClass(validFixture(), false);
+    for (JavaMethod method : parsed.methods) {
+      if (method.code != null) {
+        assertNull(method.code.stackMapFrames);
+      }
+    }
+    assertDoesNotThrow(() -> new JavaClass(malformedFixture(), false));
   }
 
   private static void addKinds(EnumSet<JavaVerificationType.Kind> kinds, JavaVerificationType[] values) {

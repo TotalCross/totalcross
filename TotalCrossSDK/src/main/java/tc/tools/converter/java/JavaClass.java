@@ -35,12 +35,19 @@ public final class JavaClass {
   public String[] modulePackages;
   public String sourceFile, signature;
   public byte[] bytes;
+  private boolean needsSemanticMetadata;
 
   //public ClassAttribute[] attrs;
 
   public JavaClass(byte[] bytes, boolean onlyHeader) throws totalcross.io.IOException {
+    this(bytes, onlyHeader, false);
+  }
+
+  public JavaClass(byte[] bytes, boolean onlyHeader, boolean needsSemanticMetadata)
+      throws totalcross.io.IOException {
     int i, n;
     this.bytes = bytes;
+    this.needsSemanticMetadata = needsSemanticMetadata;
     DataStream ds = new DataStream(new ByteArrayStream(bytes));
     ds.skipBytes(4); // skip 4-byte  magic number
     minorVersion = ds.readUnsignedShort();
@@ -86,7 +93,7 @@ public final class JavaClass {
       n = ds.readUnsignedShort();
       methods = new JavaMethod[n];
       for (i = 0; i < n; i++) {
-        methods[i] = new JavaMethod(this, ds, cp);
+        methods[i] = new JavaMethod(this, ds, cp, needsSemanticMetadata);
       }
       skipClassAttributes(ds);
     }
@@ -125,8 +132,14 @@ public final class JavaClass {
   }
 
   public JavaClass parse(byte[] bytes, boolean onlyHeader) throws totalcross.io.IOException {
+    return parse(bytes, onlyHeader, needsSemanticMetadata);
+  }
+
+  public JavaClass parse(byte[] bytes, boolean onlyHeader, boolean needsSemanticMetadata)
+      throws totalcross.io.IOException {
     int i, n;
     this.bytes = bytes;
+    this.needsSemanticMetadata = needsSemanticMetadata;
     DataStream ds = new DataStream(new ByteArrayStream(bytes));
     ds.skipBytes(4); // skip 4-byte  magic number
 
@@ -167,7 +180,7 @@ public final class JavaClass {
       JavaMethod[] oldMethods = methods;
       methods = new JavaMethod[n];
       for (i = 0; i < n; i++) {
-        JavaMethod m = new JavaMethod(this, ds, cp);
+        JavaMethod m = new JavaMethod(this, ds, cp, needsSemanticMetadata);
         if (oldMethods != null) {
           for (JavaMethod javaMethod : oldMethods) {
             if (javaMethod.replaceWithNative) {
@@ -183,6 +196,10 @@ public final class JavaClass {
       skipClassAttributes(ds);
     }
     return this;
+  }
+
+  public boolean needsSemanticMetadata() {
+    return needsSemanticMetadata;
   }
 
   private void skipClassAttributes(DataStream ds) throws totalcross.io.IOException {

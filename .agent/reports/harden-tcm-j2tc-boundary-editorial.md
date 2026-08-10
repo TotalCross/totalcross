@@ -22,3 +22,24 @@ baseline TCM v1 fixture SHA-256 is
 
 Hardening implementation has not started at this checkpoint, so no delivered
 boundary improvement is claimed yet.
+
+## Disabled path and origin finalization
+
+TCM `NONE` is now a structural no-op. One conversion-scoped decision selects a
+singleton disabled capture, while normal converter state—including
+`Class.forName` discovery—continues independently. The class parser receives a
+semantic capability and skips StackMap bytes without materializing frames when
+metadata is unnecessary. Direct parser tests can still request and diagnose
+StackMap metadata explicitly.
+
+AOT origin finalization now performs one ordered scan of final lowered
+instructions and one ordered emission pass over source sites, replacing the
+former scan of every instruction for every Java bytecode. Empty source origins,
+allocations, calls, dynamic lowerings, branch-promoted origins, and TC slot
+ranges remain represented as before.
+
+On the fixed workload, `NONE` metadata counts fell from the baseline values to
+zero; AOT counts, the v1 fixture hash, and TCZ SHA-256 stayed unchanged. The
+bounded repeat timing medians were 3.552 s for `NONE` and 3.636 s for AOT,
+within 5% of their respective baselines. Timing remains supporting evidence for
+this workload only.

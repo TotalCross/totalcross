@@ -8,6 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 public final class CompilationMetadata {
+  private static final CompilationMetadata EMPTY = new CompilationMetadata(Collections.<ClassMetadata>emptyList(),
+      Collections.<String>emptyList(), false);
+
   public enum NativeKind {
     NONE, JAVA_NATIVE, REPLACED_ON_DEPLOY
   }
@@ -28,6 +31,10 @@ public final class CompilationMetadata {
     this.classes = immutable(classes);
     this.resolvedClassForNameRoots = immutable(roots);
     this.unresolvedDynamicClassLookup = unresolved;
+  }
+
+  static CompilationMetadata empty() {
+    return EMPTY;
   }
 
   static <T> List<T> immutable(List<T> values) {

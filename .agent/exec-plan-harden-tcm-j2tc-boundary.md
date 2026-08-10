@@ -81,8 +81,10 @@ reconstruction. Do not reread the completed predecessor ExecPlan by default.
 - [x] (2026-08-10T18:45:53Z) Milestone 0: froze v1 wire values and a fixture,
   captured identical `NONE`/`AOT` metadata work, representative timing, and
   declaration-resolution categories. Evidence is in the plan evidence index.
-- [ ] Milestone 1: execute the disabled-path/origin subplan and close with its
-  final structural/performance validation.
+- [x] (2026-08-10T19:00:53Z) Milestone 1: `NONE` now uses a singleton no-op
+  capture and skips StackMap materialization; origin finalization is one
+  instruction scan plus one source-site emission pass. AOT facts, v1 bytes, and
+  TCZ bytes remained stable; bounded repeat timing stayed within 5% of baseline.
 - [ ] Milestone 2: execute the wire/publication subplan and close with v1 backward
   compatibility and failure-path validation.
 - [ ] Milestone 3: execute the semantic-resolution subplan and close with
@@ -373,6 +375,14 @@ sites/origin ranges, 681 call sites, 73 synthetic origins, and 108 StackMap
 frames for the fixed aggregate smoke conversion. The captured TCM v1 fixture
 and timing samples are recorded in the evidence index; timing is supporting
 evidence only.
+
+Milestone 1 made the disabled path structurally inactive: the same workload now
+reports zero classes, fields, methods, sites, calls, origins, StackMap frames,
+and synthetic origins in `NONE`, while AOT retains all frozen counts. Origin
+finalization changed from `B` full instruction rescans to one `I` scan and one
+`B` emission pass. TCZ and TCM fixture hashes remained unchanged. The first
+timing pass was system-noisy; one bounded repeat placed both mode medians within
+5% of baseline, so no universal speed claim is made.
 
 At completion state:
 

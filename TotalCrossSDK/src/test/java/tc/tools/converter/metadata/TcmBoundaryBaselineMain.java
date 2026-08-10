@@ -65,16 +65,22 @@ public final class TcmBoundaryBaselineMain {
         samples.add(Long.valueOf(elapsed));
       }
     }
+    expected.verify(mode);
 
     String fixtureHash = null;
+    List<String> tczHashes = copyTczArtifacts(outputDir.resolve(mode));
     if ("aot".equals(mode)) {
       Path sidecar = Paths.get(DeploySettings.tcmFileName).toAbsolutePath().normalize();
-      Path fixture = outputDir.resolve("baseline-v1.tcm");
+      Path fixtureDir = outputDir.resolve("fixture-v1");
+      Files.createDirectories(fixtureDir);
+      Path fixture = fixtureDir.resolve(sidecar.getFileName());
       Files.copy(sidecar, fixture, StandardCopyOption.REPLACE_EXISTING);
+      copyTczArtifacts(fixtureDir);
       fixtureHash = hex(sha256(fixture));
     }
     Path output = outputDir.resolve("baseline-" + mode + ".json");
-    Files.write(output, json(mode, warmups, samples, expected, fixtureHash).getBytes(StandardCharsets.UTF_8));
+    Files.write(output, json(mode, warmups, samples, expected, tczHashes, fixtureHash)
+        .getBytes(StandardCharsets.UTF_8));
     System.out.println("TCM_BOUNDARY_BASELINE mode=" + mode + " samples=" + sampleCount + " output=" + output);
   }
 
@@ -92,7 +98,19 @@ public final class TcmBoundaryBaselineMain {
     visited.set(null, new Hashtable(1000));
   }
 
-  private static String json(String mode, int warmups, List<Long> samples, Summary summary, String fixtureHash) {
+  private static List<String> copyTczArtifacts(Path destination) throws Exception {
+    Files.createDirectories(destination);
+    List<String> hashes = new ArrayList<String>();
+    for (String value : DeploySettings.tczs) {
+      Path source = Paths.get(value).toAbsolutePath().normalize();
+      Files.copy(source, destination.resolve(source.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+      hashes.add(source.getFileName() + ":" + hex(sha256(source)));
+    }
+    return hashes;
+  }
+
+  private static String json(String mode, int warmups, List<Long> samples, Summary summary, List<String> tczHashes,
+      String fixtureHash) {
     List<Long> sorted = new ArrayList<Long>(samples);
     Collections.sort(sorted);
     long total = 0;
@@ -107,6 +125,7 @@ public final class TcmBoundaryBaselineMain {
     out.append("  \"medianNanos\": ").append(sorted.get(sorted.size() / 2)).append(",\n");
     out.append("  \"meanNanos\": ").append(total / samples.size()).append(",\n");
     out.append("  \"metadata\": ").append(summary.json()).append(",\n");
+    out.append("  \"tczSha256\": ").append(strings(tczHashes)).append(",\n");
     out.append("  \"wire\": {\"major\": 1, \"minor\": 0, \"requiredBit\": 32768,")
         .append(" \"sectionIds\": [1,2,3,4,5,6,7,8,9,10],")
         .append(" \"nativeKinds\": [0,1,2], \"invokeKinds\": [0,1,2,3,4,5,6],")
@@ -114,6 +133,15 @@ public final class TcmBoundaryBaselineMain {
     out.append("  \"fixtureSha256\": ")
         .append(fixtureHash == null ? "null" : "\"" + fixtureHash + "\"").append("\n}\n");
     return out.toString();
+  }
+
+  private static String strings(List<String> values) {
+    StringBuilder result = new StringBuilder("[");
+    for (int i = 0; i < values.size(); i++) {
+      if (i > 0) result.append(',');
+      result.append('\"').append(values.get(i)).append('\"');
+    }
+    return result.append(']').toString();
   }
 
   private static byte[] sha256(Path path) throws IOException, NoSuchAlgorithmException {
@@ -150,6 +178,20 @@ public final class TcmBoundaryBaselineMain {
     int constructors;
     int interfaces;
     int inheritedOwners;
+
+    void verify(String mode) {
+      if ("none".equals(mode)) {
+        if (classes != 0 || fields != 0 || methods != 0 || bytecodeSites != 0 || calls != 0 || frames != 0
+            || synthetic != 0) {
+          throw new IllegalStateException("TCM NONE accumulated semantic metadata: " + json());
+        }
+        return;
+      }
+      if (classes != 87 || fields != 38 || methods != 306 || bytecodeSites != 2767 || calls != 681
+          || frames != 108 || synthetic != 73) {
+        throw new IllegalStateException("AOT structural metadata changed from the frozen workload: " + json());
+      }
+    }
 
     static Summary from(CompilationMetadata metadata) {
       Summary result = new Summary();

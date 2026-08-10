@@ -69,7 +69,7 @@ public final class Java8LambdaLowering implements Opcodes {
     for (int i = 0; i < sites.length; i++) {
       LambdaSite site = resolve(owner, sites[i]);
       validateSupportedLambdaMetafactory(owner, sites[i], site);
-      adapters[i] = new JavaClass(generateAdapterBytes(owner, site), false);
+      adapters[i] = new JavaClass(generateAdapterBytes(owner, site), false, owner.needsSemanticMetadata());
     }
     return adapters;
   }

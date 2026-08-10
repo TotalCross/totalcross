@@ -6,21 +6,21 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Harden TCM/J2TC Boundary — Active State
 
-Updated: 2026-08-10T18:45:53Z
+Updated: 2026-08-10T19:00:53Z
 
 ## Active milestone
 
-- Milestone 1: disabled metadata path and linear origins.
+- Milestone 2: stable wire format and safe publication.
 - Active plan: `.agent/exec-plan-harden-tcm-j2tc-boundary.md`.
-- Active subplan: `.agent/subplan-tcm-disabled-path-and-origins.md`.
+- Active subplan: `.agent/subplan-tcm-wire-and-publication.md`.
 
 ## Repository state
 
 - Branch: `feature/422-create-ir-for-jniaot`.
 - Baseline revision: `441c5785dd88a6aaf8c028c2a390c27d113ad0d6`.
-- Last plan commit: pending Milestone 0 baseline commit.
+- Last plan commit: `1dd173ed7` (Milestone 0 baseline).
 - Tracked worktree changes at start: none.
-- Plan inputs are untracked: coordinator plan and its three subplans.
+- Coordinator plan and subplans were committed with Milestone 0.
 - Deliberately out of scope untracked file:
   `.agent/sljit-depot-tools-execplan.md`.
 
@@ -31,37 +31,39 @@ Updated: 2026-08-10T18:45:53Z
 - `.agent/evidence/harden-tcm-j2tc-boundary-01.jsonl`
 - `.agent/archive/harden-tcm-j2tc-boundary-history.md`
 - `.agent/reports/harden-tcm-j2tc-boundary-editorial.md`
-- `.agent/subplan-tcm-disabled-path-and-origins.md`
-- `TotalCrossSDK/src/main/java/tc/tools/converter/J2TC.java`
-- `TotalCrossSDK/src/main/java/tc/tools/converter/java/JavaCode.java`
-- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/CompilationMetadataCollector.java`
+- `.agent/subplan-tcm-wire-and-publication.md`
+- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/TcmWriter.java`
+- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/TcmReader.java`
+- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/TcmFormat.java`
 - `TotalCrossSDK/src/test/java/tc/tools/converter/metadata/`
 
 ## Next concrete action
 
-Read `.agent/subplan-tcm-disabled-path-and-origins.md` in full, then inspect only
-the named J2TC, Java parsing, origin-tag, and metadata tests needed for the first
-Milestone 1 implementation slice.
+Commit the validated Milestone 1 changes, then read
+`.agent/subplan-tcm-wire-and-publication.md` in full and inspect only its named
+wire, artifact, publication, and failure-test paths.
 
 ## Tests written but not executed
 
-- None.
+- None for Milestone 2.
 
 ## Validation completed
 
 - Milestone 0 baseline capture passed for `none` and `aot` with three warmups
   and ten measured samples per mode. Compact outputs and full logs are recorded
   in the evidence index.
+- Milestone 1 focused tests, fixed workloads, TCZ comparison, copyright,
+  whitespace, and new-file size checks passed. See evidence index.
 
 ## Deferred validation
 
-- Milestones 1–4 validation remains deferred until each implementation is
+- Milestones 2–4 validation remains deferred until each implementation is
   complete.
 
 ## Evidence and logs
 
 - Evidence index: `.agent/evidence/harden-tcm-j2tc-boundary-01.jsonl`.
-- Milestone 0 evidence is recorded at baseline revision `441c5785`.
+- Milestones 0 and 1 evidence are recorded in the evidence index.
 
 ## Active decisions and blockers
 
