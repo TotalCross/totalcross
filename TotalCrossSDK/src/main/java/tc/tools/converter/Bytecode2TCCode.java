@@ -1594,8 +1594,10 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
           OperandSymO s = (OperandSymO) retAndParams[1];
           String n = GlobalConstantPool.getString(s.index);
           J2TC.callForName.addElement(n);
+          J2TC.recordResolvedClassForName(n);
         } else if (!signature.equals("class$(Ljava/lang/String;)")) {
           J2TC.notResolvedForNameFound = true;
+          J2TC.recordUnresolvedClassForName();
         }
       }
       Call call = (Call) GenerateInstruction.newInstruction(vcode, op == INVOKEVIRTUAL ? CALL_virtual : CALL_normal,
@@ -1937,6 +1939,9 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
             OperandRegI target = new OperandRegI();
             OperandSym sym = new OperandSymI(i.sym);
             GenerateInstruction.newInstruction(vc, pref_MOV, target, sym, tc.line);
+            Instruction promoted = (Instruction) vc.items[vc.size() - 1];
+            promoted.javaPc = tc.javaPc;
+            promoted.javaOpcode = tc.javaOpcode;
             int reg = i.reg;
             switch (op) {
             case JEQ_regI_sym:
@@ -1950,6 +1955,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
               break;
             }
             Reg_reg_s12 i2 = new Reg_reg_s12(op, i.line, reg, target.index, desloc);
+            i2.javaPc = tc.javaPc;
+            i2.javaOpcode = tc.javaOpcode;
             tc = i2;
           } else {
             i.desloc = desloc;
