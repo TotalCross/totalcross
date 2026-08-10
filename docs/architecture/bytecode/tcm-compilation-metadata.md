@@ -28,6 +28,11 @@ covers the whole deploy invocation, including every split TCZ. Publication uses
 it. An explicitly requested sidecar failure fails that deploy operation without
 modifying the completed TCZ files.
 
+Platform packaging normally removes its intermediate root TCZ after copying it
+into the install image. In `AOT` mode the deployer retains the root TCZ set beside
+the TCM so the manifest remains directly verifiable; packaged copies are
+unchanged.
+
 ## Binary envelope
 
 All integers are little-endian. The file header is:
