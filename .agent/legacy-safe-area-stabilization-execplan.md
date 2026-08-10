@@ -92,27 +92,28 @@ tree or branch to any of them.
 
 - [x] 2026-08-10T17:39:06Z Record the current branch, HEAD,
       selected-path status, and checkpoints.
-- [ ] Remove only later generic fade/screenshot repair changes not required by
-      the safe-area release.
-- [ ] Restore Window-based `SlidingWindow` and `MaterialWindow`.
-- [ ] Restore Window-based `TopMenu` and legacy `SideMenuContainer`, then apply
-      the minimal safe-width correction.
-- [ ] Remove active PresentationHost coupling from `Window`.
-- [ ] Move deferred presentation sources to `totalcross.ui.presentation` and make
-      them compile without widening legacy UI APIs.
-- [ ] Replace presentation-oriented regression coverage with focused legacy
-      safe-area coverage.
-- [ ] Complete release-focused visual/smoke validation, one non-clean SDK build,
-      provenance/header checks, and final handoff.
+- [x] 2026-08-10T17:44:27Z Remove later generic fade/screenshot repairs not
+      required by the safe-area release.
+- [x] 2026-08-10T17:49:52Z Restore Window-based `SlidingWindow` and
+      `MaterialWindow`.
+- [x] 2026-08-10T17:56:14Z Restore Window-based `TopMenu` and legacy
+      `SideMenuContainer`, with the minimal safe-width correction.
+- [x] 2026-08-10T18:02:41Z Remove active PresentationHost coupling from
+      `Window`.
+- [x] 2026-08-10T18:02:41Z Move deferred presentation sources to
+      `totalcross.ui.presentation` and compile without widening legacy APIs.
+- [x] 2026-08-10T18:02:41Z Replace presentation-oriented coverage with focused
+      legacy safe-area coverage.
+- [x] 2026-08-10T18:30:02Z Complete release-focused visual/smoke validation,
+      one non-clean SDK build, provenance/header checks, and final handoff.
 
 Use UTC timestamps when updating Progress.
 
 ## Current Architecture and Scope
 
-The current branch migrated `SlidingWindow` and `TopMenu` from `Window` into
-PresentationHost. For this release restore the legacy Window z-stack model, with
-SideMenu using TopMenu. Preserve all safe-area APIs, safe client geometry,
-logical scaling, and unrelated clipping work.
+The branch migrated `SlidingWindow` and `TopMenu` from `Window` into
+PresentationHost. Restore the legacy Window z-stack model with SideMenu using
+TopMenu, while preserving safe-area APIs, scaling, and unrelated clipping.
 
 The pre-migration SlidingWindow already lays out at final bounds before moving
 only x/y to the animation origin. The pre-migration TopMenu already compensates
@@ -432,10 +433,9 @@ The release is accepted when:
 
 ## Risks and Open Questions
 
-Main risks are overwriting unrelated logical-scaling work, package-private
-accesses exposed by the presentation move, and changing SideMenu width precedence.
-Use narrow historical comparisons, do not split existing TopMenu for size, let
-compilation identify access issues, and preserve explicit caller width.
+Main risks are overwriting scaling work, subpackage access, and SideMenu width
+precedence. Use narrow comparisons, compilation evidence, and preserve explicit
+caller width.
 
 If legacy fade is still visually broken after removing the later generic fade
 repair and restoring Window-based components, do not expand architecture. Compare
@@ -462,23 +462,18 @@ Do not push. Commits are local recovery checkpoints only.
 
 ## Outcomes & Retrospective
 
-At milestone closure, record a concise factual outcome and point to evidence.
-
-At final completion record:
-
-- post-presentation/fade changes removed;
-- pre-migration safe-area behavior restored;
-- final SideMenu width rule;
-- Presentation classes moved and deferred limitations;
-- focused test results;
-- visual/smoke evidence;
-- final SDK build result;
-- remaining work deferred to the future presentation architecture.
+- Removed the later generic fade repair and restored Window-based TopMenu,
+  SlidingWindow, MaterialWindow, and SideMenu behavior.
+- Horizontal automatic drawer width is
+  `max(1, min(320, safeWidth - 56))`; explicit caller width still wins.
+- Isolated eight deferred presentation classes without API widening. Runtime
+  parity and human review of the pending provenance audit remain future work.
+- Passed 18 focused tests, inspected 10 JavaSE preview PNGs, completed the
+  replacement native macOS smoke, and built one non-clean SDK distribution.
+- Final diff, header, provenance, and size checks passed. Android/iOS were not
+  run, and no changes were pushed.
 
 ## Revision Note
 
-2026-08-10: Initial release-stabilization plan. It prioritizes safe-area behavior
-of Window-based `TopMenu`, `SlidingWindow`, and `SideMenuContainer`, removes the
-later generic fade-repair dependency, retains the presentation subsystem under
-`totalcross.ui.presentation`, and runs tests only as the final step of each
-relevant milestone.
+2026-08-10: Initial Window-based safe-area stabilization plan with deferred
+presentation isolation and milestone-final testing.
