@@ -74,7 +74,10 @@ def main() -> int:
             statuses.append(size.run(root, change_set))
         return max(statuses, default=0)
     except (changes.ChangeDiscoveryError, ProvenanceError) as exc:
-        print(f"Source validation configuration error: {exc}", file=sys.stderr)
+        selected = set(args.check or ("headers", "size"))
+        label = ("Copyright header configuration error"
+                 if selected == {"headers"} else "Source validation configuration error")
+        print(f"{label}: {exc}", file=sys.stderr)
         return 2
 
 
