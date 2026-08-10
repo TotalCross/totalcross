@@ -313,6 +313,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
     Instruction tc = null;
     int op = i.bc;
     CheckIfIsGotoTarget(indexOfCurrentBytecode, i, stack, vcode);
+    seedExceptionHandlerStack(currentExceptionHandlers, isTargetOfGoto[indexOfCurrentBytecode], op, stack);
     if (isTargetOfGoto[indexOfCurrentBytecode] != 0) {
       htBytecodeIndex.put(isTargetOfGoto[indexOfCurrentBytecode], countOfTCCode(vcode));
     }
@@ -2140,6 +2141,24 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
       }
     }
     return found;
+  }
+
+  private static void seedExceptionHandlerStack(TCException[] handlers, int pc, int opcode, OperandStack stack) {
+    if (opcode == ASTORE || handlers == null) {
+      return; // The existing ASTORE fast path binds the VM exception directly to its target local.
+    }
+    boolean handlerEntry = false;
+    for (int i = 0; i < handlers.length && !handlerEntry; i++) {
+      handlerEntry = handlers[i].handlerPC == pc;
+    }
+    if (!handlerEntry) {
+      return;
+    }
+    OperandRegO exception = new OperandRegO();
+    if (setExceptionHandler(handlers, pc, exception.index)) {
+      stack.clear();
+      stack.push(exception);
+    }
   }
 
   public static TCException[] updatePCsOfExceptionHandler(TCException[] tces) throws Exception {
