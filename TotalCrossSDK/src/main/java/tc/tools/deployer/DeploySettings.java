@@ -24,7 +24,13 @@ import totalcross.util.IntVector;
 import totalcross.util.Vector;
 
 public class DeploySettings {
+  public enum TcmMode {
+    NONE, AOT
+  }
+
   public static String[] tczs;
+  public static TcmMode tcmMode = TcmMode.NONE;
+  public static String tcmFileName;
   // constants for including the vm in a package 
   public static boolean packageVM;
   public static String folderTotalCross3DistVM;
