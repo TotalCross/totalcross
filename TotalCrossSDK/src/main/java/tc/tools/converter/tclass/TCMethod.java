@@ -241,70 +241,27 @@ public final class TCMethod implements TCConstants {
     //System.out.println(J2TC.currentClass+" "+J2TC.currentMethod+" checking "+className+" "+method);
     if (J2TC.inProhibitedList(className, false) && !htAlreadyChecked.exists(params)) {
       htAlreadyChecked.put(params, "");
-      Class<?> c4D;
-      // checks if class java.xxx exists as a totalcross.xxx4D class
-      String tcClassName = "totalcross" + className.substring(4);
-      try {
-        int index = tcClassName.indexOf('$');
-        if (index < 0) {
-          c4D = Class.forName(tcClassName + "4D"); // first try the 4D class
-        } else {
-          c4D = Class.forName(tcClassName.substring(0, index) + "4D" + tcClassName.substring(index));
-        }
-      } catch (ClassNotFoundException e) {
-        try {
-          c4D = Class.forName(tcClassName);
-        } catch (ClassNotFoundException ee) {
-          tcClassName = "jdkcompat" + className.substring(4);
-          try {
-            int index = tcClassName.indexOf('$');
-            if (index < 0) {
-              c4D = Class.forName(tcClassName + "4D"); // first try the 4D class
-            } else {
-              c4D = Class.forName(tcClassName.substring(0, index) + "4D" + tcClassName.substring(index));
-            }
-          } catch (ClassNotFoundException e1) {
-            throw new InvalidClassException("Class '" + className
-                + "' is not available at the device! To see the available classes, see the Javadocs for totalcross.lang package."
-                + beAware);
-          }
+      boolean found = false;
+      boolean mappedClassFound = false;
+      String declarationOwner = method.equals(TClassConstants.CONSTRUCTOR_NAME)
+          ? null : findJavaDeclarationOwner(className, method, params);
+      Vector candidateOwners = new Vector(6);
+      addOwner(candidateOwners, className);
+      addOwner(candidateOwners, declarationOwner);
+      if (!method.equals(TClassConstants.CONSTRUCTOR_NAME)) {
+        addJavaSuperTypes(candidateOwners, className);
+      }
+      for (int i = 0; i < candidateOwners.size() && !found; i++) {
+        Class<?> c4D = findDeviceClass((String) candidateOwners.items[i]);
+        if (c4D != null) {
+          mappedClassFound = true;
+          found = hasCompatibleMember(c4D, method, params);
         }
       }
-      // now checks if the method exists in the totalcross4D class
-      boolean found = false;
-      if (method.equals(TClassConstants.CONSTRUCTOR_NAME)) // is this a constructor?
-      {
-        java.lang.reflect.Constructor<?>[] consts = c4D.getDeclaredConstructors();
-        for (int i = 0; i < consts.length; i++) {
-          if (areParametersCompatible(params, consts[i].getParameterTypes())) {
-            found = true;
-            break;
-          }
-        }
-      } else {
-        Vector vector = new Vector(c4D.getMethods());
-        vector.addElements(c4D.getDeclaredMethods());
-        Object[] objects = vector.toObjectArray();
-        Method[] methods = new Method[objects.length];
-
-        Vm.arrayCopy(objects, 0, methods, 0, objects.length);
-        // lookahead to see if there are 4D methods with this same name
-        Hashtable ht = new Hashtable(methods.length);
-        for (int i = 0; i < methods.length; i++) {
-          ht.put(methods[i].getName(), "");
-        }
-        for (int i = 0; i < methods.length; i++) {
-          String name = methods[i].getName();
-          if (name.endsWith("4D")) {
-            name = name.substring(0, name.length() - 2);
-          } else if (ht.exists(name + "4D")) {
-            continue;
-          }
-          if (name.equals(method) && areParametersCompatible(params, methods[i].getParameterTypes())) {
-            found = true;
-            break;
-          }
-        }
+      if (!mappedClassFound) {
+        throw new InvalidClassException("Class '" + className
+            + "' is not available at the device! To see the available classes, see the Javadocs for totalcross.lang package."
+            + beAware);
       }
       if (!found) {
         throw new InvalidClassException(toHumanReadable(className, method, params)
@@ -312,6 +269,118 @@ public final class TCMethod implements TCConstants {
             + java2totalcross(className) + " class." + (className.startsWith("java.lang") ? beAware : ""));
       }
     }
+  }
+
+  private static String findJavaDeclarationOwner(String className, String method, int[] params) {
+    try {
+      Class<?> owner = Class.forName(className.replace('/', '.'), false, TCMethod.class.getClassLoader());
+      Method[] methods = owner.getMethods();
+      for (int i = 0; i < methods.length; i++) {
+        if (methods[i].getName().equals(method) && areParametersCompatible(params, methods[i].getParameterTypes())) {
+          return methods[i].getDeclaringClass().getName();
+        }
+      }
+      methods = owner.getDeclaredMethods();
+      for (int i = 0; i < methods.length; i++) {
+        if (methods[i].getName().equals(method) && areParametersCompatible(params, methods[i].getParameterTypes())) {
+          return methods[i].getDeclaringClass().getName();
+        }
+      }
+    } catch (ClassNotFoundException e) {
+      // The mapped-device lookup below retains the existing precise diagnostic.
+    }
+    return null;
+  }
+
+  private static void addJavaSuperTypes(Vector owners, String className) {
+    try {
+      Class<?> owner = Class.forName(className.replace('/', '.'), false, TCMethod.class.getClassLoader());
+      for (Class<?> type = owner.getSuperclass(); type != null; type = type.getSuperclass()) {
+        addOwner(owners, type.getName());
+        addInterfaces(owners, type.getInterfaces());
+      }
+      addInterfaces(owners, owner.getInterfaces());
+    } catch (ClassNotFoundException e) {
+      // The mapped-device lookup retains the existing precise diagnostic.
+    }
+  }
+
+  private static void addInterfaces(Vector owners, Class<?>[] interfaces) {
+    for (int i = 0; i < interfaces.length; i++) {
+      addOwner(owners, interfaces[i].getName());
+      addInterfaces(owners, interfaces[i].getInterfaces());
+    }
+  }
+
+  private static void addOwner(Vector owners, String owner) {
+    if (owner == null) {
+      return;
+    }
+    owner = owner.replace('/', '.');
+    for (int i = 0; i < owners.size(); i++) {
+      if (owner.equals(owners.items[i])) {
+        return;
+      }
+    }
+    owners.addElement(owner);
+  }
+
+  private static Class<?> findDeviceClass(String javaClassName) {
+    javaClassName = javaClassName.replace('/', '.');
+    String[] prefixes = { "totalcross", "jdkcompat" };
+    for (int i = 0; i < prefixes.length; i++) {
+      String className = prefixes[i] + javaClassName.substring(4);
+      int nested = className.indexOf('$');
+      String class4D = nested < 0 ? className + "4D"
+          : className.substring(0, nested) + "4D" + className.substring(nested);
+      try {
+        return Class.forName(class4D, false, TCMethod.class.getClassLoader());
+      } catch (ClassNotFoundException e) {
+        try {
+          return Class.forName(className, false, TCMethod.class.getClassLoader());
+        } catch (ClassNotFoundException ignored) {
+          // Try the next supported compatibility namespace.
+        }
+      }
+    }
+    return null;
+  }
+
+  private static boolean hasCompatibleMember(Class<?> c4D, String method, int[] params) {
+    if (method.equals(TClassConstants.CONSTRUCTOR_NAME)) {
+      java.lang.reflect.Constructor<?>[] constructors = c4D.getDeclaredConstructors();
+      for (int i = 0; i < constructors.length; i++) {
+        if (areParametersCompatible(params, constructors[i].getParameterTypes())) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    Vector vector = new Vector(c4D.getMethods());
+    vector.addElements(c4D.getDeclaredMethods());
+    Object[] objects = vector.toObjectArray();
+    if (objects == null) {
+      return false;
+    }
+    Method[] methods = new Method[objects.length];
+    Vm.arrayCopy(objects, 0, methods, 0, objects.length);
+    Hashtable names = new Hashtable(methods.length);
+    for (int i = 0; i < methods.length; i++) {
+      names.put(methods[i].getName(), "");
+    }
+    for (int i = 0; i < methods.length; i++) {
+      String name = methods[i].getName();
+      if (name.endsWith("4D")) {
+        name = name.substring(0, name.length() - 2);
+      } else if (names.exists(name + "4D")) {
+        continue;
+      }
+      if (name.equals(method) && areParametersCompatible(params, methods[i].getParameterTypes())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static String java2totalcross(String name) {
