@@ -93,22 +93,31 @@ def _parse_name_status(output: bytes) -> tuple[ChangedFile, ...]:
     return tuple(changes)
 
 
-def _pathspec(files: list[str] | None) -> list[str]:
-    return ["--", *files] if files else []
+def _filter(changes: tuple[ChangedFile, ...],
+            files: list[str] | None) -> tuple[ChangedFile, ...]:
+    if not files:
+        return changes
+    selected = set(files)
+    return tuple(
+        change for change in changes
+        if change.old_path in selected or change.new_path in selected
+    )
 
 
 def _diff(root: Path, args: list[str], files: list[str] | None) -> tuple[ChangedFile, ...]:
-    return _parse_name_status(_git(root, [
+    changes = _parse_name_status(_git(root, [
         "diff", "-M", "--name-status", "-z", "--diff-filter=ACMRTD",
-        *args, *_pathspec(files),
+        *args,
     ]))
+    return _filter(changes, files)
 
 
 def _tree(root: Path, commit: str, files: list[str] | None) -> tuple[ChangedFile, ...]:
-    return _parse_name_status(_git(root, [
+    changes = _parse_name_status(_git(root, [
         "diff-tree", "-M", "--root", "--no-commit-id", "--name-status",
-        "-z", "--diff-filter=ACMRTD", "-r", commit, *_pathspec(files),
+        "-z", "--diff-filter=ACMRTD", "-r", commit,
     ]))
+    return _filter(changes, files)
 
 
 def _head(root: Path) -> str | None:

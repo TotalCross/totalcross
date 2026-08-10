@@ -19,7 +19,7 @@ if str(ROOT / "legal" / "copyright-provenance") not in sys.path:
     sys.path.insert(0, str(ROOT / "legal" / "copyright-provenance"))
 
 from provenance import ProvenanceError, repo_root  # noqa: E402
-from source_validation import changes, headers  # noqa: E402
+from source_validation import changes, headers, size  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--staged", action="store_true", help="compare HEAD with the Git index")
     mode.add_argument("--working-tree", action="store_true", help="compare HEAD with the working tree")
-    parser.add_argument("--check", action="append", choices=("headers",),
+    parser.add_argument("--check", action="append", choices=("headers", "size"),
                         help="run only the selected check")
     parser.add_argument("--fix", action="store_true", help="repair header mismatches")
     parser.add_argument("--audit-id", action="append", default=[],
@@ -62,11 +62,17 @@ def main() -> int:
             root, base=args.base, head=args.head, commit=args.commit,
             files=args.files, staged=args.staged, working_tree=args.working_tree,
         )
-        return headers.run(
-            root, change_set, fix=args.fix,
-            audit_ids=set(args.audit_id) if args.audit_id else None,
-            require_snapshots=args.require_provenance_snapshots,
-        )
+        selected = set(args.check or ("headers", "size"))
+        statuses: list[int] = []
+        if "headers" in selected:
+            statuses.append(headers.run(
+                root, change_set, fix=args.fix,
+                audit_ids=set(args.audit_id) if args.audit_id else None,
+                require_snapshots=args.require_provenance_snapshots,
+            ))
+        if "size" in selected:
+            statuses.append(size.run(root, change_set))
+        return max(statuses, default=0)
     except (changes.ChangeDiscoveryError, ProvenanceError) as exc:
         print(f"Source validation configuration error: {exc}", file=sys.stderr)
         return 2
