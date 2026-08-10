@@ -9,12 +9,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Plan-start revision: `42dec24e3353a1e3e97de5ea0288956318a55142`.
 - Branch: `feature/422-create-ir-for-jniaot`.
-- Active milestone: 1, float parameter correctness.
-- Active subplan: `.agent/subplan-j2tc-float-and-compatibility.md`, Slices A-B.
-- Last logical commit: none for this plan.
-- Next action: add the data-driven `OperandReg` parameter-map matrix and a
-  conversion fixture, then make `F` consume one JVM local slot while remaining
-  in the TC 64-bit register bank.
+- Active milestone: 2, J2TC compatibility hardening.
+- Active subplan: `.agent/subplan-j2tc-float-and-compatibility.md`, Slice C.
+- Last logical commit: `7c960237f` (`fix(compiler): correct float parameter slot
+  mapping`).
+- Next action: add a deterministic valid class fixture whose first line-table
+  entry starts after PC zero, then make early bytecode use unknown-line semantics.
 
 ## Milestone 0 baseline
 
@@ -47,10 +47,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Validation state
 
-- Completed: retained ProGuard corpus and logs are present; baseline TCZ hashes
-  recorded; plan and support files satisfy the new-file limit.
-- Deferred: focused float tests until Slice A implementation; SDK distribution,
-  deploy smoke, and native macOS execution until Milestone 1 closure.
+- Completed: Milestone 1 focused matrix/converter suite, SDK `dist -x test`,
+  aggregate deploy, and native macOS execution passed. Native output contained
+  all nine float-case passes and no `[FAIL]` lines; deploy/build summaries showed
+  zero obsolete float warnings.
+- Deferred: the Milestone 2 compatibility sweep and final deploy/native execution
+  until all compatibility categories are resolved.
 - Blockers: none.
 
 ## Dirty-worktree exclusions
@@ -64,11 +66,15 @@ Preserve and do not stage these unrelated untracked files:
 - `tcir_tests.plist`
 - `tcir_verify.plist`
 
+Generated local smoke prerequisite, never stage:
+
+- `TotalCrossSDK/etc/launchers/macos/Launcher`
+
 The coordinating plan and its three subplans are user-provided inputs to this
 goal and are in scope.
 
 ## Resume command
 
 ```bash
-sed -n '68,194p' .agent/subplan-j2tc-float-and-compatibility.md
+sed -n '195,232p' .agent/subplan-j2tc-float-and-compatibility.md
 ```
