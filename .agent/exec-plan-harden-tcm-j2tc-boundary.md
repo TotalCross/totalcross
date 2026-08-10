@@ -91,8 +91,9 @@ reconstruction. Do not reread the completed predecessor ExecPlan by default.
 - [x] (2026-08-10T19:34:00Z) Milestone 3: canonical descriptor lowering and
   declaration resolution are shared by converter validation and metadata;
   focused program/device/constructor/host-independence regressions passed.
-- [ ] Milestone 4: final integration, deploy/native smoke, audits, documentation,
-  and factual editorial handoff.
+- [x] (2026-08-10T19:59:18Z) Milestone 4: focused tests, distribution, deploy,
+  isolated byte-identity/inspection, 97-pass native macOS smoke, audits, and
+  documentation completed.
 
 ## Current Architecture and Scope
 
@@ -262,15 +263,12 @@ evidence, history, Outcomes, and the editorial report.
 
 ## Surprises & Discoveries
 
-- Observation: previous work proved byte non-interference but not zero disabled
-  collection cost.
-- Observation: final `Instruction` objects already retain Java origin tags, so
-  nested origin rescans are unnecessary.
-- Observation: documented wire values currently match enum order only by
-  convention.
-- Observation: source declaration-owner metadata currently consults the host JDK.
-
-Move resolved items to history at milestone checkpoints.
+- Final distribution showed that repository-owned 4D classes sometimes inherit
+  through host-named Java/Javax types. The resolver now follows those names only
+  into mapped TotalCross-owned implementations and never inspects host members.
+- The local SDK runtime had `libtcvm.dylib` and a generated launcher executable,
+  but not the expected launcher input path. The final deploy/runtime gate reused
+  that ignored generated launcher without adding repository content.
 
 ## Decision Log
 
@@ -394,18 +392,20 @@ replacement, falls back to regular replacement only when atomic move is not
 supported, and preserves an existing sidecar on deterministic pre-replacement
 failure. The frozen aggregate v1 TCM and both TCZ hashes remained byte-identical.
 
-At completion state:
+Milestone 3 made constant-pool descriptor lowering canonical for production and
+metadata. One declaration resolver now serves deploy validation and metadata,
+using active program classes and TotalCross-owned mapped hierarchies. It keeps
+symbolic owners, does not search superclass constructors, supports both `java`
+and `javax` compatibility namespaces, and leaves unavailable facts unresolved.
 
-- how `NONE` became structurally inactive and measured before/after timing;
-- how origin finalization changed from nested rescans to linear processing;
-- explicit wire-code mechanism and v1 compatibility;
-- publication failure/replacement guarantee;
-- streaming artifact hashing;
-- canonical type mapping;
-- canonical declaration-owner model and unresolved cases;
-- TCZ byte identity and TCM compatibility;
-- final deploy/native macOS results;
-- intentionally deferred platform or optimizer work.
+Milestone 4 passed the complete focused suite, incremental distribution, and
+aggregate deploy. Isolated `NONE` and `AOT` output had the same TCZ SHA-256
+`21f48888a0817eefe94cbc0e51ec4a775edcf8f6a3e20c6b9aec0b3df2be081c`;
+the production inspector validated the new semantic TCM at
+`55b189a03adf9e28c919a49743f23b956bba34129a5330d719456329fbd1f10c`.
+The macOS runtime smoke reported 97 passes and no failures. Android, iOS, and
+Windows matrices were intentionally not run because no platform-specific path
+changed. Field optimization, HIR, and an AOT consumer remain future work.
 
 Do not claim optimizer/AOT performance benefits from this hardening alone.
 
