@@ -15,11 +15,14 @@ import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStream;
 
 public final class JavaClass {
+  public int rawAccessFlags;
   public boolean isPublic, isFinal, isSuper, isInterface, isAbstract;
   public int minorVersion, majorVersion;
   public JavaConstantPool cp;
   public String className, superClass;
+  public String originalClassName, originalSuperClass;
   public String[] interfaces;
+  public String[] originalInterfaces;
   public JavaField[] fields;
   public JavaMethod[] methods;
   public JavaBootstrapMethod[] bootstrapMethods;
@@ -30,6 +33,7 @@ public final class JavaClass {
   public String moduleName;
   public String moduleMainClass;
   public String[] modulePackages;
+  public String sourceFile, signature;
   public byte[] bytes;
 
   //public ClassAttribute[] attrs;
@@ -46,27 +50,30 @@ public final class JavaClass {
     cp = new JavaConstantPool(ds);
     // access flags
 
-    int f = ds.readUnsignedShort();
+    int f = rawAccessFlags = ds.readUnsignedShort();
     isPublic = (f & 0x1) != 0;
     isFinal = (f & 0x10) != 0;
     isSuper = (f & 0x20) != 0;
     isInterface = (f & 0x200) != 0;
     isAbstract = (f & 0x400) != 0;
     // names
-    className = cp.getString1(ds.readUnsignedShort());
+    className = originalClassName = cp.getString1(ds.readUnsignedShort());
     JavaClassFileVersion.validate(className, majorVersion, minorVersion);
 
     int idx = ds.readUnsignedShort();
     if (idx == 0) {
       superClass = "";
     } else {
-      superClass = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(cp.getString1(idx));
+      originalSuperClass = cp.getString1(idx);
+      superClass = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(originalSuperClass);
     }
     // interfaces
     n = ds.readUnsignedShort();
     interfaces = new String[n];
+    originalInterfaces = new String[n];
     for (i = 0; i < n; i++) {
-      interfaces[i] = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(cp.getString1(ds.readUnsignedShort()));
+      originalInterfaces[i] = cp.getString1(ds.readUnsignedShort());
+      interfaces[i] = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(originalInterfaces[i]);
     }
     if (!onlyHeader) {
       // fields
@@ -86,6 +93,7 @@ public final class JavaClass {
   }
 
   public JavaClass(ClassNode classNode) {
+    rawAccessFlags = classNode.access;
     majorVersion = classNode.version;
     isPublic = ((classNode.access & Opcodes.ACC_PUBLIC) != 0);
     isFinal = ((classNode.access & Opcodes.ACC_FINAL) != 0);
@@ -93,11 +101,13 @@ public final class JavaClass {
     isInterface = ((classNode.access & Opcodes.ACC_INTERFACE) != 0);
     isAbstract = ((classNode.access & Opcodes.ACC_ABSTRACT) != 0);
 
-    className = classNode.name;
+    className = originalClassName = classNode.name;
 
+    originalSuperClass = classNode.superName;
     superClass = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(classNode.superName);
 
-    interfaces = (String[]) classNode.interfaces.toArray(new String[] {});
+    originalInterfaces = (String[]) classNode.interfaces.toArray(new String[] {});
+    interfaces = originalInterfaces.clone();
     for (int i = 0; i < interfaces.length; i++) {
       interfaces[i] = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(interfaces[i]);
     }
@@ -110,6 +120,8 @@ public final class JavaClass {
     for (int i = 0; i < methods.length; i++) {
       methods[i] = new JavaMethod(this, (MethodNode) classNode.methods.get(i));
     }
+    sourceFile = classNode.sourceFile;
+    signature = classNode.signature;
   }
 
   public JavaClass parse(byte[] bytes, boolean onlyHeader) throws totalcross.io.IOException {
@@ -124,22 +136,23 @@ public final class JavaClass {
 
     cp = new JavaConstantPool(ds);
 
-    // skip access flags
-    ds.readUnsignedShort();
+    rawAccessFlags = ds.readUnsignedShort();
 
-    className = cp.getString1(ds.readUnsignedShort());
+    className = originalClassName = cp.getString1(ds.readUnsignedShort());
     JavaClassFileVersion.validate(className, majorVersion, minorVersion);
 
-    // skip superClass
     int idx = ds.readUnsignedShort();
     if (idx > 0) {
-      cp.getString1(idx);
+      originalSuperClass = cp.getString1(idx);
+      superClass = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(originalSuperClass);
     }
 
-    // skip interfaces
     n = ds.readUnsignedShort();
+    interfaces = new String[n];
+    originalInterfaces = new String[n];
     for (i = 0; i < n; i++) {
-      cp.getString1(ds.readUnsignedShort());
+      originalInterfaces[i] = cp.getString1(ds.readUnsignedShort());
+      interfaces[i] = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(originalInterfaces[i]);
     }
     if (!onlyHeader) {
       // fields
@@ -193,6 +206,10 @@ public final class JavaClass {
         readRecord(ds);
       } else if ("PermittedSubclasses".equals(name)) {
         readPermittedSubclasses(ds);
+      } else if ("SourceFile".equals(name) && len == 2) {
+        sourceFile = (String) cp.constants[ds.readUnsignedShort()];
+      } else if ("Signature".equals(name) && len == 2) {
+        signature = (String) cp.constants[ds.readUnsignedShort()];
       } else {
         ds.skipBytes(len);
       }

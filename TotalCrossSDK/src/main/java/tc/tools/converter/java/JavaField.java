@@ -1,7 +1,9 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
+
 package tc.tools.converter.java;
 
 import org.objectweb.asm.Opcodes;
@@ -10,13 +12,14 @@ import org.objectweb.asm.tree.FieldNode;
 import totalcross.io.DataStream;
 
 public final class JavaField {
+  public int rawAccessFlags;
   public String name, type;
   public Object constantValue;
   public boolean isPublic, isPrivate, isProtected, isStatic, isFinal, isVolatile, isTransient, is64bit;
 
   public JavaField(DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
     // access flags
-    int f = ds.readUnsignedShort();
+    int f = rawAccessFlags = ds.readUnsignedShort();
     isPublic = (f & 0x1) != 0;
     isPrivate = (f & 0x2) != 0;
     isProtected = (f & 0x4) != 0;
@@ -42,6 +45,7 @@ public final class JavaField {
   }
 
   public JavaField(FieldNode fieldNode) {
+    rawAccessFlags = fieldNode.access;
     isPublic = ((fieldNode.access & Opcodes.ACC_PUBLIC) != 0);
     isPrivate = ((fieldNode.access & Opcodes.ACC_PRIVATE) != 0);
     isProtected = ((fieldNode.access & Opcodes.ACC_PROTECTED) != 0);
