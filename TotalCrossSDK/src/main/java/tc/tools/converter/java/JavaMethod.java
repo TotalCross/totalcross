@@ -82,10 +82,6 @@ public final class JavaMethod {
     return (String[]) v.toObjectArray();
   }
 
-  private static final String FLOAT_WARNING_MESSAGE =
-      "There's a bug in tc.Deploy that will lead to unpredictable results in device when a method has a float parameter that's not at the last position. To fix this, just change the parameter's type from float to double. Note that, in device, all float values ARE transformed into double (TCVM does not supports float in device).";
-  private static final Vector floatWarningMethods = new Vector(16);
-
   public JavaMethod(JavaClass jc, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
     this.classOfMethod = jc;
     int f = ds.readUnsignedShort();
@@ -107,16 +103,6 @@ public final class JavaMethod {
     }
     this.ret = retsb.toString();
     signature = name + parameters.substring(0, parameters.length() - ret.length()); // (I)V -> (I)
-
-    // check for float types in the method
-    if (params != null) {
-      for (int i = 0; i < params.length - 1; i++) {
-        if (params[i].equals("F")) {
-          registerFloatWarning(jc.className + "." + name);
-          break;
-        }
-      }
-    }
 
     // read the attributes
     int n = ds.readUnsignedShort();
@@ -200,16 +186,6 @@ public final class JavaMethod {
     this.ret = retsb.toString();
     signature = name + parameters.substring(0, parameters.length() - ret.length()); // (I)V -> (I)
 
-    // check for float types in the method
-    if (params != null) {
-      for (int i = 0; i < params.length - 1; i++) { // float being last is ok
-        if (params[i].equals("F")) {
-          registerFloatWarning(jc.className + "." + name);
-          break;
-        }
-      }
-    }
-
     // read the attributes
     int n = ds.readUnsignedShort();
     for (int i = 0; i < n; i++) {
@@ -244,37 +220,6 @@ public final class JavaMethod {
         skipAnnotationElementValue(ds);
       }
     }
-  }
-
-  private static void registerFloatWarning(String methodName) {
-    for (int i = 0; i < floatWarningMethods.size(); i++) {
-      if (methodName.equals(floatWarningMethods.items[i])) {
-        return;
-      }
-    }
-    floatWarningMethods.addElement(methodName);
-    DeployLogger.debug("Caution! Method " + methodName + " has a float parameter.");
-  }
-
-  public static void flushFloatWarnings() {
-    if (floatWarningMethods.size() == 0) {
-      return;
-    }
-    DeployLogger.warn(FLOAT_WARNING_MESSAGE);
-    StringBuilder methods = new StringBuilder();
-    for (int i = 0; i < floatWarningMethods.size(); i++) {
-      if (i > 0) {
-        methods.append(", ");
-      }
-      methods.append(floatWarningMethods.items[i]);
-    }
-    DeployLogger.warn("Float parameter warnings in " + floatWarningMethods.size() + " method(s): " + methods);
-    if (DeployLogger.isDebug()) {
-      for (int i = 0; i < floatWarningMethods.size(); i++) {
-        DeployLogger.debug("  - " + floatWarningMethods.items[i]);
-      }
-    }
-    floatWarningMethods.removeAllElements();
   }
 
   private static void skipAnnotationElementValue(DataStream ds) throws totalcross.io.IOException {

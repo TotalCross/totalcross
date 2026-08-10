@@ -1,7 +1,9 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
+
 package tc.tools.converter.oper;
 
 import totalcross.util.ElementNotFoundException;
@@ -50,23 +52,24 @@ public class OperandReg extends Operand {
 
     if (params != null) {
       for (int i = 0; i < params.length; i++) {
-        switch (params[i].charAt(0)) {
+        char descriptor = params[i].charAt(0);
+        switch (descriptor) {
         case 'Z':
         case 'C':
         case 'B':
         case 'S':
         case 'I': // boolean, char, byte, short, int
-          hashI.put(paramIdx++, nextRegI++);
+          hashI.put(paramIdx, nextRegI++);
           break;
         case 'J':
         case 'F':
         case 'D': // long, float, double
           hash64.put(paramIdx, nextReg64++);
-          paramIdx += 2;
           break;
         default: // *** case 'L':  case '[': ***  object
-          hashO.put(paramIdx++, nextRegO++);
+          hashO.put(paramIdx, nextRegO++);
         }
+        paramIdx += javaLocalSlotWidth(descriptor);
       }
     }
 
@@ -75,6 +78,10 @@ public class OperandReg extends Operand {
     paramRegO = nextRegO;
 
     nextRegI = nextReg64 = nextRegO = 64;
+  }
+
+  private static int javaLocalSlotWidth(char descriptor) {
+    return descriptor == 'J' || descriptor == 'D' ? 2 : 1;
   }
 
   // Constructor for temporary registers
