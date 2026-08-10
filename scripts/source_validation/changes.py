@@ -148,11 +148,30 @@ def _staged(root: Path, files: list[str] | None) -> ChangeSet:
     return ChangeSet("staged", base, BlobSource("index"), _diff(root, args, files))
 
 
-def _working_tree(root: Path, files: list[str] | None) -> ChangeSet:
+def _working_tree(root: Path, files: list[str] | None,
+                  *, include_untracked: bool) -> ChangeSet:
     head = _head(root)
     base = BlobSource("git", head) if head else BlobSource("empty")
     tracked = _diff(root, [head] if head else [], files)
-    return ChangeSet("working-tree", base, BlobSource("working-tree"), tracked)
+    if not include_untracked:
+        return ChangeSet("working-tree", base, BlobSource("working-tree"), tracked)
+    selected = set(files) if files else None
+    untracked = tuple(
+        ChangedFile("A", None, path)
+        for path in (
+            item.decode("utf-8", "surrogateescape")
+            for item in _git(root, [
+                "ls-files", "--others", "--exclude-standard", "-z",
+            ]).split(b"\0")
+            if item
+        )
+        if selected is None or path in selected
+    )
+    seen = {change.current_path for change in tracked}
+    return ChangeSet(
+        "working-tree", base, BlobSource("working-tree"),
+        tracked + tuple(change for change in untracked if change.current_path not in seen),
+    )
 
 
 def _revision_range(root: Path, base: str, head: str,
@@ -171,7 +190,7 @@ def discover_changes(root: Path, *, base: str | None = None,
     if staged:
         return _staged(root, files)
     if working_tree:
-        return _working_tree(root, files)
+        return _working_tree(root, files, include_untracked=True)
     if base and head:
         return _revision_range(root, base, head, files, "base-head")
     if commit:
@@ -187,7 +206,7 @@ def discover_changes(root: Path, *, base: str | None = None,
     pr_base = os.environ.get("PR_BASE_SHA")
     pr_head = os.environ.get("PR_HEAD_SHA")
     if event == "pull_request" and pr_base and pr_head:
-        merge_base = _text(root, ["merge-base", pr_base, pr_head]) or pr_base
+        merge_base = _text(root, ["merge-base", pr_base, pr_head], check=False) or pr_base
         return _revision_range(root, merge_base, pr_head, None, "pull-request")
     push_after = os.environ.get("PUSH_AFTER")
     if push_after:
@@ -198,4 +217,5 @@ def discover_changes(root: Path, *, base: str | None = None,
                          _tree(root, push_after, None))
 
     staged_changes = _staged(root, None)
-    return staged_changes if staged_changes.files else _working_tree(root, None)
+    return (staged_changes if staged_changes.files
+            else _working_tree(root, None, include_untracked=False))

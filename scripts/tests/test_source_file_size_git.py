@@ -80,6 +80,13 @@ class GitSizeValidationTest(unittest.TestCase):
         self.assertEqual(1, result.returncode)
         self.assertIn("base:       new file", result.stderr)
 
+    def test_explicit_working_tree_includes_untracked_sources(self) -> None:
+        self.commit_file("seed.txt", 1)
+        self.write("src/Untracked.java", LIMIT + 1)
+        result = self.validate("--working-tree")
+        self.assertEqual(1, result.returncode)
+        self.assertIn("new source exceeds", result.stderr)
+
     def test_rename_inherits_oversized_baseline(self) -> None:
         base_size = 30 * 1024
         self.commit_file("src/Old.java", base_size)

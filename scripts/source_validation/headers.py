@@ -140,8 +140,11 @@ def run(root: Path, changes: ChangeSet, *, fix: bool = False,
         path = change.current_path
         if path is None or path in seen:
             continue
-        content = ((root / path).read_bytes() if fix and (root / path).is_file()
-                   else changes.target.read(root, path))
+        # Preserve historical header-validation behavior for revision modes,
+        # while staged pre-commit validation must inspect the index exactly.
+        staged_snapshot = changes.mode == "staged" and not fix
+        content = (changes.target.read(root, path) if staged_snapshot
+                   else ((root / path).read_bytes() if (root / path).is_file() else None))
         if not should_check(path, content is not None):
             continue
         seen.add(path)

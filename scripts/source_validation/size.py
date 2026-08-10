@@ -87,7 +87,9 @@ def evaluate(base_size: int | None, current_size: int) -> Decision:
 
 def should_check(path: str) -> bool:
     """Return whether a path is manually maintained executable/build source."""
-    normalized = path.replace("\\", "/").lstrip("./")
+    normalized = path.replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
     if any(normalized.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
         return False
     item = PurePosixPath(normalized)
