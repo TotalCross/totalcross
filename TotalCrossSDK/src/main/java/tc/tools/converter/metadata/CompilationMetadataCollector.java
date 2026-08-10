@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.metadata;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -11,11 +10,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.objectweb.asm.Type;
-
+import tc.tools.converter.GlobalConstantPool;
 import tc.tools.converter.Java8LambdaLowering;
 import tc.tools.converter.JavaObjectMethodsLowering;
 import tc.tools.converter.JavaStringConcatLowering;
+import tc.tools.converter.MethodDeclarationResolver;
 import tc.tools.converter.TCConstants;
 import tc.tools.converter.bytecode.BC186_invokedynamic;
 import tc.tools.converter.bytecode.BC187_new;
@@ -71,7 +70,8 @@ public final class CompilationMetadataCollector implements CompilationMetadataCa
     ClassBuilder builder = classesByIdentity.get(owner);
     if (builder != null) {
       builder.fields.add(new CompilationMetadata.FieldMetadata(builder.originalName, builder.effectiveName, field.name,
-          field.type, lowerType(field.type), field.rawAccessFlags, safeConstant(owner, field.constantValue),
+          field.type, GlobalConstantPool.javaType2TCType(field.type), field.rawAccessFlags,
+          safeConstant(owner, field.constantValue),
           tcFieldSymbol));
     }
   }
@@ -95,7 +95,7 @@ public final class CompilationMetadataCollector implements CompilationMetadataCa
     if (bytecode instanceof MethodCall && bytecode.bc != JVM_INVOKEDYNAMIC) {
       MethodCall call = (MethodCall) bytecode;
       site.call = new CallBuilder(site, invokeKind(bytecode.bc), call.className, call.name, call.parameters,
-          resolveDeclarationOwner(call.className, call.name, call.parameters));
+          MethodDeclarationResolver.resolve(call.className, call.name, call.parameters).declarationOwner);
     } else if (bytecode instanceof BC186_invokedynamic) {
       captureDynamic(owner, method, (BC186_invokedynamic) bytecode, site);
     }
@@ -217,31 +217,6 @@ public final class CompilationMetadataCollector implements CompilationMetadataCa
     }
   }
 
-  private static String resolveDeclarationOwner(String ownerName, String name, String descriptor) {
-    if ("<init>".equals(name)) {
-      return ownerName;
-    }
-    try {
-      Class<?> owner = Class.forName(ownerName.replace('/', '.'), false,
-          CompilationMetadataCollector.class.getClassLoader());
-      Method[] candidates = owner.getMethods();
-      for (int i = 0; i < candidates.length; i++) {
-        if (name.equals(candidates[i].getName()) && descriptor.equals(Type.getMethodDescriptor(candidates[i]))) {
-          return candidates[i].getDeclaringClass().getName().replace('.', '/');
-        }
-      }
-      candidates = owner.getDeclaredMethods();
-      for (int i = 0; i < candidates.length; i++) {
-        if (name.equals(candidates[i].getName()) && descriptor.equals(Type.getMethodDescriptor(candidates[i]))) {
-          return candidates[i].getDeclaringClass().getName().replace('.', '/');
-        }
-      }
-    } catch (Throwable ignored) {
-      // Resolution is best-effort metadata; J2TC's compatibility validator owns rejection.
-    }
-    return null;
-  }
-
   private static String allocationType(ByteCode bytecode) {
     if (bytecode instanceof BC187_new) {
       return ((BC187_new) bytecode).className;
@@ -258,24 +233,6 @@ public final class CompilationMetadataCollector implements CompilationMetadataCa
       return type >= 4 && type <= 11 ? "[" + types.charAt(type - 3) : null;
     }
     return null;
-  }
-
-  private static String lowerType(String descriptor) {
-    if (descriptor == null || descriptor.length() == 0) {
-      return descriptor;
-    }
-    switch (descriptor.charAt(0)) {
-    case 'V': return "&V";
-    case 'Z': return "&b";
-    case 'B': return "&B";
-    case 'C': return "&C";
-    case 'S': return "&S";
-    case 'I': return "&I";
-    case 'J': return "&L";
-    case 'F':
-    case 'D': return "&D";
-    default: return descriptor;
-    }
   }
 
   private static Object safeConstant(JavaClass owner, Object value) {
@@ -361,7 +318,7 @@ public final class CompilationMetadataCollector implements CompilationMetadataCa
       List<String> loweredParams = new ArrayList<String>();
       if (source.params != null) {
         for (int i = 0; i < source.params.length; i++) {
-          loweredParams.add(lowerType(source.params[i]));
+          loweredParams.add(GlobalConstantPool.javaType2TCType(source.params[i]));
         }
       }
       CompilationMetadata.NativeKind nativeKind = source.replaceWithNative
@@ -372,7 +329,8 @@ public final class CompilationMetadataCollector implements CompilationMetadataCa
         builtCalls.add(calls.get(i).build());
       }
       return new CompilationMetadata.MethodMetadata(owner.originalName, owner.effectiveName, originalName,
-          effectiveName, source.descriptor, strings(source.params), source.ret, loweredParams, lowerType(source.ret),
+          effectiveName, source.descriptor, strings(source.params), source.ret, loweredParams,
+          GlobalConstantPool.javaType2TCType(source.ret),
           source.rawAccessFlags, nativeKind, tcMethodNameSymbol, frames(source), builtCalls, origins);
     }
   }

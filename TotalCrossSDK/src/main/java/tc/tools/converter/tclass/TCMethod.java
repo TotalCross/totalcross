@@ -6,10 +6,9 @@
 
 package tc.tools.converter.tclass;
 
-import java.lang.reflect.Method;
-
 import tc.tools.converter.GlobalConstantPool;
 import tc.tools.converter.J2TC;
+import tc.tools.converter.MethodDeclarationResolver;
 import tc.tools.converter.Storage;
 import tc.tools.converter.TCConstants;
 import tc.tools.converter.TCValue;
@@ -20,7 +19,6 @@ import tc.tools.converter.ir.Instruction.Instruction;
 import tc.tools.converter.regalloc.AdjListNode;
 import totalcross.io.DataStreamLE;
 import totalcross.sys.Convert;
-import totalcross.sys.Vm;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
 
@@ -241,146 +239,19 @@ public final class TCMethod implements TCConstants {
     //System.out.println(J2TC.currentClass+" "+J2TC.currentMethod+" checking "+className+" "+method);
     if (J2TC.inProhibitedList(className, false) && !htAlreadyChecked.exists(params)) {
       htAlreadyChecked.put(params, "");
-      boolean found = false;
-      boolean mappedClassFound = false;
-      String declarationOwner = method.equals(TClassConstants.CONSTRUCTOR_NAME)
-          ? null : findJavaDeclarationOwner(className, method, params);
-      Vector candidateOwners = new Vector(6);
-      addOwner(candidateOwners, className);
-      addOwner(candidateOwners, declarationOwner);
-      if (!method.equals(TClassConstants.CONSTRUCTOR_NAME)) {
-        addJavaSuperTypes(candidateOwners, className);
-      }
-      for (int i = 0; i < candidateOwners.size() && !found; i++) {
-        Class<?> c4D = findDeviceClass((String) candidateOwners.items[i]);
-        if (c4D != null) {
-          mappedClassFound = true;
-          found = hasCompatibleMember(c4D, method, params);
-        }
-      }
-      if (!mappedClassFound) {
+      MethodDeclarationResolver.Resolution resolution =
+          MethodDeclarationResolver.resolveDeviceCall(className, method, params);
+      if (!resolution.deviceClassFound) {
         throw new InvalidClassException("Class '" + className
             + "' is not available at the device! To see the available classes, see the Javadocs for totalcross.lang package."
             + beAware);
       }
-      if (!found) {
+      if (!resolution.deviceMemberFound) {
         throw new InvalidClassException(toHumanReadable(className, method, params)
             + " is not available at the device! To find the available ones, see the Javadocs for "
             + java2totalcross(className) + " class." + (className.startsWith("java.lang") ? beAware : ""));
       }
     }
-  }
-
-  private static String findJavaDeclarationOwner(String className, String method, int[] params) {
-    try {
-      Class<?> owner = Class.forName(className.replace('/', '.'), false, TCMethod.class.getClassLoader());
-      Method[] methods = owner.getMethods();
-      for (int i = 0; i < methods.length; i++) {
-        if (methods[i].getName().equals(method) && areParametersCompatible(params, methods[i].getParameterTypes())) {
-          return methods[i].getDeclaringClass().getName();
-        }
-      }
-      methods = owner.getDeclaredMethods();
-      for (int i = 0; i < methods.length; i++) {
-        if (methods[i].getName().equals(method) && areParametersCompatible(params, methods[i].getParameterTypes())) {
-          return methods[i].getDeclaringClass().getName();
-        }
-      }
-    } catch (ClassNotFoundException e) {
-      // The mapped-device lookup below retains the existing precise diagnostic.
-    }
-    return null;
-  }
-
-  private static void addJavaSuperTypes(Vector owners, String className) {
-    try {
-      Class<?> owner = Class.forName(className.replace('/', '.'), false, TCMethod.class.getClassLoader());
-      for (Class<?> type = owner.getSuperclass(); type != null; type = type.getSuperclass()) {
-        addOwner(owners, type.getName());
-        addInterfaces(owners, type.getInterfaces());
-      }
-      addInterfaces(owners, owner.getInterfaces());
-    } catch (ClassNotFoundException e) {
-      // The mapped-device lookup retains the existing precise diagnostic.
-    }
-  }
-
-  private static void addInterfaces(Vector owners, Class<?>[] interfaces) {
-    for (int i = 0; i < interfaces.length; i++) {
-      addOwner(owners, interfaces[i].getName());
-      addInterfaces(owners, interfaces[i].getInterfaces());
-    }
-  }
-
-  private static void addOwner(Vector owners, String owner) {
-    if (owner == null) {
-      return;
-    }
-    owner = owner.replace('/', '.');
-    for (int i = 0; i < owners.size(); i++) {
-      if (owner.equals(owners.items[i])) {
-        return;
-      }
-    }
-    owners.addElement(owner);
-  }
-
-  private static Class<?> findDeviceClass(String javaClassName) {
-    javaClassName = javaClassName.replace('/', '.');
-    String[] prefixes = { "totalcross", "jdkcompat" };
-    for (int i = 0; i < prefixes.length; i++) {
-      String className = prefixes[i] + javaClassName.substring(4);
-      int nested = className.indexOf('$');
-      String class4D = nested < 0 ? className + "4D"
-          : className.substring(0, nested) + "4D" + className.substring(nested);
-      try {
-        return Class.forName(class4D, false, TCMethod.class.getClassLoader());
-      } catch (ClassNotFoundException e) {
-        try {
-          return Class.forName(className, false, TCMethod.class.getClassLoader());
-        } catch (ClassNotFoundException ignored) {
-          // Try the next supported compatibility namespace.
-        }
-      }
-    }
-    return null;
-  }
-
-  private static boolean hasCompatibleMember(Class<?> c4D, String method, int[] params) {
-    if (method.equals(TClassConstants.CONSTRUCTOR_NAME)) {
-      java.lang.reflect.Constructor<?>[] constructors = c4D.getDeclaredConstructors();
-      for (int i = 0; i < constructors.length; i++) {
-        if (areParametersCompatible(params, constructors[i].getParameterTypes())) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    Vector vector = new Vector(c4D.getMethods());
-    vector.addElements(c4D.getDeclaredMethods());
-    Object[] objects = vector.toObjectArray();
-    if (objects == null) {
-      return false;
-    }
-    Method[] methods = new Method[objects.length];
-    Vm.arrayCopy(objects, 0, methods, 0, objects.length);
-    Hashtable names = new Hashtable(methods.length);
-    for (int i = 0; i < methods.length; i++) {
-      names.put(methods[i].getName(), "");
-    }
-    for (int i = 0; i < methods.length; i++) {
-      String name = methods[i].getName();
-      if (name.endsWith("4D")) {
-        name = name.substring(0, name.length() - 2);
-      } else if (names.exists(name + "4D")) {
-        continue;
-      }
-      if (name.equals(method) && areParametersCompatible(params, methods[i].getParameterTypes())) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private static String java2totalcross(String name) {
@@ -413,66 +284,4 @@ public final class TCMethod implements TCConstants {
     return sb.append(")").toString();
   }
 
-  // jiargs is what the user is calling; args is from the method retrieved with introspection in the totalcross/xxx4D class
-  private static boolean areParametersCompatible(int[] jiargs, Class<?>[] args) {
-    int jiargsLen = jiargs.length - 2;
-    int argsLen = args == null ? 0 : args.length;
-    if (jiargsLen != argsLen) {
-      return false;
-    }
-    boolean found = true;
-    for (int i = 0; i < jiargsLen && found; i++) {
-      String name = args[i].getName();
-      String js = GlobalConstantPool.getClassName(jiargs[i + 2]);
-      if (name == "float") {
-        name = "double";
-      }
-
-      if (js.charAt(0) == '&') {
-        found &= name.equals(GlobalConstantPool.getPrimitiveJavaName(js));
-      } else if (js.charAt(0) == '[') {
-        int j = 0;
-        while (name.charAt(++j) == '[') {
-          ;
-        }
-        String suffix = "";
-        switch (name.charAt(j)) {
-        case 'Z':
-          suffix = "&b";
-          break;
-        case 'C':
-          suffix = "&C";
-          break;
-        case 'B':
-          suffix = "&B";
-          break;
-        case 'S':
-          suffix = "&S";
-          break;
-        case 'I':
-          suffix = "&I";
-          break;
-        case 'J':
-          suffix = "&L";
-          break;
-        case 'F':
-          suffix = "&D";
-          break;
-        case 'D':
-          suffix = "&D";
-          break;
-        case 'L':
-          suffix = name.substring(j + 1, name.length() - 1);
-        }
-        name = name.substring(0, j) + suffix;
-        found &= name.equals(js); // for arrays they return in the same format
-      } else // object
-      {
-        name = java2totalcross(name);
-        js = java2totalcross(js);
-        found &= name.equals(js) || name.equals(js + "4D") || Convert.replace(name, "4D", "").equals(js);
-      }
-    }
-    return found;
-  }
 }

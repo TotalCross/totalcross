@@ -62,3 +62,20 @@ temporary completely, attempts atomic replacement, and falls back to a regular
 replacement move only when atomic moves are unsupported. Injected failures
 before replacement preserve the prior sidecar and remove the owned temporary.
 This is an ordering guarantee, not an fsync or crash-durability guarantee.
+
+## Canonical converter semantics
+
+Java-to-TC descriptor lowering now has one production API shared by J2TC and
+TCM capture. Source `F` remains visible as `F` in metadata while its lowered
+form remains the converter's TC double type; primitive arrays retain their
+existing distinct component encoding. Object and 4D normalization likewise
+follow the constant-pool rules instead of a collector-local approximation.
+
+Declaration-owner capture and deploy validation now use one resolver. Parsed
+program classes and their known superclasses/interfaces are authoritative for
+application methods. Supported Java APIs are checked only through
+TotalCross-owned `totalcross`/`jdkcompat` classes plus explicit canonical
+mappings, including `java.util.Properties.put` declaring through
+`java.util.Hashtable`. The resolver never loads host `java.*` classes, preserves
+the bytecode symbolic owner, refuses superclass constructor guesses, and leaves
+unknown declarations unresolved.

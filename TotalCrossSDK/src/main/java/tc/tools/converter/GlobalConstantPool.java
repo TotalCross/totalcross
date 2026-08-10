@@ -1,7 +1,9 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
+
 package tc.tools.converter;
 
 import tc.Deploy;
@@ -248,7 +250,10 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
     return "*none*";
   }
 
-  private static String javaType2TCType(String value) {
+  public static String javaType2TCType(String value) {
+    if (value.length() == 1 && value.charAt(0) != '[') {
+      return javaPrimitiveType2TCType(value);
+    }
     value = value.replace('/', '.'); // java use java/lang/String, we use java.lang.String
     int len = value.length();
     char last = value.charAt(len - 1);
@@ -329,7 +334,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       if (p.charAt(0) == 'L' || p.charAt(0) == '[') {
         all[j + 2] = putParam(p);
       } else {
-        p = javaPrimitiveType2TCType(p);
+        p = javaType2TCType(p);
         TCValue tc = (TCValue) htCls.get(p);
         all[j + 2] = tc.index;
       }

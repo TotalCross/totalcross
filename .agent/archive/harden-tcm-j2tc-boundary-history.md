@@ -60,3 +60,20 @@ filesystem seam. Tests prove ordinary replacement, atomic-not-supported
 fallback, previous-sidecar preservation on injected pre-replacement failure,
 and owned-temporary cleanup. Documentation deliberately makes no fsync or crash
 durability claim.
+
+## Milestone 3 — canonical converter semantics
+
+Completed 2026-08-10 after focused validation on the required semantic paths.
+
+`GlobalConstantPool.javaType2TCType` is now the single descriptor-lowering entry
+point used by production conversion and metadata. It preserves the established
+primitive, object, array, 4D-name, and scalar-float-to-TC-double behavior while
+keeping source descriptors intact in metadata.
+
+`MethodDeclarationResolver` now serves both device-call validation and TCM
+capture. It consults active parsed program classes first, then guarded
+TotalCross/jdkcompat device classes and the explicit Properties-to-Hashtable
+mapping. It never loads a host `java.*` class. Bytecode symbolic owners remain
+unchanged, constructors never search mapped superclasses, and unresolved facts
+remain unresolved. Focused tests passed on JDK 17; installed JDK 11 could not run
+the Java-17 Gradle/project bytecode, so no cross-runtime result is claimed.
