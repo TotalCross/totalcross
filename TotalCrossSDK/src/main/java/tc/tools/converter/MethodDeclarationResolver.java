@@ -5,6 +5,7 @@ package tc.tools.converter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,7 +18,6 @@ import tc.tools.converter.java.JavaMethod;
 import tc.tools.converter.tclass.TClassConstants;
 import totalcross.sys.Convert;
 import totalcross.util.Hashtable;
-import totalcross.util.Vector;
 
 /** Resolves source declaration owners from conversion-owned and device-owned models. */
 public final class MethodDeclarationResolver {
@@ -69,7 +69,7 @@ public final class MethodDeclarationResolver {
       Class<?> deviceClass = findDeviceClass(candidate);
       if (deviceClass == null) continue;
       classFound = true;
-      Class<?> declaration = findMemberDeclaration(deviceClass, name, matcher);
+      Class<?> declaration = findMemberDeclaration(deviceClass, name, matcher, new HashSet<String>());
       if (declaration != null) {
         return new DeviceResolution(javaFacingOwner(declaration, candidate), deviceClass.getName(), true, true);
       }
@@ -86,22 +86,20 @@ public final class MethodDeclarationResolver {
     return result;
   }
 
-  private static Class<?> findMemberDeclaration(Class<?> deviceClass, String name, ParameterMatcher matcher) {
+  private static Class<?> findMemberDeclaration(Class<?> deviceClass, String name, ParameterMatcher matcher,
+      Set<String> visited) {
+    if (deviceClass == null || !visited.add(deviceClass.getName())) return null;
     if (isConstructor(name)) {
       for (Constructor<?> constructor : deviceClass.getDeclaredConstructors()) {
         if (matcher.matches(constructor.getParameterTypes())) return deviceClass;
       }
       return null;
     }
-    Vector candidates = new Vector(deviceClass.getMethods());
-    candidates.addElements(deviceClass.getDeclaredMethods());
-    Object[] values = candidates.toObjectArray();
-    if (values == null) return null;
+    Method[] values = deviceClass.getDeclaredMethods();
     Hashtable names = new Hashtable(values.length);
     for (Object value : values) names.put(((Method) value).getName(), "");
     for (Object value : values) {
       Method method = (Method) value;
-      if (!isDeviceOwned(method.getDeclaringClass())) continue;
       String candidateName = method.getName();
       if (candidateName.endsWith("4D")) {
         candidateName = candidateName.substring(0, candidateName.length() - 2);
@@ -112,12 +110,37 @@ public final class MethodDeclarationResolver {
         return method.getDeclaringClass();
       }
     }
+    Class<?> declaration;
+    for (Class<?> mappedSuper : mappedHierarchyTypes(deviceClass.getSuperclass())) {
+      declaration = findMemberDeclaration(mappedSuper, name, matcher, visited);
+      if (declaration != null) return declaration;
+    }
+    for (Class<?> iface : deviceClass.getInterfaces()) {
+      for (Class<?> mappedInterface : mappedHierarchyTypes(iface)) {
+        declaration = findMemberDeclaration(mappedInterface, name, matcher, visited);
+        if (declaration != null) return declaration;
+      }
+    }
     return null;
   }
 
+  private static Class<?>[] mappedHierarchyTypes(Class<?> type) {
+    if (type == null) return new Class<?>[0];
+    if (isDeviceOwned(type)) return new Class<?>[] { type };
+    String name = type.getName();
+    return name.startsWith("java.") || name.startsWith("javax.")
+        ? findDeviceClasses(name.replace('.', '/')) : new Class<?>[0];
+  }
+
   private static Class<?> findDeviceClass(String javaOwner) {
+    Class<?>[] candidates = findDeviceClasses(javaOwner);
+    return candidates.length == 0 ? null : candidates[0];
+  }
+
+  private static Class<?>[] findDeviceClasses(String javaOwner) {
     String dotted = javaOwner.replace('/', '.');
-    if (!dotted.startsWith("java.")) return null;
+    if (!dotted.startsWith("java.") && !dotted.startsWith("javax.")) return new Class<?>[0];
+    ArrayList<Class<?>> foundClasses = new ArrayList<Class<?>>(2);
     String[] prefixes = { "totalcross", "jdkcompat" };
     for (String prefix : prefixes) {
       String mapped = prefix + dotted.substring(4);
@@ -125,15 +148,19 @@ public final class MethodDeclarationResolver {
       String replacement = nested < 0 ? mapped + "4D"
           : mapped.substring(0, nested) + "4D" + mapped.substring(nested);
       Class<?> found = loadOwned(replacement);
-      if (found != null) return found;
+      if (found != null) {
+        foundClasses.add(found);
+        continue;
+      }
       found = loadOwned(mapped);
-      if (found != null) return found;
+      if (found != null) foundClasses.add(found);
     }
-    return null;
+    return foundClasses.toArray(new Class<?>[foundClasses.size()]);
   }
 
   private static Class<?> loadOwned(String className) {
-    if (!className.startsWith("totalcross.") && !className.startsWith("jdkcompat.")) return null;
+    if (!className.startsWith("totalcross.") && !className.startsWith("jdkcompat.")
+        && !className.startsWith("jdkcompatx.")) return null;
     try {
       return Class.forName(className, false, MethodDeclarationResolver.class.getClassLoader());
     } catch (ClassNotFoundException e) {
@@ -171,12 +198,13 @@ public final class MethodDeclarationResolver {
     if (name.endsWith("4D")) name = name.substring(0, name.length() - 2);
     if (name.startsWith("totalcross.")) name = "java." + name.substring("totalcross.".length());
     else if (name.startsWith("jdkcompat.")) name = "java." + name.substring("jdkcompat.".length());
+    else if (name.startsWith("jdkcompatx.")) name = "javax." + name.substring("jdkcompatx.".length());
     return slash(name);
   }
 
   private static boolean isDeviceOwned(Class<?> type) {
     String name = type.getName();
-    return name.startsWith("totalcross.") || name.startsWith("jdkcompat.");
+    return name.startsWith("totalcross.") || name.startsWith("jdkcompat.") || name.startsWith("jdkcompatx.");
   }
 
   private static boolean isConstructor(String name) {

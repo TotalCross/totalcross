@@ -71,6 +71,22 @@ class MethodDeclarationResolverTest {
   }
 
   @Test
+  void followsOnlyMappedDeviceHierarchyForInheritedApiMethods() {
+    assertMappedDeclaration("java/io/ByteArrayInputStream", "close", "()V", "java/io/InputStream");
+    assertMappedDeclaration("java/io/IOException", "printStackTrace", "()V", "java/lang/Throwable");
+    assertMappedDeclaration("java/io/UnsupportedEncodingException", "initCause",
+        "(Ljava/lang/Throwable;)Ljava/lang/Throwable;", "java/lang/Throwable");
+    assertMappedDeclaration("java/util/LinkedList", "iterator", "()Ljava/util/Iterator;",
+        "java/util/AbstractSequentialList");
+    assertMappedDeclaration("java/lang/InternalError", "initCause",
+        "(Ljava/lang/Throwable;)Ljava/lang/Throwable;", "java/lang/Throwable");
+    assertMappedDeclaration("java/nio/charset/UnsupportedCharsetException", "getMessage", "()Ljava/lang/String;",
+        "java/lang/Throwable");
+    assertMappedDeclaration("javax/crypto/SecretKeyFactorySpi", "engineGenerateSecret",
+        "(Ljava/security/spec/KeySpec;)Ljavax/crypto/SecretKey;", "javax/crypto/SecretKeyFactorySpi");
+  }
+
+  @Test
   void tcmUsesTheSameProgramDeclarationResult() throws Exception {
     GlobalConstantPool.init();
     J2TC.resetCompilationMetadata();
@@ -97,6 +113,13 @@ class MethodDeclarationResolverTest {
 
   private static void register(JavaClass type) {
     MethodDeclarationResolver.registerProgramClass(type);
+  }
+
+  private static void assertMappedDeclaration(String owner, String name, String descriptor, String declaration) {
+    MethodDeclarationResolver.Resolution result = MethodDeclarationResolver.resolve(owner, name, descriptor);
+    assertEquals(owner, result.symbolicOwner);
+    assertEquals(declaration, result.declarationOwner);
+    assertTrue(result.deviceMemberFound);
   }
 
   private static JavaClass programType(String name, String superName, String[] interfaces, String methodName)
