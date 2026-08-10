@@ -37,6 +37,7 @@ import tc.tools.converter.java.JavaMethod;
 import tc.tools.converter.metadata.CompilationMetadata;
 import tc.tools.converter.metadata.CompilationMetadataCollector;
 import tc.tools.converter.metadata.CompilationMetadataCollector.SiteCapture;
+import tc.tools.converter.metadata.TcmWriter;
 import tc.tools.converter.oper.Operand;
 import tc.tools.converter.oper.OperandConstant32;
 import tc.tools.converter.oper.OperandConstant64;
@@ -1439,6 +1440,15 @@ public final class J2TC implements JConstants, TCConstants {
       DeploySettings.tczs = (String[]) tczs.toObjectArray();
       for (int i = 0; i < tczMsg.size(); i++) {
         DeployLogger.normal((String) tczMsg.items[i]);
+      }
+      if (DeploySettings.tcmMode == DeploySettings.TcmMode.AOT) {
+        ArrayList<java.nio.file.Path> tczPaths = new ArrayList<java.nio.file.Path>(DeploySettings.tczs.length);
+        for (int i = 0; i < DeploySettings.tczs.length; i++) {
+          tczPaths.add(java.nio.file.Paths.get(DeploySettings.tczs[i]));
+        }
+        java.nio.file.Path sidecar = TcmWriter.publishForTczs(tczPaths, getCompilationMetadata());
+        DeploySettings.tcmFileName = sidecar.toString().replace('\\', '/');
+        DeployLogger.normal("File " + DeploySettings.tcmFileName + " written (TCM v1)");
       }
     }
     if (!DeploySettings.testClass) {

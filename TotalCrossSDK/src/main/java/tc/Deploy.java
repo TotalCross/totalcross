@@ -410,7 +410,20 @@ public class Deploy {
           activationKey = key;
           break;
         case 't':
-          DeploySettings.testClass = true;
+          if ("/tcm".equals(op)) {
+            if (i >= args.length - 1) {
+              throw new DeployerException("Missing mode for /tcm; supported mode: aot");
+            }
+            String tcmMode = args[++i].toLowerCase();
+            if (!"aot".equals(tcmMode)) {
+              throw new DeployerException("Invalid /tcm mode: " + tcmMode + "; supported mode: aot");
+            }
+            DeploySettings.tcmMode = DeploySettings.TcmMode.AOT;
+          } else if ("/t".equals(op)) {
+            DeploySettings.testClass = true;
+          } else {
+            throw new DeployerException("Unknown option: " + op);
+          }
           break; // guich@tc115_37: missing break
         case 'w':
           waitIfError = true;
@@ -537,6 +550,7 @@ public class Deploy {
             + "The files are always installed at the same folder of the application, so each application will have its own vm.\n"
             + "   /r key  : Specify a registration key to be used to activate TotalCross when required\n"
             + "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n"
+            + "   /tcm aot: Emit a deterministic compilation-metadata sidecar beside the generated TCZ.\n"
             + "   /v      : Verbose output for information messages\n"
             + "   /w      : Waits for a key press if an error occurs\n"
             + "   /x list : Comma-separated list of class names that must be excluded (in a starts-with manner). E.G.: \"/x com/framework/\" \n"
