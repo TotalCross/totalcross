@@ -116,6 +116,7 @@ public final class J2TC implements JConstants, TCConstants {
         return;
       }
       jc.className = Bytecode2TCCode.removeSuffix4D(jc.className);
+      MethodDeclarationResolver.registerProgramClass(jc);
       metadataCapture.captureClass(jc, jc.className);
       converted = convertJClass2TClass(jc);
       tcbas.reset();
@@ -149,6 +150,7 @@ public final class J2TC implements JConstants, TCConstants {
 
   //This constructor was created solely to perform the test cases of conversion Bytecode2TCCode. After that, it could be removed.
   public J2TC(JavaClass jc, boolean dummy) throws IOException, Exception {
+    MethodDeclarationResolver.registerProgramClass(jc);
     metadataCapture.captureClass(jc, jc.className);
     converted = convertJClass2TClass(jc);
     if (DeploySettings.testClass) {
@@ -474,7 +476,7 @@ public final class J2TC implements JConstants, TCConstants {
         if (isClass) {
           tcm.cpParams[j] = GlobalConstantPool.putParam(p); // already in java's format
         } else {
-          p = GlobalConstantPool.javaPrimitiveType2TCType(p);
+          p = GlobalConstantPool.javaType2TCType(p);
           tcm.cpParams[j] = GlobalConstantPool.getPrimitiveTypeIndex(p);
         }
       }
@@ -486,7 +488,7 @@ public final class J2TC implements JConstants, TCConstants {
         if (isClass) {
           tcm.cpReturn = GlobalConstantPool.putParam(p); // already in java's format
         } else {
-          p = GlobalConstantPool.javaPrimitiveType2TCType(p);
+          p = GlobalConstantPool.javaType2TCType(p);
           tcm.cpReturn = GlobalConstantPool.getPrimitiveTypeIndex(p);
         }
       }
@@ -642,7 +644,7 @@ public final class J2TC implements JConstants, TCConstants {
         TCInt32Field t = new TCInt32Field();
         t.flags = flags;
         t.cpName = GlobalConstantPool.putMethodOrFieldName(f.name);
-        t.cpType = GlobalConstantPool.getPrimitiveTypeIndex(GlobalConstantPool.javaPrimitiveType2TCType(f.type));
+        t.cpType = GlobalConstantPool.getPrimitiveTypeIndex(GlobalConstantPool.javaType2TCType(f.type));
         o = t;
         if (f.constantValue != null) {
           t.value = ((Integer) f.constantValue).intValue();
@@ -667,7 +669,7 @@ public final class J2TC implements JConstants, TCConstants {
         TCValue64Field t = new TCValue64Field();
         t.flags = flags;
         t.cpName = GlobalConstantPool.putMethodOrFieldName(f.name);
-        t.cpType = GlobalConstantPool.getPrimitiveTypeIndex(GlobalConstantPool.javaPrimitiveType2TCType(f.type));
+        t.cpType = GlobalConstantPool.getPrimitiveTypeIndex(GlobalConstantPool.javaType2TCType(f.type));
         o = t;
         if (flags.isStatic) {
           sV64.addElement(o);
@@ -905,6 +907,7 @@ public final class J2TC implements JConstants, TCConstants {
         if (name.endsWith(".class")) {
           jc = classes.get(name.substring(0, name.length() - 6));
           jc = jc.parse(bytes, false, metadataCapture.isEnabled());
+          MethodDeclarationResolver.registerProgramClass(jc);
           if (Utils.getFileName(jc.className).equals(mainCandidate)) {
             setApplicationProperties(jc);
           }
@@ -1042,6 +1045,7 @@ public final class J2TC implements JConstants, TCConstants {
     }
     if (isClass) {
       jc = new JavaClass(bytes, false, metadataCapture.isEnabled());
+      MethodDeclarationResolver.registerProgramClass(jc);
       name = jc.className + ".class";
     } else {
       jc = null;
@@ -1162,6 +1166,7 @@ public final class J2TC implements JConstants, TCConstants {
     fName = fName.replace('\\', '/');
     ByteCode.initClasses();
     Java8LambdaLowering.beginConversionRun();
+    MethodDeclarationResolver.beginConversionRun();
     metadataCapture = DeploySettings.tcmMode == DeploySettings.TcmMode.AOT
         ? new CompilationMetadataCollector() : CompilationMetadataCapture.NONE;
     Vector vin = new Vector(200);
@@ -1504,6 +1509,7 @@ public final class J2TC implements JConstants, TCConstants {
   }
 
   public static void resetCompilationMetadata() {
+    MethodDeclarationResolver.beginConversionRun();
     metadataCapture = new CompilationMetadataCollector();
   }
 
@@ -1560,6 +1566,7 @@ public final class J2TC implements JConstants, TCConstants {
         try {
           JavaClass javaClass = new JavaClass(readAllBytes(classFileInputStream), false,
               metadataCapture.isEnabled());
+          MethodDeclarationResolver.registerProgramClass(javaClass);
           ret.put(javaClass.className, javaClass);
         } finally {
           classFileInputStream.close();

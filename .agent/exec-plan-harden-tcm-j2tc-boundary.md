@@ -88,8 +88,9 @@ reconstruction. Do not reread the completed predecessor ExecPlan by default.
 - [x] (2026-08-10T19:09:20Z) Milestone 2: permanent v1 wire codes, neutral
   streaming artifact support, and replacement-safe publication passed frozen
   fixture, injected failure/fallback, deterministic-byte, and TCZ checks.
-- [ ] Milestone 3: execute the semantic-resolution subplan and close with
-  converter/metadata compatibility validation.
+- [x] (2026-08-10T19:34:00Z) Milestone 3: canonical descriptor lowering and
+  declaration resolution are shared by converter validation and metadata;
+  focused program/device/constructor/host-independence regressions passed.
 - [ ] Milestone 4: final integration, deploy/native smoke, audits, documentation,
   and factual editorial handoff.
 

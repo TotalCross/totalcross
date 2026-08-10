@@ -6,19 +6,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Harden TCM/J2TC Boundary — Active State
 
-Updated: 2026-08-10T19:09:20Z
+Updated: 2026-08-10T19:34:00Z
 
 ## Active milestone
 
-- Milestone 3: canonical converter semantics.
+- Milestone 4: final integration and handoff.
 - Active plan: `.agent/exec-plan-harden-tcm-j2tc-boundary.md`.
-- Active subplan: `.agent/subplan-converter-semantic-resolution.md`.
+- Active subplan: none; Milestone 3 subplan is complete.
 
 ## Repository state
 
 - Branch: `feature/422-create-ir-for-jniaot`.
 - Baseline revision: `441c5785dd88a6aaf8c028c2a390c27d113ad0d6`.
-- Last plan commit: `7ec5707c5` (Milestone 1 capture/origin hardening).
+- Last plan commit: `4672da9b9` (Milestone 2 wire/publication hardening).
 - Tracked worktree changes at start: none.
 - Coordinator plan and subplans were committed with Milestone 0.
 - Deliberately out of scope untracked file:
@@ -39,14 +39,13 @@ Updated: 2026-08-10T19:09:20Z
 
 ## Next concrete action
 
-Commit the validated Milestone 2 changes, then read
-`.agent/subplan-converter-semantic-resolution.md` in full and inspect only the
-canonical type-mapping, method-validation, program/device hierarchy, and
-metadata call-site paths it names.
+Commit the validated Milestone 3 changes, then run the parent plan's final
+focused suite, distribution, isolated deploy, production TCM inspection, and
+aggregate native macOS smoke gate.
 
 ## Tests written but not executed
 
-- None for Milestone 3.
+- None for Milestone 4.
 
 ## Validation completed
 
@@ -57,16 +56,20 @@ metadata call-site paths it names.
   whitespace, and new-file size checks passed. See evidence index.
 - Milestone 2 focused tests, frozen v1 validation, one-sample deploy identity,
   static audits, copyright, whitespace, and new-file size checks passed.
+- Milestone 3 focused type/owner/metadata/inherited-owner tests passed on JDK
+  17. Header, whitespace, duplicate-lowering, guarded-reflection, and new-file
+  size audits passed.
 
 ## Deferred validation
 
-- Milestones 3–4 validation remains deferred until each implementation is
-  complete.
+- Milestone 4 aggregate deploy/native validation remains deferred.
+- Installed JDK 11 cannot run the Java-17 Gradle/project bytecode, so the
+  optional second-runtime comparison is unavailable without changing the build.
 
 ## Evidence and logs
 
 - Evidence index: `.agent/evidence/harden-tcm-j2tc-boundary-01.jsonl`.
-- Milestones 0–2 evidence are recorded in the evidence index.
+- Milestones 0–3 evidence are recorded in the evidence index.
 
 ## Active decisions and blockers
 

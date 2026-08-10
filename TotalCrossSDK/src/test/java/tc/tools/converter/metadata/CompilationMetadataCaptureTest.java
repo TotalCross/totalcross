@@ -18,6 +18,7 @@ import org.objectweb.asm.Opcodes;
 
 import tc.tools.converter.GlobalConstantPool;
 import tc.tools.converter.J2TC;
+import tc.tools.converter.MethodDeclarationResolver;
 import tc.tools.converter.TCConstants;
 import tc.tools.converter.bytecode.ByteCode;
 import tc.tools.converter.java.JavaClass;
@@ -66,6 +67,7 @@ class CompilationMetadataCaptureTest {
     assertEquals("&D", sample.loweredParameterTypes.get(0));
     assertEquals("D", sample.sourceParameterDescriptors.get(2));
     assertEquals("&D", sample.loweredParameterTypes.get(2));
+    assertEquals("java.util.LinkedHashMap", sample.loweredParameterTypes.get(1));
     assertEquals(NativeKind.NONE, sample.nativeKind);
     assertTrue(sample.tcMethodNameSymbol >= 0);
 
@@ -73,6 +75,8 @@ class CompilationMetadataCaptureTest {
     assertEquals(CompilationMetadata.InvokeKind.VIRTUAL, inherited.invokeKind);
     assertEquals("java/util/LinkedHashMap", inherited.symbolicOwner);
     assertEquals("java/util/HashMap", inherited.resolvedDeclarationOwner);
+    assertEquals(MethodDeclarationResolver.resolve(inherited.symbolicOwner, inherited.name,
+        inherited.javaDescriptor).declarationOwner, inherited.resolvedDeclarationOwner);
     assertEquals(TCConstants.CALL_virtual, inherited.loweredOpcode);
     assertTrue(inherited.tcStartSlot >= 0);
     assertTrue(inherited.tcEndSlotExclusive > inherited.tcStartSlot);
@@ -80,6 +84,9 @@ class CompilationMetadataCaptureTest {
     OriginRange allocation = allocation(sample, "java/util/LinkedHashMap");
     assertTrue(allocation.tcStartSlot >= 0);
     assertTrue(allocation.tcEndSlotExclusive > allocation.tcStartSlot);
+    CallSiteMetadata constructor = call(sample, "<init>");
+    assertEquals("java/util/LinkedHashMap", constructor.symbolicOwner);
+    assertEquals(constructor.symbolicOwner, constructor.resolvedDeclarationOwner);
     assertTrue(metadata.resolvedClassForNameRoots.contains("fixtures/MetadataTarget"));
     assertTrue(metadata.unresolvedDynamicClassLookup);
     CallSiteMetadata interfaceCall = call(method(type, "interfaceSize"), "size");

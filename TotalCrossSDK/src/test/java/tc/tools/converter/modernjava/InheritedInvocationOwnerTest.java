@@ -6,6 +6,7 @@ package tc.tools.converter.modernjava;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -54,8 +55,17 @@ class InheritedInvocationOwnerTest {
   @Test
   void keepsPreciseFailureForUnresolvedInheritedMember() throws Exception {
     TCMethod missing = findMethod(convertFixture(), "missing");
-    assertThrows(InvalidClassException.class,
+    InvalidClassException error = assertThrows(InvalidClassException.class,
         () -> missing.write(new DataStreamLE(new ByteArrayStream(256))));
+    assertTrue(error.getMessage().contains("Method java/util/Properties.missingMethod()"));
+  }
+
+  @Test
+  void doesNotResolveUnsupportedConstructorThroughMappedSuperclass() throws Exception {
+    TCMethod constructor = findMethod(convertFixture(), "unsupportedConstructor");
+    InvalidClassException error = assertThrows(InvalidClassException.class,
+        () -> constructor.write(new DataStreamLE(new ByteArrayStream(256))));
+    assertTrue(error.getMessage().contains("Constructor java/util/Properties(int)"));
   }
 
   private static TCClass convertFixture() throws Exception {
@@ -93,6 +103,7 @@ class InheritedInvocationOwnerTest {
     writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "fixtures/InheritedOwner", null, "java/lang/Object", null);
     addCall(writer, "inheritedPut", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", true);
     addCall(writer, "missing", "missingMethod", "()V", false);
+    addUnsupportedConstructor(writer);
     writer.visitEnd();
     return writer.toByteArray();
   }
@@ -111,6 +122,20 @@ class InheritedInvocationOwnerTest {
     if (arguments) {
       method.visitInsn(Opcodes.POP);
     }
+    method.visitInsn(Opcodes.RETURN);
+    method.visitMaxs(0, 0);
+    method.visitEnd();
+  }
+
+  private static void addUnsupportedConstructor(ClassWriter writer) {
+    MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "unsupportedConstructor",
+        "()V", null, null);
+    method.visitCode();
+    method.visitTypeInsn(Opcodes.NEW, "java/util/Properties");
+    method.visitInsn(Opcodes.DUP);
+    method.visitInsn(Opcodes.ICONST_1);
+    method.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/util/Properties", "<init>", "(I)V", false);
+    method.visitInsn(Opcodes.POP);
     method.visitInsn(Opcodes.RETURN);
     method.visitMaxs(0, 0);
     method.visitEnd();
