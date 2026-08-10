@@ -99,6 +99,26 @@ The pipeline has specific lowerings for:
 
 An `invokedynamic` outside known patterns produces a deterministic conversion error. There is no generic arbitrary-bootstrap implementation. Lambda deserialization methods and selected replaced artifacts can be removed during conversion.
 
+## Compatibility boundary for optimized class files
+
+J2TC accepts JVM-valid sparse line tables, including a first entry after bytecode
+PC zero. Instructions before that entry retain line zero as the unknown-line
+sentinel. It also resolves inherited Java declarations while preserving the
+symbolic call owner and the selected TotalCross virtual or normal call opcode.
+
+Exception handlers enter with the thrown object on the JVM operand stack. The
+converter initializes that value even when the handler begins with an operation
+such as `dup`; the older `astore` fast path remains an equivalent special case.
+
+Optimization does not make every transformed Java ABI a supported TotalCross
+replacement ABI. In particular, optimizer-created constructor descriptors such
+as `Throwable(String, Throwable, byte)` and renamed members such as
+`BiPredicate.test$...` or `Reader.read$...` are valid class-file shapes but are
+not canonical TotalCross 4D contracts. The converter rejects them instead of
+normalizing generated descriptors or allowlisting generated names. This keeps
+replacement validation strict while distinguishing those intentional rejections
+from converter bugs.
+
 ## Semantics requiring targeted tests
 
 - `float` uses the same runtime bank as `double`; rounding and NaN need differential cases.

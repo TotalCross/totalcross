@@ -23,3 +23,18 @@ descriptor matrix runs for both static and instance dispatch, javac conversion
 fixtures assert post-float return registers, and the aggregate native smoke runs
 nine value cases across int, reference, long, and double. Commit `7c960237f`;
 full validation is indexed in the evidence file.
+
+## Milestone 2 — compatibility hardening
+
+Three JVM-valid cases became focused converter fixes: sparse line tables retain
+unknown line zero before their first entry; inherited calls validate against the
+resolved declaration hierarchy while preserving the symbolic owner; and catch
+handlers receive their implicit throwable even when they begin with `dup` rather
+than `astore`. Commits `8542a4948`, `4a673de38`, and `398d7095f` contain the
+independent fixes and fixtures.
+
+ASM verification established that representative optimized classes were valid.
+The remaining replacement constructors and generated member names nevertheless
+change canonical TotalCross 4D contracts, so they remain deterministic
+unsupported-input diagnostics. Current-converter corpus rechecks, the focused
+test sweep, distribution, deploy, and native macOS smoke all passed as applicable.

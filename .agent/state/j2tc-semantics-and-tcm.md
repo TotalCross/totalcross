@@ -9,12 +9,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Plan-start revision: `42dec24e3353a1e3e97de5ea0288956318a55142`.
 - Branch: `feature/422-create-ir-for-jniaot`.
-- Active milestone: 2, J2TC compatibility hardening.
-- Active subplan: `.agent/subplan-j2tc-float-and-compatibility.md`, Slice C.
-- Last logical commit: `7c960237f` (`fix(compiler): correct float parameter slot
-  mapping`).
-- Next action: add a deterministic valid class fixture whose first line-table
-  entry starts after PC zero, then make early bytecode use unknown-line semantics.
+- Active milestone: 3, in-memory semantic preservation.
+- Active subplan: `.agent/subplan-tcm-semantic-preservation.md`.
+- Last logical commit: `398d7095f` (`fix(compiler): initialize exception handler
+  stacks`).
+- Next action: inspect Java class parsing and J2TC lowering capture points, then
+  introduce the deploy-scoped metadata model without changing TCZ output.
 
 ## Milestone 0 baseline
 
@@ -37,22 +37,32 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/build/proguard-tcz-experiment/aa6b2ff3ded73a845848c014ee54fae9bcfc7a77/baseline/o`;
   hashes are recorded in the evidence index.
 
+## Milestone 2 result
+
+- Fixed sparse pre-first-entry line lookup, inherited declaration-owner
+  validation, and valid handler-entry stacks whose first opcode is not `astore`.
+- ASM 9.6 verified representative optimized UI, language, and utility classes.
+  Replacement constructor descriptors and generated method names are valid JVM
+  bytecode but remain unsupported because they violate canonical TotalCross 4D
+  replacement contracts.
+- Current converter rechecks pass both strict and optimized TCUI inputs. The
+  remaining language, utility, and misc failures are those classified contracts.
+
 ## Active paths
 
-- `TotalCrossSDK/src/main/java/tc/tools/converter/oper/OperandReg.java`
-- `TotalCrossSDK/src/main/java/tc/tools/converter/java/JavaMethod.java`
+- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/`
+- Java class/method/code parsing paths selected during the next inspection
+- `TotalCrossSDK/src/main/java/tc/tools/converter/Bytecode2TCCode.java`
 - `TotalCrossSDK/src/main/java/tc/tools/converter/J2TC.java`
-- `TotalCrossSDK/src/test/java/tc/tools/converter/`
-- aggregate modern-Java smoke fixture paths named by the subplan
+- focused metadata tests under `TotalCrossSDK/src/test/java/tc/tools/converter/`
 
 ## Validation state
 
-- Completed: Milestone 1 focused matrix/converter suite, SDK `dist -x test`,
-  aggregate deploy, and native macOS execution passed. Native output contained
-  all nine float-case passes and no `[FAIL]` lines; deploy/build summaries showed
-  zero obsolete float warnings.
-- Deferred: the Milestone 2 compatibility sweep and final deploy/native execution
-  until all compatibility categories are resolved.
+- Completed: Milestone 2 focused converter sweep, retained-corpus rechecks, SDK
+  `dist -x test`, aggregate deploy, and native macOS execution passed. Native
+  output contained 97 pass lines and no failures.
+- Deferred: broad build/deploy/native validation until TCM has an external
+  artifact contract in Milestone 4, per the semantic-preservation subplan.
 - Blockers: none.
 
 ## Dirty-worktree exclusions
@@ -76,5 +86,5 @@ goal and are in scope.
 ## Resume command
 
 ```bash
-sed -n '195,232p' .agent/subplan-j2tc-float-and-compatibility.md
+sed -n '120,360p' .agent/subplan-tcm-semantic-preservation.md
 ```
