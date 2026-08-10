@@ -101,9 +101,9 @@ reproduced; do not reopen completed plans by default.
   frames, then collected immutable class/member, origin, call, allocation,
   dynamic-access, native/replacement, and synthetic-lowering metadata without
   changing TCCode or TCZ serialization.
-- [ ] Milestone 4: implement deterministic optional TCM v1 emission and reading,
-  prove TCZ byte identity with TCM off/on, and close with deploy and native macOS
-  smoke.
+- [x] (2026-08-10) Milestone 4: implemented deterministic sectioned TCM v1,
+  manifest validation, `/tcm aot`, atomic publication, and reader/inspector;
+  proved identical off/on TCZ bytes and passed TCM-enabled native macOS smoke.
 - [ ] Milestone 5: run the final proportional validation gate, reconcile evidence,
   complete the editorial report and Outcomes & Retrospective, and leave a clean
   architectural handoff for optimizer/AOT work.

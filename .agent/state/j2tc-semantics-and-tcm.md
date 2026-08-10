@@ -9,12 +9,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Plan-start revision: `42dec24e3353a1e3e97de5ea0288956318a55142`.
 - Branch: `feature/422-create-ir-for-jniaot`.
-- Active milestone: 4, deterministic TCM v1 format and emission.
-- Active subplan: `.agent/subplan-tcm-format-and-emission.md`.
-- Last logical commit: `0507ad84d` (`feat(compiler): collect lowering semantic
-  metadata`).
-- Next action: define the fixed v1 section constants and deterministic string
-  table, then implement writer/reader round-trip tests before deploy integration.
+- Active milestone: 5, final integration and handoff.
+- Active subplan: parent plan final gate.
+- Last logical commit: `66daee561` (`fix(deploy): retain tcz artifacts for tcm`).
+- Next action: audit every plan-created file for size/header compliance, run final
+  diff and scoped status checks, then complete Outcomes and the editorial handoff.
 
 ## Milestone 0 baseline
 
@@ -50,19 +49,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active paths
 
-- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/`
-- `TotalCrossSDK/src/main/java/tc/Deploy.java`
-- `TotalCrossSDK/src/main/java/tc/tools/deployer/DeploySettings.java`
-- TCM-focused tests under `TotalCrossSDK/src/test/java/tc/tools/converter/metadata/`
-- `docs/architecture/bytecode/tcm-compilation-metadata.md`
+- all files changed since the plan-start revision, excluding preserved unrelated
+  untracked files and generated smoke prerequisites
+- plan state/evidence/history/editorial files
 
 ## Validation state
 
-- Completed: Milestone 3 focused metadata and complete modern-Java converter
-  sweep passed in 8 seconds. StackMap fixtures are JVM-verified and cover compact,
-  chop, append, full, object, uninitialized, float, double, and long forms.
-- Deferred: distribution, deploy, TCZ identity, and native validation until the
-  external sidecar contract is implemented at Milestone 4 closure.
+- Completed: Milestone 4 focused tests and `dist -x test` passed. Isolated macOS
+  deploys produced identical TCZ SHA-256
+  `21f48888a0817eefe94cbc0e51ec4a775edcf8f6a3e20c6b9aec0b3df2be081c`;
+  the reader validated the TCM manifest, and native execution passed 97 checks
+  with zero failures.
+- Deferred: no expensive platform matrix; TCM has no runtime consumer and the
+  plan requires only the affected macOS aggregate smoke.
 - Blockers: none.
 
 ## Dirty-worktree exclusions
@@ -86,5 +85,5 @@ goal and are in scope.
 ## Resume command
 
 ```bash
-sed -n '20,230p' .agent/subplan-tcm-format-and-emission.md
+sed -n '250,390p' .agent/exec-plan-j2tc-semantics-and-tcm.md
 ```
