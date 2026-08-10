@@ -24,6 +24,11 @@ public final class JavaCode implements JConstants {
   private static boolean lineNumberWarned;
 
   public JavaCode(JavaMethod method, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
+    this(method, ds, cp, false);
+  }
+
+  public JavaCode(JavaMethod method, DataStream ds, JavaConstantPool cp, boolean needsSemanticMetadata)
+      throws totalcross.io.IOException {
     this.method = method;
     maxStack = ds.readUnsignedShort();
     maxLocals = ds.readUnsignedShort();
@@ -88,9 +93,13 @@ public final class JavaCode implements JConstants {
           lineNumberLine[j] = ds.readUnsignedShort();
         }
       } else if (name.equals("StackMapTable")) {
-        byte[] attribute = new byte[len];
-        ds.readBytes(attribute);
-        stackMapFrames = StackMapTableReader.read(attribute, cp, method);
+        if (needsSemanticMetadata) {
+          byte[] attribute = new byte[len];
+          ds.readBytes(attribute);
+          stackMapFrames = StackMapTableReader.read(attribute, cp, method);
+        } else {
+          ds.skipBytes(len);
+        }
       } else {
         if (dump) {
           System.out.println("Skipping attribute " + name + " in method " + method.signature);

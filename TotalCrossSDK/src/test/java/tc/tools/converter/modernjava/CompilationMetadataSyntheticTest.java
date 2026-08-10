@@ -51,7 +51,7 @@ class CompilationMetadataSyntheticTest {
     boolean previous = TCMethod.checkJavaCalls;
     TCMethod.checkJavaCalls = false;
     try {
-      new J2TC(new JavaClass(fixture.get().bytes, false), true);
+      new J2TC(new JavaClass(fixture.get().bytes, false, true), true);
     } finally {
       TCMethod.checkJavaCalls = previous;
     }
@@ -76,6 +76,7 @@ class CompilationMetadataSyntheticTest {
     assertEquals("(Ljava/lang/String;)Ljava/lang/Runnable;", call.javaDescriptor);
     assertEquals(TCConstants.CALL_normal, call.loweredOpcode);
     assertTrue(call.tcStartSlot >= 0);
+    assertTrue(call.tcEndSlotExclusive > call.tcStartSlot);
   }
 
   @Test
@@ -86,6 +87,7 @@ class CompilationMetadataSyntheticTest {
     CompilationMetadata metadata = convert(fixture.get());
     assertTrue(hasSynthetic(metadata.classes.get(0), CompilationMetadata.SyntheticKind.STRING_CONCAT));
     assertTrue(hasInvoke(metadata.classes.get(0), CompilationMetadata.InvokeKind.DYNAMIC_STRING_CONCAT));
+    assertValidRange(invoke(metadata.classes.get(0), CompilationMetadata.InvokeKind.DYNAMIC_STRING_CONCAT));
   }
 
   @Test
@@ -96,6 +98,7 @@ class CompilationMetadataSyntheticTest {
     CompilationMetadata metadata = convert(fixture.get());
     assertTrue(hasSynthetic(metadata.classes.get(0), CompilationMetadata.SyntheticKind.RECORD_OBJECT_METHOD));
     assertTrue(hasInvoke(metadata.classes.get(0), CompilationMetadata.InvokeKind.DYNAMIC_RECORD));
+    assertValidRange(invoke(metadata.classes.get(0), CompilationMetadata.InvokeKind.DYNAMIC_RECORD));
   }
 
   private static CompilationMetadata convert(ModernJavaClassFileFixture fixture) throws Exception {
@@ -105,7 +108,7 @@ class CompilationMetadataSyntheticTest {
     boolean previous = TCMethod.checkJavaCalls;
     TCMethod.checkJavaCalls = false;
     try {
-      new J2TC(new JavaClass(fixture.bytes, false), true);
+      new J2TC(new JavaClass(fixture.bytes, false, true), true);
       return J2TC.getCompilationMetadata();
     } finally {
       TCMethod.checkJavaCalls = previous;
@@ -122,14 +125,22 @@ class CompilationMetadataSyntheticTest {
   }
 
   private static boolean hasInvoke(ClassMetadata owner, CompilationMetadata.InvokeKind kind) {
+    return invoke(owner, kind) != null;
+  }
+
+  private static CallSiteMetadata invoke(ClassMetadata owner, CompilationMetadata.InvokeKind kind) {
     for (MethodMetadata method : owner.methods) {
       for (CallSiteMetadata call : method.callSites) {
         if (call.invokeKind == kind) {
-          return true;
+          return call;
         }
       }
     }
-    return false;
+    return null;
+  }
+
+  private static void assertValidRange(CallSiteMetadata call) {
+    assertTrue(call != null && call.tcStartSlot >= 0 && call.tcEndSlotExclusive > call.tcStartSlot);
   }
 
   private static MethodMetadata method(ClassMetadata owner, String name) {

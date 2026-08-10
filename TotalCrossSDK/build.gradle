@@ -562,7 +562,8 @@ tasks.register('captureTcmBoundaryBaseline', JavaExec) {
     dependsOn 'testClasses', 'copySdkDependencies', 'compileModernJavaFeatureSmoke'
 
     def mode = providers.gradleProperty('tcmBaselineMode').orElse('none')
-    def outputDir = layout.buildDirectory.dir('tcm-boundary/baseline')
+    def runName = providers.gradleProperty('tcmBoundaryRun').orElse('baseline')
+    def outputDir = layout.buildDirectory.dir(runName.map { "tcm-boundary/${it}" })
 
     mainClass = 'tc.tools.converter.metadata.TcmBoundaryBaselineMain'
     classpath = sourceSets.test.runtimeClasspath + files(smokeTestSdkJar) + fileTree('dist/libs') {

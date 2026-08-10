@@ -84,6 +84,11 @@ public final class JavaMethod {
   }
 
   public JavaMethod(JavaClass jc, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
+    this(jc, ds, cp, false);
+  }
+
+  public JavaMethod(JavaClass jc, DataStream ds, JavaConstantPool cp, boolean needsSemanticMetadata)
+      throws totalcross.io.IOException {
     this.classOfMethod = jc;
     int f = rawAccessFlags = ds.readUnsignedShort();
     isPublic = (f & 0x1) != 0;
@@ -114,7 +119,7 @@ public final class JavaMethod {
         DeployLogger.debug("Method attribute: " + name);
       }
       if (name.equals("Code") || name.equals("JavaCode")) {
-        code = new JavaCode(this, ds, cp);
+        code = new JavaCode(this, ds, cp, needsSemanticMetadata);
       } else if (name.equals("Exceptions")) {
         checkedExceptions = new String[ds.readUnsignedShort()];
         for (int j = 0; j < checkedExceptions.length; j++) {
@@ -195,7 +200,7 @@ public final class JavaMethod {
       String name = (String) cp.constants[ds.readUnsignedShort()];
       int len = ds.readInt();
       if (name.equals("Code") || name.equals("JavaCode")) {
-        code = new JavaCode(this, ds, cp);
+        code = new JavaCode(this, ds, cp, jc.needsSemanticMetadata());
       } else if (name.equals("Exceptions")) {
         checkedExceptions = new String[ds.readUnsignedShort()];
         for (int j = 0; j < checkedExceptions.length; j++) {

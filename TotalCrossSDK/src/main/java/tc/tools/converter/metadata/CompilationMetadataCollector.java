@@ -5,6 +5,7 @@ package tc.tools.converter.metadata;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,7 +36,7 @@ import tc.tools.converter.java.JavaVerificationType;
 import tc.tools.converter.tclass.TCMethod;
 import totalcross.util.Vector;
 
-public final class CompilationMetadataCollector implements TCConstants {
+public final class CompilationMetadataCollector implements CompilationMetadataCapture, TCConstants {
   private static final int JVM_INVOKESPECIAL = 183;
   private static final int JVM_INVOKESTATIC = 184;
   private static final int JVM_INVOKEINTERFACE = 185;
@@ -46,6 +47,12 @@ public final class CompilationMetadataCollector implements TCConstants {
   private final Set<String> classForNameRoots = new LinkedHashSet<String>();
   private boolean unresolvedDynamicClassLookup;
 
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
+
+  @Override
   public void captureClass(JavaClass source, String effectiveName) {
     ClassBuilder builder = new ClassBuilder(source, effectiveName);
     classes.add(builder);
@@ -59,6 +66,7 @@ public final class CompilationMetadataCollector implements TCConstants {
     }
   }
 
+  @Override
   public void captureField(JavaClass owner, JavaField field, int tcFieldSymbol) {
     ClassBuilder builder = classesByIdentity.get(owner);
     if (builder != null) {
@@ -68,6 +76,7 @@ public final class CompilationMetadataCollector implements TCConstants {
     }
   }
 
+  @Override
   public void captureMethodHeader(JavaMethod source, TCMethod target) {
     MethodBuilder builder = methods.get(source);
     if (builder != null) {
@@ -76,6 +85,7 @@ public final class CompilationMetadataCollector implements TCConstants {
     }
   }
 
+  @Override
   public SiteCapture beginBytecode(JavaClass owner, JavaMethod method, ByteCode bytecode) {
     MethodBuilder builder = methods.get(method);
     if (builder == null) {
@@ -90,10 +100,14 @@ public final class CompilationMetadataCollector implements TCConstants {
       captureDynamic(owner, method, (BC186_invokedynamic) bytecode, site);
     }
     builder.sites.add(site);
+    builder.sitesByJavaPc.put(Integer.valueOf(site.javaPc), site);
     return site;
   }
 
-  public void endBytecode(SiteCapture site, Vector instructions, int firstInstruction) {
+  @Override
+  public void endBytecode(CompilationMetadataCapture.SiteCapture capturedSite, Vector instructions,
+      int firstInstruction) {
+    SiteCapture site = (SiteCapture) capturedSite;
     if (site == null) {
       return;
     }
@@ -104,59 +118,56 @@ public final class CompilationMetadataCollector implements TCConstants {
     }
   }
 
+  @Override
   public void finishMethod(JavaMethod source, TCMethod target) {
     MethodBuilder builder = methods.get(source);
     if (builder == null || target.insts == null) {
       return;
     }
+    int slot = 0;
+    for (int i = 0; i < target.insts.size(); i++) {
+      Instruction instruction = (Instruction) target.insts.items[i];
+      SiteCapture site = builder.sitesByJavaPc.get(Integer.valueOf(instruction.javaPc));
+      if (site != null && instruction.javaOpcode == site.javaOpcode) {
+        if (site.tcStartSlot < 0) {
+          site.tcStartSlot = slot;
+        }
+        site.tcEndSlot = slot + instruction.len;
+        if (site.call != null && instruction instanceof Call) {
+          site.call.tcStartSlot = slot;
+          site.call.tcEndSlot = slot + instruction.len;
+          site.call.loweredOpcode = instruction.opcode;
+        }
+      }
+      slot += instruction.len;
+    }
     for (int i = 0; i < builder.sites.size(); i++) {
       SiteCapture site = builder.sites.get(i);
-      int slot = 0;
-      int start = -1;
-      int end = -1;
-      int callStart = -1;
-      int callEnd = -1;
-      int loweredOpcode = -1;
-      for (int j = 0; j < target.insts.size(); j++) {
-        Instruction instruction = (Instruction) target.insts.items[j];
-        if (instruction.javaPc == site.javaPc && instruction.javaOpcode == site.javaOpcode) {
-          if (start < 0) {
-            start = slot;
-          }
-          end = slot + instruction.len;
-          if (site.call != null && instruction instanceof Call) {
-            callStart = slot;
-            callEnd = slot + instruction.len;
-            loweredOpcode = instruction.opcode;
-          }
-        }
-        slot += instruction.len;
-      }
-      builder.origins.add(new CompilationMetadata.OriginRange(site.javaPc, site.javaOpcode, start, end,
-          site.allocationType));
+      builder.origins.add(new CompilationMetadata.OriginRange(site.javaPc, site.javaOpcode, site.tcStartSlot,
+          site.tcEndSlot, site.allocationType));
       if (site.call != null) {
         if (site.call.kind.name().startsWith("DYNAMIC_")) {
-          callStart = start;
-          callEnd = end;
+          site.call.tcStartSlot = site.tcStartSlot;
+          site.call.tcEndSlot = site.tcEndSlot;
         }
-        site.call.loweredOpcode = loweredOpcode;
-        site.call.tcStartSlot = callStart;
-        site.call.tcEndSlot = callEnd;
         builder.calls.add(site.call);
       }
     }
   }
 
+  @Override
   public void recordResolvedClassForName(String className) {
     if (className != null) {
       classForNameRoots.add(className.replace('.', '/'));
     }
   }
 
+  @Override
   public void recordUnresolvedClassForName() {
     unresolvedDynamicClassLookup = true;
   }
 
+  @Override
   public CompilationMetadata snapshot() {
     List<CompilationMetadata.ClassMetadata> result = new ArrayList<CompilationMetadata.ClassMetadata>();
     for (int i = 0; i < classes.size(); i++) {
@@ -284,12 +295,14 @@ public final class CompilationMetadataCollector implements TCConstants {
     return result;
   }
 
-  public static final class SiteCapture {
+  public static final class SiteCapture implements CompilationMetadataCapture.SiteCapture {
     final MethodBuilder method;
     final int javaPc;
     final int javaOpcode;
     final String allocationType;
     CallBuilder call;
+    int tcStartSlot = -1;
+    int tcEndSlot = -1;
 
     SiteCapture(MethodBuilder method, int javaPc, int javaOpcode, String allocationType) {
       this.method = method;
@@ -331,6 +344,7 @@ public final class CompilationMetadataCollector implements TCConstants {
     final JavaMethod source;
     final String originalName;
     final List<SiteCapture> sites = new ArrayList<SiteCapture>();
+    final HashMap<Integer, SiteCapture> sitesByJavaPc = new HashMap<Integer, SiteCapture>();
     final List<CallBuilder> calls = new ArrayList<CallBuilder>();
     final List<CompilationMetadata.OriginRange> origins = new ArrayList<CompilationMetadata.OriginRange>();
     String effectiveName;

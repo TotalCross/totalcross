@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -26,6 +27,7 @@ import tc.tools.converter.metadata.CompilationMetadata.MethodMetadata;
 import tc.tools.converter.metadata.CompilationMetadata.NativeKind;
 import tc.tools.converter.metadata.CompilationMetadata.OriginRange;
 import tc.tools.converter.tclass.TCMethod;
+import totalcross.util.Vector;
 
 class CompilationMetadataCaptureTest {
   @BeforeAll
@@ -40,7 +42,7 @@ class CompilationMetadataCaptureTest {
     boolean previous = TCMethod.checkJavaCalls;
     TCMethod.checkJavaCalls = false;
     try {
-      new J2TC(new JavaClass(fixtureClass(), false), true);
+      new J2TC(new JavaClass(fixtureClass(), false, true), true);
     } finally {
       TCMethod.checkJavaCalls = previous;
     }
@@ -85,6 +87,37 @@ class CompilationMetadataCaptureTest {
     assertEquals(TCConstants.CALL_normal, interfaceCall.loweredOpcode);
     assertEquals(NativeKind.JAVA_NATIVE, method(type, "nativeMethod").nativeKind);
     assertEquals(NativeKind.REPLACED_ON_DEPLOY, method(type, "replacedMethod").nativeKind);
+    OriginRange promotedBranch = origin(method(type, "promotedBranch"), Opcodes.IF_ICMPEQ);
+    assertTrue(promotedBranch.tcEndSlotExclusive - promotedBranch.tcStartSlot >= 2,
+        "promoted branch instructions must retain their shared Java origin");
+    J2TC.disableCompilationMetadata();
+  }
+
+  @Test
+  void disabledCaptureRetainsDeploySemanticsWithoutMetadataOrOriginTags() throws Exception {
+    GlobalConstantPool.init();
+    J2TC.disableCompilationMetadata();
+    J2TC.callForName = new Vector(4);
+    boolean previous = TCMethod.checkJavaCalls;
+    TCMethod.checkJavaCalls = false;
+    J2TC conversion;
+    try {
+      conversion = new J2TC(new JavaClass(fixtureClass(), false), true);
+    } finally {
+      TCMethod.checkJavaCalls = previous;
+    }
+
+    assertTrue(J2TC.getCompilationMetadata().classes.isEmpty());
+    assertTrue(J2TC.callForName.size() > 0, "Class.forName deploy discovery must remain active");
+    for (TCMethod method : conversion.converted.methods) {
+      if (method.insts == null) continue;
+      for (int i = 0; i < method.insts.size(); i++) {
+        tc.tools.converter.ir.Instruction.Instruction instruction =
+            (tc.tools.converter.ir.Instruction.Instruction) method.insts.items[i];
+        assertEquals(-1, instruction.javaPc);
+        assertEquals(-1, instruction.javaOpcode);
+      }
+    }
   }
 
   private static MethodMetadata method(ClassMetadata type, String name) {
@@ -112,6 +145,15 @@ class CompilationMetadataCaptureTest {
       }
     }
     throw new AssertionError("Missing allocation metadata: " + type);
+  }
+
+  private static OriginRange origin(MethodMetadata method, int javaOpcode) {
+    for (OriginRange origin : method.origins) {
+      if (origin.javaOpcode == javaOpcode) {
+        return origin;
+      }
+    }
+    throw new AssertionError("Missing origin for opcode: " + javaOpcode);
   }
 
   private static byte[] fixtureClass() {
@@ -155,6 +197,24 @@ class CompilationMetadataCaptureTest {
     dynamic.visitInsn(Opcodes.RETURN);
     dynamic.visitMaxs(0, 0);
     dynamic.visitEnd();
+
+    MethodVisitor promotedBranch = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "promotedBranch",
+        "(I)I", null, null);
+    promotedBranch.visitCode();
+    Label equal = new Label();
+    promotedBranch.visitVarInsn(Opcodes.ILOAD, 0);
+    promotedBranch.visitIntInsn(Opcodes.BIPUSH, 100);
+    promotedBranch.visitJumpInsn(Opcodes.IF_ICMPEQ, equal);
+    for (int i = 0; i < 40; i++) {
+      promotedBranch.visitIincInsn(0, 1);
+    }
+    promotedBranch.visitInsn(Opcodes.ICONST_0);
+    promotedBranch.visitInsn(Opcodes.IRETURN);
+    promotedBranch.visitLabel(equal);
+    promotedBranch.visitInsn(Opcodes.ICONST_1);
+    promotedBranch.visitInsn(Opcodes.IRETURN);
+    promotedBranch.visitMaxs(0, 0);
+    promotedBranch.visitEnd();
 
     MethodVisitor interfaceSize = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "interfaceSize",
         "(Ljava/util/List;)I", null, null);
