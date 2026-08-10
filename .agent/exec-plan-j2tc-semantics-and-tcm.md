@@ -90,9 +90,9 @@ reproduced; do not reopen completed plans by default.
 - [x] (2026-08-10) Milestone 0: fixed the start revision and dirty exclusions,
   indexed the retained ProGuard failure corpus and ordinary TCZ hashes, and
   created resumable state/evidence/history/report files without runtime changes.
-- [ ] Milestone 1: fix JVM local-slot accounting for `float`, remove the warning
-  infrastructure, add the complete parameter matrix, and close with deploy plus
-  native macOS smoke.
+- [x] (2026-08-10) Milestone 1: separated JVM slot width from TC register-bank
+  choice, removed the warning infrastructure, passed the complete static/instance
+  matrix, and closed with deploy plus native macOS smoke at `7c960237f`.
 - [ ] Milestone 2: fix confirmed J2TC compatibility bugs from the ProGuard
   experiment and classify non-bugs; close with the relevant ProGuard/converter
   reproduction and smoke/deploy validation.
