@@ -65,3 +65,17 @@ with metadata both off and on. `TcmInspector` validated the emitted sidecar, and
 the TCM-enabled macOS app completed 97 checks with zero failures. TCM remains a
 local build artifact containing application identities; it is not telemetry and
 has no required runtime or AOT consumer.
+
+## Final handoff
+
+All requested converter and sidecar boundaries are now explicit and tested.
+Future field optimization, HIR, or AOT work should consume TCM facts and rederive
+its own analyses; it must not treat source metadata as permission to change TCZ
+runtime semantics. Raw class embedding, optimizer decisions, production ProGuard
+integration, telemetry, and non-macOS platform qualification remain outside this
+delivery.
+
+Final validation covered the focused modern-Java/metadata suite, SDK distribution,
+isolated default and TCM-enabled deploys, reader/hash inspection, native macOS
+execution, all changed copyright headers, committed and worktree whitespace, and
+every new file's size/line limits. No in-scope working-tree changes remain.

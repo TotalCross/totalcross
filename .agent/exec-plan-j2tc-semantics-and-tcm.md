@@ -104,9 +104,9 @@ reproduced; do not reopen completed plans by default.
 - [x] (2026-08-10) Milestone 4: implemented deterministic sectioned TCM v1,
   manifest validation, `/tcm aot`, atomic publication, and reader/inspector;
   proved identical off/on TCZ bytes and passed TCM-enabled native macOS smoke.
-- [ ] Milestone 5: run the final proportional validation gate, reconcile evidence,
-  complete the editorial report and Outcomes & Retrospective, and leave a clean
-  architectural handoff for optimizer/AOT work.
+- [x] (2026-08-10) Milestone 5: reconciled evidence, validated all changed
+  headers and diffs, confirmed every new file is within size/line limits, and
+  completed the optimizer/AOT handoff without expanding scope.
 
 ## Current Architecture and Scope
 
@@ -422,20 +422,42 @@ work, and any expensive validation intentionally deferred to milestone closure.
 
 ## Outcomes & Retrospective
 
-Populate at milestone completion.
+The float corruption was a width conflation: `F` belongs in TC `reg64` but uses
+one JVM local slot, while `J` and `D` use two. Ten descriptors under both static
+and instance dispatch plus native value cases cover float before/middle/after
+integer, reference, long, and double parameters. Warning-only scans are removed.
 
-The final retrospective must state:
+The ProGuard corpus confirmed three J2TC bugs: sparse pre-first-entry line lookup,
+inherited declaration-owner validation, and missing implicit throwable state for
+handlers beginning with stack operations. Optimizer-created 4D constructor
+descriptors and renamed members remain valid JVM bytecode but unsupported
+TotalCross replacement contracts; no generated-name exceptions weakened the ABI.
 
-- the exact float root cause and supported parameter matrix;
-- which previous ProGuard failures became confirmed J2TC fixes;
-- which were classified as invalid/unsupported input and why;
-- the TCM v1 format and metadata facts actually delivered;
-- proof that TCM does not alter TCZ bytes;
-- deploy/native macOS smoke results;
-- limitations relevant to future field optimization, HIR, or AOT.
+TCM v1 is a deterministic little-endian `TCM1` sidecar with ten versioned,
+length-delimited sections, a sorted string table, and an ordered relative-name /
+SHA-256 TCZ manifest. `/tcm aot` is explicit and default-off. It preserves
+original/effective identities, raw flags and hierarchy, source/lowered types,
+native/replacement kind, source calls and resolved owners, Java-PC/TC-slot origins,
+allocations, dynamic access, synthetic lowerings, and exact symbolic StackMap
+types. Unknown optional sections skip; incompatible required data and mismatched
+artifacts fail. Publication is temporary-file plus atomic replacement.
+
+The aggregate off/on deploy TCZ SHA-256 was identical:
+`21f48888a0817eefe94cbc0e51ec4a775edcf8f6a3e20c6b9aec0b3df2be081c`.
+The production reader validated the sidecar and its artifact, and the TCM-enabled
+macOS app passed 97 checks with no failures. All 31 plan-created files satisfy the
+20 KiB/~600-line policy; all changed headers and whitespace checks pass.
+
+This work deliberately stops before field optimization, HIR, TCM-consuming AOT,
+raw-class embedding, telemetry, or production ProGuard integration. Future
+consumers can derive version-specific analyses from TCM facts while treating TCZ
+and interpreter behavior as the executable authority.
 
 ## Revision Note
 
 2026-08-10: initial plan split into a coordinating ExecPlan plus two subplans to
 keep every new planning artifact below the requested 20 KiB/~600-line limit and
 to isolate compatibility work from the TCM format/metadata responsibility.
+
+2026-08-10: completed all milestones with TCM default-off, TCZ byte identity,
+reader validation, native macOS smoke, and final header/size/diff audits.
