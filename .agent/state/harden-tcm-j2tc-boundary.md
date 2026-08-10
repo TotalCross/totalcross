@@ -6,11 +6,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Harden TCM/J2TC Boundary — Active State
 
-Updated: 2026-08-10T19:34:00Z
+Updated: 2026-08-10T19:59:18Z
 
 ## Active milestone
 
-- Milestone 4: final integration and handoff.
+- Complete through Milestone 4.
 - Active plan: `.agent/exec-plan-harden-tcm-j2tc-boundary.md`.
 - Active subplan: none; Milestone 3 subplan is complete.
 
@@ -18,7 +18,8 @@ Updated: 2026-08-10T19:34:00Z
 
 - Branch: `feature/422-create-ir-for-jniaot`.
 - Baseline revision: `441c5785dd88a6aaf8c028c2a390c27d113ad0d6`.
-- Last plan commit: `4672da9b9` (Milestone 2 wire/publication hardening).
+- Last implementation commits: `d25e8e3bf` (canonical semantics) and
+  `e161158ed` (mapped hierarchy compatibility).
 - Tracked worktree changes at start: none.
 - Coordinator plan and subplans were committed with Milestone 0.
 - Deliberately out of scope untracked file:
@@ -39,9 +40,7 @@ Updated: 2026-08-10T19:34:00Z
 
 ## Next concrete action
 
-Commit the validated Milestone 3 changes, then run the parent plan's final
-focused suite, distribution, isolated deploy, production TCM inspection, and
-aggregate native macOS smoke gate.
+Commit the final documentation/evidence checkpoint. No implementation remains.
 
 ## Tests written but not executed
 
@@ -59,17 +58,22 @@ aggregate native macOS smoke gate.
 - Milestone 3 focused type/owner/metadata/inherited-owner tests passed on JDK
   17. Header, whitespace, duplicate-lowering, guarded-reflection, and new-file
   size audits passed.
+- Milestone 4 complete focused suite, incremental distribution, aggregate
+  deploy, isolated `NONE`/`AOT` byte comparison, production TCM inspection,
+  and native macOS smoke passed. The native smoke reported 97 passes and no
+  failures.
 
 ## Deferred validation
 
-- Milestone 4 aggregate deploy/native validation remains deferred.
 - Installed JDK 11 cannot run the Java-17 Gradle/project bytecode, so the
   optional second-runtime comparison is unavailable without changing the build.
+- Android, iOS, and Windows matrices were not run because no platform-specific
+  path changed.
 
 ## Evidence and logs
 
 - Evidence index: `.agent/evidence/harden-tcm-j2tc-boundary-01.jsonl`.
-- Milestones 0–3 evidence are recorded in the evidence index.
+- Milestones 0–4 evidence are recorded in the evidence index.
 
 ## Active decisions and blockers
 

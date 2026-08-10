@@ -79,3 +79,24 @@ mappings, including `java.util.Properties.put` declaring through
 `java.util.Hashtable`. The resolver never loads host `java.*` classes, preserves
 the bytecode symbolic owner, refuses superclass constructor guesses, and leaves
 unknown declarations unresolved.
+
+## Final integration
+
+The completed boundary passed the converter metadata/modern-Java suite, SDK
+distribution, and aggregate deploy. Distribution caught a subtle compatibility
+case: TotalCross-owned 4D classes can express their inheritance with host-named
+Java or Javax types. Resolution now follows those names only into repository-owned
+mapped classes; it still never treats host methods as authoritative.
+
+On the final isolated conversion, `NONE` recorded zero metadata objects and
+`AOT` retained 87 classes, 306 methods, 681 calls, 2,767 origins, and 108 frames.
+Both modes emitted TCZ SHA-256
+`21f48888a0817eefe94cbc0e51ec4a775edcf8f6a3e20c6b9aec0b3df2be081c`.
+The production inspector accepted the semantic TCM, whose expected content
+changes now hash to
+`55b189a03adf9e28c919a49743f23b956bba34129a5330d719456329fbd1f10c`.
+The aggregate macOS VM smoke finished with 97 passes and no failures.
+
+This work establishes a cheaper, safer metadata boundary. It does not implement
+or benchmark field optimization, HIR, an AOT backend, or ProGuard integration;
+those remain separate decisions for future plans.

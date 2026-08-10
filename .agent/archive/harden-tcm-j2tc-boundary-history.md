@@ -77,3 +77,17 @@ mapping. It never loads a host `java.*` class. Bytecode symbolic owners remain
 unchanged, constructors never search mapped superclasses, and unresolved facts
 remain unresolved. Focused tests passed on JDK 17; installed JDK 11 could not run
 the Java-17 Gradle/project bytecode, so no cross-runtime result is claimed.
+
+## Milestone 4 — final integration and handoff
+
+Completed 2026-08-10 after final integration exposed and closed one compatibility
+gap. Several SDK classes inherit supported members through host-named hierarchy
+edges. The resolver now uses those edges only to find repository-owned mapped
+implementations, including Javax through `jdkcompatx`; it never accepts a host
+method declaration. Commit `e161158ed` contains the focused fix.
+
+The complete focused suite, incremental distribution, aggregate deploy,
+isolated mode comparison, production TCM inspection, and native macOS smoke all
+passed. `NONE` retained zero metadata counts, all corresponding TCZ bytes were
+identical, the inspector accepted the 87-class TCM, and the runtime reported 97
+passes with no failures. Platform matrices were not applicable.

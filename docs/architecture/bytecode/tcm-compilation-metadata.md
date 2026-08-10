@@ -22,6 +22,11 @@ The default mode is `NONE`, which emits no sidecar. The implemented opt-in mode
 is `AOT`; its name describes the intended future consumer, not a compiler run by
 the current deployer.
 
+`NONE` also disables metadata collection itself. J2TC selects a singleton no-op
+capture for the conversion and skips StackMap materialization while preserving
+ordinary deploy behavior such as dynamic class discovery. `AOT` selects the
+collector and retains the facts described below.
+
 For a primary `MyApp.tcz`, the deployer publishes `MyApp.tcm` beside it. One TCM
 covers the whole deploy invocation, including every split TCZ. Publication uses
 `MyApp.tcm.tmp`, writes it completely, and then attempts an atomic replacement.
@@ -104,6 +109,14 @@ string-concat and record lowering origins; and symbolic StackMap frames with
 TCM stores facts, not version-specific optimizer decisions. It contains no
 `canInline`, liveness, predicted receiver, or precomputed call graph fields. It
 also does not embed raw class files.
+
+Descriptor lowering uses the same constant-pool mapping as executable
+conversion. Declaration owners use the same resolver as device-call validation:
+active parsed program classes are consulted first, followed by mapped
+TotalCross/jdkcompat device hierarchies and explicit canonical mappings. The
+resolver does not load host `java.*` classes as declaration authority. Symbolic
+bytecode owners are preserved, constructors stay on their symbolic owner, and
+facts unavailable from these owned models remain unresolved.
 
 ## Determinism and non-interference
 
