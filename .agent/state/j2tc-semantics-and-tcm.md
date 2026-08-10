@@ -9,11 +9,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Plan-start revision: `42dec24e3353a1e3e97de5ea0288956318a55142`.
 - Branch: `feature/422-create-ir-for-jniaot`.
-- Active milestone: 5, final integration and handoff.
-- Active subplan: parent plan final gate.
+- Active milestone: complete.
+- Active subplan: none.
 - Last logical commit: `66daee561` (`fix(deploy): retain tcz artifacts for tcm`).
-- Next action: audit every plan-created file for size/header compliance, run final
-  diff and scoped status checks, then complete Outcomes and the editorial handoff.
+- Next action: none; all plan acceptance criteria are satisfied.
 
 ## Milestone 0 baseline
 
@@ -55,13 +54,16 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Validation state
 
-- Completed: Milestone 4 focused tests and `dist -x test` passed. Isolated macOS
+- Completed: final focused tests and `dist -x test` passed. Isolated macOS
   deploys produced identical TCZ SHA-256
   `21f48888a0817eefe94cbc0e51ec4a775edcf8f6a3e20c6b9aec0b3df2be081c`;
   the reader validated the TCM manifest, and native execution passed 97 checks
   with zero failures.
 - Deferred: no expensive platform matrix; TCM has no runtime consumer and the
   plan requires only the affected macOS aggregate smoke.
+- Final audit: 45 changed files, 31 new files, zero header, whitespace, size, or
+  line-limit violations. Scoped status is clean; six unrelated untracked files
+  remain preserved.
 - Blockers: none.
 
 ## Dirty-worktree exclusions
@@ -84,6 +86,4 @@ goal and are in scope.
 
 ## Resume command
 
-```bash
-sed -n '250,390p' .agent/exec-plan-j2tc-semantics-and-tcm.md
-```
+None; the goal is complete.
