@@ -129,28 +129,43 @@ To build TotalCross for each system below, you will need::
 
 With these prerequisites, you may need to clone this repository, as well as have a ready SDK and a [sample code](https://github.com/TotalCross/hello-world) to get started.
 
-### Copyright headers and code provenance
+### Source validation and code provenance
 
 First-party source and documentation files use
 `SPDX-License-Identifier: LGPL-2.1-only` and must pass the repository header
-validator before a pull request is submitted.
+validator before a pull request is submitted. The same command also applies a
+forward-only byte-size ratchet to manually maintained executable and build
+source.
 
 Run the validator from the repository root. Prefer a focused file list while
 developing:
 
 ```sh
-python3 scripts/validate-copyright-headers.sh --files <changed files>
+python3 scripts/validate-source-files.py --files <changed files>
 ```
 
 To apply safe automatic corrections:
 
 ```sh
-python3 scripts/validate-copyright-headers.sh --fix --files <changed files>
+python3 scripts/validate-source-files.py --fix --files <changed files>
 ```
 
 With no `--files` argument, the validator checks staged changes, or working-tree
 changes when nothing is staged. It also accepts `--commit <commit>` or a base
 and head revision as positional arguments.
+
+Manually maintained source files may not exceed 20,480 bytes. Existing files
+already above that limit may shrink freely and may grow by no more than 500
+bytes relative to the selected Git base; permitted legacy growth produces a
+warning. A file at or below the limit may never cross it. The validator derives
+every baseline from Git, preserves rename baselines, and has no per-file
+baseline, allowlist, or exception file.
+
+Before committing, validate the exact staged slice rather than the working tree:
+
+```sh
+python3 scripts/validate-source-files.py --staged --files <staged files>
+```
 
 A file's current pathname does not always determine its copyright history.
 When a change renames, splits, merges, copies, or extracts substantial code, the
@@ -423,7 +438,7 @@ Before submitting a pull request, please make sure the following is done:
   - Example: `feature/my-awesome-feature` or `fix/annoying-bug`;
 - Build your changes;
 - If you’ve fixed a bug or added code that should be tested, **add tests**;
-- Run `python3 scripts/validate-copyright-headers.sh` for the intended changes;
+- Run `python3 scripts/validate-source-files.py` for the intended changes;
 - For substantial renames, splits, copies, or extractions, include the required
   provenance audit for maintainer review;
 - Ensure your commit is validated;

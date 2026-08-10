@@ -69,12 +69,13 @@ Important top-level areas:
 - For package layout changes, compare with the relevant script in `scripts/`
   before changing only the workflow.
 
-## Copyright Headers And Provenance
+## Source File Validation, Copyright Headers, And Provenance
 
-Use `python3 scripts/validate-copyright-headers.sh` as the source of truth for
-first-party copyright headers. Do not infer the required header from the current
-pathname alone when code was renamed, split, copied, or substantially extracted
-from an older file.
+Use `python3 scripts/validate-source-files.py` as the source of truth for
+repository source validation. It runs independent copyright/provenance and
+source-size checks behind one command. Do not infer the required header from the
+current pathname alone when code was renamed, split, copied, or substantially
+extracted from an older file.
 
 - New first-party files use the current-year Amalgam header unless an approved
   active provenance audit identifies inherited code:
@@ -113,9 +114,23 @@ from an older file.
 - Use the focused validator during normal work:
 
 ```bash
-python3 scripts/validate-copyright-headers.sh --files <changed files>
-python3 scripts/validate-copyright-headers.sh --fix --files <changed files>
+python3 scripts/validate-source-files.py --files <changed files>
+python3 scripts/validate-source-files.py --fix --files <changed files>
 ```
+
+- Manually maintained executable and build source may not exceed 20,480 bytes.
+  New files and files at or below that limit in the comparison base must remain
+  at or below it. Files already above the limit may shrink freely and may grow
+  by at most 500 bytes, which passes with a warning. Growth above 500 bytes
+  fails.
+- The size baseline is always the selected Git snapshot. There is no baseline,
+  grandfather, allowlist, or exception file. Git-detected renames inherit the
+  old path's size.
+- For pre-commit validation, inspect the exact index blobs with
+  `python3 scripts/validate-source-files.py --staged --files <staged files>`.
+  Unstaged content at the same paths is intentionally ignored.
+- `scripts/validate-copyright-headers.sh` remains only as a compatibility
+  wrapper for `validate-source-files.py --check headers`.
 
 - Refactors that rename, split, merge, copy, or extract substantial code should
   be audited from the last known pre-refactor revision through the resulting

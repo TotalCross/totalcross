@@ -164,13 +164,13 @@ The script refuses to run when:
 The repository validator is:
 
 ```bash
-python3 scripts/validate-copyright-headers.sh
+python3 scripts/validate-source-files.py --check headers
 ```
 
 Repair explicit files:
 
 ```bash
-python3 scripts/validate-copyright-headers.sh --fix --files \
+python3 scripts/validate-source-files.py --check headers --fix --files \
   path/to/First.java \
   path/to/Second.java
 ```
@@ -178,7 +178,7 @@ python3 scripts/validate-copyright-headers.sh --fix --files \
 Validate only one active audit:
 
 ```bash
-python3 scripts/validate-copyright-headers.sh \
+python3 scripts/validate-source-files.py --check headers \
   --audit-id <audit-id> \
   --files <audited-targets>
 ```
