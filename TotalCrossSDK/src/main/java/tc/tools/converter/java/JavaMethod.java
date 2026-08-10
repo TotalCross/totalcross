@@ -24,7 +24,8 @@ public final class JavaMethod {
   private static final String REPLACED_BY_NATIVE_ON_DEPLOY_DESCRIPTOR =
       Type.getDescriptor(ReplacedByNativeOnDeploy.class);
 
-  public String name, ret, signature;
+  public String name, ret, signature, descriptor;
+  public int rawAccessFlags;
   public JavaCode code;
   public JavaClass classOfMethod;
   public String[] checkedExceptions;
@@ -84,7 +85,7 @@ public final class JavaMethod {
 
   public JavaMethod(JavaClass jc, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
     this.classOfMethod = jc;
-    int f = ds.readUnsignedShort();
+    int f = rawAccessFlags = ds.readUnsignedShort();
     isPublic = (f & 0x1) != 0;
     isPrivate = (f & 0x2) != 0;
     isProtected = (f & 0x4) != 0;
@@ -96,7 +97,7 @@ public final class JavaMethod {
     isStrict = (f & 0x800) != 0;
 
     name = (String) cp.constants[ds.readUnsignedShort()];
-    String parameters = (String) cp.constants[ds.readUnsignedShort()];
+    String parameters = descriptor = (String) cp.constants[ds.readUnsignedShort()];
     params = splitParams(parameters, retsb);
     if (params != null) {
       paramCount = params.length;
@@ -129,6 +130,7 @@ public final class JavaMethod {
 
   public JavaMethod(JavaClass jc, MethodNode methodNode) {
     this.classOfMethod = jc;
+    rawAccessFlags = methodNode.access;
 
     isPublic = ((methodNode.access & Opcodes.ACC_PUBLIC) != 0);
     isPrivate = ((methodNode.access & Opcodes.ACC_PRIVATE) != 0);
@@ -142,6 +144,7 @@ public final class JavaMethod {
 
     name = methodNode.name;
 
+    descriptor = methodNode.desc;
     Type[] argumentTypes = Type.getArgumentTypes(methodNode.desc);
     params = new String[argumentTypes.length];
     for (int i = 0; i < params.length; i++) {
@@ -166,7 +169,7 @@ public final class JavaMethod {
   public JavaMethod parse(JavaClass jc, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
 
     this.classOfMethod = jc;
-    int f = ds.readUnsignedShort();
+    int f = rawAccessFlags = ds.readUnsignedShort();
     isPublic = (f & 0x1) != 0;
     isPrivate = (f & 0x2) != 0;
     isProtected = (f & 0x4) != 0;
@@ -178,7 +181,7 @@ public final class JavaMethod {
     isStrict = (f & 0x800) != 0;
 
     name = (String) cp.constants[ds.readUnsignedShort()];
-    String parameters = (String) cp.constants[ds.readUnsignedShort()];
+    String parameters = descriptor = (String) cp.constants[ds.readUnsignedShort()];
     params = splitParams(parameters, retsb);
     if (params != null) {
       paramCount = params.length;

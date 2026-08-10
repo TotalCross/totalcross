@@ -1,7 +1,9 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
+
 package tc.tools.converter.java;
 
 import tc.tools.converter.JConstants;
@@ -16,6 +18,7 @@ public final class JavaCode implements JConstants {
   public JavaMethod method;
   public int[] lineNumberPC; // the pc of the given line number
   public int[] lineNumberLine; // the line number itself
+  public JavaStackMapFrame[] stackMapFrames;
 
   private static final boolean dump = false;
   private static boolean lineNumberWarned;
@@ -75,8 +78,8 @@ public final class JavaCode implements JConstants {
     n = ds.readUnsignedShort();
     for (int i = 0; i < n; i++) {
       String name = (String) cp.constants[ds.readUnsignedShort()];
+      int len = ds.readInt();
       if (name.equals("LineNumberTable")) {
-        ds.skipBytes(4); // skip attribute length
         int l = ds.readUnsignedShort();
         lineNumberPC = new int[l];
         lineNumberLine = new int[l];
@@ -84,11 +87,14 @@ public final class JavaCode implements JConstants {
           lineNumberPC[j] = ds.readUnsignedShort();
           lineNumberLine[j] = ds.readUnsignedShort();
         }
+      } else if (name.equals("StackMapTable")) {
+        byte[] attribute = new byte[len];
+        ds.readBytes(attribute);
+        stackMapFrames = StackMapTableReader.read(attribute, cp, method);
       } else {
         if (dump) {
           System.out.println("Skipping attribute " + name + " in method " + method.signature);
         }
-        int len = ds.readInt();
         ds.skipBytes(len); // skip the rest
       }
     }
