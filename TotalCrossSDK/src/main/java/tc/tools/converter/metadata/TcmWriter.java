@@ -4,12 +4,7 @@
 package tc.tools.converter.metadata;
 
 import java.io.IOException;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -69,42 +64,16 @@ public final class TcmWriter {
     if (tczPaths.isEmpty()) {
       throw new IllegalArgumentException("TCM requires at least one TCZ artifact");
     }
-    List<Artifact> artifacts = artifacts(tczPaths);
+    List<Artifact> artifacts = TcmArtifacts.fromPaths(tczPaths);
     Path primary = tczPaths.get(0).toAbsolutePath().normalize();
-    String fileName = primary.getFileName().toString();
-    String base = fileName.toLowerCase().endsWith(".tcz") ? fileName.substring(0, fileName.length() - 4) : fileName;
-    Path sidecar = primary.resolveSibling(base + ".tcm");
+    Path sidecar = TcmArtifacts.sidecarFor(primary);
     String identity = Settings.versionStr + "." + Settings.buildNumber;
-    publish(sidecar, new TcmWriter(metadata, artifacts, identity).write());
+    TcmPublisher.publish(sidecar, new TcmWriter(metadata, artifacts, identity).write());
     return sidecar;
   }
 
   public static List<Artifact> artifacts(List<Path> paths) throws IOException {
-    List<Artifact> artifacts = new ArrayList<Artifact>();
-    MessageDigest digest = sha256();
-    for (int i = 0; i < paths.size(); i++) {
-      Path path = paths.get(i).toAbsolutePath().normalize();
-      digest.reset();
-      artifacts.add(new Artifact(path.getFileName().toString(), digest.digest(Files.readAllBytes(path))));
-    }
-    return artifacts;
-  }
-
-  private static void publish(Path sidecar, byte[] bytes) throws IOException {
-    Path temporary = sidecar.resolveSibling(sidecar.getFileName().toString() + ".tmp");
-    Files.deleteIfExists(temporary);
-    Files.deleteIfExists(sidecar);
-    try {
-      Files.write(temporary, bytes);
-      try {
-        Files.move(temporary, sidecar, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-      } catch (AtomicMoveNotSupportedException e) {
-        Files.move(temporary, sidecar, StandardCopyOption.REPLACE_EXISTING);
-      }
-    } catch (IOException e) {
-      Files.deleteIfExists(temporary);
-      throw e;
-    }
+    return TcmArtifacts.fromPaths(paths);
   }
 
   private void indexMetadata() {
@@ -230,7 +199,7 @@ public final class TcmWriter {
         string(out, method.originalName); string(out, method.effectiveName); string(out, method.javaDescriptor);
         strings(out, method.sourceParameterDescriptors); string(out, method.sourceReturnDescriptor);
         strings(out, method.loweredParameterTypes); string(out, method.loweredReturnType);
-        out.i32(method.rawAccessFlags); out.u8(method.nativeKind.ordinal()); out.i32(method.tcMethodNameSymbol);
+        out.i32(method.rawAccessFlags); out.u8(method.nativeKind.wireCode); out.i32(method.tcMethodNameSymbol);
       }
     }
     return out.toByteArray();
@@ -243,7 +212,7 @@ public final class TcmWriter {
     for (ClassMetadata type : metadata.classes) for (MethodMetadata method : type.methods)
       for (CallSiteMetadata call : method.callSites) {
         out.i32(methodIds.get(method).intValue()); out.i32(call.javaPc); out.i32(call.javaOpcode);
-        out.u8(call.invokeKind.ordinal()); string(out, call.symbolicOwner); string(out, call.name);
+        out.u8(call.invokeKind.wireCode); string(out, call.symbolicOwner); string(out, call.name);
         string(out, call.javaDescriptor); string(out, call.resolvedDeclarationOwner); out.i32(call.loweredOpcode);
         out.i32(call.tcStartSlot); out.i32(call.tcEndSlotExclusive);
       }
@@ -267,7 +236,7 @@ public final class TcmWriter {
     int count = metadata.classes.stream().mapToInt(type -> type.syntheticOrigins.size()).sum();
     out.i32(count);
     for (ClassMetadata type : metadata.classes) for (SyntheticOrigin origin : type.syntheticOrigins) {
-      out.i32(classIds.get(type).intValue()); out.u8(origin.kind.ordinal()); string(out, origin.owner);
+      out.i32(classIds.get(type).intValue()); out.u8(origin.kind.wireCode); string(out, origin.owner);
       string(out, origin.methodDescriptor); out.i32(origin.javaPc); string(out, origin.generatedClass);
       string(out, origin.factoryMethod); string(out, origin.samDescriptor); out.i32(origin.implementationKind);
       string(out, origin.implementationOwner); string(out, origin.implementationName);
@@ -338,8 +307,4 @@ public final class TcmWriter {
     for (VerificationType type : types) add(values, type.kind, type.className);
   }
 
-  private static MessageDigest sha256() {
-    try { return MessageDigest.getInstance("SHA-256"); }
-    catch (NoSuchAlgorithmException e) { throw new IllegalStateException("SHA-256 is unavailable", e); }
-  }
 }

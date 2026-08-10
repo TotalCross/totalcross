@@ -6,7 +6,6 @@ package tc.tools.converter.metadata;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -88,22 +87,7 @@ public final class TcmReader {
 
   public TcmFile read(Path sidecar, List<Path> tczPaths) throws IOException {
     TcmFile file = read(Files.readAllBytes(sidecar));
-    List<Artifact> actual = TcmWriter.artifacts(tczPaths);
-    if (file.artifacts.size() != actual.size()) {
-      throw new IllegalArgumentException("TCM artifact count mismatch: expected " + file.artifacts.size()
-          + ", received " + actual.size());
-    }
-    for (int i = 0; i < actual.size(); i++) {
-      Artifact expected = file.artifacts.get(i);
-      Artifact supplied = actual.get(i);
-      if (!expected.relativeName.equals(supplied.relativeName)) {
-        throw new IllegalArgumentException("TCM artifact name mismatch at index " + i + ": expected "
-            + expected.relativeName + ", received " + supplied.relativeName);
-      }
-      if (!MessageDigest.isEqual(expected.sha256, supplied.sha256)) {
-        throw new IllegalArgumentException("TCM SHA-256 mismatch for " + expected.relativeName);
-      }
-    }
+    TcmArtifacts.validate(file.artifacts, tczPaths);
     return file;
   }
 
@@ -182,7 +166,7 @@ public final class TcmReader {
       method.originalName = string(in); method.effectiveName = string(in); method.descriptor = string(in);
       method.sourceParameters = strings(in); method.sourceReturn = string(in);
       method.loweredParameters = strings(in); method.loweredReturn = string(in);
-      method.rawAccessFlags = in.i32(); method.nativeKind = enumValue(NativeKind.values(), in.u8(), in, "native kind");
+      method.rawAccessFlags = in.i32(); method.nativeKind = nativeKind(in.u8(), in);
       method.tcMethodNameSymbol = in.i32();
       owner.methods.add(method); methods.add(method);
     }
@@ -197,7 +181,7 @@ public final class TcmReader {
     for (int i = 0; i < count; i++) {
       MethodData method = index(methods, in.i32(), "call method");
       int javaPc = in.i32(); int opcode = in.i32();
-      InvokeKind kind = enumValue(InvokeKind.values(), in.u8(), in, "invoke kind");
+      InvokeKind kind = invokeKind(in.u8(), in);
       method.calls.add(new CallSiteMetadata(javaPc, opcode, kind, string(in), string(in), string(in), string(in),
           in.i32(), in.i32(), in.i32()));
     }
@@ -221,7 +205,7 @@ public final class TcmReader {
     int count = in.count("synthetic-origin count");
     for (int i = 0; i < count; i++) {
       ClassData owner = index(classes, in.i32(), "synthetic class");
-      SyntheticKind kind = enumValue(SyntheticKind.values(), in.u8(), in, "synthetic kind");
+      SyntheticKind kind = syntheticKind(in.u8(), in);
       owner.synthetic.add(new SyntheticOrigin(kind, string(in), string(in), in.i32(), string(in), string(in),
           string(in), in.i32(), string(in), string(in), string(in), strings(in)));
     }
@@ -308,9 +292,22 @@ public final class TcmReader {
     return values.get(index);
   }
 
-  private static <T> T enumValue(T[] values, int ordinal, TcmBinary.Input in, String label) {
-    if (ordinal >= values.length) throw in.error("invalid " + label + " " + ordinal);
-    return values[ordinal];
+  private static NativeKind nativeKind(int wireCode, TcmBinary.Input in) {
+    NativeKind value = NativeKind.fromWireCode(wireCode);
+    if (value == null) throw in.error("invalid native kind " + wireCode);
+    return value;
+  }
+
+  private static InvokeKind invokeKind(int wireCode, TcmBinary.Input in) {
+    InvokeKind value = InvokeKind.fromWireCode(wireCode);
+    if (value == null) throw in.error("invalid invoke kind " + wireCode);
+    return value;
+  }
+
+  private static SyntheticKind syntheticKind(int wireCode, TcmBinary.Input in) {
+    SyntheticKind value = SyntheticKind.fromWireCode(wireCode);
+    if (value == null) throw in.error("invalid synthetic kind " + wireCode);
+    return value;
   }
 
   private static final class Manifest {

@@ -12,15 +12,48 @@ public final class CompilationMetadata {
       Collections.<String>emptyList(), false);
 
   public enum NativeKind {
-    NONE, JAVA_NATIVE, REPLACED_ON_DEPLOY
+    NONE(0), JAVA_NATIVE(1), REPLACED_ON_DEPLOY(2);
+
+    public final int wireCode;
+
+    NativeKind(int wireCode) {
+      this.wireCode = wireCode;
+    }
+
+    static NativeKind fromWireCode(int wireCode) {
+      for (NativeKind value : values()) if (value.wireCode == wireCode) return value;
+      return null;
+    }
   }
 
   public enum InvokeKind {
-    STATIC, SPECIAL, INTERFACE, VIRTUAL, DYNAMIC_LAMBDA, DYNAMIC_STRING_CONCAT, DYNAMIC_RECORD
+    STATIC(0), SPECIAL(1), INTERFACE(2), VIRTUAL(3), DYNAMIC_LAMBDA(4), DYNAMIC_STRING_CONCAT(5), DYNAMIC_RECORD(6);
+
+    public final int wireCode;
+
+    InvokeKind(int wireCode) {
+      this.wireCode = wireCode;
+    }
+
+    static InvokeKind fromWireCode(int wireCode) {
+      for (InvokeKind value : values()) if (value.wireCode == wireCode) return value;
+      return null;
+    }
   }
 
   public enum SyntheticKind {
-    LAMBDA, STRING_CONCAT, RECORD_OBJECT_METHOD
+    LAMBDA(0), STRING_CONCAT(1), RECORD_OBJECT_METHOD(2);
+
+    public final int wireCode;
+
+    SyntheticKind(int wireCode) {
+      this.wireCode = wireCode;
+    }
+
+    static SyntheticKind fromWireCode(int wireCode) {
+      for (SyntheticKind value : values()) if (value.wireCode == wireCode) return value;
+      return null;
+    }
   }
 
   public final List<ClassMetadata> classes;
