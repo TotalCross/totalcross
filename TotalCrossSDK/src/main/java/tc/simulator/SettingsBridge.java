@@ -225,6 +225,9 @@ abstract class SettingsBridge extends StorageBridge {
     totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.VISTA_UI;
     totalcross.sys.Settings.screenWidth = toWidth;
     totalcross.sys.Settings.screenHeight = toHeight;
+    if (toWidth >= 0 && toHeight >= 0) {
+      totalcross.ui.gfx.Graphics.configureMainWindowSurface(toWidth, toHeight, toDensityValue);
+    }
     totalcross.sys.Settings.onJavaSE = true;
     totalcross.sys.Settings.platform = Settings.JAVA;
     totalcross.sys.Settings.applicationId = getDefaultCrid(className); // dhaysmith@420_4

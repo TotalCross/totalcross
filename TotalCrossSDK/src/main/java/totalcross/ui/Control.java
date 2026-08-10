@@ -437,7 +437,7 @@ public class Control extends GfxSurface {
       } else {
         offscreen0 = null;
       }
-      Image offscreen = new Image(width, height);
+      Image offscreen = Image.createLogical(width, height, Graphics.getMainWindowContentScale());
       paint2shot(offscreen.getGraphics(), false);
       if (nr == 1) {
         this.offscreen = offscreen;

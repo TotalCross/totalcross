@@ -39,6 +39,23 @@ class CommandLineParserTest {
   }
 
   @Test
+  void densityLeavesScreenAndSafeAreaInLogicalUnits() throws Exception {
+    for (int density = 1; density <= 3; density++) {
+      SimulatorConfiguration config = new SimulatorConfiguration("com.example.App", "/scr", "393x852x32",
+          "/density", Integer.toString(density), "/safeAreaPortrait", "10,3,7,4", "/safeAreaLandscape",
+          "2,11,5,13");
+
+      LaunchOptions result = CommandLineParser.parse(config, true, 0, 0);
+
+      assertEquals(393, result.width);
+      assertEquals(852, result.height);
+      assertEquals(density, result.densityValue);
+      assertInsets(result.insetsPortrait, 10, 3, 7, 4);
+      assertInsets(result.insetsLandscape, 2, 11, 5, 13);
+    }
+  }
+
+  @Test
   void storesSettingsFlagsWithoutApplyingThem() throws Exception {
     SimulatorConfiguration config = new SimulatorConfiguration("com.example.App", "/scr", "320x480x16", "/fingertouch",
         "/geofocus", "/virtualKeyboard", "/showmousepos", "/dbginfo");
@@ -64,5 +81,12 @@ class CommandLineParserTest {
     assertEquals(1, error.getIndex());
     assertEquals("7", error.getArgument());
     assertEquals("/bpp 7", error.getFullCommandLine());
+  }
+
+  private static void assertInsets(totalcross.ui.Insets insets, int top, int left, int bottom, int right) {
+    assertEquals(top, insets.top);
+    assertEquals(left, insets.left);
+    assertEquals(bottom, insets.bottom);
+    assertEquals(right, insets.right);
   }
 }
