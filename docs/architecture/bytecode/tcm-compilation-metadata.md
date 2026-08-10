@@ -24,9 +24,13 @@ the current deployer.
 
 For a primary `MyApp.tcz`, the deployer publishes `MyApp.tcm` beside it. One TCM
 covers the whole deploy invocation, including every split TCZ. Publication uses
-`MyApp.tcm.tmp` followed by an atomic replacement where the filesystem supports
-it. An explicitly requested sidecar failure fails that deploy operation without
-modifying the completed TCZ files.
+`MyApp.tcm.tmp`, writes it completely, and then attempts an atomic replacement.
+Where atomic replacement is unsupported, publication falls back to replacement
+by a regular move. Failures before replacement preserve a previous valid TCM,
+and handled failures clean only the owned temporary file. This ordering does not
+claim filesystem crash durability or `fsync` semantics. An explicitly requested
+sidecar failure fails that deploy operation without modifying completed TCZ
+files.
 
 Platform packaging normally removes its intermediate root TCZ after copying it
 into the install image. In `AOT` mode the deployer retains the root TCZ set beside
@@ -82,7 +86,9 @@ Native kinds are encoded as `NONE=0`, `JAVA_NATIVE=1`, and
 `VIRTUAL=3`, `DYNAMIC_LAMBDA=4`, `DYNAMIC_STRING_CONCAT=5`, and
 `DYNAMIC_RECORD=6`. Synthetic kinds are `LAMBDA=0`, `STRING_CONCAT=1`, and
 `RECORD_OBJECT_METHOD=2`. Verification kinds are string values so future readers
-can diagnose an unfamiliar symbolic type precisely.
+can diagnose an unfamiliar symbolic type precisely. These numeric values are
+permanent v1 wire codes, independent of Java enum declaration order; readers
+reject unknown codes rather than interpreting them as enum ordinals.
 
 ## Preserved facts
 
@@ -102,8 +108,9 @@ also does not embed raw class files.
 ## Determinism and non-interference
 
 The writer sorts its deduplicated string table, uses stable deploy/class/member
-order, emits fixed section order, and hashes finalized TCZ files. Repeating the
-same deploy with the same build identity produces identical TCM bytes.
+order, emits fixed section order, and hashes finalized TCZ files with bounded
+streaming SHA-256. Repeating the same deploy with the same build identity
+produces identical TCM bytes.
 
 Metadata is collected through converter-only structures. Origin tags never enter
 TCCode serialization, and enabling `/tcm aot` does not alter TCZ constant-pool

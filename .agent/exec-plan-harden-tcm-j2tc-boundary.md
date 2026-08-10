@@ -85,8 +85,9 @@ reconstruction. Do not reread the completed predecessor ExecPlan by default.
   capture and skips StackMap materialization; origin finalization is one
   instruction scan plus one source-site emission pass. AOT facts, v1 bytes, and
   TCZ bytes remained stable; bounded repeat timing stayed within 5% of baseline.
-- [ ] Milestone 2: execute the wire/publication subplan and close with v1 backward
-  compatibility and failure-path validation.
+- [x] (2026-08-10T19:09:20Z) Milestone 2: permanent v1 wire codes, neutral
+  streaming artifact support, and replacement-safe publication passed frozen
+  fixture, injected failure/fallback, deterministic-byte, and TCZ checks.
 - [ ] Milestone 3: execute the semantic-resolution subplan and close with
   converter/metadata compatibility validation.
 - [ ] Milestone 4: final integration, deploy/native smoke, audits, documentation,
@@ -383,6 +384,14 @@ finalization changed from `B` full instruction rescans to one `I` scan and one
 `B` emission pass. TCZ and TCM fixture hashes remained unchanged. The first
 timing pass was system-noisy; one bounded repeat placed both mode medians within
 5% of baseline, so no universal speed claim is made.
+
+Milestone 2 replaced every wire-driving enum ordinal with its documented
+permanent code and reader lookup. Artifact naming, ordered bounded streaming
+SHA-256, and validation now live in a neutral helper shared by writer and
+reader. Publication writes the owned temporary file fully before atomic
+replacement, falls back to regular replacement only when atomic move is not
+supported, and preserves an existing sidecar on deterministic pre-replacement
+failure. The frozen aggregate v1 TCM and both TCZ hashes remained byte-identical.
 
 At completion state:
 

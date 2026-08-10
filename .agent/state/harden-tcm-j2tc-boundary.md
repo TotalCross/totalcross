@@ -6,19 +6,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Harden TCM/J2TC Boundary — Active State
 
-Updated: 2026-08-10T19:00:53Z
+Updated: 2026-08-10T19:09:20Z
 
 ## Active milestone
 
-- Milestone 2: stable wire format and safe publication.
+- Milestone 3: canonical converter semantics.
 - Active plan: `.agent/exec-plan-harden-tcm-j2tc-boundary.md`.
-- Active subplan: `.agent/subplan-tcm-wire-and-publication.md`.
+- Active subplan: `.agent/subplan-converter-semantic-resolution.md`.
 
 ## Repository state
 
 - Branch: `feature/422-create-ir-for-jniaot`.
 - Baseline revision: `441c5785dd88a6aaf8c028c2a390c27d113ad0d6`.
-- Last plan commit: `1dd173ed7` (Milestone 0 baseline).
+- Last plan commit: `7ec5707c5` (Milestone 1 capture/origin hardening).
 - Tracked worktree changes at start: none.
 - Coordinator plan and subplans were committed with Milestone 0.
 - Deliberately out of scope untracked file:
@@ -31,21 +31,22 @@ Updated: 2026-08-10T19:00:53Z
 - `.agent/evidence/harden-tcm-j2tc-boundary-01.jsonl`
 - `.agent/archive/harden-tcm-j2tc-boundary-history.md`
 - `.agent/reports/harden-tcm-j2tc-boundary-editorial.md`
-- `.agent/subplan-tcm-wire-and-publication.md`
-- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/TcmWriter.java`
-- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/TcmReader.java`
-- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/TcmFormat.java`
-- `TotalCrossSDK/src/test/java/tc/tools/converter/metadata/`
+- `.agent/subplan-converter-semantic-resolution.md`
+- `TotalCrossSDK/src/main/java/tc/tools/converter/GlobalConstantPool.java`
+- `TotalCrossSDK/src/main/java/tc/tools/converter/tclass/TCMethod.java`
+- `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/CompilationMetadataCollector.java`
+- Relevant metadata and inherited-owner tests named by the subplan.
 
 ## Next concrete action
 
-Commit the validated Milestone 1 changes, then read
-`.agent/subplan-tcm-wire-and-publication.md` in full and inspect only its named
-wire, artifact, publication, and failure-test paths.
+Commit the validated Milestone 2 changes, then read
+`.agent/subplan-converter-semantic-resolution.md` in full and inspect only the
+canonical type-mapping, method-validation, program/device hierarchy, and
+metadata call-site paths it names.
 
 ## Tests written but not executed
 
-- None for Milestone 2.
+- None for Milestone 3.
 
 ## Validation completed
 
@@ -54,16 +55,18 @@ wire, artifact, publication, and failure-test paths.
   in the evidence index.
 - Milestone 1 focused tests, fixed workloads, TCZ comparison, copyright,
   whitespace, and new-file size checks passed. See evidence index.
+- Milestone 2 focused tests, frozen v1 validation, one-sample deploy identity,
+  static audits, copyright, whitespace, and new-file size checks passed.
 
 ## Deferred validation
 
-- Milestones 2–4 validation remains deferred until each implementation is
+- Milestones 3–4 validation remains deferred until each implementation is
   complete.
 
 ## Evidence and logs
 
 - Evidence index: `.agent/evidence/harden-tcm-j2tc-boundary-01.jsonl`.
-- Milestones 0 and 1 evidence are recorded in the evidence index.
+- Milestones 0–2 evidence are recorded in the evidence index.
 
 ## Active decisions and blockers
 

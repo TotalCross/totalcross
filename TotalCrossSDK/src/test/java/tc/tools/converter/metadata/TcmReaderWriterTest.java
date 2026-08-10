@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -65,6 +67,46 @@ class TcmReaderWriterTest {
     assertEquals(SyntheticKind.LAMBDA, type.syntheticOrigins.get(0).kind);
     assertTrue(decoded.metadata.resolvedClassForNameRoots.contains("fixtures/Target"));
     assertTrue(decoded.metadata.unresolvedDynamicClassLookup);
+  }
+
+  @Test
+  void usesPermanentV1WireCodesAndRejectsUnknownValues() throws Exception {
+    assertEquals(0, NativeKind.NONE.wireCode);
+    assertEquals(1, NativeKind.JAVA_NATIVE.wireCode);
+    assertEquals(2, NativeKind.REPLACED_ON_DEPLOY.wireCode);
+    assertEquals(0, InvokeKind.STATIC.wireCode);
+    assertEquals(1, InvokeKind.SPECIAL.wireCode);
+    assertEquals(2, InvokeKind.INTERFACE.wireCode);
+    assertEquals(3, InvokeKind.VIRTUAL.wireCode);
+    assertEquals(4, InvokeKind.DYNAMIC_LAMBDA.wireCode);
+    assertEquals(5, InvokeKind.DYNAMIC_STRING_CONCAT.wireCode);
+    assertEquals(6, InvokeKind.DYNAMIC_RECORD.wireCode);
+    assertEquals(0, SyntheticKind.LAMBDA.wireCode);
+    assertEquals(1, SyntheticKind.STRING_CONCAT.wireCode);
+    assertEquals(2, SyntheticKind.RECORD_OBJECT_METHOD.wireCode);
+
+    byte[] encoded = bytes();
+    int nativeCode = sectionPayloadOffset(encoded, TcmFormat.METHODS) + 56;
+    int invokeCode = sectionPayloadOffset(encoded, TcmFormat.CALL_SITES) + 16;
+    int syntheticCode = sectionPayloadOffset(encoded, TcmFormat.ALLOCATION_AND_SYNTHETIC_ORIGINS) + 8;
+    assertEquals(2, encoded[nativeCode] & 0xff);
+    assertEquals(2, encoded[invokeCode] & 0xff);
+    assertEquals(0, encoded[syntheticCode] & 0xff);
+
+    assertInvalidWireCode(encoded, nativeCode, "invalid native kind 99");
+    assertInvalidWireCode(encoded, invokeCode, "invalid invoke kind 99");
+    assertInvalidWireCode(encoded, syntheticCode, "invalid synthetic kind 99");
+  }
+
+  @Test
+  void readsFrozenMilestoneZeroV1FixtureWhenProvided() throws Exception {
+    String fixtureDirectory = System.getenv("TCM_V1_FIXTURE_DIR");
+    assumeTrue(fixtureDirectory != null, "Set TCM_V1_FIXTURE_DIR during compatibility validation");
+    Path directory = Path.of(fixtureDirectory);
+    TcmFile decoded = new TcmReader().read(directory.resolve("FeatureSmokeApp.tcm"),
+        Collections.singletonList(directory.resolve("FeatureSmokeApp.tcz")));
+    assertEquals(87, decoded.metadata.classes.size());
+    assertEquals(10, sectionCount(Files.readAllBytes(directory.resolve("FeatureSmokeApp.tcm"))));
   }
 
   @Test
@@ -123,6 +165,34 @@ class TcmReaderWriterTest {
     putI32(result, offset + 4, payload.length);
     System.arraycopy(payload, 0, result, offset + 8, payload.length);
     return result;
+  }
+
+  private static void assertInvalidWireCode(byte[] source, int offset, String message) {
+    byte[] changed = source.clone();
+    changed[offset] = 99;
+    IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+        () -> new TcmReader().read(changed));
+    assertTrue(error.getMessage().contains(message));
+  }
+
+  private static int sectionPayloadOffset(byte[] bytes, int expectedType) {
+    int offset = 16;
+    int count = sectionCount(bytes);
+    for (int i = 0; i < count; i++) {
+      int type = getU16(bytes, offset) & ~TcmFormat.REQUIRED;
+      int length = getI32(bytes, offset + 4);
+      if (type == expectedType) return offset + 8;
+      offset += 8 + length;
+    }
+    throw new AssertionError("Missing section " + expectedType);
+  }
+
+  private static int sectionCount(byte[] bytes) {
+    return getI32(bytes, 12);
+  }
+
+  private static int getU16(byte[] bytes, int offset) {
+    return (bytes[offset] & 0xff) | ((bytes[offset + 1] & 0xff) << 8);
   }
 
   private static int getI32(byte[] bytes, int offset) {

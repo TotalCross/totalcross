@@ -43,3 +43,20 @@ The fixed workload produced zero disabled metadata, unchanged AOT counts, an
 unchanged v1 fixture hash, and byte-identical `NONE`/AOT TCZ output. A noisy
 first timing pass was followed by one bounded repeat; both medians were within
 5% of baseline. Details and logs are in the evidence index.
+
+## Milestone 2 — stable wire and safe publication
+
+Completed 2026-08-10 after focused compatibility and failure validation.
+
+Native, invoke, and synthetic enums now carry their documented permanent v1
+codes, and the reader searches those codes with precise unknown-value errors.
+No enum ordinal controls wire bytes. The preserved aggregate v1 fixture decoded
+through the production reader, and new output retained its exact SHA-256.
+
+`TcmArtifacts` now owns sidecar naming, ordered artifact construction, bounded
+16 KiB streaming SHA-256, and manifest validation for both writer and reader.
+`TcmPublisher` owns temporary-file publication and exposes a package-private
+filesystem seam. Tests prove ordinary replacement, atomic-not-supported
+fallback, previous-sidecar preservation on injected pre-replacement failure,
+and owned-temporary cleanup. Documentation deliberately makes no fsync or crash
+durability claim.

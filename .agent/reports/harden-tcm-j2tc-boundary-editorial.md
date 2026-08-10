@@ -43,3 +43,22 @@ zero; AOT counts, the v1 fixture hash, and TCZ SHA-256 stayed unchanged. The
 bounded repeat timing medians were 3.552 s for `NONE` and 3.636 s for AOT,
 within 5% of their respective baselines. Timing remains supporting evidence for
 this workload only.
+
+## Stable v1 bytes, artifacts, and publication
+
+TCM v1 numeric meanings no longer depend on Java enum order. Every native,
+invoke, and synthetic value has a permanent documented wire code, and the reader
+maps by code with explicit unknown-code diagnostics. The format stays at v1.0;
+the preserved pre-change aggregate fixture remains readable and newly emitted
+bytes retain SHA-256
+`ee07c01ddcf503044c58ac702ddf1e750c55212f919e59f0d73f51478938b965`.
+
+A neutral artifact component now derives sidecar names, preserves supplied TCZ
+order, hashes each TCZ through a bounded 16 KiB stream, and validates manifest
+count, names, order, and hashes. The reader no longer depends on writer internals.
+
+Publication no longer deletes the previous sidecar. It writes the sibling
+temporary completely, attempts atomic replacement, and falls back to a regular
+replacement move only when atomic moves are unsupported. Injected failures
+before replacement preserve the prior sidecar and remove the owned temporary.
+This is an ordering guarantee, not an fsync or crash-durability guarantee.
