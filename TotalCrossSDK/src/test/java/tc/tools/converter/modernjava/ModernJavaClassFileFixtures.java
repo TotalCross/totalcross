@@ -71,6 +71,24 @@ final class ModernJavaClassFileFixtures {
     return compile(workDir, javaRelease, major.intValue(), "simple javac class", className, source);
   }
 
+  static Optional<ModernJavaClassFileFixture> compileFloatParameterFixture(Path workDir) throws IOException {
+    String className = "fixtures.FloatParameters";
+    String source = "package fixtures;\n"
+        + "public class FloatParameters {\n"
+        + "  public static int staticInt(float ignored, int value) { return value; }\n"
+        + "  public static int staticMiddle(int left, float ignored, int right) { return right; }\n"
+        + "  public static Object staticObject(float ignored, Object value) { return value; }\n"
+        + "  public static long staticLong(float ignored, long value) { return value; }\n"
+        + "  public static double staticDouble(float ignored, double value) { return value; }\n"
+        + "  public int instanceInt(float ignored, int value) { return value; }\n"
+        + "  public Object instanceObject(float ignored, Object value) { return value; }\n"
+        + "  public long instanceLong(float ignored, long value) { return value; }\n"
+        + "  public double instanceDouble(float ignored, double value) { return value; }\n"
+        + "}\n";
+    return compile(workDir, JAVA_8, ROADMAP_MAJOR_VERSIONS.get(Integer.valueOf(JAVA_8)).intValue(),
+        "float parameter mapping", className, source);
+  }
+
   static Optional<ModernJavaClassFileFixture> compileJava8LambdaFixture(Path workDir) throws IOException {
     String packageName = "fixtures";
     String simpleName = "CompiledJava8Lambda";

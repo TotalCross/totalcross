@@ -553,7 +553,6 @@ public final class J2TC implements JConstants, TCConstants {
     RegAllocation.makeRegAllocation(tc.methods);
     generateCode(tc.methods);
     methodsIgnored.clear();
-    JavaMethod.flushFloatWarnings();
   }
 
   public static void generateCode(TCMethod[] methods) {
@@ -1471,7 +1470,6 @@ public final class J2TC implements JConstants, TCConstants {
               "Caution! Android should not be fullscreen because the virtual keyboard will not appear correctly. Consider removing \"Android\" from the Settings.fullScreenPlatforms field");
         }
       }
-      JavaMethod.flushFloatWarnings();
     }
   }
 
