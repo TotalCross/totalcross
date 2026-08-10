@@ -129,21 +129,22 @@ abstract class FrameRenderer extends InputDispatcher {
 
   public void updateScreen() {
     //int ini = totalcross.sys.Vm.getTimeStamp();
-    int w = totalcross.sys.Settings.screenWidth;
-    int h = totalcross.sys.Settings.screenHeight;
+    int w = totalcross.ui.gfx.Graphics.getMainWindowPixelWidth();
+    int h = totalcross.ui.gfx.Graphics.getMainWindowPixelHeight();
 
-    if (screenImg == null) {
+    if (screenImg == null || screenImg.getWidth() != w || screenImg.getHeight() != h) {
       screenImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
       // We can typecast directly to DataBufferInt because that's the type used for images with 24+ bit color
       DataBufferInt dbi = (DataBufferInt) screenImg.getRaster().getDataBuffer();
       int[] pixels = dbi.getData();
       // Copy whatever was drawn before
-      System.arraycopy(totalcross.ui.gfx.Graphics.mainWindowPixels, 0, pixels, 0, w*h);
+      System.arraycopy(totalcross.ui.gfx.Graphics.mainWindowPixels, 0, pixels, 0,
+          Math.min(totalcross.ui.gfx.Graphics.mainWindowPixels.length, w * h));
       // And replace with our bytes, now we no longer need to copy from the mainWindowPixels to our image. Saving a ton of memory.
       totalcross.ui.gfx.Graphics.mainWindowPixels = pixels;
     }
     int[] pixels = totalcross.ui.gfx.Graphics.mainWindowPixels;
-    int n = Settings.screenWidth * Settings.screenHeight;
+    int n = w * h;
     if (toBpp >= 24) {
       screenPixels = pixels;
     } else if (screenPixels.length < n) {
@@ -179,7 +180,7 @@ abstract class FrameRenderer extends InputDispatcher {
     getPreviewSurface().present(screenImg);
     PreviewFrameSink frameConsumer = getPreviewFrameSink();
     if (frameConsumer != null) {
-      frameConsumer.present(new PreviewFrame(w, h, w, Settings.screenDensity,
+      frameConsumer.present(new PreviewFrame(w, h, w, totalcross.ui.gfx.Graphics.getMainWindowContentScale(),
           PreviewFrame.PixelFormat.ARGB_8888, screenPixels));
     }
     // make the emulator work like OpenGL: erase the screen to instruct the user that everything must be drawn always
@@ -188,7 +189,8 @@ abstract class FrameRenderer extends InputDispatcher {
 
   protected AwtRenderSurface getPreviewSurface() {
     if (previewSurface == null) {
-      previewSurface = new AppletPreviewSurface(this, toScale, fastScale);
+      previewSurface = new AppletPreviewSurface(this, toScale,
+          totalcross.ui.gfx.Graphics.getMainWindowContentScale(), fastScale);
     }
     return previewSurface;
   }

@@ -14,4 +14,8 @@ public class AppletPreviewSurface extends AwtRenderSurface {
   public AppletPreviewSurface(Component component, double scale, boolean fastScale) {
     super(component, scale, fastScale);
   }
+
+  public AppletPreviewSurface(Component component, double presentationScale, double contentScale, boolean fastScale) {
+    super(component, presentationScale, contentScale, fastScale);
+  }
 }
