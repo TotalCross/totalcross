@@ -47,3 +47,21 @@ owners, final TC slot ranges, reflection roots, unresolved lookup state, and
 lambda/string-concat/record origins. The resulting object graph exposes immutable
 lists and contains source facts rather than optimization conclusions. No metadata
 field is serialized into TCCode or TCZ.
+
+## TCM v1 delivery
+
+`/tcm aot` emits one deterministic `TCM1` sidecar; ordinary deploy remains
+default-off. Ten length-delimited little-endian sections use a sorted string
+table, and the required manifest binds ordered relative TCZ names to SHA-256.
+Unknown optional sections are skipped, while unknown required sections, malformed
+lengths, incompatible major versions, and artifact mismatches are rejected. The
+writer publishes through a sibling temporary file. Platform builds retain their
+root TCZ set only when TCM is requested, keeping the sidecar directly verifiable
+without changing installed copies.
+
+The closure deploys produced TCZ SHA-256
+`21f48888a0817eefe94cbc0e51ec4a775edcf8f6a3e20c6b9aec0b3df2be081c`
+with metadata both off and on. `TcmInspector` validated the emitted sidecar, and
+the TCM-enabled macOS app completed 97 checks with zero failures. TCM remains a
+local build artifact containing application identities; it is not telemetry and
+has no required runtime or AOT consumer.
