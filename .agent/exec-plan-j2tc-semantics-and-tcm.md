@@ -97,8 +97,10 @@ reproduced; do not reopen completed plans by default.
   resolution, and handler-entry stack initialization; verified and classified
   transformed replacement descriptors/generated names as unsupported contracts;
   passed focused corpus rechecks, distribution, deploy, and native smoke.
-- [ ] Milestone 3: introduce the in-memory semantic-preservation model required by
-  TCM without changing TCZ serialization.
+- [x] (2026-08-10) Milestone 3: preserved raw class-file facts and StackMap
+  frames, then collected immutable class/member, origin, call, allocation,
+  dynamic-access, native/replacement, and synthetic-lowering metadata without
+  changing TCCode or TCZ serialization.
 - [ ] Milestone 4: implement deterministic optional TCM v1 emission and reading,
   prove TCZ byte identity with TCM off/on, and close with deploy and native macOS
   smoke.
@@ -171,66 +173,19 @@ Metadata implementation should use small cohesive files under a dedicated
 
 ### Milestone 0 — freeze the evidence boundary
 
-Record the current branch revision and dirty-worktree exclusions in state. Locate
-the exact generated fixtures/logs or reproducible configurations behind the
-previous ProGuard J2TC failure categories. Do not regenerate the entire ProGuard
-matrix unless the existing build artifacts are unavailable and a specific
-reproduction cannot be reconstructed more cheaply.
-
-Capture a small baseline for:
-
-- the float parameter mis-mapping;
-- the line-table PC-zero failure;
-- inherited-owner invocation rejection;
-- each remaining ProGuard failure family that may represent a real J2TC bug;
-- normal TCZ output for one deterministic smoke/deploy input that will later be
-  used for byte-identity comparison.
-
-Do not run native or full SDK smoke in this milestone. This milestone is accepted
-when later changes have reproducible fixtures and a recorded start revision.
+Completed. The start revision, dirty exclusions, retained ProGuard corpus, and
+ordinary TCZ hashes are indexed in state/evidence and summarized in history.
 
 ### Milestone 1 — float parameter correctness
 
-Execute `.agent/subplan-j2tc-float-and-compatibility.md`, float section.
-
-The implementation must separate JVM local-slot width from TotalCross register-bank
-selection, keep the current TotalCross `F -> double/reg64` lowering unchanged, and
-remove `FLOAT_WARNING_MESSAGE`, `floatWarningMethods`, registration, flushing, and
-all warning-only call sites after tests prove the fix.
-
-Use a data-driven test matrix.
-
-This milestone closes only after its focused converter tests, aggregate deploy
-smoke, and native macOS execution pass. Do not run those expensive end-to-end
-steps after every edit.
-
-Create one logical commit for the complete float fix and its tests, for example:
-
-```text
-fix(compiler): correct float parameter slot mapping
-```
-
-Do not push.
+Completed. JVM local-slot width is independent of TC register-bank choice; the
+warning path is removed, and matrix/deploy/native evidence is indexed.
 
 ### Milestone 2 — J2TC compatibility hardening
 
-Execute the compatibility section of
-`.agent/subplan-j2tc-float-and-compatibility.md`.
-
-Fix the line-number and inherited-owner cases when their focused fixtures prove
-the JVM-valid behavior. For the stack/replacement/generated-name categories,
-first validate the candidate class with a JVM verifier or equivalent ASM verifier.
-Only change J2TC when the input is valid and the required semantics fit TotalCross
-runtime/replacement contracts.
-
-Do not add broad `try/catch`, disable stack checks, remove validation, or add
-ProGuard-specific name exceptions merely to turn a failure green.
-
-Commit independent compatibility fixes separately with their regression fixtures.
-
-At milestone closure, rerun only the relevant previously rejected ProGuard
-families plus focused converter tests. Run aggregate deploy/native macOS smoke once
-if invocation or generated-call semantics changed.
+Completed. Sparse lines, inherited owners, and handler-entry stacks were fixed;
+replacement descriptors and generated names remain classified unsupported
+contracts. Exact commits, verifier evidence, and validation are in history.
 
 ### Milestone 3 — preserve semantics in memory
 

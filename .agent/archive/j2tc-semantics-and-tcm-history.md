@@ -38,3 +38,14 @@ The remaining replacement constructors and generated member names nevertheless
 change canonical TotalCross 4D contracts, so they remain deterministic
 unsupported-input diagnostics. Current-converter corpus rechecks, the focused
 test sweep, distribution, deploy, and native macOS smoke all passed as applicable.
+
+## Milestone 3 — semantic preservation in memory
+
+Commit `b9e6abf65` retains exact class/member access flags, original hierarchy
+names, source/signature attributes, and bounded symbolic StackMap frames. Its
+JVM-verified fixtures cover every required frame encoding and precise malformed
+input diagnostics. Commit `0507ad84d` adds an effectively immutable deploy-scoped
+model and captures source/effective identities, source/lowered types, call kinds
+and owners, Java-PC origins, allocations, reflection roots, native/replacement
+kinds, and lambda/string-concat/record origins. Converter-only origin tags do not
+enter TCCode serialization. The full focused modern-Java sweep passed.

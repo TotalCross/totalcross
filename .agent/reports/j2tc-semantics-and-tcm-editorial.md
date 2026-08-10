@@ -35,3 +35,15 @@ they no longer describe supported TotalCross 4D replacement contracts. Keeping
 their rejection prevents a ProGuard-specific exception from weakening device ABI
 validation. The milestone closed with focused tests, SDK distribution, aggregate
 deploy, and a native run containing 97 passes and no failures.
+
+## Preserved compilation facts
+
+The converter now snapshots original class-file identity and raw access flags
+before TotalCross normalization. It retains source/signature, nest, record,
+permitted-subclass, exact JVM descriptors, explicit native/replacement kind, and
+symbolic StackMap types including distinct float and double. During lowering it
+records Java PCs, opcodes, allocations, source invoke kind and symbolic/resolved
+owners, final TC slot ranges, reflection roots, unresolved lookup state, and
+lambda/string-concat/record origins. The resulting object graph exposes immutable
+lists and contains source facts rather than optimization conclusions. No metadata
+field is serialized into TCCode or TCZ.
