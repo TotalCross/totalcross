@@ -9,12 +9,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Plan-start revision: `42dec24e3353a1e3e97de5ea0288956318a55142`.
 - Branch: `feature/422-create-ir-for-jniaot`.
-- Active milestone: 3, in-memory semantic preservation.
-- Active subplan: `.agent/subplan-tcm-semantic-preservation.md`.
-- Last logical commit: `398d7095f` (`fix(compiler): initialize exception handler
-  stacks`).
-- Next action: inspect Java class parsing and J2TC lowering capture points, then
-  introduce the deploy-scoped metadata model without changing TCZ output.
+- Active milestone: 4, deterministic TCM v1 format and emission.
+- Active subplan: `.agent/subplan-tcm-format-and-emission.md`.
+- Last logical commit: `0507ad84d` (`feat(compiler): collect lowering semantic
+  metadata`).
+- Next action: define the fixed v1 section constants and deterministic string
+  table, then implement writer/reader round-trip tests before deploy integration.
 
 ## Milestone 0 baseline
 
@@ -51,18 +51,18 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Active paths
 
 - `TotalCrossSDK/src/main/java/tc/tools/converter/metadata/`
-- Java class/method/code parsing paths selected during the next inspection
-- `TotalCrossSDK/src/main/java/tc/tools/converter/Bytecode2TCCode.java`
-- `TotalCrossSDK/src/main/java/tc/tools/converter/J2TC.java`
-- focused metadata tests under `TotalCrossSDK/src/test/java/tc/tools/converter/`
+- `TotalCrossSDK/src/main/java/tc/Deploy.java`
+- `TotalCrossSDK/src/main/java/tc/tools/deployer/DeploySettings.java`
+- TCM-focused tests under `TotalCrossSDK/src/test/java/tc/tools/converter/metadata/`
+- `docs/architecture/bytecode/tcm-compilation-metadata.md`
 
 ## Validation state
 
-- Completed: Milestone 2 focused converter sweep, retained-corpus rechecks, SDK
-  `dist -x test`, aggregate deploy, and native macOS execution passed. Native
-  output contained 97 pass lines and no failures.
-- Deferred: broad build/deploy/native validation until TCM has an external
-  artifact contract in Milestone 4, per the semantic-preservation subplan.
+- Completed: Milestone 3 focused metadata and complete modern-Java converter
+  sweep passed in 8 seconds. StackMap fixtures are JVM-verified and cover compact,
+  chop, append, full, object, uninitialized, float, double, and long forms.
+- Deferred: distribution, deploy, TCZ identity, and native validation until the
+  external sidecar contract is implemented at Milestone 4 closure.
 - Blockers: none.
 
 ## Dirty-worktree exclusions
@@ -86,5 +86,5 @@ goal and are in scope.
 ## Resume command
 
 ```bash
-sed -n '120,360p' .agent/subplan-tcm-semantic-preservation.md
+sed -n '20,230p' .agent/subplan-tcm-format-and-emission.md
 ```
