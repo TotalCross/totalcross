@@ -2388,14 +2388,14 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
   private static int getLineOfPC(int pc) {
     if (javaCodeCurrent.lineNumberPC != null) {
       int[] pcs = javaCodeCurrent.lineNumberPC;
+      if (pcs.length == 0 || pc < pcs[0]) {
+        return 0;
+      }
       int i = 0;
-      while (i < pcs.length && pcs[i] < pc) {
+      while (i + 1 < pcs.length && pcs[i + 1] <= pc) {
         i++;
       }
-      if (i < pcs.length && pc == pcs[i]) {
-        return javaCodeCurrent.lineNumberLine[i];
-      }
-      return javaCodeCurrent.lineNumberLine[i - 1];
+      return javaCodeCurrent.lineNumberLine[i];
     }
     return 0;
   }

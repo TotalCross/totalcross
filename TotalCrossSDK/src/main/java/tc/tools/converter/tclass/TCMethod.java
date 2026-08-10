@@ -1,7 +1,9 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
+
 package tc.tools.converter.tclass;
 
 import java.lang.reflect.Method;
@@ -80,10 +82,6 @@ public final class TCMethod implements TCConstants {
     boolean allLN1 = true;
     if (lineNumberDebugInfoCount > 0 && !name.equals("<S>")) {
       int p, l;
-      // first do some checks
-      if (lineNumberDebugInfoCount > 2 && lineNumbers[0].lineNumber == 0) {
-        lineNumbers[0].lineNumber = lineNumbers[1].lineNumber;
-      }
       for (i = 1; i < lineNumberDebugInfoCount; i++) {
         p = lineNumbers[i].startPC - lineNumbers[i - 1].startPC;
         l = lineNumbers[i].lineNumber - lineNumbers[i - 1].lineNumber;
