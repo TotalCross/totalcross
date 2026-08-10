@@ -177,7 +177,7 @@ def update_review(manifest: dict[str, object], decision: str) -> None:
 
 def validator_command(audit_id: str, targets: list[str], fix: bool) -> list[str]:
     command = [
-        sys.executable, str(VALIDATOR), "--audit-id", audit_id,
+        sys.executable, str(VALIDATOR), "--check", "headers", "--audit-id", audit_id,
         "--require-provenance-snapshots",
     ]
     if fix:
