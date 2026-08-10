@@ -556,6 +556,28 @@ tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
     }
 }
 
+tasks.register('captureTcmBoundaryBaseline', JavaExec) {
+    group = 'verification'
+    description = 'Captures TCM boundary work and timing for the aggregate modern Java smoke conversion.'
+    dependsOn 'testClasses', 'copySdkDependencies', 'compileModernJavaFeatureSmoke'
+
+    def mode = providers.gradleProperty('tcmBaselineMode').orElse('none')
+    def outputDir = layout.buildDirectory.dir('tcm-boundary/baseline')
+
+    mainClass = 'tc.tools.converter.metadata.TcmBoundaryBaselineMain'
+    classpath = sourceSets.test.runtimeClasspath + files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir featureSmokeClassesDir.get().asFile
+    args = [
+        'modernjava/FeatureSmokeApp.class',
+        mode.get(),
+        outputDir.get().asFile.absolutePath,
+        '3',
+        '10'
+    ]
+}
+
 
 tasks.register('deployLambdaLoweringFixesRepro', JavaExec) {
     group = 'verification'
