@@ -93,9 +93,10 @@ reproduced; do not reopen completed plans by default.
 - [x] (2026-08-10) Milestone 1: separated JVM slot width from TC register-bank
   choice, removed the warning infrastructure, passed the complete static/instance
   matrix, and closed with deploy plus native macOS smoke at `7c960237f`.
-- [ ] Milestone 2: fix confirmed J2TC compatibility bugs from the ProGuard
-  experiment and classify non-bugs; close with the relevant ProGuard/converter
-  reproduction and smoke/deploy validation.
+- [x] (2026-08-10) Milestone 2: fixed sparse line lookup, inherited declaration
+  resolution, and handler-entry stack initialization; verified and classified
+  transformed replacement descriptors/generated names as unsupported contracts;
+  passed focused corpus rechecks, distribution, deploy, and native smoke.
 - [ ] Milestone 3: introduce the in-memory semantic-preservation model required by
   TCM without changing TCZ serialization.
 - [ ] Milestone 4: implement deterministic optional TCM v1 emission and reading,
