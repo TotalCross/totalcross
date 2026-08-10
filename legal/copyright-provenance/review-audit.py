@@ -33,7 +33,7 @@ from provenance import (  # noqa: E402
     write_json,
 )
 
-VALIDATOR = Path("scripts/validate-copyright-headers.sh")
+VALIDATOR = Path("scripts/validate-source-files.py")
 AUDIT_TOOL = Path("legal/copyright-provenance/audit-code-provenance.py")
 REVIEW_TOOL = Path("legal/copyright-provenance/review-audit.py")
 COMMON_TOOL = Path("legal/copyright-provenance/provenance.py")
