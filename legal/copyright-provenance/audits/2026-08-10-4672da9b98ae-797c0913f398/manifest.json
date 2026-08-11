@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 4,
+  "auditId": "2026-08-10-4672da9b98ae-797c0913f398",
+  "reviewStatus": "approved",
+  "createdAt": "2026-08-10T21:17:21.486035-03:00",
+  "initialRevision": "4672da9b98ae3196cf49d8b410b14170ef6f1877",
+  "finalRevision": "797c0913f398c1ac81e8061828376b4d81b418a7",
+  "mode": "automatic",
+  "requestedSourcePath": null,
+  "automaticSourcePolicy": "changed-or-removed-only",
+  "responsibilityTransferPolicy": "disabled",
+  "tool": {
+    "path": "legal/copyright-provenance/audit-code-provenance.py",
+    "sha256": "494d22bee93de217cba5626eb8c1c36ebacd9b31a5fafe0c12c2b82331b5adc8",
+    "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 legal/copyright-provenance/audit-code-provenance.py 4672da9b98ae 797c0913f398c1ac81e8061828376b4d81b418a7"
+  },
+  "targetAssignments": [
+    {
+      "targetPath": "TotalCrossSDK/src/test/java/tc/tools/converter/MethodDeclarationResolverTest.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/InheritedInvocationOwnerTest.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": [
+        {
+          "sourcePath": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+          "classification": "partial-inherited",
+          "confidence": "medium",
+          "score": 0.164314
+        }
+      ]
+    },
+    {
+      "targetPath": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+      "selectedSources": [
+        {
+          "sourcePath": "TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/InheritedInvocationOwnerTest.java",
+          "role": "primary"
+        }
+      ],
+      "rejectedAlternatives": []
+    }
+  ],
+  "results": [
+    {
+      "sourcePath": "TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/InheritedInvocationOwnerTest.java",
+      "sourceBlob": "0818694287025d1e0cbfef42f1c47a789422e825",
+      "sourceCodeFingerprint": "b07c6cec58d9436d85027bb86ad8ed6a4b986d592c904c16bee6f7b115f357a2",
+      "evidence": "evidence/TotalCrossSDK.src.test.java.tc.tools.converter.modernjava.InheritedInvocationOwnerTest.json",
+      "report": "reports/TotalCrossSDK.src.test.java.tc.tools.converter.modernjava.InheritedInvocationOwnerTest.md",
+      "finalTargets": [
+        {
+          "path": "TotalCrossSDK/src/test/java/tc/tools/converter/MethodDeclarationResolverTest.java",
+          "blob": "2602f87540ebc1487ac566d00a4811d7594a94f0",
+          "codeFingerprint": "e2f88dd7ecaf5cd760234c7a2d751fe021837d1d3f363ad5a7941446f43b230c",
+          "classification": "partial-inherited",
+          "confidence": "medium",
+          "evidenceBasis": "transitive",
+          "evidenceScore": 0.222966,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        },
+        {
+          "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+          "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18",
+          "codeFingerprint": "0a698bc75eae41775dd7c4850512ae66e7b5fc5465e689e27aac2dbb63d89a94",
+          "classification": "inherited",
+          "confidence": "high",
+          "evidenceBasis": "direct",
+          "evidenceScore": 0.282334,
+          "assignmentRole": "primary",
+          "headerStatus": "preserved"
+        }
+      ],
+      "reviewCandidates": []
+    }
+  ],
+  "supersedes": [],
+  "reviewedAt": "2026-08-10T21:18:49.460946-03:00",
+  "reviewedBy": {
+    "name": "Fabio Sobral",
+    "email": "flsobral@gmail.com"
+  }
+}
