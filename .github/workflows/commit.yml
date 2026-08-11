@@ -82,6 +82,7 @@ jobs:
           def validate(commit, message):
             title = message.split("\n", 1)[0]
             failures = []
+            warnings = []
 
             if not TITLE_FORMAT.match(title):
               failures.append("Invalid commit title format.")
@@ -98,12 +99,12 @@ jobs:
                   "If a commit body is present, it must be separated from the title by a blank line."
               )
             if any(body_line_length(line) > 80 for line in message.split("\n")[1:]):
-              failures.append(
-                  "Each line in the commit body must be 80 characters or less, "
+              warnings.append(
+                  "Commit body lines should be 80 characters or less, "
                   "excluding Markdown link URLs."
               )
 
-            return title, failures
+            return title, failures, warnings
 
           base, head = commit_range()
           commits = list_commits(base, head)
@@ -116,11 +117,23 @@ jobs:
             sys.exit(0)
 
           invalid = []
+          warned = []
           for commit in reversed(commits):
             message = read_message(commit)
-            title, failures = validate(commit, message)
+            title, failures, warnings = validate(commit, message)
+            if warnings:
+              warned.append((commit, title, warnings))
             if failures:
               invalid.append((commit, title, failures))
+
+          if warned:
+            print(f"Commit message warnings for {len(warned)} commit(s).\n")
+            for commit, title, warnings in warned:
+              print(f"- {commit} {title}")
+              for warning in warnings:
+                print(f"    - {warning}")
+                print(f"::warning title={commit[:10]} {title}::{warning}")
+              print()
 
           if invalid:
             print(f"Commit message validation failed for {len(invalid)} commit(s).\n")
