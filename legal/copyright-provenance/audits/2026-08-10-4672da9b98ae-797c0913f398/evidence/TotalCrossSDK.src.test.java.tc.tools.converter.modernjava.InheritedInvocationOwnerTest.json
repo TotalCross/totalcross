@@ -1,0 +1,642 @@
+{
+  "schemaVersion": 4,
+  "source": {
+    "commit": "4672da9b98ae3196cf49d8b410b14170ef6f1877",
+    "path": "TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/InheritedInvocationOwnerTest.java",
+    "blob": "0818694287025d1e0cbfef42f1c47a789422e825"
+  },
+  "sourceCodeFingerprint": "b07c6cec58d9436d85027bb86ad8ed6a4b986d592c904c16bee6f7b115f357a2",
+  "sourceHeader": {
+    "status": "preserved",
+    "sourceNotices": [
+      {
+        "years": "2026",
+        "owner": "Amalgam Solucoes em TI Ltda"
+      }
+    ],
+    "targetNotices": [
+      {
+        "years": "2026",
+        "owner": "Amalgam Solucoes em TI Ltda"
+      }
+    ],
+    "missingNotices": [],
+    "spdx": true
+  },
+  "targets": [
+    {
+      "path": "TotalCrossSDK/src/test/java/tc/tools/converter/MethodDeclarationResolverTest.java",
+      "blob": "2602f87540ebc1487ac566d00a4811d7594a94f0",
+      "codeFingerprint": "e2f88dd7ecaf5cd760234c7a2d751fe021837d1d3f363ad5a7941446f43b230c",
+      "classification": "partial-inherited",
+      "confidence": "medium",
+      "evidenceBasis": "transitive",
+      "evidenceScore": 0.222966,
+      "assignmentRole": "primary",
+      "headerStatus": "preserved",
+      "effectiveEvidence": {
+        "classification": "partial-inherited",
+        "confidence": "medium",
+        "basis": "transitive",
+        "score": 0.22296613611051727
+      },
+      "directEvidence": {
+        "classification": "no-material-lineage",
+        "confidence": "none",
+        "score": 0.0,
+        "sourceCoverage": 0.0,
+        "targetCoverage": 0.0,
+        "sourceTokens": 659,
+        "targetTokens": 946,
+        "matchedSourceTokens": 0,
+        "matchedTargetTokens": 0,
+        "matches": []
+      },
+      "reviewSignal": null,
+      "header": {
+        "status": "preserved",
+        "sourceNotices": [
+          {
+            "years": "2026",
+            "owner": "Amalgam Solucoes em TI Ltda"
+          }
+        ],
+        "targetNotices": [
+          {
+            "years": "2026",
+            "owner": "Amalgam Solucoes em TI Ltda"
+          }
+        ],
+        "missingNotices": [],
+        "spdx": true
+      },
+      "lineage": {
+        "nodes": [
+          {
+            "commit": "4672da9b98ae3196cf49d8b410b14170ef6f1877",
+            "path": "TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/InheritedInvocationOwnerTest.java",
+            "blob": "0818694287025d1e0cbfef42f1c47a789422e825"
+          },
+          {
+            "commit": "d25e8e3bf050dd28ced951729e349dcb4d0a6f24",
+            "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+            "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18"
+          },
+          {
+            "commit": "e161158ed72f572e295f033164e5515e9951a85c",
+            "path": "TotalCrossSDK/src/test/java/tc/tools/converter/MethodDeclarationResolverTest.java",
+            "blob": "2602f87540ebc1487ac566d00a4811d7594a94f0"
+          },
+          {
+            "commit": "797c0913f398c1ac81e8061828376b4d81b418a7",
+            "path": "TotalCrossSDK/src/test/java/tc/tools/converter/MethodDeclarationResolverTest.java",
+            "blob": "2602f87540ebc1487ac566d00a4811d7594a94f0"
+          }
+        ],
+        "edges": [
+          {
+            "source": {
+              "commit": "4672da9b98ae3196cf49d8b410b14170ef6f1877",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/InheritedInvocationOwnerTest.java",
+              "blob": "0818694287025d1e0cbfef42f1c47a789422e825"
+            },
+            "target": {
+              "commit": "d25e8e3bf050dd28ced951729e349dcb4d0a6f24",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+              "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18"
+            },
+            "reason": "similarity",
+            "supportsLineage": true,
+            "similarity": {
+              "classification": "inherited",
+              "confidence": "high",
+              "score": 0.282334,
+              "sourceCoverage": 0.179059,
+              "targetCoverage": 0.124146,
+              "sourceTokens": 659,
+              "targetTokens": 1756,
+              "matchedSourceTokens": 118,
+              "matchedTargetTokens": 218,
+              "matches": [
+                {
+                  "kind": "adapted",
+                  "confidence": "high",
+                  "score": 0.762481,
+                  "estimatedMatchedTokens": 41,
+                  "exactRatio": 0.796117,
+                  "structuralRatio": 0.951456,
+                  "longestExactBlock": 12,
+                  "longestStructuralBlock": 31,
+                  "source": {
+                    "first": 82,
+                    "last": 89,
+                    "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+                    "tokens": 54
+                  },
+                  "target": {
+                    "first": 130,
+                    "last": 137,
+                    "signature": "CompilationMetadataCaptureTest: private static MethodMetadata method ( ClassMetadata type , String name )",
+                    "tokens": 49
+                  }
+                },
+                {
+                  "kind": "adapted",
+                  "confidence": "high",
+                  "score": 0.719247,
+                  "estimatedMatchedTokens": 37,
+                  "exactRatio": 0.718447,
+                  "structuralRatio": 0.951456,
+                  "longestExactBlock": 8,
+                  "longestStructuralBlock": 31,
+                  "source": {
+                    "first": 82,
+                    "last": 89,
+                    "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+                    "tokens": 54
+                  },
+                  "target": {
+                    "first": 139,
+                    "last": 146,
+                    "signature": "CompilationMetadataCaptureTest: private static CallSiteMetadata call ( MethodMetadata method , String name )",
+                    "tokens": 49
+                  }
+                },
+                {
+                  "kind": "adapted",
+                  "confidence": "high",
+                  "score": 0.692128,
+                  "estimatedMatchedTokens": 34,
+                  "exactRatio": 0.660194,
+                  "structuralRatio": 0.951456,
+                  "longestExactBlock": 7,
+                  "longestStructuralBlock": 31,
+                  "source": {
+                    "first": 82,
+                    "last": 89,
+                    "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+                    "tokens": 54
+                  },
+                  "target": {
+                    "first": 148,
+                    "last": 155,
+                    "signature": "CompilationMetadataCaptureTest: private static OriginRange allocation ( MethodMetadata method , String type )",
+                    "tokens": 49
+                  }
+                },
+                {
+                  "kind": "adapted",
+                  "confidence": "medium",
+                  "score": 0.610513,
+                  "estimatedMatchedTokens": 29,
+                  "exactRatio": 0.58,
+                  "structuralRatio": 0.88,
+                  "longestExactBlock": 7,
+                  "longestStructuralBlock": 18,
+                  "source": {
+                    "first": 82,
+                    "last": 89,
+                    "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+                    "tokens": 54
+                  },
+                  "target": {
+                    "first": 157,
+                    "last": 164,
+                    "signature": "CompilationMetadataCaptureTest: private static OriginRange origin ( MethodMetadata method , int javaOpcode )",
+                    "tokens": 46
+                  }
+                },
+                {
+                  "kind": "copied-fragment",
+                  "confidence": "medium",
+                  "score": 0.244017,
+                  "estimatedMatchedTokens": 77,
+                  "exactRatio": 0.186215,
+                  "structuralRatio": 0.203144,
+                  "longestExactBlock": 35,
+                  "longestStructuralBlock": 35,
+                  "source": {
+                    "first": 91,
+                    "last": 98,
+                    "signature": "InheritedInvocationOwnerTest: private static byte [ ] fixtureClass ( )",
+                    "tokens": 85
+                  },
+                  "target": {
+                    "first": 166,
+                    "last": 250,
+                    "signature": "CompilationMetadataCaptureTest: private static byte [ ] fixtureClass ( )",
+                    "tokens": 742
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "source": {
+              "commit": "d25e8e3bf050dd28ced951729e349dcb4d0a6f24",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+              "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18"
+            },
+            "target": {
+              "commit": "e161158ed72f572e295f033164e5515e9951a85c",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/MethodDeclarationResolverTest.java",
+              "blob": "2602f87540ebc1487ac566d00a4811d7594a94f0"
+            },
+            "reason": "similarity",
+            "supportsLineage": true,
+            "similarity": {
+              "classification": "partial-inherited",
+              "confidence": "medium",
+              "score": 0.163599,
+              "sourceCoverage": 0.068907,
+              "targetCoverage": 0.127907,
+              "sourceTokens": 1756,
+              "targetTokens": 946,
+              "matchedSourceTokens": 121,
+              "matchedTargetTokens": 121,
+              "matches": [
+                {
+                  "kind": "adapted-fragment",
+                  "confidence": "medium",
+                  "score": 0.296047,
+                  "estimatedMatchedTokens": 121,
+                  "exactRatio": 0.275313,
+                  "structuralRatio": 0.311718,
+                  "longestExactBlock": 19,
+                  "longestStructuralBlock": 73,
+                  "source": {
+                    "first": 166,
+                    "last": 250,
+                    "signature": "CompilationMetadataCaptureTest: private static byte [ ] fixtureClass ( )",
+                    "tokens": 742
+                  },
+                  "target": {
+                    "first": 144,
+                    "last": 157,
+                    "signature": "MethodDeclarationResolverTest: private static byte [ ] caller ( )",
+                    "tokens": 137
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "source": {
+              "commit": "e161158ed72f572e295f033164e5515e9951a85c",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/MethodDeclarationResolverTest.java",
+              "blob": "2602f87540ebc1487ac566d00a4811d7594a94f0"
+            },
+            "target": {
+              "commit": "797c0913f398c1ac81e8061828376b4d81b418a7",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/MethodDeclarationResolverTest.java",
+              "blob": "2602f87540ebc1487ac566d00a4811d7594a94f0"
+            },
+            "reason": "unchanged-to-final",
+            "supportsLineage": false,
+            "similarity": null
+          }
+        ]
+      },
+      "rejectedAlternatives": [
+        {
+          "sourcePath": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+          "classification": "partial-inherited",
+          "confidence": "medium",
+          "score": 0.164314
+        }
+      ]
+    },
+    {
+      "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+      "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18",
+      "codeFingerprint": "0a698bc75eae41775dd7c4850512ae66e7b5fc5465e689e27aac2dbb63d89a94",
+      "classification": "inherited",
+      "confidence": "high",
+      "evidenceBasis": "direct",
+      "evidenceScore": 0.282334,
+      "assignmentRole": "primary",
+      "headerStatus": "preserved",
+      "effectiveEvidence": {
+        "classification": "inherited",
+        "confidence": "high",
+        "basis": "direct",
+        "score": 0.2823335253997284
+      },
+      "directEvidence": {
+        "classification": "inherited",
+        "confidence": "high",
+        "score": 0.282334,
+        "sourceCoverage": 0.179059,
+        "targetCoverage": 0.124146,
+        "sourceTokens": 659,
+        "targetTokens": 1756,
+        "matchedSourceTokens": 118,
+        "matchedTargetTokens": 218,
+        "matches": [
+          {
+            "kind": "adapted",
+            "confidence": "high",
+            "score": 0.762481,
+            "estimatedMatchedTokens": 41,
+            "exactRatio": 0.796117,
+            "structuralRatio": 0.951456,
+            "longestExactBlock": 12,
+            "longestStructuralBlock": 31,
+            "source": {
+              "first": 82,
+              "last": 89,
+              "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+              "tokens": 54
+            },
+            "target": {
+              "first": 130,
+              "last": 137,
+              "signature": "CompilationMetadataCaptureTest: private static MethodMetadata method ( ClassMetadata type , String name )",
+              "tokens": 49
+            }
+          },
+          {
+            "kind": "adapted",
+            "confidence": "high",
+            "score": 0.719247,
+            "estimatedMatchedTokens": 37,
+            "exactRatio": 0.718447,
+            "structuralRatio": 0.951456,
+            "longestExactBlock": 8,
+            "longestStructuralBlock": 31,
+            "source": {
+              "first": 82,
+              "last": 89,
+              "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+              "tokens": 54
+            },
+            "target": {
+              "first": 139,
+              "last": 146,
+              "signature": "CompilationMetadataCaptureTest: private static CallSiteMetadata call ( MethodMetadata method , String name )",
+              "tokens": 49
+            }
+          },
+          {
+            "kind": "adapted",
+            "confidence": "high",
+            "score": 0.692128,
+            "estimatedMatchedTokens": 34,
+            "exactRatio": 0.660194,
+            "structuralRatio": 0.951456,
+            "longestExactBlock": 7,
+            "longestStructuralBlock": 31,
+            "source": {
+              "first": 82,
+              "last": 89,
+              "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+              "tokens": 54
+            },
+            "target": {
+              "first": 148,
+              "last": 155,
+              "signature": "CompilationMetadataCaptureTest: private static OriginRange allocation ( MethodMetadata method , String type )",
+              "tokens": 49
+            }
+          },
+          {
+            "kind": "adapted",
+            "confidence": "medium",
+            "score": 0.610513,
+            "estimatedMatchedTokens": 29,
+            "exactRatio": 0.58,
+            "structuralRatio": 0.88,
+            "longestExactBlock": 7,
+            "longestStructuralBlock": 18,
+            "source": {
+              "first": 82,
+              "last": 89,
+              "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+              "tokens": 54
+            },
+            "target": {
+              "first": 157,
+              "last": 164,
+              "signature": "CompilationMetadataCaptureTest: private static OriginRange origin ( MethodMetadata method , int javaOpcode )",
+              "tokens": 46
+            }
+          },
+          {
+            "kind": "copied-fragment",
+            "confidence": "medium",
+            "score": 0.244017,
+            "estimatedMatchedTokens": 77,
+            "exactRatio": 0.186215,
+            "structuralRatio": 0.203144,
+            "longestExactBlock": 35,
+            "longestStructuralBlock": 35,
+            "source": {
+              "first": 91,
+              "last": 98,
+              "signature": "InheritedInvocationOwnerTest: private static byte [ ] fixtureClass ( )",
+              "tokens": 85
+            },
+            "target": {
+              "first": 166,
+              "last": 250,
+              "signature": "CompilationMetadataCaptureTest: private static byte [ ] fixtureClass ( )",
+              "tokens": 742
+            }
+          }
+        ]
+      },
+      "reviewSignal": null,
+      "header": {
+        "status": "preserved",
+        "sourceNotices": [
+          {
+            "years": "2026",
+            "owner": "Amalgam Solucoes em TI Ltda"
+          }
+        ],
+        "targetNotices": [
+          {
+            "years": "2026",
+            "owner": "Amalgam Solucoes em TI Ltda"
+          }
+        ],
+        "missingNotices": [],
+        "spdx": true
+      },
+      "lineage": {
+        "nodes": [
+          {
+            "commit": "4672da9b98ae3196cf49d8b410b14170ef6f1877",
+            "path": "TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/InheritedInvocationOwnerTest.java",
+            "blob": "0818694287025d1e0cbfef42f1c47a789422e825"
+          },
+          {
+            "commit": "d25e8e3bf050dd28ced951729e349dcb4d0a6f24",
+            "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+            "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18"
+          },
+          {
+            "commit": "797c0913f398c1ac81e8061828376b4d81b418a7",
+            "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+            "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18"
+          }
+        ],
+        "edges": [
+          {
+            "source": {
+              "commit": "4672da9b98ae3196cf49d8b410b14170ef6f1877",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/modernjava/InheritedInvocationOwnerTest.java",
+              "blob": "0818694287025d1e0cbfef42f1c47a789422e825"
+            },
+            "target": {
+              "commit": "d25e8e3bf050dd28ced951729e349dcb4d0a6f24",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+              "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18"
+            },
+            "reason": "similarity",
+            "supportsLineage": true,
+            "similarity": {
+              "classification": "inherited",
+              "confidence": "high",
+              "score": 0.282334,
+              "sourceCoverage": 0.179059,
+              "targetCoverage": 0.124146,
+              "sourceTokens": 659,
+              "targetTokens": 1756,
+              "matchedSourceTokens": 118,
+              "matchedTargetTokens": 218,
+              "matches": [
+                {
+                  "kind": "adapted",
+                  "confidence": "high",
+                  "score": 0.762481,
+                  "estimatedMatchedTokens": 41,
+                  "exactRatio": 0.796117,
+                  "structuralRatio": 0.951456,
+                  "longestExactBlock": 12,
+                  "longestStructuralBlock": 31,
+                  "source": {
+                    "first": 82,
+                    "last": 89,
+                    "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+                    "tokens": 54
+                  },
+                  "target": {
+                    "first": 130,
+                    "last": 137,
+                    "signature": "CompilationMetadataCaptureTest: private static MethodMetadata method ( ClassMetadata type , String name )",
+                    "tokens": 49
+                  }
+                },
+                {
+                  "kind": "adapted",
+                  "confidence": "high",
+                  "score": 0.719247,
+                  "estimatedMatchedTokens": 37,
+                  "exactRatio": 0.718447,
+                  "structuralRatio": 0.951456,
+                  "longestExactBlock": 8,
+                  "longestStructuralBlock": 31,
+                  "source": {
+                    "first": 82,
+                    "last": 89,
+                    "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+                    "tokens": 54
+                  },
+                  "target": {
+                    "first": 139,
+                    "last": 146,
+                    "signature": "CompilationMetadataCaptureTest: private static CallSiteMetadata call ( MethodMetadata method , String name )",
+                    "tokens": 49
+                  }
+                },
+                {
+                  "kind": "adapted",
+                  "confidence": "high",
+                  "score": 0.692128,
+                  "estimatedMatchedTokens": 34,
+                  "exactRatio": 0.660194,
+                  "structuralRatio": 0.951456,
+                  "longestExactBlock": 7,
+                  "longestStructuralBlock": 31,
+                  "source": {
+                    "first": 82,
+                    "last": 89,
+                    "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+                    "tokens": 54
+                  },
+                  "target": {
+                    "first": 148,
+                    "last": 155,
+                    "signature": "CompilationMetadataCaptureTest: private static OriginRange allocation ( MethodMetadata method , String type )",
+                    "tokens": 49
+                  }
+                },
+                {
+                  "kind": "adapted",
+                  "confidence": "medium",
+                  "score": 0.610513,
+                  "estimatedMatchedTokens": 29,
+                  "exactRatio": 0.58,
+                  "structuralRatio": 0.88,
+                  "longestExactBlock": 7,
+                  "longestStructuralBlock": 18,
+                  "source": {
+                    "first": 82,
+                    "last": 89,
+                    "signature": "InheritedInvocationOwnerTest: private static TCMethod findMethod ( TCClass converted , String name )",
+                    "tokens": 54
+                  },
+                  "target": {
+                    "first": 157,
+                    "last": 164,
+                    "signature": "CompilationMetadataCaptureTest: private static OriginRange origin ( MethodMetadata method , int javaOpcode )",
+                    "tokens": 46
+                  }
+                },
+                {
+                  "kind": "copied-fragment",
+                  "confidence": "medium",
+                  "score": 0.244017,
+                  "estimatedMatchedTokens": 77,
+                  "exactRatio": 0.186215,
+                  "structuralRatio": 0.203144,
+                  "longestExactBlock": 35,
+                  "longestStructuralBlock": 35,
+                  "source": {
+                    "first": 91,
+                    "last": 98,
+                    "signature": "InheritedInvocationOwnerTest: private static byte [ ] fixtureClass ( )",
+                    "tokens": 85
+                  },
+                  "target": {
+                    "first": 166,
+                    "last": 250,
+                    "signature": "CompilationMetadataCaptureTest: private static byte [ ] fixtureClass ( )",
+                    "tokens": 742
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "source": {
+              "commit": "d25e8e3bf050dd28ced951729e349dcb4d0a6f24",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+              "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18"
+            },
+            "target": {
+              "commit": "797c0913f398c1ac81e8061828376b4d81b418a7",
+              "path": "TotalCrossSDK/src/test/java/tc/tools/converter/metadata/CompilationMetadataCaptureTest.java",
+              "blob": "b6c5ff471ff29adddb68773a78c32779dfdb6a18"
+            },
+            "reason": "unchanged-to-final",
+            "supportsLineage": false,
+            "similarity": null
+          }
+        ]
+      },
+      "rejectedAlternatives": []
+    }
+  ]
+}
