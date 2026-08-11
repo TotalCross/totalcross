@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Purpose
 
-Issue #422 asked two distinct questions:
+Work under Issue #422 evolved into two distinct but related research questions:
 
 - **Runtime JIT/AOT:** can TC bytecode become a verified IR for interpreter,
   JIT, or AOT paths while TCZ and legacy fallback remain compatible?
@@ -92,6 +92,33 @@ runtime corpus is not representative applications.
 - optional TCM precision work such as unresolved-call analysis or further
   declaration-resolution refinement.
 
+## Known residuals before stronger optimizer/AOT use
+
+These are known future-use constraints, not unfinished acceptance criteria for
+the completed Issue #422 research. None blocks reintegration of this branch.
+
+- **Permanent TCM v1 compatibility fixture:** historical compatibility passed
+  against a frozen fixture, but it remains external/build-local and its test is
+  skipped unless `TCM_V1_FIXTURE_DIR` is set. A small immutable committed
+  fixture in normal CI remains desirable before long-term format evolution.
+- **Program-to-device hierarchy transition:** program-class traversal does not
+  explicitly bridge an application superclass edge into the mapped hierarchy,
+  as in `MyProperties -> java.util.Properties -> java.util.Hashtable.put`.
+  This does not block the field optimizer, but must be resolved or treated
+  conservatively before CHA, devirtualization, or aggressive AOT relies on
+  declaration ownership.
+- **Full JVM descriptor precision:** device declaration matching currently uses
+  parameter compatibility rather than the full descriptor including return
+  type. Harden this before bridge, covariant, or synthetic method cases become
+  optimizer authority.
+- **Remaining unresolved calls:** classify intentional native, replacement,
+  dynamic, external, and generated cases separately from resolver gaps before
+  using call/declaration metadata for devirtualization, inlining, or aggressive
+  AOT. Until then, unresolved cases must remain conservative.
+
+For exact validation and measurements, see the [hardening editorial](harden-tcm-j2tc-boundary-editorial.md)
+and [hardening evidence](../evidence/harden-tcm-j2tc-boundary-01.jsonl).
+
 ## Recommended order
 
 1. Gather representative application evidence when optimization resumes.
@@ -144,7 +171,7 @@ Deferred runtime work is scoped by the [TCIR continuation plan](../exec-plan-exp
 
 - Issue: **#422**.
 - Source branch: `feature/422-create-ir-for-jniaot`.
-- Research/provenance revision immediately before this handoff commit:
+- Final research/provenance revision:
   `de87b35d35dd67a2119a51760ca32c7d85896cf4`.
 - Required copyright-provenance work before reintegration is complete there.
 - The branch is closing intentionally so unrelated priorities can proceed;
