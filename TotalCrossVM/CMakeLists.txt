@@ -352,7 +352,7 @@ if(TC_ENABLE_SLJIT_JIT)
     C_STANDARD_REQUIRED YES
     C_EXTENSIONS NO
   )
-  target_link_libraries(tcvm tcir_jit)
+  target_link_libraries(tcvm PRIVATE tcir_jit)
 endif()
 
 if(NOT USE_MADLER_ZLIB)

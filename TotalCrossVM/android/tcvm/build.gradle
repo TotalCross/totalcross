@@ -338,7 +338,7 @@ android {
                 abiFilters nativeAndroidAbis as String[]
                 arguments (
                     "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF",
-                    "-DTC_ENABLE_SLJIT_JIT=ON",
+                    "-DTC_ENABLE_SLJIT_JIT=OFF",
                     "-DTC_JNI_HEADER_DIR=${jniHeaderDir.absolutePath}"
                 )
                 cppFlags "-std=c++14", "-DSK_GL"
