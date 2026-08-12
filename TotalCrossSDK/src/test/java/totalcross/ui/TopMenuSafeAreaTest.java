@@ -14,9 +14,12 @@ import org.junit.jupiter.api.Test;
 
 import totalcross.Launcher;
 import totalcross.sys.Settings;
+import totalcross.ui.gfx.Rect;
 
 class TopMenuSafeAreaTest {
-  private Insets original;
+  private Insets originalInsets;
+  private int originalWidth;
+  private int originalHeight;
 
   @BeforeAll
   static void initializeUi() {
@@ -28,106 +31,96 @@ class TopMenuSafeAreaTest {
   @BeforeEach
   void setSafeArea() {
     Insets safe = Window.getSafeAreaInsets();
-    original = new Insets(safe.top, safe.left, safe.bottom, safe.right);
-    Window.zStack.removeAllElements();
+    originalInsets = new Insets(safe.top, safe.left, safe.bottom, safe.right);
+    originalWidth = Settings.screenWidth;
+    originalHeight = Settings.screenHeight;
+    Settings.screenWidth = 320;
+    Settings.screenHeight = 640;
     Window._updateSafeAreaInsets(10, 20, 30, 40);
   }
 
   @AfterEach
   void restoreSafeArea() {
-    Window.zStack.removeAllElements();
-    Window._updateSafeAreaInsets(original.top, original.left, original.bottom, original.right);
+    Window._updateSafeAreaInsets(originalInsets.top, originalInsets.left,
+        originalInsets.bottom, originalInsets.right);
+    Settings.screenWidth = originalWidth;
+    Settings.screenHeight = originalHeight;
   }
 
   @Test
-  void attachedEdgesFollowAnimationDirection() {
+  void directionsMapToOnlyTheirAttachedSafeEdges() {
     assertEquals(SafeAreaEdges.TOP | SafeAreaEdges.LEFT | SafeAreaEdges.BOTTOM,
-        new TopMenu(new Control[0], Control.LEFT).getAttachedSafeAreaEdges());
+        bareMenu(Control.LEFT).getAttachedSafeAreaEdges());
     assertEquals(SafeAreaEdges.TOP | SafeAreaEdges.RIGHT | SafeAreaEdges.BOTTOM,
-        new TopMenu(new Control[0], Control.RIGHT).getAttachedSafeAreaEdges());
+        bareMenu(Control.RIGHT).getAttachedSafeAreaEdges());
     assertEquals(SafeAreaEdges.TOP | SafeAreaEdges.LEFT | SafeAreaEdges.RIGHT,
-        new TopMenu(new Control[0], Control.TOP).getAttachedSafeAreaEdges());
+        bareMenu(Control.TOP).getAttachedSafeAreaEdges());
     assertEquals(SafeAreaEdges.BOTTOM | SafeAreaEdges.LEFT | SafeAreaEdges.RIGHT,
-        new TopMenu(new Control[0], Control.BOTTOM).getAttachedSafeAreaEdges());
+        bareMenu(Control.BOTTOM).getAttachedSafeAreaEdges());
+    assertEquals(SafeAreaEdges.ALL,
+        bareMenu(Control.CENTER).getAttachedSafeAreaEdges());
   }
 
   @Test
-  void redditReservesBothBars() {
-    TopMenu menu = menu(TopMenu.ScrollUnderMode.NONE);
-    assertLayout(menu, 40, 290, 0, 0);
+  void fixedBarsConsumeInsetsOnlyOnAttachedEdges() {
+    TopMenu left = menu(Control.LEFT, TopMenu.ScrollUnderMode.NONE);
+    assertEquals(new Rect(0, 0, 200, 40), left.topBarHost.getRect());
+    assertEquals(new Rect(20, 10, 180, 30), left.getTopBar().getRect());
+    assertEquals(new Rect(0, 530, 200, 70), left.bottomBarHost.getRect());
+    assertEquals(new Rect(20, 0, 180, 40), left.getBottomBar().getRect());
+
+    TopMenu right = menu(Control.RIGHT, TopMenu.ScrollUnderMode.NONE);
+    assertEquals(new Rect(0, 0, 200, 40), right.topBarHost.getRect());
+    assertEquals(new Rect(0, 10, 160, 30), right.getTopBar().getRect());
+    assertEquals(new Rect(0, 530, 200, 70), right.bottomBarHost.getRect());
+    assertEquals(new Rect(0, 0, 160, 40), right.getBottomBar().getRect());
   }
 
   @Test
-  void chatGptScrollsUnderTopAndReservesBottom() {
-    TopMenu menu = menu(TopMenu.ScrollUnderMode.TOP);
-    assertLayout(menu, 0, 330, 40, 0);
+  void fixedBarModesKeepLegacyBodyGeometrySafeAware() {
+    assertLayout(TopMenu.ScrollUnderMode.NONE, 40, 490, 0, 0);
+    assertLayout(TopMenu.ScrollUnderMode.TOP, 0, 530, 40, 0);
+    assertLayout(TopMenu.ScrollUnderMode.BOTTOM, 40, 560, 0, 70);
+    assertLayout(TopMenu.ScrollUnderMode.BOTH, 0, 600, 40, 70);
   }
 
   @Test
-  void gmailReservesTopAndScrollsUnderBottom() {
-    TopMenu menu = menu(TopMenu.ScrollUnderMode.BOTTOM);
-    assertLayout(menu, 40, 360, 0, 70);
-  }
-
-  @Test
-  void bothKeepsFullViewportAndInsetsBothContentEdges() {
-    TopMenu menu = menu(TopMenu.ScrollUnderMode.BOTH);
-    assertLayout(menu, 0, 400, 40, 70);
-  }
-
-  @Test
-  void dynamicSafeAreaUpdatesBarsAndViewportWithoutRecreatingBody() {
-    TopMenu menu = menu(TopMenu.ScrollUnderMode.NONE);
+  void resizeReusesBodyAndRebuildsSafeBarPadding() {
+    TopMenu menu = menu(Control.LEFT, TopMenu.ScrollUnderMode.NONE);
     ScrollContainer body = menu.bodyScroller;
-    Window.zStack.push(menu);
 
-    Window._updateSafeAreaInsets(15, 25, 35, 45);
+    Window._updateSafeAreaInsets(12, 24, 32, 44);
+    menu.screenResized();
 
     assertSame(body, menu.bodyScroller);
-    assertLayout(menu, 45, 280, 0, 0);
-    assertEquals(25, menu.getTopBar().getX());
-    assertEquals(15, menu.getTopBar().getY());
-    assertEquals(25, menu.getBottomBar().getX());
+    assertEquals(new Rect(0, 42, 200, 482), body.getRect());
+    assertEquals(new Rect(24, 12, 176, 30), menu.getTopBar().getRect());
+    assertEquals(new Rect(24, 0, 176, 40), menu.getBottomBar().getRect());
   }
 
-  @Test
-  void sideMenuForwardsFixedBarsAndLayoutPreset() {
-    SideMenuContainer side = new SideMenuContainer(null, new Control[0]);
-    Spacer top = new Spacer(10, 30);
-    Spacer bottom = new Spacer(10, 40);
-
-    side.setTopBar(top);
-    side.setBottomBar(bottom);
-    side.setScrollUnderMode(TopMenu.ScrollUnderMode.BOTTOM);
-
-    assertSame(top, side.getTopBar());
-    assertSame(bottom, side.getBottomBar());
-  }
-
-  private static TopMenu menu(TopMenu.ScrollUnderMode mode) {
-    TopMenu menu = new TopMenu(new Control[] { new Spacer(20, 500) }, Control.LEFT, Window.NO_BORDER);
-    menu.setTopBar(new Spacer(10, 30));
-    menu.setBottomBar(new Spacer(10, 40));
-    menu.setScrollUnderMode(mode);
-    menu.setRect(0, 0, 200, 400);
-    menu.initUI();
-    return menu;
-  }
-
-  private static void assertLayout(TopMenu menu, int bodyY, int bodyHeight, int topInset, int bottomInset) {
-    assertEquals(bodyY, menu.bodyScroller.y);
-    assertEquals(bodyHeight, menu.bodyScroller.height);
-    Insets safe = Window.getSafeAreaInsets();
-    assertEquals(30 + safe.top, menu.topBarHost.height);
-    assertEquals(40 + safe.bottom, menu.bottomBarHost.height);
-    assertEquals(safe.left, menu.getTopBar().getX());
-    assertEquals(safe.top, menu.getTopBar().getY());
-    assertEquals(safe.left, menu.getBottomBar().getX());
-    assertEquals(0, menu.getBottomBar().getY());
+  private void assertLayout(TopMenu.ScrollUnderMode mode, int bodyY, int bodyHeight,
+      int topInset, int bottomInset) {
+    TopMenu menu = menu(Control.LEFT, mode);
+    assertEquals(new Rect(0, bodyY, 200, bodyHeight), menu.bodyScroller.getRect());
     Insets content = new Insets();
     menu.bodyScroller.getContentInsets(content);
     assertEquals(topInset, content.top);
     assertEquals(bottomInset, content.bottom);
+  }
+
+  private static TopMenu menu(int direction, TopMenu.ScrollUnderMode mode) {
+    TopMenu menu = new TopMenu(new Control[] {new Spacer(20, 500)}, direction, Window.NO_BORDER);
+    menu.widthInPixels = 200;
+    menu.setTopBar(new Spacer(10, 30));
+    menu.setBottomBar(new Spacer(10, 40));
+    menu.setScrollUnderMode(mode);
+    menu.setRect(false);
+    menu.repositionChildren();
+    return menu;
+  }
+
+  private static TopMenu bareMenu(int direction) {
+    return new TopMenu(new Control[0], direction, Window.NO_BORDER);
   }
 
   private static final class TestMainWindow extends MainWindow {

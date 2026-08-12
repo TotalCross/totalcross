@@ -106,8 +106,9 @@ public class SideMenuContainer extends Container implements PenListener {
       topMenu.percWidth = 100;
     } else {
       // navigation drawer width - https://material.io/guidelines/patterns/navigation-drawer.html#navigation-drawer-specs
-      int screenWidthInDp = Settings.screenWidth;
-      topMenu.widthInPixels = Math.min(320, screenWidthInDp - BAR_HEIGHT_IN_DP);
+      Insets safe = Window.getSafeAreaInsets();
+      int safeWidth = Math.max(0, Settings.screenWidth - safe.left - safe.right);
+      topMenu.widthInPixels = Math.max(1, Math.min(320, safeWidth - BAR_HEIGHT_IN_DP));
     }
     topMenu.totalTime = 400;
     topMenu.autoClose = true;
