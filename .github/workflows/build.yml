@@ -36,6 +36,15 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Validate commit
+      uses: ./.github/actions/validate-commit
+      with:
+        event-name: ${{ github.event_name }}
+        push-before: ${{ github.event.before }}
+        push-after: ${{ github.sha }}
+        pr-base-sha: ${{ github.event.pull_request.base.sha }}
+        pr-head-sha: ${{ github.event.pull_request.head.sha }}
+
     - name: Pack source code
       run: tar --exclude=.git -czf "${RUNNER_TEMP}/source-code.tar.gz" .
 

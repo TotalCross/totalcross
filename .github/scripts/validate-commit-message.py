@@ -153,7 +153,7 @@ def main():
         return validate_messages([("message-file", message)])
 
     event_name = os.environ["EVENT_NAME"]
-    if event_name == "workflow_dispatch":
+    if event_name not in ("pull_request", "push"):
         head = os.environ["PUSH_AFTER"]
         commits = [head]
         range_label = head

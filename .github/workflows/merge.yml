@@ -12,10 +12,6 @@ on:
     branches: [ master ]
 
 jobs:
-  validate:
-    uses: ./.github/workflows/validate-commit.yml
-
   build:
-    needs: validate
     uses: ./.github/workflows/build.yml
     secrets: inherit

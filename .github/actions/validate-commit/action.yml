@@ -1,0 +1,76 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Validate commit
+description: Validate commit messages and copyright headers in the current checkout
+
+inputs:
+  event-name:
+    description: Name of the event that triggered the calling workflow
+    required: true
+  push-before:
+    description: Commit before a push
+    required: false
+    default: ""
+  push-after:
+    description: Commit after a push or current commit for manual validation
+    required: true
+  pr-base-sha:
+    description: Base commit of a pull request
+    required: false
+    default: ""
+  pr-head-sha:
+    description: Head commit of a pull request
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Validate commit messages
+      id: commit_messages
+      continue-on-error: true
+      env:
+        EVENT_NAME: ${{ inputs.event-name }}
+        PUSH_BEFORE: ${{ inputs.push-before }}
+        PUSH_AFTER: ${{ inputs.push-after }}
+        PR_BASE_SHA: ${{ inputs.pr-base-sha }}
+        PR_HEAD_SHA: ${{ inputs.pr-head-sha }}
+      shell: bash
+      run: python3 "${GITHUB_ACTION_PATH}/../../scripts/validate-commit-message.py"
+
+    - name: Validate copyright headers
+      id: copyright
+      continue-on-error: true
+      env:
+        EVENT_NAME: ${{ inputs.event-name }}
+        PUSH_BEFORE: ${{ inputs.push-before }}
+        PUSH_AFTER: ${{ inputs.push-after }}
+        PR_BASE_SHA: ${{ inputs.pr-base-sha }}
+        PR_HEAD_SHA: ${{ inputs.pr-head-sha }}
+      shell: bash
+      run: python3 "${GITHUB_WORKSPACE}/scripts/validate-copyright-headers.sh"
+
+    - name: Report validation results
+      if: always()
+      env:
+        COMMIT_MESSAGES_OUTCOME: ${{ steps.commit_messages.outcome }}
+        COPYRIGHT_OUTCOME: ${{ steps.copyright.outcome }}
+      shell: bash
+      run: |
+        {
+          printf '## Commit validation\n'
+          printf '%s\n' "- Commit messages: ${COMMIT_MESSAGES_OUTCOME}"
+          printf '%s\n' "- Copyright headers: ${COPYRIGHT_OUTCOME}"
+        } | tee -a "${GITHUB_STEP_SUMMARY}"
+
+        if [ "${COMMIT_MESSAGES_OUTCOME}" != "success" ]; then
+          echo "::error title=Commit-message validation failed::See the dedicated validation step above."
+        fi
+        if [ "${COPYRIGHT_OUTCOME}" != "success" ]; then
+          echo "::error title=Copyright validation failed::See the dedicated validation step above."
+        fi
+        if [ "${COMMIT_MESSAGES_OUTCOME}" != "success" ] || [ "${COPYRIGHT_OUTCOME}" != "success" ]; then
+          exit 1
+        fi
