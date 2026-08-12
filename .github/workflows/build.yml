@@ -157,12 +157,27 @@ jobs:
         done
 
         fetch_dep vcruntime windows x86 VCRUNTIME_GITHUB_TOKEN VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
+        vcruntime_runtime_dir="${depot_dir}/vcruntime/local/windows/x86"
+        printf '%s\0%s\0' \
+          "${VCRUNTIME_RELEASE_TAG:-vcruntime-14}" \
+          "${VCRUNTIME_GITHUB_REPO:-TotalCross/totalcross-depot-tools}" \
+          | sha256sum \
+          | cut -d ' ' -f 1 \
+          > "${vcruntime_runtime_dir}/totalcross-runtime-inputs.sha256"
         fetch_dep minizip-ng windows x64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
         fetch_dep minizip-ng windows arm64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
         fetch_dep minizip-ng ios-simulator arm64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
         fetch_dep axtls windows x64 AXTLS_GITHUB_TOKEN AXTLS_RELEASE_TAG AXTLS_GITHUB_REPO
         fetch_dep axtls windows arm64 AXTLS_GITHUB_TOKEN AXTLS_RELEASE_TAG AXTLS_GITHUB_REPO
         fetch_dep axtls ios-simulator arm64 AXTLS_GITHUB_TOKEN AXTLS_RELEASE_TAG AXTLS_GITHUB_REPO
+
+    - name: Upload SDK native runtime
+      uses: actions/upload-artifact@v7
+      with:
+        name: sdk-native-runtime
+        path: TotalCrossVM/deps/totalcross-depot-tools/vcruntime/local/windows/x86
+        if-no-files-found: error
+        retention-days: 1
 
     - name: Upload source code
       uses: actions/upload-artifact@v7
@@ -512,12 +527,11 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Restore depot tools cache
-      uses: actions/cache/restore@v5
+    - name: Download SDK native runtime
+      uses: actions/download-artifact@v7
       with:
-        path: TotalCrossVM/deps/totalcross-depot-tools
-        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
-        enableCrossOsArchive: true
+        name: sdk-native-runtime
+        path: TotalCrossVM/deps/totalcross-depot-tools/vcruntime/local/windows/x86
 
     - name: Setup JDK 17
       uses: actions/setup-java@v5
