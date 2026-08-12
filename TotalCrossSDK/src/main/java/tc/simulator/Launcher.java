@@ -348,6 +348,10 @@ public class Launcher extends SimulatorCore implements PreviewSession {
     launcher.parseApplicationArguments(config.getMainWindowClass(), config.getLauncherArgs());
     launcher.init();
     if (preview) {
+      if (launcher.mainWindow == null) {
+        throw new IllegalStateException(
+            "Failed to initialize preview MainWindow: " + config.getMainWindowClass());
+      }
       launcher.startApp();
       launcher.pumpEvents();
       // A headless consumer has no AWT paint callback to trigger the first frame.

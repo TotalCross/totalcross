@@ -243,6 +243,10 @@ tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.Japicmp
 
 test {
     useJUnitPlatform()
+    def awtHeadless = System.getProperty('java.awt.headless')
+    if (awtHeadless != null) {
+        systemProperty 'java.awt.headless', awtHeadless
+    }
     // Anonymous telemetry is disabled until its external service is replaced.
     exclude '**/AnonymousUserDataTest.class'
     testLogging {
