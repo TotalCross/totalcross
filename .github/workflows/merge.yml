@@ -1,3 +1,8 @@
+# Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
 name: Merge flow
 on:
   workflow_dispatch:
@@ -7,6 +12,10 @@ on:
     branches: [ master ]
 
 jobs:
+  validate:
+    uses: ./.github/workflows/validate-commit.yml
+
   build:
+    needs: validate
     uses: ./.github/workflows/build.yml
     secrets: inherit
