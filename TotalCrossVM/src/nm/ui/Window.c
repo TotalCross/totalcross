@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "Window.h"
+#include "WindowSafeArea.h"
 #include "GraphicsPrimitives.h"
 
 #if defined (WINCE) || defined (WIN32)

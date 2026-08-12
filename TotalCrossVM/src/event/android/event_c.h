@@ -8,7 +8,7 @@
 #include "specialkeys.h"
 #include "GraphicsPrimitives.h"
 #include "startup.h"
-#include "Window.h"
+#include "WindowSafeArea.h"
 
 bool isEssentialKey(int32 portableKey);
 

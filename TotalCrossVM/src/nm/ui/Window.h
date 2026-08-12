@@ -19,11 +19,4 @@ enum TCSIP
    SIP_DISABLE_NUMERICPAD = 10005
 };
 
-void windowUpdateSafeAreaInsetsPhysical(
-   Context currentContext,
-   int32 top,
-   int32 left,
-   int32 bottom,
-   int32 right);
-
 #endif
