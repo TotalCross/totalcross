@@ -10,7 +10,7 @@
 #include "../../nm/ui/darwin/mainview.h"
 #define Class __Class
 #include "GraphicsPrimitives.h"
-#include "Window.h"
+#include "WindowSafeArea.h"
 #define Context id
 #include "event.h"
 #undef Class
