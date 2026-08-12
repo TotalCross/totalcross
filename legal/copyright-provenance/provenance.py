@@ -149,6 +149,33 @@ def parse_notices(text: str) -> list[Notice]:
     return notices
 
 
+def parse_recorded_notices(value: object, context: str) -> list[Notice]:
+    """Parse source notices stored in immutable provenance evidence."""
+    if not isinstance(value, list) or not value:
+        raise ProvenanceError(f"missing source copyright notices: {context}")
+    notices: list[Notice] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise ProvenanceError(f"invalid source notice {index}: {context}")
+        years = item.get("years")
+        owner = item.get("owner")
+        if not isinstance(years, str) or not isinstance(owner, str):
+            raise ProvenanceError(f"invalid source notice {index}: {context}")
+        normalized_owner = normalize_owner(owner)
+        if not normalized_owner:
+            raise ProvenanceError(f"empty source notice owner at {index}: {context}")
+        try:
+            parsed_years = parse_years(years)
+        except (ProvenanceError, ValueError) as exc:
+            raise ProvenanceError(
+                f"invalid source notice years at {index}: {context}: {years}"
+            ) from exc
+        if not parsed_years:
+            raise ProvenanceError(f"empty source notice years at {index}: {context}")
+        notices.append(Notice(parsed_years, normalized_owner))
+    return notices
+
+
 def merge_years(notices: Iterable[Notice]) -> dict[str, set[int]]:
     merged: dict[str, set[int]] = {}
     for notice in notices:
@@ -286,7 +313,8 @@ def relative_manifest(audit_id: str) -> str:
     return f"audits/{audit_id}/manifest.json"
 
 
-def load_rules(root: Path, audit_filter: set[str] | None = None) -> dict[str, Rule]:
+def load_rules(root: Path, audit_filter: set[str] | None = None,
+               require_source_snapshot: bool = False) -> dict[str, Rule]:
     rules: dict[str, Rule] = {}
     base = (root / PROVENANCE_ROOT).resolve()
     loaded_audits: set[str] = set()
@@ -304,7 +332,10 @@ def load_rules(root: Path, audit_filter: set[str] | None = None) -> dict[str, Ru
             raise ProvenanceError(f"active audit is not approved: {audit_id}")
         if int(manifest.get("schemaVersion", 0)) < 4:
             raise ProvenanceError(f"unsupported active audit schema: {audit_id}")
-        initial = resolve_commit(str(manifest.get("initialRevision", "")))
+        initial_revision = manifest.get("initialRevision")
+        if not isinstance(initial_revision, str) or not initial_revision:
+            raise ProvenanceError(f"active manifest missing initialRevision: {audit_id}")
+        initial = resolve_commit(initial_revision) if require_source_snapshot else None
         loaded_audits.add(audit_id)
         for result in manifest.get("results", []):
             if not isinstance(result, dict):
@@ -313,9 +344,61 @@ def load_rules(root: Path, audit_filter: set[str] | None = None) -> dict[str, Ru
             source_blob = result.get("sourceBlob")
             if not isinstance(source_path, str) or not isinstance(source_blob, str):
                 raise ProvenanceError(f"invalid source in audit {audit_id}")
-            if git_blob(initial, source_path) != source_blob:
-                raise ProvenanceError(f"source blob mismatch: {audit_id}: {source_path}")
-            notices = canonical_inherited(parse_notices(git_text(initial, source_path)))
+            evidence_ref = result.get("evidence")
+            if not isinstance(evidence_ref, str) or not evidence_ref:
+                raise ProvenanceError(f"missing evidence in audit {audit_id}: {source_path}")
+            audit_dir = path.parent.resolve()
+            evidence_path = (audit_dir / evidence_ref).resolve()
+            if audit_dir not in evidence_path.parents or not evidence_path.is_file():
+                raise ProvenanceError(
+                    f"invalid evidence reference in audit {audit_id}: {evidence_ref}"
+                )
+            evidence = read_json(evidence_path)
+            if evidence.get("schemaVersion") != manifest.get("schemaVersion"):
+                raise ProvenanceError(f"evidence schema mismatch: {audit_id}: {evidence_ref}")
+            evidence_source = evidence.get("source")
+            if not isinstance(evidence_source, dict):
+                raise ProvenanceError(f"missing evidence source: {audit_id}: {evidence_ref}")
+            source_fields = (
+                ("commit", initial_revision),
+                ("path", source_path),
+                ("blob", source_blob),
+            )
+            for field, expected in source_fields:
+                if field not in evidence_source:
+                    continue
+                actual = evidence_source[field]
+                if not isinstance(actual, str):
+                    raise ProvenanceError(
+                        f"invalid evidence source {field}: {audit_id}: {evidence_ref}"
+                    )
+                if actual != expected:
+                    raise ProvenanceError(
+                        f"evidence source {field} mismatch: {audit_id}: {source_path}"
+                    )
+            evidence_fingerprint = evidence.get("sourceCodeFingerprint")
+            result_fingerprint = result.get("sourceCodeFingerprint")
+            if evidence_fingerprint is not None and result_fingerprint is not None:
+                if (not isinstance(evidence_fingerprint, str)
+                        or evidence_fingerprint != result_fingerprint):
+                    raise ProvenanceError(
+                        f"evidence source fingerprint mismatch: {audit_id}: {source_path}"
+                    )
+            source_header = evidence.get("sourceHeader")
+            if not isinstance(source_header, dict):
+                raise ProvenanceError(f"missing evidence source header: {audit_id}: {evidence_ref}")
+            recorded_notices = parse_recorded_notices(
+                source_header.get("sourceNotices"), f"{audit_id}: {evidence_ref}"
+            )
+            if initial is not None:
+                if git_blob(initial, source_path) != source_blob:
+                    raise ProvenanceError(f"source blob mismatch: {audit_id}: {source_path}")
+                snapshot_notices = parse_notices(git_text(initial, source_path))
+                if merge_years(snapshot_notices) != merge_years(recorded_notices):
+                    raise ProvenanceError(
+                        f"evidence source notices mismatch: {audit_id}: {source_path}"
+                    )
+            notices = canonical_inherited(recorded_notices)
             for target in result.get("finalTargets", []):
                 if not isinstance(target, dict) or target.get("classification") not in {
                     "inherited", "partial-inherited",
