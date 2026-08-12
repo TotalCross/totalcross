@@ -186,9 +186,12 @@ python3 scripts/validate-copyright-headers.sh \
 For a covered file, validation uses this precedence:
 
 1. Locate the target in approved manifests listed by `active-audits.json`.
-2. Verify its code fingerprint.
-3. Read each historical source from the immutable initial revision.
-4. Build the inherited copyright chain.
+2. Follow each manifest result's `evidence` reference and verify that the
+   immutable evidence identifies the same historical source path and blob.
+3. Build the inherited copyright chain from the source notices recorded in the
+   committed evidence.
+4. In strict snapshot mode, also resolve the historical source revision and
+   verify its original blob, content notices, and audited target fingerprints.
 5. Apply the current Amalgam end year.
 6. Validate or repair the target header.
 
@@ -203,6 +206,15 @@ legal/copyright-provenance/audits/
 ```
 
 is excluded from ordinary header validation. The audit tool, review tool, shared helper, and this README remain normal first-party files and must carry repository headers.
+
+Git history is required while generating, reviewing, and activating an audit.
+`review-audit.py` therefore runs the validator with
+`--require-provenance-snapshots`, which requires the historical source revision
+and verifies the original Git snapshot. Once an approved audit is active,
+ordinary header validation consumes its committed immutable evidence and does
+not depend on the original Git objects remaining available after rebases,
+history cleanup, branch deletion, or garbage collection. Strict snapshot
+validation remains available for activation and integrity checks.
 
 ## Active audit index
 

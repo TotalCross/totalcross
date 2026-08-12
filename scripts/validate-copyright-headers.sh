@@ -212,7 +212,11 @@ def main() -> int:
     try:
         root = repo_root()
         os.chdir(root)
-        rules = load_rules(root, set(args.audit_id) if args.audit_id else None)
+        rules = load_rules(
+            root,
+            set(args.audit_id) if args.audit_id else None,
+            require_source_snapshot=args.require_provenance_snapshots,
+        )
         failures: list[tuple[str, list[str]]] = []
         checked = fixed = 0
         seen: set[str] = set()
