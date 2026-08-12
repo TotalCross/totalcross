@@ -4,6 +4,7 @@
 
 package totalcross.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,10 +26,9 @@ import org.junit.jupiter.api.Test;
 import tc.preview.PreviewFrame;
 import tc.preview.PreviewFrameSink;
 import tc.simulator.Launcher;
-import totalcross.sys.Settings;
 import totalcross.ui.gfx.Color;
 
-public class LegacySafeAreaVisualTest {
+public class LegacySafeAreaVisualSmokeTest {
   private static final int PORTRAIT_TOP = 12;
   private static final int PORTRAIT_LEFT = 20;
   private static final int PORTRAIT_BOTTOM = 24;
@@ -49,6 +49,8 @@ public class LegacySafeAreaVisualTest {
           "/scr", "320x480x32", "/density", "1");
       await(() -> VisualApp.instance != null && sink.size() > 0, "initial preview frame");
       VisualApp app = VisualApp.instance;
+      assertEquals(320, sink.latest().getWidth());
+      assertEquals(480, sink.latest().getHeight());
       assertSame(app, Window.getTopMost());
 
       TopMenu portraitMenu = showTopMenu(app, Control.LEFT, 220);

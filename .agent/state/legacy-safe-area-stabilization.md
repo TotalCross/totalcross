@@ -6,12 +6,13 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Legacy safe-area stabilization state
 
-- Updated: 2026-08-10T18:30:02Z
-- Active milestone: none — task complete
+- Updated: 2026-08-12T20:02:07Z
+- Active milestone: none — milestone 6 complete
 - Branch: `feat/logical-ui-scaling2`
 - Baseline HEAD: `09dc39143c7edf0363ad3c1670bdd16e141b4572`
-- Last implementation commit: `b3fcb3111` (`test(sdk): validate legacy safe area visuals`)
-- Last validation: final diff, headers, provenance, and size gates passed
+- Last implementation commit: this follow-up commit
+- Last validation: 22 focused mandatory tests and one visual smoke passed;
+  focused headers and diff check passed
 - Blockers: none
 
 ## Baseline
@@ -66,10 +67,24 @@ seven material files and remains pending human review.
 - Smoke compilation: passed; native macOS jar deploy/run ended `final=PASS`
 - Android/iOS: not run by plan
 
+## Milestone 6 outcome
+
+- Deterministic TopMenu portrait/landscape geometry, SideMenu widths 208/320,
+  SlidingWindow safe relayout/reuse, and synchronous z-stack behavior now run
+  under mandatory JUnit.
+- Preview rendering, real animations, input injection, polling, and PNG output
+  moved to `LegacySafeAreaVisualSmokeTest` under the existing smoke source set.
+- The minimal repeated-preview test did not reproduce `NullPointerException:
+  target`; it reproduced stale MainWindow/window-stack state on session two.
+  `Launcher` now calls the existing preview reset before creating each preview
+  application, while EventLoop continues to require a non-null MainClass.
+- Focused mandatory and visual smoke validation passed. Full SDK distribution,
+  platform builds, packaging, deployment, and publishing were not run.
+
 ## Active paths
 
 - None.
 
 ## Next command
 
-None. Preserve the local commits and do not push.
+None. Preserve the local commit and do not push.

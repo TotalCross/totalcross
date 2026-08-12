@@ -47,18 +47,20 @@ class SideMenuSafeAreaTest {
   }
 
   @Test
-  void horizontalAutomaticWidthUsesUsableSafeWidth() {
+  void portraitDrawersUseVisualScenarioSafeWidth() {
+    Window._updateSafeAreaInsets(12, 20, 24, 36);
     SideMenuContainer left = new SideMenuContainer(Control.LEFT, "Menu", new Control[0]);
     SideMenuContainer right = new SideMenuContainer(Control.RIGHT, "Menu", new Control[0]);
 
-    assertEquals(204, left.topMenu.widthInPixels);
-    assertEquals(204, right.topMenu.widthInPixels);
+    assertEquals(208, left.topMenu.widthInPixels);
+    assertEquals(208, right.topMenu.widthInPixels);
   }
 
   @Test
   void automaticWidthCapsAndClampsWhileExplicitWidthWins() {
     Settings.screenWidth = 640;
-    Window._updateSafeAreaInsets(8, 80, 12, 60);
+    Settings.screenHeight = 320;
+    Window._updateSafeAreaInsets(8, 80, 12, 30);
     SideMenuContainer wide = new SideMenuContainer("Menu", new Control[0]);
     assertEquals(320, wide.topMenu.widthInPixels);
 

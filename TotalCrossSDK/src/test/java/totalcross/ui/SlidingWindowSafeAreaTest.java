@@ -5,6 +5,7 @@
 package totalcross.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import totalcross.Launcher;
 import totalcross.sys.Settings;
+import totalcross.ui.anim.ControlAnimation;
 import totalcross.ui.anim.FadeAnimation;
 import totalcross.ui.gfx.Rect;
 
@@ -103,6 +105,54 @@ class SlidingWindowSafeAreaTest {
   }
 
   @Test
+  void popupDismissAndReopenPreserveSynchronousWindowStackSemantics() {
+    Object[] originalStack = Window.zStack.toObjectArray();
+    Window originalTopMost = Window.topMost;
+    MainWindow mainWindow = MainWindow.getMainWindow();
+    Window.zStack.removeAllElements();
+    Window.zStack.push(mainWindow);
+    Window.topMost = mainWindow;
+
+    try {
+      CountingProvider provider = new CountingProvider();
+      SlidingWindow sliding = new SlidingWindow(provider);
+      sliding.animDir = Control.BOTTOM;
+      sliding.totalTime = 100;
+      sliding.prepareForPopup();
+
+      sliding.popupNonBlocking();
+      assertSame(sliding, Window.getTopMost());
+      finish(sliding.currentAnimation);
+
+      sliding.unpop();
+      finish(sliding.currentAnimation);
+      assertSame(mainWindow, Window.getTopMost());
+
+      Settings.screenWidth = 640;
+      Settings.screenHeight = 320;
+      Window._updateSafeAreaInsets(8, 80, 12, 30);
+      sliding.prepareForPopup();
+      sliding.popupNonBlocking();
+
+      assertSame(sliding, Window.getTopMost());
+      assertEquals(new Rect(0, 320, 640, 320), sliding.getRect());
+      assertEquals(new Rect(80, 8, 530, 300), provider.view.getRect());
+      assertEquals(1, provider.calls);
+      finish(sliding.currentAnimation);
+
+      sliding.unpop();
+      finish(sliding.currentAnimation);
+      assertSame(mainWindow, Window.getTopMost());
+    } finally {
+      Window.zStack.removeAllElements();
+      for (Object window : originalStack) {
+        Window.zStack.push(window);
+      }
+      Window.topMost = originalTopMost;
+    }
+  }
+
+  @Test
   void centerUsesLegacyFadeAnimation() {
     SlidingWindow sliding = new SlidingWindow(new CountingProvider());
     sliding.animDir = Control.CENTER;
@@ -114,6 +164,11 @@ class SlidingWindowSafeAreaTest {
     assertTrue(sliding.currentAnimation instanceof FadeAnimation);
     sliding.currentAnimation.stop(true);
     sliding.currentAnimation = null;
+  }
+
+  private static void finish(ControlAnimation animation) {
+    assertNotNull(animation);
+    animation.stop(false);
   }
 
   private static final class CountingProvider implements Presenter<Container> {

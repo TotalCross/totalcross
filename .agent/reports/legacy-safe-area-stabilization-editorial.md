@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Legacy safe-area stabilization editorial report
 
-Status: complete on 2026-08-10.
+Status: complete, including the coverage-separation follow-up on 2026-08-12.
 
 ## Restored legacy behavior
 
@@ -65,6 +65,29 @@ It remains pending human review; no approval command was run.
 
 The distribution emitted existing Javadoc diagnostics and one Gradle
 deprecation notice but completed successfully.
+
+## Coverage-separation follow-up
+
+Mandatory JUnit now owns deterministic TopMenu portrait/landscape geometry,
+safe fixed-bar sizing, SideMenu drawer widths 208 and 320, SlidingWindow safe
+relayout/reuse, and synchronous popup/dismiss/reopen z-stack semantics. The
+preview lifecycle regression verifies two sequential sessions, requested frame
+dimensions, clean stop, and fresh MainWindow/window-stack state.
+
+Real animation frames, bounded polling, injected pointer/Back events, AWT PNG
+rendering, and manual visual artifacts moved to
+`LegacySafeAreaVisualSmokeTest` in the existing `smokeTest` source set. Its new
+JUnit smoke task is not part of normal `test` or `check` execution.
+
+The minimal regression did not reproduce `NullPointerException: target`; it
+proved that a second preview retained the first MainWindow singleton and stack.
+The simulator now invokes the existing preview-state reset before constructing
+each preview application. EventLoop still requires a non-null MainClass target.
+
+The focused mandatory lane passed 22 tests, the optional visual smoke passed,
+and the final focused header/diff checks passed. No full distribution, platform
+build, packaging, deployment, publishing, or push was performed for this
+follow-up.
 
 ## Remaining limitations
 

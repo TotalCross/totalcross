@@ -106,6 +106,9 @@ tree or branch to any of them.
       legacy safe-area coverage.
 - [x] 2026-08-10T18:30:02Z Complete release-focused visual/smoke validation,
       one non-clean SDK build, provenance/header checks, and final handoff.
+- [x] 2026-08-12T20:02:07Z Separate the legacy visual scenario from mandatory
+      JUnit coverage, add deterministic preview lifecycle coverage, and commit
+      the focused follow-up without pushing.
 
 Use UTC timestamps when updating Progress.
 
@@ -355,6 +358,33 @@ Update evidence, state, this plan, and:
 The editorial report distinguishes restored legacy behavior, retained scaling,
 deferred presentation work, validation, and remaining limits.
 
+### Milestone 6: Separate deterministic and visual regression coverage
+
+Goal: keep every reliable safe-area assertion in the mandatory JUnit lane while
+moving preview rendering, animation timing, input injection, and PNG artifacts
+to the existing `smokeTest` source set.
+
+Extend the focused TopMenu, SideMenuContainer, and SlidingWindow safe-area tests
+with the portrait/landscape geometry, drawer widths, resize/reuse behavior, and
+synchronous window-stack semantics represented by
+`LegacySafeAreaVisualTest`. Move the end-to-end preview workflow to
+`LegacySafeAreaVisualSmokeTest` under `src/smokeTest`; do not retain sleeps,
+polling, AWT rendering, or injected input in `src/test`.
+
+Add a minimal JUnit lifecycle test for two sequential
+`Launcher.startPreviewFrames` sessions. It proves application creation, first
+frame delivery, logical `/scr` dimensions, clean stop, and fresh static
+MainWindow/Window state. Change simulator runtime code only if this test
+reproduces the null-target or stale-state failure, and preserve the EventLoop
+non-null target invariant.
+
+Reuse the existing `smokeTest` source set. If it lacks a JUnit execution task,
+add only the dependencies and focused Test task needed to run the visual smoke;
+do not create another source set. Validate at Level 2 with the focused safe-area
+and lifecycle selectors, the focused visual smoke task, `git diff --check`, and
+the header validator. Do not run a clean/full platform build, packaging,
+deployment, or publishing.
+
 ## Surprises & Discoveries
 
 - The pre-PresentationHost `SlidingWindow` already establishes final geometry
@@ -395,6 +425,16 @@ Add only discoveries that materially change remaining work.
 - Decision: run tests only after relevant milestone implementation is complete.
   Rationale: reduce token/tool cost and repeated validation.
   Date: 2026-08-10.
+- Decision: reset existing MainWindow preview state at the start of each new
+  preview session.
+  Rationale: the lifecycle regression proved a second session retained the
+  first session's singleton and window stack; EventLoop still rejects null.
+  Date: 2026-08-12.
+- Decision: expose optional JUnit smoke execution without wiring it into the
+  normal `test` or `check` lifecycle.
+  Rationale: visual rendering remains explicitly opt-in while using the
+  repository's existing `smokeTest` source set.
+  Date: 2026-08-12.
 
 ## Validation and Acceptance
 
@@ -472,6 +512,11 @@ Do not push. Commits are local recovery checkpoints only.
   replacement native macOS smoke, and built one non-clean SDK distribution.
 - Final diff, header, provenance, and size checks passed. Android/iOS were not
   run, and no changes were pushed.
+- Follow-up coverage now keeps deterministic portrait/landscape geometry,
+  drawer widths, reuse, and synchronous z-stack behavior in mandatory JUnit;
+  preview animation, input, rendering, and PNG artifacts run only through the
+  optional smoke task. Sequential preview lifecycle coverage proved and fixed
+  stale singleton/window-stack state without weakening EventLoop invariants.
 
 ## Revision Note
 
