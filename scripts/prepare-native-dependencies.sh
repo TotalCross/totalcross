@@ -7,6 +7,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 depot_dir="${TOTALCROSS_DEPOT_TOOLS_DIR:-${repo_root}/TotalCrossVM/deps/totalcross-depot-tools}"
 dry_run=0
+prepared_index="${PREPARED_NATIVE_DEPENDENCIES_INDEX:-${RUNNER_TEMP:-/tmp}/prepared-native-dependencies-index.jsonl}"
 
 if [ "${1:-}" = --dry-run ] && [ "$#" -eq 1 ]; then
   dry_run=1
@@ -28,6 +29,9 @@ if [ -z "${TOTALCROSS_DEPOT_FETCH_CACHE_DIR:-}" ]; then
   fi
 fi
 export TOTALCROSS_DEPOT_FETCH_CACHE_DIR
+if [ "$dry_run" -eq 0 ]; then
+  : > "$prepared_index"
+fi
 
 read_release_pin() {
   local dependency="$1"
@@ -46,6 +50,44 @@ run_command() {
   else
     "$@"
   fi
+}
+
+record_prepared_marker() {
+  local dependency="$1"
+  local platform="$2"
+  local arch="$3"
+  local repository="$4"
+  local release_tag="$5"
+  [ "$dry_run" -eq 0 ] || return 0
+  python3 - "$depot_dir" "$prepared_index" "$dependency" "$platform" "$arch" "$repository" "$release_tag" <<'PY'
+import hashlib
+import json
+import pathlib
+import sys
+
+depot = pathlib.Path(sys.argv[1])
+index = pathlib.Path(sys.argv[2])
+dependency, platform, arch, repository, release_tag = sys.argv[3:]
+if dependency == "sqlite3":
+    namespace = "%s-%s" % (release_tag, hashlib.sha256(repository.encode()).hexdigest()[:12])
+    marker = depot / dependency / "local" / namespace / platform / arch / ".totalcross-artifact.json"
+elif dependency == "skia-shared":
+    marker = depot / "skia" / "local" / ".totalcross-artifact.json"
+elif dependency == "skia":
+    artifacts = json.loads((depot / "skia" / "artifacts.json").read_text())
+    target = artifacts["artifacts"]["%s-%s" % (platform, arch)]["target_path"]
+    marker = depot / "skia" / pathlib.Path(target).parent / ".totalcross-artifact.json"
+else:
+    marker = depot / dependency / "local" / platform / arch / ".totalcross-artifact.json"
+if not marker.is_file():
+    raise SystemExit("prepared dependency marker is missing: %s" % marker)
+payload = json.loads(marker.read_text())
+if payload.get("repository") != repository or payload.get("release_tag") != release_tag:
+    raise SystemExit("prepared dependency marker identity mismatch: %s" % marker)
+payload["marker_path"] = str(marker.relative_to(depot))
+with index.open("a") as handle:
+    handle.write(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n")
+PY
 }
 
 fetch_dep() {
@@ -75,6 +117,7 @@ fetch_dep() {
   )
   args+=("$@")
   run_command bash "${args[@]}"
+  record_prepared_marker "$dependency" "$platform" "$arch" "$github_repo" "$release_tag"
 }
 
 common_targets=(
@@ -104,6 +147,11 @@ skia_shared_args=("$depot_dir/skia/fetch.sh" --install-shared --github-token-env
 [ -z "${SKIA_RELEASE_TAG:-}" ] || skia_shared_args+=(--release-tag "$SKIA_RELEASE_TAG")
 [ -z "${SKIA_GITHUB_REPO:-}" ] || skia_shared_args+=(--github-repo "$SKIA_GITHUB_REPO")
 run_command bash "${skia_shared_args[@]}"
+if [ "$dry_run" -eq 0 ]; then
+  skia_shared_release="${SKIA_RELEASE_TAG:-$(read_release_pin skia)}"
+  skia_shared_repo="${SKIA_GITHUB_REPO:-TotalCross/totalcross-depot-tools}"
+  record_prepared_marker skia-shared '' '' "$skia_shared_repo" "$skia_shared_release"
+fi
 
 fetch_dep vcruntime windows x86 VCRUNTIME_GITHUB_TOKEN VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
 if [ "$dry_run" -eq 0 ]; then

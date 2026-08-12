@@ -97,7 +97,24 @@ jobs:
       run: TotalCrossVM/deps/fetch-depot-tools.sh
 
     - name: Fetch native dependencies
+      env:
+        PREPARED_NATIVE_DEPENDENCIES_INDEX: ${{ runner.temp }}/prepared-native-dependencies-index.jsonl
       run: scripts/prepare-native-dependencies.sh
+
+    - name: Package prepared native dependencies
+      run: |
+        scripts/package-native-dependencies.py \\
+          --depot-dir TotalCrossVM/deps/totalcross-depot-tools \\
+          --index "${RUNNER_TEMP}/prepared-native-dependencies-index.jsonl" \\
+          --output "${RUNNER_TEMP}/depot-tools-native-dependencies.tar.gz"
+
+    - name: Upload prepared native dependencies
+      uses: actions/upload-artifact@v7
+      with:
+        name: prepared-native-dependencies
+        path: ${{ runner.temp }}/depot-tools-native-dependencies.tar.gz
+        if-no-files-found: error
+        retention-days: 1
 
     - name: Upload SDK native runtime
       uses: actions/upload-artifact@v7
@@ -145,12 +162,14 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Restore depot tools cache
-      uses: actions/cache/restore@v5
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
       with:
-        path: TotalCrossVM/deps/totalcross-depot-tools
-        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
-        enableCrossOsArchive: true
+        name: prepared-native-dependencies
+
+    - name: Extract prepared native dependencies
+      shell: bash
+      run: tar -xzf depot-tools-native-dependencies.tar.gz
 
     - name: Export dependency overrides
       env:
@@ -278,12 +297,14 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Restore depot tools cache
-      uses: actions/cache/restore@v5
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
       with:
-        path: TotalCrossVM/deps/totalcross-depot-tools
-        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
-        enableCrossOsArchive: true
+        name: prepared-native-dependencies
+
+    - name: Extract prepared native dependencies
+      shell: bash
+      run: tar -xzf depot-tools-native-dependencies.tar.gz
 
     - name: Install cross toolchain
       run: |
@@ -321,12 +342,14 @@ jobs:
       shell: bash
       run: tar -xzf source-code.tar.gz
 
-    - name: Restore depot tools cache
-      uses: actions/cache/restore@v5
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
       with:
-        path: TotalCrossVM/deps/totalcross-depot-tools
-        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
-        enableCrossOsArchive: true
+        name: prepared-native-dependencies
+
+    - name: Extract prepared native dependencies
+      shell: bash
+      run: tar -xzf depot-tools-native-dependencies.tar.gz
 
     - name: Export dependency overrides
       shell: bash
@@ -389,12 +412,14 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Restore depot tools cache
-      uses: actions/cache/restore@v5
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
       with:
-        path: TotalCrossVM/deps/totalcross-depot-tools
-        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
-        enableCrossOsArchive: true
+        name: prepared-native-dependencies
+
+    - name: Extract prepared native dependencies
+      shell: bash
+      run: tar -xzf depot-tools-native-dependencies.tar.gz
 
     - name: Export dependency overrides
       env:
@@ -524,12 +549,14 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Restore depot tools cache
-      uses: actions/cache/restore@v5
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
       with:
-        path: TotalCrossVM/deps/totalcross-depot-tools
-        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
-        enableCrossOsArchive: true
+        name: prepared-native-dependencies
+
+    - name: Extract prepared native dependencies
+      shell: bash
+      run: tar -xzf depot-tools-native-dependencies.tar.gz
 
     - name: Export dependency overrides
       env:
@@ -607,12 +634,14 @@ jobs:
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
 
-    - name: Restore depot tools cache
-      uses: actions/cache/restore@v5
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
       with:
-        path: TotalCrossVM/deps/totalcross-depot-tools
-        key: depot-tools-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
-        enableCrossOsArchive: true
+        name: prepared-native-dependencies
+
+    - name: Extract prepared native dependencies
+      shell: bash
+      run: tar -xzf depot-tools-native-dependencies.tar.gz
 
     - name: Export dependency overrides
       env:
