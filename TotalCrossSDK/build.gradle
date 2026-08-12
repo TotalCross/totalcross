@@ -208,6 +208,10 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'
 
+    smokeTestImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    smokeTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    smokeTestRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'
+
     implementation 'com.totalcross.annotations:totalcross-annotations:1.0.0'
 
     // Smoke tests deliberately compile against the generated SDK artifact rather
@@ -556,6 +560,16 @@ tasks.named('compileSmokeTestJava', JavaCompile) {
             throw new GradleException('Run ./gradlew dist -x test before compiling the smoke tests.')
         }
     }
+}
+
+tasks.register('smokeTest', Test) {
+    group = 'verification'
+    description = 'Runs optional JUnit smoke tests from the smokeTest source set.'
+    dependsOn tasks.named('classes'), sourceSets.smokeTest.classesTaskName
+
+    testClassesDirs = sourceSets.smokeTest.output.classesDirs
+    classpath = files(sourceSets.main.output) + sourceSets.smokeTest.runtimeClasspath
+    useJUnitPlatform()
 }
 def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
 def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')

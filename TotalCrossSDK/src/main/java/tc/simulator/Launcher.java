@@ -337,6 +337,9 @@ public class Launcher extends SimulatorCore implements PreviewSession {
     if (config == null) {
       throw new IllegalStateException("parseArguments must be called before start");
     }
+    if (preview) {
+      MainWindow.resetPreviewState();
+    }
     Launcher.isApplication = true;
     recordLauncherUsage();
     launcher = new Launcher(null, preview, appClassLoader);

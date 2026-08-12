@@ -77,6 +77,34 @@ class TopMenuSafeAreaTest {
   }
 
   @Test
+  void portraitLeftMenuUsesRequestedWidthAndAttachedSafeInsets() {
+    setSurface(320, 480, 12, 20, 24, 36);
+
+    TopMenu menu = menu(Control.LEFT, TopMenu.ScrollUnderMode.NONE, 220);
+
+    assertEquals(new Rect(-220, 12, 220, 444), menu.getRect());
+    assertEquals(new Rect(0, 0, 220, 42), menu.topBarHost.getRect());
+    assertEquals(new Rect(20, 12, 200, 30), menu.getTopBar().getRect());
+    assertEquals(new Rect(0, 380, 220, 64), menu.bottomBarHost.getRect());
+    assertEquals(new Rect(20, 0, 200, 40), menu.getBottomBar().getRect());
+    assertEquals(new Rect(0, 42, 220, 338), menu.bodyScroller.getRect());
+  }
+
+  @Test
+  void landscapeRightMenuUsesRequestedWidthAndAttachedSafeInsets() {
+    setSurface(640, 320, 8, 80, 12, 30);
+
+    TopMenu menu = menu(Control.RIGHT, TopMenu.ScrollUnderMode.NONE, 260);
+
+    assertEquals(new Rect(610, 8, 260, 300), menu.getRect());
+    assertEquals(new Rect(0, 0, 260, 38), menu.topBarHost.getRect());
+    assertEquals(new Rect(0, 8, 230, 30), menu.getTopBar().getRect());
+    assertEquals(new Rect(0, 248, 260, 52), menu.bottomBarHost.getRect());
+    assertEquals(new Rect(0, 0, 230, 40), menu.getBottomBar().getRect());
+    assertEquals(new Rect(0, 38, 260, 210), menu.bodyScroller.getRect());
+  }
+
+  @Test
   void fixedBarModesKeepLegacyBodyGeometrySafeAware() {
     assertLayout(TopMenu.ScrollUnderMode.NONE, 40, 490, 0, 0);
     assertLayout(TopMenu.ScrollUnderMode.TOP, 0, 530, 40, 0);
@@ -96,6 +124,12 @@ class TopMenuSafeAreaTest {
     assertEquals(new Rect(0, 42, 200, 482), body.getRect());
     assertEquals(new Rect(24, 12, 176, 30), menu.getTopBar().getRect());
     assertEquals(new Rect(24, 0, 176, 40), menu.getBottomBar().getRect());
+
+    menu.setRect(false);
+    menu.repositionChildren();
+
+    assertSame(body, menu.bodyScroller);
+    assertEquals(new Rect(0, 42, 200, 482), body.getRect());
   }
 
   private void assertLayout(TopMenu.ScrollUnderMode mode, int bodyY, int bodyHeight,
@@ -109,14 +143,24 @@ class TopMenuSafeAreaTest {
   }
 
   private static TopMenu menu(int direction, TopMenu.ScrollUnderMode mode) {
+    return menu(direction, mode, 200);
+  }
+
+  private static TopMenu menu(int direction, TopMenu.ScrollUnderMode mode, int width) {
     TopMenu menu = new TopMenu(new Control[] {new Spacer(20, 500)}, direction, Window.NO_BORDER);
-    menu.widthInPixels = 200;
+    menu.widthInPixels = width;
     menu.setTopBar(new Spacer(10, 30));
     menu.setBottomBar(new Spacer(10, 40));
     menu.setScrollUnderMode(mode);
     menu.setRect(false);
     menu.repositionChildren();
     return menu;
+  }
+
+  private static void setSurface(int width, int height, int top, int left, int bottom, int right) {
+    Settings.screenWidth = width;
+    Settings.screenHeight = height;
+    Window._updateSafeAreaInsets(top, left, bottom, right);
   }
 
   private static TopMenu bareMenu(int direction) {

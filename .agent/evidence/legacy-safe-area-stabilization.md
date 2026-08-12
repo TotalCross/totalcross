@@ -86,3 +86,21 @@ SPDX-License-Identifier: LGPL-2.1-only
 - New tracked files: 9; maximum 20,410 bytes/479 lines
 - Pending audit: 16 files; maximum 19,751 bytes/560 lines
 - No visual PNG exceeds 10 KiB
+
+## Milestone 6 — deterministic/visual coverage separation
+
+- Timestamp: 2026-08-12T20:02:07Z
+- Initial lifecycle regression failed as intended because the second preview
+  retained the first MainWindow; it did not reproduce `NullPointerException:
+  target`. Full log: `TotalCrossSDK/agent-logs/20260812-165642-test-full.log`
+- After the narrow preview reset, the lifecycle regression passed. Full log:
+  `TotalCrossSDK/agent-logs/20260812-165738-test-full.log`
+- Focused safe-area and lifecycle lane passed 22 tests in 8 seconds. Full log:
+  `TotalCrossSDK/agent-logs/20260812-165948-test-full.log`
+- Optional `LegacySafeAreaVisualSmokeTest` passed in 15 seconds and generated
+  the existing portrait/landscape PNG artifact set. Full log:
+  `TotalCrossSDK/agent-logs/20260812-170251-smokeTest-full.log`
+- Nine changed first-party files passed the focused header validator with zero
+  changes; `git diff --check` passed.
+- Full SDK distribution, Android/iOS builds, packaging, deployment, and
+  publishing were intentionally not run.
