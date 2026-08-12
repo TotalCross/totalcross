@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.sys.Settings;
@@ -141,6 +146,11 @@ public class SlidingWindow extends Window implements PenListener, KeyListener {
 
   @Override
   public void popup() {
+    prepareForPopup();
+    super.popup();
+  }
+
+  void prepareForPopup() {
     /*
      * First establish the real destination bounds. Besides defining the final
      * width/height, this allows initUI() and child layout to use the correct
@@ -167,8 +177,6 @@ public class SlidingWindow extends Window implements PenListener, KeyListener {
     if (animDir != CENTER) {
       moveToAnimationStart();
     }
-
-    super.popup();
   }
 
   @Override

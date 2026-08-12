@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -51,7 +52,7 @@ public abstract class ControlAnimation implements UpdateListener {
   }
 
   public void start() {
-	executedTime = 0;
+    executedTime = 0;
     if (!slave) {
       if (totalTime == 0) {
         internalAnimate();
@@ -72,15 +73,15 @@ public abstract class ControlAnimation implements UpdateListener {
 
   public void stop(boolean abort) {
     if (isPlaying) {
-       isPlaying = false;
-       if (releaseScreenShot) {
-         c.releaseScreenShot();
-       }
-       
-       if (animFinish != null) {
-         animFinish.onAnimationFinished(this);
-         animFinish = null;
-       }
+      isPlaying = false;
+      if (releaseScreenShot) {
+        c.releaseScreenShot();
+      }
+
+      if (animFinish != null) {
+        animFinish.onAnimationFinished(this);
+        animFinish = null;
+      }
     }
     
     if (!abort) {
@@ -96,7 +97,7 @@ public abstract class ControlAnimation implements UpdateListener {
     }
     
     if (!isWaiting) {
-       MainWindow.getMainWindow().removeUpdateListener(this);
+      MainWindow.getMainWindow().removeUpdateListener(this);
     }
   }
      

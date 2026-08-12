@@ -223,7 +223,7 @@ public class TopMenu extends Window {
     setBackForeColors(UIColors.separatorFore, UIColors.topmenuFore);
     fadeOnPopAndUnpop = true;
     setSafeAreaMode(SafeAreaMode.DISABLED);
-    
+
     MainWindow.getMainWindow().addTimer(1000);
   }
 
