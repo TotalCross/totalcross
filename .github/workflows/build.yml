@@ -103,10 +103,12 @@ jobs:
 
     - name: Package prepared native dependencies
       run: |
-        scripts/package-native-dependencies.py \\
-          --depot-dir TotalCrossVM/deps/totalcross-depot-tools \\
-          --index "${RUNNER_TEMP}/prepared-native-dependencies-index.jsonl" \\
+        args=(
+          --depot-dir TotalCrossVM/deps/totalcross-depot-tools
+          --index "${RUNNER_TEMP}/prepared-native-dependencies-index.jsonl"
           --output "${RUNNER_TEMP}/depot-tools-native-dependencies.tar.gz"
+        )
+        scripts/package-native-dependencies.py "${args[@]}"
 
     - name: Upload prepared native dependencies
       uses: actions/upload-artifact@v7
