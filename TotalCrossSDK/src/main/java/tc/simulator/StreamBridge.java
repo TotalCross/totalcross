@@ -66,7 +66,9 @@ import totalcross.util.zip.TCZ;
 @SuppressWarnings({"deprecation", "removal"})
 class StreamBridge extends SettingsBridge {
   public void alert(String msg) {
-    if (!started) {
+    if (alert == null) {
+      System.err.println("Alert: " + msg);
+    } else if (!started) {
       System.out.println("Alert: " + msg);
     } else {
       alert.setText(msg);

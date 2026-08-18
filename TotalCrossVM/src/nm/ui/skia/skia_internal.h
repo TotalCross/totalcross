@@ -17,6 +17,7 @@
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColorSpace.h"
+#include "include/core/SkFontMetrics.h"
 #include "include/core/SkGraphics.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageEncoder.h"
@@ -74,7 +75,9 @@ static inline Pixel skiaPixelFromColor(SkColor color) {
 #endif
 #endif
 
+#ifndef USE_WRITE_PIXELS
 #define USE_WRITE_PIXELS 1
+#endif
 
 #define SKIA_DEBUG
 

@@ -1,11 +1,12 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #include "Window.h"
+#include "WindowSafeArea.h"
+#include "GraphicsPrimitives.h"
 
 #if defined (WINCE) || defined (WIN32)
  #include "win/Window_c.h"
@@ -76,6 +77,54 @@ TC_API void tuW_setOrientation_i(NMParams p) // totalcross/ui/Window native publ
 }
 //////////////////////////////////////////////////////////////////////////
 TCObject* safeAreaInsets;
+static bool safeAreaInsetsInitialized;
+static Method updateSafeAreaInsetsMethod;
+
+static int32 windowPhysicalToLogical(int32 value)
+{
+   double scale = screen.contentScale > 0 ? screen.contentScale : 1;
+   double logical = value / scale;
+   return logical >= 0 ? (int32)(logical + 0.5) : (int32)(logical - 0.5);
+}
+
+void windowUpdateSafeAreaInsetsPhysical(
+   Context currentContext,
+   int32 top,
+   int32 left,
+   int32 bottom,
+   int32 right)
+{
+   if (currentContext == null)
+      return;
+
+   if (updateSafeAreaInsetsMethod == null)
+   {
+      TCClass windowClass = loadClass(currentContext, "totalcross.ui.Window", true);
+      if (windowClass == null || currentContext->thrownException != null)
+         return;
+      updateSafeAreaInsetsMethod = getMethod(
+         windowClass,
+         false,
+         "_updateSafeAreaInsets",
+         4,
+         J_INT,
+         J_INT,
+         J_INT,
+         J_INT);
+   }
+
+   if (updateSafeAreaInsetsMethod != null)
+   {
+      safeAreaInsetsInitialized = true;
+      executeMethod(
+         currentContext,
+         updateSafeAreaInsetsMethod,
+         windowPhysicalToLogical(top),
+         windowPhysicalToLogical(left),
+         windowPhysicalToLogical(bottom),
+         windowPhysicalToLogical(right));
+   }
+}
 
 TC_API void tuW_getSafeAreaInsets(NMParams p) // totalcross/ui/Window public static Insets getSafeAreaInsets();
 {
@@ -83,13 +132,19 @@ TC_API void tuW_getSafeAreaInsets(NMParams p) // totalcross/ui/Window public sta
       safeAreaInsets = getStaticFieldObject(p->currentContext, loadClass(p->currentContext, "totalcross.ui.Window", true), "safeAreaInsets");
    }
 #if defined darwin || defined ANDROID
-   if (safeAreaInsets != null && p->currentContext->thrownException == null) {
+   if (!safeAreaInsetsInitialized && safeAreaInsets != null && p->currentContext->thrownException == null) {
+      int32 top = 0, left = 0, bottom = 0, right = 0;
       windowGetSafeAreaInsets(
-         &FIELD_I32(*safeAreaInsets, 0),
-         &FIELD_I32(*safeAreaInsets, 1),
-         &FIELD_I32(*safeAreaInsets, 2),
-         &FIELD_I32(*safeAreaInsets, 3)
+         &top,
+         &left,
+         &bottom,
+         &right
       );
+      FIELD_I32(*safeAreaInsets, 0) = windowPhysicalToLogical(top);
+      FIELD_I32(*safeAreaInsets, 1) = windowPhysicalToLogical(left);
+      FIELD_I32(*safeAreaInsets, 2) = windowPhysicalToLogical(bottom);
+      FIELD_I32(*safeAreaInsets, 3) = windowPhysicalToLogical(right);
+      safeAreaInsetsInitialized = true;
    }
 #endif
    p->retO = (*safeAreaInsets);

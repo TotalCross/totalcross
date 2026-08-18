@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -9,6 +10,8 @@
 //#define ENABLE_WIN32_POINTER_VERIFICATION 1
 //#define ENABLE_TRACE
 #define ENABLE_TEXTURE_TRACE 0
+
+#include "tc_platform.h"
 
 #ifdef darwin
 #include <OpenGLES/ES2/gl.h>

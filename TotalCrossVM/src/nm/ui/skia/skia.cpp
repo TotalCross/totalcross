@@ -6,8 +6,6 @@
 
 #include "skia_internal.h"
 
-#define USE_WRITE_PIXELS 1
-
 #ifndef USE_COMPUTE_OPAQUE
 #if __APPLE__ || ANDROID
 #define USE_COMPUTE_OPAQUE 0
@@ -55,7 +53,7 @@
 #endif
 #endif
 #endif
-#if defined HEADLESS
+#if TC_WINDOWING_SDL
 #include "../../../init/tcsdl.h"
 #endif
 #include <math.h>
@@ -157,12 +155,12 @@ std::map<std::string, int> typefaceIndexMap;
 void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
-#ifdef HEADLESS
+#if TC_GRAPHICS_SOFTWARE
     bitmap.installPixels(SkImageInfo::Make(w,
                                            h,
                                            (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), (Uint32 *)pixels, pitch);
     canvas = new SkCanvas(bitmap);
-#else
+#elif TC_GRAPHICS_GLES
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
     // the different OpenGL variants (Core, ES, etc). Most of the code bellow is dedicated to create
     // a GL context and produce a valid rendertarget out of it for rendering.
@@ -191,6 +189,8 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     // We cache a reference for the surface and canvas for later use.
     surface = gpuSurface;
     canvas = gpuCanvas;
+#else
+    #error "Unsupported graphics backend"
 #endif
     skFont.setSize(16);
     // The forepaint is used for "draw" methods
@@ -214,7 +214,7 @@ void flushSkia()
     } else if (canvas) {
         canvas->flush();
     }
-#ifdef HEADLESS
+#if TC_WINDOWING_SDL
     TCSDL_UpdateTexture(bitmap.width(), bitmap.height(), bitmap.rowBytes(),bitmap.getPixels());
 #endif
 }
@@ -256,7 +256,7 @@ sk_sp<SkTypeface> skia_getTypeface(int32 typefaceIndex) {
     }
 }
 
-int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, int32 fontSize)
+int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, double fontSize)
 {
     const auto newTypeFace = skia_getTypeface(typefaceIndex);
 
@@ -266,7 +266,29 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, i
     if(skFont.getSize() != fontSize) {
         skFont.setSize(fontSize);
     }
-    return skFont.measureText(text,charCount,SkTextEncoding::kUTF16);
+    return (int32)ceil(skia_stringWidthD(text, charCount, typefaceIndex, fontSize));
+}
+
+double skia_stringWidthD(const void *text, int32 charCount, int32 typefaceIndex, double fontSize)
+{
+    const auto newTypeFace = skia_getTypeface(typefaceIndex);
+    if (skFont.getTypeface() != newTypeFace.get()) {
+        skFont.setTypeface(newTypeFace);
+    }
+    if (skFont.getSize() != fontSize) {
+        skFont.setSize(fontSize);
+    }
+    return skFont.measureText(text, charCount, SkTextEncoding::kUTF16);
+}
+
+void skia_fontMetrics(int32 typefaceIndex, double fontSize, double* ascent, double* descent, double* leading)
+{
+    SkFont metricsFont(skia_getTypeface(typefaceIndex), fontSize);
+    SkFontMetrics metrics;
+    metricsFont.getMetrics(&metrics);
+    *ascent = -metrics.fAscent;
+    *descent = metrics.fDescent;
+    *leading = metrics.fLeading;
 }
 
 
@@ -284,7 +306,7 @@ void skia_shiftScreen(float w, float h, float glShiftY) {
     flushSkia();
 }
 
-#ifdef ANDROID
+#if TC_TARGET_ANDROID
 /**
  * Draws something into the given bitmap
  * @param  env
@@ -313,7 +335,7 @@ extern "C" JNIEXPORT void JNICALL Java_totalcross_Launcher4A_drawIntoBitmap(JNIE
 }
 #endif
 
-#ifdef HEADLESS
+#if TC_WINDOWING_SDL
 int32 colorType(uint32 pixelformat) {
     if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED16) {
         if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB) {

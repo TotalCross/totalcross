@@ -1,14 +1,18 @@
-package totalcross.util;
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
+//
+// SPDX-License-Identifier: LGPL-2.1-only
 
-import totalcross.sys.Settings;
-import totalcross.ui.Control;
+package totalcross.util;
 
 public abstract class UnitsConverter {
 
+  /**
+   * @deprecated Layout and drawing values are logical. The destination graphics
+   *             surface performs physical-pixel conversion.
+   */
+  @Deprecated
   public static int toPixels(int value) {
-    if ((Control.DP - Control.RANGE) <= value && value <= (Control.DP + Control.RANGE)) {
-      return (int) (Settings.screenDensity * (value - Control.DP));
-    }
     return value;
   }
 }

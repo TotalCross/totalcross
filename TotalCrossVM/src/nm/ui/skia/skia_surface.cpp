@@ -4,6 +4,8 @@
 
 #include "skia_internal.h"
 
+#include <cmath>
+
 static void releaseProc(void* addr, void*) {
     delete[] static_cast<int32*>(addr);
 }
@@ -104,6 +106,39 @@ void skia_restoreClip(int32 skiaSurface) {
     }
 }
 
+void skia_setSurfaceScale(int32 skiaSurface, double contentScale) {
+    SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
+    if (!targetCanvas || !std::isfinite(contentScale) || contentScale <= 0) {
+        return;
+    }
+    targetCanvas->resetMatrix();
+    targetCanvas->scale(static_cast<SkScalar>(contentScale), static_cast<SkScalar>(contentScale));
+}
+
+static bool skia_canWritePixels(const SkCanvas* targetCanvas, const SkBitmap* texture,
+                                float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                float dstLeft, float dstTop, float dstRight, float dstBottom,
+                                int32 alphaMask) {
+#if USE_WRITE_PIXELS
+    if (!targetCanvas || !texture || !texture->isOpaque() || alphaMask != 255 ||
+        !targetCanvas->getTotalMatrix().isIdentity() || targetCanvas->getSaveCount() != 1 ||
+        srcLeft != 0.0f || srcTop != 0.0f || srcRight != texture->width() ||
+        srcBottom != texture->height() || (srcRight - srcLeft) != (dstRight - dstLeft) ||
+        (srcBottom - srcTop) != (dstBottom - dstTop) ||
+        std::floor(dstLeft) != dstLeft || std::floor(dstTop) != dstTop) {
+        return false;
+    }
+
+    const int dstX = static_cast<int>(dstLeft);
+    const int dstY = static_cast<int>(dstTop);
+    const SkImageInfo targetInfo = targetCanvas->imageInfo();
+    return dstX >= 0 && dstY >= 0 && dstX + texture->width() <= targetInfo.width() &&
+        dstY + texture->height() <= targetInfo.height();
+#else
+    return false;
+#endif
+}
+
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
                      float srcRight, float srcBottom, float dstLeft, float dstTop,
                      float dstRight, float dstBottom, int32 alphaMask) {
@@ -113,7 +148,6 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
     if (!targetCanvas || !texture) {
         return;
     }
-
     const SkRect srcRect = SkRect::MakeLTRB(srcLeft, srcTop, srcRight, srcBottom);
     const SkRect dstRect = SkRect::MakeLTRB(dstLeft, dstTop, dstRight, dstBottom);
     const bool fullSource = srcLeft == 0.0f && srcTop == 0.0f &&
@@ -121,14 +155,12 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
     const bool sameSize = (srcRight - srcLeft) == (dstRight - dstLeft) &&
         (srcBottom - srcTop) == (dstBottom - dstTop);
 
-#if USE_WRITE_PIXELS
-    if (texture->isOpaque() && alphaMask == 255 && fullSource && sameSize) {
+    if (skia_canWritePixels(targetCanvas, texture, srcLeft, srcTop, srcRight, srcBottom,
+                            dstLeft, dstTop, dstRight, dstBottom, alphaMask)) {
         targetCanvas->writePixels(
             texture->info(), texture->getPixels(), texture->rowBytes(),
             static_cast<int>(dstLeft), static_cast<int>(dstTop));
-    } else
-#endif
-    {
+    } else {
         alphaPaint.setAlpha(alphaMask);
         alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
         targetCanvas->drawBitmapRect(
@@ -180,7 +212,10 @@ void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel) {
     SKIA_TRACE()
     if (SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface)) {
         backPaint.setColor(skiaColorFromPixel(pixel));
+        targetCanvas->save();
+        targetCanvas->resetMatrix();
         targetCanvas->drawRect(SkRect::MakeXYWH(x, y, 1, 1), backPaint);
+        targetCanvas->restore();
     }
 }
 

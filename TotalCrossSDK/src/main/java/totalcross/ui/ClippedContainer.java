@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -15,22 +16,23 @@ import totalcross.ui.gfx.*;
 public class ClippedContainer extends Container {
   public boolean verticalOnly;
   protected int bagClipX0, bagClipXf, bagClipY0, bagClipYf;
-  protected int lastMid;
+  protected int lastMid = -1;
 
-  private int findOneVisible(int y0, int yf, int ini, int end) {
-    int i, mid;
-    for (i = 0; end - i > 1;) {
-      mid = i + (end - i) / 2;
+  int findOneVisible(int y0, int yf, int ini, int end) {
+    int low = ini;
+    int high = end - 1;
+    while (low <= high) {
+      int mid = low + (high - low) / 2;
       Control c = (Control) tabOrder.items[mid];
       if (c.y > yf) {
-        end = mid;
+        high = mid - 1;
       } else if (y0 > c.y + c.height) {
-        i = mid;
+        low = mid + 1;
       } else {
         return mid;
       }
     }
-    return 0;
+    return -1;
   }
 
   protected void computeClipRect() {
@@ -51,11 +53,19 @@ public class ClippedContainer extends Container {
     if (verticalOnly) {
       Object[] items = tabOrder.items;
       int n = tabOrder.size(), i, first, painted = 0;
+      if (n == 0) {
+        lastMid = -1;
+        return;
+      }
       // check if the mid container of the last search is still visible, and restart the search using it
       if (lastMid != -1 && lastMid < n && ((Control) items[lastMid]).isVisibleAndInside(bagClipY0, bagClipYf)) {
         first = lastMid;
       } else {
         first = findOneVisible(bagClipY0, bagClipYf, 0, n);
+      }
+      if (first < 0) {
+        lastMid = -1;
+        return;
       }
       // found the first (or second) visible, go back to find the really first visible
       while (first > 0 && ((Control) items[first - 1]).isVisibleAndInside(bagClipY0, bagClipYf)) {
@@ -77,7 +87,7 @@ public class ClippedContainer extends Container {
           }
         }
       }
-      lastMid = (first + i) / 2;
+      lastMid = painted == 0 ? -1 : (first + i - 1) / 2;
     } else {
       for (Control child = children; child != null; child = child.next) {
         if (child.isVisibleAndInside(bagClipX0, bagClipY0, bagClipXf, bagClipYf)

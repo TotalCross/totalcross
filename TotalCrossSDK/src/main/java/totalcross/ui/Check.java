@@ -54,6 +54,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   private int fourColors[] = new int[4];
   private String[] lines = Label.emptyStringArray;
   private int[] linesW;
+  private double layoutFontScale = Double.NaN;
   private int lastASW;
   private String originalText;
   private int alphaSel = 255;
@@ -198,6 +199,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
 
   /** Returns the maximum text width for the lines of this Label. */
   public int getMaxTextWidth() {
+    ensureTextWidths();
     int w = 0;
     for (int i = lines.length - 1; i >= 0; i--) {
       if (linesW[i] > w) {
@@ -218,7 +220,8 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   /**Returns the preferred height of this control.*/
   @Override
   public int getPreferredHeight() {
-    return (uiMaterial ? checkSize : (fmH*lines.length > checkSize ? fmH*lines.length : checkSize)) + insets.top + insets.bottom;
+    int fontHeight = getFontHeightForLayout();
+    return (uiMaterial ? checkSize : (fontHeight * lines.length > checkSize ? fontHeight * lines.length : checkSize)) + insets.top + insets.bottom;
   }
   
   @Override
@@ -291,15 +294,16 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
     g.foreColor = checkColor != -1 ? checkColor : uiAndroid ? foreColor : cfColor;
 
     if (!uiAndroid && checked) {
-      paintCheck(g, fmH, checkSize);
+      paintCheck(g, getFontHeightForLayout(), checkSize);
     }
 
     // draw label
     //TODO
-    yy = height/2 - (fmH*lines.length)/2;
+    int fontHeight = getFontHeightForLayout();
+    yy = height/2 - (fontHeight * lines.length)/2;
     int xx = insets.left + checkSize + textLeftGap; // guich@300_69
     g.foreColor = textColor != -1 ? textColor : foreColor;
-    for (int i = 0; i < lines.length; i++, yy += fmH) {
+    for (int i = 0; i < lines.length; i++, yy += fontHeight) {
       String text = StringUtils.shortText(lines[i], font.fm, this.width - xx - insets.right);
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
     }
@@ -360,20 +364,29 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
   public void split(int maxWidth) // guich@tc114_73
   {
     String text = originalText; // originalText will be changed by setText
-    setText(Convert.insertLineBreak(maxWidth, fm, text)); // guich@tc126_18: text cannot be assigned here or originalText will be overwritten
+    setText(Convert.insertLineBreak(maxWidth, fm, font.size * gfx.getFontScale(), text)); // guich@tc126_18: text cannot be assigned here or originalText will be overwritten
     originalText = text;
   }
 
   @Override
   protected void onFontChanged() {
+    layoutFontScale = Double.NaN;
+    ensureTextWidths();
+  }
+
+  private void ensureTextWidths() {
+    if (layoutFontScale == gfx.getFontScale()) {
+      return;
+    }
     int i;
     if (linesW == null || linesW.length != lines.length) {
       linesW = new int[lines.length];
     }
     int[] linesW = this.linesW; // guich@450_36: use local var
     for (i = lines.length - 1; i >= 0; i--) {
-      linesW[i] = fm.stringWidth(lines[i]);
+      linesW[i] = getFontWidthForLayout(lines[i]);
     }
+    layoutFontScale = gfx.getFontScale();
   }
 
   @Override
@@ -381,7 +394,7 @@ public class Check extends Control implements TextControl, MaterialEffect.SideEf
     if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
     {
       lastASW = this.width;
-      int wh = lines.length == 1 ? height : fmH + Edit.prefH;
+      int wh = lines.length == 1 ? height : getFontHeightForLayout() + Edit.prefH;
       split((this.width < wh - 2 ? getPreferredWidth() : this.width) - wh - 2);
       if (PREFERRED - RANGE <= setH && setH <= PREFERRED + RANGE) {;
         setRect(KEEP, KEEP, KEEP, getPreferredHeight() + setH - PREFERRED);

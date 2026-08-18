@@ -21,6 +21,8 @@ class SimulatorLauncherTest {
   private final boolean virtualKeyboard = Settings.virtualKeyboard;
   private final boolean showMousePosition = Settings.showMousePosition;
   private final boolean showDebugMessages = Settings.showDebugMessages;
+  private final int screenWidth = Settings.screenWidth;
+  private final int screenHeight = Settings.screenHeight;
   private final double screenDensity = Settings.screenDensity;
   private final String dataPath = Settings.dataPath;
   private final int userFontSize = Launcher.userFontSize;
@@ -35,7 +37,11 @@ class SimulatorLauncherTest {
     Settings.virtualKeyboard = virtualKeyboard;
     Settings.showMousePosition = showMousePosition;
     Settings.showDebugMessages = showDebugMessages;
+    Settings.screenWidth = screenWidth;
+    Settings.screenHeight = screenHeight;
     Settings.screenDensity = screenDensity;
+    totalcross.ui.gfx.Graphics.configureMainWindowSurface(Math.max(0, screenWidth), Math.max(0, screenHeight),
+        screenDensity > 0 ? screenDensity : 1);
     Settings.dataPath = dataPath;
     Launcher.userFontSize = userFontSize;
     Launcher.instance = launcherInstance;
@@ -130,5 +136,35 @@ class SimulatorLauncherTest {
     assertEquals(true, Settings.showDebugMessages);
     assertEquals(2, Settings.screenDensity);
     assertEquals("data", Settings.dataPath);
+  }
+
+  @Test
+  void inputCoordinatesRemoveOnlyHostPresentationScale() {
+    for (int density = 1; density <= 3; density++) {
+      Settings.screenDensity = density;
+      assertEquals(80, InputDispatcher.toLogicalInputCoordinate(120, 1.5));
+      assertEquals(120, InputDispatcher.toLogicalInputCoordinate(120, 1));
+    }
+  }
+
+  @Test
+  void settingsStayLogicalWhileSurfaceBackingUsesDensity() throws Exception {
+    Launcher runtime = new Launcher();
+    Launcher core = new Launcher(null, true);
+    SimulatorConfiguration config = new SimulatorConfiguration("com.example.App", "/scr", "393x852x32",
+        "/density", "3", "/safeAreaPortrait", "10,3,7,4");
+
+    runtime.parseSimulatorArguments(core, config, true, 0, 0);
+    runtime.initializeSettings(core);
+
+    assertEquals(393, Settings.screenWidth);
+    assertEquals(852, Settings.screenHeight);
+    assertEquals(3, Settings.screenDensity);
+    assertEquals(1179, totalcross.ui.gfx.Graphics.getMainWindowPixelWidth());
+    assertEquals(2556, totalcross.ui.gfx.Graphics.getMainWindowPixelHeight());
+    assertEquals(10, core.toInsetsPortrait.top);
+    assertEquals(3, core.toInsetsPortrait.left);
+    assertEquals(7, core.toInsetsPortrait.bottom);
+    assertEquals(4, core.toInsetsPortrait.right);
   }
 }

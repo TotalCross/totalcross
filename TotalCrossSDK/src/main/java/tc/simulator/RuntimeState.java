@@ -97,7 +97,9 @@ abstract class RuntimeState extends SimulatorSupport {
     appletInitialized = true; // guich@500_1
     totalcross.sys.Settings.showDesktopMessages = true; // guich@500_1: redo the messages.
     try {
-      alert = new AlertBox();
+      if (shouldCreateAlertBox(previewMode, java.awt.GraphicsEnvironment.isHeadless())) {
+        alert = new AlertBox();
+      }
       // NOTE: applet parameters are supplied by LauncherApplet after construction,
       // so they can only be parsed during init.
       if (!isApplication) {
@@ -133,15 +135,24 @@ abstract class RuntimeState extends SimulatorSupport {
           mainWindow.setUIStyle((byte) toUI);
         }
       } catch (LinkageError le) {
+        if (previewMode) {
+          throw previewInitializationFailure(le);
+        }
         System.out.println("Fatal Error when running applet: there is an error in the constructor of the class "
             + className + " and it could not be instantiated. Stack trace: ");
         le.printStackTrace();
         exit(0);
       } catch (ClassCastException cce) {
+        if (previewMode) {
+          throw previewInitializationFailure(cce);
+        }
         System.out.println("Error: class " + className + " does not extend MainClass nor MainWindow!");
         cce.printStackTrace();
         exit(-1);
       } catch (ClassNotFoundException cnfe) {
+        if (previewMode) {
+          throw previewInitializationFailure(cnfe);
+        }
         System.out.println("The MainWindow class specified was not found: " + className + "\n\nCommon causes are:");
         System.out
             .println(". The name is misspelled: java is case sensitive, so UIGadgets is not the same of uigadgets");
@@ -156,12 +167,38 @@ abstract class RuntimeState extends SimulatorSupport {
                 + className);
         exit(-1);
       }
+    } catch (PreviewInitializationException pie) {
+      throw pie;
     } catch (Exception ee) {
+      if (previewMode) {
+        throw previewInitializationFailure(ee);
+      }
       if (showInstructionsOnError) {
         ApplicationLoader.showInstructions();
       }
       ee.printStackTrace();
+    } catch (Error error) {
+      if (previewMode) {
+        throw previewInitializationFailure(error);
+      }
+      throw error;
     } // guich@120
+  }
+
+  private PreviewInitializationException previewInitializationFailure(Throwable cause) {
+    return new PreviewInitializationException(className, cause);
+  }
+
+  static boolean shouldCreateAlertBox(boolean previewMode, boolean headless) {
+    return !previewMode && !headless;
+  }
+
+  private static final class PreviewInitializationException extends IllegalStateException {
+    private static final long serialVersionUID = 1L;
+
+    private PreviewInitializationException(String className, Throwable cause) {
+      super("Failed to initialize preview MainWindow: " + className, cause);
+    }
   }
 
   protected ClassLoader getAppClassLoader() {

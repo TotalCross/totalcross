@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.ui.event.ControlEvent;
@@ -102,7 +107,7 @@ public class MaterialWindow extends SlidingWindow {
   
   @Override
   public void initUI() {
-    add(bar, LEFT, TOP);
+    add(bar, LEFT, TOP, FILL, PREFERRED);
     if (!delayInitUI) {
 	    add(provider.getView(), LEFT, AFTER, FILL, FILL, bar);
 	} else {

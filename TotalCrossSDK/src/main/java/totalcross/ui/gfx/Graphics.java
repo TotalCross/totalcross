@@ -1,6 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -94,6 +94,9 @@ public final class Graphics {
   // instance doubles
   private double lastPPD, lastcPPD; // used by arcPiePointDrawAndFill
 
+  private double contentScale = 1;
+  private double fontScale = 1;
+
   // instance objects
   /** The surface where this Graphics will draw on. */
   protected GfxSurface surface;
@@ -114,6 +117,12 @@ public final class Graphics {
 
   /** Contains the pixels of the MainWindow. */
   public static int[] mainWindowPixels; // create the pixels
+
+  private static int mainWindowLogicalWidth;
+  private static int mainWindowLogicalHeight;
+  private static int mainWindowPixelWidth;
+  private static int mainWindowPixelHeight;
+  private static double mainWindowContentScale = 1;
 
   /** used in the draw3dRect method */
   static public final byte R3D_EDIT = 1;
@@ -168,16 +177,117 @@ public final class Graphics {
     create(surface);
   }
 
+  /** Returns the physical pixels represented by one logical coordinate unit. */
+  public double getContentScale() {
+    return contentScale;
+  }
+
+  /** Returns the logical text scaling factor for this destination surface. */
+  public double getFontScale() {
+    return fontScale;
+  }
+
+  /** Returns the physical row stride of this destination surface, in pixels. */
+  public int getSurfacePixelPitch() {
+    return pitch;
+  }
+
+  /** Returns the physical width of this destination surface, in pixels. */
+  public int getSurfacePixelWidth() {
+    return surface instanceof Image ? ((Image) surface).getPixelWidth() : mainWindowPixelWidth;
+  }
+
+  /** Returns the physical height of this destination surface, in pixels. */
+  public int getSurfacePixelHeight() {
+    return surface instanceof Image ? ((Image) surface).getPixelHeight() : mainWindowPixelHeight;
+  }
+
+  /**
+   * Configures the Java simulator's shared screen backing.
+   *
+   * <p>The width and height are logical TotalCross units. The content scale is
+   * used only to derive the physical pixel allocation and rasterization scale.</p>
+   */
+  public static void configureMainWindowSurface(int logicalWidth, int logicalHeight, double contentScale) {
+    if (logicalWidth < 0 || logicalHeight < 0 || !Double.isFinite(contentScale) || contentScale <= 0) {
+      throw new IllegalArgumentException("invalid main-window surface configuration");
+    }
+    int pixelWidth = scaleSurfaceDimension(logicalWidth, contentScale);
+    int pixelHeight = scaleSurfaceDimension(logicalHeight, contentScale);
+    long pixelCount = (long) pixelWidth * pixelHeight;
+    if (pixelCount > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("main-window surface is too large");
+    }
+    boolean changed = mainWindowLogicalWidth != logicalWidth || mainWindowLogicalHeight != logicalHeight
+        || mainWindowContentScale != contentScale || mainWindowPixelWidth != pixelWidth
+        || mainWindowPixelHeight != pixelHeight;
+    mainWindowLogicalWidth = logicalWidth;
+    mainWindowLogicalHeight = logicalHeight;
+    mainWindowContentScale = contentScale;
+    mainWindowPixelWidth = pixelWidth;
+    mainWindowPixelHeight = pixelHeight;
+    if (changed || mainWindowPixels == null || mainWindowPixels.length != pixelCount) {
+      mainWindowPixels = new int[(int) pixelCount];
+    }
+  }
+
+  /** Returns the physical width of the Java simulator's shared screen backing. */
+  public static int getMainWindowPixelWidth() {
+    return mainWindowPixelWidth;
+  }
+
+  /** Returns the physical height of the Java simulator's shared screen backing. */
+  public static int getMainWindowPixelHeight() {
+    return mainWindowPixelHeight;
+  }
+
+  /** Returns the physical pixels represented by one logical screen unit. */
+  public static double getMainWindowContentScale() {
+    return mainWindowContentScale;
+  }
+
+  private static int scaleSurfaceDimension(int logicalSize, double scale) {
+    double scaled = Math.ceil(logicalSize * scale);
+    if (scaled > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("scaled surface dimension is too large");
+    }
+    return (int) scaled;
+  }
+
+  /**
+   * Updates destination-owned scales after a runtime surface configuration change.
+   *
+   * <p>This is not a global display-density setting. Changing {@code contentScale} preserves
+   * logical layout and requests repaint; changing {@code fontScale} also repositions controls
+   * using their recorded layout expressions.</p>
+   */
+  public void setScales(double contentScale, double fontScale) {
+    if (!Double.isFinite(contentScale) || contentScale <= 0 || !Double.isFinite(fontScale) || fontScale <= 0) {
+      throw new IllegalArgumentException("graphics scales must be finite and positive");
+    }
+    boolean fontScaleChanged = this.fontScale != fontScale;
+    this.contentScale = contentScale;
+    this.fontScale = fontScale;
+    if (surface instanceof Control) {
+      if (fontScaleChanged) {
+        ((Control) surface).reposition();
+      }
+      Window.needsPaint = true;
+    }
+  }
+
   @ReplacedByNativeOnDeploy
   private void create(GfxSurface surface) {
     alpha = 0xFF000000; // On Java, alpha is always initialized with opaque
     if (surface instanceof Image) {
-      pitch = ((Image) surface).getWidth();
+      pitch = ((Image) surface).getPixelWidth();
     } else if (surface instanceof Control) {
-      if (mainWindowPixels == null || mainWindowPixels.length < Settings.screenWidth * Settings.screenHeight) {
-        mainWindowPixels = new int[Settings.screenWidth * Settings.screenHeight]; // create the pixels
+      if (Settings.screenWidth >= 0 && Settings.screenHeight >= 0
+          && (mainWindowLogicalWidth != Settings.screenWidth || mainWindowLogicalHeight != Settings.screenHeight)) {
+        configureMainWindowSurface(Settings.screenWidth, Settings.screenHeight, mainWindowContentScale);
       }
-      pitch = Settings.screenWidth;
+      contentScale = mainWindowContentScale;
+      pitch = mainWindowPixelWidth;
     } else {
       throw new RuntimeException("Only Image and Control can have a Graphics.");
     }
@@ -256,11 +366,13 @@ public final class Graphics {
   public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, Font f) {
     int scrW, scrH;
     if (isControlSurface) {
-      if (mainWindowPixels.length < Settings.screenHeight * Settings.screenWidth) {
-        mainWindowPixels = null; // let the gc collect the old array before allocating the new one if necessary.
-        mainWindowPixels = new int[Settings.screenHeight * Settings.screenWidth];
+      if (Settings.screenWidth >= 0 && Settings.screenHeight >= 0
+          && (mainWindowLogicalWidth != Settings.screenWidth || mainWindowLogicalHeight != Settings.screenHeight)) {
+        configureMainWindowSurface(Settings.screenWidth, Settings.screenHeight, mainWindowContentScale);
       }
-      scrW = pitch = Settings.screenWidth;
+      contentScale = mainWindowContentScale;
+      pitch = mainWindowPixelWidth;
+      scrW = Settings.screenWidth;
       scrH = Settings.screenHeight;
     } else {
       // image
@@ -536,6 +648,10 @@ public final class Graphics {
     x += transX;
     y += transY;
     if (clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2) {
+      if (hasScaledBacking()) {
+        x = scaleBackingEdge(x);
+        y = scaleBackingEdge(y);
+      }
       return getSurfacePixels(surface)[y * pitch + x] & 0xFFFFFF;
     }
     return -1;
@@ -639,6 +755,14 @@ public final class Graphics {
       if (x < 0 || y < 0 || w <= 0 || h <= 0) {
         return;
       }
+      if (hasScaledBacking()) {
+        int x2 = scaleBackingEdge(x + w);
+        int y2 = scaleBackingEdge(y + h);
+        x = scaleBackingEdge(x);
+        y = scaleBackingEdge(y);
+        w = x2 - x;
+        h = y2 - y;
+      }
       int[] pix = getSurfacePixels(surface);
       for (x += y * pitch; h-- > 0; x += pitch) {
         Convert.fill(pix, x, x + w, backColor | alpha);
@@ -647,6 +771,14 @@ public final class Graphics {
         needsUpdate = true;
       }
     }
+  }
+
+  private int scaleBackingEdge(int logicalEdge) {
+    return (int) Math.round(logicalEdge * contentScale);
+  }
+
+  private boolean hasScaledBacking() {
+    return contentScale != 1;
   }
 
   /**
@@ -856,13 +988,23 @@ public final class Graphics {
    */
   @ReplacedByNativeOnDeploy
   public void drawText(String text, int x, int y, int justifyWidth) {
-    int x0 = x;
-    int y0 = y;
     int chrCount;
-    int xMax, xMin, yMax, yMin;
     if (text == null || (chrCount = text.length()) == 0) {
       return; // guich@200b3: corrected bug if text is null
     }
+    double rasterScale = hasScaledBacking() ? contentScale : 1;
+    int rasterTransX = scaleTextEdge(transX, rasterScale);
+    int rasterTransY = scaleTextEdge(transY, rasterScale);
+    int rasterClipX1 = scaleTextEdge(clipX1, rasterScale);
+    int rasterClipY1 = scaleTextEdge(clipY1, rasterScale);
+    int rasterClipX2 = scaleTextEdge(clipX2, rasterScale);
+    int rasterClipY2 = scaleTextEdge(clipY2, rasterScale);
+    x = scaleTextEdge(x, rasterScale);
+    y = scaleTextEdge(y, rasterScale);
+    justifyWidth = scaleTextEdge(justifyWidth, rasterScale);
+    int x0 = x;
+    int y0 = y;
+    int xMax, xMin, yMax, yMin;
     int ands8[] = ands8Mask;
     int width;
     int start, current;
@@ -870,7 +1012,8 @@ public final class Graphics {
     byte[] bitmapTable; // pgr@402_50
     int rowWIB;
     // speed-up
-    tc.simulator.Launcher.UserFont font = (tc.simulator.Launcher.UserFont) this.font.hv_UserFont;
+    Font textFont = effectiveTextFont(rasterScale);
+    tc.simulator.Launcher.UserFont font = (tc.simulator.Launcher.UserFont) textFont.hv_UserFont;
     totalcross.Launcher.CharBits bits = new totalcross.Launcher.CharBits();
     int height = font.maxHeight;
     int chrStart = 0;
@@ -886,7 +1029,7 @@ public final class Graphics {
       if (chrCount == 0) {
         return;
       }
-      rem = justifyWidth - this.font.fm.stringWidth(text.toCharArray(), 0, chrCount);
+      rem = justifyWidth - textFont.fm.stringWidth(text.toCharArray(), 0, chrCount);
       if (rem > 0) {
         extraPixelsPerChar = rem / chrCount;
         extraPixelsRemaining = rem % chrCount;
@@ -894,17 +1037,17 @@ public final class Graphics {
     }
 
     if (isVert) {
-      y += transY;
+      y += rasterTransY;
     }
     int incY = height + justifyWidth;
-    x0 += transX;
-    y0 += transY;
-    xMax = xMin = (x0 < clipX1) ? clipX1 : x0;
+    x0 += rasterTransX;
+    y0 += rasterTransY;
+    xMax = xMin = (x0 < rasterClipX1) ? rasterClipX1 : x0;
     yMax = y0 + (isVert ? chrCount * incY : height);
-    if (yMax >= clipY2) {
-      yMax = clipY2;
+    if (yMax >= rasterClipY2) {
+      yMax = rasterClipY2;
     }
-    yMin = (y0 < clipY1) ? clipY1 : y0;
+    yMin = (y0 < rasterClipY1) ? rasterClipY1 : y0;
     int[] pixels = getSurfacePixels(surface);
 
     for (int k = 0; k < chrCount; k++) {
@@ -914,7 +1057,7 @@ public final class Graphics {
           if (isVert) {
             y += ch == '\t' ? incY * Font.TAB_SIZE : incY;
           } else {
-            x0 += Launcher.instance.getCharWidth(this.font, ch) + extraPixelsPerChar;
+            x0 += Launcher.instance.getCharWidth(textFont, ch) + extraPixelsPerChar;
             if (k <= extraPixelsRemaining) {
               x0++;
             }
@@ -923,7 +1066,7 @@ public final class Graphics {
         continue; // for all other control chars, just skip to next
       }
       if (font.ubase == null || ch < font.firstChar || ch > font.lastChar) {
-        this.font.hv_UserFont = font = Launcher.instance.getFont(this.font, ch);
+        textFont.hv_UserFont = font = Launcher.instance.getFont(textFont, ch);
       }
       font.setCharBits(ch, bits);
       if (bits.offset == -1) {
@@ -936,8 +1079,8 @@ public final class Graphics {
       rowWIB = bits.rowWIB;
       bitmapTable = bits.charBitmapTable;
       width = bits.width;
-      if ((xMax = x0 + width) > clipX2) {
-        xMax = clipX2;
+      if ((xMax = x0 + width) > rasterClipX2) {
+        xMax = rasterClipX2;
       }
       int y1 = y, r = 0;
       start = 0;
@@ -1041,8 +1184,8 @@ public final class Graphics {
           break;
         }
       } else {
-        if (xMax >= clipX2) {
-          xMax = clipX2;
+        if (xMax >= rasterClipX2) {
+          xMax = rasterClipX2;
           break;
         }
         x0 = xMax; // next character
@@ -1052,6 +1195,18 @@ public final class Graphics {
         }
       }
     }
+  }
+
+  private int scaleTextEdge(int value, double rasterScale) {
+    return rasterScale == 1 ? value : (int) Math.round(value * rasterScale);
+  }
+
+  private Font effectiveTextFont(double rasterScale) {
+    if (fontScale == 1 && rasterScale == 1) {
+      return font;
+    }
+    return Font.getFont(font.name, font.isBold(),
+        Math.max(1, (int) Math.round(font.size * fontScale * rasterScale)));
   }
 
   
@@ -1980,10 +2135,19 @@ public final class Graphics {
       h = results[3];
 
       int[] pixels = getSurfacePixels(surface);
-      int inc = pitch, pos = y * inc + x, count = w * h;
-
-      for (; h-- > 0; pos += inc, offset += w) {
-        System.arraycopy(pixels, pos, data, offset, w);
+      int count = w * h;
+      if (!hasScaledBacking()) {
+        int pos = y * pitch + x;
+        for (int row = 0; row < h; row++, pos += pitch, offset += w) {
+          System.arraycopy(pixels, pos, data, offset, w);
+        }
+      } else {
+        for (int logicalY = y; logicalY < y + h; logicalY++) {
+          int pixelY = scaleBackingEdge(logicalY);
+          for (int logicalX = x; logicalX < x + w; logicalX++) {
+            data[offset++] = pixels[pixelY * pitch + scaleBackingEdge(logicalX)];
+          }
+        }
       }
 
       return count;
@@ -2017,10 +2181,28 @@ public final class Graphics {
       h = results[3];
 
       int[] pixels = getSurfacePixels(surface);
-      int inc = pitch, pos = y * inc + x, count = w * h;
-
-      for (; h-- > 0; pos += inc, offset += w) {
-        Vm.arrayCopy(data, offset, pixels, pos, w);
+      int count = w * h;
+      if (!hasScaledBacking()) {
+        int pos = y * pitch + x;
+        for (int row = 0; row < h; row++, pos += pitch, offset += w) {
+          Vm.arrayCopy(data, offset, pixels, pos, w);
+        }
+      } else {
+        for (int logicalY = y; logicalY < y + h; logicalY++) {
+          int pixelY1 = scaleBackingEdge(logicalY);
+          int pixelY2 = scaleBackingEdge(logicalY + 1);
+          for (int logicalX = x; logicalX < x + w; logicalX++) {
+            int pixelX1 = scaleBackingEdge(logicalX);
+            int pixelX2 = scaleBackingEdge(logicalX + 1);
+            int color = data[offset++];
+            for (int pixelY = pixelY1; pixelY < pixelY2; pixelY++) {
+              Convert.fill(pixels, pixelY * pitch + pixelX1, pixelY * pitch + pixelX2, color);
+            }
+          }
+        }
+      }
+      if (isControlSurface) {
+        needsUpdate = true;
       }
 
       return count;
@@ -2055,6 +2237,7 @@ public final class Graphics {
   private void drawSurface(int[] pixels, Object srcSurface, int x, int y, int width, int height, int dstX, int dstY,
       boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH) {
     boolean isScaled = false;
+    int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
     if (srcSurface instanceof Image) {
       Image img = (Image) srcSurface;
       if (img.hwScaleH != 1 || img.hwScaleW != 1) {
@@ -2070,106 +2253,129 @@ public final class Graphics {
     }
     try {
       // petrus@450_7: revamp of the drawBitmap clipping algorithm
-      int bmpPt, screenPt;
-      int i, j;
       dstX += transX;
       dstY += transY;
 
-      if (!doClip) {
-        /*
-         * | Although doClip is not set, we make sure that the area of the bitmap | that we want to copy IS inside
-         * its area | If doClip is set, then the clipping computation below ensures | the sanity of the operation
-         * (and is quite as fast). | DoClip is important for game sprites where programmers ensure that the | sprite
-         * will never pass screen boundaries.
-         */
-        if ((x <= -width) || (x >= bmpW) || (y <= -height) || (y >= bmpH)) {
-          return;
-        }
-      } else {
-        /* clip the source rectangle to the source surface */
-        if (x < 0) {
-          width += x;
-          dstX -= x;
-          x = 0;
-        }
-        i = bmpW - x;
-        if (width > i) {
-          width = i;
-        }
-        if (y < 0) {
-          height += y;
-          dstY -= y;
-          y = 0;
-        }
-        i = bmpH - y;
-        if (height > i) {
-          height = i;
-        }
+      /* Clip in logical coordinates. Physical conversion happens only after both
+       * source and destination rectangles have their final logical extent. */
+      if (x < 0) {
+        width += x;
+        dstX -= x;
+        x = 0;
+      }
+      int available = bmpW - x;
+      if (width > available) {
+        width = available;
+      }
+      if (y < 0) {
+        height += y;
+        dstY -= y;
+        y = 0;
+      }
+      available = bmpH - y;
+      if (height > available) {
+        height = available;
+      }
 
-        /* clip the destination rectangle against the clip rectangle */
-        if (dstX < clipX1) {
-          i = clipX1 - dstX;
-          dstX = clipX1;
-          x += i;
-          width -= i;
+      int destinationClipX1 = doClip ? clipX1 : minX;
+      int destinationClipY1 = doClip ? clipY1 : minY;
+      int destinationClipX2 = doClip ? clipX2 : maxX;
+      int destinationClipY2 = doClip ? clipY2 : maxY;
+      {
+        if (dstX < destinationClipX1) {
+          int clipped = destinationClipX1 - dstX;
+          dstX = destinationClipX1;
+          x += clipped;
+          width -= clipped;
         }
-        if ((dstX + width) > clipX2) {
-          width = clipX2 - dstX;
+        if (dstX + width > destinationClipX2) {
+          width = destinationClipX2 - dstX;
         }
-        if (dstY < clipY1) {
-          i = clipY1 - dstY;
-          dstY = clipY1;
-          y += i;
-          height -= i;
+        if (dstY < destinationClipY1) {
+          int clipped = destinationClipY1 - dstY;
+          dstY = destinationClipY1;
+          y += clipped;
+          height -= clipped;
         }
-        if ((dstY + height) > clipY2) {
-          height = clipY2 - dstY;
+        if (dstY + height > destinationClipY2) {
+          height = destinationClipY2 - dstY;
         }
-
-        /* check the validity */
-        if ((width <= 0) || (height <= 0)) {
-          return;
-        }
+      }
+      if (width <= 0 || height <= 0) {
+        return;
       }
 
       int[] dst = getSurfacePixels(surface);
       boolean isSrcScreen = !(srcSurface instanceof Image);
-      int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
-      int psrc = (bmpY + y) * scrPitch + bmpX + x;
-      int pdst = dstY * pitch + dstX;
-      int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
-      for (j = height; --j >= 0; psrc += scrPitch, pdst += pitch) {
-        int srcIdx = psrc; // guich@450_1
-        int dstIdx = pdst;
-        if (isSrcScreen) {
-          for (i = width; --i >= 0;) {
-            dst[dstIdx++] = pixels[srcIdx++] | 0xFF000000;
-          }
-        } else {
-          for (i = width; --i >= 0; dstIdx++) {
-            bmpPt = pixels[srcIdx++];
-            int a = (bmpPt >>> 24) & 0xFF;
-            a = alphaMask * a / 255;
-            if (a == 0xFF) {
-              dst[dstIdx] = bmpPt;
-            } else if (a != 0) {
-              screenPt = dst[dstIdx];
-              int br = (bmpPt >> 16) & 0xFF;
-              int bg = (bmpPt >> 8) & 0xFF;
-              int bb = (bmpPt) & 0xFF;
-              int sr = (screenPt >> 16) & 0xFF;
-              int sg = (screenPt >> 8) & 0xFF;
-              int sb = (screenPt) & 0xFF;
+      double srcScale = srcSurface instanceof Image ? ((Image) srcSurface).getContentScale()
+          : mainWindowContentScale;
+      int srcPitch = srcSurface instanceof Image ? ((Image) srcSurface).getPixelWidth() : mainWindowPixelWidth;
+      int srcPixelHeight = srcSurface instanceof Image ? ((Image) srcSurface).getPixelHeight() : mainWindowPixelHeight;
+      int srcX1 = scaleSurfaceEdge(bmpX + x, srcScale);
+      int srcY1 = scaleSurfaceEdge(bmpY + y, srcScale);
+      int srcX2 = scaleSurfaceEdge(bmpX + x + width, srcScale);
+      int srcY2 = scaleSurfaceEdge(bmpY + y + height, srcScale);
+      int dstX1 = scaleSurfaceEdge(dstX, contentScale);
+      int dstY1 = scaleSurfaceEdge(dstY, contentScale);
+      int dstX2 = scaleSurfaceEdge(dstX + width, contentScale);
+      int dstY2 = scaleSurfaceEdge(dstY + height, contentScale);
 
-              int ma = 0xFF - a;
-              int r = (a * br + ma * sr);
-              r = (r + 1 + (r >> 8)) >> 8; // fast way to divide by 255
-              int g = (a * bg + ma * sg);
-              g = (g + 1 + (g >> 8)) >> 8;
-              int b = (a * bb + ma * sb);
-              b = (b + 1 + (b >> 8)) >> 8;
-              dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
-            }
+      srcX1 = Math.max(0, Math.min(srcPitch, srcX1));
+      srcX2 = Math.max(srcX1, Math.min(srcPitch, srcX2));
+      srcY1 = Math.max(0, Math.min(srcPixelHeight, srcY1));
+      srcY2 = Math.max(srcY1, Math.min(srcPixelHeight, srcY2));
+      dstX1 = Math.max(0, Math.min(getSurfacePixelWidth(), dstX1));
+      dstX2 = Math.max(dstX1, Math.min(getSurfacePixelWidth(), dstX2));
+      dstY1 = Math.max(0, Math.min(getSurfacePixelHeight(), dstY1));
+      dstY2 = Math.max(dstY1, Math.min(getSurfacePixelHeight(), dstY2));
+
+      int srcWidth = srcX2 - srcX1;
+      int srcHeight = srcY2 - srcY1;
+      int dstWidth = dstX2 - dstX1;
+      int dstHeight = dstY2 - dstY1;
+      if (srcWidth <= 0 || srcHeight <= 0 || dstWidth <= 0 || dstHeight <= 0) {
+        return;
+      }
+
+      if (pixels == dst && rectanglesOverlap(srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2)) {
+        int[] snapshot = new int[srcWidth * srcHeight];
+        for (int row = 0; row < srcHeight; row++) {
+          System.arraycopy(pixels, (srcY1 + row) * srcPitch + srcX1, snapshot, row * srcWidth, srcWidth);
+        }
+        pixels = snapshot;
+        srcPitch = srcWidth;
+        srcX1 = srcY1 = 0;
+      }
+
+      for (int pixelY = dstY1; pixelY < dstY2; pixelY++) {
+        int sourceY = srcY1 + (int) ((long) (pixelY - dstY1) * srcHeight / dstHeight);
+        int dstIndex = pixelY * pitch + dstX1;
+        for (int pixelX = dstX1; pixelX < dstX2; pixelX++, dstIndex++) {
+          int sourceX = srcX1 + (int) ((long) (pixelX - dstX1) * srcWidth / dstWidth);
+          int bmpPt = pixels[sourceY * srcPitch + sourceX];
+          if (isSrcScreen) {
+            dst[dstIndex] = bmpPt | 0xFF000000;
+            continue;
+          }
+          int a = alphaMask * ((bmpPt >>> 24) & 0xFF) / 255;
+          if (a == 0xFF) {
+            dst[dstIndex] = bmpPt;
+          } else if (a != 0) {
+            int screenPt = dst[dstIndex];
+            int br = (bmpPt >> 16) & 0xFF;
+            int bg = (bmpPt >> 8) & 0xFF;
+            int bb = bmpPt & 0xFF;
+            int sr = (screenPt >> 16) & 0xFF;
+            int sg = (screenPt >> 8) & 0xFF;
+            int sb = screenPt & 0xFF;
+            int ma = 0xFF - a;
+            int r = a * br + ma * sr;
+            int g = a * bg + ma * sg;
+            int b = a * bb + ma * sb;
+            r = (r + 1 + (r >> 8)) >> 8;
+            g = (g + 1 + (g >> 8)) >> 8;
+            b = (b + 1 + (b >> 8)) >> 8;
+            dst[dstIndex] = (screenPt & 0xFF000000) | (r << 16) | (g << 8) | b;
           }
         }
       }
@@ -2184,6 +2390,15 @@ public final class Graphics {
         e.printStackTrace();
       }
     }
+  }
+
+  private static int scaleSurfaceEdge(int logicalEdge, double scale) {
+    return scale == 1 ? logicalEdge : (int) Math.round(logicalEdge * scale);
+  }
+
+  private static boolean rectanglesOverlap(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2,
+      int by2) {
+    return ax1 < bx2 && bx1 < ax2 && ay1 < by2 && by1 < ay2;
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////
@@ -2339,7 +2554,17 @@ public final class Graphics {
         return;
       }
       int[] pixels = getSurfacePixels(surface);
-      pixels[y * pitch + x] = color;
+      if (hasScaledBacking()) {
+        int x2 = scaleBackingEdge(x + 1);
+        int y2 = scaleBackingEdge(y + 1);
+        x = scaleBackingEdge(x);
+        y = scaleBackingEdge(y);
+        for (; y < y2; y++) {
+          Convert.fill(pixels, y * pitch + x, y * pitch + x2, color);
+        }
+      } else {
+        pixels[y * pitch + x] = color;
+      }
       if (isControlSurface) {
         needsUpdate = true;
       }
@@ -2364,8 +2589,19 @@ public final class Graphics {
         return;
       }
       int[] pix = getSurfacePixels(surface);
-      x += y * pitch;
-      Convert.fill(pix, x, x + w, color);
+      if (hasScaledBacking()) {
+        int x2 = scaleBackingEdge(x + w);
+        int y2 = scaleBackingEdge(y + 1);
+        y = scaleBackingEdge(y);
+        x = scaleBackingEdge(x);
+        w = x2 - x;
+        for (; y < y2; y++) {
+          Convert.fill(pix, y * pitch + x, y * pitch + x + w, color);
+        }
+      } else {
+        x += y * pitch;
+        Convert.fill(pix, x, x + w, color);
+      }
       if (isControlSurface) {
         needsUpdate = true;
       }
@@ -2390,8 +2626,19 @@ public final class Graphics {
         return;
       }
       int[] pixels = getSurfacePixels(surface);
-      for (x += y * pitch; h-- > 0; x += pitch) {
-        pixels[x] = color;
+      if (hasScaledBacking()) {
+        int x2 = scaleBackingEdge(x + 1);
+        int y2 = scaleBackingEdge(y + h);
+        x = scaleBackingEdge(x);
+        y = scaleBackingEdge(y);
+        h = y2 - y;
+        for (; h-- > 0; y++) {
+          Convert.fill(pixels, y * pitch + x, y * pitch + x2, color);
+        }
+      } else {
+        for (x += y * pitch; h-- > 0; x += pitch) {
+          pixels[x] = color;
+        }
       }
       if (isControlSurface) {
         needsUpdate = true;
@@ -3261,12 +3508,20 @@ public final class Graphics {
     y = results[1];
     w = results[2];
     h = results[3];
+    int x2 = x + w;
+    int y2 = y + h;
+    if (hasScaledBacking()) {
+      x2 = scaleBackingEdge(x2);
+      y2 = scaleBackingEdge(y2);
+      x = scaleBackingEdge(x);
+      y = scaleBackingEdge(y);
+    }
     // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
-    int[] pixels = (int[]) getSurfacePixels(surface);
+    int[] pixels = getSurfacePixels(surface);
     int p, oldR, oldG, oldB, newR, newG, newB, errR, errG, errB;
-    for (int yy = y; yy < h; yy++) {
-      for (int xx = x; xx < w; xx++) {
-        p = pixels[yy * w + xx];
+    for (int yy = y; yy < y2; yy++) {
+      for (int xx = x; xx < x2; xx++) {
+        p = pixels[yy * pitch + xx];
         // get current pixel values
         oldR = (p >> 16) & 0xFF;
         oldG = (p >> 8) & 0xFF;
@@ -3280,12 +3535,12 @@ public final class Graphics {
         errG = oldG - newG;
         errB = oldB - newB;
         // set new pixel
-        pixels[yy * w + xx] = (p & 0xFF000000) | (newR << 16) | (newG << 8) | newB;
+        pixels[yy * pitch + xx] = (p & 0xFF000000) | (newR << 16) | (newG << 8) | newB;
 
-        addError(pixels, xx + 1, yy, w, h, errR, errG, errB, 7, 16);
-        addError(pixels, xx - 1, yy + 1, w, h, errR, errG, errB, 3, 16);
-        addError(pixels, xx, yy + 1, w, h, errR, errG, errB, 5, 16);
-        addError(pixels, xx + 1, yy + 1, w, h, errR, errG, errB, 1, 16);
+        addError(pixels, xx + 1, yy, x, y, x2, y2, errR, errG, errB, 7, 16);
+        addError(pixels, xx - 1, yy + 1, x, y, x2, y2, errR, errG, errB, 3, 16);
+        addError(pixels, xx, yy + 1, x, y, x2, y2, errR, errG, errB, 5, 16);
+        addError(pixels, xx + 1, yy + 1, x, y, x2, y2, errR, errG, errB, 1, 16);
       }
     }
     if (isControlSurface) {
@@ -3293,11 +3548,12 @@ public final class Graphics {
     }
   }
   // used for the dither method
-  private void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k) {
-    if (x >= w || y >= h || x < 0) {
+  private void addError(int[] pixel, int x, int y, int minX, int minY, int maxX, int maxY, int errR, int errG,
+      int errB, int j, int k) {
+    if (x < minX || x >= maxX || y < minY || y >= maxY) {
       return;
     }
-    int i = y * w + x;
+    int i = y * pitch + x;
     int p = pixel[i];
     int r = (p >> 16) & 0xFF;
     int g = (p >> 8) & 0xFF;

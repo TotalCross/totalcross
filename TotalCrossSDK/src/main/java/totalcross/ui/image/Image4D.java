@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>   
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -89,6 +90,8 @@ public class Image4D extends GfxSurface {
   private int[] instanceCount = new int[1];
   private Image4D[] master = new Image4D[1];
   private String path;
+  private int logicalWidth;
+  private int logicalHeight;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
@@ -107,6 +110,7 @@ public class Image4D extends GfxSurface {
    * @since TotalCross 2.0
    */
   public double hwScaleW = 1, hwScaleH = 1;
+  private double contentScale = 1;
 
   // statics
   /** Dumb field to keep compilation compatibility with TC 1 */
@@ -120,14 +124,35 @@ public class Image4D extends GfxSurface {
   }
 
   public Image4D(int width, int height) throws ImageException {
-    this.width = width;
-    this.height = height;
+    this(width, height, 1);
+  }
+
+  private Image4D(int logicalWidth, int logicalHeight, double contentScale) throws ImageException {
+    if (!Double.isFinite(contentScale) || contentScale <= 0 || logicalWidth <= 0 || logicalHeight <= 0) {
+      throw new ImageException("Image dimensions and content scale must be positive.");
+    }
+    long pixelWidth = (long) Math.ceil(logicalWidth * contentScale);
+    long pixelHeight = (long) Math.ceil(logicalHeight * contentScale);
+    if (pixelWidth > Integer.MAX_VALUE || pixelHeight > Integer.MAX_VALUE || pixelWidth * pixelHeight > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    this.logicalWidth = logicalWidth;
+    this.logicalHeight = logicalHeight;
+    this.contentScale = contentScale;
+    this.hwScaleW = 1;
+    this.hwScaleH = 1;
+    width = (int) pixelWidth;
+    height = (int) pixelHeight;
     try {
       pixels = new int[height * width]; // just create the pixels array
     } catch (OutOfMemoryError oome) {
       throw new ImageException("Out of memory: cannot allocated " + width + "x" + height + " offscreen image.");
     }
     init();
+  }
+
+  public static Image4D createLogical(int width, int height, double contentScale) throws ImageException {
+    return new Image4D(width, height, contentScale);
   }
 
   public Image4D(String path) throws ImageException {
@@ -187,6 +212,10 @@ public class Image4D extends GfxSurface {
     this.surfaceType = src.surfaceType;
     this.width = src.width;
     this.height = src.height;
+    this.logicalWidth = src.logicalWidth;
+    this.logicalHeight = src.logicalHeight;
+    this.contentScale = src.contentScale;
+    this.alphaMask = src.alphaMask;
     this.frameCount = src.frameCount;
     this.currentFrame = -1;
     this.widthOfAllFrames = src.widthOfAllFrames;
@@ -213,7 +242,24 @@ public class Image4D extends GfxSurface {
   }
 
   private void init() throws ImageException {
-	textureId = -1;
+    surfaceType = 1;
+    textureId = -1;
+    if (hwScaleW == 0) {
+      hwScaleW = 1;
+    }
+    if (hwScaleH == 0) {
+      hwScaleH = 1;
+    }
+    if (contentScale == 0) {
+      contentScale = 1;
+    }
+    if (alphaMask == 0) {
+      alphaMask = 255;
+    }
+    if (logicalWidth == 0) {
+      logicalWidth = width;
+      logicalHeight = height;
+    }
     if (comment != null && comment.startsWith("FC=")) {
       try {
         setFrameCount(Convert.toInt(comment.substring(3)));
@@ -222,7 +268,8 @@ public class Image4D extends GfxSurface {
     }
     // init the Graphics
     gfx = new Graphics(this);
-    gfx.refresh(0, 0, width, height, 0, 0, null);
+    gfx.setScales(contentScale, 1);
+    gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
   }
 
   native private void imageLoad(String path);
@@ -243,6 +290,7 @@ public class Image4D extends GfxSurface {
         comment = "FC=" + n;
         widthOfAllFrames = width;
         width /= frameCount;
+        logicalWidth = (int) Math.ceil(width / contentScale);
         // the pixels will hold the pixel of a single frame
         pixelsOfAllFrames = pixels;
         pixels = new int[width * height];
@@ -277,20 +325,24 @@ public class Image4D extends GfxSurface {
 
   @Override
   public int getHeight() {
-    return (int) (height * hwScaleH);
+    return (int) (logicalHeight * hwScaleH);
   }
 
   @Override
   public int getWidth() {
-    return (int) (width * hwScaleW);
+    return (int) (logicalWidth * hwScaleW);
   }
+
+  public int getPixelWidth() { return width; }
+  public int getPixelHeight() { return height; }
+  public double getContentScale() { return contentScale; }
 
   public Graphics getGraphics() {
     if (pixels == null) {
       return null;
     }
     gfx.setFont(MainWindow.getDefaultFont());
-    gfx.refresh(0, 0, width, height, 0, 0, null);
+    gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
     return gfx;
   }
 
@@ -435,8 +487,8 @@ public class Image4D extends GfxSurface {
 
   private totalcross.ui.image.Image4D getModifiedInstance(int newW, int newH, int angle, int percScale, int color,
       int brightness, int contrast, int type) throws totalcross.ui.image.ImageException {
-    if (type != ALPHA_INSTANCE && type != FADED_INSTANCE && newW == width && newH == height && (angle % 360) == 0
-        && brightness == 0 && contrast == 0) {
+    if (type != ALPHA_INSTANCE && type != FADED_INSTANCE && contentScale == 1 && newW == width && newH == height
+        && (angle % 360) == 0 && brightness == 0 && contrast == 0) {
       return this;
     }
 

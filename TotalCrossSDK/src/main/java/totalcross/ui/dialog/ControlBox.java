@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -118,8 +119,8 @@ public class ControlBox extends Window {
     msg.setFont(font);
     int maxW = Settings.screenWidth - fmH * 2;
     String text = originalText;
-    if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) {
-      text = Convert.insertLineBreak(maxW, fm, text.replace('\n', ' '));
+    if (text.indexOf('\n') < 0 && getFontWidthForLayout(text) > maxW) {
+      text = Convert.insertLineBreak(maxW, fm, font.size * getGraphics().getFontScale(), text.replace('\n', ' '));
     }
     msg.setText(text);
     int wb = btns == null ? 0 : btns.getPreferredWidth();

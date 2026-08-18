@@ -12,8 +12,11 @@ void privateScreenChange(int32 w, int32 h)
    UNUSED(h)
 }
 
+#if TC_WINDOWING_SDL
 #include "../../init/tcsdl.h"
-#ifdef USE_SKIA
+#endif
+
+#if TC_RENDERER_SKIA
 #include "../skia/skia.h"
 #endif
 
@@ -23,7 +26,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 #ifdef __arm__
    *(tcSettings.isFullScreenPtr)=true;
 #endif
-#ifdef SKIA_H
+#if TC_WINDOWING_SDL
    TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr));
 #elif !defined HEADLESS
    DFBResult err;
@@ -74,7 +77,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
-#ifdef SKIA_H
+#if TC_RENDERER_SKIA
    initSkia(screen->screenW, screen->screenH, screen->pixels, (int)screen->pitch, screen->pixelformat);
 #endif
    return true;
@@ -82,8 +85,10 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen) // screen's already locked
 {            
-#ifdef SKIA_H
+#if TC_RENDERER_SKIA
    flushSkia();
+#elif TC_WINDOWING_SDL
+   TCSDL_UpdateTexture(screen->screenW, screen->screenH, screen->pitch, screen->pixels);
 #elif !defined HEADLESS
    DFBRegion bounds;
    bounds.x1 = currentContext->dirtyX1;
@@ -91,14 +96,12 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen) // scree
    bounds.x2 = currentContext->dirtyX2;
    bounds.y2 = currentContext->dirtyY2;
    SCREEN_EX(screen)->primary->Flip(SCREEN_EX(screen)->primary, &bounds, DSFLIP_ONSYNC);
-#else
-   TCSDL_UpdateTexture(screen->screenW, screen->screenH, screen->pitch, screen->pixels);
 #endif
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
-#ifdef SKIA_H
+#if TC_WINDOWING_SDL
    TCSDL_Destroy(screen);
 #elif !defined HEADLESS
    if (SCREEN_EX(screen)->layer)

@@ -8,28 +8,34 @@
 #ifdef SKIA_H
 static int32 skiaSurfaceForGraphics(TCObject g)
 {
+   int32 surfaceId;
    if (!Graphics_isImageSurface(g))
-      return SKIA_SCREEN_SURFACE_ID;
+      surfaceId = SKIA_SCREEN_SURFACE_ID;
+   else
+   {
+      TCObject image = Graphics_surface(g);
+      if (image == null)
+         return SKIA_INVALID_SURFACE_ID;
 
-   TCObject image = Graphics_surface(g);
-   if (image == null)
-      return SKIA_INVALID_SURFACE_ID;
-
-   int32 id = Image_textureId(image);
-   if (id >= 0)
-      return id;
-
-   int32 frameCount = Image_frameCount(image);
-   TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(image) : Image_pixels(image);
-   Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
-   int32 width = frameCount > 1 ? Image_widthOfAllFrames(image) : Image_width(image);
-   int32 height = Image_height(image);
-   id = skia_makeBitmap(SKIA_SCREEN_SURFACE_ID, pixels, width, height);
-   if (id >= 0) {
-      Image_textureId(image) = id;
-      Image_changed(image) = false;
+      surfaceId = Image_textureId(image);
+      if (surfaceId < 0)
+      {
+         int32 frameCount = Image_frameCount(image);
+         TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(image) : Image_pixels(image);
+         Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+         int32 width = frameCount > 1 ? Image_widthOfAllFrames(image) : Image_width(image);
+         int32 height = Image_height(image);
+         surfaceId = skia_makeBitmap(SKIA_SCREEN_SURFACE_ID, pixels, width, height);
+         if (surfaceId >= 0) {
+            Image_textureId(image) = surfaceId;
+            Image_changed(image) = false;
+         }
+      }
    }
-   return id;
+
+   if (surfaceId >= SKIA_SCREEN_SURFACE_ID)
+      skia_setSurfaceScale(surfaceId, Graphics_contentScale(g));
+   return surfaceId;
 }
 #endif
 
@@ -219,14 +225,22 @@ end:
 static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSurf, int32 srcX, int32 srcY, int32 w, int32 h,
    int32 dstX, int32 dstY, int32 doClip) {
    if (Surface_isImage(srcSurf)) {
-      int32 srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
-      int32 srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
-      double scaleW = Image_hwScaleW(srcSurf);
-      double scaleH = Image_hwScaleH(srcSurf);
+      double contentScale = Image_contentScale(srcSurf);
+      double scaleW;
+      double scaleH;
+      int32 srcWidth;
+      int32 srcHeight;
       int32 frameCount = Image_frameCount(srcSurf);
       int32 frame = 0;
       bool clipSet = false;
 
+      if (contentScale <= 0) {
+         contentScale = 1;
+      }
+      srcWidth = (int32)ceil(Image_width(srcSurf) * Image_hwScaleW(srcSurf) / contentScale);
+      srcHeight = (int32)ceil(Image_height(srcSurf) * Image_hwScaleH(srcSurf) / contentScale);
+      scaleW = Image_hwScaleW(srcSurf) / contentScale;
+      scaleH = Image_hwScaleH(srcSurf) / contentScale;
       if (scaleW <= 0 || scaleH <= 0 || w <= 0 || h <= 0 || srcWidth <= 0 || srcHeight <= 0) {
          return;
       }
@@ -413,6 +427,6 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
    skia_setPixel(skiaSurfaceForGraphics(g), x, y, pixel | Graphics_alpha(g));
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
-   markDirty(currentContext, g, x, y, 1, 1);
+   markPhysicalDirty(currentContext, g, x, y, 1, 1);
 }
 #endif

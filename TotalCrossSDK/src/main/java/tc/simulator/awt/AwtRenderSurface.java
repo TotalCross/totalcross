@@ -27,7 +27,8 @@ import totalcross.ui.UIColors;
  */
 public class AwtRenderSurface extends Canvas implements RenderSurface {
   private final Component paintTarget;
-  private final double scale;
+  private final double presentationScale;
+  private final double contentScale;
   private final boolean fastScale;
   private BufferedImage image;
   private BufferedImage scaledImageSource;
@@ -38,8 +39,17 @@ public class AwtRenderSurface extends Canvas implements RenderSurface {
   }
 
   public AwtRenderSurface(Component paintTarget, double scale, boolean fastScale) {
+    this(paintTarget, scale, 1, fastScale);
+  }
+
+  public AwtRenderSurface(Component paintTarget, double presentationScale, double contentScale, boolean fastScale) {
+    if (!Double.isFinite(presentationScale) || presentationScale <= 0 || !Double.isFinite(contentScale)
+        || contentScale <= 0) {
+      throw new IllegalArgumentException("surface scales must be finite and positive");
+    }
     this.paintTarget = paintTarget == null ? this : paintTarget;
-    this.scale = scale;
+    this.presentationScale = presentationScale;
+    this.contentScale = contentScale;
     this.fastScale = fastScale;
   }
 
@@ -83,21 +93,23 @@ public class AwtRenderSurface extends Canvas implements RenderSurface {
   private void paintImage(Graphics graphics, BufferedImage image, Component observer) {
     int width = image.getWidth();
     int height = image.getHeight();
-    int scaledWidth = (int) (width * scale);
-    int scaledHeight = (int) (height * scale);
+    double backingToHostScale = presentationScale / contentScale;
+    int scaledWidth = (int) Math.round(width * backingToHostScale);
+    int scaledHeight = (int) Math.round(height * backingToHostScale);
     int shiftY = totalcross.ui.Window.shiftY;
     int shiftH = totalcross.ui.Window.shiftH;
-    if ((shiftY + shiftH) > height) {
-      totalcross.ui.Window.shiftY = shiftY = height - shiftH;
+    int logicalHeight = (int) Math.round(height / contentScale);
+    if ((shiftY + shiftH) > logicalHeight) {
+      totalcross.ui.Window.shiftY = shiftY = logicalHeight - shiftH;
     }
     if (shiftY != 0) {
       graphics.setColor(new Color(UIColors.unsafeAreaColor));
-      int yy = (int) (shiftH * scale);
+      int yy = (int) Math.round(shiftH * presentationScale);
       graphics.fillRect(0, yy, scaledWidth, scaledHeight - yy);
       graphics.setClip(0, 0, scaledWidth, yy);
-      graphics.translate(0, -(int) (shiftY * scale));
+      graphics.translate(0, -(int) Math.round(shiftY * presentationScale));
     }
-    if (scale != 1) {
+    if (backingToHostScale != 1) {
       if (fastScale) {
         graphics.drawImage(image, 0, 0, scaledWidth, scaledHeight, 0, 0, width, height, observer);
       } else {
@@ -111,7 +123,7 @@ public class AwtRenderSurface extends Canvas implements RenderSurface {
       graphics.drawImage(image, 0, 0, scaledWidth, scaledHeight, 0, 0, width, height, observer);
     }
     if (shiftY != 0) {
-      graphics.translate(0, (int) (shiftY * scale));
+      graphics.translate(0, (int) Math.round(shiftY * presentationScale));
       graphics.setClip(0, 0, scaledWidth, scaledHeight);
     }
   }

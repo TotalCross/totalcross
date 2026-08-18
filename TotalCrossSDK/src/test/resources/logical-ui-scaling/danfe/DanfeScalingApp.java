@@ -1,0 +1,298 @@
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
+package danfe.fixture;
+
+import totalcross.io.ByteArrayStream;
+import totalcross.ui.ImageControl;
+import totalcross.ui.Label;
+import totalcross.ui.Button;
+import totalcross.ui.Check;
+import totalcross.ui.Radio;
+import totalcross.ui.Edit;
+import totalcross.ui.Container;
+import totalcross.ui.LayoutUnit;
+import totalcross.ui.MainWindow;
+import totalcross.ui.MultiEdit;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.font.FontMetrics;
+import totalcross.ui.image.Image;
+import totalcross.sys.Settings;
+
+/** Deterministic, non-private macOS visual fixture for logical image scaling. */
+public class DanfeScalingApp extends MainWindow {
+  private static final int WIDTH = 360;
+  private static final int HEIGHT = 540;
+
+  @Override
+  public void initUI() {
+    Image document;
+    try {
+      document = new Image(WIDTH, HEIGHT);
+    } catch (Exception exception) {
+      throw new IllegalStateException("Unable to create DANFE fixture image", exception);
+    }
+    render(document.getGraphics());
+    add(new ImageControl(document), CENTER, CENTER, PREFERRED, PREFERRED);
+    if (getCommandLine().indexOf("/logical-ui-assert") >= 0) {
+      Graphics screen = getGraphics();
+      double contentScale = screen.getContentScale();
+      int physicalWidth = (int) Math.round(Settings.screenWidth * contentScale);
+      int physicalHeight = (int) Math.round(Settings.screenHeight * contentScale);
+      FontMetrics metrics = getFont().fm;
+      Label metricLabel = new Label("DANFE 25,00");
+      add(metricLabel, 0, 0, PREFERRED, PREFERRED);
+      Graphics labelGraphics = metricLabel.getGraphics();
+      labelGraphics.setScales(contentScale, 1.0);
+      int widthAtOne = metricLabel.getPreferredWidth();
+      labelGraphics.setScales(contentScale * 2.0, 1.0);
+      int widthAtDoubleContentScale = metricLabel.getPreferredWidth();
+      labelGraphics.setScales(contentScale, 1.5);
+      int widthAtFontScale = metricLabel.getPreferredWidth();
+      Edit metricEdit = new Edit("99999");
+      add(metricEdit, 0, 20, PREFERRED, PREFERRED);
+      Graphics editGraphics = metricEdit.getGraphics();
+      editGraphics.setScales(contentScale, 1.0);
+      int editWidthAtOne = metricEdit.getPreferredWidth();
+      editGraphics.setScales(contentScale * 2.0, 1.0);
+      int editWidthAtDoubleContentScale = metricEdit.getPreferredWidth();
+      editGraphics.setScales(contentScale, 1.5);
+      int editWidthAtFontScale = metricEdit.getPreferredWidth();
+      MultiEdit metricMultiEdit = new MultiEdit("99999", 2, 1);
+      add(metricMultiEdit, 0, 50, PREFERRED, PREFERRED);
+      Graphics multiEditGraphics = metricMultiEdit.getGraphics();
+      multiEditGraphics.setScales(contentScale, 1.0);
+      int multiEditHeightAtOne = metricMultiEdit.getPreferredHeight();
+      multiEditGraphics.setScales(contentScale * 2.0, 1.0);
+      int multiEditHeightAtDoubleContentScale = metricMultiEdit.getPreferredHeight();
+      multiEditGraphics.setScales(contentScale, 1.5);
+      int multiEditHeightAtFontScale = metricMultiEdit.getPreferredHeight();
+      Button metricButton = new Button("DANFE 25,00");
+      add(metricButton, 0, 70, PREFERRED, PREFERRED);
+      metricButton.getGraphics().setScales(contentScale, 1.0);
+      int buttonWidthAtOne = metricButton.getPreferredWidth();
+      metricButton.getGraphics().setScales(contentScale * 2.0, 1.0);
+      int buttonWidthAtDoubleContentScale = metricButton.getPreferredWidth();
+      metricButton.getGraphics().setScales(contentScale, 1.5);
+      int buttonWidthAtFontScale = metricButton.getPreferredWidth();
+      Check metricCheck = new Check("DANFE texto longo para quebrar linhas");
+      add(metricCheck, 0, 100, PREFERRED, PREFERRED);
+      metricCheck.getGraphics().setScales(contentScale, 1.0);
+      metricCheck.split(50);
+      int checkWidthAtOne = metricCheck.getMaxTextWidth();
+      metricCheck.getGraphics().setScales(contentScale * 2.0, 1.0);
+      int checkWidthAtDoubleContentScale = metricCheck.getMaxTextWidth();
+      metricCheck.getGraphics().setScales(contentScale, 1.5);
+      metricCheck.split(50);
+      int checkWidthAtFontScale = metricCheck.getMaxTextWidth();
+      Radio metricRadio = new Radio("DANFE 25,00");
+      add(metricRadio, 0, 130, PREFERRED, PREFERRED);
+      metricRadio.getGraphics().setScales(contentScale, 1.0);
+      int radioWidthAtOne = metricRadio.getPreferredWidth();
+      metricRadio.getGraphics().setScales(contentScale * 2.0, 1.0);
+      int radioWidthAtDoubleContentScale = metricRadio.getPreferredWidth();
+      metricRadio.getGraphics().setScales(contentScale, 1.5);
+      int radioWidthAtFontScale = metricRadio.getPreferredWidth();
+      Image logicalImage;
+      try {
+        logicalImage = Image.createLogical(3, 2, 2);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to create logical image assertion", exception);
+      }
+      logicalImage.getGraphics().backColor = Color.BLACK;
+      logicalImage.getGraphics().fillRect(1, 0, 1, 1);
+      logicalImage.applyChanges();
+      if (logicalImage.getWidth() != 3 || logicalImage.getHeight() != 2
+          || logicalImage.getPixelWidth() != 6 || logicalImage.getPixelHeight() != 4) {
+        throw new IllegalStateException("Logical image dimension assertion failed: "
+            + logicalImage.getWidth() + "x" + logicalImage.getHeight() + "/"
+            + logicalImage.getPixelWidth() + "x" + logicalImage.getPixelHeight());
+      }
+      ByteArrayStream logicalPng = new ByteArrayStream(128);
+      Image loadedImage;
+      Image transformedImage;
+      try {
+        logicalImage.createPng(logicalPng);
+        if (pngDimension(logicalPng.getBuffer(), 16) != 6 || pngDimension(logicalPng.getBuffer(), 20) != 4) {
+          throw new IllegalStateException("Logical image PNG physical-dimension assertion failed");
+        }
+        logicalPng.setPos(0);
+        loadedImage = new Image(logicalPng);
+        transformedImage = logicalImage.getScaledInstance(6, 4);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to encode, load, or transform logical image assertion", exception);
+      }
+      if (loadedImage.getWidth() != 6 || loadedImage.getHeight() != 4 || loadedImage.getPixelWidth() != 6
+          || loadedImage.getPixelHeight() != 4 || loadedImage.getContentScale() != 1) {
+        throw new IllegalStateException("Loaded image scale assertion failed");
+      }
+      if (transformedImage.getWidth() != 6 || transformedImage.getHeight() != 4
+          || transformedImage.getPixelWidth() != 6 || transformedImage.getPixelHeight() != 4
+          || transformedImage.getContentScale() != 1) {
+        throw new IllegalStateException("Logical image transformation assertion failed");
+      }
+      Image sourceImage;
+      Image destinationImage;
+      try {
+        sourceImage = Image.createLogical(2, 2, 2);
+        destinationImage = new Image(2, 2);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to create source-rectangle assertion", exception);
+      }
+      sourceImage.applyChanges();
+      Graphics sourceGraphics = sourceImage.getGraphics();
+      sourceGraphics.backColor = Color.RED;
+      sourceGraphics.fillRect(0, 0, 1, 1);
+      sourceGraphics.backColor = Color.GREEN;
+      sourceGraphics.fillRect(1, 0, 1, 1);
+      sourceGraphics.backColor = Color.BLUE;
+      sourceGraphics.fillRect(0, 1, 1, 1);
+      sourceGraphics.backColor = Color.WHITE;
+      sourceGraphics.fillRect(1, 1, 1, 1);
+      byte[] sourceFirstRow = new byte[16];
+      sourceImage.getPixelRow(sourceFirstRow, 0);
+      if ((sourceFirstRow[0] & 0xFF) != 255 || (sourceFirstRow[1] & 0xFF) != 0
+          || (sourceFirstRow[8] & 0xFF) != 0 || (sourceFirstRow[9] & 0xFF) != 255) {
+        throw new IllegalStateException("Logical image backing assertion failed: " + (sourceFirstRow[0] & 0xFF)
+            + "," + (sourceFirstRow[1] & 0xFF) + "," + (sourceFirstRow[2] & 0xFF) + ";"
+            + (sourceFirstRow[8] & 0xFF) + "," + (sourceFirstRow[9] & 0xFF) + "," + (sourceFirstRow[10] & 0xFF));
+      }
+      destinationImage.getGraphics().drawImage(sourceImage, 0, 0);
+      byte[] firstRow = new byte[8];
+      byte[] secondRow = new byte[8];
+      destinationImage.getPixelRow(firstRow, 0);
+      destinationImage.getPixelRow(secondRow, 1);
+      if (!matches(firstRow, 0, 255, 0, 0, 255) || !matches(firstRow, 4, 0, 255, 0, 255)
+          || !matches(secondRow, 0, 0, 0, 255, 255) || !matches(secondRow, 4, 255, 255, 255, 255)) {
+        throw new IllegalStateException("Logical image row readback assertion failed");
+      }
+      Image partialImage;
+      try {
+        partialImage = new Image(1, 2);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to create partial source assertion", exception);
+      }
+      partialImage.getGraphics().backColor = Color.BLACK;
+      partialImage.getGraphics().fillRect(0, 0, 1, 2);
+      sourceImage.alphaMask = 128;
+      partialImage.getGraphics().copyImageRect(sourceImage, 1, 0, 1, 2, true);
+      byte[] partialFirstRow = new byte[4];
+      byte[] partialSecondRow = new byte[4];
+      partialImage.getPixelRow(partialFirstRow, 0);
+      partialImage.getPixelRow(partialSecondRow, 1);
+      if (!isHalf(partialFirstRow[1] & 0xFF) || (partialFirstRow[0] & 0xFF) != 0
+          || (partialFirstRow[2] & 0xFF) != 0 || (partialFirstRow[3] & 0xFF) != 255
+          || !isHalf(partialSecondRow[0] & 0xFF) || !isHalf(partialSecondRow[1] & 0xFF)
+          || !isHalf(partialSecondRow[2] & 0xFF) || (partialSecondRow[3] & 0xFF) != 255) {
+        throw new IllegalStateException("Logical image partial alpha assertion failed");
+      }
+      Image frameImage;
+      try {
+        frameImage = new Image(6, 1);
+        frameImage.setFrameCount(2);
+      } catch (Exception exception) {
+        throw new IllegalStateException("Unable to create frame assertion", exception);
+      }
+      if (frameImage.getWidth() != 3 || frameImage.getPixelWidth() != 3) {
+        throw new IllegalStateException("Logical image frame width assertion failed");
+      }
+      Container pixelRoot = new Container();
+      pixelRoot.setLayoutUnit(LayoutUnit.PIXEL);
+      add(pixelRoot, 0, 80, 200, 100);
+      pixelRoot.getGraphics().setScales(contentScale, 1.0);
+      Container pixelChild = new Container();
+      pixelRoot.add(pixelChild, 20, 10, 100, 40);
+      double danfeAdvance = metrics.stringWidthD("DANFE 25,00");
+      double accentedAdvance = metrics.stringWidthD("Comércio São Paulo");
+      double representativePairAdvance = metrics.stringWidthD("AV");
+      int compatibleDanfeAdvance = metrics.stringWidth("DANFE 25,00");
+      char[] danfeChars = "DANFE 25,00".toCharArray();
+      int arrayDanfeAdvance = metrics.stringWidth(danfeChars, 0, danfeChars.length);
+      int bufferDanfeAdvance = metrics.sbWidth(new StringBuffer("DANFE 25,00"));
+      System.out.println("LOGICAL_UI_IMAGE logical=" + logicalImage.getWidth() + "x" + logicalImage.getHeight()
+          + " physical=" + logicalImage.getPixelWidth() + "x" + logicalImage.getPixelHeight());
+      if (!(metrics.getAscentD() > 0 && metrics.getDescentD() >= 0 && metrics.getLeadingD() >= 0
+          && metrics.getHeightD() >= metrics.getAscentD() + metrics.getDescentD()
+          && danfeAdvance > 0 && accentedAdvance > 0 && representativePairAdvance > 0
+          && compatibleDanfeAdvance == (int) Math.ceil(danfeAdvance)
+          && arrayDanfeAdvance == compatibleDanfeAdvance && bufferDanfeAdvance == compatibleDanfeAdvance
+          && widthAtOne == widthAtDoubleContentScale && widthAtFontScale > widthAtOne
+          && editWidthAtOne == editWidthAtDoubleContentScale && editWidthAtFontScale > editWidthAtOne
+          && multiEditHeightAtOne == multiEditHeightAtDoubleContentScale
+          && multiEditHeightAtFontScale > multiEditHeightAtOne
+          && buttonWidthAtOne == buttonWidthAtDoubleContentScale && buttonWidthAtFontScale > buttonWidthAtOne
+          && checkWidthAtOne == checkWidthAtDoubleContentScale && checkWidthAtFontScale > checkWidthAtOne
+          && radioWidthAtOne == radioWidthAtDoubleContentScale && radioWidthAtFontScale > radioWidthAtOne
+          && pixelChild.getX() == (int) Math.round(20 / contentScale)
+          && pixelChild.getY() == (int) Math.round(10 / contentScale)
+          && pixelChild.getWidth() == (int) Math.round(100 / contentScale)
+          && pixelChild.getHeight() == (int) Math.round(40 / contentScale))) {
+        throw new IllegalStateException("Logical text metric assertion failed: label=" + widthAtOne + ","
+            + widthAtDoubleContentScale + "," + widthAtFontScale + " edit=" + editWidthAtOne + ","
+            + editWidthAtDoubleContentScale + "," + editWidthAtFontScale + " multi=" + multiEditHeightAtOne + ","
+            + multiEditHeightAtDoubleContentScale + "," + multiEditHeightAtFontScale + " button=" + buttonWidthAtOne
+            + "," + buttonWidthAtDoubleContentScale + "," + buttonWidthAtFontScale + " check=" + checkWidthAtOne
+            + "," + checkWidthAtDoubleContentScale + "," + checkWidthAtFontScale + " radio=" + radioWidthAtOne
+            + "," + radioWidthAtDoubleContentScale + "," + radioWidthAtFontScale + " metrics="
+            + metrics.getAscentD() + "," + metrics.getDescentD() + "," + metrics.getLeadingD() + ","
+            + metrics.getHeightD() + " advances=" + danfeAdvance + "," + accentedAdvance + ","
+            + representativePairAdvance + "," + compatibleDanfeAdvance + "," + arrayDanfeAdvance + ","
+            + bufferDanfeAdvance + " pixel=" + pixelChild.getX() + "," + pixelChild.getY() + ","
+            + pixelChild.getWidth() + "," + pixelChild.getHeight());
+      }
+      System.out.println("LOGICAL_UI_SCALE logical=" + Settings.screenWidth + "x" + Settings.screenHeight
+          + " physical=" + physicalWidth + "x" + physicalHeight + " contentScale=" + contentScale
+          + " ascentD=" + metrics.getAscentD() + " descentD=" + metrics.getDescentD()
+          + " leadingD=" + metrics.getLeadingD() + " heightD=" + metrics.getHeightD()
+          + " advanceD=" + danfeAdvance + " accentedAdvanceD=" + accentedAdvance
+          + " representativePairAdvanceD=" + representativePairAdvance + " compatibleAdvance=" + compatibleDanfeAdvance
+          + " arrayAdvance=" + arrayDanfeAdvance + " bufferAdvance=" + bufferDanfeAdvance
+          + " labelWidths=" + widthAtOne + "," + widthAtDoubleContentScale + "," + widthAtFontScale
+          + " editWidths=" + editWidthAtOne + "," + editWidthAtDoubleContentScale + "," + editWidthAtFontScale
+          + " multiEditHeights=" + multiEditHeightAtOne + "," + multiEditHeightAtDoubleContentScale + "," + multiEditHeightAtFontScale
+          + " buttonWidths=" + buttonWidthAtOne + "," + buttonWidthAtDoubleContentScale + "," + buttonWidthAtFontScale
+          + " checkWidths=" + checkWidthAtOne + "," + checkWidthAtDoubleContentScale + "," + checkWidthAtFontScale
+          + " radioWidths=" + radioWidthAtOne + "," + radioWidthAtDoubleContentScale + "," + radioWidthAtFontScale
+          + " logicalImage=3x2/6x4"
+          + " pixelChild=" + pixelChild.getX() + "," + pixelChild.getY() + "," + pixelChild.getWidth() + "," + pixelChild.getHeight());
+      exit(0);
+    }
+  }
+
+  private static void render(Graphics graphics) {
+    graphics.backColor = Color.WHITE;
+    graphics.fillRect(0, 0, WIDTH, HEIGHT);
+    graphics.backColor = Color.DARK;
+    graphics.fillRect(12, 12, 336, 30);
+    graphics.foreColor = Color.WHITE;
+    graphics.drawText("DANFE - DOCUMENTO AUXILIAR", 20, 20);
+    graphics.foreColor = Color.BLACK;
+    graphics.drawText("EMISSOR: Comércio Exemplo São Paulo Ltda.", 20, 60);
+    graphics.drawText("DESTINATÁRIO: Cliente Demonstração", 20, 80);
+    graphics.drawText("Produto de descrição longa para validação", 20, 120);
+    graphics.drawText("Qtd. 2  Valor unitário 12,50  Total 25,00", 20, 140);
+    graphics.drawText("Rua das Flores, 100 - São Paulo - SP - 01000-000", 20, 160);
+    graphics.drawText("TOTAL DA NOTA: R$ 25,00", 20, 180);
+    graphics.backColor = Color.BLACK;
+    for (int run = 0; run < 31; run++) {
+      graphics.fillRect(20 + run * 10, 460, 4, 40);
+    }
+    graphics.drawText("Documento de demonstração sem dados privados", 20, 520);
+  }
+
+  private static boolean matches(byte[] row, int offset, int red, int green, int blue, int alpha) {
+    return (row[offset] & 0xFF) == red && (row[offset + 1] & 0xFF) == green
+        && (row[offset + 2] & 0xFF) == blue && (row[offset + 3] & 0xFF) == alpha;
+  }
+
+  private static boolean isHalf(int value) {
+    return value >= 127 && value <= 128;
+  }
+
+  private static int pngDimension(byte[] png, int offset) {
+    return ((png[offset] & 0xFF) << 24) | ((png[offset + 1] & 0xFF) << 16)
+        | ((png[offset + 2] & 0xFF) << 8) | (png[offset + 3] & 0xFF);
+  }
+}

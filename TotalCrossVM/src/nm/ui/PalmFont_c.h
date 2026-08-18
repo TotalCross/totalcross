@@ -555,21 +555,13 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    int32 nlen, vsize, i;
    TCZFile uftcz;
    char faceType;
-   double fontSizeFactor = (*tcSettings.screenDensityPtr);
-
+   const double fontSizeFactor = 1;
    LOCKVAR(fonts);
    IF_HEAP_ERROR(fontsHeap)
    {
       goto end;
    }
    
-#if defined (ANDROID) || defined (darwin)
-   fontSizeFactor *= 1.2; // 20% increase to make our size 20 match 20sp on Android
-#elif defined (WIN32) || defined (WINCE)
-   if (fontSizeFactor < 1) {
-      fontSizeFactor = 1; // ignore screen density font size reduction
-   }
-#endif
    
 tryAgain:
    nlen = 0;
@@ -717,16 +709,16 @@ UserFont loadUserFontFromFontObj(Context currentContext, TCObject fontObj, JChar
    }
 }
 
-#if defined USE_SKIA && (defined ANDROID || defined darwin || defined HEADLESS)
+#if TC_RENDERER_SKIA
 #include "skia/skia.h"
 
 int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch) {
-  int32 fontSize = (int)(Font_size(fontObj) * (*tcSettings.screenDensityPtr));
+  int32 fontSize = Font_size(fontObj);
   return skia_stringWidth(&ch, sizeof(JChar), Font_skiaIndex(fontObj), fontSize);
 }
 
 int32 getJCharPWidth(Context currentContext, TCObject fontObj, JCharP s, int32 len) {
-   int32 fontSize = (int)(Font_size(fontObj) * (*tcSettings.screenDensityPtr));
+   int32 fontSize = Font_size(fontObj);
     return len == 0? 0: skia_stringWidth(s, len * sizeof(JChar), Font_skiaIndex(fontObj), fontSize);
 }
 #else

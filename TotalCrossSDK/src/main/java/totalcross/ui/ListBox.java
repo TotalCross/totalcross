@@ -1,6 +1,7 @@
 // Copyright (C) 2001 Daniel Tauchke 
 // Copyright (C) 2001-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package totalcross.ui;
@@ -636,11 +637,11 @@ public class ListBox extends Container implements Scrollable {
 	 */
 	public int addWrapping(String text) // guich@tc124_21
 	{
-		if (fm.stringWidth(text) <= btnX && text.indexOf('\n') < 0) {
+		if (getFontWidthForLayout(text) <= btnX && text.indexOf('\n') < 0) {
 			add(text);
 			return 1;
 		}
-		String[] lines = Convert.tokenizeString(Convert.insertLineBreak(btnX, fm, text), '\n');
+		String[] lines = Convert.tokenizeString(Convert.insertLineBreak(btnX, fm, font.size * gfx.getFontScale(), text), '\n');
 		add(lines);
 		return lines.length;
 	}

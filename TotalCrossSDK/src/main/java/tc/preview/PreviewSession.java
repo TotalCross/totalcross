@@ -7,8 +7,10 @@ package tc.preview;
 public interface PreviewSession {
   void pumpEvents();
 
+  /** Resizes the logical viewport and selects its physical-pixel content scale. */
   void resize(int width, int height, double density);
 
+  /** Injects a pointer transition in logical viewport coordinates. */
   void pointer(int x, int y, int button, boolean pressed);
 
   void key(int keyCode, boolean pressed, int modifiers);

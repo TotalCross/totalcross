@@ -208,14 +208,27 @@ abstract class InputDispatcher extends ApplicationLoader {
   }
 
   protected void screenResized(int w, int h, boolean setframe) {
-    if (screenImg == null || (Settings.screenWidth == w && Settings.screenHeight == h)) {
+    if (Settings.screenWidth == w && Settings.screenHeight == h) {
       return;
     }
     Settings.screenWidth = w;
     Settings.screenHeight = h;
+    totalcross.ui.gfx.Graphics.configureMainWindowSurface(w, h, toDensityValue);
     setWindowSize(w, h, setframe);
     screenImg = null; // force the creation of a new screen image
+    previewSurface = null;
     eventLoop.postEvent(KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.SCREEN_CHANGE, 0, 0, modifiers, Vm.getTimeStamp());
+  }
+
+  static int toLogicalInputCoordinate(int coordinate, double presentationScale) {
+    if (!Double.isFinite(presentationScale) || presentationScale <= 0) {
+      throw new IllegalArgumentException("presentation scale must be finite and positive");
+    }
+    return (int) (coordinate / presentationScale);
+  }
+
+  protected void setInputPresentationScale(double presentationScale) {
+    toScale = presentationScale;
   }
 
   @Override
@@ -275,8 +288,8 @@ abstract class InputDispatcher extends ApplicationLoader {
 
   @Override
   public void mousePressed(java.awt.event.MouseEvent event) {
-    int px = (int) (event.getX() / toScale);
-    int py = (int) (event.getY() / toScale);
+    int px = toLogicalInputCoordinate(event.getX(), toScale);
+    int py = toLogicalInputCoordinate(event.getY(), toScale);
     if (eventLoop != null) {
       eventLoop.postEvent(PenEvent.PEN_DOWN, 0, px, py, modifiers, Vm.getTimeStamp());
     }
@@ -287,8 +300,8 @@ abstract class InputDispatcher extends ApplicationLoader {
 
   @Override
   public void mouseReleased(java.awt.event.MouseEvent event) {
-    int px = (int) (event.getX() / toScale);
-    int py = (int) (event.getY() / toScale);
+    int px = toLogicalInputCoordinate(event.getX(), toScale);
+    int py = toLogicalInputCoordinate(event.getY(), toScale);
     if (eventLoop != null) {
       eventLoop.postEvent(PenEvent.PEN_UP, 0, px, py, modifiers, Vm.getTimeStamp());
     }
@@ -299,8 +312,8 @@ abstract class InputDispatcher extends ApplicationLoader {
 
   @Override
   public void mouseDragged(java.awt.event.MouseEvent event) {
-    int px = (int) (event.getX() / toScale);
-    int py = (int) (event.getY() / toScale);
+    int px = toLogicalInputCoordinate(event.getX(), toScale);
+    int py = toLogicalInputCoordinate(event.getY(), toScale);
     if (eventLoop != null) // sometimes, when debugging in applet, eventLoop can be null
     {
       if ((event.getButton() & 2) != 0 || isRightButton) {
@@ -323,8 +336,8 @@ abstract class InputDispatcher extends ApplicationLoader {
     {
       int ev = totalcross.ui.event.MouseEvent.MOUSE_WHEEL;
       if (!eventLoop.hasPendingEvent(ev)) {
-        int px = (int) (e.getX() / toScale);
-        int py = (int) (e.getY() / toScale);
+        int px = toLogicalInputCoordinate(e.getX(), toScale);
+        int py = toLogicalInputCoordinate(e.getY(), toScale);
         eventLoop.postEvent(ev,
             e.getWheelRotation() < 0 ? totalcross.ui.event.DragEvent.UP : totalcross.ui.event.DragEvent.DOWN, px, py,
             modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
@@ -391,8 +404,9 @@ abstract class InputDispatcher extends ApplicationLoader {
   @Override
   public void mouseMoved(java.awt.event.MouseEvent event) {
     if (eventLoop != null) {
-      eventLoop.postEvent(totalcross.ui.event.MouseEvent.MOUSE_MOVE, 0, (int) (event.getX() / toScale),
-          (int) (event.getY() / toScale), modifiers, Vm.getTimeStamp());
+      eventLoop.postEvent(totalcross.ui.event.MouseEvent.MOUSE_MOVE, 0,
+          toLogicalInputCoordinate(event.getX(), toScale), toLogicalInputCoordinate(event.getY(), toScale), modifiers,
+          Vm.getTimeStamp());
     }
     if (hasWindowBackend() && Settings.showMousePosition) // guich@tc115_48
     {
@@ -400,11 +414,16 @@ abstract class InputDispatcher extends ApplicationLoader {
       if (frameTitle != null) {
         mmsb.append(frameTitle).append(" (");
       }
-      int xx = (int) (event.getX() / toScale);
-      int yy = (int) (event.getY() / toScale);
+      int xx = toLogicalInputCoordinate(event.getX(), toScale);
+      int yy = toLogicalInputCoordinate(event.getY(), toScale);
       int[] pixels = totalcross.ui.gfx.Graphics.mainWindowPixels;
+      int physicalX = (int) Math.round(xx * toDensityValue);
+      int physicalY = (int) Math.round(yy * toDensityValue);
+      physicalX = Math.max(0, Math.min(physicalX, totalcross.ui.gfx.Graphics.getMainWindowPixelWidth() - 1));
+      physicalY = Math.max(0, Math.min(physicalY, totalcross.ui.gfx.Graphics.getMainWindowPixelHeight() - 1));
       mmsb.append(xx).append(",").append(yy).append(" ")
-          .append(totalcross.sys.Convert.unsigned2hex(pixels[yy * Settings.screenWidth + xx], 6));
+          .append(totalcross.sys.Convert.unsigned2hex(
+              pixels[physicalY * totalcross.ui.gfx.Graphics.getMainWindowPixelWidth() + physicalX], 6));
       if (frameTitle != null) {
         mmsb.append(")");
       }

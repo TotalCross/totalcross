@@ -208,6 +208,10 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'
 
+    smokeTestImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    smokeTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    smokeTestRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.0'
+
     implementation 'com.totalcross.annotations:totalcross-annotations:1.0.0'
 
     // Smoke tests deliberately compile against the generated SDK artifact rather
@@ -239,6 +243,10 @@ tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.Japicmp
 
 test {
     useJUnitPlatform()
+    def awtHeadless = System.getProperty('java.awt.headless')
+    if (awtHeadless != null) {
+        systemProperty 'java.awt.headless', awtHeadless
+    }
     // Anonymous telemetry is disabled until its external service is replaced.
     exclude '**/AnonymousUserDataTest.class'
     testLogging {
@@ -558,6 +566,21 @@ tasks.named('compileSmokeTestJava', JavaCompile) {
     }
 }
 
+tasks.register('smokeTest', Test) {
+    group = 'verification'
+    description = 'Runs optional JUnit smoke tests from the smokeTest source set.'
+    dependsOn tasks.named('classes'), sourceSets.smokeTest.classesTaskName
+
+    testClassesDirs = sourceSets.smokeTest.output.classesDirs
+    classpath = files(sourceSets.main.output) + sourceSets.smokeTest.runtimeClasspath
+    useJUnitPlatform()
+}
+def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
+def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')
+def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scaling/danfe') {
+	include '*.java'
+}
+
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
@@ -608,6 +631,65 @@ tasks.register('compileAxtlsProviderSmoke', Sync) {
     }
     from(smokeTestResourcesDir)
     into axtlsProviderSmokeClassesDir
+}
+
+tasks.register('compileLogicalUiScalingSmoke', JavaCompile) {
+	group = 'verification'
+	description = 'Compiles the logical UI scaling fixture against the generated SDK.'
+
+	source logicalUiScalingSmokeSources
+	classpath = files(logicalUiScalingSmokeSdkJar)
+	destinationDirectory = logicalUiScalingSmokeClassesDir
+	options.encoding = 'UTF-8'
+	options.release.set(17)
+
+	doFirst {
+		if (!logicalUiScalingSmokeSdkJar.isFile()) {
+			throw new GradleException('Run ./gradlew-agent dist -x test before compiling the logical UI scaling fixture.')
+		}
+	}
+}
+
+tasks.register('deployLogicalUiScalingSmokeMacOS', JavaExec) {
+	group = 'verification'
+	description = 'Deploys the logical UI scaling fixture for native macOS validation.'
+	dependsOn 'copySdkDependencies', 'compileLogicalUiScalingSmoke'
+
+	mainClass = 'tc.Deploy'
+	classpath = files(logicalUiScalingSmokeSdkJar) + fileTree('dist/libs') {
+		include '*.jar'
+	}
+	workingDir logicalUiScalingSmokeClassesDir.get().asFile
+	args = [
+		'danfe/fixture/DanfeScalingApp.class',
+		'-macos'
+	]
+	doFirst {
+		def launcher = project.findProperty('tcvmLauncher')
+		if (launcher) {
+			def launcherFile = file(launcher)
+			if (!launcherFile.isFile()) {
+				throw new GradleException("Native macOS launcher not found: ${launcherFile}")
+			}
+			copy {
+				from launcherFile
+				into file('etc/launchers/macos')
+				rename { 'Launcher' }
+			}
+		}
+		def nativeRuntime = project.findProperty('tcvmDylib')
+		if (nativeRuntime) {
+			def nativeRuntimeFile = file(nativeRuntime)
+			if (!nativeRuntimeFile.isFile()) {
+				throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+			}
+			copy {
+				from nativeRuntimeFile
+				into file('dist/vm/macos')
+				rename { 'libtcvm.dylib' }
+			}
+		}
+	}
 }
 
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {

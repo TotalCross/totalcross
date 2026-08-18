@@ -1,9 +1,8 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
-
-
 
 #include "tcvm.h"
 
@@ -242,23 +241,24 @@ TC_API void tsS_refresh(NMParams p) // totalcross/sys/Settings native public sta
    storeSettings(false); // guich@tc136
 }
 
-void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings
+void updateScreenSettings(ScreenSurface screen) // will be called from initGraphicsAfterSettings
 {
-   *tcSettings.screenWidthPtr = width;
-   *tcSettings.screenHeightPtr = height;
-   *tcSettings.screenWidthInDPIPtr = hRes;
-   *tcSettings.screenHeightInDPIPtr = vRes;
-   *tcSettings.screenBPPPtr = bpp;
+   double contentScale = screen->contentScale > 0 ? screen->contentScale : 1;
+
+#if defined (WIN32) || defined (WINCE)
+   contentScale = min32(screen->screenW, screen->screenH) <= 240 ? 0.75 : contentScale;
+#endif
+   *tcSettings.screenWidthPtr = (int32)(screen->screenW / contentScale + 0.5);
+   *tcSettings.screenHeightPtr = (int32)(screen->screenH / contentScale + 0.5);
+   *tcSettings.screenWidthInDPIPtr = screen->hRes;
+   *tcSettings.screenHeightInDPIPtr = screen->vRes;
+   *tcSettings.screenBPPPtr = screen->bpp;
+   *tcSettings.screenDensityPtr = contentScale;
 #if defined(ANDROID) || defined(darwin) || defined(linux)
    *tcSettings.isOpenGL = true;
 #endif
 #if defined(ANDROID) || defined(darwin)
-   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
-#endif
-#if defined (darwin)
-   *tcSettings.screenDensityPtr = iosScale;
-#elif defined (WIN32) || defined (WINCE)
-   *tcSettings.screenDensityPtr = min32(width, height) <= 240 ? 0.75 : 1;
+   *tcSettings.deviceFontHeightPtr = screen->deviceFontHeight;
 #endif
 }
 

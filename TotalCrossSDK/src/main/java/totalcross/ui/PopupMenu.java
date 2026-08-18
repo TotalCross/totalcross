@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -234,12 +235,12 @@ public class PopupMenu extends Window {
 				if (cw == -1) {
 					cw = getClientRect().width - Math.abs(c.getLeftControlX()) - Math.abs(c.getRightControlX());
 				}
-				int sw = fm.stringWidth(s);
+				int sw = getFontWidthForLayout(s);
 				if (sw <= cw) {
 					c.items = new String[] { "", s, "" };
 				} else {
 					if(uiMaterial) {
-						String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw, fm, s), '\n');
+						String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw, fm, font.size * gfx.getFontScale(), s), '\n');
 						c.items = new String[] { "", "", "" };
 						for (int j = 0, n = Math.min(parts.length, c.items.length); j < n; j++) {
 							c.items[j] = parts[j];

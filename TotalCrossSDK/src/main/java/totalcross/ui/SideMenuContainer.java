@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
 // Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
@@ -106,8 +106,9 @@ public class SideMenuContainer extends Container implements PenListener {
       topMenu.percWidth = 100;
     } else {
       // navigation drawer width - https://material.io/guidelines/patterns/navigation-drawer.html#navigation-drawer-specs
-      int screenWidthInDp = (int) (Settings.screenWidth / Settings.screenDensity);
-      topMenu.widthInPixels = (int) (Math.min(320, screenWidthInDp - BAR_HEIGHT_IN_DP) * Settings.screenDensity);
+      Insets safe = Window.getSafeAreaInsets();
+      int safeWidth = Math.max(0, Settings.screenWidth - safe.left - safe.right);
+      topMenu.widthInPixels = Math.max(1, Math.min(320, safeWidth - BAR_HEIGHT_IN_DP));
     }
     topMenu.totalTime = 400;
     topMenu.autoClose = true;
@@ -157,6 +158,41 @@ public class SideMenuContainer extends Container implements PenListener {
 
   public void close() {
     topMenu.unpop();
+  }
+
+  /** Forwards the fixed top bar to the underlying menu. */
+  public void setTopBar(Control bar) {
+    topMenu.setTopBar(bar);
+  }
+
+  /** Returns the fixed top bar from the underlying menu. */
+  public Control getTopBar() {
+    return topMenu.getTopBar();
+  }
+
+  /** Forwards the fixed bottom bar to the underlying menu. */
+  public void setBottomBar(Control bar) {
+    topMenu.setBottomBar(bar);
+  }
+
+  /** Returns the fixed bottom bar from the underlying menu. */
+  public Control getBottomBar() {
+    return topMenu.getBottomBar();
+  }
+
+  /** Forwards the top fixed-bar layout mode to the underlying menu. */
+  public void setTopBarLayoutMode(TopMenu.BarLayoutMode mode) {
+    topMenu.setTopBarLayoutMode(mode);
+  }
+
+  /** Forwards the bottom fixed-bar layout mode to the underlying menu. */
+  public void setBottomBarLayoutMode(TopMenu.BarLayoutMode mode) {
+    topMenu.setBottomBarLayoutMode(mode);
+  }
+
+  /** Forwards the requested ChatGPT, Reddit, Gmail, or dual-overlay model. */
+  public void setScrollUnderMode(TopMenu.ScrollUnderMode mode) {
+    topMenu.setScrollUnderMode(mode);
   }
 
   /**
@@ -220,7 +256,7 @@ public class SideMenuContainer extends Container implements PenListener {
         @Override
         public void initUI() {
           // 16dp left spacing - https://material.io/guidelines/patterns/navigation-drawer.html#navigation-drawer-specs
-          this.setInsets((int) ((Settings.screenWidth < 320 ? 8 : 16) * Settings.screenDensity), 0, 0, 0);
+          this.setInsets(Settings.screenWidth < 320 ? 8 : 16, 0, 0, 0);
           Icon i = new Icon(icon);
           i.setForeColor(iconColor);
           i.setAlpha(iconAlpha);
@@ -296,14 +332,14 @@ public class SideMenuContainer extends Container implements PenListener {
       if (items != null) {
         for (Control control : items) {
           control.setForeColor(parent.foreColor);
-          add(control, (int) ((Settings.screenWidth < 320 ? 4 : 8) * Settings.screenDensity), AFTER, FILL, DP + 48);
+          add(control, Settings.screenWidth < 320 ? 4 : 8, AFTER, FILL, DP + 48);
         }
       }
     }
 
     @Override
     public int getPreferredHeight() {
-      return (int) (Settings.screenDensity * 48);
+      return 48;
     }
 
     @Override
@@ -425,7 +461,7 @@ public class SideMenuContainer extends Container implements PenListener {
 
       @Override
       public void initUI() {
-        this.setInsets((int) ((Settings.screenWidth < 320 ? 8 : 16) * Settings.screenDensity), 0, 0, 0);
+        this.setInsets(Settings.screenWidth < 320 ? 8 : 16, 0, 0, 0);
 
         expand = new Icon(collapsed);
         expand.setAlpha(137);
@@ -438,8 +474,8 @@ public class SideMenuContainer extends Container implements PenListener {
              * 72dp left spacing and 16 dp right spacing
              * https://material.io/guidelines/patterns/navigation-drawer.html#navigation-drawer-specs
              */
-            this.setInsets((int) ((Settings.screenWidth < 320 ? 64 - 8 : 72 - 16) * Settings.screenDensity),
-                (int) ((Settings.screenWidth < 320 ? 8 : 16) * Settings.screenDensity), 0, 0);
+            this.setInsets(Settings.screenWidth < 320 ? 64 - 8 : 72 - 16, Settings.screenWidth < 320 ? 8 : 16,
+                0, 0);
             add(lCaption, LEFT, CENTER, FILL, PREFERRED);
           }
         }, LEFT, CENTER, FILL, PREFERRED);
@@ -447,7 +483,7 @@ public class SideMenuContainer extends Container implements PenListener {
 
       @Override
       public int getPreferredHeight() {
-        return (int) (Settings.screenDensity * 48);
+        return 48;
       }
 
       public void invert() {

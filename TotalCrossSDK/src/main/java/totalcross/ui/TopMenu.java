@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.io.IOException;
@@ -22,6 +27,26 @@ import totalcross.ui.image.ImageException;
  * @since TotalCross 3.03
  */
 public class TopMenu extends Window {
+  /** Controls whether a fixed bar reserves viewport space or overlays it. */
+  public enum BarLayoutMode {
+    /** Remove the complete bar height from the scrolling viewport. */
+    RESERVE_SPACE,
+    /** Keep the viewport behind the bar and reserve its height in scroll content. */
+    OVERLAY
+  }
+
+  /** Selects which fixed bars the menu body may scroll beneath. */
+  public enum ScrollUnderMode {
+    /** Reserve both fixed bars, matching the Reddit layout model. */
+    NONE,
+    /** Scroll below the top bar and reserve the bottom bar, matching ChatGPT. */
+    TOP,
+    /** Reserve the top bar and scroll below the bottom bar, matching Gmail. */
+    BOTTOM,
+    /** Scroll below both fixed bars. */
+    BOTH
+  }
+
   public static interface AnimationListener {
     public void onAnimationFinished();
   }
@@ -63,6 +88,14 @@ public class TopMenu extends Window {
 
   private ControlAnimation currentAnimation;
   private boolean fadeOnPopAndUnpop;
+  private Control topBar;
+  private Control bottomBar;
+  private BarLayoutMode topBarLayoutMode = BarLayoutMode.RESERVE_SPACE;
+  private BarLayoutMode bottomBarLayoutMode = BarLayoutMode.RESERVE_SPACE;
+  private ScrollUnderMode scrollUnderMode = ScrollUnderMode.NONE;
+  ScrollContainer bodyScroller;
+  Container topBarHost;
+  Container bottomBarHost;
 
   public static class Item extends Container {
     Control tit;
@@ -137,8 +170,7 @@ public class TopMenu extends Window {
            * 72dp left spacing and 16 dp right spacing
            * https://material.io/guidelines/patterns/navigation-drawer.html#navigation-drawer-specs
            */
-          this.setInsets((int) ((Settings.screenWidth < 320 ? 64 : 72) * Settings.screenDensity),
-              (int) ((Settings.screenWidth < 320 ? 8 : 16) * Settings.screenDensity), 0, 0);
+          this.setInsets(Settings.screenWidth < 320 ? 64 : 72, Settings.screenWidth < 320 ? 8 : 16, 0, 0);
           add(tit, LEFT, CENTER, FILL, PREFERRED);
         }
       }, LEFT, CENTER, FILL, PREFERRED);
@@ -190,7 +222,8 @@ public class TopMenu extends Window {
     borderColor = UIColors.separatorFore;
     setBackForeColors(UIColors.separatorFore, UIColors.topmenuFore);
     fadeOnPopAndUnpop = true;
-    
+    setSafeAreaMode(SafeAreaMode.DISABLED);
+
     MainWindow.getMainWindow().addTimer(1000);
   }
 
@@ -220,7 +253,7 @@ public class TopMenu extends Window {
     default:
       resetSetPositions(); // required to make sure the height gets updated by the following setRect
       setRect(LEFT, animDir, ww,
-          (int) Math.min(Settings.screenHeight * 3 / 4, Settings.screenDensity * items.length * 50), null,
+          Math.min(Settings.screenHeight * 3 / 4, items.length * 50), null,
           screenResized);
       break;
     }
@@ -230,6 +263,179 @@ public class TopMenu extends Window {
   public double itemHeightFactor = 2;
 
   public Container header = null;
+
+  /** Sets the optional fixed top bar. The legacy {@link #header} still scrolls. */
+  public void setTopBar(Control bar) {
+    if (topBar != bar) {
+      topBar = bar;
+      rebuildBarHost(true);
+      layoutMenu();
+    }
+  }
+
+  /** Returns the optional fixed top bar. */
+  public Control getTopBar() {
+    return topBar;
+  }
+
+  /** Sets the optional fixed bottom bar. */
+  public void setBottomBar(Control bar) {
+    if (bottomBar != bar) {
+      bottomBar = bar;
+      rebuildBarHost(false);
+      layoutMenu();
+    }
+  }
+
+  /** Returns the optional fixed bottom bar. */
+  public Control getBottomBar() {
+    return bottomBar;
+  }
+
+  /** Sets whether the top bar reserves viewport space or overlays scrolling content. */
+  public void setTopBarLayoutMode(BarLayoutMode mode) {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
+    if (topBarLayoutMode != mode) {
+      topBarLayoutMode = mode;
+      updateScrollUnderModeFromBars();
+      layoutMenu();
+    }
+  }
+
+  /** Sets whether the bottom bar reserves viewport space or overlays scrolling content. */
+  public void setBottomBarLayoutMode(BarLayoutMode mode) {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
+    if (bottomBarLayoutMode != mode) {
+      bottomBarLayoutMode = mode;
+      updateScrollUnderModeFromBars();
+      layoutMenu();
+    }
+  }
+
+  /** Applies one of the four fixed-bar scrolling models. */
+  public void setScrollUnderMode(ScrollUnderMode mode) {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
+    scrollUnderMode = mode;
+    topBarLayoutMode = mode == ScrollUnderMode.TOP || mode == ScrollUnderMode.BOTH
+        ? BarLayoutMode.OVERLAY : BarLayoutMode.RESERVE_SPACE;
+    bottomBarLayoutMode = mode == ScrollUnderMode.BOTTOM || mode == ScrollUnderMode.BOTH
+        ? BarLayoutMode.OVERLAY : BarLayoutMode.RESERVE_SPACE;
+    layoutMenu();
+  }
+
+  private void updateScrollUnderModeFromBars() {
+    boolean top = topBarLayoutMode == BarLayoutMode.OVERLAY;
+    boolean bottom = bottomBarLayoutMode == BarLayoutMode.OVERLAY;
+    scrollUnderMode = top ? bottom ? ScrollUnderMode.BOTH : ScrollUnderMode.TOP
+        : bottom ? ScrollUnderMode.BOTTOM : ScrollUnderMode.NONE;
+  }
+
+  int getAttachedSafeAreaEdges() {
+    switch (animDir) {
+    case LEFT:
+      return SafeAreaEdges.TOP | SafeAreaEdges.LEFT | SafeAreaEdges.BOTTOM;
+    case RIGHT:
+      return SafeAreaEdges.TOP | SafeAreaEdges.RIGHT | SafeAreaEdges.BOTTOM;
+    case TOP:
+      return SafeAreaEdges.TOP | SafeAreaEdges.LEFT | SafeAreaEdges.RIGHT;
+    case BOTTOM:
+      return SafeAreaEdges.BOTTOM | SafeAreaEdges.LEFT | SafeAreaEdges.RIGHT;
+    default:
+      return SafeAreaEdges.ALL;
+    }
+  }
+
+  private int getBarPaddingEdges(boolean top) {
+    return getAttachedSafeAreaEdges()
+        & (SafeAreaEdges.LEFT | SafeAreaEdges.RIGHT | (top ? SafeAreaEdges.TOP : SafeAreaEdges.BOTTOM));
+  }
+
+  private int getBarHeight(Control bar, boolean top) {
+    if (bar == null) {
+      return 0;
+    }
+    int height = bar.getPreferredHeight();
+    Insets safe = getSafeAreaInsets();
+    int edges = getBarPaddingEdges(top);
+    if (top && (edges & SafeAreaEdges.TOP) != 0) {
+      height += safe.top;
+    }
+    if (!top && (edges & SafeAreaEdges.BOTTOM) != 0) {
+      height += safe.bottom;
+    }
+    return height;
+  }
+
+  private void rebuildBarHost(boolean top) {
+    Container oldHost = top ? topBarHost : bottomBarHost;
+    if (oldHost != null && oldHost.parent == this) {
+      super.remove(oldHost);
+    }
+    Control bar = top ? topBar : bottomBar;
+    Container host = null;
+    if (bar != null && bodyScroller != null) {
+      if (bar.parent != null) {
+        bar.parent.remove(bar);
+      }
+      host = new Container();
+      host.setSafeAreaLayout(SafeAreaLayout.FULL_BLEED);
+      host.setSafeAreaPaddingEdges(getBarPaddingEdges(top));
+      host.setBackColor(bar.getBackColor());
+      super.add(host);
+      Rect client = getClientRect();
+      int barHeight = getBarHeight(bar, top);
+      host.setRect(client.x, top ? client.y : client.y + client.height - barHeight, client.width, barHeight);
+      host.add(bar, LEFT, TOP, FILL, FILL);
+    }
+    if (top) {
+      topBarHost = host;
+    } else {
+      bottomBarHost = host;
+    }
+  }
+
+  private void layoutMenu() {
+    if (bodyScroller == null || width <= 0 || height <= 0) {
+      return;
+    }
+    Rect client = getClientRect();
+    int bodyX = client.x + scInsets.left;
+    int bodyY = client.y + scInsets.top;
+    int bodyWidth = client.width - scInsets.left - scInsets.right;
+    int bodyHeight = client.height - scInsets.top - scInsets.bottom;
+    int topHeight = getBarHeight(topBar, true);
+    int bottomHeight = getBarHeight(bottomBar, false);
+
+    if (topBar != null && topBarLayoutMode == BarLayoutMode.RESERVE_SPACE) {
+      bodyY += topHeight;
+      bodyHeight -= topHeight;
+    }
+    if (bottomBar != null && bottomBarLayoutMode == BarLayoutMode.RESERVE_SPACE) {
+      bodyHeight -= bottomHeight;
+    }
+    bodyScroller.resetSetPositions();
+    bodyScroller.setRect(bodyX, bodyY, Math.max(0, bodyWidth), Math.max(0, bodyHeight));
+    bodyScroller.setContentInsets(0, 0,
+        topBar != null && topBarLayoutMode == BarLayoutMode.OVERLAY ? topHeight : 0,
+        bottomBar != null && bottomBarLayoutMode == BarLayoutMode.OVERLAY ? bottomHeight : 0);
+
+    if (topBarHost != null) {
+      topBarHost.setSafeAreaPaddingEdges(getBarPaddingEdges(true));
+      topBarHost.resetSetPositions();
+      topBarHost.setRect(client.x, client.y, client.width, topHeight);
+    }
+    if (bottomBarHost != null) {
+      bottomBarHost.setSafeAreaPaddingEdges(getBarPaddingEdges(false));
+      bottomBarHost.resetSetPositions();
+      bottomBarHost.setRect(client.x, client.y + client.height - bottomHeight, client.width, bottomHeight);
+    }
+  }
 
   @Override
   public void initUI() {
@@ -259,7 +465,7 @@ public class TopMenu extends Window {
       }
     }
 
-    ScrollContainer sc = new ScrollContainer(false, true);
+    ScrollContainer sc = bodyScroller = new ScrollContainer(false, true);
     if (backImage != null) {
       try {
         sc.transparentBackground = true;
@@ -272,8 +478,7 @@ public class TopMenu extends Window {
         t.printStackTrace(); // don't add the image
       }
     }
-    add(sc, LEFT + scInsets.left, TOP + scInsets.top, (showElevation && animDir == LEFT ? FIT : FILL) - scInsets.right,
-        FILL);
+    add(sc, LEFT, TOP, FILL, FILL);
     sc.setBackColor(backColor);
     if (header != null) {
       /*
@@ -298,6 +503,21 @@ public class TopMenu extends Window {
         sc.add(r, LEFT, AFTER, FILL, gap);
       }
     }
+    rebuildBarHost(true);
+    rebuildBarHost(false);
+    sc.resize();
+    layoutMenu();
+  }
+
+  @Override
+  protected void onBoundsChanged(boolean screenChanged) {
+    super.onBoundsChanged(screenChanged);
+    layoutMenu();
+  }
+
+  @Override
+  protected void safeAreaInsetsChanged(Insets previous, Insets current) {
+    layoutMenu();
   }
 
   @Override
@@ -365,7 +585,7 @@ public class TopMenu extends Window {
     if (animDir == CENTER) {
       currentAnimation = FadeAnimation.create(this, false, null, totalTime);
     } else {
-      currentAnimation = PathAnimation.create(this, -animDir, null, totalTime);
+      currentAnimation = PathAnimation.create(this, -animDir, null, totalTime, 0, true);
       if (fadeOnPopAndUnpop) {
         currentAnimation.with(FadeAnimation.create(this, false, null, totalTime));
       }
@@ -400,7 +620,7 @@ public class TopMenu extends Window {
       setRect(CENTER, CENTER, KEEP, KEEP);
       currentAnimation = FadeAnimation.create(this, true, null, totalTime);
     } else {
-      currentAnimation = PathAnimation.create(this, animDir, null, totalTime);
+      currentAnimation = PathAnimation.create(this, animDir, null, totalTime, 0, true);
       if (fadeOnPopAndUnpop) {
         currentAnimation.with(FadeAnimation.create(this, true, null, totalTime));
       }

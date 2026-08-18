@@ -123,11 +123,6 @@ final class CommandLineParser {
       }
     }
 
-    result.width *= result.densityValue;
-    result.height *= result.densityValue;
-    scaleInsets(result.insetsPortrait, result.densityValue);
-    scaleInsets(result.insetsLandscape, result.densityValue);
-
     return result;
   }
 
@@ -192,15 +187,6 @@ final class CommandLineParser {
       return Settings.MATERIAL_UI;
     }
     throw new Exception();
-  }
-
-  private static void scaleInsets(totalcross.ui.Insets insets, double density) {
-    if (insets != null) {
-      insets.top *= density;
-      insets.left *= density;
-      insets.bottom *= density;
-      insets.right *= density;
-    }
   }
 
   private static int toInt(String s) {

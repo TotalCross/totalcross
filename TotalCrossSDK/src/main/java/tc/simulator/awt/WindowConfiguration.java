@@ -16,8 +16,6 @@ public class WindowConfiguration {
   public final String title;
   /** Raw command-line scale value; {@code -1} means fit the host display. */
   public final double scaleValue;
-  /** Device density used to convert the raw scale value to a presentation scale. */
-  public final double densityValue;
   public final int x;
   public final int y;
   public final boolean fullscreen;
@@ -27,22 +25,14 @@ public class WindowConfiguration {
   public final ComponentListener componentListener;
 
   public WindowConfiguration(int width, int height, int scale, String title) {
-    this(width, height, scale, 1, title, 0, 0, false, true, null, null, null);
+    this(width, height, scale, title, 0, 0, false, true, null, null, null);
   }
 
   public WindowConfiguration(int width, int height, double scaleValue, String title, int x, int y, boolean fullscreen,
       boolean resizable, Color background, WindowListener windowListener, ComponentListener componentListener) {
-    this(width, height, scaleValue, 1, title, x, y, fullscreen, resizable, background, windowListener,
-        componentListener);
-  }
-
-  public WindowConfiguration(int width, int height, double scaleValue, double densityValue, String title, int x, int y,
-      boolean fullscreen, boolean resizable, Color background, WindowListener windowListener,
-      ComponentListener componentListener) {
     this.width = width;
     this.height = height;
     this.scaleValue = scaleValue;
-    this.densityValue = densityValue;
     this.title = title;
     this.x = x;
     this.y = y;

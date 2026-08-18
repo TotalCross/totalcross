@@ -1,7 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -221,7 +221,12 @@ public class Control extends GfxSurface {
    */
   public static final int FONTSIZE = 22 * UICONST;
   
-  public static final int DP = 23 * UICONST;
+  /**
+   * @deprecated Layout values are logical by default. Recompile applications so
+   *             expressions such as {@code DP + 16} become {@code 16}.
+   */
+  @Deprecated
+  public static final int DP = 0;
   /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
    * Sample:
    * <pre>
@@ -237,6 +242,32 @@ public class Control extends GfxSurface {
 
   /** Set to true to ignore parent's insets when placing this control on screen. */
   public boolean ignoreInsets;
+
+  private SafeAreaLayout safeAreaLayout = SafeAreaLayout.INHERIT;
+  int safeAreaConsumedEdges;
+
+  /**
+   * Selects whether this control inherits, forces, or bypasses safe-area
+   * exclusion when it is positioned directly in a window. The default is
+   * {@link SafeAreaLayout#INHERIT}.
+   *
+   * @param layout the safe-area layout policy; must not be {@code null}
+   */
+  public void setSafeAreaLayout(SafeAreaLayout layout) {
+    if (layout == null) {
+      throw new NullPointerException("layout");
+    }
+    if (safeAreaLayout != layout) {
+      safeAreaLayout = layout;
+      reposition();
+      repaint();
+    }
+  }
+
+  /** Returns this control's safe-area layout policy. */
+  public SafeAreaLayout getSafeAreaLayout() {
+    return safeAreaLayout;
+  }
 
   private ControlEvent pressedEvent; // guich@tc100: share the same event across all controls - guich@tc114_42: no longer share
 
@@ -406,7 +437,7 @@ public class Control extends GfxSurface {
       } else {
         offscreen0 = null;
       }
-      Image offscreen = new Image(width, height);
+      Image offscreen = Image.createLogical(width, height, Graphics.getMainWindowContentScale());
       paint2shot(offscreen.getGraphics(), false);
       if (nr == 1) {
         this.offscreen = offscreen;
@@ -633,7 +664,37 @@ public class Control extends GfxSurface {
 
   /** Returns the preferred height of this control. */
   public int getPreferredHeight() {
-    return fmH;
+    return getFontHeightForLayout();
+  }
+
+  /**
+   * Returns this control's font height in destination logical units.
+   *
+   * <p>The font metrics themselves are logical at a scale of one. A destination may apply a
+   * separate logical text scale, which changes layout but never its backing-pixel density.</p>
+   */
+  protected int getFontHeightForLayout() {
+    return (int) Math.ceil(fm.lineHeightAtSizeD(font.size * gfx.getFontScale()));
+  }
+
+  /** Returns the logical ascent of this control's destination font. */
+  protected int getFontAscentForLayout() {
+    return (int) Math.ceil(fm.ascentAtSizeD(font.size * gfx.getFontScale()));
+  }
+
+  /** Returns the logical layout advance of {@code text} for this control's destination. */
+  protected int getFontWidthForLayout(String text) {
+    return (int) Math.ceil(fm.stringWidthAtSizeD(text, font.size * gfx.getFontScale()));
+  }
+
+  /** Returns the logical layout advance of a character for this control's destination. */
+  protected int getFontCharWidthForLayout(char value) {
+    return (int) Math.ceil(fm.stringWidthAtSizeD(String.valueOf(value), font.size * gfx.getFontScale()));
+  }
+
+  /** Returns the logical layout advance of a StringBuffer range for this control's destination. */
+  protected int getFontWidthForLayout(StringBuffer text, int start, int count) {
+    return getFontWidthForLayout(text.substring(start, start + count));
   }
 
   /** Sets or changes a control's position and size.
@@ -718,6 +779,8 @@ public class Control extends GfxSurface {
    * @see Container#add(Control, int, int, Control)
    */
   public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged) {
+    Container parent = this.parent; // guich@450_36: use local var instead of field
+    boolean pixelLayout = parent != null && parent.getEffectiveLayoutUnit() == LayoutUnit.PIXEL;
     if (setX == SETX_NOT_SET) {
       setX = x;
       setY = y;
@@ -743,26 +806,44 @@ public class Control extends GfxSurface {
 
       repositionAllowed = true;
       int lpx = 0, lpy = 0;
-      Container parent = this.parent; // guich@450_36: use local var instead of field
       Rect cli = this.cli; // guich@450_36: avoid recreating Rects
       // relative placement
       if (parent != null) {
         if (!ignoreInsets) {
-          parent.getClientRect(cli);
+          parent.getClientRectForChild(this, cli);
         } else {
           cli.x = cli.y = 0;
           cli.width = parent.width;
           cli.height = parent.height;
+          safeAreaConsumedEdges = SafeAreaEdges.NONE;
         }
 
         lpx = parent.lastX;
         lpy = parent.lastY;
+        if (pixelLayout) {
+          int logicalLeft = cli.x;
+          int logicalTop = cli.y;
+          int logicalRight = logicalLeft + cli.width;
+          int logicalBottom = logicalTop + cli.height;
+          cli.x = parent.toLayoutPixels(logicalLeft);
+          cli.y = parent.toLayoutPixels(logicalTop);
+          cli.width = parent.toLayoutPixels(logicalRight) - cli.x;
+          cli.height = parent.toLayoutPixels(logicalBottom) - cli.y;
+          lpx = parent.toLayoutPixels(lpx);
+          lpy = parent.toLayoutPixels(lpy);
+          if (parent.lastX != -999999) {
+            parent.lastX = parent.toLayoutPixels(parent.lastX);
+            parent.lastY = parent.toLayoutPixels(parent.lastY);
+            parent.lastW = parent.toLayoutPixels(parent.lastW);
+            parent.lastH = parent.toLayoutPixels(parent.lastH);
+          }
+        }
         if (relative != null) {
           // use the given control's coords instead of parent's ones.
-          parent.lastX = relative.x;
-          parent.lastY = relative.y;
-          parent.lastW = relative.width;
-          parent.lastH = relative.height;
+          parent.lastX = pixelLayout ? parent.toLayoutPixels(relative.x) : relative.x;
+          parent.lastY = pixelLayout ? parent.toLayoutPixels(relative.y) : relative.y;
+          parent.lastW = pixelLayout ? parent.toLayoutPixels(relative.x + relative.width) - parent.lastX : relative.width;
+          parent.lastH = pixelLayout ? parent.toLayoutPixels(relative.y + relative.height) - parent.lastY : relative.height;
         } else if (parent.lastX == -999999) // first control being added? - guich@450_36: only one check is enough
         {
           parent.lastX = cli.x;
@@ -848,9 +929,6 @@ public class Control extends GfxSurface {
           } else {
             width = width * fmH / 100;
           }
-        } else if ((DP - RANGE) <= width && width <= (DP + RANGE)) {
-          width -= DP;
-          width *= Settings.screenDensity;
         }
         tempW = width;
         // non-dependant height
@@ -923,9 +1001,6 @@ public class Control extends GfxSurface {
           } else {
             height = height * fmH / 100;
           }
-        } else if ((DP - RANGE) <= height && height <= (DP + RANGE)) {
-          height -= DP;
-          height *= Settings.screenDensity;
         }
         // x
         if (x < MAXABSOLUTECOORD) {
@@ -1116,9 +1191,6 @@ public class Control extends GfxSurface {
           } else {
             width = width * fmH / 100;
           }
-        } else if ((DP - RANGE) <= width && width <= (DP + RANGE)) {
-          width -= DP;
-          width *= Settings.screenDensity;
         }
         tempW = width;
         // non-dependant height
@@ -1191,9 +1263,6 @@ public class Control extends GfxSurface {
           } else {
             height = height * fmH / 100;
           }
-        } else if ((DP - RANGE) <= height && height <= (DP + RANGE)) {
-          height -= DP;
-          height *= Settings.screenDensity;
         }
         // x
         if (x < MAXABSOLUTECOORD) {
@@ -1367,6 +1436,15 @@ public class Control extends GfxSurface {
           throw new RuntimeException("Invalid resulting values in height for control " + toString() + ": " + height);
         }
       }
+    }
+
+    if (pixelLayout) {
+      int logicalRight = parent.toLogicalLayoutEdge(x + width);
+      int logicalBottom = parent.toLogicalLayoutEdge(y + height);
+      x = parent.toLogicalLayoutEdge(x);
+      y = parent.toLogicalLayoutEdge(y);
+      width = logicalRight - x;
+      height = logicalBottom - y;
     }
 
     this.x = x;
@@ -1645,26 +1723,28 @@ public class Control extends GfxSurface {
         sx += cx;
         sy += cy;
 
-        // before?
-        delta = sx - cx;
-        if (delta < 0) {
-          sw += delta;
-          sx = cx;
-        }
-        delta = sy - cy;
-        if (delta < 0) {
-          sh += delta;
-          sy = cy;
-        }
+        if (c.clipsChildrenToBounds()) {
+          // before?
+          delta = sx - cx;
+          if (delta < 0) {
+            sw += delta;
+            sx = cx;
+          }
+          delta = sy - cy;
+          if (delta < 0) {
+            sh += delta;
+            sy = cy;
+          }
 
-        // after?
-        delta = (sx + sw) - (cx + c.width);
-        if (delta > 0) {
-          sw -= delta;
-        }
-        delta = (sy + sh) - (cy + c.height);
-        if (delta > 0) {
-          sh -= delta;
+          // after?
+          delta = (sx + sw) - (cx + c.width);
+          if (delta > 0) {
+            sw -= delta;
+          }
+          delta = (sy + sh) - (cy + c.height);
+          if (delta > 0) {
+            sh -= delta;
+          }
         }
       }
     }

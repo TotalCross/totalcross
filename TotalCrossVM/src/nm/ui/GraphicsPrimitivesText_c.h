@@ -375,15 +375,17 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x, int32 y, Pixel foreColor, int32 justifyWidth)
 {
    TCObject fontObj = Graphics_font(g);
-   int32 fontSize = (int)(Font_size(fontObj) * (*tcSettings.screenDensityPtr));
+   double fontSize = Font_size(fontObj) * Graphics_fontScale(g);
    int32 typefaceIndex = Font_skiaIndex(fontObj);
+   double ascent, descent, leading;
 
    x += Graphics_transX(g);
    y += Graphics_transY(g);
+   skia_fontMetrics(typefaceIndex, fontSize, &ascent, &descent, &leading);
    skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
-   skia_drawText(skiaSurfaceForGraphics(g), text, chrCount * sizeof(JChar), x, y + fontSize, foreColor | Graphics_alpha(g), justifyWidth, fontSize, typefaceIndex);
+   skia_drawText(skiaSurfaceForGraphics(g), text, chrCount * sizeof(JChar), x, y + ascent, foreColor | Graphics_alpha(g), justifyWidth, fontSize, typefaceIndex);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 
-   markDirty(currentContext, g, x, y, skia_stringWidth(text, chrCount * sizeof(JChar), typefaceIndex, fontSize), fontSize);
+   markDirty(currentContext, g, x, y, (int32)ceil(skia_stringWidthD(text, chrCount * sizeof(JChar), typefaceIndex, fontSize)), (int32)ceil(ascent + descent + leading));
 }
 #endif

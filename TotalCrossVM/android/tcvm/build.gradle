@@ -308,6 +308,12 @@ tasks.register('removeStaleNativeBuildDirs') {
      }
  }
 
+def jniHeaderDir =
+    project(':app').layout.buildDirectory
+        .dir('generated')
+        .get()
+        .asFile
+
 android {
     namespace 'com.totalcross.tcvm'
     compileSdk 35
@@ -330,7 +336,11 @@ android {
         externalNativeBuild {
             cmake {
                 abiFilters nativeAndroidAbis as String[]
-                arguments "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF", "-DTC_ENABLE_SLJIT_JIT=ON"
+                arguments (
+                    "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF",
+                    "-DTC_ENABLE_SLJIT_JIT=OFF",
+                    "-DTC_JNI_HEADER_DIR=${jniHeaderDir.absolutePath}"
+                )
                 cppFlags "-std=c++14", "-DSK_GL"
                 targets "tcvm"
             }
@@ -374,15 +384,32 @@ android {
     }
 }
 
-afterEvaluate {
-    tasks.matching { Task task ->
-        task.name == 'preBuild' ||
-        task.name.startsWith('configureCMake') ||
-        task.name.startsWith('externalNativeBuild')
-    }.configureEach { Task task ->
-        dependsOn(tasks.named('fetchNativeDependencies'))
-        if (task.name.startsWith('externalNativeBuildClean')) {
-            dependsOn(tasks.named('removeStaleNativeBuildDirs'))
-        }
+def fetchNativeDependencies =
+    tasks.named('fetchNativeDependencies')
+
+def removeStaleNativeBuildDirs =
+    tasks.named('removeStaleNativeBuildDirs')
+
+tasks.configureEach {
+    def nativeClean =
+        name.startsWith('externalNativeBuildClean')
+
+    def nativeBuild =
+        name.startsWith('configureCMake') ||
+        (name.startsWith('externalNativeBuild') && !nativeClean)
+
+    if (name == 'preBuild') {
+        dependsOn(fetchNativeDependencies)
+    }
+
+    if (nativeBuild) {
+        dependsOn(
+            fetchNativeDependencies,
+            ':app:generateJniHeaders'
+        )
+    }
+
+    if (nativeClean) {
+        dependsOn(removeStaleNativeBuildDirs)
     }
 }
