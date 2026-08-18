@@ -8,21 +8,23 @@ void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 
 {
     SKIA_TRACE()
     float intervals[] = {5, 5};
+    GfxPaint paint1 = gfxPaintFromColor((int32*)&pixel1);
+    GfxPaint paint2 = gfxPaintFromColor((int32*)&pixel2);
     forePaint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 2.5f));
-    skia_drawLine(skiaSurface, x1, y1, x2, y2, pixel1);
+    skia_drawLine(skiaSurface, x1, y1, x2, y2, paint1);
     forePaint.setPathEffect(nullptr);
 
     forePaint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 7.5f));
-    skia_drawLine(skiaSurface, x1, y1, x2, y2, pixel2);
+    skia_drawLine(skiaSurface, x1, y1, x2, y2, paint2);
     forePaint.setPathEffect(nullptr);
 }
 
-void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, GfxPaint paint)
 {
     SKIA_TRACE()
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
     if (!targetCanvas) return;
-    forePaint.setColor(skiaColorFromPixel(pixel));
+    forePaint.setColor(*paint.color);
     targetCanvas->drawLine(x1, y1, x2, y2, forePaint);
 }
 
@@ -249,6 +251,32 @@ void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, i
     if (!targetCanvas) return;
     backPaint.setColor(skiaColorFromPixel(c));
     targetCanvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), r, r), backPaint);
+}
+
+void skia_drawRRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, const double *radii, Pixel c, bool filled)
+{
+    SKIA_TRACE()
+    SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
+    if (!targetCanvas) return;
+    SkRect rect = SkRect::MakeXYWH(x, y, w, h);
+    SkPaint &paint = filled ? backPaint : forePaint;
+    paint.setColor(skiaColorFromPixel(c));
+
+    if (radii == nullptr) {
+        targetCanvas->drawRect(rect, paint);
+        return;
+    }
+
+    SkVector corners[4] = {
+        SkVector::Make((SkScalar)radii[0], (SkScalar)radii[1]),
+        SkVector::Make((SkScalar)radii[2], (SkScalar)radii[3]),
+        SkVector::Make((SkScalar)radii[4], (SkScalar)radii[5]),
+        SkVector::Make((SkScalar)radii[6], (SkScalar)radii[7])
+    };
+
+    SkRRect rr;
+    rr.setRectRadii(rect, corners);
+    targetCanvas->drawRRect(rr, paint);
 }
 
 void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)

@@ -194,13 +194,16 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             }
             else
    #endif
-            for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+            for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch,y++)    // draw each row
             {
+               int32 rowStart, rowEnd;
+               if (!gfxClipHorizontalSpan(g, y, &rowStart, &rowEnd))
+                  continue;
                current = start;
                ands = ands8 + (currentBit = startBit);
                for (x=x0; x < xMax; x++)
                {
-                  if ((*current & *ands++) != 0 && x >= xMin)
+                  if ((*current & *ands++) != 0 && rowStart <= x && x <= rowEnd)
                      row[x] = foreColor;
                   if (++currentBit == 8)   // finished this uint8?
                   {
@@ -247,8 +250,11 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             }
             else
    #endif
-               for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+               for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch,y++)    // draw each row
                {
+                  int32 rowStart, rowEnd;
+                  if (!gfxClipHorizontalSpan(g, y, &rowStart, &rowEnd))
+                     continue;
                   current = start;
                   isLowNibble = isNibbleStartingLow;
                   i = (PixelConv*)&row[x0];
@@ -256,7 +262,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                   {
                      transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
                      isLowNibble = !isLowNibble;
-                     if (transparency == 0 || x < xMin)
+                     if (transparency == 0 || x < rowStart || x > rowEnd)
                         continue;
                      if (transparency == 0xF)
                         i->pixel = foreColor;
@@ -320,14 +326,17 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                {
                   rowWIB = width+diffW;
                   start = alpha + istart * rowWIB;
-                  for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+                  for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch,y++)    // draw each row
                   {
+                     int32 rowStart, rowEnd;
+                     if (!gfxClipHorizontalSpan(g, y, &rowStart, &rowEnd))
+                        continue;
                      current = start;
                      i = (PixelConv*)&row[x0];
                      for (x=x0; x < xMax; x++,i++)
                      {
                         transparency = *current++;
-                        if (transparency == 0 || x < xMin)
+                        if (transparency == 0 || x < rowStart || x > rowEnd)
                            continue;
                         if (transparency == 0xFF)
                            i->pixel = foreColor;
@@ -380,7 +389,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
    x += Graphics_transX(g);
    y += Graphics_transY(g);
-   skia_setClip(skiaSurfaceForGraphics(g), Get_Clip(g));
+   skia_applyClip(skiaSurfaceForGraphics(g), g);
    skia_drawText(skiaSurfaceForGraphics(g), text, chrCount * sizeof(JChar), x, y + fontSize, foreColor | Graphics_alpha(g), justifyWidth, fontSize, typefaceIndex);
    skia_restoreClip(skiaSurfaceForGraphics(g));
 

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "skia_internal.h"
+#include "../../instancefields.h"
 
 static void releaseProc(void* addr, void*) {
     delete[] static_cast<int32*>(addr);
@@ -95,6 +96,36 @@ void skia_setClip(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2) {
     if (SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface)) {
         targetCanvas->save();
         targetCanvas->clipRect(SkRect::MakeLTRB(x1, y1, x2, y2));
+    }
+}
+
+void skia_applyClip(int32 skiaSurface, TCObject g) {
+    SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
+    if (!targetCanvas) {
+        return;
+    }
+
+    TCObject roundClip = Graphics_roundClip(g);
+    targetCanvas->save();
+    if (roundClip != null) {
+        const double *radii = RRect_radii(roundClip);
+        SkVector corners[4];
+        SkRRect rrect;
+        for (int i = 0; i < 4; i++) {
+            corners[i].set((SkScalar)radii[i * 2], (SkScalar)radii[i * 2 + 1]);
+        }
+        rrect.setRectRadii(
+            SkRect::MakeXYWH(
+                (SkScalar)Rect_x(roundClip),
+                (SkScalar)Rect_y(roundClip),
+                (SkScalar)Rect_width(roundClip),
+                (SkScalar)Rect_height(roundClip)),
+            corners);
+        targetCanvas->clipRRect(rrect, true);
+    } else {
+        targetCanvas->clipRect(SkRect::MakeLTRB(
+            Graphics_clipX1(g), Graphics_clipY1(g),
+            Graphics_clipX2(g), Graphics_clipY2(g)));
     }
 }
 
