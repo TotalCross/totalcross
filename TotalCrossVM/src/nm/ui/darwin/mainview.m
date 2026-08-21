@@ -51,9 +51,11 @@ bool initGLES(ScreenSurface screen)
    // initialize the screen bitmap with the full width and height
    CGRect rect = [[UIScreen mainScreen] bounds];
    window = [[UIWindow alloc] initWithFrame: rect];
+   window.backgroundColor = [UIColor blackColor];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
    window.autoresizesSubviews = YES; // IOS 8 - make didLayoutSubviews be called
    [window makeKeyAndVisible];
+   [DEVICE_CTX->_mainview.view layoutIfNeeded];
    [DEVICE_CTX->_childview setScreenValues: screen];
    [DEVICE_CTX->_childview createGLcontext];
    return true;
@@ -143,7 +145,21 @@ bool iosLowMemory;
 
 - (void)loadView
 {
-   self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
+   root_view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+   root_view.backgroundColor = [UIColor blackColor];
+   root_view.autoresizesSubviews = YES;
+
+   DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
+   child_view.translatesAutoresizingMaskIntoConstraints = NO;
+   [root_view addSubview:child_view];
+   UILayoutGuide *safeArea = root_view.safeAreaLayoutGuide;
+   [NSLayoutConstraint activateConstraints:@[
+      [child_view.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor],
+      [child_view.trailingAnchor constraintEqualToAnchor:safeArea.trailingAnchor],
+      [child_view.topAnchor constraintEqualToAnchor:safeArea.topAnchor],
+      [child_view.bottomAnchor constraintEqualToAnchor:safeArea.bottomAnchor]
+   ]];
+   self.view = root_view;
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
    kbd = [[UITextView alloc] init];
@@ -653,7 +669,7 @@ int isShown;
 
 -(IBAction)closeWebView:(id)sender
 {
-   self.view = child_view;
+   self.view = root_view;
    webView = nil;
 }
 
