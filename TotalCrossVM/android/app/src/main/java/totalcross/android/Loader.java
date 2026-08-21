@@ -68,6 +68,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsAnimationCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.core.graphics.Insets;
 
 public class Loader extends AppCompatActivity implements TextToSpeech.OnInitListener, ActivityCompat.OnRequestPermissionsResultCallback
@@ -653,6 +654,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
 
       
     setTitle(tczname);
+    WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
     if (isFullScreen)
       getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -662,15 +664,29 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
 
     mainView = new Launcher4A(this, tczname, appPath, cmdline, isSingleAPK);
     mainLayout = new RelativeLayout(this);
-    mainLayout.addView(mainView);
+    mainLayout.setBackgroundColor(Color.BLACK);
+
+    ViewCompat.setOnApplyWindowInsetsListener(mainLayout, (view, insets) -> {
+        Insets safeInsets = insets.getInsetsIgnoringVisibility(
+                WindowInsetsCompat.Type.systemBars()
+                        | WindowInsetsCompat.Type.displayCutout()
+        );
+
+        applySafeArea(safeInsets);
+        updateImeState(insets);
+
+        return WindowInsetsCompat.CONSUMED;
+    });
+
     setContentView(mainLayout);
     onMainLoop = true;
 
-       WindowCompat.setDecorFitsSystemWindows(
-               getWindow(),
-               false
-       );
        View rootView = getWindow().getDecorView();
+       getWindow().setStatusBarColor(Color.TRANSPARENT);
+       getWindow().setNavigationBarColor(Color.TRANSPARENT);
+       WindowInsetsControllerCompat insetsController = WindowCompat.getInsetsController(getWindow(), rootView);
+       insetsController.setAppearanceLightStatusBars(false);
+       insetsController.setAppearanceLightNavigationBars(false);
 
        ViewCompat.setWindowInsetsAnimationCallback(
                rootView,
@@ -697,48 +713,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                    }
                });
 
-       ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
-
-           WindowInsetsCompat rootInsets = ViewCompat.getRootWindowInsets(view);
-
-           if (rootInsets == null) {
-               return insets;
-           }
-
-           Insets safeInsets = rootInsets.getInsetsIgnoringVisibility(
-                   WindowInsetsCompat.Type.systemBars()
-                           | WindowInsetsCompat.Type.displayCutout()
-           );
-
-           // IMPORTANT: make sure the view was already resized
-           view.post(() -> {
-               Launcher4A.instance.onSafeAreaChanged(safeInsets);
-           });
-
-           Insets imeInsets = insets.getInsets(
-                   WindowInsetsCompat.Type.ime()
-           );
-
-           boolean imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-                   || imeInsets.bottom > 0;
-
-           if (imeVisible) {
-               Launcher4A.sipVisible = true;
-               Launcher4A.sipWasOpen = false;
-           }
-
-           if (!imeVisible && Launcher4A.sipVisible) {
-               Launcher4A.sipWasOpen = true;
-               Launcher4A.sipVisible = false;
-           }
-
-           // If the keyboard is visible, update our cached SIP height
-           if (imeInsets.bottom > 0) {
-               Launcher4A.instance.sipInsetBottom = imeInsets.bottom;
-           }
-
-           return WindowInsetsCompat.CONSUMED;
-       });
+       ViewCompat.requestApplyInsets(mainLayout);
   }
 
    public static void setMargins (View v, int l, int t, int r, int b) {
@@ -760,7 +735,62 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
 
   RelativeLayout mainLayout;
   public static View mainView;
+  private Insets appliedSafeInsets;
+  private boolean mainViewAttached;
   // public static AdView adView;
+
+  private void applySafeArea(Insets safeInsets)
+  {
+    Launcher4A.instance.onSafeAreaChanged(safeInsets);
+
+    boolean changed = appliedSafeInsets == null
+        || appliedSafeInsets.top != safeInsets.top
+        || appliedSafeInsets.left != safeInsets.left
+        || appliedSafeInsets.bottom != safeInsets.bottom
+        || appliedSafeInsets.right != safeInsets.right;
+    if (!changed && mainViewAttached)
+      return;
+
+    appliedSafeInsets = safeInsets;
+    RelativeLayout.LayoutParams params;
+    if (mainViewAttached)
+      params = (RelativeLayout.LayoutParams) mainView.getLayoutParams();
+    else
+      params = new RelativeLayout.LayoutParams(
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.MATCH_PARENT);
+
+    params.setMargins(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
+    if (mainViewAttached)
+      mainView.setLayoutParams(params);
+    else
+    {
+      mainLayout.addView(mainView, params);
+      mainViewAttached = true;
+    }
+  }
+
+  private void updateImeState(WindowInsetsCompat insets)
+  {
+    Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+    boolean imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+        || imeInsets.bottom > 0;
+
+    if (imeVisible)
+    {
+      Launcher4A.sipVisible = true;
+      Launcher4A.sipWasOpen = false;
+    }
+    else
+    if (Launcher4A.sipVisible)
+    {
+      Launcher4A.sipWasOpen = true;
+      Launcher4A.sipVisible = false;
+    }
+
+    if (imeInsets.bottom > 0)
+      Launcher4A.instance.sipInsetBottom = imeInsets.bottom;
+  }
 
    class EventHandler extends Handler 
    {
