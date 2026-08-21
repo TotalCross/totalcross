@@ -699,15 +699,12 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                            @NonNull WindowInsetsCompat insets,
                            @NonNull List<WindowInsetsAnimationCompat> runningAnimations) {
 
-                       // Current sip height during animation
                        int bottom = insets.getInsets(
                                WindowInsetsCompat.Type.ime()
                        ).bottom;
+                       int percent = Launcher4A.instance.getSipAnimationPercent(bottom);
 
-                       // % of the keyboard shown, calculated using our cached SIP height
-                       int h = (int) ((double) bottom * 100) / Launcher4A.instance.sipInsetBottom;
-
-                       Launcher4A.instance.nativeSetKeyboardShift(h); // signal vm that the keyboard will appear
+                       Launcher4A.instance.nativeSetKeyboardShift(percent);
 
                        return insets;
                    }

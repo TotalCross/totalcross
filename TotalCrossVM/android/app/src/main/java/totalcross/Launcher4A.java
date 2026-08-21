@@ -930,8 +930,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
        if (instance.safeInsets == null) {
            return instance.getHeight();
        }
-       return instance.getHeight() - (instance.sipInsetBottom > instance.safeInsets.bottom ? instance.sipInsetBottom : 0);
+       return instance.getHeight() - instance.getSipOverlap(instance.sipInsetBottom);
    }
+
+    private int getSipOverlap(int imeInsetBottom) {
+        int safeBottom = safeInsets == null ? 0 : safeInsets.bottom;
+        return Math.max(0, imeInsetBottom - safeBottom);
+    }
+
+    public int getSipAnimationPercent(int imeInsetBottom) {
+        int finalOverlap = getSipOverlap(sipInsetBottom);
+        if (finalOverlap <= 0) {
+            return 0;
+        }
+        int currentOverlap = getSipOverlap(imeInsetBottom);
+        return Math.max(0, Math.min(100, currentOverlap * 100 / finalOverlap));
+    }
    
     private Insets safeInsets;
     private boolean safeAreaInsetsPending;
