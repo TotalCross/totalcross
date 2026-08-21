@@ -135,6 +135,9 @@ bool iosLowMemory;
    if (orientationChanged)
       lastOrientationSentToVM = orientation;
    [self sendSafeAreaInsetsIfChanged];
+
+   if (hasLastKeyboardFrame)
+      [self updateKeyboardOverlapWithScreenFrame:lastKeyboardFrameInScreen];
 }
 
 - (void)viewSafeAreaInsetsDidChange
@@ -160,6 +163,7 @@ bool iosLowMemory;
       [child_view.bottomAnchor constraintEqualToAnchor:safeArea.bottomAnchor]
    ]];
    self.view = root_view;
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardWillChangeFrame:) name: UIKeyboardWillChangeFrameNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
    kbd = [[UITextView alloc] init];
@@ -254,21 +258,54 @@ int isShown;
    [_events addObject: event];
 }
 
+- (void)updateKeyboardOverlapWithScreenFrame:(CGRect)keyboardFrameInScreen
+{
+   if (child_view.window == nil)
+      return;
+
+   CGRect keyboardFrame = [child_view convertRect:keyboardFrameInScreen
+                              fromCoordinateSpace:child_view.window.screen.coordinateSpace];
+   CGRect overlap = CGRectIntersection(child_view.bounds, keyboardFrame);
+   if (CGRectIsNull(overlap) || CGRectIsEmpty(overlap))
+      keyboardH = 0;
+   else
+   {
+      CGFloat scale = child_view.contentScaleFactor > 0
+         ? child_view.contentScaleFactor : [UIScreen mainScreen].scale;
+      keyboardH = (int)lround(CGRectGetHeight(overlap) * scale);
+   }
+}
+
+- (BOOL)updateKeyboardFrameFromNotification:(NSNotification *)notif
+{
+   NSDictionary* info = [notif userInfo];
+   NSValue* frameValue = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
+   if (frameValue == nil)
+      return NO;
+
+   lastKeyboardFrameInScreen = [frameValue CGRectValue];
+   hasLastKeyboardFrame = YES;
+   [self updateKeyboardOverlapWithScreenFrame:lastKeyboardFrameInScreen];
+   return YES;
+}
+
+-(void) keyboardWillChangeFrame: (NSNotification *)notif
+{
+   if ([self updateKeyboardFrameFromNotification:notif])
+      isShown = keyboardH > 0;
+}
+
 -(void) keyboardDidShow: (NSNotification *)notif
 {
-   if (keyboardH != 0) 
-      return;
+   [self updateKeyboardFrameFromNotification:notif];
    isShown = true;
-   // Get the size of the keyboard.
-   NSDictionary* info = [notif userInfo];
-   NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
-   CGSize keyboardSize = [aValue CGRectValue].size;
-   keyboardH = (int32) lround(keyboardSize.height * screenContentScale);
 }
 
 -(void) keyboardDidHide: (NSNotification *)notif
 {
    keyboardH = 0;
+   hasLastKeyboardFrame = NO;
+   lastKeyboardFrameInScreen = CGRectZero;
    [ self addEvent:
       [[NSDictionary alloc] initWithObjectsAndKeys:
        @"sipClosed", @"type",

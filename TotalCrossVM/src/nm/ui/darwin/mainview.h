@@ -30,6 +30,8 @@
    int lastScreenHeightSentToVM;
    UIEdgeInsets lastSafeAreaInsetsSentToVM;
    BOOL hasLastSafeAreaInsetsSentToVM;
+   CGRect lastKeyboardFrameInScreen;
+   BOOL hasLastKeyboardFrame;
    // keyboard
    UITextView* kbd;
    UIView* kbdDisabled;
@@ -70,7 +72,10 @@
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 - (void) keyboardDidShow: (NSNotification *)notif;
+- (void) keyboardWillChangeFrame: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
+- (void) updateKeyboardOverlapWithScreenFrame: (CGRect)keyboardFrameInScreen;
+- (BOOL) updateKeyboardFrameFromNotification: (NSNotification *)notif;
 - (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t;
 - (BOOL) documentPickerStart:(NSString*) fileName width:(int)w height:(int)h type:(int)t;
 - (void) updateLayout;
