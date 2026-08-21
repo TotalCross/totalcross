@@ -107,6 +107,7 @@ bool iosLowMemory;
 
 - (void)viewDidLayoutSubviews
 {
+   [super viewDidLayoutSubviews];
    //NSLog(@"*** view will layout subviews");
    int orientation = [child_view getOrientation];
    CGSize res = [child_view getResolution];
