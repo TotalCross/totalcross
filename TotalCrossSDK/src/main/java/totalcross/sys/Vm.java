@@ -1,6 +1,7 @@
 // Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
-// Copyright (C) 2000-2013 SuperWaba Ltda. 
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2000-2013 SuperWaba Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -170,7 +171,7 @@ public final class Vm {
    * If you're using /cmd and the command fails, change /c option to /k, which will keep the open window instead
    * of closing it, so you can see the error cause.
    *<p>
-   * In Android, you can launch an application, an url at the browser, execute a shell command, or install an apk:
+   * In Android, you can launch an application, an url at the browser, execute a shell command, install an apk, or share a file with another application:
    * <ul>
    * <li> Vm.exec("cmd","logcat -d -f /sdcard/error.log -v time *:I",0,true); -- creates the adb report (useful to get errors - note that you must wait for the file to be created, since the wait parameter does not work - like File f = new File("/sdcard/error.log"); while (!f.exists()) Vm.sleep(500);)
    * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true); -- launches a url
@@ -185,6 +186,16 @@ public final class Vm {
    * <li> Vm.exec("totalcross.appsrvc","TCService",0,true); -- starts the given service
    * <li> Vm.exec("broadcast","broadcast package",flags,true); -- sends a broadcast intent. "flag" is used in intent.addFlags if different of 0.
    * <li> Vm.exec("intent","{\"package\":\"com.company.application\",\"data\":\"file:///sdcard/something.pdf\",\"type\":\"application/pdf\"}",flags,true); -- starts an Intent with given values for package, data and type. The args value is expected to be a valid json object, you may use the class JSONObject to get a valid json string.
+   * <li> Vm.exec("share", "/path/to/file.pdf", 0, true);
+   * </br>
+   * Opens the Android system share sheet to share the specified file.</br>
+   * The file MIME type is automatically inferred from its extension.</br>
+   * The receiving application is granted temporary read access to the
+   * file.</br>
+   * </br>
+   * The wait parameter does not wait for the share operation to</br>
+   * complete. Use true to keep the TotalCross application running</br>
+   * while the system share sheet is displayed.
    * </ul>
    * <p>
    * In iOS, the following work as in Android. Note that since iOS does not have a sdcard, you must extract or copy the files to your application's directory (Settings.appPath).

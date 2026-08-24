@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -1004,6 +1005,35 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     Launcher4A.adsRet = ret;
   }
 
+  private void shareFile(String path) {
+    if (path == null || path.isEmpty()) {
+      return;
+    }
+
+    File file = new File(path);
+
+    if (!file.exists() || !file.isFile()) {
+      AndroidUtils.debug("File not found: " + path);
+      return;
+    }
+
+    Uri uri = getFileUri4Intent(file);
+
+    String mimeType = getMimeType(uri, file.getName());
+
+    if (mimeType == null) {
+      mimeType = "application/octet-stream";
+    }
+
+    Intent intent = new Intent(Intent.ACTION_SEND);
+    intent.setType(mimeType);
+    intent.putExtra(Intent.EXTRA_STREAM, uri);
+    intent.setClipData(ClipData.newRawUri("", uri));
+    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+    startActivity(Intent.createChooser(intent, null));
+  }
+
   // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
   // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
   // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -1100,6 +1130,9 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                return;
             }
          }
+         else if (command.equalsIgnoreCase("share")) {
+           shareFile(args);
+         }
          else if (command.equalsIgnoreCase("webview") && args != null) {
              CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
 //             builder.setStartAnimations(this, android.R.anim.slide_in_left, android.R.anim.slide_in_left);
@@ -1175,18 +1208,37 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          finish();
    }
 
-  // From https://stackoverflow.com/a/31691791/4438007
-  public String getMimeType(Uri uri) {
-    String mimeType = null;
-    if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-      ContentResolver cr = getContentResolver();
-      mimeType = cr.getType(uri);
-    } else {
-      String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
-      mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase());
-    }
-    return mimeType;
-  }
+   private String getMimeType(Uri uri) {
+     return getMimeType(uri, null);
+   }
+
+   private String getMimeType(Uri uri, String fallbackFileName) {
+     if (uri == null) {
+       return null;
+     }
+
+     if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+       String mimeType = getContentResolver().getType(uri);
+
+       if (mimeType != null) {
+         return mimeType;
+       }
+     }
+
+     String source = fallbackFileName != null
+         ? fallbackFileName
+         : uri.toString();
+
+     String extension = MimeTypeMap.getFileExtensionFromUrl(source);
+
+     if (extension == null || extension.isEmpty()) {
+       return null;
+     }
+
+     return MimeTypeMap.getSingleton()
+         .getMimeTypeFromExtension(
+             extension.toLowerCase(Locale.ROOT));
+   }
 
    public void onConfigurationChanged(Configuration config)
    {
