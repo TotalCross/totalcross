@@ -7,7 +7,11 @@
 package totalcross.sys;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 import totalcross.ui.IVirtualKeyboard;
@@ -196,6 +200,44 @@ public final class Settings {
    * @see #LINUX_ARM
    */
   public static String platform;
+
+  static void initializeJavaSESettings() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.set(2002, Calendar.DECEMBER, 25, 20, 0, 0);
+
+    String date = DateFormat.getDateInstance(DateFormat.SHORT).format(calendar.getTime());
+    dateFormat = date.startsWith("25") ? DATE_DMY : date.startsWith("12") ? DATE_MDY : DATE_YMD;
+    dateSeparator = firstNonNumericSymbol(date);
+    weekStart = (byte) (calendar.getFirstDayOfWeek() - 1);
+
+    String time = DateFormat.getTimeInstance(DateFormat.SHORT).format(calendar.getTime());
+    String normalizedTime = time.toLowerCase(Locale.ROOT);
+    is24Hour = !normalizedTime.contains("am") && !normalizedTime.contains("pm");
+    timeSeparator = firstNonNumericSymbol(time);
+
+    DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
+    thousandsSeparator = symbols.getGroupingSeparator();
+    decimalSeparator = symbols.getDecimalSeparator();
+    onJavaSE = true;
+    platform = JAVA;
+  }
+
+  static void initializeJavaSESettings4D() {
+  }
+
+  private static char firstNonNumericSymbol(String value) {
+    for (int i = 0; i < value.length(); i++) {
+      char character = value.charAt(i);
+      if (character != ' ' && !Character.isDigit(character)) {
+        return character;
+      }
+    }
+    return ' ';
+  }
+
+  static {
+    initializeJavaSESettings();
+  }
 
   /**
    * Field that returns the username of the user running the Virtual Machine. Because of

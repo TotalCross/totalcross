@@ -1,6 +1,7 @@
-// Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>   
+// Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -14,7 +15,6 @@ import java.util.Set;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
-import totalcross.Launcher;
 import totalcross.ui.font.FontMetrics;
 import totalcross.util.Comparable;
 import totalcross.util.Date;
@@ -29,36 +29,6 @@ import totalcross.util.Vector;
 public final class Convert {
   public static final String CRLF = "\r\n";
   public static final byte[] CRLF_BYTES = { '\r', '\n' };
-
-  static void newLauncherInstance() {
-    /* guich@200b4_150: totalcross.sys.Convert is always the first native method
-     * class created. It may have been created by a compiler or by Retroguard
-     * during the obfuscating process. When it is created this way, the
-     * Applet was not initialized, and such here we test and
-     * create it if necessary. The values in the class aren't important; but
-     * they must not be null.
-     */
-    try {
-      if (Launcher.instance == null) {
-        new Launcher();
-      }
-      if (Launcher.instance == null) {
-        new Launcher();
-        System.out.println("******************** NULL");
-      }
-      Launcher.instance.fillSettings(); // guich@tc100
-    } catch (java.awt.HeadlessException he) {
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
-  }
-
-  static void newLauncherInstance4D() {
-  }
-
-  static {
-    newLauncherInstance();
-  }
 
   public static char[] b2h = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
   private static byte[] h2b = new byte['f' + 1];

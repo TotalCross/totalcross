@@ -177,43 +177,13 @@ abstract class SettingsBridge extends StorageBridge {
     totalcross.sys.Settings.showDesktopMessages = true; // guich@340_49
   }
 
-  protected char getFirstSymbol(String s) {
-    char[] c = s.toCharArray();
-    for (int i = 0; i < c.length; i++) {
-      if (c[i] != ' ' && !('0' <= c[i] && c[i] <= '9')) {
-        return c[i];
-      }
-    }
-    return ' ';
-  }
-
   /** called by totalcross.Launcher.init() */
   public void fillSettings() {
     if (settingsFilled) {
       return;
     }
     settingsFilled = true;
-    java.util.Calendar cal = java.util.Calendar.getInstance();
-    // guich@340_34: since java can't provide us good methods to return these values, we use parse the return of some formatting methods
-    cal.set(2002, 11, 25, 20, 0, 0); // guich@401_32
-    java.text.DateFormat df = java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT); // guich@401_32: fixed wrong results in some systems
-    String d = df.format(cal.getTime());
-    totalcross.sys.Settings.dateFormat = d.startsWith("25") ? totalcross.sys.Settings.DATE_DMY
-        : d.startsWith("12") ? totalcross.sys.Settings.DATE_MDY : totalcross.sys.Settings.DATE_YMD;
-    totalcross.sys.Settings.dateSeparator = getFirstSymbol(d);
-    df = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT); // guich@401_32
-    d = df.format(cal.getTime());
-
-    totalcross.sys.Settings.is24Hour = d.toLowerCase().indexOf("am") == -1 && d.toLowerCase().indexOf("pm") == -1;
-    totalcross.sys.Settings.timeSeparator = getFirstSymbol(d);
-    //
-
-    totalcross.sys.Settings.weekStart = (byte) (cal.getFirstDayOfWeek() - 1);
     settingsRefresh(false);
-
-    java.text.DecimalFormatSymbols dfs = new java.text.DecimalFormatSymbols();
-    totalcross.sys.Settings.thousandsSeparator = dfs.getGroupingSeparator();
-    totalcross.sys.Settings.decimalSeparator = dfs.getDecimalSeparator();
     totalcross.sys.Settings.screenBPP = toBpp;
     try {
       totalcross.sys.Settings.screenWidthInDPI = totalcross.sys.Settings.screenHeightInDPI = Toolkit.getDefaultToolkit()
@@ -225,8 +195,6 @@ abstract class SettingsBridge extends StorageBridge {
     totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.VISTA_UI;
     totalcross.sys.Settings.screenWidth = toWidth;
     totalcross.sys.Settings.screenHeight = toHeight;
-    totalcross.sys.Settings.onJavaSE = true;
-    totalcross.sys.Settings.platform = Settings.JAVA;
     totalcross.sys.Settings.applicationId = getDefaultCrid(className); // dhaysmith@420_4
     totalcross.sys.Settings.deviceId = "Desktop"; // guich@568_2
     if (totalcross.sys.Settings.applicationId != null) {

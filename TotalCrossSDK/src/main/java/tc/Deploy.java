@@ -40,6 +40,8 @@ public class Deploy {
   public static String bootClassPath;
 
   public static void main(String[] args) throws Exception {
+    System.setProperty("java.awt.headless", "true");
+    System.setProperty("apple.awt.UIElement", "true");
     new Deploy(args);
   }
 

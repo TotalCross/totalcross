@@ -36,7 +36,9 @@ pushd $BASEDIR/TotalCrossSDK
       etc \
       $OUTDIR
 
-   ./gradlew-agent clean dist
+   package_java_options="${JAVA_TOOL_OPTIONS:-}"
+   package_java_options="${package_java_options:+$package_java_options }-Djava.awt.headless=true -Dapple.awt.UIElement=true"
+   JAVA_TOOL_OPTIONS="$package_java_options" ./gradlew-agent clean dist
    archive_gradle_logs
    if [ ! -f dist/libs/appdirs-1.2.0.jar ]; then
       echo "Could not find appdirs-1.2.0.jar in TotalCrossSDK/dist/libs after Gradle dist" >&2
@@ -49,7 +51,8 @@ pushd $BASEDIR/TotalCrossSDK
          --exclude=*-proguard.jar      \
       build/libs/totalcross-sdk*.jar \
       $OUTDIR/dist/
-   sdk_jar="$(find build/libs -maxdepth 1 -type f -regex '.*/totalcross-sdk-[0-9]+\.[0-9]+\.[0-9]+\.jar' -print -quit)"
+   sdk_jar="$(find build/libs -maxdepth 1 -type f -name 'totalcross-sdk-*.jar' \
+      ! -name '*-javadoc.jar' ! -name '*-sources.jar' -print -quit)"
    if [ -z "$sdk_jar" ]; then
       echo "Could not find versioned totalcross-sdk jar" >&2
       exit 1
