@@ -119,10 +119,11 @@ void windowUpdateSafeAreaInsetsPhysical(
       executeMethod(
          currentContext,
          updateSafeAreaInsetsMethod,
-         windowPhysicalToLogical(top),
-         windowPhysicalToLogical(left),
-         windowPhysicalToLogical(bottom),
-         windowPhysicalToLogical(right));
+         0, //windowPhysicalToLogical(top),
+         0, //windowPhysicalToLogical(left),
+         0, //windowPhysicalToLogical(bottom),
+         0  //windowPhysicalToLogical(right)
+      );
    }
 }
 
@@ -140,10 +141,10 @@ TC_API void tuW_getSafeAreaInsets(NMParams p) // totalcross/ui/Window public sta
          &bottom,
          &right
       );
-      FIELD_I32(*safeAreaInsets, 0) = windowPhysicalToLogical(top);
-      FIELD_I32(*safeAreaInsets, 1) = windowPhysicalToLogical(left);
-      FIELD_I32(*safeAreaInsets, 2) = windowPhysicalToLogical(bottom);
-      FIELD_I32(*safeAreaInsets, 3) = windowPhysicalToLogical(right);
+      FIELD_I32(*safeAreaInsets, 0) = 0; //windowPhysicalToLogical(top);
+      FIELD_I32(*safeAreaInsets, 1) = 0; //windowPhysicalToLogical(left);
+      FIELD_I32(*safeAreaInsets, 2) = 0; //windowPhysicalToLogical(bottom);
+      FIELD_I32(*safeAreaInsets, 3) = 0; //windowPhysicalToLogical(right);
       safeAreaInsetsInitialized = true;
    }
 #endif
