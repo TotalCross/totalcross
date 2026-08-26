@@ -76,6 +76,9 @@ On resume, read state first, inspect only active paths and the focused diff, the
 - [x] (2026-08-26) Extracted the SDL `TScreenSurfaceEx` definition into the
   shared `nm/ui/sdl/gfx_ex.h` backend and left Linux `gfx_ex.h` DirectFB-only;
   `GraphicsPrimitives.h` now selects SDL state before desktop platform identity.
+- [x] (2026-08-26) Routed graphics implementation by backend selection: WinCE
+  and Windows Native retain the Win32 DIB/BitBlt implementation, while Windows
+  SDL can reach the generic software graphics path.
 - [ ] Route events by windowing backend and preserve the Win32 event backend for Native.
 - [ ] Preserve Windows platform services when SDL owns the window.
 - [ ] Bring up Windows SDL with the software graphics path and Legacy renderer as a diagnostic configuration.
