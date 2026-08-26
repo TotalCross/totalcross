@@ -73,7 +73,9 @@ On resume, read state first, inspect only active paths and the focused diff, the
   defaults, accepted legacy inverse inputs, and rejected unsupported WinCE
   and Windows Native + Skia combinations. Evidence is in the migration state
   file and configure logs.
-- [ ] Separate SDL windowing state/types from Linux-specific implementation paths.
+- [x] (2026-08-26) Extracted the SDL `TScreenSurfaceEx` definition into the
+  shared `nm/ui/sdl/gfx_ex.h` backend and left Linux `gfx_ex.h` DirectFB-only;
+  `GraphicsPrimitives.h` now selects SDL state before desktop platform identity.
 - [ ] Route events by windowing backend and preserve the Win32 event backend for Native.
 - [ ] Preserve Windows platform services when SDL owns the window.
 - [ ] Bring up Windows SDL with the software graphics path and Legacy renderer as a diagnostic configuration.
