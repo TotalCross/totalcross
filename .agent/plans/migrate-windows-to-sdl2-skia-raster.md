@@ -112,8 +112,12 @@ On resume, read state first, inspect only active paths and the focused diff, the
 - [x] (2026-08-26) Hardened SDL event dispatch, mouse-union handling, UTF-8
   committed text including surrogate pairs, composition behavior, lifecycle
   events, fullscreen/resizable initialization, and SDL title/input behavior.
-- [ ] Run the final Windows backend matrix and repository-level affected validation.
-- [ ] Reconcile state, evidence, outcomes, and the editorial report.
+- [x] (2026-08-26) Ran the available final selector matrix and affected macOS
+  SDL builds, audited ownership/GPU conditions, and recorded Windows
+  architecture/runtime validation as deferred because this host has neither a
+  Windows toolchain nor staged Windows artifacts.
+- [x] (2026-08-26) Reconciled implementation state, validation limitations,
+  outcomes, and the factual editorial report.
 
 ## Current Architecture and Scope
 
@@ -873,7 +877,30 @@ Every non-trivial commit body should state motivation, ownership boundary change
 
 ## Outcomes & Retrospective
 
-Update only at meaningful milestone closure.
+The Windows desktop default is now SDL + Skia + Software. Native + Legacy +
+Software remains explicitly selectable with
+`-DTC_WINDOWING_SDL=OFF -DTC_RENDERER_SKIA=OFF -DTC_GRAPHICS_SOFTWARE=ON`, and
+WinCE remains fixed to that native configuration. SDL state and events are
+shared under `src/nm/ui/sdl` and `src/event/sdl`; Windows SDL exposes its HWND
+only as a platform-services bridge and never runs the Win32 event pump.
+
+SDL + Legacy remains supported as a diagnostic configuration. SDL/Skia uses a
+physical ARGB8888 CPU framebuffer, SDL streaming texture, and Skia BGRA raster
+mapping. Resize/DPI events use logical SDL window size versus physical renderer
+output size, and screen recreation keeps the SDL window/renderer while
+rebinding the backbuffer and Skia screen canvas. UTF-8 committed text is
+decoded to UTF-16 units, including surrogate pairs.
+
+The default and diagnostic SDL configurations built successfully on macOS
+ARM64, including the affected shared SDL paths. Windows selector checks showed
+the intended default, fallback, diagnostic, and unsupported Native + Skia
+behavior, but Windows x86/x64/ARM64 compilation and all runtime scenarios
+(including mixed-DPI monitors and native-library event hooks) remain deferred
+to a Windows-capable CI lane. No TotalCross GPU backend or context was added;
+Skia's existing GLES code remains conditional on `TC_GRAPHICS_GLES`.
+
+See `.agent/reports/windows-sdl-skia-raster-editorial.md` for the factual
+handoff and the exact validation records.
 
 At final completion record:
 
@@ -898,3 +925,4 @@ Create/update `.agent/reports/windows-sdl-skia-raster-editorial.md` with the fac
 ## Revision Note
 
 2026-08-26: Initial Luna-oriented ExecPlan. It assumes static SDL2 consumption from totalcross-depot-tools is already complete, preserves Windows Native + Legacy as a fallback, adds SDL + Skia only through the software graphics path, makes event ownership follow windowing, changes the Windows default only after functional bring-up, and then requires HiDPI/lifecycle/pixel/input hardening before the migration is considered complete.
+2026-08-26: Completed the implementation on the available host. Windows runtime and architecture validation remains explicitly deferred rather than inferred from macOS builds.

@@ -72,11 +72,13 @@ static void beginScaleGesture()
    {
       scaleGestureActive = true;
       lastScaleDistance = getScaleDistance();
+#if !__APPLE__
       if (isDragging)
       {
          isDragging = false;
          postEvent(mainContext, PENEVENT_PEN_UP, 0, 10000, 10000, -1);
       }
+#endif
       postEvent(mainContext, MULTITOUCHEVENT_SCALE, 1, 0, 0, -1);
    }
 }
@@ -127,11 +129,13 @@ static void handleFingerTouchEvent(SDL_Event event)
          }
          if (scaleFingerCount >= MAX_SCALE_FINGERS)
             beginScaleGesture();
+#if !__APPLE__
          else
          {
             isDragging = true;
             postEvent(mainContext, PENEVENT_PEN_DOWN, 0, x, y, -1);
          }
+#endif
          break;
       }
       case SDL_FINGERUP:
@@ -147,11 +151,13 @@ static void handleFingerTouchEvent(SDL_Event event)
                break;
             }
          }
+#if !__APPLE__
          if (!scaleGestureActive)
          {
             isDragging = false;
             postEvent(mainContext, PENEVENT_PEN_UP, 0, x, y, -1);
          }
+#endif
          break;
       }
       case SDL_FINGERMOTION:
