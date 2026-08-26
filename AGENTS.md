@@ -196,6 +196,7 @@ fetched into:
 - `TotalCrossVM/deps/totalcross-depot-tools/libpng/local`
 - `TotalCrossVM/deps/totalcross-depot-tools/sqlite3/local`
 - `TotalCrossVM/deps/totalcross-depot-tools/mbedtls/local`
+- `TotalCrossVM/deps/totalcross-depot-tools/sdl2/local`
 - `TotalCrossVM/deps/totalcross-depot-tools/skia/local`
 
 The bootstrap script is:
@@ -213,6 +214,14 @@ warning and falls back to the repository default branch/main. When the
 metadata if the directory came from a source archive, verifies the expected
 origin, fetches tags, and checks out the configured ref instead of returning only
 because `deps.yml` is present.
+
+Desktop builds with `TC_WINDOWING_SDL` consume static SDL 2.32.8 through the
+pinned depot-tools checkout; a host/system SDL installation is not required.
+SDL configuration may use:
+
+- `SDL2_RELEASE_TAG`
+- `SDL2_GITHUB_REPO`
+- `SDL2_GITHUB_TOKEN`
 
 The Android Gradle module uses `fetchNativeDependencies` to fetch the Android
 prebuilt artifacts before CMake tasks. If native dependencies are missing in a
