@@ -102,10 +102,16 @@ On resume, read state first, inspect only active paths and the focused diff, the
 - [x] (2026-08-26) Changed Windows desktop defaults to SDL + Skia + Software;
   explicit Native + Legacy remains available through the cache selectors and
   WinCE stays fixed to Native + Legacy + Software.
-- [ ] Fix HiDPI and per-monitor logical/physical metric handling.
-- [ ] Fix SDL/backbuffer/Skia lifecycle and resize/display-change recreation.
-- [ ] Make the SDL/Skia pixel format and presentation path deterministic.
-- [ ] Harden SDL input, text, window events, fullscreen/title behavior, and other issues found while exercising the new default.
+- [x] (2026-08-26) Added SDL logical/physical metric querying, per-monitor scale
+  handling, SDL Windows DPI awareness, central screen-change dispatch, and
+  constrained the legacy 0.75 density override to non-SDL Windows.
+- [x] (2026-08-26) Separated SDL window/renderer lifetime from backbuffer
+  lifetime and added explicit Skia screen teardown/rebind around recreation.
+- [x] (2026-08-26) Replaced window-surface/format discovery with a fixed
+  ARGB8888 streaming texture and deterministic Skia BGRA mapping.
+- [x] (2026-08-26) Hardened SDL event dispatch, mouse-union handling, UTF-8
+  committed text including surrogate pairs, composition behavior, lifecycle
+  events, fullscreen/resizable initialization, and SDL title/input behavior.
 - [ ] Run the final Windows backend matrix and repository-level affected validation.
 - [ ] Reconcile state, evidence, outcomes, and the editorial report.
 

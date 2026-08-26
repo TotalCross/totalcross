@@ -155,6 +155,7 @@ std::map<std::string, int> typefaceIndexMap;
 void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
+    destroySkiaScreen();
 #if TC_GRAPHICS_SOFTWARE
     bitmap.installPixels(SkImageInfo::Make(w,
                                            h,
@@ -205,6 +206,14 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     backPaint.setAntiAlias(true);
     canvas->clear(SK_ColorWHITE);
     flushSkia();
+}
+
+void destroySkiaScreen()
+{
+    delete canvas;
+    canvas = nullptr;
+    bitmap.reset();
+    surface.reset();
 }
 
 void flushSkia()
@@ -337,21 +346,8 @@ extern "C" JNIEXPORT void JNICALL Java_totalcross_Launcher4A_drawIntoBitmap(JNIE
 
 #if TC_WINDOWING_SDL
 int32 colorType(uint32 pixelformat) {
-    if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED16) {
-        if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB) {
-            if (SDL_PIXELLAYOUT(pixelformat) == SDL_PACKEDLAYOUT_565) {
-                return kRGB_565_SkColorType;
-            }
-        }
-    }
-    else if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED32) {
-        if (SDL_PIXELLAYOUT(pixelformat) == SDL_PACKEDLAYOUT_8888) {
-            if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB ||
-                SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_ARGB) {
-                return kBGRA_8888_SkColorType;
-            }
-        }
-    }
+    if (pixelformat == SDL_PIXELFORMAT_ARGB8888)
+        return kBGRA_8888_SkColorType;
     debug("Unsupported pixel format %s, try mapping your color format on %s - %s", SDL_GetPixelFormatName(pixelformat), __FILE__, __FUNCTION__);
     return kUnknown_SkColorType;
 }
