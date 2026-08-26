@@ -133,6 +133,10 @@ if (NOT DEFINED SKIA_AUTO_FETCH)
   set(SKIA_AUTO_FETCH ON)
 endif()
 
+if (NOT DEFINED SDL2_AUTO_FETCH)
+  set(SDL2_AUTO_FETCH ON)
+endif()
+
 if (NOT DEFINED SQLITE3_AUTO_FETCH)
   set(SQLITE3_AUTO_FETCH ON)
 endif()
@@ -270,6 +274,7 @@ if(NOT EXISTS "${TCVM_DEPOT_TOOLS_DIR}/deps.yml")
 endif()
 
 set(CMAKE_MODULE_PATH
+  "${TCVM_DEPOT_TOOLS_DIR}/sdl2/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/qrcode/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/qrcodegen/cmake"
   "${TCVM_DEPOT_TOOLS_DIR}/zlib-ng/cmake"
@@ -317,6 +322,11 @@ foreach(TCVM_DEP_CACHE_VAR
     SLJIT_DIR
     SLJIT_INCLUDE_DIR
     SLJIT_LIBRARY
+    SDL2_DIR
+    SDL2_INCLUDE_DIR
+    SDL2_LIBRARY
+    SDL2_LIBRARY_TEMP
+    SDL2MAIN_LIBRARY
     SKIA_CONFIG_INCLUDE_DIR
     SKIA_CORE_INCLUDE_DIR
     SKIA_UTILS_INCLUDE_DIR
@@ -500,12 +510,15 @@ if(TC_TARGET_APPLE)
   endif()
 endif()
 
-# Find SDL2
-IF (NOT (TC_TARGET_ANDROID OR MSVC OR TC_GENERATOR_XCODE))
-  set(SDL2_BUILDING_LIBRARY TRUE)
-  find_package(SDL2 2.0.12 REQUIRED)
-  include_directories(${SDL2_INCLUDE_DIR})
-ENDIF (NOT (TC_TARGET_ANDROID OR MSVC OR TC_GENERATOR_XCODE))
+# Find SDL2 from depot-tools when SDL windowing is selected.
+if(TC_WINDOWING_SDL)
+  include("${TCVM_DEPOT_TOOLS_DIR}/sdl2/cmake/AutoFetchSDL2.cmake")
+  if(SDL2_AUTO_FETCH)
+    tcvm_auto_fetch_sdl2()
+  endif()
+  find_package(SDL2 REQUIRED)
+  target_link_libraries(tcvm PRIVATE SDL2::SDL2)
+endif()
 
 # Find Skia
 include("${TCVM_DEPOT_TOOLS_DIR}/skia/cmake/AutoFetchSkia.cmake")
@@ -721,11 +734,11 @@ if(TC_GENERATOR_XCODE)
   )
 endif()
 
-if(DEFINED SDL2_LIBRARY)
+if(TC_WINDOWING_SDL)
   set(TC_SDL_SOURCES
     ${TC_SRCDIR}/init/tcsdl.cpp
   )
-endif(DEFINED SDL2_LIBRARY)
+endif(TC_WINDOWING_SDL)
 
 if(TC_TARGET_ANDROID)
   set(TC_ANDROID_SOURCES
@@ -934,46 +947,6 @@ if(TC_GENERATOR_XCODE)
     XCODE_ATTRIBUTE_OTHER_LIBTOOLFLAGS "${TCVM_XCODE_OTHER_LIBTOOLFLAGS}"
     XCODE_LINK_BUILD_PHASE_MODE KNOWN_LOCATION
   )
-endif()
-
-if(DEFINED SDL2_LIBRARY)
-  target_link_libraries(tcvm PRIVATE ${SDL2_LIBRARY})
-
-  if(TC_TARGET_APPLE)
-    set_target_properties(tcvm PROPERTIES
-      MACOSX_RPATH ON
-      BUILD_WITH_INSTALL_RPATH TRUE
-      INSTALL_RPATH
-        "/opt/homebrew/lib;/opt/homebrew/opt/sdl2-compat/lib;/opt/homebrew/sdl2/lib"
-    )
-
-    foreach(item IN LISTS SDL2_LIBRARY)
-      if(item MATCHES ".*libSDL2.*\\.dylib$")
-        set(SDL2_DYLIB_PATH "${item}")
-      endif()
-    endforeach()
-
-    if(SDL2_DYLIB_PATH)
-      execute_process(
-        COMMAND otool -D "${SDL2_DYLIB_PATH}"
-        OUTPUT_VARIABLE SDL2_OTOOl_D_OUTPUT
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-
-      string(REGEX MATCH
-        "([^\n]+libSDL2-2\\.0\\.0\\.dylib)"
-        SDL2_INSTALL_NAME
-        "${SDL2_OTOOl_D_OUTPUT}"
-      )
-
-      add_custom_command(TARGET tcvm POST_BUILD
-        COMMAND install_name_tool
-          -change "${SDL2_INSTALL_NAME}"
-                  "@rpath/libSDL2.dylib"
-                  "$<TARGET_FILE:tcvm>"
-      )
-    endif()
-  endif()
 endif()
 
 if(TC_TARGET_ANDROID)
