@@ -88,7 +88,10 @@ On resume, read state first, inspect only active paths and the focused diff, the
   UTF-8 title updates, routed Windows SDL title/SIP calls through it, and
   bridged the SDL window to `mainHWnd` with SDL SysWM without adding a Win32
   event pump.
-- [ ] Bring up Windows SDL with the software graphics path and Legacy renderer as a diagnostic configuration.
+- [x] (2026-08-26) Configured and built the SDL + Legacy + Software diagnostic
+  path on the available macOS SDL lane, proving the shared SDL event/windowing
+  and generic software graphics sources compile together. Windows interactive
+  smoke remains deferred to a Windows-capable lane.
 - [ ] Bring up Windows SDL + Skia raster as an alternate configuration.
 - [ ] Validate SDL + Skia against Native + Legacy before changing defaults.
 - [ ] Change the Windows default to SDL + Skia while retaining explicit Native + Legacy fallback.
