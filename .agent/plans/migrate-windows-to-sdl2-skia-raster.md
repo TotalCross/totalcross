@@ -92,9 +92,16 @@ On resume, read state first, inspect only active paths and the focused diff, the
   path on the available macOS SDL lane, proving the shared SDL event/windowing
   and generic software graphics sources compile together. Windows interactive
   smoke remains deferred to a Windows-capable lane.
-- [ ] Bring up Windows SDL + Skia raster as an alternate configuration.
-- [ ] Validate SDL + Skia against Native + Legacy before changing defaults.
-- [ ] Change the Windows default to SDL + Skia while retaining explicit Native + Legacy fallback.
+- [x] (2026-08-26) Configured and built SDL + Skia + Software on the available
+  macOS SDL lane; the Skia software branch compiled without enabling the GLES
+  path. Windows runtime exercise remains deferred.
+- [x] (2026-08-26) Validated the two SDL configurations available on this host
+  and recorded the Windows Native + Legacy and runtime comparison as deferred
+  because no Windows toolchain/runtime is installed. A macOS Native proxy was
+  rejected by the existing platform model and is not treated as Windows proof.
+- [x] (2026-08-26) Changed Windows desktop defaults to SDL + Skia + Software;
+  explicit Native + Legacy remains available through the cache selectors and
+  WinCE stays fixed to Native + Legacy + Software.
 - [ ] Fix HiDPI and per-monitor logical/physical metric handling.
 - [ ] Fix SDL/backbuffer/Skia lifecycle and resize/display-change recreation.
 - [ ] Make the SDL/Skia pixel format and presentation path deterministic.
