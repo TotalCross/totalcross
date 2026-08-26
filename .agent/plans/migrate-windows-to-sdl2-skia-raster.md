@@ -79,7 +79,11 @@ On resume, read state first, inspect only active paths and the focused diff, the
 - [x] (2026-08-26) Routed graphics implementation by backend selection: WinCE
   and Windows Native retain the Win32 DIB/BitBlt implementation, while Windows
   SDL can reach the generic software graphics path.
-- [ ] Route events by windowing backend and preserve the Win32 event backend for Native.
+- [x] (2026-08-26) Added a shared SDL event backend and made event dispatch
+  follow windowing selection; Native Windows remains exclusively on Win32,
+  while Linux `event_c.h` now contains only DirectFB handling. Moved the
+  Windows DLL module capture into the platform startup source so SDL builds do
+  not need the Win32 event header.
 - [ ] Preserve Windows platform services when SDL owns the window.
 - [ ] Bring up Windows SDL with the software graphics path and Legacy renderer as a diagnostic configuration.
 - [ ] Bring up Windows SDL + Skia raster as an alternate configuration.
