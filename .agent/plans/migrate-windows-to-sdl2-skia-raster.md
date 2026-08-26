@@ -84,7 +84,10 @@ On resume, read state first, inspect only active paths and the focused diff, the
   while Linux `event_c.h` now contains only DirectFB handling. Moved the
   Windows DLL module capture into the platform startup source so SDL builds do
   not need the Win32 event header.
-- [ ] Preserve Windows platform services when SDL owns the window.
+- [x] (2026-08-26) Added the SDL Windows windowing adapter for text-input and
+  UTF-8 title updates, routed Windows SDL title/SIP calls through it, and
+  bridged the SDL window to `mainHWnd` with SDL SysWM without adding a Win32
+  event pump.
 - [ ] Bring up Windows SDL with the software graphics path and Legacy renderer as a diagnostic configuration.
 - [ ] Bring up Windows SDL + Skia raster as an alternate configuration.
 - [ ] Validate SDL + Skia against Native + Legacy before changing defaults.
