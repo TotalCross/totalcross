@@ -24,6 +24,7 @@ env:
   SKIA_GITHUB_TOKEN: ${{ secrets.SKIA_GITHUB_TOKEN }}
   VCRUNTIME_GITHUB_TOKEN: ${{ secrets.VCRUNTIME_GITHUB_TOKEN }}
   LIBJPEG_TURBO_GITHUB_TOKEN: ${{ secrets.LIBJPEG_TURBO_GITHUB_TOKEN }}
+  SDL2_GITHUB_TOKEN: ${{ secrets.SDL2_GITHUB_TOKEN }}
 
 jobs:
   checkout-source:
@@ -68,6 +69,8 @@ jobs:
         SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
         VCRUNTIME_RELEASE_TAG_OVERRIDE: ${{ secrets.VCRUNTIME_RELEASE_TAG }}
         VCRUNTIME_GITHUB_REPO_OVERRIDE: ${{ secrets.VCRUNTIME_GITHUB_REPO }}
+        SDL2_RELEASE_TAG_OVERRIDE: ${{ secrets.SDL2_RELEASE_TAG }}
+        SDL2_GITHUB_REPO_OVERRIDE: ${{ secrets.SDL2_GITHUB_REPO }}
       run: |
         for name in \
           SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
@@ -78,7 +81,8 @@ jobs:
           AXTLS_RELEASE_TAG AXTLS_GITHUB_REPO \
           LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
           SKIA_RELEASE_TAG SKIA_GITHUB_REPO \
-          VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
+          VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO \
+          SDL2_RELEASE_TAG SDL2_GITHUB_REPO
         do
           value_name="${name}_OVERRIDE"
           if [ -n "${!value_name:-}" ]; then
@@ -450,7 +454,7 @@ jobs:
         done
 
     - name: Install build tools
-      run: brew install ninja sdl2
+      run: brew install ninja
 
     - name: Build VM & Launcher
       run: |
