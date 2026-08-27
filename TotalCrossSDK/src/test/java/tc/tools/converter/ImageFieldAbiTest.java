@@ -50,7 +50,7 @@ class ImageFieldAbiTest {
     assertAbiPrefix(converted);
     assertNativeMethods(converted, "imageLoad", "imageParse", "setCurrentFrame", "applyChanges", "changeColors",
         "getPixelRow", "setTransparentColor", "freeTexture", "createJpg", "applyColor", "nativeEquals",
-        "applyColor2", "applyFade", "nativeResizeJpeg", "getJpegBestFit", "getJpegScaled");
+        "applyColor2", "applyFade", "nativeResizeJpeg", "getJpegBestFit", "getJpegScaled", "getModifiedInstance");
   }
 
   private static TCClass convertDirectImage() throws Exception {
