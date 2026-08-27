@@ -123,7 +123,11 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 
 bool graphicsLock(ScreenSurface screen, bool on)
 {
-#ifndef HEADLESS
+#if TC_WINDOWING_SDL || defined(HEADLESS)
+   UNUSED(screen)
+   UNUSED(on)
+   return true;
+#else
    IDirectFBSurface *surf = SCREEN_EX(screen)->primary;
    IDirectFBDisplayLayer *_layer = SCREEN_EX(screen)->layer;
    if (on)
@@ -137,7 +141,5 @@ bool graphicsLock(ScreenSurface screen, bool on)
       _layer->EnableCursor(_layer, 1);
       return ok;
    }
-#else
-    return true;
 #endif
 }
