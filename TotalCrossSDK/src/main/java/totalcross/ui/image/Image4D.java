@@ -78,9 +78,6 @@ public class Image4D extends GfxSurface {
   public int lastAccess = -1;
   int textureId = -1;
   
-  /** Used by lockChanges to store the hashCode before discarding the pixels */
-  private int hashCode = 0;
-
   // object
   private int[] pixels; // must be at Object position 0
   protected int[] pixelsOfAllFrames;
@@ -92,6 +89,9 @@ public class Image4D extends GfxSurface {
   private String path;
   private int logicalWidth;
   private int logicalHeight;
+
+  /** Used by lockChanges to store the hashCode before discarding the pixels. */
+  private int hashCode = 0;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
