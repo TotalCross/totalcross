@@ -99,7 +99,7 @@ If preserving field indices appears impossible, stop before editing `instancefie
 - [x] Align `Image.java` state/behavior with deployed `Image4D` semantics.
 - [x] Remove `Image4D.java` and prove direct conversion; isolate the JavaSE-only nested reader through `ImageLoader4D`.
 - [x] Run deployed native macOS field-ABI smoke against a fresh Release `libtcvm.dylib`.
-- [ ] Clean stale references and complete final validation.
+- [x] Clean stale references and complete final validation.
 
 ## Initial Reconnaissance
 
@@ -484,7 +484,13 @@ After every commit, state must record commit hash, checkpoint, changed paths, fo
 
 ## Outcomes & Retrospective
 
-At completion record only: whether `Image4D.java` was fully removed; whether direct conversion required converter changes; whether a JavaSE helper was introduced; whether every original native field index was preserved; final native macOS smoke result/tested commit; intentional compatibility limitation; and deferred lazy image work. Point to evidence for commands/results rather than duplicating logs.
+- `Image4D.java` was fully removed; generic `4D` replacement selection remains for other classes.
+- Direct conversion required no converter implementation changes; the new `ImageFieldAbiTest` locks the native layout and direct conversion behavior.
+- `Image$ImageLoader4D` was introduced to keep AWT/ImageIO behind the JavaSE-only replacement boundary.
+- Every original native `Image_*` field index was preserved; `ImageFieldAbiTest` covers the field prefixes and the native macros were unchanged.
+- Native macOS smoke passed with a fresh Release dylib at production revision `cad955305c605bad7cd4dac403333961e7b7f253`; evidence is recorded in `.agent/evidence/eliminate-image4d.md`.
+- Intentional compatibility limitation: `Image4D` remains absent with no deploy-visible stub because it was an internal replacement class; no compatibility baseline artifact was available for the optional aggregate check.
+- Lazy image work remains deferred as planned.
 
 ## Revision Note
 
