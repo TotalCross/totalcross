@@ -1029,6 +1029,7 @@ tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
             'pngSourceCopy=true',
             'firstDrawMaterializes=true',
             'repeatedBarrierReusesPixels=true',
+            'warningCompatibility=true',
             'pathSourceStable=true',
             'jpegConstructionLazy=true',
             'structuralInvalid=true',

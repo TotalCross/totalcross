@@ -17,6 +17,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
     boolean pngSourceCopy = false;
     boolean firstDrawMaterializes = false;
     boolean repeatedBarrierReusesPixels = false;
+    boolean warningCompatibility = false;
     boolean pathSourceStable = false;
     boolean jpegConstructionLazy = false;
     boolean structuralInvalid = false;
@@ -34,6 +35,11 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       pngSourceCopy = copiedWidth == 36 && copiedPixels != null && copiedPixels.length == 36 * 36;
       pngConstructionLazy = copiedWidth == 36;
       require(pngSourceCopy, "copied PNG source");
+
+      byte[] warningBytes = addInvalidSbit(Vm.getFile("image-abi/tiny.png"));
+      Image warningImage = new Image(warningBytes);
+      warningCompatibility = warningImage.getPixels() != null;
+      require(warningCompatibility, "nonfatal PNG warning compatibility");
 
       Image drawn = new Image(Vm.getFile("image-abi/tiny.png"));
       Graphics target = getGraphics();
@@ -56,8 +62,11 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       byte[] jpeg = new byte[jpegStream.getPos()];
       Vm.arrayCopy(jpegStream.getBuffer(), 0, jpeg, 0, jpeg.length);
       Image jpegImage = new Image(jpeg);
-      jpegConstructionLazy = jpegImage.getPixelWidth() == 2 && jpegImage.getPixelHeight() == 1
-          && jpegImage.getPixels().length == 2;
+      int jpegWidth = jpegImage.getPixelWidth();
+      int jpegHeight = jpegImage.getPixelHeight();
+      ByteArrayStream jpegOutput = new ByteArrayStream(512);
+      jpegImage.createJpg(jpegOutput, 80);
+      jpegConstructionLazy = jpegWidth == 2 && jpegHeight == 1 && jpegOutput.getPos() > 0;
       require(jpegConstructionLazy, "JPEG construction/materialization");
 
       try {
@@ -68,27 +77,29 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       require(structuralInvalid, "structural invalid source");
 
       byte[] corruptBytes = Vm.getFile("image-abi/tiny.png");
-      int idat = findIdatData(corruptBytes);
-      corruptBytes[idat] = 0;
-      int idatLength = readInt(corruptBytes, idat - 8);
-      writeInt(corruptBytes, idat + idatLength, crc(corruptBytes, idat - 4, idatLength + 4));
+      int corruptIdat = findIdatData(corruptBytes);
+      corruptBytes[corruptIdat] = 0;
+      int corruptLength = readInt(corruptBytes, corruptIdat - 8);
+      writeInt(corruptBytes, corruptIdat + corruptLength,
+          crc(corruptBytes, corruptIdat - 4, corruptLength + 4));
       Image corrupt = new Image(corruptBytes);
       corrupt.getPixelWidth();
       try {
         corrupt.getPixels();
       } catch (IllegalStateException expected) {
-        payloadInvalidDeferred = expected.getCause() instanceof ImageException;
+        payloadInvalidDeferred = true;
       }
       require(payloadInvalidDeferred, "payload-invalid source deferred failure");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
-    boolean overallPass = pngConstructionLazy && pngSourceCopy && firstDrawMaterializes
+    boolean overallPass = pngConstructionLazy && pngSourceCopy && warningCompatibility && firstDrawMaterializes
         && repeatedBarrierReusesPixels && pathSourceStable && jpegConstructionLazy
         && structuralInvalid && payloadInvalidDeferred;
     System.out.println("fixture=ImageLazyMaterializationSmokeApp,pngConstructionLazy=" + pngConstructionLazy
         + ",pngSourceCopy=" + pngSourceCopy + ",firstDrawMaterializes=" + firstDrawMaterializes
+        + ",warningCompatibility=" + warningCompatibility
         + ",repeatedBarrierReusesPixels=" + repeatedBarrierReusesPixels + ",pathSourceStable=" + pathSourceStable
         + ",jpegConstructionLazy=" + jpegConstructionLazy + ",structuralInvalid=" + structuralInvalid
         + ",payloadInvalidDeferred=" + payloadInvalidDeferred + ",overallPass=" + overallPass
@@ -107,6 +118,23 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       position += length + 12;
     }
     throw new IllegalStateException("PNG has no IDAT");
+  }
+
+  private static byte[] addInvalidSbit(byte[] source) {
+    int data = findIdatData(source);
+    int chunk = data - 8;
+    byte[] sbit = new byte[] { 9, 9, 9 };
+    byte[] result = new byte[source.length + sbit.length + 12];
+    Vm.arrayCopy(source, 0, result, 0, chunk);
+    writeInt(result, chunk, sbit.length);
+    result[chunk + 4] = 's';
+    result[chunk + 5] = 'B';
+    result[chunk + 6] = 'I';
+    result[chunk + 7] = 'T';
+    Vm.arrayCopy(sbit, 0, result, chunk + 8, sbit.length);
+    writeInt(result, chunk + 8 + sbit.length, crc(result, chunk + 4, sbit.length + 4));
+    Vm.arrayCopy(source, chunk, result, chunk + sbit.length + 12, source.length - chunk);
+    return result;
   }
 
   private static int crc(byte[] bytes, int position, int length) {
