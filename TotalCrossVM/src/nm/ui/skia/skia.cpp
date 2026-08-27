@@ -210,7 +210,9 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 
 void destroySkiaScreen()
 {
+#if TC_GRAPHICS_SOFTWARE
     delete canvas;
+#endif
     canvas = nullptr;
     bitmap.reset();
     surface.reset();
