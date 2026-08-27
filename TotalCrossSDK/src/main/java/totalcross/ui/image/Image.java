@@ -70,6 +70,8 @@ import totalcross.util.zip.ZLib;
  * @see Graphics
  */
 public class Image extends GfxSurface {
+  // ABI-sensitive: keep storage-category order synchronized with
+  // TotalCrossVM/src/nm/instancefields.h.
   // int
   public int surfaceType = 1; // don't move from here! must be static at position 0
   protected int width;
@@ -77,6 +79,8 @@ public class Image extends GfxSurface {
 
   /** Contains the pixels of this image. */
   int[] pixels;
+
+  private Object pixelsOfAllFrames;
 
   /** The number of frames of this image, if derived from a multi-frame gif. */
   private int frameCount = 1;
@@ -86,8 +90,6 @@ public class Image extends GfxSurface {
 
   private Graphics gfx;
 
-  private Object pixelsOfAllFrames;
-  private String path;
   private int currentFrame = -1, widthOfAllFrames;
 
   /** Dumb field to keep compilation compatibility with TC 1 */
@@ -97,9 +99,20 @@ public class Image extends GfxSurface {
   /** A global alpha mask to be applied to the whole image when drawing it, ranging from 0 to 255.
    */
   public int alphaMask = 255;
+  public int lastAccess = -1;
+  int textureId = -1;
+
   private int logicalWidth;
   private int logicalHeight;
-  private double contentScale = 1;
+
+  /** Used by lockChanges to store the hashCode before discarding the pixels. */
+  private int hashCode;
+
+  // object fields addressed by TotalCrossVM/src/nm/instancefields.h
+  private boolean[] changed = { true };
+  private int[] instanceCount = new int[1];
+  private Image[] master = new Image[1];
+  private String path;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
@@ -118,6 +131,7 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   public double hwScaleW = 1, hwScaleH = 1;
+  private double contentScale = 1;
 
   // statics
   /** Dumb field to keep compilation compatibility with TC 1 */
@@ -236,18 +250,14 @@ public class Image extends GfxSurface {
     if (s instanceof File) {
       path = ((File) s).getPath();
     }
-    ByteArrayStream bas = new ByteArrayStream(8192);
-    byte[] buf = new byte[1024];
-    while (true) {
-      int n = s.readBytes(buf, 0, buf.length);
-      if (n <= 0) {
-        break;
-      }
-      bas.writeBytes(buf, 0, n);
+    byte[] buf = new byte[512];
+    int n = s.readBytes(buf, 0, 4);
+    if (n < 4) {
+      throw new ImageException("Can't read from Stream");
     }
-    imageParse(bas.getBuffer(), bas.getPos());
+    imageParse(s, buf);
     if (width == 0) {
-      throw new ImageException("Error on bmp with " + bas.getPos() + " bytes length description");
+      throw new ImageException("Error when loading image from stream");
     }
     init();
   }
@@ -264,6 +274,7 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   @Deprecated
+  @ReplacedByNativeOnDeploy
   public Image setTransparentColor(int color) {
     int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
     for (int i = pixels.length; --i >= 0;) {
@@ -332,7 +343,12 @@ public class Image extends GfxSurface {
    * @throws totalcross.ui.image.ImageException Thrown when something was wrong with the image.
    */
   public Image(byte[] fullDescription, int length) throws ImageException {
-    imageParse(fullDescription, length);
+    if (length < 4) {
+      throw new ImageException("Invalid image description");
+    }
+    ByteArrayStream bas = new ByteArrayStream(fullDescription);
+    bas.skipBytes(4);
+    imageParse(bas, fullDescription);
     if (width == 0) {
       throw new ImageException(fullDescription == null ? "Description is null"
           : ("Error on image with " + fullDescription.length + " bytes length description"));
@@ -341,6 +357,20 @@ public class Image extends GfxSurface {
   }
 
   private void init() throws IllegalArgumentException, IllegalStateException, ImageException {
+    surfaceType = 1;
+    textureId = -1;
+    if (hwScaleW == 0) {
+      hwScaleW = 1;
+    }
+    if (hwScaleH == 0) {
+      hwScaleH = 1;
+    }
+    if (contentScale == 0) {
+      contentScale = 1;
+    }
+    if (alphaMask == 0) {
+      alphaMask = 255;
+    }
     if (logicalWidth == 0) {
       logicalWidth = width;
       logicalHeight = height;
@@ -402,6 +432,7 @@ public class Image extends GfxSurface {
   /** Move the contents of the given frame to the currently visible pixels.
    * @since TotalCross 1.0
    */
+  @ReplacedByNativeOnDeploy
   final public void setCurrentFrame(int nr) {
     if (frameCount <= 1 || nr == currentFrame) {
       return;
@@ -475,6 +506,7 @@ public class Image extends GfxSurface {
    * In non-open gl platforms, does nothing.
    * @since TotalCross 2
    */
+  @ReplacedByNativeOnDeploy
   public void applyChanges() {
   }
 
@@ -490,6 +522,7 @@ public class Image extends GfxSurface {
    * 
    * AVOID USING THIS METHOD IF UNSURE ABOUT IT.
    */
+  @ReplacedByNativeOnDeploy
   public void freeTexture() {
   }
 
@@ -518,6 +551,7 @@ public class Image extends GfxSurface {
    * @see #applyColor(int)
    * @see #applyColor2(int)
    */
+  @ReplacedByNativeOnDeploy
   final public void changeColors(int from, int to) {
     int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
     for (int n = pixels.length; --n >= 0;) {
@@ -653,6 +687,7 @@ public class Image extends GfxSurface {
    * @throws ImageException
    * @throws IOException
    */
+  @ReplacedByNativeOnDeploy
   public void createJpg(Stream s, int quality) throws ImageException, IOException {
     try {
       java.awt.image.MemoryImageSource screenMis = new java.awt.image.MemoryImageSource(width, height,
@@ -760,6 +795,7 @@ public class Image extends GfxSurface {
   /** Used in saveTo method. Fills in the y row into the fillIn array.
    * there must be enough space for the full line be filled, with width*4 bytes. 
    * The alpha channel is NOT stripped off. */
+  @ReplacedByNativeOnDeploy
   final public void getPixelRow(byte[] fillIn, int y) {
     int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
     int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
@@ -1485,6 +1521,7 @@ public class Image extends GfxSurface {
     return table;
   }
 
+  @ReplacedByNativeOnDeploy
   private void imageLoad(String path) throws ImageException {
     byte[] bytes = Launcher.instance.readBytes(path);
     // NOTE: we could use the following to read out of an applet's JAR file
@@ -1516,6 +1553,26 @@ public class Image extends GfxSurface {
     } else {
       imageLoad(fullBmpDescription, length);
     }
+  }
+
+  /** JavaSE bridge for the deployed stream/initial-buffer native signature. */
+  @ReplacedByNativeOnDeploy
+  private void imageParse(Stream in, byte[] buf) throws ImageException {
+    ByteArrayStream bas = new ByteArrayStream(8192);
+    bas.writeBytes(buf, 0, 4);
+    byte[] rest = new byte[1024];
+    try {
+      while (true) {
+        int n = in.readBytes(rest, 0, rest.length);
+        if (n <= 0) {
+          break;
+        }
+        bas.writeBytes(rest, 0, n);
+      }
+    } catch (IOException e) {
+      throw new ImageException(e.getMessage());
+    }
+    imageParse(bas.getBuffer(), bas.getPos());
   }
 
   // ///////////////// METHODS TAKEN FROM THE TOTALCROSS VM ////////////////////
@@ -2325,6 +2382,10 @@ public class Image extends GfxSurface {
   }
 
   public static void resizeJpeg(String inputPath, String outputPath, int maxPixelSize) {
+    if (hasNativeResizeJpeg()) {
+      nativeResizeJpeg(inputPath, outputPath, maxPixelSize);
+      return;
+    }
     try {
       Image img = new Image(inputPath);
 
@@ -2360,11 +2421,19 @@ public class Image extends GfxSurface {
       e.printStackTrace();
     }
   }
+
+  private static boolean hasNativeResizeJpeg() {
+    return Settings.isIOS();
+  }
+
+  @ReplacedByNativeOnDeploy
+  public static native void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
   
   private static final double F1_8 = 12.5;
   private static final double F1_4 = 25;
   private static final double F1_2 = 50;
   
+  @ReplacedByNativeOnDeploy
   public static Image getJpegBestFit(String path, int targetWidth, int targetHeight)
       throws java.io.IOException, ImageException {
     SimpleImageInfo sif = null;
@@ -2410,6 +2479,7 @@ public class Image extends GfxSurface {
     return new Image(path).smoothScaledBy(scale, scale);
   }
 
+  @ReplacedByNativeOnDeploy
   public static Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
       throws java.io.IOException, ImageException {
     SimpleImageInfo sif = null;
