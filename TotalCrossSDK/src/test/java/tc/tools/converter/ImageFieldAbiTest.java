@@ -39,19 +39,9 @@ class ImageFieldAbiTest {
   }
 
   @Test
-  void deployedImageReplacementPreservesNativeFieldIndices() throws Exception {
+  void directImageConversionPreservesNativeFieldIndices() throws Exception {
     J2TC.htAddedClasses.clear();
     J2TC.htExcludedClasses.clear();
-    GlobalConstantPool.init();
-
-    TCClass converted = convertReplacement();
-    assertNotNull(converted);
-    assertEquals("totalcross/ui/image/Image", converted.className);
-    assertAbiPrefix(converted);
-  }
-
-  @Test
-  void directImageCandidateConvertsWithTheSameNativeFieldIndices() throws Exception {
     GlobalConstantPool.init();
 
     TCClass converted = convertDirectImage();
@@ -61,14 +51,6 @@ class ImageFieldAbiTest {
     assertNativeMethods(converted, "imageLoad", "imageParse", "setCurrentFrame", "applyChanges", "changeColors",
         "getPixelRow", "setTransparentColor", "freeTexture", "createJpg", "applyColor", "nativeEquals",
         "applyColor2", "applyFade", "nativeResizeJpeg", "getJpegBestFit", "getJpegScaled");
-  }
-
-  private static TCClass convertReplacement() throws Exception {
-    try (InputStream stream = totalcross.ui.image.Image4D.class
-        .getResourceAsStream("Image4D.class")) {
-      assertNotNull(stream, "Image4D.class resource");
-      return new J2TC(new JavaClass(stream.readAllBytes(), false)).converted;
-    }
   }
 
   private static TCClass convertDirectImage() throws Exception {

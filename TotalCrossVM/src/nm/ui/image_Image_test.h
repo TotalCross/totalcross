@@ -69,7 +69,7 @@ TESTCASE(tuiI_getPixelRow_Bi) // totalcross/ui/image/Image native protected void
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tuiI_getModifiedInstance_iiiiiii) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image4D newImg, int angle, int percScale, int color, int brightness, int contrast, int type); #DEPENDS(tuiI_imageParse_sB)
+TESTCASE(tuiI_getModifiedInstance_iiiiiii) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type); #DEPENDS(tuiI_imageParse_sB)
 {
    TEST_SKIP;
    finish: ;

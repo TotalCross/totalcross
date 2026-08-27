@@ -2139,6 +2139,16 @@ public class Image extends GfxSurface {
     }
   }
 
+  /** Deploy replacement for the JavaSE-only image reader. */
+  static class ImageLoader4D {
+    public ImageLoader4D() {
+    }
+
+    public Image load(byte[] input, int len) {
+      return null;
+    }
+  }
+
   /** Returns 0 */
   @Override
   public int getX() {
