@@ -70,6 +70,41 @@ import totalcross.util.zip.ZLib;
  * @see Graphics
  */
 public class Image extends GfxSurface {
+  private static boolean transientMaterializationFailureForTest;
+
+  private static final class DeterministicImageDecodeException extends ImageException {
+    DeterministicImageDecodeException(String message) {
+      super(message);
+    }
+
+    DeterministicImageDecodeException(ImageException cause) {
+      super(cause.getMessage());
+      initCause(cause);
+    }
+  }
+
+  private static final class TransientImageMaterializationException extends ImageException {
+    TransientImageMaterializationException(String message) {
+      super(message);
+    }
+
+    TransientImageMaterializationException(Throwable cause) {
+      super(cause.getMessage() == null ? "Transient image materialization failure" : cause.getMessage());
+      initCause(cause);
+    }
+  }
+
+  /** Test-only hook for exercising retryable materialization failures. */
+  static synchronized void failNextMaterializationForTest() {
+    transientMaterializationFailureForTest = true;
+  }
+
+  private static synchronized boolean consumeTransientMaterializationFailureForTest() {
+    boolean failure = transientMaterializationFailureForTest;
+    transientMaterializationFailureForTest = false;
+    return failure;
+  }
+
   // ABI-sensitive: keep storage-category order synchronized with
   // TotalCrossVM/src/nm/instancefields.h.
   // int
@@ -436,19 +471,27 @@ public class Image extends GfxSurface {
     if (cached != null) {
       throw cached;
     }
+    if (consumeTransientMaterializationFailureForTest()) {
+      throw new TransientImageMaterializationException("Simulated transient image materialization failure");
+    }
 
     Image decoded = new Image();
     decoded.initializeDecodeTarget(source);
     try {
       decoded.decodeEncodedSource(source);
       if (decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
-        throw new ImageException("Could not decode encoded image");
+        throw new DeterministicImageDecodeException("Could not decode encoded image");
       }
       decoded.init();
       verifyDecodedMetadata(source, decoded);
     } catch (ImageException failure) {
-      source.cacheDecodeFailure(failure);
-      throw failure;
+      if (failure instanceof TransientImageMaterializationException) {
+        throw failure;
+      }
+      ImageException deterministic = failure instanceof DeterministicImageDecodeException
+          ? failure : new DeterministicImageDecodeException(failure);
+      source.cacheDecodeFailure(deterministic);
+      throw deterministic;
     }
 
     pixels = decoded.pixels;
@@ -477,7 +520,7 @@ public class Image extends GfxSurface {
         || decoded.logicalHeight != source.getLogicalHeight()
         || decoded.frameCount != source.getFrameCount()
         || (decoded.frameCount > 1 && decoded.widthOfAllFrames != expectedAllFramesWidth)) {
-      throw new ImageException("Decoded image metadata does not match its encoded source");
+      throw new DeterministicImageDecodeException("Decoded image metadata does not match its encoded source");
     }
   }
 
@@ -500,11 +543,11 @@ public class Image extends GfxSurface {
     try {
       imageLoad(input, source.getEncodedLength());
     } catch (ImageException e) {
-      throw e;
+      throw new DeterministicImageDecodeException(e);
     } catch (OutOfMemoryError e) {
       throw e;
     } catch (Throwable e) {
-      throw new ImageException(e.getMessage() == null ? "Could not decode encoded image" : e.getMessage());
+      throw new TransientImageMaterializationException(e);
     }
   }
 

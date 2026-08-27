@@ -73,6 +73,20 @@ class ImageLazyMaterializationTest {
   }
 
   @Test
+  void transientMaterializationFailureIsRetriedWithoutCaching() throws Exception {
+    Image image = new Image(png(2, 1));
+    Object deferredPipeline = pipeline(image);
+
+    Image.failNextMaterializationForTest();
+    IllegalStateException first = assertThrows(IllegalStateException.class, image::getPixels);
+
+    assertTrue(first.getCause() instanceof ImageException);
+    assertSame(deferredPipeline, pipeline(image));
+    assertNotNull(image.getPixels());
+    assertNull(pipeline(image));
+  }
+
+  @Test
   void jpegExportIsAMaterializationBarrier() throws Exception {
     Image image = new Image(png(2, 1));
     ByteArrayStream output = new ByteArrayStream(256);
