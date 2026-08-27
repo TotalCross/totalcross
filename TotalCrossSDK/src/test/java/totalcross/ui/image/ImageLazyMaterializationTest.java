@@ -15,12 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.zip.CRC32;
 
 import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
+import totalcross.Launcher;
 import totalcross.io.ByteArrayStream;
 
 class ImageLazyMaterializationTest {
@@ -82,6 +85,25 @@ class ImageLazyMaterializationTest {
   }
 
   @Test
+  void jpegScalingFactoriesAlwaysReturnMaterializedImages() throws Exception {
+    Path file = Files.createTempFile("totalcross-jpeg-scaling", ".jpg");
+    tc.simulator.Launcher previous = (tc.simulator.Launcher) Launcher.instance;
+    try {
+      Files.write(file, jpeg(4, 2));
+      new tc.simulator.Launcher();
+
+      Image bestFit = Image.getJpegBestFit(file.toString(), 4, 2);
+      assertMaterialized(bestFit);
+
+      Image scaled = Image.getJpegScaled(file.toString(), 1, 1);
+      assertMaterialized(scaled);
+    } finally {
+      Files.deleteIfExists(file);
+      Launcher.instance = previous;
+    }
+  }
+
+  @Test
   void blankAndLogicalImagesRemainEager() throws Exception {
     Image blank = new Image(2, 3);
     Image logical = Image.createLogical(2, 3, 1.5);
@@ -114,6 +136,23 @@ class ImageLazyMaterializationTest {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     assertTrue(ImageIO.write(source, "png", output));
     return output.toByteArray();
+  }
+
+  private static byte[] jpeg(int width, int height) throws Exception {
+    BufferedImage source = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        source.setRGB(x, y, (x * 0x330000) | (y * 0x003300));
+      }
+    }
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    assertTrue(ImageIO.write(source, "jpg", output));
+    return output.toByteArray();
+  }
+
+  private static void assertMaterialized(Image image) throws Exception {
+    assertNull(pipeline(image));
+    assertNotNull(image.getPixels());
   }
 
   private static byte[] corruptIdat(byte[] source) {

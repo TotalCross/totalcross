@@ -2911,7 +2911,10 @@ public class Image extends GfxSurface {
     }
     
     final double scale = 1.0 / scale_denom;
-    return new Image(path).smoothScaledBy(scale, scale);
+    Image image = new Image(path);
+    Image result = image.smoothScaledBy(scale, scale);
+    result.materializeCanonicalChecked();
+    return result;
   }
 
   @ReplacedByNativeOnDeploy
@@ -2942,7 +2945,10 @@ public class Image extends GfxSurface {
     }
 
     final double scale = scaleNumerator / scaleDenominator;
-    return new Image(path).smoothScaledBy(scale, scale);
+    Image image = new Image(path);
+    Image result = image.smoothScaledBy(scale, scale);
+    result.materializeCanonicalChecked();
+    return result;
   }
 
   @Override
