@@ -137,6 +137,13 @@ public class Image extends GfxSurface {
   /** Dumb field to keep compilation compatibility with TC 1 */
   public static final int NO_TRANSPARENT_COLOR = -2;
 
+  /*
+   * DO NOT REMOVE!
+   * Empty default constructor is required for easy native object creation.
+   */
+  private Image() {
+  }
+
   /** Sets the hwScaleW and hwScaleH fields based on the given new size.
    * Does not work on Win32.
    * @see #hwScaleH
@@ -216,6 +223,41 @@ public class Image extends GfxSurface {
       throw new ImageException("Out of memory: cannot allocate " + width + "x" + height + " offscreen image.");
     }
     init();
+  }
+
+  private Image(Image src) {
+    if (Settings.isOpenGL && src.changed[0]) {
+      src.applyChanges();
+    }
+    this.surfaceType = src.surfaceType;
+    this.width = src.width;
+    this.height = src.height;
+    this.logicalWidth = src.logicalWidth;
+    this.logicalHeight = src.logicalHeight;
+    this.contentScale = src.contentScale;
+    this.hwScaleW = src.hwScaleW;
+    this.hwScaleH = src.hwScaleH;
+    this.alphaMask = src.alphaMask;
+    this.frameCount = src.frameCount;
+    this.currentFrame = -1;
+    this.widthOfAllFrames = src.widthOfAllFrames;
+    this.textureId = src.textureId; // shared among all instances
+    this.changed = src.changed;
+    this.pixels = src.pixels;
+    this.pixelsOfAllFrames = src.pixelsOfAllFrames;
+    this.comment = src.comment;
+    this.gfx = new Graphics(this);
+    this.gfx.refresh(0, 0, getWidth(), getHeight(), 0, 0, null);
+    this.transparentColor = src.transparentColor;
+    this.useAlpha = src.useAlpha;
+    this.instanceCount = src.instanceCount; // shared among all instances
+    if (instanceCount[0] == 0) {
+      this.master = new Image[] { src }; // keep a copy of the original image
+    } else {
+      this.master = src.master;
+    }
+    this.path = src.path;
+    src.instanceCount[0]++;
   }
 
   /** Creates a logical image with an immutable physical backing scale. */
@@ -347,6 +389,13 @@ public class Image extends GfxSurface {
       throw new ImageException("Invalid image description");
     }
     ByteArrayStream bas = new ByteArrayStream(fullDescription);
+    if (length != fullDescription.length) {
+      try {
+        bas.setPos(length);
+        bas.mark();
+      } catch (Exception e) {
+      }
+    }
     bas.skipBytes(4);
     imageParse(bas, fullDescription);
     if (width == 0) {
@@ -491,6 +540,9 @@ public class Image extends GfxSurface {
 
   /** Returns a new Graphics instance that can be used to drawing in this image. */
   public Graphics getGraphics() {
+    if (pixels == null) {
+      return null;
+    }
     if (Launcher.instance != null && Launcher.instance.mainWindow != null) {
       gfx.setFont(MainWindow.getDefaultFont()); // avoid loading the font if running from tc.Deploy
     }
@@ -526,6 +578,12 @@ public class Image extends GfxSurface {
   public void freeTexture() {
   }
 
+  @Override
+  public void finalize() {
+    instanceCount[0]--;
+    freeTexture();
+  }
+
   /** In OpenGL platforms, apply changes to the current texture and
    * frees the memory used for the pixels in internal memory (the 
    * image can, however, be drawn on screen because the texture will
@@ -536,6 +594,18 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   public void lockChanges() {
+    if (Settings.isOpenGL) {
+      if (changed[0]) {
+        applyChanges();
+      }
+      int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+      if (p != null) {
+        hashCode = 0;
+        hashCode = this.hashCode();
+      }
+      pixels = null;
+      pixelsOfAllFrames = null;
+    }
   }
 
   /** Changes all the pixels of the image from one color to the other.
@@ -2512,6 +2582,9 @@ public class Image extends GfxSurface {
 
   @Override
   public int hashCode() {
+    if (hashCode != 0) {
+      return hashCode;
+    }
     int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
     if (p != null) {
       try {
@@ -2528,6 +2601,6 @@ public class Image extends GfxSurface {
       }
       return Arrays.hashCode(p);
     }
-    return Arrays.hashCode(p);
+    return super.hashCode();
   }
 }
