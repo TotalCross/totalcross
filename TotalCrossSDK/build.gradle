@@ -924,6 +924,7 @@ tasks.register('runEncodedImageSourceSmokeMacOS', Exec) {
             'streamCapture=true',
             'pathCapture=true',
             'pngValidation=true',
+            'fcMetadataParity=true',
             'jpegValidation=true',
             'lifetime=true',
             'overallPass=true'

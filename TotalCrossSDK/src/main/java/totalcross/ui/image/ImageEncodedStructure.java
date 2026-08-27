@@ -20,12 +20,13 @@ final class ImageEncodedStructure {
     final int frameCount;
     final String comment;
 
-    Inspection(Format format, int width, int height, int frameCount, String comment) {
+    Inspection(Format format, int width, int height, int logicalWidth, int logicalHeight,
+        int frameCount, String comment) {
       this.format = format;
       this.width = width;
       this.height = height;
-      this.logicalWidth = frameCount > 1 ? width / frameCount : width;
-      this.logicalHeight = height;
+      this.logicalWidth = logicalWidth;
+      this.logicalHeight = logicalHeight;
       this.frameCount = frameCount;
       this.comment = comment;
     }
@@ -146,7 +147,7 @@ final class ImageEncodedStructure {
       throw invalid("indexed PNG is missing a palette");
     }
     int frames = frameCount(comment);
-    return new Inspection(Format.PNG, width, height, frames, comment);
+    return new Inspection(Format.PNG, width, height, width / frames, height, frames, comment);
   }
 
   private static boolean validPngColor(int color, int depth) {
@@ -191,7 +192,7 @@ final class ImageEncodedStructure {
       }
     }
     if (!sof || scans == 0 || !eoi) throw invalid("incomplete JPEG structure");
-    return new Inspection(Format.JPEG, width, height, 1, null);
+    return new Inspection(Format.JPEG, width, height, width, height, 1, null);
   }
 
   private static int skipJpegScan(byte[] b, int p, int n) throws ImageException {
@@ -223,7 +224,7 @@ final class ImageEncodedStructure {
       int block = b[p++] & 0xFF;
       if (block == 0x3B) {
         if (frames == 0) throw invalid("GIF has no image frames");
-        return new Inspection(Format.GIF, width, height, frames, null);
+        return new Inspection(Format.GIF, width, height, width, height, frames, null);
       }
       if (block == 0x21) {
         if (p >= n) throw invalid("truncated GIF extension");
@@ -288,7 +289,7 @@ final class ImageEncodedStructure {
     } else {
       validateRle(b, offset, n, width, height, compression == 1);
     }
-    return new Inspection(Format.BMP, width, height, 1, null);
+    return new Inspection(Format.BMP, width, height, width, height, 1, null);
   }
 
   private static void validateRle(byte[] b, int p, int n, int width, int height, boolean rle8) throws ImageException {
@@ -322,12 +323,30 @@ final class ImageEncodedStructure {
 
   private static int frameCount(String comment) throws ImageException {
     if (comment != null && comment.startsWith("FC=")) {
-      try {
-        int value = Integer.parseInt(comment.substring(3));
-        if (value < 1) throw invalid("frame count must be positive");
-        return value;
-      } catch (NumberFormatException ignored) {
+      String valueText = comment.substring(3);
+      int p = 0;
+      boolean negative = false;
+      boolean overflow = false;
+      long value = 0;
+      if (valueText.startsWith("+") || valueText.startsWith("-")) {
+        negative = valueText.charAt(0) == '-';
+        p++;
       }
+      if (p == valueText.length()) return 1;
+      while (p < valueText.length()) {
+        char digit = valueText.charAt(p++);
+        if (digit < '0' || digit > '9') return 1;
+        int numericDigit = digit - '0';
+        if (!overflow && value > (Integer.MAX_VALUE - numericDigit) / 10) {
+          overflow = true;
+        }
+        if (!overflow) {
+          value = value * 10 + numericDigit;
+        }
+      }
+      if (overflow) throw invalid("frame count exceeds signed 32-bit range");
+      if (negative || value < 1) throw invalid("frame count must be positive");
+      return (int) value;
     }
     return 1;
   }

@@ -47,15 +47,22 @@ static bool chunkTypeIsValid(const uint8* p) {
 static int32 pngFrameCount(const uint8* comment, int32 length, bool* valid) {
    int32 p = 3, sign = 1;
    int64 value = 0;
+   bool overflow = false;
    if (!comment || length < 3 || comment[0] != 'F' || comment[1] != 'C' || comment[2] != '=') return 1;
    if (p < length && comment[p] == '+') p++;
    else if (p < length && comment[p] == '-') { sign = -1; p++; }
    if (p == length) return 1;
    while (p < length) {
       if (comment[p] < '0' || comment[p] > '9') return 1;
-      if (value <= 214748364LL) value = value * 10 + (comment[p] - '0');
-      else return 1;
+      if (!overflow && value > (2147483647LL - (comment[p] - '0')) / 10) {
+         overflow = true;
+      }
+      if (!overflow) value = value * 10 + (comment[p] - '0');
       p++;
+   }
+   if (overflow) {
+      *valid = false;
+      return 1;
    }
    value *= sign;
    if (value < 1) {

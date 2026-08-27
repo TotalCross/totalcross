@@ -98,6 +98,7 @@ TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/Encode
       int32 count;
       bag = imageEncodedBagCreateEmpty(tcz->uncompressedSize);
       if (!bag) {
+         tczClose(tcz);
          throwException(p->currentContext, OutOfMemoryError, null);
          return;
       }

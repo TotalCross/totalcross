@@ -11,11 +11,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.zip.CRC32;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.junit.jupiter.api.Test;
 
@@ -91,11 +98,29 @@ class EncodedImageSourceTest {
 
   @Test
   void preservesImageLoaderFrameMetadataRules() throws Exception {
+    EncodedImageSource one = EncodedImageSource.fromBytes(png("FC=1", new byte[] {1}));
+    assertEquals(1, one.getFrameCount());
+    assertEquals(7, one.getLogicalWidth());
     assertEquals(100, EncodedImageSource.fromBytes(pngWithDimensions("FC=3", 300, 40)).getLogicalWidth());
     assertEquals(100, EncodedImageSource.fromBytes(pngWithDimensions("FC=3", 301, 40)).getLogicalWidth());
+    EncodedImageSource max = EncodedImageSource.fromBytes(png("FC=2147483647", new byte[] {1}));
+    assertEquals(Integer.MAX_VALUE, max.getFrameCount());
+    assertEquals(0, max.getLogicalWidth());
     assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(png("FC=0", new byte[] {1})));
     assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(png("FC=-2", new byte[] {1})));
+    assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(png("FC=2147483648", new byte[] {1})));
     assertEquals(7, EncodedImageSource.fromBytes(png("FC=not-a-number", new byte[] {1})).getLogicalWidth());
+  }
+
+  @Test
+  void keepsGifLogicalDimensionsForMultipleFrames() throws Exception {
+    EncodedImageSource source = EncodedImageSource.fromBytes(gif(300, 40, 3));
+    assertEquals(ImageEncodedStructure.Format.GIF, source.getFormat());
+    assertEquals(300, source.getIntrinsicWidth());
+    assertEquals(40, source.getIntrinsicHeight());
+    assertEquals(300, source.getLogicalWidth());
+    assertEquals(40, source.getLogicalHeight());
+    assertEquals(3, source.getFrameCount());
   }
 
   @Test
@@ -118,6 +143,17 @@ class EncodedImageSourceTest {
     byte[] malformedLength = jpeg.clone();
     malformedLength[4] = 0x7f;
     assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(malformedLength));
+    assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(jpeg(0xc1, new byte[] {1})));
+  }
+
+  @Test
+  void acceptsBaselineAndProgressiveJpegStructure() throws Exception {
+    EncodedImageSource baseline = EncodedImageSource.fromBytes(jpeg(new byte[] {1, 2, 3}));
+    assertEquals(ImageEncodedStructure.Format.JPEG, baseline.getFormat());
+    EncodedImageSource progressive = EncodedImageSource.fromBytes(progressiveJpeg());
+    assertEquals(ImageEncodedStructure.Format.JPEG, progressive.getFormat());
+    assertEquals(2, progressive.getIntrinsicWidth());
+    assertEquals(1, progressive.getIntrinsicHeight());
   }
 
   @Test
@@ -184,10 +220,14 @@ class EncodedImageSourceTest {
   }
 
   private static byte[] jpeg(byte[] entropy) throws Exception {
+    return jpeg(0xc0, entropy);
+  }
+
+  private static byte[] jpeg(int sofMarker, byte[] entropy) throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     out.write(new byte[] {(byte) 0xff, (byte) 0xd8});
     segment(out, 0xe0, new byte[] {1, 2, 3});
-    segment(out, 0xc0, new byte[] {8, 0, 9, 0, 11, 1, 1, 0x11, 0});
+    segment(out, sofMarker, new byte[] {8, 0, 9, 0, 11, 1, 1, 0x11, 0});
     segment(out, 0xda, new byte[] {1, 1, 0, 0, 63, 0});
     out.write(entropy);
     out.write(new byte[] {(byte) 0xff, (byte) 0xd9});
@@ -200,11 +240,44 @@ class EncodedImageSourceTest {
   }
 
   private static byte[] gif() {
+    return gif(2, 2, 1);
+  }
+
+  private static byte[] gif(int width, int height, int frames) {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     out.writeBytes("GIF89a".getBytes());
-    out.writeBytes(new byte[] {2, 0, 2, 0, (byte) 0x80, 0, 0, 0, 0, 0, (byte) 0xff, (byte) 0xff, (byte) 0xff});
-    out.writeBytes(new byte[] {0x2c, 0, 0, 0, 0, 2, 0, 2, 0, 0, 2, 1, 0, 0, 0x3b});
+    out.writeBytes(new byte[] {(byte) width, (byte) (width >> 8), (byte) height, (byte) (height >> 8),
+        (byte) 0x80, 0, 0, 0, 0, 0, (byte) 0xff, (byte) 0xff, (byte) 0xff});
+    for (int i = 0; i < frames; i++) {
+      out.writeBytes(new byte[] {0x2c, 0, 0, 0, 0, (byte) width, (byte) (width >> 8),
+          (byte) height, (byte) (height >> 8), 0, 2, 1, 0, 0});
+    }
+    out.write(0x3b);
     return out.toByteArray();
+  }
+
+  private static byte[] progressiveJpeg() throws Exception {
+    BufferedImage image = new BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+    try (ImageOutputStream output = ImageIO.createImageOutputStream(bytes)) {
+      ImageWriteParam params = writer.getDefaultWriteParam();
+      params.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
+      writer.setOutput(output);
+      writer.write(null, new IIOImage(image, null, null), params);
+    } finally {
+      writer.dispose();
+    }
+    byte[] result = bytes.toByteArray();
+    boolean hasProgressiveSof = false;
+    for (int i = 0; i + 1 < result.length; i++) {
+      if ((result[i] & 0xff) == 0xff && (result[i + 1] & 0xff) == 0xc2) {
+        hasProgressiveSof = true;
+        break;
+      }
+    }
+    if (!hasProgressiveSof) throw new AssertionError("ImageIO did not produce progressive JPEG");
+    return result;
   }
 
   private static byte[] bmp() {

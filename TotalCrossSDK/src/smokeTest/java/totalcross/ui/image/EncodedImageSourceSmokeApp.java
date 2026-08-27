@@ -15,6 +15,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     boolean streamCapture = false;
     boolean pathCapture = false;
     boolean pngValidation = false;
+    boolean fcMetadataParity = false;
     boolean jpegValidation = false;
     boolean lifetime = false;
     String error = "";
@@ -29,6 +30,15 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
           && bytes.getLogicalWidth() == 100 && bytes.getLogicalHeight() == 40
           && bytes.getFrameCount() == 3 && "FC=3".equals(bytes.getComment());
       require(byteCapture, "byte capture metadata/backing");
+
+      fcMetadataParity = fc("FC=1", 300, 1, 300)
+          && fc("FC=3", 300, 3, 100)
+          && fc("FC=2147483647", 300, Integer.MAX_VALUE, 0)
+          && rejects(png(300, 40, "FC=0", new byte[] { 1 }))
+          && rejects(png(300, 40, "FC=-2", new byte[] { 1 }))
+          && rejects(png(300, 40, "FC=2147483648", new byte[] { 1 }))
+          && fc("FC=not-a-number", 300, 1, 300);
+      require(fcMetadataParity, "FC metadata parity");
 
       EncodedImageSource stream = EncodedImageSource.fromStream(new ByteArrayStream(framedPng));
       streamCapture = stream.hasNativeBackingForSmoke() && !stream.hasJavaBackingForSmoke()
@@ -72,10 +82,12 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
-    boolean overallPass = byteCapture && streamCapture && pathCapture && pngValidation && jpegValidation && lifetime;
+    boolean overallPass = byteCapture && streamCapture && pathCapture && pngValidation
+        && fcMetadataParity && jpegValidation && lifetime;
     System.out.println("fixture=EncodedImageSourceSmokeApp,byteCapture=" + byteCapture
         + ",streamCapture=" + streamCapture + ",pathCapture=" + pathCapture
-        + ",pngValidation=" + pngValidation + ",jpegValidation=" + jpegValidation
+        + ",pngValidation=" + pngValidation + ",fcMetadataParity=" + fcMetadataParity
+        + ",jpegValidation=" + jpegValidation
         + ",lifetime=" + lifetime + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
@@ -88,6 +100,12 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     } catch (ImageException expected) {
       return true;
     }
+  }
+
+  private static boolean fc(String comment, int width, int frameCount, int logicalWidth) throws ImageException {
+    EncodedImageSource source = EncodedImageSource.fromBytes(png(width, 40, comment, new byte[] { 1 }));
+    return source.getFrameCount() == frameCount && source.getLogicalWidth() == logicalWidth
+        && comment.equals(source.getComment());
   }
 
   private static byte[] png(int width, int height, String comment, byte[] idat) {
