@@ -28,6 +28,10 @@ static void captureEncodedBag(Context context, TCObject source, const uint8* byt
    ImageEncodedBag* bag = imageEncodedBagCreate(bytes, length);
    ImageEncodedInspection inspection;
    TCObject comment = null;
+   if (!bytes || length <= 0) {
+      throwException(context, ImageException, "Invalid encoded image buffer");
+      return;
+   }
    if (!bag) {
       throwException(context, OutOfMemoryError, null);
       return;

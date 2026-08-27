@@ -73,6 +73,7 @@ class EncodedImageSourceTest {
 
   @Test
   void rejectsBadPngCrcAndTruncatedChunks() throws Exception {
+    assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(new byte[0]));
     byte[] valid = png(null, new byte[] { 1 });
     byte[] badCrc = valid.clone();
     badCrc[badCrc.length - 5] ^= 1;
