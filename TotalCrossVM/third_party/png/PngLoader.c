@@ -33,6 +33,7 @@ typedef struct
    int32 bytesPerRow;
    png_bytep upixels;
    bool quit;
+   int32 rowsDecoded;
    Context currentContext;
 
    png_infop info_ptr;
@@ -176,7 +177,7 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
 
-   if (!userData.quit)
+   if (userData.pixelsObj == null || userData.rowsDecoded < userData.height)
    {
       if (userData.upixels) png_free(png_ptr, userData.upixels);
       png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
@@ -337,6 +338,7 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
       else
          for (x = 0; x < userData->width; x++, buffer += 3)
             *userData->pixels++ = makePixel((uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
+      userData->rowsDecoded++;
       userData->quit = (int32)row_num == (userData->height-1);
    }
 }
