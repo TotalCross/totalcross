@@ -12,6 +12,7 @@
 #include "ImagePrimitives_c.h"
 #include "io/File.h"
 #include "JpegLoader.h"
+#include "ui/image/ImageEncodedBag.h"
 #if POSIX
    #include <sys/mman.h>
    #include <errno.h>
@@ -22,6 +23,86 @@
 #endif
 
 void pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
+
+static void captureEncodedBag(Context context, TCObject source, const uint8* bytes, int32 length) {
+   ImageEncodedBag* bag = imageEncodedBagCreate(bytes, length);
+   ImageEncodedInspection inspection;
+   if (!bag) {
+      throwException(context, OutOfMemoryError, null);
+      return;
+   }
+   if (!imageEncodedBagInspect(bag, &inspection)) {
+      imageEncodedBagRelease(&bag);
+      throwException(context, ImageException, "Invalid or unsupported encoded image");
+      return;
+   }
+   if (EncodedImageSource_nativeBag(source)) {
+      ImageEncodedBag* previous = (ImageEncodedBag*)EncodedImageSource_nativeBag(source);
+      imageEncodedBagRelease(&previous);
+   }
+   EncodedImageSource_nativeBag(source) = (int64)bag;
+   EncodedImageSource_bytes(source) = null;
+}
+
+TC_API void tuiEIS_captureNative_Bi(NMParams p) // totalcross/ui/image/EncodedImageSource private void captureNative(byte[] input, int length);
+{
+   TCObject input = p->obj[1];
+   int32 length = p->i32[0];
+   if (!input || length < 0 || length > ARRAYOBJ_LEN(input)) {
+      throwException(p->currentContext, ImageException, "Invalid encoded image buffer");
+      return;
+   }
+   captureEncodedBag(p->currentContext, p->obj[0], (uint8*)ARRAYOBJ_START(input), length);
+}
+
+TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/EncodedImageSource private void captureNativePath(String path);
+{
+   char path[256];
+   TCObject pathObj = p->obj[1];
+   TCZFile tcz;
+   String2CharPBuf(pathObj, path);
+   tcz = tczGetFile(path, false);
+   if (!tcz || tcz->uncompressedSize <= 0) {
+      throwException(p->currentContext, ImageException, "Could not open encoded image");
+      return;
+   }
+   {
+      ImageEncodedBag* bag;
+      int32 count;
+      bag = imageEncodedBagCreateEmpty(tcz->uncompressedSize);
+      if (!bag) {
+         throwException(p->currentContext, OutOfMemoryError, null);
+         return;
+      }
+      count = tczRead(tcz, bag->bytes, tcz->uncompressedSize);
+      if (count != tcz->uncompressedSize) {
+         imageEncodedBagRelease(&bag);
+         throwException(p->currentContext, ImageException, "Could not read encoded image");
+         return;
+      }
+      {
+         ImageEncodedInspection inspection;
+         if (!imageEncodedBagInspect(bag, &inspection)) {
+            imageEncodedBagRelease(&bag);
+            throwException(p->currentContext, ImageException, "Invalid or unsupported encoded image");
+            return;
+         }
+      }
+      if (EncodedImageSource_nativeBag(p->obj[0])) {
+         ImageEncodedBag* previous = (ImageEncodedBag*)EncodedImageSource_nativeBag(p->obj[0]);
+         imageEncodedBagRelease(&previous);
+      }
+      EncodedImageSource_nativeBag(p->obj[0]) = (int64)bag;
+      EncodedImageSource_bytes(p->obj[0]) = null;
+   }
+}
+
+TC_API void tuiEIS_releaseNativeBag(NMParams p) // totalcross/ui/image/EncodedImageSource private void releaseNativeBag();
+{
+   ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(p->obj[0]);
+   imageEncodedBagRelease(&bag);
+   EncodedImageSource_nativeBag(p->obj[0]) = 0;
+}
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native private void imageLoad(String path);
