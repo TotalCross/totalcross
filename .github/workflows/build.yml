@@ -428,6 +428,19 @@ jobs:
       shell: bash
       run: tar -xzf depot-tools-native-dependencies.tar.gz
 
+    - name: Export SQLite SEE override
+      shell: bash
+      env:
+        SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
+        SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
+      run: |
+        if [ -n "${SQLITE3_RELEASE_TAG_OVERRIDE:-}" ]; then
+          printf 'SQLITE3_RELEASE_TAG=%s\n' "$SQLITE3_RELEASE_TAG_OVERRIDE" >> "$GITHUB_ENV"
+        fi
+        if [ -n "${SQLITE3_GITHUB_REPO_OVERRIDE:-}" ]; then
+          printf 'SQLITE3_GITHUB_REPO=%s\n' "$SQLITE3_GITHUB_REPO_OVERRIDE" >> "$GITHUB_ENV"
+        fi
+
     - name: Build VM with Native and Legacy renderer
       shell: cmd
       run: |
