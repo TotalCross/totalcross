@@ -937,6 +937,112 @@ tasks.register('runEncodedImageSourceSmokeMacOS', Exec) {
     }
 }
 
+def imageLazyMaterializationSmokeClassesDir = layout.buildDirectory.dir('image-lazy-materialization-smoke/classes')
+
+tasks.register('compileImageLazyMaterializationSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the deployed lazy Image materialization smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/ImageLazyMaterializationSmokeApp.class'
+    }
+    from(smokeTestResourcesDir) {
+        include 'image-abi/**'
+    }
+    into imageLazyMaterializationSmokeClassesDir
+}
+
+tasks.register('jarImageLazyMaterializationSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the lazy Image materialization smoke app for deployment.'
+    dependsOn 'compileImageLazyMaterializationSmoke'
+    archiveFileName = 'ImageLazyMaterializationSmokeApp.jar'
+    destinationDirectory = imageLazyMaterializationSmokeClassesDir
+    from(imageLazyMaterializationSmokeClassesDir)
+}
+
+tasks.register('deployImageLazyMaterializationSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the lazy Image materialization smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarImageLazyMaterializationSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir imageLazyMaterializationSmokeClassesDir.get().asFile
+    args = [
+        'ImageLazyMaterializationSmokeApp.jar',
+        '-macos'
+    ]
+}
+
+tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the lazy Image materialization smoke app with the exact macOS dylib.'
+    dependsOn 'deployImageLazyMaterializationSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runImageLazyMaterializationSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+        }
+        def installDir = imageLazyMaterializationSmokeClassesDir.get().dir('install/macos').asFile
+        def deployedRuntime = new File(installDir, 'libtcvm.dylib')
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def sourceHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(nativeRuntimeFile.bytes).encodeHex().toString()
+        def deployedHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(deployedRuntime.bytes).encodeHex().toString()
+        if (sourceHash != deployedHash) {
+            throw new GradleException("Deployed native runtime hash differs: source=${sourceHash}, deployed=${deployedHash}")
+        }
+        def executable = new File(installDir, 'ImageLazyMaterializationSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException("Native smoke executable not found: ${executable}")
+        }
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir imageLazyMaterializationSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def requiredFields = [
+            'fixture=ImageLazyMaterializationSmokeApp',
+            'pngConstructionLazy=true',
+            'pngSourceCopy=true',
+            'firstDrawMaterializes=true',
+            'repeatedBarrierReusesPixels=true',
+            'pathSourceStable=true',
+            'jpegConstructionLazy=true',
+            'structuralInvalid=true',
+            'payloadInvalidDeferred=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('Lazy Image materialization native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
     group = 'verification'
     description = 'Deploys the aggregate modern Java feature smoke app with the generated SDK.'
