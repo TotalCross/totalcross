@@ -404,6 +404,40 @@ jobs:
           TotalCrossVM/vc2022/Release/*.dll
           TotalCrossVM/vc2022/Release/*.exe
 
+  build-windows-native-legacy:
+    name: Build `windows-native-legacy`
+    needs: checkout-source
+    runs-on: windows-2022
+
+    steps:
+    - name: Download source code
+      uses: actions/download-artifact@v7
+      with:
+        name: source-code
+
+    - name: Extract source code
+      shell: bash
+      run: tar -xzf source-code.tar.gz
+
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
+      with:
+        name: prepared-native-dependencies
+
+    - name: Extract prepared native dependencies
+      shell: bash
+      run: tar -xzf depot-tools-native-dependencies.tar.gz
+
+    - name: Build VM with Native and Legacy renderer
+      shell: cmd
+      run: |
+        mkdir TotalCrossVM\vc2022-native-legacy-runtime-fix
+        pushd TotalCrossVM\vc2022-native-legacy-runtime-fix
+        cmake ..\ -G"Visual Studio 17 2022" -A Win32 -DTC_WINDOWING_NATIVE=ON -DTC_WINDOWING_SDL=OFF -DTC_RENDERER_LEGACY=ON -DTC_RENDERER_SKIA=OFF -DTC_GRAPHICS_SOFTWARE=ON
+        cmake --build . --config Release
+        if not exist Release\tcvm.dll exit /b 1
+        popd
+
   build-macos-arm64:
     name: Build `macos-arm64`
     needs: checkout-source
