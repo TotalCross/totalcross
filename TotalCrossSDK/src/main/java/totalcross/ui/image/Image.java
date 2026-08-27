@@ -1563,6 +1563,8 @@ public class Image extends GfxSurface {
   private Image getCopy(int w, int h) throws ImageException {
     Image i = new Image(w, h);
     i.path = path;
+    i.hwScaleH = hwScaleH;
+    i.hwScaleW = hwScaleW;
     // copy other attributes
     return i;
   }
