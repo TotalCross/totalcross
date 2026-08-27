@@ -98,7 +98,7 @@ If preserving field indices appears impossible, stop before editing `instancefie
 - [x] Make `Image.java` directly deployable while `Image4D` still exists.
 - [x] Align `Image.java` state/behavior with deployed `Image4D` semantics.
 - [x] Remove `Image4D.java` and prove direct conversion; isolate the JavaSE-only nested reader through `ImageLoader4D`.
-- [ ] Run deployed native macOS field-ABI smoke.
+- [x] Run deployed native macOS field-ABI smoke against a fresh Release `libtcvm.dylib`.
 - [ ] Clean stale references and complete final validation.
 
 ## Initial Reconnaissance
@@ -446,6 +446,7 @@ Do not create an empty cleanup commit.
 - Decision: defer lazy image work. Rationale: unification must be behavior-preserving groundwork. Date: 2026-08-27.
 - Decision: keep the legacy `hashCode` cache after the ABI-sensitive I32 prefix. Rationale: its old declaration shifted `logicalWidth` and `logicalHeight`; relocating it preserves the native macro indices without changing the cache contract. Date: 2026-08-27.
 - Decision: retain the JavaSE reader as `Image$ImageLoader` and provide `Image$ImageLoader4D` for deployment. Rationale: deployment expands referenced classes, so AWT/ImageIO must be removed from the converted class graph while JavaSE format support remains unchanged. Date: 2026-08-27.
+- Decision: validate the macOS launcher through copied-dylib hash equality plus `otool -L` and loader-symbol evidence. Rationale: this launcher loads `libtcvm.dylib` by name instead of declaring it as a Mach-O load command. Date: 2026-08-27.
 
 ## Validation Policy
 
