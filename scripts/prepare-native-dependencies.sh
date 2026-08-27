@@ -141,9 +141,11 @@ for target in "${common_targets[@]}"; do
   fetch_dep axtls "$platform" "$arch" AXTLS_GITHUB_TOKEN AXTLS_RELEASE_TAG AXTLS_GITHUB_REPO
   fetch_dep qrcodegen "$platform" "$arch" QRCODEGEN_GITHUB_TOKEN QRCODEGEN_RELEASE_TAG QRCODEGEN_GITHUB_REPO
   fetch_dep skia "$platform" "$arch" SKIA_GITHUB_TOKEN SKIA_RELEASE_TAG SKIA_GITHUB_REPO
-  if [ "$platform" = linux ] || [ "$platform" = macos ]; then
-    fetch_dep sdl2 "$platform" "$arch" SDL2_GITHUB_TOKEN SDL2_RELEASE_TAG SDL2_GITHUB_REPO
-  fi
+  case "$platform" in
+    linux|macos|windows)
+      fetch_dep sdl2 "$platform" "$arch" SDL2_GITHUB_TOKEN SDL2_RELEASE_TAG SDL2_GITHUB_REPO
+      ;;
+  esac
 done
 
 skia_shared_args=("$depot_dir/skia/fetch.sh" --install-shared --github-token-env SKIA_GITHUB_TOKEN)
