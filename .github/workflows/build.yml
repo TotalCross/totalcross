@@ -393,6 +393,8 @@ jobs:
         mkdir TotalCrossVM\vc2022
         pushd TotalCrossVM\vc2022
         cmake ..\ -G"Visual Studio 17 2022" -A Win32
+        findstr /C:"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
+        findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         cmake --build . --config Release
         popd
 
@@ -447,6 +449,8 @@ jobs:
         mkdir TotalCrossVM\vc2022-native-legacy-runtime-fix
         pushd TotalCrossVM\vc2022-native-legacy-runtime-fix
         cmake ..\ -G"Visual Studio 17 2022" -A Win32 -DTC_WINDOWING_NATIVE=ON -DTC_WINDOWING_SDL=OFF -DTC_RENDERER_LEGACY=ON -DTC_RENDERER_SKIA=OFF -DTC_GRAPHICS_SOFTWARE=ON
+        findstr /C:"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
+        findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         cmake --build . --config Release
         if not exist Release\tcvm.dll exit /b 1
         popd
