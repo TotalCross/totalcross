@@ -12,7 +12,6 @@
 static void row_callback(png_structp, png_bytep, png_uint_32, int);
 static void info_callback(png_structp png_ptr, png_infop info);
 static void error_callback(png_structp, png_const_charp);
-static void warning_callback(png_structp png_ptr, png_const_charp);
 
 typedef struct
 {
@@ -34,7 +33,6 @@ typedef struct
    int32 bytesPerRow;
    png_bytep upixels;
    bool quit;
-   bool decodeError;
    Context currentContext;
 
    png_infop info_ptr;
@@ -157,7 +155,7 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    }
    /* Start decompressor */
    /* Create and initialize the png_struct. */
-   png_ptr = png_create_read_struct_2(PNG_LIBPNG_VER_STRING, heap, error_callback, warning_callback, heap, usermalloc, userfree);
+   png_ptr = png_create_read_struct_2(PNG_LIBPNG_VER_STRING, heap, error_callback, null, heap, usermalloc, userfree);
    if (png_ptr == NULL)
       HEAP_ERROR(heap, 999);
    userData.info_ptr = png_create_info_struct(png_ptr);
@@ -178,7 +176,7 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
 
-   if (userData.decodeError)
+   if (!userData.quit)
    {
       if (userData.upixels) png_free(png_ptr, userData.upixels);
       png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
@@ -347,13 +345,5 @@ static void error_callback(png_structp png_ptr, png_const_charp msg)
 {
    Heap h = (Heap) png_get_error_ptr(png_ptr);
    HEAP_ERROR(h, 996);
-   UNUSED(msg)
-}
-
-static void warning_callback(png_structp png_ptr, png_const_charp msg)
-{
-   UserData *userData = (UserData *)png_get_progressive_ptr(png_ptr);
-   if (userData)
-      userData->decodeError = true;
    UNUSED(msg)
 }
