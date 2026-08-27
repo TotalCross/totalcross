@@ -7,8 +7,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 # State: Windows SDL + Skia link fix
 
 Active milestone: Complete — default and fallback Windows CI gates passed
-Current TotalCross HEAD: `e2fe6c2a4e7f21976b6a00e4d12f39cf3c16d1f8`
-Last logical commit: `e2fe6c2a4` — CI asserts generated static CRT settings
+Current TotalCross HEAD: `859bf1ef89da7add80ecdda41df72d81935bc1c5`
+Last logical commit: `e2fe6c2a4` — CI asserts generated static CRT settings;
+final documentation snapshot: `859bf1ef8`
 Current depot-tools pin: `0ebff1d7202fab6e61758344219f60fa757fe6ce`
 Candidate SDL2 release tag: `sdl2-2.32.8-r2`
 Verified SDL2 release commit: annotated tag peels to
