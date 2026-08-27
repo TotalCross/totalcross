@@ -7,6 +7,7 @@
 #include <setjmp.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "jpeglib.h"
 #include "util/mem.h"
@@ -35,11 +36,58 @@ static bool typeIs(const uint8* p, const char* type) {
    return p[0] == (uint8)type[0] && p[1] == (uint8)type[1] && p[2] == (uint8)type[2] && p[3] == (uint8)type[3];
 }
 
+static bool chunkTypeIsValid(const uint8* p) {
+   int32 i;
+   for (i = 0; i < 4; i++) {
+      if (!((p[i] >= 'A' && p[i] <= 'Z') || (p[i] >= 'a' && p[i] <= 'z'))) return false;
+   }
+   return true;
+}
+
+static int32 pngFrameCount(const uint8* comment, int32 length, bool* valid) {
+   int32 p = 3, sign = 1;
+   int64 value = 0;
+   if (!comment || length < 3 || comment[0] != 'F' || comment[1] != 'C' || comment[2] != '=') return 1;
+   if (p < length && comment[p] == '+') p++;
+   else if (p < length && comment[p] == '-') { sign = -1; p++; }
+   if (p == length) return 1;
+   while (p < length) {
+      if (comment[p] < '0' || comment[p] > '9') return 1;
+      if (value <= 214748364LL) value = value * 10 + (comment[p] - '0');
+      else return 1;
+      p++;
+   }
+   value *= sign;
+   if (value < 1) {
+      *valid = false;
+      return 1;
+   }
+   return (int32)value;
+}
+
+static bool finishPngMetadata(ImageEncodedInspection* out, int32 width, int32 height,
+      const uint8* comment, int32 commentLength) {
+   bool valid = true;
+   int32 frames = pngFrameCount(comment, commentLength, &valid);
+   if (!valid) return false;
+   out->format = IMAGE_ENCODED_PNG;
+   out->width = width;
+   out->height = height;
+   out->frameCount = frames;
+   out->logicalWidth = frames > 1 ? width / frames : width;
+   out->logicalHeight = height;
+   out->comment = comment;
+   out->commentLength = commentLength;
+   return true;
+}
+
 static bool pngInspect(const uint8* b, int32 n, ImageEncodedInspection* out) {
    static const uint8 signature[] = {0x89, 'P', 'N', 'G', 0x0d, 0x0a, 0x1a, 0x0a};
    int32 p = 8, width = 0, height = 0;
-   bool ihdr = false, idat = false, idatEnded = false, iend = false, palette = false;
-   int32 color = -1;
+   bool ihdr = false, idat = false, idatEnded = false, iend = false, palette = false, trns = false;
+   int32 color = -1, depth = -1, paletteEntries = 0;
+   const uint8* comment = null;
+   int32 commentLength = 0;
    int32 i;
    for (i = 0; i < 8; i++) if (b[i] != signature[i]) return false;
    while (p + 12 <= n) {
@@ -51,6 +99,7 @@ static bool pngInspect(const uint8* b, int32 n, ImageEncodedInspection* out) {
       dataLength = (int32)length;
       type = b + p + 4;
       data = b + p + 8;
+      if (!chunkTypeIsValid(type)) return false;
       if (!ihdr && !typeIs(type, "IHDR")) return false;
       if (crc32Bytes(type, dataLength + 4) != readBE32(data + dataLength)) return false;
       if (typeIs(type, "IHDR")) {
@@ -69,8 +118,17 @@ static bool pngInspect(const uint8* b, int32 n, ImageEncodedInspection* out) {
                || data[10] != 0 || data[11] != 0 || data[12] > 1) return false;
          ihdr = true;
       } else if (typeIs(type, "PLTE")) {
-         if (palette || idat || dataLength == 0 || dataLength % 3 != 0 || dataLength > 768) return false;
+         if (palette || idat || (color != 2 && color != 3 && color != 6)
+               || dataLength == 0 || dataLength % 3 != 0 || dataLength > 768) return false;
+         paletteEntries = dataLength / 3;
+         if (color == 3 && paletteEntries > (1 << depth)) return false;
          palette = true;
+      } else if (typeIs(type, "tRNS")) {
+         if (trns || idat) return false;
+         if ((color == 0 && dataLength != 2) || (color == 2 && dataLength != 6)
+               || (color == 3 && (!palette || dataLength == 0 || dataLength > paletteEntries))
+               || (color != 0 && color != 2 && color != 3)) return false;
+         trns = true;
       } else if (typeIs(type, "IDAT")) {
          if (!ihdr || idatEnded || (color == 3 && !palette)) return false;
          idat = true;
@@ -78,21 +136,27 @@ static bool pngInspect(const uint8* b, int32 n, ImageEncodedInspection* out) {
          if (dataLength != 0 || !ihdr || !idat) return false;
          iend = true;
          break;
-      } else if (idat && !(type[0] & 0x20)) {
+      } else if (!(type[0] & 0x20)) {
          return false;
+      }
+      if (typeIs(type, "tEXt") && dataLength > 7) {
+         int32 zero = 0;
+         while (zero < dataLength && data[zero] != 0) zero++;
+         if (zero < dataLength && zero == 7 && !memcmp(data, "Comment", 7)) {
+            comment = data + zero + 1;
+            commentLength = dataLength - zero - 1;
+         }
       }
       if (idat && !typeIs(type, "IDAT")) idatEnded = true;
       p += dataLength + 12;
    }
    if (!ihdr || !idat || !iend) return false;
-   out->format = IMAGE_ENCODED_PNG;
-   out->width = width;
-   out->height = height;
-   return true;
+   if (color == 3 && !palette) return false;
+   return finishPngMetadata(out, width, height, comment, commentLength);
 }
 
 static bool isSof(uint8 marker) {
-   return marker >= 0xc0 && marker <= 0xcf && marker != 0xc4 && marker != 0xc8 && marker != 0xcc;
+   return marker == 0xc0 || marker == 0xc2;
 }
 
 static int32 skipJpegScan(const uint8* b, int32 p, int32 n) {
@@ -120,13 +184,15 @@ static void jpegErrorExit(j_common_ptr cinfo) {
 static bool jpegHeaderIsValid(const uint8* b, int32 n) {
    struct jpeg_decompress_struct decoder;
    ImageJpegError error;
+   bool created = false;
    decoder.err = jpeg_std_error(&error.manager);
    error.manager.error_exit = jpegErrorExit;
    if (setjmp(error.jump)) {
-      jpeg_destroy_decompress(&decoder);
+      if (created) jpeg_destroy_decompress(&decoder);
       return false;
    }
    jpeg_create_decompress(&decoder);
+   created = true;
    jpeg_mem_src(&decoder, (unsigned char*)b, (unsigned long)n);
    if (jpeg_read_header(&decoder, TRUE) != JPEG_HEADER_OK) {
       jpeg_destroy_decompress(&decoder);
@@ -170,6 +236,11 @@ static bool jpegInspect(const uint8* b, int32 n, ImageEncodedInspection* out) {
    out->format = IMAGE_ENCODED_JPEG;
    out->width = width;
    out->height = height;
+   out->logicalWidth = width;
+   out->logicalHeight = height;
+   out->frameCount = 1;
+   out->comment = null;
+   out->commentLength = 0;
    return true;
 }
 

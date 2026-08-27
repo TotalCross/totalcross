@@ -33,6 +33,8 @@ class EncodedImageSourceTest {
     assertEquals(7, source.getIntrinsicWidth());
     assertEquals(5, source.getIntrinsicHeight());
     assertEquals(3, source.getFrameCount());
+    assertEquals(2, source.getLogicalWidth());
+    assertEquals(5, source.getLogicalHeight());
     assertEquals("FC=3", source.getComment());
     assertArrayEquals(png("FC=3", new byte[] { 0x78, (byte) 0x9c }), source.copyBytes());
   }
@@ -87,6 +89,24 @@ class EncodedImageSourceTest {
   }
 
   @Test
+  void preservesImageLoaderFrameMetadataRules() throws Exception {
+    assertEquals(100, EncodedImageSource.fromBytes(pngWithDimensions("FC=3", 300, 40)).getLogicalWidth());
+    assertEquals(100, EncodedImageSource.fromBytes(pngWithDimensions("FC=3", 301, 40)).getLogicalWidth());
+    assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(png("FC=0", new byte[] {1})));
+    assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(png("FC=-2", new byte[] {1})));
+    assertEquals(7, EncodedImageSource.fromBytes(png("FC=not-a-number", new byte[] {1})).getLogicalWidth());
+  }
+
+  @Test
+  void rejectsUnsupportedPngChunkCombinations() throws Exception {
+    final byte[] unknownCritical = insertChunkBeforeIend(png(null, new byte[] {1}), "ABCD", new byte[] {1});
+    assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(unknownCritical));
+
+    byte[] indexed = pngIndexedWithoutPalette();
+    assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(indexed));
+  }
+
+  @Test
   void rejectsMalformedJpegMarkersButDoesNotDecodeEntropy() throws Exception {
     byte[] jpeg = jpeg(new byte[] { 0x12, (byte) 0xff, 0, 0x34 });
     EncodedImageSource source = EncodedImageSource.fromBytes(jpeg);
@@ -114,12 +134,39 @@ class EncodedImageSourceTest {
   }
 
   private static byte[] png(String comment, byte[] idat) throws Exception {
+    return pngWithDimensions(comment, 7, 5, idat);
+  }
+
+  private static byte[] pngWithDimensions(String comment, int width, int height) throws Exception {
+    return pngWithDimensions(comment, width, height, new byte[] {1});
+  }
+
+  private static byte[] pngWithDimensions(String comment, int width, int height, byte[] idat) throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     out.write(new byte[] {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10});
-    byte[] ihdr = {0, 0, 0, 7, 0, 0, 0, 5, 8, 6, 0, 0, 0};
+    byte[] ihdr = {(byte) (width >> 24), (byte) (width >> 16), (byte) (width >> 8), (byte) width,
+        (byte) (height >> 24), (byte) (height >> 16), (byte) (height >> 8), (byte) height, 8, 6, 0, 0, 0};
     chunk(out, "IHDR", ihdr);
     if (comment != null) chunk(out, "tEXt", ("Comment\0" + comment).getBytes());
     chunk(out, "IDAT", idat);
+    chunk(out, "IEND", new byte[0]);
+    return out.toByteArray();
+  }
+
+  private static byte[] insertChunkBeforeIend(byte[] png, String name, byte[] data) throws Exception {
+    int iend = png.length - 12;
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    out.write(png, 0, iend);
+    chunk(out, name, data);
+    out.write(png, iend, 12);
+    return out.toByteArray();
+  }
+
+  private static byte[] pngIndexedWithoutPalette() throws Exception {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    out.write(new byte[] {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10});
+    chunk(out, "IHDR", new byte[] {0, 0, 0, 1, 0, 0, 0, 1, 8, 3, 0, 0, 0});
+    chunk(out, "IDAT", new byte[] {1});
     chunk(out, "IEND", new byte[0]);
     return out.toByteArray();
   }

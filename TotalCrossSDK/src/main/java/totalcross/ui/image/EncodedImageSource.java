@@ -14,28 +14,18 @@ import totalcross.io.Stream;
 
 /** Immutable, eagerly captured encoded image source. */
 final class EncodedImageSource extends ImageSource {
-  private final ImageEncodedStructure.Format format;
+  private int formatCode;
   private byte[] bytes;
-  private final int length;
-  private final int intrinsicWidth;
-  private final int intrinsicHeight;
-  private final int logicalWidth;
-  private final int logicalHeight;
-  private final int frameCount;
-  private final String comment;
+  private int length;
+  private int intrinsicWidth;
+  private int intrinsicHeight;
+  private int logicalWidth;
+  private int logicalHeight;
+  private int frameCount;
+  private String comment;
   private long nativeBag;
 
-  private EncodedImageSource(byte[] ownedBytes, int length) throws ImageException {
-    ImageEncodedStructure.Inspection inspection = ImageEncodedStructure.inspect(ownedBytes, length);
-    this.bytes = ownedBytes;
-    this.length = length;
-    this.format = inspection.format;
-    this.intrinsicWidth = inspection.width;
-    this.intrinsicHeight = inspection.height;
-    this.logicalWidth = inspection.logicalWidth;
-    this.logicalHeight = inspection.logicalHeight;
-    this.frameCount = inspection.frameCount;
-    this.comment = inspection.comment;
+  private EncodedImageSource() {
   }
 
   static EncodedImageSource fromBytes(byte[] input) throws ImageException {
@@ -51,18 +41,18 @@ final class EncodedImageSource extends ImageSource {
     }
     byte[] owned = new byte[length];
     System.arraycopy(input, 0, owned, 0, length);
-    return new EncodedImageSource(owned, length);
+    EncodedImageSource source = new EncodedImageSource();
+    source.captureNative(owned, length);
+    return source;
   }
 
   static EncodedImageSource fromPath(String path) throws ImageException, IOException {
-    if (path == null || Launcher.instance == null) {
+    if (path == null) {
       throw new ImageException("ERROR: can't open image file " + path);
     }
-    byte[] bytes = Launcher.instance.readBytes(path);
-    if (bytes == null) {
-      throw new ImageException("ERROR: can't open image file " + path);
-    }
-    return new EncodedImageSource(bytes, bytes.length);
+    EncodedImageSource source = new EncodedImageSource();
+    source.captureNativePath(path);
+    return source;
   }
 
   static EncodedImageSource fromStream(Stream stream) throws ImageException, IOException {
@@ -82,11 +72,19 @@ final class EncodedImageSource extends ImageSource {
       captured.write(buffer, 0, count);
     }
     byte[] owned = captured.toByteArray();
-    return new EncodedImageSource(owned, owned.length);
+    EncodedImageSource source = new EncodedImageSource();
+    source.captureNative(owned, owned.length);
+    return source;
   }
 
   ImageEncodedStructure.Format getFormat() {
-    return format;
+    switch (formatCode) {
+      case 1: return ImageEncodedStructure.Format.PNG;
+      case 2: return ImageEncodedStructure.Format.JPEG;
+      case 3: return ImageEncodedStructure.Format.GIF;
+      case 4: return ImageEncodedStructure.Format.BMP;
+      default: throw new IllegalStateException("Unknown encoded image format: " + formatCode);
+    }
   }
 
   int getEncodedLength() {
@@ -118,6 +116,9 @@ final class EncodedImageSource extends ImageSource {
   }
 
   byte[] copyBytes() {
+    if (bytes == null) {
+      throw new IllegalStateException("Encoded bytes are held by the native image bag");
+    }
     byte[] copy = new byte[length];
     System.arraycopy(bytes, 0, copy, 0, length);
     return copy;
@@ -127,16 +128,44 @@ final class EncodedImageSource extends ImageSource {
     return bytes;
   }
 
+  boolean hasJavaBackingForSmoke() {
+    return bytes != null;
+  }
+
+  boolean hasNativeBackingForSmoke() {
+    return nativeBag != 0;
+  }
+
+  void releaseForSmoke() {
+    releaseNativeBag();
+  }
+
   /** Replaced on deployed targets by an immutable native bag copy. */
   @ReplacedByNativeOnDeploy
-  private void captureNative(byte[] input, int length) {
-    nativeBag = 0;
+  private void captureNative(byte[] input, int length) throws ImageException {
+    ImageEncodedStructure.Inspection inspection = ImageEncodedStructure.inspect(input, length);
+    this.bytes = input;
+    this.length = length;
+    this.formatCode = inspection.format.ordinal() + 1;
+    this.intrinsicWidth = inspection.width;
+    this.intrinsicHeight = inspection.height;
+    this.logicalWidth = inspection.logicalWidth;
+    this.logicalHeight = inspection.logicalHeight;
+    this.frameCount = inspection.frameCount;
+    this.comment = inspection.comment;
   }
 
   /** Replaced on deployed targets by TCZ-first native path capture. */
   @ReplacedByNativeOnDeploy
-  private void captureNativePath(String path) {
-    nativeBag = 0;
+  private void captureNativePath(String path) throws ImageException, IOException {
+    if (path == null || Launcher.instance == null) {
+      throw new ImageException("ERROR: can't open image file " + path);
+    }
+    byte[] input = Launcher.instance.readBytes(path);
+    if (input == null) {
+      throw new ImageException("ERROR: can't open image file " + path);
+    }
+    captureNative(input, input.length);
   }
 
   /** Idempotently releases the deployed encoded bag. */

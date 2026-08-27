@@ -27,6 +27,7 @@ void pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStrea
 static void captureEncodedBag(Context context, TCObject source, const uint8* bytes, int32 length) {
    ImageEncodedBag* bag = imageEncodedBagCreate(bytes, length);
    ImageEncodedInspection inspection;
+   TCObject comment = null;
    if (!bag) {
       throwException(context, OutOfMemoryError, null);
       return;
@@ -36,12 +37,29 @@ static void captureEncodedBag(Context context, TCObject source, const uint8* byt
       throwException(context, ImageException, "Invalid or unsupported encoded image");
       return;
    }
+   if (inspection.comment && inspection.commentLength > 0) {
+      comment = createStringObjectFromCharP(context, (CharP)inspection.comment, inspection.commentLength);
+      if (!comment) {
+         imageEncodedBagRelease(&bag);
+         throwException(context, OutOfMemoryError, null);
+         return;
+      }
+      setObjectLock(comment, UNLOCKED);
+   }
    if (EncodedImageSource_nativeBag(source)) {
       ImageEncodedBag* previous = (ImageEncodedBag*)EncodedImageSource_nativeBag(source);
       imageEncodedBagRelease(&previous);
    }
+   EncodedImageSource_formatCode(source) = (int32)inspection.format;
+   EncodedImageSource_length(source) = bag->length;
+   EncodedImageSource_intrinsicWidth(source) = inspection.width;
+   EncodedImageSource_intrinsicHeight(source) = inspection.height;
+   EncodedImageSource_logicalWidth(source) = inspection.logicalWidth;
+   EncodedImageSource_logicalHeight(source) = inspection.logicalHeight;
+   EncodedImageSource_frameCount(source) = inspection.frameCount;
    EncodedImageSource_nativeBag(source) = (int64)bag;
    EncodedImageSource_bytes(source) = null;
+   EncodedImageSource_comment(source) = comment;
 }
 
 TC_API void tuiEIS_captureNative_Bi(NMParams p) // totalcross/ui/image/EncodedImageSource private void captureNative(byte[] input, int length);
@@ -62,7 +80,12 @@ TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/Encode
    TCZFile tcz;
    String2CharPBuf(pathObj, path);
    tcz = tczGetFile(path, false);
-   if (!tcz || tcz->uncompressedSize <= 0) {
+   if (!tcz) {
+      throwException(p->currentContext, ImageException, "Could not open encoded image");
+      return;
+   }
+   if (tcz->uncompressedSize <= 0) {
+      tczClose(tcz);
       throwException(p->currentContext, ImageException, "Could not open encoded image");
       return;
    }
@@ -77,20 +100,40 @@ TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/Encode
       count = tczRead(tcz, bag->bytes, tcz->uncompressedSize);
       if (count != tcz->uncompressedSize) {
          imageEncodedBagRelease(&bag);
+         tczClose(tcz);
          throwException(p->currentContext, ImageException, "Could not read encoded image");
          return;
       }
+      tczClose(tcz);
       {
          ImageEncodedInspection inspection;
+         TCObject comment = null;
          if (!imageEncodedBagInspect(bag, &inspection)) {
             imageEncodedBagRelease(&bag);
             throwException(p->currentContext, ImageException, "Invalid or unsupported encoded image");
             return;
          }
-      }
-      if (EncodedImageSource_nativeBag(p->obj[0])) {
-         ImageEncodedBag* previous = (ImageEncodedBag*)EncodedImageSource_nativeBag(p->obj[0]);
-         imageEncodedBagRelease(&previous);
+         if (inspection.comment && inspection.commentLength > 0) {
+            comment = createStringObjectFromCharP(p->currentContext, (CharP)inspection.comment, inspection.commentLength);
+            if (!comment) {
+               imageEncodedBagRelease(&bag);
+               throwException(p->currentContext, OutOfMemoryError, null);
+               return;
+            }
+            setObjectLock(comment, UNLOCKED);
+         }
+         if (EncodedImageSource_nativeBag(p->obj[0])) {
+            ImageEncodedBag* previous = (ImageEncodedBag*)EncodedImageSource_nativeBag(p->obj[0]);
+            imageEncodedBagRelease(&previous);
+         }
+         EncodedImageSource_formatCode(p->obj[0]) = (int32)inspection.format;
+         EncodedImageSource_length(p->obj[0]) = bag->length;
+         EncodedImageSource_intrinsicWidth(p->obj[0]) = inspection.width;
+         EncodedImageSource_intrinsicHeight(p->obj[0]) = inspection.height;
+         EncodedImageSource_logicalWidth(p->obj[0]) = inspection.logicalWidth;
+         EncodedImageSource_logicalHeight(p->obj[0]) = inspection.logicalHeight;
+         EncodedImageSource_frameCount(p->obj[0]) = inspection.frameCount;
+         EncodedImageSource_comment(p->obj[0]) = comment;
       }
       EncodedImageSource_nativeBag(p->obj[0]) = (int64)bag;
       EncodedImageSource_bytes(p->obj[0]) = null;

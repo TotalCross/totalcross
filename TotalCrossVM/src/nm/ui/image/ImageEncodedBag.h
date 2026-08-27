@@ -23,6 +23,11 @@ typedef struct ImageEncodedInspection {
    ImageEncodedFormat format;
    int32 width;
    int32 height;
+   int32 logicalWidth;
+   int32 logicalHeight;
+   int32 frameCount;
+   const uint8* comment;
+   int32 commentLength;
 } ImageEncodedInspection;
 
 ImageEncodedBag* imageEncodedBagCreate(const uint8* bytes, int32 length);

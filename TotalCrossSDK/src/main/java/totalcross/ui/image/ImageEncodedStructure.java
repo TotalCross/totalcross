@@ -24,7 +24,7 @@ final class ImageEncodedStructure {
       this.format = format;
       this.width = width;
       this.height = height;
-      this.logicalWidth = width;
+      this.logicalWidth = frameCount > 1 ? width / frameCount : width;
       this.logicalHeight = height;
       this.frameCount = frameCount;
       this.comment = comment;
@@ -56,8 +56,9 @@ final class ImageEncodedStructure {
   private static Inspection png(byte[] b, int n) throws ImageException {
     int p = 8;
     int width = 0, height = 0;
-    int colorType = -1;
-    boolean ihdr = false, plte = false, idat = false, idatEnded = false, iend = false;
+    int colorType = -1, bitDepth = -1;
+    boolean ihdr = false, plte = false, trns = false, idat = false, idatEnded = false, iend = false;
+    int paletteEntries = 0;
     String comment = null;
     while (p + 12 <= n) {
       long chunkLength = uint(b, p);
@@ -68,6 +69,9 @@ final class ImageEncodedStructure {
       int type = p + 4;
       int data = p + 8;
       int crc = data + dataLength;
+      if (!chunkType(b, type)) {
+        throw invalid("invalid PNG chunk type");
+      }
       if (!ihdr && !ascii(b, type, "IHDR")) {
         throw invalid("PNG IHDR must be first");
       }
@@ -80,7 +84,7 @@ final class ImageEncodedStructure {
         }
         width = positiveInt(b, data);
         height = positiveInt(b, data + 4);
-        int bitDepth = b[data + 8] & 0xFF;
+        bitDepth = b[data + 8] & 0xFF;
         colorType = b[data + 9] & 0xFF;
         if (!validPngColor(colorType, bitDepth) || (b[data + 10] & 0xFF) != 0
             || (b[data + 11] & 0xFF) != 0 || (b[data + 12] & 0xFF) > 1) {
@@ -88,14 +92,25 @@ final class ImageEncodedStructure {
         }
         ihdr = true;
       } else if (ascii(b, type, "PLTE")) {
-        if (plte || idat || dataLength == 0 || dataLength % 3 != 0 || dataLength > 768) {
+        if (plte || idat || (colorType != 2 && colorType != 3 && colorType != 6)
+            || dataLength == 0 || dataLength % 3 != 0 || dataLength > 768) {
           throw invalid("invalid PNG palette");
+        }
+        paletteEntries = dataLength / 3;
+        if (colorType == 3 && paletteEntries > (1 << bitDepth)) {
+          throw invalid("PNG palette exceeds indexed bit depth");
         }
         plte = true;
       } else if (ascii(b, type, "tRNS")) {
-        if (idat || (colorType == 3 && !plte)) {
+        if (trns || idat) {
           throw invalid("invalid PNG transparency ordering");
         }
+        if ((colorType == 0 && dataLength != 2) || (colorType == 2 && dataLength != 6)
+            || (colorType == 3 && (!plte || dataLength == 0 || dataLength > paletteEntries))
+            || (colorType != 0 && colorType != 2 && colorType != 3)) {
+          throw invalid("invalid PNG transparency data");
+        }
+        trns = true;
       } else if (ascii(b, type, "IDAT")) {
         if (!ihdr || idatEnded || (colorType == 3 && !plte)) {
           throw invalid("invalid PNG IDAT ordering");
@@ -107,7 +122,7 @@ final class ImageEncodedStructure {
         }
         iend = true;
         break;
-      } else if (idat && (b[type] & 0x20) == 0) {
+      } else if ((b[type] & 0x20) == 0) {
         throw invalid("critical PNG chunk after IDAT");
       }
       if (ascii(b, type, "tEXt") && dataLength > 7) {
@@ -116,7 +131,7 @@ final class ImageEncodedStructure {
           zero++;
         }
         if (zero < data + dataLength && "Comment".equals(new String(b, data, zero - data, StandardCharsets.ISO_8859_1))) {
-          comment = new String(b, zero + 1, data + dataLength - zero - 1);
+          comment = new String(b, zero + 1, data + dataLength - zero - 1, StandardCharsets.ISO_8859_1);
         }
       }
       if (idat && !ascii(b, type, "IDAT")) {
@@ -126,6 +141,9 @@ final class ImageEncodedStructure {
     }
     if (!ihdr || !idat || !iend) {
       throw invalid("incomplete PNG structure");
+    }
+    if (colorType == 3 && !plte) {
+      throw invalid("indexed PNG is missing a palette");
     }
     int frames = frameCount(comment);
     return new Inspection(Format.PNG, width, height, frames, comment);
@@ -190,7 +208,7 @@ final class ImageEncodedStructure {
   }
 
   private static boolean isSof(int marker) {
-    return marker >= 0xC0 && marker <= 0xCF && marker != 0xC4 && marker != 0xC8 && marker != 0xCC;
+    return marker == 0xC0 || marker == 0xC2;
   }
 
   private static Inspection gif(byte[] b, int n) throws ImageException {
@@ -302,11 +320,12 @@ final class ImageEncodedStructure {
     throw invalid("missing BMP RLE end marker");
   }
 
-  private static int frameCount(String comment) {
+  private static int frameCount(String comment) throws ImageException {
     if (comment != null && comment.startsWith("FC=")) {
       try {
         int value = Integer.parseInt(comment.substring(3));
-        if (value > 0) return value;
+        if (value < 1) throw invalid("frame count must be positive");
+        return value;
       } catch (NumberFormatException ignored) {
       }
     }
@@ -328,6 +347,14 @@ final class ImageEncodedStructure {
   private static boolean ascii(byte[] b, int p, String value) {
     if (p < 0 || p + value.length() > b.length) return false;
     for (int i = 0; i < value.length(); i++) if (b[p + i] != (byte) value.charAt(i)) return false;
+    return true;
+  }
+
+  private static boolean chunkType(byte[] b, int p) {
+    for (int i = 0; i < 4; i++) {
+      int c = b[p + i] & 0xFF;
+      if ((c < 'A' || c > 'Z') && (c < 'a' || c > 'z')) return false;
+    }
     return true;
   }
 

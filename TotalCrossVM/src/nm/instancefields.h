@@ -184,7 +184,15 @@
 
 // totalcross/ui/image/EncodedImageSource
 #define EncodedImageSource_nativeBag(o) FIELD_I64(o, OBJ_CLASS(o), 0)
-#define EncodedImageSource_bytes(o) FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define EncodedImageSource_formatCode(o) FIELD_I32(o, 0)
+#define EncodedImageSource_length(o) FIELD_I32(o, 1)
+#define EncodedImageSource_intrinsicWidth(o) FIELD_I32(o, 2)
+#define EncodedImageSource_intrinsicHeight(o) FIELD_I32(o, 3)
+#define EncodedImageSource_logicalWidth(o) FIELD_I32(o, 4)
+#define EncodedImageSource_logicalHeight(o) FIELD_I32(o, 5)
+#define EncodedImageSource_frameCount(o) FIELD_I32(o, 6)
+#define EncodedImageSource_bytes(o) FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define EncodedImageSource_comment(o) FIELD_OBJ(o, OBJ_CLASS(o), 1)
 
 #define ImageOrControl_surfaceType(o) FIELD_I32(o, 0)
 

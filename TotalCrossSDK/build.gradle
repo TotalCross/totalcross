@@ -832,6 +832,110 @@ tasks.register('runImageAbiSmokeMacOS', Exec) {
     }
 }
 
+def encodedImageSourceSmokeClassesDir = layout.buildDirectory.dir('encoded-image-source-smoke/classes')
+
+tasks.register('compileEncodedImageSourceSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the deployed EncodedImageSource smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/EncodedImageSourceSmokeApp.class'
+    }
+    from(smokeTestResourcesDir) {
+        include 'image-abi/**'
+    }
+    into encodedImageSourceSmokeClassesDir
+}
+
+tasks.register('jarEncodedImageSourceSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the EncodedImageSource smoke app for deployment.'
+    dependsOn 'compileEncodedImageSourceSmoke'
+    archiveFileName = 'EncodedImageSourceSmokeApp.jar'
+    destinationDirectory = encodedImageSourceSmokeClassesDir
+    from(encodedImageSourceSmokeClassesDir)
+}
+
+tasks.register('deployEncodedImageSourceSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the EncodedImageSource smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarEncodedImageSourceSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir encodedImageSourceSmokeClassesDir.get().asFile
+    args = [
+        'EncodedImageSourceSmokeApp.jar',
+        '-macos'
+    ]
+}
+
+tasks.register('runEncodedImageSourceSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the deployed EncodedImageSource smoke app with the exact macOS dylib.'
+    dependsOn 'deployEncodedImageSourceSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runEncodedImageSourceSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+        }
+        def installDir = encodedImageSourceSmokeClassesDir.get().dir('install/macos').asFile
+        def deployedRuntime = new File(installDir, 'libtcvm.dylib')
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def sourceHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(nativeRuntimeFile.bytes).encodeHex().toString()
+        def deployedHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(deployedRuntime.bytes).encodeHex().toString()
+        if (sourceHash != deployedHash) {
+            throw new GradleException("Deployed native runtime hash differs: source=${sourceHash}, deployed=${deployedHash}")
+        }
+        def executable = new File(installDir, 'EncodedImageSourceSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException("Native smoke executable not found: ${executable}")
+        }
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir encodedImageSourceSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def requiredFields = [
+            'fixture=EncodedImageSourceSmokeApp',
+            'byteCapture=true',
+            'streamCapture=true',
+            'pathCapture=true',
+            'pngValidation=true',
+            'jpegValidation=true',
+            'lifetime=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('EncodedImageSource native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
     group = 'verification'
     description = 'Deploys the aggregate modern Java feature smoke app with the generated SDK.'
