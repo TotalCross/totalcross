@@ -35,6 +35,13 @@ public class ImageAbiSmokeApp extends MainWindow {
     boolean textureUploadPass = false;
     boolean textureRecreatePass = false;
     boolean pngRoundTripPass = false;
+    boolean replicateScalePass = false;
+    boolean smoothScalePass = false;
+    boolean rotationPass = false;
+    boolean touchUpPass = false;
+    boolean fadePass = false;
+    boolean alphaPass = false;
+    boolean hwScaleCopyPass = false;
     String error = "";
 
     try {
@@ -87,6 +94,49 @@ public class ImageAbiSmokeApp extends MainWindow {
           && scaled.getPixelWidth() == 7 && scaled.getPixelHeight() == 5;
       require(resizePass, "smooth resize dimensions");
 
+      Image transformSource = new Image(4, 2);
+      fill(transformSource, NATIVE_RED);
+      Image replicated = transformSource.getScaledInstance(8, 4);
+      replicateScalePass = replicated.getPixelWidth() == 8 && replicated.getPixelHeight() == 4
+          && rowContainsRgb(replicated, 0xFF, 0x00, 0x00);
+      require(replicateScalePass, "replicate scale dimensions=" + replicated.getPixelWidth() + "x"
+          + replicated.getPixelHeight() + ",row=" + rowSummary(replicated));
+
+      Image smoothlyScaled = transformSource.getSmoothScaledInstance(2, 1);
+      smoothScalePass = smoothlyScaled.getPixelWidth() == 2 && smoothlyScaled.getPixelHeight() == 1;
+      require(smoothScalePass, "smooth scale");
+
+      Image rotationSource = new Image(3, 2);
+      fill(rotationSource, NATIVE_RED);
+      Image rotated = rotationSource.getRotatedScaledInstance(100, 45, 0xFF123456);
+      rotationPass = rotated.getPixelWidth() == 4 && rotated.getPixelHeight() == 3
+          && containsRgb(rotated, 0x12, 0x34, 0x56);
+      require(rotationPass, "non-square rotation dimensions/fill=" + rotated.getPixelWidth() + "x"
+          + rotated.getPixelHeight() + ",pixels=" + imageSummary(rotated));
+
+      byte[] sourceRow = row(transformSource);
+      Image touchedUp = transformSource.getTouchedUpInstance((byte) 32, (byte) 0);
+      touchUpPass = touchedUp.getPixelWidth() == 4 && touchedUp.getPixelHeight() == 2
+          && differs(sourceRow, row(touchedUp));
+      require(touchUpPass, "touch-up transformation");
+
+      Image faded = transformSource.getFadedInstance(0x00112233);
+      fadePass = faded.getPixelWidth() == 4 && faded.getPixelHeight() == 2
+          && differs(sourceRow, row(faded));
+      require(fadePass, "fade transformation");
+
+      Image alpha = transformSource.getAlphaInstance(-64);
+      byte[] alphaRow = row(alpha);
+      alphaPass = alpha.getPixelWidth() == 4 && alpha.getPixelHeight() == 2
+          && (alphaRow[3] & 0xFF) == 0xBF;
+      require(alphaPass, "alpha transformation");
+
+      Image hwScaleSource = new Image(4, 2);
+      hwScaleSource.setHwScaleFixedAspectRatio(8, false);
+      Image hwScaleDerived = hwScaleSource.getScaledInstance(2, 1);
+      hwScaleCopyPass = hwScaleDerived.getWidth() == 4 && hwScaleDerived.getHeight() == 2;
+      require(hwScaleCopyPass, "hardware scale on derived image");
+
       Image frames = new Image(8, 2);
       int[] framePixels = frames.getPixels();
       for (int i = 0; i < framePixels.length; i++) {
@@ -123,7 +173,8 @@ public class ImageAbiSmokeApp extends MainWindow {
 
     boolean overallPass = constructorPass && decodePass && logicalDimensionsPass && physicalDimensionsPass
         && framePass && colorMutationPass && resizePass && textureUploadPass && textureRecreatePass
-        && pngRoundTripPass;
+        && pngRoundTripPass && replicateScalePass && smoothScalePass && rotationPass && touchUpPass
+        && fadePass && alphaPass && hwScaleCopyPass;
     byte[] commitBytes = Vm.getFile("image-abi/commit.txt");
     String commit = commitBytes == null ? "unknown" : new String(commitBytes).trim();
     System.out.println("fixture=ImageAbiSmokeApp,commit=" + commit + ",renderer="
@@ -132,7 +183,10 @@ public class ImageAbiSmokeApp extends MainWindow {
         + ",logicalDimensionsPass=" + logicalDimensionsPass + ",physicalDimensionsPass=" + physicalDimensionsPass
         + ",framePass=" + framePass + ",colorMutationPass=" + colorMutationPass + ",resizePass=" + resizePass
         + ",textureUploadPass=" + textureUploadPass + ",textureRecreatePass=" + textureRecreatePass
-        + ",pngRoundTripPass=" + pngRoundTripPass + ",overallPass=" + overallPass
+        + ",pngRoundTripPass=" + pngRoundTripPass + ",replicateScalePass=" + replicateScalePass
+        + ",smoothScalePass=" + smoothScalePass + ",rotationPass=" + rotationPass
+        + ",touchUpPass=" + touchUpPass + ",fadePass=" + fadePass + ",alphaPass=" + alphaPass
+        + ",hwScaleCopyPass=" + hwScaleCopyPass + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
   }
@@ -141,5 +195,84 @@ public class ImageAbiSmokeApp extends MainWindow {
     if (!condition) {
       throw new IllegalStateException(message);
     }
+  }
+
+  private static void fill(Image image, int pixel) {
+    int[] pixels = image.getPixels();
+    for (int i = 0; i < pixels.length; i++) {
+      pixels[i] = pixel;
+    }
+  }
+
+  private static byte[] row(Image image) {
+    return row(image, 0);
+  }
+
+  private static byte[] row(Image image, int y) {
+    byte[] row = new byte[image.getPixelWidth() * 4];
+    image.getPixelRow(row, y);
+    return row;
+  }
+
+  private static boolean rowContainsRgb(Image image, int red, int green, int blue) {
+    byte[] row = row(image);
+    for (int i = 0; i < row.length; i += 4) {
+      if ((row[i] & 0xFF) == red && (row[i + 1] & 0xFF) == green && (row[i + 2] & 0xFF) == blue) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean containsRgb(Image image, int red, int green, int blue) {
+    for (int y = 0; y < image.getPixelHeight(); y++) {
+      byte[] row = new byte[image.getPixelWidth() * 4];
+      image.getPixelRow(row, y);
+      for (int i = 0; i < row.length; i += 4) {
+        if ((row[i] & 0xFF) == red && (row[i + 1] & 0xFF) == green && (row[i + 2] & 0xFF) == blue) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean differs(byte[] first, byte[] second) {
+    if (first.length != second.length) {
+      return true;
+    }
+    for (int i = 0; i < first.length; i++) {
+      if (first[i] != second[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static String rowSummary(Image image) {
+    return rowSummary(image, 0);
+  }
+
+  private static String rowSummary(Image image, int y) {
+    byte[] row = row(image, y);
+    StringBuilder summary = new StringBuilder();
+    for (int i = 0; i < Math.min(row.length, 16); i++) {
+      if (i > 0) {
+        summary.append('/');
+      }
+      summary.append(row[i] & 0xFF);
+    }
+    return summary.toString();
+  }
+
+  private static String imageSummary(Image image) {
+    StringBuilder summary = new StringBuilder();
+    for (int y = 0; y < image.getPixelHeight(); y++) {
+      if (y > 0) {
+        summary.append('|');
+      }
+      summary.append(rowSummary(image, y));
+    }
+    return summary.toString();
   }
 }

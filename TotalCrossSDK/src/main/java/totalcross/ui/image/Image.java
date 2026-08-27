@@ -1002,7 +1002,7 @@ public class Image extends GfxSurface {
     int hOut = ((yMax - yMin) * percScale) / 100;
     int x0 = ((wIn << 16) - (((xMax - xMin) * rawCosine) - ((yMax - yMin) * rawSine)) - 1) / 2;
     int y0 = ((hIn << 16) - (((xMax - xMin) * rawSine) + ((yMax - yMin) * rawCosine)) - 1) / 2;
-    return getModifiedInstance(wOut, hOut, percScale, angle, 0, x0, y0, ROTATED_SCALED_INSTANCE);
+    return getModifiedInstance(wOut, hOut, percScale, angle, fillColor, x0, y0, ROTATED_SCALED_INSTANCE);
   }
 
   /**

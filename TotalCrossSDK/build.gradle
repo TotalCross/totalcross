@@ -815,6 +815,13 @@ tasks.register('runImageAbiSmokeMacOS', Exec) {
             'textureUploadPass=true',
             'textureRecreatePass=true',
             'pngRoundTripPass=true',
+            'replicateScalePass=true',
+            'smoothScalePass=true',
+            'rotationPass=true',
+            'touchUpPass=true',
+            'fadePass=true',
+            'alphaPass=true',
+            'hwScaleCopyPass=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }
