@@ -1493,13 +1493,23 @@ public final class Graphics {
    * @param dstX the destination x location on the current surface
    * @param dstY the destination y location on the current surface
    */
-  @ReplacedByNativeOnDeploy
   public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
+    if (surface instanceof Image) {
+      ((Image) surface).getPixels();
+    }
+    if (!Settings.onJavaSE) {
+      copyRectNative(surface, x, y, width, height, dstX, dstY);
+      return;
+    }
     int[] srcPixels = (int[]) getSurfacePixels(surface);
     if (srcPixels != null) {
       drawSurface(srcPixels, surface, x, y, width, height, dstX, dstY, true, surface.getX(), surface.getY(),
           surface.getWidth(), surface.getHeight());
     }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void copyRectNative(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
   }
 
   /** Sets the current font for operations that draw text. */
@@ -1633,8 +1643,12 @@ public final class Graphics {
    * 
    * @since SuperWaba 3.3
    */
-  @ReplacedByNativeOnDeploy
   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
+    if (!Settings.onJavaSE) {
+      image.getPixels();
+      drawImageNative(image, x, y, doClip);
+      return;
+    }
     int[] srcPixels = (int[]) image.getPixels();
     if (srcPixels != null) {
       drawSurface(srcPixels, image, 0, 0, image.getWidth(), image.getHeight(), x, y, doClip, 0, 0, image.getWidth(),
@@ -1658,8 +1672,12 @@ public final class Graphics {
    * 
    * @since SuperWaba 3.3
    */
-  @ReplacedByNativeOnDeploy
   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip) {
+    if (!Settings.onJavaSE) {
+      src.getPixels();
+      copyImageRectNative(src, x, y, width, height, doClip);
+      return;
+    }
     int[] srcPixels = (int[]) src.getPixels();
     if (srcPixels != null) {
       drawSurface(srcPixels, src, x, y, width, height, 0, 0, doClip, 0, 0, src.getWidth(), src.getHeight());
@@ -1672,14 +1690,31 @@ public final class Graphics {
    * 
    * @see #copyRect
    */
-  @ReplacedByNativeOnDeploy
   public void drawImage(totalcross.ui.image.Image src, int x, int y) {
+    if (!Settings.onJavaSE) {
+      src.getPixels();
+      drawImageNative(src, x, y);
+      return;
+    }
     // guich@tc100b5_5: refactored to use the transparent color
     int[] srcPixels = (int[]) src.getPixels();
     if (srcPixels != null) {
       drawSurface(srcPixels, src, 0, 0, src.getWidth(), src.getHeight(), x, y, true, 0, 0, src.getWidth(),
           src.getHeight());
     }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void copyImageRectNative(totalcross.ui.image.Image image, int x, int y, int width, int height,
+      boolean doClip) {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void drawImageNative(totalcross.ui.image.Image image, int x, int y) {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
