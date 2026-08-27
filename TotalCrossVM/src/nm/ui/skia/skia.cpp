@@ -30,6 +30,13 @@
 #endif
 #endif
 
+#if defined(ANDROID)
+#include <jni.h>
+#include <android/bitmap.h>
+#endif
+
+#if TC_GRAPHICS_GLES
+
 #if __APPLE__
 #ifdef darwin
 #include <OpenGLES/ES2/gl.h>
@@ -38,21 +45,20 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #endif
-#else
-#if !defined(__arm__) && !defined(ANDROID)
+
+#elif !defined(__arm__) && !defined(ANDROID)
+
 #include <GL/gl.h>
+
 #else
+
 #include <EGL/egl.h>
-// #include <GLES/gl.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
-#if defined ANDROID
-#include <jni.h>
-#include <android/bitmap.h>
 #endif
-#endif
-#endif
+
+#endif // TC_GRAPHICS_GLES
 #if TC_WINDOWING_SDL
 #include "../../../init/tcsdl.h"
 #endif
@@ -73,17 +79,6 @@
 #include "include/core/SkPath.h"
 #include "include/effects/SkGradientShader.h"
 #include "include/core/SkTextBlob.h"
-
-#include "include/gpu/gl/GrGLAssembleInterface.h"
-#include "include/gpu/gl/GrGLConfig.h"
-#include "include/gpu/gl/GrGLExtensions.h"
-#include "include/gpu/gl/GrGLFunctions.h"
-#include "include/gpu/gl/GrGLInterface.h"
-#include "include/gpu/gl/GrGLTypes.h"
-
-#include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrDirectContext.h"
-#include "include/gpu/GrTypes.h"
 
 #include "include/core/SkColorSpace.h"
 #include "include/effects/SkDashPathEffect.h"
