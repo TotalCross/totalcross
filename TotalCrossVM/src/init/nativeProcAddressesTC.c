@@ -119,7 +119,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_setTransparentColorNative_i"), &tuiI_setTransparentColorNative_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_freeTextureNative"), &tuiI_freeTextureNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyFadeNative_i"), &tuiI_applyFadeNative_i);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpgNative_si"), &tuiI_createJpgNative_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeResizeJpeg_ssi"), &tuiI_nativeResizeJpeg_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getJpegBestFit_sii"), &tuiI_getJpegBestFit_sii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getJpegScaled_sii"), &tuiI_getJpegScaled_sii);

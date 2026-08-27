@@ -52,7 +52,7 @@ class ImageFieldAbiTest {
     assertEquals("path", fieldName(converted.objectInstanceFields[7]));
     assertEquals("pipeline", fieldName(converted.objectInstanceFields[8]));
     assertNativeMethods(converted, "imageLoad", "imageParse", "setCurrentFrameNative", "applyChangesNative",
-        "changeColorsNative", "getPixelRowNative", "setTransparentColorNative", "freeTextureNative", "createJpg",
+        "changeColorsNative", "getPixelRowNative", "setTransparentColorNative", "freeTextureNative", "createJpgNative",
         "applyColorNative", "nativeEqualsNative", "applyColor2Native", "applyFadeNative", "decodeEncodedSource",
         "nativeResizeJpeg", "getJpegBestFit", "getJpegScaled", "getModifiedNative");
   }

@@ -379,7 +379,8 @@ public class Image extends GfxSurface {
    *    Vm.sleep(2000);
    * }
    * </pre>
-   * Caution: if reading a JPEG file, the original array contents will be changed!
+   * The visible encoded range is copied during construction, so later changes
+   * to the caller's array do not affect this image.
    * @throws totalcross.ui.image.ImageException Thrown when something was wrong with the image.
    */
   public Image(byte[] fullDescription, int length) throws ImageException {
@@ -893,9 +894,17 @@ public class Image extends GfxSurface {
    * @throws ImageException
    * @throws IOException
    */
-  @ReplacedByNativeOnDeploy
   public void createJpg(Stream s, int quality) throws ImageException, IOException {
     materializeCanonicalChecked();
+    if (!Settings.onJavaSE) {
+      createJpgNative(s, quality);
+      return;
+    }
+    createJpgJava(s, quality);
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void createJpgJava(Stream s, int quality) throws ImageException, IOException {
     try {
       java.awt.image.MemoryImageSource screenMis = new java.awt.image.MemoryImageSource(width, height,
           new java.awt.image.DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0), (int[]) pixels, 0, width);
@@ -916,6 +925,10 @@ public class Image extends GfxSurface {
     } catch (Throwable e) {
       throw new IOException(e.getMessage());
     }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void createJpgNative(Stream s, int quality) throws ImageException, IOException {
   }
 
   public void createJpg4B(Stream s, int quality) throws ImageException, IOException {

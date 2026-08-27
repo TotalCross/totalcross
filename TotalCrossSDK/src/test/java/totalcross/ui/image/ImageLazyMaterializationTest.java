@@ -21,6 +21,8 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
+import totalcross.io.ByteArrayStream;
+
 class ImageLazyMaterializationTest {
   @Test
   void encodedConstructionExposesMetadataWithoutAllocatingPixels() throws Exception {
@@ -65,6 +67,18 @@ class ImageLazyMaterializationTest {
     assertSame(first.getCause(), second.getCause());
     assertSame(deferredPipeline, pipeline(image));
     assertNull(pixelStorage(image));
+  }
+
+  @Test
+  void jpegExportIsAMaterializationBarrier() throws Exception {
+    Image image = new Image(png(2, 1));
+    ByteArrayStream output = new ByteArrayStream(256);
+
+    image.createJpg(output, 80);
+
+    assertTrue(output.getPos() > 0);
+    assertNull(pipeline(image));
+    assertNotNull(image.getPixels());
   }
 
   @Test

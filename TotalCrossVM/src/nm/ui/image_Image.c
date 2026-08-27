@@ -350,17 +350,12 @@ TC_API void tuiI_freeTextureNative(NMParams p) // totalcross/ui/image/Image priv
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
+TC_API void tuiI_createJpgNative_si(NMParams p) // totalcross/ui/image/Image private void createJpgNative(totalcross.io.Stream s, int quality);
 {
-   TCObject thisObj = p->obj[0];
    TCObject stream = p->obj[1];
    int32 quality = p->i32[0];
-   Method getPixelsMethod = getMethod(OBJ_CLASS(thisObj), true, "getPixels", 0);
-   if (getPixelsMethod != null)
-      executeMethod(p->currentContext, getPixelsMethod, thisObj);
-   if (p->currentContext->thrownException != null)
-      return;
-   /*bool ret = */image2jpeg(p->currentContext, thisObj, stream, quality);
+   /* The Java wrapper has already completed canonical materialization. */
+   image2jpeg(p->currentContext, p->obj[0], stream, quality);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyFadeNative_i(NMParams p) // totalcross/ui/image/Image private void applyFadeNative(int fadeValue);
