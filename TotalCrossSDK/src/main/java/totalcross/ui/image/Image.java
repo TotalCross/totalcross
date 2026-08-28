@@ -71,6 +71,7 @@ import totalcross.util.zip.ZLib;
  */
 public class Image extends GfxSurface {
   private static boolean decodedRasterAllocationFailureForTest;
+  private static boolean materializedFrameBufferAllocationFailureForTest;
 
   private static final class DeterministicImageDecodeException extends ImageException {
     DeterministicImageDecodeException(String message) {
@@ -88,6 +89,11 @@ public class Image extends GfxSurface {
     decodedRasterAllocationFailureForTest = true;
   }
 
+  /** Test-only hook for exercising retryable multi-frame buffer allocation failures. */
+  static synchronized void failNextMaterializedFrameBufferAllocationForTest() {
+    materializedFrameBufferAllocationFailureForTest = true;
+  }
+
   /** Test-only hook for exercising retryable native decoded-raster allocation failures. */
   static void failNextNativeMaterializationForTest() {
     failNextNativeMaterializationForTestNative();
@@ -100,6 +106,12 @@ public class Image extends GfxSurface {
   private static synchronized boolean consumeDecodedRasterAllocationFailureForTest() {
     boolean failure = decodedRasterAllocationFailureForTest;
     decodedRasterAllocationFailureForTest = false;
+    return failure;
+  }
+
+  private static synchronized boolean consumeMaterializedFrameBufferAllocationFailureForTest() {
+    boolean failure = materializedFrameBufferAllocationFailureForTest;
+    materializedFrameBufferAllocationFailureForTest = false;
     return failure;
   }
 
@@ -487,7 +499,7 @@ public class Image extends GfxSurface {
       if (decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
         throw new DeterministicImageDecodeException("Could not decode encoded image");
       }
-      decoded.init();
+      decoded.init(true);
       verifyDecodedMetadata(source, decoded);
     } catch (ImageException failure) {
       if (failure instanceof TransientImageMaterializationException) {
@@ -560,6 +572,11 @@ public class Image extends GfxSurface {
   }
 
   private void init() throws IllegalArgumentException, IllegalStateException, ImageException {
+    init(false);
+  }
+
+  private void init(boolean materializingEncodedSource)
+      throws IllegalArgumentException, IllegalStateException, ImageException {
     surfaceType = 1;
     textureId = -1;
     if (hwScaleW == 0) {
@@ -581,7 +598,7 @@ public class Image extends GfxSurface {
     // frame count information?
     if (comment != null && comment.startsWith("FC=")) {
       try {
-        setFrameCount(Convert.toInt(comment.substring(3)));
+        setFrameCount(Convert.toInt(comment.substring(3)), materializingEncodedSource);
       } catch (InvalidNumberException ine) {
       }
     }
@@ -601,6 +618,11 @@ public class Image extends GfxSurface {
    * @since TotalCross 1.0
    */
   public void setFrameCount(int n) throws IllegalArgumentException, IllegalStateException, ImageException {
+    setFrameCount(n, false);
+  }
+
+  private void setFrameCount(int n, boolean materializingEncodedSource)
+      throws IllegalArgumentException, IllegalStateException, ImageException {
     materializeCanonicalChecked();
     if (frameCount > 1 && n != frameCount) {
       throw new IllegalStateException("The frame count can only be set once.");
@@ -618,9 +640,15 @@ public class Image extends GfxSurface {
         logicalWidth = (int) Math.ceil(width / contentScale);
         // the pixels will hold the pixel of a single frame
         pixelsOfAllFrames = pixels;
+        if (materializingEncodedSource && consumeMaterializedFrameBufferAllocationFailureForTest()) {
+          throw new TransientImageMaterializationException("Simulated multi-frame buffer allocation failure");
+        }
         pixels = new int[width * height];
         setCurrentFrame(0);
       } catch (OutOfMemoryError oome) {
+        if (materializingEncodedSource) {
+          throw new TransientImageMaterializationException(oome);
+        }
         throw new ImageException("Not enough memory to create the single frame");
       }
     }

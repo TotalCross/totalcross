@@ -87,6 +87,30 @@ class ImageLazyMaterializationTest {
   }
 
   @Test
+  void multiFrameBufferFailureIsRetriedWithoutCaching() throws Exception {
+    Image image = new Image(pngWithComment(2, 1, "FC=2"));
+    Object deferredPipeline = pipeline(image);
+
+    Image.failNextMaterializedFrameBufferAllocationForTest();
+    IllegalStateException first = assertThrows(IllegalStateException.class, image::getPixels);
+
+    assertTrue(first.getCause() instanceof TransientImageMaterializationException);
+    assertSame(deferredPipeline, pipeline(image));
+    assertEquals(2, image.getFrameCount());
+    assertEquals(1, image.getWidth());
+    assertEquals(1, image.getPixelWidth());
+
+    int[] pixels = image.getPixels();
+    assertEquals(1, pixels.length);
+    assertEquals(0xFF000000, pixels[0]);
+    assertEquals(2, image.getFrameCount());
+    assertEquals(1, image.getWidth());
+    assertEquals(1, image.getPixelWidth());
+    assertEquals(0, image.getCurrentFrame());
+    assertNull(pipeline(image));
+  }
+
+  @Test
   void jpegExportIsAMaterializationBarrier() throws Exception {
     Image image = new Image(png(2, 1));
     ByteArrayStream output = new ByteArrayStream(256);
@@ -150,6 +174,35 @@ class ImageLazyMaterializationTest {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     assertTrue(ImageIO.write(source, "png", output));
     return output.toByteArray();
+  }
+
+  private static byte[] pngWithComment(int width, int height, String comment) throws Exception {
+    byte[] source = png(width, height);
+    int iend = source.length - 12;
+    ByteArrayOutputStream output = new ByteArrayOutputStream(source.length + comment.length() + 32);
+    output.write(source, 0, iend);
+    byte[] text = ("Comment\0" + comment).getBytes();
+    writeChunk(output, "tEXt", text);
+    output.write(source, iend, 12);
+    return output.toByteArray();
+  }
+
+  private static void writeChunk(ByteArrayOutputStream output, String type, byte[] data) throws Exception {
+    writeInt(output, data.length);
+    byte[] typeBytes = type.getBytes();
+    output.write(typeBytes);
+    output.write(data);
+    CRC32 crc = new CRC32();
+    crc.update(typeBytes);
+    crc.update(data);
+    writeInt(output, (int) crc.getValue());
+  }
+
+  private static void writeInt(ByteArrayOutputStream output, int value) {
+    output.write(value >> 24);
+    output.write(value >> 16);
+    output.write(value >> 8);
+    output.write(value);
   }
 
   private static byte[] jpeg(int width, int height) throws Exception {
