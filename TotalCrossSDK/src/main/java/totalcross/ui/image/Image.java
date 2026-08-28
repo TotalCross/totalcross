@@ -70,7 +70,7 @@ import totalcross.util.zip.ZLib;
  * @see Graphics
  */
 public class Image extends GfxSurface {
-  private static boolean transientMaterializationFailureForTest;
+  private static boolean decodedRasterAllocationFailureForTest;
 
   private static final class DeterministicImageDecodeException extends ImageException {
     DeterministicImageDecodeException(String message) {
@@ -94,14 +94,14 @@ public class Image extends GfxSurface {
     }
   }
 
-  /** Test-only hook for exercising retryable materialization failures. */
-  static synchronized void failNextMaterializationForTest() {
-    transientMaterializationFailureForTest = true;
+  /** Test-only hook for exercising retryable decoded-raster allocation failures. */
+  static synchronized void failNextDecodedRasterAllocationForTest() {
+    decodedRasterAllocationFailureForTest = true;
   }
 
-  private static synchronized boolean consumeTransientMaterializationFailureForTest() {
-    boolean failure = transientMaterializationFailureForTest;
-    transientMaterializationFailureForTest = false;
+  private static synchronized boolean consumeDecodedRasterAllocationFailureForTest() {
+    boolean failure = decodedRasterAllocationFailureForTest;
+    decodedRasterAllocationFailureForTest = false;
     return failure;
   }
 
@@ -241,6 +241,11 @@ public class Image extends GfxSurface {
   }
 
   private Image(int logicalWidth, int logicalHeight, double contentScale) throws ImageException {
+    this(logicalWidth, logicalHeight, contentScale, false);
+  }
+
+  private Image(int logicalWidth, int logicalHeight, double contentScale, boolean decodedRaster)
+      throws ImageException {
     if (!Double.isFinite(contentScale) || contentScale <= 0 || logicalWidth <= 0 || logicalHeight <= 0) {
       throw new ImageException("Image dimensions and content scale must be positive.");
     }
@@ -255,8 +260,14 @@ public class Image extends GfxSurface {
     width = (int) pixelWidth;
     height = (int) pixelHeight;
     try {
+      if (decodedRaster && consumeDecodedRasterAllocationFailureForTest()) {
+        throw new TransientImageMaterializationException("Simulated decoded-raster allocation failure");
+      }
       pixels = new int[height * width]; // just create the pixels array
     } catch (OutOfMemoryError oome) {
+      if (decodedRaster) {
+        throw new TransientImageMaterializationException(oome);
+      }
       throw new ImageException("Out of memory: cannot allocate " + width + "x" + height + " offscreen image.");
     }
     init();
@@ -471,10 +482,6 @@ public class Image extends GfxSurface {
     if (cached != null) {
       throw cached;
     }
-    if (consumeTransientMaterializationFailureForTest()) {
-      throw new TransientImageMaterializationException("Simulated transient image materialization failure");
-    }
-
     Image decoded = new Image();
     decoded.initializeDecodeTarget(source);
     try {
@@ -543,6 +550,9 @@ public class Image extends GfxSurface {
     try {
       imageLoad(input, source.getEncodedLength());
     } catch (ImageException e) {
+      if (e instanceof TransientImageMaterializationException) {
+        throw e;
+      }
       throw new DeterministicImageDecodeException(e);
     } catch (OutOfMemoryError e) {
       throw e;
@@ -2365,7 +2375,7 @@ public class Image extends GfxSurface {
             /* final int count = reader.getNumImages(true); */
             for (int index = 0; /* index < count */; index++) {
               final BufferedImage frame = reader.read(index);
-              image = new Image(width, height);
+              image = new Image(width, height, 1, true);
               image.pixels = convertBufferedImageToPixels(frame, image.pixels, width, height);
               frames.add(image);
             }
@@ -2381,7 +2391,7 @@ public class Image extends GfxSurface {
           final int width = frame.getWidth();
           final int height = frame.getHeight();
 
-          image = new Image(width, height);
+          image = new Image(width, height, 1, true);
           if (new String(input, 1, 3).equals("PNG")) {
             fillPNGInformations(input, image);
           }
@@ -2470,17 +2480,16 @@ public class Image extends GfxSurface {
       }
     }
 
-    private Image joinImages(List<Image> images) {
+    private Image joinImages(List<Image> images) throws ImageException {
       int n = images.size();
       Image resultImage = images.get(n - 1);
       if (n > 1) {
-        try {
           int totalW = 0;
           int totalH = resultImage.height;
           for (int i = 0; i < n; i++) {
             totalW += images.get(i).width;
           }
-          Image temp = new Image(totalW, totalH);
+          Image temp = new Image(totalW, totalH, 1, true);
           temp.frameCount = n;
           temp.comment = resultImage.comment;
           int[] dest = (int[]) temp.pixels;
@@ -2495,9 +2504,6 @@ public class Image extends GfxSurface {
             xx += w;
           }
           resultImage = temp;
-        } catch (Exception e) {
-          resultImage = images.get(0); // if an error occurs, we assume only the first frame
-        }
       }
       return resultImage;
     }

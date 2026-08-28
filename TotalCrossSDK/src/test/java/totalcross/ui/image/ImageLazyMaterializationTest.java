@@ -77,7 +77,7 @@ class ImageLazyMaterializationTest {
     Image image = new Image(png(2, 1));
     Object deferredPipeline = pipeline(image);
 
-    Image.failNextMaterializationForTest();
+    Image.failNextDecodedRasterAllocationForTest();
     IllegalStateException first = assertThrows(IllegalStateException.class, image::getPixels);
 
     assertTrue(first.getCause() instanceof ImageException);
