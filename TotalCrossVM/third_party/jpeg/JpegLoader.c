@@ -212,13 +212,25 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    if (imageDecodeConsumeAllocationFailureForTest())
    {
       status = IMAGE_DECODE_RESOURCE_FAILURE;
-      HEAP_ERROR(heap, HEAP_MEMORY_ERROR);
+      jpeg_abort_decompress(&cinfo);
+      jpeg_destroy_decompress(&cinfo);
+      if (tcz != null)
+         tczClose(tcz);
+      heapDestroy(heap);
+      Image_pixels(imageObj) = null;
+      return status;
    }
    Image_pixels(imageObj) = pixelsObj = createIntArray(currentContext, width*height);
    if (!pixelsObj)
    {
       status = IMAGE_DECODE_RESOURCE_FAILURE;
-      HEAP_ERROR(heap, 997);
+      jpeg_abort_decompress(&cinfo);
+      jpeg_destroy_decompress(&cinfo);
+      if (tcz != null)
+         tczClose(tcz);
+      heapDestroy(heap);
+      Image_pixels(imageObj) = null;
+      return status;
    }
    setObjectLock(pixelsObj, UNLOCKED);
    pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);

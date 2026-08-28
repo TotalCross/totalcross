@@ -37,7 +37,9 @@ int imageDecodeConsumeAllocationFailureForTest(void)
 static void throwImageDecodeStatus(Context context, ImageDecodeStatus status)
 {
    if (status == IMAGE_DECODE_RESOURCE_FAILURE)
-      throwException(context, OutOfMemoryError, null);
+   {
+      throwExceptionNamed(context, "totalcross.ui.image.TransientImageMaterializationException", null);
+   }
    else if (status == IMAGE_DECODE_CORRUPT)
       throwException(context, ImageException, "Could not decode encoded image");
 }
@@ -231,7 +233,7 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
    throwImageDecodeStatus(p->currentContext, status);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_failNextNativeMaterializationForTest(NMParams p) // totalcross/ui/image/Image package static void failNextNativeMaterializationForTest();
+TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/Image native private static void failNextNativeMaterializationForTestNative();
 {
    failNextImageAllocationForTest = true;
    UNUSED(p);

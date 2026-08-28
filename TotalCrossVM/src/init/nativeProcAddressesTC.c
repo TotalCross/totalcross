@@ -109,7 +109,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageLoad_s"), &tuiI_imageLoad_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageParse_sB"), &tuiI_imageParse_sB);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSource_e"), &tuiI_decodeEncodedSource_e);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextNativeMaterializationForTest"), &tuiI_failNextNativeMaterializationForTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextNativeMaterializati"), &tuiI_failNextNativeMaterializati);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_changeColorsNative_ii"), &tuiI_changeColorsNative_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getPixelRowNative_Bi"), &tuiI_getPixelRowNative_Bi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getModifiedNative_iiiiiii"), &tuiI_getModifiedNative_iiiiiii);

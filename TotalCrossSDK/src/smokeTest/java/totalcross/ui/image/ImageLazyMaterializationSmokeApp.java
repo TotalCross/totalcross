@@ -92,7 +92,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       }
       require(payloadInvalidDeferred, "payload-invalid source deferred failure");
 
-      Image nativeRetry = new Image(Vm.getFile("image-abi/tiny.png"));
+      Image nativeRetry = new Image(jpeg);
       boolean firstNativeAllocationFailed = false;
       Image.failNextNativeMaterializationForTest();
       try {
@@ -102,7 +102,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       }
       int[] retriedNativePixels = nativeRetry.getPixels();
       nativeAllocationRetryable = firstNativeAllocationFailed && retriedNativePixels != null
-          && retriedNativePixels.length == 36 * 36;
+          && retriedNativePixels.length == 2;
       require(nativeAllocationRetryable, "native allocation failure retry");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');

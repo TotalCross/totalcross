@@ -83,25 +83,18 @@ public class Image extends GfxSurface {
     }
   }
 
-  private static final class TransientImageMaterializationException extends ImageException {
-    TransientImageMaterializationException(String message) {
-      super(message);
-    }
-
-    TransientImageMaterializationException(Throwable cause) {
-      super(cause.getMessage() == null ? "Transient image materialization failure" : cause.getMessage());
-      initCause(cause);
-    }
-  }
-
   /** Test-only hook for exercising retryable decoded-raster allocation failures. */
   static synchronized void failNextDecodedRasterAllocationForTest() {
     decodedRasterAllocationFailureForTest = true;
   }
 
   /** Test-only hook for exercising retryable native decoded-raster allocation failures. */
-  @ReplacedByNativeOnDeploy
   static void failNextNativeMaterializationForTest() {
+    failNextNativeMaterializationForTestNative();
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failNextNativeMaterializationForTestNative() {
   }
 
   private static synchronized boolean consumeDecodedRasterAllocationFailureForTest() {

@@ -117,7 +117,7 @@ TC_API void tudFP_nativePresent(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);
 TC_API void tuiI_decodeEncodedSource_e(NMParams p);
-TC_API void tuiI_failNextNativeMaterializationForTest(NMParams p);
+TC_API void tuiI_failNextNativeMaterializati(NMParams p);
 TC_API void tuiI_changeColorsNative_ii(NMParams p);
 TC_API void tuiI_getPixelRowNative_Bi(NMParams p);
 TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p);
