@@ -1034,6 +1034,7 @@ tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
             'jpegConstructionLazy=true',
             'structuralInvalid=true',
             'payloadInvalidDeferred=true',
+            'nativeAllocationRetryable=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }

@@ -22,6 +22,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
     boolean jpegConstructionLazy = false;
     boolean structuralInvalid = false;
     boolean payloadInvalidDeferred = false;
+    boolean nativeAllocationRetryable = false;
     String error = "";
 
     try {
@@ -90,19 +91,33 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
         payloadInvalidDeferred = true;
       }
       require(payloadInvalidDeferred, "payload-invalid source deferred failure");
+
+      Image nativeRetry = new Image(Vm.getFile("image-abi/tiny.png"));
+      boolean firstNativeAllocationFailed = false;
+      Image.failNextNativeMaterializationForTest();
+      try {
+        nativeRetry.getPixels();
+      } catch (Throwable expected) {
+        firstNativeAllocationFailed = true;
+      }
+      int[] retriedNativePixels = nativeRetry.getPixels();
+      nativeAllocationRetryable = firstNativeAllocationFailed && retriedNativePixels != null
+          && retriedNativePixels.length == 36 * 36;
+      require(nativeAllocationRetryable, "native allocation failure retry");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
     boolean overallPass = pngConstructionLazy && pngSourceCopy && warningCompatibility && firstDrawMaterializes
         && repeatedBarrierReusesPixels && pathSourceStable && jpegConstructionLazy
-        && structuralInvalid && payloadInvalidDeferred;
+        && structuralInvalid && payloadInvalidDeferred && nativeAllocationRetryable;
     System.out.println("fixture=ImageLazyMaterializationSmokeApp,pngConstructionLazy=" + pngConstructionLazy
         + ",pngSourceCopy=" + pngSourceCopy + ",firstDrawMaterializes=" + firstDrawMaterializes
         + ",warningCompatibility=" + warningCompatibility
         + ",repeatedBarrierReusesPixels=" + repeatedBarrierReusesPixels + ",pathSourceStable=" + pathSourceStable
         + ",jpegConstructionLazy=" + jpegConstructionLazy + ",structuralInvalid=" + structuralInvalid
-        + ",payloadInvalidDeferred=" + payloadInvalidDeferred + ",overallPass=" + overallPass
+        + ",payloadInvalidDeferred=" + payloadInvalidDeferred + ",nativeAllocationRetryable="
+        + nativeAllocationRetryable + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
   }
