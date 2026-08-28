@@ -26,7 +26,7 @@ static uint32 crc32Bytes(const uint8* p, int32 length) {
    for (i = 0; i < length; i++) {
       uint32 value = crc ^ p[i];
       int32 bit;
-      for (bit = 0; bit < 8; bit++) value = (value >> 1) ^ (0xedb88320U & -(value & 1));
+      for (bit = 0; bit < 8; bit++) value = (value >> 1) ^ ((value & 1) ? 0xedb88320U : 0U);
       crc = value;
    }
    return crc ^ 0xffffffffU;

@@ -5,8 +5,6 @@
 #ifndef IMAGE_ENCODED_BAG_H
 #define IMAGE_ENCODED_BAG_H
 
-#include <stdbool.h>
-
 #include "xtypes.h"
 
 typedef enum {
