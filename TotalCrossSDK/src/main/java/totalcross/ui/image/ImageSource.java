@@ -8,4 +8,16 @@ package totalcross.ui.image;
 abstract class ImageSource {
   ImageSource() {
   }
+
+  abstract int width();
+
+  abstract int height();
+
+  abstract int logicalWidth();
+
+  abstract int logicalHeight();
+
+  abstract int frameCount();
+
+  abstract int widthOfAllFrames();
 }
