@@ -99,6 +99,11 @@ public class Image extends GfxSurface {
     decodedRasterAllocationFailureForTest = true;
   }
 
+  /** Test-only hook for exercising retryable native decoded-raster allocation failures. */
+  @ReplacedByNativeOnDeploy
+  static void failNextNativeMaterializationForTest() {
+  }
+
   private static synchronized boolean consumeDecodedRasterAllocationFailureForTest() {
     boolean failure = decodedRasterAllocationFailureForTest;
     decodedRasterAllocationFailureForTest = false;

@@ -37,6 +37,9 @@ static void error_exit(j_common_ptr cinfo)
    TCJpegErrorManager *err = (TCJpegErrorManager *)cinfo->err;
 
    (*cinfo->err->output_message)(cinfo);
+   if (err->decodeStatus)
+      *err->decodeStatus = err->pub.msg_code == JERR_OUT_OF_MEMORY
+         ? IMAGE_DECODE_RESOURCE_FAILURE : IMAGE_DECODE_CORRUPT;
    HEAP_ERROR(err->heap, err->pub.msg_code);
 }
 

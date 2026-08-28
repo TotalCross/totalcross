@@ -97,6 +97,7 @@ TC_API void tuiI_applyChangesNative(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);
 TC_API void tuiI_decodeEncodedSource_e(NMParams p);
+TC_API void tuiI_failNextNativeMaterializationForTest(NMParams p);
 TC_API void tuiI_changeColorsNative_ii(NMParams p);
 TC_API void tuiI_getPixelRowNative_Bi(NMParams p);
 TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p);
@@ -945,6 +946,10 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source);
+TC_API void tuiI_failNextNativeMaterializationForTest(NMParams p) // totalcross/ui/image/Image native static void failNextNativeMaterializationForTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_changeColorsNative_ii(NMParams p) // totalcross/ui/image/Image native private void changeColorsNative(int from, int to);
 {
 }
