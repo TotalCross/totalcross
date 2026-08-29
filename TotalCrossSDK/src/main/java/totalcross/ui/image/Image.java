@@ -473,6 +473,7 @@ public class Image extends GfxSurface {
   }
 
   private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
+    Vm.debug("IMAGE initializeDeferredTransform");
     pipeline = deferred;
     width = deferred.width();
     height = deferred.height();
@@ -497,6 +498,7 @@ public class Image extends GfxSurface {
   }
 
   private RasterImageSource snapshotRasterSource() {
+    Vm.debug("IMAGE snapshotRasterSource");
     int[] allFrames = frameCount > 1 ? (int[]) pixelsOfAllFrames : null;
     return new RasterImageSource(width, height, logicalWidth, logicalHeight, contentScale, frameCount,
         currentFrame, widthOfAllFrames, pixels == null ? null : pixels.clone(),
@@ -531,6 +533,8 @@ public class Image extends GfxSurface {
 
   private Image deferTransform(int operationType, int parameter1, int parameter2, int parameter3,
       int parameter4, int outputWidth, int outputHeight) throws ImageException {
+        Vm.debug("IMAGE deferTransform op=" + operationType
+    + " size=" + outputWidth + "x" + outputHeight);
     ImagePipeline previous = pipeline;
     if (previous == null) {
       previous = new ImagePipeline(snapshotRasterSource());
