@@ -95,9 +95,8 @@ static void endScaleGesture()
 
 bool privateIsEventAvailable()
 {
-   SDL_Event event;
-   return SDL_PeepEvents(&event, 1, SDL_PEEKEVENT,
-      SDL_FIRSTEVENT, SDL_LASTEVENT) > 0;
+   // Pump native events while checking availability without consuming them.
+   return SDL_PollEvent(NULL);
 }
 
 static void handleFingerTouchEvent(SDL_Event event)
