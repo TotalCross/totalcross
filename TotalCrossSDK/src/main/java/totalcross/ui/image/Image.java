@@ -533,8 +533,12 @@ public class Image extends GfxSurface {
 
   private Image deferTransform(int operationType, int parameter1, int parameter2, int parameter3,
       int parameter4, int outputWidth, int outputHeight) throws ImageException {
-        Vm.debug("IMAGE deferTransform op=" + operationType
-    + " size=" + outputWidth + "x" + outputHeight);
+  Vm.debug("IMAGE deferTransform op=" + operationType
+      + " size=" + outputWidth + "x" + outputHeight
+      + " source=" + width + "x" + height);
+Vm.debug("IMAGE deferTransform pipeline=" + (pipeline != null)
+    + " pixels=" + (pixels != null));
+  Vm.printStackTrace();
     ImagePipeline previous = pipeline;
     if (previous == null) {
       previous = new ImagePipeline(snapshotRasterSource());
