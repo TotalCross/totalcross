@@ -281,6 +281,26 @@ static void loadExceptionClasses(Context currentContext)
 #endif
 
 #if TC_OS_DESKTOP
+typedef enum
+{
+   STARTUP_OPTION_SCREEN_BOUNDS,
+   STARTUP_OPTION_FULLSCREEN,
+   STARTUP_OPTION_MAXIMIZED
+} TCStartupOptionKind;
+
+typedef struct
+{
+   const char *name;
+   TCStartupOptionKind kind;
+} TCStartupOption;
+
+static const TCStartupOption startupOptions[] =
+{
+   { "/scr", STARTUP_OPTION_SCREEN_BOUNDS },
+   { "/fullscreen", STARTUP_OPTION_FULLSCREEN },
+   { "/maximized", STARTUP_OPTION_MAXIMIZED }
+};
+
 static bool isStartupOption(CharP command, CharP position, const char *option)
 {
    size_t optionLength = xstrlen(option);
@@ -307,6 +327,15 @@ static bool parseScreenBounds(CharP value)
    return true;
 }
 
+static const TCStartupOption *findStartupOption(CharP command, CharP position)
+{
+   size_t i;
+   for (i = 0; i < sizeof(startupOptions) / sizeof(startupOptions[0]); ++i)
+      if (isStartupOption(command, position, startupOptions[i].name))
+         return &startupOptions[i];
+   return null;
+}
+
 static bool parseInitialWindowState(TCInitialWindowState state)
 {
    if (initialWindowState != TC_INITIAL_WINDOW_NORMAL && initialWindowState != state)
@@ -324,15 +353,10 @@ static bool parseDesktopStartupOptions(CharP command)
    CharP write = command;
    while (*read != '\0')
    {
-      if (isStartupOption(command, read, "/cmd"))
+      const TCStartupOption *option = findStartupOption(command, read);
+      if (option != null && option->kind == STARTUP_OPTION_SCREEN_BOUNDS)
       {
-         while (*read != '\0')
-            *write++ = *read++;
-         break;
-      }
-      if (isStartupOption(command, read, "/scr"))
-      {
-         CharP value = read + 4;
+         CharP value = read + xstrlen(option->name);
          while (*value == ' ')
             value++;
          if (!parseScreenBounds(value))
@@ -342,18 +366,18 @@ static bool parseDesktopStartupOptions(CharP command)
             read++;
          continue;
       }
-      if (isStartupOption(command, read, "/fullscreen"))
+      if (option != null && option->kind == STARTUP_OPTION_FULLSCREEN)
       {
          if (!parseInitialWindowState(TC_INITIAL_WINDOW_FULLSCREEN))
             return false;
-         read += xstrlen("/fullscreen");
+         read += xstrlen(option->name);
          continue;
       }
-      if (isStartupOption(command, read, "/maximized"))
+      if (option != null && option->kind == STARTUP_OPTION_MAXIMIZED)
       {
          if (!parseInitialWindowState(TC_INITIAL_WINDOW_MAXIMIZED))
             return false;
-         read += xstrlen("/maximized");
+         read += xstrlen(option->name);
          continue;
       }
       *write++ = *read++;
