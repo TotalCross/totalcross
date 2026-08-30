@@ -224,7 +224,12 @@ TC_API int32 startProgram(Context currentContext)
    if (currentContext->thrownException == null && keepRunning)
    {
       checkFullScreenPlatform();
-      if (*tcSettings.isFullScreenPtr) // Settings.isFullScreen is set at the static initializer
+#if TC_OS_DESKTOP
+      if (initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
+         || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr))
+#else
+      if (*tcSettings.isFullScreenPtr)
+#endif
          setFullScreen();
       // 4. Retrieve user settings
       retrieveSettingsChangedAtStaticInitializer(currentContext);
@@ -302,7 +307,18 @@ static bool parseScreenBounds(CharP value)
    return true;
 }
 
-static bool parseDesktopScreenBounds(CharP command)
+static bool parseInitialWindowState(TCInitialWindowState state)
+{
+   if (initialWindowState != TC_INITIAL_WINDOW_NORMAL && initialWindowState != state)
+   {
+      alert("/fullscreen and /maximized cannot be combined.");
+      return false;
+   }
+   initialWindowState = state;
+   return true;
+}
+
+static bool parseDesktopStartupOptions(CharP command)
 {
    CharP read = command;
    CharP write = command;
@@ -324,6 +340,20 @@ static bool parseDesktopScreenBounds(CharP command)
          read = value;
          while (*read != '\0' && *read != ' ')
             read++;
+         continue;
+      }
+      if (isStartupOption(command, read, "/fullscreen"))
+      {
+         if (!parseInitialWindowState(TC_INITIAL_WINDOW_FULLSCREEN))
+            return false;
+         read += xstrlen("/fullscreen");
+         continue;
+      }
+      if (isStartupOption(command, read, "/maximized"))
+      {
+         if (!parseInitialWindowState(TC_INITIAL_WINDOW_MAXIMIZED))
+            return false;
+         read += xstrlen("/maximized");
          continue;
       }
       *write++ = *read++;
@@ -351,7 +381,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       return 109;
  #endif
 #elif TC_OS_DESKTOP
-   if (argsOriginalLen > 0 && !parseDesktopScreenBounds(argsOriginal))
+   if (argsOriginalLen > 0 && !parseDesktopStartupOptions(argsOriginal))
       return 110;
    argsOriginalLen = xstrlen(argsOriginal);
 #endif

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -122,6 +123,10 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    mainHWnd = CreateWindow(exeName, main, style, rect.left, rect.top, rect.right, rect.bottom, NULL, NULL, instance, NULL ); // guich@400_62: move window to desired user position
    if (!mainHWnd)
       return false;
+#if !defined(WINCE)
+   if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)
+      ShowWindow(mainHWnd, SW_MAXIMIZE);
+#endif
 
    // store the x, y, width, height, hRes and vRes
    screen->screenY = rect.top;

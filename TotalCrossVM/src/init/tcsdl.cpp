@@ -100,8 +100,11 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
    if (defScrH > 0)
       height = defScrH;
 
-   if (fullScreen)
+   if (initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
+      || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && fullScreen))
       flags |= SDL_WINDOW_FULLSCREEN;
+   else if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)
+      flags |= SDL_WINDOW_MAXIMIZED;
    if (tcSettings.resizableWindow != NULL && *tcSettings.resizableWindow)
       flags |= SDL_WINDOW_RESIZABLE;
 

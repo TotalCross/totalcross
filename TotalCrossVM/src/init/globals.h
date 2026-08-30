@@ -48,7 +48,15 @@ extern bool destroyingApplication;
 extern TCObject mainClass;  // the instance being executed
 extern bool isMainWindow;   // extends MainWindow ?
 #if TC_OS_DESKTOP
+typedef enum TCInitialWindowState
+{
+   TC_INITIAL_WINDOW_NORMAL,
+   TC_INITIAL_WINDOW_FULLSCREEN,
+   TC_INITIAL_WINDOW_MAXIMIZED
+} TCInitialWindowState;
+
 extern int32 defScrX, defScrY, defScrW, defScrH;
+extern TCInitialWindowState initialWindowState;
 #endif
 #if defined(ANDROID)
 extern JavaVM* androidJVM;
