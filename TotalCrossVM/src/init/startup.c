@@ -275,6 +275,64 @@ static void loadExceptionClasses(Context currentContext)
 #define ALLOW_TEST_SUITE true
 #endif
 
+#if TC_OS_DESKTOP
+static bool isStartupOption(CharP command, CharP position, const char *option)
+{
+   size_t optionLength = xstrlen(option);
+   return (position == command || *(position - 1) == ' ')
+      && strncmp(position, option, optionLength) == 0
+      && (position[optionLength] == ' ' || position[optionLength] == '\0');
+}
+
+static bool parseScreenBounds(CharP value)
+{
+   int count = 0;
+   int32 x, y, width, height;
+   if (sscanf(value, "%d,%d,%d,%d%n", &x, &y, &width, &height, &count) != 4
+      || (value[count] != '\0' && value[count] != ' ')
+      || x < -2 || y < -2 || width == 0 || height == 0 || width < -1 || height < -1)
+   {
+      alert("Format: <other arguments> /scr x,y,width,height\\nPass -1 to use the default and -2 to center on screen.");
+      return false;
+   }
+   defScrX = x;
+   defScrY = y;
+   defScrW = width;
+   defScrH = height;
+   return true;
+}
+
+static bool parseDesktopScreenBounds(CharP command)
+{
+   CharP read = command;
+   CharP write = command;
+   while (*read != '\0')
+   {
+      if (isStartupOption(command, read, "/cmd"))
+      {
+         while (*read != '\0')
+            *write++ = *read++;
+         break;
+      }
+      if (isStartupOption(command, read, "/scr"))
+      {
+         CharP value = read + 4;
+         while (*value == ' ')
+            value++;
+         if (!parseScreenBounds(value))
+            return false;
+         read = value;
+         while (*read != '\0' && *read != ' ')
+            read++;
+         continue;
+      }
+      *write++ = *read++;
+   }
+   *write = '\0';
+   return true;
+}
+#endif
+
 TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 {
    CharP cmdline;
@@ -292,14 +350,10 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
     if (isWakeUpCall(argsOriginal))
       return 109;
  #endif
-#elif defined WIN32
-   if (argsOriginalLen > 0 && xstrstr(argsOriginal, "/scr"))
-   {
-      argsOriginal = parseScreenBounds(argsOriginal, &defScrX, &defScrY, &defScrW, &defScrH);
-      if (!argsOriginal)
-         return 110;
-      argsOriginalLen = xstrlen(argsOriginal);
-   }
+#elif TC_OS_DESKTOP
+   if (argsOriginalLen > 0 && !parseDesktopScreenBounds(argsOriginal))
+      return 110;
+   argsOriginalLen = xstrlen(argsOriginal);
 #endif
 
    xstrncpy(args, argsOriginal, min32(sizeof(args)-1, argsOriginalLen));

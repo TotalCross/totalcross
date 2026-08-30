@@ -95,13 +95,21 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
    }
    width = environmentDimension("TC_WIDTH", width);
    height = environmentDimension("TC_HEIGHT", height);
+   if (defScrW > 0)
+      width = defScrW;
+   if (defScrH > 0)
+      height = defScrH;
 
    if (fullScreen)
       flags |= SDL_WINDOW_FULLSCREEN;
    if (tcSettings.resizableWindow != NULL && *tcSettings.resizableWindow)
       flags |= SDL_WINDOW_RESIZABLE;
 
-   window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+   int32 x = defScrX == -2 ? SDL_WINDOWPOS_CENTERED
+      : defScrX >= 0 ? defScrX : SDL_WINDOWPOS_UNDEFINED;
+   int32 y = defScrY == -2 ? SDL_WINDOWPOS_CENTERED
+      : defScrY >= 0 ? defScrY : SDL_WINDOWPOS_UNDEFINED;
+   window = SDL_CreateWindow(title, x, y,
       width, height, flags);
    if (window == NULL)
    {

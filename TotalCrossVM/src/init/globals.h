@@ -47,6 +47,9 @@ extern bool rebootOnExit;
 extern bool destroyingApplication;
 extern TCObject mainClass;  // the instance being executed
 extern bool isMainWindow;   // extends MainWindow ?
+#if TC_OS_DESKTOP
+extern int32 defScrX, defScrY, defScrW, defScrH;
+#endif
 #if defined(ANDROID)
 extern JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
