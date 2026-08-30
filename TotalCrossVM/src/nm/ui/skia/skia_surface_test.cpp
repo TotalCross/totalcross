@@ -26,9 +26,10 @@ int main() {
     }
 
     Pixel channelOrderPixel = 0x1020E0FF;
+    const Pixel expectedChannelOrder = 0xFF1020E0;
     const int channelOrderSurface = skia_makeBitmap(-1, &channelOrderPixel, 1, 1);
     if (channelOrderSurface < 0 ||
-        !expectEqual(skia_getPixel(channelOrderSurface, 0, 0), channelOrderPixel,
+        !expectEqual(skia_getPixel(channelOrderSurface, 0, 0), expectedChannelOrder,
                      "asymmetric image channels")) {
         return 1;
     }
