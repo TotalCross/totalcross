@@ -320,7 +320,7 @@ static bool parseScreenBounds(CharP value)
       || (value[count] != '\0' && value[count] != ' ')
       || x < -2 || y < -2 || width == 0 || height == 0 || width < -1 || height < -1)
    {
-      alert("Format: <other arguments> /scr x,y,width,height\\nPass -1 to use the default and -2 to center on screen.");
+      alert("Format: <other arguments> /scr x,y,width,height\nPass -1 to use the default and -2 to center on screen.");
       return false;
    }
    defScrX = x;
