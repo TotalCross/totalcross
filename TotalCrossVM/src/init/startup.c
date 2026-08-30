@@ -12,6 +12,9 @@
 #include "tcvm.h"
 #include "tcz.h"
 #include "nativeProcAddressesTC.h"
+#if TC_WINDOWING_SDL
+ #include "tcsdl.h"
+#endif
 
 #if defined (WINCE) || defined (WIN32)
  #include "malloc.h"
@@ -229,6 +232,9 @@ TC_API int32 startProgram(Context currentContext)
       if (initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
          || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr))
          setFullScreen();
+#else
+      if (initialWindowState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr)
+         TCSDL_SetFullscreen(true);
 #endif
 #else
       if (*tcSettings.isFullScreenPtr)

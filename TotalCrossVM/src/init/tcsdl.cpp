@@ -159,6 +159,13 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
    return true;
 }
 
+bool TCSDL_SetFullscreen(bool fullscreen)
+{
+   if (window == NULL)
+      return false;
+   return SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) == 0;
+}
+
 bool TCSDL_CreateBackBuffer(ScreenSurface screen)
 {
    if (screen == NULL || SCREEN_EX(screen) == NULL || renderer == NULL

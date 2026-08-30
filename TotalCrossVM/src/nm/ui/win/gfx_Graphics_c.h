@@ -74,6 +74,9 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    HDC deviceContext;
    bool resizableWindow = appTczAttr & ATTR_RESIZABLE_WINDOW;
    int32 windowedWidth, windowedHeight;
+   int32 requestedX, requestedY;
+   bool defaultX, defaultY;
+   RECT actualWindowRect;
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
 
@@ -95,8 +98,12 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    defScrX = defScrY = 0;
 #endif
 
-   rect.left = defScrX == -1 ? CW_USEDEFAULT : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
-   rect.top  = defScrY == -1 ? CW_USEDEFAULT : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
+   defaultX = defScrX == -1;
+   defaultY = defScrY == -1;
+   requestedX = defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
+   requestedY = defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
+   rect.left = defaultX || defaultY ? CW_USEDEFAULT : requestedX;
+   rect.top = defaultX || defaultY ? CW_USEDEFAULT : requestedY;
    rect.bottom = height;
    rect.right = width;
    adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom);
@@ -127,6 +134,19 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    if (!mainHWnd)
       return false;
 #if !defined(WINCE)
+   if (defaultX || defaultY)
+   {
+      GetWindowRect(mainHWnd, &actualWindowRect);
+      if (!defaultX || !defaultY)
+      {
+         SetWindowPos(mainHWnd, NULL,
+            defaultX ? actualWindowRect.left : requestedX,
+            defaultY ? actualWindowRect.top : requestedY,
+            0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+      }
+      rect.left = defaultX ? actualWindowRect.left : requestedX;
+      rect.top = defaultY ? actualWindowRect.top : requestedY;
+   }
    if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)
       ShowWindow(mainHWnd, SW_MAXIMIZE);
 #endif
