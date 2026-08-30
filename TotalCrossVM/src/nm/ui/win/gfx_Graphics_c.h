@@ -73,6 +73,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    char* dot;
    HDC deviceContext;
    bool resizableWindow = appTczAttr & ATTR_RESIZABLE_WINDOW;
+   int32 windowedWidth, windowedHeight;
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
 
@@ -94,8 +95,8 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    defScrX = defScrY = 0;
 #endif
 
-   rect.left = defScrX == -1 ? 0 : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
-   rect.top  = defScrY == -1 ? 0 : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
+   rect.left = defScrX == -1 ? CW_USEDEFAULT : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
+   rect.top  = defScrY == -1 ? CW_USEDEFAULT : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
    rect.bottom = height;
    rect.right = width;
    adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom);
@@ -118,6 +119,8 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
       height = rect.bottom;
    AdjustWindowRectEx(&rect, style, FALSE, 0);
 #endif
+   windowedWidth = width;
+   windowedHeight = height;
    dot = xstrrchr(mainClassName, '.');
    CharP2TCHARPBuf(dot ? dot+1 : mainClassName, main); // remove the package from the name
    mainHWnd = CreateWindow(exeName, main, style, rect.left, rect.top, rect.right, rect.bottom, NULL, NULL, instance, NULL ); // guich@400_62: move window to desired user position
@@ -131,9 +134,18 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    // store the x, y, width, height, hRes and vRes
    screen->screenY = rect.top;
    GetClientRect(mainHWnd, &rect);
+#if !defined(WINCE)
+   if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)
+   {
+      width = rect.right - rect.left;
+      height = rect.bottom - rect.top;
+   }
+#endif
    screen->screenX = rect.left;
-   screen->minScreenW = screen->screenW = width;
-   screen->minScreenH = screen->screenH = height;
+   screen->minScreenW = windowedWidth;
+   screen->minScreenH = windowedHeight;
+   screen->screenW = width;
+   screen->screenH = height;
    screen->hRes = GetDeviceCaps(deviceContext, LOGPIXELSX);
    screen->vRes = GetDeviceCaps(deviceContext, LOGPIXELSY);
 

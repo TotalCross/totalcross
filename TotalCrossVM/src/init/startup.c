@@ -225,12 +225,15 @@ TC_API int32 startProgram(Context currentContext)
    {
       checkFullScreenPlatform();
 #if TC_OS_DESKTOP
+#if !TC_WINDOWING_SDL
       if (initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
          || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr))
+         setFullScreen();
+#endif
 #else
       if (*tcSettings.isFullScreenPtr)
-#endif
          setFullScreen();
+#endif
       // 4. Retrieve user settings
       retrieveSettingsChangedAtStaticInitializer(currentContext);
       // 5. create an instance and call the constructor
