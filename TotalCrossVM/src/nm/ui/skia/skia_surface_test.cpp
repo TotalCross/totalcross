@@ -25,7 +25,7 @@ int main() {
         return 1;
     }
 
-    Pixel channelOrderPixel = 0xFF1020E0;
+    Pixel channelOrderPixel = 0x1020E0FF;
     const int channelOrderSurface = skia_makeBitmap(-1, &channelOrderPixel, 1, 1);
     if (channelOrderSurface < 0 ||
         !expectEqual(skia_getPixel(channelOrderSurface, 0, 0), channelOrderPixel,
