@@ -20,6 +20,7 @@ extern "C" {
     #include "GraphicsPrimitives.h"
 
     bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen);
+    bool TCSDL_SetPixelFormatRequest(const char* value);
     bool TCSDL_SetFullscreen(bool fullscreen);
     bool TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration* configuration);
     bool TCSDL_CreateBackBuffer(ScreenSurface screen);

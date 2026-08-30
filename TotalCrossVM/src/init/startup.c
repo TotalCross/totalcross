@@ -294,7 +294,8 @@ typedef enum
 {
    STARTUP_OPTION_SCREEN_BOUNDS,
    STARTUP_OPTION_FULLSCREEN,
-   STARTUP_OPTION_MAXIMIZED
+   STARTUP_OPTION_MAXIMIZED,
+   STARTUP_OPTION_SDL_PIXEL_FORMAT
 } TCStartupOptionKind;
 
 typedef struct
@@ -307,7 +308,8 @@ static const TCStartupOption startupOptions[] =
 {
    { "/scr", STARTUP_OPTION_SCREEN_BOUNDS },
    { "/fullscreen", STARTUP_OPTION_FULLSCREEN },
-   { "/maximized", STARTUP_OPTION_MAXIMIZED }
+   { "/maximized", STARTUP_OPTION_MAXIMIZED },
+   { "/sdlPixelFormat", STARTUP_OPTION_SDL_PIXEL_FORMAT }
 };
 
 static bool isStartupOption(CharP command, CharP position, const char *option)
@@ -360,7 +362,8 @@ static bool parseDesktopStartupOptions(CharP command)
 {
    CharP read = command;
    CharP write = command;
-   while (*read != '\0')
+   CharP commandEnd = xstrstr(command, " /cmd ");
+   while (*read != '\0' && (commandEnd == null || read < commandEnd))
    {
       const TCStartupOption *option = findStartupOption(command, read);
       if (option != null && option->kind == STARTUP_OPTION_SCREEN_BOUNDS)
@@ -389,8 +392,44 @@ static bool parseDesktopStartupOptions(CharP command)
          read += xstrlen(option->name);
          continue;
       }
+      if (option != null && option->kind == STARTUP_OPTION_SDL_PIXEL_FORMAT)
+      {
+         CharP value = read + xstrlen(option->name);
+         CharP valueEnd;
+         while (*value == ' ')
+            value++;
+         valueEnd = value;
+         while (*valueEnd != '\0' && *valueEnd != ' ')
+            valueEnd++;
+         if (valueEnd == value)
+         {
+            alert("Format: /sdlPixelFormat <auto|argb8888|rgb565>");
+            return false;
+         }
+#if TC_WINDOWING_SDL
+         {
+            char saved = *valueEnd;
+            bool valid;
+            *valueEnd = '\0';
+            valid = TCSDL_SetPixelFormatRequest(value);
+            *valueEnd = saved;
+            if (!valid)
+            {
+               alert("Format: /sdlPixelFormat <auto|argb8888|rgb565>");
+               return false;
+            }
+         }
+#else
+         alert("/sdlPixelFormat requires SDL windowing.");
+         return false;
+#endif
+         read = valueEnd;
+         continue;
+      }
       *write++ = *read++;
    }
+   while (*read != '\0')
+      *write++ = *read++;
    *write = '\0';
    return true;
 }

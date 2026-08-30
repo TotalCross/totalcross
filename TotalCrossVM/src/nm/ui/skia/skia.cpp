@@ -154,7 +154,7 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 #if TC_GRAPHICS_SOFTWARE
     bitmap.installPixels(SkImageInfo::Make(w,
                                            h,
-                                           (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), (Uint32 *)pixels, pitch);
+                                           (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), pixels, pitch);
     canvas = new SkCanvas(bitmap);
 #elif TC_GRAPHICS_GLES
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
@@ -345,6 +345,8 @@ extern "C" JNIEXPORT void JNICALL Java_totalcross_Launcher4A_drawIntoBitmap(JNIE
 int32 colorType(uint32 pixelformat) {
     if (pixelformat == SDL_PIXELFORMAT_ARGB8888)
         return kBGRA_8888_SkColorType;
+    if (pixelformat == SDL_PIXELFORMAT_RGB565)
+        return kRGB_565_SkColorType;
     debug("Unsupported pixel format %s, try mapping your color format on %s - %s", SDL_GetPixelFormatName(pixelformat), __FILE__, __FUNCTION__);
     return kUnknown_SkColorType;
 }
