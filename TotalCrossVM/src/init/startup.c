@@ -362,8 +362,7 @@ static bool parseDesktopStartupOptions(CharP command)
 {
    CharP read = command;
    CharP write = command;
-   CharP commandEnd = xstrstr(command, " /cmd ");
-   while (*read != '\0' && (commandEnd == null || read < commandEnd))
+   while (*read != '\0')
    {
       const TCStartupOption *option = findStartupOption(command, read);
       if (option != null && option->kind == STARTUP_OPTION_SCREEN_BOUNDS)
