@@ -77,6 +77,8 @@ PortableSpecialKeys privateKeyDevice2Portable(int32 key)
 
 PortableModifiers privateKeyGetPortableModifiers(int32 mods)
 {
+   if (mods == -1)
+      return PM_NONE;
    return (((mods & KMOD_LSHIFT) || (mods & KMOD_RSHIFT)) ? PM_SHIFT   : PM_NONE) |
           (((mods & KMOD_LCTRL) || (mods & KMOD_RCTRL)) ? PM_CONTROL : PM_NONE) |
           (((mods & KMOD_LALT) || (mods & KMOD_RALT)) ? PM_ALT     : PM_NONE);

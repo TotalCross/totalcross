@@ -183,7 +183,6 @@ static void handleFingerTouchEvent(SDL_Event event)
 
 static void handleMouseEvent(SDL_Event event)
 {
-   int32 timestamp = getTimeStamp();
    switch (event.type)
    {
       case SDL_MOUSEBUTTONDOWN:
@@ -191,7 +190,7 @@ static void handleMouseEvent(SDL_Event event)
          {
             isDragging = true;
             postEvent(mainContext, PENEVENT_PEN_DOWN, 0,
-               event.button.x, event.button.y, timestamp);
+               event.button.x, event.button.y, -1);
          }
          break;
       case SDL_MOUSEBUTTONUP:
@@ -199,31 +198,31 @@ static void handleMouseEvent(SDL_Event event)
          {
             isDragging = false;
             postEvent(mainContext, PENEVENT_PEN_UP, 0,
-               event.button.x, event.button.y, timestamp);
+               event.button.x, event.button.y, -1);
          }
          break;
       case SDL_MOUSEMOTION:
          if (event.motion.state & SDL_BUTTON_LMASK)
             postEvent(mainContext, PENEVENT_PEN_DRAG, 0,
-               event.motion.x, event.motion.y, timestamp);
+               event.motion.x, event.motion.y, -1);
          else
             postEvent(mainContext, MOUSEEVENT_MOUSE_MOVE, 0,
-               event.motion.x, event.motion.y, timestamp);
+               event.motion.x, event.motion.y, -1);
          break;
    }
 }
 
 static void handleKeyboardEvent(SDL_Event event)
 {
-   int key, modifier;
+   int key;
    if (event.type == SDL_KEYDOWN)
    {
       key = keyDevice2Portable(event.key.keysym.sym);
-      modifier = (int)keyGetPortableModifiers(event.key.keysym.mod);
       if (showKeyCodes)
          printf("Event keysym: %d\n", event.key.keysym.sym);
       if (key != event.key.keysym.sym)
-         postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0, modifier);
+         postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0,
+            event.key.keysym.mod);
    }
 }
 
@@ -258,7 +257,7 @@ static void postTextCodePoint(uint32 codePoint, int32 modifier)
 static void handleTextInputEvent(SDL_Event event)
 {
    const uint8 *text = (const uint8*)event.text.text;
-   int32 modifier = (int32)keyGetPortableModifiers(SDL_GetModState());
+   int32 modifier = SDL_GetModState();
    while (*text != '\0')
    {
       uint32 codePoint;

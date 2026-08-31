@@ -16,6 +16,7 @@ SDL_KEYS = ROOT / "TotalCrossVM/src/event/sdl/specialkeys_c.h"
 LINUX_KEYS = ROOT / "TotalCrossVM/src/event/linux/specialkeys_c.h"
 STARTUP = ROOT / "TotalCrossVM/src/init/startup.c"
 SDL_INIT = ROOT / "TotalCrossVM/src/init/tcsdl.cpp"
+WIN_VM = ROOT / "TotalCrossVM/src/nm/sys/win/Vm_c.h"
 
 
 def has_mapping(source, device, portable):
@@ -37,6 +38,49 @@ class SDLDesktopContractTests(unittest.TestCase):
         window_creation = sdl_init.index("window = SDL_CreateWindow")
         self.assertLess(sdl_init.index("SDL_StartTextInput();", window_creation),
                         sdl_init.index("#if defined(WIN32)", window_creation))
+
+    def test_sdl_events_pass_raw_modifiers_and_mouse_modifiers(self):
+        source = EVENT.read_text()
+        keyboard = source[source.index("static void handleKeyboardEvent") :
+                           source.index("static void handleWheelEvent")]
+        text = source[source.index("static void handleTextInputEvent") :
+                       source.index("void privatePumpEvent")]
+        mouse = source[source.index("static void handleMouseEvent") :
+                       source.index("static void handleKeyboardEvent")]
+        self.assertNotIn("keyGetPortableModifiers", keyboard)
+        self.assertNotIn("keyGetPortableModifiers", text)
+        self.assertIn("event.key.keysym.mod", keyboard)
+        self.assertIn("SDL_GetModState()", text)
+        self.assertNotIn("getTimeStamp", mouse)
+        self.assertEqual(4, mouse.count("event.button.y, -1") + mouse.count("event.motion.y, -1"))
+        keys = SDL_KEYS.read_text()
+        self.assertIn("if (mods == -1)", keys)
+        event_core = (ROOT / "TotalCrossVM/src/event/Event.c").read_text()
+        self.assertIn("keyGetPortableModifiers(mods)", event_core)
+
+    def test_windows_hotkeys_use_vk_values_independently_of_sdl_events(self):
+        source = WIN_VM.read_text()
+        mapper = source[source.index("static int32 vmPortableKeyToWin32") :
+                        source.index("void registerHotkeys")]
+        for portable, vk in {
+            "SK_PAGE_UP": "VK_PRIOR",
+            "SK_HOME": "VK_HOME",
+            "SK_ENTER": "VK_RETURN",
+            "SK_HARD1": "VK_F1",
+            "SK_HARD2": "VK_F2",
+            "SK_HARD3": "VK_F3",
+            "SK_HARD4": "VK_F4",
+            "SK_MENU": "VK_F6",
+            "SK_CALC": "VK_F7",
+            "SK_FIND": "VK_F8",
+            "SK_SCREEN_CHANGE": "VK_F9",
+            "SK_KEYBOARD_ABC": "VK_F11",
+            "SK_ACTION": "VK_F12",
+        }.items():
+            self.assertTrue(has_mapping(mapper, portable, vk), (portable, vk))
+        self.assertIn("*dk = vmPortableKeyToWin32(*keys);", source)
+        self.assertIn("key = vmPortableKeyToWin32(key);", source)
+        self.assertNotIn("*dk = keyPortable2Device(*keys);", source)
 
     def test_sdl_backend_owns_key_dispatch_before_platform_branches(self):
         source = DISPATCH.read_text()
@@ -115,13 +159,17 @@ class SDLDesktopContractTests(unittest.TestCase):
         preparer = source[source.index("static bool prepareDesktopCommandLines") :]
         for option in ("/scr", "/fullscreen", "/maximized", "/sdlPixelFormat"):
             self.assertIn(f'"{option}"', source)
+        for option in ('"-t"', '"-p"', '"-testsuite"'):
+            self.assertIn(option, source)
         self.assertIn("while (*read != '\\0')", parser)
         self.assertNotIn("commandEnd", parser[:parser.index("#endif")])
         self.assertIn("parseDesktopStartupOptions(vmCommandLine)", preparer)
         self.assertIn('separator = xstrstr(vmCommandLine, " /cmd ")', preparer)
         self.assertIn("separator + 6", preparer)
         self.assertIn("applicationCommandLine", preparer)
-        self.assertIn("commandLineToParse = cmdline == null ? null : applicationCommandLine", source)
+        self.assertIn("filterApplicationCommandLine(applicationCommandLine", source)
+        self.assertIn("commandLineToParse = filteredApplicationCommandLine", source)
+        self.assertIn("testSuiteRequested", source)
         self.assertIn("xstrncpy(commandLine, c, sizeof(commandLine) - 1)", source)
 
         self.assertIn("position[optionLength] == ' ' || position[optionLength] == '\\0'", source)
