@@ -24,6 +24,24 @@ static int32 scaleFingerCount;
 static bool scaleGestureActive;
 static double lastScaleDistance;
 
+static void dispatchPortableSpecialKey(PortableSpecialKeys key, int32 modifiers)
+{
+   if (key == SK_SCREEN_CHANGE)
+   {
+      if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
+      {
+         int32 minimum = screen.minScreenW;
+         screen.minScreenW = screen.minScreenH;
+         screen.minScreenH = minimum;
+         screenChange(mainContext, *tcSettings.screenHeightPtr,
+            *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr,
+            *tcSettings.screenWidthInDPIPtr, false);
+      }
+   }
+   else
+      postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0, modifiers);
+}
+
 #if defined(WIN32) && !defined(WINCE)
 static bool windowsMessageHookInstalled;
 
@@ -49,8 +67,7 @@ static void SDLCALL sdlWindowsMessageHook(void *userdata, void *hWnd,
    {
       if (*keys++ == key)
       {
-         postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS,
-            vmWin32KeyToPortable(key), 0, 0, -1);
+         dispatchPortableSpecialKey(vmWin32KeyToPortable(key), -1);
          return;
       }
    }
@@ -260,6 +277,24 @@ static void handleMouseEvent(SDL_Event event)
    }
 }
 
+static bool isControlShortcut(int32 key, int32 modifiers)
+{
+   if ((modifiers & KMOD_CTRL) == 0)
+      return false;
+   switch (key)
+   {
+      case SDLK_a:
+      case SDLK_c:
+      case SDLK_p:
+      case SDLK_v:
+      case SDLK_x:
+      case SDLK_SPACE:
+         return true;
+      default:
+         return false;
+   }
+}
+
 static void handleKeyboardEvent(SDL_Event event)
 {
    int key;
@@ -269,12 +304,8 @@ static void handleKeyboardEvent(SDL_Event event)
       if (showKeyCodes)
          printf("Event keysym: %d\n", event.key.keysym.sym);
       if (key != event.key.keysym.sym)
-         postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0,
-            event.key.keysym.mod);
-      else if ((event.key.keysym.mod & KMOD_CTRL) != 0
-         && (event.key.keysym.sym == SDLK_a
-            || event.key.keysym.sym == SDLK_c
-            || event.key.keysym.sym == SDLK_v))
+         dispatchPortableSpecialKey(key, event.key.keysym.mod);
+      else if (isControlShortcut(event.key.keysym.sym, event.key.keysym.mod))
          postEvent(mainContext, KEYEVENT_KEY_PRESS, event.key.keysym.sym,
             0, 0, event.key.keysym.mod);
    }

@@ -52,9 +52,11 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertNotIn("keyGetPortableModifiers", text)
         self.assertIn("event.key.keysym.mod", keyboard)
         self.assertIn("SDL_GetModState()", text)
-        self.assertIn("event.key.keysym.mod & KMOD_CTRL", keyboard)
-        for shortcut in ("SDLK_a", "SDLK_c", "SDLK_v"):
-            self.assertIn(shortcut, keyboard)
+        shortcuts = source[source.index("static bool isControlShortcut") :
+                           source.index("static void handleKeyboardEvent")]
+        self.assertIn("modifiers & KMOD_CTRL", shortcuts)
+        for shortcut in ("SDLK_a", "SDLK_c", "SDLK_p", "SDLK_v", "SDLK_x", "SDLK_SPACE"):
+            self.assertIn(shortcut, shortcuts)
         self.assertNotIn(
             "postEvent(mainContext, KEYEVENT_KEY_PRESS, key, 0, 0,",
             keyboard,
@@ -99,6 +101,22 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("SDL_SetWindowsMessageHook(null, null);", event)
         hook = event[event.index("sdlWindowsMessageHook") :]
         self.assertNotIn("keyDevice2Portable(key)", hook)
+        self.assertIn("dispatchPortableSpecialKey(vmWin32KeyToPortable(key), -1)", event)
+
+    def test_sdl_special_dispatch_preserves_screen_change_behavior(self):
+        source = EVENT.read_text()
+        helper = source[source.index("static void dispatchPortableSpecialKey") :
+                        source.index("#if defined(WIN32)")]
+        self.assertIn("if (key == SK_SCREEN_CHANGE)", helper)
+        self.assertIn("*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr", helper)
+        self.assertIn("screen.minScreenW", helper)
+        self.assertIn("screen.minScreenH", helper)
+        self.assertIn("screenChange(mainContext", helper)
+        self.assertIn("postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS", helper)
+        keyboard = source[source.index("static void handleKeyboardEvent") :
+                           source.index("static void handleWheelEvent")]
+        self.assertIn("dispatchPortableSpecialKey(key, event.key.keysym.mod)", keyboard)
+        self.assertNotIn("KEYEVENT_SPECIALKEY_PRESS, key", keyboard)
 
     def test_sdl_backend_owns_key_dispatch_before_platform_branches(self):
         source = DISPATCH.read_text()
@@ -191,6 +209,10 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("xstrncpy(commandLine, c, sizeof(commandLine) - 1)", source)
         self.assertIn("appendCommandToken", source)
         self.assertIn("search = separator + 5", source)
+        separator = source[source.index("static CharP findCommandSeparator") :
+                           source.index("static bool filterDesktopCommandLine")]
+        self.assertIn("#if TC_OS_DESKTOP", separator)
+        self.assertIn('#else\n   return xstrstr(command, " /cmd ");', separator)
         self.assertIn('"App.tcz -t /cmdlike /scr -2,-2,800,600 /cmd foo /fullscreen bar "',
                       STARTUP_TEST.read_text())
         self.assertIn("/scrSomething /cmdlike -testsuitelike", STARTUP_TEST.read_text())
