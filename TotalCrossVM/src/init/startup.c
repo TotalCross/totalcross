@@ -289,6 +289,23 @@ static void loadExceptionClasses(Context currentContext)
 #define ALLOW_TEST_SUITE true
 #endif
 
+static CharP findCommandSeparator(CharP command)
+{
+#if TC_OS_DESKTOP
+   CharP search = command;
+   CharP separator;
+   while ((separator = xstrstr(search, " /cmd")) != null)
+   {
+      if (separator[5] == ' ' || separator[5] == '\0')
+         return separator;
+      search = separator + 5;
+   }
+   return null;
+#else
+   return xstrstr(command, " /cmd ");
+#endif
+}
+
 #if TC_OS_DESKTOP
 typedef enum
 {
@@ -385,19 +402,6 @@ static bool appendCommandToken(CharP *write, CharP output, int32 outputSize,
    }
    *hasToken = true;
    return true;
-}
-
-static CharP findCommandSeparator(CharP command)
-{
-   CharP search = command;
-   CharP separator;
-   while ((separator = xstrstr(search, " /cmd")) != null)
-   {
-      if (separator[5] == ' ' || separator[5] == '\0')
-         return separator;
-      search = separator + 5;
-   }
-   return null;
 }
 
 static bool filterDesktopCommandLine(CharP command,
