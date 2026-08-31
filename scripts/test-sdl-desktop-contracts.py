@@ -166,7 +166,7 @@ class SDLDesktopContractTests(unittest.TestCase):
 
     def test_application_command_line_is_filtered_from_composite_vm_line(self):
         source = STARTUP.read_text()
-        parser = source[source.index("static bool parseDesktopStartupOptions") :]
+        parser = source[source.index("static bool filterDesktopCommandLine") :]
         preparer = source[source.index("static bool prepareDesktopCommandLines") :]
         for option in ("/scr", "/fullscreen", "/maximized", "/sdlPixelFormat"):
             self.assertIn(f'"{option}"', source)
@@ -174,20 +174,26 @@ class SDLDesktopContractTests(unittest.TestCase):
             self.assertIn(option, source)
         self.assertIn("while (*read != '\\0')", parser)
         self.assertNotIn("commandEnd", parser[:parser.index("#endif")])
-        self.assertIn("parseDesktopStartupOptions(vmCommandLine)", preparer)
-        self.assertIn('separator = xstrstr(vmCommandLine, " /cmd ")', preparer)
+        self.assertIn("filterDesktopCommandLine(vmCommandLine, options)", preparer)
+        self.assertIn("separator = findCommandSeparator(vmCommandLine)", preparer)
+        self.assertIn('xstrstr(search, " /cmd")', source)
         self.assertIn("separator + 6", preparer)
         self.assertIn("applicationCommandLine", preparer)
-        self.assertIn("filterApplicationCommandLine(applicationCommandLine", source)
-        self.assertIn("commandLineToParse = filteredApplicationCommandLine", source)
-        self.assertIn("testSuiteRequested", source)
+        self.assertIn("commandLineToParse = cmdline == null ? null : applicationCommandLine", source)
+        self.assertIn("desktopCommandLineOptions.testSuiteRequested", source)
         self.assertIn("xstrncpy(commandLine, c, sizeof(commandLine) - 1)", source)
+        self.assertIn("appendCommandToken", source)
+        self.assertIn("search = separator + 5", source)
+        self.assertIn('"App.tcz -t /cmdlike /scr -2,-2,800,600 /cmd foo /fullscreen bar "',
+                      STARTUP_TEST.read_text())
+        self.assertIn("/scrSomething /cmdlike -testsuitelike", STARTUP_TEST.read_text())
 
         self.assertIn("position[optionLength] == ' ' || position[optionLength] == '\\0'", source)
         test_source = STARTUP_TEST.read_text()
-        self.assertIn('"/cmdlike"', test_source)
-        self.assertIn('"-testsuitelike"', test_source)
-        self.assertIn('xstrstr(filteredApplicationCommandLine, " /cmd ") != null', test_source)
+        self.assertIn("/cmdlike", test_source)
+        self.assertIn("-testsuitelike", test_source)
+        self.assertIn('"foo bar baz qux /scrSomething /cmdlike -testsuitelike"',
+                      test_source)
 
 
 if __name__ == "__main__":

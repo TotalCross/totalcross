@@ -312,6 +312,14 @@ static const TCStartupOption startupOptions[] =
    { "/sdlPixelFormat", STARTUP_OPTION_SDL_PIXEL_FORMAT }
 };
 
+typedef struct
+{
+   bool traceRequested;
+   bool testSuiteRequested;
+   bool pathRequested;
+   char path[MAX_PATHNAME];
+} DesktopCommandLineOptions;
+
 static bool isStartupOption(CharP command, CharP position, const char *option)
 {
    size_t optionLength = xstrlen(option);
@@ -358,16 +366,68 @@ static bool parseInitialWindowState(TCInitialWindowState state)
    return true;
 }
 
-static bool parseDesktopStartupOptions(CharP command)
+static bool appendCommandToken(CharP *write, CharP output, int32 outputSize,
+   bool *hasToken, CharP token, CharP tokenEnd)
+{
+   if (token == tokenEnd)
+      return true;
+   if (*hasToken)
+   {
+      if (*write - output >= outputSize - 1)
+         return false;
+      *(*write)++ = ' ';
+   }
+   while (token < tokenEnd)
+   {
+      if (*write - output >= outputSize - 1)
+         return false;
+      *(*write)++ = *token++;
+   }
+   *hasToken = true;
+   return true;
+}
+
+static CharP findCommandSeparator(CharP command)
+{
+   CharP search = command;
+   CharP separator;
+   while ((separator = xstrstr(search, " /cmd")) != null)
+   {
+      if (separator[5] == ' ' || separator[5] == '\0')
+         return separator;
+      search = separator + 5;
+   }
+   return null;
+}
+
+static bool filterDesktopCommandLine(CharP command,
+   DesktopCommandLineOptions *options)
 {
    CharP read = command;
    CharP write = command;
+   bool hasToken = false;
+   int32 commandSize = xstrlen(command) + 1;
+
+   xmemzero(options, sizeof(*options));
+
    while (*read != '\0')
    {
-      const TCStartupOption *option = findStartupOption(command, read);
+      CharP token;
+      CharP tokenEnd;
+      const TCStartupOption *option;
+
+      while (*read == ' ')
+         read++;
+      if (*read == '\0')
+         break;
+      token = read;
+      while (*read != '\0' && *read != ' ')
+         read++;
+      tokenEnd = read;
+      option = findStartupOption(command, token);
       if (option != null && option->kind == STARTUP_OPTION_SCREEN_BOUNDS)
       {
-         CharP value = read + xstrlen(option->name);
+         CharP value = read;
          while (*value == ' ')
             value++;
          if (!parseScreenBounds(value))
@@ -381,19 +441,17 @@ static bool parseDesktopStartupOptions(CharP command)
       {
          if (!parseInitialWindowState(TC_INITIAL_WINDOW_FULLSCREEN))
             return false;
-         read += xstrlen(option->name);
          continue;
       }
       if (option != null && option->kind == STARTUP_OPTION_MAXIMIZED)
       {
          if (!parseInitialWindowState(TC_INITIAL_WINDOW_MAXIMIZED))
             return false;
-         read += xstrlen(option->name);
          continue;
       }
       if (option != null && option->kind == STARTUP_OPTION_SDL_PIXEL_FORMAT)
       {
-         CharP value = read + xstrlen(option->name);
+         CharP value = read;
          CharP valueEnd;
          while (*value == ' ')
             value++;
@@ -425,71 +483,61 @@ static bool parseDesktopStartupOptions(CharP command)
          read = valueEnd;
          continue;
       }
-      *write++ = *read++;
-   }
-   while (*read != '\0')
-      *write++ = *read++;
-   *write = '\0';
-   return true;
-}
-
-static bool prepareDesktopCommandLines(CharP vmCommandLine,
-   CharP applicationCommandLine, int32 applicationCommandLineSize)
-{
-   CharP separator;
-
-   if (!parseDesktopStartupOptions(vmCommandLine))
-      return false;
-   separator = xstrstr(vmCommandLine, " /cmd ");
-   if (separator == null)
-   {
-      *applicationCommandLine = '\0';
-      return true;
-   }
-   xstrncpy(applicationCommandLine, separator + 6,
-      applicationCommandLineSize - 1);
-   return true;
-}
-
-static bool filterApplicationCommandLine(CharP command, CharP filtered,
-   int32 filteredSize, bool *testSuiteRequested)
-{
-   CharP read = command;
-   CharP write = filtered;
-
-   if (filteredSize <= 0)
-      return false;
-   *testSuiteRequested = false;
-   while (*read != '\0')
-   {
-      if (isStartupOption(command, read, "-t"))
+      if (isStartupOption(command, token, "-t"))
       {
-         traceOn = true;
-         read += 2;
+         options->traceRequested = true;
          continue;
       }
-      if (isStartupOption(command, read, "-p"))
+      if (isStartupOption(command, token, "-p"))
       {
-         CharP path = read + 2;
+         CharP path = read;
+         CharP pathEnd;
+         options->pathRequested = true;
          while (*path == ' ')
             path++;
-         closeDebug();
-         read = nextArgPath(path, appPath);
+         pathEnd = path;
+         while (*pathEnd != '\0' && *pathEnd != ' ')
+            pathEnd++;
+         if (pathEnd != path)
+            xstrncpy(options->path, path, sizeof(options->path) - 1);
+         read = pathEnd;
          continue;
       }
-      if (isStartupOption(command, read, "-testsuite"))
+      if (isStartupOption(command, token, "-testsuite"))
       {
-         *testSuiteRequested = true;
-         read += 10;
+         options->testSuiteRequested = true;
          continue;
       }
-      *write++ = *read++;
-      if (write - filtered >= filteredSize - 1)
+      if (!appendCommandToken(&write, command, commandSize, &hasToken,
+         token, tokenEnd))
          return false;
    }
    *write = '\0';
    return true;
 }
+
+static bool prepareDesktopCommandLines(CharP vmCommandLine,
+   CharP applicationCommandLine, int32 applicationCommandLineSize,
+   DesktopCommandLineOptions *options)
+{
+   CharP separator;
+
+   if (!filterDesktopCommandLine(vmCommandLine, options))
+      return false;
+   separator = findCommandSeparator(vmCommandLine);
+   if (separator == null)
+   {
+      *applicationCommandLine = '\0';
+      return true;
+   }
+   if (separator[5] == '\0')
+      *applicationCommandLine = '\0';
+   else
+      xstrncpy(applicationCommandLine, separator + 6,
+         applicationCommandLineSize - 1);
+   return true;
+}
+
 #ifdef ENABLE_TEST_SUITE
 #include "startup_test.h"
 #endif
@@ -504,8 +552,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 #if TC_OS_DESKTOP
    char vmCommandLine[512];
    char applicationCommandLine[256] = { 0 };
-   char filteredApplicationCommandLine[256];
-   bool testSuiteRequested = false;
+   DesktopCommandLineOptions desktopCommandLineOptions = { 0 };
 #endif
    CharP tczName;
    int32 argsOriginalLen = argsOriginal ? xstrlen(argsOriginal) : 0;
@@ -524,7 +571,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    {
       xstrncpy(vmCommandLine, argsOriginal, sizeof(vmCommandLine) - 1);
       if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
-         sizeof(applicationCommandLine)))
+         sizeof(applicationCommandLine), &desktopCommandLineOptions))
          return 110;
       argsOriginal = vmCommandLine;
       argsOriginalLen = xstrlen(vmCommandLine);
@@ -549,30 +596,30 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 
    initException(); // load exceptions
 
+#if TC_OS_DESKTOP
+   if (desktopCommandLineOptions.traceRequested)
+      traceOn = true;
+   if (desktopCommandLineOptions.pathRequested)
+   {
+      closeDebug();
+      xstrcpy(appPath, desktopCommandLineOptions.path);
+   }
+#endif
+
    xstrcpy(argsLower, args);
    CharPToLower(argsLower);
    if (xstrstr(argsLower, "launcher") && 0) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
       xstrcpy(args, " /cmd -testsuite");
 
-   cmdline = xstrstr(args, " /cmd "); // check if there's a cmd line
+   cmdline = findCommandSeparator(args); // check if there's a cmd line
    if (cmdline) // if yes, split the cmdline and the tczName
    {
       *cmdline = 0;
-      cmdline += 6;
+      cmdline += cmdline[5] == ' ' ? 6 : 5;
    }
 
 #if TC_OS_DESKTOP
-   commandLineToParse = null;
-   if (cmdline != null)
-   {
-      xstrncpy(applicationCommandLine, cmdline,
-         sizeof(applicationCommandLine) - 1);
-      if (!filterApplicationCommandLine(applicationCommandLine,
-         filteredApplicationCommandLine, sizeof(filteredApplicationCommandLine),
-         &testSuiteRequested))
-         return 110;
-      commandLineToParse = filteredApplicationCommandLine;
-   }
+   commandLineToParse = cmdline == null ? null : applicationCommandLine;
 #else
    commandLineToParse = cmdline;
 #endif
@@ -581,7 +628,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    {
       if (ALLOW_TEST_SUITE && (!*args ||
 #if TC_OS_DESKTOP
-         testSuiteRequested
+         desktopCommandLineOptions.testSuiteRequested
 #else
          xstrstr(commandLineToParse,"-testsuite")
 #endif

@@ -6,52 +6,46 @@ TESTCASE(startup_filterApplicationCommandLine)
 {
 #if TC_OS_DESKTOP && TC_WINDOWING_SDL
    char vmCommandLine[512] =
-      "App.tcz /scr -2,-2,800,600 /cmd foo -t /fullscreen bar "
+      "App.tcz -t /cmdlike /scr -2,-2,800,600 /cmd foo /fullscreen bar "
       "-p /tmp/app baz -testsuite qux /sdlPixelFormat auto "
       "/scrSomething /cmdlike -testsuitelike";
    char applicationCommandLine[256];
-   char filteredApplicationCommandLine[256];
    char oldAppPath[MAX_PATHNAME];
    int32 oldDefScrX = defScrX;
    int32 oldDefScrY = defScrY;
    int32 oldDefScrW = defScrW;
    int32 oldDefScrH = defScrH;
    TCInitialWindowState oldWindowState = initialWindowState;
-   bool testSuiteRequested;
+   DesktopCommandLineOptions desktopCommandLineOptions;
 
    xstrcpy(oldAppPath, appPath);
    initialWindowState = TC_INITIAL_WINDOW_NORMAL;
    if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
-      sizeof(applicationCommandLine)))
+      sizeof(applicationCommandLine), &desktopCommandLineOptions))
    {
       TEST_FAIL(tc, "Could not prepare the desktop command line");
       goto cleanup;
    }
-   if (!filterApplicationCommandLine(applicationCommandLine,
-      filteredApplicationCommandLine, sizeof(filteredApplicationCommandLine),
-      &testSuiteRequested))
+   if (!desktopCommandLineOptions.testSuiteRequested
+      || !desktopCommandLineOptions.traceRequested
+      || !desktopCommandLineOptions.pathRequested
+      || xstrcmp(desktopCommandLineOptions.path, "/tmp/app") != 0
+      || defScrX != -2 || defScrY != -2
+      || defScrW != 800 || defScrH != 600
+      || initialWindowState != TC_INITIAL_WINDOW_FULLSCREEN)
    {
-      TEST_FAIL(tc, "Could not filter the application command line");
+      TEST_FAIL(tc, "Desktop VM options were not parsed correctly");
       goto cleanup;
    }
-   if (!testSuiteRequested || defScrX != -2 || defScrY != -2
-      || defScrW != 800 || defScrH != 600
-      || initialWindowState != TC_INITIAL_WINDOW_FULLSCREEN
-      || xstrstr(filteredApplicationCommandLine, "foo") == null
-      || xstrstr(filteredApplicationCommandLine, "bar") == null
-      || xstrstr(filteredApplicationCommandLine, "baz") == null
-      || xstrstr(filteredApplicationCommandLine, "qux") == null
-      || xstrstr(filteredApplicationCommandLine, "/scrSomething") == null
-      || xstrstr(filteredApplicationCommandLine, "/cmdlike") == null
-      || xstrstr(filteredApplicationCommandLine, "-testsuitelike") == null
-      || xstrstr(filteredApplicationCommandLine, " /cmd ") != null
-      || xstrstr(filteredApplicationCommandLine, " -t ") != null
-      || xstrstr(filteredApplicationCommandLine, " -p ") != null
-      || xstrstr(filteredApplicationCommandLine, " -testsuite ") != null
-      || xstrstr(filteredApplicationCommandLine, "/scr ") != null
-      || xstrstr(filteredApplicationCommandLine, "/fullscreen ") != null
-      || xstrstr(filteredApplicationCommandLine, "/sdlPixelFormat ") != null)
-      TEST_FAIL(tc, "Desktop VM options were not filtered correctly");
+   if (xstrcmp(vmCommandLine,
+      "App.tcz /cmdlike /cmd foo bar baz qux /scrSomething /cmdlike "
+      "-testsuitelike") != 0
+      || xstrcmp(applicationCommandLine,
+         "foo bar baz qux /scrSomething /cmdlike -testsuitelike") != 0)
+   {
+      TEST_FAIL(tc, "Desktop command-line compaction was incorrect");
+      goto cleanup;
+   }
 
 cleanup:
    xstrcpy(appPath, oldAppPath);
