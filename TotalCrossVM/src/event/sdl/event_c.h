@@ -386,10 +386,12 @@ void privatePumpEvent(Context currentContext)
 
 bool privateInitEvent()
 {
+   SDL_StartTextInput();
    return true;
 }
 
 void privateDestroyEvent()
 {
+   SDL_StopTextInput();
    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 }
