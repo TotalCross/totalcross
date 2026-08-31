@@ -258,6 +258,7 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
       TCSDL_DestroyWindow(screen);
       return false;
    }
+   SDL_StartTextInput();
 
 #if defined(WIN32) && !defined(WINCE)
    SDL_SysWMinfo windowInfo;

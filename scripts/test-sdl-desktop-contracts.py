@@ -15,6 +15,7 @@ DISPATCH = ROOT / "TotalCrossVM/src/event/specialkeys.c"
 SDL_KEYS = ROOT / "TotalCrossVM/src/event/sdl/specialkeys_c.h"
 LINUX_KEYS = ROOT / "TotalCrossVM/src/event/linux/specialkeys_c.h"
 STARTUP = ROOT / "TotalCrossVM/src/init/startup.c"
+SDL_INIT = ROOT / "TotalCrossVM/src/init/tcsdl.cpp"
 
 
 def has_mapping(source, device, portable):
@@ -32,6 +33,10 @@ class SDLDesktopContractTests(unittest.TestCase):
         init = source[source.index("bool privateInitEvent()") :]
         self.assertIn("SDL_StartTextInput();", init[:init.index("void privateDestroyEvent()")])
         self.assertIn("SDL_StopTextInput();", init[init.index("void privateDestroyEvent()"):])
+        sdl_init = SDL_INIT.read_text()
+        window_creation = sdl_init.index("window = SDL_CreateWindow")
+        self.assertLess(sdl_init.index("SDL_StartTextInput();", window_creation),
+                        sdl_init.index("#if defined(WIN32)", window_creation))
 
     def test_sdl_backend_owns_key_dispatch_before_platform_branches(self):
         source = DISPATCH.read_text()
