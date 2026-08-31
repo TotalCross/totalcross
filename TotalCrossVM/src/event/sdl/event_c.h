@@ -271,6 +271,12 @@ static void handleKeyboardEvent(SDL_Event event)
       if (key != event.key.keysym.sym)
          postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0,
             event.key.keysym.mod);
+      else if ((event.key.keysym.mod & KMOD_CTRL) != 0
+         && (event.key.keysym.sym == SDLK_a
+            || event.key.keysym.sym == SDLK_c
+            || event.key.keysym.sym == SDLK_v))
+         postEvent(mainContext, KEYEVENT_KEY_PRESS, event.key.keysym.sym,
+            0, 0, event.key.keysym.mod);
    }
 }
 

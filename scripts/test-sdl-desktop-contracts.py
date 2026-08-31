@@ -52,6 +52,13 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertNotIn("keyGetPortableModifiers", text)
         self.assertIn("event.key.keysym.mod", keyboard)
         self.assertIn("SDL_GetModState()", text)
+        self.assertIn("event.key.keysym.mod & KMOD_CTRL", keyboard)
+        for shortcut in ("SDLK_a", "SDLK_c", "SDLK_v"):
+            self.assertIn(shortcut, keyboard)
+        self.assertNotIn(
+            "postEvent(mainContext, KEYEVENT_KEY_PRESS, key, 0, 0,",
+            keyboard,
+        )
         self.assertNotIn("getTimeStamp", mouse)
         self.assertEqual(4, mouse.count("event.button.y, -1") + mouse.count("event.motion.y, -1"))
         keys = SDL_KEYS.read_text()
