@@ -44,7 +44,7 @@ TESTCASE(startup_filterApplicationCommandLine)
       || xstrstr(filteredApplicationCommandLine, "/scrSomething") == null
       || xstrstr(filteredApplicationCommandLine, "/cmdlike") == null
       || xstrstr(filteredApplicationCommandLine, "-testsuitelike") == null
-      || xstrstr(filteredApplicationCommandLine, "/cmd") != null
+      || xstrstr(filteredApplicationCommandLine, " /cmd ") != null
       || xstrstr(filteredApplicationCommandLine, " -t ") != null
       || xstrstr(filteredApplicationCommandLine, " -p ") != null
       || xstrstr(filteredApplicationCommandLine, " -testsuite ") != null

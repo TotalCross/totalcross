@@ -177,7 +177,7 @@ class SDLDesktopContractTests(unittest.TestCase):
         test_source = STARTUP_TEST.read_text()
         self.assertIn('"/cmdlike"', test_source)
         self.assertIn('"-testsuitelike"', test_source)
-        self.assertIn('xstrstr(filteredApplicationCommandLine, "/cmd") != null', test_source)
+        self.assertIn('xstrstr(filteredApplicationCommandLine, " /cmd ") != null', test_source)
 
 
 if __name__ == "__main__":
