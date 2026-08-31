@@ -33,12 +33,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Startup parses reserved VM options across the full composite launcher line,
   including after `/cmd`, while `MainWindow.getCommandLine()` receives only
   the filtered application payload and never the `/cmd` separator.
+- The non-desktop startup path keeps its historical exact `" /cmd "` lookup;
+  only the desktop path uses the near-match-aware parser and compaction logic.
 - SDL modifiers remain raw at the SDL boundary and are translated once by the
   shared event layer; Windows native hotkey registration remains on Win32 VK
   values independently of SDL event translation. SDL’s supported Windows
   message hook forwards `WM_HOTKEY` events back through the portable special-
-  key path, and Ctrl+A/C/V use the SDL keydown path without changing ordinary
-  text-input ownership.
+  key path, and Ctrl+A/C/P/V/X/Space use the SDL keydown path without changing
+  ordinary text-input ownership.
 - No TotalCross GPU backend or context was introduced.
 
 ## Validation
@@ -53,7 +55,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   backend summaries; dependency/build completion was unavailable locally.
 - Passed: focused copyright-header validation for all fourteen affected files
   and `git diff --check` for the completed commit range and working tree.
-- Passed: `python3 scripts/test-sdl-desktop-contracts.py` with six focused SDL
+- Passed: `python3 scripts/test-sdl-desktop-contracts.py` with seven focused SDL
   keyboard, modifier, special-key, Windows hotkey, backend-ownership, and
   command-line contract tests.
 - Passed: the existing native test-suite registry contains a command-line
@@ -68,6 +70,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   `/tmp/totalcross-sdl-desktop-final-macos-build-followup2.log`.
 - Passed: final `TotalCrossSDK/gradlew-agent dist`; log:
   `/tmp/totalcross-sdk-final-dist-followup2.log`.
+- Observed: CI run [33448669274](https://github.com/TotalCross/totalcross/actions/runs/33448669274)
+  at remote SHA `0db8648db` failed Android compilation and iOS linking on the
+  pre-fix desktop-only `findCommandSeparator` regression. The local fix is in
+  `fdab5c7a7`; no post-fix CI run is available because this task must not push.
 - Attempted: local macOS sample launch. It reached the SDL application loop,
   but the available sample setup could not complete interactive input smoke
   because runtime-state creation failed in the temporary launch directory.

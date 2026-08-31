@@ -7,8 +7,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Windows SDL + Skia migration state
 
 - Plan key: `windows-sdl-skia-raster`
-- Active milestone: closed; Windows runtime proof deferred to CI
-- Last implementation commit: `6d01ab5d1 fix(event,windows): guard SDL hotkey hook setup`
+- Active milestone: blocker fixes source-complete; updated CI proof pending
+- Last implementation commit: `f1dbb7827 fix(event,sdl): preserve special-key dispatch semantics`
 - Active paths: `TotalCrossVM/src/event/sdl/event_c.h`,
   `TotalCrossVM/src/event/sdl/specialkeys_c.h`,
   `TotalCrossVM/src/nm/sys/win/Vm_c.h`, `TotalCrossVM/src/init/startup.c`,
@@ -24,7 +24,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   deferred to a Windows-capable lane. Existing macOS build caches are kept
   untouched.
 - Focused validation: `python3 scripts/test-sdl-desktop-contracts.py` passed
-  six focused contract tests; the test-enabled `startup.c` syntax check passed;
+  seven focused contract tests; the test-enabled `startup.c` syntax check passed;
   copyright headers passed for all fourteen affected files; the completed
   range and working-tree `git diff --check` passed; and the native regression
   is wired into the existing `ENABLE_TEST_SUITE` registry. New files remain
@@ -35,9 +35,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Command-line validation: the existing native regression now compares exact
   compacted TCZ and application strings, exercises reserved options before,
   between, and after `/cmd`, and preserves exact near-matches.
-- Shortcut validation: Ctrl+A, Ctrl+C, and Ctrl+V use one SDL keydown-to-key
-  path with raw Ctrl modifiers; ordinary printable text remains on
-  `SDL_TEXTINPUT`, with no general printable-keydown fallback.
+- Shortcut validation: Ctrl+A, Ctrl+C, Ctrl+P, Ctrl+V, Ctrl+X, and Ctrl+Space
+  use one SDL keydown-to-key path with raw Ctrl modifiers; ordinary printable
+  text remains on `SDL_TEXTINPUT`, with no general printable-keydown fallback.
 - Final local validation: the SDL + Skia + Software macOS Release build passed
   with log `/tmp/totalcross-sdl-desktop-final-macos-build-followup2.log`, and
   `TotalCrossSDK/gradlew-agent dist` passed with log
@@ -46,14 +46,18 @@ SPDX-License-Identifier: LGPL-2.1-only
   smoke for both default and fallback, including mixed-DPI monitors and
   native-library event hooks, because this host has no Windows toolchain,
   runtime, or staged Windows artifacts.
-- Blockers: none for source implementation; Windows runtime proof and complete
-  interactive keyboard smoke are deferred to the Windows CI lane. A local
-  macOS sample launch reached the SDL loop but did not complete because its
+- Blockers: source implementation is complete, but updated CI proof is pending.
+  The latest available run at remote SHA `0db8648db` failed Android compilation
+  and iOS linking on the old desktop-only `findCommandSeparator` regression;
+  it predates `fdab5c7a7`, so it cannot validate the fix. Windows runtime proof
+  and complete interactive keyboard smoke remain deferred to CI. A local macOS
+  sample launch reached the SDL loop but did not complete because its
   runtime-state write failed in the available smoke setup.
 - Deliberate out-of-scope local files: existing untracked dependency/generated
   trees and helper scripts outside this plan.
-- Next action: none. Source implementation is closed; Windows runtime proof and
-  complete interactive keyboard smoke remain deferred to CI. Do not push.
+- Next action: obtain CI confirmation for the local commits when they are
+  available to the CI lane; do not push from this task. Then close the plan if
+  Android/iOS pass and no new source issue is reported.
 - Resume command: `sed -n '1,220p' .agent/state/windows-sdl-skia-raster.md`
 
 ## Closure record
@@ -90,6 +94,13 @@ SPDX-License-Identifier: LGPL-2.1-only
   from SDL keydown without changing ordinary text-input ownership.
 - `6d01ab5d1 fix(event,windows): guard SDL hotkey hook setup` installs the
   bridge only after SDL returns a valid native Windows window handle.
+- `fdab5c7a7 fix(runtime): preserve mobile command separator` keeps the exact
+  desktop separator parser while restoring the historical non-desktop lookup
+  semantics so Android/iOS compilation no longer sees a desktop-only helper.
+- `f1dbb7827 fix(event,sdl): preserve special-key dispatch semantics` adds one
+  SDL special-key dispatcher for navigation, rotation, and native hotkeys, and
+  forwards the existing Edit/MultiEdit Ctrl+A/C/P/V/X/Space contract without
+  adding a printable-text fallback.
 - The final source audit and allowed macOS/SDK builds passed. The local sample
   reached the SDL loop but could not complete interactive input smoke because
   runtime-state creation failed in the temporary launch setup. Windows runtime

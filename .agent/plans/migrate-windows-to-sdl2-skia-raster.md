@@ -138,6 +138,12 @@ On resume, read state first, inspect only active paths and the focused diff, the
   macOS SDL + Skia + Software build, and the SDK distribution build. The SDL
   Windows hotkey bridge and Ctrl+A/C/V path are source-validated; Windows
   interactive proof is explicitly deferred to CI.
+- [x] (2026-08-31) Restored the historical non-desktop `" /cmd "` lookup while
+  keeping the exact desktop separator and compaction behavior unchanged.
+- [x] (2026-08-31) Centralized SDL special-key dispatch, restored historical
+  `SK_SCREEN_CHANGE` rotation/minimum-dimension behavior, and covered the
+  existing Ctrl+A/C/P/V/X/Space editing shortcuts without duplicate text
+  events.
 
 ## Current Architecture and Scope
 
