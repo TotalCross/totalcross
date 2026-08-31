@@ -118,6 +118,26 @@ On resume, read state first, inspect only active paths and the focused diff, the
   Windows toolchain nor staged Windows artifacts.
 - [x] (2026-08-26) Reconciled implementation state, validation limitations,
   outcomes, and the factual editorial report.
+- [x] (2026-08-31) Enabled SDL text input lifecycle, moved special-key
+  translation to the SDL backend, and filtered reserved VM options from the
+  application command line while preserving parsing after `/cmd`.
+- [x] (2026-08-31) Passed focused SDL desktop contract tests, copyright/header
+  validation, `git diff --check`, macOS SDL + Skia Release native build, and
+  SDK distribution build. Windows interactive smoke remains deferred because
+  this host has no Windows toolchain/runtime.
+- [x] (2026-08-31) Closed the SDL startup-order gap by activating text input
+  after SDL window creation and passed the incremental macOS native rebuild.
+- [x] (2026-08-31) Preserved raw SDL event modifiers through the shared event
+  layer and kept Windows native hotkey registration on Win32 VK values.
+- [x] (2026-08-31) Separated the composite VM command line from the filtered
+  application payload, removed reserved options after `/cmd`, preserved
+  unrelated arguments and near-matches, and added existing-suite regression
+  coverage.
+- [x] (2026-08-31) Re-ran focused contracts, test-enabled startup syntax,
+  fourteen-file header validation, diff checks, file-size limits, the final
+  macOS SDL + Skia + Software build, and the SDK distribution build. The SDL
+  Windows hotkey bridge and Ctrl+A/C/V path are source-validated; Windows
+  interactive proof is explicitly deferred to CI.
 
 ## Current Architecture and Scope
 
@@ -891,6 +911,13 @@ output size, and screen recreation keeps the SDL window/renderer while
 rebinding the backbuffer and Skia screen canvas. UTF-8 committed text is
 decoded to UTF-16 units, including surrogate pairs.
 
+The final SDL input closure explicitly starts and stops SDL text input, keeps
+`SDL_KEYDOWN` for special/non-text keys, and keeps `SDL_TEXTINPUT` for printable
+Unicode. SDL special-key ownership now includes the desktop function-key
+emulation mappings. Desktop startup parses reserved VM options throughout the
+composite launcher command line but exposes only the filtered payload after
+`/cmd` through `MainWindow.getCommandLine()`.
+
 The default and diagnostic SDL configurations built successfully on macOS
 ARM64, including the affected shared SDL paths. Windows selector checks showed
 the intended default, fallback, diagnostic, and unsupported Native + Skia
@@ -926,3 +953,15 @@ Create/update `.agent/reports/windows-sdl-skia-raster-editorial.md` with the fac
 
 2026-08-26: Initial Luna-oriented ExecPlan. It assumes static SDL2 consumption from totalcross-depot-tools is already complete, preserves Windows Native + Legacy as a fallback, adds SDL + Skia only through the software graphics path, makes event ownership follow windowing, changes the Windows default only after functional bring-up, and then requires HiDPI/lifecycle/pixel/input hardening before the migration is considered complete.
 2026-08-26: Completed the implementation on the available host. Windows runtime and architecture validation remains explicitly deferred rather than inferred from macOS builds.
+2026-08-31: Closed the remaining SDL keyboard, SDL special-key ownership,
+modifier propagation, native Windows hotkey, and command-line exposure
+findings in logical commits. Final focused checks, macOS SDL + Skia build, and
+SDK distribution build passed; Windows interactive proof remains deferred to
+CI.
+2026-08-31: Added the SDL Windows message-hook bridge for native registered
+hotkeys, deterministic full-line VM-option filtering with exact application
+payload regression coverage, and the focused Ctrl+A/C/V keydown path. Final
+macOS SDL + Skia + Software and SDK builds, fourteen-file header validation,
+test-enabled startup syntax, focused contracts, and diff checks passed. The
+local sample reached the SDL loop but could not complete input smoke because
+runtime-state creation failed; Windows runtime proof remains deferred to CI.
