@@ -265,8 +265,10 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
    SDL_VERSION(&windowInfo.version);
    if (SDL_GetWindowWMInfo(window, &windowInfo) == SDL_TRUE
       && windowInfo.subsystem == SDL_SYSWM_WINDOWS)
+   {
       mainHWnd = windowInfo.info.win.window;
-   sdlInstallWindowsMessageHook();
+      sdlInstallWindowsMessageHook();
+   }
 #endif
 
    renderer = SDL_CreateRenderer(window, -1, 0);
