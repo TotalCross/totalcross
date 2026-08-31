@@ -24,6 +24,54 @@ static int32 scaleFingerCount;
 static bool scaleGestureActive;
 static double lastScaleDistance;
 
+#if defined(WIN32) && !defined(WINCE)
+static bool windowsMessageHookInstalled;
+
+PortableSpecialKeys vmWin32KeyToPortable(int32 key);
+
+static void SDLCALL sdlWindowsMessageHook(void *userdata, void *hWnd,
+   unsigned int message, Uint64 wParam, Sint64 lParam)
+{
+   int32 key;
+   Int32Array keys;
+   int32 len;
+
+   UNUSED(userdata);
+   UNUSED(lParam);
+   if (message != WM_HOTKEY || hWnd != (void*)mainHWnd
+      || interceptedSpecialKeys == null)
+      return;
+
+   key = (int32)wParam;
+   keys = interceptedSpecialKeys;
+   len = ARRAYLEN(keys);
+   while (len-- > 0)
+   {
+      if (*keys++ == key)
+      {
+         postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS,
+            vmWin32KeyToPortable(key), 0, 0, -1);
+         return;
+      }
+   }
+}
+
+void sdlInstallWindowsMessageHook()
+{
+   SDL_SetWindowsMessageHook(sdlWindowsMessageHook, null);
+   windowsMessageHookInstalled = true;
+}
+
+void sdlRemoveWindowsMessageHook()
+{
+   if (windowsMessageHookInstalled)
+   {
+      SDL_SetWindowsMessageHook(null, null);
+      windowsMessageHookInstalled = false;
+   }
+}
+#endif
+
 static void postScaleEvent(double scale)
 {
    union

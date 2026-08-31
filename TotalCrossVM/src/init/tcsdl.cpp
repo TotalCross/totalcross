@@ -266,6 +266,7 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
    if (SDL_GetWindowWMInfo(window, &windowInfo) == SDL_TRUE
       && windowInfo.subsystem == SDL_SYSWM_WINDOWS)
       mainHWnd = windowInfo.info.win.window;
+   sdlInstallWindowsMessageHook();
 #endif
 
    renderer = SDL_CreateRenderer(window, -1, 0);
@@ -382,6 +383,7 @@ void TCSDL_DestroyWindow(ScreenSurface screen)
    if (window != NULL)
    {
 #if defined(WIN32) && !defined(WINCE)
+      sdlRemoveWindowsMessageHook();
       mainHWnd = NULL;
 #endif
       SDL_DestroyWindow(window);

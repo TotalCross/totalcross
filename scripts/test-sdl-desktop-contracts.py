@@ -82,6 +82,16 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("*dk = vmPortableKeyToWin32(*keys);", source)
         self.assertIn("key = vmPortableKeyToWin32(key);", source)
         self.assertNotIn("*dk = keyPortable2Device(*keys);", source)
+        event = EVENT.read_text()
+        tcsdl = SDL_INIT.read_text()
+        self.assertIn("SDL_SetWindowsMessageHook", event)
+        self.assertIn("message != WM_HOTKEY", event)
+        self.assertIn("vmWin32KeyToPortable(key)", event)
+        self.assertIn("sdlInstallWindowsMessageHook();", tcsdl)
+        self.assertIn("sdlRemoveWindowsMessageHook();", tcsdl)
+        self.assertIn("SDL_SetWindowsMessageHook(null, null);", event)
+        hook = event[event.index("sdlWindowsMessageHook") :]
+        self.assertNotIn("keyDevice2Portable(key)", hook)
 
     def test_sdl_backend_owns_key_dispatch_before_platform_branches(self):
         source = DISPATCH.read_text()
