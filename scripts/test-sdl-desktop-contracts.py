@@ -14,6 +14,7 @@ EVENT = ROOT / "TotalCrossVM/src/event/sdl/event_c.h"
 DISPATCH = ROOT / "TotalCrossVM/src/event/specialkeys.c"
 SDL_KEYS = ROOT / "TotalCrossVM/src/event/sdl/specialkeys_c.h"
 LINUX_KEYS = ROOT / "TotalCrossVM/src/event/linux/specialkeys_c.h"
+STARTUP = ROOT / "TotalCrossVM/src/init/startup.c"
 
 
 def has_mapping(source, device, portable):
@@ -102,6 +103,23 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("KMOD_LSHIFT", source)
         self.assertIn("KMOD_LCTRL", source)
         self.assertIn("KMOD_LALT", source)
+
+    def test_application_command_line_is_filtered_from_composite_vm_line(self):
+        source = STARTUP.read_text()
+        parser = source[source.index("static bool parseDesktopStartupOptions") :]
+        preparer = source[source.index("static bool prepareDesktopCommandLines") :]
+        for option in ("/scr", "/fullscreen", "/maximized", "/sdlPixelFormat"):
+            self.assertIn(f'"{option}"', source)
+        self.assertIn("while (*read != '\\0')", parser)
+        self.assertNotIn("commandEnd", parser[:parser.index("#endif")])
+        self.assertIn("parseDesktopStartupOptions(vmCommandLine)", preparer)
+        self.assertIn('separator = xstrstr(vmCommandLine, " /cmd ")', preparer)
+        self.assertIn("separator + 6", preparer)
+        self.assertIn("applicationCommandLine", preparer)
+        self.assertIn("commandLineToParse = cmdline == null ? null : applicationCommandLine", source)
+        self.assertIn("xstrncpy(commandLine, c, sizeof(commandLine) - 1)", source)
+
+        self.assertIn("position[optionLength] == ' ' || position[optionLength] == '\\0'", source)
 
 
 if __name__ == "__main__":

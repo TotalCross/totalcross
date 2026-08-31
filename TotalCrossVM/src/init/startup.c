@@ -432,6 +432,24 @@ static bool parseDesktopStartupOptions(CharP command)
    *write = '\0';
    return true;
 }
+
+static bool prepareDesktopCommandLines(CharP vmCommandLine,
+   CharP applicationCommandLine, int32 applicationCommandLineSize)
+{
+   CharP separator;
+
+   if (!parseDesktopStartupOptions(vmCommandLine))
+      return false;
+   separator = xstrstr(vmCommandLine, " /cmd ");
+   if (separator == null)
+   {
+      *applicationCommandLine = '\0';
+      return true;
+   }
+   xstrncpy(applicationCommandLine, separator + 6,
+      applicationCommandLineSize - 1);
+   return true;
+}
 #endif
 
 TC_API int32 startVM(CharP argsOriginal, Context* cOut)
@@ -440,9 +458,14 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    TCZFile loadedTCZ;
    char args[256];
    char argsLower[256];
+#if TC_OS_DESKTOP
+   char vmCommandLine[512];
+   char applicationCommandLine[256] = { 0 };
+#endif
    CharP tczName;
    int32 argsOriginalLen = argsOriginal ? xstrlen(argsOriginal) : 0;
    CharP c;
+   CharP commandLineToParse;
    Context currentContext;
    TCObject name;
 
@@ -452,9 +475,15 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       return 109;
  #endif
 #elif TC_OS_DESKTOP
-   if (argsOriginalLen > 0 && !parseDesktopStartupOptions(argsOriginal))
-      return 110;
-   argsOriginalLen = xstrlen(argsOriginal);
+   if (argsOriginalLen > 0)
+   {
+      xstrncpy(vmCommandLine, argsOriginal, sizeof(vmCommandLine) - 1);
+      if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
+         sizeof(applicationCommandLine)))
+         return 110;
+      argsOriginal = vmCommandLine;
+      argsOriginalLen = xstrlen(vmCommandLine);
+   }
 #endif
 
    xstrncpy(args, argsOriginal, min32(sizeof(args)-1, argsOriginalLen));
@@ -487,10 +516,16 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       cmdline += 6;
    }
 
+#if TC_OS_DESKTOP
+   commandLineToParse = cmdline == null ? null : applicationCommandLine;
+#else
+   commandLineToParse = cmdline;
+#endif
+
    if (cmdline || !*args) // parse the command line
    {
       bool loop = true;
-      if (ALLOW_TEST_SUITE && (!*args || xstrstr(cmdline,"-testsuite")))
+      if (ALLOW_TEST_SUITE && (!*args || xstrstr(commandLineToParse,"-testsuite")))
       {
          #ifdef ENABLE_TEST_SUITE
           initSettings(currentContext, "", null);
@@ -515,19 +550,19 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
          #endif
           return exitProgram(-1);
       }
-      c = cmdline;
-      if (cmdline) 
+      c = commandLineToParse;
+      if (commandLineToParse)
       while (loop)
       {
-         switch (*cmdline++)
+         switch (*commandLineToParse++)
          {
             case 0:
-               cmdline--;
+               commandLineToParse--;
                loop = false;
                break;
             case '-': // possible options
             {
-               switch (toLower(*cmdline++))
+               switch (toLower(*commandLineToParse++))
                {
                   case 't':
                   {
@@ -538,12 +573,12 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
                   case 'p': // required on systems that can't determine the executable directory of the current process
                   {
                      closeDebug(); // close debug file before an appPath change, not terrible :-(
-                     cmdline = nextArgPath(cmdline, appPath);
+                     commandLineToParse = nextArgPath(commandLineToParse, appPath);
                      goto jumpArgument;
                   }
                   break;
 jumpArgument:
-                  c = cmdline;
+                  c = commandLineToParse;
                   default:
                      break;
                }
@@ -556,7 +591,7 @@ jumpArgument:
       while (*c == ' ' && *c != 0)
          c++;
       if (commandLine != null && c != null)
-         xstrcpy(commandLine, c);
+         xstrncpy(commandLine, c, sizeof(commandLine) - 1);
    }
 
 #if defined(ENABLE_TRACE) && (defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)
