@@ -15,6 +15,7 @@ DISPATCH = ROOT / "TotalCrossVM/src/event/specialkeys.c"
 SDL_KEYS = ROOT / "TotalCrossVM/src/event/sdl/specialkeys_c.h"
 LINUX_KEYS = ROOT / "TotalCrossVM/src/event/linux/specialkeys_c.h"
 STARTUP = ROOT / "TotalCrossVM/src/init/startup.c"
+STARTUP_TEST = ROOT / "TotalCrossVM/src/init/startup_test.h"
 SDL_INIT = ROOT / "TotalCrossVM/src/init/tcsdl.cpp"
 WIN_VM = ROOT / "TotalCrossVM/src/nm/sys/win/Vm_c.h"
 
@@ -173,6 +174,10 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("xstrncpy(commandLine, c, sizeof(commandLine) - 1)", source)
 
         self.assertIn("position[optionLength] == ' ' || position[optionLength] == '\\0'", source)
+        test_source = STARTUP_TEST.read_text()
+        self.assertIn('"/cmdlike"', test_source)
+        self.assertIn('"-testsuitelike"', test_source)
+        self.assertIn('xstrstr(filteredApplicationCommandLine, "/cmd") != null', test_source)
 
 
 if __name__ == "__main__":

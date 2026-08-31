@@ -450,6 +450,49 @@ static bool prepareDesktopCommandLines(CharP vmCommandLine,
       applicationCommandLineSize - 1);
    return true;
 }
+
+static bool filterApplicationCommandLine(CharP command, CharP filtered,
+   int32 filteredSize, bool *testSuiteRequested)
+{
+   CharP read = command;
+   CharP write = filtered;
+
+   if (filteredSize <= 0)
+      return false;
+   *testSuiteRequested = false;
+   while (*read != '\0')
+   {
+      if (isStartupOption(command, read, "-t"))
+      {
+         traceOn = true;
+         read += 2;
+         continue;
+      }
+      if (isStartupOption(command, read, "-p"))
+      {
+         CharP path = read + 2;
+         while (*path == ' ')
+            path++;
+         closeDebug();
+         read = nextArgPath(path, appPath);
+         continue;
+      }
+      if (isStartupOption(command, read, "-testsuite"))
+      {
+         *testSuiteRequested = true;
+         read += 10;
+         continue;
+      }
+      *write++ = *read++;
+      if (write - filtered >= filteredSize - 1)
+         return false;
+   }
+   *write = '\0';
+   return true;
+}
+#ifdef ENABLE_TEST_SUITE
+#include "startup_test.h"
+#endif
 #endif
 
 TC_API int32 startVM(CharP argsOriginal, Context* cOut)
@@ -461,6 +504,8 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 #if TC_OS_DESKTOP
    char vmCommandLine[512];
    char applicationCommandLine[256] = { 0 };
+   char filteredApplicationCommandLine[256];
+   bool testSuiteRequested = false;
 #endif
    CharP tczName;
    int32 argsOriginalLen = argsOriginal ? xstrlen(argsOriginal) : 0;
@@ -517,15 +562,30 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    }
 
 #if TC_OS_DESKTOP
-   commandLineToParse = cmdline == null ? null : applicationCommandLine;
+   commandLineToParse = null;
+   if (cmdline != null)
+   {
+      xstrncpy(applicationCommandLine, cmdline,
+         sizeof(applicationCommandLine) - 1);
+      if (!filterApplicationCommandLine(applicationCommandLine,
+         filteredApplicationCommandLine, sizeof(filteredApplicationCommandLine),
+         &testSuiteRequested))
+         return 110;
+      commandLineToParse = filteredApplicationCommandLine;
+   }
 #else
    commandLineToParse = cmdline;
 #endif
 
    if (cmdline || !*args) // parse the command line
    {
-      bool loop = true;
-      if (ALLOW_TEST_SUITE && (!*args || xstrstr(commandLineToParse,"-testsuite")))
+      if (ALLOW_TEST_SUITE && (!*args ||
+#if TC_OS_DESKTOP
+         testSuiteRequested
+#else
+         xstrstr(commandLineToParse,"-testsuite")
+#endif
+         ))
       {
          #ifdef ENABLE_TEST_SUITE
           initSettings(currentContext, "", null);
@@ -550,6 +610,11 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
          #endif
           return exitProgram(-1);
       }
+#if TC_OS_DESKTOP
+      if (commandLineToParse != null)
+         xstrncpy(commandLine, commandLineToParse, sizeof(commandLine) - 1);
+#else
+      bool loop = true;
       c = commandLineToParse;
       if (commandLineToParse)
       while (loop)
@@ -592,6 +657,7 @@ jumpArgument:
          c++;
       if (commandLine != null && c != null)
          xstrncpy(commandLine, c, sizeof(commandLine) - 1);
+#endif
    }
 
 #if defined(ENABLE_TRACE) && (defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)
