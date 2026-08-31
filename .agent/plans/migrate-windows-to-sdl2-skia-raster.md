@@ -144,6 +144,10 @@ On resume, read state first, inspect only active paths and the focused diff, the
   `SK_SCREEN_CHANGE` rotation/minimum-dimension behavior, and covered the
   existing Ctrl+A/C/P/V/X/Space editing shortcuts without duplicate text
   events.
+- [x] (2026-08-31) CI run `33450370159` at `51dde0f43` passed Android and iOS
+  compilation and all other enabled build jobs. The migration is complete;
+  Windows interactive keyboard smoke remains explicitly deferred because this
+  host has no Windows runtime.
 
 ## Current Architecture and Scope
 

@@ -70,10 +70,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   `/tmp/totalcross-sdl-desktop-final-macos-build-followup2.log`.
 - Passed: final `TotalCrossSDK/gradlew-agent dist`; log:
   `/tmp/totalcross-sdk-final-dist-followup2.log`.
-- Observed: CI run [33448669274](https://github.com/TotalCross/totalcross/actions/runs/33448669274)
-  at remote SHA `0db8648db` failed Android compilation and iOS linking on the
-  pre-fix desktop-only `findCommandSeparator` regression. The local fix is in
-  `fdab5c7a7`; no post-fix CI run is available because this task must not push.
+- Passed: CI run [33450370159](https://github.com/TotalCross/totalcross/actions/runs/33450370159)
+  at `51dde0f43` passed Android and iOS compilation, plus macOS, Windows,
+  Linux, and SDK jobs. This confirms the non-desktop startup fix in the pushed
+  branch.
 - Attempted: local macOS sample launch. It reached the SDL application loop,
   but the available sample setup could not complete interactive input smoke
   because runtime-state creation failed in the temporary launch directory.

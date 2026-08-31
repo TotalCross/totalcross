@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Windows SDL + Skia migration state
 
 - Plan key: `windows-sdl-skia-raster`
-- Active milestone: blocker fixes source-complete; updated CI proof pending
+- Active milestone: complete; Windows interactive smoke remains deferred
 - Last implementation commit: `f1dbb7827 fix(event,sdl): preserve special-key dispatch semantics`
 - Active paths: `TotalCrossVM/src/event/sdl/event_c.h`,
   `TotalCrossVM/src/event/sdl/specialkeys_c.h`,
@@ -46,18 +46,16 @@ SPDX-License-Identifier: LGPL-2.1-only
   smoke for both default and fallback, including mixed-DPI monitors and
   native-library event hooks, because this host has no Windows toolchain,
   runtime, or staged Windows artifacts.
-- Blockers: source implementation is complete, but updated CI proof is pending.
-  The latest available run at remote SHA `0db8648db` failed Android compilation
-  and iOS linking on the old desktop-only `findCommandSeparator` regression;
-  it predates `fdab5c7a7`, so it cannot validate the fix. Windows runtime proof
-  and complete interactive keyboard smoke remain deferred to CI. A local macOS
-  sample launch reached the SDL loop but did not complete because its
-  runtime-state write failed in the available smoke setup.
+- Blockers: none for the source implementation or required CI compilation.
+  CI run `33450370159` at `51dde0f43` passed Android and iOS, as well as the
+  macOS, Windows, Linux, and SDK jobs. Windows interactive keyboard smoke and
+  native event-hook runtime behavior remain deferred because this host has no
+  Windows runtime. A local macOS sample launch reached the SDL loop but did not
+  complete because its runtime-state write failed in the available smoke setup.
 - Deliberate out-of-scope local files: existing untracked dependency/generated
   trees and helper scripts outside this plan.
-- Next action: obtain CI confirmation for the local commits when they are
-  available to the CI lane; do not push from this task. Then close the plan if
-  Android/iOS pass and no new source issue is reported.
+- Next action: none. The migration is complete; retain the documented Windows
+  runtime limitation and do not amend or push from this task.
 - Resume command: `sed -n '1,220p' .agent/state/windows-sdl-skia-raster.md`
 
 ## Closure record
@@ -101,6 +99,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   SDL special-key dispatcher for navigation, rotation, and native hotkeys, and
   forwards the existing Edit/MultiEdit Ctrl+A/C/P/V/X/Space contract without
   adding a printable-text fallback.
+- CI run `33450370159` at `51dde0f43` passed Android and iOS compilation and
+  all other enabled build jobs, confirming the non-desktop startup fix.
 - The final source audit and allowed macOS/SDK builds passed. The local sample
   reached the SDL loop but could not complete interactive input smoke because
   runtime-state creation failed in the temporary launch setup. Windows runtime
