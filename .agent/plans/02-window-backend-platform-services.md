@@ -81,8 +81,8 @@ Resume with:
 
 - [x] Milestone 1: introduce explicit Window backend/platform-service contracts.
 - [x] Milestone 2: migrate platform services and eliminate SDL/SIP coupling.
-- [ ] Milestone 3: validate all supported contracts and close; local validation
-  passes, but final-HEAD CI has no available check-run yet.
+- [x] Milestone 3: validate all supported contracts and close; final-HEAD CI
+  passed after correcting the extracted SIP header provenance.
 
 ## Current Architecture and Defect
 
@@ -602,17 +602,23 @@ event adapter. macOS SDL has an explicit no-op service adapter, and native
 macOS no longer falls through to Linux. Android JNI, iOS SIP/safe-area, and
 WinCE behavior remain behind standardized service signatures.
 
-Focused contracts, header validation, whitespace checks, new-file size checks,
-the permitted macOS Release build, and the final SDK distribution build passed.
+Focused contracts, whitespace checks, new-file size checks, the permitted macOS
+Release build, and the final SDK distribution build passed. Header validation
+passes for all touched/new files after applying the validator-required
+provenance chain to the extracted `WindowSIP.h` constants.
 Windows, Linux, Android, iOS, and WinCE builds were intentionally deferred by
 the execution contract. No interactive Windows artifact or runnable macOS
 keyboard sample was available, so interactive keyboard smoke remains deferred.
 
-The functional change is `ab85fa051`, with closure records in `ed78a0d10` and
-the final fixes in `ffdab187f` and `183fc28bb`. The rewritten and new commit
-messages pass the repository format check. GitHub has no check-run for final
-HEAD `183fc28bb` and reports that the SHA is unknown, so the plan remains open
-until its full CI matrix is green; no push was performed.
+The functional change is `ab85fa051`, with closure records in `ed78a0d10`,
+header and safe-area fixes in `ffdab187f` and `183fc28bb`, SIP constant
+centralization in `b2a872553`, and the final header correction in
+`b63a6b64e`. Local contract tests and permitted macOS/SDK builds pass. GitHub
+run `33533439023` for final HEAD passed copyright validation and the full
+supported matrix, including iOS, Windows SDL, Windows Native+Legacy, Android,
+Linux, macOS, and SDK. The cross linux-arm32v7 job is intentionally skipped.
+The plan is complete; no interactive Windows keyboard artifact was available
+for local smoke testing.
 
 At closure summarize only final backend/service composition, Windows SDL
 SIP/input result, macOS explicit dispatch, native compatibility, validations
