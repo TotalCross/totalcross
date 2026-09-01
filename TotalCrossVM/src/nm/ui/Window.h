@@ -11,5 +11,17 @@
 #include "WindowSIP.h"
 
 bool windowBackendSetSize(int32 width, int32 height);
+bool windowResolveStartupSize(
+   int16 appTczAttr,
+   int32 displayWidth,
+   int32 displayHeight,
+   int32 workAreaHeight,
+   int32 commandLineWidth,
+   int32 commandLineHeight,
+   int32 environmentWidth,
+   int32 environmentHeight,
+   int32 *width,
+   int32 *height,
+   bool *tczSizeApplied);
 
 #endif

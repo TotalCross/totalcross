@@ -6,6 +6,7 @@
 
 #include "tcsdl.h"
 #include "../event/sdl/event_sdl.h"
+#include "../nm/ui/Window.h"
 #if defined(WIN32) && !defined(WINCE)
 #include "SDL2/SDL_syswm.h"
 #endif
@@ -142,14 +143,14 @@ bool TCSDL_SetPixelFormatRequest(const char *value)
    return true;
 }
 
-static int32 environmentDimension(const char *name, int32 fallback)
+static int32 environmentDimension(const char *name)
 {
    const char *value = getenv(name);
    if (value == NULL || *value == '\0')
-      return fallback;
+      return -1;
    char *end = NULL;
    long parsed = strtol(value, &end, 10);
-   return end != value && *end == '\0' && parsed > 0 ? (int32)parsed : fallback;
+   return end != value && *end == '\0' && parsed > 0 ? (int32)parsed : -1;
 }
 
 bool TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration *configuration)
@@ -190,11 +191,20 @@ bool TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration *config
    return true;
 }
 
-bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
+bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen, int16 appTczAttr)
 {
    SDL_DisplayMode displayMode;
-   int32 width = 800;
-   int32 height = 600;
+   SDL_Rect displayBounds;
+   SDL_Rect usableBounds;
+   int32 displayWidth = 0;
+   int32 displayHeight = 0;
+   int32 workAreaHeight = 0;
+   int32 width;
+   int32 height;
+   int32 environmentWidth;
+   int32 environmentHeight;
+   bool tczSizeApplied;
+   bool initialFullscreen;
    Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 
 #if defined(WIN32) && !defined(WINCE)
@@ -227,29 +237,51 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
       }
    }
 
-   if (SDL_GetCurrentDisplayMode(0, &displayMode) == 0)
+   if (SDL_GetDisplayBounds(0, &displayBounds) == 0)
    {
-      width = displayMode.w;
-      height = displayMode.h;
+      displayWidth = displayBounds.w;
+      displayHeight = displayBounds.h;
    }
-   width = environmentDimension("TC_WIDTH", width);
-   height = environmentDimension("TC_HEIGHT", height);
-   if (defScrW > 0)
-      width = defScrW;
-   if (defScrH > 0)
-      height = defScrH;
+   if (SDL_GetDisplayUsableBounds(0, &usableBounds) == 0)
+      workAreaHeight = usableBounds.h;
+   if ((displayWidth <= 0 || displayHeight <= 0)
+      && SDL_GetCurrentDisplayMode(0, &displayMode) == 0)
+   {
+      displayWidth = displayMode.w;
+      displayHeight = displayMode.h;
+   }
+   if (displayWidth <= 0 || displayHeight <= 0)
+   {
+      displayWidth = 800;
+      displayHeight = 600;
+   }
+   if (workAreaHeight <= 0)
+      workAreaHeight = displayHeight;
 
-   if (initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
-      || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && fullScreen))
+   environmentWidth = environmentDimension("TC_WIDTH");
+   environmentHeight = environmentDimension("TC_HEIGHT");
+   if (!windowResolveStartupSize(appTczAttr,
+      displayWidth, displayHeight, workAreaHeight,
+      defScrW, defScrH, environmentWidth, environmentHeight,
+      &width, &height, &tczSizeApplied))
+   {
+      fprintf(stderr, "Could not resolve the initial SDL window size.\n");
+      TCSDL_DestroyWindow(screen);
+      return false;
+   }
+
+   initialFullscreen = initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
+      || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && fullScreen);
+   if (initialFullscreen)
       flags |= SDL_WINDOW_FULLSCREEN;
    else if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)
       flags |= SDL_WINDOW_MAXIMIZED;
-   if (tcSettings.resizableWindow != NULL && *tcSettings.resizableWindow)
+   if (!initialFullscreen && (appTczAttr & ATTR_RESIZABLE_WINDOW))
       flags |= SDL_WINDOW_RESIZABLE;
 
-   int32 x = defScrX == -2 ? SDL_WINDOWPOS_CENTERED
+   int32 x = defScrX == -2 || (tczSizeApplied && defScrX == -1) ? SDL_WINDOWPOS_CENTERED
       : defScrX >= 0 ? defScrX : SDL_WINDOWPOS_UNDEFINED;
-   int32 y = defScrY == -2 ? SDL_WINDOWPOS_CENTERED
+   int32 y = defScrY == -2 || (tczSizeApplied && defScrY == -1) ? SDL_WINDOWPOS_CENTERED
       : defScrY >= 0 ? defScrY : SDL_WINDOWPOS_UNDEFINED;
    window = SDL_CreateWindow(title, x, y,
       width, height, flags);

@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
+#include "../Window.h"
+
 void graphicsScreenChange(int32 w, int32 h)
 {
    UNUSED(w)
@@ -67,6 +69,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    int32 windowedWidth, windowedHeight;
    int32 requestedX, requestedY;
    bool defaultX, defaultY;
+   bool tczSizeApplied;
    RECT actualWindowRect;
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
@@ -78,21 +81,21 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->bpp = GetDeviceCaps(deviceContext,BITSPIXEL) * GetDeviceCaps(deviceContext,PLANES);
    DeleteDC(deviceContext);
 
-   if (appTczAttr & ATTR_WINDOWSIZE_320X480) {defScrX=defScrY=-2; width = 320; height = 480;} else
-   if (appTczAttr & ATTR_WINDOWSIZE_480X640) {defScrX=defScrY=-2; width = 480; height = 640;} else
-   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = min32(800,rect.bottom-rect.top);} else
-   {
-      width = defScrW == -1 ? 240 : defScrW;
-      height = defScrH == -1 ? 320 : defScrH;
-   }                                                                                                                          
+   if (!windowResolveStartupSize(appTczAttr,
+      GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+      rect.bottom - rect.top, defScrW, defScrH, -1, -1,
+      &width, &height, &tczSizeApplied))
+      return false;
 #ifdef _DEBUG
    defScrX = defScrY = 0;
 #endif
 
-   defaultX = defScrX == -1;
-   defaultY = defScrY == -1;
-   requestedX = defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
-   requestedY = defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
+   defaultX = defScrX == -1 && !tczSizeApplied;
+   defaultY = defScrY == -1 && !tczSizeApplied;
+   requestedX = defScrX == -2 || (tczSizeApplied && defScrX == -1)
+      ? (rect.left+(rect.right -width )/2) : defScrX;
+   requestedY = defScrY == -2 || (tczSizeApplied && defScrY == -1)
+      ? (rect.top +(rect.bottom-height)/2) : defScrY;
    rect.left = defaultX || defaultY ? CW_USEDEFAULT : requestedX;
    rect.top = defaultX || defaultY ? CW_USEDEFAULT : requestedY;
    rect.bottom = height;
