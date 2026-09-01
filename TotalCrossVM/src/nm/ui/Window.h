@@ -9,7 +9,16 @@
 
 #include "tcvm.h"
 #include "WindowSIP.h"
+#include "WindowStartup.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 bool windowBackendSetSize(int32 width, int32 height);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

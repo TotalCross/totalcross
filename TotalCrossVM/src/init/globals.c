@@ -47,8 +47,10 @@ bool destroyingApplication = false;
 TCObject mainClass = { 0 };  // the instance being executed
 bool isMainWindow = false;   // extends MainWindow ?
 #if TC_OS_DESKTOP
-int32 defScrX = -1, defScrY = -1, defScrW = -1, defScrH = -1;
-TCInitialWindowState initialWindowState = TC_INITIAL_WINDOW_NORMAL;
+TCWindowStartupOptions desktopWindowStartupOptions = {
+   false, -1, -1, -1, -1, -1, -1,
+   TC_INITIAL_WINDOW_NORMAL, false, 0
+};
 #endif
 #if defined(ANDROID)
 JavaVM* androidJVM;
