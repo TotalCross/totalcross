@@ -36,3 +36,7 @@ Append compact records here at logical-commit and milestone checkpoints.
 - 2026-09-01 | `33542462499` | exact-HEAD closure | full enabled Merge Flow
   matrix passed for `036e8ff9e` | Windows SDL and Windows Native+Legacy passed;
   Linux arm32 cross remained intentionally skipped.
+- 2026-09-01 | `33542990738` | final exact-HEAD closure | full enabled Merge
+  Flow matrix passed for `09a239764` | Windows SDL and Windows Native+Legacy,
+  Android, iOS, SDK, macOS, and Linux passed; Linux arm32 cross remained
+  intentionally skipped.

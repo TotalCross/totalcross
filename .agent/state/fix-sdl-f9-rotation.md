@@ -24,8 +24,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Deferred validation: Windows and other platform builds; final macOS VM/
   Launcher build completed; native smoke is `SMOKE_FIXTURE_UNAVAILABLE`
   because `ctest -N` reports zero tests and no runnable desktop fixture exists.
-- CI: remote `Merge flow` run `33542462499` passed its full enabled matrix for
-  `036e8ff9e`, including Windows SDL and Windows Native+Legacy. The
+- CI: remote `Merge flow` run `33542990738` passed its full enabled matrix for
+  `09a239764`, including Windows SDL and Windows Native+Legacy. The
   `linux-arm32v7-cross` job was intentionally skipped by workflow policy.
 - Unrelated local files intentionally left alone: all pre-existing modified or
   untracked `.agent` files, `.vscode/`, generated plist/tcz files, dependency

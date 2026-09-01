@@ -137,6 +137,6 @@ non-amended. Push only when required for exact-HEAD CI.
 Milestones 1 and 2 are implemented in `ece6ee5f7` and `8ea9cd486`; the SDL
 wrapper compile correction is `40d127c46`, the snapshot fix is `500119506`,
 and final SDL confirmation is `b27b7df91`. Focused contracts, the permitted
-macOS VM/Launcher build, and exact-HEAD Merge Flow run `33542462499` passed.
+macOS VM/Launcher build, and exact-HEAD Merge Flow run `33542990738` passed.
 The native smoke inventory remains unavailable because `ctest -N` reports zero
 configured tests.
