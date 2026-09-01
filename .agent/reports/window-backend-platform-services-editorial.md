@@ -17,13 +17,15 @@ no-op services adapter, and native macOS cannot fall through to Linux. Android
 JNI calls and iOS SIP/safe-area implementations remain available behind their
 service adapters; WinCE behavior remains in the Windows-family adapter.
 
-Proof completed: focused source-contract tests, copyright/header validation,
-scoped whitespace validation, and the permitted macOS Release build for
-`tcvm` and `Launcher`. Windows, Linux, Android, iOS, and WinCE builds were not
-run under the plan restrictions. No interactive Windows artifact or runnable
-macOS keyboard sample was available, so keyboard smoke is deferred.
+Proof completed locally: seven source-contract tests, copyright/header
+validation, scoped whitespace and size validation, and the permitted macOS
+Release build for `tcvm` and `Launcher`, plus the SDK `dist` build. Windows,
+Linux, Android, iOS, and WinCE builds remain deferred under the plan
+restrictions. No interactive Windows artifact or runnable macOS keyboard
+sample was available, so keyboard smoke is deferred.
 
-The functional commit is `8afc9cf8d`. Its title is valid, but its body was
-created with a literal escaped newline and exceeds the repository's wrapped
-body-line check. Closure records are committed separately; history was not
-rewritten because the plan forbids amend or rewrite operations.
+The final local revision is `183fc28bb`, following header fix `ffdab187f` and
+rewritten functional/docs commits `ab85fa051` and `ed78a0d10`. All four commit
+messages pass the repository format check. GitHub has no check-run for
+`183fc28bb` and says the SHA is unknown; therefore this handoff is locally
+validated but the plan is not complete until the full CI matrix is green.

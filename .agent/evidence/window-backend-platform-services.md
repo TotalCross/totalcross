@@ -23,3 +23,17 @@ SPDX-License-Identifier: LGPL-2.1-only
   new-file size checks passed. Final macOS incremental build passed with log
   `/tmp/window-backend-macos-final-build.log`; SDK `dist` passed with log
   `/tmp/window-backend-sdk-dist.log`.
+- 2026-09-01 | `ffdab187f` | closure fix | header policy | PASS |
+  Android and Darwin new service headers now use only the 2026 Amalgam header
+  and LGPL-2.1-only line; focused header validation passed.
+- 2026-09-01 | `183fc28bb` | closure fix | safe-area contract | PASS |
+  macOS, Linux, and Windows/WinCE no-op adapters explicitly assign all four
+  insets to zero. The focused contract suite passed with 7 tests.
+- 2026-09-01 | `183fc28bb` | final validation | PASS |
+  all touched/new header checks, range/worktree diff checks, size checks, final
+  macOS build (`/tmp/window-backend-macos-closure.log`), and SDK `dist`
+  (`/tmp/window-backend-sdk-closure.log`) passed.
+- 2026-09-01 | `183fc28bb` | CI gate | NOT AVAILABLE |
+  GitHub API returned `No commit found for SHA`; `gh run list --commit`
+  returned no runs. The full matrix cannot be considered green without a push
+  or another external CI run.

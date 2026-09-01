@@ -81,7 +81,8 @@ Resume with:
 
 - [x] Milestone 1: introduce explicit Window backend/platform-service contracts.
 - [x] Milestone 2: migrate platform services and eliminate SDL/SIP coupling.
-- [x] Milestone 3: validate all supported contracts and close.
+- [ ] Milestone 3: validate all supported contracts and close; local validation
+  passes, but final-HEAD CI has no available check-run yet.
 
 ## Current Architecture and Defect
 
@@ -607,11 +608,11 @@ Windows, Linux, Android, iOS, and WinCE builds were intentionally deferred by
 the execution contract. No interactive Windows artifact or runnable macOS
 keyboard sample was available, so interactive keyboard smoke remains deferred.
 
-The functional change is `8afc9cf8d`; closure documentation is recorded in the
-follow-up documentation commit. The functional commit's title passed, but its
-body contains a literal escaped newline and exceeds the repository's body-line
-limit. History was not rewritten because this plan forbids amend or rewrite
-operations.
+The functional change is `ab85fa051`, with closure records in `ed78a0d10` and
+the final fixes in `ffdab187f` and `183fc28bb`. The rewritten and new commit
+messages pass the repository format check. GitHub has no check-run for final
+HEAD `183fc28bb` and reports that the SHA is unknown, so the plan remains open
+until its full CI matrix is green; no push was performed.
 
 At closure summarize only final backend/service composition, Windows SDL
 SIP/input result, macOS explicit dispatch, native compatibility, validations
