@@ -11,14 +11,136 @@
 #endif
 
 #include <cmath>
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 
-static const Uint32 TCSDL_PIXEL_FORMAT = SDL_PIXELFORMAT_ARGB8888;
+enum TCSDLRequestedPixelFormat
+{
+   TCSDL_PIXEL_FORMAT_AUTO,
+   TCSDL_PIXEL_FORMAT_ARGB8888_REQUEST,
+   TCSDL_PIXEL_FORMAT_RGB565_REQUEST
+};
+
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 static SDL_Window *window;
 static bool sdlInitialized;
+static TCSDLRequestedPixelFormat requestedPixelFormat = TCSDL_PIXEL_FORMAT_AUTO;
+static bool commandLinePixelFormatSet;
+static Uint32 selectedPixelFormat = SDL_PIXELFORMAT_UNKNOWN;
+
+static bool equalsIgnoreCase(const char *value, const char *expected)
+{
+   while (*value != '\0' && *expected != '\0')
+   {
+      if (std::tolower((unsigned char)*value) != std::tolower((unsigned char)*expected))
+         return false;
+      value++;
+      expected++;
+   }
+   return *value == '\0' && *expected == '\0';
+}
+
+static bool parsePixelFormat(const char *value, TCSDLRequestedPixelFormat *parsed)
+{
+   if (equalsIgnoreCase(value, "auto"))
+      *parsed = TCSDL_PIXEL_FORMAT_AUTO;
+   else if (equalsIgnoreCase(value, "argb8888"))
+      *parsed = TCSDL_PIXEL_FORMAT_ARGB8888_REQUEST;
+   else if (equalsIgnoreCase(value, "rgb565"))
+      *parsed = TCSDL_PIXEL_FORMAT_RGB565_REQUEST;
+   else
+      return false;
+   return true;
+}
+
+static Uint32 requestedSDLFormat(TCSDLRequestedPixelFormat requested)
+{
+   return requested == TCSDL_PIXEL_FORMAT_ARGB8888_REQUEST ? SDL_PIXELFORMAT_ARGB8888
+      : requested == TCSDL_PIXEL_FORMAT_RGB565_REQUEST ? SDL_PIXELFORMAT_RGB565
+      : SDL_PIXELFORMAT_UNKNOWN;
+}
+
+static bool isSupportedPixelFormat(Uint32 format)
+{
+   return format == SDL_PIXELFORMAT_ARGB8888 || format == SDL_PIXELFORMAT_RGB565;
+}
+
+static bool rendererSupportsPixelFormat(Uint32 format)
+{
+   SDL_RendererInfo info;
+   if (SDL_GetRendererInfo(renderer, &info) != 0 || info.num_texture_formats <= 0)
+      return true;
+   for (Uint32 i = 0; i < info.num_texture_formats; ++i)
+      if (info.texture_formats[i] == format)
+         return true;
+   return false;
+}
+
+static SDL_Texture *createStreamingTexture(Uint32 format, int width, int height)
+{
+   if (!rendererSupportsPixelFormat(format))
+   {
+      SDL_SetError("renderer does not advertise this texture format");
+      return NULL;
+   }
+   return SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, width, height);
+}
+
+static bool addCandidate(Uint32 *candidates, int *count, Uint32 candidate)
+{
+   if (!isSupportedPixelFormat(candidate))
+      return false;
+   for (int i = 0; i < *count; ++i)
+      if (candidates[i] == candidate)
+         return false;
+   candidates[(*count)++] = candidate;
+   return true;
+}
+
+static bool selectPixelFormat(ScreenSurface screen)
+{
+   Uint32 candidates[3];
+   int candidateCount = 0;
+   if (requestedPixelFormat == TCSDL_PIXEL_FORMAT_AUTO)
+   {
+      addCandidate(candidates, &candidateCount, SDL_GetWindowPixelFormat(window));
+      addCandidate(candidates, &candidateCount, SDL_PIXELFORMAT_ARGB8888);
+      addCandidate(candidates, &candidateCount, SDL_PIXELFORMAT_RGB565);
+   }
+   else
+      addCandidate(candidates, &candidateCount, requestedSDLFormat(requestedPixelFormat));
+
+   for (int i = 0; i < candidateCount; ++i)
+   {
+      texture = createStreamingTexture(candidates[i], screen->screenW, screen->screenH);
+      if (texture != NULL)
+      {
+         selectedPixelFormat = candidates[i];
+         return true;
+      }
+      if (requestedPixelFormat != TCSDL_PIXEL_FORMAT_AUTO)
+      {
+         fprintf(stderr, "SDL_CreateTexture(%s): %s\n",
+            SDL_GetPixelFormatName(candidates[i]), SDL_GetError());
+         return false;
+      }
+   }
+   fprintf(stderr, "SDL_CreateTexture(): no supported streaming pixel format: %s\n",
+      SDL_GetError());
+   return false;
+}
+
+bool TCSDL_SetPixelFormatRequest(const char *value)
+{
+   TCSDLRequestedPixelFormat parsed;
+   if (!parsePixelFormat(value, &parsed))
+      return false;
+   requestedPixelFormat = parsed;
+   commandLinePixelFormatSet = true;
+   return true;
+}
 
 static int32 environmentDimension(const char *name, int32 fallback)
 {
@@ -89,6 +211,22 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
    }
    sdlInitialized = true;
 
+   if (!commandLinePixelFormatSet)
+   {
+      const char *value = getenv("TC_SDL_PIXEL_FORMAT");
+      TCSDLRequestedPixelFormat parsed;
+      if (value != NULL && *value != '\0')
+      {
+         if (parsePixelFormat(value, &parsed))
+            requestedPixelFormat = parsed;
+         else
+         {
+            requestedPixelFormat = TCSDL_PIXEL_FORMAT_AUTO;
+            fprintf(stderr, "Ignoring invalid TC_SDL_PIXEL_FORMAT; expected auto, argb8888, or rgb565.\n");
+         }
+      }
+   }
+
    if (SDL_GetCurrentDisplayMode(0, &displayMode) == 0)
    {
       width = displayMode.w;
@@ -96,13 +234,24 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
    }
    width = environmentDimension("TC_WIDTH", width);
    height = environmentDimension("TC_HEIGHT", height);
+   if (defScrW > 0)
+      width = defScrW;
+   if (defScrH > 0)
+      height = defScrH;
 
-   if (fullScreen)
+   if (initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
+      || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && fullScreen))
       flags |= SDL_WINDOW_FULLSCREEN;
+   else if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)
+      flags |= SDL_WINDOW_MAXIMIZED;
    if (tcSettings.resizableWindow != NULL && *tcSettings.resizableWindow)
       flags |= SDL_WINDOW_RESIZABLE;
 
-   window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+   int32 x = defScrX == -2 ? SDL_WINDOWPOS_CENTERED
+      : defScrX >= 0 ? defScrX : SDL_WINDOWPOS_UNDEFINED;
+   int32 y = defScrY == -2 ? SDL_WINDOWPOS_CENTERED
+      : defScrY >= 0 ? defScrY : SDL_WINDOWPOS_UNDEFINED;
+   window = SDL_CreateWindow(title, x, y,
       width, height, flags);
    if (window == NULL)
    {
@@ -153,26 +302,53 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
    return true;
 }
 
+bool TCSDL_SetFullscreen(bool fullscreen)
+{
+   if (window == NULL)
+      return false;
+   return SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) == 0;
+}
+
 bool TCSDL_CreateBackBuffer(ScreenSurface screen)
 {
    if (screen == NULL || SCREEN_EX(screen) == NULL || renderer == NULL
       || screen->screenW <= 0 || screen->screenH <= 0)
       return false;
 
-   screen->bpp = 32;
-   screen->pitch = screen->screenW * sizeof(Pixel32);
-   screen->pixelformat = TCSDL_PIXEL_FORMAT;
-   screen->pixels = (uint8*)xmalloc((size_t)screen->pitch * screen->screenH);
-   if (screen->pixels == NULL)
-      return false;
-
-   texture = SDL_CreateTexture(renderer, TCSDL_PIXEL_FORMAT, SDL_TEXTUREACCESS_STREAMING,
-      screen->screenW, screen->screenH);
-   if (texture == NULL)
+   if (selectedPixelFormat == SDL_PIXELFORMAT_UNKNOWN)
    {
-      xfree(screen->pixels);
-      screen->pixels = NULL;
-      fprintf(stderr, "SDL_CreateTexture(): %s\n", SDL_GetError());
+      if (!selectPixelFormat(screen))
+         return false;
+   }
+   else
+   {
+      texture = createStreamingTexture(selectedPixelFormat, screen->screenW, screen->screenH);
+      if (texture == NULL)
+      {
+         fprintf(stderr, "SDL_CreateTexture(%s): %s\n",
+            SDL_GetPixelFormatName(selectedPixelFormat), SDL_GetError());
+         return false;
+      }
+   }
+
+   SDL_PixelFormat *format = SDL_AllocFormat(selectedPixelFormat);
+   if (format == NULL)
+   {
+      fprintf(stderr, "SDL_AllocFormat(%s): %s\n",
+         SDL_GetPixelFormatName(selectedPixelFormat), SDL_GetError());
+      SDL_DestroyTexture(texture);
+      texture = NULL;
+      return false;
+   }
+   screen->bpp = format->BitsPerPixel;
+   screen->pitch = format->BytesPerPixel * screen->screenW;
+   screen->pixelformat = selectedPixelFormat;
+   screen->pixels = (uint8*)xmalloc((size_t)screen->pitch * screen->screenH);
+   SDL_FreeFormat(format);
+   if (screen->pixels == NULL)
+   {
+      SDL_DestroyTexture(texture);
+      texture = NULL;
       return false;
    }
    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
@@ -217,6 +393,7 @@ void TCSDL_DestroyWindow(ScreenSurface screen)
       SDL_DestroyWindow(window);
       window = NULL;
    }
+   selectedPixelFormat = SDL_PIXELFORMAT_UNKNOWN;
    if (screen != NULL && screen->extension != NULL)
    {
       xfree(screen->extension);

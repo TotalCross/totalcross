@@ -191,29 +191,6 @@ static bool isWakeUpCall(CharP args)
    return false;
 }
 
-#if !defined(WINCE)
-int32 defScrX=-1,defScrY=-1,defScrW=-1,defScrH=-1;
-static CharP parseScreenBounds(CharP cmd, int32 *xx, int32 *yy, int32 *ww, int32 *hh)
-{
-   CharP scr = xstrstr(cmd, "/scr"),s2;
-   int n;
-   if (!scr) return null;
-   n = sscanf(scr + 5,"%d,%d,%d,%d", xx, yy, ww, hh);
-   if (n != 4)
-   {
-      alert("Format: <other arguments> /scr x,y,width,height\nPass -1 to use the default and -2 to center on screen.\nEx: \"/scr -2,100,320,-1\"\nwill open a window horizontally centered at\ny=100, w=320, h=320 (default is 0,0,240,320).");
-      return null;
-   }
-   *scr = 0; // cut at the scr
-   while (scr > cmd && *(scr-1) == ' ') // trim
-      *(scr-1) = 0;
-   s2 = xstrstr(cmd, " /cmd"); // if only /cmd remained at end, remove it.
-   if (s2 == scr-6)
-      *s2 = 0;
-   return cmd;
-}
-#endif
-
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged); // GraphicsPrimitives_c.h
 
 void appSetFullScreen();
