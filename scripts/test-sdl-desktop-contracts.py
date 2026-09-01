@@ -148,6 +148,12 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertNotIn("screenApplyConfiguration(", helper)
         pending = helper.index("pendingScreenRotationOrientation = screenOrientation(width, height)")
         resize = helper.index("TCSDL_SetWindowSize(height, width)")
+        guard = helper.index(
+            "if (pendingScreenRotationOrientation != 0)\n"
+            "         return;"
+        )
+        self.assertLess(guard, helper.index("TCSDL_GetWindowSize(&screen, &width, &height)"))
+        self.assertLess(guard, pending)
         self.assertLess(pending, resize)
         self.assertIn("postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS", helper)
         keyboard = source[source.index("static void handleKeyboardEvent") :
