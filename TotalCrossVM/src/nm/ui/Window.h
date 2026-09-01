@@ -9,26 +9,13 @@
 
 #include "tcvm.h"
 #include "WindowSIP.h"
+#include "WindowStartup.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 bool windowBackendSetSize(int32 width, int32 height);
-bool windowResolveStartupSize(
-   int16 appTczAttr,
-   bool commandLineSizeProvided,
-   bool fullscreenDefault,
-   int32 displayWidth,
-   int32 displayHeight,
-   int32 workAreaHeight,
-   int32 commandLineWidth,
-   int32 commandLineHeight,
-   int32 environmentWidth,
-   int32 environmentHeight,
-   int32 *width,
-   int32 *height,
-   bool *tczSizeApplied);
 
 #ifdef __cplusplus
 }

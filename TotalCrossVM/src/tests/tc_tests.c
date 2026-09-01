@@ -176,7 +176,7 @@ void test_tuMW_getCommandLine(struct TestSuite *tc, Context currentContext);// n
 void test_tuMW_setTimerInterval_i(struct TestSuite *tc, Context currentContext);// nm/ui/MainWindow_test.h
 void test_tuW_pumpEvents(struct TestSuite *tc, Context currentContext);// nm/ui/Window_test.h
 void test_tuW_setSIP_icb(struct TestSuite *tc, Context currentContext);// nm/ui/Window_test.h
-void test_windowResolveStartupSize(struct TestSuite *tc, Context currentContext);// nm/ui/Window_test.h
+void test_windowResolveStartupConfiguration(struct TestSuite *tc, Context currentContext);// nm/ui/Window_test.h
 void test_tueE_isAvailable(struct TestSuite *tc, Context currentContext);// nm/ui/event_Event_test.h
 void test_startup_filterApplicationCommandLine(struct TestSuite *tc, Context currentContext);// init/startup_test.h
 void test_tufFM_charWidth_c(struct TestSuite *tc, Context currentContext);// nm/ui/font_FontMetrics_test.h - depends on testtufFM_fontMetricsCreate
@@ -710,7 +710,7 @@ void fillTestCaseArray(testFunc *tests)
    tests[345] = test__str2int64;
    tests[346] = test_VM_Cleanup;
    tests[347] = test_startup_filterApplicationCommandLine;
-   tests[348] = test_windowResolveStartupSize;
+   tests[348] = test_windowResolveStartupConfiguration;
 }
 
 void startTestSuite(Context currentContext)

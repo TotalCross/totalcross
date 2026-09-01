@@ -52,10 +52,6 @@ void getScreenSize(int32 *w, int32* h)
 #endif
 }
 
-#if !defined(WINCE)
-extern int32 defScrX,defScrY,defScrW,defScrH;
-#endif
-
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
    DWORD style;
@@ -65,12 +61,14 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    HANDLE instance = GetModuleHandle(0);
    char* dot;
    HDC deviceContext;
-   bool resizableWindow = appTczAttr & ATTR_RESIZABLE_WINDOW;
+   bool resizableWindow;
    int32 windowedWidth, windowedHeight;
    int32 requestedX, requestedY;
    bool defaultX, defaultY;
-   bool tczSizeApplied;
    RECT actualWindowRect;
+   TCDisplayMetrics display;
+   TCWindowStartupOptions startupOptions = desktopWindowStartupOptions;
+   TCWindowStartupConfiguration configuration;
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
 
@@ -81,30 +79,36 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->bpp = GetDeviceCaps(deviceContext,BITSPIXEL) * GetDeviceCaps(deviceContext,PLANES);
    DeleteDC(deviceContext);
 
-   if (!windowResolveStartupSize(appTczAttr,
-      defScrSpecified, false,
-      GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
-      rect.bottom - rect.top, defScrW, defScrH, -1, -1,
-      &width, &height, &tczSizeApplied))
+   display.width = GetSystemMetrics(SM_CXSCREEN);
+   display.height = GetSystemMetrics(SM_CYSCREEN);
+   display.usableWidth = rect.right - rect.left;
+   display.usableHeight = rect.bottom - rect.top;
+   startupOptions.appTczAttr = appTczAttr;
+   startupOptions.legacyFullscreen = *tcSettings.isFullScreenPtr;
+   windowLoadStartupEnvironment(&startupOptions);
+   if (!windowResolveStartupConfiguration(&startupOptions, &display, &configuration))
       return false;
-#ifdef _DEBUG
-   defScrX = defScrY = 0;
-#endif
-
-   defaultX = defScrX == -1 && !tczSizeApplied;
-   defaultY = defScrY == -1 && !tczSizeApplied;
-   requestedX = defScrX == -2 || (tczSizeApplied && defScrX == -1)
-      ? (rect.left+(rect.right -width )/2) : defScrX;
-   requestedY = defScrY == -2 || (tczSizeApplied && defScrY == -1)
-      ? (rect.top +(rect.bottom-height)/2) : defScrY;
-   rect.left = defaultX || defaultY ? CW_USEDEFAULT : requestedX;
-   rect.top = defaultX || defaultY ? CW_USEDEFAULT : requestedY;
+   width = configuration.width;
+   height = configuration.height;
+   resizableWindow = configuration.resizable;
+   defaultX = configuration.xMode == TC_WINDOW_POSITION_DEFAULT;
+   defaultY = configuration.yMode == TC_WINDOW_POSITION_DEFAULT;
+   requestedX = configuration.xMode == TC_WINDOW_POSITION_CENTER
+      ? rect.left + (rect.right - rect.left - width) / 2 : configuration.x;
+   requestedY = configuration.yMode == TC_WINDOW_POSITION_CENTER
+      ? rect.top + (rect.bottom - rect.top - height) / 2 : configuration.y;
+   rect.left = defaultX ? CW_USEDEFAULT : requestedX;
+   rect.top = defaultY ? CW_USEDEFAULT : requestedY;
    rect.bottom = height;
    rect.right = width;
-   adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom);
+   if (!configuration.fullscreen)
+      adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom);
 
-   style |= WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
-   if (resizableWindow) style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
+   if (!configuration.fullscreen)
+   {
+      style |= WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
+      if (resizableWindow) style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
+   }
 #else
    SystemParametersInfo(SPI_GETWORKAREA, 0, &defaultWorkingArea, 0);
    deviceContext = GetDC(mainHWnd);
@@ -142,7 +146,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
       rect.left = defaultX ? actualWindowRect.left : requestedX;
       rect.top = defaultY ? actualWindowRect.top : requestedY;
    }
-   if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)
+   if (configuration.maximized)
       ShowWindow(mainHWnd, SW_MAXIMIZE);
 #endif
 
@@ -150,7 +154,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenY = rect.top;
    GetClientRect(mainHWnd, &rect);
 #if !defined(WINCE)
-   if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)
+   if (configuration.maximized)
    {
       width = rect.right - rect.left;
       height = rect.bottom - rect.top;

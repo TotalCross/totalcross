@@ -11,16 +11,11 @@ TESTCASE(startup_filterApplicationCommandLine)
       "/scrSomething /cmdlike -testsuitelike";
    char applicationCommandLine[256];
    char oldAppPath[MAX_PATHNAME];
-   int32 oldDefScrX = defScrX;
-   int32 oldDefScrY = defScrY;
-   int32 oldDefScrW = defScrW;
-   int32 oldDefScrH = defScrH;
-   bool oldDefScrSpecified = defScrSpecified;
-   TCInitialWindowState oldWindowState = initialWindowState;
+   TCWindowStartupOptions oldStartupOptions = desktopWindowStartupOptions;
    DesktopCommandLineOptions desktopCommandLineOptions;
 
    xstrcpy(oldAppPath, appPath);
-   initialWindowState = TC_INITIAL_WINDOW_NORMAL;
+   desktopWindowStartupOptions.initialState = TC_INITIAL_WINDOW_NORMAL;
    if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
       sizeof(applicationCommandLine), &desktopCommandLineOptions))
    {
@@ -31,10 +26,12 @@ TESTCASE(startup_filterApplicationCommandLine)
       || !desktopCommandLineOptions.traceRequested
       || !desktopCommandLineOptions.pathRequested
       || xstrcmp(desktopCommandLineOptions.path, "/tmp/app") != 0
-      || defScrX != -2 || defScrY != -2
-      || defScrW != 800 || defScrH != 600
-      || !defScrSpecified
-      || initialWindowState != TC_INITIAL_WINDOW_FULLSCREEN)
+      || desktopWindowStartupOptions.x != -2
+      || desktopWindowStartupOptions.y != -2
+      || desktopWindowStartupOptions.width != 800
+      || desktopWindowStartupOptions.height != 600
+      || !desktopWindowStartupOptions.screenSpecified
+      || desktopWindowStartupOptions.initialState != TC_INITIAL_WINDOW_FULLSCREEN)
    {
       TEST_FAIL(tc, "Desktop VM options were not parsed correctly");
       goto cleanup;
@@ -51,12 +48,14 @@ TESTCASE(startup_filterApplicationCommandLine)
 
    xstrcpy(vmCommandLine,
       "App.tcz /cmd /admin W DEBUG /scr -2, -2, 480, 720");
-   initialWindowState = TC_INITIAL_WINDOW_NORMAL;
+   desktopWindowStartupOptions.initialState = TC_INITIAL_WINDOW_NORMAL;
    if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
       sizeof(applicationCommandLine), &desktopCommandLineOptions)
-      || defScrX != -2 || defScrY != -2
-      || defScrW != 480 || defScrH != 720
-      || !defScrSpecified
+      || desktopWindowStartupOptions.x != -2
+      || desktopWindowStartupOptions.y != -2
+      || desktopWindowStartupOptions.width != 480
+      || desktopWindowStartupOptions.height != 720
+      || !desktopWindowStartupOptions.screenSpecified
       || xstrcmp(vmCommandLine, "App.tcz /cmd /admin W DEBUG") != 0
       || xstrcmp(applicationCommandLine, "/admin W DEBUG") != 0)
    {
@@ -66,12 +65,7 @@ TESTCASE(startup_filterApplicationCommandLine)
 
 cleanup:
    xstrcpy(appPath, oldAppPath);
-   defScrX = oldDefScrX;
-   defScrY = oldDefScrY;
-   defScrW = oldDefScrW;
-   defScrH = oldDefScrH;
-   defScrSpecified = oldDefScrSpecified;
-   initialWindowState = oldWindowState;
+   desktopWindowStartupOptions = oldStartupOptions;
 #else
    TEST_SKIP;
 #endif

@@ -159,6 +159,7 @@ NM_UI_FILES =                                 \
 	$(TC_SRCDIR)/nm/ui/media_MediaClip.c       \
 	$(TC_SRCDIR)/nm/ui/media_Camera.c          \
 	$(TC_SRCDIR)/nm/ui/Window.c
+	$(TC_SRCDIR)/nm/ui/WindowStartup.c
 
 NM_UTIL_FILES =                               \
 	$(TC_SRCDIR)/nm/util/concurrent_Lock.c     \
