@@ -170,3 +170,22 @@ interactive smoke. The implementation and closure documentation commits retain
 commit-message mirror warnings caused by overlong body lines because the
 requested non-amended history was preserved; the final empty closure checkpoint
 passes the mirror.
+
+## Final startup correctness closure
+
+- Passed: `204306bdf` corrects TCZ centering after environment precedence;
+  positioning is centered only when a TCZ dimension remains in use.
+- Passed: `python3 scripts/test-sdl-desktop-contracts.py` with 16 focused
+  desktop and SDL startup contract tests.
+- Passed: the opt-in `window_startup_native_test` executable was built and
+  run; it directly executes `test_windowResolveStartupConfiguration`.
+- Passed: source/test copyright-header validation and `git diff --check`.
+- Passed: macOS SDL + Skia + Software Release `tcvm`/`Launcher` build; log:
+  `/tmp/desktop-startup-final-macos-build.log`.
+- Passed: exact-head [Merge Flow run 33563499168](https://github.com/TotalCross/totalcross/actions/runs/33563499168)
+  for `204306bdf99556e75f098b9d2796292e9a6d8710`; all enabled Android, iOS,
+  macOS, Windows, Linux, and SDK jobs passed, and the intentionally disabled
+  Linux ARM32 cross job was skipped.
+- Not run: the broad native test suite, because enabling it exposes unrelated
+  pre-existing `objectmemorymanager_test.h` compilation errors. The focused
+  resolver executable provides the required direct test execution.

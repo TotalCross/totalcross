@@ -169,6 +169,12 @@ On resume, read state first, inspect only active paths and the focused diff, the
   environment loading, size/position precedence, and fullscreen/maximized/
   resizable resolution. SDL and Native Windows translate one resolved
   configuration, and WinCE remains on its existing native path.
+- [x] (2026-09-01) Corrected TCZ centering after environment precedence in
+  `204306bdf`: TCZ positioning is centered only when a TCZ dimension remains
+  in use. Added executable resolver coverage for environment overrides,
+  `/scr`, all TCZ sizes, fullscreen defaults, and resizable states. Focused
+  contracts, headers, the native executable, the macOS build, and exact-head
+  Merge Flow `33563499168` passed for `204306bdf`.
 
 ## Current Architecture and Scope
 
@@ -1038,3 +1044,14 @@ documentation commits retain overlong body lines because the requested
 non-amended history was preserved; the final empty closure checkpoint passes
 the message mirror. Windows architecture/runtime and interactive smoke remain
 deferred because this host has no Windows toolchain or runtime.
+2026-09-01: Corrected TCZ centering after environment overrides in
+`204306bdf`. The resolver now centers only when a TCZ dimension is actually
+used, and the opt-in `window_startup_native_test` executable runs the complete
+resolver table. Focused contracts (16 tests), source/test headers, diff checks,
+the executable, and the macOS SDL + Skia + Software Release build passed.
+Exact-head Merge Flow `33563499168` passed for
+`204306bdf99556e75f098b9d2796292e9a6d8710`; all enabled jobs passed and the
+intentionally disabled Linux ARM32 cross job was skipped. The broad native
+suite remains unselected because its unrelated existing
+`objectmemorymanager_test.h` calls do not compile on this host. Windows
+interactive smoke remains deferred because this host has no Windows runtime.

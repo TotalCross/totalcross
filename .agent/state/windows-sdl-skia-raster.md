@@ -7,17 +7,18 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Windows SDL + Skia migration state
 
 - Plan key: `windows-sdl-skia-raster`
-- Active milestone: complete; desktop startup sizing correctness follow-up
+- Active milestone: complete; final desktop startup correctness follow-up
   complete; Windows interactive smoke remains deferred
-- Last logical commits: `7a8a11ffd refactor(windowing): centralize desktop
-  startup policy`, `e562e0501 fix(windowing): preserve WinCE startup
-  compatibility`, and `a47d1d1a8 build(cmake): include shared startup source`
+- Last logical commit: `204306bdf fix(windowing): correct TCZ startup
+  centering`; preceding startup-policy commits remain
+  `7a8a11ffd`, `e562e0501`, and `a47d1d1a`.
 - Active paths: `TotalCrossVM/src/nm/ui/WindowStartup.h`,
   `TotalCrossVM/src/nm/ui/WindowStartup.c`, `TotalCrossVM/src/init/globals.c`,
   `TotalCrossVM/src/init/globals.h`, `TotalCrossVM/src/init/startup.c`,
   `TotalCrossVM/src/init/tcsdl.cpp`,
   `TotalCrossVM/src/nm/ui/win/gfx_Graphics_c.h`, startup tests, CMake/Android
-  source lists, and `scripts/test-sdl-desktop-contracts.py`.
+  source lists, `TotalCrossVM/src/tests/window_startup_native_test.c`, and
+  `scripts/test-sdl-desktop-contracts.py`.
 - Starting prerequisite: confirmed the pinned depot checkout is at
   `118ff8925b165c79de87cd2d69f562b570b1ebd5`, `deps.yml` pins SDL
   `sdl2-2.32.8`, and the CMake path consumes `SDL2::SDL2` and `Skia::Skia`.
@@ -26,10 +27,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   deferred to a Windows-capable lane. Existing macOS build caches are kept
   untouched.
 - Focused validation: `python3 scripts/test-sdl-desktop-contracts.py` passed
-  16 focused contract tests; the macOS SDL + Skia + Software `tcvm`/`Launcher`
-  build passed; copyright headers passed for all 13 affected files;
-  `git diff --check --cached` passed for the implementation commits; and the
-  final closure checkpoint passed the authoritative commit validator.
+  16 focused contract tests; the opt-in `window_startup_native_test`
+  executable built and ran `test_windowResolveStartupConfiguration`; the
+  macOS SDL + Skia + Software `tcvm`/`Launcher` build passed; source/test
+  copyright headers passed; and staged diff checks passed.
 - Hotkey bridge validation: SDL’s Windows message-hook install/remove points,
   `WM_HOTKEY` filtering, Win32 reverse mapping, and separation from SDL key
   translation are covered by the focused contract suite.
@@ -41,22 +42,23 @@ SPDX-License-Identifier: LGPL-2.1-only
   text remains on `SDL_TEXTINPUT`, with no general printable-keydown fallback.
 - Final local validation: the SDL + Skia + Software macOS Release `tcvm` and
   `Launcher` build passed with log
-  `/tmp/desktop-window-startup-sizing-correctness-macos-build.log`.
+  `/tmp/desktop-startup-final-macos-build.log`; the native resolver executable
+  passed with log `/tmp/desktop-startup-native-test-exec-run.log`.
 - Deferred validation: Windows x86/x64/ARM64 configure/build/link and runtime
   smoke for both default and fallback, including mixed-DPI monitors and
   native-library event hooks, because this host has no Windows toolchain,
   runtime, or staged Windows artifacts.
 - Blockers: none for the source implementation or required CI compilation.
-  Exact-HEAD Merge Flow run `33555763139` at
-  `6501430ad5f13ce5c696f98f785a2173366ff981` passed Android, iOS, macOS,
+  Exact-HEAD Merge Flow run `33563499168` at
+  `204306bdf99556e75f098b9d2796292e9a6d8710` passed Android, iOS, macOS,
   Windows, Linux, and SDK jobs; the intentionally disabled Linux ARM32 cross
   job was skipped. Windows interactive keyboard smoke and native event-hook
   runtime behavior remain deferred because this host has no Windows runtime.
 - Deliberate out-of-scope local files: existing untracked dependency/generated
   trees and helper scripts outside this plan.
-- Next action: none. The final shared startup-policy refactor is complete;
-  retain the documented Windows runtime limitation and do not amend the
-  logical commits.
+- Next action: none. The final desktop startup correctness follow-up is
+  complete; retain the documented Windows runtime limitation and do not amend
+  or rewrite the logical commits.
 - Resume command: `sed -n '1,220p' .agent/state/windows-sdl-skia-raster.md`
 
 ## Closure record
@@ -106,3 +108,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   reached the SDL loop but could not complete interactive input smoke because
   runtime-state creation failed in the temporary launch setup. Windows runtime
   and interactive keyboard proof remain explicitly deferred to CI.
+- `204306bdf fix(windowing): correct TCZ startup centering` fixes TCZ position
+  modes after environment overrides and adds the executable resolver test
+  target. Its focused checks, macOS build, and exact-head Merge Flow
+  `33563499168` passed. The broad native suite was not enabled because of
+  unrelated pre-existing `objectmemorymanager_test.h` compilation errors.
