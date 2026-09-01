@@ -1,7 +1,16 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
+
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+{
+   UNUSED(lpReserved)
+   if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+      hModuleTCVM = hModule;
+   return TRUE;
+}
 
 TC_API DWORD TSV_Close(DWORD dwData) {return 0;}
 TC_API DWORD TSV_Deinit(DWORD dwData) {return 0;}
