@@ -364,14 +364,18 @@ cont:
                if (keysMatch(*keys, key))
                {
                   key = keyDevice2Portable(*keys);
-                     if (key == SK_SCREEN_CHANGE)
+                  if (key == SK_SCREEN_CHANGE)
+                  {
+                     int32 targetWidth = *tcSettings.screenHeightPtr;
+                     int32 targetHeight = *tcSettings.screenWidthPtr;
+                     int32 targetHRes = *tcSettings.screenHeightInDPIPtr;
+                     int32 targetVRes = *tcSettings.screenWidthInDPIPtr;
+                     if (targetWidth != targetHeight)
                      {
-                        if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
-                        {
-                           windowBackendSetSize(*tcSettings.screenHeightPtr,
-                              *tcSettings.screenWidthPtr);
-                           screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
-                        }
+                        windowBackendSetSize(targetWidth, targetHeight);
+                        screenChange(mainContext, targetWidth, targetHeight,
+                           targetHRes, targetVRes, false);
+                     }
                   }
                   else
                   {
@@ -392,12 +396,16 @@ cont:
                else
                if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
                {
+                  int32 targetWidth = *tcSettings.screenHeightPtr;
+                  int32 targetHeight = *tcSettings.screenWidthPtr;
+                  int32 targetHRes = *tcSettings.screenHeightInDPIPtr;
+                  int32 targetVRes = *tcSettings.screenWidthInDPIPtr;
                   int t = screen.minScreenW;
                   screen.minScreenW = screen.minScreenH;
                   screen.minScreenH = t;
-                  windowBackendSetSize(*tcSettings.screenHeightPtr,
-                     *tcSettings.screenWidthPtr);
-                  screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
+                  windowBackendSetSize(targetWidth, targetHeight);
+                  screenChange(mainContext, targetWidth, targetHeight,
+                     targetHRes, targetVRes, false);
                }
             }
          }
