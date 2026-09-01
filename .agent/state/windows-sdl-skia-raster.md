@@ -28,8 +28,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Focused validation: `python3 scripts/test-sdl-desktop-contracts.py` passed
   16 focused contract tests; the macOS SDL + Skia + Software `tcvm`/`Launcher`
   build passed; copyright headers passed for all 13 affected files;
-  `git diff --check --cached` passed for both logical commits; and the second
-  commit passed the authoritative commit validator.
+  `git diff --check --cached` passed for the implementation commits; and the
+  final closure checkpoint passed the authoritative commit validator.
 - Hotkey bridge validation: SDL’s Windows message-hook install/remove points,
   `WM_HOTKEY` filtering, Win32 reverse mapping, and separation from SDL key
   translation are covered by the focused contract suite.

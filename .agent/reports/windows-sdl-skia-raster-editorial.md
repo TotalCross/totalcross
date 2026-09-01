@@ -166,6 +166,7 @@ TotalCross GPU backend or context was added; Skia’s existing GLES code remains
 conditional on `TC_GRAPHICS_GLES`.
 
 The host still has no Windows toolchain/runtime for architecture builds or
-interactive smoke. The first refactor commit retains a commit-message mirror
-warning caused by literal escaped newlines because the requested non-amended
-history was preserved; the compatibility follow-up commit passes the mirror.
+interactive smoke. The implementation and closure documentation commits retain
+commit-message mirror warnings caused by overlong body lines because the
+requested non-amended history was preserved; the final empty closure checkpoint
+passes the mirror.

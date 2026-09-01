@@ -1033,8 +1033,8 @@ deferred because this host has no Windows runtime.
 2026-09-01: Completed the final shared desktop startup-policy refactor in
 `7a8a11ffd` and added the WinCE compatibility guard in `e562e0501`. Focused
 contracts, 13-file header validation, staged diff checks, and the macOS SDL +
-Skia + Software `tcvm`/`Launcher` build passed. The first commit's local
-message mirror reported an overlong body caused by literal escaped newlines;
-history was preserved without amendment, and the follow-up commit's message
-passes the mirror. Windows architecture/runtime and interactive smoke remain
+Skia + Software `tcvm`/`Launcher` build passed. The implementation and closure
+documentation commits retain overlong body lines because the requested
+non-amended history was preserved; the final empty closure checkpoint passes
+the message mirror. Windows architecture/runtime and interactive smoke remain
 deferred because this host has no Windows toolchain or runtime.
