@@ -8,7 +8,9 @@
 #include "WindowSafeArea.h"
 #include "GraphicsPrimitives.h"
 
-#if defined (WINCE) || defined (WIN32)
+#if TC_WINDOWING_SDL && defined (WIN32) && !defined (WINCE)
+ #include "sdl/Window_c.h"
+#elif defined (WINCE) || defined (WIN32)
  #include "win/Window_c.h"
 #elif defined (darwin)
  #include "darwin/Window_c.h"
