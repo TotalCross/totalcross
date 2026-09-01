@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -237,6 +238,112 @@ void vmSetAutoOff(bool enable)
 
 //////////// START OF KEY INTERCEPTION FUNCTIONS
 //XXX: O que s�o hot keys? N�o fa�o a menor id�ia do que fazer aqui e acho que nem faz sentido
+static int32 vmPortableKeyToWin32(PortableSpecialKeys key)
+{
+   switch (key)
+   {
+      case SK_PAGE_UP       : return VK_PRIOR;
+      case SK_PAGE_DOWN     : return VK_NEXT;
+      case SK_HOME          : return VK_HOME;
+      case SK_END           : return VK_END;
+      case SK_UP            : return VK_UP;
+      case SK_DOWN          : return VK_DOWN;
+      case SK_LEFT          : return VK_LEFT;
+      case SK_RIGHT         : return VK_RIGHT;
+      case SK_INSERT        : return VK_INSERT;
+      case SK_ENTER         : return VK_RETURN;
+      case SK_TAB           : return VK_TAB;
+      case SK_BACKSPACE     : return VK_BACK;
+      case SK_ESCAPE        : return VK_ESCAPE;
+      case SK_DELETE        : return VK_DELETE;
+      case SK_MENU          : return VK_F6;
+      case SK_KEYBOARD_ABC  : return VK_F11;
+      case SK_HARD1         : return VK_F1;
+      case SK_HARD2         : return VK_F2;
+      case SK_HARD3         : return VK_F3;
+      case SK_HARD4         : return VK_F4;
+      case SK_CALC          : return VK_F7;
+      case SK_FIND          : return VK_F8;
+      case SK_ACTION        : return VK_F12;
+      case SK_SCREEN_CHANGE : return VK_F9;
+      case SK_F1            : return VK_F1;
+      case SK_F2            : return VK_F2;
+      case SK_F3            : return VK_F3;
+      case SK_F4            : return VK_F4;
+      case SK_F5            : return VK_F5;
+      case SK_F6            : return VK_F6;
+      case SK_F7            : return VK_F7;
+      case SK_F8            : return VK_F8;
+      case SK_F9            : return VK_F9;
+      case SK_F10           : return VK_F10;
+      case SK_F11           : return VK_F11;
+      case SK_F12           : return VK_F12;
+      case SK_F13           : return VK_F13;
+      case SK_F14           : return VK_F14;
+      case SK_F15           : return VK_F15;
+      case SK_F16           : return VK_F16;
+      case SK_F17           : return VK_F17;
+      case SK_F18           : return VK_F18;
+      case SK_F19           : return VK_F19;
+      case SK_F20           : return VK_F20;
+      case SK_F21           : return VK_F21;
+      case SK_F22           : return VK_F22;
+      case SK_F23           : return VK_F23;
+      case SK_F24           : return VK_F24;
+      default:
+         break;
+   }
+   return key < 0 ? -key : key;
+}
+
+PortableSpecialKeys vmWin32KeyToPortable(int32 key)
+{
+   switch (key)
+   {
+      case VK_PRIOR : return SK_PAGE_UP;
+      case VK_NEXT  : return SK_PAGE_DOWN;
+      case VK_HOME  : return SK_HOME;
+      case VK_END   : return SK_END;
+      case VK_UP    : return SK_UP;
+      case VK_DOWN  : return SK_DOWN;
+      case VK_LEFT  : return SK_LEFT;
+      case VK_RIGHT : return SK_RIGHT;
+      case VK_INSERT: return SK_INSERT;
+      case VK_RETURN: return SK_ENTER;
+      case VK_TAB   : return SK_TAB;
+      case VK_BACK  : return SK_BACKSPACE;
+      case VK_ESCAPE: return SK_ESCAPE;
+      case VK_DELETE: return SK_DELETE;
+      case VK_F1    : return SK_HARD1;
+      case VK_F2    : return SK_HARD2;
+      case VK_F3    : return SK_HARD3;
+      case VK_F4    : return SK_HARD4;
+      case VK_F5    : return SK_F5;
+      case VK_F6    : return SK_MENU;
+      case VK_F7    : return SK_CALC;
+      case VK_F8    : return SK_FIND;
+      case VK_F9    : return SK_SCREEN_CHANGE;
+      case VK_F10   : return SK_HOME;
+      case VK_F11   : return SK_KEYBOARD_ABC;
+      case VK_F12   : return SK_ACTION;
+      case VK_F13   : return SK_F13;
+      case VK_F14   : return SK_F14;
+      case VK_F15   : return SK_F15;
+      case VK_F16   : return SK_F16;
+      case VK_F17   : return SK_F17;
+      case VK_F18   : return SK_F18;
+      case VK_F19   : return SK_F19;
+      case VK_F20   : return SK_F20;
+      case VK_F21   : return SK_F21;
+      case VK_F22   : return SK_F22;
+      case VK_F23   : return SK_F23;
+      case VK_F24   : return SK_F24;
+      default:
+         break;
+   }
+   return (PortableSpecialKeys)key;
+}
+
 void registerHotkeys(Int32Array keys, bool isRegister)
 {
    if (mainHWnd != null)
@@ -304,7 +411,7 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
       {
          // map the TotalCross keys into the device-specific keys
          for (; len-- > 0; keys++, dk++)
-            *dk = keyPortable2Device(*keys);
+            *dk = vmPortableKeyToWin32(*keys);
          registerHotkeys(interceptedSpecialKeys, true);
       }
    }
@@ -387,7 +494,7 @@ static TCObject vmClipboardPaste(Context currentContext)
 
 static bool vmIsKeyDown(int32 key)
 {
-   key = keyPortable2Device(key);
+   key = vmPortableKeyToWin32(key);
    return (GetAsyncKeyState(key) & 0x8000) != 0;
 }
 

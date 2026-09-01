@@ -27,6 +27,10 @@ extern "C" {
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
     void TCSDL_Present();
     void TCSDL_GetWindowSize(ScreenSurface screen, int32* width, int32* height);
+#if defined(WIN32) && !defined(WINCE)
+    void sdlInstallWindowsMessageHook();
+    void sdlRemoveWindowsMessageHook();
+#endif
 
 #ifdef __cplusplus
 }

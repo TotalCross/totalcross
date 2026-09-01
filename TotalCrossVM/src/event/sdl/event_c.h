@@ -8,6 +8,7 @@
 #include "SDL2/SDL.h"
 #endif
 #include "../../init/tcsdl.h"
+#include "event_sdl.h"
 
 #define MAX_SCALE_FINGERS 2
 
@@ -23,6 +24,71 @@ static ScaleFinger scaleFingers[MAX_SCALE_FINGERS];
 static int32 scaleFingerCount;
 static bool scaleGestureActive;
 static double lastScaleDistance;
+
+static void dispatchPortableSpecialKey(PortableSpecialKeys key, int32 modifiers)
+{
+   if (key == SK_SCREEN_CHANGE)
+   {
+      if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
+      {
+         int32 minimum = screen.minScreenW;
+         screen.minScreenW = screen.minScreenH;
+         screen.minScreenH = minimum;
+         screenChange(mainContext, *tcSettings.screenHeightPtr,
+            *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr,
+            *tcSettings.screenWidthInDPIPtr, false);
+      }
+   }
+   else
+      postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0, modifiers);
+}
+
+#if defined(WIN32) && !defined(WINCE)
+static bool windowsMessageHookInstalled;
+
+PortableSpecialKeys vmWin32KeyToPortable(int32 key);
+
+static void SDLCALL sdlWindowsMessageHook(void *userdata, void *hWnd,
+   unsigned int message, Uint64 wParam, Sint64 lParam)
+{
+   int32 key;
+   Int32Array keys;
+   int32 len;
+
+   UNUSED(userdata);
+   UNUSED(lParam);
+   if (message != WM_HOTKEY || hWnd != (void*)mainHWnd
+      || interceptedSpecialKeys == null)
+      return;
+
+   key = (int32)wParam;
+   keys = interceptedSpecialKeys;
+   len = ARRAYLEN(keys);
+   while (len-- > 0)
+   {
+      if (*keys++ == key)
+      {
+         dispatchPortableSpecialKey(vmWin32KeyToPortable(key), -1);
+         return;
+      }
+   }
+}
+
+void sdlInstallWindowsMessageHook()
+{
+   SDL_SetWindowsMessageHook(sdlWindowsMessageHook, null);
+   windowsMessageHookInstalled = true;
+}
+
+void sdlRemoveWindowsMessageHook()
+{
+   if (windowsMessageHookInstalled)
+   {
+      SDL_SetWindowsMessageHook(null, null);
+      windowsMessageHookInstalled = false;
+   }
+}
+#endif
 
 static void postScaleEvent(double scale)
 {
@@ -72,11 +138,13 @@ static void beginScaleGesture()
    {
       scaleGestureActive = true;
       lastScaleDistance = getScaleDistance();
+#if !__APPLE__
       if (isDragging)
       {
          isDragging = false;
          postEvent(mainContext, PENEVENT_PEN_UP, 0, 10000, 10000, -1);
       }
+#endif
       postEvent(mainContext, MULTITOUCHEVENT_SCALE, 1, 0, 0, -1);
    }
 }
@@ -93,9 +161,8 @@ static void endScaleGesture()
 
 bool privateIsEventAvailable()
 {
-   SDL_Event event;
-   return SDL_PeepEvents(&event, 1, SDL_PEEKEVENT,
-      SDL_FIRSTEVENT, SDL_LASTEVENT) > 0;
+   // Pump native events while checking availability without consuming them.
+   return SDL_PollEvent(NULL);
 }
 
 static void handleFingerTouchEvent(SDL_Event event)
@@ -127,11 +194,13 @@ static void handleFingerTouchEvent(SDL_Event event)
          }
          if (scaleFingerCount >= MAX_SCALE_FINGERS)
             beginScaleGesture();
+#if !__APPLE__
          else
          {
             isDragging = true;
             postEvent(mainContext, PENEVENT_PEN_DOWN, 0, x, y, -1);
          }
+#endif
          break;
       }
       case SDL_FINGERUP:
@@ -147,11 +216,13 @@ static void handleFingerTouchEvent(SDL_Event event)
                break;
             }
          }
+#if !__APPLE__
          if (!scaleGestureActive)
          {
             isDragging = false;
             postEvent(mainContext, PENEVENT_PEN_UP, 0, x, y, -1);
          }
+#endif
          break;
       }
       case SDL_FINGERMOTION:
@@ -178,7 +249,6 @@ static void handleFingerTouchEvent(SDL_Event event)
 
 static void handleMouseEvent(SDL_Event event)
 {
-   int32 timestamp = getTimeStamp();
    switch (event.type)
    {
       case SDL_MOUSEBUTTONDOWN:
@@ -186,7 +256,7 @@ static void handleMouseEvent(SDL_Event event)
          {
             isDragging = true;
             postEvent(mainContext, PENEVENT_PEN_DOWN, 0,
-               event.button.x, event.button.y, timestamp);
+               event.button.x, event.button.y, -1);
          }
          break;
       case SDL_MOUSEBUTTONUP:
@@ -194,31 +264,51 @@ static void handleMouseEvent(SDL_Event event)
          {
             isDragging = false;
             postEvent(mainContext, PENEVENT_PEN_UP, 0,
-               event.button.x, event.button.y, timestamp);
+               event.button.x, event.button.y, -1);
          }
          break;
       case SDL_MOUSEMOTION:
          if (event.motion.state & SDL_BUTTON_LMASK)
             postEvent(mainContext, PENEVENT_PEN_DRAG, 0,
-               event.motion.x, event.motion.y, timestamp);
+               event.motion.x, event.motion.y, -1);
          else
             postEvent(mainContext, MOUSEEVENT_MOUSE_MOVE, 0,
-               event.motion.x, event.motion.y, timestamp);
+               event.motion.x, event.motion.y, -1);
          break;
+   }
+}
+
+static bool isControlShortcut(int32 key, int32 modifiers)
+{
+   if ((modifiers & KMOD_CTRL) == 0)
+      return false;
+   switch (key)
+   {
+      case SDLK_a:
+      case SDLK_c:
+      case SDLK_p:
+      case SDLK_v:
+      case SDLK_x:
+      case SDLK_SPACE:
+         return true;
+      default:
+         return false;
    }
 }
 
 static void handleKeyboardEvent(SDL_Event event)
 {
-   int key, modifier;
+   int key;
    if (event.type == SDL_KEYDOWN)
    {
       key = keyDevice2Portable(event.key.keysym.sym);
-      modifier = (int)keyGetPortableModifiers(event.key.keysym.mod);
       if (showKeyCodes)
          printf("Event keysym: %d\n", event.key.keysym.sym);
       if (key != event.key.keysym.sym)
-         postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0, modifier);
+         dispatchPortableSpecialKey(key, event.key.keysym.mod);
+      else if (isControlShortcut(event.key.keysym.sym, event.key.keysym.mod))
+         postEvent(mainContext, KEYEVENT_KEY_PRESS, event.key.keysym.sym,
+            0, 0, event.key.keysym.mod);
    }
 }
 
@@ -253,7 +343,7 @@ static void postTextCodePoint(uint32 codePoint, int32 modifier)
 static void handleTextInputEvent(SDL_Event event)
 {
    const uint8 *text = (const uint8*)event.text.text;
-   int32 modifier = (int32)keyGetPortableModifiers(SDL_GetModState());
+   int32 modifier = SDL_GetModState();
    while (*text != '\0')
    {
       uint32 codePoint;
@@ -382,6 +472,16 @@ void privatePumpEvent(Context currentContext)
 bool privateInitEvent()
 {
    return true;
+}
+
+void sdlEventWindowCreated(void)
+{
+   SDL_StartTextInput();
+}
+
+void sdlEventWindowDestroying(void)
+{
+   SDL_StopTextInput();
 }
 
 void privateDestroyEvent()
