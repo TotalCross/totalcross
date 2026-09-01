@@ -69,7 +69,7 @@ static bool pumpEvent(Context currentContext)
       privatePumpEvent(currentContext);
    checkTimer(currentContext);
 sleep:
-#if !TC_OS_APPLE
+#if !TC_OS_IOS
    Sleep(1); // avoid 100% cpu - important on Android!
 #endif   
    return ok;

@@ -30,6 +30,14 @@ def has_mapping(source, device, portable):
 
 
 class SDLDesktopContractTests(unittest.TestCase):
+    def test_event_loop_throttle_excludes_only_ios(self):
+        source = EVENT_DISPATCH.read_text()
+        pump = source[source.index("static bool pumpEvent") :
+                      source.index("bool isEventAvailable")]
+        self.assertRegex(pump, r"#if !TC_OS_IOS\s+Sleep\(1\);")
+        self.assertNotIn("TC_OS_APPLE", pump)
+        self.assertNotIn("#ifndef darwin", pump)
+
     def test_keyboard_event_lifecycle_keeps_text_and_special_paths(self):
         source = EVENT.read_text()
         self.assertIn("case SDL_KEYDOWN:", source)
