@@ -11,6 +11,12 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EVENT = ROOT / "TotalCrossVM/src/event/sdl/event_c.h"
+WINDOW = ROOT / "TotalCrossVM/src/nm/ui/Window.c"
+WINDOW_H = ROOT / "TotalCrossVM/src/nm/ui/Window.h"
+SDL_WINDOW = ROOT / "TotalCrossVM/src/nm/ui/sdl/Window_c.h"
+WIN_WINDOW = ROOT / "TotalCrossVM/src/nm/ui/win/Window_c.h"
+WIN_GFX = ROOT / "TotalCrossVM/src/nm/ui/win/gfx_Graphics_c.h"
+GRAPHICS = ROOT / "TotalCrossVM/src/nm/ui/GraphicsPrimitives_c.h"
 DISPATCH = ROOT / "TotalCrossVM/src/event/specialkeys.c"
 EVENT_DISPATCH = ROOT / "TotalCrossVM/src/event/Event.c"
 SDL_KEYS = ROOT / "TotalCrossVM/src/event/sdl/specialkeys_c.h"
@@ -18,6 +24,7 @@ LINUX_KEYS = ROOT / "TotalCrossVM/src/event/linux/specialkeys_c.h"
 STARTUP = ROOT / "TotalCrossVM/src/init/startup.c"
 STARTUP_TEST = ROOT / "TotalCrossVM/src/init/startup_test.h"
 SDL_INIT = ROOT / "TotalCrossVM/src/init/tcsdl.cpp"
+SDL_HEADER = ROOT / "TotalCrossVM/src/init/tcsdl.h"
 SDL_EVENT_HEADER = ROOT / "TotalCrossVM/src/event/sdl/event_sdl.h"
 WIN_VM = ROOT / "TotalCrossVM/src/nm/sys/win/Vm_c.h"
 
@@ -136,12 +143,74 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr", helper)
         self.assertIn("screen.minScreenW", helper)
         self.assertIn("screen.minScreenH", helper)
-        self.assertIn("screenChange(mainContext", helper)
+        self.assertIn("TCSDL_GetWindowSize(&screen, &width, &height)", helper)
+        self.assertIn("TCSDL_SetWindowSize(height, width)", helper)
+        self.assertNotIn("screenChange(", helper)
+        self.assertNotIn("screenChangeCommitted(", helper)
+        self.assertNotIn("screenApplyConfiguration(", helper)
         self.assertIn("postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS", helper)
         keyboard = source[source.index("static void handleKeyboardEvent") :
                            source.index("static void handleWheelEvent")]
         self.assertIn("dispatchPortableSpecialKey(key, event.key.keysym.mod)", keyboard)
         self.assertNotIn("KEYEVENT_SPECIALKEY_PRESS, key", keyboard)
+
+    def test_sdl_rotation_uses_one_event_driven_hidpi_commit(self):
+        event = EVENT.read_text()
+        resize = event[event.index("case SDL_WINDOWEVENT_SIZE_CHANGED") :
+                       event.index("case SDL_WINDOWEVENT_MINIMIZED")]
+        for operation in (
+            "TCSDL_QueryWindowMetrics(&screen, &configuration)",
+            "screenApplyConfiguration(",
+            "screenConsumePendingChanges(&screen)",
+            "screenChangeCommitted(mainContext, changes)",
+        ):
+            self.assertIn(operation, resize)
+        self.assertEqual(1, resize.count("screenChangeCommitted("))
+        helper = event[event.index("static void dispatchPortableSpecialKey") :
+                       event.index("#if defined(WIN32)")]
+        self.assertNotIn("screenChangeCommitted(", helper)
+        self.assertNotIn("graphicsDestroy(", helper)
+
+        sdl = SDL_INIT.read_text()
+        metrics = sdl[sdl.index("bool TCSDL_QueryWindowMetrics") :
+                      sdl.index("bool TCSDL_Init")]
+        self.assertIn("SDL_GetWindowSize(window, &logicalWidth, &logicalHeight)", metrics)
+        self.assertIn("SDL_GetRendererOutputSize(renderer, &physicalWidth, &physicalHeight)", metrics)
+        self.assertIn("configuration->width = physicalWidth", metrics)
+        self.assertIn("configuration->height = physicalHeight", metrics)
+        self.assertNotIn("tcSettings.screenWidthPtr", metrics)
+
+    def test_window_backends_own_resize_and_native_rotation(self):
+        window = WINDOW.read_text()
+        header = WINDOW_H.read_text()
+        sdl_window = SDL_WINDOW.read_text()
+        win_window = WIN_WINDOW.read_text()
+        graphics = GRAPHICS.read_text()
+        win_graphics = WIN_GFX.read_text()
+
+        self.assertIn("bool windowBackendSetSize(int32 width, int32 height)", header)
+        self.assertIn("return windowBackendSetSizeImpl(width, height);", window)
+        self.assertIn("TCSDL_SetWindowSize(width, height)", sdl_window)
+        self.assertIn("void adjustWindowSizeWithBorders", win_window)
+        self.assertIn("SetWindowPos(mainHWnd, 0, 0, 0, width, height", win_window)
+        self.assertNotIn("privateScreenChange", graphics)
+        self.assertNotIn("privateScreenChange", win_graphics)
+        graphics_hook = win_graphics[:win_graphics.index("#if defined (WINCE)")]
+        self.assertNotIn("adjustWindowSizeWithBorders", graphics_hook)
+
+        native_event = (ROOT / "TotalCrossVM/src/event/win/event_c.h").read_text()
+        self.assertIn("windowBackendSetSize(*tcSettings.screenHeightPtr", native_event)
+        self.assertIn("screenChange(mainContext, *tcSettings.screenHeightPtr", native_event)
+
+    def test_tcsdl_window_size_operation_is_generic(self):
+        header = SDL_HEADER.read_text()
+        source = SDL_INIT.read_text()
+        operation = source[source.index("bool TCSDL_SetWindowSize") :
+                           source.index("bool TCSDL_CreateBackBuffer")]
+        self.assertIn("bool TCSDL_SetWindowSize(int32 width, int32 height)", header)
+        self.assertIn("SDL_SetWindowSize(window, width, height)", operation)
+        self.assertNotIn("screenChange", operation)
+        self.assertNotIn("F9", operation)
 
     def test_sdl_backend_owns_key_dispatch_before_platform_branches(self):
         source = DISPATCH.read_text()

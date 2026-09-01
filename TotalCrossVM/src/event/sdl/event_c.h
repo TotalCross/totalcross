@@ -29,14 +29,17 @@ static void dispatchPortableSpecialKey(PortableSpecialKeys key, int32 modifiers)
 {
    if (key == SK_SCREEN_CHANGE)
    {
+      int32 width;
+      int32 height;
       if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
       {
+         TCSDL_GetWindowSize(&screen, &width, &height);
+         if (width <= 0 || height <= 0 || width == height)
+            return;
          int32 minimum = screen.minScreenW;
          screen.minScreenW = screen.minScreenH;
          screen.minScreenH = minimum;
-         screenChange(mainContext, *tcSettings.screenHeightPtr,
-            *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr,
-            *tcSettings.screenWidthInDPIPtr, false);
+         TCSDL_SetWindowSize(height, width);
       }
    }
    else
