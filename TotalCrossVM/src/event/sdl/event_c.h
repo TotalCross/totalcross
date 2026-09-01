@@ -56,6 +56,8 @@ static void dispatchPortableSpecialKey(PortableSpecialKeys key, int32 modifiers)
    {
       int32 width;
       int32 height;
+      if (pendingScreenRotationOrientation != 0)
+         return;
       TCSDL_GetWindowSize(&screen, &width, &height);
       if (width <= 0 || height <= 0 || width == height)
          return;
