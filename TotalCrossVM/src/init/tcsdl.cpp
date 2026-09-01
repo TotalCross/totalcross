@@ -311,9 +311,14 @@ bool TCSDL_SetFullscreen(bool fullscreen)
 
 bool TCSDL_SetWindowSize(int32 width, int32 height)
 {
+   int actualWidth;
+   int actualHeight;
+
    if (window == NULL || width <= 0 || height <= 0)
       return false;
-   return SDL_SetWindowSize(window, width, height) == 0;
+   SDL_SetWindowSize(window, width, height);
+   SDL_GetWindowSize(window, &actualWidth, &actualHeight);
+   return actualWidth == width && actualHeight == height;
 }
 
 bool TCSDL_CreateBackBuffer(ScreenSurface screen)
