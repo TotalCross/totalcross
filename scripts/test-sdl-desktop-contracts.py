@@ -18,6 +18,7 @@ LINUX_KEYS = ROOT / "TotalCrossVM/src/event/linux/specialkeys_c.h"
 STARTUP = ROOT / "TotalCrossVM/src/init/startup.c"
 STARTUP_TEST = ROOT / "TotalCrossVM/src/init/startup_test.h"
 SDL_INIT = ROOT / "TotalCrossVM/src/init/tcsdl.cpp"
+SDL_EVENT_HEADER = ROOT / "TotalCrossVM/src/event/sdl/event_sdl.h"
 WIN_VM = ROOT / "TotalCrossVM/src/nm/sys/win/Vm_c.h"
 
 
@@ -33,13 +34,28 @@ class SDLDesktopContractTests(unittest.TestCase):
         source = EVENT.read_text()
         self.assertIn("case SDL_KEYDOWN:", source)
         self.assertIn("case SDL_TEXTINPUT:", source)
-        init = source[source.index("bool privateInitEvent()") :]
-        self.assertIn("SDL_StartTextInput();", init[:init.index("void privateDestroyEvent()")])
-        self.assertIn("SDL_StopTextInput();", init[init.index("void privateDestroyEvent()"):])
+        init = source[source.index("bool privateInitEvent()") :
+                      source.index("void sdlEventWindowCreated(void)")]
+        destroy = source[source.index("void privateDestroyEvent()") :]
+        self.assertNotIn("SDL_StartTextInput();", init)
+        self.assertNotIn("SDL_StopTextInput();", destroy)
+        self.assertIn("SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);", destroy)
+        self.assertIn("void sdlEventWindowCreated(void)", source)
+        self.assertIn("void sdlEventWindowDestroying(void)", source)
+        header = SDL_EVENT_HEADER.read_text()
+        self.assertIn("void sdlEventWindowCreated(void);", header)
+        self.assertIn("void sdlEventWindowDestroying(void);", header)
         sdl_init = SDL_INIT.read_text()
         window_creation = sdl_init.index("window = SDL_CreateWindow")
-        self.assertLess(sdl_init.index("SDL_StartTextInput();", window_creation),
-                        sdl_init.index("#if defined(WIN32)", window_creation))
+        created = sdl_init.index("sdlEventWindowCreated();", window_creation)
+        self.assertGreater(created, sdl_init.index("return false;", window_creation))
+        self.assertLess(created, sdl_init.index("renderer = SDL_CreateRenderer", window_creation))
+        self.assertNotIn("SDL_StartTextInput();", sdl_init)
+        window_destruction = sdl_init.index("void TCSDL_DestroyWindow")
+        destroying = sdl_init.index("sdlEventWindowDestroying();", window_destruction)
+        destroyed = sdl_init.index("SDL_DestroyWindow(window)", window_destruction)
+        self.assertLess(destroying, destroyed)
+        self.assertNotIn("SDL_StopTextInput();", sdl_init)
 
     def test_sdl_events_pass_raw_modifiers_and_mouse_modifiers(self):
         source = EVENT.read_text()

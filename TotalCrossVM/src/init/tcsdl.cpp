@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcsdl.h"
+#include "../event/sdl/event_sdl.h"
 #if defined(WIN32) && !defined(WINCE)
 #include "SDL2/SDL_syswm.h"
 #endif
@@ -258,7 +259,7 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
       TCSDL_DestroyWindow(screen);
       return false;
    }
-   SDL_StartTextInput();
+   sdlEventWindowCreated();
 
 #if defined(WIN32) && !defined(WINCE)
    SDL_SysWMinfo windowInfo;
@@ -388,6 +389,7 @@ void TCSDL_DestroyWindow(ScreenSurface screen)
       sdlRemoveWindowsMessageHook();
       mainHWnd = NULL;
 #endif
+      sdlEventWindowDestroying();
       SDL_DestroyWindow(window);
       window = NULL;
    }

@@ -8,6 +8,7 @@
 #include "SDL2/SDL.h"
 #endif
 #include "../../init/tcsdl.h"
+#include "event_sdl.h"
 
 #define MAX_SCALE_FINGERS 2
 
@@ -470,12 +471,20 @@ void privatePumpEvent(Context currentContext)
 
 bool privateInitEvent()
 {
-   SDL_StartTextInput();
    return true;
+}
+
+void sdlEventWindowCreated(void)
+{
+   SDL_StartTextInput();
+}
+
+void sdlEventWindowDestroying(void)
+{
+   SDL_StopTextInput();
 }
 
 void privateDestroyEvent()
 {
-   SDL_StopTextInput();
    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 }
