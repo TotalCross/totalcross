@@ -59,7 +59,7 @@ void graphicsDestroyPrimitives();
 static bool createScreenSurface(Context currentContext, bool isScreenChange);
 
 void updateScreen(Context currentContext);
-void privateScreenChange(int32 w, int32 h);
+void graphicsScreenChange(int32 w, int32 h);
 void markWholeScreenDirty(Context currentContext);
 static bool translateAndClip(TCObject g, int32 *pX, int32 *pY, int32 *pWidth, int32 *pHeight);
 
@@ -170,7 +170,7 @@ void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes)
    *tcSettings.deviceFontHeightPtr = screen.deviceFontHeight;
 
    markWholeScreenDirty(currentContext);
-   privateScreenChange(screen.screenW, screen.screenH);
+   graphicsScreenChange(screen.screenW, screen.screenH);
 
    if ((changes & SCREEN_CHANGE_RECREATE_SURFACE) != 0)
    {

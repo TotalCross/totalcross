@@ -8,7 +8,7 @@
 #define Class __Class
 #include "xtypes.h"
 #include "tcvm.h"
-#include "Window_c.h"
+#include "WindowServices_c.h"
 #include "sipargs.h"
 #undef Class
 #include "mainview.h"
