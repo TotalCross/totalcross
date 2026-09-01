@@ -15,6 +15,7 @@ TESTCASE(startup_filterApplicationCommandLine)
    int32 oldDefScrY = defScrY;
    int32 oldDefScrW = defScrW;
    int32 oldDefScrH = defScrH;
+   bool oldDefScrSpecified = defScrSpecified;
    TCInitialWindowState oldWindowState = initialWindowState;
    DesktopCommandLineOptions desktopCommandLineOptions;
 
@@ -32,6 +33,7 @@ TESTCASE(startup_filterApplicationCommandLine)
       || xstrcmp(desktopCommandLineOptions.path, "/tmp/app") != 0
       || defScrX != -2 || defScrY != -2
       || defScrW != 800 || defScrH != 600
+      || !defScrSpecified
       || initialWindowState != TC_INITIAL_WINDOW_FULLSCREEN)
    {
       TEST_FAIL(tc, "Desktop VM options were not parsed correctly");
@@ -54,6 +56,7 @@ TESTCASE(startup_filterApplicationCommandLine)
       sizeof(applicationCommandLine), &desktopCommandLineOptions)
       || defScrX != -2 || defScrY != -2
       || defScrW != 480 || defScrH != 720
+      || !defScrSpecified
       || xstrcmp(vmCommandLine, "App.tcz /cmd /admin W DEBUG") != 0
       || xstrcmp(applicationCommandLine, "/admin W DEBUG") != 0)
    {
@@ -67,6 +70,7 @@ cleanup:
    defScrY = oldDefScrY;
    defScrW = oldDefScrW;
    defScrH = oldDefScrH;
+   defScrSpecified = oldDefScrSpecified;
    initialWindowState = oldWindowState;
 #else
    TEST_SKIP;

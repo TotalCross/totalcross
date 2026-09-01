@@ -258,9 +258,13 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("tczWidth = 600", window)
         self.assertIn("min32(800, workAreaHeight)", window)
         self.assertIn("commandLineWidth > 0", window)
+        self.assertIn("commandLineSizeProvided", window)
+        self.assertIn("fullscreenDefault", window)
         self.assertIn("environmentWidth > 0", window)
         self.assertIn("displayWidth / 2", window)
         self.assertIn("displayHeight / 2", window)
+        self.assertIn("defaultWidth = displayWidth", window)
+        self.assertIn("defaultHeight = displayHeight", window)
         self.assertNotIn("240", window)
 
     def test_sdl_startup_size_attributes_and_hidpi_state(self):
@@ -278,6 +282,7 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("displayWidth = 800", source)
         self.assertIn("displayHeight = 600", source)
         self.assertIn("bool initialFullscreen", source)
+        self.assertIn("defScrSpecified, initialFullscreen", source)
         self.assertIn("if (!initialFullscreen && (appTczAttr & ATTR_RESIZABLE_WINDOW))", source)
         self.assertIn("SDL_WINDOW_FULLSCREEN", source)
         self.assertIn("SDL_WINDOW_MAXIMIZED", source)
@@ -298,6 +303,18 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertNotIn("ATTR_WINDOWSIZE_600X800", native)
         self.assertNotIn("? 240", native)
         self.assertNotIn("? 320", native)
+
+    def test_screen_bounds_parser_tracks_explicit_size_request(self):
+        source = STARTUP.read_text()
+        globals_source = (ROOT / "TotalCrossVM/src/init/globals.c").read_text()
+        globals_header = (ROOT / "TotalCrossVM/src/init/globals.h").read_text()
+        self.assertIn("bool defScrSpecified = false", globals_source)
+        self.assertIn("extern bool defScrSpecified", globals_header)
+        self.assertIn("defScrSpecified = true", source)
+        self.assertIn("defScrSpecified = false", source)
+
+        tests = (ROOT / "TotalCrossVM/src/tests/tc_tests.c").read_text()
+        self.assertIn("test_windowResolveStartupSize", tests)
 
     def test_graphics_passes_tcz_attributes_to_sdl_startup(self):
         graphics = (ROOT / "TotalCrossVM/src/nm/ui/backend/graphics/software/gfx_Graphics_c.h").read_text()
