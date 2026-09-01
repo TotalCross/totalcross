@@ -11,6 +11,9 @@
 #define SUCCESS(x)      ((x) == 0)
 
 #include "tcsdl.h"
+#if defined(WIN32) && !defined(WINCE)
+#include "SDL2/SDL_syswm.h"
+#endif
 #include <iostream>
 #include <vector>
 
@@ -121,6 +124,16 @@ bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
 		std::cerr << "SDL_CreateWindow(): " << SDL_GetError() << '\n';
 		return false;
 	}
+
+#if defined(WIN32) && !defined(WINCE)
+	SDL_SysWMinfo windowInfo;
+	SDL_VERSION(&windowInfo.version);
+	if (SDL_GetWindowWMInfo(window, &windowInfo) == SDL_TRUE
+		&& windowInfo.subsystem == SDL_SYSWM_WINDOWS)
+	{
+		mainHWnd = windowInfo.info.win.window;
+	}
+#endif
 
 	std::cout << "SDL_RENDER_DRIVER available:";
 	for (int i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
@@ -297,6 +310,9 @@ void TCSDL_Destroy(ScreenSurface screen) {
 			SDL_DestroyRenderer(SCREEN_EX(screen)->renderer);
 		}
 		if (SCREEN_EX(screen)->window != NULL) {
+			#if defined(WIN32) && !defined(WINCE)
+			mainHWnd = NULL;
+			#endif
 			SDL_DestroyWindow(SCREEN_EX(screen)->window);
 		}
 		free(SCREEN_EX(screen));
