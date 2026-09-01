@@ -33,6 +33,8 @@ bool windowBackendSetSize(int32 width, int32 height)
 
 bool windowResolveStartupSize(
    int16 appTczAttr,
+   bool commandLineSizeProvided,
+   bool fullscreenDefault,
    int32 displayWidth,
    int32 displayHeight,
    int32 workAreaHeight,
@@ -46,6 +48,9 @@ bool windowResolveStartupSize(
 {
    int32 tczWidth = -1;
    int32 tczHeight = -1;
+   bool environmentSizeProvided;
+   int32 defaultWidth;
+   int32 defaultHeight;
 
    if (width == null || height == null || tczSizeApplied == null)
       return false;
@@ -66,9 +71,21 @@ bool windowResolveStartupSize(
       tczHeight = workAreaHeight > 0 ? min32(800, workAreaHeight) : 800;
    }
 
+   environmentSizeProvided = environmentWidth > 0 || environmentHeight > 0;
+   defaultWidth = displayWidth / 2;
+   defaultHeight = displayHeight / 2;
+   if (fullscreenDefault && !commandLineSizeProvided
+      && !environmentSizeProvided && tczWidth <= 0 && tczHeight <= 0)
+   {
+      defaultWidth = displayWidth;
+      defaultHeight = displayHeight;
+   }
+
    *tczSizeApplied = false;
-   if (commandLineWidth > 0)
-      *width = commandLineWidth;
+   if (commandLineSizeProvided)
+   {
+      *width = commandLineWidth > 0 ? commandLineWidth : displayWidth / 2;
+   }
    else if (environmentWidth > 0)
       *width = environmentWidth;
    else if (tczWidth > 0)
@@ -77,10 +94,10 @@ bool windowResolveStartupSize(
       *tczSizeApplied = true;
    }
    else
-      *width = displayWidth / 2;
+      *width = defaultWidth;
 
-   if (commandLineHeight > 0)
-      *height = commandLineHeight;
+   if (commandLineSizeProvided)
+      *height = commandLineHeight > 0 ? commandLineHeight : displayHeight / 2;
    else if (environmentHeight > 0)
       *height = environmentHeight;
    else if (tczHeight > 0)
@@ -89,7 +106,7 @@ bool windowResolveStartupSize(
       *tczSizeApplied = true;
    }
    else
-      *height = displayHeight / 2;
+      *height = defaultHeight;
 
    return *width > 0 && *height > 0;
 }

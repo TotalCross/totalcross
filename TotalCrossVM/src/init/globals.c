@@ -48,6 +48,7 @@ TCObject mainClass = { 0 };  // the instance being executed
 bool isMainWindow = false;   // extends MainWindow ?
 #if TC_OS_DESKTOP
 int32 defScrX = -1, defScrY = -1, defScrW = -1, defScrH = -1;
+bool defScrSpecified = false;
 TCInitialWindowState initialWindowState = TC_INITIAL_WINDOW_NORMAL;
 #endif
 #if defined(ANDROID)

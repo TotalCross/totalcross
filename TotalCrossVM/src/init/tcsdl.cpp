@@ -260,7 +260,10 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen, int16 
 
    environmentWidth = environmentDimension("TC_WIDTH");
    environmentHeight = environmentDimension("TC_HEIGHT");
+   initialFullscreen = initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
+      || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && fullScreen);
    if (!windowResolveStartupSize(appTczAttr,
+      defScrSpecified, initialFullscreen,
       displayWidth, displayHeight, workAreaHeight,
       defScrW, defScrH, environmentWidth, environmentHeight,
       &width, &height, &tczSizeApplied))
@@ -270,8 +273,6 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen, int16 
       return false;
    }
 
-   initialFullscreen = initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
-      || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && fullScreen);
    if (initialFullscreen)
       flags |= SDL_WINDOW_FULLSCREEN;
    else if (initialWindowState == TC_INITIAL_WINDOW_MAXIMIZED)

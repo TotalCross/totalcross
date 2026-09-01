@@ -360,6 +360,7 @@ static CharP parseScreenBounds(CharP value)
    defScrY = y;
    defScrW = width;
    defScrH = height;
+   defScrSpecified = true;
    return value + count;
 }
 
@@ -413,6 +414,7 @@ static bool filterDesktopCommandLine(CharP command,
    int32 commandSize = xstrlen(command) + 1;
 
    xmemzero(options, sizeof(*options));
+   defScrSpecified = false;
 
    while (*read != '\0')
    {

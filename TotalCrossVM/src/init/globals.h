@@ -56,6 +56,7 @@ typedef enum TCInitialWindowState
 } TCInitialWindowState;
 
 extern int32 defScrX, defScrY, defScrW, defScrH;
+extern bool defScrSpecified;
 extern TCInitialWindowState initialWindowState;
 #endif
 #if defined(ANDROID)

@@ -17,6 +17,8 @@ extern "C" {
 bool windowBackendSetSize(int32 width, int32 height);
 bool windowResolveStartupSize(
    int16 appTczAttr,
+   bool commandLineSizeProvided,
+   bool fullscreenDefault,
    int32 displayWidth,
    int32 displayHeight,
    int32 workAreaHeight,
