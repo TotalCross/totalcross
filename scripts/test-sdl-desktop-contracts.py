@@ -245,6 +245,59 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertNotIn("screenChange", operation)
         self.assertNotIn("F9", operation)
 
+    def test_window_startup_size_precedence_and_defaults(self):
+        window = WINDOW.read_text()
+        header = WINDOW_H.read_text()
+        self.assertIn("bool windowResolveStartupSize(", header)
+        self.assertIn("ATTR_WINDOWSIZE_320X480", window)
+        self.assertIn("tczWidth = 320", window)
+        self.assertIn("tczHeight = 480", window)
+        self.assertIn("tczWidth = 480", window)
+        self.assertIn("tczHeight = 640", window)
+        self.assertIn("tczWidth = 600", window)
+        self.assertIn("min32(800, workAreaHeight)", window)
+        self.assertIn("commandLineWidth > 0", window)
+        self.assertIn("environmentWidth > 0", window)
+        self.assertIn("displayWidth / 2", window)
+        self.assertIn("displayHeight / 2", window)
+        self.assertNotIn("240", window)
+
+    def test_sdl_startup_size_attributes_and_hidpi_state(self):
+        source = SDL_INIT.read_text()
+        header = SDL_HEADER.read_text()
+        self.assertIn(
+            "bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen, int16 appTczAttr)",
+            header,
+        )
+        self.assertIn("SDL_GetDisplayBounds(0, &displayBounds)", source)
+        self.assertIn("SDL_GetDisplayUsableBounds(0, &usableBounds)", source)
+        self.assertIn("windowResolveStartupSize(appTczAttr", source)
+        self.assertIn("environmentDimension(\"TC_WIDTH\")", source)
+        self.assertIn("environmentDimension(\"TC_HEIGHT\")", source)
+        self.assertIn("displayWidth = 800", source)
+        self.assertIn("displayHeight = 600", source)
+        self.assertIn("bool initialFullscreen", source)
+        self.assertIn("if (!initialFullscreen && (appTczAttr & ATTR_RESIZABLE_WINDOW))", source)
+        self.assertIn("SDL_WINDOW_FULLSCREEN", source)
+        self.assertIn("SDL_WINDOW_MAXIMIZED", source)
+        self.assertIn("SDL_WINDOW_RESIZABLE", source)
+        self.assertIn("tczSizeApplied && defScrX == -1", source)
+        self.assertIn("tczSizeApplied && defScrY == -1", source)
+
+    def test_native_startup_uses_shared_size_policy_and_client_geometry(self):
+        native = WIN_GFX.read_text()
+        self.assertIn("windowResolveStartupSize(appTczAttr", native)
+        self.assertIn("GetSystemMetrics(SM_CXSCREEN)", native)
+        self.assertIn("GetSystemMetrics(SM_CYSCREEN)", native)
+        self.assertIn("rect.bottom - rect.top", native)
+        self.assertIn("adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom)", native)
+        self.assertIn("windowedWidth = width", native)
+        self.assertNotIn("ATTR_WINDOWSIZE_320X480", native)
+        self.assertNotIn("ATTR_WINDOWSIZE_480X640", native)
+        self.assertNotIn("ATTR_WINDOWSIZE_600X800", native)
+        self.assertNotIn("? 240", native)
+        self.assertNotIn("? 320", native)
+
     def test_sdl_backend_owns_key_dispatch_before_platform_branches(self):
         source = DISPATCH.read_text()
         self.assertLess(source.index("#if TC_WINDOWING_SDL"), source.index("#elif TC_WINDOWING_NATIVE"))
