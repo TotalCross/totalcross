@@ -47,6 +47,7 @@ include(cmake/TCGraphics.cmake)
 tc_generate_platform_config()
 
 option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
+option(TC_BUILD_NATIVE_STARTUP_TEST "Build the native desktop startup test" OFF)
 option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
 option(TC_ENABLE_C_AOT "Build the experimental portable-C TCIR backend" OFF)
 option(TC_ENABLE_SLJIT_JIT "Build the experimental SLJIT TCIR backend" OFF)
@@ -855,6 +856,28 @@ link_directories(${PROJECT_SOURCE_DIR})
 # add the library
 set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_SOURCES} ${TC_SKIA_SOURCES} ${TC_SDL_SOURCES} ${TC_ANDROID_SOURCES} ${TCVM_iOS_FILES})
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
+
+if(TC_BUILD_NATIVE_STARTUP_TEST)
+  add_executable(window_startup_native_test
+    ${TC_SRCDIR}/tests/window_startup_native_test.c
+    ${TC_SRCDIR}/nm/ui/WindowStartup.c
+  )
+  target_include_directories(window_startup_native_test PRIVATE
+    "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+    "${TC_SRCDIR}"
+    "${TC_SRCDIR}/tcvm"
+  )
+  target_compile_definitions(window_startup_native_test PRIVATE
+    TC_PLATFORM_CONFIGURED=1
+  )
+  target_link_libraries(window_startup_native_test PRIVATE
+    SDL2::SDL2
+    Skia::Skia
+  )
+  target_compile_options(window_startup_native_test PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra>
+  )
+endif()
 
 if(TC_ENABLE_COMPILED_DISPATCH)
   add_library(tcir_runtime STATIC
