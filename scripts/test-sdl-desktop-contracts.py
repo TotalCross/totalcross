@@ -298,6 +298,13 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertNotIn("? 240", native)
         self.assertNotIn("? 320", native)
 
+    def test_graphics_passes_tcz_attributes_to_sdl_startup(self):
+        graphics = (ROOT / "TotalCrossVM/src/nm/ui/backend/graphics/software/gfx_Graphics_c.h").read_text()
+        self.assertIn(
+            "TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr), appTczAttr)",
+            graphics,
+        )
+
     def test_sdl_backend_owns_key_dispatch_before_platform_branches(self):
         source = DISPATCH.read_text()
         self.assertLess(source.index("#if TC_WINDOWING_SDL"), source.index("#elif TC_WINDOWING_NATIVE"))
