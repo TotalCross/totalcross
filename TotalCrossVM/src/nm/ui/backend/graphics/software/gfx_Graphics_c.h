@@ -27,7 +27,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    *(tcSettings.isFullScreenPtr)=true;
 #endif
 #if TC_WINDOWING_SDL
-   if (!TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr)))
+   if (!TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr), appTczAttr))
       return false;
 #elif !defined HEADLESS
    DFBResult err;
@@ -71,7 +71,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenW = w;
    screen->screenH = h;
 #else
-   TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr));
+   TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr), appTczAttr);
 #endif
    return true;
 }
