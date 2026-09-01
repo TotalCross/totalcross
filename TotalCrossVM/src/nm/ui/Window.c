@@ -8,33 +8,47 @@
 #include "WindowSafeArea.h"
 #include "GraphicsPrimitives.h"
 
-#if TC_WINDOWING_SDL && defined (WIN32) && !defined (WINCE)
+#if TC_WINDOWING_SDL
  #include "sdl/Window_c.h"
-#elif defined (WINCE) || defined (WIN32)
- #include "win/Window_c.h"
-#elif defined (darwin)
- #include "darwin/Window_c.h"
-#elif defined(ANDROID)
- #include "android/Window_c.h"
+#elif TC_WINDOWING_NATIVE
+ #if TC_OS_WINDOWS || TC_OS_WINCE
+  #include "win/Window_c.h"
+ #elif TC_OS_LINUX
+  #include "linux/Window_c.h"
+ #elif TC_OS_ANDROID
+  #include "android/Window_c.h"
+ #elif TC_OS_IOS
+  #include "darwin/Window_c.h"
+ #else
+  #error Unsupported native Window backend
+ #endif
 #else
- #include "linux/Window_c.h"
+ #error No Window backend selected
+#endif
+
+bool windowBackendSetSize(int32 width, int32 height)
+{
+   return windowBackendSetSizeImpl(width, height);
+}
+
+#if TC_OS_WINDOWS || TC_OS_WINCE
+ #include "win/WindowServices_c.h"
+#elif TC_OS_MACOS
+ #include "macos/WindowServices_c.h"
+#elif TC_OS_LINUX
+ #include "linux/WindowServices_c.h"
+#elif TC_OS_ANDROID
+ #include "android/WindowServices_c.h"
+#elif TC_OS_IOS
+ #include "darwin/WindowServices_c.h"
+#else
+ #error Unsupported Window platform services
 #endif
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_isSipShown(NMParams p) // totalcross/ui/Window native public static boolean isSipShown();
 {     
-   int32 ret = 0;
-#if defined (WINCE) && _WIN32_WCE >= 300
-   if (*tcSettings.virtualKeyboardPtr)
-      ret = windowGetSIP();
-#elif defined(darwin)
-   ret = windowGetSIP();
-#elif defined (ANDROID)
-   ret = windowGetSIP();
-#elif defined (WIN32) && !defined(WINCE) // for windows 8 and up tablet devices
-   ret = windowGetSIP();
-#endif   
-   p->retI = ret;
+   p->retI = windowPlatformIsSIPShown();
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public static void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
@@ -44,18 +58,12 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
    if (sipOption < SIP_HIDE || sipOption > SIP_SHOW)
       throwIllegalArgumentExceptionI(p->currentContext, "sipOption", sipOption);
    else
-#if defined (WINCE) && _WIN32_WCE >= 300
-   if (*tcSettings.virtualKeyboardPtr)
-      windowSetSIP(sipOption, p->i32[1]);
-#elif defined(darwin)
-   windowSetSIP(p->currentContext, sipOption, p->obj[0] /*control*/, p->i32[1] /*numeric*/);
-#elif defined (ANDROID)
-   windowSetSIP(sipOption, p->i32[1] /*numeric*/);
-#elif defined (WIN32) && !defined(WINCE) // for windows 8 and up tablet devices
-   windowSetSIP(sipOption, p->i32[1]);
-#else
-   ;
-#endif
+      windowPlatformSetSIP(
+         p->currentContext,
+         sipOption,
+         p->obj[0] /*control*/,
+         p->i32[1] /*numeric*/
+      );
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_pumpEvents(NMParams p) // totalcross/ui/Window native public static void pumpEvents();
@@ -65,17 +73,12 @@ TC_API void tuW_pumpEvents(NMParams p) // totalcross/ui/Window native public sta
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native public static void setDeviceTitle(String title);
 {
-   UNUSED(p);
-#ifndef darwin
-   windowSetDeviceTitle(p->obj[0]); // guich@tc113_32: changed 1 to 0
-#endif
+   windowBackendSetDeviceTitle(p->obj[0]); // guich@tc113_32: changed 1 to 0
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setOrientation_i(NMParams p) // totalcross/ui/Window native public static void setOrientation(int orientation);
 {
-#ifdef ANDROID
-   windowSetOrientation(p->i32[0]);
-#endif
+   windowPlatformSetOrientation(p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TCObject* safeAreaInsets;
@@ -134,10 +137,9 @@ TC_API void tuW_getSafeAreaInsets(NMParams p) // totalcross/ui/Window public sta
    if (safeAreaInsets == null) {
       safeAreaInsets = getStaticFieldObject(p->currentContext, loadClass(p->currentContext, "totalcross.ui.Window", true), "safeAreaInsets");
    }
-#if defined darwin || defined ANDROID
    if (!safeAreaInsetsInitialized && safeAreaInsets != null && p->currentContext->thrownException == null) {
       int32 top = 0, left = 0, bottom = 0, right = 0;
-      windowGetSafeAreaInsets(
+      windowPlatformGetSafeAreaInsets(
          &top,
          &left,
          &bottom,
@@ -149,7 +151,6 @@ TC_API void tuW_getSafeAreaInsets(NMParams p) // totalcross/ui/Window public sta
       FIELD_I32(*safeAreaInsets, 3) = 0; //windowPhysicalToLogical(right);
       safeAreaInsetsInitialized = true;
    }
-#endif
    p->retO = (*safeAreaInsets);
 }
 

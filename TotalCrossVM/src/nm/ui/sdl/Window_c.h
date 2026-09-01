@@ -8,22 +8,14 @@
 #include "SDL2/SDL.h"
 #endif
 #include "../Window.h"
+#include "../../init/tcsdl.h"
 
-static bool windowGetSIP()
+static bool windowBackendSetSizeImpl(int32 width, int32 height)
 {
-   return SDL_IsTextInputActive() != SDL_FALSE;
+   return TCSDL_SetWindowSize(width, height);
 }
 
-static void windowSetSIP(int32 sipOption, bool numeric)
-{
-   UNUSED(numeric)
-   if (sipOption == SIP_HIDE || sipOption == SIP_DISABLE_NUMERICPAD)
-      SDL_StopTextInput();
-   else
-      SDL_StartTextInput();
-}
-
-static void windowSetDeviceTitle(TCObject titleObj)
+static void windowBackendSetDeviceTitle(TCObject titleObj)
 {
    JCharP chars = String_charsStart(titleObj);
    int32 length = String_charsLen(titleObj);

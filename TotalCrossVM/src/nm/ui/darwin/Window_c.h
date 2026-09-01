@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -9,14 +10,17 @@
 extern "C" {
 #endif
 
-void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool secret);
-bool windowGetSIP();
-void windowGetSafeAreaInsets(int32* top, int32* left, int32* bottom, int32* right);
+static bool windowBackendSetSizeImpl(int32 width, int32 height)
+{
+   UNUSED(width)
+   UNUSED(height)
+   return false;
+}
 
-/*static void windowSetDeviceTitle(TCObject titleObj)
+static void windowBackendSetDeviceTitle(TCObject titleObj)
 {
    UNUSED(titleObj)
-}*/
+}
 
 #ifdef __cplusplus
 }

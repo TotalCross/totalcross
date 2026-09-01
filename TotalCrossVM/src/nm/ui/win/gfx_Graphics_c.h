@@ -1,21 +1,13 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h)
+void graphicsScreenChange(int32 w, int32 h)
 {
-#ifndef WINCE // windows ce already does this for us
-   *w += GetSystemMetrics(resizableWindow ? SM_CXSIZEFRAME : SM_CXFIXEDFRAME)*2;
-   *h += GetSystemMetrics(resizableWindow ? SM_CYSIZEFRAME : SM_CYFIXEDFRAME)*2 + GetSystemMetrics(SM_CYCAPTION);
-#endif
-}
-void privateScreenChange(int32 w, int32 h)
-{
-#ifndef WINCE // windows ce already does this for us
-   adjustWindowSizeWithBorders(*tcSettings.resizableWindow,&w, &h);
-   SetWindowPos(mainHWnd,0,0,0, w, h, SWP_NOMOVE);
-#endif
+   UNUSED(w)
+   UNUSED(h)
 }
 
 #if defined (WINCE)
