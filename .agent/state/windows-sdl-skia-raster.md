@@ -7,15 +7,17 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Windows SDL + Skia migration state
 
 - Plan key: `windows-sdl-skia-raster`
-- Active milestone: complete; Windows interactive smoke remains deferred
-- Last implementation commit: `f1dbb7827 fix(event,sdl): preserve special-key dispatch semantics`
-- Active paths: `TotalCrossVM/src/event/sdl/event_c.h`,
-  `TotalCrossVM/src/event/sdl/specialkeys_c.h`,
-  `TotalCrossVM/src/nm/sys/win/Vm_c.h`, `TotalCrossVM/src/init/startup.c`,
-  `TotalCrossVM/src/init/startup_test.h`,
-  `TotalCrossVM/src/tests/tc_tests.c`,
-  `TotalCrossVM/src/init/tcsdl.h`, and
-  `scripts/test-sdl-desktop-contracts.py`.
+- Active milestone: complete; desktop startup sizing correctness follow-up
+  complete; Windows interactive smoke remains deferred
+- Last logical commits: `7a8a11ffd refactor(windowing): centralize desktop
+  startup policy` and `e562e0501 fix(windowing): preserve WinCE startup
+  compatibility`
+- Active paths: `TotalCrossVM/src/nm/ui/WindowStartup.h`,
+  `TotalCrossVM/src/nm/ui/WindowStartup.c`, `TotalCrossVM/src/init/globals.c`,
+  `TotalCrossVM/src/init/globals.h`, `TotalCrossVM/src/init/startup.c`,
+  `TotalCrossVM/src/init/tcsdl.cpp`,
+  `TotalCrossVM/src/nm/ui/win/gfx_Graphics_c.h`, startup tests, CMake/Android
+  source lists, and `scripts/test-sdl-desktop-contracts.py`.
 - Starting prerequisite: confirmed the pinned depot checkout is at
   `118ff8925b165c79de87cd2d69f562b570b1ebd5`, `deps.yml` pins SDL
   `sdl2-2.32.8`, and the CMake path consumes `SDL2::SDL2` and `Skia::Skia`.
@@ -24,11 +26,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   deferred to a Windows-capable lane. Existing macOS build caches are kept
   untouched.
 - Focused validation: `python3 scripts/test-sdl-desktop-contracts.py` passed
-  seven focused contract tests; the test-enabled `startup.c` syntax check passed;
-  copyright headers passed for all fourteen affected files; the completed
-  range and working-tree `git diff --check` passed; and the native regression
-  is wired into the existing `ENABLE_TEST_SUITE` registry. New files remain
-  below the 20 KB / approximately 600-line limit.
+  16 focused contract tests; the macOS SDL + Skia + Software `tcvm`/`Launcher`
+  build passed; copyright headers passed for all 13 affected files;
+  `git diff --check --cached` passed for both logical commits; and the second
+  commit passed the authoritative commit validator.
 - Hotkey bridge validation: SDL’s Windows message-hook install/remove points,
   `WM_HOTKEY` filtering, Win32 reverse mapping, and separation from SDL key
   translation are covered by the focused contract suite.
@@ -38,24 +39,24 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Shortcut validation: Ctrl+A, Ctrl+C, Ctrl+P, Ctrl+V, Ctrl+X, and Ctrl+Space
   use one SDL keydown-to-key path with raw Ctrl modifiers; ordinary printable
   text remains on `SDL_TEXTINPUT`, with no general printable-keydown fallback.
-- Final local validation: the SDL + Skia + Software macOS Release build passed
-  with log `/tmp/totalcross-sdl-desktop-final-macos-build-followup2.log`, and
-  `TotalCrossSDK/gradlew-agent dist` passed with log
-  `/tmp/totalcross-sdk-final-dist-followup2.log`.
+- Final local validation: the SDL + Skia + Software macOS Release `tcvm` and
+  `Launcher` build passed with log
+  `/tmp/desktop-window-startup-sizing-correctness-macos-build.log`.
 - Deferred validation: Windows x86/x64/ARM64 configure/build/link and runtime
   smoke for both default and fallback, including mixed-DPI monitors and
   native-library event hooks, because this host has no Windows toolchain,
   runtime, or staged Windows artifacts.
 - Blockers: none for the source implementation or required CI compilation.
-  CI run `33450370159` at `51dde0f43` passed Android and iOS, as well as the
-  macOS, Windows, Linux, and SDK jobs. Windows interactive keyboard smoke and
-  native event-hook runtime behavior remain deferred because this host has no
-  Windows runtime. A local macOS sample launch reached the SDL loop but did not
-  complete because its runtime-state write failed in the available smoke setup.
+  Exact-HEAD Merge Flow run `33555763139` at
+  `6501430ad5f13ce5c696f98f785a2173366ff981` passed Android, iOS, macOS,
+  Windows, Linux, and SDK jobs; the intentionally disabled Linux ARM32 cross
+  job was skipped. Windows interactive keyboard smoke and native event-hook
+  runtime behavior remain deferred because this host has no Windows runtime.
 - Deliberate out-of-scope local files: existing untracked dependency/generated
   trees and helper scripts outside this plan.
-- Next action: none. The migration is complete; retain the documented Windows
-  runtime limitation and do not amend or push from this task.
+- Next action: none. The final shared startup-policy refactor is complete;
+  retain the documented Windows runtime limitation and do not amend the
+  logical commits.
 - Resume command: `sed -n '1,220p' .agent/state/windows-sdl-skia-raster.md`
 
 ## Closure record

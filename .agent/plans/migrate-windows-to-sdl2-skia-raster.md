@@ -148,6 +148,27 @@ On resume, read state first, inspect only active paths and the focused diff, the
   compilation and all other enabled build jobs. The migration is complete;
   Windows interactive keyboard smoke remains explicitly deferred because this
   host has no Windows runtime.
+- [x] (2026-09-01) Fixed `/scr` filtering for comma-separated payloads with
+  internal spaces by returning the existing `%n` endpoint from
+  `parseScreenBounds()` and consuming it directly in the generic filter.
+  Compact `/scr`, near-match preservation, exact application payloads, header
+  validation, the macOS VM/Launcher build, and exact-HEAD Merge Flow passed.
+- [x] (2026-09-01) Centralized SDL and Native Windows startup sizing in the
+  Window layer. `/scr` takes precedence over `TC_WIDTH`/`TC_HEIGHT`, TCZ sizes,
+  and half-display defaults; SDL now consumes all three TCZ sizes and gates
+  resizable windows off in fullscreen. Focused contracts, the macOS build, and
+  exact-HEAD Merge Flow passed at `9572636b4`.
+- [x] (2026-09-01) Corrected explicit `/scr` tracking so `-1` dimensions keep
+  command-line precedence, use half-display defaults, and cannot be replaced
+  by environment or TCZ sizing. Fullscreen SDL startup now uses the full
+  display only when no size source is supplied. Executable table coverage,
+  focused contracts, headers, macOS VM/Launcher build, and exact-HEAD Merge
+  Flow passed at `6501430ad`.
+- [x] (2026-09-01) Completed the final desktop startup-policy refactor in
+  `7a8a11ffd` and `e562e0501`: `WindowStartup` now owns the shared options,
+  environment loading, size/position precedence, and fullscreen/maximized/
+  resizable resolution. SDL and Native Windows translate one resolved
+  configuration, and WinCE remains on its existing native path.
 
 ## Current Architecture and Scope
 
@@ -928,6 +949,18 @@ emulation mappings. Desktop startup parses reserved VM options throughout the
 composite launcher command line but exposes only the filtered payload after
 `/cmd` through `MainWindow.getCommandLine()`.
 
+The follow-up `/scr` regression now consumes the complete spaced payload
+`-2, -2, 480, 720`, preserving the exact application command line
+`/admin W DEBUG` while retaining compact forms and near-match behavior.
+
+The final desktop startup contract is implemented in
+`src/nm/ui/WindowStartup.h` and `WindowStartup.c`. The parser stores command
+line state in one desktop options object; shared environment parsing accepts
+only the existing strictly positive `TC_WIDTH`/`TC_HEIGHT` values; and both
+SDL and Native Windows pass local options plus native display metrics to the
+same deterministic resolver. The old `defScr*`, `initialWindowState`,
+`windowResolveStartupSize()`, and `tczSizeApplied` ownership paths are gone.
+
 The default and diagnostic SDL configurations built successfully on macOS
 ARM64, including the affected shared SDL paths. Windows selector checks showed
 the intended default, fallback, diagnostic, and unsupported Native + Skia
@@ -975,3 +1008,33 @@ macOS SDL + Skia + Software and SDK builds, fourteen-file header validation,
 test-enabled startup syntax, focused contracts, and diff checks passed. The
 local sample reached the SDL loop but could not complete input smoke because
 runtime-state creation failed; Windows runtime proof remains deferred to CI.
+2026-09-01: Completed the `/scr` spaced-payload follow-up in `16a0577a9`.
+The focused desktop contracts, three-file header validation, cached diff check,
+macOS `tcvm`/`Launcher` build, and Merge Flow `33547921138` passed for the
+exact HEAD. The authoritative commit validator emitted only its existing body
+line-length warning; the intentionally disabled Linux ARM32 cross job remained
+skipped. No further CI-chasing documentation commit is required.
+2026-09-01: Added the desktop startup sizing follow-up in `c2e433c01`,
+`5f581a8a5`, `d5c5233cb`, `52f075840`, and `9572636b4`. The Window layer now
+owns `/scr` > environment > TCZ > half-display sizing precedence for SDL and
+Native Windows, including logical SDL sizes, the Native client-area contract,
+all three TCZ size attributes, and SDL resizable/fullscreen behavior. The
+focused suite passed 15 tests, the final macOS VM/Launcher build passed, and
+exact-HEAD Merge Flow `33553035556` passed. Windows interactive smoke remains
+deferred because this host has no Windows runtime.
+2026-09-01: Corrected the sizing edge cases in `14fdce749` and added executable
+table coverage in `6501430ad`. The parser now records whether `/scr` was
+explicitly supplied, so `/scr ...,-1` cannot be overridden by environment or
+TCZ sizing; SDL fullscreen uses full-display defaults only with no explicit
+size source. The 16-test focused suite, header checks, macOS VM/Launcher
+build, and exact-HEAD Merge Flow `33555763139` passed for
+`6501430ad5f13ce5c696f98f785a2173366ff981`. Windows interactive smoke remains
+deferred because this host has no Windows runtime.
+2026-09-01: Completed the final shared desktop startup-policy refactor in
+`7a8a11ffd` and added the WinCE compatibility guard in `e562e0501`. Focused
+contracts, 13-file header validation, staged diff checks, and the macOS SDL +
+Skia + Software `tcvm`/`Launcher` build passed. The first commit's local
+message mirror reported an overlong body caused by literal escaped newlines;
+history was preserved without amendment, and the follow-up commit's message
+passes the mirror. Windows architecture/runtime and interactive smoke remain
+deferred because this host has no Windows toolchain or runtime.
