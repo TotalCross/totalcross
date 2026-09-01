@@ -29,3 +29,7 @@ Append compact records here at logical-commit and milestone checkpoints.
 - 2026-09-01 | `33539502398` | remote CI inspection | full enabled matrix passed
   for remote SHA `6971e996a` | included Windows SDL and Windows Native+Legacy;
   exact final SHA `500119506` has no run because no push was permitted.
+- 2026-09-01 | `b27b7df91` | final SDL confirmation | 11 focused contracts,
+  four-file header validation, cached diff check, and commit-message validation
+  passed; macOS Release `tcvm`/`Launcher` build passed | generic SDL resize no
+  longer reads back requested size; pending orientation resolves on SIZE_CHANGED.

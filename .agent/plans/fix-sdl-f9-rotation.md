@@ -38,20 +38,15 @@ these paths are unrelated and must remain untouched.
 ## Current Architecture and Scope
 
 `TotalCrossVM/src/event/sdl/event_c.h` dispatches F9 through
-`dispatchPortableSpecialKey()`. Its current path directly feeds logical
-`tcSettings` dimensions to `screenChange()`, which makes logical dimensions
-look like physical framebuffer dimensions under HiDPI. The same file already
-handles `SDL_WINDOWEVENT_SIZE_CHANGED` by querying
+`dispatchPortableSpecialKey()`. Its current path records the queried logical
+window orientation, requests a generic SDL resize, and defers minimum-size
+orientation updates until `SDL_WINDOWEVENT_SIZE_CHANGED`. That event queries
 `TCSDL_QueryWindowMetrics()`, applying the configuration, consuming pending
 flags, and calling `screenChangeCommitted()`.
 
-`screenChangeCommitted()` currently invokes `privateScreenChange()`. The
-native Win32 graphics header uses that hook to call `SetWindowPos`, while the
-SDL software header implements a no-op. This mixes Window and Graphics
-responsibilities. The graphics hook will be renamed to a graphics-only
-configuration reaction; window resizing will be exposed through the Window
-backend. Native F9 will request the backend resize before committing the
-established native configuration. SDL F9 will not call `screenChange()`.
+`screenChangeCommitted()` invokes only the graphics configuration hook. The
+native Win32 resize operation is exposed by the Window backend, while SDL F9
+does not call `screenChange()` directly.
 
 ## Plan of Work
 
@@ -135,15 +130,13 @@ All source changes are additive or local replacements. Re-running focused
 contracts and header validation is safe. Stage only implementation, test, and
 this plan's state/evidence/report paths; never stage existing unrelated `.agent`
   files, generated artifacts, or dependency checkouts. Commits are small and
-non-amended; no push is performed.
+non-amended. Push only when required for exact-HEAD CI.
 
 ## Outcomes & Retrospective
 
 Milestones 1 and 2 are implemented in `ece6ee5f7` and `8ea9cd486`; the SDL
-wrapper compile correction is `40d127c46`, and final correctness fixes are in
-`500119506`. The focused contracts and permitted macOS VM/Launcher build
-passed. The latest remote full matrix is green for `6971e996a`, including
-Windows SDL and Windows Native+Legacy, but exact final SHA `500119506` has no
-CI run because it was not pushed. Native smoke remains unavailable because
-`ctest -N` reports zero configured tests. The implementation plan is complete;
-exact-HEAD CI remains an external gate.
+wrapper compile correction is `40d127c46`, the snapshot fix is `500119506`,
+and final SDL confirmation is `b27b7df91`. Focused contracts and the permitted
+macOS VM/Launcher build passed. Exact-HEAD Merge Flow is the remaining closure
+gate after publishing the final revision; native smoke remains unavailable
+because `ctest -N` reports zero configured tests.
