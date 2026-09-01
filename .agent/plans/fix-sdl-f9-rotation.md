@@ -34,6 +34,7 @@ these paths are unrelated and must remain untouched.
 - [x] Add focused source-contract regression coverage and run final permitted
   macOS VM/Launcher and native smoke validation.
 - [x] Apply final native snapshot and SDL resize-success ordering fixes.
+- [x] Ignore duplicate SDL F9 requests while rotation confirmation is pending.
 
 ## Current Architecture and Scope
 
@@ -136,7 +137,8 @@ non-amended. Push only when required for exact-HEAD CI.
 
 Milestones 1 and 2 are implemented in `ece6ee5f7` and `8ea9cd486`; the SDL
 wrapper compile correction is `40d127c46`, the snapshot fix is `500119506`,
-and final SDL confirmation is `b27b7df91`. Focused contracts, the permitted
-macOS VM/Launcher build, and exact-HEAD Merge Flow run `33542990738` passed.
+and final SDL confirmation is `b27b7df91`; the pending-request guard is
+`c97f7dc78`. Focused contracts, the permitted macOS VM/Launcher build, and
+exact-HEAD Merge Flow run `33545202074` passed for `c97f7dc78`.
 The native smoke inventory remains unavailable because `ctest -N` reports zero
 configured tests.

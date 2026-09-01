@@ -40,3 +40,11 @@ Append compact records here at logical-commit and milestone checkpoints.
   Flow matrix passed for `09a239764` | Windows SDL and Windows Native+Legacy,
   Android, iOS, SDK, macOS, and Linux passed; Linux arm32 cross remained
   intentionally skipped.
+- 2026-09-01 | `c97f7dc78` | pending-request fix | 11 focused contracts,
+  two-file header validation, cached diff check, and commit-message validation
+  passed; macOS Release `tcvm`/`Launcher` build passed | duplicate F9 requests
+  are ignored while SDL rotation confirmation is pending.
+- 2026-09-01 | `33545202074` | final exact-HEAD closure | full enabled Merge Flow
+  matrix passed for `c97f7dc78` | Windows SDL and Windows Native+Legacy,
+  Android, iOS, SDK, macOS, and Linux passed; Linux arm32 cross remained
+  intentionally skipped.

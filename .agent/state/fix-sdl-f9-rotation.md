@@ -7,8 +7,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 # State: fix-sdl-f9-rotation
 
 - Active milestone: implementation and validation complete.
-- Last functional commit: `b27b7df91 fix(windowing,sdl): confirm rotation
-  from resize event`.
+- Last functional commit: `c97f7dc78 fix(windowing,sdl): ignore pending
+  rotation requests`.
 - Active paths: Window backend headers and `Window.c`, graphics screen-change
   hooks, native Windows F9 event paths, SDL event/tcsdl paths, and focused SDL
   contract tests.
@@ -24,8 +24,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Deferred validation: Windows and other platform builds; final macOS VM/
   Launcher build completed; native smoke is `SMOKE_FIXTURE_UNAVAILABLE`
   because `ctest -N` reports zero tests and no runnable desktop fixture exists.
-- CI: remote `Merge flow` run `33542990738` passed its full enabled matrix for
-  `09a239764`, including Windows SDL and Windows Native+Legacy. The
+- CI: remote `Merge flow` run `33545202074` passed its full enabled matrix for
+  `c97f7dc78`, including Windows SDL and Windows Native+Legacy. The
   `linux-arm32v7-cross` job was intentionally skipped by workflow policy.
 - Unrelated local files intentionally left alone: all pre-existing modified or
   untracked `.agent` files, `.vscode/`, generated plist/tcz files, dependency
