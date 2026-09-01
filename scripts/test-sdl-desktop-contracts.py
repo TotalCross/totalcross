@@ -12,6 +12,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EVENT = ROOT / "TotalCrossVM/src/event/sdl/event_c.h"
 DISPATCH = ROOT / "TotalCrossVM/src/event/specialkeys.c"
+EVENT_DISPATCH = ROOT / "TotalCrossVM/src/event/Event.c"
 SDL_KEYS = ROOT / "TotalCrossVM/src/event/sdl/specialkeys_c.h"
 LINUX_KEYS = ROOT / "TotalCrossVM/src/event/linux/specialkeys_c.h"
 STARTUP = ROOT / "TotalCrossVM/src/init/startup.c"
@@ -120,9 +121,27 @@ class SDLDesktopContractTests(unittest.TestCase):
 
     def test_sdl_backend_owns_key_dispatch_before_platform_branches(self):
         source = DISPATCH.read_text()
-        self.assertLess(source.index("#if TC_WINDOWING_SDL"), source.index("#elif defined(WINCE)"))
+        self.assertLess(source.index("#if TC_WINDOWING_SDL"), source.index("#elif TC_WINDOWING_NATIVE"))
         self.assertIn('#include "sdl/specialkeys_c.h"', source)
+        self.assertIn("#if TC_OS_WINDOWS || TC_OS_WINCE", source)
+        self.assertIn("#elif TC_OS_ANDROID", source)
+        self.assertIn("#elif TC_OS_IOS", source)
+        self.assertIn("#elif TC_OS_LINUX", source)
+        self.assertIn("#error Unsupported native special-key backend", source)
+        self.assertIn("#error No special-key backend selected", source)
+        self.assertNotRegex(source, r"defined\((?:WIN32|WINCE|ANDROID|linux|darwin)\)")
         self.assertNotIn("TC_WINDOWING_SDL", LINUX_KEYS.read_text())
+
+        event = EVENT_DISPATCH.read_text()
+        self.assertLess(event.index("#if TC_WINDOWING_SDL"), event.index("#elif TC_WINDOWING_NATIVE"))
+        self.assertIn('#include "sdl/event_c.h"', event)
+        self.assertIn('#include "win/event_c.h"', event)
+        self.assertIn('#include "android/event_c.h"', event)
+        self.assertIn('#include "darwin/event_c.h"', event)
+        self.assertIn('#include "linux/event_c.h"', event)
+        self.assertIn("#error Unsupported native event backend", event)
+        self.assertIn("#error No event backend selected", event)
+        self.assertNotRegex(event, r"defined\((?:WIN32|WINCE|ANDROID|linux|darwin)\)")
 
     def test_sdl_special_key_round_trips_and_modifiers(self):
         source = SDL_KEYS.read_text()

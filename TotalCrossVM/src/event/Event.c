@@ -15,14 +15,20 @@ void vmSetAutoOff(bool enable); // vm_c.h
 // Platform-specific code
 #if TC_WINDOWING_SDL
  #include "sdl/event_c.h"
-#elif defined(WINCE) || defined(WIN32)
- #include "win/event_c.h"
-#elif defined(darwin)
- #include "darwin/event_c.h"
-#elif defined(ANDROID)                                                             
- #include "android/event_c.h"
+#elif TC_WINDOWING_NATIVE
+ #if TC_OS_WINDOWS || TC_OS_WINCE
+  #include "win/event_c.h"
+ #elif TC_OS_ANDROID
+  #include "android/event_c.h"
+ #elif TC_OS_IOS
+  #include "darwin/event_c.h"
+ #elif TC_OS_LINUX
+  #include "linux/event_c.h"
+ #else
+  #error Unsupported native event backend
+ #endif
 #else
- #include "linux/event_c.h"
+ #error No event backend selected
 #endif
 //
 
@@ -63,7 +69,7 @@ static bool pumpEvent(Context currentContext)
       privatePumpEvent(currentContext);
    checkTimer(currentContext);
 sleep:
-#ifndef darwin   
+#if !TC_OS_APPLE
    Sleep(1); // avoid 100% cpu - important on Android!
 #endif   
    return ok;
@@ -101,7 +107,7 @@ void mainEventLoop(Context currentContext)
    onMinimize = getMethod(OBJ_CLASS(mainClass), true, "_onMinimize", 0);
    onRestore = getMethod(OBJ_CLASS(mainClass), true, "_onRestore", 0);
 
-#ifdef darwin
+#if TC_OS_IOS
     graphicsSetupIOS(); // start the opengl context in the same thread of the events
 #endif
    if (_onTimerTick == null || _postEvent == null || onMinimize == null || onRestore == null) // unlikely to occur...
