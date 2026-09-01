@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -14,20 +15,6 @@
 void markWholeScreenDirty(Context currentContext);
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int hRes, int vRes, bool nothingChanged);
 void getScreenSize(int32 *w, int32* h); // ui/win/gfx_Graphics_c.h
-
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
-{
-   switch (ul_reason_for_call)
-	{
-		case DLL_PROCESS_ATTACH:
-			hModuleTCVM = hModule;
-		case DLL_THREAD_ATTACH:
-		case DLL_THREAD_DETACH:
-		case DLL_PROCESS_DETACH:
-			break;
-   }
-   return TRUE;
-}
 
 static void hideWinCEStuff()
 {
