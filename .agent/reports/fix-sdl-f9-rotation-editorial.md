@@ -17,22 +17,22 @@ Window backend. Graphics only reacts to committed configuration changes.
 
 ## Proof
 
-- Commits: `ece6ee5f7`, `8ea9cd486`, `40d127c46`, `500119506`, and final SDL
-  confirmation fix `b27b7df91`.
+- Commits: `ece6ee5f7`, `8ea9cd486`, `40d127c46`, `500119506`, final SDL
+  confirmation fix `b27b7df91`, and closure record `036e8ff9e`.
 - `python3 scripts/test-sdl-desktop-contracts.py`: 11 tests passed.
 - Focused copyright validation and staged/working-tree diff checks passed.
 - macOS Release `tcvm` and `Launcher` build passed; log:
-  `/tmp/fix-sdl-f9-rotation-macos-build-final3.log`.
+  `/tmp/fix-sdl-f9-rotation-macos-build-final4.log`.
 - Native smoke inventory passed but reported zero configured tests; native
   smoke is `SMOKE_FIXTURE_UNAVAILABLE`.
-- Remote `Merge flow` run [33539502398](https://github.com/TotalCross/totalcross/actions/runs/33539502398)
-  passed the full enabled matrix for SHA `6971e996a`, including Windows SDL
-  and Windows Native+Legacy. Exact final SHA is pending publication and CI.
+- Remote `Merge flow` run [33542462499](https://github.com/TotalCross/totalcross/actions/runs/33542462499)
+  passed the full enabled matrix for exact HEAD `036e8ff9e`, including Windows
+  SDL and Windows Native+Legacy. The Linux arm32 cross job was intentionally
+  skipped by workflow policy.
 
 ## Limitations
 
 Windows, Linux, Android, iOS, and other platform builds were not run locally,
-per the task restriction. The exact final CI gate remains pending until the
-authorized push is made. The first ownership commit was not amended after its
-body-line check found an overlong line; subsequent commit messages pass the
-local repository validator.
+per the task restriction; they were covered by the exact-HEAD remote matrix.
+The first ownership commit was not amended after its body-line check found an
+overlong line; subsequent commit messages pass the local repository validator.

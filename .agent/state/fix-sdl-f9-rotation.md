@@ -6,14 +6,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # State: fix-sdl-f9-rotation
 
-- Active milestone: implementation complete; exact-HEAD CI pending after push.
+- Active milestone: implementation and validation complete.
 - Last functional commit: `b27b7df91 fix(windowing,sdl): confirm rotation
   from resize event`.
 - Active paths: Window backend headers and `Window.c`, graphics screen-change
   hooks, native Windows F9 event paths, SDL event/tcsdl paths, and focused SDL
   contract tests.
-- Next action: push the final revision because the workflow requires a remote
-  ref, then inspect its full Merge Flow matrix.
+- Next action: hand off the completed milestone; no further source work is
+  required.
 - Focused validation: `python3 scripts/test-sdl-desktop-contracts.py` passed
   11 tests; scoped `git diff --check` and copyright validation passed for the
   implementation, tests, and plan files; final macOS Release `tcvm` and
@@ -24,12 +24,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Deferred validation: Windows and other platform builds; final macOS VM/
   Launcher build completed; native smoke is `SMOKE_FIXTURE_UNAVAILABLE`
   because `ctest -N` reports zero tests and no runnable desktop fixture exists.
-- CI: remote `Merge flow` run `33539502398` passed its full enabled matrix for
-  `6971e996a`, including Windows SDL and Windows Native+Legacy. Exact final
-  SHA is not yet published, so its run is pending.
+- CI: remote `Merge flow` run `33542462499` passed its full enabled matrix for
+  `036e8ff9e`, including Windows SDL and Windows Native+Legacy. The
+  `linux-arm32v7-cross` job was intentionally skipped by workflow policy.
 - Unrelated local files intentionally left alone: all pre-existing modified or
   untracked `.agent` files, `.vscode/`, generated plist/tcz files, dependency
   checkout contents, and any other paths outside the active set.
-- Blockers: exact-HEAD CI requires publishing the final SHA; this is now
-  authorized only because the workflow requires it.
+- Blockers: none.
 - Resume command: `sed -n '1,180p' .agent/state/fix-sdl-f9-rotation.md`

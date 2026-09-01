@@ -33,3 +33,6 @@ Append compact records here at logical-commit and milestone checkpoints.
   four-file header validation, cached diff check, and commit-message validation
   passed; macOS Release `tcvm`/`Launcher` build passed | generic SDL resize no
   longer reads back requested size; pending orientation resolves on SIZE_CHANGED.
+- 2026-09-01 | `33542462499` | exact-HEAD closure | full enabled Merge Flow
+  matrix passed for `036e8ff9e` | Windows SDL and Windows Native+Legacy passed;
+  Linux arm32 cross remained intentionally skipped.
