@@ -33,6 +33,7 @@ these paths are unrelated and must remain untouched.
   driven commit.
 - [x] Add focused source-contract regression coverage and run final permitted
   macOS VM/Launcher and native smoke validation.
+- [x] Apply final native snapshot and SDL resize-success ordering fixes.
 
 ## Current Architecture and Scope
 
@@ -139,8 +140,10 @@ non-amended; no push is performed.
 ## Outcomes & Retrospective
 
 Milestones 1 and 2 are implemented in `ece6ee5f7` and `8ea9cd486`; the SDL
-wrapper compile correction is `40d127c46`. The focused contracts and permitted
-macOS VM/Launcher build passed. No native smoke fixture is configured in the
-selected build directory (`ctest -N` reports zero tests), so native smoke is
-recorded as unavailable. Windows and other platform builds remain intentionally
-deferred.
+wrapper compile correction is `40d127c46`, and final correctness fixes are in
+`500119506`. The focused contracts and permitted macOS VM/Launcher build
+passed. The latest remote full matrix is green for `6971e996a`, including
+Windows SDL and Windows Native+Legacy, but exact final SHA `500119506` has no
+CI run because it was not pushed. Native smoke remains unavailable because
+`ctest -N` reports zero configured tests. The implementation plan is complete;
+exact-HEAD CI remains an external gate.

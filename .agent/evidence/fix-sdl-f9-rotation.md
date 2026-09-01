@@ -21,3 +21,11 @@ Append compact records here at logical-commit and milestone checkpoints.
 - 2026-09-01 | `40d127c46` | milestone closure | `ctest --test-dir
   build-macos-sdl-contracts -N` passed with zero tests | native smoke recorded
   as `SMOKE_FIXTURE_UNAVAILABLE`; Windows and other platforms not built.
+- 2026-09-01 | `500119506` | final correctness | 11 focused contracts,
+  three-file header validation, cached diff check, and commit-message
+  validation passed; macOS Release `tcvm`/`Launcher` build passed | native
+  Windows values are snapshotted before resize; SDL gate uses queried logical
+  size and swaps minimums only after resize success.
+- 2026-09-01 | `33539502398` | remote CI inspection | full enabled matrix passed
+  for remote SHA `6971e996a` | included Windows SDL and Windows Native+Legacy;
+  exact final SHA `500119506` has no run because no push was permitted.
