@@ -1,3 +1,10 @@
+<!--
+Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+
+SPDX-License-Identifier: LGPL-2.1-only
+-->
+
 # Compiling and Testing TotalCross Virtual Machine for Windows or WinCE
 First things first, in order to compile a virtual machine for Windows desktop, one need to install the following requirements on your machine:
 
@@ -27,6 +34,20 @@ Lastly, press Build and your tcvm.dll will be ready to debug your applcation:
 ![](https://imgur.com/YLo5AaS.png)
 
 Now we are able to develop new features and fix some bugs and Test on your Visual Studio Code.
+
+### Windows desktop graphics backends
+
+Windows desktop builds default to SDL2 windowing with Skia raster rendering
+over the software framebuffer. SDL2 is supplied as the pinned static
+depot-tools dependency; a host SDL installation is not required. To build the
+compatibility fallback explicitly, configure with:
+
+```text
+cmake ..\ -G"Visual Studio 17 2022" -A Win32 -DTC_WINDOWING_SDL=OFF -DTC_RENDERER_SKIA=OFF -DTC_GRAPHICS_SOFTWARE=ON
+```
+
+This selects the original Native + Legacy + Software path. Windows CE remains
+fixed to that native configuration.
 
 ### Windows CE
 
