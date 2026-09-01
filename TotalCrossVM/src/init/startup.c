@@ -12,6 +12,9 @@
 #include "tcvm.h"
 #include "tcz.h"
 #include "nativeProcAddressesTC.h"
+#if TC_WINDOWING_SDL
+ #include "tcsdl.h"
+#endif
 
 #if defined (WINCE) || defined (WIN32)
  #include "malloc.h"
@@ -224,8 +227,19 @@ TC_API int32 startProgram(Context currentContext)
    if (currentContext->thrownException == null && keepRunning)
    {
       checkFullScreenPlatform();
-      if (*tcSettings.isFullScreenPtr) // Settings.isFullScreen is set at the static initializer
+#if TC_OS_DESKTOP
+#if !TC_WINDOWING_SDL
+      if (initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
+         || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr))
          setFullScreen();
+#else
+      if (initialWindowState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr)
+         TCSDL_SetFullscreen(true);
+#endif
+#else
+      if (*tcSettings.isFullScreenPtr)
+         setFullScreen();
+#endif
       // 4. Retrieve user settings
       retrieveSettingsChangedAtStaticInitializer(currentContext);
       // 5. create an instance and call the constructor
@@ -275,6 +289,152 @@ static void loadExceptionClasses(Context currentContext)
 #define ALLOW_TEST_SUITE true
 #endif
 
+#if TC_OS_DESKTOP
+typedef enum
+{
+   STARTUP_OPTION_SCREEN_BOUNDS,
+   STARTUP_OPTION_FULLSCREEN,
+   STARTUP_OPTION_MAXIMIZED,
+   STARTUP_OPTION_SDL_PIXEL_FORMAT
+} TCStartupOptionKind;
+
+typedef struct
+{
+   const char *name;
+   TCStartupOptionKind kind;
+} TCStartupOption;
+
+static const TCStartupOption startupOptions[] =
+{
+   { "/scr", STARTUP_OPTION_SCREEN_BOUNDS },
+   { "/fullscreen", STARTUP_OPTION_FULLSCREEN },
+   { "/maximized", STARTUP_OPTION_MAXIMIZED },
+   { "/sdlPixelFormat", STARTUP_OPTION_SDL_PIXEL_FORMAT }
+};
+
+static bool isStartupOption(CharP command, CharP position, const char *option)
+{
+   size_t optionLength = xstrlen(option);
+   return (position == command || *(position - 1) == ' ')
+      && strncmp(position, option, optionLength) == 0
+      && (position[optionLength] == ' ' || position[optionLength] == '\0');
+}
+
+static bool parseScreenBounds(CharP value)
+{
+   int count = 0;
+   int32 x, y, width, height;
+   if (sscanf(value, "%d,%d,%d,%d%n", &x, &y, &width, &height, &count) != 4
+      || (value[count] != '\0' && value[count] != ' ')
+      || x < -2 || y < -2 || width == 0 || height == 0 || width < -1 || height < -1)
+   {
+      alert("Format: <other arguments> /scr x,y,width,height\nPass -1 to use the default and -2 to center on screen.");
+      return false;
+   }
+   defScrX = x;
+   defScrY = y;
+   defScrW = width;
+   defScrH = height;
+   return true;
+}
+
+static const TCStartupOption *findStartupOption(CharP command, CharP position)
+{
+   size_t i;
+   for (i = 0; i < sizeof(startupOptions) / sizeof(startupOptions[0]); ++i)
+      if (isStartupOption(command, position, startupOptions[i].name))
+         return &startupOptions[i];
+   return null;
+}
+
+static bool parseInitialWindowState(TCInitialWindowState state)
+{
+   if (initialWindowState != TC_INITIAL_WINDOW_NORMAL && initialWindowState != state)
+   {
+      alert("/fullscreen and /maximized cannot be combined.");
+      return false;
+   }
+   initialWindowState = state;
+   return true;
+}
+
+static bool parseDesktopStartupOptions(CharP command)
+{
+   CharP read = command;
+   CharP write = command;
+   CharP commandEnd = xstrstr(command, " /cmd ");
+   while (*read != '\0' && (commandEnd == null || read < commandEnd))
+   {
+      const TCStartupOption *option = findStartupOption(command, read);
+      if (option != null && option->kind == STARTUP_OPTION_SCREEN_BOUNDS)
+      {
+         CharP value = read + xstrlen(option->name);
+         while (*value == ' ')
+            value++;
+         if (!parseScreenBounds(value))
+            return false;
+         read = value;
+         while (*read != '\0' && *read != ' ')
+            read++;
+         continue;
+      }
+      if (option != null && option->kind == STARTUP_OPTION_FULLSCREEN)
+      {
+         if (!parseInitialWindowState(TC_INITIAL_WINDOW_FULLSCREEN))
+            return false;
+         read += xstrlen(option->name);
+         continue;
+      }
+      if (option != null && option->kind == STARTUP_OPTION_MAXIMIZED)
+      {
+         if (!parseInitialWindowState(TC_INITIAL_WINDOW_MAXIMIZED))
+            return false;
+         read += xstrlen(option->name);
+         continue;
+      }
+      if (option != null && option->kind == STARTUP_OPTION_SDL_PIXEL_FORMAT)
+      {
+         CharP value = read + xstrlen(option->name);
+         CharP valueEnd;
+         while (*value == ' ')
+            value++;
+         valueEnd = value;
+         while (*valueEnd != '\0' && *valueEnd != ' ')
+            valueEnd++;
+         if (valueEnd == value)
+         {
+            alert("Format: /sdlPixelFormat <auto|argb8888|rgb565>");
+            return false;
+         }
+#if TC_WINDOWING_SDL
+         {
+            char saved = *valueEnd;
+            bool valid;
+            *valueEnd = '\0';
+            valid = TCSDL_SetPixelFormatRequest(value);
+            *valueEnd = saved;
+            if (!valid)
+            {
+               alert("Format: /sdlPixelFormat <auto|argb8888|rgb565>");
+               return false;
+            }
+         }
+#else
+         alert("/sdlPixelFormat requires SDL windowing.");
+         return false;
+#endif
+         read = valueEnd;
+         continue;
+      }
+      *write++ = *read++;
+   }
+   while (*read != '\0')
+      *write++ = *read++;
+   *write = '\0';
+   return true;
+}
+#endif
+
 TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 {
    CharP cmdline;
@@ -292,14 +452,10 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
     if (isWakeUpCall(argsOriginal))
       return 109;
  #endif
-#elif defined WIN32
-   if (argsOriginalLen > 0 && xstrstr(argsOriginal, "/scr"))
-   {
-      argsOriginal = parseScreenBounds(argsOriginal, &defScrX, &defScrY, &defScrW, &defScrH);
-      if (!argsOriginal)
-         return 110;
-      argsOriginalLen = xstrlen(argsOriginal);
-   }
+#elif TC_OS_DESKTOP
+   if (argsOriginalLen > 0 && !parseDesktopStartupOptions(argsOriginal))
+      return 110;
+   argsOriginalLen = xstrlen(argsOriginal);
 #endif
 
    xstrncpy(args, argsOriginal, min32(sizeof(args)-1, argsOriginalLen));
