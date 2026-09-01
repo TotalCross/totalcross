@@ -14,7 +14,7 @@
 #endif
 #include "GraphicsPrimitives_c.h"
 
-#if defined(WINCE) || defined(WIN32)
+#if defined(WINCE) || (defined(WIN32) && TC_WINDOWING_NATIVE)
  #include "win/gfx_Graphics_c.h"
 #elif TC_GRAPHICS_GLES
  #include "backend/graphics/gles/gfx_Graphics_c.h"
