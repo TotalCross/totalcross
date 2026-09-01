@@ -26,6 +26,11 @@
  #error No Window backend selected
 #endif
 
+bool windowBackendSetSize(int32 width, int32 height)
+{
+   return windowBackendSetSizeImpl(width, height);
+}
+
 #if TC_OS_WINDOWS || TC_OS_WINCE
  #include "win/WindowServices_c.h"
 #elif TC_OS_MACOS

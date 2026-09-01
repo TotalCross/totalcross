@@ -4,19 +4,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h)
+void graphicsScreenChange(int32 w, int32 h)
 {
-#ifndef WINCE // windows ce already does this for us
-   *w += GetSystemMetrics(resizableWindow ? SM_CXSIZEFRAME : SM_CXFIXEDFRAME)*2;
-   *h += GetSystemMetrics(resizableWindow ? SM_CYSIZEFRAME : SM_CYFIXEDFRAME)*2 + GetSystemMetrics(SM_CYCAPTION);
-#endif
-}
-void privateScreenChange(int32 w, int32 h)
-{
-#ifndef WINCE // windows ce already does this for us
-   adjustWindowSizeWithBorders(*tcSettings.resizableWindow,&w, &h);
-   SetWindowPos(mainHWnd,0,0,0, w, h, SWP_NOMOVE);
-#endif
+   UNUSED(w)
+   UNUSED(h)
 }
 
 #if defined (WINCE)

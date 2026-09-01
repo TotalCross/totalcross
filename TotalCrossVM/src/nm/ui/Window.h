@@ -10,4 +10,6 @@
 #include "tcvm.h"
 #include "WindowSIP.h"
 
+bool windowBackendSetSize(int32 width, int32 height);
+
 #endif

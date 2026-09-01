@@ -11,6 +11,8 @@
  #include "win/aygshellLib.h"
 #endif
 
+#include "../../nm/ui/Window.h"
+
 
 void markWholeScreenDirty(Context currentContext);
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int hRes, int vRes, bool nothingChanged);
@@ -362,10 +364,14 @@ cont:
                if (keysMatch(*keys, key))
                {
                   key = keyDevice2Portable(*keys);
-                  if (key == SK_SCREEN_CHANGE)
-                  {
-                     if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
-                        screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
+                     if (key == SK_SCREEN_CHANGE)
+                     {
+                        if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
+                        {
+                           windowBackendSetSize(*tcSettings.screenHeightPtr,
+                              *tcSettings.screenWidthPtr);
+                           screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
+                        }
                   }
                   else
                   {
@@ -389,6 +395,8 @@ cont:
                   int t = screen.minScreenW;
                   screen.minScreenW = screen.minScreenH;
                   screen.minScreenH = t;
+                  windowBackendSetSize(*tcSettings.screenHeightPtr,
+                     *tcSettings.screenWidthPtr);
                   screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
                }
             }

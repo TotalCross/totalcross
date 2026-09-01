@@ -5,6 +5,12 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 
+static bool windowBackendSetSizeImpl(int32 width, int32 height)
+{
+   UNUSED(width)
+   UNUSED(height)
+   return false;
+}
 
 static void windowBackendSetDeviceTitle(TCObject titleObj)
 {

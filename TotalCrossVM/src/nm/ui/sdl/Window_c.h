@@ -8,6 +8,12 @@
 #include "SDL2/SDL.h"
 #endif
 #include "../Window.h"
+#include "../../init/tcsdl.h"
+
+static bool windowBackendSetSizeImpl(int32 width, int32 height)
+{
+   return TCSDL_SetWindowSize(width, height);
+}
 
 static void windowBackendSetDeviceTitle(TCObject titleObj)
 {

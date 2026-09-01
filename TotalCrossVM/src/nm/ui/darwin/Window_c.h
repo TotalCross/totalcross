@@ -10,6 +10,13 @@
 extern "C" {
 #endif
 
+static bool windowBackendSetSizeImpl(int32 width, int32 height)
+{
+   UNUSED(width)
+   UNUSED(height)
+   return false;
+}
+
 static void windowBackendSetDeviceTitle(TCObject titleObj)
 {
    UNUSED(titleObj)
