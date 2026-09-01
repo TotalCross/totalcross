@@ -140,14 +140,17 @@ class SDLDesktopContractTests(unittest.TestCase):
         helper = source[source.index("static void dispatchPortableSpecialKey") :
                         source.index("#if defined(WIN32)")]
         self.assertIn("if (key == SK_SCREEN_CHANGE)", helper)
-        self.assertIn("*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr", helper)
         self.assertIn("screen.minScreenW", helper)
         self.assertIn("screen.minScreenH", helper)
         self.assertIn("TCSDL_GetWindowSize(&screen, &width, &height)", helper)
         self.assertIn("TCSDL_SetWindowSize(height, width)", helper)
+        self.assertNotIn("tcSettings", helper)
         self.assertNotIn("screenChange(", helper)
         self.assertNotIn("screenChangeCommitted(", helper)
         self.assertNotIn("screenApplyConfiguration(", helper)
+        resize = helper.index("if (TCSDL_SetWindowSize(height, width))")
+        minimum = helper.index("int32 minimum = screen.minScreenW")
+        self.assertLess(resize, minimum)
         self.assertIn("postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS", helper)
         keyboard = source[source.index("static void handleKeyboardEvent") :
                            source.index("static void handleWheelEvent")]
@@ -199,8 +202,17 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertNotIn("adjustWindowSizeWithBorders", graphics_hook)
 
         native_event = (ROOT / "TotalCrossVM/src/event/win/event_c.h").read_text()
-        self.assertIn("windowBackendSetSize(*tcSettings.screenHeightPtr", native_event)
-        self.assertIn("screenChange(mainContext, *tcSettings.screenHeightPtr", native_event)
+        self.assertEqual(2, native_event.count("int32 targetWidth = *tcSettings.screenHeightPtr"))
+        self.assertEqual(2, native_event.count("int32 targetHeight = *tcSettings.screenWidthPtr"))
+        self.assertEqual(2, native_event.count("int32 targetHRes = *tcSettings.screenHeightInDPIPtr"))
+        self.assertEqual(2, native_event.count("int32 targetVRes = *tcSettings.screenWidthInDPIPtr"))
+        self.assertEqual(2, native_event.count("windowBackendSetSize(targetWidth, targetHeight)"))
+        self.assertEqual(2, native_event.count("screenChange(mainContext, targetWidth, targetHeight"))
+        for start, end in zip(
+            [m.start() for m in re.finditer("int32 targetWidth =", native_event)],
+            [m.start() for m in re.finditer("windowBackendSetSize(targetWidth, targetHeight)", native_event)],
+        ):
+            self.assertLess(start, end)
 
     def test_tcsdl_window_size_operation_is_generic(self):
         header = SDL_HEADER.read_text()
