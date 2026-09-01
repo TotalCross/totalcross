@@ -47,7 +47,7 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
 
     auto imageSurface = std::make_unique<SkiaImageSurface>();
     imageSurface->bitmap.installPixels(
-        SkImageInfo::Make(w, h, kN32_SkColorType, kUnpremul_SkAlphaType),
+        SkImageInfo::Make(w, h, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType),
         converted,
         sizeof(Pixel) * static_cast<size_t>(w),
         releaseProc,

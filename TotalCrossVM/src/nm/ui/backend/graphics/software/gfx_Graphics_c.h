@@ -27,7 +27,8 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    *(tcSettings.isFullScreenPtr)=true;
 #endif
 #if TC_WINDOWING_SDL
-   TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr));
+   if (!TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr)))
+      return false;
 #elif !defined HEADLESS
    DFBResult err;
    IDirectFB *_dfb;
@@ -77,6 +78,10 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
+#if TC_WINDOWING_SDL
+   if (!TCSDL_CreateBackBuffer(screen))
+      return false;
+#endif
 #if TC_RENDERER_SKIA
    initSkia(screen->screenW, screen->screenH, screen->pixels, (int)screen->pitch, screen->pixelformat);
 #endif
@@ -102,7 +107,12 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen) // scree
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
 #if TC_WINDOWING_SDL
-   TCSDL_Destroy(screen);
+   #if TC_RENDERER_SKIA
+   destroySkiaScreen();
+   #endif
+   TCSDL_DestroyBackBuffer(screen);
+   if (!isScreenChange)
+      TCSDL_DestroyWindow(screen);
 #elif !defined HEADLESS
    if (SCREEN_EX(screen)->layer)
       SCREEN_EX(screen)->layer->Release (SCREEN_EX(screen)->layer);
@@ -113,7 +123,11 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 
 bool graphicsLock(ScreenSurface screen, bool on)
 {
-#ifndef HEADLESS
+#if TC_WINDOWING_SDL || defined(HEADLESS)
+   UNUSED(screen)
+   UNUSED(on)
+   return true;
+#else
    IDirectFBSurface *surf = SCREEN_EX(screen)->primary;
    IDirectFBDisplayLayer *_layer = SCREEN_EX(screen)->layer;
    if (on)
@@ -127,7 +141,5 @@ bool graphicsLock(ScreenSurface screen, bool on)
       _layer->EnableCursor(_layer, 1);
       return ok;
    }
-#else
-    return true;
 #endif
 }

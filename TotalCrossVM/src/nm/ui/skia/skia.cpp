@@ -30,6 +30,13 @@
 #endif
 #endif
 
+#if defined(ANDROID)
+#include <jni.h>
+#include <android/bitmap.h>
+#endif
+
+#if TC_GRAPHICS_GLES
+
 #if __APPLE__
 #ifdef darwin
 #include <OpenGLES/ES2/gl.h>
@@ -38,21 +45,20 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #endif
-#else
-#if !defined(__arm__) && !defined(ANDROID)
+
+#elif !defined(__arm__) && !defined(ANDROID)
+
 #include <GL/gl.h>
+
 #else
+
 #include <EGL/egl.h>
-// #include <GLES/gl.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
-#if defined ANDROID
-#include <jni.h>
-#include <android/bitmap.h>
 #endif
-#endif
-#endif
+
+#endif // TC_GRAPHICS_GLES
 #if TC_WINDOWING_SDL
 #include "../../../init/tcsdl.h"
 #endif
@@ -73,17 +79,6 @@
 #include "include/core/SkPath.h"
 #include "include/effects/SkGradientShader.h"
 #include "include/core/SkTextBlob.h"
-
-#include "include/gpu/gl/GrGLAssembleInterface.h"
-#include "include/gpu/gl/GrGLConfig.h"
-#include "include/gpu/gl/GrGLExtensions.h"
-#include "include/gpu/gl/GrGLFunctions.h"
-#include "include/gpu/gl/GrGLInterface.h"
-#include "include/gpu/gl/GrGLTypes.h"
-
-#include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrDirectContext.h"
-#include "include/gpu/GrTypes.h"
 
 #include "include/core/SkColorSpace.h"
 #include "include/effects/SkDashPathEffect.h"
@@ -155,10 +150,11 @@ std::map<std::string, int> typefaceIndexMap;
 void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
+    destroySkiaScreen();
 #if TC_GRAPHICS_SOFTWARE
     bitmap.installPixels(SkImageInfo::Make(w,
                                            h,
-                                           (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), (Uint32 *)pixels, pitch);
+                                           (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), pixels, pitch);
     canvas = new SkCanvas(bitmap);
 #elif TC_GRAPHICS_GLES
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
@@ -205,6 +201,16 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     backPaint.setAntiAlias(true);
     canvas->clear(SK_ColorWHITE);
     flushSkia();
+}
+
+void destroySkiaScreen()
+{
+#if TC_GRAPHICS_SOFTWARE
+    delete canvas;
+#endif
+    canvas = nullptr;
+    bitmap.reset();
+    surface.reset();
 }
 
 void flushSkia()
@@ -337,21 +343,10 @@ extern "C" JNIEXPORT void JNICALL Java_totalcross_Launcher4A_drawIntoBitmap(JNIE
 
 #if TC_WINDOWING_SDL
 int32 colorType(uint32 pixelformat) {
-    if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED16) {
-        if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB) {
-            if (SDL_PIXELLAYOUT(pixelformat) == SDL_PACKEDLAYOUT_565) {
-                return kRGB_565_SkColorType;
-            }
-        }
-    }
-    else if (SDL_PIXELTYPE(pixelformat) == SDL_PIXELTYPE_PACKED32) {
-        if (SDL_PIXELLAYOUT(pixelformat) == SDL_PACKEDLAYOUT_8888) {
-            if (SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_XRGB ||
-                SDL_PIXELORDER(pixelformat) == SDL_PACKEDORDER_ARGB) {
-                return kBGRA_8888_SkColorType;
-            }
-        }
-    }
+    if (pixelformat == SDL_PIXELFORMAT_ARGB8888)
+        return kBGRA_8888_SkColorType;
+    if (pixelformat == SDL_PIXELFORMAT_RGB565)
+        return kRGB_565_SkColorType;
     debug("Unsupported pixel format %s, try mapping your color format on %s - %s", SDL_GetPixelFormatName(pixelformat), __FILE__, __FUNCTION__);
     return kUnknown_SkColorType;
 }

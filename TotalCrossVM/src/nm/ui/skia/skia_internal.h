@@ -30,6 +30,7 @@
 #include "include/core/SkTypeface.h"
 #include "include/effects/SkDashPathEffect.h"
 #include "include/effects/SkGradientShader.h"
+#if TC_GRAPHICS_GLES
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrTypes.h"
@@ -39,6 +40,7 @@
 #include "include/gpu/gl/GrGLFunctions.h"
 #include "include/gpu/gl/GrGLInterface.h"
 #include "include/gpu/gl/GrGLTypes.h"
+#endif
 #include "include/utils/SkRandom.h"
 
 static inline SkColor skiaColorFromPixel(Pixel pixel) {
