@@ -66,9 +66,11 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    int32 requestedX, requestedY;
    bool defaultX, defaultY;
    RECT actualWindowRect;
+#if !defined(WINCE)
    TCDisplayMetrics display;
    TCWindowStartupOptions startupOptions = desktopWindowStartupOptions;
    TCWindowStartupConfiguration configuration;
+#endif
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
 
