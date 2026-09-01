@@ -10,8 +10,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Active milestone: complete; desktop startup sizing correctness follow-up
   complete; Windows interactive smoke remains deferred
 - Last logical commits: `7a8a11ffd refactor(windowing): centralize desktop
-  startup policy` and `e562e0501 fix(windowing): preserve WinCE startup
-  compatibility`
+  startup policy`, `e562e0501 fix(windowing): preserve WinCE startup
+  compatibility`, and `a47d1d1a8 build(cmake): include shared startup source`
 - Active paths: `TotalCrossVM/src/nm/ui/WindowStartup.h`,
   `TotalCrossVM/src/nm/ui/WindowStartup.c`, `TotalCrossVM/src/init/globals.c`,
   `TotalCrossVM/src/init/globals.h`, `TotalCrossVM/src/init/startup.c`,
