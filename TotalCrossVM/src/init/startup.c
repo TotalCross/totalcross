@@ -289,6 +289,23 @@ static void loadExceptionClasses(Context currentContext)
 #define ALLOW_TEST_SUITE true
 #endif
 
+static CharP findCommandSeparator(CharP command)
+{
+#if TC_OS_DESKTOP
+   CharP search = command;
+   CharP separator;
+   while ((separator = xstrstr(search, " /cmd")) != null)
+   {
+      if (separator[5] == ' ' || separator[5] == '\0')
+         return separator;
+      search = separator + 5;
+   }
+   return null;
+#else
+   return xstrstr(command, " /cmd ");
+#endif
+}
+
 #if TC_OS_DESKTOP
 typedef enum
 {
@@ -312,6 +329,14 @@ static const TCStartupOption startupOptions[] =
    { "/sdlPixelFormat", STARTUP_OPTION_SDL_PIXEL_FORMAT }
 };
 
+typedef struct
+{
+   bool traceRequested;
+   bool testSuiteRequested;
+   bool pathRequested;
+   char path[MAX_PATHNAME];
+} DesktopCommandLineOptions;
+
 static bool isStartupOption(CharP command, CharP position, const char *option)
 {
    size_t optionLength = xstrlen(option);
@@ -320,7 +345,7 @@ static bool isStartupOption(CharP command, CharP position, const char *option)
       && (position[optionLength] == ' ' || position[optionLength] == '\0');
 }
 
-static bool parseScreenBounds(CharP value)
+static CharP parseScreenBounds(CharP value)
 {
    int count = 0;
    int32 x, y, width, height;
@@ -329,13 +354,13 @@ static bool parseScreenBounds(CharP value)
       || x < -2 || y < -2 || width == 0 || height == 0 || width < -1 || height < -1)
    {
       alert("Format: <other arguments> /scr x,y,width,height\nPass -1 to use the default and -2 to center on screen.");
-      return false;
+      return null;
    }
    defScrX = x;
    defScrY = y;
    defScrW = width;
    defScrH = height;
-   return true;
+   return value + count;
 }
 
 static const TCStartupOption *findStartupOption(CharP command, CharP position)
@@ -358,43 +383,77 @@ static bool parseInitialWindowState(TCInitialWindowState state)
    return true;
 }
 
-static bool parseDesktopStartupOptions(CharP command)
+static bool appendCommandToken(CharP *write, CharP output, int32 outputSize,
+   bool *hasToken, CharP token, CharP tokenEnd)
+{
+   if (token == tokenEnd)
+      return true;
+   if (*hasToken)
+   {
+      if (*write - output >= outputSize - 1)
+         return false;
+      *(*write)++ = ' ';
+   }
+   while (token < tokenEnd)
+   {
+      if (*write - output >= outputSize - 1)
+         return false;
+      *(*write)++ = *token++;
+   }
+   *hasToken = true;
+   return true;
+}
+
+static bool filterDesktopCommandLine(CharP command,
+   DesktopCommandLineOptions *options)
 {
    CharP read = command;
    CharP write = command;
-   CharP commandEnd = xstrstr(command, " /cmd ");
-   while (*read != '\0' && (commandEnd == null || read < commandEnd))
+   bool hasToken = false;
+   int32 commandSize = xstrlen(command) + 1;
+
+   xmemzero(options, sizeof(*options));
+
+   while (*read != '\0')
    {
-      const TCStartupOption *option = findStartupOption(command, read);
+      CharP token;
+      CharP tokenEnd;
+      const TCStartupOption *option;
+
+      while (*read == ' ')
+         read++;
+      if (*read == '\0')
+         break;
+      token = read;
+      while (*read != '\0' && *read != ' ')
+         read++;
+      tokenEnd = read;
+      option = findStartupOption(command, token);
       if (option != null && option->kind == STARTUP_OPTION_SCREEN_BOUNDS)
       {
-         CharP value = read + xstrlen(option->name);
+         CharP value = read;
          while (*value == ' ')
             value++;
-         if (!parseScreenBounds(value))
+         read = parseScreenBounds(value);
+         if (read == null)
             return false;
-         read = value;
-         while (*read != '\0' && *read != ' ')
-            read++;
          continue;
       }
       if (option != null && option->kind == STARTUP_OPTION_FULLSCREEN)
       {
          if (!parseInitialWindowState(TC_INITIAL_WINDOW_FULLSCREEN))
             return false;
-         read += xstrlen(option->name);
          continue;
       }
       if (option != null && option->kind == STARTUP_OPTION_MAXIMIZED)
       {
          if (!parseInitialWindowState(TC_INITIAL_WINDOW_MAXIMIZED))
             return false;
-         read += xstrlen(option->name);
          continue;
       }
       if (option != null && option->kind == STARTUP_OPTION_SDL_PIXEL_FORMAT)
       {
-         CharP value = read + xstrlen(option->name);
+         CharP value = read;
          CharP valueEnd;
          while (*value == ' ')
             value++;
@@ -426,13 +485,64 @@ static bool parseDesktopStartupOptions(CharP command)
          read = valueEnd;
          continue;
       }
-      *write++ = *read++;
+      if (isStartupOption(command, token, "-t"))
+      {
+         options->traceRequested = true;
+         continue;
+      }
+      if (isStartupOption(command, token, "-p"))
+      {
+         CharP path = read;
+         CharP pathEnd;
+         options->pathRequested = true;
+         while (*path == ' ')
+            path++;
+         pathEnd = path;
+         while (*pathEnd != '\0' && *pathEnd != ' ')
+            pathEnd++;
+         if (pathEnd != path)
+            xstrncpy(options->path, path, sizeof(options->path) - 1);
+         read = pathEnd;
+         continue;
+      }
+      if (isStartupOption(command, token, "-testsuite"))
+      {
+         options->testSuiteRequested = true;
+         continue;
+      }
+      if (!appendCommandToken(&write, command, commandSize, &hasToken,
+         token, tokenEnd))
+         return false;
    }
-   while (*read != '\0')
-      *write++ = *read++;
    *write = '\0';
    return true;
 }
+
+static bool prepareDesktopCommandLines(CharP vmCommandLine,
+   CharP applicationCommandLine, int32 applicationCommandLineSize,
+   DesktopCommandLineOptions *options)
+{
+   CharP separator;
+
+   if (!filterDesktopCommandLine(vmCommandLine, options))
+      return false;
+   separator = findCommandSeparator(vmCommandLine);
+   if (separator == null)
+   {
+      *applicationCommandLine = '\0';
+      return true;
+   }
+   if (separator[5] == '\0')
+      *applicationCommandLine = '\0';
+   else
+      xstrncpy(applicationCommandLine, separator + 6,
+         applicationCommandLineSize - 1);
+   return true;
+}
+
+#ifdef ENABLE_TEST_SUITE
+#include "startup_test.h"
+#endif
 #endif
 
 TC_API int32 startVM(CharP argsOriginal, Context* cOut)
@@ -441,9 +551,15 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    TCZFile loadedTCZ;
    char args[256];
    char argsLower[256];
+#if TC_OS_DESKTOP
+   char vmCommandLine[512];
+   char applicationCommandLine[256] = { 0 };
+   DesktopCommandLineOptions desktopCommandLineOptions = { 0 };
+#endif
    CharP tczName;
    int32 argsOriginalLen = argsOriginal ? xstrlen(argsOriginal) : 0;
    CharP c;
+   CharP commandLineToParse;
    Context currentContext;
    TCObject name;
 
@@ -453,9 +569,15 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       return 109;
  #endif
 #elif TC_OS_DESKTOP
-   if (argsOriginalLen > 0 && !parseDesktopStartupOptions(argsOriginal))
-      return 110;
-   argsOriginalLen = xstrlen(argsOriginal);
+   if (argsOriginalLen > 0)
+   {
+      xstrncpy(vmCommandLine, argsOriginal, sizeof(vmCommandLine) - 1);
+      if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
+         sizeof(applicationCommandLine), &desktopCommandLineOptions))
+         return 110;
+      argsOriginal = vmCommandLine;
+      argsOriginalLen = xstrlen(vmCommandLine);
+   }
 #endif
 
    xstrncpy(args, argsOriginal, min32(sizeof(args)-1, argsOriginalLen));
@@ -476,22 +598,43 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 
    initException(); // load exceptions
 
+#if TC_OS_DESKTOP
+   if (desktopCommandLineOptions.traceRequested)
+      traceOn = true;
+   if (desktopCommandLineOptions.pathRequested)
+   {
+      closeDebug();
+      xstrcpy(appPath, desktopCommandLineOptions.path);
+   }
+#endif
+
    xstrcpy(argsLower, args);
    CharPToLower(argsLower);
    if (xstrstr(argsLower, "launcher") && 0) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
       xstrcpy(args, " /cmd -testsuite");
 
-   cmdline = xstrstr(args, " /cmd "); // check if there's a cmd line
+   cmdline = findCommandSeparator(args); // check if there's a cmd line
    if (cmdline) // if yes, split the cmdline and the tczName
    {
       *cmdline = 0;
-      cmdline += 6;
+      cmdline += cmdline[5] == ' ' ? 6 : 5;
    }
+
+#if TC_OS_DESKTOP
+   commandLineToParse = cmdline == null ? null : applicationCommandLine;
+#else
+   commandLineToParse = cmdline;
+#endif
 
    if (cmdline || !*args) // parse the command line
    {
-      bool loop = true;
-      if (ALLOW_TEST_SUITE && (!*args || xstrstr(cmdline,"-testsuite")))
+      if (ALLOW_TEST_SUITE && (!*args ||
+#if TC_OS_DESKTOP
+         desktopCommandLineOptions.testSuiteRequested
+#else
+         xstrstr(commandLineToParse,"-testsuite")
+#endif
+         ))
       {
          #ifdef ENABLE_TEST_SUITE
           initSettings(currentContext, "", null);
@@ -516,19 +659,24 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
          #endif
           return exitProgram(-1);
       }
-      c = cmdline;
-      if (cmdline) 
+#if TC_OS_DESKTOP
+      if (commandLineToParse != null)
+         xstrncpy(commandLine, commandLineToParse, sizeof(commandLine) - 1);
+#else
+      bool loop = true;
+      c = commandLineToParse;
+      if (commandLineToParse)
       while (loop)
       {
-         switch (*cmdline++)
+         switch (*commandLineToParse++)
          {
             case 0:
-               cmdline--;
+               commandLineToParse--;
                loop = false;
                break;
             case '-': // possible options
             {
-               switch (toLower(*cmdline++))
+               switch (toLower(*commandLineToParse++))
                {
                   case 't':
                   {
@@ -539,12 +687,12 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
                   case 'p': // required on systems that can't determine the executable directory of the current process
                   {
                      closeDebug(); // close debug file before an appPath change, not terrible :-(
-                     cmdline = nextArgPath(cmdline, appPath);
+                     commandLineToParse = nextArgPath(commandLineToParse, appPath);
                      goto jumpArgument;
                   }
                   break;
 jumpArgument:
-                  c = cmdline;
+                  c = commandLineToParse;
                   default:
                      break;
                }
@@ -557,7 +705,8 @@ jumpArgument:
       while (*c == ' ' && *c != 0)
          c++;
       if (commandLine != null && c != null)
-         xstrcpy(commandLine, c);
+         xstrncpy(commandLine, c, sizeof(commandLine) - 1);
+#endif
    }
 
 #if defined(ENABLE_TRACE) && (defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)
