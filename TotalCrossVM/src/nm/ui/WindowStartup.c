@@ -93,6 +93,7 @@ bool windowResolveStartupConfiguration(
    int32 defaultHeight;
    bool explicitSizeSource;
    bool tczSizeSource;
+   bool tczSizeUsed;
 
    if (options == null || display == null || configuration == null
       || display->width <= 0 || display->height <= 0)
@@ -134,9 +135,11 @@ bool windowResolveStartupConfiguration(
          : tczWidth > 0 ? tczWidth : defaultWidth;
       configuration->height = options->environmentHeight > 0 ? options->environmentHeight
          : tczHeight > 0 ? tczHeight : defaultHeight;
-      configuration->xMode = tczSizeSource ? TC_WINDOW_POSITION_CENTER
+      tczSizeUsed = (options->environmentWidth <= 0 && tczWidth > 0)
+         || (options->environmentHeight <= 0 && tczHeight > 0);
+      configuration->xMode = tczSizeUsed ? TC_WINDOW_POSITION_CENTER
          : TC_WINDOW_POSITION_DEFAULT;
-      configuration->yMode = tczSizeSource ? TC_WINDOW_POSITION_CENTER
+      configuration->yMode = tczSizeUsed ? TC_WINDOW_POSITION_CENTER
          : TC_WINDOW_POSITION_DEFAULT;
       configuration->x = 0;
       configuration->y = 0;

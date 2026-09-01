@@ -266,6 +266,9 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("defaultWidth = display->width", window)
         self.assertIn("defaultHeight = display->height", window)
         self.assertIn("TC_WINDOW_POSITION_CENTER", window)
+        self.assertIn("tczSizeUsed", window)
+        self.assertIn("options->environmentWidth <= 0 && tczWidth > 0", window)
+        self.assertIn("options->environmentHeight <= 0 && tczHeight > 0", window)
         self.assertNotIn("tczSizeApplied", window)
 
     def test_sdl_startup_size_attributes_and_hidpi_state(self):
