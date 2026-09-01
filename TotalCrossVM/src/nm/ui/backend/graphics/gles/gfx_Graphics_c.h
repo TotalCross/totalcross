@@ -363,7 +363,7 @@ static void setProjectionMatrix(float w, float h)
 
 /////////////////////////////////////////////////////////////////////////
 
-void privateScreenChange(int32 w, int32 h)
+void graphicsScreenChange(int32 w, int32 h)
 {
 #if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
    surfaceWillChange = false;

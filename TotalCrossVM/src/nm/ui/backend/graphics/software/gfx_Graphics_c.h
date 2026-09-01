@@ -6,7 +6,7 @@
 
 #include "gfx_ex.h"
 
-void privateScreenChange(int32 w, int32 h)
+void graphicsScreenChange(int32 w, int32 h)
 {
    UNUSED(w)
    UNUSED(h)
