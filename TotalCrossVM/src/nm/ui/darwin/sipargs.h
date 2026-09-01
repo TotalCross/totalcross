@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -7,14 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #include "xtypes.h"
-
-enum
-{
-   SIP_HIDE    = 10000, /** Used to hide the virtual keyboard */
-   SIP_TOP     = 10001, /** Used to place the keyboard on top of screen */
-   SIP_BOTTOM  = 10002, /** Used to place the keyboard on bottom of screen */
-   SIP_SHOW    = 10003  /** Used to show the virtual keyboard, without changing the position */
-};
+#include "../WindowSIP.h"
 
 struct SipArgs
 {

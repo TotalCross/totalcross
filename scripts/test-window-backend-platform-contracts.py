@@ -11,6 +11,8 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 WINDOW = ROOT / "TotalCrossVM/src/nm/ui/Window.c"
+WINDOW_H = ROOT / "TotalCrossVM/src/nm/ui/Window.h"
+WINDOW_SIP_H = ROOT / "TotalCrossVM/src/nm/ui/WindowSIP.h"
 UI = ROOT / "TotalCrossVM/src/nm/ui"
 BACKENDS = {
     "sdl": UI / "sdl/Window_c.h",
@@ -107,6 +109,25 @@ class WindowBackendPlatformContractTests(unittest.TestCase):
 
         sdl = BACKENDS["sdl"].read_text()
         self.assertNotRegex(sdl, r"SIP|SDL_(?:Start|Stop|IsTextInput)")
+
+    def test_sip_constants_have_one_shared_definition(self):
+        source = WINDOW_SIP_H.read_text()
+        self.assertIn("enum TCSIP", source)
+        for name, value in {
+            "SIP_HIDE": "10000",
+            "SIP_TOP": "10001",
+            "SIP_BOTTOM": "10002",
+            "SIP_SHOW": "10003",
+            "SIP_ENABLE_NUMERICPAD": "10004",
+            "SIP_DISABLE_NUMERICPAD": "10005",
+        }.items():
+            self.assertRegex(source, rf"{name}\s*=\s*{value}")
+        self.assertIn('#include "WindowSIP.h"', WINDOW_H.read_text())
+        sipargs = (UI / "darwin/sipargs.h").read_text()
+        self.assertIn('#include "../WindowSIP.h"', sipargs)
+        self.assertNotIn("enum\n{", sipargs)
+        self.assertNotIn('#include "../Window.h"',
+                         (UI / "darwin/WindowServices_c.h").read_text())
 
     def test_platform_dispatch_does_not_use_linux_for_macos(self):
         source = WINDOW.read_text()

@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#include "../Window.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
