@@ -97,7 +97,9 @@ typedef JChar* JCharP;
 
 #if !defined HAS_TCHAR
  #if defined(WINCE) || defined(WIN32)
-  #define inline __inline
+  #if !defined(__cplusplus)
+   #define inline __inline
+  #endif
   #if defined(UNICODE) && !defined(__cplusplus)
   typedef uint16 TCHAR;
   #endif
