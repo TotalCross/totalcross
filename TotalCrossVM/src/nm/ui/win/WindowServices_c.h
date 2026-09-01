@@ -184,8 +184,5 @@ static void windowPlatformGetSafeAreaInsets(
    int32 *bottom,
    int32 *right)
 {
-   UNUSED(top)
-   UNUSED(left)
-   UNUSED(bottom)
-   UNUSED(right)
+   *top = *left = *bottom = *right = 0;
 }

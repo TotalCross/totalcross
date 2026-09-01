@@ -87,6 +87,27 @@ class WindowBackendPlatformContractTests(unittest.TestCase):
         self.assertIn('"setSIP"', SERVICES["android"].read_text())
         self.assertIn('"getSafeAreaInsets"', SERVICES["android"].read_text())
 
+    def test_new_service_headers_use_current_year_policy(self):
+        expected = (
+            "// Copyright (C) 2026 Amalgam Solucoes em TI Ltda\n"
+            "//\n"
+            "// SPDX-License-Identifier: LGPL-2.1-only\n"
+        )
+        for path in (SERVICES["android"], SERVICES["darwin"]):
+            source = path.read_text()
+            self.assertTrue(source.startswith(expected), path.name)
+            self.assertNotIn("SuperWaba", source, path.name)
+            self.assertNotIn("TotalCross Global", source, path.name)
+
+    def test_unsupported_safe_area_services_write_explicit_zeros(self):
+        for name in ("macos", "linux", "win"):
+            source = SERVICES[name].read_text()
+            function = source[source.index("static void windowPlatformGetSafeAreaInsets") :]
+            self.assertIn("*top = *left = *bottom = *right = 0;", function, name)
+
+        sdl = BACKENDS["sdl"].read_text()
+        self.assertNotRegex(sdl, r"SIP|SDL_(?:Start|Stop|IsTextInput)")
+
     def test_platform_dispatch_does_not_use_linux_for_macos(self):
         source = WINDOW.read_text()
         service_dispatch = source[source.index('#if TC_OS_WINDOWS || TC_OS_WINCE') :]
