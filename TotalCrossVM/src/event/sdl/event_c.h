@@ -179,29 +179,32 @@ static void handleFingerTouchEvent(SDL_Event event)
 static void handleMouseEvent(SDL_Event event)
 {
    int32 timestamp = getTimeStamp();
-   if (event.button.button == SDL_BUTTON_LEFT)
+   switch (event.type)
    {
-      switch (event.type)
-      {
-         case SDL_MOUSEBUTTONDOWN:
+      case SDL_MOUSEBUTTONDOWN:
+         if (event.button.button == SDL_BUTTON_LEFT)
+         {
             isDragging = true;
             postEvent(mainContext, PENEVENT_PEN_DOWN, 0,
                event.button.x, event.button.y, timestamp);
-            break;
-         case SDL_MOUSEBUTTONUP:
+         }
+         break;
+      case SDL_MOUSEBUTTONUP:
+         if (event.button.button == SDL_BUTTON_LEFT)
+         {
             isDragging = false;
             postEvent(mainContext, PENEVENT_PEN_UP, 0,
                event.button.x, event.button.y, timestamp);
-            break;
-         case SDL_MOUSEMOTION:
-            if (event.motion.state == SDL_PRESSED)
-               postEvent(mainContext, PENEVENT_PEN_DRAG, 0,
-                  event.motion.x, event.motion.y, timestamp);
-            else
-               postEvent(mainContext, MOUSEEVENT_MOUSE_MOVE, 0,
-                  event.motion.x, event.motion.y, timestamp);
-            break;
-      }
+         }
+         break;
+      case SDL_MOUSEMOTION:
+         if (event.motion.state & SDL_BUTTON_LMASK)
+            postEvent(mainContext, PENEVENT_PEN_DRAG, 0,
+               event.motion.x, event.motion.y, timestamp);
+         else
+            postEvent(mainContext, MOUSEEVENT_MOUSE_MOVE, 0,
+               event.motion.x, event.motion.y, timestamp);
+         break;
    }
 }
 
@@ -233,12 +236,78 @@ static void handleWheelEvent(SDL_Event event)
       postEvent(mainContext, MOUSEEVENT_MOUSE_WHEEL, WHEEL_LEFT, x, max32(y, 0), -1);
 }
 
+static void postTextCodePoint(uint32 codePoint, int32 modifier)
+{
+   if (codePoint <= 0xFFFF)
+      postEvent(mainContext, KEYEVENT_KEY_PRESS, (int32)codePoint, 0, 0, modifier);
+   else
+   {
+      codePoint -= 0x10000;
+      postEvent(mainContext, KEYEVENT_KEY_PRESS,
+         (int32)(0xD800 + (codePoint >> 10)), 0, 0, modifier);
+      postEvent(mainContext, KEYEVENT_KEY_PRESS,
+         (int32)(0xDC00 + (codePoint & 0x3FF)), 0, 0, modifier);
+   }
+}
+
 static void handleTextInputEvent(SDL_Event event)
 {
-   int i;
-   int modifier = (int)keyGetPortableModifiers(SDL_GetModState());
-   for (i = 0; event.text.text[i] != '\0'; i++)
-      postEvent(mainContext, KEYEVENT_KEY_PRESS, event.text.text[i], 0, 0, modifier);
+   const uint8 *text = (const uint8*)event.text.text;
+   int32 modifier = (int32)keyGetPortableModifiers(SDL_GetModState());
+   while (*text != '\0')
+   {
+      uint32 codePoint;
+      int32 length;
+      uint8 first = *text++;
+
+      if (first < 0x80)
+      {
+         codePoint = first;
+         length = 0;
+      }
+      else if (first >= 0xC2 && first <= 0xDF)
+      {
+         codePoint = first & 0x1F;
+         length = 1;
+      }
+      else if (first >= 0xE0 && first <= 0xEF)
+      {
+         codePoint = first & 0x0F;
+         length = 2;
+      }
+      else if (first >= 0xF0 && first <= 0xF4)
+      {
+         codePoint = first & 0x07;
+         length = 3;
+      }
+      else
+      {
+         postTextCodePoint(0xFFFD, modifier);
+         continue;
+      }
+
+      const uint8 *continuation = text;
+      bool valid = true;
+      for (int32 i = 0; i < length; i++)
+      {
+         if ((continuation[i] & 0xC0) != 0x80)
+         {
+            valid = false;
+            break;
+         }
+         codePoint = (codePoint << 6) | (continuation[i] & 0x3F);
+      }
+      if (!valid || (length == 2 && codePoint < 0x800)
+         || (length == 3 && codePoint < 0x10000)
+         || codePoint > 0x10FFFF
+         || (codePoint >= 0xD800 && codePoint <= 0xDFFF))
+      {
+         postTextCodePoint(0xFFFD, modifier);
+         continue;
+      }
+      text += length;
+      postTextCodePoint(codePoint, modifier);
+   }
 }
 
 void privatePumpEvent(Context currentContext)
@@ -252,8 +321,35 @@ void privatePumpEvent(Context currentContext)
    switch (event.type)
    {
       case SDL_WINDOWEVENT:
-         if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-            TCSDL_WindowSizeChanged(&screen, event.window.data1, event.window.data2);
+         switch (event.window.event)
+         {
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
+            case SDL_WINDOWEVENT_DISPLAY_CHANGED:
+            case SDL_WINDOWEVENT_MOVED:
+            {
+               TScreenConfiguration configuration;
+               if (TCSDL_QueryWindowMetrics(&screen, &configuration))
+               {
+                  ScreenChangeFlags changes = screenApplyConfiguration(
+                     &screen, &configuration);
+                  screenConsumePendingChanges(&screen);
+                  screenChangeCommitted(mainContext, changes);
+               }
+               break;
+            }
+            case SDL_WINDOWEVENT_MINIMIZED:
+               postOnMinimizeOrRestore(true);
+               break;
+            case SDL_WINDOWEVENT_RESTORED:
+               postOnMinimizeOrRestore(false);
+               break;
+            case SDL_WINDOWEVENT_EXPOSED:
+               markWholeScreenDirty(mainContext);
+               break;
+            case SDL_WINDOWEVENT_CLOSE:
+               keepRunning = false;
+               break;
+         }
          TCSDL_Present();
          break;
       case SDL_FINGERDOWN:
@@ -271,6 +367,8 @@ void privatePumpEvent(Context currentContext)
          break;
       case SDL_TEXTINPUT:
          handleTextInputEvent(event);
+         break;
+      case SDL_TEXTEDITING:
          break;
       case SDL_MOUSEWHEEL:
          handleWheelEvent(event);

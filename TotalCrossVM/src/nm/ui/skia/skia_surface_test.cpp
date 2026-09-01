@@ -25,6 +25,15 @@ int main() {
         return 1;
     }
 
+    Pixel channelOrderPixel = 0x1020E0FF;
+    const Pixel expectedChannelOrder = 0xFF1020E0;
+    const int channelOrderSurface = skia_makeBitmap(-1, &channelOrderPixel, 1, 1);
+    if (channelOrderSurface < 0 ||
+        !expectEqual(skia_getPixel(channelOrderSurface, 0, 0), expectedChannelOrder,
+                     "asymmetric image channels")) {
+        return 1;
+    }
+
     const Pixel expected = skia_getPixel(source, 0, 0);
     skia_drawSurface(destination, source, 0, 0, 2, 2, 1, 1, 3, 3, 255);
     if (!expectEqual(skia_getPixel(destination, 1, 1), expected, "identity copy")) {
@@ -84,6 +93,7 @@ int main() {
 
     skia_deleteBitmap(source);
     skia_deleteBitmap(destination);
+    skia_deleteBitmap(channelOrderSurface);
     skia_deleteBitmap(primitiveDestination);
     skia_deleteBitmap(clippedDestination);
     std::puts("skia surface copy assertions passed");

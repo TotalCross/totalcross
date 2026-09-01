@@ -1,332 +1,252 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
 // Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
-// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
-
-#define DISPLAY_INDEX 0
-#define NO_FLAGS 0
-#define IS_NULL(x)      ((x) == NULL)
-#define NOT_SUCCESS(x)  ((x) != 0)
-#define SUCCESS(x)      ((x) == 0)
 
 #include "tcsdl.h"
 #if defined(WIN32) && !defined(WINCE)
 #include "SDL2/SDL_syswm.h"
 #endif
-#include <iostream>
-#include <vector>
 
-static SDL_Renderer* renderer = NULL;
-static SDL_Texture* texture = NULL;
-static SDL_Window *window = NULL; 
-static SDL_Surface *surface = NULL;
-static bool usesTexture;
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
-/*
- * Init steps to create a window and texture to Skia handling
- *
- * Args:
- * - ScreenSurface from TotalCross globals
- *
- * Return:
- * - false on failure
- * - true on success
- */
-bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen) {
+static const Uint32 TCSDL_PIXEL_FORMAT = SDL_PIXELFORMAT_ARGB8888;
+static SDL_Renderer *renderer;
+static SDL_Texture *texture;
+static SDL_Window *window;
+static bool sdlInitialized;
 
-	std::cout << "Testing video drivers..." << '\n';
-	std::vector< bool > drivers(SDL_GetNumVideoDrivers());
+static int32 environmentDimension(const char *name, int32 fallback)
+{
+   const char *value = getenv(name);
+   if (value == NULL || *value == '\0')
+      return fallback;
+   char *end = NULL;
+   long parsed = strtol(value, &end, 10);
+   return end != value && *end == '\0' && parsed > 0 ? (int32)parsed : fallback;
+}
 
-	std::cout << "SDL_VIDEODRIVER available:";
-	for (int i = 0; i < drivers.size(); ++i) {
-		std::cout << " " << SDL_GetVideoDriver(i);
-	}
-	std::cout << '\n';
+bool TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration *configuration)
+{
+   int logicalWidth, logicalHeight;
+   int physicalWidth, physicalHeight;
 
-#if __APPLE__
-	// Trackpad support for Macbook
-	SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "1");
-#endif
+   if (screen == NULL || configuration == NULL || window == NULL || renderer == NULL)
+      return false;
+   SDL_GetWindowSize(window, &logicalWidth, &logicalHeight);
+   if (logicalWidth <= 0 || logicalHeight <= 0
+      || SDL_GetRendererOutputSize(renderer, &physicalWidth, &physicalHeight) != 0
+      || physicalWidth <= 0 || physicalHeight <= 0)
+      return false;
 
-	// Only init video (without audio)
-	if (NOT_SUCCESS(SDL_Init(SDL_INIT_VIDEO))) {
-		std::cerr << "SDL_Init(): " << SDL_GetError() << '\n';
-		return false;
-	}
-	std::cout << "SDL_VIDEODRIVER selected : " << SDL_GetCurrentVideoDriver() << '\n';
+   double scaleX = (double)physicalWidth / logicalWidth;
+   double scaleY = (double)physicalHeight / logicalHeight;
+   if (std::fabs(scaleX - scaleY) > 0.01)
+      fprintf(stderr, "SDL returned non-uniform window scale: %.4f x %.4f\n", scaleX, scaleY);
 
-	SDL_Rect viewport;
-#if __APPLE__
-	// Get the desktop area represented by a display, with the primary
-	// display located at 0,0 based on viewport allocated on initial position
-	int (*TCSDL_GetDisplayBounds)(int, SDL_Rect*) = 
-#ifdef __arm__                  
-	&SDL_GetDisplayBounds;
-#else                           
-	&SDL_GetDisplayUsableBounds;
-#endif
-
-	if(NOT_SUCCESS(TCSDL_GetDisplayBounds(DISPLAY_INDEX, &viewport))) {
-		printf("SDL_GetDisplayBounds failed: %s\n", SDL_GetError());
-		return false;
-	}
-
-	// Adjust height on desktop, it should not affect fullscreen (y should be 0)
-	viewport.h -= viewport.y;
+   double contentScale = (scaleX + scaleY) / 2.0;
+   configuration->width = physicalWidth;
+   configuration->height = physicalHeight;
+#if defined(WIN32) && !defined(WINCE)
+   UINT dpi = mainHWnd != NULL ? GetDpiForWindow(mainHWnd) : 0;
+   configuration->hRes = dpi != 0 ? (int32)dpi : (int32)std::lround(contentScale * 96.0);
+   configuration->vRes = configuration->hRes;
 #else
-	SDL_DisplayMode DM;
-	// Get current display mode of all displays.
-  	for(int i = 0; i < SDL_GetNumVideoDisplays(); ++i){
-		int should_be_zero = SDL_GetCurrentDisplayMode(i, &DM);
-
-		if(should_be_zero != 0) {
-			std::cerr << "SDL_GetCurrentDisplayMode() failed for video display #" << i << ": " << SDL_GetError() << '\n';
-		} else {
-			std::cout << "SDL_DisplayMode #" << i << ": current display mode is " << DM.w << "x" << DM.h << "x" << DM.refresh_rate << '\n';
-		}
-	}
-	viewport.x = SDL_WINDOWPOS_UNDEFINED; 
-	viewport.y = SDL_WINDOWPOS_UNDEFINED;
-	viewport.w = DM.w;
-	viewport.h = DM.h;
+   configuration->hRes = (int32)std::lround(contentScale * 96.0);
+   configuration->vRes = configuration->hRes;
 #endif
+   configuration->contentScale = contentScale > 0 ? contentScale : 1;
+   configuration->fontScale = screen->fontScale > 0 ? screen->fontScale : 1;
+   configuration->deviceFontHeight = screen->deviceFontHeight;
+   configuration->generation = screen->surfaceGeneration + 1;
+   configuration->surfaceReady = true;
+   configuration->nativeSurfaceChanged = false;
+   return true;
+}
 
-	if (getenv("TC_WIDTH") != NULL) {
-		viewport.w = std::stoi(getenv("TC_WIDTH"));
-	}
-	if (getenv("TC_HEIGHT") != NULL) {
-		viewport.h = std::stoi(getenv("TC_HEIGHT"));
-	}
-
-	uint32 flags; 
-#ifdef __APPLE__
-	flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
-#else
-	if(getenv("TC_FULLSCREEN") == NULL) {
-		flags = SDL_WINDOW_FULLSCREEN;
-	} else {
-		flags = SDL_WINDOW_SHOWN;
-		viewport.w -= viewport.w*0.09;
-		viewport.h -= viewport.h*0.09;
-	}
-#endif
-
-	// Create the window
-	if (IS_NULL(window = SDL_CreateWindow(
-							 title,
-							 viewport.x,
-							 viewport.y,
-							 viewport.w,
-							 viewport.h,
-							 flags
-						 ))) {
-		std::cerr << "SDL_CreateWindow(): " << SDL_GetError() << '\n';
-		return false;
-	}
+bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen)
+{
+   SDL_DisplayMode displayMode;
+   int32 width = 800;
+   int32 height = 600;
+   Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 
 #if defined(WIN32) && !defined(WINCE)
-	SDL_SysWMinfo windowInfo;
-	SDL_VERSION(&windowInfo.version);
-	if (SDL_GetWindowWMInfo(window, &windowInfo) == SDL_TRUE
-		&& windowInfo.subsystem == SDL_SYSWM_WINDOWS)
-	{
-		mainHWnd = windowInfo.info.win.window;
-	}
+   SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
+#endif
+#if __APPLE__
+   SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "1");
 #endif
 
-	std::cout << "SDL_RENDER_DRIVER available:";
-	for (int i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
-		SDL_RendererInfo info;
-		SDL_GetRenderDriverInfo(i, &info);
-		std::cout << " " << info.name;
-	}
-	std::cout << '\n';
+   if (SDL_Init(SDL_INIT_VIDEO) != 0)
+   {
+      fprintf(stderr, "SDL_Init(): %s\n", SDL_GetError());
+      return false;
+   }
+   sdlInitialized = true;
 
-	// Create a 2D rendering context for a window
-	if (IS_NULL(renderer = SDL_CreateRenderer(
-							window, 
-							-1, 
-/*
-	Some devices crash when opengl is used, so for now,
-	we'll force the usage of the software renderer until we
-	find a way to test for hardware accelerated graphics
-	support without crashing.
-*/
-#if !defined ANDROID && (defined __APPLE__ && defined __aarch64__ && !defined darwin) || (defined linux && defined __arm__)
-							SDL_RENDERER_SOFTWARE
-#else
-							NO_FLAGS
+   if (SDL_GetCurrentDisplayMode(0, &displayMode) == 0)
+   {
+      width = displayMode.w;
+      height = displayMode.h;
+   }
+   width = environmentDimension("TC_WIDTH", width);
+   height = environmentDimension("TC_HEIGHT", height);
+
+   if (fullScreen)
+      flags |= SDL_WINDOW_FULLSCREEN;
+   if (tcSettings.resizableWindow != NULL && *tcSettings.resizableWindow)
+      flags |= SDL_WINDOW_RESIZABLE;
+
+   window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+      width, height, flags);
+   if (window == NULL)
+   {
+      fprintf(stderr, "SDL_CreateWindow(): %s\n", SDL_GetError());
+      TCSDL_DestroyWindow(screen);
+      return false;
+   }
+
+#if defined(WIN32) && !defined(WINCE)
+   SDL_SysWMinfo windowInfo;
+   SDL_VERSION(&windowInfo.version);
+   if (SDL_GetWindowWMInfo(window, &windowInfo) == SDL_TRUE
+      && windowInfo.subsystem == SDL_SYSWM_WINDOWS)
+      mainHWnd = windowInfo.info.win.window;
 #endif
-	))) {
-		std::cerr << "SDL_CreateRenderer(): " << SDL_GetError() << '\n';
-		std::cout << '\n' << "HINT: try to export SDL_RENDER_DRIVER environment variable with an available render driver!" << '\n';
-		return false;
-	}
 
-	// Get renderer driver information
-	SDL_RendererInfo rendererInfo;
-	if (NOT_SUCCESS(SDL_GetRendererInfo(renderer, &rendererInfo))) {
-		std::cerr << "SDL_GetRendererInfo(): " << SDL_GetError() << '\n';
-		return 0;
-	}
-	std::cout << "SDL_RENDER_DRIVER selected : " << rendererInfo.name << '\n';
+   renderer = SDL_CreateRenderer(window, -1, 0);
+   if (renderer == NULL)
+   {
+      fprintf(stderr, "SDL_CreateRenderer(): %s\n", SDL_GetError());
+      TCSDL_DestroyWindow(screen);
+      return false;
+   }
 
-	// Get window pixel format
-	Uint32 windowPixelFormat;
-	if (SDL_PIXELFORMAT_UNKNOWN == (windowPixelFormat = SDL_GetWindowPixelFormat(window))) {
-		std::cerr << "SDL_GetWindowPixelFormat(): " << SDL_GetError() << '\n';
-		return false;
-	}
-	std::cout << "SDL_PIXEL_FORMAT: " << SDL_GetPixelFormatName(windowPixelFormat) << '\n';
+   if (screen->extension == NULL)
+      screen->extension = (ScreenSurfaceEx)xmalloc(sizeof(TScreenSurfaceEx));
+   if (screen->extension == NULL)
+   {
+      TCSDL_DestroyWindow(screen);
+      return false;
+   }
+   xmemzero(screen->extension, sizeof(TScreenSurfaceEx));
+   SCREEN_EX(screen)->window = window;
+   SCREEN_EX(screen)->renderer = renderer;
 
-	usesTexture = std::string(rendererInfo.name).compare(std::string("software"));
-	int physicalWidth = viewport.w;
-	int physicalHeight = viewport.h;
-	if (usesTexture) {
-		SDL_GetRendererOutputSize(renderer, &physicalWidth, &physicalHeight);
-	} else {
-		surface = SDL_GetWindowSurface(window);
-		physicalWidth = surface->w;
-		physicalHeight = surface->h;
-	}
-	if (physicalWidth <= 0 || physicalHeight <= 0) {
-		std::cerr << "SDL returned an invalid drawable size" << '\n';
-		return false;
-	}
-
-	if(usesTexture) {
-		// MUST USE SDL_TEXTUREACCESS_STREAMING, CANNOT BE REPLACED WITH SDL_CreateTextureFromSurface
-		if (IS_NULL(texture = SDL_CreateTexture(
-								renderer,
-								windowPixelFormat,
-								SDL_TEXTUREACCESS_STREAMING,
-								physicalWidth,
-								physicalHeight))) {
-			std::cerr << "SDL_CreateTexturet(): " << SDL_GetError() << '\n';
-			return false;
-		}
-	} else {
-		surface = SDL_GetWindowSurface(window);
-	}
-
-	// Get pixel format struct
-	SDL_PixelFormat* pixelformat;
-	if (IS_NULL(pixelformat = SDL_AllocFormat(windowPixelFormat))) {
-		std::cerr << "SDL_AllocFormat(): " << SDL_GetError() << '\n';
-		return false;
-	}
-
-	// The backing store is physical; Java-facing dimensions are derived from
-	// contentScale when Settings is initialized.
-	screen->screenW = physicalWidth;
-	screen->screenH = physicalHeight;
-	screen->contentScale = (double)physicalWidth / viewport.w;
-	// Adjusts screen's BPP
-	screen->bpp = pixelformat->BitsPerPixel;
-	// Set surface pitch
-	screen->pitch = pixelformat->BytesPerPixel * screen->screenW;
-	// pixel order
-	screen->pixelformat = windowPixelFormat;
-
-	if (usesTexture) {
-		// Adjusts screen's pixel surface
-		if (IS_NULL(screen->pixels = (uint8*) malloc(screen->pitch * screen->screenH))) {
-			std::cerr << "Failed to alloc " << (screen->pitch * screen->screenH) << " bytes for pixel surface" << '\n';
-			return false;
-		}
-	}else {
-		screen->pixels = (uint8*) surface->pixels;
-	}
-
-	if (IS_NULL(screen->extension = (ScreenSurfaceEx) malloc(sizeof(TScreenSurfaceEx)))) {
-		if (usesTexture) {
-			free(screen->pixels);
-		}
-		std::cerr << "Failed to alloc TScreenSurfaceEx of " << sizeof(TScreenSurfaceEx) << " bytes" << '\n';
-		return false;
-	}
-	SCREEN_EX(screen)->window = window;
-	SCREEN_EX(screen)->renderer = renderer;
-	SCREEN_EX(screen)->texture = texture;
-	SCREEN_EX(screen)->surface = surface;
-
-	SDL_FreeFormat(pixelformat);
-
-	return true;
+   TScreenConfiguration configuration;
+   if (!TCSDL_QueryWindowMetrics(screen, &configuration))
+   {
+      TCSDL_DestroyWindow(screen);
+      return false;
+   }
+   screenApplyConfiguration(screen, &configuration);
+   screenConsumePendingChanges(screen);
+   return true;
 }
 
-/*
- * Update the given texture rectangle with new pixel data.
- *
- * # MUST BE REVIEWED
- *
- * SDL_UpdateTexture it's too slow and our implementation
- * depends on it
- */
-void TCSDL_UpdateTexture(int w, int h, int pitch, void* pixels) {
-	if(usesTexture) {
-		// Update the given texture rectangle with new pixel data.
-		SDL_UpdateTexture(texture, NULL, pixels, pitch);
-	} else {
-		surface = SDL_GetWindowSurface(window);
-	}
-	// Call SDL render present
-	TCSDL_Present();
+bool TCSDL_CreateBackBuffer(ScreenSurface screen)
+{
+   if (screen == NULL || SCREEN_EX(screen) == NULL || renderer == NULL
+      || screen->screenW <= 0 || screen->screenH <= 0)
+      return false;
+
+   screen->bpp = 32;
+   screen->pitch = screen->screenW * sizeof(Pixel32);
+   screen->pixelformat = TCSDL_PIXEL_FORMAT;
+   screen->pixels = (uint8*)xmalloc((size_t)screen->pitch * screen->screenH);
+   if (screen->pixels == NULL)
+      return false;
+
+   texture = SDL_CreateTexture(renderer, TCSDL_PIXEL_FORMAT, SDL_TEXTUREACCESS_STREAMING,
+      screen->screenW, screen->screenH);
+   if (texture == NULL)
+   {
+      xfree(screen->pixels);
+      screen->pixels = NULL;
+      fprintf(stderr, "SDL_CreateTexture(): %s\n", SDL_GetError());
+      return false;
+   }
+   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
+   SCREEN_EX(screen)->texture = texture;
+   return true;
 }
 
-/*
- * Update the screen with rendering performed
- */
-void TCSDL_Present() {
-  if(usesTexture) {
-    // Copy a portion of the texture to the current rendering target
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    // Update the screen with rendering performed
-    SDL_RenderPresent(renderer);
-    // Clears the entire rendering targe
-    SDL_RenderClear(renderer);
-  } else {
-    SDL_UpdateWindowSurface(window);
-  }
+void TCSDL_DestroyBackBuffer(ScreenSurface screen)
+{
+   if (screen == NULL)
+      return;
+   if (SCREEN_EX(screen) != NULL && SCREEN_EX(screen)->texture != NULL)
+   {
+      SDL_DestroyTexture(SCREEN_EX(screen)->texture);
+      SCREEN_EX(screen)->texture = NULL;
+      texture = NULL;
+   }
+   if (screen->pixels != NULL)
+   {
+      xfree(screen->pixels);
+      screen->pixels = NULL;
+   }
+   screen->pitch = 0;
 }
 
-/*
- * Destroy all SDL allocated variables
- */
-void TCSDL_Destroy(ScreenSurface screen) {
-	if (usesTexture && screen->pixels != NULL) {
-		free(screen->pixels);
-	}
-
-	if (SCREEN_EX(screen) != NULL) {
-		if (SCREEN_EX(screen)->surface != NULL) {
-			SDL_FreeSurface(SCREEN_EX(screen)->surface);
-		}
-		if (SCREEN_EX(screen)->texture != NULL) {
-			SDL_DestroyTexture(SCREEN_EX(screen)->texture);
-		}
-		if (SCREEN_EX(screen)->renderer != NULL) {
-			SDL_DestroyRenderer(SCREEN_EX(screen)->renderer);
-		}
-		if (SCREEN_EX(screen)->window != NULL) {
-			#if defined(WIN32) && !defined(WINCE)
-			mainHWnd = NULL;
-			#endif
-			SDL_DestroyWindow(SCREEN_EX(screen)->window);
-		}
-		free(SCREEN_EX(screen));
-	}
-	SDL_Quit();
+void TCSDL_DestroyWindow(ScreenSurface screen)
+{
+   if (screen != NULL)
+      TCSDL_DestroyBackBuffer(screen);
+   if (renderer != NULL)
+   {
+      SDL_DestroyRenderer(renderer);
+      renderer = NULL;
+   }
+   if (window != NULL)
+   {
+#if defined(WIN32) && !defined(WINCE)
+      mainHWnd = NULL;
+#endif
+      SDL_DestroyWindow(window);
+      window = NULL;
+   }
+   if (screen != NULL && screen->extension != NULL)
+   {
+      xfree(screen->extension);
+      screen->extension = NULL;
+   }
+   if (sdlInitialized)
+   {
+      SDL_Quit();
+      sdlInitialized = false;
+   }
 }
 
-void TCSDL_GetWindowSize(ScreenSurface screen, int32* width, int32* height) {
-	SDL_GetWindowSize(SCREEN_EX(screen)->window, width, height);
+void TCSDL_UpdateTexture(int w, int h, int pitch, void *pixels)
+{
+   UNUSED(w)
+   UNUSED(h)
+   if (texture == NULL || pixels == NULL)
+      return;
+   SDL_UpdateTexture(texture, NULL, pixels, pitch);
+   TCSDL_Present();
 }
 
-void TCSDL_WindowSizeChanged(ScreenSurface screen, int32 width, int32 height) {
-	SCREEN_EX(screen)->surface = surface = SDL_GetWindowSurface(SCREEN_EX(screen)->window);
-	screen->screenW = surface->w;
-	screen->screenH = surface->h;
-	screen->contentScale = width > 0 ? (double)surface->w / width : 1;
+void TCSDL_GetWindowSize(ScreenSurface screen, int32 *width, int32 *height)
+{
+   if (width != NULL)
+      *width = 0;
+   if (height != NULL)
+      *height = 0;
+   if (screen != NULL && SCREEN_EX(screen) != NULL && SCREEN_EX(screen)->window != NULL)
+      SDL_GetWindowSize(SCREEN_EX(screen)->window, width, height);
+}
+
+void TCSDL_Present()
+{
+   if (renderer == NULL || texture == NULL)
+      return;
+   SDL_RenderClear(renderer);
+   SDL_RenderCopy(renderer, texture, NULL, NULL);
+   SDL_RenderPresent(renderer);
 }

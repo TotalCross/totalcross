@@ -40,13 +40,23 @@ TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void f
    }
 
    int32 fontIdx = skia_getTypefaceIndex(nameTTF);
-   if (fontIdx == -1) {
-       if ((file = tczGetFile(nameTTF, false)) != null) {
-           uint8 buffer[file->uncompressedSize];
-           tczRead(file, buffer, file->uncompressedSize);
-           fontIdx = skia_makeTypeface(nameTTF, buffer, file->uncompressedSize);
-       }
-       tczClose(file);
+   if (fontIdx == -1)
+   {
+      file = tczGetFile(nameTTF, false);
+      if (file != null)
+      {
+         uint8 *buffer = (uint8 *)xmalloc(file->uncompressedSize);
+         if (buffer != null)
+         {
+            tczRead(file, buffer, file->uncompressedSize);
+            fontIdx = skia_makeTypeface(
+               nameTTF,
+               buffer,
+               file->uncompressedSize);
+            xfree(buffer);
+         }
+         tczClose(file);
+      }
    }
    Font_skiaIndex(obj) = fontIdx;
    // save reference to SkTypeFace at Font_hvUserFont
