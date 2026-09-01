@@ -13,13 +13,17 @@
 #include "skia/skia.h"
 #endif
 
-#if defined(WINCE) || defined(WIN32)
+#if defined(WINCE)
+ #include "win/gfx_ex.h"
+#elif TC_WINDOWING_SDL
+ #include "sdl/gfx_ex.h"
+#elif defined(WIN32)
  #include "win/gfx_ex.h"
 #elif defined(darwin)
  #include "darwin/gfx_ex.h"
 #elif defined(ANDROID)
  #include "android/gfx_ex.h"
-#elif defined(linux) || defined TC_WINDOWING_SDL
+#elif defined(linux)
  #include "linux/gfx_ex.h"
 #endif
 #include "xtypes.h"
