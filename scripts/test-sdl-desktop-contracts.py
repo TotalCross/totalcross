@@ -140,17 +140,15 @@ class SDLDesktopContractTests(unittest.TestCase):
         helper = source[source.index("static void dispatchPortableSpecialKey") :
                         source.index("#if defined(WIN32)")]
         self.assertIn("if (key == SK_SCREEN_CHANGE)", helper)
-        self.assertIn("screen.minScreenW", helper)
-        self.assertIn("screen.minScreenH", helper)
         self.assertIn("TCSDL_GetWindowSize(&screen, &width, &height)", helper)
         self.assertIn("TCSDL_SetWindowSize(height, width)", helper)
         self.assertNotIn("tcSettings", helper)
         self.assertNotIn("screenChange(", helper)
         self.assertNotIn("screenChangeCommitted(", helper)
         self.assertNotIn("screenApplyConfiguration(", helper)
-        resize = helper.index("if (TCSDL_SetWindowSize(height, width))")
-        minimum = helper.index("int32 minimum = screen.minScreenW")
-        self.assertLess(resize, minimum)
+        pending = helper.index("pendingScreenRotationOrientation = screenOrientation(width, height)")
+        resize = helper.index("TCSDL_SetWindowSize(height, width)")
+        self.assertLess(pending, resize)
         self.assertIn("postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS", helper)
         keyboard = source[source.index("static void handleKeyboardEvent") :
                            source.index("static void handleWheelEvent")]
@@ -173,6 +171,22 @@ class SDLDesktopContractTests(unittest.TestCase):
                        event.index("#if defined(WIN32)")]
         self.assertNotIn("screenChangeCommitted(", helper)
         self.assertNotIn("graphicsDestroy(", helper)
+        self.assertIn("pendingScreenRotationOrientation = screenOrientation(width, height)", helper)
+        self.assertIn("if (!TCSDL_SetWindowSize(height, width))", helper)
+        self.assertNotIn("screen.minScreenW", helper)
+
+        resolver = event[event.index("static void resolvePendingScreenRotation") :
+                        event.index("static void dispatchPortableSpecialKey")]
+        self.assertIn("configuration->width, configuration->height", resolver)
+        self.assertIn("resultingOrientation != pendingScreenRotationOrientation", resolver)
+        self.assertEqual(1, resolver.count("screen.minScreenW = screen.minScreenH"))
+        self.assertIn("pendingScreenRotationOrientation = 0", resolver)
+        self.assertIn("resolvePendingScreenRotation(&configuration)", resize)
+        self.assertIn(
+            "else if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)\n"
+            "                  pendingScreenRotationOrientation = 0",
+            resize,
+        )
 
         sdl = SDL_INIT.read_text()
         metrics = sdl[sdl.index("bool TCSDL_QueryWindowMetrics") :
@@ -221,6 +235,7 @@ class SDLDesktopContractTests(unittest.TestCase):
                            source.index("bool TCSDL_CreateBackBuffer")]
         self.assertIn("bool TCSDL_SetWindowSize(int32 width, int32 height)", header)
         self.assertIn("SDL_SetWindowSize(window, width, height)", operation)
+        self.assertNotIn("SDL_GetWindowSize", operation)
         self.assertNotIn("screenChange", operation)
         self.assertNotIn("F9", operation)
 

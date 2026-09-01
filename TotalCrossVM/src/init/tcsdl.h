@@ -22,6 +22,7 @@ extern "C" {
     bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen);
     bool TCSDL_SetPixelFormatRequest(const char* value);
     bool TCSDL_SetFullscreen(bool fullscreen);
+    // Returns whether the resize request was submitted; SDL event metrics confirm its result.
     bool TCSDL_SetWindowSize(int32 width, int32 height);
     bool TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration* configuration);
     bool TCSDL_CreateBackBuffer(ScreenSurface screen);

@@ -24,6 +24,31 @@ static ScaleFinger scaleFingers[MAX_SCALE_FINGERS];
 static int32 scaleFingerCount;
 static bool scaleGestureActive;
 static double lastScaleDistance;
+static int32 pendingScreenRotationOrientation;
+
+static int32 screenOrientation(int32 width, int32 height)
+{
+   return width > height ? 1 : width < height ? -1 : 0;
+}
+
+static void resolvePendingScreenRotation(const TScreenConfiguration *configuration)
+{
+   int32 resultingOrientation;
+
+   if (pendingScreenRotationOrientation == 0 || configuration == NULL)
+      return;
+
+   resultingOrientation = screenOrientation(
+      configuration->width, configuration->height);
+   if (resultingOrientation != 0
+      && resultingOrientation != pendingScreenRotationOrientation)
+   {
+      int32 minimum = screen.minScreenW;
+      screen.minScreenW = screen.minScreenH;
+      screen.minScreenH = minimum;
+   }
+   pendingScreenRotationOrientation = 0;
+}
 
 static void dispatchPortableSpecialKey(PortableSpecialKeys key, int32 modifiers)
 {
@@ -34,12 +59,9 @@ static void dispatchPortableSpecialKey(PortableSpecialKeys key, int32 modifiers)
       TCSDL_GetWindowSize(&screen, &width, &height);
       if (width <= 0 || height <= 0 || width == height)
          return;
-      if (TCSDL_SetWindowSize(height, width))
-      {
-         int32 minimum = screen.minScreenW;
-         screen.minScreenW = screen.minScreenH;
-         screen.minScreenH = minimum;
-      }
+      pendingScreenRotationOrientation = screenOrientation(width, height);
+      if (!TCSDL_SetWindowSize(height, width))
+         pendingScreenRotationOrientation = 0;
    }
    else
       postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key, 0, 0, modifiers);
@@ -422,11 +444,15 @@ void privatePumpEvent(Context currentContext)
                TScreenConfiguration configuration;
                if (TCSDL_QueryWindowMetrics(&screen, &configuration))
                {
+                  if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                     resolvePendingScreenRotation(&configuration);
                   ScreenChangeFlags changes = screenApplyConfiguration(
                      &screen, &configuration);
                   screenConsumePendingChanges(&screen);
                   screenChangeCommitted(mainContext, changes);
                }
+               else if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                  pendingScreenRotationOrientation = 0;
                break;
             }
             case SDL_WINDOWEVENT_MINIMIZED:
