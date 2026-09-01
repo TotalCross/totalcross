@@ -10,6 +10,10 @@
 #include "tcvm.h"
 #include "WindowSIP.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool windowBackendSetSize(int32 width, int32 height);
 bool windowResolveStartupSize(
    int16 appTczAttr,
@@ -23,5 +27,9 @@ bool windowResolveStartupSize(
    int32 *width,
    int32 *height,
    bool *tczSizeApplied);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
