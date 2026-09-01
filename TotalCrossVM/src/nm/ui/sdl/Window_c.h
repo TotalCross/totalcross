@@ -9,21 +9,7 @@
 #endif
 #include "../Window.h"
 
-static bool windowGetSIP()
-{
-   return SDL_IsTextInputActive() != SDL_FALSE;
-}
-
-static void windowSetSIP(int32 sipOption, bool numeric)
-{
-   UNUSED(numeric)
-   if (sipOption == SIP_HIDE || sipOption == SIP_DISABLE_NUMERICPAD)
-      SDL_StopTextInput();
-   else
-      SDL_StartTextInput();
-}
-
-static void windowSetDeviceTitle(TCObject titleObj)
+static void windowBackendSetDeviceTitle(TCObject titleObj)
 {
    JCharP chars = String_charsStart(titleObj);
    int32 length = String_charsLen(titleObj);
