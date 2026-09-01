@@ -20,11 +20,13 @@ extern "C" {
     #include "GraphicsPrimitives.h"
 
     bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen);
+    bool TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration* configuration);
+    bool TCSDL_CreateBackBuffer(ScreenSurface screen);
+    void TCSDL_DestroyBackBuffer(ScreenSurface screen);
+    void TCSDL_DestroyWindow(ScreenSurface screen);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);
     void TCSDL_Present();
-    void TCSDL_Destroy(ScreenSurface screen);
     void TCSDL_GetWindowSize(ScreenSurface screen, int32* width, int32* height);
-    void TCSDL_WindowSizeChanged(ScreenSurface screen, int32 width, int32 height);
 
 #ifdef __cplusplus
 }

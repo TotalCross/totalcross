@@ -246,7 +246,9 @@ void updateScreenSettings(ScreenSurface screen) // will be called from initGraph
    double contentScale = screen->contentScale > 0 ? screen->contentScale : 1;
 
 #if defined (WIN32) || defined (WINCE)
+#if !TC_WINDOWING_SDL
    contentScale = min32(screen->screenW, screen->screenH) <= 240 ? 0.75 : contentScale;
+#endif
 #endif
    *tcSettings.screenWidthPtr = (int32)(screen->screenW / contentScale + 0.5);
    *tcSettings.screenHeightPtr = (int32)(screen->screenH / contentScale + 0.5);

@@ -9,6 +9,7 @@
 #include "tcvm.h"
 
 void updateScreen(Context currentContext);
+void markWholeScreenDirty(Context currentContext);
 void vmSetAutoOff(bool enable); // vm_c.h
 
 // Platform-specific code
