@@ -249,6 +249,7 @@ class SDLDesktopContractTests(unittest.TestCase):
         window = WINDOW.read_text()
         header = WINDOW_H.read_text()
         self.assertIn("bool windowResolveStartupSize(", header)
+        self.assertIn('#ifdef __cplusplus\nextern "C" {', header)
         self.assertIn("ATTR_WINDOWSIZE_320X480", window)
         self.assertIn("tczWidth = 320", window)
         self.assertIn("tczHeight = 480", window)
