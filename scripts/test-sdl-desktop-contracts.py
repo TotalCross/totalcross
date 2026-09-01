@@ -354,11 +354,16 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("xstrncpy(commandLine, c, sizeof(commandLine) - 1)", source)
         self.assertIn("appendCommandToken", source)
         self.assertIn("search = separator + 5", source)
+        self.assertIn("static CharP parseScreenBounds(CharP value)", source)
+        self.assertIn("return value + count;", source)
+        self.assertIn("read = parseScreenBounds(value);", source)
         separator = source[source.index("static CharP findCommandSeparator") :
                            source.index("static bool filterDesktopCommandLine")]
         self.assertIn("#if TC_OS_DESKTOP", separator)
         self.assertIn('#else\n   return xstrstr(command, " /cmd ");', separator)
         self.assertIn('"App.tcz -t /cmdlike /scr -2,-2,800,600 /cmd foo /fullscreen bar "',
+                      STARTUP_TEST.read_text())
+        self.assertIn('"App.tcz /cmd /admin W DEBUG /scr -2, -2, 480, 720"',
                       STARTUP_TEST.read_text())
         self.assertIn("/scrSomething /cmdlike -testsuitelike", STARTUP_TEST.read_text())
 
@@ -368,6 +373,7 @@ class SDLDesktopContractTests(unittest.TestCase):
         self.assertIn("-testsuitelike", test_source)
         self.assertIn('"foo bar baz qux /scrSomething /cmdlike -testsuitelike"',
                       test_source)
+        self.assertIn('"/admin W DEBUG"', test_source)
 
 
 if __name__ == "__main__":

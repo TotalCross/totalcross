@@ -47,6 +47,20 @@ TESTCASE(startup_filterApplicationCommandLine)
       goto cleanup;
    }
 
+   xstrcpy(vmCommandLine,
+      "App.tcz /cmd /admin W DEBUG /scr -2, -2, 480, 720");
+   initialWindowState = TC_INITIAL_WINDOW_NORMAL;
+   if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
+      sizeof(applicationCommandLine), &desktopCommandLineOptions)
+      || defScrX != -2 || defScrY != -2
+      || defScrW != 480 || defScrH != 720
+      || xstrcmp(vmCommandLine, "App.tcz /cmd /admin W DEBUG") != 0
+      || xstrcmp(applicationCommandLine, "/admin W DEBUG") != 0)
+   {
+      TEST_FAIL(tc, "Screen bounds payload was not fully filtered");
+      goto cleanup;
+   }
+
 cleanup:
    xstrcpy(appPath, oldAppPath);
    defScrX = oldDefScrX;

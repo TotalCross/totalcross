@@ -345,7 +345,7 @@ static bool isStartupOption(CharP command, CharP position, const char *option)
       && (position[optionLength] == ' ' || position[optionLength] == '\0');
 }
 
-static bool parseScreenBounds(CharP value)
+static CharP parseScreenBounds(CharP value)
 {
    int count = 0;
    int32 x, y, width, height;
@@ -354,13 +354,13 @@ static bool parseScreenBounds(CharP value)
       || x < -2 || y < -2 || width == 0 || height == 0 || width < -1 || height < -1)
    {
       alert("Format: <other arguments> /scr x,y,width,height\nPass -1 to use the default and -2 to center on screen.");
-      return false;
+      return null;
    }
    defScrX = x;
    defScrY = y;
    defScrW = width;
    defScrH = height;
-   return true;
+   return value + count;
 }
 
 static const TCStartupOption *findStartupOption(CharP command, CharP position)
@@ -434,11 +434,9 @@ static bool filterDesktopCommandLine(CharP command,
          CharP value = read;
          while (*value == ' ')
             value++;
-         if (!parseScreenBounds(value))
+         read = parseScreenBounds(value);
+         if (read == null)
             return false;
-         read = value;
-         while (*read != '\0' && *read != ' ')
-            read++;
          continue;
       }
       if (option != null && option->kind == STARTUP_OPTION_FULLSCREEN)
