@@ -661,6 +661,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/ui/media_Camera.c
     ${TC_SRCDIR}/nm/ui/YoutubePlayer.c
     ${TC_SRCDIR}/nm/ui/Window.c
+    ${TC_SRCDIR}/nm/ui/WindowStartup.c
     ${TC_SRCDIR}/nm/ui/dialog_FilePicker.c
 
     ${TC_SRCDIR}/nm/util/concurrent_Lock.c

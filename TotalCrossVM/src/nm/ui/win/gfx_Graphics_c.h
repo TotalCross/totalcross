@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
+#include "../Window.h"
+
 void graphicsScreenChange(int32 w, int32 h)
 {
    UNUSED(w)
@@ -50,10 +52,6 @@ void getScreenSize(int32 *w, int32* h)
 #endif
 }
 
-#if !defined(WINCE)
-extern int32 defScrX,defScrY,defScrW,defScrH;
-#endif
-
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
    DWORD style;
@@ -63,7 +61,16 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    HANDLE instance = GetModuleHandle(0);
    char* dot;
    HDC deviceContext;
-   bool resizableWindow = appTczAttr & ATTR_RESIZABLE_WINDOW;
+   bool resizableWindow;
+   int32 windowedWidth, windowedHeight;
+   int32 requestedX, requestedY;
+   bool defaultX, defaultY;
+   RECT actualWindowRect;
+#if !defined(WINCE)
+   TCDisplayMetrics display;
+   TCWindowStartupOptions startupOptions = desktopWindowStartupOptions;
+   TCWindowStartupConfiguration configuration;
+#endif
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
 
@@ -74,25 +81,36 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->bpp = GetDeviceCaps(deviceContext,BITSPIXEL) * GetDeviceCaps(deviceContext,PLANES);
    DeleteDC(deviceContext);
 
-   if (appTczAttr & ATTR_WINDOWSIZE_320X480) {defScrX=defScrY=-2; width = 320; height = 480;} else
-   if (appTczAttr & ATTR_WINDOWSIZE_480X640) {defScrX=defScrY=-2; width = 480; height = 640;} else
-   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = min32(800,rect.bottom-rect.top);} else
-   {
-      width = defScrW == -1 ? 240 : defScrW;
-      height = defScrH == -1 ? 320 : defScrH;
-   }                                                                                                                          
-#ifdef _DEBUG
-   defScrX = defScrY = 0;
-#endif
-
-   rect.left = defScrX == -1 ? 0 : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
-   rect.top  = defScrY == -1 ? 0 : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
+   display.width = GetSystemMetrics(SM_CXSCREEN);
+   display.height = GetSystemMetrics(SM_CYSCREEN);
+   display.usableWidth = rect.right - rect.left;
+   display.usableHeight = rect.bottom - rect.top;
+   startupOptions.appTczAttr = appTczAttr;
+   startupOptions.legacyFullscreen = *tcSettings.isFullScreenPtr;
+   windowLoadStartupEnvironment(&startupOptions);
+   if (!windowResolveStartupConfiguration(&startupOptions, &display, &configuration))
+      return false;
+   width = configuration.width;
+   height = configuration.height;
+   resizableWindow = configuration.resizable;
+   defaultX = configuration.xMode == TC_WINDOW_POSITION_DEFAULT;
+   defaultY = configuration.yMode == TC_WINDOW_POSITION_DEFAULT;
+   requestedX = configuration.xMode == TC_WINDOW_POSITION_CENTER
+      ? rect.left + (rect.right - rect.left - width) / 2 : configuration.x;
+   requestedY = configuration.yMode == TC_WINDOW_POSITION_CENTER
+      ? rect.top + (rect.bottom - rect.top - height) / 2 : configuration.y;
+   rect.left = defaultX ? CW_USEDEFAULT : requestedX;
+   rect.top = defaultY ? CW_USEDEFAULT : requestedY;
    rect.bottom = height;
    rect.right = width;
-   adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom);
+   if (!configuration.fullscreen)
+      adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom);
 
-   style |= WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
-   if (resizableWindow) style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
+   if (!configuration.fullscreen)
+   {
+      style |= WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
+      if (resizableWindow) style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
+   }
 #else
    SystemParametersInfo(SPI_GETWORKAREA, 0, &defaultWorkingArea, 0);
    deviceContext = GetDC(mainHWnd);
@@ -109,18 +127,46 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
       height = rect.bottom;
    AdjustWindowRectEx(&rect, style, FALSE, 0);
 #endif
+   windowedWidth = width;
+   windowedHeight = height;
    dot = xstrrchr(mainClassName, '.');
    CharP2TCHARPBuf(dot ? dot+1 : mainClassName, main); // remove the package from the name
    mainHWnd = CreateWindow(exeName, main, style, rect.left, rect.top, rect.right, rect.bottom, NULL, NULL, instance, NULL ); // guich@400_62: move window to desired user position
    if (!mainHWnd)
       return false;
+#if !defined(WINCE)
+   if (defaultX || defaultY)
+   {
+      GetWindowRect(mainHWnd, &actualWindowRect);
+      if (!defaultX || !defaultY)
+      {
+         SetWindowPos(mainHWnd, NULL,
+            defaultX ? actualWindowRect.left : requestedX,
+            defaultY ? actualWindowRect.top : requestedY,
+            0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+      }
+      rect.left = defaultX ? actualWindowRect.left : requestedX;
+      rect.top = defaultY ? actualWindowRect.top : requestedY;
+   }
+   if (configuration.maximized)
+      ShowWindow(mainHWnd, SW_MAXIMIZE);
+#endif
 
    // store the x, y, width, height, hRes and vRes
    screen->screenY = rect.top;
    GetClientRect(mainHWnd, &rect);
+#if !defined(WINCE)
+   if (configuration.maximized)
+   {
+      width = rect.right - rect.left;
+      height = rect.bottom - rect.top;
+   }
+#endif
    screen->screenX = rect.left;
-   screen->minScreenW = screen->screenW = width;
-   screen->minScreenH = screen->screenH = height;
+   screen->minScreenW = windowedWidth;
+   screen->minScreenH = windowedHeight;
+   screen->screenW = width;
+   screen->screenH = height;
    screen->hRes = GetDeviceCaps(deviceContext, LOGPIXELSX);
    screen->vRes = GetDeviceCaps(deviceContext, LOGPIXELSY);
 

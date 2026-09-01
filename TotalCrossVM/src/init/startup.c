@@ -229,11 +229,11 @@ TC_API int32 startProgram(Context currentContext)
       checkFullScreenPlatform();
 #if TC_OS_DESKTOP
 #if !TC_WINDOWING_SDL
-      if (initialWindowState == TC_INITIAL_WINDOW_FULLSCREEN
-         || (initialWindowState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr))
+      if (desktopWindowStartupOptions.initialState == TC_INITIAL_WINDOW_FULLSCREEN
+         || (desktopWindowStartupOptions.initialState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr))
          setFullScreen();
 #else
-      if (initialWindowState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr)
+      if (desktopWindowStartupOptions.initialState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr)
          TCSDL_SetFullscreen(true);
 #endif
 #else
@@ -356,10 +356,11 @@ static CharP parseScreenBounds(CharP value)
       alert("Format: <other arguments> /scr x,y,width,height\nPass -1 to use the default and -2 to center on screen.");
       return null;
    }
-   defScrX = x;
-   defScrY = y;
-   defScrW = width;
-   defScrH = height;
+   desktopWindowStartupOptions.x = x;
+   desktopWindowStartupOptions.y = y;
+   desktopWindowStartupOptions.width = width;
+   desktopWindowStartupOptions.height = height;
+   desktopWindowStartupOptions.screenSpecified = true;
    return value + count;
 }
 
@@ -374,12 +375,13 @@ static const TCStartupOption *findStartupOption(CharP command, CharP position)
 
 static bool parseInitialWindowState(TCInitialWindowState state)
 {
-   if (initialWindowState != TC_INITIAL_WINDOW_NORMAL && initialWindowState != state)
+   if (desktopWindowStartupOptions.initialState != TC_INITIAL_WINDOW_NORMAL
+      && desktopWindowStartupOptions.initialState != state)
    {
       alert("/fullscreen and /maximized cannot be combined.");
       return false;
    }
-   initialWindowState = state;
+   desktopWindowStartupOptions.initialState = state;
    return true;
 }
 
@@ -413,6 +415,7 @@ static bool filterDesktopCommandLine(CharP command,
    int32 commandSize = xstrlen(command) + 1;
 
    xmemzero(options, sizeof(*options));
+   windowResetCommandLineOptions(&desktopWindowStartupOptions);
 
    while (*read != '\0')
    {
