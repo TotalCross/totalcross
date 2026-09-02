@@ -33,99 +33,6 @@ configurations {
     obfuscatedArchive
 }
 
-def depotToolsFetchScript = file("${rootDir}/../TotalCrossVM/deps/fetch-depot-tools.sh")
-def depotToolsDir = file("${rootDir}/../TotalCrossVM/deps/totalcross-depot-tools")
-def depotToolsRefFile = file("${rootDir}/../TotalCrossVM/deps/totalcross-depot-tools.ref")
-def vcruntimeFetchScript = file("${depotToolsDir}/vcruntime/fetch.sh")
-def vcruntimeLocalDir = file("${depotToolsDir}/vcruntime/local/windows/x86")
-def vcruntimeDll = file("${vcruntimeLocalDir}/vcruntime140.dll")
-def vcruntimeManifest = file("${vcruntimeLocalDir}/manifest.txt")
-def vcruntimeNotice = file("${vcruntimeLocalDir}/NOTICE.txt")
-def vcruntimeInputsFingerprint = file("${vcruntimeLocalDir}/totalcross-runtime-inputs.sha256")
-def envOrNull = { name ->
-    def value = System.getenv(name)
-    value ? value : null
-}
-def addOptionalArg = { args, optionName, value ->
-    if (value) {
-        args.add(optionName)
-        args.add(value)
-    }
-}
-def optionalInput = { value ->
-    value ?: ''
-}
-def vcruntimeReleaseTag = envOrNull('VCRUNTIME_RELEASE_TAG')
-def vcruntimeGithubRepo = envOrNull('VCRUNTIME_GITHUB_REPO')
-def effectiveVcruntimeReleaseTag = vcruntimeReleaseTag ?: 'vcruntime-14'
-def effectiveVcruntimeGithubRepo = vcruntimeGithubRepo ?: 'TotalCross/totalcross-depot-tools'
-def vcruntimeInputIdentity = "${effectiveVcruntimeReleaseTag}\u0000${effectiveVcruntimeGithubRepo}\u0000"
-def vcruntimeExpectedFingerprint = java.security.MessageDigest
-    .getInstance('SHA-256')
-    .digest(vcruntimeInputIdentity.getBytes(java.nio.charset.StandardCharsets.UTF_8))
-    .encodeHex()
-    .toString()
-
-def vcruntimePayloadIssues = {
-    def issues = []
-    [vcruntimeDll, vcruntimeManifest, vcruntimeNotice].each { requiredFile ->
-        if (!requiredFile.isFile()) {
-            issues.add("missing ${requiredFile.name}")
-        } else if (requiredFile.length() == 0) {
-            issues.add("empty ${requiredFile.name}")
-        }
-    }
-
-    if (vcruntimeManifest.isFile() && vcruntimeManifest.length() > 0) {
-        def manifestLines = vcruntimeManifest.readLines('UTF-8') as Set
-        [
-            'name=vcruntime',
-            'platform=windows',
-            'arch=x86',
-            'license_notice=NOTICE.txt',
-            'dll=vcruntime140.dll'
-        ].each { expectedLine ->
-            if (!manifestLines.contains(expectedLine)) {
-                issues.add("manifest.txt lacks ${expectedLine}")
-            }
-        }
-    }
-
-    issues
-}
-
-def vcruntimeReadyIssues = {
-    def issues = vcruntimePayloadIssues()
-    if (!vcruntimeInputsFingerprint.isFile()) {
-        issues.add("missing ${vcruntimeInputsFingerprint.name}")
-    } else if (vcruntimeInputsFingerprint.getText('UTF-8').trim() != vcruntimeExpectedFingerprint) {
-        issues.add("runtime inputs do not match the requested release")
-    }
-    issues
-}
-
-def runWithVisibleOutput = { description, command ->
-    def output = providers.exec {
-        commandLine command
-        ignoreExitValue = true
-    }
-    def result = output.result.get()
-    def stdout = output.standardOutput.asText.get().trim()
-    def stderr = output.standardError.asText.get().trim()
-
-    if (stdout) {
-        logger.lifecycle(stdout)
-    }
-    if (stderr) {
-        logger.error(stderr)
-    }
-    if (result.exitValue != 0) {
-        throw new GradleException(
-            "${description} failed with exit code ${result.exitValue}; see command output above."
-        )
-    }
-}
-
 wrapper {
     gradleVersion = '9.6.1'
     distributionType = Wrapper.DistributionType.ALL
@@ -460,64 +367,11 @@ task deployTcui(type: JavaExec, dependsOn: [jar, tcuiJar]) {
     )
 }
 
-task fetchSdkNativeRuntime {
-    group = 'build setup'
-    description = 'Fetches native runtime DLLs distributed with the SDK.'
-
-    inputs.file(depotToolsFetchScript)
-    inputs.file(depotToolsRefFile).optional()
-    inputs.property('vcruntimeReleaseTag', optionalInput(vcruntimeReleaseTag))
-    inputs.property('vcruntimeGithubRepo', optionalInput(vcruntimeGithubRepo))
-    outputs.files(vcruntimeDll, vcruntimeManifest, vcruntimeNotice, vcruntimeInputsFingerprint)
-
-    doLast {
-        def reuseIssues = vcruntimeReadyIssues()
-        if (reuseIssues.isEmpty()) {
-            logger.lifecycle("Reusing prepared vcruntime windows/x86 from ${vcruntimeLocalDir}")
-            return
-        }
-
-        logger.lifecycle(
-            "Prepared vcruntime windows/x86 is unavailable or invalid (${reuseIssues.join('; ')}); fetching it."
-        )
-        runWithVisibleOutput(
-            'Fetching totalcross-depot-tools metadata',
-            ['bash', depotToolsFetchScript.absolutePath]
-        )
-
-        if (!vcruntimeFetchScript.isFile()) {
-            throw GradleException("Could not find vcruntime fetch script at ${vcruntimeFetchScript}")
-        }
-
-        def fetchArgs = [
-            'bash',
-            vcruntimeFetchScript.absolutePath,
-            '--platform', 'windows',
-            '--arch', 'x86',
-            '--github-token-env', 'VCRUNTIME_GITHUB_TOKEN'
-        ]
-        addOptionalArg(fetchArgs, '--release-tag', vcruntimeReleaseTag)
-        addOptionalArg(fetchArgs, '--github-repo', vcruntimeGithubRepo)
-        runWithVisibleOutput('Fetching vcruntime windows/x86', fetchArgs)
-
-        def fetchedPayloadIssues = vcruntimePayloadIssues()
-        if (!fetchedPayloadIssues.isEmpty()) {
-            throw new GradleException(
-                "Fetched vcruntime windows/x86 is invalid: ${fetchedPayloadIssues.join('; ')}"
-            )
-        }
-        vcruntimeInputsFingerprint.setText(vcruntimeExpectedFingerprint + System.lineSeparator(), 'UTF-8')
-    }
-}
-
-task copySdkDependencies(type: Copy, dependsOn: fetchSdkNativeRuntime) {
+task copySdkDependencies(type: Copy) {
     doFirst {
         delete destinationDir
     }
     from({ configurations.runtimeClasspath.findAll { it.name.endsWith('.jar') } })
-    from(vcruntimeLocalDir) {
-        include '*.dll'
-    }
     into 'dist/libs'
 }
 
