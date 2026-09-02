@@ -20,4 +20,6 @@ abstract class ImageSource {
   abstract int frameCount();
 
   abstract int widthOfAllFrames();
+
+  abstract double contentScale();
 }
