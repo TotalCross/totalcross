@@ -41,3 +41,4 @@
 {"kind":"resolution","scope":"resume-next","status":"superseded","revision":"04a7bfa0a","note":"Milestone 2 was completed and the next action is plan-3 milestone-3 resume, not further crop investigation."}
 {"kind":"commit","scope":"milestone-2-artifacts","revision":"772806c85","status":"created","subject":"docs(plans): record geometry milestone checkpoint"}
 {"kind":"note","scope":"commit-message-check","status":"failed","note":"The artifact commit body also contains literal backslash-n characters from shell escaping; neither commit was amended or rewritten."}
+{"kind":"note","scope":"goal-stop","status":"complete","note":"The execution and goal are fully stopped after the milestone-2 checkpoint; plan-3 milestone 3 remains the later resume point."}
