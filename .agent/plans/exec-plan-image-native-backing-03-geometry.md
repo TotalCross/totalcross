@@ -29,8 +29,8 @@ single oversized dispatcher.
 
 ## Progress
 
-- [ ] Milestone 1: add a native/draw execution description for geometry.
-- [ ] Milestone 2: migrate frame/crop/scale operations.
+- [x] Milestone 1: add a native/draw execution description for geometry.
+- [x] Milestone 2: migrate frame/crop/scale operations.
 - [ ] Milestone 3: migrate rotate/scale and materialization barriers.
 - [ ] Close plan 3 and prepare plan 4 state.
 
@@ -274,8 +274,27 @@ stale configuration is proven.
 
 ## Outcomes & Retrospective
 
-Record final operations migrated, commits, build/smoke results, and any color-node
-resolver dependency intentionally left for plan 4.
+Milestones 1 and 2 are complete at implementation commit `04a7bfa0a`.
+`ImageGeometryPlan` now preserves source-to-result operation order and carries
+the native root backing, frame metadata, content scales, alpha masks, and
+hardware scales. The Skia executor handles frame selection/layout, crop,
+nearest scale, Catmull-Rom smooth scale, and the currently exercised rotation
+path for direct draw and one final native materialization.
+
+The milestone-2 crop/frame smoke passes encoded multi-frame extraction,
+current-frame capture, fractional content scales, alpha masks, non-unit
+hardware scales, targeted JPEG behavior, and the existing 500x500 to 89x89
+ImageControl materialization/reposition regression. The dedicated geometry
+smoke passes nearest, crop, smooth, chained scale/crop, rotation, and frame
+selection. Exact commands and logs are recorded in
+`.agent/evidence/image-native-backing-03.jsonl`.
+
+The broad legacy lazy/ABI smokes remain deferred: they still assert mutable or
+identity-preserving `getPixels()` arrays and exercise color-native mutation
+paths that belong to plan 4. Android, iOS, Linux, Windows, and the full
+platform matrix remain deferred by roadmap scope. Plan 3 stays open at
+milestone 3 for a later execution turn; this checkpoint intentionally stops
+before that milestone.
 
 ## Revision Note
 
