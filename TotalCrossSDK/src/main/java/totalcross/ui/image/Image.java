@@ -70,6 +70,51 @@ import totalcross.util.zip.ZLib;
  * @see Graphics
  */
 public class Image extends GfxSurface {
+  private static boolean decodedRasterAllocationFailureForTest;
+  private static boolean materializedFrameBufferAllocationFailureForTest;
+
+  private static final class DeterministicImageDecodeException extends ImageException {
+    DeterministicImageDecodeException(String message) {
+      super(message);
+    }
+
+    DeterministicImageDecodeException(ImageException cause) {
+      super(cause.getMessage());
+      initCause(cause);
+    }
+  }
+
+  /** Test-only hook for exercising retryable decoded-raster allocation failures. */
+  static synchronized void failNextDecodedRasterAllocationForTest() {
+    decodedRasterAllocationFailureForTest = true;
+  }
+
+  /** Test-only hook for exercising retryable multi-frame buffer allocation failures. */
+  static synchronized void failNextMaterializedFrameBufferAllocationForTest() {
+    materializedFrameBufferAllocationFailureForTest = true;
+  }
+
+  /** Test-only hook for exercising retryable native decoded-raster allocation failures. */
+  static void failNextNativeMaterializationForTest() {
+    failNextNativeMaterializationForTestNative();
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failNextNativeMaterializationForTestNative() {
+  }
+
+  private static synchronized boolean consumeDecodedRasterAllocationFailureForTest() {
+    boolean failure = decodedRasterAllocationFailureForTest;
+    decodedRasterAllocationFailureForTest = false;
+    return failure;
+  }
+
+  private static synchronized boolean consumeMaterializedFrameBufferAllocationFailureForTest() {
+    boolean failure = materializedFrameBufferAllocationFailureForTest;
+    materializedFrameBufferAllocationFailureForTest = false;
+    return failure;
+  }
+
   // ABI-sensitive: keep storage-category order synchronized with
   // TotalCrossVM/src/nm/instancefields.h.
   // int
@@ -113,6 +158,8 @@ public class Image extends GfxSurface {
   private int[] instanceCount = new int[1];
   private Image[] master = new Image[1];
   private String path;
+  /** Non-null only while this image is an immutable, deferred encoded source. */
+  private ImagePipeline pipeline;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
@@ -204,6 +251,11 @@ public class Image extends GfxSurface {
   }
 
   private Image(int logicalWidth, int logicalHeight, double contentScale) throws ImageException {
+    this(logicalWidth, logicalHeight, contentScale, false);
+  }
+
+  private Image(int logicalWidth, int logicalHeight, double contentScale, boolean decodedRaster)
+      throws ImageException {
     if (!Double.isFinite(contentScale) || contentScale <= 0 || logicalWidth <= 0 || logicalHeight <= 0) {
       throw new ImageException("Image dimensions and content scale must be positive.");
     }
@@ -218,15 +270,21 @@ public class Image extends GfxSurface {
     width = (int) pixelWidth;
     height = (int) pixelHeight;
     try {
+      if (decodedRaster && consumeDecodedRasterAllocationFailureForTest()) {
+        throw new TransientImageMaterializationException("Simulated decoded-raster allocation failure");
+      }
       pixels = new int[height * width]; // just create the pixels array
     } catch (OutOfMemoryError oome) {
+      if (decodedRaster) {
+        throw new TransientImageMaterializationException(oome);
+      }
       throw new ImageException("Out of memory: cannot allocate " + width + "x" + height + " offscreen image.");
     }
     init();
   }
 
   private Image(Image src) {
-    if (Settings.isOpenGL && src.changed[0]) {
+    if (Settings.isOpenGL && src.pipeline == null && src.changed[0]) {
       src.applyChanges();
     }
     this.surfaceType = src.surfaceType;
@@ -257,6 +315,7 @@ public class Image extends GfxSurface {
       this.master = src.master;
     }
     this.path = src.path;
+    this.pipeline = src.pipeline;
     src.instanceCount[0]++;
   }
 
@@ -267,6 +326,7 @@ public class Image extends GfxSurface {
 
   /** Used only at desktop to get the image's pixels. */
   public int[] getPixels() {
+    materializeCanonicalUnchecked();
     return pixels;
   }
 
@@ -278,11 +338,7 @@ public class Image extends GfxSurface {
    */
   public Image(String path) throws ImageException, IOException {
     this.path = path;
-    imageLoad(path);
-    if (width == 0) {
-      throw new ImageException("Could not load image, file not found: " + path);
-    }
-    init();
+    initializeDeferred(EncodedImageSource.fromPath(path));
   }
 
   /** Loads a BMP, JPEG, GIF or PNG image from a totalcross.io.Stream. Note that Gif and BMP are supported only at desktop.
@@ -292,16 +348,7 @@ public class Image extends GfxSurface {
     if (s instanceof File) {
       path = ((File) s).getPath();
     }
-    byte[] buf = new byte[512];
-    int n = s.readBytes(buf, 0, 4);
-    if (n < 4) {
-      throw new ImageException("Can't read from Stream");
-    }
-    imageParse(s, buf);
-    if (width == 0) {
-      throw new ImageException("Error when loading image from stream");
-    }
-    init();
+    initializeDeferred(EncodedImageSource.fromStream(s));
   }
 
   /** Returns the path used to create the Image. For constructors that don't receive a path, returns null */
@@ -316,14 +363,22 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   @Deprecated
-  @ReplacedByNativeOnDeploy
   public Image setTransparentColor(int color) {
+    materializeCanonicalUnchecked();
+    if (!Settings.onJavaSE) {
+      setTransparentColorNative(color);
+      return this;
+    }
     int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
     for (int i = pixels.length; --i >= 0;) {
       int p = pixels[i] & 0xFFFFFF;
       pixels[i] = (p == color) ? color : p | 0xFF000000; // if is the transparent color, set the alpha to 0, otherwise, set to full bright
     }
     return this;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void setTransparentColorNative(int color) {
   }
 
   /** Parses an image from the given byte array. Note that the byte array must
@@ -350,11 +405,10 @@ public class Image extends GfxSurface {
    *    Vm.sleep(2000);
    * }
    * </pre>
-   * Caution: if reading a JPEG file, the original array contents will be changed!
    * @throws totalcross.ui.image.ImageException Thrown when something was wrong with the image.
    */
   public Image(byte[] fullDescription) throws ImageException {
-    this(fullDescription, fullDescription.length);
+    this(fullDescription, fullDescription == null ? -1 : fullDescription.length);
   }
 
   /** Parses an image from the given byte array with the specified length. Note that the byte array must
@@ -381,31 +435,148 @@ public class Image extends GfxSurface {
    *    Vm.sleep(2000);
    * }
    * </pre>
-   * Caution: if reading a JPEG file, the original array contents will be changed!
+   * The visible encoded range is copied during construction, so later changes
+   * to the caller's array do not affect this image.
    * @throws totalcross.ui.image.ImageException Thrown when something was wrong with the image.
    */
   public Image(byte[] fullDescription, int length) throws ImageException {
-    if (length < 4) {
+    if (fullDescription == null || length < 4 || length > fullDescription.length) {
       throw new ImageException("Invalid image description");
     }
-    ByteArrayStream bas = new ByteArrayStream(fullDescription);
-    if (length != fullDescription.length) {
-      try {
-        bas.setPos(length);
-        bas.mark();
-      } catch (Exception e) {
+    initializeDeferred(EncodedImageSource.fromBytes(fullDescription, length));
+  }
+
+  private void initializeDeferred(EncodedImageSource source) {
+    pipeline = new ImagePipeline(source);
+    width = source.getFrameCount() > 1 ? source.getLogicalWidth() : source.getIntrinsicWidth();
+    height = source.getIntrinsicHeight();
+    widthOfAllFrames = source.getIntrinsicWidth();
+    logicalWidth = source.getLogicalWidth();
+    logicalHeight = source.getLogicalHeight();
+    frameCount = source.getFrameCount();
+    currentFrame = frameCount > 1 ? 0 : -1;
+    comment = source.getComment();
+    contentScale = 1;
+    surfaceType = 1;
+    textureId = -1;
+    hwScaleW = 1;
+    hwScaleH = 1;
+    alphaMask = 255;
+    gfx = new Graphics(this);
+    gfx.setScales(1, 1);
+    gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+  }
+
+  private void initializeDecodeTarget(EncodedImageSource source) {
+    width = source.getIntrinsicWidth();
+    height = source.getIntrinsicHeight();
+    logicalWidth = source.getLogicalWidth();
+    logicalHeight = source.getLogicalHeight();
+    comment = source.getComment();
+    contentScale = 1;
+    surfaceType = 1;
+    textureId = -1;
+    hwScaleW = 1;
+    hwScaleH = 1;
+    alphaMask = 255;
+  }
+
+  /** Checked canonical barrier used by APIs that already expose ImageException. */
+  private synchronized void materializeCanonicalChecked() throws ImageException {
+    ImagePipeline deferred = pipeline;
+    if (deferred == null) {
+      return;
+    }
+    EncodedImageSource source = deferred.root();
+    ImageException cached = source.decodeFailure();
+    if (cached != null) {
+      throw cached;
+    }
+    Image decoded = new Image();
+    decoded.initializeDecodeTarget(source);
+    try {
+      decoded.decodeEncodedSource(source);
+      if (decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
+        throw new DeterministicImageDecodeException("Could not decode encoded image");
       }
+      decoded.init(true);
+      verifyDecodedMetadata(source, decoded);
+    } catch (ImageException failure) {
+      if (failure instanceof TransientImageMaterializationException) {
+        throw failure;
+      }
+      ImageException deterministic = failure instanceof DeterministicImageDecodeException
+          ? failure : new DeterministicImageDecodeException(failure);
+      source.cacheDecodeFailure(deterministic);
+      throw deterministic;
     }
-    bas.skipBytes(4);
-    imageParse(bas, fullDescription);
-    if (width == 0) {
-      throw new ImageException(fullDescription == null ? "Description is null"
-          : ("Error on image with " + fullDescription.length + " bytes length description"));
+
+    pixels = decoded.pixels;
+    pixelsOfAllFrames = decoded.pixelsOfAllFrames;
+    width = decoded.width;
+    height = decoded.height;
+    frameCount = decoded.frameCount;
+    currentFrame = decoded.currentFrame;
+    widthOfAllFrames = decoded.widthOfAllFrames;
+    logicalWidth = decoded.logicalWidth;
+    logicalHeight = decoded.logicalHeight;
+    comment = decoded.comment;
+    contentScale = 1;
+    textureId = -1;
+    hashCode = 0;
+    changed[0] = true;
+    pipeline = null;
+  }
+
+  private void verifyDecodedMetadata(EncodedImageSource source, Image decoded) throws ImageException {
+    int expectedAllFramesWidth = source.getFormat() == ImageEncodedStructure.Format.GIF
+        ? source.getIntrinsicWidth() * source.getFrameCount() : source.getIntrinsicWidth();
+    if (decoded.width != (source.getFrameCount() > 1 ? source.getLogicalWidth() : source.getIntrinsicWidth())
+        || decoded.height != source.getIntrinsicHeight()
+        || decoded.logicalWidth != source.getLogicalWidth()
+        || decoded.logicalHeight != source.getLogicalHeight()
+        || decoded.frameCount != source.getFrameCount()
+        || (decoded.frameCount > 1 && decoded.widthOfAllFrames != expectedAllFramesWidth)) {
+      throw new DeterministicImageDecodeException("Decoded image metadata does not match its encoded source");
     }
-    init();
+  }
+
+  /** Unchecked barrier for APIs whose public compatibility signature cannot change. */
+  private void materializeCanonicalUnchecked() {
+    try {
+      materializeCanonicalChecked();
+    } catch (ImageException failure) {
+      throw new IllegalStateException("Could not materialize encoded image", failure);
+    }
+  }
+
+  /** Deploy replacement decodes directly from the source's native bag. */
+  @ReplacedByNativeOnDeploy
+  private void decodeEncodedSource(EncodedImageSource source) throws ImageException {
+    byte[] input = source.bytesForInternalDecode();
+    if (input == null) {
+      throw new ImageException("Encoded source has no Java backing");
+    }
+    try {
+      imageLoad(input, source.getEncodedLength());
+    } catch (ImageException e) {
+      if (e instanceof TransientImageMaterializationException) {
+        throw e;
+      }
+      throw new DeterministicImageDecodeException(e);
+    } catch (OutOfMemoryError e) {
+      throw e;
+    } catch (Throwable e) {
+      throw new TransientImageMaterializationException(e);
+    }
   }
 
   private void init() throws IllegalArgumentException, IllegalStateException, ImageException {
+    init(false);
+  }
+
+  private void init(boolean materializingEncodedSource)
+      throws IllegalArgumentException, IllegalStateException, ImageException {
     surfaceType = 1;
     textureId = -1;
     if (hwScaleW == 0) {
@@ -427,7 +598,7 @@ public class Image extends GfxSurface {
     // frame count information?
     if (comment != null && comment.startsWith("FC=")) {
       try {
-        setFrameCount(Convert.toInt(comment.substring(3)));
+        setFrameCount(Convert.toInt(comment.substring(3)), materializingEncodedSource);
       } catch (InvalidNumberException ine) {
       }
     }
@@ -447,6 +618,12 @@ public class Image extends GfxSurface {
    * @since TotalCross 1.0
    */
   public void setFrameCount(int n) throws IllegalArgumentException, IllegalStateException, ImageException {
+    setFrameCount(n, false);
+  }
+
+  private void setFrameCount(int n, boolean materializingEncodedSource)
+      throws IllegalArgumentException, IllegalStateException, ImageException {
+    materializeCanonicalChecked();
     if (frameCount > 1 && n != frameCount) {
       throw new IllegalStateException("The frame count can only be set once.");
     }
@@ -463,9 +640,15 @@ public class Image extends GfxSurface {
         logicalWidth = (int) Math.ceil(width / contentScale);
         // the pixels will hold the pixel of a single frame
         pixelsOfAllFrames = pixels;
+        if (materializingEncodedSource && consumeMaterializedFrameBufferAllocationFailureForTest()) {
+          throw new TransientImageMaterializationException("Simulated multi-frame buffer allocation failure");
+        }
         pixels = new int[width * height];
         setCurrentFrame(0);
       } catch (OutOfMemoryError oome) {
+        if (materializingEncodedSource) {
+          throw new TransientImageMaterializationException(oome);
+        }
         throw new ImageException("Not enough memory to create the single frame");
       }
     }
@@ -481,8 +664,12 @@ public class Image extends GfxSurface {
   /** Move the contents of the given frame to the currently visible pixels.
    * @since TotalCross 1.0
    */
-  @ReplacedByNativeOnDeploy
   final public void setCurrentFrame(int nr) {
+    materializeCanonicalUnchecked();
+    if (!Settings.onJavaSE) {
+      setCurrentFrameNative(nr);
+      return;
+    }
     if (frameCount <= 1 || nr == currentFrame) {
       return;
     }
@@ -495,6 +682,10 @@ public class Image extends GfxSurface {
     for (int y = height - 1; y >= 0; y--) {
       Vm.arrayCopy(pixelsOfAllFrames, nr * width + y * widthOfAllFrames, pixels, y * width, width);
     }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void setCurrentFrameNative(int nr) {
   }
 
   /** Returns the current frame in a multi-frame image.
@@ -540,6 +731,7 @@ public class Image extends GfxSurface {
 
   /** Returns a new Graphics instance that can be used to drawing in this image. */
   public Graphics getGraphics() {
+    materializeCanonicalUnchecked();
     if (pixels == null) {
       return null;
     }
@@ -557,8 +749,15 @@ public class Image extends GfxSurface {
    * In non-open gl platforms, does nothing.
    * @since TotalCross 2
    */
-  @ReplacedByNativeOnDeploy
   public void applyChanges() {
+    if (!Settings.onJavaSE && Settings.isOpenGL) {
+      materializeCanonicalUnchecked();
+      applyChangesNative();
+    }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void applyChangesNative() {
   }
 
   /**
@@ -573,8 +772,12 @@ public class Image extends GfxSurface {
    * 
    * AVOID USING THIS METHOD IF UNSURE ABOUT IT.
    */
-  @ReplacedByNativeOnDeploy
   public void freeTexture() {
+    freeTextureNative();
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void freeTextureNative() {
   }
 
   @Override
@@ -620,8 +823,12 @@ public class Image extends GfxSurface {
    * @see #applyColor(int)
    * @see #applyColor2(int)
    */
-  @ReplacedByNativeOnDeploy
   final public void changeColors(int from, int to) {
+    materializeCanonicalUnchecked();
+    if (!Settings.onJavaSE) {
+      changeColorsNative(from, to);
+      return;
+    }
     int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
     for (int n = pixels.length; --n >= 0;) {
       if (pixels[n] == from) {
@@ -632,6 +839,14 @@ public class Image extends GfxSurface {
       currentFrame = 2;
       setCurrentFrame(0);
     }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void applyColor2Native(int color) {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void changeColorsNative(int from, int to) {
   }
 
   /** Saves this image as a Windows .png file format to the given PDBFile.
@@ -689,6 +904,7 @@ public class Image extends GfxSurface {
    * @see #loadFrom(PDBFile, String)
    */
   public void saveTo(PDBFile cat, String name) throws ImageException, IOException {
+    materializeCanonicalChecked();
     name = name.toLowerCase();
     if (!name.endsWith(".png")) {
       name += ".png";
@@ -756,8 +972,17 @@ public class Image extends GfxSurface {
    * @throws ImageException
    * @throws IOException
    */
-  @ReplacedByNativeOnDeploy
   public void createJpg(Stream s, int quality) throws ImageException, IOException {
+    materializeCanonicalChecked();
+    if (!Settings.onJavaSE) {
+      createJpgNative(s, quality);
+      return;
+    }
+    createJpgJava(s, quality);
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void createJpgJava(Stream s, int quality) throws ImageException, IOException {
     try {
       java.awt.image.MemoryImageSource screenMis = new java.awt.image.MemoryImageSource(width, height,
           new java.awt.image.DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0), (int[]) pixels, 0, width);
@@ -780,6 +1005,10 @@ public class Image extends GfxSurface {
     }
   }
 
+  @ReplacedByNativeOnDeploy
+  private void createJpgNative(Stream s, int quality) throws ImageException, IOException {
+  }
+
   /** Saves this image as a 24 BPP .png file format (if useAlpha is true, it saves as 32 BPP), 
    * to the given stream.
    * If you're sending the png through a stream but not saving to a PDBFile,
@@ -790,6 +1019,7 @@ public class Image extends GfxSurface {
    * @see #saveTo(totalcross.io.PDBFile, java.lang.String)
    */
   public void createPng(Stream s) throws ImageException, IOException {
+    materializeCanonicalChecked();
     try {
       // based in a code from J. David Eisenberg of PngEncoder, version 1.5
       byte[] pngIdBytes = { (byte) -119, (byte) 80, (byte) 78, (byte) 71, (byte) 13, (byte) 10, (byte) 26, (byte) 10 };
@@ -861,8 +1091,12 @@ public class Image extends GfxSurface {
   /** Used in saveTo method. Fills in the y row into the fillIn array.
    * there must be enough space for the full line be filled, with width*4 bytes. 
    * The alpha channel is NOT stripped off. */
-  @ReplacedByNativeOnDeploy
   final public void getPixelRow(byte[] fillIn, int y) {
+    materializeCanonicalUnchecked();
+    if (!Settings.onJavaSE) {
+      getPixelRowNative(fillIn, y);
+      return;
+    }
     int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
     int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
     for (int x = 0, n = w, i = y * w; n-- > 0;) {
@@ -874,6 +1108,10 @@ public class Image extends GfxSurface {
     }
   }
 
+  @ReplacedByNativeOnDeploy
+  private void getPixelRowNative(byte[] fillIn, int y) {
+  }
+
   private static final int SCALED_INSTANCE = 0;
   private static final int SMOOTH_SCALED_INSTANCE = 1;
   private static final int ROTATED_SCALED_INSTANCE = 2;
@@ -881,10 +1119,14 @@ public class Image extends GfxSurface {
   private static final int FADED_INSTANCE = 4;
   private static final int ALPHA_INSTANCE = 5;
 
-  /** The deployed implementation is replaced with tuiI_getModifiedInstance_iiiiiii. */
-  @ReplacedByNativeOnDeploy
+  /** JavaSE implementation; deployed builds call the private native bridge. */
   private void getModifiedInstance(Image newImg, int angle, int percScale, int color,
       int brightness, int contrast, int type) throws ImageException {
+    materializeCanonicalChecked();
+    if (!Settings.onJavaSE) {
+      getModifiedNative(newImg, angle, percScale, color, brightness, contrast, type);
+      return;
+    }
     Image modified;
     switch (type) {
     case SCALED_INSTANCE:
@@ -910,6 +1152,11 @@ public class Image extends GfxSurface {
       throw new IllegalArgumentException("Unknown image modification type: " + type);
     }
     newImg.copyFrom(modified);
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void getModifiedNative(Image newImg, int angle, int percScale, int color,
+      int brightness, int contrast, int type) throws ImageException {
   }
 
   private Image getModifiedInstance(int newW, int newH, int angle, int percScale, int color,
@@ -1008,6 +1255,7 @@ public class Image extends GfxSurface {
    */
   public Image getScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
   {
+    materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getModifiedInstance(newWidth, newHeight, 0, 0, -1, 0, 0, SCALED_INSTANCE);
     }
@@ -1056,6 +1304,7 @@ public class Image extends GfxSurface {
    */
   public Image getSmoothScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
   {
+    materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getModifiedInstance(newWidth, newHeight, 0, 0, 0, 0, 0, SMOOTH_SCALED_INSTANCE);
     }
@@ -1399,6 +1648,7 @@ public class Image extends GfxSurface {
    * Color.WHITE if the transparentColor was not set; use 0 for a transparent background, or 0xFF000000 for the BLACK color.
    */
   public Image getRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException {
+    materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getNativeRotatedScaledInstance(scale, angle, fillColor);
     }
@@ -1536,6 +1786,7 @@ public class Image extends GfxSurface {
   @Deprecated
   public Image getFadedInstance(int backColor) throws ImageException // guich@tc110_50
   {
+    materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getModifiedInstance(width, height, 0, 0, backColor, 0, 0, FADED_INSTANCE);
     }
@@ -1582,6 +1833,7 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   public Image getAlphaInstance(int delta) throws ImageException {
+    materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getModifiedInstance(width, height, 0, 0, delta, 0, 0, ALPHA_INSTANCE);
     }
@@ -1627,6 +1879,7 @@ public class Image extends GfxSurface {
    *           level, -128 is no contrast.
    */
   public Image getTouchedUpInstance(byte brightness, byte contrast) throws ImageException {
+    materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getModifiedInstance(width, height, 0, 0, 0, brightness, contrast, TOUCHEDUP_INSTANCE);
     }
@@ -2144,7 +2397,7 @@ public class Image extends GfxSurface {
             /* final int count = reader.getNumImages(true); */
             for (int index = 0; /* index < count */; index++) {
               final BufferedImage frame = reader.read(index);
-              image = new Image(width, height);
+              image = new Image(width, height, 1, true);
               image.pixels = convertBufferedImageToPixels(frame, image.pixels, width, height);
               frames.add(image);
             }
@@ -2160,7 +2413,7 @@ public class Image extends GfxSurface {
           final int width = frame.getWidth();
           final int height = frame.getHeight();
 
-          image = new Image(width, height);
+          image = new Image(width, height, 1, true);
           if (new String(input, 1, 3).equals("PNG")) {
             fillPNGInformations(input, image);
           }
@@ -2249,17 +2502,16 @@ public class Image extends GfxSurface {
       }
     }
 
-    private Image joinImages(List<Image> images) {
+    private Image joinImages(List<Image> images) throws ImageException {
       int n = images.size();
       Image resultImage = images.get(n - 1);
       if (n > 1) {
-        try {
           int totalW = 0;
           int totalH = resultImage.height;
           for (int i = 0; i < n; i++) {
             totalW += images.get(i).width;
           }
-          Image temp = new Image(totalW, totalH);
+          Image temp = new Image(totalW, totalH, 1, true);
           temp.frameCount = n;
           temp.comment = resultImage.comment;
           int[] dest = (int[]) temp.pixels;
@@ -2274,9 +2526,6 @@ public class Image extends GfxSurface {
             xx += w;
           }
           resultImage = temp;
-        } catch (Exception e) {
-          resultImage = images.get(0); // if an error occurs, we assume only the first frame
-        }
       }
       return resultImage;
     }
@@ -2321,6 +2570,7 @@ public class Image extends GfxSurface {
    * @since TotalCross 1.12 
    */
   final public Image getFrameInstance(int frame) throws ImageException {
+    materializeCanonicalChecked();
     Image img = getCopy(width, height);
     int old = currentFrame;
     setCurrentFrame(frame);
@@ -2336,9 +2586,13 @@ public class Image extends GfxSurface {
    * @param color The color to be applied
    * @since TotalCross 1.12
    */
-  @ReplacedByNativeOnDeploy
   final public void applyColor(int color) // guich@tc112_24
   {
+    materializeCanonicalUnchecked();
+    if (!Settings.onJavaSE) {
+      applyColorNative(color);
+      return;
+    }
     int r2 = Color.getRed(color);
     int g2 = Color.getGreen(color);
     int b2 = Color.getBlue(color);
@@ -2373,6 +2627,10 @@ public class Image extends GfxSurface {
     }
   }
 
+  @ReplacedByNativeOnDeploy
+  private void applyColorNative(int color) {
+  }
+
   /** Returns a smooth scaled instance of this image with a fixed aspect ratio
    * based on the given resolution (which is the resolution that you used to MAKE the image). The target size is computed as 
    * <code>image_size*min(screen_size)/original_resolution</code>
@@ -2391,11 +2649,19 @@ public class Image extends GfxSurface {
    */
   @Override
   public boolean equals(Object o) {
-    return (o instanceof Image) && nativeEquals((Image) o);
+    if (!(o instanceof Image)) {
+      return false;
+    }
+    materializeCanonicalUnchecked();
+    Image other = (Image) o;
+    other.materializeCanonicalUnchecked();
+    return nativeEquals(other);
   }
-  
-  @ReplacedByNativeOnDeploy
+
   private boolean nativeEquals(Image other) {
+    if (!Settings.onJavaSE) {
+      return nativeEqualsNative(other);
+    }
     Image img = other;
     int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
     int w2 = img.frameCount > 1 ? img.widthOfAllFrames : img.width;
@@ -2420,6 +2686,11 @@ public class Image extends GfxSurface {
     return true;
   }
 
+  @ReplacedByNativeOnDeploy
+  private boolean nativeEqualsNative(Image other) {
+    return false;
+  }
+
   /** Applies the given color r,g,b values to all pixels of this image, 
    * preserving the transparent color and alpha channel, if set.
    * This method is used to colorize the Android buttons.
@@ -2429,8 +2700,12 @@ public class Image extends GfxSurface {
    * @param color The color to be applied
    * @since TotalCross 1.3
    */
-  @ReplacedByNativeOnDeploy
   final public void applyColor2(int color) {
+    materializeCanonicalUnchecked();
+    if (!Settings.onJavaSE) {
+      applyColor2Native(color);
+      return;
+    }
     int r2 = Color.getRed(color);
     int g2 = Color.getGreen(color);
     int b2 = Color.getBlue(color);
@@ -2539,8 +2814,12 @@ public class Image extends GfxSurface {
   }
 
   /** Applies the given fade value to r,g,b of this image while preserving the alpha value. */
-  @ReplacedByNativeOnDeploy
   public void applyFade(int fadeValue) {
+    materializeCanonicalUnchecked();
+    if (!Settings.onJavaSE) {
+      applyFadeNative(fadeValue);
+      return;
+    }
     int[] pixels = (int[]) this.pixels;
     int lastColor = -1, lastFaded = 0;
     for (int j = 0; j < pixels.length; j++) {  
@@ -2556,6 +2835,10 @@ public class Image extends GfxSurface {
         lastFaded = pixels[j] = (a << 24) | (r << 16) | (g << 8) | b;
       }
     }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void applyFadeNative(int fadeValue) {
   }
 
   /** Utility method used to change the frame count of an image. This method exists in
@@ -2730,7 +3013,10 @@ public class Image extends GfxSurface {
         sif.getWidth(), sif.getHeight(), targetWidth, targetHeight);
     final int scaledWidth = jpegScaledDimension(sif.getWidth(), 1, scaleDenominator);
     final int scaledHeight = jpegScaledDimension(sif.getHeight(), 1, scaleDenominator);
-    return new Image(path).getSmoothScaledInstance(scaledWidth, scaledHeight);
+    Image image = new Image(path);
+    Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
+    result.materializeCanonicalChecked();
+    return result;
   }
 
   @ReplacedByNativeOnDeploy
@@ -2763,11 +3049,15 @@ public class Image extends GfxSurface {
 
     final int scaledWidth = jpegScaledDimension(sif.getWidth(), scaleNumerator, scaleDenominator);
     final int scaledHeight = jpegScaledDimension(sif.getHeight(), scaleNumerator, scaleDenominator);
-    return new Image(path).getSmoothScaledInstance(scaledWidth, scaledHeight);
+    Image image = new Image(path);
+    Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
+    result.materializeCanonicalChecked();
+    return result;
   }
 
   @Override
   public int hashCode() {
+    materializeCanonicalUnchecked();
     if (hashCode != 0) {
       return hashCode;
     }

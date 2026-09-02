@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda.
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -7,6 +8,7 @@
 
 #include "png.h"
 #include "tcvm.h"
+#include "ui/image/ImageDecodeStatus.h"
 
 static void row_callback(png_structp, png_bytep, png_uint_32, int);
 static void info_callback(png_structp png_ptr, png_infop info);
@@ -20,6 +22,9 @@ typedef struct
    TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
    // for fetching data
    TCObject inputStreamObj, bufObj, pixelsObj;
+   const uint8* mapped;
+   int32 mappedLength;
+   int32 mappedCursor;
    Method readBytesMethod;
    TValue params[4];
    // the first 4 bytes
@@ -29,6 +34,8 @@ typedef struct
    int32 bytesPerRow;
    png_bytep upixels;
    bool quit;
+   int32 rowsDecoded;
+   volatile ImageDecodeStatus *decodeStatus;
    Context currentContext;
 
    png_infop info_ptr;
@@ -46,6 +53,18 @@ int pngRead(void *buff, int count, UserData *in)
       cur += 4;
       count -= 4;
       extra = 4;
+   }
+   if (in->mapped != null)
+   {
+      int32 available = in->mappedLength - in->mappedCursor;
+      if (available > count) available = count;
+      if (available > 0)
+      {
+         xmemmove(cur, in->mapped + in->mappedCursor, available);
+         in->mappedCursor += available;
+         return available + extra;
+      }
+      return extra;
    }
    if (in->tcz != null)
       return tczRead(in->tcz, cur, count) + extra;
@@ -86,8 +105,9 @@ void userfree(png_structp png_ptr, png_voidp ptr)
 }
 
 void setTransparentColor(TCObject obj, Pixel color);
-// imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4)
+// imageObj+tcz+first4, imageObj+inputStream+bufObj+bufCount, or imageObj+mapped bytes
+ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
+      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength)
 {
    Heap heap;
    int32 count;
@@ -97,6 +117,7 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
 
    UserData userData;
    png_structp png_ptr;
+   volatile ImageDecodeStatus decodeStatus = IMAGE_DECODE_SUCCESS;
 
    png_textp text = null;
    png_byte color_type;
@@ -106,14 +127,21 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
 
    heap = heapCreate();
    if (!heap)
-      return; // throwImageException("Out of memory");
+      return IMAGE_DECODE_RESOURCE_FAILURE;
 
    userData.currentContext = currentContext;
    userData.heap = heap;
+   userData.decodeStatus = &decodeStatus;
    if (tcz != null)
    {
       userData.tcz = tcz;
       tcz->tempHeap = heap;
+   }
+   else if (mapped != null)
+   {
+      userData.mapped = mapped;
+      userData.mappedLength = mappedLength;
+      userData.mappedCursor = 0;
    }
    else
    {
@@ -125,10 +153,12 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
 
    IF_HEAP_ERROR(heap)
    {
+      if (decodeStatus == IMAGE_DECODE_SUCCESS)
+         decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
       heapDestroy(heap);
       if (tcz != null)
          tczClose(tcz);
-      return; // throwImageException(...);
+      return decodeStatus;
    }
    /* Start decompressor */
    /* Create and initialize the png_struct. */
@@ -137,7 +167,7 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
       HEAP_ERROR(heap, 999);
    userData.info_ptr = png_create_info_struct(png_ptr);
 
-   if (tcz == null)
+   if (tcz == null && mapped == null)
    {
       Method readBytesMethod = getMethod(OBJ_CLASS(userData.inputStreamObj), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
       if (readBytesMethod == null)
@@ -152,6 +182,19 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    /* Create decompressor output buffer. */
    while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
+
+   if (userData.pixelsObj == null || userData.rowsDecoded < userData.height)
+   {
+      if (userData.upixels) png_free(png_ptr, userData.upixels);
+      png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
+      Image_pixels(imageObj) = null;
+      Image_width(imageObj) = 0;
+      Image_height(imageObj) = 0;
+      if (tcz != null)
+         tczClose(tcz);
+      heapDestroy(heap);
+      return decodeStatus == IMAGE_DECODE_RESOURCE_FAILURE ? decodeStatus : IMAGE_DECODE_CORRUPT;
+   }
 
    // guich@tc100: check if a comment came with the png
    if (png_get_text(png_ptr, userData.info_ptr, &text, null) != 0 && text && strEq("Comment", text->key)) {
@@ -203,6 +246,8 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    if (tcz != null)
       tczClose(tcz);
    heapDestroy(heap);
+
+   return IMAGE_DECODE_SUCCESS;
 
 //   if (!isAlpha && transp != -1) // guich@tc200rc1: added a test for -1, otherwise a png with rgb will apply a pink mask to the image
 //      setTransparentColor(imageObj, (Pixel)transp);
@@ -256,11 +301,24 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    userData->bytesPerRow = (int32)png_get_rowbytes(png_ptr, info_ptr);
    userData->upixels = png_malloc(png_ptr, userData->bytesPerRow);
    if (width > 65535 || height > 65535)  // bad width/height?
+   {
+      *userData->decodeStatus = IMAGE_DECODE_CORRUPT;
       HEAP_ERROR(userData->heap, 998);
+   }
 
+   if (imageDecodeConsumeAllocationFailureForTest())
+   {
+      *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+      userData->quit = true;
+      return;
+   }
    Image_pixels(userData->imageObj) = userData->pixelsObj = createIntArray(userData->currentContext, (int32)(width*height));
    if (!userData->pixelsObj)
-      HEAP_ERROR(userData->heap, 997);
+   {
+      *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+      userData->quit = true;
+      return;
+   }
    setObjectLock(Image_pixels(userData->imageObj), UNLOCKED);
    userData->pixels = (Pixel*)ARRAYOBJ_START(userData->pixelsObj);
 }
@@ -284,6 +342,8 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
 static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pass)
 {
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
+   if (!userData->pixelsObj)
+      return;
    png_bytep old_row = userData->upixels;
    png_progressive_combine_row(png_ptr, old_row, new_row);
 
@@ -301,6 +361,7 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
       else
          for (x = 0; x < userData->width; x++, buffer += 3)
             *userData->pixels++ = makePixel((uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
+      userData->rowsDecoded++;
       userData->quit = (int32)row_num == (userData->height-1);
    }
 }
@@ -308,6 +369,9 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
 static void error_callback(png_structp png_ptr, png_const_charp msg)
 {
    Heap h = (Heap) png_get_error_ptr(png_ptr);
+   UserData *userData = (UserData *)png_get_progressive_ptr(png_ptr);
+   if (userData)
+      *userData->decodeStatus = IMAGE_DECODE_CORRUPT;
    HEAP_ERROR(h, 996);
    UNUSED(msg)
 }

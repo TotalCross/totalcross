@@ -24,6 +24,7 @@ final class EncodedImageSource extends ImageSource {
   private int frameCount;
   private String comment;
   private long nativeBag;
+  private ImageException decodeFailure;
 
   private EncodedImageSource() {
   }
@@ -134,6 +135,16 @@ final class EncodedImageSource extends ImageSource {
 
   boolean hasNativeBackingForSmoke() {
     return nativeBag != 0;
+  }
+
+  ImageException decodeFailure() {
+    return decodeFailure;
+  }
+
+  void cacheDecodeFailure(ImageException failure) {
+    if (decodeFailure == null) {
+      decodeFailure = failure;
+    }
   }
 
   void releaseForSmoke() {

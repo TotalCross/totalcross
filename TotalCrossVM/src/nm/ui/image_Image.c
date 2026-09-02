@@ -22,7 +22,27 @@
 #include "darwin/image_Image_c.h"
 #endif
 
-void pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
+ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj,
+      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength);
+
+static bool failNextImageAllocationForTest;
+
+int imageDecodeConsumeAllocationFailureForTest(void)
+{
+   bool fail = failNextImageAllocationForTest;
+   failNextImageAllocationForTest = false;
+   return fail;
+}
+
+static void throwImageDecodeStatus(Context context, ImageDecodeStatus status)
+{
+   if (status == IMAGE_DECODE_RESOURCE_FAILURE)
+   {
+      throwExceptionNamed(context, "totalcross.ui.image.TransientImageMaterializationException", null);
+   }
+   else if (status == IMAGE_DECODE_CORRUPT)
+      throwException(context, ImageException, "Could not decode encoded image");
+}
 
 static void captureEncodedBag(Context context, TCObject source, const uint8* bytes, int32 length) {
    ImageEncodedBag* bag = imageEncodedBagCreate(bytes, length);
@@ -167,9 +187,11 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
       char magic[4]; // read the magic to find if its a png or a jpeg (note that jpeg has no magic)
       tczRead(tcz, magic, 4);
       if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
-         pngLoad(p->currentContext, imageObj, null, null, tcz, magic);
+         throwImageDecodeStatus(p->currentContext,
+            pngLoad(p->currentContext, imageObj, null, null, tcz, magic, null, 0));
       } else
-         jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, 0, 0);
+         throwImageDecodeStatus(p->currentContext,
+            jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, 0, 0));
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -182,12 +204,42 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
    char magic[4];
    xmove4(magic, buf); // buf already comes filled from Java with the first 4 bytes
    if ((magic[0] & 0xFF) == 0x89 && magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
-      pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic);
+      throwImageDecodeStatus(p->currentContext,
+         pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, null, 0));
    } else
-      jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, 0, 0);
+      throwImageDecodeStatus(p->currentContext,
+         jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, 0, 0));
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_changeColors_ii(NMParams p) // totalcross/ui/image/Image native public void changeColors(int from, int to);
+TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source);
+{
+   TCObject imageObj = p->obj[0];
+   TCObject sourceObj = p->obj[1];
+   ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
+   if (!bag || !bag->bytes || bag->length <= 0)
+   {
+      throwException(p->currentContext, ImageException, "Encoded source has no native backing");
+      return;
+   }
+   ImageDecodeStatus status;
+   if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_PNG)
+      status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length);
+   else if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_JPEG)
+      status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length, 0, 0);
+   else {
+      throwException(p->currentContext, ImageException, "Unsupported deployed encoded image format");
+      return;
+   }
+   throwImageDecodeStatus(p->currentContext, status);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/Image native private static void failNextNativeMaterializationForTestNative();
+{
+   failNextImageAllocationForTest = true;
+   UNUSED(p);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_changeColorsNative_ii(NMParams p) // totalcross/ui/image/Image private void changeColorsNative(int from, int to);
 {
    TCObject thisObj = p->obj[0];
    Pixel from = makePixelARGB(p->i32[0]);
@@ -195,7 +247,7 @@ TC_API void tuiI_changeColors_ii(NMParams p) // totalcross/ui/image/Image native
    changeColors(thisObj, from, to);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_getPixelRow_Bi(NMParams p) // totalcross/ui/image/Image native protected void getPixelRow(byte []fillIn, int y);
+TC_API void tuiI_getPixelRowNative_Bi(NMParams p) // totalcross/ui/image/Image private void getPixelRowNative(byte []fillIn, int y);
 {
    TCObject thisObj = p->obj[0];
    TCObject fillIn = p->obj[1];
@@ -212,7 +264,7 @@ typedef enum
    FADED_INSTANCE,
    ALPHA_INSTANCE
 } FuncType;
-TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
+TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p) // totalcross/ui/image/Image private void getModifiedNative(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 {
    TCObject thisObj = p->obj[0];
    TCObject newObj = p->obj[1];
@@ -244,34 +296,34 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
    }
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_setCurrentFrame_i(NMParams p) // totalcross/ui/image/Image native public void setCurrentFrame(int nr);
+TC_API void tuiI_setCurrentFrameNative_i(NMParams p) // totalcross/ui/image/Image private void setCurrentFrameNative(int nr);
 {
    TCObject obj = p->obj[0];
    setCurrentFrame(obj, p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_applyColor_i(NMParams p) // totalcross/ui/image/Image native public void applyColor(int color);
+TC_API void tuiI_applyColorNative_i(NMParams p) // totalcross/ui/image/Image private void applyColorNative(int color);
 {
    TCObject thisObj = p->obj[0];
    Pixel color = makePixelRGB(p->i32[0]);
    applyColor(thisObj, color);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_nativeEquals_i(NMParams p) // totalcross/ui/image/Image native private boolean nativeEquals(totalcross.ui.image.Image other);
+TC_API void tuiI_nativeEqualsNative_i(NMParams p) // totalcross/ui/image/Image private boolean nativeEqualsNative(totalcross.ui.image.Image other);
 {
    TCObject thisObj = p->obj[0];
    TCObject otherObj = p->obj[1];
    p->retI = nativeEquals(thisObj, otherObj);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native public void applyColor2(int color);
+TC_API void tuiI_applyColor2Native_i(NMParams p) // totalcross/ui/image/Image private void applyColor2Native(int color);
 {
    TCObject thisObj = p->obj[0];
    Pixel color = makePixelARGB(p->i32[0]);
    applyColor2(thisObj, color);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+TC_API void tuiI_setTransparentColorNative_i(NMParams p) // totalcross/ui/image/Image private void setTransparentColorNative(int color);
 {
    TCObject thisObj = p->obj[0];
    Pixel color = makePixelRGB(p->i32[0]);
@@ -283,7 +335,7 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
 #include "skia/skia.h"
 #endif
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
+TC_API void tuiI_applyChangesNative(NMParams p) // totalcross/ui/image/Image private void applyChangesNative();
 {
 #ifndef SKIA_H
 #ifdef __gl2_h_    
@@ -316,7 +368,7 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native public void freeTexture();
+TC_API void tuiI_freeTextureNative(NMParams p) // totalcross/ui/image/Image private void freeTextureNative();
 {
 #ifndef SKIA_H
 #ifdef __gl2_h_                         
@@ -331,15 +383,15 @@ TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native pub
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
+TC_API void tuiI_createJpgNative_si(NMParams p) // totalcross/ui/image/Image private void createJpgNative(totalcross.io.Stream s, int quality);
 {
-   TCObject thisObj = p->obj[0];
    TCObject stream = p->obj[1];
    int32 quality = p->i32[0];
-   /*bool ret = */image2jpeg(p->currentContext, thisObj, stream, quality);
+   /* The Java wrapper has already completed canonical materialization. */
+   image2jpeg(p->currentContext, p->obj[0], stream, quality);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_applyFade_i(NMParams p) // totalcross/ui/image/Image native public void applyFade(int fadeValue);
+TC_API void tuiI_applyFadeNative_i(NMParams p) // totalcross/ui/image/Image private void applyFadeNative(int fadeValue);
 {
    TCObject thisObj = p->obj[0];
    int32 fadeValue = p->i32[0];
@@ -397,7 +449,8 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
 
       // Found in tcz?
       if (tcz != null) {
-         jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, targetWidth, targetHeight);
+         throwImageDecodeStatus(p->currentContext,
+            jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, targetWidth, targetHeight));
          goto finish;
       }
 
@@ -421,7 +474,8 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
             if (mapped == MAP_FAILED) {
                err = errno;
             } else {
-               jpegLoad(p->currentContext, imageObj, fileObj, null, null, mapped, size, targetWidth, targetHeight);
+               throwImageDecodeStatus(p->currentContext,
+                  jpegLoad(p->currentContext, imageObj, fileObj, null, null, mapped, size, targetWidth, targetHeight));
                munmap((void*) mapped, size);
             }
          }
@@ -439,7 +493,8 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
             executeMethod(p->currentContext, fileConstructor, fileObj, pathObj, READ_ONLY);
             if (p->currentContext->thrownException == null) {
                if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
-                  jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, targetWidth, targetHeight);
+                  throwImageDecodeStatus(p->currentContext,
+                     jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, targetWidth, targetHeight));
                   setObjectLock(bufferObj, UNLOCKED);
                }
             }
@@ -486,14 +541,16 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image nati
    if ((imageObj = createObject(p->currentContext, "totalcross.ui.image.Image")) != NULL
          && (initMethod = getMethod(OBJ_CLASS(imageObj), false, "init", 0)) != NULL ) {
       if (tcz != null) {
-         jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, -scaleNumerator, -scaleDenominator);
+         throwImageDecodeStatus(p->currentContext,
+            jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, -scaleNumerator, -scaleDenominator));
       } else if ((fileObj = createObject(p->currentContext, "totalcross.io.File")) != NULL) {
          fileConstructor = getMethod(OBJ_CLASS(fileObj), false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT);
          if (fileConstructor != null) {
             executeMethod(p->currentContext, fileConstructor, fileObj, pathObj, READ_ONLY);
             if (p->currentContext->thrownException == null) {
                if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
-                  jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, -scaleNumerator, -scaleDenominator);
+                  throwImageDecodeStatus(p->currentContext,
+                     jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, -scaleNumerator, -scaleDenominator));
                }
             }
          }
