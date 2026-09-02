@@ -184,6 +184,9 @@
 #define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
 #define Image_contentScale(o)      FIELD_DBL(o, OBJ_CLASS(o), 2)
 
+// totalcross.ui.image.NativeImageBacking
+#define NativeImageBacking_nativeHandle(o) FIELD_I64(o, OBJ_CLASS(o), 0)
+
 // totalcross/ui/image/EncodedImageSource
 #define EncodedImageSource_nativeBag(o) FIELD_I64(o, OBJ_CLASS(o), 0)
 #define EncodedImageSource_formatCode(o) FIELD_I32(o, 0)
