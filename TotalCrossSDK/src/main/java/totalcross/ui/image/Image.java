@@ -70,6 +70,8 @@ import totalcross.util.zip.ZLib;
  * @see Graphics
  */
 public class Image extends GfxSurface {
+  // ABI-sensitive: keep storage-category order synchronized with
+  // TotalCrossVM/src/nm/instancefields.h.
   // int
   public int surfaceType = 1; // don't move from here! must be static at position 0
   protected int width;
@@ -77,6 +79,8 @@ public class Image extends GfxSurface {
 
   /** Contains the pixels of this image. */
   int[] pixels;
+
+  private Object pixelsOfAllFrames;
 
   /** The number of frames of this image, if derived from a multi-frame gif. */
   private int frameCount = 1;
@@ -86,8 +90,6 @@ public class Image extends GfxSurface {
 
   private Graphics gfx;
 
-  private Object pixelsOfAllFrames;
-  private String path;
   private int currentFrame = -1, widthOfAllFrames;
 
   /** Dumb field to keep compilation compatibility with TC 1 */
@@ -97,9 +99,20 @@ public class Image extends GfxSurface {
   /** A global alpha mask to be applied to the whole image when drawing it, ranging from 0 to 255.
    */
   public int alphaMask = 255;
+  public int lastAccess = -1;
+  int textureId = -1;
+
   private int logicalWidth;
   private int logicalHeight;
-  private double contentScale = 1;
+
+  /** Used by lockChanges to store the hashCode before discarding the pixels. */
+  private int hashCode;
+
+  // object fields addressed by TotalCrossVM/src/nm/instancefields.h
+  private boolean[] changed = { true };
+  private int[] instanceCount = new int[1];
+  private Image[] master = new Image[1];
+  private String path;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
@@ -118,10 +131,18 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   public double hwScaleW = 1, hwScaleH = 1;
+  private double contentScale = 1;
 
   // statics
   /** Dumb field to keep compilation compatibility with TC 1 */
   public static final int NO_TRANSPARENT_COLOR = -2;
+
+  /*
+   * DO NOT REMOVE!
+   * Empty default constructor is required for easy native object creation.
+   */
+  private Image() {
+  }
 
   /** Sets the hwScaleW and hwScaleH fields based on the given new size.
    * Does not work on Win32.
@@ -204,6 +225,41 @@ public class Image extends GfxSurface {
     init();
   }
 
+  private Image(Image src) {
+    if (Settings.isOpenGL && src.changed[0]) {
+      src.applyChanges();
+    }
+    this.surfaceType = src.surfaceType;
+    this.width = src.width;
+    this.height = src.height;
+    this.logicalWidth = src.logicalWidth;
+    this.logicalHeight = src.logicalHeight;
+    this.contentScale = src.contentScale;
+    this.hwScaleW = src.hwScaleW;
+    this.hwScaleH = src.hwScaleH;
+    this.alphaMask = src.alphaMask;
+    this.frameCount = src.frameCount;
+    this.currentFrame = -1;
+    this.widthOfAllFrames = src.widthOfAllFrames;
+    this.textureId = src.textureId; // shared among all instances
+    this.changed = src.changed;
+    this.pixels = src.pixels;
+    this.pixelsOfAllFrames = src.pixelsOfAllFrames;
+    this.comment = src.comment;
+    this.gfx = new Graphics(this);
+    this.gfx.refresh(0, 0, getWidth(), getHeight(), 0, 0, null);
+    this.transparentColor = src.transparentColor;
+    this.useAlpha = src.useAlpha;
+    this.instanceCount = src.instanceCount; // shared among all instances
+    if (instanceCount[0] == 0) {
+      this.master = new Image[] { src }; // keep a copy of the original image
+    } else {
+      this.master = src.master;
+    }
+    this.path = src.path;
+    src.instanceCount[0]++;
+  }
+
   /** Creates a logical image with an immutable physical backing scale. */
   public static Image createLogical(int width, int height, double contentScale) throws ImageException {
     return new Image(width, height, contentScale);
@@ -236,18 +292,14 @@ public class Image extends GfxSurface {
     if (s instanceof File) {
       path = ((File) s).getPath();
     }
-    ByteArrayStream bas = new ByteArrayStream(8192);
-    byte[] buf = new byte[1024];
-    while (true) {
-      int n = s.readBytes(buf, 0, buf.length);
-      if (n <= 0) {
-        break;
-      }
-      bas.writeBytes(buf, 0, n);
+    byte[] buf = new byte[512];
+    int n = s.readBytes(buf, 0, 4);
+    if (n < 4) {
+      throw new ImageException("Can't read from Stream");
     }
-    imageParse(bas.getBuffer(), bas.getPos());
+    imageParse(s, buf);
     if (width == 0) {
-      throw new ImageException("Error on bmp with " + bas.getPos() + " bytes length description");
+      throw new ImageException("Error when loading image from stream");
     }
     init();
   }
@@ -264,6 +316,7 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   @Deprecated
+  @ReplacedByNativeOnDeploy
   public Image setTransparentColor(int color) {
     int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
     for (int i = pixels.length; --i >= 0;) {
@@ -332,7 +385,19 @@ public class Image extends GfxSurface {
    * @throws totalcross.ui.image.ImageException Thrown when something was wrong with the image.
    */
   public Image(byte[] fullDescription, int length) throws ImageException {
-    imageParse(fullDescription, length);
+    if (length < 4) {
+      throw new ImageException("Invalid image description");
+    }
+    ByteArrayStream bas = new ByteArrayStream(fullDescription);
+    if (length != fullDescription.length) {
+      try {
+        bas.setPos(length);
+        bas.mark();
+      } catch (Exception e) {
+      }
+    }
+    bas.skipBytes(4);
+    imageParse(bas, fullDescription);
     if (width == 0) {
       throw new ImageException(fullDescription == null ? "Description is null"
           : ("Error on image with " + fullDescription.length + " bytes length description"));
@@ -341,6 +406,20 @@ public class Image extends GfxSurface {
   }
 
   private void init() throws IllegalArgumentException, IllegalStateException, ImageException {
+    surfaceType = 1;
+    textureId = -1;
+    if (hwScaleW == 0) {
+      hwScaleW = 1;
+    }
+    if (hwScaleH == 0) {
+      hwScaleH = 1;
+    }
+    if (contentScale == 0) {
+      contentScale = 1;
+    }
+    if (alphaMask == 0) {
+      alphaMask = 255;
+    }
     if (logicalWidth == 0) {
       logicalWidth = width;
       logicalHeight = height;
@@ -402,6 +481,7 @@ public class Image extends GfxSurface {
   /** Move the contents of the given frame to the currently visible pixels.
    * @since TotalCross 1.0
    */
+  @ReplacedByNativeOnDeploy
   final public void setCurrentFrame(int nr) {
     if (frameCount <= 1 || nr == currentFrame) {
       return;
@@ -460,9 +540,11 @@ public class Image extends GfxSurface {
 
   /** Returns a new Graphics instance that can be used to drawing in this image. */
   public Graphics getGraphics() {
-    if (Launcher.instance != null && Launcher.instance.mainWindow != null) {
-      gfx.setFont(MainWindow.getDefaultFont()); // avoid loading the font if running from tc.Deploy
+    if (pixels == null) {
+      return null;
     }
+
+    gfx.setFont(MainWindow.getDefaultFont());
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
     return gfx;
   }
@@ -475,6 +557,7 @@ public class Image extends GfxSurface {
    * In non-open gl platforms, does nothing.
    * @since TotalCross 2
    */
+  @ReplacedByNativeOnDeploy
   public void applyChanges() {
   }
 
@@ -490,7 +573,14 @@ public class Image extends GfxSurface {
    * 
    * AVOID USING THIS METHOD IF UNSURE ABOUT IT.
    */
+  @ReplacedByNativeOnDeploy
   public void freeTexture() {
+  }
+
+  @Override
+  public void finalize() {
+    instanceCount[0]--;
+    freeTexture();
   }
 
   /** In OpenGL platforms, apply changes to the current texture and
@@ -503,6 +593,18 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   public void lockChanges() {
+    if (Settings.isOpenGL) {
+      if (changed[0]) {
+        applyChanges();
+      }
+      int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+      if (p != null) {
+        hashCode = 0;
+        hashCode = this.hashCode();
+      }
+      pixels = null;
+      pixelsOfAllFrames = null;
+    }
   }
 
   /** Changes all the pixels of the image from one color to the other.
@@ -518,6 +620,7 @@ public class Image extends GfxSurface {
    * @see #applyColor(int)
    * @see #applyColor2(int)
    */
+  @ReplacedByNativeOnDeploy
   final public void changeColors(int from, int to) {
     int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
     for (int n = pixels.length; --n >= 0;) {
@@ -653,6 +756,7 @@ public class Image extends GfxSurface {
    * @throws ImageException
    * @throws IOException
    */
+  @ReplacedByNativeOnDeploy
   public void createJpg(Stream s, int quality) throws ImageException, IOException {
     try {
       java.awt.image.MemoryImageSource screenMis = new java.awt.image.MemoryImageSource(width, height,
@@ -760,6 +864,7 @@ public class Image extends GfxSurface {
   /** Used in saveTo method. Fills in the y row into the fillIn array.
    * there must be enough space for the full line be filled, with width*4 bytes. 
    * The alpha channel is NOT stripped off. */
+  @ReplacedByNativeOnDeploy
   final public void getPixelRow(byte[] fillIn, int y) {
     int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
     int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
@@ -772,6 +877,133 @@ public class Image extends GfxSurface {
     }
   }
 
+  private static final int SCALED_INSTANCE = 0;
+  private static final int SMOOTH_SCALED_INSTANCE = 1;
+  private static final int ROTATED_SCALED_INSTANCE = 2;
+  private static final int TOUCHEDUP_INSTANCE = 3;
+  private static final int FADED_INSTANCE = 4;
+  private static final int ALPHA_INSTANCE = 5;
+
+  /** The deployed implementation is replaced with tuiI_getModifiedInstance_iiiiiii. */
+  @ReplacedByNativeOnDeploy
+  private void getModifiedInstance(Image newImg, int angle, int percScale, int color,
+      int brightness, int contrast, int type) throws ImageException {
+    Image modified;
+    switch (type) {
+    case SCALED_INSTANCE:
+      modified = getScaledInstance(newImg.width / frameCount, newImg.height);
+      break;
+    case SMOOTH_SCALED_INSTANCE:
+      modified = getSmoothScaledInstance(newImg.width / frameCount, newImg.height);
+      break;
+    case ROTATED_SCALED_INSTANCE:
+      // The historical native ABI receives scale in angle and rotation in percScale.
+      modified = getRotatedScaledInstance(angle, percScale, color);
+      break;
+    case TOUCHEDUP_INSTANCE:
+      modified = getTouchedUpInstance((byte) brightness, (byte) contrast);
+      break;
+    case FADED_INSTANCE:
+      modified = getFadedInstance(color);
+      break;
+    case ALPHA_INSTANCE:
+      modified = getAlphaInstance(color);
+      break;
+    default:
+      throw new IllegalArgumentException("Unknown image modification type: " + type);
+    }
+    newImg.copyFrom(modified);
+  }
+
+  private Image getModifiedInstance(int newW, int newH, int angle, int percScale, int color,
+      int brightness, int contrast, int type) throws ImageException {
+    if (type != ALPHA_INSTANCE && type != FADED_INSTANCE && contentScale == 1 && newW == width && newH == height
+        && (angle % 360) == 0 && brightness == 0 && contrast == 0) {
+      return this;
+    }
+
+    newW *= frameCount;
+    Image imageOut = getCopy(newW, newH);
+    if (type == ROTATED_SCALED_INSTANCE && frameCount > 1) {
+      imageOut.setFrameCount(frameCount);
+    }
+    getModifiedInstance(imageOut, angle, percScale, color, brightness, contrast, type);
+    if (type != ROTATED_SCALED_INSTANCE && frameCount > 1) {
+      imageOut.setFrameCount(frameCount);
+    }
+    return imageOut;
+  }
+
+  private Image getNativeRotatedScaledInstance(int percScale, int angle, int fillColor) throws ImageException {
+    if (percScale <= 0) {
+      percScale = 1;
+    }
+
+    int rawSine = 0;
+    int rawCosine = 0;
+    angle = angle % 360;
+    if ((angle % 90) == 0) {
+      if (angle < 0) {
+        angle += 360;
+      }
+      switch (angle) {
+      case 0:
+        rawCosine = 0x10000;
+        break;
+      case 90:
+        rawSine = 0x10000;
+        break;
+      case 180:
+        rawCosine = -0x10000;
+        break;
+      default:
+        rawSine = -0x10000;
+        break;
+      }
+    } else {
+      double rad = angle * 0.0174532925;
+      rawSine = (int) (Math.sin(rad) * 0x10000);
+      rawCosine = (int) (Math.cos(rad) * 0x10000);
+    }
+
+    int hIn = height;
+    int wIn = width;
+    int[] cornersX = new int[3];
+    int[] cornersY = new int[3];
+    int xMin = 0;
+    int yMin = 0;
+    int xMax = 0;
+    int yMax = 0;
+    cornersX[0] = (wIn * rawCosine) >> 16;
+    cornersY[0] = (wIn * rawSine) >> 16;
+    cornersX[2] = (-hIn * rawSine) >> 16;
+    cornersY[2] = (hIn * rawCosine) >> 16;
+    cornersX[1] = cornersX[0] + cornersX[2];
+    cornersY[1] = cornersY[0] + cornersY[2];
+
+    for (int i = 2; i >= 0; i--) {
+      if (cornersX[i] < xMin) {
+        xMin = cornersX[i];
+      } else if (cornersX[i] > xMax) {
+        xMax = cornersX[i];
+      }
+      if (cornersY[i] < yMin) {
+        yMin = cornersY[i];
+      } else if (cornersY[i] > yMax) {
+        yMax = cornersY[i];
+      }
+    }
+    if (width == height) {
+      xMax = yMax = width;
+      xMin = yMin = 0;
+    }
+    int wOut = ((xMax - xMin) * percScale) / 100;
+    int hOut = ((yMax - yMin) * percScale) / 100;
+    int x0 = ((wIn << 16) - (((xMax - xMin) * rawCosine) - ((yMax - yMin) * rawSine)) - 1) / 2;
+    int y0 = ((hIn << 16) - (((xMax - xMin) * rawSine) + ((yMax - yMin) * rawCosine)) - 1) / 2;
+    return getModifiedInstance(wOut, hOut, percScale, angle, fillColor, x0, y0, ROTATED_SCALED_INSTANCE);
+  }
+
   /**
    * Returns the scaled instance for this image. The algorithm used is the replicate scale: not good quality, but fast.
    * 
@@ -779,6 +1011,9 @@ public class Image extends GfxSurface {
    */
   public Image getScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
   {
+    if (!Settings.onJavaSE) {
+      return getModifiedInstance(newWidth, newHeight, 0, 0, -1, 0, 0, SCALED_INSTANCE);
+    }
     // Based on the ImageProcessor class on "KickAss Java Programming" (Tonny Espeset)
     newWidth *= frameCount; // guich@tc100b5_40
     Image scaledImage = getCopy(newWidth, newHeight);
@@ -824,6 +1059,9 @@ public class Image extends GfxSurface {
    */
   public Image getSmoothScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
   {
+    if (!Settings.onJavaSE) {
+      return getModifiedInstance(newWidth, newHeight, 0, 0, 0, 0, 0, SMOOTH_SCALED_INSTANCE);
+    }
     // image preparation
     if (newWidth == width && newHeight == height) {
       return this;
@@ -1164,6 +1402,9 @@ public class Image extends GfxSurface {
    * Color.WHITE if the transparentColor was not set; use 0 for a transparent background, or 0xFF000000 for the BLACK color.
    */
   public Image getRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException {
+    if (!Settings.onJavaSE) {
+      return getNativeRotatedScaledInstance(scale, angle, fillColor);
+    }
     if (scale <= 0) {
       scale = 1;
     }
@@ -1298,6 +1539,9 @@ public class Image extends GfxSurface {
   @Deprecated
   public Image getFadedInstance(int backColor) throws ImageException // guich@tc110_50
   {
+    if (!Settings.onJavaSE) {
+      return getModifiedInstance(width, height, 0, 0, backColor, 0, 0, FADED_INSTANCE);
+    }
     Image imageOut = getCopy(frameCount > 1 ? widthOfAllFrames : width, height);
     if (frameCount > 1) {
       imageOut.setFrameCount(frameCount);
@@ -1318,6 +1562,8 @@ public class Image extends GfxSurface {
   private Image getCopy(int w, int h) throws ImageException {
     Image i = new Image(w, h);
     i.path = path;
+    i.hwScaleH = hwScaleH;
+    i.hwScaleW = hwScaleW;
     // copy other attributes
     return i;
   }
@@ -1339,6 +1585,9 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   public Image getAlphaInstance(int delta) throws ImageException {
+    if (!Settings.onJavaSE) {
+      return getModifiedInstance(width, height, 0, 0, delta, 0, 0, ALPHA_INSTANCE);
+    }
     Image imageOut = getCopy(frameCount > 1 ? widthOfAllFrames : width, height);
     if (frameCount > 1) {
       imageOut.setFrameCount(frameCount);
@@ -1381,6 +1630,9 @@ public class Image extends GfxSurface {
    *           level, -128 is no contrast.
    */
   public Image getTouchedUpInstance(byte brightness, byte contrast) throws ImageException {
+    if (!Settings.onJavaSE) {
+      return getModifiedInstance(width, height, 0, 0, 0, brightness, contrast, TOUCHEDUP_INSTANCE);
+    }
     final int NO_TOUCHUP = 0;
     final int BRITE_TOUCHUP = 1;
     final int CONTRAST_TOUCHUP = 2;
@@ -1485,6 +1737,7 @@ public class Image extends GfxSurface {
     return table;
   }
 
+  @ReplacedByNativeOnDeploy
   private void imageLoad(String path) throws ImageException {
     byte[] bytes = Launcher.instance.readBytes(path);
     // NOTE: we could use the following to read out of an applet's JAR file
@@ -1516,6 +1769,26 @@ public class Image extends GfxSurface {
     } else {
       imageLoad(fullBmpDescription, length);
     }
+  }
+
+  /** JavaSE bridge for the deployed stream/initial-buffer native signature. */
+  @ReplacedByNativeOnDeploy
+  private void imageParse(Stream in, byte[] buf) throws ImageException {
+    ByteArrayStream bas = new ByteArrayStream(8192);
+    bas.writeBytes(buf, 0, 4);
+    byte[] rest = new byte[1024];
+    try {
+      while (true) {
+        int n = in.readBytes(rest, 0, rest.length);
+        if (n <= 0) {
+          break;
+        }
+        bas.writeBytes(rest, 0, n);
+      }
+    } catch (IOException e) {
+      throw new ImageException(e.getMessage());
+    }
+    imageParse(bas.getBuffer(), bas.getPos());
   }
 
   // ///////////////// METHODS TAKEN FROM THE TOTALCROSS VM ////////////////////
@@ -2012,6 +2285,16 @@ public class Image extends GfxSurface {
     }
   }
 
+  /** Deploy replacement for the JavaSE-only image reader. */
+  static class ImageLoader4D {
+    public ImageLoader4D() {
+    }
+
+    public Image load(byte[] input, int len) {
+      return null;
+    }
+  }
+
   /** Returns 0 */
   @Override
   public int getX() {
@@ -2325,6 +2608,10 @@ public class Image extends GfxSurface {
   }
 
   public static void resizeJpeg(String inputPath, String outputPath, int maxPixelSize) {
+    if (hasNativeResizeJpeg()) {
+      nativeResizeJpeg(inputPath, outputPath, maxPixelSize);
+      return;
+    }
     try {
       Image img = new Image(inputPath);
 
@@ -2360,11 +2647,19 @@ public class Image extends GfxSurface {
       e.printStackTrace();
     }
   }
+
+  private static boolean hasNativeResizeJpeg() {
+    return Settings.isIOS();
+  }
+
+  @ReplacedByNativeOnDeploy
+  public static native void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
   
   private static final double F1_8 = 12.5;
   private static final double F1_4 = 25;
   private static final double F1_2 = 50;
   
+  @ReplacedByNativeOnDeploy
   public static Image getJpegBestFit(String path, int targetWidth, int targetHeight)
       throws java.io.IOException, ImageException {
     SimpleImageInfo sif = null;
@@ -2410,6 +2705,7 @@ public class Image extends GfxSurface {
     return new Image(path).smoothScaledBy(scale, scale);
   }
 
+  @ReplacedByNativeOnDeploy
   public static Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
       throws java.io.IOException, ImageException {
     SimpleImageInfo sif = null;
@@ -2442,6 +2738,9 @@ public class Image extends GfxSurface {
 
   @Override
   public int hashCode() {
+    if (hashCode != 0) {
+      return hashCode;
+    }
     int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
     if (p != null) {
       try {
@@ -2458,6 +2757,6 @@ public class Image extends GfxSurface {
       }
       return Arrays.hashCode(p);
     }
-    return Arrays.hashCode(p);
+    return super.hashCode();
   }
 }
