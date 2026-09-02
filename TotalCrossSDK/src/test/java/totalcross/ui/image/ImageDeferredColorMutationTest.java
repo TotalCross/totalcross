@@ -240,6 +240,17 @@ class ImageDeferredColorMutationTest {
       assertEquals(pixels[channels.length], actualColor.getPixels()[channels.length],
           "transparent applyColor=" + color);
     }
+
+    for (int color : new int[] { 0xFF000000, 0xAA4080C0, 0xAAFFFFFF }) {
+      Image expectedColor2 = new Image(encoded);
+      expectedColor2.getPixels();
+      expectedColor2.applyColor2(color);
+      Image actualColor2 = new Image(encoded);
+      actualColor2.applyColor2(color);
+      assertArrayEquals(expectedColor2.getPixels(), actualColor2.getPixels(), "applyColor2=" + color);
+      assertEquals(pixels[channels.length], actualColor2.getPixels()[channels.length],
+          "transparent applyColor2=" + color);
+    }
   }
 
   private void assertDeferredAndEquivalent(Operation operation) throws Exception {

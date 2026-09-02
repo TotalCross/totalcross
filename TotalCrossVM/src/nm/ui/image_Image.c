@@ -441,6 +441,18 @@ TC_API void tuiI_nativeEqualsNative_i(NMParams p) // totalcross/ui/image/Image p
 TC_API void tuiI_applyColor2Native_i(NMParams p) // totalcross/ui/image/Image private void applyColor2Native(int color);
 {
    TCObject thisObj = p->obj[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(thisObj, SKIA_IMAGE_COLOR_APPLY_COLOR2, p->i32[0], 0)) {
+         throwException(p->currentContext, ImageException, "Could not apply native image color2");
+         return;
+      }
+      if (Image_frameCount(thisObj) > 1) {
+         Image_currentFrame(thisObj) = 0;
+      }
+      return;
+   }
+#endif
    Pixel color = makePixelARGB(p->i32[0]);
    applyColor2(thisObj, color);
 }

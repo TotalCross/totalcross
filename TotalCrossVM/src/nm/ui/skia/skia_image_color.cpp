@@ -175,6 +175,53 @@ static bool transform(std::vector<uint8_t>* pixels, int32 width, int32 height, i
         }
         return true;
     }
+    case SKIA_IMAGE_COLOR_APPLY_COLOR2: {
+        const int targetRed = (parameter1 >> 16) & 0xff;
+        const int targetGreen = (parameter1 >> 8) & 0xff;
+        const int targetBlue = parameter1 & 0xff;
+        const bool changeAlpha = ((parameter1 >> 24) & 0xff) == 0xaa;
+        int highestBrightness = 0;
+        int highestRed = 0;
+        int highestGreen = 0;
+        int highestBlue = 0;
+        for (size_t i = 0; i < pixels->size(); i += 4) {
+            if ((*pixels)[i + 3] == 0xff) {
+                const int brightness = (3 * (*pixels)[i] + 4 * (*pixels)[i + 1] + (*pixels)[i + 2]) >> 3;
+                if (brightness > highestBrightness) {
+                    highestBrightness = brightness;
+                    highestRed = (*pixels)[i];
+                    highestGreen = (*pixels)[i + 1];
+                    highestBlue = (*pixels)[i + 2];
+                }
+            }
+        }
+        if (highestRed == 0) {
+            highestRed = 255;
+        }
+        if (highestGreen == 0) {
+            highestGreen = 255;
+        }
+        if (highestBlue == 0) {
+            highestBlue = 255;
+        }
+        const int highestChannel = std::max(highestRed, std::max(highestGreen, highestBlue));
+        for (size_t i = 0; i < pixels->size(); i += 4) {
+            if ((*pixels)[i + 3] == 0) {
+                continue;
+            }
+            const int red = clampChannel((*pixels)[i] * targetRed / highestRed);
+            const int green = clampChannel((*pixels)[i + 1] * targetGreen / highestGreen);
+            const int blue = clampChannel((*pixels)[i + 2] * targetBlue / highestBlue);
+            if (changeAlpha) {
+                const int brightest = std::max((*pixels)[i], std::max((*pixels)[i + 1], (*pixels)[i + 2]));
+                (*pixels)[i + 3] = static_cast<uint8_t>(clampChannel(brightest * 255 / highestChannel));
+            }
+            (*pixels)[i] = static_cast<uint8_t>(red);
+            (*pixels)[i + 1] = static_cast<uint8_t>(green);
+            (*pixels)[i + 2] = static_cast<uint8_t>(blue);
+        }
+        return true;
+    }
     default:
         return false;
     }

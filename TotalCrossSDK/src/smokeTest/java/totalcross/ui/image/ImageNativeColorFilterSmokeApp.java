@@ -20,6 +20,7 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
     boolean frameScopedFade = false;
     boolean alpha = false;
     boolean faded = false;
+    boolean applyColor2 = false;
     boolean touchUp = false;
     boolean applyColor = false;
     boolean drawAndSave = false;
@@ -61,6 +62,13 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
           && (colorPixels[0] & 0xFF000000) == (SOURCE[0] & 0xFF000000);
       require(applyColor, "applyColor mapping");
 
+      Image color2Image = sourceImage();
+      color2Image.applyColor2(0xAA4080C0);
+      int[] color2Pixels = color2Image.getPixels();
+      applyColor2 = color2Pixels[0] == applyColor2(SOURCE[0], 0xAA4080C0)
+          && color2Pixels[3] == applyColor2(SOURCE[3], 0xAA4080C0);
+      require(applyColor2, "applyColor2 mapping");
+
       Image touched = sourceImage().getTouchedUpInstance((byte) 20, (byte) -10);
       require(touched.pixels == null && touched.hasNativeBackingForSmoke(),
           "touch-up native result backing");
@@ -81,10 +89,12 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
-    boolean overallPass = nativeBacking && frameScopedFade && alpha && faded && applyColor && touchUp && drawAndSave;
+    boolean overallPass = nativeBacking && frameScopedFade && alpha && faded && applyColor && applyColor2
+        && touchUp && drawAndSave;
     System.out.println("fixture=ImageNativeColorFilterSmokeApp,nativeBacking=" + nativeBacking
         + ",frameScopedFade=" + frameScopedFade + ",alpha=" + alpha + ",faded=" + faded
-        + ",applyColor=" + applyColor + ",touchUp=" + touchUp + ",drawAndSave=" + drawAndSave
+        + ",applyColor=" + applyColor + ",applyColor2=" + applyColor2
+        + ",touchUp=" + touchUp + ",drawAndSave=" + drawAndSave
         + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
@@ -115,6 +125,30 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
     int green = Math.min(255, greenMultiplier * ((pixel >> 8) & 0xFF) >> 16);
     int blue = Math.min(255, blueMultiplier * (pixel & 0xFF) >> 16);
     return (pixel & 0xFF000000) | red << 16 | green << 8 | blue;
+  }
+
+  private static int applyColor2(int pixel, int color) {
+    int brightest = 0;
+    int brightestPixel = 0;
+    for (int sourcePixel : SOURCE) {
+      int brightness = (3 * ((sourcePixel >> 16) & 0xFF) + 4 * ((sourcePixel >> 8) & 0xFF)
+          + (sourcePixel & 0xFF)) >> 3;
+      if (brightness > brightest) {
+        brightest = brightness;
+        brightestPixel = sourcePixel;
+      }
+    }
+    int redScale = ((brightestPixel >> 16) & 0xFF) == 0 ? 255 : (brightestPixel >> 16) & 0xFF;
+    int greenScale = ((brightestPixel >> 8) & 0xFF) == 0 ? 255 : (brightestPixel >> 8) & 0xFF;
+    int blueScale = (brightestPixel & 0xFF) == 0 ? 255 : brightestPixel & 0xFF;
+    int scale = Math.max(redScale, Math.max(greenScale, blueScale));
+    int red = Math.min(255, ((pixel >> 16) & 0xFF) * ((color >> 16) & 0xFF) / redScale);
+    int green = Math.min(255, ((pixel >> 8) & 0xFF) * ((color >> 8) & 0xFF) / greenScale);
+    int blue = Math.min(255, (pixel & 0xFF) * (color & 0xFF) / blueScale);
+    int alpha = (color >>> 24) == 0xAA
+        ? Math.min(255, Math.max((pixel >> 16) & 0xFF, Math.max((pixel >> 8) & 0xFF, pixel & 0xFF)) * 255 / scale)
+        : (pixel >>> 24);
+    return alpha << 24 | red << 16 | green << 8 | blue;
   }
 
   private static boolean sameArray(int[] first, int[] second) {
