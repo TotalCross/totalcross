@@ -229,6 +229,17 @@ class ImageDeferredColorMutationTest {
     Image expectedFaded = invokeEager(expectedFade, "eagerFadedInstance", new Class<?>[] { int.class }, 0xFF204060);
     Image actualFaded = new Image(encoded).getFadedInstance(0xFF204060);
     assertArrayEquals(expectedFaded.getPixels(), actualFaded.getPixels());
+
+    for (int color : new int[] { 0x00000000, 0x00000001, 0x007F80FE, 0x00FFFFFF }) {
+      Image expectedColor = new Image(encoded);
+      expectedColor.getPixels();
+      expectedColor.applyColor(color);
+      Image actualColor = new Image(encoded);
+      actualColor.applyColor(color);
+      assertArrayEquals(expectedColor.getPixels(), actualColor.getPixels(), "applyColor=" + color);
+      assertEquals(pixels[channels.length], actualColor.getPixels()[channels.length],
+          "transparent applyColor=" + color);
+    }
   }
 
   private void assertDeferredAndEquivalent(Operation operation) throws Exception {

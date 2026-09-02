@@ -78,6 +78,7 @@ int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 output
 #define SKIA_IMAGE_COLOR_FADE_INSTANCE 1
 #define SKIA_IMAGE_COLOR_ALPHA_INSTANCE 2
 #define SKIA_IMAGE_COLOR_TOUCH_UP_INSTANCE 3
+#define SKIA_IMAGE_COLOR_APPLY_COLOR 4
 int skia_image_backing_apply_color_mutation(int64_t handle, int32 operation, int32 parameter1,
     int32 parameter2, int32 frameCount, int32 visibleWidth, int32 currentFrame);
 int64_t skia_image_backing_create_color_instance(int64_t handle, int32 operation, int32 parameter1,

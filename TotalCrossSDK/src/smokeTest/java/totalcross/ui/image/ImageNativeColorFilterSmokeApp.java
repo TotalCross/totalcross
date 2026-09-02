@@ -21,6 +21,7 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
     boolean alpha = false;
     boolean faded = false;
     boolean touchUp = false;
+    boolean applyColor = false;
     boolean drawAndSave = false;
     String error = "";
     try {
@@ -53,6 +54,13 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
       faded = fadedPixels[0] == 0xFF183048 && fadedPixels[3] == 0xFF809830;
       require(faded, "fade mapping");
 
+      Image colorImage = sourceImage();
+      colorImage.applyColor(0xFF804020);
+      int[] colorPixels = colorImage.getPixels();
+      applyColor = colorPixels[0] == applyColor(SOURCE[0], 0xFF804020)
+          && (colorPixels[0] & 0xFF000000) == (SOURCE[0] & 0xFF000000);
+      require(applyColor, "applyColor mapping");
+
       Image touched = sourceImage().getTouchedUpInstance((byte) 20, (byte) -10);
       require(touched.pixels == null && touched.hasNativeBackingForSmoke(),
           "touch-up native result backing");
@@ -73,10 +81,11 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
-    boolean overallPass = nativeBacking && frameScopedFade && alpha && faded && touchUp && drawAndSave;
+    boolean overallPass = nativeBacking && frameScopedFade && alpha && faded && applyColor && touchUp && drawAndSave;
     System.out.println("fixture=ImageNativeColorFilterSmokeApp,nativeBacking=" + nativeBacking
         + ",frameScopedFade=" + frameScopedFade + ",alpha=" + alpha + ",faded=" + faded
-        + ",touchUp=" + touchUp + ",drawAndSave=" + drawAndSave + ",overallPass=" + overallPass
+        + ",applyColor=" + applyColor + ",touchUp=" + touchUp + ",drawAndSave=" + drawAndSave
+        + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
   }
@@ -96,6 +105,16 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
     int g = ((pixel >> 8) & 0xFF) * value / 255;
     int b = (pixel & 0xFF) * value / 255;
     return (pixel & 0xFF000000) | r << 16 | g << 8 | b;
+  }
+
+  private static int applyColor(int pixel, int color) {
+    int redMultiplier = (int) (Math.sqrt((((color >> 16) & 0xFF) + 128.0) / 128.0) * 0x10000);
+    int greenMultiplier = (int) (Math.sqrt((((color >> 8) & 0xFF) + 128.0) / 128.0) * 0x10000);
+    int blueMultiplier = (int) (Math.sqrt(((color & 0xFF) + 128.0) / 128.0) * 0x10000);
+    int red = Math.min(255, redMultiplier * ((pixel >> 16) & 0xFF) >> 16);
+    int green = Math.min(255, greenMultiplier * ((pixel >> 8) & 0xFF) >> 16);
+    int blue = Math.min(255, blueMultiplier * (pixel & 0xFF) >> 16);
+    return (pixel & 0xFF000000) | red << 16 | green << 8 | blue;
   }
 
   private static boolean sameArray(int[] first, int[] second) {

@@ -158,6 +158,23 @@ static bool transform(std::vector<uint8_t>* pixels, int32 width, int32 height, i
     case SKIA_IMAGE_COLOR_TOUCH_UP_INSTANCE:
         touchUp(pixels, parameter1, parameter2);
         return true;
+    case SKIA_IMAGE_COLOR_APPLY_COLOR: {
+        const int multiplierRed = static_cast<int>(std::sqrt((((parameter1 >> 16) & 0xff) + 128.0) / 128.0)
+            * 0x10000);
+        const int multiplierGreen = static_cast<int>(std::sqrt((((parameter1 >> 8) & 0xff) + 128.0) / 128.0)
+            * 0x10000);
+        const int multiplierBlue = static_cast<int>(std::sqrt(((parameter1 & 0xff) + 128.0) / 128.0)
+            * 0x10000);
+        for (size_t i = 0; i < pixels->size(); i += 4) {
+            if ((*pixels)[i + 3] == 0) {
+                continue;
+            }
+            (*pixels)[i] = static_cast<uint8_t>(clampChannel((multiplierRed * (*pixels)[i]) >> 16));
+            (*pixels)[i + 1] = static_cast<uint8_t>(clampChannel((multiplierGreen * (*pixels)[i + 1]) >> 16));
+            (*pixels)[i + 2] = static_cast<uint8_t>(clampChannel((multiplierBlue * (*pixels)[i + 2]) >> 16));
+        }
+        return true;
+    }
     default:
         return false;
     }

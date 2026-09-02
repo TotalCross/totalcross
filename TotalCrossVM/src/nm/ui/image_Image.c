@@ -415,6 +415,18 @@ TC_API void tuiI_setCurrentFrameNative_i(NMParams p) // totalcross/ui/image/Imag
 TC_API void tuiI_applyColorNative_i(NMParams p) // totalcross/ui/image/Image private void applyColorNative(int color);
 {
    TCObject thisObj = p->obj[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(thisObj, SKIA_IMAGE_COLOR_APPLY_COLOR, p->i32[0], 0)) {
+         throwException(p->currentContext, ImageException, "Could not apply native image color");
+         return;
+      }
+      if (Image_frameCount(thisObj) > 1) {
+         Image_currentFrame(thisObj) = 0;
+      }
+      return;
+   }
+#endif
    Pixel color = makePixelRGB(p->i32[0]);
    applyColor(thisObj, color);
 }
