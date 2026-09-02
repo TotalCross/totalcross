@@ -656,6 +656,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/ui/font_Font.c
     ${TC_SRCDIR}/nm/ui/font_FontMetrics.c
     ${TC_SRCDIR}/nm/ui/image_Image.c
+    ${TC_SRCDIR}/nm/ui/image_NativeImageBacking.c
     ${TC_SRCDIR}/nm/ui/image/ImageEncodedBag.c
     ${TC_SRCDIR}/nm/ui/MainWindow.c
     ${TC_SRCDIR}/nm/ui/media_Sound.c
@@ -714,6 +715,7 @@ if(TC_RENDERER_SKIA)
     ${TC_SRCDIR}/nm/ui/skia/skia.cpp
     ${TC_SRCDIR}/nm/ui/skia/skia_surface.cpp
     ${TC_SRCDIR}/nm/ui/skia/skia_primitives.cpp
+    ${TC_SRCDIR}/nm/ui/skia/skia_image_backing.cpp
   )
 endif(TC_RENDERER_SKIA)
 

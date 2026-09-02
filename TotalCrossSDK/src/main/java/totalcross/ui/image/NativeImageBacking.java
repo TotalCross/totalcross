@@ -60,13 +60,28 @@ final class NativeImageBacking extends ImageBacking {
     return nativeHandle;
   }
 
+  boolean makeMutable() {
+    if (nativeHandle == 0) {
+      throw new IllegalStateException("Native image backing has been released");
+    }
+    return makeMutableNative();
+  }
+
+  boolean readPixels(int[] output, int offset, int x, int y, int width, int height) {
+    if (nativeHandle == 0 || output == null || offset < 0 || width < 0 || height < 0
+        || (long) offset + (long) width * height > output.length) {
+      return false;
+    }
+    return readPixelsNative(output, offset, x, y, width, height);
+  }
+
   @Override
   ImageBacking snapshot() {
     long handle = nativeHandle;
     if (handle == 0) {
       throw new IllegalStateException("Native image backing has been released");
     }
-    long snapshot = snapshotNative(handle);
+    long snapshot = snapshotNative();
     if (snapshot == 0) {
       throw new IllegalStateException("Could not snapshot native image backing");
     }
@@ -92,8 +107,18 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
-  private static long snapshotNative(long nativeHandle) {
+  private long snapshotNative() {
     return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean makeMutableNative() {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean readPixelsNative(int[] output, int offset, int x, int y, int width, int height) {
+    return false;
   }
 
   @ReplacedByNativeOnDeploy
