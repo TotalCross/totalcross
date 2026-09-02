@@ -129,8 +129,11 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_captureNativePath_s"), &tuiEIS_captureNativePath_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_releaseNativeBag"), &tuiEIS_releaseNativeBag);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createEmptyNative_ii"), &tuiNIB_createEmptyNative_ii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_isAvailableNative"), &tuiNIB_isAvailableNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createFromArgbPixels_Iii"), &tuiNIB_createFromArgbPixels_Iii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_snapshotNative"), &tuiNIB_snapshotNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_makeMutableNative"), &tuiNIB_makeMutableNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_scaleNative_iib"), &tuiNIB_scaleNative_iib);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_readPixelsNative_Iiiiii"), &tuiNIB_readPixelsNative_Iiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_releaseNativeHandle_l"), &tuiNIB_releaseNativeHandle_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);

@@ -65,13 +65,20 @@ void skia_shiftScreen(float w, float h, float glShiftY);
 
 int64_t skia_image_backing_create_empty(int32 width, int32 height);
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height);
+int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 width, int32 height);
 int64_t skia_image_backing_snapshot(int64_t handle);
 int skia_image_backing_make_mutable(int64_t handle);
+int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth);
 int32 skia_image_backing_width(int64_t handle);
 int32 skia_image_backing_height(int64_t handle);
 int skia_image_backing_read_pixels(int64_t handle, void* output, int32 x, int32 y, int32 width, int32 height);
 int skia_image_backing_read_row(int64_t handle, void* output, int32 y, int32 width);
+int skia_image_backing_read_rgba_row(int64_t handle, void* output, int32 y, int32 width);
 int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
+    float srcLeft, float srcTop, float srcRight, float srcBottom,
+    float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
+int32 skia_image_backing_surface_id(int64_t handle);
+int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle,
     float srcLeft, float srcTop, float srcRight, float srcBottom,
     float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
 void skia_image_backing_release(int64_t handle);

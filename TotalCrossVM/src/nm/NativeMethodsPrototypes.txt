@@ -119,6 +119,7 @@ TC_API void tuiEIS_releaseNativeBag(NMParams p);
 TC_API void tuiNIB_createEmptyNative_ii(NMParams p);
 TC_API void tuiNIB_snapshotNative(NMParams p);
 TC_API void tuiNIB_makeMutableNative(NMParams p);
+TC_API void tuiNIB_scaleNative_iib(NMParams p);
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p);
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p);
 TC_API void tugG_create_g(NMParams p);
@@ -1029,11 +1030,23 @@ TC_API void tuiNIB_createEmptyNative_ii(NMParams p) // totalcross/ui/image/Nativ
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static boolean isAvailableNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_createFromArgbPixels_Iii(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long createFromArgbPixelsNative(int []pixels, int width, int height);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_snapshotNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private long snapshotNative();
 {
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_makeMutableNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean makeMutableNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_scaleNative_iib(NMParams p) // totalcross/ui/image/NativeImageBacking native private long scaleNative(int width, int height, boolean smooth);
 {
 }
 //////////////////////////////////////////////////////////////////////////

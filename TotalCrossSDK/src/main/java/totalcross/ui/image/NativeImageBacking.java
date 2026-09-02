@@ -36,6 +36,21 @@ final class NativeImageBacking extends ImageBacking {
     return new NativeImageBacking(handle, width, height);
   }
 
+  static NativeImageBacking createFromArgbPixels(int[] pixels, int width, int height) throws ImageException {
+    if (pixels == null || width <= 0 || height <= 0 || (long) width * height > pixels.length) {
+      throw new ImageException("Invalid native image pixels.");
+    }
+    long handle = createFromArgbPixelsNative(pixels, width, height);
+    if (handle == 0) {
+      throw new ImageException("Could not create native image backing.");
+    }
+    return new NativeImageBacking(handle, width, height);
+  }
+
+  static boolean isAvailable() {
+    return isAvailableNative();
+  }
+
   @Override
   boolean isNative() {
     return true;
@@ -75,6 +90,17 @@ final class NativeImageBacking extends ImageBacking {
     return readPixelsNative(output, offset, x, y, width, height);
   }
 
+  NativeImageBacking scale(int outputWidth, int outputHeight, boolean smooth) throws ImageException {
+    if (nativeHandle == 0 || outputWidth <= 0 || outputHeight <= 0) {
+      throw new ImageException("Invalid native image scale.");
+    }
+    long scaled = scaleNative(outputWidth, outputHeight, smooth);
+    if (scaled == 0) {
+      throw new ImageException("Could not scale native image backing.");
+    }
+    return new NativeImageBacking(scaled, outputWidth, outputHeight);
+  }
+
   @Override
   ImageBacking snapshot() {
     long handle = nativeHandle;
@@ -107,6 +133,16 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private static boolean isAvailableNative() {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long createFromArgbPixelsNative(int[] pixels, int width, int height) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
   private long snapshotNative() {
     return 0;
   }
@@ -119,6 +155,11 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private boolean readPixelsNative(int[] output, int offset, int x, int y, int width, int height) {
     return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private long scaleNative(int width, int height, boolean smooth) {
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy
