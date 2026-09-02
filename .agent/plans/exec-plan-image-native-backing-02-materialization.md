@@ -41,10 +41,10 @@ All new files remain below 20 KB/~600 lines.
 
 ## Progress
 
-- [ ] Milestone 1: make generated Images native-surface-backed on deployed Skia.
-- [ ] Milestone 2: decode PNG/JPEG directly into native backing.
-- [ ] Milestone 3: make draw/materialization/snapshot barriers backing-aware.
-- [ ] Close plan 2 and prepare plan 3 state.
+- [x] Milestone 1: make generated Images native-surface-backed on deployed Skia.
+- [x] Milestone 2: decode PNG/JPEG directly into native backing.
+- [x] Milestone 3: make draw/materialization/snapshot barriers backing-aware.
+- [x] Close plan 2; plan 3 remains unstarted until a later execution turn.
 
 ## Current Architecture and Scope
 
@@ -238,8 +238,15 @@ Acceptance:
 
 ## Surprises & Discoveries
 
-Record only facts that change remaining implementation. Do not reopen the fixed
-choice of native backing versus Java raster.
+The Skia raster APIs used by the PNG/JPEG loaders require a temporary native
+pixel buffer for the existing decoder channel layout. The buffer is bounded,
+never exposed through `Image.pixels`, and is released immediately after the
+opaque backing is created. A small native scale bridge was required to keep the
+existing deferred `ImageControl` path backing-aware; exact geometry semantics
+remain in plan 3.
+
+The repository commit-message checker reported one overlong body line on the
+plan-2 implementation commit. The commit was not amended or rewritten.
 
 ## Decision Log
 
@@ -257,6 +264,14 @@ each related milestone. Between commits use static/header/diff checks.
 
 Use `logical-commits` for every checkpoint. State explicitly that expensive build
 validation is deferred to the milestone gate when committing earlier slices.
+
+## Completion
+
+Plan 2 implementation is committed as `4f5c58da8`. Focused SDK tests,
+distribution, smoke compilation, macOS arm64 native `tcvm`/`Launcher` build,
+and the native materialization smoke all passed. Android, iOS, Linux, Windows,
+and full platform matrix validation remain deferred because the roadmap scope
+permits only SDK and macOS arm64 gates. No plan-3 implementation was started.
 
 ## Risks and Open Questions
 
