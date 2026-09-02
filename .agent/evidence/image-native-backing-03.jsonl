@@ -37,3 +37,7 @@
 {"kind":"validation","scope":"broad-legacy-abi-smoke","status":"failed-deferred","log":"/tmp/image-native-backing-03-m2-abi-smoke-final.log","result":"exitCode=139","note":"The fixture mutates the legacy Java pixel array and exercises color-native paths outside this geometry milestone."}
 {"kind":"commit","scope":"milestone-2-implementation","revision":"04a7bfa0a","status":"created","subject":"feat(sdk,vm): execute image geometry through native backing"}
 {"kind":"note","scope":"commit-message-check","status":"failed","note":"The local mirror detected literal backslash-n characters in the implementation commit body caused by shell escaping; the commit was intentionally not amended or rewritten."}
+{"kind":"resolution","scope":"encoded-multiframe-materialization-regression","status":"resolved","revision":"04a7bfa0a","note":"The stale FC comment was removed from native geometry results; crop/frame dimensions and pixels now match the Java plan."}
+{"kind":"resolution","scope":"resume-next","status":"superseded","revision":"04a7bfa0a","note":"Milestone 2 was completed and the next action is plan-3 milestone-3 resume, not further crop investigation."}
+{"kind":"commit","scope":"milestone-2-artifacts","revision":"772806c85","status":"created","subject":"docs(plans): record geometry milestone checkpoint"}
+{"kind":"note","scope":"commit-message-check","status":"failed","note":"The artifact commit body also contains literal backslash-n characters from shell escaping; neither commit was amended or rewritten."}

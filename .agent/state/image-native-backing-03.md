@@ -9,6 +9,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Starting HEAD: `6cc978a0c`
 - Milestone checkpoint commit: `04a7bfa0a` — plan 3 milestones 1 and 2
   implementation and focused fixtures.
+- Artifact checkpoint commit: `772806c85` — plan/state/evidence/editorial
+  milestone record.
 - Active milestone: milestone 2 complete; plan 3 remains open at milestone 3.
 - Active slice: resume later with rotate/save validation and any remaining
   geometry materialization barriers. The current execution is intentionally
