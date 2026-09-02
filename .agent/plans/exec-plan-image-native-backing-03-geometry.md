@@ -31,8 +31,8 @@ single oversized dispatcher.
 
 - [x] Milestone 1: add a native/draw execution description for geometry.
 - [x] Milestone 2: migrate frame/crop/scale operations.
-- [ ] Milestone 3: migrate rotate/scale and materialization barriers.
-- [ ] Close plan 3 and prepare plan 4 state.
+- [x] Milestone 3: migrate rotate/scale and materialization barriers.
+- [x] Close plan 3 and prepare plan 4 state.
 
 ## Current Architecture and Scope
 
@@ -289,12 +289,22 @@ smoke passes nearest, crop, smooth, chained scale/crop, rotation, and frame
 selection. Exact commands and logs are recorded in
 `.agent/evidence/image-native-backing-03.jsonl`.
 
+Milestone 3 is complete at test checkpoint `87212e7ff`. The focused SDK test
+proves that a deferred rotated image survives `createPng` and round-trips to
+the eager reference pixels. The deployed macOS arm64 fixture opens an encoded
+PNG, rotates and scales it with a fill color, compares direct draw pixels with
+the saved PNG, and verifies the native materialization barrier. The required
+SDK tests, SDK distribution, macOS arm64 configure/build, smoke compilation,
+deployment, and native run all passed. The existing native geometry executor
+implementation remains at `04a7bfa0a`; the fixture/test checkpoint closes the
+previously open persistence proof without changing the encoder.
+
 The broad legacy lazy/ABI smokes remain deferred: they still assert mutable or
 identity-preserving `getPixels()` arrays and exercise color-native mutation
 paths that belong to plan 4. Android, iOS, Linux, Windows, and the full
-platform matrix remain deferred by roadmap scope. Plan 3 stays open at
-milestone 3 for a later execution turn; this checkpoint intentionally stops
-before that milestone.
+platform matrix remain deferred by roadmap scope. Plan 4 has not been
+initiated; the roadmap boundary is recorded in the plan-03 state for a later
+resume.
 
 ## Revision Note
 

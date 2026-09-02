@@ -13,12 +13,14 @@ SPDX-License-Identifier: LGPL-2.1-only
   `94c719c1d`, `25678a445`, `34ab98ec5`, `a3eddc41f`, and
   `e5c8c35b8`. No prior commit was amended, rewritten, squashed, or
   rebased.
-- The corrective milestone is complete and this goal is fully stopped.
+- Rotate/save milestone checkpoint: `87212e7ff`.
+- Plan 3 is complete through milestones 1, 2, and 3. The roadmap boundary is
+  now recorded and plan 4 has not been initiated.
 - Corrective commit titles passed the repository format check. The local
   body-line wrapping check flagged existing unwrapped body lines; those
   commits remain unchanged to honor the no-history-rewrite instruction.
-- Plan 3 remains open before milestone 3. Resume later at the rotate/save
-  milestone gate; do not restart the corrective milestone or begin plan 4.
+- Do not restart the corrective milestone or plan 3. A later roadmap resume
+  may begin plan 4 after reviewing its own state and acceptance criteria.
 - Corrective slice delivered:
   - `Image.lockChanges()` releases raster backing wrappers after clearing
     legacy pixel arrays while retaining native backing ownership.
@@ -49,6 +51,18 @@ SPDX-License-Identifier: LGPL-2.1-only
   `ImageNativeGeometrySmokeApp` covers native geometry execution. The
   staging artifact root is
   `/tmp/image-native-backing-03-corrective-smokes.ne2QXN`.
+- Milestone 3 validation passed: focused SDK tests at
+  `/tmp/image-native-backing-03-m3-sdk-tests.log`, smoke compilation at
+  `/tmp/image-native-backing-03-m3-smoke-compile.log`, SDK distribution at
+  `/tmp/image-native-backing-03-m3-dist.log`, macOS arm64 configure at
+  `/tmp/image-native-backing-03-m3-cmake.log`, and native build at
+  `/tmp/image-native-backing-03-m3-native-build.log`.
+- The deployed rotate/save fixture passed with result
+  `fixture=ImageNativeRotateSaveSmokeApp,pass=true`. Deployment, linkage, and
+  run records are `/tmp/image-native-backing-03-m3-rotate-save-deploy.log`,
+  `/tmp/image-native-backing-03-m3-rotate-save-linkage.log`, and
+  `/tmp/image-native-backing-03-m3-rotate-save-run.log`; staged artifacts are
+  under `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/image-native-backing-03-m3-smoke.XXXXXX.lPVdxX3KTK`.
 - Active paths are the image backing SDK classes/tests/smokes, Skia backing
   sources and CMake source list, native bridge registration files, and the
   state/evidence/editorial files named below. Preserve unrelated local
@@ -58,7 +72,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   historical validation details. The editorial handoff is
   `.agent/reports/image-native-backing-03-editorial.md`.
 - Deferred by roadmap scope: Android, iOS, Linux, Windows, full platform
-  matrix, broad legacy lazy/ABI smokes, plan 3 milestone 3, plan 4 color
-  migration, and plan 5 retirement.
+  matrix, broad legacy lazy/ABI smokes, plan 4 color migration, and plan 5
+  retirement. Plan 4 is the next later resume point.
 - Resume command:
   `sed -n '1,220p' .agent/state/image-native-backing-03.md`.

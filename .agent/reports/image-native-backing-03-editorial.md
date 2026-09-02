@@ -34,6 +34,12 @@ regression.
 
 The evidence index records commands, logs, artifacts, the initial gate
 failure, and its resolution. Android, iOS, Linux, Windows, the full platform
-matrix, broad legacy compatibility smokes, plan 3 milestone 3, plan 4, and
-plan 5 remain deferred. Resume from
-`.agent/state/image-native-backing-03.md` for the rotate/save milestone.
+matrix, broad legacy compatibility smokes, plan 4, and plan 5 remain deferred.
+
+The rotate/save milestone is now complete at `87212e7ff`. It adds the focused
+SDK PNG-barrier regression and a deployed macOS arm64 fixture that compares
+direct native draw pixels with the PNG round trip after deferred rotation and
+scaling. The milestone gate and fixture passed; exact logs and the staging
+artifact path are recorded in the evidence index and state file. Plan 3 is
+closed, and the next later resume point is plan 4; no plan-4 implementation
+was started here.
