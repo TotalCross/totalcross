@@ -14,6 +14,7 @@
 
 #include "JpegLoader.h"
 #include "jerror-tc.h"
+#include "jerror.h"
 
 #if defined _WINDOWS || defined WINCE
 #ifndef fmin
@@ -122,7 +123,8 @@ static int32 jpegBestFitScaleDenominator(JDIMENSION sourceWidth, JDIMENSION sour
 }
 
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, const char* first4, int32 size, int32 targetWidthOrScaleNum, int32 targetHeightOrScaleDenom)
+ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
+      TCZFile tcz, const char* first4, int32 size, int32 targetWidthOrScaleNum, int32 targetHeightOrScaleDenom)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -134,6 +136,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    struct jpeg_decompress_struct cinfo;
    TCJpegIOContext io;
    TCObject pixelsObj;
+   volatile ImageDecodeStatus status = IMAGE_DECODE_SUCCESS;
 
    xmemzero(&errbase, sizeof(errbase));
    xmemzero(&cinfo, sizeof(cinfo));
@@ -142,7 +145,7 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
 
    heap = heapCreate();
    if (!heap)
-      return; // throwImageException("Out of memory");
+      return IMAGE_DECODE_RESOURCE_FAILURE;
 
    file.currentContext = currentContext;
    if (tcz != null)
@@ -163,12 +166,14 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
 
    IF_HEAP_ERROR(heap)
    {
+      if (status == IMAGE_DECODE_SUCCESS)
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
       heapDestroy(heap);
       if (tcz != null)
          tczClose(tcz);
-	  throwException(currentContext, ImageException, null);
-      return; // throwImageException(...);
+      return status;
    }
+   errbase.decodeStatus = &status;
    /* Start decompressor */
    cinfo.err = tc_jpeg_std_error(&errbase, heap);
    jpeg_create_decompress(&cinfo);
@@ -208,11 +213,34 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    width = cinfo.output_width;
    height = cinfo.output_height;
    if (width > 65535 || height > 65535)  // bad width/height?
+   {
+      status = IMAGE_DECODE_CORRUPT;
       HEAP_ERROR(heap, 998);
+   }
 
+   if (imageDecodeConsumeAllocationFailureForTest())
+   {
+      status = IMAGE_DECODE_RESOURCE_FAILURE;
+      jpeg_abort_decompress(&cinfo);
+      jpeg_destroy_decompress(&cinfo);
+      if (tcz != null)
+         tczClose(tcz);
+      heapDestroy(heap);
+      Image_pixels(imageObj) = null;
+      return status;
+   }
    Image_pixels(imageObj) = pixelsObj = createIntArray(currentContext, width*height);
    if (!pixelsObj)
-      HEAP_ERROR(heap, 997);
+   {
+      status = IMAGE_DECODE_RESOURCE_FAILURE;
+      jpeg_abort_decompress(&cinfo);
+      jpeg_destroy_decompress(&cinfo);
+      if (tcz != null)
+         tczClose(tcz);
+      heapDestroy(heap);
+      Image_pixels(imageObj) = null;
+      return status;
+   }
    setObjectLock(pixelsObj, UNLOCKED);
    pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
 
@@ -242,6 +270,8 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    if (tcz != null)
       tczClose(tcz);
    heapDestroy(heap);
+
+   return status;
 }
 
 bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStreamObj, int32 width, int32 height)

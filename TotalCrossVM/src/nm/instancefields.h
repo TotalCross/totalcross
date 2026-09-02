@@ -177,6 +177,7 @@
 #define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 3)
 #define Image_changed(o)            *((int32*)ARRAYOBJ_START(Image_changedObj(o)))
 #define Image_instanceCount(o)      *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))
+#define Image_pipeline(o)           FIELD_OBJ(o, OBJ_CLASS(o), 8)
 
 #define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 #define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)

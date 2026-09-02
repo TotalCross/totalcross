@@ -280,7 +280,7 @@ TC_API void tugG_fillRoundRect_iiiii(NMParams p) // totalcross/ui/gfx/Graphics n
    fillRoundRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], Graphics_backPixel(g));
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyRect_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
+TC_API void tugG_copyRectNative_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics native private void copyRectNative(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
 {
    TCObject hDest = p->obj[0];
    TCObject hOrig = p->obj[1];
@@ -294,14 +294,14 @@ TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
    drawRoundGradient(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],p->i32[4],p->i32[5],p->i32[6],p->i32[7],p->i32[8],p->i32[9], p->i32[10]);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawImage_iiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
+TC_API void tugG_drawImageNative_iiib(NMParams p) // totalcross/ui/gfx/Graphics native private void drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean doClip);
 {
    TCObject surfDest = p->obj[0];
    TCObject surfOrig = p->obj[1];
    if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, (int32)(Image_width(surfOrig) * Image_hwScaleW(surfOrig)), (int32)(Image_height(surfOrig) * Image_hwScaleH(surfOrig)), p->i32[0], p->i32[1], (bool)p->i32[2]);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyImageRect_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
+TC_API void tugG_copyImageRectNative_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private void copyImageRectNative(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
    TCObject surfDest = p->obj[0];
    TCObject surfOrig = p->obj[1];
@@ -349,7 +349,7 @@ TC_API void tugG_refresh_iiiiiif(NMParams p) // totalcross/ui/gfx/Graphics nativ
    if (p->obj[1]) Graphics_font(g) = p->obj[1];
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawImage_iii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y);
+TC_API void tugG_drawImageNative_iii(NMParams p) // totalcross/ui/gfx/Graphics native private void drawImageNative(totalcross.ui.image.Image image, int x, int y);
 {
    //copyRect(image, 0, 0, image.getWidth(),image.getHeight(), x, y);
    TCObject surfDest = p->obj[0];
