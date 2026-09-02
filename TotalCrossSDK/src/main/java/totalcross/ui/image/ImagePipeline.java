@@ -45,6 +45,13 @@ final class ImagePipeline {
   private long cacheUseCounter;
   private long cachedUse1;
   private long cachedUse2;
+  private long cachedGeometryScale1Bits;
+  private long cachedGeometryScale2Bits;
+  private ImageGeometryPlan cachedGeometryPlan1;
+  private ImageGeometryPlan cachedGeometryPlan2;
+  private long cachedGeometryUseCounter;
+  private long cachedGeometryUse1;
+  private long cachedGeometryUse2;
 
   ImagePipeline(ImageSource root) {
     if (root == null) {
@@ -153,6 +160,33 @@ final class ImagePipeline {
     return false;
   }
 
+  boolean hasGeometryOperation() {
+    for (ImagePipeline node = this; node.previous() != null; node = node.previous()) {
+      if (node.operationType == SCALE || node.operationType == SMOOTH_SCALE || node.operationType == ROTATE_SCALE
+          || node.operationType == FRAME_SELECT || node.operationType == CROP || node.operationType == FRAME_LAYOUT) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean isGeometryOnly() {
+    for (ImagePipeline node = this; node.previous() != null; node = node.previous()) {
+      switch (node.operationType) {
+      case SCALE:
+      case SMOOTH_SCALE:
+      case ROTATE_SCALE:
+      case FRAME_SELECT:
+      case CROP:
+      case FRAME_LAYOUT:
+        break;
+      default:
+        return false;
+      }
+    }
+    return hasGeometryOperation();
+  }
+
   Image cachedVariant(long scaleBits) {
     if (cachedVariant1 != null && cachedScale1Bits == scaleBits) {
       cachedUse1 = ++cacheUseCounter;
@@ -199,6 +233,35 @@ final class ImagePipeline {
     cachedVariant2 = null;
     cachedUse1 = cachedUse2 = 0;
     cachedScale1Bits = cachedScale2Bits = 0;
+    cachedGeometryPlan1 = null;
+    cachedGeometryPlan2 = null;
+    cachedGeometryUse1 = cachedGeometryUse2 = 0;
+    cachedGeometryScale1Bits = cachedGeometryScale2Bits = 0;
+  }
+
+  ImageGeometryPlan cachedGeometryPlan(long scaleBits) {
+    if (cachedGeometryPlan1 != null && cachedGeometryScale1Bits == scaleBits) {
+      cachedGeometryUse1 = ++cachedGeometryUseCounter;
+      return cachedGeometryPlan1;
+    }
+    if (cachedGeometryPlan2 != null && cachedGeometryScale2Bits == scaleBits) {
+      cachedGeometryUse2 = ++cachedGeometryUseCounter;
+      return cachedGeometryPlan2;
+    }
+    return null;
+  }
+
+  void cacheGeometryPlan(long scaleBits, ImageGeometryPlan plan) {
+    long use = ++cachedGeometryUseCounter;
+    if (cachedGeometryPlan1 == null || cachedGeometryUse1 <= cachedGeometryUse2) {
+      cachedGeometryScale1Bits = scaleBits;
+      cachedGeometryPlan1 = plan;
+      cachedGeometryUse1 = use;
+    } else {
+      cachedGeometryScale2Bits = scaleBits;
+      cachedGeometryPlan2 = plan;
+      cachedGeometryUse2 = use;
+    }
   }
 
   int cachedVariantCountForSmoke() {

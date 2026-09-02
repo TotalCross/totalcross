@@ -52,6 +52,121 @@ static int32 skiaSurfaceForGraphics(TCObject g)
       skia_setSurfaceScale(surfaceId, Graphics_contentScale(g));
    return surfaceId;
 }
+
+static bool skiaGeometryPlanData(TCObject plan, SkiaImageGeometryPlanData* data)
+{
+   TCObject root;
+   TCObject operations;
+   TCObject parameters;
+   TCObject dimensions;
+   if (!plan || !data) {
+      return false;
+   }
+   root = ImageGeometryPlan_root(plan);
+   operations = ImageGeometryPlan_operations(plan);
+   parameters = ImageGeometryPlan_parameters(plan);
+   dimensions = ImageGeometryPlan_dimensions(plan);
+   if (!root || !isNativeImageBacking(Image_backing(root)) || !operations || !parameters || !dimensions) {
+      return false;
+   }
+   data->rootHandle = NativeImageBacking_nativeHandle(Image_backing(root));
+   data->rootWidth = ImageGeometryPlan_rootWidth(plan);
+   data->rootHeight = ImageGeometryPlan_rootHeight(plan);
+   data->rootLogicalWidth = ImageGeometryPlan_rootLogicalWidth(plan);
+   data->rootLogicalHeight = ImageGeometryPlan_rootLogicalHeight(plan);
+   data->rootFrameCount = ImageGeometryPlan_rootFrameCount(plan);
+   data->rootWidthOfAllFrames = ImageGeometryPlan_rootWidthOfAllFrames(plan);
+   data->rootContentScale = ImageGeometryPlan_rootContentScale(plan);
+   data->operations = (const int32*)ARRAYOBJ_START(operations);
+   data->parameters = (const int32*)ARRAYOBJ_START(parameters);
+   data->dimensions = (const int32*)ARRAYOBJ_START(dimensions);
+   data->operationCount = ARRAYOBJ_LEN(operations);
+   data->outputWidth = ImageGeometryPlan_outputWidth(plan);
+   data->outputHeight = ImageGeometryPlan_outputHeight(plan);
+   data->outputFrameCount = ImageGeometryPlan_outputFrameCount(plan);
+   data->outputWidthOfAllFrames = ImageGeometryPlan_outputWidthOfAllFrames(plan);
+   data->currentFrame = ImageGeometryPlan_currentFrame(plan);
+   data->alphaMask = ImageGeometryPlan_alphaMask(plan);
+   data->transparentColor = ImageGeometryPlan_transparentColor(plan);
+   data->materializeAlphaMask = ImageGeometryPlan_materializeAlphaMask(plan);
+   data->outputAlphaMask = ImageGeometryPlan_outputAlphaMask(plan);
+   data->destinationScale = ImageGeometryPlan_destinationScale(plan);
+   data->outputContentScale = ImageGeometryPlan_outputContentScale(plan);
+   data->hwScaleW = ImageGeometryPlan_hwScaleW(plan);
+   data->hwScaleH = ImageGeometryPlan_hwScaleH(plan);
+   data->rootHwScaleW = ImageGeometryPlan_rootHwScaleW(plan);
+   data->rootHwScaleH = ImageGeometryPlan_rootHwScaleH(plan);
+   return data->operationCount > 0 && data->operationCount * 4 <= ARRAYOBJ_LEN(parameters)
+      && data->operationCount * 2 <= ARRAYOBJ_LEN(dimensions);
+}
+
+static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
+                                 int32 srcX, int32 srcY, int32 width, int32 height,
+                                 int32 dstX, int32 dstY, int32 doClip)
+{
+   SkiaImageGeometryPlanData data;
+   int32 surfaceId;
+   bool clipSet = false;
+   if (!skiaGeometryPlanData(plan, &data) || width <= 0 || height <= 0
+      || data.hwScaleW != 1 || data.hwScaleH != 1) {
+      return false;
+   }
+   surfaceId = skiaSurfaceForGraphics(dstSurf);
+   if (surfaceId == SKIA_INVALID_SURFACE_ID) {
+      return false;
+   }
+   dstX += Graphics_transX(dstSurf);
+   dstY += Graphics_transY(dstSurf);
+   if (doClip) {
+      if (srcX < 0) {
+         dstX -= srcX;
+         width += srcX;
+         srcX = 0;
+      }
+      if (srcY < 0) {
+         dstY -= srcY;
+         height += srcY;
+         srcY = 0;
+      }
+      if (srcX + width > data.outputWidth) {
+         width = data.outputWidth - srcX;
+      }
+      if (srcY + height > data.outputHeight) {
+         height = data.outputHeight - srcY;
+      }
+      if (dstX < Graphics_clipX1(dstSurf)) {
+         int32 delta = Graphics_clipX1(dstSurf) - dstX;
+         dstX = Graphics_clipX1(dstSurf);
+         srcX += delta;
+         width -= delta;
+      }
+      if (dstY < Graphics_clipY1(dstSurf)) {
+         int32 delta = Graphics_clipY1(dstSurf) - dstY;
+         dstY = Graphics_clipY1(dstSurf);
+         srcY += delta;
+         height -= delta;
+      }
+      if (dstX + width > Graphics_clipX2(dstSurf)) {
+         width = Graphics_clipX2(dstSurf) - dstX;
+      }
+      if (dstY + height > Graphics_clipY2(dstSurf)) {
+         height = Graphics_clipY2(dstSurf) - dstY;
+      }
+      if (width <= 0 || height <= 0) {
+         return true;
+      }
+      skia_setClip(surfaceId, Get_Clip(dstSurf));
+      clipSet = true;
+   }
+   int result = skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
+      (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
+      (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height));
+   if (clipSet) {
+      skia_restoreClip(surfaceId);
+   }
+   UNUSED(currentContext)
+   return result != 0;
+}
 #endif
 
 #endif

@@ -301,6 +301,31 @@ TC_API void tugG_drawImageNative_iiib(NMParams p) // totalcross/ui/gfx/Graphics 
    if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, (int32)(Image_logicalWidth(surfOrig) * Image_hwScaleW(surfOrig)), (int32)(Image_logicalHeight(surfOrig) * Image_hwScaleH(surfOrig)), p->i32[0], p->i32[1], (bool)p->i32[2]);
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean drawGeometryNative(Object plan, int x, int y, boolean doClip);
+{
+#if defined SKIA_H
+   TCObject g = p->obj[0];
+   TCObject plan = p->obj[1];
+   p->retI = skiaDrawGeometryPlan(p->currentContext, g, plan, 0, 0,
+      ImageGeometryPlan_outputWidth(plan), ImageGeometryPlan_outputHeight(plan),
+      p->i32[0], p->i32[1], p->i32[2]);
+#else
+   p->retI = 0;
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip);
+{
+#if defined SKIA_H
+   TCObject g = p->obj[0];
+   TCObject plan = p->obj[1];
+   p->retI = skiaDrawGeometryPlan(p->currentContext, g, plan, p->i32[0], p->i32[1],
+      p->i32[2], p->i32[3], 0, 0, p->i32[4]);
+#else
+   p->retI = 0;
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_copyImageRectNative_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private void copyImageRectNative(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
    TCObject surfDest = p->obj[0];

@@ -134,6 +134,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_snapshotNative"), &tuiNIB_snapshotNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_makeMutableNative"), &tuiNIB_makeMutableNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_scaleNative_iib"), &tuiNIB_scaleNative_iib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_materializeGeometryNative"), &tuiNIB_materializeGeometryNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_readPixelsNative_Iiiiii"), &tuiNIB_readPixelsNative_Iiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_releaseNativeHandle_l"), &tuiNIB_releaseNativeHandle_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);
@@ -164,6 +165,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_copyRectNative_giiiiii"), &tugG_copyRectNative_giiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawRoundGradient_iiiiiiiii"), &tugG_drawRoundGradient_iiiiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawImageNative_iiib"), &tugG_drawImageNative_iiib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawGeometryNative_oiib"), &tugG_drawGeometryNative_oiib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_copyGeometryNative_oiiiib"), &tugG_copyGeometryNative_oiiiib);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_copyImageRectNative_iiiiib"), &tugG_copyImageRectNative_iiiiib);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_setPixels_IIi"), &tugG_setPixels_IIi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_refresh_iiiiiif"), &tugG_refresh_iiiiiif);

@@ -1147,6 +1147,10 @@ tasks.register('runImageDeferredCropFrameSmokeMacOS', Exec) {
             'rasterSnapshotIsolation=true',
             'naturalScaleCrop=true',
             'scaledCrop=true',
+            'fractionalScale15=true',
+            'fractionalScale25=true',
+            'alphaMaskCompatibility=true',
+            'hwScaleCompatibility=true',
             'targetedAfterSmooth=true',
             'fallbackBeforeSmooth=true',
             'overallPass=true'

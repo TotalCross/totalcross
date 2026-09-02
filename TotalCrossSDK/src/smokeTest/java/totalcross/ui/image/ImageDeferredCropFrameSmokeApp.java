@@ -58,7 +58,10 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
       require(cropLazy, "lazy crop");
       Image expectedCrop = eagerCrop(new Image(fixture), 1, 0, 2, 2);
       cropPixels = samePixels(expectedCrop, actualCrop);
-      require(cropPixels, "crop pixels");
+      require(cropPixels, "crop pixels actual=" + values(actualCrop.getPixels()) + " expected="
+          + values(expectedCrop.getPixels()) + " logical=" + actualCrop.getWidth() + "x"
+          + actualCrop.getHeight() + " physical=" + actualCrop.getPixelWidth() + "x"
+          + actualCrop.getPixelHeight() + " scale=" + actualCrop.getContentScale());
 
       Image currentFrameSource = new Image(fixture);
       currentFrameSource.setCurrentFrame(1);
@@ -91,7 +94,8 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
 
       Image logical = Image.createLogical(3, 2, 2);
       fillPattern(logical);
-      Image natural = logical.getClippedInstance(1, 0, 2, 1).resolveForDrawing(3);
+      Image naturalDeferred = logical.getClippedInstance(1, 0, 2, 1);
+      Image natural = naturalDeferred.resolveForDrawing(3);
       naturalScaleCrop = natural.getContentScale() == 2 && natural.getPixelWidth() == 4
           && natural.getPixelHeight() == 2
           && sameArray(natural.getPixels(), croppedPattern(2, 0, 4));
@@ -121,7 +125,9 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
       alphaSource.alphaMask = 127;
       Image alphaActual = alphaSource.getClippedInstance(1, 0, 2, 1).resolveForDrawing(1);
       Image alphaExpected = eagerCropWithScale(alphaSource, 1, 0, 2, 1, 2);
-      alphaMaskCompatibility = samePixels(alphaExpected, alphaActual);
+      int[] alphaActualPixels = alphaActual.getPixels();
+      int[] alphaExpectedPixels = alphaExpected.getPixels();
+      alphaMaskCompatibility = sameArray(alphaExpectedPixels, alphaActualPixels);
       require(alphaMaskCompatibility, "alpha mask compatibility");
 
       Image hwSource = Image.createLogical(3, 2, 2);
@@ -214,8 +220,11 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
       Vm.arrayCopy(sourcePixels, row * source.getPixelWidth() + sourceX, expected, row * physicalWidth,
           physicalWidth);
     }
-    return actual.getPixelWidth() == physicalWidth && actual.getPixelHeight() == physicalHeight
-        && sameArray(actual.getPixels(), expected);
+    int[] actualPixels = actual.getPixels();
+    boolean widthPass = actual.getPixelWidth() == physicalWidth;
+    boolean heightPass = actual.getPixelHeight() == physicalHeight;
+    boolean pixelsPass = sameArray(actualPixels, expected);
+    return widthPass && heightPass && pixelsPass;
   }
 
   private static boolean sameArray(int[] first, int[] second) {
@@ -251,14 +260,16 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
   }
 
   private static void fillPattern(Image image) {
+    Graphics graphics = beginPhysicalFill(image);
     int width = image.getPixelWidth();
     int height = image.getPixelHeight();
-    int[] pixels = image.getPixels();
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-        pixels[y * width + x] = patternPixel(x, y);
+        graphics.foreColor = patternPixel(x, y);
+        graphics.setPixel(x, y);
       }
     }
+    endPhysicalFill(image, graphics);
   }
 
   private static int[] croppedPattern(int x, int y, int physicalWidth) {
@@ -276,23 +287,41 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
   }
 
   private static void fillQuadrants(Image image) {
-    int[] pixels = image.getPixels();
+    Graphics graphics = beginPhysicalFill(image);
     int width = image.getPixelWidth();
     int halfWidth = width / 2;
     int halfHeight = image.getPixelHeight() / 2;
     for (int y = 0; y < image.getPixelHeight(); y++) {
       for (int x = 0; x < width; x++) {
-        pixels[y * width + x] = x < halfWidth && y < halfHeight ? FRAME_A
+        graphics.foreColor = x < halfWidth && y < halfHeight ? FRAME_A
             : x >= halfWidth && y < halfHeight ? FRAME_B : 0xFF708090;
+        graphics.setPixel(x, y);
       }
     }
+    endPhysicalFill(image, graphics);
   }
 
   private static void fill(Image image, int pixel) {
-    int[] pixels = image.getPixels();
-    for (int i = 0; i < pixels.length; i++) {
-      pixels[i] = pixel;
+    Graphics graphics = beginPhysicalFill(image);
+    graphics.foreColor = pixel;
+    for (int y = 0; y < image.getPixelHeight(); y++) {
+      for (int x = 0; x < image.getPixelWidth(); x++) {
+        graphics.setPixel(x, y);
+      }
     }
+    endPhysicalFill(image, graphics);
+  }
+
+  private static Graphics beginPhysicalFill(Image image) {
+    Graphics graphics = image.getGraphics();
+    graphics.setScales(1, 1);
+    graphics.refresh(0, 0, image.getPixelWidth(), image.getPixelHeight(), 0, 0, null);
+    return graphics;
+  }
+
+  private static void endPhysicalFill(Image image, Graphics graphics) {
+    graphics.setScales(image.getContentScale(), 1);
+    graphics.refresh(0, 0, image.getWidth(), image.getHeight(), 0, 0, null);
   }
 
   private static void require(boolean condition, String message) {

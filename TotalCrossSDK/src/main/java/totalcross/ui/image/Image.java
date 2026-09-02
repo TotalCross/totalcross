@@ -913,6 +913,76 @@ public class Image extends GfxSurface {
     return resolved;
   }
 
+  /** Returns a cached native geometry description when this pipeline is drawable without color nodes. */
+  Object geometryPlanForDrawing(double destinationScale) throws ImageException {
+    if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
+      throw new ImageException("Image destination scale must be finite and positive.");
+    }
+    ImagePipeline deferred = pipeline;
+    if (deferred == null || !deferred.isGeometryOnly() || Settings.onJavaSE) {
+      return null;
+    }
+    double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
+    long scaleBits = Double.doubleToLongBits(effectiveScale);
+    ImageGeometryPlan cached = deferred.cachedGeometryPlan(scaleBits);
+    if (cached != null) {
+      return cached;
+    }
+    ArrayList<ImagePipeline> nodes = pipelineNodes(deferred);
+    Image root = materializePipelineRoot(deferred, nodes, effectiveScale);
+    if (!(root.backing instanceof NativeImageBacking)) {
+      root = promoteGeometryRoot(root);
+    }
+    if (!(root.backing instanceof NativeImageBacking)) {
+      return null;
+    }
+    ArrayList<ImagePipeline> orderedNodes = new ArrayList<ImagePipeline>(nodes);
+    for (int left = 0, right = orderedNodes.size() - 1; left < right; left++, right--) {
+      ImagePipeline node = orderedNodes.get(left);
+      orderedNodes.set(left, orderedNodes.get(right));
+      orderedNodes.set(right, node);
+    }
+    int[] operations = new int[orderedNodes.size()];
+    int[] parameters = new int[orderedNodes.size() * 4];
+    int[] dimensions = new int[orderedNodes.size() * 2];
+    for (int i = 0; i < orderedNodes.size(); i++) {
+      ImagePipeline node = orderedNodes.get(i);
+      operations[i] = node.operationType();
+      int parameterOffset = i * 4;
+      parameters[parameterOffset] = node.parameter1();
+      parameters[parameterOffset + 1] = node.parameter2();
+      parameters[parameterOffset + 2] = node.parameter3();
+      parameters[parameterOffset + 3] = node.parameter4();
+      int dimensionOffset = i * 2;
+      dimensions[dimensionOffset] = node.logicalWidth();
+      dimensions[dimensionOffset + 1] = node.logicalHeight();
+    }
+    boolean bakesSourceAlpha = false;
+    for (int i = 0; i < orderedNodes.size(); i++) {
+      if (orderedNodes.get(i).operationType() == ImagePipeline.CROP) {
+        bakesSourceAlpha = true;
+        break;
+      }
+    }
+    int outputAlphaMask = alphaMask;
+    int sourceAlphaMask = root.alphaMask;
+    int drawAlphaMask = bakesSourceAlpha ? multiplyAlphaMasks(sourceAlphaMask, outputAlphaMask) : outputAlphaMask;
+    int materializeAlphaMask = bakesSourceAlpha ? sourceAlphaMask : 255;
+    ImageGeometryPlan plan = new ImageGeometryPlan(root, operations, parameters, dimensions,
+        root.width, root.height, root.logicalWidth, root.logicalHeight, root.frameCount, root.widthOfAllFrames,
+        root.contentScale,
+        deferred.logicalWidth(), deferred.logicalHeight(), deferred.frameCount(), deferred.widthOfAllFrames(),
+        currentFrame, drawAlphaMask, transparentColor, materializeAlphaMask, outputAlphaMask, effectiveScale,
+        deferred.hasGeometricNode() ? effectiveScale : root.contentScale, hwScaleW, hwScaleH,
+        root.hwScaleW, root.hwScaleH);
+    deferred.cacheGeometryPlan(scaleBits, plan);
+    return plan;
+  }
+
+  private static int multiplyAlphaMasks(int first, int second) {
+    return (first * second + 127) / 255;
+  }
+
   private void synchronizePresentationState(Image resolved) {
     resolved.alphaMask = alphaMask;
     resolved.hwScaleW = hwScaleW;
@@ -920,6 +990,14 @@ public class Image extends GfxSurface {
     if (resolved.frameCount > 1) {
       selectCurrentFrameEager(resolved, currentFrame);
     }
+  }
+
+  private static ArrayList<ImagePipeline> pipelineNodes(ImagePipeline deferred) {
+    ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
+    for (ImagePipeline node = deferred; node.previous() != null; node = node.previous()) {
+      nodes.add(node);
+    }
+    return nodes;
   }
 
   /** Selects a frame on an already materialized variant without crossing the deferred barrier. */
@@ -943,11 +1021,61 @@ public class Image extends GfxSurface {
   }
 
   private Image resolvePipeline(ImagePipeline deferred, double destinationScale) throws ImageException {
-    ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
-    for (ImagePipeline node = deferred; node.previous() != null; node = node.previous()) {
-      nodes.add(node);
+    if (!Settings.onJavaSE && deferred.isGeometryOnly()) {
+      Image nativeGeometry = materializeNativeGeometry(deferred, destinationScale);
+      if (nativeGeometry != null) {
+        return nativeGeometry;
+      }
     }
+    ArrayList<ImagePipeline> nodes = pipelineNodes(deferred);
+    Image current = materializePipelineRoot(deferred, nodes, destinationScale);
 
+    for (int i = nodes.size() - 1; i >= 0; i--) {
+      if (nodes.get(i).operationType() == ImagePipeline.APPLY_FADE && current.frameCount > 1) {
+        selectCurrentFrameEager(current, nodes.get(i).parameter2());
+      }
+      current = applyEagerTransform(current, nodes.get(i), destinationScale);
+    }
+    return current;
+  }
+
+  private Image materializeNativeGeometry(ImagePipeline deferred, double destinationScale) throws ImageException {
+    Object geometry = geometryPlanForDrawing(destinationScale);
+    if (!(geometry instanceof ImageGeometryPlan)) {
+      return null;
+    }
+    ImageGeometryPlan plan = (ImageGeometryPlan) geometry;
+    NativeImageBacking nativeBacking = NativeImageBacking.materializeGeometry(plan);
+    int frameCount = Math.max(1, plan.outputFrameCount);
+    int visibleWidth = nativeBacking.width() / frameCount;
+    Image result = new Image();
+    result.backing = nativeBacking;
+    result.width = visibleWidth;
+    result.height = nativeBacking.height();
+    result.logicalWidth = plan.outputWidth;
+    result.logicalHeight = plan.outputHeight;
+    result.contentScale = plan.outputContentScale;
+    result.frameCount = frameCount;
+    result.currentFrame = frameCount > 1 ? normalizedFrame(plan.currentFrame) : -1;
+    result.widthOfAllFrames = nativeBacking.width();
+    // Do not carry an encoded root's FC comment into a geometry result. The
+    // result already has authoritative frame metadata, and init() parses FC
+    // comments to derive the visible width again.
+    result.comment = frameCount > 1 ? "FC=" + frameCount : null;
+    result.path = plan.root.path;
+    result.surfaceType = plan.root.surfaceType;
+    result.transparentColor = plan.root.transparentColor;
+    result.useAlpha = plan.root.useAlpha;
+    result.alphaMask = plan.outputAlphaMask;
+    result.hwScaleW = plan.hwScaleW;
+    result.hwScaleH = plan.hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
+  }
+
+  private Image materializePipelineRoot(ImagePipeline deferred, ArrayList<ImagePipeline> nodes,
+      double destinationScale) throws ImageException {
     Image current;
     ImageSource root = deferred.root();
     if (root instanceof EncodedImageSource) {
@@ -993,13 +1121,40 @@ public class Image extends GfxSurface {
           : ((RasterImageSource) root).materialize();
     }
 
-    for (int i = nodes.size() - 1; i >= 0; i--) {
-      if (nodes.get(i).operationType() == ImagePipeline.APPLY_FADE && current.frameCount > 1) {
-        selectCurrentFrameEager(current, nodes.get(i).parameter2());
-      }
-      current = applyEagerTransform(current, nodes.get(i), destinationScale);
-    }
     return current;
+  }
+
+  private Image promoteGeometryRoot(Image source) throws ImageException {
+    if (source.pixels == null || source.width <= 0 || source.height <= 0) {
+      return source;
+    }
+    int fullWidth = source.frameCount > 1 ? source.widthOfAllFrames : source.width;
+    int[] sourcePixels = source.frameCount > 1 ? (int[]) source.pixelsOfAllFrames : source.pixels;
+    if (sourcePixels == null || !NativeImageBacking.isAvailable()) {
+      return source;
+    }
+    NativeImageBacking nativeBacking = NativeImageBacking.createFromArgbPixels(sourcePixels, fullWidth, source.height);
+    Image result = new Image();
+    result.backing = nativeBacking;
+    result.width = source.width;
+    result.height = source.height;
+    result.logicalWidth = source.logicalWidth;
+    result.logicalHeight = source.logicalHeight;
+    result.contentScale = source.contentScale;
+    result.frameCount = source.frameCount;
+    result.currentFrame = source.currentFrame;
+    result.widthOfAllFrames = fullWidth;
+    result.comment = source.comment;
+    result.path = source.path;
+    result.surfaceType = source.surfaceType;
+    result.transparentColor = source.transparentColor;
+    result.useAlpha = source.useAlpha;
+    result.alphaMask = source.alphaMask;
+    result.hwScaleW = source.hwScaleW;
+    result.hwScaleH = source.hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
   }
 
   private static boolean isEligibleJpegTargetDecode(EncodedImageSource source, ImagePipeline firstNode,

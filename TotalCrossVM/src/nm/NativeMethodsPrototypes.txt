@@ -120,6 +120,7 @@ TC_API void tuiNIB_createEmptyNative_ii(NMParams p);
 TC_API void tuiNIB_snapshotNative(NMParams p);
 TC_API void tuiNIB_makeMutableNative(NMParams p);
 TC_API void tuiNIB_scaleNative_iib(NMParams p);
+TC_API void tuiNIB_materializeGeometryNative(NMParams p);
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p);
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p);
 TC_API void tugG_create_g(NMParams p);
@@ -150,6 +151,8 @@ TC_API void tugG_fillRoundRect_iiiii(NMParams p);
 TC_API void tugG_copyRectNative_giiiiii(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
 TC_API void tugG_drawImageNative_iiib(NMParams p);
+TC_API void tugG_drawGeometryNative_oiib(NMParams p);
+TC_API void tugG_copyGeometryNative_oiiiib(NMParams p);
 TC_API void tugG_copyImageRectNative_iiiiib(NMParams p);
 TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
@@ -1050,6 +1053,10 @@ TC_API void tuiNIB_scaleNative_iib(NMParams p) // totalcross/ui/image/NativeImag
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_materializeGeometryNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long materializeGeometryNative(totalcross.ui.image.ImageGeometryPlan plan);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean readPixelsNative(int []output, int offset, int x, int y, int width, int height);
 {
 }
@@ -1167,6 +1174,14 @@ TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawImageNative_iiib(NMParams p) // totalcross/ui/gfx/Graphics native private void drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean doClip);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean drawGeometryNative(Object plan, int x, int y, boolean doClip);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////

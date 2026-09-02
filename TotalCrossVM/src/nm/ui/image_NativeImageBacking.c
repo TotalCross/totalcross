@@ -106,6 +106,62 @@ TC_API void tuiNIB_scaleNative_iib(NMParams p) // totalcross/ui/image/NativeImag
 #endif
 }
 
+TC_API void tuiNIB_materializeGeometryNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static long materializeGeometryNative(totalcross.ui.image.ImageGeometryPlan plan);
+{
+#if TC_RENDERER_SKIA
+   TCObject plan = p->obj[0];
+   TCObject root;
+   TCObject operations;
+   TCObject parameters;
+   TCObject dimensions;
+   SkiaImageGeometryPlanData data;
+   if (!plan || !(root = ImageGeometryPlan_root(plan)) ||
+       !Image_backing(root) || !strEq(OBJ_CLASS(Image_backing(root))->name,
+          "totalcross.ui.image.NativeImageBacking") ||
+       !(operations = ImageGeometryPlan_operations(plan)) ||
+       !(parameters = ImageGeometryPlan_parameters(plan)) ||
+       !(dimensions = ImageGeometryPlan_dimensions(plan))) {
+      p->retL = 0;
+      return;
+   }
+   data.rootHandle = NativeImageBacking_nativeHandle(Image_backing(root));
+   data.rootWidth = ImageGeometryPlan_rootWidth(plan);
+   data.rootHeight = ImageGeometryPlan_rootHeight(plan);
+   data.rootLogicalWidth = ImageGeometryPlan_rootLogicalWidth(plan);
+   data.rootLogicalHeight = ImageGeometryPlan_rootLogicalHeight(plan);
+   data.rootFrameCount = ImageGeometryPlan_rootFrameCount(plan);
+   data.rootWidthOfAllFrames = ImageGeometryPlan_rootWidthOfAllFrames(plan);
+   data.rootContentScale = ImageGeometryPlan_rootContentScale(plan);
+   data.operations = (const int32*)ARRAYOBJ_START(operations);
+   data.parameters = (const int32*)ARRAYOBJ_START(parameters);
+   data.dimensions = (const int32*)ARRAYOBJ_START(dimensions);
+   data.operationCount = ARRAYOBJ_LEN(operations);
+   data.outputWidth = ImageGeometryPlan_outputWidth(plan);
+   data.outputHeight = ImageGeometryPlan_outputHeight(plan);
+   data.outputFrameCount = ImageGeometryPlan_outputFrameCount(plan);
+   data.outputWidthOfAllFrames = ImageGeometryPlan_outputWidthOfAllFrames(plan);
+   data.currentFrame = ImageGeometryPlan_currentFrame(plan);
+   data.alphaMask = ImageGeometryPlan_alphaMask(plan);
+   data.transparentColor = ImageGeometryPlan_transparentColor(plan);
+   data.materializeAlphaMask = ImageGeometryPlan_materializeAlphaMask(plan);
+   data.outputAlphaMask = ImageGeometryPlan_outputAlphaMask(plan);
+   data.destinationScale = ImageGeometryPlan_destinationScale(plan);
+   data.outputContentScale = ImageGeometryPlan_outputContentScale(plan);
+   data.hwScaleW = ImageGeometryPlan_hwScaleW(plan);
+   data.hwScaleH = ImageGeometryPlan_hwScaleH(plan);
+   data.rootHwScaleW = ImageGeometryPlan_rootHwScaleW(plan);
+   data.rootHwScaleH = ImageGeometryPlan_rootHwScaleH(plan);
+   if (data.operationCount <= 0 || data.operationCount * 4 > ARRAYOBJ_LEN(parameters)
+       || data.operationCount * 2 > ARRAYOBJ_LEN(dimensions)) {
+      p->retL = 0;
+      return;
+   }
+   p->retL = skia_image_backing_materialize_geometry(&data);
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p) // totalcross/ui/image/NativeImageBacking private boolean readPixelsNative(int[] output, int offset, int x, int y, int width, int height);
 {
 #if TC_RENDERER_SKIA

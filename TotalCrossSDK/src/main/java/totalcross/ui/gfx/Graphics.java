@@ -1645,6 +1645,10 @@ public final class Graphics {
    * @since SuperWaba 3.3
    */
   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
+    Object geometryPlan = resolveGeometryPlanForDrawing(image);
+    if (!Settings.onJavaSE && geometryPlan != null && drawGeometryNative(geometryPlan, x, y, doClip)) {
+      return;
+    }
     image = resolveImageForDrawing(image);
     if (!Settings.onJavaSE) {
       drawImageNative(image, x, y, doClip);
@@ -1674,6 +1678,11 @@ public final class Graphics {
    * @since SuperWaba 3.3
    */
   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip) {
+    Object geometryPlan = resolveGeometryPlanForDrawing(src);
+    if (!Settings.onJavaSE && geometryPlan != null
+        && copyGeometryNative(geometryPlan, x, y, width, height, doClip)) {
+      return;
+    }
     src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
       copyImageRectNative(src, x, y, width, height, doClip);
@@ -1692,6 +1701,10 @@ public final class Graphics {
    * @see #copyRect
    */
   public void drawImage(totalcross.ui.image.Image src, int x, int y) {
+    Object geometryPlan = resolveGeometryPlanForDrawing(src);
+    if (!Settings.onJavaSE && geometryPlan != null && drawGeometryNative(geometryPlan, x, y, true)) {
+      return;
+    }
     src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
       drawImageNative(src, x, y);
@@ -1714,6 +1727,31 @@ public final class Graphics {
     } catch (ImageException failure) {
       throw new IllegalStateException("Could not resolve image for drawing", failure);
     }
+  }
+
+  private Object resolveGeometryPlanForDrawing(Image image) {
+    if (image == null) {
+      throw new NullPointerException("image");
+    }
+    if (Settings.onJavaSE) {
+      return null;
+    }
+    try {
+      return ImageDrawingBridge.geometryPlanForDrawing(image, getContentScale());
+    } catch (ImageException failure) {
+      throw new IllegalStateException("Could not prepare image geometry for drawing", failure);
+    }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean drawGeometryNative(Object plan, int x, int y, boolean doClip) {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean copyGeometryNative(Object plan, int x, int y, int width, int height,
+      boolean doClip) {
+    return false;
   }
 
   @ReplacedByNativeOnDeploy

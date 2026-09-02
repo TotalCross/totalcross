@@ -25,6 +25,25 @@ final class NativeImageBacking extends ImageBacking {
     return new NativeImageBacking(nativeHandle, width, height);
   }
 
+  static NativeImageBacking materializeGeometry(ImageGeometryPlan plan) throws ImageException {
+    if (plan == null) {
+      throw new ImageException("Invalid native image geometry plan.");
+    }
+    long handle = materializeGeometryNative(plan);
+    if (handle == 0) {
+      throw new ImageException("Could not materialize native image geometry.");
+    }
+    double physicalWidth = Math.ceil(plan.outputWidth * plan.outputContentScale);
+    double physicalHeight = Math.ceil(plan.outputHeight * plan.outputContentScale);
+    long fullWidth = (long) physicalWidth * Math.max(1, plan.outputFrameCount);
+    if (!Double.isFinite(physicalWidth) || !Double.isFinite(physicalHeight) || physicalWidth <= 0
+        || physicalHeight <= 0 || fullWidth > Integer.MAX_VALUE) {
+      releaseNativeHandle(handle);
+      throw new ImageException("Native image geometry dimensions are too large.");
+    }
+    return new NativeImageBacking(handle, (int) fullWidth, (int) physicalHeight);
+  }
+
   static NativeImageBacking createEmpty(int width, int height) throws ImageException {
     if (width <= 0 || height <= 0) {
       throw new ImageException("Image dimensions must be positive.");
@@ -159,6 +178,11 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private long scaleNative(int width, int height, boolean smooth) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long materializeGeometryNative(ImageGeometryPlan plan) {
     return 0;
   }
 

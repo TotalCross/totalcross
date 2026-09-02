@@ -69,6 +69,39 @@ int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 wid
 int64_t skia_image_backing_snapshot(int64_t handle);
 int skia_image_backing_make_mutable(int64_t handle);
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth);
+typedef struct SkiaImageGeometryPlanData {
+    int64_t rootHandle;
+    int32 rootWidth;
+    int32 rootHeight;
+    int32 rootLogicalWidth;
+    int32 rootLogicalHeight;
+    int32 rootFrameCount;
+    int32 rootWidthOfAllFrames;
+    double rootContentScale;
+    const int32* operations;
+    const int32* parameters;
+    const int32* dimensions;
+    int32 operationCount;
+    int32 outputWidth;
+    int32 outputHeight;
+    int32 outputFrameCount;
+    int32 outputWidthOfAllFrames;
+    int32 currentFrame;
+    int32 alphaMask;
+    int32 transparentColor;
+    int32 materializeAlphaMask;
+    int32 outputAlphaMask;
+    double destinationScale;
+    double outputContentScale;
+    double hwScaleW;
+    double hwScaleH;
+    double rootHwScaleW;
+    double rootHwScaleH;
+} SkiaImageGeometryPlanData;
+int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
+    const SkiaImageGeometryPlanData* plan, float srcLeft, float srcTop, float srcRight,
+    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);
+int64_t skia_image_backing_materialize_geometry(const SkiaImageGeometryPlanData* plan);
 int32 skia_image_backing_width(int64_t handle);
 int32 skia_image_backing_height(int64_t handle);
 int skia_image_backing_read_pixels(int64_t handle, void* output, int32 x, int32 y, int32 width, int32 height);
