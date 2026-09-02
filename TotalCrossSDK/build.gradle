@@ -434,6 +434,7 @@ def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')
 def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scaling/danfe') {
 	include '*.java'
 }
+def imageAbiSmokeClassesDir = layout.buildDirectory.dir('image-abi-smoke/classes')
 
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -544,6 +545,145 @@ tasks.register('deployLogicalUiScalingSmokeMacOS', JavaExec) {
 			}
 		}
 	}
+}
+
+tasks.register('compileImageAbiSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the unified Image native ABI smoke app against the generated SDK.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'imageabi/ImageAbiSmokeApp.class'
+    }
+    from(smokeTestResourcesDir) {
+        include 'image-abi/**'
+    }
+    into imageAbiSmokeClassesDir
+
+    // Keep the native result tied to the exact source revision used by this run.
+    outputs.upToDateWhen { false }
+    doLast {
+        def commitFile = new File(imageAbiSmokeClassesDir.get().asFile, 'image-abi/commit.txt')
+        commitFile.parentFile.mkdirs()
+        def commit = providers.exec {
+            commandLine 'git', 'rev-parse', 'HEAD'
+        }.standardOutput.asText.get().trim()
+        commitFile.setText(commit + System.lineSeparator(), 'UTF-8')
+    }
+}
+
+tasks.register('deployImageAbiSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the unified Image native ABI smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'compileImageAbiSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir imageAbiSmokeClassesDir.get().asFile
+    args = [
+        'imageabi/ImageAbiSmokeApp.class',
+        '-macos'
+    ]
+}
+
+tasks.register('runImageAbiSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the generated unified Image native ABI smoke executable with an exact macOS dylib.'
+    dependsOn 'deployImageAbiSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runImageAbiSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+        }
+
+        def installDir = imageAbiSmokeClassesDir.get().dir('install/macos').asFile
+        def deployedRuntime = new File(installDir, 'libtcvm.dylib')
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def sourceHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(nativeRuntimeFile.bytes).encodeHex().toString()
+        def deployedHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(deployedRuntime.bytes).encodeHex().toString()
+        if (sourceHash != deployedHash) {
+            throw new GradleException("Deployed native runtime hash differs: source=${sourceHash}, deployed=${deployedHash}")
+        }
+
+        def executable = new File(installDir, 'ImageAbiSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException("Native smoke executable not found: ${executable}")
+        }
+        def linkageResult = providers.exec {
+            commandLine 'otool', '-L', executable.absolutePath
+            ignoreExitValue = true
+        }
+        def linkageText = linkageResult.standardOutput.asText.get() + linkageResult.standardError.asText.get()
+        def loaderResult = providers.exec {
+            commandLine 'strings', executable.absolutePath
+            ignoreExitValue = true
+        }
+        def loaderText = loaderResult.standardOutput.asText.get() + loaderResult.standardError.asText.get()
+        if (linkageResult.result.get().exitValue != 0 || loaderResult.result.get().exitValue != 0
+            || !loaderText.contains('libtcvm')) {
+            throw new GradleException("Native executable does not expose the repository libtcvm loader:\n${linkageText}")
+        }
+        logger.lifecycle("[IMAGE_ABI_RUNTIME] source=${nativeRuntimeFile.absolutePath}, deployed=${deployedRuntime.absolutePath}, sourceSha256=${sourceHash}, deployedSha256=${deployedHash}, otool=${linkageText.trim().replace(System.lineSeparator(), '; ')}, loaderSymbol=libtcvm")
+
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir imageAbiSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def commit = providers.exec {
+            commandLine 'git', 'rev-parse', 'HEAD'
+        }.standardOutput.asText.get().trim()
+        def requiredFields = [
+            'fixture=ImageAbiSmokeApp',
+            'commit=' + commit,
+            'renderer=',
+            'imageClass=totalcross.ui.image.Image',
+            'constructorPass=true',
+            'decodePass=true',
+            'logicalDimensionsPass=true',
+            'physicalDimensionsPass=true',
+            'framePass=true',
+            'colorMutationPass=true',
+            'resizePass=true',
+            'textureUploadPass=true',
+            'textureRecreatePass=true',
+            'pngRoundTripPass=true',
+            'replicateScalePass=true',
+            'smoothScalePass=true',
+            'rotationPass=true',
+            'touchUpPass=true',
+            'fadePass=true',
+            'alphaPass=true',
+            'hwScaleCopyPass=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('Image ABI native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
 }
 
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {

@@ -30,6 +30,12 @@ class ArtifactBoundariesTest {
     }
 
     @Test
+    void apiDoesNotExpose4DImplementationClasses() throws Exception {
+        assertFalse(entries("totalcross-api").stream().anyMatch(name -> name.endsWith("4D.class")
+                || name.contains("4D$")));
+    }
+
+    @Test
     void converterAndDeployerRemainSeparate() throws Exception {
         Set<String> converter = entries("totalcross-converter");
         Set<String> deployer = entries("totalcross-deployer");
