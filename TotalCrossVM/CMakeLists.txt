@@ -716,6 +716,7 @@ if(TC_RENDERER_SKIA)
     ${TC_SRCDIR}/nm/ui/skia/skia_surface.cpp
     ${TC_SRCDIR}/nm/ui/skia/skia_primitives.cpp
     ${TC_SRCDIR}/nm/ui/skia/skia_image_backing.cpp
+    ${TC_SRCDIR}/nm/ui/skia/skia_image_geometry.cpp
   )
 endif(TC_RENDERER_SKIA)
 
