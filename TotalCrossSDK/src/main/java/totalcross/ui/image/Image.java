@@ -2652,13 +2652,56 @@ public class Image extends GfxSurface {
   @ReplacedByNativeOnDeploy
   public static native void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
   
-  private static final double F1_8 = 12.5;
-  private static final double F1_4 = 25;
-  private static final double F1_2 = 50;
+  private static final int JPEG_SCALE_1_8 = 8;
+  private static final int JPEG_SCALE_1_4 = 4;
+  private static final int JPEG_SCALE_1_2 = 2;
+
+  private static void validateJpegScaleArguments(int numerator, int denominator) throws ImageException {
+    if (numerator <= 0 || denominator <= 0) {
+      throw new ImageException(null);
+    }
+  }
+
+  private static int jpegScaledDimension(int sourceDimension, int scaleNumerator, int scaleDenominator)
+      throws ImageException {
+    long scaled = (long) sourceDimension * scaleNumerator;
+    long dimension = (scaled + scaleDenominator - 1) / scaleDenominator;
+    if (dimension <= 0 || dimension > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    return (int) dimension;
+  }
+
+  private static boolean jpegBestFitFits(int sourceDimension, int scaleDenominator, int targetDimension) {
+    long decodedDimension = ((long) sourceDimension + scaleDenominator - 1) / scaleDenominator;
+    return decodedDimension >= targetDimension;
+  }
+
+  private static int jpegBestFitScaleDenominatorForDimension(int sourceDimension, int targetDimension) {
+    if (jpegBestFitFits(sourceDimension, JPEG_SCALE_1_8, targetDimension)) {
+      return JPEG_SCALE_1_8;
+    }
+    if (jpegBestFitFits(sourceDimension, JPEG_SCALE_1_4, targetDimension)) {
+      return JPEG_SCALE_1_4;
+    }
+    if (jpegBestFitFits(sourceDimension, JPEG_SCALE_1_2, targetDimension)) {
+      return JPEG_SCALE_1_2;
+    }
+    return 1;
+  }
+
+  private static int jpegBestFitScaleDenominator(int sourceWidth, int sourceHeight,
+      int targetWidth, int targetHeight) {
+    if ((long) targetWidth * sourceHeight <= (long) targetHeight * sourceWidth) {
+      return jpegBestFitScaleDenominatorForDimension(sourceWidth, targetWidth);
+    }
+    return jpegBestFitScaleDenominatorForDimension(sourceHeight, targetHeight);
+  }
   
   @ReplacedByNativeOnDeploy
   public static Image getJpegBestFit(String path, int targetWidth, int targetHeight)
       throws java.io.IOException, ImageException {
+    validateJpegScaleArguments(targetWidth, targetHeight);
     SimpleImageInfo sif = null;
 
     if (path != null) {
@@ -2683,28 +2726,17 @@ public class Image extends GfxSurface {
       throw new ImageException(null);
     }
 
-    final double p1 = targetWidth * 100.0 / sif.getWidth();
-    final double p2 = targetHeight * 100.0 / sif.getHeight();
-    final double p = Math.min(p1, p2);
-
-    int scale_denom;
-    if (p <= F1_8) {
-      scale_denom = 8; // 1/8
-    } else if (p <= F1_4) {
-      scale_denom = 4; // 1/4
-    } else if (p <= F1_2) {
-      scale_denom = 2; // 1/2
-    } else {
-      scale_denom = 1; // original size
-    }
-    
-    final double scale = 1.0 / scale_denom;
-    return new Image(path).smoothScaledBy(scale, scale);
+    final int scaleDenominator = jpegBestFitScaleDenominator(
+        sif.getWidth(), sif.getHeight(), targetWidth, targetHeight);
+    final int scaledWidth = jpegScaledDimension(sif.getWidth(), 1, scaleDenominator);
+    final int scaledHeight = jpegScaledDimension(sif.getHeight(), 1, scaleDenominator);
+    return new Image(path).getSmoothScaledInstance(scaledWidth, scaledHeight);
   }
 
   @ReplacedByNativeOnDeploy
   public static Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
       throws java.io.IOException, ImageException {
+    validateJpegScaleArguments(scaleNumerator, scaleDenominator);
     SimpleImageInfo sif = null;
 
     if (path != null) {
@@ -2729,8 +2761,9 @@ public class Image extends GfxSurface {
       throw new ImageException(null);
     }
 
-    final double scale = (double) scaleNumerator / scaleDenominator;
-    return new Image(path).smoothScaledBy(scale, scale);
+    final int scaledWidth = jpegScaledDimension(sif.getWidth(), scaleNumerator, scaleDenominator);
+    final int scaledHeight = jpegScaledDimension(sif.getHeight(), scaleNumerator, scaleDenominator);
+    return new Image(path).getSmoothScaledInstance(scaledWidth, scaledHeight);
   }
 
   @Override
