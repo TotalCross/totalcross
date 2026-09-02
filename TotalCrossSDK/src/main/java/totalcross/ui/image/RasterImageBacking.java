@@ -30,7 +30,7 @@ final class RasterImageBacking extends ImageBacking {
 
   @Override
   int width() {
-    return width;
+    return frameCount > 1 ? widthOfAllFrames : width;
   }
 
   @Override
@@ -40,7 +40,7 @@ final class RasterImageBacking extends ImageBacking {
 
   @Override
   boolean isValid() {
-    return width > 0 && height > 0 && pixels != null
+    return width() > 0 && height > 0 && pixels != null
         && (frameCount <= 1 || pixelsOfAllFrames != null);
   }
 

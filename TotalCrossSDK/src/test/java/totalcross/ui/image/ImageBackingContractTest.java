@@ -44,6 +44,35 @@ class ImageBackingContractTest {
   }
 
   @Test
+  void backingDimensionsUsePhysicalStorageWidthForSingleAndMultiFrameImages() throws Exception {
+    Image single = new Image(3, 2);
+    assertEquals(3, single.backing.width());
+    assertEquals(2, single.backing.height());
+
+    Image multi = new Image(6, 2);
+    multi.setFrameCount(3);
+    assertEquals(2, multi.getPixelWidth());
+    assertEquals(6, multi.backing.width());
+    assertEquals(2, multi.backing.height());
+  }
+
+  @Test
+  void backingSourceRejectsStorageDimensionMismatchesButAllowsZeroVisibleFrameWidth() {
+    RasterImageBacking backing = new RasterImageBacking(3, 2, 1, 3, new int[6], null);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> new BackingImageSource(backing, 2, 2, 2, 2, 1, 1, -1, 2, null, null, 1, 0, true, 255, 1, 1));
+    assertThrows(IllegalArgumentException.class,
+        () -> new BackingImageSource(backing, 3, 1, 3, 1, 1, 1, -1, 3, null, null, 1, 0, true, 255, 1, 1));
+
+    RasterImageBacking zeroVisible = new RasterImageBacking(0, 2, 2, 4, new int[0], new int[8]);
+    BackingImageSource source = new BackingImageSource(zeroVisible, 0, 2, 0, 2, 1, 2, 0, 4,
+        null, null, 1, 0, true, 255, 1, 1);
+    assertEquals(0, source.width);
+    assertEquals(4, source.backing.width());
+  }
+
+  @Test
   void lockingRasterImageReleasesRasterBackingAndDisablesGraphics() throws Exception {
     boolean previousOpenGL = Settings.isOpenGL;
     try {
@@ -96,7 +125,7 @@ class ImageBackingContractTest {
 
   @Test
   void metadataRemainsIndependentFromBackingRepresentation() throws Exception {
-    NativeImageBacking nativeBacking = NativeImageBacking.fromHandle(1, 3, 2);
+    NativeImageBacking nativeBacking = NativeImageBacking.fromHandle(1, 7, 5);
     BackingImageSource source = new BackingImageSource(nativeBacking, 7, 5, 7, 5, 1.25,
         1, -1, 7, "comment", "path", 1, 0x123456, true, 91, 0.5, 0.75);
 
