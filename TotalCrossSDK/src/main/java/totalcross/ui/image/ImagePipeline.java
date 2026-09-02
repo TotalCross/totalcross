@@ -27,6 +27,16 @@ final class ImagePipeline {
   private final int frameCount;
   private final int widthOfAllFrames;
 
+  // The cache belongs to this pipeline leaf. It is deliberately not shared by
+  // roots or images so encoded sources remain authoritative after eviction.
+  private long cachedScale1Bits;
+  private long cachedScale2Bits;
+  private Image cachedVariant1;
+  private Image cachedVariant2;
+  private long cacheUseCounter;
+  private long cachedUse1;
+  private long cachedUse2;
+
   ImagePipeline(ImageSource root) {
     if (root == null) {
       throw new NullPointerException("root");
@@ -117,5 +127,66 @@ final class ImagePipeline {
       int width, int height, int logicalWidth, int logicalHeight, int frameCount, int widthOfAllFrames) {
     return new ImagePipeline(this, operationType, parameter1, parameter2, parameter3, parameter4,
         width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames);
+  }
+
+  boolean hasGeometricNode() {
+    for (ImagePipeline node = this; node.previous() != null; node = node.previous()) {
+      if (node.operationType == SCALE || node.operationType == SMOOTH_SCALE || node.operationType == ROTATE_SCALE) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Image cachedVariant(long scaleBits) {
+    if (cachedVariant1 != null && cachedScale1Bits == scaleBits) {
+      cachedUse1 = ++cacheUseCounter;
+      return cachedVariant1;
+    }
+    if (cachedVariant2 != null && cachedScale2Bits == scaleBits) {
+      cachedUse2 = ++cacheUseCounter;
+      return cachedVariant2;
+    }
+    return null;
+  }
+
+  void cacheVariant(long scaleBits, Image variant) {
+    long use = ++cacheUseCounter;
+    if (cachedVariant1 == null || cachedUse1 <= cachedUse2) {
+      if (cachedVariant1 != null) {
+        cachedVariant1.releaseTextureOnly();
+      }
+      cachedScale1Bits = scaleBits;
+      cachedVariant1 = variant;
+      cachedUse1 = use;
+    } else {
+      if (cachedVariant2 != null) {
+        cachedVariant2.releaseTextureOnly();
+      }
+      cachedScale2Bits = scaleBits;
+      cachedVariant2 = variant;
+      cachedUse2 = use;
+    }
+  }
+
+  void releaseCachedVariantTextures() {
+    if (cachedVariant1 != null) {
+      cachedVariant1.releaseTextureOnly();
+    }
+    if (cachedVariant2 != null) {
+      cachedVariant2.releaseTextureOnly();
+    }
+  }
+
+  void clearCachedVariants() {
+    releaseCachedVariantTextures();
+    cachedVariant1 = null;
+    cachedVariant2 = null;
+    cachedUse1 = cachedUse2 = 0;
+    cachedScale1Bits = cachedScale2Bits = 0;
+  }
+
+  int cachedVariantCountForSmoke() {
+    return (cachedVariant1 == null ? 0 : 1) + (cachedVariant2 == null ? 0 : 1);
   }
 }

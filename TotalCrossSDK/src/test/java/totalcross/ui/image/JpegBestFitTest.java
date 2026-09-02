@@ -87,6 +87,23 @@ class JpegBestFitTest {
         () -> Image.getJpegScaled(jpegPath.toString(), Integer.MAX_VALUE, 1));
   }
 
+  @Test
+  void rejectsMissingJpegWithJavaIoException() {
+    String missingPath = tempDir.resolve("missing.jpg").toString();
+    assertThrows(java.io.IOException.class, () -> Image.getJpegBestFit(missingPath, 1, 1));
+    assertThrows(java.io.IOException.class, () -> Image.getJpegScaled(missingPath, 1, 2));
+  }
+
+  @Test
+  void rejectsExistingNonJpegWithImageException() throws Exception {
+    Path pngPath = tempDir.resolve("not-a-jpeg.png");
+    BufferedImage source = new BufferedImage(4, 4, BufferedImage.TYPE_INT_RGB);
+    assertTrue(ImageIO.write(source, "png", pngPath.toFile()));
+
+    assertThrows(ImageException.class, () -> Image.getJpegBestFit(pngPath.toString(), 1, 1));
+    assertThrows(ImageException.class, () -> Image.getJpegScaled(pngPath.toString(), 1, 2));
+  }
+
   private static void assertBestFit(int targetWidth, int targetHeight, int expectedWidth, int expectedHeight)
       throws Exception {
     Image image = Image.getJpegBestFit(jpegPath.toString(), targetWidth, targetHeight);

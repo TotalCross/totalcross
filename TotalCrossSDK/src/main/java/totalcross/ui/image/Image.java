@@ -15,8 +15,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
@@ -72,15 +74,22 @@ import totalcross.util.zip.ZLib;
 public class Image extends GfxSurface {
   private static boolean decodedRasterAllocationFailureForTest;
   private static boolean materializedFrameBufferAllocationFailureForTest;
+  private static boolean targetedDecodeInfrastructureFailureForTest;
+  static int targetedDecodeInvocationCountForTest;
+  static int targetedDecodeWidthForTest;
+  static int targetedDecodeHeightForTest;
 
   private static final class DeterministicImageDecodeException extends ImageException {
+    DeterministicImageDecodeException() {
+      super("Could not decode encoded image");
+    }
+
     DeterministicImageDecodeException(String message) {
       super(message);
     }
 
-    DeterministicImageDecodeException(ImageException cause) {
-      super(cause.getMessage());
-      initCause(cause);
+    DeterministicImageDecodeException(Throwable cause) {
+      super(cause.getMessage() == null ? "Could not decode encoded image" : cause.getMessage());
     }
   }
 
@@ -97,6 +106,39 @@ public class Image extends GfxSurface {
   /** Test-only hook for exercising retryable native decoded-raster allocation failures. */
   static void failNextNativeMaterializationForTest() {
     failNextNativeMaterializationForTestNative();
+  }
+
+  static synchronized void resetTargetedDecodeInvocationCountForTest() {
+    targetedDecodeInvocationCountForTest = 0;
+    targetedDecodeWidthForTest = 0;
+    targetedDecodeHeightForTest = 0;
+  }
+
+  static synchronized int targetedDecodeInvocationCountForTest() {
+    return targetedDecodeInvocationCountForTest;
+  }
+
+  static synchronized int targetedDecodeWidthForTest() {
+    return targetedDecodeWidthForTest;
+  }
+
+  static synchronized int targetedDecodeHeightForTest() {
+    return targetedDecodeHeightForTest;
+  }
+
+  /** Test-only hook for exercising retryable targeted ImageIO setup failures. */
+  static synchronized void failNextTargetedDecodeInfrastructureForTest() {
+    targetedDecodeInfrastructureFailureForTest = true;
+  }
+
+  private static synchronized boolean consumeTargetedDecodeInfrastructureFailureForTest() {
+    boolean failure = targetedDecodeInfrastructureFailureForTest;
+    targetedDecodeInfrastructureFailureForTest = false;
+    return failure;
+  }
+
+  private static synchronized void recordTargetedDecodeInvocationForTest() {
+    targetedDecodeInvocationCountForTest++;
   }
 
   @ReplacedByNativeOnDeploy
@@ -643,7 +685,7 @@ public class Image extends GfxSurface {
     if (deferred == null) {
       return;
     }
-    Image resolved = resolvePipeline(deferred);
+    Image resolved = resolvePipeline(deferred, 1);
     pixels = resolved.pixels;
     pixelsOfAllFrames = resolved.pixelsOfAllFrames;
     width = resolved.width;
@@ -660,10 +702,40 @@ public class Image extends GfxSurface {
     textureId = -1;
     hashCode = 0;
     changed[0] = true;
+    deferred.clearCachedVariants();
     pipeline = null;
   }
 
-  private Image resolvePipeline(ImagePipeline deferred) throws ImageException {
+  /** Resolves a deferred image for a destination without adopting the result. */
+  /** Resolves this image for a destination raster without adopting the result. */
+  Image resolveForDrawing(double destinationScale) throws ImageException {
+    if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
+      throw new ImageException("Image destination scale must be finite and positive.");
+    }
+    ImagePipeline deferred = pipeline;
+    if (deferred == null) {
+      return this;
+    }
+    double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
+    long scaleBits = Double.doubleToLongBits(effectiveScale);
+    Image cached = deferred.cachedVariant(scaleBits);
+    if (cached != null) {
+      synchronizePresentationState(cached);
+      return cached;
+    }
+    Image resolved = resolvePipeline(deferred, effectiveScale);
+    synchronizePresentationState(resolved);
+    deferred.cacheVariant(scaleBits, resolved);
+    return resolved;
+  }
+
+  private void synchronizePresentationState(Image resolved) {
+    resolved.alphaMask = alphaMask;
+    resolved.hwScaleW = hwScaleW;
+    resolved.hwScaleH = hwScaleH;
+  }
+
+  private Image resolvePipeline(ImagePipeline deferred, double destinationScale) throws ImageException {
     ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
     for (ImagePipeline node = deferred; node.previous() != null; node = node.previous()) {
       nodes.add(node);
@@ -679,50 +751,121 @@ public class Image extends GfxSurface {
       }
       Image decoded = new Image();
       decoded.initializeDecodeTarget(source);
+      ImagePipeline firstNode = nodes.isEmpty() ? null : nodes.get(nodes.size() - 1);
+      int targetWidth = firstNode == null ? 0 : scaledDimension(firstNode.logicalWidth(), destinationScale);
+      int targetHeight = firstNode == null ? 0 : scaledDimension(firstNode.logicalHeight(), destinationScale);
+      boolean targeted = isEligibleJpegTargetDecode(source, firstNode, targetWidth, targetHeight);
       try {
-        decoded.decodeEncodedSource(source);
+        if (targeted) {
+          decoded.decodeEncodedSourceTargeted(source, targetWidth, targetHeight);
+        } else {
+          decoded.decodeEncodedSource(source);
+        }
         if (decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
           throw new DeterministicImageDecodeException("Could not decode encoded image");
         }
-        decoded.init(true);
-        verifyDecodedMetadata(source, decoded);
-        current = decoded;
-      } catch (ImageException failure) {
-        if (failure instanceof TransientImageMaterializationException) {
+      } catch (DeterministicImageDecodeException failure) {
+        source.cacheDecodeFailure(failure);
+        throw failure;
+      } catch (TransientImageMaterializationException failure) {
+        throw failure;
+      }
+      decoded.init(true);
+      if (!targeted) {
+        try {
+          verifyDecodedMetadata(source, decoded);
+        } catch (DeterministicImageDecodeException failure) {
+          source.cacheDecodeFailure(failure);
           throw failure;
         }
-        ImageException deterministic = failure instanceof DeterministicImageDecodeException
-            ? failure : new DeterministicImageDecodeException(failure);
-        source.cacheDecodeFailure(deterministic);
-        throw deterministic;
       }
+      current = decoded;
     } else {
       current = ((RasterImageSource) root).materialize();
     }
 
     for (int i = nodes.size() - 1; i >= 0; i--) {
-      current = applyEagerTransform(current, nodes.get(i));
+      current = applyEagerTransform(current, nodes.get(i), destinationScale);
     }
     return current;
   }
 
-  private Image applyEagerTransform(Image source, ImagePipeline node) throws ImageException {
+  private static boolean isEligibleJpegTargetDecode(EncodedImageSource source, ImagePipeline firstNode,
+      int targetWidth, int targetHeight) {
+    if (firstNode == null || firstNode.operationType() != ImagePipeline.SMOOTH_SCALE
+        || source.getFormat() != ImageEncodedStructure.Format.JPEG || targetWidth <= 0 || targetHeight <= 0) {
+      return false;
+    }
+    int intrinsicWidth = source.getIntrinsicWidth();
+    int intrinsicHeight = source.getIntrinsicHeight();
+    return targetWidth < intrinsicWidth && targetHeight < intrinsicHeight
+        && jpegTargetDecodeScaleDenominator(intrinsicWidth, intrinsicHeight, targetWidth, targetHeight) > 1;
+  }
+
+  private Image applyEagerTransform(Image source, ImagePipeline node, double destinationScale) throws ImageException {
+    boolean geometric = node.operationType() == ImagePipeline.SCALE
+        || node.operationType() == ImagePipeline.SMOOTH_SCALE
+        || node.operationType() == ImagePipeline.ROTATE_SCALE;
+    int targetWidth = scaledDimension(node.logicalWidth(), destinationScale);
+    int targetHeight = scaledDimension(node.logicalHeight(), destinationScale);
+    Image result;
     switch (node.operationType()) {
     case ImagePipeline.SCALE:
-      return source.eagerScaledInstance(node.parameter1(), node.parameter2());
+      result = source.eagerScaledInstance(targetWidth, targetHeight);
+      break;
     case ImagePipeline.SMOOTH_SCALE:
-      return source.eagerSmoothScaledInstance(node.parameter1(), node.parameter2());
+      result = source.eagerSmoothScaledInstance(targetWidth, targetHeight);
+      break;
     case ImagePipeline.ROTATE_SCALE:
-      return source.eagerRotatedScaledInstance(node.parameter1(), node.parameter2(), node.parameter3());
+      int physicalScale = scaledRotationPercentage(node.parameter1(), destinationScale, source.contentScale);
+      result = source.eagerRotatedScaledInstance(physicalScale, node.parameter2(), node.parameter3());
+      int expectedWidth = checkedFrameWidth(targetWidth, result.frameCount);
+      if (result.width != expectedWidth || result.height != targetHeight) {
+        result = result.eagerSmoothScaledInstance(expectedWidth, targetHeight);
+      }
+      break;
     case ImagePipeline.TOUCH_UP:
-      return source.eagerTouchedUpInstance((byte) node.parameter1(), (byte) node.parameter2());
+      result = source.eagerTouchedUpInstance((byte) node.parameter1(), (byte) node.parameter2());
+      break;
     case ImagePipeline.FADE:
-      return source.eagerFadedInstance(node.parameter1());
+      result = source.eagerFadedInstance(node.parameter1());
+      break;
     case ImagePipeline.ALPHA:
-      return source.eagerAlphaInstance(node.parameter1());
+      result = source.eagerAlphaInstance(node.parameter1());
+      break;
     default:
       throw new IllegalStateException("Unknown image pipeline operation: " + node.operationType());
     }
+    result.logicalWidth = node.logicalWidth();
+    result.logicalHeight = node.logicalHeight();
+    result.contentScale = geometric ? destinationScale : source.contentScale;
+    result.widthOfAllFrames = result.frameCount > 1 ? result.width * result.frameCount : result.width;
+    return result;
+  }
+
+  private static int scaledDimension(int logicalDimension, double scale) throws ImageException {
+    double physical = Math.ceil(logicalDimension * scale);
+    if (!Double.isFinite(physical) || physical <= 0 || physical > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    return (int) physical;
+  }
+
+  private static int checkedFrameWidth(int width, int frameCount) throws ImageException {
+    long total = (long) width * frameCount;
+    if (total > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    return width;
+  }
+
+  private static int scaledRotationPercentage(int percentage, double destinationScale, double sourceScale)
+      throws ImageException {
+    double physical = percentage * destinationScale / sourceScale;
+    if (!Double.isFinite(physical) || physical <= 0 || physical > Integer.MAX_VALUE) {
+      throw new ImageException("Image rotation scale is too large.");
+    }
+    return Math.max(1, (int) Math.round(physical));
   }
 
   private void verifyDecodedMetadata(EncodedImageSource source, Image decoded) throws ImageException {
@@ -765,6 +908,121 @@ public class Image extends GfxSurface {
       throw e;
     } catch (Throwable e) {
       throw new TransientImageMaterializationException(e);
+    }
+  }
+
+  /** Deploy replacement uses the encoded native bag and jpegLoad's target sizing. */
+  @ReplacedByNativeOnDeploy
+  private void decodeEncodedSourceTargeted(EncodedImageSource source, int targetWidth, int targetHeight)
+      throws ImageException {
+    byte[] input = source.bytesForInternalDecode();
+    if (input == null) {
+      throw new ImageException("Encoded source has no Java backing");
+    }
+    recordTargetedDecodeInvocationForTest();
+
+    ImageInputStream stream = null;
+    ImageReader reader = null;
+    boolean decodeFailureObserved = false;
+    try {
+      try {
+        stream = new MemoryCacheImageInputStream(new ByteArrayInputStream(input, 0, source.getEncodedLength()));
+        java.util.Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+        if (!readers.hasNext()) {
+          throw new java.io.IOException("No ImageIO reader available");
+        }
+        reader = readers.next();
+        reader.setInput(stream);
+        ImageReadParam parameters = reader.getDefaultReadParam();
+        if (consumeTargetedDecodeInfrastructureFailureForTest()) {
+          throw new TransientImageMaterializationException("Simulated targeted ImageIO setup failure");
+        }
+
+        int intrinsicWidth;
+        int intrinsicHeight;
+        try {
+          intrinsicWidth = reader.getWidth(0);
+          intrinsicHeight = reader.getHeight(0);
+        } catch (OutOfMemoryError e) {
+          throw e;
+        } catch (java.io.IOException e) {
+          throw new DeterministicImageDecodeException(e);
+        } catch (RuntimeException e) {
+          throw new TransientImageMaterializationException(e);
+        }
+        try {
+          int scaleDenominator = jpegTargetDecodeScaleDenominator(
+              intrinsicWidth, intrinsicHeight, targetWidth, targetHeight);
+          parameters.setSourceSubsampling(scaleDenominator, scaleDenominator, 0, 0);
+        } catch (OutOfMemoryError e) {
+          throw e;
+        } catch (RuntimeException e) {
+          throw new TransientImageMaterializationException(e);
+        }
+
+        BufferedImage frame;
+        try {
+          frame = reader.read(0, parameters);
+        } catch (OutOfMemoryError e) {
+          throw e;
+        } catch (java.io.IOException e) {
+          throw new DeterministicImageDecodeException(e);
+        } catch (RuntimeException e) {
+          throw new TransientImageMaterializationException(e);
+        }
+        width = frame.getWidth();
+        height = frame.getHeight();
+        logicalWidth = width;
+        logicalHeight = height;
+        pixels = new int[width * height];
+        frame.getRGB(0, 0, width, height, pixels, 0, width);
+        synchronized (Image.class) {
+          targetedDecodeWidthForTest = width;
+          targetedDecodeHeightForTest = height;
+        }
+      } catch (OutOfMemoryError e) {
+        throw e;
+      } catch (java.io.IOException e) {
+        throw new TransientImageMaterializationException(e);
+      } catch (RuntimeException e) {
+        throw new TransientImageMaterializationException(e);
+      }
+    } catch (ImageException e) {
+      decodeFailureObserved = true;
+      throw e;
+    } catch (Error e) {
+      decodeFailureObserved = true;
+      throw e;
+    } catch (RuntimeException e) {
+      decodeFailureObserved = true;
+      throw new TransientImageMaterializationException(e);
+    } finally {
+      Throwable cleanupFailure = null;
+      if (reader != null) {
+        try {
+          reader.dispose();
+        } catch (Throwable failure) {
+          cleanupFailure = failure;
+        }
+      }
+      if (stream != null) {
+        try {
+          stream.close();
+        } catch (Throwable failure) {
+          if (cleanupFailure == null) {
+            cleanupFailure = failure;
+          }
+        }
+      }
+      if (!decodeFailureObserved && cleanupFailure != null) {
+        if (cleanupFailure instanceof OutOfMemoryError) {
+          throw (OutOfMemoryError) cleanupFailure;
+        }
+        if (cleanupFailure instanceof Error) {
+          throw (Error) cleanupFailure;
+        }
+        throw new TransientImageMaterializationException("Targeted ImageIO cleanup failure");
+      }
     }
   }
 
@@ -970,6 +1228,15 @@ public class Image extends GfxSurface {
    * AVOID USING THIS METHOD IF UNSURE ABOUT IT.
    */
   public void freeTexture() {
+    if (pipeline != null) {
+      pipeline.releaseCachedVariantTextures();
+      return;
+    }
+    freeTextureNative();
+  }
+
+  /** Releases only native texture state; it never forces deferred materialization. */
+  void releaseTextureOnly() {
     freeTextureNative();
   }
 
@@ -3196,10 +3463,26 @@ public class Image extends GfxSurface {
     }
     return (int) dimension;
   }
-
   private static boolean jpegBestFitFits(int sourceDimension, int scaleDenominator, int targetDimension) {
     long decodedDimension = ((long) sourceDimension + scaleDenominator - 1) / scaleDenominator;
     return decodedDimension >= targetDimension;
+  }
+
+  private static int jpegTargetDecodeScaleDenominator(int sourceWidth, int sourceHeight,
+      int targetWidth, int targetHeight) {
+    if (jpegBestFitFits(sourceWidth, JPEG_SCALE_1_8, targetWidth)
+        && jpegBestFitFits(sourceHeight, JPEG_SCALE_1_8, targetHeight)) {
+      return JPEG_SCALE_1_8;
+    }
+    if (jpegBestFitFits(sourceWidth, JPEG_SCALE_1_4, targetWidth)
+        && jpegBestFitFits(sourceHeight, JPEG_SCALE_1_4, targetHeight)) {
+      return JPEG_SCALE_1_4;
+    }
+    if (jpegBestFitFits(sourceWidth, JPEG_SCALE_1_2, targetWidth)
+        && jpegBestFitFits(sourceHeight, JPEG_SCALE_1_2, targetHeight)) {
+      return JPEG_SCALE_1_2;
+    }
+    return 1;
   }
 
   private static int jpegBestFitScaleDenominatorForDimension(int sourceDimension, int targetDimension) {
@@ -3222,40 +3505,43 @@ public class Image extends GfxSurface {
     }
     return jpegBestFitScaleDenominatorForDimension(sourceHeight, targetHeight);
   }
-  
+
+  private static EncodedImageSource captureJpegSource(String path)
+      throws java.io.IOException, ImageException {
+    if (path == null) {
+      throw new java.io.IOException();
+    }
+    byte[] encoded = Vm.getFile(path);
+    if (encoded == null) {
+      try (File file = new File(path, File.READ_ONLY)) {
+        encoded = file.read();
+      }
+    }
+    EncodedImageSource source = EncodedImageSource.fromOwnedBytes(encoded);
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG) {
+      throw new ImageException(null);
+    }
+    return source;
+  }
+
+  private static Image imageForCapturedSource(String path, EncodedImageSource source) {
+    Image image = new Image();
+    image.path = path;
+    image.initializeDeferred(source);
+    return image;
+  }
+
   @ReplacedByNativeOnDeploy
   public static Image getJpegBestFit(String path, int targetWidth, int targetHeight)
       throws java.io.IOException, ImageException {
     validateJpegScaleArguments(targetWidth, targetHeight);
-    SimpleImageInfo sif = null;
-
-    if (path != null) {
-      byte[] b = Vm.getFile(path);
-      if (b != null) {
-        try (ByteArrayStream bas = new ByteArrayStream(b)) {
-          InputStream is = bas.asInputStream();
-          sif = new SimpleImageInfo(is);
-        }
-      } else {
-        try (File f = new File(path, File.READ_ONLY)) {
-          InputStream is = f.asInputStream();
-          sif = new SimpleImageInfo(is);
-        }
-      }
-    }
-
-    if (sif == null) {
-      throw new java.io.IOException();
-    }
-    if (!"image/jpeg".equals(sif.getMimeType())) {
-      throw new ImageException(null);
-    }
+    EncodedImageSource source = captureJpegSource(path);
 
     final int scaleDenominator = jpegBestFitScaleDenominator(
-        sif.getWidth(), sif.getHeight(), targetWidth, targetHeight);
-    final int scaledWidth = jpegScaledDimension(sif.getWidth(), 1, scaleDenominator);
-    final int scaledHeight = jpegScaledDimension(sif.getHeight(), 1, scaleDenominator);
-    Image image = new Image(path);
+        source.getIntrinsicWidth(), source.getIntrinsicHeight(), targetWidth, targetHeight);
+    final int scaledWidth = jpegScaledDimension(source.getIntrinsicWidth(), 1, scaleDenominator);
+    final int scaledHeight = jpegScaledDimension(source.getIntrinsicHeight(), 1, scaleDenominator);
+    Image image = imageForCapturedSource(path, source);
     Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
     result.materializeCanonicalChecked();
     return result;
@@ -3265,33 +3551,11 @@ public class Image extends GfxSurface {
   public static Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
       throws java.io.IOException, ImageException {
     validateJpegScaleArguments(scaleNumerator, scaleDenominator);
-    SimpleImageInfo sif = null;
+    EncodedImageSource source = captureJpegSource(path);
 
-    if (path != null) {
-      byte[] b = Vm.getFile(path);
-      if (b != null) {
-        try (ByteArrayStream bas = new ByteArrayStream(b)) {
-          InputStream is = bas.asInputStream();
-          sif = new SimpleImageInfo(is);
-        }
-      } else {
-        try (File f = new File(path, File.READ_ONLY)) {
-          InputStream is = f.asInputStream();
-          sif = new SimpleImageInfo(is);
-        }
-      }
-    }
-
-    if (sif == null) {
-      throw new java.io.IOException();
-    }
-    if (!"image/jpeg".equals(sif.getMimeType())) {
-      throw new ImageException(null);
-    }
-
-    final int scaledWidth = jpegScaledDimension(sif.getWidth(), scaleNumerator, scaleDenominator);
-    final int scaledHeight = jpegScaledDimension(sif.getHeight(), scaleNumerator, scaleDenominator);
-    Image image = new Image(path);
+    final int scaledWidth = jpegScaledDimension(source.getIntrinsicWidth(), scaleNumerator, scaleDenominator);
+    final int scaledHeight = jpegScaledDimension(source.getIntrinsicHeight(), scaleNumerator, scaleDenominator);
+    Image image = imageForCapturedSource(path, source);
     Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
     result.materializeCanonicalChecked();
     return result;
