@@ -12,6 +12,11 @@ final class ImagePipeline {
   static final int TOUCH_UP = 3;
   static final int FADE = 4;
   static final int ALPHA = 5;
+  static final int APPLY_COLOR = 6;
+  static final int APPLY_COLOR2 = 7;
+  static final int APPLY_FADE = 8;
+  static final int CHANGE_COLORS = 9;
+  static final int SET_TRANSPARENT_COLOR = 10;
 
   private final ImageSource root;
   private final ImagePipeline previous;
