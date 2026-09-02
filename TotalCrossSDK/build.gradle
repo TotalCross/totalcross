@@ -1052,6 +1052,99 @@ tasks.register('runImageDeferredColorMutationSmokeMacOS', Exec) {
     }
 }
 
+def imageNativeColorFilterSmokeClassesDir = layout.buildDirectory.dir('image-native-color-filter-smoke/classes')
+
+tasks.register('compileImageNativeColorFilterSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the native Image color-filter smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/ImageNativeColorFilterSmokeApp.class'
+    }
+    into imageNativeColorFilterSmokeClassesDir
+}
+
+tasks.register('jarImageNativeColorFilterSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the native Image color-filter smoke app for deployment.'
+    dependsOn 'compileImageNativeColorFilterSmoke'
+    archiveFileName = 'ImageNativeColorFilterSmokeApp.jar'
+    destinationDirectory = imageNativeColorFilterSmokeClassesDir
+    from(imageNativeColorFilterSmokeClassesDir)
+}
+
+tasks.register('deployImageNativeColorFilterSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the native Image color-filter smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarImageNativeColorFilterSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir imageNativeColorFilterSmokeClassesDir.get().asFile
+    args = [
+        'ImageNativeColorFilterSmokeApp.jar',
+        '-macos'
+    ]
+}
+
+tasks.register('runImageNativeColorFilterSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the native Image color-filter smoke app with the exact macOS dylib.'
+    dependsOn 'deployImageNativeColorFilterSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runImageNativeColorFilterSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+        }
+        def installDir = imageNativeColorFilterSmokeClassesDir.get().dir('install/macos').asFile
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def executable = new File(installDir, 'ImageNativeColorFilterSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException("Native smoke executable not found: ${executable}")
+        }
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir imageNativeColorFilterSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def requiredFields = [
+            'fixture=ImageNativeColorFilterSmokeApp',
+            'nativeBacking=true',
+            'frameScopedFade=true',
+            'alpha=true',
+            'faded=true',
+            'touchUp=true',
+            'drawAndSave=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('Native Image color-filter macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
 def imageDeferredCropFrameSmokeClassesDir = layout.buildDirectory.dir('image-deferred-crop-frame-smoke/classes')
 
 tasks.register('compileImageDeferredCropFrameSmoke', Sync) {

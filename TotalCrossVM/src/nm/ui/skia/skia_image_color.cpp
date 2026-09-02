@@ -4,6 +4,8 @@
 
 #include "skia_image_backing_internal.h"
 
+#include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -56,6 +58,57 @@ static int clampChannel(int value) {
     return value < 0 ? 0 : value > 255 ? 255 : value;
 }
 
+static void buildContrastTable(int32 level, uint8_t* table) {
+    const double factor = level < 0
+        ? (level + 128) / 128.0
+        : 127.0 / std::max(127 - level, 1);
+    for (int i = 0; i <= 127; ++i) {
+        const int value = static_cast<int>(127.0 * std::pow(i / 127.0, factor)) & 0xff;
+        table[i] = static_cast<uint8_t>(value);
+        table[255 - i] = static_cast<uint8_t>(255 - value);
+    }
+}
+
+static void touchUp(std::vector<uint8_t>* pixels, int32 brightness, int32 contrast) {
+    uint8_t table[256];
+    const bool useContrast = contrast != 0;
+    const bool useBrightness = brightness != 0;
+    int32 multiplier = 0;
+    int32 offset = 0;
+    if (useContrast) {
+        buildContrastTable(contrast, table);
+    }
+    if (useBrightness) {
+        const double effective = (brightness + 128.0) / 128.0;
+        if (brightness <= 1) {
+            multiplier = static_cast<int32>(std::sqrt(effective) * 0x10000);
+        } else {
+            double f = effective - 1.0;
+            f *= f;
+            offset = static_cast<int32>(f * 0xFF0000);
+            multiplier = static_cast<int32>((1.0 - f) * effective * 0x10000);
+        }
+    }
+    for (size_t i = 0; i < pixels->size(); i += 4) {
+        int red = (*pixels)[i];
+        int green = (*pixels)[i + 1];
+        int blue = (*pixels)[i + 2];
+        if (useContrast) {
+            red = table[red];
+            green = table[green];
+            blue = table[blue];
+        }
+        if (useBrightness) {
+            red = (multiplier * red + offset) >> 16;
+            green = (multiplier * green + offset) >> 16;
+            blue = (multiplier * blue + offset) >> 16;
+        }
+        (*pixels)[i] = static_cast<uint8_t>(clampChannel(red));
+        (*pixels)[i + 1] = static_cast<uint8_t>(clampChannel(green));
+        (*pixels)[i + 2] = static_cast<uint8_t>(clampChannel(blue));
+    }
+}
+
 static bool transform(std::vector<uint8_t>* pixels, int32 width, int32 height, int32 operation,
                       int32 parameter1, int32 parameter2, int32 frameCount, int32 visibleWidth,
                       int32 currentFrame) {
@@ -101,6 +154,9 @@ static bool transform(std::vector<uint8_t>* pixels, int32 width, int32 height, i
                 (*pixels)[i + 3] = static_cast<uint8_t>(clampChannel((*pixels)[i + 3] + parameter1));
             }
         }
+        return true;
+    case SKIA_IMAGE_COLOR_TOUCH_UP_INSTANCE:
+        touchUp(pixels, parameter1, parameter2);
         return true;
     default:
         return false;

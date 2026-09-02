@@ -346,12 +346,18 @@ TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p) // totalcross/ui/image/Im
    Pixel color = p->i32[2] == 0 ? (Pixel)0 : makePixelRGB(p->i32[2]);
    FuncType type = (FuncType)p->i32[5];
 #if TC_RENDERER_SKIA
-   if (imageUsesNativeBacking(thisObj) && (type == FADED_INSTANCE || type == ALPHA_INSTANCE)) {
+   if (imageUsesNativeBacking(thisObj) && (type == TOUCHEDUP_INSTANCE
+         || type == FADED_INSTANCE || type == ALPHA_INSTANCE)) {
       int32 operation;
       int32 parameter1;
       int32 parameter2;
       int64 handle;
       switch (type) {
+         case TOUCHEDUP_INSTANCE:
+            operation = SKIA_IMAGE_COLOR_TOUCH_UP_INSTANCE;
+            parameter1 = p->i32[3];
+            parameter2 = p->i32[4];
+            break;
          case FADED_INSTANCE:
             operation = SKIA_IMAGE_COLOR_FADE_INSTANCE;
             parameter1 = p->i32[2];
