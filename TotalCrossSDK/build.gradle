@@ -683,6 +683,8 @@ tasks.register('runImageAbiSmokeMacOS', Exec) {
             'jpegBestFitPass=true',
             'jpegScaledPass=true',
             'jpegBestFitScalePass=true',
+            'jpegOddDimensionPass=true',
+            'jpegArgumentValidationPass=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }

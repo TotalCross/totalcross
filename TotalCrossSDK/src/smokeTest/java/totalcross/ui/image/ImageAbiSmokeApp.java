@@ -11,6 +11,7 @@ import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /** Native macOS smoke fixture for the unified Image field ABI and lifecycle. */
 public class ImageAbiSmokeApp extends MainWindow {
@@ -46,6 +47,8 @@ public class ImageAbiSmokeApp extends MainWindow {
     boolean jpegBestFitPass = false;
     boolean jpegScaledPass = false;
     boolean jpegBestFitScalePass = false;
+    boolean jpegOddDimensionPass = false;
+    boolean jpegArgumentValidationPass = false;
     String error = "";
 
     try {
@@ -85,7 +88,9 @@ public class ImageAbiSmokeApp extends MainWindow {
 
       Image scaledTcz = Image.getJpegScaled("image-abi/back3.jpg", 1, 2);
       Image scaledFile = Image.getJpegScaled("back3-file.jpg", 1, 2);
-      jpegScaledPass = hasDimensions(scaledTcz, 800, 450) && hasDimensions(scaledFile, 800, 450);
+      Image scaledThreeQuarters = Image.getJpegScaled("image-abi/back3.jpg", 3, 4);
+      jpegScaledPass = hasDimensions(scaledTcz, 800, 450) && hasDimensions(scaledFile, 800, 450)
+          && hasDimensions(scaledThreeQuarters, 1200, 675);
       require(jpegScaledPass, "JPEG scaled logical/pixel dimensions");
 
       jpegBestFitScalePass = hasDimensions(Image.getJpegBestFit("image-abi/back3.jpg", 200, 113), 200, 113)
@@ -96,6 +101,26 @@ public class ImageAbiSmokeApp extends MainWindow {
           && hasDimensions(Image.getJpegBestFit("image-abi/back3.jpg", 401, 226), 800, 450)
           && hasDimensions(Image.getJpegBestFit("back3-file.jpg", 801, 451), 1600, 900);
       require(jpegBestFitScalePass, "JPEG best-fit libjpeg scale boundaries");
+
+      Image oddJpegSource = new Image(1601, 901);
+      File oddJpegFile = new File("odd-jpeg.jpg", File.CREATE_EMPTY);
+      oddJpegSource.createJpg(oddJpegFile, 90);
+      oddJpegFile.close();
+      jpegOddDimensionPass = hasDimensions(Image.getJpegBestFit("odd-jpeg.jpg", 201, 113), 201, 113)
+          && hasDimensions(Image.getJpegBestFit("odd-jpeg.jpg", 200, 200), 201, 113)
+          && hasDimensions(Image.getJpegBestFit("odd-jpeg.jpg", 402, 200), 401, 226)
+          && hasDimensions(Image.getJpegScaled("odd-jpeg.jpg", 1, 8), 201, 113)
+          && hasDimensions(Image.getJpegScaled("odd-jpeg.jpg", 3, 4), 1201, 676);
+      require(jpegOddDimensionPass, "JPEG odd dimensions use libjpeg ceiling");
+
+      jpegArgumentValidationPass = rejectsJpegBestFit("image-abi/back3.jpg", 0, 113)
+          && rejectsJpegBestFit("image-abi/back3.jpg", 200, -1)
+          && rejectsJpegScaled("image-abi/back3.jpg", 0, 1)
+          && rejectsJpegScaled("image-abi/back3.jpg", 1, 0)
+          && rejectsJpegScaled("image-abi/back3.jpg", -1, 1)
+          && rejectsJpegScaled("image-abi/back3.jpg", 1, -1)
+          && rejectsJpegScaled("image-abi/back3.jpg", Integer.MIN_VALUE, 1);
+      require(jpegArgumentValidationPass, "JPEG invalid arguments");
 
       Image mutable = new Image(2, 2);
       int[] mutablePixels = mutable.getPixels();
@@ -203,7 +228,7 @@ public class ImageAbiSmokeApp extends MainWindow {
         && framePass && colorMutationPass && resizePass && textureUploadPass && textureRecreatePass
         && pngRoundTripPass && replicateScalePass && smoothScalePass && rotationPass && touchUpPass
         && fadePass && alphaPass && hwScaleCopyPass && jpegBestFitPass && jpegScaledPass
-        && jpegBestFitScalePass;
+        && jpegBestFitScalePass && jpegOddDimensionPass && jpegArgumentValidationPass;
     byte[] commitBytes = Vm.getFile("image-abi/commit.txt");
     String commit = commitBytes == null ? "unknown" : new String(commitBytes).trim();
     System.out.println("fixture=ImageAbiSmokeApp,commit=" + commit + ",renderer="
@@ -217,6 +242,8 @@ public class ImageAbiSmokeApp extends MainWindow {
         + ",touchUpPass=" + touchUpPass + ",fadePass=" + fadePass + ",alphaPass=" + alphaPass
         + ",hwScaleCopyPass=" + hwScaleCopyPass + ",jpegBestFitPass=" + jpegBestFitPass
         + ",jpegScaledPass=" + jpegScaledPass + ",jpegBestFitScalePass=" + jpegBestFitScalePass
+        + ",jpegOddDimensionPass=" + jpegOddDimensionPass
+        + ",jpegArgumentValidationPass=" + jpegArgumentValidationPass
         + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
@@ -232,6 +259,28 @@ public class ImageAbiSmokeApp extends MainWindow {
     return image != null && image.getWidth() == width && image.getHeight() == height
         && image.getPixelWidth() == width && image.getPixelHeight() == height
         && image.getContentScale() == 1;
+  }
+
+  private static boolean rejectsJpegBestFit(String path, int targetWidth, int targetHeight) {
+    try {
+      Image.getJpegBestFit(path, targetWidth, targetHeight);
+      return false;
+    } catch (ImageException expected) {
+      return true;
+    } catch (Exception unexpected) {
+      return false;
+    }
+  }
+
+  private static boolean rejectsJpegScaled(String path, int numerator, int denominator) {
+    try {
+      Image.getJpegScaled(path, numerator, denominator);
+      return false;
+    } catch (ImageException expected) {
+      return true;
+    } catch (Exception unexpected) {
+      return false;
+    }
   }
 
   private static void fill(Image image, int pixel) {
