@@ -29,7 +29,7 @@ skia_image_backing_internal::NativeImageBackingRecord* findBacking(int64_t handl
     return found == backings.end() ? nullptr : found->second.get();
 }
 
-int64_t registerBacking(std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing) {
+int64_t registerBackingRecord(std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing) {
     if (!backing || nextHandle <= 0) {
         return 0;
     }
@@ -174,7 +174,7 @@ NativeImageBackingRecord* findBacking(int64_t handle) {
 }
 
 int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing) {
-    return ::registerBacking(std::move(backing));
+    return ::registerBackingRecord(std::move(backing));
 }
 
 SkImageInfo rasterInfo(int32 width, int32 height) {
@@ -195,7 +195,7 @@ int64_t skia_image_backing_create_empty(int32 width, int32 height) {
         }
         backing->width = width;
         backing->height = height;
-        return registerBacking(std::move(backing));
+        return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
     }
@@ -221,7 +221,7 @@ int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, in
         backing->image = std::move(image);
         backing->width = width;
         backing->height = height;
-        return registerBacking(std::move(backing));
+        return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
     }
@@ -272,7 +272,7 @@ int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle) 
         backing->image = std::move(snapshot);
         backing->width = source->width;
         backing->height = source->height;
-        const int64_t newHandle = registerBacking(std::move(backing));
+        const int64_t newHandle = registerBackingRecord(std::move(backing));
         if (newHandle == 0) {
             return SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE;
         }
@@ -345,7 +345,7 @@ int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 output
             SkCanvas::kStrict_SrcRectConstraint);
         backing->width = outputWidth;
         backing->height = outputHeight;
-        return registerBacking(std::move(backing));
+        return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
     }

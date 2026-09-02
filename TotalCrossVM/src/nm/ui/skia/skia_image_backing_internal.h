@@ -5,6 +5,7 @@
 #ifndef SKIA_IMAGE_BACKING_INTERNAL_H
 #define SKIA_IMAGE_BACKING_INTERNAL_H
 
+#include "skia_image_backing.h"
 #include "skia_internal.h"
 
 namespace skia_image_backing_internal {
