@@ -14,6 +14,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   `e5c8c35b8`. No prior commit was amended, rewritten, squashed, or
   rebased.
 - The corrective milestone is complete and this goal is fully stopped.
+- Corrective commit titles passed the repository format check. The local
+  body-line wrapping check flagged existing unwrapped body lines; those
+  commits remain unchanged to honor the no-history-rewrite instruction.
 - Plan 3 remains open before milestone 3. Resume later at the rotate/save
   milestone gate; do not restart the corrective milestone or begin plan 4.
 - Corrective slice delivered:
