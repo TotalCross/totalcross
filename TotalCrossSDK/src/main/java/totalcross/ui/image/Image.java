@@ -780,9 +780,6 @@ public class Image extends GfxSurface {
     }
   }
 
-  public void createJpg4B(Stream s, int quality) throws ImageException, IOException {
-  }
-
   /** Saves this image as a 24 BPP .png file format (if useAlpha is true, it saves as 32 BPP), 
    * to the given stream.
    * If you're sending the png through a stream but not saving to a PDBFile,
