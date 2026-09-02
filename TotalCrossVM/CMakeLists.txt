@@ -656,6 +656,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/ui/font_Font.c
     ${TC_SRCDIR}/nm/ui/font_FontMetrics.c
     ${TC_SRCDIR}/nm/ui/image_Image.c
+    ${TC_SRCDIR}/nm/ui/image/ImageEncodedBag.c
     ${TC_SRCDIR}/nm/ui/MainWindow.c
     ${TC_SRCDIR}/nm/ui/media_Sound.c
     ${TC_SRCDIR}/nm/ui/media_MediaClip.c
