@@ -307,7 +307,15 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
    }
 
 finish:
-   p->retO = imageObj;
+   p->retO = null;
+   if (imageObj != null && initMethod != null
+         && p->currentContext->thrownException == null
+         && Image_width(imageObj) > 0 && Image_height(imageObj) > 0) {
+      executeMethod(p->currentContext, initMethod, imageObj);
+      if (p->currentContext->thrownException == null) {
+         p->retO = imageObj;
+      }
+   }
    if (imageObj != null) {
       setObjectLock(imageObj, UNLOCKED);
    }
@@ -346,7 +354,15 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image nati
       }
    }
 
-   p->retO = imageObj;
+   p->retO = null;
+   if (imageObj != null && initMethod != null
+         && p->currentContext->thrownException == null
+         && Image_width(imageObj) > 0 && Image_height(imageObj) > 0) {
+      executeMethod(p->currentContext, initMethod, imageObj);
+      if (p->currentContext->thrownException == null) {
+         p->retO = imageObj;
+      }
+   }
    if (imageObj != null) {
       setObjectLock(imageObj, UNLOCKED);
    }

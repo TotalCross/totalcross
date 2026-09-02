@@ -558,6 +558,10 @@ tasks.register('compileImageAbiSmoke', Sync) {
     from(smokeTestResourcesDir) {
         include 'image-abi/**'
     }
+    from('src/main/resources/images/back3.jpg') {
+        into 'image-abi'
+        rename { 'back3.jpg' }
+    }
     into imageAbiSmokeClassesDir
 
     // Keep the native result tied to the exact source revision used by this run.
@@ -676,6 +680,9 @@ tasks.register('runImageAbiSmokeMacOS', Exec) {
             'fadePass=true',
             'alphaPass=true',
             'hwScaleCopyPass=true',
+            'jpegBestFitPass=true',
+            'jpegScaledPass=true',
+            'jpegBestFitScalePass=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }
