@@ -291,7 +291,6 @@ jobs:
           'win32/Hello World.exe',
           'win32/Hello World.tcz',
           'win32/tcvm.dll',
-          'win32/vcruntime140.dll',
           'android/HelloWorld.aab',
           'android/HelloWorld.apk',
           'ios/Hello World.ipa',
