@@ -11,6 +11,9 @@ import totalcross.ui.gfx.Graphics;
 
 /** Deployed macOS smoke for lazy encoded Image construction and barriers. */
 public class ImageLazyMaterializationSmokeApp extends MainWindow {
+  private static final int NATIVE_RED = 0xFF0000FF;
+  private static final int NATIVE_BLUE = 0x0000FFFF;
+
   @Override
   public void initUI() {
     boolean pngConstructionLazy = false;
@@ -23,6 +26,19 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
     boolean structuralInvalid = false;
     boolean payloadInvalidDeferred = false;
     boolean nativeAllocationRetryable = false;
+    boolean transformFamiliesDeferred = false;
+    boolean transformFamiliesResolve = false;
+    boolean transformChainDeferred = false;
+    boolean transformChainResolve = false;
+    boolean encodedRootShared = false;
+    boolean rasterSnapshotIsolated = false;
+    boolean rotationFillRegression = false;
+    boolean frameTransformPass = false;
+    boolean drawTransformBarrier = false;
+    boolean largeImageHashPass = false;
+    boolean smoothScaleNoOpCompatibility = false;
+    boolean rotationNoOpCompatibility = false;
+    boolean transformEquivalence = false;
     String error = "";
 
     try {
@@ -104,20 +120,130 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       nativeAllocationRetryable = firstNativeAllocationFailed && retriedNativePixels != null
           && retriedNativePixels.length == 2;
       require(nativeAllocationRetryable, "native allocation failure retry");
+
+      byte[] transformBytes = Vm.getFile("image-abi/tiny.png");
+      Image transformSource = new Image(transformBytes);
+      Image replicated = transformSource.getScaledInstance(12, 10);
+      Image smooth = transformSource.getSmoothScaledInstance(12, 10);
+      Image touched = transformSource.getTouchedUpInstance((byte) 16, (byte) -8);
+      Image faded = transformSource.getFadedInstance(0x00112233);
+      Image alpha = transformSource.getAlphaInstance(-32);
+      Image rotatedSquare = transformSource.getRotatedScaledInstance(100, 30, 0xFF123456);
+      transformFamiliesDeferred = replicated.pixels == null && smooth.pixels == null
+          && touched.pixels == null && faded.pixels == null && alpha.pixels == null
+          && rotatedSquare.pixels == null;
+      require(transformFamiliesDeferred, "encoded transform deferment");
+      transformFamiliesResolve = replicated.getPixels() != null && smooth.getPixels() != null
+          && touched.getPixels() != null && faded.getPixels() != null && alpha.getPixels() != null
+          && rotatedSquare.getPixels() != null;
+      require(transformFamiliesResolve, "encoded transform resolution");
+
+      Image chainSource = new Image(transformBytes);
+      Image chained = chainSource.getSmoothScaledInstance(20, 18)
+          .getTouchedUpInstance((byte) 8, (byte) 0)
+          .getRotatedScaledInstance(100, 30, 0xFF123456)
+          .getScaledInstance(8, 8);
+      transformChainDeferred = chained.pixels == null && chained.pipelineForSmoke() != null
+          && chained.pipelineForSmoke().previous() != null
+          && chained.pipelineForSmoke().previous().previous() != null;
+      require(transformChainDeferred, "transform chain deferment");
+      transformChainResolve = chained.getPixels() != null && chained.getPixelWidth() == 8
+          && chained.getPixelHeight() == 8;
+      require(transformChainResolve, "transform chain resolution");
+
+      Image sharedSource = new Image(transformBytes);
+      Image sharedFirst = sharedSource.getScaledInstance(10, 10);
+      Image sharedSecond = sharedSource.getAlphaInstance(-16);
+      encodedRootShared = sharedFirst.pipelineForSmoke().root() == sharedSecond.pipelineForSmoke().root();
+      require(encodedRootShared, "encoded transform root sharing");
+
+      Image mutable = new Image(4, 2);
+      fill(mutable, NATIVE_RED);
+      Image snapshot = mutable.getSmoothScaledInstance(2, 1);
+      mutable.pixels[0] = NATIVE_BLUE;
+      snapshot.getPixels();
+      rasterSnapshotIsolated = rowContainsRgb(snapshot, 0xFF, 0x00, 0x00);
+      require(rasterSnapshotIsolated, "raster transform snapshot");
+
+      Image rotationSource = new Image(3, 2);
+      fill(rotationSource, NATIVE_RED);
+      Image deferredRotation = rotationSource.getRotatedScaledInstance(100, 45, 0xFF123456);
+      boolean rotationDeferred = deferredRotation.pixels == null;
+      rotationFillRegression = rotationDeferred && deferredRotation.getPixelWidth() == 4
+          && deferredRotation.getPixelHeight() == 3
+          && containsRgb(deferredRotation, 0x12, 0x34, 0x56);
+      require(rotationFillRegression, "deferred rotation fill");
+
+      Image frames = new Image(8, 2);
+      fill(frames, NATIVE_RED);
+      frames.setFrameCount(2);
+      Image transformedFrames = frames.getScaledInstance(2, 1);
+      frameTransformPass = transformedFrames.pixels == null && transformedFrames.getFrameCount() == 2
+          && transformedFrames.getPixelWidth() == 2 && transformedFrames.getPixels() != null
+          && transformedFrames.getFrameCount() == 2;
+      require(frameTransformPass, "deferred frame transform");
+
+      Image drawTransform = new Image(transformBytes).getSmoothScaledInstance(10, 10);
+      target.drawImage(drawTransform, 5, 5);
+      drawTransformBarrier = drawTransform.pixels != null;
+      require(drawTransformBarrier, "draw transform barrier");
+
+      Image large = new Image(65, 65);
+      fill(large, NATIVE_RED);
+      Image expectedReduced = new Image(65, 65);
+      fill(expectedReduced, NATIVE_RED);
+      int expectedLargeHash = expectedReduced.getScaledInstance(64, 64).hashCode();
+      largeImageHashPass = expectedLargeHash != 0 && large.hashCode() == expectedLargeHash;
+      require(largeImageHashPass, "large image hash reduction");
+
+      Image smoothSource = new Image(4, 2);
+      fill(smoothSource, NATIVE_RED);
+      Image smoothSame = smoothSource.getSmoothScaledInstance(4, 2);
+      Image logicalSmoothSource = Image.createLogical(2, 1, 2);
+      fill(logicalSmoothSource, NATIVE_RED);
+      Image logicalSmooth = logicalSmoothSource.getSmoothScaledInstance(4, 2);
+      smoothScaleNoOpCompatibility = smoothSame == smoothSource && logicalSmooth != logicalSmoothSource
+          && logicalSmooth.getPixels() != null;
+      require(smoothScaleNoOpCompatibility, "smooth-scale no-op compatibility");
+
+      Image rotationNoOpSource = new Image(3, 2);
+      fill(rotationNoOpSource, NATIVE_RED);
+      Image rotationSame = rotationNoOpSource.getRotatedScaledInstance(100, 0, 0xFF123456);
+      Image logicalRotationSource = Image.createLogical(3, 2, 2);
+      fill(logicalRotationSource, NATIVE_RED);
+      Image logicalRotation = logicalRotationSource.getRotatedScaledInstance(100, 0, 0xFF123456);
+      rotationNoOpCompatibility = rotationSame == rotationNoOpSource && logicalRotation != logicalRotationSource
+          && logicalRotation.getPixels() != null;
+      require(rotationNoOpCompatibility, "rotation no-op compatibility");
+
+      transformEquivalence = equivalentWithMaterializedRoot(transformBytes);
+      require(transformEquivalence, "deferred transform equivalence");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
     boolean overallPass = pngConstructionLazy && pngSourceCopy && warningCompatibility && firstDrawMaterializes
         && repeatedBarrierReusesPixels && pathSourceStable && jpegConstructionLazy
-        && structuralInvalid && payloadInvalidDeferred && nativeAllocationRetryable;
+        && structuralInvalid && payloadInvalidDeferred && nativeAllocationRetryable
+        && transformFamiliesDeferred && transformFamiliesResolve && transformChainDeferred
+        && transformChainResolve && encodedRootShared && rasterSnapshotIsolated
+        && rotationFillRegression && frameTransformPass && drawTransformBarrier && largeImageHashPass
+        && smoothScaleNoOpCompatibility && rotationNoOpCompatibility && transformEquivalence;
     System.out.println("fixture=ImageLazyMaterializationSmokeApp,pngConstructionLazy=" + pngConstructionLazy
         + ",pngSourceCopy=" + pngSourceCopy + ",firstDrawMaterializes=" + firstDrawMaterializes
         + ",warningCompatibility=" + warningCompatibility
         + ",repeatedBarrierReusesPixels=" + repeatedBarrierReusesPixels + ",pathSourceStable=" + pathSourceStable
         + ",jpegConstructionLazy=" + jpegConstructionLazy + ",structuralInvalid=" + structuralInvalid
         + ",payloadInvalidDeferred=" + payloadInvalidDeferred + ",nativeAllocationRetryable="
-        + nativeAllocationRetryable + ",overallPass=" + overallPass
+        + nativeAllocationRetryable + ",transformFamiliesDeferred=" + transformFamiliesDeferred
+        + ",transformFamiliesResolve=" + transformFamiliesResolve + ",transformChainDeferred="
+        + transformChainDeferred + ",transformChainResolve=" + transformChainResolve
+        + ",encodedRootShared=" + encodedRootShared + ",rasterSnapshotIsolated=" + rasterSnapshotIsolated
+        + ",rotationFillRegression=" + rotationFillRegression + ",frameTransformPass=" + frameTransformPass
+        + ",drawTransformBarrier=" + drawTransformBarrier + ",largeImageHashPass=" + largeImageHashPass
+        + ",smoothScaleNoOpCompatibility=" + smoothScaleNoOpCompatibility
+        + ",rotationNoOpCompatibility=" + rotationNoOpCompatibility
+        + ",transformEquivalence=" + transformEquivalence + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
   }
@@ -179,5 +305,73 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
     if (!condition) {
       throw new IllegalStateException(message);
     }
+  }
+
+  private static void fill(Image image, int pixel) {
+    int[] pixels = image.getPixels();
+    for (int i = 0; i < pixels.length; i++) {
+      pixels[i] = pixel;
+    }
+  }
+
+  private static boolean rowContainsRgb(Image image, int red, int green, int blue) {
+    byte[] row = new byte[image.getPixelWidth() * 4];
+    image.getPixelRow(row, 0);
+    for (int i = 0; i < row.length; i += 4) {
+      if ((row[i] & 0xFF) == red && (row[i + 1] & 0xFF) == green && (row[i + 2] & 0xFF) == blue) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean containsRgb(Image image, int red, int green, int blue) {
+    for (int y = 0; y < image.getPixelHeight(); y++) {
+      byte[] row = new byte[image.getPixelWidth() * 4];
+      image.getPixelRow(row, y);
+      for (int i = 0; i < row.length; i += 4) {
+        if ((row[i] & 0xFF) == red && (row[i + 1] & 0xFF) == green && (row[i + 2] & 0xFF) == blue) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean equivalentWithMaterializedRoot(byte[] bytes) throws ImageException {
+    return samePixels(new Image(bytes).getScaledInstance(12, 10), materialized(bytes).getScaledInstance(12, 10))
+        && samePixels(new Image(bytes).getSmoothScaledInstance(12, 10),
+            materialized(bytes).getSmoothScaledInstance(12, 10))
+        && samePixels(new Image(bytes).getRotatedScaledInstance(100, 30, 0xFF123456),
+            materialized(bytes).getRotatedScaledInstance(100, 30, 0xFF123456))
+        && samePixels(new Image(bytes).getTouchedUpInstance((byte) 16, (byte) -8),
+            materialized(bytes).getTouchedUpInstance((byte) 16, (byte) -8))
+        && samePixels(new Image(bytes).getFadedInstance(0x00112233),
+            materialized(bytes).getFadedInstance(0x00112233))
+        && samePixels(new Image(bytes).getAlphaInstance(-32), materialized(bytes).getAlphaInstance(-32));
+  }
+
+  private static Image materialized(byte[] bytes) throws ImageException {
+    Image image = new Image(bytes);
+    image.getPixels();
+    return image;
+  }
+
+  private static boolean samePixels(Image first, Image second) {
+    if (first.getPixelWidth() != second.getPixelWidth() || first.getPixelHeight() != second.getPixelHeight()) {
+      return false;
+    }
+    for (int y = 0; y < first.getPixelHeight(); y++) {
+      byte[] firstRow = new byte[first.getPixelWidth() * 4];
+      byte[] secondRow = new byte[second.getPixelWidth() * 4];
+      first.getPixelRow(firstRow, y);
+      second.getPixelRow(secondRow, y);
+      for (int x = 0; x < firstRow.length; x++) {
+        if (firstRow[x] != secondRow[x]) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }

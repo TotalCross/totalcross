@@ -898,6 +898,19 @@ tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
             'structuralInvalid=true',
             'payloadInvalidDeferred=true',
             'nativeAllocationRetryable=true',
+            'transformFamiliesDeferred=true',
+            'transformFamiliesResolve=true',
+            'transformChainDeferred=true',
+            'transformChainResolve=true',
+            'encodedRootShared=true',
+            'rasterSnapshotIsolated=true',
+            'rotationFillRegression=true',
+            'frameTransformPass=true',
+            'drawTransformBarrier=true',
+            'largeImageHashPass=true',
+            'smoothScaleNoOpCompatibility=true',
+            'rotationNoOpCompatibility=true',
+            'transformEquivalence=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }
