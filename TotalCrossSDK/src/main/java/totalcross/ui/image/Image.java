@@ -2683,16 +2683,16 @@ public class Image extends GfxSurface {
       throw new ImageException(null);
     }
 
-    final double p1 = targetWidth * 100 / sif.getWidth();
-    final double p2 = targetHeight * 100 / sif.getHeight();
+    final double p1 = targetWidth * 100.0 / sif.getWidth();
+    final double p2 = targetHeight * 100.0 / sif.getHeight();
     final double p = Math.min(p1, p2);
 
     int scale_denom;
-    if (p < F1_8) {
+    if (p <= F1_8) {
       scale_denom = 8; // 1/8
-    } else if (p < F1_4) {
+    } else if (p <= F1_4) {
       scale_denom = 4; // 1/4
-    } else if (p < F1_2) {
+    } else if (p <= F1_2) {
       scale_denom = 2; // 1/2
     } else {
       scale_denom = 1; // original size
@@ -2729,7 +2729,7 @@ public class Image extends GfxSurface {
       throw new ImageException(null);
     }
 
-    final double scale = scaleNumerator / scaleDenominator;
+    final double scale = (double) scaleNumerator / scaleDenominator;
     return new Image(path).smoothScaledBy(scale, scale);
   }
 

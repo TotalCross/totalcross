@@ -170,8 +170,8 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    cinfo.dither_mode = JDITHER_NONE; // 8580 -> 5360
    cinfo.dct_method = JDCT_IFAST;
    if (targetWidthOrScaleNum > 0 && targetHeightOrScaleDenom > 0) {
-      double p1 = targetWidthOrScaleNum * 100 / cinfo.image_width;
-      double p2 = targetHeightOrScaleDenom * 100 / cinfo.image_height;
+      double p1 = targetWidthOrScaleNum * 100.0 / cinfo.image_width;
+      double p2 = targetHeightOrScaleDenom * 100.0 / cinfo.image_height;
       double p = fmin(p1, p2);
       int32 scale_num2 = 1;
       int32 scale_denom2;

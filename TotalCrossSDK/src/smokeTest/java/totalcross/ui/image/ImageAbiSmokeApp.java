@@ -5,6 +5,7 @@
 package imageabi;
 
 import totalcross.io.ByteArrayStream;
+import totalcross.io.File;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
@@ -42,6 +43,9 @@ public class ImageAbiSmokeApp extends MainWindow {
     boolean fadePass = false;
     boolean alphaPass = false;
     boolean hwScaleCopyPass = false;
+    boolean jpegBestFitPass = false;
+    boolean jpegScaledPass = false;
+    boolean jpegBestFitScalePass = false;
     String error = "";
 
     try {
@@ -68,6 +72,30 @@ public class ImageAbiSmokeApp extends MainWindow {
           && byteImage.getPixelHeight() == pathImage.getPixelHeight()
           && pathImage.getClass().getName().equals("totalcross.ui.image.Image");
       require(decodePass, "PNG decode paths");
+
+      byte[] jpegBytes = Vm.getFile("image-abi/back3.jpg");
+      require(jpegBytes != null && jpegBytes.length > 0, "JPEG resource");
+      File jpegFile = new File("back3-file.jpg", File.CREATE_EMPTY);
+      jpegFile.writeBytes(jpegBytes, 0, jpegBytes.length);
+      jpegFile.close();
+
+      Image bestFit = Image.getJpegBestFit("image-abi/back3.jpg", 200, 113);
+      jpegBestFitPass = hasDimensions(bestFit, 200, 113);
+      require(jpegBestFitPass, "JPEG best-fit logical/pixel dimensions");
+
+      Image scaledTcz = Image.getJpegScaled("image-abi/back3.jpg", 1, 2);
+      Image scaledFile = Image.getJpegScaled("back3-file.jpg", 1, 2);
+      jpegScaledPass = hasDimensions(scaledTcz, 800, 450) && hasDimensions(scaledFile, 800, 450);
+      require(jpegScaledPass, "JPEG scaled logical/pixel dimensions");
+
+      jpegBestFitScalePass = hasDimensions(Image.getJpegBestFit("image-abi/back3.jpg", 200, 113), 200, 113)
+          && hasDimensions(Image.getJpegBestFit("image-abi/back3.jpg", 400, 225), 400, 225)
+          && hasDimensions(Image.getJpegBestFit("image-abi/back3.jpg", 800, 450), 800, 450)
+          && hasDimensions(Image.getJpegBestFit("image-abi/back3.jpg", 1600, 900), 1600, 900)
+          && hasDimensions(Image.getJpegBestFit("image-abi/back3.jpg", 201, 114), 400, 225)
+          && hasDimensions(Image.getJpegBestFit("image-abi/back3.jpg", 401, 226), 800, 450)
+          && hasDimensions(Image.getJpegBestFit("back3-file.jpg", 801, 451), 1600, 900);
+      require(jpegBestFitScalePass, "JPEG best-fit libjpeg scale boundaries");
 
       Image mutable = new Image(2, 2);
       int[] mutablePixels = mutable.getPixels();
@@ -174,7 +202,8 @@ public class ImageAbiSmokeApp extends MainWindow {
     boolean overallPass = constructorPass && decodePass && logicalDimensionsPass && physicalDimensionsPass
         && framePass && colorMutationPass && resizePass && textureUploadPass && textureRecreatePass
         && pngRoundTripPass && replicateScalePass && smoothScalePass && rotationPass && touchUpPass
-        && fadePass && alphaPass && hwScaleCopyPass;
+        && fadePass && alphaPass && hwScaleCopyPass && jpegBestFitPass && jpegScaledPass
+        && jpegBestFitScalePass;
     byte[] commitBytes = Vm.getFile("image-abi/commit.txt");
     String commit = commitBytes == null ? "unknown" : new String(commitBytes).trim();
     System.out.println("fixture=ImageAbiSmokeApp,commit=" + commit + ",renderer="
@@ -186,7 +215,9 @@ public class ImageAbiSmokeApp extends MainWindow {
         + ",pngRoundTripPass=" + pngRoundTripPass + ",replicateScalePass=" + replicateScalePass
         + ",smoothScalePass=" + smoothScalePass + ",rotationPass=" + rotationPass
         + ",touchUpPass=" + touchUpPass + ",fadePass=" + fadePass + ",alphaPass=" + alphaPass
-        + ",hwScaleCopyPass=" + hwScaleCopyPass + ",overallPass=" + overallPass
+        + ",hwScaleCopyPass=" + hwScaleCopyPass + ",jpegBestFitPass=" + jpegBestFitPass
+        + ",jpegScaledPass=" + jpegScaledPass + ",jpegBestFitScalePass=" + jpegBestFitScalePass
+        + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
   }
@@ -195,6 +226,12 @@ public class ImageAbiSmokeApp extends MainWindow {
     if (!condition) {
       throw new IllegalStateException(message);
     }
+  }
+
+  private static boolean hasDimensions(Image image, int width, int height) {
+    return image != null && image.getWidth() == width && image.getHeight() == height
+        && image.getPixelWidth() == width && image.getPixelHeight() == height
+        && image.getContentScale() == 1;
   }
 
   private static void fill(Image image, int pixel) {
