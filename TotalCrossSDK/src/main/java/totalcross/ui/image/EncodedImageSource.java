@@ -36,6 +36,15 @@ final class EncodedImageSource extends ImageSource {
     return fromBytes(input, input.length);
   }
 
+  static EncodedImageSource fromOwnedBytes(byte[] input) throws ImageException {
+    if (input == null) {
+      throw new ImageException("Description is null");
+    }
+    EncodedImageSource source = new EncodedImageSource();
+    source.captureNative(input, input.length);
+    return source;
+  }
+
   static EncodedImageSource fromBytes(byte[] input, int length) throws ImageException {
     if (input == null || length < 0 || length > input.length) {
       throw new ImageException("Invalid image description");

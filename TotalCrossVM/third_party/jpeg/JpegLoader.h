@@ -45,9 +45,17 @@ typedef struct TCJpegIOContext
    TCJpegWriteFunc write;
 } TCJpegIOContext;
 
+typedef enum
+{
+   JPEG_DECODE_FULL,
+   JPEG_DECODE_BEST_FIT,
+   JPEG_DECODE_TARGET_DECODE,
+   JPEG_DECODE_EXPLICIT_RATIO
+} JpegDecodeMode;
+
 ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
-                           TCZFile tcz, const char *first4, int32 size, int32 targetWidthOrScaleNum,
-                           int32 targetHeightOrScaleDenom);
+                           TCZFile tcz, const char *first4, int32 size, JpegDecodeMode mode,
+                           int32 modeArg1, int32 modeArg2);
 bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality);
 
 void jpeg_tc_src(j_decompress_ptr cinfo);

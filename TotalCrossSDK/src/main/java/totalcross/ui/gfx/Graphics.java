@@ -17,6 +17,7 @@ import totalcross.ui.UIColors;
 import totalcross.ui.Window;
 import totalcross.ui.font.Font;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageDrawingBridge;
 import totalcross.ui.image.ImageException;
 import totalcross.util.Hashtable;
 
@@ -1495,7 +1496,7 @@ public final class Graphics {
    */
   public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
     if (surface instanceof Image) {
-      ((Image) surface).getPixels();
+      surface = resolveImageForDrawing((Image) surface);
     }
     if (!Settings.onJavaSE) {
       copyRectNative(surface, x, y, width, height, dstX, dstY);
@@ -1644,8 +1645,8 @@ public final class Graphics {
    * @since SuperWaba 3.3
    */
   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
+    image = resolveImageForDrawing(image);
     if (!Settings.onJavaSE) {
-      image.getPixels();
       drawImageNative(image, x, y, doClip);
       return;
     }
@@ -1673,8 +1674,8 @@ public final class Graphics {
    * @since SuperWaba 3.3
    */
   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip) {
+    src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
-      src.getPixels();
       copyImageRectNative(src, x, y, width, height, doClip);
       return;
     }
@@ -1691,8 +1692,8 @@ public final class Graphics {
    * @see #copyRect
    */
   public void drawImage(totalcross.ui.image.Image src, int x, int y) {
+    src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
-      src.getPixels();
       drawImageNative(src, x, y);
       return;
     }
@@ -1701,6 +1702,17 @@ public final class Graphics {
     if (srcPixels != null) {
       drawSurface(srcPixels, src, 0, 0, src.getWidth(), src.getHeight(), x, y, true, 0, 0, src.getWidth(),
           src.getHeight());
+    }
+  }
+
+  private Image resolveImageForDrawing(Image image) {
+    if (image == null) {
+      throw new NullPointerException("image");
+    }
+    try {
+      return ImageDrawingBridge.resolveForDrawing(image, getContentScale());
+    } catch (ImageException failure) {
+      throw new IllegalStateException("Could not resolve image for drawing", failure);
     }
   }
 

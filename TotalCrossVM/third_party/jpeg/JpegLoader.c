@@ -122,9 +122,24 @@ static int32 jpegBestFitScaleDenominator(JDIMENSION sourceWidth, JDIMENSION sour
    return jpegBestFitScaleDenominatorForDimension(sourceHeight, targetHeight);
 }
 
+static int32 jpegTargetDecodeScaleDenominator(JDIMENSION sourceWidth, JDIMENSION sourceHeight,
+      int32 targetWidth, int32 targetHeight)
+{
+   if (jpegBestFitFits(sourceWidth, 8, targetWidth)
+         && jpegBestFitFits(sourceHeight, 8, targetHeight))
+      return 8;
+   if (jpegBestFitFits(sourceWidth, 4, targetWidth)
+         && jpegBestFitFits(sourceHeight, 4, targetHeight))
+      return 4;
+   if (jpegBestFitFits(sourceWidth, 2, targetWidth)
+         && jpegBestFitFits(sourceHeight, 2, targetHeight))
+      return 2;
+   return 1;
+}
+
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
 ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
-      TCZFile tcz, const char* first4, int32 size, int32 targetWidthOrScaleNum, int32 targetHeightOrScaleDenom)
+      TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -195,16 +210,24 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    /* override with specified decompression parameters */
    cinfo.dither_mode = JDITHER_NONE; // 8580 -> 5360
    cinfo.dct_method = JDCT_IFAST;
-   if (targetWidthOrScaleNum > 0 && targetHeightOrScaleDenom > 0) {
-      int32 scale_num2 = 1;
-      int32 scale_denom2 = jpegBestFitScaleDenominator(cinfo.image_width, cinfo.image_height,
-            targetWidthOrScaleNum, targetHeightOrScaleDenom);
-
-      cinfo.scale_num = scale_num2;
-      cinfo.scale_denom = scale_denom2;
-   } else if (targetWidthOrScaleNum < 0 && targetHeightOrScaleDenom < 0) {
-      cinfo.scale_num = -targetWidthOrScaleNum;
-      cinfo.scale_denom = -targetHeightOrScaleDenom;
+   switch (mode) {
+      case JPEG_DECODE_BEST_FIT:
+         cinfo.scale_num = 1;
+         cinfo.scale_denom = jpegBestFitScaleDenominator(cinfo.image_width, cinfo.image_height,
+               modeArg1, modeArg2);
+         break;
+      case JPEG_DECODE_TARGET_DECODE:
+         cinfo.scale_num = 1;
+         cinfo.scale_denom = jpegTargetDecodeScaleDenominator(cinfo.image_width, cinfo.image_height,
+               modeArg1, modeArg2);
+         break;
+      case JPEG_DECODE_EXPLICIT_RATIO:
+         cinfo.scale_num = modeArg1;
+         cinfo.scale_denom = modeArg2;
+         break;
+      case JPEG_DECODE_FULL:
+      default:
+         break;
    }
 
    jpeg_calc_output_dimensions(&cinfo); /* Calculate output image dimensions so we can allocate space */

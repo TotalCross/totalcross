@@ -41,7 +41,7 @@ static void throwImageDecodeStatus(Context context, ImageDecodeStatus status)
       throwExceptionNamed(context, "totalcross.ui.image.TransientImageMaterializationException", null);
    }
    else if (status == IMAGE_DECODE_CORRUPT)
-      throwException(context, ImageException, "Could not decode encoded image");
+      throwExceptionNamed(context, "totalcross.ui.image.Image$DeterministicImageDecodeException", null);
 }
 
 static void captureEncodedBag(Context context, TCObject source, const uint8* bytes, int32 length) {
@@ -191,7 +191,7 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
             pngLoad(p->currentContext, imageObj, null, null, tcz, magic, null, 0));
       } else
          throwImageDecodeStatus(p->currentContext,
-            jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, 0, 0));
+            jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, JPEG_DECODE_FULL, 0, 0));
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -208,7 +208,7 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
          pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, null, 0));
    } else
       throwImageDecodeStatus(p->currentContext,
-         jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, 0, 0));
+         jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, JPEG_DECODE_FULL, 0, 0));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source);
@@ -225,10 +225,54 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
    if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_PNG)
       status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length);
    else if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_JPEG)
-      status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length, 0, 0);
+      status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
+         JPEG_DECODE_FULL, 0, 0);
    else {
       throwException(p->currentContext, ImageException, "Unsupported deployed encoded image format");
       return;
+   }
+   throwImageDecodeStatus(p->currentContext, status);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSourceTargeted(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight);
+{
+   TCObject imageObj = p->obj[0];
+   TCObject sourceObj = p->obj[1];
+   ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
+   int32 targetWidth = p->i32[0];
+   int32 targetHeight = p->i32[1];
+   ImageDecodeStatus status;
+   TCClass imageClass = loadClass(p->currentContext, "totalcross.ui.image.Image", false);
+   int32* targetedCount = imageClass == null ? null
+      : getStaticFieldInt(imageClass, "targetedDecodeInvocationCountForTest");
+   int32* targetedWidth = imageClass == null ? null
+      : getStaticFieldInt(imageClass, "targetedDecodeWidthForTest");
+   int32* targetedHeight = imageClass == null ? null
+      : getStaticFieldInt(imageClass, "targetedDecodeHeightForTest");
+   int32* infrastructureFailure = imageClass == null ? null
+      : getStaticFieldInt(imageClass, "targetedDecodeInfrastructureFailureForTest");
+   if (!bag || !bag->bytes || bag->length <= 0) {
+      throwException(p->currentContext, ImageException, "Encoded source has no native backing");
+      return;
+   }
+   if (EncodedImageSource_formatCode(sourceObj) != IMAGE_ENCODED_JPEG || targetWidth <= 0 || targetHeight <= 0) {
+      throwException(p->currentContext, ImageException, "Targeted decode requires a JPEG image and positive dimensions");
+      return;
+   }
+   if (targetedCount != null)
+      (*targetedCount)++;
+   if (infrastructureFailure != null && *infrastructureFailure) {
+      *infrastructureFailure = false;
+      throwExceptionNamed(p->currentContext, "totalcross.ui.image.TransientImageMaterializationException", null);
+      return;
+   }
+   status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
+      JPEG_DECODE_TARGET_DECODE, targetWidth, targetHeight);
+   if (status == IMAGE_DECODE_SUCCESS) {
+      if (targetedWidth != null)
+         (*targetedWidth) = Image_width(imageObj);
+      if (targetedHeight != null)
+         (*targetedHeight) = Image_height(imageObj);
    }
    throwImageDecodeStatus(p->currentContext, status);
 }
@@ -450,7 +494,8 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
       // Found in tcz?
       if (tcz != null) {
          throwImageDecodeStatus(p->currentContext,
-            jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, targetWidth, targetHeight));
+            jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, JPEG_DECODE_BEST_FIT,
+               targetWidth, targetHeight));
          goto finish;
       }
 
@@ -475,7 +520,8 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
                err = errno;
             } else {
                throwImageDecodeStatus(p->currentContext,
-                  jpegLoad(p->currentContext, imageObj, fileObj, null, null, mapped, size, targetWidth, targetHeight));
+                  jpegLoad(p->currentContext, imageObj, fileObj, null, null, mapped, size, JPEG_DECODE_BEST_FIT,
+                     targetWidth, targetHeight));
                munmap((void*) mapped, size);
             }
          }
@@ -494,12 +540,11 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
             if (p->currentContext->thrownException == null) {
                if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
                   throwImageDecodeStatus(p->currentContext,
-                     jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, targetWidth, targetHeight));
-                  setObjectLock(bufferObj, UNLOCKED);
+                     jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, JPEG_DECODE_BEST_FIT,
+                        targetWidth, targetHeight));
                }
             }
          }
-         setObjectLock(fileObj, UNLOCKED);
       }
    }
 
@@ -515,6 +560,12 @@ finish:
    }
    if (imageObj != null) {
       setObjectLock(imageObj, UNLOCKED);
+   }
+   if (bufferObj != null) {
+      setObjectLock(bufferObj, UNLOCKED);
+   }
+   if (fileObj != null) {
+      setObjectLock(fileObj, UNLOCKED);
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -542,7 +593,8 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image nati
          && (initMethod = getMethod(OBJ_CLASS(imageObj), false, "init", 0)) != NULL ) {
       if (tcz != null) {
          throwImageDecodeStatus(p->currentContext,
-            jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, -scaleNumerator, -scaleDenominator));
+            jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, JPEG_DECODE_EXPLICIT_RATIO,
+               scaleNumerator, scaleDenominator));
       } else if ((fileObj = createObject(p->currentContext, "totalcross.io.File")) != NULL) {
          fileConstructor = getMethod(OBJ_CLASS(fileObj), false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT);
          if (fileConstructor != null) {
@@ -550,7 +602,8 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image nati
             if (p->currentContext->thrownException == null) {
                if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
                   throwImageDecodeStatus(p->currentContext,
-                     jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, -scaleNumerator, -scaleDenominator));
+                     jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0,
+                        JPEG_DECODE_EXPLICIT_RATIO, scaleNumerator, scaleDenominator));
                }
             }
          }
