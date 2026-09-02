@@ -308,6 +308,35 @@ typedef enum
    FADED_INSTANCE,
    ALPHA_INSTANCE
 } FuncType;
+
+#if TC_RENDERER_SKIA
+static bool imageUsesNativeBacking(TCObject imageObj)
+{
+   TCObject backing = imageObj ? Image_backing(imageObj) : null;
+   return backing != null && strEq(OBJ_CLASS(backing)->name,
+      "totalcross.ui.image.NativeImageBacking");
+}
+
+static bool applyNativeColorMutation(TCObject imageObj, int32 operation, int32 parameter1,
+                                     int32 parameter2)
+{
+   int32 frameCount;
+   int32 visibleWidth;
+   if (!imageUsesNativeBacking(imageObj)) {
+      return false;
+   }
+   frameCount = Image_frameCount(imageObj);
+   visibleWidth = Image_width(imageObj);
+   if (!skia_image_backing_apply_color_mutation(
+         NativeImageBacking_nativeHandle(Image_backing(imageObj)), operation, parameter1,
+         parameter2, frameCount, visibleWidth, Image_currentFrame(imageObj))) {
+      return false;
+   }
+   Image_changed(imageObj) = true;
+   return true;
+}
+#endif
+
 TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p) // totalcross/ui/image/Image private void getModifiedNative(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 {
    TCObject thisObj = p->obj[0];
@@ -316,6 +345,37 @@ TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p) // totalcross/ui/image/Im
    int32 angle = p->i32[1];
    Pixel color = p->i32[2] == 0 ? (Pixel)0 : makePixelRGB(p->i32[2]);
    FuncType type = (FuncType)p->i32[5];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj) && (type == FADED_INSTANCE || type == ALPHA_INSTANCE)) {
+      int32 operation;
+      int32 parameter1;
+      int32 parameter2;
+      int64 handle;
+      switch (type) {
+         case FADED_INSTANCE:
+            operation = SKIA_IMAGE_COLOR_FADE_INSTANCE;
+            parameter1 = p->i32[2];
+            parameter2 = 0;
+            break;
+         default:
+            operation = SKIA_IMAGE_COLOR_ALPHA_INSTANCE;
+            parameter1 = p->i32[2];
+            parameter2 = 0;
+            break;
+      }
+      handle = skia_image_backing_create_color_instance(
+         NativeImageBacking_nativeHandle(Image_backing(thisObj)), operation, parameter1, parameter2);
+      if (handle == 0) {
+         throwException(p->currentContext, OutOfMemoryError, null);
+         return;
+      }
+      if (!imageReplaceNativeBacking(p->currentContext, newObj, handle,
+            skia_image_backing_width(handle), skia_image_backing_height(handle))) {
+         return;
+      }
+      return;
+   }
+#endif
    switch (type)
    {
       case SCALED_INSTANCE:
@@ -446,6 +506,14 @@ TC_API void tuiI_applyFadeNative_i(NMParams p) // totalcross/ui/image/Image priv
 {
    TCObject thisObj = p->obj[0];
    int32 fadeValue = p->i32[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(thisObj, SKIA_IMAGE_COLOR_APPLY_FADE, fadeValue, 0)) {
+         throwException(p->currentContext, ImageException, "Could not apply native image fade");
+      }
+      return;
+   }
+#endif
    applyFade(thisObj, fadeValue);
 }
 //////////////////////////////////////////////////////////////////////////

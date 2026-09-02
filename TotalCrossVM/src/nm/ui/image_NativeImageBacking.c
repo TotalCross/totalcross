@@ -44,6 +44,41 @@ bool imageInstallNativeBacking(Context context, TCObject imageObj, int64 handle,
 #endif
 }
 
+bool imageReplaceNativeBacking(Context context, TCObject imageObj, int64 handle,
+                               int32 width, int32 height)
+{
+#if TC_RENDERER_SKIA
+   TCObject backing;
+   if (!imageObj || handle == 0 || width <= 0 || height <= 0) {
+      skia_image_backing_release(handle);
+      throwException(context, ImageException, "Could not replace native image backing");
+      return false;
+   }
+   backing = Image_backing(imageObj);
+   if (backing != null && strEq(OBJ_CLASS(backing)->name,
+         "totalcross.ui.image.NativeImageBacking")) {
+      int64 oldHandle = NativeImageBacking_nativeHandle(backing);
+      if (oldHandle != handle) {
+         skia_image_backing_release(oldHandle);
+      }
+      NativeImageBacking_nativeHandle(backing) = handle;
+      NativeImageBacking_width(backing) = width;
+      NativeImageBacking_height(backing) = height;
+      Image_pixels(imageObj) = null;
+      Image_pixelsOfAllFrames(imageObj) = null;
+      return true;
+   }
+   return imageInstallNativeBacking(context, imageObj, handle, width, height);
+#else
+   UNUSED(context)
+   UNUSED(imageObj)
+   UNUSED(width)
+   UNUSED(height)
+   UNUSED(handle)
+   return false;
+#endif
+}
+
 TC_API void tuiNIB_createEmptyNative_ii(NMParams p) // totalcross/ui/image/NativeImageBacking private static long createEmptyNative(int width, int height);
 {
 #if TC_RENDERER_SKIA
