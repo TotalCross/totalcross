@@ -30,7 +30,7 @@ exact native passes by responsibility.
 
 ## Progress
 
-- [ ] Milestone 1: migrate fade/alpha/touch-up filter candidates.
+- [x] Milestone 1: migrate fade/alpha/touch-up filter candidates.
 - [ ] Milestone 2: migrate applyColor and applyColor2.
 - [ ] Milestone 3: migrate exact color-key mutations and composition/barriers.
 - [ ] Close plan 4 and prepare plan 5 state.
