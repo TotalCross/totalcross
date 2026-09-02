@@ -22,6 +22,8 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
+import totalcross.io.ByteArrayStream;
+
 class ImageDeferredTransformsTest {
   @Test
   void allTransformFamiliesRemainDeferredUntilTheCanonicalBarrier() throws Exception {
@@ -213,6 +215,22 @@ class ImageDeferredTransformsTest {
     assertEquivalent(
         eager(new Image(png(5, 4)), "eagerAlphaInstance", new Class<?>[] { int.class }, -40),
         new Image(png(5, 4)).getAlphaInstance(-40));
+  }
+
+  @Test
+  void pngBarrierPreservesDeferredRotationResult() throws Exception {
+    Image expected = eager(raster(3, 2), "eagerRotatedScaledInstance",
+        new Class<?>[] { int.class, int.class, int.class }, 150, 37, 0xFF102030);
+    Image deferred = raster(3, 2).getRotatedScaledInstance(150, 37, 0xFF102030);
+    ByteArrayStream output = new ByteArrayStream(512);
+
+    deferred.createPng(output);
+    Image saved = new Image(output.getBuffer(), output.getPos());
+
+    assertNull(pipeline(deferred));
+    assertEquals(expected.getPixelWidth(), saved.getPixelWidth());
+    assertEquals(expected.getPixelHeight(), saved.getPixelHeight());
+    assertArrayEquals(expected.getPixels(), saved.getPixels());
   }
 
   private static void assertEquivalent(Image eager, Image deferred) {
