@@ -467,6 +467,162 @@ public class Image extends GfxSurface {
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
   }
 
+  /** Package-private inspection hook used by deployed image smoke tests. */
+  ImagePipeline pipelineForSmoke() {
+    return pipeline;
+  }
+
+  private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
+    pipeline = deferred;
+    width = deferred.width();
+    height = deferred.height();
+    logicalWidth = deferred.logicalWidth();
+    logicalHeight = deferred.logicalHeight();
+    widthOfAllFrames = deferred.widthOfAllFrames();
+    frameCount = deferred.frameCount();
+    currentFrame = frameCount > 1 ? 0 : -1;
+    comment = frameCount > 1 ? "FC=" + frameCount : null;
+    path = source.path;
+    surfaceType = source.surfaceType;
+    transparentColor = source.transparentColor;
+    useAlpha = source.useAlpha;
+    alphaMask = source.alphaMask;
+    contentScale = 1;
+    hwScaleW = source.hwScaleW;
+    hwScaleH = source.hwScaleH;
+    textureId = -1;
+    gfx = new Graphics(this);
+    gfx.setScales(1, 1);
+    gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+  }
+
+  private RasterImageSource snapshotRasterSource() {
+    int[] allFrames = frameCount > 1 ? (int[]) pixelsOfAllFrames : null;
+    return new RasterImageSource(width, height, logicalWidth, logicalHeight, contentScale, frameCount,
+        currentFrame, widthOfAllFrames, pixels == null ? null : pixels.clone(),
+        allFrames == null ? null : allFrames.clone(), comment, path, surfaceType, transparentColor, useAlpha,
+        alphaMask, hwScaleW, hwScaleH);
+  }
+
+  static Image materializeRasterSource(RasterImageSource source) throws ImageException {
+    Image result = new Image();
+    result.width = source.width;
+    result.height = source.height;
+    result.logicalWidth = source.logicalWidth;
+    result.logicalHeight = source.logicalHeight;
+    result.contentScale = source.contentScale;
+    result.frameCount = source.frameCount;
+    result.currentFrame = source.currentFrame;
+    result.widthOfAllFrames = source.widthOfAllFrames;
+    result.pixels = source.pixels == null ? null : source.pixels.clone();
+    result.pixelsOfAllFrames = source.pixelsOfAllFrames == null ? null : source.pixelsOfAllFrames.clone();
+    result.comment = source.comment;
+    result.path = source.path;
+    result.surfaceType = source.surfaceType;
+    result.transparentColor = source.transparentColor;
+    result.useAlpha = source.useAlpha;
+    result.alphaMask = source.alphaMask;
+    result.hwScaleW = source.hwScaleW;
+    result.hwScaleH = source.hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
+  }
+
+  private Image deferTransform(int operationType, int parameter1, int parameter2, int parameter3,
+      int parameter4, int outputWidth, int outputHeight) throws ImageException {
+    ImagePipeline previous = pipeline;
+    if (previous == null) {
+      previous = new ImagePipeline(snapshotRasterSource());
+    }
+    long allFramesWidth = (long) outputWidth * previous.frameCount();
+    if (outputWidth <= 0 || outputHeight <= 0 || allFramesWidth > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    ImagePipeline deferred = previous.append(operationType, parameter1, parameter2, parameter3, parameter4,
+        outputWidth, outputHeight, outputWidth, outputHeight, previous.frameCount(), (int) allFramesWidth);
+    Image result = new Image();
+    result.initializeDeferredTransform(deferred, this);
+    return result;
+  }
+
+  private static int[] rotatedDimensions(int inputWidth, int inputHeight, int scale, int angle) {
+    if (scale <= 0) {
+      scale = 1;
+    }
+    int rawSine = 0;
+    int rawCosine = 0;
+    angle %= 360;
+    if ((angle % 90) == 0) {
+      if (angle < 0) {
+        angle += 360;
+      }
+      switch (angle) {
+      case 0:
+        rawCosine = 0x10000;
+        break;
+      case 90:
+        rawSine = 0x10000;
+        break;
+      case 180:
+        rawCosine = -0x10000;
+        break;
+      default:
+        rawSine = -0x10000;
+        break;
+      }
+    } else {
+      double rad = angle * 0.0174532925;
+      rawSine = (int) (Math.sin(rad) * 0x10000);
+      rawCosine = (int) (Math.cos(rad) * 0x10000);
+    }
+
+    int[] cornersX = new int[3];
+    int[] cornersY = new int[3];
+    int xMin = 0;
+    int yMin = 0;
+    int xMax = 0;
+    int yMax = 0;
+    cornersX[0] = (inputWidth * rawCosine) >> 16;
+    cornersY[0] = (inputWidth * rawSine) >> 16;
+    cornersX[2] = (-inputHeight * rawSine) >> 16;
+    cornersY[2] = (inputHeight * rawCosine) >> 16;
+    cornersX[1] = cornersX[0] + cornersX[2];
+    cornersY[1] = cornersY[0] + cornersY[2];
+    if (Settings.onJavaSE) {
+      for (int i = 2; --i >= 0;) {
+        if (cornersX[i] < xMin) {
+          xMin = cornersX[i];
+        } else if (cornersX[i] > xMax) {
+          xMax = cornersX[i];
+        }
+        if (cornersY[i] < yMin) {
+          yMin = cornersY[i];
+        } else if (cornersY[i] > yMax) {
+          yMax = cornersY[i];
+        }
+      }
+    } else {
+      for (int i = 2; i >= 0; i--) {
+        if (cornersX[i] < xMin) {
+          xMin = cornersX[i];
+        } else if (cornersX[i] > xMax) {
+          xMax = cornersX[i];
+        }
+        if (cornersY[i] < yMin) {
+          yMin = cornersY[i];
+        } else if (cornersY[i] > yMax) {
+          yMax = cornersY[i];
+        }
+      }
+    }
+    if (inputWidth == inputHeight) {
+      xMax = yMax = inputWidth;
+      xMin = yMin = 0;
+    }
+    return new int[] { ((xMax - xMin) * scale) / 100, ((yMax - yMin) * scale) / 100 };
+  }
+
   private void initializeDecodeTarget(EncodedImageSource source) {
     width = source.getIntrinsicWidth();
     height = source.getIntrinsicHeight();
@@ -487,45 +643,86 @@ public class Image extends GfxSurface {
     if (deferred == null) {
       return;
     }
-    EncodedImageSource source = deferred.root();
-    ImageException cached = source.decodeFailure();
-    if (cached != null) {
-      throw cached;
-    }
-    Image decoded = new Image();
-    decoded.initializeDecodeTarget(source);
-    try {
-      decoded.decodeEncodedSource(source);
-      if (decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
-        throw new DeterministicImageDecodeException("Could not decode encoded image");
-      }
-      decoded.init(true);
-      verifyDecodedMetadata(source, decoded);
-    } catch (ImageException failure) {
-      if (failure instanceof TransientImageMaterializationException) {
-        throw failure;
-      }
-      ImageException deterministic = failure instanceof DeterministicImageDecodeException
-          ? failure : new DeterministicImageDecodeException(failure);
-      source.cacheDecodeFailure(deterministic);
-      throw deterministic;
-    }
-
-    pixels = decoded.pixels;
-    pixelsOfAllFrames = decoded.pixelsOfAllFrames;
-    width = decoded.width;
-    height = decoded.height;
-    frameCount = decoded.frameCount;
-    currentFrame = decoded.currentFrame;
-    widthOfAllFrames = decoded.widthOfAllFrames;
-    logicalWidth = decoded.logicalWidth;
-    logicalHeight = decoded.logicalHeight;
-    comment = decoded.comment;
-    contentScale = 1;
+    Image resolved = resolvePipeline(deferred);
+    pixels = resolved.pixels;
+    pixelsOfAllFrames = resolved.pixelsOfAllFrames;
+    width = resolved.width;
+    height = resolved.height;
+    frameCount = resolved.frameCount;
+    currentFrame = resolved.currentFrame;
+    widthOfAllFrames = resolved.widthOfAllFrames;
+    logicalWidth = resolved.logicalWidth;
+    logicalHeight = resolved.logicalHeight;
+    comment = resolved.comment;
+    contentScale = resolved.contentScale;
+    transparentColor = resolved.transparentColor;
+    useAlpha = resolved.useAlpha;
     textureId = -1;
     hashCode = 0;
     changed[0] = true;
     pipeline = null;
+  }
+
+  private Image resolvePipeline(ImagePipeline deferred) throws ImageException {
+    ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
+    for (ImagePipeline node = deferred; node.previous() != null; node = node.previous()) {
+      nodes.add(node);
+    }
+
+    Image current;
+    ImageSource root = deferred.root();
+    if (root instanceof EncodedImageSource) {
+      EncodedImageSource source = (EncodedImageSource) root;
+      ImageException cached = source.decodeFailure();
+      if (cached != null) {
+        throw cached;
+      }
+      Image decoded = new Image();
+      decoded.initializeDecodeTarget(source);
+      try {
+        decoded.decodeEncodedSource(source);
+        if (decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
+          throw new DeterministicImageDecodeException("Could not decode encoded image");
+        }
+        decoded.init(true);
+        verifyDecodedMetadata(source, decoded);
+        current = decoded;
+      } catch (ImageException failure) {
+        if (failure instanceof TransientImageMaterializationException) {
+          throw failure;
+        }
+        ImageException deterministic = failure instanceof DeterministicImageDecodeException
+            ? failure : new DeterministicImageDecodeException(failure);
+        source.cacheDecodeFailure(deterministic);
+        throw deterministic;
+      }
+    } else {
+      current = ((RasterImageSource) root).materialize();
+    }
+
+    for (int i = nodes.size() - 1; i >= 0; i--) {
+      current = applyEagerTransform(current, nodes.get(i));
+    }
+    return current;
+  }
+
+  private Image applyEagerTransform(Image source, ImagePipeline node) throws ImageException {
+    switch (node.operationType()) {
+    case ImagePipeline.SCALE:
+      return source.eagerScaledInstance(node.parameter1(), node.parameter2());
+    case ImagePipeline.SMOOTH_SCALE:
+      return source.eagerSmoothScaledInstance(node.parameter1(), node.parameter2());
+    case ImagePipeline.ROTATE_SCALE:
+      return source.eagerRotatedScaledInstance(node.parameter1(), node.parameter2(), node.parameter3());
+    case ImagePipeline.TOUCH_UP:
+      return source.eagerTouchedUpInstance((byte) node.parameter1(), (byte) node.parameter2());
+    case ImagePipeline.FADE:
+      return source.eagerFadedInstance(node.parameter1());
+    case ImagePipeline.ALPHA:
+      return source.eagerAlphaInstance(node.parameter1());
+    default:
+      throw new IllegalStateException("Unknown image pipeline operation: " + node.operationType());
+    }
   }
 
   private void verifyDecodedMetadata(EncodedImageSource source, Image decoded) throws ImageException {
@@ -1130,23 +1327,23 @@ public class Image extends GfxSurface {
     Image modified;
     switch (type) {
     case SCALED_INSTANCE:
-      modified = getScaledInstance(newImg.width / frameCount, newImg.height);
+      modified = eagerScaledInstance(newImg.width / frameCount, newImg.height);
       break;
     case SMOOTH_SCALED_INSTANCE:
-      modified = getSmoothScaledInstance(newImg.width / frameCount, newImg.height);
+      modified = eagerSmoothScaledInstance(newImg.width / frameCount, newImg.height);
       break;
     case ROTATED_SCALED_INSTANCE:
       // The historical native ABI receives scale in angle and rotation in percScale.
-      modified = getRotatedScaledInstance(angle, percScale, color);
+      modified = eagerRotatedScaledInstance(angle, percScale, color);
       break;
     case TOUCHEDUP_INSTANCE:
-      modified = getTouchedUpInstance((byte) brightness, (byte) contrast);
+      modified = eagerTouchedUpInstance((byte) brightness, (byte) contrast);
       break;
     case FADED_INSTANCE:
-      modified = getFadedInstance(color);
+      modified = eagerFadedInstance(color);
       break;
     case ALPHA_INSTANCE:
-      modified = getAlphaInstance(color);
+      modified = eagerAlphaInstance(color);
       break;
     default:
       throw new IllegalArgumentException("Unknown image modification type: " + type);
@@ -1255,7 +1452,16 @@ public class Image extends GfxSurface {
    */
   public Image getScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
   {
-    materializeCanonicalChecked();
+    if (newWidth <= 0 || newHeight <= 0) {
+      throw new ImageException("Image dimensions and content scale must be positive.");
+    }
+    if (!Settings.onJavaSE && contentScale == 1 && newWidth == width && newHeight == height) {
+      return this;
+    }
+    return deferTransform(ImagePipeline.SCALE, newWidth, newHeight, 0, 0, newWidth, newHeight);
+  }
+
+  private Image eagerScaledInstance(int newWidth, int newHeight) throws ImageException {
     if (!Settings.onJavaSE) {
       return getModifiedInstance(newWidth, newHeight, 0, 0, -1, 0, 0, SCALED_INSTANCE);
     }
@@ -1304,7 +1510,16 @@ public class Image extends GfxSurface {
    */
   public Image getSmoothScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
   {
-    materializeCanonicalChecked();
+    if (newWidth <= 0 || newHeight <= 0) {
+      throw new ImageException("Image dimensions and content scale must be positive.");
+    }
+    if (newWidth == width && newHeight == height && (Settings.onJavaSE || contentScale == 1)) {
+      return this;
+    }
+    return deferTransform(ImagePipeline.SMOOTH_SCALE, newWidth, newHeight, 0, 0, newWidth, newHeight);
+  }
+
+  private Image eagerSmoothScaledInstance(int newWidth, int newHeight) throws ImageException {
     if (!Settings.onJavaSE) {
       return getModifiedInstance(newWidth, newHeight, 0, 0, 0, 0, 0, SMOOTH_SCALED_INSTANCE);
     }
@@ -1648,6 +1863,18 @@ public class Image extends GfxSurface {
    * Color.WHITE if the transparentColor was not set; use 0 for a transparent background, or 0xFF000000 for the BLACK color.
    */
   public Image getRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException {
+    int normalizedScale = scale <= 0 ? 1 : scale;
+    int normalizedAngle = angle % 360;
+    int[] dimensions = rotatedDimensions(width, height, normalizedScale, normalizedAngle);
+    if (!Settings.onJavaSE && normalizedScale == 100 && normalizedAngle == 0 && contentScale == 1
+        && dimensions[0] == width && dimensions[1] == height) {
+      return this;
+    }
+    return deferTransform(ImagePipeline.ROTATE_SCALE, normalizedScale, normalizedAngle, fillColor, 0,
+        dimensions[0], dimensions[1]);
+  }
+
+  private Image eagerRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException {
     materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getNativeRotatedScaledInstance(scale, angle, fillColor);
@@ -1786,6 +2013,10 @@ public class Image extends GfxSurface {
   @Deprecated
   public Image getFadedInstance(int backColor) throws ImageException // guich@tc110_50
   {
+    return deferTransform(ImagePipeline.FADE, backColor, 0, 0, 0, width, height);
+  }
+
+  private Image eagerFadedInstance(int backColor) throws ImageException {
     materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getModifiedInstance(width, height, 0, 0, backColor, 0, 0, FADED_INSTANCE);
@@ -1833,6 +2064,10 @@ public class Image extends GfxSurface {
    * @since TotalCross 2.0
    */
   public Image getAlphaInstance(int delta) throws ImageException {
+    return deferTransform(ImagePipeline.ALPHA, delta, 0, 0, 0, width, height);
+  }
+
+  private Image eagerAlphaInstance(int delta) throws ImageException {
     materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getModifiedInstance(width, height, 0, 0, delta, 0, 0, ALPHA_INSTANCE);
@@ -1879,6 +2114,13 @@ public class Image extends GfxSurface {
    *           level, -128 is no contrast.
    */
   public Image getTouchedUpInstance(byte brightness, byte contrast) throws ImageException {
+    if (!Settings.onJavaSE && brightness == 0 && contrast == 0) {
+      return this;
+    }
+    return deferTransform(ImagePipeline.TOUCH_UP, brightness, contrast, 0, 0, width, height);
+  }
+
+  private Image eagerTouchedUpInstance(byte brightness, byte contrast) throws ImageException {
     materializeCanonicalChecked();
     if (!Settings.onJavaSE) {
       return getModifiedInstance(width, height, 0, 0, 0, brightness, contrast, TOUCHEDUP_INSTANCE);
@@ -3069,7 +3311,7 @@ public class Image extends GfxSurface {
          * getScaledInstance is faster because it has native implementation.
          */
         if (p.length > 4096) {
-          Image i = this.getScaledInstance(64, 64);
+          Image i = eagerScaledInstance(64, 64);
           return Arrays.hashCode(i.pixels);
         }
       } catch (ImageException e) {
