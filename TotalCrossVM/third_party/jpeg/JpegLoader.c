@@ -96,9 +96,30 @@ static size_t jpegWriteCallback(void *opaque, const void *buffer, size_t count)
    return (size_t)current;
 }
 
-#define F1_8 12.5
-#define F1_4 25
-#define F1_2 50
+static bool jpegBestFitFits(JDIMENSION sourceDimension, int32 scaleDenominator, int32 targetDimension)
+{
+   uint64 decodedDimension = ((uint64)sourceDimension + scaleDenominator - 1) / scaleDenominator;
+   return decodedDimension >= (uint64)targetDimension;
+}
+
+static int32 jpegBestFitScaleDenominatorForDimension(JDIMENSION sourceDimension, int32 targetDimension)
+{
+   if (jpegBestFitFits(sourceDimension, 8, targetDimension))
+      return 8; // 1/8
+   if (jpegBestFitFits(sourceDimension, 4, targetDimension))
+      return 4; // 1/4
+   if (jpegBestFitFits(sourceDimension, 2, targetDimension))
+      return 2; // 1/2
+   return 1; // original size
+}
+
+static int32 jpegBestFitScaleDenominator(JDIMENSION sourceWidth, JDIMENSION sourceHeight,
+      int32 targetWidth, int32 targetHeight)
+{
+   if ((uint64)targetWidth * sourceHeight <= (uint64)targetHeight * sourceWidth)
+      return jpegBestFitScaleDenominatorForDimension(sourceWidth, targetWidth);
+   return jpegBestFitScaleDenominatorForDimension(sourceHeight, targetHeight);
+}
 
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
 void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, const char* first4, int32 size, int32 targetWidthOrScaleNum, int32 targetHeightOrScaleDenom)
@@ -170,21 +191,9 @@ void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj
    cinfo.dither_mode = JDITHER_NONE; // 8580 -> 5360
    cinfo.dct_method = JDCT_IFAST;
    if (targetWidthOrScaleNum > 0 && targetHeightOrScaleDenom > 0) {
-      double p1 = targetWidthOrScaleNum * 100.0 / cinfo.image_width;
-      double p2 = targetHeightOrScaleDenom * 100.0 / cinfo.image_height;
-      double p = fmin(p1, p2);
       int32 scale_num2 = 1;
-      int32 scale_denom2;
-
-      if (p <= F1_8) {
-         scale_denom2 = 8; // 1/8
-      } else if (p <= F1_4) {
-         scale_denom2 = 4; // 1/4
-      } else if (p <= F1_2) {
-         scale_denom2 = 2; // 1/2
-      } else {
-         scale_denom2 = 1; // original size
-      }
+      int32 scale_denom2 = jpegBestFitScaleDenominator(cinfo.image_width, cinfo.image_height,
+            targetWidthOrScaleNum, targetHeightOrScaleDenom);
 
       cinfo.scale_num = scale_num2;
       cinfo.scale_denom = scale_denom2;

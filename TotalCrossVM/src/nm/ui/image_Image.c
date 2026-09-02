@@ -234,6 +234,15 @@ TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p) // totalcross/ui/image/Image n
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
+static bool validateJpegScaleArguments(Context currentContext, int32 numerator, int32 denominator)
+{
+   if (numerator <= 0 || denominator <= 0) {
+      throwException(currentContext, ImageException, null);
+      return false;
+   }
+   return true;
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image native public static totalcross.ui.image.Image getJpegBestFit(String path, int targetWidth, int targetHeight) throws java.io.IOException, totalcross.ui.image.ImageException;
 {
    TCObject pathObj = p->obj[0];
@@ -247,6 +256,10 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
    char szPath[MAX_PATHNAME];
    TCZFile tcz;
 
+   p->retO = null;
+   if (!validateJpegScaleArguments(p->currentContext, targetWidth, targetHeight)) {
+      return;
+   }
    String2CharPBuf(pathObj, szPath);
    tcz = tczGetFile(szPath, false);
 
@@ -334,6 +347,10 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image nati
    char szPath[MAX_PATHNAME];
    TCZFile tcz;
 
+   p->retO = null;
+   if (!validateJpegScaleArguments(p->currentContext, scaleNumerator, scaleDenominator)) {
+      return;
+   }
    String2CharPBuf(pathObj, szPath);
    tcz = tczGetFile(szPath, false);
 
