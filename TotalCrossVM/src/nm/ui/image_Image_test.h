@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -69,7 +70,7 @@ TESTCASE(tuiI_getPixelRow_Bi) // totalcross/ui/image/Image native protected void
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tuiI_getModifiedInstance_iiiiiii) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image4D newImg, int angle, int percScale, int color, int brightness, int contrast, int type); #DEPENDS(tuiI_imageParse_sB)
+TESTCASE(tuiI_getModifiedInstance_iiiiiii) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type); #DEPENDS(tuiI_imageParse_sB)
 {
    TEST_SKIP;
    finish: ;

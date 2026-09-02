@@ -6,6 +6,8 @@ package tc.tools.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 
@@ -16,6 +18,7 @@ import tc.tools.converter.bytecode.ByteCode;
 import tc.tools.converter.java.JavaClass;
 import tc.tools.converter.tclass.TCClass;
 import tc.tools.converter.tclass.TCField;
+import tc.tools.converter.tclass.TCMethod;
 
 /** Locks the field prefix addressed by TotalCrossVM/src/nm/instancefields.h. */
 class ImageFieldAbiTest {
@@ -36,22 +39,25 @@ class ImageFieldAbiTest {
   }
 
   @Test
-  void deployedImageReplacementPreservesNativeFieldIndices() throws Exception {
+  void directImageConversionPreservesNativeFieldIndices() throws Exception {
     J2TC.htAddedClasses.clear();
     J2TC.htExcludedClasses.clear();
     GlobalConstantPool.init();
 
-    TCClass converted = convertReplacement();
+    TCClass converted = convertDirectImage();
     assertNotNull(converted);
     assertEquals("totalcross/ui/image/Image", converted.className);
     assertAbiPrefix(converted);
+    assertNativeMethods(converted, "imageLoad", "imageParse", "setCurrentFrame", "applyChanges", "changeColors",
+        "getPixelRow", "setTransparentColor", "freeTexture", "createJpg", "applyColor", "nativeEquals",
+        "applyColor2", "applyFade", "nativeResizeJpeg", "getJpegBestFit", "getJpegScaled", "getModifiedInstance");
   }
 
-  private static TCClass convertReplacement() throws Exception {
-    try (InputStream stream = totalcross.ui.image.Image4D.class
-        .getResourceAsStream("Image4D.class")) {
-      assertNotNull(stream, "Image4D.class resource");
-      return new J2TC(new JavaClass(stream.readAllBytes(), false)).converted;
+  private static TCClass convertDirectImage() throws Exception {
+    try (InputStream stream = totalcross.ui.image.Image.class
+        .getResourceAsStream("Image.class")) {
+      assertNotNull(stream, "Image.class resource");
+      return new J2TC(new JavaClass(stream.readAllBytes(), false), true).converted;
     }
   }
 
@@ -72,5 +78,27 @@ class ImageFieldAbiTest {
 
   private static String fieldName(TCField field) {
     return GlobalConstantPool.getMethodFieldName(field.cpName);
+  }
+
+  private static void assertNativeMethods(TCClass converted, String... names) {
+    for (String name : names) {
+      boolean found = false;
+      for (TCMethod method : converted.methods) {
+        if (name.equals(GlobalConstantPool.getMethodFieldName(method.cpName)) && method.flags.isNative) {
+          assertNull(method.code, "native method " + name + " must not retain executable Java code");
+          found = true;
+        }
+      }
+      assertTrue(found, "converted method " + name + " must be native");
+    }
+  }
+
+  private static TCMethod findMethod(TCClass converted, String name) {
+    for (TCMethod method : converted.methods) {
+      if (name.equals(GlobalConstantPool.getMethodFieldName(method.cpName))) {
+        return method;
+      }
+    }
+    return null;
   }
 }

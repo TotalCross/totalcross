@@ -69,6 +69,17 @@ class DanfeScalingTest {
     assertEquals(1, loaded.getContentScale());
   }
 
+  @Test
+  void derivedImagesRetainHardwareScale() throws Exception {
+    Image source = new Image(4, 2);
+    source.setHwScaleFixedAspectRatio(8, false);
+
+    Image derived = source.getScaledInstance(2, 1);
+
+    assertEquals(4, derived.getWidth());
+    assertEquals(2, derived.getHeight());
+  }
+
   private static Image render(Image image) {
     Graphics graphics = image.getGraphics();
     graphics.backColor = Color.WHITE;
