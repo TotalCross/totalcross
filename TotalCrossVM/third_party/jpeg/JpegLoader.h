@@ -9,6 +9,7 @@
 
 #include "tcvm.h"
 #include "jpeglib.h"
+#include "ui/image/ImageDecodeStatus.h"
 
 typedef struct TJPEGFILE
 {
@@ -44,8 +45,9 @@ typedef struct TCJpegIOContext
    TCJpegWriteFunc write;
 } TCJpegIOContext;
 
-void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz,
-              const char *first4, int32 size, int32 targetWidthOrScaleNum, int32 targetHeightOrScaleDenom);
+ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
+                           TCZFile tcz, const char *first4, int32 size, int32 targetWidthOrScaleNum,
+                           int32 targetHeightOrScaleDenom);
 bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality);
 
 void jpeg_tc_src(j_decompress_ptr cinfo);

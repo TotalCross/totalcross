@@ -7,11 +7,13 @@
 
 #include "tcvm.h"
 #include "jpeglib.h"
+#include "ui/image/ImageDecodeStatus.h"
 
 typedef struct
 {
    struct jpeg_error_mgr pub;
    Heap heap;
+   volatile ImageDecodeStatus *decodeStatus;
 } TCJpegErrorManager;
 
 struct jpeg_error_mgr *tc_jpeg_std_error(TCJpegErrorManager *err, Heap heap);
