@@ -1820,6 +1820,9 @@ public class Image extends GfxSurface {
       }
       pixels = null;
       pixelsOfAllFrames = null;
+      if (backing != null && backing.isRaster()) {
+        backing = null;
+      }
       changesLocked = true;
     }
   }

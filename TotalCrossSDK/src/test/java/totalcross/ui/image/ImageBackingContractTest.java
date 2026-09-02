@@ -21,6 +21,8 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
+import totalcross.sys.Settings;
+
 class ImageBackingContractTest {
   @Test
   void encodedImagesStartDeferredWithoutMaterializedBacking() throws Exception {
@@ -38,6 +40,42 @@ class ImageBackingContractTest {
     assertTrue(image.backing.isRaster());
     assertTrue(image.backing.isValid());
     assertSame(image.getPixels(), ((RasterImageBacking) image.backing).pixels());
+  }
+
+  @Test
+  void lockingRasterImageReleasesRasterBackingAndDisablesGraphics() throws Exception {
+    boolean previousOpenGL = Settings.isOpenGL;
+    try {
+      Settings.isOpenGL = true;
+      Image image = new Image(2, 1);
+      assertTrue(image.backing instanceof RasterImageBacking);
+
+      image.lockChanges();
+
+      assertNull(image.backing);
+      assertNull(image.getGraphics());
+    } finally {
+      Settings.isOpenGL = previousOpenGL;
+    }
+  }
+
+  @Test
+  void lockingNativeImageKeepsNativeBackingAndDisablesGraphics() throws Exception {
+    boolean previousOpenGL = Settings.isOpenGL;
+    NativeImageBacking nativeBacking = NativeImageBacking.fromHandle(1, 2, 1);
+    try {
+      Settings.isOpenGL = true;
+      Image image = new Image(2, 1);
+      image.backing = nativeBacking;
+
+      image.lockChanges();
+
+      assertSame(nativeBacking, image.backing);
+      assertNull(image.getGraphics());
+    } finally {
+      nativeBacking.release();
+      Settings.isOpenGL = previousOpenGL;
+    }
   }
 
   @Test
