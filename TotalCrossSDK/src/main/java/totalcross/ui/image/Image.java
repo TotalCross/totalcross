@@ -1407,6 +1407,7 @@ public class Image extends GfxSurface {
         }
         pixels = new int[width * height];
         setCurrentFrame(0);
+        adoptRasterBackingCompatibility();
       } catch (OutOfMemoryError oome) {
         if (materializingEncodedSource) {
           throw new TransientImageMaterializationException(oome);
