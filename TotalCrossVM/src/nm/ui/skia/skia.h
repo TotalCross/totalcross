@@ -66,7 +66,12 @@ void skia_shiftScreen(float w, float h, float glShiftY);
 int64_t skia_image_backing_create_empty(int32 width, int32 height);
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height);
 int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 width, int32 height);
+#define SKIA_IMAGE_BACKING_SNAPSHOT_OK 0
+#define SKIA_IMAGE_BACKING_SNAPSHOT_INVALID 1
+#define SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE 2
 int64_t skia_image_backing_snapshot(int64_t handle);
+int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle);
+void skia_image_backing_fail_next_snapshot_for_test(void);
 int skia_image_backing_make_mutable(int64_t handle);
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth);
 typedef struct SkiaImageGeometryPlanData {

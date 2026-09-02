@@ -81,10 +81,21 @@ TC_API void tuiNIB_createFromArgbPixels_Iii(NMParams p) // totalcross/ui/image/N
 TC_API void tuiNIB_snapshotNative(NMParams p) // totalcross/ui/image/NativeImageBacking private long snapshotNative();
 {
 #if TC_RENDERER_SKIA
-   p->retL = skia_image_backing_snapshot(NativeImageBacking_nativeHandle(p->obj[0]));
+   int64_t snapshotHandle = 0;
+   int status = skia_image_backing_snapshot_status(NativeImageBacking_nativeHandle(p->obj[0]),
+      &snapshotHandle);
+   p->retL = status == SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE ? -1 : snapshotHandle;
 #else
    p->retL = 0;
 #endif
+}
+
+TC_API void tuiNIB_failNextSnapshotNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static void failNextSnapshotNative();
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_fail_next_snapshot_for_test();
+#endif
+   UNUSED(p);
 }
 
 TC_API void tuiNIB_makeMutableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private boolean makeMutableNative();

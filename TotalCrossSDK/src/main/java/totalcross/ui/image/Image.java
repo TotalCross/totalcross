@@ -597,7 +597,7 @@ public class Image extends GfxSurface {
     }
   }
 
-  BackingImageSource snapshotRasterSource() {
+  BackingImageSource snapshotRasterSource() throws ImageException {
     if (backing == null && pixels != null) {
       adoptRasterBackingCompatibility();
     }

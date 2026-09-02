@@ -121,7 +121,7 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @Override
-  ImageBacking snapshot() {
+  ImageBacking snapshot() throws ImageException {
     long handle = nativeHandle;
     if (handle == 0) {
       throw new IllegalStateException("Native image backing has been released");
@@ -130,7 +130,15 @@ final class NativeImageBacking extends ImageBacking {
     if (snapshot == 0) {
       throw new IllegalStateException("Could not snapshot native image backing");
     }
+    if (snapshot < 0) {
+      throw new TransientImageMaterializationException("Could not allocate native image snapshot");
+    }
     return new NativeImageBacking(snapshot, width, height);
+  }
+
+  /** Test-only hook for exercising retryable native backing snapshot allocation failures. */
+  static void failNextSnapshotForTest() {
+    failNextSnapshotNative();
   }
 
   void release() {
@@ -164,6 +172,10 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private long snapshotNative() {
     return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failNextSnapshotNative() {
   }
 
   @ReplacedByNativeOnDeploy

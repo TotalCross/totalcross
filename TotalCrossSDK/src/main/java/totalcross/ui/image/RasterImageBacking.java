@@ -61,9 +61,13 @@ final class RasterImageBacking extends ImageBacking {
   }
 
   @Override
-  ImageBacking snapshot() {
-    return new RasterImageBacking(width, height, frameCount, widthOfAllFrames,
-        pixels == null ? null : pixels.clone(),
-        pixelsOfAllFrames == null ? null : pixelsOfAllFrames.clone());
+  ImageBacking snapshot() throws ImageException {
+    try {
+      return new RasterImageBacking(width, height, frameCount, widthOfAllFrames,
+          pixels == null ? null : pixels.clone(),
+          pixelsOfAllFrames == null ? null : pixelsOfAllFrames.clone());
+    } catch (OutOfMemoryError oome) {
+      throw new TransientImageMaterializationException(oome);
+    }
   }
 }

@@ -132,6 +132,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_isAvailableNative"), &tuiNIB_isAvailableNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createFromArgbPixels_Iii"), &tuiNIB_createFromArgbPixels_Iii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_snapshotNative"), &tuiNIB_snapshotNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_failNextSnapshotNative"), &tuiNIB_failNextSnapshotNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_makeMutableNative"), &tuiNIB_makeMutableNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_scaleNative_iib"), &tuiNIB_scaleNative_iib);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_materializeGeometryNative"), &tuiNIB_materializeGeometryNative);

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
@@ -117,6 +118,14 @@ class ImageBackingContractTest {
     backing.release();
     backing.release();
     assertFalse(backing.isValid());
+  }
+
+  @Test
+  void releasedNativeBackingSnapshotFailsAsInvalidState() throws Exception {
+    NativeImageBacking backing = NativeImageBacking.fromHandle(1, 1, 1);
+    backing.release();
+
+    assertThrows(IllegalStateException.class, backing::snapshot);
   }
 
   private static byte[] png(int width, int height) throws Exception {

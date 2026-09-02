@@ -141,6 +141,7 @@ TC_API void tuiNIB_createEmptyNative_ii(NMParams p);
 TC_API void tuiNIB_isAvailableNative(NMParams p);
 TC_API void tuiNIB_createFromArgbPixels_Iii(NMParams p);
 TC_API void tuiNIB_snapshotNative(NMParams p);
+TC_API void tuiNIB_failNextSnapshotNative(NMParams p);
 TC_API void tuiNIB_makeMutableNative(NMParams p);
 TC_API void tuiNIB_scaleNative_iib(NMParams p);
 TC_API void tuiNIB_materializeGeometryNative(NMParams p);

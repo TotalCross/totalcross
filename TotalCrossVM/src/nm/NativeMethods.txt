@@ -118,6 +118,7 @@ totalcross/ui/image/NativeImageBacking|native private static long createEmptyNat
 totalcross/ui/image/NativeImageBacking|native private static boolean isAvailableNative();
 totalcross/ui/image/NativeImageBacking|native private static long createFromArgbPixelsNative(int []pixels, int width, int height);
 totalcross/ui/image/NativeImageBacking|native private long snapshotNative();
+totalcross/ui/image/NativeImageBacking|native private static void failNextSnapshotNative();
 totalcross/ui/image/NativeImageBacking|native private boolean makeMutableNative();
 totalcross/ui/image/NativeImageBacking|native private long scaleNative(int width, int height, boolean smooth);
 totalcross/ui/image/NativeImageBacking|native private static long materializeGeometryNative(totalcross.ui.image.ImageGeometryPlan plan);

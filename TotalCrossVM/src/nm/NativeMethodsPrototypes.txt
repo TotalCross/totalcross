@@ -118,6 +118,7 @@ TC_API void tuiEIS_captureNativePath_s(NMParams p);
 TC_API void tuiEIS_releaseNativeBag(NMParams p);
 TC_API void tuiNIB_createEmptyNative_ii(NMParams p);
 TC_API void tuiNIB_snapshotNative(NMParams p);
+TC_API void tuiNIB_failNextSnapshotNative(NMParams p);
 TC_API void tuiNIB_makeMutableNative(NMParams p);
 TC_API void tuiNIB_scaleNative_iib(NMParams p);
 TC_API void tuiNIB_materializeGeometryNative(NMParams p);
@@ -1042,6 +1043,10 @@ TC_API void tuiNIB_createFromArgbPixels_Iii(NMParams p) // totalcross/ui/image/N
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_snapshotNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private long snapshotNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_failNextSnapshotNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void failNextSnapshotNative();
 {
 }
 //////////////////////////////////////////////////////////////////////////

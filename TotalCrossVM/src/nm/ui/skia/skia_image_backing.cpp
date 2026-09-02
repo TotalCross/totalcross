@@ -40,6 +40,7 @@ std::map<int32, int64_t> surfaceAliases;
 std::map<int64_t, int32> backingAliases;
 int64_t nextHandle = 1;
 int32 nextSurfaceAlias = std::numeric_limits<int32>::min() + 1;
+bool failNextSnapshotAllocationForTest;
 
 NativeImageBackingRecord* findBacking(int64_t handle) {
     auto found = backings.find(handle);
@@ -252,24 +253,48 @@ int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 wid
     }
 }
 
-int64_t skia_image_backing_snapshot(int64_t handle) {
+int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle) {
+    if (snapshotHandle) {
+        *snapshotHandle = 0;
+    }
     NativeImageBackingRecord* source = findBacking(handle);
     if (!source) {
-        return 0;
+        return SKIA_IMAGE_BACKING_SNAPSHOT_INVALID;
+    }
+    if (failNextSnapshotAllocationForTest) {
+        failNextSnapshotAllocationForTest = false;
+        return SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE;
     }
     try {
         sk_sp<SkImage> snapshot = source->snapshot();
         if (!snapshot) {
-            return 0;
+            return SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE;
         }
         std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
         backing->image = std::move(snapshot);
         backing->width = source->width;
         backing->height = source->height;
-        return registerBacking(std::move(backing));
+        const int64_t newHandle = registerBacking(std::move(backing));
+        if (newHandle == 0) {
+            return SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE;
+        }
+        if (snapshotHandle) {
+            *snapshotHandle = newHandle;
+        }
+        return SKIA_IMAGE_BACKING_SNAPSHOT_OK;
     } catch (const std::bad_alloc&) {
-        return 0;
+        return SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE;
     }
+}
+
+int64_t skia_image_backing_snapshot(int64_t handle) {
+    int64_t snapshotHandle = 0;
+    return skia_image_backing_snapshot_status(handle, &snapshotHandle)
+        == SKIA_IMAGE_BACKING_SNAPSHOT_OK ? snapshotHandle : 0;
+}
+
+void skia_image_backing_fail_next_snapshot_for_test(void) {
+    failNextSnapshotAllocationForTest = true;
 }
 
 int skia_image_backing_make_mutable(int64_t handle) {

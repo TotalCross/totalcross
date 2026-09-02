@@ -71,6 +71,20 @@ public class ImageNativeMaterializationSmokeApp extends MainWindow {
       retry.getPixelRow(new byte[32 * 4], 0);
       require(retry.hasNativeBackingForSmoke(), "native decode retry success");
 
+      Image snapshotRetry = new Image(8, 8);
+      require(snapshotRetry.hasNativeBackingForSmoke(), "native snapshot retry backing");
+      NativeImageBacking.failNextSnapshotForTest();
+      boolean snapshotFailed = false;
+      try {
+        snapshotRetry.getSmoothScaledInstance(4, 4);
+      } catch (TransientImageMaterializationException expected) {
+        snapshotFailed = true;
+      }
+      require(snapshotFailed && snapshotRetry.hasNativeBackingForSmoke(),
+          "native snapshot allocation retry state");
+      Image retriedSnapshot = snapshotRetry.getSmoothScaledInstance(4, 4);
+      require(retriedSnapshot.hasNativeBackingForSmoke(), "native snapshot allocation retry success");
+
       Image large = new Image(500, 500);
       Graphics largeGraphics = large.getGraphics();
       require(largeGraphics != null, "large generated graphics");
