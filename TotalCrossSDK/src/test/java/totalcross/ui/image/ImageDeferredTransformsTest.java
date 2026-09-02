@@ -69,7 +69,7 @@ class ImageDeferredTransformsTest {
     Image expected = source.getSmoothScaledInstance(2, 2);
     Image derived = source.getSmoothScaledInstance(2, 2).getAlphaInstance(-30);
     Image expectedChained = expected.getAlphaInstance(-30);
-    assertTrue(root(pipeline(derived)) instanceof RasterImageSource);
+    assertTrue(root(pipeline(derived)) instanceof BackingImageSource);
 
     source.pixels[0] = 0xFFFFFFFF;
     assertArrayEquals(expectedChained.getPixels(), derived.getPixels());

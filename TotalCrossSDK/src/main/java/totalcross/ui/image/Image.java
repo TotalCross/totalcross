@@ -202,6 +202,8 @@ public class Image extends GfxSurface {
   private String path;
   /** Non-null only while this image is an immutable, deferred encoded source. */
   private ImagePipeline pipeline;
+  /** Transitional explicit backing; legacy pixel fields remain authoritative until plan 5. */
+  ImageBacking backing;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
@@ -345,6 +347,7 @@ public class Image extends GfxSurface {
     this.changed = src.changed;
     this.pixels = src.pixels;
     this.pixelsOfAllFrames = src.pixelsOfAllFrames;
+    this.backing = src.backing;
     this.comment = src.comment;
     this.gfx = new Graphics(this);
     this.gfx.refresh(0, 0, getWidth(), getHeight(), 0, 0, null);
@@ -558,19 +561,24 @@ public class Image extends GfxSurface {
     hashCode = 0;
     pixels = null;
     pixelsOfAllFrames = null;
+    backing = null;
     if (frameCount > 1 && (operationType == ImagePipeline.APPLY_COLOR
         || operationType == ImagePipeline.APPLY_COLOR2 || operationType == ImagePipeline.CHANGE_COLORS)) {
       currentFrame = 0;
     }
   }
 
-  private RasterImageSource snapshotRasterSource() {
-    int[] allFrames = frameCount > 1 ? (int[]) pixelsOfAllFrames : null;
+  BackingImageSource snapshotRasterSource() {
+    if (backing == null && pixels != null) {
+      adoptRasterBackingCompatibility();
+    }
+    if (backing == null || !backing.isValid()) {
+      throw new IllegalStateException("Image has no valid backing to snapshot");
+    }
     int fullWidth = frameCount > 1 ? widthOfAllFrames : width;
-    return new RasterImageSource(width, height, logicalWidth, logicalHeight, contentScale, frameCount,
-        currentFrame, fullWidth, pixels == null ? null : pixels.clone(),
-        allFrames == null ? null : allFrames.clone(), comment, path, surfaceType, transparentColor, useAlpha,
-        alphaMask, hwScaleW, hwScaleH);
+    return new BackingImageSource(backing.snapshot(), width, height, logicalWidth, logicalHeight, contentScale,
+        frameCount, currentFrame, fullWidth, comment, path, surfaceType, transparentColor, useAlpha, alphaMask,
+        hwScaleW, hwScaleH);
   }
 
   static Image materializeRasterSource(RasterImageSource source) throws ImageException {
@@ -596,6 +604,42 @@ public class Image extends GfxSurface {
     result.textureId = -1;
     result.init();
     return result;
+  }
+
+  static Image materializeBackingSource(BackingImageSource source) throws ImageException {
+    if (!source.backing.isRaster()) {
+      throw new ImageException("Native image sources are not available on this execution path");
+    }
+    RasterImageBacking raster = (RasterImageBacking) source.backing;
+    Image result = new Image();
+    result.width = source.width;
+    result.height = source.height;
+    result.logicalWidth = source.logicalWidth;
+    result.logicalHeight = source.logicalHeight;
+    result.contentScale = source.contentScale;
+    result.frameCount = source.frameCount;
+    result.currentFrame = source.currentFrame;
+    result.widthOfAllFrames = source.widthOfAllFrames;
+    result.pixels = raster.pixels() == null ? null : raster.pixels().clone();
+    result.pixelsOfAllFrames = raster.pixelsOfAllFrames() == null ? null : raster.pixelsOfAllFrames().clone();
+    result.comment = source.comment;
+    result.path = source.path;
+    result.surfaceType = source.surfaceType;
+    result.transparentColor = source.transparentColor;
+    result.useAlpha = source.useAlpha;
+    result.alphaMask = source.alphaMask;
+    result.hwScaleW = source.hwScaleW;
+    result.hwScaleH = source.hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
+  }
+
+  /** Keeps the transitional backing wrapper aligned with legacy raster fields. */
+  private void adoptRasterBackingCompatibility() {
+    backing = pixels == null ? null
+        : new RasterImageBacking(width, height, frameCount, widthOfAllFrames, pixels,
+            frameCount > 1 ? (int[]) pixelsOfAllFrames : null);
   }
 
   private Image deferTransform(int operationType, int parameter1, int parameter2, int parameter3,
@@ -625,7 +669,7 @@ public class Image extends GfxSurface {
     return frame >= frameCount ? 0 : frame;
   }
 
-  private Image deferFrameSelection(int frame) {
+  private Image deferFrameSelection(int frame) throws ImageException {
     ImagePipeline previous = pipeline;
     if (previous == null) {
       previous = new ImagePipeline(snapshotRasterSource());
@@ -786,6 +830,7 @@ public class Image extends GfxSurface {
     transparentColor = resolved.transparentColor;
     useAlpha = resolved.useAlpha;
     textureId = -1;
+    adoptRasterBackingCompatibility();
     hashCode = 0;
     changed[0] = true;
     deferred.clearCachedVariants();
@@ -887,7 +932,9 @@ public class Image extends GfxSurface {
       }
       current = decoded;
     } else {
-      current = ((RasterImageSource) root).materialize();
+      current = root instanceof BackingImageSource
+          ? ((BackingImageSource) root).materialize()
+          : ((RasterImageSource) root).materialize();
     }
 
     for (int i = nodes.size() - 1; i >= 0; i--) {
@@ -1296,6 +1343,7 @@ public class Image extends GfxSurface {
     gfx = new Graphics(this);
     gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+    adoptRasterBackingCompatibility();
   }
 
   /**
