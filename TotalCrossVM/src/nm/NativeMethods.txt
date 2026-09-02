@@ -105,6 +105,7 @@ totalcross/ui/image/Image|native private void setTransparentColorNative(int colo
 totalcross/ui/image/Image|native private void freeTextureNative();
 totalcross/ui/image/Image|native private void applyFadeNative(int fadeValue);
 totalcross/ui/image/Image|native private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source) throws totalcross.ui.image.ImageException;
+totalcross/ui/image/Image|native private void decodeEncodedSourceTargeted(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight) throws totalcross.ui.image.ImageException;
 totalcross/ui/image/Image|native private static void failNextNativeMaterializationForTestNative();
 totalcross/ui/image/Image|native private void createJpgNative(totalcross.io.Stream s, int quality);
 totalcross/ui/image/Image|native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);

@@ -13,6 +13,8 @@ import totalcross.ui.gfx.Graphics;
 public class ImageLazyMaterializationSmokeApp extends MainWindow {
   private static final int NATIVE_RED = 0xFF0000FF;
   private static final int NATIVE_BLUE = 0x0000FFFF;
+  private static final int SKIA_RED = 0xFFFF0000;
+  private static final int SKIA_BLUE = 0xFF0000FF;
 
   @Override
   public void initUI() {
@@ -39,6 +41,26 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
     boolean smoothScaleNoOpCompatibility = false;
     boolean rotationNoOpCompatibility = false;
     boolean transformEquivalence = false;
+    boolean destinationScaleDimensions = false;
+    boolean destinationScaleCache = false;
+    boolean destinationScaleDeferred = false;
+    boolean destinationScaleCanonical = false;
+    boolean destinationScaleHwScale = false;
+    boolean destinationScaleCopy = false;
+    boolean resolutionFailureNotCached = false;
+    boolean sharedSourceUnaffected = false;
+    boolean freeTextureKeepsCpuCache = false;
+    boolean jpegTargetDecode1x = false;
+    boolean jpegTargetDecode4x = false;
+    boolean jpegTargetDecodeBothAxes = false;
+    boolean jpegTargetSimilarity = false;
+    boolean jpegTargetFallback = false;
+    boolean pngTargetFallback = false;
+    boolean targetedInfrastructureRetryable = false;
+    boolean drawNoClipHiDpi = false;
+    boolean targetedCorruptionCached = false;
+    boolean rotationScaleFill = false;
+    boolean snapshotSemantics = false;
     String error = "";
 
     try {
@@ -185,7 +207,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
 
       Image drawTransform = new Image(transformBytes).getSmoothScaledInstance(10, 10);
       target.drawImage(drawTransform, 5, 5);
-      drawTransformBarrier = drawTransform.pixels != null;
+      drawTransformBarrier = drawTransform.pixels == null && drawTransform.pipelineForSmoke() != null;
       require(drawTransformBarrier, "draw transform barrier");
 
       Image large = new Image(65, 65);
@@ -218,6 +240,134 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
 
       transformEquivalence = equivalentWithMaterializedRoot(transformBytes);
       require(transformEquivalence, "deferred transform equivalence");
+
+      byte[] largeJpegBytes = createJpeg(1024, 768);
+      Image sharedEncoded = new Image(largeJpegBytes);
+      Image failedResolution = sharedEncoded.getSmoothScaledInstance(64, 48);
+      Image sharedSibling = sharedEncoded.getScaledInstance(32, 24);
+      EncodedImageSource resolutionSource = (EncodedImageSource) failedResolution.pipelineForSmoke().root();
+      boolean resolutionFailed = false;
+      try {
+        failedResolution.resolveForDrawing(Double.MAX_VALUE);
+      } catch (ImageException expected) {
+        resolutionFailed = true;
+      }
+      resolutionFailureNotCached = resolutionFailed && resolutionSource.decodeFailure() == null
+          && failedResolution.pipelineForSmoke() != null
+          && failedResolution.resolveForDrawing(1).getPixelWidth() == 64;
+      sharedSourceUnaffected = resolutionSource.decodeFailure() == null
+          && sharedSibling.resolveForDrawing(1).getPixelWidth() == 32;
+
+      Image jpegSource = new Image(largeJpegBytes);
+      Image smoothJpeg = jpegSource.getSmoothScaledInstance(64, 48);
+      Image.resetTargetedDecodeInvocationCountForTest();
+      Image oneX = smoothJpeg.resolveForDrawing(1);
+      jpegTargetDecode1x = Image.targetedDecodeInvocationCountForTest() == 1
+          && oneX.getPixelWidth() == 64 && oneX.getPixelHeight() == 48;
+      Image fourX = smoothJpeg.resolveForDrawing(4);
+      jpegTargetDecode4x = Image.targetedDecodeInvocationCountForTest() == 2
+          && fourX.getPixelWidth() == 256 && fourX.getPixelHeight() == 192;
+      Image aspectJpeg = new Image(createJpeg(1600, 900)).getSmoothScaledInstance(200, 400);
+      Image aspectResult = aspectJpeg.resolveForDrawing(1);
+      jpegTargetDecodeBothAxes = Image.targetedDecodeInvocationCountForTest() == 3
+          && Image.targetedDecodeWidthForTest() == 800 && Image.targetedDecodeHeightForTest() == 450
+          && aspectResult.getPixelWidth() == 200 && aspectResult.getPixelHeight() == 400;
+      Image twoX = smoothJpeg.resolveForDrawing(2);
+      destinationScaleDimensions = oneX.getPixelWidth() == 64 && oneX.getPixelHeight() == 48
+          && twoX.getPixelWidth() == 128 && twoX.getPixelHeight() == 96
+          && fourX.getPixelWidth() == 256 && fourX.getPixelHeight() == 192;
+      destinationScaleCache = twoX == smoothJpeg.resolveForDrawing(2)
+          && smoothJpeg.pipelineForSmoke().cachedVariantCountForSmoke() <= 2;
+      smoothJpeg.hwScaleW = 0.5;
+      smoothJpeg.hwScaleH = 1.5;
+      Image presentation = smoothJpeg.resolveForDrawing(2);
+      destinationScaleHwScale = presentation.getPixelWidth() == 128 && presentation.getPixelHeight() == 96
+          && presentation.getWidth() == 32 && presentation.getHeight() == 72;
+      destinationScaleDeferred = smoothJpeg.pixels == null && smoothJpeg.pipelineForSmoke() != null;
+      Image drawSourceBase = new Image(2, 2);
+      fill(drawSourceBase, NATIVE_RED);
+      Image drawSource = drawSourceBase.getSmoothScaledInstance(1, 1);
+      Image drawDestination = Image.createLogical(2, 2, 2);
+      fill(drawDestination, NATIVE_BLUE);
+      Graphics drawGraphics = new Graphics(drawDestination);
+      drawGraphics.drawImage(drawSource, 0, 0);
+      int draw00 = drawGraphics.getPixel(0, 0);
+      int draw10 = drawGraphics.getPixel(1, 0);
+      int draw01 = drawGraphics.getPixel(0, 1);
+      destinationScaleCopy = drawDestination.getPixelWidth() == 4 && drawDestination.getPixelHeight() == 4
+          && draw00 == SKIA_RED && draw10 == SKIA_RED && draw01 == SKIA_RED
+          && drawGraphics.getPixel(2, 0) == SKIA_BLUE;
+      Image freeTextureSource = new Image(8, 8).getSmoothScaledInstance(4, 4);
+      Image cachedCpuVariant = freeTextureSource.resolveForDrawing(2);
+      freeTextureSource.freeTexture();
+      freeTextureKeepsCpuCache = freeTextureSource.resolveForDrawing(2) == cachedCpuVariant
+          && cachedCpuVariant.getPixels() != null;
+      smoothJpeg.getPixels();
+      destinationScaleCanonical = smoothJpeg.getPixelWidth() == 64 && smoothJpeg.getPixelHeight() == 48
+          && smoothJpeg.getContentScale() == 1
+          && smoothJpeg.pipelineForSmoke() == null;
+      int decodeCountBeforeFallback = Image.targetedDecodeInvocationCountForTest();
+      Image nearestJpeg = new Image(largeJpegBytes).getScaledInstance(64, 48);
+      Image nearestPixels = nearestJpeg.resolveForDrawing(1);
+      jpegTargetFallback = Image.targetedDecodeInvocationCountForTest() == decodeCountBeforeFallback
+          && nearestPixels.getPixelWidth() == 64 && nearestPixels.getPixelHeight() == 48;
+      Image pngFallback = new Image(transformBytes).getSmoothScaledInstance(10, 10);
+      Image pngPixels = pngFallback.resolveForDrawing(1);
+      pngTargetFallback = pngPixels.getPixelWidth() == 10 && pngPixels.getPixelHeight() == 10;
+
+      Image retryableTarget = new Image(largeJpegBytes).getSmoothScaledInstance(64, 48);
+      EncodedImageSource retryableSource = (EncodedImageSource) retryableTarget.pipelineForSmoke().root();
+      Image.failNextTargetedDecodeInfrastructureForTest();
+      ImageException firstTargetedFailure = null;
+      try {
+        retryableTarget.resolveForDrawing(1);
+      } catch (ImageException expected) {
+        firstTargetedFailure = expected;
+      }
+      Image retryableResult = retryableTarget.resolveForDrawing(1);
+      targetedInfrastructureRetryable = firstTargetedFailure instanceof TransientImageMaterializationException
+          && retryableSource.decodeFailure() == null && retryableTarget.pipelineForSmoke() != null
+          && retryableResult.getPixelWidth() == 64;
+
+      Image fullJpeg = new Image(largeJpegBytes);
+      fullJpeg.getPixels();
+      Image fullJpegScaled = fullJpeg.getSmoothScaledInstance(64, 48);
+      jpegTargetSimilarity = maxChannelDifference(oneX, fullJpegScaled) <= 64;
+
+      Image noClipSourceBase = new Image(2, 2);
+      fill(noClipSourceBase, NATIVE_RED);
+      Image noClipSource = noClipSourceBase.getSmoothScaledInstance(1, 1);
+      Image noClipDestination = Image.createLogical(3, 2, 2);
+      fill(noClipDestination, NATIVE_BLUE);
+      Graphics noClipGraphics = new Graphics(noClipDestination);
+      noClipGraphics.drawImage(noClipSource, 1, 0, false);
+      drawNoClipHiDpi = noClipDestination.getPixelWidth() == 6 && noClipDestination.getPixelHeight() == 4
+          && noClipGraphics.getPixel(2, 0) == SKIA_RED && noClipGraphics.getPixel(3, 1) == SKIA_RED
+          && outsideLogicalRectEquals(noClipGraphics, 2, 0, 2, 2, SKIA_BLUE);
+
+      Image corruptedJpeg = new Image(corruptJpegEntropy(largeJpegBytes)).getSmoothScaledInstance(64, 48);
+      ImageException firstCorruption = null;
+      ImageException secondCorruption = null;
+      try {
+        corruptedJpeg.resolveForDrawing(1);
+      } catch (ImageException expected) {
+        firstCorruption = expected;
+      }
+      try {
+        corruptedJpeg.resolveForDrawing(1);
+      } catch (ImageException expected) {
+        secondCorruption = expected;
+      }
+      targetedCorruptionCached = firstCorruption != null && secondCorruption != null
+          && firstCorruption == secondCorruption
+          && corruptedJpeg.pipelineForSmoke() != null;
+
+      Image rotation = new Image(3, 2);
+      fill(rotation, NATIVE_RED);
+      Image rotatedAtScale = rotation.getRotatedScaledInstance(100, 45, 0xFF123456).resolveForDrawing(4);
+      rotationScaleFill = rotatedAtScale.getPixelWidth() == 16 && rotatedAtScale.getPixelHeight() == 12
+          && containsRgb(rotatedAtScale, 0x12, 0x34, 0x56);
+      snapshotSemantics = smoothJpeg.pixels != null && drawTransform.pixels == null;
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
@@ -229,6 +379,13 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
         && transformChainResolve && encodedRootShared && rasterSnapshotIsolated
         && rotationFillRegression && frameTransformPass && drawTransformBarrier && largeImageHashPass
         && smoothScaleNoOpCompatibility && rotationNoOpCompatibility && transformEquivalence;
+    overallPass = overallPass && destinationScaleDimensions && destinationScaleCache && destinationScaleDeferred
+        && destinationScaleCanonical && destinationScaleHwScale && destinationScaleCopy
+        && resolutionFailureNotCached && sharedSourceUnaffected && freeTextureKeepsCpuCache
+        && jpegTargetDecode1x && jpegTargetDecode4x && jpegTargetSimilarity && jpegTargetFallback
+        && jpegTargetDecodeBothAxes
+        && pngTargetFallback && targetedInfrastructureRetryable && drawNoClipHiDpi && targetedCorruptionCached
+        && rotationScaleFill && snapshotSemantics;
     System.out.println("fixture=ImageLazyMaterializationSmokeApp,pngConstructionLazy=" + pngConstructionLazy
         + ",pngSourceCopy=" + pngSourceCopy + ",firstDrawMaterializes=" + firstDrawMaterializes
         + ",warningCompatibility=" + warningCompatibility
@@ -243,7 +400,20 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
         + ",drawTransformBarrier=" + drawTransformBarrier + ",largeImageHashPass=" + largeImageHashPass
         + ",smoothScaleNoOpCompatibility=" + smoothScaleNoOpCompatibility
         + ",rotationNoOpCompatibility=" + rotationNoOpCompatibility
-        + ",transformEquivalence=" + transformEquivalence + ",overallPass=" + overallPass
+        + ",transformEquivalence=" + transformEquivalence + ",destinationScaleDimensions="
+        + destinationScaleDimensions + ",destinationScaleCache=" + destinationScaleCache
+        + ",destinationScaleDeferred=" + destinationScaleDeferred + ",destinationScaleCanonical="
+        + destinationScaleCanonical + ",destinationScaleHwScale=" + destinationScaleHwScale
+        + ",destinationScaleCopy=" + destinationScaleCopy + ",resolutionFailureNotCached="
+        + resolutionFailureNotCached + ",sharedSourceUnaffected=" + sharedSourceUnaffected
+        + ",freeTextureKeepsCpuCache=" + freeTextureKeepsCpuCache + ",jpegTargetDecode1x=" + jpegTargetDecode1x
+        + ",jpegTargetDecode4x=" + jpegTargetDecode4x + ",jpegTargetSimilarity=" + jpegTargetSimilarity
+        + ",jpegTargetDecodeBothAxes=" + jpegTargetDecodeBothAxes
+        + ",jpegTargetFallback=" + jpegTargetFallback + ",pngTargetFallback=" + pngTargetFallback
+        + ",targetedInfrastructureRetryable=" + targetedInfrastructureRetryable + ",drawNoClipHiDpi="
+        + drawNoClipHiDpi + ",targetedCorruptionCached=" + targetedCorruptionCached
+        + ",rotationScaleFill=" + rotationScaleFill + ",snapshotSemantics=" + snapshotSemantics
+        + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
   }
@@ -312,6 +482,70 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
     for (int i = 0; i < pixels.length; i++) {
       pixels[i] = pixel;
     }
+  }
+
+  private static byte[] createJpeg(int width, int height) throws Exception {
+    Image image = new Image(width, height);
+    fill(image, NATIVE_RED);
+    ByteArrayStream stream = new ByteArrayStream(width * height);
+    image.createJpg(stream, 80);
+    byte[] jpeg = new byte[stream.getPos()];
+    Vm.arrayCopy(stream.getBuffer(), 0, jpeg, 0, jpeg.length);
+    return jpeg;
+  }
+
+  private static byte[] corruptJpegEntropy(byte[] source) {
+    byte[] result;
+    int sos = -1;
+    for (int i = 0; i + 1 < source.length; i++) {
+      if ((source[i] & 0xFF) == 0xFF && (source[i + 1] & 0xFF) == 0xDA) {
+        sos = i;
+        break;
+      }
+    }
+    require(sos >= 0, "JPEG SOS marker");
+    int segmentLength = ((source[sos + 2] & 0xFF) << 8) | (source[sos + 3] & 0xFF);
+    int entropy = sos + 2 + segmentLength;
+    byte[] invalidEntropyTail = new byte[] {
+        (byte) 0xFF, (byte) 0xC3, 0, 8, 8, 0, 1, 0, 1, 1, (byte) 0xFF, (byte) 0xD9
+    };
+    result = new byte[entropy + invalidEntropyTail.length];
+    Vm.arrayCopy(source, 0, result, 0, entropy);
+    Vm.arrayCopy(invalidEntropyTail, 0, result, entropy, invalidEntropyTail.length);
+    return result;
+  }
+
+  private static boolean outsideLogicalRectEquals(Graphics graphics, int x, int y, int width, int height,
+      int expected) {
+    int imageWidth = (int) Math.ceil(graphics.getSurfacePixelWidth() / graphics.getContentScale());
+    int imageHeight = (int) Math.ceil(graphics.getSurfacePixelHeight() / graphics.getContentScale());
+    for (int yy = 0; yy < imageHeight; yy++) {
+      for (int xx = 0; xx < imageWidth; xx++) {
+        if (xx < x || xx >= x + width || yy < y || yy >= y + height) {
+          if (graphics.getPixel(xx, yy) != expected) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  private static int maxChannelDifference(Image first, Image second) {
+    if (first.getPixelWidth() != second.getPixelWidth() || first.getPixelHeight() != second.getPixelHeight()) {
+      return Integer.MAX_VALUE;
+    }
+    int[] firstPixels = first.getPixels();
+    int[] secondPixels = second.getPixels();
+    int max = 0;
+    for (int i = 0; i < firstPixels.length; i++) {
+      int firstPixel = firstPixels[i];
+      int secondPixel = secondPixels[i];
+      max = Math.max(max, Math.abs(((firstPixel >> 16) & 0xFF) - ((secondPixel >> 16) & 0xFF)));
+      max = Math.max(max, Math.abs(((firstPixel >> 8) & 0xFF) - ((secondPixel >> 8) & 0xFF)));
+      max = Math.max(max, Math.abs((firstPixel & 0xFF) - (secondPixel & 0xFF)));
+    }
+    return max;
   }
 
   private static boolean rowContainsRgb(Image image, int red, int green, int blue) {

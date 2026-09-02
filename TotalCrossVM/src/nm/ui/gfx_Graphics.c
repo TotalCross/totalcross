@@ -298,7 +298,7 @@ TC_API void tugG_drawImageNative_iiib(NMParams p) // totalcross/ui/gfx/Graphics 
 {
    TCObject surfDest = p->obj[0];
    TCObject surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, (int32)(Image_width(surfOrig) * Image_hwScaleW(surfOrig)), (int32)(Image_height(surfOrig) * Image_hwScaleH(surfOrig)), p->i32[0], p->i32[1], (bool)p->i32[2]);
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, (int32)(Image_logicalWidth(surfOrig) * Image_hwScaleW(surfOrig)), (int32)(Image_logicalHeight(surfOrig) * Image_hwScaleH(surfOrig)), p->i32[0], p->i32[1], (bool)p->i32[2]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_copyImageRectNative_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private void copyImageRectNative(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
@@ -354,7 +354,7 @@ TC_API void tugG_drawImageNative_iii(NMParams p) // totalcross/ui/gfx/Graphics n
    //copyRect(image, 0, 0, image.getWidth(),image.getHeight(), x, y);
    TCObject surfDest = p->obj[0];
    TCObject surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0,0, (int32)(Image_width(surfOrig) * Image_hwScaleW(surfOrig)), (int32)(Image_height(surfOrig) * Image_hwScaleH(surfOrig)), p->i32[0], p->i32[1], true);
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0,0, (int32)(Image_logicalWidth(surfOrig) * Image_hwScaleW(surfOrig)), (int32)(Image_logicalHeight(surfOrig) * Image_hwScaleH(surfOrig)), p->i32[0], p->i32[1], true);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_getRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public int getRGB(int []data, int offset, int x, int y, int w, int h);

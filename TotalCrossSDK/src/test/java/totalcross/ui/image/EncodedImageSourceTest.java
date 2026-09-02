@@ -7,6 +7,8 @@ package totalcross.ui.image;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
@@ -44,6 +46,21 @@ class EncodedImageSourceTest {
     assertEquals(5, source.getLogicalHeight());
     assertEquals("FC=3", source.getComment());
     assertArrayEquals(png("FC=3", new byte[] { 0x78, (byte) 0x9c }), source.copyBytes());
+  }
+
+  @Test
+  void distinguishesDefensiveCopiesFromInternallyOwnedBytes() throws Exception {
+    byte[] callerBytes = png(null, new byte[] { 1, 2, 3 });
+    byte[] capturedBytes = callerBytes.clone();
+    EncodedImageSource copied = EncodedImageSource.fromBytes(callerBytes);
+    callerBytes[0] ^= 1;
+
+    assertNotSame(callerBytes, copied.bytesForInternalDecode());
+    assertArrayEquals(capturedBytes, copied.copyBytes());
+
+    byte[] ownedBytes = png(null, new byte[] { 4, 5, 6 });
+    EncodedImageSource adopted = EncodedImageSource.fromOwnedBytes(ownedBytes);
+    assertSame(ownedBytes, adopted.bytesForInternalDecode());
   }
 
   @Test
