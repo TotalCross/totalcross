@@ -112,6 +112,36 @@ final class EncodedImageSource extends ImageSource {
     return frameCount;
   }
 
+  @Override
+  int width() {
+    return frameCount > 1 ? logicalWidth : intrinsicWidth;
+  }
+
+  @Override
+  int height() {
+    return intrinsicHeight;
+  }
+
+  @Override
+  int logicalWidth() {
+    return logicalWidth;
+  }
+
+  @Override
+  int logicalHeight() {
+    return logicalHeight;
+  }
+
+  @Override
+  int frameCount() {
+    return frameCount;
+  }
+
+  @Override
+  int widthOfAllFrames() {
+    return intrinsicWidth;
+  }
+
   String getComment() {
     return comment;
   }
