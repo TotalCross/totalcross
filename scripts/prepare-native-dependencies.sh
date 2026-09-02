@@ -158,16 +158,6 @@ if [ "$dry_run" -eq 0 ]; then
   record_prepared_marker skia-shared '' '' "$skia_shared_repo" "$skia_shared_release"
 fi
 
-fetch_dep vcruntime windows x86 VCRUNTIME_GITHUB_TOKEN VCRUNTIME_RELEASE_TAG VCRUNTIME_GITHUB_REPO
-if [ "$dry_run" -eq 0 ]; then
-  vcruntime_runtime_dir="$depot_dir/vcruntime/local/windows/x86"
-  printf '%s\0%s\0' \
-    "${VCRUNTIME_RELEASE_TAG:-$(read_release_pin vcruntime)}" \
-    "${VCRUNTIME_GITHUB_REPO:-TotalCross/totalcross-depot-tools}" \
-    | sha256sum \
-    | cut -d ' ' -f 1 \
-    > "$vcruntime_runtime_dir/totalcross-runtime-inputs.sha256"
-fi
 fetch_dep minizip-ng windows x64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
 fetch_dep minizip-ng windows arm64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
 fetch_dep minizip-ng ios-simulator arm64 MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
