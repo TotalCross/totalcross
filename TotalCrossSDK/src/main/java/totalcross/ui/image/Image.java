@@ -1030,13 +1030,30 @@ public class Image extends GfxSurface {
     ArrayList<ImagePipeline> nodes = pipelineNodes(deferred);
     Image current = materializePipelineRoot(deferred, nodes, destinationScale);
 
-    for (int i = nodes.size() - 1; i >= 0; i--) {
+    for (int i = nodes.size() - 1; i >= 0;) {
+      if (!Settings.onJavaSE && current.backing instanceof NativeImageBacking
+          && isNativeGeometryNode(nodes.get(i).operationType())) {
+        int first = i;
+        while (first > 0 && isNativeGeometryNode(nodes.get(first - 1).operationType())) {
+          first--;
+        }
+        current = current.eagerNativeGeometrySegment(nodes, first, i, destinationScale);
+        i = first - 1;
+        continue;
+      }
       if (nodes.get(i).operationType() == ImagePipeline.APPLY_FADE && current.frameCount > 1) {
         selectCurrentFrameEager(current, nodes.get(i).parameter2());
       }
       current = applyEagerTransform(current, nodes.get(i), destinationScale);
+      i--;
     }
     return current;
+  }
+
+  private static boolean isNativeGeometryNode(int operationType) {
+    return operationType == ImagePipeline.SCALE || operationType == ImagePipeline.SMOOTH_SCALE
+        || operationType == ImagePipeline.ROTATE_SCALE || operationType == ImagePipeline.FRAME_SELECT
+        || operationType == ImagePipeline.CROP || operationType == ImagePipeline.FRAME_LAYOUT;
   }
 
   private Image materializeNativeGeometry(ImagePipeline deferred, double destinationScale) throws ImageException {
@@ -1256,23 +1273,45 @@ public class Image extends GfxSurface {
   }
 
   private Image eagerNativeGeometryStep(ImagePipeline node, double destinationScale) throws ImageException {
-    int[] operations = { node.operationType() };
-    int[] parameters = { node.parameter1(), node.parameter2(), node.parameter3(), node.parameter4() };
-    int[] dimensions = { node.logicalWidth(), node.logicalHeight() };
+    ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
+    nodes.add(node);
+    return eagerNativeGeometrySegment(nodes, 0, 0, destinationScale);
+  }
+
+  private Image eagerNativeGeometrySegment(ArrayList<ImagePipeline> nodes, int first, int last,
+      double destinationScale) throws ImageException {
+    int count = last - first + 1;
+    int[] operations = new int[count];
+    int[] parameters = new int[count * 4];
+    int[] dimensions = new int[count * 2];
+    for (int i = 0; i < count; i++) {
+      ImagePipeline node = nodes.get(last - i);
+      operations[i] = node.operationType();
+      int parameterOffset = i * 4;
+      parameters[parameterOffset] = node.parameter1();
+      parameters[parameterOffset + 1] = node.parameter2();
+      parameters[parameterOffset + 2] = node.parameter3();
+      parameters[parameterOffset + 3] = node.parameter4();
+      int dimensionOffset = i * 2;
+      dimensions[dimensionOffset] = node.logicalWidth();
+      dimensions[dimensionOffset + 1] = node.logicalHeight();
+    }
+    ImagePipeline outputNode = nodes.get(first);
     ImageGeometryPlan plan = new ImageGeometryPlan(this, operations, parameters, dimensions,
         width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames, contentScale,
-        node.logicalWidth(), node.logicalHeight(), node.frameCount(), node.widthOfAllFrames(), currentFrame,
+        outputNode.logicalWidth(), outputNode.logicalHeight(), outputNode.frameCount(),
+        outputNode.widthOfAllFrames(), currentFrame,
         255, transparentColor, 255, 255, destinationScale, destinationScale,
         hwScaleW, hwScaleH, hwScaleW, hwScaleH);
     NativeImageBacking nativeBacking = NativeImageBacking.materializeGeometry(plan);
-    int outputFrameCount = Math.max(1, node.frameCount());
+    int outputFrameCount = Math.max(1, outputNode.frameCount());
     int outputWidth = nativeBacking.width() / outputFrameCount;
     Image result = new Image();
     result.backing = nativeBacking;
     result.width = outputWidth;
     result.height = nativeBacking.height();
-    result.logicalWidth = node.logicalWidth();
-    result.logicalHeight = node.logicalHeight();
+    result.logicalWidth = outputNode.logicalWidth();
+    result.logicalHeight = outputNode.logicalHeight();
     result.contentScale = destinationScale;
     result.frameCount = outputFrameCount;
     result.currentFrame = outputFrameCount > 1 ? normalizedFrame(currentFrame) : -1;
