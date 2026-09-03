@@ -6,6 +6,8 @@
 
 #include <cstdio>
 #include <cstring>
+#include <fstream>
+#include <vector>
 
 static bool expectEqual(Pixel actual, Pixel expected, const char* message) {
     if (actual == expected) {
@@ -15,7 +17,79 @@ static bool expectEqual(Pixel actual, Pixel expected, const char* message) {
     return false;
 }
 
-int main() {
+static bool readBinaryFile(const char* path, std::vector<unsigned char>& data) {
+    std::ifstream input(path, std::ios::binary | std::ios::ate);
+    if (!input) {
+        std::fprintf(stderr, "unable to open font fixture: %s\n", path);
+        return false;
+    }
+    const std::streamoff size = input.tellg();
+    if (size <= 0) {
+        std::fprintf(stderr, "font fixture is empty: %s\n", path);
+        return false;
+    }
+    data.resize(static_cast<size_t>(size));
+    input.seekg(0, std::ios::beg);
+    if (!input.read(reinterpret_cast<char*>(data.data()), size)) {
+        std::fprintf(stderr, "unable to read font fixture: %s\n", path);
+        return false;
+    }
+    return true;
+}
+
+static bool testTypefaceRegistry(const char* fontPath) {
+    std::vector<unsigned char> fontData;
+    if (!readBinaryFile(fontPath, fontData)) {
+        return false;
+    }
+
+    unsigned char invalidData[] = {0, 1, 2, 3};
+    char invalidName[] = "skia-invalid-font";
+    if (skia_makeTypeface(invalidName, invalidData, sizeof(invalidData)) != -1 ||
+        skia_getTypefaceIndex(invalidName) != -1) {
+        std::fputs("invalid TTF data entered the typeface registry\n", stderr);
+        return false;
+    }
+
+    char repeatedName[] = "skia-repeated-font";
+    const int32 repeatedIndex = skia_makeTypeface(
+        repeatedName, fontData.data(), static_cast<int32>(fontData.size()));
+    if (repeatedIndex < 0 ||
+        skia_makeTypeface(repeatedName, fontData.data(), static_cast<int32>(fontData.size())) != repeatedIndex ||
+        skia_getTypefaceIndex(repeatedName) != repeatedIndex) {
+        std::fputs("valid typeface names were not cached stably\n", stderr);
+        return false;
+    }
+
+    int32 indices[40];
+    for (int i = 0; i < 40; ++i) {
+        char name[64];
+        std::snprintf(name, sizeof(name), "skia-capacity-font-%d", i);
+        indices[i] = skia_makeTypeface(
+            name, fontData.data(), static_cast<int32>(fontData.size()));
+        if (indices[i] < 0 || (i > 0 && indices[i] <= indices[i - 1]) ||
+            skia_getTypefaceIndex(name) != indices[i]) {
+            std::fputs("typeface registry did not retain stable capacity entries\n", stderr);
+            return false;
+        }
+    }
+
+    for (int i = 0; i < 40; ++i) {
+        char name[64];
+        std::snprintf(name, sizeof(name), "skia-capacity-font-%d", i);
+        if (skia_getTypefaceIndex(name) != indices[i]) {
+            std::fputs("typeface registry indices changed after insertion\n", stderr);
+            return false;
+        }
+    }
+    std::puts("skia typeface registry assertions passed");
+    return true;
+}
+
+int main(int argc, char** argv) {
+    if (argc > 1 && !testTypefaceRegistry(argv[1])) {
+        return 1;
+    }
     Pixel sourcePixels[4] = { 0xFF102030, 0xFF405060, 0xFF708090, 0xFFA0B0C0 };
     Pixel destinationPixels[16] = {};
     const int source = skia_makeBitmap(-1, sourcePixels, 2, 2);
