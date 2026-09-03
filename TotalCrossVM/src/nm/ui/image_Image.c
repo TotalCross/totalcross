@@ -283,9 +283,27 @@ TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/
    UNUSED(p);
 }
 //////////////////////////////////////////////////////////////////////////
+#if TC_RENDERER_SKIA
+static bool imageUsesNativeBacking(TCObject imageObj);
+static bool applyNativeColorMutation(TCObject imageObj, int32 operation, int32 parameter1,
+                                     int32 parameter2);
+#endif
 TC_API void tuiI_changeColorsNative_ii(NMParams p) // totalcross/ui/image/Image private void changeColorsNative(int from, int to);
 {
    TCObject thisObj = p->obj[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(thisObj, SKIA_IMAGE_COLOR_CHANGE_COLORS,
+            p->i32[0], p->i32[1])) {
+         throwException(p->currentContext, ImageException, "Could not change native image colors");
+         return;
+      }
+      if (Image_frameCount(thisObj) > 1) {
+         Image_currentFrame(thisObj) = 0;
+      }
+      return;
+   }
+#endif
    Pixel from = makePixelARGB(p->i32[0]);
    Pixel to = makePixelARGB(p->i32[1]);
    changeColors(thisObj, from, to);
@@ -460,6 +478,19 @@ TC_API void tuiI_applyColor2Native_i(NMParams p) // totalcross/ui/image/Image pr
 TC_API void tuiI_setTransparentColorNative_i(NMParams p) // totalcross/ui/image/Image private void setTransparentColorNative(int color);
 {
    TCObject thisObj = p->obj[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(thisObj, SKIA_IMAGE_COLOR_SET_TRANSPARENT_COLOR,
+            p->i32[0], 0)) {
+         throwException(p->currentContext, ImageException, "Could not set native image transparent color");
+         return;
+      }
+      if (Image_frameCount(thisObj) > 1) {
+         Image_currentFrame(thisObj) = 0;
+      }
+      return;
+   }
+#endif
    Pixel color = makePixelRGB(p->i32[0]);
    setTransparentColor(thisObj, color);
    p->retO = thisObj;

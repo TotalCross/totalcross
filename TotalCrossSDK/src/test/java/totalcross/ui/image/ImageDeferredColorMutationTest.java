@@ -253,6 +253,36 @@ class ImageDeferredColorMutationTest {
     }
   }
 
+  @Test
+  void exactColorMutationsPreserveArgbAndNoTransparentColorSemantics() throws Exception {
+    int[] pixels = { 0x00112233, 0xFF112233, 0x7F445566, 0xFF778899 };
+    byte[] encoded = pngWithPixels(pixels);
+
+    Image expectedChange = new Image(encoded);
+    expectedChange.getPixels();
+    expectedChange.changeColors(0x00112233, 0xAA010203);
+    Image actualChange = new Image(encoded);
+    actualChange.changeColors(0x00112233, 0xAA010203);
+    assertNull(actualChange.pixels);
+    assertArrayEquals(expectedChange.getPixels(), actualChange.getPixels());
+
+    Image expectedTransparent = new Image(encoded);
+    expectedTransparent.getPixels();
+    expectedTransparent.setTransparentColor(0x112233);
+    Image actualTransparent = new Image(encoded);
+    actualTransparent.setTransparentColor(0x112233);
+    assertNull(actualTransparent.pixels);
+    assertArrayEquals(expectedTransparent.getPixels(), actualTransparent.getPixels());
+
+    Image expectedOpaque = new Image(encoded);
+    expectedOpaque.getPixels();
+    expectedOpaque.setTransparentColor(-1);
+    Image actualOpaque = new Image(encoded);
+    actualOpaque.setTransparentColor(-1);
+    assertNull(actualOpaque.pixels);
+    assertArrayEquals(expectedOpaque.getPixels(), actualOpaque.getPixels());
+  }
+
   private void assertDeferredAndEquivalent(Operation operation) throws Exception {
     byte[] encoded = png(6, 4);
     Image expected = new Image(encoded);

@@ -222,6 +222,47 @@ static bool transform(std::vector<uint8_t>* pixels, int32 width, int32 height, i
         }
         return true;
     }
+    case SKIA_IMAGE_COLOR_CHANGE_COLORS: {
+        const uint32_t from = static_cast<uint32_t>(parameter1);
+        const uint32_t to = static_cast<uint32_t>(parameter2);
+        for (size_t i = 0; i < pixels->size(); i += 4) {
+            const uint32_t pixel = (static_cast<uint32_t>((*pixels)[i + 3]) << 24)
+                | (static_cast<uint32_t>((*pixels)[i]) << 16)
+                | (static_cast<uint32_t>((*pixels)[i + 1]) << 8)
+                | static_cast<uint32_t>((*pixels)[i + 2]);
+            if (pixel == from) {
+                (*pixels)[i] = static_cast<uint8_t>(to >> 16);
+                (*pixels)[i + 1] = static_cast<uint8_t>(to >> 8);
+                (*pixels)[i + 2] = static_cast<uint8_t>(to);
+                (*pixels)[i + 3] = static_cast<uint8_t>(to >> 24);
+            }
+        }
+        return true;
+    }
+    case SKIA_IMAGE_COLOR_SET_TRANSPARENT_COLOR: {
+        const uint32_t color = static_cast<uint32_t>(parameter1);
+        if (static_cast<int32_t>(color) == -1) {
+            for (size_t i = 0; i < pixels->size(); i += 4) {
+                (*pixels)[i + 3] = 255;
+            }
+            return true;
+        }
+        const uint32_t rgb = color & 0x00ffffff;
+        for (size_t i = 0; i < pixels->size(); i += 4) {
+            const uint32_t pixelRgb = (static_cast<uint32_t>((*pixels)[i]) << 16)
+                | (static_cast<uint32_t>((*pixels)[i + 1]) << 8)
+                | static_cast<uint32_t>((*pixels)[i + 2]);
+            if (pixelRgb == rgb) {
+                (*pixels)[i] = static_cast<uint8_t>(rgb >> 16);
+                (*pixels)[i + 1] = static_cast<uint8_t>(rgb >> 8);
+                (*pixels)[i + 2] = static_cast<uint8_t>(rgb);
+                (*pixels)[i + 3] = 0;
+            } else {
+                (*pixels)[i + 3] = 255;
+            }
+        }
+        return true;
+    }
     default:
         return false;
     }
