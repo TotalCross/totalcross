@@ -80,10 +80,14 @@ Do not change the native `Font` instance-field layout.
 
 ## Progress
 
-- [ ] Record baseline and dirty-worktree state.
-- [ ] Milestone 1: make Skia and legacy font ownership mutually exclusive.
-- [ ] Milestone 2: make Skia TTF resolution safe and deterministic.
-- [ ] Close Plan 1 and prepare the exact handoff contract for Plan 2.
+- [x] (2026-09-03) Record baseline and dirty-worktree state.
+- [x] (2026-09-03) Milestone 1: make Skia and legacy font ownership mutually
+  exclusive; commit `bfac1883c` — `fix(font): separate skia and legacy loading`.
+- [x] (2026-09-03) Milestone 2: make Skia TTF resolution safe and
+  deterministic; commit `7f4f11d2a` —
+  `fix(font): make skia ttf resolution deterministic`.
+- [x] (2026-09-03) Close Plan 1 and prepare the exact handoff contract for
+  Plan 2.
 
 ## Current Architecture and Scope
 

@@ -17,10 +17,11 @@ Legacy PalmFont loading and assets remain isolated and supported.
 
 Plan 1 separated Skia and PalmFont ownership and made TTF lookup deterministic.
 Plan 2 hardened the registry, propagated bold style, reconciled SDK
-documentation, and required final native and SDK validation. All requested
-behaviors were delivered. The only planned test limitation was that the
-checkout has no CMake target for the historical full native VM test suite; a
-standalone Skia fixture supplied the focused native coverage instead.
+documentation, and required final native and SDK validation. All implementation
+requirements were delivered. The runtime tests specifically exercising Plan 1's
+`tufF_fontCreate()` could not be executed because the available CMake
+configuration does not expose the corresponding native test-suite target. A
+standalone Skia fixture supplied the focused registry and rendering coverage.
 
 ## What Changed
 
@@ -33,6 +34,8 @@ standalone Skia fixture supplied the focused native coverage instead.
   typefaces, bold rendering, and restoration to plain rendering.
 - `Font.java` documents generated legacy font archives, generic TCZ TTF
   lookup, default fallback, and renderer-specific bold behavior.
+- The final cleanup commit removes the obsolete default-font bold warning while
+  preserving the existing `getFont` API, cache, and legacy flow.
 
 ## Decisions and Trade-offs
 
@@ -66,9 +69,12 @@ compiled directly against the rebuilt `libtcvm.dylib`.
 - Direct Skia fixture: passed invalid-cache, repeated-cache, 40-entry
   capacity, bold-rendering, plain-reset, and existing surface assertions.
 - `TotalCrossSDK/gradlew-agent clean dist`: passed.
+- Plan 1 `tufF_fontCreate()` runtime tests: not executed; the corresponding
+  native CMake test-suite target is unavailable in this checkout.
 
-The Plan 2 checkpoint commits are `62d4afbba`, `bc6085176`, `d712b2df4`, and
-`374d55370`; Plan 1 supplied `bfac1883c` and `7f4f11d2a`.
+The finalization commit is `d35933a57`. The Plan 2 checkpoint commits are
+`62d4afbba`, `bc6085176`, `d712b2df4`, and `374d55370`; Plan 1 supplied
+`bfac1883c` and `7f4f11d2a`.
 
 ## Useful Evidence and Examples
 
@@ -78,16 +84,17 @@ index after insertion, proving both capacity and stability. It also renders a
 plain glyph, a bold glyph, and a later plain glyph, asserting that the first
 and third surfaces match while the bold surface differs.
 
-Full command output is preserved in the task logs referenced by
+The commands wrote output to local temporary logs referenced by
 `.agent/state/fix-skia-font-pipeline-02.md`; raw logs are intentionally not
 duplicated here.
 
 ## Limitations, Remaining Work, and Open Questions
 
 No Windows, Linux, Android, iOS, WinCE, or cross-target builds were run, as
-required by the active plans. The CMake checkout does not expose the full
-native VM test suite as a target. The deployed package’s final TTF inventory
-and behavior on every supported platform remain platform-release validation.
+required by the active plans. The CMake checkout does not expose the native
+test-suite target needed for the Plan 1 `tufF_fontCreate()` runtime tests. The
+deployed package’s final TTF inventory and behavior on every supported platform
+remain platform-release validation.
 
 ## Possible Article Angles
 
