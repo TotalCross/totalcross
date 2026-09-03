@@ -33,13 +33,15 @@ exact native passes by responsibility.
 - [x] Milestone 1: migrate fade/alpha/touch-up filter candidates.
 - [x] Milestone 2: migrate applyColor and applyColor2 (checkpoints
   `dcd4e026d`, `a1635eb26`).
-- [ ] Milestone 3: migrate exact color-key mutations and composition/barriers.
-- [ ] Close plan 4 and prepare plan 5 state.
+- [x] Milestone 3: migrate exact color-key mutations and composition/barriers
+  (checkpoints `7f03f2915`, `706c3d1c0`, `59cda45a6`).
+- [x] Close plan 4 and prepare plan 5 state.
 
 ## Current Architecture and Scope
 
-Plans 1-3 provide native backing and direct Skia geometry execution. Color nodes
-still resolve through eager routines or direct loops. The operations in scope are:
+Plans 1-3 provide native backing and direct Skia geometry execution. Plan 4 now
+routes the listed color nodes through exact native passes and native geometry
+barriers on deployed Skia. The operations in scope are:
 
     FADE
     ALPHA
@@ -274,8 +276,15 @@ path.
 
 ## Outcomes & Retrospective
 
-Record operations migrated, which ones use built-in filters versus exact native
-passes, commit SHAs, and gate/smoke outcomes. Do not paste LUTs or raw image dumps.
+Plan 4 migrated all listed color operations on deployed Skia. The implementation
+uses exact native unpremultiplied RGBA passes rather than built-in filters:
+fade, alpha, touch-up, APPLY_COLOR, APPLY_COLOR2, CHANGE_COLORS, and
+SET_TRANSPARENT_COLOR. APPLY_COLOR2 performs ordered native full-strip analysis;
+mixed pipelines group consecutive geometry nodes and keep exact color operations
+as native barriers. Checkpoints are `7b70f068c`, `c16f68a3b`, `dcd4e026d`,
+`a1635eb26`, `7f03f2915`, `706c3d1c0`, and `59cda45a6`. The macOS arm64 native
+build, focused SDK tests, distribution, and final native color-filter smoke all
+passed. Plan 5 remains the next separate retirement phase.
 
 ## Revision Note
 
