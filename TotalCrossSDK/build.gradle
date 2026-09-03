@@ -1134,7 +1134,10 @@ tasks.register('runImageNativeColorFilterSmokeMacOS', Exec) {
             'alpha=true',
             'faded=true',
             'applyColor=true',
+            'applyColor2=true',
             'touchUp=true',
+            'exactColors=true',
+            'mixedPipeline=true',
             'drawAndSave=true',
             'overallPass=true'
         ]

@@ -1177,6 +1177,17 @@ public class Image extends GfxSurface {
         ? 0 : scaledDimension(node.logicalWidth(), destinationScale);
     int targetHeight = scaledDimension(node.logicalHeight(), destinationScale);
     Image result;
+    if (!Settings.onJavaSE && source.backing instanceof NativeImageBacking
+        && (node.operationType() == ImagePipeline.FRAME_SELECT
+            || node.operationType() == ImagePipeline.FRAME_LAYOUT
+            || node.operationType() == ImagePipeline.CROP
+            || node.operationType() == ImagePipeline.ROTATE_SCALE)) {
+      result = source.eagerNativeGeometryStep(node, destinationScale);
+      result.logicalWidth = node.logicalWidth();
+      result.logicalHeight = node.logicalHeight();
+      result.contentScale = destinationScale;
+      return result;
+    }
     switch (node.operationType()) {
     case ImagePipeline.FRAME_SELECT:
       result = source.eagerFrameSelection(node.parameter1());
@@ -1241,6 +1252,41 @@ public class Image extends GfxSurface {
     if (node.operationType() != ImagePipeline.FRAME_LAYOUT) {
       result.widthOfAllFrames = result.frameCount > 1 ? result.width * result.frameCount : result.width;
     }
+    return result;
+  }
+
+  private Image eagerNativeGeometryStep(ImagePipeline node, double destinationScale) throws ImageException {
+    int[] operations = { node.operationType() };
+    int[] parameters = { node.parameter1(), node.parameter2(), node.parameter3(), node.parameter4() };
+    int[] dimensions = { node.logicalWidth(), node.logicalHeight() };
+    ImageGeometryPlan plan = new ImageGeometryPlan(this, operations, parameters, dimensions,
+        width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames, contentScale,
+        node.logicalWidth(), node.logicalHeight(), node.frameCount(), node.widthOfAllFrames(), currentFrame,
+        255, transparentColor, 255, 255, destinationScale, destinationScale,
+        hwScaleW, hwScaleH, hwScaleW, hwScaleH);
+    NativeImageBacking nativeBacking = NativeImageBacking.materializeGeometry(plan);
+    int outputFrameCount = Math.max(1, node.frameCount());
+    int outputWidth = nativeBacking.width() / outputFrameCount;
+    Image result = new Image();
+    result.backing = nativeBacking;
+    result.width = outputWidth;
+    result.height = nativeBacking.height();
+    result.logicalWidth = node.logicalWidth();
+    result.logicalHeight = node.logicalHeight();
+    result.contentScale = destinationScale;
+    result.frameCount = outputFrameCount;
+    result.currentFrame = outputFrameCount > 1 ? normalizedFrame(currentFrame) : -1;
+    result.widthOfAllFrames = nativeBacking.width();
+    result.comment = outputFrameCount > 1 ? "FC=" + outputFrameCount : null;
+    result.path = path;
+    result.surfaceType = surfaceType;
+    result.transparentColor = transparentColor;
+    result.useAlpha = useAlpha;
+    result.alphaMask = alphaMask;
+    result.hwScaleW = hwScaleW;
+    result.hwScaleH = hwScaleH;
+    result.textureId = -1;
+    result.init();
     return result;
   }
 

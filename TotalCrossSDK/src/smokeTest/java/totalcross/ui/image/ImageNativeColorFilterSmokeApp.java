@@ -8,7 +8,7 @@ import totalcross.io.ByteArrayStream;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Graphics;
 
-/** Deployed macOS smoke for native fade, alpha, and touch-up operations. */
+/** Deployed macOS smoke for native color mutations and mixed pipelines. */
 public class ImageNativeColorFilterSmokeApp extends MainWindow {
   private static final int WIDTH = 4;
   private static final int HEIGHT = 1;
@@ -23,6 +23,8 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
     boolean applyColor2 = false;
     boolean touchUp = false;
     boolean applyColor = false;
+    boolean exactColors = false;
+    boolean mixedPipeline = false;
     boolean drawAndSave = false;
     String error = "";
     try {
@@ -69,6 +71,50 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
           && color2Pixels[3] == applyColor2(SOURCE[3], 0xAA4080C0);
       require(applyColor2, "applyColor2 mapping");
 
+      Image changed = sourceImage();
+      changed.changeColors(SOURCE[0], 0xFFAABBCC);
+      int[] changedPixels = changed.getPixels();
+      Image transparent = sourceImage();
+      transparent.setTransparentColor(SOURCE[0] & 0x00FFFFFF);
+      int[] transparentPixels = transparent.getPixels();
+      Image opaque = sourceImage();
+      opaque.setTransparentColor(-1);
+      int[] opaquePixels = opaque.getPixels();
+      exactColors = changedPixels[0] == 0xFFAABBCC
+          && changedPixels[1] == SOURCE[1]
+          && transparentPixels[0] == (SOURCE[0] & 0x00FFFFFF)
+          && (transparentPixels[0] >>> 24) == 0
+          && (transparentPixels[1] >>> 24) == 0xFF
+          && opaquePixels[0] == SOURCE[0];
+      require(exactColors, "exact color mutations");
+
+      Image mixed = sourceImage().getClippedInstance(0, 0, WIDTH, HEIGHT)
+          .getSmoothScaledInstance(8, 2);
+      mixed.applyFade(128);
+      mixed.changeColors(fade(SOURCE[0], 128), 0xFF010203);
+      Image mixedResult = mixed.getRotatedScaledInstance(100, 90, 0).getAlphaInstance(-20);
+      int[] mixedPixels = mixedResult.getPixels();
+      ByteArrayStream mixedEncoded = new ByteArrayStream(512);
+      mixedResult.createPng(mixedEncoded);
+      Image mixedSaved = new Image(mixedEncoded.getBuffer(), mixedEncoded.getPos());
+      Image mixedDestination = new Image(mixedResult.getWidth(), mixedResult.getHeight());
+      mixedDestination.getGraphics().drawImage(mixedResult, 0, 0);
+      mixedPipeline = sameArray(mixedPixels, mixedSaved.getPixels())
+          && sameArray(mixedPixels, mixedDestination.getPixels());
+      require(mixedPipeline, "mixed native pipeline");
+
+      Image chained = sourceImage();
+      chained.applyColor(0xFF804020);
+      chained.applyColor2(0xAA4080C0);
+      chained.setTransparentColor(0x010203);
+      ByteArrayStream chainedEncoded = new ByteArrayStream(512);
+      chained.createPng(chainedEncoded);
+      Image chainedSaved = new Image(chainedEncoded.getBuffer(), chainedEncoded.getPos());
+      Image chainedDestination = new Image(WIDTH, HEIGHT);
+      chainedDestination.getGraphics().drawImage(chained, 0, 0);
+      drawAndSave = sameArray(chained.getPixels(), chainedSaved.getPixels())
+          && sameArray(chained.getPixels(), chainedDestination.getPixels());
+
       Image touched = sourceImage().getTouchedUpInstance((byte) 20, (byte) -10);
       require(touched.pixels == null && touched.hasNativeBackingForSmoke(),
           "touch-up native result backing");
@@ -82,7 +128,7 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
       Image destination = new Image(WIDTH, HEIGHT);
       Graphics destinationGraphics = destination.getGraphics();
       destinationGraphics.drawImage(touched, 0, 0);
-      drawAndSave = sameArray(touchedPixels, saved.getPixels())
+      drawAndSave = drawAndSave && sameArray(touchedPixels, saved.getPixels())
           && sameArray(touchedPixels, destination.getPixels());
       require(drawAndSave, "direct draw and saved output");
     } catch (Throwable failure) {
@@ -90,11 +136,12 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
     }
 
     boolean overallPass = nativeBacking && frameScopedFade && alpha && faded && applyColor && applyColor2
-        && touchUp && drawAndSave;
+        && touchUp && exactColors && mixedPipeline && drawAndSave;
     System.out.println("fixture=ImageNativeColorFilterSmokeApp,nativeBacking=" + nativeBacking
         + ",frameScopedFade=" + frameScopedFade + ",alpha=" + alpha + ",faded=" + faded
         + ",applyColor=" + applyColor + ",applyColor2=" + applyColor2
-        + ",touchUp=" + touchUp + ",drawAndSave=" + drawAndSave
+        + ",touchUp=" + touchUp + ",exactColors=" + exactColors
+        + ",mixedPipeline=" + mixedPipeline + ",drawAndSave=" + drawAndSave
         + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
