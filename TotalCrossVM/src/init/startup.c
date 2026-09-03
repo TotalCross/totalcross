@@ -186,15 +186,19 @@ static bool loadLibraries(Context currentContext, CharP path, bool first)
    return err == NO_ERROR;
 }
 
-static void checkFullScreenPlatform() // guich@tc120_59
+static bool checkFullScreenPlatform() // guich@tc120_59
 {
    if (*tcSettings.fullScreenPlatformsPtr)
    {
       char plat[100];
       String2CharPBuf(*tcSettings.fullScreenPlatformsPtr, plat);
       if (xstrstr(plat, platform) == null)    // if the platform is not inside, set to false
+      {
          *tcSettings.isFullScreenPtr = false;
+         return false;
+      }
    }
+   return true;
 }
 
 #define ISNOTSIGNED 0
@@ -226,17 +230,27 @@ TC_API int32 startProgram(Context currentContext)
    else
    if (currentContext->thrownException == null && keepRunning)
    {
-      checkFullScreenPlatform();
 #if TC_OS_DESKTOP
+      TCWindowStartupOptions startupOptions;
+      TCFullscreenSetting settingsFullscreen;
+      bool fullscreen;
+      bool platformAllowed = checkFullScreenPlatform();
+
+      startupOptions = desktopWindowStartupOptions;
+      windowLoadStartupEnvironment(&startupOptions);
+      settingsFullscreen = platformAllowed && *tcSettings.isFullScreenPtr
+         ? TC_FULLSCREEN_TRUE
+         : !platformAllowed ? TC_FULLSCREEN_FALSE : TC_FULLSCREEN_UNSET;
+      windowResolveFullscreen(&startupOptions, settingsFullscreen, &fullscreen);
 #if !TC_WINDOWING_SDL
-      if (desktopWindowStartupOptions.initialState == TC_INITIAL_WINDOW_FULLSCREEN
-         || (desktopWindowStartupOptions.initialState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr))
+      if (fullscreen)
          setFullScreen();
 #else
-      if (desktopWindowStartupOptions.initialState == TC_INITIAL_WINDOW_NORMAL && *tcSettings.isFullScreenPtr)
+      if (fullscreen && settingsFullscreen == TC_FULLSCREEN_TRUE)
          TCSDL_SetFullscreen(true);
 #endif
 #else
+      checkFullScreenPlatform();
       if (*tcSettings.isFullScreenPtr)
          setFullScreen();
 #endif

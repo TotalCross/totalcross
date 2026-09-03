@@ -33,11 +33,12 @@ int main(void)
    testSuite.fail = testFail;
    testSuite.output = testOutput;
    test_windowResolveStartupConfiguration(&testSuite, null);
+   test_windowResolveStartupFullscreenPolicy(&testSuite, null);
    if (testSuite.failed != 0)
    {
-      fprintf(stderr, "windowResolveStartupConfiguration failed\n");
+      fprintf(stderr, "WindowStartup tests failed\n");
       return 1;
    }
-   puts("windowResolveStartupConfiguration passed");
+   puts("WindowStartup tests passed");
    return 0;
 }

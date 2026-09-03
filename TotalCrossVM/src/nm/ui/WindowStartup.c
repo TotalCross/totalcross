@@ -5,7 +5,22 @@
 #include "WindowStartup.h"
 #include "../../tcvm/tcvm.h"
 
+#include <stdio.h>
 #include <stdlib.h>
+
+static bool equalsIgnoreCase(const char *left, const char *right)
+{
+   while (*left != '\0' && *right != '\0')
+   {
+      char leftChar = *left >= 'A' && *left <= 'Z' ? *left + ('a' - 'A') : *left;
+      char rightChar = *right >= 'A' && *right <= 'Z' ? *right + ('a' - 'A') : *right;
+      if (leftChar != rightChar)
+         return false;
+      left++;
+      right++;
+   }
+   return *left == '\0' && *right == '\0';
+}
 
 static int32 environmentDimension(const char *name)
 {
@@ -33,14 +48,37 @@ void windowResetCommandLineOptions(TCWindowStartupOptions *options)
 
 void windowLoadStartupEnvironment(TCWindowStartupOptions *options)
 {
+#if TC_OS_DESKTOP
+   const char *fullscreen;
+#endif
+
    if (options == null)
       return;
    options->environmentWidth = -1;
    options->environmentHeight = -1;
+   options->environmentFullscreen = TC_FULLSCREEN_UNSET;
 #if TC_OS_DESKTOP
    options->environmentWidth = environmentDimension("TC_WIDTH");
    options->environmentHeight = environmentDimension("TC_HEIGHT");
+   fullscreen = getenv("TC_FULLSCREEN");
+   if (fullscreen != null)
+   {
+      options->environmentFullscreen = windowParseFullscreenEnvironment(fullscreen);
+      if (options->environmentFullscreen == TC_FULLSCREEN_UNSET)
+         fprintf(stderr, "Ignoring invalid TC_FULLSCREEN; expected true or false (or 1 or 0).\n");
+   }
 #endif
+}
+
+TCFullscreenSetting windowParseFullscreenEnvironment(const char *value)
+{
+   if (value == null)
+      return TC_FULLSCREEN_UNSET;
+   if (equalsIgnoreCase(value, "true") || equalsIgnoreCase(value, "1"))
+      return TC_FULLSCREEN_TRUE;
+   if (equalsIgnoreCase(value, "false") || equalsIgnoreCase(value, "0"))
+      return TC_FULLSCREEN_FALSE;
+   return TC_FULLSCREEN_UNSET;
 }
 
 static bool hasTczSize(int16 appTczAttr)
@@ -82,9 +120,59 @@ static TCWindowPositionMode resolvePositionMode(int32 position)
       : TC_WINDOW_POSITION_DEFAULT;
 }
 
-bool windowResolveStartupConfiguration(
+static TCWindowStartupPlatform currentPlatform(void)
+{
+#if TC_OS_LINUX
+#if TC_ARCH_ARM_FAMILY
+   return TC_WINDOW_PLATFORM_LINUX_ARM;
+#else
+   return TC_WINDOW_PLATFORM_LINUX_X86;
+#endif
+#elif TC_OS_WINDOWS
+   return TC_WINDOW_PLATFORM_WINDOWS;
+#elif TC_OS_MACOS
+   return TC_WINDOW_PLATFORM_MACOS;
+#else
+   return TC_WINDOW_PLATFORM_LINUX_X86;
+#endif
+}
+
+static bool platformDefaultFullscreen(TCWindowStartupPlatform platform)
+{
+   return platform == TC_WINDOW_PLATFORM_LINUX_ARM;
+}
+
+static bool resolveFullscreen(
+   const TCWindowStartupOptions *options,
+   TCFullscreenSetting settingsFullscreen,
+   TCWindowStartupPlatform platform)
+{
+   if (options->initialState == TC_INITIAL_WINDOW_FULLSCREEN)
+      return true;
+   if (options->initialState == TC_INITIAL_WINDOW_MAXIMIZED)
+      return false;
+   if (options->environmentFullscreen != TC_FULLSCREEN_UNSET)
+      return options->environmentFullscreen == TC_FULLSCREEN_TRUE;
+   if (settingsFullscreen != TC_FULLSCREEN_UNSET)
+      return settingsFullscreen == TC_FULLSCREEN_TRUE;
+   return platformDefaultFullscreen(platform);
+}
+
+bool windowResolveFullscreen(
+   const TCWindowStartupOptions *options,
+   TCFullscreenSetting settingsFullscreen,
+   bool *fullscreen)
+{
+   if (options == null || fullscreen == null)
+      return false;
+   *fullscreen = resolveFullscreen(options, settingsFullscreen, currentPlatform());
+   return true;
+}
+
+bool windowResolveStartupConfigurationForPlatform(
    const TCWindowStartupOptions *options,
    const TCDisplayMetrics *display,
+   TCWindowStartupPlatform platform,
    TCWindowStartupConfiguration *configuration)
 {
    int32 tczWidth;
@@ -106,9 +194,7 @@ bool windowResolveStartupConfiguration(
       || tczSizeSource;
    defaultWidth = display->width / 2;
    defaultHeight = display->height / 2;
-   configuration->fullscreen = options->initialState == TC_INITIAL_WINDOW_FULLSCREEN
-      || (options->initialState == TC_INITIAL_WINDOW_NORMAL
-         && options->legacyFullscreen);
+   configuration->fullscreen = resolveFullscreen(options, options->initialFullscreen, platform);
    configuration->maximized = !configuration->fullscreen
       && options->initialState == TC_INITIAL_WINDOW_MAXIMIZED;
    configuration->resizable = (options->appTczAttr & ATTR_RESIZABLE_WINDOW) != 0
@@ -146,4 +232,13 @@ bool windowResolveStartupConfiguration(
    }
 
    return configuration->width > 0 && configuration->height > 0;
+}
+
+bool windowResolveStartupConfiguration(
+   const TCWindowStartupOptions *options,
+   const TCDisplayMetrics *display,
+   TCWindowStartupConfiguration *configuration)
+{
+   return windowResolveStartupConfigurationForPlatform(
+      options, display, currentPlatform(), configuration);
 }

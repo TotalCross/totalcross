@@ -25,6 +25,21 @@ typedef enum
    TC_WINDOW_POSITION_EXPLICIT
 } TCWindowPositionMode;
 
+typedef enum
+{
+   TC_FULLSCREEN_UNSET,
+   TC_FULLSCREEN_FALSE,
+   TC_FULLSCREEN_TRUE
+} TCFullscreenSetting;
+
+typedef enum
+{
+   TC_WINDOW_PLATFORM_LINUX_ARM,
+   TC_WINDOW_PLATFORM_LINUX_X86,
+   TC_WINDOW_PLATFORM_WINDOWS,
+   TC_WINDOW_PLATFORM_MACOS
+} TCWindowStartupPlatform;
+
 typedef struct
 {
    bool screenSpecified;
@@ -37,7 +52,8 @@ typedef struct
    int32 environmentHeight;
 
    TCInitialWindowState initialState;
-   bool legacyFullscreen;
+   TCFullscreenSetting initialFullscreen;     // Settings.isFullScreen before app startup
+   TCFullscreenSetting environmentFullscreen; // TC_FULLSCREEN override
    int16 appTczAttr;
 } TCWindowStartupOptions;
 
@@ -66,9 +82,19 @@ typedef struct
 
 void windowResetCommandLineOptions(TCWindowStartupOptions *options);
 void windowLoadStartupEnvironment(TCWindowStartupOptions *options);
+TCFullscreenSetting windowParseFullscreenEnvironment(const char *value);
+bool windowResolveFullscreen(
+   const TCWindowStartupOptions *options,
+   TCFullscreenSetting settingsFullscreen,
+   bool *fullscreen);
 bool windowResolveStartupConfiguration(
    const TCWindowStartupOptions *options,
    const TCDisplayMetrics *display,
+   TCWindowStartupConfiguration *configuration);
+bool windowResolveStartupConfigurationForPlatform(
+   const TCWindowStartupOptions *options,
+   const TCDisplayMetrics *display,
+   TCWindowStartupPlatform platform,
    TCWindowStartupConfiguration *configuration);
 
 #ifdef __cplusplus

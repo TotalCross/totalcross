@@ -49,7 +49,7 @@ bool isMainWindow = false;   // extends MainWindow ?
 #if TC_OS_DESKTOP
 TCWindowStartupOptions desktopWindowStartupOptions = {
    false, -1, -1, -1, -1, -1, -1,
-   TC_INITIAL_WINDOW_NORMAL, false, 0
+   TC_INITIAL_WINDOW_NORMAL, TC_FULLSCREEN_UNSET, TC_FULLSCREEN_UNSET, 0
 };
 #endif
 #if defined(ANDROID)

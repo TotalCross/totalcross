@@ -254,7 +254,7 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen, int16 
       display.usableHeight = display.height;
 
    options.appTczAttr = appTczAttr;
-   options.legacyFullscreen = fullScreen;
+   options.initialFullscreen = fullScreen ? TC_FULLSCREEN_TRUE : TC_FULLSCREEN_UNSET;
    windowLoadStartupEnvironment(&options);
    if (!windowResolveStartupConfiguration(&options, &display, &startupConfiguration))
    {
