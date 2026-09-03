@@ -33,21 +33,39 @@ final class NativeImageBacking extends ImageBacking {
     if (handle == 0) {
       throw new ImageException("Could not materialize native image geometry.");
     }
-    boolean integerFrameLayout = plan.outputFrameCount > 1 && plan.outputWidthOfAllFrames > 0
+    boolean frameLayout = plan.outputFrameCount > 1 && plan.outputWidthOfAllFrames > 0
         && plan.operations.length > 0
         && plan.operations[plan.operations.length - 1] == ImagePipeline.FRAME_LAYOUT;
-    double physicalWidth = integerFrameLayout
+    boolean destinationScaledFrameLayout = frameLayout && hasDestinationScaledGeometry(plan);
+    double physicalWidth = frameLayout && !destinationScaledFrameLayout
         ? plan.outputWidthOfAllFrames / plan.outputFrameCount
         : Math.ceil(plan.outputWidth * plan.outputContentScale);
     double physicalHeight = Math.ceil(plan.outputHeight * plan.outputContentScale);
-    long fullWidth = integerFrameLayout ? plan.outputWidthOfAllFrames
-        : (long) physicalWidth * Math.max(1, plan.outputFrameCount);
-    if (!Double.isFinite(physicalWidth) || !Double.isFinite(physicalHeight) || physicalWidth <= 0
-        || physicalHeight <= 0 || fullWidth > Integer.MAX_VALUE) {
+    double fullWidth = frameLayout ? plan.outputWidthOfAllFrames
+        : physicalWidth * Math.max(1, plan.outputFrameCount);
+    if (destinationScaledFrameLayout && plan.operations.length > 1) {
+      int previousWidth = plan.dimensions[(plan.operations.length - 2) * 2];
+      double transformedWidth = Math.ceil(previousWidth * plan.destinationScale);
+      fullWidth = Math.max(fullWidth, Math.max(transformedWidth,
+          physicalWidth * plan.outputFrameCount));
+    }
+    if (!Double.isFinite(physicalWidth) || !Double.isFinite(physicalHeight) || !Double.isFinite(fullWidth)
+        || physicalWidth <= 0 || physicalHeight <= 0 || fullWidth > Integer.MAX_VALUE) {
       releaseNativeHandle(handle);
       throw new ImageException("Native image geometry dimensions are too large.");
     }
     return new NativeImageBacking(handle, (int) fullWidth, (int) physicalHeight);
+  }
+
+  private static boolean hasDestinationScaledGeometry(ImageGeometryPlan plan) {
+    for (int i = 0; i < plan.operations.length - 1; i++) {
+      int operation = plan.operations[i];
+      if (operation == ImagePipeline.SCALE || operation == ImagePipeline.SMOOTH_SCALE
+          || operation == ImagePipeline.ROTATE_SCALE) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static NativeImageBacking createEmpty(int width, int height) throws ImageException {

@@ -194,8 +194,12 @@ class ImageDeferredFrameStateTest {
     image.setFrameCount(2);
     assertEquals(1, image.getWidth());
     assertEquals(1, intField(image, "logicalWidth"));
-    assertEquals(2, image.resolveForDrawing(2).getPixelWidth());
-    assertEquals(1, image.resolveForDrawing(2).getWidth());
+    Image oneX = image.resolveForDrawing(1);
+    assertEquals(1, oneX.getPixelWidth());
+    assertEquals(1, oneX.getWidth());
+    Image twoX = image.resolveForDrawing(2);
+    assertEquals(2, twoX.getPixelWidth());
+    assertEquals(1, twoX.getWidth());
 
     Image roundTripSource = new Image(stripPng(5, 2));
     roundTripSource.setFrameCount(2);
@@ -205,6 +209,10 @@ class ImageDeferredFrameStateTest {
     assertEquals(5, inspection.width);
     assertEquals(2, inspection.frameCount);
     assertEquals("FC=2", inspection.comment);
+    Image roundTrip = new Image(output.toByteArray());
+    Image expectedStrip = new Image(stripPng(5, 2));
+    expectedStrip.setFrameCount(2);
+    assertArrayEquals(allFramePixels(expectedStrip), allFramePixels(roundTrip));
   }
 
   @Test

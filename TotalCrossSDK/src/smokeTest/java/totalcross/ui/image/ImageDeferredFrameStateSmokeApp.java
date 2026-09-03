@@ -40,6 +40,8 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     boolean frameLayoutMetadata = false;
     boolean frameLayoutPixels = false;
     boolean frameLayoutRoundTrip = false;
+    boolean frameLayoutResidualRoundTrip = false;
+    boolean frameLayoutScaledResidual = false;
     boolean frameLayoutRetryable = false;
     String error = "";
 
@@ -141,9 +143,13 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
 
       Image scaledLayout = new Image(encodedStrip()).getSmoothScaledInstance(3, 2);
       scaledLayout.setFrameCount(2);
+      Image scaledLayoutUnitVariant = scaledLayout.resolveForDrawing(1);
       Image scaledLayoutVariant = scaledLayout.resolveForDrawing(2);
       frameLayoutMetadata = frameLayoutMetadata && scaledLayout.getWidth() == 1
-          && scaledLayoutVariant.getWidth() == 1 && scaledLayoutVariant.getPixelWidth() == 1;
+          && scaledLayoutUnitVariant.getWidth() == 1 && scaledLayoutUnitVariant.getPixelWidth() == 1
+          && scaledLayoutVariant.getWidth() == 1 && scaledLayoutVariant.getPixelWidth() == 2;
+      frameLayoutScaledResidual = hasNonTransparentResidual(scaledLayoutUnitVariant, 3)
+          && hasNonTransparentResidual(scaledLayoutVariant, 6);
 
       Image roundTripSource = new Image(encodedStrip());
       roundTripSource.setFrameCount(2);
@@ -154,6 +160,9 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
       frameLayoutRoundTrip = roundTrip.getFrameCount() == 2 && roundTripEncoded.getIntrinsicWidth() == 5
           && "FC=2".equals(roundTripEncoded.getComment());
       require(frameLayoutRoundTrip, "frame layout round trip");
+
+      frameLayoutResidualRoundTrip = nativeResidualFrameLayoutRoundTrip();
+      require(frameLayoutResidualRoundTrip, "frame layout residual round trip");
 
       hidpiFrameLayout = highDensityFrameLayout(2.0) && highDensityFrameLayout(1.5);
       require(hidpiFrameLayout, "high-density frame layout");
@@ -229,7 +238,8 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
         && exactFractionalScale175 && croppedExactFractionalScale && frameSelectedExactFractionalScale
         && zeroWidthFrameCompatibility && frameLayoutDeferred && frameLayoutMetadata
         && materializedFrameLayoutCompatibility && zeroWidthNativeFrameCompatibility
-        && frameLayoutPixels && frameLayoutRoundTrip && frameLayoutRetryable;
+        && frameLayoutPixels && frameLayoutRoundTrip && frameLayoutResidualRoundTrip
+        && frameLayoutScaledResidual && frameLayoutRetryable;
     System.out.println("fixture=ImageDeferredFrameStateSmokeApp,currentFrameDeferred=" + currentFrameDeferred
         + ",currentFrameWrap=" + currentFrameWrap + ",cachedVariantReused=" + cachedVariantReused
         + ",cachedVariantFrameUpdated=" + cachedVariantFrameUpdated + ",canonicalSelectedFrame="
@@ -247,6 +257,8 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
         + ",zeroWidthNativeFrameCompatibility=" + zeroWidthNativeFrameCompatibility
         + ",frameLayoutDeferred=" + frameLayoutDeferred + ",frameLayoutMetadata=" + frameLayoutMetadata
         + ",frameLayoutPixels=" + frameLayoutPixels + ",frameLayoutRoundTrip=" + frameLayoutRoundTrip
+        + ",frameLayoutResidualRoundTrip=" + frameLayoutResidualRoundTrip
+        + ",frameLayoutScaledResidual=" + frameLayoutScaledResidual
         + ",frameLayoutRetryable=" + frameLayoutRetryable + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
@@ -296,6 +308,18 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     return true;
   }
 
+  private static boolean sameBytes(byte[] first, byte[] second) {
+    if (first == null || second == null || first.length != second.length) {
+      return false;
+    }
+    for (int i = 0; i < first.length; i++) {
+      if (first[i] != second[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private static boolean sameRows(Image expected, Image actual) throws Exception {
     return sameRows(expected, actual, expected.getPixelWidth() * expected.getFrameCount());
   }
@@ -313,6 +337,66 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
       }
     }
     return true;
+  }
+
+  private static boolean nativeResidualFrameLayoutRoundTrip() throws Exception {
+    Image source = new Image(5, 2);
+    fillPhysicalStripWithGraphics(source);
+    ByteArrayStream encoded = new ByteArrayStream(256);
+    source.createPng(encoded);
+
+    Image actual = new Image(copy(encoded));
+    actual.setFrameCount(2);
+    Image resolved = actual.resolveForDrawing(1);
+    int[] first = resolved.getPixels();
+    actual.setCurrentFrame(1);
+    int[] second = actual.resolveForDrawing(1).getPixels();
+    byte[] expectedStorage = stripRgba(5, 2);
+    byte[] materializedStorage = readStorageRgba(resolved, 5, 2);
+
+    ByteArrayStream roundTripOutput = new ByteArrayStream(256);
+    resolved.createPng(roundTripOutput);
+    Image roundTrip = new Image(copy(roundTripOutput));
+    byte[] roundTripStorage = readStorageRgba(roundTrip, 5, 2);
+    return resolved.hasNativeBackingForSmoke() && resolved.getPixelWidth() == 2 && resolved.getWidth() == 2
+        && sameArray(first, framePixels(0, 2)) && sameArray(second, framePixels(1, 2))
+        && sameBytes(expectedStorage, materializedStorage) && sameBytes(expectedStorage, roundTripStorage);
+  }
+
+  private static boolean hasNonTransparentResidual(Image image, int storageWidth) throws Exception {
+    byte[] storage = readStorageRgba(image, storageWidth, image.getPixelHeight());
+    int rowBytes = storageWidth * 4;
+    for (int y = 0; y < image.getPixelHeight(); y++) {
+      if ((storage[y * rowBytes + (storageWidth - 1) * 4 + 3] & 0xFF) == 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static byte[] readStorageRgba(Image image, int storageWidth, int storageHeight) {
+    byte[] result = new byte[storageWidth * storageHeight * 4];
+    byte[] row = new byte[storageWidth * 4];
+    for (int y = 0; y < storageHeight; y++) {
+      image.getPixelRow(row, y);
+      Vm.arrayCopy(row, 0, result, y * row.length, row.length);
+    }
+    return result;
+  }
+
+  private static byte[] stripRgba(int width, int height) {
+    byte[] result = new byte[width * height * 4];
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        int pixel = stripPixel(x, y);
+        int offset = (y * width + x) * 4;
+        result[offset] = (byte) (pixel >> 16);
+        result[offset + 1] = (byte) (pixel >> 8);
+        result[offset + 2] = (byte) pixel;
+        result[offset + 3] = (byte) (pixel >>> 24);
+      }
+    }
+    return result;
   }
 
   private static boolean highDensityFrameLayout(double contentScale) throws Exception {

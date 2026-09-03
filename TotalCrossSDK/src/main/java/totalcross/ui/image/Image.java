@@ -1023,7 +1023,8 @@ public class Image extends GfxSurface {
   }
 
   private Image resolvePipeline(ImagePipeline deferred, double destinationScale) throws ImageException {
-    if (!Settings.onJavaSE && deferred.isGeometryOnly() && !deferred.hasZeroWidthFrameLayout()) {
+    if (!Settings.onJavaSE && deferred.isGeometryOnly() && !deferred.hasZeroWidthFrameLayout()
+        && !isPureFrameLayout(deferred)) {
       Image nativeGeometry = materializeNativeGeometry(deferred, destinationScale);
       if (nativeGeometry != null) {
         return nativeGeometry;
@@ -1058,6 +1059,30 @@ public class Image extends GfxSurface {
         || operationType == ImagePipeline.CROP || operationType == ImagePipeline.FRAME_LAYOUT;
   }
 
+  private static boolean isPureFrameLayout(ImagePipeline pipeline) {
+    return pipeline != null && pipeline.operationType() == ImagePipeline.FRAME_LAYOUT
+        && pipeline.previous() != null && pipeline.previous().previous() == null;
+  }
+
+  private static boolean isFinalFrameLayout(ImageGeometryPlan plan) {
+    return plan.operations.length > 0 && plan.outputFrameCount > 1
+        && plan.operations[plan.operations.length - 1] == ImagePipeline.FRAME_LAYOUT;
+  }
+
+  private static boolean hasDestinationScaledFrameLayout(ImageGeometryPlan plan) {
+    if (!isFinalFrameLayout(plan)) {
+      return false;
+    }
+    for (int i = 0; i < plan.operations.length - 1; i++) {
+      int operation = plan.operations[i];
+      if (operation == ImagePipeline.SCALE || operation == ImagePipeline.SMOOTH_SCALE
+          || operation == ImagePipeline.ROTATE_SCALE) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private Image materializeNativeGeometry(ImagePipeline deferred, double destinationScale) throws ImageException {
     Object geometry = geometryPlanForDrawing(destinationScale);
     if (!(geometry instanceof ImageGeometryPlan)) {
@@ -1067,6 +1092,9 @@ public class Image extends GfxSurface {
     NativeImageBacking nativeBacking = NativeImageBacking.materializeGeometry(plan);
     int frameCount = Math.max(1, plan.outputFrameCount);
     int visibleWidth = nativeBacking.width() / frameCount;
+    if (hasDestinationScaledFrameLayout(plan)) {
+      visibleWidth = scaledDimension(plan.outputWidth, plan.destinationScale);
+    }
     Image result = new Image();
     result.backing = nativeBacking;
     result.width = visibleWidth;
@@ -1299,11 +1327,9 @@ public class Image extends GfxSurface {
       dimensions[dimensionOffset + 1] = node.logicalHeight();
     }
     ImagePipeline outputNode = nodes.get(first);
-    if (outputNode.operationType() == ImagePipeline.FRAME_LAYOUT && outputNode.logicalWidth() == 0) {
-      if (count != 1) {
-        throw new ImageException("Zero-width frame layout cannot be combined with native geometry.");
-      }
-      return eagerZeroWidthNativeFrameLayout(outputNode.parameter1(), outputNode.logicalWidth(),
+    if (outputNode.operationType() == ImagePipeline.FRAME_LAYOUT && count == 1
+        && outputNode.previous() != null && outputNode.previous().previous() == null) {
+      return eagerNativeFrameLayoutMetadata(outputNode.parameter1(), outputNode.logicalWidth(),
           outputNode.logicalHeight(), outputNode.widthOfAllFrames());
     }
     ImageGeometryPlan plan = new ImageGeometryPlan(this, operations, parameters, dimensions,
@@ -1338,15 +1364,16 @@ public class Image extends GfxSurface {
     return result;
   }
 
-  private Image eagerZeroWidthNativeFrameLayout(int outputFrameCount, int outputLogicalWidth,
+  private Image eagerNativeFrameLayoutMetadata(int outputFrameCount, int outputLogicalWidth,
       int outputLogicalHeight, int outputWidthOfAllFrames) throws ImageException {
     if (!(backing instanceof NativeImageBacking) || !backing.isValid() || outputFrameCount <= 1
-        || outputLogicalWidth != 0 || outputLogicalHeight <= 0 || outputWidthOfAllFrames <= 0) {
-      throw new ImageException("Invalid zero-width native frame layout.");
+        || outputLogicalWidth < 0 || outputLogicalHeight <= 0 || outputWidthOfAllFrames <= 0
+        || outputWidthOfAllFrames != backing.width()) {
+      throw new ImageException("Invalid native frame layout metadata.");
     }
     Image result = new Image();
     result.backing = backing;
-    result.width = 0;
+    result.width = outputWidthOfAllFrames / outputFrameCount;
     result.height = height;
     result.logicalWidth = outputLogicalWidth;
     result.logicalHeight = outputLogicalHeight;

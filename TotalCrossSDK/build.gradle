@@ -1380,6 +1380,8 @@ tasks.register('runImageDeferredFrameStateSmokeMacOS', Exec) {
             'frameLayoutMetadata=true',
             'frameLayoutPixels=true',
             'frameLayoutRoundTrip=true',
+            'frameLayoutResidualRoundTrip=true',
+            'frameLayoutScaledResidual=true',
             'frameLayoutRetryable=true',
             'overallPass=true'
         ]
