@@ -33,9 +33,15 @@ final class NativeImageBacking extends ImageBacking {
     if (handle == 0) {
       throw new ImageException("Could not materialize native image geometry.");
     }
-    double physicalWidth = Math.ceil(plan.outputWidth * plan.outputContentScale);
+    boolean integerFrameLayout = plan.outputFrameCount > 1 && plan.outputWidthOfAllFrames > 0
+        && plan.operations.length > 0
+        && plan.operations[plan.operations.length - 1] == ImagePipeline.FRAME_LAYOUT;
+    double physicalWidth = integerFrameLayout
+        ? plan.outputWidthOfAllFrames / plan.outputFrameCount
+        : Math.ceil(plan.outputWidth * plan.outputContentScale);
     double physicalHeight = Math.ceil(plan.outputHeight * plan.outputContentScale);
-    long fullWidth = (long) physicalWidth * Math.max(1, plan.outputFrameCount);
+    long fullWidth = integerFrameLayout ? plan.outputWidthOfAllFrames
+        : (long) physicalWidth * Math.max(1, plan.outputFrameCount);
     if (!Double.isFinite(physicalWidth) || !Double.isFinite(physicalHeight) || physicalWidth <= 0
         || physicalHeight <= 0 || fullWidth > Integer.MAX_VALUE) {
       releaseNativeHandle(handle);
@@ -92,10 +98,13 @@ final class NativeImageBacking extends ImageBacking {
 
   @Override
   int[] readVisiblePixels(int visibleWidth, int outputHeight, int frame) {
-    if (!isValid() || visibleWidth <= 0 || outputHeight != height
+    if (!isValid() || visibleWidth < 0 || outputHeight != height
         || (long) visibleWidth * outputHeight > Integer.MAX_VALUE
         || (long) visibleWidth * Math.max(0, frame) + visibleWidth > width) {
       throw new IllegalStateException("Invalid native image backing read");
+    }
+    if (visibleWidth == 0) {
+      return new int[0];
     }
     Image.recordBackingReadbackForTest();
     int[] output = new int[visibleWidth * outputHeight];

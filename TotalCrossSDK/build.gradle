@@ -1374,6 +1374,8 @@ tasks.register('runImageDeferredFrameStateSmokeMacOS', Exec) {
             'croppedExactFractionalScale=true',
             'frameSelectedExactFractionalScale=true',
             'zeroWidthFrameCompatibility=true',
+            'materializedFrameLayoutCompatibility=true',
+            'zeroWidthNativeFrameCompatibility=true',
             'frameLayoutDeferred=true',
             'frameLayoutMetadata=true',
             'frameLayoutPixels=true',

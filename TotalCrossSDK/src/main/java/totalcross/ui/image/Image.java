@@ -920,7 +920,7 @@ public class Image extends GfxSurface {
       throw new ImageException("Image destination scale must be finite and positive.");
     }
     ImagePipeline deferred = pipeline;
-    if (deferred == null || !deferred.isGeometryOnly() || Settings.onJavaSE) {
+    if (deferred == null || !deferred.isGeometryOnly() || deferred.hasZeroWidthFrameLayout() || Settings.onJavaSE) {
       return null;
     }
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
@@ -1023,7 +1023,7 @@ public class Image extends GfxSurface {
   }
 
   private Image resolvePipeline(ImagePipeline deferred, double destinationScale) throws ImageException {
-    if (!Settings.onJavaSE && deferred.isGeometryOnly()) {
+    if (!Settings.onJavaSE && deferred.isGeometryOnly() && !deferred.hasZeroWidthFrameLayout()) {
       Image nativeGeometry = materializeNativeGeometry(deferred, destinationScale);
       if (nativeGeometry != null) {
         return nativeGeometry;
@@ -1299,6 +1299,13 @@ public class Image extends GfxSurface {
       dimensions[dimensionOffset + 1] = node.logicalHeight();
     }
     ImagePipeline outputNode = nodes.get(first);
+    if (outputNode.operationType() == ImagePipeline.FRAME_LAYOUT && outputNode.logicalWidth() == 0) {
+      if (count != 1) {
+        throw new ImageException("Zero-width frame layout cannot be combined with native geometry.");
+      }
+      return eagerZeroWidthNativeFrameLayout(outputNode.parameter1(), outputNode.logicalWidth(),
+          outputNode.logicalHeight(), outputNode.widthOfAllFrames());
+    }
     ImageGeometryPlan plan = new ImageGeometryPlan(this, operations, parameters, dimensions,
         width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames, contentScale,
         outputNode.logicalWidth(), outputNode.logicalHeight(), outputNode.frameCount(),
@@ -1319,6 +1326,35 @@ public class Image extends GfxSurface {
     result.currentFrame = outputFrameCount > 1 ? normalizedFrame(currentFrame) : -1;
     result.widthOfAllFrames = nativeBacking.width();
     result.comment = outputFrameCount > 1 ? "FC=" + outputFrameCount : null;
+    result.path = path;
+    result.surfaceType = surfaceType;
+    result.transparentColor = transparentColor;
+    result.useAlpha = useAlpha;
+    result.alphaMask = alphaMask;
+    result.hwScaleW = hwScaleW;
+    result.hwScaleH = hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
+  }
+
+  private Image eagerZeroWidthNativeFrameLayout(int outputFrameCount, int outputLogicalWidth,
+      int outputLogicalHeight, int outputWidthOfAllFrames) throws ImageException {
+    if (!(backing instanceof NativeImageBacking) || !backing.isValid() || outputFrameCount <= 1
+        || outputLogicalWidth != 0 || outputLogicalHeight <= 0 || outputWidthOfAllFrames <= 0) {
+      throw new ImageException("Invalid zero-width native frame layout.");
+    }
+    Image result = new Image();
+    result.backing = backing;
+    result.width = 0;
+    result.height = height;
+    result.logicalWidth = outputLogicalWidth;
+    result.logicalHeight = outputLogicalHeight;
+    result.contentScale = contentScale;
+    result.frameCount = outputFrameCount;
+    result.currentFrame = 0;
+    result.widthOfAllFrames = outputWidthOfAllFrames;
+    result.comment = "FC=" + outputFrameCount;
     result.path = path;
     result.surfaceType = surfaceType;
     result.transparentColor = transparentColor;
@@ -1697,7 +1733,7 @@ public class Image extends GfxSurface {
 
     if (!Settings.onJavaSE && backing instanceof NativeImageBacking) {
       int fullWidth = backing.width();
-      if (fullWidth <= 0 || fullWidth % n != 0) {
+      if (fullWidth <= 0) {
         throw new ImageException("Image frame layout is invalid.");
       }
       frameCount = n;

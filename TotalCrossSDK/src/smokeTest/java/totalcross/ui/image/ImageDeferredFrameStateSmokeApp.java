@@ -8,12 +8,10 @@ import totalcross.io.ByteArrayStream;
 import totalcross.net.Base64;
 import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
+import totalcross.ui.gfx.Graphics;
 
 /** Deployed macOS smoke for deferred Image frame state and frame layout. */
 public class ImageDeferredFrameStateSmokeApp extends MainWindow {
-  private static final int FRAME_A = 0xFF102030;
-  private static final int FRAME_B = 0xFF405060;
-
   @Override
   public void initUI() {
     boolean currentFrameDeferred = false;
@@ -36,6 +34,8 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     boolean croppedExactFractionalScale = false;
     boolean frameSelectedExactFractionalScale = false;
     boolean zeroWidthFrameCompatibility = false;
+    boolean materializedFrameLayoutCompatibility = false;
+    boolean zeroWidthNativeFrameCompatibility = false;
     boolean frameLayoutDeferred = false;
     boolean frameLayoutMetadata = false;
     boolean frameLayoutPixels = false;
@@ -143,7 +143,7 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
       scaledLayout.setFrameCount(2);
       Image scaledLayoutVariant = scaledLayout.resolveForDrawing(2);
       frameLayoutMetadata = frameLayoutMetadata && scaledLayout.getWidth() == 1
-          && scaledLayoutVariant.getWidth() == 1 && scaledLayoutVariant.getPixelWidth() == 2;
+          && scaledLayoutVariant.getWidth() == 1 && scaledLayoutVariant.getPixelWidth() == 1;
 
       Image roundTripSource = new Image(encodedStrip());
       roundTripSource.setFrameCount(2);
@@ -170,16 +170,40 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
       require(frameSelectedExactFractionalScale && croppedExactFractionalScale,
           "exact fractional frame layout");
 
-      Image zeroExpected = new Image(1, 2);
-      fill(zeroExpected, FRAME_A);
-      zeroExpected.setFrameCount(2);
       Image zeroActual = new Image(encodedZeroStrip());
       zeroActual.setFrameCount(2);
       Image zeroResolved = zeroActual.resolveForDrawing(1);
       zeroActual.setCurrentFrame(1);
+      int[] zeroPixels = zeroActual.getPixels();
       zeroWidthFrameCompatibility = zeroActual.getWidth() == 0 && zeroActual.getPixelWidth() == 0
-          && zeroResolved.getPixels().length == 0 && sameRows(zeroExpected, zeroActual, 1);
+          && zeroResolved.getPixels().length == 0 && zeroPixels.length == 0
+          && zeroActual.pipelineForSmoke() == null && zeroActual.getCurrentFrame() == 1;
       require(zeroWidthFrameCompatibility, "zero-width frame compatibility");
+
+      Image materializedLayout = new Image(5, 2);
+      fillPhysicalStripWithGraphics(materializedLayout);
+      boolean materializedNative = materializedLayout.hasNativeBackingForSmoke();
+      materializedLayout.setFrameCount(2);
+      int[] materializedFirst = materializedLayout.getPixels();
+      materializedLayout.setCurrentFrame(1);
+      int[] materializedSecond = materializedLayout.getPixels();
+      materializedFrameLayoutCompatibility = materializedNative
+          && materializedLayout.pipelineForSmoke() == null
+          && materializedLayout.getPixelWidth() == 2 && materializedLayout.getWidth() == 2
+          && sameArray(materializedFirst, framePixels(0, 2))
+          && sameArray(materializedSecond, framePixels(1, 2));
+      require(materializedFrameLayoutCompatibility, "materialized truncated frame layout");
+
+      Image materializedZero = new Image(1, 2);
+      fillPhysicalStripWithGraphics(materializedZero);
+      boolean materializedZeroNative = materializedZero.hasNativeBackingForSmoke();
+      materializedZero.setFrameCount(2);
+      materializedZero.setCurrentFrame(1);
+      zeroWidthNativeFrameCompatibility = materializedZero.pipelineForSmoke() == null
+          && materializedZero.getFrameCount() == 2 && materializedZero.getPixelWidth() == 0
+          && materializedZero.getWidth() == 0 && materializedZero.getPixels().length == 0
+          && materializedZero.hasNativeBackingForSmoke() && materializedZeroNative;
+      require(zeroWidthNativeFrameCompatibility, "materialized zero-width frame layout");
 
       Image retry = new Image(encodedStrip());
       retry.setFrameCount(2);
@@ -204,6 +228,7 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
         && croppedFractionalFrameLayout && exactFractionalScale11 && exactFractionalScale125
         && exactFractionalScale175 && croppedExactFractionalScale && frameSelectedExactFractionalScale
         && zeroWidthFrameCompatibility && frameLayoutDeferred && frameLayoutMetadata
+        && materializedFrameLayoutCompatibility && zeroWidthNativeFrameCompatibility
         && frameLayoutPixels && frameLayoutRoundTrip && frameLayoutRetryable;
     System.out.println("fixture=ImageDeferredFrameStateSmokeApp,currentFrameDeferred=" + currentFrameDeferred
         + ",currentFrameWrap=" + currentFrameWrap + ",cachedVariantReused=" + cachedVariantReused
@@ -218,6 +243,8 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
         + exactFractionalScale175 + ",croppedExactFractionalScale=" + croppedExactFractionalScale
         + ",frameSelectedExactFractionalScale=" + frameSelectedExactFractionalScale
         + ",zeroWidthFrameCompatibility=" + zeroWidthFrameCompatibility
+        + ",materializedFrameLayoutCompatibility=" + materializedFrameLayoutCompatibility
+        + ",zeroWidthNativeFrameCompatibility=" + zeroWidthNativeFrameCompatibility
         + ",frameLayoutDeferred=" + frameLayoutDeferred + ",frameLayoutMetadata=" + frameLayoutMetadata
         + ",frameLayoutPixels=" + frameLayoutPixels + ",frameLayoutRoundTrip=" + frameLayoutRoundTrip
         + ",frameLayoutRetryable=" + frameLayoutRetryable + ",overallPass=" + overallPass
@@ -247,6 +274,18 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     int[] first = expected.getPixels();
     int[] second = actual.getPixels();
     if (first.length != second.length) {
+      return false;
+    }
+    for (int i = 0; i < first.length; i++) {
+      if (first[i] != second[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean sameArray(int[] first, int[] second) {
+    if (first == null || second == null || first.length != second.length) {
       return false;
     }
     for (int i = 0; i < first.length; i++) {
@@ -360,11 +399,29 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     }
   }
 
-  private static void fill(Image image, int pixel) {
-    int[] pixels = image.getPixels();
-    for (int i = 0; i < pixels.length; i++) {
-      pixels[i] = pixel;
+  private static void fillPhysicalStripWithGraphics(Image image) {
+    Graphics graphics = image.getGraphics();
+    int width = image.getPixelWidth();
+    for (int y = 0; y < image.getPixelHeight(); y++) {
+      for (int x = 0; x < width; x++) {
+        graphics.foreColor = stripPixel(x, y);
+        graphics.setPixel(x, y);
+      }
     }
+  }
+
+  private static int[] framePixels(int frame, int frameWidth) {
+    int[] result = new int[frameWidth * 2];
+    for (int y = 0; y < 2; y++) {
+      for (int x = 0; x < frameWidth; x++) {
+        result[y * frameWidth + x] = stripPixel(frame * frameWidth + x, y);
+      }
+    }
+    return result;
+  }
+
+  private static int stripPixel(int x, int y) {
+    return 0xFF000000 | ((x + 1) << 16) | ((y + 2) << 8) | x + 3;
   }
 
   private static void require(boolean condition, String message) {

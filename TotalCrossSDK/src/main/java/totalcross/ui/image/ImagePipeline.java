@@ -187,6 +187,15 @@ final class ImagePipeline {
     return hasGeometryOperation();
   }
 
+  boolean hasZeroWidthFrameLayout() {
+    for (ImagePipeline node = this; node.previous() != null; node = node.previous()) {
+      if (node.operationType == FRAME_LAYOUT && node.logicalWidth == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Image cachedVariant(long scaleBits) {
     if (cachedVariant1 != null && cachedScale1Bits == scaleBits) {
       cachedUse1 = ++cacheUseCounter;

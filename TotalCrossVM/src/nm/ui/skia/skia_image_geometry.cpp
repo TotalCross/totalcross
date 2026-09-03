@@ -80,8 +80,8 @@ static bool geometryOperation(const SkiaImageGeometryPlanData* plan, int index, 
 static void geometrySetRootFrame(GeometryTransform* transform, const SkiaImageGeometryPlanData* plan,
                                  int frame) {
     const int count = std::max(1, plan->rootFrameCount);
-    const double fullWidth = plan->rootWidthOfAllFrames > 0 ? plan->rootWidthOfAllFrames : plan->rootWidth;
-    const double frameWidth = fullWidth / count;
+    const int fullWidth = plan->rootWidthOfAllFrames > 0 ? plan->rootWidthOfAllFrames : plan->rootWidth;
+    const int frameWidth = fullWidth / count;
     const int normalized = geometryFrame(frame, count);
     transform->validRoot = SkRect::MakeLTRB(static_cast<float>(normalized * frameWidth), 0,
                                              static_cast<float>((normalized + 1) * frameWidth),
@@ -160,8 +160,8 @@ static bool compileGeometry(const SkiaImageGeometryPlanData* plan, int frameOver
             transform->width = outputWidth;
             transform->height = outputHeight;
             if (plan->rootFrameCount == 1) {
-                const double fullWidth = plan->rootWidthOfAllFrames > 0 ? plan->rootWidthOfAllFrames : plan->rootWidth;
-                const double frameWidth = fullWidth / count;
+                const int fullWidth = plan->rootWidthOfAllFrames > 0 ? plan->rootWidthOfAllFrames : plan->rootWidth;
+                const int frameWidth = fullWidth / count;
                 transform->validRoot = SkRect::MakeLTRB(static_cast<float>(frame * frameWidth), 0,
                                                          static_cast<float>((frame + 1) * frameWidth),
                                                          static_cast<float>(plan->rootHeight));
@@ -368,9 +368,16 @@ int64_t skia_image_backing_materialize_geometry(const SkiaImageGeometryPlanData*
         || !std::isfinite(plan->outputContentScale) || plan->outputContentScale <= 0) {
         return 0;
     }
-    const double physicalFrameWidth = std::ceil(plan->outputWidth * plan->outputContentScale);
+    const bool integerFrameLayout = plan->outputFrameCount > 1 && plan->outputWidthOfAllFrames > 0
+        && plan->operations && plan->operationCount > 0
+        && plan->operations[plan->operationCount - 1] == 13;
+    const double physicalFrameWidth = integerFrameLayout
+        ? static_cast<double>(plan->outputWidthOfAllFrames / plan->outputFrameCount)
+        : std::ceil(plan->outputWidth * plan->outputContentScale);
     const double physicalHeight = std::ceil(plan->outputHeight * plan->outputContentScale);
-    const double physicalFullWidth = physicalFrameWidth * plan->outputFrameCount;
+    const double physicalFullWidth = integerFrameLayout
+        ? static_cast<double>(plan->outputWidthOfAllFrames)
+        : physicalFrameWidth * plan->outputFrameCount;
     if (!std::isfinite(physicalFrameWidth) || !std::isfinite(physicalHeight)
         || !std::isfinite(physicalFullWidth) || physicalFrameWidth <= 0 || physicalHeight <= 0
         || physicalFullWidth > std::numeric_limits<int32>::max()
