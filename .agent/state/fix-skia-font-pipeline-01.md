@@ -6,12 +6,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # State — fix-skia-font-pipeline-01
 
-- Active milestone/slice: Plan 1 complete; both implementation milestones and
-  permitted macOS validation are finished.
+- Active milestone/slice: Plan 1 and its final documentation/code closure are
+  complete.
 - Last logical commits: `bfac1883c` (`fix(font): separate skia and legacy
   loading`) and `7f4f11d2a` (`fix(font): make skia ttf resolution
   deterministic`); baseline `868294ba1` on
   `fix/windowing-clickthrough-fontname`.
+- Finalization commits: `d35933a57` (`fix(font): remove obsolete default bold
+  warning`) and `6f4894905` (`docs(plans): reconcile skia font pipeline
+  closure`).
 - Modified paths: committed `TotalCrossVM/src/nm/ui/font_Font.c`,
   `TotalCrossVM/src/nm/ui/PalmFont_c.h`,
   `TotalCrossVM/src/nm/ui/GraphicsPrimitivesText_c.h`, and
@@ -29,5 +32,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   checks found an overlong body line; no amend is allowed by repository policy.
 - Milestone-end build/smoke: passed. No font-specific native test target is
   configured in the available macOS CMake build, so that check was not run.
+- Final SDK validation: `cd TotalCrossSDK && ./gradlew-agent clean dist`
+  passed; its output was written to the local temporary log
+  `/tmp/fix-skia-font-pipeline-finalize-sdk-dist.log`. The runtime tests
+  specifically exercising `tufF_fontCreate()` were not executed because the
+  corresponding native CMake test-suite target is unavailable.
 - Blocker: none; message-format exception recorded above.
 - Resume command: `cd /Users/flsobral/repos/totalcross-github && sed -n '1,160p' .agent/state/fix-skia-font-pipeline-01.md`

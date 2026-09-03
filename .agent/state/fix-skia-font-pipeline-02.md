@@ -17,6 +17,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   (`test(skia): verify bold pixel state`), and `374d55370`
   (`docs(font): clarify renderer font sources`). Plan 1 commits remain
   `bfac1883c` and `7f4f11d2a`.
+- Finalization commits: `d35933a57` (`fix(font): remove obsolete default bold
+  warning`) and `6f4894905` (`docs(plans): reconcile skia font pipeline
+  closure`).
 - Modified paths: Skia registry/interface/primitives, native font metrics and
   text call sites, the existing Skia fixture, `Font.java`, this state file,
   and the editorial report. Unrelated dirty worktree content remains out of
@@ -33,6 +36,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Validation limitation: the repository CMake configuration has no dedicated
   full native VM test-suite target; the standalone Skia fixture was compiled
   directly against the built macOS VM library.
+- Final closure validation: `cd TotalCrossSDK && ./gradlew-agent clean dist`
+  passed. Its output was written to the local temporary log
+  `/tmp/fix-skia-font-pipeline-finalize-sdk-dist.log`. Plan 1 runtime tests
+  for `tufF_fontCreate()` remain unexecuted because their native CMake target
+  is unavailable.
 - Commit-message note: the Plan 1-derived commits `62d4afbba` and
   `374d55370` have body lines over 80 characters due to the no-amend history
   policy; `bc6085176` and `d712b2df4` passed the local message validator.
