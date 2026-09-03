@@ -26,6 +26,12 @@ SPDX-License-Identifier: LGPL-2.1-only
   native strip, and transformed non-divisible strips preserve residual pixels
   through native readback and PNG round-trip. The zero-width layout regression
   remains covered.
+- Structural geometry split completed in `4d9ea4dd7`: geometry compilation and
+  direct drawing remain in `skia_image_geometry.cpp`; materialization-specific
+  sizing, surface allocation, prefix rendering, and backing registration now
+  live in `skia_image_geometry_materialize.cpp`, with a narrow private header.
+  Resulting sizes are 16,314 bytes/365 lines, 5,964 bytes/125 lines, and
+  1,040 bytes/33 lines for the implementation, materializer, and header.
 - Active paths: `TotalCrossSDK/src/main/java/totalcross/ui/image/Image.java`,
   `ImageBacking.java`, `NativeImageBacking.java`, `RasterImageBacking.java`,
   `ImageSource` implementations, `TotalCrossVM/src/nm/instancefields.h`,
@@ -50,21 +56,21 @@ SPDX-License-Identifier: LGPL-2.1-only
   `/tmp/image-native-backing-05-m1-java-tests.log` and
   `/tmp/image-native-backing-05-m2-sdk-abi-tests.log`; the incremental native
   build passed in `/tmp/image-native-backing-05-m2-native-build-rerun.log`.
-- Historical Plan 5 gate passed at `b7337e93e`; it is superseded as current
-  validation by the final gate at code revision `ee0fbe23a`:
-  CMake configure/build logs are `/tmp/image-native-backing-frame-layout-final-arm64-cmake.log`
-  and `/tmp/image-native-backing-frame-layout-final-arm64-build.log`; focused
-  SDK tests are in `/tmp/image-native-backing-frame-layout-final-focused-tests.log`;
-  SDK `dist` is in `TotalCrossSDK/agent-logs/20260903-000517-dist-full.log`
-  with compact summary `TotalCrossSDK/agent-logs/20260903-000517-dist-agent.log`;
-  frame-state smoke is `/tmp/image-native-backing-frame-layout-final-frame-state-smoke.log`;
+- Historical Plan 5 gate passed at `b7337e93e`; the FRAME_LAYOUT correction
+  gate passed at `ee0fbe23a`. The current structural-split gate passed at code
+  revision `4d9ea4dd7`: CMake configure/build logs are
+  `/tmp/image-native-backing-geometry-split-final-arm64-cmake.log` and
+  `/tmp/image-native-backing-geometry-split-final-arm64-build.log`; frame-state
+  smoke is `/tmp/image-native-backing-geometry-split-final-frame-state-smoke.log`;
   geometry and materialization smokes are
-  `/tmp/image-native-backing-frame-layout-final-geometry-run.log` and
-  `/tmp/image-native-backing-frame-layout-final-materialization-run.log`; final
-  image-backing smoke is `/tmp/image-native-backing-frame-layout-final-lazy-smoke.log`.
-  All required fields passed, including `frameLayoutScaledResidual=true`,
-  `frameLayoutResidualRoundTrip=true`, `backingReadbackCount=2`, and
-  `overallPass=true`.
+  `/tmp/image-native-backing-geometry-split-final-geometry-run.log` and
+  `/tmp/image-native-backing-geometry-split-final-materialization-run.log`; final
+  image-backing smoke is `/tmp/image-native-backing-geometry-split-final-lazy-smoke.log`.
+  All required fields passed, including multi-row `applyFade`, truncated and
+  zero-width frame layouts, destination-scale 2px output, residual-strip and
+  PNG round-trip checks, `backingReadbackCount=2`, and `overallPass=true`.
+- The structural-only commit reused the already-built unchanged SDK/Java smoke
+  artifacts and injected the newly built arm64 dylib into each deployed smoke.
 - The commit-message check accepted the title but reported one body line over
   80 characters; history was preserved without amend/rewrite as required.
 - Static final checks found no `Image_pixels` or `Image_pixelsOfAllFrames`
