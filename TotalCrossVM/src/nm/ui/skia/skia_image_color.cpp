@@ -117,6 +117,7 @@ static bool transform(std::vector<uint8_t>* pixels, int32 width, int32 height, i
     }
     size_t first = 0;
     size_t last = pixels->size();
+    size_t rowStride = 0;
     if (operation == SKIA_IMAGE_COLOR_APPLY_FADE && frameCount > 1) {
         if (visibleWidth <= 0 || static_cast<int64_t>(visibleWidth) * frameCount > width) {
             return false;
@@ -125,16 +126,28 @@ static bool transform(std::vector<uint8_t>* pixels, int32 width, int32 height, i
         if (frame >= frameCount) {
             frame = 0;
         }
+        rowStride = static_cast<size_t>(width) * 4;
         first = static_cast<size_t>(frame) * visibleWidth * 4;
-        last = first + static_cast<size_t>(visibleWidth) * height * 4;
+        last = first + static_cast<size_t>(visibleWidth) * 4;
     }
 
     switch (operation) {
     case SKIA_IMAGE_COLOR_APPLY_FADE:
-        for (size_t i = first; i < last; i += 4) {
-            (*pixels)[i] = static_cast<uint8_t>((*pixels)[i] * parameter1 / 255);
-            (*pixels)[i + 1] = static_cast<uint8_t>((*pixels)[i + 1] * parameter1 / 255);
-            (*pixels)[i + 2] = static_cast<uint8_t>((*pixels)[i + 2] * parameter1 / 255);
+        if (frameCount > 1) {
+            for (int32 y = 0; y < height; ++y) {
+                const size_t rowFirst = static_cast<size_t>(y) * rowStride + first;
+                for (size_t i = rowFirst; i < rowFirst + (last - first); i += 4) {
+                    (*pixels)[i] = static_cast<uint8_t>((*pixels)[i] * parameter1 / 255);
+                    (*pixels)[i + 1] = static_cast<uint8_t>((*pixels)[i + 1] * parameter1 / 255);
+                    (*pixels)[i + 2] = static_cast<uint8_t>((*pixels)[i + 2] * parameter1 / 255);
+                }
+            }
+        } else {
+            for (size_t i = first; i < last; i += 4) {
+                (*pixels)[i] = static_cast<uint8_t>((*pixels)[i] * parameter1 / 255);
+                (*pixels)[i + 1] = static_cast<uint8_t>((*pixels)[i + 1] * parameter1 / 255);
+                (*pixels)[i + 2] = static_cast<uint8_t>((*pixels)[i + 2] * parameter1 / 255);
+            }
         }
         return true;
     case SKIA_IMAGE_COLOR_FADE_INSTANCE: {

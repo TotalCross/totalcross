@@ -13,6 +13,12 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
   private static final int WIDTH = 4;
   private static final int HEIGHT = 1;
   private static final int[] SOURCE = { 0xFF102030, 0xFF405060, 0xFF8090A0, 0xFFE0F000 };
+  private static final int FRAME_STRIP_WIDTH = 4;
+  private static final int FRAME_STRIP_HEIGHT = 2;
+  private static final int[] FRAME_STRIP_SOURCE = {
+      0xFF102030, 0xFF203040, 0xFF405060, 0xFF506070,
+      0xFF8090A0, 0xFFA0B0C0, 0xFFD0E0F0, 0xFFE0F000
+  };
 
   @Override
   public void initUI() {
@@ -32,15 +38,16 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
       nativeBacking = source.hasNativeBackingForSmoke();
       require(nativeBacking, "source native backing");
 
-      Image fadedFrame = sourceImage();
+      Image fadedFrame = frameStripImage();
       fadedFrame.setFrameCount(2);
       fadedFrame.setCurrentFrame(1);
       fadedFrame.applyFade(128);
       int[] frameOne = fadedFrame.getPixels();
       fadedFrame.setCurrentFrame(0);
       int[] frameZero = fadedFrame.getPixels();
-      frameScopedFade = frameOne[0] == fade(SOURCE[2], 128)
-          && frameZero[0] == SOURCE[0] && fadedFrame.hasNativeBackingForSmoke();
+      frameScopedFade = sameArray(frameOne, fadedFramePixels(1, 128))
+          && sameArray(frameZero, fadedFramePixels(0, 255))
+          && fadedFrame.hasNativeBackingForSmoke();
       require(frameScopedFade, "frame-scoped fade");
 
       Image alphaResult = sourceImage().getAlphaInstance(-40);
@@ -155,6 +162,26 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
       graphics.setPixel(x, 0);
     }
     return image;
+  }
+
+  private static Image frameStripImage() throws Exception {
+    Image image = new Image(FRAME_STRIP_WIDTH, FRAME_STRIP_HEIGHT);
+    Graphics graphics = image.getGraphics();
+    for (int i = 0; i < FRAME_STRIP_SOURCE.length; i++) {
+      graphics.foreColor = FRAME_STRIP_SOURCE[i];
+      graphics.setPixel(i % FRAME_STRIP_WIDTH, i / FRAME_STRIP_WIDTH);
+    }
+    return image;
+  }
+
+  private static int[] fadedFramePixels(int frame, int value) {
+    int[] result = new int[2 * FRAME_STRIP_HEIGHT];
+    for (int y = 0; y < FRAME_STRIP_HEIGHT; y++) {
+      for (int x = 0; x < 2; x++) {
+        result[y * 2 + x] = fade(FRAME_STRIP_SOURCE[y * FRAME_STRIP_WIDTH + frame * 2 + x], value);
+      }
+    }
+    return result;
   }
 
   private static int fade(int pixel, int value) {
