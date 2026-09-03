@@ -230,6 +230,24 @@ TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p) // totalcross/ui/image/Na
 #endif
 }
 
+TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p) // totalcross/ui/image/NativeImageBacking private boolean readRgbaRowNative(byte[] output, int y, int width);
+{
+#if TC_RENDERER_SKIA
+   TCObject output = p->obj[1];
+   int32 y = p->i32[0];
+   int32 width = p->i32[1];
+   if (!output || y < 0 || width <= 0 || (int64)width * 4 > ARRAYOBJ_LEN(output))
+   {
+      p->retI = 0;
+      return;
+   }
+   p->retI = skia_image_backing_read_rgba_row(NativeImageBacking_nativeHandle(p->obj[0]),
+      ARRAYOBJ_START(output), y, width);
+#else
+   p->retI = 0;
+#endif
+}
+
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p) // totalcross/ui/image/NativeImageBacking private static void releaseNativeHandle(long nativeHandle);
 {
 #if TC_RENDERER_SKIA

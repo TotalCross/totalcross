@@ -378,23 +378,10 @@ public class Image extends GfxSurface {
   /** Used only at desktop to get the image's pixels. */
   public int[] getPixels() {
     materializeCanonicalUnchecked();
-    if (!Settings.onJavaSE && backing instanceof NativeImageBacking) {
-      return readbackVisiblePixels((NativeImageBacking) backing);
+    if (backing != null && backing.isValid()) {
+      return backing.readVisiblePixels(width, height, frameCount > 1 ? normalizedFrame(currentFrame) : 0);
     }
     return pixels;
-  }
-
-  private int[] readbackVisiblePixels(NativeImageBacking nativeBacking) {
-    long pixelCount = (long) width * height;
-    if (pixelCount > Integer.MAX_VALUE) {
-      throw new IllegalStateException("Image is too large to read back");
-    }
-    int[] visible = new int[(int) pixelCount];
-    int frameX = frameCount > 1 ? normalizedFrame(currentFrame) * width : 0;
-    if (!nativeBacking.readPixels(visible, 0, frameX, 0, width, height)) {
-      throw new IllegalStateException("Could not read native image backing");
-    }
-    return visible;
   }
 
   /**
@@ -1898,7 +1885,8 @@ public class Image extends GfxSurface {
       if (changed[0]) {
         applyChanges();
       }
-      int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+      int[] p = backing == null || backing.isRaster()
+          ? (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames) : null;
       if (p != null) {
         hashCode = 0;
         hashCode = this.hashCode();
@@ -2094,8 +2082,9 @@ public class Image extends GfxSurface {
   @ReplacedByNativeOnDeploy
   private void createJpgJava(Stream s, int quality) throws ImageException, IOException {
     try {
+      int[] visiblePixels = getPixels();
       java.awt.image.MemoryImageSource screenMis = new java.awt.image.MemoryImageSource(width, height,
-          new java.awt.image.DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0), (int[]) pixels, 0, width);
+          new java.awt.image.DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0), visiblePixels, 0, width);
       screenMis.setAnimated(true);
       screenMis.setFullBufferUpdates(true);
       java.awt.Image screenImg = java.awt.Toolkit.getDefaultToolkit().createImage(screenMis);
@@ -2203,6 +2192,12 @@ public class Image extends GfxSurface {
    * The alpha channel is NOT stripped off. */
   final public void getPixelRow(byte[] fillIn, int y) {
     materializeCanonicalUnchecked();
+    if (backing != null && backing.isValid()) {
+      if (!backing.readRgbaRow(fillIn, y)) {
+        throw new IllegalStateException("Could not read image backing row");
+      }
+      return;
+    }
     if (!Settings.onJavaSE) {
       getPixelRowNative(fillIn, y);
       return;
@@ -3852,9 +3847,6 @@ public class Image extends GfxSurface {
   }
 
   private boolean nativeEquals(Image other) {
-    if (!Settings.onJavaSE) {
-      return nativeEqualsNative(other);
-    }
     Image img = other;
     int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
     int w2 = img.frameCount > 1 ? img.widthOfAllFrames : img.width;
@@ -3870,18 +3862,13 @@ public class Image extends GfxSurface {
     for (int y = 0; y < h; y++) {
       this.getPixelRow(row1, y);
       img.getPixelRow(row2, y);
-      for (int k = row1.length; --k >= 0;) {
-        if (row1[k] != row2[k]) {
+      for (int k = 0; k < row1.length; k += 4) {
+        if (row1[k] != row2[k] || row1[k + 1] != row2[k + 1] || row1[k + 2] != row2[k + 2]) {
           return false;
         }
       }
     }
     return true;
-  }
-
-  @ReplacedByNativeOnDeploy
-  private boolean nativeEqualsNative(Image other) {
-    return false;
   }
 
   /** Applies the given color r,g,b values to all pixels of this image, 
@@ -4288,21 +4275,42 @@ public class Image extends GfxSurface {
     if (hashCode != 0) {
       return hashCode;
     }
-    int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
-    if (p != null) {
+    int storageWidth = frameCount == 1 ? width : widthOfAllFrames;
+    long storagePixelCount = (long) storageWidth * height;
+    int[] rasterPixels = backing != null && backing.isRaster() && backing.isValid()
+        ? backing.readStoragePixels()
+        : (backing == null ? (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames) : null);
+    if (storagePixelCount > 4096) {
       try {
         /*
          * If bigger than 64x64, scale down for faster hashing.
          * getScaledInstance is faster because it has native implementation.
          */
-        if (p.length > 4096) {
-          Image i = eagerScaledInstance(64, 64);
-          return Arrays.hashCode(i.pixels);
-        }
+        Image i = eagerScaledInstance(64, 64);
+        return Arrays.hashCode(i.getPixels());
       } catch (ImageException e) {
         e.printStackTrace();
       }
-      return Arrays.hashCode(p);
+    }
+    if (rasterPixels != null) {
+      return Arrays.hashCode(rasterPixels);
+    }
+    if (backing != null && backing.isValid()) {
+      byte[] row = new byte[storageWidth * 4];
+      int result = 1;
+      for (int y = 0; y < height; y++) {
+        if (!backing.readRgbaRow(row, y)) {
+          throw new IllegalStateException("Could not read image backing row");
+        }
+        for (int x = 0, offset = 0; x < storageWidth; x++, offset += 4) {
+          int pixel = ((row[offset + 3] & 0xFF) << 24)
+              | ((row[offset] & 0xFF) << 16)
+              | ((row[offset + 1] & 0xFF) << 8)
+              | (row[offset + 2] & 0xFF);
+          result = 31 * result + pixel;
+        }
+      }
+      return result;
     }
     return super.hashCode();
   }

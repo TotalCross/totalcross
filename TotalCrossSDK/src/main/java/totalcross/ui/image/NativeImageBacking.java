@@ -90,6 +90,38 @@ final class NativeImageBacking extends ImageBacking {
     return nativeHandle != 0 && width > 0 && height > 0;
   }
 
+  @Override
+  int[] readVisiblePixels(int visibleWidth, int outputHeight, int frame) {
+    if (!isValid() || visibleWidth <= 0 || outputHeight != height
+        || (long) visibleWidth * outputHeight > Integer.MAX_VALUE
+        || (long) visibleWidth * Math.max(0, frame) + visibleWidth > width) {
+      throw new IllegalStateException("Invalid native image backing read");
+    }
+    int[] output = new int[visibleWidth * outputHeight];
+    if (!readPixels(output, 0, visibleWidth * Math.max(0, frame), 0, visibleWidth, outputHeight)) {
+      throw new IllegalStateException("Could not read native image backing");
+    }
+    return output;
+  }
+
+  @Override
+  int[] readStoragePixels() {
+    if (!isValid() || (long) width * height > Integer.MAX_VALUE) {
+      throw new IllegalStateException("Invalid native image backing read");
+    }
+    int[] output = new int[width * height];
+    if (!readPixels(output, 0, 0, 0, width, height)) {
+      throw new IllegalStateException("Could not read native image backing");
+    }
+    return output;
+  }
+
+  @Override
+  boolean readRgbaRow(byte[] output, int y) {
+    return isValid() && output != null && y >= 0 && y < height && output.length >= width * 4
+        && readRgbaRowNative(output, y, width);
+  }
+
   long nativeHandleForBridge() {
     return nativeHandle;
   }
@@ -185,6 +217,11 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private boolean readPixelsNative(int[] output, int offset, int x, int y, int width, int height) {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean readRgbaRowNative(byte[] output, int y, int width) {
     return false;
   }
 

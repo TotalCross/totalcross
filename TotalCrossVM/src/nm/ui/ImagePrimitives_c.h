@@ -715,23 +715,6 @@ void onImage(int32 it, VoidP ptr)
       Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
 }
 
-static bool nativeEquals(TCObject thisObj, TCObject otherObj)
-{
-   Pixel *p1,*p2;
-   int32 len;
-   int32 frameCount = Image_frameCount(thisObj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
-
-   p1 = (Pixel*)ARRAYOBJ_START(pixelsObj);
-   p2 = (Pixel*)ARRAYOBJ_START(Image_pixels(otherObj));
-   len = ARRAYOBJ_LEN(pixelsObj);
-
-   for (; len-- > 0; p1++,p2++)
-      if (*p1 != *p2)
-         return false;
-   return true;
-}
-
 static void applyFade(TCObject obj, int32 fadeValue)
 {
    int32 frameCount = Image_frameCount(obj);

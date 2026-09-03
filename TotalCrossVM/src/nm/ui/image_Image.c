@@ -449,13 +449,6 @@ TC_API void tuiI_applyColorNative_i(NMParams p) // totalcross/ui/image/Image pri
    applyColor(thisObj, color);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_nativeEqualsNative_i(NMParams p) // totalcross/ui/image/Image private boolean nativeEqualsNative(totalcross.ui.image.Image other);
-{
-   TCObject thisObj = p->obj[0];
-   TCObject otherObj = p->obj[1];
-   p->retI = nativeEquals(thisObj, otherObj);
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyColor2Native_i(NMParams p) // totalcross/ui/image/Image private void applyColor2Native(int color);
 {
    TCObject thisObj = p->obj[0];
