@@ -97,6 +97,7 @@ final class NativeImageBacking extends ImageBacking {
         || (long) visibleWidth * Math.max(0, frame) + visibleWidth > width) {
       throw new IllegalStateException("Invalid native image backing read");
     }
+    Image.recordBackingReadbackForTest();
     int[] output = new int[visibleWidth * outputHeight];
     if (!readPixels(output, 0, visibleWidth * Math.max(0, frame), 0, visibleWidth, outputHeight)) {
       throw new IllegalStateException("Could not read native image backing");

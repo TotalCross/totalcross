@@ -78,6 +78,8 @@ public class Image extends GfxSurface {
   static int targetedDecodeInvocationCountForTest;
   static int targetedDecodeWidthForTest;
   static int targetedDecodeHeightForTest;
+  private static boolean backingReadbackAccountingForTest;
+  private static int backingReadbackCountForTest;
 
   private static final class DeterministicImageDecodeException extends ImageException {
     DeterministicImageDecodeException() {
@@ -124,6 +126,22 @@ public class Image extends GfxSurface {
 
   static synchronized int targetedDecodeHeightForTest() {
     return targetedDecodeHeightForTest;
+  }
+
+  /** Test-only accounting for explicit deployed getPixels() snapshots. */
+  static synchronized void resetBackingReadbackAccountingForTest() {
+    backingReadbackAccountingForTest = true;
+    backingReadbackCountForTest = 0;
+  }
+
+  static synchronized int backingReadbackCountForTest() {
+    return backingReadbackCountForTest;
+  }
+
+  static synchronized void recordBackingReadbackForTest() {
+    if (backingReadbackAccountingForTest) {
+      backingReadbackCountForTest++;
+    }
   }
 
   /** Test-only hook for exercising retryable targeted ImageIO setup failures. */

@@ -892,7 +892,7 @@ tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
             'pngConstructionLazy=true',
             'pngSourceCopy=true',
             'firstDrawMaterializes=true',
-            'repeatedBarrierReusesPixels=true',
+            'repeatedBarrierReadbacksStable=true',
             'warningCompatibility=true',
             'pathSourceStable=true',
             'jpegConstructionLazy=true',
@@ -932,6 +932,17 @@ tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
             'targetedCorruptionCached=true',
             'rotationScaleFill=true',
             'snapshotSemantics=true',
+            'finalDecodedPngAlpha=true',
+            'finalTargetedJpeg=true',
+            'finalGeneratedDrawSave=true',
+            'finalImageControlResize=true',
+            'finalGeometryDraw=true',
+            'finalDecodeRotateColorSave=true',
+            'finalMultiFrameApplyFade=true',
+            'finalExactColorKey=true',
+            'finalScaleCacheReuse=true',
+            'finalDetachedGetPixels=true',
+            'finalBackingAllocationAccounting=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }
