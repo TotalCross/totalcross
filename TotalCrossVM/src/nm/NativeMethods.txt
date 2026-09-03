@@ -99,7 +99,6 @@ totalcross/ui/image/Image|native private void getPixelRowNative(byte []fillIn, i
 totalcross/ui/image/Image|native private void getModifiedNative(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 totalcross/ui/image/Image|native private void setCurrentFrameNative(int nr);
 totalcross/ui/image/Image|native private void applyColorNative(int color);
-totalcross/ui/image/Image|native private boolean nativeEqualsNative(totalcross.ui.image.Image other);
 totalcross/ui/image/Image|native private void applyColor2Native(int color);
 totalcross/ui/image/Image|native private void setTransparentColorNative(int color);
 totalcross/ui/image/Image|native private void freeTextureNative();

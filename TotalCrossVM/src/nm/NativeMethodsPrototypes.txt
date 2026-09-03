@@ -104,7 +104,6 @@ TC_API void tuiI_getPixelRowNative_Bi(NMParams p);
 TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p);
 TC_API void tuiI_setCurrentFrameNative_i(NMParams p);
 TC_API void tuiI_applyColorNative_i(NMParams p);
-TC_API void tuiI_nativeEqualsNative_i(NMParams p);
 TC_API void tuiI_applyColor2Native_i(NMParams p);
 TC_API void tuiI_setTransparentColorNative_i(NMParams p);
 TC_API void tuiI_freeTextureNative(NMParams p);
@@ -123,6 +122,7 @@ TC_API void tuiNIB_makeMutableNative(NMParams p);
 TC_API void tuiNIB_scaleNative_iib(NMParams p);
 TC_API void tuiNIB_materializeGeometryNative(NMParams p);
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p);
+TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p);
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p);
 TC_API void tugG_create_g(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
@@ -982,10 +982,6 @@ TC_API void tuiI_applyColorNative_i(NMParams p) // totalcross/ui/image/Image nat
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_nativeEqualsNative_i(NMParams p) // totalcross/ui/image/Image native private boolean nativeEqualsNative(totalcross.ui.image.Image other);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyColor2Native_i(NMParams p) // totalcross/ui/image/Image native private void applyColor2Native(int color);
 {
 }
@@ -1063,6 +1059,10 @@ TC_API void tuiNIB_materializeGeometryNative(NMParams p) // totalcross/ui/image/
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean readPixelsNative(int []output, int offset, int x, int y, int width, int height);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean readRgbaRowNative(byte []output, int y, int width);
 {
 }
 //////////////////////////////////////////////////////////////////////////
