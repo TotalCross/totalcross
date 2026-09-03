@@ -17,29 +17,26 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void fontCreate();
 {
+   TCObject obj = p->obj[0];
+#if TC_RENDERER_SKIA
    char name[128];
-   TCObject obj, fontName;
-   FontFile ff;
-
-   obj = p->obj[0];
-   fontName = Font_name(obj);
-   String2CharPBuf(fontName, name);
-#ifdef SKIA_H
-	// get ttf from tcz
-	TCZFile file;
+   TCZFile file;
    char nameTTF[128];
-   if (xstrcmp(name, "TCFont") == 0) {
-      xstrcpy(nameTTF, "Roboto Regular");
-   } else {
-      xstrcpy(nameTTF, name);
-   }
-   int len = xstrlen(nameTTF);
-   // if it doesn't end with .ttf
-   if(!(nameTTF[len-4] == '.' && nameTTF[len-3] == 't' && nameTTF[len-2] == 't' && nameTTF[len-1] == 'f')) {
-      xstrcat(nameTTF, ".ttf");
-   }
+   int32 len;
+   int32 fontIdx;
 
-   int32 fontIdx = skia_getTypefaceIndex(nameTTF);
+   String2CharPBuf(Font_name(obj), name);
+   // Get the TTF from a resource in an already loaded TCZ.
+   if (xstrcmp(name, "TCFont") == 0)
+      xstrcpy(nameTTF, "Roboto Regular");
+   else
+      xstrcpy(nameTTF, name);
+   len = xstrlen(nameTTF);
+   // If it doesn't end with .ttf, append the resource suffix.
+   if (!(nameTTF[len - 4] == '.' && nameTTF[len - 3] == 't' && nameTTF[len - 2] == 't' && nameTTF[len - 1] == 'f'))
+      xstrcat(nameTTF, ".ttf");
+
+   fontIdx = skia_getTypefaceIndex(nameTTF);
    if (fontIdx == -1)
    {
       file = tczGetFile(nameTTF, false);
@@ -49,26 +46,27 @@ TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void f
          if (buffer != null)
          {
             tczRead(file, buffer, file->uncompressedSize);
-            fontIdx = skia_makeTypeface(
-               nameTTF,
-               buffer,
-               file->uncompressedSize);
+            fontIdx = skia_makeTypeface(nameTTF, buffer, file->uncompressedSize);
             xfree(buffer);
          }
          tczClose(file);
       }
    }
    Font_skiaIndex(obj) = fontIdx;
-   // save reference to SkTypeFace at Font_hvUserFont
-#endif  
-   // the only thing we can store here is the font file, because the UserFont will vary for char ranges
-   ff = name[0] == '$' ? null : loadFontFile(name); //  bruno@tc114_37: native fonts always start with '$'
+#else
+   char name[128];
+   FontFile ff;
+
+   String2CharPBuf(Font_name(obj), name);
+   // The only thing we can store here is the font file, because the UserFont
+   // will vary for char ranges.
+   ff = name[0] == '$' ? null : loadFontFile(name); // bruno@tc114_37: native fonts always start with '$'
    if (ff == null)
    {
-      // if the original font file was not found, use the default font.
+      // If the original font file was not found, use the default font.
       ff = defaultFont;
-      // replace the name so the user can know that the font was not found
-      Font_name(obj) = createStringObjectFromCharP(p->currentContext, defaultFontName,6);
+      // Replace the name so the user can know that the font was not found.
+      Font_name(obj) = createStringObjectFromCharP(p->currentContext, defaultFontName, 6);
       setObjectLock(Font_name(obj), UNLOCKED);
    }
    if (Font_hvUserFont(obj) == null) // alloc space for the pointer
@@ -78,6 +76,7 @@ TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void f
    }
    if (Font_hvUserFont(obj) != null) // alloc space for the pointer
       xmoveptr(ARRAYOBJ_START(Font_hvUserFont(obj)), &ff);
+#endif
 }
 
 #ifdef ENABLE_TEST_SUITE

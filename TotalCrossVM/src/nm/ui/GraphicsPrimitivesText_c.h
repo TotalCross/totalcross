@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#ifndef SKIA_H
+#if !TC_RENDERER_SKIA
 #define INTERP(j,f,shift) (j + (((f - j) * transparency) >> shift)) & 0xFF
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};

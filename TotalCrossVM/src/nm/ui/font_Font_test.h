@@ -1,15 +1,14 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
-
-
 
 TCObject testfont;
 TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCreate(Font obj);
 {
    TNMParams p;
-   int32 *style, *size, *maxfs, *minfs, *normal, *tabSize;
+   int32 *style, *size, *skiaIndex, *maxfs, *minfs, *normal, *tabSize;
    TCObject *name, *hvUserFont;
    TCClass c;
    TCObject font;
@@ -27,6 +26,10 @@ TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCr
    size = getInstanceFieldInt(font, "size", "totalcross.ui.font.Font");
    ASSERT1_EQUALS(NotNull, size);
    ASSERT2_EQUALS(Ptr, size, &Font_size(font));
+
+   skiaIndex = getInstanceFieldInt(font, "skiaIndex", "totalcross.ui.font.Font");
+   ASSERT1_EQUALS(NotNull, skiaIndex);
+   ASSERT2_EQUALS(Ptr, skiaIndex, &Font_skiaIndex(font));
 
    name = getInstanceFieldObject(font, "name", "totalcross.ui.font.Font");
    ASSERT1_EQUALS(NotNull, name);
@@ -48,7 +51,9 @@ TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCr
    ASSERT1_EQUALS(True, *normal > 0);
    ASSERT1_EQUALS(True, *tabSize > 0);
 
+#if !TC_RENDERER_SKIA
    ASSERT1_EQUALS(NotNull, defaultFont);
+#endif
 
    // fill in a font and test if it loads
    Font_name(font) = createStringObjectFromCharP(currentContext, "TCFont",-1);
@@ -58,7 +63,11 @@ TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCr
    p.currentContext = currentContext;
    p.obj = &font;
    tufF_fontCreate(&p);
+#if TC_RENDERER_SKIA
+   ASSERT1_EQUALS(Null, *hvUserFont);
+#else
    ASSERT1_EQUALS(NotNull, *hvUserFont);
+#endif
 
    testfont = font; // will be used in the fontmetrics tests
    finish: ;
