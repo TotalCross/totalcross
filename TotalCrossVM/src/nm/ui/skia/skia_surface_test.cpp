@@ -6,7 +6,6 @@
 
 #include <cstdio>
 #include <cstdint>
-#include <cstring>
 #include <fstream>
 #include <vector>
 
@@ -134,13 +133,18 @@ static bool testBoldStyle(const char* fontPath) {
                   typefaceIndex, false);
 
     bool boldChangedPixels = false;
-    for (int i = 0; i < width * height; ++i) {
-        if (plainPixels[i] != resetPixels[i]) {
-            std::fputs("Skia bold state leaked into a later plain draw\n", stderr);
-            return false;
-        }
-        if (plainPixels[i] != boldPixels[i]) {
-            boldChangedPixels = true;
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            const Pixel plainPixel = skia_getPixel(plainSurface, x, y);
+            const Pixel boldPixel = skia_getPixel(boldSurface, x, y);
+            const Pixel resetPixel = skia_getPixel(resetSurface, x, y);
+            if (plainPixel != resetPixel) {
+                std::fputs("Skia bold state leaked into a later plain draw\n", stderr);
+                return false;
+            }
+            if (plainPixel != boldPixel) {
+                boldChangedPixels = true;
+            }
         }
     }
     skia_deleteBitmap(plainSurface);
