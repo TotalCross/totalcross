@@ -28,10 +28,14 @@ split merely to satisfy this rule.
 
 ## Progress
 
-- [ ] Milestone 1: migrate readback, encoding, equality/hash, and frame access.
-- [ ] Milestone 2: retire Image pixel fields and legacy native pixel macros.
-- [ ] Milestone 3: run final compatibility/smoke gate and reconcile documentation.
-- [ ] Complete the full five-plan sequence.
+- [x] Milestone 1: migrate readback, encoding, equality/hash, and frame access.
+  - [x] Checkpoint A: backing-based snapshots, rows, PNG/JPG/PDB input path,
+    equality/hash reads, and native frame-safe row access.
+  - [x] Checkpoints B/C: complete the backing-based observing path and
+    preserve Java SE live-raster behavior.
+- [x] Milestone 2: retire Image pixel fields and legacy native pixel macros.
+- [x] Milestone 3: run final compatibility/smoke gate and reconcile documentation.
+- [x] Complete the full five-plan sequence.
 
 ## Current Architecture and Scope
 

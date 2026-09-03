@@ -55,6 +55,14 @@ will be later resumed after the plan's implementation is validated.
    Move readback/encoding/legacy contracts to the backing API and retire the
    pixel-array fields from `Image`.
 
+### Execution status
+
+The five-plan image-native-backing sequence is complete. Plan 5 closed at code
+revision `b7337e93e`; its final macOS arm64 SDK/native gate, ABI checks, and
+deployed smoke passed. The completion report is in
+`.agent/reports/image-native-backing-05-editorial.md` and compact evidence is
+indexed in `.agent/evidence/image-native-backing-05.jsonl`.
+
 At the start of each plan, record the actual `HEAD`. Do not automatically switch
 branches. The expected starting code contains `ImagePipeline`, `ImageSource`,
 `EncodedImageSource`, `RasterImageSource`, `ImageDrawingBridge`, the Skia image
