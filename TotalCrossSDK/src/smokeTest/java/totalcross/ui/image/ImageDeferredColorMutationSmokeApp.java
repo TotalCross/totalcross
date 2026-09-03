@@ -37,7 +37,7 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
       byte[] png = Vm.getFile("image-abi/tiny.png");
       require(png != null && png.length > 0, "tiny PNG resource");
       Image constructed = new Image(png);
-      constructionLazy = constructed.pipelineForSmoke() != null && constructed.pixels == null
+      constructionLazy = constructed.pipelineForSmoke() != null
           && constructed.getPixelWidth() == 36 && constructed.getPixelHeight() == 36;
       require(constructionLazy, "deferred construction");
 
@@ -128,7 +128,7 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
     apply(expected, operation);
     Image actual = new Image(encoded);
     apply(actual, operation);
-    boolean deferred = actual.pipelineForSmoke() != null && actual.pixels == null;
+    boolean deferred = actual.pipelineForSmoke() != null;
     return deferred && samePixels(expected, actual);
   }
 

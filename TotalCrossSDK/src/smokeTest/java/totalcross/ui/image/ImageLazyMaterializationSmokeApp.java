@@ -151,9 +151,9 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       Image faded = transformSource.getFadedInstance(0x00112233);
       Image alpha = transformSource.getAlphaInstance(-32);
       Image rotatedSquare = transformSource.getRotatedScaledInstance(100, 30, 0xFF123456);
-      transformFamiliesDeferred = replicated.pixels == null && smooth.pixels == null
-          && touched.pixels == null && faded.pixels == null && alpha.pixels == null
-          && rotatedSquare.pixels == null;
+      transformFamiliesDeferred = replicated.pipelineForSmoke() != null && smooth.pipelineForSmoke() != null
+          && touched.pipelineForSmoke() != null && faded.pipelineForSmoke() != null
+          && alpha.pipelineForSmoke() != null && rotatedSquare.pipelineForSmoke() != null;
       require(transformFamiliesDeferred, "encoded transform deferment");
       transformFamiliesResolve = replicated.getPixels() != null && smooth.getPixels() != null
           && touched.getPixels() != null && faded.getPixels() != null && alpha.getPixels() != null
@@ -165,7 +165,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
           .getTouchedUpInstance((byte) 8, (byte) 0)
           .getRotatedScaledInstance(100, 30, 0xFF123456)
           .getScaledInstance(8, 8);
-      transformChainDeferred = chained.pixels == null && chained.pipelineForSmoke() != null
+      transformChainDeferred = chained.pipelineForSmoke() != null
           && chained.pipelineForSmoke().previous() != null
           && chained.pipelineForSmoke().previous().previous() != null;
       require(transformChainDeferred, "transform chain deferment");
@@ -182,7 +182,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       Image mutable = new Image(4, 2);
       fill(mutable, NATIVE_RED);
       Image snapshot = mutable.getSmoothScaledInstance(2, 1);
-      mutable.pixels[0] = NATIVE_BLUE;
+      mutable.getPixels()[0] = NATIVE_BLUE;
       snapshot.getPixels();
       rasterSnapshotIsolated = rowContainsRgb(snapshot, 0xFF, 0x00, 0x00);
       require(rasterSnapshotIsolated, "raster transform snapshot");
@@ -190,7 +190,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       Image rotationSource = new Image(3, 2);
       fill(rotationSource, NATIVE_RED);
       Image deferredRotation = rotationSource.getRotatedScaledInstance(100, 45, 0xFF123456);
-      boolean rotationDeferred = deferredRotation.pixels == null;
+      boolean rotationDeferred = deferredRotation.backing == null;
       rotationFillRegression = rotationDeferred && deferredRotation.getPixelWidth() == 4
           && deferredRotation.getPixelHeight() == 3
           && containsRgb(deferredRotation, 0x12, 0x34, 0x56);
@@ -200,14 +200,14 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       fill(frames, NATIVE_RED);
       frames.setFrameCount(2);
       Image transformedFrames = frames.getScaledInstance(2, 1);
-      frameTransformPass = transformedFrames.pixels == null && transformedFrames.getFrameCount() == 2
+      frameTransformPass = transformedFrames.pipelineForSmoke() != null && transformedFrames.getFrameCount() == 2
           && transformedFrames.getPixelWidth() == 2 && transformedFrames.getPixels() != null
           && transformedFrames.getFrameCount() == 2;
       require(frameTransformPass, "deferred frame transform");
 
       Image drawTransform = new Image(transformBytes).getSmoothScaledInstance(10, 10);
       target.drawImage(drawTransform, 5, 5);
-      drawTransformBarrier = drawTransform.pixels == null && drawTransform.pipelineForSmoke() != null;
+      drawTransformBarrier = drawTransform.pipelineForSmoke() != null;
       require(drawTransformBarrier, "draw transform barrier");
 
       Image large = new Image(65, 65);
@@ -283,7 +283,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       Image presentation = smoothJpeg.resolveForDrawing(2);
       destinationScaleHwScale = presentation.getPixelWidth() == 128 && presentation.getPixelHeight() == 96
           && presentation.getWidth() == 32 && presentation.getHeight() == 72;
-      destinationScaleDeferred = smoothJpeg.pixels == null && smoothJpeg.pipelineForSmoke() != null;
+      destinationScaleDeferred = smoothJpeg.pipelineForSmoke() != null;
       Image drawSourceBase = new Image(2, 2);
       fill(drawSourceBase, NATIVE_RED);
       Image drawSource = drawSourceBase.getSmoothScaledInstance(1, 1);
@@ -367,7 +367,7 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
       Image rotatedAtScale = rotation.getRotatedScaledInstance(100, 45, 0xFF123456).resolveForDrawing(4);
       rotationScaleFill = rotatedAtScale.getPixelWidth() == 16 && rotatedAtScale.getPixelHeight() == 12
           && containsRgb(rotatedAtScale, 0x12, 0x34, 0x56);
-      snapshotSemantics = smoothJpeg.pixels != null && drawTransform.pixels == null;
+      snapshotSemantics = smoothJpeg.pipelineForSmoke() == null && drawTransform.pipelineForSmoke() != null;
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }

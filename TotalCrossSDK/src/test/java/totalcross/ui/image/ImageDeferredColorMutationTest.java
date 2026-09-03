@@ -181,7 +181,7 @@ class ImageDeferredColorMutationTest {
     assertEquals(20, resolved.getPixelHeight());
     assertEquals(2, resolved.getContentScale());
     assertEquals(1, image.getContentScale());
-    assertNull(image.pixels);
+    assertNull(image.backing);
   }
 
   @Test
@@ -263,7 +263,7 @@ class ImageDeferredColorMutationTest {
     expectedChange.changeColors(0x00112233, 0xAA010203);
     Image actualChange = new Image(encoded);
     actualChange.changeColors(0x00112233, 0xAA010203);
-    assertNull(actualChange.pixels);
+    assertNull(actualChange.backing);
     assertArrayEquals(expectedChange.getPixels(), actualChange.getPixels());
 
     Image expectedTransparent = new Image(encoded);
@@ -271,7 +271,7 @@ class ImageDeferredColorMutationTest {
     expectedTransparent.setTransparentColor(0x112233);
     Image actualTransparent = new Image(encoded);
     actualTransparent.setTransparentColor(0x112233);
-    assertNull(actualTransparent.pixels);
+    assertNull(actualTransparent.backing);
     assertArrayEquals(expectedTransparent.getPixels(), actualTransparent.getPixels());
 
     Image expectedOpaque = new Image(encoded);
@@ -279,7 +279,7 @@ class ImageDeferredColorMutationTest {
     expectedOpaque.setTransparentColor(-1);
     Image actualOpaque = new Image(encoded);
     actualOpaque.setTransparentColor(-1);
-    assertNull(actualOpaque.pixels);
+    assertNull(actualOpaque.backing);
     assertArrayEquals(expectedOpaque.getPixels(), actualOpaque.getPixels());
   }
 
@@ -290,10 +290,10 @@ class ImageDeferredColorMutationTest {
     apply(operation, expected);
 
     Image actual = new Image(encoded);
-    assertNull(actual.pixels);
+    assertNull(actual.backing);
     apply(operation, actual);
     assertNotNullPipeline(actual);
-    assertNull(actual.pixels);
+    assertNull(actual.backing);
     assertArrayEquals(expected.getPixels(), actual.getPixels());
   }
 
@@ -355,8 +355,8 @@ class ImageDeferredColorMutationTest {
 
   private static Image raster(int width, int height) throws Exception {
     Image image = new Image(width, height);
-    for (int i = 0; i < image.pixels.length; i++) {
-      image.pixels[i] = 0xFF000000 | ((i * 37) & 0xFF) << 16 | ((i * 19) & 0xFF) << 8 | (i * 11) & 0xFF;
+    for (int i = 0; i < image.getPixels().length; i++) {
+      image.getPixels()[i] = 0xFF000000 | ((i * 37) & 0xFF) << 16 | ((i * 19) & 0xFF) << 8 | (i * 11) & 0xFF;
     }
     return image;
   }

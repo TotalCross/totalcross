@@ -34,7 +34,7 @@ class ImageDestinationScaleTest {
     assertEquals(48, one.getWidth());
     assertEquals(96, two.getPixelHeight());
     assertEquals(4, four.getContentScale());
-    assertNull(image.pixels);
+    assertNull(image.backing);
     assertEquals(48, image.getPixelWidth());
     assertEquals(1, image.getContentScale());
     assertNotNull(image.pipelineForSmoke());
@@ -118,7 +118,7 @@ class ImageDestinationScaleTest {
     assertEquals(48, resolved.getWidth());
     assertEquals(48, resolved.getHeight());
     assertEquals(4, resolved.getContentScale());
-    assertNull(image.pixels);
+    assertNull(image.backing);
   }
 
   @Test
@@ -156,7 +156,7 @@ class ImageDestinationScaleTest {
     assertEquals(40, reduced.getPixelWidth());
     assertEquals(30, reduced.getPixelHeight());
     assertEquals(1, reduced.getContentScale());
-    assertNull(smooth.pixels);
+    assertNull(smooth.backing);
 
     Image highDensity = smooth.resolveForDrawing(4);
     assertEquals(160, highDensity.getPixelWidth());

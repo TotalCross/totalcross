@@ -73,16 +73,17 @@ class ImageBackingContractTest {
   }
 
   @Test
-  void lockingRasterImageReleasesRasterBackingAndDisablesGraphics() throws Exception {
+  void lockingRasterImageKeepsRasterBackingAndDisablesGraphics() throws Exception {
     boolean previousOpenGL = Settings.isOpenGL;
     try {
       Settings.isOpenGL = true;
       Image image = new Image(2, 1);
       assertTrue(image.backing instanceof RasterImageBacking);
 
+      ImageBacking backing = image.backing;
       image.lockChanges();
 
-      assertNull(image.backing);
+      assertSame(backing, image.backing);
       assertNull(image.getGraphics());
     } finally {
       Settings.isOpenGL = previousOpenGL;

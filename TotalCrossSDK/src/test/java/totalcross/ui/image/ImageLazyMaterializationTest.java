@@ -159,7 +159,7 @@ class ImageLazyMaterializationTest {
   }
 
   private static int[] pixelStorage(Image image) throws Exception {
-    Field field = Image.class.getDeclaredField("pixels");
+    Field field = Image.class.getDeclaredField("backing");
     field.setAccessible(true);
     return (int[]) field.get(image);
   }

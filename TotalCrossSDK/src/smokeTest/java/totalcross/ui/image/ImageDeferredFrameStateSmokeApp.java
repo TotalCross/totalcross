@@ -47,7 +47,7 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
       byte[] frames = encodedFrames();
       Image source = new Image(frames);
       source.setCurrentFrame(-1);
-      currentFrameDeferred = source.pipelineForSmoke() != null && source.pixels == null
+      currentFrameDeferred = source.pipelineForSmoke() != null
           && source.getCurrentFrame() == 1;
       source.nextFrame();
       source.prevFrame();
@@ -128,7 +128,7 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
 
       Image layout = new Image(encodedStrip());
       layout.setFrameCount(2);
-      frameLayoutDeferred = layout.pipelineForSmoke() != null && layout.pixels == null;
+      frameLayoutDeferred = layout.pipelineForSmoke() != null;
       frameLayoutMetadata = layout.getFrameCount() == 2 && layout.getWidth() == 2
           && "FC=2".equals(layout.comment);
       Image layoutVariant = layout.resolveForDrawing(1);
@@ -284,7 +284,7 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     fillStrip(source);
     Image actual = source.getFrameInstance(0);
     actual.setFrameCount(2);
-    boolean metadata = actual.pipelineForSmoke() != null && actual.pixels == null
+    boolean metadata = actual.pipelineForSmoke() != null
         && actual.getPixelWidth() == expected.getPixelWidth()
         && actual.getWidth() == expected.getWidth();
     boolean first = samePixels(expected, actual);
@@ -307,7 +307,7 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     Image actual = source.getClippedInstance(0, 0, 4, 2);
     actual.setFrameCount(2);
     ImagePipeline layout = actual.pipelineForSmoke();
-    boolean metadata = layout != null && actual.pixels == null && actual.getPixelWidth() == expected.getPixelWidth()
+    boolean metadata = layout != null && actual.getPixelWidth() == expected.getPixelWidth()
         && actual.getWidth() == expected.getWidth() && actual.getContentScale() == expected.getContentScale()
         && layout.widthOfAllFrames() == expected.getPixelWidth() * 2;
     boolean first = samePixels(expected, actual);
@@ -337,7 +337,7 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     Image actual = cropped ? source.getClippedInstance(0, 0, logicalWidth, 2) : source.getFrameInstance(0);
     actual.setFrameCount(2);
     ImagePipeline layout = actual.pipelineForSmoke();
-    boolean metadata = layout != null && actual.pixels == null && actual.getFrameCount() == 2
+    boolean metadata = layout != null && actual.getFrameCount() == 2
         && actual.getContentScale() == contentScale && actual.getPixelWidth() == fullWidth / 2
         && actual.getWidth() == (int) Math.ceil(actual.getPixelWidth() / contentScale)
         && layout.widthOfAllFrames() == fullWidth && roundedSource && actualRoundedSource;

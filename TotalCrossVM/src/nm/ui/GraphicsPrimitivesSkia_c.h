@@ -34,7 +34,8 @@ static int32 skiaSurfaceForGraphics(TCObject g)
       if (surfaceId == SKIA_INVALID_SURFACE_ID)
       {
          int32 frameCount = Image_frameCount(image);
-         TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(image) : Image_pixels(image);
+         TCObject pixelsObj = frameCount > 1 ? RasterImageBacking_pixelsOfAllFrames(backing)
+            : RasterImageBacking_pixels(backing);
          if (pixelsObj == null)
             return SKIA_INVALID_SURFACE_ID;
          Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
@@ -463,7 +464,8 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       } else {
          int32 id = Image_textureId(srcSurf);
          if (id < 0) {
-            TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(srcSurf) : Image_pixels(srcSurf);
+            TCObject pixelsObj = frameCount > 1 ? RasterImageBacking_pixelsOfAllFrames(backing)
+               : RasterImageBacking_pixels(backing);
             Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
             int32 width = frameCount > 1 ? Image_widthOfAllFrames(srcSurf) : Image_width(srcSurf);
             int32 height = Image_height(srcSurf);

@@ -19,13 +19,13 @@ class GraphicsDeferredImageTest {
     Image base = new Image(2, 2);
     java.util.Arrays.fill(base.getPixels(), 0xFFFF0000);
     Image source = base.getSmoothScaledInstance(1, 1);
-    assertNull(pixels(source));
+    assertNull(backing(source));
 
     for (int scale = 1; scale <= 4; scale *= 2) {
       Image destination = Image.createLogical(1, 1, scale);
       destination.getGraphics().drawImage(source, 0, 0);
       assertAllPixels(destination, 0xFFFF0000);
-      assertNull(pixels(source));
+      assertNull(backing(source));
     }
 
   }
@@ -43,7 +43,7 @@ class GraphicsDeferredImageTest {
     Image copiedSurface = Image.createLogical(1, 1, 2);
     copiedSurface.getGraphics().copyRect(source, 0, 0, 1, 1, 0, 0);
     assertAllPixels(copiedSurface, 0xFF00FF00);
-    assertNull(pixels(source));
+    assertNull(backing(source));
   }
 
   @Test
@@ -58,10 +58,10 @@ class GraphicsDeferredImageTest {
     assertEquals(2, source.getContentScale());
   }
 
-  private static int[] pixels(Image image) throws Exception {
-    Field field = Image.class.getDeclaredField("pixels");
+  private static Object backing(Image image) throws Exception {
+    Field field = Image.class.getDeclaredField("backing");
     field.setAccessible(true);
-    return (int[]) field.get(image);
+    return field.get(image);
   }
 
   private static void assertAllPixels(Image image, int expected) {

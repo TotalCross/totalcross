@@ -31,8 +31,8 @@ class ImageDeferredFrameExtractionTest {
 
     Image result = source.getFrameInstance(1);
 
-    assertNull(source.pixels);
-    assertNull(result.pixels);
+    assertNull(source.backing);
+    assertNull(result.backing);
     assertEquals(1, result.getFrameCount());
     assertEquals(4, result.getWidth());
     assertEquals(4, result.getPixelWidth());
@@ -100,7 +100,7 @@ class ImageDeferredFrameExtractionTest {
     Image source = new Image(twoFramePng());
     Image copy = source.getCopy();
 
-    assertNull(copy.pixels);
+    assertNull(copy.backing);
     assertEquals(1, copy.getFrameCount());
     assertEquals(Arrays.asList(ImagePipeline.FRAME_SELECT), operationTypes(pipeline(copy)));
     Image expected = new Image(twoFramePng());
@@ -143,8 +143,8 @@ class ImageDeferredFrameExtractionTest {
 
   private static Image materializedMultiFrame() throws Exception {
     Image image = new Image(8, 2);
-    for (int i = 0; i < image.pixels.length; i++) {
-      image.pixels[i] = i < 8 ? 0xFF102030 : 0xFF405060;
+    for (int i = 0; i < image.getPixels().length; i++) {
+      image.getPixels()[i] = i < 8 ? 0xFF102030 : 0xFF405060;
     }
     image.setFrameCount(2);
     image.setCurrentFrame(1);

@@ -164,10 +164,10 @@ public class Image extends GfxSurface {
   protected int width;
   protected int height;
 
-  /** Contains the pixels of this image. */
-  int[] pixels;
-
-  private Object pixelsOfAllFrames;
+  // Object slot 0 is the canonical backing. Slot 1 remains reserved for ABI compatibility.
+  ImageBacking backing;
+  @SuppressWarnings("unused")
+  private Object reservedLegacyPixelsOfAllFrames;
 
   /** The number of frames of this image, if derived from a multi-frame gif. */
   private int frameCount = 1;
@@ -203,8 +203,6 @@ public class Image extends GfxSurface {
   private String path;
   /** Non-null only while this image is an immutable, deferred encoded source. */
   private ImagePipeline pipeline;
-  /** Transitional explicit backing; legacy pixel fields remain authoritative until plan 5. */
-  ImageBacking backing;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
@@ -321,7 +319,7 @@ public class Image extends GfxSurface {
         if (decodedRaster && consumeDecodedRasterAllocationFailureForTest()) {
           throw new TransientImageMaterializationException("Simulated decoded-raster allocation failure");
         }
-        pixels = new int[height * width]; // just create the pixels array
+        backing = new RasterImageBacking(width, height, 1, width, new int[height * width], null);
       } catch (OutOfMemoryError oome) {
         if (decodedRaster) {
           throw new TransientImageMaterializationException(oome);
@@ -350,8 +348,6 @@ public class Image extends GfxSurface {
     this.widthOfAllFrames = src.widthOfAllFrames;
     this.textureId = src.textureId; // shared among all instances
     this.changed = src.changed;
-    this.pixels = src.pixels;
-    this.pixelsOfAllFrames = src.pixelsOfAllFrames;
     this.backing = src.backing;
     this.changesLocked = src.changesLocked;
     this.comment = src.comment;
@@ -381,7 +377,23 @@ public class Image extends GfxSurface {
     if (backing != null && backing.isValid()) {
       return backing.readVisiblePixels(width, height, frameCount > 1 ? normalizedFrame(currentFrame) : 0);
     }
-    return pixels;
+    return rasterPixels(this);
+  }
+
+  private static RasterImageBacking requireRasterBacking(Image image) {
+    if (!(image.backing instanceof RasterImageBacking) || !image.backing.isValid()) {
+      throw new IllegalStateException("Image has no valid raster backing");
+    }
+    return (RasterImageBacking) image.backing;
+  }
+
+  private static int[] rasterPixels(Image image) {
+    return requireRasterBacking(image).pixels();
+  }
+
+  private static int[] rasterStoragePixels(Image image) {
+    RasterImageBacking raster = requireRasterBacking(image);
+    return raster.frameCount() > 1 ? raster.pixelsOfAllFrames() : raster.pixels();
   }
 
   /**
@@ -432,7 +444,7 @@ public class Image extends GfxSurface {
       setTransparentColorNative(color);
       return;
     }
-    int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
+    int[] pixels = rasterStoragePixels(this); // guich@tc100b5_40
     for (int i = pixels.length; --i >= 0;) {
       int p = pixels[i] & 0xFFFFFF;
       pixels[i] = (p == color) ? color : p | 0xFF000000; // if is the transparent color, set the alpha to 0, otherwise, set to full bright
@@ -538,7 +550,7 @@ public class Image extends GfxSurface {
   boolean hasNativeBackingForSmoke() {
     materializeCanonicalUnchecked();
     return !Settings.onJavaSE && backing instanceof NativeImageBacking
-        && pixels == null && pixelsOfAllFrames == null;
+        && backing.isValid();
   }
 
   private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
@@ -575,8 +587,6 @@ public class Image extends GfxSurface {
     pipeline = previous.append(operationType, parameter1, parameter2, parameter3, parameter4,
         width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames);
     hashCode = 0;
-    pixels = null;
-    pixelsOfAllFrames = null;
     backing = null;
     if (frameCount > 1 && (operationType == ImagePipeline.APPLY_COLOR
         || operationType == ImagePipeline.APPLY_COLOR2 || operationType == ImagePipeline.CHANGE_COLORS)) {
@@ -585,9 +595,6 @@ public class Image extends GfxSurface {
   }
 
   BackingImageSource snapshotRasterSource() throws ImageException {
-    if (backing == null && pixels != null) {
-      adoptRasterBackingCompatibility();
-    }
     if (backing == null || !backing.isValid()) {
       throw new IllegalStateException("Image has no valid backing to snapshot");
     }
@@ -607,8 +614,9 @@ public class Image extends GfxSurface {
     result.frameCount = source.frameCount;
     result.currentFrame = source.currentFrame;
     result.widthOfAllFrames = source.widthOfAllFrames;
-    result.pixels = source.pixels == null ? null : source.pixels.clone();
-    result.pixelsOfAllFrames = source.pixelsOfAllFrames == null ? null : source.pixelsOfAllFrames.clone();
+    result.backing = new RasterImageBacking(source.width, source.height, source.frameCount,
+        source.widthOfAllFrames, source.pixels == null ? null : source.pixels.clone(),
+        source.pixelsOfAllFrames == null ? null : source.pixelsOfAllFrames.clone());
     result.comment = source.comment;
     result.path = source.path;
     result.surfaceType = source.surfaceType;
@@ -656,8 +664,9 @@ public class Image extends GfxSurface {
     result.frameCount = source.frameCount;
     result.currentFrame = source.currentFrame;
     result.widthOfAllFrames = source.widthOfAllFrames;
-    result.pixels = raster.pixels() == null ? null : raster.pixels().clone();
-    result.pixelsOfAllFrames = raster.pixelsOfAllFrames() == null ? null : raster.pixelsOfAllFrames().clone();
+    result.backing = new RasterImageBacking(source.width, source.height, source.frameCount,
+        source.widthOfAllFrames, raster.pixels() == null ? null : raster.pixels().clone(),
+        raster.pixelsOfAllFrames() == null ? null : raster.pixelsOfAllFrames().clone());
     result.comment = source.comment;
     result.path = source.path;
     result.surfaceType = source.surfaceType;
@@ -669,16 +678,6 @@ public class Image extends GfxSurface {
     result.textureId = -1;
     result.init();
     return result;
-  }
-
-  /** Keeps the transitional backing wrapper aligned with legacy raster fields. */
-  private void adoptRasterBackingCompatibility() {
-    if (pixels != null) {
-      backing = new RasterImageBacking(width, height, frameCount, widthOfAllFrames, pixels,
-          frameCount > 1 ? (int[]) pixelsOfAllFrames : null);
-    } else if (backing == null || backing.isRaster()) {
-      backing = null;
-    }
   }
 
   private Image deferTransform(int operationType, int parameter1, int parameter2, int parameter3,
@@ -848,15 +847,13 @@ public class Image extends GfxSurface {
   }
 
   /** Checked canonical barrier used by APIs that already expose ImageException. */
-  private synchronized void materializeCanonicalChecked() throws ImageException {
+  private void materializeCanonicalChecked() throws ImageException {
     ImagePipeline deferred = pipeline;
     if (deferred == null) {
       return;
     }
     Image resolved = resolvePipeline(deferred, 1);
     synchronizePresentationState(resolved);
-    pixels = resolved.pixels;
-    pixelsOfAllFrames = resolved.pixelsOfAllFrames;
     backing = resolved.backing;
     width = resolved.width;
     height = resolved.height;
@@ -870,7 +867,6 @@ public class Image extends GfxSurface {
     transparentColor = resolved.transparentColor;
     useAlpha = resolved.useAlpha;
     textureId = -1;
-    adoptRasterBackingCompatibility();
     hashCode = 0;
     changed[0] = true;
     deferred.clearCachedVariants();
@@ -1000,10 +996,11 @@ public class Image extends GfxSurface {
     if (image.backing instanceof NativeImageBacking) {
       return;
     }
-    int[] allFrames = (int[]) image.pixelsOfAllFrames;
+    int[] allFrames = rasterStoragePixels(image);
+    int[] visible = rasterPixels(image);
     for (int y = image.height - 1; y >= 0; y--) {
       Vm.arrayCopy(allFrames, normalized * image.width + y * image.widthOfAllFrames,
-          image.pixels, y * image.width, image.width);
+          visible, y * image.width, image.width);
     }
   }
 
@@ -1100,7 +1097,7 @@ public class Image extends GfxSurface {
         } else {
           decoded.decodeEncodedSource(source);
         }
-        if ((decoded.backing == null && decoded.pixels == null) || decoded.width <= 0 || decoded.height <= 0) {
+        if ((decoded.backing == null || !decoded.backing.isValid()) || decoded.width <= 0 || decoded.height <= 0) {
           throw new DeterministicImageDecodeException("Could not decode encoded image");
         }
       } catch (DeterministicImageDecodeException failure) {
@@ -1129,11 +1126,11 @@ public class Image extends GfxSurface {
   }
 
   private Image promoteGeometryRoot(Image source) throws ImageException {
-    if (source.pixels == null || source.width <= 0 || source.height <= 0) {
+    if (!(source.backing instanceof RasterImageBacking) || source.width <= 0 || source.height <= 0) {
       return source;
     }
     int fullWidth = source.frameCount > 1 ? source.widthOfAllFrames : source.width;
-    int[] sourcePixels = source.frameCount > 1 ? (int[]) source.pixelsOfAllFrames : source.pixels;
+    int[] sourcePixels = rasterStoragePixels(source);
     if (sourcePixels == null || !NativeImageBacking.isAvailable()) {
       return source;
     }
@@ -1337,12 +1334,15 @@ public class Image extends GfxSurface {
     result.frameCount = outputFrameCount;
     result.currentFrame = -1;
     result.widthOfAllFrames = width;
-    result.pixelsOfAllFrames = pixels;
+    int[] sourcePixels = rasterStoragePixels(this);
+    int[] visiblePixels;
     try {
-      result.pixels = new int[(int) visibleLength];
+      visiblePixels = new int[(int) visibleLength];
     } catch (OutOfMemoryError oome) {
       throw new TransientImageMaterializationException(oome);
     }
+    result.backing = new RasterImageBacking(visibleWidth, height, outputFrameCount, width,
+        visiblePixels, sourcePixels);
     result.comment = "FC=" + outputFrameCount;
     result.path = path;
     result.surfaceType = surfaceType;
@@ -1363,7 +1363,9 @@ public class Image extends GfxSurface {
       setCurrentFrame(frame);
     }
     Image result = new Image(logicalWidth, logicalHeight, contentScale);
-    Vm.arrayCopy(pixels, 0, result.pixels, 0, pixels.length);
+    int[] sourcePixels = rasterPixels(this);
+    int[] destinationPixels = rasterPixels(result);
+    Vm.arrayCopy(sourcePixels, 0, destinationPixels, 0, sourcePixels.length);
     return result;
   }
 
@@ -1377,7 +1379,8 @@ public class Image extends GfxSurface {
       int sourceBottom = sourceY + result.height;
       if (sourceRight <= width && sourceBottom <= height && canCopyCropDirect(sourceX, sourceY, sourceRight, sourceBottom)) {
         for (int row = sourceY; row < sourceBottom; row++) {
-          Vm.arrayCopy(pixels, row * width + sourceX, result.pixels, (row - sourceY) * result.width, result.width);
+          Vm.arrayCopy(rasterPixels(this), row * width + sourceX, rasterPixels(result),
+              (row - sourceY) * result.width, result.width);
         }
         return result;
       }
@@ -1392,7 +1395,7 @@ public class Image extends GfxSurface {
     }
     for (int row = sourceY; row < sourceBottom; row++) {
       for (int column = sourceX; column < sourceRight; column++) {
-        if ((pixels[row * width + column] >>> 24) != 255) {
+        if ((rasterPixels(this)[row * width + column] >>> 24) != 255) {
           return false;
         }
       }
@@ -1539,8 +1542,9 @@ public class Image extends GfxSurface {
         height = frame.getHeight();
         logicalWidth = width;
         logicalHeight = height;
-        pixels = new int[width * height];
-        frame.getRGB(0, 0, width, height, pixels, 0, width);
+        int[] decodedPixels = new int[width * height];
+        frame.getRGB(0, 0, width, height, decodedPixels, 0, width);
+        backing = new RasterImageBacking(width, height, 1, width, decodedPixels, null);
         synchronized (Image.class) {
           targetedDecodeWidthForTest = width;
           targetedDecodeHeightForTest = height;
@@ -1626,7 +1630,6 @@ public class Image extends GfxSurface {
     gfx = new Graphics(this);
     gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
-    adoptRasterBackingCompatibility();
   }
 
   /**
@@ -1669,8 +1672,6 @@ public class Image extends GfxSurface {
       currentFrame = 0;
       comment = "FC=" + n;
       hashCode = 0;
-      pixels = null;
-      pixelsOfAllFrames = null;
       return;
     }
 
@@ -1697,14 +1698,14 @@ public class Image extends GfxSurface {
         widthOfAllFrames = width;
         width /= frameCount;
         logicalWidth = (int) Math.ceil(width / contentScale);
-        // the pixels will hold the pixel of a single frame
-        pixelsOfAllFrames = pixels;
+        // The raster backing holds the full frame strip and the visible frame.
+        int[] allFrames = rasterPixels(this);
         if (materializingEncodedSource && consumeMaterializedFrameBufferAllocationFailureForTest()) {
           throw new TransientImageMaterializationException("Simulated multi-frame buffer allocation failure");
         }
-        pixels = new int[width * height];
+        int[] visible = new int[width * height];
+        backing = new RasterImageBacking(width, height, frameCount, widthOfAllFrames, visible, allFrames);
         setCurrentFrame(0);
-        adoptRasterBackingCompatibility();
       } catch (OutOfMemoryError oome) {
         if (materializingEncodedSource) {
           throw new TransientImageMaterializationException(oome);
@@ -1885,16 +1886,10 @@ public class Image extends GfxSurface {
       if (changed[0]) {
         applyChanges();
       }
-      int[] p = backing == null || backing.isRaster()
-          ? (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames) : null;
+      int[] p = backing != null && backing.isRaster() ? rasterStoragePixels(this) : null;
       if (p != null) {
         hashCode = 0;
         hashCode = this.hashCode();
-      }
-      pixels = null;
-      pixelsOfAllFrames = null;
-      if (backing != null && backing.isRaster()) {
-        backing = null;
       }
       changesLocked = true;
     }
@@ -1927,7 +1922,7 @@ public class Image extends GfxSurface {
       changeColorsNative(from, to);
       return;
     }
-    int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    int[] pixels = rasterStoragePixels(this);
     for (int n = pixels.length; --n >= 0;) {
       if (pixels[n] == from) {
         pixels[n] = to;
@@ -2202,7 +2197,7 @@ public class Image extends GfxSurface {
       getPixelRowNative(fillIn, y);
       return;
     }
-    int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
+    int[] row = rasterStoragePixels(this);
     int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
     for (int x = 0, n = w, i = y * w; n-- > 0;) {
       int p = row[i++];
@@ -2380,8 +2375,8 @@ public class Image extends GfxSurface {
     newWidth *= frameCount; // guich@tc100b5_40
     Image scaledImage = getCopy(newWidth, newHeight);
 
-    int[] dstImageData = (int[]) scaledImage.pixels;
-    int[] srcImageData = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
+    int[] dstImageData = rasterPixels(scaledImage);
+    int[] srcImageData = rasterStoragePixels(this); // guich@tc100b5_40
 
     int fw = frameCount == 1 ? this.width : this.widthOfAllFrames; // guich@tc100b5_40
     // guich: a modified version of the replicate scale algorithm.
@@ -2446,8 +2441,8 @@ public class Image extends GfxSurface {
 
     int width = this.width * frameCount;
     int height = this.height;
-    int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
-    int[] pixels2 = (int[]) scaledImage.pixels;
+    int[] pixels = rasterStoragePixels(this);
+    int[] pixels2 = rasterPixels(scaledImage);
 
     // algorithm start
 
@@ -2913,13 +2908,13 @@ public class Image extends GfxSurface {
         setCurrentFrame(f);
         imageOut.setCurrentFrame(f);
       }
-      int[] pixelsIn = (int[]) this.pixels;
+      int[] pixelsIn = rasterPixels(this);
 
       /* center */
       int x0 = ((wIn << 16) - (((xMax - xMin) * rawCosine) - ((yMax - yMin) * rawSine)) - 1) / 2;
       int y0 = ((hIn << 16) - (((xMax - xMin) * rawSine) + ((yMax - yMin) * rawCosine)) - 1) / 2;
       /* and draw! */
-      int[] lineOut = (int[]) imageOut.pixels;
+      int[] lineOut = rasterPixels(imageOut);
       for (int l = 0; l < hOut; l++) {
         int x = x0;
         int y = y0;
@@ -2938,7 +2933,7 @@ public class Image extends GfxSurface {
       }
       if (frameCount != 1) {
         for (int y = imageOut.height - 1; y >= 0; y--) {
-          Vm.arrayCopy(imageOut.pixels, y * imageOut.width, imageOut.pixelsOfAllFrames,
+          Vm.arrayCopy(rasterPixels(imageOut), y * imageOut.width, rasterStoragePixels(imageOut),
               f * imageOut.width + y * imageOut.widthOfAllFrames, imageOut.width);
         }
       }
@@ -2971,8 +2966,8 @@ public class Image extends GfxSurface {
       imageOut.setFrameCount(frameCount);
     }
 
-    int[] from = (int[]) (frameCount > 1 ? pixelsOfAllFrames : pixels);
-    int[] to = (int[]) (frameCount > 1 ? imageOut.pixelsOfAllFrames : imageOut.pixels);
+    int[] from = rasterStoragePixels(this);
+    int[] to = rasterStoragePixels(imageOut);
     for (int i = from.length; --i >= 0;) {
       to[i] = (from[i] & 0xFF000000) | Color.interpolate(backColor, from[i]); // keep the alpha channel unchanged
     }
@@ -3022,8 +3017,8 @@ public class Image extends GfxSurface {
       imageOut.setFrameCount(frameCount);
     }
 
-    int[] from = (int[]) (frameCount > 1 ? pixelsOfAllFrames : pixels);
-    int[] to = (int[]) (frameCount > 1 ? imageOut.pixelsOfAllFrames : imageOut.pixels);
+    int[] from = rasterStoragePixels(this);
+    int[] to = rasterStoragePixels(imageOut);
     for (int i = from.length; --i >= 0;) {
       int p = from[i];
       if ((p & 0xFF000000) == 0) {
@@ -3074,13 +3069,13 @@ public class Image extends GfxSurface {
     final int BRITE_TOUCHUP = 1;
     final int CONTRAST_TOUCHUP = 2;
     int touchup = NO_TOUCHUP;
-    int[] pixelsIn = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    int[] pixelsIn = rasterStoragePixels(this);
     int w = frameCount == 1 ? this.width : this.widthOfAllFrames;
     int h = this.height;
 
     Image imageOut = getCopy(w, h);
 
-    int[] pixelsOut = (int[]) imageOut.pixels;
+    int[] pixelsOut = rasterPixels(imageOut);
     short table[] = null;
     int m = 0, k = 0;
 
@@ -3153,7 +3148,7 @@ public class Image extends GfxSurface {
     this.logicalWidth = img.logicalWidth;
     this.logicalHeight = img.logicalHeight;
     this.contentScale = img.contentScale;
-    this.pixels = img.pixels;
+    this.backing = img.backing;
     this.frameCount = img.frameCount;
     this.comment = img.comment;
   }
@@ -3257,7 +3252,7 @@ public class Image extends GfxSurface {
       bitShifts[i] = 8 - ((i + 1) * bpp);
     }
 
-    int[] pix = (int[]) this.pixels;
+    int[] pix = rasterPixels(this);
     int pitch = ((width + div - 1) / div) * div; // make sure are in a 4 byte boundary - those extra pixels will be stripped off by the current clip
     int dif = pitch - width;
     // Start at the bottom of the pixel array and work up
@@ -3326,7 +3321,7 @@ public class Image extends GfxSurface {
     int len, esc, r;
     int x, y;
     int colors0 = 0, colors1 = 0;
-    int[] pix = (int[]) this.pixels;
+    int[] pix = rasterPixels(this);
 
     x = 0;
     y = height - 1;
@@ -3485,7 +3480,8 @@ public class Image extends GfxSurface {
      */
 
     // Create space for the pixels
-    this.pixels = new int[this.height * this.width];
+    this.backing = new RasterImageBacking(this.width, this.height, 1, this.width,
+        new int[this.height * this.width], null);
 
     // Read the pixels from the stream based on the compression type directly into the selected offscreen image
     if (compression == BI_RGB) {
@@ -3585,7 +3581,8 @@ public class Image extends GfxSurface {
             for (int index = 0; /* index < count */; index++) {
               final BufferedImage frame = reader.read(index);
               image = new Image(width, height, 1, true);
-              image.pixels = convertBufferedImageToPixels(frame, image.pixels, width, height);
+              image.backing = new RasterImageBacking(width, height, 1, width,
+                  convertBufferedImageToPixels(frame, rasterPixels(image), width, height), null);
               frames.add(image);
             }
           } catch (IndexOutOfBoundsException e) {
@@ -3604,7 +3601,8 @@ public class Image extends GfxSurface {
           if (new String(input, 1, 3).equals("PNG")) {
             fillPNGInformations(input, image);
           }
-          image.pixels = convertBufferedImageToPixels(frame, image.pixels, width, height);
+          image.backing = new RasterImageBacking(width, height, 1, width,
+              convertBufferedImageToPixels(frame, rasterPixels(image), width, height), null);
         }
       } catch (java.io.IOException e) {
         // should never happen
@@ -3701,11 +3699,11 @@ public class Image extends GfxSurface {
           Image temp = new Image(totalW, totalH, 1, true);
           temp.frameCount = n;
           temp.comment = resultImage.comment;
-          int[] dest = (int[]) temp.pixels;
+          int[] dest = rasterPixels(temp);
           int xx = 0;
           for (int i = 0; i < n; i++) {
             Image img = images.get(i);
-            int[] src = (int[]) img.pixels;
+            int[] src = rasterPixels(img);
             int w = img.width;
             for (int yy = 0; yy < totalH; yy++) {
               Vm.arrayCopy(src, yy * w, dest, xx + yy * totalW, w);
@@ -3790,7 +3788,7 @@ public class Image extends GfxSurface {
     mg = (int) (Math.sqrt((g2 + k) / k) * 0x10000);
     mb = (int) (Math.sqrt((b2 + k) / k) * 0x10000);
 
-    int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    int[] pixels = rasterStoragePixels(this);
     for (int n = pixels.length; --n >= 0;) {
       int p = pixels[n];
       if ((p & 0xFF000000) != 0) {
@@ -3900,7 +3898,7 @@ public class Image extends GfxSurface {
     boolean changeA = (color & 0xFF000000) == 0xAA000000;
     int m, p;
 
-    int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    int[] pixels = rasterStoragePixels(this);
 
     // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
     int hi = 0, hip = 0;
@@ -4017,7 +4015,7 @@ public class Image extends GfxSurface {
       applyFadeNative(fadeValue);
       return;
     }
-    int[] pixels = (int[]) this.pixels;
+    int[] pixels = rasterPixels(this);
     int lastColor = -1, lastFaded = 0;
     for (int j = 0; j < pixels.length; j++) {  
       int rgb = pixels[j];
@@ -4279,7 +4277,7 @@ public class Image extends GfxSurface {
     long storagePixelCount = (long) storageWidth * height;
     int[] rasterPixels = backing != null && backing.isRaster() && backing.isValid()
         ? backing.readStoragePixels()
-        : (backing == null ? (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames) : null);
+        : null;
     if (storagePixelCount > 4096) {
       try {
         /*

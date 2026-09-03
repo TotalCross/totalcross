@@ -509,12 +509,14 @@ TC_API void tuiI_applyChangesNative(NMParams p) // totalcross/ui/image/Image pri
    }
    int32 frameCount = Image_frameCount(img);
    TCObject backing = Image_backing(img);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(img) : Image_pixelsOfAllFrames(img);
+   TCObject pixelsObj;
 
    if (backing != null && strEq(OBJ_CLASS(backing)->name, "totalcross.ui.image.NativeImageBacking")) {
       Image_changed(img) = false;
       return;
    }
+   pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(backing)
+      : RasterImageBacking_pixelsOfAllFrames(backing);
    
    if (pixelsObj != NULL) {
       int32 width = (frameCount > 1) ? Image_widthOfAllFrames(img) : Image_width(img);

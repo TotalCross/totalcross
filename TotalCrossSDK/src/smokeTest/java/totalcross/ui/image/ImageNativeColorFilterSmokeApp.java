@@ -44,14 +44,14 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
       require(frameScopedFade, "frame-scoped fade");
 
       Image alphaResult = sourceImage().getAlphaInstance(-40);
-      require(alphaResult.pixels == null && alphaResult.hasNativeBackingForSmoke(),
+      require(alphaResult.hasNativeBackingForSmoke(),
           "alpha native result backing");
       int[] alphaPixels = alphaResult.getPixels();
       alpha = alphaPixels[0] == 0xD7102030 && alphaPixels[3] == 0xD7E0F000;
       require(alpha, "alpha mapping");
 
       Image fadedResult = sourceImage().getFadedInstance(0xFF204060);
-      require(fadedResult.pixels == null && fadedResult.hasNativeBackingForSmoke(),
+      require(fadedResult.hasNativeBackingForSmoke(),
           "fade native result backing");
       int[] fadedPixels = fadedResult.getPixels();
       faded = fadedPixels[0] == 0xFF183048 && fadedPixels[3] == 0xFF809830;
@@ -116,7 +116,7 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
           && sameArray(chained.getPixels(), chainedDestination.getPixels());
 
       Image touched = sourceImage().getTouchedUpInstance((byte) 20, (byte) -10);
-      require(touched.pixels == null && touched.hasNativeBackingForSmoke(),
+      require(touched.hasNativeBackingForSmoke(),
           "touch-up native result backing");
       int[] touchedPixels = touched.getPixels();
       require(touchedPixels.length == SOURCE.length, "touch-up output dimensions");

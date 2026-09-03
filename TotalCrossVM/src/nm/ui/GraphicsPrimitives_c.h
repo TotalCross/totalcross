@@ -78,7 +78,7 @@ static Pixel* getSurfacePixels(TCObject surf)
          surf = Graphics_surface(surf);
       isImage = Surface_isImage(surf);
    }
-   pix = isImage ? Image_pixels(surf) : screen.mainWindowPixels;
+   pix = isImage ? RasterImageBacking_pixels(Image_backing(surf)) : screen.mainWindowPixels;
    return (Pixel*)ARRAYOBJ_START(pix);
 }
 

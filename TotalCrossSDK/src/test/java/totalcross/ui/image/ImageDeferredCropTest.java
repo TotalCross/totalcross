@@ -27,7 +27,7 @@ class ImageDeferredCropTest {
     Image expected = eagerCrop(expectedSource, 1, 2, 4, 2);
     Image actual = new Image(encoded).getClippedInstance(1, 2, 4, 2);
 
-    assertNull(actual.pixels);
+    assertNull(actual.backing);
     assertEquals(Arrays.asList(ImagePipeline.CROP), operationTypes(pipeline(actual)));
     assertEquals(1, actual.getFrameCount());
     assertEquals(4, actual.getWidth());
@@ -186,15 +186,15 @@ class ImageDeferredCropTest {
     Image image = new Image(width, height);
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-        image.pixels[y * width + x] = 0xFF000000 | (x * 30) << 16 | (y * 40) << 8 | x + y;
+        image.getPixels()[y * width + x] = 0xFF000000 | (x * 30) << 16 | (y * 40) << 8 | x + y;
       }
     }
     return image;
   }
 
   private static void fillLogicalPixels(Image image) {
-    for (int i = 0; i < image.pixels.length; i++) {
-      image.pixels[i] = 0xFF000000 | (i * 13) << 8 | i;
+    for (int i = 0; i < image.getPixels().length; i++) {
+      image.getPixels()[i] = 0xFF000000 | (i * 13) << 8 | i;
     }
   }
 

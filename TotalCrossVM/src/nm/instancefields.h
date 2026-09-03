@@ -171,14 +171,13 @@
 #define Image_logicalHeight(o)      FIELD_I32(o, 12)
 
 #define Image_changedObj(o)         FIELD_OBJ(o, OBJ_CLASS(o), 4)
-#define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
-#define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define Image_backing(o)            FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Image_reservedLegacyPixelsOfAllFrames(o) FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 2)
 #define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 3)
 #define Image_changed(o)            *((int32*)ARRAYOBJ_START(Image_changedObj(o)))
 #define Image_instanceCount(o)      *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))
 #define Image_pipeline(o)           FIELD_OBJ(o, OBJ_CLASS(o), 8)
-#define Image_backing(o)             FIELD_OBJ(o, OBJ_CLASS(o), 9)
 
 #define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 #define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
@@ -188,6 +187,14 @@
 #define NativeImageBacking_nativeHandle(o) FIELD_I64(o, OBJ_CLASS(o), 0)
 #define NativeImageBacking_width(o)        FIELD_I32(o, 0)
 #define NativeImageBacking_height(o)       FIELD_I32(o, 1)
+
+// totalcross.ui.image.RasterImageBacking
+#define RasterImageBacking_width(o)              FIELD_I32(o, 0)
+#define RasterImageBacking_height(o)             FIELD_I32(o, 1)
+#define RasterImageBacking_frameCount(o)         FIELD_I32(o, 2)
+#define RasterImageBacking_widthOfAllFrames(o)   FIELD_I32(o, 3)
+#define RasterImageBacking_pixels(o)            FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define RasterImageBacking_pixelsOfAllFrames(o) FIELD_OBJ(o, OBJ_CLASS(o), 1)
 
 // totalcross.ui.image.ImageGeometryPlan
 #define ImageGeometryPlan_root(o)                 FIELD_OBJ(o, OBJ_CLASS(o), 0)

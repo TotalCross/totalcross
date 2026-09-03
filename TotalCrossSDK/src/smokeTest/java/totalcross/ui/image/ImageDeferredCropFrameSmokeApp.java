@@ -39,8 +39,8 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
       byte[] fixture = encodedFrames();
       Image source = new Image(fixture);
       Image selected = source.getFrameInstance(-1);
-      frameExtractionLazy = source.pipelineForSmoke() != null && source.pixels == null
-          && selected.pipelineForSmoke() != null && selected.pixels == null;
+      frameExtractionLazy = source.pipelineForSmoke() != null
+          && selected.pipelineForSmoke() != null;
       require(frameExtractionLazy, "lazy frame extraction");
       int lastPixel = selected.getPixels()[0];
       int firstPixel = new Image(fixture).getFrameInstance(99).getPixels()[0];
@@ -48,13 +48,13 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
       require(frameNormalization, "frame normalization");
 
       Image copy = new Image(fixture).getCopy();
-      getCopyLazy = copy.pipelineForSmoke() != null && copy.pixels == null;
+      getCopyLazy = copy.pipelineForSmoke() != null;
       Image expectedCopy = new Image(fixture).getFrameInstance(0);
       getCopyLazy = getCopyLazy && copy.getPixels()[0] == expectedCopy.getPixels()[0];
       require(getCopyLazy, "lazy getCopy");
 
       Image actualCrop = new Image(fixture).getClippedInstance(1, 0, 2, 2);
-      cropLazy = actualCrop.pipelineForSmoke() != null && actualCrop.pixels == null;
+      cropLazy = actualCrop.pipelineForSmoke() != null;
       require(cropLazy, "lazy crop");
       Image expectedCrop = eagerCrop(new Image(fixture), 1, 0, 2, 2);
       cropPixels = samePixels(expectedCrop, actualCrop);
@@ -89,7 +89,7 @@ public class ImageDeferredCropFrameSmokeApp extends MainWindow {
       int callTimePixel = raster.getPixels()[0];
       Image rasterCopy = raster.getFrameInstance(0);
       raster.getPixels()[0] = 0xFFFFFFFF;
-      rasterSnapshotIsolation = rasterCopy.pixels == null && callTimePixel == rasterCopy.getPixels()[0];
+      rasterSnapshotIsolation = rasterCopy.backing == null && callTimePixel == rasterCopy.getPixels()[0];
       require(rasterSnapshotIsolation, "raster snapshot isolation");
 
       Image logical = Image.createLogical(3, 2, 2);

@@ -31,8 +31,6 @@ bool imageInstallNativeBacking(Context context, TCObject imageObj, int64 handle,
    NativeImageBacking_height(backing) = height;
    setObjectLock(backing, UNLOCKED);
    Image_backing(imageObj) = backing;
-   Image_pixels(imageObj) = null;
-   Image_pixelsOfAllFrames(imageObj) = null;
    return true;
 #else
    UNUSED(context)
@@ -64,8 +62,6 @@ bool imageReplaceNativeBacking(Context context, TCObject imageObj, int64 handle,
       NativeImageBacking_nativeHandle(backing) = handle;
       NativeImageBacking_width(backing) = width;
       NativeImageBacking_height(backing) = height;
-      Image_pixels(imageObj) = null;
-      Image_pixelsOfAllFrames(imageObj) = null;
       return true;
    }
    return imageInstallNativeBacking(context, imageObj, handle, width, height);
