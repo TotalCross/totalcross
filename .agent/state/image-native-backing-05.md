@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image native backing plan 05 state
 
-- Status: complete; Plan 5 and the full five-plan image-native-backing sequence are complete.
+- Status: complete; Plan 5 and the full five-plan image-native-backing sequence are complete, including the FRAME_LAYOUT compatibility correction at `ee0fbe23a`.
 - Starting revision: `15c7e813a` (`docs(plans): close native image color plan four`).
 - Plans 1 through 4 are complete; Plan 4 handoff is in
   `.agent/reports/image-native-backing-04-editorial.md`.
@@ -21,6 +21,11 @@ SPDX-License-Identifier: LGPL-2.1-only
   use explicit backing macros.
 - Milestone 3 completed in `b7337e93e`: the compact deployed smoke covers the
   final ten scenarios plus the test-only allocation/readback accounting hook.
+- Corrective FRAME_LAYOUT milestone completed in `ee0fbe23a`: destination-scale
+  dimensions now match JavaSE/native semantics, pure layouts reuse the complete
+  native strip, and transformed non-divisible strips preserve residual pixels
+  through native readback and PNG round-trip. The zero-width layout regression
+  remains covered.
 - Active paths: `TotalCrossSDK/src/main/java/totalcross/ui/image/Image.java`,
   `ImageBacking.java`, `NativeImageBacking.java`, `RasterImageBacking.java`,
   `ImageSource` implementations, `TotalCrossVM/src/nm/instancefields.h`,
@@ -45,15 +50,23 @@ SPDX-License-Identifier: LGPL-2.1-only
   `/tmp/image-native-backing-05-m1-java-tests.log` and
   `/tmp/image-native-backing-05-m2-sdk-abi-tests.log`; the incremental native
   build passed in `/tmp/image-native-backing-05-m2-native-build-rerun.log`.
-- Final gate on the macOS arm64 host passed at code revision `b7337e93e`:
-  explicit CMake configure/build logs are `/tmp/image-native-backing-05-final-arm64-cmake.log`
-  and `/tmp/image-native-backing-05-final-arm64-build.log`; focused SDK tests
-  are in `/tmp/image-native-backing-05-final-focused-tests.log`; SDK `dist` is
-  in `TotalCrossSDK/agent-logs/20260902-223220-dist-full.log` with compact
-  summary `TotalCrossSDK/agent-logs/20260902-223220-dist-agent.log`; final
-  deployed smoke is `/tmp/image-native-backing-05-final-smoke-arm64.log`.
-  The smoke reported every required field as true, `backingReadbackCount=2`,
-  and `overallPass=true`.
+- Historical Plan 5 gate passed at `b7337e93e`; it is superseded as current
+  validation by the final gate at code revision `ee0fbe23a`:
+  CMake configure/build logs are `/tmp/image-native-backing-frame-layout-final-arm64-cmake.log`
+  and `/tmp/image-native-backing-frame-layout-final-arm64-build.log`; focused
+  SDK tests are in `/tmp/image-native-backing-frame-layout-final-focused-tests.log`;
+  SDK `dist` is in `TotalCrossSDK/agent-logs/20260903-000517-dist-full.log`
+  with compact summary `TotalCrossSDK/agent-logs/20260903-000517-dist-agent.log`;
+  frame-state smoke is `/tmp/image-native-backing-frame-layout-final-frame-state-smoke.log`;
+  geometry and materialization smokes are
+  `/tmp/image-native-backing-frame-layout-final-geometry-run.log` and
+  `/tmp/image-native-backing-frame-layout-final-materialization-run.log`; final
+  image-backing smoke is `/tmp/image-native-backing-frame-layout-final-lazy-smoke.log`.
+  All required fields passed, including `frameLayoutScaledResidual=true`,
+  `frameLayoutResidualRoundTrip=true`, `backingReadbackCount=2`, and
+  `overallPass=true`.
+- The commit-message check accepted the title but reported one body line over
+  80 characters; history was preserved without amend/rewrite as required.
 - Static final checks found no `Image_pixels` or `Image_pixelsOfAllFrames`
   native macro/use. `Image.java` retains only legitimate backing/source API
   references and no `int[] pixels` field. Headers and staged diffs passed.

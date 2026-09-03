@@ -57,9 +57,11 @@ will be later resumed after the plan's implementation is validated.
 
 ### Execution status
 
-The five-plan image-native-backing sequence is complete. Plan 5 closed at code
-revision `b7337e93e`; its final macOS arm64 SDK/native gate, ABI checks, and
-deployed smoke passed. The completion report is in
+The five-plan image-native-backing sequence is complete. Plan 5's historical
+implementation close was `b7337e93e`; the current corrective FRAME_LAYOUT
+revision is `ee0fbe23a`, whose macOS arm64 SDK/native gate, focused frame-state
+coverage, geometry/materialization smokes, and deployed final smoke passed.
+The completion report is in
 `.agent/reports/image-native-backing-05-editorial.md` and compact evidence is
 indexed in `.agent/evidence/image-native-backing-05.jsonl`.
 

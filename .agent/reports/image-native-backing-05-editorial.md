@@ -7,8 +7,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Image native backing Plan 5 completion
 
 Plan 5 and the complete five-plan image-native-backing sequence are complete.
-The functional retirement commit is `b7337e93e`; the final gate ran against
-that code revision before this documentation update.
+The historical functional retirement commit is `b7337e93e`; the corrective
+FRAME_LAYOUT commit is `ee0fbe23a`, and the final gate below ran against that
+current code revision.
 
 ## Architecture delivered
 
@@ -23,6 +24,12 @@ frame selection, and lifecycle paths observe the backing directly. Deployed
 `getPixels()` produces a detached compatibility snapshot; Java SE retains live
 raster behavior. Equality ignores alpha as before, and large-image hashing
 continues to use the bounded scaled reduction.
+
+The corrective FRAME_LAYOUT path preserves integer-truncated canonical storage
+while applying destination-scale dimensions to visible frames. Pure layouts
+reuse their complete native strip, and transformed non-divisible strips retain
+residual storage pixels through readback and PNG round-trip. Zero-width frame
+metadata remains valid without allocating a zero-sized surface.
 
 All native consumers use explicit `RasterImageBacking_*` or
 `NativeImageBacking_*` accessors. The old `Image_pixels` and
@@ -40,19 +47,28 @@ the visible-row reads bounded to the selected frame.
 
 ## Final proof
 
-The macOS arm64 final gate passed:
+The macOS arm64 final gate passed at `ee0fbe23a`:
 
 - CMake configure with `CMAKE_OSX_ARCHITECTURES=arm64` and build of `tcvm` and
-  `Launcher` — passed; logs are `/tmp/image-native-backing-05-final-arm64-cmake.log`
-  and `/tmp/image-native-backing-05-final-arm64-build.log`.
-- Focused Image/ABI SDK tests — passed; log is
-  `/tmp/image-native-backing-05-final-focused-tests.log`.
+  `Launcher` — passed; logs are `/tmp/image-native-backing-frame-layout-final-arm64-cmake.log`
+  and `/tmp/image-native-backing-frame-layout-final-arm64-build.log`.
+- Focused frame/destination-scale SDK tests — passed; log is
+  `/tmp/image-native-backing-frame-layout-final-focused-tests.log`.
 - `./gradlew-agent dist` — passed; compact/full logs are
-  `TotalCrossSDK/agent-logs/20260902-223220-dist-agent.log` and
-  `TotalCrossSDK/agent-logs/20260902-223220-dist-full.log`.
-- Deployed `ImageLazyMaterializationSmokeApp` against the final dylib —
-  passed with every required field true, `backingReadbackCount=2`, and
-  `overallPass=true`; log is `/tmp/image-native-backing-05-final-smoke-arm64.log`.
+  `TotalCrossSDK/agent-logs/20260903-000517-dist-agent.log` and
+  `TotalCrossSDK/agent-logs/20260903-000517-dist-full.log`.
+- Deployed `ImageDeferredFrameStateSmokeApp` — passed with
+  `frameLayoutScaledResidual=true`, `frameLayoutResidualRoundTrip=true`, and
+  `overallPass=true`; log is
+  `/tmp/image-native-backing-frame-layout-final-frame-state-smoke.log`.
+- Deployed `ImageNativeGeometrySmokeApp` and
+  `ImageNativeMaterializationSmokeApp` — both passed; logs are
+  `/tmp/image-native-backing-frame-layout-final-geometry-run.log` and
+  `/tmp/image-native-backing-frame-layout-final-materialization-run.log`.
+- Deployed `ImageLazyMaterializationSmokeApp` against the final dylib — passed
+  with every required field true, `backingReadbackCount=2`, and
+  `overallPass=true`; log is
+  `/tmp/image-native-backing-frame-layout-final-lazy-smoke.log`.
 
 The smoke covers decoded PNG alpha, targeted JPEG dimensions, generated
 draw/save, repeated 500x500 ImageControl resize, crop/smooth/rotate drawing,
@@ -63,5 +79,7 @@ creation/decode and two readbacks for the two explicit detached snapshots; it
 does not introduce a profiler or a production allocation counter.
 
 Android, iOS, Linux, Windows, and the full platform matrix were not run under
-the fixed Plan 5 validation policy. Unrelated local edits and generated or
-downloaded artifacts were not staged or committed.
+the fixed Plan 5 validation policy. The commit-message check accepted the
+title but reported one body line over 80 characters; history was preserved
+without amend/rewrite. Unrelated local edits and generated or downloaded
+artifacts were not staged or committed.
