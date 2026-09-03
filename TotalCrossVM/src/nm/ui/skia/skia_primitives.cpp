@@ -45,7 +45,7 @@ void skia_fillRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel 
     targetCanvas->drawRect(SkRect::MakeXYWH(x, y, w, h), backPaint);
 }
 
-void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x0, double y0, Pixel foreColor, int32 justifyWidth, double fontSize, int32 typefaceIndex)
+void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x0, double y0, Pixel foreColor, int32 justifyWidth, double fontSize, int32 typefaceIndex, bool bold)
 {
     SKIA_TRACE()
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
@@ -58,6 +58,7 @@ void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x
     if(skFont.getSize() != fontSize) {
         skFont.setSize(fontSize);
     }
+    skFont.setEmbolden(bold);
     if(backPaint.getColor() != foreColor){
         backPaint.setColor(skiaColorFromPixel(foreColor));
     }

@@ -15,7 +15,9 @@ TC_API void tufFM_fontMetricsCreate(NMParams p) // totalcross/ui/font/FontMetric
    TCObject fm = p->obj[0],font = FontMetrics_font(fm);
 #if TC_RENDERER_SKIA
    double ascent, descent, leading;
-   skia_fontMetrics(Font_skiaIndex(font), Font_size(font), &ascent, &descent, &leading);
+   skia_fontMetrics(Font_skiaIndex(font), Font_size(font),
+                    (Font_style(font) & 1) != 0,
+                    &ascent, &descent, &leading);
    FontMetrics_ascentD(fm) = ascent;
    FontMetrics_descentD(fm) = descent;
    FontMetrics_leadingD(fm) = leading;
@@ -37,7 +39,8 @@ TC_API void tufFM_charWidth_c(NMParams p) // totalcross/ui/font/FontMetrics nati
 #if TC_RENDERER_SKIA
    TCObject font = FontMetrics_font(p->obj[0]);
    JChar ch = (JChar)p->i32[0];
-   p->retI = skia_stringWidth(&ch, sizeof(JChar), Font_skiaIndex(font), Font_size(font));
+   p->retI = skia_stringWidth(&ch, sizeof(JChar), Font_skiaIndex(font),
+                              Font_size(font), (Font_style(font) & 1) != 0);
 #else
    p->retI = getJCharWidth(p->currentContext, FontMetrics_font(p->obj[0]), (JChar)p->i32[0]);
 #endif
@@ -47,7 +50,9 @@ TC_API void tufFM_charWidthD_c(NMParams p) // totalcross/ui/font/FontMetrics nat
 {
 #if TC_RENDERER_SKIA
    JChar ch = (JChar)p->i32[0];
-   p->retD = skia_stringWidthD(&ch, sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+   TCObject font = FontMetrics_font(p->obj[0]);
+   p->retD = skia_stringWidthD(&ch, sizeof(JChar), Font_skiaIndex(font),
+                               Font_size(font), (Font_style(font) & 1) != 0);
 #else
    p->retD = getJCharWidth(p->currentContext, FontMetrics_font(p->obj[0]), (JChar)p->i32[0]);
 #endif
@@ -60,7 +65,12 @@ TC_API void tufFM_stringWidth_s(NMParams p) // totalcross/ui/font/FontMetrics na
       throwNullArgumentException(p->currentContext, "s");
 #if TC_RENDERER_SKIA
    else
-      p->retI = skia_stringWidth(String_charsStart(s), String_charsLen(s) * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+   {
+      TCObject font = FontMetrics_font(p->obj[0]);
+      p->retI = skia_stringWidth(String_charsStart(s), String_charsLen(s) * sizeof(JChar),
+                                  Font_skiaIndex(font), Font_size(font),
+                                  (Font_style(font) & 1) != 0);
+   }
 #else
    else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), String_charsStart(s), String_charsLen(s));
@@ -74,7 +84,12 @@ TC_API void tufFM_stringWidthD_s(NMParams p) // totalcross/ui/font/FontMetrics n
       throwNullArgumentException(p->currentContext, "s");
 #if TC_RENDERER_SKIA
    else
-      p->retD = skia_stringWidthD(String_charsStart(s), String_charsLen(s) * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+   {
+      TCObject font = FontMetrics_font(p->obj[0]);
+      p->retD = skia_stringWidthD(String_charsStart(s), String_charsLen(s) * sizeof(JChar),
+                                  Font_skiaIndex(font), Font_size(font),
+                                  (Font_style(font) & 1) != 0);
+   }
 #else
    else
       p->retD = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), String_charsStart(s), String_charsLen(s));
@@ -88,7 +103,12 @@ TC_API void tufFM_stringWidthAtSizeD_sd(NMParams p) // totalcross/ui/font/FontMe
       throwNullArgumentException(p->currentContext, "s");
 #if TC_RENDERER_SKIA
    else
-      p->retD = skia_stringWidthD(String_charsStart(s), String_charsLen(s) * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0]);
+   {
+      TCObject font = FontMetrics_font(p->obj[0]);
+      p->retD = skia_stringWidthD(String_charsStart(s), String_charsLen(s) * sizeof(JChar),
+                                  Font_skiaIndex(font), p->dbl[0],
+                                  (Font_style(font) & 1) != 0);
+   }
 #else
    else
       p->retD = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), String_charsStart(s), String_charsLen(s)) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
@@ -99,7 +119,10 @@ TC_API void tufFM_lineHeightAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetr
 {
 #if TC_RENDERER_SKIA
    double ascent, descent, leading;
-   skia_fontMetrics(Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0], &ascent, &descent, &leading);
+   TCObject font = FontMetrics_font(p->obj[0]);
+   skia_fontMetrics(Font_skiaIndex(font), p->dbl[0],
+                    (Font_style(font) & 1) != 0,
+                    &ascent, &descent, &leading);
    p->retD = ascent + descent + leading;
 #else
    p->retD = (FontMetrics_heightD(p->obj[0]) ? FontMetrics_heightD(p->obj[0]) : FontMetrics_ascent(p->obj[0]) + FontMetrics_descent(p->obj[0])) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
@@ -110,7 +133,10 @@ TC_API void tufFM_descentAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics
 {
 #if TC_RENDERER_SKIA
    double ascent, descent, leading;
-   skia_fontMetrics(Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0], &ascent, &descent, &leading);
+   TCObject font = FontMetrics_font(p->obj[0]);
+   skia_fontMetrics(Font_skiaIndex(font), p->dbl[0],
+                    (Font_style(font) & 1) != 0,
+                    &ascent, &descent, &leading);
    p->retD = descent;
 #else
    p->retD = FontMetrics_descentD(p->obj[0]) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
@@ -121,7 +147,10 @@ TC_API void tufFM_ascentAtSizeD_d(NMParams p) // totalcross/ui/font/FontMetrics 
 {
 #if TC_RENDERER_SKIA
    double ascent, descent, leading;
-   skia_fontMetrics(Font_skiaIndex(FontMetrics_font(p->obj[0])), p->dbl[0], &ascent, &descent, &leading);
+   TCObject font = FontMetrics_font(p->obj[0]);
+   skia_fontMetrics(Font_skiaIndex(font), p->dbl[0],
+                    (Font_style(font) & 1) != 0,
+                    &ascent, &descent, &leading);
    p->retD = ascent;
 #else
    p->retD = FontMetrics_ascentD(p->obj[0]) * p->dbl[0] / Font_size(FontMetrics_font(p->obj[0]));
@@ -138,7 +167,12 @@ TC_API void tufFM_stringWidth_Cii(NMParams p) // totalcross/ui/font/FontMetrics 
    else
    if (checkArrayRange(p->currentContext, charArray, start, count))
 #if TC_RENDERER_SKIA
-      p->retI = skia_stringWidth(((JCharP)ARRAYOBJ_START(charArray))+start, count * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+   {
+      TCObject font = FontMetrics_font(p->obj[0]);
+      p->retI = skia_stringWidth(((JCharP)ARRAYOBJ_START(charArray)) + start,
+                                 count * sizeof(JChar), Font_skiaIndex(font),
+                                 Font_size(font), (Font_style(font) & 1) != 0);
+   }
 #else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), ((JCharP)ARRAYOBJ_START(charArray))+start, count);
 #endif
@@ -151,7 +185,12 @@ TC_API void tufFM_sbWidth_s(NMParams p) // totalcross/ui/font/FontMetrics native
       throwNullArgumentException(p->currentContext, "s"); // throw NPE
 #if TC_RENDERER_SKIA
    else
-      p->retI = skia_stringWidth(StringBuffer_charsStart(s), StringBuffer_count(s) * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+   {
+      TCObject font = FontMetrics_font(p->obj[0]);
+      p->retI = skia_stringWidth(StringBuffer_charsStart(s), StringBuffer_count(s) * sizeof(JChar),
+                                  Font_skiaIndex(font), Font_size(font),
+                                  (Font_style(font) & 1) != 0);
+   }
 #else
    else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), StringBuffer_charsStart(s), StringBuffer_count(s));
@@ -168,7 +207,12 @@ TC_API void tufFM_sbWidth_sii(NMParams p) // totalcross/ui/font/FontMetrics nati
    else
    if (checkArrayRange(p->currentContext, StringBuffer_chars(s), start, count))
 #if TC_RENDERER_SKIA
-      p->retI = skia_stringWidth(StringBuffer_charsStart(s)+start, count * sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+   {
+      TCObject font = FontMetrics_font(p->obj[0]);
+      p->retI = skia_stringWidth(StringBuffer_charsStart(s) + start,
+                                 count * sizeof(JChar), Font_skiaIndex(font),
+                                 Font_size(font), (Font_style(font) & 1) != 0);
+   }
 #else
       p->retI = getJCharPWidth(p->currentContext, FontMetrics_font(p->obj[0]), StringBuffer_charsStart(s)+start, count);
 #endif
@@ -183,7 +227,12 @@ TC_API void tufFM_charWidth_si(NMParams p) // totalcross/ui/font/FontMetrics nat
    else
    if (checkArrayRange(p->currentContext, StringBuffer_chars(s), i, 1)) // check only index "i"
 #if TC_RENDERER_SKIA
-      p->retI = skia_stringWidth(StringBuffer_charsStart(s)+i, sizeof(JChar), Font_skiaIndex(FontMetrics_font(p->obj[0])), Font_size(FontMetrics_font(p->obj[0])));
+   {
+      TCObject font = FontMetrics_font(p->obj[0]);
+      p->retI = skia_stringWidth(StringBuffer_charsStart(s) + i, sizeof(JChar),
+                                 Font_skiaIndex(font), Font_size(font),
+                                 (Font_style(font) & 1) != 0);
+   }
 #else
       p->retI = getJCharWidth(p->currentContext, FontMetrics_font(p->obj[0]), StringBuffer_charsStart(s)[i]);
 #endif
