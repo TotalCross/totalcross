@@ -12,6 +12,14 @@ TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCr
    TCObject *name, *hvUserFont;
    TCClass c;
    TCObject font;
+#if TC_RENDERER_SKIA
+   CharP resourceName;
+   CharP missingName;
+   TCObject customFont;
+   TCObject missingFont;
+   char longName[160];
+   int32 i;
+#endif
    font = createObject(currentContext, "totalcross.ui.font.Font");
    setObjectLock(font, UNLOCKED);
    ASSERT1_EQUALS(NotNull, font);
@@ -51,6 +59,30 @@ TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCr
    ASSERT1_EQUALS(True, *normal > 0);
    ASSERT1_EQUALS(True, *tabSize > 0);
 
+#if TC_RENDERER_SKIA
+   resourceName = createSkiaResourceName("a");
+   ASSERT2_EQUALS(Sz, resourceName, "a.ttf");
+   xfree(resourceName);
+   resourceName = createSkiaResourceName("a.ttf");
+   ASSERT2_EQUALS(Sz, resourceName, "a.ttf");
+   xfree(resourceName);
+   resourceName = createSkiaResourceName("a.TTF");
+   ASSERT2_EQUALS(Sz, resourceName, "a.TTF");
+   xfree(resourceName);
+   resourceName = createSkiaResourceName("a.TtF");
+   ASSERT2_EQUALS(Sz, resourceName, "a.TtF");
+   xfree(resourceName);
+   resourceName = createSkiaResourceName("TCFont");
+   ASSERT2_EQUALS(Sz, resourceName, "Roboto Regular.ttf");
+   xfree(resourceName);
+   for (i = 0; i < 159; i++)
+      longName[i] = 'x';
+   longName[159] = 0;
+   resourceName = createSkiaResourceName(longName);
+   ASSERT2_EQUALS(I32, xstrlen(resourceName), 163);
+   xfree(resourceName);
+#endif
+
 #if !TC_RENDERER_SKIA
    ASSERT1_EQUALS(NotNull, defaultFont);
 #endif
@@ -65,6 +97,35 @@ TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCr
    tufF_fontCreate(&p);
 #if TC_RENDERER_SKIA
    ASSERT1_EQUALS(Null, *hvUserFont);
+
+   if (skia_getTypefaceIndex("Roboto Regular.ttf") >= 0)
+   {
+      customFont = createObject(currentContext, "totalcross.ui.font.Font");
+      ASSERT1_EQUALS(NotNull, customFont);
+      setObjectLock(customFont, UNLOCKED);
+      Font_name(customFont) = createStringObjectFromCharP(currentContext, "Roboto Regular", -1);
+      setObjectLock(Font_name(customFont), UNLOCKED);
+      Font_size(customFont) = 9;
+      p.obj = &customFont;
+      tufF_fontCreate(&p);
+      ASSERT1_EQUALS(True, Font_skiaIndex(customFont) >= 0);
+      missingName = String2CharP(Font_name(customFont));
+      ASSERT2_EQUALS(Sz, missingName, "Roboto Regular");
+      xfree(missingName);
+   }
+
+   missingFont = createObject(currentContext, "totalcross.ui.font.Font");
+   ASSERT1_EQUALS(NotNull, missingFont);
+   setObjectLock(missingFont, UNLOCKED);
+   Font_name(missingFont) = createStringObjectFromCharP(currentContext, "Missing", -1);
+   setObjectLock(Font_name(missingFont), UNLOCKED);
+   Font_size(missingFont) = 9;
+   p.obj = &missingFont;
+   tufF_fontCreate(&p);
+   ASSERT1_EQUALS(Null, Font_hvUserFont(missingFont));
+   missingName = String2CharP(Font_name(missingFont));
+   ASSERT2_EQUALS(Sz, missingName, "TCFont");
+   xfree(missingName);
 #else
    ASSERT1_EQUALS(NotNull, *hvUserFont);
 #endif
