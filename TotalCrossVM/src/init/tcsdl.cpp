@@ -203,6 +203,7 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen, int16 
 #if __APPLE__
    SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "1");
 #endif
+   SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
    if (SDL_Init(SDL_INIT_VIDEO) != 0)
    {
