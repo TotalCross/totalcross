@@ -23,9 +23,6 @@ void graphicsScreenChange(int32 w, int32 h)
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
-#ifdef __arm__
-   *(tcSettings.isFullScreenPtr)=true;
-#endif
 #if TC_WINDOWING_SDL
    if (!TCSDL_Init(screen, exeName, *(tcSettings.isFullScreenPtr), appTczAttr))
       return false;

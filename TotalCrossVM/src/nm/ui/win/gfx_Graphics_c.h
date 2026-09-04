@@ -86,7 +86,8 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    display.usableWidth = rect.right - rect.left;
    display.usableHeight = rect.bottom - rect.top;
    startupOptions.appTczAttr = appTczAttr;
-   startupOptions.legacyFullscreen = *tcSettings.isFullScreenPtr;
+   startupOptions.initialFullscreen = *tcSettings.isFullScreenPtr
+      ? TC_FULLSCREEN_TRUE : TC_FULLSCREEN_UNSET;
    windowLoadStartupEnvironment(&startupOptions);
    if (!windowResolveStartupConfiguration(&startupOptions, &display, &configuration))
       return false;
