@@ -19,6 +19,7 @@ final class ImagePipeline {
   static final int SET_TRANSPARENT_COLOR = 10;
   static final int FRAME_SELECT = 11;
   static final int CROP = 12;
+  static final int FRAME_LAYOUT = 13;
 
   private final ImageSource root;
   private final ImagePipeline previous;
@@ -33,6 +34,7 @@ final class ImagePipeline {
   private final int logicalHeight;
   private final int frameCount;
   private final int widthOfAllFrames;
+  private final double contentScale;
 
   // The cache belongs to this pipeline leaf. It is deliberately not shared by
   // roots or images so encoded sources remain authoritative after eviction.
@@ -58,6 +60,7 @@ final class ImagePipeline {
     logicalHeight = root.logicalHeight();
     frameCount = root.frameCount();
     widthOfAllFrames = root.widthOfAllFrames();
+    contentScale = root.contentScale();
   }
 
   private ImagePipeline(ImagePipeline previous, int operationType, int parameter1, int parameter2,
@@ -76,6 +79,7 @@ final class ImagePipeline {
     this.logicalHeight = logicalHeight;
     this.frameCount = frameCount;
     this.widthOfAllFrames = widthOfAllFrames;
+    this.contentScale = previous.contentScale;
   }
 
   ImageSource root() {
@@ -128,6 +132,10 @@ final class ImagePipeline {
 
   int widthOfAllFrames() {
     return widthOfAllFrames;
+  }
+
+  double contentScale() {
+    return contentScale;
   }
 
   ImagePipeline append(int operationType, int parameter1, int parameter2, int parameter3, int parameter4,

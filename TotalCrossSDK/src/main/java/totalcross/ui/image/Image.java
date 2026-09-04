@@ -537,12 +537,12 @@ public class Image extends GfxSurface {
     transparentColor = source.transparentColor;
     useAlpha = source.useAlpha;
     alphaMask = source.alphaMask;
-    contentScale = 1;
+    contentScale = deferred.hasGeometricNode() ? 1 : deferred.contentScale();
     hwScaleW = source.hwScaleW;
     hwScaleH = source.hwScaleH;
     textureId = -1;
     gfx = new Graphics(this);
-    gfx.setScales(1, 1);
+    gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
   }
 
@@ -566,8 +566,9 @@ public class Image extends GfxSurface {
 
   private RasterImageSource snapshotRasterSource() {
     int[] allFrames = frameCount > 1 ? (int[]) pixelsOfAllFrames : null;
+    int fullWidth = frameCount > 1 ? widthOfAllFrames : width;
     return new RasterImageSource(width, height, logicalWidth, logicalHeight, contentScale, frameCount,
-        currentFrame, widthOfAllFrames, pixels == null ? null : pixels.clone(),
+        currentFrame, fullWidth, pixels == null ? null : pixels.clone(),
         allFrames == null ? null : allFrames.clone(), comment, path, surfaceType, transparentColor, useAlpha,
         alphaMask, hwScaleW, hwScaleH);
   }
@@ -647,7 +648,7 @@ public class Image extends GfxSurface {
     frameCount = 1;
     currentFrame = -1;
     path = source.path;
-    contentScale = source.contentScale;
+    contentScale = deferred.hasGeometricNode() ? 1 : deferred.contentScale();
     hwScaleW = source.hwScaleW;
     hwScaleH = source.hwScaleH;
     textureId = -1;
@@ -665,9 +666,10 @@ public class Image extends GfxSurface {
     widthOfAllFrames = width;
     frameCount = 1;
     currentFrame = -1;
+    contentScale = deferred.hasGeometricNode() ? 1 : deferred.contentScale();
     textureId = -1;
     gfx = new Graphics(this);
-    gfx.setScales(1, 1);
+    gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
   }
 
@@ -769,6 +771,7 @@ public class Image extends GfxSurface {
       return;
     }
     Image resolved = resolvePipeline(deferred, 1);
+    synchronizePresentationState(resolved);
     pixels = resolved.pixels;
     pixelsOfAllFrames = resolved.pixelsOfAllFrames;
     width = resolved.width;
@@ -816,6 +819,26 @@ public class Image extends GfxSurface {
     resolved.alphaMask = alphaMask;
     resolved.hwScaleW = hwScaleW;
     resolved.hwScaleH = hwScaleH;
+    if (resolved.frameCount > 1) {
+      selectCurrentFrameEager(resolved, currentFrame);
+    }
+  }
+
+  /** Selects a frame on an already materialized variant without crossing the deferred barrier. */
+  private static void selectCurrentFrameEager(Image image, int frame) {
+    if (image.frameCount <= 1) {
+      return;
+    }
+    int normalized = frame < 0 ? image.frameCount - 1 : frame >= image.frameCount ? 0 : frame;
+    if (normalized == image.currentFrame) {
+      return;
+    }
+    image.currentFrame = normalized;
+    int[] allFrames = (int[]) image.pixelsOfAllFrames;
+    for (int y = image.height - 1; y >= 0; y--) {
+      Vm.arrayCopy(allFrames, normalized * image.width + y * image.widthOfAllFrames,
+          image.pixels, y * image.width, image.width);
+    }
   }
 
   private Image resolvePipeline(ImagePipeline deferred, double destinationScale) throws ImageException {
@@ -835,7 +858,7 @@ public class Image extends GfxSurface {
       Image decoded = new Image();
       decoded.initializeDecodeTarget(source);
       ImagePipeline firstNode = nodes.isEmpty() ? null : nodes.get(nodes.size() - 1);
-      int targetWidth = firstNode == null ? 0 : scaledDimension(firstNode.logicalWidth(), destinationScale);
+      int targetWidth = firstNode == null ? 0 : scaledDimensionAllowingZero(firstNode.logicalWidth(), destinationScale);
       int targetHeight = firstNode == null ? 0 : scaledDimension(firstNode.logicalHeight(), destinationScale);
       boolean targeted = isEligibleJpegTargetDecode(source, firstNode, targetWidth, targetHeight);
       try {
@@ -868,6 +891,9 @@ public class Image extends GfxSurface {
     }
 
     for (int i = nodes.size() - 1; i >= 0; i--) {
+      if (nodes.get(i).operationType() == ImagePipeline.APPLY_FADE && current.frameCount > 1) {
+        selectCurrentFrameEager(current, nodes.get(i).parameter2());
+      }
       current = applyEagerTransform(current, nodes.get(i), destinationScale);
     }
     return current;
@@ -889,12 +915,18 @@ public class Image extends GfxSurface {
     boolean geometric = node.operationType() == ImagePipeline.SCALE
         || node.operationType() == ImagePipeline.SMOOTH_SCALE
         || node.operationType() == ImagePipeline.ROTATE_SCALE;
-    int targetWidth = scaledDimension(node.logicalWidth(), destinationScale);
+    int targetWidth = node.operationType() == ImagePipeline.FRAME_LAYOUT && node.logicalWidth() == 0
+        ? 0 : scaledDimension(node.logicalWidth(), destinationScale);
     int targetHeight = scaledDimension(node.logicalHeight(), destinationScale);
     Image result;
     switch (node.operationType()) {
     case ImagePipeline.FRAME_SELECT:
       result = source.eagerFrameSelection(node.parameter1());
+      break;
+    case ImagePipeline.FRAME_LAYOUT:
+      int physicalFrameWidth = node.previous().hasGeometricNode()
+          ? targetWidth : node.parameter2();
+      result = source.eagerFrameLayout(node.parameter1(), node.logicalWidth(), physicalFrameWidth);
       break;
     case ImagePipeline.CROP:
       result = source.eagerCrop(node.parameter1(), node.parameter2(), node.parameter3(), node.parameter4());
@@ -948,7 +980,50 @@ public class Image extends GfxSurface {
     result.logicalWidth = node.logicalWidth();
     result.logicalHeight = node.logicalHeight();
     result.contentScale = geometric ? destinationScale : source.contentScale;
-    result.widthOfAllFrames = result.frameCount > 1 ? result.width * result.frameCount : result.width;
+    if (node.operationType() != ImagePipeline.FRAME_LAYOUT) {
+      result.widthOfAllFrames = result.frameCount > 1 ? result.width * result.frameCount : result.width;
+    }
+    return result;
+  }
+
+  private Image eagerFrameLayout(int outputFrameCount, int logicalFrameWidth, int visibleWidth) throws ImageException {
+    if (visibleWidth < 0) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    long visibleLength = (long) visibleWidth * height;
+    if (visibleLength > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    if (consumeMaterializedFrameBufferAllocationFailureForTest()) {
+      throw new TransientImageMaterializationException("Simulated multi-frame buffer allocation failure");
+    }
+
+    Image result = new Image();
+    result.width = visibleWidth;
+    result.height = height;
+    result.logicalWidth = logicalFrameWidth;
+    result.logicalHeight = logicalHeight;
+    result.contentScale = contentScale;
+    result.frameCount = outputFrameCount;
+    result.currentFrame = -1;
+    result.widthOfAllFrames = width;
+    result.pixelsOfAllFrames = pixels;
+    try {
+      result.pixels = new int[(int) visibleLength];
+    } catch (OutOfMemoryError oome) {
+      throw new TransientImageMaterializationException(oome);
+    }
+    result.comment = "FC=" + outputFrameCount;
+    result.path = path;
+    result.surfaceType = surfaceType;
+    result.transparentColor = transparentColor;
+    result.useAlpha = useAlpha;
+    result.alphaMask = alphaMask;
+    result.hwScaleW = hwScaleW;
+    result.hwScaleH = hwScaleH;
+    result.textureId = -1;
+    selectCurrentFrameEager(result, 0);
+    result.init();
     return result;
   }
 
@@ -1005,6 +1080,10 @@ public class Image extends GfxSurface {
       throw new ImageException("Image dimensions are too large.");
     }
     return (int) physical;
+  }
+
+  private static int scaledDimensionAllowingZero(int logicalDimension, double scale) throws ImageException {
+    return logicalDimension == 0 ? 0 : scaledDimension(logicalDimension, scale);
   }
 
   private static int checkedFrameWidth(int width, int frameCount) throws ImageException {
@@ -1234,13 +1313,37 @@ public class Image extends GfxSurface {
 
   private void setFrameCount(int n, boolean materializingEncodedSource)
       throws IllegalArgumentException, IllegalStateException, ImageException {
-    materializeCanonicalChecked();
-    if (frameCount > 1 && n != frameCount) {
-      throw new IllegalStateException("The frame count can only be set once.");
-    }
     if (n < 1) {
       throw new IllegalArgumentException("Argument 'n' must have a positive value");
     }
+    if (frameCount > 1 && n != frameCount) {
+      throw new IllegalStateException("The frame count can only be set once.");
+    }
+    if (n == frameCount) {
+      return;
+    }
+
+    if (pipeline != null) {
+      int oldFullWidth = pipeline.widthOfAllFrames();
+      int physicalFrameWidth = oldFullWidth / n;
+      double canonicalScale = pipeline.hasGeometricNode() ? 1 : pipeline.contentScale();
+      int logicalFrameWidth = (int) Math.ceil(physicalFrameWidth / canonicalScale);
+      pipeline.clearCachedVariants();
+      pipeline = pipeline.append(ImagePipeline.FRAME_LAYOUT, n, physicalFrameWidth, 0, 0,
+          physicalFrameWidth, height, logicalFrameWidth, logicalHeight, n, oldFullWidth);
+      width = physicalFrameWidth;
+      widthOfAllFrames = oldFullWidth;
+      logicalWidth = logicalFrameWidth;
+      frameCount = n;
+      currentFrame = 0;
+      comment = "FC=" + n;
+      hashCode = 0;
+      pixels = null;
+      pixelsOfAllFrames = null;
+      return;
+    }
+
+    materializeCanonicalChecked();
 
     if (n != frameCount && n > 1 && frameCount <= 1) {
       try {
@@ -1276,6 +1379,16 @@ public class Image extends GfxSurface {
    * @since TotalCross 1.0
    */
   final public void setCurrentFrame(int nr) {
+    if (pipeline != null) {
+      if (frameCount <= 1) {
+        return;
+      }
+      int normalized = normalizedFrame(nr);
+      if (normalized != currentFrame) {
+        currentFrame = normalized;
+      }
+      return;
+    }
     materializeCanonicalUnchecked();
     if (!Settings.onJavaSE) {
       setCurrentFrameNative(nr);
@@ -1289,10 +1402,7 @@ public class Image extends GfxSurface {
     } else if (nr >= frameCount) {
       nr = 0;
     }
-    currentFrame = nr;
-    for (int y = height - 1; y >= 0; y--) {
-      Vm.arrayCopy(pixelsOfAllFrames, nr * width + y * widthOfAllFrames, pixels, y * width, width);
-    }
+    selectCurrentFrameEager(this, nr);
   }
 
   @ReplacedByNativeOnDeploy
@@ -3498,7 +3608,8 @@ public class Image extends GfxSurface {
   /** Applies the given fade value to r,g,b of this image while preserving the alpha value. */
   public void applyFade(int fadeValue) {
     if (pipeline != null) {
-      deferInPlaceMutation(ImagePipeline.APPLY_FADE, fadeValue, 0, 0, 0);
+      deferInPlaceMutation(ImagePipeline.APPLY_FADE, fadeValue,
+          frameCount > 1 ? normalizedFrame(currentFrame) : 0, 0, 0);
       return;
     }
     materializeCanonicalUnchecked();
@@ -3586,7 +3697,12 @@ public class Image extends GfxSurface {
           previous.width(), previous.height(), previous.logicalWidth(), previous.logicalHeight(), 1,
           previous.width());
     }
-    ImagePipeline deferred = previous.append(ImagePipeline.CROP, x, y, w, h, w, h, w, h, 1, w);
+    boolean destinationAware = previous.hasGeometricNode();
+    double canonicalScale = destinationAware ? 1 : previous.contentScale();
+    int physicalWidth = destinationAware ? w : scaledDimension(w, canonicalScale);
+    int physicalHeight = destinationAware ? h : scaledDimension(h, canonicalScale);
+    ImagePipeline deferred = previous.append(ImagePipeline.CROP, x, y, w, h, physicalWidth, physicalHeight, w, h, 1,
+        physicalWidth);
     Image result = new Image();
     result.initializeDeferredCrop(deferred);
     return result;

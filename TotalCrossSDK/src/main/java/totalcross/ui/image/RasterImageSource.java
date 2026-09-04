@@ -79,6 +79,11 @@ final class RasterImageSource extends ImageSource {
     return widthOfAllFrames;
   }
 
+  @Override
+  double contentScale() {
+    return contentScale;
+  }
+
   Image materialize() throws ImageException {
     return Image.materializeRasterSource(this);
   }
