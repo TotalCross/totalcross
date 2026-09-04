@@ -265,7 +265,7 @@ sk_sp<SkTypeface> skia_getTypeface(int32 typefaceIndex) {
     }
 }
 
-int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, double fontSize)
+static void configureSkFont(int32 typefaceIndex, double fontSize, bool bold)
 {
     const auto newTypeFace = skia_getTypeface(typefaceIndex);
 
@@ -275,24 +275,24 @@ int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, d
     if(skFont.getSize() != fontSize) {
         skFont.setSize(fontSize);
     }
-    return (int32)ceil(skia_stringWidthD(text, charCount, typefaceIndex, fontSize));
+    skFont.setEmbolden(bold);
 }
 
-double skia_stringWidthD(const void *text, int32 charCount, int32 typefaceIndex, double fontSize)
+int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, double fontSize, bool bold)
 {
-    const auto newTypeFace = skia_getTypeface(typefaceIndex);
-    if (skFont.getTypeface() != newTypeFace.get()) {
-        skFont.setTypeface(newTypeFace);
-    }
-    if (skFont.getSize() != fontSize) {
-        skFont.setSize(fontSize);
-    }
+    return (int32)ceil(skia_stringWidthD(text, charCount, typefaceIndex, fontSize, bold));
+}
+
+double skia_stringWidthD(const void *text, int32 charCount, int32 typefaceIndex, double fontSize, bool bold)
+{
+    configureSkFont(typefaceIndex, fontSize, bold);
     return skFont.measureText(text, charCount, SkTextEncoding::kUTF16);
 }
 
-void skia_fontMetrics(int32 typefaceIndex, double fontSize, double* ascent, double* descent, double* leading)
+void skia_fontMetrics(int32 typefaceIndex, double fontSize, bool bold, double* ascent, double* descent, double* leading)
 {
     SkFont metricsFont(skia_getTypeface(typefaceIndex), fontSize);
+    metricsFont.setEmbolden(bold);
     SkFontMetrics metrics;
     metricsFont.getMetrics(&metrics);
     *ascent = -metrics.fAscent;
