@@ -1051,6 +1051,113 @@ tasks.register('runImageDeferredColorMutationSmokeMacOS', Exec) {
     }
 }
 
+def imageDeferredCropFrameSmokeClassesDir = layout.buildDirectory.dir('image-deferred-crop-frame-smoke/classes')
+
+tasks.register('compileImageDeferredCropFrameSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the deferred Image crop/frame smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/ImageDeferredCropFrameSmokeApp.class'
+    }
+    into imageDeferredCropFrameSmokeClassesDir
+}
+
+tasks.register('jarImageDeferredCropFrameSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the deferred Image crop/frame smoke app for deployment.'
+    dependsOn 'compileImageDeferredCropFrameSmoke'
+    archiveFileName = 'ImageDeferredCropFrameSmokeApp.jar'
+    destinationDirectory = imageDeferredCropFrameSmokeClassesDir
+    from(imageDeferredCropFrameSmokeClassesDir)
+}
+
+tasks.register('deployImageDeferredCropFrameSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the deferred Image crop/frame smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarImageDeferredCropFrameSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir imageDeferredCropFrameSmokeClassesDir.get().asFile
+    args = [
+        'ImageDeferredCropFrameSmokeApp.jar',
+        '-macos'
+    ]
+}
+
+tasks.register('runImageDeferredCropFrameSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the deferred Image crop/frame smoke app with the exact macOS dylib.'
+    dependsOn 'deployImageDeferredCropFrameSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runImageDeferredCropFrameSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+        }
+        def installDir = imageDeferredCropFrameSmokeClassesDir.get().dir('install/macos').asFile
+        def deployedRuntime = new File(installDir, 'libtcvm.dylib')
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def sourceHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(nativeRuntimeFile.bytes).encodeHex().toString()
+        def deployedHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(deployedRuntime.bytes).encodeHex().toString()
+        if (sourceHash != deployedHash) {
+            throw new GradleException("Deployed native runtime hash differs: source=${sourceHash}, deployed=${deployedHash}")
+        }
+        def executable = new File(installDir, 'ImageDeferredCropFrameSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException("Native smoke executable not found: ${executable}")
+        }
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir imageDeferredCropFrameSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def requiredFields = [
+            'fixture=ImageDeferredCropFrameSmokeApp',
+            'frameExtractionLazy=true',
+            'frameNormalization=true',
+            'getCopyLazy=true',
+            'cropLazy=true',
+            'cropPixels=true',
+            'cropCapturesCurrentFrame=true',
+            'cropMetadataCompatibility=true',
+            'rasterSnapshotIsolation=true',
+            'naturalScaleCrop=true',
+            'scaledCrop=true',
+            'targetedAfterSmooth=true',
+            'fallbackBeforeSmooth=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('Deferred Image crop/frame native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
     group = 'verification'
     description = 'Deploys the aggregate modern Java feature smoke app with the generated SDK.'

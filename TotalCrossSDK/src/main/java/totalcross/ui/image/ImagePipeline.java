@@ -17,6 +17,8 @@ final class ImagePipeline {
   static final int APPLY_FADE = 8;
   static final int CHANGE_COLORS = 9;
   static final int SET_TRANSPARENT_COLOR = 10;
+  static final int FRAME_SELECT = 11;
+  static final int CROP = 12;
 
   private final ImageSource root;
   private final ImagePipeline previous;
