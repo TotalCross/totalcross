@@ -15,7 +15,7 @@
 #include "event.h"
 #undef Class
 
-extern bool keepRunning;
+extern int32 keepRunning;
 static bool mainThreadSuspended;
 
 bool allowMainThread()
@@ -23,12 +23,12 @@ bool allowMainThread()
    return !mainThreadSuspended;
 }
 
-bool iphone_privateIsEventAvailable()
+int32 iphone_privateIsEventAvailable()
 {
-   return [DEVICE_CTX->_mainview isEventAvailable];
+   return [DEVICE_CTX->_mainview isEventAvailable] ? 1 : 0;
 }
 
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged); // rotate the screen
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, int32 nothingChanged); // rotate the screen
 void setEditText(Context currentContext, TCObject control, NSString *str);
 
 void iphone_privatePumpEvent(Context currentContext)
@@ -113,9 +113,9 @@ void iphone_privatePumpEvent(Context currentContext)
    }
 }
 
-bool iphone_privateInitEvent()
+int32 iphone_privateInitEvent()
 {
-   return true;
+   return 1;
 }
 
 void iphone_privateDestroyEvent()
@@ -126,5 +126,5 @@ void notifyStopVM() // fdie@ the launcher mainthread notifies the vm thread to s
 {
    mainThreadSuspended = true;
    printf("notifyStopVM\n");
-   keepRunning = false;
+   keepRunning = 0;
 }

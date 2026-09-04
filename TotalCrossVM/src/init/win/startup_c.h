@@ -191,7 +191,7 @@ static bool isWakeUpCall(CharP args)
    return false;
 }
 
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged); // GraphicsPrimitives_c.h
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, int32 nothingChanged); // GraphicsPrimitives_c.h
 
 void appSetFullScreen();
 

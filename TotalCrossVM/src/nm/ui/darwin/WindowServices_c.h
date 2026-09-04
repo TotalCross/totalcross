@@ -6,24 +6,24 @@
 extern "C" {
 #endif
 
-void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool numeric);
-bool windowGetSIP(void);
+void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, int32 numeric);
+int32 windowGetSIP(void);
 void windowGetSafeAreaInsets(int32 *top, int32 *left, int32 *bottom, int32 *right);
 
 #ifdef __cplusplus
 }
 #endif
 
-static bool windowPlatformIsSIPShown(void)
+static int32 windowPlatformIsSIPShown(void)
 {
-   return windowGetSIP();
+   return windowGetSIP() != 0;
 }
 
 static void windowPlatformSetSIP(
    Context currentContext,
    int32 sipOption,
    TCObject control,
-   bool numeric)
+   int32 numeric)
 {
    windowSetSIP(currentContext, sipOption, control, numeric);
 }

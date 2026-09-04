@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -19,7 +20,7 @@ Err PDBGetLastErr()
    return GetLastError();
 }
 
-bool PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef)
+int32 PDBCreateFile(TCHARP fullPath, int32 createIt, int32 readOnly, PDBFileRef* fileRef)
 {
    return (*fileRef = CreateFile(fullPath,
       readOnly ? GENERIC_READ:(GENERIC_READ|GENERIC_WRITE), // font files must be open in readonly, or two instances will not be able to run
@@ -30,7 +31,7 @@ bool PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fi
       null)) != INVALID_HANDLE_VALUE;
 }
 
-bool PDBCloseFile(PDBFileRef fileRef)
+int32 PDBCloseFile(PDBFileRef fileRef)
 {
    return CloseHandle(fileRef);
 }
@@ -45,7 +46,7 @@ bool PDBRemove(TCHARP fileName)
    return DeleteFile(fileName);
 }
 
-bool PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
+int32 PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 {
    return ReadFile(fileRef, buf, size, read, null);
 }

@@ -188,7 +188,7 @@ extern jmethodID jreadTCZ, jfindTCZ;
 
 // event.c
 extern bool appExitThrown;
-extern bool keepRunning;
+extern int32 keepRunning;
 extern bool eventsInitialized;
 extern int32 nextTimerTick;
 extern bool isDragging;

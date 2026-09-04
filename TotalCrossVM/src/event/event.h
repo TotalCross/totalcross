@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -14,9 +15,9 @@ extern "C" {
 
 void mainEventLoop(Context currentContext);
 void pumpEvents(Context currentContext);
-bool isEventAvailable();
+int32 isEventAvailable();
 
-bool initEvent();
+int32 initEvent();
 void destroyEvent();
 
 /// hardware events that can be sent by the vm to the running instance
@@ -62,7 +63,7 @@ typedef struct
 
 /// post an event to the running Java application. If mods is -1, the asynch mods will be retrieved; otherwise, pass the mods given in the key event
 void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 x, int32 y, int32 mods); // guich@tc126_70
-void postOnMinimizeOrRestore(bool isMinimized);
+void postOnMinimizeOrRestore(int32 isMinimized);
 
 #ifdef __cplusplus
 }

@@ -14,7 +14,7 @@
 #undef Class
 
 
-int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
+int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, int32 wait)
 {
    bool ret = false;
    NSString *args = [NSString stringWithFormat:@"%s", szArgs];
@@ -38,7 +38,7 @@ int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
    else
    if (strEq(szCommand,"url"))
       ret = [[UIApplication sharedApplication] openURL:[NSURL URLWithString: args]];
-   if (!wait)
+   if (wait == 0)
       keepRunning = false;
     return ret ? 0 : 1;
 }

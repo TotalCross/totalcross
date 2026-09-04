@@ -183,7 +183,7 @@ void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes)
    repaintActiveWindows(mainContext);
 }
 
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, int32 nothingChanged) // rotate the screen
 {
    TScreenConfiguration configuration;
    ScreenChangeFlags changes;
@@ -200,7 +200,7 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    configuration.surfaceReady = true;
 
    changes = screenApplyConfiguration(&screen, &configuration);
-   if (nothingChanged)
+   if (nothingChanged != 0)
       changes = (ScreenChangeFlags)(changes & ~SCREEN_CHANGE_RECREATE_SURFACE);
    screenConsumePendingChanges(&screen);
    screenChangeCommitted(currentContext, changes);

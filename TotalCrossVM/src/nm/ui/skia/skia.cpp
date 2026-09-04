@@ -278,21 +278,21 @@ static void configureSkFont(int32 typefaceIndex, double fontSize, bool bold)
     skFont.setEmbolden(bold);
 }
 
-int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, double fontSize, bool bold)
+int32 skia_stringWidth(const void *text, int32 charCount, int32 typefaceIndex, double fontSize, int32 bold)
 {
     return (int32)ceil(skia_stringWidthD(text, charCount, typefaceIndex, fontSize, bold));
 }
 
-double skia_stringWidthD(const void *text, int32 charCount, int32 typefaceIndex, double fontSize, bool bold)
+double skia_stringWidthD(const void *text, int32 charCount, int32 typefaceIndex, double fontSize, int32 bold)
 {
-    configureSkFont(typefaceIndex, fontSize, bold);
+    configureSkFont(typefaceIndex, fontSize, bold != 0);
     return skFont.measureText(text, charCount, SkTextEncoding::kUTF16);
 }
 
-void skia_fontMetrics(int32 typefaceIndex, double fontSize, bool bold, double* ascent, double* descent, double* leading)
+void skia_fontMetrics(int32 typefaceIndex, double fontSize, int32 bold, double* ascent, double* descent, double* leading)
 {
     SkFont metricsFont(skia_getTypeface(typefaceIndex), fontSize);
-    metricsFont.setEmbolden(bold);
+    metricsFont.setEmbolden(bold != 0);
     SkFontMetrics metrics;
     metricsFont.getMetrics(&metrics);
     *ascent = -metrics.fAscent;

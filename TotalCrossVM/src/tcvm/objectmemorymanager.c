@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -381,7 +382,7 @@ static TCObject allocObjWith(uint32 size)
    return o;
 }
 
-extern bool iosLowMemory;
+extern int32 iosLowMemory;
 static int32 consecutiveSkips;
 
 static TCObject allocObject(Context currentContext, uint32 size, TCClass cls, int32 alen)
@@ -392,7 +393,7 @@ static TCObject allocObject(Context currentContext, uint32 size, TCClass cls, in
 #ifdef darwin
    if (iosLowMemory/* && size > 1024*/)
    {    
-      iosLowMemory = false;
+      iosLowMemory = 0;
       debug("IOS low memory. Free: %d",getFreeMemory(0));
       //iosLowMemory = getFreeMemory(0) <= 10*1024*1024;
       //throwException(currentContext, OutOfMemoryError, "iOS low memory warning");

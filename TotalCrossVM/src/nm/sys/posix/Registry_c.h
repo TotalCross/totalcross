@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -13,7 +14,7 @@ void privateGetBlob(NMParams p, int32 hk, TCHARP key, TCHARP value);
 void privateSetInt(Context c, int32 hk, TCHARP key, TCHARP value, int32 data);
 void privateSetString(Context c, int32 hk, TCHARP key, TCHARP value, CharP data);
 void privateSetBlob(Context c, int32 hk, TCHARP key, TCHARP value, uint8* data, int32 len);
-bool privateDelete(int32 hk, TCHARP key, TCHARP value);
+int32 privateDelete(int32 hk, TCHARP key, TCHARP value);
 TCObject privateList(Context c, int32 hk, TCHARP key);
 
 #else

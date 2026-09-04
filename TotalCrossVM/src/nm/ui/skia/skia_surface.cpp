@@ -219,8 +219,8 @@ void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel) {
     }
 }
 
-int skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
-                   int32 x, int32 y, int32 w, int32 h, bool isGet) {
+int32 skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
+                   int32 x, int32 y, int32 w, int32 h, int32 isGet) {
     SKIA_TRACE()
 
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
@@ -241,7 +241,7 @@ int skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
 
     Pixel* pixelBuffer = static_cast<Pixel*>(pixels) + offset;
 
-    if (isGet) {
+    if (isGet != 0) {
         if (!targetCanvas->readPixels(pixelBitmap, x, y)) {
             return 0;
         }
