@@ -435,6 +435,7 @@ def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scali
 	include '*.java'
 }
 def imageAbiSmokeClassesDir = layout.buildDirectory.dir('image-abi-smoke/classes')
+def imageDeferredFrameStateSmokeClassesDir = layout.buildDirectory.dir('image-deferred-frame-state-smoke/classes')
 
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -1153,6 +1154,124 @@ tasks.register('runImageDeferredCropFrameSmokeMacOS', Exec) {
         def missing = requiredFields.findAll { !output.contains(it) }
         if (exitCode != 0 || !missing.isEmpty()) {
             throw new GradleException('Deferred Image crop/frame native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
+tasks.register('compileImageDeferredFrameStateSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the deferred Image frame-state smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/ImageDeferredFrameStateSmokeApp.class'
+    }
+    into imageDeferredFrameStateSmokeClassesDir
+}
+
+tasks.register('jarImageDeferredFrameStateSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the deferred Image frame-state smoke app for deployment.'
+    dependsOn 'compileImageDeferredFrameStateSmoke'
+    archiveFileName = 'ImageDeferredFrameStateSmokeApp.jar'
+    destinationDirectory = imageDeferredFrameStateSmokeClassesDir
+    from(imageDeferredFrameStateSmokeClassesDir)
+}
+
+tasks.register('deployImageDeferredFrameStateSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the deferred Image frame-state smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarImageDeferredFrameStateSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir imageDeferredFrameStateSmokeClassesDir.get().asFile
+    args = [
+        'ImageDeferredFrameStateSmokeApp.jar',
+        '-macos'
+    ]
+}
+
+tasks.register('runImageDeferredFrameStateSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the deferred Image frame-state smoke app with the exact macOS dylib.'
+    dependsOn 'deployImageDeferredFrameStateSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runImageDeferredFrameStateSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+        }
+        def installDir = imageDeferredFrameStateSmokeClassesDir.get().dir('install/macos').asFile
+        def deployedRuntime = new File(installDir, 'libtcvm.dylib')
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def sourceHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(nativeRuntimeFile.bytes).encodeHex().toString()
+        def deployedHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(deployedRuntime.bytes).encodeHex().toString()
+        if (sourceHash != deployedHash) {
+            throw new GradleException("Deployed native runtime hash differs: source=${sourceHash}, deployed=${deployedHash}")
+        }
+        def executable = new File(installDir, 'ImageDeferredFrameStateSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException("Native smoke executable not found: ${executable}")
+        }
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir imageDeferredFrameStateSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def requiredFields = [
+            'fixture=ImageDeferredFrameStateSmokeApp',
+            'currentFrameDeferred=true',
+            'currentFrameWrap=true',
+            'cachedVariantReused=true',
+            'cachedVariantFrameUpdated=true',
+            'canonicalSelectedFrame=true',
+            'cropCapturesSelectedFrame=true',
+            'explicitFrameExtraction=true',
+            'colorFrameSemantics=true',
+            'fadeCallTimeFrame=true',
+            'fadeOrdering=true',
+            'fadeVisibleFrameOrdering=true',
+            'hidpiFrameLayout=true',
+            'croppedHidpiFrameLayout=true',
+            'croppedFractionalFrameLayout=true',
+            'exactFractionalScale11=true',
+            'exactFractionalScale125=true',
+            'exactFractionalScale175=true',
+            'croppedExactFractionalScale=true',
+            'frameSelectedExactFractionalScale=true',
+            'zeroWidthFrameCompatibility=true',
+            'frameLayoutDeferred=true',
+            'frameLayoutMetadata=true',
+            'frameLayoutPixels=true',
+            'frameLayoutRoundTrip=true',
+            'frameLayoutRetryable=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('Deferred Image frame-state native macOS smoke failed: exitCode=' + exitCode
                 + ', missing=' + missing)
         }
     }

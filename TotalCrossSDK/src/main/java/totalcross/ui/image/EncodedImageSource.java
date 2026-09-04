@@ -151,6 +151,11 @@ final class EncodedImageSource extends ImageSource {
     return intrinsicWidth;
   }
 
+  @Override
+  double contentScale() {
+    return 1;
+  }
+
   String getComment() {
     return comment;
   }
