@@ -946,6 +946,34 @@ if(TC_BUILD_NATIVE_STARTUP_TEST)
         PROPERTY LINK_FLAGS " -Wl,-dead_strip"
       )
     endif()
+
+    if(TC_RENDERER_SKIA)
+      add_executable(skia_surface_test
+        ${TC_SRCDIR}/nm/ui/skia/skia_surface_test.cpp
+      )
+      target_include_directories(skia_surface_test PRIVATE
+        "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+        "${TC_SRCDIR}"
+      )
+      target_compile_definitions(skia_surface_test PRIVATE
+        TC_PLATFORM_CONFIGURED=1
+      )
+      add_dependencies(skia_surface_test tcvm)
+      target_link_libraries(skia_surface_test PRIVATE
+        "$<TARGET_FILE:tcvm>"
+        SDL2::SDL2
+        Skia::Skia
+      )
+      set_target_properties(skia_surface_test PROPERTIES
+        BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR}"
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO
+      )
+      target_compile_options(skia_surface_test PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall;-Wextra>
+      )
+    endif()
   endif()
 endif()
 

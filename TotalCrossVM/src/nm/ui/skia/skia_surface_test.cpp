@@ -5,7 +5,7 @@
 #include "skia.h"
 
 #include <cstdio>
-#include <cstring>
+#include <cstdint>
 #include <fstream>
 #include <vector>
 
@@ -86,9 +86,83 @@ static bool testTypefaceRegistry(const char* fontPath) {
     return true;
 }
 
+static bool testBoldStyle(const char* fontPath) {
+    std::vector<unsigned char> fontData;
+    if (!readBinaryFile(fontPath, fontData)) {
+        return false;
+    }
+
+    char name[] = "skia-bold-style-font";
+    const int32 typefaceIndex = skia_makeTypeface(
+        name, fontData.data(), static_cast<int32>(fontData.size()));
+    if (typefaceIndex < 0) {
+        std::fputs("unable to load the bold-style font fixture\n", stderr);
+        return false;
+    }
+
+    const std::uint16_t text[] = {'A'};
+    const double plainWidthBefore = skia_stringWidthD(
+        text, sizeof(text), typefaceIndex, 32, false);
+    const double boldWidth = skia_stringWidthD(
+        text, sizeof(text), typefaceIndex, 32, true);
+    const double plainWidthAfter = skia_stringWidthD(
+        text, sizeof(text), typefaceIndex, 32, false);
+    if (plainWidthBefore != plainWidthAfter || boldWidth < 0) {
+        std::fputs("Skia bold state leaked into a later plain measurement\n", stderr);
+        return false;
+    }
+
+    constexpr int width = 64;
+    constexpr int height = 64;
+    Pixel plainPixels[width * height] = {};
+    Pixel boldPixels[width * height] = {};
+    Pixel resetPixels[width * height] = {};
+    const int plainSurface = skia_makeBitmap(-1, plainPixels, width, height);
+    const int boldSurface = skia_makeBitmap(-1, boldPixels, width, height);
+    const int resetSurface = skia_makeBitmap(-1, resetPixels, width, height);
+    if (plainSurface < 0 || boldSurface < 0 || resetSurface < 0) {
+        std::fputs("unable to create Skia bold-style test surfaces\n", stderr);
+        return false;
+    }
+
+    skia_drawText(plainSurface, text, sizeof(text), 4, 40, 0xFF000000, 0, 32,
+                  typefaceIndex, false);
+    skia_drawText(boldSurface, text, sizeof(text), 4, 40, 0xFF000000, 0, 32,
+                  typefaceIndex, true);
+    skia_drawText(resetSurface, text, sizeof(text), 4, 40, 0xFF000000, 0, 32,
+                  typefaceIndex, false);
+
+    bool boldChangedPixels = false;
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            const Pixel plainPixel = skia_getPixel(plainSurface, x, y);
+            const Pixel boldPixel = skia_getPixel(boldSurface, x, y);
+            const Pixel resetPixel = skia_getPixel(resetSurface, x, y);
+            if (plainPixel != resetPixel) {
+                std::fputs("Skia bold state leaked into a later plain draw\n", stderr);
+                return false;
+            }
+            if (plainPixel != boldPixel) {
+                boldChangedPixels = true;
+            }
+        }
+    }
+    skia_deleteBitmap(plainSurface);
+    skia_deleteBitmap(boldSurface);
+    skia_deleteBitmap(resetSurface);
+    if (!boldChangedPixels) {
+        std::fputs("Skia bold draw did not alter the rendered glyph\n", stderr);
+        return false;
+    }
+    std::puts("skia bold-style assertions passed");
+    return true;
+}
+
 int main(int argc, char** argv) {
-    if (argc > 1 && !testTypefaceRegistry(argv[1])) {
-        return 1;
+    if (argc > 1) {
+        if (!testTypefaceRegistry(argv[1]) || !testBoldStyle(argv[1])) {
+            return 1;
+        }
     }
     Pixel sourcePixels[4] = { 0xFF102030, 0xFF405060, 0xFF708090, 0xFFA0B0C0 };
     Pixel destinationPixels[16] = {};
