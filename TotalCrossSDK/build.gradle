@@ -941,6 +941,116 @@ tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
     }
 }
 
+def imageDeferredColorMutationSmokeClassesDir = layout.buildDirectory.dir('image-deferred-color-mutation-smoke/classes')
+
+tasks.register('compileImageDeferredColorMutationSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the deferred Image color-mutation smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/ImageDeferredColorMutationSmokeApp.class'
+    }
+    from(smokeTestResourcesDir) {
+        include 'image-abi/**'
+    }
+    into imageDeferredColorMutationSmokeClassesDir
+}
+
+tasks.register('jarImageDeferredColorMutationSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the deferred Image color-mutation smoke app for deployment.'
+    dependsOn 'compileImageDeferredColorMutationSmoke'
+    archiveFileName = 'ImageDeferredColorMutationSmokeApp.jar'
+    destinationDirectory = imageDeferredColorMutationSmokeClassesDir
+    from(imageDeferredColorMutationSmokeClassesDir)
+}
+
+tasks.register('deployImageDeferredColorMutationSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the deferred Image color-mutation smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarImageDeferredColorMutationSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir imageDeferredColorMutationSmokeClassesDir.get().asFile
+    args = [
+        'ImageDeferredColorMutationSmokeApp.jar',
+        '-macos'
+    ]
+}
+
+tasks.register('runImageDeferredColorMutationSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the deferred Image color-mutation smoke app with the exact macOS dylib.'
+    dependsOn 'deployImageDeferredColorMutationSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runImageDeferredColorMutationSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+        }
+        def installDir = imageDeferredColorMutationSmokeClassesDir.get().dir('install/macos').asFile
+        def deployedRuntime = new File(installDir, 'libtcvm.dylib')
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def sourceHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(nativeRuntimeFile.bytes).encodeHex().toString()
+        def deployedHash = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(deployedRuntime.bytes).encodeHex().toString()
+        if (sourceHash != deployedHash) {
+            throw new GradleException("Deployed native runtime hash differs: source=${sourceHash}, deployed=${deployedHash}")
+        }
+        def executable = new File(installDir, 'ImageDeferredColorMutationSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException("Native smoke executable not found: ${executable}")
+        }
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir imageDeferredColorMutationSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def requiredFields = [
+            'fixture=ImageDeferredColorMutationSmokeApp',
+            'constructionLazy=true',
+            'applyColorDeferred=true',
+            'applyColor2Deferred=true',
+            'applyFadeDeferred=true',
+            'changeColorsDeferred=true',
+            'transparentColorDeferred=true',
+            'chainEquivalence=true',
+            'multiFrameCompatibility=true',
+            'cacheInvalidated=true',
+            'eagerAliasCompatibility=true',
+            'targetedAfterSmooth=true',
+            'fallbackBeforeSmooth=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('Deferred Image color-mutation native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
 tasks.register('deployModernJavaFeatureSmoke', JavaExec) {
     group = 'verification'
     description = 'Deploys the aggregate modern Java feature smoke app with the generated SDK.'
