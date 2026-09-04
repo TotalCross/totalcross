@@ -406,17 +406,25 @@ public class Image extends GfxSurface {
    */
   @Deprecated
   public Image setTransparentColor(int color) {
+    if (pipeline != null) {
+      deferInPlaceMutation(ImagePipeline.SET_TRANSPARENT_COLOR, color, 0, 0, 0);
+      return this;
+    }
     materializeCanonicalUnchecked();
+    setTransparentColorEager(color);
+    return this;
+  }
+
+  private void setTransparentColorEager(int color) {
     if (!Settings.onJavaSE) {
       setTransparentColorNative(color);
-      return this;
+      return;
     }
     int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
     for (int i = pixels.length; --i >= 0;) {
       int p = pixels[i] & 0xFFFFFF;
       pixels[i] = (p == color) ? color : p | 0xFF000000; // if is the transparent color, set the alpha to 0, otherwise, set to full bright
     }
-    return this;
   }
 
   @ReplacedByNativeOnDeploy
@@ -536,6 +544,24 @@ public class Image extends GfxSurface {
     gfx = new Graphics(this);
     gfx.setScales(1, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+  }
+
+  private void deferInPlaceMutation(int operationType, int parameter1, int parameter2, int parameter3,
+      int parameter4) {
+    ImagePipeline previous = pipeline;
+    if (previous == null) {
+      throw new IllegalStateException("Deferred image pipeline is missing");
+    }
+    previous.clearCachedVariants();
+    pipeline = previous.append(operationType, parameter1, parameter2, parameter3, parameter4,
+        width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames);
+    hashCode = 0;
+    pixels = null;
+    pixelsOfAllFrames = null;
+    if (frameCount > 1 && (operationType == ImagePipeline.APPLY_COLOR
+        || operationType == ImagePipeline.APPLY_COLOR2 || operationType == ImagePipeline.CHANGE_COLORS)) {
+      currentFrame = 0;
+    }
   }
 
   private RasterImageSource snapshotRasterSource() {
@@ -832,6 +858,26 @@ public class Image extends GfxSurface {
       break;
     case ImagePipeline.ALPHA:
       result = source.eagerAlphaInstance(node.parameter1());
+      break;
+    case ImagePipeline.APPLY_COLOR:
+      source.applyColorEager(node.parameter1());
+      result = source;
+      break;
+    case ImagePipeline.APPLY_COLOR2:
+      source.applyColor2Eager(node.parameter1());
+      result = source;
+      break;
+    case ImagePipeline.APPLY_FADE:
+      source.applyFadeEager(node.parameter1());
+      result = source;
+      break;
+    case ImagePipeline.CHANGE_COLORS:
+      source.changeColorsEager(node.parameter1(), node.parameter2());
+      result = source;
+      break;
+    case ImagePipeline.SET_TRANSPARENT_COLOR:
+      source.setTransparentColorEager(node.parameter1());
+      result = source;
       break;
     default:
       throw new IllegalStateException("Unknown image pipeline operation: " + node.operationType());
@@ -1288,7 +1334,15 @@ public class Image extends GfxSurface {
    * @see #applyColor2(int)
    */
   final public void changeColors(int from, int to) {
+    if (pipeline != null) {
+      deferInPlaceMutation(ImagePipeline.CHANGE_COLORS, from, to, 0, 0);
+      return;
+    }
     materializeCanonicalUnchecked();
+    changeColorsEager(from, to);
+  }
+
+  private void changeColorsEager(int from, int to) {
     if (!Settings.onJavaSE) {
       changeColorsNative(from, to);
       return;
@@ -3097,7 +3151,16 @@ public class Image extends GfxSurface {
    */
   final public void applyColor(int color) // guich@tc112_24
   {
+    if (pipeline != null) {
+      deferInPlaceMutation(ImagePipeline.APPLY_COLOR, color, 0, 0, 0);
+      return;
+    }
     materializeCanonicalUnchecked();
+    applyColorEager(color);
+  }
+
+  private void applyColorEager(int color)
+  {
     if (!Settings.onJavaSE) {
       applyColorNative(color);
       return;
@@ -3210,7 +3273,15 @@ public class Image extends GfxSurface {
    * @since TotalCross 1.3
    */
   final public void applyColor2(int color) {
+    if (pipeline != null) {
+      deferInPlaceMutation(ImagePipeline.APPLY_COLOR2, color, 0, 0, 0);
+      return;
+    }
     materializeCanonicalUnchecked();
+    applyColor2Eager(color);
+  }
+
+  private void applyColor2Eager(int color) {
     if (!Settings.onJavaSE) {
       applyColor2Native(color);
       return;
@@ -3324,7 +3395,15 @@ public class Image extends GfxSurface {
 
   /** Applies the given fade value to r,g,b of this image while preserving the alpha value. */
   public void applyFade(int fadeValue) {
+    if (pipeline != null) {
+      deferInPlaceMutation(ImagePipeline.APPLY_FADE, fadeValue, 0, 0, 0);
+      return;
+    }
     materializeCanonicalUnchecked();
+    applyFadeEager(fadeValue);
+  }
+
+  private void applyFadeEager(int fadeValue) {
     if (!Settings.onJavaSE) {
       applyFadeNative(fadeValue);
       return;
