@@ -217,7 +217,7 @@ jmethodID jfindTCZ;
 
 // event.c
 bool appExitThrown = false;
-bool keepRunning = true; // don't remove from here!
+int32 keepRunning = 1; // don't remove from here!
 bool eventsInitialized = false;
 int32 nextTimerTick = 0;
 bool isDragging = false;

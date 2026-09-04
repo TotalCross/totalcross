@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -272,7 +273,7 @@ finish:
    return errNone;
 }
 
-bool PDBMatchExact(TCHARP filePath, VoidP userVars)
+int32 PDBMatchExact(TCHARP filePath, VoidP userVars)
 {
    FileMatches_Vars* vars = (FileMatches_Vars*) userVars;
    DatabaseHeader dbh;
@@ -895,7 +896,7 @@ int32 listDatabases(TCHARP searchPath, HandlePDBSearchProcType proc, void *userV
    return 0;
 }
 #else
-bool PDBMatchByTypeCreator(TCHARP fileName, VoidP userVars)
+int32 PDBMatchByTypeCreator(TCHARP fileName, VoidP userVars)
 {
    FileMatches_Vars* vars = (FileMatches_Vars*) userVars;
    DatabaseHeader dbh;

@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -24,7 +25,7 @@ Err  PDBGetLastErr()
    return errno;
 }
 
-bool PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef)
+int32 PDBCreateFile(TCHARP fullPath, int32 createIt, int32 readOnly, PDBFileRef* fileRef)
 {
    if (readOnly)
    {
@@ -50,7 +51,7 @@ bool PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fi
    return *fileRef != NULL;
 }
 
-bool  PDBCloseFile(PDBFileRef fileRef)
+int32 PDBCloseFile(PDBFileRef fileRef)
 {
    return fclose(fileRef) == 0;
 }
@@ -65,7 +66,7 @@ bool  PDBRemove(TCHARP fileName)
    return remove(fileName) == 0;
 }
 
-bool  PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
+int32 PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 {
    return (*read = (int32)fread(buf, 1, size, fileRef)) > 0;
 }

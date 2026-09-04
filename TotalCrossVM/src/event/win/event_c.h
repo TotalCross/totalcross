@@ -15,7 +15,7 @@
 
 
 void markWholeScreenDirty(Context currentContext);
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int hRes, int vRes, bool nothingChanged);
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int hRes, int vRes, int32 nothingChanged);
 void getScreenSize(int32 *w, int32* h); // ui/win/gfx_Graphics_c.h
 
 static void hideWinCEStuff()

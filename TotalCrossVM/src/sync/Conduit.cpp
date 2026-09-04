@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -340,7 +341,7 @@ typedef struct
    int32 stringsCount;
 } CLC_Vars;
 
-static bool clcAddFile(TCHAR* fileName, void *userVars)
+static int32 clcAddFile(TCHAR* fileName, void *userVars)
 {
    CLC_Vars *vars = (CLC_Vars*) userVars;
    DatabaseHeader dbh;

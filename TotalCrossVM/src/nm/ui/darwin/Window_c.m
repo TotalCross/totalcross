@@ -17,12 +17,12 @@
 bool allowMainThread();
 extern int isShown; // mainview.m
 
-bool windowGetSIP()
+int32 windowGetSIP()
 {
-   return isShown;
+   return isShown != 0;
 }
 
-void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool numeric)
+void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, int32 numeric)
 {
    NSString *str = nil;
    if (control)
@@ -33,7 +33,7 @@ void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, boo
      TValue ret = executeMethod(currentContext, m, control);
 	  str = [ [ NSString alloc ] initWithCharacters: String_charsStart(ret.asObj) length: String_charsLen(ret.asObj) ];
    }
-   SipArguments *args = [ [ SipArguments alloc ] init: SipArgsMake(sipOption, (__bridge id)control, numeric, str) ];
+   SipArguments *args = [ [ SipArguments alloc ] init: SipArgsMake(sipOption, (__bridge id)control, numeric != 0, str) ];
    if (DEVICE_CTX && DEVICE_CTX->_mainview && allowMainThread)
       [ DEVICE_CTX->_mainview  performSelectorOnMainThread:@selector(showSIP:) withObject:args waitUntilDone: YES ];
    if (str) [str release];

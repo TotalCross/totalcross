@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -112,9 +113,9 @@ extern "C" {
 
  #include "../palmdb/palmdb.h"
  typedef HANDLE PDBFileRef;
- extern bool PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef);
- extern bool PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read);
- extern bool PDBCloseFile(PDBFileRef fileRef);
+ extern int32 PDBCreateFile(TCHARP fullPath, int32 createIt, int32 readOnly, PDBFileRef* fileRef);
+ extern int32 PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read);
+ extern int32 PDBCloseFile(PDBFileRef fileRef);
 
  enum ActionCode
  {

@@ -94,7 +94,7 @@ void privateSetBlob(Context c, int32 hk, TCHARP key, TCHARP value, uint8* data, 
       throwException(c, ExceptionClass, "Cannot write value.");
 }
 
-bool privateDelete(int32 hk, TCHARP key, TCHARP value)
+int32 privateDelete(int32 hk, TCHARP key, TCHARP value)
 {
    CFStringRef cfValue = CFStringCreateWithCString(kCFAllocatorDefault, value, kCFStringEncodingUTF8);
    CFPreferencesSetAppValue(cfValue, NULL, kCFPreferencesCurrentApplication);

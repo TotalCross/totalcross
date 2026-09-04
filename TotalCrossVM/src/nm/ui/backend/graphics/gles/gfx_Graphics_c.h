@@ -22,7 +22,7 @@
 #endif
 
 #if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
-bool isIpad;
+int32 isIpad;
 #else
 bool isIpad = false;
 #endif
@@ -30,9 +30,9 @@ bool isIpad = false;
 static bool surfaceWillChange;
 
 #if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
-void iphone_privateSetSurfaceWillChange(bool willChange)
+void iphone_privateSetSurfaceWillChange(int32 willChange)
 {
-   surfaceWillChange = willChange;
+   surfaceWillChange = willChange != 0;
 }
 #endif
 
@@ -46,7 +46,7 @@ static void resetGlobals()
    lastAlphaMask = -1;
 }
 
-bool initGLES(ScreenSurface screenSurface);
+int32 initGLES(ScreenSurface screenSurface);
 
 void setTimerInterval(int32 t);
 int32 desiredglShiftY;
@@ -243,7 +243,7 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativePrepareForResume(
 #endif
 
 #if TC_GLES_ANDROID
-bool initGLES(ScreenSurface screenSurface)
+int32 initGLES(ScreenSurface screenSurface)
 {
    const EGLint attribs[] = {
       EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,

@@ -45,7 +45,7 @@ void skia_fillRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel 
     targetCanvas->drawRect(SkRect::MakeXYWH(x, y, w, h), backPaint);
 }
 
-void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x0, double y0, Pixel foreColor, int32 justifyWidth, double fontSize, int32 typefaceIndex, bool bold)
+void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x0, double y0, Pixel foreColor, int32 justifyWidth, double fontSize, int32 typefaceIndex, int32 bold)
 {
     SKIA_TRACE()
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
@@ -58,20 +58,20 @@ void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x
     if(skFont.getSize() != fontSize) {
         skFont.setSize(fontSize);
     }
-    skFont.setEmbolden(bold);
+    skFont.setEmbolden(bold != 0);
     if(backPaint.getColor() != foreColor){
         backPaint.setColor(skiaColorFromPixel(foreColor));
     }
     targetCanvas->drawTextBlob(SkTextBlob::MakeFromText(text,chrCount,skFont,SkTextEncoding::kUTF16),x0,y0,backPaint);
 }
 
-void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
+void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, int32 fill, int32 gradient)
 {
     SKIA_TRACE()
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
     if (!targetCanvas) return;
-    if (fill) {
-        if (gradient) {
+    if (fill != 0) {
+        if (gradient != 0) {
             SkPoint points[3] = {
                     SkPoint::Make(xc, yc - ry),
                     SkPoint::Make(xc, yc + ry),
@@ -125,7 +125,7 @@ void skia_drawPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 n
     targetCanvas->translate(-tx, -ty);
 }
 
-void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 nPoints, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isPie)
+void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 nPoints, int32 tx, int32 ty, Pixel c1, Pixel c2, int32 gradient, int32 isPie)
 {
     SKIA_TRACE()
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
@@ -133,7 +133,7 @@ void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 n
     SkPath path = _skia_makePath(xPoints, yPoints, nPoints);
 
     backPaint.setColor(skiaColorFromPixel(c1));
-    if (gradient) {
+    if (gradient != 0) {
         int32 minY, maxY;
         _skia_getPathBounds(xPoints, yPoints, nPoints, &minY, &maxY);
         SkPoint points[2] = {
@@ -150,7 +150,7 @@ void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 n
     targetCanvas->drawPath(path, backPaint);
     targetCanvas->translate(-tx, -ty);
 
-    if (gradient) {
+    if (gradient != 0) {
         backPaint.setShader(nullptr);
     }
 }
@@ -196,17 +196,18 @@ SkPath _skia_makeArcPath(const SkRect& oval, SkScalar startAngle, SkScalar sweep
 
     return path;
 }
-void skia_arcPiePointDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient)
+void skia_arcPiePointDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, int32 fill, int32 pie, int32 gradient)
 {
     double start = -startAngle;
     double sweepAngle = -(endAngle - startAngle);
+    const bool usePie = pie != 0;
     SKIA_TRACE()
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
     if (!targetCanvas) return;
-    if (fill) {
+    if (fill != 0) {
         backPaint.setColor(skiaColorFromPixel(c2));
-        if (gradient) {
-            SkPath arcPath = _skia_makeArcPath(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, pie);
+        if (gradient != 0) {
+            SkPath arcPath = _skia_makeArcPath(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, usePie);
             SkRect r = arcPath.computeTightBounds();
 
             SkPoint points[2] = {
@@ -221,16 +222,16 @@ void skia_arcPiePointDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx
             targetCanvas->drawPath(arcPath, backPaint);
             backPaint.setShader(nullptr);
         } else {
-            targetCanvas->drawArc(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, pie, backPaint);
+            targetCanvas->drawArc(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, usePie, backPaint);
             forePaint.setColor(skiaColorFromPixel(c));
             SkScalar strokeWidth = forePaint.getStrokeWidth();
             forePaint.setStrokeWidth(2);
-            targetCanvas->drawArc(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, pie, forePaint);
+            targetCanvas->drawArc(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, usePie, forePaint);
             forePaint.setStrokeWidth(strokeWidth);
         }
     } else {
         forePaint.setColor(skiaColorFromPixel(c));
-        targetCanvas->drawArc(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, pie, forePaint);
+        targetCanvas->drawArc(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, usePie, forePaint);
     }
 }
 
@@ -252,7 +253,7 @@ void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, i
     targetCanvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), r, r), backPaint);
 }
 
-void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
+void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, int32 vertical)
 {
     SKIA_TRACE()
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
@@ -260,7 +261,7 @@ void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32
     int32 w = endX - startX;
     int32 h = endY - startY;
     SkPoint points[2];
-    if (vertical) {
+    if (vertical != 0) {
         points[0] = SkPoint::Make(startX, startY);
         points[1] = SkPoint::Make(startX, startY + h * 2);
     } else {

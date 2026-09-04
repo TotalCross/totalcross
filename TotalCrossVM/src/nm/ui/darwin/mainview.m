@@ -21,7 +21,7 @@ bool allowMainThread();
 int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
-void iphone_privateSetSurfaceWillChange(bool willChange);
+void iphone_privateSetSurfaceWillChange(int32 willChange);
 static bool callingCamera;
 UIWindow* barwindow;
 static bool callingBarcode;
@@ -31,7 +31,7 @@ static char documentChars[4096];
 static char barcode[2048];
 static NSMutableString *currBarcode;
 extern double screenContentScale;
-extern bool isIpad;
+extern int32 isIpad;
 
 @implementation MainViewController
 static bool wasNumeric;
@@ -43,7 +43,7 @@ static bool wasNumeric;
     return self;
 }
 
-bool initGLES(ScreenSurface screen)
+int32 initGLES(ScreenSurface screen)
 {
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
@@ -78,11 +78,11 @@ bool initGLES(ScreenSurface screen)
    lastOrientationSentToVM = [child_view getOrientation];
 }
 
-bool iosLowMemory;
+int32 iosLowMemory;
 - (void)didReceiveMemoryWarning
 {
    [super didReceiveMemoryWarning];
-   iosLowMemory = true;
+   iosLowMemory = 1;
 }
 
 - (void)sendSafeAreaInsetsIfChanged
@@ -745,10 +745,10 @@ char* iphone_readBarcode(char* mode)
    return barcode;
 }
 
-bool iphone_mapsShowAddress(char* addr, int flags)
+int32 iphone_mapsShowAddress(char* addr, int flags)
 {
    NSString* string = [NSString stringWithFormat:@"%s", addr];
-   return [DEVICE_CTX->_mainview mapsShowAddress:string flags:flags];
+   return [DEVICE_CTX->_mainview mapsShowAddress:string flags:flags] ? 1 : 0;
 }
 
 void iphone_dialNumber(char* number)

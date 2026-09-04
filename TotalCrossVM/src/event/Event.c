@@ -75,7 +75,7 @@ sleep:
    return ok;
 }
 
-bool isEventAvailable()
+int32 isEventAvailable()
 {  
    Sleep(1); // avoid 100% cpu - important on Android!
    return privateIsEventAvailable();
@@ -134,16 +134,16 @@ void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 
    }
 }
 
-void postOnMinimizeOrRestore(bool minimized)
-{                                  
-   isMinimized = minimized;
+void postOnMinimizeOrRestore(int32 minimized)
+{
+   isMinimized = minimized != 0;
    if (mainClass != null)
       executeMethod(lifeContext, (isMinimized ? onMinimize : onRestore), mainClass); // events are always posted to the main execution line
 }
 
-bool initEvent()
+int32 initEvent()
 {
-   return privateInitEvent();
+   return privateInitEvent() != 0;
 }
 
 void destroyEvent()

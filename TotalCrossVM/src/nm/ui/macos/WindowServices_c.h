@@ -4,16 +4,16 @@
 
 #include "../Window.h"
 
-static bool windowPlatformIsSIPShown(void)
+static int32 windowPlatformIsSIPShown(void)
 {
-   return false;
+   return 0;
 }
 
 static void windowPlatformSetSIP(
    Context currentContext,
    int32 sipOption,
    TCObject control,
-   bool numeric)
+   int32 numeric)
 {
    UNUSED(currentContext)
    UNUSED(sipOption)

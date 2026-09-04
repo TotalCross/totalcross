@@ -82,8 +82,8 @@ typedef struct TScreenConfiguration
    double fontScale;
    int32 deviceFontHeight;
    uint32 generation;
-   bool surfaceReady;
-   bool nativeSurfaceChanged;
+   uint8 surfaceReady;
+   uint8 nativeSurfaceChanged;
 } TScreenConfiguration;
 
 typedef struct TScreenSurface // represents a device-dependant surface, there's only ONE per application
@@ -99,7 +99,7 @@ typedef struct TScreenSurface // represents a device-dependant surface, there's 
    int32 deviceFontHeight;
    uint32 surfaceGeneration;
    uint32 pendingChangeFlags;
-   bool surfaceReady;
+   uint8 surfaceReady;
    void *extension; // platform specific data
    int32 shiftY;
    uint32 pixelformat;
@@ -115,7 +115,7 @@ void repaintActiveWindows(Context currentContext);
 ScreenChangeFlags screenApplyConfiguration(ScreenSurface screenSurface, const TScreenConfiguration *configuration);
 ScreenChangeFlags screenConsumePendingChanges(ScreenSurface screenSurface);
 void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes);
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged);
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, int32 nothingChanged);
 
 /**
  * The device context points a structure containing platform specific data

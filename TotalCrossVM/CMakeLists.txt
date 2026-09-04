@@ -916,6 +916,80 @@ if(TC_BUILD_NATIVE_STARTUP_TEST)
     CXX_EXTENSIONS NO
   )
 
+  add_executable(graphics_primitives_abi_c_test
+    ${TC_SRCDIR}/tests/graphics_primitives_abi_c_test.c
+  )
+  target_include_directories(graphics_primitives_abi_c_test PRIVATE
+    "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+    "${TC_SRCDIR}"
+  )
+  target_compile_definitions(graphics_primitives_abi_c_test PRIVATE
+    TC_PLATFORM_CONFIGURED=1
+  )
+  target_link_libraries(graphics_primitives_abi_c_test PRIVATE
+    SDL2::SDL2
+    Skia::Skia
+  )
+  target_compile_options(graphics_primitives_abi_c_test PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(graphics_primitives_abi_c_test PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+  )
+
+  add_executable(graphics_primitives_abi_cpp_test
+    ${TC_SRCDIR}/tests/graphics_primitives_abi_cpp_test.cpp
+  )
+  target_include_directories(graphics_primitives_abi_cpp_test PRIVATE
+    "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+    "${TC_SRCDIR}"
+  )
+  target_compile_definitions(graphics_primitives_abi_cpp_test PRIVATE
+    TC_PLATFORM_CONFIGURED=1
+  )
+  target_link_libraries(graphics_primitives_abi_cpp_test PRIVATE
+    SDL2::SDL2
+    Skia::Skia
+  )
+  target_compile_options(graphics_primitives_abi_cpp_test PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(graphics_primitives_abi_cpp_test PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+  )
+
+  add_executable(graphics_primitives_abi_bridge_test
+    ${TC_SRCDIR}/tests/graphics_primitives_abi_bridge.c
+    ${TC_SRCDIR}/tests/graphics_primitives_abi_bridge_test.cpp
+  )
+  target_include_directories(graphics_primitives_abi_bridge_test PRIVATE
+    "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+    "${TC_SRCDIR}"
+  )
+  target_compile_definitions(graphics_primitives_abi_bridge_test PRIVATE
+    TC_PLATFORM_CONFIGURED=1
+  )
+  target_link_libraries(graphics_primitives_abi_bridge_test PRIVATE
+    SDL2::SDL2
+    Skia::Skia
+  )
+  target_compile_options(graphics_primitives_abi_bridge_test PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra;-Werror>
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(graphics_primitives_abi_bridge_test PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+  )
+
   if(TC_TARGET_MACOS AND TC_WINDOWING_SDL)
     add_executable(window_startup_integration_test
       ${TC_SRCDIR}/tests/window_startup_integration_test.c
