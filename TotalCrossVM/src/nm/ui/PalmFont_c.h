@@ -34,6 +34,9 @@ bool fontInit(Context currentContext)
    maxFontSize = *maxfs;
    minFontSize = *minfs;
    normalFontSize = *normal;
+#if TC_RENDERER_SKIA
+   return true;
+#else
    fontsHeap = heapCreate();
    if (fontsHeap == null)
       return false;
@@ -53,6 +56,7 @@ bool fontInit(Context currentContext)
       htFree(&htBaseFonts, null);
    }
    return defaultFont != null;
+#endif
 }
 
 static void destroyUF(int32 i32, VoidP ptr)
@@ -67,6 +71,7 @@ static void destroyUF(int32 i32, VoidP ptr)
 
 void fontDestroy()
 {
+#if !TC_RENDERER_SKIA
    VoidPs *list, *head;
    htTraverse(&htBaseFonts, destroyUF);
 
@@ -84,6 +89,7 @@ void fontDestroy()
    heapDestroy(fontsHeap);
    htFree(&htUF, null);
    htFree(&htBaseFonts, null);
+#endif
 }
 
 static FontFile findFontFile(char* fontName)
@@ -424,7 +430,7 @@ Cleanup: /* CLEANUP */
    return fSuccess ? ob0 : null;
 }
 
-#ifndef SKIA_H
+#if !TC_RENDERER_SKIA
 #ifdef __gl2_h_
 bool lowmemDevice;
 int32 glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, int32 onlyAlpha);
@@ -504,7 +510,7 @@ static void reset1font(int32 i32, VoidP ptr)
 
 void resetFontTexture()
 {
-#ifndef SKIA_H
+#if !TC_RENDERER_SKIA
    #ifdef __gl2_h_
    htTraverse(&htBaseFonts, reset1font);
    #endif

@@ -14,61 +14,123 @@
 
 #define PLAIN 0
 #define BOLD 1
+
+#if TC_RENDERER_SKIA
+static bool hasTTFSuffix(CharP name)
+{
+   int32 len = xstrlen(name);
+   return len >= 4 && toLower(name[len - 4]) == '.' && toLower(name[len - 3]) == 't' &&
+      toLower(name[len - 2]) == 't' && toLower(name[len - 1]) == 'f';
+}
+
+static CharP createSkiaResourceName(CharP fontName)
+{
+   CharP baseName = xstrcmp(fontName, "TCFont") == 0 ? "Roboto Regular" : fontName;
+   int32 baseLen = xstrlen(baseName);
+   bool hasSuffix = hasTTFSuffix(baseName);
+   int32 resourceLen = baseLen + (hasSuffix ? 0 : 4);
+   CharP resourceName = (CharP)xmalloc(resourceLen + 1);
+
+   if (resourceName != null)
+   {
+      xstrcpy(resourceName, baseName);
+      if (!hasSuffix)
+         xstrcat(resourceName, ".ttf");
+   }
+   return resourceName;
+}
+
+static int32 loadSkiaTypeface(CharP resourceName)
+{
+   int32 fontIdx = skia_getTypefaceIndex(resourceName);
+   TCZFile file;
+
+   if (fontIdx < 0 && (file = tczGetFile(resourceName, false)) != null)
+   {
+      uint8 *buffer = (uint8 *)xmalloc(file->uncompressedSize);
+      if (buffer != null)
+      {
+         tczRead(file, buffer, file->uncompressedSize);
+         fontIdx = skia_makeTypeface(resourceName, buffer, file->uncompressedSize);
+         xfree(buffer);
+      }
+      tczClose(file);
+   }
+   return fontIdx < 0 ? -1 : fontIdx;
+}
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void fontCreate();
 {
-   char name[128];
-   TCObject obj, fontName;
-   FontFile ff;
+   TCObject obj = p->obj[0];
+#if TC_RENDERER_SKIA
+   CharP name = String2CharP(Font_name(obj));
+   CharP resourceName;
+   int32 fontIdx;
+   bool useDefaultName = false;
 
-   obj = p->obj[0];
-   fontName = Font_name(obj);
-   String2CharPBuf(fontName, name);
-#ifdef SKIA_H
-	// get ttf from tcz
-	TCZFile file;
-   char nameTTF[128];
-   if (xstrcmp(name, "TCFont") == 0) {
-      xstrcpy(nameTTF, "Roboto Regular");
-   } else {
-      xstrcpy(nameTTF, name);
-   }
-   int len = xstrlen(nameTTF);
-   // if it doesn't end with .ttf
-   if(!(nameTTF[len-4] == '.' && nameTTF[len-3] == 't' && nameTTF[len-2] == 't' && nameTTF[len-1] == 'f')) {
-      xstrcat(nameTTF, ".ttf");
-   }
-
-   int32 fontIdx = skia_getTypefaceIndex(nameTTF);
-   if (fontIdx == -1)
+   if (name == null)
    {
-      file = tczGetFile(nameTTF, false);
-      if (file != null)
+      throwException(p->currentContext, OutOfMemoryError, "Cannot convert font name");
+      return;
+   }
+   resourceName = createSkiaResourceName(name);
+   if (resourceName == null)
+   {
+      xfree(name);
+      throwException(p->currentContext, OutOfMemoryError, "Cannot create font resource name");
+      return;
+   }
+   fontIdx = loadSkiaTypeface(resourceName);
+   if (fontIdx < 0)
+   {
+      useDefaultName = true;
+      if (xstrcmp(name, defaultFontName) != 0)
       {
-         uint8 *buffer = (uint8 *)xmalloc(file->uncompressedSize);
-         if (buffer != null)
+         xfree(resourceName);
+         resourceName = createSkiaResourceName(defaultFontName);
+         if (resourceName == null)
          {
-            tczRead(file, buffer, file->uncompressedSize);
-            fontIdx = skia_makeTypeface(
-               nameTTF,
-               buffer,
-               file->uncompressedSize);
-            xfree(buffer);
+            xfree(name);
+            Font_skiaIndex(obj) = -1;
+            throwException(p->currentContext, OutOfMemoryError, "Cannot create default font resource name");
+            return;
          }
-         tczClose(file);
+         fontIdx = loadSkiaTypeface(resourceName);
       }
    }
-   Font_skiaIndex(obj) = fontIdx;
-   // save reference to SkTypeFace at Font_hvUserFont
-#endif  
-   // the only thing we can store here is the font file, because the UserFont will vary for char ranges
-   ff = name[0] == '$' ? null : loadFontFile(name); //  bruno@tc114_37: native fonts always start with '$'
+   if (useDefaultName)
+   {
+      TCObject defaultName = createStringObjectFromCharP(p->currentContext, defaultFontName, xstrlen(defaultFontName));
+      if (defaultName == null)
+      {
+         xfree(resourceName);
+         xfree(name);
+         Font_skiaIndex(obj) = -1;
+         throwException(p->currentContext, OutOfMemoryError, "Cannot set default font name");
+         return;
+      }
+      Font_name(obj) = defaultName;
+      setObjectLock(defaultName, UNLOCKED);
+   }
+   Font_skiaIndex(obj) = fontIdx < 0 ? -1 : fontIdx;
+   xfree(resourceName);
+   xfree(name);
+#else
+   char name[128];
+   FontFile ff;
+
+   String2CharPBuf(Font_name(obj), name);
+   // The only thing we can store here is the font file, because the UserFont
+   // will vary for char ranges.
+   ff = name[0] == '$' ? null : loadFontFile(name); // bruno@tc114_37: native fonts always start with '$'
    if (ff == null)
    {
-      // if the original font file was not found, use the default font.
+      // If the original font file was not found, use the default font.
       ff = defaultFont;
-      // replace the name so the user can know that the font was not found
-      Font_name(obj) = createStringObjectFromCharP(p->currentContext, defaultFontName,6);
+      // Replace the name so the user can know that the font was not found.
+      Font_name(obj) = createStringObjectFromCharP(p->currentContext, defaultFontName, 6);
       setObjectLock(Font_name(obj), UNLOCKED);
    }
    if (Font_hvUserFont(obj) == null) // alloc space for the pointer
@@ -78,6 +140,7 @@ TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void f
    }
    if (Font_hvUserFont(obj) != null) // alloc space for the pointer
       xmoveptr(ARRAYOBJ_START(Font_hvUserFont(obj)), &ff);
+#endif
 }
 
 #ifdef ENABLE_TEST_SUITE
