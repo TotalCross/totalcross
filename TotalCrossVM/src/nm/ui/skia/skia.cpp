@@ -139,9 +139,7 @@ SkPaint alphaPaint; // used for alphaMask
 SkBitmap bitmap;
 SkFont   skFont;
 
-#define TYPEFACE_LEN 32
-sk_sp<SkTypeface> typefaces[TYPEFACE_LEN];
-int typefaceIdx = 0;
+std::vector<sk_sp<SkTypeface>> typefaces;
 
 std::vector<std::unique_ptr<SkiaImageSurface>> imageSurfaces;
 
@@ -231,15 +229,20 @@ int32 skia_makeTypeface(char* name, void *data, int32 size)
     SKIA_TRACE()
     std::string key = name;
     int32 idx = skia_getTypefaceIndex(name);
-    
-    if (idx == -1 && typefaceIdx < TYPEFACE_LEN - 1) {
-        sk_sp<SkData> typefaceData = SkData::MakeWithCopy(data, size);
-        sk_sp<SkTypeface> typeface = SkTypeface::MakeFromData(typefaceData);
-        idx = typefaceIdx;
-        typefaces[typefaceIdx++] = typeface;
-        typefaceIndexMap[key] = idx;
+
+    if (idx >= 0) {
+        return idx;
     }
-    
+
+    sk_sp<SkData> typefaceData = SkData::MakeWithCopy(data, size);
+    sk_sp<SkTypeface> typeface = SkTypeface::MakeFromData(typefaceData);
+    if (!typeface) {
+        return -1;
+    }
+
+    idx = (int32)typefaces.size();
+    typefaces.push_back(typeface);
+    typefaceIndexMap[key] = idx;
     return idx;
 }
 
@@ -255,7 +258,7 @@ int32 skia_getTypefaceIndex(char* name) {
 }
 
 sk_sp<SkTypeface> skia_getTypeface(int32 typefaceIndex) {
-    if (typefaceIndex >= 0 && typefaceIndex < typefaceIdx) {
+    if (typefaceIndex >= 0 && typefaceIndex < (int32)typefaces.size()) {
         return typefaces[typefaceIndex];
     } else {
         return SkTypeface::MakeFromName(nullptr, SkFontStyle());
