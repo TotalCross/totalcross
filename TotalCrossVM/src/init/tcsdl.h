@@ -19,13 +19,13 @@ extern "C" {
     #endif
     #include "GraphicsPrimitives.h"
 
-    bool TCSDL_Init(ScreenSurface screen, const char* title, bool fullScreen, int16 appTczAttr);
-    bool TCSDL_SetPixelFormatRequest(const char* value);
-    bool TCSDL_SetFullscreen(bool fullscreen);
+    int32 TCSDL_Init(ScreenSurface screen, const char* title, int32 fullScreen, int16 appTczAttr);
+    int32 TCSDL_SetPixelFormatRequest(const char* value);
+    int32 TCSDL_SetFullscreen(int32 fullscreen);
     // Returns whether the resize request was submitted; SDL event metrics confirm its result.
-    bool TCSDL_SetWindowSize(int32 width, int32 height);
-    bool TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration* configuration);
-    bool TCSDL_CreateBackBuffer(ScreenSurface screen);
+    int32 TCSDL_SetWindowSize(int32 width, int32 height);
+    int32 TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration* configuration);
+    int32 TCSDL_CreateBackBuffer(ScreenSurface screen);
     void TCSDL_DestroyBackBuffer(ScreenSurface screen);
     void TCSDL_DestroyWindow(ScreenSurface screen);
     void TCSDL_UpdateTexture(int w, int h, int pitch,void *pixels);

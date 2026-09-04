@@ -133,7 +133,7 @@ static bool selectPixelFormat(ScreenSurface screen)
    return false;
 }
 
-bool TCSDL_SetPixelFormatRequest(const char *value)
+int32 TCSDL_SetPixelFormatRequest(const char *value)
 {
    TCSDLRequestedPixelFormat parsed;
    if (!parsePixelFormat(value, &parsed))
@@ -143,7 +143,7 @@ bool TCSDL_SetPixelFormatRequest(const char *value)
    return true;
 }
 
-bool TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration *configuration)
+int32 TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration *configuration)
 {
    int logicalWidth, logicalHeight;
    int physicalWidth, physicalHeight;
@@ -187,7 +187,7 @@ static int32 sdlWindowPosition(TCWindowPositionMode mode, int32 position)
       : mode == TC_WINDOW_POSITION_EXPLICIT ? position : SDL_WINDOWPOS_UNDEFINED;
 }
 
-bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen, int16 appTczAttr)
+int32 TCSDL_Init(ScreenSurface screen, const char *title, int32 fullScreen, int16 appTczAttr)
 {
    SDL_DisplayMode displayMode;
    SDL_Rect displayBounds;
@@ -254,7 +254,7 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen, int16 
       display.usableHeight = display.height;
 
    options.appTczAttr = appTczAttr;
-   options.legacyFullscreen = fullScreen;
+   options.initialFullscreen = fullScreen != 0 ? TC_FULLSCREEN_TRUE : TC_FULLSCREEN_UNSET;
    windowLoadStartupEnvironment(&options);
    if (!windowResolveStartupConfiguration(&options, &display, &startupConfiguration))
    {
@@ -323,14 +323,14 @@ bool TCSDL_Init(ScreenSurface screen, const char *title, bool fullScreen, int16 
    return true;
 }
 
-bool TCSDL_SetFullscreen(bool fullscreen)
+int32 TCSDL_SetFullscreen(int32 fullscreen)
 {
    if (window == NULL)
       return false;
-   return SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) == 0;
+   return SDL_SetWindowFullscreen(window, fullscreen != 0 ? SDL_WINDOW_FULLSCREEN : 0) == 0;
 }
 
-bool TCSDL_SetWindowSize(int32 width, int32 height)
+int32 TCSDL_SetWindowSize(int32 width, int32 height)
 {
    if (window == NULL || width <= 0 || height <= 0)
       return false;
@@ -338,7 +338,7 @@ bool TCSDL_SetWindowSize(int32 width, int32 height)
    return true;
 }
 
-bool TCSDL_CreateBackBuffer(ScreenSurface screen)
+int32 TCSDL_CreateBackBuffer(ScreenSurface screen)
 {
    if (screen == NULL || SCREEN_EX(screen) == NULL || renderer == NULL
       || screen->screenW <= 0 || screen->screenH <= 0)

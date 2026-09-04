@@ -18,7 +18,7 @@ TESTCASE(windowResolveStartupConfiguration)
       int32 environmentWidth;
       int32 environmentHeight;
       TCInitialWindowState initialState;
-      bool legacyFullscreen;
+      bool initialFullscreen;
       int32 expectedWidth;
       int32 expectedHeight;
       TCWindowPositionMode expectedXMode;
@@ -114,7 +114,9 @@ TESTCASE(windowResolveStartupConfiguration)
       options.environmentWidth = cases[i].environmentWidth;
       options.environmentHeight = cases[i].environmentHeight;
       options.initialState = cases[i].initialState;
-      options.legacyFullscreen = cases[i].legacyFullscreen;
+      options.initialFullscreen = cases[i].initialFullscreen
+         ? TC_FULLSCREEN_TRUE : TC_FULLSCREEN_UNSET;
+      options.environmentFullscreen = TC_FULLSCREEN_UNSET;
       options.appTczAttr = cases[i].appTczAttr;
       if (!windowResolveStartupConfiguration(&options, &display, &configuration)
          || configuration.width != cases[i].expectedWidth
@@ -130,6 +132,88 @@ TESTCASE(windowResolveStartupConfiguration)
          TEST_FAIL(tc, "Startup window configuration policy case failed");
          goto finish;
       }
+   }
+#else
+   TEST_SKIP;
+#endif
+   finish: ;
+}
+
+static bool startupFullscreenCase(
+   TCWindowStartupPlatform platform,
+   TCFullscreenSetting initialFullscreen,
+   TCFullscreenSetting environmentFullscreen,
+   TCInitialWindowState initialState,
+   bool expectedFullscreen)
+{
+   TCDisplayMetrics display = { 1600, 1000, 1600, 700 };
+   TCWindowStartupOptions options;
+   TCWindowStartupConfiguration configuration;
+
+   xmemzero(&options, sizeof(options));
+   options.x = -1;
+   options.y = -1;
+   options.environmentWidth = -1;
+   options.environmentHeight = -1;
+   options.initialState = initialState;
+   options.initialFullscreen = initialFullscreen;
+   options.environmentFullscreen = environmentFullscreen;
+   return windowResolveStartupConfigurationForPlatform(
+      &options, &display, platform, &configuration)
+      && configuration.fullscreen == expectedFullscreen;
+}
+
+TESTCASE(windowResolveStartupFullscreenPolicy)
+{
+#if TC_OS_DESKTOP
+   struct FullscreenCase
+   {
+      TCWindowStartupPlatform platform;
+      TCFullscreenSetting initialFullscreen;
+      TCFullscreenSetting environmentFullscreen;
+      TCInitialWindowState initialState;
+      bool expectedFullscreen;
+   } cases[] = {
+      { TC_WINDOW_PLATFORM_LINUX_ARM, TC_FULLSCREEN_UNSET, TC_FULLSCREEN_UNSET,
+        TC_INITIAL_WINDOW_NORMAL, true },
+      { TC_WINDOW_PLATFORM_LINUX_X86, TC_FULLSCREEN_UNSET, TC_FULLSCREEN_UNSET,
+        TC_INITIAL_WINDOW_NORMAL, false },
+      { TC_WINDOW_PLATFORM_WINDOWS, TC_FULLSCREEN_UNSET, TC_FULLSCREEN_UNSET,
+        TC_INITIAL_WINDOW_NORMAL, false },
+      { TC_WINDOW_PLATFORM_MACOS, TC_FULLSCREEN_UNSET, TC_FULLSCREEN_UNSET,
+        TC_INITIAL_WINDOW_NORMAL, false },
+      { TC_WINDOW_PLATFORM_LINUX_ARM, TC_FULLSCREEN_TRUE, TC_FULLSCREEN_UNSET,
+        TC_INITIAL_WINDOW_NORMAL, true },
+      { TC_WINDOW_PLATFORM_LINUX_ARM, TC_FULLSCREEN_FALSE, TC_FULLSCREEN_UNSET,
+        TC_INITIAL_WINDOW_NORMAL, false },
+      { TC_WINDOW_PLATFORM_LINUX_X86, TC_FULLSCREEN_TRUE, TC_FULLSCREEN_UNSET,
+        TC_INITIAL_WINDOW_NORMAL, true },
+      { TC_WINDOW_PLATFORM_LINUX_X86, TC_FULLSCREEN_FALSE, TC_FULLSCREEN_UNSET,
+        TC_INITIAL_WINDOW_NORMAL, false },
+      { TC_WINDOW_PLATFORM_LINUX_ARM, TC_FULLSCREEN_FALSE, TC_FULLSCREEN_TRUE,
+        TC_INITIAL_WINDOW_NORMAL, true },
+      { TC_WINDOW_PLATFORM_LINUX_ARM, TC_FULLSCREEN_TRUE, TC_FULLSCREEN_FALSE,
+        TC_INITIAL_WINDOW_NORMAL, false },
+      { TC_WINDOW_PLATFORM_LINUX_ARM, TC_FULLSCREEN_FALSE, TC_FULLSCREEN_FALSE,
+        TC_INITIAL_WINDOW_FULLSCREEN, true },
+   };
+   int32 i;
+
+   for (i = 0; i < (int32)(sizeof(cases) / sizeof(cases[0])); i++)
+      if (!startupFullscreenCase(cases[i].platform, cases[i].initialFullscreen,
+         cases[i].environmentFullscreen, cases[i].initialState,
+         cases[i].expectedFullscreen))
+      {
+         TEST_FAIL(tc, "Fullscreen startup policy case failed");
+         goto finish;
+      }
+
+   if (windowParseFullscreenEnvironment("TrUe") != TC_FULLSCREEN_TRUE
+      || windowParseFullscreenEnvironment("FaLsE") != TC_FULLSCREEN_FALSE
+      || windowParseFullscreenEnvironment("invalid") != TC_FULLSCREEN_UNSET)
+   {
+      TEST_FAIL(tc, "TC_FULLSCREEN value parsing policy case failed");
+      goto finish;
    }
 #else
    TEST_SKIP;

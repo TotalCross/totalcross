@@ -26,7 +26,7 @@
  #error No Window backend selected
 #endif
 
-bool windowBackendSetSize(int32 width, int32 height)
+int32 windowBackendSetSize(int32 width, int32 height)
 {
    return windowBackendSetSizeImpl(width, height);
 }

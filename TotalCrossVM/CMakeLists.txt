@@ -877,6 +877,76 @@ if(TC_BUILD_NATIVE_STARTUP_TEST)
   target_compile_options(window_startup_native_test PRIVATE
     $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra>
   )
+
+  add_executable(window_startup_abi_c_test
+    ${TC_SRCDIR}/tests/window_startup_abi_c_test.c
+  )
+  target_include_directories(window_startup_abi_c_test PRIVATE
+    "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+    "${TC_SRCDIR}"
+  )
+  target_compile_definitions(window_startup_abi_c_test PRIVATE
+    TC_PLATFORM_CONFIGURED=1
+  )
+  target_compile_options(window_startup_abi_c_test PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(window_startup_abi_c_test PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+  )
+
+  add_executable(window_startup_abi_cpp_test
+    ${TC_SRCDIR}/tests/window_startup_abi_cpp_test.cpp
+  )
+  target_include_directories(window_startup_abi_cpp_test PRIVATE
+    "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+    "${TC_SRCDIR}"
+  )
+  target_compile_definitions(window_startup_abi_cpp_test PRIVATE
+    TC_PLATFORM_CONFIGURED=1
+  )
+  target_compile_options(window_startup_abi_cpp_test PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(window_startup_abi_cpp_test PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+  )
+
+  if(TC_TARGET_MACOS AND TC_WINDOWING_SDL)
+    add_executable(window_startup_integration_test
+      ${TC_SRCDIR}/tests/window_startup_integration_test.c
+    )
+    target_include_directories(window_startup_integration_test PRIVATE
+      "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+      "${TC_SRCDIR}"
+      "${TC_SRCDIR}/tcvm"
+    )
+    target_compile_definitions(window_startup_integration_test PRIVATE
+      TC_PLATFORM_CONFIGURED=1
+    )
+    add_dependencies(window_startup_integration_test tcvm)
+    target_link_libraries(window_startup_integration_test PRIVATE
+      "$<TARGET_FILE:tcvm>"
+      SDL2::SDL2
+      Skia::Skia
+    )
+    set_target_properties(window_startup_integration_test PROPERTIES
+      BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR}"
+    )
+    target_compile_options(window_startup_integration_test PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra>
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-ffunction-sections;-fdata-sections>
+    )
+    if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+      set_property(TARGET window_startup_integration_test APPEND_STRING
+        PROPERTY LINK_FLAGS " -Wl,-dead_strip"
+      )
+    endif()
+  endif()
 endif()
 
 if(TC_ENABLE_COMPILED_DISPATCH)

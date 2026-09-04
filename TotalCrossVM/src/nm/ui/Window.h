@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-bool windowBackendSetSize(int32 width, int32 height);
+int32 windowBackendSetSize(int32 width, int32 height);
 
 #ifdef __cplusplus
 }
