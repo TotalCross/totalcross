@@ -614,6 +614,63 @@ public class Image extends GfxSurface {
     return result;
   }
 
+  private int normalizedFrame(int frame) {
+    if (frameCount <= 1) {
+      return 0;
+    }
+    if (frame < 0) {
+      return frameCount - 1;
+    }
+    return frame >= frameCount ? 0 : frame;
+  }
+
+  private Image deferFrameSelection(int frame) {
+    ImagePipeline previous = pipeline;
+    if (previous == null) {
+      previous = new ImagePipeline(snapshotRasterSource());
+    }
+    ImagePipeline deferred = previous.append(ImagePipeline.FRAME_SELECT, frame, 0, 0, 0,
+        previous.width(), previous.height(), previous.logicalWidth(), previous.logicalHeight(), 1,
+        previous.width());
+    Image result = new Image();
+    result.initializeDeferredFrameSelection(deferred, this);
+    return result;
+  }
+
+  private void initializeDeferredFrameSelection(ImagePipeline deferred, Image source) {
+    pipeline = deferred;
+    width = deferred.width();
+    height = deferred.height();
+    logicalWidth = deferred.logicalWidth();
+    logicalHeight = deferred.logicalHeight();
+    widthOfAllFrames = width;
+    frameCount = 1;
+    currentFrame = -1;
+    path = source.path;
+    contentScale = source.contentScale;
+    hwScaleW = source.hwScaleW;
+    hwScaleH = source.hwScaleH;
+    textureId = -1;
+    gfx = new Graphics(this);
+    gfx.setScales(contentScale, 1);
+    gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+  }
+
+  private void initializeDeferredCrop(ImagePipeline deferred) {
+    pipeline = deferred;
+    width = deferred.width();
+    height = deferred.height();
+    logicalWidth = deferred.logicalWidth();
+    logicalHeight = deferred.logicalHeight();
+    widthOfAllFrames = width;
+    frameCount = 1;
+    currentFrame = -1;
+    textureId = -1;
+    gfx = new Graphics(this);
+    gfx.setScales(1, 1);
+    gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+  }
+
   private static int[] rotatedDimensions(int inputWidth, int inputHeight, int scale, int angle) {
     if (scale <= 0) {
       scale = 1;
@@ -836,6 +893,12 @@ public class Image extends GfxSurface {
     int targetHeight = scaledDimension(node.logicalHeight(), destinationScale);
     Image result;
     switch (node.operationType()) {
+    case ImagePipeline.FRAME_SELECT:
+      result = source.eagerFrameSelection(node.parameter1());
+      break;
+    case ImagePipeline.CROP:
+      result = source.eagerCrop(node.parameter1(), node.parameter2(), node.parameter3(), node.parameter4());
+      break;
     case ImagePipeline.SCALE:
       result = source.eagerScaledInstance(targetWidth, targetHeight);
       break;
@@ -887,6 +950,53 @@ public class Image extends GfxSurface {
     result.contentScale = geometric ? destinationScale : source.contentScale;
     result.widthOfAllFrames = result.frameCount > 1 ? result.width * result.frameCount : result.width;
     return result;
+  }
+
+  private Image eagerFrameSelection(int frame) throws ImageException {
+    materializeCanonicalChecked();
+    if (frameCount > 1) {
+      setCurrentFrame(frame);
+    }
+    Image result = new Image(logicalWidth, logicalHeight, contentScale);
+    Vm.arrayCopy(pixels, 0, result.pixels, 0, pixels.length);
+    return result;
+  }
+
+  private Image eagerCrop(int x, int y, int w, int h) throws ImageException {
+    materializeCanonicalChecked();
+    Image result = new Image(w, h, contentScale);
+    if (contentScale != 1 && x >= 0 && y >= 0 && x + w <= logicalWidth && y + h <= logicalHeight) {
+      int sourceX = scaledCropEdge(x, contentScale);
+      int sourceY = scaledCropEdge(y, contentScale);
+      int sourceRight = sourceX + result.width;
+      int sourceBottom = sourceY + result.height;
+      if (sourceRight <= width && sourceBottom <= height && canCopyCropDirect(sourceX, sourceY, sourceRight, sourceBottom)) {
+        for (int row = sourceY; row < sourceBottom; row++) {
+          Vm.arrayCopy(pixels, row * width + sourceX, result.pixels, (row - sourceY) * result.width, result.width);
+        }
+        return result;
+      }
+    }
+    result.gfx.copyImageRect(this, x, y, w, h, true);
+    return result;
+  }
+
+  private boolean canCopyCropDirect(int sourceX, int sourceY, int sourceRight, int sourceBottom) {
+    if (alphaMask != 255 || hwScaleW != 1 || hwScaleH != 1) {
+      return false;
+    }
+    for (int row = sourceY; row < sourceBottom; row++) {
+      for (int column = sourceX; column < sourceRight; column++) {
+        if ((pixels[row * width + column] >>> 24) != 255) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private static int scaledCropEdge(int logicalEdge, double contentScale) {
+    return (int) Math.round(logicalEdge * contentScale);
   }
 
   private static int scaledDimension(int logicalDimension, double scale) throws ImageException {
@@ -3133,15 +3243,7 @@ public class Image extends GfxSurface {
    * @since TotalCross 1.12 
    */
   final public Image getFrameInstance(int frame) throws ImageException {
-    materializeCanonicalChecked();
-    Image img = getCopy(width, height);
-    int old = currentFrame;
-    setCurrentFrame(frame);
-    int[] from = (int[]) this.pixels;
-    int[] to = (int[]) img.pixels;
-    Vm.arrayCopy(from, 0, to, 0, from.length);
-    setCurrentFrame(old);
-    return img;
+    return deferFrameSelection(normalizedFrame(frame));
   }
 
   /** Applies the given color r,g,b values to all pixels of this image, 
@@ -3469,10 +3571,25 @@ public class Image extends GfxSurface {
    * an exception will be thrown
    */
   public Image getClippedInstance(int x, int y, int w, int h) throws ImageException {
-    Image img = new Image(w, h);
-    Graphics g = img.getGraphics();
-    g.copyImageRect(this, x, y, w, h, true);
-    return img;
+    if (w <= 0 || h <= 0) {
+      throw new ImageException("Image dimensions and content scale must be positive.");
+    }
+    if ((long) w * h > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    ImagePipeline previous = pipeline;
+    if (previous == null) {
+      previous = new ImagePipeline(snapshotRasterSource());
+    }
+    if (frameCount > 1) {
+      previous = previous.append(ImagePipeline.FRAME_SELECT, normalizedFrame(currentFrame), 0, 0, 0,
+          previous.width(), previous.height(), previous.logicalWidth(), previous.logicalHeight(), 1,
+          previous.width());
+    }
+    ImagePipeline deferred = previous.append(ImagePipeline.CROP, x, y, w, h, w, h, w, h, 1, w);
+    Image result = new Image();
+    result.initializeDeferredCrop(deferred);
+    return result;
   }
 
   public static void resizeJpeg(String inputPath, String outputPath, int maxPixelSize) {
