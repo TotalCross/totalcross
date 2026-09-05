@@ -9,6 +9,7 @@ import argparse
 import csv
 import os
 import platform
+from pathlib import Path
 import select
 import subprocess
 import sys
@@ -51,13 +52,28 @@ def host_memory_bytes():
     return result.stdout.strip() if result.returncode == 0 else "unknown"
 
 
-def write_summary(path, executable, scenario, expected_samples, records, peak_rss, exit_code):
-    revision = subprocess.run(
-        ["git", "rev-parse", "HEAD"], check=False, capture_output=True, text=True
-    ).stdout.strip()
+def repository_root():
+    return Path(__file__).resolve().parent.parent
+
+
+def resolve_revision(requested):
+    revision = requested or "HEAD"
+    result = subprocess.run(
+        ["git", "-C", str(repository_root()), "rev-parse", "--verify", f"{revision}^{{commit}}"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    resolved = result.stdout.strip()
+    if result.returncode != 0 or not resolved:
+        raise RuntimeError(f"could not resolve benchmark revision: {revision}")
+    return resolved
+
+
+def write_summary(path, executable, scenario, expected_samples, records, peak_rss, exit_code, revision):
     lines = [
         f"scenario={scenario}",
-        f"revision={revision or 'unknown'}",
+        f"revision={revision}",
         f"executable={os.path.abspath(executable)}",
         f"expected_samples={expected_samples}",
         f"recorded_samples={len(records)}",
@@ -78,6 +94,7 @@ def run(args):
     executable = os.path.abspath(args.executable)
     if not os.path.isfile(executable):
         raise RuntimeError(f"benchmark executable not found: {executable}")
+    revision = resolve_revision(args.revision)
     process = subprocess.Popen(
         [executable, f"--scenario={args.scenario}", f"--samples={args.samples}"],
         cwd=os.path.dirname(executable),
@@ -137,7 +154,7 @@ def run(args):
         for record in records:
             record["rss_peak_kb"] = peak_rss
             writer.writerow(record)
-    write_summary(args.summary, executable, args.scenario, args.samples, records, peak_rss, exit_code)
+    write_summary(args.summary, executable, args.scenario, args.samples, records, peak_rss, exit_code, revision)
     print(
         f"scenario={args.scenario} samples={len(records)} peak_rss_kb={peak_rss} "
         f"output={args.output} summary={args.summary}"
@@ -152,6 +169,7 @@ def main(argv):
     parser.add_argument("--output", required=True)
     parser.add_argument("--log", required=True)
     parser.add_argument("--summary", required=True)
+    parser.add_argument("--revision", help="commit to record; validated in the repository root")
     parser.add_argument("--rss-interval", type=float, default=0.05)
     args = parser.parse_args(argv[1:])
     if args.samples <= 0 or args.samples > 200:

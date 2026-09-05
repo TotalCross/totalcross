@@ -730,6 +730,12 @@ registerImageMacSmoke('ImageOptimizationControlBenchmark', 'ImageOptimizationCon
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
+    'image-diagnostic-accounting-gate-benchmark', false, false, [
+        'fixture=ImageDiagnosticAccountingGateBenchmarkApp',
+        'overallPass=true'
+    ])
+
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
