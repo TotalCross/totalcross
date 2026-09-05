@@ -7,6 +7,7 @@
 
 #ifdef SKIA_H
 #include "skia/skia_image_backing.h"
+#include "ImageTestAccounting_c.h"
 static bool isNativeImageBacking(TCObject backing)
 {
    return backing != null && strEq(OBJ_CLASS(backing)->name,
@@ -34,7 +35,8 @@ static int32 skiaSurfaceForGraphics(TCObject g)
       if (surfaceId == SKIA_INVALID_SURFACE_ID)
       {
          int32 frameCount = Image_frameCount(image);
-         TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(image) : Image_pixels(image);
+         TCObject pixelsObj = frameCount > 1 ? RasterImageBacking_pixelsOfAllFrames(backing)
+            : RasterImageBacking_pixels(backing);
          if (pixelsObj == null)
             return SKIA_INVALID_SURFACE_ID;
          Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
@@ -51,6 +53,122 @@ static int32 skiaSurfaceForGraphics(TCObject g)
    if (surfaceId != SKIA_INVALID_SURFACE_ID)
       skia_setSurfaceScale(surfaceId, Graphics_contentScale(g));
    return surfaceId;
+}
+
+static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
+{
+   TCObject root;
+   TCObject operations;
+   TCObject parameters;
+   TCObject dimensions;
+   if (!plan || !data) {
+      return false;
+   }
+   root = ImageDrawPlan_root(plan);
+   operations = ImageDrawPlan_operations(plan);
+   parameters = ImageDrawPlan_parameters(plan);
+   dimensions = ImageDrawPlan_dimensions(plan);
+   if (!root || !isNativeImageBacking(Image_backing(root)) || !operations || !parameters || !dimensions) {
+      return false;
+   }
+   data->rootHandle = NativeImageBacking_nativeHandle(Image_backing(root));
+   data->rootWidth = ImageDrawPlan_rootWidth(plan);
+   data->rootHeight = ImageDrawPlan_rootHeight(plan);
+   data->rootLogicalWidth = ImageDrawPlan_rootLogicalWidth(plan);
+   data->rootLogicalHeight = ImageDrawPlan_rootLogicalHeight(plan);
+   data->rootFrameCount = ImageDrawPlan_rootFrameCount(plan);
+   data->rootWidthOfAllFrames = ImageDrawPlan_rootWidthOfAllFrames(plan);
+   data->rootContentScale = ImageDrawPlan_rootContentScale(plan);
+   data->operations = (const int32*)ARRAYOBJ_START(operations);
+   data->parameters = (const int32*)ARRAYOBJ_START(parameters);
+   data->dimensions = (const int32*)ARRAYOBJ_START(dimensions);
+   data->sourceDecodeGeneration = ImageDrawPlan_sourceDecodeGeneration(plan);
+   data->operationCount = ARRAYOBJ_LEN(operations);
+   data->outputWidth = ImageDrawPlan_outputWidth(plan);
+   data->outputHeight = ImageDrawPlan_outputHeight(plan);
+   data->outputFrameCount = ImageDrawPlan_outputFrameCount(plan);
+   data->outputWidthOfAllFrames = ImageDrawPlan_outputWidthOfAllFrames(plan);
+   data->currentFrame = ImageDrawPlan_currentFrame(plan);
+   data->alphaMask = ImageDrawPlan_alphaMask(plan);
+   data->transparentColor = ImageDrawPlan_transparentColor(plan);
+   data->materializeAlphaMask = ImageDrawPlan_materializeAlphaMask(plan);
+   data->outputAlphaMask = ImageDrawPlan_outputAlphaMask(plan);
+   data->destinationScale = ImageDrawPlan_destinationScale(plan);
+   data->outputContentScale = ImageDrawPlan_outputContentScale(plan);
+   data->hwScaleW = ImageDrawPlan_hwScaleW(plan);
+   data->hwScaleH = ImageDrawPlan_hwScaleH(plan);
+   data->rootHwScaleW = ImageDrawPlan_rootHwScaleW(plan);
+   data->rootHwScaleH = ImageDrawPlan_rootHwScaleH(plan);
+   return data->operationCount > 0 && data->operationCount * 4 <= ARRAYOBJ_LEN(parameters)
+      && data->operationCount * 2 <= ARRAYOBJ_LEN(dimensions);
+}
+
+static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
+                                 int32 srcX, int32 srcY, int32 width, int32 height,
+                                 int32 dstX, int32 dstY, int32 doClip)
+{
+   SkiaImageDrawPlanData data;
+   int32 surfaceId;
+   bool clipSet = false;
+   if (!skiaDrawPlanData(plan, &data) || width <= 0 || height <= 0
+      || data.hwScaleW != 1 || data.hwScaleH != 1) {
+      return false;
+   }
+   surfaceId = skiaSurfaceForGraphics(dstSurf);
+   if (surfaceId == SKIA_INVALID_SURFACE_ID) {
+      return false;
+   }
+   dstX += Graphics_transX(dstSurf);
+   dstY += Graphics_transY(dstSurf);
+   if (doClip) {
+      if (srcX < 0) {
+         dstX -= srcX;
+         width += srcX;
+         srcX = 0;
+      }
+      if (srcY < 0) {
+         dstY -= srcY;
+         height += srcY;
+         srcY = 0;
+      }
+      if (srcX + width > data.outputWidth) {
+         width = data.outputWidth - srcX;
+      }
+      if (srcY + height > data.outputHeight) {
+         height = data.outputHeight - srcY;
+      }
+      if (dstX < Graphics_clipX1(dstSurf)) {
+         int32 delta = Graphics_clipX1(dstSurf) - dstX;
+         dstX = Graphics_clipX1(dstSurf);
+         srcX += delta;
+         width -= delta;
+      }
+      if (dstY < Graphics_clipY1(dstSurf)) {
+         int32 delta = Graphics_clipY1(dstSurf) - dstY;
+         dstY = Graphics_clipY1(dstSurf);
+         srcY += delta;
+         height -= delta;
+      }
+      if (dstX + width > Graphics_clipX2(dstSurf)) {
+         width = Graphics_clipX2(dstSurf) - dstX;
+      }
+      if (dstY + height > Graphics_clipY2(dstSurf)) {
+         height = Graphics_clipY2(dstSurf) - dstY;
+      }
+      if (width <= 0 || height <= 0) {
+         return true;
+      }
+      skia_setClip(surfaceId, Get_Clip(dstSurf));
+      clipSet = true;
+   }
+   int result = skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
+      (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
+      (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height));
+   if (clipSet) {
+      skia_restoreClip(surfaceId);
+   }
+   UNUSED(currentContext)
+   return result != 0;
 }
 #endif
 
@@ -348,7 +466,8 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       } else {
          int32 id = Image_textureId(srcSurf);
          if (id < 0) {
-            TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(srcSurf) : Image_pixels(srcSurf);
+            TCObject pixelsObj = frameCount > 1 ? RasterImageBacking_pixelsOfAllFrames(backing)
+               : RasterImageBacking_pixels(backing);
             Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
             int32 width = frameCount > 1 ? Image_widthOfAllFrames(srcSurf) : Image_width(srcSurf);
             int32 height = Image_height(srcSurf);
