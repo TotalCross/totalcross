@@ -9,6 +9,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <map>
 #include <memory>
@@ -32,6 +33,10 @@ uint64_t backingRecordsLiveForTest;
 uint64_t backingRecordsPeakLiveForTest;
 uint64_t backingBytesLiveForTest;
 uint64_t backingBytesPeakLiveForTest;
+uint64_t writePixelsAttemptsForTest;
+uint64_t writePixelsHitsForTest;
+uint64_t writePixelsFallbacksForTest;
+uint64_t writePixelsCopiedBytesForTest;
 
 uint64_t backingBytes(const NativeImageBackingRecord& backing) {
     return static_cast<uint64_t>(backing.width) * static_cast<uint64_t>(backing.height) * 4;
@@ -136,6 +141,65 @@ int drawOnCanvas(SkCanvas* canvas, NativeImageBackingRecord* source,
                           SkRect::MakeLTRB(dstLeft, dstTop, dstRight, dstBottom), &paint,
                           SkCanvas::kStrict_SrcRectConstraint);
     return 1;
+}
+
+bool tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
+                    float srcLeft, float srcTop, float srcRight, float srcBottom,
+                    float dstLeft, float dstTop, float dstRight, float dstBottom,
+                    int32 alphaMask, int32 optimizationMask) {
+#if TC_GRAPHICS_SOFTWARE
+    constexpr int32 kOpaqueWritePixelsBit = 1 << 2;
+    if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
+        return false;
+    }
+    ++writePixelsAttemptsForTest;
+    auto fallback = []() {
+        ++writePixelsFallbacksForTest;
+        return false;
+    };
+    if (!targetCanvas || !source || source->opacity != SKIA_IMAGE_OPACITY_OPAQUE
+        || alphaMask != 255 || !targetCanvas->getTotalMatrix().isIdentity()
+        || targetCanvas->getSaveCount() != 1 || srcLeft != 0.0f || srcTop != 0.0f
+        || srcRight != source->width || srcBottom != source->height
+        || srcRight - srcLeft != dstRight - dstLeft
+        || srcBottom - srcTop != dstBottom - dstTop
+        || std::floor(dstLeft) != dstLeft || std::floor(dstTop) != dstTop) {
+        return fallback();
+    }
+    const int32 dstX = static_cast<int32>(dstLeft);
+    const int32 dstY = static_cast<int32>(dstTop);
+    const SkImageInfo targetInfo = targetCanvas->imageInfo();
+    if (dstX < 0 || dstY < 0 || dstX > targetInfo.width() - source->width
+        || dstY > targetInfo.height() - source->height) {
+        return fallback();
+    }
+    sk_sp<SkImage> image = source->snapshot();
+    SkPixmap pixmap;
+    if (!image || !image->peekPixels(&pixmap)) {
+        return fallback();
+    }
+    if (!targetCanvas->writePixels(pixmap.info(), pixmap.addr(), pixmap.rowBytes(), dstX, dstY)) {
+        return fallback();
+    }
+    ++writePixelsHitsForTest;
+    writePixelsCopiedBytesForTest += static_cast<uint64_t>(source->width)
+        * static_cast<uint64_t>(source->height) * 4;
+    return true;
+#else
+    UNUSED(targetCanvas)
+    UNUSED(source)
+    UNUSED(srcLeft)
+    UNUSED(srcTop)
+    UNUSED(srcRight)
+    UNUSED(srcBottom)
+    UNUSED(dstLeft)
+    UNUSED(dstTop)
+    UNUSED(dstRight)
+    UNUSED(dstBottom)
+    UNUSED(alphaMask)
+    UNUSED(optimizationMask)
+    return false;
+#endif
 }
 
 SkImageInfo rasterInfo(int32 width, int32 height) {
@@ -472,9 +536,15 @@ int32 skia_image_backing_surface_id(int64_t handle) {
 int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle,
                                        float srcLeft, float srcTop, float srcRight, float srcBottom,
                                        float dstLeft, float dstTop, float dstRight, float dstBottom,
-                                       int32 alphaMask) {
-    return drawOnCanvas(skiaGetCanvas(targetSurface), findBacking(sourceHandle), srcLeft, srcTop,
-                        srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+                                       int32 alphaMask, int32 optimizationMask) {
+    SkCanvas* canvas = skiaGetCanvas(targetSurface);
+    NativeImageBackingRecord* source = findBacking(sourceHandle);
+    if (tryWritePixels(canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                       dstLeft, dstTop, dstRight, dstBottom, alphaMask, optimizationMask)) {
+        return 1;
+    }
+    return drawOnCanvas(canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                        dstLeft, dstTop, dstRight, dstBottom, alphaMask);
 }
 
 SkCanvas* skia_image_backing_canvas(int64_t handle) {
@@ -547,6 +617,10 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     }
     backingRecordsPeakLiveForTest = backingRecordsLiveForTest;
     backingBytesPeakLiveForTest = backingBytesLiveForTest;
+    writePixelsAttemptsForTest = 0;
+    writePixelsHitsForTest = 0;
+    writePixelsFallbacksForTest = 0;
+    writePixelsCopiedBytesForTest = 0;
 }
 
 void skia_image_backing_set_accounting_for_test(int enabled) {
@@ -583,4 +657,20 @@ uint64_t skia_image_backing_bytes_live_for_test(void) {
 
 uint64_t skia_image_backing_bytes_peak_live_for_test(void) {
     return backingBytesPeakLiveForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_attempts_for_test(void) {
+    return writePixelsAttemptsForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_hits_for_test(void) {
+    return writePixelsHitsForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_fallbacks_for_test(void) {
+    return writePixelsFallbacksForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_copied_bytes_for_test(void) {
+    return writePixelsCopiedBytesForTest;
 }

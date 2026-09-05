@@ -344,6 +344,42 @@ TC_API void tuiNIB_opacityNative(NMParams p) // totalcross/ui/image/NativeImageB
 #endif
 }
 
+TC_API void tuiNIB_writePixelsAttemptsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsAttemptsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_attempts_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_writePixelsHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsHitsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_hits_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_writePixelsFallbacksTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsFallbacksTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_fallbacks_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsCopyBytesTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_copied_bytes_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p) // totalcross/ui/image/NativeImageBacking private static void releaseNativeHandle(long nativeHandle);
 {
 #if TC_RENDERER_SKIA
