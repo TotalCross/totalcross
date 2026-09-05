@@ -6,14 +6,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T14:41:46-03:00
+Updated: 2026-09-05T14:54:29-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
 
-Milestones 3 and 4 are complete. The branch was created from
+Milestones 3, 4, and 5 are complete. The branch was created from
 the final phase-1 branch HEAD, the four benchmark workloads and
 argument-capable runner are committed, zero-copy S1/S2/S3 was captured for PNG
 and JPEG, and the opt-in PNG/JPEG direct decode path is implemented with
@@ -27,11 +27,12 @@ evidence is under `opaque-draw/`.
 ## Next concrete action
 
 The row-readback/direct-color S1 baseline is captured at `8f52cfdf9` in
-`readback-color/`. The implementation is in the working tree and has passed a
-native rebuild, SDK distribution, smoke Java compilation, and one-sample
-semantic checks for enabled row pixels/encoding/color plus disabled pixels.
-Commit the baseline report separately, then commit the implementation and run
-the complete S2/S3 readback/color matrix.
+`readback-color/`. The implementation is committed at `da324f3d8` with the
+native row bridge follow-up at `ee7b90051`. The final S2/S3 matrix passed for
+pixels, encoding, and color; checksums matched S1, row scratch was 7,840 bytes,
+and direct color materialization recorded 63 hits. The batched native row
+bridge was added after the first implementation smoke to remove a per-row VM
+call overhead and was revalidated with the full matrix.
 
 ## Active paths
 
@@ -56,8 +57,7 @@ and compact summaries are under `.agent/benchmarks/image-opt-phase2-raster/zero-
 ## Deferred validation
 
 Focused Image unit tests and final SDK/native validation remain deferred.
-Readback/color S2/S3 measurement remains deferred. Android, iOS, Windows,
-Linux, and GPU validation are outside this phase.
+Android, iOS, Windows, Linux, and GPU validation are outside this phase.
 
 ## Decisions still active
 
