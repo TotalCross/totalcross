@@ -28,3 +28,27 @@ Milestone commits:
 The final validation and handoff documentation is the next checkpoint. The
 bootstrap/workload commits contain the literal `\\n` body sequences noted in
 state; they are preserved because history rewriting is prohibited.
+
+## Corrective closeout
+
+The post-review corrective slice preserved the historical benchmark
+directories and added a separate corrected matrix under
+`.agent/benchmarks/image-opt-phase2-raster/corrections/`.
+
+- `926b5387b` and `aff5f5ede` add and fix direct APPLY_COLOR2 alpha parity for
+  `0xAAxxxxxx` inputs.
+- `6b5562b4a` and `4572797fc` cover and fix native-backing mutation
+  invalidation, including mutable Graphics aliases and generation changes.
+- `f3123be0c` and `74c4d5501` cover and fix zero-copy allocation-failure
+  cleanup, retry behavior, and stable process-global decode masks.
+- `d17ae57db`, `f7dc80637`, `a58a6b4c4`, and `374381d3f` extend the shared
+  conservative opaque-copy path through trivial draw plans and native mutable
+  targets, with the failure hook registered in the native table.
+- `4a0ec8495`, `f162c981c`, `7cfa7521f`, `4af79bc0c`, and `b15aca032` batch
+  the benchmark work, move full hashing outside timing, enforce the 30 ms
+  floor, and recapture the final matrix.
+- `736ac7c45` records the corrected decode, opacity, opaque-draw, and
+  readback/color CSVs, summaries, and reports. The final gate passed the
+  focused Image tests, SDK distribution, Release software-Skia native build,
+  smoke-test compilation, and direct color, opacity, zero-copy, and draw-plan
+  smokes.

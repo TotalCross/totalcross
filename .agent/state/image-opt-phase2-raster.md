@@ -6,44 +6,43 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T15:02:01-03:00
+Updated: 2026-09-05T17:17:06-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
-Phase-3 base SHA: `13e6653d4`
+Phase-3 base SHA: `736ac7c45`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
 
-Milestones 0 through 5 are complete. The branch was created from
-the final phase-1 branch HEAD, the four benchmark workloads and
-argument-capable runner are committed, zero-copy S1/S2/S3 was captured for PNG
-and JPEG, and the opt-in PNG/JPEG direct decode path is implemented with
-semantic retry/parity coverage. Opacity metadata is implemented with
-source/decode proofs, cached backing state, and conservative invalidation.
-Opacity S1 covers all four required fixture kinds at `f4f1a6ad9`; S2/S3 is
-recorded at `f6a4e1227`. The guarded software-renderer writePixels path and
-pixel-parity smoke are committed at `eb192e6fe` and `c590ec290`; its S1/S2/S3
-evidence is under `opaque-draw/`.
+The phase implementation and corrective closeout are complete. The branch was
+created from the final phase-1 branch HEAD, the four benchmark workloads and
+argument-capable runner are committed, and the opt-in PNG/JPEG direct decode
+path has semantic retry/parity coverage. The final corrective pass also
+verified direct APPLY_COLOR2 alpha parity, native-backing mutation
+invalidation, zero-copy allocation-failure cleanup, process-global masks, and
+the shared conservative raster-copy eligibility helper used by ordinary draws
+and trivial draw plans. The historical S1/S2/S3 artifacts remain untouched;
+the corrected batched recapture is under `benchmarks/.../corrections/`.
 
-## Next concrete action
+## Last completed slice
 
 The row-readback/direct-color S1 baseline is captured at `8f52cfdf9` in
 `readback-color/`. The implementation is committed at `da324f3d8` with the
-native row bridge follow-up at `ee7b90051`. The final S2/S3 matrix passed for
-pixels, encoding, and color; checksums matched S1, row scratch was 7,840 bytes,
-and direct color materialization recorded 63 hits. The batched native row
-bridge was added after the first implementation smoke to remove a per-row VM
-call overhead and was revalidated with the full matrix.
+native row bridge follow-up at `ee7b90051`; the corrective batched matrix is
+recorded by `736ac7c45`. The final S2/S3 matrix passed for pixels, encoding,
+color, decode, opacity, and opaque draws. Full output hashes were stable,
+all timed samples cleared the 30 ms floor, and metadata-disabled opaque draws
+performed one cached fallback scan per backing generation.
 
 ## Final validation
 
 Focused Image tests, SDK distribution, final Release software-Skia Ninja
-build, the native Image smoke family, and the final readback/color S2/S3
-matrix all passed. The final native smoke family covered modifier/color,
-geometry, materialization, zero-copy decode, presentation state, deferred
-frame/fade, and modifier RSS memory behavior. The phase is complete. The exact
-phase-3 base is `13e6653d4`; the subsequent state-only checkpoint records that
-SHA without changing runtime or benchmark artifacts.
+build, smoke-test compilation, the corrective native Image smoke family, and
+the final corrected benchmark matrix all passed. The focused corrective smokes
+covered direct color parity, mutable opacity invalidation, zero-copy retry and
+cleanup, and trivial draw-plan writes. The exact phase-3 source/evidence base
+is `736ac7c45`; subsequent documentation-only closeout commits do not change
+runtime or benchmark artifacts.
 
 ## Active paths
 
@@ -57,13 +56,14 @@ SHA without changing runtime or benchmark artifacts.
 
 ## Validation
 
-SDK `dist -x test`, smoke-test Java compilation, Release macOS software-Skia
-CMake/Ninja, native materialization/JPEG smokes, zero-copy parity/retry smoke,
-benchmark deployment, and the shared 60-sample RSS-aware runner passed. PNG S1
-median/P95 was 4/4 ms with 139264 KiB peak RSS; JPEG S1 median/P95 was 20/21 ms
-with 162512 KiB peak RSS. S2/S3 showed no disabled timing regression; enabled
-JPEG median was 16 ms and copied decode bytes fell to zero. Full raw samples
-and compact summaries are under `.agent/benchmarks/image-opt-phase2-raster/zero-copy/`.
+SDK `dist -x test`, focused `totalcross.ui.image.*` tests, smoke-test Java
+compilation, Release macOS software-Skia CMake/Ninja, four corrective native
+Image smokes, benchmark deployment, and the shared 60-sample RSS-aware runner
+passed. The corrected reports under
+`.agent/benchmarks/image-opt-phase2-raster/corrections/` retain full CSV
+samples, stable full-content hashes, proof counters, and the disabled-metadata
+fallback scan. The historical reports under the original item directories
+remain preserved for comparison.
 
 ## Deferred validation
 
