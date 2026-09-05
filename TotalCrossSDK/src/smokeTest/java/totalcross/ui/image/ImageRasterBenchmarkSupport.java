@@ -30,6 +30,30 @@ final class ImageRasterBenchmarkSupport {
     }
   }
 
+  static void configureAllRasterFeatures(String scenario) {
+    require("pre".equals(scenario) || "post-disabled".equals(scenario)
+        || "post-enabled".equals(scenario), "invalid scenario");
+    ImageOptimizationSettings.resetForTest();
+    if ("pre".equals(scenario)) {
+      return;
+    }
+    for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
+      ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
+    }
+    if ("post-enabled".equals(scenario)) {
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.DECODE_ZERO_COPY,
+          ImageOptimizationSettings.ENABLED);
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_OPACITY_METADATA,
+          ImageOptimizationSettings.ENABLED);
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
+          ImageOptimizationSettings.ENABLED);
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_ROW_READBACK,
+          ImageOptimizationSettings.ENABLED);
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION,
+          ImageOptimizationSettings.ENABLED);
+    }
+  }
+
   static byte[] resource(String path) {
     byte[] bytes = Vm.getFile(path);
     require(bytes != null && bytes.length > 0, "resource " + path);
