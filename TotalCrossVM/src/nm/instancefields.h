@@ -186,6 +186,8 @@
 
 // totalcross.ui.image.NativeImageBacking
 #define NativeImageBacking_nativeHandle(o) FIELD_I64(o, OBJ_CLASS(o), 0)
+#define NativeImageBacking_width(o)        FIELD_I32(o, 0)
+#define NativeImageBacking_height(o)       FIELD_I32(o, 1)
 
 // totalcross/ui/image/EncodedImageSource
 #define EncodedImageSource_nativeBag(o) FIELD_I64(o, OBJ_CLASS(o), 0)

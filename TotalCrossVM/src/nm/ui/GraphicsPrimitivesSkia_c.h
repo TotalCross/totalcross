@@ -6,6 +6,13 @@
 #define GRAPHICSPRIMITIVESSKIA_HELPER_H
 
 #ifdef SKIA_H
+#include "skia/skia_image_backing.h"
+static bool isNativeImageBacking(TCObject backing)
+{
+   return backing != null && strEq(OBJ_CLASS(backing)->name,
+      "totalcross.ui.image.NativeImageBacking");
+}
+
 static int32 skiaSurfaceForGraphics(TCObject g)
 {
    int32 surfaceId;
@@ -17,11 +24,19 @@ static int32 skiaSurfaceForGraphics(TCObject g)
       if (image == null)
          return SKIA_INVALID_SURFACE_ID;
 
-      surfaceId = Image_textureId(image);
-      if (surfaceId < 0)
+      surfaceId = SKIA_INVALID_SURFACE_ID;
+      TCObject backing = Image_backing(image);
+      if (isNativeImageBacking(backing)) {
+         surfaceId = skia_image_backing_surface_id(NativeImageBacking_nativeHandle(backing));
+      }
+      if (surfaceId == SKIA_INVALID_SURFACE_ID)
+         surfaceId = Image_textureId(image);
+      if (surfaceId == SKIA_INVALID_SURFACE_ID)
       {
          int32 frameCount = Image_frameCount(image);
          TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(image) : Image_pixels(image);
+         if (pixelsObj == null)
+            return SKIA_INVALID_SURFACE_ID;
          Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
          int32 width = frameCount > 1 ? Image_widthOfAllFrames(image) : Image_width(image);
          int32 height = Image_height(image);
@@ -33,7 +48,7 @@ static int32 skiaSurfaceForGraphics(TCObject g)
       }
    }
 
-   if (surfaceId >= SKIA_SCREEN_SURFACE_ID)
+   if (surfaceId != SKIA_INVALID_SURFACE_ID)
       skia_setSurfaceScale(surfaceId, Graphics_contentScale(g));
    return surfaceId;
 }
@@ -301,18 +316,6 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          }
       }
 
-      int32 id = Image_textureId(srcSurf);
-      if (id < 0) {
-         TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(srcSurf) : Image_pixels(srcSurf);
-         Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
-         int32 width = frameCount > 1 ? Image_widthOfAllFrames(srcSurf) : Image_width(srcSurf);
-         int32 height = Image_height(srcSurf);
-         Image_textureId(srcSurf) = skia_makeBitmap(SKIA_SCREEN_SURFACE_ID, pixels, width, height);
-         if (Image_textureId(srcSurf) >= 0) {
-            Image_changed(srcSurf) = false;
-         }
-      }
-
       if (doClip) {
          skia_setClip(skiaSurfaceForGraphics(dstSurf), Get_Clip(dstSurf));
          clipSet = true;
@@ -327,13 +330,42 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          }
       }
 
-      skia_drawSurface(skiaSurfaceForGraphics(dstSurf), Image_textureId(srcSurf),
-         (float)(srcX / scaleW + frame * Image_width(srcSurf)),
-         (float)(srcY / scaleH),
-         (float)((srcX + w) / scaleW + frame * Image_width(srcSurf)),
-         (float)((srcY + h) / scaleH),
-         (float)dstX, (float)dstY, (float)(dstX + w), (float)(dstY + h),
-         Image_alphaMask(srcSurf));
+      TCObject backing = Image_backing(srcSurf);
+      if (isNativeImageBacking(backing)) {
+         if (!skia_image_backing_draw_to_surface(skiaSurfaceForGraphics(dstSurf),
+               NativeImageBacking_nativeHandle(backing),
+               (float)(srcX / scaleW + frame * Image_width(srcSurf)),
+               (float)(srcY / scaleH),
+               (float)((srcX + w) / scaleW + frame * Image_width(srcSurf)),
+               (float)((srcY + h) / scaleH),
+               (float)dstX, (float)dstY, (float)(dstX + w), (float)(dstY + h),
+               Image_alphaMask(srcSurf))) {
+            if (clipSet) {
+               skia_restoreClip(skiaSurfaceForGraphics(dstSurf));
+            }
+            return;
+         }
+      } else {
+         int32 id = Image_textureId(srcSurf);
+         if (id < 0) {
+            TCObject pixelsObj = frameCount > 1 ? Image_pixelsOfAllFrames(srcSurf) : Image_pixels(srcSurf);
+            Pixel* pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+            int32 width = frameCount > 1 ? Image_widthOfAllFrames(srcSurf) : Image_width(srcSurf);
+            int32 height = Image_height(srcSurf);
+            Image_textureId(srcSurf) = skia_makeBitmap(SKIA_SCREEN_SURFACE_ID, pixels, width, height);
+            if (Image_textureId(srcSurf) >= 0) {
+               Image_changed(srcSurf) = false;
+            }
+            id = Image_textureId(srcSurf);
+         }
+         skia_drawSurface(skiaSurfaceForGraphics(dstSurf), id,
+            (float)(srcX / scaleW + frame * Image_width(srcSurf)),
+            (float)(srcY / scaleH),
+            (float)((srcX + w) / scaleW + frame * Image_width(srcSurf)),
+            (float)((srcY + h) / scaleH),
+            (float)dstX, (float)dstY, (float)(dstX + w), (float)(dstY + h),
+            Image_alphaMask(srcSurf));
+      }
       if (clipSet) {
          skia_restoreClip(skiaSurfaceForGraphics(dstSurf));
       }
