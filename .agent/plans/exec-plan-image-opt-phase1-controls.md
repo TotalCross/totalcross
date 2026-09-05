@@ -403,15 +403,11 @@ Acceptance:
 
 ### Milestone 3 — Finalize the reusable protocol and handoff
 
-Finalize `.agent/design/image-optimization-benchmark-protocol.md` from the
-measurement regime actually used. Do not copy raw tables into the plan.
-
-Run final focused Image tests, SDK dist, macOS Release build only if the previous
-milestone build is no longer at HEAD, and the relevant native image smokes.
-
-Update state, evidence, archive, and editorial report. The editorial report must
-state measured control overhead, exact sample regime, known measurement limits,
-and the branch HEAD that phase 2 must use.
+Finalize `.agent/design/image-optimization-benchmark-protocol.md` from the actual
+regime; do not copy raw tables into the plan. Run final focused Image tests, SDK
+dist, macOS Release only if the previous build is not at HEAD, and relevant Image
+smokes. Update state, evidence, archive, and editorial report with overhead,
+regime, limits, and the phase-2 branch HEAD.
 
 ## Validation and Acceptance
 
@@ -442,35 +438,31 @@ Final acceptance requires:
 - no new file above 20 KiB/~600 lines;
 - no public stable API added;
 - all future optimization toggles default to disabled/current behavior;
-- S1/S2/S3 control benchmark report committed;
+- S1/S2/S3 control reports, including the corrective gate item, committed;
 - no confirmed >5% disabled-path regression;
 - phase-2 handoff SHA recorded.
 
 ## Risks and Open Questions
 
-If an internal feature would require changing public Image ABI/stable API,
-stop that slice and record the blocker; do not invent another surface.
+If an internal feature requires public Image ABI/stable API, stop and record a
+blocker; do not invent another surface.
 
-If benchmark timing is too coarse, increase operations per measured batch; do
-not switch to a different benchmark regime between scenarios.
+If timing is too coarse, increase operations per batch; keep the regime fixed.
 
-If the existing Gradle smoke registration cannot pass a benchmark mode through
-the deployed executable, use `MainWindow.getCommandLine()` and invoke the
-deployed executable directly from the benchmark runner. Do not introduce a
-second runtime configuration mechanism.
+If Gradle cannot pass a benchmark mode, use `MainWindow.getCommandLine()` and
+invoke the deployed executable from the runner; do not add another runtime
+configuration mechanism.
 
 ## Idempotence and Recovery
 
 Never delete or reset unrelated local changes.
 
-Repeated benchmark runs may overwrite only the exact scenario artifact for the
-same commit and workload. If the commit SHA differs, create a new result file or
-replace the old one only when state explicitly marks the previous run invalid.
+Repeated runs may overwrite only the exact scenario artifact for the same
+commit/workload; a differing SHA requires a new file or explicit invalidation.
 
-Build directories and `artifacts/image-opt-phase1-controls/` remain
-uncommitted. On interruption, resume from state, verify HEAD and the last
-committed scenario, and continue the recorded next action. Do not rerun completed
-benchmarks unless source, binary revision, or measurement regime changed.
+Build directories and `artifacts/image-opt-phase1-controls/` remain uncommitted.
+On interruption, resume from state, verify HEAD/last scenario, and rerun only
+if source, binary revision, or regime changed.
 
 ## Progress
 
@@ -480,6 +472,8 @@ benchmarks unless source, binary revision, or measurement regime changed.
 - [x] Implement internal settings, focused tests, and diagnostics gating.
 - [x] Run and commit S2/S3 plus the control-plumbing benchmark report.
 - [x] Complete final validation and record the phase-2 handoff.
+- [x] Correct complete diagnostic accounting gating and record its S1/S2/S3
+  evidence without overwriting the original control report.
 
 ## Decision Log
 
@@ -508,9 +502,14 @@ Phase 1 delivered package-private tri-state controls for 13 feature IDs,
 validated byte settings, an effective mask, and a no-op pressure hook. Only
 `DIAGNOSTIC_ACCOUNTING` is connected; other features remain inert.
 
-The S1/S2/S3 workload used 60 samples after three warmups on one macOS arm64
-software-Skia host: medians were 668, 669 (+0.15%), and 669 ms (+0.15%);
-peak RSS deltas were -0.16% and +1.44%. CV stayed below 5%, so no 200-sample
-rerun was required. Final Image tests, SDK distribution, macOS build, and
-relevant native smokes passed. Other platforms and later optimizations remain
+The original control-plumbing report remains historical. Its corrective
+complete-gating item used 60 samples after three warmups on one macOS arm64
+software-Skia host: medians were 676, 677 (+0.148%), and 671 (-0.740%) ms;
+peak RSS deltas were +0.360% and +0.346%. S2 recorded zero for every emitted
+diagnostic field. S3 recorded nonzero Java pipeline/draw-plan, readback, and
+native backing create/release counters. CV stayed below 0.25%, so no 200-sample
+rerun was required. Focused Image tests, SDK distribution, macOS Release
+CMake/Ninja, exact-dylib deployment, and relevant Image smokes passed. The
+corrected implementation/evidence handoff is `884ffcb61`; final documentation
+is the current branch HEAD. Other platforms and later optimizations remain
 deferred.
