@@ -1,0 +1,1 @@
+{"timestamp":"2026-09-05T00:00:00-03:00","revision":"86bfeafe388ce866236c3ae58eecb144664895e2","milestone":"bootstrap","status":"started","branch":"perf/image-opt-phase3-formats","parent":"perf/image-opt-phase2-raster","scope":"created from the exact accepted Phase-2 HEAD; no Phase-3 build, smoke, or benchmark run"}
