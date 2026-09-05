@@ -44,8 +44,8 @@ public class ImageZeroCopyDecodeSmokeApp extends MainWindow {
       boolean failed = false;
       try {
         retryImage.getPixels();
-      } catch (TransientImageMaterializationException expected) {
-        failed = true;
+      } catch (IllegalStateException expected) {
+        failed = containsTransientFailure(expected);
       }
       int[] retriedPixels = retryImage.getPixels();
       retry = failed && retriedPixels != null && Image.zeroCopyDecodeCountForTest() > 0;
@@ -100,6 +100,15 @@ public class ImageZeroCopyDecodeSmokeApp extends MainWindow {
     if (!condition) {
       throw new IllegalStateException(message);
     }
+  }
+
+  private static boolean containsTransientFailure(Throwable failure) {
+    for (Throwable current = failure; current != null; current = current.getCause()) {
+      if (current instanceof TransientImageMaterializationException) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static final class DecodeResult {
