@@ -39,7 +39,7 @@ final class ImageOptimizationSettings {
     checkState(state);
     states[feature] = state;
     if (feature == DIAGNOSTIC_ACCOUNTING) {
-      Image.imageOperationAccountingForTest = state == ENABLED;
+      Image.setDiagnosticAccountingForTest(state == ENABLED);
     }
   }
 
@@ -91,7 +91,7 @@ final class ImageOptimizationSettings {
     }
     cacheMaxBytes = DEFAULT_CACHE_MAX_BYTES;
     mmapThresholdBytes = DEFAULT_MMAP_THRESHOLD_BYTES;
-    Image.imageOperationAccountingForTest = false;
+    Image.setDiagnosticAccountingForTest(false);
   }
 
   static void triggerMemoryPressureForTest() {
