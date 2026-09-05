@@ -94,6 +94,68 @@ TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeIm
 #endif
 }
 
+TC_API void tuiNIB_resetAccountingTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static void resetAccountingTestNative();
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_reset_accounting_for_test();
+#endif
+   UNUSED(p);
+}
+
+TC_API void tuiNIB_backingCreatedTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static long backingCreatedTestNative();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_records_created_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_backingReleasedTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static long backingReleasedTestNative();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_records_released_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_backingLiveTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static long backingLiveTestNative();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_records_live_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_backingPeakLiveTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static long backingPeakLiveTestNative();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_records_peak_live_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_backingBytesLiveTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long backingBytesLiveTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_bytes_live_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_backingPeakBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long backingPeakBytesTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_bytes_peak_live_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_createFromArgbPixels_Iii(NMParams p) // totalcross/ui/image/NativeImageBacking private static long createFromArgbPixelsNative(int[] pixels, int width, int height);
 {
 #if TC_RENDERER_SKIA
@@ -157,6 +219,7 @@ TC_API void tuiNIB_materializeGeometryNative(NMParams p) // totalcross/ui/image/
    TCObject operations;
    TCObject parameters;
    TCObject dimensions;
+   TCObject presentation;
    SkiaImageDrawPlanData data;
    if (!plan || !(root = ImageDrawPlan_root(plan)) ||
        !Image_backing(root) || !strEq(OBJ_CLASS(Image_backing(root))->name,
@@ -195,6 +258,21 @@ TC_API void tuiNIB_materializeGeometryNative(NMParams p) // totalcross/ui/image/
    data.hwScaleH = ImageDrawPlan_hwScaleH(plan);
    data.rootHwScaleW = ImageDrawPlan_rootHwScaleW(plan);
    data.rootHwScaleH = ImageDrawPlan_rootHwScaleH(plan);
+   presentation = ImageDrawPlan_presentation(plan);
+   if (!presentation) {
+      presentation = root;
+   }
+   if (presentation) {
+      const int32 presentationAlpha = Image_alphaMask(presentation);
+      data.currentFrame = Image_currentFrame(presentation);
+      data.transparentColor = Image_transparentColor(presentation);
+      data.outputAlphaMask = presentationAlpha;
+      data.alphaMask = data.materializeAlphaMask == 255
+         ? presentationAlpha
+         : (data.materializeAlphaMask * presentationAlpha + 127) / 255;
+      data.hwScaleW = Image_hwScaleW(presentation);
+      data.hwScaleH = Image_hwScaleH(presentation);
+   }
    if (data.operationCount <= 0 || data.operationCount * 4 > ARRAYOBJ_LEN(parameters)
        || data.operationCount * 2 > ARRAYOBJ_LEN(dimensions)) {
       p->retL = 0;

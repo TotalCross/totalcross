@@ -196,7 +196,7 @@ final class EncodedImageSource extends ImageSource {
     }
   }
 
-  synchronized ImageBacking decodedBackingForReuse(int requestedDenominator) {
+  ImageBacking decodedBackingForReuse(int requestedDenominator) {
     if (requestedDenominator <= 0 || decodedBacking == null || !decodedBacking.isValid()
         || decodedWidth <= 0 || decodedHeight <= 0 || decodedDenominator <= 0
         || decodedDenominator > requestedDenominator) {
@@ -205,23 +205,23 @@ final class EncodedImageSource extends ImageSource {
     return decodedBacking;
   }
 
-  synchronized int decodedWidth() {
+  int decodedWidth() {
     return decodedWidth;
   }
 
-  synchronized int decodedHeight() {
+  int decodedHeight() {
     return decodedHeight;
   }
 
-  synchronized int decodedDenominator() {
+  int decodedDenominator() {
     return decodedDenominator;
   }
 
-  synchronized long decodedGeneration() {
+  long decodedGeneration() {
     return decodedGeneration;
   }
 
-  synchronized void installDecodedBacking(ImageBacking backing, int width, int height, int denominator) {
+  void installDecodedBacking(ImageBacking backing, int width, int height, int denominator) {
     if (backing == null || !backing.isValid() || width <= 0 || height <= 0
         || (denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8)) {
       throw new IllegalArgumentException("Invalid decoded image backing");
@@ -237,7 +237,7 @@ final class EncodedImageSource extends ImageSource {
     decodedGeneration++;
   }
 
-  synchronized void evictDecodedBacking() {
+  void evictDecodedBacking() {
     if (decodedBacking == null && decodedWidth == 0 && decodedHeight == 0 && decodedDenominator == 0) {
       return;
     }
