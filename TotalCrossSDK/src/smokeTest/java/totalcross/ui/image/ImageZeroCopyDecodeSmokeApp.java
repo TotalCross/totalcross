@@ -16,6 +16,8 @@ public class ImageZeroCopyDecodeSmokeApp extends MainWindow {
     boolean pngCounter = false;
     boolean jpegCounter = false;
     boolean retry = false;
+    boolean pngFailureCleanup = false;
+    boolean jpegFailureCleanup = false;
     String error = "";
     String step = "start";
 
@@ -55,15 +57,23 @@ public class ImageZeroCopyDecodeSmokeApp extends MainWindow {
       }
       int[] retriedPixels = retryImage.getPixels();
       retry = failed && retriedPixels != null && Image.zeroCopyDecodeCountForTest() > 0;
+
+      step = "png-final-buffer-failure";
+      pngFailureCleanup = failureAfterFinalBufferAllocation(png);
+      step = "jpeg-final-buffer-failure";
+      jpegFailureCleanup = failureAfterFinalBufferAllocation(jpeg);
     } catch (Throwable failure) {
       error = step + ":" + failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
-    boolean pass = pngParity && jpegParity && pngCounter && jpegCounter && retry && error.length() == 0;
+    boolean pass = pngParity && jpegParity && pngCounter && jpegCounter && retry
+        && pngFailureCleanup && jpegFailureCleanup && error.length() == 0;
     System.out.println("fixture=ImageZeroCopyDecodeSmokeApp,pngParity=" + pngParity
         + ",jpegParity=" + jpegParity + ",pngCounter=" + pngCounter
-        + ",jpegCounter=" + jpegCounter + ",retry=" + retry + ",overallPass=" + pass
+        + ",jpegCounter=" + jpegCounter + ",retry=" + retry
+        + ",pngFailureCleanup=" + pngFailureCleanup
+        + ",jpegFailureCleanup=" + jpegFailureCleanup + ",overallPass=" + pass
         + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();
     exit(pass ? 0 : 1);
@@ -77,6 +87,25 @@ public class ImageZeroCopyDecodeSmokeApp extends MainWindow {
     return new DecodeResult(pixels, image.getPixelWidth(), image.getPixelHeight(),
         Image.zeroCopyDecodeCountForTest(), Image.copiedDecodeCountForTest(),
         Image.decodeFinalBufferBytesForTest());
+  }
+
+  private static boolean failureAfterFinalBufferAllocation(byte[] encoded) throws Exception {
+    configure(true);
+    Image.resetImageOperationAccountingForTest();
+    Image image = new Image(encoded, encoded.length);
+    long liveBefore = NativeImageBacking.backingRecordsLiveForTest();
+    Image.failNextZeroCopyDecodeAfterAllocationForTest();
+    boolean failed = false;
+    try {
+      image.getPixels();
+    } catch (IllegalStateException expected) {
+      failed = containsTransientFailure(expected);
+    }
+    boolean noBacking = image.backing == null || !image.backing.isValid();
+    boolean noLeak = NativeImageBacking.backingRecordsLiveForTest() == liveBefore;
+    int[] retried = image.getPixels();
+    return failed && noBacking && noLeak && retried != null
+        && Image.zeroCopyDecodeCountForTest() > 0;
   }
 
   private static void configure(boolean zeroCopy) {
