@@ -579,6 +579,43 @@ int skia_image_backing_read_rgba_row(int64_t handle, void* output, int32 y, int3
     return readRgbaBytes(findBacking(handle), output, 0, y, width, 1) ? 1 : 0;
 }
 
+int skia_image_backing_read_argb_rows(int64_t handle, Pixel* output, int32 y, int32 width,
+                                      int32 height) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    if (!backing || !output || y < 0 || width <= 0 || height <= 0
+        || width > backing->width || y > backing->height - height) {
+        return 0;
+    }
+    try {
+        const size_t rowBytes = static_cast<size_t>(width) * 4;
+        std::vector<uint8_t> rgba(rowBytes);
+        const SkImageInfo info = rasterInfo(width, 1);
+        for (int32 row = 0; row < height; ++row) {
+            const int32 sourceY = y + row;
+            bool copied = false;
+            if (backing->surface) {
+                copied = backing->surface->readPixels(info, rgba.data(), rowBytes, 0, sourceY);
+            } else if (backing->image) {
+                copied = backing->image->readPixels(info, rgba.data(), rowBytes, 0, sourceY);
+            }
+            if (!copied) {
+                return 0;
+            }
+            Pixel* target = output + static_cast<size_t>(row) * width;
+            for (int32 x = 0; x < width; ++x) {
+                const uint8_t* pixel = rgba.data() + static_cast<size_t>(x) * 4;
+                target[x] = (static_cast<Pixel>(pixel[3]) << 24)
+                    | (static_cast<Pixel>(pixel[0]) << 16)
+                    | (static_cast<Pixel>(pixel[1]) << 8)
+                    | static_cast<Pixel>(pixel[2]);
+            }
+        }
+        return 1;
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
 void skia_image_backing_release(int64_t handle) {
     if (handle != 0) {
         auto alias = backingAliases.find(handle);

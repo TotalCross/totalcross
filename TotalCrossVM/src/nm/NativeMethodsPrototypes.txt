@@ -125,6 +125,7 @@ TC_API void tuiNIB_scaleNative_iib(NMParams p);
 TC_API void tuiNIB_materializeGeometryNative(NMParams p);
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p);
 TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p);
+TC_API void tuiNIB_readArgbRowsNative_Iiii(NMParams p);
 TC_API void tuiNIB_opacityNative(NMParams p);
 TC_API void tuiNIB_writePixelsAttemptsTest(NMParams p);
 TC_API void tuiNIB_writePixelsHitsTest(NMParams p);
@@ -1107,6 +1108,10 @@ TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p) // totalcross/ui/image/Na
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean readRgbaRowNative(byte []output, int y, int width);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_readArgbRowsNative_Iiii(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean readArgbRowsNative(int []output, int y, int width, int height);
 {
 }
 //////////////////////////////////////////////////////////////////////////
