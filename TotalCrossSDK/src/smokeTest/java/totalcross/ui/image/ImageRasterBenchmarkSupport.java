@@ -10,6 +10,9 @@ import totalcross.ui.gfx.Graphics;
 
 /** Shared setup and reporting helpers for phase-2 raster benchmark apps. */
 final class ImageRasterBenchmarkSupport {
+  private static final long FNV_OFFSET = 0xcbf29ce484222325L;
+  private static final long FNV_PRIME = 0x100000001b3L;
+
   private ImageRasterBenchmarkSupport() {
   }
 
@@ -52,6 +55,34 @@ final class ImageRasterBenchmarkSupport {
     Image image = new Image(encoded, encoded.length);
     require(image.getGraphics() != null, "decoded image graphics");
     return image;
+  }
+
+  static long fullPixelHash(Image image) {
+    return fullPixelHash(image.getPixels());
+  }
+
+  static long fullPixelHash(int[] pixels) {
+    require(pixels != null, "pixel output");
+    long hash = FNV_OFFSET;
+    for (int pixel : pixels) {
+      hash ^= pixel & 0xFFFFFFFFL;
+      hash *= FNV_PRIME;
+    }
+    return hash;
+  }
+
+  static long fullByteHash(byte[] bytes, int length) {
+    require(bytes != null && length >= 0 && length <= bytes.length, "byte output");
+    long hash = FNV_OFFSET;
+    for (int i = 0; i < length; i++) {
+      hash ^= bytes[i] & 0xFFL;
+      hash *= FNV_PRIME;
+    }
+    return hash;
+  }
+
+  static String hashString(long hash) {
+    return Long.toHexString(hash);
   }
 
   static byte[] copy(byte[] source, int length) {
