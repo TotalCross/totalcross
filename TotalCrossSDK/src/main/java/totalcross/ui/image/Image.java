@@ -190,9 +190,7 @@ public class Image extends GfxSurface {
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
     backingReadbackCountForTest = 0;
-    boolean enabled = imageOperationAccountingForTest;
-    NativeImageBacking.resetBackingAccountingForTest();
-    NativeImageBacking.setBackingAccountingForTest(enabled);
+    NativeImageBacking.clearBackingAccountingCountersForTest();
   }
 
   static int imageCreatedCountForTest() {

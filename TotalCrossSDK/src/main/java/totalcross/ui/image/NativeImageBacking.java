@@ -100,6 +100,10 @@ final class NativeImageBacking extends ImageBacking {
     backingAccountingEnabledForTest = true;
   }
 
+  static void clearBackingAccountingCountersForTest() {
+    clearAccountingTestNative();
+  }
+
   static void setBackingAccountingForTest(boolean enabled) {
     backingAccountingEnabledForTest = enabled;
   }
@@ -264,6 +268,10 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static void resetAccountingTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void clearAccountingTestNative() {
   }
 
   @ReplacedByNativeOnDeploy
