@@ -390,6 +390,9 @@ static bool directApplyColor2(NativeImageBackingRecord* source, int32 parameter1
             }
             for (size_t i = 0; i < row.size(); i += 4) {
                 if (row[i + 3] != 0) {
+                    const int originalRed = row[i];
+                    const int originalGreen = row[i + 1];
+                    const int originalBlue = row[i + 2];
                     row[i] = static_cast<uint8_t>(clampChannel(
                         row[i] * targetRed / analysis.highestRed));
                     row[i + 1] = static_cast<uint8_t>(clampChannel(
@@ -397,7 +400,8 @@ static bool directApplyColor2(NativeImageBackingRecord* source, int32 parameter1
                     row[i + 2] = static_cast<uint8_t>(clampChannel(
                         row[i + 2] * targetBlue / analysis.highestBlue));
                     if (changeAlpha) {
-                        const int brightest = std::max(row[i], std::max(row[i + 1], row[i + 2]));
+                        const int brightest = std::max(originalRed,
+                            std::max(originalGreen, originalBlue));
                         row[i + 3] = static_cast<uint8_t>(clampChannel(
                             brightest * 255 / analysis.highestChannel));
                     }
