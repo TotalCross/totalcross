@@ -470,12 +470,20 @@ void skia_image_backing_release(int64_t handle) {
 }
 
 void skia_image_backing_reset_accounting_for_test(void) {
+    backingAccountingForTest = true;
+    skia_image_backing_clear_accounting_counters_for_test();
+}
+
+void skia_image_backing_clear_accounting_counters_for_test(void) {
     backingRecordsCreatedForTest = 0;
     backingRecordsReleasedForTest = 0;
     backingRecordsLiveForTest = 0;
     backingRecordsPeakLiveForTest = 0;
     backingBytesLiveForTest = 0;
     backingBytesPeakLiveForTest = 0;
+    if (!backingAccountingForTest) {
+        return;
+    }
     for (const auto& entry : backings) {
         if (entry.second) {
             ++backingRecordsLiveForTest;
@@ -484,7 +492,6 @@ void skia_image_backing_reset_accounting_for_test(void) {
     }
     backingRecordsPeakLiveForTest = backingRecordsLiveForTest;
     backingBytesPeakLiveForTest = backingBytesLiveForTest;
-    backingAccountingForTest = true;
 }
 
 void skia_image_backing_set_accounting_for_test(int enabled) {

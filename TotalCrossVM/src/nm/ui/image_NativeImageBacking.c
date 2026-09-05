@@ -102,6 +102,14 @@ TC_API void tuiNIB_resetAccountingTestNative(NMParams p) // totalcross/ui/image/
    UNUSED(p);
 }
 
+TC_API void tuiNIB_clearAccountingTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static void clearAccountingTestNative();
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_clear_accounting_counters_for_test();
+#endif
+   UNUSED(p);
+}
+
 TC_API void tuiNIB_backingCreatedTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static long backingCreatedTestNative();
 {
 #if TC_RENDERER_SKIA

@@ -1045,6 +1045,10 @@ TC_API void tuiNIB_resetAccountingTestNative(NMParams p) // totalcross/ui/image/
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_clearAccountingTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void clearAccountingTestNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_backingCreatedTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long backingCreatedTestNative();
 {
 }
