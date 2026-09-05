@@ -448,6 +448,7 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
         from(smokeTestClassesDir) {
             include 'totalcross/ui/image/' + appClass + '*.class'
             include 'totalcross/ui/image/ImageRasterBenchmarkSupport*.class'
+            include 'totalcross/ui/image/ImageCompactFormatsBenchmarkSupport*.class'
         }
         if (includeImageAbiResources) {
             from(smokeTestResourcesDir) {
@@ -795,6 +796,24 @@ registerImageMacSmoke('ImageRasterCombinedBenchmark', 'ImageRasterCombinedBenchm
         'fixture=ImageRasterCombinedBenchmarkApp',
         'overallPass=true'
     ])
+
+registerImageMacSmoke('ImageCompactFormatsBenchmark', 'ImageCompactFormatsBenchmarkApp',
+    'image-compact-formats-benchmark', false, false, [
+        'fixture=ImageCompactFormatsBenchmarkApp',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
+
+registerImageMacSmoke('ImageCompactFormatsSmoke', 'ImageCompactFormatsSmokeApp',
+    'image-compact-formats-smoke', false, false, [
+        'fixture=ImageCompactFormatsSmokeApp',
+        'selection=true',
+        'observerNonPromotion=true',
+        'promotion=true',
+        'decodeFailureRetry=true',
+        'promotionFailureRetry=true',
+        'writePixelsParity=true',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
 
 registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
     'image-diagnostic-accounting-gate-benchmark', false, false, [
