@@ -697,6 +697,8 @@ registerImageMacSmoke('ImageZeroCopyDecode', 'ImageZeroCopyDecodeSmokeApp',
         'pngCounter=true',
         'jpegCounter=true',
         'retry=true',
+        'pngFailureCleanup=true',
+        'jpegFailureCleanup=true',
         'overallPass=true'
     ])
 
