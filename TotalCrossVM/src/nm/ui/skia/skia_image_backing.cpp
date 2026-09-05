@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <algorithm>
 #include <limits>
 #include <map>
 #include <memory>
@@ -23,6 +24,41 @@ std::map<int64_t, int32> backingAliases;
 int64_t nextHandle = 1;
 int32 nextSurfaceAlias = std::numeric_limits<int32>::min() + 1;
 bool failNextSnapshotAllocationForTest;
+bool backingAccountingForTest;
+uint64_t backingRecordsCreatedForTest;
+uint64_t backingRecordsReleasedForTest;
+uint64_t backingRecordsLiveForTest;
+uint64_t backingRecordsPeakLiveForTest;
+uint64_t backingBytesLiveForTest;
+uint64_t backingBytesPeakLiveForTest;
+
+uint64_t backingBytes(const NativeImageBackingRecord& backing) {
+    return static_cast<uint64_t>(backing.width) * static_cast<uint64_t>(backing.height) * 4;
+}
+
+void recordBackingCreated(const NativeImageBackingRecord& backing) {
+    if (!backingAccountingForTest) {
+        return;
+    }
+    const uint64_t bytes = backingBytes(backing);
+    ++backingRecordsCreatedForTest;
+    ++backingRecordsLiveForTest;
+    backingBytesLiveForTest += bytes;
+    backingRecordsPeakLiveForTest = std::max(backingRecordsPeakLiveForTest, backingRecordsLiveForTest);
+    backingBytesPeakLiveForTest = std::max(backingBytesPeakLiveForTest, backingBytesLiveForTest);
+}
+
+void recordBackingReleased(const NativeImageBackingRecord& backing) {
+    if (!backingAccountingForTest) {
+        return;
+    }
+    ++backingRecordsReleasedForTest;
+    if (backingRecordsLiveForTest > 0) {
+        --backingRecordsLiveForTest;
+    }
+    const uint64_t bytes = backingBytes(backing);
+    backingBytesLiveForTest = backingBytesLiveForTest >= bytes ? backingBytesLiveForTest - bytes : 0;
+}
 
 skia_image_backing_internal::NativeImageBackingRecord* findBacking(int64_t handle) {
     auto found = backings.find(handle);
@@ -35,7 +71,11 @@ int64_t registerBackingRecord(std::unique_ptr<skia_image_backing_internal::Nativ
     }
     const int64_t handle = nextHandle++;
     try {
-        backings.emplace(handle, std::move(backing));
+        auto inserted = backings.emplace(handle, std::move(backing));
+        if (!inserted.second) {
+            return 0;
+        }
+        recordBackingCreated(*inserted.first->second);
     } catch (const std::bad_alloc&) {
         return 0;
     }
@@ -421,6 +461,52 @@ void skia_image_backing_release(int64_t handle) {
             surfaceAliases.erase(alias->second);
             backingAliases.erase(alias);
         }
-        backings.erase(handle);
+        auto found = backings.find(handle);
+        if (found != backings.end()) {
+            recordBackingReleased(*found->second);
+            backings.erase(found);
+        }
     }
+}
+
+void skia_image_backing_reset_accounting_for_test(void) {
+    backingRecordsCreatedForTest = 0;
+    backingRecordsReleasedForTest = 0;
+    backingRecordsLiveForTest = 0;
+    backingRecordsPeakLiveForTest = 0;
+    backingBytesLiveForTest = 0;
+    backingBytesPeakLiveForTest = 0;
+    for (const auto& entry : backings) {
+        if (entry.second) {
+            ++backingRecordsLiveForTest;
+            backingBytesLiveForTest += backingBytes(*entry.second);
+        }
+    }
+    backingRecordsPeakLiveForTest = backingRecordsLiveForTest;
+    backingBytesPeakLiveForTest = backingBytesLiveForTest;
+    backingAccountingForTest = true;
+}
+
+uint64_t skia_image_backing_records_created_for_test(void) {
+    return backingRecordsCreatedForTest;
+}
+
+uint64_t skia_image_backing_records_released_for_test(void) {
+    return backingRecordsReleasedForTest;
+}
+
+uint64_t skia_image_backing_records_live_for_test(void) {
+    return backingRecordsLiveForTest;
+}
+
+uint64_t skia_image_backing_records_peak_live_for_test(void) {
+    return backingRecordsPeakLiveForTest;
+}
+
+uint64_t skia_image_backing_bytes_live_for_test(void) {
+    return backingBytesLiveForTest;
+}
+
+uint64_t skia_image_backing_bytes_peak_live_for_test(void) {
+    return backingBytesPeakLiveForTest;
 }

@@ -130,6 +130,13 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_releaseNativeBag"), &tuiEIS_releaseNativeBag);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createEmptyNative_ii"), &tuiNIB_createEmptyNative_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_isAvailableNative"), &tuiNIB_isAvailableNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_resetAccountingTestNative"), &tuiNIB_resetAccountingTestNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_backingCreatedTestNative"), &tuiNIB_backingCreatedTestNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_backingReleasedTestNative"), &tuiNIB_backingReleasedTestNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_backingLiveTestNative"), &tuiNIB_backingLiveTestNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_backingPeakLiveTestNative"), &tuiNIB_backingPeakLiveTestNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_backingBytesLiveTest"), &tuiNIB_backingBytesLiveTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_backingPeakBytesTest"), &tuiNIB_backingPeakBytesTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createFromArgbPixels_Iii"), &tuiNIB_createFromArgbPixels_Iii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_snapshotNative"), &tuiNIB_snapshotNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_failNextSnapshotNative"), &tuiNIB_failNextSnapshotNative);

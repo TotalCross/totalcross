@@ -437,6 +437,293 @@ def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scali
 def imageAbiSmokeClassesDir = layout.buildDirectory.dir('image-abi-smoke/classes')
 def imageDeferredFrameStateSmokeClassesDir = layout.buildDirectory.dir('image-deferred-frame-state-smoke/classes')
 
+def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDirName,
+                              boolean includeImageAbiResources, boolean includeBack3Resource,
+                              List requiredFields, List resourceIncludes = [] ->
+    def classesDir = layout.buildDirectory.dir(smokeDirName + '/classes')
+    tasks.register('compile' + taskPrefix, Sync) {
+        group = 'verification'
+        description = 'Compiles and stages the ' + appClass + ' smoke app.'
+        dependsOn sourceSets.smokeTest.classesTaskName
+        from(smokeTestClassesDir) {
+            include 'totalcross/ui/image/' + appClass + '*.class'
+        }
+        if (includeImageAbiResources) {
+            from(smokeTestResourcesDir) {
+                include 'image-abi/**'
+            }
+        }
+        if (includeBack3Resource) {
+            from('src/main/resources/images/back3.jpg') {
+                into 'image-abi'
+                rename { 'back3.jpg' }
+            }
+        }
+        resourceIncludes.each { resourceInclude ->
+            from(smokeTestResourcesDir) {
+                include resourceInclude
+            }
+        }
+        into classesDir
+    }
+
+    tasks.register('jar' + taskPrefix, Jar) {
+        group = 'verification'
+        description = 'Packages the ' + appClass + ' smoke app for deployment.'
+        dependsOn 'compile' + taskPrefix
+        archiveFileName = appClass + '.jar'
+        destinationDirectory = classesDir
+        from(classesDir)
+    }
+
+    tasks.register('deploy' + taskPrefix + 'MacOS', JavaExec) {
+        group = 'verification'
+        description = 'Deploys the ' + appClass + ' smoke app for macOS.'
+        dependsOn 'copySdkDependencies', 'jar' + taskPrefix
+        mainClass = 'tc.Deploy'
+        classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+            include '*.jar'
+        }
+        workingDir classesDir.get().asFile
+        args = [appClass + '.jar', '-macos']
+    }
+
+    tasks.register('run' + taskPrefix + 'MacOS', Exec) {
+        group = 'verification'
+        description = 'Runs the ' + appClass + ' smoke app with the exact macOS dylib.'
+        dependsOn 'deploy' + taskPrefix + 'MacOS'
+        ignoreExitValue = true
+        def smokeOutput = new ByteArrayOutputStream()
+        doFirst {
+            def nativeRuntime = project.findProperty('tcvmDylib')
+            if (!nativeRuntime) {
+                throw new GradleException('run' + taskPrefix + 'MacOS requires -PtcvmDylib=<absolute path>')
+            }
+            def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+            if (!nativeRuntimeFile.isFile()) {
+                throw new GradleException('Native runtime not found: ' + nativeRuntimeFile)
+            }
+            def installDir = classesDir.get().dir('install/macos').asFile
+            def deployedRuntime = new File(installDir, 'libtcvm.dylib')
+            copy {
+                from nativeRuntimeFile
+                into installDir
+                rename { 'libtcvm.dylib' }
+            }
+            def sourceHash = java.security.MessageDigest.getInstance('SHA-256')
+                .digest(nativeRuntimeFile.bytes).encodeHex().toString()
+            def deployedHash = java.security.MessageDigest.getInstance('SHA-256')
+                .digest(deployedRuntime.bytes).encodeHex().toString()
+            if (sourceHash != deployedHash) {
+                throw new GradleException('Deployed native runtime hash differs')
+            }
+            def executable = new File(installDir, appClass)
+            if (!executable.isFile()) {
+                throw new GradleException('Native smoke executable not found: ' + executable)
+            }
+            commandLine executable.absolutePath
+            smokeOutput.reset()
+            standardOutput = smokeOutput
+            errorOutput = smokeOutput
+        }
+        workingDir classesDir.map { it.dir('install/macos').asFile }
+        doLast {
+            def output = smokeOutput.toString('UTF-8')
+            logger.lifecycle(output.trim())
+            def exitCode = executionResult.get().exitValue
+            def missing = requiredFields.findAll { !output.contains(it) }
+            if (exitCode != 0 || !missing.isEmpty()) {
+                throw new GradleException(appClass + ' native macOS smoke failed: exitCode=' + exitCode
+                    + ', missing=' + missing)
+            }
+        }
+    }
+}
+
+registerImageMacSmoke('ImageModifierWorkloadSmoke', 'ImageModifierWorkloadSmokeApp',
+    'image-modifier-workload-smoke', true, false, [
+        'fixture=ImageModifierWorkloadSmokeApp',
+        'brightnessContrast=true',
+        'brightnessTrajectory=true',
+        'contrastTrajectory=true',
+        'transparentFill=true',
+        'exactPixels=true',
+        'brightnessPlusOne=true',
+        'siblingDecode=true',
+        'noPersistentSliderBacking=true',
+        'boundedCaches=true',
+        'rotateScale=true',
+        'rotateTrajectory=true',
+        'scaleTrajectory=true',
+        'repeatedAdjustmentSessions=true',
+        'fillAfterTouchUp=true',
+        'fusedDraw=true',
+        'nativeColorReadbackCount=0',
+        'overallPass=true'
+    ], ['image-modifier-memory/**'])
+
+registerImageMacSmoke('ImagePngModifierParitySmoke', 'ImagePngModifierParitySmokeApp',
+    'image-modifier-png-parity-smoke', false, false, [
+        'fixture=ImagePngModifierParitySmokeApp',
+        'case=ROTATE_SCALE_THEN_TOUCH_UP_+1_CONTROL',
+        'diagnosticCompleted=true',
+        'plusOneControlPass=true',
+        'allCasesSemanticParity=true',
+        'overallPass=true'
+    ], ['image-modifier-memory/**'])
+
+registerImageMacSmoke('ImageModifierMemorySmoke', 'ImageModifierMemorySmokeApp',
+    'image-modifier-memory-smoke', true, false, [
+        'fixture=ImageModifierMemorySmokeApp',
+        'checkpoint=events-100',
+        'checkpoint=events-500',
+        'checkpoint=events-1000',
+        'checkpoint=events-2000',
+        'checkpoint=events-3000',
+        'checkpoint=events-4000',
+        'checkpoint=after-stress',
+        'checkpoint=after-leaf-gc-1',
+        'checkpoint=after-leaf-gc-2',
+        'overallPass=true'
+    ], ['image-modifier-memory/**'])
+
+tasks.register('runImageModifierMemorySmokeMacOSWithRss', Exec) {
+    group = 'verification'
+    description = 'Runs the image modifier memory smoke with external macOS RSS sampling.'
+    dependsOn 'deployImageModifierMemorySmokeMacOS'
+    def defaultArtifactDir = rootProject.file('artifacts/image-modifier-memory-profile')
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runImageModifierMemorySmokeMacOSWithRss requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException('Native runtime not found: ' + nativeRuntimeFile)
+        }
+        def installDir = layout.buildDirectory.dir('image-modifier-memory-smoke/classes/install/macos').get().asFile
+        def deployedRuntime = new File(installDir, 'libtcvm.dylib')
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def outputFile = file(project.findProperty('memorySmokeOutput')
+            ?: new File(defaultArtifactDir, 'smoke.log'))
+        def rssFile = file(project.findProperty('memorySmokeRss')
+            ?: new File(defaultArtifactDir, 'rss.csv'))
+        def summaryFile = file(project.findProperty('memorySmokeSummary')
+            ?: new File(defaultArtifactDir, 'rss-summary.txt'))
+        outputFile.parentFile.mkdirs()
+        rssFile.parentFile.mkdirs()
+        summaryFile.parentFile.mkdirs()
+        def executable = new File(installDir, 'ImageModifierMemorySmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException('Native smoke executable not found: ' + executable)
+        }
+        commandLine rootProject.file('../scripts/run-image-modifier-memory-smoke.py').absolutePath,
+            executable.absolutePath, outputFile.absolutePath, rssFile.absolutePath, summaryFile.absolutePath
+        workingDir installDir
+    }
+}
+
+registerImageMacSmoke('ImageJpegPinchSmoke', 'ImageJpegPinchSmokeApp',
+    'image-jpeg-pinch-smoke', false, false, [
+        'fixture=ImageJpegPinchSmokeApp',
+        'smallestSufficientTier=true',
+        'upwardPromotion=true',
+        'repeatAndDownwardReuse=true',
+        'zoomOutAfterFull=true',
+        'noAvoidableUpscale=true',
+        'quality20=true',
+        'quality35=true',
+        'quality60=true',
+        'quality100=true',
+        'retainedBacking=true',
+        'evictionReload=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageJpegModifierSmoke', 'ImageJpegModifierSmokeApp',
+    'image-jpeg-modifier-smoke', true, false, [
+        'fixture=ImageJpegModifierSmokeApp',
+        'loaded=true',
+        'modifierDraw=true',
+        'presentationReuse=true',
+        'adaptivePromotion=true',
+        'downwardReuse=true',
+        'smallLenaParity=true',
+        'directDraw=true',
+        'exactModifierPixels=true',
+        'noMaterialization=true',
+        'structuralReuse=true',
+        'tier=1',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageNativeGeometry', 'ImageNativeGeometrySmokeApp',
+    'image-native-geometry-smoke', false, false, [
+        'fixture=ImageNativeGeometrySmokeApp',
+        'nearest=true',
+        'crop=true',
+        'smooth=true',
+        'chained=true',
+        'rotate=true',
+        'transparentRotate=true',
+        'partialFill=true',
+        'frames=true',
+        'colorCandidateMaterialization=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageNativeMaterialization', 'ImageNativeMaterializationSmokeApp',
+    'image-native-materialization-smoke', false, true, [
+        'fixture=ImageNativeMaterializationSmokeApp',
+        'pass=true'
+    ])
+
+registerImageMacSmoke('ImageDrawPresentationState', 'ImageDrawPresentationStateSmokeApp',
+    'image-draw-presentation-state-smoke', false, false, [
+        'fixture=ImageDrawPresentationStateSmokeApp',
+        'firstDraw=true',
+        'currentFrameRefresh=true',
+        'alphaRefresh=true',
+        'transparentColorRefresh=true',
+        'hwScaleRefresh=true',
+        'secondDrawUsesCurrentState=true',
+        'zeroAllocationCacheHit=true',
+        'imageCreations=0',
+        'pipelineCreations=0',
+        'structuralPlanBuilds=0',
+        'capabilityArrayAllocations=0',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageDeferredFrameFadeLayout', 'ImageDeferredFrameFadeLayoutSmokeApp',
+    'image-deferred-frame-fade-layout-smoke', false, false, [
+        'fixture=ImageDeferredFrameFadeLayoutSmokeApp',
+        'deferredFrameZero=true',
+        'deferredFrameOne=true',
+        'eagerFrameZero=true',
+        'eagerFrameOne=true',
+        'eagerParity=true',
+        'fadeScoped=true',
+        'fadeThenSelectZero=true',
+        'fadeThenSelectOne=true',
+        'rootFadeThenSelectZero=true',
+        'rootFadeThenSelectOne=true',
+        'selectFadeSelectZero=true',
+        'selectFadeSelectOne=true',
+        'fadeThenLayout=true',
+        'selectSelectZero=true',
+        'selectSelectOne=true',
+        'selectScaleSelectZero=true',
+        'layoutSelectZero=true',
+        'layoutSelectOne=true',
+        'overallPass=true'
+    ])
+
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
@@ -892,7 +1179,7 @@ tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
             'pngConstructionLazy=true',
             'pngSourceCopy=true',
             'firstDrawMaterializes=true',
-            'repeatedBarrierReusesPixels=true',
+            'repeatedBarrierReadbacksStable=true',
             'warningCompatibility=true',
             'pathSourceStable=true',
             'jpegConstructionLazy=true',
@@ -932,6 +1219,17 @@ tasks.register('runImageLazyMaterializationSmokeMacOS', Exec) {
             'targetedCorruptionCached=true',
             'rotationScaleFill=true',
             'snapshotSemantics=true',
+            'finalDecodedPngAlpha=true',
+            'finalTargetedJpeg=true',
+            'finalGeneratedDrawSave=true',
+            'finalImageControlResize=true',
+            'finalGeometryDraw=true',
+            'finalDecodeRotateColorSave=true',
+            'finalMultiFrameApplyFade=true',
+            'finalExactColorKey=true',
+            'finalScaleCacheReuse=true',
+            'finalDetachedGetPixels=true',
+            'finalBackingAllocationAccounting=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }
@@ -1042,11 +1340,118 @@ tasks.register('runImageDeferredColorMutationSmokeMacOS', Exec) {
             'eagerAliasCompatibility=true',
             'targetedAfterSmooth=true',
             'fallbackBeforeSmooth=true',
+            'jpegBackingPromotion=true',
+            'transactionalPromotion=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }
         if (exitCode != 0 || !missing.isEmpty()) {
             throw new GradleException('Deferred Image color-mutation native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
+def imageNativeColorFilterSmokeClassesDir = layout.buildDirectory.dir('image-native-color-filter-smoke/classes')
+
+tasks.register('compileImageNativeColorFilterSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the native Image color-filter smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/ImageNativeColorFilterSmokeApp.class'
+        include 'totalcross/ui/image/ImageNativeColorFilterSmokeSupport.class'
+    }
+    into imageNativeColorFilterSmokeClassesDir
+}
+
+tasks.register('jarImageNativeColorFilterSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the native Image color-filter smoke app for deployment.'
+    dependsOn 'compileImageNativeColorFilterSmoke'
+    archiveFileName = 'ImageNativeColorFilterSmokeApp.jar'
+    destinationDirectory = imageNativeColorFilterSmokeClassesDir
+    from(imageNativeColorFilterSmokeClassesDir)
+}
+
+tasks.register('deployImageNativeColorFilterSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the native Image color-filter smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarImageNativeColorFilterSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir imageNativeColorFilterSmokeClassesDir.get().asFile
+    args = [
+        'ImageNativeColorFilterSmokeApp.jar',
+        '-macos'
+    ]
+}
+
+tasks.register('runImageNativeColorFilterSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the native Image color-filter smoke app with the exact macOS dylib.'
+    dependsOn 'deployImageNativeColorFilterSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runImageNativeColorFilterSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException("Native runtime not found: ${nativeRuntimeFile}")
+        }
+        def installDir = imageNativeColorFilterSmokeClassesDir.get().dir('install/macos').asFile
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def executable = new File(installDir, 'ImageNativeColorFilterSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException("Native smoke executable not found: ${executable}")
+        }
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir imageNativeColorFilterSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def requiredFields = [
+            'fixture=ImageNativeColorFilterSmokeApp',
+            'nativeBacking=true',
+            'frameScopedFade=true',
+            'alpha=true',
+            'faded=true',
+            'applyColor=true',
+            'applyColor2=true',
+            'touchUp=true',
+            'exactColors=true',
+            'mixedPipeline=true',
+            'drawColorStages=true',
+            'drawInPlaceStages=true',
+            'drawPrefixStages=true',
+            'applyColor2Cache=true',
+            'encodedSourceCache=true',
+            'drawPlanGeneration=true',
+            'drawColorReadbackCount=0',
+            'drawAndSave=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('Native Image color-filter macOS smoke failed: exitCode=' + exitCode
                 + ', missing=' + missing)
         }
     }
@@ -1147,8 +1552,12 @@ tasks.register('runImageDeferredCropFrameSmokeMacOS', Exec) {
             'rasterSnapshotIsolation=true',
             'naturalScaleCrop=true',
             'scaledCrop=true',
-            'targetedAfterSmooth=true',
-            'fallbackBeforeSmooth=true',
+            'fractionalScale15=true',
+            'fractionalScale25=true',
+            'alphaMaskCompatibility=true',
+            'hwScaleCompatibility=true',
+            'fallbackAfterSmooth=true',
+            'targetedBeforeSmooth=true',
             'overallPass=true'
         ]
         def missing = requiredFields.findAll { !output.contains(it) }
@@ -1262,10 +1671,14 @@ tasks.register('runImageDeferredFrameStateSmokeMacOS', Exec) {
             'croppedExactFractionalScale=true',
             'frameSelectedExactFractionalScale=true',
             'zeroWidthFrameCompatibility=true',
+            'materializedFrameLayoutCompatibility=true',
+            'zeroWidthNativeFrameCompatibility=true',
             'frameLayoutDeferred=true',
             'frameLayoutMetadata=true',
             'frameLayoutPixels=true',
             'frameLayoutRoundTrip=true',
+            'frameLayoutResidualRoundTrip=true',
+            'frameLayoutScaledResidual=true',
             'frameLayoutRetryable=true',
             'overallPass=true'
         ]
