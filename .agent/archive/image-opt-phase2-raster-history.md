@@ -52,3 +52,14 @@ directories and added a separate corrected matrix under
   focused Image tests, SDK distribution, Release software-Skia native build,
   smoke-test compilation, and direct color, opacity, zero-copy, and draw-plan
   smokes.
+- `b68f6cd28` adds the integrated decode/draw/readback/encode/color workload;
+  `aba3c7d61` records individual matrices whose S1 is the true Phase-1 base,
+  not a final-runtime disabled-feature proxy; `d044e13bd` records the
+  integrated S1/S2/S3 matrix and its counter/parity report.
+
+The integrated workload measured 877/878/56 ms median for S1/S2/S3, with
+881/884/62 ms P95 and 122,688/131,296/140,352 KiB peak RSS. Its S3 counters
+proved 120 zero-copy decodes, 60 source and 60 decode opacity proofs, 61,440
+writePixels hits, 92,160 row reads, and 60 direct color materializations. All
+three output hashes matched exactly. The final documentation checkpoint is
+the Phase-3 base; Android, iOS, Windows, Linux, and GPU remain out of scope.
