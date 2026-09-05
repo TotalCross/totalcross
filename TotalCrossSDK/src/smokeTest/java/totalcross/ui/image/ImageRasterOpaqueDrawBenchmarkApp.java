@@ -21,6 +21,7 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
     int completedSamples = 0;
     String error = "";
     long totalDraws = 0;
+    boolean semanticParity = !"post-enabled".equals(scenario);
 
     try {
       ImageRasterBenchmarkSupport.require("jpeg".equals(format) || "png".equals(format),
@@ -36,6 +37,9 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
       Image target = new Image(source.getPixelWidth(), source.getPixelHeight());
       Graphics canvas = target.getGraphics();
       ImageRasterBenchmarkSupport.require(canvas != null, "draw target graphics");
+      if ("post-enabled".equals(scenario)) {
+        semanticParity = verifyFastPathParity(source);
+      }
       runGuardCases(canvas, source);
       for (int warmup = 0; warmup < 3; warmup++) {
         drawBatch(canvas, source);
@@ -62,6 +66,7 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
 
     boolean pass = ImageRasterBenchmarkSupport.finish("ImageRasterOpaqueDrawBenchmarkApp", scenario,
         samples, completedSamples, "format=" + format + ",total_draws=" + totalDraws
+            + ",semantic_parity=" + semanticParity
             + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()
             + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
             + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
@@ -73,6 +78,34 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
     for (int draw = 0; draw < DRAWS_PER_SAMPLE; draw++) {
       canvas.drawImage(source, 0, 0, false);
     }
+  }
+
+  private static boolean verifyFastPathParity(Image source) throws Exception {
+    Image slowTarget = new Image(source.getPixelWidth(), source.getPixelHeight());
+    Image fastTarget = new Image(source.getPixelWidth(), source.getPixelHeight());
+    Graphics slowCanvas = slowTarget.getGraphics();
+    Graphics fastCanvas = fastTarget.getGraphics();
+    ImageRasterBenchmarkSupport.require(slowCanvas != null && fastCanvas != null,
+        "parity target graphics");
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
+        ImageOptimizationSettings.DISABLED);
+    slowCanvas.drawImage(source, 0, 0, false);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
+        ImageOptimizationSettings.ENABLED);
+    fastCanvas.drawImage(source, 0, 0, false);
+    return samePixels(slowTarget.getPixels(), fastTarget.getPixels());
+  }
+
+  private static boolean samePixels(int[] first, int[] second) {
+    if (first == null || second == null || first.length != second.length) {
+      return false;
+    }
+    for (int i = 0; i < first.length; i++) {
+      if (first[i] != second[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static void runGuardCases(Graphics canvas, Image source) throws Exception {
