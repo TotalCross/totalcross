@@ -346,7 +346,11 @@ public class Image extends GfxSurface {
   }
 
   static void recordRowReadbackForTest(int scratchBytes) {
-    rowReadbackCountForTest++;
+    recordRowReadbacksForTest(1, scratchBytes);
+  }
+
+  static void recordRowReadbacksForTest(int rowCount, int scratchBytes) {
+    rowReadbackCountForTest += rowCount;
     if (scratchBytes > rowScratchPeakBytesForTest) {
       rowScratchPeakBytesForTest = scratchBytes;
     }

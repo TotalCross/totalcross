@@ -189,19 +189,10 @@ final class NativeImageBacking extends ImageBacking {
     int[] output = new int[visibleWidth * outputHeight];
     if (ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_ROW_READBACK)
         == ImageOptimizationSettings.ENABLED && frame == 0 && visibleWidth == width) {
-      byte[] row = new byte[visibleWidth * 4];
-      for (int y = 0; y < outputHeight; y++) {
-        if (!readRgbaRow(row, y)) {
-          throw new IllegalStateException("Could not read native image backing row");
-        }
-        int outputOffset = y * visibleWidth;
-        for (int x = 0, offset = 0; x < visibleWidth; x++, offset += 4) {
-          output[outputOffset + x] = ((row[offset + 3] & 0xFF) << 24)
-              | ((row[offset] & 0xFF) << 16)
-              | ((row[offset + 1] & 0xFF) << 8)
-              | (row[offset + 2] & 0xFF);
-        }
+      if (!readArgbRowsNative(output, 0, visibleWidth, outputHeight)) {
+        throw new IllegalStateException("Could not read native image backing rows");
       }
+      Image.recordRowReadbacksForTest(outputHeight, visibleWidth * 4);
       return output;
     }
     Image.recordBackingReadbackForTest();
@@ -399,6 +390,11 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private boolean readRgbaRowNative(byte[] output, int y, int width) {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean readArgbRowsNative(int[] output, int y, int width, int height) {
     return false;
   }
 

@@ -147,6 +147,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_materializeGeometryNative"), &tuiNIB_materializeGeometryNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_readPixelsNative_Iiiiii"), &tuiNIB_readPixelsNative_Iiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_readRgbaRowNative_Bii"), &tuiNIB_readRgbaRowNative_Bii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_readArgbRowsNative_Iiii"), &tuiNIB_readArgbRowsNative_Iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_opacityNative"), &tuiNIB_opacityNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsAttemptsTest"), &tuiNIB_writePixelsAttemptsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsHitsTest"), &tuiNIB_writePixelsHitsTest);
