@@ -1645,6 +1645,10 @@ public final class Graphics {
    * @since SuperWaba 3.3
    */
   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
+    Object drawPlan = resolveDrawPlanForDrawing(image);
+    if (!Settings.onJavaSE && drawPlan != null && drawGeometryNative(drawPlan, x, y, doClip)) {
+      return;
+    }
     image = resolveImageForDrawing(image);
     if (!Settings.onJavaSE) {
       drawImageNative(image, x, y, doClip);
@@ -1674,6 +1678,11 @@ public final class Graphics {
    * @since SuperWaba 3.3
    */
   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip) {
+    Object drawPlan = resolveDrawPlanForDrawing(src);
+    if (!Settings.onJavaSE && drawPlan != null
+        && copyGeometryNative(drawPlan, x, y, width, height, doClip)) {
+      return;
+    }
     src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
       copyImageRectNative(src, x, y, width, height, doClip);
@@ -1692,6 +1701,10 @@ public final class Graphics {
    * @see #copyRect
    */
   public void drawImage(totalcross.ui.image.Image src, int x, int y) {
+    Object drawPlan = resolveDrawPlanForDrawing(src);
+    if (!Settings.onJavaSE && drawPlan != null && drawGeometryNative(drawPlan, x, y, true)) {
+      return;
+    }
     src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
       drawImageNative(src, x, y);
@@ -1714,6 +1727,31 @@ public final class Graphics {
     } catch (ImageException failure) {
       throw new IllegalStateException("Could not resolve image for drawing", failure);
     }
+  }
+
+  private Object resolveDrawPlanForDrawing(Image image) {
+    if (image == null) {
+      throw new NullPointerException("image");
+    }
+    if (Settings.onJavaSE) {
+      return null;
+    }
+    try {
+      return ImageDrawingBridge.drawPlanForDrawing(image, getContentScale());
+    } catch (ImageException failure) {
+      throw new IllegalStateException("Could not prepare image draw plan", failure);
+    }
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean drawGeometryNative(Object plan, int x, int y, boolean doClip) {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean copyGeometryNative(Object plan, int x, int y, int width, int height,
+      boolean doClip) {
+    return false;
   }
 
   @ReplacedByNativeOnDeploy

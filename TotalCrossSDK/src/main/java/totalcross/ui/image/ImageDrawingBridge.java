@@ -20,4 +20,13 @@ public final class ImageDrawingBridge {
   public static Image resolveForDrawing(Image image, double destinationScale) throws ImageException {
     return image.resolveForDrawing(destinationScale);
   }
+
+  /** @hidden */
+  @Deprecated
+  public static Object drawPlanForDrawing(Image image, double destinationScale) throws ImageException {
+    if (image == null) {
+      throw new NullPointerException("image");
+    }
+    return image.drawPlanForDrawing(destinationScale);
+  }
 }

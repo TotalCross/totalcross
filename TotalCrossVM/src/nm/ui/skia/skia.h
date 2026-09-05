@@ -74,6 +74,66 @@ int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle);
 void skia_image_backing_fail_next_snapshot_for_test(void);
 int skia_image_backing_make_mutable(int64_t handle);
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth);
+#define SKIA_IMAGE_COLOR_APPLY_FADE 0
+#define SKIA_IMAGE_COLOR_FADE_INSTANCE 1
+#define SKIA_IMAGE_COLOR_ALPHA_INSTANCE 2
+#define SKIA_IMAGE_COLOR_TOUCH_UP_INSTANCE 3
+#define SKIA_IMAGE_COLOR_APPLY_COLOR 4
+#define SKIA_IMAGE_COLOR_APPLY_COLOR2 5
+#define SKIA_IMAGE_COLOR_CHANGE_COLORS 6
+#define SKIA_IMAGE_COLOR_SET_TRANSPARENT_COLOR 7
+#define SKIA_IMAGE_DRAW_SCALE 0
+#define SKIA_IMAGE_DRAW_SMOOTH_SCALE 1
+#define SKIA_IMAGE_DRAW_ROTATE_SCALE 2
+#define SKIA_IMAGE_DRAW_TOUCH_UP 3
+#define SKIA_IMAGE_DRAW_FADE 4
+#define SKIA_IMAGE_DRAW_ALPHA 5
+#define SKIA_IMAGE_DRAW_APPLY_COLOR 6
+#define SKIA_IMAGE_DRAW_APPLY_COLOR2 7
+#define SKIA_IMAGE_DRAW_APPLY_FADE 8
+#define SKIA_IMAGE_DRAW_CHANGE_COLORS 9
+#define SKIA_IMAGE_DRAW_SET_TRANSPARENT_COLOR 10
+#define SKIA_IMAGE_DRAW_FRAME_SELECT 11
+#define SKIA_IMAGE_DRAW_CROP 12
+#define SKIA_IMAGE_DRAW_FRAME_LAYOUT 13
+int skia_image_backing_apply_color_mutation(int64_t handle, int32 operation, int32 parameter1,
+    int32 parameter2, int32 frameCount, int32 visibleWidth, int32 currentFrame);
+int64_t skia_image_backing_create_color_instance(int64_t handle, int32 operation, int32 parameter1,
+    int32 parameter2);
+typedef struct SkiaImageDrawPlanData {
+    int64_t rootHandle;
+    int32 rootWidth;
+    int32 rootHeight;
+    int32 rootLogicalWidth;
+    int32 rootLogicalHeight;
+    int32 rootFrameCount;
+    int32 rootWidthOfAllFrames;
+    double rootContentScale;
+    const int32* operations;
+    const int32* parameters;
+    const int32* dimensions;
+    int64_t sourceDecodeGeneration;
+    int32 operationCount;
+    int32 outputWidth;
+    int32 outputHeight;
+    int32 outputFrameCount;
+    int32 outputWidthOfAllFrames;
+    int32 currentFrame;
+    int32 alphaMask;
+    int32 transparentColor;
+    int32 materializeAlphaMask;
+    int32 outputAlphaMask;
+    double destinationScale;
+    double outputContentScale;
+    double hwScaleW;
+    double hwScaleH;
+    double rootHwScaleW;
+    double rootHwScaleH;
+} SkiaImageDrawPlanData;
+int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
+    const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
+    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);
+int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan);
 int32 skia_image_backing_width(int64_t handle);
 int32 skia_image_backing_height(int64_t handle);
 int skia_image_backing_read_pixels(int64_t handle, void* output, int32 x, int32 y, int32 width, int32 height);

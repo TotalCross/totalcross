@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-#include "skia_image_backing.h"
-
-#include "skia_internal.h"
+#include "skia_image_backing_internal.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -17,34 +15,21 @@
 
 namespace {
 
-struct NativeImageBackingRecord {
-    sk_sp<SkImage> image;
-    sk_sp<SkSurface> surface;
-    int32 width;
-    int32 height;
+using skia_image_backing_internal::NativeImageBackingRecord;
 
-    SkCanvas* canvas() const {
-        return surface ? surface->getCanvas() : nullptr;
-    }
-
-    sk_sp<SkImage> snapshot() const {
-        return image ? image : surface ? surface->makeImageSnapshot() : nullptr;
-    }
-};
-
-std::map<int64_t, std::unique_ptr<NativeImageBackingRecord>> backings;
+std::map<int64_t, std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord>> backings;
 std::map<int32, int64_t> surfaceAliases;
 std::map<int64_t, int32> backingAliases;
 int64_t nextHandle = 1;
 int32 nextSurfaceAlias = std::numeric_limits<int32>::min() + 1;
 bool failNextSnapshotAllocationForTest;
 
-NativeImageBackingRecord* findBacking(int64_t handle) {
+skia_image_backing_internal::NativeImageBackingRecord* findBacking(int64_t handle) {
     auto found = backings.find(handle);
     return found == backings.end() ? nullptr : found->second.get();
 }
 
-int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing) {
+int64_t registerBackingRecord(std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing) {
     if (!backing || nextHandle <= 0) {
         return 0;
     }
@@ -182,6 +167,22 @@ bool readRgba(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
 
 } // namespace
 
+namespace skia_image_backing_internal {
+
+NativeImageBackingRecord* findBacking(int64_t handle) {
+    return ::findBacking(handle);
+}
+
+int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing) {
+    return ::registerBackingRecord(std::move(backing));
+}
+
+SkImageInfo rasterInfo(int32 width, int32 height) {
+    return ::rasterInfo(width, height);
+}
+
+}
+
 int64_t skia_image_backing_create_empty(int32 width, int32 height) {
     if (width <= 0 || height <= 0) {
         return 0;
@@ -194,7 +195,7 @@ int64_t skia_image_backing_create_empty(int32 width, int32 height) {
         }
         backing->width = width;
         backing->height = height;
-        return registerBacking(std::move(backing));
+        return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
     }
@@ -220,7 +221,7 @@ int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, in
         backing->image = std::move(image);
         backing->width = width;
         backing->height = height;
-        return registerBacking(std::move(backing));
+        return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
     }
@@ -271,7 +272,7 @@ int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle) 
         backing->image = std::move(snapshot);
         backing->width = source->width;
         backing->height = source->height;
-        const int64_t newHandle = registerBacking(std::move(backing));
+        const int64_t newHandle = registerBackingRecord(std::move(backing));
         if (newHandle == 0) {
             return SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE;
         }
@@ -344,11 +345,12 @@ int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 output
             SkCanvas::kStrict_SrcRectConstraint);
         backing->width = outputWidth;
         backing->height = outputHeight;
-        return registerBacking(std::move(backing));
+        return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
     }
 }
+
 
 int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
                             float srcLeft, float srcTop, float srcRight, float srcBottom,
@@ -359,8 +361,13 @@ int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
     if (!target || !target->surface || !source) {
         return 0;
     }
-    return drawOnCanvas(target->canvas(), source, srcLeft, srcTop, srcRight, srcBottom,
-                        dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+    const int result = drawOnCanvas(target->canvas(), source, srcLeft, srcTop, srcRight, srcBottom,
+                                    dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+    if (result != 0) {
+        ++target->generation;
+        target->applyColor2AnalysisValid = false;
+    }
+    return result;
 }
 
 int32 skia_image_backing_surface_id(int64_t handle) {
