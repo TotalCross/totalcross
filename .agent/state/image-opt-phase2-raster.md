@@ -9,6 +9,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 Updated: 2026-09-05T15:02:01-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
+Phase-3 base SHA: `13e6653d4`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
@@ -40,9 +41,9 @@ Focused Image tests, SDK distribution, final Release software-Skia Ninja
 build, the native Image smoke family, and the final readback/color S2/S3
 matrix all passed. The final native smoke family covered modifier/color,
 geometry, materialization, zero-copy decode, presentation state, deferred
-frame/fade, and modifier RSS memory behavior. The phase is ready for the
-phase-3 base checkpoint; the exact base SHA is recorded after the final
-documentation commit.
+frame/fade, and modifier RSS memory behavior. The phase is complete. The exact
+phase-3 base is `13e6653d4`; the subsequent state-only checkpoint records that
+SHA without changing runtime or benchmark artifacts.
 
 ## Active paths
 
