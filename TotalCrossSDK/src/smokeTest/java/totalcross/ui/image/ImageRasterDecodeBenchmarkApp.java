@@ -10,7 +10,7 @@ import totalcross.ui.MainWindow;
 /** macOS benchmark workload for fresh PNG and JPEG materialization. */
 public class ImageRasterDecodeBenchmarkApp extends MainWindow {
   private static final int DEFAULT_SAMPLES = 60;
-  private static final int PNG_BATCH = 8;
+  private static final int PNG_BATCH = 10;
   private static final int JPEG_BATCH = 2;
 
   @Override
