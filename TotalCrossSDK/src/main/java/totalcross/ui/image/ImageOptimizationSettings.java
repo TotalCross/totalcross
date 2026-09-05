@@ -44,7 +44,9 @@ final class ImageOptimizationSettings {
     if (feature == DIAGNOSTIC_ACCOUNTING) {
       Image.setDiagnosticAccountingForTest(state == ENABLED);
     }
-    Image.setNativeOptimizationMaskForDrawForTest(effectiveMask());
+    long mask = effectiveMask();
+    Image.setNativeOptimizationMaskForDrawForTest(mask);
+    Image.setNativeOptimizationMaskForDecodeForTest(mask);
   }
 
   static int state(int feature) {
@@ -97,6 +99,7 @@ final class ImageOptimizationSettings {
     mmapThresholdBytes = DEFAULT_MMAP_THRESHOLD_BYTES;
     Image.setDiagnosticAccountingForTest(false);
     Image.setNativeOptimizationMaskForDrawForTest(0);
+    Image.setNativeOptimizationMaskForDecodeForTest(0);
   }
 
   static void triggerMemoryPressureForTest() {

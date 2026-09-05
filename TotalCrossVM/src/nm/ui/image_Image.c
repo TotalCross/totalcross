@@ -39,8 +39,13 @@ static bool imageDecodeOpacityMetadataEnabled(TCObject imageObj)
 {
    int32* featureMask = imageObj == null
       ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
-   return featureMask != null && ((*featureMask & (IMAGE_OPT_RASTER_OPACITY_METADATA
-      | IMAGE_OPT_RASTER_OPAQUE_WRITE_PIXELS)) != 0);
+   return featureMask != null && ((*featureMask & IMAGE_OPT_RASTER_OPACITY_METADATA) != 0);
+}
+
+void imageRecordOpacityFallbackScanForTest(int32 pixels)
+{
+   imageRecordTestCounter("opacityFallbackScansForTest");
+   imageAddTestCounter("opacityFallbackPixelsForTest", pixels);
 }
 
 ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj,
@@ -48,6 +53,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObje
       bool opacityMetadata);
 
 static bool failNextImageAllocationForTest;
+static bool failNextFinalBufferAllocationForTest;
 
 TC_API void tuiI_setDiagnosticAccountingTest(NMParams p) // totalcross/ui/image/Image native private static void setDiagnosticAccountingTestNative(boolean enabled);
 {
@@ -76,6 +82,13 @@ int imageDecodeConsumeAllocationFailureForTest(void)
 {
    bool fail = failNextImageAllocationForTest;
    failNextImageAllocationForTest = false;
+   return fail;
+}
+
+int imageDecodeConsumeFinalBufferFailureForTest(void)
+{
+   bool fail = failNextFinalBufferAllocationForTest;
+   failNextFinalBufferAllocationForTest = false;
    return fail;
 }
 
@@ -359,6 +372,12 @@ TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p) // totalcross/ui/image/
 TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/Image native private static void failNextNativeMaterializationForTestNative();
 {
    failNextImageAllocationForTest = true;
+   UNUSED(p);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_failNextZeroCopyDecodeAfterAllocation(NMParams p) // totalcross/ui/image/Image native private static void failNextZeroCopyDecodeAfterAllocationForTestNative();
+{
+   failNextFinalBufferAllocationForTest = true;
    UNUSED(p);
 }
 //////////////////////////////////////////////////////////////////////////
