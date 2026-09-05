@@ -24,6 +24,8 @@ typedef unsigned int uint32;
 typedef uint32 Pixel32; // 32 bpp
 typedef Pixel32 Pixel;
 
+void imageRecordOpacityFallbackScanForTest(int32 pixels);
+
 #if TC_WINDOWING_SDL
 int32 colorType(uint32 pixelformat);
 #endif

@@ -143,6 +143,40 @@ int drawOnCanvas(SkCanvas* canvas, NativeImageBackingRecord* source,
     return 1;
 }
 
+bool proveOpaqueForWritePixels(NativeImageBackingRecord* source) {
+    if (!source) {
+        return false;
+    }
+    if (source->opacity == SKIA_IMAGE_OPACITY_OPAQUE) {
+        return true;
+    }
+    if (source->opacity == SKIA_IMAGE_OPACITY_TRANSLUCENT) {
+        return false;
+    }
+    sk_sp<SkImage> image = source->snapshot();
+    SkPixmap pixmap;
+    if (!image || !image->peekPixels(&pixmap)) {
+        return false;
+    }
+    bool opaque = true;
+    for (int32 y = 0; y < source->height && opaque; ++y) {
+        const uint8_t* row = static_cast<const uint8_t*>(pixmap.addr(0, y));
+        if (!row) {
+            return false;
+        }
+        for (int32 x = 0; x < source->width; ++x) {
+            if (row[static_cast<size_t>(x) * 4 + 3] != 0xff) {
+                opaque = false;
+                break;
+            }
+        }
+    }
+    source->opacity = opaque ? SKIA_IMAGE_OPACITY_OPAQUE : SKIA_IMAGE_OPACITY_TRANSLUCENT;
+    imageRecordOpacityFallbackScanForTest(static_cast<int32>(
+        static_cast<uint64_t>(source->width) * static_cast<uint64_t>(source->height)));
+    return opaque;
+}
+
 bool tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
                     float srcLeft, float srcTop, float srcRight, float srcBottom,
                     float dstLeft, float dstTop, float dstRight, float dstBottom,
@@ -157,8 +191,8 @@ bool tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
         ++writePixelsFallbacksForTest;
         return false;
     };
-    if (!targetCanvas || !source || source->opacity != SKIA_IMAGE_OPACITY_OPAQUE
-        || alphaMask != 255 || !targetCanvas->getTotalMatrix().isIdentity()
+    if (!targetCanvas || !source || alphaMask != 255
+        || !targetCanvas->getTotalMatrix().isIdentity()
         || targetCanvas->getSaveCount() != 1 || srcLeft != 0.0f || srcTop != 0.0f
         || srcRight != source->width || srcBottom != source->height
         || srcRight - srcLeft != dstRight - dstLeft
@@ -171,6 +205,9 @@ bool tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
     const SkImageInfo targetInfo = targetCanvas->imageInfo();
     if (dstX < 0 || dstY < 0 || dstX > targetInfo.width() - source->width
         || dstY > targetInfo.height() - source->height) {
+        return fallback();
+    }
+    if (!proveOpaqueForWritePixels(source)) {
         return fallback();
     }
     sk_sp<SkImage> image = source->snapshot();

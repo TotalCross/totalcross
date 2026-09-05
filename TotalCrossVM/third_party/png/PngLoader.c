@@ -129,7 +129,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    int32 transp = -1;
    bool isAlpha = false;
 
-   UserData userData;
+   UserData *userData;
    png_structp png_ptr;
    volatile ImageDecodeStatus decodeStatus = IMAGE_DECODE_SUCCESS;
 
@@ -137,40 +137,50 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    png_byte color_type;
 
    xmemzero(&png_ptr, sizeof(png_ptr));
-   xmemzero(&userData, sizeof(userData));
+   userData = (UserData*)calloc(1, sizeof(*userData));
+   if (!userData)
+      return IMAGE_DECODE_RESOURCE_FAILURE;
 
    heap = heapCreate();
    if (!heap)
+   {
+      free(userData);
       return IMAGE_DECODE_RESOURCE_FAILURE;
+   }
 
-   userData.currentContext = currentContext;
-   userData.heap = heap;
-   userData.decodeStatus = &decodeStatus;
+   userData->currentContext = currentContext;
+   userData->heap = heap;
+   userData->decodeStatus = &decodeStatus;
    if (tcz != null)
    {
-      userData.tcz = tcz;
+      userData->tcz = tcz;
       tcz->tempHeap = heap;
    }
    else if (mapped != null)
    {
-      userData.mapped = mapped;
-      userData.mappedLength = mappedLength;
-      userData.mappedCursor = 0;
+      userData->mapped = mapped;
+      userData->mappedLength = mappedLength;
+      userData->mappedCursor = 0;
    }
    else
    {
-      userData.inputStreamObj = inputStreamObj;  // JPEG stream
-      userData.bufObj = bufObj;    // a byte array for readBytes()
+      userData->inputStreamObj = inputStreamObj;  // JPEG stream
+      userData->bufObj = bufObj;    // a byte array for readBytes()
    }
-   userData.first4 = first4;
-   userData.imageObj = imageObj;
-   userData.zeroCopy = zeroCopy;
-   userData.opacityMetadata = opacityMetadata;
+   userData->first4 = first4;
+   userData->imageObj = imageObj;
+   userData->zeroCopy = zeroCopy;
+   userData->opacityMetadata = opacityMetadata;
 
    IF_HEAP_ERROR(heap)
    {
       if (decodeStatus == IMAGE_DECODE_SUCCESS)
          decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+      if (userData->rgbaStorage) free(userData->rgbaStorage);
+#if TC_RENDERER_SKIA
+      if (userData->pixelStorage) xfree(userData->pixelStorage);
+#endif
+      free(userData);
       heapDestroy(heap);
       if (tcz != null)
          tczClose(tcz);
@@ -181,50 +191,51 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    png_ptr = png_create_read_struct_2(PNG_LIBPNG_VER_STRING, heap, error_callback, null, heap, usermalloc, userfree);
    if (png_ptr == NULL)
       HEAP_ERROR(heap, 999);
-   userData.info_ptr = png_create_info_struct(png_ptr);
+   userData->info_ptr = png_create_info_struct(png_ptr);
 
    if (tcz == null && mapped == null)
    {
-      Method readBytesMethod = getMethod(OBJ_CLASS(userData.inputStreamObj), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
+      Method readBytesMethod = getMethod(OBJ_CLASS(userData->inputStreamObj), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
       if (readBytesMethod == null)
          HEAP_ERROR(heap, 999);
-      userData.readBytesMethod = readBytesMethod;
-      userData.params[0].asObj = userData.inputStreamObj;
-      userData.params[1].asObj = userData.bufObj;
+      userData->readBytesMethod = readBytesMethod;
+      userData->params[0].asObj = userData->inputStreamObj;
+      userData->params[1].asObj = userData->bufObj;
    }
 
-   png_set_progressive_read_fn(png_ptr,&userData,info_callback,row_callback,null);
+   png_set_progressive_read_fn(png_ptr,userData,info_callback,row_callback,null);
 
    /* Create decompressor output buffer. */
-   while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
-      png_process_data(png_ptr, userData.info_ptr, buffer, count);
+   while (!userData->quit && (count = pngRead(buffer, sizeof(buffer), userData)) > 0)
+      png_process_data(png_ptr, userData->info_ptr, buffer, count);
 
-   if ((userData.pixelsObj == null && userData.pixels == null && userData.rgbaStorage == null)
-         || userData.rowsDecoded < userData.height)
+   if ((userData->pixelsObj == null && userData->pixels == null && userData->rgbaStorage == null)
+         || userData->rowsDecoded < userData->height)
    {
-      if (userData.upixels) png_free(png_ptr, userData.upixels);
+      if (userData->upixels) png_free(png_ptr, userData->upixels);
 #if TC_RENDERER_SKIA
-      if (userData.pixelStorage) xfree(userData.pixelStorage);
-      if (userData.rgbaStorage) free(userData.rgbaStorage);
+      if (userData->pixelStorage) xfree(userData->pixelStorage);
+      if (userData->rgbaStorage) free(userData->rgbaStorage);
 #endif
-      png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
+      png_destroy_read_struct(&png_ptr, &userData->info_ptr, NULL);
       Image_backing(imageObj) = null;
       Image_width(imageObj) = 0;
       Image_height(imageObj) = 0;
       if (tcz != null)
          tczClose(tcz);
       heapDestroy(heap);
+      free(userData);
       return decodeStatus == IMAGE_DECODE_RESOURCE_FAILURE ? decodeStatus : IMAGE_DECODE_CORRUPT;
    }
 
    // guich@tc100: check if a comment came with the png
-   if (png_get_text(png_ptr, userData.info_ptr, &text, null) != 0 && text && strEq("Comment", text->key)) {
+   if (png_get_text(png_ptr, userData->info_ptr, &text, null) != 0 && text && strEq("Comment", text->key)) {
       Image_comment(imageObj) = createStringObjectFromCharP(currentContext, text->text, (int)text->text_length);
       setObjectLock(Image_comment(imageObj), UNLOCKED);
    }
 
    // guich@tc100: set the transparent color
-   color_type = png_get_color_type(png_ptr, userData.info_ptr);
+   color_type = png_get_color_type(png_ptr, userData->info_ptr);
    if (color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
       isAlpha = true;
    } else {
@@ -232,7 +243,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
       int32 num_trans = 0;
       png_color_16p trans_color = null;
 
-      if (png_get_tRNS(png_ptr, userData.info_ptr, &trans_alpha, &num_trans, &trans_color) != 0 && num_trans > 0) {
+      if (png_get_tRNS(png_ptr, userData->info_ptr, &trans_alpha, &num_trans, &trans_color) != 0 && num_trans > 0) {
          if (color_type == PNG_COLOR_TYPE_PALETTE) { // palettized?
             int32 i;
             if (num_trans == 256 && color_type == PNG_COLOR_TYPE_PALETTE) {
@@ -242,7 +253,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
                if (trans_alpha[i] == 0) {
                   png_colorp palette = null;
                   int32 num_palette = 0;
-                  if(png_get_PLTE(png_ptr, userData.info_ptr, &palette, &num_palette) != 0) {
+                  if(png_get_PLTE(png_ptr, userData->info_ptr, &palette, &num_palette) != 0) {
                      png_color c = palette[i];
                      transp = (c.red << 16) | (c.green << 8) | c.blue;
                      isAlpha = false;
@@ -259,50 +270,51 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
 
    // Finish decompression and release memory. Do it in this order because output module
    // has allocated memory of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
-   if (userData.upixels) png_free(png_ptr, userData.upixels);
-   png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
+   if (userData->upixels) png_free(png_ptr, userData->upixels);
+   png_destroy_read_struct(&png_ptr, &userData->info_ptr, NULL);
 
-   Image_width(imageObj) = userData.width;
-   Image_height(imageObj) = userData.height;
+   Image_width(imageObj) = userData->width;
+   Image_height(imageObj) = userData->height;
 #if TC_RENDERER_SKIA
    {
       int64 handle;
-      const int32 pixelBytes = (int32)((uint64)userData.width * userData.height * 4);
-      if (userData.zeroCopy) {
-         handle = skia_image_backing_create_from_owned_rgba_pixels(userData.rgbaStorage,
-            userData.width, userData.height);
-         userData.rgbaStorage = null;
+      const int32 pixelBytes = (int32)((uint64)userData->width * userData->height * 4);
+      if (userData->zeroCopy) {
+         handle = skia_image_backing_create_from_owned_rgba_pixels(userData->rgbaStorage,
+            userData->width, userData->height);
+         userData->rgbaStorage = null;
       } else {
-         handle = skia_image_backing_create_from_argb_pixels(userData.pixelStorage,
-            userData.width, userData.height);
-         xfree(userData.pixelStorage);
-         userData.pixelStorage = null;
+         handle = skia_image_backing_create_from_argb_pixels(userData->pixelStorage,
+            userData->width, userData->height);
+         xfree(userData->pixelStorage);
+         userData->pixelStorage = null;
       }
-      userData.pixels = null;
-      if (handle && userData.opacityMetadata) {
-         const int32 opacity = !userData.sourceHasAlpha
+      userData->pixels = null;
+      if (handle && userData->opacityMetadata) {
+         const int32 opacity = !userData->sourceHasAlpha
             ? SKIA_IMAGE_OPACITY_OPAQUE
-            : userData.opacityAlphaOutput
-               ? (userData.pixelsOpaque ? SKIA_IMAGE_OPACITY_OPAQUE
+            : userData->opacityAlphaOutput
+               ? (userData->pixelsOpaque ? SKIA_IMAGE_OPACITY_OPAQUE
                                         : SKIA_IMAGE_OPACITY_TRANSLUCENT)
                : SKIA_IMAGE_OPACITY_UNKNOWN;
          skia_image_backing_set_opacity(handle, opacity);
-         if (!userData.sourceHasAlpha) {
+         if (!userData->sourceHasAlpha) {
             imageRecordTestCounter("opacityKnownFromSourceForTest");
          } else if (opacity != SKIA_IMAGE_OPACITY_UNKNOWN) {
             imageRecordTestCounter("opacityDeterminedDuringDecodeForTest");
          }
       }
       if (!handle || !imageInstallNativeBacking(currentContext, imageObj, handle,
-            userData.width, userData.height)) {
+            userData->width, userData->height)) {
          Image_width(imageObj) = 0;
          Image_height(imageObj) = 0;
          if (tcz != null)
             tczClose(tcz);
          heapDestroy(heap);
+         free(userData);
          return IMAGE_DECODE_RESOURCE_FAILURE;
       }
-      if (userData.zeroCopy) {
+      if (userData->zeroCopy) {
          imageRecordTestCounter("zeroCopyDecodeCountForTest");
       } else {
          imageRecordTestCounter("copiedDecodeCountForTest");
@@ -314,6 +326,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    if (tcz != null)
       tczClose(tcz);
    heapDestroy(heap);
+   free(userData);
 
    return IMAGE_DECODE_SUCCESS;
 
@@ -398,6 +411,10 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
          *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
          userData->quit = true;
          return;
+      }
+      if (imageDecodeConsumeFinalBufferFailureForTest()) {
+         *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+         HEAP_ERROR(userData->heap, 997);
       }
    } else {
       userData->pixelStorage = userData->pixels =
