@@ -508,6 +508,35 @@ On interruption, state must name:
 - [x] Capture row-readback S1.
 - [x] Implement/report row/block readback and color materialization.
 - [x] Final validation and phase-3 handoff.
+- [x] Correct direct APPLY_COLOR2 alpha parity and native-backing mutation
+  invalidation.
+- [x] Harden zero-copy allocation-failure ownership and process-global masks.
+- [x] Share conservative eligibility with trivial draw plans and validate the
+  metadata-disabled fallback scan.
+- [x] Recapture corrected batched S1/S2/S3 matrices with stable full-content
+  hashes and a 30 ms minimum sample floor.
+
+## Corrective closeout
+
+The corrective pass was required after review identified four semantic and
+measurement gaps in the first closeout. Direct APPLY_COLOR2 now derives the
+`0xAAxxxxxx` alpha from the original RGB exactly as the legacy path does.
+Mutable native-backed Graphics writes materialize a mutable surface, advance
+the backing generation, and invalidate opacity to `UNKNOWN`. The zero-copy
+decoder now owns its final buffer safely across allocation-failure longjmp,
+releases it exactly once, and leaves a retryable non-backed failure state.
+Optimization masks are process-global and are updated by settings without a
+per-decode set/reset cycle.
+
+`RASTER_OPAQUE_WRITE_PIXELS` is independent of opacity metadata. With metadata
+disabled, the first eligible draw performs one full scan, caches the result by
+backing generation, and later draws reuse it; ordinary native draws and
+trivial draw plans use the same conservative eligibility helper. The corrected
+benchmark artifacts are under
+`.agent/benchmarks/image-opt-phase2-raster/corrections/`; the original
+historical S1/S2/S3 directories are preserved unchanged. All corrected
+samples use macOS Release software Skia, exact parity/full-content hashes, and
+at least 30 ms of timed work per sample.
 
 ## Decision Log
 
@@ -528,6 +557,18 @@ On interruption, state must name:
   Rationale: avoid misleading terminology and preserve decoder design.
   Date: 2026-09-05.
 
+- Decision: keep opacity metadata and opaque-copy dispatch independently
+  switchable.
+  Rationale: unknown opacity must be conservatively scanned even when the
+  metadata feature is disabled, while the copy feature remains independently
+  testable.
+  Date: 2026-09-05.
+
+- Decision: treat Graphics mutation as a backing-generation boundary.
+  Rationale: aliases can change native pixels outside the Java image API, so
+  cached opacity and copy eligibility must be invalidated together.
+  Date: 2026-09-05.
+
 ## Outcomes & Retrospective
 
 Update only at milestone boundaries with measured facts and committed evidence.
@@ -541,6 +582,9 @@ Update only at milestone boundaries with measured facts and committed evidence.
   rejected after its timing regression and replaced before final S2/S3.
 - Phase-3 should treat all four toggles as experimental and off by default
   until broader platform validation is intentionally scheduled.
+- Corrected S1/S2/S3 recaptures cleared the 30 ms sample floor, kept full
+  output hashes stable, and preserved the original benchmark artifacts for
+  auditability.
 
 ## Revision Note
 
