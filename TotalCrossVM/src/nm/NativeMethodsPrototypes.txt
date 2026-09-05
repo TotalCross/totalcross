@@ -126,6 +126,10 @@ TC_API void tuiNIB_materializeGeometryNative(NMParams p);
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p);
 TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p);
 TC_API void tuiNIB_opacityNative(NMParams p);
+TC_API void tuiNIB_writePixelsAttemptsTest(NMParams p);
+TC_API void tuiNIB_writePixelsHitsTest(NMParams p);
+TC_API void tuiNIB_writePixelsFallbacksTest(NMParams p);
+TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p);
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p);
 TC_API void tugG_create_g(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
@@ -1107,6 +1111,22 @@ TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p) // totalcross/ui/image/Nati
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_opacityNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private int opacityNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_writePixelsAttemptsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsAttemptsTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_writePixelsHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsHitsTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_writePixelsFallbacksTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsFallbacksTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsCopyBytesTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////

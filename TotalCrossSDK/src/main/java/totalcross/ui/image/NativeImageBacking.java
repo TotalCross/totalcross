@@ -140,6 +140,22 @@ final class NativeImageBacking extends ImageBacking {
     return backingPeakBytesTest();
   }
 
+  static long writePixelsAttemptsForTest() {
+    return writePixelsAttemptsTest();
+  }
+
+  static long writePixelsHitsForTest() {
+    return writePixelsHitsTest();
+  }
+
+  static long writePixelsFallbacksForTest() {
+    return writePixelsFallbacksTest();
+  }
+
+  static long writePixelsCopiedBytesForTest() {
+    return writePixelsCopyBytesTest();
+  }
+
   @Override
   boolean isNative() {
     return true;
@@ -309,6 +325,26 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long backingPeakBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsAttemptsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsFallbacksTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsCopyBytesTest() {
     return 0;
   }
 

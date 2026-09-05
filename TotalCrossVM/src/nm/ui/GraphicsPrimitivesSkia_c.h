@@ -465,6 +465,9 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 
       TCObject backing = Image_backing(srcSurf);
       if (isNativeImageBacking(backing)) {
+         int32* optimizationMaskField = getStaticFieldInt(
+            OBJ_CLASS(srcSurf), "nativeOptimizationMaskForDraw");
+         const int32 optimizationMask = optimizationMaskField ? *optimizationMaskField : 0;
          if (!skia_image_backing_draw_to_surface(skiaSurfaceForGraphics(dstSurf),
                NativeImageBacking_nativeHandle(backing),
                (float)(srcX / scaleW + frame * Image_width(srcSurf)),
@@ -472,7 +475,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
                (float)((srcX + w) / scaleW + frame * Image_width(srcSurf)),
                (float)((srcY + h) / scaleH),
                (float)dstX, (float)dstY, (float)(dstX + w), (float)(dstY + h),
-               Image_alphaMask(srcSurf))) {
+               Image_alphaMask(srcSurf), optimizationMask)) {
             if (clipSet) {
                skia_restoreClip(skiaSurfaceForGraphics(dstSurf));
             }
