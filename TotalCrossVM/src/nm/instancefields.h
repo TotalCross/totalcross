@@ -202,6 +202,7 @@
 #define ImageDrawPlan_parameters(o)              FIELD_OBJ(o, OBJ_CLASS(o), 2)
 #define ImageDrawPlan_dimensions(o)              FIELD_OBJ(o, OBJ_CLASS(o), 3)
 #define ImageDrawPlan_operationCapabilities(o)   FIELD_OBJ(o, OBJ_CLASS(o), 4)
+#define ImageDrawPlan_presentation(o)            FIELD_OBJ(o, OBJ_CLASS(o), 5)
 #define ImageDrawPlan_sourceDecodeGeneration(o)  FIELD_I64(o, OBJ_CLASS(o), 7)
 #define ImageDrawPlan_rootWidth(o)               FIELD_I32(o, 0)
 #define ImageDrawPlan_rootHeight(o)              FIELD_I32(o, 1)

@@ -99,6 +99,21 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
    data->hwScaleH = ImageDrawPlan_hwScaleH(plan);
    data->rootHwScaleW = ImageDrawPlan_rootHwScaleW(plan);
    data->rootHwScaleH = ImageDrawPlan_rootHwScaleH(plan);
+   TCObject presentation = ImageDrawPlan_presentation(plan);
+   if (!presentation) {
+      presentation = root;
+   }
+   if (presentation) {
+      const int32 presentationAlpha = Image_alphaMask(presentation);
+      data->currentFrame = Image_currentFrame(presentation);
+      data->transparentColor = Image_transparentColor(presentation);
+      data->outputAlphaMask = presentationAlpha;
+      data->alphaMask = data->materializeAlphaMask == 255
+         ? presentationAlpha
+         : (data->materializeAlphaMask * presentationAlpha + 127) / 255;
+      data->hwScaleW = Image_hwScaleW(presentation);
+      data->hwScaleH = Image_hwScaleH(presentation);
+   }
    return data->operationCount > 0 && data->operationCount * 4 <= ARRAYOBJ_LEN(parameters)
       && data->operationCount * 2 <= ARRAYOBJ_LEN(dimensions);
 }

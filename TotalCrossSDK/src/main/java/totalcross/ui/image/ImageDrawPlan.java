@@ -23,6 +23,8 @@ final class ImageDrawPlan {
   final int[] parameters;
   final int[] dimensions;
   final int[] operationCapabilities;
+  /** Image whose mutable fields carry the draw's current presentation state. */
+  final Image presentation;
   final int rootWidth;
   final int rootHeight;
   final int rootLogicalWidth;
@@ -67,11 +69,26 @@ final class ImageDrawPlan {
       int transparentColor, int materializeAlphaMask, int outputAlphaMask, double destinationScale,
       double outputContentScale, double hwScaleW, double hwScaleH, double rootHwScaleW,
       double rootHwScaleH, long sourceDecodeGeneration) {
+    this(root, operations, parameters, dimensions, rootWidth, rootHeight, rootLogicalWidth, rootLogicalHeight,
+        rootFrameCount, rootWidthOfAllFrames, rootContentScale, outputWidth, outputHeight, outputFrameCount,
+        outputWidthOfAllFrames, currentFrame, alphaMask, transparentColor, materializeAlphaMask, outputAlphaMask,
+        destinationScale, outputContentScale, hwScaleW, hwScaleH, rootHwScaleW, rootHwScaleH,
+        sourceDecodeGeneration, root);
+  }
+
+  ImageDrawPlan(Image root, int[] operations, int[] parameters, int[] dimensions, int rootWidth, int rootHeight,
+      int rootLogicalWidth, int rootLogicalHeight, int rootFrameCount, int rootWidthOfAllFrames,
+      double rootContentScale, int outputWidth, int outputHeight,
+      int outputFrameCount, int outputWidthOfAllFrames, int currentFrame, int alphaMask,
+      int transparentColor, int materializeAlphaMask, int outputAlphaMask, double destinationScale,
+      double outputContentScale, double hwScaleW, double hwScaleH, double rootHwScaleW,
+      double rootHwScaleH, long sourceDecodeGeneration, Image presentation) {
     if (root == null || operations == null || parameters == null || dimensions == null
         || operations.length * 4 != parameters.length || operations.length * 2 != dimensions.length) {
       throw new IllegalArgumentException("Invalid image draw plan");
     }
     this.root = root;
+    this.presentation = presentation == null ? root : presentation;
     this.operations = operations;
     this.parameters = parameters;
     this.dimensions = dimensions;
@@ -99,20 +116,12 @@ final class ImageDrawPlan {
     this.hwScaleH = hwScaleH;
     this.rootHwScaleW = rootHwScaleW;
     this.rootHwScaleH = rootHwScaleH;
-  }
-
-  /** Returns this structural plan with the caller's current mutable presentation state. */
-  ImageDrawPlan withPresentationState(int currentFrame, int alphaMask, int transparentColor,
-      int materializeAlphaMask, int outputAlphaMask, double hwScaleW, double hwScaleH) {
-    return new ImageDrawPlan(root, operations, parameters, dimensions, rootWidth, rootHeight,
-        rootLogicalWidth, rootLogicalHeight, rootFrameCount, rootWidthOfAllFrames, rootContentScale,
-        outputWidth, outputHeight, outputFrameCount, outputWidthOfAllFrames, currentFrame, alphaMask,
-        transparentColor, materializeAlphaMask, outputAlphaMask, destinationScale, outputContentScale,
-        hwScaleW, hwScaleH, rootHwScaleW, rootHwScaleH, sourceDecodeGeneration);
+    Image.recordImageDrawPlanCreatedForTest();
   }
 
   private static int[] classifyOperations(int[] operations) {
     int[] capabilities = new int[operations.length];
+    Image.recordImageDrawPlanCapabilitiesAllocatedForTest();
     for (int i = 0; i < operations.length; i++) {
       switch (operations[i]) {
       case ImagePipeline.SCALE:
