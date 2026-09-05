@@ -5,7 +5,7 @@
 
 
 
-#include "tcvm.h"
+#include "Class.h"
 
 TC_API void jlC_forName_s(NMParams p);
 
@@ -129,20 +129,23 @@ static void createMethodObject(Context currentContext, Method m, TCClass declari
       setObjectLock(Method_name(*ret) = createStringObjectFromCharP(currentContext,isConstructor ? declaringClass->name : m->name,-1),UNLOCKED);
       createClassObject(currentContext, declaringClass->name, Type_Null, &Method_declaringClass(*ret),null);
       // parameters and exceptions
-      Method_parameterTypes(*ret) = createArrayObject(currentContext, "[java.lang.Class", n = m->paramCount);
-      if (Method_parameterTypes(*ret) && n > 0)
+      ptrObj = createArrayObject(currentContext, "[java.lang.Class", n = m->paramCount);
+      if (ptrObj && n > 0)
       {
-         TCObject* oa = (TCObject*)ARRAYOBJ_START(Method_parameterTypes(*ret));
+         TCObject* oa = (TCObject*)ARRAYOBJ_START(ptrObj);
          for (i=0; i < n; i++)
             createClassObject(currentContext, declaringClass->cp->cls[m->cpParams[i]], m->cpParams[i] < Type_Object ? m->cpParams[i] : Type_Null, oa++, null);
       }
-      Method_exceptionTypes(*ret) = createArrayObject(currentContext, "[java.lang.Class", n = 0); // thrown exceptions is not stored in TCClass!
-      if (Method_exceptionTypes(*ret) && n > 0)
+      setObjectLock(Method_parameterTypes(*ret) = ptrObj, UNLOCKED);
+
+      ptrObj = createArrayObject(currentContext, "[java.lang.Class", n = 0); // thrown exceptions is not stored in TCClass!
+      if (ptrObj && n > 0)
       {
-         TCObject* oa = (TCObject*)ARRAYOBJ_START(Method_exceptionTypes(*ret));
+         TCObject* oa = (TCObject*)ARRAYOBJ_START(ptrObj);
          for (i=0; i < n; i++)
             createClassObject(currentContext, m->exceptionHandlers[i].className, Type_Null, oa++, null);
       }
+      setObjectLock(Method_exceptionTypes(*ret) = ptrObj, UNLOCKED);
 
       // return and type
       if (!isConstructor)
@@ -566,7 +569,27 @@ TC_API void jlC_getFields(NMParams p) // java/lang/Class public native java.lang
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
 {
-   getMCarray(p,false,true);
+   TCObject this_ = p->obj[0];
+   TCObject methods = Class_methods(this_);
+   TCObject ret;
+
+   if (methods == null)
+   {
+      getMCarray(p,false,true);
+      Class_methods(this_) = methods = p->retO;
+   }
+
+   ret = createArrayObject(p->currentContext, "[java.lang.reflect.Method", ARRAYOBJ_LEN(methods));
+   if (ret)
+   {
+      int32 length = ARRAYOBJ_LEN(methods);
+      TCObjectArray psrc = (TCObjectArray) ARRAYOBJ_START(methods);
+      TCObjectArray pdst = (TCObjectArray) ARRAYOBJ_START(ret);
+
+      while (length-- >= 0)
+         *pdst++ = *psrc++;
+   }
+   setObjectLock(p->retO = ret, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
