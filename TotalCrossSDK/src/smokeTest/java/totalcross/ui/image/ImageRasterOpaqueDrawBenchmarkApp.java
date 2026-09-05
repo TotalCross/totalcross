@@ -11,7 +11,7 @@ import totalcross.ui.gfx.Graphics;
 /** macOS benchmark workload for eligible and guarded opaque raster draws. */
 public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
   private static final int DEFAULT_SAMPLES = 60;
-  private static final int DRAWS_PER_SAMPLE = 1280;
+  private static final int DRAWS_PER_SAMPLE = 1536;
 
   @Override
   public void initUI() {
