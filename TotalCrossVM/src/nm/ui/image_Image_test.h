@@ -29,7 +29,7 @@ TESTCASE(tuiI_imageLoad_s) // totalcross/ui/image/Image native private void imag
    p.obj[0] = imgObj;
    p.obj[1] = pathObj;
    tuiI_imageLoad_s(&p);
-   ASSERT1_EQUALS(NotNull, Image_pixels(imgObj));
+   ASSERT1_EQUALS(NotNull, RasterImageBacking_pixels(Image_backing(imgObj)));
    ASSERT2_EQUALS(I32, Image_width(imgObj), 240);
    ASSERT2_EQUALS(I32, Image_height(imgObj), 240);
    
@@ -48,7 +48,7 @@ TESTCASE(tuiI_imageLoad_s) // totalcross/ui/image/Image native private void imag
    p.obj[0] = imgObj;
    p.obj[1] = pathObj;
    tuiI_imageLoad_s(&p);
-   ASSERT1_EQUALS(NotNull, Image_pixels(imgObj));
+   ASSERT1_EQUALS(NotNull, RasterImageBacking_pixels(Image_backing(imgObj)));
    ASSERT2_EQUALS(I32, Image_width(imgObj), 240);
    ASSERT2_EQUALS(I32, Image_height(imgObj), 240);
 

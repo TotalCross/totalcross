@@ -15,6 +15,13 @@ struct NativeImageBackingRecord {
     sk_sp<SkSurface> surface;
     int32 width;
     int32 height;
+    uint64_t generation = 0;
+    bool applyColor2AnalysisValid = false;
+    uint64_t applyColor2AnalysisGeneration = 0;
+    uint8_t applyColor2HighestRed = 0;
+    uint8_t applyColor2HighestGreen = 0;
+    uint8_t applyColor2HighestBlue = 0;
+    uint8_t applyColor2HighestChannel = 0;
 
     SkCanvas* canvas() const {
         return surface ? surface->getCanvas() : nullptr;
