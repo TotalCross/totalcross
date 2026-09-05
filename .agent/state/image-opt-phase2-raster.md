@@ -6,10 +6,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T17:17:06-03:00
+Updated: 2026-09-05T17:20:01-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
-Phase-3 base SHA: `736ac7c45`
+Phase-3 base SHA: `39aabd574`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
@@ -41,7 +41,7 @@ build, smoke-test compilation, the corrective native Image smoke family, and
 the final corrected benchmark matrix all passed. The focused corrective smokes
 covered direct color parity, mutable opacity invalidation, zero-copy retry and
 cleanup, and trivial draw-plan writes. The exact phase-3 source/evidence base
-is `736ac7c45`; subsequent documentation-only closeout commits do not change
+is `39aabd574`; the subsequent state-only checkpoint does not change
 runtime or benchmark artifacts.
 
 ## Active paths
