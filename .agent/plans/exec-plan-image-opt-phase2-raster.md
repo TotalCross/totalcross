@@ -467,8 +467,9 @@ built `libtcvm.dylib`.
 
 Before every commit run header validation and `git diff --check --cached`.
 
-The phase is complete only when all four item reports contain S1/S2/S3 data and
-no confirmed disabled-path regression remains.
+The phase is complete only when all four item reports contain S1/S2/S3 data
+and every 200-sample >5% RSS result is either fixed or shown by a final-runtime
+control not to be disabled-feature-only overhead.
 
 ## Risks and Stop Conditions
 
@@ -518,6 +519,8 @@ On interruption, state must name:
 - [x] Add and capture the integrated five-optimization S1/S2/S3 workload with
   exact output parity and native hit counters.
 - [x] Record the final HEAD as the unambiguous Phase-3 handoff base.
+- [x] Version the true-base adapter, capture fixtures before scenario setup,
+  and complete the requested 200-sample RSS closeout.
 
 ## Corrective closeout
 
@@ -543,6 +546,18 @@ at least 30 ms of timed work per sample. The individual S1/S2/S3 reports use
 the actual Phase-1 runtime for S1 and the final Phase-2 runtime for S2/S3. The
 integrated report proves all five Phase-2 features in one representative
 workload; future storage/cache/GPU/mmap features remain explicitly disabled.
+
+The reproducibility closeout is under
+`.agent/benchmarks/image-opt-phase2-raster/closeout-200/`. The true-base
+adapter is a committed benchmark-only script with digest
+`cbfada1ba5f95c27005c473d1f7f128e644adf8f8496d8573bf8beeb1dc08a19`.
+Integrated JPEG and generated opaque-PNG input hashes are identical across
+S1/S2/S3. The requested opacity/readback S2 RSS deltas are all below 5%;
+integrated S2 is +5.26% against true-base S1, with a repeat still above 5%.
+A final-runtime `pre`/`post-disabled` repeat differs by only 0.95% with equal
+medians, so the remaining integrated delta is recorded as a cross-runtime
+revision limitation rather than a demonstrated disabled-path overhead. No
+runtime fix was made.
 
 ## Decision Log
 
@@ -575,6 +590,17 @@ workload; future storage/cache/GPU/mmap features remain explicitly disabled.
   cached opacity and copy eligibility must be invalidated together.
   Date: 2026-09-05.
 
+- Decision: keep the integrated PNG generated before scenario configuration
+  and record full-content input hashes.
+  Rationale: optimization state must not influence benchmark fixture bytes;
+  the existing Java-generated fixture is retained without adding a binary.
+  Date: 2026-09-05.
+
+- Decision: classify the integrated >5% S2/S1 RSS result as cross-runtime only.
+  Rationale: repeated final-runtime `pre` and `post-disabled` controls differ
+  by 0.95% with equal medians, so a disabled-only allocation was not shown.
+  Date: 2026-09-05.
+
 ## Outcomes & Retrospective
 
 Update only at milestone boundaries with measured facts and committed evidence.
@@ -591,6 +617,11 @@ Update only at milestone boundaries with measured facts and committed evidence.
 - Corrected S1/S2/S3 recaptures cleared the 30 ms sample floor, kept full
   output hashes stable, and preserved the original benchmark artifacts for
   auditability.
+- The 200-sample closeout made the true-base harness reproducible, proved
+  byte-identical integrated inputs, and removed the prior unsupported claim
+  that a 60-sample RSS comparison ruled out disabled regressions. Individual
+  opacity/readback RSS gates passed; the integrated cross-runtime RSS shift is
+  documented with final-runtime controls and remains a Phase-3 limitation.
 
 ## Revision Note
 

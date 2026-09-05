@@ -54,6 +54,37 @@ zero-copy decodes, 60 source and 60 decode opacity proofs, 61,440/61,440
 writePixels attempts/hits, 92,160 row reads, zero full readbacks, and 60
 direct color materializations.
 
+## 200-sample reproducibility closeout
+
+The versioned true-base adapter is
+`.agent/benchmarks/image-opt-phase2-raster/true-base-harness/prepare-image-opt-phase2-true-base.sh`.
+It adapts only benchmark compatibility/counter calls and deployment inputs to
+the Phase-1 runtime. Its digest is
+`cbfada1ba5f95c27005c473d1f7f128e644adf8f8496d8573bf8beeb1dc08a19`; the S1
+200-sample recapture uses that adapter and the exact Phase-1 runtime SHA
+`9545c18207fab74d81340b24825c5a82ddbda7fd`.
+
+The new closeout is under
+`.agent/benchmarks/image-opt-phase2-raster/closeout-200/`. Opacity JPEG S2
+RSS is -1.87% versus S1; readback pixels, encode, and color are -4.14%,
+-8.09%, and -1.82%. Their medians/P95 remain equal or within one millisecond,
+and output hashes match exactly.
+
+The integrated canonical S1/S2/S3 results are 878/874/56 ms median,
+883/879.05/59.05 ms P95, and 116,176/122,288/126,560 KiB peak RSS. Input
+JPEG and generated opaque-PNG full-content hashes are identical in all three
+scenarios. S3 counters prove 400 zero-copy decodes, 200 source and decode
+opacity proofs, 204,800 writePixels hits, 307,200 row reads, no full
+readbacks, and 200 direct color materializations.
+
+The integrated S2/S1 RSS delta is above 5% in the canonical run and in its
+repeat, but final-runtime `pre` versus `post-disabled` controls differ by
+only 0.95% in the repeated pair with identical medians. This distinguishes a
+cross-runtime revision RSS shift from demonstrated disabled-feature overhead;
+no runtime fix is claimed or applied. The full diagnosis and repeat controls
+are in the closeout report. Historical, corrected-60-sample, true-base, and
+200-sample evidence are intentionally kept separate.
+
 ## Validation
 
 Passed on macOS with Release software Skia:
@@ -68,6 +99,11 @@ Passed on macOS with Release software Skia:
 - true-base S1 plus final-runtime S2/S3 matrices for decode, opacity,
   opaque-draw, and readback/color;
 - integrated five-optimization S1/S2/S3 matrix with exact output parity.
+- true-base and final-runtime 200-sample closeout runs for opacity JPEG,
+  readback pixels/encode/color, and the integrated workload.
+- final focused `totalcross.ui.image.*` tests, SDK distribution, incremental
+  Release software-Skia native build, smoke-test compilation, and related
+  native Image smokes after the harness changes.
 
 All phase-2 optimization toggles remain disabled by default. Android, iOS,
 Windows, Linux, and GPU validation were intentionally not run because they are
@@ -92,11 +128,11 @@ The review-driven closeout fixed the remaining semantic and measurement gaps:
 - ordinary native draws and trivial draw-plan writes share one conservative
   eligibility helper.
 
-The corrected 60-sample S1/S2/S3 matrices now use a true Phase-1 S1 rather
-than a final-runtime disabled-feature proxy. The integrated workload enables
-all five Phase-2 features only in S3 and proves each with native counters.
-Every sample cleared the 30 ms floor; hashes were stable and matched across
-scenarios. The opaque-draw report also records the intentional guard fallbacks
-and the single cached metadata-disabled scan per backing generation. All phase
-toggles remain disabled by default, and Android, iOS, Windows, Linux, and GPU
-validation remain outside this phase.
+The corrected 60-sample S1/S2/S3 matrices and the new 200-sample closeout use
+a true Phase-1 S1 rather than a final-runtime disabled-feature proxy. The
+integrated workload enables all five Phase-2 features only in S3 and proves
+each with native counters. Hashes are stable and match across scenarios. The
+opaque-draw report also records the intentional guard fallbacks and the single
+cached metadata-disabled scan per backing generation. All phase toggles remain
+disabled by default, and Android, iOS, Windows, Linux, and GPU validation
+remain outside this phase.
