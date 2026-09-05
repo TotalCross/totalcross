@@ -120,7 +120,7 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p);
 TC_API void tuiI_failNextNativeMaterializati(NMParams p);
-TC_API void tuiI_setDiagnosticAccountingTestNative_b(NMParams p);
+TC_API void tuiI_setDiagnosticAccountingTest(NMParams p);
 TC_API void tuiI_changeColorsNative_ii(NMParams p);
 TC_API void tuiI_getPixelRowNative_Bi(NMParams p);
 TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p);
