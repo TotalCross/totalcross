@@ -60,7 +60,8 @@ time, mean/stddev when useful, peak RSS, relevant backing/counter diagnostics,
 S2-vs-S1 and S3-vs-S1/S2 deltas, correctness/quality status, and limitations.
 
 Raw samples live under
-`.agent/benchmarks/image-opt-phase1-controls/<item>/scenario-{1,2,3}.csv`.
+`.agent/benchmarks/<plan>/<item>/scenario-{1,2,3}.csv` (for this plan,
+`<plan>` is `image-opt-phase1-controls`).
 Split raw files by workload before exceeding 20 KiB. Verbose local logs belong
 under `artifacts/image-opt-phase1-controls/` and are not committed.
 
