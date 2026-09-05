@@ -8,6 +8,7 @@
 
 #if TC_RENDERER_SKIA
 #include "skia/skia.h"
+#include "NativeImageBacking.h"
 #endif
 
 static void setCurrentFrame(TCObject obj, int32 nr)
@@ -593,8 +594,14 @@ static void getAlphaInstance(TCObject thisObj, TCObject newObj, int32 delta) // 
 static void getPixelRow(Context currentContext, TCObject obj, TCObject outObj, int32 y)
 {
 #ifdef SKIA_H
+   TCObject backing = Image_backing(obj);
    int32 id = Image_textureId(obj);
    int32 skiaWidth = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
+   if (backing != null && strEq(OBJ_CLASS(backing)->name, "totalcross.ui.image.NativeImageBacking") &&
+       checkArrayRange(currentContext, outObj, 0, skiaWidth * 4) &&
+       skia_image_backing_read_rgba_row(NativeImageBacking_nativeHandle(backing),
+                                        ARRAYOBJ_START(outObj), y, skiaWidth))
+      return;
    if (id >= 0 && checkArrayRange(currentContext, outObj, 0, skiaWidth * 4) &&
        skia_getPixelRow(id, ARRAYOBJ_START(outObj), y, skiaWidth))
       return;

@@ -9,6 +9,10 @@
 #include "png.h"
 #include "tcvm.h"
 #include "ui/image/ImageDecodeStatus.h"
+#if TC_RENDERER_SKIA
+#include "ui/NativeImageBacking.h"
+#include "ui/skia/skia.h"
+#endif
 
 static void row_callback(png_structp, png_bytep, png_uint_32, int);
 static void info_callback(png_structp png_ptr, png_infop info);
@@ -19,6 +23,7 @@ typedef struct
    Heap heap;
    TCObject imageObj;
    Pixel* pixels;
+   Pixel* pixelStorage;
    TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
    // for fetching data
    TCObject inputStreamObj, bufObj, pixelsObj;
@@ -183,11 +188,16 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
 
-   if (userData.pixelsObj == null || userData.rowsDecoded < userData.height)
+   if ((userData.pixelsObj == null && userData.pixels == null) || userData.rowsDecoded < userData.height)
    {
       if (userData.upixels) png_free(png_ptr, userData.upixels);
+#if TC_RENDERER_SKIA
+      if (userData.pixelStorage) xfree(userData.pixelStorage);
+#endif
       png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
       Image_pixels(imageObj) = null;
+      Image_pixelsOfAllFrames(imageObj) = null;
+      Image_backing(imageObj) = null;
       Image_width(imageObj) = 0;
       Image_height(imageObj) = 0;
       if (tcz != null)
@@ -243,6 +253,24 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
 
    Image_width(imageObj) = userData.width;
    Image_height(imageObj) = userData.height;
+#if TC_RENDERER_SKIA
+   {
+      int64 handle = skia_image_backing_create_from_argb_pixels(userData.pixelStorage,
+         userData.width, userData.height);
+      xfree(userData.pixelStorage);
+      userData.pixels = null;
+      userData.pixelStorage = null;
+      if (!handle || !imageInstallNativeBacking(currentContext, imageObj, handle,
+            userData.width, userData.height)) {
+         Image_width(imageObj) = 0;
+         Image_height(imageObj) = 0;
+         if (tcz != null)
+            tczClose(tcz);
+         heapDestroy(heap);
+         return IMAGE_DECODE_RESOURCE_FAILURE;
+      }
+   }
+#endif
    if (tcz != null)
       tczClose(tcz);
    heapDestroy(heap);
@@ -312,6 +340,22 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
       userData->quit = true;
       return;
    }
+#if TC_RENDERER_SKIA
+   if ((uint64)width * height > (uint64)0x7FFFFFFF / sizeof(Pixel))
+   {
+      *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+      userData->quit = true;
+      return;
+   }
+   userData->pixelStorage = userData->pixels =
+      (Pixel*)xmalloc((int32)((uint64)width * height * sizeof(Pixel)));
+   if (!userData->pixelStorage)
+   {
+      *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+      userData->quit = true;
+      return;
+   }
+#else
    Image_pixels(userData->imageObj) = userData->pixelsObj = createIntArray(userData->currentContext, (int32)(width*height));
    if (!userData->pixelsObj)
    {
@@ -321,6 +365,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    }
    setObjectLock(Image_pixels(userData->imageObj), UNLOCKED);
    userData->pixels = (Pixel*)ARRAYOBJ_START(userData->pixelsObj);
+#endif
 }
 
 /** Description:
@@ -342,7 +387,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
 static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pass)
 {
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
-   if (!userData->pixelsObj)
+   if (!userData->pixelsObj && !userData->pixels)
       return;
    png_bytep old_row = userData->upixels;
    png_progressive_combine_row(png_ptr, old_row, new_row);

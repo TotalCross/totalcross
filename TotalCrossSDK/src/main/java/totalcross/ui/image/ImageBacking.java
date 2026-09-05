@@ -19,5 +19,5 @@ abstract class ImageBacking {
   abstract boolean isValid();
 
   /** Returns a detached snapshot suitable for a deferred pipeline root. */
-  abstract ImageBacking snapshot();
+  abstract ImageBacking snapshot() throws ImageException;
 }

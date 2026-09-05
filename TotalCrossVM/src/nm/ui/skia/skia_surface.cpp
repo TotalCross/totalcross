@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "skia_internal.h"
+#include "skia_image_backing.h"
 
 #include <cmath>
 
@@ -14,7 +15,10 @@ SkCanvas* skiaGetCanvas(int32 surfaceId) {
     if (surfaceId == SKIA_SCREEN_SURFACE_ID) {
         return canvas;
     }
-    if (surfaceId < 0 || static_cast<size_t>(surfaceId) >= imageSurfaces.size()) {
+    if (surfaceId < 0) {
+        return skia_image_backing_canvas_for_surface_id(surfaceId);
+    }
+    if (static_cast<size_t>(surfaceId) >= imageSurfaces.size()) {
         return nullptr;
     }
     const auto& imageSurface = imageSurfaces[static_cast<size_t>(surfaceId)];

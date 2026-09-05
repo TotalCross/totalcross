@@ -394,7 +394,13 @@ TC_API void tuiI_applyChangesNative(NMParams p) // totalcross/ui/image/Image pri
       Image_textureId(img) = -1;
    }
    int32 frameCount = Image_frameCount(img);
+   TCObject backing = Image_backing(img);
    TCObject pixelsObj = frameCount == 1 ? Image_pixels(img) : Image_pixelsOfAllFrames(img);
+
+   if (backing != null && strEq(OBJ_CLASS(backing)->name, "totalcross.ui.image.NativeImageBacking")) {
+      Image_changed(img) = false;
+      return;
+   }
    
    if (pixelsObj != NULL) {
       int32 width = (frameCount > 1) ? Image_widthOfAllFrames(img) : Image_width(img);
@@ -421,9 +427,10 @@ TC_API void tuiI_freeTextureNative(NMParams p) // totalcross/ui/image/Image priv
 #else
       TCObject img = p->obj[0];
       int32 id = Image_textureId(img);
-
-      skia_deleteBitmap(id);
-      Image_textureId(img) = -1;
+      if (id >= 0) {
+         skia_deleteBitmap(id);
+         Image_textureId(img) = -1;
+      }
 #endif
 }
 //////////////////////////////////////////////////////////////////////////

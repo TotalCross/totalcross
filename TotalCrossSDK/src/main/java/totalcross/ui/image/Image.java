@@ -194,6 +194,7 @@ public class Image extends GfxSurface {
 
   /** Used by lockChanges to store the hashCode before discarding the pixels. */
   private int hashCode;
+  private boolean changesLocked;
 
   // object fields addressed by TotalCrossVM/src/nm/instancefields.h
   private boolean[] changed = { true };
@@ -313,16 +314,20 @@ public class Image extends GfxSurface {
     this.contentScale = contentScale;
     width = (int) pixelWidth;
     height = (int) pixelHeight;
-    try {
-      if (decodedRaster && consumeDecodedRasterAllocationFailureForTest()) {
-        throw new TransientImageMaterializationException("Simulated decoded-raster allocation failure");
+    if (!Settings.onJavaSE && NativeImageBacking.isAvailable()) {
+      backing = NativeImageBacking.createEmpty(width, height);
+    } else {
+      try {
+        if (decodedRaster && consumeDecodedRasterAllocationFailureForTest()) {
+          throw new TransientImageMaterializationException("Simulated decoded-raster allocation failure");
+        }
+        pixels = new int[height * width]; // just create the pixels array
+      } catch (OutOfMemoryError oome) {
+        if (decodedRaster) {
+          throw new TransientImageMaterializationException(oome);
+        }
+        throw new ImageException("Out of memory: cannot allocate " + width + "x" + height + " offscreen image.");
       }
-      pixels = new int[height * width]; // just create the pixels array
-    } catch (OutOfMemoryError oome) {
-      if (decodedRaster) {
-        throw new TransientImageMaterializationException(oome);
-      }
-      throw new ImageException("Out of memory: cannot allocate " + width + "x" + height + " offscreen image.");
     }
     init();
   }
@@ -348,6 +353,7 @@ public class Image extends GfxSurface {
     this.pixels = src.pixels;
     this.pixelsOfAllFrames = src.pixelsOfAllFrames;
     this.backing = src.backing;
+    this.changesLocked = src.changesLocked;
     this.comment = src.comment;
     this.gfx = new Graphics(this);
     this.gfx.refresh(0, 0, getWidth(), getHeight(), 0, 0, null);
@@ -372,7 +378,23 @@ public class Image extends GfxSurface {
   /** Used only at desktop to get the image's pixels. */
   public int[] getPixels() {
     materializeCanonicalUnchecked();
+    if (!Settings.onJavaSE && backing instanceof NativeImageBacking) {
+      return readbackVisiblePixels((NativeImageBacking) backing);
+    }
     return pixels;
+  }
+
+  private int[] readbackVisiblePixels(NativeImageBacking nativeBacking) {
+    long pixelCount = (long) width * height;
+    if (pixelCount > Integer.MAX_VALUE) {
+      throw new IllegalStateException("Image is too large to read back");
+    }
+    int[] visible = new int[(int) pixelCount];
+    int frameX = frameCount > 1 ? normalizedFrame(currentFrame) * width : 0;
+    if (!nativeBacking.readPixels(visible, 0, frameX, 0, width, height)) {
+      throw new IllegalStateException("Could not read native image backing");
+    }
+    return visible;
   }
 
   /**
@@ -525,6 +547,13 @@ public class Image extends GfxSurface {
     return pipeline;
   }
 
+  /** Test-only representation probe that does not expose the native handle. */
+  boolean hasNativeBackingForSmoke() {
+    materializeCanonicalUnchecked();
+    return !Settings.onJavaSE && backing instanceof NativeImageBacking
+        && pixels == null && pixelsOfAllFrames == null;
+  }
+
   private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
     pipeline = deferred;
     width = deferred.width();
@@ -568,7 +597,7 @@ public class Image extends GfxSurface {
     }
   }
 
-  BackingImageSource snapshotRasterSource() {
+  BackingImageSource snapshotRasterSource() throws ImageException {
     if (backing == null && pixels != null) {
       adoptRasterBackingCompatibility();
     }
@@ -608,7 +637,27 @@ public class Image extends GfxSurface {
 
   static Image materializeBackingSource(BackingImageSource source) throws ImageException {
     if (!source.backing.isRaster()) {
-      throw new ImageException("Native image sources are not available on this execution path");
+      Image result = new Image();
+      result.width = source.width;
+      result.height = source.height;
+      result.logicalWidth = source.logicalWidth;
+      result.logicalHeight = source.logicalHeight;
+      result.contentScale = source.contentScale;
+      result.frameCount = source.frameCount;
+      result.currentFrame = source.currentFrame;
+      result.widthOfAllFrames = source.widthOfAllFrames;
+      result.backing = source.backing;
+      result.comment = source.comment;
+      result.path = source.path;
+      result.surfaceType = source.surfaceType;
+      result.transparentColor = source.transparentColor;
+      result.useAlpha = source.useAlpha;
+      result.alphaMask = source.alphaMask;
+      result.hwScaleW = source.hwScaleW;
+      result.hwScaleH = source.hwScaleH;
+      result.textureId = -1;
+      result.init();
+      return result;
     }
     RasterImageBacking raster = (RasterImageBacking) source.backing;
     Image result = new Image();
@@ -637,9 +686,12 @@ public class Image extends GfxSurface {
 
   /** Keeps the transitional backing wrapper aligned with legacy raster fields. */
   private void adoptRasterBackingCompatibility() {
-    backing = pixels == null ? null
-        : new RasterImageBacking(width, height, frameCount, widthOfAllFrames, pixels,
-            frameCount > 1 ? (int[]) pixelsOfAllFrames : null);
+    if (pixels != null) {
+      backing = new RasterImageBacking(width, height, frameCount, widthOfAllFrames, pixels,
+          frameCount > 1 ? (int[]) pixelsOfAllFrames : null);
+    } else if (backing == null || backing.isRaster()) {
+      backing = null;
+    }
   }
 
   private Image deferTransform(int operationType, int parameter1, int parameter2, int parameter3,
@@ -818,6 +870,7 @@ public class Image extends GfxSurface {
     synchronizePresentationState(resolved);
     pixels = resolved.pixels;
     pixelsOfAllFrames = resolved.pixelsOfAllFrames;
+    backing = resolved.backing;
     width = resolved.width;
     height = resolved.height;
     frameCount = resolved.frameCount;
@@ -879,6 +932,9 @@ public class Image extends GfxSurface {
       return;
     }
     image.currentFrame = normalized;
+    if (image.backing instanceof NativeImageBacking) {
+      return;
+    }
     int[] allFrames = (int[]) image.pixelsOfAllFrames;
     for (int y = image.height - 1; y >= 0; y--) {
       Vm.arrayCopy(allFrames, normalized * image.width + y * image.widthOfAllFrames,
@@ -912,7 +968,7 @@ public class Image extends GfxSurface {
         } else {
           decoded.decodeEncodedSource(source);
         }
-        if (decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
+        if ((decoded.backing == null && decoded.pixels == null) || decoded.width <= 0 || decoded.height <= 0) {
           throw new DeterministicImageDecodeException("Could not decode encoded image");
         }
       } catch (DeterministicImageDecodeException failure) {
@@ -1393,6 +1449,20 @@ public class Image extends GfxSurface {
 
     materializeCanonicalChecked();
 
+    if (!Settings.onJavaSE && backing instanceof NativeImageBacking) {
+      int fullWidth = backing.width();
+      if (fullWidth <= 0 || fullWidth % n != 0) {
+        throw new ImageException("Image frame layout is invalid.");
+      }
+      frameCount = n;
+      widthOfAllFrames = fullWidth;
+      width = fullWidth / n;
+      logicalWidth = (int) Math.ceil(width / contentScale);
+      currentFrame = 0;
+      comment = "FC=" + n;
+      return;
+    }
+
     if (n != frameCount && n > 1 && frameCount <= 1) {
       try {
         frameCount = n;
@@ -1440,6 +1510,12 @@ public class Image extends GfxSurface {
     }
     materializeCanonicalUnchecked();
     if (!Settings.onJavaSE) {
+      if (backing instanceof NativeImageBacking) {
+        if (frameCount > 1) {
+          currentFrame = normalizedFrame(nr);
+        }
+        return;
+      }
       setCurrentFrameNative(nr);
       return;
     }
@@ -1501,8 +1577,11 @@ public class Image extends GfxSurface {
 
   /** Returns a new Graphics instance that can be used to drawing in this image. */
   public Graphics getGraphics() {
+    if (changesLocked) {
+      return null;
+    }
     materializeCanonicalUnchecked();
-    if (pixels == null) {
+    if (backing == null || !backing.isValid()) {
       return null;
     }
 
@@ -1586,6 +1665,10 @@ public class Image extends GfxSurface {
       }
       pixels = null;
       pixelsOfAllFrames = null;
+      if (backing != null && backing.isRaster()) {
+        backing = null;
+      }
+      changesLocked = true;
     }
   }
 
@@ -2052,6 +2135,9 @@ public class Image extends GfxSurface {
   }
 
   private Image eagerScaledInstance(int newWidth, int newHeight) throws ImageException {
+    if (!Settings.onJavaSE && backing instanceof NativeImageBacking) {
+      return eagerNativeScaledInstance(newWidth, newHeight, false);
+    }
     if (!Settings.onJavaSE) {
       return getModifiedInstance(newWidth, newHeight, 0, 0, -1, 0, 0, SCALED_INSTANCE);
     }
@@ -2110,6 +2196,9 @@ public class Image extends GfxSurface {
   }
 
   private Image eagerSmoothScaledInstance(int newWidth, int newHeight) throws ImageException {
+    if (!Settings.onJavaSE && backing instanceof NativeImageBacking) {
+      return eagerNativeScaledInstance(newWidth, newHeight, true);
+    }
     if (!Settings.onJavaSE) {
       return getModifiedInstance(newWidth, newHeight, 0, 0, 0, 0, 0, SMOOTH_SCALED_INSTANCE);
     }
@@ -2384,6 +2473,37 @@ public class Image extends GfxSurface {
     }
 
     return scaledImage;
+  }
+
+  private Image eagerNativeScaledInstance(int newWidth, int newHeight, boolean smooth) throws ImageException {
+    if (newWidth <= 0 || newHeight <= 0) {
+      throw new ImageException("Image dimensions must be positive.");
+    }
+    long physicalWidth = (long) newWidth * frameCount;
+    if (physicalWidth > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    NativeImageBacking scaledBacking = ((NativeImageBacking) backing).scale((int) physicalWidth, newHeight, smooth);
+    Image result = new Image();
+    result.backing = scaledBacking;
+    result.width = newWidth;
+    result.height = newHeight;
+    result.logicalWidth = newWidth;
+    result.logicalHeight = newHeight;
+    result.contentScale = contentScale;
+    result.frameCount = frameCount;
+    result.currentFrame = currentFrame;
+    result.widthOfAllFrames = (int) physicalWidth;
+    result.comment = comment;
+    result.surfaceType = 1;
+    result.textureId = -1;
+    result.hwScaleW = 1;
+    result.hwScaleH = 1;
+    result.alphaMask = alphaMask;
+    result.transparentColor = transparentColor;
+    result.useAlpha = useAlpha;
+    result.init();
+    return result;
   }
 
   /** Returns the scaled instance for this image, given the scale arguments. The algorithm used is

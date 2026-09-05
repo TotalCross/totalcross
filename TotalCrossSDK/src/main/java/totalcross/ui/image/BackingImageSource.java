@@ -28,7 +28,9 @@ final class BackingImageSource extends ImageSource {
       double contentScale, int frameCount, int currentFrame, int widthOfAllFrames, String comment,
       String path, int surfaceType, int transparentColor, boolean useAlpha, int alphaMask,
       double hwScaleW, double hwScaleH) {
-    if (backing == null || !backing.isValid()) {
+    int expectedStorageWidth = frameCount > 1 ? widthOfAllFrames : width;
+    if (backing == null || !backing.isValid() || expectedStorageWidth <= 0 || height <= 0
+        || backing.width() != expectedStorageWidth || backing.height() != height) {
       throw new IllegalArgumentException("Invalid image backing source");
     }
     this.backing = backing;

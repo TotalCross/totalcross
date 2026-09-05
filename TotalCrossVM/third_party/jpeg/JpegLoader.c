@@ -15,6 +15,10 @@
 #include "JpegLoader.h"
 #include "jerror-tc.h"
 #include "jerror.h"
+#if TC_RENDERER_SKIA
+#include "ui/NativeImageBacking.h"
+#include "ui/skia/skia.h"
+#endif
 
 #if defined _WINDOWS || defined WINCE
 #ifndef fmin
@@ -143,6 +147,7 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
 {
    JPEGFILE file;
    Pixel *pixels;
+   Pixel *pixelStorage;
    Heap heap;
    TCJpegErrorManager errbase;
    JSAMPARRAY buffer0; // Output pixel-row buffer
@@ -151,6 +156,9 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    struct jpeg_decompress_struct cinfo;
    TCJpegIOContext io;
    TCObject pixelsObj;
+#if TC_RENDERER_SKIA
+   int64 nativeHandle = 0;
+#endif
    volatile ImageDecodeStatus status = IMAGE_DECODE_SUCCESS;
 
    xmemzero(&errbase, sizeof(errbase));
@@ -250,8 +258,39 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
          tczClose(tcz);
       heapDestroy(heap);
       Image_pixels(imageObj) = null;
+      Image_pixelsOfAllFrames(imageObj) = null;
+      Image_backing(imageObj) = null;
       return status;
    }
+#if TC_RENDERER_SKIA
+   if ((uint64)width * height > (uint64)0x7FFFFFFF / sizeof(Pixel))
+   {
+      status = IMAGE_DECODE_RESOURCE_FAILURE;
+      jpeg_abort_decompress(&cinfo);
+      jpeg_destroy_decompress(&cinfo);
+      if (tcz != null)
+         tczClose(tcz);
+      heapDestroy(heap);
+      Image_pixels(imageObj) = null;
+      Image_pixelsOfAllFrames(imageObj) = null;
+      Image_backing(imageObj) = null;
+      return status;
+   }
+   pixelStorage = pixels = (Pixel*)xmalloc((int32)((uint64)width * height * sizeof(Pixel)));
+   if (!pixelStorage)
+   {
+      status = IMAGE_DECODE_RESOURCE_FAILURE;
+      jpeg_abort_decompress(&cinfo);
+      jpeg_destroy_decompress(&cinfo);
+      if (tcz != null)
+         tczClose(tcz);
+      heapDestroy(heap);
+      Image_pixels(imageObj) = null;
+      Image_pixelsOfAllFrames(imageObj) = null;
+      Image_backing(imageObj) = null;
+      return status;
+   }
+#else
    Image_pixels(imageObj) = pixelsObj = createIntArray(currentContext, width*height);
    if (!pixelsObj)
    {
@@ -265,7 +304,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       return status;
    }
    setObjectLock(pixelsObj, UNLOCKED);
-   pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+   pixelStorage = pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+#endif
 
    /* Create decompressor output buffer. */
    buffer0 = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, (width * cinfo.output_components+3) & ~3, (JDIMENSION)1);
@@ -290,6 +330,16 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    // has allocated memory of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
    jpeg_finish_decompress(&cinfo);
    jpeg_destroy_decompress(&cinfo);
+#if TC_RENDERER_SKIA
+   nativeHandle = skia_image_backing_create_from_argb_pixels(pixelStorage, width, height);
+   xfree(pixelStorage);
+   pixelStorage = null;
+   if (!nativeHandle || !imageInstallNativeBacking(currentContext, imageObj, nativeHandle, width, height)) {
+      status = IMAGE_DECODE_RESOURCE_FAILURE;
+      Image_width(imageObj) = 0;
+      Image_height(imageObj) = 0;
+   }
+#endif
    if (tcz != null)
       tczClose(tcz);
    heapDestroy(heap);
@@ -427,7 +477,20 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    volatile bool ret = false;                  
    
    TCObject pixObj = (Image_frameCount(srcImageObj) > 1) ? Image_pixelsOfAllFrames(srcImageObj) : Image_pixels(srcImageObj);
-   PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
+   PixelConv *pixels = null;
+#if TC_RENDERER_SKIA
+   Pixel *nativeRow = null;
+   TCObject backing = Image_backing(srcImageObj);
+   bool nativeBacking = backing != null && strEq(OBJ_CLASS(backing)->name,
+      "totalcross.ui.image.NativeImageBacking");
+#else
+   bool nativeBacking = false;
+#endif
+   if (!nativeBacking) {
+      if (!pixObj)
+         return false;
+      pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
+   }
    int32 width = (Image_frameCount(srcImageObj) > 1) ? Image_widthOfAllFrames(srcImageObj) : Image_width(srcImageObj);
    int32 height = Image_height(srcImageObj);
    scanLineOut = width * 3;
@@ -461,6 +524,15 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    }
 
    bufAux = (uint8*) heapAlloc(heap, scanLineOut);
+#if TC_RENDERER_SKIA
+   if (nativeBacking) {
+      if (width <= 0 || width > (int32)(0x7FFFFFFF / sizeof(Pixel)))
+         goto finish;
+      nativeRow = (Pixel*)heapAlloc(heap, width * sizeof(Pixel));
+      if (!nativeRow)
+         goto finish;
+   }
+#endif
 
    // initialize error handler and compressor.
    cinfo.err = tc_jpeg_std_error(&errbase, heap);
@@ -492,11 +564,27 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
 
    while (cinfo.next_scanline < cinfo.image_height) /* Process data */
    {
-      for (i = width ; --i >= 0; pixels++)
-      {
-         *bufAux++ = pixels->r;
-         *bufAux++ = pixels->g;
-         *bufAux++ = pixels->b;
+      if (nativeBacking) {
+#if TC_RENDERER_SKIA
+         if (!skia_image_backing_read_row(NativeImageBacking_nativeHandle(backing),
+               nativeRow, (int32)cinfo.next_scanline, width)) {
+            jpeg_abort_compress(&cinfo);
+            jpeg_destroy_compress(&cinfo);
+            goto finish;
+         }
+         for (i = 0; i < width; ++i) {
+            *bufAux++ = (uint8)((nativeRow[i] >> 16) & 0xFF);
+            *bufAux++ = (uint8)((nativeRow[i] >> 8) & 0xFF);
+            *bufAux++ = (uint8)(nativeRow[i] & 0xFF);
+         }
+#endif
+      } else {
+         for (i = width ; --i >= 0; pixels++)
+         {
+            *bufAux++ = pixels->r;
+            *bufAux++ = pixels->g;
+            *bufAux++ = pixels->b;
+         }
       }
       bufAux -= scanLineOut;
 
