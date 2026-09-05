@@ -11,7 +11,7 @@ import totalcross.ui.gfx.Graphics;
 /** macOS benchmark workload for eligible and guarded opaque raster draws. */
 public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
   private static final int DEFAULT_SAMPLES = 60;
-  private static final int DRAWS_PER_SAMPLE = 128;
+  private static final int DRAWS_PER_SAMPLE = 1280;
 
   @Override
   public void initUI() {
@@ -45,7 +45,6 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
       for (int warmup = 0; warmup < 3; warmup++) {
         drawBatch(canvas, source);
       }
-      Image.resetImageOperationAccountingForTest();
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
         drawBatch(canvas, source);
@@ -59,7 +58,8 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
         }
         totalDraws += DRAWS_PER_SAMPLE;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",format=" + format
-            + ",draws=" + DRAWS_PER_SAMPLE + ",width=" + source.getPixelWidth()
+            + ",draws=" + DRAWS_PER_SAMPLE + ",opacity_metadata=disabled"
+            + ",width=" + source.getPixelWidth()
             + ",height=" + source.getPixelHeight()
             + ",pixel_hash=" + pixelHash
             + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()

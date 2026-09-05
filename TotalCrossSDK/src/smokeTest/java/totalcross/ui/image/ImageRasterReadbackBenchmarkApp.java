@@ -43,7 +43,7 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
         long start = Vm.getTimeStamp();
         OperationResult result = runOperationBatch(encoded, operation, batch);
         long elapsed = Vm.getTimeStamp() - start;
-        String outputHash = ImageRasterBenchmarkSupport.hashString(result.hash);
+        String outputHash = ImageRasterBenchmarkSupport.hashString(result.hash());
         if (expectedHash == null) {
           expectedHash = outputHash;
           finalHash = outputHash;
@@ -88,31 +88,38 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
   }
 
   private static OperationResult runOperation(byte[] encoded, String operation) throws Exception {
-    Image image = ImageRasterBenchmarkSupport.materialize(encoded);
+      Image image = ImageRasterBenchmarkSupport.materialize(encoded);
     if ("pixels".equals(operation)) {
       int[] pixels = image.getPixels();
-      return new OperationResult((long) pixels.length * 4,
-          ImageRasterBenchmarkSupport.fullPixelHash(pixels));
+      return new OperationResult((long) pixels.length * 4, pixels, null, 0);
     }
     if ("encode".equals(operation)) {
       ByteArrayStream stream = new ByteArrayStream(8192);
       image.createPng(stream);
-      return new OperationResult(stream.getPos(), ImageRasterBenchmarkSupport.fullByteHash(
-          stream.getBuffer(), stream.getPos()));
+      return new OperationResult(stream.getPos(), null, stream.getBuffer(), stream.getPos());
     }
     image.applyColor2(0x0090A0B0);
     int[] pixels = image.getPixels();
-    return new OperationResult((long) pixels.length * 4,
-        ImageRasterBenchmarkSupport.fullPixelHash(pixels));
+    return new OperationResult((long) pixels.length * 4, pixels, null, 0);
   }
 
   private static final class OperationResult {
     final long outputBytes;
-    final long hash;
+    final int[] pixels;
+    final byte[] bytes;
+    final int byteLength;
 
-    OperationResult(long outputBytes, long hash) {
+    OperationResult(long outputBytes, int[] pixels, byte[] bytes, int byteLength) {
       this.outputBytes = outputBytes;
-      this.hash = hash;
+      this.pixels = pixels;
+      this.bytes = bytes;
+      this.byteLength = byteLength;
+    }
+
+    long hash() {
+      return pixels != null
+          ? ImageRasterBenchmarkSupport.fullPixelHash(pixels)
+          : ImageRasterBenchmarkSupport.fullByteHash(bytes, byteLength);
     }
   }
 }
