@@ -29,7 +29,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObje
 
 static bool failNextImageAllocationForTest;
 
-TC_API void tuiI_setDiagnosticAccountingTestNative_b(NMParams p) // totalcross/ui/image/Image native private static void setDiagnosticAccountingTestNative(boolean enabled);
+TC_API void tuiI_setDiagnosticAccountingTest(NMParams p) // totalcross/ui/image/Image native private static void setDiagnosticAccountingTestNative(boolean enabled);
 {
    imageSetTestAccounting(p->currentContext, p->i32[0]);
 #if TC_RENDERER_SKIA
