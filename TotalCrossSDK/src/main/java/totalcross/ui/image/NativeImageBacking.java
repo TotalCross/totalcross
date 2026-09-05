@@ -8,6 +8,10 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 /** Opaque native backing used by deployed Skia images. */
 final class NativeImageBacking extends ImageBacking {
+  static final int OPACITY_UNKNOWN = 0;
+  static final int OPACITY_OPAQUE = 1;
+  static final int OPACITY_TRANSLUCENT = 2;
+
   private static boolean backingAccountingEnabledForTest;
   private long nativeHandle;
   private final int width;
@@ -196,6 +200,10 @@ final class NativeImageBacking extends ImageBacking {
     return nativeHandle;
   }
 
+  int opacityForTest() {
+    return isValid() ? opacityNative() : OPACITY_UNKNOWN;
+  }
+
   boolean makeMutable() {
     if (nativeHandle == 0) {
       throw new IllegalStateException("Native image backing has been released");
@@ -331,6 +339,11 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private boolean readRgbaRowNative(byte[] output, int y, int width) {
     return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int opacityNative() {
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy

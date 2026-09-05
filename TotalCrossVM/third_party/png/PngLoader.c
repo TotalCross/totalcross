@@ -43,6 +43,10 @@ typedef struct
    png_bytep upixels;
    bool quit;
    bool zeroCopy;
+   bool opacityMetadata;
+   bool sourceHasAlpha;
+   bool opacityAlphaOutput;
+   bool pixelsOpaque;
    int32 rowsDecoded;
    volatile ImageDecodeStatus *decodeStatus;
    Context currentContext;
@@ -116,7 +120,8 @@ void userfree(png_structp png_ptr, png_voidp ptr)
 void setTransparentColor(TCObject obj, Pixel color);
 // imageObj+tcz+first4, imageObj+inputStream+bufObj+bufCount, or imageObj+mapped bytes
 ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
-      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength, bool zeroCopy)
+      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength, bool zeroCopy,
+      bool opacityMetadata)
 {
    Heap heap;
    int32 count;
@@ -160,6 +165,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    userData.first4 = first4;
    userData.imageObj = imageObj;
    userData.zeroCopy = zeroCopy;
+   userData.opacityMetadata = opacityMetadata;
 
    IF_HEAP_ERROR(heap)
    {
@@ -273,6 +279,20 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
          userData.pixelStorage = null;
       }
       userData.pixels = null;
+      if (handle && userData.opacityMetadata) {
+         const int32 opacity = !userData.sourceHasAlpha
+            ? SKIA_IMAGE_OPACITY_OPAQUE
+            : userData.opacityAlphaOutput
+               ? (userData.pixelsOpaque ? SKIA_IMAGE_OPACITY_OPAQUE
+                                        : SKIA_IMAGE_OPACITY_TRANSLUCENT)
+               : SKIA_IMAGE_OPACITY_UNKNOWN;
+         skia_image_backing_set_opacity(handle, opacity);
+         if (!userData.sourceHasAlpha) {
+            imageRecordTestCounter("opacityKnownFromSourceForTest");
+         } else if (opacity != SKIA_IMAGE_OPACITY_UNKNOWN) {
+            imageRecordTestCounter("opacityDeterminedDuringDecodeForTest");
+         }
+      }
       if (!handle || !imageInstallNativeBacking(currentContext, imageObj, handle,
             userData.width, userData.height)) {
          Image_width(imageObj) = 0;
@@ -321,6 +341,9 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    int32 num_trans = 0;
 
    png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,&interlace_type,&compression_type,&filter_method);
+   userData->sourceHasAlpha = color_type == PNG_COLOR_TYPE_RGB_ALPHA
+      || color_type == PNG_COLOR_TYPE_GRAY_ALPHA
+      || png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) != 0;
    
    /*
    | set up transformation params:
@@ -344,6 +367,8 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    num_trans = 0; // MUST BE INITIALIZED BEFORE png_get_tRNS
    if (color_type != PNG_COLOR_TYPE_PALETTE && png_get_tRNS(png_ptr, info_ptr, null, &num_trans, null) != 0 && num_trans != 0) // we don't support transparent palettes
       png_set_strip_alpha(png_ptr);
+   userData->opacityAlphaOutput = userData->sourceHasAlpha && png_get_channels(png_ptr, info_ptr) == 4;
+   userData->pixelsOpaque = true;
    userData->width = (int32)width;
    userData->height = (int32)height;
    userData->bytesPerRow = (int32)png_get_rowbytes(png_ptr, info_ptr);
@@ -444,6 +469,15 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
       int32 num_trans = 0;
       png_byte channels = png_get_channels(png_ptr, userData->info_ptr);
       png_get_tRNS(png_ptr, userData->info_ptr, null, &num_trans, null);
+      if (userData->opacityMetadata && userData->opacityAlphaOutput && channels == 4) {
+         png_bytep alpha = buffer + 3;
+         for (x = 0; x < userData->width; x++, alpha += 4) {
+            if (*alpha != 0xFF) {
+               userData->pixelsOpaque = false;
+               break;
+            }
+         }
+      }
       if (userData->zeroCopy) {
          uint8* destination = userData->rgbaStorage + (size_t)row_num * userData->width * 4;
          if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6)) {

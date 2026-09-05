@@ -39,12 +39,20 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
         long elapsed = Vm.getTimeStamp() - start;
         long pixels = (long) image.getPixelWidth() * image.getPixelHeight();
         totalPixels += pixels;
+        int opacity = image.backing instanceof NativeImageBacking
+            ? ((NativeImageBacking) image.backing).opacityForTest()
+            : NativeImageBacking.OPACITY_UNKNOWN;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",kind=" + kind
             + ",width=" + image.getPixelWidth() + ",height=" + image.getPixelHeight()
-            + ",pixels=" + pixels + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
+            + ",pixels=" + pixels + ",opacity=" + opacity
+            + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
             + ",copied=" + Image.copiedDecodeCountForTest()
             + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
-            + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest());
+            + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest()
+            + ",opacity_known_source=" + Image.opacityKnownFromSourceForTest()
+            + ",opacity_determined_decode=" + Image.opacityDeterminedDuringDecodeForTest()
+            + ",opacity_fallback_scans=" + Image.opacityFallbackScansForTest()
+            + ",opacity_fallback_pixels=" + Image.opacityFallbackPixelsForTest());
         System.out.flush();
         completedSamples = sample;
       }
@@ -58,7 +66,11 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
             + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
             + ",copied=" + Image.copiedDecodeCountForTest()
             + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
-            + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest(), error);
+            + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest()
+            + ",opacity_known_source=" + Image.opacityKnownFromSourceForTest()
+            + ",opacity_determined_decode=" + Image.opacityDeterminedDuringDecodeForTest()
+            + ",opacity_fallback_scans=" + Image.opacityFallbackScansForTest()
+            + ",opacity_fallback_pixels=" + Image.opacityFallbackPixelsForTest(), error);
     exit(pass ? 0 : 1);
   }
 

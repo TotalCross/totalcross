@@ -328,6 +328,21 @@ int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 wid
     }
 }
 
+void skia_image_backing_set_opacity(int64_t handle, int32 opacity) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    if (!backing || (opacity != SKIA_IMAGE_OPACITY_UNKNOWN
+        && opacity != SKIA_IMAGE_OPACITY_OPAQUE
+        && opacity != SKIA_IMAGE_OPACITY_TRANSLUCENT)) {
+        return;
+    }
+    backing->opacity = opacity;
+}
+
+int32 skia_image_backing_opacity(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    return backing ? backing->opacity : SKIA_IMAGE_OPACITY_UNKNOWN;
+}
+
 int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle) {
     if (snapshotHandle) {
         *snapshotHandle = 0;
@@ -349,6 +364,7 @@ int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle) 
         backing->image = std::move(snapshot);
         backing->width = source->width;
         backing->height = source->height;
+        backing->opacity = source->opacity;
         const int64_t newHandle = registerBackingRecord(std::move(backing));
         if (newHandle == 0) {
             return SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE;
@@ -422,6 +438,7 @@ int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 output
             SkCanvas::kStrict_SrcRectConstraint);
         backing->width = outputWidth;
         backing->height = outputHeight;
+        backing->opacity = source->opacity;
         return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
@@ -443,6 +460,7 @@ int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
     if (result != 0) {
         ++target->generation;
         target->applyColor2AnalysisValid = false;
+        target->opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
     }
     return result;
 }

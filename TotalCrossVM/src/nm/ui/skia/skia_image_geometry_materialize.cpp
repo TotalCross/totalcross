@@ -31,6 +31,21 @@ static bool hasDestinationScaledGeometry(const SkiaImageDrawPlanData* plan, int 
     return false;
 }
 
+static bool preservesOpaquePixels(const SkiaImageDrawPlanData* plan, const NativeImageBackingRecord* source,
+                                  int prefixOperationCount) {
+    if (!plan || !source || source->opacity != SKIA_IMAGE_OPACITY_OPAQUE
+        || plan->alphaMask != 255 || plan->materializeAlphaMask != 255) {
+        return false;
+    }
+    for (int i = 0; i < prefixOperationCount; ++i) {
+        const int operation = plan->operations[i];
+        if (operation != 0 && operation != 1 && operation != 12 && operation != 13) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }
 
 int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan) {
@@ -124,6 +139,9 @@ int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* pla
         }
         backing->width = static_cast<int32>(physicalFullWidth);
         backing->height = static_cast<int32>(physicalHeight);
+        if (preservesOpaquePixels(plan, source, prefixOperationCount)) {
+            backing->opacity = SKIA_IMAGE_OPACITY_OPAQUE;
+        }
         return registerBacking(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
