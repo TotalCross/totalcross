@@ -22,10 +22,20 @@
 #include "darwin/image_Image_c.h"
 #endif
 
+ImageTestAccountingState imageTestAccountingState;
+
 ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj,
       TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength);
 
 static bool failNextImageAllocationForTest;
+
+TC_API void tuiI_setDiagnosticAccountingTestNative_b(NMParams p) // totalcross/ui/image/Image native private static void setDiagnosticAccountingTestNative(boolean enabled);
+{
+   imageSetTestAccounting(p->currentContext, p->i32[0]);
+#if TC_RENDERER_SKIA
+   skia_image_backing_set_accounting_for_test(p->i32[0]);
+#endif
+}
 
 static int32 jpegTargetDecodeDenominatorForTest(int32 sourceWidth, int32 sourceHeight,
    int32 targetWidth, int32 targetHeight)
@@ -230,7 +240,7 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
 {
    TCObject imageObj = p->obj[0];
    TCObject sourceObj = p->obj[1];
-   imageRecordTestCounter(p->currentContext, "fullDecodeInvocationCountForTest");
+   imageRecordTestCounter("fullDecodeInvocationCountForTest");
    ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
    if (!bag || !bag->bytes || bag->length <= 0)
    {
@@ -258,17 +268,17 @@ static void decodeEncodedSourceAtDenominator(NMParams p, int32 denominator, bool
    int32 targetHeight = p->i32[1];
    ImageDecodeStatus status;
    TCClass imageClass = loadClass(p->currentContext, "totalcross.ui.image.Image", false);
-   int32* targetedCount = imageTestAccountingField(p->currentContext,
+   int32* targetedCount = imageTestAccountingField(
       "targetedDecodeInvocationCountForTest");
-   int32* targetedRequestWidth = imageTestAccountingField(p->currentContext,
+   int32* targetedRequestWidth = imageTestAccountingField(
       "targetedDecodeRequestWidthForTest");
-   int32* targetedRequestHeight = imageTestAccountingField(p->currentContext,
+   int32* targetedRequestHeight = imageTestAccountingField(
       "targetedDecodeRequestHeightForTest");
-   int32* targetedDenominator = imageTestAccountingField(p->currentContext,
+   int32* targetedDenominator = imageTestAccountingField(
       "targetedDecodeDenominatorForTest");
-   int32* targetedWidth = imageTestAccountingField(p->currentContext,
+   int32* targetedWidth = imageTestAccountingField(
       "targetedDecodeWidthForTest");
-   int32* targetedHeight = imageTestAccountingField(p->currentContext,
+   int32* targetedHeight = imageTestAccountingField(
       "targetedDecodeHeightForTest");
    int32* infrastructureFailure = imageClass == null ? null
       : getStaticFieldInt(imageClass, "targetedDecodeInfrastructureFailureForTest");
@@ -393,7 +403,7 @@ static bool applyNativeColorMutation(Context currentContext, TCObject imageObj, 
       return false;
    }
    Image_changed(imageObj) = true;
-   imageRecordTestCounter(currentContext, "nativeColorReadbackCountForTest");
+   imageRecordTestCounter("nativeColorReadbackCountForTest");
    return true;
 }
 #endif
@@ -440,7 +450,7 @@ TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p) // totalcross/ui/image/Im
             skia_image_backing_width(handle), skia_image_backing_height(handle))) {
          return;
       }
-      imageRecordTestCounter(p->currentContext, "nativeColorReadbackCountForTest");
+      imageRecordTestCounter("nativeColorReadbackCountForTest");
       return;
    }
 #endif
