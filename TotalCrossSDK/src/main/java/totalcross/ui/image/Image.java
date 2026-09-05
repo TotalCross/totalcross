@@ -76,6 +76,13 @@ public class Image extends GfxSurface {
   private static boolean materializedFrameBufferAllocationFailureForTest;
   private static boolean targetedDecodeInfrastructureFailureForTest;
   static boolean imageOperationAccountingForTest;
+  static int imageCreatedCountForTest;
+  static int imageFinalizedCountForTest;
+  static int imagePipelineCreatedCountForTest;
+  static int imageDrawPlanCreatedCountForTest;
+  static int imageDrawPlanCacheHitCountForTest;
+  static int imageDrawPlanCapabilitiesAllocatedCountForTest;
+  static int presentationOnlyPlanRecreationCountForTest;
   static int fullDecodeInvocationCountForTest;
   static int targetedDecodeInvocationCountForTest;
   static int targetedDecodeRequestWidthForTest;
@@ -104,12 +111,12 @@ public class Image extends GfxSurface {
   }
 
   /** Test-only hook for exercising retryable decoded-raster allocation failures. */
-  static synchronized void failNextDecodedRasterAllocationForTest() {
+  static void failNextDecodedRasterAllocationForTest() {
     decodedRasterAllocationFailureForTest = true;
   }
 
   /** Test-only hook for exercising retryable multi-frame buffer allocation failures. */
-  static synchronized void failNextMaterializedFrameBufferAllocationForTest() {
+  static void failNextMaterializedFrameBufferAllocationForTest() {
     materializedFrameBufferAllocationFailureForTest = true;
   }
 
@@ -118,7 +125,7 @@ public class Image extends GfxSurface {
     failNextNativeMaterializationForTestNative();
   }
 
-  static synchronized void resetTargetedDecodeInvocationCountForTest() {
+  static void resetTargetedDecodeInvocationCountForTest() {
     imageOperationAccountingForTest = true;
     targetedDecodeInvocationCountForTest = 0;
     targetedDecodeRequestWidthForTest = 0;
@@ -128,32 +135,39 @@ public class Image extends GfxSurface {
     targetedDecodeHeightForTest = 0;
   }
 
-  static synchronized int targetedDecodeInvocationCountForTest() {
+  static int targetedDecodeInvocationCountForTest() {
     return targetedDecodeInvocationCountForTest;
   }
 
-  static synchronized int targetedDecodeWidthForTest() {
+  static int targetedDecodeWidthForTest() {
     return targetedDecodeWidthForTest;
   }
 
-  static synchronized int targetedDecodeHeightForTest() {
+  static int targetedDecodeHeightForTest() {
     return targetedDecodeHeightForTest;
   }
 
-  static synchronized int targetedDecodeRequestWidthForTest() {
+  static int targetedDecodeRequestWidthForTest() {
     return targetedDecodeRequestWidthForTest;
   }
 
-  static synchronized int targetedDecodeRequestHeightForTest() {
+  static int targetedDecodeRequestHeightForTest() {
     return targetedDecodeRequestHeightForTest;
   }
 
-  static synchronized int targetedDecodeDenominatorForTest() {
+  static int targetedDecodeDenominatorForTest() {
     return targetedDecodeDenominatorForTest;
   }
 
-  static synchronized void resetImageOperationAccountingForTest() {
+  static void resetImageOperationAccountingForTest() {
     imageOperationAccountingForTest = true;
+    imageCreatedCountForTest = 0;
+    imageFinalizedCountForTest = 0;
+    imagePipelineCreatedCountForTest = 0;
+    imageDrawPlanCreatedCountForTest = 0;
+    imageDrawPlanCacheHitCountForTest = 0;
+    imageDrawPlanCapabilitiesAllocatedCountForTest = 0;
+    presentationOnlyPlanRecreationCountForTest = 0;
     fullDecodeInvocationCountForTest = 0;
     targetedDecodeInvocationCountForTest = 0;
     targetedDecodeRequestWidthForTest = 0;
@@ -166,53 +180,106 @@ public class Image extends GfxSurface {
     directDrawPlanExecutionCountForTest = 0;
     backingReadbackAccountingForTest = true;
     backingReadbackCountForTest = 0;
+    NativeImageBacking.resetBackingAccountingForTest();
   }
 
-  static synchronized int fullDecodeInvocationCountForTest() {
+  static int imageCreatedCountForTest() {
+    return imageCreatedCountForTest;
+  }
+
+  static int imageFinalizedCountForTest() {
+    return imageFinalizedCountForTest;
+  }
+
+  static int imagePipelineCreatedCountForTest() {
+    return imagePipelineCreatedCountForTest;
+  }
+
+  static int imageDrawPlanCreatedCountForTest() {
+    return imageDrawPlanCreatedCountForTest;
+  }
+
+  static int imageDrawPlanCacheHitCountForTest() {
+    return imageDrawPlanCacheHitCountForTest;
+  }
+
+  static int imageDrawPlanCapabilitiesAllocatedCountForTest() {
+    return imageDrawPlanCapabilitiesAllocatedCountForTest;
+  }
+
+  static int presentationOnlyPlanRecreationCountForTest() {
+    return presentationOnlyPlanRecreationCountForTest;
+  }
+
+  static void recordImagePipelineCreatedForTest() {
+    if (imageOperationAccountingForTest) {
+      imagePipelineCreatedCountForTest++;
+    }
+  }
+
+  static void recordImageDrawPlanCreatedForTest() {
+    if (imageOperationAccountingForTest) {
+      imageDrawPlanCreatedCountForTest++;
+    }
+  }
+
+  static void recordImageDrawPlanCacheHitForTest() {
+    if (imageOperationAccountingForTest) {
+      imageDrawPlanCacheHitCountForTest++;
+    }
+  }
+
+  static void recordImageDrawPlanCapabilitiesAllocatedForTest() {
+    if (imageOperationAccountingForTest) {
+      imageDrawPlanCapabilitiesAllocatedCountForTest++;
+    }
+  }
+
+  static int fullDecodeInvocationCountForTest() {
     return fullDecodeInvocationCountForTest;
   }
 
-  static synchronized int nativeGeometryMaterializationCountForTest() {
+  static int nativeGeometryMaterializationCountForTest() {
     return nativeGeometryMaterializationCountForTest;
   }
 
-  static synchronized int nativeColorReadbackCountForTest() {
+  static int nativeColorReadbackCountForTest() {
     return nativeColorReadbackCountForTest;
   }
 
-  static synchronized int directDrawPlanExecutionCountForTest() {
+  static int directDrawPlanExecutionCountForTest() {
     return directDrawPlanExecutionCountForTest;
   }
 
   /** Test-only accounting for explicit deployed getPixels() snapshots. */
-  static synchronized void resetBackingReadbackAccountingForTest() {
+  static void resetBackingReadbackAccountingForTest() {
     imageOperationAccountingForTest = true;
     backingReadbackAccountingForTest = true;
     backingReadbackCountForTest = 0;
   }
 
-  static synchronized int backingReadbackCountForTest() {
+  static int backingReadbackCountForTest() {
     return backingReadbackCountForTest;
   }
 
-  static synchronized void recordBackingReadbackForTest() {
+  static void recordBackingReadbackForTest() {
     if (backingReadbackAccountingForTest) {
       backingReadbackCountForTest++;
     }
   }
 
   /** Test-only hook for exercising retryable targeted ImageIO setup failures. */
-  static synchronized void failNextTargetedDecodeInfrastructureForTest() {
+  static void failNextTargetedDecodeInfrastructureForTest() {
     targetedDecodeInfrastructureFailureForTest = true;
   }
 
-  private static synchronized boolean consumeTargetedDecodeInfrastructureFailureForTest() {
+  private static boolean consumeTargetedDecodeInfrastructureFailureForTest() {
     boolean failure = targetedDecodeInfrastructureFailureForTest;
     targetedDecodeInfrastructureFailureForTest = false;
     return failure;
   }
 
-  private static synchronized void recordTargetedDecodeInvocationForTest(int targetWidth, int targetHeight,
+  private static void recordTargetedDecodeInvocationForTest(int targetWidth, int targetHeight,
       int denominator) {
     if (imageOperationAccountingForTest) {
       targetedDecodeInvocationCountForTest++;
@@ -222,7 +289,7 @@ public class Image extends GfxSurface {
     }
   }
 
-  private static synchronized void recordFullDecodeInvocationForTest() {
+  private static void recordFullDecodeInvocationForTest() {
     if (imageOperationAccountingForTest) {
       fullDecodeInvocationCountForTest++;
     }
@@ -232,13 +299,13 @@ public class Image extends GfxSurface {
   private static void failNextNativeMaterializationForTestNative() {
   }
 
-  private static synchronized boolean consumeDecodedRasterAllocationFailureForTest() {
+  private static boolean consumeDecodedRasterAllocationFailureForTest() {
     boolean failure = decodedRasterAllocationFailureForTest;
     decodedRasterAllocationFailureForTest = false;
     return failure;
   }
 
-  private static synchronized boolean consumeMaterializedFrameBufferAllocationFailureForTest() {
+  private static boolean consumeMaterializedFrameBufferAllocationFailureForTest() {
     boolean failure = materializedFrameBufferAllocationFailureForTest;
     materializedFrameBufferAllocationFailureForTest = false;
     return failure;
@@ -626,6 +693,7 @@ public class Image extends GfxSurface {
     gfx = new Graphics(this);
     gfx.setScales(1, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+    recordImageCreatedForTest();
   }
 
   /** Package-private inspection hook used by deployed image smoke tests. */
@@ -662,6 +730,13 @@ public class Image extends GfxSurface {
     gfx = new Graphics(this);
     gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+    recordImageCreatedForTest();
+  }
+
+  private static void recordImageCreatedForTest() {
+    if (imageOperationAccountingForTest) {
+      imageCreatedCountForTest++;
+    }
   }
 
   private void deferInPlaceMutation(int operationType, int parameter1, int parameter2, int parameter3,
@@ -824,6 +899,7 @@ public class Image extends GfxSurface {
     gfx = new Graphics(this);
     gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+    recordImageCreatedForTest();
   }
 
   private void initializeDeferredCrop(ImagePipeline deferred) {
@@ -995,22 +1071,16 @@ public class Image extends GfxSurface {
     }
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
     long scaleBits = Double.doubleToLongBits(effectiveScale);
+    long sourceDecodeGeneration = sourceDecodeGeneration(deferred);
+    ImageDrawPlan cached = deferred.cachedDrawPlan(scaleBits, sourceDecodeGeneration);
+    if (cached != null) {
+      return cached;
+    }
     ArrayList<ImagePipeline> nodes = pipelineNodes(deferred);
     Image materializedEncodedRoot = null;
-    long sourceDecodeGeneration = sourceDecodeGeneration(deferred);
     if (deferred.root() instanceof EncodedImageSource) {
       materializedEncodedRoot = materializePipelineRoot(deferred, nodes, effectiveScale);
       sourceDecodeGeneration = sourceDecodeGeneration(deferred);
-    }
-    ImageDrawPlan cached = deferred.cachedDrawPlan(scaleBits, sourceDecodeGeneration);
-    if (cached != null) {
-      int outputAlphaMask = alphaMask;
-      int drawAlphaMask = outputAlphaMask;
-      if (cachedBakesSourceAlpha(cached)) {
-        drawAlphaMask = multiplyAlphaMasks(cached.root.alphaMask, outputAlphaMask);
-      }
-      return cached.withPresentationState(currentFrame, drawAlphaMask, transparentColor,
-          cached.materializeAlphaMask, outputAlphaMask, hwScaleW, hwScaleH);
     }
     ArrayList<ImagePipeline> orderedNodes = new ArrayList<ImagePipeline>(nodes);
     for (int left = 0, right = orderedNodes.size() - 1; left < right; left++, right--) {
@@ -1067,7 +1137,7 @@ public class Image extends GfxSurface {
         deferred.logicalWidth(), deferred.logicalHeight(), deferred.frameCount(), deferred.widthOfAllFrames(),
         currentFrame, drawAlphaMask, transparentColor, materializeAlphaMask, outputAlphaMask, effectiveScale,
         deferred.hasGeometricNode() ? effectiveScale : root.contentScale, hwScaleW, hwScaleH,
-        root.hwScaleW, root.hwScaleH, sourceDecodeGeneration);
+        root.hwScaleW, root.hwScaleH, sourceDecodeGeneration, this);
     deferred.cacheDrawPlan(scaleBits, plan);
     return plan;
   }
@@ -1079,15 +1149,6 @@ public class Image extends GfxSurface {
 
   private static int multiplyAlphaMasks(int first, int second) {
     return (first * second + 127) / 255;
-  }
-
-  private static boolean cachedBakesSourceAlpha(ImageDrawPlan plan) {
-    for (int operation : plan.operations) {
-      if (operation == ImagePipeline.CROP) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private void synchronizePresentationState(Image resolved) {
@@ -1141,9 +1202,18 @@ public class Image extends GfxSurface {
 
     for (int i = nodes.size() - 1; i >= 0;) {
       if (!Settings.onJavaSE && current.backing instanceof NativeImageBacking
-          && isNativeGeometryNode(nodes.get(i).operationType())) {
+          && isNativeGeometryNode(nodes.get(i).operationType())
+          && !(nodes.get(i).operationType() == ImagePipeline.FRAME_SELECT && current.frameCount <= 1)) {
         int first = i;
+        int frameDomainBarrierCount = ImagePipeline.isFrameDomainBarrier(nodes.get(i).operationType()) ? 1 : 0;
         while (first > 0 && isNativeGeometryNode(nodes.get(first - 1).operationType())) {
+          int previousOperation = nodes.get(first - 1).operationType();
+          if (ImagePipeline.isFrameDomainBarrier(previousOperation)) {
+            if (frameDomainBarrierCount > 0) {
+              break;
+            }
+            frameDomainBarrierCount++;
+          }
           first--;
         }
         current = current.eagerNativeGeometrySegment(nodes, first, i, destinationScale);
@@ -1425,7 +1495,8 @@ public class Image extends GfxSurface {
         && (node.operationType() == ImagePipeline.FRAME_SELECT
             || node.operationType() == ImagePipeline.FRAME_LAYOUT
             || node.operationType() == ImagePipeline.CROP
-            || node.operationType() == ImagePipeline.ROTATE_SCALE)) {
+            || node.operationType() == ImagePipeline.ROTATE_SCALE)
+        && !(node.operationType() == ImagePipeline.FRAME_SELECT && source.frameCount <= 1)) {
       result = source.eagerNativeGeometryStep(node, destinationScale);
       result.logicalWidth = node.logicalWidth();
       result.logicalHeight = node.logicalHeight();
@@ -1640,10 +1711,63 @@ public class Image extends GfxSurface {
     if (frameCount > 1) {
       setCurrentFrame(frame);
     }
-    Image result = new Image(logicalWidth, logicalHeight, contentScale);
+    if (frameCount <= 1 && backing instanceof NativeImageBacking) {
+      // A repeated deferred selection is a materialization barrier. Preserve
+      // the selected native pixels without applying a second source-frame map.
+      Image result = new Image();
+      result.width = width;
+      result.height = height;
+      result.logicalWidth = logicalWidth;
+      result.logicalHeight = logicalHeight;
+      result.contentScale = contentScale;
+      result.frameCount = 1;
+      result.currentFrame = -1;
+      result.widthOfAllFrames = width;
+      result.backing = backing.snapshot();
+      result.comment = comment;
+      result.path = path;
+      result.surfaceType = surfaceType;
+      result.transparentColor = transparentColor;
+      result.useAlpha = useAlpha;
+      result.alphaMask = alphaMask;
+      result.hwScaleW = hwScaleW;
+      result.hwScaleH = hwScaleH;
+      result.textureId = -1;
+      result.init();
+      return result;
+    }
+    Image result = backing instanceof RasterImageBacking
+        ? createRasterImage(width, height, logicalWidth, logicalHeight, contentScale)
+        : new Image(logicalWidth, logicalHeight, contentScale);
     int[] sourcePixels = rasterPixels(this);
     int[] destinationPixels = rasterPixels(result);
     Vm.arrayCopy(sourcePixels, 0, destinationPixels, 0, sourcePixels.length);
+    return result;
+  }
+
+  private static Image createRasterImage(int width, int height, int logicalWidth, int logicalHeight,
+      double contentScale) throws ImageException {
+    if (width <= 0 || height <= 0 || (long) width * height > Integer.MAX_VALUE) {
+      throw new ImageException("Image dimensions are too large.");
+    }
+    int[] pixels;
+    try {
+      pixels = new int[width * height];
+    } catch (OutOfMemoryError oome) {
+      throw new TransientImageMaterializationException(oome);
+    }
+    Image result = new Image();
+    result.width = width;
+    result.height = height;
+    result.logicalWidth = logicalWidth;
+    result.logicalHeight = logicalHeight;
+    result.contentScale = contentScale;
+    result.frameCount = 1;
+    result.currentFrame = -1;
+    result.widthOfAllFrames = width;
+    result.backing = new RasterImageBacking(width, height, 1, width, pixels, null);
+    result.textureId = -1;
+    result.init();
     return result;
   }
 
@@ -1825,10 +1949,8 @@ public class Image extends GfxSurface {
         int[] decodedPixels = new int[width * height];
         frame.getRGB(0, 0, width, height, decodedPixels, 0, width);
         backing = new RasterImageBacking(width, height, 1, width, decodedPixels, null);
-        synchronized (Image.class) {
-          targetedDecodeWidthForTest = width;
-          targetedDecodeHeightForTest = height;
-        }
+        targetedDecodeWidthForTest = width;
+        targetedDecodeHeightForTest = height;
       } catch (OutOfMemoryError e) {
         throw e;
       } catch (java.io.IOException e) {
@@ -1930,10 +2052,8 @@ public class Image extends GfxSurface {
         int[] decodedPixels = new int[width * height];
         frame.getRGB(0, 0, width, height, decodedPixels, 0, width);
         backing = new RasterImageBacking(width, height, 1, width, decodedPixels, null);
-        synchronized (Image.class) {
-          targetedDecodeWidthForTest = width;
-          targetedDecodeHeightForTest = height;
-        }
+        targetedDecodeWidthForTest = width;
+        targetedDecodeHeightForTest = height;
       } catch (OutOfMemoryError e) {
         throw e;
       } catch (java.io.IOException e) {
@@ -2043,6 +2163,7 @@ public class Image extends GfxSurface {
     gfx = new Graphics(this);
     gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
+    recordImageCreatedForTest();
   }
 
   /**
@@ -2281,6 +2402,9 @@ public class Image extends GfxSurface {
 
   @Override
   public void finalize() {
+    if (imageOperationAccountingForTest) {
+      imageFinalizedCountForTest++;
+    }
     instanceCount[0]--;
     freeTexture();
   }

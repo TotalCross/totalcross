@@ -73,6 +73,7 @@ final class ImagePipeline {
     frameCount = root.frameCount();
     widthOfAllFrames = root.widthOfAllFrames();
     contentScale = root.contentScale();
+    Image.recordImagePipelineCreatedForTest();
   }
 
   private ImagePipeline(ImagePipeline previous, int operationType, int parameter1, int parameter2,
@@ -92,6 +93,7 @@ final class ImagePipeline {
     this.frameCount = frameCount;
     this.widthOfAllFrames = widthOfAllFrames;
     this.contentScale = previous.contentScale;
+    Image.recordImagePipelineCreatedForTest();
   }
 
   ImageSource root() {
@@ -192,15 +194,27 @@ final class ImagePipeline {
     return hasGeometryOperation();
   }
 
+  static boolean isFrameDomainBarrier(int operationType) {
+    return operationType == FRAME_SELECT || operationType == FRAME_LAYOUT;
+  }
+
   /** Returns whether this pipeline can be represented by the current draw plan. */
   boolean isDrawFusable() {
     boolean hasDrawableOperation = false;
+    int frameDomainBarrierCount = 0;
     for (ImagePipeline node = this; node.previous() != null; node = node.previous()) {
       switch (node.operationType) {
       case SCALE:
-      case FRAME_SELECT:
       case CROP:
+        hasDrawableOperation = true;
+        break;
+      case FRAME_SELECT:
       case FRAME_LAYOUT:
+        if (isFrameDomainBarrier(node.operationType) && ++frameDomainBarrierCount > 1) {
+          // A native geometry segment may contain only one frame-domain
+          // operation. Resolve later frame changes canonically.
+          return false;
+        }
         hasDrawableOperation = true;
         break;
       case SMOOTH_SCALE:
@@ -293,6 +307,7 @@ final class ImagePipeline {
         return null;
       }
       cachedDrawUse1 = ++cachedDrawUseCounter;
+      Image.recordImageDrawPlanCacheHitForTest();
       return cachedDrawPlan1;
     }
     if (cachedDrawPlan2 != null && cachedDrawScale2Bits == scaleBits) {
@@ -300,6 +315,7 @@ final class ImagePipeline {
         return null;
       }
       cachedDrawUse2 = ++cachedDrawUseCounter;
+      Image.recordImageDrawPlanCacheHitForTest();
       return cachedDrawPlan2;
     }
     return null;

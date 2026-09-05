@@ -130,21 +130,39 @@ static int normalizedFrame(int frame, int count) {
 
 static bool applyFadeToDrawnFrame(const SkiaImageDrawPlanData* plan, int index, int capturedFrame) {
     int frameCount = std::max(1, plan->rootFrameCount);
-    int selectedFrame = normalizedFrame(plan->currentFrame, frameCount);
     for (int prior = 0; prior < index; ++prior) {
         const int operation = plan->operations[prior];
         if (operation == SKIA_IMAGE_DRAW_FRAME_SELECT) {
             frameCount = 1;
-            selectedFrame = 0;
         } else if (operation == SKIA_IMAGE_DRAW_FRAME_LAYOUT) {
             frameCount = std::max(1, plan->parameters[prior * 4]);
-            selectedFrame = normalizedFrame(plan->currentFrame, frameCount);
+        }
+    }
+
+    // APPLY_FADE mutates the frame that was current at call time. Resolve the
+    // frame domain at the operation first, then follow the complete remaining
+    // frame flow to the draw. A backward scan alone cannot see a later
+    // FRAME_SELECT and would incorrectly fade a different selected frame.
+    const int targetFrame = normalizedFrame(capturedFrame, frameCount);
+    for (int next = index + 1; next < plan->operationCount; ++next) {
+        const int operation = plan->operations[next];
+        if (operation == SKIA_IMAGE_DRAW_FRAME_SELECT) {
+            if (frameCount <= 1) {
+                return true;
+            }
+            return targetFrame == normalizedFrame(plan->parameters[next * 4], frameCount);
+        }
+        if (operation == SKIA_IMAGE_DRAW_FRAME_LAYOUT) {
+            // FRAME_LAYOUT after a single-frame APPLY_FADE copies the already
+            // faded strip into its output frames. A layout from a multi-frame
+            // domain is not produced by the deferred Image API today.
+            return frameCount <= 1;
         }
     }
     if (frameCount <= 1) {
         return true;
     }
-    return selectedFrame == normalizedFrame(capturedFrame, frameCount);
+    return normalizedFrame(plan->currentFrame, frameCount) == targetFrame;
 }
 
 }
