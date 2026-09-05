@@ -506,7 +506,7 @@ On interruption, state must name:
 - [x] Capture writePixels S1.
 - [x] Implement/report writePixels; capture writePixels S2/S3.
 - [x] Capture row-readback S1.
-- [ ] Implement/report row/block readback and color materialization.
+- [x] Implement/report row/block readback and color materialization.
 - [ ] Final validation and phase-3 handoff.
 
 ## Decision Log
