@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-05T04:44:00-03:00
+Updated: 2026-09-05T04:52:00-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
@@ -21,13 +21,14 @@ mode fix in `613762c45ed887733b1dab9a12b20b32280e0fca`. Corrected S2/S3 runs
 recorded 60 samples each: S2 median 669 ms / peak RSS 107280 KB; S3 median
 669 ms / peak RSS 109008 KB. S3 counters prove intentional accounting. Final
 validation is complete; the phase-2 source handoff is
-`613762c45ed887733b1dab9a12b20b32280e0fca`.
+`613762c45ed887733b1dab9a12b20b32280e0fca`. Final documentation is complete
+in checkpoint `47b81182dd509a8cafd11250510939fd686586d0`.
 
 ## Next concrete action
 
-Commit the finalized plan, state, evidence, archive, editorial report, and
-benchmark protocol. Then validate the final commit and leave the branch ready
-for phase 2 without pushing or merging.
+No implementation work remains. The next phase may branch from the final
+phase-1 documentation checkpoint after this state/evidence update, without
+pushing, merging, or rewriting history.
 
 ## Active paths
 
@@ -43,15 +44,16 @@ for phase 2 without pushing or merging.
 Bootstrap and harness source validation passed: focused copyright headers,
 Python syntax, and staged whitespace. The SDK distribution, macOS software-
 Skia Release build, benchmark deployment, runtime-copy comparison, and S1
-process runs all passed. Final plan/report updates and phase-2 handoff are
-staged for commitment.
+process runs all passed. The finalized plan, protocol, state, evidence,
+archive, editorial report, benchmark report, and source handoff are committed.
 
 ## Deferred validation
 
 Final focused Image tests, SDK dist, macOS Release build, and relevant native
 Image smokes all passed. No expensive validation remains within this phase;
 verbose logs remain under the ignored `artifacts/image-opt-phase1-controls/`
-path.
+path. Android/iOS/Windows/Linux/GPU validation and later optimizations are
+outside the plan.
 
 ## Decisions still active
 

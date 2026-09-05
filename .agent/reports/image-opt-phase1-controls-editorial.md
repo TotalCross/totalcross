@@ -24,7 +24,9 @@ cache hits, proving the diagnostic switch was active.
 
 The exact source handoff for phase 2 is branch commit
 `613762c45ed887733b1dab9a12b20b32280e0fca`; the final documentation commit
-will follow it without changing implementation behavior.
+`47b81182dd509a8cafd11250510939fd686586d0` follows it without changing
+implementation behavior. Phase 2 should branch from the final phase-1 branch
+HEAD after the state/evidence bookkeeping commit.
 
 Known limits: one local machine, one software-Skia workload, external 50 ms
 RSS sampling, and millisecond VM timing around large batches. These results do
