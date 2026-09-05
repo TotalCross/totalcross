@@ -15,10 +15,13 @@
 #include "JpegLoader.h"
 #include "jerror-tc.h"
 #include "jerror.h"
+#include "ui/ImageTestAccounting_c.h"
 #if TC_RENDERER_SKIA
 #include "ui/NativeImageBacking.h"
 #include "ui/skia/skia.h"
 #endif
+
+#include <stdlib.h>
 
 #if defined _WINDOWS || defined WINCE
 #ifndef fmin
@@ -143,11 +146,13 @@ static int32 jpegTargetDecodeScaleDenominator(JDIMENSION sourceWidth, JDIMENSION
 
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
 ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
-      TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2)
+      TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2,
+      bool zeroCopy)
 {
    JPEGFILE file;
    Pixel *pixels;
    Pixel *pixelStorage;
+   uint8* rgbaStorage = null;
    Heap heap;
    TCJpegErrorManager errbase;
    JSAMPARRAY buffer0; // Output pixel-row buffer
@@ -272,17 +277,32 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       Image_backing(imageObj) = null;
       return status;
    }
-   pixelStorage = pixels = (Pixel*)xmalloc((int32)((uint64)width * height * sizeof(Pixel)));
-   if (!pixelStorage)
-   {
-      status = IMAGE_DECODE_RESOURCE_FAILURE;
-      jpeg_abort_decompress(&cinfo);
-      jpeg_destroy_decompress(&cinfo);
-      if (tcz != null)
-         tczClose(tcz);
-      heapDestroy(heap);
-      Image_backing(imageObj) = null;
-      return status;
+   if (zeroCopy) {
+      rgbaStorage = (uint8*)malloc((size_t)width * height * 4);
+      if (!rgbaStorage)
+      {
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+         jpeg_abort_decompress(&cinfo);
+         jpeg_destroy_decompress(&cinfo);
+         if (tcz != null)
+            tczClose(tcz);
+         heapDestroy(heap);
+         Image_backing(imageObj) = null;
+         return status;
+      }
+   } else {
+      pixelStorage = pixels = (Pixel*)xmalloc((int32)((uint64)width * height * sizeof(Pixel)));
+      if (!pixelStorage)
+      {
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+         jpeg_abort_decompress(&cinfo);
+         jpeg_destroy_decompress(&cinfo);
+         if (tcz != null)
+            tczClose(tcz);
+         heapDestroy(heap);
+         Image_backing(imageObj) = null;
+         return status;
+      }
    }
 #else
    pixelsObj = createIntArray(currentContext, width*height);
@@ -324,7 +344,24 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    {
       buffer = buffer0[0];
       jpeg_read_scanlines(&cinfo, buffer0, 1);
-      if (cinfo.out_color_components == 1) // guich@tc114_12
+      if (zeroCopy) {
+         uint8* destination = rgbaStorage + (size_t)(cinfo.output_scanline - 1) * width * 4;
+         if (cinfo.out_color_components == 1) {
+            for (x = 0; x < width; x++, buffer++, destination += 4) {
+               destination[0] = 0xFF;
+               destination[1] = (uint8)buffer[0];
+               destination[2] = (uint8)buffer[0];
+               destination[3] = (uint8)buffer[0];
+            }
+         } else {
+            for (x = 0; x < width; x++, buffer += 3, destination += 4) {
+               destination[0] = 0xFF;
+               destination[1] = (uint8)buffer[0];
+               destination[2] = (uint8)buffer[1];
+               destination[3] = (uint8)buffer[2];
+            }
+         }
+      } else if (cinfo.out_color_components == 1) // guich@tc114_12
          for (x = 0; x < width; x++, buffer++)
             *pixels++ = makePixelA(0xFF,(uint8)buffer[0], (uint8)buffer[0], (uint8)buffer[0]);
       else
@@ -340,9 +377,26 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    jpeg_finish_decompress(&cinfo);
    jpeg_destroy_decompress(&cinfo);
 #if TC_RENDERER_SKIA
-   nativeHandle = skia_image_backing_create_from_argb_pixels(pixelStorage, width, height);
-   xfree(pixelStorage);
-   pixelStorage = null;
+   {
+      const int32 pixelBytes = (int32)((uint64)width * height * 4);
+      if (zeroCopy) {
+         nativeHandle = skia_image_backing_create_from_owned_rgba_pixels(rgbaStorage, width, height);
+         rgbaStorage = null;
+      } else {
+         nativeHandle = skia_image_backing_create_from_argb_pixels(pixelStorage, width, height);
+         xfree(pixelStorage);
+         pixelStorage = null;
+      }
+      if (nativeHandle) {
+         if (zeroCopy) {
+            imageRecordTestCounter("zeroCopyDecodeCountForTest");
+         } else {
+            imageRecordTestCounter("copiedDecodeCountForTest");
+            imageAddTestCounter("decodeCopiedBytesForTest", pixelBytes);
+         }
+         imageAddTestCounter("decodeFinalBufferBytesForTest", pixelBytes);
+      }
+   }
    if (!nativeHandle || !imageInstallNativeBacking(currentContext, imageObj, nativeHandle, width, height)) {
       status = IMAGE_DECODE_RESOURCE_FAILURE;
       Image_width(imageObj) = 0;

@@ -19,6 +19,10 @@ typedef struct {
    int32* nativeGeometryMaterializationCount;
    int32* nativeColorReadbackCount;
    int32* directDrawPlanExecutionCount;
+   int32* zeroCopyDecodeCount;
+   int32* copiedDecodeCount;
+   int32* decodeCopiedBytes;
+   int32* decodeFinalBufferBytes;
 } ImageTestAccountingState;
 
 extern ImageTestAccountingState imageTestAccountingState;
@@ -36,6 +40,10 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
    imageTestAccountingState.nativeGeometryMaterializationCount = null;
    imageTestAccountingState.nativeColorReadbackCount = null;
    imageTestAccountingState.directDrawPlanExecutionCount = null;
+   imageTestAccountingState.zeroCopyDecodeCount = null;
+   imageTestAccountingState.copiedDecodeCount = null;
+   imageTestAccountingState.decodeCopiedBytes = null;
+   imageTestAccountingState.decodeFinalBufferBytes = null;
    if (!imageTestAccountingState.enabled) {
       return;
    }
@@ -63,6 +71,14 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
       getStaticFieldInt(imageClass, "nativeColorReadbackCountForTest");
    imageTestAccountingState.directDrawPlanExecutionCount =
       getStaticFieldInt(imageClass, "directDrawPlanExecutionCountForTest");
+   imageTestAccountingState.zeroCopyDecodeCount =
+      getStaticFieldInt(imageClass, "zeroCopyDecodeCountForTest");
+   imageTestAccountingState.copiedDecodeCount =
+      getStaticFieldInt(imageClass, "copiedDecodeCountForTest");
+   imageTestAccountingState.decodeCopiedBytes =
+      getStaticFieldInt(imageClass, "decodeCopiedBytesForTest");
+   imageTestAccountingState.decodeFinalBufferBytes =
+      getStaticFieldInt(imageClass, "decodeFinalBufferBytesForTest");
 }
 
 static int32* imageTestAccountingField(const char* fieldName) {
@@ -99,6 +115,18 @@ static int32* imageTestAccountingField(const char* fieldName) {
    if (strcmp(fieldName, "directDrawPlanExecutionCountForTest") == 0) {
       return imageTestAccountingState.directDrawPlanExecutionCount;
    }
+   if (strcmp(fieldName, "zeroCopyDecodeCountForTest") == 0) {
+      return imageTestAccountingState.zeroCopyDecodeCount;
+   }
+   if (strcmp(fieldName, "copiedDecodeCountForTest") == 0) {
+      return imageTestAccountingState.copiedDecodeCount;
+   }
+   if (strcmp(fieldName, "decodeCopiedBytesForTest") == 0) {
+      return imageTestAccountingState.decodeCopiedBytes;
+   }
+   if (strcmp(fieldName, "decodeFinalBufferBytesForTest") == 0) {
+      return imageTestAccountingState.decodeFinalBufferBytes;
+   }
    return null;
 }
 
@@ -106,6 +134,13 @@ static void imageRecordTestCounter(const char* fieldName) {
    int32* counter = imageTestAccountingField(fieldName);
    if (counter) {
       (*counter)++;
+   }
+}
+
+static void imageAddTestCounter(const char* fieldName, int32 amount) {
+   int32* counter = imageTestAccountingField(fieldName);
+   if (counter) {
+      (*counter) += amount;
    }
 }
 

@@ -24,8 +24,17 @@
 
 ImageTestAccountingState imageTestAccountingState;
 
+#define IMAGE_OPT_DECODE_ZERO_COPY (1 << 0)
+
+static bool imageDecodeZeroCopyEnabled(TCObject imageObj)
+{
+   int32* featureMask = imageObj == null
+      ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
+   return featureMask != null && ((*featureMask & IMAGE_OPT_DECODE_ZERO_COPY) != 0);
+}
+
 ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj,
-      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength);
+      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength, bool zeroCopy);
 
 static bool failNextImageAllocationForTest;
 
@@ -213,10 +222,12 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
       tczRead(tcz, magic, 4);
       if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
          throwImageDecodeStatus(p->currentContext,
-            pngLoad(p->currentContext, imageObj, null, null, tcz, magic, null, 0));
+            pngLoad(p->currentContext, imageObj, null, null, tcz, magic, null, 0,
+               imageDecodeZeroCopyEnabled(imageObj)));
       } else
          throwImageDecodeStatus(p->currentContext,
-            jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, JPEG_DECODE_FULL, 0, 0));
+            jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, JPEG_DECODE_FULL, 0, 0,
+               imageDecodeZeroCopyEnabled(imageObj)));
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -230,10 +241,12 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
    xmove4(magic, buf); // buf already comes filled from Java with the first 4 bytes
    if ((magic[0] & 0xFF) == 0x89 && magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
       throwImageDecodeStatus(p->currentContext,
-         pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, null, 0));
+         pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, null, 0,
+            imageDecodeZeroCopyEnabled(imageObj)));
    } else
       throwImageDecodeStatus(p->currentContext,
-         jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, JPEG_DECODE_FULL, 0, 0));
+         jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, JPEG_DECODE_FULL, 0, 0,
+            imageDecodeZeroCopyEnabled(imageObj)));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source);
@@ -249,10 +262,11 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
    }
    ImageDecodeStatus status;
    if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_PNG)
-      status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length);
+      status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length,
+         imageDecodeZeroCopyEnabled(imageObj));
    else if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_JPEG)
       status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
-         JPEG_DECODE_FULL, 0, 0);
+         JPEG_DECODE_FULL, 0, 0, imageDecodeZeroCopyEnabled(imageObj));
    else {
       throwException(p->currentContext, ImageException, "Unsupported deployed encoded image format");
       return;
@@ -306,7 +320,8 @@ static void decodeEncodedSourceAtDenominator(NMParams p, int32 denominator, bool
    }
    status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
       explicitRatio ? JPEG_DECODE_EXPLICIT_RATIO : JPEG_DECODE_TARGET_DECODE,
-      explicitRatio ? 1 : targetWidth, explicitRatio ? denominator : targetHeight);
+      explicitRatio ? 1 : targetWidth, explicitRatio ? denominator : targetHeight,
+      imageDecodeZeroCopyEnabled(imageObj));
    if (status == IMAGE_DECODE_SUCCESS) {
       if (targetedWidth != null)
          (*targetedWidth) = Image_width(imageObj);
@@ -680,7 +695,7 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
       if (tcz != null) {
          throwImageDecodeStatus(p->currentContext,
             jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, JPEG_DECODE_BEST_FIT,
-               targetWidth, targetHeight));
+               targetWidth, targetHeight, imageDecodeZeroCopyEnabled(imageObj)));
          goto finish;
       }
 
@@ -706,7 +721,7 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
             } else {
                throwImageDecodeStatus(p->currentContext,
                   jpegLoad(p->currentContext, imageObj, fileObj, null, null, mapped, size, JPEG_DECODE_BEST_FIT,
-                     targetWidth, targetHeight));
+                     targetWidth, targetHeight, imageDecodeZeroCopyEnabled(imageObj)));
                munmap((void*) mapped, size);
             }
          }
@@ -726,7 +741,7 @@ TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image nat
                if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
                   throwImageDecodeStatus(p->currentContext,
                      jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, JPEG_DECODE_BEST_FIT,
-                        targetWidth, targetHeight));
+                        targetWidth, targetHeight, imageDecodeZeroCopyEnabled(imageObj)));
                }
             }
          }
@@ -779,7 +794,7 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image nati
       if (tcz != null) {
          throwImageDecodeStatus(p->currentContext,
             jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, JPEG_DECODE_EXPLICIT_RATIO,
-               scaleNumerator, scaleDenominator));
+               scaleNumerator, scaleDenominator, imageDecodeZeroCopyEnabled(imageObj)));
       } else if ((fileObj = createObject(p->currentContext, "totalcross.io.File")) != NULL) {
          fileConstructor = getMethod(OBJ_CLASS(fileObj), false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT);
          if (fileConstructor != null) {
@@ -788,7 +803,8 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image nati
                if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
                   throwImageDecodeStatus(p->currentContext,
                      jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0,
-                        JPEG_DECODE_EXPLICIT_RATIO, scaleNumerator, scaleDenominator));
+                        JPEG_DECODE_EXPLICIT_RATIO, scaleNumerator, scaleDenominator,
+                        imageDecodeZeroCopyEnabled(imageObj)));
                }
             }
          }

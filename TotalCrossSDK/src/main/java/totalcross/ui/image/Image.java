@@ -93,6 +93,11 @@ public class Image extends GfxSurface {
   static int nativeGeometryMaterializationCountForTest;
   static int nativeColorReadbackCountForTest;
   static int directDrawPlanExecutionCountForTest;
+  static int zeroCopyDecodeCountForTest;
+  static int copiedDecodeCountForTest;
+  static int decodeCopiedBytesForTest;
+  static int decodeFinalBufferBytesForTest;
+  private static int nativeOptimizationMaskForDecode;
   private static boolean backingReadbackAccountingForTest;
   private static int backingReadbackCountForTest;
 
@@ -189,6 +194,10 @@ public class Image extends GfxSurface {
     nativeGeometryMaterializationCountForTest = 0;
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
+    zeroCopyDecodeCountForTest = 0;
+    copiedDecodeCountForTest = 0;
+    decodeCopiedBytesForTest = 0;
+    decodeFinalBufferBytesForTest = 0;
     backingReadbackCountForTest = 0;
     NativeImageBacking.clearBackingAccountingCountersForTest();
   }
@@ -259,6 +268,22 @@ public class Image extends GfxSurface {
 
   static int directDrawPlanExecutionCountForTest() {
     return directDrawPlanExecutionCountForTest;
+  }
+
+  static int zeroCopyDecodeCountForTest() {
+    return zeroCopyDecodeCountForTest;
+  }
+
+  static int copiedDecodeCountForTest() {
+    return copiedDecodeCountForTest;
+  }
+
+  static int decodeCopiedBytesForTest() {
+    return decodeCopiedBytesForTest;
+  }
+
+  static int decodeFinalBufferBytesForTest() {
+    return decodeFinalBufferBytesForTest;
   }
 
   /** Test-only accounting for explicit deployed getPixels() snapshots. */
@@ -1351,10 +1376,15 @@ public class Image extends GfxSurface {
         decoded.initializeDecodeTarget(source);
         boolean targeted = requestedDenominator > 1;
         try {
-          if (targeted) {
-            decoded.decodeEncodedSourceTiered(source, requestedWidth, requestedHeight, requestedDenominator);
-          } else {
-            decoded.decodeEncodedSource(source);
+          nativeOptimizationMaskForDecode = (int) ImageOptimizationSettings.effectiveMask();
+          try {
+            if (targeted) {
+              decoded.decodeEncodedSourceTiered(source, requestedWidth, requestedHeight, requestedDenominator);
+            } else {
+              decoded.decodeEncodedSource(source);
+            }
+          } finally {
+            nativeOptimizationMaskForDecode = 0;
           }
           if ((decoded.backing == null || !decoded.backing.isValid()) || decoded.width <= 0 || decoded.height <= 0) {
             throw new DeterministicImageDecodeException("Could not decode encoded image");
@@ -2137,7 +2167,12 @@ public class Image extends GfxSurface {
     }
     Image decoded = new Image();
     decoded.initializeDecodeTarget(source);
-    decoded.decodeEncodedSourceTiered(source, source.getIntrinsicWidth(), source.getIntrinsicHeight(), denominator);
+    nativeOptimizationMaskForDecode = (int) ImageOptimizationSettings.effectiveMask();
+    try {
+      decoded.decodeEncodedSourceTiered(source, source.getIntrinsicWidth(), source.getIntrinsicHeight(), denominator);
+    } finally {
+      nativeOptimizationMaskForDecode = 0;
+    }
     if (decoded.backing == null || !decoded.backing.isValid()) {
       throw new ImageException("Could not decode forced JPEG reference");
     }

@@ -27,10 +27,12 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(samples > 0 && samples <= 200,
           "samples must be between 1 and 200");
       ImageRasterBenchmarkSupport.configure(scenario, ImageOptimizationSettings.RASTER_OPACITY_METADATA);
+      Image.resetImageOperationAccountingForTest();
       byte[] encoded = fixture(kind);
       for (int warmup = 0; warmup < 3; warmup++) {
         ImageRasterBenchmarkSupport.materialize(encoded);
       }
+      Image.resetImageOperationAccountingForTest();
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
         Image image = ImageRasterBenchmarkSupport.materialize(encoded);
@@ -39,7 +41,10 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
         totalPixels += pixels;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",kind=" + kind
             + ",width=" + image.getPixelWidth() + ",height=" + image.getPixelHeight()
-            + ",pixels=" + pixels);
+            + ",pixels=" + pixels + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
+            + ",copied=" + Image.copiedDecodeCountForTest()
+            + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
+            + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest());
         System.out.flush();
         completedSamples = sample;
       }
@@ -49,7 +54,11 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
     }
 
     boolean pass = ImageRasterBenchmarkSupport.finish("ImageRasterOpacityBenchmarkApp", scenario,
-        samples, completedSamples, "kind=" + kind + ",total_pixels=" + totalPixels, error);
+        samples, completedSamples, "kind=" + kind + ",total_pixels=" + totalPixels
+            + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
+            + ",copied=" + Image.copiedDecodeCountForTest()
+            + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
+            + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest(), error);
     exit(pass ? 0 : 1);
   }
 

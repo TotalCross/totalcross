@@ -689,6 +689,17 @@ registerImageMacSmoke('ImageNativeMaterialization', 'ImageNativeMaterializationS
         'pass=true'
     ])
 
+registerImageMacSmoke('ImageZeroCopyDecode', 'ImageZeroCopyDecodeSmokeApp',
+    'image-zero-copy-decode-smoke', true, false, [
+        'fixture=ImageZeroCopyDecodeSmokeApp',
+        'pngParity=true',
+        'jpegParity=true',
+        'pngCounter=true',
+        'jpegCounter=true',
+        'retry=true',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageDrawPresentationState', 'ImageDrawPresentationStateSmokeApp',
     'image-draw-presentation-state-smoke', false, false, [
         'fixture=ImageDrawPresentationStateSmokeApp',
