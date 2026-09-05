@@ -6,10 +6,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T17:20:01-03:00
+Updated: 2026-09-05T21:30:00-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
-Phase-3 base SHA: `39aabd574`
+Phase-3 base SHA: `d044e13bd`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
@@ -22,27 +22,29 @@ verified direct APPLY_COLOR2 alpha parity, native-backing mutation
 invalidation, zero-copy allocation-failure cleanup, process-global masks, and
 the shared conservative raster-copy eligibility helper used by ordinary draws
 and trivial draw plans. The historical S1/S2/S3 artifacts remain untouched;
-the corrected batched recapture is under `benchmarks/.../corrections/`.
+the corrected batched recapture is under `benchmarks/.../corrections/`. The
+individual S1/S2/S3 matrices now use the true Phase-1 runtime for S1; the
+integrated matrix exercises all five Phase-2 features together.
 
 ## Last completed slice
 
 The row-readback/direct-color S1 baseline is captured at `8f52cfdf9` in
 `readback-color/`. The implementation is committed at `da324f3d8` with the
-native row bridge follow-up at `ee7b90051`; the corrective batched matrix is
-recorded by `736ac7c45`. The final S2/S3 matrix passed for pixels, encoding,
-color, decode, opacity, and opaque draws. Full output hashes were stable,
-all timed samples cleared the 30 ms floor, and metadata-disabled opaque draws
-performed one cached fallback scan per backing generation.
+native row bridge follow-up at `ee7b90051`. The true-base individual matrix is
+recorded by `aba3c7d61`, and the integrated matrix by `d044e13bd`. All 33
+individual scenario files and all three integrated scenarios passed 60 samples
+with stable full-output hashes and the 30 ms floor. The integrated S3 counter
+row proves all five optimizations were exercised.
 
 ## Final validation
 
 Focused Image tests, SDK distribution, final Release software-Skia Ninja
-build, smoke-test compilation, the corrective native Image smoke family, and
-the final corrected benchmark matrix all passed. The focused corrective smokes
-covered direct color parity, mutable opacity invalidation, zero-copy retry and
-cleanup, and trivial draw-plan writes. The exact phase-3 source/evidence base
-is `39aabd574`; the subsequent state-only checkpoint does not change
-runtime or benchmark artifacts.
+build, smoke-test compilation, the corrective native Image smoke family, the
+true-base/final-runtime individual matrices, and the integrated matrix all
+passed. The focused corrective smokes covered direct color parity, mutable
+opacity invalidation, zero-copy retry and cleanup, and trivial draw-plan
+writes. The exact Phase-3 source/evidence base is `d044e13bd`; the subsequent
+documentation-only checkpoint does not change runtime or benchmark artifacts.
 
 ## Active paths
 
@@ -58,8 +60,8 @@ runtime or benchmark artifacts.
 
 SDK `dist -x test`, focused `totalcross.ui.image.*` tests, smoke-test Java
 compilation, Release macOS software-Skia CMake/Ninja, four corrective native
-Image smokes, benchmark deployment, and the shared 60-sample RSS-aware runner
-passed. The corrected reports under
+Image smokes, true-base benchmark deployment, final-runtime benchmark
+deployment, and the shared 60-sample RSS-aware runner passed. The corrected reports under
 `.agent/benchmarks/image-opt-phase2-raster/corrections/` retain full CSV
 samples, stable full-content hashes, proof counters, and the disabled-metadata
 fallback scan. The historical reports under the original item directories

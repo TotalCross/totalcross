@@ -513,12 +513,15 @@ On interruption, state must name:
 - [x] Harden zero-copy allocation-failure ownership and process-global masks.
 - [x] Share conservative eligibility with trivial draw plans and validate the
   metadata-disabled fallback scan.
-- [x] Recapture corrected batched S1/S2/S3 matrices with stable full-content
-  hashes and a 30 ms minimum sample floor.
+- [x] Recapture corrected batched S1/S2/S3 matrices with a true Phase-1 S1,
+  stable full-content hashes, and a 30 ms minimum sample floor.
+- [x] Add and capture the integrated five-optimization S1/S2/S3 workload with
+  exact output parity and native hit counters.
+- [x] Record the final HEAD as the unambiguous Phase-3 handoff base.
 
 ## Corrective closeout
 
-The corrective pass was required after review identified four semantic and
+The corrective pass was required after review identified semantic and
 measurement gaps in the first closeout. Direct APPLY_COLOR2 now derives the
 `0xAAxxxxxx` alpha from the original RGB exactly as the legacy path does.
 Mutable native-backed Graphics writes materialize a mutable surface, advance
@@ -536,7 +539,10 @@ benchmark artifacts are under
 `.agent/benchmarks/image-opt-phase2-raster/corrections/`; the original
 historical S1/S2/S3 directories are preserved unchanged. All corrected
 samples use macOS Release software Skia, exact parity/full-content hashes, and
-at least 30 ms of timed work per sample.
+at least 30 ms of timed work per sample. The individual S1/S2/S3 reports use
+the actual Phase-1 runtime for S1 and the final Phase-2 runtime for S2/S3. The
+integrated report proves all five Phase-2 features in one representative
+workload; future storage/cache/GPU/mmap features remain explicitly disabled.
 
 ## Decision Log
 
