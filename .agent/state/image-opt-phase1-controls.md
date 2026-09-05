@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-05T04:52:00-03:00
+Updated: 2026-09-05T04:58:00-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
@@ -22,13 +22,14 @@ recorded 60 samples each: S2 median 669 ms / peak RSS 107280 KB; S3 median
 669 ms / peak RSS 109008 KB. S3 counters prove intentional accounting. Final
 validation is complete; the phase-2 source handoff is
 `613762c45ed887733b1dab9a12b20b32280e0fca`. Final documentation is complete
-in checkpoint `47b81182dd509a8cafd11250510939fd686586d0`.
+through checkpoint `47b81182dd509a8cafd11250510939fd686586d0`, and the plan
+size consolidation is `72b0041895a4a93fb921f4e3f4dcf6ae05616853`.
 
 ## Next concrete action
 
-No implementation work remains. The next phase may branch from the final
-phase-1 documentation checkpoint after this state/evidence update, without
-pushing, merging, or rewriting history.
+No implementation work remains. The next phase may branch from the resulting
+phase-1 HEAD after this bookkeeping update, without pushing, merging, or
+rewriting history.
 
 ## Active paths
 
@@ -44,8 +45,8 @@ pushing, merging, or rewriting history.
 Bootstrap and harness source validation passed: focused copyright headers,
 Python syntax, and staged whitespace. The SDK distribution, macOS software-
 Skia Release build, benchmark deployment, runtime-copy comparison, and S1
-process runs all passed. The finalized plan, protocol, state, evidence,
-archive, editorial report, benchmark report, and source handoff are committed.
+process runs all passed. The finalized plan is 20373 bytes and every direct
+artifact is committed; source handoff remains `613762c4`.
 
 ## Deferred validation
 
