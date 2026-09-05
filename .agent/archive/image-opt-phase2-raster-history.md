@@ -63,3 +63,25 @@ proved 120 zero-copy decodes, 60 source and 60 decode opacity proofs, 61,440
 writePixels hits, 92,160 row reads, and 60 direct color materializations. All
 three output hashes matched exactly. The final documentation checkpoint is
 the Phase-3 base; Android, iOS, Windows, Linux, and GPU remain out of scope.
+
+## 200-sample reproducibility closeout
+
+`a769c7ca6` versions the deterministic true-base benchmark adapter and moves
+integrated PNG generation before scenario configuration. `f66561b99` keeps
+the full 64-bit FNV hash formatter compatible with the TotalCross device
+converter. The adapter was applied to
+`9545c18207fab74d81340b24825c5a82ddbda7fd` and produced digest
+`cbfada1ba5f95c27005c473d1f7f128e644adf8f8496d8573bf8beeb1dc08a19`.
+
+`aacff9d53` records the closeout-200 evidence. True-base S1 and final S2
+each ran 200 samples for opacity JPEG and readback pixels/encode/color; the
+integrated workload ran 200 samples for S1, S2, and S3. Input JPEG and
+generated opaque-PNG hashes matched across all integrated scenarios. The
+individual S2 RSS deltas were -1.87%, -4.14%, -8.09%, and -1.82% for opacity,
+pixels, encode, and color. Integrated S2 was +5.26% RSS against the canonical
+true-base S1, and the repeat remained above 5%; final-runtime `pre` versus
+`post-disabled` differed by only 0.95% in the repeated control. This supports
+a cross-runtime revision difference, not a demonstrated disabled-only
+allocation, so no runtime change was made. The new raw samples are compressed
+under `benchmarks/image-opt-phase2-raster/closeout-200/`; historical and
+corrected artifacts remain unchanged.
