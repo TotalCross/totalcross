@@ -711,6 +711,14 @@ registerImageMacSmoke('ImageRasterOpacityMutation', 'ImageRasterOpacityMutationS
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageRasterDrawPlanWritePixels', 'ImageRasterDrawPlanWritePixelsSmokeApp',
+    'image-raster-draw-plan-write-pixels-smoke', false, false, [
+        'fixture=ImageRasterDrawPlanWritePixelsSmokeApp',
+        'parity=true',
+        'fastHit=true',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageDrawPresentationState', 'ImageDrawPresentationStateSmokeApp',
     'image-draw-presentation-state-smoke', false, false, [
         'fixture=ImageDrawPresentationStateSmokeApp',
