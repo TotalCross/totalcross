@@ -99,6 +99,7 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
    data->hwScaleH = ImageDrawPlan_hwScaleH(plan);
    data->rootHwScaleW = ImageDrawPlan_rootHwScaleW(plan);
    data->rootHwScaleH = ImageDrawPlan_rootHwScaleH(plan);
+   data->optimizationMask = 0;
    TCObject presentation = ImageDrawPlan_presentation(plan);
    if (!presentation) {
       presentation = root;
@@ -113,6 +114,11 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
          : (data->materializeAlphaMask * presentationAlpha + 127) / 255;
       data->hwScaleW = Image_hwScaleW(presentation);
       data->hwScaleH = Image_hwScaleH(presentation);
+      int32* optimizationMaskField = getStaticFieldInt(
+         OBJ_CLASS(presentation), "nativeOptimizationMaskForDraw");
+      if (optimizationMaskField) {
+         data->optimizationMask = *optimizationMaskField;
+      }
    }
    return data->operationCount > 0 && data->operationCount * 4 <= ARRAYOBJ_LEN(parameters)
       && data->operationCount * 2 <= ARRAYOBJ_LEN(dimensions);

@@ -138,7 +138,12 @@ typedef struct SkiaImageDrawPlanData {
     double hwScaleH;
     double rootHwScaleW;
     double rootHwScaleH;
+    int32 optimizationMask;
 } SkiaImageDrawPlanData;
+int skia_image_backing_try_write_pixels(void* targetCanvas, int64_t sourceHandle,
+    float srcLeft, float srcTop, float srcRight, float srcBottom,
+    float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask,
+    int32 optimizationMask);
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);

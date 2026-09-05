@@ -341,12 +341,43 @@ static bool geometryDrawCompiled(SkCanvas* canvas, const SkImage* image,
     return true;
 }
 
+static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan) {
+    if (!plan || plan->rootFrameCount != 1 || plan->outputFrameCount != 1
+        || plan->rootWidthOfAllFrames > 0 && plan->rootWidthOfAllFrames != plan->rootWidth
+        || plan->outputWidthOfAllFrames > 0 && plan->outputWidthOfAllFrames != plan->outputWidth
+        || plan->rootWidth != plan->outputWidth || plan->rootHeight != plan->outputHeight
+        || plan->rootContentScale != 1.0 || plan->outputContentScale != 1.0
+        || plan->destinationScale != 1.0 || plan->hwScaleW != 1.0 || plan->hwScaleH != 1.0
+        || plan->rootHwScaleW != 1.0 || plan->rootHwScaleH != 1.0
+        || plan->alphaMask != 255 || plan->materializeAlphaMask != 255
+        || plan->outputAlphaMask != 255 || plan->operationCount <= 0) {
+        return false;
+    }
+    for (int i = 0; i < plan->operationCount; ++i) {
+        if (plan->operations[i] != SKIA_IMAGE_DRAW_CROP
+            || plan->parameters[i * 4] != 0 || plan->parameters[i * 4 + 1] != 0
+            || plan->parameters[i * 4 + 2] != plan->rootLogicalWidth
+            || plan->parameters[i * 4 + 3] != plan->rootLogicalHeight
+            || plan->dimensions[i * 2] != plan->rootWidth
+            || plan->dimensions[i * 2 + 1] != plan->rootHeight) {
+            return false;
+        }
+    }
+    return true;
+}
+
 static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, float srcLeft,
                          float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop,
                          float dstRight, float dstBottom, int frameOverride) {
     NativeImageBackingRecord* source = plan ? findBacking(plan->rootHandle) : nullptr;
     if (!source || !canvas) {
         return false;
+    }
+    if (isTrivialWritePixelsPlan(plan)
+        && skia_image_backing_try_write_pixels(canvas, plan->rootHandle, srcLeft, srcTop,
+            srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, plan->alphaMask,
+            plan->optimizationMask)) {
+        return true;
     }
     try {
         sk_sp<SkImage> image = source->snapshot();
