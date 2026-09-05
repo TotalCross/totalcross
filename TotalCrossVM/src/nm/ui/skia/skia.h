@@ -148,6 +148,7 @@ int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle
     float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
 void skia_image_backing_release(int64_t handle);
 void skia_image_backing_reset_accounting_for_test(void);
+void skia_image_backing_clear_accounting_counters_for_test(void);
 void skia_image_backing_set_accounting_for_test(int enabled);
 uint64_t skia_image_backing_records_created_for_test(void);
 uint64_t skia_image_backing_records_released_for_test(void);
