@@ -17,26 +17,32 @@ public class ImageZeroCopyDecodeSmokeApp extends MainWindow {
     boolean jpegCounter = false;
     boolean retry = false;
     String error = "";
+    String step = "start";
 
     try {
       byte[] png = Vm.getFile("image-abi/tiny.png");
       byte[] jpeg = Vm.getFile("image-abi/lena512.jpg");
       require(png != null && jpeg != null, "fixtures");
 
+      step = "png-disabled";
       DecodeResult pngDisabled = decode(png, false);
+      step = "png-enabled";
       DecodeResult pngEnabled = decode(png, true);
       pngParity = samePixels(pngDisabled.pixels, pngEnabled.pixels);
       pngCounter = pngDisabled.copied > 0 && pngDisabled.zeroCopy == 0
           && pngEnabled.zeroCopy > 0 && pngEnabled.copied == 0
           && pngEnabled.finalBytes == (long) pngEnabled.width * pngEnabled.height * 4;
 
+      step = "jpeg-disabled";
       DecodeResult jpegDisabled = decode(jpeg, false);
+      step = "jpeg-enabled";
       DecodeResult jpegEnabled = decode(jpeg, true);
       jpegParity = samePixels(jpegDisabled.pixels, jpegEnabled.pixels);
       jpegCounter = jpegDisabled.copied > 0 && jpegDisabled.zeroCopy == 0
           && jpegEnabled.zeroCopy > 0 && jpegEnabled.copied == 0
           && jpegEnabled.finalBytes == (long) jpegEnabled.width * jpegEnabled.height * 4;
 
+      step = "retry";
       configure(true);
       Image.resetImageOperationAccountingForTest();
       Image retryImage = new Image(png, png.length);
@@ -50,7 +56,7 @@ public class ImageZeroCopyDecodeSmokeApp extends MainWindow {
       int[] retriedPixels = retryImage.getPixels();
       retry = failed && retriedPixels != null && Image.zeroCopyDecodeCountForTest() > 0;
     } catch (Throwable failure) {
-      error = failure.getClass().getName() + ":"
+      error = step + ":" + failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
