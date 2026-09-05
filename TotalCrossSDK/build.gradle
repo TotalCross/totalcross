@@ -730,6 +730,12 @@ registerImageMacSmoke('ImageDeferredFrameFadeLayout', 'ImageDeferredFrameFadeLay
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageOptimizationControlBenchmark', 'ImageOptimizationControlBenchmarkApp',
+    'image-optimization-control-benchmark', false, false, [
+        'fixture=ImageOptimizationControlBenchmarkApp',
+        'overallPass=true'
+    ])
+
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
