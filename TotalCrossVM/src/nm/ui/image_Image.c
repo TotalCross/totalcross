@@ -375,7 +375,7 @@ TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/
    UNUSED(p);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_failNextZeroCopyDecodeAfterAllocation(NMParams p) // totalcross/ui/image/Image native private static void failNextZeroCopyDecodeAfterAllocationForTestNative();
+TC_API void tuiI_failNextZeroCopyDecodeAfter(NMParams p) // totalcross/ui/image/Image native private static void failNextZeroCopyDecodeAfterAllocationForTestNative();
 {
    failNextFinalBufferAllocationForTest = true;
    UNUSED(p);
