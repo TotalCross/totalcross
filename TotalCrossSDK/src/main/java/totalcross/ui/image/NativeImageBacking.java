@@ -94,6 +94,34 @@ final class NativeImageBacking extends ImageBacking {
     return isAvailableNative();
   }
 
+  static void resetBackingAccountingForTest() {
+    resetAccountingTestNative();
+  }
+
+  static long backingRecordsCreatedForTest() {
+    return backingCreatedTestNative();
+  }
+
+  static long backingRecordsReleasedForTest() {
+    return backingReleasedTestNative();
+  }
+
+  static long backingRecordsLiveForTest() {
+    return backingLiveTestNative();
+  }
+
+  static long backingRecordsPeakLiveForTest() {
+    return backingPeakLiveTestNative();
+  }
+
+  static long backingBytesLiveForTest() {
+    return backingBytesLiveTest();
+  }
+
+  static long backingBytesPeakLiveForTest() {
+    return backingPeakBytesTest();
+  }
+
   @Override
   boolean isNative() {
     return true;
@@ -222,6 +250,40 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private static boolean isAvailableNative() {
     return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void resetAccountingTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long backingCreatedTestNative() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long backingReleasedTestNative() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long backingLiveTestNative() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long backingPeakLiveTestNative() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long backingBytesLiveTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long backingPeakBytesTest() {
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy

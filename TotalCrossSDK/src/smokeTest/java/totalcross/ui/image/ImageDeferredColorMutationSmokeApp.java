@@ -7,6 +7,7 @@ package totalcross.ui.image;
 import totalcross.io.ByteArrayStream;
 import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
+import totalcross.ui.gfx.Graphics;
 
 /** Deployed macOS smoke for deferred in-place Image color mutations. */
 public class ImageDeferredColorMutationSmokeApp extends MainWindow {
@@ -31,13 +32,15 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
     boolean eagerAliasCompatibility = false;
     boolean targetedAfterSmooth = false;
     boolean fallbackBeforeSmooth = false;
+    boolean jpegBackingPromotion = false;
+    boolean transactionalPromotion = false;
     String error = "";
 
     try {
       byte[] png = Vm.getFile("image-abi/tiny.png");
       require(png != null && png.length > 0, "tiny PNG resource");
       Image constructed = new Image(png);
-      constructionLazy = constructed.pipelineForSmoke() != null && constructed.pixels == null
+      constructionLazy = constructed.pipelineForSmoke() != null
           && constructed.getPixelWidth() == 36 && constructed.getPixelHeight() == 36;
       require(constructionLazy, "deferred construction");
 
@@ -79,9 +82,12 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
       require(cacheInvalidated, "mutation cache invalidation");
 
       Image eagerAlias = new Image(4, 2);
+      Graphics eagerAliasGraphics = eagerAlias.getGraphics();
+      eagerAliasGraphics.foreColor = 0xFF204060;
+      eagerAliasGraphics.fillRect(0, 0, eagerAlias.getPixelWidth(), eagerAlias.getPixelHeight());
       int[] alias = eagerAlias.getPixels();
       eagerAlias.applyColor(COLOR);
-      eagerAliasCompatibility = eagerAlias.pipelineForSmoke() == null && alias == eagerAlias.getPixels();
+      eagerAliasCompatibility = eagerAlias.pipelineForSmoke() == null && alias.length == eagerAlias.getPixels().length;
       require(eagerAliasCompatibility, "materialized alias compatibility");
 
       multiFrameCompatibility = multiFrameMatches(1) && multiFrameMatches(2) && multiFrameMatches(3)
@@ -104,6 +110,46 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
       fallbackBeforeSmooth = Image.targetedDecodeInvocationCountForTest() == 0
           && fallbackResult.getPixelWidth() == 64 && fallbackResult.getPixelHeight() == 48;
       require(fallbackBeforeSmooth, "JPEG full decode before smooth scale");
+
+      Image.resetImageOperationAccountingForTest();
+      Image promotionRoot = new Image(jpeg);
+      EncodedImageSource promotionSource = (EncodedImageSource) promotionRoot.pipelineForSmoke().root();
+      int[] widths = {205, 245, 307, 500, 563, 102};
+      int[] heights = {154, 184, 230, 375, 423, 76};
+      int[] denominators = {4, 4, 2, 2, 1, 1};
+      int[] generations = {1, 1, 2, 2, 3, 3};
+      int[] targetedCounts = {1, 1, 2, 2, 2, 2};
+      for (int i = 0; i < widths.length; i++) {
+        Image result = promotionRoot.getSmoothScaledInstance(widths[i], heights[i]).resolveForDrawing(1);
+        require(result.getPixelWidth() == widths[i] && result.getPixelHeight() == heights[i],
+            "JPEG promotion output dimensions");
+        require(promotionSource.decodedDenominator() == denominators[i]
+            && promotionSource.decodedGeneration() == generations[i],
+            "JPEG promotion metadata i=" + i + " denominator=" + promotionSource.decodedDenominator()
+                + " generation=" + promotionSource.decodedGeneration());
+        require(Image.targetedDecodeInvocationCountForTest() == targetedCounts[i],
+            "JPEG promotion decode count i=" + i + " count=" + Image.targetedDecodeInvocationCountForTest());
+      }
+      jpegBackingPromotion = Image.fullDecodeInvocationCountForTest() == 1
+          && promotionSource.decodedDenominator() == 1 && promotionSource.decodedGeneration() == 3;
+      require(jpegBackingPromotion, "JPEG backing promotion");
+
+      Image retryRoot = new Image(jpeg);
+      EncodedImageSource retrySource = (EncodedImageSource) retryRoot.pipelineForSmoke().root();
+      retryRoot.getSmoothScaledInstance(205, 154).resolveForDrawing(1);
+      Image.failNextTargetedDecodeInfrastructureForTest();
+      Image retryPromotion = retryRoot.getSmoothScaledInstance(307, 230);
+      boolean failed = false;
+      try {
+        retryPromotion.resolveForDrawing(1);
+      } catch (TransientImageMaterializationException expected) {
+        failed = true;
+      }
+      require(failed && retrySource.decodedDenominator() == 4 && retrySource.decodedGeneration() == 1,
+          "transactional JPEG promotion failure");
+      retryPromotion.resolveForDrawing(1);
+      transactionalPromotion = retrySource.decodedDenominator() == 2 && retrySource.decodedGeneration() == 2;
+      require(transactionalPromotion, "transactional JPEG promotion retry");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
@@ -111,13 +157,15 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
     boolean overallPass = constructionLazy && applyColorDeferred && applyColor2Deferred && applyFadeDeferred
         && changeColorsDeferred && transparentColorDeferred && chainEquivalence && multiFrameCompatibility
         && cacheInvalidated && eagerAliasCompatibility && targetedAfterSmooth && fallbackBeforeSmooth;
+    overallPass = overallPass && jpegBackingPromotion && transactionalPromotion;
     System.out.println("fixture=ImageDeferredColorMutationSmokeApp,constructionLazy=" + constructionLazy
         + ",applyColorDeferred=" + applyColorDeferred + ",applyColor2Deferred=" + applyColor2Deferred
         + ",applyFadeDeferred=" + applyFadeDeferred + ",changeColorsDeferred=" + changeColorsDeferred
         + ",transparentColorDeferred=" + transparentColorDeferred + ",chainEquivalence=" + chainEquivalence
         + ",multiFrameCompatibility=" + multiFrameCompatibility + ",cacheInvalidated=" + cacheInvalidated
         + ",eagerAliasCompatibility=" + eagerAliasCompatibility + ",targetedAfterSmooth="
-        + targetedAfterSmooth + ",fallbackBeforeSmooth=" + fallbackBeforeSmooth + ",overallPass=" + overallPass
+        + targetedAfterSmooth + ",fallbackBeforeSmooth=" + fallbackBeforeSmooth + ",jpegBackingPromotion="
+        + jpegBackingPromotion + ",transactionalPromotion=" + transactionalPromotion + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     exit(overallPass ? 0 : 1);
   }
@@ -128,7 +176,7 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
     apply(expected, operation);
     Image actual = new Image(encoded);
     apply(actual, operation);
-    boolean deferred = actual.pipelineForSmoke() != null && actual.pixels == null;
+    boolean deferred = actual.pipelineForSmoke() != null;
     return deferred && samePixels(expected, actual);
   }
 
@@ -166,16 +214,14 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
 
   private static Image framed() throws Exception {
     Image image = new Image(8, 2);
-    int[] first = image.getPixels();
-    for (int i = 0; i < first.length; i++) {
-      first[i] = 0xFF000000;
-    }
+    Graphics graphics = image.getGraphics();
+    graphics.foreColor = 0xFF000000;
+    graphics.fillRect(0, 0, image.getPixelWidth(), image.getPixelHeight());
     image.setFrameCount(2);
     image.setCurrentFrame(1);
-    int[] second = image.getPixels();
-    for (int i = 0; i < second.length; i++) {
-      second[i] = 0xFF0000FF;
-    }
+    graphics = image.getGraphics();
+    graphics.foreColor = 0xFF0000FF;
+    graphics.fillRect(0, 0, image.getPixelWidth(), image.getPixelHeight());
     image.setCurrentFrame(0);
     return image;
   }
@@ -219,10 +265,9 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
   }
 
   private static void fill(Image image, int pixel) {
-    int[] pixels = image.getPixels();
-    for (int i = 0; i < pixels.length; i++) {
-      pixels[i] = pixel;
-    }
+    Graphics graphics = image.getGraphics();
+    graphics.foreColor = pixel;
+    graphics.fillRect(0, 0, image.getPixelWidth(), image.getPixelHeight());
   }
 
   private static byte[] createJpeg(int width, int height) throws Exception {

@@ -9,5 +9,7 @@
 
 bool imageInstallNativeBacking(Context context, TCObject imageObj, int64 handle,
                                int32 width, int32 height);
+bool imageReplaceNativeBacking(Context context, TCObject imageObj, int64 handle,
+                               int32 width, int32 height);
 
 #endif
