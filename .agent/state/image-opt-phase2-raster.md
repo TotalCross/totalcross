@@ -6,28 +6,29 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T14:12:00-03:00
+Updated: 2026-09-05T14:31:00-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
 
-Milestone 3 is complete. The branch was created from
+Milestones 3 and 4 are complete. The branch was created from
 the final phase-1 branch HEAD, the four benchmark workloads and
 argument-capable runner are committed, zero-copy S1/S2/S3 was captured for PNG
 and JPEG, and the opt-in PNG/JPEG direct decode path is implemented with
 semantic retry/parity coverage. Opacity metadata is implemented with
 source/decode proofs, cached backing state, and conservative invalidation.
 Opacity S1 covers all four required fixture kinds at `f4f1a6ad9`; S2/S3 is
-recorded at `f6a4e1227`.
+recorded at `f6a4e1227`. The guarded software-renderer writePixels path and
+pixel-parity smoke are committed at `eb192e6fe` and `c590ec290`; its S1/S2/S3
+evidence is under `opaque-draw/`.
 
 ## Next concrete action
 
-Implement `RASTER_OPAQUE_WRITE_PIXELS`, preserving the opacity gate and
-recording write attempt/hit/fallback counters. Capture its S1 before changing
-the runtime write path, then validate the enabled path before moving to row
-readback and direct color materialization.
+Capture the row-readback/direct-color S1 baseline before changing those paths.
+Then implement `RASTER_ROW_READBACK` and `RASTER_DIRECT_COLOR_MATERIALIZATION`
+as the next implementation family.
 
 ## Active paths
 
@@ -51,9 +52,9 @@ and compact summaries are under `.agent/benchmarks/image-opt-phase2-raster/zero-
 
 ## Deferred validation
 
-WritePixels S1/S2/S3, row-readback/color materialization, focused Image unit
-tests, and final SDK/native validation remain deferred. Android, iOS, Windows,
-Linux, and GPU validation are outside this phase.
+Row-readback/color materialization, focused Image unit tests, and final SDK/native
+validation remain deferred. Android, iOS, Windows, Linux, and GPU validation
+are outside this phase.
 
 ## Decisions still active
 
