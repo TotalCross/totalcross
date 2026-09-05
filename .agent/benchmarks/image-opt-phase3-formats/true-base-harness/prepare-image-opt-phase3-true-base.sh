@@ -23,6 +23,7 @@ HARNESS_FILES="TotalCrossSDK/build.gradle
 scripts/run-image-optimization-benchmark.py
 TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageRasterBenchmarkSupport.java
 TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsBenchmarkSupport.java
+TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsNativeHooks.java
 TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsBenchmarkApp.java
 TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsSmokeApp.java"
 
