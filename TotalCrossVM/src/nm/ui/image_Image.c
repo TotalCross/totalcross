@@ -27,6 +27,21 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObje
 
 static bool failNextImageAllocationForTest;
 
+static int32 jpegTargetDecodeDenominatorForTest(int32 sourceWidth, int32 sourceHeight,
+   int32 targetWidth, int32 targetHeight)
+{
+   const int32 denominators[] = { 8, 4, 2, 1 };
+   int32 i;
+   for (i = 0; i < 4; i++)
+   {
+      int32 denominator = denominators[i];
+      if ((sourceWidth + denominator - 1) / denominator >= targetWidth
+         && (sourceHeight + denominator - 1) / denominator >= targetHeight)
+         return denominator;
+   }
+   return 1;
+}
+
 int imageDecodeConsumeAllocationFailureForTest(void)
 {
    bool fail = failNextImageAllocationForTest;
@@ -215,6 +230,7 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
 {
    TCObject imageObj = p->obj[0];
    TCObject sourceObj = p->obj[1];
+   imageRecordTestCounter(p->currentContext, "fullDecodeInvocationCountForTest");
    ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
    if (!bag || !bag->bytes || bag->length <= 0)
    {
@@ -234,8 +250,7 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
    throwImageDecodeStatus(p->currentContext, status);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSourceTargeted(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight);
-{
+static void decodeEncodedSourceAtDenominator(NMParams p, int32 denominator, bool explicitRatio) {
    TCObject imageObj = p->obj[0];
    TCObject sourceObj = p->obj[1];
    ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
@@ -243,31 +258,45 @@ TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/
    int32 targetHeight = p->i32[1];
    ImageDecodeStatus status;
    TCClass imageClass = loadClass(p->currentContext, "totalcross.ui.image.Image", false);
-   int32* targetedCount = imageClass == null ? null
-      : getStaticFieldInt(imageClass, "targetedDecodeInvocationCountForTest");
-   int32* targetedWidth = imageClass == null ? null
-      : getStaticFieldInt(imageClass, "targetedDecodeWidthForTest");
-   int32* targetedHeight = imageClass == null ? null
-      : getStaticFieldInt(imageClass, "targetedDecodeHeightForTest");
+   int32* targetedCount = imageTestAccountingField(p->currentContext,
+      "targetedDecodeInvocationCountForTest");
+   int32* targetedRequestWidth = imageTestAccountingField(p->currentContext,
+      "targetedDecodeRequestWidthForTest");
+   int32* targetedRequestHeight = imageTestAccountingField(p->currentContext,
+      "targetedDecodeRequestHeightForTest");
+   int32* targetedDenominator = imageTestAccountingField(p->currentContext,
+      "targetedDecodeDenominatorForTest");
+   int32* targetedWidth = imageTestAccountingField(p->currentContext,
+      "targetedDecodeWidthForTest");
+   int32* targetedHeight = imageTestAccountingField(p->currentContext,
+      "targetedDecodeHeightForTest");
    int32* infrastructureFailure = imageClass == null ? null
       : getStaticFieldInt(imageClass, "targetedDecodeInfrastructureFailureForTest");
    if (!bag || !bag->bytes || bag->length <= 0) {
       throwException(p->currentContext, ImageException, "Encoded source has no native backing");
       return;
    }
-   if (EncodedImageSource_formatCode(sourceObj) != IMAGE_ENCODED_JPEG || targetWidth <= 0 || targetHeight <= 0) {
+   if (EncodedImageSource_formatCode(sourceObj) != IMAGE_ENCODED_JPEG || targetWidth <= 0 || targetHeight <= 0
+         || (explicitRatio && denominator != 2 && denominator != 4 && denominator != 8)) {
       throwException(p->currentContext, ImageException, "Targeted decode requires a JPEG image and positive dimensions");
       return;
    }
    if (targetedCount != null)
       (*targetedCount)++;
+   if (targetedRequestWidth != null)
+      (*targetedRequestWidth) = targetWidth;
+   if (targetedRequestHeight != null)
+      (*targetedRequestHeight) = targetHeight;
+   if (targetedDenominator != null)
+      (*targetedDenominator) = denominator;
    if (infrastructureFailure != null && *infrastructureFailure) {
       *infrastructureFailure = false;
       throwExceptionNamed(p->currentContext, "totalcross.ui.image.TransientImageMaterializationException", null);
       return;
    }
    status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
-      JPEG_DECODE_TARGET_DECODE, targetWidth, targetHeight);
+      explicitRatio ? JPEG_DECODE_EXPLICIT_RATIO : JPEG_DECODE_TARGET_DECODE,
+      explicitRatio ? 1 : targetWidth, explicitRatio ? denominator : targetHeight);
    if (status == IMAGE_DECODE_SUCCESS) {
       if (targetedWidth != null)
          (*targetedWidth) = Image_width(imageObj);
@@ -277,15 +306,46 @@ TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/
    throwImageDecodeStatus(p->currentContext, status);
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSourceTargeted(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight);
+{
+   int32 denominator = jpegTargetDecodeDenominatorForTest(
+      EncodedImageSource_intrinsicWidth(p->obj[1]), EncodedImageSource_intrinsicHeight(p->obj[1]),
+      p->i32[0], p->i32[1]);
+   decodeEncodedSourceAtDenominator(p, denominator, false);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSourceTiered(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight, int denominator);
+{
+   decodeEncodedSourceAtDenominator(p, p->i32[2], true);
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/Image native private static void failNextNativeMaterializationForTestNative();
 {
    failNextImageAllocationForTest = true;
    UNUSED(p);
 }
 //////////////////////////////////////////////////////////////////////////
+#if TC_RENDERER_SKIA
+static bool imageUsesNativeBacking(TCObject imageObj);
+static bool applyNativeColorMutation(Context currentContext, TCObject imageObj, int32 operation, int32 parameter1,
+                                     int32 parameter2);
+#endif
 TC_API void tuiI_changeColorsNative_ii(NMParams p) // totalcross/ui/image/Image private void changeColorsNative(int from, int to);
 {
    TCObject thisObj = p->obj[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(p->currentContext, thisObj, SKIA_IMAGE_COLOR_CHANGE_COLORS,
+            p->i32[0], p->i32[1])) {
+         throwException(p->currentContext, ImageException, "Could not change native image colors");
+         return;
+      }
+      if (Image_frameCount(thisObj) > 1) {
+         Image_currentFrame(thisObj) = 0;
+      }
+      return;
+   }
+#endif
    Pixel from = makePixelARGB(p->i32[0]);
    Pixel to = makePixelARGB(p->i32[1]);
    changeColors(thisObj, from, to);
@@ -308,6 +368,36 @@ typedef enum
    FADED_INSTANCE,
    ALPHA_INSTANCE
 } FuncType;
+
+#if TC_RENDERER_SKIA
+static bool imageUsesNativeBacking(TCObject imageObj)
+{
+   TCObject backing = imageObj ? Image_backing(imageObj) : null;
+   return backing != null && strEq(OBJ_CLASS(backing)->name,
+      "totalcross.ui.image.NativeImageBacking");
+}
+
+static bool applyNativeColorMutation(Context currentContext, TCObject imageObj, int32 operation, int32 parameter1,
+                                     int32 parameter2)
+{
+   int32 frameCount;
+   int32 visibleWidth;
+   if (!imageUsesNativeBacking(imageObj)) {
+      return false;
+   }
+   frameCount = Image_frameCount(imageObj);
+   visibleWidth = Image_width(imageObj);
+   if (!skia_image_backing_apply_color_mutation(
+         NativeImageBacking_nativeHandle(Image_backing(imageObj)), operation, parameter1,
+         parameter2, frameCount, visibleWidth, Image_currentFrame(imageObj))) {
+      return false;
+   }
+   Image_changed(imageObj) = true;
+   imageRecordTestCounter(currentContext, "nativeColorReadbackCountForTest");
+   return true;
+}
+#endif
+
 TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p) // totalcross/ui/image/Image private void getModifiedNative(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 {
    TCObject thisObj = p->obj[0];
@@ -316,6 +406,44 @@ TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p) // totalcross/ui/image/Im
    int32 angle = p->i32[1];
    Pixel color = p->i32[2] == 0 ? (Pixel)0 : makePixelRGB(p->i32[2]);
    FuncType type = (FuncType)p->i32[5];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj) && (type == TOUCHEDUP_INSTANCE
+         || type == FADED_INSTANCE || type == ALPHA_INSTANCE)) {
+      int32 operation;
+      int32 parameter1;
+      int32 parameter2;
+      int64 handle;
+      switch (type) {
+         case TOUCHEDUP_INSTANCE:
+            operation = SKIA_IMAGE_COLOR_TOUCH_UP_INSTANCE;
+            parameter1 = p->i32[3];
+            parameter2 = p->i32[4];
+            break;
+         case FADED_INSTANCE:
+            operation = SKIA_IMAGE_COLOR_FADE_INSTANCE;
+            parameter1 = p->i32[2];
+            parameter2 = 0;
+            break;
+         default:
+            operation = SKIA_IMAGE_COLOR_ALPHA_INSTANCE;
+            parameter1 = p->i32[2];
+            parameter2 = 0;
+            break;
+      }
+      handle = skia_image_backing_create_color_instance(
+         NativeImageBacking_nativeHandle(Image_backing(thisObj)), operation, parameter1, parameter2);
+      if (handle == 0) {
+         throwException(p->currentContext, OutOfMemoryError, null);
+         return;
+      }
+      if (!imageReplaceNativeBacking(p->currentContext, newObj, handle,
+            skia_image_backing_width(handle), skia_image_backing_height(handle))) {
+         return;
+      }
+      imageRecordTestCounter(p->currentContext, "nativeColorReadbackCountForTest");
+      return;
+   }
+#endif
    switch (type)
    {
       case SCALED_INSTANCE:
@@ -349,20 +477,37 @@ TC_API void tuiI_setCurrentFrameNative_i(NMParams p) // totalcross/ui/image/Imag
 TC_API void tuiI_applyColorNative_i(NMParams p) // totalcross/ui/image/Image private void applyColorNative(int color);
 {
    TCObject thisObj = p->obj[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(p->currentContext, thisObj, SKIA_IMAGE_COLOR_APPLY_COLOR, p->i32[0], 0)) {
+         throwException(p->currentContext, ImageException, "Could not apply native image color");
+         return;
+      }
+      if (Image_frameCount(thisObj) > 1) {
+         Image_currentFrame(thisObj) = 0;
+      }
+      return;
+   }
+#endif
    Pixel color = makePixelRGB(p->i32[0]);
    applyColor(thisObj, color);
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_nativeEqualsNative_i(NMParams p) // totalcross/ui/image/Image private boolean nativeEqualsNative(totalcross.ui.image.Image other);
-{
-   TCObject thisObj = p->obj[0];
-   TCObject otherObj = p->obj[1];
-   p->retI = nativeEquals(thisObj, otherObj);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyColor2Native_i(NMParams p) // totalcross/ui/image/Image private void applyColor2Native(int color);
 {
    TCObject thisObj = p->obj[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(p->currentContext, thisObj, SKIA_IMAGE_COLOR_APPLY_COLOR2, p->i32[0], 0)) {
+         throwException(p->currentContext, ImageException, "Could not apply native image color2");
+         return;
+      }
+      if (Image_frameCount(thisObj) > 1) {
+         Image_currentFrame(thisObj) = 0;
+      }
+      return;
+   }
+#endif
    Pixel color = makePixelARGB(p->i32[0]);
    applyColor2(thisObj, color);
 }
@@ -370,6 +515,19 @@ TC_API void tuiI_applyColor2Native_i(NMParams p) // totalcross/ui/image/Image pr
 TC_API void tuiI_setTransparentColorNative_i(NMParams p) // totalcross/ui/image/Image private void setTransparentColorNative(int color);
 {
    TCObject thisObj = p->obj[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(p->currentContext, thisObj, SKIA_IMAGE_COLOR_SET_TRANSPARENT_COLOR,
+            p->i32[0], 0)) {
+         throwException(p->currentContext, ImageException, "Could not set native image transparent color");
+         return;
+      }
+      if (Image_frameCount(thisObj) > 1) {
+         Image_currentFrame(thisObj) = 0;
+      }
+      return;
+   }
+#endif
    Pixel color = makePixelRGB(p->i32[0]);
    setTransparentColor(thisObj, color);
    p->retO = thisObj;
@@ -395,12 +553,14 @@ TC_API void tuiI_applyChangesNative(NMParams p) // totalcross/ui/image/Image pri
    }
    int32 frameCount = Image_frameCount(img);
    TCObject backing = Image_backing(img);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(img) : Image_pixelsOfAllFrames(img);
+   TCObject pixelsObj;
 
    if (backing != null && strEq(OBJ_CLASS(backing)->name, "totalcross.ui.image.NativeImageBacking")) {
       Image_changed(img) = false;
       return;
    }
+   pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(backing)
+      : RasterImageBacking_pixelsOfAllFrames(backing);
    
    if (pixelsObj != NULL) {
       int32 width = (frameCount > 1) ? Image_widthOfAllFrames(img) : Image_width(img);
@@ -446,6 +606,14 @@ TC_API void tuiI_applyFadeNative_i(NMParams p) // totalcross/ui/image/Image priv
 {
    TCObject thisObj = p->obj[0];
    int32 fadeValue = p->i32[0];
+#if TC_RENDERER_SKIA
+   if (imageUsesNativeBacking(thisObj)) {
+      if (!applyNativeColorMutation(p->currentContext, thisObj, SKIA_IMAGE_COLOR_APPLY_FADE, fadeValue, 0)) {
+         throwException(p->currentContext, ImageException, "Could not apply native image fade");
+      }
+      return;
+   }
+#endif
    applyFade(thisObj, fadeValue);
 }
 //////////////////////////////////////////////////////////////////////////

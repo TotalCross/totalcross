@@ -24,6 +24,11 @@ final class EncodedImageSource extends ImageSource {
   private int frameCount;
   private String comment;
   private long nativeBag;
+  private ImageBacking decodedBacking;
+  private int decodedWidth;
+  private int decodedHeight;
+  private int decodedDenominator;
+  private long decodedGeneration;
   private ImageException decodeFailure;
 
   private EncodedImageSource() {
@@ -189,6 +194,58 @@ final class EncodedImageSource extends ImageSource {
     if (decodeFailure == null) {
       decodeFailure = failure;
     }
+  }
+
+  synchronized ImageBacking decodedBackingForReuse(int requestedDenominator) {
+    if (requestedDenominator <= 0 || decodedBacking == null || !decodedBacking.isValid()
+        || decodedWidth <= 0 || decodedHeight <= 0 || decodedDenominator <= 0
+        || decodedDenominator > requestedDenominator) {
+      return null;
+    }
+    return decodedBacking;
+  }
+
+  synchronized int decodedWidth() {
+    return decodedWidth;
+  }
+
+  synchronized int decodedHeight() {
+    return decodedHeight;
+  }
+
+  synchronized int decodedDenominator() {
+    return decodedDenominator;
+  }
+
+  synchronized long decodedGeneration() {
+    return decodedGeneration;
+  }
+
+  synchronized void installDecodedBacking(ImageBacking backing, int width, int height, int denominator) {
+    if (backing == null || !backing.isValid() || width <= 0 || height <= 0
+        || (denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8)) {
+      throw new IllegalArgumentException("Invalid decoded image backing");
+    }
+    if (decodedBacking == backing && decodedWidth == width && decodedHeight == height
+        && decodedDenominator == denominator) {
+      return;
+    }
+    decodedBacking = backing;
+    decodedWidth = width;
+    decodedHeight = height;
+    decodedDenominator = denominator;
+    decodedGeneration++;
+  }
+
+  synchronized void evictDecodedBacking() {
+    if (decodedBacking == null && decodedWidth == 0 && decodedHeight == 0 && decodedDenominator == 0) {
+      return;
+    }
+    decodedBacking = null;
+    decodedWidth = 0;
+    decodedHeight = 0;
+    decodedDenominator = 0;
+    decodedGeneration++;
   }
 
   void releaseForSmoke() {

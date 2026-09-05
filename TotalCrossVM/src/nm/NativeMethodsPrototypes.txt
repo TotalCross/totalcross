@@ -98,13 +98,13 @@ TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);
 TC_API void tuiI_decodeEncodedSource_e(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p);
+TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p);
 TC_API void tuiI_failNextNativeMaterializati(NMParams p);
 TC_API void tuiI_changeColorsNative_ii(NMParams p);
 TC_API void tuiI_getPixelRowNative_Bi(NMParams p);
 TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p);
 TC_API void tuiI_setCurrentFrameNative_i(NMParams p);
 TC_API void tuiI_applyColorNative_i(NMParams p);
-TC_API void tuiI_nativeEqualsNative_i(NMParams p);
 TC_API void tuiI_applyColor2Native_i(NMParams p);
 TC_API void tuiI_setTransparentColorNative_i(NMParams p);
 TC_API void tuiI_freeTextureNative(NMParams p);
@@ -121,7 +121,9 @@ TC_API void tuiNIB_snapshotNative(NMParams p);
 TC_API void tuiNIB_failNextSnapshotNative(NMParams p);
 TC_API void tuiNIB_makeMutableNative(NMParams p);
 TC_API void tuiNIB_scaleNative_iib(NMParams p);
+TC_API void tuiNIB_materializeGeometryNative(NMParams p);
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p);
+TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p);
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p);
 TC_API void tugG_create_g(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
@@ -151,6 +153,8 @@ TC_API void tugG_fillRoundRect_iiiii(NMParams p);
 TC_API void tugG_copyRectNative_giiiiii(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
 TC_API void tugG_drawImageNative_iiib(NMParams p);
+TC_API void tugG_drawGeometryNative_oiib(NMParams p);
+TC_API void tugG_copyGeometryNative_oiiiib(NMParams p);
 TC_API void tugG_copyImageRectNative_iiiiib(NMParams p);
 TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
@@ -955,6 +959,7 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source);
 TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSourceTargeted(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight);
+TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSourceTiered(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight, int denominator);
 TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/Image native private static void failNextNativeMaterializationForTestNative();
 {
 }
@@ -976,10 +981,6 @@ TC_API void tuiI_setCurrentFrameNative_i(NMParams p) // totalcross/ui/image/Imag
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyColorNative_i(NMParams p) // totalcross/ui/image/Image native private void applyColorNative(int color);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_nativeEqualsNative_i(NMParams p) // totalcross/ui/image/Image native private boolean nativeEqualsNative(totalcross.ui.image.Image other);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1055,7 +1056,15 @@ TC_API void tuiNIB_scaleNative_iib(NMParams p) // totalcross/ui/image/NativeImag
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_materializeGeometryNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long materializeGeometryNative(totalcross.ui.image.ImageDrawPlan plan);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean readPixelsNative(int []output, int offset, int x, int y, int width, int height);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean readRgbaRowNative(byte []output, int y, int width);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1172,6 +1181,14 @@ TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawImageNative_iiib(NMParams p) // totalcross/ui/gfx/Graphics native private void drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean doClip);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean drawGeometryNative(Object plan, int x, int y, boolean doClip);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////

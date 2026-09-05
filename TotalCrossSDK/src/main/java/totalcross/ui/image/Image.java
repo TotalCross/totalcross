@@ -75,9 +75,19 @@ public class Image extends GfxSurface {
   private static boolean decodedRasterAllocationFailureForTest;
   private static boolean materializedFrameBufferAllocationFailureForTest;
   private static boolean targetedDecodeInfrastructureFailureForTest;
+  static boolean imageOperationAccountingForTest;
+  static int fullDecodeInvocationCountForTest;
   static int targetedDecodeInvocationCountForTest;
+  static int targetedDecodeRequestWidthForTest;
+  static int targetedDecodeRequestHeightForTest;
+  static int targetedDecodeDenominatorForTest;
   static int targetedDecodeWidthForTest;
   static int targetedDecodeHeightForTest;
+  static int nativeGeometryMaterializationCountForTest;
+  static int nativeColorReadbackCountForTest;
+  static int directDrawPlanExecutionCountForTest;
+  private static boolean backingReadbackAccountingForTest;
+  private static int backingReadbackCountForTest;
 
   private static final class DeterministicImageDecodeException extends ImageException {
     DeterministicImageDecodeException() {
@@ -109,7 +119,11 @@ public class Image extends GfxSurface {
   }
 
   static synchronized void resetTargetedDecodeInvocationCountForTest() {
+    imageOperationAccountingForTest = true;
     targetedDecodeInvocationCountForTest = 0;
+    targetedDecodeRequestWidthForTest = 0;
+    targetedDecodeRequestHeightForTest = 0;
+    targetedDecodeDenominatorForTest = 0;
     targetedDecodeWidthForTest = 0;
     targetedDecodeHeightForTest = 0;
   }
@@ -126,6 +140,67 @@ public class Image extends GfxSurface {
     return targetedDecodeHeightForTest;
   }
 
+  static synchronized int targetedDecodeRequestWidthForTest() {
+    return targetedDecodeRequestWidthForTest;
+  }
+
+  static synchronized int targetedDecodeRequestHeightForTest() {
+    return targetedDecodeRequestHeightForTest;
+  }
+
+  static synchronized int targetedDecodeDenominatorForTest() {
+    return targetedDecodeDenominatorForTest;
+  }
+
+  static synchronized void resetImageOperationAccountingForTest() {
+    imageOperationAccountingForTest = true;
+    fullDecodeInvocationCountForTest = 0;
+    targetedDecodeInvocationCountForTest = 0;
+    targetedDecodeRequestWidthForTest = 0;
+    targetedDecodeRequestHeightForTest = 0;
+    targetedDecodeDenominatorForTest = 0;
+    targetedDecodeWidthForTest = 0;
+    targetedDecodeHeightForTest = 0;
+    nativeGeometryMaterializationCountForTest = 0;
+    nativeColorReadbackCountForTest = 0;
+    directDrawPlanExecutionCountForTest = 0;
+    backingReadbackAccountingForTest = true;
+    backingReadbackCountForTest = 0;
+  }
+
+  static synchronized int fullDecodeInvocationCountForTest() {
+    return fullDecodeInvocationCountForTest;
+  }
+
+  static synchronized int nativeGeometryMaterializationCountForTest() {
+    return nativeGeometryMaterializationCountForTest;
+  }
+
+  static synchronized int nativeColorReadbackCountForTest() {
+    return nativeColorReadbackCountForTest;
+  }
+
+  static synchronized int directDrawPlanExecutionCountForTest() {
+    return directDrawPlanExecutionCountForTest;
+  }
+
+  /** Test-only accounting for explicit deployed getPixels() snapshots. */
+  static synchronized void resetBackingReadbackAccountingForTest() {
+    imageOperationAccountingForTest = true;
+    backingReadbackAccountingForTest = true;
+    backingReadbackCountForTest = 0;
+  }
+
+  static synchronized int backingReadbackCountForTest() {
+    return backingReadbackCountForTest;
+  }
+
+  static synchronized void recordBackingReadbackForTest() {
+    if (backingReadbackAccountingForTest) {
+      backingReadbackCountForTest++;
+    }
+  }
+
   /** Test-only hook for exercising retryable targeted ImageIO setup failures. */
   static synchronized void failNextTargetedDecodeInfrastructureForTest() {
     targetedDecodeInfrastructureFailureForTest = true;
@@ -137,8 +212,20 @@ public class Image extends GfxSurface {
     return failure;
   }
 
-  private static synchronized void recordTargetedDecodeInvocationForTest() {
-    targetedDecodeInvocationCountForTest++;
+  private static synchronized void recordTargetedDecodeInvocationForTest(int targetWidth, int targetHeight,
+      int denominator) {
+    if (imageOperationAccountingForTest) {
+      targetedDecodeInvocationCountForTest++;
+      targetedDecodeRequestWidthForTest = targetWidth;
+      targetedDecodeRequestHeightForTest = targetHeight;
+      targetedDecodeDenominatorForTest = denominator;
+    }
+  }
+
+  private static synchronized void recordFullDecodeInvocationForTest() {
+    if (imageOperationAccountingForTest) {
+      fullDecodeInvocationCountForTest++;
+    }
   }
 
   @ReplacedByNativeOnDeploy
@@ -164,10 +251,10 @@ public class Image extends GfxSurface {
   protected int width;
   protected int height;
 
-  /** Contains the pixels of this image. */
-  int[] pixels;
-
-  private Object pixelsOfAllFrames;
+  // Object slot 0 is the canonical backing. Slot 1 remains reserved for ABI compatibility.
+  ImageBacking backing;
+  @SuppressWarnings("unused")
+  private Object reservedLegacyPixelsOfAllFrames;
 
   /** The number of frames of this image, if derived from a multi-frame gif. */
   private int frameCount = 1;
@@ -203,8 +290,6 @@ public class Image extends GfxSurface {
   private String path;
   /** Non-null only while this image is an immutable, deferred encoded source. */
   private ImagePipeline pipeline;
-  /** Transitional explicit backing; legacy pixel fields remain authoritative until plan 5. */
-  ImageBacking backing;
 
   // double
   /** Hardware accellerated scaling. The original image is scaled up or down
@@ -321,7 +406,7 @@ public class Image extends GfxSurface {
         if (decodedRaster && consumeDecodedRasterAllocationFailureForTest()) {
           throw new TransientImageMaterializationException("Simulated decoded-raster allocation failure");
         }
-        pixels = new int[height * width]; // just create the pixels array
+        backing = new RasterImageBacking(width, height, 1, width, new int[height * width], null);
       } catch (OutOfMemoryError oome) {
         if (decodedRaster) {
           throw new TransientImageMaterializationException(oome);
@@ -350,8 +435,6 @@ public class Image extends GfxSurface {
     this.widthOfAllFrames = src.widthOfAllFrames;
     this.textureId = src.textureId; // shared among all instances
     this.changed = src.changed;
-    this.pixels = src.pixels;
-    this.pixelsOfAllFrames = src.pixelsOfAllFrames;
     this.backing = src.backing;
     this.changesLocked = src.changesLocked;
     this.comment = src.comment;
@@ -378,23 +461,26 @@ public class Image extends GfxSurface {
   /** Used only at desktop to get the image's pixels. */
   public int[] getPixels() {
     materializeCanonicalUnchecked();
-    if (!Settings.onJavaSE && backing instanceof NativeImageBacking) {
-      return readbackVisiblePixels((NativeImageBacking) backing);
+    if (backing != null && backing.isValid()) {
+      return backing.readVisiblePixels(width, height, frameCount > 1 ? normalizedFrame(currentFrame) : 0);
     }
-    return pixels;
+    return rasterPixels(this);
   }
 
-  private int[] readbackVisiblePixels(NativeImageBacking nativeBacking) {
-    long pixelCount = (long) width * height;
-    if (pixelCount > Integer.MAX_VALUE) {
-      throw new IllegalStateException("Image is too large to read back");
+  private static RasterImageBacking requireRasterBacking(Image image) {
+    if (!(image.backing instanceof RasterImageBacking) || !image.backing.isValid()) {
+      throw new IllegalStateException("Image has no valid raster backing");
     }
-    int[] visible = new int[(int) pixelCount];
-    int frameX = frameCount > 1 ? normalizedFrame(currentFrame) * width : 0;
-    if (!nativeBacking.readPixels(visible, 0, frameX, 0, width, height)) {
-      throw new IllegalStateException("Could not read native image backing");
-    }
-    return visible;
+    return (RasterImageBacking) image.backing;
+  }
+
+  private static int[] rasterPixels(Image image) {
+    return requireRasterBacking(image).pixels();
+  }
+
+  private static int[] rasterStoragePixels(Image image) {
+    RasterImageBacking raster = requireRasterBacking(image);
+    return raster.frameCount() > 1 ? raster.pixelsOfAllFrames() : raster.pixels();
   }
 
   /**
@@ -445,7 +531,7 @@ public class Image extends GfxSurface {
       setTransparentColorNative(color);
       return;
     }
-    int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
+    int[] pixels = rasterStoragePixels(this); // guich@tc100b5_40
     for (int i = pixels.length; --i >= 0;) {
       int p = pixels[i] & 0xFFFFFF;
       pixels[i] = (p == color) ? color : p | 0xFF000000; // if is the transparent color, set the alpha to 0, otherwise, set to full bright
@@ -551,7 +637,7 @@ public class Image extends GfxSurface {
   boolean hasNativeBackingForSmoke() {
     materializeCanonicalUnchecked();
     return !Settings.onJavaSE && backing instanceof NativeImageBacking
-        && pixels == null && pixelsOfAllFrames == null;
+        && backing.isValid();
   }
 
   private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
@@ -588,8 +674,6 @@ public class Image extends GfxSurface {
     pipeline = previous.append(operationType, parameter1, parameter2, parameter3, parameter4,
         width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames);
     hashCode = 0;
-    pixels = null;
-    pixelsOfAllFrames = null;
     backing = null;
     if (frameCount > 1 && (operationType == ImagePipeline.APPLY_COLOR
         || operationType == ImagePipeline.APPLY_COLOR2 || operationType == ImagePipeline.CHANGE_COLORS)) {
@@ -598,9 +682,6 @@ public class Image extends GfxSurface {
   }
 
   BackingImageSource snapshotRasterSource() throws ImageException {
-    if (backing == null && pixels != null) {
-      adoptRasterBackingCompatibility();
-    }
     if (backing == null || !backing.isValid()) {
       throw new IllegalStateException("Image has no valid backing to snapshot");
     }
@@ -620,8 +701,9 @@ public class Image extends GfxSurface {
     result.frameCount = source.frameCount;
     result.currentFrame = source.currentFrame;
     result.widthOfAllFrames = source.widthOfAllFrames;
-    result.pixels = source.pixels == null ? null : source.pixels.clone();
-    result.pixelsOfAllFrames = source.pixelsOfAllFrames == null ? null : source.pixelsOfAllFrames.clone();
+    result.backing = new RasterImageBacking(source.width, source.height, source.frameCount,
+        source.widthOfAllFrames, source.pixels == null ? null : source.pixels.clone(),
+        source.pixelsOfAllFrames == null ? null : source.pixelsOfAllFrames.clone());
     result.comment = source.comment;
     result.path = source.path;
     result.surfaceType = source.surfaceType;
@@ -669,8 +751,9 @@ public class Image extends GfxSurface {
     result.frameCount = source.frameCount;
     result.currentFrame = source.currentFrame;
     result.widthOfAllFrames = source.widthOfAllFrames;
-    result.pixels = raster.pixels() == null ? null : raster.pixels().clone();
-    result.pixelsOfAllFrames = raster.pixelsOfAllFrames() == null ? null : raster.pixelsOfAllFrames().clone();
+    result.backing = new RasterImageBacking(source.width, source.height, source.frameCount,
+        source.widthOfAllFrames, raster.pixels() == null ? null : raster.pixels().clone(),
+        raster.pixelsOfAllFrames() == null ? null : raster.pixelsOfAllFrames().clone());
     result.comment = source.comment;
     result.path = source.path;
     result.surfaceType = source.surfaceType;
@@ -682,16 +765,6 @@ public class Image extends GfxSurface {
     result.textureId = -1;
     result.init();
     return result;
-  }
-
-  /** Keeps the transitional backing wrapper aligned with legacy raster fields. */
-  private void adoptRasterBackingCompatibility() {
-    if (pixels != null) {
-      backing = new RasterImageBacking(width, height, frameCount, widthOfAllFrames, pixels,
-          frameCount > 1 ? (int[]) pixelsOfAllFrames : null);
-    } else if (backing == null || backing.isRaster()) {
-      backing = null;
-    }
   }
 
   private Image deferTransform(int operationType, int parameter1, int parameter2, int parameter3,
@@ -861,15 +934,13 @@ public class Image extends GfxSurface {
   }
 
   /** Checked canonical barrier used by APIs that already expose ImageException. */
-  private synchronized void materializeCanonicalChecked() throws ImageException {
+  private void materializeCanonicalChecked() throws ImageException {
     ImagePipeline deferred = pipeline;
     if (deferred == null) {
       return;
     }
     Image resolved = resolvePipeline(deferred, 1);
     synchronizePresentationState(resolved);
-    pixels = resolved.pixels;
-    pixelsOfAllFrames = resolved.pixelsOfAllFrames;
     backing = resolved.backing;
     width = resolved.width;
     height = resolved.height;
@@ -883,7 +954,6 @@ public class Image extends GfxSurface {
     transparentColor = resolved.transparentColor;
     useAlpha = resolved.useAlpha;
     textureId = -1;
-    adoptRasterBackingCompatibility();
     hashCode = 0;
     changed[0] = true;
     deferred.clearCachedVariants();
@@ -902,15 +972,122 @@ public class Image extends GfxSurface {
     }
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
     long scaleBits = Double.doubleToLongBits(effectiveScale);
-    Image cached = deferred.cachedVariant(scaleBits);
+    long sourceDecodeGeneration = sourceDecodeGeneration(deferred);
+    Image cached = deferred.cachedMaterializedVariant(scaleBits, sourceDecodeGeneration);
     if (cached != null) {
       synchronizePresentationState(cached);
       return cached;
     }
     Image resolved = resolvePipeline(deferred, effectiveScale);
     synchronizePresentationState(resolved);
-    deferred.cacheVariant(scaleBits, resolved);
+    deferred.cacheMaterializedVariant(scaleBits, resolved, sourceDecodeGeneration(deferred));
     return resolved;
+  }
+
+  /** Returns a cached native draw description when this pipeline is drawable with supported color stages. */
+  Object drawPlanForDrawing(double destinationScale) throws ImageException {
+    if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
+      throw new ImageException("Image destination scale must be finite and positive.");
+    }
+    ImagePipeline deferred = pipeline;
+    if (deferred == null || !deferred.isDrawFusable() || deferred.hasZeroWidthFrameLayout() || Settings.onJavaSE) {
+      return null;
+    }
+    double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
+    long scaleBits = Double.doubleToLongBits(effectiveScale);
+    ArrayList<ImagePipeline> nodes = pipelineNodes(deferred);
+    Image materializedEncodedRoot = null;
+    long sourceDecodeGeneration = sourceDecodeGeneration(deferred);
+    if (deferred.root() instanceof EncodedImageSource) {
+      materializedEncodedRoot = materializePipelineRoot(deferred, nodes, effectiveScale);
+      sourceDecodeGeneration = sourceDecodeGeneration(deferred);
+    }
+    ImageDrawPlan cached = deferred.cachedDrawPlan(scaleBits, sourceDecodeGeneration);
+    if (cached != null) {
+      int outputAlphaMask = alphaMask;
+      int drawAlphaMask = outputAlphaMask;
+      if (cachedBakesSourceAlpha(cached)) {
+        drawAlphaMask = multiplyAlphaMasks(cached.root.alphaMask, outputAlphaMask);
+      }
+      return cached.withPresentationState(currentFrame, drawAlphaMask, transparentColor,
+          cached.materializeAlphaMask, outputAlphaMask, hwScaleW, hwScaleH);
+    }
+    ArrayList<ImagePipeline> orderedNodes = new ArrayList<ImagePipeline>(nodes);
+    for (int left = 0, right = orderedNodes.size() - 1; left < right; left++, right--) {
+      ImagePipeline node = orderedNodes.get(left);
+      orderedNodes.set(left, orderedNodes.get(right));
+      orderedNodes.set(right, node);
+    }
+    int prefixOperationCount = drawPrefixOperationCount(orderedNodes);
+    if (prefixOperationCount < 0) {
+      return null;
+    }
+    Image root = prefixOperationCount == 0
+        ? materializedEncodedRoot != null ? materializedEncodedRoot
+            : materializePipelineRoot(deferred, nodes, effectiveScale)
+        : materializeDrawPrefix(orderedNodes.get(prefixOperationCount - 1), effectiveScale);
+    if (!(root.backing instanceof NativeImageBacking)) {
+      root = promoteGeometryRoot(root);
+    }
+    if (!(root.backing instanceof NativeImageBacking)) {
+      return null;
+    }
+    if (prefixOperationCount > 0) {
+      orderedNodes = new ArrayList<ImagePipeline>(orderedNodes.subList(prefixOperationCount, orderedNodes.size()));
+    }
+    int[] operations = new int[orderedNodes.size()];
+    int[] parameters = new int[orderedNodes.size() * 4];
+    int[] dimensions = new int[orderedNodes.size() * 2];
+    for (int i = 0; i < orderedNodes.size(); i++) {
+      ImagePipeline node = orderedNodes.get(i);
+      operations[i] = node.operationType();
+      int parameterOffset = i * 4;
+      parameters[parameterOffset] = node.parameter1();
+      parameters[parameterOffset + 1] = node.parameter2();
+      parameters[parameterOffset + 2] = node.parameter3();
+      parameters[parameterOffset + 3] = node.parameter4();
+      int dimensionOffset = i * 2;
+      dimensions[dimensionOffset] = node.logicalWidth();
+      dimensions[dimensionOffset + 1] = node.logicalHeight();
+    }
+    boolean bakesSourceAlpha = false;
+    for (int i = 0; i < orderedNodes.size(); i++) {
+      if (orderedNodes.get(i).operationType() == ImagePipeline.CROP) {
+        bakesSourceAlpha = true;
+        break;
+      }
+    }
+    int outputAlphaMask = alphaMask;
+    int sourceAlphaMask = root.alphaMask;
+    int drawAlphaMask = bakesSourceAlpha ? multiplyAlphaMasks(sourceAlphaMask, outputAlphaMask) : outputAlphaMask;
+    int materializeAlphaMask = bakesSourceAlpha ? sourceAlphaMask : 255;
+    ImageDrawPlan plan = new ImageDrawPlan(root, operations, parameters, dimensions,
+        root.width, root.height, root.logicalWidth, root.logicalHeight, root.frameCount, root.widthOfAllFrames,
+        root.contentScale,
+        deferred.logicalWidth(), deferred.logicalHeight(), deferred.frameCount(), deferred.widthOfAllFrames(),
+        currentFrame, drawAlphaMask, transparentColor, materializeAlphaMask, outputAlphaMask, effectiveScale,
+        deferred.hasGeometricNode() ? effectiveScale : root.contentScale, hwScaleW, hwScaleH,
+        root.hwScaleW, root.hwScaleH, sourceDecodeGeneration);
+    deferred.cacheDrawPlan(scaleBits, plan);
+    return plan;
+  }
+
+  private static long sourceDecodeGeneration(ImagePipeline pipeline) {
+    return pipeline.root() instanceof EncodedImageSource
+        ? ((EncodedImageSource) pipeline.root()).decodedGeneration() : 0;
+  }
+
+  private static int multiplyAlphaMasks(int first, int second) {
+    return (first * second + 127) / 255;
+  }
+
+  private static boolean cachedBakesSourceAlpha(ImageDrawPlan plan) {
+    for (int operation : plan.operations) {
+      if (operation == ImagePipeline.CROP) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void synchronizePresentationState(Image resolved) {
@@ -920,6 +1097,14 @@ public class Image extends GfxSurface {
     if (resolved.frameCount > 1) {
       selectCurrentFrameEager(resolved, currentFrame);
     }
+  }
+
+  private static ArrayList<ImagePipeline> pipelineNodes(ImagePipeline deferred) {
+    ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
+    for (ImagePipeline node = deferred; node.previous() != null; node = node.previous()) {
+      nodes.add(node);
+    }
+    return nodes;
   }
 
   /** Selects a frame on an already materialized variant without crossing the deferred barrier. */
@@ -935,19 +1120,131 @@ public class Image extends GfxSurface {
     if (image.backing instanceof NativeImageBacking) {
       return;
     }
-    int[] allFrames = (int[]) image.pixelsOfAllFrames;
+    int[] allFrames = rasterStoragePixels(image);
+    int[] visible = rasterPixels(image);
     for (int y = image.height - 1; y >= 0; y--) {
       Vm.arrayCopy(allFrames, normalized * image.width + y * image.widthOfAllFrames,
-          image.pixels, y * image.width, image.width);
+          visible, y * image.width, image.width);
     }
   }
 
   private Image resolvePipeline(ImagePipeline deferred, double destinationScale) throws ImageException {
-    ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
-    for (ImagePipeline node = deferred; node.previous() != null; node = node.previous()) {
-      nodes.add(node);
+    if (!Settings.onJavaSE && deferred.isGeometryOnly() && !deferred.hasZeroWidthFrameLayout()
+        && !isPureFrameLayout(deferred)) {
+      Image nativeGeometry = materializeNativeGeometry(deferred, destinationScale);
+      if (nativeGeometry != null) {
+        return nativeGeometry;
+      }
     }
+    ArrayList<ImagePipeline> nodes = pipelineNodes(deferred);
+    Image current = materializePipelineRoot(deferred, nodes, destinationScale);
 
+    for (int i = nodes.size() - 1; i >= 0;) {
+      if (!Settings.onJavaSE && current.backing instanceof NativeImageBacking
+          && isNativeGeometryNode(nodes.get(i).operationType())) {
+        int first = i;
+        while (first > 0 && isNativeGeometryNode(nodes.get(first - 1).operationType())) {
+          first--;
+        }
+        current = current.eagerNativeGeometrySegment(nodes, first, i, destinationScale);
+        i = first - 1;
+        continue;
+      }
+      if (nodes.get(i).operationType() == ImagePipeline.APPLY_FADE && current.frameCount > 1) {
+        selectCurrentFrameEager(current, nodes.get(i).parameter2());
+      }
+      if (isInPlaceMutation(nodes.get(i).operationType()) && deferred.root() instanceof EncodedImageSource) {
+        current.detachSharedEncodedBacking((EncodedImageSource) deferred.root());
+      }
+      current = applyEagerTransform(current, nodes.get(i), destinationScale);
+      i--;
+    }
+    return current;
+  }
+
+  private static boolean isNativeGeometryNode(int operationType) {
+    return operationType == ImagePipeline.SCALE || operationType == ImagePipeline.SMOOTH_SCALE
+        || operationType == ImagePipeline.ROTATE_SCALE || operationType == ImagePipeline.FRAME_SELECT
+        || operationType == ImagePipeline.CROP || operationType == ImagePipeline.FRAME_LAYOUT;
+  }
+
+  private static boolean isInPlaceMutation(int operationType) {
+    return operationType == ImagePipeline.APPLY_COLOR || operationType == ImagePipeline.APPLY_COLOR2
+        || operationType == ImagePipeline.APPLY_FADE || operationType == ImagePipeline.CHANGE_COLORS
+        || operationType == ImagePipeline.SET_TRANSPARENT_COLOR;
+  }
+
+  private void detachSharedEncodedBacking(EncodedImageSource source) throws ImageException {
+    ImageBacking cached = source.decodedBackingForReuse(1);
+    if (backing != null && backing == cached) {
+      backing = backing.snapshot();
+    }
+  }
+
+  private static boolean isPureFrameLayout(ImagePipeline pipeline) {
+    return pipeline != null && pipeline.operationType() == ImagePipeline.FRAME_LAYOUT
+        && pipeline.previous() != null && pipeline.previous().previous() == null;
+  }
+
+  private static boolean isFinalFrameLayout(ImageDrawPlan plan) {
+    return plan.operations.length > 0 && plan.outputFrameCount > 1
+        && plan.operations[plan.operations.length - 1] == ImagePipeline.FRAME_LAYOUT;
+  }
+
+  private static boolean hasDestinationScaledFrameLayout(ImageDrawPlan plan) {
+    if (!isFinalFrameLayout(plan)) {
+      return false;
+    }
+    for (int i = 0; i < plan.operations.length - 1; i++) {
+      int operation = plan.operations[i];
+      if (operation == ImagePipeline.SCALE || operation == ImagePipeline.SMOOTH_SCALE
+          || operation == ImagePipeline.ROTATE_SCALE) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private Image materializeNativeGeometry(ImagePipeline deferred, double destinationScale) throws ImageException {
+    Object drawPlan = drawPlanForDrawing(destinationScale);
+    if (!(drawPlan instanceof ImageDrawPlan)) {
+      return null;
+    }
+    ImageDrawPlan plan = (ImageDrawPlan) drawPlan;
+    NativeImageBacking nativeBacking = NativeImageBacking.materializeGeometry(plan);
+    int frameCount = Math.max(1, plan.outputFrameCount);
+    int visibleWidth = nativeBacking.width() / frameCount;
+    if (hasDestinationScaledFrameLayout(plan)) {
+      visibleWidth = scaledDimension(plan.outputWidth, plan.destinationScale);
+    }
+    Image result = new Image();
+    result.backing = nativeBacking;
+    result.width = visibleWidth;
+    result.height = nativeBacking.height();
+    result.logicalWidth = plan.outputWidth;
+    result.logicalHeight = plan.outputHeight;
+    result.contentScale = plan.outputContentScale;
+    result.frameCount = frameCount;
+    result.currentFrame = frameCount > 1 ? normalizedFrame(plan.currentFrame) : -1;
+    result.widthOfAllFrames = nativeBacking.width();
+    // Do not carry an encoded root's FC comment into a geometry result. The
+    // result already has authoritative frame metadata, and init() parses FC
+    // comments to derive the visible width again.
+    result.comment = frameCount > 1 ? "FC=" + frameCount : null;
+    result.path = plan.root.path;
+    result.surfaceType = plan.root.surfaceType;
+    result.transparentColor = plan.root.transparentColor;
+    result.useAlpha = plan.root.useAlpha;
+    result.alphaMask = plan.outputAlphaMask;
+    result.hwScaleW = plan.hwScaleW;
+    result.hwScaleH = plan.hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
+  }
+
+  private Image materializePipelineRoot(ImagePipeline deferred, ArrayList<ImagePipeline> nodes,
+      double destinationScale) throws ImageException {
     Image current;
     ImageSource root = deferred.root();
     if (root instanceof EncodedImageSource) {
@@ -956,62 +1253,164 @@ public class Image extends GfxSurface {
       if (cached != null) {
         throw cached;
       }
-      Image decoded = new Image();
-      decoded.initializeDecodeTarget(source);
-      ImagePipeline firstNode = nodes.isEmpty() ? null : nodes.get(nodes.size() - 1);
-      int targetWidth = firstNode == null ? 0 : scaledDimensionAllowingZero(firstNode.logicalWidth(), destinationScale);
-      int targetHeight = firstNode == null ? 0 : scaledDimension(firstNode.logicalHeight(), destinationScale);
-      boolean targeted = isEligibleJpegTargetDecode(source, firstNode, targetWidth, targetHeight);
-      try {
-        if (targeted) {
-          decoded.decodeEncodedSourceTargeted(source, targetWidth, targetHeight);
-        } else {
-          decoded.decodeEncodedSource(source);
-        }
-        if ((decoded.backing == null && decoded.pixels == null) || decoded.width <= 0 || decoded.height <= 0) {
-          throw new DeterministicImageDecodeException("Could not decode encoded image");
-        }
-      } catch (DeterministicImageDecodeException failure) {
-        source.cacheDecodeFailure(failure);
-        throw failure;
-      } catch (TransientImageMaterializationException failure) {
-        throw failure;
-      }
-      decoded.init(true);
-      if (!targeted) {
+      int requestedWidth = scaledDimensionAllowingZero(deferred.logicalWidth(), destinationScale);
+      int requestedHeight = scaledDimension(deferred.logicalHeight(), destinationScale);
+      int requestedDenominator = ImageDecodeRequirement.choose(source, deferred, requestedWidth, requestedHeight);
+      ImageBacking cachedBacking = source.decodedBackingForReuse(requestedDenominator);
+      if (cachedBacking != null) {
+        current = materializeCachedEncodedSource(source, cachedBacking);
+      } else {
+        Image decoded = new Image();
+        decoded.initializeDecodeTarget(source);
+        boolean targeted = requestedDenominator > 1;
         try {
-          verifyDecodedMetadata(source, decoded);
+          if (targeted) {
+            decoded.decodeEncodedSourceTiered(source, requestedWidth, requestedHeight, requestedDenominator);
+          } else {
+            decoded.decodeEncodedSource(source);
+          }
+          if ((decoded.backing == null || !decoded.backing.isValid()) || decoded.width <= 0 || decoded.height <= 0) {
+            throw new DeterministicImageDecodeException("Could not decode encoded image");
+          }
         } catch (DeterministicImageDecodeException failure) {
           source.cacheDecodeFailure(failure);
           throw failure;
+        } catch (TransientImageMaterializationException failure) {
+          throw failure;
         }
+        decoded.init(true);
+        if (!targeted) {
+          try {
+            verifyDecodedMetadata(source, decoded);
+          } catch (DeterministicImageDecodeException failure) {
+            source.cacheDecodeFailure(failure);
+            throw failure;
+          }
+          source.installDecodedBacking(decoded.backing, decoded.backing.width(), decoded.backing.height(), 1);
+        } else {
+          source.installDecodedBacking(decoded.backing, decoded.backing.width(), decoded.backing.height(),
+              requestedDenominator);
+        }
+        current = decoded;
       }
-      current = decoded;
     } else {
       current = root instanceof BackingImageSource
           ? ((BackingImageSource) root).materialize()
           : ((RasterImageSource) root).materialize();
     }
 
-    for (int i = nodes.size() - 1; i >= 0; i--) {
-      if (nodes.get(i).operationType() == ImagePipeline.APPLY_FADE && current.frameCount > 1) {
-        selectCurrentFrameEager(current, nodes.get(i).parameter2());
-      }
-      current = applyEagerTransform(current, nodes.get(i), destinationScale);
-    }
     return current;
   }
 
-  private static boolean isEligibleJpegTargetDecode(EncodedImageSource source, ImagePipeline firstNode,
-      int targetWidth, int targetHeight) {
-    if (firstNode == null || firstNode.operationType() != ImagePipeline.SMOOTH_SCALE
-        || source.getFormat() != ImageEncodedStructure.Format.JPEG || targetWidth <= 0 || targetHeight <= 0) {
-      return false;
+  private Image materializeCachedEncodedSource(EncodedImageSource source, ImageBacking cachedBacking)
+      throws ImageException {
+    int storageWidth = source.decodedWidth();
+    int decodedHeight = source.decodedHeight();
+    int cachedFrameCount = source.getFrameCount();
+    if (storageWidth <= 0 || decodedHeight <= 0 || cachedFrameCount <= 0
+        || (cachedFrameCount > 1 && storageWidth % cachedFrameCount != 0)) {
+      throw new DeterministicImageDecodeException("Cached image metadata is invalid");
     }
-    int intrinsicWidth = source.getIntrinsicWidth();
-    int intrinsicHeight = source.getIntrinsicHeight();
-    return targetWidth < intrinsicWidth && targetHeight < intrinsicHeight
-        && jpegTargetDecodeScaleDenominator(intrinsicWidth, intrinsicHeight, targetWidth, targetHeight) > 1;
+    Image result = new Image();
+    result.width = cachedFrameCount > 1 ? storageWidth / cachedFrameCount : storageWidth;
+    result.height = decodedHeight;
+    result.logicalWidth = source.getLogicalWidth();
+    result.logicalHeight = source.getLogicalHeight();
+    result.contentScale = 1;
+    result.frameCount = cachedFrameCount;
+    result.currentFrame = cachedFrameCount > 1 ? 0 : -1;
+    result.widthOfAllFrames = storageWidth;
+    result.backing = cachedBacking;
+    result.comment = source.getComment();
+    result.path = path;
+    result.surfaceType = surfaceType;
+    result.transparentColor = transparentColor;
+    result.useAlpha = useAlpha;
+    result.alphaMask = 255;
+    result.hwScaleW = 1;
+    result.hwScaleH = 1;
+    result.textureId = -1;
+    result.init();
+    return result;
+  }
+
+  private Image materializeDrawPrefix(ImagePipeline prefixPipeline, double destinationScale)
+      throws ImageException {
+    Image prefix = new Image();
+    prefix.initializeDeferredTransform(prefixPipeline, this);
+    if (prefix.frameCount > 1) {
+      prefix.currentFrame = currentFrame < 0 ? 0 : normalizedFrame(currentFrame);
+    }
+    return prefix.resolveForDrawing(destinationScale);
+  }
+
+  private static int drawPrefixOperationCount(ArrayList<ImagePipeline> orderedNodes) {
+    boolean colorSeen = false;
+    int rotateCount = 0;
+    int prefixOperationCount = 0;
+    for (int i = 0; i < orderedNodes.size(); i++) {
+      int operation = orderedNodes.get(i).operationType();
+      switch (operation) {
+      case ImagePipeline.TOUCH_UP:
+      case ImagePipeline.FADE:
+      case ImagePipeline.ALPHA:
+      case ImagePipeline.APPLY_FADE:
+      case ImagePipeline.APPLY_COLOR:
+        colorSeen = true;
+        break;
+      case ImagePipeline.SMOOTH_SCALE:
+        if (colorSeen) {
+          prefixOperationCount = i;
+        }
+        break;
+      case ImagePipeline.ROTATE_SCALE:
+        if (++rotateCount > 1) {
+          prefixOperationCount = Math.max(prefixOperationCount, i);
+        }
+        break;
+      case ImagePipeline.SCALE:
+      case ImagePipeline.FRAME_SELECT:
+      case ImagePipeline.CROP:
+      case ImagePipeline.FRAME_LAYOUT:
+        break;
+      default:
+        return -1;
+      }
+    }
+    return prefixOperationCount;
+  }
+
+  private Image promoteGeometryRoot(Image source) throws ImageException {
+    if (!(source.backing instanceof RasterImageBacking) || source.width <= 0 || source.height <= 0) {
+      return source;
+    }
+    int fullWidth = source.frameCount > 1 ? source.widthOfAllFrames : source.width;
+    int[] sourcePixels = rasterStoragePixels(source);
+    if (sourcePixels == null || !NativeImageBacking.isAvailable()) {
+      return source;
+    }
+    NativeImageBacking nativeBacking = NativeImageBacking.createFromArgbPixels(sourcePixels, fullWidth, source.height);
+    Image result = new Image();
+    result.backing = nativeBacking;
+    result.width = source.width;
+    result.height = source.height;
+    result.logicalWidth = source.logicalWidth;
+    result.logicalHeight = source.logicalHeight;
+    result.contentScale = source.contentScale;
+    result.frameCount = source.frameCount;
+    result.currentFrame = source.currentFrame;
+    result.widthOfAllFrames = fullWidth;
+    result.comment = source.comment;
+    result.path = source.path;
+    result.surfaceType = source.surfaceType;
+    result.transparentColor = source.transparentColor;
+    result.useAlpha = source.useAlpha;
+    result.alphaMask = source.alphaMask;
+    result.hwScaleW = source.hwScaleW;
+    result.hwScaleH = source.hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
   }
 
   private Image applyEagerTransform(Image source, ImagePipeline node, double destinationScale) throws ImageException {
@@ -1022,6 +1421,17 @@ public class Image extends GfxSurface {
         ? 0 : scaledDimension(node.logicalWidth(), destinationScale);
     int targetHeight = scaledDimension(node.logicalHeight(), destinationScale);
     Image result;
+    if (!Settings.onJavaSE && source.backing instanceof NativeImageBacking
+        && (node.operationType() == ImagePipeline.FRAME_SELECT
+            || node.operationType() == ImagePipeline.FRAME_LAYOUT
+            || node.operationType() == ImagePipeline.CROP
+            || node.operationType() == ImagePipeline.ROTATE_SCALE)) {
+      result = source.eagerNativeGeometryStep(node, destinationScale);
+      result.logicalWidth = node.logicalWidth();
+      result.logicalHeight = node.logicalHeight();
+      result.contentScale = destinationScale;
+      return result;
+    }
     switch (node.operationType()) {
     case ImagePipeline.FRAME_SELECT:
       result = source.eagerFrameSelection(node.parameter1());
@@ -1089,6 +1499,98 @@ public class Image extends GfxSurface {
     return result;
   }
 
+  private Image eagerNativeGeometryStep(ImagePipeline node, double destinationScale) throws ImageException {
+    ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
+    nodes.add(node);
+    return eagerNativeGeometrySegment(nodes, 0, 0, destinationScale);
+  }
+
+  private Image eagerNativeGeometrySegment(ArrayList<ImagePipeline> nodes, int first, int last,
+      double destinationScale) throws ImageException {
+    int count = last - first + 1;
+    int[] operations = new int[count];
+    int[] parameters = new int[count * 4];
+    int[] dimensions = new int[count * 2];
+    for (int i = 0; i < count; i++) {
+      ImagePipeline node = nodes.get(last - i);
+      operations[i] = node.operationType();
+      int parameterOffset = i * 4;
+      parameters[parameterOffset] = node.parameter1();
+      parameters[parameterOffset + 1] = node.parameter2();
+      parameters[parameterOffset + 2] = node.parameter3();
+      parameters[parameterOffset + 3] = node.parameter4();
+      int dimensionOffset = i * 2;
+      dimensions[dimensionOffset] = node.logicalWidth();
+      dimensions[dimensionOffset + 1] = node.logicalHeight();
+    }
+    ImagePipeline outputNode = nodes.get(first);
+    if (outputNode.operationType() == ImagePipeline.FRAME_LAYOUT && count == 1
+        && outputNode.previous() != null && outputNode.previous().previous() == null) {
+      return eagerNativeFrameLayoutMetadata(outputNode.parameter1(), outputNode.logicalWidth(),
+          outputNode.logicalHeight(), outputNode.widthOfAllFrames());
+    }
+    ImageDrawPlan plan = new ImageDrawPlan(this, operations, parameters, dimensions,
+        width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames, contentScale,
+        outputNode.logicalWidth(), outputNode.logicalHeight(), outputNode.frameCount(),
+        outputNode.widthOfAllFrames(), currentFrame,
+        255, transparentColor, 255, 255, destinationScale, destinationScale,
+        hwScaleW, hwScaleH, hwScaleW, hwScaleH);
+    NativeImageBacking nativeBacking = NativeImageBacking.materializeGeometry(plan);
+    int outputFrameCount = Math.max(1, outputNode.frameCount());
+    int outputWidth = nativeBacking.width() / outputFrameCount;
+    Image result = new Image();
+    result.backing = nativeBacking;
+    result.width = outputWidth;
+    result.height = nativeBacking.height();
+    result.logicalWidth = outputNode.logicalWidth();
+    result.logicalHeight = outputNode.logicalHeight();
+    result.contentScale = destinationScale;
+    result.frameCount = outputFrameCount;
+    result.currentFrame = outputFrameCount > 1 ? normalizedFrame(currentFrame) : -1;
+    result.widthOfAllFrames = nativeBacking.width();
+    result.comment = outputFrameCount > 1 ? "FC=" + outputFrameCount : null;
+    result.path = path;
+    result.surfaceType = surfaceType;
+    result.transparentColor = transparentColor;
+    result.useAlpha = useAlpha;
+    result.alphaMask = alphaMask;
+    result.hwScaleW = hwScaleW;
+    result.hwScaleH = hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
+  }
+
+  private Image eagerNativeFrameLayoutMetadata(int outputFrameCount, int outputLogicalWidth,
+      int outputLogicalHeight, int outputWidthOfAllFrames) throws ImageException {
+    if (!(backing instanceof NativeImageBacking) || !backing.isValid() || outputFrameCount <= 1
+        || outputLogicalWidth < 0 || outputLogicalHeight <= 0 || outputWidthOfAllFrames <= 0
+        || outputWidthOfAllFrames != backing.width()) {
+      throw new ImageException("Invalid native frame layout metadata.");
+    }
+    Image result = new Image();
+    result.backing = backing;
+    result.width = outputWidthOfAllFrames / outputFrameCount;
+    result.height = height;
+    result.logicalWidth = outputLogicalWidth;
+    result.logicalHeight = outputLogicalHeight;
+    result.contentScale = contentScale;
+    result.frameCount = outputFrameCount;
+    result.currentFrame = 0;
+    result.widthOfAllFrames = outputWidthOfAllFrames;
+    result.comment = "FC=" + outputFrameCount;
+    result.path = path;
+    result.surfaceType = surfaceType;
+    result.transparentColor = transparentColor;
+    result.useAlpha = useAlpha;
+    result.alphaMask = alphaMask;
+    result.hwScaleW = hwScaleW;
+    result.hwScaleH = hwScaleH;
+    result.textureId = -1;
+    result.init();
+    return result;
+  }
+
   private Image eagerFrameLayout(int outputFrameCount, int logicalFrameWidth, int visibleWidth) throws ImageException {
     if (visibleWidth < 0) {
       throw new ImageException("Image dimensions are too large.");
@@ -1110,12 +1612,15 @@ public class Image extends GfxSurface {
     result.frameCount = outputFrameCount;
     result.currentFrame = -1;
     result.widthOfAllFrames = width;
-    result.pixelsOfAllFrames = pixels;
+    int[] sourcePixels = rasterStoragePixels(this);
+    int[] visiblePixels;
     try {
-      result.pixels = new int[(int) visibleLength];
+      visiblePixels = new int[(int) visibleLength];
     } catch (OutOfMemoryError oome) {
       throw new TransientImageMaterializationException(oome);
     }
+    result.backing = new RasterImageBacking(visibleWidth, height, outputFrameCount, width,
+        visiblePixels, sourcePixels);
     result.comment = "FC=" + outputFrameCount;
     result.path = path;
     result.surfaceType = surfaceType;
@@ -1136,7 +1641,9 @@ public class Image extends GfxSurface {
       setCurrentFrame(frame);
     }
     Image result = new Image(logicalWidth, logicalHeight, contentScale);
-    Vm.arrayCopy(pixels, 0, result.pixels, 0, pixels.length);
+    int[] sourcePixels = rasterPixels(this);
+    int[] destinationPixels = rasterPixels(result);
+    Vm.arrayCopy(sourcePixels, 0, destinationPixels, 0, sourcePixels.length);
     return result;
   }
 
@@ -1150,7 +1657,8 @@ public class Image extends GfxSurface {
       int sourceBottom = sourceY + result.height;
       if (sourceRight <= width && sourceBottom <= height && canCopyCropDirect(sourceX, sourceY, sourceRight, sourceBottom)) {
         for (int row = sourceY; row < sourceBottom; row++) {
-          Vm.arrayCopy(pixels, row * width + sourceX, result.pixels, (row - sourceY) * result.width, result.width);
+          Vm.arrayCopy(rasterPixels(this), row * width + sourceX, rasterPixels(result),
+              (row - sourceY) * result.width, result.width);
         }
         return result;
       }
@@ -1165,7 +1673,7 @@ public class Image extends GfxSurface {
     }
     for (int row = sourceY; row < sourceBottom; row++) {
       for (int column = sourceX; column < sourceRight; column++) {
-        if ((pixels[row * width + column] >>> 24) != 255) {
+        if ((rasterPixels(this)[row * width + column] >>> 24) != 255) {
           return false;
         }
       }
@@ -1231,6 +1739,7 @@ public class Image extends GfxSurface {
   /** Deploy replacement decodes directly from the source's native bag. */
   @ReplacedByNativeOnDeploy
   private void decodeEncodedSource(EncodedImageSource source) throws ImageException {
+    recordFullDecodeInvocationForTest();
     byte[] input = source.bytesForInternalDecode();
     if (input == null) {
       throw new ImageException("Encoded source has no Java backing");
@@ -1257,7 +1766,9 @@ public class Image extends GfxSurface {
     if (input == null) {
       throw new ImageException("Encoded source has no Java backing");
     }
-    recordTargetedDecodeInvocationForTest();
+    int targetDenominator = jpegTargetDecodeScaleDenominator(source.getIntrinsicWidth(), source.getIntrinsicHeight(),
+        targetWidth, targetHeight);
+    recordTargetedDecodeInvocationForTest(targetWidth, targetHeight, targetDenominator);
 
     ImageInputStream stream = null;
     ImageReader reader = null;
@@ -1289,8 +1800,7 @@ public class Image extends GfxSurface {
           throw new TransientImageMaterializationException(e);
         }
         try {
-          int scaleDenominator = jpegTargetDecodeScaleDenominator(
-              intrinsicWidth, intrinsicHeight, targetWidth, targetHeight);
+          int scaleDenominator = targetDenominator;
           parameters.setSourceSubsampling(scaleDenominator, scaleDenominator, 0, 0);
         } catch (OutOfMemoryError e) {
           throw e;
@@ -1312,8 +1822,9 @@ public class Image extends GfxSurface {
         height = frame.getHeight();
         logicalWidth = width;
         logicalHeight = height;
-        pixels = new int[width * height];
-        frame.getRGB(0, 0, width, height, pixels, 0, width);
+        int[] decodedPixels = new int[width * height];
+        frame.getRGB(0, 0, width, height, decodedPixels, 0, width);
+        backing = new RasterImageBacking(width, height, 1, width, decodedPixels, null);
         synchronized (Image.class) {
           targetedDecodeWidthForTest = width;
           targetedDecodeHeightForTest = height;
@@ -1364,6 +1875,139 @@ public class Image extends GfxSurface {
     }
   }
 
+  /** Deploy replacement decodes a JPEG at the already-selected conservative denominator. */
+  @ReplacedByNativeOnDeploy
+  private void decodeEncodedSourceTiered(EncodedImageSource source, int targetWidth, int targetHeight,
+      int denominator) throws ImageException {
+    byte[] input = source.bytesForInternalDecode();
+    if (input == null) {
+      throw new ImageException("Encoded source has no Java backing");
+    }
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || targetWidth <= 0 || targetHeight <= 0
+        || (denominator != 2 && denominator != 4 && denominator != 8)) {
+      throw new ImageException("Tiered decode requires a JPEG image, positive dimensions, and denominator 2, 4, or 8");
+    }
+    recordTargetedDecodeInvocationForTest(targetWidth, targetHeight, denominator);
+
+    ImageInputStream stream = null;
+    ImageReader reader = null;
+    boolean decodeFailureObserved = false;
+    try {
+      try {
+        stream = new MemoryCacheImageInputStream(new ByteArrayInputStream(input, 0, source.getEncodedLength()));
+        java.util.Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+        if (!readers.hasNext()) {
+          throw new java.io.IOException("No ImageIO reader available");
+        }
+        reader = readers.next();
+        reader.setInput(stream);
+        ImageReadParam parameters = reader.getDefaultReadParam();
+        if (consumeTargetedDecodeInfrastructureFailureForTest()) {
+          throw new TransientImageMaterializationException("Simulated targeted ImageIO setup failure");
+        }
+        try {
+          parameters.setSourceSubsampling(denominator, denominator, 0, 0);
+        } catch (OutOfMemoryError e) {
+          throw e;
+        } catch (RuntimeException e) {
+          throw new TransientImageMaterializationException(e);
+        }
+
+        BufferedImage frame;
+        try {
+          frame = reader.read(0, parameters);
+        } catch (OutOfMemoryError e) {
+          throw e;
+        } catch (java.io.IOException e) {
+          throw new DeterministicImageDecodeException(e);
+        } catch (RuntimeException e) {
+          throw new TransientImageMaterializationException(e);
+        }
+        width = frame.getWidth();
+        height = frame.getHeight();
+        logicalWidth = width;
+        logicalHeight = height;
+        int[] decodedPixels = new int[width * height];
+        frame.getRGB(0, 0, width, height, decodedPixels, 0, width);
+        backing = new RasterImageBacking(width, height, 1, width, decodedPixels, null);
+        synchronized (Image.class) {
+          targetedDecodeWidthForTest = width;
+          targetedDecodeHeightForTest = height;
+        }
+      } catch (OutOfMemoryError e) {
+        throw e;
+      } catch (java.io.IOException e) {
+        throw new TransientImageMaterializationException(e);
+      } catch (RuntimeException e) {
+        throw new TransientImageMaterializationException(e);
+      }
+    } catch (ImageException e) {
+      decodeFailureObserved = true;
+      throw e;
+    } catch (Error e) {
+      decodeFailureObserved = true;
+      throw e;
+    } catch (RuntimeException e) {
+      decodeFailureObserved = true;
+      throw new TransientImageMaterializationException(e);
+    } finally {
+      Throwable cleanupFailure = null;
+      if (reader != null) {
+        try {
+          reader.dispose();
+        } catch (Throwable failure) {
+          cleanupFailure = failure;
+        }
+      }
+      if (stream != null) {
+        try {
+          stream.close();
+        } catch (Throwable failure) {
+          if (cleanupFailure == null) {
+            cleanupFailure = failure;
+          }
+        }
+      }
+      if (!decodeFailureObserved && cleanupFailure != null) {
+        if (cleanupFailure instanceof OutOfMemoryError) {
+          throw (OutOfMemoryError) cleanupFailure;
+        }
+        if (cleanupFailure instanceof Error) {
+          throw (Error) cleanupFailure;
+        }
+        throw new TransientImageMaterializationException("Tiered ImageIO cleanup failure");
+      }
+    }
+  }
+
+  /** Package-private forced-tier reference used only by deployed JPEG quality smokes. */
+  static Image decodeJpegAtDenominatorForTest(byte[] input, int denominator) throws ImageException {
+    if (input == null || denominator <= 0 || (denominator != 1 && denominator != 2
+        && denominator != 4 && denominator != 8)) {
+      throw new ImageException("Invalid forced JPEG denominator");
+    }
+    Image encoded = new Image(input);
+    if (denominator == 1) {
+      encoded.getPixels();
+      return encoded;
+    }
+    if (!(encoded.pipeline != null && encoded.pipeline.root() instanceof EncodedImageSource)) {
+      throw new ImageException("Forced JPEG reference requires an encoded source");
+    }
+    EncodedImageSource source = (EncodedImageSource) encoded.pipeline.root();
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG) {
+      throw new ImageException("Forced JPEG reference requires a JPEG source");
+    }
+    Image decoded = new Image();
+    decoded.initializeDecodeTarget(source);
+    decoded.decodeEncodedSourceTiered(source, source.getIntrinsicWidth(), source.getIntrinsicHeight(), denominator);
+    if (decoded.backing == null || !decoded.backing.isValid()) {
+      throw new ImageException("Could not decode forced JPEG reference");
+    }
+    decoded.init(true);
+    return decoded;
+  }
+
   private void init() throws IllegalArgumentException, IllegalStateException, ImageException {
     init(false);
   }
@@ -1399,7 +2043,6 @@ public class Image extends GfxSurface {
     gfx = new Graphics(this);
     gfx.setScales(contentScale, 1);
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
-    adoptRasterBackingCompatibility();
   }
 
   /**
@@ -1442,8 +2085,6 @@ public class Image extends GfxSurface {
       currentFrame = 0;
       comment = "FC=" + n;
       hashCode = 0;
-      pixels = null;
-      pixelsOfAllFrames = null;
       return;
     }
 
@@ -1451,7 +2092,7 @@ public class Image extends GfxSurface {
 
     if (!Settings.onJavaSE && backing instanceof NativeImageBacking) {
       int fullWidth = backing.width();
-      if (fullWidth <= 0 || fullWidth % n != 0) {
+      if (fullWidth <= 0) {
         throw new ImageException("Image frame layout is invalid.");
       }
       frameCount = n;
@@ -1470,14 +2111,14 @@ public class Image extends GfxSurface {
         widthOfAllFrames = width;
         width /= frameCount;
         logicalWidth = (int) Math.ceil(width / contentScale);
-        // the pixels will hold the pixel of a single frame
-        pixelsOfAllFrames = pixels;
+        // The raster backing holds the full frame strip and the visible frame.
+        int[] allFrames = rasterPixels(this);
         if (materializingEncodedSource && consumeMaterializedFrameBufferAllocationFailureForTest()) {
           throw new TransientImageMaterializationException("Simulated multi-frame buffer allocation failure");
         }
-        pixels = new int[width * height];
+        int[] visible = new int[width * height];
+        backing = new RasterImageBacking(width, height, frameCount, widthOfAllFrames, visible, allFrames);
         setCurrentFrame(0);
-        adoptRasterBackingCompatibility();
       } catch (OutOfMemoryError oome) {
         if (materializingEncodedSource) {
           throw new TransientImageMaterializationException(oome);
@@ -1658,15 +2299,10 @@ public class Image extends GfxSurface {
       if (changed[0]) {
         applyChanges();
       }
-      int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+      int[] p = backing != null && backing.isRaster() ? rasterStoragePixels(this) : null;
       if (p != null) {
         hashCode = 0;
         hashCode = this.hashCode();
-      }
-      pixels = null;
-      pixelsOfAllFrames = null;
-      if (backing != null && backing.isRaster()) {
-        backing = null;
       }
       changesLocked = true;
     }
@@ -1699,7 +2335,7 @@ public class Image extends GfxSurface {
       changeColorsNative(from, to);
       return;
     }
-    int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    int[] pixels = rasterStoragePixels(this);
     for (int n = pixels.length; --n >= 0;) {
       if (pixels[n] == from) {
         pixels[n] = to;
@@ -1854,8 +2490,9 @@ public class Image extends GfxSurface {
   @ReplacedByNativeOnDeploy
   private void createJpgJava(Stream s, int quality) throws ImageException, IOException {
     try {
+      int[] visiblePixels = getPixels();
       java.awt.image.MemoryImageSource screenMis = new java.awt.image.MemoryImageSource(width, height,
-          new java.awt.image.DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0), (int[]) pixels, 0, width);
+          new java.awt.image.DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0), visiblePixels, 0, width);
       screenMis.setAnimated(true);
       screenMis.setFullBufferUpdates(true);
       java.awt.Image screenImg = java.awt.Toolkit.getDefaultToolkit().createImage(screenMis);
@@ -1963,11 +2600,17 @@ public class Image extends GfxSurface {
    * The alpha channel is NOT stripped off. */
   final public void getPixelRow(byte[] fillIn, int y) {
     materializeCanonicalUnchecked();
+    if (backing != null && backing.isValid()) {
+      if (!backing.readRgbaRow(fillIn, y)) {
+        throw new IllegalStateException("Could not read image backing row");
+      }
+      return;
+    }
     if (!Settings.onJavaSE) {
       getPixelRowNative(fillIn, y);
       return;
     }
-    int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
+    int[] row = rasterStoragePixels(this);
     int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
     for (int x = 0, n = w, i = y * w; n-- > 0;) {
       int p = row[i++];
@@ -2145,8 +2788,8 @@ public class Image extends GfxSurface {
     newWidth *= frameCount; // guich@tc100b5_40
     Image scaledImage = getCopy(newWidth, newHeight);
 
-    int[] dstImageData = (int[]) scaledImage.pixels;
-    int[] srcImageData = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
+    int[] dstImageData = rasterPixels(scaledImage);
+    int[] srcImageData = rasterStoragePixels(this); // guich@tc100b5_40
 
     int fw = frameCount == 1 ? this.width : this.widthOfAllFrames; // guich@tc100b5_40
     // guich: a modified version of the replicate scale algorithm.
@@ -2211,8 +2854,8 @@ public class Image extends GfxSurface {
 
     int width = this.width * frameCount;
     int height = this.height;
-    int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
-    int[] pixels2 = (int[]) scaledImage.pixels;
+    int[] pixels = rasterStoragePixels(this);
+    int[] pixels2 = rasterPixels(scaledImage);
 
     // algorithm start
 
@@ -2678,13 +3321,13 @@ public class Image extends GfxSurface {
         setCurrentFrame(f);
         imageOut.setCurrentFrame(f);
       }
-      int[] pixelsIn = (int[]) this.pixels;
+      int[] pixelsIn = rasterPixels(this);
 
       /* center */
       int x0 = ((wIn << 16) - (((xMax - xMin) * rawCosine) - ((yMax - yMin) * rawSine)) - 1) / 2;
       int y0 = ((hIn << 16) - (((xMax - xMin) * rawSine) + ((yMax - yMin) * rawCosine)) - 1) / 2;
       /* and draw! */
-      int[] lineOut = (int[]) imageOut.pixels;
+      int[] lineOut = rasterPixels(imageOut);
       for (int l = 0; l < hOut; l++) {
         int x = x0;
         int y = y0;
@@ -2703,7 +3346,7 @@ public class Image extends GfxSurface {
       }
       if (frameCount != 1) {
         for (int y = imageOut.height - 1; y >= 0; y--) {
-          Vm.arrayCopy(imageOut.pixels, y * imageOut.width, imageOut.pixelsOfAllFrames,
+          Vm.arrayCopy(rasterPixels(imageOut), y * imageOut.width, rasterStoragePixels(imageOut),
               f * imageOut.width + y * imageOut.widthOfAllFrames, imageOut.width);
         }
       }
@@ -2736,8 +3379,8 @@ public class Image extends GfxSurface {
       imageOut.setFrameCount(frameCount);
     }
 
-    int[] from = (int[]) (frameCount > 1 ? pixelsOfAllFrames : pixels);
-    int[] to = (int[]) (frameCount > 1 ? imageOut.pixelsOfAllFrames : imageOut.pixels);
+    int[] from = rasterStoragePixels(this);
+    int[] to = rasterStoragePixels(imageOut);
     for (int i = from.length; --i >= 0;) {
       to[i] = (from[i] & 0xFF000000) | Color.interpolate(backColor, from[i]); // keep the alpha channel unchanged
     }
@@ -2787,8 +3430,8 @@ public class Image extends GfxSurface {
       imageOut.setFrameCount(frameCount);
     }
 
-    int[] from = (int[]) (frameCount > 1 ? pixelsOfAllFrames : pixels);
-    int[] to = (int[]) (frameCount > 1 ? imageOut.pixelsOfAllFrames : imageOut.pixels);
+    int[] from = rasterStoragePixels(this);
+    int[] to = rasterStoragePixels(imageOut);
     for (int i = from.length; --i >= 0;) {
       int p = from[i];
       if ((p & 0xFF000000) == 0) {
@@ -2839,13 +3482,13 @@ public class Image extends GfxSurface {
     final int BRITE_TOUCHUP = 1;
     final int CONTRAST_TOUCHUP = 2;
     int touchup = NO_TOUCHUP;
-    int[] pixelsIn = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    int[] pixelsIn = rasterStoragePixels(this);
     int w = frameCount == 1 ? this.width : this.widthOfAllFrames;
     int h = this.height;
 
     Image imageOut = getCopy(w, h);
 
-    int[] pixelsOut = (int[]) imageOut.pixels;
+    int[] pixelsOut = rasterPixels(imageOut);
     short table[] = null;
     int m = 0, k = 0;
 
@@ -2856,7 +3499,7 @@ public class Image extends GfxSurface {
     if (brightness != 0) {
       touchup |= BRITE_TOUCHUP;
       double eBrightness = (brightness + 128.0) / 128.0; // [0.0 ... 2.0]
-      if (brightness <= 1.0) {
+      if (brightness <= 0) {
         m = (int) (Math.sqrt(eBrightness) * 0x10000);
         k = 0;
       } else {
@@ -2918,7 +3561,7 @@ public class Image extends GfxSurface {
     this.logicalWidth = img.logicalWidth;
     this.logicalHeight = img.logicalHeight;
     this.contentScale = img.contentScale;
-    this.pixels = img.pixels;
+    this.backing = img.backing;
     this.frameCount = img.frameCount;
     this.comment = img.comment;
   }
@@ -3022,7 +3665,7 @@ public class Image extends GfxSurface {
       bitShifts[i] = 8 - ((i + 1) * bpp);
     }
 
-    int[] pix = (int[]) this.pixels;
+    int[] pix = rasterPixels(this);
     int pitch = ((width + div - 1) / div) * div; // make sure are in a 4 byte boundary - those extra pixels will be stripped off by the current clip
     int dif = pitch - width;
     // Start at the bottom of the pixel array and work up
@@ -3091,7 +3734,7 @@ public class Image extends GfxSurface {
     int len, esc, r;
     int x, y;
     int colors0 = 0, colors1 = 0;
-    int[] pix = (int[]) this.pixels;
+    int[] pix = rasterPixels(this);
 
     x = 0;
     y = height - 1;
@@ -3250,7 +3893,8 @@ public class Image extends GfxSurface {
      */
 
     // Create space for the pixels
-    this.pixels = new int[this.height * this.width];
+    this.backing = new RasterImageBacking(this.width, this.height, 1, this.width,
+        new int[this.height * this.width], null);
 
     // Read the pixels from the stream based on the compression type directly into the selected offscreen image
     if (compression == BI_RGB) {
@@ -3350,7 +3994,8 @@ public class Image extends GfxSurface {
             for (int index = 0; /* index < count */; index++) {
               final BufferedImage frame = reader.read(index);
               image = new Image(width, height, 1, true);
-              image.pixels = convertBufferedImageToPixels(frame, image.pixels, width, height);
+              image.backing = new RasterImageBacking(width, height, 1, width,
+                  convertBufferedImageToPixels(frame, rasterPixels(image), width, height), null);
               frames.add(image);
             }
           } catch (IndexOutOfBoundsException e) {
@@ -3369,7 +4014,8 @@ public class Image extends GfxSurface {
           if (new String(input, 1, 3).equals("PNG")) {
             fillPNGInformations(input, image);
           }
-          image.pixels = convertBufferedImageToPixels(frame, image.pixels, width, height);
+          image.backing = new RasterImageBacking(width, height, 1, width,
+              convertBufferedImageToPixels(frame, rasterPixels(image), width, height), null);
         }
       } catch (java.io.IOException e) {
         // should never happen
@@ -3466,11 +4112,11 @@ public class Image extends GfxSurface {
           Image temp = new Image(totalW, totalH, 1, true);
           temp.frameCount = n;
           temp.comment = resultImage.comment;
-          int[] dest = (int[]) temp.pixels;
+          int[] dest = rasterPixels(temp);
           int xx = 0;
           for (int i = 0; i < n; i++) {
             Image img = images.get(i);
-            int[] src = (int[]) img.pixels;
+            int[] src = rasterPixels(img);
             int w = img.width;
             for (int yy = 0; yy < totalH; yy++) {
               Vm.arrayCopy(src, yy * w, dest, xx + yy * totalW, w);
@@ -3555,7 +4201,7 @@ public class Image extends GfxSurface {
     mg = (int) (Math.sqrt((g2 + k) / k) * 0x10000);
     mb = (int) (Math.sqrt((b2 + k) / k) * 0x10000);
 
-    int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    int[] pixels = rasterStoragePixels(this);
     for (int n = pixels.length; --n >= 0;) {
       int p = pixels[n];
       if ((p & 0xFF000000) != 0) {
@@ -3612,9 +4258,6 @@ public class Image extends GfxSurface {
   }
 
   private boolean nativeEquals(Image other) {
-    if (!Settings.onJavaSE) {
-      return nativeEqualsNative(other);
-    }
     Image img = other;
     int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
     int w2 = img.frameCount > 1 ? img.widthOfAllFrames : img.width;
@@ -3630,18 +4273,13 @@ public class Image extends GfxSurface {
     for (int y = 0; y < h; y++) {
       this.getPixelRow(row1, y);
       img.getPixelRow(row2, y);
-      for (int k = row1.length; --k >= 0;) {
-        if (row1[k] != row2[k]) {
+      for (int k = 0; k < row1.length; k += 4) {
+        if (row1[k] != row2[k] || row1[k + 1] != row2[k + 1] || row1[k + 2] != row2[k + 2]) {
           return false;
         }
       }
     }
     return true;
-  }
-
-  @ReplacedByNativeOnDeploy
-  private boolean nativeEqualsNative(Image other) {
-    return false;
   }
 
   /** Applies the given color r,g,b values to all pixels of this image, 
@@ -3673,7 +4311,7 @@ public class Image extends GfxSurface {
     boolean changeA = (color & 0xFF000000) == 0xAA000000;
     int m, p;
 
-    int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+    int[] pixels = rasterStoragePixels(this);
 
     // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
     int hi = 0, hip = 0;
@@ -3790,7 +4428,7 @@ public class Image extends GfxSurface {
       applyFadeNative(fadeValue);
       return;
     }
-    int[] pixels = (int[]) this.pixels;
+    int[] pixels = rasterPixels(this);
     int lastColor = -1, lastFaded = 0;
     for (int j = 0; j < pixels.length; j++) {  
       int rgb = pixels[j];
@@ -4048,21 +4686,42 @@ public class Image extends GfxSurface {
     if (hashCode != 0) {
       return hashCode;
     }
-    int[] p = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
-    if (p != null) {
+    int storageWidth = frameCount == 1 ? width : widthOfAllFrames;
+    long storagePixelCount = (long) storageWidth * height;
+    int[] rasterPixels = backing != null && backing.isRaster() && backing.isValid()
+        ? backing.readStoragePixels()
+        : null;
+    if (storagePixelCount > 4096) {
       try {
         /*
          * If bigger than 64x64, scale down for faster hashing.
          * getScaledInstance is faster because it has native implementation.
          */
-        if (p.length > 4096) {
-          Image i = eagerScaledInstance(64, 64);
-          return Arrays.hashCode(i.pixels);
-        }
+        Image i = eagerScaledInstance(64, 64);
+        return Arrays.hashCode(i.getPixels());
       } catch (ImageException e) {
         e.printStackTrace();
       }
-      return Arrays.hashCode(p);
+    }
+    if (rasterPixels != null) {
+      return Arrays.hashCode(rasterPixels);
+    }
+    if (backing != null && backing.isValid()) {
+      byte[] row = new byte[storageWidth * 4];
+      int result = 1;
+      for (int y = 0; y < height; y++) {
+        if (!backing.readRgbaRow(row, y)) {
+          throw new IllegalStateException("Could not read image backing row");
+        }
+        for (int x = 0, offset = 0; x < storageWidth; x++, offset += 4) {
+          int pixel = ((row[offset + 3] & 0xFF) << 24)
+              | ((row[offset] & 0xFF) << 16)
+              | ((row[offset + 1] & 0xFF) << 8)
+              | (row[offset + 2] & 0xFF);
+          result = 31 * result + pixel;
+        }
+      }
+      return result;
     }
     return super.hashCode();
   }
