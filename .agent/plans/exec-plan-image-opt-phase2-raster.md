@@ -507,7 +507,7 @@ On interruption, state must name:
 - [x] Implement/report writePixels; capture writePixels S2/S3.
 - [x] Capture row-readback S1.
 - [x] Implement/report row/block readback and color materialization.
-- [ ] Final validation and phase-3 handoff.
+- [x] Final validation and phase-3 handoff.
 
 ## Decision Log
 
@@ -531,6 +531,16 @@ On interruption, state must name:
 ## Outcomes & Retrospective
 
 Update only at milestone boundaries with measured facts and committed evidence.
+
+- Lossless direct decode removed the extra decoded raster only when explicitly
+  enabled and preserved the disabled control path for A/B comparison.
+- Proof-based opacity metadata made the opaque draw path conservative while
+  covering JPEG, RGB PNG, all-opaque alpha PNG, and translucent PNG fixtures.
+- Native row batching kept `getPixels()` at parity with S1 while reducing
+  measured RSS and preserving O(width) scratch; the first per-row bridge was
+  rejected after its timing regression and replaced before final S2/S3.
+- Phase-3 should treat all four toggles as experimental and off by default
+  until broader platform validation is intentionally scheduled.
 
 ## Revision Note
 

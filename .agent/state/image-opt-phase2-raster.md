@@ -6,14 +6,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T14:54:29-03:00
+Updated: 2026-09-05T15:02:01-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
 
-Milestones 3, 4, and 5 are complete. The branch was created from
+Milestones 0 through 5 are complete. The branch was created from
 the final phase-1 branch HEAD, the four benchmark workloads and
 argument-capable runner are committed, zero-copy S1/S2/S3 was captured for PNG
 and JPEG, and the opt-in PNG/JPEG direct decode path is implemented with
@@ -33,6 +33,16 @@ pixels, encoding, and color; checksums matched S1, row scratch was 7,840 bytes,
 and direct color materialization recorded 63 hits. The batched native row
 bridge was added after the first implementation smoke to remove a per-row VM
 call overhead and was revalidated with the full matrix.
+
+## Final validation
+
+Focused Image tests, SDK distribution, final Release software-Skia Ninja
+build, the native Image smoke family, and the final readback/color S2/S3
+matrix all passed. The final native smoke family covered modifier/color,
+geometry, materialization, zero-copy decode, presentation state, deferred
+frame/fade, and modifier RSS memory behavior. The phase is ready for the
+phase-3 base checkpoint; the exact base SHA is recorded after the final
+documentation commit.
 
 ## Active paths
 
@@ -56,7 +66,6 @@ and compact summaries are under `.agent/benchmarks/image-opt-phase2-raster/zero-
 
 ## Deferred validation
 
-Focused Image unit tests and final SDK/native validation remain deferred.
 Android, iOS, Windows, Linux, and GPU validation are outside this phase.
 
 ## Decisions still active
