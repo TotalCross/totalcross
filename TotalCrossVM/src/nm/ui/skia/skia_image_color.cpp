@@ -350,6 +350,7 @@ int skia_image_backing_apply_color_mutation(int64_t handle, int32 operation, int
         source->surface.reset();
         ++source->generation;
         source->applyColor2AnalysisValid = false;
+        source->opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
         return 1;
     } catch (const std::bad_alloc&) {
         return 0;

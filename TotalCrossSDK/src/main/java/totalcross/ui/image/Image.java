@@ -97,6 +97,10 @@ public class Image extends GfxSurface {
   static int copiedDecodeCountForTest;
   static int decodeCopiedBytesForTest;
   static int decodeFinalBufferBytesForTest;
+  static int opacityKnownFromSourceForTest;
+  static int opacityDeterminedDuringDecodeForTest;
+  static int opacityFallbackScansForTest;
+  static int opacityFallbackPixelsForTest;
   private static int nativeOptimizationMaskForDecode;
   private static boolean backingReadbackAccountingForTest;
   private static int backingReadbackCountForTest;
@@ -198,6 +202,10 @@ public class Image extends GfxSurface {
     copiedDecodeCountForTest = 0;
     decodeCopiedBytesForTest = 0;
     decodeFinalBufferBytesForTest = 0;
+    opacityKnownFromSourceForTest = 0;
+    opacityDeterminedDuringDecodeForTest = 0;
+    opacityFallbackScansForTest = 0;
+    opacityFallbackPixelsForTest = 0;
     backingReadbackCountForTest = 0;
     NativeImageBacking.clearBackingAccountingCountersForTest();
   }
@@ -284,6 +292,22 @@ public class Image extends GfxSurface {
 
   static int decodeFinalBufferBytesForTest() {
     return decodeFinalBufferBytesForTest;
+  }
+
+  static int opacityKnownFromSourceForTest() {
+    return opacityKnownFromSourceForTest;
+  }
+
+  static int opacityDeterminedDuringDecodeForTest() {
+    return opacityDeterminedDuringDecodeForTest;
+  }
+
+  static int opacityFallbackScansForTest() {
+    return opacityFallbackScansForTest;
+  }
+
+  static int opacityFallbackPixelsForTest() {
+    return opacityFallbackPixelsForTest;
   }
 
   /** Test-only accounting for explicit deployed getPixels() snapshots. */

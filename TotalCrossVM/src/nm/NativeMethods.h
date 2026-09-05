@@ -156,6 +156,7 @@ TC_API void tuiNIB_scaleNative_iib(NMParams p);
 TC_API void tuiNIB_materializeGeometryNative(NMParams p);
 TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p);
 TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p);
+TC_API void tuiNIB_opacityNative(NMParams p);
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);

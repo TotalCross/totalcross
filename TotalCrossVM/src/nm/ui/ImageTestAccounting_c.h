@@ -23,6 +23,10 @@ typedef struct {
    int32* copiedDecodeCount;
    int32* decodeCopiedBytes;
    int32* decodeFinalBufferBytes;
+   int32* opacityKnownFromSource;
+   int32* opacityDeterminedDuringDecode;
+   int32* opacityFallbackScans;
+   int32* opacityFallbackPixels;
 } ImageTestAccountingState;
 
 extern ImageTestAccountingState imageTestAccountingState;
@@ -44,6 +48,10 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
    imageTestAccountingState.copiedDecodeCount = null;
    imageTestAccountingState.decodeCopiedBytes = null;
    imageTestAccountingState.decodeFinalBufferBytes = null;
+   imageTestAccountingState.opacityKnownFromSource = null;
+   imageTestAccountingState.opacityDeterminedDuringDecode = null;
+   imageTestAccountingState.opacityFallbackScans = null;
+   imageTestAccountingState.opacityFallbackPixels = null;
    if (!imageTestAccountingState.enabled) {
       return;
    }
@@ -79,6 +87,14 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
       getStaticFieldInt(imageClass, "decodeCopiedBytesForTest");
    imageTestAccountingState.decodeFinalBufferBytes =
       getStaticFieldInt(imageClass, "decodeFinalBufferBytesForTest");
+   imageTestAccountingState.opacityKnownFromSource =
+      getStaticFieldInt(imageClass, "opacityKnownFromSourceForTest");
+   imageTestAccountingState.opacityDeterminedDuringDecode =
+      getStaticFieldInt(imageClass, "opacityDeterminedDuringDecodeForTest");
+   imageTestAccountingState.opacityFallbackScans =
+      getStaticFieldInt(imageClass, "opacityFallbackScansForTest");
+   imageTestAccountingState.opacityFallbackPixels =
+      getStaticFieldInt(imageClass, "opacityFallbackPixelsForTest");
 }
 
 static int32* imageTestAccountingField(const char* fieldName) {
@@ -126,6 +142,18 @@ static int32* imageTestAccountingField(const char* fieldName) {
    }
    if (strcmp(fieldName, "decodeFinalBufferBytesForTest") == 0) {
       return imageTestAccountingState.decodeFinalBufferBytes;
+   }
+   if (strcmp(fieldName, "opacityKnownFromSourceForTest") == 0) {
+      return imageTestAccountingState.opacityKnownFromSource;
+   }
+   if (strcmp(fieldName, "opacityDeterminedDuringDecodeForTest") == 0) {
+      return imageTestAccountingState.opacityDeterminedDuringDecode;
+   }
+   if (strcmp(fieldName, "opacityFallbackScansForTest") == 0) {
+      return imageTestAccountingState.opacityFallbackScans;
+   }
+   if (strcmp(fieldName, "opacityFallbackPixelsForTest") == 0) {
+      return imageTestAccountingState.opacityFallbackPixels;
    }
    return null;
 }
