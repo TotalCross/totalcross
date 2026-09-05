@@ -15,6 +15,7 @@ struct NativeImageBackingRecord {
     sk_sp<SkSurface> surface;
     int32 width;
     int32 height;
+    int32 opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
     uint64_t generation = 0;
     bool applyColor2AnalysisValid = false;
     uint64_t applyColor2AnalysisGeneration = 0;

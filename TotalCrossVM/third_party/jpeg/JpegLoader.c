@@ -147,7 +147,7 @@ static int32 jpegTargetDecodeScaleDenominator(JDIMENSION sourceWidth, JDIMENSION
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
 ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
       TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2,
-      bool zeroCopy)
+      bool zeroCopy, bool opacityMetadata)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -388,6 +388,10 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
          pixelStorage = null;
       }
       if (nativeHandle) {
+         if (opacityMetadata) {
+            skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+            imageRecordTestCounter("opacityKnownFromSourceForTest");
+         }
          if (zeroCopy) {
             imageRecordTestCounter("zeroCopyDecodeCountForTest");
          } else {

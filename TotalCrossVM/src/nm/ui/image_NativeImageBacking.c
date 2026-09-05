@@ -335,6 +335,15 @@ TC_API void tuiNIB_readRgbaRowNative_Bii(NMParams p) // totalcross/ui/image/Nati
 #endif
 }
 
+TC_API void tuiNIB_opacityNative(NMParams p) // totalcross/ui/image/NativeImageBacking private int opacityNative();
+{
+#if TC_RENDERER_SKIA
+   p->retI = skia_image_backing_opacity(NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retI = 0;
+#endif
+}
+
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p) // totalcross/ui/image/NativeImageBacking private static void releaseNativeHandle(long nativeHandle);
 {
 #if TC_RENDERER_SKIA
