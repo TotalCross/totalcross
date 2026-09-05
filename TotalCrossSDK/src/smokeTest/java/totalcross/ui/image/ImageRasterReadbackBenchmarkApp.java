@@ -31,6 +31,7 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
           ? ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION
           : ImageOptimizationSettings.RASTER_ROW_READBACK;
       ImageRasterBenchmarkSupport.configure(scenario, targetFeature);
+      Image.resetImageOperationAccountingForTest();
       byte[] encoded = ImageRasterBenchmarkSupport.resource("image-abi/lena1960.jpg");
       for (int warmup = 0; warmup < 3; warmup++) {
         runOperation(encoded, operation);
@@ -42,7 +43,12 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
         totalOutputBytes += result.outputBytes;
         checksum ^= result.checksum;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",operation=" + operation
-            + ",output_bytes=" + result.outputBytes + ",checksum=" + result.checksum);
+            + ",output_bytes=" + result.outputBytes + ",checksum=" + result.checksum
+            + ",row_readbacks=" + Image.rowReadbackCountForTest()
+            + ",full_readbacks=" + Image.fullReadbackCountForTest()
+            + ",row_scratch_peak_bytes=" + Image.rowScratchPeakBytesForTest()
+            + ",full_scratch_bytes=" + Image.fullScratchBytesForTest()
+            + ",direct_color_materializations=" + Image.directColorMaterializationCountForTest());
         System.out.flush();
         completedSamples = sample;
       }
@@ -53,7 +59,12 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
 
     boolean pass = ImageRasterBenchmarkSupport.finish("ImageRasterReadbackBenchmarkApp", scenario,
         samples, completedSamples, "operation=" + operation + ",total_output_bytes=" + totalOutputBytes
-            + ",checksum=" + checksum, error);
+            + ",checksum=" + checksum
+            + ",row_readbacks=" + Image.rowReadbackCountForTest()
+            + ",full_readbacks=" + Image.fullReadbackCountForTest()
+            + ",row_scratch_peak_bytes=" + Image.rowScratchPeakBytesForTest()
+            + ",full_scratch_bytes=" + Image.fullScratchBytesForTest()
+            + ",direct_color_materializations=" + Image.directColorMaterializationCountForTest(), error);
     exit(pass ? 0 : 1);
   }
 

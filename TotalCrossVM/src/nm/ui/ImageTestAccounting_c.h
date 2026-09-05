@@ -27,6 +27,7 @@ typedef struct {
    int32* opacityDeterminedDuringDecode;
    int32* opacityFallbackScans;
    int32* opacityFallbackPixels;
+   int32* directColorMaterializationCount;
 } ImageTestAccountingState;
 
 extern ImageTestAccountingState imageTestAccountingState;
@@ -52,6 +53,7 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
    imageTestAccountingState.opacityDeterminedDuringDecode = null;
    imageTestAccountingState.opacityFallbackScans = null;
    imageTestAccountingState.opacityFallbackPixels = null;
+   imageTestAccountingState.directColorMaterializationCount = null;
    if (!imageTestAccountingState.enabled) {
       return;
    }
@@ -95,6 +97,8 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
       getStaticFieldInt(imageClass, "opacityFallbackScansForTest");
    imageTestAccountingState.opacityFallbackPixels =
       getStaticFieldInt(imageClass, "opacityFallbackPixelsForTest");
+   imageTestAccountingState.directColorMaterializationCount =
+      getStaticFieldInt(imageClass, "directColorMaterializationCountForTest");
 }
 
 static int32* imageTestAccountingField(const char* fieldName) {
@@ -154,6 +158,9 @@ static int32* imageTestAccountingField(const char* fieldName) {
    }
    if (strcmp(fieldName, "opacityFallbackPixelsForTest") == 0) {
       return imageTestAccountingState.opacityFallbackPixels;
+   }
+   if (strcmp(fieldName, "directColorMaterializationCountForTest") == 0) {
+      return imageTestAccountingState.directColorMaterializationCount;
    }
    return null;
 }

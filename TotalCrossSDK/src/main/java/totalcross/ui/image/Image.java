@@ -101,6 +101,11 @@ public class Image extends GfxSurface {
   static int opacityDeterminedDuringDecodeForTest;
   static int opacityFallbackScansForTest;
   static int opacityFallbackPixelsForTest;
+  static int rowReadbackCountForTest;
+  static int fullReadbackCountForTest;
+  static int rowScratchPeakBytesForTest;
+  static int fullScratchBytesForTest;
+  static int directColorMaterializationCountForTest;
   private static int nativeOptimizationMaskForDecode;
   private static int nativeOptimizationMaskForDraw;
   private static boolean backingReadbackAccountingForTest;
@@ -211,6 +216,11 @@ public class Image extends GfxSurface {
     opacityDeterminedDuringDecodeForTest = 0;
     opacityFallbackScansForTest = 0;
     opacityFallbackPixelsForTest = 0;
+    rowReadbackCountForTest = 0;
+    fullReadbackCountForTest = 0;
+    rowScratchPeakBytesForTest = 0;
+    fullScratchBytesForTest = 0;
+    directColorMaterializationCountForTest = 0;
     backingReadbackCountForTest = 0;
     NativeImageBacking.clearBackingAccountingCountersForTest();
   }
@@ -313,6 +323,40 @@ public class Image extends GfxSurface {
 
   static int opacityFallbackPixelsForTest() {
     return opacityFallbackPixelsForTest;
+  }
+
+  static int rowReadbackCountForTest() {
+    return rowReadbackCountForTest;
+  }
+
+  static int fullReadbackCountForTest() {
+    return fullReadbackCountForTest;
+  }
+
+  static int rowScratchPeakBytesForTest() {
+    return rowScratchPeakBytesForTest;
+  }
+
+  static int fullScratchBytesForTest() {
+    return fullScratchBytesForTest;
+  }
+
+  static int directColorMaterializationCountForTest() {
+    return directColorMaterializationCountForTest;
+  }
+
+  static void recordRowReadbackForTest(int scratchBytes) {
+    rowReadbackCountForTest++;
+    if (scratchBytes > rowScratchPeakBytesForTest) {
+      rowScratchPeakBytesForTest = scratchBytes;
+    }
+  }
+
+  static void recordFullReadbackForTest(int scratchBytes) {
+    fullReadbackCountForTest++;
+    if (scratchBytes > fullScratchBytesForTest) {
+      fullScratchBytesForTest = scratchBytes;
+    }
   }
 
   /** Test-only accounting for explicit deployed getPixels() snapshots. */

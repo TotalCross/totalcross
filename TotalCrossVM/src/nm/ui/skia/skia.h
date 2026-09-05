@@ -103,7 +103,8 @@ int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 output
 #define SKIA_IMAGE_DRAW_CROP 12
 #define SKIA_IMAGE_DRAW_FRAME_LAYOUT 13
 int skia_image_backing_apply_color_mutation(int64_t handle, int32 operation, int32 parameter1,
-    int32 parameter2, int32 frameCount, int32 visibleWidth, int32 currentFrame);
+    int32 parameter2, int32 frameCount, int32 visibleWidth, int32 currentFrame,
+    int32 optimizationMask);
 int64_t skia_image_backing_create_color_instance(int64_t handle, int32 operation, int32 parameter1,
     int32 parameter2);
 typedef struct SkiaImageDrawPlanData {

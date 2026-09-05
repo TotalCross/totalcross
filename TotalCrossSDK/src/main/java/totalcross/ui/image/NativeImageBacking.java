@@ -186,8 +186,26 @@ final class NativeImageBacking extends ImageBacking {
     if (visibleWidth == 0) {
       return new int[0];
     }
-    Image.recordBackingReadbackForTest();
     int[] output = new int[visibleWidth * outputHeight];
+    if (ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_ROW_READBACK)
+        == ImageOptimizationSettings.ENABLED && frame == 0 && visibleWidth == width) {
+      byte[] row = new byte[visibleWidth * 4];
+      for (int y = 0; y < outputHeight; y++) {
+        if (!readRgbaRow(row, y)) {
+          throw new IllegalStateException("Could not read native image backing row");
+        }
+        int outputOffset = y * visibleWidth;
+        for (int x = 0, offset = 0; x < visibleWidth; x++, offset += 4) {
+          output[outputOffset + x] = ((row[offset + 3] & 0xFF) << 24)
+              | ((row[offset] & 0xFF) << 16)
+              | ((row[offset + 1] & 0xFF) << 8)
+              | (row[offset + 2] & 0xFF);
+        }
+      }
+      return output;
+    }
+    Image.recordBackingReadbackForTest();
+    Image.recordFullReadbackForTest(width * outputHeight * 4);
     if (!readPixels(output, 0, visibleWidth * Math.max(0, frame), 0, visibleWidth, outputHeight)) {
       throw new IllegalStateException("Could not read native image backing");
     }
@@ -208,8 +226,15 @@ final class NativeImageBacking extends ImageBacking {
 
   @Override
   boolean readRgbaRow(byte[] output, int y) {
-    return isValid() && output != null && y >= 0 && y < height && output.length >= width * 4
-        && readRgbaRowNative(output, y, width);
+    boolean valid = isValid() && output != null && y >= 0 && y < height && output.length >= width * 4;
+    if (!valid) {
+      return false;
+    }
+    if (ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_ROW_READBACK)
+        == ImageOptimizationSettings.ENABLED) {
+      Image.recordRowReadbackForTest(width * 4);
+    }
+    return readRgbaRowNative(output, y, width);
   }
 
   long nativeHandleForBridge() {

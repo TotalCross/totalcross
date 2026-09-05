@@ -364,7 +364,7 @@ TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/
 //////////////////////////////////////////////////////////////////////////
 #if TC_RENDERER_SKIA
 static bool imageUsesNativeBacking(TCObject imageObj);
-static bool applyNativeColorMutation(Context currentContext, TCObject imageObj, int32 operation, int32 parameter1,
+static int32 applyNativeColorMutation(Context currentContext, TCObject imageObj, int32 operation, int32 parameter1,
                                      int32 parameter2);
 #endif
 TC_API void tuiI_changeColorsNative_ii(NMParams p) // totalcross/ui/image/Image private void changeColorsNative(int from, int to);
@@ -414,24 +414,33 @@ static bool imageUsesNativeBacking(TCObject imageObj)
       "totalcross.ui.image.NativeImageBacking");
 }
 
-static bool applyNativeColorMutation(Context currentContext, TCObject imageObj, int32 operation, int32 parameter1,
+static int32 applyNativeColorMutation(Context currentContext, TCObject imageObj, int32 operation, int32 parameter1,
                                      int32 parameter2)
 {
    int32 frameCount;
    int32 visibleWidth;
+   int32* optimizationMask;
+   int32 result;
    if (!imageUsesNativeBacking(imageObj)) {
       return false;
    }
    frameCount = Image_frameCount(imageObj);
    visibleWidth = Image_width(imageObj);
-   if (!skia_image_backing_apply_color_mutation(
+   optimizationMask = getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDraw");
+   result = skia_image_backing_apply_color_mutation(
          NativeImageBacking_nativeHandle(Image_backing(imageObj)), operation, parameter1,
-         parameter2, frameCount, visibleWidth, Image_currentFrame(imageObj))) {
-      return false;
+         parameter2, frameCount, visibleWidth, Image_currentFrame(imageObj),
+         optimizationMask ? *optimizationMask : 0);
+   if (result == 0) {
+      return 0;
    }
    Image_changed(imageObj) = true;
-   imageRecordTestCounter("nativeColorReadbackCountForTest");
-   return true;
+   if (result == 2) {
+      imageRecordTestCounter("directColorMaterializationCountForTest");
+   } else {
+      imageRecordTestCounter("nativeColorReadbackCountForTest");
+   }
+   return result;
 }
 #endif
 
