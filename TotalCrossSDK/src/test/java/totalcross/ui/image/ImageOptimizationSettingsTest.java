@@ -149,6 +149,17 @@ class ImageOptimizationSettingsTest {
     assertTrue(NativeImageBacking.backingAccountingEnabledForTest());
     assertEquals(0, Image.imagePipelineCreatedCountForTest());
     assertEquals(0, Image.backingReadbackCountForTest());
+
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.DISABLED);
+    Image.recordImagePipelineCreatedForTest();
+    Image.recordBackingReadbackForTest();
+    Image.clearImageOperationAccountingCountersForTest();
+    assertFalse(Image.imageOperationAccountingForTest);
+    assertFalse(Image.backingReadbackAccountingEnabledForTest());
+    assertFalse(NativeImageBacking.backingAccountingEnabledForTest());
+    assertEquals(0, Image.imagePipelineCreatedCountForTest());
+    assertEquals(0, Image.backingReadbackCountForTest());
   }
 
   @Test
