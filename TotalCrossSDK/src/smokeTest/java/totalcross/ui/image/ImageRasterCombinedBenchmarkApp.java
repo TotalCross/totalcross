@@ -20,13 +20,19 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
     int samples = ImageRasterBenchmarkSupport.integerArgument(getCommandLine(), "samples", DEFAULT_SAMPLES);
     int completedSamples = 0;
     String error = "";
+    String inputJpegHash = "unavailable";
+    String inputPngHash = "unavailable";
 
     try {
       ImageRasterBenchmarkSupport.require(samples > 0 && samples <= 200,
           "samples must be between 1 and 200");
-      ImageRasterBenchmarkSupport.configureAllRasterFeatures(scenario);
       byte[] jpeg = ImageRasterBenchmarkSupport.resource("image-abi/lena512.jpg");
       byte[] png = ImageRasterBenchmarkSupport.opaquePng(512, 512);
+      inputJpegHash = ImageRasterBenchmarkSupport.hashString(
+          ImageRasterBenchmarkSupport.fullByteHash(jpeg, jpeg.length));
+      inputPngHash = ImageRasterBenchmarkSupport.hashString(
+          ImageRasterBenchmarkSupport.fullByteHash(png, png.length));
+      ImageRasterBenchmarkSupport.configureAllRasterFeatures(scenario);
       for (int warmup = 0; warmup < 3; warmup++) {
         runWorkload(jpeg, png);
       }
@@ -55,6 +61,7 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
         }
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed
             + ",draws=" + DRAWS_PER_SAMPLE
+            + ",input_jpeg_hash=" + inputJpegHash + ",input_png_hash=" + inputPngHash
             + ",pixel_hash=" + pixelHash + ",png_hash=" + pngHash + ",color_hash=" + colorHash
             + ",decode_zero_copy=" + Image.zeroCopyDecodeCountForTest()
             + ",opacity_known_source=" + Image.opacityKnownFromSourceForTest()
@@ -76,6 +83,8 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
     boolean pass = ImageRasterBenchmarkSupport.finish("ImageRasterCombinedBenchmarkApp", scenario,
         samples, completedSamples,
         "draws=" + DRAWS_PER_SAMPLE
+            + ",input_jpeg_hash=" + inputJpegHash
+            + ",input_png_hash=" + inputPngHash
             + ",decode_zero_copy=" + Image.zeroCopyDecodeCountForTest()
             + ",opacity_known_source=" + Image.opacityKnownFromSourceForTest()
             + ",opacity_determined_decode=" + Image.opacityDeterminedDuringDecodeForTest()
