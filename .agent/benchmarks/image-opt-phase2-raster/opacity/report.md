@@ -4,7 +4,7 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Opacity metadata S1 baseline
+# Opacity metadata S1 baseline and S2/S3 results
 
 This report records the pre-implementation opacity baseline required before
 adding structural opacity metadata.
@@ -37,3 +37,29 @@ the semantic gate for S2/S3.
 
 Raw samples and runner summaries are stored in the matching
 `scenario-1-*.csv` and `scenario-1-*-summary.txt` files.
+
+## Post-implementation comparison
+
+The opacity implementation was committed at `f6a4e1227`. S2 disabled all
+phase-2 toggles; S3 enabled only `RASTER_OPACITY_METADATA`. The sequential
+runner completed all 480 post-implementation samples successfully.
+
+| Fixture | Scenario | Median | P95 | Peak RSS | Opacity | Source proofs | Decode proofs | Fallback scans |
+| --- | --- | ---: | ---: | ---: | --- | ---: | ---: | ---: |
+| JPEG | S2/post-disabled | 2 ms | 2 ms | 130896 KiB | UNKNOWN | 0 | 0 | 0 |
+| RGB PNG | S2/post-disabled | 2 ms | 2 ms | 120672 KiB | UNKNOWN | 0 | 0 | 0 |
+| Alpha PNG, all opaque | S2/post-disabled | 1 ms | 2 ms | 166400 KiB | UNKNOWN | 0 | 0 | 0 |
+| Alpha PNG, translucent | S2/post-disabled | 0 ms | 0 ms | 113536 KiB | UNKNOWN | 0 | 0 | 0 |
+| JPEG | S3/post-enabled | 2 ms | 2 ms | 147744 KiB | OPAQUE | 60 | 0 | 0 |
+| RGB PNG | S3/post-enabled | 2 ms | 3 ms | 118160 KiB | OPAQUE | 60 | 0 | 0 |
+| Alpha PNG, all opaque | S3/post-enabled | 2 ms | 2 ms | 166496 KiB | OPAQUE | 0 | 60 | 0 |
+| Alpha PNG, translucent | S3/post-enabled | 0 ms | 0 ms | 113552 KiB | TRANSLUCENT | 0 | 60 | 0 |
+
+S3 adds no separate full-image opacity scan for JPEG or alpha-free RGB PNG.
+Alpha PNG classification occurs during row decoding, and the semantic probes
+reported the expected opacity class without changing visible pixels. The
+timing gate shows no confirmed regression versus the S1 fixture baselines;
+these remain local macOS software-Skia measurements.
+
+Raw post-implementation samples and runner summaries are stored in the
+matching `scenario-2-*.csv`, `scenario-3-*.csv`, and summary files.
