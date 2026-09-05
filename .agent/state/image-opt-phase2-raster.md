@@ -6,23 +6,25 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T13:55:31-03:00
+Updated: 2026-09-05T13:59:00-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
 
-Milestone 2 is complete. The branch was created from the final phase-1 branch
-HEAD, the four benchmark workloads and argument-capable runner are committed,
-zero-copy S1 was captured for PNG and JPEG, and the opt-in PNG/JPEG direct
-decode path is implemented with semantic retry/parity coverage.
+Milestone 2 and the opacity S1 gate are complete. The branch was created from
+the final phase-1 branch HEAD, the four benchmark workloads and
+argument-capable runner are committed, zero-copy S1/S2/S3 was captured for PNG
+and JPEG, and the opt-in PNG/JPEG direct decode path is implemented with
+semantic retry/parity coverage. Opacity S1 covers all four required fixture
+kinds at `f4f1a6ad9`.
 
 ## Next concrete action
 
-Capture the opacity S1 baseline with the post-zero-copy build and every phase-2
-optimization disabled. Then implement `RASTER_OPACITY_METADATA` with the
-cached proof semantics in the plan.
+Implement `RASTER_OPACITY_METADATA` with the cached proof semantics in the
+plan. Preserve the S1 workload and add source/decode/fallback opacity counters,
+then build and capture S2/S3 before moving to writePixels.
 
 ## Active paths
 
@@ -46,7 +48,7 @@ and compact summaries are under `.agent/benchmarks/image-opt-phase2-raster/zero-
 
 ## Deferred validation
 
-Opacity S1/S2/S3, writePixels, row-readback/color materialization, focused Image
+Opacity S2/S3, writePixels, row-readback/color materialization, focused Image
 unit tests, and final SDK/native validation remain deferred. Android, iOS,
 Windows, Linux, and GPU validation are outside this phase.
 

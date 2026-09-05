@@ -501,7 +501,7 @@ On interruption, state must name:
 
 - [x] Bootstrap phase-2 branch and plan.
 - [x] Commit all benchmark workloads; capture zero-copy S1.
-- [ ] Implement/report zero-copy; capture opacity S1.
+- [x] Implement/report zero-copy; capture opacity S1.
 - [ ] Implement/report opacity; capture writePixels S1.
 - [ ] Implement/report writePixels; capture row-readback S1.
 - [ ] Implement/report row/block readback and color materialization.
