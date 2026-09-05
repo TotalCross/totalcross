@@ -178,10 +178,14 @@
 #define Image_changed(o)            *((int32*)ARRAYOBJ_START(Image_changedObj(o)))
 #define Image_instanceCount(o)      *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))
 #define Image_pipeline(o)           FIELD_OBJ(o, OBJ_CLASS(o), 8)
+#define Image_backing(o)             FIELD_OBJ(o, OBJ_CLASS(o), 9)
 
 #define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 #define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
 #define Image_contentScale(o)      FIELD_DBL(o, OBJ_CLASS(o), 2)
+
+// totalcross.ui.image.NativeImageBacking
+#define NativeImageBacking_nativeHandle(o) FIELD_I64(o, OBJ_CLASS(o), 0)
 
 // totalcross/ui/image/EncodedImageSource
 #define EncodedImageSource_nativeBag(o) FIELD_I64(o, OBJ_CLASS(o), 0)
