@@ -44,6 +44,40 @@ final class RasterImageBacking extends ImageBacking {
         && (frameCount <= 1 || pixelsOfAllFrames != null);
   }
 
+  @Override
+  int[] readVisiblePixels(int visibleWidth, int outputHeight, int frame) {
+    if (!isValid() || visibleWidth != width || outputHeight != height) {
+      throw new IllegalStateException("Invalid raster image backing read");
+    }
+    return pixels;
+  }
+
+  @Override
+  int[] readStoragePixels() {
+    if (!isValid()) {
+      throw new IllegalStateException("Invalid raster image backing read");
+    }
+    return frameCount > 1 ? pixelsOfAllFrames : pixels;
+  }
+
+  @Override
+  boolean readRgbaRow(byte[] output, int y) {
+    int storageWidth = width();
+    if (!isValid() || output == null || y < 0 || y >= height || output.length < storageWidth * 4) {
+      return false;
+    }
+    int[] source = readStoragePixels();
+    int sourceIndex = y * storageWidth;
+    for (int x = 0, pixel = sourceIndex; x < storageWidth; x++, pixel++) {
+      int value = source[pixel];
+      output[x * 4] = (byte) (value >> 16);
+      output[x * 4 + 1] = (byte) (value >> 8);
+      output[x * 4 + 2] = (byte) value;
+      output[x * 4 + 3] = (byte) (value >>> 24);
+    }
+    return true;
+  }
+
   int frameCount() {
     return frameCount;
   }

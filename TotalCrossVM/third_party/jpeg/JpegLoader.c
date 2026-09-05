@@ -257,8 +257,6 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       if (tcz != null)
          tczClose(tcz);
       heapDestroy(heap);
-      Image_pixels(imageObj) = null;
-      Image_pixelsOfAllFrames(imageObj) = null;
       Image_backing(imageObj) = null;
       return status;
    }
@@ -271,8 +269,6 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       if (tcz != null)
          tczClose(tcz);
       heapDestroy(heap);
-      Image_pixels(imageObj) = null;
-      Image_pixelsOfAllFrames(imageObj) = null;
       Image_backing(imageObj) = null;
       return status;
    }
@@ -285,13 +281,11 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       if (tcz != null)
          tczClose(tcz);
       heapDestroy(heap);
-      Image_pixels(imageObj) = null;
-      Image_pixelsOfAllFrames(imageObj) = null;
       Image_backing(imageObj) = null;
       return status;
    }
 #else
-   Image_pixels(imageObj) = pixelsObj = createIntArray(currentContext, width*height);
+   pixelsObj = createIntArray(currentContext, width*height);
    if (!pixelsObj)
    {
       status = IMAGE_DECODE_RESOURCE_FAILURE;
@@ -300,10 +294,25 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       if (tcz != null)
          tczClose(tcz);
       heapDestroy(heap);
-      Image_pixels(imageObj) = null;
+      Image_backing(imageObj) = null;
       return status;
    }
    setObjectLock(pixelsObj, UNLOCKED);
+   TCObject backing = createObject(currentContext, "totalcross.ui.image.RasterImageBacking");
+   if (!backing)
+   {
+      status = IMAGE_DECODE_RESOURCE_FAILURE;
+      Image_backing(imageObj) = null;
+      return status;
+   }
+   RasterImageBacking_pixels(backing) = pixelsObj;
+   RasterImageBacking_pixelsOfAllFrames(backing) = null;
+   RasterImageBacking_width(backing) = width;
+   RasterImageBacking_height(backing) = height;
+   RasterImageBacking_frameCount(backing) = 1;
+   RasterImageBacking_widthOfAllFrames(backing) = width;
+   setObjectLock(backing, UNLOCKED);
+   Image_backing(imageObj) = backing;
    pixelStorage = pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
 #endif
 
@@ -476,17 +485,20 @@ bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStream
    int32 i, scanLineOut;
    volatile bool ret = false;                  
    
-   TCObject pixObj = (Image_frameCount(srcImageObj) > 1) ? Image_pixelsOfAllFrames(srcImageObj) : Image_pixels(srcImageObj);
    PixelConv *pixels = null;
+   TCObject backing = Image_backing(srcImageObj);
+   TCObject pixObj = null;
 #if TC_RENDERER_SKIA
    Pixel *nativeRow = null;
-   TCObject backing = Image_backing(srcImageObj);
    bool nativeBacking = backing != null && strEq(OBJ_CLASS(backing)->name,
       "totalcross.ui.image.NativeImageBacking");
 #else
    bool nativeBacking = false;
 #endif
    if (!nativeBacking) {
+      pixObj = (Image_frameCount(srcImageObj) > 1)
+         ? RasterImageBacking_pixelsOfAllFrames(backing)
+         : RasterImageBacking_pixels(backing);
       if (!pixObj)
          return false;
       pixels = (PixelConv*)ARRAYOBJ_START(pixObj);

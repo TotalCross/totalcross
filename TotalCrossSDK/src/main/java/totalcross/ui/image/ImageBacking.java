@@ -18,6 +18,15 @@ abstract class ImageBacking {
 
   abstract boolean isValid();
 
+  /** Returns the visible frame, preserving the live raster identity when applicable. */
+  abstract int[] readVisiblePixels(int visibleWidth, int height, int frame);
+
+  /** Returns the physical storage sequence used by legacy equality and hashing. */
+  abstract int[] readStoragePixels();
+
+  /** Reads one physical storage row as RGBA bytes without allocating a full raster. */
+  abstract boolean readRgbaRow(byte[] output, int y);
+
   /** Returns a detached snapshot suitable for a deferred pipeline root. */
   abstract ImageBacking snapshot() throws ImageException;
 }

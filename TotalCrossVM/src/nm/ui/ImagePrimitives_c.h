@@ -10,12 +10,14 @@
 #include "skia/skia.h"
 #include "NativeImageBacking.h"
 #endif
+#include "ImageTestAccounting_c.h"
 
 static void setCurrentFrame(TCObject obj, int32 nr)
 {
    int32 y,width,widthOfAllFrames;
-   Pixel* pixelsOfAllFrames = (Pixel*)ARRAYOBJ_START(Image_pixelsOfAllFrames(obj));
-   Pixel* pixels = (Pixel*)ARRAYOBJ_START(Image_pixels(obj));
+   Pixel* pixelsOfAllFrames = (Pixel*)ARRAYOBJ_START(
+      RasterImageBacking_pixelsOfAllFrames(Image_backing(obj)));
+   Pixel* pixels = (Pixel*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(obj)));
    int32 frameCount = Image_frameCount(obj), mw;
 
    if (frameCount <= 1 || nr == Image_currentFrame(obj)) return;
@@ -37,7 +39,8 @@ static void setCurrentFrame(TCObject obj, int32 nr)
 static void applyColor(TCObject obj, Pixel color) // guich@tc112_24
 {
    int32 frameCount = Image_frameCount(obj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(obj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(obj));
    int32 len = ARRAYOBJ_LEN(pixelsObj);
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
    PixelConv c;
@@ -70,13 +73,14 @@ static void applyColor(TCObject obj, Pixel color) // guich@tc112_24
 static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@tc130: changed area-averaging to Catmull-Rom resampling
 {
    bool fSuccess = false;
-   PixelConv* ob = (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
+   PixelConv* ob = (PixelConv*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(newObj)));
    int32 frameCount = Image_frameCount(thisObj);
    int32 width = Image_width(thisObj) * frameCount;
    int32 height = Image_height(thisObj);
    int32 newWidth = Image_width(newObj);
    int32 newHeight = Image_height(newObj);
-   TCObject pixelsObj = (frameCount == 1) ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = (frameCount == 1) ? RasterImageBacking_pixels(Image_backing(thisObj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(thisObj));
    PixelConv *ib = (PixelConv*)ARRAYOBJ_START(pixelsObj);
    PixelConv pval;                                                                                                                                   
 
@@ -308,7 +312,8 @@ Cleanup: /* CLEANUP */
 static void changeColors(TCObject obj, Pixel from, Pixel to)
 {
    int32 frameCount = Image_frameCount(obj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(obj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(obj));
    int32 len = ARRAYOBJ_LEN(pixelsObj);
    Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
    for (; len-- > 0; pixels++)
@@ -324,9 +329,10 @@ static void changeColors(TCObject obj, Pixel from, Pixel to)
 
 static void getScaledInstance(TCObject thisObj, TCObject newObj)
 {
-   Pixel* dstImageData = (Pixel*)ARRAYOBJ_START(Image_pixels(newObj));
+   Pixel* dstImageData = (Pixel*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(newObj)));
    int32 frameCount = Image_frameCount(thisObj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(thisObj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(thisObj));
    Pixel* srcImageData = (Pixel*)ARRAYOBJ_START(pixelsObj);
    int32 thisWidth = Image_width(thisObj) * frameCount;
    int32 thisHeight= Image_height(thisObj);
@@ -357,8 +363,8 @@ static void getScaledInstance(TCObject thisObj, TCObject newObj)
 static void getRotatedScaledInstance(TCObject thisObj, TCObject newObj, int32 percScale, int32 angle, Pixel color, int32 x0, int32 y0)
 {
    int32 frameCount = Image_frameCount(thisObj);
-   Pixel *pixelsIn = (Pixel*)ARRAYOBJ_START(Image_pixels(thisObj)), *pixelsIn0 = pixelsIn;
-   Pixel *pixelsOut= (Pixel*)ARRAYOBJ_START(Image_pixels(newObj)),  *pixelsOut0= pixelsOut;
+   Pixel *pixelsIn = (Pixel*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(thisObj))), *pixelsIn0 = pixelsIn;
+   Pixel *pixelsOut= (Pixel*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(newObj))),  *pixelsOut0= pixelsOut;
    int32 thisWidth = Image_width(thisObj);
    int32 thisHeight= Image_height(thisObj);
    int32 newWidth  = Image_width(newObj);
@@ -430,8 +436,9 @@ static void getRotatedScaledInstance(TCObject thisObj, TCObject newObj, int32 pe
       {                                                   
          int32 n = newWidth;
          widthOfAllFrames = Image_widthOfAllFrames(newObj) - newWidth;
-         pixelsOfAllFrames = (Pixel*)ARRAYOBJ_START(Image_pixelsOfAllFrames(newObj));
-         pixels = (Pixel*)ARRAYOBJ_START(Image_pixels(newObj));
+         pixelsOfAllFrames = (Pixel*)ARRAYOBJ_START(
+            RasterImageBacking_pixelsOfAllFrames(Image_backing(newObj)));
+         pixels = (Pixel*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(newObj)));
          pixelsOfAllFrames += j * newWidth;
          for (y = newHeight0; --y >= 0; pixelsOfAllFrames += widthOfAllFrames, n = newWidth)
             while (n-- > 0)
@@ -473,11 +480,12 @@ static void getTouchedUpInstance(TCObject thisObj, TCObject newObj, int32 iBrigh
    uint8 table[256];
    int32 m=0, k=0, max;
    int32 frameCount = Image_frameCount(thisObj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(thisObj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(thisObj));
 
    touchup = NO_TOUCHUP;
    in = (PixelConv*)ARRAYOBJ_START(pixelsObj);
-   out= (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
+   out= (PixelConv*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(newObj)));
    len = ARRAYOBJ_LEN(pixelsObj);
 
    if (iContrast != 0)
@@ -542,10 +550,11 @@ static void getFadedInstance(TCObject thisObj, TCObject newObj, int32 backColor)
    PixelConv *in, *out,back;
    int32 len,r,g,b;
    int32 frameCount = Image_frameCount(thisObj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(thisObj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(thisObj));
 
    in = (PixelConv*)ARRAYOBJ_START(pixelsObj);
-   out= (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
+   out= (PixelConv*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(newObj)));
    len = ARRAYOBJ_LEN(pixelsObj);
 
    back.pixel = backColor;
@@ -572,10 +581,11 @@ static void getAlphaInstance(TCObject thisObj, TCObject newObj, int32 delta) // 
    PixelConv *in, *out;
    int32 len;
    int32 frameCount = Image_frameCount(thisObj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(thisObj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(thisObj));
 
    in = (PixelConv*)ARRAYOBJ_START(pixelsObj);
-   out= (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
+   out= (PixelConv*)ARRAYOBJ_START(RasterImageBacking_pixels(Image_backing(newObj)));
    len = ARRAYOBJ_LEN(pixelsObj);
 
    for (; len-- > 0; in++,out++)
@@ -605,8 +615,12 @@ static void getPixelRow(Context currentContext, TCObject obj, TCObject outObj, i
    if (id >= 0 && checkArrayRange(currentContext, outObj, 0, skiaWidth * 4) &&
        skia_getPixelRow(id, ARRAYOBJ_START(outObj), y, skiaWidth))
       return;
+   if (backing != null && strEq(OBJ_CLASS(backing)->name, "totalcross.ui.image.NativeImageBacking"))
+      return;
 #endif
-   TCObject pixObj = (Image_frameCount(obj) > 1) ? Image_pixelsOfAllFrames(obj) : Image_pixels(obj);
+   TCObject pixObj = (Image_frameCount(obj) > 1)
+      ? RasterImageBacking_pixelsOfAllFrames(Image_backing(obj))
+      : RasterImageBacking_pixels(Image_backing(obj));
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int8* out = (int8*)ARRAYOBJ_START(outObj);
    int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
@@ -623,7 +637,8 @@ static void getPixelRow(Context currentContext, TCObject obj, TCObject outObj, i
 static void applyColor2(TCObject obj, Pixel color)
 {
    int32 frameCount = Image_frameCount(obj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(obj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(obj));
    int32 len0 = ARRAYOBJ_LEN(pixelsObj), len;
    PixelConv *pixels0 = (PixelConv*)ARRAYOBJ_START(pixelsObj), *pixels;
    PixelConv c;
@@ -684,7 +699,8 @@ void setTransparentColor(TCObject obj, Pixel color);
 void setTransparentColor(TCObject obj, Pixel color)
 {
    int32 frameCount = Image_frameCount(obj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(obj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(obj));
    int32 len = ARRAYOBJ_LEN(pixelsObj);
    Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
    if ((int32)color == -1) // no transparent pixels?
@@ -715,27 +731,11 @@ void onImage(int32 it, VoidP ptr)
       Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
 }
 
-static bool nativeEquals(TCObject thisObj, TCObject otherObj)
-{
-   Pixel *p1,*p2;
-   int32 len;
-   int32 frameCount = Image_frameCount(thisObj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
-
-   p1 = (Pixel*)ARRAYOBJ_START(pixelsObj);
-   p2 = (Pixel*)ARRAYOBJ_START(Image_pixels(otherObj));
-   len = ARRAYOBJ_LEN(pixelsObj);
-
-   for (; len-- > 0; p1++,p2++)
-      if (*p1 != *p2)
-         return false;
-   return true;
-}
-
 static void applyFade(TCObject obj, int32 fadeValue)
 {
    int32 frameCount = Image_frameCount(obj);
-   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   TCObject pixelsObj = frameCount == 1 ? RasterImageBacking_pixels(Image_backing(obj))
+      : RasterImageBacking_pixelsOfAllFrames(Image_backing(obj));
    int32 len = ARRAYOBJ_LEN(pixelsObj), r,g,b;
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
 

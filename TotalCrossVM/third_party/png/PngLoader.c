@@ -195,8 +195,6 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
       if (userData.pixelStorage) xfree(userData.pixelStorage);
 #endif
       png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
-      Image_pixels(imageObj) = null;
-      Image_pixelsOfAllFrames(imageObj) = null;
       Image_backing(imageObj) = null;
       Image_width(imageObj) = 0;
       Image_height(imageObj) = 0;
@@ -356,14 +354,29 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
       return;
    }
 #else
-   Image_pixels(userData->imageObj) = userData->pixelsObj = createIntArray(userData->currentContext, (int32)(width*height));
+   TCObject backing;
+   userData->pixelsObj = createIntArray(userData->currentContext, (int32)(width*height));
    if (!userData->pixelsObj)
    {
       *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
       userData->quit = true;
       return;
    }
-   setObjectLock(Image_pixels(userData->imageObj), UNLOCKED);
+   backing = createObject(userData->currentContext, "totalcross.ui.image.RasterImageBacking");
+   if (!backing)
+   {
+      *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+      userData->quit = true;
+      return;
+   }
+   RasterImageBacking_pixels(backing) = userData->pixelsObj;
+   RasterImageBacking_pixelsOfAllFrames(backing) = null;
+   RasterImageBacking_width(backing) = (int32)width;
+   RasterImageBacking_height(backing) = (int32)height;
+   RasterImageBacking_frameCount(backing) = 1;
+   RasterImageBacking_widthOfAllFrames(backing) = (int32)width;
+   setObjectLock(backing, UNLOCKED);
+   Image_backing(userData->imageObj) = backing;
    userData->pixels = (Pixel*)ARRAYOBJ_START(userData->pixelsObj);
 #endif
 }
