@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <cstdlib>
 #include <algorithm>
 #include <limits>
 #include <map>
@@ -145,6 +146,10 @@ void releaseOwnedPixels(const void* pixels, void*) {
     delete[] static_cast<const uint8_t*>(pixels);
 }
 
+void releaseMallocPixels(const void* pixels, void*) {
+    std::free(const_cast<void*>(pixels));
+}
+
 bool readRgbaBytes(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
                    int32 width, int32 height) {
     if (!backing || !output || x < 0 || y < 0 || width <= 0 || height <= 0 ||
@@ -253,6 +258,38 @@ int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, in
     const size_t byteCount = static_cast<size_t>(pixelCount) * 4;
     try {
         sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseOwnedPixels, nullptr);
+        sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height), data, rowBytes);
+        if (!image) {
+            return 0;
+        }
+        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
+        backing->image = std::move(image);
+        backing->width = width;
+        backing->height = height;
+        return registerBackingRecord(std::move(backing));
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
+int64_t skia_image_backing_create_from_owned_rgba_pixels(void* pixels, int32 width, int32 height) {
+    if (!pixels || width <= 0 || height <= 0) {
+        return 0;
+    }
+    const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
+    if (pixelCount > std::numeric_limits<size_t>::max() / 4) {
+        return 0;
+    }
+    std::unique_ptr<uint8_t, decltype(&std::free)> owner(
+        static_cast<uint8_t*>(pixels), &std::free);
+    const size_t rowBytes = static_cast<size_t>(width) * 4;
+    const size_t byteCount = static_cast<size_t>(pixelCount) * 4;
+    try {
+        sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseMallocPixels, nullptr);
+        if (!data) {
+            return 0;
+        }
+        owner.release();
         sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height), data, rowBytes);
         if (!image) {
             return 0;

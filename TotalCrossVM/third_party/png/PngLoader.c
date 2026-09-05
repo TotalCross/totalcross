@@ -9,6 +9,8 @@
 #include "png.h"
 #include "tcvm.h"
 #include "ui/image/ImageDecodeStatus.h"
+#include "ui/ImageTestAccounting_c.h"
+#include <stdlib.h>
 #if TC_RENDERER_SKIA
 #include "ui/NativeImageBacking.h"
 #include "ui/skia/skia.h"
@@ -24,6 +26,7 @@ typedef struct
    TCObject imageObj;
    Pixel* pixels;
    Pixel* pixelStorage;
+   uint8* rgbaStorage;
    TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
    // for fetching data
    TCObject inputStreamObj, bufObj, pixelsObj;
@@ -39,6 +42,7 @@ typedef struct
    int32 bytesPerRow;
    png_bytep upixels;
    bool quit;
+   bool zeroCopy;
    int32 rowsDecoded;
    volatile ImageDecodeStatus *decodeStatus;
    Context currentContext;
@@ -112,7 +116,7 @@ void userfree(png_structp png_ptr, png_voidp ptr)
 void setTransparentColor(TCObject obj, Pixel color);
 // imageObj+tcz+first4, imageObj+inputStream+bufObj+bufCount, or imageObj+mapped bytes
 ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
-      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength)
+      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength, bool zeroCopy)
 {
    Heap heap;
    int32 count;
@@ -155,6 +159,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    }
    userData.first4 = first4;
    userData.imageObj = imageObj;
+   userData.zeroCopy = zeroCopy;
 
    IF_HEAP_ERROR(heap)
    {
@@ -193,6 +198,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
       if (userData.upixels) png_free(png_ptr, userData.upixels);
 #if TC_RENDERER_SKIA
       if (userData.pixelStorage) xfree(userData.pixelStorage);
+      if (userData.rgbaStorage) free(userData.rgbaStorage);
 #endif
       png_destroy_read_struct(&png_ptr, &userData.info_ptr, NULL);
       Image_backing(imageObj) = null;
@@ -253,11 +259,19 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    Image_height(imageObj) = userData.height;
 #if TC_RENDERER_SKIA
    {
-      int64 handle = skia_image_backing_create_from_argb_pixels(userData.pixelStorage,
-         userData.width, userData.height);
-      xfree(userData.pixelStorage);
+      int64 handle;
+      const int32 pixelBytes = (int32)((uint64)userData.width * userData.height * 4);
+      if (userData.zeroCopy) {
+         handle = skia_image_backing_create_from_owned_rgba_pixels(userData.rgbaStorage,
+            userData.width, userData.height);
+         userData.rgbaStorage = null;
+      } else {
+         handle = skia_image_backing_create_from_argb_pixels(userData.pixelStorage,
+            userData.width, userData.height);
+         xfree(userData.pixelStorage);
+         userData.pixelStorage = null;
+      }
       userData.pixels = null;
-      userData.pixelStorage = null;
       if (!handle || !imageInstallNativeBacking(currentContext, imageObj, handle,
             userData.width, userData.height)) {
          Image_width(imageObj) = 0;
@@ -267,6 +281,13 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
          heapDestroy(heap);
          return IMAGE_DECODE_RESOURCE_FAILURE;
       }
+      if (userData.zeroCopy) {
+         imageRecordTestCounter("zeroCopyDecodeCountForTest");
+      } else {
+         imageRecordTestCounter("copiedDecodeCountForTest");
+         imageAddTestCounter("decodeCopiedBytesForTest", pixelBytes);
+      }
+      imageAddTestCounter("decodeFinalBufferBytesForTest", pixelBytes);
    }
 #endif
    if (tcz != null)
@@ -345,13 +366,22 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
       userData->quit = true;
       return;
    }
-   userData->pixelStorage = userData->pixels =
-      (Pixel*)xmalloc((int32)((uint64)width * height * sizeof(Pixel)));
-   if (!userData->pixelStorage)
-   {
-      *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
-      userData->quit = true;
-      return;
+   if (userData->zeroCopy) {
+      userData->rgbaStorage = (uint8*)malloc((size_t)width * height * 4);
+      if (!userData->rgbaStorage) {
+         *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+         userData->quit = true;
+         return;
+      }
+   } else {
+      userData->pixelStorage = userData->pixels =
+         (Pixel*)xmalloc((int32)((uint64)width * height * sizeof(Pixel)));
+      if (!userData->pixelStorage)
+      {
+         *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+         userData->quit = true;
+         return;
+      }
    }
 #else
    TCObject backing;
@@ -400,7 +430,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
 static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pass)
 {
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
-   if (!userData->pixelsObj && !userData->pixels)
+   if (!userData->pixelsObj && !userData->pixels && !userData->rgbaStorage)
       return;
    png_bytep old_row = userData->upixels;
    png_progressive_combine_row(png_ptr, old_row, new_row);
@@ -413,7 +443,24 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
       int32 num_trans = 0;
       png_byte channels = png_get_channels(png_ptr, userData->info_ptr);
       png_get_tRNS(png_ptr, userData->info_ptr, null, &num_trans, null);
-      if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6))
+      if (userData->zeroCopy) {
+         uint8* destination = userData->rgbaStorage + (size_t)row_num * userData->width * 4;
+         if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6)) {
+            for (x = 0; x < userData->width; x++, buffer += 4, destination += 4) {
+               destination[0] = (uint8)buffer[3];
+               destination[1] = (uint8)buffer[0];
+               destination[2] = (uint8)buffer[1];
+               destination[3] = (uint8)buffer[2];
+            }
+         } else {
+            for (x = 0; x < userData->width; x++, buffer += 3, destination += 4) {
+               destination[0] = 0xFF;
+               destination[1] = (uint8)buffer[0];
+               destination[2] = (uint8)buffer[1];
+               destination[3] = (uint8)buffer[2];
+            }
+         }
+      } else if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6))
          for (x = 0; x < userData->width; x++, buffer += 4)
             *userData->pixels++ = makePixelA((uint8)buffer[3], (uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
       else
