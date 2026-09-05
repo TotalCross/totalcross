@@ -310,7 +310,7 @@ TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphi
       ImageDrawPlan_outputWidth(plan), ImageDrawPlan_outputHeight(plan),
       p->i32[0], p->i32[1], p->i32[2]);
    if (p->retI) {
-      imageRecordTestCounter(p->currentContext, "directDrawPlanExecutionCountForTest");
+      imageRecordTestCounter("directDrawPlanExecutionCountForTest");
    }
 #else
    p->retI = 0;
@@ -325,7 +325,7 @@ TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Grap
    p->retI = skiaDrawGeometryPlan(p->currentContext, g, plan, p->i32[0], p->i32[1],
       p->i32[2], p->i32[3], 0, 0, p->i32[4]);
    if (p->retI) {
-      imageRecordTestCounter(p->currentContext, "directDrawPlanExecutionCountForTest");
+      imageRecordTestCounter("directDrawPlanExecutionCountForTest");
    }
 #else
    p->retI = 0;

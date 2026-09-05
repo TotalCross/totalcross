@@ -487,6 +487,18 @@ void skia_image_backing_reset_accounting_for_test(void) {
     backingAccountingForTest = true;
 }
 
+void skia_image_backing_set_accounting_for_test(int enabled) {
+    backingAccountingForTest = enabled != 0;
+    if (!backingAccountingForTest) {
+        backingRecordsCreatedForTest = 0;
+        backingRecordsReleasedForTest = 0;
+        backingRecordsLiveForTest = 0;
+        backingRecordsPeakLiveForTest = 0;
+        backingBytesLiveForTest = 0;
+        backingBytesPeakLiveForTest = 0;
+    }
+}
+
 uint64_t skia_image_backing_records_created_for_test(void) {
     return backingRecordsCreatedForTest;
 }

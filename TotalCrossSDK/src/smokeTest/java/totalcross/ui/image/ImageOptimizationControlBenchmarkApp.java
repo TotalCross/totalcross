@@ -31,11 +31,8 @@ public class ImageOptimizationControlBenchmarkApp extends MainWindow {
       boolean diagnosticEnabled = "post-enabled".equals(scenario);
       byte[] fixture = encodedFixture();
       Image.resetImageOperationAccountingForTest();
-      Image.imageOperationAccountingForTest = false;
-      if (diagnosticEnabled) {
-        ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
-            ImageOptimizationSettings.ENABLED);
-      }
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+          diagnosticEnabled ? ImageOptimizationSettings.ENABLED : ImageOptimizationSettings.DISABLED);
       Image root = new Image(fixture);
       Image cached = root.getSmoothScaledInstance(160, 120);
       Image target = new Image(TARGET_WIDTH, TARGET_HEIGHT);
@@ -47,9 +44,8 @@ public class ImageOptimizationControlBenchmarkApp extends MainWindow {
       }
 
       Image.resetImageOperationAccountingForTest();
-      if (!diagnosticEnabled) {
-        Image.imageOperationAccountingForTest = false;
-      }
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+          diagnosticEnabled ? ImageOptimizationSettings.ENABLED : ImageOptimizationSettings.DISABLED);
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
         runBatch(root, cached, surface, sample);
