@@ -26,12 +26,14 @@ public class ImageRasterDecodeBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(samples > 0 && samples <= 200,
           "samples must be between 1 and 200");
       ImageRasterBenchmarkSupport.configure(scenario, ImageOptimizationSettings.DECODE_ZERO_COPY);
+      Image.resetImageOperationAccountingForTest();
       byte[] encoded = "png".equals(format)
           ? ImageRasterBenchmarkSupport.resource("images/lenna.png")
           : ImageRasterBenchmarkSupport.resource("image-abi/lena1960.jpg");
       for (int warmup = 0; warmup < 3; warmup++) {
         ImageRasterBenchmarkSupport.materialize(encoded);
       }
+      Image.resetImageOperationAccountingForTest();
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
         Image image = ImageRasterBenchmarkSupport.materialize(encoded);
@@ -39,7 +41,11 @@ public class ImageRasterDecodeBenchmarkApp extends MainWindow {
         totalBytes += (long) image.getPixelWidth() * image.getPixelHeight() * 4;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",format=" + format
             + ",width=" + image.getPixelWidth() + ",height=" + image.getPixelHeight()
-            + ",decoded_bytes=" + ((long) image.getPixelWidth() * image.getPixelHeight() * 4));
+            + ",decoded_bytes=" + ((long) image.getPixelWidth() * image.getPixelHeight() * 4)
+            + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
+            + ",copied=" + Image.copiedDecodeCountForTest()
+            + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
+            + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest());
         System.out.flush();
         completedSamples = sample;
       }
@@ -49,7 +55,11 @@ public class ImageRasterDecodeBenchmarkApp extends MainWindow {
     }
 
     boolean pass = ImageRasterBenchmarkSupport.finish("ImageRasterDecodeBenchmarkApp", scenario,
-        samples, completedSamples, "format=" + format + ",total_decoded_bytes=" + totalBytes, error);
+        samples, completedSamples, "format=" + format + ",total_decoded_bytes=" + totalBytes
+            + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
+            + ",copied=" + Image.copiedDecodeCountForTest()
+            + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
+            + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest(), error);
     exit(pass ? 0 : 1);
   }
 }
