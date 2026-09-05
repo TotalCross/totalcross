@@ -100,13 +100,13 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
 
   private static int batchRepetitions(String kind) {
     if ("jpeg".equals(kind)) {
-      return 16;
+      return 24;
     }
     if ("png-rgb".equals(kind)) {
-      return 16;
+      return 24;
     }
     if ("png-alpha-opaque".equals(kind)) {
-      return 16;
+      return 24;
     }
     return 1024;
   }
