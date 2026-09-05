@@ -290,6 +290,15 @@ SkImageInfo rasterInfo(int32 width, int32 height) {
     return ::rasterInfo(width, height);
 }
 
+void markMutated(NativeImageBackingRecord* backing) {
+    if (!backing) {
+        return;
+    }
+    ++backing->generation;
+    backing->applyColor2AnalysisValid = false;
+    backing->opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
+}
+
 }
 
 int64_t skia_image_backing_create_empty(int32 width, int32 height) {
@@ -522,9 +531,7 @@ int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
     const int result = drawOnCanvas(target->canvas(), source, srcLeft, srcTop, srcRight, srcBottom,
                                     dstLeft, dstTop, dstRight, dstBottom, alphaMask);
     if (result != 0) {
-        ++target->generation;
-        target->applyColor2AnalysisValid = false;
-        target->opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
+        skia_image_backing_internal::markMutated(target);
     }
     return result;
 }
@@ -541,10 +548,15 @@ int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle
     NativeImageBackingRecord* source = findBacking(sourceHandle);
     if (tryWritePixels(canvas, source, srcLeft, srcTop, srcRight, srcBottom,
                        dstLeft, dstTop, dstRight, dstBottom, alphaMask, optimizationMask)) {
+        skia_image_backing_mark_surface_mutated(targetSurface);
         return 1;
     }
-    return drawOnCanvas(canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                        dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+    const int result = drawOnCanvas(canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                                    dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+    if (result != 0) {
+        skia_image_backing_mark_surface_mutated(targetSurface);
+    }
+    return result;
 }
 
 SkCanvas* skia_image_backing_canvas(int64_t handle) {
@@ -554,6 +566,13 @@ SkCanvas* skia_image_backing_canvas(int64_t handle) {
 
 SkCanvas* skia_image_backing_canvas_for_surface_id(int32 surfaceId) {
     return canvasForSurfaceAlias(surfaceId);
+}
+
+void skia_image_backing_mark_surface_mutated(int32 surfaceId) {
+    auto alias = surfaceAliases.find(surfaceId);
+    if (alias != surfaceAliases.end()) {
+        skia_image_backing_internal::markMutated(findBacking(alias->second));
+    }
 }
 
 int32 skia_image_backing_width(int64_t handle) {

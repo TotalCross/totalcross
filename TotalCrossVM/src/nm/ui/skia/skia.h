@@ -155,6 +155,7 @@ int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle
     float srcLeft, float srcTop, float srcRight, float srcBottom,
     float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask,
     int32 optimizationMask);
+void skia_image_backing_mark_surface_mutated(int32 surfaceId);
 void skia_image_backing_release(int64_t handle);
 void skia_image_backing_reset_accounting_for_test(void);
 void skia_image_backing_clear_accounting_counters_for_test(void);

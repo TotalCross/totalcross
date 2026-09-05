@@ -421,9 +421,7 @@ static bool directApplyColor2(NativeImageBackingRecord* source, int32 parameter1
         }
         source->image = std::move(image);
         source->surface.reset();
-        ++source->generation;
-        source->applyColor2AnalysisValid = false;
-        source->opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
+        skia_image_backing_internal::markMutated(source);
         return true;
     } catch (const std::bad_alloc&) {
         return false;
@@ -466,9 +464,7 @@ int skia_image_backing_apply_color_mutation(int64_t handle, int32 operation, int
         }
         source->image = std::move(image);
         source->surface.reset();
-        ++source->generation;
-        source->applyColor2AnalysisValid = false;
-        source->opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
+        skia_image_backing_internal::markMutated(source);
         return 1;
     } catch (const std::bad_alloc&) {
         return 0;
