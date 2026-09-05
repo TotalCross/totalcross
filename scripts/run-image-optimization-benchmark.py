@@ -130,7 +130,9 @@ def run(args):
     fields.append("rss_peak_kb")
     os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
     with open(args.output, "w", newline="", encoding="utf-8") as output:
-        writer = csv.DictWriter(output, fieldnames=fields, extrasaction="ignore")
+        writer = csv.DictWriter(
+            output, fieldnames=fields, extrasaction="ignore", lineterminator="\n"
+        )
         writer.writeheader()
         for record in records:
             record["rss_peak_kb"] = peak_rss
