@@ -41,5 +41,31 @@ materialization through `getGraphics()`. It does not call `getPixels()` in the
 timed decode section. The decoded-buffer byte totals are 1,440,000 bytes per
 PNG iteration and 15,366,400 bytes per JPEG iteration.
 
-No post-disabled or post-enabled result exists yet; this report is the S1 gate
-for the implementation milestone.
+## Post-implementation comparison
+
+The post-implementation build was `af1d6df65`. S2 explicitly disabled
+`DECODE_ZERO_COPY`; S3 enabled only that feature. The semantic smoke reported
+exact PNG and JPEG pixel parity, including the transparent PNG fixture, and
+confirmed retry after an injected native allocation failure.
+
+| Workload | Scenario | Median | P95 | Peak RSS | Zero-copy decodes | Copied decodes | Copied bytes |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| PNG | S2/post-disabled | 4 ms | 4 ms | 134160 KiB | 0 | 60 | 86400000 |
+| PNG | S3/post-enabled | 4 ms | 4 ms | 134160 KiB | 60 | 0 | 0 |
+| JPEG | S2/post-disabled | 20 ms | 21 ms | 162272 KiB | 0 | 60 | 921984000 |
+| JPEG | S3/post-enabled | 16 ms | 16 ms | 147424 KiB | 60 | 0 | 0 |
+
+Compared with S1, S2 has no confirmed timing regression. S3 reduces measured
+JPEG median decode time by 20% and peak RSS by 9.3% on this workload. PNG
+median timing is unchanged and peak RSS is 3.7% below S1. These are local
+macOS software-Skia workload measurements, not cross-platform claims.
+
+The S2/S3 raw samples are in the matching `scenario-2-*.csv` and
+`scenario-3-*.csv` files. Runner summaries contain the exact revision,
+environment, and RSS sample counts. `decode_final_buffer_bytes` is 86400000
+for PNG and 921984000 for JPEG in both post scenarios; only the extra
+`decode_copied_bytes` allocation disappears in S3.
+
+The zero-copy implementation is complete for this item. The next phase-2
+gate is the opacity S1 baseline, captured with this post-zero-copy build and
+all phase-2 optimization toggles disabled.

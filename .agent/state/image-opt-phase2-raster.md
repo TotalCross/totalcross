@@ -6,23 +6,23 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T13:33:58-03:00
+Updated: 2026-09-05T13:55:31-03:00
 Branch: `perf/image-opt-phase2-raster`
 Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`
 
 ## Active slice
 
-Milestone 1 is complete. The branch was created from the final phase-1 branch
+Milestone 2 is complete. The branch was created from the final phase-1 branch
 HEAD, the four benchmark workloads and argument-capable runner are committed,
-and zero-copy S1 has been captured for PNG and JPEG.
+zero-copy S1 was captured for PNG and JPEG, and the opt-in PNG/JPEG direct
+decode path is implemented with semantic retry/parity coverage.
 
 ## Next concrete action
 
-Implement `DECODE_ZERO_COPY` behind its disabled default, preserving the
-current copied path and exactly-once ownership behavior. Then build the SDK and
-macOS software-Skia runtime, run the focused decode/native-materialization
-smokes, and capture S2/S3.
+Capture the opacity S1 baseline with the post-zero-copy build and every phase-2
+optimization disabled. Then implement `RASTER_OPACITY_METADATA` with the
+cached proof semantics in the plan.
 
 ## Active paths
 
@@ -37,16 +37,18 @@ smokes, and capture S2/S3.
 ## Validation
 
 SDK `dist -x test`, smoke-test Java compilation, Release macOS software-Skia
-CMake/Ninja, benchmark deployment, and the shared 60-sample RSS-aware runner
-passed. PNG S1 median/P95 was 4/4 ms with 139264 KiB peak RSS; JPEG S1
-median/P95 was 20/21 ms with 162512 KiB peak RSS. Full raw samples and compact
-summaries are under `.agent/benchmarks/image-opt-phase2-raster/zero-copy/`.
+CMake/Ninja, native materialization/JPEG smokes, zero-copy parity/retry smoke,
+benchmark deployment, and the shared 60-sample RSS-aware runner passed. PNG S1
+median/P95 was 4/4 ms with 139264 KiB peak RSS; JPEG S1 median/P95 was 20/21 ms
+with 162512 KiB peak RSS. S2/S3 showed no disabled timing regression; enabled
+JPEG median was 16 ms and copied decode bytes fell to zero. Full raw samples
+and compact summaries are under `.agent/benchmarks/image-opt-phase2-raster/zero-copy/`.
 
 ## Deferred validation
 
-S2/S3 implementation results, focused Image tests, native Image smokes, and
-final SDK/native validation remain deferred. Android, iOS, Windows, Linux, and
-GPU validation are outside this phase.
+Opacity S1/S2/S3, writePixels, row-readback/color materialization, focused Image
+unit tests, and final SDK/native validation remain deferred. Android, iOS,
+Windows, Linux, and GPU validation are outside this phase.
 
 ## Decisions still active
 
