@@ -114,6 +114,11 @@ totalcross/ui/image/Image|native public static totalcross.ui.image.Image getJpeg
 totalcross/ui/image/EncodedImageSource|native private void captureNative(byte []input, int length);
 totalcross/ui/image/EncodedImageSource|native private void captureNativePath(String path);
 totalcross/ui/image/EncodedImageSource|native private void releaseNativeBag();
+totalcross/ui/image/NativeImageBacking|native private static long createEmptyNative(int width, int height);
+totalcross/ui/image/NativeImageBacking|native private long snapshotNative();
+totalcross/ui/image/NativeImageBacking|native private boolean makeMutableNative();
+totalcross/ui/image/NativeImageBacking|native private boolean readPixelsNative(int []output, int offset, int x, int y, int width, int height);
+totalcross/ui/image/NativeImageBacking|native private static void releaseNativeHandle(long nativeHandle);
 totalcross/ui/gfx/Graphics|native protected void create(totalcross.ui.gfx.GfxSurface surface);
 totalcross/ui/gfx/Graphics|native public void dither(int x, int y, int w, int h);
 totalcross/ui/gfx/Graphics|native public void drawEllipse(int xc, int yc, int rx, int ry);

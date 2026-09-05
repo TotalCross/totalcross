@@ -116,6 +116,11 @@ TC_API void tuiI_getJpegScaled_sii(NMParams p);
 TC_API void tuiEIS_captureNative_Bi(NMParams p);
 TC_API void tuiEIS_captureNativePath_s(NMParams p);
 TC_API void tuiEIS_releaseNativeBag(NMParams p);
+TC_API void tuiNIB_createEmptyNative_ii(NMParams p);
+TC_API void tuiNIB_snapshotNative(NMParams p);
+TC_API void tuiNIB_makeMutableNative(NMParams p);
+TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p);
+TC_API void tuiNIB_releaseNativeHandle_l(NMParams p);
 TC_API void tugG_create_g(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_drawEllipse_iiii(NMParams p);
@@ -1017,6 +1022,26 @@ TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/Encode
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiEIS_releaseNativeBag(NMParams p) // totalcross/ui/image/EncodedImageSource native private void releaseNativeBag();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_createEmptyNative_ii(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long createEmptyNative(int width, int height);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_snapshotNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private long snapshotNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_makeMutableNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean makeMutableNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_readPixelsNative_Iiiiii(NMParams p) // totalcross/ui/image/NativeImageBacking native private boolean readPixelsNative(int []output, int offset, int x, int y, int width, int height);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_releaseNativeHandle_l(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void releaseNativeHandle(long nativeHandle);
 {
 }
 //////////////////////////////////////////////////////////////////////////

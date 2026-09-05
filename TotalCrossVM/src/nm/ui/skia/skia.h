@@ -9,6 +9,8 @@
 
 #include "tc_platform.h"
 
+#include <stdint.h>
+
 #define SKIA_SCREEN_SURFACE_ID (-1)
 #define SKIA_INVALID_SURFACE_ID (-2)
 
@@ -60,6 +62,19 @@ void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, i
 void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, int32 vertical);
 int32 skia_getsetRGB(int32 skiaSurface, void *dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, int32 isGet);
 void skia_shiftScreen(float w, float h, float glShiftY);
+
+int64_t skia_image_backing_create_empty(int32 width, int32 height);
+int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height);
+int64_t skia_image_backing_snapshot(int64_t handle);
+int skia_image_backing_make_mutable(int64_t handle);
+int32 skia_image_backing_width(int64_t handle);
+int32 skia_image_backing_height(int64_t handle);
+int skia_image_backing_read_pixels(int64_t handle, void* output, int32 x, int32 y, int32 width, int32 height);
+int skia_image_backing_read_row(int64_t handle, void* output, int32 y, int32 width);
+int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
+    float srcLeft, float srcTop, float srcRight, float srcBottom,
+    float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
+void skia_image_backing_release(int64_t handle);
 #ifdef __cplusplus
 }
 #endif
