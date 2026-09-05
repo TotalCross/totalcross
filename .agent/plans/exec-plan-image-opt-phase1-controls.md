@@ -32,9 +32,6 @@ The authoritative starting `master` observed when this plan was authored is:
 
     1898014784b2fba5716cc033e49520740b05f0dd
 
-Current master already has native Skia backing, encoded-source ownership,
-deferred semantic pipelines, and allocation-free reusable draw-plan cache hits.
-
 ## Branch and Series Contract
 
 Use exactly this branch for this phase:
@@ -292,10 +289,6 @@ and resume instead of recreating it.
 Place this plan at its repository path, create the state/evidence/archive/report
 skeletons, and commit them before implementation.
 
-Suggested commit:
-
-    docs(image): add optimization controls execplan
-
 No build is allowed in this milestone. Validate only headers, Markdown size,
 `git diff --check`, and commit message.
 
@@ -326,10 +319,6 @@ milliseconds; do not measure individual nanosecond-scale operations with
 millisecond TCVM timing.
 
 Commit the benchmark source and runner before running S1.
-
-Suggested commit:
-
-    test(image): add optimization benchmark harness
 
 At milestone end only, run the SDK and macOS Release builds. Redirect verbose
 output to uncommitted logs.
@@ -404,10 +393,6 @@ Generate:
 The report distinguishes disabled-path overhead from intentionally enabled
 diagnostic overhead.
 
-Suggested result commit:
-
-    test(image): record optimization controls benchmark
-
 Acceptance:
 
 - S2 preserves current behavior and has no confirmed >5% disabled-path
@@ -427,10 +412,6 @@ milestone build is no longer at HEAD, and the relevant native image smokes.
 Update state, evidence, archive, and editorial report. The editorial report must
 state measured control overhead, exact sample regime, known measurement limits,
 and the branch HEAD that phase 2 must use.
-
-Suggested final commit:
-
-    docs(image): complete optimization controls phase
 
 ## Validation and Acceptance
 
@@ -523,25 +504,13 @@ benchmarks unless source, binary revision, or measurement regime changed.
 
 ## Outcomes & Retrospective
 
-Phase 1 delivered a package-private process-global tri-state control surface
-for all 13 planned feature IDs, validated cache/MMAP byte settings, an
-allocation-free effective mask, and a no-op memory-pressure test hook. Only
-`DIAGNOSTIC_ACCOUNTING` is connected; all other features remain behaviorally
-inert and all defaults resolve to current behavior.
+Phase 1 delivered package-private tri-state controls for 13 feature IDs,
+validated byte settings, an effective mask, and a no-op pressure hook. Only
+`DIAGNOSTIC_ACCOUNTING` is connected; other features remain inert.
 
-The committed S1/S2/S3 control workload used 60 samples after three warmups
-on one macOS arm64 software-Skia host. S1 median was 668 ms, S2 disabled was
-669 ms (+0.15%) with 0.16% lower peak RSS, and S3 enabled was 669 ms (+0.15%)
-with 1.44% higher peak RSS. CV stayed below 5%, so no 200-sample rerun was
-required. The S3 RSS increase is reported as diagnostic trade-off evidence.
-
-Final focused Image tests, SDK distribution, macOS Release build, and relevant
-native Image smokes passed. Android/iOS/Windows/Linux/GPU validation and all
-later optimization implementations remain deferred by scope.
-
-## Revision Note
-
-Initial plan authored for the post-`feat/image-native-backing` master. The
-working-set path was corrected to the plan's repository location during final
-handoff. Phase 5 GPU representation optimizations such as KTX2/Basis, ASTC,
-ETC2, BCn, and R8 asset formats are explicitly outside this series.
+The S1/S2/S3 workload used 60 samples after three warmups on one macOS arm64
+software-Skia host: medians were 668, 669 (+0.15%), and 669 ms (+0.15%);
+peak RSS deltas were -0.16% and +1.44%. CV stayed below 5%, so no 200-sample
+rerun was required. Final Image tests, SDK distribution, macOS build, and
+relevant native smokes passed. Other platforms and later optimizations remain
+deferred.
