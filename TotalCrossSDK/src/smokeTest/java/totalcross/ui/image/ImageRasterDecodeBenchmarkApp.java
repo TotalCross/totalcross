@@ -10,6 +10,8 @@ import totalcross.ui.MainWindow;
 /** macOS benchmark workload for fresh PNG and JPEG materialization. */
 public class ImageRasterDecodeBenchmarkApp extends MainWindow {
   private static final int DEFAULT_SAMPLES = 60;
+  private static final int PNG_BATCH = 8;
+  private static final int JPEG_BATCH = 2;
 
   @Override
   public void initUI() {
@@ -30,18 +32,29 @@ public class ImageRasterDecodeBenchmarkApp extends MainWindow {
       byte[] encoded = "png".equals(format)
           ? ImageRasterBenchmarkSupport.resource("images/lenna.png")
           : ImageRasterBenchmarkSupport.resource("image-abi/lena1960.jpg");
+      int batch = "png".equals(format) ? PNG_BATCH : JPEG_BATCH;
       for (int warmup = 0; warmup < 3; warmup++) {
-        ImageRasterBenchmarkSupport.materialize(encoded);
+        decodeBatch(encoded, batch);
       }
       Image.resetImageOperationAccountingForTest();
+      String expectedHash = null;
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
-        Image image = ImageRasterBenchmarkSupport.materialize(encoded);
+        Image image = decodeBatch(encoded, batch);
         long elapsed = Vm.getTimeStamp() - start;
+        String pixelHash = ImageRasterBenchmarkSupport.hashString(
+            ImageRasterBenchmarkSupport.fullPixelHash(image));
+        if (expectedHash == null) {
+          expectedHash = pixelHash;
+        } else {
+          ImageRasterBenchmarkSupport.require(expectedHash.equals(pixelHash), "decode hash drift");
+        }
         totalBytes += (long) image.getPixelWidth() * image.getPixelHeight() * 4;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",format=" + format
+            + ",batch_repetitions=" + batch
             + ",width=" + image.getPixelWidth() + ",height=" + image.getPixelHeight()
             + ",decoded_bytes=" + ((long) image.getPixelWidth() * image.getPixelHeight() * 4)
+            + ",pixel_hash=" + pixelHash
             + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
             + ",copied=" + Image.copiedDecodeCountForTest()
             + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
@@ -61,5 +74,13 @@ public class ImageRasterDecodeBenchmarkApp extends MainWindow {
             + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
             + ",decode_final_buffer_bytes=" + Image.decodeFinalBufferBytesForTest(), error);
     exit(pass ? 0 : 1);
+  }
+
+  private static Image decodeBatch(byte[] encoded, int batch) throws Exception {
+    Image last = null;
+    for (int i = 0; i < batch; i++) {
+      last = ImageRasterBenchmarkSupport.materialize(encoded);
+    }
+    return last;
   }
 }

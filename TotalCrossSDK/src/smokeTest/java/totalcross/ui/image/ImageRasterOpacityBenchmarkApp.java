@@ -29,22 +29,33 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.configure(scenario, ImageOptimizationSettings.RASTER_OPACITY_METADATA);
       Image.resetImageOperationAccountingForTest();
       byte[] encoded = fixture(kind);
+      int batch = batchRepetitions(kind);
       for (int warmup = 0; warmup < 3; warmup++) {
-        ImageRasterBenchmarkSupport.materialize(encoded);
+        materializeBatch(encoded, batch);
       }
       Image.resetImageOperationAccountingForTest();
+      String expectedHash = null;
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
-        Image image = ImageRasterBenchmarkSupport.materialize(encoded);
+        Image image = materializeBatch(encoded, batch);
         long elapsed = Vm.getTimeStamp() - start;
+        String pixelHash = ImageRasterBenchmarkSupport.hashString(
+            ImageRasterBenchmarkSupport.fullPixelHash(image));
+        if (expectedHash == null) {
+          expectedHash = pixelHash;
+        } else {
+          ImageRasterBenchmarkSupport.require(expectedHash.equals(pixelHash), "opacity hash drift");
+        }
         long pixels = (long) image.getPixelWidth() * image.getPixelHeight();
         totalPixels += pixels;
         int opacity = image.backing instanceof NativeImageBacking
             ? ((NativeImageBacking) image.backing).opacityForTest()
             : NativeImageBacking.OPACITY_UNKNOWN;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",kind=" + kind
+            + ",batch_repetitions=" + batch
             + ",width=" + image.getPixelWidth() + ",height=" + image.getPixelHeight()
             + ",pixels=" + pixels + ",opacity=" + opacity
+            + ",pixel_hash=" + pixelHash
             + ",zero_copy=" + Image.zeroCopyDecodeCountForTest()
             + ",copied=" + Image.copiedDecodeCountForTest()
             + ",decode_copied_bytes=" + Image.decodeCopiedBytesForTest()
@@ -85,5 +96,26 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
       return ImageRasterBenchmarkSupport.resource("image-abi/tiny.png");
     }
     return ImageRasterBenchmarkSupport.opaquePng(600, 600);
+  }
+
+  private static int batchRepetitions(String kind) {
+    if ("jpeg".equals(kind)) {
+      return 16;
+    }
+    if ("png-rgb".equals(kind)) {
+      return 16;
+    }
+    if ("png-alpha-opaque".equals(kind)) {
+      return 16;
+    }
+    return 512;
+  }
+
+  private static Image materializeBatch(byte[] encoded, int batch) throws Exception {
+    Image last = null;
+    for (int i = 0; i < batch; i++) {
+      last = ImageRasterBenchmarkSupport.materialize(encoded);
+    }
+    return last;
   }
 }
