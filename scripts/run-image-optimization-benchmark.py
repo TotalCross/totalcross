@@ -96,7 +96,7 @@ def run(args):
         raise RuntimeError(f"benchmark executable not found: {executable}")
     revision = resolve_revision(args.revision)
     process = subprocess.Popen(
-        [executable, f"--scenario={args.scenario}", f"--samples={args.samples}"],
+        [executable, f"--scenario={args.scenario}", f"--samples={args.samples}", *args.extra_arg],
         cwd=os.path.dirname(executable),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -170,6 +170,13 @@ def main(argv):
     parser.add_argument("--log", required=True)
     parser.add_argument("--summary", required=True)
     parser.add_argument("--revision", help="commit to record; validated in the repository root")
+    parser.add_argument(
+        "--arg",
+        dest="extra_arg",
+        action="append",
+        default=[],
+        help="additional argument passed to the deployed benchmark; repeat for multiple arguments",
+    )
     parser.add_argument("--rss-interval", type=float, default=0.05)
     args = parser.parse_args(argv[1:])
     if args.samples <= 0 or args.samples > 200:
