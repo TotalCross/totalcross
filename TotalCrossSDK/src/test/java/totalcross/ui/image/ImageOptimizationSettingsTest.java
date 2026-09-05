@@ -85,6 +85,8 @@ class ImageOptimizationSettingsTest {
     assertEquals(64L * 1024 * 1024, ImageOptimizationSettings.cacheMaxBytes());
     assertEquals(4L * 1024 * 1024, ImageOptimizationSettings.mmapThresholdBytes());
     assertFalse(Image.imageOperationAccountingForTest);
+    assertFalse(Image.backingReadbackAccountingEnabledForTest());
+    assertFalse(NativeImageBacking.backingAccountingEnabledForTest());
   }
 
   @Test
@@ -92,11 +94,61 @@ class ImageOptimizationSettingsTest {
     ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
         ImageOptimizationSettings.ENABLED);
     assertTrue(Image.imageOperationAccountingForTest);
+    assertTrue(Image.backingReadbackAccountingEnabledForTest());
+    assertTrue(NativeImageBacking.backingAccountingEnabledForTest());
     ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
         ImageOptimizationSettings.DISABLED);
     assertFalse(Image.imageOperationAccountingForTest);
+    assertFalse(Image.backingReadbackAccountingEnabledForTest());
+    assertFalse(NativeImageBacking.backingAccountingEnabledForTest());
     Image.resetImageOperationAccountingForTest();
     assertTrue(Image.imageOperationAccountingForTest);
+    assertTrue(Image.backingReadbackAccountingEnabledForTest());
+    assertTrue(NativeImageBacking.backingAccountingEnabledForTest());
+  }
+
+  @Test
+  void diagnosticGateCoversJavaPipelineDrawPlanAndBackingReadbackAccounting() {
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.DISABLED);
+    Image.clearImageOperationAccountingCountersForTest();
+    Image.recordImagePipelineCreatedForTest();
+    Image.recordImageDrawPlanCreatedForTest();
+    Image.recordImageDrawPlanCacheHitForTest();
+    Image.recordBackingReadbackForTest();
+    assertEquals(0, Image.imagePipelineCreatedCountForTest());
+    assertEquals(0, Image.imageDrawPlanCreatedCountForTest());
+    assertEquals(0, Image.imageDrawPlanCacheHitCountForTest());
+    assertEquals(0, Image.backingReadbackCountForTest());
+    assertEquals(0L, NativeImageBacking.backingRecordsCreatedForTest());
+    assertEquals(0L, NativeImageBacking.backingRecordsReleasedForTest());
+    assertEquals(0L, NativeImageBacking.backingRecordsLiveForTest());
+
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    Image.clearImageOperationAccountingCountersForTest();
+    Image.recordImagePipelineCreatedForTest();
+    Image.recordImageDrawPlanCreatedForTest();
+    Image.recordImageDrawPlanCacheHitForTest();
+    Image.recordBackingReadbackForTest();
+    assertEquals(1, Image.imagePipelineCreatedCountForTest());
+    assertEquals(1, Image.imageDrawPlanCreatedCountForTest());
+    assertEquals(1, Image.imageDrawPlanCacheHitCountForTest());
+    assertEquals(1, Image.backingReadbackCountForTest());
+  }
+
+  @Test
+  void counterClearPreservesTheConfiguredDiagnosticGate() {
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    Image.recordImagePipelineCreatedForTest();
+    Image.recordBackingReadbackForTest();
+    Image.clearImageOperationAccountingCountersForTest();
+    assertTrue(Image.imageOperationAccountingForTest);
+    assertTrue(Image.backingReadbackAccountingEnabledForTest());
+    assertTrue(NativeImageBacking.backingAccountingEnabledForTest());
+    assertEquals(0, Image.imagePipelineCreatedCountForTest());
+    assertEquals(0, Image.backingReadbackCountForTest());
   }
 
   @Test
