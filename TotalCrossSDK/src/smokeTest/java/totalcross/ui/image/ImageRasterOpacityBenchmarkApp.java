@@ -108,7 +108,7 @@ public class ImageRasterOpacityBenchmarkApp extends MainWindow {
     if ("png-alpha-opaque".equals(kind)) {
       return 16;
     }
-    return 512;
+    return 1024;
   }
 
   private static Image materializeBatch(byte[] encoded, int batch) throws Exception {
