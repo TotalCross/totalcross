@@ -1,0 +1,167 @@
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
+package totalcross.ui.image;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+
+import javax.imageio.ImageIO;
+
+import org.junit.jupiter.api.Test;
+
+import totalcross.sys.Settings;
+
+class ImageBackingContractTest {
+  @Test
+  void encodedImagesStartDeferredWithoutMaterializedBacking() throws Exception {
+    Image image = new Image(png(2, 1));
+
+    assertNull(image.backing);
+    assertNotNull(image.pipelineForSmoke());
+  }
+
+  @Test
+  void rasterImagesExposeTheirLiveRasterBacking() throws Exception {
+    Image image = new Image(2, 1);
+
+    assertNotNull(image.backing);
+    assertTrue(image.backing.isRaster());
+    assertTrue(image.backing.isValid());
+    assertSame(image.getPixels(), ((RasterImageBacking) image.backing).pixels());
+  }
+
+  @Test
+  void backingDimensionsUsePhysicalStorageWidthForSingleAndMultiFrameImages() throws Exception {
+    Image single = new Image(3, 2);
+    assertEquals(3, single.backing.width());
+    assertEquals(2, single.backing.height());
+
+    Image multi = new Image(6, 2);
+    multi.setFrameCount(3);
+    assertEquals(2, multi.getPixelWidth());
+    assertEquals(6, multi.backing.width());
+    assertEquals(2, multi.backing.height());
+  }
+
+  @Test
+  void backingSourceRejectsStorageDimensionMismatchesButAllowsZeroVisibleFrameWidth() {
+    RasterImageBacking backing = new RasterImageBacking(3, 2, 1, 3, new int[6], null);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> new BackingImageSource(backing, 2, 2, 2, 2, 1, 1, -1, 2, null, null, 1, 0, true, 255, 1, 1));
+    assertThrows(IllegalArgumentException.class,
+        () -> new BackingImageSource(backing, 3, 1, 3, 1, 1, 1, -1, 3, null, null, 1, 0, true, 255, 1, 1));
+
+    RasterImageBacking zeroVisible = new RasterImageBacking(0, 2, 2, 4, new int[0], new int[8]);
+    BackingImageSource source = new BackingImageSource(zeroVisible, 0, 2, 0, 2, 1, 2, 0, 4,
+        null, null, 1, 0, true, 255, 1, 1);
+    assertEquals(0, source.width);
+    assertEquals(4, source.backing.width());
+  }
+
+  @Test
+  void lockingRasterImageKeepsRasterBackingAndDisablesGraphics() throws Exception {
+    boolean previousOpenGL = Settings.isOpenGL;
+    try {
+      Settings.isOpenGL = true;
+      Image image = new Image(2, 1);
+      assertTrue(image.backing instanceof RasterImageBacking);
+
+      ImageBacking backing = image.backing;
+      image.lockChanges();
+
+      assertSame(backing, image.backing);
+      assertNull(image.getGraphics());
+    } finally {
+      Settings.isOpenGL = previousOpenGL;
+    }
+  }
+
+  @Test
+  void lockingNativeImageKeepsNativeBackingAndDisablesGraphics() throws Exception {
+    boolean previousOpenGL = Settings.isOpenGL;
+    NativeImageBacking nativeBacking = NativeImageBacking.fromHandle(1, 2, 1);
+    try {
+      Settings.isOpenGL = true;
+      Image image = new Image(2, 1);
+      image.backing = nativeBacking;
+
+      image.lockChanges();
+
+      assertSame(nativeBacking, image.backing);
+      assertNull(image.getGraphics());
+    } finally {
+      nativeBacking.release();
+      Settings.isOpenGL = previousOpenGL;
+    }
+  }
+
+  @Test
+  void snapshotsDetachResultProducingPipelineRoots() throws Exception {
+    Image image = new Image(2, 1);
+    image.getPixels()[0] = 0xFF102030;
+
+    BackingImageSource snapshot = image.snapshotRasterSource();
+    image.getPixels()[0] = 0xFFFFFFFF;
+    Image materialized = snapshot.materialize();
+
+    assertArrayEquals(new int[] { 0xFF102030, 0 }, materialized.getPixels());
+    assertNotNull(snapshot.backing);
+    assertTrue(snapshot.backing.isRaster());
+    assertFalse(snapshot.backing == image.backing);
+  }
+
+  @Test
+  void metadataRemainsIndependentFromBackingRepresentation() throws Exception {
+    NativeImageBacking nativeBacking = NativeImageBacking.fromHandle(1, 7, 5);
+    BackingImageSource source = new BackingImageSource(nativeBacking, 7, 5, 7, 5, 1.25,
+        1, -1, 7, "comment", "path", 1, 0x123456, true, 91, 0.5, 0.75);
+
+    assertTrue(source.backing.isNative());
+    assertEquals(7, source.width);
+    assertEquals(5, source.height);
+    assertEquals(1.25, source.contentScale);
+    assertEquals("comment", source.comment);
+    assertEquals("path", source.path);
+    nativeBacking.release();
+  }
+
+  @Test
+  void nativeBackingReleaseIsIdempotentWithoutMonitorLocking() throws Exception {
+    Method release = NativeImageBacking.class.getDeclaredMethod("release");
+    assertFalse(Modifier.isSynchronized(release.getModifiers()));
+
+    NativeImageBacking backing = NativeImageBacking.fromHandle(1, 1, 1);
+    backing.release();
+    backing.release();
+    assertFalse(backing.isValid());
+  }
+
+  @Test
+  void releasedNativeBackingSnapshotFailsAsInvalidState() throws Exception {
+    NativeImageBacking backing = NativeImageBacking.fromHandle(1, 1, 1);
+    backing.release();
+
+    assertThrows(IllegalStateException.class, backing::snapshot);
+  }
+
+  private static byte[] png(int width, int height) throws Exception {
+    BufferedImage source = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    assertTrue(ImageIO.write(source, "png", output));
+    return output.toByteArray();
+  }
+}

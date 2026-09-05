@@ -34,7 +34,7 @@ class ImageDestinationScaleTest {
     assertEquals(48, one.getWidth());
     assertEquals(96, two.getPixelHeight());
     assertEquals(4, four.getContentScale());
-    assertNull(image.pixels);
+    assertNull(image.backing);
     assertEquals(48, image.getPixelWidth());
     assertEquals(1, image.getContentScale());
     assertNotNull(image.pipelineForSmoke());
@@ -118,7 +118,7 @@ class ImageDestinationScaleTest {
     assertEquals(48, resolved.getWidth());
     assertEquals(48, resolved.getHeight());
     assertEquals(4, resolved.getContentScale());
-    assertNull(image.pixels);
+    assertNull(image.backing);
   }
 
   @Test
@@ -156,7 +156,7 @@ class ImageDestinationScaleTest {
     assertEquals(40, reduced.getPixelWidth());
     assertEquals(30, reduced.getPixelHeight());
     assertEquals(1, reduced.getContentScale());
-    assertNull(smooth.pixels);
+    assertNull(smooth.backing);
 
     Image highDensity = smooth.resolveForDrawing(4);
     assertEquals(160, highDensity.getPixelWidth());
@@ -213,8 +213,14 @@ class ImageDestinationScaleTest {
     Image smooth = new Image(jpeg(1024, 768)).getSmoothScaledInstance(64, 48);
     assertEquals(64, smooth.resolveForDrawing(1).getPixelWidth());
     assertEquals(1, Image.targetedDecodeInvocationCountForTest());
+    assertEquals(64, Image.targetedDecodeRequestWidthForTest());
+    assertEquals(48, Image.targetedDecodeRequestHeightForTest());
+    assertEquals(8, Image.targetedDecodeDenominatorForTest());
     assertEquals(256, smooth.resolveForDrawing(4).getPixelWidth());
     assertEquals(2, Image.targetedDecodeInvocationCountForTest());
+    assertEquals(256, Image.targetedDecodeRequestWidthForTest());
+    assertEquals(192, Image.targetedDecodeRequestHeightForTest());
+    assertEquals(4, Image.targetedDecodeDenominatorForTest());
 
     Image nearest = new Image(jpeg(1024, 768)).getScaledInstance(64, 48);
     assertEquals(64, nearest.resolveForDrawing(1).getPixelWidth());

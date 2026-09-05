@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -46,6 +47,50 @@ class EncodedImageSourceTest {
     assertEquals(5, source.getLogicalHeight());
     assertEquals("FC=3", source.getComment());
     assertArrayEquals(png("FC=3", new byte[] { 0x78, (byte) 0x9c }), source.copyBytes());
+  }
+
+  @Test
+  void reusesDecodedBackingAcrossSiblingsAndDetachesBarrierMutations() throws Exception {
+    byte[] encoded = realPng(6, 4);
+    Image.resetImageOperationAccountingForTest();
+    Image base = new Image(encoded);
+    EncodedImageSource source = (EncodedImageSource) base.pipelineForSmoke().root();
+
+    Image decoded = base.resolveForDrawing(1);
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+    assertSame(source.decodedBackingForReuse(1), decoded.backing);
+    assertEquals(1, source.decodedDenominator());
+    assertEquals(1, source.decodedGeneration());
+    int[] decodedPixels = decoded.getPixels().clone();
+
+    Image sibling = base.getScaledInstance(3, 2);
+    sibling.resolveForDrawing(1);
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+    assertSame(source.decodedBackingForReuse(1), decoded.backing);
+
+    Image barrier = base.getScaledInstance(6, 4);
+    barrier.applyColor2(0xAA4080C0);
+    barrier.getPixels();
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+    assertArrayEquals(decodedPixels, decoded.getPixels());
+    assertEquals(1, source.decodedGeneration());
+  }
+
+  @Test
+  void evictionClearsDecodedMetadataAndAdvancesGeneration() throws Exception {
+    EncodedImageSource source = EncodedImageSource.fromBytes(realPng(6, 4));
+    ImageBacking backing = new RasterImageBacking(3, 2, 1, 3, new int[6], null);
+
+    source.installDecodedBacking(backing, 3, 2, 4);
+    assertSame(backing, source.decodedBackingForReuse(4));
+    assertEquals(1, source.decodedGeneration());
+
+    source.evictDecodedBacking();
+    assertNull(source.decodedBackingForReuse(1));
+    assertEquals(0, source.decodedWidth());
+    assertEquals(0, source.decodedHeight());
+    assertEquals(0, source.decodedDenominator());
+    assertEquals(2, source.decodedGeneration());
   }
 
   @Test
@@ -185,6 +230,18 @@ class EncodedImageSourceTest {
     assertEquals(ImageEncodedStructure.Format.BMP, bmp.getFormat());
     assertEquals(1, bmp.getIntrinsicWidth());
     assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(Arrays.copyOf(bmp(), 54)));
+  }
+
+  private static byte[] realPng(int width, int height) throws Exception {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        image.setRGB(x, y, 0xFF000000 | (x * 29 + y * 7) << 16 | (x * 11 + y * 31) << 8 | x + y);
+      }
+    }
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    ImageIO.write(image, "png", bytes);
+    return bytes.toByteArray();
   }
 
   private static byte[] png(String comment, byte[] idat) throws Exception {

@@ -44,6 +44,19 @@ class ImageLazyMaterializationTest {
   }
 
   @Test
+  void imageOperationAccountingCanBeEnabledExplicitly() throws Exception {
+    Image.resetImageOperationAccountingForTest();
+    Image image = new Image(png(2, 1));
+
+    assertEquals(0, Image.fullDecodeInvocationCountForTest());
+    assertNotNull(image.getPixels());
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+    assertEquals(0, Image.nativeGeometryMaterializationCountForTest());
+    assertEquals(0, Image.nativeColorReadbackCountForTest());
+    assertEquals(0, Image.directDrawPlanExecutionCountForTest());
+  }
+
+  @Test
   void materializationAdoptsPixelsIntoTheSameImageAndOwnsCallerBytes() throws Exception {
     byte[] encoded = png(2, 1);
     Image image = new Image(encoded);
@@ -123,6 +136,23 @@ class ImageLazyMaterializationTest {
   }
 
   @Test
+  void graphicsPixelsAndPngEncodingMaterializeDeferredSemanticOutput() throws Exception {
+    Image graphicsImage = new Image(png(3, 2)).getScaledInstance(2, 2);
+    assertNotNull(graphicsImage.getGraphics());
+    assertNull(pipeline(graphicsImage));
+
+    Image pixelImage = new Image(png(3, 2)).getSmoothScaledInstance(2, 2);
+    assertTrue(pixelImage.getPixels().length > 0);
+    assertNull(pipeline(pixelImage));
+
+    Image encodedImage = new Image(png(3, 2)).getAlphaInstance(-20);
+    ByteArrayStream output = new ByteArrayStream(256);
+    encodedImage.createPng(output);
+    assertTrue(output.getPos() > 0);
+    assertNull(pipeline(encodedImage));
+  }
+
+  @Test
   void jpegScalingFactoriesAlwaysReturnMaterializedImages() throws Exception {
     Path file = Files.createTempFile("totalcross-jpeg-scaling", ".jpg");
     tc.simulator.Launcher previous = (tc.simulator.Launcher) Launcher.instance;
@@ -159,7 +189,7 @@ class ImageLazyMaterializationTest {
   }
 
   private static int[] pixelStorage(Image image) throws Exception {
-    Field field = Image.class.getDeclaredField("pixels");
+    Field field = Image.class.getDeclaredField("backing");
     field.setAccessible(true);
     return (int[]) field.get(image);
   }
