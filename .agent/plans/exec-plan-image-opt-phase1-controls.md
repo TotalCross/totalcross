@@ -472,8 +472,8 @@ if source, binary revision, or regime changed.
 - [x] Implement internal settings, focused tests, and diagnostics gating.
 - [x] Run and commit S2/S3 plus the control-plumbing benchmark report.
 - [x] Complete final validation and record the phase-2 handoff.
-- [x] Correct complete diagnostic accounting gating and record its S1/S2/S3
-  evidence without overwriting the original control report.
+- [x] Correct complete diagnostic accounting gating, preserve clear/reset gate
+  state, and record the native smoke plus S1/S2/S3 evidence separately.
 
 ## Decision Log
 
@@ -498,18 +498,18 @@ if source, binary revision, or regime changed.
 
 ## Outcomes & Retrospective
 
-Phase 1 delivered package-private tri-state controls for 13 feature IDs,
-validated byte settings, an effective mask, and a no-op pressure hook. Only
-`DIAGNOSTIC_ACCOUNTING` is connected; other features remain inert.
+Phase 1 delivered package-private tri-state controls for 13 IDs, byte
+validation, an effective mask, and a no-op pressure hook. Only
+`DIAGNOSTIC_ACCOUNTING` is connected.
 
 The original control-plumbing report remains historical. Its corrective
-complete-gating item used 60 samples after three warmups on one macOS arm64
-software-Skia host: medians were 676, 677 (+0.148%), and 671 (-0.740%) ms;
-peak RSS deltas were +0.360% and +0.346%. S2 recorded zero for every emitted
-diagnostic field. S3 recorded nonzero Java pipeline/draw-plan, readback, and
-native backing create/release counters. CV stayed below 0.25%, so no 200-sample
-rerun was required. Focused Image tests, SDK distribution, macOS Release
-CMake/Ninja, exact-dylib deployment, and relevant Image smokes passed. The
-corrected implementation/evidence handoff is `884ffcb61`; final documentation
-is the current branch HEAD. Other platforms and later optimizations remain
-deferred.
+complete-gating item used 60 samples on macOS arm64 software-Skia: medians
+676, 677 (+0.148%), and 671 (-0.740%) ms; RSS deltas +0.360%/+0.346%. S2 was
+zero; S3 was nonzero. Follow-up test/smoke `89458ecc7` and native fix
+`62a4c9278` make clear preserve Java/native gate state while legacy reset
+remains reset-and-enable. The deployed smoke passed disabled zero-accounting
+and enabled incrementing assertions. Focused Image tests, SDK distribution,
+macOS Release CMake/Ninja, exact-dylib deployment, and related Image smokes
+passed. No benchmark rerun was needed: workload and counted hot paths were
+unchanged. Phase 2 may branch from the final documentation HEAD; other
+platforms and later optimizations remain deferred.
