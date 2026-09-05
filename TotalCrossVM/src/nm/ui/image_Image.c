@@ -26,6 +26,7 @@ ImageTestAccountingState imageTestAccountingState;
 
 #define IMAGE_OPT_DECODE_ZERO_COPY (1 << 0)
 #define IMAGE_OPT_RASTER_OPACITY_METADATA (1 << 1)
+#define IMAGE_OPT_RASTER_OPAQUE_WRITE_PIXELS (1 << 2)
 
 static bool imageDecodeZeroCopyEnabled(TCObject imageObj)
 {
@@ -38,7 +39,8 @@ static bool imageDecodeOpacityMetadataEnabled(TCObject imageObj)
 {
    int32* featureMask = imageObj == null
       ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
-   return featureMask != null && ((*featureMask & IMAGE_OPT_RASTER_OPACITY_METADATA) != 0);
+   return featureMask != null && ((*featureMask & (IMAGE_OPT_RASTER_OPACITY_METADATA
+      | IMAGE_OPT_RASTER_OPAQUE_WRITE_PIXELS)) != 0);
 }
 
 ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj,

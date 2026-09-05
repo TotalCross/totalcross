@@ -151,7 +151,8 @@ int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
 int32 skia_image_backing_surface_id(int64_t handle);
 int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle,
     float srcLeft, float srcTop, float srcRight, float srcBottom,
-    float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
+    float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask,
+    int32 optimizationMask);
 void skia_image_backing_release(int64_t handle);
 void skia_image_backing_reset_accounting_for_test(void);
 void skia_image_backing_clear_accounting_counters_for_test(void);
@@ -162,6 +163,10 @@ uint64_t skia_image_backing_records_live_for_test(void);
 uint64_t skia_image_backing_records_peak_live_for_test(void);
 uint64_t skia_image_backing_bytes_live_for_test(void);
 uint64_t skia_image_backing_bytes_peak_live_for_test(void);
+uint64_t skia_image_backing_write_pixels_attempts_for_test(void);
+uint64_t skia_image_backing_write_pixels_hits_for_test(void);
+uint64_t skia_image_backing_write_pixels_fallbacks_for_test(void);
+uint64_t skia_image_backing_write_pixels_copied_bytes_for_test(void);
 #ifdef __cplusplus
 }
 #endif

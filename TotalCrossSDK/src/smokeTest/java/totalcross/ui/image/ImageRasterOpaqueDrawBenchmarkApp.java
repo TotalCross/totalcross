@@ -28,6 +28,7 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(samples > 0 && samples <= 200,
           "samples must be between 1 and 200");
       ImageRasterBenchmarkSupport.configure(scenario, ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS);
+      Image.resetImageOperationAccountingForTest();
       byte[] encoded = "jpeg".equals(format)
           ? ImageRasterBenchmarkSupport.resource("image-abi/lena512.jpg")
           : ImageRasterBenchmarkSupport.opaquePng(600, 600);
@@ -46,7 +47,11 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
         totalDraws += DRAWS_PER_SAMPLE;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",format=" + format
             + ",draws=" + DRAWS_PER_SAMPLE + ",width=" + source.getPixelWidth()
-            + ",height=" + source.getPixelHeight());
+            + ",height=" + source.getPixelHeight()
+            + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()
+            + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
+            + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
+            + ",write_pixels_copied_bytes=" + NativeImageBacking.writePixelsCopiedBytesForTest());
         System.out.flush();
         completedSamples = sample;
       }
@@ -56,7 +61,11 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
     }
 
     boolean pass = ImageRasterBenchmarkSupport.finish("ImageRasterOpaqueDrawBenchmarkApp", scenario,
-        samples, completedSamples, "format=" + format + ",total_draws=" + totalDraws, error);
+        samples, completedSamples, "format=" + format + ",total_draws=" + totalDraws
+            + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()
+            + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
+            + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
+            + ",write_pixels_copied_bytes=" + NativeImageBacking.writePixelsCopiedBytesForTest(), error);
     exit(pass ? 0 : 1);
   }
 

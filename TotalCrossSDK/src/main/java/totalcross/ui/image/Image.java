@@ -102,6 +102,7 @@ public class Image extends GfxSurface {
   static int opacityFallbackScansForTest;
   static int opacityFallbackPixelsForTest;
   private static int nativeOptimizationMaskForDecode;
+  private static int nativeOptimizationMaskForDraw;
   private static boolean backingReadbackAccountingForTest;
   private static int backingReadbackCountForTest;
 
@@ -178,6 +179,10 @@ public class Image extends GfxSurface {
     backingReadbackAccountingForTest = enabled;
     NativeImageBacking.setBackingAccountingForTest(enabled);
     setDiagnosticAccountingTestNative(enabled);
+  }
+
+  static void setNativeOptimizationMaskForDrawForTest(long mask) {
+    nativeOptimizationMaskForDraw = (int) mask;
   }
 
   static void clearImageOperationAccountingCountersForTest() {
