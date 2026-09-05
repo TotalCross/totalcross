@@ -6,30 +6,23 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-05T04:58:00-03:00
+Updated: 2026-09-05T06:35:00-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
 
 ## Active slice
 
-Milestone 0 bootstrap is complete in commit `ea124e140083bc577500412063e3164e6e900b22`.
-Milestone 1 harness and S1 baseline are complete through commit
-`d00d7c1dfec4bddc14bdfbb8293b30dfe8b3a3c6`. Milestone 2 implementation is
-complete in `4d8c5ab469a18c8a92060885fc790c72ba6b7c00`, with the S3 benchmark
-mode fix in `613762c45ed887733b1dab9a12b20b32280e0fca`. Corrected S2/S3 runs
-recorded 60 samples each: S2 median 669 ms / peak RSS 107280 KB; S3 median
-669 ms / peak RSS 109008 KB. S3 counters prove intentional accounting. Final
-validation is complete; the phase-2 source handoff is
-`613762c45ed887733b1dab9a12b20b32280e0fca`. Final documentation is complete
-through checkpoint `47b81182dd509a8cafd11250510939fd686586d0`, and the plan
-size consolidation is `72b0041895a4a93fb921f4e3f4dcf6ae05616853`.
+The original Phase 1 control-plumbing work and report remain historical. The
+corrective slice is complete through focused tests `42a183473`, workload and
+runner `f33760435`, gate fix `4721397d6`, registration fix `8399b8b0a`, and
+benchmark evidence `884ffcb61`. S1 used `f33760435`; S2/S3 used `8399b8b0a`.
 
 ## Next concrete action
 
-No implementation work remains. The next phase may branch from the resulting
-phase-1 HEAD after this bookkeeping update, without pushing, merging, or
-rewriting history.
+No implementation or validation work remains. Phase 2 may branch from the
+final phase-1 branch HEAD after this documentation checkpoint. The original
+control report was not overwritten.
 
 ## Active paths
 
@@ -39,28 +32,30 @@ rewriting history.
 - `.agent/archive/image-opt-phase1-controls-history.md`
 - `.agent/reports/image-opt-phase1-controls-editorial.md`
 - `.agent/design/image-optimization-benchmark-protocol.md`
+- `.agent/benchmarks/image-opt-phase1-controls/complete-diagnostic-gating/`
 
 ## Validation
 
-Bootstrap and harness source validation passed: focused copyright headers,
-Python syntax, and staged whitespace. The SDK distribution, macOS software-
-Skia Release build, benchmark deployment, runtime-copy comparison, and S1
-process runs all passed. The finalized plan is 20373 bytes and every direct
-artifact is committed; source handoff remains `613762c4`.
+Focused copyright, whitespace, runner syntax, SDK Image tests, SDK `dist`,
+macOS Release CMake/Ninja, exact-dylib deployment, relevant native Image
+smokes, and S1/S2/S3 process runs passed. S1/S2/S3 each recorded 60 samples;
+all S2 diagnostic fields are zero and S3 has nonzero Java/readback/native
+backing counters. No 200-sample rerun was required.
 
 ## Deferred validation
 
-Final focused Image tests, SDK dist, macOS Release build, and relevant native
-Image smokes all passed. No expensive validation remains within this phase;
-verbose logs remain under the ignored `artifacts/image-opt-phase1-controls/`
-path. Android/iOS/Windows/Linux/GPU validation and later optimizations are
-outside the plan.
+Android/iOS/Windows/Linux/GPU validation and later optimizations remain outside
+the plan. Verbose logs remain under ignored `artifacts/image-opt-phase1-controls/`.
 
 ## Decisions still active
 
 - Settings are package-private, process-global, tri-state, and opt-in.
 - All future optimization defaults resolve to disabled.
 - Native hot paths receive effective feature bits at call boundaries.
+- Diagnostic native counter pointers are cached at the Java/native boundary;
+  counted native operations do not perform Java class or field lookups.
+- The corrective artifact is separate from the historical control report;
+  S2 zeroes every emitted diagnostic field and S3 proves re-enablement.
 - Benchmark evidence is committed; generated binaries and verbose logs are not.
 
 ## Blockers and deliberate out-of-scope files
