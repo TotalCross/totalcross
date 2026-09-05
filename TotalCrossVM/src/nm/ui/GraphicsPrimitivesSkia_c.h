@@ -28,7 +28,10 @@ static int32 skiaSurfaceForGraphics(TCObject g)
       surfaceId = SKIA_INVALID_SURFACE_ID;
       TCObject backing = Image_backing(image);
       if (isNativeImageBacking(backing)) {
-         surfaceId = skia_image_backing_surface_id(NativeImageBacking_nativeHandle(backing));
+         int64 nativeHandle = NativeImageBacking_nativeHandle(backing);
+         if (skia_image_backing_make_mutable(nativeHandle)) {
+            surfaceId = skia_image_backing_surface_id(nativeHandle);
+         }
       }
       if (surfaceId == SKIA_INVALID_SURFACE_ID)
          surfaceId = Image_textureId(image);

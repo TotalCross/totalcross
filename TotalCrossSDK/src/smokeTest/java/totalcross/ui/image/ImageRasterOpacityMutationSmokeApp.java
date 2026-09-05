@@ -14,6 +14,7 @@ public class ImageRasterOpacityMutationSmokeApp extends MainWindow {
     boolean decodedOpaque = false;
     boolean invalidated = false;
     boolean drawParity = false;
+    int opacityAfterWrite = -1;
     String error = "";
     try {
       ImageOptimizationSettings.resetForTest();
@@ -30,7 +31,8 @@ public class ImageRasterOpacityMutationSmokeApp extends MainWindow {
       sourceGraphics.foreColor = 0x00112233;
       sourceGraphics.alpha = 0;
       sourceGraphics.setPixel(0, 0);
-      invalidated = ((NativeImageBacking) source.backing).opacityForTest()
+      opacityAfterWrite = ((NativeImageBacking) source.backing).opacityForTest();
+      invalidated = opacityAfterWrite
           == NativeImageBacking.OPACITY_UNKNOWN;
 
       ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
@@ -52,6 +54,7 @@ public class ImageRasterOpacityMutationSmokeApp extends MainWindow {
     boolean pass = decodedOpaque && invalidated && drawParity && error.length() == 0;
     System.out.println("fixture=ImageRasterOpacityMutationSmokeApp,decodedOpaque=" + decodedOpaque
         + ",invalidated=" + invalidated + ",drawParity=" + drawParity
+        + ",opacityAfterWrite=" + opacityAfterWrite
         + ",overallPass=" + pass + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();
     exit(pass ? 0 : 1);
