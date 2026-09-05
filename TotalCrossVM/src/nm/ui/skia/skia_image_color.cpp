@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -48,6 +49,10 @@ static sk_sp<SkImage> makeImage(const std::vector<uint8_t>& pixels, int32 width,
     }
     return SkImage::MakeRasterData(rasterInfo(width, height), data,
         static_cast<size_t>(width) * 4);
+}
+
+static void releaseOwnedPixels(const void* pixels, void*) {
+    delete[] static_cast<const uint8_t*>(pixels);
 }
 
 static int channelAverage(int first, int second) {
@@ -319,6 +324,108 @@ static bool transform(std::vector<uint8_t>* pixels, int32 width, int32 height, i
     }
 }
 
+static bool directApplyColor2(NativeImageBackingRecord* source, int32 parameter1) {
+    if (!source || source->width <= 0 || source->height <= 0) {
+        return false;
+    }
+    const size_t rowBytes = static_cast<size_t>(source->width) * 4;
+    const size_t byteCount = rowBytes * static_cast<size_t>(source->height);
+    try {
+        sk_sp<SkImage> input = source->snapshot();
+        if (!input) {
+            return false;
+        }
+        std::vector<uint8_t> row(rowBytes);
+        ApplyColor2Analysis analysis;
+        if (source->applyColor2AnalysisValid
+            && source->applyColor2AnalysisGeneration == source->generation) {
+            analysis.highestRed = source->applyColor2HighestRed;
+            analysis.highestGreen = source->applyColor2HighestGreen;
+            analysis.highestBlue = source->applyColor2HighestBlue;
+            analysis.highestChannel = source->applyColor2HighestChannel;
+        } else {
+            int highestBrightness = 0;
+            int highestRed = 0;
+            int highestGreen = 0;
+            int highestBlue = 0;
+            const SkImageInfo rowInfo = rasterInfo(source->width, 1);
+            for (int32 y = 0; y < source->height; ++y) {
+                if (!input->readPixels(rowInfo, row.data(), rowBytes, 0, y)) {
+                    return false;
+                }
+                for (size_t i = 0; i < row.size(); i += 4) {
+                    if (row[i + 3] == 0xff) {
+                        const int brightness = (3 * row[i] + 4 * row[i + 1] + row[i + 2]) >> 3;
+                        if (brightness > highestBrightness) {
+                            highestBrightness = brightness;
+                            highestRed = row[i];
+                            highestGreen = row[i + 1];
+                            highestBlue = row[i + 2];
+                        }
+                    }
+                }
+            }
+            analysis.highestRed = highestRed == 0 ? 255 : highestRed;
+            analysis.highestGreen = highestGreen == 0 ? 255 : highestGreen;
+            analysis.highestBlue = highestBlue == 0 ? 255 : highestBlue;
+            analysis.highestChannel = std::max(analysis.highestRed,
+                std::max(analysis.highestGreen, analysis.highestBlue));
+            source->applyColor2HighestRed = static_cast<uint8_t>(analysis.highestRed);
+            source->applyColor2HighestGreen = static_cast<uint8_t>(analysis.highestGreen);
+            source->applyColor2HighestBlue = static_cast<uint8_t>(analysis.highestBlue);
+            source->applyColor2HighestChannel = static_cast<uint8_t>(analysis.highestChannel);
+            source->applyColor2AnalysisGeneration = source->generation;
+            source->applyColor2AnalysisValid = true;
+        }
+
+        const int targetRed = (parameter1 >> 16) & 0xff;
+        const int targetGreen = (parameter1 >> 8) & 0xff;
+        const int targetBlue = parameter1 & 0xff;
+        const bool changeAlpha = ((parameter1 >> 24) & 0xff) == 0xaa;
+        std::unique_ptr<uint8_t[]> output(new uint8_t[byteCount]);
+        const SkImageInfo rowInfo = rasterInfo(source->width, 1);
+        for (int32 y = 0; y < source->height; ++y) {
+            if (!input->readPixels(rowInfo, row.data(), rowBytes, 0, y)) {
+                return false;
+            }
+            for (size_t i = 0; i < row.size(); i += 4) {
+                if (row[i + 3] != 0) {
+                    row[i] = static_cast<uint8_t>(clampChannel(
+                        row[i] * targetRed / analysis.highestRed));
+                    row[i + 1] = static_cast<uint8_t>(clampChannel(
+                        row[i + 1] * targetGreen / analysis.highestGreen));
+                    row[i + 2] = static_cast<uint8_t>(clampChannel(
+                        row[i + 2] * targetBlue / analysis.highestBlue));
+                    if (changeAlpha) {
+                        const int brightest = std::max(row[i], std::max(row[i + 1], row[i + 2]));
+                        row[i + 3] = static_cast<uint8_t>(clampChannel(
+                            brightest * 255 / analysis.highestChannel));
+                    }
+                }
+            }
+            std::memcpy(output.get() + static_cast<size_t>(y) * rowBytes, row.data(), rowBytes);
+        }
+        sk_sp<SkData> data = SkData::MakeWithProc(output.get(), byteCount, releaseOwnedPixels, nullptr);
+        if (!data) {
+            return false;
+        }
+        output.release();
+        sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(source->width, source->height),
+            data, rowBytes);
+        if (!image) {
+            return false;
+        }
+        source->image = std::move(image);
+        source->surface.reset();
+        ++source->generation;
+        source->applyColor2AnalysisValid = false;
+        source->opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
+        return true;
+    } catch (const std::bad_alloc&) {
+        return false;
+    }
+}
+
 static bool transformedPixels(int64_t handle, int32 operation, int32 parameter1, int32 parameter2,
                               int32 frameCount, int32 visibleWidth, int32 currentFrame,
                               std::vector<uint8_t>* pixels, NativeImageBackingRecord** source) {
@@ -334,8 +441,15 @@ static bool transformedPixels(int64_t handle, int32 operation, int32 parameter1,
 
 int skia_image_backing_apply_color_mutation(int64_t handle, int32 operation, int32 parameter1,
                                             int32 parameter2, int32 frameCount, int32 visibleWidth,
-                                            int32 currentFrame) {
+                                            int32 currentFrame, int32 optimizationMask) {
     try {
+        constexpr int32 kDirectColorMaterializationBit = 1 << 4;
+        NativeImageBackingRecord* directSource = findBacking(handle);
+        if ((optimizationMask & kDirectColorMaterializationBit) != 0
+            && operation == SKIA_IMAGE_COLOR_APPLY_COLOR2 && frameCount == 1
+            && directApplyColor2(directSource, parameter1)) {
+            return 2;
+        }
         std::vector<uint8_t> pixels;
         NativeImageBackingRecord* source = nullptr;
         if (!transformedPixels(handle, operation, parameter1, parameter2, frameCount, visibleWidth,
