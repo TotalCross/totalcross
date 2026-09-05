@@ -106,8 +106,7 @@ final class ImageRasterBenchmarkSupport {
   }
 
   static String hashString(long hash) {
-    return Integer.toHexString((int) (hash >>> 32))
-        + Integer.toHexString((int) hash);
+    return Long.toHexString(hash);
   }
 
   static byte[] copy(byte[] source, int length) {
