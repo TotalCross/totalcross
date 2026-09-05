@@ -790,6 +790,12 @@ registerImageMacSmoke('ImageRasterReadbackBenchmark', 'ImageRasterReadbackBenchm
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageRasterCombinedBenchmark', 'ImageRasterCombinedBenchmarkApp',
+    'image-raster-combined-benchmark', true, false, [
+        'fixture=ImageRasterCombinedBenchmarkApp',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
     'image-diagnostic-accounting-gate-benchmark', false, false, [
         'fixture=ImageDiagnosticAccountingGateBenchmarkApp',
