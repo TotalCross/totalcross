@@ -700,6 +700,15 @@ registerImageMacSmoke('ImageZeroCopyDecode', 'ImageZeroCopyDecodeSmokeApp',
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageRasterOpacityMutation', 'ImageRasterOpacityMutationSmokeApp',
+    'image-raster-opacity-mutation-smoke', true, false, [
+        'fixture=ImageRasterOpacityMutationSmokeApp',
+        'decodedOpaque=true',
+        'invalidated=true',
+        'drawParity=true',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageDrawPresentationState', 'ImageDrawPresentationStateSmokeApp',
     'image-draw-presentation-state-smoke', false, false, [
         'fixture=ImageDrawPresentationStateSmokeApp',
