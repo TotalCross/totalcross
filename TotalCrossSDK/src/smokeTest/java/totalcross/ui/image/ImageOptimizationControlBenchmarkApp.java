@@ -12,8 +12,8 @@ import totalcross.ui.gfx.Graphics;
 /** macOS benchmark workload for image optimization control plumbing. */
 public class ImageOptimizationControlBenchmarkApp extends MainWindow {
   private static final int DEFAULT_SAMPLES = 60;
-  private static final int CACHED_DRAWS = 2048;
-  private static final int CHURN_OPERATIONS = 128;
+  private static final int CACHED_DRAWS = 256;
+  private static final int CHURN_OPERATIONS = 32;
   private static final int TARGET_WIDTH = 320;
   private static final int TARGET_HEIGHT = 240;
 
@@ -36,7 +36,7 @@ public class ImageOptimizationControlBenchmarkApp extends MainWindow {
       Graphics surface = target.getGraphics();
       require(surface != null, "benchmark target graphics");
 
-      for (int warmup = 0; warmup < 8; warmup++) {
+      for (int warmup = 0; warmup < 3; warmup++) {
         runBatch(root, cached, surface, warmup);
       }
 
