@@ -25,6 +25,49 @@ final class NativeImageBacking extends ImageBacking {
     return new NativeImageBacking(nativeHandle, width, height);
   }
 
+  static NativeImageBacking materializeGeometry(ImageDrawPlan plan) throws ImageException {
+    if (plan == null) {
+      throw new ImageException("Invalid native image geometry plan.");
+    }
+    long handle = materializeGeometryNative(plan);
+    if (handle == 0) {
+      throw new ImageException("Could not materialize native image geometry.");
+    }
+    boolean frameLayout = plan.outputFrameCount > 1 && plan.outputWidthOfAllFrames > 0
+        && plan.operations.length > 0
+        && plan.operations[plan.operations.length - 1] == ImagePipeline.FRAME_LAYOUT;
+    boolean destinationScaledFrameLayout = frameLayout && hasDestinationScaledGeometry(plan);
+    double physicalWidth = frameLayout && !destinationScaledFrameLayout
+        ? plan.outputWidthOfAllFrames / plan.outputFrameCount
+        : Math.ceil(plan.outputWidth * plan.outputContentScale);
+    double physicalHeight = Math.ceil(plan.outputHeight * plan.outputContentScale);
+    double fullWidth = frameLayout ? plan.outputWidthOfAllFrames
+        : physicalWidth * Math.max(1, plan.outputFrameCount);
+    if (destinationScaledFrameLayout && plan.operations.length > 1) {
+      int previousWidth = plan.dimensions[(plan.operations.length - 2) * 2];
+      double transformedWidth = Math.ceil(previousWidth * plan.destinationScale);
+      fullWidth = Math.max(fullWidth, Math.max(transformedWidth,
+          physicalWidth * plan.outputFrameCount));
+    }
+    if (!Double.isFinite(physicalWidth) || !Double.isFinite(physicalHeight) || !Double.isFinite(fullWidth)
+        || physicalWidth <= 0 || physicalHeight <= 0 || fullWidth > Integer.MAX_VALUE) {
+      releaseNativeHandle(handle);
+      throw new ImageException("Native image geometry dimensions are too large.");
+    }
+    return new NativeImageBacking(handle, (int) fullWidth, (int) physicalHeight);
+  }
+
+  private static boolean hasDestinationScaledGeometry(ImageDrawPlan plan) {
+    for (int i = 0; i < plan.operations.length - 1; i++) {
+      int operation = plan.operations[i];
+      if (operation == ImagePipeline.SCALE || operation == ImagePipeline.SMOOTH_SCALE
+          || operation == ImagePipeline.ROTATE_SCALE) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   static NativeImageBacking createEmpty(int width, int height) throws ImageException {
     if (width <= 0 || height <= 0) {
       throw new ImageException("Image dimensions must be positive.");
@@ -69,6 +112,42 @@ final class NativeImageBacking extends ImageBacking {
   @Override
   boolean isValid() {
     return nativeHandle != 0 && width > 0 && height > 0;
+  }
+
+  @Override
+  int[] readVisiblePixels(int visibleWidth, int outputHeight, int frame) {
+    if (!isValid() || visibleWidth < 0 || outputHeight != height
+        || (long) visibleWidth * outputHeight > Integer.MAX_VALUE
+        || (long) visibleWidth * Math.max(0, frame) + visibleWidth > width) {
+      throw new IllegalStateException("Invalid native image backing read");
+    }
+    if (visibleWidth == 0) {
+      return new int[0];
+    }
+    Image.recordBackingReadbackForTest();
+    int[] output = new int[visibleWidth * outputHeight];
+    if (!readPixels(output, 0, visibleWidth * Math.max(0, frame), 0, visibleWidth, outputHeight)) {
+      throw new IllegalStateException("Could not read native image backing");
+    }
+    return output;
+  }
+
+  @Override
+  int[] readStoragePixels() {
+    if (!isValid() || (long) width * height > Integer.MAX_VALUE) {
+      throw new IllegalStateException("Invalid native image backing read");
+    }
+    int[] output = new int[width * height];
+    if (!readPixels(output, 0, 0, 0, width, height)) {
+      throw new IllegalStateException("Could not read native image backing");
+    }
+    return output;
+  }
+
+  @Override
+  boolean readRgbaRow(byte[] output, int y) {
+    return isValid() && output != null && y >= 0 && y < height && output.length >= width * 4
+        && readRgbaRowNative(output, y, width);
   }
 
   long nativeHandleForBridge() {
@@ -170,7 +249,17 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private boolean readRgbaRowNative(byte[] output, int y, int width) {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
   private long scaleNative(int width, int height, boolean smooth) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long materializeGeometryNative(ImageDrawPlan plan) {
     return 0;
   }
 

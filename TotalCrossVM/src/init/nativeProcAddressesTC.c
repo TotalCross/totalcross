@@ -110,13 +110,13 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageParse_sB"), &tuiI_imageParse_sB);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSource_e"), &tuiI_decodeEncodedSource_e);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceTargeted"), &tuiI_decodeEncodedSourceTargeted);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceTiered_e"), &tuiI_decodeEncodedSourceTiered_e);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextNativeMaterializati"), &tuiI_failNextNativeMaterializati);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_changeColorsNative_ii"), &tuiI_changeColorsNative_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getPixelRowNative_Bi"), &tuiI_getPixelRowNative_Bi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getModifiedNative_iiiiiii"), &tuiI_getModifiedNative_iiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_setCurrentFrameNative_i"), &tuiI_setCurrentFrameNative_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyColorNative_i"), &tuiI_applyColorNative_i);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeEqualsNative_i"), &tuiI_nativeEqualsNative_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyColor2Native_i"), &tuiI_applyColor2Native_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_setTransparentColorNative_i"), &tuiI_setTransparentColorNative_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_freeTextureNative"), &tuiI_freeTextureNative);
@@ -135,7 +135,9 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_failNextSnapshotNative"), &tuiNIB_failNextSnapshotNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_makeMutableNative"), &tuiNIB_makeMutableNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_scaleNative_iib"), &tuiNIB_scaleNative_iib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_materializeGeometryNative"), &tuiNIB_materializeGeometryNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_readPixelsNative_Iiiiii"), &tuiNIB_readPixelsNative_Iiiiii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_readRgbaRowNative_Bii"), &tuiNIB_readRgbaRowNative_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_releaseNativeHandle_l"), &tuiNIB_releaseNativeHandle_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
@@ -165,6 +167,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_copyRectNative_giiiiii"), &tugG_copyRectNative_giiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawRoundGradient_iiiiiiiii"), &tugG_drawRoundGradient_iiiiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawImageNative_iiib"), &tugG_drawImageNative_iiib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawGeometryNative_oiib"), &tugG_drawGeometryNative_oiib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_copyGeometryNative_oiiiib"), &tugG_copyGeometryNative_oiiiib);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_copyImageRectNative_iiiiib"), &tugG_copyImageRectNative_iiiiib);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_setPixels_IIi"), &tugG_setPixels_IIi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_refresh_iiiiiif"), &tugG_refresh_iiiiiif);
