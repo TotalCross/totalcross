@@ -16,3 +16,11 @@ and initial evidence record are in:
 
 - `.agent/state/image-opt-phase1-controls.md`
 - `.agent/evidence/image-opt-phase1-controls.jsonl`
+
+## Milestone 1 — benchmark harness and S1
+
+The deterministic control workload and reusable RSS runner were added and
+deployed through the existing macOS smoke registration. The exact pre-settings
+baseline is commit `d00d7c1dfec4bddc14bdfbb8293b30dfe8b3a3c6`; compact samples and
+machine metadata are in
+`.agent/benchmarks/image-opt-phase1-controls/control-plumbing/`.

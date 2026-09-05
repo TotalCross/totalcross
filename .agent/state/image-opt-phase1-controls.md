@@ -6,22 +6,24 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-05
+Updated: 2026-09-05T04:32:00-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
 
 ## Active slice
 
-Milestone 0 bootstrap is in progress. The branch is created from the authored
-master SHA. The plan and resumable artifact skeletons are being committed
-before source implementation.
+Milestone 0 bootstrap is complete in commit `ea124e140083bc577500412063e3164e6e900b22`.
+Milestone 1 harness and S1 baseline are complete through commit
+`d00d7c1dfec4bddc14bdfbb8293b30dfe8b3a3c6`. S1 recorded 60 samples at median
+668 ms, p95 671 ms, CV 0.22%, and peak RSS 107456 KB with clean process exit.
 
 ## Next concrete action
 
-Validate the scoped bootstrap files, stage only the plan and phase-1 control
-artifacts, create the milestone-0 documentation commit, validate its message,
-then begin milestone 1 benchmark harness work.
+Implement package-private `ImageOptimizationSettings` and focused Java tests,
+then integrate only `DIAGNOSTIC_ACCOUNTING` with existing Image/native-backing
+accounting. Keep every other reserved feature behaviorally inert and defer
+the next build/smoke gate until the milestone is source-complete.
 
 ## Active paths
 
@@ -34,13 +36,16 @@ then begin milestone 1 benchmark harness work.
 
 ## Validation
 
-No build or native smoke is permitted for milestone 0. Pending focused header
-validation, Markdown size checks, and `git diff --check`.
+Bootstrap and harness source validation passed: focused copyright headers,
+Python syntax, and staged whitespace. The SDK distribution, macOS software-
+Skia Release build, benchmark deployment, runtime-copy comparison, and S1
+process run all passed. S1 artifacts are committed below the control-plumbing
+benchmark directory.
 
 ## Deferred validation
 
-SDK and macOS Release builds are deferred to the end of milestone 1, as
-required by the active plan. Verbose logs will remain under the ignored
+The SDK and macOS Release builds for settings validation are deferred until
+the milestone 2 gate. Verbose logs remain under the ignored
 `artifacts/image-opt-phase1-controls/` path.
 
 ## Decisions still active
