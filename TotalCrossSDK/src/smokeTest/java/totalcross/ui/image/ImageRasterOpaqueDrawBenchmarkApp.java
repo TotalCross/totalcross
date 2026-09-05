@@ -11,7 +11,7 @@ import totalcross.ui.gfx.Graphics;
 /** macOS benchmark workload for eligible and guarded opaque raster draws. */
 public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
   private static final int DEFAULT_SAMPLES = 60;
-  private static final int DRAWS_PER_SAMPLE = 8;
+  private static final int DRAWS_PER_SAMPLE = 128;
 
   @Override
   public void initUI() {
@@ -41,20 +41,32 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
         semanticParity = verifyFastPathParity(source);
       }
       runGuardCases(canvas, source);
+      String expectedHash = null;
       for (int warmup = 0; warmup < 3; warmup++) {
         drawBatch(canvas, source);
       }
+      Image.resetImageOperationAccountingForTest();
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
         drawBatch(canvas, source);
         long elapsed = Vm.getTimeStamp() - start;
+        String pixelHash = ImageRasterBenchmarkSupport.hashString(
+            ImageRasterBenchmarkSupport.fullPixelHash(target));
+        if (expectedHash == null) {
+          expectedHash = pixelHash;
+        } else {
+          ImageRasterBenchmarkSupport.require(expectedHash.equals(pixelHash), "draw hash drift");
+        }
         totalDraws += DRAWS_PER_SAMPLE;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",format=" + format
             + ",draws=" + DRAWS_PER_SAMPLE + ",width=" + source.getPixelWidth()
             + ",height=" + source.getPixelHeight()
+            + ",pixel_hash=" + pixelHash
             + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()
             + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
             + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
+            + ",opacity_fallback_scans=" + Image.opacityFallbackScansForTest()
+            + ",opacity_fallback_pixels=" + Image.opacityFallbackPixelsForTest()
             + ",write_pixels_copied_bytes=" + NativeImageBacking.writePixelsCopiedBytesForTest());
         System.out.flush();
         completedSamples = sample;
@@ -70,6 +82,8 @@ public class ImageRasterOpaqueDrawBenchmarkApp extends MainWindow {
             + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()
             + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
             + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
+            + ",opacity_fallback_scans=" + Image.opacityFallbackScansForTest()
+            + ",opacity_fallback_pixels=" + Image.opacityFallbackPixelsForTest()
             + ",write_pixels_copied_bytes=" + NativeImageBacking.writePixelsCopiedBytesForTest(), error);
     exit(pass ? 0 : 1);
   }

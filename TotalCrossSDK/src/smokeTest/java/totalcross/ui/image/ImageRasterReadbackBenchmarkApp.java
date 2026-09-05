@@ -20,7 +20,7 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
     int completedSamples = 0;
     String error = "";
     long totalOutputBytes = 0;
-    int checksum = 0;
+    String finalHash = "";
 
     try {
       ImageRasterBenchmarkSupport.require("pixels".equals(operation) || "encode".equals(operation)
@@ -33,17 +33,27 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.configure(scenario, targetFeature);
       Image.resetImageOperationAccountingForTest();
       byte[] encoded = ImageRasterBenchmarkSupport.resource("image-abi/lena1960.jpg");
+      int batch = "pixels".equals(operation) ? 2 : 1;
       for (int warmup = 0; warmup < 3; warmup++) {
-        runOperation(encoded, operation);
+        runOperationBatch(encoded, operation, batch);
       }
+      Image.resetImageOperationAccountingForTest();
+      String expectedHash = null;
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
-        OperationResult result = runOperation(encoded, operation);
+        OperationResult result = runOperationBatch(encoded, operation, batch);
         long elapsed = Vm.getTimeStamp() - start;
+        String outputHash = ImageRasterBenchmarkSupport.hashString(result.hash);
+        if (expectedHash == null) {
+          expectedHash = outputHash;
+          finalHash = outputHash;
+        } else {
+          ImageRasterBenchmarkSupport.require(expectedHash.equals(outputHash), "readback hash drift");
+        }
         totalOutputBytes += result.outputBytes;
-        checksum ^= result.checksum;
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",operation=" + operation
-            + ",output_bytes=" + result.outputBytes + ",checksum=" + result.checksum
+            + ",batch_repetitions=" + batch + ",output_bytes=" + result.outputBytes
+            + ",output_hash=" + outputHash
             + ",row_readbacks=" + Image.rowReadbackCountForTest()
             + ",full_readbacks=" + Image.fullReadbackCountForTest()
             + ",row_scratch_peak_bytes=" + Image.rowScratchPeakBytesForTest()
@@ -59,7 +69,7 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
 
     boolean pass = ImageRasterBenchmarkSupport.finish("ImageRasterReadbackBenchmarkApp", scenario,
         samples, completedSamples, "operation=" + operation + ",total_output_bytes=" + totalOutputBytes
-            + ",checksum=" + checksum
+            + ",output_hash=" + finalHash
             + ",row_readbacks=" + Image.rowReadbackCountForTest()
             + ",full_readbacks=" + Image.fullReadbackCountForTest()
             + ",row_scratch_peak_bytes=" + Image.rowScratchPeakBytesForTest()
@@ -68,37 +78,41 @@ public class ImageRasterReadbackBenchmarkApp extends MainWindow {
     exit(pass ? 0 : 1);
   }
 
+  private static OperationResult runOperationBatch(byte[] encoded, String operation, int batch)
+      throws Exception {
+    OperationResult last = null;
+    for (int i = 0; i < batch; i++) {
+      last = runOperation(encoded, operation);
+    }
+    return last;
+  }
+
   private static OperationResult runOperation(byte[] encoded, String operation) throws Exception {
     Image image = ImageRasterBenchmarkSupport.materialize(encoded);
     if ("pixels".equals(operation)) {
       int[] pixels = image.getPixels();
-      return new OperationResult((long) pixels.length * 4, checksum(pixels));
+      return new OperationResult((long) pixels.length * 4,
+          ImageRasterBenchmarkSupport.fullPixelHash(pixels));
     }
     if ("encode".equals(operation)) {
       ByteArrayStream stream = new ByteArrayStream(8192);
       image.createPng(stream);
-      return new OperationResult(stream.getPos(), stream.getPos());
+      return new OperationResult(stream.getPos(), ImageRasterBenchmarkSupport.fullByteHash(
+          stream.getBuffer(), stream.getPos()));
     }
     image.applyColor2(0x0090A0B0);
     int[] pixels = image.getPixels();
-    return new OperationResult((long) pixels.length * 4, checksum(pixels));
-  }
-
-  private static int checksum(int[] pixels) {
-    int result = 1;
-    for (int i = 0; i < pixels.length; i += Math.max(1, pixels.length / 97)) {
-      result = 31 * result + pixels[i];
-    }
-    return result;
+    return new OperationResult((long) pixels.length * 4,
+        ImageRasterBenchmarkSupport.fullPixelHash(pixels));
   }
 
   private static final class OperationResult {
     final long outputBytes;
-    final int checksum;
+    final long hash;
 
-    OperationResult(long outputBytes, int checksum) {
+    OperationResult(long outputBytes, long hash) {
       this.outputBytes = outputBytes;
-      this.checksum = checksum;
+      this.hash = hash;
     }
   }
 }
