@@ -146,6 +146,7 @@ int32 skia_image_backing_height(int64_t handle);
 int skia_image_backing_read_pixels(int64_t handle, void* output, int32 x, int32 y, int32 width, int32 height);
 int skia_image_backing_read_row(int64_t handle, void* output, int32 y, int32 width);
 int skia_image_backing_read_rgba_row(int64_t handle, void* output, int32 y, int32 width);
+int skia_image_backing_read_argb_rows(int64_t handle, Pixel* output, int32 y, int32 width, int32 height);
 int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
     float srcLeft, float srcTop, float srcRight, float srcBottom,
     float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
