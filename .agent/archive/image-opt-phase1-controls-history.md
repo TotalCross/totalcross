@@ -42,3 +42,24 @@ handoff SHA for phase 2 is `613762c45ed887733b1dab9a12b20b32280e0fca`.
 Implementation changes stop at the internal settings and diagnostic gate;
 later raster, format, cache, lifecycle, GPU, and allocation work remains for
 the next plans.
+
+## Corrective milestone — complete diagnostic accounting gate
+
+The original control-plumbing report remains unchanged. Focused tests landed in
+`42a183473`; the separate workload, explicit native backing
+create/readback/release probe, generic artifact path, and revision-aware runner
+landed in `f33760435`. The gate fix and cached native counter boundary landed
+in `4721397d6`, with native symbol registration corrected in `8399b8b0a`.
+
+The corrective S1/S2/S3 item is
+`.agent/benchmarks/image-opt-phase1-controls/complete-diagnostic-gating/`.
+S1 at `f33760435` recorded 60 backing readbacks and 60 native creates/releases
+despite Java diagnostics being disabled. Post-fix S2 at `8399b8b0a` recorded
+zero in every emitted diagnostic field; S3 recorded nonzero Java pipeline and
+draw-plan counters, 60 readbacks, and native backing create/release counts.
+All 60-sample CVs were below 0.25%, so no 200-sample rerun was needed.
+
+Focused Image tests, SDK distribution, macOS software-Skia Release CMake/Ninja,
+exact-dylib deployment, and relevant Image smokes passed. The corrective
+evidence commit is `884ffcb61`; verbose logs and generated binaries remain
+outside the committed artifact set.

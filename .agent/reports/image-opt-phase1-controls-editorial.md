@@ -6,32 +6,32 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 editorial handoff
 
-Status: complete.
+Status: complete after corrective milestone.
 
-Phase 1 delivered internal, package-private controls for the image optimization
-series without adding public SDK API. The 13 feature states are independent
-tri-state switches; `DEFAULT` remains disabled for all future optimizations.
-Only `DIAGNOSTIC_ACCOUNTING` is wired to the existing Image and native-backing
-accounting gate. The memory-pressure hook is intentionally a no-op for phase 4.
+Phase 1 delivered internal package-private controls for 13 feature IDs without
+adding public SDK API. All future optimization defaults remain disabled and
+the pressure hook remains a no-op. The original control-plumbing report is
+preserved at
+`.agent/benchmarks/image-opt-phase1-controls/control-plumbing/report.md`.
 
-The control benchmark used 60 samples after three warmups on macOS 26.5.2
-arm64 with software Skia. S1 median/p95 was 668/671 ms with peak RSS 107456 KB.
-S2, all features disabled, was 669/671 ms and 107280 KB: +0.15% elapsed and
--0.16% RSS versus S1. S3, diagnostic accounting enabled only, was 669/671 ms
-and 109008 KB: +0.15% elapsed and +1.44% RSS versus S1. S3 ended with 5752
-Image creations, 3832 pipeline creations, 1920 draw-plan creations, and 15360
-cache hits, proving the diagnostic switch was active.
+The corrective report is
+`.agent/benchmarks/image-opt-phase1-controls/complete-diagnostic-gating/report.md`.
+Its S1/S2/S3 runs used 60 samples after three warmups on macOS 26.5.2 arm64
+software Skia: medians 676, 677, and 671 ms; peak RSS 115712, 116128, and
+116112 KB. S2 was +0.148% in median and +0.360% in RSS versus S1, with every
+diagnostic field zero. S3 proved the enabled path with 5752 Image creations,
+3832 pipelines, 1920 draw plans, 60 readbacks, and 60 native backing creates.
+All CVs were below 0.25%; no 200-sample rerun was required.
 
-The exact source handoff for phase 2 is branch commit
-`613762c45ed887733b1dab9a12b20b32280e0fca`; the final documentation commit
-`47b81182dd509a8cafd11250510939fd686586d0` follows it without changing
-implementation behavior. Phase 2 should branch from the final phase-1 branch
-HEAD after the state/evidence bookkeeping commit.
+The corrected implementation/evidence handoff for phase 2 is `884ffcb61`,
+with final branch documentation following it. Focused Image tests, SDK
+distribution, macOS Release CMake/Ninja, exact-dylib deployment, and relevant
+Image smokes passed. Native diagnostic pointers are cached at the boundary;
+counted native operations perform no Java class or field lookup.
 
 Known limits: one local machine, one software-Skia workload, external 50 ms
-RSS sampling, and millisecond VM timing around large batches. These results do
-not claim behavior or performance on Android, iOS, GPU paths, or later format,
-cache, lifecycle, or allocation optimizations.
+RSS sampling, and millisecond VM timing around large batches. Android, iOS,
+GPU, Windows, Linux, and later optimization phases remain out of scope.
 
 The authoritative evidence index is
 `.agent/evidence/image-opt-phase1-controls.jsonl`; verbose logs and generated
