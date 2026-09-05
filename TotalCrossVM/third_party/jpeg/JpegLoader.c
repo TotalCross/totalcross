@@ -348,17 +348,17 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
          uint8* destination = rgbaStorage + (size_t)(cinfo.output_scanline - 1) * width * 4;
          if (cinfo.out_color_components == 1) {
             for (x = 0; x < width; x++, buffer++, destination += 4) {
-               destination[0] = 0xFF;
+               destination[0] = (uint8)buffer[0];
                destination[1] = (uint8)buffer[0];
                destination[2] = (uint8)buffer[0];
-               destination[3] = (uint8)buffer[0];
+               destination[3] = 0xFF;
             }
          } else {
             for (x = 0; x < width; x++, buffer += 3, destination += 4) {
-               destination[0] = 0xFF;
-               destination[1] = (uint8)buffer[0];
-               destination[2] = (uint8)buffer[1];
-               destination[3] = (uint8)buffer[2];
+               destination[0] = (uint8)buffer[0];
+               destination[1] = (uint8)buffer[1];
+               destination[2] = (uint8)buffer[2];
+               destination[3] = 0xFF;
             }
          }
       } else if (cinfo.out_color_components == 1) // guich@tc114_12

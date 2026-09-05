@@ -193,7 +193,8 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
 
-   if ((userData.pixelsObj == null && userData.pixels == null) || userData.rowsDecoded < userData.height)
+   if ((userData.pixelsObj == null && userData.pixels == null && userData.rgbaStorage == null)
+         || userData.rowsDecoded < userData.height)
    {
       if (userData.upixels) png_free(png_ptr, userData.upixels);
 #if TC_RENDERER_SKIA
@@ -447,17 +448,17 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
          uint8* destination = userData->rgbaStorage + (size_t)row_num * userData->width * 4;
          if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6)) {
             for (x = 0; x < userData->width; x++, buffer += 4, destination += 4) {
-               destination[0] = (uint8)buffer[3];
-               destination[1] = (uint8)buffer[0];
-               destination[2] = (uint8)buffer[1];
-               destination[3] = (uint8)buffer[2];
+               destination[0] = (uint8)buffer[0];
+               destination[1] = (uint8)buffer[1];
+               destination[2] = (uint8)buffer[2];
+               destination[3] = (uint8)buffer[3];
             }
          } else {
             for (x = 0; x < userData->width; x++, buffer += 3, destination += 4) {
-               destination[0] = 0xFF;
-               destination[1] = (uint8)buffer[0];
-               destination[2] = (uint8)buffer[1];
-               destination[3] = (uint8)buffer[2];
+               destination[0] = (uint8)buffer[0];
+               destination[1] = (uint8)buffer[1];
+               destination[2] = (uint8)buffer[2];
+               destination[3] = 0xFF;
             }
          }
       } else if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6))
