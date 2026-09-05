@@ -28,10 +28,11 @@ public class ImageOptimizationControlBenchmarkApp extends MainWindow {
     try {
       require(samples > 0 && samples <= 200, "samples must be between 1 and 200");
       configureScenario(scenario);
+      boolean diagnosticEnabled = "post-enabled".equals(scenario);
       byte[] fixture = encodedFixture();
       Image.resetImageOperationAccountingForTest();
       Image.imageOperationAccountingForTest = false;
-      if ("post-enabled".equals(scenario)) {
+      if (diagnosticEnabled) {
         ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
             ImageOptimizationSettings.ENABLED);
       }
@@ -46,7 +47,9 @@ public class ImageOptimizationControlBenchmarkApp extends MainWindow {
       }
 
       Image.resetImageOperationAccountingForTest();
-      Image.imageOperationAccountingForTest = false;
+      if (!diagnosticEnabled) {
+        Image.imageOperationAccountingForTest = false;
+      }
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
         runBatch(root, cached, surface, sample);
