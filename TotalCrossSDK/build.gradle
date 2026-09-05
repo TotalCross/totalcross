@@ -447,6 +447,7 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
         dependsOn sourceSets.smokeTest.classesTaskName
         from(smokeTestClassesDir) {
             include 'totalcross/ui/image/' + appClass + '*.class'
+            include 'totalcross/ui/image/ImageRasterBenchmarkSupport*.class'
         }
         if (includeImageAbiResources) {
             from(smokeTestResourcesDir) {
@@ -521,7 +522,12 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
             if (!executable.isFile()) {
                 throw new GradleException('Native smoke executable not found: ' + executable)
             }
-            commandLine executable.absolutePath
+            def smokeArguments = project.findProperty('smokeArgs')
+            if (smokeArguments) {
+                commandLine([executable.absolutePath] + smokeArguments.toString().trim().split(/\s+/).findAll { it })
+            } else {
+                commandLine executable.absolutePath
+            }
             smokeOutput.reset()
             standardOutput = smokeOutput
             errorOutput = smokeOutput
@@ -727,6 +733,30 @@ registerImageMacSmoke('ImageDeferredFrameFadeLayout', 'ImageDeferredFrameFadeLay
 registerImageMacSmoke('ImageOptimizationControlBenchmark', 'ImageOptimizationControlBenchmarkApp',
     'image-optimization-control-benchmark', false, false, [
         'fixture=ImageOptimizationControlBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterDecodeBenchmark', 'ImageRasterDecodeBenchmarkApp',
+    'image-raster-decode-benchmark', true, false, [
+        'fixture=ImageRasterDecodeBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterOpacityBenchmark', 'ImageRasterOpacityBenchmarkApp',
+    'image-raster-opacity-benchmark', true, false, [
+        'fixture=ImageRasterOpacityBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterOpaqueDrawBenchmark', 'ImageRasterOpaqueDrawBenchmarkApp',
+    'image-raster-opaque-draw-benchmark', true, false, [
+        'fixture=ImageRasterOpaqueDrawBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterReadbackBenchmark', 'ImageRasterReadbackBenchmarkApp',
+    'image-raster-readback-benchmark', true, false, [
+        'fixture=ImageRasterReadbackBenchmarkApp',
         'overallPass=true'
     ])
 
