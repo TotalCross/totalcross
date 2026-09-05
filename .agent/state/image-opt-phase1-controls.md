@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-05T06:35:00-03:00
+Updated: 2026-09-05T12:14:11-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
@@ -16,7 +16,9 @@ Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
 The original Phase 1 control-plumbing work and report remain historical. The
 corrective slice is complete through focused tests `42a183473`, workload and
 runner `f33760435`, gate fix `4721397d6`, registration fix `8399b8b0a`, and
-benchmark evidence `884ffcb61`. S1 used `f33760435`; S2/S3 used `8399b8b0a`.
+benchmark evidence `884ffcb61`. The follow-up clear-state tests/smoke landed
+in `89458ecc7`; the native clear-only fix is `62a4c9278`. S1 used
+`f33760435`; S2/S3 used `8399b8b0a`.
 
 ## Next concrete action
 
@@ -36,11 +38,15 @@ control report was not overwritten.
 
 ## Validation
 
-Focused copyright, whitespace, runner syntax, SDK Image tests, SDK `dist`,
-macOS Release CMake/Ninja, exact-dylib deployment, relevant native Image
-smokes, and S1/S2/S3 process runs passed. S1/S2/S3 each recorded 60 samples;
-all S2 diagnostic fields are zero and S3 has nonzero Java/readback/native
-backing counters. No 200-sample rerun was required.
+Focused copyright/whitespace checks, SDK Image tests, SDK `dist`, macOS Release
+software-Skia CMake/Ninja, exact-dylib deployment, the disabled/enabled native
+accounting smoke, and related native Image smokes passed. The new smoke
+asserts zero Java/readback/native create/release counters after a real native
+create/readback/release while disabled, and increments in the enabled state.
+S1/S2/S3 each recorded 60 samples; all S2 diagnostic fields are zero and S3
+has nonzero Java/readback/native backing counters. No benchmark rerun was
+required because the follow-up only changes counter clearing, not the timed
+workload or hot path.
 
 ## Deferred validation
 
@@ -56,6 +62,8 @@ the plan. Verbose logs remain under ignored `artifacts/image-opt-phase1-controls
   counted native operations do not perform Java class or field lookups.
 - The corrective artifact is separate from the historical control report;
   S2 zeroes every emitted diagnostic field and S3 proves re-enablement.
+- Clear-only accounting preserves the configured Java/native gate; legacy reset
+  helpers continue to reset and enable accounting.
 - Benchmark evidence is committed; generated binaries and verbose logs are not.
 
 ## Blockers and deliberate out-of-scope files

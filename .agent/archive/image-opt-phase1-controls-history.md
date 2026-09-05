@@ -63,3 +63,20 @@ Focused Image tests, SDK distribution, macOS software-Skia Release CMake/Ninja,
 exact-dylib deployment, and relevant Image smokes passed. The corrective
 evidence commit is `884ffcb61`; verbose logs and generated binaries remain
 outside the committed artifact set.
+
+## Corrective follow-up — preserve clear/reset accounting state
+
+The focused state tests and deployed native regression smoke landed in
+`89458ecc7`; the native clear-only implementation and method registration
+landed in `62a4c9278`. `Image.clearImageOperationAccountingCountersForTest()`
+now clears Java and native counters without changing the configured gate.
+Legacy `Image.resetImageOperationAccountingForTest()` and
+`NativeImageBacking.resetBackingAccountingForTest()` remain reset-and-enable.
+
+The macOS Release software-Skia smoke used a real native backing and passed
+both required states: disabled clear/create/readback/release kept Java,
+readback, and native create/release counters at zero; enabled clear/create/
+readback/release incremented them. Focused Image tests, SDK distribution,
+native build, exact-dylib deployment, and related Image smokes passed. S1/S2/S3
+benchmark artifacts were not rerun or modified because the timed workload and
+counted hot paths were unchanged.
