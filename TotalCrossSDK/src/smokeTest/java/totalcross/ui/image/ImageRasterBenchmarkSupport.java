@@ -106,7 +106,17 @@ final class ImageRasterBenchmarkSupport {
   }
 
   static String hashString(long hash) {
-    return Long.toHexString(hash);
+    return hexWord((int) (hash >>> 32)) + hexWord((int) hash);
+  }
+
+  private static String hexWord(int value) {
+    String hex = Integer.toHexString(value);
+    StringBuilder padded = new StringBuilder(8);
+    for (int i = hex.length(); i < 8; i++) {
+      padded.append('0');
+    }
+    padded.append(hex);
+    return padded.toString();
   }
 
   static byte[] copy(byte[] source, int length) {
