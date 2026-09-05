@@ -386,6 +386,10 @@ bool skia_image_geometry_draw_compiled(SkCanvas* canvas, const SkImage* image,
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom) {
-    return geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight, srcBottom,
-                        dstLeft, dstTop, dstRight, dstBottom, -1) ? 1 : 0;
+    const int result = geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight,
+                                    srcBottom, dstLeft, dstTop, dstRight, dstBottom, -1) ? 1 : 0;
+    if (result != 0) {
+        skia_image_backing_mark_surface_mutated(targetSurface);
+    }
+    return result;
 }

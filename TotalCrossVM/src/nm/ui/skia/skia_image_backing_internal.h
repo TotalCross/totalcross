@@ -36,6 +36,7 @@ struct NativeImageBackingRecord {
 NativeImageBackingRecord* findBacking(int64_t handle);
 int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing);
 SkImageInfo rasterInfo(int32 width, int32 height);
+void markMutated(NativeImageBackingRecord* backing);
 
 }
 
