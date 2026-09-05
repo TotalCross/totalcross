@@ -4,11 +4,7 @@
 
 package totalcross.ui.image;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import totalcross.io.ByteArrayStream;
-import totalcross.sys.Vm;
 import totalcross.ui.gfx.Graphics;
 
 /** Shared Phase-3 fixtures, configuration, independent quality oracles, and shims. */
@@ -17,8 +13,6 @@ final class ImageCompactFormatsBenchmarkSupport {
   static final String GRAY8 = "GRAY8";
   static final String ARGB4444 = "ARGB4444";
   static final String RGBA8888 = "RGBA8888";
-  private static final Object MISSING = new Object();
-
   private ImageCompactFormatsBenchmarkSupport() {
   }
 
@@ -95,12 +89,7 @@ final class ImageCompactFormatsBenchmarkSupport {
   /** Materializes an encoded source without calling getGraphics on the source. */
   static Image materialize(byte[] encoded) throws Exception {
     Image image = new Image(encoded, encoded.length);
-    Object result = invokeInstanceOptional(image, "materializeNativeBackingForTest");
-    if (result == MISSING) {
-      // True-base adapter shim: Phase 2 has no non-mutating native materialization hook.
-      image.getPixels();
-    }
-    return image;
+    return ImageCompactFormatsNativeHooks.materialize(image);
   }
 
   static int[] decodeReference(byte[] encoded) throws Exception {
@@ -125,90 +114,23 @@ final class ImageCompactFormatsBenchmarkSupport {
   }
 
   static String format(Image image) {
-    Object backing = backing(image);
-    if (backing == null) {
-      return "UNKNOWN";
-    }
-    Object value = invokeInstanceOptional(backing, "currentFormatForTest");
-    if (value == MISSING) {
-      value = invokeInstanceOptional(backing, "formatForTest");
-    }
-    if (value != MISSING && value != null) {
-      return String.valueOf(value);
-    }
-    return backing.getClass().getName().contains("NativeImageBacking") ? RGBA8888 : "JAVA_RASTER";
+    return ImageCompactFormatsNativeHooks.format(image);
   }
 
   static boolean formatProbeAvailable() {
-    return findMethod("totalcross.ui.image.NativeImageBacking", "currentFormatForTest") != null
-        || findMethod("totalcross.ui.image.NativeImageBacking", "formatForTest") != null;
+    return ImageCompactFormatsNativeHooks.formatProbeAvailable();
   }
 
   static boolean metricProbeAvailable(String method) {
-    return findMethod("totalcross.ui.image.Image", method) != null
-        || findMethod("totalcross.ui.image.NativeImageBacking", method) != null;
+    return ImageCompactFormatsNativeHooks.metricProbeAvailable(method);
   }
 
   static long metric(String method) {
-    Object value = invokeStaticOptional("totalcross.ui.image.Image", method);
-    if (value == MISSING) {
-      value = invokeStaticOptional("totalcross.ui.image.NativeImageBacking", method);
-    }
-    return value instanceof Number ? ((Number) value).longValue() : 0;
+    return ImageCompactFormatsNativeHooks.metric(method);
   }
 
   static void invokeStaticRequired(String className, String method) throws Exception {
-    Object result = invokeStaticOptional(className, method);
-    ImageRasterBenchmarkSupport.require(result != MISSING,
-        "missing Phase-3 test hook " + className + "." + method);
-  }
-
-  static Object invokeStaticOptional(String className, String method) {
-    try {
-      Method candidate = findMethod(className, method);
-      if (candidate == null) {
-        return MISSING;
-      }
-      return candidate.invoke(null);
-    } catch (Throwable failure) {
-      return MISSING;
-    }
-  }
-
-  private static Object invokeInstanceOptional(Object receiver, String method) {
-    if (receiver == null) {
-      return MISSING;
-    }
-    try {
-      Method candidate = receiver.getClass().getDeclaredMethod(method);
-      candidate.setAccessible(true);
-      return candidate.invoke(receiver);
-    } catch (NoSuchMethodException missing) {
-      return MISSING;
-    } catch (Throwable failure) {
-      return MISSING;
-    }
-  }
-
-  private static Method findMethod(String className, String method) {
-    try {
-      Class<?> type = Class.forName(className);
-      Method candidate = type.getDeclaredMethod(method);
-      candidate.setAccessible(true);
-      return candidate;
-    } catch (Throwable missing) {
-      return null;
-    }
-  }
-
-  private static Object backing(Image image) {
-    try {
-      Field field = Image.class.getDeclaredField("backing");
-      field.setAccessible(true);
-      return field.get(image);
-    } catch (Throwable missing) {
-      return null;
-    }
+    ImageCompactFormatsNativeHooks.invokeStaticRequired(className, method);
   }
 
   static Quality quality(int[] actual, int[] expected) {
@@ -316,6 +238,6 @@ final class ImageCompactFormatsBenchmarkSupport {
   }
 
   static long elapsedMillis(long start) {
-    return Vm.getTimeStamp() - start;
+    return totalcross.sys.Vm.getTimeStamp() - start;
   }
 }

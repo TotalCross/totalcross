@@ -10,7 +10,8 @@ This adapter replays the Phase-3 compact-format harness on the exact accepted
 Phase-2 runtime (`86bfeafe388ce866236c3ae58eecb144664895e2`). It archives the
 benchmark sources from an explicit Phase-3 harness revision, copies the fixed
 encoded fixtures and macOS launcher into a disposable detached worktree, and
-uses the reflection shims in `ImageCompactFormatsBenchmarkSupport` for
+uses the explicit `ImageCompactFormatsNativeHooks` shim in the benchmark
+support package for
 Phase-3-only format/counter/failure hooks that do not exist in Phase 2.
 
 The adapter does not copy or modify runtime source. Its digest covers the
@@ -28,4 +29,3 @@ prepare-image-opt-phase3-true-base.sh \
 ```
 
 The command prints `source_revision`, `base_revision`, and `adapter_digest`.
-
