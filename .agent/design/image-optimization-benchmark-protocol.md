@@ -42,7 +42,8 @@ The default native configuration is:
 -DTC_WINDOWING_SDL=ON
 ```
 
-The workload warms up internally before recording 60 measured samples. If a
+The phase-1 workload warms up with three complete batches before recording 60
+measured samples. The runner samples process RSS externally every 50 ms. If a
 comparison has coefficient of variation above 5% or is near its acceptance
 boundary, rerun that comparison with 200 samples and record the reason. Do not
 exceed 200 samples without a documented justification.

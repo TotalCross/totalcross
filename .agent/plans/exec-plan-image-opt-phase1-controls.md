@@ -62,7 +62,7 @@ explicitly requested later.
 
 The active plan is:
 
-    .agent/exec-plan-image-opt-phase1-controls.md
+    .agent/plans/exec-plan-image-opt-phase1-controls.md
 
 Create and maintain:
 
@@ -493,11 +493,12 @@ benchmarks unless source, binary revision, or measurement regime changed.
 
 ## Progress
 
-- [ ] Bootstrap `perf/image-opt-phase1-controls` and commit this plan.
-- [ ] Create benchmark harness and commit S1.
-- [ ] Implement internal settings and diagnostics gating.
-- [ ] Run and commit S2/S3 plus benchmark report.
-- [ ] Final validation and phase-2 handoff.
+- [x] Bootstrap `perf/image-opt-phase1-controls` from the authored master SHA
+  and commit this plan plus resumable phase artifacts.
+- [x] Create the macOS benchmark harness and commit the exact S1 baseline.
+- [x] Implement internal settings, focused tests, and diagnostics gating.
+- [x] Run and commit S2/S3 plus the control-plumbing benchmark report.
+- [x] Complete final validation and record the phase-2 handoff.
 
 ## Decision Log
 
@@ -522,11 +523,25 @@ benchmarks unless source, binary revision, or measurement regime changed.
 
 ## Outcomes & Retrospective
 
-Complete this section only at milestone boundaries. Record delivered behavior,
-measured results, and deferred limitations. Do not write estimates as results.
+Phase 1 delivered a package-private process-global tri-state control surface
+for all 13 planned feature IDs, validated cache/MMAP byte settings, an
+allocation-free effective mask, and a no-op memory-pressure test hook. Only
+`DIAGNOSTIC_ACCOUNTING` is connected; all other features remain behaviorally
+inert and all defaults resolve to current behavior.
+
+The committed S1/S2/S3 control workload used 60 samples after three warmups
+on one macOS arm64 software-Skia host. S1 median was 668 ms, S2 disabled was
+669 ms (+0.15%) with 0.16% lower peak RSS, and S3 enabled was 669 ms (+0.15%)
+with 1.44% higher peak RSS. CV stayed below 5%, so no 200-sample rerun was
+required. The S3 RSS increase is reported as diagnostic trade-off evidence.
+
+Final focused Image tests, SDK distribution, macOS Release build, and relevant
+native Image smokes passed. Android/iOS/Windows/Linux/GPU validation and all
+later optimization implementations remain deferred by scope.
 
 ## Revision Note
 
-Initial plan authored for the post-`feat/image-native-backing` master. Phase 5
-GPU representation optimizations such as KTX2/Basis, ASTC, ETC2, BCn, and R8
-asset formats are explicitly outside this series.
+Initial plan authored for the post-`feat/image-native-backing` master. The
+working-set path was corrected to the plan's repository location during final
+handoff. Phase 5 GPU representation optimizations such as KTX2/Basis, ASTC,
+ETC2, BCn, and R8 asset formats are explicitly outside this series.
