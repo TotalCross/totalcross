@@ -33,7 +33,7 @@ class ImageDeferredFrameStateTest {
   @Test
   void currentFrameNavigationIsMetadataOnlyAndReusesCachedVariants() throws Exception {
     Image image = new Image(twoFramePng()).getSmoothScaledInstance(4, 2);
-    assertNull(image.pixels);
+    assertNull(image.backing);
     assertEquals(0, image.getCurrentFrame());
 
     Image oneX = image.resolveForDrawing(1);
@@ -43,7 +43,7 @@ class ImageDeferredFrameStateTest {
 
     image.setCurrentFrame(-1);
     assertEquals(1, image.getCurrentFrame());
-    assertNull(image.pixels);
+    assertNull(image.backing);
     assertSame(oneX, image.resolveForDrawing(1));
     assertSame(twoX, image.resolveForDrawing(2));
     assertFalse(Arrays.equals(oneFrameZero, oneX.getPixels()));
@@ -63,7 +63,7 @@ class ImageDeferredFrameStateTest {
   void canonicalBarrierAdoptsTheSelectedFrame() throws Exception {
     Image actual = new Image(twoFramePng());
     actual.setCurrentFrame(1);
-    assertNull(actual.pixels);
+    assertNull(actual.backing);
     int[] expected = new Image(twoFramePng()).getFrameInstance(1).getPixels();
 
     assertArrayEquals(expected, actual.getPixels());
@@ -156,7 +156,7 @@ class ImageDeferredFrameStateTest {
     Image image = new Image(stripPng(5, 2));
     image.setFrameCount(2);
 
-    assertNull(image.pixels);
+    assertNull(image.backing);
     assertEquals(2, image.getFrameCount());
     assertEquals(2, image.getWidth());
     assertEquals(2, intField(image, "logicalWidth"));
@@ -182,7 +182,7 @@ class ImageDeferredFrameStateTest {
       expected.setFrameCount(2);
 
       actual.setFrameCount(2);
-      assertNull(actual.pixels);
+      assertNull(actual.backing);
       assertEquals(2, actual.getFrameCount());
       assertArrayEquals(expected.getPixels(), actual.getPixels());
     }
@@ -194,8 +194,12 @@ class ImageDeferredFrameStateTest {
     image.setFrameCount(2);
     assertEquals(1, image.getWidth());
     assertEquals(1, intField(image, "logicalWidth"));
-    assertEquals(2, image.resolveForDrawing(2).getPixelWidth());
-    assertEquals(1, image.resolveForDrawing(2).getWidth());
+    Image oneX = image.resolveForDrawing(1);
+    assertEquals(1, oneX.getPixelWidth());
+    assertEquals(1, oneX.getWidth());
+    Image twoX = image.resolveForDrawing(2);
+    assertEquals(2, twoX.getPixelWidth());
+    assertEquals(1, twoX.getWidth());
 
     Image roundTripSource = new Image(stripPng(5, 2));
     roundTripSource.setFrameCount(2);
@@ -205,6 +209,10 @@ class ImageDeferredFrameStateTest {
     assertEquals(5, inspection.width);
     assertEquals(2, inspection.frameCount);
     assertEquals("FC=2", inspection.comment);
+    Image roundTrip = new Image(output.toByteArray());
+    Image expectedStrip = new Image(stripPng(5, 2));
+    expectedStrip.setFrameCount(2);
+    assertArrayEquals(allFramePixels(expectedStrip), allFramePixels(roundTrip));
   }
 
   @Test
@@ -311,7 +319,7 @@ class ImageDeferredFrameStateTest {
 
     Image actual = highDensityStrip(contentScale).getClippedInstance(0, 0, 4, 2);
     actual.setFrameCount(2);
-    assertNull(actual.pixels);
+    assertNull(actual.backing);
     assertEquals(expected.getPixelWidth(), actual.getPixelWidth());
     assertEquals(expected.getWidth(), actual.getWidth());
     assertEquals(expected.getContentScale(), actual.getContentScale());
@@ -333,7 +341,7 @@ class ImageDeferredFrameStateTest {
 
     Image actual = highDensityStrip(contentScale).getFrameInstance(0);
     actual.setFrameCount(2);
-    assertNull(actual.pixels);
+    assertNull(actual.backing);
     assertEquals(physicalFrameWidth, actual.getPixelWidth());
     assertEquals(logicalFrameWidth, actual.getWidth());
     assertEquals(logicalFrameWidth, intField(actual, "logicalWidth"));
@@ -367,17 +375,17 @@ class ImageDeferredFrameStateTest {
   void frameLayoutValidationIsImmediateAndSameCountIsNoOp() throws Exception {
     Image image = new Image(stripPng(5, 2));
     assertThrows(IllegalArgumentException.class, () -> image.setFrameCount(0));
-    assertNull(image.pixels);
+    assertNull(image.backing);
     image.setFrameCount(2);
     ImagePipeline layout = pipeline(image);
     image.setFrameCount(2);
     assertSame(layout, pipeline(image));
     assertThrows(IllegalStateException.class, () -> image.setFrameCount(3));
-    assertNull(image.pixels);
+    assertNull(image.backing);
 
     Image multi = new Image(twoFramePng());
     assertThrows(IllegalStateException.class, () -> multi.setFrameCount(3));
-    assertNull(multi.pixels);
+    assertNull(multi.backing);
   }
 
   @Test
@@ -426,9 +434,7 @@ class ImageDeferredFrameStateTest {
 
   private static int[] allFramePixels(Image image) throws Exception {
     image.getPixels();
-    Field field = Image.class.getDeclaredField("pixelsOfAllFrames");
-    field.setAccessible(true);
-    return ((int[]) field.get(image)).clone();
+    return ((RasterImageBacking) image.backing).pixelsOfAllFrames().clone();
   }
 
   private static byte[] twoFramePng() throws Exception {

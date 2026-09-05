@@ -56,6 +56,63 @@ class ImageDeferredColorMutationTest {
   }
 
   @Test
+  void drawColorCandidatesAreFusableAndColor2RemainsAnExactFallback() throws Exception {
+    Image[] drawCandidates = {
+        new Image(png(6, 4)).getTouchedUpInstance((byte) 5, (byte) 0),
+        new Image(png(6, 4)).getFadedInstance(0xFF204060),
+        new Image(png(6, 4)).getAlphaInstance(-20),
+        inPlaceCandidate(Operation.APPLY_COLOR),
+        inPlaceCandidate(Operation.APPLY_FADE)
+    };
+
+    for (Image candidate : drawCandidates) {
+      assertTrue(pipeline(candidate).isDrawFusable());
+      assertFalse(pipeline(candidate).isGeometryOnly());
+      assertNull(candidate.backing);
+      assertTrue(candidate.getPixels().length > 0);
+      assertNull(pipeline(candidate));
+    }
+
+    Image[] fallbackCandidates = {
+        inPlaceCandidate(Operation.APPLY_COLOR2)
+    };
+
+    for (Image candidate : fallbackCandidates) {
+      assertFalse(pipeline(candidate).isDrawFusable());
+      assertFalse(pipeline(candidate).isGeometryOnly());
+      assertNull(candidate.drawPlanForDrawing(1));
+      assertNull(candidate.backing);
+      assertTrue(candidate.getPixels().length > 0);
+      assertNull(pipeline(candidate));
+    }
+
+    for (Operation barrier : new Operation[] { Operation.CHANGE_COLORS, Operation.SET_TRANSPARENT_COLOR }) {
+      Image image = inPlaceCandidate(barrier);
+      ImagePipeline deferred = pipeline(image);
+      assertEquals(barrier == Operation.CHANGE_COLORS ? ImagePipeline.CHANGE_COLORS
+          : ImagePipeline.SET_TRANSPARENT_COLOR, deferred.operationType());
+      assertFalse(deferred.isGeometryOnly());
+      assertNull(image.drawPlanForDrawing(1));
+      assertTrue(image.getPixels() != null);
+      assertNull(pipeline(image));
+    }
+  }
+
+  @Test
+  void basicDrawColorClassificationPreservesSmoothAndRotateBoundaries() throws Exception {
+    Image colorAfterSmooth = new Image(png(8, 6)).getSmoothScaledInstance(4, 3)
+        .getTouchedUpInstance((byte) 20, (byte) -10);
+    Image colorBeforeSmooth = new Image(png(8, 6)).getTouchedUpInstance((byte) 20, (byte) -10)
+        .getSmoothScaledInstance(4, 3);
+    Image twoRotations = new Image(png(8, 6)).getRotatedScaledInstance(100, 30, 0xFF102030)
+        .getRotatedScaledInstance(100, 30, 0xFF102030);
+
+    assertTrue(pipeline(colorAfterSmooth).isDrawFusable());
+    assertTrue(pipeline(colorBeforeSmooth).isDrawFusable());
+    assertTrue(pipeline(twoRotations).isDrawFusable());
+  }
+
+  @Test
   void chainedMutationsPreserveCallOrderExactly() throws Exception {
     byte[] encoded = png(7, 5);
     Image expected = new Image(encoded);
@@ -181,7 +238,126 @@ class ImageDeferredColorMutationTest {
     assertEquals(20, resolved.getPixelHeight());
     assertEquals(2, resolved.getContentScale());
     assertEquals(1, image.getContentScale());
-    assertNull(image.pixels);
+    assertNull(image.backing);
+  }
+
+  @Test
+  void deferredFadeAlphaAndTouchUpMatchBoundaryChannelMappings() throws Exception {
+    int[] channels = { 0, 1, 127, 128, 254, 255 };
+    int[] pixels = new int[channels.length * 2];
+    for (int i = 0; i < channels.length; i++) {
+      int channel = channels[i];
+      pixels[i] = 0xFF000000 | channel << 16 | (255 - channel) << 8 | channel;
+      pixels[channels.length + i] = (i == 0 ? 0 : 0x7F000000) | channel << 16 | channel << 8 | (255 - channel);
+    }
+    byte[] encoded = pngWithPixels(pixels);
+
+    for (int fade : channels) {
+      Image expected = new Image(encoded);
+      expected.getPixels();
+      expected.applyFade(fade);
+      Image actual = new Image(encoded);
+      actual.applyFade(fade);
+      assertArrayEquals(expected.getPixels(), actual.getPixels(), "fade=" + fade);
+    }
+
+    for (int delta : new int[] { -255, -1, 0, 1, 255 }) {
+      Image expected = new Image(encoded);
+      expected.getPixels();
+      Image expectedResult = invokeEager(expected, "eagerAlphaInstance", new Class<?>[] { int.class }, delta);
+      Image actualResult = new Image(encoded).getAlphaInstance(delta);
+      assertArrayEquals(expectedResult.getPixels(), actualResult.getPixels(), "alpha delta=" + delta);
+    }
+
+    for (int brightness : new int[] { -128, -1, 0, 1, 127 }) {
+      for (int contrast : new int[] { -128, -1, 0, 1, 127 }) {
+        Image expected = new Image(encoded);
+        expected.getPixels();
+        Image expectedResult = invokeEager(expected, "eagerTouchedUpInstance",
+            new Class<?>[] { byte.class, byte.class }, (byte) brightness, (byte) contrast);
+        Image actualResult = new Image(encoded).getTouchedUpInstance((byte) brightness, (byte) contrast);
+        assertArrayEquals(expectedResult.getPixels(), actualResult.getPixels(),
+            "brightness=" + brightness + ",contrast=" + contrast);
+      }
+    }
+
+    Image expectedFade = new Image(encoded);
+    expectedFade.getPixels();
+    Image expectedFaded = invokeEager(expectedFade, "eagerFadedInstance", new Class<?>[] { int.class }, 0xFF204060);
+    Image actualFaded = new Image(encoded).getFadedInstance(0xFF204060);
+    assertArrayEquals(expectedFaded.getPixels(), actualFaded.getPixels());
+
+    for (int color : new int[] { 0x00000000, 0x00000001, 0x007F80FE, 0x00FFFFFF }) {
+      Image expectedColor = new Image(encoded);
+      expectedColor.getPixels();
+      expectedColor.applyColor(color);
+      Image actualColor = new Image(encoded);
+      actualColor.applyColor(color);
+      assertArrayEquals(expectedColor.getPixels(), actualColor.getPixels(), "applyColor=" + color);
+      assertEquals(pixels[channels.length], actualColor.getPixels()[channels.length],
+          "transparent applyColor=" + color);
+    }
+
+    for (int color : new int[] { 0xFF000000, 0xAA4080C0, 0xAAFFFFFF }) {
+      Image expectedColor2 = new Image(encoded);
+      expectedColor2.getPixels();
+      expectedColor2.applyColor2(color);
+      Image actualColor2 = new Image(encoded);
+      actualColor2.applyColor2(color);
+      assertArrayEquals(expectedColor2.getPixels(), actualColor2.getPixels(), "applyColor2=" + color);
+      assertEquals(pixels[channels.length], actualColor2.getPixels()[channels.length],
+          "transparent applyColor2=" + color);
+    }
+  }
+
+  @Test
+  void touchUpBrightnessUsesTheLegacyZeroThreshold() throws Exception {
+    int[] sourcePixels = { 0xFFE0F000, 0xFF8090A0 };
+    byte[] encoded = pngWithPixels(sourcePixels);
+    int[][] expected = {
+        { 0xFFDFEF00, 0xFF7F8F9F },
+        { 0xFFE0F000, 0xFF8090A0 },
+        { 0xFFE1F100, 0xFF8191A1 },
+        { 0xFFE3F300, 0xFF8292A2 }
+    };
+
+    for (int brightness = -1; brightness <= 2; brightness++) {
+      Image actual = new Image(encoded).getTouchedUpInstance((byte) brightness, (byte) 0);
+      assertArrayEquals(expected[brightness + 1], actual.getPixels(), "brightness=" + brightness);
+    }
+
+    Image contrasted = new Image(encoded).getTouchedUpInstance((byte) 1, (byte) 1);
+    assertArrayEquals(new int[] { 0xFFE2F200, 0xFF8192A2 }, contrasted.getPixels());
+  }
+
+  @Test
+  void exactColorMutationsPreserveArgbAndNoTransparentColorSemantics() throws Exception {
+    int[] pixels = { 0x00112233, 0xFF112233, 0x7F445566, 0xFF778899 };
+    byte[] encoded = pngWithPixels(pixels);
+
+    Image expectedChange = new Image(encoded);
+    expectedChange.getPixels();
+    expectedChange.changeColors(0x00112233, 0xAA010203);
+    Image actualChange = new Image(encoded);
+    actualChange.changeColors(0x00112233, 0xAA010203);
+    assertNull(actualChange.backing);
+    assertArrayEquals(expectedChange.getPixels(), actualChange.getPixels());
+
+    Image expectedTransparent = new Image(encoded);
+    expectedTransparent.getPixels();
+    expectedTransparent.setTransparentColor(0x112233);
+    Image actualTransparent = new Image(encoded);
+    actualTransparent.setTransparentColor(0x112233);
+    assertNull(actualTransparent.backing);
+    assertArrayEquals(expectedTransparent.getPixels(), actualTransparent.getPixels());
+
+    Image expectedOpaque = new Image(encoded);
+    expectedOpaque.getPixels();
+    expectedOpaque.setTransparentColor(-1);
+    Image actualOpaque = new Image(encoded);
+    actualOpaque.setTransparentColor(-1);
+    assertNull(actualOpaque.backing);
+    assertArrayEquals(expectedOpaque.getPixels(), actualOpaque.getPixels());
   }
 
   private void assertDeferredAndEquivalent(Operation operation) throws Exception {
@@ -191,10 +367,10 @@ class ImageDeferredColorMutationTest {
     apply(operation, expected);
 
     Image actual = new Image(encoded);
-    assertNull(actual.pixels);
+    assertNull(actual.backing);
     apply(operation, actual);
     assertNotNullPipeline(actual);
-    assertNull(actual.pixels);
+    assertNull(actual.backing);
     assertArrayEquals(expected.getPixels(), actual.getPixels());
   }
 
@@ -218,6 +394,12 @@ class ImageDeferredColorMutationTest {
     default:
       throw new AssertionError(operation);
     }
+  }
+
+  private static Image inPlaceCandidate(Operation operation) throws Exception {
+    Image image = new Image(png(6, 4));
+    apply(operation, image);
+    return image;
   }
 
   private static void assertFrameArraysEqual(Image expected, Image actual) {
@@ -247,10 +429,17 @@ class ImageDeferredColorMutationTest {
     assertTrue(pipeline(image) != null);
   }
 
+  private static Image invokeEager(Image image, String name, Class<?>[] parameterTypes, Object... arguments)
+      throws Exception {
+    Method method = Image.class.getDeclaredMethod(name, parameterTypes);
+    method.setAccessible(true);
+    return (Image) method.invoke(image, arguments);
+  }
+
   private static Image raster(int width, int height) throws Exception {
     Image image = new Image(width, height);
-    for (int i = 0; i < image.pixels.length; i++) {
-      image.pixels[i] = 0xFF000000 | ((i * 37) & 0xFF) << 16 | ((i * 19) & 0xFF) << 8 | (i * 11) & 0xFF;
+    for (int i = 0; i < image.getPixels().length; i++) {
+      image.getPixels()[i] = 0xFF000000 | ((i * 37) & 0xFF) << 16 | ((i * 19) & 0xFF) << 8 | (i * 11) & 0xFF;
     }
     return image;
   }
@@ -261,6 +450,14 @@ class ImageDeferredColorMutationTest {
       for (int x = 0; x < width; x++) {
         source.setRGB(x, y, 0xFF000000 | ((x * 29) & 0xFF) << 16 | ((y * 41) & 0xFF) << 8 | (x + y));
       }
+    }
+    return writePng(source, null);
+  }
+
+  private static byte[] pngWithPixels(int[] pixels) throws Exception {
+    BufferedImage source = new BufferedImage(pixels.length, 1, BufferedImage.TYPE_INT_ARGB);
+    for (int x = 0; x < pixels.length; x++) {
+      source.setRGB(x, 0, pixels[x]);
     }
     return writePng(source, null);
   }

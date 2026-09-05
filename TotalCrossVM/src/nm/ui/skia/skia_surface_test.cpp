@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "skia.h"
+#include "skia_image_backing.h"
 
 #include <cstdio>
 #include <cstdint>
@@ -238,6 +239,45 @@ int main(int argc, char** argv) {
     if (!expectEqual(skia_getPixel(clippedDestination, 1, 1), 0, "clipped fallback copy")) {
         return 1;
     }
+
+    auto* firstPixels = new uint8_t[8]{ 0x10, 0x20, 0x30, 0xFF, 0x40, 0x50, 0x60, 0xFF };
+    auto* secondPixels = new uint8_t[8]{ 0xA0, 0xB0, 0xC0, 0xFF, 0xD0, 0xE0, 0xF0, 0xFF };
+    const int64_t firstBacking = skia_image_backing_create_from_rgba_pixels(firstPixels, 2, 1);
+    const int64_t secondBacking = skia_image_backing_create_from_rgba_pixels(secondPixels, 2, 1);
+    const int64_t mutableBacking = skia_image_backing_create_empty(2, 1);
+    const int64_t invalidBacking = 0x7fffffff;
+    if (!firstBacking || !secondBacking || !mutableBacking ||
+        !skia_image_backing_draw(mutableBacking, firstBacking, 0, 0, 2, 1, 0, 0, 2, 1, 255)) {
+        std::fputs("unable to create native image backing probe surfaces\n", stderr);
+        return 1;
+    }
+
+    Pixel snapshotPixels[2] = {};
+    const int64_t snapshotBacking = skia_image_backing_snapshot(mutableBacking);
+    if (!snapshotBacking || !skia_image_backing_read_row(snapshotBacking, snapshotPixels, 0, 2) ||
+        !expectEqual(snapshotPixels[0], 0xFF102030, "native backing ARGB readback") ||
+        !expectEqual(snapshotPixels[1], 0xFF405060, "native backing row readback")) {
+        return 1;
+    }
+
+    if (!skia_image_backing_draw(mutableBacking, secondBacking, 0, 0, 2, 1, 0, 0, 2, 1, 255) ||
+        !skia_image_backing_read_row(snapshotBacking, snapshotPixels, 0, 2) ||
+        !expectEqual(snapshotPixels[0], 0xFF102030, "native snapshot copy-on-write") ||
+        !skia_image_backing_read_row(mutableBacking, snapshotPixels, 0, 2) ||
+        !expectEqual(snapshotPixels[0], 0xFFA0B0C0, "native mutable surface update")) {
+        return 1;
+    }
+
+    if (skia_image_backing_snapshot(invalidBacking) != 0 ||
+        skia_image_backing_read_row(invalidBacking, snapshotPixels, 0, 2)) {
+        std::fputs("invalid native backing handle was accepted\n", stderr);
+        return 1;
+    }
+    skia_image_backing_release(firstBacking);
+    skia_image_backing_release(secondBacking);
+    skia_image_backing_release(mutableBacking);
+    skia_image_backing_release(snapshotBacking);
+    skia_image_backing_release(snapshotBacking);
 
     skia_deleteBitmap(source);
     skia_deleteBitmap(destination);

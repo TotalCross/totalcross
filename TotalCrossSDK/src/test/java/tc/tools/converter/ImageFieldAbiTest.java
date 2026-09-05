@@ -28,7 +28,8 @@ class ImageFieldAbiTest {
   };
 
   private static final String[] OBJECT_FIELDS = {
-      "pixels", "pixelsOfAllFrames", "comment", "gfx", "changed", "instanceCount"
+      "backing", "reservedLegacyPixelsOfAllFrames", "comment", "gfx", "changed", "instanceCount",
+      "master", "path", "pipeline"
   };
 
   private static final String[] VALUE64_FIELDS = { "hwScaleW", "hwScaleH", "contentScale" };
@@ -53,7 +54,7 @@ class ImageFieldAbiTest {
     assertEquals("pipeline", fieldName(converted.objectInstanceFields[8]));
     assertNativeMethods(converted, "imageLoad", "imageParse", "setCurrentFrameNative", "applyChangesNative",
         "changeColorsNative", "getPixelRowNative", "setTransparentColorNative", "freeTextureNative", "createJpgNative",
-        "applyColorNative", "nativeEqualsNative", "applyColor2Native", "applyFadeNative", "decodeEncodedSource",
+        "applyColorNative", "applyColor2Native", "applyFadeNative", "decodeEncodedSource",
         "failNextNativeMaterializationForTestNative", "nativeResizeJpeg",
         "getJpegBestFit", "getJpegScaled", "getModifiedNative");
   }

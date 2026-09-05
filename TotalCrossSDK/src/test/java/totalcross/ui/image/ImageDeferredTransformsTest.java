@@ -22,7 +22,42 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
+import totalcross.io.ByteArrayStream;
+
 class ImageDeferredTransformsTest {
+  @Test
+  void drawPlanClassifiesSemanticOperationsAndStartsAtGenerationZero() throws Exception {
+    int[] operations = {
+        ImagePipeline.SCALE, ImagePipeline.SMOOTH_SCALE, ImagePipeline.ROTATE_SCALE,
+        ImagePipeline.TOUCH_UP, ImagePipeline.FADE, ImagePipeline.ALPHA,
+        ImagePipeline.APPLY_COLOR, ImagePipeline.APPLY_COLOR2, ImagePipeline.APPLY_FADE,
+        ImagePipeline.CHANGE_COLORS, ImagePipeline.SET_TRANSPARENT_COLOR,
+        ImagePipeline.FRAME_SELECT, ImagePipeline.CROP, ImagePipeline.FRAME_LAYOUT
+    };
+    ImageDrawPlan plan = new ImageDrawPlan(raster(1, 1), operations,
+        new int[operations.length * 4], new int[operations.length * 2],
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1,
+        255, 0, 255, 255, 1, 1, 1, 1, 1, 1);
+
+    assertArrayEquals(new int[] {
+        ImageDrawPlan.CAPABILITY_DRAW_GEOMETRY,
+        ImageDrawPlan.CAPABILITY_DRAW_GEOMETRY,
+        ImageDrawPlan.CAPABILITY_DRAW_GEOMETRY,
+        ImageDrawPlan.CAPABILITY_DRAW_COLOR_CANDIDATE,
+        ImageDrawPlan.CAPABILITY_DRAW_COLOR_CANDIDATE,
+        ImageDrawPlan.CAPABILITY_DRAW_COLOR_CANDIDATE,
+        ImageDrawPlan.CAPABILITY_DRAW_COLOR_CANDIDATE,
+        ImageDrawPlan.CAPABILITY_DRAW_COLOR_CANDIDATE,
+        ImageDrawPlan.CAPABILITY_DRAW_COLOR_CANDIDATE,
+        ImageDrawPlan.CAPABILITY_MATERIALIZATION_BARRIER,
+        ImageDrawPlan.CAPABILITY_MATERIALIZATION_BARRIER,
+        ImageDrawPlan.CAPABILITY_DRAW_GEOMETRY,
+        ImageDrawPlan.CAPABILITY_DRAW_GEOMETRY,
+        ImageDrawPlan.CAPABILITY_DRAW_GEOMETRY
+    }, plan.operationCapabilities);
+    assertEquals(0, plan.sourceDecodeGeneration);
+  }
+
   @Test
   void allTransformFamiliesRemainDeferredUntilTheCanonicalBarrier() throws Exception {
     Image[] results = {
@@ -36,7 +71,7 @@ class ImageDeferredTransformsTest {
 
     for (Image result : results) {
       assertNotNull(pipeline(result));
-      assertNull(result.pixels);
+      assertNull(result.backing);
       assertTrue(result.getWidth() > 0);
       assertTrue(result.getHeight() > 0);
       assertNotNull(result.getPixels());
@@ -55,23 +90,23 @@ class ImageDeferredTransformsTest {
     assertSame(root, root(pipeline(second)));
     assertSame(root, root(pipeline(chained)));
     assertTrue(root instanceof EncodedImageSource);
-    assertNull(first.pixels);
-    assertNull(second.pixels);
-    assertNull(chained.pixels);
+    assertNull(first.backing);
+    assertNull(second.backing);
+    assertNull(chained.backing);
   }
 
   @Test
   void rasterRootIsDeepSnapshotAndSubsequentTransformsAppendToIt() throws Exception {
     Image source = new Image(4, 3);
-    for (int i = 0; i < source.pixels.length; i++) {
-      source.pixels[i] = 0xFF000000 | (i * 0x00010101);
+    for (int i = 0; i < source.getPixels().length; i++) {
+      source.getPixels()[i] = 0xFF000000 | (i * 0x00010101);
     }
     Image expected = source.getSmoothScaledInstance(2, 2);
     Image derived = source.getSmoothScaledInstance(2, 2).getAlphaInstance(-30);
     Image expectedChained = expected.getAlphaInstance(-30);
-    assertTrue(root(pipeline(derived)) instanceof RasterImageSource);
+    assertTrue(root(pipeline(derived)) instanceof BackingImageSource);
 
-    source.pixels[0] = 0xFFFFFFFF;
+    source.getPixels()[0] = 0xFFFFFFFF;
     assertArrayEquals(expectedChained.getPixels(), derived.getPixels());
     assertEquals(2, derived.getWidth());
     assertEquals(2, derived.getHeight());
@@ -81,7 +116,7 @@ class ImageDeferredTransformsTest {
   @Test
   void largeImageHashUsesEagerReductionAfterTransformsAreDeferred() throws Exception {
     Image image = raster(65, 65);
-    int expected = Arrays.hashCode(eager(image, "eagerScaledInstance", new Class<?>[] { int.class, int.class }, 64, 64).pixels);
+    int expected = Arrays.hashCode(eager(image, "eagerScaledInstance", new Class<?>[] { int.class, int.class }, 64, 64).getPixels());
 
     assertTrue(expected != 0);
     assertEquals(expected, image.hashCode());
@@ -116,6 +151,20 @@ class ImageDeferredTransformsTest {
   }
 
   @Test
+  void rotatedZeroFillRemainsTransparentAtTheCorners() throws Exception {
+    Image rotated = raster(5, 4).getRotatedScaledInstance(100, 37, 0);
+    int[] pixels = rotated.getPixels();
+    boolean sawTransparent = false;
+    for (int pixel : pixels) {
+      if ((pixel >>> 24) == 0) {
+        sawTransparent = true;
+        break;
+      }
+    }
+    assertTrue(sawTransparent);
+  }
+
+  @Test
   void multiFrameMetadataIsKnownBeforeMaterialization() throws Exception {
     Image image = new Image(pngWithComment(4, 2, "FC=2"));
     Image transformed = image.getScaledInstance(3, 5);
@@ -124,7 +173,7 @@ class ImageDeferredTransformsTest {
     assertEquals(5, transformed.getHeight());
     assertEquals(2, transformed.getFrameCount());
     assertEquals(3, transformed.getPixelWidth());
-    assertNull(transformed.pixels);
+    assertNull(transformed.backing);
     assertNotNull(transformed.getPixels());
     assertEquals(2, transformed.getFrameCount());
     assertEquals(6, intField(transformed, "widthOfAllFrames"));
@@ -215,6 +264,22 @@ class ImageDeferredTransformsTest {
         new Image(png(5, 4)).getAlphaInstance(-40));
   }
 
+  @Test
+  void pngBarrierPreservesDeferredRotationResult() throws Exception {
+    Image expected = eager(raster(3, 2), "eagerRotatedScaledInstance",
+        new Class<?>[] { int.class, int.class, int.class }, 150, 37, 0xFF102030);
+    Image deferred = raster(3, 2).getRotatedScaledInstance(150, 37, 0xFF102030);
+    ByteArrayStream output = new ByteArrayStream(512);
+
+    deferred.createPng(output);
+    Image saved = new Image(output.getBuffer(), output.getPos());
+
+    assertNull(pipeline(deferred));
+    assertEquals(expected.getPixelWidth(), saved.getPixelWidth());
+    assertEquals(expected.getPixelHeight(), saved.getPixelHeight());
+    assertArrayEquals(expected.getPixels(), saved.getPixels());
+  }
+
   private static void assertEquivalent(Image eager, Image deferred) {
     assertEquals(eager.getPixelWidth(), deferred.getPixelWidth());
     assertEquals(eager.getPixelHeight(), deferred.getPixelHeight());
@@ -258,21 +323,21 @@ class ImageDeferredTransformsTest {
 
   private static Image raster(int width, int height) throws Exception {
     Image image = new Image(width, height);
-    for (int i = 0; i < image.pixels.length; i++) {
-      image.pixels[i] = 0xFF000000 | (i * 0x00010101);
+    for (int i = 0; i < image.getPixels().length; i++) {
+      image.getPixels()[i] = 0xFF000000 | (i * 0x00010101);
     }
     return image;
   }
 
   private static Image multiFrameRaster() throws Exception {
     Image image = new Image(10, 4);
-    for (int i = 0; i < image.pixels.length; i++) {
-      image.pixels[i] = 0xFF112233;
+    for (int i = 0; i < image.getPixels().length; i++) {
+      image.getPixels()[i] = 0xFF112233;
     }
     image.setFrameCount(2);
     image.setCurrentFrame(1);
-    for (int i = 0; i < image.pixels.length; i++) {
-      image.pixels[i] = 0xFF445566;
+    for (int i = 0; i < image.getPixels().length; i++) {
+      image.getPixels()[i] = 0xFF445566;
     }
     image.setCurrentFrame(0);
     return image;
