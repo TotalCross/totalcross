@@ -27,9 +27,14 @@ public class ImageOptimizationControlBenchmarkApp extends MainWindow {
 
     try {
       require(samples > 0 && samples <= 200, "samples must be between 1 and 200");
+      configureScenario(scenario);
       byte[] fixture = encodedFixture();
       Image.resetImageOperationAccountingForTest();
       Image.imageOperationAccountingForTest = false;
+      if ("post-enabled".equals(scenario)) {
+        ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+            ImageOptimizationSettings.ENABLED);
+      }
       Image root = new Image(fixture);
       Image cached = root.getSmoothScaledInstance(160, 120);
       Image target = new Image(TARGET_WIDTH, TARGET_HEIGHT);
@@ -71,6 +76,15 @@ public class ImageOptimizationControlBenchmarkApp extends MainWindow {
         + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();
     exit(overallPass ? 0 : 1);
+  }
+
+  private static void configureScenario(String scenario) {
+    if (!"pre".equals(scenario)) {
+      ImageOptimizationSettings.resetForTest();
+      for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
+        ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
+      }
+    }
   }
 
   private static void runBatch(Image root, Image cached, Graphics surface, int sample) throws Exception {
