@@ -449,6 +449,7 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
             include 'totalcross/ui/image/' + appClass + '*.class'
             include 'totalcross/ui/image/ImageRasterBenchmarkSupport*.class'
             include 'totalcross/ui/image/ImageCompactFormatsBenchmarkSupport*.class'
+            include 'totalcross/ui/image/ImageCompactFormatsNativeHooks*.class'
         }
         if (includeImageAbiResources) {
             from(smokeTestResourcesDir) {
