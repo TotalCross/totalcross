@@ -144,20 +144,51 @@ final class ImageCompactFormatsBenchmarkSupport {
         && actual.length == expected.length, "quality arrays differ");
     long squared = 0;
     int max = 0;
-    int count = actual.length * 4;
+    int count = 0;
     for (int i = 0; i < actual.length; i++) {
       int a = actual[i];
       int e = expected[i];
       max = Math.max(max, Math.abs(((a >>> 24) & 0xFF) - ((e >>> 24) & 0xFF)));
-      max = Math.max(max, Math.abs(((a >>> 16) & 0xFF) - ((e >>> 16) & 0xFF)));
-      max = Math.max(max, Math.abs(((a >>> 8) & 0xFF) - ((e >>> 8) & 0xFF)));
-      max = Math.max(max, Math.abs((a & 0xFF) - (e & 0xFF)));
       squared += square(((a >>> 24) & 0xFF) - ((e >>> 24) & 0xFF));
-      squared += square(((a >>> 16) & 0xFF) - ((e >>> 16) & 0xFF));
-      squared += square(((a >>> 8) & 0xFF) - ((e >>> 8) & 0xFF));
-      squared += square((a & 0xFF) - (e & 0xFF));
+      count++;
+      if (((e >>> 24) & 0xFF) != 0) {
+        max = Math.max(max, Math.abs(((a >>> 16) & 0xFF) - ((e >>> 16) & 0xFF)));
+        max = Math.max(max, Math.abs(((a >>> 8) & 0xFF) - ((e >>> 8) & 0xFF)));
+        max = Math.max(max, Math.abs((a & 0xFF) - (e & 0xFF)));
+        squared += square(((a >>> 16) & 0xFF) - ((e >>> 16) & 0xFF));
+        squared += square(((a >>> 8) & 0xFF) - ((e >>> 8) & 0xFF));
+        squared += square((a & 0xFF) - (e & 0xFF));
+        count += 3;
+      }
     }
     return new Quality(max, Math.sqrt((double) squared / Math.max(1, count)));
+  }
+
+  static Quality compositeQuality(int[] actual, int[] expected, int background) {
+    long squared = 0;
+    int max = 0;
+    int count = actual.length * 3;
+    for (int i = 0; i < actual.length; i++) {
+      int actualAlpha = alpha(actual[i]);
+      int expectedAlpha = alpha(expected[i]);
+      int actualRed = composite(red(actual[i]), actualAlpha, background);
+      int actualGreen = composite(green(actual[i]), actualAlpha, background);
+      int actualBlue = composite(blue(actual[i]), actualAlpha, background);
+      int expectedRed = composite(red(expected[i]), expectedAlpha, background);
+      int expectedGreen = composite(green(expected[i]), expectedAlpha, background);
+      int expectedBlue = composite(blue(expected[i]), expectedAlpha, background);
+      int redError = actualRed - expectedRed;
+      int greenError = actualGreen - expectedGreen;
+      int blueError = actualBlue - expectedBlue;
+      max = Math.max(max, Math.max(Math.abs(redError),
+          Math.max(Math.abs(greenError), Math.abs(blueError))));
+      squared += square(redError) + square(greenError) + square(blueError);
+    }
+    return new Quality(max, Math.sqrt((double) squared / Math.max(1, count)));
+  }
+
+  private static int composite(int channel, int alpha, int background) {
+    return (channel * alpha + background * (255 - alpha) + 127) / 255;
   }
 
   private static long square(int value) {

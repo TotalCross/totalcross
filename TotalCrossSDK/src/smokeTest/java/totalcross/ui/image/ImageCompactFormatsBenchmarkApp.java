@@ -72,7 +72,11 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
             + ",rgba_quality_max=" + quality.rgbaMax
             + ",rgba_quality_rmse=" + quality.rgbaRmse
             + ",model_quality_max=" + quality.modelMax
-            + ",model_quality_rmse=" + quality.modelRmse);
+            + ",model_quality_rmse=" + quality.modelRmse
+            + ",black_composite_max=" + quality.blackCompositeMax
+            + ",black_composite_rmse=" + quality.blackCompositeRmse
+            + ",white_composite_max=" + quality.whiteCompositeMax
+            + ",white_composite_rmse=" + quality.whiteCompositeRmse);
         System.out.flush();
         completedSamples = sample;
       }
@@ -144,8 +148,12 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
             image.getGraphics().fillRect(0, 0, 1, 1);
           }
         } else {
+          int draws = SOURCE_DRAWS;
+          if ("gray8".equals(workload) || "argb4444".equals(workload)) {
+            draws *= 2;
+          }
           ImageCompactFormatsBenchmarkSupport.drawToRgbaTarget(image,
-              "writepixels".equals(workload) ? SOURCE_DRAWS * 4 : SOURCE_DRAWS);
+              "writepixels".equals(workload) ? SOURCE_DRAWS * 4 : draws);
         }
         if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)) {
           // Encoding is an observer and must not promote the compact source.
@@ -198,6 +206,10 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
     double rgbaRmse = 0;
     int modelMax = 0;
     double modelRmse = 0;
+    int blackCompositeMax = 0;
+    double blackCompositeRmse = 0;
+    int whiteCompositeMax = 0;
+    double whiteCompositeRmse = 0;
     for (int i = 0; i < result.pixels.length; i++) {
       ImageCompactFormatsBenchmarkSupport.Quality rgba =
           ImageCompactFormatsBenchmarkSupport.quality(result.pixels[i], references[i]);
@@ -215,8 +227,21 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
       rgbaRmse = Math.max(rgbaRmse, rgba.rmse);
       modelMax = Math.max(modelMax, modelQuality.maxError);
       modelRmse = Math.max(modelRmse, modelQuality.rmse);
+      if (result.formats[i].equals(ImageCompactFormatsBenchmarkSupport.ARGB4444)) {
+        ImageCompactFormatsBenchmarkSupport.Quality black =
+            ImageCompactFormatsBenchmarkSupport.compositeQuality(
+                result.pixels[i], references[i], 0);
+        ImageCompactFormatsBenchmarkSupport.Quality white =
+            ImageCompactFormatsBenchmarkSupport.compositeQuality(
+                result.pixels[i], references[i], 255);
+        blackCompositeMax = Math.max(blackCompositeMax, black.maxError);
+        blackCompositeRmse = Math.max(blackCompositeRmse, black.rmse);
+        whiteCompositeMax = Math.max(whiteCompositeMax, white.maxError);
+        whiteCompositeRmse = Math.max(whiteCompositeRmse, white.rmse);
+      }
     }
-    return new QualitySummary(rgbaMax, rgbaRmse, modelMax, modelRmse);
+    return new QualitySummary(rgbaMax, rgbaRmse, modelMax, modelRmse,
+        blackCompositeMax, blackCompositeRmse, whiteCompositeMax, whiteCompositeRmse);
   }
 
   private static String inputHashes(ImageCompactFormatsBenchmarkSupport.Fixture[] fixtures) {
@@ -267,12 +292,22 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
     final double rgbaRmse;
     final int modelMax;
     final double modelRmse;
+    final int blackCompositeMax;
+    final double blackCompositeRmse;
+    final int whiteCompositeMax;
+    final double whiteCompositeRmse;
 
-    QualitySummary(int rgbaMax, double rgbaRmse, int modelMax, double modelRmse) {
+    QualitySummary(int rgbaMax, double rgbaRmse, int modelMax, double modelRmse,
+        int blackCompositeMax, double blackCompositeRmse,
+        int whiteCompositeMax, double whiteCompositeRmse) {
       this.rgbaMax = rgbaMax;
       this.rgbaRmse = rgbaRmse;
       this.modelMax = modelMax;
       this.modelRmse = modelRmse;
+      this.blackCompositeMax = blackCompositeMax;
+      this.blackCompositeRmse = blackCompositeRmse;
+      this.whiteCompositeMax = whiteCompositeMax;
+      this.whiteCompositeRmse = whiteCompositeRmse;
     }
   }
 }
