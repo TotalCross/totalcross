@@ -10,6 +10,7 @@
 #include "tcvm.h"
 #include "ui/image/ImageDecodeStatus.h"
 #include "ui/ImageTestAccounting_c.h"
+#include "ui/image/ImageDecodeFormat.h"
 #include <stdlib.h>
 #if TC_RENDERER_SKIA
 #include "ui/NativeImageBacking.h"
@@ -27,6 +28,7 @@ typedef struct
    Pixel* pixels;
    Pixel* pixelStorage;
    uint8* rgbaStorage;
+   uint8* compactStorage;
    TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
    // for fetching data
    TCObject inputStreamObj, bufObj, pixelsObj;
@@ -45,6 +47,7 @@ typedef struct
    bool zeroCopy;
    bool opacityMetadata;
    bool sourceHasAlpha;
+   ImageBackingFormat storageFormat;
    bool opacityAlphaOutput;
    bool pixelsOpaque;
    int32 rowsDecoded;
@@ -179,6 +182,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
       if (userData->rgbaStorage) free(userData->rgbaStorage);
 #if TC_RENDERER_SKIA
       if (userData->pixelStorage) xfree(userData->pixelStorage);
+      if (userData->compactStorage) free(userData->compactStorage);
 #endif
       free(userData);
       heapDestroy(heap);
@@ -209,13 +213,15 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    while (!userData->quit && (count = pngRead(buffer, sizeof(buffer), userData)) > 0)
       png_process_data(png_ptr, userData->info_ptr, buffer, count);
 
-   if ((userData->pixelsObj == null && userData->pixels == null && userData->rgbaStorage == null)
+   if ((userData->pixelsObj == null && userData->pixels == null && userData->rgbaStorage == null
+         && userData->compactStorage == null)
          || userData->rowsDecoded < userData->height)
    {
       if (userData->upixels) png_free(png_ptr, userData->upixels);
 #if TC_RENDERER_SKIA
       if (userData->pixelStorage) xfree(userData->pixelStorage);
       if (userData->rgbaStorage) free(userData->rgbaStorage);
+      if (userData->compactStorage) free(userData->compactStorage);
 #endif
       png_destroy_read_struct(&png_ptr, &userData->info_ptr, NULL);
       Image_backing(imageObj) = null;
@@ -279,7 +285,11 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    {
       int64 handle;
       const int32 pixelBytes = (int32)((uint64)userData->width * userData->height * 4);
-      if (userData->zeroCopy) {
+      if (userData->compactStorage) {
+         handle = skia_image_backing_create_from_owned_pixels(userData->compactStorage,
+            userData->width, userData->height, userData->storageFormat);
+         userData->compactStorage = null;
+      } else if (userData->zeroCopy) {
          handle = skia_image_backing_create_from_owned_rgba_pixels(userData->rgbaStorage,
             userData->width, userData->height);
          userData->rgbaStorage = null;
@@ -290,7 +300,15 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
          userData->pixelStorage = null;
       }
       userData->pixels = null;
-      if (handle && userData->opacityMetadata) {
+      const int32 compactBytes = (int32)((uint64)userData->width * userData->height
+         * (userData->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2));
+      if (handle && userData->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
+         skia_image_backing_set_opacity(handle,
+            userData->storageFormat == IMAGE_BACKING_FORMAT_ARGB4444
+               ? (userData->pixelsOpaque ? SKIA_IMAGE_OPACITY_OPAQUE
+                                          : SKIA_IMAGE_OPACITY_TRANSLUCENT)
+               : SKIA_IMAGE_OPACITY_OPAQUE);
+      } else if (handle && userData->opacityMetadata) {
          const int32 opacity = !userData->sourceHasAlpha
             ? SKIA_IMAGE_OPACITY_OPAQUE
             : userData->opacityAlphaOutput
@@ -314,7 +332,11 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
          free(userData);
          return IMAGE_DECODE_RESOURCE_FAILURE;
       }
-      if (userData->zeroCopy) {
+      if (userData->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
+         skia_image_backing_record_compact_decode_for_test(userData->storageFormat,
+            (uint64_t)compactBytes);
+         imageAddTestCounter("decodeFinalBufferBytesForTest", compactBytes);
+      } else if (userData->zeroCopy) {
          imageRecordTestCounter("zeroCopyDecodeCountForTest");
       } else {
          imageRecordTestCounter("copiedDecodeCountForTest");
@@ -357,6 +379,9 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    userData->sourceHasAlpha = color_type == PNG_COLOR_TYPE_RGB_ALPHA
       || color_type == PNG_COLOR_TYPE_GRAY_ALPHA
       || png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) != 0;
+   userData->storageFormat = imageSelectDecodeStorageFormat(userData->imageObj,
+      color_type == PNG_COLOR_TYPE_GRAY && !userData->sourceHasAlpha,
+      userData->sourceHasAlpha);
    
    /*
    | set up transformation params:
@@ -368,7 +393,8 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
 
    if (color_type == PNG_COLOR_TYPE_RGB_ALPHA || color_type == PNG_COLOR_TYPE_PALETTE || bit_depth < 8 || png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
       png_set_expand(png_ptr);
-   if ((color_type == PNG_COLOR_TYPE_GRAY) || (color_type == PNG_COLOR_TYPE_GRAY_ALPHA))
+   if (userData->storageFormat != IMAGE_BACKING_FORMAT_GRAY8
+         && ((color_type == PNG_COLOR_TYPE_GRAY) || (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)))
       png_set_gray_to_rgb(png_ptr);
 
    userData->lastPass = png_set_interlace_handling(png_ptr) - 1;
@@ -378,8 +404,6 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    info_ptr = userData->info_ptr;
    color_type = png_get_color_type(png_ptr, info_ptr);
    num_trans = 0; // MUST BE INITIALIZED BEFORE png_get_tRNS
-   if (color_type != PNG_COLOR_TYPE_PALETTE && png_get_tRNS(png_ptr, info_ptr, null, &num_trans, null) != 0 && num_trans != 0) // we don't support transparent palettes
-      png_set_strip_alpha(png_ptr);
    userData->opacityAlphaOutput = userData->sourceHasAlpha && png_get_channels(png_ptr, info_ptr) == 4;
    userData->pixelsOpaque = true;
    userData->width = (int32)width;
@@ -405,7 +429,19 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
       userData->quit = true;
       return;
    }
-   if (userData->zeroCopy) {
+   if (userData->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
+      const size_t bytesPerPixel = userData->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2;
+      userData->compactStorage = (uint8*)malloc((size_t)width * height * bytesPerPixel);
+      if (!userData->compactStorage) {
+         *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+         userData->quit = true;
+         return;
+      }
+      if (imageDecodeConsumeFinalBufferFailureForTest()) {
+         *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+         HEAP_ERROR(userData->heap, 997);
+      }
+   } else if (userData->zeroCopy) {
       userData->rgbaStorage = (uint8*)malloc((size_t)width * height * 4);
       if (!userData->rgbaStorage) {
          *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
@@ -470,10 +506,21 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    png_progressive_combine_row() to replace the corresponding row as
    shown below:
 */
+static uint8 pngQuantize4(uint8 value)
+{
+   return (uint8)(((uint32)value * 15 + 127) / 255);
+}
+
+static uint8 pngPremultiply4(uint8 value, uint8 alpha4)
+{
+   return pngQuantize4((uint8)(((uint32)value * alpha4 + 7) / 15));
+}
+
 static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pass)
 {
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
-   if (!userData->pixelsObj && !userData->pixels && !userData->rgbaStorage)
+   if (!userData->pixelsObj && !userData->pixels && !userData->rgbaStorage
+         && !userData->compactStorage)
       return;
    png_bytep old_row = userData->upixels;
    png_progressive_combine_row(png_ptr, old_row, new_row);
@@ -495,7 +542,42 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
             }
          }
       }
-      if (userData->zeroCopy) {
+      if (userData->compactStorage) {
+         const size_t rowOffset = (size_t)row_num * userData->width
+            * (userData->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2);
+         uint8* destination = userData->compactStorage + rowOffset;
+         if (userData->storageFormat == IMAGE_BACKING_FORMAT_GRAY8) {
+            if (channels == 1) {
+               for (x = 0; x < userData->width; x++)
+                  destination[x] = buffer[x];
+            } else {
+               for (x = 0; x < userData->width; x++, buffer += channels)
+                  destination[x] = buffer[0];
+            }
+         } else if (userData->storageFormat == IMAGE_BACKING_FORMAT_RGB565) {
+            for (x = 0; x < userData->width; x++, buffer += channels) {
+               const uint16 packed = (uint16)((((uint16)buffer[0] * 31 + 127) / 255) << 11)
+                  | (uint16)((((uint16)buffer[1] * 63 + 127) / 255) << 5)
+                  | (uint16)(((uint16)buffer[2] * 31 + 127) / 255);
+               destination[x * 2] = (uint8)(packed & 0xFF);
+               destination[x * 2 + 1] = (uint8)(packed >> 8);
+            }
+         } else {
+            for (x = 0; x < userData->width; x++, buffer += channels) {
+               uint8 red = buffer[0];
+               uint8 green = buffer[1];
+               uint8 blue = buffer[2];
+               uint8 alpha = channels == 4 ? buffer[3] : 0xFF;
+               uint8 alpha4 = pngQuantize4(alpha);
+               uint16 packed = (uint16)pngPremultiply4(red, alpha4) << 12;
+               packed |= (uint16)pngPremultiply4(green, alpha4) << 8;
+               packed |= (uint16)pngPremultiply4(blue, alpha4) << 4;
+               packed |= alpha4;
+               destination[x * 2] = (uint8)(packed & 0xFF);
+               destination[x * 2 + 1] = (uint8)(packed >> 8);
+            }
+         }
+      } else if (userData->zeroCopy) {
          uint8* destination = userData->rgbaStorage + (size_t)row_num * userData->width * 4;
          if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6)) {
             for (x = 0; x < userData->width; x++, buffer += 4, destination += 4) {

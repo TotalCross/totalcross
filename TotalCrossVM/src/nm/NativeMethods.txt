@@ -126,6 +126,16 @@ totalcross/ui/image/NativeImageBacking|native private static long backingLiveTes
 totalcross/ui/image/NativeImageBacking|native private static long backingPeakLiveTestNative();
 totalcross/ui/image/NativeImageBacking|native private static long backingBytesLiveTest();
 totalcross/ui/image/NativeImageBacking|native private static long backingPeakBytesTest();
+totalcross/ui/image/NativeImageBacking|native private static long formatBytesTest(int format);
+totalcross/ui/image/NativeImageBacking|native private static long compactDecodeCountTest();
+totalcross/ui/image/NativeImageBacking|native private static long compactDecodeBytesTest();
+totalcross/ui/image/NativeImageBacking|native private static long temporaryRgbaBytesTest();
+totalcross/ui/image/NativeImageBacking|native private static long compactReadbacksTest();
+totalcross/ui/image/NativeImageBacking|native private static long compactScratchPeakTest();
+totalcross/ui/image/NativeImageBacking|native private static long promotionAttemptsTest();
+totalcross/ui/image/NativeImageBacking|native private static long promotionSuccessesTest();
+totalcross/ui/image/NativeImageBacking|native private static long promotionFailuresTest();
+totalcross/ui/image/NativeImageBacking|native private static long promotionBytesTest();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsAttemptsTest();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsHitsTest();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsFallbacksTest();
@@ -133,7 +143,9 @@ totalcross/ui/image/NativeImageBacking|native private static long writePixelsCop
 totalcross/ui/image/NativeImageBacking|native private static long createFromArgbPixelsNative(int []pixels, int width, int height);
 totalcross/ui/image/NativeImageBacking|native private long snapshotNative();
 totalcross/ui/image/NativeImageBacking|native private static void failNextSnapshotNative();
+totalcross/ui/image/NativeImageBacking|native private static void failNextPromotionNative();
 totalcross/ui/image/NativeImageBacking|native private boolean makeMutableNative();
+totalcross/ui/image/NativeImageBacking|native private int currentFormatNative();
 totalcross/ui/image/NativeImageBacking|native private long scaleNative(int width, int height, boolean smooth);
 totalcross/ui/image/NativeImageBacking|native private static long materializeGeometryNative(totalcross.ui.image.ImageDrawPlan plan);
 totalcross/ui/image/NativeImageBacking|native private boolean readPixelsNative(int []output, int offset, int x, int y, int width, int height);

@@ -8,6 +8,10 @@
 #include "skia_image_backing.h"
 #include "skia_internal.h"
 
+#include <cstddef>
+
+#include "ui/ImageBackingFormat.h"
+
 namespace skia_image_backing_internal {
 
 struct NativeImageBackingRecord {
@@ -15,6 +19,8 @@ struct NativeImageBackingRecord {
     sk_sp<SkSurface> surface;
     int32 width;
     int32 height;
+    ImageBackingFormat format = IMAGE_BACKING_FORMAT_RGBA8888;
+    size_t rowBytes = 0;
     int32 opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
     uint64_t generation = 0;
     bool applyColor2AnalysisValid = false;
@@ -35,7 +41,8 @@ struct NativeImageBackingRecord {
 
 NativeImageBackingRecord* findBacking(int64_t handle);
 int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing);
-SkImageInfo rasterInfo(int32 width, int32 height);
+SkImageInfo rasterInfo(int32 width, int32 height,
+      ImageBackingFormat format = IMAGE_BACKING_FORMAT_RGBA8888);
 void markMutated(NativeImageBackingRecord* backing);
 
 }

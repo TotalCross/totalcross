@@ -13,6 +13,7 @@
 #include "io/File.h"
 #include "JpegLoader.h"
 #include "ui/image/ImageEncodedBag.h"
+#include "ui/image/ImageDecodeFormat.h"
 #if POSIX
    #include <sys/mman.h>
    #include <errno.h>
@@ -40,6 +41,21 @@ static bool imageDecodeOpacityMetadataEnabled(TCObject imageObj)
    int32* featureMask = imageObj == null
       ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
    return featureMask != null && ((*featureMask & IMAGE_OPT_RASTER_OPACITY_METADATA) != 0);
+}
+
+ImageBackingFormat imageSelectDecodeStorageFormat(TCObject imageObj, bool sourceIsGray,
+      bool sourceHasAlpha)
+{
+   int32* featureMask = imageObj == null
+      ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
+   int32 mask = featureMask ? *featureMask : 0;
+   if (sourceIsGray && !sourceHasAlpha && (mask & (1 << 6)) != 0)
+      return IMAGE_BACKING_FORMAT_GRAY8;
+   if (!sourceHasAlpha && (mask & (1 << 5)) != 0)
+      return IMAGE_BACKING_FORMAT_RGB565;
+   if (sourceHasAlpha && (mask & (1 << 7)) != 0)
+      return IMAGE_BACKING_FORMAT_ARGB4444;
+   return IMAGE_BACKING_FORMAT_RGBA8888;
 }
 
 void imageRecordOpacityFallbackScanForTest(int32 pixels)

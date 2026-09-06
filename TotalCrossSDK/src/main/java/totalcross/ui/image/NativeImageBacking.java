@@ -99,6 +99,10 @@ final class NativeImageBacking extends ImageBacking {
     return isAvailableNative();
   }
 
+  static boolean formatProbeAvailableNative() {
+    return isAvailable();
+  }
+
   static void resetBackingAccountingForTest() {
     resetAccountingTestNative();
     backingAccountingEnabledForTest = true;
@@ -154,6 +158,58 @@ final class NativeImageBacking extends ImageBacking {
 
   static long writePixelsCopiedBytesForTest() {
     return writePixelsCopyBytesTest();
+  }
+
+  static long rgba8888BackingBytesForTest() {
+    return formatBytesTest(0);
+  }
+
+  static long rgb565BackingBytesForTest() {
+    return formatBytesTest(1);
+  }
+
+  static long gray8BackingBytesForTest() {
+    return formatBytesTest(2);
+  }
+
+  static long argb4444BackingBytesForTest() {
+    return formatBytesTest(3);
+  }
+
+  static long compactDirectDecodeCountForTest() {
+    return compactDecodeCountTest();
+  }
+
+  static long compactDirectDecodeBytesForTest() {
+    return compactDecodeBytesTest();
+  }
+
+  static long temporaryRgbaDecodeBytesForTest() {
+    return temporaryRgbaBytesTest();
+  }
+
+  static long compactReadbackCountForTest() {
+    return compactReadbacksTest();
+  }
+
+  static long compactRowScratchPeakBytesForTest() {
+    return compactScratchPeakTest();
+  }
+
+  static long promotionAttemptsForTest() {
+    return promotionAttemptsTest();
+  }
+
+  static long promotionSuccessesForTest() {
+    return promotionSuccessesTest();
+  }
+
+  static long promotionFailuresForTest() {
+    return promotionFailuresTest();
+  }
+
+  static long promotionBytesForTest() {
+    return promotionBytesTest();
   }
 
   @Override
@@ -236,6 +292,10 @@ final class NativeImageBacking extends ImageBacking {
     return isValid() ? opacityNative() : OPACITY_UNKNOWN;
   }
 
+  int currentFormatForTest() {
+    return isValid() ? currentFormatNative() : -1;
+  }
+
   boolean makeMutable() {
     if (nativeHandle == 0) {
       throw new IllegalStateException("Native image backing has been released");
@@ -281,6 +341,11 @@ final class NativeImageBacking extends ImageBacking {
   /** Test-only hook for exercising retryable native backing snapshot allocation failures. */
   static void failNextSnapshotForTest() {
     failNextSnapshotNative();
+  }
+
+  /** Test-only hook for exercising retryable compact backing promotion failures. */
+  static void failNextPromotionForTest() {
+    failNextPromotionNative();
   }
 
   void release() {
@@ -365,6 +430,56 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private static long formatBytesTest(int format) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long compactDecodeCountTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long compactDecodeBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long temporaryRgbaBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long compactReadbacksTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long compactScratchPeakTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long promotionAttemptsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long promotionSuccessesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long promotionFailuresTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long promotionBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
   private static long createFromArgbPixelsNative(int[] pixels, int width, int height) {
     return 0;
   }
@@ -379,8 +494,17 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private static void failNextPromotionNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
   private boolean makeMutableNative() {
     return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int currentFormatNative() {
+    return -1;
   }
 
   @ReplacedByNativeOnDeploy
