@@ -401,27 +401,21 @@ public class Image extends GfxSurface {
     hwScaleH = (double) h / height;
   }
 
-  /** At non OpenGL devices, is the same of smoothScaledFixedAspectRatio;
-   * At openGL ones, this method shares all image informations
-   * while changing only the hwScaleW/hwScaleH parameters. 
+  /** Compatibility alias for smoothScaledFixedAspectRatio.
    * @since TotalCross 2.0
    */
   public Image hwScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException {
     return smoothScaledFixedAspectRatio(newSize, isHeight);
   }
 
-  /** At non OpenGL devices, is the same of getSmoothScaledInstance;
-   * At openGL ones, this method shares all image informations
-   * while changing only the hwScaleW/hwScaleH parameters. 
+  /** Compatibility alias for getSmoothScaledInstance.
    * @since TotalCross 2.0
    */
   public Image getHwScaledInstance(int width, int height) throws ImageException {
     return getSmoothScaledInstance(width, height);
   }
 
-  /** At non OpenGL devices, is the same of smoothScaledBy;
-   * At openGL ones, this method shares all image informations
-   * while changing only the hwScaleW/hwScaleH parameters. 
+  /** Compatibility alias for smoothScaledBy.
    * @since TotalCross 2.0
    */
   public Image hwScaledBy(double scaleX, double scaleY) throws ImageException {
@@ -1348,8 +1342,8 @@ public class Image extends GfxSurface {
         } catch (TransientImageMaterializationException failure) {
           throw failure;
         }
-        decoded.init(true);
         if (!targeted) {
+          decoded.init(true);
           try {
             verifyDecodedMetadata(source, decoded);
           } catch (DeterministicImageDecodeException failure) {
@@ -1357,9 +1351,16 @@ public class Image extends GfxSurface {
             throw failure;
           }
           source.installDecodedBacking(decoded.backing, decoded.backing.width(), decoded.backing.height(), 1);
+          decoded.logicalWidth = source.getLogicalWidth();
+          decoded.logicalHeight = source.getLogicalHeight();
+          decoded.contentScale = contentScaleForDecodedDenominator(source.decodedDenominator());
         } else {
           source.installDecodedBacking(decoded.backing, decoded.backing.width(), decoded.backing.height(),
               requestedDenominator);
+          decoded.logicalWidth = source.getLogicalWidth();
+          decoded.logicalHeight = source.getLogicalHeight();
+          decoded.contentScale = contentScaleForDecodedDenominator(source.decodedDenominator());
+          decoded.init(true);
         }
         current = decoded;
       }
@@ -1386,7 +1387,7 @@ public class Image extends GfxSurface {
     result.height = decodedHeight;
     result.logicalWidth = source.getLogicalWidth();
     result.logicalHeight = source.getLogicalHeight();
-    result.contentScale = 1;
+    result.contentScale = contentScaleForDecodedDenominator(source.decodedDenominator());
     result.frameCount = cachedFrameCount;
     result.currentFrame = cachedFrameCount > 1 ? 0 : -1;
     result.widthOfAllFrames = storageWidth;
@@ -1402,6 +1403,13 @@ public class Image extends GfxSurface {
     result.textureId = -1;
     result.init();
     return result;
+  }
+
+  private static double contentScaleForDecodedDenominator(int denominator) {
+    if (denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8) {
+      throw new IllegalArgumentException("Invalid decoded JPEG denominator");
+    }
+    return 1.0 / denominator;
   }
 
   private Image materializeDrawPrefix(ImagePipeline prefixPipeline, double destinationScale)
@@ -1944,8 +1952,9 @@ public class Image extends GfxSurface {
         }
         width = frame.getWidth();
         height = frame.getHeight();
-        logicalWidth = width;
-        logicalHeight = height;
+        logicalWidth = source.getLogicalWidth();
+        logicalHeight = source.getLogicalHeight();
+        contentScale = contentScaleForDecodedDenominator(targetDenominator);
         int[] decodedPixels = new int[width * height];
         frame.getRGB(0, 0, width, height, decodedPixels, 0, width);
         backing = new RasterImageBacking(width, height, 1, width, decodedPixels, null);
@@ -2047,8 +2056,9 @@ public class Image extends GfxSurface {
         }
         width = frame.getWidth();
         height = frame.getHeight();
-        logicalWidth = width;
-        logicalHeight = height;
+        logicalWidth = source.getLogicalWidth();
+        logicalHeight = source.getLogicalHeight();
+        contentScale = contentScaleForDecodedDenominator(denominator);
         int[] decodedPixels = new int[width * height];
         frame.getRGB(0, 0, width, height, decodedPixels, 0, width);
         backing = new RasterImageBacking(width, height, 1, width, decodedPixels, null);
@@ -2124,6 +2134,9 @@ public class Image extends GfxSurface {
     if (decoded.backing == null || !decoded.backing.isValid()) {
       throw new ImageException("Could not decode forced JPEG reference");
     }
+    decoded.logicalWidth = source.getLogicalWidth();
+    decoded.logicalHeight = source.getLogicalHeight();
+    decoded.contentScale = contentScaleForDecodedDenominator(denominator);
     decoded.init(true);
     return decoded;
   }
