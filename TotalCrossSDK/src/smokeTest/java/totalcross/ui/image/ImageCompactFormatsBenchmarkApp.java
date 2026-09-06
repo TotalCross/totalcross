@@ -11,7 +11,7 @@ import totalcross.ui.MainWindow;
 public class ImageCompactFormatsBenchmarkApp extends MainWindow {
   private static final int DEFAULT_SAMPLES = 60;
   private static final int SOURCE_DRAWS = 32;
-  private static final int PROMOTION_DRAWS = 1;
+  private static final int PROMOTION_DRAWS = 8;
 
   @Override
   public void initUI() {
@@ -134,6 +134,9 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
       if ("promotion".equals(workload)) {
         if (image.getGraphics() == null) {
           throw new IllegalStateException("promotion graphics unavailable");
+        }
+        for (int draw = 0; draw < PROMOTION_DRAWS; draw++) {
+          image.getGraphics().fillRect(0, 0, 1, 1);
         }
         image.getGraphics().fillRect(0, 0, 1, 1);
       } else {
