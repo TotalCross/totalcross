@@ -1,0 +1,1 @@
+ 5733 01:15 109264 435718368 /private/tmp/image-opt-phase3-true-base/TotalCrossSDK/build/image-compact-formats-benchmark/classes/install/macos/ImageCompactFormatsBenchmarkApp --scenario=pre --samples=200 --workload=argb4444 --phase2=false

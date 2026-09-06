@@ -1,0 +1,12 @@
+scenario=pre
+revision=86bfeafe388ce866236c3ae58eecb144664895e2
+executable=/private/tmp/image-opt-phase3-true-base/TotalCrossSDK/build/image-compact-formats-benchmark/classes/install/macos/ImageCompactFormatsBenchmarkApp
+expected_samples=200
+recorded_samples=200
+peak_rss_kb=134336
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count
