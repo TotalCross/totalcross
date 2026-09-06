@@ -188,6 +188,11 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
     if ("argb4444".equals(workload)) {
       return ImageCompactFormatsBenchmarkSupport.ARGB4444;
     }
+    if ("promotion".equals(workload)) {
+      return index == 0 ? ImageCompactFormatsBenchmarkSupport.RGB565
+          : index == 1 ? ImageCompactFormatsBenchmarkSupport.GRAY8
+          : ImageCompactFormatsBenchmarkSupport.ARGB4444;
+    }
     if ("combined-enabled".equals(workload)) {
       if (index <= 1) {
         return index == 0 ? ImageCompactFormatsBenchmarkSupport.RGB565

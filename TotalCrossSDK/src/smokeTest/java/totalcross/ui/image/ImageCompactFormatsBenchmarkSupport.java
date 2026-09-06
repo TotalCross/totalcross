@@ -74,11 +74,11 @@ final class ImageCompactFormatsBenchmarkSupport {
       ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_RGB565,
           ImageOptimizationSettings.ENABLED);
     }
-    if (workload.contains("gray8")) {
+    if (workload.contains("gray8") || workload.contains("promotion")) {
       ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_GRAY8,
           ImageOptimizationSettings.ENABLED);
     }
-    if (workload.contains("argb4444")) {
+    if (workload.contains("argb4444") || workload.contains("promotion")) {
       ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_ARGB4444,
           ImageOptimizationSettings.ENABLED);
     }
