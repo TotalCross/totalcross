@@ -57,17 +57,18 @@ final class ImageCompactFormatsBenchmarkSupport {
       }
       return;
     }
-    for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
+    for (int feature = ImageOptimizationSettings.DECODE_ZERO_COPY;
+        feature <= ImageOptimizationSettings.STORAGE_ARGB4444; feature++) {
       ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
-    }
-    if (!"post-enabled".equals(scenario)) {
-      return;
     }
     if (phase2Stack) {
       for (int feature = ImageOptimizationSettings.DECODE_ZERO_COPY;
           feature <= ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION; feature++) {
         ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
       }
+    }
+    if (!"post-enabled".equals(scenario)) {
+      return;
     }
     if (workload.contains("rgb565") || workload.contains("writepixels")
         || workload.contains("promotion")) {
