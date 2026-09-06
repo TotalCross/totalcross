@@ -17,6 +17,7 @@ public class ImageCompactFormatsSmokeApp extends MainWindow {
     boolean decodeFailureRetry = false;
     boolean promotionFailureRetry = false;
     boolean writePixelsParity = false;
+    boolean writePixelsFallback = false;
     boolean formatProbe = ImageCompactFormatsBenchmarkSupport.formatProbeAvailable();
     String error = "";
     try {
@@ -40,22 +41,25 @@ public class ImageCompactFormatsSmokeApp extends MainWindow {
       observer = promotionAttemptsBefore
           == ImageCompactFormatsBenchmarkSupport.metric("promotionAttemptsForTest")
           && checkSelection(images);
-      writePixelsParity = checkDrawParity(images[0]);
-      decodeFailureRetry = checkDecodeFailureRetry(fixtures[0]);
+      writePixelsParity = checkDrawParity(images[0]) && checkDrawParity(images[2]);
+      writePixelsFallback = checkTranslucentFallback(images[4]);
+      decodeFailureRetry = checkDecodeFailureRetry(fixtures);
       promotion = checkPromotions(fixtures);
-      promotionFailureRetry = checkPromotionFailureRetry(fixtures[1]);
+      promotionFailureRetry = checkPromotionFailureRetry(fixtures);
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
     boolean pass = error.length() == 0 && selection && observer && promotion
-        && decodeFailureRetry && promotionFailureRetry && writePixelsParity;
+        && decodeFailureRetry && promotionFailureRetry && writePixelsParity
+        && writePixelsFallback;
     System.out.println("fixture=ImageCompactFormatsSmokeApp,formatProbe=" + formatProbe
         + ",selection=" + selection + ",observerNonPromotion=" + observer
         + ",promotion=" + promotion + ",decodeFailureRetry=" + decodeFailureRetry
         + ",promotionFailureRetry=" + promotionFailureRetry
         + ",writePixelsParity=" + writePixelsParity
+        + ",writePixelsFallback=" + writePixelsFallback
         + ",backingBytesLive=" + ImageCompactFormatsBenchmarkSupport.metric("backingBytesLiveForTest")
         + ",promotionAttempts=" + ImageCompactFormatsBenchmarkSupport.metric("promotionAttemptsForTest")
         + ",promotionSuccesses=" + ImageCompactFormatsBenchmarkSupport.metric("promotionSuccessesForTest")
@@ -92,14 +96,29 @@ public class ImageCompactFormatsSmokeApp extends MainWindow {
     for (int index : new int[] { 0, 2, 4 }) {
       Image image = ImageCompactFormatsBenchmarkSupport.materialize(fixtures[index].bytes);
       String before = ImageCompactFormatsBenchmarkSupport.format(image);
+      int[] beforePixels = image.getPixels();
+      long attemptsBefore = ImageCompactFormatsBenchmarkSupport.metric("promotionAttemptsForTest");
       Graphics graphics = image.getGraphics();
+      int[] afterPromotionPixels = image.getPixels();
+      long attemptsAfterPromotion = ImageCompactFormatsBenchmarkSupport.metric(
+          "promotionAttemptsForTest");
       if (graphics == null || !ImageCompactFormatsBenchmarkSupport.RGBA8888.equals(
-          ImageCompactFormatsBenchmarkSupport.format(image))) {
+          ImageCompactFormatsBenchmarkSupport.format(image))
+          || !samePixels(beforePixels, afterPromotionPixels)
+          || attemptsAfterPromotion != attemptsBefore + 1) {
+        System.out.println("promotionCheck index=" + index + ",before=" + before
+            + ",after=" + ImageCompactFormatsBenchmarkSupport.format(image)
+            + ",attemptsBefore=" + attemptsBefore + ",attemptsAfter=" + attemptsAfterPromotion
+            + ",pixelMismatch=" + firstMismatch(beforePixels, afterPromotionPixels));
         return false;
       }
       graphics.backColor = 0x00445566;
       graphics.fillRect(0, 0, 1, 1);
-      if (before.equals(ImageCompactFormatsBenchmarkSupport.format(image))) {
+      if (before.equals(ImageCompactFormatsBenchmarkSupport.format(image))
+          || !ImageCompactFormatsBenchmarkSupport.RGBA8888.equals(
+              ImageCompactFormatsBenchmarkSupport.format(image))
+          || ImageCompactFormatsBenchmarkSupport.metric("promotionAttemptsForTest")
+              != attemptsAfterPromotion) {
         return false;
       }
     }
@@ -107,48 +126,79 @@ public class ImageCompactFormatsSmokeApp extends MainWindow {
   }
 
   private static boolean checkDecodeFailureRetry(
-      ImageCompactFormatsBenchmarkSupport.Fixture fixture) throws Exception {
+      ImageCompactFormatsBenchmarkSupport.Fixture[] fixtures) throws Exception {
     if (!ImageCompactFormatsBenchmarkSupport.metricProbeAvailable(
         "failNextCompactDecodeAfterAllocationForTest")) {
       return true;
     }
-    long beforeBytes = ImageCompactFormatsBenchmarkSupport.metric("backingBytesLiveForTest");
-    ImageCompactFormatsBenchmarkSupport.invokeStaticRequired("totalcross.ui.image.Image",
-        "failNextCompactDecodeAfterAllocationForTest");
-    boolean failed = false;
-    try {
-      ImageCompactFormatsBenchmarkSupport.materialize(fixture.bytes);
-    } catch (Throwable expected) {
-      failed = true;
+    String[] expectedFormats = {
+        ImageCompactFormatsBenchmarkSupport.RGB565,
+        ImageCompactFormatsBenchmarkSupport.RGB565,
+        ImageCompactFormatsBenchmarkSupport.GRAY8,
+        ImageCompactFormatsBenchmarkSupport.GRAY8,
+        ImageCompactFormatsBenchmarkSupport.ARGB4444
+    };
+    for (int index = 0; index < fixtures.length; index++) {
+      ImageCompactFormatsBenchmarkSupport.configure("post-enabled", "combined-enabled", true);
+      Image referenceImage = ImageCompactFormatsBenchmarkSupport.materialize(fixtures[index].bytes);
+      int[] expectedPixels = referenceImage.getPixels();
+      long beforeBytes = ImageCompactFormatsBenchmarkSupport.metric("backingBytesLiveForTest");
+      ImageCompactFormatsBenchmarkSupport.invokeStaticRequired("totalcross.ui.image.Image",
+          "failNextCompactDecodeAfterAllocationForTest");
+      boolean failed = false;
+      try {
+        ImageCompactFormatsBenchmarkSupport.materialize(fixtures[index].bytes);
+      } catch (Throwable expected) {
+        failed = true;
+      }
+      long afterBytes = ImageCompactFormatsBenchmarkSupport.metric("backingBytesLiveForTest");
+      Image retry = ImageCompactFormatsBenchmarkSupport.materialize(fixtures[index].bytes);
+      if (!failed || beforeBytes != afterBytes
+          || !expectedFormats[index].equals(ImageCompactFormatsBenchmarkSupport.format(retry))
+          || !samePixels(expectedPixels, retry.getPixels())) {
+        System.out.println("decodeFailureCheck index=" + index + ",failed=" + failed
+            + ",beforeBytes=" + beforeBytes + ",afterBytes=" + afterBytes
+            + ",format=" + ImageCompactFormatsBenchmarkSupport.format(retry)
+            + ",pixelMismatch=" + firstMismatch(expectedPixels, retry.getPixels()));
+        return false;
+      }
     }
-    long afterBytes = ImageCompactFormatsBenchmarkSupport.metric("backingBytesLiveForTest");
-    Image retry = ImageCompactFormatsBenchmarkSupport.materialize(fixture.bytes);
-    return failed && beforeBytes == afterBytes && retry.getPixels() != null;
+    return true;
   }
 
   private static boolean checkPromotionFailureRetry(
-      ImageCompactFormatsBenchmarkSupport.Fixture fixture) throws Exception {
+      ImageCompactFormatsBenchmarkSupport.Fixture[] fixtures) throws Exception {
     if (!ImageCompactFormatsBenchmarkSupport.metricProbeAvailable("failNextPromotionForTest")) {
       return true;
     }
-    Image image = ImageCompactFormatsBenchmarkSupport.materialize(fixture.bytes);
-    String before = ImageCompactFormatsBenchmarkSupport.format(image);
-    ImageCompactFormatsBenchmarkSupport.invokeStaticRequired(
-        "totalcross.ui.image.NativeImageBacking", "failNextPromotionForTest");
-    boolean failed = false;
-    try {
-      Graphics graphics = image.getGraphics();
-      if (graphics == null) {
+    for (int index : new int[] { 0, 2, 4 }) {
+      Image image = ImageCompactFormatsBenchmarkSupport.materialize(fixtures[index].bytes);
+      String before = ImageCompactFormatsBenchmarkSupport.format(image);
+      int[] beforePixels = image.getPixels();
+      ImageCompactFormatsBenchmarkSupport.invokeStaticRequired(
+          "totalcross.ui.image.NativeImageBacking", "failNextPromotionForTest");
+      boolean failed = false;
+      try {
+        Graphics graphics = image.getGraphics();
+        if (graphics == null) {
+          failed = true;
+        }
+      } catch (Throwable expected) {
         failed = true;
       }
-    } catch (Throwable expected) {
-      failed = true;
+      boolean preserved = before.equals(ImageCompactFormatsBenchmarkSupport.format(image))
+          && samePixels(beforePixels, image.getPixels());
+      Graphics retry = image.getGraphics();
+      if (!failed || !preserved || retry == null
+          || !ImageCompactFormatsBenchmarkSupport.RGBA8888.equals(
+              ImageCompactFormatsBenchmarkSupport.format(image))) {
+        System.out.println("promotionFailureCheck index=" + index + ",failed=" + failed
+            + ",preserved=" + preserved + ",format="
+            + ImageCompactFormatsBenchmarkSupport.format(image));
+        return false;
+      }
     }
-    boolean preserved = before.equals(ImageCompactFormatsBenchmarkSupport.format(image));
-    Graphics retry = image.getGraphics();
-    return failed && preserved && retry != null
-        && ImageCompactFormatsBenchmarkSupport.RGBA8888.equals(
-            ImageCompactFormatsBenchmarkSupport.format(image));
+    return true;
   }
 
   private static boolean checkDrawParity(Image source) throws Exception {
@@ -169,5 +219,42 @@ public class ImageCompactFormatsSmokeApp extends MainWindow {
       }
     }
     return true;
+  }
+
+  private static boolean checkTranslucentFallback(Image source) throws Exception {
+    long fallbacksBefore = ImageCompactFormatsBenchmarkSupport.metric("writePixelsFallbacksForTest");
+    Image target = new Image(source.getPixelWidth(), source.getPixelHeight());
+    Graphics graphics = target.getGraphics();
+    if (graphics == null) {
+      return false;
+    }
+    graphics.drawImage(source, 0, 0, false);
+    target.getPixels();
+    return ImageCompactFormatsBenchmarkSupport.metric("writePixelsFallbacksForTest")
+        > fallbacksBefore;
+  }
+
+  private static boolean samePixels(int[] first, int[] second) {
+    if (first == null || second == null || first.length != second.length) {
+      return false;
+    }
+    for (int index = 0; index < first.length; index++) {
+      if (first[index] != second[index]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static int firstMismatch(int[] first, int[] second) {
+    if (first == null || second == null || first.length != second.length) {
+      return -1;
+    }
+    for (int index = 0; index < first.length; index++) {
+      if (first[index] != second[index]) {
+        return index;
+      }
+    }
+    return -1;
   }
 }

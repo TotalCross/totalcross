@@ -813,6 +813,7 @@ registerImageMacSmoke('ImageCompactFormatsSmoke', 'ImageCompactFormatsSmokeApp',
         'decodeFailureRetry=true',
         'promotionFailureRetry=true',
         'writePixelsParity=true',
+        'writePixelsFallback=true',
         'overallPass=true'
     ], ['image-opt-phase3/**'])
 

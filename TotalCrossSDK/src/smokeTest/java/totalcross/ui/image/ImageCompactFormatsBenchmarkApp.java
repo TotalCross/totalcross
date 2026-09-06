@@ -50,7 +50,7 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
               "output hash drift");
         }
         QualitySummary quality = quality(result, references, workload);
-        requireExpectedFormats(result, scenario, workload);
+        requireExpectedFormats(result, scenario, workload, sample);
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed
             + ",workload=" + workload + ",phase2_stack=" + phase2Stack
             + ",input_hashes=" + inputHashes + ",output_hash=" + outputHash
@@ -168,7 +168,8 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
     return new WorkloadResult(pixels, formats);
   }
 
-  private static void requireExpectedFormats(WorkloadResult result, String scenario, String workload) {
+  private static void requireExpectedFormats(
+      WorkloadResult result, String scenario, String workload, int sample) {
     if (!"post-enabled".equals(scenario)
         || !ImageCompactFormatsBenchmarkSupport.formatProbeAvailable()) {
       return;
@@ -178,6 +179,38 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
       if (expected != null && !expected.equals(result.formats[i])) {
         throw new IllegalStateException("format precedence expected=" + expected
             + " actual=" + result.formats[i] + " workload=" + workload);
+      }
+    }
+    if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)) {
+      ImageRasterBenchmarkSupport.require(result.formats.length == 5,
+          "combined format count");
+      ImageRasterBenchmarkSupport.require(
+          ImageCompactFormatsBenchmarkSupport.RGB565.equals(result.formats[0])
+              && ImageCompactFormatsBenchmarkSupport.RGB565.equals(result.formats[1])
+              && ImageCompactFormatsBenchmarkSupport.GRAY8.equals(result.formats[2])
+              && ImageCompactFormatsBenchmarkSupport.GRAY8.equals(result.formats[3])
+              && ImageCompactFormatsBenchmarkSupport.ARGB4444.equals(result.formats[4]),
+          "combined exact formats");
+      ImageRasterBenchmarkSupport.require(
+          ImageCompactFormatsBenchmarkSupport.metric("promotionAttemptsForTest") == 0,
+          "combined compact-source promotion");
+      ImageRasterBenchmarkSupport.require(
+          ImageCompactFormatsBenchmarkSupport.metric("temporaryRgbaDecodeBytesForTest") == 0,
+          "combined temporary RGBA decode");
+      if ("combined-enabled".equals(workload)) {
+        long multiplier = sample;
+        ImageRasterBenchmarkSupport.require(
+            ImageCompactFormatsBenchmarkSupport.metric("writePixelsAttemptsForTest")
+                == multiplier * SOURCE_DRAWS * 5,
+            "combined writePixels attempts");
+        ImageRasterBenchmarkSupport.require(
+            ImageCompactFormatsBenchmarkSupport.metric("writePixelsHitsForTest")
+                == multiplier * SOURCE_DRAWS * 4,
+            "combined writePixels hits");
+        ImageRasterBenchmarkSupport.require(
+            ImageCompactFormatsBenchmarkSupport.metric("writePixelsFallbacksForTest")
+                == multiplier * SOURCE_DRAWS,
+            "combined writePixels fallbacks");
       }
     }
   }
@@ -197,7 +230,7 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
           : index == 1 ? ImageCompactFormatsBenchmarkSupport.GRAY8
           : ImageCompactFormatsBenchmarkSupport.ARGB4444;
     }
-    if ("combined-enabled".equals(workload)) {
+    if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)) {
       if (index <= 1) {
         return index == 0 ? ImageCompactFormatsBenchmarkSupport.RGB565
             : ImageCompactFormatsBenchmarkSupport.RGB565;
