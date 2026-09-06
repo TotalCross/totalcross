@@ -6,15 +6,17 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 3 state
 
-Updated: 2026-09-05T21:25:00-03:00
+Updated: 2026-09-05T23:30:00-03:00
 Branch: `perf/image-opt-phase3-formats`
 Phase-2 parent SHA: `86bfeafe388ce866236c3ae58eecb144664895e2`
 Plan: `.agent/plans/exec-plan-image-opt-phase3-formats.md`
 
 ## Active milestone
 
-Milestone 2 — generic infrastructure and RGB565. The harness is frozen and
-the exact pre-RGB565 S1 is captured; runtime implementation has not started.
+Milestone 8 — final validation and handoff complete. Compact backing
+implementation, isolated format matrices, promotion matrix, both combined
+matrices, corrective matched-control baselines, focused tests, copyright
+validation, and final compact smoke are complete.
 
 ## Last completed slice
 
@@ -22,8 +24,9 @@ The harness/fixture/true-base adapter slice is committed through `d8184712b`.
 The deterministic adapter digest is
 `9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
 RGB565 S1 is captured under `.agent/benchmarks/image-opt-phase3-formats/rgb565/s1/`
-on exact runtime `86bfeafe388ce866236c3ae58eecb144664895e2`. The runtime remains
-unchanged from Phase 2.
+on exact runtime `86bfeafe388ce866236c3ae58eecb144664895e2`. Compact backing
+implementation is `fb5718cb2`; final benchmark-control corrections are
+`94519f0b8`, `bbd364b32`, and `119ab421c`.
 
 ## Active paths
 
@@ -38,21 +41,28 @@ unchanged from Phase 2.
 
 - Exact pre-item S1 runtime SHA: `86bfeafe388ce866236c3ae58eecb144664895e2`.
 - Harness digest: `9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
-- Implementation SHA: not created.
-- RGB565: S1 captured; implementation/S2/S3 not started.
-- GRAY8: S1/S2/S3 not started.
-- ARGB4444: S1/S2/S3 not started.
-- Promotion matrix: S1/S2/S3 not started.
-- Combined matrices: S1/S2/S3 not started.
+- Implementation SHA: `fb5718cb2`.
+- RGB565: exact S1 plus 60-sample S2/S3 complete; S2 median 63 ms vs 62 ms,
+  S3 selects RGB565 and uses 1,048,576 compact bytes.
+- GRAY8: exact-base S1 and matched final-harness S1 preserved; S2/S3 complete,
+  S3 selects GRAY8, uses one-byte storage, and has zero temporary RGBA decode
+  bytes.
+- ARGB4444: exact-base S1 and matched final-harness S1 preserved; S2/S3
+  complete, S3 model error is 0 and black/white composite max error is 16.
+- Promotion matrix: matched-control S1/S2/S3 complete; S3 selects all three
+  compact formats and promotes each exactly once per repetition.
+- Combined matrices: exact-base and matched-control S1s are preserved; both
+  disabled-stack and full-stack S1/S2/S3 matrices pass with zero compact-source
+  promotions. Full-stack S2 median is 160 ms vs matched S1 160 ms.
 
 ## Validation
 
-SDK distribution, smoke compilation, Release software-Skia native build,
-true-base deployment, fallback smoke, and seven three-sample workload
-dry-runs passed. RGB565 S1 completed with 60 samples, stable hashes, 62–64 ms
-elapsed samples, and peak RSS 139520 KiB. The exact detached-base CMake
-configure was deferred after the pinned qrcodegen asset returned HTTP 404; the
-native source tree is byte-equivalent to the current branch and the existing
+SDK distribution, focused `totalcross.ui.image.*` tests, Release software-Skia
+native build, compact smoke, decode and
+promotion failure/retry checks, exact write-pixels parity, all isolated 60-sample
+matrices, promotion, and both combined matrices passed. The exact detached-base
+CMake configure was deferred after the pinned qrcodegen asset returned HTTP 404;
+the native source tree is byte-equivalent to the current branch and the existing
 Release dylib was used as the exact Phase-2-compatible runtime.
 
 ## Deferred validation
@@ -75,11 +85,5 @@ scope: `TotalCrossVM/deps/wince-deps/` and `TotalCrossVM/xcode/generated/`.
 
 ## Next exact command
 
-Inspect the existing PNG/JPEG decode ownership and Skia backing APIs, then add
-generic format metadata/accounting and transactional promotion without making
-any compact format selectable yet.
-
-```sh
-rg -n "Image.*Benchmark|runImage|IMAGE_OPT|DECODE_ZERO_COPY|RASTER_" \
-  TotalCrossSDK TotalCrossVM scripts .agent/benchmarks/image-opt-phase2-raster
-```
+Commit the final evidence/state/report/plan handoff as
+`docs(image): complete compact backing phase`; Phase 4 starts from that HEAD.

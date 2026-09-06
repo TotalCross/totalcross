@@ -16,3 +16,13 @@ by the active plan.
 - Exact Phase-2 parent: `86bfeafe388ce866236c3ae58eecb144664895e2`
 - No runtime or benchmark changes in the bootstrap slice.
 
+## Compact backing completion
+
+- Implementation checkpoint: `fb5718cb2`.
+- Harness corrections: `94519f0b8`, `bbd364b32`, `119ab421c`.
+- RGB565, GRAY8, ARGB4444, promotion, and both combined matrices completed
+  with 60-sample S1/S2/S3 evidence under
+  `.agent/benchmarks/image-opt-phase3-formats/`.
+- Exact Phase-2 S1 artifacts and matched final-harness controls are both kept
+  where a timing-floor correction changed the isolated workload.
+- Final compact formats remain opt-in and disabled by default.
