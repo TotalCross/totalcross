@@ -12,6 +12,7 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
   private static final int DEFAULT_SAMPLES = 60;
   private static final int SOURCE_DRAWS = 32;
   private static final int PROMOTION_DRAWS = 8;
+  private static final int PROMOTION_REPETITIONS = 4;
 
   @Override
   public void initUI() {
@@ -128,24 +129,28 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
     int[][] pixels = new int[fixtures.length][];
     String[] formats = new String[fixtures.length];
     for (int i = 0; i < fixtures.length; i++) {
-      Image image = ImageCompactFormatsBenchmarkSupport.materialize(fixtures[i].bytes);
-      formats[i] = ImageCompactFormatsBenchmarkSupport.format(image);
-      pixels[i] = image.getPixels();
-      if ("promotion".equals(workload)) {
-        if (image.getGraphics() == null) {
-          throw new IllegalStateException("promotion graphics unavailable");
+      int repetitions = "promotion".equals(workload) ? PROMOTION_REPETITIONS : 1;
+      for (int repetition = 0; repetition < repetitions; repetition++) {
+        Image image = ImageCompactFormatsBenchmarkSupport.materialize(fixtures[i].bytes);
+        if (repetition == 0) {
+          formats[i] = ImageCompactFormatsBenchmarkSupport.format(image);
+          pixels[i] = image.getPixels();
         }
-        for (int draw = 0; draw < PROMOTION_DRAWS; draw++) {
-          image.getGraphics().fillRect(0, 0, 1, 1);
+        if ("promotion".equals(workload)) {
+          if (image.getGraphics() == null) {
+            throw new IllegalStateException("promotion graphics unavailable");
+          }
+          for (int draw = 0; draw < PROMOTION_DRAWS; draw++) {
+            image.getGraphics().fillRect(0, 0, 1, 1);
+          }
+        } else {
+          ImageCompactFormatsBenchmarkSupport.drawToRgbaTarget(image,
+              "writepixels".equals(workload) ? SOURCE_DRAWS * 4 : SOURCE_DRAWS);
         }
-        image.getGraphics().fillRect(0, 0, 1, 1);
-      } else {
-        ImageCompactFormatsBenchmarkSupport.drawToRgbaTarget(image,
-            "writepixels".equals(workload) ? SOURCE_DRAWS * 4 : SOURCE_DRAWS);
-      }
-      if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)) {
-        // Encoding is an observer and must not promote the compact source.
-        ImageCompactFormatsBenchmarkSupport.encodePng(image);
+        if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)) {
+          // Encoding is an observer and must not promote the compact source.
+          ImageCompactFormatsBenchmarkSupport.encodePng(image);
+        }
       }
     }
     return new WorkloadResult(pixels, formats);
