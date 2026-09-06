@@ -27,9 +27,9 @@ Input hash is `argb4444-png:0000ADD900004B73`. S1/S2 output hash is
 peak, has zero temporary full-RGBA decode bytes and zero promotions, model max
 error 0, and black/white composite max error 16.
 
-## 200-sample RSS gate
+## Historical single-pair RSS gate
 
-Matched final-harness S1/S2 were `127088/139456` KiB (+9.7%). At sample 100,
+The earlier matched final-harness S1/S2 were `127088/139456` KiB (+9.7%). At sample 100,
 `ps` RSS was 98,080/114,208 KiB and at sample 150 it was 100,624/113,744 KiB.
 `vmmap -summary` captured the required checkpoints. S2 current physical
 footprint was 72.9M/69.3M versus S1 63.6M/62.8M, but S2 peak physical
@@ -37,3 +37,12 @@ footprint was 81.3M versus S1 84.4M; the difference was concentrated in
 allocator residency. Backing formats, output hashes, and compact counters were
 identical. This is recorded as an unconfirmed sampled-RSS signal, not a live
 compact-backing leak or confirmed peak-footprint regression.
+
+## Authoritative three-pair matched-harness recheck
+
+The alternating corrective runs are under
+`rss-200-corrective-3pairs-matched-harness/`. S2/S1 peak-RSS deltas were
+`-0.7%`, `+7.1%`, and `-4.3%`; S2 peak physical-footprint deltas were `-4.9%`,
+`-2.6%`, and `+2.0%`. Current physical/private writable residency changed with
+run order and allocator/page state. The frozen >5% regression rule therefore
+rejects the anomaly as reproducible; runtime source was not changed.

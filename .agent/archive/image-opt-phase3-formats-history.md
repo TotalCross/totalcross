@@ -42,3 +42,16 @@ by the active plan.
 - Final post-optimization combined medians/P95/peak RSS are disabled-stack
   `263/264/145424`, `263/264/154352`, `184/186/154304`, and full-stack
   `160/161/146656`, `161/164/152256`, `162/163/139360` for S1/S2/S3.
+
+## ARGB4444 RSS anomaly closure
+
+- The first corrective S1/S2 pair was rejected as mismatched because the
+  detached S1 bundle still contained the shorter pre-correction workload.
+- A corrected S1 overlay used the final benchmark workload/support with the
+  conservative Phase-2 hook shim and the exact true-base dylib. Its overlay
+  digest is `edd9a79ebb30d081681b141a245a8525788b74df4a55712113ecf7a9c2335d7d`.
+- Three valid alternating 200-sample pairs produced S2 peak-RSS deltas
+  `-0.7%`, `+7.1%`, and `-4.3%`; S2 peak physical-footprint deltas were
+  `-4.9%`, `-2.6%`, and `+2.0%`. `vmmap -summary`/`ps` checkpoints showed
+  order-dependent allocator/page residency, not a reproducible disabled-path
+  regression. Runtime source was unchanged.

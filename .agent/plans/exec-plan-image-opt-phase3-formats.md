@@ -423,8 +423,9 @@ Do not build Android/iOS/Windows/Linux/GPU.
 
 Final summary records backing bytes, timing/RSS, quality, promotion cost, all
 60/200/`vmmap` gates, both combined matrices, limitations, and disabled defaults.
-Preserve historical evidence. Update state/evidence/archive/editorial/Outcomes and
-commit `docs(image): complete compact backing phase`. Phase 4 starts from final HEAD.
+Preserve historical evidence. The corrective RSS evidence and the synchronized
+state/evidence/archive/editorial/Outcomes records are committed separately from
+the benchmark artifacts. Phase 4 starts from the final HEAD of this branch.
 
 ## Validation and completion gate
 
@@ -491,7 +492,9 @@ clearly named corrective set.
   sources do not select RGB565.
 - ARGB4444 is opt-in lossy premultiplied storage.
 - Ownership/promotion and the benchmark/adapter/RSS rules above are fixed before
-  runtime work; both final matrices disable GRAY8 and prohibit promotion.
+  runtime work; both final matrices enforce the exact
+  `RGB565|RGB565|GRAY8|GRAY8|ARGB4444` order and prohibit compact-source
+  promotion.
 
 ## Outcomes & Retrospective
 
@@ -518,3 +521,11 @@ preserved. Its S2 peak physical footprint was lower than S1 (81.3M vs 84.4M),
 with the sampled RSS difference concentrated in allocator residency, so the
 signal is recorded as unconfirmed rather than a confirmed live-footprint
 regression. No Phase-4 work starts here.
+
+The authoritative three-pair ARGB4444 recheck used a corrected final workload
+against the exact true-base dylib in alternating order S1->S2, S2->S1, S1->S2.
+S2 peak-RSS deltas were -0.7%, +7.1%, and -4.3%; matched S2 peak physical
+footprint deltas were -4.9%, -2.6%, and +2.0%. Current physical/private
+writable residency changed with run order and allocator/page state, so the
+frozen >5% regression rule rejects a reproducible disabled-path regression.
+Runtime source was not changed.
