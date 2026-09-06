@@ -67,12 +67,14 @@ The matched final-harness peak RSS pairs were:
 | Combined, Phase 2 off | 147904 | 151504 | +2.4% |
 | Combined, Phase 2 on | 157568 | 152496 | -3.2% |
 
-ARGB4444 exceeded the raw threshold and therefore has required `vmmap -summary`
-and `ps` captures at samples 100 and 150. S2 current physical footprint was
-higher at those snapshots, but its peak physical footprint was lower (81.3M vs
-84.4M) and the difference was concentrated in allocator residency; backing
-formats, output hashes, and counters were identical. This is documented as an
-unconfirmed sampled-RSS signal, not a confirmed live compact-backing leak.
+ARGB4444 exceeded the raw threshold in the historical single pair and therefore
+received the required `vmmap -summary` and `ps` captures. The authoritative
+corrected-harness recheck is under
+`argb4444/rss-200-corrective-3pairs-matched-harness/`: alternating S2/S1 peak
+RSS deltas were `-0.7%`, `+7.1%`, and `-4.3%`; matched S2 peak physical-footprint
+deltas were `-4.9%`, `-2.6%`, and `+2.0%`. Current physical/private writable
+residency changed with run order and allocator/page state, so the frozen rule
+rejects a reproducible disabled-path regression. Runtime source was unchanged.
 
 ## Validation scope and limitations
 
@@ -92,4 +94,5 @@ S1 capture.
 Compact formats remain internal opt-in features and are disabled by default.
 The implementation was largely delivered in one runtime slice before the
 per-format S1 captures; exact-base and matched-control evidence remain separate
-and are not conflated.
+and are not conflated. Phase 4 starts from the final HEAD of this branch and was
+not started here.
