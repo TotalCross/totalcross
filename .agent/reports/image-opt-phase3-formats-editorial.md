@@ -12,13 +12,22 @@ supported validation scope, limitations, and disabled defaults.
 
 ## Bootstrap
 
-Phase 3 starts from the accepted Phase-2 runtime at
-`86bfeafe388ce866236c3ae58eecb144664895e2` on branch
-`perf/image-opt-phase3-formats`. The implementation checkpoint is
-`fb5718cb2`; the corrective runtime and correctness checkpoints are
-`37746781b` and `6fcb50a37`. The exact true-base dylib SHA-256 is
+Phase 3 is now replayed directly on the accepted Phase-2 runtime at
+`4d3177801a29752bc3e7b17754400001fef6270f` on branch
+`perf/image-opt-phase3-formats`. The rebased implementation checkpoint is
+`5dbadf3bb7ea44ee14472ba25ab2b27b2fb3a2b9`; the corrective runtime and
+correctness checkpoints are `a212f76e64c5415af8d6a3843e87ce82030db94e` and
+`4e52067003b899566de67f01a9f50000326cbd98`. The final rebased Phase-3 HEAD is
+the tip of `perf/image-opt-phase3-formats` after the documentation-only
+history correction. The exact true-base dylib SHA-256 is
 `32926d24c475ca3b6f04134ce4d6556c37d926862d6877d122cdec517213c4ca`; the final
 dylib SHA-256 is `2864d0ee3ace6d52729bcaccad727902088327caa2bafe0769e66cbc2c0a9caa`.
+
+The benchmark results in this handoff are historical pre-rebase evidence:
+their exact-base controls ran on `86bfeafe388ce866236c3ae58eecb144664895e2`
+and their final runtime measurements used the original pre-rebase Phase-3
+checkpoints. The production and permanent-test tree was replayed without
+rerunning the full benchmark matrix or changing those measurements.
 
 ## Delivered behavior
 
