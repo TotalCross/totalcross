@@ -481,6 +481,7 @@ clearly named corrective set.
 - [x] Promotion S1 -> cross-format promotion/observer validation -> S2/S3.
 - [x] Combined compact-format matrix with Phase-2 options disabled.
 - [x] Combined compact-format matrix with all Phase-2 options enabled.
+- [x] Corrective compact correctness matrix, row-allocation optimization, and 200-sample RSS gates.
 - [x] Final validation/documentation/Phase-4 handoff.
 
 ## Fixed decisions
@@ -501,3 +502,19 @@ matched their final-harness S1 controls within the frozen regression gate. The
 first GRAY8/ARGB4444 S1s used a shorter workload; those exact-base artifacts
 remain preserved and matched final-harness corrective S1s are used for timing
 comparisons after the workload was doubled to meet the 30 ms floor.
+
+The implementation was largely delivered in one runtime slice before the
+per-format S1 captures; the exact-base and matched-control artifacts are both
+preserved rather than conflated. The final row-conversion correction writes
+directly into the supplied buffer and keeps compact writePixels scratch bounded
+to one width*4 row. The all-format smoke matrix now checks full pixel equality
+through promotion, allocation-failure preservation/retry, exact RGB565/GRAY8
+draw parity, and ARGB4444 translucent fallback.
+
+The required 200-sample matched RSS gate passed for promotion (+0.3%),
+combined-disabled (+2.4%), and full-stack combined-enabled (-3.2%). ARGB4444
+reported a raw +9.7% peak-RSS signal; sample-100/150 vmmap and ps evidence is
+preserved. Its S2 peak physical footprint was lower than S1 (81.3M vs 84.4M),
+with the sampled RSS difference concentrated in allocator residency, so the
+signal is recorded as unconfirmed rather than a confirmed live-footprint
+regression. No Phase-4 work starts here.
