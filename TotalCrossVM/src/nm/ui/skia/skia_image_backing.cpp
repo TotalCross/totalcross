@@ -351,25 +351,15 @@ bool readRgbaBytes(NativeImageBackingRecord* backing, void* output, int32 x, int
             compactRowScratchPeakBytesForTest, static_cast<uint64_t>(width) * 4);
     }
 
-    try {
-        std::vector<uint8_t> rgba(static_cast<size_t>(pixelCount) * 4);
-        const SkImageInfo info = rasterInfo(width, height);
-        const size_t rowBytes = static_cast<size_t>(width) * 4;
-        bool copied = false;
-        if (backing->surface) {
-            copied = backing->surface->readPixels(info, rgba.data(), rowBytes, x, y);
-        } else if (backing->image) {
-            copied = backing->image->readPixels(info, rgba.data(), rowBytes, x, y);
-        }
-        if (!copied) {
-            return false;
-        }
-
-        std::memcpy(output, rgba.data(), rgba.size());
-        return true;
-    } catch (const std::bad_alloc&) {
-        return false;
+    const SkImageInfo info = rasterInfo(width, height);
+    const size_t rowBytes = static_cast<size_t>(width) * 4;
+    if (backing->surface) {
+        return backing->surface->readPixels(info, output, rowBytes, x, y);
     }
+    if (backing->image) {
+        return backing->image->readPixels(info, output, rowBytes, x, y);
+    }
+    return false;
 }
 
 bool readRgba(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
@@ -663,7 +653,21 @@ int skia_image_backing_make_mutable(int64_t handle) {
             }
             return 0;
         }
-        surface->getCanvas()->drawImage(backing->image, 0, 0);
+        if (compact) {
+            const size_t rowBytes = static_cast<size_t>(backing->width) * 4;
+            std::vector<uint8_t> rgba(rowBytes);
+            const SkImageInfo info = rasterInfo(backing->width, 1,
+                IMAGE_BACKING_FORMAT_RGBA8888);
+            for (int32 row = 0; row < backing->height; ++row) {
+                if (!readRgbaBytes(backing, rgba.data(), 0, row, backing->width, 1)) {
+                    ++promotionFailuresForTest;
+                    return 0;
+                }
+                surface->writePixels(SkPixmap(info, rgba.data(), rowBytes), 0, row);
+            }
+        } else {
+            surface->getCanvas()->drawImage(backing->image, 0, 0);
+        }
         if (compact && failNextPromotionAllocationForTest) {
             failNextPromotionAllocationForTest = false;
             ++promotionFailuresForTest;
