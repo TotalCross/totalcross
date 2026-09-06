@@ -23,6 +23,9 @@ focused validation, evidence cleanup, and report handoff are complete.
 The harness/fixture/true-base adapter slice is committed through `d8184712b`.
 The deterministic adapter digest is
 `9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
+The corrected final-workload overlay used for the authoritative true-base RSS
+recheck has digest
+`edd9a79ebb30d081681b141a245a8525788b74df4a55712113ecf7a9c2335d7d`.
 RGB565 S1 is captured under `.agent/benchmarks/image-opt-phase3-formats/rgb565/s1/`
 on exact runtime `86bfeafe388ce866236c3ae58eecb144664895e2`. Compact backing
 implementation is `fb5718cb2`; final benchmark-control corrections are
@@ -72,13 +75,23 @@ implementation is `fb5718cb2`; final benchmark-control corrections are
 - Combined-disabled: 147904 -> 151504 KiB (+2.4%).
 - Combined-enabled full stack: 157568 -> 152496 KiB (-3.2%).
 
+The authoritative ARGB4444 three-pair recheck is under
+`argb4444/rss-200-corrective-3pairs-matched-harness/` and used order
+S1->S2, S2->S1, S1->S2. S2 peak-RSS deltas were -0.7%, +7.1%, and -4.3%;
+matched S2 peak physical-footprint deltas were -4.9%, -2.6%, and +2.0%.
+Checkpoint physical/private writable residency changed with run order. The
+frozen rule rejects a reproducible disabled-path regression; runtime source was
+not changed.
+
 ## Validation
 
 Native rebuild, SDK distribution, compact smoke, decode and promotion
 failure/retry checks, exact RGB565/GRAY8 parity, all isolated 60-sample
-matrices, promotion, both combined matrices, and the corrective RSS gates
-passed. Focused SDK tests, final header validation, generated-log cleanup, and
-report size checks also passed. The exact detached-base
+matrices, promotion, both combined matrices, and the initial corrective RSS
+gate passed. The authoritative three-pair ARGB4444 recheck is complete and
+rejects the anomaly under the frozen rule without a runtime change. Focused SDK
+tests, final header validation, generated-log cleanup, and report size checks
+also passed. The exact detached-base
 CMake configure was deferred after the pinned qrcodegen asset returned HTTP 404;
 the native source tree is byte-equivalent to the current branch and the existing
 Release dylib was used as the exact Phase-2-compatible runtime.
@@ -103,7 +116,5 @@ scope: `TotalCrossVM/deps/wince-deps/` and `TotalCrossVM/xcode/generated/`.
 
 ## Next exact command
 
-Run the focused SDK tests, SDK distribution, Release software-Skia smoke and
-header/diff validation, remove only generated benchmark `*.log` artifacts, then
-commit the final evidence/state/report/plan handoff. Phase 4 starts from that
-final HEAD; do not begin Phase 4 here.
+No further Phase-3 validation command is pending. Phase 4 starts from the final
+HEAD of this branch; do not begin Phase 4 here.
