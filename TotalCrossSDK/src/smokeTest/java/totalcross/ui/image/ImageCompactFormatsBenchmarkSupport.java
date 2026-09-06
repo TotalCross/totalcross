@@ -49,6 +49,12 @@ final class ImageCompactFormatsBenchmarkSupport {
         "invalid scenario");
     ImageOptimizationSettings.resetForTest();
     if ("pre".equals(scenario)) {
+      if (phase2Stack && workload.contains("combined-enabled")) {
+        for (int feature = ImageOptimizationSettings.DECODE_ZERO_COPY;
+            feature <= ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION; feature++) {
+          ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
+        }
+      }
       return;
     }
     for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
