@@ -31,10 +31,18 @@ Branch:
 Create it from the final accepted HEAD of `perf/image-opt-phase2-raster`.
 Current accepted Phase-2 HEAD:
 
-    86bfeafe388ce866236c3ae58eecb144664895e2
+    4d3177801a29752bc3e7b17754400001fef6270f
+
+The completed Phase-3 history was subsequently reconstructed directly on this
+Phase-2 parent, preserving the original 21 commit subjects and order. Existing
+benchmark records under `.agent/evidence/` and `.agent/benchmarks/` were
+captured before that history correction, so their original runtime/checkpoint
+SHAs remain historical provenance and are not claims about the rebased SHAs.
 
 Record the actual parent SHA at bootstrap. Do not branch from master or rewrite
-history. Phase 4 starts from the final Phase-3 HEAD; record its SHA in Phase-4 state.
+history during Phase-3 execution. The post-completion history correction is
+documented above and preserves the original 21-commit sequence. Phase 4 starts
+from the final Phase-3 HEAD; record its SHA in Phase-4 state.
 
 Plan/support:
 
@@ -426,6 +434,11 @@ Final summary records backing bytes, timing/RSS, quality, promotion cost, all
 Preserve historical evidence. The corrective RSS evidence and the synchronized
 state/evidence/archive/editorial/Outcomes records are committed separately from
 the benchmark artifacts. Phase 4 starts from the final HEAD of this branch.
+
+The final Phase-3 tree is the original production/test result replayed on
+`4d3177801a29752bc3e7b17754400001fef6270f`; benchmark measurements in this
+plan were made on the pre-rebase true-base/runtime checkpoints and remain
+explicitly historical.
 
 ## Validation and completion gate
 
