@@ -877,6 +877,11 @@ public class Image extends GfxSurface {
     }
   }
 
+  /** Test-only non-mutating materialization hook for compact backing benchmarks. */
+  void materializeNativeBackingForTest() {
+    materializeCanonicalUnchecked();
+  }
+
   private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
     pipeline = deferred;
     width = deferred.width();
@@ -2533,6 +2538,10 @@ public class Image extends GfxSurface {
     }
     materializeCanonicalUnchecked();
     if (backing == null || !backing.isValid()) {
+      return null;
+    }
+    if (backing instanceof NativeImageBacking
+        && !((NativeImageBacking) backing).makeMutable()) {
       return null;
     }
 

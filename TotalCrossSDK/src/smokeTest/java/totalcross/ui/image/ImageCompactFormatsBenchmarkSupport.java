@@ -190,9 +190,9 @@ final class ImageCompactFormatsBenchmarkSupport {
     for (int i = 0; i < rgba.length; i++) {
       int pixel = rgba[i];
       int alpha = quantize4(alpha(pixel));
-      int premulRed = (red(pixel) * alpha + 7) / 15;
-      int premulGreen = (green(pixel) * alpha + 7) / 15;
-      int premulBlue = (blue(pixel) * alpha + 7) / 15;
+      int premulRed = quantize4((red(pixel) * alpha + 7) / 15);
+      int premulGreen = quantize4((green(pixel) * alpha + 7) / 15);
+      int premulBlue = quantize4((blue(pixel) * alpha + 7) / 15);
       int unpremulRed = alpha == 0 ? 0 : Math.min(255, (premulRed * 255 + alpha / 2) / alpha);
       int unpremulGreen = alpha == 0 ? 0 : Math.min(255, (premulGreen * 255 + alpha / 2) / alpha);
       int unpremulBlue = alpha == 0 ? 0 : Math.min(255, (premulBlue * 255 + alpha / 2) / alpha);
