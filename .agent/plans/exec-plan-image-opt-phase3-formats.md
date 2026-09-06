@@ -473,15 +473,15 @@ clearly named corrective set.
 
 ## Progress
 
-- [ ] Bootstrap/freeze contract.
-- [ ] Freeze all workloads, fixtures, oracles, counters, and true-base adapter.
-- [ ] RGB565 S1 -> implementation -> S2/S3.
-- [ ] GRAY8 S1 -> implementation -> S2/S3.
-- [ ] ARGB4444 S1 -> implementation -> S2/S3.
-- [ ] Promotion S1 -> cross-format promotion/observer validation -> S2/S3.
-- [ ] Combined RGB565+ARGB4444 matrix with Phase-2 options disabled.
-- [ ] Combined RGB565+ARGB4444 matrix with all Phase-2 options enabled.
-- [ ] Final validation/documentation/Phase-4 handoff.
+- [x] Bootstrap/freeze contract.
+- [x] Freeze all workloads, fixtures, oracles, counters, and true-base adapter.
+- [x] RGB565 S1 -> implementation -> S2/S3.
+- [x] GRAY8 S1 -> implementation -> S2/S3.
+- [x] ARGB4444 S1 -> implementation -> S2/S3.
+- [x] Promotion S1 -> cross-format promotion/observer validation -> S2/S3.
+- [x] Combined compact-format matrix with Phase-2 options disabled.
+- [x] Combined compact-format matrix with all Phase-2 options enabled.
+- [x] Final validation/documentation/Phase-4 handoff.
 
 ## Fixed decisions
 
@@ -494,4 +494,10 @@ clearly named corrective set.
 
 ## Outcomes & Retrospective
 
-Update only at milestone boundaries with committed measured facts.
+The compact backing milestone delivered opt-in RGB565, GRAY8, and ARGB4444
+source storage with deterministic structural precedence, exact observer parity,
+transactional promotion, and direct decoder ownership. All disabled S2 controls
+matched their final-harness S1 controls within the frozen regression gate. The
+first GRAY8/ARGB4444 S1s used a shorter workload; those exact-base artifacts
+remain preserved and matched final-harness corrective S1s are used for timing
+comparisons after the workload was doubled to meet the 30 ms floor.
