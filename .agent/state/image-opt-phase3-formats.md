@@ -6,21 +6,23 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 3 state
 
-Updated: 2026-09-05T00:00:00-03:00
+Updated: 2026-09-05T21:10:00-03:00
 Branch: `perf/image-opt-phase3-formats`
 Phase-2 parent SHA: `86bfeafe388ce866236c3ae58eecb144664895e2`
 Plan: `.agent/plans/exec-plan-image-opt-phase3-formats.md`
 
 ## Active milestone
 
-Milestone 0 — bootstrap and freeze contract. The branch is based on the exact
-accepted Phase-2 HEAD. No Phase-3 runtime implementation, benchmark, or build
-has run yet.
+Milestone 1 — freeze complete benchmark harness. The branch is based on the
+exact accepted Phase-2 HEAD. Harness/fixture/adapter sources are committed;
+runtime implementation and benchmark measurement have not started.
 
 ## Last completed slice
 
-The Phase-3 plan and resumable support-file skeletons are ready for the
-benchmark-freeze slice. The runtime remains unchanged from Phase 2.
+The harness/fixture/true-base adapter slice is committed through `d8184712b`.
+The deterministic adapter digest is
+`9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
+The runtime remains unchanged from Phase 2.
 
 ## Active paths
 
@@ -33,8 +35,9 @@ benchmark-freeze slice. The runtime remains unchanged from Phase 2.
 
 ## S1/S2/S3 status
 
-- Exact pre-item S1 runtime SHA: not applicable before the harness freeze.
-- Harness digest: not created.
+- Exact pre-item S1 runtime SHA: `86bfeafe388ce866236c3ae58eecb144664895e2` for
+  the true-base adapter dry-run; no captured S1 artifact yet.
+- Harness digest: `9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
 - Implementation SHA: not created.
 - RGB565: S1/S2/S3 not started.
 - GRAY8: S1/S2/S3 not started.
@@ -44,15 +47,16 @@ benchmark-freeze slice. The runtime remains unchanged from Phase 2.
 
 ## Validation
 
-No build, smoke, or benchmark has run for Phase 3. The branch/bootstrap
-checkpoint is documentation-only.
+SDK distribution, smoke compilation, Release software-Skia native build,
+true-base deployment, fallback smoke, and seven three-sample workload
+dry-runs passed. The exact detached-base CMake configure was deferred after
+the pinned qrcodegen asset returned HTTP 404; the native source tree is
+byte-equivalent to the current branch and the existing Release dylib was used
+as the exact Phase-2-compatible runtime. No 60-sample S1 has been captured.
 
 ## Deferred validation
 
-SDK/macOS software-Skia build and all native smokes begin only after the full
-harness, fixtures, correctness oracles, counters, deployment tasks, and
-true-base adapter are committed. Android, iOS, Windows, Linux, and GPU remain
-outside this phase contract.
+Android, iOS, Windows, Linux, and GPU remain outside this phase contract.
 
 ## Decisions still active
 
@@ -70,11 +74,10 @@ scope: `TotalCrossVM/deps/wince-deps/` and `TotalCrossVM/xcode/generated/`.
 
 ## Next exact command
 
-Inspect the Phase-2 benchmark harness and create all Phase-3 fixture/workload,
-oracle, counter, deployment, and true-base adapter files before runtime edits.
+Capture and commit the RGB565 S1 baseline on the exact Phase-2 runtime using
+the frozen adapter, then begin generic compact-backing infrastructure.
 
 ```sh
 rg -n "Image.*Benchmark|runImage|IMAGE_OPT|DECODE_ZERO_COPY|RASTER_" \
   TotalCrossSDK TotalCrossVM scripts .agent/benchmarks/image-opt-phase2-raster
 ```
-
