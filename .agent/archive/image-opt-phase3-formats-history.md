@@ -26,3 +26,19 @@ by the active plan.
 - Exact Phase-2 S1 artifacts and matched final-harness controls are both kept
   where a timing-floor correction changed the isolated workload.
 - Final compact formats remain opt-in and disabled by default.
+
+## Corrective closure checkpoint
+
+- Runtime row-conversion correction: `37746781b`.
+- Correctness and combined assertion checkpoint: `6fcb50a37`.
+- The implementation was largely delivered in one runtime slice before the
+  per-format S1 captures; exact-base and matched-control evidence remain
+  separate.
+- 200-sample matched RSS pairs were ARGB4444 `127088 -> 139456` KiB,
+  promotion `153216 -> 153744`, combined-disabled `147904 -> 151504`, and
+  full-stack combined-enabled `157568 -> 152496`. Required ARGB4444 checkpoint
+  `vmmap -summary`/`ps` evidence is preserved; its lower S2 peak physical
+  footprint makes the raw RSS signal unconfirmed.
+- Final post-optimization combined medians/P95/peak RSS are disabled-stack
+  `263/264/145424`, `263/264/154352`, `184/186/154304`, and full-stack
+  `160/161/146656`, `161/164/152256`, `162/163/139360` for S1/S2/S3.
