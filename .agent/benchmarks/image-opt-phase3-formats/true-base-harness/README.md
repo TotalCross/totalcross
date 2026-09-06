@@ -25,7 +25,8 @@ git worktree add --detach /private/tmp/image-opt-phase3-true-base \
 prepare-image-opt-phase3-true-base.sh \
   /private/tmp/image-opt-phase3-true-base "$PWD" <harness-revision> \
   "$PWD/TotalCrossSDK/src/smokeTest/resources/image-opt-phase3" \
-  "$PWD/TotalCrossSDK/etc/launchers/macos/Launcher"
+  "$PWD/TotalCrossSDK/etc/launchers/macos/Launcher" \
+  "$PWD/build/libtcvm.dylib"
 ```
 
 The command prints `source_revision`, `base_revision`, and `adapter_digest`.

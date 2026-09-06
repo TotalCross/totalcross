@@ -11,6 +11,7 @@ SOURCE_ROOT=${2:?source repository path is required}
 SOURCE_REVISION=${3:?source harness revision is required}
 FIXTURE_ROOT=${4:?fixture directory is required}
 LAUNCHER=${5:?macOS launcher path is required}
+NATIVE_RUNTIME=${6:?Release macOS native runtime path is required}
 
 SOURCE_COMMIT=$(git -C "$SOURCE_ROOT" rev-parse --verify "${SOURCE_REVISION}^{commit}")
 BASE_COMMIT=$(git -C "$BASE_WORKTREE" rev-parse --verify HEAD)
@@ -39,6 +40,8 @@ mkdir -p "$BASE_WORKTREE/TotalCrossSDK/src/smokeTest/resources/image-opt-phase3"
 cp "$FIXTURE_ROOT"/* "$BASE_WORKTREE/TotalCrossSDK/src/smokeTest/resources/image-opt-phase3/"
 mkdir -p "$BASE_WORKTREE/TotalCrossSDK/etc/launchers/macos"
 cp "$LAUNCHER" "$BASE_WORKTREE/TotalCrossSDK/etc/launchers/macos/Launcher"
+mkdir -p "$BASE_WORKTREE/TotalCrossSDK/dist/vm/macos"
+cp "$NATIVE_RUNTIME" "$BASE_WORKTREE/TotalCrossSDK/dist/vm/macos/libtcvm.dylib"
 
 BASE_WORKTREE="$BASE_WORKTREE" HARNESS_FILES="$HARNESS_FILES" SOURCE_COMMIT="$SOURCE_COMMIT" python3 - <<'PY'
 import hashlib
