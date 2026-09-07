@@ -9,6 +9,11 @@
 
 #include <stdlib.h>
 #include <string.h>
+#if defined(_MSC_VER) && !defined(__clang__)
+ #include <intrin.h>
+ #pragma intrinsic(_byteswap_ushort)
+ #pragma intrinsic(_byteswap_ulong)
+#endif
 #if defined (WIN32)
  #include <tchar.h>
 #endif
@@ -24,14 +29,6 @@ extern "C" {
 #endif
 
 // Crossplatform Types
-
-#define SWAP16_FORCED(n) (((((unsigned int) n) << 8) & 0xFF00) | \
-      ((((unsigned int) n) >> 8) & 0x00FF))
-
-#define SWAP32_FORCED(n) (((((unsigned long) n) << 24) & 0xFF000000) |   \
-      ((((unsigned long) n) <<  8) & 0x00FF0000) |   \
-      ((((unsigned long) n) >>  8) & 0x0000FF00) |   \
-      ((((unsigned long) n) >> 24) & 0x000000FF))
 
 #ifndef UNUSED
 #define UNUSED(x) x=x;
@@ -109,6 +106,66 @@ typedef JChar* JCharP;
  #endif
 #endif
 typedef TCHAR* TCHARP;
+
+/////////////////////////////////////////////////////////////////////////
+// Compiler capabilities
+
+#ifndef TCVM_HAS_BUILTIN
+ #ifdef __has_builtin
+  #define TCVM_HAS_BUILTIN(x) __has_builtin(x)
+ #else
+  #define TCVM_HAS_BUILTIN(x) 0
+ #endif
+#endif
+
+/////////////////////////////////////////////////////////////////////////
+// Endianness
+
+#if TCVM_HAS_BUILTIN(__builtin_bswap16)
+ #define TCVM_USE_BUILTIN_BSWAP16 1
+#elif defined(__GNUC__) && !defined(__clang__) && \
+      ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+ #define TCVM_USE_BUILTIN_BSWAP16 1
+#else
+ #define TCVM_USE_BUILTIN_BSWAP16 0
+#endif
+
+#if TCVM_HAS_BUILTIN(__builtin_bswap32)
+ #define TCVM_USE_BUILTIN_BSWAP32 1
+#elif defined(__GNUC__) && !defined(__clang__) && \
+      ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+ #define TCVM_USE_BUILTIN_BSWAP32 1
+#else
+ #define TCVM_USE_BUILTIN_BSWAP32 0
+#endif
+
+static inline uint16 tcvm_swap16(uint16 value) {
+#if TCVM_USE_BUILTIN_BSWAP16
+   return (uint16)__builtin_bswap16(value);
+#elif defined(_MSC_VER)
+   return (uint16)_byteswap_ushort((unsigned short)value);
+#else
+   return (uint16)((value << 8) | (value >> 8));
+#endif
+}
+
+static inline uint32 tcvm_swap32(uint32 value) {
+#if TCVM_USE_BUILTIN_BSWAP32
+   return (uint32)__builtin_bswap32(value);
+#elif defined(_MSC_VER)
+   return (uint32)_byteswap_ulong((unsigned long)value);
+#else
+   return (value << 24) |
+      ((value << 8) & 0x00FF0000u) |
+      ((value >> 8) & 0x0000FF00u) |
+      (value >> 24);
+#endif
+}
+
+#define SWAP16_FORCED(n) tcvm_swap16((uint16)(n))
+#define SWAP32_FORCED(n) tcvm_swap32((uint32)(n))
+
+/////////////////////////////////////////////////////////////////////////
 
 #if !defined(__cplusplus) && !defined(__OBJC__) && !(defined(__STDBOOL_H) || defined(__STDBOOL_H))
    #define _STDBOOL_H // prevent stdbool.h include on darwin
