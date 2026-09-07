@@ -200,14 +200,11 @@ std::string architecture() {
 #endif
 }
 
-std::string order_string(size_t sample) {
+std::string order_code(size_t sample) {
     std::string order;
     for (size_t slot = 0; slot < kVariantCount; ++slot) {
-        if (slot != 0) {
-            order += ">";
-        }
         const size_t variant_index = (sample + slot) % kVariantCount;
-        order += kVariantNames[variant_index];
+        order += static_cast<char>('0' + variant_index);
     }
     return order;
 }
@@ -325,10 +322,7 @@ int main(int argc, char** argv) {
         for (const char* name : kVariantNames) {
             raw << "," << name << "_ns";
         }
-        for (const char* name : kVariantNames) {
-            raw << "," << name << "_checksum";
-        }
-        raw << "\n";
+        raw << ",checksum\n";
 
         std::array<std::vector<uint64_t>, kVariantCount> times;
         for (auto& variant_times : times) {
@@ -349,13 +343,11 @@ int main(int argc, char** argv) {
                 checksums_agree = checksums_agree &&
                                   sample_checksums[variant] == sample_checksums[0];
             }
-            raw << sample << ',' << order_string(sample);
+            raw << sample << ',' << order_code(sample);
             for (const uint64_t elapsed : sample_times) {
                 raw << ',' << elapsed;
             }
-            for (const uint64_t result_checksum : sample_checksums) {
-                raw << ',' << result_checksum;
-            }
+            raw << ',' << sample_checksums[0];
             raw << '\n';
         }
         if (!raw) {
