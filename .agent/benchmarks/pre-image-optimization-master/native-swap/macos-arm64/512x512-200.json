@@ -7,10 +7,10 @@
   "architecture": "arm64",
   "warmups": 3,
   "samples": 200,
-  "native_median_ns": 294000,
-  "native_p95_ns": 307542,
-  "portable_median_ns": 293959,
-  "portable_p95_ns": 303083,
-  "native_portable_ratio": 1.00014,
+  "native_median_ns": 18375,
+  "native_p95_ns": 26958,
+  "portable_median_ns": 18333,
+  "portable_p95_ns": 26708,
+  "native_portable_ratio": 1.00229,
   "checksum_agreement": true
 }

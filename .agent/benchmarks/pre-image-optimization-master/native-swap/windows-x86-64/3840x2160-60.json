@@ -7,10 +7,10 @@
   "architecture": "x86-64",
   "warmups": 3,
   "samples": 60,
-  "native_median_ns": 15503300,
-  "native_p95_ns": 15801700,
-  "portable_median_ns": 13263300,
-  "portable_p95_ns": 15578900,
-  "native_portable_ratio": 1.16889,
+  "native_median_ns": 2252500,
+  "native_p95_ns": 2444200,
+  "portable_median_ns": 2231700,
+  "portable_p95_ns": 2518600,
+  "native_portable_ratio": 1.00932,
   "checksum_agreement": true
 }
