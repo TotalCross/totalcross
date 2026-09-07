@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-07T14:19:44-03:00
+Updated: 2026-09-07T14:27:04-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Current master baseline SHA: `7add0f29e9366a19d894237119a415416e6bb557`
@@ -27,8 +27,10 @@ in `a860deb3f`.
 
 ## Next concrete action
 
-No further Phase 1 action remains. Before Phase 2 optimization work, rebase
-the implementation from current master; historical reports remain untouched.
+No further Phase 1 action remains. `perf/image-opt-phase2-raster` must be
+rebased onto the final `perf/image-opt-phase1-controls` HEAD
+`0f51b8d56f1afd0d2dec94cd12e6b3f81f6c77ae`; historical reports remain
+untouched.
 
 ## Active paths
 
@@ -53,7 +55,7 @@ at `1d8deacb1`, and 200/200 samples for each scenario. The initial 60-sample
 RSS gap required the 200-sample rerun; the final S2/S1 and S3/S1 RSS deltas
 were +1.942% and +0.211%, so matched `vmmap` diagnostics were not required.
 All scenarios exited successfully; S2 diagnostic fields were zero and S3
-showed expected accounting activity. The plan is 8,748 bytes and 199 lines.
+showed expected accounting activity. The plan is 8,840 bytes and 201 lines.
 
 ## Deferred validation
 
@@ -87,7 +89,9 @@ RSS differences fell below 5%. Verbose logs remain under ignored
 
 ## Blockers and deliberate out-of-scope files
 
-There are no Phase 1 blockers. Phase 2 must rebase before implementing later
+There are no Phase 1 blockers. `perf/image-opt-phase2-raster` must be rebased
+onto the final `perf/image-opt-phase1-controls` HEAD
+`0f51b8d56f1afd0d2dec94cd12e6b3f81f6c77ae` before implementing later
 optimizations. The pre-existing untracked
 `scripts/run-image-modifier-memory-smoke.py` is unrelated local work and must
 remain untouched and unstaged.

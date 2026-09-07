@@ -88,9 +88,10 @@ and +0.211% in RSS. The persistent-RSS condition was not met, so matched
 All three scenarios passed 200/200 sample and process-exit checks. The final
 focused Image suite passed all 137 tests, SDK `dist -x test` passed, and the
 Release software-Skia macOS CMake/Ninja build plus exact-dylib smoke passed.
-The active plan is 8,595 bytes and 196 lines. Phase 2 should rebase from
-current master before implementing any later raster optimization; historical
-benchmark artifacts remain immutable.
+The active plan is 8,840 bytes and 201 lines. `perf/image-opt-phase2-raster`
+must be rebased onto the final `perf/image-opt-phase1-controls` HEAD
+`0f51b8d56f1afd0d2dec94cd12e6b3f81f6c77ae` before implementing any later raster
+optimization; historical benchmark artifacts remain immutable.
 
 ## Prospective Phase 2+ benchmark policy
 
@@ -111,5 +112,6 @@ at milestone/closeout boundaries and retain the 60-to-200 escalation, RSS rules,
 and local macOS methodology.
 
 This policy is prospective for Phase 2+ and does not invalidate or require
-rerunning any historical Phase 1 report or sample. Phase 2 must still rebase
-from current master before implementation.
+rerunning any historical Phase 1 report or sample. `perf/image-opt-phase2-raster`
+must be rebased onto the final `perf/image-opt-phase1-controls` HEAD
+`0f51b8d56f1afd0d2dec94cd12e6b3f81f6c77ae` before implementation.
