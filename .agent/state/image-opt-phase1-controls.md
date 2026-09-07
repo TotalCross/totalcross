@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-07T12:27:01-03:00
+Updated: 2026-09-07T14:02:31-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Current master baseline SHA: `7add0f29e9366a19d894237119a415416e6bb557`
@@ -80,6 +80,10 @@ RSS differences fell below 5%. Verbose logs remain under ignored
   memory/residency diagnostics before regression classification.
 - The authored SHA remains historical; current master `7add0f29e9366a19d894237119a415416e6bb557`
   is the S1 source for the new post-stabilization comparison.
+- The shared benchmark protocol’s cross-platform policy is prospective for
+  Phase 2+; macOS software Skia remains authoritative, hosted CI is secondary,
+  Android uses production GPU/OpenGL ES, and historical Phase 1 artifacts need
+  no rerun.
 
 ## Blockers and deliberate out-of-scope files
 

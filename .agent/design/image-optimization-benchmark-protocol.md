@@ -6,8 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization benchmark protocol
 
-Status: established for phase 1; update only when the executed measurement
-regime materially differs from this contract.
+Status: established for Phase 1; the cross-platform policy below is
+prospective for Phase 2 and later.
 
 ## Scope
 
@@ -30,6 +30,39 @@ and sample regime:
 
 Every run resets `ImageOptimizationSettings` and explicitly disables every
 other optimization introduced by this series. `DEFAULT` resolves to disabled.
+
+## Cross-platform policy for Phase 2+
+
+This section is prospective for Phase 2 and later. It does not invalidate or
+require rerunning historical Phase 1 benchmark reports or samples.
+
+- Local macOS software Skia remains the primary and authoritative environment
+  for S1/S2/S3 raster benchmarks and small regression decisions.
+- Android device runs use a physical device via `adb` and the real production
+  GPU/OpenGL ES backend. Do not add or require Android software-raster builds
+  solely for benchmarking.
+- Windows GitHub-hosted runners and Linux GitHub-hosted runners are valid for
+  native software-raster cross-platform validation and comparisons. Prefer
+  Linux x64 and, when available and practical, native Linux ARM64; emulated or
+  QEMU ARM runs are not performance evidence.
+- GitHub-hosted performance results are secondary and indicative because
+  hosted-runner variability can distort small deltas. Correctness failures are
+  blockers, but hosted CI results alone must not accept or reject a small
+  performance delta near the existing 5% threshold.
+- Compared GitHub configurations run on the same provisioned runner/job with
+  identical build flags and workload, preferably interleaved or counterbalanced
+  in execution order. Do not compare absolute timings from unrelated jobs or
+  runners.
+- Run optimizations only on semantically relevant backends. For `RASTER_*`
+  optimizations, macOS, Windows, and Linux software raster are the relevant
+  performance targets. On Android GPU, validate relevant CPU-side decode and
+  backing behavior and, where applicable, verify that raster-only fast paths
+  remain unused or zero-hit rather than forcing a raster renderer.
+- Expand platform coverage at meaningful milestone or closeout boundaries,
+  rather than multiplying every micro-benchmark across every platform.
+
+The existing 60-to-200 sample escalation, RSS rules, and local macOS
+methodology remain unchanged for all applicable comparisons.
 
 The Phase 1 addendum reserves, in addition to the existing IDs 0-12:
 

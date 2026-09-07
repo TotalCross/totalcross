@@ -91,3 +91,25 @@ Release software-Skia macOS CMake/Ninja build plus exact-dylib smoke passed.
 The active plan is 8,595 bytes and 196 lines. Phase 2 should rebase from
 current master before implementing any later raster optimization; historical
 benchmark artifacts remain immutable.
+
+## Prospective Phase 2+ benchmark policy
+
+The shared protocol now defines cross-platform evidence for later phases.
+Local macOS software Skia remains authoritative for S1/S2/S3 and small
+regression decisions. Physical Android devices use `adb` with the production
+GPU/OpenGL ES backend; Windows and Linux hosted runners may provide native
+software-raster validation, with Linux x64 and practical native ARM64 preferred
+and emulated/QEMU ARM excluded as performance evidence.
+
+Hosted-runner performance is secondary/indicative: correctness failures block,
+but hosted results alone cannot decide a small delta near 5%. Compared
+revisions must share a provisioned runner/job, flags, workload, and preferably
+interleaved or counterbalanced order. `RASTER_*` performance targets are
+macOS/Windows/Linux software raster; Android GPU checks CPU-side decode/backing
+and confirms raster-only paths remain unused where applicable. Expand coverage
+at milestone/closeout boundaries and retain the 60-to-200 escalation, RSS rules,
+and local macOS methodology.
+
+This policy is prospective for Phase 2+ and does not invalidate or require
+rerunning any historical Phase 1 report or sample. Phase 2 must still rebase
+from current master before implementation.
