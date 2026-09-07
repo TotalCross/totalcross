@@ -167,11 +167,22 @@ getGraphics barriers, eager JPEG APIs, ordinary direct draw, APPLY_COLOR2,
 and zero-copy failure/retry. Full details and artifact paths are in
 `closeout-s1-s2-s3-results.txt`.
 
+## Extension 03 Android availability
+
+`adb devices` found `192.168.1.154:43289` (`2312DRA50G`, Android 13), but the
+installed TotalCross packages had no identifiable provenance matching the
+final Phase 2 runtime `c6515a8f0` and harness revision
+`7700966325b84b876d42822465b0c9a9d5f3b1ae`. The required result is therefore
+`DEFERRED — matching runtime requires a prohibited Android build`. No Android
+build, install, logcat, or GPU workload was performed. The concise record is
+`.agent/evidence/image-opt-phase2-raster-extension-android.md`.
+
 ## Deferred validation
 
-Android GPU validation is pending in extension 03 and must not trigger an
-Android build. iOS, Windows, Linux, and GPU validation outside the planned
-Android check remain deferred by task policy. The commit-message checker
+Android GPU validation is explicitly deferred because no matching installed
+runtime was available without a prohibited Android build. iOS, Windows, Linux,
+and GPU validation outside the planned Android check remain deferred by task
+policy. The commit-message checker
 flagged overlong body lines on three earlier extension-01 commits; history was
 preserved without amendment. The extension-02 factory correction commit
 passed the checker. The ID 13 runtime commit's local check reported a body
@@ -194,9 +205,8 @@ No blockers. Existing unrelated untracked files under `.agent`, `scripts`,
 
 ## Next concrete action
 
-Complete the extension-03 Android availability check without building Android,
-then finalize the Phase 2 handoff. Phase 3 must resolve and record the exact
-frozen tip of `perf/image-opt-phase2-raster` when it starts.
+Finalize the Phase 2 handoff. Phase 3 must resolve and record the exact frozen
+tip of `perf/image-opt-phase2-raster` when it starts.
 
 ## Resume command
 
