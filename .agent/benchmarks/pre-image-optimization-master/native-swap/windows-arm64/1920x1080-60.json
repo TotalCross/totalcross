@@ -1,0 +1,16 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "pixel_count": 2073600,
+  "compiler": "MSVC 1944.35228",
+  "os": "Windows",
+  "architecture": "ARM64",
+  "warmups": 3,
+  "samples": 60,
+  "native_median_ns": 1280900,
+  "native_p95_ns": 1331100,
+  "portable_median_ns": 1393300,
+  "portable_p95_ns": 1475200,
+  "native_portable_ratio": 0.919328,
+  "checksum_agreement": true
+}

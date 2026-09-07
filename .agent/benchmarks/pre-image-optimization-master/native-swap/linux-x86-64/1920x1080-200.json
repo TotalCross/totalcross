@@ -1,0 +1,16 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "pixel_count": 2073600,
+  "compiler": "GCC 11.4.0",
+  "os": "Linux",
+  "architecture": "x86_64",
+  "warmups": 3,
+  "samples": 200,
+  "native_median_ns": 3908668,
+  "native_p95_ns": 5863535,
+  "portable_median_ns": 3954880,
+  "portable_p95_ns": 5847892,
+  "native_portable_ratio": 0.988315,
+  "checksum_agreement": true
+}
