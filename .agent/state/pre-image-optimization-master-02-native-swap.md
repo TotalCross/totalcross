@@ -15,7 +15,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Prerequisite: plan-1 implementation is an ancestor; the only post-
   implementation commit changes the documented plan/state/evidence/report
   handoff paths.
-- Last commit: `298f51d00` (`ci(skia): prepare native swap runner matrix`).
+- Last commit: `9c6ad7743` (`test(skia): record macos swap results`).
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
