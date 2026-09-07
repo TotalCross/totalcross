@@ -802,6 +802,24 @@ registerImageMacSmoke('ImageRasterCombinedBenchmark', 'ImageRasterCombinedBenchm
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageRasterPhysicalIdentityBenchmark', 'ImageRasterPhysicalIdentityBenchmarkApp',
+    'image-raster-physical-identity-benchmark', false, false, [
+        'fixture=ImageRasterPhysicalIdentityBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterTargetColorBenchmark', 'ImageRasterTargetColorBenchmarkApp',
+    'image-raster-target-color-benchmark', false, false, [
+        'fixture=ImageRasterTargetColorBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterVariantBenchmark', 'ImageRasterVariantBenchmarkApp',
+    'image-raster-variant-benchmark', false, false, [
+        'fixture=ImageRasterVariantBenchmarkApp',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
     'image-diagnostic-accounting-gate-benchmark', false, false, [
         'fixture=ImageDiagnosticAccountingGateBenchmarkApp',

@@ -337,6 +337,20 @@ SkImageInfo rasterInfo(int32 width, int32 height) {
     return ::rasterInfo(width, height);
 }
 
+static SkImageInfo testRasterInfo(int32 width, int32 height, int32 colorType) {
+    SkColorType skColorType = kUnknown_SkColorType;
+    SkAlphaType alphaType = kUnpremul_SkAlphaType;
+    if (colorType == SKIA_TEST_COLOR_RGBA8888) {
+        skColorType = kRGBA_8888_SkColorType;
+    } else if (colorType == SKIA_TEST_COLOR_BGRA8888) {
+        skColorType = kBGRA_8888_SkColorType;
+    } else if (colorType == SKIA_TEST_COLOR_RGB565) {
+        skColorType = kRGB_565_SkColorType;
+        alphaType = kOpaque_SkAlphaType;
+    }
+    return SkImageInfo::Make(width, height, skColorType, alphaType);
+}
+
 void markMutated(NativeImageBackingRecord* backing) {
     if (!backing) {
         return;
@@ -360,6 +374,29 @@ int64_t skia_image_backing_create_empty(int32 width, int32 height) {
         }
         backing->width = width;
         backing->height = height;
+        return registerBackingRecord(std::move(backing));
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
+int64_t skia_image_backing_create_empty_for_test(int32 width, int32 height, int32 colorType) {
+    if (width <= 0 || height <= 0 || colorType < SKIA_TEST_COLOR_RGBA8888
+        || colorType > SKIA_TEST_COLOR_RGB565) {
+        return 0;
+    }
+    try {
+        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
+        backing->surface = SkSurface::MakeRaster(
+            skia_image_backing_internal::testRasterInfo(width, height, colorType));
+        if (!backing->surface) {
+            return 0;
+        }
+        backing->width = width;
+        backing->height = height;
+        if (colorType == SKIA_TEST_COLOR_RGB565) {
+            backing->opacity = SKIA_IMAGE_OPACITY_OPAQUE;
+        }
         return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;

@@ -666,6 +666,21 @@ public class Image extends GfxSurface {
     return new Image(width, height, contentScale);
   }
 
+  /** Test-only software raster target factory; never used by production code. */
+  static Image createTestRaster(int width, int height, double contentScale, int colorType)
+      throws ImageException {
+    Image result = createLogical(width, height, contentScale);
+    if (Settings.onJavaSE || !(result.backing instanceof NativeImageBacking)) {
+      return result;
+    }
+    NativeImageBacking previous = (NativeImageBacking) result.backing;
+    NativeImageBacking replacement = NativeImageBacking.createEmptyForTest(
+        result.width, result.height, colorType);
+    previous.release();
+    result.backing = replacement;
+    return result;
+  }
+
   /** Used only at desktop to get the image's pixels. */
   public int[] getPixels() {
     materializeCanonicalUnchecked();

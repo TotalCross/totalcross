@@ -140,6 +140,7 @@ TC_API void tuiEIS_captureNative_Bi(NMParams p);
 TC_API void tuiEIS_captureNativePath_s(NMParams p);
 TC_API void tuiEIS_releaseNativeBag(NMParams p);
 TC_API void tuiNIB_createEmptyNative_ii(NMParams p);
+TC_API void tuiNIB_createEmptyForTestNative_iii(NMParams p);
 TC_API void tuiNIB_isAvailableNative(NMParams p);
 TC_API void tuiNIB_resetAccountingTestNative(NMParams p);
 TC_API void tuiNIB_clearAccountingTestNative(NMParams p);

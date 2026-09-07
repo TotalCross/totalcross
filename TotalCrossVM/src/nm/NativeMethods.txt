@@ -117,6 +117,7 @@ totalcross/ui/image/EncodedImageSource|native private void captureNative(byte []
 totalcross/ui/image/EncodedImageSource|native private void captureNativePath(String path);
 totalcross/ui/image/EncodedImageSource|native private void releaseNativeBag();
 totalcross/ui/image/NativeImageBacking|native private static long createEmptyNative(int width, int height);
+totalcross/ui/image/NativeImageBacking|native private static long createEmptyForTestNative(int width, int height, int colorType);
 totalcross/ui/image/NativeImageBacking|native private static boolean isAvailableNative();
 totalcross/ui/image/NativeImageBacking|native private static void resetAccountingTestNative();
 totalcross/ui/image/NativeImageBacking|native private static void clearAccountingTestNative();

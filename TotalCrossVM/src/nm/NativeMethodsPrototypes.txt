@@ -1048,6 +1048,10 @@ TC_API void tuiNIB_createEmptyNative_ii(NMParams p) // totalcross/ui/image/Nativ
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_createEmptyForTestNative_iii(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long createEmptyForTestNative(int width, int height, int colorType);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static boolean isAvailableNative();
 {
 }
