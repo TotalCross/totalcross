@@ -194,3 +194,17 @@ No Android build, install, logcat, or GPU workload was performed. The
 draw-only GPU invariants therefore remain unexecuted; macOS software-Skia is
 the authoritative final evidence. The concise availability record is
 `.agent/evidence/image-opt-phase2-raster-extension-android.md`.
+
+## 2026-09-07 — Extension 03 final handoff
+
+Extension 03 is accepted. Benchmark evidence is committed in `0634674ea` and
+the Android deferral in `25b61c8a1`; native Phase 2 runtime code remains
+frozen at `c6515a8f0`. Controls 0-4 and 13-15 are opt-in/default-disabled,
+identity folding precedes the bounded physical variant, and target color is
+chosen during final materialization.
+
+Phase 3 must resolve `git rev-parse HEAD` on
+`perf/image-opt-phase2-raster` when it starts and record that exact handoff
+SHA. Its scope is compact source formats. Cache/lifecycle and mmap/working-set
+work remains later scope; Windows, Linux, and iOS remain deferred by this
+execution's build policy.

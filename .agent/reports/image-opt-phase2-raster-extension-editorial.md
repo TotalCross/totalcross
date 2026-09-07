@@ -211,3 +211,18 @@ for the final Phase 2 runtime. GPU validation is therefore explicitly
 build or install was attempted. The draw-only GPU-negative invariants remain
 unexecuted; the concise record is
 `.agent/evidence/image-opt-phase2-raster-extension-android.md`.
+
+## Phase 2 final handoff
+
+Delivered behavior is the complete lossless raster set: controls 0-4 and
+13-15, all opt-in/default-disabled, with exact decode/opacity/readback paths,
+writePixels, direct-color materialization, identity folding, target-color
+conversion, and one-entry physical variant reuse. The authoritative
+performance evidence is macOS software-Skia; Windows, Linux, and iOS were not
+built under this execution policy. Android was reachable but had no matching
+installed runtime, so its GPU-negative checks are explicitly deferred without
+an Android build.
+
+Phase 3 should now address compact source formats and resolve the exact frozen
+branch tip at start. Cache/lifecycle and mmap/working-set work remains later
+scope; this closeout does not expand into those areas.
