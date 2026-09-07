@@ -168,3 +168,36 @@ The next sequential plan is
 `.agent/plans/exec-plan-image-opt-phase2-raster-extension-03.md`, which must
 freeze the branch tip it starts from and distinguish final Phase 2 behavior
 from the later Phase 3 compact-source work.
+
+## Extension 03 integrated macOS closeout
+
+Phase 2's final integrated harness is at
+`7700966325b84b876d42822465b0c9a9d5f3b1ae`; the native runtime remains frozen
+at `c6515a8f0`. The frozen S1 used runtime
+`a8a9480bd61aa510de423569af494d8dde69e8f2` and the approved true-base adapter
+with digest `ff13de81694fc7075602d1194648bc8fd5eaea58357821e952a814974cd950eb`.
+
+| Scenario | Samples | Median | P95 | CV | Peak RSS |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| S1 frozen true base | 60 | 912 ms | 921 ms | 0.516% | 114432 KiB |
+| S2 all disabled | 60 | 912 ms | 918.05 ms | 0.429% | 120656 KiB |
+| S3 controls 0-4,13-15 | 60 | 84.5 ms | 91.05 ms | 4.288% | 125712 KiB |
+
+The integrated workload exercised JPEG/PNG decode, opacity, physical identity,
+repeated transformed materialization and hits, target-color selection,
+writePixels, readback, encoding, and mutation invalidation. All seven recorded
+hashes stayed exact and stable. The S2 60-sample RSS trigger was resolved with
+the required final-runtime 200-sample pre/disabled control: 918/920 ms medians,
+927/924 ms P95, 0.716%/0.395% CV, and 114048/113040 KiB RSS. The final deltas
+were +0.218% elapsed and -0.884% RSS; matched live physical-footprint peaks
+were 83.6M and 86.5M. An enabled 200-sample confirmation completed at 87 ms
+median, 94 ms P95, 6.086% CV, and 135664 KiB RSS, with stable hashes.
+
+The exact final-dylib correctness matrix passed for adaptive and targeted JPEG,
+zero-copy/retry, geometry/materialization, opacity, row/full readback,
+writePixels, identity guards, BGRA/RGB565/translucent target behavior, mutation,
+one-entry physical variants, decode-generation invalidation, eager JPEG APIs,
+ordinary direct draw, and APPLY_COLOR2 parity. These results close Phase 2's
+lossless raster work. Phase 3 should focus on compact source formats and must
+resolve the frozen `perf/image-opt-phase2-raster` tip at start; lifecycle and
+mmap/working-set work remains later scope.
