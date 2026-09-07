@@ -36,3 +36,21 @@ production revision: 60 samples, median 5629 ms, peak RSS 114208 KiB. The
 initial stale installed dylib was detected by symbol/timestamp inspection and
 replaced with the exact macOS Release build before measurements; no historical
 artifact was changed.
+
+## 2026-09-07 — Milestone 2 physical identity folding
+
+ID 15 was committed in `31c3d0fa40d955806df18e1dad1ba79fa301a606`. The native
+path derives an ephemeral `RasterPhysicalPlan` from the existing compiled
+geometry, requires exact physical integer identity on software raster targets,
+and falls back without rotation or near-identity approximation. It preserves
+the existing writePixels helper as an independent eligibility path and records
+package-private identity counters.
+
+Focused smokes passed for smooth and nearest identity, 400x400 to 200x200
+non-identity fallback, alpha/save and dynamic-hwScale guards, and exact crop and
+frame selection. SDK tests/dist, macOS Release software-Skia build, and related
+geometry/writePixels smokes passed. Identity S2/S3 used the committed runtime
+above and 60 samples: S2 median 5483 ms, P95 5516 ms, CV 0.62%, peak RSS 114080
+KiB, counters zero; S3 median 1060 ms, P95 1062 ms, CV 0.21%, peak RSS 115728
+KiB, 1024 identity hits and avoided resamples per batch. Both hashes were
+`000000D600000165`, and no 200-sample escalation was required.
