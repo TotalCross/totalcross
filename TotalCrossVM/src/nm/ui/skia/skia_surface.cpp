@@ -46,7 +46,7 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
     int32* const converted = new int32[count];
     const Pixel* const src = reinterpret_cast<const Pixel*>(data);
     for (size_t i = 0; i < count; i++) {
-        converted[i] = SWAP32(src[i]);
+        converted[i] = SWAP32_FORCED(src[i]);
     }
 
     auto imageSurface = std::make_unique<SkiaImageSurface>();
