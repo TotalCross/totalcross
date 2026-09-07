@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-07T11:46:22-03:00
+Updated: 2026-09-07T11:51:14-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
@@ -18,16 +18,15 @@ corrective slice is complete through focused tests `42a183473`, workload and
 runner `f33760435`, gate fix `4721397d6`, registration fix `8399b8b0a`, and
 benchmark evidence `884ffcb61`. The follow-up clear-state tests/smoke landed
 in `89458ecc7`; the native clear-only fix is `62a4c9278`. S1 used
-`f33760435`; S2/S3 used `8399b8b0a`. The reservation addendum code and tests
-landed in `23b361051`; documentation and final validation remain the active
-slice.
+`f33760435`; S2/S3 used `8399b8b0a`. The reservation addendum code landed in
+`23b361051`, the protocol/plan/editorial update in `e5e35e305`, and the
+test-isolation follow-up in `edcefbe06`. The addendum is complete.
 
 ## Next concrete action
 
-Complete the documentation/protocol addendum, run the focused SDK validations,
-then record the final revision and results. Phase 2 may branch from the final
-phase-1 branch HEAD after this checkpoint. The original control report was not
-overwritten.
+No implementation or validation work remains for this addendum. Phase 2 may
+branch from the final phase-1 branch HEAD after this checkpoint. The original
+control report was not overwritten.
 
 ## Active paths
 
@@ -51,10 +50,19 @@ has nonzero Java/readback/native backing counters. No benchmark rerun was
 required because the follow-up only changes counter clearing, not the timed
 workload or hot path.
 
+The addendum focused run passed all 137 `totalcross.ui.image.*` tests after
+the test-isolation follow-up, and SDK `dist -x test` passed. Focused copyright
+and whitespace checks passed. The first focused run found only a shared-JVM
+test precondition issue; no production assertion failed after the test reset
+was added.
+
 ## Deferred validation
 
-Android/iOS/Windows/Linux/GPU validation and later optimizations remain outside
-the plan. Verbose logs remain under ignored `artifacts/image-opt-phase1-controls/`.
+The macOS software-Skia native build was not rerun because this addendum changes
+only Java controls/tests and documentation; no native code, build configuration,
+or counted hot path changed. Android/iOS/Windows/Linux/GPU validation and later
+optimizations remain outside the plan. Verbose logs remain under ignored
+`artifacts/image-opt-phase1-controls/`.
 
 ## Decisions still active
 

@@ -61,3 +61,8 @@ matched execution points when a peak-RSS difference above 5% persists after the
 required 200-sample rerun. On macOS this means `vmmap -summary` plus RSS and
 available physical-footprint measurements. The local macOS requirement and
 historical benchmark artifacts remain unchanged.
+
+Focused `totalcross.ui.image.*` tests passed all 137 tests after a shared-JVM
+test precondition was made explicit in `edcefbe06`; SDK `dist -x test` also
+passed. The macOS software-Skia native build was not rerun because the
+addendum changes no native code, build configuration, or counted hot path.
