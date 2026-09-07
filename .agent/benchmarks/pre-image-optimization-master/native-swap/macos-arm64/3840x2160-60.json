@@ -1,0 +1,16 @@
+{
+  "width": 3840,
+  "height": 2160,
+  "pixel_count": 8294400,
+  "compiler": "Clang Apple LLVM 21.0.0 (clang-2100.1.1.101)",
+  "os": "macOS",
+  "architecture": "arm64",
+  "warmups": 3,
+  "samples": 60,
+  "native_median_ns": 9395542,
+  "native_p95_ns": 9575334,
+  "portable_median_ns": 9430709,
+  "portable_p95_ns": 9591750,
+  "native_portable_ratio": 0.996271,
+  "checksum_agreement": true
+}

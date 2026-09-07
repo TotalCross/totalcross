@@ -15,21 +15,22 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Prerequisite: plan-1 implementation is an ancestor; the only post-
   implementation commit changes the documented plan/state/evidence/report
   handoff paths.
-- Last commit: `63fc89a48` (`test(skia): add native swap benchmark`).
+- Last commit: `298f51d00` (`ci(skia): prepare native swap runner matrix`).
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
 - Active artifact path:
   `.agent/benchmarks/pre-image-optimization-master/native-swap/`.
-- Next exact action: run the local macOS 60-pair preliminary and 200-pair final
-  checkpoints for 512x512, 1920x1080, and 3840x2160, then fast-forward push
-  the feature branch so the temporary native workflow can run.
-- Benchmark jobs/results collected: none.
+- Next exact action: verify the remote branch permits a normal fast-forward,
+  push this feature branch, and inspect only the native-swap workflow jobs.
+- Benchmark jobs/results collected: local macOS arm64 60/200 checkpoints for
+  512x512, 1920x1080, and 3840x2160; raw and JSON artifacts are under
+  `.agent/benchmarks/pre-image-optimization-master/native-swap/macos-arm64/`.
 - Validation completed for plan 2: prerequisite ancestry and handoff allowlist
   checks; optimized macOS arm64 smoke with 3 warmups and 10 pairs; output
   format/checksum assertions; focused copyright validation; staged diff check.
-- Validation deferred: local macOS 60/200 checkpoints and all native
-  Windows/Linux runner jobs are still required for the decision.
+- Validation deferred: all native Windows/Linux runner jobs are still required
+  for the decision; macOS is corroborating evidence only.
 - Decisions still active: apply only the fixed 5% rule; keep
   `skia_internal.h` as the sole default-definition site for surviving flags;
   leave opacity, writePixels, and color-type behavior unchanged.
