@@ -23,7 +23,10 @@ final class ImageOptimizationSettings {
   static final int GPU_DISCARD_CPU_BACKING = 10;
   static final int STORAGE_MMAP_LARGE_BACKINGS = 11;
   static final int DIAGNOSTIC_ACCOUNTING = 12;
-  static final int FEATURE_COUNT = 13;
+  static final int RASTER_TARGET_COLORTYPE_CONVERSION = 13;
+  static final int RASTER_PHYSICAL_VARIANT_CACHE = 14;
+  static final int RASTER_PHYSICAL_IDENTITY_FOLDING = 15;
+  static final int FEATURE_COUNT = 16;
 
   private static final long DEFAULT_CACHE_MAX_BYTES = 64L * 1024 * 1024;
   private static final long DEFAULT_MMAP_THRESHOLD_BYTES = 4L * 1024 * 1024;
@@ -113,6 +116,9 @@ final class ImageOptimizationSettings {
     appendFeature(description, "GPU_DISCARD_CPU_BACKING", GPU_DISCARD_CPU_BACKING);
     appendFeature(description, "STORAGE_MMAP_LARGE_BACKINGS", STORAGE_MMAP_LARGE_BACKINGS);
     appendFeature(description, "DIAGNOSTIC_ACCOUNTING", DIAGNOSTIC_ACCOUNTING);
+    appendFeature(description, "RASTER_TARGET_COLORTYPE_CONVERSION", RASTER_TARGET_COLORTYPE_CONVERSION);
+    appendFeature(description, "RASTER_PHYSICAL_VARIANT_CACHE", RASTER_PHYSICAL_VARIANT_CACHE);
+    appendFeature(description, "RASTER_PHYSICAL_IDENTITY_FOLDING", RASTER_PHYSICAL_IDENTITY_FOLDING);
     description.append(",cacheMaxBytes=").append(cacheMaxBytes)
         .append(",mmapThresholdBytes=").append(mmapThresholdBytes);
     return description.toString();

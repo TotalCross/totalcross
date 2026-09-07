@@ -28,6 +28,27 @@ class ImageOptimizationSettingsTest {
   }
 
   @Test
+  void preservesExistingFeatureIdsAndAppendsRasterReservations() {
+    assertEquals(0, ImageOptimizationSettings.DECODE_ZERO_COPY);
+    assertEquals(1, ImageOptimizationSettings.RASTER_OPACITY_METADATA);
+    assertEquals(2, ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS);
+    assertEquals(3, ImageOptimizationSettings.RASTER_ROW_READBACK);
+    assertEquals(4, ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION);
+    assertEquals(5, ImageOptimizationSettings.STORAGE_RGB565);
+    assertEquals(6, ImageOptimizationSettings.STORAGE_GRAY8);
+    assertEquals(7, ImageOptimizationSettings.STORAGE_ARGB4444);
+    assertEquals(8, ImageOptimizationSettings.CACHE_BYTE_BUDGET);
+    assertEquals(9, ImageOptimizationSettings.CACHE_MEMORY_PRESSURE_EVICTION);
+    assertEquals(10, ImageOptimizationSettings.GPU_DISCARD_CPU_BACKING);
+    assertEquals(11, ImageOptimizationSettings.STORAGE_MMAP_LARGE_BACKINGS);
+    assertEquals(12, ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING);
+    assertEquals(13, ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION);
+    assertEquals(14, ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
+    assertEquals(15, ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING);
+    assertEquals(16, ImageOptimizationSettings.FEATURE_COUNT);
+  }
+
+  @Test
   void stateAndFeatureValidationIsImmediate() {
     ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_RGB565,
         ImageOptimizationSettings.ENABLED);
@@ -55,9 +76,32 @@ class ImageOptimizationSettingsTest {
         ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_GRAY8,
         ImageOptimizationSettings.DISABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+        ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+        ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
+        ImageOptimizationSettings.DISABLED);
     long expected = (1L << ImageOptimizationSettings.DECODE_ZERO_COPY)
-        | (1L << ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING);
+        | (1L << ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING)
+        | (1L << ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION)
+        | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
     assertEquals(expected, ImageOptimizationSettings.effectiveMask());
+  }
+
+  @Test
+  void newRasterReservationsAreDefaultDisabledAndCanBeExplicitlyEnabled() {
+    int[] newFeatures = {
+        ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+        ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+        ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING
+    };
+    for (int feature : newFeatures) {
+      assertEquals(ImageOptimizationSettings.DEFAULT, ImageOptimizationSettings.state(feature));
+      assertFalse(ImageOptimizationSettings.isEnabled(feature, false));
+      ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
+      assertTrue(ImageOptimizationSettings.isEnabled(feature, false));
+    }
   }
 
   @Test
@@ -78,10 +122,22 @@ class ImageOptimizationSettingsTest {
   void resetRestoresStatesNumbersAndDiagnosticGate() {
     ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
         ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+        ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+        ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
+        ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setCacheMaxBytes(1);
     ImageOptimizationSettings.setMmapThresholdBytes(2);
     ImageOptimizationSettings.resetForTest();
     assertEquals(0L, ImageOptimizationSettings.effectiveMask());
+    assertEquals(ImageOptimizationSettings.DEFAULT,
+        ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION));
+    assertEquals(ImageOptimizationSettings.DEFAULT,
+        ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE));
+    assertEquals(ImageOptimizationSettings.DEFAULT,
+        ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING));
     assertEquals(64L * 1024 * 1024, ImageOptimizationSettings.cacheMaxBytes());
     assertEquals(4L * 1024 * 1024, ImageOptimizationSettings.mmapThresholdBytes());
     assertFalse(Image.imageOperationAccountingForTest);
@@ -163,12 +219,43 @@ class ImageOptimizationSettingsTest {
   }
 
   @Test
+  void newRasterReservationsDoNotEnableRuntimeAccountingBehavior() {
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+        ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+        ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
+        ImageOptimizationSettings.ENABLED);
+    assertFalse(Image.imageOperationAccountingForTest);
+    assertFalse(Image.backingReadbackAccountingEnabledForTest());
+    assertFalse(NativeImageBacking.backingAccountingEnabledForTest());
+
+    Image.clearImageOperationAccountingCountersForTest();
+    Image.recordImagePipelineCreatedForTest();
+    Image.recordImageDrawPlanCreatedForTest();
+    Image.recordImageDrawPlanCacheHitForTest();
+    Image.recordBackingReadbackForTest();
+    ImageOptimizationSettings.triggerMemoryPressureForTest();
+    assertEquals(0, Image.imagePipelineCreatedCountForTest());
+    assertEquals(0, Image.imageDrawPlanCreatedCountForTest());
+    assertEquals(0, Image.imageDrawPlanCacheHitCountForTest());
+    assertEquals(0, Image.backingReadbackCountForTest());
+  }
+
+  @Test
   void descriptionIncludesEveryFeatureAndNumericSetting() {
     ImageOptimizationSettings.setState(ImageOptimizationSettings.CACHE_BYTE_BUDGET,
         ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+        ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+        ImageOptimizationSettings.DISABLED);
     String description = ImageOptimizationSettings.describeForTest();
     assertTrue(description.contains("CACHE_BYTE_BUDGET=ENABLED"));
     assertTrue(description.contains("DIAGNOSTIC_ACCOUNTING=DEFAULT"));
+    assertTrue(description.contains("RASTER_TARGET_COLORTYPE_CONVERSION=ENABLED"));
+    assertTrue(description.contains("RASTER_PHYSICAL_VARIANT_CACHE=DISABLED"));
+    assertTrue(description.contains("RASTER_PHYSICAL_IDENTITY_FOLDING=DEFAULT"));
     assertTrue(description.contains("cacheMaxBytes=67108864"));
     assertTrue(description.contains("mmapThresholdBytes=4194304"));
   }
