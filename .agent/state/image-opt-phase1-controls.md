@@ -53,7 +53,7 @@ at `1d8deacb1`, and 200/200 samples for each scenario. The initial 60-sample
 RSS gap required the 200-sample rerun; the final S2/S1 and S3/S1 RSS deltas
 were +1.942% and +0.211%, so matched `vmmap` diagnostics were not required.
 All scenarios exited successfully; S2 diagnostic fields were zero and S3
-showed expected accounting activity. The plan is 8,507 bytes and 195 lines.
+showed expected accounting activity. The plan is 8,595 bytes and 196 lines.
 
 ## Deferred validation
 

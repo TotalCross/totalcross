@@ -88,6 +88,6 @@ and +0.211% in RSS. The persistent-RSS condition was not met, so matched
 All three scenarios passed 200/200 sample and process-exit checks. The final
 focused Image suite passed all 137 tests, SDK `dist -x test` passed, and the
 Release software-Skia macOS CMake/Ninja build plus exact-dylib smoke passed.
-The active plan is 8,507 bytes and 195 lines. Phase 2 should rebase from
+The active plan is 8,595 bytes and 196 lines. Phase 2 should rebase from
 current master before implementing any later raster optimization; historical
 benchmark artifacts remain immutable.
