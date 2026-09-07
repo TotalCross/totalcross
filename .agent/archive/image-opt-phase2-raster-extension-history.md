@@ -54,3 +54,21 @@ above and 60 samples: S2 median 5483 ms, P95 5516 ms, CV 0.62%, peak RSS 114080
 KiB, counters zero; S3 median 1060 ms, P95 1062 ms, CV 0.21%, peak RSS 115728
 KiB, 1024 identity hits and avoided resamples per batch. Both hashes were
 `000000D600000165`, and no 200-sample escalation was required.
+
+## 2026-09-07 — Extension 02 handoff and S1 baselines
+
+Extension 01's final handoff HEAD was `de5ad089e68e39a1224a87247aad026e6d31baab`.
+The ID 15 runtime remained `31c3d0fa40d955806df18e1dad1ba79fa301a606`; three
+follow-up commits corrected the test-raster factory registration and its
+32-character native signature lookup. The final pre-ID13/14 production and
+harness revision for both S1 baselines is
+`07912a0f2d5d48705a5b7caa65f82a71ed7d3b57`.
+
+The target-color RGBA control used 60 samples: median 5477 ms, P95 5493 ms,
+CV 0.22%, peak RSS 115296 KiB, and hash `000000D600000165`. Focused S1 probes
+for BGRA, RGB565, and translucent targets passed with hashes
+`000000D600000165`, `0000AD0400003765`, and `0000F55E00000165`.
+The physical-variant repeat control used 60 samples: median 1326 ms, P95
+1328 ms, CV 0.13%, peak RSS 114160 KiB, and hash `000000D600000165`.
+First-use, mutation, and size-replacement probes each passed with one sample.
+All raw captures are additive under the extension benchmark directory.
