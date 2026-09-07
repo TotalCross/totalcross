@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Phase 2 raster extension state
 
-Updated: 2026-09-07T15:39:18-03:00
+Updated: 2026-09-07T16:35:41-03:00
 Branch: `perf/image-opt-phase2-raster`
 Frozen Phase 1 base: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Starting Phase 2 HEAD: `a225d10165b8b60c4bf7bf2f95f5bf3b395f3a92`
@@ -14,17 +14,21 @@ Plan: `.agent/plans/exec-plan-image-opt-phase2-raster-extension-01.md`
 
 ## Active slice
 
-Milestone 1 rebaseline is complete. The branch has benchmark workloads for
-physical identity, target color, and physical variants, but no ID 13-15
-runtime changes. Historical Phase 2 evidence remains unchanged.
+Milestone 2 physical identity folding is complete. ID 15 is implemented in the
+software-Skia geometry path and committed as
+`31c3d0fa40d955806df18e1dad1ba79fa301a606`. Milestone 3 handoff documentation
+is the remaining slice for extension 01. Historical Phase 2 evidence remains
+unchanged.
 
 ## Last completed slice
 
-The workloads were committed before implementation. SDK tests and distribution
-build passed, the macOS software-Skia Release build passed, the true-base
-adapter captured frozen Phase 1 S1, and the rebased Phase 2 S2/S3 controls
-passed exact-output and focused correctness checks. S3 was escalated from 60 to
-200 samples because its initial CV was 5.56%; the 200-sample CV was 4.22%.
+ID 15 was implemented after the workloads and validated with exact-output
+identity, nearest, non-identity, alpha/save, dynamic-hwScale, crop, and frame
+smokes. SDK tests/dist and the macOS software-Skia Release build passed. The
+identity S2/S3 comparison used 60 samples because both CVs stayed below 5%:
+S2 median 5483 ms with zero identity counters and 114080 KiB peak RSS; S3
+median 1060 ms with 1024 hits and 1024 avoided resamples per batch and 115728
+KiB peak RSS. Both scenarios produced pixel hash `000000D600000165`.
 
 ## Active paths
 
@@ -53,25 +57,30 @@ Milestone 1 checks passed:
   --console=plain`;
 - `./gradlew-agent dist -x test --no-daemon --console=plain`;
 - macOS software-Skia CMake/Ninja Release build;
+- Milestone 2 SDK test/dist and macOS Release software-Skia build;
+- physical identity smooth/nearest, non-identity, alpha/save, dynamic-hwScale,
+  crop, frame, geometry, and writePixels smokes;
+- identity S2/S3 workloads with exact output parity and counter assertions;
 - focused image correctness smokes, including adaptive JPEG tiers and retry,
   APPLY_COLOR2 parity, opacity invalidation, writePixels parity, and readback
   parity;
 - integrated S1/S2/S3 workloads with stable pixel, PNG, and color hashes.
 
 The authoritative measurements are in
-`.agent/benchmarks/image-opt-phase2-raster-extension/rebaseline-60/` and
-`rebaseline-200/s3/`. S1 uses frozen runtime
+`.agent/benchmarks/image-opt-phase2-raster-extension/rebaseline-60/`,
+`rebaseline-200/s3/`, `identity-s2-60/`, and `identity-s3-60/`. S1 uses frozen runtime
 `a8a9480bd61aa510de423569af494d8dde69e8f2` with harness source revision
 `25a43c0d55bd8550fef3e992e212da9fd2d57d15` and adapter digest
 `69383c1689963b04e1a94e2a0403a024a6c249105683924fab5b8572c496edf9`.
-S2/S3 use production revision
-`25a43c0d55bd8550fef3e992e212da9fd2d57d15`.
+Rebaseline S2/S3 use production revision
+`25a43c0d55bd8550fef3e992e212da9fd2d57d15`; identity S2/S3 use
+`31c3d0fa40d955806df18e1dad1ba79fa301a606`.
 
 ## Deferred validation
 
-SDK and macOS Release software-Skia builds are deferred to the end of
-Milestone 1. Android, iOS, Windows, Linux, and GPU validation are outside this
-execution by plan policy.
+Android, iOS, Windows, Linux, and GPU validation are outside this execution by
+plan policy. The commit-message checker flagged an overlong body line on the
+required runtime commit; history was preserved without amendment.
 
 ## Decisions still active
 
@@ -87,8 +96,8 @@ No blockers. Existing unrelated untracked files under `.agent`, `scripts`,
 
 ## Next concrete action
 
-Implement `RasterPhysicalPlan` and ID 15 exactly within the software-raster
-draw path, then run the focused identity smokes and S2/S3 comparison.
+Commit the Milestone 3 handoff documentation, then start extension plan 02
+with this state and the exact ID 15 production revision.
 
 ## Resume command
 

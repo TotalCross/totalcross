@@ -84,8 +84,8 @@ Use `rg`, narrow `sed` ranges, and direct reads; do not reconstruct history.
 - [x] (2026-09-07) Revalidate/rebaseline the five existing Phase 2
   optimizations with true-base S1, disabled S2, and enabled S3; the S3
   comparison was escalated to 200 samples after the 60-sample CV exceeded 5%.
-- [ ] Implement and validate `RASTER_PHYSICAL_IDENTITY_FOLDING`.
-- [ ] Hand off exact continuation state to extension plan 02.
+- [x] (2026-09-07) Implement and validate `RASTER_PHYSICAL_IDENTITY_FOLDING`.
+- [x] (2026-09-07) Hand off exact continuation state to extension plan 02.
 
 ## Current Architecture and Scope
 
