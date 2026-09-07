@@ -6,30 +6,6 @@
 
 #include "skia_internal.h"
 
-#ifndef USE_COMPUTE_OPAQUE
-#if __APPLE__ || ANDROID
-#define USE_COMPUTE_OPAQUE 0
-#else
-#define USE_COMPUTE_OPAQUE 1
-#endif
-#endif
-
-#ifndef USE_COLORTYPE_CONVERSION
-#if __APPLE__ || ANDROID
-#define USE_COLORTYPE_CONVERSION 0
-#else
-#define USE_COLORTYPE_CONVERSION 1
-#endif
-#endif
-
-#ifndef USE_NATIVE_SWAP
-#if __APPLE__ || ANDROID
-#define USE_NATIVE_SWAP 0
-#else
-#define USE_NATIVE_SWAP 1
-#endif
-#endif
-
 #if defined(ANDROID)
 #include <jni.h>
 #include <android/bitmap.h>
