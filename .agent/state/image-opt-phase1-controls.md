@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-05T12:14:11-03:00
+Updated: 2026-09-07T11:46:22-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
@@ -18,13 +18,16 @@ corrective slice is complete through focused tests `42a183473`, workload and
 runner `f33760435`, gate fix `4721397d6`, registration fix `8399b8b0a`, and
 benchmark evidence `884ffcb61`. The follow-up clear-state tests/smoke landed
 in `89458ecc7`; the native clear-only fix is `62a4c9278`. S1 used
-`f33760435`; S2/S3 used `8399b8b0a`.
+`f33760435`; S2/S3 used `8399b8b0a`. The reservation addendum code and tests
+landed in `23b361051`; documentation and final validation remain the active
+slice.
 
 ## Next concrete action
 
-No implementation or validation work remains. Phase 2 may branch from the
-final phase-1 branch HEAD after this documentation checkpoint. The original
-control report was not overwritten.
+Complete the documentation/protocol addendum, run the focused SDK validations,
+then record the final revision and results. Phase 2 may branch from the final
+phase-1 branch HEAD after this checkpoint. The original control report was not
+overwritten.
 
 ## Active paths
 
@@ -65,6 +68,10 @@ the plan. Verbose logs remain under ignored `artifacts/image-opt-phase1-controls
 - Clear-only accounting preserves the configured Java/native gate; legacy reset
   helpers continue to reset and enable accounting.
 - Benchmark evidence is committed; generated binaries and verbose logs are not.
+- IDs 13-15 are reservation-only raster controls; no raster optimization,
+  excluded control, or GPU `writePixels` invariant was added.
+- A persistent peak-RSS difference above 5% after 200 samples requires matched
+  memory/residency diagnostics before regression classification.
 
 ## Blockers and deliberate out-of-scope files
 

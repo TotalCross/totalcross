@@ -44,3 +44,20 @@ GPU, Windows, Linux, and later optimization phases remain out of scope.
 The authoritative evidence index is
 `.agent/evidence/image-opt-phase1-controls.jsonl`; verbose logs and generated
 binaries remain outside the committed artifact set.
+
+## Phase 1 addendum — later raster reservations
+
+The addendum appends `RASTER_TARGET_COLORTYPE_CONVERSION` (13),
+`RASTER_PHYSICAL_VARIANT_CACHE` (14), and `RASTER_PHYSICAL_IDENTITY_FOLDING`
+(15), and sets `FEATURE_COUNT` to 16. Existing IDs 0-12 and the package-private
+process-global tri-state, opt-in, long-mask contracts remain unchanged. The
+three reservations are default-disabled and runtime-inert; color-type
+conversion, physical variant caching, and physical identity folding were not
+implemented. No controls were added for the explicitly excluded swap, JPEG,
+hardware-scaling, or GPU `writePixels` cases.
+
+The benchmark protocol now requires equivalent memory/residency diagnostics at
+matched execution points when a peak-RSS difference above 5% persists after the
+required 200-sample rerun. On macOS this means `vmmap -summary` plus RSS and
+available physical-footprint measurements. The local macOS requirement and
+historical benchmark artifacts remain unchanged.

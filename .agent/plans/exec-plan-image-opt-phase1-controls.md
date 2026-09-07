@@ -28,6 +28,10 @@ Image backing optimizations. At the end of this phase, the repository has:
 No phase 2-4 optimization is implemented here; every new toggle defaults to
 current `master` behavior.
 
+Phase 1 addendum: reserve the later raster controls at IDs 13-15 while keeping
+them inert and disabled by default. This addendum does not reopen or alter the
+historical benchmark artifacts.
+
 The authoritative starting `master` observed when this plan was authored is:
 
     1898014784b2fba5716cc033e49520740b05f0dd
@@ -186,6 +190,11 @@ must be rerun with 200 samples. If confirmed, fix the disabled-path regression
 before accepting the milestone. Do not explain away a confirmed disabled-path
 regression.
 
+If a peak-RSS difference above 5% persists after the required 200-sample rerun,
+capture equivalent memory/residency diagnostics at matched execution points
+before classifying it as a regression. On macOS, use `vmmap -summary` plus RSS
+and physical-footprint measurements when available.
+
 For S3, do not fabricate a success threshold when an item is explicitly a
 trade-off. Report measured gains and losses. Item-specific acceptance rules in
 later plans decide whether the enabled path is acceptable.
@@ -246,6 +255,13 @@ Reserve feature IDs for all phase 2-4 work:
     STORAGE_MMAP_LARGE_BACKINGS
     DIAGNOSTIC_ACCOUNTING
 
+The Phase 1 addendum appends these reservations without renumbering IDs 0-12:
+
+    RASTER_TARGET_COLORTYPE_CONVERSION = 13
+    RASTER_PHYSICAL_VARIANT_CACHE = 14
+    RASTER_PHYSICAL_IDENTITY_FOLDING = 15
+    FEATURE_COUNT = 16
+
 Also provide numeric settings:
 
     cacheMaxBytes
@@ -272,6 +288,11 @@ Add a package-private no-op:
 Phase 4 will connect this stable benchmark hook to the real manager. This lets
 the phase-4 benchmark workload be committed before the memory-pressure
 implementation exists.
+
+The addendum does not add controls for `USE_NATIVE_SWAP`, adaptive JPEG,
+`getJpegBestFit`/`getJpegScaled`, `hwScaleW`/`hwScaleH`, or the invariant that
+GPU rendering must not use `writePixels`. It also does not implement color-type
+conversion, physical variant caching, or physical identity folding.
 
 ## Plan of Work
 
@@ -409,6 +430,16 @@ dist, macOS Release only if the previous build is not at HEAD, and relevant Imag
 smokes. Update state, evidence, archive, and editorial report with overhead,
 regime, limits, and the phase-2 branch HEAD.
 
+### Phase 1 addendum — reserve later raster controls
+
+The addendum appends three package-private tri-state feature IDs after the
+existing 0-12 controls and raises `FEATURE_COUNT` to 16. `effectiveMask()`,
+reset, enumeration, and diagnostic description output include the new IDs;
+their `DEFAULT` state remains disabled and enabling them has no runtime effect.
+Tests explicitly lock the existing IDs, new masks, reset behavior,
+descriptions, and inertness. The local macOS software-Skia benchmark
+requirement is unchanged, and no historical samples or reports are rewritten.
+
 ## Validation and Acceptance
 
 Only SDK and macOS validations are allowed. At applicable milestone closes:
@@ -474,6 +505,8 @@ if source, binary revision, or regime changed.
 - [x] Complete final validation and record the phase-2 handoff.
 - [x] Correct complete diagnostic accounting gating, preserve clear/reset gate
   state, and record the native smoke plus S1/S2/S3 evidence separately.
+- [x] Addendum: reserve raster target color-type conversion, physical variant
+  cache, and physical identity folding controls without implementing them.
 
 ## Decision Log
 
@@ -496,6 +529,18 @@ if source, binary revision, or regime changed.
   Rationale: preserve reproducible direct evidence without repository noise.
   Date: 2026-09-05.
 
+- Decision: append raster reservation IDs 13-15 and set `FEATURE_COUNT` to 16;
+  preserve all existing IDs and keep the controls inert.
+  Rationale: later phases need stable feature positions without changing Phase 1
+  runtime behavior or the existing diagnostic-accounting contract.
+  Date: 2026-09-07.
+
+- Decision: require matched memory/residency diagnostics before classifying a
+  persistent post-rerun peak-RSS difference above 5% as a regression.
+  Rationale: distinguish real residency changes from sampling artifacts while
+  preserving the established 60/200-sample local macOS regime.
+  Date: 2026-09-07.
+
 ## Outcomes & Retrospective
 
 Phase 1 delivered package-private tri-state controls for 13 IDs, byte
@@ -513,3 +558,13 @@ macOS Release CMake/Ninja, exact-dylib deployment, and related Image smokes
 passed. No benchmark rerun was needed: workload and counted hot paths were
 unchanged. Phase 2 may branch from the final documentation HEAD; other
 platforms and later optimizations remain deferred.
+
+The Phase 1 addendum reserves `RASTER_TARGET_COLORTYPE_CONVERSION` (13),
+`RASTER_PHYSICAL_VARIANT_CACHE` (14), and `RASTER_PHYSICAL_IDENTITY_FOLDING`
+(15), with `FEATURE_COUNT` now 16. Existing IDs 0-12 and the package-private,
+process-global, tri-state, opt-in, long-mask contracts remain unchanged. The
+new controls are tested as default-disabled and runtime-inert. The benchmark
+protocol now requires matched `vmmap -summary`, RSS, and available
+physical-footprint diagnostics for a persistent peak-RSS difference above 5%
+after the required 200-sample rerun; the local macOS requirement and all
+historical benchmark artifacts remain unchanged.

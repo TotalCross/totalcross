@@ -31,6 +31,21 @@ and sample regime:
 Every run resets `ImageOptimizationSettings` and explicitly disables every
 other optimization introduced by this series. `DEFAULT` resolves to disabled.
 
+The Phase 1 addendum reserves, in addition to the existing IDs 0-12:
+
+```text
+RASTER_TARGET_COLORTYPE_CONVERSION = 13
+RASTER_PHYSICAL_VARIANT_CACHE = 14
+RASTER_PHYSICAL_IDENTITY_FOLDING = 15
+FEATURE_COUNT = 16
+```
+
+These are reservation-only controls. They remain package-private,
+process-global, tri-state, opt-in, and inert. This protocol does not reserve
+controls for `USE_NATIVE_SWAP`, adaptive JPEG, `getJpegBestFit`/
+`getJpegScaled`, `hwScaleW`/`hwScaleH`, or the invariant that GPU rendering
+must not use `writePixels`.
+
 ## Build and sample regime
 
 The default native configuration is:
@@ -47,6 +62,13 @@ measured samples. The runner samples process RSS externally every 50 ms. If a
 comparison has coefficient of variation above 5% or is near its acceptance
 boundary, rerun that comparison with 200 samples and record the reason. Do not
 exceed 200 samples without a documented justification.
+
+If a peak-RSS difference above 5% persists after the required 200-sample rerun,
+capture equivalent memory/residency diagnostics at matched execution points
+before classifying it as a regression. On macOS, use `vmmap -summary` plus RSS
+and physical-footprint measurements when available. This supplements the
+existing local macOS benchmark requirement; it does not change the sample
+regime or reclassify historical results.
 
 The benchmark runner records elapsed time for a sufficiently large batch;
 individual nanosecond-scale operations are not timed with millisecond TCVM
