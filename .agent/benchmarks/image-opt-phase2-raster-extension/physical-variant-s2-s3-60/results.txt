@@ -1,0 +1,24 @@
+feature=RASTER_PHYSICAL_VARIANT_CACHE
+runtime_revision=c6515a8f0
+s1_revision=07912a0f2d5d48705a5b7caa65f82a71ed7d3b57
+build=macOS software-Skia Release; TC_GRAPHICS_SOFTWARE=ON
+workload=ImageRasterVariantBenchmarkApp case=repeat draws=256 samples=60
+
+S1 pre: median_ms=1326 p95_ms=1328 mean_ms=1326.23 sd_ms=1.71 cv_pct=0.129 peak_rss_kb=114160 hash=000000D600000165
+S2 post-disabled: median_ms=1323 p95_ms=1334 mean_ms=1324.83 sd_ms=4.36 cv_pct=0.329 peak_rss_kb=116608 hash=000000D600000165
+S3 post-enabled: median_ms=263 p95_ms=265 mean_ms=263.57 sd_ms=0.74 cv_pct=0.280 peak_rss_kb=116320 hash=000000D600000165
+
+S2_vs_S1=median_delta_pct=-0.226 rss_delta_pct=2.144
+S3_vs_S1=median_delta_pct=-80.166 rss_delta_pct=1.892
+escalation=none; CV stayed below 5 percent and hashes were stable
+
+focused_smokes=repeat,identity,replace,mutation,decode,crop,alpha,hwscale,rotation,combined
+focused_results=repeat materialized once then hit; identity had zero physical variants; replacement evicted once; mutation rebuilt once; decode-generation change caused two misses and a fresh materialization; crop cached; alpha/rotation/hwScale did not cache; combined ID13+ID14 materialized one BGRA physical variant with no duplicate target-color variant
+focused_disabled=post-disabled repeat had zero physical variant counters
+target_color_compatibility=BGRA and translucent ID13 smokes passed after ID14 integration
+
+raw_s1=physical-variant-s1-60/repeat/variant.csv.gz
+raw_s2=physical-variant-s2-60/repeat/variant.csv.gz
+raw_s3=physical-variant-s3-60/repeat/variant.csv.gz
+runner=scripts/run-image-optimization-benchmark.py with external RSS sampling at 50 ms
+validation=SDK image tests and dist; macOS software-Skia CMake/Ninja; exact-dylib native smokes

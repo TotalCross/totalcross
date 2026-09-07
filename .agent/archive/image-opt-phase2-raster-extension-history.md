@@ -101,3 +101,31 @@ translucent fallback, source-root mutation invalidation, BGRA-to-RGB565 slot
 replacement (two materializations and 240000 converted bytes), disabled BGRA
 parity, and canonical source readback. No 200-sample escalation was required;
 all CVs were below 5% and exact RGBA S2 elapsed/RSS deltas stayed below 5%.
+
+## 2026-09-07 — Extension 02 physical variant cache
+
+ID 14 was committed in `c6515a8f0`. The native one-slot derived raster cache
+supports only frame/crop/scale/smooth-scale geometry, uses exact scalar
+signatures and source/decode generations, materializes on the second
+consecutive key, and clears on mutation. ID 15 identity folding remains
+first; with ID 13 enabled the physical materializer writes directly to final
+BGRA/RGB565 when opacity permits, otherwise RGBA.
+
+The exact physical-variant S1/S2/S3 workload used 60 samples and the unchanged
+`ImageRasterVariantBenchmarkApp` repeat case: S1 median1326ms, S2 1323ms,
+S3 263ms; P95 1328/1334/265ms; CV 0.129/0.329/0.280%; peak RSS
+114160/116608/116320KiB. All hashes were `000000D600000165`. S2/S3 elapsed
+deltas versus S1 were -0.226%/-80.166%, RSS deltas +2.144%/+1.892%, no
+escalation.
+
+Focused smokes passed for repeat/materialization/hits, identity precedence,
+one-slot replacement/eviction, mutation invalidation, crop, alpha, rotation,
+hardware-scale, disabled parity, and ID13 BGRA/translucent compatibility.
+The combined ID13+ID14 BGRA smoke passed with one physical materialization,
+one hit, no target-color materialization, and the stable output hash. Counters
+were repeat 3 lookups/2 misses/1 materialization/1 hit; replacement
+6 lookups/4 misses/2 materializations/1 eviction; mutation 2 lookups/2
+misses/1 materialization; the encoded-root decode-generation smoke recorded
+two misses, one fresh materialization, and zero stale hits; identity zero
+physical variants. Raw captures and compact results are under the physical-
+variant S2/S3 directories.
