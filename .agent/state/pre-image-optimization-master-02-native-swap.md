@@ -6,8 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Pre-image optimization master 02 native swap state
 
-- Active milestone/slice: Milestone 2 — apply the fixed decision and clean
-  duplicate macro defaults.
+- Active milestone/slice: Milestone 3 — final validation and master/rebase
+  handoff.
 - Branch: `fix/pre-image-optimization-master`.
 - PLAN1_IMPLEMENTATION_HEAD:
   `8156f62f9cdf41b6d2cd2e18b7ba4b4704ad98b2`.
@@ -16,16 +16,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Prerequisite: plan-1 implementation is an ancestor; the only post-
   implementation commit changes the documented plan/state/evidence/report
   handoff paths.
-- Last commit: `e28dba8ee` (`test(skia): record native runner results`).
+- Last commit: `4e29d17f1` (`refactor(skia): centralize legacy macro defaults`).
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
 - Active artifact path:
   `.agent/benchmarks/pre-image-optimization-master/native-swap/`.
-- Next exact action: remove duplicate compile-flag default blocks from
-  `skia.cpp`, retain the current `USE_NATIVE_SWAP` implementation/defaults,
-  remove the temporary branch-specific workflow push trigger, then run the
-  focused macOS software-Skia validation.
+- Next exact action: update the final plan/report with the matrix, policy,
+  production cleanup, validations, and final branch handoff; inspect the diff
+  from plan-1 BASE_SHA; then create the final factual handoff commit.
 - Benchmark jobs/results collected: local macOS arm64 and workflow run
   `34070711950` on native Linux x86-64/ARM64 and Windows x86-64/ARM64; all
   60/200 checkpoints for 512x512, 1920x1080, and 3840x2160 are committed under
@@ -34,8 +33,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   checks; optimized macOS arm64 smoke and 60/200 checkpoints; successful native
   workflow run 34070711950; 30 summary/raw parity checks; focused header
   validation and staged diff checks.
-- Validation deferred: final macOS software-Skia build and surface test after
-  production cleanup; no Windows/Linux TotalCross build is permitted here.
+- Validation completed for production cleanup: reconfigured Release macOS
+  software-Skia with `TC_BUILD_NATIVE_STARTUP_TEST=ON`, built
+  `skia_surface_test`, and ran it successfully. No Windows/Linux TotalCross
+  build is permitted here.
 - Decisions still active: retain `USE_NATIVE_SWAP` and its current defaults due
   to the Windows ARM64/Linux x86-64 conflict; keep `skia_internal.h` as the
   sole default-definition site for surviving flags; leave opacity, writePixels,

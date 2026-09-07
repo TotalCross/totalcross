@@ -151,7 +151,7 @@ Do not implement:
 
 - [x] Milestone 0: bootstrap plan-2 state and add benchmark harness/workflow.
 - [x] Milestone 1: collect macOS and native Windows/Linux benchmark evidence.
-- [ ] Milestone 2: apply fixed decision rule and clean duplicate macro defaults.
+- [x] Milestone 2: apply fixed decision rule and clean duplicate macro defaults.
 - [ ] Milestone 3: final macOS validation and master/rebase handoff.
 
 ## Benchmark Design Contract
