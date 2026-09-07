@@ -15,14 +15,16 @@ SPDX-License-Identifier: LGPL-2.1-only
   `ef44795adabe6bd33fb41e7687cbc581960be0ab`.
 - Latest artifact/evidence commit: `1f84208d2`
   (`test(skia): record four-way swap results`).
+- Latest documentation commit: `c3f2e8b95`
+  (`docs(image): update swap benchmark evidence`).
 - Corrected benchmark artifacts and compact evidence are committed under
   `.agent/benchmarks/pre-image-optimization-master/native-swap/` and
   `.agent/evidence/pre-image-optimization-master-02-native-swap.jsonl`.
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
-- Next exact action: commit the updated plan/report/state, then verify the
-  final local HEAD and scoped worktree state.
+- Next exact action: verify the final local HEAD, scoped worktree state, and
+  four-way artifact audit.
 
 ## Latest benchmark collection
 
@@ -57,6 +59,5 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Blockers: none.
 - Deliberate out-of-scope local files: unrelated untracked repository artifacts
   and generated outputs shown by scoped status; do not stage them.
-- Resume command: after the documentation commit, run the final scoped audit,
-  record the resulting `git rev-parse HEAD`, and leave the branch unmerged and
-  unrebased.
+- Resume command: run the final scoped audit, record the resulting
+  `git rev-parse HEAD`, and leave the branch unmerged and unrebased.
