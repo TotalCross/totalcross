@@ -149,8 +149,8 @@ Do not implement:
 
 ## Progress
 
-- [ ] Milestone 0: bootstrap plan-2 state and add benchmark harness/workflow.
-- [ ] Milestone 1: collect macOS and native Windows/Linux benchmark evidence.
+- [x] Milestone 0: bootstrap plan-2 state and add benchmark harness/workflow.
+- [x] Milestone 1: collect macOS and native Windows/Linux benchmark evidence.
 - [ ] Milestone 2: apply fixed decision rule and clean duplicate macro defaults.
 - [ ] Milestone 3: final macOS validation and master/rebase handoff.
 
@@ -413,8 +413,10 @@ fixed rule, and no Windows/Linux TotalCross build.
 
 ## Surprises & Discoveries
 
-Keep empty initially. Add only observations that affect remaining work. Do not
-copy raw benchmark data here.
+Native swap was substantially slower than the portable expression on Linux
+x86-64 at 512x512 and 3840x2160 in both checkpoints, while Windows ARM64 had a
+stable greater-than-5-percent native win at 512x512. The architecture conflict
+requires retaining the current cross-platform defaults under rule 4.
 
 ## Decision Log
 
@@ -422,6 +424,8 @@ copy raw benchmark data here.
 - Compile only the standalone benchmark on Windows/Linux.
 - Use 60-pair preliminary and 200-pair final checkpoints.
 - Apply the fixed 5% decision rule without inventing architecture policy.
+- Retain the current `USE_NATIVE_SWAP` defaults because Windows ARM64 and Linux
+  x86-64 materially conflict under the fixed rule.
 - Keep `skia_internal.h` as the sole default-definition site for surviving
   legacy Skia compile flags.
 - Leave opacity/writePixels/color-type optimization changes to the image series.

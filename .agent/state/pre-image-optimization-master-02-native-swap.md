@@ -6,7 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Pre-image optimization master 02 native swap state
 
-- Active milestone/slice: Milestone 1 — collect macOS and native CI evidence.
+- Active milestone/slice: Milestone 2 — apply the fixed decision and clean
+  duplicate macro defaults.
 - Branch: `fix/pre-image-optimization-master`.
 - PLAN1_IMPLEMENTATION_HEAD:
   `8156f62f9cdf41b6d2cd2e18b7ba4b4704ad98b2`.
@@ -15,25 +16,30 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Prerequisite: plan-1 implementation is an ancestor; the only post-
   implementation commit changes the documented plan/state/evidence/report
   handoff paths.
-- Last commit: `9c6ad7743` (`test(skia): record macos swap results`).
+- Last commit: `e28dba8ee` (`test(skia): record native runner results`).
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
 - Active artifact path:
   `.agent/benchmarks/pre-image-optimization-master/native-swap/`.
-- Next exact action: verify the remote branch permits a normal fast-forward,
-  push this feature branch, and inspect only the native-swap workflow jobs.
-- Benchmark jobs/results collected: local macOS arm64 60/200 checkpoints for
-  512x512, 1920x1080, and 3840x2160; raw and JSON artifacts are under
-  `.agent/benchmarks/pre-image-optimization-master/native-swap/macos-arm64/`.
+- Next exact action: remove duplicate compile-flag default blocks from
+  `skia.cpp`, retain the current `USE_NATIVE_SWAP` implementation/defaults,
+  remove the temporary branch-specific workflow push trigger, then run the
+  focused macOS software-Skia validation.
+- Benchmark jobs/results collected: local macOS arm64 and workflow run
+  `34070711950` on native Linux x86-64/ARM64 and Windows x86-64/ARM64; all
+  60/200 checkpoints for 512x512, 1920x1080, and 3840x2160 are committed under
+  `.agent/benchmarks/pre-image-optimization-master/native-swap/`.
 - Validation completed for plan 2: prerequisite ancestry and handoff allowlist
-  checks; optimized macOS arm64 smoke with 3 warmups and 10 pairs; output
-  format/checksum assertions; focused copyright validation; staged diff check.
-- Validation deferred: all native Windows/Linux runner jobs are still required
-  for the decision; macOS is corroborating evidence only.
-- Decisions still active: apply only the fixed 5% rule; keep
-  `skia_internal.h` as the sole default-definition site for surviving flags;
-  leave opacity, writePixels, and color-type behavior unchanged.
+  checks; optimized macOS arm64 smoke and 60/200 checkpoints; successful native
+  workflow run 34070711950; 30 summary/raw parity checks; focused header
+  validation and staged diff checks.
+- Validation deferred: final macOS software-Skia build and surface test after
+  production cleanup; no Windows/Linux TotalCross build is permitted here.
+- Decisions still active: retain `USE_NATIVE_SWAP` and its current defaults due
+  to the Windows ARM64/Linux x86-64 conflict; keep `skia_internal.h` as the
+  sole default-definition site for surviving flags; leave opacity, writePixels,
+  and color-type behavior unchanged.
 - Blockers: none.
 - Deliberate out-of-scope local files: unrelated untracked repository artifacts
   and generated outputs shown by scoped status; do not stage them.
