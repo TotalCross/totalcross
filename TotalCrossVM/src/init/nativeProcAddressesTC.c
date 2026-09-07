@@ -145,6 +145,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_snapshotNative"), &tuiNIB_snapshotNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_failNextSnapshotNative"), &tuiNIB_failNextSnapshotNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_makeMutableNative"), &tuiNIB_makeMutableNative);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_mutateForTestNative"), &tuiNIB_mutateForTestNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_scaleNative_iib"), &tuiNIB_scaleNative_iib);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_materializeGeometryNative"), &tuiNIB_materializeGeometryNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_readPixelsNative_Iiiiii"), &tuiNIB_readPixelsNative_Iiiiii);
@@ -159,6 +160,11 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityHitsTest"), &tuiNIB_physicalIdentityHitsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityFallbacks"), &tuiNIB_physicalIdentityFallbacks);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityResamples"), &tuiNIB_physicalIdentityResamples);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorAttemptsTest"), &tuiNIB_targetColorAttemptsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorMatsTest"), &tuiNIB_targetColorMatsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorHitsTest"), &tuiNIB_targetColorHitsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorFallbacksTest"), &tuiNIB_targetColorFallbacksTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorBytesTest"), &tuiNIB_targetColorBytesTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_releaseNativeHandle_l"), &tuiNIB_releaseNativeHandle_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);

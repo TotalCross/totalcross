@@ -218,6 +218,15 @@ TC_API void tuiNIB_makeMutableNative(NMParams p) // totalcross/ui/image/NativeIm
 #endif
 }
 
+TC_API void tuiNIB_mutateForTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private boolean mutateForTestNative();
+{
+#if TC_RENDERER_SKIA
+   p->retI = skia_image_backing_mutate_for_test(NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retI = 0;
+#endif
+}
+
 TC_API void tuiNIB_scaleNative_iib(NMParams p) // totalcross/ui/image/NativeImageBacking private long scaleNative(int width, int height, boolean smooth);
 {
 #if TC_RENDERER_SKIA
@@ -440,6 +449,51 @@ TC_API void tuiNIB_physicalIdentityResamples(NMParams p) // totalcross/ui/image/
 {
 #if TC_RENDERER_SKIA
    p->retL = skia_image_backing_physical_identity_resamples_avoided_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_targetColorAttemptsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long targetColorAttemptsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_target_color_attempts_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_targetColorMatsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long targetColorMatsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_target_color_materializations_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_targetColorHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long targetColorHitsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_target_color_hits_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_targetColorFallbacksTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long targetColorFallbacksTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_target_color_fallbacks_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_targetColorBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long targetColorBytesTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_target_color_converted_bytes_for_test();
 #else
    p->retL = 0;
 #endif

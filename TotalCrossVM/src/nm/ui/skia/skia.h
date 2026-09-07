@@ -85,6 +85,7 @@ int64_t skia_image_backing_snapshot(int64_t handle);
 int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle);
 void skia_image_backing_fail_next_snapshot_for_test(void);
 int skia_image_backing_make_mutable(int64_t handle);
+int skia_image_backing_mutate_for_test(int64_t handle);
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth);
 #define SKIA_IMAGE_COLOR_APPLY_FADE 0
 #define SKIA_IMAGE_COLOR_FADE_INSTANCE 1
@@ -189,6 +190,11 @@ uint64_t skia_image_backing_physical_identity_attempts_for_test(void);
 uint64_t skia_image_backing_physical_identity_hits_for_test(void);
 uint64_t skia_image_backing_physical_identity_fallbacks_for_test(void);
 uint64_t skia_image_backing_physical_identity_resamples_avoided_for_test(void);
+uint64_t skia_image_backing_target_color_attempts_for_test(void);
+uint64_t skia_image_backing_target_color_materializations_for_test(void);
+uint64_t skia_image_backing_target_color_hits_for_test(void);
+uint64_t skia_image_backing_target_color_fallbacks_for_test(void);
+uint64_t skia_image_backing_target_color_converted_bytes_for_test(void);
 #ifdef __cplusplus
 }
 #endif
