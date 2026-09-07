@@ -64,7 +64,7 @@ jobs:
         run: |
           $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
           if (-not (Test-Path $vswhere)) { throw 'vswhere was not found' }
-          $vsPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $vsPath = & $vswhere -latest -products * -property installationPath
           if ([string]::IsNullOrWhiteSpace($vsPath)) { throw 'Visual Studio installation was not found' }
           $hostArchitecture = if ('${{ matrix.architecture }}' -eq 'ARM64') { 'arm64' } else { 'x64' }
           $devCmd = Join-Path $vsPath 'Common7\Tools\VsDevCmd.bat'

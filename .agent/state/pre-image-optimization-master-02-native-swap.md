@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Pre-image optimization master 02 native swap state
 
-- Active milestone/slice: Milestone 0 — benchmark infrastructure.
+- Active milestone/slice: Milestone 1 — collect macOS and native CI evidence.
 - Branch: `fix/pre-image-optimization-master`.
 - PLAN1_IMPLEMENTATION_HEAD:
   `8156f62f9cdf41b6d2cd2e18b7ba4b4704ad98b2`.
@@ -15,22 +15,21 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Prerequisite: plan-1 implementation is an ancestor; the only post-
   implementation commit changes the documented plan/state/evidence/report
   handoff paths.
-- Last commit: none for plan 2 yet; infrastructure is the active slice.
+- Last commit: `63fc89a48` (`test(skia): add native swap benchmark`).
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
 - Active artifact path:
   `.agent/benchmarks/pre-image-optimization-master/native-swap/`.
-- Next exact action: compile and run the required local macOS smoke with three
-  warmups and ten paired samples for one representative size, validate raw CSV
-  and summary JSON, then run focused header validation and staged diff checks
-  before the infrastructure commit.
+- Next exact action: run the local macOS 60-pair preliminary and 200-pair final
+  checkpoints for 512x512, 1920x1080, and 3840x2160, then fast-forward push
+  the feature branch so the temporary native workflow can run.
 - Benchmark jobs/results collected: none.
 - Validation completed for plan 2: prerequisite ancestry and handoff allowlist
-  checks passed; benchmark smoke and header validation remain pending.
-- Validation deferred: final local macOS 60/200 checkpoints and all native
-  Windows/Linux runner jobs are deferred until the infrastructure commit and
-  branch-triggered workflow are available.
+  checks; optimized macOS arm64 smoke with 3 warmups and 10 pairs; output
+  format/checksum assertions; focused copyright validation; staged diff check.
+- Validation deferred: local macOS 60/200 checkpoints and all native
+  Windows/Linux runner jobs are still required for the decision.
 - Decisions still active: apply only the fixed 5% rule; keep
   `skia_internal.h` as the sole default-definition site for surviving flags;
   leave opacity, writePixels, and color-type behavior unchanged.
