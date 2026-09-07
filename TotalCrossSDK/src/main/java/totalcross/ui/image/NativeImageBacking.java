@@ -208,6 +208,30 @@ final class NativeImageBacking extends ImageBacking {
     return targetColorBytesTest();
   }
 
+  static long physicalVariantLookupsForTest() {
+    return variantLookupsTest();
+  }
+
+  static long physicalVariantHitsForTest() {
+    return variantHitsTest();
+  }
+
+  static long physicalVariantMissesForTest() {
+    return variantMissesTest();
+  }
+
+  static long physicalVariantMaterializationsForTest() {
+    return variantMatsTest();
+  }
+
+  static long physicalVariantEvictionsForTest() {
+    return variantEvictionsTest();
+  }
+
+  static long physicalVariantBytesForTest() {
+    return variantBytesTest();
+  }
+
   @Override
   boolean isNative() {
     return true;
@@ -470,6 +494,36 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long targetColorBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantLookupsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantMissesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantMatsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantEvictionsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantBytesTest() {
     return 0;
   }
 

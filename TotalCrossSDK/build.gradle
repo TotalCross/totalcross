@@ -820,6 +820,12 @@ registerImageMacSmoke('ImageRasterVariantBenchmark', 'ImageRasterVariantBenchmar
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageRasterPhysicalVariantSmoke', 'ImageRasterPhysicalVariantSmokeApp',
+    'image-raster-physical-variant-smoke', false, false, [
+        'fixture=ImageRasterPhysicalVariantSmokeApp',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
     'image-diagnostic-accounting-gate-benchmark', false, false, [
         'fixture=ImageDiagnosticAccountingGateBenchmarkApp',

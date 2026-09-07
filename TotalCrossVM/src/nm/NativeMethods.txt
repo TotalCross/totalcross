@@ -140,6 +140,12 @@ totalcross/ui/image/NativeImageBacking|native private static long targetColorMat
 totalcross/ui/image/NativeImageBacking|native private static long targetColorHitsTest();
 totalcross/ui/image/NativeImageBacking|native private static long targetColorFallbacksTest();
 totalcross/ui/image/NativeImageBacking|native private static long targetColorBytesTest();
+totalcross/ui/image/NativeImageBacking|native private static long variantLookupsTest();
+totalcross/ui/image/NativeImageBacking|native private static long variantHitsTest();
+totalcross/ui/image/NativeImageBacking|native private static long variantMissesTest();
+totalcross/ui/image/NativeImageBacking|native private static long variantMatsTest();
+totalcross/ui/image/NativeImageBacking|native private static long variantEvictionsTest();
+totalcross/ui/image/NativeImageBacking|native private static long variantBytesTest();
 totalcross/ui/image/NativeImageBacking|native private static long createFromArgbPixelsNative(int []pixels, int width, int height);
 totalcross/ui/image/NativeImageBacking|native private long snapshotNative();
 totalcross/ui/image/NativeImageBacking|native private static void failNextSnapshotNative();

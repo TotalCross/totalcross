@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <memory>
 
@@ -547,6 +548,80 @@ static bool targetColorTypeSupported(SkColorType colorType) {
     return colorType == kBGRA_8888_SkColorType || colorType == kRGB_565_SkColorType;
 }
 
+static uint64_t exactDoubleBits(double value) {
+    uint64_t bits = 0;
+    std::memcpy(&bits, &value, sizeof(bits));
+    return bits;
+}
+
+static void appendGeometrySignature(RasterVariantKey* key, int32 value) {
+    key->geometrySignature.push_back(static_cast<uint64_t>(static_cast<int64_t>(value)));
+}
+
+static void appendGeometrySignature(RasterVariantKey* key, double value) {
+    key->geometrySignature.push_back(exactDoubleBits(value));
+}
+
+static RasterVariantKey makePhysicalVariantKey(const SkiaImageDrawPlanData* plan,
+                                               const NativeImageBackingRecord* source,
+                                               const SkPixmap& targetPixels,
+                                               SkColorType colorType) {
+    RasterVariantKey key;
+    key.sourceGeneration = source->generation;
+    key.sourceDecodeGeneration = static_cast<uint64_t>(plan->sourceDecodeGeneration);
+    key.sourceRight = plan->rootWidth;
+    key.sourceBottom = plan->rootHeight;
+    key.destinationRight = plan->outputWidth;
+    key.destinationBottom = plan->outputHeight;
+    key.targetWidth = targetPixels.width();
+    key.targetHeight = targetPixels.height();
+    key.targetColorType = static_cast<int32>(colorType);
+    key.kind = skia_image_backing_internal::RASTER_VARIANT_PHYSICAL;
+    key.geometrySignature.reserve(static_cast<size_t>(plan->operationCount) * 7 + 24);
+    appendGeometrySignature(&key, plan->rootWidth);
+    appendGeometrySignature(&key, plan->rootHeight);
+    appendGeometrySignature(&key, plan->rootLogicalWidth);
+    appendGeometrySignature(&key, plan->rootLogicalHeight);
+    appendGeometrySignature(&key, plan->rootFrameCount);
+    appendGeometrySignature(&key, plan->rootWidthOfAllFrames);
+    appendGeometrySignature(&key, plan->rootContentScale);
+    appendGeometrySignature(&key, plan->outputWidth);
+    appendGeometrySignature(&key, plan->outputHeight);
+    appendGeometrySignature(&key, plan->outputFrameCount);
+    appendGeometrySignature(&key, plan->outputWidthOfAllFrames);
+    appendGeometrySignature(&key, plan->currentFrame);
+    appendGeometrySignature(&key, plan->materializeAlphaMask);
+    appendGeometrySignature(&key, plan->destinationScale);
+    appendGeometrySignature(&key, plan->outputContentScale);
+    appendGeometrySignature(&key, plan->rootHwScaleW);
+    appendGeometrySignature(&key, plan->rootHwScaleH);
+    appendGeometrySignature(&key, plan->hwScaleW);
+    appendGeometrySignature(&key, plan->hwScaleH);
+    appendGeometrySignature(&key, plan->operationCount);
+    for (int i = 0; i < plan->operationCount; ++i) {
+        appendGeometrySignature(&key, plan->operations[i]);
+        for (int parameter = 0; parameter < 4; ++parameter) {
+            appendGeometrySignature(&key, plan->parameters[i * 4 + parameter]);
+        }
+        for (int dimension = 0; dimension < 2; ++dimension) {
+            appendGeometrySignature(&key, plan->dimensions[i * 2 + dimension]);
+        }
+    }
+    return key;
+}
+
+static SkColorType physicalVariantColorType(const SkiaImageDrawPlanData* plan,
+                                            NativeImageBackingRecord* source,
+                                            const SkPixmap& targetPixels) {
+    constexpr int32 kTargetColorConversionBit = 1 << 13;
+    if ((plan->optimizationMask & kTargetColorConversionBit) != 0
+        && targetColorTypeSupported(targetPixels.colorType())
+        && skia_image_backing_internal::proveOpaque(source)) {
+        return targetPixels.colorType();
+    }
+    return kRGBA_8888_SkColorType;
+}
+
 static RasterVariantKey makeTargetColorVariantKey(const NativeImageBackingRecord* source,
                                                   const RasterPhysicalPlan& physicalPlan,
                                                   const SkPixmap& targetPixels,
@@ -635,6 +710,95 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
     return false;
 }
 
+static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                          const SkPixmap& targetPixels) {
+    if (!plan || !canvas || !purePhysicalGeometry(plan)
+        || plan->alphaMask != 255 || plan->materializeAlphaMask != 255
+        || plan->outputAlphaMask != 255 || plan->hwScaleW != 1.0 || plan->hwScaleH != 1.0
+        || plan->rootHwScaleW != 1.0 || plan->rootHwScaleH != 1.0
+        || !std::isfinite(plan->outputContentScale) || plan->outputContentScale <= 0
+        || canvas->getSaveCount() != 1 || targetPixels.width() <= 0 || targetPixels.height() <= 0) {
+        return false;
+    }
+    SkIRect deviceClip;
+    if (!canvas->getDeviceClipBounds(&deviceClip)
+        || deviceClip != SkIRect::MakeWH(targetPixels.width(), targetPixels.height())) {
+        return false;
+    }
+    const SkMatrix matrix = canvas->getTotalMatrix();
+    if (matrix.hasPerspective() || matrix.getSkewX() != 0 || matrix.getSkewY() != 0
+        || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0
+        || !exactValue(matrix.getScaleX(), plan->outputContentScale)
+        || !exactValue(matrix.getScaleY(), plan->outputContentScale)) {
+        return false;
+    }
+    return true;
+}
+
+static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                               NativeImageBackingRecord* source, float srcLeft, float srcTop,
+                               float srcRight, float srcBottom, float dstLeft, float dstTop,
+                               float dstRight, float dstBottom) {
+#if TC_GRAPHICS_SOFTWARE
+    constexpr int32 kPhysicalVariantCacheBit = 1 << 14;
+    constexpr int32 kPhysicalIdentityFoldingBit = 1 << 15;
+    if (!plan || (plan->optimizationMask & kPhysicalVariantCacheBit) == 0) {
+        return false;
+    }
+    SkPixmap targetPixels;
+    if (!canvas || !canvas->peekPixels(&targetPixels)
+        || !physicalVariantCanvasEligible(plan, canvas, targetPixels)) {
+        return false;
+    }
+    if ((plan->optimizationMask & kPhysicalIdentityFoldingBit) != 0) {
+        RasterPhysicalPlan identityPlan;
+        if (buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                                    dstLeft, dstTop, dstRight, dstBottom, &identityPlan)) {
+            return false;
+        }
+    }
+    const SkColorType colorType = physicalVariantColorType(plan, source, targetPixels);
+    const RasterVariantKey key = makePhysicalVariantKey(plan, source, targetPixels, colorType);
+    sk_sp<SkImage> variant;
+    const RasterVariantUse use = skia_image_backing_internal::acquirePhysicalVariant(
+        source, key, plan, colorType, &variant);
+    if (use != skia_image_backing_internal::RASTER_VARIANT_HIT
+        && use != skia_image_backing_internal::RASTER_VARIANT_MATERIALIZED) {
+        return false;
+    }
+    GeometryTransform variantTransform;
+    variantTransform.a = plan->outputContentScale;
+    variantTransform.b = 0;
+    variantTransform.c = 0;
+    variantTransform.d = plan->outputContentScale;
+    variantTransform.tx = 0;
+    variantTransform.ty = 0;
+    variantTransform.width = variant->width() / plan->outputContentScale;
+    variantTransform.height = variant->height() / plan->outputContentScale;
+    variantTransform.validRoot = SkRect::MakeWH(static_cast<float>(variant->width()),
+                                                static_cast<float>(variant->height()));
+    variantTransform.smooth = false;
+    variantTransform.hasFill = false;
+    variantTransform.fillColor = 0;
+    return geometryDrawCompiled(canvas, variant.get(), variantTransform, srcLeft, srcTop,
+                                srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+                                plan->alphaMask, false, nullptr);
+#else
+    UNUSED(plan)
+    UNUSED(canvas)
+    UNUSED(source)
+    UNUSED(srcLeft)
+    UNUSED(srcTop)
+    UNUSED(srcRight)
+    UNUSED(srcBottom)
+    UNUSED(dstLeft)
+    UNUSED(dstTop)
+    UNUSED(dstRight)
+    UNUSED(dstBottom)
+    return false;
+#endif
+}
+
 static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, float srcLeft,
                          float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop,
                          float dstRight, float dstBottom, int frameOverride) {
@@ -679,6 +843,10 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
     }
     if (drawTargetColorVariant(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
                                dstLeft, dstTop, dstRight, dstBottom)) {
+        return true;
+    }
+    if (drawPhysicalVariant(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                            dstLeft, dstTop, dstRight, dstBottom)) {
         return true;
     }
 #endif
