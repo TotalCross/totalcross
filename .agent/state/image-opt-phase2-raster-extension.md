@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Phase 2 raster extension state
 
-Updated: 2026-09-07T19:52:00-03:00
+Updated: 2026-09-07T19:57:00-03:00
 Branch: `perf/image-opt-phase2-raster`
 Frozen Phase 1 base: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Starting Phase 2 HEAD: `a225d10165b8b60c4bf7bf2f95f5bf3b395f3a92`
@@ -176,6 +176,20 @@ final Phase 2 runtime `c6515a8f0` and harness revision
 `DEFERRED — matching runtime requires a prohibited Android build`. No Android
 build, install, logcat, or GPU workload was performed. The concise record is
 `.agent/evidence/image-opt-phase2-raster-extension-android.md`.
+
+## Extension 03 final handoff
+
+Extension 03 is accepted. The integrated benchmark evidence is committed in
+`0634674ea`; the Android availability deferral is committed in `25b61c8a1`.
+Phase 2 native runtime code is frozen at `c6515a8f0`, and the final harness
+source is `7700966325b84b876d42822465b0c9a9d5f3b1ae`. Controls 0-4 and 13-15
+remain opt-in/default-disabled, with identity folding preceding bounded
+physical variants and final target-color materialization.
+
+Phase 2 is frozen for the sequential Phase 3 plan. Phase 3 must resolve
+`git rev-parse HEAD` on `perf/image-opt-phase2-raster` when it starts and
+record that exact handoff SHA in its provenance. Phase 3 scope is compact
+source formats; cache/lifecycle and mmap/working-set work remains later scope.
 
 ## Deferred validation
 
