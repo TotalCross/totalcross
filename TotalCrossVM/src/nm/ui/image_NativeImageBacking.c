@@ -85,6 +85,15 @@ TC_API void tuiNIB_createEmptyNative_ii(NMParams p) // totalcross/ui/image/Nativ
 #endif
 }
 
+TC_API void tuiNIB_createEmptyForTestNative_iii(NMParams p) // totalcross/ui/image/NativeImageBacking private static long createEmptyForTestNative(int width, int height, int colorType);
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_create_empty_for_test(p->i32[0], p->i32[1], p->i32[2]);
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static boolean isAvailableNative();
 {
 #if TC_RENDERER_SKIA

@@ -13,6 +13,9 @@
 
 #define SKIA_SCREEN_SURFACE_ID (-1)
 #define SKIA_INVALID_SURFACE_ID (-2)
+#define SKIA_TEST_COLOR_RGBA8888 0
+#define SKIA_TEST_COLOR_BGRA8888 1
+#define SKIA_TEST_COLOR_RGB565 2
 
 #ifdef __cplusplus
 extern "C"
@@ -66,6 +69,7 @@ int32 skia_getsetRGB(int32 skiaSurface, void *dataObj, int32 offset, int32 x, in
 void skia_shiftScreen(float w, float h, float glShiftY);
 
 int64_t skia_image_backing_create_empty(int32 width, int32 height);
+int64_t skia_image_backing_create_empty_for_test(int32 width, int32 height, int32 colorType);
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height);
 int64_t skia_image_backing_create_from_owned_rgba_pixels(void* pixels, int32 width, int32 height);
 int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 width, int32 height);

@@ -11,6 +11,9 @@ final class NativeImageBacking extends ImageBacking {
   static final int OPACITY_UNKNOWN = 0;
   static final int OPACITY_OPAQUE = 1;
   static final int OPACITY_TRANSLUCENT = 2;
+  static final int TEST_COLOR_RGBA8888 = 0;
+  static final int TEST_COLOR_BGRA8888 = 1;
+  static final int TEST_COLOR_RGB565 = 2;
 
   private static boolean backingAccountingEnabledForTest;
   private long nativeHandle;
@@ -80,6 +83,19 @@ final class NativeImageBacking extends ImageBacking {
     long handle = createEmptyNative(width, height);
     if (handle == 0) {
       throw new ImageException("Could not create native image backing.");
+    }
+    return new NativeImageBacking(handle, width, height);
+  }
+
+  static NativeImageBacking createEmptyForTest(int width, int height, int colorType)
+      throws ImageException {
+    if (width <= 0 || height <= 0 || colorType < TEST_COLOR_RGBA8888
+        || colorType > TEST_COLOR_RGB565) {
+      throw new ImageException("Invalid test raster surface.");
+    }
+    long handle = createEmptyForTestNative(width, height, colorType);
+    if (handle == 0) {
+      throw new ImageException("Could not create test raster surface.");
     }
     return new NativeImageBacking(handle, width, height);
   }
@@ -298,6 +314,11 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long createEmptyNative(int width, int height) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long createEmptyForTestNative(int width, int height, int colorType) {
     return 0;
   }
 
