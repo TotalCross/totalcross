@@ -30,13 +30,31 @@ The active branch must be:
 
     fix/pre-image-optimization-master
 
-Read plan-1 state/editorial and obtain its recorded `PLAN1_HEAD`. Verify:
+Read plan-1 state/editorial and obtain its recorded
+`PLAN1_IMPLEMENTATION_HEAD`. Verify that the implementation commit is an
+ancestor of the current branch without requiring the current branch tip to
+equal it:
 
-    git rev-parse HEAD
+    PLAN1_IMPLEMENTATION_HEAD=$(...)
+    git merge-base --is-ancestor "$PLAN1_IMPLEMENTATION_HEAD" HEAD
 
-matches `PLAN1_HEAD` before starting. If it does not, stop and inspect only the
-branch history needed to explain the mismatch. Do not rebase or reset to repair
-it automatically.
+If that check fails, stop and inspect only the branch history needed to explain
+the mismatch. Then inspect every commit after
+`PLAN1_IMPLEMENTATION_HEAD` and before plan 2 starts. Their changed paths must
+be limited to this plan's and plan 1's handoff artifacts:
+
+    .agent/plans/pre-image-optimization-master-01-correctness.md
+    .agent/plans/pre-image-optimization-master-02-native-swap.md
+    .agent/state/pre-image-optimization-master-01-correctness.md
+    .agent/state/pre-image-optimization-master-02-native-swap.md
+    .agent/evidence/pre-image-optimization-master-01-correctness.jsonl
+    .agent/evidence/pre-image-optimization-master-02-native-swap.jsonl
+    .agent/reports/pre-image-optimization-master-01-correctness-editorial.md
+    .agent/reports/pre-image-optimization-master-02-native-swap-editorial.md
+
+If any other path changed, stop. After these checks, adopt the actual current
+branch tip as `PLAN2_BASE` and record it in plan-2 state. Do not require a
+stable exact tip for plan 1; handoff documentation may advance the branch tip.
 
 Feature-branch commits are authorized. A normal fast-forward push of this branch
 is authorized solely to execute the required GitHub Actions benchmark. Never
@@ -57,8 +75,8 @@ Use:
     .agent/reports/pre-image-optimization-master-02-native-swap-editorial.md
     .agent/benchmarks/pre-image-optimization-master/native-swap/
 
-After interruption read state first. It must contain `PLAN1_HEAD`, active
-milestone/slice, last commit, next exact action, benchmark jobs/results already
+After interruption read state first. It must contain `PLAN1_IMPLEMENTATION_HEAD`,
+`PLAN2_BASE`, active milestone/slice, last commit, next exact action, benchmark jobs/results already
 collected, validation completed/deferred, and blockers. Do not reread all raw
 benchmark samples or plan 1 unless a recorded dependency requires it.
 
@@ -245,7 +263,9 @@ incomplete until required measurements exist or the user changes the contract.
 
 ### Milestone 0 — Add reproducible benchmark infrastructure
 
-Verify `HEAD == PLAN1_HEAD`. Create concise state/evidence/editorial skeletons.
+Verify `PLAN1_IMPLEMENTATION_HEAD` is an ancestor of `HEAD`, validate the
+handoff-only commit path allowlist, and set `PLAN2_BASE=$(git rev-parse HEAD)`.
+Create concise state/evidence/editorial skeletons recording both values.
 Add the fixed standalone C++ benchmark and GitHub workflow per the contracts
 above. The C++ program itself must emit both raw CSV and summary JSON; do not add
 a separate summarizer.
@@ -362,7 +382,7 @@ build/tests unless SDK production source changed after plan 1's final checkpoint
 
 Update the editorial report with:
 
-- plan-1 `BASE_SHA` and `PLAN1_HEAD`;
+- plan-1 `BASE_SHA`, `PLAN1_IMPLEMENTATION_HEAD`, and plan-2 `PLAN2_BASE`;
 - final branch HEAD;
 - complete native-swap platform matrix and measured decision;
 - exact production macro policy after the decision;

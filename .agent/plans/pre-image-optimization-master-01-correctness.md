@@ -164,8 +164,8 @@ Do not implement or import:
 ## Progress
 
 - [x] (2026-09-06T23:40:09Z) Milestone 0: created `fix/pre-image-optimization-master` from `origin/master` at `1898014784b2fba5716cc033e49520740b05f0dd`; added resumable state, evidence, and editorial files.
-- [x] (2026-09-06T23:58:48Z) Milestone 1: repaired targeted JPEG metadata at fresh/cached materialization boundaries and completed the Java/macOS regression matrix; implementation HEAD is `061a1dde9`.
-- [x] (2026-09-06T23:58:48Z) Milestone 2: completed SDK and macOS validation, documented the correctness handoff, and recorded `PLAN1_HEAD=221c259ab` for plan 2.
+- [x] (2026-09-07T00:25:18Z) Milestone 1: repaired targeted JPEG metadata transactionally at fresh/cached materialization boundaries, added initialization-failure coverage, and completed the Java/macOS regression matrix; implementation commit is `8156f62f9`.
+- [x] (2026-09-07T00:25:18Z) Milestone 2: completed the final SDK/macOS gates and documented an ancestor-plus-allowlist handoff for plan 2; the current tip may contain only handoff artifacts after the implementation commit.
 
 ## Plan of Work
 
@@ -309,15 +309,18 @@ Update state/evidence and commit the factual handoff, for example:
 
     docs(image): complete targeted jpeg correction
 
-Record the resulting HEAD as `PLAN1_HEAD`. Plan 2 must start from this exact
-branch HEAD and must not recreate/rebase the branch.
+Record the final implementation/test commit as
+`PLAN1_IMPLEMENTATION_HEAD`. Plan 2 must verify that commit is an ancestor of
+the current branch tip, inspect every later commit against the explicit
+handoff-only path allowlist, and then record the actual current tip as
+`PLAN2_BASE`. Handoff documentation may advance the branch tip; plan 2 must
+not require an exact tip or recreate/rebase the branch.
 
-Implementation completed at `061a1dde9` and handoff documentation at
-`221c259ab`: targeted physical dimensions remain decoder output,
-logical dimensions remain encoded-source metadata, and `contentScale` is
-`1.0 / decodedDenominator()` for fresh and cached targeted roots. Plan 2 starts
-from `PLAN1_HEAD=221c259ab` and must preserve this exact branch HEAD as its
-starting point.
+Implementation completed at `8156f62f9`: targeted physical dimensions remain
+decoder output, logical dimensions remain encoded-source metadata, and
+`contentScale` is `1.0 / decodedDenominator()` for fresh and cached targeted
+roots. The follow-up handoff artifacts are limited to the plan/state/evidence/
+report files named by plan 2.
 
 ## Validation and Acceptance
 
@@ -374,15 +377,19 @@ contains the authorized CI-benchmark push procedure.
 
 ## Outcomes & Retrospective
 
-Plan 1 completed on `fix/pre-image-optimization-master` at final handoff HEAD
-`221c259ab`; the implementation commit is `061a1dde9`.
+Plan 1 completed on `fix/pre-image-optimization-master`; the final production
+implementation/test commit is `8156f62f9`. The current tip after this handoff
+documentation is the starting tip that plan 2 must record as `PLAN2_BASE`
+after its ancestor and path-allowlist checks.
 Adaptive JPEG smooth selection remains intact; targeted roots now carry the
 decoder's physical raster, encoded logical dimensions, and denominator-derived
 content scale across fresh and cached paths. The focused SDK suite, SDK
 distribution, Release macOS software-Skia build, and exact-dylib JPEG pinch
-smoke passed. Evidence is recorded in
-`.agent/evidence/pre-image-optimization-master-01-correctness.jsonl`; plan 2
-must begin from `PLAN1_HEAD=221c259ab`.
+smoke passed after the transactional correction. The implementation commit's
+message check reported one 84-character body line; the no-amend rule preserved
+that commit, and all later handoff commit messages were checked separately.
+Evidence is recorded in
+`.agent/evidence/pre-image-optimization-master-01-correctness.jsonl`.
 
 ## Revision Note
 
