@@ -14,11 +14,11 @@ Plan: `.agent/plans/exec-plan-image-opt-phase2-raster-extension-01.md`
 
 ## Active slice
 
-Milestone 2 physical identity folding is complete. ID 15 is implemented in the
-software-Skia geometry path and committed as
-`31c3d0fa40d955806df18e1dad1ba79fa301a606`. Milestone 3 handoff documentation
-is the remaining slice for extension 01. Historical Phase 2 evidence remains
-unchanged.
+Extension 01 is complete through the physical identity folding and handoff
+milestones. ID 15 is implemented in the software-Skia geometry path and
+committed as `31c3d0fa40d955806df18e1dad1ba79fa301a606`; the benchmark and
+handoff records are committed in `5712fed80`. Historical Phase 2 evidence
+remains unchanged.
 
 ## Last completed slice
 
@@ -96,8 +96,8 @@ No blockers. Existing unrelated untracked files under `.agent`, `scripts`,
 
 ## Next concrete action
 
-Commit the Milestone 3 handoff documentation, then start extension plan 02
-with this state and the exact ID 15 production revision.
+Start extension plan 02 with this state, the exact ID 15 production revision,
+and the additive target-color/physical-variant workloads.
 
 ## Resume command
 
