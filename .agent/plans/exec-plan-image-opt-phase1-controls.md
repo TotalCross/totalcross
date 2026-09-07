@@ -195,5 +195,7 @@ new baseline. Resume from state and verify each scenario SHA before rerunning.
 
 The addendum implementation, current-master rebaseline, and required Phase 1
 validation are complete. Detailed measurements are recorded in the new
-post-stabilization report, state, evidence, and editorial addenda; Phase 2
-must rebase from current master before later optimization work.
+post-stabilization report, state, evidence, and editorial addenda.
+`perf/image-opt-phase2-raster` must be rebased onto the final
+`perf/image-opt-phase1-controls` HEAD
+`0f51b8d56f1afd0d2dec94cd12e6b3f81f6c77ae` before Phase 2 work.
