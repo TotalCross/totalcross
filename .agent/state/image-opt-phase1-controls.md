@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-07T12:16:00-03:00
+Updated: 2026-09-07T12:27:01-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
 Current master baseline SHA: `7add0f29e9366a19d894237119a415416e6bb557`
@@ -22,13 +22,13 @@ in `89458ecc7`; the native clear-only fix is `62a4c9278`. S1 used
 `f33760435`; S2/S3 used `8399b8b0a`. The reservation addendum code landed in
 `23b361051`, the protocol/plan/editorial update in `e5e35e305`, the
 test-isolation follow-up in `edcefbe06`, and the explicit bit-15 mask coverage
-in `5ecb1b393`. The current-master rebaseline is active.
+in `5ecb1b393`, and compact plan/docs in `1d8deacb1`. Rebaseline evidence is
+in `a860deb3f`.
 
 ## Next concrete action
 
-Build the current-master harness overlay and Phase 1 harness, capture the new
-S1/S2/S3 rebaseline, run the required macOS validation, and record the final
-handoff. The original reports remain untouched.
+No further Phase 1 action remains. Before Phase 2 optimization work, rebase
+the implementation from current master; historical reports remain untouched.
 
 ## Active paths
 
@@ -45,30 +45,22 @@ handoff. The original reports remain untouched.
 
 Focused copyright/whitespace checks, SDK Image tests, SDK `dist`, macOS Release
 software-Skia CMake/Ninja, exact-dylib deployment, the disabled/enabled native
-accounting smoke, and related native Image smokes passed. The new smoke
-asserts zero Java/readback/native create/release counters after a real native
-create/readback/release while disabled, and increments in the enabled state.
-S1/S2/S3 each recorded 60 samples; all S2 diagnostic fields are zero and S3
-has nonzero Java/readback/native backing counters. No benchmark rerun was
-required because the follow-up only changes counter clearing, not the timed
-workload or hot path.
+accounting smoke, and related native Image smokes passed. The addendum-focused
+run passed all 137 `totalcross.ui.image.*` tests, and SDK `dist -x test` passed.
 
-The addendum focused run passed all 137 `totalcross.ui.image.*` tests after
-the test-isolation follow-up, and SDK `dist -x test` passed. Focused copyright
-and whitespace checks passed. The first focused run found only a shared-JVM
-test precondition issue; no production assertion failed after the test reset
-was added.
-
-The active plan compaction is 8,507 bytes and 195 lines. The explicit bit-15
-mask assertion is committed, but the post-stabilization benchmark and its
-required native build/smokes remain pending.
+The post-stabilization report records S1 at current master `7add0f29`, S2/S3
+at `1d8deacb1`, and 200/200 samples for each scenario. The initial 60-sample
+RSS gap required the 200-sample rerun; the final S2/S1 and S3/S1 RSS deltas
+were +1.942% and +0.211%, so matched `vmmap` diagnostics were not required.
+All scenarios exited successfully; S2 diagnostic fields were zero and S3
+showed expected accounting activity. The plan is 8,507 bytes and 195 lines.
 
 ## Deferred validation
 
-The post-stabilization macOS software-Skia build/smokes, S1/S2/S3 rebaseline,
-and any required 200-sample diagnostics remain deferred. Android/iOS/Windows/
-Linux/GPU validation and later optimizations remain outside the plan. Verbose
-logs remain under ignored `artifacts/image-opt-phase1-controls/`.
+Android/iOS/Windows/Linux/GPU validation and later optimizations remain outside
+the plan. Matched memory diagnostics were not needed because the 200-sample
+RSS differences fell below 5%. Verbose logs remain under ignored
+`artifacts/image-opt-phase1-controls/` and temporary logs.
 
 ## Decisions still active
 
@@ -91,7 +83,8 @@ logs remain under ignored `artifacts/image-opt-phase1-controls/`.
 
 ## Blockers and deliberate out-of-scope files
 
-There are no blockers. The pre-existing untracked
+There are no Phase 1 blockers. Phase 2 must rebase before implementing later
+optimizations. The pre-existing untracked
 `scripts/run-image-modifier-memory-smoke.py` is unrelated local work and must
 remain untouched and unstaged.
 
@@ -99,6 +92,6 @@ remain untouched and unstaged.
 
 ```sh
 sed -n '1,220p' .agent/state/image-opt-phase1-controls.md
-sed -n '300,430p' .agent/plans/exec-plan-image-opt-phase1-controls.md
+sed -n '1,220p' .agent/plans/exec-plan-image-opt-phase1-controls.md
 git log -1 --oneline
 ```
