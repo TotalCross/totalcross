@@ -10,7 +10,7 @@ Updated: 2026-09-07T19:07:00-03:00
 Branch: `perf/image-opt-phase2-raster`
 Frozen Phase 1 base: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Starting Phase 2 HEAD: `a225d10165b8b60c4bf7bf2f95f5bf3b395f3a92`
-Plan: `.agent/plans/exec-plan-image-opt-phase2-raster-extension-02.md`
+Plan: `.agent/plans/exec-plan-image-opt-phase2-raster-extension-03.md`
 
 ## Active slice
 
@@ -52,6 +52,13 @@ CVs stayed below 5%, and S2/S3 RSS deltas versus S1 were 2.144%/1.892%. The
 S3 path reduced median elapsed time by 80.166% and focused counters recorded
 one 200x200 materialization followed by hits. Target-color BGRA and
 translucent compatibility smokes passed after ID 14 integration.
+
+Extension 02 is complete. Its native runtime code is frozen at
+`c6515a8f0`; the combined-target and encoded-root decode-generation smoke
+follow-ups are `4b5de2931` and `2ff711ffe`, respectively, and the physical
+variant evidence commit is `8db53eab3`. The final extension-02 branch tip for
+the next plan is `2ff711ffe` before this handoff documentation commit; no
+native runtime code changed after `c6515a8f0`.
 
 ## Active paths
 
@@ -129,12 +136,14 @@ ID 14 S2/S3 captures are under `physical-variant-s2-60/` and
 
 ## Deferred validation
 
-Android, iOS, Windows, Linux, and GPU validation are outside this execution by
-plan policy. The commit-message checker flagged overlong body lines on three
-earlier extension-01 commits; history was preserved without amendment. The
-extension-02 factory correction commit passed the checker. The ID 13 runtime
-commit's local check reported a body line over 80 characters because the shell
-passed literal `\n` text; history was preserved without amendment.
+Android GPU validation is pending in extension 03 and must not trigger an
+Android build. iOS, Windows, Linux, and GPU validation outside the planned
+Android check remain deferred by task policy. The commit-message checker
+flagged overlong body lines on three earlier extension-01 commits; history was
+preserved without amendment. The extension-02 factory correction commit
+passed the checker. The ID 13 runtime commit's local check reported a body
+line over 80 characters because the shell passed literal `\n` text; history
+was preserved without amendment.
 The ID 14 runtime commit's local check reported one body line over 80
 characters; history was preserved without amendment.
 
@@ -152,8 +161,8 @@ No blockers. Existing unrelated untracked files under `.agent`, `scripts`,
 
 ## Next concrete action
 
-Update the continuation state and hand off the exact ID 13/14 runtime to
-extension 03, keeping all recorded S1/S2/S3 captures immutable.
+Execute `.agent/plans/exec-plan-image-opt-phase2-raster-extension-03.md` from
+the frozen extension-02 tip, beginning with the final macOS closeout contract.
 
 ## Resume command
 

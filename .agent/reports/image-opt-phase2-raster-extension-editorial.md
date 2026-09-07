@@ -151,3 +151,20 @@ and `physical-variant-s3-60/`; the compact record is
 The physical-variant benchmark uses the exact pre-ID14 production/harness
 revision `07912a0f2d5d48705a5b7caa65f82a71ed7d3b57` and runtime revision
 `c6515a8f0`. Full SDK agent logs remain uncommitted.
+
+## Extension 02 Milestone 3 — handoff to integrated closeout
+
+Extension 02 is complete. Native runtime code is frozen at `c6515a8f0`; the
+combined-target and encoded-root decode-generation smoke follow-ups are
+`4b5de2931` and `2ff711ffe`, and the physical-variant evidence is committed in
+`8db53eab3`. The final extension-02 branch tip before this documentation
+handoff is `2ff711ffe`; no native runtime code changed after `c6515a8f0`.
+
+The target-color and physical-variant S1 controls both use production/harness
+revision `07912a0f2d5d48705a5b7caa65f82a71ed7d3b57`. Their 60-sample S2/S3
+records, exact hashes, focused counters, RSS diagnostics, and source/decode
+invalidation evidence are preserved in the additive benchmark directories.
+The next sequential plan is
+`.agent/plans/exec-plan-image-opt-phase2-raster-extension-03.md`, which must
+freeze the branch tip it starts from and distinguish final Phase 2 behavior
+from the later Phase 3 compact-source work.

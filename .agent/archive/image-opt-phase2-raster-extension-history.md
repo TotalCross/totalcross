@@ -129,3 +129,17 @@ misses/1 materialization; the encoded-root decode-generation smoke recorded
 two misses, one fresh materialization, and zero stale hits; identity zero
 physical variants. Raw captures and compact results are under the physical-
 variant S2/S3 directories.
+
+## 2026-09-07 — Extension 02 handoff to integrated closeout
+
+Extension 02 completed with native runtime code frozen at `c6515a8f0`. The
+combined-target and encoded-root decode-generation smoke follow-ups are
+`4b5de2931` and `2ff711ffe`; the physical-variant evidence commit is
+`8db53eab3`. The exact next-plan starting tip is `2ff711ffe` before this
+documentation handoff, with no native runtime changes after `c6515a8f0`.
+
+IDs 13 and 14 remain independently switchable and default-disabled, ID 15
+still wins before physical variant admission, and all additive S1/S2/S3
+captures remain immutable. Extension 03 is responsible for the combined
+all-eight macOS closeout, conditional Android GPU check without an Android
+build, and final Phase 3 compact-source handoff.
