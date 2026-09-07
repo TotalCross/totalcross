@@ -239,7 +239,10 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
     return 1;
 #else
     UNUSED(targetCanvas)
-    UNUSED(source)
+    UNUSED(image)
+    UNUSED(width)
+    UNUSED(height)
+    UNUSED(sourceOpaque)
     UNUSED(srcLeft)
     UNUSED(srcTop)
     UNUSED(srcRight)
