@@ -4,567 +4,192 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Phase 1: Establish image optimization controls and benchmark infrastructure
+# Phase 1 addendum: reserve later raster controls
 
 This ExecPlan follows `AGENTS.md`, `.agent/PLANS.md`, and
-`.agents/skills/logical-commits/SKILL.md`. Explicit instructions in this plan
-take precedence where they intentionally narrow validation or build scope.
+`.agents/skills/logical-commits/SKILL.md`.
 
 ## Purpose / Big Picture
 
-Establish the internal control and measurement layer required for all later
-Image backing optimizations. At the end of this phase, the repository has:
-
-- a package-private `ImageOptimizationSettings` control surface with independent
-  tri-state toggles for every optimization planned in phases 2-4;
-- no public/stable SDK API commitment;
-- a reusable macOS benchmark runner and reporting format;
-- compact diagnostics that identify which backing/draw/decode path was used;
-- a measured baseline proving the control/diagnostic plumbing does not introduce
-  an unacceptable disabled-path regression;
-- committed benchmark inputs, raw samples, summaries, state, evidence, and
-  editorial handoff.
-
-No phase 2-4 optimization is implemented here; every new toggle defaults to
-current `master` behavior.
-
-Phase 1 addendum: reserve the later raster controls at IDs 13-15 while keeping
-them inert and disabled by default. This addendum does not reopen or alter the
-historical benchmark artifacts.
-
-The authoritative starting `master` observed when this plan was authored is:
-
-    1898014784b2fba5716cc033e49520740b05f0dd
-
-## Branch and Series Contract
-
-Use exactly this branch for this phase:
-
-    perf/image-opt-phase1-controls
-
-Create it from `master`. Record the actual base SHA in state and benchmark
-reports. If `master` no longer equals the authored SHA, compare only the
-image-related paths touched by this plan against the authored SHA. If those
-paths changed materially, update the Decision Log before implementation. Do not
-reconstruct unrelated history.
-
-The next plans branch sequentially:
-
-    master
-      -> perf/image-opt-phase1-controls
-      -> perf/image-opt-phase2-raster
-      -> perf/image-opt-phase3-formats
-      -> perf/image-opt-phase4-lifecycle
-
-Do not push, open a PR, merge, rebase, amend, or rewrite history unless
-explicitly requested later.
+Keep Phase 1 compatible with the later raster work by reserving three stable
+package-private feature positions. This addendum changes no raster execution;
+the new controls remain inert and disabled by default.
 
 ## Working Set and Resume Protocol
 
-The active plan is:
+Work only on `perf/image-opt-phase1-controls`. The active files are:
 
-    .agent/plans/exec-plan-image-opt-phase1-controls.md
+- `TotalCrossSDK/src/main/java/totalcross/ui/image/ImageOptimizationSettings.java`
+- `TotalCrossSDK/src/test/java/totalcross/ui/image/ImageOptimizationSettingsTest.java`
+- `.agent/design/image-optimization-benchmark-protocol.md`
+- `.agent/state/image-opt-phase1-controls.md`
+- `.agent/evidence/image-opt-phase1-controls.jsonl`
+- `.agent/archive/image-opt-phase1-controls-history.md`
+- `.agent/reports/image-opt-phase1-controls-editorial.md`
+- `.agent/benchmarks/image-opt-phase1-controls/post-stabilization-rebaseline/`
 
-Create and maintain:
+Read state first on resume. Completed Phase 1 implementation and benchmark
+history stays in the existing archive, editorial report, and historical
+benchmark directories; do not rewrite those artifacts.
 
-    .agent/state/image-opt-phase1-controls.md
-    .agent/evidence/image-opt-phase1-controls.jsonl
-    .agent/archive/image-opt-phase1-controls-history.md
-    .agent/reports/image-opt-phase1-controls-editorial.md
-    .agent/design/image-optimization-benchmark-protocol.md
+## Branch and Provenance
 
-Committed benchmark data lives below:
+The authored Phase 1 base remains historical metadata:
 
-    .agent/benchmarks/image-opt-phase1-controls/
+    1898014784b2fba5716cc033e49520740b05f0dd
 
-On resume, read only the state file first. Then read the active milestone in
-this plan and the exact source paths named by state. Search evidence selectively;
-do not reread the whole evidence file or prior benchmark output.
+The current master baseline for this rebaseline is:
 
-Primary paths: `Image.java`, `ImagePipeline.java`, `ImageDrawPlan.java`, and
-`NativeImageBacking.java` under `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
-plus `TotalCrossSDK/build.gradle` and
-`scripts/run-image-modifier-memory-smoke.py`. Use
-`.agent/reports/image-native-backing-report.md` only when a current semantic
-contract is unclear; do not reread old implementation history routinely.
+    7add0f29e9366a19d894237119a415416e6bb557
 
-## Non-Negotiable Execution Constraints
-
-All benchmarking is local on macOS.
-
-Only SDK and macOS builds are permitted. Do not build Android, iOS, Linux,
-Windows, Docker images, packages, or unrelated targets.
-
-A build or compilation task may run only at the end of a milestone related to
-that build. Compilation triggered by Gradle tests counts as a build. Before a
-logical commit that precedes a milestone build, use source-level checks,
-copyright/header validation, `git diff --check`, and narrowly scoped scripts.
-Record build validation as deferred to the milestone gate.
-
-Native smoke tests may run only at the end of a related milestone and at final
-plan completion.
-
-Every new file created by this plan must remain below 20 KiB and approximately
-600 lines. Prefer 300-450 lines for the active plan and 100-150 lines for state.
-If a generated CSV, report, state, evidence, or source file would exceed the
-limit, split it by workload/scenario or consolidate completed detail into the
-archive. Never truncate evidence to satisfy the limit.
-
-Do not refactor an existing large file solely to reduce its size. Make narrow
-edits to existing files and place substantial new logic in focused new files.
-
-Commit the plan itself and every artifact produced directly by the plan,
-including benchmark sources, compact raw benchmark samples, benchmark reports,
-state, evidence, archive, and editorial handoff. Do not commit indirect build
-artifacts, build directories, deployed applications, generated SDK outputs,
-temporary profiling files, or verbose build logs.
-
-Store verbose local logs under an ignored path such as:
-
-    artifacts/image-opt-phase1-controls/
-
-## Commit Protocol
-
-For every commit, execute `.agents/skills/logical-commits/SKILL.md` exactly:
-inspect only scoped changes, validate headers, stage only intended paths, run
-`git diff --check --cached`, review the staged diff, commit one logical behavior
-with a valid English scoped Conventional Commit, validate the created message
-with the skill's Python check, and update state. Do not amend or include
-unrelated work.
-
-Suggested subjects below define intended logical boundaries; adjust wording only
-when the actual slice differs.
-
-## Benchmark Protocol Established by This Phase
-
-Create `.agent/design/image-optimization-benchmark-protocol.md` before any
-optimization implementation. Later phases must follow it without redefining the
-measurement regime.
-
-For each performance- or memory-affecting item, the protocol is:
-
-1. Create the benchmark workload before implementing the item.
-2. Build at the benchmark-baseline milestone boundary.
-3. Run scenario 1 on the exact pre-implementation commit.
-4. Implement the item.
-5. Build at the implementation milestone boundary.
-6. Run scenario 2 with the target feature explicitly `DISABLED`.
-7. Run scenario 3 with the target feature explicitly `ENABLED`.
-8. Generate and commit a report comparing all three scenarios.
-
-For isolation, every benchmark run must reset `ImageOptimizationSettings` and
-explicitly disable every non-target optimization introduced by this series.
-Existing master behavior that predates this series remains unchanged.
-
-Scenario definitions:
-
-- `S1/pre`: code before the item implementation; the target toggle may exist but
-  the implementation must not.
-- `S2/post-disabled`: post-implementation code with target toggle `DISABLED`.
-- `S3/post-enabled`: identical post-implementation code with only the target
-  toggle `ENABLED`.
-
-Use identical fixture bytes, workload parameters, build type, renderer,
-graphics backend, windowing backend, machine, and sample regime for S1/S2/S3.
-
-Default local raster build configuration is explicit even though macOS currently
-defaults to software graphics:
-
-    -DTC_GRAPHICS_SOFTWARE=ON
-    -DTC_RENDERER_SKIA=ON
-    -DTC_WINDOWING_SDL=ON
-    -DCMAKE_BUILD_TYPE=Release
-
-Each workload performs internal warm-up before recording samples. Start with 60
-measured samples. If S1 versus S2 or S2 versus S3 shows more than 5% coefficient
-of variation or a result near the acceptance boundary, rerun that comparison
-with 200 measured samples. Do not exceed 200 without recording the reason.
-
-Each report includes exact scenario SHAs, machine/macOS/CPU/RAM, commands and
-CMake flags, sample/workload counts, median/p95 time, mean/stddev when useful,
-externally sampled peak RSS, relevant backing/counter metrics, S2-vs-S1 and
-S3-vs-S1/S2 deltas, correctness/quality status, and limitations.
-
-A post-disabled regression larger than 5% in median elapsed time or peak RSS
-must be rerun with 200 samples. If confirmed, fix the disabled-path regression
-before accepting the milestone. Do not explain away a confirmed disabled-path
-regression.
-
-If a peak-RSS difference above 5% persists after the required 200-sample rerun,
-capture equivalent memory/residency diagnostics at matched execution points
-before classifying it as a regression. On macOS, use `vmmap -summary` plus RSS
-and physical-footprint measurements when available.
-
-For S3, do not fabricate a success threshold when an item is explicitly a
-trade-off. Report measured gains and losses. Item-specific acceptance rules in
-later plans decide whether the enabled path is acceptable.
-
-Write compact raw samples under:
-
-    .agent/benchmarks/<plan>/<item>/scenario-1.csv
-    .agent/benchmarks/<plan>/<item>/scenario-2.csv
-    .agent/benchmarks/<plan>/<item>/scenario-3.csv
-    .agent/benchmarks/<plan>/<item>/report.md
-
-If a raw file would exceed 20 KiB, split by workload before adding more samples.
-
-GPU benchmark cases are a special rule used in phase 4: create all three
-scenario definitions and the report template, but do not execute any GPU
-benchmark scenario during these plans. Mark the report `NOT EXECUTED BY PLAN`
-and make no performance claim.
+Record both SHAs in state, evidence, and the new rebaseline report. Do not
+switch this worktree to another branch, push, merge, rebase, amend, or rewrite
+history.
 
 ## Current Architecture and Scope
 
-`ImagePipeline` currently records test creation counters from constructors, and
-`Image` owns the existing conditional accounting flag/counters. Preserve
-existing smoke-test semantics.
-
-Do not add stable public settings to `Settings` or stable methods to `Image`.
-This phase intentionally introduces an internal experimental substrate only.
-
-Implement one package-private class:
-
-    TotalCrossSDK/src/main/java/totalcross/ui/image/ImageOptimizationSettings.java
-
-Use tri-state values:
-
-    DEFAULT  = 0
-    ENABLED  = 1
-    DISABLED = 2
-
-Do not add a `FORCED` state. `ENABLED` means “use when semantic and platform
-preconditions are satisfied,” never “violate correctness to force the path.”
-
-The settings are process-global for this series. Do not implement per-Image
-overrides yet. Future public policies may map to the same feature bits without
-changing the native optimization implementations.
-
-Reserve feature IDs for all phase 2-4 work:
-
-    DECODE_ZERO_COPY
-    RASTER_OPACITY_METADATA
-    RASTER_OPAQUE_WRITE_PIXELS
-    RASTER_ROW_READBACK
-    RASTER_DIRECT_COLOR_MATERIALIZATION
-    STORAGE_RGB565
-    STORAGE_GRAY8
-    STORAGE_ARGB4444
-    CACHE_BYTE_BUDGET
-    CACHE_MEMORY_PRESSURE_EVICTION
-    GPU_DISCARD_CPU_BACKING
-    STORAGE_MMAP_LARGE_BACKINGS
-    DIAGNOSTIC_ACCOUNTING
-
-The Phase 1 addendum appends these reservations without renumbering IDs 0-12:
+`ImageOptimizationSettings` is package-private, process-global, tri-state,
+opt-in, and uses a `long` effective feature mask. Existing IDs 0-12 must stay
+unchanged. Append exactly:
 
     RASTER_TARGET_COLORTYPE_CONVERSION = 13
     RASTER_PHYSICAL_VARIANT_CACHE = 14
     RASTER_PHYSICAL_IDENTITY_FOLDING = 15
     FEATURE_COUNT = 16
 
-Also provide numeric settings:
+`effectiveMask()`, state validation, reset, and `describeForTest()` must cover
+the new positions. `DEFAULT` remains disabled for optimization callers. The
+existing `DIAGNOSTIC_ACCOUNTING` gate and clear/reset behavior must not change.
+No color conversion, physical variant cache, physical identity folding, or
+other Phase 2 optimization is implemented here.
 
-    cacheMaxBytes
-    mmapThresholdBytes
-
-Use validated package-private mutators, `resetForTest()`, `state(feature)`,
-`isEnabled(feature, defaultEnabled)`, and `describeForTest()`. Invalid feature
-IDs/states fail immediately with `IllegalArgumentException`.
-
-All new optimization features resolve `DEFAULT` to disabled throughout these
-four plans. Do not change a feature default to enabled merely because its local
-benchmark is positive. Policy/default selection is a later task.
-
-Native calls must not look up Java static fields on every draw or pixel. Later
-phases pass an effective enabled-feature bitmask across the Java/native boundary
-where needed. `ImageOptimizationSettings` therefore provides an allocation-free
-integer/long effective mask accessor. Do not create a native global settings
-registry in phase 1.
-
-Add a package-private no-op:
-
-    ImageOptimizationSettings.triggerMemoryPressureForTest()
-
-Phase 4 will connect this stable benchmark hook to the real manager. This lets
-the phase-4 benchmark workload be committed before the memory-pressure
-implementation exists.
-
-The addendum does not add controls for `USE_NATIVE_SWAP`, adaptive JPEG,
+Do not add controls for `USE_NATIVE_SWAP`, adaptive JPEG,
 `getJpegBestFit`/`getJpegScaled`, `hwScaleW`/`hwScaleH`, or the invariant that
-GPU rendering must not use `writePixels`. It also does not implement color-type
-conversion, physical variant caching, or physical identity folding.
+GPU rendering must not use `writePixels`.
+
+## Benchmark Protocol Addendum
+
+Benchmark only on macOS with the existing Release software-Skia configuration:
+
+    -DCMAKE_BUILD_TYPE=Release
+    -DTC_GRAPHICS_SOFTWARE=ON
+    -DTC_RENDERER_SKIA=ON
+    -DTC_WINDOWING_SDL=ON
+
+Use identical fixtures, workload, warmup, machine, renderer, backend, and
+sample regime. The rebaseline scenarios are:
+
+- `S1/pre`: current master `7add0f29e9366a19d894237119a415416e6bb557`.
+- `S2/post-disabled`: final Phase 1 code, every optimization explicitly
+  disabled, including `DIAGNOSTIC_ACCOUNTING`.
+- `S3/post-enabled`: the same Phase 1 code with only
+  `DIAGNOSTIC_ACCOUNTING` enabled.
+
+Use three warmup batches and 60 measured samples initially. If the existing
+coefficient-of-variation or acceptance-boundary rule triggers, rerun the
+affected comparison with 200 samples. A post-disabled median or peak-RSS
+regression above 5% must be confirmed with 200 samples. If a peak-RSS
+difference above 5% persists after that rerun, capture equivalent
+memory/residency diagnostics at matched execution points before classifying it
+as a regression; on macOS use `vmmap -summary` plus RSS and physical-footprint
+measurements when available.
+
+Write a new report and compact samples under:
+
+    .agent/benchmarks/image-opt-phase1-controls/post-stabilization-rebaseline/
+
+Keep `control-plumbing/` and `complete-diagnostic-gating/` unchanged. The
+local macOS benchmark requirement is unchanged.
 
 ## Plan of Work
 
-### Milestone 0 — Bootstrap the branch and commit the ExecPlan
-
-From a worktree that preserves unrelated local changes:
-
-    git switch master
-    git status --short
-    git switch -c perf/image-opt-phase1-controls
-
-Record `git rev-parse HEAD` in state. If the branch already exists, switch to it
-and resume instead of recreating it.
-
-Place this plan at its repository path, create the state/evidence/archive/report
-skeletons, and commit them before implementation.
-
-No build is allowed in this milestone. Validate only headers, Markdown size,
-`git diff --check`, and commit message.
-
-Acceptance: the plan and resumption files are committed and every new file is
-below the size limit.
-
-### Milestone 1 — Create the benchmark harness and capture S1
-
-Create a reusable macOS benchmark runner under `scripts/`. Keep runner and
-reporter separate if one file would approach the size limit.
-
-Create package-private smoke benchmark support under
-`TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/`. Reuse the existing
-`registerImageMacSmoke` deployment pattern rather than creating another deploy
-system.
-
-Create `ImageOptimizationControlBenchmarkApp` before
-`ImageOptimizationSettings`. Its S1 workload must compile against the current
-master API and measure:
-
-- repeated cached deferred draws;
-- Image/Pipeline creation churn;
-- the existing accounting-disabled path;
-- RSS while the workload is active.
-
-The workload must be large enough that recorded batches are at least tens of
-milliseconds; do not measure individual nanosecond-scale operations with
-millisecond TCVM timing.
-
-Commit the benchmark source and runner before running S1.
-
-At milestone end only, run the SDK and macOS Release builds. Redirect verbose
-output to uncommitted logs.
-
-SDK:
-
-    cd TotalCrossSDK
-    ./gradlew-agent dist -x test --no-daemon --console=plain
-
-macOS software Skia:
-
-    cmake -S TotalCrossVM -B build/image-opt-phase1-macos \
-      -DCMAKE_BUILD_TYPE=Release -G Ninja \
-      -DTC_GRAPHICS_SOFTWARE=ON \
-      -DTC_RENDERER_SKIA=ON \
-      -DTC_WINDOWING_SDL=ON
-    ninja -C build/image-opt-phase1-macos tcvm Launcher
-
-Deploy the benchmark with the exact newly built `libtcvm.dylib`, then run S1
-with 60 samples. Save compact committed samples and machine metadata.
-
-Commit S1 artifacts before implementing settings.
-
-Suggested commit:
-
-    test(image): record optimization control baseline
-
-Acceptance: the benchmark can be reproduced from committed source and S1 data
-identifies its exact pre-settings commit.
-
-### Milestone 2 — Implement internal settings and diagnostics gating
-
-Add `ImageOptimizationSettings` exactly as specified above. Keep it
-package-private and absent from public SDK documentation.
-
-Integrate `DIAGNOSTIC_ACCOUNTING` with existing Image/native-backing accounting
-without adding synchronization to hot paths. Existing smoke methods that
-explicitly reset/start accounting must continue to work even when the diagnostic
-feature default is disabled.
-
-Do not modify decode, pixel format, writePixels, cache policy, GPU backing, or
-mmap behavior in this milestone. Their feature IDs exist but have no effect.
-
-Add focused Java tests for tri-state validation, reset behavior, effective
-feature mask, numeric settings, and the no-op memory-pressure test hook.
-
-Update the control benchmark so post-settings S2 explicitly disables diagnostic
-accounting and S3 explicitly enables it. Do not change the timed workload.
-
-Suggested implementation commit:
-
-    feat(image): add internal optimization controls
-
-Before committing, use only source-level/header/diff validation. Defer Gradle
-and native compilation to the milestone gate.
-
-At milestone end, build the SDK and the same macOS software Skia configuration.
-Run relevant Image unit tests and native smoke tests only now.
-
-Run:
-
-- S2 with all optimization features and diagnostic accounting disabled;
-- S3 with only diagnostic accounting enabled.
-
-If S2 is more than 5% slower or uses more than 5% additional peak RSS versus S1,
-rerun with 200 samples. A confirmed regression must be fixed before completion.
-
-Generate:
-
-    .agent/benchmarks/image-opt-phase1-controls/control-plumbing/report.md
-
-The report distinguishes disabled-path overhead from intentionally enabled
-diagnostic overhead.
-
-Acceptance:
-
-- S2 preserves current behavior and has no confirmed >5% disabled-path
-  performance/RSS regression;
-- S3 proves accounting can be intentionally enabled;
-- all reserved feature toggles remain behaviorally inert;
-- current Image smoke semantics remain unchanged.
-
-### Milestone 3 — Finalize the reusable protocol and handoff
-
-Finalize `.agent/design/image-optimization-benchmark-protocol.md` from the actual
-regime; do not copy raw tables into the plan. Run final focused Image tests, SDK
-dist, macOS Release only if the previous build is not at HEAD, and relevant Image
-smokes. Update state, evidence, archive, and editorial report with overhead,
-regime, limits, and the phase-2 branch HEAD.
-
-### Phase 1 addendum — reserve later raster controls
-
-The addendum appends three package-private tri-state feature IDs after the
-existing 0-12 controls and raises `FEATURE_COUNT` to 16. `effectiveMask()`,
-reset, enumeration, and diagnostic description output include the new IDs;
-their `DEFAULT` state remains disabled and enabling them has no runtime effect.
-Tests explicitly lock the existing IDs, new masks, reset behavior,
-descriptions, and inertness. The local macOS software-Skia benchmark
-requirement is unchanged, and no historical samples or reports are rewritten.
+1. Complete the effective-mask test for all three new bits while preserving
+   IDs 0-12. Land as `test(image): complete raster reservation mask coverage`.
+2. Compact this active plan to this authoritative addendum and retain completed
+   detail in the existing archive/editorial files. Record both provenance SHAs.
+3. Build the current-master harness overlay and Phase 1 harness with the same
+   Release software-Skia native runtime. Capture S1, S2, and S3 at 60 samples,
+   escalating only under the protocol rules, and create the new report.
+4. Run focused Image tests, SDK distribution, the required macOS native build,
+   exact-dylib deployment, and benchmark/smoke execution. Record final state,
+   evidence, and editorial handoff without changing historical artifacts.
 
 ## Validation and Acceptance
 
-Only SDK and macOS validations are allowed. At applicable milestone closes:
-
-    python3 scripts/validate-copyright-headers.sh --files <changed files>
-    git diff --check
-
-SDK Image tests:
+Required checks at completion:
 
     cd TotalCrossSDK
-    ./gradlew-agent test --tests 'totalcross.ui.image.*' \
-      --no-daemon --console=plain
-
-SDK distribution:
-
+    ./gradlew-agent test --tests 'totalcross.ui.image.*' --no-daemon --console=plain
     ./gradlew-agent dist -x test --no-daemon --console=plain
 
-macOS native build: use the explicit software-Skia CMake configuration above.
+    cmake -S TotalCrossVM -B build/image-opt-phase1-macos -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release -DTC_GRAPHICS_SOFTWARE=ON \
+      -DTC_RENDERER_SKIA=ON -DTC_WINDOWING_SDL=ON
+    ninja -C build/image-opt-phase1-macos tcvm Launcher
 
-Run only the native Image smoke tasks affected by changed accounting/benchmark
-plumbing. Do not run unrelated platform matrices.
+Also run the existing exact-dylib Image benchmark/smoke deployment path, the
+three-scenario runner, focused copyright validation, and `git diff --check`.
+Keep verbose logs under `artifacts/image-opt-phase1-controls/` or temporary
+logs; do not commit generated builds or deployed binaries.
 
-Final acceptance requires:
+Acceptance requires:
 
-- branch created from recorded master SHA;
-- plan and direct artifacts committed;
-- no new file above 20 KiB/~600 lines;
-- no public stable API added;
-- all future optimization toggles default to disabled/current behavior;
-- S1/S2/S3 control reports, including the corrective gate item, committed;
-- no confirmed >5% disabled-path regression;
-- phase-2 handoff SHA recorded.
+- branch is `perf/image-opt-phase1-controls`;
+- IDs 0-12 are unchanged and IDs 13-15 plus `FEATURE_COUNT=16` are present;
+- all three new controls are tested default-disabled and runtime-inert;
+- no excluded control or Phase 2 optimization is implemented;
+- current-master and authored/base provenance are recorded separately;
+- the new S1/S2/S3 report uses identical workload/regime and remains historical
+  separate from prior reports;
+- any required 200-sample escalation and matched RSS diagnostics are recorded;
+- the active plan is below 20 KiB and approximately 600 lines.
 
 ## Risks and Open Questions
 
-If an internal feature requires public Image ABI/stable API, stop and record a
-blocker; do not invent another surface.
-
-If timing is too coarse, increase operations per batch; keep the regime fixed.
-
-If Gradle cannot pass a benchmark mode, use `MainWindow.getCommandLine()` and
-invoke the deployed executable from the runner; do not add another runtime
-configuration mechanism.
+The current master does not contain the Phase 1 benchmark harness, so S1 may
+use a temporary harness overlay in a detached worktree while retaining the
+exact current-master production sources. Do not commit that overlay to master.
+If native or smoke results differ materially from the prior workload, stop and
+record the discrepancy rather than changing the workload.
 
 ## Idempotence and Recovery
 
-Never delete or reset unrelated local changes.
-
-Repeated runs may overwrite only the exact scenario artifact for the same
-commit/workload; a differing SHA requires a new file or explicit invalidation.
-
-Build directories and `artifacts/image-opt-phase1-controls/` remain uncommitted.
-On interruption, resume from state, verify HEAD/last scenario, and rerun only
-if source, binary revision, or regime changed.
+Never alter unrelated local files or historical benchmark artifacts. Temporary
+detached worktrees, build directories, deployed apps, and verbose logs are
+disposable generated state; committed samples must use a new directory for the
+new baseline. Resume from state and verify each scenario SHA before rerunning.
 
 ## Progress
 
-- [x] Bootstrap `perf/image-opt-phase1-controls` from the authored master SHA
-  and commit this plan plus resumable phase artifacts.
-- [x] Create the macOS benchmark harness and commit the exact S1 baseline.
-- [x] Implement internal settings, focused tests, and diagnostics gating.
-- [x] Run and commit S2/S3 plus the control-plumbing benchmark report.
-- [x] Complete final validation and record the phase-2 handoff.
-- [x] Correct complete diagnostic accounting gating, preserve clear/reset gate
-  state, and record the native smoke plus S1/S2/S3 evidence separately.
-- [x] Addendum: reserve raster target color-type conversion, physical variant
-  cache, and physical identity folding controls without implementing them.
+- [x] Reserve IDs 13-15 and raise `FEATURE_COUNT` to 16.
+- [x] Add tests for ID stability, masks, reset, descriptions, and inertness.
+- [x] Record the explicit bit-15 effective-mask assertion.
+- [x] Compact the active plan to the authoritative addendum and preserve the
+  authored SHA as historical metadata.
+- [ ] Record current master `7add0f29e9366a19d894237119a415416e6bb557` and
+  capture the post-stabilization S1/S2/S3 rebaseline.
+- [ ] Run final required validations and record the Phase 2 rebase handoff.
 
 ## Decision Log
 
-- Decision: use package-private process-global fine-grained settings, not a
-  public policy API.
-  Rationale: this phase exists for exhaustive controlled experimentation.
-  Date: 2026-09-05.
+- Decision: reserve only the three requested raster IDs after the existing
+  sequence and keep them inert/default-disabled.
+  Rationale: establish stable positions without changing Phase 1 behavior.
 
-- Decision: all new optimization defaults remain disabled throughout phases 1-4.
-  Rationale: measured opt-in behavior must precede product default policy.
-  Date: 2026-09-05.
+- Decision: treat `1898014784b2fba5716cc033e49520740b05f0dd` as the authored
+  historical base and `7add0f29e9366a19d894237119a415416e6bb557` as the current
+  master baseline for the new comparison.
+  Rationale: correct provenance after master stabilization without rewriting
+  historical evidence.
 
-- Decision: pass effective feature bits at native call boundaries rather than
-  reading Java static fields from native hot paths.
-  Rationale: preserve low overhead and avoid a native global settings lifecycle.
-  Date: 2026-09-05.
-
-- Decision: benchmark data and reports are committed; verbose build logs and
-  generated binaries are not.
-  Rationale: preserve reproducible direct evidence without repository noise.
-  Date: 2026-09-05.
-
-- Decision: append raster reservation IDs 13-15 and set `FEATURE_COUNT` to 16;
-  preserve all existing IDs and keep the controls inert.
-  Rationale: later phases need stable feature positions without changing Phase 1
-  runtime behavior or the existing diagnostic-accounting contract.
-  Date: 2026-09-07.
-
-- Decision: require matched memory/residency diagnostics before classifying a
-  persistent post-rerun peak-RSS difference above 5% as a regression.
-  Rationale: distinguish real residency changes from sampling artifacts while
-  preserving the established 60/200-sample local macOS regime.
-  Date: 2026-09-07.
+- Decision: require matched memory/residency diagnostics for a persistent
+  post-rerun peak-RSS difference above 5%, using macOS `vmmap -summary`, RSS,
+  and physical footprint when available.
+  Rationale: separate residency effects from sampling noise before regression
+  classification.
 
 ## Outcomes & Retrospective
 
-Phase 1 delivered package-private tri-state controls for 13 IDs, byte
-validation, an effective mask, and a no-op pressure hook. Only
-`DIAGNOSTIC_ACCOUNTING` is connected.
-
-The original control-plumbing report remains historical. Its corrective
-complete-gating item used 60 samples on macOS arm64 software-Skia: medians
-676, 677 (+0.148%), and 671 (-0.740%) ms; RSS deltas +0.360%/+0.346%. S2 was
-zero; S3 was nonzero. Follow-up test/smoke `89458ecc7` and native fix
-`62a4c9278` make clear preserve Java/native gate state while legacy reset
-remains reset-and-enable. The deployed smoke passed disabled zero-accounting
-and enabled incrementing assertions. Focused Image tests, SDK distribution,
-macOS Release CMake/Ninja, exact-dylib deployment, and related Image smokes
-passed. No benchmark rerun was needed: workload and counted hot paths were
-unchanged. Phase 2 may branch from the final documentation HEAD; other
-platforms and later optimizations remain deferred.
-
-The Phase 1 addendum reserves `RASTER_TARGET_COLORTYPE_CONVERSION` (13),
-`RASTER_PHYSICAL_VARIANT_CACHE` (14), and `RASTER_PHYSICAL_IDENTITY_FOLDING`
-(15), with `FEATURE_COUNT` now 16. Existing IDs 0-12 and the package-private,
-process-global, tri-state, opt-in, long-mask contracts remain unchanged. The
-new controls are tested as default-disabled and runtime-inert. The benchmark
-protocol now requires matched `vmmap -summary`, RSS, and available
-physical-footprint diagnostics for a persistent peak-RSS difference above 5%
-after the required 200-sample rerun; the local macOS requirement and all
-historical benchmark artifacts remain unchanged.
+The addendum implementation and focused tests are complete. The current
+master rebaseline and final Phase 2 handoff remain to be recorded in the new
+post-stabilization report, state, evidence, and editorial addendum.

@@ -6,9 +6,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 state
 
-Updated: 2026-09-07T11:51:14-03:00
+Updated: 2026-09-07T12:16:00-03:00
 Branch: `perf/image-opt-phase1-controls`
 Base SHA: `1898014784b2fba5716cc033e49520740b05f0dd`
+Current master baseline SHA: `7add0f29e9366a19d894237119a415416e6bb557`
 Plan: `.agent/plans/exec-plan-image-opt-phase1-controls.md`
 
 ## Active slice
@@ -19,14 +20,15 @@ runner `f33760435`, gate fix `4721397d6`, registration fix `8399b8b0a`, and
 benchmark evidence `884ffcb61`. The follow-up clear-state tests/smoke landed
 in `89458ecc7`; the native clear-only fix is `62a4c9278`. S1 used
 `f33760435`; S2/S3 used `8399b8b0a`. The reservation addendum code landed in
-`23b361051`, the protocol/plan/editorial update in `e5e35e305`, and the
-test-isolation follow-up in `edcefbe06`. The addendum is complete.
+`23b361051`, the protocol/plan/editorial update in `e5e35e305`, the
+test-isolation follow-up in `edcefbe06`, and the explicit bit-15 mask coverage
+in `5ecb1b393`. The current-master rebaseline is active.
 
 ## Next concrete action
 
-No implementation or validation work remains for this addendum. Phase 2 may
-branch from the final phase-1 branch HEAD after this checkpoint. The original
-control report was not overwritten.
+Build the current-master harness overlay and Phase 1 harness, capture the new
+S1/S2/S3 rebaseline, run the required macOS validation, and record the final
+handoff. The original reports remain untouched.
 
 ## Active paths
 
@@ -37,6 +39,7 @@ control report was not overwritten.
 - `.agent/reports/image-opt-phase1-controls-editorial.md`
 - `.agent/design/image-optimization-benchmark-protocol.md`
 - `.agent/benchmarks/image-opt-phase1-controls/complete-diagnostic-gating/`
+- `.agent/benchmarks/image-opt-phase1-controls/post-stabilization-rebaseline/`
 
 ## Validation
 
@@ -56,13 +59,16 @@ and whitespace checks passed. The first focused run found only a shared-JVM
 test precondition issue; no production assertion failed after the test reset
 was added.
 
+The active plan compaction is 8,507 bytes and 195 lines. The explicit bit-15
+mask assertion is committed, but the post-stabilization benchmark and its
+required native build/smokes remain pending.
+
 ## Deferred validation
 
-The macOS software-Skia native build was not rerun because this addendum changes
-only Java controls/tests and documentation; no native code, build configuration,
-or counted hot path changed. Android/iOS/Windows/Linux/GPU validation and later
-optimizations remain outside the plan. Verbose logs remain under ignored
-`artifacts/image-opt-phase1-controls/`.
+The post-stabilization macOS software-Skia build/smokes, S1/S2/S3 rebaseline,
+and any required 200-sample diagnostics remain deferred. Android/iOS/Windows/
+Linux/GPU validation and later optimizations remain outside the plan. Verbose
+logs remain under ignored `artifacts/image-opt-phase1-controls/`.
 
 ## Decisions still active
 
@@ -80,6 +86,8 @@ optimizations remain outside the plan. Verbose logs remain under ignored
   excluded control, or GPU `writePixels` invariant was added.
 - A persistent peak-RSS difference above 5% after 200 samples requires matched
   memory/residency diagnostics before regression classification.
+- The authored SHA remains historical; current master `7add0f29e9366a19d894237119a415416e6bb557`
+  is the S1 source for the new post-stabilization comparison.
 
 ## Blockers and deliberate out-of-scope files
 
