@@ -153,6 +153,8 @@ Do not implement:
 - [x] Milestone 1: collect macOS and native Windows/Linux benchmark evidence.
 - [x] Milestone 2: apply fixed decision rule and clean duplicate macro defaults.
 - [x] Milestone 3: final macOS validation and master/rebase handoff.
+- [x] Corrective rerun: replace indirect-dispatch benchmark evidence with
+  production-like buffer-level loops and recompute the policy.
 
 ## Benchmark Design Contract
 
@@ -242,19 +244,18 @@ trigger and leave the final workflow `workflow_dispatch` only.
 
 Apply exactly this rule. The executor must not invent platform policy.
 
-1. Remove `USE_NATIVE_SWAP` and use the portable shift/mask expression
-   unconditionally if native swap has less than 5% median speedup on every
-   measured Windows/Linux platform/size.
-2. Also remove it if native swap is more than 5% slower on any Windows/Linux
-   platform/size in both the 60- and 200-sample checkpoints.
-3. Retain the current platform-default policy only if native swap has a stable
-   >=5% win on at least one Windows/Linux target/size in both checkpoints and no
-   stable >5% regression on another target where it is currently enabled.
-4. If Windows/Linux architectures materially conflict (stable >=5% win on one
-   and stable >5% regression on another), retain the current flag/defaults. Do
-   not introduce a new per-architecture policy.
-5. macOS is corroborating evidence only because Apple currently defaults to the
-   portable path; it cannot override stable Windows/Linux results.
+1. If native has no stable >=5% median win on any Windows/Linux target/size and
+   the portable loop is not stably >5% slower anywhere, remove `USE_NATIVE_SWAP`
+   and use the portable expression unconditionally.
+2. If native has a stable >=5% win on at least one target and no stable >5%
+   regression on another target where it is enabled, retain the current policy.
+3. If there is a stable >=5% native win on one target and a stable >5%
+   regression on another, choose the simplest platform/architecture default
+   policy supported by the measurements while preserving Apple/Android
+   behavior. Do not introduce runtime selection.
+4. “Stable” means the >=5% result occurs in both the 60- and 200-pair
+   checkpoints for the same platform/architecture/size. macOS remains
+   corroborating evidence only.
 
 A runner failure or invalid benchmark is not evidence. Leave the milestone
 incomplete until required measurements exist or the user changes the contract.
@@ -331,6 +332,12 @@ If rule selects retention:
 
 - keep current Apple/Android vs other-platform defaults unchanged;
 - keep native and portable implementations unchanged.
+
+If rule selects differentiated defaults:
+
+- encode only the minimal platform/architecture condition justified by the
+  stable measurements;
+- preserve Apple/Android behavior and do not add runtime selection.
 
 In both cases:
 
@@ -413,19 +420,20 @@ fixed rule, and no Windows/Linux TotalCross build.
 
 ## Surprises & Discoveries
 
-Native swap was substantially slower than the portable expression on Linux
-x86-64 at 512x512 and 3840x2160 in both checkpoints, while Windows ARM64 had a
-stable greater-than-5-percent native win at 512x512. The architecture conflict
-requires retaining the current cross-platform defaults under rule 4.
+The first result set was invalid for policy because its per-pixel function
+pointer prevented production-like loop optimization. The corrected direct-loop
+matrix makes Linux x86-64 and Windows x86-64 effectively equal, while Windows
+ARM64 has a stable greater-than-5-percent native win at every size. No
+Windows/Linux target has a stable greater-than-5-percent regression.
 
 ## Decision Log
 
 - Benchmark native swap on native x86-64/ARM64 runners; never use QEMU evidence.
 - Compile only the standalone benchmark on Windows/Linux.
 - Use 60-pair preliminary and 200-pair final checkpoints.
-- Apply the fixed 5% decision rule without inventing architecture policy.
-- Retain the current `USE_NATIVE_SWAP` defaults because Windows ARM64 and Linux
-  x86-64 materially conflict under the fixed rule.
+- Apply the corrected fixed rule without inventing runtime selection.
+- Retain the current `USE_NATIVE_SWAP` defaults because Windows ARM64 has a
+  stable win and no enabled Windows/Linux target has a stable regression.
 - Keep `skia_internal.h` as the sole default-definition site for surviving
   legacy Skia compile flags.
 - Leave opacity/writePixels/color-type optimization changes to the image series.
@@ -451,15 +459,15 @@ local changes.
 
 ## Outcomes & Retrospective
 
-Milestone 0 delivered a standalone checksum-checked benchmark and a temporary
-four-runner native workflow. Milestone 1 recorded all required 60/200 paired
-samples for three sizes on macOS arm64 and native Linux/Windows x86-64/ARM64;
-the raw and summary artifacts are committed under the benchmark artifact path.
-Milestone 2 retained the current native-swap policy under rule 4 because the
-Windows ARM64 win and Linux x86-64 regression materially conflict, and removed
-duplicate defaults from `skia.cpp`. Milestone 3 passed the focused macOS
-software-Skia surface test and completed the handoff report. Measurements are
-microbenchmark evidence, not end-to-end image-performance claims.
+The first benchmark result set and policy conclusion were superseded because
+the harness used per-pixel indirect dispatch. The corrective slice replaced the
+source, reran all required local macOS and native Linux/Windows checkpoints,
+and replaced the 30 CSV/JSON artifacts. The corrected evidence retains the
+current policy under rule 2: Windows ARM64 has stable wins and no enabled
+Windows/Linux target has a stable regression. Duplicate defaults remain removed
+from `skia.cpp`; the focused macOS software-Skia surface test passes.
+Measurements are microbenchmark evidence, not end-to-end image-performance
+claims.
 
 ## Revision Note
 
