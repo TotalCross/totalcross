@@ -79,8 +79,11 @@ Use `rg`, narrow `sed` ranges, and direct reads; do not reconstruct history.
 
 - [x] (2026-09-07) Bootstrap continuation state and verify branch ancestry;
   evidence is recorded in the extension state/evidence files.
-- [ ] Add all new physical-plan benchmark workloads before implementation.
-- [ ] Revalidate/rebaseline the five existing Phase 2 optimizations.
+- [x] (2026-09-07) Add all three physical-plan benchmark workloads before
+  implementation; SDK and macOS software-Skia build gates passed.
+- [x] (2026-09-07) Revalidate/rebaseline the five existing Phase 2
+  optimizations with true-base S1, disabled S2, and enabled S3; the S3
+  comparison was escalated to 200 samples after the 60-sample CV exceeded 5%.
 - [ ] Implement and validate `RASTER_PHYSICAL_IDENTITY_FOLDING`.
 - [ ] Hand off exact continuation state to extension plan 02.
 
