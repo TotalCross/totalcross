@@ -12,9 +12,10 @@ prospective for Phase 2 and later.
 ## Scope
 
 This protocol measures image backing, draw, decode, storage, cache, and
-diagnostic changes across the phase series on macOS. It is local evidence, not
-a cross-platform performance claim. Only the SDK and macOS software-Skia
-builds are in scope for phase 1.
+diagnostic changes across the phase series. macOS/software-Skia defines the
+primary and authoritative local raster benchmark methodology. Phase 1 uses
+only local macOS evidence. Phase 2+ may add complementary cross-platform
+evidence according to the `Cross-platform policy for Phase 2+` section.
 
 ## Required scenarios
 
