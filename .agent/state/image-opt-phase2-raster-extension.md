@@ -6,19 +6,20 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Phase 2 raster extension state
 
-Updated: 2026-09-07T16:35:41-03:00
+Updated: 2026-09-07T16:59:07-03:00
 Branch: `perf/image-opt-phase2-raster`
 Frozen Phase 1 base: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Starting Phase 2 HEAD: `a225d10165b8b60c4bf7bf2f95f5bf3b395f3a92`
-Plan: `.agent/plans/exec-plan-image-opt-phase2-raster-extension-01.md`
+Plan: `.agent/plans/exec-plan-image-opt-phase2-raster-extension-02.md`
 
 ## Active slice
 
 Extension 01 is complete through the physical identity folding and handoff
-milestones. ID 15 is implemented in the software-Skia geometry path and
-committed as `31c3d0fa40d955806df18e1dad1ba79fa301a606`; the benchmark and
-handoff records are committed in `5712fed80`. Historical Phase 2 evidence
-remains unchanged.
+milestones. Its final handoff HEAD is
+`de5ad089e68e39a1224a87247aad026e6d31baab`; the ID 15 production runtime is
+`31c3d0fa40d955806df18e1dad1ba79fa301a606`. The test-raster factory
+registration was corrected in `5cbe01782`, `f5be3f190`, and `07912a0f2`.
+Historical Phase 2 evidence remains unchanged.
 
 ## Last completed slice
 
@@ -64,7 +65,16 @@ Milestone 1 checks passed:
 - focused image correctness smokes, including adaptive JPEG tiers and retry,
   APPLY_COLOR2 parity, opacity invalidation, writePixels parity, and readback
   parity;
-- integrated S1/S2/S3 workloads with stable pixel, PNG, and color hashes.
+- integrated S1/S2/S3 workloads with stable pixel, PNG, and color hashes;
+- extension 02 S1 target-color RGBA control: 60 samples, median 5477 ms,
+  P95 5493 ms, CV 0.22%, peak RSS 115296 KiB, hash `000000D600000165`;
+- extension 02 S1 target-color BGRA/RGB565/translucent probes: one sample each,
+  all passed with hashes `000000D600000165`, `0000AD0400003765`, and
+  `0000F55E00000165`;
+- extension 02 S1 physical-variant repeat: 60 samples, median 1326 ms,
+  P95 1328 ms, CV 0.13%, peak RSS 114160 KiB, hash `000000D600000165`;
+- extension 02 S1 physical-variant first/mutation/size probes: one sample each,
+  all passed with hash `000000D600000165`.
 
 The authoritative measurements are in
 `.agent/benchmarks/image-opt-phase2-raster-extension/rebaseline-60/`,
@@ -74,13 +84,17 @@ The authoritative measurements are in
 `69383c1689963b04e1a94e2a0403a024a6c249105683924fab5b8572c496edf9`.
 Rebaseline S2/S3 use production revision
 `25a43c0d55bd8550fef3e992e212da9fd2d57d15`; identity S2/S3 use
-`31c3d0fa40d955806df18e1dad1ba79fa301a606`.
+`31c3d0fa40d955806df18e1dad1ba79fa301a606`. Extension 02 S1 uses production
+and harness revision `07912a0f2d5d48705a5b7caa65f82a71ed7d3b57`; its additive
+captures are under `target-color-s1-60/`, `target-color-s1-1/`,
+`physical-variant-s1-60/`, and `physical-variant-s1-1/`.
 
 ## Deferred validation
 
 Android, iOS, Windows, Linux, and GPU validation are outside this execution by
-plan policy. The commit-message checker flagged an overlong body line on the
-required runtime commit; history was preserved without amendment.
+plan policy. The commit-message checker flagged overlong body lines on three
+earlier extension-01 commits; history was preserved without amendment. The
+extension-02 factory correction commit passed the checker.
 
 ## Decisions still active
 
@@ -96,8 +110,8 @@ No blockers. Existing unrelated untracked files under `.agent`, `scripts`,
 
 ## Next concrete action
 
-Start extension plan 02 with this state, the exact ID 15 production revision,
-and the additive target-color/physical-variant workloads.
+Implement ID 13 target-color conversion in the one-slot derived-raster
+scaffold, keeping the recorded S1 captures immutable.
 
 ## Resume command
 

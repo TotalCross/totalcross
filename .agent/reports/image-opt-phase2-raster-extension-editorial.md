@@ -73,3 +73,17 @@ production revision recorded above.
 
 The required runtime commit's body contained an overlong original line and
 the local commit-message check reported it; no history rewrite was performed.
+
+## Extension 02 S1 handoff
+
+Extension 01's final handoff HEAD is `de5ad089e68e39a1224a87247aad026e6d31baab`.
+The final pre-ID13/14 production and harness revision is
+`07912a0f2d5d48705a5b7caa65f82a71ed7d3b57`; it includes only test-raster
+factory registration corrections on top of the ID 15 runtime.
+
+The target-color RGBA control completed 60 samples at a 5477 ms median, 5493
+ms P95, 0.22% CV, and 115296 KiB peak RSS. The physical-variant repeat control
+completed 60 samples at a 1326 ms median, 1328 ms P95, 0.13% CV, and 114160 KiB
+peak RSS. Both produced `000000D600000165`. One-sample focused probes for
+BGRA, RGB565, translucent, first-use, mutation, and size cases also passed;
+their hashes are preserved in the additive benchmark directories.
