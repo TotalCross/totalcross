@@ -72,3 +72,32 @@ The physical-variant repeat control used 60 samples: median 1326 ms, P95
 1328 ms, CV 0.13%, peak RSS 114160 KiB, and hash `000000D600000165`.
 First-use, mutation, and size-replacement probes each passed with one sample.
 All raw captures are additive under the extension benchmark directory.
+
+## 2026-09-07 — Extension 02 target-color conversion
+
+ID 13 was committed in `37f489600449c81c4ead3eb677a01ec35d12112f`. The one-slot
+derived raster is target-aware, CPU-accessible, and owned by the source backing;
+the primary source remains authoritative for canonical ARGB readback. Skia
+performs BGRA8888 and RGB565 conversion only after the second eligible draw.
+RGBA remains the control path, translucent content falls back, and source-root
+mutation clears the slot before the next draw.
+
+The exact RGBA S1/S2/S3 comparison used 60 samples and three warmups. S1 at
+`07912a0f2d5d48705a5b7caa65f82a71ed7d3b57` measured 5477 ms median, 5493 ms
+P95, 0.221% CV, and 115296 KiB peak RSS. S2 at the ID 13 revision measured
+5629 ms median, 5646 ms P95, 0.178% CV, and 113280 KiB peak RSS. S3 measured
+5642 ms median, 5648 ms P95, 0.133% CV, and 115744 KiB peak RSS. All RGBA
+hashes were `000000D600000165`; S2 and S3 target-color counters were zero.
+
+The BGRA conversion S2/S3 pair also used 60 samples. S2 measured 5667 ms
+median, 5677 ms P95, 0.128% CV, and 114240 KiB peak RSS with zero counters.
+S3 measured 1083 ms median, 1089 ms P95, 0.329% CV, and 109184 KiB peak RSS;
+the final counters were 64512 attempts, one materialization, 64510 hits, one
+fallback, and 160000 converted bytes. The stable output hash was
+`000000D600000165`.
+
+Focused macOS smokes passed for RGB565 conversion (80000 converted bytes),
+translucent fallback, source-root mutation invalidation, BGRA-to-RGB565 slot
+replacement (two materializations and 240000 converted bytes), disabled BGRA
+parity, and canonical source readback. No 200-sample escalation was required;
+all CVs were below 5% and exact RGBA S2 elapsed/RSS deltas stayed below 5%.

@@ -87,3 +87,31 @@ completed 60 samples at a 1326 ms median, 1328 ms P95, 0.13% CV, and 114160 KiB
 peak RSS. Both produced `000000D600000165`. One-sample focused probes for
 BGRA, RGB565, translucent, first-use, mutation, and size cases also passed;
 their hashes are preserved in the additive benchmark directories.
+
+## Extension 02 Milestone 1 — target-color conversion
+
+ID 13 is committed in `37f489600449c81c4ead3eb677a01ec35d12112f`. The native
+implementation keeps the source backing authoritative and owns one target-aware
+Skia raster slot per source backing. It admits the slot on the second identical
+eligible draw, reuses it on later draws, and clears it on source-root mutation.
+RGBA is the control representation; BGRA8888 and opaque RGB565 use Skia's
+conversion path, while translucent content falls back.
+
+| Scenario | Samples | Median | P95 | CV | Peak RSS | Result |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| S1 RGBA control | 60 | 5477 ms | 5493 ms | 0.221% | 115296 KiB | frozen pre-ID13 |
+| S2 RGBA disabled | 60 | 5629 ms | 5646 ms | 0.178% | 113280 KiB | zero counters |
+| S3 RGBA enabled | 60 | 5642 ms | 5648 ms | 0.133% | 115744 KiB | control path |
+| S2 BGRA disabled | 60 | 5667 ms | 5677 ms | 0.128% | 114240 KiB | zero counters |
+| S3 BGRA enabled | 60 | 1083 ms | 1089 ms | 0.329% | 109184 KiB | 1 materialization, 64510 hits |
+
+All RGBA and BGRA timed hashes were stable. The exact RGBA S2 median delta was
+2.775% versus S1 and its RSS delta was -1.748%; no 200-sample escalation was
+required. Focused smokes additionally passed RGB565 conversion, translucent
+fallback, source-root mutation invalidation, BGRA-to-RGB565 replacement,
+disabled parity, and canonical ARGB readback.
+
+The raw samples and compact result record are under
+`.agent/benchmarks/image-opt-phase2-raster-extension/target-color-s2-60/`,
+`target-color-s3-60/`, and `target-color-s2-s3-60/results.txt`. Full SDK agent
+logs remain uncommitted in `TotalCrossSDK/agent-logs/`.
