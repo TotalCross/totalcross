@@ -1,0 +1,96 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: native swap benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/pre-image-optimization-master
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux x86-64
+            runner: ubuntu-22.04
+            architecture: x86-64
+          - label: Linux ARM64
+            runner: ubuntu-22.04-arm
+            architecture: ARM64
+          - label: Windows x86-64
+            runner: windows-2022
+            architecture: x86-64
+          - label: Windows ARM64
+            runner: windows-11-arm
+            architecture: ARM64
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build and run Linux benchmark
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          benchmark="$RUNNER_TEMP/native_swap_benchmark"
+          c++ -std=c++17 -O3 -DNDEBUG \
+            TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp \
+            -o "$benchmark"
+          result_dir="$GITHUB_WORKSPACE/native-swap-results/Linux-${{ matrix.architecture }}"
+          mkdir -p "$result_dir"
+          for size in 512x512 1920x1080 3840x2160; do
+            IFS=x read -r width height <<< "$size"
+            for samples in 60 200; do
+              raw="$result_dir/${size}-${samples}.csv"
+              summary="$result_dir/${size}-${samples}.json"
+              "$benchmark" "$width" "$height" 3 "$samples" "$raw" "$summary"
+            done
+          done
+
+      - name: Build and run Windows benchmark
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (-not (Test-Path $vswhere)) { throw 'vswhere was not found' }
+          $vsPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if ([string]::IsNullOrWhiteSpace($vsPath)) { throw 'Visual Studio installation was not found' }
+          $hostArchitecture = if ('${{ matrix.architecture }}' -eq 'ARM64') { 'arm64' } else { 'x64' }
+          $devCmd = Join-Path $vsPath 'Common7\Tools\VsDevCmd.bat'
+          $source = Join-Path $env:GITHUB_WORKSPACE 'TotalCrossVM\src\nm\ui\skia\benchmarks\native_swap_benchmark.cpp'
+          $benchmark = Join-Path $env:RUNNER_TEMP 'native_swap_benchmark.exe'
+          $buildCommand = "call `"$devCmd`" -arch=$hostArchitecture -host_arch=$hostArchitecture && cl /nologo /std:c++17 /O2 /DNDEBUG /EHsc /Fe:`"$benchmark`" `"$source`""
+          cmd.exe /d /s /c $buildCommand
+          if ($LASTEXITCODE -ne 0) { throw "cl failed with exit code $LASTEXITCODE" }
+          $resultDir = Join-Path $env:GITHUB_WORKSPACE 'native-swap-results\Windows-${{ matrix.architecture }}'
+          New-Item -ItemType Directory -Force -Path $resultDir | Out-Null
+          foreach ($size in @(@(512, 512), @(1920, 1080), @(3840, 2160))) {
+            $width = $size[0]
+            $height = $size[1]
+            foreach ($samples in @(60, 200)) {
+              $name = "${width}x${height}-${samples}"
+              $raw = Join-Path $resultDir "$name.csv"
+              $summary = Join-Path $resultDir "$name.json"
+              & $benchmark $width $height 3 $samples $raw $summary
+              if ($LASTEXITCODE -ne 0) { throw "benchmark failed with exit code $LASTEXITCODE" }
+            }
+          }
+
+      - name: Upload structured benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-swap-${{ matrix.architecture }}-${{ matrix.runner }}
+          path: native-swap-results
+          if-no-files-found: error
