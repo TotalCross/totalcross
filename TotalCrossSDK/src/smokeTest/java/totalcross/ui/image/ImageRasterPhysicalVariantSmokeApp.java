@@ -21,7 +21,8 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
       ImageRasterBenchmarkSupport.require("repeat".equals(testCase) || "identity".equals(testCase)
           || "replace".equals(testCase) || "mutation".equals(testCase) || "crop".equals(testCase)
           || "alpha".equals(testCase) || "hwscale".equals(testCase)
-          || "rotation".equals(testCase) || "combined".equals(testCase), "invalid case");
+          || "rotation".equals(testCase) || "combined".equals(testCase)
+          || "decode".equals(testCase), "invalid case");
       ImageRasterBenchmarkSupport.configure(scenario,
           ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
       if ("identity".equals(testCase) && "post-enabled".equals(scenario)) {
@@ -32,7 +33,13 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
             ImageOptimizationSettings.ENABLED);
       }
-      Image source = source("identity".equals(testCase));
+      Image source;
+      if ("decode".equals(testCase)) {
+        byte[] encoded = ImageRasterBenchmarkSupport.opaquePng(200, 200);
+        source = new Image(encoded, encoded.length);
+      } else {
+        source = source("identity".equals(testCase));
+      }
       Image image;
       Image destination;
       if ("crop".equals(testCase)) {
@@ -64,6 +71,14 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         drawBatch(canvas, image, 2);
         Image.resetImageOperationAccountingForTest();
         image.mutateDeferredRootForTest(destination.getContentScale());
+        drawBatch(canvas, image, 2);
+      } else if ("decode".equals(testCase)) {
+        drawBatch(canvas, image, 2);
+        Image.resetImageOperationAccountingForTest();
+        Object root = image.pipelineForSmoke().root();
+        ImageRasterBenchmarkSupport.require(root instanceof EncodedImageSource,
+            "encoded physical variant root");
+        ((EncodedImageSource) root).evictDecodedBacking();
         drawBatch(canvas, image, 2);
       } else {
         if ("alpha".equals(testCase)) {
@@ -143,6 +158,10 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(lookups == 2 && hits == 0 && misses == 2
           && materializations == 1 && evictions == 0 && bytes == 160000,
           "mutated physical variant counters" + counters());
+    } else if ("decode".equals(testCase)) {
+      ImageRasterBenchmarkSupport.require(lookups == 2 && hits == 0 && misses == 2
+          && materializations == 1 && evictions == 0 && bytes == 160000,
+          "decode-generation physical variant counters" + counters());
     } else if ("combined".equals(testCase)) {
       ImageRasterBenchmarkSupport.require(lookups == 3 && hits == 1 && misses == 2
           && materializations == 1 && evictions == 0 && bytes == 160000,
