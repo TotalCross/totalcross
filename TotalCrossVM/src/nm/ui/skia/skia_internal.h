@@ -6,6 +6,7 @@
 #define SKIA_INTERNAL_H
 
 #include "skia.h"
+#include "util/xtypes.h"
 
 #include <cstdint>
 #include <cstdio>
@@ -69,14 +70,6 @@ static inline Pixel skiaPixelFromColor(SkColor color) {
 #endif
 #endif
 
-#ifndef USE_NATIVE_SWAP
-#if __APPLE__ || ANDROID
-#define USE_NATIVE_SWAP 0
-#else
-#define USE_NATIVE_SWAP 1
-#endif
-#endif
-
 #ifndef USE_WRITE_PIXELS
 #define USE_WRITE_PIXELS 1
 #endif
@@ -94,21 +87,6 @@ static inline Pixel skiaPixelFromColor(SkColor color) {
 #define SKIA_TRACE() LOGD(__FUNCTION__);
 #else
 #define SKIA_TRACE() //LOGD();
-#endif
-
-#if USE_NATIVE_SWAP
-inline uint32_t builtinSwap32(uint32_t val) noexcept {
-#if defined(__clang__)
-    return __builtin_bswap32(val);
-#elif defined(__GNUG__)
-    return __builtin_bswap32(val);
-#elif defined(_MSC_VER)
-    return _byteswap_ulong(val);
-#endif
-}
-#define SWAP32(n) builtinSwap32(n)
-#else
-#define SWAP32(n) (((n >> 24) & 0xFF)) | ((((n >> 16) & 0xFF) << 8) | (((n >> 8) & 0xFF) << 16) | ((n & 0xFF) << 24))
 #endif
 
 extern sk_sp<SkSurface> surface;
