@@ -15,8 +15,10 @@
 #include <memory>
 
 using skia_image_backing_internal::NativeImageBackingRecord;
+#if TC_GRAPHICS_SOFTWARE
 using skia_image_backing_internal::RasterVariantKey;
 using skia_image_backing_internal::RasterVariantUse;
+#endif
 using skia_image_backing_internal::findBacking;
 using skia_image_backing_internal::rasterInfo;
 using skia_image_backing_internal::registerBacking;
@@ -344,6 +346,10 @@ static bool geometryDrawCompiled(SkCanvas* canvas, const SkImage* image,
     return true;
 }
 
+static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan);
+
+#if TC_GRAPHICS_SOFTWARE
+
 struct RasterPhysicalPlan {
     GeometryTransform transform;
     SkRect sourcePixels;
@@ -392,8 +398,6 @@ static bool purePhysicalGeometry(const SkiaImageDrawPlanData* plan) {
     }
     return true;
 }
-
-static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan);
 
 static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
                                     NativeImageBackingRecord* source, float srcLeft, float srcTop,
@@ -519,6 +523,8 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
     return true;
 }
 
+#endif
+
 static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan) {
     if (!plan || plan->rootFrameCount != 1 || plan->outputFrameCount != 1
         || plan->rootWidthOfAllFrames > 0 && plan->rootWidthOfAllFrames != plan->rootWidth
@@ -543,6 +549,8 @@ static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan) {
     }
     return true;
 }
+
+#if TC_GRAPHICS_SOFTWARE
 
 static bool targetColorTypeSupported(SkColorType colorType) {
     return colorType == kBGRA_8888_SkColorType || colorType == kRGB_565_SkColorType;
@@ -648,7 +656,6 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
                                    NativeImageBackingRecord* source, float srcLeft, float srcTop,
                                    float srcRight, float srcBottom, float dstLeft, float dstTop,
                                    float dstRight, float dstBottom) {
-#if TC_GRAPHICS_SOFTWARE
     constexpr int32 kTargetColorConversionBit = 1 << 13;
     if (!plan || (plan->optimizationMask & kTargetColorConversionBit) == 0) {
         return false;
@@ -694,19 +701,6 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
                              plan->alphaMask, false, &colorFilters)) {
         return true;
     }
-#else
-    UNUSED(plan)
-    UNUSED(canvas)
-    UNUSED(source)
-    UNUSED(srcLeft)
-    UNUSED(srcTop)
-    UNUSED(srcRight)
-    UNUSED(srcBottom)
-    UNUSED(dstLeft)
-    UNUSED(dstTop)
-    UNUSED(dstRight)
-    UNUSED(dstBottom)
-#endif
     return false;
 }
 
@@ -739,7 +733,6 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
                                NativeImageBackingRecord* source, float srcLeft, float srcTop,
                                float srcRight, float srcBottom, float dstLeft, float dstTop,
                                float dstRight, float dstBottom) {
-#if TC_GRAPHICS_SOFTWARE
     constexpr int32 kPhysicalVariantCacheBit = 1 << 14;
     constexpr int32 kPhysicalIdentityFoldingBit = 1 << 15;
     if (!plan || (plan->optimizationMask & kPhysicalVariantCacheBit) == 0) {
@@ -783,21 +776,9 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
     return geometryDrawCompiled(canvas, variant.get(), variantTransform, srcLeft, srcTop,
                                 srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
                                 plan->alphaMask, false, nullptr);
-#else
-    UNUSED(plan)
-    UNUSED(canvas)
-    UNUSED(source)
-    UNUSED(srcLeft)
-    UNUSED(srcTop)
-    UNUSED(srcRight)
-    UNUSED(srcBottom)
-    UNUSED(dstLeft)
-    UNUSED(dstTop)
-    UNUSED(dstRight)
-    UNUSED(dstBottom)
-    return false;
-#endif
 }
+
+#endif
 
 static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, float srcLeft,
                          float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop,
