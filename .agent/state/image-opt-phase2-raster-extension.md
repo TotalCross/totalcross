@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Phase 2 raster extension state
 
-Updated: 2026-09-07T15:08:22-03:00
+Updated: 2026-09-07T15:39:18-03:00
 Branch: `perf/image-opt-phase2-raster`
 Frozen Phase 1 base: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Starting Phase 2 HEAD: `a225d10165b8b60c4bf7bf2f95f5bf3b395f3a92`
@@ -14,14 +14,17 @@ Plan: `.agent/plans/exec-plan-image-opt-phase2-raster-extension-01.md`
 
 ## Active slice
 
-Milestone 0 bootstrap is complete. The branch is at the expected Phase 2 tip,
-and the frozen Phase 1 base is an ancestor. No extension runtime changes have
-been made. Historical Phase 2 evidence remains unchanged.
+Milestone 1 rebaseline is complete. The branch has benchmark workloads for
+physical identity, target color, and physical variants, but no ID 13-15
+runtime changes. Historical Phase 2 evidence remains unchanged.
 
 ## Last completed slice
 
-Bootstrap verified branch ancestry and recorded the pre-extension Phase 2
-state. The continuation skeletons were created in this commit.
+The workloads were committed before implementation. SDK tests and distribution
+build passed, the macOS software-Skia Release build passed, the true-base
+adapter captured frozen Phase 1 S1, and the rebased Phase 2 S2/S3 controls
+passed exact-output and focused correctness checks. S3 was escalated from 60 to
+200 samples because its initial CV was 5.56%; the 200-sample CV was 4.22%.
 
 ## Active paths
 
@@ -44,7 +47,25 @@ Bootstrap checks passed:
 - `git rev-parse HEAD` matched the expected Phase 2 tip;
 - `git merge-base --is-ancestor a8a9480... HEAD` passed.
 
-No build is required for the documentation-only bootstrap milestone.
+Milestone 1 checks passed:
+
+- `./gradlew-agent test --tests 'totalcross.ui.image.*' --no-daemon
+  --console=plain`;
+- `./gradlew-agent dist -x test --no-daemon --console=plain`;
+- macOS software-Skia CMake/Ninja Release build;
+- focused image correctness smokes, including adaptive JPEG tiers and retry,
+  APPLY_COLOR2 parity, opacity invalidation, writePixels parity, and readback
+  parity;
+- integrated S1/S2/S3 workloads with stable pixel, PNG, and color hashes.
+
+The authoritative measurements are in
+`.agent/benchmarks/image-opt-phase2-raster-extension/rebaseline-60/` and
+`rebaseline-200/s3/`. S1 uses frozen runtime
+`a8a9480bd61aa510de423569af494d8dde69e8f2` with harness source revision
+`25a43c0d55bd8550fef3e992e212da9fd2d57d15` and adapter digest
+`69383c1689963b04e1a94e2a0403a024a6c249105683924fab5b8572c496edf9`.
+S2/S3 use production revision
+`25a43c0d55bd8550fef3e992e212da9fd2d57d15`.
 
 ## Deferred validation
 
@@ -66,8 +87,8 @@ No blockers. Existing unrelated untracked files under `.agent`, `scripts`,
 
 ## Next concrete action
 
-Create the physical-identity, target-color, and physical-variant benchmark
-workloads before implementing controls 13-15, then commit only those sources.
+Implement `RasterPhysicalPlan` and ID 15 exactly within the software-raster
+draw path, then run the focused identity smokes and S2/S3 comparison.
 
 ## Resume command
 
