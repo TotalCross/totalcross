@@ -78,7 +78,7 @@ public class ImageRasterVariantBenchmarkApp extends MainWindow {
   }
 
   private static void runCase(String testCase, Image source, Image repeated, Image alternate,
-      Graphics canvas, Graphics alternateCanvas) {
+      Graphics canvas, Graphics alternateCanvas) throws Exception {
     if ("first".equals(testCase)) {
       for (int i = 0; i < DRAWS_PER_SAMPLE; i++) {
         Image fresh = source.getSmoothScaledInstance(100, 100);
