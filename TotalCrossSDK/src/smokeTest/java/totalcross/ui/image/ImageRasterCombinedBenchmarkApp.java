@@ -165,9 +165,9 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
     Image variantTarget = createTarget(100, 100, 2, 1);
     Graphics variantCanvas = requireGraphics(variantTarget);
     drawBatch(variantCanvas, variant, 4);
+    int[] variantPixels = variantTarget.getPixels();
     ImageRasterBenchmarkSupport.mutateDeferredRootForTest(variant, variantTarget.getContentScale());
     drawBatch(variantCanvas, variant, 2);
-    int[] variantPixels = variantTarget.getPixels();
     return new Result(pixels, stream.getBuffer(), stream.getPos(), colorPixels,
         identityPixels, variantPixels);
   }
