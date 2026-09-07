@@ -152,7 +152,7 @@ Do not implement:
 - [x] Milestone 0: bootstrap plan-2 state and add benchmark harness/workflow.
 - [x] Milestone 1: collect macOS and native Windows/Linux benchmark evidence.
 - [x] Milestone 2: apply fixed decision rule and clean duplicate macro defaults.
-- [ ] Milestone 3: final macOS validation and master/rebase handoff.
+- [x] Milestone 3: final macOS validation and master/rebase handoff.
 
 ## Benchmark Design Contract
 
@@ -451,8 +451,15 @@ local changes.
 
 ## Outcomes & Retrospective
 
-Populate only at milestone boundaries with concise factual results and evidence
-paths. Distinguish measured results from historical expectations.
+Milestone 0 delivered a standalone checksum-checked benchmark and a temporary
+four-runner native workflow. Milestone 1 recorded all required 60/200 paired
+samples for three sizes on macOS arm64 and native Linux/Windows x86-64/ARM64;
+the raw and summary artifacts are committed under the benchmark artifact path.
+Milestone 2 retained the current native-swap policy under rule 4 because the
+Windows ARM64 win and Linux x86-64 regression materially conflict, and removed
+duplicate defaults from `skia.cpp`. Milestone 3 passed the focused macOS
+software-Skia surface test and completed the handoff report. Measurements are
+microbenchmark evidence, not end-to-end image-performance claims.
 
 ## Revision Note
 
