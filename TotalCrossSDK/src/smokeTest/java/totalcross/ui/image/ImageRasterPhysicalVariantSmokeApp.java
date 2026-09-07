@@ -21,11 +21,15 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
       ImageRasterBenchmarkSupport.require("repeat".equals(testCase) || "identity".equals(testCase)
           || "replace".equals(testCase) || "mutation".equals(testCase) || "crop".equals(testCase)
           || "alpha".equals(testCase) || "hwscale".equals(testCase)
-          || "rotation".equals(testCase), "invalid case");
+          || "rotation".equals(testCase) || "combined".equals(testCase), "invalid case");
       ImageRasterBenchmarkSupport.configure(scenario,
           ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
       if ("identity".equals(testCase) && "post-enabled".equals(scenario)) {
         ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
+            ImageOptimizationSettings.ENABLED);
+      }
+      if ("combined".equals(testCase) && "post-enabled".equals(scenario)) {
+        ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
             ImageOptimizationSettings.ENABLED);
       }
       Image source = source("identity".equals(testCase));
@@ -37,6 +41,10 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
       } else if ("rotation".equals(testCase)) {
         image = source.getRotatedScaledInstance(50, 90, 0);
         destination = Image.createLogical(200, 200, 2);
+      } else if ("combined".equals(testCase)) {
+        image = source.getSmoothScaledInstance(100, 100);
+        destination = Image.createTestRaster(100, 100, 2,
+            NativeImageBacking.TEST_COLOR_BGRA8888);
       } else {
         image = source.getSmoothScaledInstance(100, 100);
         destination = Image.createLogical(100, 100, 2);
@@ -135,6 +143,16 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(lookups == 2 && hits == 0 && misses == 2
           && materializations == 1 && evictions == 0 && bytes == 160000,
           "mutated physical variant counters" + counters());
+    } else if ("combined".equals(testCase)) {
+      ImageRasterBenchmarkSupport.require(lookups == 3 && hits == 1 && misses == 2
+          && materializations == 1 && evictions == 0 && bytes == 160000,
+          "combined physical variant counters" + counters());
+      ImageRasterBenchmarkSupport.require(NativeImageBacking.targetColorAttemptsForTest() == 3
+          && NativeImageBacking.targetColorMaterializationsForTest() == 0
+          && NativeImageBacking.targetColorHitsForTest() == 0
+          && NativeImageBacking.targetColorFallbacksForTest() == 3
+          && NativeImageBacking.targetColorConvertedBytesForTest() == 0,
+          "combined target color counters");
     } else {
       ImageRasterBenchmarkSupport.require(lookups == 3 && hits == 1 && misses == 2
           && materializations == 1 && evictions == 0 && bytes == 160000,
