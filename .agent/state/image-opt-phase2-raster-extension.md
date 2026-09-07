@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Phase 2 raster extension state
 
-Updated: 2026-09-07T19:07:00-03:00
+Updated: 2026-09-07T19:52:00-03:00
 Branch: `perf/image-opt-phase2-raster`
 Frozen Phase 1 base: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Starting Phase 2 HEAD: `a225d10165b8b60c4bf7bf2f95f5bf3b395f3a92`
@@ -134,6 +134,39 @@ ID 14 S2/S3 captures are under `physical-variant-s2-60/` and
 `physical-variant-s3-60/`; the compact result record is
 `physical-variant-s2-s3-60/results.txt`.
 
+## Extension 03 macOS closeout
+
+The final integrated harness is committed in
+`7700966325b84b876d42822465b0c9a9d5f3b1ae`; the native runtime remains frozen
+at `c6515a8f0`. The frozen S1 true-base adapter used harness revision
+`7700966325b84b876d42822465b0c9a9d5f3b1ae` and adapter digest
+`ff13de81694fc7075602d1194648bc8fd5eaea58357821e952a814974cd950eb`.
+
+The authoritative 60-sample all-eight closeout passed with medians
+912/912/84.5 ms for S1/S2/S3, P95 921/918.05/91.05 ms, CV
+0.516%/0.429%/4.288%, and peak RSS 114432/120656/125712 KiB. All input,
+pixel, encoded-PNG, color, identity, and variant hashes were stable; the
+compact report and raw captures are under
+`.agent/benchmarks/image-opt-phase2-raster-extension/closeout-s1-rerun-60/`,
+`closeout-s2-rerun-60/`, and `closeout-s3-rerun-60/`.
+
+The initial S2/S1 60-sample RSS delta was +5.439%, so the required
+final-runtime pre-vs-disabled control ran for 200 samples. It passed with
+pre median/P95/CV/RSS 918 ms/927 ms/0.716%/114048 KiB and disabled
+920 ms/924 ms/0.395%/113040 KiB: +0.218% elapsed and -0.884% RSS. Matched
+live diagnostics measured 83.6M versus 86.5M peak physical footprint, below
+the 5% threshold. The enabled 200-sample confirmation completed all samples
+with stable hashes at median 87 ms, P95 94 ms, and CV 6.086%; the plan's
+200-sample cap was reached.
+
+The cross-feature correctness matrix passed against the exact final dylib,
+including adaptive JPEG and targeted decode, identity folding, physical
+variant reuse/replacement/mutation/decode-generation invalidation, final
+target-color conversion and fallback guards, canonical readback/encoding/
+getGraphics barriers, eager JPEG APIs, ordinary direct draw, APPLY_COLOR2,
+and zero-copy failure/retry. Full details and artifact paths are in
+`closeout-s1-s2-s3-results.txt`.
+
 ## Deferred validation
 
 Android GPU validation is pending in extension 03 and must not trigger an
@@ -161,8 +194,9 @@ No blockers. Existing unrelated untracked files under `.agent`, `scripts`,
 
 ## Next concrete action
 
-Execute `.agent/plans/exec-plan-image-opt-phase2-raster-extension-03.md` from
-the frozen extension-02 tip, beginning with the final macOS closeout contract.
+Complete the extension-03 Android availability check without building Android,
+then finalize the Phase 2 handoff. Phase 3 must resolve and record the exact
+frozen tip of `perf/image-opt-phase2-raster` when it starts.
 
 ## Resume command
 

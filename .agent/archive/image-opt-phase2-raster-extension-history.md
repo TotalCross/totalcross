@@ -143,3 +143,41 @@ still wins before physical variant admission, and all additive S1/S2/S3
 captures remain immutable. Extension 03 is responsible for the combined
 all-eight macOS closeout, conditional Android GPU check without an Android
 build, and final Phase 3 compact-source handoff.
+
+## 2026-09-07 — Extension 03 integrated macOS closeout
+
+The final integrated workload was committed in harness revision
+`7700966325b84b876d42822465b0c9a9d5f3b1ae`; native runtime behavior remained
+frozen at `c6515a8f0`. S1 used frozen Phase 1 runtime
+`a8a9480bd61aa510de423569af494d8dde69e8f2` through the committed true-base
+adapter with digest
+`ff13de81694fc7075602d1194648bc8fd5eaea58357821e952a814974cd950eb`.
+
+| Scenario | Samples | Median | P95 | CV | Peak RSS |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| S1 frozen true base | 60 | 912 ms | 921 ms | 0.516% | 114432 KiB |
+| S2 all disabled | 60 | 912 ms | 918.05 ms | 0.429% | 120656 KiB |
+| S3 controls 0-4,13-15 | 60 | 84.5 ms | 91.05 ms | 4.288% | 125712 KiB |
+
+Hashes for JPEG, PNG, pixels, encoding, color, identity, and physical variant
+were stable across all scenarios. S2's initial +5.439% RSS delta triggered
+the required final-runtime control. At 200 samples, pre was 918 ms median,
+927 ms P95, 0.716% CV, and 114048 KiB; disabled was 920 ms, 924 ms, 0.395%
+CV, and 113040 KiB. The final deltas were +0.218% elapsed and -0.884% RSS.
+Matched diagnostics recorded 83.6M versus 86.5M peak physical footprint.
+
+An enabled 200-sample confirmation completed with stable hashes at 87 ms
+median, 94 ms P95, 6.086% CV, and 135664 KiB peak RSS. The 200-sample cap was
+reached after the prescribed 60-sample escalation. The final S3 counters prove
+zero-copy decode, opacity metadata, writePixels, row readback, direct-color
+materialization, target-color fallback guards, and bounded physical variant
+reuse in the integrated workload. Compact evidence is under
+`.agent/benchmarks/image-opt-phase2-raster-extension/closeout-*` and the
+matched `diagnostics-*` directories; verbose logs remain uncommitted.
+
+The final macOS correctness matrix passed against the exact Release dylib,
+covering adaptive/targeted JPEG, decode retry, geometry/materialization,
+opacity/readback/writePixels, identity guards, target formats and mutation,
+physical variant cases including replacement and decode-generation invalidation,
+and the combined ID13+ID14 path. Android availability and the Phase 3 handoff
+remain for the next extension-03 milestones; no Android build is permitted.
