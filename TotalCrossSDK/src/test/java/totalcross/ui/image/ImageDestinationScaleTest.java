@@ -4,6 +4,7 @@
 
 package totalcross.ui.image;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -14,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -234,6 +236,95 @@ class ImageDestinationScaleTest {
   }
 
   @Test
+  void targetedBackingPublicationWaitsForSuccessfulInitialization() throws Exception {
+    Image.resetTargetedDecodeInvocationCountForTest();
+    Image image = new Image(jpeg(1024, 768)).getSmoothScaledInstance(64, 48);
+    EncodedImageSource source = (EncodedImageSource) image.pipelineForSmoke().root();
+
+    Image.failNextTargetedDecodeInitializationForTest();
+    ImageException failure = assertThrows(ImageException.class, () -> image.resolveForDrawing(1));
+    assertTrue(failure instanceof TransientImageMaterializationException);
+    assertEquals(0, source.decodedGeneration());
+    assertEquals(0, source.decodedDenominator());
+    assertNull(source.decodedBackingForReuse(8));
+
+    Image retry = image.resolveForDrawing(1);
+    assertEquals(64, retry.getPixelWidth());
+    assertEquals(1, source.decodedGeneration());
+    assertEquals(8, source.decodedDenominator());
+    assertEquals(2, Image.targetedDecodeInvocationCountForTest());
+  }
+
+  @Test
+  void targetedJpegRootMetadataUsesTheSelectedDenominatorForFreshAndCachedBacking() throws Exception {
+    byte[] encoded = jpeg(161, 121);
+    int[] targetWidths = {80, 40, 20};
+    int[] targetHeights = {60, 30, 15};
+    int[] denominators = {2, 4, 8};
+
+    for (int i = 0; i < denominators.length; i++) {
+      Image base = new Image(encoded);
+      Image firstPipeline = base.getSmoothScaledInstance(targetWidths[i], targetHeights[i]);
+      EncodedImageSource source = (EncodedImageSource) firstPipeline.pipelineForSmoke().root();
+      Image fresh = materializeEncodedRoot(firstPipeline);
+
+      assertEquals(denominators[i], source.decodedDenominator());
+      assertEquals((161 + denominators[i] - 1) / denominators[i], fresh.getPixelWidth());
+      assertEquals((121 + denominators[i] - 1) / denominators[i], fresh.getPixelHeight());
+      assertEquals(161, fresh.getWidth());
+      assertEquals(121, fresh.getHeight());
+      assertEquals(1.0 / denominators[i], fresh.getContentScale(), 0.0000001);
+
+      Image cachedPipeline = base.getSmoothScaledInstance(targetWidths[i], targetHeights[i]);
+      Image cached = materializeEncodedRoot(cachedPipeline);
+      assertEquals(1, source.decodedGeneration());
+      assertEquals(fresh.getContentScale(), cached.getContentScale(), 0.0000001);
+      assertEquals(fresh.getWidth(), cached.getWidth());
+      assertEquals(fresh.getHeight(), cached.getHeight());
+      assertArrayEquals(fresh.getPixels(), cached.getPixels());
+    }
+  }
+
+  @Test
+  void targetedJpegSmoothFamiliesMatchIndependentFullDecodeReference() throws Exception {
+    byte[] encoded = jpeg(160, 120);
+    assertSmoothParity(new Image(encoded).getSmoothScaledInstance(20, 15).resolveForDrawing(1),
+        fullSmoothReference(encoded, 20, 15));
+    assertSmoothParity(new Image(encoded).getSmoothScaledInstance(40, 30).resolveForDrawing(1),
+        fullSmoothReference(encoded, 40, 30));
+    assertSmoothParity(new Image(encoded).getHwScaledInstance(40, 30).resolveForDrawing(1),
+        fullSmoothReference(encoded, 40, 30));
+    Image actualAlpha = new Image(encoded).getSmoothScaledInstance(40, 30).getAlphaInstance(-40)
+        .resolveForDrawing(1);
+    Image expectedAlpha = fullSmoothAlphaReference(encoded, 40, 30);
+    assertSmoothParity(actualAlpha, expectedAlpha);
+    assertExactAlpha(actualAlpha, expectedAlpha);
+    assertSmoothParity(new Image(encoded).getClippedInstance(0, 0, 80, 60)
+        .getSmoothScaledInstance(40, 30).resolveForDrawing(1), fullCropSmoothReference(encoded));
+    assertSmoothParity(new Image(encoded).getSmoothScaledInstance(80, 60)
+        .getSmoothScaledInstance(40, 30).resolveForDrawing(1), fullSmoothTwiceReference(encoded));
+
+    byte[] oddEncoded = blockJpeg(161, 121);
+    Image oddActual = new Image(oddEncoded).getSmoothScaledInstance(20, 15).resolveForDrawing(1);
+    assertSmoothParity(oddActual, fullSmoothReference(oddEncoded, 20, 15));
+  }
+
+  @Test
+  void nearestAndRotateScaleStillForceFullDecode() throws Exception {
+    byte[] encoded = jpeg(161, 121);
+
+    Image.resetImageOperationAccountingForTest();
+    new Image(encoded).getScaledInstance(40, 30).resolveForDrawing(1);
+    assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+
+    Image.resetImageOperationAccountingForTest();
+    new Image(encoded).getRotatedScaledInstance(100, 37, 0xFF123456).resolveForDrawing(1);
+    assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+  }
+
+  @Test
   void targetedImageIoInfrastructureFailureIsTransientAndRetried() throws Exception {
     Image.resetTargetedDecodeInvocationCountForTest();
     Image image = new Image(jpeg(1024, 768)).getSmoothScaledInstance(64, 48);
@@ -295,5 +386,91 @@ class ImageDestinationScaleTest {
     System.arraycopy(source, 0, result, 0, entropy);
     System.arraycopy(invalidEntropyTail, 0, result, entropy, invalidEntropyTail.length);
     return result;
+  }
+
+  private static Image materializeEncodedRoot(Image image) throws Exception {
+    Method materialize = Image.class.getDeclaredMethod("materializePipelineRoot", ImagePipeline.class,
+        ArrayList.class, double.class);
+    materialize.setAccessible(true);
+    return (Image) materialize.invoke(image, image.pipelineForSmoke(), new ArrayList<ImagePipeline>(), 1.0);
+  }
+
+  private static Image fullSmoothReference(byte[] encoded, int width, int height) throws Exception {
+    Image full = fullDecoded(encoded);
+    return full.getSmoothScaledInstance(width, height).resolveForDrawing(1);
+  }
+
+  private static Image fullSmoothAlphaReference(byte[] encoded, int width, int height) throws Exception {
+    Image full = fullDecoded(encoded);
+    return full.getSmoothScaledInstance(width, height).getAlphaInstance(-40).resolveForDrawing(1);
+  }
+
+  private static Image fullCropSmoothReference(byte[] encoded) throws Exception {
+    Image full = fullDecoded(encoded);
+    return full.getClippedInstance(0, 0, 80, 60).getSmoothScaledInstance(40, 30).resolveForDrawing(1);
+  }
+
+  private static Image fullSmoothTwiceReference(byte[] encoded) throws Exception {
+    Image full = fullDecoded(encoded);
+    return full.getSmoothScaledInstance(80, 60).getSmoothScaledInstance(40, 30).resolveForDrawing(1);
+  }
+
+  private static Image fullDecoded(byte[] encoded) throws Exception {
+    Image full = new Image(encoded);
+    full.getPixels();
+    assertNull(full.pipelineForSmoke());
+    return full;
+  }
+
+  private static void assertExactAlpha(Image actual, Image expected) {
+    int[] actualPixels = actual.getPixels();
+    int[] expectedPixels = expected.getPixels();
+    assertEquals(expectedPixels.length, actualPixels.length);
+    for (int i = 0; i < actualPixels.length; i++) {
+      assertEquals(expectedPixels[i] >>> 24, actualPixels[i] >>> 24, "alpha at pixel " + i);
+    }
+  }
+
+  private static byte[] blockJpeg(int width, int height) throws Exception {
+    BufferedImage source = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        int blockX = x / 64;
+        int blockY = y / 64;
+        int red = 40 + blockX * 32 + blockY * 16;
+        int green = 48 + blockX * 24 + blockY * 32;
+        int blue = 56 + blockX * 16 + blockY * 24;
+        source.setRGB(x, y, (red << 16) | (green << 8) | blue);
+      }
+    }
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    assertEquals(true, ImageIO.write(source, "jpg", output));
+    return output.toByteArray();
+  }
+
+  private static void assertSmoothParity(Image actual, Image expected) {
+    assertEquals(expected.getPixelWidth(), actual.getPixelWidth());
+    assertEquals(expected.getPixelHeight(), actual.getPixelHeight());
+    int[] actualPixels = actual.getPixels();
+    int[] expectedPixels = expected.getPixels();
+    assertEquals(expectedPixels.length, actualPixels.length);
+    int maxChannelDifference = 0;
+    for (int i = 0; i < actualPixels.length; i++) {
+      int actualPixel = actualPixels[i];
+      int expectedPixel = expectedPixels[i];
+      maxChannelDifference = Math.max(maxChannelDifference,
+          Math.max(Math.abs(((actualPixel >> 16) & 0xFF) - ((expectedPixel >> 16) & 0xFF)),
+              Math.max(Math.abs(((actualPixel >> 8) & 0xFF) - ((expectedPixel >> 8) & 0xFF)),
+                  Math.abs((actualPixel & 0xFF) - (expectedPixel & 0xFF)))));
+    }
+    assertTrue(maxChannelDifference <= 64);
+    int[] focusedPixels = {0, actualPixels.length / 3, actualPixels.length / 2, actualPixels.length - 1};
+    for (int index : focusedPixels) {
+      int actualPixel = actualPixels[index];
+      int expectedPixel = expectedPixels[index];
+      assertTrue(Math.abs(((actualPixel >> 16) & 0xFF) - ((expectedPixel >> 16) & 0xFF)) <= 64);
+      assertTrue(Math.abs(((actualPixel >> 8) & 0xFF) - ((expectedPixel >> 8) & 0xFF)) <= 64);
+      assertTrue(Math.abs((actualPixel & 0xFF) - (expectedPixel & 0xFF)) <= 64);
+    }
   }
 }
