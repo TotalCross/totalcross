@@ -29,34 +29,35 @@
 namespace {
 
 using Clock = std::chrono::steady_clock;
-using SwapFunction = uint32_t (*)(uint32_t) noexcept;
 
 volatile uint64_t checksum_sink = 0;
 
-NATIVE_SWAP_NOINLINE uint32_t native_swap32(uint32_t value) noexcept {
+NATIVE_SWAP_NOINLINE void native_swap_buffer(const uint32_t* source,
+                                             uint32_t* destination,
+                                             size_t pixel_count) noexcept {
 #if defined(_MSC_VER)
-    return _byteswap_ulong(value);
+    for (size_t index = 0; index < pixel_count; ++index) {
+        destination[index] = _byteswap_ulong(source[index]);
+    }
 #elif defined(__clang__) || defined(__GNUC__)
-    return __builtin_bswap32(value);
+    for (size_t index = 0; index < pixel_count; ++index) {
+        destination[index] = __builtin_bswap32(source[index]);
+    }
 #else
 #error "native_swap_benchmark requires GCC, Clang, or MSVC"
 #endif
 }
 
-NATIVE_SWAP_NOINLINE uint32_t portable_swap32(uint32_t value) noexcept {
-    return (((value >> 24) & 0xFFu)) |
-           ((((value >> 16) & 0xFFu) << 8) |
-            (((value >> 8) & 0xFFu) << 16) | ((value & 0xFFu) << 24));
-}
-
-size_t parse_count(const char* text, const char* name, bool allow_zero = false) {
-    char* end = nullptr;
-    const unsigned long long parsed = std::strtoull(text, &end, 10);
-    if (end == text || *end != '\0' || (!allow_zero && parsed == 0) ||
-        parsed > std::numeric_limits<size_t>::max()) {
-        throw std::invalid_argument(std::string("invalid ") + name);
+NATIVE_SWAP_NOINLINE void portable_swap_buffer(const uint32_t* source,
+                                               uint32_t* destination,
+                                               size_t pixel_count) noexcept {
+    for (size_t index = 0; index < pixel_count; ++index) {
+        const uint32_t value = source[index];
+        destination[index] = (((value >> 24) & 0xFFu)) |
+                             ((((value >> 16) & 0xFFu) << 8) |
+                              (((value >> 8) & 0xFFu) << 16) |
+                              ((value & 0xFFu) << 24));
     }
-    return static_cast<size_t>(parsed);
 }
 
 uint64_t checksum(const std::vector<uint32_t>& values) noexcept {
@@ -68,26 +69,40 @@ uint64_t checksum(const std::vector<uint32_t>& values) noexcept {
     return result;
 }
 
-void swap_buffer(const std::vector<uint32_t>& source,
-                 std::vector<uint32_t>& destination,
-                 SwapFunction swap_function) noexcept {
-    for (size_t index = 0; index < source.size(); ++index) {
-        destination[index] = swap_function(source[index]);
-    }
-}
-
-uint64_t measure(const std::vector<uint32_t>& source,
-                 std::vector<uint32_t>& destination,
-                 SwapFunction swap_function,
-                 uint64_t& result_checksum) noexcept {
+uint64_t measure_native(const std::vector<uint32_t>& source,
+                        std::vector<uint32_t>& destination,
+                        uint64_t& result_checksum) noexcept {
     std::fill(destination.begin(), destination.end(), 0xA5A5A5A5u);
     const auto start = Clock::now();
-    swap_buffer(source, destination, swap_function);
+    native_swap_buffer(source.data(), destination.data(), source.size());
     const auto finish = Clock::now();
     result_checksum = checksum(destination);
     checksum_sink ^= result_checksum;
     return static_cast<uint64_t>(
         std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count());
+}
+
+uint64_t measure_portable(const std::vector<uint32_t>& source,
+                          std::vector<uint32_t>& destination,
+                          uint64_t& result_checksum) noexcept {
+    std::fill(destination.begin(), destination.end(), 0xA5A5A5A5u);
+    const auto start = Clock::now();
+    portable_swap_buffer(source.data(), destination.data(), source.size());
+    const auto finish = Clock::now();
+    result_checksum = checksum(destination);
+    checksum_sink ^= result_checksum;
+    return static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count());
+}
+
+size_t parse_count(const char* text, const char* name, bool allow_zero = false) {
+    char* end = nullptr;
+    const unsigned long long parsed = std::strtoull(text, &end, 10);
+    if (end == text || *end != '\0' || (!allow_zero && parsed == 0) ||
+        parsed > std::numeric_limits<size_t>::max()) {
+        throw std::invalid_argument(std::string("invalid ") + name);
+    }
+    return static_cast<size_t>(parsed);
 }
 
 std::string compiler_version() {
@@ -230,11 +245,11 @@ int main(int argc, char** argv) {
             uint64_t native_checksum = 0;
             uint64_t portable_checksum = 0;
             if ((sample & 1u) == 0) {
-                measure(source, destination, native_swap32, native_checksum);
-                measure(source, destination, portable_swap32, portable_checksum);
+                measure_native(source, destination, native_checksum);
+                measure_portable(source, destination, portable_checksum);
             } else {
-                measure(source, destination, portable_swap32, portable_checksum);
-                measure(source, destination, native_swap32, native_checksum);
+                measure_portable(source, destination, portable_checksum);
+                measure_native(source, destination, native_checksum);
             }
             if (native_checksum != portable_checksum) {
                 throw std::runtime_error("checksum mismatch during warmup");
@@ -258,11 +273,11 @@ int main(int argc, char** argv) {
             uint64_t native_time = 0;
             uint64_t portable_time = 0;
             if ((sample & 1u) == 0) {
-                native_time = measure(source, destination, native_swap32, native_checksum);
-                portable_time = measure(source, destination, portable_swap32, portable_checksum);
+                native_time = measure_native(source, destination, native_checksum);
+                portable_time = measure_portable(source, destination, portable_checksum);
             } else {
-                portable_time = measure(source, destination, portable_swap32, portable_checksum);
-                native_time = measure(source, destination, native_swap32, native_checksum);
+                portable_time = measure_portable(source, destination, portable_checksum);
+                native_time = measure_native(source, destination, native_checksum);
             }
             checksums_agree = checksums_agree && native_checksum == portable_checksum;
             native_times.push_back(native_time);
