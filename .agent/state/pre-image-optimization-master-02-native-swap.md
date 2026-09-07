@@ -6,8 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Pre-image optimization master 02 native swap state
 
-- Active milestone/slice: Milestone 3 — final validation and master/rebase
-  handoff.
+- Active milestone/slice: Complete — final validation and master/rebase handoff.
 - Branch: `fix/pre-image-optimization-master`.
 - PLAN1_IMPLEMENTATION_HEAD:
   `8156f62f9cdf41b6d2cd2e18b7ba4b4704ad98b2`.
@@ -16,15 +15,17 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Prerequisite: plan-1 implementation is an ancestor; the only post-
   implementation commit changes the documented plan/state/evidence/report
   handoff paths.
-- Last commit: `4e29d17f1` (`refactor(skia): centralize legacy macro defaults`).
+- Last content commit: `94656e8e6` (`docs(image): complete pre-optimization
+  master fixes`).
+- Final handoff content is committed; the bookkeeping state commit follows.
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
 - Active artifact path:
   `.agent/benchmarks/pre-image-optimization-master/native-swap/`.
-- Next exact action: update the final plan/report with the matrix, policy,
-  production cleanup, validations, and final branch handoff; inspect the diff
-  from plan-1 BASE_SHA; then create the final factual handoff commit.
+- Next exact action: verify the final local HEAD and scoped worktree state;
+  then mark the execution goal complete. No further implementation action is
+  required.
 - Benchmark jobs/results collected: local macOS arm64 and workflow run
   `34070711950` on native Linux x86-64/ARM64 and Windows x86-64/ARM64; all
   60/200 checkpoints for 512x512, 1920x1080, and 3840x2160 are committed under
@@ -37,6 +38,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   software-Skia with `TC_BUILD_NATIVE_STARTUP_TEST=ON`, built
   `skia_surface_test`, and ran it successfully. No Windows/Linux TotalCross
   build is permitted here.
+- Final audit completed: plan-1 BASE_SHA diff is limited to plan-1 correctness
+  work plus native-swap benchmark/evidence, macro cleanup, and handoff
+  documentation; workflow is dispatch-only; all staged checks passed.
 - Decisions still active: retain `USE_NATIVE_SWAP` and its current defaults due
   to the Windows ARM64/Linux x86-64 conflict; keep `skia_internal.h` as the
   sole default-definition site for surviving flags; leave opacity, writePixels,
@@ -44,5 +48,5 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Blockers: none.
 - Deliberate out-of-scope local files: unrelated untracked repository artifacts
   and generated outputs shown by scoped status; do not stage them.
-- Resume command: read this state, inspect the active benchmark paths, then
-  perform the next exact action above.
+- Resume command: none; if resumed, verify `git rev-parse HEAD` against the
+  final response and leave the branch unmerged and unrebased.
