@@ -6,9 +6,6 @@ name: native swap benchmark
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - fix/pre-image-optimization-master
 
 permissions:
   contents: read
