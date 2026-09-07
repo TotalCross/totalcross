@@ -31,7 +31,8 @@ static bool hasDestinationScaledGeometry(const SkiaImageDrawPlanData* plan, int 
     return false;
 }
 
-static bool preservesOpaquePixels(const SkiaImageDrawPlanData* plan, const NativeImageBackingRecord* source,
+static bool preservesOpaquePixels(const SkiaImageDrawPlanData* plan,
+                                  const NativeImageBackingRecord* source,
                                   int prefixOperationCount) {
     if (!plan || !source || source->opacity != SKIA_IMAGE_OPACITY_OPAQUE
         || plan->alphaMask != 255 || plan->materializeAlphaMask != 255) {
@@ -48,10 +49,19 @@ static bool preservesOpaquePixels(const SkiaImageDrawPlanData* plan, const Nativ
 
 }
 
-int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan) {
+struct GeometryMaterializationDimensions {
+    int32 physicalWidth;
+    int32 physicalHeight;
+    int32 fullWidth;
+    int prefixOperationCount;
+    bool frameLayout;
+};
+
+static bool geometryMaterializationDimensions(const SkiaImageDrawPlanData* plan,
+                                             GeometryMaterializationDimensions* result) {
     if (!plan || plan->outputWidth <= 0 || plan->outputHeight <= 0 || plan->outputFrameCount <= 0
         || !std::isfinite(plan->outputContentScale) || plan->outputContentScale <= 0) {
-        return 0;
+        return false;
     }
     const bool frameLayout = plan->outputFrameCount > 1 && plan->outputWidthOfAllFrames > 0
         && plan->operations && plan->operationCount > 0
@@ -76,39 +86,61 @@ int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* pla
         || !std::isfinite(physicalFullWidth) || physicalFrameWidth <= 0 || physicalHeight <= 0
         || physicalFullWidth > std::numeric_limits<int32>::max()
         || physicalHeight > std::numeric_limits<int32>::max()) {
-        return 0;
+        return false;
+    }
+    result->physicalWidth = static_cast<int32>(physicalFrameWidth);
+    result->physicalHeight = static_cast<int32>(physicalHeight);
+    result->fullWidth = static_cast<int32>(physicalFullWidth);
+    result->prefixOperationCount = prefixOperationCount;
+    result->frameLayout = frameLayout;
+    return true;
+}
+
+static bool supportedVariantColorType(SkColorType colorType) {
+    return colorType == kRGBA_8888_SkColorType || colorType == kBGRA_8888_SkColorType
+        || colorType == kRGB_565_SkColorType;
+}
+
+static sk_sp<SkImage> materializeGeometryImage(const SkiaImageDrawPlanData* plan,
+                                                SkColorType colorType,
+                                                GeometryMaterializationDimensions* dimensions) {
+    if (!dimensions || !geometryMaterializationDimensions(plan, dimensions)
+        || !supportedVariantColorType(colorType)) {
+        return nullptr;
     }
     NativeImageBackingRecord* source = findBacking(plan->rootHandle);
     if (!source) {
-        return 0;
+        return nullptr;
     }
     try {
         sk_sp<SkImage> image = source->snapshot();
         if (!image) {
-            return 0;
+            return nullptr;
         }
-        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
-        backing->surface = SkSurface::MakeRaster(rasterInfo(static_cast<int32>(physicalFullWidth),
-                                                             static_cast<int32>(physicalHeight)));
-        if (!backing->surface) {
-            return 0;
+        const SkAlphaType alphaType = colorType == kRGB_565_SkColorType
+            ? kOpaque_SkAlphaType : kUnpremul_SkAlphaType;
+        const SkImageInfo info = SkImageInfo::Make(dimensions->fullWidth,
+                                                  dimensions->physicalHeight, colorType, alphaType);
+        sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+        if (!surface) {
+            return nullptr;
         }
-        SkCanvas* target = backing->surface->getCanvas();
+        SkCanvas* target = surface->getCanvas();
         target->clear(SK_ColorTRANSPARENT);
-        if (frameLayout && prefixOperationCount > 0 && plan->dimensions) {
+        if (dimensions->frameLayout && dimensions->prefixOperationCount > 0 && plan->dimensions) {
             SkiaImageDrawPlanData prefix = *plan;
-            prefix.operationCount = prefixOperationCount;
-            prefix.outputWidth = plan->dimensions[(prefixOperationCount - 1) * 2];
-            prefix.outputHeight = plan->dimensions[(prefixOperationCount - 1) * 2 + 1];
+            prefix.operationCount = dimensions->prefixOperationCount;
+            prefix.outputWidth = plan->dimensions[(dimensions->prefixOperationCount - 1) * 2];
+            prefix.outputHeight = plan->dimensions[(dimensions->prefixOperationCount - 1) * 2 + 1];
             prefix.outputFrameCount = 1;
             prefix.outputWidthOfAllFrames = prefix.outputWidth;
             GeometryTransform transform;
             if (!skia_image_geometry_compile(&prefix, -1, &transform)) {
-                return 0;
+                return nullptr;
             }
             SkiaImageDrawColorFilters colorFilters;
             if (!skia_image_draw_color_filters(&prefix, &colorFilters)) {
-                return 0;
+                return nullptr;
             }
             target->scale(static_cast<float>(plan->outputContentScale),
                           static_cast<float>(plan->outputContentScale));
@@ -117,7 +149,7 @@ int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* pla
                 0, 0, static_cast<float>(prefix.outputWidth), static_cast<float>(prefix.outputHeight),
                 plan->materializeAlphaMask,
                 std::abs(plan->outputContentScale - 1.0) < 0.000001, &colorFilters)) {
-                return 0;
+                return nullptr;
             }
         } else {
             target->scale(static_cast<float>(plan->outputContentScale),
@@ -133,17 +165,49 @@ int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* pla
                         static_cast<float>((frame + 1) * plan->outputWidth),
                         static_cast<float>(plan->outputHeight), plan->materializeAlphaMask,
                         std::abs(plan->outputContentScale - 1.0) < 0.000001, &colorFilters)) {
-                    return 0;
+                    return nullptr;
                 }
             }
         }
-        backing->width = static_cast<int32>(physicalFullWidth);
-        backing->height = static_cast<int32>(physicalHeight);
-        if (preservesOpaquePixels(plan, source, prefixOperationCount)) {
+        return surface->makeImageSnapshot();
+    } catch (const std::bad_alloc&) {
+        return nullptr;
+    }
+}
+
+int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan) {
+    GeometryMaterializationDimensions dimensions;
+    sk_sp<SkImage> image = materializeGeometryImage(plan, kRGBA_8888_SkColorType, &dimensions);
+    if (!image) {
+        return 0;
+    }
+    NativeImageBackingRecord* source = findBacking(plan->rootHandle);
+    if (!source) {
+        return 0;
+    }
+    try {
+        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
+        backing->image = std::move(image);
+        backing->width = dimensions.fullWidth;
+        backing->height = dimensions.physicalHeight;
+        if (preservesOpaquePixels(plan, source, dimensions.prefixOperationCount)) {
             backing->opacity = SKIA_IMAGE_OPACITY_OPAQUE;
         }
         return registerBacking(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
     }
+}
+
+sk_sp<SkImage> skia_image_backing_materialize_geometry_variant(
+    const SkiaImageDrawPlanData* plan, SkColorType colorType, int32* width, int32* height) {
+    GeometryMaterializationDimensions dimensions;
+    sk_sp<SkImage> image = materializeGeometryImage(plan, colorType, &dimensions);
+    if (width) {
+        *width = image ? dimensions.fullWidth : 0;
+    }
+    if (height) {
+        *height = image ? dimensions.physicalHeight : 0;
+    }
+    return image;
 }

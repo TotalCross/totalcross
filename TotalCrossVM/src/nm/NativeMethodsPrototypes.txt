@@ -142,6 +142,12 @@ TC_API void tuiNIB_targetColorMatsTest(NMParams p);
 TC_API void tuiNIB_targetColorHitsTest(NMParams p);
 TC_API void tuiNIB_targetColorFallbacksTest(NMParams p);
 TC_API void tuiNIB_targetColorBytesTest(NMParams p);
+TC_API void tuiNIB_variantLookupsTest(NMParams p);
+TC_API void tuiNIB_variantHitsTest(NMParams p);
+TC_API void tuiNIB_variantMissesTest(NMParams p);
+TC_API void tuiNIB_variantMatsTest(NMParams p);
+TC_API void tuiNIB_variantEvictionsTest(NMParams p);
+TC_API void tuiNIB_variantBytesTest(NMParams p);
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p);
 TC_API void tugG_create_g(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
@@ -1191,6 +1197,30 @@ TC_API void tuiNIB_targetColorFallbacksTest(NMParams p) // totalcross/ui/image/N
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_targetColorBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long targetColorBytesTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_variantLookupsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long variantLookupsTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_variantHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long variantHitsTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_variantMissesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long variantMissesTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_variantMatsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long variantMatsTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_variantEvictionsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long variantEvictionsTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_variantBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long variantBytesTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////

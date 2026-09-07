@@ -195,6 +195,12 @@ uint64_t skia_image_backing_target_color_materializations_for_test(void);
 uint64_t skia_image_backing_target_color_hits_for_test(void);
 uint64_t skia_image_backing_target_color_fallbacks_for_test(void);
 uint64_t skia_image_backing_target_color_converted_bytes_for_test(void);
+uint64_t skia_image_backing_physical_variant_lookups_for_test(void);
+uint64_t skia_image_backing_physical_variant_hits_for_test(void);
+uint64_t skia_image_backing_physical_variant_misses_for_test(void);
+uint64_t skia_image_backing_physical_variant_materializations_for_test(void);
+uint64_t skia_image_backing_physical_variant_evictions_for_test(void);
+uint64_t skia_image_backing_physical_variant_bytes_for_test(void);
 #ifdef __cplusplus
 }
 #endif

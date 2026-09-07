@@ -165,6 +165,12 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorHitsTest"), &tuiNIB_targetColorHitsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorFallbacksTest"), &tuiNIB_targetColorFallbacksTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorBytesTest"), &tuiNIB_targetColorBytesTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_variantLookupsTest"), &tuiNIB_variantLookupsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_variantHitsTest"), &tuiNIB_variantHitsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_variantMissesTest"), &tuiNIB_variantMissesTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_variantMatsTest"), &tuiNIB_variantMatsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_variantEvictionsTest"), &tuiNIB_variantEvictionsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_variantBytesTest"), &tuiNIB_variantBytesTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_releaseNativeHandle_l"), &tuiNIB_releaseNativeHandle_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);

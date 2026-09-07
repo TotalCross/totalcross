@@ -9,6 +9,7 @@
 #include "skia_internal.h"
 
 #include <cstdint>
+#include <vector>
 
 namespace skia_image_backing_internal {
 
@@ -32,6 +33,7 @@ struct RasterVariantKey {
     int32 targetHeight = 0;
     int32 targetColorType = 0;
     uint8_t kind = 0;
+    std::vector<uint64_t> geometrySignature;
 
     bool operator==(const RasterVariantKey& other) const {
         return sourceGeneration == other.sourceGeneration
@@ -41,7 +43,8 @@ struct RasterVariantKey {
             && destinationLeft == other.destinationLeft && destinationTop == other.destinationTop
             && destinationRight == other.destinationRight && destinationBottom == other.destinationBottom
             && targetWidth == other.targetWidth && targetHeight == other.targetHeight
-            && targetColorType == other.targetColorType && kind == other.kind;
+            && targetColorType == other.targetColorType && kind == other.kind
+            && geometrySignature == other.geometrySignature;
     }
 };
 
@@ -102,6 +105,10 @@ enum RasterVariantUse : uint8_t {
 RasterVariantUse acquireTargetColorVariant(NativeImageBackingRecord* source,
                                            const RasterVariantKey& key, SkColorType targetColorType,
                                            sk_sp<SkImage>* image);
+RasterVariantUse acquirePhysicalVariant(NativeImageBackingRecord* source,
+                                         const RasterVariantKey& key,
+                                         const SkiaImageDrawPlanData* plan,
+                                         SkColorType targetColorType, sk_sp<SkImage>* image);
 void clearRasterVariant(NativeImageBackingRecord* source);
 
 }

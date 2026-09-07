@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "skia_image_backing_internal.h"
+#include "skia_image_geometry_internal.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -46,6 +47,12 @@ uint64_t targetColorMaterializationsForTest;
 uint64_t targetColorHitsForTest;
 uint64_t targetColorFallbacksForTest;
 uint64_t targetColorConvertedBytesForTest;
+uint64_t physicalVariantLookupsForTest;
+uint64_t physicalVariantHitsForTest;
+uint64_t physicalVariantMissesForTest;
+uint64_t physicalVariantMaterializationsForTest;
+uint64_t physicalVariantEvictionsForTest;
+uint64_t physicalVariantBytesForTest;
 
 uint64_t backingBytes(const NativeImageBackingRecord& backing) {
     return static_cast<uint64_t>(backing.width) * static_cast<uint64_t>(backing.height) * 4;
@@ -448,45 +455,90 @@ void clearRasterVariant(NativeImageBackingRecord* backing) {
     backing->pendingRasterVariantObservations = 0;
 }
 
-RasterVariantUse acquireTargetColorVariant(NativeImageBackingRecord* source,
-                                           const RasterVariantKey& key, SkColorType targetColorType,
-                                           sk_sp<SkImage>* image) {
+template<typename Materializer>
+RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVariantKey& key,
+                                sk_sp<SkImage>* image, Materializer materializer) {
     if (image) {
         image->reset();
     }
     if (!source || !image) {
         return RASTER_VARIANT_FAILED;
     }
+    const bool physical = key.kind == RASTER_VARIANT_PHYSICAL;
+    if (physical) {
+        ++physicalVariantLookupsForTest;
+    }
     if (source->rasterVariant.valid && source->rasterVariant.key == key) {
         *image = source->rasterVariant.image;
-        ++targetColorHitsForTest;
+        if (physical) {
+            ++physicalVariantHitsForTest;
+        } else {
+            ++targetColorHitsForTest;
+        }
         return *image ? RASTER_VARIANT_HIT : RASTER_VARIANT_FAILED;
+    }
+    if (physical) {
+        ++physicalVariantMissesForTest;
     }
 
     if (!source->pendingRasterVariant || !(source->pendingRasterVariantKey == key)) {
         source->pendingRasterVariant = true;
         source->pendingRasterVariantKey = key;
         source->pendingRasterVariantObservations = 1;
-        ++targetColorFallbacksForTest;
+        if (!physical) {
+            ++targetColorFallbacksForTest;
+        }
         return RASTER_VARIANT_OBSERVED;
     }
-    sk_sp<SkImage> candidate = makeTargetColorVariant(source, targetColorType);
+    sk_sp<SkImage> candidate = materializer();
     if (!candidate) {
         source->pendingRasterVariant = false;
         source->pendingRasterVariantObservations = 0;
-        ++targetColorFallbacksForTest;
+        if (!physical) {
+            ++targetColorFallbacksForTest;
+        }
         return RASTER_VARIANT_FAILED;
+    }
+    if (physical && source->rasterVariant.valid) {
+        ++physicalVariantEvictionsForTest;
     }
     source->rasterVariant.image = std::move(candidate);
     source->rasterVariant.key = key;
     source->rasterVariant.valid = true;
     source->pendingRasterVariant = false;
     source->pendingRasterVariantObservations = 0;
-    ++targetColorMaterializationsForTest;
-    targetColorConvertedBytesForTest += rasterVariantBytes(targetColorType, source->width,
-                                                           source->height);
+    const size_t bytes = rasterVariantBytes(key.targetColorType == kRGB_565_SkColorType
+        ? kRGB_565_SkColorType : static_cast<SkColorType>(key.targetColorType),
+        source->rasterVariant.image->width(), source->rasterVariant.image->height());
+    if (physical) {
+        ++physicalVariantMaterializationsForTest;
+        physicalVariantBytesForTest += bytes;
+    } else {
+        ++targetColorMaterializationsForTest;
+        targetColorConvertedBytesForTest += bytes;
+    }
     *image = source->rasterVariant.image;
     return *image ? RASTER_VARIANT_MATERIALIZED : RASTER_VARIANT_FAILED;
+}
+
+RasterVariantUse acquireTargetColorVariant(NativeImageBackingRecord* source,
+                                           const RasterVariantKey& key, SkColorType targetColorType,
+                                           sk_sp<SkImage>* image) {
+    return acquireVariant(source, key, image,
+        [source, targetColorType]() {
+            return makeTargetColorVariant(source, targetColorType);
+        });
+}
+
+RasterVariantUse acquirePhysicalVariant(NativeImageBackingRecord* source,
+                                         const RasterVariantKey& key,
+                                         const SkiaImageDrawPlanData* plan,
+                                         SkColorType targetColorType, sk_sp<SkImage>* image) {
+    return acquireVariant(source, key, image,
+        [plan, targetColorType]() {
+            return skia_image_backing_materialize_geometry_variant(plan, targetColorType,
+                                                                    nullptr, nullptr);
+        });
 }
 
 }
@@ -916,6 +968,12 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     targetColorHitsForTest = 0;
     targetColorFallbacksForTest = 0;
     targetColorConvertedBytesForTest = 0;
+    physicalVariantLookupsForTest = 0;
+    physicalVariantHitsForTest = 0;
+    physicalVariantMissesForTest = 0;
+    physicalVariantMaterializationsForTest = 0;
+    physicalVariantEvictionsForTest = 0;
+    physicalVariantBytesForTest = 0;
 }
 
 void skia_image_backing_set_accounting_for_test(int enabled) {
@@ -936,6 +994,12 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
         targetColorHitsForTest = 0;
         targetColorFallbacksForTest = 0;
         targetColorConvertedBytesForTest = 0;
+        physicalVariantLookupsForTest = 0;
+        physicalVariantHitsForTest = 0;
+        physicalVariantMissesForTest = 0;
+        physicalVariantMaterializationsForTest = 0;
+        physicalVariantEvictionsForTest = 0;
+        physicalVariantBytesForTest = 0;
     }
 }
 
@@ -1037,4 +1101,28 @@ uint64_t skia_image_backing_target_color_fallbacks_for_test(void) {
 
 uint64_t skia_image_backing_target_color_converted_bytes_for_test(void) {
     return targetColorConvertedBytesForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_lookups_for_test(void) {
+    return physicalVariantLookupsForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_hits_for_test(void) {
+    return physicalVariantHitsForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_misses_for_test(void) {
+    return physicalVariantMissesForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_materializations_for_test(void) {
+    return physicalVariantMaterializationsForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_evictions_for_test(void) {
+    return physicalVariantEvictionsForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_bytes_for_test(void) {
+    return physicalVariantBytesForTest;
 }
