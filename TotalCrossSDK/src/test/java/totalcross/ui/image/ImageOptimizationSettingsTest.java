@@ -81,11 +81,12 @@ class ImageOptimizationSettingsTest {
     ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
         ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
-        ImageOptimizationSettings.DISABLED);
+        ImageOptimizationSettings.ENABLED);
     long expected = (1L << ImageOptimizationSettings.DECODE_ZERO_COPY)
         | (1L << ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING)
         | (1L << ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION)
-        | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
+        | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE)
+        | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING);
     assertEquals(expected, ImageOptimizationSettings.effectiveMask());
   }
 
