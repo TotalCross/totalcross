@@ -75,6 +75,22 @@ if support_text.count(shim_marker) != 1:
     raise SystemExit("benchmark support insertion marker is not unique")
 support.write_text(support_text.replace(shim_marker, shims + shim_marker), encoding="utf-8")
 
+for method in (
+    "targetColorAttemptsForTest", "targetColorMaterializationsForTest",
+    "targetColorHitsForTest", "targetColorFallbacksForTest",
+    "targetColorConvertedBytesForTest", "physicalVariantLookupsForTest",
+    "physicalVariantHitsForTest", "physicalVariantMissesForTest",
+    "physicalVariantMaterializationsForTest", "physicalVariantEvictionsForTest",
+    "physicalVariantBytesForTest",
+):
+    support_text = support.read_text(encoding="utf-8")
+    support_text = support_text.replace("NativeImageBacking." + method + "()", "0")
+    support.write_text(support_text, encoding="utf-8")
+
+support_text = support.read_text(encoding="utf-8")
+support_text = support_text.replace("image.mutateDeferredRootForTest(destinationScale);", "")
+support.write_text(support_text, encoding="utf-8")
+
 image_methods = (
     "zeroCopyDecodeCountForTest", "copiedDecodeCountForTest",
     "decodeCopiedBytesForTest", "decodeFinalBufferBytesForTest",
@@ -104,6 +120,10 @@ for relative_path in files[3:]:
         if text.count(old) != 1:
             raise SystemExit("opacity compatibility expression is not unique")
         text = text.replace(old, "        int opacity = 0;")
+    if relative_path.name == "ImageRasterCombinedBenchmarkApp.java":
+        text = text.replace(
+            "return Image.createTestRaster(width, height, contentScale, colorType);",
+            "return Image.createLogical(width, height, contentScale);")
     path.write_text(text, encoding="utf-8")
 
 import hashlib
