@@ -75,6 +75,7 @@ public class Image extends GfxSurface {
   private static boolean decodedRasterAllocationFailureForTest;
   private static boolean materializedFrameBufferAllocationFailureForTest;
   private static boolean targetedDecodeInfrastructureFailureForTest;
+  private static boolean targetedDecodeInitializationFailureForTest;
   static boolean imageOperationAccountingForTest;
   static int imageCreatedCountForTest;
   static int imageFinalizedCountForTest;
@@ -127,6 +128,7 @@ public class Image extends GfxSurface {
 
   static void resetTargetedDecodeInvocationCountForTest() {
     imageOperationAccountingForTest = true;
+    targetedDecodeInitializationFailureForTest = false;
     targetedDecodeInvocationCountForTest = 0;
     targetedDecodeRequestWidthForTest = 0;
     targetedDecodeRequestHeightForTest = 0;
@@ -175,6 +177,7 @@ public class Image extends GfxSurface {
     targetedDecodeDenominatorForTest = 0;
     targetedDecodeWidthForTest = 0;
     targetedDecodeHeightForTest = 0;
+    targetedDecodeInitializationFailureForTest = false;
     nativeGeometryMaterializationCountForTest = 0;
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
@@ -271,6 +274,18 @@ public class Image extends GfxSurface {
   /** Test-only hook for exercising retryable targeted ImageIO setup failures. */
   static void failNextTargetedDecodeInfrastructureForTest() {
     targetedDecodeInfrastructureFailureForTest = true;
+  }
+
+  /** Test-only hook for proving targeted backing publication is transactional. */
+  static void failNextTargetedDecodeInitializationForTest() {
+    targetedDecodeInitializationFailureForTest = true;
+  }
+
+  private static void consumeTargetedDecodeInitializationFailureForTest() throws ImageException {
+    if (targetedDecodeInitializationFailureForTest) {
+      targetedDecodeInitializationFailureForTest = false;
+      throw new TransientImageMaterializationException("Simulated targeted Image initialization failure");
+    }
   }
 
   private static boolean consumeTargetedDecodeInfrastructureFailureForTest() {
@@ -1355,12 +1370,13 @@ public class Image extends GfxSurface {
           decoded.logicalHeight = source.getLogicalHeight();
           decoded.contentScale = contentScaleForDecodedDenominator(source.decodedDenominator());
         } else {
-          source.installDecodedBacking(decoded.backing, decoded.backing.width(), decoded.backing.height(),
-              requestedDenominator);
           decoded.logicalWidth = source.getLogicalWidth();
           decoded.logicalHeight = source.getLogicalHeight();
-          decoded.contentScale = contentScaleForDecodedDenominator(source.decodedDenominator());
+          decoded.contentScale = contentScaleForDecodedDenominator(requestedDenominator);
+          consumeTargetedDecodeInitializationFailureForTest();
           decoded.init(true);
+          source.installDecodedBacking(decoded.backing, decoded.backing.width(), decoded.backing.height(),
+              requestedDenominator);
         }
         current = decoded;
       }
