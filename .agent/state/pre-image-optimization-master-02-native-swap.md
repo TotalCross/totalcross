@@ -6,45 +6,57 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Pre-image optimization master 02 native swap state
 
-- Active milestone/slice: Complete — final corrective handoff.
+- Active milestone/slice: Complete — latest four-way measurement handoff.
 - Branch: `fix/pre-image-optimization-master`.
 - PLAN1_IMPLEMENTATION_HEAD:
   `8156f62f9cdf41b6d2cd2e18b7ba4b4704ad98b2`.
 - PLAN2_BASE: `f918fd4a6ff32c051231657ae58148a040edc6df`.
-- Current branch at bootstrap: `f918fd4a6ff32c051231657ae58148a040edc6df`.
-- Prerequisite: plan-1 implementation is an ancestor; the only post-
-  implementation commit changes the documented plan/state/evidence/report
-  handoff paths.
-- Last content commit: `557a79f21` (`docs(image): close corrected native swap
-  benchmark`).
-- Corrected benchmark artifacts, evidence, revised rule, and handoff report are
-  committed; this final state update closes the bookkeeping slice.
+- Latest benchmark source commit:
+  `ef44795adabe6bd33fb41e7687cbc581960be0ab`.
+- Latest artifact/evidence commit: `1f84208d2`
+  (`test(skia): record four-way swap results`).
+- Corrected benchmark artifacts and compact evidence are committed under
+  `.agent/benchmarks/pre-image-optimization-master/native-swap/` and
+  `.agent/evidence/pre-image-optimization-master-02-native-swap.jsonl`.
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
-- Active artifact path:
-  `.agent/benchmarks/pre-image-optimization-master/native-swap/`.
-- Next exact action: verify the final local HEAD and scoped worktree state.
-- Benchmark jobs/results collected: corrected local macOS arm64 and workflow
-  run `34072184561` on native Linux x86-64/ARM64 and Windows x86-64/ARM64; all
-  60/200 checkpoints for 512x512, 1920x1080, and 3840x2160 are under
-  `.agent/benchmarks/pre-image-optimization-master/native-swap/`.
-- Validation completed for the correction: direct-loop 3-warmup/10-pair smoke;
-  corrected local matrix; successful native workflow run 34072184561; 30
-  corrected summary/raw parity checks; no indirect benchmark dispatch remains.
-- Validation completed for prior production cleanup: Release macOS
-  software-Skia `skia_surface_test` passed. No Windows/Linux TotalCross build
-  is permitted here; no new production macro change is required by corrected
-  evidence because the existing policy is retained.
-- Final audit: after this state commit, verify the final local HEAD and scoped
-  worktree state; no further implementation action is required.
-- Decisions still active: retain `USE_NATIVE_SWAP` and its current defaults
-  under corrected rule 2 because Windows ARM64 has stable wins and no enabled
-  Windows/Linux target has a stable regression; keep `skia_internal.h` as the
-  sole default-definition site for surviving flags; leave opacity, writePixels,
-  and color-type behavior unchanged.
+- Next exact action: commit the updated plan/report/state, then verify the
+  final local HEAD and scoped worktree state.
+
+## Latest benchmark collection
+
+- Local host: macOS arm64; compiler: Clang Apple LLVM 21.0.0
+  (`clang-2100.1.1.101`).
+- Workflow run: `34075737240`; native Linux x86-64/ARM64 and Windows
+  x86-64/ARM64 jobs all succeeded.
+- Dimensions: 512x512, 1920x1080, and 3840x2160.
+- Checkpoints: three warmups, then 60 and 200 samples per dimension.
+- Variants: `SWAP32_PORTABLE`, `SWAP32_FORCED`, `swap32_forced_impl`, and
+  `builtinSwap32`.
+- Collection validation: 30 JSON summaries and 30 CSV files; all four timing
+  columns, medians, p95s, ratios, metadata, rotating-order records, checksum
+  agreement, and under-20-KiB file limits passed.
+- The prior two-way evidence is explicitly superseded. The latest continuation
+  is measurement-only and makes no production policy recommendation.
+
+## Scope and validation
+
+- No changes in this continuation to `SWAP32`, `SWAP32_FORCED`,
+  `USE_NATIVE_SWAP`, `skia_internal.h`, or `xtypes.h`.
+- Four-way optimized macOS smoke passed with checksum parity and rotating
+  order; local full matrix passed; corrected native workflow passed.
+- Structural benchmark check passed: four separate direct buffer-level
+  `NATIVE_SWAP_NOINLINE` loops and no `SwapFunction` dispatch.
+- Focused copyright validation and `git diff --check` passed for the
+  benchmark source and artifact/evidence commit.
+- No Linux/Windows TotalCross build, SDK rebuild, packaging, QEMU, or
+  emulation was used. Existing earlier macOS production validation is not
+  repeated because this continuation changes measurement artifacts only.
+
 - Blockers: none.
 - Deliberate out-of-scope local files: unrelated untracked repository artifacts
   and generated outputs shown by scoped status; do not stage them.
-- Resume command: none; if resumed, verify `git rev-parse HEAD` against the
-  final response and leave the branch unmerged and unrebased.
+- Resume command: after the documentation commit, run the final scoped audit,
+  record the resulting `git rev-parse HEAD`, and leave the branch unmerged and
+  unrebased.

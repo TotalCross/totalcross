@@ -162,8 +162,8 @@ Create exactly this standalone benchmark source:
 
     TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp
 
-It must exercise the exact two swap expressions without linking Skia or
-TotalCross. The executable interface is fixed:
+It must exercise exactly these four swap implementations without linking Skia
+or TotalCross. The executable interface is fixed:
 
     native_swap_benchmark <width> <height> <warmups> <samples> <raw.csv> <summary.json>
 
@@ -177,8 +177,8 @@ Requirements:
 - keep allocation, startup, file I/O, formatting, and checksum reporting outside
   timed regions;
 - prevent dead-code elimination with a checksum consumed after each sample;
-- keep native and portable swap functions non-inlined;
-- alternate measurement order A/B then B/A across paired samples;
+- keep all four buffer-level swap functions non-inlined;
+- rotate the four-variant measurement order deterministically across samples;
 - use identical source data/work per pair;
 - record time in a monotonic high-resolution clock;
 - emit compact machine-readable raw samples and a concise summary.
@@ -194,8 +194,9 @@ paired samples as the final recorded checkpoint on every required platform.
 Store raw samples in separate files per platform/architecture/size/sample-count
 so each file remains below 20 KiB.
 
-Summary fields must include median, p95, native/portable ratio, compiler/version,
-OS, architecture, warmups, sample count, pixel count, and checksum agreement.
+Summary fields must include median, p95, and ratio to the portable baseline for
+each variant, plus compiler/version, OS, architecture, warmups, sample count,
+pixel count, and checksum agreement.
 
 Optimized compile mode is fixed. On macOS/Linux compile to a temporary
 executable with:
@@ -209,6 +210,16 @@ executable into the runner temporary directory. Benchmark binaries are never
 committed.
 
 The macOS local run uses and records `uname -m`; do not assume architecture.
+
+## Latest Four-way Measurement Correction
+
+The latest continuation replaces the earlier two-way corrected artifact set
+with the four-way direct-loop contract above. It is measurement-only: retain
+the existing production files and defaults, make no policy recommendation,
+and record the latest local macOS arm64 matrix plus workflow run
+`34075737240` for native Linux x86-64/ARM64 and Windows x86-64/ARM64. The
+latest JSON/CSV artifacts, compact evidence, state, and editorial report are
+the authoritative result set; earlier two-way records are superseded.
 
 ## Required GitHub Actions Matrix
 
