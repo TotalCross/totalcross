@@ -101,6 +101,9 @@ Write a new report and compact samples under:
 Keep `control-plumbing/` and `complete-diagnostic-gating/` unchanged. The
 local macOS benchmark requirement is unchanged.
 
+The shared protocol now defines a prospective Phase 2+ cross-platform policy;
+it does not expand this Phase 1 measurement or require historical reruns.
+
 ## Plan of Work
 
 1. Complete the effective-mask test for all three new bits while preserving
