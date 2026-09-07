@@ -40,6 +40,8 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
       String expectedPixelHash = null;
       String expectedPngHash = null;
       String expectedColorHash = null;
+      String expectedIdentityHash = null;
+      String expectedVariantHash = null;
       for (int sample = 1; sample <= samples; sample++) {
         long start = Vm.getTimeStamp();
         Result result = runWorkload(jpeg, png);
@@ -50,19 +52,28 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
             ImageRasterBenchmarkSupport.fullByteHash(result.encoded, result.encodedLength));
         String colorHash = ImageRasterBenchmarkSupport.hashString(
             ImageRasterBenchmarkSupport.fullPixelHash(result.colorPixels));
+        String identityHash = ImageRasterBenchmarkSupport.hashString(
+            ImageRasterBenchmarkSupport.fullPixelHash(result.identityPixels));
+        String variantHash = ImageRasterBenchmarkSupport.hashString(
+            ImageRasterBenchmarkSupport.fullPixelHash(result.variantPixels));
         if (expectedPixelHash == null) {
           expectedPixelHash = pixelHash;
           expectedPngHash = pngHash;
           expectedColorHash = colorHash;
+          expectedIdentityHash = identityHash;
+          expectedVariantHash = variantHash;
         } else {
           ImageRasterBenchmarkSupport.require(expectedPixelHash.equals(pixelHash), "pixel hash drift");
           ImageRasterBenchmarkSupport.require(expectedPngHash.equals(pngHash), "PNG hash drift");
           ImageRasterBenchmarkSupport.require(expectedColorHash.equals(colorHash), "color hash drift");
+          ImageRasterBenchmarkSupport.require(expectedIdentityHash.equals(identityHash), "identity hash drift");
+          ImageRasterBenchmarkSupport.require(expectedVariantHash.equals(variantHash), "variant hash drift");
         }
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed
             + ",draws=" + DRAWS_PER_SAMPLE
             + ",input_jpeg_hash=" + inputJpegHash + ",input_png_hash=" + inputPngHash
             + ",pixel_hash=" + pixelHash + ",png_hash=" + pngHash + ",color_hash=" + colorHash
+            + ",identity_hash=" + identityHash + ",variant_hash=" + variantHash
             + ",decode_zero_copy=" + Image.zeroCopyDecodeCountForTest()
             + ",opacity_known_source=" + Image.opacityKnownFromSourceForTest()
             + ",opacity_determined_decode=" + Image.opacityDeterminedDuringDecodeForTest()
@@ -71,7 +82,19 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
             + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
             + ",row_readbacks=" + Image.rowReadbackCountForTest()
             + ",full_readbacks=" + Image.fullReadbackCountForTest()
-            + ",direct_color_materializations=" + Image.directColorMaterializationCountForTest());
+            + ",direct_color_materializations=" + Image.directColorMaterializationCountForTest()
+            + ",target_color_attempts=" + ImageRasterBenchmarkSupport.targetColorAttemptsForTest()
+            + ",target_color_materializations=" + ImageRasterBenchmarkSupport.targetColorMaterializationsForTest()
+            + ",target_color_hits=" + ImageRasterBenchmarkSupport.targetColorHitsForTest()
+            + ",target_color_fallbacks=" + ImageRasterBenchmarkSupport.targetColorFallbacksForTest()
+            + ",target_color_converted_bytes=" + ImageRasterBenchmarkSupport.targetColorConvertedBytesForTest()
+            + ",physical_variant_lookups=" + ImageRasterBenchmarkSupport.physicalVariantLookupsForTest()
+            + ",physical_variant_hits=" + ImageRasterBenchmarkSupport.physicalVariantHitsForTest()
+            + ",physical_variant_misses=" + ImageRasterBenchmarkSupport.physicalVariantMissesForTest()
+            + ",physical_variant_materializations="
+            + ImageRasterBenchmarkSupport.physicalVariantMaterializationsForTest()
+            + ",physical_variant_evictions=" + ImageRasterBenchmarkSupport.physicalVariantEvictionsForTest()
+            + ",physical_variant_bytes=" + ImageRasterBenchmarkSupport.physicalVariantBytesForTest());
         System.out.flush();
         completedSamples = sample;
       }
@@ -93,7 +116,19 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
             + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
             + ",row_readbacks=" + Image.rowReadbackCountForTest()
             + ",full_readbacks=" + Image.fullReadbackCountForTest()
-            + ",direct_color_materializations=" + Image.directColorMaterializationCountForTest(), error);
+            + ",direct_color_materializations=" + Image.directColorMaterializationCountForTest()
+            + ",target_color_attempts=" + ImageRasterBenchmarkSupport.targetColorAttemptsForTest()
+            + ",target_color_materializations=" + ImageRasterBenchmarkSupport.targetColorMaterializationsForTest()
+            + ",target_color_hits=" + ImageRasterBenchmarkSupport.targetColorHitsForTest()
+            + ",target_color_fallbacks=" + ImageRasterBenchmarkSupport.targetColorFallbacksForTest()
+            + ",target_color_converted_bytes=" + ImageRasterBenchmarkSupport.targetColorConvertedBytesForTest()
+            + ",physical_variant_lookups=" + ImageRasterBenchmarkSupport.physicalVariantLookupsForTest()
+            + ",physical_variant_hits=" + ImageRasterBenchmarkSupport.physicalVariantHitsForTest()
+            + ",physical_variant_misses=" + ImageRasterBenchmarkSupport.physicalVariantMissesForTest()
+            + ",physical_variant_materializations="
+            + ImageRasterBenchmarkSupport.physicalVariantMaterializationsForTest()
+            + ",physical_variant_evictions=" + ImageRasterBenchmarkSupport.physicalVariantEvictionsForTest()
+            + ",physical_variant_bytes=" + ImageRasterBenchmarkSupport.physicalVariantBytesForTest(), error);
     exit(pass ? 0 : 1);
   }
 
@@ -116,7 +151,53 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
 
     jpegImage.applyColor2(0x0090A0B0);
     int[] colorPixels = jpegImage.getPixels();
-    return new Result(pixels, stream.getBuffer(), stream.getPos(), colorPixels);
+
+    Image identitySource = Image.createLogical(100, 100, 2);
+    fill(identitySource, 100, 100);
+    Image identity = identitySource.getSmoothScaledInstance(100, 100);
+    Image identityTarget = Image.createLogical(100, 100, 2);
+    requireGraphics(identityTarget).drawImage(identity, 0, 0, false);
+    int[] identityPixels = identityTarget.getPixels();
+
+    Image variantSource = Image.createLogical(200, 200, 2);
+    fill(variantSource, 200, 200);
+    Image variant = variantSource.getSmoothScaledInstance(100, 100);
+    Image variantTarget = createTarget(100, 100, 2, 1);
+    Graphics variantCanvas = requireGraphics(variantTarget);
+    drawBatch(variantCanvas, variant, 4);
+    ImageRasterBenchmarkSupport.mutateDeferredRootForTest(variant, variantTarget.getContentScale());
+    drawBatch(variantCanvas, variant, 2);
+    int[] variantPixels = variantTarget.getPixels();
+    return new Result(pixels, stream.getBuffer(), stream.getPos(), colorPixels,
+        identityPixels, variantPixels);
+  }
+
+  private static void fill(Image image, int width, int height) throws Exception {
+    Graphics graphics = requireGraphics(image);
+    for (int y = 0; y < height; y += 16) {
+      for (int x = 0; x < width; x += 16) {
+        graphics.foreColor = 0xFF000000 | ((x * 11) & 0xFF) << 16
+            | ((y * 13) & 0xFF) << 8 | ((x + y * 3) & 0xFF);
+        graphics.fillRect(x, y, Math.min(16, width - x), Math.min(16, height - y));
+      }
+    }
+  }
+
+  private static Graphics requireGraphics(Image image) {
+    Graphics graphics = image.getGraphics();
+    ImageRasterBenchmarkSupport.require(graphics != null, "target graphics");
+    return graphics;
+  }
+
+  private static Image createTarget(int width, int height, double contentScale, int colorType)
+      throws Exception {
+    return Image.createTestRaster(width, height, contentScale, colorType);
+  }
+
+  private static void drawBatch(Graphics canvas, Image image, int draws) {
+    for (int draw = 0; draw < draws; draw++) {
+      canvas.drawImage(image, 0, 0, false);
+    }
   }
 
   private static final class Result {
@@ -124,12 +205,17 @@ public class ImageRasterCombinedBenchmarkApp extends MainWindow {
     final byte[] encoded;
     final int encodedLength;
     final int[] colorPixels;
+    final int[] identityPixels;
+    final int[] variantPixels;
 
-    Result(int[] pixels, byte[] encoded, int encodedLength, int[] colorPixels) {
+    Result(int[] pixels, byte[] encoded, int encodedLength, int[] colorPixels,
+        int[] identityPixels, int[] variantPixels) {
       this.pixels = pixels;
       this.encoded = encoded;
       this.encodedLength = encodedLength;
       this.colorPixels = colorPixels;
+      this.identityPixels = identityPixels;
+      this.variantPixels = variantPixels;
     }
   }
 }

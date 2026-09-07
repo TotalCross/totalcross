@@ -51,7 +51,62 @@ final class ImageRasterBenchmarkSupport {
           ImageOptimizationSettings.ENABLED);
       ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION,
           ImageOptimizationSettings.ENABLED);
+      for (int feature = 13; feature <= 15; feature++) {
+        try {
+          ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
+        } catch (IllegalArgumentException ignored) {
+          // The true-base adapter may run against a pre-extension setting set.
+        }
+      }
     }
+  }
+
+  static long targetColorAttemptsForTest() {
+    return NativeImageBacking.targetColorAttemptsForTest();
+  }
+
+  static long targetColorMaterializationsForTest() {
+    return NativeImageBacking.targetColorMaterializationsForTest();
+  }
+
+  static long targetColorHitsForTest() {
+    return NativeImageBacking.targetColorHitsForTest();
+  }
+
+  static long targetColorFallbacksForTest() {
+    return NativeImageBacking.targetColorFallbacksForTest();
+  }
+
+  static long targetColorConvertedBytesForTest() {
+    return NativeImageBacking.targetColorConvertedBytesForTest();
+  }
+
+  static long physicalVariantLookupsForTest() {
+    return NativeImageBacking.physicalVariantLookupsForTest();
+  }
+
+  static long physicalVariantHitsForTest() {
+    return NativeImageBacking.physicalVariantHitsForTest();
+  }
+
+  static long physicalVariantMissesForTest() {
+    return NativeImageBacking.physicalVariantMissesForTest();
+  }
+
+  static long physicalVariantMaterializationsForTest() {
+    return NativeImageBacking.physicalVariantMaterializationsForTest();
+  }
+
+  static long physicalVariantEvictionsForTest() {
+    return NativeImageBacking.physicalVariantEvictionsForTest();
+  }
+
+  static long physicalVariantBytesForTest() {
+    return NativeImageBacking.physicalVariantBytesForTest();
+  }
+
+  static void mutateDeferredRootForTest(Image image, double destinationScale) throws Exception {
+    image.mutateDeferredRootForTest(destinationScale);
   }
 
   static byte[] resource(String path) {
