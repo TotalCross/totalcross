@@ -131,7 +131,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_captureNativePath_s"), &tuiEIS_captureNativePath_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_releaseNativeBag"), &tuiEIS_releaseNativeBag);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createEmptyNative_ii"), &tuiNIB_createEmptyNative_ii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createEmptyForTestNative_"), &tuiNIB_createEmptyForTestNative_iii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createEmptyForTestNative"), &tuiNIB_createEmptyForTestNative_iii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_isAvailableNative"), &tuiNIB_isAvailableNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_resetAccountingTestNative"), &tuiNIB_resetAccountingTestNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_clearAccountingTestNative"), &tuiNIB_clearAccountingTestNative);
