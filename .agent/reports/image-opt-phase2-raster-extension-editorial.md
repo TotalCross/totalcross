@@ -201,3 +201,13 @@ ordinary direct draw, and APPLY_COLOR2 parity. These results close Phase 2's
 lossless raster work. Phase 3 should focus on compact source formats and must
 resolve the frozen `perf/image-opt-phase2-raster` tip at start; lifecycle and
 mmap/working-set work remains later scope.
+
+## Android validation
+
+The available Android device was reachable through `adb` (`2312DRA50G`,
+Android 13), but no installed TotalCross package had identifiable provenance
+for the final Phase 2 runtime. GPU validation is therefore explicitly
+`DEFERRED — matching runtime requires a prohibited Android build`. No Android
+build or install was attempted. The draw-only GPU-negative invariants remain
+unexecuted; the concise record is
+`.agent/evidence/image-opt-phase2-raster-extension-android.md`.

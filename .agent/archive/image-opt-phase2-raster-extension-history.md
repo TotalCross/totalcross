@@ -181,3 +181,16 @@ opacity/readback/writePixels, identity guards, target formats and mutation,
 physical variant cases including replacement and decode-generation invalidation,
 and the combined ID13+ID14 path. Android availability and the Phase 3 handoff
 remain for the next extension-03 milestones; no Android build is permitted.
+
+## 2026-09-07 — Extension 03 Android validation deferral
+
+`adb devices` found a reachable Xiaomi `2312DRA50G` running Android 13, but
+the installed TotalCross packages had no identifiable provenance matching
+Phase 2 runtime `c6515a8f0` and harness revision
+`7700966325b84b876d42822465b0c9a9d5f3b1ae`. The result is explicitly
+`DEFERRED — matching runtime requires a prohibited Android build`.
+
+No Android build, install, logcat, or GPU workload was performed. The
+draw-only GPU invariants therefore remain unexecuted; macOS software-Skia is
+the authoritative final evidence. The concise availability record is
+`.agent/evidence/image-opt-phase2-raster-extension-android.md`.
