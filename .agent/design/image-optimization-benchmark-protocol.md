@@ -95,6 +95,17 @@ RSS. Post-settings runs use S2 with all optimization features disabled and S3
 with only `DIAGNOSTIC_ACCOUNTING` enabled. S3 is intentionally a diagnostic
 trade-off, so no fabricated success threshold is applied.
 
+## Post-stabilization rebaseline
+
+The Phase 1 rebaseline uses current master
+`7add0f29e9366a19d894237119a415416e6bb557` for S1/pre. S2/post-disabled uses
+the final Phase 1 code with every optimization explicitly disabled, including
+`DIAGNOSTIC_ACCOUNTING`; S3/post-enabled uses the same Phase 1 code with only
+`DIAGNOSTIC_ACCOUNTING` enabled. The authored Phase 1 base
+`1898014784b2fba5716cc033e49520740b05f0dd` remains historical metadata, not
+the new S1 source. The new samples and report belong under
+`post-stabilization-rebaseline/`; earlier benchmark artifacts are immutable.
+
 ## Interpretation
 
 A confirmed post-disabled regression greater than 5% in median elapsed time or
