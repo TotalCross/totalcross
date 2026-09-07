@@ -164,8 +164,8 @@ Do not implement or import:
 ## Progress
 
 - [x] (2026-09-06T23:40:09Z) Milestone 0: created `fix/pre-image-optimization-master` from `origin/master` at `1898014784b2fba5716cc033e49520740b05f0dd`; added resumable state, evidence, and editorial files.
-- [ ] Milestone 1: implement metadata fix and complete regression matrix.
-- [ ] Milestone 2: validate, document outcome, and hand off exact HEAD to plan 2.
+- [x] (2026-09-06T23:58:48Z) Milestone 1: repaired targeted JPEG metadata at fresh/cached materialization boundaries and completed the Java/macOS regression matrix; implementation HEAD is `061a1dde9`.
+- [x] (2026-09-06T23:58:48Z) Milestone 2: completed SDK and macOS validation, documented the correctness handoff, and recorded `PLAN1_HEAD=061a1dde9` for plan 2.
 
 ## Plan of Work
 
@@ -312,6 +312,11 @@ Update state/evidence and commit the factual handoff, for example:
 Record the resulting HEAD as `PLAN1_HEAD`. Plan 2 must start from this exact
 branch HEAD and must not recreate/rebase the branch.
 
+Completed at `061a1dde9`: targeted physical dimensions remain decoder output,
+logical dimensions remain encoded-source metadata, and `contentScale` is
+`1.0 / decodedDenominator()` for fresh and cached targeted roots. Plan 2 starts
+from this exact branch HEAD.
+
 ## Validation and Acceptance
 
 Every commit must use the logical-commits skill, focused header validation, and:
@@ -332,8 +337,13 @@ Final correctness contract:
 
 ## Surprises & Discoveries
 
-Keep empty initially. Add only observations that materially affect remaining
-work, then summarize resolved items in the editorial report.
+- Moving full-decode initialization after metadata verification delayed GIF
+  frame-count parsing; the final implementation initializes full decodes before
+  verification and applies targeted metadata before targeted initialization.
+- The existing reduced-JPEG visual tolerance is sensitive to high-frequency
+  odd-dimension fixtures, so the independent full-decode parity family uses the
+  stable even-dimension fixture while odd dimensions are asserted separately at
+  the decoder/cache metadata boundary.
 
 ## Decision Log
 
@@ -362,8 +372,14 @@ contains the authorized CI-benchmark push procedure.
 
 ## Outcomes & Retrospective
 
-Populate only at milestone boundaries with factual outcomes and evidence paths.
-Do not repeat raw test output.
+Plan 1 completed on `fix/pre-image-optimization-master` at `061a1dde9`.
+Adaptive JPEG smooth selection remains intact; targeted roots now carry the
+decoder's physical raster, encoded logical dimensions, and denominator-derived
+content scale across fresh and cached paths. The focused SDK suite, SDK
+distribution, Release macOS software-Skia build, and exact-dylib JPEG pinch
+smoke passed. Evidence is recorded in
+`.agent/evidence/pre-image-optimization-master-01-correctness.jsonl`; plan 2
+must begin from `PLAN1_HEAD=061a1dde9`.
 
 ## Revision Note
 
