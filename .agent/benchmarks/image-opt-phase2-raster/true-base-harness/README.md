@@ -16,6 +16,11 @@ The required base is:
 
 `9545c18207fab74d81340b24825c5a82ddbda7fd`
 
+The `IMAGE_PHASE2_TRUE_BASE_SHA` environment variable may select another
+approved frozen Phase 2 base for an additive closeout, such as
+`a8a9480bd61aa510de423569af494d8dde69e8f2`; the default remains the original
+reproducibility boundary above.
+
 Run it against a disposable detached worktree. The final two arguments are
 the exact fixture directory containing `lenna.png` and `lenna_full.png`, and
 the launcher used by the deployment. The script prints a content digest over

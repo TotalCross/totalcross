@@ -5,7 +5,7 @@
 
 set -eu
 
-BASE_SHA=9545c18207fab74d81340b24825c5a82ddbda7fd
+BASE_SHA=${IMAGE_PHASE2_TRUE_BASE_SHA:-9545c18207fab74d81340b24825c5a82ddbda7fd}
 BASE_WORKTREE=${1:?base worktree path is required}
 SOURCE_ROOT=${2:?source repository path is required}
 SOURCE_REVISION=${3:?source harness revision is required}
