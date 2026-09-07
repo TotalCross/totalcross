@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Phase 2 raster extension state
 
-Updated: 2026-09-07T18:09:36-03:00
+Updated: 2026-09-07T19:07:00-03:00
 Branch: `perf/image-opt-phase2-raster`
 Frozen Phase 1 base: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Starting Phase 2 HEAD: `a225d10165b8b60c4bf7bf2f95f5bf3b395f3a92`
@@ -34,6 +34,24 @@ The exact RGBA S1/S2/S3 comparison used 60 samples: S1 median 5477 ms, S2
 below 5%, and S2 elapsed/RSS deltas versus S1 were 2.775%/-1.748%. The BGRA
 S2/S3 pair measured 5667/1083 ms medians; S3 completed 64512 attempts with one
 materialization, 64510 hits, one fallback, and 160000 converted bytes.
+
+ID 14 was committed in `c6515a8f0`. It extends the same source-owned slot to
+repeated frame/crop/scale/smooth-scale geometry, with exact scalar signatures,
+one pending observation, mutation invalidation, bounded replacement, and
+direct target-color materialization when ID 13 is also enabled. The physical
+variant focused smokes passed for repeat, identity precedence, replacement,
+mutation, crop, alpha, rotation, and hardware-scale guards. The combined ID13+ID14
+BGRA smoke passed with one physical materialization, one hit, no duplicate target-color
+materialization, and stable output parity. The encoded-root decode-generation smoke
+caused two misses and one fresh materialization after decoded backing eviction, with
+zero stale hits.
+
+The exact physical-variant S1/S2/S3 comparison used 60 samples: S1 median
+1326 ms, S2 1323 ms, and S3 263 ms; all hashes were `000000D600000165`, all
+CVs stayed below 5%, and S2/S3 RSS deltas versus S1 were 2.144%/1.892%. The
+S3 path reduced median elapsed time by 80.166% and focused counters recorded
+one 200x200 materialization followed by hits. Target-color BGRA and
+translucent compatibility smokes passed after ID 14 integration.
 
 ## Active paths
 
@@ -79,6 +97,17 @@ Milestone 1 checks passed:
   P95 1328 ms, CV 0.13%, peak RSS 114160 KiB, hash `000000D600000165`;
 - extension 02 S1 physical-variant first/mutation/size probes: one sample each,
   all passed with hash `000000D600000165`.
+- extension 02 ID 14 S2/S3 physical-variant repeat: 60 samples each, medians
+  1323/263 ms, P95 1334/265 ms, CV 0.329%/0.280%, peak RSS 116608/116320
+  KiB, stable hash `000000D600000165`, and no escalation;
+- extension 02 ID 14 focused repeat, identity, replacement, mutation, crop,
+  alpha, rotation, hardware-scale, and disabled-parity smokes;
+- extension 02 combined ID 13+ID 14 BGRA smoke with one physical materialization,
+  one hit, no duplicate target-color materialization, and stable output parity;
+- extension 02 encoded-root decode-generation smoke with two misses, one fresh
+  materialization, zero stale hits, and stable output parity;
+- final ID 14 SDK image tests/dist and macOS Release software-Skia CMake/Ninja
+  build after the runtime commit.
 
 The authoritative measurements are in
 `.agent/benchmarks/image-opt-phase2-raster-extension/rebaseline-60/`,
@@ -94,6 +123,9 @@ captures are under `target-color-s1-60/`, `target-color-s1-1/`,
 `physical-variant-s1-60/`, and `physical-variant-s1-1/`. ID 13 S2/S3 captures
 are under `target-color-s2-60/` and `target-color-s3-60/`; the compact result
 record is `target-color-s2-s3-60/results.txt`.
+ID 14 S2/S3 captures are under `physical-variant-s2-60/` and
+`physical-variant-s3-60/`; the compact result record is
+`physical-variant-s2-s3-60/results.txt`.
 
 ## Deferred validation
 
@@ -103,6 +135,8 @@ earlier extension-01 commits; history was preserved without amendment. The
 extension-02 factory correction commit passed the checker. The ID 13 runtime
 commit's local check reported a body line over 80 characters because the shell
 passed literal `\n` text; history was preserved without amendment.
+The ID 14 runtime commit's local check reported one body line over 80
+characters; history was preserved without amendment.
 
 ## Decisions still active
 
@@ -118,8 +152,8 @@ No blockers. Existing unrelated untracked files under `.agent`, `scripts`,
 
 ## Next concrete action
 
-Implement ID 14 one-slot physical-variant caching, keeping the recorded S1
-captures immutable and preserving the ID 13 target-color behavior.
+Update the continuation state and hand off the exact ID 13/14 runtime to
+extension 03, keeping all recorded S1/S2/S3 captures immutable.
 
 ## Resume command
 

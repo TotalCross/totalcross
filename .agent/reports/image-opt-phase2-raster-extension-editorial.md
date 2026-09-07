@@ -115,3 +115,39 @@ The raw samples and compact result record are under
 `.agent/benchmarks/image-opt-phase2-raster-extension/target-color-s2-60/`,
 `target-color-s3-60/`, and `target-color-s2-s3-60/results.txt`. Full SDK agent
 logs remain uncommitted in `TotalCrossSDK/agent-logs/`.
+
+## Extension 02 Milestone 2 — physical variant cache
+
+ID 14 is committed in `c6515a8f0`. It reuses the ID13 source-owned slot for
+bounded CPU raster variants. The key is built from explicit plan scalars,
+exact floating-point bit values, operation parameters, dimensions, source
+generation/decode generation, target dimensions, and target color type. The
+admission policy is exactly two observations: first draw records the key,
+second materializes, subsequent draws hit. Mutation clears the slot and
+pending key; key changes replace one materialized candidate at a time.
+
+| Scenario | Samples | Median | P95 | CV | Peak RSS | Result |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| S1 true pre-ID14 | 60 | 1326 ms | 1328 ms | 0.129% | 114160 KiB | frozen pre-ID14 |
+| S2 ID14 disabled | 60 | 1323 ms | 1334 ms | 0.329% | 116608 KiB | zero feature path |
+| S3 ID14 enabled | 60 | 263 ms | 265 ms | 0.280% | 116320 KiB | stable physical variant reuse |
+
+All hashes were `000000D600000165`. S2/S3 median elapsed deltas versus S1
+were -0.226%/-80.166%; matched RSS deltas were +2.144%/+1.892%. The CV
+threshold stayed below 5%, so no 200-sample escalation was needed.
+
+Focused smokes passed repeat, identity precedence, replacement/eviction,
+mutation invalidation, encoded-root decode-generation invalidation, crop, alpha,
+rotation, hardware-scale, disabled parity,
+and ID13 BGRA/translucent compatibility. The combined ID13+ID14 BGRA smoke
+passed with one physical materialization, one hit, no duplicate target-color
+materialization, and stable output parity. The implementation reports bounded
+bytes (repeat160000, replacement307456, mutation160000) and no extra backing
+record for the derived variant. Raw samples are under
+`.agent/benchmarks/image-opt-phase2-raster-extension/physical-variant-s2-60/`
+and `physical-variant-s3-60/`; the compact record is
+`physical-variant-s2-s3-60/results.txt`.
+
+The physical-variant benchmark uses the exact pre-ID14 production/harness
+revision `07912a0f2d5d48705a5b7caa65f82a71ed7d3b57` and runtime revision
+`c6515a8f0`. Full SDK agent logs remain uncommitted.
