@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <limits>
-#include <new>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -29,12 +29,61 @@
 namespace {
 
 using Clock = std::chrono::steady_clock;
+constexpr size_t kVariantCount = 4;
+
+enum class Variant : size_t {
+    Portable = 0,
+    Forced,
+    ForcedImpl,
+    Builtin,
+};
+
+constexpr std::array<const char*, kVariantCount> kVariantNames = {
+    "SWAP32_PORTABLE",
+    "SWAP32_FORCED",
+    "swap32_forced_impl",
+    "builtinSwap32",
+};
 
 volatile uint64_t checksum_sink = 0;
 
-NATIVE_SWAP_NOINLINE void native_swap_buffer(const uint32_t* source,
+NATIVE_SWAP_NOINLINE void SWAP32_PORTABLE(const uint32_t* source,
+                                          uint32_t* destination,
+                                          size_t pixel_count) noexcept {
+    for (size_t index = 0; index < pixel_count; ++index) {
+        destination[index] = (((source[index] >> 24) & 0xFF)) |
+                             ((((source[index] >> 16) & 0xFF) << 8) |
+                              (((source[index] >> 8) & 0xFF) << 16) |
+                              ((source[index] & 0xFF) << 24));
+    }
+}
+
+NATIVE_SWAP_NOINLINE void SWAP32_FORCED(const uint32_t* source,
+                                        uint32_t* destination,
+                                        size_t pixel_count) noexcept {
+    for (size_t index = 0; index < pixel_count; ++index) {
+        destination[index] = (((unsigned long) source[index] << 24) & 0xFF000000) |
+                             ((((unsigned long) source[index] << 8) & 0x00FF0000) |
+                              (((unsigned long) source[index] >> 8) & 0x0000FF00) |
+                              (((unsigned long) source[index] >> 24) & 0x000000FF));
+    }
+}
+
+NATIVE_SWAP_NOINLINE void swap32_forced_impl(const uint32_t* source,
                                              uint32_t* destination,
                                              size_t pixel_count) noexcept {
+    for (size_t index = 0; index < pixel_count; ++index) {
+        const uint32_t value = source[index];
+        destination[index] = ((value >> 24) & 0x000000FFu) |
+                             ((value >> 8) & 0x0000FF00u) |
+                             ((value << 8) & 0x00FF0000u) |
+                             ((value << 24) & 0xFF000000u);
+    }
+}
+
+NATIVE_SWAP_NOINLINE void builtinSwap32(const uint32_t* source,
+                                        uint32_t* destination,
+                                        size_t pixel_count) noexcept {
 #if defined(_MSC_VER)
     for (size_t index = 0; index < pixel_count; ++index) {
         destination[index] = _byteswap_ulong(source[index]);
@@ -48,16 +97,14 @@ NATIVE_SWAP_NOINLINE void native_swap_buffer(const uint32_t* source,
 #endif
 }
 
-NATIVE_SWAP_NOINLINE void portable_swap_buffer(const uint32_t* source,
-                                               uint32_t* destination,
-                                               size_t pixel_count) noexcept {
-    for (size_t index = 0; index < pixel_count; ++index) {
-        const uint32_t value = source[index];
-        destination[index] = (((value >> 24) & 0xFFu)) |
-                             ((((value >> 16) & 0xFFu) << 8) |
-                              (((value >> 8) & 0xFFu) << 16) |
-                              ((value & 0xFFu) << 24));
+size_t parse_count(const char* text, const char* name, bool allow_zero = false) {
+    char* end = nullptr;
+    const unsigned long long parsed = std::strtoull(text, &end, 10);
+    if (end == text || *end != '\0' || (!allow_zero && parsed == 0) ||
+        parsed > std::numeric_limits<size_t>::max()) {
+        throw std::invalid_argument(std::string("invalid ") + name);
     }
+    return static_cast<size_t>(parsed);
 }
 
 uint64_t checksum(const std::vector<uint32_t>& values) noexcept {
@@ -69,40 +116,37 @@ uint64_t checksum(const std::vector<uint32_t>& values) noexcept {
     return result;
 }
 
-uint64_t measure_native(const std::vector<uint32_t>& source,
-                        std::vector<uint32_t>& destination,
-                        uint64_t& result_checksum) noexcept {
-    std::fill(destination.begin(), destination.end(), 0xA5A5A5A5u);
-    const auto start = Clock::now();
-    native_swap_buffer(source.data(), destination.data(), source.size());
-    const auto finish = Clock::now();
-    result_checksum = checksum(destination);
-    checksum_sink ^= result_checksum;
-    return static_cast<uint64_t>(
-        std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count());
-}
-
-uint64_t measure_portable(const std::vector<uint32_t>& source,
-                          std::vector<uint32_t>& destination,
-                          uint64_t& result_checksum) noexcept {
-    std::fill(destination.begin(), destination.end(), 0xA5A5A5A5u);
-    const auto start = Clock::now();
-    portable_swap_buffer(source.data(), destination.data(), source.size());
-    const auto finish = Clock::now();
-    result_checksum = checksum(destination);
-    checksum_sink ^= result_checksum;
-    return static_cast<uint64_t>(
-        std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count());
-}
-
-size_t parse_count(const char* text, const char* name, bool allow_zero = false) {
-    char* end = nullptr;
-    const unsigned long long parsed = std::strtoull(text, &end, 10);
-    if (end == text || *end != '\0' || (!allow_zero && parsed == 0) ||
-        parsed > std::numeric_limits<size_t>::max()) {
-        throw std::invalid_argument(std::string("invalid ") + name);
+void run_variant(Variant variant,
+                 const std::vector<uint32_t>& source,
+                 std::vector<uint32_t>& destination) noexcept {
+    switch (variant) {
+        case Variant::Portable:
+            SWAP32_PORTABLE(source.data(), destination.data(), source.size());
+            break;
+        case Variant::Forced:
+            SWAP32_FORCED(source.data(), destination.data(), source.size());
+            break;
+        case Variant::ForcedImpl:
+            swap32_forced_impl(source.data(), destination.data(), source.size());
+            break;
+        case Variant::Builtin:
+            builtinSwap32(source.data(), destination.data(), source.size());
+            break;
     }
-    return static_cast<size_t>(parsed);
+}
+
+uint64_t measure_variant(Variant variant,
+                         const std::vector<uint32_t>& source,
+                         std::vector<uint32_t>& destination,
+                         uint64_t& result_checksum) noexcept {
+    std::fill(destination.begin(), destination.end(), 0xA5A5A5A5u);
+    const auto start = Clock::now();
+    run_variant(variant, source, destination);
+    const auto finish = Clock::now();
+    result_checksum = checksum(destination);
+    checksum_sink ^= result_checksum;
+    return static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count());
 }
 
 std::string compiler_version() {
@@ -156,6 +200,18 @@ std::string architecture() {
 #endif
 }
 
+std::string order_string(size_t sample) {
+    std::string order;
+    for (size_t slot = 0; slot < kVariantCount; ++slot) {
+        if (slot != 0) {
+            order += ">";
+        }
+        const size_t variant_index = (sample + slot) % kVariantCount;
+        order += kVariantNames[variant_index];
+    }
+    return order;
+}
+
 std::string json_escape(const std::string& value) {
     std::string escaped;
     escaped.reserve(value.size());
@@ -180,15 +236,14 @@ void write_summary(const std::string& path,
                    size_t height,
                    size_t warmups,
                    size_t samples,
-                   const std::vector<uint64_t>& native_times,
-                   const std::vector<uint64_t>& portable_times,
+                   const std::array<std::vector<uint64_t>, kVariantCount>& times,
                    bool checksums_agree) {
-    const uint64_t native_median = percentile(native_times, 0.50);
-    const uint64_t portable_median = percentile(portable_times, 0.50);
-    const uint64_t native_p95 = percentile(native_times, 0.95);
-    const uint64_t portable_p95 = percentile(portable_times, 0.95);
-    const double ratio = static_cast<double>(native_median) /
-                         static_cast<double>(portable_median);
+    std::array<uint64_t, kVariantCount> medians {};
+    std::array<uint64_t, kVariantCount> p95s {};
+    for (size_t variant = 0; variant < kVariantCount; ++variant) {
+        medians[variant] = percentile(times[variant], 0.50);
+        p95s[variant] = percentile(times[variant], 0.95);
+    }
 
     std::ofstream output(path);
     if (!output) {
@@ -202,14 +257,21 @@ void write_summary(const std::string& path,
            << "  \"os\": \"" << operating_system() << "\",\n"
            << "  \"architecture\": \"" << architecture() << "\",\n"
            << "  \"warmups\": " << warmups << ",\n"
-           << "  \"samples\": " << samples << ",\n"
-           << "  \"native_median_ns\": " << native_median << ",\n"
-           << "  \"native_p95_ns\": " << native_p95 << ",\n"
-           << "  \"portable_median_ns\": " << portable_median << ",\n"
-           << "  \"portable_p95_ns\": " << portable_p95 << ",\n"
-           << "  \"native_portable_ratio\": " << ratio << ",\n"
-           << "  \"checksum_agreement\": " << (checksums_agree ? "true" : "false")
-           << "\n}\n";
+           << "  \"samples\": " << samples << ",\n";
+    for (size_t variant = 0; variant < kVariantCount; ++variant) {
+        output << "  \"" << kVariantNames[variant] << "_median_ns\": "
+               << medians[variant] << ",\n"
+               << "  \"" << kVariantNames[variant] << "_p95_ns\": "
+               << p95s[variant] << ",\n";
+    }
+    for (size_t variant = 0; variant < kVariantCount; ++variant) {
+        const double ratio = static_cast<double>(medians[variant]) /
+                             static_cast<double>(medians[0]);
+        output << "  \"" << kVariantNames[variant]
+               << "_to_portable_ratio\": " << ratio << ",\n";
+    }
+    output << "  \"checksum_agreement\": "
+           << (checksums_agree ? "true" : "false") << "\n}\n";
     if (!output) {
         throw std::runtime_error("cannot write summary output");
     }
@@ -242,17 +304,16 @@ int main(int argc, char** argv) {
         }
 
         for (size_t sample = 0; sample < warmups; ++sample) {
-            uint64_t native_checksum = 0;
-            uint64_t portable_checksum = 0;
-            if ((sample & 1u) == 0) {
-                measure_native(source, destination, native_checksum);
-                measure_portable(source, destination, portable_checksum);
-            } else {
-                measure_portable(source, destination, portable_checksum);
-                measure_native(source, destination, native_checksum);
+            std::array<uint64_t, kVariantCount> warmup_checksums {};
+            for (size_t slot = 0; slot < kVariantCount; ++slot) {
+                const Variant variant = static_cast<Variant>((sample + slot) % kVariantCount);
+                measure_variant(variant, source, destination,
+                                warmup_checksums[static_cast<size_t>(variant)]);
             }
-            if (native_checksum != portable_checksum) {
-                throw std::runtime_error("checksum mismatch during warmup");
+            for (size_t variant = 1; variant < kVariantCount; ++variant) {
+                if (warmup_checksums[variant] != warmup_checksums[0]) {
+                    throw std::runtime_error("checksum mismatch during warmup");
+                }
             }
         }
 
@@ -260,31 +321,42 @@ int main(int argc, char** argv) {
         if (!raw) {
             throw std::runtime_error("cannot open raw output");
         }
-        raw << "sample,order,native_ns,portable_ns,native_checksum,portable_checksum\n";
+        raw << "sample,order";
+        for (const char* name : kVariantNames) {
+            raw << "," << name << "_ns";
+        }
+        for (const char* name : kVariantNames) {
+            raw << "," << name << "_checksum";
+        }
+        raw << "\n";
 
-        std::vector<uint64_t> native_times;
-        std::vector<uint64_t> portable_times;
-        native_times.reserve(samples);
-        portable_times.reserve(samples);
+        std::array<std::vector<uint64_t>, kVariantCount> times;
+        for (auto& variant_times : times) {
+            variant_times.reserve(samples);
+        }
         bool checksums_agree = true;
         for (size_t sample = 0; sample < samples; ++sample) {
-            uint64_t native_checksum = 0;
-            uint64_t portable_checksum = 0;
-            uint64_t native_time = 0;
-            uint64_t portable_time = 0;
-            if ((sample & 1u) == 0) {
-                native_time = measure_native(source, destination, native_checksum);
-                portable_time = measure_portable(source, destination, portable_checksum);
-            } else {
-                portable_time = measure_portable(source, destination, portable_checksum);
-                native_time = measure_native(source, destination, native_checksum);
+            std::array<uint64_t, kVariantCount> sample_times {};
+            std::array<uint64_t, kVariantCount> sample_checksums {};
+            for (size_t slot = 0; slot < kVariantCount; ++slot) {
+                const Variant variant = static_cast<Variant>((sample + slot) % kVariantCount);
+                const size_t variant_index = static_cast<size_t>(variant);
+                sample_times[variant_index] = measure_variant(
+                    variant, source, destination, sample_checksums[variant_index]);
+                times[variant_index].push_back(sample_times[variant_index]);
             }
-            checksums_agree = checksums_agree && native_checksum == portable_checksum;
-            native_times.push_back(native_time);
-            portable_times.push_back(portable_time);
-            raw << sample << ',' << (((sample & 1u) == 0) ? "native-portable" : "portable-native")
-                << ',' << native_time << ',' << portable_time << ','
-                << native_checksum << ',' << portable_checksum << '\n';
+            for (size_t variant = 1; variant < kVariantCount; ++variant) {
+                checksums_agree = checksums_agree &&
+                                  sample_checksums[variant] == sample_checksums[0];
+            }
+            raw << sample << ',' << order_string(sample);
+            for (const uint64_t elapsed : sample_times) {
+                raw << ',' << elapsed;
+            }
+            for (const uint64_t result_checksum : sample_checksums) {
+                raw << ',' << result_checksum;
+            }
+            raw << '\n';
         }
         if (!raw) {
             throw std::runtime_error("cannot write raw output");
@@ -293,8 +365,8 @@ int main(int argc, char** argv) {
         if (!checksums_agree) {
             throw std::runtime_error("checksum mismatch");
         }
-        write_summary(argv[6], width, height, warmups, samples, native_times,
-                      portable_times, checksums_agree);
+        write_summary(argv[6], width, height, warmups, samples, times,
+                      checksums_agree);
         return 0;
     } catch (const std::exception&) {
         return 1;
