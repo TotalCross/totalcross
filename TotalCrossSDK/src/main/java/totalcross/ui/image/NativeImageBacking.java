@@ -172,6 +172,22 @@ final class NativeImageBacking extends ImageBacking {
     return writePixelsCopyBytesTest();
   }
 
+  static long physicalIdentityAttemptsForTest() {
+    return physicalIdentityAttemptsTest();
+  }
+
+  static long physicalIdentityHitsForTest() {
+    return physicalIdentityHitsTest();
+  }
+
+  static long physicalIdentityFallbacksForTest() {
+    return physicalIdentityFallbacksTest();
+  }
+
+  static long physicalIdentityResamplesAvoidedForTest() {
+    return physicalIdentityResamplesAvoidedTest();
+  }
+
   @Override
   boolean isNative() {
     return true;
@@ -382,6 +398,26 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long writePixelsCopyBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long physicalIdentityAttemptsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long physicalIdentityHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long physicalIdentityFallbacksTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long physicalIdentityResamplesAvoidedTest() {
     return 0;
   }
 

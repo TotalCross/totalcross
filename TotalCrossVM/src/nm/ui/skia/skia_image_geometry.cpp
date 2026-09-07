@@ -291,6 +291,7 @@ static bool geometryDrawCompiled(SkCanvas* canvas, const SkImage* image,
     if (!std::isfinite(scaleX) || !std::isfinite(scaleY) || scaleX <= 0 || scaleY <= 0) {
         return false;
     }
+    SkMatrix rootToCanvas;
     const double planTx = srcLeft - dstLeft / scaleX;
     const double planTy = srcTop - dstTop / scaleY;
     const SkMatrix canvasToRoot = SkMatrix::MakeAll(
@@ -299,7 +300,6 @@ static bool geometryDrawCompiled(SkCanvas* canvas, const SkImage* image,
         static_cast<float>(transform.c / scaleX), static_cast<float>(transform.d / scaleY),
         static_cast<float>(transform.c * planTx + transform.d * planTy + transform.ty),
         0, 0, 1);
-    SkMatrix rootToCanvas;
     if (!canvasToRoot.invert(&rootToCanvas)) {
         return false;
     }
@@ -341,6 +341,181 @@ static bool geometryDrawCompiled(SkCanvas* canvas, const SkImage* image,
     return true;
 }
 
+struct RasterPhysicalPlan {
+    GeometryTransform transform;
+    SkRect sourcePixels;
+    SkRect destinationPixels;
+};
+
+static SkPoint mapPoint(const SkMatrix& matrix, float x, float y) {
+    SkPoint point = SkPoint::Make(x, y);
+    matrix.mapPoints(&point, 1);
+    return point;
+}
+
+static bool exactValue(float value, double expected) {
+    return std::isfinite(value) && value == static_cast<float>(expected);
+}
+
+static bool integerValue(float value, int32* result) {
+    if (!std::isfinite(value)) {
+        return false;
+    }
+    const double rounded = std::round(static_cast<double>(value));
+    if (value != static_cast<float>(rounded)
+        || rounded < std::numeric_limits<int32>::min()
+        || rounded > std::numeric_limits<int32>::max()) {
+        return false;
+    }
+    *result = static_cast<int32>(rounded);
+    return true;
+}
+
+static bool purePhysicalGeometry(const SkiaImageDrawPlanData* plan) {
+    if (!plan || plan->operationCount <= 0 || !plan->operations) {
+        return false;
+    }
+    for (int i = 0; i < plan->operationCount; ++i) {
+        switch (plan->operations[i]) {
+        case SKIA_IMAGE_DRAW_SCALE:
+        case SKIA_IMAGE_DRAW_SMOOTH_SCALE:
+        case SKIA_IMAGE_DRAW_FRAME_SELECT:
+        case SKIA_IMAGE_DRAW_CROP:
+        case SKIA_IMAGE_DRAW_FRAME_LAYOUT:
+            break;
+        default:
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan);
+
+static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                    NativeImageBackingRecord* source, float srcLeft, float srcTop,
+                                    float srcRight, float srcBottom, float dstLeft, float dstTop,
+                                    float dstRight, float dstBottom, RasterPhysicalPlan* result) {
+    if (!plan || !canvas || !source || !result || !purePhysicalGeometry(plan)
+        || plan->alphaMask != 255 || plan->materializeAlphaMask != 255
+        || plan->outputAlphaMask != 255 || canvas->getSaveCount() != 1) {
+        return false;
+    }
+
+    SkPixmap targetPixels;
+    if (!canvas->peekPixels(&targetPixels) || targetPixels.width() <= 0 || targetPixels.height() <= 0) {
+        return false;
+    }
+    SkIRect deviceClip;
+    if (!canvas->getDeviceClipBounds(&deviceClip)
+        || deviceClip != SkIRect::MakeWH(targetPixels.width(), targetPixels.height())) {
+        return false;
+    }
+
+    GeometryTransform transform;
+    if (!compileGeometry(plan, -1, &transform)) {
+        return false;
+    }
+    const double scaleX = (dstRight - dstLeft) / (srcRight - srcLeft);
+    const double scaleY = (dstBottom - dstTop) / (srcBottom - srcTop);
+    if (!std::isfinite(scaleX) || !std::isfinite(scaleY) || scaleX <= 0 || scaleY <= 0) {
+        return false;
+    }
+    const double planTx = srcLeft - dstLeft / scaleX;
+    const double planTy = srcTop - dstTop / scaleY;
+    const SkMatrix canvasToRoot = SkMatrix::MakeAll(
+        static_cast<float>(transform.a / scaleX), static_cast<float>(transform.b / scaleY),
+        static_cast<float>(transform.a * planTx + transform.b * planTy + transform.tx),
+        static_cast<float>(transform.c / scaleX), static_cast<float>(transform.d / scaleY),
+        static_cast<float>(transform.c * planTx + transform.d * planTy + transform.ty),
+        0, 0, 1);
+    SkMatrix rootToCanvas;
+    if (!canvasToRoot.invert(&rootToCanvas)) {
+        return false;
+    }
+    const SkMatrix canvasMatrix = canvas->getTotalMatrix();
+    if (canvasMatrix.hasPerspective()) {
+        return false;
+    }
+
+    const SkPoint rootOriginInCanvas = mapPoint(rootToCanvas, 0, 0);
+    const SkPoint rootXInCanvas = mapPoint(rootToCanvas, 1, 0);
+    const SkPoint rootYInCanvas = mapPoint(rootToCanvas, 0, 1);
+    const SkPoint rootOrigin = mapPoint(canvasMatrix, rootOriginInCanvas.fX, rootOriginInCanvas.fY);
+    const SkPoint rootX = mapPoint(canvasMatrix, rootXInCanvas.fX, rootXInCanvas.fY);
+    const SkPoint rootY = mapPoint(canvasMatrix, rootYInCanvas.fX, rootYInCanvas.fY);
+    if (!exactValue(rootX.fX - rootOrigin.fX, 1) || !exactValue(rootX.fY - rootOrigin.fY, 0)
+        || !exactValue(rootY.fX - rootOrigin.fX, 0) || !exactValue(rootY.fY - rootOrigin.fY, 1)) {
+        return false;
+    }
+
+    const SkPoint destinationTopLeft = mapPoint(canvasMatrix, dstLeft, dstTop);
+    const SkPoint destinationTopRight = mapPoint(canvasMatrix, dstRight, dstTop);
+    const SkPoint destinationBottomLeft = mapPoint(canvasMatrix, dstLeft, dstBottom);
+    const SkPoint destinationBottomRight = mapPoint(canvasMatrix, dstRight, dstBottom);
+    if (!exactValue(destinationTopRight.fY, destinationTopLeft.fY)
+        || !exactValue(destinationBottomLeft.fX, destinationTopLeft.fX)
+        || !exactValue(destinationBottomRight.fX, destinationTopRight.fX)
+        || !exactValue(destinationBottomRight.fY, destinationBottomLeft.fY)
+        || destinationTopRight.fX <= destinationTopLeft.fX
+        || destinationBottomLeft.fY <= destinationTopLeft.fY) {
+        return false;
+    }
+
+    int32 destinationLeft;
+    int32 destinationTop;
+    int32 destinationRight;
+    int32 destinationBottom;
+    int32 sourceLeft;
+    int32 sourceTop;
+    int32 sourceRight;
+    int32 sourceBottom;
+    if (!integerValue(destinationTopLeft.fX, &destinationLeft)
+        || !integerValue(destinationTopLeft.fY, &destinationTop)
+        || !integerValue(destinationTopRight.fX, &destinationRight)
+        || !integerValue(destinationBottomLeft.fY, &destinationBottom)
+        || !integerValue(destinationLeft - rootOrigin.fX, &sourceLeft)
+        || !integerValue(destinationTop - rootOrigin.fY, &sourceTop)
+        || !integerValue(destinationRight - rootOrigin.fX, &sourceRight)
+        || !integerValue(destinationBottom - rootOrigin.fY, &sourceBottom)
+        || sourceRight <= sourceLeft || sourceBottom <= sourceTop
+        || destinationRight - destinationLeft != sourceRight - sourceLeft
+        || destinationBottom - destinationTop != sourceBottom - sourceTop) {
+        return false;
+    }
+    if (destinationLeft < 0 || destinationTop < 0
+        || destinationRight > targetPixels.width() || destinationBottom > targetPixels.height()
+        || sourceLeft < 0 || sourceTop < 0 || sourceRight > source->width || sourceBottom > source->height) {
+        return false;
+    }
+
+    const SkRect validRoot = transform.validRoot;
+    int32 validRootLeft;
+    int32 validRootTop;
+    int32 validRootRight;
+    int32 validRootBottom;
+    if (!integerValue(validRoot.fLeft, &validRootLeft)
+        || !integerValue(validRoot.fTop, &validRootTop)
+        || !integerValue(validRoot.fRight, &validRootRight)
+        || !integerValue(validRoot.fBottom, &validRootBottom)
+        || sourceLeft < validRootLeft || sourceTop < validRootTop
+        || sourceRight > validRootRight || sourceBottom > validRootBottom) {
+        return false;
+    }
+
+    if (transform.b != 0.0 || transform.c != 0.0) {
+        return false;
+    }
+    result->transform = transform;
+    result->sourcePixels = SkRect::MakeLTRB(static_cast<float>(sourceLeft), static_cast<float>(sourceTop),
+                                             static_cast<float>(sourceRight), static_cast<float>(sourceBottom));
+    result->destinationPixels = SkRect::MakeLTRB(static_cast<float>(destinationLeft),
+                                                  static_cast<float>(destinationTop),
+                                                  static_cast<float>(destinationRight),
+                                                  static_cast<float>(destinationBottom));
+    return true;
+}
+
 static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan) {
     if (!plan || plan->rootFrameCount != 1 || plan->outputFrameCount != 1
         || plan->rootWidthOfAllFrames > 0 && plan->rootWidthOfAllFrames != plan->rootWidth
@@ -373,6 +548,42 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
     if (!source || !canvas) {
         return false;
     }
+#if TC_GRAPHICS_SOFTWARE
+    constexpr int32 kPhysicalIdentityFoldingBit = 1 << 15;
+    if (plan->optimizationMask & kPhysicalIdentityFoldingBit) {
+        skia_image_backing_record_physical_identity_attempt_for_test();
+        RasterPhysicalPlan physicalPlan;
+        if (buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                                    dstLeft, dstTop, dstRight, dstBottom, &physicalPlan)) {
+            if (isTrivialWritePixelsPlan(plan)
+                && skia_image_backing_try_write_pixels(canvas, plan->rootHandle, srcLeft, srcTop,
+                    srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, plan->alphaMask,
+                    plan->optimizationMask)) {
+                skia_image_backing_record_physical_identity_hit_for_test();
+                skia_image_backing_record_physical_identity_resample_avoided_for_test();
+                return true;
+            }
+            try {
+                sk_sp<SkImage> image = source->snapshot();
+                if (image) {
+                    GeometryTransform identityTransform = physicalPlan.transform;
+                    identityTransform.smooth = false;
+                    identityTransform.validRoot = physicalPlan.sourcePixels;
+                    SkiaImageDrawColorFilters colorFilters;
+                    if (geometryDrawCompiled(canvas, image.get(), identityTransform, srcLeft, srcTop,
+                                             srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+                                             plan->alphaMask, false, &colorFilters)) {
+                        skia_image_backing_record_physical_identity_hit_for_test();
+                        skia_image_backing_record_physical_identity_resample_avoided_for_test();
+                        return true;
+                    }
+                }
+            } catch (const std::bad_alloc&) {
+            }
+        }
+        skia_image_backing_record_physical_identity_fallback_for_test();
+    }
+#endif
     if (isTrivialWritePixelsPlan(plan)
         && skia_image_backing_try_write_pixels(canvas, plan->rootHandle, srcLeft, srcTop,
             srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, plan->alphaMask,

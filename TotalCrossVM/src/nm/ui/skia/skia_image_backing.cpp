@@ -37,6 +37,10 @@ uint64_t writePixelsAttemptsForTest;
 uint64_t writePixelsHitsForTest;
 uint64_t writePixelsFallbacksForTest;
 uint64_t writePixelsCopiedBytesForTest;
+uint64_t physicalIdentityAttemptsForTest;
+uint64_t physicalIdentityHitsForTest;
+uint64_t physicalIdentityFallbacksForTest;
+uint64_t physicalIdentityResamplesAvoidedForTest;
 
 uint64_t backingBytes(const NativeImageBackingRecord& backing) {
     return static_cast<uint64_t>(backing.width) * static_cast<uint64_t>(backing.height) * 4;
@@ -761,6 +765,10 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     writePixelsHitsForTest = 0;
     writePixelsFallbacksForTest = 0;
     writePixelsCopiedBytesForTest = 0;
+    physicalIdentityAttemptsForTest = 0;
+    physicalIdentityHitsForTest = 0;
+    physicalIdentityFallbacksForTest = 0;
+    physicalIdentityResamplesAvoidedForTest = 0;
 }
 
 void skia_image_backing_set_accounting_for_test(int enabled) {
@@ -772,6 +780,10 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
         backingRecordsPeakLiveForTest = 0;
         backingBytesLiveForTest = 0;
         backingBytesPeakLiveForTest = 0;
+        physicalIdentityAttemptsForTest = 0;
+        physicalIdentityHitsForTest = 0;
+        physicalIdentityFallbacksForTest = 0;
+        physicalIdentityResamplesAvoidedForTest = 0;
     }
 }
 
@@ -813,4 +825,44 @@ uint64_t skia_image_backing_write_pixels_fallbacks_for_test(void) {
 
 uint64_t skia_image_backing_write_pixels_copied_bytes_for_test(void) {
     return writePixelsCopiedBytesForTest;
+}
+
+void skia_image_backing_record_physical_identity_attempt_for_test(void) {
+    if (backingAccountingForTest) {
+        ++physicalIdentityAttemptsForTest;
+    }
+}
+
+void skia_image_backing_record_physical_identity_hit_for_test(void) {
+    if (backingAccountingForTest) {
+        ++physicalIdentityHitsForTest;
+    }
+}
+
+void skia_image_backing_record_physical_identity_fallback_for_test(void) {
+    if (backingAccountingForTest) {
+        ++physicalIdentityFallbacksForTest;
+    }
+}
+
+void skia_image_backing_record_physical_identity_resample_avoided_for_test(void) {
+    if (backingAccountingForTest) {
+        ++physicalIdentityResamplesAvoidedForTest;
+    }
+}
+
+uint64_t skia_image_backing_physical_identity_attempts_for_test(void) {
+    return physicalIdentityAttemptsForTest;
+}
+
+uint64_t skia_image_backing_physical_identity_hits_for_test(void) {
+    return physicalIdentityHitsForTest;
+}
+
+uint64_t skia_image_backing_physical_identity_fallbacks_for_test(void) {
+    return physicalIdentityFallbacksForTest;
+}
+
+uint64_t skia_image_backing_physical_identity_resamples_avoided_for_test(void) {
+    return physicalIdentityResamplesAvoidedForTest;
 }

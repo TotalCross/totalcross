@@ -409,6 +409,42 @@ TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/N
 #endif
 }
 
+TC_API void tuiNIB_physicalIdentityAttemptsT(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityAttemptsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_physical_identity_attempts_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_physicalIdentityHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityHitsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_physical_identity_hits_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_physicalIdentityFallbacks(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityFallbacksTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_physical_identity_fallbacks_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_physicalIdentityResamples(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityResamplesAvoidedTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_physical_identity_resamples_avoided_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_releaseNativeHandle_l(NMParams p) // totalcross/ui/image/NativeImageBacking private static void releaseNativeHandle(long nativeHandle);
 {
 #if TC_RENDERER_SKIA

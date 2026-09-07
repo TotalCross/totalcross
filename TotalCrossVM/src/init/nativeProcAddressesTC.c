@@ -154,6 +154,10 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsHitsTest"), &tuiNIB_writePixelsHitsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsFallbacksTest"), &tuiNIB_writePixelsFallbacksTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsCopyBytesTest"), &tuiNIB_writePixelsCopyBytesTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityAttemptsT"), &tuiNIB_physicalIdentityAttemptsT);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityHitsTest"), &tuiNIB_physicalIdentityHitsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityFallbacks"), &tuiNIB_physicalIdentityFallbacks);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityResamples"), &tuiNIB_physicalIdentityResamples);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_releaseNativeHandle_l"), &tuiNIB_releaseNativeHandle_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
