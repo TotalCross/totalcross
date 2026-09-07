@@ -23,8 +23,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Active implementation paths:
   `TotalCrossVM/src/nm/ui/skia/benchmarks/native_swap_benchmark.cpp`,
   `.github/workflows/native-swap-benchmark.yml`.
-- Next exact action: verify the final local HEAD, scoped worktree state, and
-  four-way artifact audit.
+- Final audit checkpoint: `37ed2e024b5667a10f6c6a1664e90301812c9480`.
+- Final audit passed: the four-way artifact matrix, source/workflow structure,
+  headers, diff checks, and scoped worktree were clean.
 
 ## Latest benchmark collection
 
@@ -59,5 +60,5 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Blockers: none.
 - Deliberate out-of-scope local files: unrelated untracked repository artifacts
   and generated outputs shown by scoped status; do not stage them.
-- Resume command: run the final scoped audit, record the resulting
-  `git rev-parse HEAD`, and leave the branch unmerged and unrebased.
+- Resume command: none; report the final closure HEAD, and leave the branch
+  unmerged and unrebased.

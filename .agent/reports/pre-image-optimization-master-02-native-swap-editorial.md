@@ -24,8 +24,8 @@ policy is changed by this four-way rerun.
 - Local host: macOS arm64, Clang Apple LLVM 21.0.0
   (`clang-2100.1.1.101`).
 
-The exact final branch HEAD is verified after the documentation commit and is
-reported in the execution handoff and state file.
+The closing audit checkpoint is `37ed2e024b5667a10f6c6a1664e90301812c9480`;
+the final closure HEAD is reported in the execution handoff.
 
 ## Benchmark contract
 
