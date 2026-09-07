@@ -22,6 +22,7 @@ public class ImageRasterPhysicalIdentityBenchmarkApp extends MainWindow {
     int completedSamples = 0;
     String error = "";
     String expectedHash = null;
+    boolean guardPass = true;
     try {
       ImageRasterBenchmarkSupport.require("identity".equals(testCase) || "nonidentity".equals(testCase)
           || "guards".equals(testCase), "case must be identity, nonidentity, or guards");
@@ -36,7 +37,11 @@ public class ImageRasterPhysicalIdentityBenchmarkApp extends MainWindow {
       Graphics canvas = target.getGraphics();
       ImageRasterBenchmarkSupport.require(canvas != null, "target graphics");
       if ("guards".equals(testCase)) {
-        runGuardCases(canvas, source, transformed);
+        Image.resetImageOperationAccountingForTest();
+        runGuardCases(canvas, transformed);
+        boolean exactGeometryPass = runExactGeometryCases(canvas);
+        guardPass = exactGeometryPass;
+        ImageRasterBenchmarkSupport.require(guardPass, "identity guard counters");
       }
       for (int warmup = 0; warmup < 3; warmup++) {
         drawBatch(canvas, transformed);
@@ -53,10 +58,40 @@ public class ImageRasterPhysicalIdentityBenchmarkApp extends MainWindow {
         } else {
           ImageRasterBenchmarkSupport.require(expectedHash.equals(hash), "identity hash drift");
         }
+        long expectedDraws = (long) sample * DRAWS_PER_SAMPLE;
+        if ("post-enabled".equals(scenario)) {
+          if ("identity".equals(testCase)) {
+            ImageRasterBenchmarkSupport.require(
+                NativeImageBacking.physicalIdentityAttemptsForTest() == expectedDraws
+                    && NativeImageBacking.physicalIdentityHitsForTest() == expectedDraws
+                    && NativeImageBacking.physicalIdentityFallbacksForTest() == 0
+                    && NativeImageBacking.physicalIdentityResamplesAvoidedForTest() == expectedDraws,
+                "identity counters");
+          } else if ("nonidentity".equals(testCase)) {
+            ImageRasterBenchmarkSupport.require(
+                NativeImageBacking.physicalIdentityAttemptsForTest() == expectedDraws
+                    && NativeImageBacking.physicalIdentityHitsForTest() == 0
+                    && NativeImageBacking.physicalIdentityFallbacksForTest() == expectedDraws
+                    && NativeImageBacking.physicalIdentityResamplesAvoidedForTest() == 0,
+                "nonidentity counters");
+          }
+        } else {
+          ImageRasterBenchmarkSupport.require(
+              NativeImageBacking.physicalIdentityAttemptsForTest() == 0
+                  && NativeImageBacking.physicalIdentityHitsForTest() == 0
+                  && NativeImageBacking.physicalIdentityFallbacksForTest() == 0
+                  && NativeImageBacking.physicalIdentityResamplesAvoidedForTest() == 0,
+              "disabled identity counters");
+        }
         System.out.println("sample=" + sample + ",elapsed_ms=" + elapsed + ",case=" + testCase
             + ",filter=" + filter + ",draws=" + DRAWS_PER_SAMPLE + ",pixel_hash=" + hash
             + ",source_physical=" + source.getPixelWidth() + "x" + source.getPixelHeight()
-            + ",target_physical=" + target.getPixelWidth() + "x" + target.getPixelHeight());
+            + ",target_physical=" + target.getPixelWidth() + "x" + target.getPixelHeight()
+            + ",physical_identity_attempts=" + NativeImageBacking.physicalIdentityAttemptsForTest()
+            + ",physical_identity_hits=" + NativeImageBacking.physicalIdentityHitsForTest()
+            + ",physical_identity_fallbacks=" + NativeImageBacking.physicalIdentityFallbacksForTest()
+            + ",physical_identity_resamples_avoided="
+            + NativeImageBacking.physicalIdentityResamplesAvoidedForTest());
         System.out.flush();
         completedSamples = sample;
       }
@@ -66,7 +101,13 @@ public class ImageRasterPhysicalIdentityBenchmarkApp extends MainWindow {
     }
     boolean pass = ImageRasterBenchmarkSupport.finish("ImageRasterPhysicalIdentityBenchmarkApp", scenario,
         samples, completedSamples, "case=" + testCase + ",filter=" + filter + ",draws=" + DRAWS_PER_SAMPLE
-            + ",pixel_hash=" + String.valueOf(expectedHash), error);
+            + ",pixel_hash=" + String.valueOf(expectedHash)
+            + ",guard_pass=" + guardPass
+            + ",physical_identity_attempts=" + NativeImageBacking.physicalIdentityAttemptsForTest()
+            + ",physical_identity_hits=" + NativeImageBacking.physicalIdentityHitsForTest()
+            + ",physical_identity_fallbacks=" + NativeImageBacking.physicalIdentityFallbacksForTest()
+            + ",physical_identity_resamples_avoided="
+            + NativeImageBacking.physicalIdentityResamplesAvoidedForTest(), error);
     exit(pass ? 0 : 1);
   }
 
@@ -95,16 +136,54 @@ public class ImageRasterPhysicalIdentityBenchmarkApp extends MainWindow {
     }
   }
 
-  private static void runGuardCases(Graphics canvas, Image source, Image transformed) throws Exception {
+  private static void runGuardCases(Graphics canvas, Image transformed) throws Exception {
     int alpha = transformed.alphaMask;
     transformed.alphaMask = 127;
-    canvas.drawImage(transformed, 0, 0, true);
+    boolean alphaPass = fallbackObserved(canvas, transformed, true);
     transformed.alphaMask = alpha;
-    canvas.setClip(0, 0, 99, 99);
-    canvas.drawImage(transformed, 0, 0, true);
-    canvas.clearClip();
-    source.hwScaleW = 0.75;
-    canvas.drawImage(transformed, 0, 0, true);
-    source.hwScaleW = 1;
+    double hwScale = transformed.hwScaleW;
+    transformed.hwScaleW = 0.75;
+    boolean hwScalePass = noIdentityHit(canvas, transformed);
+    transformed.hwScaleW = hwScale;
+    ImageRasterBenchmarkSupport.require(alphaPass && hwScalePass,
+        "alpha=" + alphaPass + ",hwScale=" + hwScalePass);
+  }
+
+  private static boolean fallbackObserved(Graphics canvas, Image image, boolean doClip) {
+    Image.resetImageOperationAccountingForTest();
+    canvas.drawImage(image, 0, 0, doClip);
+    long attempts = NativeImageBacking.physicalIdentityAttemptsForTest();
+    long hits = NativeImageBacking.physicalIdentityHitsForTest();
+    long fallbacks = NativeImageBacking.physicalIdentityFallbacksForTest();
+    long avoided = NativeImageBacking.physicalIdentityResamplesAvoidedForTest();
+    return attempts == 1 && hits == 0 && fallbacks == 1 && avoided == 0;
+  }
+
+  private static boolean noIdentityHit(Graphics canvas, Image image) {
+    Image.resetImageOperationAccountingForTest();
+    canvas.drawImage(image, 0, 0, false);
+    return NativeImageBacking.physicalIdentityHitsForTest() == 0
+        && NativeImageBacking.physicalIdentityResamplesAvoidedForTest() == 0;
+  }
+
+  private static boolean runExactGeometryCases(Graphics canvas) throws Exception {
+    Image crop = Image.createLogical(100, 100, 2).getClippedInstance(0, 0, 100, 100);
+    Image.resetImageOperationAccountingForTest();
+    canvas.drawImage(crop, 0, 0, false);
+    boolean cropPass = NativeImageBacking.physicalIdentityAttemptsForTest() == 1
+        && NativeImageBacking.physicalIdentityHitsForTest() == 1
+        && NativeImageBacking.physicalIdentityFallbacksForTest() == 0
+        && NativeImageBacking.physicalIdentityResamplesAvoidedForTest() == 1;
+
+    Image frames = Image.createLogical(200, 100, 2);
+    frames.setFrameCount(2);
+    Image frame = frames.getFrameInstance(1);
+    Image.resetImageOperationAccountingForTest();
+    canvas.drawImage(frame, 0, 0, false);
+    boolean framePass = NativeImageBacking.physicalIdentityAttemptsForTest() == 1
+        && NativeImageBacking.physicalIdentityHitsForTest() == 1
+        && NativeImageBacking.physicalIdentityFallbacksForTest() == 0
+        && NativeImageBacking.physicalIdentityResamplesAvoidedForTest() == 1;
+    return cropPass && framePass;
   }
 }
