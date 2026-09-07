@@ -6,9 +6,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 2 state
 
-Updated: 2026-09-05T19:34:00-03:00
+Updated: 2026-09-07T14:34:48-03:00
 Branch: `perf/image-opt-phase2-raster`
-Base SHA: `9545c18207fab74d81340b24825c5a82ddbda7fd`
+Base SHA: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Phase-3 base: final HEAD of `perf/image-opt-phase2-raster`
 Phase-3 bootstrap checkpoint SHA: `aacff9d53`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster.md`

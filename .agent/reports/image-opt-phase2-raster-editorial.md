@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 This report is the factual handoff for the lossless raster optimization phase
 on `perf/image-opt-phase2-raster`, based on phase-1 parent
-`9545c18207fab74d81340b24825c5a82ddbda7fd`.
+`a8a9480bd61aa510de423569af494d8dde69e8f2`.
 
 ## Delivered
 
