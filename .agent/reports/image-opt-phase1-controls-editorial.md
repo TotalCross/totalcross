@@ -6,7 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 1 editorial handoff
 
-Status: complete after the accounting-clear corrective follow-up.
+Status: complete after the accounting-clear corrective follow-up and addendum
+rebaseline.
 
 Phase 1 delivered internal package-private controls for 13 feature IDs without
 adding public SDK API. All future optimization defaults remain disabled and
@@ -64,5 +65,29 @@ historical benchmark artifacts remain unchanged.
 
 Focused `totalcross.ui.image.*` tests passed all 137 tests after a shared-JVM
 test precondition was made explicit in `edcefbe06`; SDK `dist -x test` also
-passed. The macOS software-Skia native build was not rerun because the
-addendum changes no native code, build configuration, or counted hot path.
+passed. The original addendum checkpoint did not rerun the macOS software-Skia
+native build because the addendum changed no native code, build configuration,
+or counted hot path; the subsequent rebaseline below did run that required
+build and smoke path.
+
+## Phase 1 addendum rebaseline handoff
+
+The post-stabilization report is
+`.agent/benchmarks/image-opt-phase1-controls/post-stabilization-rebaseline/report.md`.
+It records the authored Phase 1 SHA `1898014784b2fba5716cc033e49520740b05f0dd`
+as historical metadata and current master `7add0f29e9366a19d894237119a415416e6bb557`
+as S1. S2 and S3 use final Phase 1 code at `1d8deacb14cd3847cffb4d238c3f0fa97830951d`.
+
+The initial 60-sample run required the protocol’s 200-sample rerun because of
+the peak-RSS review threshold. Final medians were 697 ms (S1), 695 ms (S2),
+and 698 ms (S3), with peak RSS of 113680, 115888, and 113920 KB. S2 versus S1
+was -0.287% in median and +1.942% in RSS; S3 versus S1 was +0.143% in median
+and +0.211% in RSS. The persistent-RSS condition was not met, so matched
+`vmmap -summary`/RSS/physical-footprint diagnostics were not required.
+
+All three scenarios passed 200/200 sample and process-exit checks. The final
+focused Image suite passed all 137 tests, SDK `dist -x test` passed, and the
+Release software-Skia macOS CMake/Ninja build plus exact-dylib smoke passed.
+The active plan is 8,507 bytes and 195 lines. Phase 2 should rebase from
+current master before implementing any later raster optimization; historical
+benchmark artifacts remain immutable.

@@ -166,9 +166,9 @@ new baseline. Resume from state and verify each scenario SHA before rerunning.
 - [x] Record the explicit bit-15 effective-mask assertion.
 - [x] Compact the active plan to the authoritative addendum and preserve the
   authored SHA as historical metadata.
-- [ ] Record current master `7add0f29e9366a19d894237119a415416e6bb557` and
-  capture the post-stabilization S1/S2/S3 rebaseline.
-- [ ] Run final required validations and record the Phase 2 rebase handoff.
+- [x] Record current master `7add0f29e9366a19d894237119a415416e6bb557` and
+  capture the post-stabilization S1/S2/S3 rebaseline in the new report.
+- [x] Run final required validations and record the Phase 2 rebase handoff.
 
 ## Decision Log
 
@@ -190,6 +190,7 @@ new baseline. Resume from state and verify each scenario SHA before rerunning.
 
 ## Outcomes & Retrospective
 
-The addendum implementation and focused tests are complete. The current
-master rebaseline and final Phase 2 handoff remain to be recorded in the new
-post-stabilization report, state, evidence, and editorial addendum.
+The addendum implementation, current-master rebaseline, and required Phase 1
+validation are complete. Detailed measurements are recorded in the new
+post-stabilization report, state, evidence, and editorial addenda; Phase 2
+must rebase from current master before later optimization work.
