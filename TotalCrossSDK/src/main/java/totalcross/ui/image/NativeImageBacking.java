@@ -188,6 +188,26 @@ final class NativeImageBacking extends ImageBacking {
     return physicalIdentityResamplesAvoidedTest();
   }
 
+  static long targetColorAttemptsForTest() {
+    return targetColorAttemptsTest();
+  }
+
+  static long targetColorMaterializationsForTest() {
+    return targetColorMatsTest();
+  }
+
+  static long targetColorHitsForTest() {
+    return targetColorHitsTest();
+  }
+
+  static long targetColorFallbacksForTest() {
+    return targetColorFallbacksTest();
+  }
+
+  static long targetColorConvertedBytesForTest() {
+    return targetColorBytesTest();
+  }
+
   @Override
   boolean isNative() {
     return true;
@@ -273,6 +293,13 @@ final class NativeImageBacking extends ImageBacking {
       throw new IllegalStateException("Native image backing has been released");
     }
     return makeMutableNative();
+  }
+
+  boolean mutateForTest() {
+    if (nativeHandle == 0) {
+      throw new IllegalStateException("Native image backing has been released");
+    }
+    return mutateForTestNative();
   }
 
   boolean readPixels(int[] output, int offset, int x, int y, int width, int height) {
@@ -422,6 +449,31 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private static long targetColorAttemptsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorMatsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorFallbacksTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
   private static long createFromArgbPixelsNative(int[] pixels, int width, int height) {
     return 0;
   }
@@ -437,6 +489,11 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private boolean makeMutableNative() {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean mutateForTestNative() {
     return false;
   }
 

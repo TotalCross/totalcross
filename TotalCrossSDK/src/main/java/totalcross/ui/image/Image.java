@@ -864,6 +864,19 @@ public class Image extends GfxSurface {
         && backing.isValid();
   }
 
+  /** Test-only mutation of the native root retained by a deferred draw plan. */
+  void mutateDeferredRootForTest(double destinationScale) throws ImageException {
+    Object drawPlan = drawPlanForDrawing(destinationScale);
+    if (!(drawPlan instanceof ImageDrawPlan)) {
+      throw new ImageException("Deferred draw plan is unavailable");
+    }
+    Image root = ((ImageDrawPlan) drawPlan).root;
+    if (!(root.backing instanceof NativeImageBacking)
+        || !((NativeImageBacking) root.backing).mutateForTest()) {
+      throw new ImageException("Deferred draw root mutation failed");
+    }
+  }
+
   private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
     pipeline = deferred;
     width = deferred.width();

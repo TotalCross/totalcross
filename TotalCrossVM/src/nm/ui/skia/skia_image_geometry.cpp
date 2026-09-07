@@ -14,6 +14,8 @@
 #include <memory>
 
 using skia_image_backing_internal::NativeImageBackingRecord;
+using skia_image_backing_internal::RasterVariantKey;
+using skia_image_backing_internal::RasterVariantUse;
 using skia_image_backing_internal::findBacking;
 using skia_image_backing_internal::rasterInfo;
 using skia_image_backing_internal::registerBacking;
@@ -541,6 +543,98 @@ static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan) {
     return true;
 }
 
+static bool targetColorTypeSupported(SkColorType colorType) {
+    return colorType == kBGRA_8888_SkColorType || colorType == kRGB_565_SkColorType;
+}
+
+static RasterVariantKey makeTargetColorVariantKey(const NativeImageBackingRecord* source,
+                                                  const RasterPhysicalPlan& physicalPlan,
+                                                  const SkPixmap& targetPixels,
+                                                  int64_t sourceDecodeGeneration) {
+    RasterVariantKey key;
+    key.sourceGeneration = source->generation;
+    key.sourceDecodeGeneration = static_cast<uint64_t>(sourceDecodeGeneration);
+    key.sourceLeft = static_cast<int32>(physicalPlan.sourcePixels.fLeft);
+    key.sourceTop = static_cast<int32>(physicalPlan.sourcePixels.fTop);
+    key.sourceRight = static_cast<int32>(physicalPlan.sourcePixels.fRight);
+    key.sourceBottom = static_cast<int32>(physicalPlan.sourcePixels.fBottom);
+    key.destinationLeft = static_cast<int32>(physicalPlan.destinationPixels.fLeft);
+    key.destinationTop = static_cast<int32>(physicalPlan.destinationPixels.fTop);
+    key.destinationRight = static_cast<int32>(physicalPlan.destinationPixels.fRight);
+    key.destinationBottom = static_cast<int32>(physicalPlan.destinationPixels.fBottom);
+    key.targetWidth = targetPixels.width();
+    key.targetHeight = targetPixels.height();
+    key.targetColorType = static_cast<int32>(targetPixels.colorType());
+    key.kind = skia_image_backing_internal::RASTER_VARIANT_TARGET_COLOR;
+    return key;
+}
+
+static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                   NativeImageBackingRecord* source, float srcLeft, float srcTop,
+                                   float srcRight, float srcBottom, float dstLeft, float dstTop,
+                                   float dstRight, float dstBottom) {
+#if TC_GRAPHICS_SOFTWARE
+    constexpr int32 kTargetColorConversionBit = 1 << 13;
+    if (!plan || (plan->optimizationMask & kTargetColorConversionBit) == 0) {
+        return false;
+    }
+    SkPixmap targetPixels;
+    if (!canvas || !canvas->peekPixels(&targetPixels)
+        || !targetColorTypeSupported(targetPixels.colorType())) {
+        return false;
+    }
+    skia_image_backing_internal::recordTargetColorAttemptForTest();
+    RasterPhysicalPlan physicalPlan;
+    if (!buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                                 dstLeft, dstTop, dstRight, dstBottom, &physicalPlan)) {
+        skia_image_backing_internal::recordTargetColorFallbackForTest();
+        return false;
+    }
+    if (!skia_image_backing_internal::proveOpaque(source)) {
+        skia_image_backing_internal::recordTargetColorFallbackForTest();
+        return false;
+    }
+    const SkColorType targetColorType = targetPixels.colorType();
+    const RasterVariantKey key = makeTargetColorVariantKey(source, physicalPlan, targetPixels,
+                                                            plan->sourceDecodeGeneration);
+    sk_sp<SkImage> variant;
+    const RasterVariantUse use = skia_image_backing_internal::acquireTargetColorVariant(
+        source, key, targetColorType, &variant);
+    if (use != skia_image_backing_internal::RASTER_VARIANT_HIT
+        && use != skia_image_backing_internal::RASTER_VARIANT_MATERIALIZED) {
+        return false;
+    }
+    if (skia_image_backing_internal::tryWritePixelsImage(
+            canvas, variant.get(), source->width, source->height, true,
+            srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+            plan->alphaMask, plan->optimizationMask)) {
+        return true;
+    }
+    GeometryTransform identityTransform = physicalPlan.transform;
+    identityTransform.smooth = false;
+    identityTransform.validRoot = physicalPlan.sourcePixels;
+    SkiaImageDrawColorFilters colorFilters;
+    if (geometryDrawCompiled(canvas, variant.get(), identityTransform, srcLeft, srcTop,
+                             srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+                             plan->alphaMask, false, &colorFilters)) {
+        return true;
+    }
+#else
+    UNUSED(plan)
+    UNUSED(canvas)
+    UNUSED(source)
+    UNUSED(srcLeft)
+    UNUSED(srcTop)
+    UNUSED(srcRight)
+    UNUSED(srcBottom)
+    UNUSED(dstLeft)
+    UNUSED(dstTop)
+    UNUSED(dstRight)
+    UNUSED(dstBottom)
+#endif
+    return false;
+}
+
 static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, float srcLeft,
                          float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop,
                          float dstRight, float dstBottom, int frameOverride) {
@@ -582,6 +676,10 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
             }
         }
         skia_image_backing_record_physical_identity_fallback_for_test();
+    }
+    if (drawTargetColorVariant(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                               dstLeft, dstTop, dstRight, dstBottom)) {
+        return true;
     }
 #endif
     if (isTrivialWritePixelsPlan(plan)

@@ -135,10 +135,16 @@ totalcross/ui/image/NativeImageBacking|native private static long physicalIdenti
 totalcross/ui/image/NativeImageBacking|native private static long physicalIdentityHitsTest();
 totalcross/ui/image/NativeImageBacking|native private static long physicalIdentityFallbacksTest();
 totalcross/ui/image/NativeImageBacking|native private static long physicalIdentityResamplesAvoidedTest();
+totalcross/ui/image/NativeImageBacking|native private static long targetColorAttemptsTest();
+totalcross/ui/image/NativeImageBacking|native private static long targetColorMatsTest();
+totalcross/ui/image/NativeImageBacking|native private static long targetColorHitsTest();
+totalcross/ui/image/NativeImageBacking|native private static long targetColorFallbacksTest();
+totalcross/ui/image/NativeImageBacking|native private static long targetColorBytesTest();
 totalcross/ui/image/NativeImageBacking|native private static long createFromArgbPixelsNative(int []pixels, int width, int height);
 totalcross/ui/image/NativeImageBacking|native private long snapshotNative();
 totalcross/ui/image/NativeImageBacking|native private static void failNextSnapshotNative();
 totalcross/ui/image/NativeImageBacking|native private boolean makeMutableNative();
+totalcross/ui/image/NativeImageBacking|native private boolean mutateForTestNative();
 totalcross/ui/image/NativeImageBacking|native private long scaleNative(int width, int height, boolean smooth);
 totalcross/ui/image/NativeImageBacking|native private static long materializeGeometryNative(totalcross.ui.image.ImageDrawPlan plan);
 totalcross/ui/image/NativeImageBacking|native private boolean readPixelsNative(int []output, int offset, int x, int y, int width, int height);
