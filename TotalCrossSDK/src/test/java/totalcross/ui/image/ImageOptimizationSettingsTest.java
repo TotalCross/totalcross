@@ -220,6 +220,7 @@ class ImageOptimizationSettingsTest {
 
   @Test
   void newRasterReservationsDoNotEnableRuntimeAccountingBehavior() {
+    ImageOptimizationSettings.resetForTest();
     ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
         ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
