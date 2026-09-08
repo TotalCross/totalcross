@@ -62,6 +62,35 @@ class JpegBestFitTest {
     assertScaled(1, 8, 201, 113);
     assertScaled(1, 2, 801, 451);
     assertScaled(3, 4, 1201, 676);
+    assertScaled(1, 1, 1601, 901);
+  }
+
+  @Test
+  void factoriesKeepDistinctPoliciesAndDecodeOnlyAtARealBarrier() throws Exception {
+    Image.resetImageOperationAccountingForTest();
+    Image bestFit = Image.getJpegBestFit(jpegPath.toString(), 201, 113);
+    ImagePipeline bestFitPipeline = bestFit.pipelineForSmoke();
+    assertEquals(ImageDecodePolicy.BEST_FIT, bestFitPipeline.decodePolicy().kind());
+    assertEquals(201, bestFitPipeline.decodePolicy().parameter1());
+    assertEquals(113, bestFitPipeline.decodePolicy().parameter2());
+    assertEquals(0, Image.fullDecodeInvocationCountForTest());
+    assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+
+    Image scaled = Image.getJpegScaled(jpegPath.toString(), 3, 4);
+    ImagePipeline scaledPipeline = scaled.pipelineForSmoke();
+    assertEquals(ImageDecodePolicy.EXPLICIT_RATIO, scaledPipeline.decodePolicy().kind());
+    assertEquals(3, scaledPipeline.decodePolicy().parameter1());
+    assertEquals(4, scaledPipeline.decodePolicy().parameter2());
+    assertEquals(1201, scaled.getPixelWidth());
+    assertEquals(676, scaled.getPixelHeight());
+    assertEquals(0, Image.fullDecodeInvocationCountForTest());
+    assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+
+    Image chained = bestFit.getSmoothScaledInstance(100, 100).getAlphaInstance(-20);
+    assertEquals(ImageDecodePolicy.BEST_FIT, chained.pipelineForSmoke().decodePolicy().kind());
+    assertEquals(0, Image.materializationCountForTest());
+    assertEquals(10000, chained.getPixels().length);
+    assertEquals(1, Image.materializationCountForTest());
   }
 
   @Test

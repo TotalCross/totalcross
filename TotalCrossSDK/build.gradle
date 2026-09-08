@@ -882,6 +882,27 @@ registerImageMacSmoke('ImageDiagnosticAccountingGate', 'ImageDiagnosticAccountin
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageJpegFactoryBenchmark', 'ImageJpegFactoryBenchmarkApp',
+    'image-jpeg-factory-benchmark', true, true, [
+        'fixture=ImageJpegFactoryBenchmarkApp',
+        'factory_only_zero_decode=true',
+        'first_draw_one_decode=true',
+        'repeated_draw_one_decode=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageJpegFactorySmoke', 'ImageJpegFactorySmokeApp',
+    'image-jpeg-factory-smoke', true, true, [
+        'fixture=ImageJpegFactorySmokeApp',
+        'bestFitLazy=true',
+        'explicitRatioLazy=true',
+        'referenceParity=true',
+        'screenDraw=true',
+        'repeatedDrawReuse=true',
+        'gpuBacking=true',
+        'overallPass=true'
+    ])
+
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
