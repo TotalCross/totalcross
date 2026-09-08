@@ -25,6 +25,7 @@ public class ImageCompactFormatsFinalStackSmokeApp extends MainWindow {
     boolean writePixels = false;
     boolean adaptiveJpeg = false;
     boolean screenDraw = false;
+    boolean androidGpu = false;
     String error = "";
     try {
       ImageCompactFormatsBenchmarkSupport.configure("post-enabled", "milestone9-full-stack", true);
@@ -32,48 +33,138 @@ public class ImageCompactFormatsFinalStackSmokeApp extends MainWindow {
           ImageCompactFormatsBenchmarkSupport.fixtures();
       ImageRasterBenchmarkSupport.require(
           ImageCompactFormatsBenchmarkSupport.formatProbeAvailable(), "native compact format probe");
-      physicalIdentity = checkPhysicalIdentity(fixtures[1]);
-      physicalVariant = checkPhysicalVariant(fixtures[1]);
-      targetColorPhysicalVariant = checkTargetColorPhysicalVariant(fixtures[1]);
-      invalidation = checkInvalidation(fixtures[1]);
-      observers = checkObservers(fixtures[1]);
-      writePixels = checkWritePixels(fixtures[1], fixtures[3], fixtures[4]);
-      adaptiveJpeg = checkAdaptiveJpeg(fixtures[0], fixtures[2]);
-      screenDraw = checkScreenDraw(fixtures[0], fixtures[2], fixtures[4]);
-      System.out.println("screenDrawCounters=writePixels="
-          + NativeImageBacking.writePixelsAttemptsForTest() + "/"
-          + NativeImageBacking.writePixelsHitsForTest() + "/"
-          + NativeImageBacking.writePixelsFallbacksForTest() + ",targetColor="
-          + NativeImageBacking.targetColorAttemptsForTest() + "/"
-          + NativeImageBacking.targetColorMaterializationsForTest() + "/"
-          + NativeImageBacking.targetColorHitsForTest() + ",physicalVariant="
-          + NativeImageBacking.physicalVariantLookupsForTest() + "/"
-          + NativeImageBacking.physicalVariantMaterializationsForTest() + "/"
-          + NativeImageBacking.physicalVariantHitsForTest() + ",physicalIdentity="
-          + NativeImageBacking.physicalIdentityAttemptsForTest() + "/"
-          + NativeImageBacking.physicalIdentityHitsForTest() + ",promotions="
-          + NativeImageBacking.promotionAttemptsForTest() + ",temporaryRgba="
-          + NativeImageBacking.temporaryRgbaDecodeBytesForTest());
-      ImageRasterBenchmarkSupport.require(physicalIdentity && physicalVariant
+      if (Settings.ANDROID.equals(Settings.platform)) {
+        androidGpu = checkAndroidGpuSmoke(fixtures);
+      } else {
+        physicalIdentity = checkPhysicalIdentity(fixtures[1]);
+        physicalVariant = checkPhysicalVariant(fixtures[1]);
+        targetColorPhysicalVariant = checkTargetColorPhysicalVariant(fixtures[1]);
+        invalidation = checkInvalidation(fixtures[1]);
+        observers = checkObservers(fixtures[1]);
+        writePixels = checkWritePixels(fixtures[1], fixtures[3], fixtures[4]);
+        adaptiveJpeg = checkAdaptiveJpeg(fixtures[0], fixtures[2]);
+        screenDraw = checkScreenDraw(fixtures[0], fixtures[2], fixtures[4]);
+        System.out.println("screenDrawCounters=writePixels="
+            + NativeImageBacking.writePixelsAttemptsForTest() + "/"
+            + NativeImageBacking.writePixelsHitsForTest() + "/"
+            + NativeImageBacking.writePixelsFallbacksForTest() + ",targetColor="
+            + NativeImageBacking.targetColorAttemptsForTest() + "/"
+            + NativeImageBacking.targetColorMaterializationsForTest() + "/"
+            + NativeImageBacking.targetColorHitsForTest() + ",physicalVariant="
+            + NativeImageBacking.physicalVariantLookupsForTest() + "/"
+            + NativeImageBacking.physicalVariantMaterializationsForTest() + "/"
+            + NativeImageBacking.physicalVariantHitsForTest() + ",physicalIdentity="
+            + NativeImageBacking.physicalIdentityAttemptsForTest() + "/"
+            + NativeImageBacking.physicalIdentityHitsForTest() + ",promotions="
+            + NativeImageBacking.promotionAttemptsForTest() + ",temporaryRgba="
+            + NativeImageBacking.temporaryRgbaDecodeBytesForTest());
+      }
+      ImageRasterBenchmarkSupport.require((physicalIdentity && physicalVariant
           && targetColorPhysicalVariant && invalidation && observers && writePixels && adaptiveJpeg
-          && screenDraw,
+          && screenDraw) || androidGpu,
           "final compact stack smoke");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
-    boolean pass = error.length() == 0 && physicalIdentity && physicalVariant
+    boolean pass = error.length() == 0 && (androidGpu || (physicalIdentity && physicalVariant
         && targetColorPhysicalVariant && invalidation && observers && writePixels && adaptiveJpeg
-        && screenDraw;
+        && screenDraw));
     System.out.println("fixture=ImageCompactFormatsFinalStackSmokeApp,physicalIdentity="
         + physicalIdentity + ",physicalVariant=" + physicalVariant
         + ",targetColorPhysicalVariant=" + targetColorPhysicalVariant
         + ",invalidation=" + invalidation + ",observers=" + observers
         + ",writePixels=" + writePixels + ",adaptiveJpeg=" + adaptiveJpeg
         + ",screenDraw=" + screenDraw
+        + ",androidGpu=" + androidGpu
         + ",overallPass=" + pass + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();
     exit(pass ? 0 : 1);
+  }
+
+  private boolean checkAndroidGpuSmoke(
+      ImageCompactFormatsBenchmarkSupport.Fixture[] fixtures) throws Exception {
+    String[] expectedFormats = {
+        ImageCompactFormatsBenchmarkSupport.RGB565,
+        ImageCompactFormatsBenchmarkSupport.RGB565,
+        ImageCompactFormatsBenchmarkSupport.GRAY8,
+        ImageCompactFormatsBenchmarkSupport.GRAY8,
+        ImageCompactFormatsBenchmarkSupport.ARGB4444
+    };
+    int[][] references = new int[fixtures.length][];
+    for (int i = 0; i < fixtures.length; i++) {
+      references[i] = ImageCompactFormatsBenchmarkSupport.decodeReference(fixtures[i].bytes);
+    }
+    ImageCompactFormatsBenchmarkSupport.configure("post-enabled", "milestone9-full-stack", true);
+    Image.resetImageOperationAccountingForTest();
+    Image[] images = new Image[fixtures.length];
+    StringBuilder hashes = new StringBuilder();
+    int qualityMax = 0;
+    double qualityRmse = 0;
+    boolean compactSelection = true;
+    boolean observerHashes = true;
+    boolean qualityPass = true;
+    for (int i = 0; i < fixtures.length; i++) {
+      images[i] = ImageCompactFormatsBenchmarkSupport.materialize(fixtures[i].bytes);
+      compactSelection &= expectedFormats[i].equals(
+          ImageCompactFormatsBenchmarkSupport.format(images[i]));
+      int[] first = images[i].getPixels();
+      int[] second = images[i].getPixels();
+      observerHashes &= ImageRasterBenchmarkSupport.fullPixelHash(first)
+          == ImageRasterBenchmarkSupport.fullPixelHash(second);
+      ImageCompactFormatsBenchmarkSupport.Quality quality =
+          ImageCompactFormatsBenchmarkSupport.quality(first, references[i]);
+      qualityMax = Math.max(qualityMax, quality.maxError);
+      qualityRmse = Math.max(qualityRmse, quality.rmse);
+      qualityPass &= quality.maxError <= 32 && quality.rmse <= 9.0;
+      if (i > 0) {
+        hashes.append('|');
+      }
+      hashes.append(ImageRasterBenchmarkSupport.hashString(
+          ImageRasterBenchmarkSupport.fullPixelHash(first)));
+    }
+
+    long directDecodeCount = NativeImageBacking.compactDirectDecodeCountForTest();
+    long directDecodeBytes = NativeImageBacking.compactDirectDecodeBytesForTest();
+    long temporaryRgbaBeforeScreen = NativeImageBacking.temporaryRgbaDecodeBytesForTest();
+    long promotionsBeforeScreen = NativeImageBacking.promotionAttemptsForTest();
+    long expectedCompactBytes = 3L * SOURCE_SIZE * SOURCE_SIZE * 2
+        + 2L * SOURCE_SIZE * SOURCE_SIZE;
+    boolean directCompact = directDecodeCount > 0
+        && directDecodeBytes == expectedCompactBytes
+        && temporaryRgbaBeforeScreen == 0
+        && promotionsBeforeScreen == 0;
+
+    Graphics screen = getGraphics();
+    ImageRasterBenchmarkSupport.require(screen != null, "MainWindow screen graphics");
+    Image.resetImageOperationAccountingForTest();
+    screen.drawImage(images[0], 0, 0, false);
+    screen.drawImage(images[2], SOURCE_SIZE, 0, false);
+    screen.drawImage(images[4], SOURCE_SIZE * 2, 0, false);
+    boolean rasterCountersZero = NativeImageBacking.writePixelsAttemptsForTest() == 0
+        && NativeImageBacking.writePixelsHitsForTest() == 0
+        && NativeImageBacking.writePixelsFallbacksForTest() == 0
+        && NativeImageBacking.targetColorAttemptsForTest() == 0
+        && NativeImageBacking.targetColorMaterializationsForTest() == 0
+        && NativeImageBacking.targetColorHitsForTest() == 0
+        && NativeImageBacking.physicalVariantLookupsForTest() == 0
+        && NativeImageBacking.physicalVariantMaterializationsForTest() == 0
+        && NativeImageBacking.physicalVariantHitsForTest() == 0
+        && NativeImageBacking.physicalIdentityAttemptsForTest() == 0
+        && NativeImageBacking.physicalIdentityHitsForTest() == 0
+        && NativeImageBacking.promotionAttemptsForTest() == 0
+        && NativeImageBacking.temporaryRgbaDecodeBytesForTest() == 0;
+    boolean pass = Settings.isOpenGL && compactSelection && observerHashes && qualityPass
+        && directCompact && rasterCountersZero;
+    System.out.println("androidGpuResult=opengl=" + Settings.isOpenGL
+        + ",formats=" + compactSelection + ",directDecodeCount=" + directDecodeCount
+        + ",directDecodeBytes=" + directDecodeBytes + ",expectedCompactBytes="
+        + expectedCompactBytes + ",temporaryRgbaBeforeScreen=" + temporaryRgbaBeforeScreen
+        + ",promotionsBeforeScreen=" + promotionsBeforeScreen
+        + ",observerHashes=" + observerHashes + ",quality=" + qualityMax + "/"
+        + qualityRmse + ",screenDraw=true,rasterCountersZero=" + rasterCountersZero
+        + ",observerHashesValue=" + hashes + ",overallPass=" + pass);
+    return pass;
   }
 
   private static boolean checkPhysicalIdentity(
