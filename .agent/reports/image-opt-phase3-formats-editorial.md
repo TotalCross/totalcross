@@ -158,3 +158,12 @@ GPU correctness evidence, not timing or RSS evidence. S3 has no speedup
 requirement, and live compact byte counters are GC-sensitive. Human review
 should confirm the intended opt-in/default-off release policy and accept the
 separate runtime-candidate and final-docs-tip provenance before Phase 4 starts.
+
+## Successor lazy-JPEG milestone
+
+The successor branch `perf/image-jpeg-factories-lazy` starts from the retained
+Phase-3 tip `224682b15a244201718701ad24be8f9d54b3fa71` and candidate
+`d2f8195b9faf828f4ee04154c93a93e1136c5bd4`. The successor runtime candidate is
+`4ce4c74d2d6310ff0eb603546c81da28ebf1bc9f`; its lazy JPEG evidence is recorded
+separately. Phase 4 remains NO-GO pending the hosted cross-platform matrix and
+an installable Android GPU smoke.

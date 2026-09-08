@@ -335,3 +335,13 @@ Create the final docs-only closeout commit
 `docs(image): close phase 3 final integration`, then record its SHA as
 `PHASE3_FINAL_TIP`. Phase 4 must branch or rebase from that tip while retaining
 `d2f8195b9faf828f4ee04154c93a93e1136c5bd4` as runtime provenance.
+
+## Successor lazy-JPEG milestone handoff
+
+The successor branch `perf/image-jpeg-factories-lazy` retains the Phase-3 tip
+`224682b15a244201718701ad24be8f9d54b3fa71` and candidate
+`d2f8195b9faf828f4ee04154c93a93e1136c5bd4`. Its runtime candidate is
+`4ce4c74d2d6310ff0eb603546c81da28ebf1bc9f`, with lazy JPEG tests and smokes
+recorded in the successor evidence. Phase 4 is explicitly NO-GO until the final
+candidate has the hosted cross-platform matrix and an installable Android GPU
+smoke.
