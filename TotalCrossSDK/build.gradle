@@ -900,8 +900,20 @@ registerImageMacSmoke('ImageJpegFactorySmoke', 'ImageJpegFactorySmokeApp',
         'screenDraw=true',
         'repeatedDrawReuse=true',
         'gpuBacking=true',
+        'nativeSourceCapture=true',
         'overallPass=true'
     ])
+
+registerImageMacSmoke('ImageCompactFormatsLazyJpegFactorySmoke',
+    'ImageCompactFormatsLazyJpegFactorySmokeApp',
+    'image-compact-formats-lazy-jpeg-factory-smoke', false, false, [
+        'fixture=ImageCompactFormatsLazyJpegFactorySmokeApp',
+        'rgb565=true',
+        'gray8=true',
+        'screenDraw=true',
+        'rasterCountersZero=true',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
 
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

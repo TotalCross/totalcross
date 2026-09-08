@@ -19,6 +19,7 @@ public class ImageJpegFactorySmokeApp extends MainWindow {
     boolean screenDraw = false;
     boolean repeatedDrawReuse = false;
     boolean gpuBacking = false;
+    boolean nativeSourceCapture = false;
     String error = "";
     try {
       int checks = runFactoryChecks();
@@ -28,15 +29,17 @@ public class ImageJpegFactorySmokeApp extends MainWindow {
       screenDraw = (checks & 8) != 0;
       repeatedDrawReuse = (checks & 16) != 0;
       gpuBacking = (checks & 32) != 0;
+      nativeSourceCapture = (checks & 64) != 0;
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
     boolean overallPass = bestFitLazy && explicitRatioLazy && referenceParity && screenDraw
-        && repeatedDrawReuse && gpuBacking;
+        && repeatedDrawReuse && gpuBacking && nativeSourceCapture;
     System.out.println("fixture=ImageJpegFactorySmokeApp,bestFitLazy=" + bestFitLazy
         + ",explicitRatioLazy=" + explicitRatioLazy + ",referenceParity=" + referenceParity
         + ",screenDraw=" + screenDraw + ",repeatedDrawReuse=" + repeatedDrawReuse
-        + ",gpuBacking=" + gpuBacking + ",overallPass=" + overallPass
+        + ",gpuBacking=" + gpuBacking + ",nativeSourceCapture=" + nativeSourceCapture
+        + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();
     exit(overallPass ? 0 : 1);
@@ -57,6 +60,12 @@ public class ImageJpegFactorySmokeApp extends MainWindow {
         && explicitRatio.getPixelWidth() == 384 && explicitRatio.getPixelHeight() == 384
         && Image.fullDecodeInvocationCountForTest() == 0
         && Image.targetedDecodeInvocationCountForTest() == 0;
+    EncodedImageSource bestFitSource = (EncodedImageSource) bestFit.pipelineForSmoke().root();
+    EncodedImageSource explicitSource = (EncodedImageSource) explicitRatio.pipelineForSmoke().root();
+    boolean nativeSourceCapture = bestFitSource.hasNativeBackingForSmoke()
+        && !bestFitSource.hasJavaBackingForSmoke()
+        && explicitSource.hasNativeBackingForSmoke()
+        && !explicitSource.hasJavaBackingForSmoke();
     require(bestFitLazy && explicitRatioLazy, "factory decode happened before barrier");
 
     screen.drawImage(bestFit, 0, 0, true);
@@ -99,6 +108,7 @@ public class ImageJpegFactorySmokeApp extends MainWindow {
     if (screenDraw) result |= 8;
     if (repeatedDrawReuse) result |= 16;
     if (gpuBacking) result |= 32;
+    if (nativeSourceCapture) result |= 64;
     return result;
   }
 
