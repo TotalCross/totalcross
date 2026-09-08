@@ -208,3 +208,30 @@ Phase 3 must resolve `git rev-parse HEAD` on
 SHA. Its scope is compact source formats. Cache/lifecycle and mmap/working-set
 work remains later scope; Windows, Linux, and iOS remain deferred by this
 execution's build policy.
+
+## 2026-09-07 — Final closeout retry
+
+The final corrective runtime tip was
+`70aa29e8a367343146fd8ade9931a11038ef77d9`; it only adds compile guards and
+stubs so raster paths are present on software targets. The existing macOS
+software-Skia build and combined smoke passed. The full macOS benchmark was
+not repeated because that runtime path was unchanged.
+
+The hosted Phase 2 S1/S2/S3 workflow was unavailable on the final branch.
+Workflow `351888305` had no usable dispatch for this ref, the workflow file was
+absent at the branch, and there were no current-branch runs. The successful
+Merge flow run `34170732235` matched the final head but is not benchmark
+evidence. No hosted timing/RSS or emulated performance evidence was claimed.
+The compact record is `.agent/evidence/image-opt-phase2-raster-closeout-hosted.md`.
+
+The requested Android retry temporarily deployed a current-head release APK
+to Xiaomi `2312DRA50G` (Android 13, Adreno 710/OpenGL ES 3.2). The report had
+stable pixel/color/identity/variant hashes and zero writePixels, target-color,
+and physical-variant counters. The artifact required an Android build,
+however, so this result is diagnostic only and does not supersede the
+ExecPlan 03 build-constrained deferral. The compact record is
+`.agent/evidence/image-opt-phase2-raster-closeout-android.md`.
+
+Phase 2 remains frozen under the plan's explicit deferral contract. Phase 3
+must resolve the exact final branch HEAD when it starts and rebase there; no
+rebase was performed in this closeout.

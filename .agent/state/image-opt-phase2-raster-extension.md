@@ -6,11 +6,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Phase 2 raster extension state
 
-Updated: 2026-09-07T19:57:00-03:00
+Updated: 2026-09-07T21:45:00-03:00
 Branch: `perf/image-opt-phase2-raster`
 Frozen Phase 1 base: `a8a9480bd61aa510de423569af494d8dde69e8f2`
 Starting Phase 2 HEAD: `a225d10165b8b60c4bf7bf2f95f5bf3b395f3a92`
 Plan: `.agent/plans/exec-plan-image-opt-phase2-raster-extension-03.md`
+Validated final runtime tip: `70aa29e8a367343146fd8ade9931a11038ef77d9`
 
 ## Active slice
 
@@ -190,6 +191,35 @@ Phase 2 is frozen for the sequential Phase 3 plan. Phase 3 must resolve
 `git rev-parse HEAD` on `perf/image-opt-phase2-raster` when it starts and
 record that exact handoff SHA in its provenance. Phase 3 scope is compact
 source formats; cache/lifecycle and mmap/working-set work remains later scope.
+
+## Final closeout retry — 2026-09-07
+
+The final runtime tip is `70aa29e8a367343146fd8ade9931a11038ef77d9`, whose
+only source changes after the prior closeout are compile guards/stubs for
+software-only raster paths. The existing macOS software-Skia build and
+post-enabled combined smoke passed; the full macOS performance suite was not
+repeated because the corrective commit does not alter that software runtime.
+
+The supported hosted Phase 2 S1/S2/S3 workflow was unavailable on this branch:
+workflow ID `351888305` is a historical native-swap workflow, has no usable
+dispatch on the final branch, and has no current-branch runs. The successful
+current-head Merge flow run is `34170732235`, but it is not benchmark
+evidence. Hosted timing/RSS claims remain deferred; no QEMU evidence was used.
+Details are in `.agent/evidence/image-opt-phase2-raster-closeout-hosted.md`.
+
+The physical Android retry produced a positive GPU-negative diagnostic with
+matching current-head release provenance, stable pixel/color/identity/variant
+hashes, and zero writePixels, target-color, and physical-variant counters.
+However, it required an Android build, which ExecPlan 03 explicitly forbids;
+the result is preserved as diagnostic only. The authoritative plan status
+remains the explicit build-constrained Android deferral in
+`.agent/evidence/image-opt-phase2-raster-closeout-android.md`.
+
+Under the plan's acceptance contract, the macOS correctness/performance gate
+and all eight controls remain accepted/default-disabled, while hosted and
+Android limitations are explicit policy deferrals. Phase 2 remains frozen;
+Phase 3 must resolve the exact branch HEAD at start and rebase there. No Phase
+3 rebase was performed.
 
 ## Deferred validation
 
