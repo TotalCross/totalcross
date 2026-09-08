@@ -4,6 +4,7 @@
 
 package totalcross.ui.image;
 
+import totalcross.sys.Settings;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Graphics;
 
@@ -23,6 +24,7 @@ public class ImageCompactFormatsFinalStackSmokeApp extends MainWindow {
     boolean observers = false;
     boolean writePixels = false;
     boolean adaptiveJpeg = false;
+    boolean screenDraw = false;
     String error = "";
     try {
       ImageCompactFormatsBenchmarkSupport.configure("post-enabled", "milestone9-full-stack", true);
@@ -37,20 +39,38 @@ public class ImageCompactFormatsFinalStackSmokeApp extends MainWindow {
       observers = checkObservers(fixtures[1]);
       writePixels = checkWritePixels(fixtures[1], fixtures[3], fixtures[4]);
       adaptiveJpeg = checkAdaptiveJpeg(fixtures[0], fixtures[2]);
+      screenDraw = checkScreenDraw(fixtures[0], fixtures[2], fixtures[4]);
+      System.out.println("screenDrawCounters=writePixels="
+          + NativeImageBacking.writePixelsAttemptsForTest() + "/"
+          + NativeImageBacking.writePixelsHitsForTest() + "/"
+          + NativeImageBacking.writePixelsFallbacksForTest() + ",targetColor="
+          + NativeImageBacking.targetColorAttemptsForTest() + "/"
+          + NativeImageBacking.targetColorMaterializationsForTest() + "/"
+          + NativeImageBacking.targetColorHitsForTest() + ",physicalVariant="
+          + NativeImageBacking.physicalVariantLookupsForTest() + "/"
+          + NativeImageBacking.physicalVariantMaterializationsForTest() + "/"
+          + NativeImageBacking.physicalVariantHitsForTest() + ",physicalIdentity="
+          + NativeImageBacking.physicalIdentityAttemptsForTest() + "/"
+          + NativeImageBacking.physicalIdentityHitsForTest() + ",promotions="
+          + NativeImageBacking.promotionAttemptsForTest() + ",temporaryRgba="
+          + NativeImageBacking.temporaryRgbaDecodeBytesForTest());
       ImageRasterBenchmarkSupport.require(physicalIdentity && physicalVariant
-          && targetColorPhysicalVariant && invalidation && observers && writePixels && adaptiveJpeg,
+          && targetColorPhysicalVariant && invalidation && observers && writePixels && adaptiveJpeg
+          && screenDraw,
           "final compact stack smoke");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
     boolean pass = error.length() == 0 && physicalIdentity && physicalVariant
-        && targetColorPhysicalVariant && invalidation && observers && writePixels && adaptiveJpeg;
+        && targetColorPhysicalVariant && invalidation && observers && writePixels && adaptiveJpeg
+        && screenDraw;
     System.out.println("fixture=ImageCompactFormatsFinalStackSmokeApp,physicalIdentity="
         + physicalIdentity + ",physicalVariant=" + physicalVariant
         + ",targetColorPhysicalVariant=" + targetColorPhysicalVariant
         + ",invalidation=" + invalidation + ",observers=" + observers
         + ",writePixels=" + writePixels + ",adaptiveJpeg=" + adaptiveJpeg
+        + ",screenDraw=" + screenDraw
         + ",overallPass=" + pass + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();
     exit(pass ? 0 : 1);
@@ -289,6 +309,61 @@ public class ImageCompactFormatsFinalStackSmokeApp extends MainWindow {
         && ImageCompactFormatsBenchmarkSupport.RGB565.equals(
             ImageCompactFormatsBenchmarkSupport.format(retry))
         && NativeImageBacking.temporaryRgbaDecodeBytesForTest() == 0;
+    return pass;
+  }
+
+  private boolean checkScreenDraw(
+      ImageCompactFormatsBenchmarkSupport.Fixture rgbFixture,
+      ImageCompactFormatsBenchmarkSupport.Fixture grayFixture,
+      ImageCompactFormatsBenchmarkSupport.Fixture alphaFixture) throws Exception {
+    Image rgb = ImageCompactFormatsBenchmarkSupport.materialize(rgbFixture.bytes);
+    Image gray = ImageCompactFormatsBenchmarkSupport.materialize(grayFixture.bytes);
+    Image alpha = ImageCompactFormatsBenchmarkSupport.materialize(alphaFixture.bytes);
+    Graphics screen = getGraphics();
+    ImageRasterBenchmarkSupport.require(screen != null, "MainWindow screen graphics");
+    Image.resetImageOperationAccountingForTest();
+    screen.drawImage(rgb, 0, 0, false);
+    screen.drawImage(gray, SOURCE_SIZE, 0, false);
+    screen.drawImage(alpha, SOURCE_SIZE * 2, 0, false);
+    boolean pass = ImageCompactFormatsBenchmarkSupport.RGB565.equals(
+            ImageCompactFormatsBenchmarkSupport.format(rgb))
+        && ImageCompactFormatsBenchmarkSupport.GRAY8.equals(
+            ImageCompactFormatsBenchmarkSupport.format(gray))
+        && ImageCompactFormatsBenchmarkSupport.ARGB4444.equals(
+            ImageCompactFormatsBenchmarkSupport.format(alpha))
+        && (!Settings.ANDROID.equals(Settings.platform) || (NativeImageBacking.writePixelsAttemptsForTest() == 0
+            && NativeImageBacking.writePixelsHitsForTest() == 0
+            && NativeImageBacking.writePixelsFallbacksForTest() == 0
+            && NativeImageBacking.targetColorAttemptsForTest() == 0
+            && NativeImageBacking.targetColorMaterializationsForTest() == 0
+            && NativeImageBacking.targetColorHitsForTest() == 0
+            && NativeImageBacking.physicalVariantLookupsForTest() == 0
+            && NativeImageBacking.physicalVariantMaterializationsForTest() == 0
+            && NativeImageBacking.physicalVariantHitsForTest() == 0
+            && NativeImageBacking.physicalIdentityAttemptsForTest() == 0
+            && NativeImageBacking.physicalIdentityHitsForTest() == 0))
+        && NativeImageBacking.promotionAttemptsForTest() == 0
+        && NativeImageBacking.temporaryRgbaDecodeBytesForTest() == 0;
+    if (!pass) {
+      System.out.println("screenDrawFailure=rgb="
+          + ImageCompactFormatsBenchmarkSupport.format(rgb) + ",gray="
+          + ImageCompactFormatsBenchmarkSupport.format(gray) + ",alpha="
+          + ImageCompactFormatsBenchmarkSupport.format(alpha) + ",write="
+          + NativeImageBacking.writePixelsAttemptsForTest() + "/"
+          + NativeImageBacking.writePixelsHitsForTest() + "/"
+          + NativeImageBacking.writePixelsFallbacksForTest() + ",target="
+          + NativeImageBacking.targetColorAttemptsForTest() + "/"
+          + NativeImageBacking.targetColorMaterializationsForTest() + "/"
+          + NativeImageBacking.targetColorHitsForTest() + ",variant="
+          + NativeImageBacking.physicalVariantLookupsForTest() + "/"
+          + NativeImageBacking.physicalVariantMaterializationsForTest() + "/"
+          + NativeImageBacking.physicalVariantHitsForTest() + ",identity="
+          + NativeImageBacking.physicalIdentityAttemptsForTest() + "/"
+          + NativeImageBacking.physicalIdentityHitsForTest() + ",promotions="
+          + NativeImageBacking.promotionAttemptsForTest() + ",tempRgba="
+          + NativeImageBacking.temporaryRgbaDecodeBytesForTest() + ",opengl="
+          + Settings.isOpenGL);
+    }
     return pass;
   }
 

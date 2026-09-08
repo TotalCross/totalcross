@@ -857,6 +857,7 @@ registerImageMacSmoke('ImageCompactFormatsFinalStackSmoke', 'ImageCompactFormats
         'observers=true',
         'writePixels=true',
         'adaptiveJpeg=true',
+        'screenDraw=true',
         'overallPass=true'
     ], ['image-opt-phase3/**'])
 
