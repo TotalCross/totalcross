@@ -18,8 +18,14 @@ final class ImageCompactFormatsNativeHooks {
     if (!image.hasNativeBackingForSmoke()) {
       return "JAVA_RASTER";
     }
-    switch (image.backing instanceof NativeImageBacking
-        ? ((NativeImageBacking) image.backing).currentFormatForTest() : -1) {
+    return formatBacking(image.backing);
+  }
+
+  static String formatBacking(ImageBacking backing) {
+    if (!(backing instanceof NativeImageBacking) || !backing.isValid()) {
+      return "JAVA_RASTER";
+    }
+    switch (((NativeImageBacking) backing).currentFormatForTest()) {
     case 0:
       return ImageCompactFormatsBenchmarkSupport.RGBA8888;
     case 1:

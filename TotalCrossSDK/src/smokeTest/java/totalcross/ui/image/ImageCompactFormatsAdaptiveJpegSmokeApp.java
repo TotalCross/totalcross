@@ -54,6 +54,7 @@ public class ImageCompactFormatsAdaptiveJpegSmokeApp extends MainWindow {
       Image scaled = base.getSmoothScaledInstance(expectedDimension, expectedDimension);
       Image actual = scaled.resolveForDrawing(1);
       int targeted = Image.targetedDecodeInvocationCountForTest();
+      ImageBacking targetedBacking = source.decodedBackingForReuse(denominator);
       long expectedBytes = (long) expectedDimension * expectedDimension
           * (ImageCompactFormatsBenchmarkSupport.GRAY8.equals(expectedFormat) ? 1 : 2);
       ImageCompactFormatsBenchmarkSupport.Quality quality =
@@ -63,18 +64,24 @@ public class ImageCompactFormatsAdaptiveJpegSmokeApp extends MainWindow {
 
       Image cachedPipeline = base.getSmoothScaledInstance(expectedDimension, expectedDimension);
       Image cached = cachedPipeline.resolveForDrawing(1);
+      int targetedAfterCache = Image.targetedDecodeInvocationCountForTest();
+      ImageBacking reusedBacking = source.decodedBackingForReuse(denominator);
       String cachedHash = ImageRasterBenchmarkSupport.hashString(
           ImageRasterBenchmarkSupport.fullPixelHash(cached));
       boolean valid = actual.getPixelWidth() == expectedDimension
           && actual.getPixelHeight() == expectedDimension
-          && actual.getWidth() == SOURCE_SIZE
-          && actual.getHeight() == SOURCE_SIZE
-          && Math.abs(actual.getContentScale() - 1.0 / denominator) < 0.000001
-          && expectedFormat.equals(ImageCompactFormatsBenchmarkSupport.format(actual))
+          && actual.getWidth() == expectedDimension
+          && actual.getHeight() == expectedDimension
+          && Math.abs(actual.getContentScale() - 1.0) < 0.000001
+          && source.getLogicalWidth() == SOURCE_SIZE
+          && source.getLogicalHeight() == SOURCE_SIZE
           && source.decodedDenominator() == denominator
           && source.decodedGeneration() == 1
-          && source.decodedBackingForReuse(denominator) != null
+          && targetedBacking != null
+          && targetedBacking == reusedBacking
+          && expectedFormat.equals(ImageCompactFormatsNativeHooks.formatBacking(targetedBacking))
           && targeted == 1
+          && targetedAfterCache == 1
           && expectedBytes == Image.decodeFinalBufferBytesForTest()
           && NativeImageBacking.temporaryRgbaDecodeBytesForTest() == 0
           && NativeImageBacking.promotionAttemptsForTest() == 0
