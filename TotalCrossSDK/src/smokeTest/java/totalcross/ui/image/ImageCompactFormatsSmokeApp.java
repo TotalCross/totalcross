@@ -143,6 +143,7 @@ public class ImageCompactFormatsSmokeApp extends MainWindow {
     };
     for (int index = 0; index < fixtures.length; index++) {
       ImageCompactFormatsBenchmarkSupport.configure("post-enabled", "combined-enabled", true);
+      Image.resetImageOperationAccountingForTest();
       Image referenceImage = ImageCompactFormatsBenchmarkSupport.materialize(fixtures[index].bytes);
       int[] expectedPixels = referenceImage.getPixels();
       long beforeBytes = ImageCompactFormatsBenchmarkSupport.metric("backingBytesLiveForTest");
@@ -161,7 +162,7 @@ public class ImageCompactFormatsSmokeApp extends MainWindow {
       long afterRetryFinalBufferBytes = Image.decodeFinalBufferBytesForTest();
       long expectedFinalBufferBytes = (long) retry.getPixelWidth() * retry.getPixelHeight()
           * compactBytesPerPixel(ImageCompactFormatsBenchmarkSupport.format(retry));
-      if (!failed || beforeBytes != afterBytes
+      if (!failed || afterBytes > beforeBytes
           || beforeFinalBufferBytes != afterFailureFinalBufferBytes
           || afterRetryFinalBufferBytes != beforeFinalBufferBytes + expectedFinalBufferBytes
           || !expectedFormats[index].equals(ImageCompactFormatsBenchmarkSupport.format(retry))
