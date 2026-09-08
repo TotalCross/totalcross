@@ -9,6 +9,21 @@ import totalcross.ui.gfx.Graphics;
 
 /** Shared Phase-3 fixtures, configuration, independent quality oracles, and shims. */
 final class ImageCompactFormatsBenchmarkSupport {
+  static final int[] PHASE2_FINAL = {
+      ImageOptimizationSettings.DECODE_ZERO_COPY,
+      ImageOptimizationSettings.RASTER_OPACITY_METADATA,
+      ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
+      ImageOptimizationSettings.RASTER_ROW_READBACK,
+      ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION,
+      ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+      ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+      ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING
+  };
+  static final int[] PHASE3_STORAGE = {
+      ImageOptimizationSettings.STORAGE_RGB565,
+      ImageOptimizationSettings.STORAGE_GRAY8,
+      ImageOptimizationSettings.STORAGE_ARGB4444
+  };
   static final String RGB565 = "RGB565";
   static final String GRAY8 = "GRAY8";
   static final String ARGB4444 = "ARGB4444";
@@ -47,50 +62,67 @@ final class ImageCompactFormatsBenchmarkSupport {
     ImageRasterBenchmarkSupport.require("pre".equals(scenario)
         || "post-disabled".equals(scenario) || "post-enabled".equals(scenario),
         "invalid scenario");
-    ImageOptimizationSettings.resetForTest();
-    if ("pre".equals(scenario)) {
-      if (phase2Stack && workload.contains("combined-enabled")) {
-        for (int feature = ImageOptimizationSettings.DECODE_ZERO_COPY;
-            feature <= ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION; feature++) {
-          ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
-        }
+    if ("milestone9-isolated".equals(workload)) {
+      configureExplicit(scenario, "post-enabled".equals(scenario) ? PHASE3_STORAGE : new int[0]);
+      return;
+    }
+    if ("milestone9-full-stack".equals(workload)) {
+      if ("post-enabled".equals(scenario)) {
+        configureExplicit(scenario, concat(PHASE2_FINAL, PHASE3_STORAGE));
+      } else {
+        configureExplicit(scenario, PHASE2_FINAL);
       }
       return;
     }
-    for (int feature = ImageOptimizationSettings.DECODE_ZERO_COPY;
-        feature <= ImageOptimizationSettings.STORAGE_ARGB4444; feature++) {
-      ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
-    }
-    if (phase2Stack) {
-      for (int feature = ImageOptimizationSettings.DECODE_ZERO_COPY;
-          feature <= ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION; feature++) {
-        ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
-      }
-    }
+    int[] enabled = phase2Stack ? PHASE2_FINAL : new int[0];
+    configureExplicit(scenario, enabled);
     if (!"post-enabled".equals(scenario)) {
       return;
     }
     if (workload.contains("rgb565") || workload.contains("writepixels")
         || workload.contains("promotion")) {
-      ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_RGB565,
-          ImageOptimizationSettings.ENABLED);
+      enable(ImageOptimizationSettings.STORAGE_RGB565);
     }
     if (workload.contains("gray8") || workload.contains("promotion")) {
-      ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_GRAY8,
-          ImageOptimizationSettings.ENABLED);
+      enable(ImageOptimizationSettings.STORAGE_GRAY8);
     }
     if (workload.contains("argb4444") || workload.contains("promotion")) {
-      ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_ARGB4444,
-          ImageOptimizationSettings.ENABLED);
+      enable(ImageOptimizationSettings.STORAGE_ARGB4444);
     }
-    if (workload.contains("combined")) {
-      ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_RGB565,
-          ImageOptimizationSettings.ENABLED);
-      ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_GRAY8,
-          ImageOptimizationSettings.ENABLED);
-      ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_ARGB4444,
-          ImageOptimizationSettings.ENABLED);
+    if (workload.contains("combined") || workload.startsWith("milestone9-")) {
+      for (int feature : PHASE3_STORAGE) {
+        enable(feature);
+      }
     }
+  }
+
+  private static int[] concat(int[] first, int[] second) {
+    int[] result = new int[first.length + second.length];
+    for (int i = 0; i < first.length; i++) {
+      result[i] = first[i];
+    }
+    for (int i = 0; i < second.length; i++) {
+      result[first.length + i] = second[i];
+    }
+    return result;
+  }
+
+  static void configureExplicit(String scenario, int[] enabledFeatures) {
+    ImageRasterBenchmarkSupport.require("pre".equals(scenario)
+        || "post-disabled".equals(scenario) || "post-enabled".equals(scenario),
+        "invalid scenario");
+    ImageRasterBenchmarkSupport.require(enabledFeatures != null, "enabled features");
+    ImageOptimizationSettings.resetForTest();
+    for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
+      ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
+    }
+    for (int feature : enabledFeatures) {
+      enable(feature);
+    }
+  }
+
+  private static void enable(int feature) {
+    ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
   }
 
   /** Materializes an encoded source without calling getGraphics on the source. */

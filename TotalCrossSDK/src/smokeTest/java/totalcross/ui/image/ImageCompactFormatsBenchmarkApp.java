@@ -103,7 +103,8 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
     return "rgb565".equals(workload) || "gray8".equals(workload)
         || "argb4444".equals(workload) || "combined-disabled".equals(workload)
         || "combined-enabled".equals(workload) || "promotion".equals(workload)
-        || "writepixels".equals(workload);
+        || "writepixels".equals(workload) || "milestone9-isolated".equals(workload)
+        || "milestone9-full-stack".equals(workload);
   }
 
   private static ImageCompactFormatsBenchmarkSupport.Fixture[] selectedFixtures(String workload) {
@@ -159,7 +160,8 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
           ImageCompactFormatsBenchmarkSupport.drawToRgbaTarget(image,
               "writepixels".equals(workload) ? SOURCE_DRAWS * 4 : draws);
         }
-        if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)) {
+        if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)
+            || workload.startsWith("milestone9-")) {
           // Encoding is an observer and must not promote the compact source.
           ImageCompactFormatsBenchmarkSupport.encodePng(image);
         }
@@ -181,7 +183,8 @@ public class ImageCompactFormatsBenchmarkApp extends MainWindow {
             + " actual=" + result.formats[i] + " workload=" + workload);
       }
     }
-    if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)) {
+    if ("combined-disabled".equals(workload) || "combined-enabled".equals(workload)
+        || workload.startsWith("milestone9-")) {
       ImageRasterBenchmarkSupport.require(result.formats.length == 5,
           "combined format count");
       ImageRasterBenchmarkSupport.require(
