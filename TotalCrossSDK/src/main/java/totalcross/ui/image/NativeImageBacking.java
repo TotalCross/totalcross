@@ -176,6 +176,14 @@ final class NativeImageBacking extends ImageBacking {
     return writePixelsCopyBytesTest();
   }
 
+  static long genericGeometryDrawsForTest() {
+    return genericGeometryDrawsTest();
+  }
+
+  static long smoothResampleDrawsForTest() {
+    return smoothResampleDrawsTest();
+  }
+
   static long physicalIdentityAttemptsForTest() {
     return physicalIdentityAttemptsTest();
   }
@@ -514,6 +522,16 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long writePixelsCopyBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long genericGeometryDrawsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long smoothResampleDrawsTest() {
     return 0;
   }
 

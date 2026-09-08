@@ -435,6 +435,24 @@ TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/N
 #endif
 }
 
+TC_API void tuiNIB_genericGeometryDrawsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long genericGeometryDrawsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_generic_geometry_draws_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_smoothResampleDrawsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long smoothResampleDrawsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_smooth_resample_draws_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_physicalIdentityAttemptsT(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityAttemptsTest();
 {
 #if TC_RENDERER_SKIA

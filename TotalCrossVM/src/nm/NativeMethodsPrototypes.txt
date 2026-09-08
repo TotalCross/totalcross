@@ -1215,6 +1215,14 @@ TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/N
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_genericGeometryDrawsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long genericGeometryDrawsTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_smoothResampleDrawsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long smoothResampleDrawsTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_physicalIdentityAttemptsT(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long physicalIdentityAttemptsTest();
 {
 }

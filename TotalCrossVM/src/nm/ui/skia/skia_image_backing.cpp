@@ -40,6 +40,8 @@ uint64_t writePixelsAttemptsForTest;
 uint64_t writePixelsHitsForTest;
 uint64_t writePixelsFallbacksForTest;
 uint64_t writePixelsCopiedBytesForTest;
+uint64_t genericGeometryDrawsForTest;
+uint64_t smoothResampleDrawsForTest;
 uint64_t physicalIdentityAttemptsForTest;
 uint64_t physicalIdentityHitsForTest;
 uint64_t physicalIdentityFallbacksForTest;
@@ -1192,6 +1194,8 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     writePixelsHitsForTest = 0;
     writePixelsFallbacksForTest = 0;
     writePixelsCopiedBytesForTest = 0;
+    genericGeometryDrawsForTest = 0;
+    smoothResampleDrawsForTest = 0;
     if (!backingAccountingForTest) {
         return;
     }
@@ -1254,6 +1258,8 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
         writePixelsHitsForTest = 0;
         writePixelsFallbacksForTest = 0;
         writePixelsCopiedBytesForTest = 0;
+        genericGeometryDrawsForTest = 0;
+        smoothResampleDrawsForTest = 0;
         physicalIdentityAttemptsForTest = 0;
         physicalIdentityHitsForTest = 0;
         physicalIdentityFallbacksForTest = 0;
@@ -1310,6 +1316,26 @@ uint64_t skia_image_backing_write_pixels_fallbacks_for_test(void) {
 
 uint64_t skia_image_backing_write_pixels_copied_bytes_for_test(void) {
     return writePixelsCopiedBytesForTest;
+}
+
+uint64_t skia_image_backing_generic_geometry_draws_for_test(void) {
+    return genericGeometryDrawsForTest;
+}
+
+uint64_t skia_image_backing_smooth_resample_draws_for_test(void) {
+    return smoothResampleDrawsForTest;
+}
+
+void skia_image_backing_record_generic_geometry_draw_for_test(void) {
+    if (backingAccountingForTest) {
+        ++genericGeometryDrawsForTest;
+    }
+}
+
+void skia_image_backing_record_smooth_resample_draw_for_test(void) {
+    if (backingAccountingForTest) {
+        ++smoothResampleDrawsForTest;
+    }
 }
 
 void skia_image_backing_record_physical_identity_attempt_for_test(void) {

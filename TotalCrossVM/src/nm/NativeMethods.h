@@ -154,6 +154,8 @@ TC_API void tuiNIB_writePixelsAttemptsTest(NMParams p);
 TC_API void tuiNIB_writePixelsHitsTest(NMParams p);
 TC_API void tuiNIB_writePixelsFallbacksTest(NMParams p);
 TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p);
+TC_API void tuiNIB_genericGeometryDrawsTest(NMParams p);
+TC_API void tuiNIB_smoothResampleDrawsTest(NMParams p);
 TC_API void tuiNIB_physicalIdentityAttemptsT(NMParams p);
 TC_API void tuiNIB_physicalIdentityHitsTest(NMParams p);
 TC_API void tuiNIB_physicalIdentityFallbacks(NMParams p);
