@@ -826,7 +826,7 @@ registerImageMacSmoke('ImageRasterPhysicalVariantSmoke', 'ImageRasterPhysicalVar
     'image-raster-physical-variant-smoke', false, false, [
         'fixture=ImageRasterPhysicalVariantSmokeApp',
         'overallPass=true'
-    ])
+    ], ['image-opt-phase3/**'])
 
 registerImageMacSmoke('ImageCompactFormatsBenchmark', 'ImageCompactFormatsBenchmarkApp',
     'image-compact-formats-benchmark', false, false, [

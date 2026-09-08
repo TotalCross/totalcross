@@ -22,9 +22,17 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
           || "replace".equals(testCase) || "mutation".equals(testCase) || "crop".equals(testCase)
           || "alpha".equals(testCase) || "hwscale".equals(testCase)
           || "rotation".equals(testCase) || "combined".equals(testCase)
-          || "decode".equals(testCase), "invalid case");
-      ImageRasterBenchmarkSupport.configure(scenario,
-          ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
+          || "decode".equals(testCase) || "compact-combined".equals(testCase), "invalid case");
+      if ("compact-combined".equals(testCase)) {
+        ImageRasterBenchmarkSupport.configureAllRasterFeatures(scenario);
+        if ("post-enabled".equals(scenario)) {
+          ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_RGB565,
+              ImageOptimizationSettings.ENABLED);
+        }
+      } else {
+        ImageRasterBenchmarkSupport.configure(scenario,
+            ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
+      }
       if ("identity".equals(testCase) && "post-enabled".equals(scenario)) {
         ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
             ImageOptimizationSettings.ENABLED);
@@ -37,6 +45,9 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
       if ("decode".equals(testCase)) {
         byte[] encoded = ImageRasterBenchmarkSupport.opaquePng(200, 200);
         source = new Image(encoded, encoded.length);
+      } else if ("compact-combined".equals(testCase)) {
+        source = ImageCompactFormatsBenchmarkSupport.materialize(
+            ImageCompactFormatsBenchmarkSupport.fixtures()[1].bytes);
       } else {
         source = source("identity".equals(testCase));
       }
@@ -52,6 +63,10 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         image = source.getSmoothScaledInstance(100, 100);
         destination = Image.createTestRaster(100, 100, 2,
             NativeImageBacking.TEST_COLOR_BGRA8888);
+      } else if ("compact-combined".equals(testCase)) {
+        image = source.getSmoothScaledInstance(100, 100);
+        destination = Image.createTestRaster(100, 100, 2,
+            NativeImageBacking.TEST_COLOR_RGB565);
       } else {
         image = source.getSmoothScaledInstance(100, 100);
         destination = Image.createLogical(100, 100, 2);
@@ -162,6 +177,15 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(lookups == 2 && hits == 0 && misses == 2
           && materializations == 1 && evictions == 0 && bytes == 160000,
           "decode-generation physical variant counters" + counters());
+    } else if ("compact-combined".equals(testCase)) {
+      ImageRasterBenchmarkSupport.require(lookups == 3 && hits == 1 && misses == 2
+          && materializations == 1 && evictions == 0 && bytes == 80000,
+          "compact combined physical variant counters" + counters());
+      ImageRasterBenchmarkSupport.require(NativeImageBacking.targetColorAttemptsForTest() == 0
+          && NativeImageBacking.targetColorMaterializationsForTest() == 0
+          && NativeImageBacking.targetColorHitsForTest() == 0
+          && NativeImageBacking.targetColorConvertedBytesForTest() == 0,
+          "compact combined target color counters");
     } else if ("combined".equals(testCase)) {
       ImageRasterBenchmarkSupport.require(lookups == 3 && hits == 1 && misses == 2
           && materializations == 1 && evictions == 0 && bytes == 160000,

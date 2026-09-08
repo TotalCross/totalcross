@@ -657,7 +657,13 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
                                    float srcRight, float srcBottom, float dstLeft, float dstTop,
                                    float dstRight, float dstBottom) {
     constexpr int32 kTargetColorConversionBit = 1 << 13;
+    constexpr int32 kPhysicalVariantCacheBit = 1 << 14;
     if (!plan || (plan->optimizationMask & kTargetColorConversionBit) == 0) {
+        return false;
+    }
+    // The physical-variant slot owns the combined geometry and target-color key.
+    // Letting this path observe first would replace that pending key on every draw.
+    if ((plan->optimizationMask & kPhysicalVariantCacheBit) != 0) {
         return false;
     }
     SkPixmap targetPixels;
