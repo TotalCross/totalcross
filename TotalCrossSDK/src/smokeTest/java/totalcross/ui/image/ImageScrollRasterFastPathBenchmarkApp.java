@@ -84,7 +84,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     return images;
   }
 
-  private static ScrollContainer buildScroll(Image[] images, boolean clip) {
+  private ScrollContainer buildScroll(Image[] images, boolean clip) {
     ScrollContainer scroll = new ScrollContainer(false, true);
     add(scroll);
     scroll.setRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
@@ -111,9 +111,9 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     paintFrame(scroll);
     frames++;
     while (true) {
-      int before = scroll.sbV == null ? 0 : scroll.sbV.value;
+      int before = scroll.sbV == null ? 0 : scroll.sbV.getValue();
       scroll.scrollContent(0, forward ? SCROLL_STEP : -SCROLL_STEP, true);
-      int after = scroll.sbV == null ? before : scroll.sbV.value;
+      int after = scroll.sbV == null ? before : scroll.sbV.getValue();
       if (before == after) {
         break;
       }
@@ -127,6 +127,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     Graphics graphics = scroll.getGraphics();
     ImageRasterBenchmarkSupport.require(graphics != null, "scroll frame graphics");
     scroll.onPaint(graphics);
+    scroll.paintChildren();
   }
 
   private static String verifyPixelParity(byte[] encoded) throws Exception {
@@ -162,7 +163,6 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     for (int warmup = 0; warmup < 2; warmup++) {
       graphics.drawImage(image, 0, 0, false);
     }
-    Image.resetImageOperationAccountingForTest();
     long start = Vm.getTimeStamp();
     for (int draw = 0; draw < 12; draw++) {
       graphics.drawImage(image, 0, 0, false);
