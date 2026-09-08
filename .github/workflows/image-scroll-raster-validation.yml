@@ -267,6 +267,7 @@ jobs:
           launcher="$(find build-image-scroll -type f -name Launcher -perm -u+x -print -quit)"
           runtime="$(find build-image-scroll -type f -name libtcvm.so -print -quit)"
           test -n "$launcher" && test -n "$runtime"
+          cp "$GITHUB_WORKSPACE"/TotalCrossSDK/dist/vm/*.tcz "$run_dir/"
           cp "$launcher" "$run_dir/ImageScrollRasterFastPathBenchmarkApp"
           cp "$runtime" "$run_dir/libtcvm.so"
           test -f "$run_dir/ImageScrollRasterFastPathBenchmarkApp.tcz"
@@ -308,6 +309,7 @@ jobs:
           $runtime = Get-ChildItem -Path build-image-scroll -Recurse -Filter tcvm.dll |
             Where-Object { $_.FullName -match '\\Release\\' } | Select-Object -First 1
           if (-not $launcher -or -not $runtime) { throw 'Fresh Windows x64 VM or launcher was not built' }
+          Copy-Item (Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/dist/vm/*.tcz') $runDir
           Copy-Item $launcher.FullName (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe')
           Copy-Item $runtime.FullName (Join-Path $runDir 'tcvm.dll')
           if (-not (Test-Path (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.tcz'))) {
