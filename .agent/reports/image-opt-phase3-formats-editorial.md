@@ -106,9 +106,9 @@ Passed: Release software-Skia native build, SDK `dist -x test`, compact format
 smoke, observer non-promotion, transactional promotion failure/retry across all
 three formats, decode failure/retry across all five fixtures, exact RGB565 and
 GRAY8 draw parity, ARGB4444 translucent fallback, isolated matrices, promotion,
-both combined matrices, and the 200-sample RSS gate. Android, iOS, Windows,
-Linux, GPU, and full cross-platform packaging remain out of scope for this
-phase.
+both combined matrices, and the 200-sample RSS gate. Milestone 9B additionally
+passed the physical Android GPU smoke and the existing iOS, Windows, and Linux
+platform build jobs. Hosted Windows/Linux performance remains unavailable.
 
 The detached true-base CMake configure was deferred because the pinned qrcodegen
 asset returned HTTP 404. The native source tree was byte-equivalent to the
@@ -118,5 +118,43 @@ S1 capture.
 Compact formats remain internal opt-in features and are disabled by default.
 The implementation was largely delivered in one runtime slice before the
 per-format S1 captures; exact-base and matched-control evidence remain separate
-and are not conflated. Phase 4 starts from the final HEAD of this branch and was
+and are not conflated. Phase 4 starts from the final Phase-3 branch tip and was
 not started here.
+
+## Milestone-9 final closeout
+
+### Delivered behavior and supported validation
+
+The final runtime candidate is `d2f8195b9faf828f4ee04154c93a93e1136c5bd4`,
+with frozen Phase-2 parent `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`, last
+9A runtime correction `8b455f2ad`, and adapter digest
+`f2292c73893fb1568c3ba5e56803f4fb0b37d3ff5b7f193f9a992a3e91472f42`. The
+existing GitHub PR matrix passed at exact head in run
+`34190415679`, including SDK, macOS ARM64, Android, iOS archive, Windows,
+Windows native/legacy, Linux amd64, and Linux ARM64.
+
+The physical Android smoke passed on Xiaomi 2312DRA50G / Android 13 / MIUI
+V14.0.9.0.TNRMIXM with Adreno 710 OpenGL ES 3.2. It selected all expected
+compact formats, decoded directly into `2097152` compact bytes, preserved
+observer hashes and quality, completed a real MainWindow screen draw, and kept
+raster, promotion, and temporary-RGBA counters at zero. The diagnostic package
+was removed after validation.
+
+### Final measured delta
+
+Fresh Matrix A isolated medians were `266/264/184` ms for S1/S2/S3, with S2
+elapsed/RSS deltas `-0.75%/+0.81%`. Fresh Matrix B full-stack medians were
+`162/159/163` ms, with first S2 deltas `-1.85%/+9.65%`. The required 200-sample
+Matrix B escalation produced `162/161` ms and `-0.62%/+8.60%`; matched
+`vmmap -summary`/`ps` checkpoints did not reproduce monotonic private growth,
+so the RSS signal remains unconfirmed allocator/residency variation and no
+runtime change was made.
+
+### Limitations and human review
+
+Hosted Windows/Linux S1/S2/S3 performance is `NOT AVAILABLE`, not failed; the
+existing platform builds provide portability evidence only. Android provides
+GPU correctness evidence, not timing or RSS evidence. S3 has no speedup
+requirement, and live compact byte counters are GC-sensitive. Human review
+should confirm the intended opt-in/default-off release policy and accept the
+separate runtime-candidate and final-docs-tip provenance before Phase 4 starts.
