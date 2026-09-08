@@ -184,7 +184,7 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y libegl1-mesa-dev libgles2-mesa-dev \
-            libfontconfig1-dev libfreetype6-dev xvfb
+            libfontconfig1-dev libfreetype6-dev xvfb gdb
 
       - name: Build fresh Linux VM and launcher
         if: matrix.platform == 'linux'
@@ -334,6 +334,19 @@ jobs:
           Add-Content $env:GITHUB_STEP_SUMMARY "runtime_sha256=$deployedHash"
           Get-Content $runLog | Where-Object { $_ -like '*fixture=ImageScrollRasterFastPathBenchmarkApp*' } |
             Add-Content $env:GITHUB_STEP_SUMMARY
+
+      - name: Capture Linux runtime backtrace on failure
+        if: failure() && matrix.platform == 'linux'
+        shell: bash
+        run: |
+          set +e
+          run_dir="$RUNNER_TEMP/image-scroll-raster"
+          if [ -x "$run_dir/ImageScrollRasterFastPathBenchmarkApp" ]; then
+            (cd "$run_dir" && timeout 60 xvfb-run -a -s '-screen 0 1024x768x24' \
+              gdb -q -batch -ex 'set pagination off' -ex run -ex bt \
+              --args ./ImageScrollRasterFastPathBenchmarkApp) \
+              > "$RUNNER_TEMP/native-backtrace.log" 2>&1
+          fi
 
       - name: Upload diagnostics on failure
         if: failure()
