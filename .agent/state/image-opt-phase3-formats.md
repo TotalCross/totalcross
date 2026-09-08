@@ -6,17 +6,30 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 3 state
 
-Updated: 2026-09-07T23:13:03-03:00
+Updated: 2026-09-07T23:30:00-03:00
 Branch: `perf/image-opt-phase3-formats`
 Phase-2 parent SHA: `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`
-Plan: `.agent/plans/exec-plan-image-opt-phase3-formats.md`
+Plans: `.agent/plans/exec-plan-image-opt-phase3-milestone9a.md`,
+`.agent/plans/exec-plan-image-opt-phase3-milestone9b.md`
 
 ## Active milestone
 
-Milestone 8 — corrective closure and final validation complete. Compact
-backing implementation, isolated format matrices, promotion matrix, both
-combined matrices, correctness matrix, and 200-sample RSS gates are complete;
-focused validation, evidence cleanup, and report handoff are complete.
+Milestone 9A — correctness and final-stack harness. Bootstrap is verified;
+runtime corrections, final-stack harness freeze, cross-feature correctness,
+and focused closeout validation remain.
+
+The previous Milestone-8 rebase and benchmark handoff are historical and remain
+unchanged. No authoritative Milestone-9 samples have been captured.
+
+## Progress
+
+- [x] Verified branch, frozen Phase-2 remote SHA, merge-base, expected tip, and
+      scoped diff safety for Milestone 9A.
+- [x] Read and activated the split Milestone-9A/9B plans.
+- [ ] Correct compact final-buffer accounting and ARGB4444 opacity semantics.
+- [ ] Freeze explicit final-stack harness and exact-base adapter.
+- [ ] Add cross-feature, observer, writePixels, and adaptive-JPEG correctness.
+- [ ] Run focused build/smoke validation and hand off to Plan 9B.
 
 ## Exact-base rebase handoff
 
@@ -36,8 +49,10 @@ Release macOS software-Skia CMake/Ninja build, and
 
 ## Last completed slice
 
-The harness/fixture/true-base adapter slice is committed through rebased
-checkpoint `b206daacd473a9c8a4af53b3775a97ccf71ad0d4`.
+The pre-Milestone-9 rebase handoff is committed through
+`604d7bb3bdba05e70699b648c59e093fb1c330e3`. The prior
+harness/fixture/true-base adapter slice is historical at
+`b206daacd473a9c8a4af53b3775a97ccf71ad0d4`.
 The deterministic adapter digest is
 `9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
 The corrected final-workload overlay used for the authoritative true-base RSS
@@ -55,12 +70,22 @@ are `9443ca28e55c3f69859602097b0db8a815e6cd6e`,
 
 ## Active paths
 
-- `.agent/plans/exec-plan-image-opt-phase3-formats.md`
+- `.agent/plans/exec-plan-image-opt-phase3-milestone9a.md`
+- `.agent/plans/exec-plan-image-opt-phase3-milestone9b.md`
 - `.agent/state/image-opt-phase3-formats.md`
 - `.agent/evidence/image-opt-phase3-formats.jsonl`
 - `.agent/archive/image-opt-phase3-formats-history.md`
 - `.agent/reports/image-opt-phase3-formats-editorial.md`
 - `.agent/benchmarks/image-opt-phase3-formats/`
+
+Milestone-9A runtime/test paths are:
+
+- `TotalCrossVM/third_party/jpeg/JpegLoader.c`
+- `TotalCrossVM/third_party/png/PngLoader.c`
+- `TotalCrossVM/src/nm/ui/skia/skia_image_backing.cpp`
+- existing image benchmark/smoke support under
+  `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/`
+- `.agent/benchmarks/image-opt-phase3-formats/milestone9/true-base-harness/`
 
 ## S1/S2/S3 status
 
@@ -108,16 +133,15 @@ not changed.
 
 ## Validation
 
-Post-rebase native rebuild, SDK distribution, compact smoke, decode and promotion
-failure/retry checks, exact RGB565/GRAY8 parity, all isolated 60-sample
-matrices, promotion, both combined matrices, and the initial corrective RSS
-gate passed. The authoritative three-pair ARGB4444 recheck is complete and
-rejects the anomaly under the frozen rule without a runtime change. Focused SDK
-tests also passed after this exact-base rebase. Final header validation,
-generated-log cleanup, report size checks, and all benchmark measurements remain
-historical pre-rebase evidence; they were not rerun or relabeled as measurements
-on the rebased SHAs. The post-rebase build used the current source tree and a
-fresh Release software-Skia dylib.
+Milestone-9 bootstrap checks passed: branch and SHA identity match the plan,
+merge-base is exact, and scoped `git diff --check` is clean. The prior
+post-rebase native rebuild, SDK distribution, compact smoke, decode/promotion
+failure-retry checks, parity checks, matrices, RSS gate, and focused SDK tests
+remain historical evidence from the pre-9A handoff.
+
+Milestone-9A focused validation is pending. Full output will be kept in
+task-specific logs and compact results recorded in
+`.agent/evidence/image-opt-phase3-formats.jsonl`.
 
 ## Deferred validation
 
@@ -139,5 +163,5 @@ scope: `TotalCrossVM/deps/wince-deps/` and `TotalCrossVM/xcode/generated/`.
 
 ## Next exact command
 
-No further Phase-3 rebase validation command is pending. Phase 4 starts from
-the rebased implementation HEAD recorded above; do not begin Phase 4 here.
+Inspect and correct compact decode accounting and ARGB4444 opacity paths, then
+add focused regression coverage before freezing the final harness.
