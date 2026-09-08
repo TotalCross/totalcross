@@ -5100,13 +5100,21 @@ public class Image extends GfxSurface {
     if (path == null) {
       throw new java.io.IOException();
     }
-    byte[] encoded = Vm.getFile(path);
-    if (encoded == null) {
-      try (File file = new File(path, File.READ_ONLY)) {
-        encoded = file.read();
+    EncodedImageSource source;
+    try {
+      source = EncodedImageSource.fromPath(path);
+    } catch (ImageException failure) {
+      if (Settings.onJavaSE) {
+        try (File file = new File(path, File.READ_ONLY)) {
+          if (!file.exists()) {
+            throw new java.io.IOException("Could not open JPEG source " + path, failure);
+          }
+        } catch (totalcross.io.IOException missing) {
+          throw new java.io.IOException("Could not open JPEG source " + path, missing);
+        }
       }
+      throw failure;
     }
-    EncodedImageSource source = EncodedImageSource.fromOwnedBytes(encoded);
     if (source.getFormat() != ImageEncodedStructure.Format.JPEG) {
       throw new ImageException(null);
     }

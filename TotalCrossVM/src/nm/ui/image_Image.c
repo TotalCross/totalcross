@@ -12,6 +12,7 @@
 #include "ImagePrimitives_c.h"
 #include "io/File.h"
 #include "JpegLoader.h"
+#include "util/utils.h"
 #include "ui/image/ImageEncodedBag.h"
 #include "ui/image/ImageDecodeFormat.h"
 #if POSIX
@@ -118,29 +119,20 @@ static void throwImageDecodeStatus(Context context, ImageDecodeStatus status)
       throwExceptionNamed(context, "totalcross.ui.image.Image$DeterministicImageDecodeException", null);
 }
 
-static void captureEncodedBag(Context context, TCObject source, const uint8* bytes, int32 length) {
-   ImageEncodedBag* bag = imageEncodedBagCreate(bytes, length);
+static bool installEncodedBag(Context context, TCObject source, ImageEncodedBag* bag) {
    ImageEncodedInspection inspection;
    TCObject comment = null;
-   if (!bytes || length <= 0) {
-      throwException(context, ImageException, "Invalid encoded image buffer");
-      return;
-   }
-   if (!bag) {
-      throwException(context, OutOfMemoryError, null);
-      return;
-   }
    if (!imageEncodedBagInspect(bag, &inspection)) {
       imageEncodedBagRelease(&bag);
       throwException(context, ImageException, "Invalid or unsupported encoded image");
-      return;
+      return false;
    }
    if (inspection.comment && inspection.commentLength > 0) {
       comment = createStringObjectFromCharP(context, (CharP)inspection.comment, inspection.commentLength);
       if (!comment) {
          imageEncodedBagRelease(&bag);
          throwException(context, OutOfMemoryError, null);
-         return;
+         return false;
       }
       setObjectLock(comment, UNLOCKED);
    }
@@ -158,6 +150,51 @@ static void captureEncodedBag(Context context, TCObject source, const uint8* byt
    EncodedImageSource_nativeBag(source) = (int64)bag;
    EncodedImageSource_bytes(source) = null;
    EncodedImageSource_comment(source) = comment;
+   return true;
+}
+
+static void captureEncodedBag(Context context, TCObject source, const uint8* bytes, int32 length) {
+   ImageEncodedBag* bag;
+   if (!bytes || length <= 0) {
+      throwException(context, ImageException, "Invalid encoded image buffer");
+      return;
+   }
+   bag = imageEncodedBagCreate(bytes, length);
+   if (!bag) {
+      throwException(context, OutOfMemoryError, null);
+      return;
+   }
+   installEncodedBag(context, source, bag);
+}
+
+static ImageEncodedBag* readEncodedFile(CharP path) {
+   FILE* file = findFile(path, null);
+   long length;
+   ImageEncodedBag* bag;
+   size_t count;
+   if (!file || fseek(file, 0, SEEK_END) != 0) {
+      if (file) {
+         fclose(file);
+      }
+      return null;
+   }
+   length = ftell(file);
+   if (length <= 0 || length > 0x7FFFFFFF || fseek(file, 0, SEEK_SET) != 0) {
+      fclose(file);
+      return null;
+   }
+   bag = imageEncodedBagCreateEmpty((int32)length);
+   if (!bag) {
+      fclose(file);
+      return null;
+   }
+   count = fread(bag->bytes, 1, (size_t)length, file);
+   fclose(file);
+   if (count != (size_t)length) {
+      imageEncodedBagRelease(&bag);
+      return null;
+   }
+   return bag;
 }
 
 TC_API void tuiEIS_captureNative_Bi(NMParams p) // totalcross/ui/image/EncodedImageSource private void captureNative(byte[] input, int length);
@@ -179,7 +216,12 @@ TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/Encode
    String2CharPBuf(pathObj, path);
    tcz = tczGetFile(path, false);
    if (!tcz) {
-      throwException(p->currentContext, ImageException, "Could not open encoded image");
+      ImageEncodedBag* bag = readEncodedFile(path);
+      if (!bag) {
+         throwException(p->currentContext, ImageException, "Could not open encoded image");
+         return;
+      }
+      installEncodedBag(p->currentContext, p->obj[0], bag);
       return;
    }
    if (tcz->uncompressedSize <= 0) {
@@ -204,38 +246,7 @@ TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/Encode
          return;
       }
       tczClose(tcz);
-      {
-         ImageEncodedInspection inspection;
-         TCObject comment = null;
-         if (!imageEncodedBagInspect(bag, &inspection)) {
-            imageEncodedBagRelease(&bag);
-            throwException(p->currentContext, ImageException, "Invalid or unsupported encoded image");
-            return;
-         }
-         if (inspection.comment && inspection.commentLength > 0) {
-            comment = createStringObjectFromCharP(p->currentContext, (CharP)inspection.comment, inspection.commentLength);
-            if (!comment) {
-               imageEncodedBagRelease(&bag);
-               throwException(p->currentContext, OutOfMemoryError, null);
-               return;
-            }
-            setObjectLock(comment, UNLOCKED);
-         }
-         if (EncodedImageSource_nativeBag(p->obj[0])) {
-            ImageEncodedBag* previous = (ImageEncodedBag*)EncodedImageSource_nativeBag(p->obj[0]);
-            imageEncodedBagRelease(&previous);
-         }
-         EncodedImageSource_formatCode(p->obj[0]) = (int32)inspection.format;
-         EncodedImageSource_length(p->obj[0]) = bag->length;
-         EncodedImageSource_intrinsicWidth(p->obj[0]) = inspection.width;
-         EncodedImageSource_intrinsicHeight(p->obj[0]) = inspection.height;
-         EncodedImageSource_logicalWidth(p->obj[0]) = inspection.logicalWidth;
-         EncodedImageSource_logicalHeight(p->obj[0]) = inspection.logicalHeight;
-         EncodedImageSource_frameCount(p->obj[0]) = inspection.frameCount;
-         EncodedImageSource_comment(p->obj[0]) = comment;
-      }
-      EncodedImageSource_nativeBag(p->obj[0]) = (int64)bag;
-      EncodedImageSource_bytes(p->obj[0]) = null;
+      installEncodedBag(p->currentContext, p->obj[0], bag);
    }
 }
 
