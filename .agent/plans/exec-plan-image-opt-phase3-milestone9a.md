@@ -77,6 +77,8 @@ full build logs, and raw logcat are not plan artifacts and must not be committed
 - [x] Add final-stack, invalidation, observer, writePixels, and adaptive-JPEG
       correctness coverage.
 - [x] Complete focused build/smoke validation and hand off to Plan 9B.
+- [x] Correct the combined target-color dispatch and complete the corrective
+      Milestone-9A validation gate without capturing authoritative samples.
 
 ## Current Architecture and Scope
 
@@ -369,6 +371,9 @@ existing archive at milestone consolidation.
 - ARGB4444 unprovable opacity resolves to `UNKNOWN`, never optimistic opaque.
 - Authoritative performance does not start until Plan 9A freezes runtime and
   harness.
+- Combined target-color probes remain observable for noncompact RGBA sources;
+  compact sources use the unified physical-variant slot without a duplicate
+  target-color materialization.
 
 ## Validation and Acceptance
 
@@ -418,13 +423,19 @@ No push, merge, tag, release, or branch-history rewrite is required in Plan 9A.
 
 Milestone 9A delivered the compact decode accounting and ARGB4444 opacity
 corrections, explicit `{0,1,2,3,4,13,14,15}` and `{5,6,7}` configuration,
-the final-stack benchmark workloads, and the exact-base adapter. The final
-harness revision is `a6e23f73011c5457b8d6e9cbc69be9bcaed1428b`; its adapter
-digest is `1fb32deccbb0c1d79c041e8f25af6d7bd1a3e6da4536fa3c4ddfb521aa08a158`.
+the final-stack benchmark workloads, and the exact-base adapter. The
+corrective final runtime commit is `8b455f2ad`; the final test/harness tip is
+`ffe681fe811a840d4ba6db2e2b696cf24ff0aeba`. The exact-base adapter was run
+from that tip against base `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`; its
+native runtime SHA-256 is
+`aee430fd3846476ebaaeb6769b51039d9164999a05907d3dddec81b115fdae8f` and its
+deterministic digest is
+`f2292c73893fb1568c3ba5e56803f4fb0b37d3ff5b7f193f9a992a3e91472f42`.
 Focused image tests, SDK distribution, Release macOS software-Skia build,
-compact smoke, final-stack correctness, and both 3-sample dry runs passed.
-No authoritative Milestone-9 sample was captured before the freeze. GO for
-Plan 9B Milestone 9.4; no further runtime edits are expected in 9A.
+compact smoke, final-stack correctness, compact target-color controls, the
+lazy adaptive-JPEG smoke, and the exact-base 3-sample dry run passed. No
+authoritative Milestone-9 sample was captured before the freeze. GO for Plan
+9B Milestone 9.4; no further runtime edits are expected in 9A.
 
 ## Revision Note
 
@@ -435,3 +446,10 @@ closeout and final handoff.
 
 2026-09-08: Completed Milestone 9A correctness, harness, and validation gates;
 Plan 9B is the next execution step.
+
+2026-09-08: Corrective closeout restored the historical combined BGRA
+target-color probe for noncompact RGBA sources while keeping compact sources
+physical-slot-only. The normal lazy adaptive-JPEG smoke now checks source
+logical metadata, cached compact backing identity, targeted denominators 2/4/8,
+and independent full-decode parity. Exact-base provenance was rebuilt from the
+detached Phase-2 worktree; no active Phase-3 dylib was accepted.

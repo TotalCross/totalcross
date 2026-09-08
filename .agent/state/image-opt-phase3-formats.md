@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 3 state
 
-Updated: 2026-09-08T00:24:00-03:00
+Updated: 2026-09-08T00:58:33-03:00
 Branch: `perf/image-opt-phase3-formats`
 Phase-2 parent SHA: `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`
 Plans: `.agent/plans/exec-plan-image-opt-phase3-milestone9a.md`,
@@ -30,6 +30,8 @@ unchanged. No authoritative Milestone-9 samples have been captured.
 - [x] Freeze explicit final-stack harness and exact-base adapter.
 - [x] Add cross-feature, observer, writePixels, and adaptive-JPEG correctness.
 - [x] Run focused build/smoke validation and hand off to Plan 9B.
+- [x] Correct combined target-color dispatch and complete the corrective 9A
+      gate without capturing authoritative samples.
 
 ## Exact-base rebase handoff
 
@@ -56,8 +58,8 @@ is `d5f40104119d56c64a633388ba17bb8673f128f3`. The frozen harness commit is
 `fe3fe963a40e839f3a5c513f39b9c9bc46683937`; the adapter source-revision fix
 is `c95c0cf2674c73a046fe2f78c7310394f0a9970f`; the final compact-smoke test
 correction is `a6e23f73011c5457b8d6e9cbc69be9bcaed1428b`.
-The final adapted harness revision is `a6e23f73011c5457b8d6e9cbc69be9bcaed1428b`,
-with deterministic adapter digest
+The previous adapted harness revision is
+`a6e23f73011c5457b8d6e9cbc69be9bcaed1428b`, with deterministic adapter digest
 `1fb32deccbb0c1d79c041e8f25af6d7bd1a3e6da4536fa3c4ddfb521aa08a158`.
 The corrected final-workload overlay used for the authoritative true-base RSS
 recheck has digest
@@ -94,6 +96,9 @@ Milestone-9A runtime/test paths are:
 - `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsBenchmarkApp.java`
 - `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsBenchmarkSupport.java`
 - `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsFinalStackSmokeApp.java`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsAdaptiveJpegSmokeApp.java`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsNativeHooks.java`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageRasterPhysicalVariantSmokeApp.java`
 - `TotalCrossSDK/build.gradle`
 
 ## S1/S2/S3 status
@@ -149,6 +154,42 @@ Checkpoint physical/private writable residency changed with run order. The
 frozen rule rejects a reproducible disabled-path regression; runtime source was
 not changed.
 
+## Corrective Milestone-9A closeout
+
+- Final branch tip after corrective test/harness work:
+  `ffe681fe811a840d4ba6db2e2b696cf24ff0aeba`.
+- Last runtime correction:
+  `8b455f2ad fix(image): preserve combined target-color coverage`.
+- Active Phase-3 Release macOS software-Skia dylib SHA-256:
+  `e62560c60b3cac312206ceae4e3eff4f3d95cfc92edb6621cd9327d82a4353f6`.
+- Final test/harness commit:
+  `ffe681fe811a840d4ba6db2e2b696cf24ff0aeba`.
+- Exact-base adapter source revision:
+  `ffe681fe811a840d4ba6db2e2b696cf24ff0aeba`.
+- Exact-base native runtime revision:
+  `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`.
+- Exact-base native runtime SHA-256:
+  `aee430fd3846476ebaaeb6769b51039d9164999a05907d3dddec81b115fdae8f`.
+- Exact-base adapter digest:
+  `f2292c73893fb1568c3ba5e56803f4fb0b37d3ff5b7f193f9a992a3e91472f42`.
+- Exact-base flags were Release, software graphics, Skia renderer, and SDL
+  windowing. The adapter used a detached physical depot-tools checkout and
+  did not accept or copy the active Phase-3 dylib.
+- Exact-base 3-sample `milestone9-full-stack` dry run passed with stable input
+  hashes, stable output hash `0000915C00006078`, and elapsed samples
+  `163/161/162` ms. Quality/hash work remained outside the timed batch.
+- Compact BGRA target-color/physical smoke passed with
+  `lookups=3,misses=2,materializations=1,hits=1,bytes=160000` and pixel hash
+  `00005CB800005F7C`. The RGB565-target control passed with 80,000 bytes.
+- Legacy combined BGRA smoke passed its original target-color fallback
+  invariant and physical counters `3/2/1/1/160000`, pixel hash
+  `000000D600000165`.
+- Normal lazy adaptive-JPEG smoke passed RGB565 and GRAY8 at denominators
+  `2/4/8`, with source logical dimensions retained, cached compact backing
+  identity reused, one targeted decode, zero temporary RGBA bytes, zero
+  promotion, and independent full-decode pixel parity.
+- No authoritative Milestone-9 S1/S2/S3 samples were captured.
+
 ## Validation
 
 Milestone-9 bootstrap checks passed: branch and SHA identity match the plan,
@@ -160,20 +201,37 @@ remain historical evidence from the pre-9A handoff.
 Milestone-9A focused validation passed:
 
 - `./gradlew-agent test --tests 'totalcross.ui.image.*' --no-daemon --console=plain`
-  passed; full log `TotalCrossSDK/agent-logs/20260908-001749-test-full.log`.
+  passed; full log `TotalCrossSDK/agent-logs/20260908-005617-test-full.log`.
 - `./gradlew-agent dist -x test --console=plain` passed; full log
-  `TotalCrossSDK/agent-logs/20260908-001758-dist-full.log`.
+  `TotalCrossSDK/agent-logs/20260908-005625-dist-full.log`.
 - `ninja -C build/image-opt-phase1-corrective-macos` passed for the Release
-  macOS software-Skia build; log `/tmp/image-opt-phase3-9a-final-release-ninja.log`.
+  macOS software-Skia build; log
+  `/tmp/image-opt-phase3-9a-final-release-ninja.log`.
 - `runImageCompactFormatsSmokeMacOS` passed with all retry/parity/opacity checks;
-  full log `TotalCrossSDK/agent-logs/20260908-002029-runImageCompactFormatsSmokeMacOS-full.log`.
+  full log
+  `TotalCrossSDK/agent-logs/20260908-005645-runImageCompactFormatsSmokeMacOS-full.log`.
 - `runImageCompactFormatsFinalStackSmokeMacOS` passed identity, variant,
   target-color composition, invalidation, observers, writePixels, and adaptive
-  JPEG; full log `TotalCrossSDK/agent-logs/20260908-002044-runImageCompactFormatsFinalStackSmokeMacOS-full.log`.
+  JPEG; full log
+  `TotalCrossSDK/agent-logs/20260908-005655-runImageCompactFormatsFinalStackSmokeMacOS-full.log`.
+- `runImageRasterPhysicalVariantSmokeMacOS --case=compact-bgra-combined`
+  passed; full log
+  `TotalCrossSDK/agent-logs/20260908-005705-runImageRasterPhysicalVariantSmokeMacOS-full.log`.
+- `runImageRasterPhysicalVariantSmokeMacOS --case=combined` passed the original
+  combined BGRA invariant; full log
+  `TotalCrossSDK/agent-logs/20260908-005714-runImageRasterPhysicalVariantSmokeMacOS-full.log`.
+- `runImageRasterPhysicalVariantSmokeMacOS --case=compact-combined` passed the
+  RGB565-target control; full log
+  `TotalCrossSDK/agent-logs/20260908-005740-runImageRasterPhysicalVariantSmokeMacOS-full.log`.
+- `runImageCompactFormatsAdaptiveJpegSmokeMacOS` passed the real lazy pipeline;
+  full log
+  `TotalCrossSDK/agent-logs/20260908-005725-runImageCompactFormatsAdaptiveJpegSmokeMacOS-full.log`.
 - The exact-base adapter used frozen SHA
-  `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`, and its 3-sample pre/full-stack
-  proof passed; preparation log `/tmp/image-opt-phase3-9a-adapter-final.log`,
-  full run log `/private/tmp/image-opt-phase3-m9-base.ugiXIy/worktree/TotalCrossSDK/agent-logs/20260908-002120-runImageCompactFormatsBenchmarkMacOS-full.log`.
+  `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`; preparation output is in
+  `/tmp/image-opt-phase3-9a-final-adapter.log`, exact-base build logs are under
+  `/private/tmp/image-opt-phase3-m9-exact-base-build-final/`, and the 3-sample
+  full run log is
+  `/private/tmp/image-opt-phase3-m9-base-final/TotalCrossSDK/agent-logs/20260908-005555-runImageCompactFormatsBenchmarkMacOS-full.log`.
 - Final source headers and `git diff --check` passed. No authoritative
   Milestone-9 samples were captured before the harness freeze.
 
