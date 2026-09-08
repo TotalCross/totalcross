@@ -70,13 +70,13 @@ full build logs, and raw logcat are not plan artifacts and must not be committed
 
 ## Progress
 
-- [ ] Verify branch/base/tip and clean-tree safety.
-- [ ] Commit both Milestone-9 plans and activate 9A in state.
-- [ ] Fix compact final-buffer accounting and ARGB4444 opacity semantics.
-- [ ] Freeze explicit final Phase-2/Phase-3 feature sets and exact-base adapter.
-- [ ] Add final-stack, invalidation, observer, writePixels, and adaptive-JPEG
+- [x] Verify branch/base/tip and clean-tree safety.
+- [x] Commit both Milestone-9 plans and activate 9A in state.
+- [x] Fix compact final-buffer accounting and ARGB4444 opacity semantics.
+- [x] Freeze explicit final Phase-2/Phase-3 feature sets and exact-base adapter.
+- [x] Add final-stack, invalidation, observer, writePixels, and adaptive-JPEG
       correctness coverage.
-- [ ] Complete focused build/smoke validation and hand off to Plan 9B.
+- [x] Complete focused build/smoke validation and hand off to Plan 9B.
 
 ## Current Architecture and Scope
 
@@ -416,9 +416,15 @@ No push, merge, tag, release, or branch-history rewrite is required in Plan 9A.
 
 ## Outcomes & Retrospective
 
-At 9A completion record only: delivered runtime corrections, frozen harness
-commit/digest, focused correctness results, remaining blockers if any, and
-`GO/NO-GO` for Plan 9B. Put detailed resolved history in the existing archive.
+Milestone 9A delivered the compact decode accounting and ARGB4444 opacity
+corrections, explicit `{0,1,2,3,4,13,14,15}` and `{5,6,7}` configuration,
+the final-stack benchmark workloads, and the exact-base adapter. The final
+harness revision is `a6e23f73011c5457b8d6e9cbc69be9bcaed1428b`; its adapter
+digest is `1fb32deccbb0c1d79c041e8f25af6d7bd1a3e6da4536fa3c4ddfb521aa08a158`.
+Focused image tests, SDK distribution, Release macOS software-Skia build,
+compact smoke, final-stack correctness, and both 3-sample dry runs passed.
+No authoritative Milestone-9 sample was captured before the freeze. GO for
+Plan 9B Milestone 9.4; no further runtime edits are expected in 9A.
 
 ## Revision Note
 
