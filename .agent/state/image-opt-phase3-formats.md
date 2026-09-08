@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 3 state
 
-Updated: 2026-09-07T23:30:00-03:00
+Updated: 2026-09-08T00:24:00-03:00
 Branch: `perf/image-opt-phase3-formats`
 Phase-2 parent SHA: `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`
 Plans: `.agent/plans/exec-plan-image-opt-phase3-milestone9a.md`,
@@ -14,9 +14,9 @@ Plans: `.agent/plans/exec-plan-image-opt-phase3-milestone9a.md`,
 
 ## Active milestone
 
-Milestone 9A — correctness and final-stack harness. Bootstrap is verified;
-runtime corrections, final-stack harness freeze, cross-feature correctness,
-and focused closeout validation remain.
+Milestone 9A — correctness and final-stack harness is complete. Runtime and
+harness are frozen for the handoff to Plan 9B; no authoritative Milestone-9
+sample was captured.
 
 The previous Milestone-8 rebase and benchmark handoff are historical and remain
 unchanged. No authoritative Milestone-9 samples have been captured.
@@ -26,10 +26,10 @@ unchanged. No authoritative Milestone-9 samples have been captured.
 - [x] Verified branch, frozen Phase-2 remote SHA, merge-base, expected tip, and
       scoped diff safety for Milestone 9A.
 - [x] Read and activated the split Milestone-9A/9B plans.
-- [ ] Correct compact final-buffer accounting and ARGB4444 opacity semantics.
-- [ ] Freeze explicit final-stack harness and exact-base adapter.
-- [ ] Add cross-feature, observer, writePixels, and adaptive-JPEG correctness.
-- [ ] Run focused build/smoke validation and hand off to Plan 9B.
+- [x] Correct compact final-buffer accounting and ARGB4444 opacity semantics.
+- [x] Freeze explicit final-stack harness and exact-base adapter.
+- [x] Add cross-feature, observer, writePixels, and adaptive-JPEG correctness.
+- [x] Run focused build/smoke validation and hand off to Plan 9B.
 
 ## Exact-base rebase handoff
 
@@ -50,11 +50,15 @@ Release macOS software-Skia CMake/Ninja build, and
 ## Last completed slice
 
 The pre-Milestone-9 rebase handoff is committed through
-`604d7bb3bdba05e70699b648c59e093fb1c330e3`. The prior
-harness/fixture/true-base adapter slice is historical at
-`b206daacd473a9c8a4af53b3775a97ccf71ad0d4`.
-The deterministic adapter digest is
-`9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
+`604d7bb3bdba05e70699b648c59e093fb1c330e3`. Milestone 9A runtime corrections
+are `e9955ee6a75ab3d4153bd1a87ded1c955723bfab` and the last runtime correction
+is `d5f40104119d56c64a633388ba17bb8673f128f3`. The frozen harness commit is
+`fe3fe963a40e839f3a5c513f39b9c9bc46683937`; the adapter source-revision fix
+is `c95c0cf2674c73a046fe2f78c7310394f0a9970f`; the final compact-smoke test
+correction is `a6e23f73011c5457b8d6e9cbc69be9bcaed1428b`.
+The final adapted harness revision is `a6e23f73011c5457b8d6e9cbc69be9bcaed1428b`,
+with deterministic adapter digest
+`1fb32deccbb0c1d79c041e8f25af6d7bd1a3e6da4536fa3c4ddfb521aa08a158`.
 The corrected final-workload overlay used for the authoritative true-base RSS
 recheck has digest
 `edd9a79ebb30d081681b141a245a8525788b74df4a55712113ecf7a9c2335d7d`.
@@ -86,6 +90,11 @@ Milestone-9A runtime/test paths are:
 - existing image benchmark/smoke support under
   `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/`
 - `.agent/benchmarks/image-opt-phase3-formats/milestone9/true-base-harness/`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsSmokeApp.java`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsBenchmarkApp.java`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsBenchmarkSupport.java`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageCompactFormatsFinalStackSmokeApp.java`
+- `TotalCrossSDK/build.gradle`
 
 ## S1/S2/S3 status
 
@@ -93,6 +102,8 @@ Milestone-9A runtime/test paths are:
   `86bfeafe388ce866236c3ae58eecb144664895e2`.
 - Exact true-base dylib SHA-256: `32926d24c475ca3b6f04134ce4d6556c37d926862d6877d122cdec517213c4ca`.
 - Rebased Phase-3 implementation HEAD: `15ab7d72e28f860f67106796bdd4cd7329075e56`.
+- Milestone-9A validation dylib SHA-256:
+  `6bb984f08349990e169f67d8fc8dc234afc93c19ad347a8c5caaf6acfe231de4`.
 - Final dylib SHA-256: `2864d0ee3ace6d52729bcaccad727902088327caa2bafe0769e66cbc2c0a9caa`.
 - Harness digest: `9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
 - Prior documented implementation checkpoint (historical):
@@ -112,6 +123,13 @@ Milestone-9A runtime/test paths are:
   Both S3 matrices use `RGB565|RGB565|GRAY8|GRAY8|ARGB4444`, zero compact-source
   promotions, and zero temporary RGBA decode bytes. Full-stack S3 improved from
   the previous 169 ms median to 162 ms.
+- Milestone-9A dry runs used the final workload names
+  `milestone9-isolated` and `milestone9-full-stack`. Both ran 3 samples with
+  identical fixture hashes and samples above 30 ms; the final full-stack run
+  was 163/163/164 ms and the isolated run was 185/186/186 ms. These are
+  harness-freeze checks only, not authoritative Milestone-9 measurements.
+  Isolated log: `TotalCrossSDK/agent-logs/20260908-001230-runImageCompactFormatsBenchmarkMacOS-full.log`;
+  full-stack log: `TotalCrossSDK/agent-logs/20260908-001251-runImageCompactFormatsBenchmarkMacOS-full.log`.
 
 ## Corrective 200-sample RSS gate
 
@@ -139,9 +157,25 @@ post-rebase native rebuild, SDK distribution, compact smoke, decode/promotion
 failure-retry checks, parity checks, matrices, RSS gate, and focused SDK tests
 remain historical evidence from the pre-9A handoff.
 
-Milestone-9A focused validation is pending. Full output will be kept in
-task-specific logs and compact results recorded in
-`.agent/evidence/image-opt-phase3-formats.jsonl`.
+Milestone-9A focused validation passed:
+
+- `./gradlew-agent test --tests 'totalcross.ui.image.*' --no-daemon --console=plain`
+  passed; full log `TotalCrossSDK/agent-logs/20260908-001749-test-full.log`.
+- `./gradlew-agent dist -x test --console=plain` passed; full log
+  `TotalCrossSDK/agent-logs/20260908-001758-dist-full.log`.
+- `ninja -C build/image-opt-phase1-corrective-macos` passed for the Release
+  macOS software-Skia build; log `/tmp/image-opt-phase3-9a-final-release-ninja.log`.
+- `runImageCompactFormatsSmokeMacOS` passed with all retry/parity/opacity checks;
+  full log `TotalCrossSDK/agent-logs/20260908-002029-runImageCompactFormatsSmokeMacOS-full.log`.
+- `runImageCompactFormatsFinalStackSmokeMacOS` passed identity, variant,
+  target-color composition, invalidation, observers, writePixels, and adaptive
+  JPEG; full log `TotalCrossSDK/agent-logs/20260908-002044-runImageCompactFormatsFinalStackSmokeMacOS-full.log`.
+- The exact-base adapter used frozen SHA
+  `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`, and its 3-sample pre/full-stack
+  proof passed; preparation log `/tmp/image-opt-phase3-9a-adapter-final.log`,
+  full run log `/private/tmp/image-opt-phase3-m9-base.ugiXIy/worktree/TotalCrossSDK/agent-logs/20260908-002120-runImageCompactFormatsBenchmarkMacOS-full.log`.
+- Final source headers and `git diff --check` passed. No authoritative
+  Milestone-9 samples were captured before the harness freeze.
 
 ## Deferred validation
 
@@ -153,7 +187,7 @@ Android, iOS, Windows, Linux, and GPU remain outside this phase contract.
 - Precedence is GRAY8 > RGB565 > ARGB4444 > RGBA8888.
 - Compact formats are source-only; mutable/full-precision barriers promote
   transactionally to RGBA8888.
-- The Phase-2 true-base adapter must be committed before runtime changes.
+- The Phase-2 true-base adapter is committed before the Plan-9B measurements.
 - Unrelated generated/untracked files remain untouched.
 
 ## Blockers and deliberate out-of-scope files
@@ -163,5 +197,6 @@ scope: `TotalCrossVM/deps/wince-deps/` and `TotalCrossVM/xcode/generated/`.
 
 ## Next exact command
 
-Inspect and correct compact decode accounting and ARGB4444 opacity paths, then
-add focused regression coverage before freezing the final harness.
+Execute Plan 9B Milestone 9.4 authoritative S1/S2/S3 measurements using the
+frozen runtime, final harness, exact Phase-2 adapter, and recorded digest; make
+no further runtime edits unless a new correctness failure blocks the gate.
