@@ -822,9 +822,9 @@ registerImageMacSmoke('ImageRasterVariantBenchmark', 'ImageRasterVariantBenchmar
         'overallPass=true'
     ])
 
-registerImageMacSmoke('ImageScrollRasterFastPathBenchmark', 'ImageScrollRasterFastPathBenchmarkApp',
+registerImageMacSmoke('ImageScrollRasterFastPathBenchmark', 'ImageScrollRasterFastPathApp',
     'image-scroll-raster-fast-path-benchmark', true, false, [
-        'fixture=ImageScrollRasterFastPathBenchmarkApp',
+        'fixture=ImageScrollRasterFastPathApp',
         'overallPass=true'
     ])
 

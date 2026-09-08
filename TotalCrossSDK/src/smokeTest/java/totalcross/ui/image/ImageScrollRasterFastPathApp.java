@@ -11,7 +11,7 @@ import totalcross.ui.ScrollContainer;
 import totalcross.ui.gfx.Graphics;
 
 /** Native-deployed clipped scrolling workload for lazy JPEG raster accounting. */
-public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
+public class ImageScrollRasterFastPathApp extends MainWindow {
   private static final int IMAGE_COUNT = 120;
   private static final int COLUMN_COUNT = 3;
   private static final int TILE_SIZE = 64;
@@ -79,7 +79,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
         + passDetails("warm_forward", warmForward)
         + variantDetails(variant);
     boolean pass = ImageRasterBenchmarkSupport.finish(
-        "ImageScrollRasterFastPathBenchmarkApp", scenario, 1, completed, details,
+        "ImageScrollRasterFastPathApp", scenario, 1, completed, details,
         overallPass && error.length() == 0 ? "" : error.length() == 0 ? "assertion_failed" : error);
     exit(pass ? 0 : 1);
   }

@@ -249,22 +249,22 @@ jobs:
           run_dir="$RUNNER_TEMP/image-scroll-raster"
           mkdir -p "$run_dir"
           (cd "$classes_dir" && java -cp "$GITHUB_WORKSPACE/TotalCrossSDK/dist/totalcross-sdk.jar:$GITHUB_WORKSPACE/TotalCrossSDK/dist/libs/*" \
-            tc.Deploy ImageScrollRasterFastPathBenchmarkApp.jar /o "$run_dir" \
+            tc.Deploy ImageScrollRasterFastPathApp.jar /o "$run_dir" \
             > "$RUNNER_TEMP/deploy.log" 2>&1)
           launcher="$(find build-image-scroll -type f -name Launcher -perm -u+x -print -quit)"
           runtime="$(find build-image-scroll -type f -name libtcvm.so -print -quit)"
           test -n "$launcher" && test -n "$runtime"
-          cp "$launcher" "$run_dir/ImageScrollRasterFastPathBenchmarkApp"
+          cp "$launcher" "$run_dir/ImageScrollRasterFastPathApp"
           cp "$runtime" "$run_dir/libtcvm.so"
-          test -f "$run_dir/ImageScrollRasterFastPathBenchmarkApp.tcz"
-          chmod +x "$run_dir/ImageScrollRasterFastPathBenchmarkApp"
+          test -f "$run_dir/ImageScrollRasterFastPathApp.tcz"
+          chmod +x "$run_dir/ImageScrollRasterFastPathApp"
           source_hash="$(sha256sum "$runtime" | awk '{print $1}')"
           deployed_hash="$(sha256sum "$run_dir/libtcvm.so" | awk '{print $1}')"
           test "$source_hash" = "$deployed_hash"
           (cd "$run_dir" && xvfb-run -a -s '-screen 0 1024x768x24' \
-            ./ImageScrollRasterFastPathBenchmarkApp 2>&1) \
+            ./ImageScrollRasterFastPathApp 2>&1) \
             | tee "$RUNNER_TEMP/image-scroll-raster/run.log"
-          grep -q 'fixture=ImageScrollRasterFastPathBenchmarkApp' "$RUNNER_TEMP/image-scroll-raster/run.log"
+          grep -q 'fixture=ImageScrollRasterFastPathApp' "$RUNNER_TEMP/image-scroll-raster/run.log"
           grep -q 'overallPass=true' "$RUNNER_TEMP/image-scroll-raster/run.log"
           grep -q 'physical_identity_attempts=' "$RUNNER_TEMP/image-scroll-raster/run.log"
           grep -q 'variant_cache=' "$RUNNER_TEMP/image-scroll-raster/run.log"
@@ -272,7 +272,7 @@ jobs:
             echo "## ${{ matrix.lane }}"
             echo "commit=$VALIDATION_COMMIT"
             echo "runtime_sha256=$deployed_hash"
-            grep 'fixture=ImageScrollRasterFastPathBenchmarkApp' "$RUNNER_TEMP/image-scroll-raster/run.log"
+            grep 'fixture=ImageScrollRasterFastPathApp' "$RUNNER_TEMP/image-scroll-raster/run.log"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run fresh Windows x64 runtime
@@ -286,7 +286,7 @@ jobs:
           $classpath = (Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/dist/totalcross-sdk.jar') + ';' +
             (Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/dist/libs/*')
           Push-Location $classesDir
-          java -cp $classpath tc.Deploy ImageScrollRasterFastPathBenchmarkApp.jar /o $runDir `
+          java -cp $classpath tc.Deploy ImageScrollRasterFastPathApp.jar /o $runDir `
             *> (Join-Path $env:RUNNER_TEMP 'deploy.log')
           if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
           Pop-Location
@@ -295,9 +295,9 @@ jobs:
           $runtime = Get-ChildItem -Path build-image-scroll -Recurse -Filter tcvm.dll |
             Where-Object { $_.FullName -match '\\Release\\' } | Select-Object -First 1
           if (-not $launcher -or -not $runtime) { throw 'Fresh Windows x64 VM or launcher was not built' }
-          Copy-Item $launcher.FullName (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe')
+          Copy-Item $launcher.FullName (Join-Path $runDir 'ImageScrollRasterFastPathApp.exe')
           Copy-Item $runtime.FullName (Join-Path $runDir 'tcvm.dll')
-          if (-not (Test-Path (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.tcz'))) {
+          if (-not (Test-Path (Join-Path $runDir 'ImageScrollRasterFastPathApp.tcz'))) {
             throw 'Deployer did not produce the fixture TCZ'
           }
           $sourceHash = (Get-FileHash $runtime.FullName -Algorithm SHA256).Hash
@@ -305,12 +305,12 @@ jobs:
           if ($sourceHash -ne $deployedHash) { throw 'Deployed native runtime hash differs' }
           $runLog = Join-Path $runDir 'run.log'
           Push-Location $runDir
-          & '.\ImageScrollRasterFastPathBenchmarkApp.exe' 2>&1 |
+          & '.\ImageScrollRasterFastPathApp.exe' 2>&1 |
             Tee-Object -FilePath $runLog
           Pop-Location
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $output = Get-Content $runLog -Raw
-          foreach ($marker in @('fixture=ImageScrollRasterFastPathBenchmarkApp', 'overallPass=true',
+          foreach ($marker in @('fixture=ImageScrollRasterFastPathApp', 'overallPass=true',
               'physical_identity_attempts=', 'variant_cache=')) {
             if ($output.IndexOf($marker, [StringComparison]::Ordinal) -lt 0) {
               throw "Missing runtime marker: $marker"
@@ -319,7 +319,7 @@ jobs:
           Add-Content $env:GITHUB_STEP_SUMMARY "## ${{ matrix.lane }}"
           Add-Content $env:GITHUB_STEP_SUMMARY "commit=$env:VALIDATION_COMMIT"
           Add-Content $env:GITHUB_STEP_SUMMARY "runtime_sha256=$deployedHash"
-          Get-Content $runLog | Where-Object { $_ -like '*fixture=ImageScrollRasterFastPathBenchmarkApp*' } |
+          Get-Content $runLog | Where-Object { $_ -like '*fixture=ImageScrollRasterFastPathApp*' } |
             Add-Content $env:GITHUB_STEP_SUMMARY
 
       - name: Upload diagnostics on failure
