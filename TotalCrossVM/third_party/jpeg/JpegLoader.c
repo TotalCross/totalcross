@@ -504,7 +504,9 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
             imageRecordTestCounter("copiedDecodeCountForTest");
             imageAddTestCounter("decodeCopiedBytesForTest", pixelBytes);
          }
-         imageAddTestCounter("decodeFinalBufferBytesForTest", pixelBytes);
+         if (allocation->storageFormat == IMAGE_BACKING_FORMAT_RGBA8888) {
+            imageAddTestCounter("decodeFinalBufferBytesForTest", pixelBytes);
+         }
       }
    }
    if (!nativeHandle || !imageInstallNativeBacking(currentContext, imageObj, nativeHandle, width, height)) {

@@ -49,6 +49,7 @@ typedef struct
    bool sourceHasAlpha;
    ImageBackingFormat storageFormat;
    bool opacityAlphaOutput;
+   bool opacityProofAvailable;
    bool pixelsOpaque;
    int32 rowsDecoded;
    volatile ImageDecodeStatus *decodeStatus;
@@ -303,11 +304,17 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
       const int32 compactBytes = (int32)((uint64)userData->width * userData->height
          * (userData->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2));
       if (handle && userData->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
-         skia_image_backing_set_opacity(handle,
-            userData->storageFormat == IMAGE_BACKING_FORMAT_ARGB4444
+         int32 opacity = SKIA_IMAGE_OPACITY_OPAQUE;
+         if (userData->storageFormat == IMAGE_BACKING_FORMAT_ARGB4444) {
+            opacity = userData->opacityProofAvailable
                ? (userData->pixelsOpaque ? SKIA_IMAGE_OPACITY_OPAQUE
                                           : SKIA_IMAGE_OPACITY_TRANSLUCENT)
-               : SKIA_IMAGE_OPACITY_OPAQUE);
+               : SKIA_IMAGE_OPACITY_UNKNOWN;
+            if (userData->opacityProofAvailable) {
+               imageRecordTestCounter("opacityDeterminedDuringDecodeForTest");
+            }
+         }
+         skia_image_backing_set_opacity(handle, opacity);
       } else if (handle && userData->opacityMetadata) {
          const int32 opacity = !userData->sourceHasAlpha
             ? SKIA_IMAGE_OPACITY_OPAQUE
@@ -342,7 +349,9 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
          imageRecordTestCounter("copiedDecodeCountForTest");
          imageAddTestCounter("decodeCopiedBytesForTest", pixelBytes);
       }
-      imageAddTestCounter("decodeFinalBufferBytesForTest", pixelBytes);
+      if (userData->storageFormat == IMAGE_BACKING_FORMAT_RGBA8888) {
+         imageAddTestCounter("decodeFinalBufferBytesForTest", pixelBytes);
+      }
    }
 #endif
    if (tcz != null)
@@ -405,6 +414,8 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    color_type = png_get_color_type(png_ptr, info_ptr);
    num_trans = 0; // MUST BE INITIALIZED BEFORE png_get_tRNS
    userData->opacityAlphaOutput = userData->sourceHasAlpha && png_get_channels(png_ptr, info_ptr) == 4;
+   userData->opacityProofAvailable = userData->storageFormat == IMAGE_BACKING_FORMAT_ARGB4444
+      && userData->opacityAlphaOutput;
    userData->pixelsOpaque = true;
    userData->width = (int32)width;
    userData->height = (int32)height;
@@ -533,15 +544,6 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
       int32 num_trans = 0;
       png_byte channels = png_get_channels(png_ptr, userData->info_ptr);
       png_get_tRNS(png_ptr, userData->info_ptr, null, &num_trans, null);
-      if (userData->opacityMetadata && userData->opacityAlphaOutput && channels == 4) {
-         png_bytep alpha = buffer + 3;
-         for (x = 0; x < userData->width; x++, alpha += 4) {
-            if (*alpha != 0xFF) {
-               userData->pixelsOpaque = false;
-               break;
-            }
-         }
-      }
       if (userData->compactStorage) {
          const size_t rowOffset = (size_t)row_num * userData->width
             * (userData->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2);
@@ -568,6 +570,9 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
                uint8 green = buffer[1];
                uint8 blue = buffer[2];
                uint8 alpha = channels == 4 ? buffer[3] : 0xFF;
+               if (userData->opacityProofAvailable && alpha != 0xFF) {
+                  userData->pixelsOpaque = false;
+               }
                uint8 alpha4 = pngQuantize4(alpha);
                uint16 packed = (uint16)pngPremultiply4(red, alpha4) << 12;
                packed |= (uint16)pngPremultiply4(green, alpha4) << 8;
@@ -585,6 +590,10 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
                destination[1] = (uint8)buffer[1];
                destination[2] = (uint8)buffer[2];
                destination[3] = (uint8)buffer[3];
+               if (userData->opacityMetadata && userData->opacityAlphaOutput
+                     && buffer[3] != 0xFF) {
+                  userData->pixelsOpaque = false;
+               }
             }
          } else {
             for (x = 0; x < userData->width; x++, buffer += 3, destination += 4) {
@@ -594,9 +603,16 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
                destination[3] = 0xFF;
             }
          }
-      } else if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6))
-         for (x = 0; x < userData->width; x++, buffer += 4)
-            *userData->pixels++ = makePixelA((uint8)buffer[3], (uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
+      } else if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6)) {
+         for (x = 0; x < userData->width; x++, buffer += 4) {
+            if (userData->opacityMetadata && userData->opacityAlphaOutput
+                  && buffer[3] != 0xFF) {
+               userData->pixelsOpaque = false;
+            }
+            *userData->pixels++ = makePixelA((uint8)buffer[3], (uint8)buffer[0],
+               (uint8)buffer[1], (uint8)buffer[2]);
+         }
+      }
       else
          for (x = 0; x < userData->width; x++, buffer += 3)
             *userData->pixels++ = makePixel((uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
