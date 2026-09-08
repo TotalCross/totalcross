@@ -179,7 +179,8 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y libegl1-mesa-dev libgles2-mesa-dev xvfb
+          sudo apt-get install -y libegl1-mesa-dev libgles2-mesa-dev \
+            libfontconfig1-dev libfreetype6-dev xvfb
 
       - name: Build fresh Linux VM and launcher
         if: matrix.platform == 'linux'
@@ -229,8 +230,9 @@ jobs:
           source_hash="$(sha256sum "$runtime" | awk '{print $1}')"
           deployed_hash="$(sha256sum "$run_dir/libtcvm.so" | awk '{print $1}')"
           test "$source_hash" = "$deployed_hash"
-          xvfb-run -a -s '-screen 0 1024x768x24' "$run_dir/ImageScrollRasterFastPathBenchmarkApp" \
-            2>&1 | tee "$RUNNER_TEMP/image-scroll-raster/run.log"
+          (cd "$run_dir" && xvfb-run -a -s '-screen 0 1024x768x24' \
+            ./ImageScrollRasterFastPathBenchmarkApp 2>&1) \
+            | tee "$RUNNER_TEMP/image-scroll-raster/run.log"
           grep -q 'fixture=ImageScrollRasterFastPathBenchmarkApp' "$RUNNER_TEMP/image-scroll-raster/run.log"
           grep -q 'overallPass=true' "$RUNNER_TEMP/image-scroll-raster/run.log"
           grep -q 'physical_identity_attempts=' "$RUNNER_TEMP/image-scroll-raster/run.log"
@@ -271,8 +273,10 @@ jobs:
           $deployedHash = (Get-FileHash (Join-Path $runDir 'tcvm.dll') -Algorithm SHA256).Hash
           if ($sourceHash -ne $deployedHash) { throw 'Deployed native runtime hash differs' }
           $runLog = Join-Path $runDir 'run.log'
-          & (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe') 2>&1 |
+          Push-Location $runDir
+          & '.\ImageScrollRasterFastPathBenchmarkApp.exe' 2>&1 |
             Tee-Object -FilePath $runLog
+          Pop-Location
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $output = Get-Content $runLog -Raw
           foreach ($marker in @('fixture=ImageScrollRasterFastPathBenchmarkApp', 'overallPass=true',
