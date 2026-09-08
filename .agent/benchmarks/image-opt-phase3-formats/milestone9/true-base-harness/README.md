@@ -25,10 +25,14 @@ prepare-image-opt-phase3-milestone9-true-base.sh \
   "$PWD/TotalCrossSDK/src/smokeTest/resources/image-opt-phase3" \
   "$PWD/TotalCrossSDK/etc/launchers/macos/Launcher" \
   "$PWD/TotalCrossVM/deps/totalcross-depot-tools" \
-  /private/tmp/image-opt-phase3-m9-exact-base-build
+  /private/tmp/image-opt-phase3-m9-exact-base-build-corrective
 ```
 
-The command prints the harness source revision, exact base revision, native
-runtime revision, native-runtime SHA-256, and a deterministic adapter digest
-over every adapted harness source and fixture. The target paths must be
-disposable; the script never edits the active Phase-3 worktree.
+The adapter requires the detached base's own depot-tools checkout, builds the
+native runtime with the requested Release software-Skia settings, and copies
+that resulting `libtcvm.dylib` into the detached SDK. It does not accept or
+copy the active Phase-3 dylib. The command prints the harness source revision,
+exact base revision, native runtime revision, native-runtime SHA-256, and a
+deterministic adapter digest over every adapted harness source and fixture.
+The target paths must be disposable; the script never edits the active
+Phase-3 worktree.

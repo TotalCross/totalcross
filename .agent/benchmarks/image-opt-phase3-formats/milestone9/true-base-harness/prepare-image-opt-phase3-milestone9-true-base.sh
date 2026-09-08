@@ -31,12 +31,13 @@ if [ -L "$DEPOT_TOOLS_LINK" ]; then
     echo "base worktree depot-tools link points elsewhere" >&2
     exit 1
   fi
+  rm "$DEPOT_TOOLS_LINK"
 elif [ -e "$DEPOT_TOOLS_LINK" ]; then
-  echo "base worktree already contains a non-link depot-tools path" >&2
+  echo "base worktree already contains a depot-tools checkout" >&2
   exit 1
-else
-  ln -s "$DEPOT_TOOLS_ROOT" "$DEPOT_TOOLS_LINK"
 fi
+mkdir -p "$BASE_WORKTREE/TotalCrossVM/deps"
+cp -a "$DEPOT_TOOLS_ROOT" "$DEPOT_TOOLS_LINK"
 
 HARNESS_FILES="TotalCrossSDK/build.gradle
 scripts/run-image-optimization-benchmark.py
