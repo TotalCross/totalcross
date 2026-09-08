@@ -64,14 +64,14 @@ logs, complete local build logs, or raw logcat.
 
 ## Progress
 
-- [ ] Verify Plan 9A handoff and frozen runtime/harness state.
-- [ ] Capture authoritative Matrix A on macOS software Skia.
-- [ ] Capture authoritative Matrix B with complete Phase-2 final stack.
-- [ ] Apply 60->200 and matched-memory escalation where triggered.
-- [ ] Commit benchmark samples/reports and identify runtime candidate SHA.
-- [ ] Run exact-SHA GitHub build matrix.
-- [ ] Run exact-SHA physical Android GPU compact-format smoke.
-- [ ] Reconcile state/evidence/archive/editorial and freeze Phase 3.
+- [x] Verify Plan 9A handoff and frozen runtime/harness state.
+- [x] Capture authoritative Matrix A on macOS software Skia.
+- [x] Capture authoritative Matrix B with complete Phase-2 final stack.
+- [x] Apply 60->200 and matched-memory escalation where triggered.
+- [x] Commit benchmark samples/reports and identify runtime candidate SHA.
+- [x] Run exact-SHA GitHub build matrix.
+- [x] Run exact-SHA physical Android GPU compact-format smoke.
+- [x] Reconcile state/evidence/archive/editorial and freeze Phase 3.
 
 ## Current Architecture and Scope
 
@@ -449,10 +449,19 @@ not merge PRs, tag, release, or alter branch protection.
 
 ## Outcomes & Retrospective
 
-At completion summarize only: Matrix A/B measured results, escalations, exact
-runtime candidate, GitHub result, Android GPU result, final tip, limitations,
-and explicit `GO/NO-GO` for Phase 4. Keep detailed resolved history in existing
-archive and factual handoff in the editorial report.
+Matrix A isolated passed with S1/S2/S3 medians `266/264/184` ms and Matrix B
+full-stack passed with `162/159/163` ms. Matrix B's `+9.65%` first-pass S2 RSS
+signal triggered the required 200-sample rerun and matched sample-100/150
+`vmmap`/`ps` diagnostics; the result was unconfirmed allocator/residency
+variation, with no runtime fix. The exact runtime candidate is
+`d2f8195b9faf828f4ee04154c93a93e1136c5bd4`; GitHub run `34190415679` passed at
+that head, and the physical Android Adreno 710/OpenGL ES 3.2 smoke passed all
+compact-selection, quality, screen-draw, and zero-raster-counter checks.
+Hosted Windows/Linux S1/S2/S3 performance remains `NOT AVAILABLE`; Android has
+no timing/RSS claim, S3 has no speedup requirement, and live compact counters
+are GC-sensitive. `GO FOR PHASE 4`: after the final docs-only commit, record
+its SHA as `PHASE3_FINAL_TIP` in the executor handoff; Phase 4 must branch or
+rebase from that tip while retaining the candidate SHA as runtime provenance.
 
 ## Revision Note
 
