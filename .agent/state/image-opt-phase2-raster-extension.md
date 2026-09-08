@@ -234,6 +234,9 @@ line over 80 characters because the shell passed literal `\n` text; history
 was preserved without amendment.
 The ID 14 runtime commit's local check reported one body line over 80
 characters; history was preserved without amendment.
+The closeout documentation commit `bc03a277d` likewise has one overlong body
+line because the shell preserved literal `\n` text; history is preserved
+without amendment.
 
 ## Decisions still active
 
