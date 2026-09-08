@@ -432,3 +432,6 @@ Plan 9B Milestone 9.4; no further runtime edits are expected in 9A.
 plan below the repository 20 KiB/~600-line artifact limit. Plan 9A freezes
 correctness and measurement inputs; Plan 9B performs measurement/platform
 closeout and final handoff.
+
+2026-09-08: Completed Milestone 9A correctness, harness, and validation gates;
+Plan 9B is the next execution step.
