@@ -22,13 +22,17 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
           || "replace".equals(testCase) || "mutation".equals(testCase) || "crop".equals(testCase)
           || "alpha".equals(testCase) || "hwscale".equals(testCase)
           || "rotation".equals(testCase) || "combined".equals(testCase)
-          || "decode".equals(testCase) || "compact-combined".equals(testCase), "invalid case");
+          || "decode".equals(testCase) || "compact-combined".equals(testCase)
+          || "compact-bgra-combined".equals(testCase), "invalid case");
       if ("compact-combined".equals(testCase)) {
         ImageRasterBenchmarkSupport.configureAllRasterFeatures(scenario);
         if ("post-enabled".equals(scenario)) {
           ImageOptimizationSettings.setState(ImageOptimizationSettings.STORAGE_RGB565,
               ImageOptimizationSettings.ENABLED);
         }
+      } else if ("compact-bgra-combined".equals(testCase)) {
+        ImageCompactFormatsBenchmarkSupport.configurePhase2WithStorage(scenario,
+            ImageOptimizationSettings.STORAGE_RGB565);
       } else {
         ImageRasterBenchmarkSupport.configure(scenario,
             ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
@@ -45,7 +49,8 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
       if ("decode".equals(testCase)) {
         byte[] encoded = ImageRasterBenchmarkSupport.opaquePng(200, 200);
         source = new Image(encoded, encoded.length);
-      } else if ("compact-combined".equals(testCase)) {
+      } else if ("compact-combined".equals(testCase)
+          || "compact-bgra-combined".equals(testCase)) {
         source = ImageCompactFormatsBenchmarkSupport.materialize(
             ImageCompactFormatsBenchmarkSupport.fixtures()[1].bytes);
       } else {
@@ -67,6 +72,10 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         image = source.getSmoothScaledInstance(100, 100);
         destination = Image.createTestRaster(100, 100, 2,
             NativeImageBacking.TEST_COLOR_RGB565);
+      } else if ("compact-bgra-combined".equals(testCase)) {
+        image = source.getSmoothScaledInstance(100, 100);
+        destination = Image.createTestRaster(100, 100, 2,
+            NativeImageBacking.TEST_COLOR_BGRA8888);
       } else {
         image = source.getSmoothScaledInstance(100, 100);
         destination = Image.createLogical(100, 100, 2);
@@ -96,7 +105,9 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         ((EncodedImageSource) root).evictDecodedBacking();
         drawBatch(canvas, image, 2);
       } else {
-        if ("alpha".equals(testCase)) {
+        if ("compact-bgra-combined".equals(testCase)) {
+          drawBatch(canvas, image, 3);
+        } else if ("alpha".equals(testCase)) {
           image.alphaMask = 127;
         } else if ("hwscale".equals(testCase)) {
           image.hwScaleW = 0.75;
@@ -186,6 +197,15 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
           && NativeImageBacking.targetColorHitsForTest() == 0
           && NativeImageBacking.targetColorConvertedBytesForTest() == 0,
           "compact combined target color counters");
+    } else if ("compact-bgra-combined".equals(testCase)) {
+      ImageRasterBenchmarkSupport.require(lookups == 3 && hits == 1 && misses == 2
+          && materializations == 1 && evictions == 0 && bytes == 160000,
+          "compact BGRA combined physical variant counters" + counters());
+      ImageRasterBenchmarkSupport.require(NativeImageBacking.targetColorAttemptsForTest() == 0
+          && NativeImageBacking.targetColorMaterializationsForTest() == 0
+          && NativeImageBacking.targetColorHitsForTest() == 0
+          && NativeImageBacking.targetColorConvertedBytesForTest() == 0,
+          "compact BGRA combined target color counters");
     } else if ("combined".equals(testCase)) {
       ImageRasterBenchmarkSupport.require(lookups == 3 && hits == 1 && misses == 2
           && materializations == 1 && evictions == 0 && bytes == 160000,

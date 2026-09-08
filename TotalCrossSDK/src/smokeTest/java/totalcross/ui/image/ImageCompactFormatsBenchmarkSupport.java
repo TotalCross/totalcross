@@ -96,7 +96,7 @@ final class ImageCompactFormatsBenchmarkSupport {
     }
   }
 
-  private static int[] concat(int[] first, int[] second) {
+  static int[] concat(int[] first, int[] second) {
     int[] result = new int[first.length + second.length];
     for (int i = 0; i < first.length; i++) {
       result[i] = first[i];
@@ -119,6 +119,11 @@ final class ImageCompactFormatsBenchmarkSupport {
     for (int feature : enabledFeatures) {
       enable(feature);
     }
+  }
+
+  static void configurePhase2WithStorage(String scenario, int storageFeature) {
+    configureExplicit(scenario, "post-enabled".equals(scenario)
+        ? concat(PHASE2_FINAL, new int[] { storageFeature }) : new int[0]);
   }
 
   private static void enable(int feature) {
