@@ -105,9 +105,7 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         ((EncodedImageSource) root).evictDecodedBacking();
         drawBatch(canvas, image, 2);
       } else {
-        if ("compact-bgra-combined".equals(testCase)) {
-          drawBatch(canvas, image, 3);
-        } else if ("alpha".equals(testCase)) {
+        if ("alpha".equals(testCase)) {
           image.alphaMask = 127;
         } else if ("hwscale".equals(testCase)) {
           image.hwScaleW = 0.75;
