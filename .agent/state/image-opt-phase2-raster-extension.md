@@ -237,6 +237,8 @@ characters; history was preserved without amendment.
 The closeout documentation commit `bc03a277d` likewise has one overlong body
 line because the shell preserved literal `\n` text; history is preserved
 without amendment.
+The follow-up history note `7355bb086` has the same quoting issue; it is also
+preserved without amendment.
 
 ## Decisions still active
 
