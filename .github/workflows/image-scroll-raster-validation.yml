@@ -5,6 +5,9 @@
 name: Image scroll raster validation
 
 on:
+  push:
+    branches:
+      - perf/image-scroll-raster-fast-path
   workflow_dispatch:
     inputs:
       commit:
@@ -13,6 +16,7 @@ on:
         type: string
 
 env:
+  VALIDATION_COMMIT: ${{ inputs.commit || github.sha }}
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
   ZLIB_NG_GITHUB_TOKEN: ${{ secrets.ZLIB_NG_GITHUB_TOKEN }}
   MINIZIP_NG_GITHUB_TOKEN: ${{ secrets.MINIZIP_NG_GITHUB_TOKEN }}
@@ -71,14 +75,14 @@ jobs:
       - name: Check out exact validation commit
         uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.commit }}
+          ref: ${{ env.VALIDATION_COMMIT }}
           fetch-depth: 0
 
       - name: Verify checked out commit
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "${{ inputs.commit }}"
+          test "$(git rev-parse HEAD)" = "$VALIDATION_COMMIT"
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -206,7 +210,7 @@ jobs:
           grep -q 'variant_cache=' "$RUNNER_TEMP/image-scroll-raster/run.log"
           {
             echo "## ${{ matrix.lane }}"
-            echo "commit=${{ inputs.commit }}"
+            echo "commit=$VALIDATION_COMMIT"
             echo "runtime_sha256=$deployed_hash"
             grep 'fixture=ImageScrollRasterFastPathBenchmarkApp' "$RUNNER_TEMP/image-scroll-raster/run.log"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -251,7 +255,7 @@ jobs:
             }
           }
           Add-Content $env:GITHUB_STEP_SUMMARY "## ${{ matrix.lane }}"
-          Add-Content $env:GITHUB_STEP_SUMMARY "commit=${{ inputs.commit }}"
+          Add-Content $env:GITHUB_STEP_SUMMARY "commit=$env:VALIDATION_COMMIT"
           Add-Content $env:GITHUB_STEP_SUMMARY "runtime_sha256=$deployedHash"
           Get-Content $runLog | Where-Object { $_ -like '*fixture=ImageScrollRasterFastPathBenchmarkApp*' } |
             Add-Content $env:GITHUB_STEP_SUMMARY
