@@ -226,3 +226,33 @@ an Android build.
 Phase 3 should now address compact source formats and resolve the exact frozen
 branch tip at start. Cache/lifecycle and mmap/working-set work remains later
 scope; this closeout does not expand into those areas.
+
+## Final closeout retry — 2026-09-07
+
+The final validated runtime tip is
+`70aa29e8a367343146fd8ade9931a11038ef77d9`. The corrective commit only adds
+software-target compile guards/stubs to the raster paths. The existing macOS
+software-Skia build and post-enabled combined smoke passed, and the full
+macOS performance suite was intentionally not rerun because its runtime path
+was unchanged.
+
+The hosted Phase 2 S1/S2/S3 workflow was not available on this branch. The
+dispatch attempt for workflow `351888305` returned HTTP 422 because the
+workflow had no usable dispatch trigger, the workflow file was absent at the
+final branch, and there were no branch-matching runs. The current-head Merge
+flow run `34170732235` passed, but it is not benchmark evidence. No hosted
+timing/RSS, QEMU, or emulated performance result is claimed. See
+`.agent/evidence/image-opt-phase2-raster-closeout-hosted.md`.
+
+The Android retry used a temporary current-head release artifact on the
+physical Xiaomi 2312DRA50G. It loaded Adreno 710/OpenGL ES 3.2, reproduced
+stable source/pixel/color/identity/variant hashes, and reported zero
+writePixels, target-color, and physical-variant activity. Since producing the
+artifact required an Android build forbidden by ExecPlan 03, this is retained
+as a diagnostic observation only; the formal Android result remains the
+explicit build-constrained deferral. See
+`.agent/evidence/image-opt-phase2-raster-closeout-android.md`.
+
+Phase 2 is frozen under the plan's explicit hosted/Android deferral rules.
+Phase 3 has a GO to rebase onto the exact branch HEAD at the start of its next
+task; no rebase was performed here. Its scope remains compact source formats.
