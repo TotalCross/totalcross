@@ -37,18 +37,18 @@ jobs:
       matrix:
         include:
           - lane: linux-x86-64
+            project: linux-amd64
             runner: ubuntu-22.04
             platform: linux
             arch: x86_64
             expected_machine: x86-64
-            docker_image: totalcross/linux-amd64:v1.0.7
             docker_platform: linux/amd64
           - lane: linux-arm64
+            project: linux-arm64
             runner: ubuntu-24.04-arm
             platform: linux
             arch: aarch64
             expected_machine: ARM aarch64
-            docker_image: totalcross/linux-arm64:v1.0.7
             docker_platform: linux/arm64
           - lane: windows-x86-64
             runner: windows-2022
@@ -190,9 +190,12 @@ jobs:
         if: matrix.platform == 'linux'
         shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p build-image-scroll
+          mkdir -p build-image-scroll .ccache
           DOCKER_ENV_ARGS=(
+            -e CCACHE_DIR=/ccache
+            -e CCACHE_BASEDIR=/sources
+            -e CCACHE_COMPRESS=true
+            -e CCACHE_MAXSIZE=1G
             -e SQLITE3_GITHUB_TOKEN
             -e ZLIB_NG_GITHUB_TOKEN
             -e LIBPNG_GITHUB_TOKEN
@@ -202,25 +205,35 @@ jobs:
           for env_name in \
             SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
             ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
-            MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO \
             LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
-            LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
             MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+            LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
             SKIA_RELEASE_TAG SKIA_GITHUB_REPO
           do
             if [ -n "${!env_name:-}" ]; then
               DOCKER_ENV_ARGS+=(-e "$env_name")
             fi
           done
-          docker run --platform "${{ matrix.docker_platform }}" \
+          docker run --platform ${{ matrix.docker_platform }} \
             "${DOCKER_ENV_ARGS[@]}" \
-            -v "${PWD}/build-image-scroll:/build" \
-            -v "${PWD}:/sources" \
-            -t "${{ matrix.docker_image }}" bash -lc '
+            -v ${PWD}/build-image-scroll:/build \
+            -v ${PWD}/.ccache:/ccache \
+            -v ${PWD}:/sources \
+            -t totalcross/${{ matrix.project }}:v1.0.7 bash -lc '
             set -e
-            cmake /sources/TotalCrossVM -B /build -DCMAKE_BUILD_TYPE=Release \
-              -DTCVM_SHARED=ON -G Ninja
-            ninja -C /build tcvm Launcher
+            cmake --version
+            if command -v ccache >/dev/null; then
+              ccache --zero-stats || true
+              CMAKE_CCACHE_ARGS="-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+            else
+              echo "::warning::ccache is not installed in this Docker image; building without compiler cache"
+              CMAKE_CCACHE_ARGS=""
+            fi
+            cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release ${CMAKE_CCACHE_ARGS} -G Ninja &&
+            ninja
+            if command -v ccache >/dev/null; then
+              ccache --show-stats || true
+            fi
           ' > "$RUNNER_TEMP/native-build.log" 2>&1
           file "$(find build-image-scroll -type f -name libtcvm.so -print -quit)" \
             "$(find build-image-scroll -type f -name Launcher -perm -u+x -print -quit)" \
