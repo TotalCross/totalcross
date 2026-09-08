@@ -41,10 +41,9 @@ reconciliation so their runtime and docs provenance remains separate.
 - [x] Retire public native eager factory replacements and add native decode
   primitives for deferred policy resolution.
 - [x] Replace the eager regression and add deployed lazy/draw/parity coverage.
-- [x] Run focused, macOS, and Android build/package validation; reconcile the
-  handoff and stop before Phase 4. Android device execution and the GitHub
-  matrix were blocked/unavailable for this unpublished candidate and remain
-  explicitly deferred.
+- [x] Run focused, macOS, Android build/package, and hosted matrix validation;
+  reconcile the corrective handoff and stop before Phase 4. Android physical
+  execution remains blocked by `INSTALL_FAILED_USER_RESTRICTED`.
 
 ## Current Architecture and Scope
 
@@ -59,6 +58,9 @@ barriers. Native code already decodes from the owned bag through private
 The current public factories capture a source, append a smooth-scale operation,
 and call `materializeCanonicalChecked`, while deployed replacement methods
 decode eagerly in `image_Image.c`. This milestone changes that boundary only.
+The corrective source-capture slice routes TCZ and filesystem paths through
+native-owned encoded bags, while JavaSE retains its ordinary filesystem
+fallback.
 
 The root pipeline will carry an immutable `ImageDecodePolicy` separate from
 `EncodedImageSource`:
@@ -100,10 +102,11 @@ continue through the existing pipeline/barrier machinery.
    software-path guard. Add a focused factory-only/first-draw/repeated-draw
    benchmark that records decode and materialization counts without rerunning
    Phase-3 matrices.
-5. Validate headers/native registration/ABI, focused image tests, SDK dist,
-   Release macOS software-Skia build and smokes, Android GPU smoke if the
-   device is available, and the existing GitHub build matrix at the final
-   runtime candidate. Record skipped expensive checks and blockers explicitly.
+5. Validate headers/native registration/ABI, focused image and converter tests,
+   SDK dist, Release macOS software-Skia build and smokes, Android GPU smoke if
+   the device is available, and the existing GitHub build matrix at the final
+   runtime/test candidate. Record skipped expensive checks and blockers
+   explicitly.
 
 ## Decision Log
 
@@ -158,17 +161,22 @@ files.
 
 ## Outcomes & Retrospective
 
-Final runtime SHA: `4ce4c74d2d6310ff0eb603546c81da28ebf1bc9f`. Final docs tip is
-the closeout branch tip after this plan/state/evidence/editorial commit. The
-exact policy representation is `ImageDecodePolicy` on the immutable
+Runtime commit: `3dd8ccd78d5ed47b6b7a1e5cf1e86b3d8d4fca7c`. Runtime/test
+candidate: `b54380800131f036a50879b921b8d30d3af1f154`. Final docs closeout tip is
+not created because the physical Android gate is blocked. The exact policy
+representation is `ImageDecodePolicy` on the immutable
 `ImagePipeline` root with separate `TARGET_DECODE`, `BEST_FIT(w,h)`, and
 `EXPLICIT_RATIO(n,d)` kinds. Public native eager factory implementations and
 registrations were removed; private decode primitives and native-bag bridges
-remain. Factory argument/path/structure/metadata failures are eager, while
+remain. Native path capture no longer requires a deployed Java full-file copy.
+Factory argument/path/structure/metadata failures are eager, while
 payload/decoder failures are deferred; deterministic failures cache and
-transient failures retry. The 60-sample benchmark passed zero-decode factory
-only and one-decode first/repeated-use gates. macOS and Android build/package
-validation passed; Android install was blocked by device policy and no GitHub
-run exists for the unpublished candidate. Decision: `NO-GO` for Phase 4 until
-the final candidate cross-platform matrix and installable Android GPU smoke
-are complete.
+transient failures retry. The eight-case real-decoder policy matrix passed,
+the compact factory smoke passed RGB565/GRAY8 and no-promotion gates, and the
+60-sample benchmark passed zero-decode factory-only and one-decode
+first/repeated-use gates. The hosted matrix passed as run `34209665445` at the
+exact candidate head, with only the intentional Linux arm32 cross skip.
+Android APK/AAB packaging passed, but normal physical-device installation was
+blocked by device policy, so Android GPU execution is not claimed. Decision:
+`NO-GO` for Phase 4 until the candidate receives an installable Android GPU
+smoke.
