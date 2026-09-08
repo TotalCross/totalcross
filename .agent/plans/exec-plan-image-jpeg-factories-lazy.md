@@ -42,8 +42,8 @@ reconciliation so their runtime and docs provenance remains separate.
   primitives for deferred policy resolution.
 - [x] Replace the eager regression and add deployed lazy/draw/parity coverage.
 - [x] Run focused, macOS, Android build/package, and hosted matrix validation;
-  reconcile the corrective handoff and stop before Phase 4. Android physical
-  execution remains blocked by `INSTALL_FAILED_USER_RESTRICTED`.
+  reconcile the corrective handoff, rerun the exact Android bundle on the
+  physical device, and stop before Phase 4.
 
 ## Current Architecture and Scope
 
@@ -162,8 +162,8 @@ files.
 ## Outcomes & Retrospective
 
 Runtime commit: `3dd8ccd78d5ed47b6b7a1e5cf1e86b3d8d4fca7c`. Runtime/test
-candidate: `b54380800131f036a50879b921b8d30d3af1f154`. Final docs closeout tip is
-not created because the physical Android gate is blocked. The exact policy
+candidate: `b54380800131f036a50879b921b8d30d3af1f154`. The final docs closeout
+tip is this docs-only closeout commit. The exact policy
 representation is `ImageDecodePolicy` on the immutable
 `ImagePipeline` root with separate `TARGET_DECODE`, `BEST_FIT(w,h)`, and
 `EXPLICIT_RATIO(n,d)` kinds. Public native eager factory implementations and
@@ -175,8 +175,9 @@ transient failures retry. The eight-case real-decoder policy matrix passed,
 the compact factory smoke passed RGB565/GRAY8 and no-promotion gates, and the
 60-sample benchmark passed zero-decode factory-only and one-decode
 first/repeated-use gates. The hosted matrix passed as run `34209665445` at the
-exact candidate head, with only the intentional Linux arm32 cross skip.
-Android APK/AAB packaging passed, but normal physical-device installation was
-blocked by device policy, so Android GPU execution is not claimed. Decision:
-`NO-GO` for Phase 4 until the candidate receives an installable Android GPU
-smoke.
+exact candidate head, with only the intentional Linux arm32 cross skip. The
+Android release native rebuild and bundle passed; the exact rebuilt AAB was
+packaged, installed normally on the physical device, and ran the production
+OpenGL smoke with both compact formats, screen draw, reuse, and zero
+raster-only counters. Decision: `GO` for Phase 4 after this closeout; Phase 4
+was not started here.
