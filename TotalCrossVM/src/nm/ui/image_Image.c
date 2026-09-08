@@ -372,6 +372,77 @@ static void decodeEncodedSourceAtDenominator(NMParams p, int32 denominator, bool
    throwImageDecodeStatus(p->currentContext, status);
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_decodeEncodedSourceBestFit(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSourceBestFit(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight);
+{
+   TCObject imageObj = p->obj[0];
+   TCObject sourceObj = p->obj[1];
+   ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
+   int32 targetWidth = p->i32[0];
+   int32 targetHeight = p->i32[1];
+   ImageDecodeStatus status;
+   int32* targetedRequestWidth = imageTestAccountingField("targetedDecodeRequestWidthForTest");
+   int32* targetedRequestHeight = imageTestAccountingField("targetedDecodeRequestHeightForTest");
+   if (!bag || !bag->bytes || bag->length <= 0) {
+      throwException(p->currentContext, ImageException, "Encoded source has no native backing");
+      return;
+   }
+   if (EncodedImageSource_formatCode(sourceObj) != IMAGE_ENCODED_JPEG || targetWidth <= 0 || targetHeight <= 0) {
+      throwException(p->currentContext, ImageException, "JPEG best-fit decode requires a JPEG image and positive dimensions");
+      return;
+   }
+   imageRecordTestCounter("targetedDecodeInvocationCountForTest");
+   if (targetedRequestWidth != null)
+      (*targetedRequestWidth) = targetWidth;
+   if (targetedRequestHeight != null)
+      (*targetedRequestHeight) = targetHeight;
+   status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
+      JPEG_DECODE_BEST_FIT, targetWidth, targetHeight, imageDecodeZeroCopyEnabled(imageObj),
+      imageDecodeOpacityMetadataEnabled(imageObj));
+   throwImageDecodeStatus(p->currentContext, status);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_decodeEncodedSourceExplicit(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSourceExplicitRatio(totalcross.ui.image.EncodedImageSource source, int numerator, int denominator);
+{
+   TCObject imageObj = p->obj[0];
+   TCObject sourceObj = p->obj[1];
+   ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
+   int32 numerator = p->i32[0];
+   int32 denominator = p->i32[1];
+   ImageDecodeStatus status;
+   int32* targetedRequestWidth = imageTestAccountingField("targetedDecodeRequestWidthForTest");
+   int32* targetedRequestHeight = imageTestAccountingField("targetedDecodeRequestHeightForTest");
+   int32* targetedDenominator = imageTestAccountingField("targetedDecodeDenominatorForTest");
+   uint64 outputWidth;
+   uint64 outputHeight;
+   if (!bag || !bag->bytes || bag->length <= 0) {
+      throwException(p->currentContext, ImageException, "Encoded source has no native backing");
+      return;
+   }
+   if (EncodedImageSource_formatCode(sourceObj) != IMAGE_ENCODED_JPEG || numerator <= 0 || denominator <= 0) {
+      throwException(p->currentContext, ImageException, "JPEG explicit-ratio decode requires a JPEG image and positive ratio");
+      return;
+   }
+   outputWidth = ((uint64)EncodedImageSource_intrinsicWidth(sourceObj) * (uint64)numerator
+      + (uint64)denominator - 1) / (uint64)denominator;
+   outputHeight = ((uint64)EncodedImageSource_intrinsicHeight(sourceObj) * (uint64)numerator
+      + (uint64)denominator - 1) / (uint64)denominator;
+   if (outputWidth == 0 || outputHeight == 0 || outputWidth > 0x7FFFFFFF || outputHeight > 0x7FFFFFFF) {
+      throwException(p->currentContext, ImageException, "Image dimensions are too large.");
+      return;
+   }
+   imageRecordTestCounter("targetedDecodeInvocationCountForTest");
+   if (targetedRequestWidth != null)
+      (*targetedRequestWidth) = (int32)outputWidth;
+   if (targetedRequestHeight != null)
+      (*targetedRequestHeight) = (int32)outputHeight;
+   if (targetedDenominator != null)
+      (*targetedDenominator) = denominator;
+   status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
+      JPEG_DECODE_EXPLICIT_RATIO, numerator, denominator, imageDecodeZeroCopyEnabled(imageObj),
+      imageDecodeOpacityMetadataEnabled(imageObj));
+   throwImageDecodeStatus(p->currentContext, status);
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSourceTargeted(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight);
 {
    int32 denominator = jpegTargetDecodeDenominatorForTest(
@@ -714,183 +785,6 @@ TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p) // totalcross/ui/image/Image n
    resizeImageAtPath(input_path, output_path, maxPixelSize);
 #endif
 }
-//////////////////////////////////////////////////////////////////////////
-static bool validateJpegScaleArguments(Context currentContext, int32 numerator, int32 denominator)
-{
-   if (numerator <= 0 || denominator <= 0) {
-      throwException(currentContext, ImageException, null);
-      return false;
-   }
-   return true;
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image native public static totalcross.ui.image.Image getJpegBestFit(String path, int targetWidth, int targetHeight) throws java.io.IOException, totalcross.ui.image.ImageException;
-{
-   TCObject pathObj = p->obj[0];
-   int32 targetWidth = p->i32[0];
-   int32 targetHeight = p->i32[1];
-   TCObject bufferObj = null; 
-   TCObject imageObj = null;
-   TCObject fileObj = null;
-   Method initMethod;
-   Method fileConstructor;
-   char szPath[MAX_PATHNAME];
-   TCZFile tcz;
-
-   p->retO = null;
-   if (!validateJpegScaleArguments(p->currentContext, targetWidth, targetHeight)) {
-      return;
-   }
-   String2CharPBuf(pathObj, szPath);
-   tcz = tczGetFile(szPath, false);
-
-   if ((imageObj = createObject(p->currentContext, "totalcross.ui.image.Image")) != NULL
-         && (initMethod = getMethod(OBJ_CLASS(imageObj), false, "init", 0)) != NULL ) {
-
-      // Found in tcz?
-      if (tcz != null) {
-         throwImageDecodeStatus(p->currentContext,
-            jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, JPEG_DECODE_BEST_FIT,
-               targetWidth, targetHeight, imageDecodeZeroCopyEnabled(imageObj),
-               imageDecodeOpacityMetadataEnabled(imageObj)));
-         goto finish;
-      }
-
-      // Try with mmap
-#if POSIX
-      NATIVE_FILE fd;
-      TCHARP sztPath;
-      Err err;
-   #if TCHAR == char
-      sztPath = szPath;
-   #else
-      TCHAR szPathAux[MAX_PATHNAME];
-      String2TCHARPBuf(pathObj, szPathAux);
-      sztPath = szPathAaux;
-   #endif
-      int32 size = 0;
-      const char * mapped;
-      if ((err = fileCreate(&fd, sztPath, READ_ONLY, NULL)) == NO_ERROR) {
-         if ((err = fileGetSize(fd, NULL, &size)) == NO_ERROR) {
-            mapped = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fileno(fd.handle), 0);
-            if (mapped == MAP_FAILED) {
-               err = errno;
-            } else {
-               throwImageDecodeStatus(p->currentContext,
-                  jpegLoad(p->currentContext, imageObj, fileObj, null, null, mapped, size, JPEG_DECODE_BEST_FIT,
-                     targetWidth, targetHeight, imageDecodeZeroCopyEnabled(imageObj),
-                     imageDecodeOpacityMetadataEnabled(imageObj)));
-               munmap((void*) mapped, size);
-            }
-         }
-         fileClose(&fd);
-      }
-      if (err == NO_ERROR) {
-         goto finish;
-      }
-#endif
-
-      // Try opening using a File object
-      if ((fileObj = createObject(p->currentContext, "totalcross.io.File")) != NULL) {
-         fileConstructor = getMethod(OBJ_CLASS(fileObj), false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT);
-         if (fileConstructor != null) {
-            executeMethod(p->currentContext, fileConstructor, fileObj, pathObj, READ_ONLY);
-            if (p->currentContext->thrownException == null) {
-               if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
-                  throwImageDecodeStatus(p->currentContext,
-                     jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0, JPEG_DECODE_BEST_FIT,
-                        targetWidth, targetHeight, imageDecodeZeroCopyEnabled(imageObj),
-                        imageDecodeOpacityMetadataEnabled(imageObj)));
-               }
-            }
-         }
-      }
-   }
-
-finish:
-   p->retO = null;
-   if (imageObj != null && initMethod != null
-         && p->currentContext->thrownException == null
-         && Image_width(imageObj) > 0 && Image_height(imageObj) > 0) {
-      executeMethod(p->currentContext, initMethod, imageObj);
-      if (p->currentContext->thrownException == null) {
-         p->retO = imageObj;
-      }
-   }
-   if (imageObj != null) {
-      setObjectLock(imageObj, UNLOCKED);
-   }
-   if (bufferObj != null) {
-      setObjectLock(bufferObj, UNLOCKED);
-   }
-   if (fileObj != null) {
-      setObjectLock(fileObj, UNLOCKED);
-   }
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image native public static totalcross.ui.image.Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator) throws java.io.IOException, totalcross.ui.image.ImageException;
-{
-   TCObject pathObj = p->obj[0];
-   int32 scaleNumerator = p->i32[0];
-   int32 scaleDenominator = p->i32[1];
-   TCObject bufferObj = null; 
-   TCObject imageObj = null;
-   TCObject fileObj = null;
-   Method initMethod;
-   Method fileConstructor;
-   char szPath[MAX_PATHNAME];
-   TCZFile tcz;
-
-   p->retO = null;
-   if (!validateJpegScaleArguments(p->currentContext, scaleNumerator, scaleDenominator)) {
-      return;
-   }
-   String2CharPBuf(pathObj, szPath);
-   tcz = tczGetFile(szPath, false);
-
-   if ((imageObj = createObject(p->currentContext, "totalcross.ui.image.Image")) != NULL
-         && (initMethod = getMethod(OBJ_CLASS(imageObj), false, "init", 0)) != NULL ) {
-      if (tcz != null) {
-         throwImageDecodeStatus(p->currentContext,
-            jpegLoad(p->currentContext, imageObj, null, null, tcz, null, 0, JPEG_DECODE_EXPLICIT_RATIO,
-               scaleNumerator, scaleDenominator, imageDecodeZeroCopyEnabled(imageObj),
-               imageDecodeOpacityMetadataEnabled(imageObj)));
-      } else if ((fileObj = createObject(p->currentContext, "totalcross.io.File")) != NULL) {
-         fileConstructor = getMethod(OBJ_CLASS(fileObj), false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT);
-         if (fileConstructor != null) {
-            executeMethod(p->currentContext, fileConstructor, fileObj, pathObj, READ_ONLY);
-            if (p->currentContext->thrownException == null) {
-               if ((bufferObj = createByteArray(p->currentContext, 512)) != NULL) {
-                  throwImageDecodeStatus(p->currentContext,
-                     jpegLoad(p->currentContext, imageObj, fileObj, bufferObj, null, null, 0,
-                        JPEG_DECODE_EXPLICIT_RATIO, scaleNumerator, scaleDenominator,
-                        imageDecodeZeroCopyEnabled(imageObj), imageDecodeOpacityMetadataEnabled(imageObj)));
-               }
-            }
-         }
-      }
-   }
-
-   p->retO = null;
-   if (imageObj != null && initMethod != null
-         && p->currentContext->thrownException == null
-         && Image_width(imageObj) > 0 && Image_height(imageObj) > 0) {
-      executeMethod(p->currentContext, initMethod, imageObj);
-      if (p->currentContext->thrownException == null) {
-         p->retO = imageObj;
-      }
-   }
-   if (imageObj != null) {
-      setObjectLock(imageObj, UNLOCKED);
-   }
-   if (bufferObj != null) {
-      setObjectLock(bufferObj, UNLOCKED);
-   }
-   if (fileObj != null) {
-      setObjectLock(fileObj, UNLOCKED);
-   }
-}
-
 #ifdef ENABLE_TEST_SUITE
 #include "image_Image_test.h"
 #endif

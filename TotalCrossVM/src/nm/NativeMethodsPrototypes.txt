@@ -97,6 +97,8 @@ TC_API void tuiI_applyChangesNative(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);
 TC_API void tuiI_decodeEncodedSource_e(NMParams p);
+TC_API void tuiI_decodeEncodedSourceBestFit(NMParams p);
+TC_API void tuiI_decodeEncodedSourceExplicit(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p);
 TC_API void tuiI_failNextNativeMaterializati(NMParams p);
@@ -113,8 +115,6 @@ TC_API void tuiI_freeTextureNative(NMParams p);
 TC_API void tuiI_applyFadeNative_i(NMParams p);
 TC_API void tuiI_createJpgNative_si(NMParams p);
 TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p);
-TC_API void tuiI_getJpegBestFit_sii(NMParams p);
-TC_API void tuiI_getJpegScaled_sii(NMParams p);
 TC_API void tuiEIS_captureNative_Bi(NMParams p);
 TC_API void tuiEIS_captureNativePath_s(NMParams p);
 TC_API void tuiEIS_releaseNativeBag(NMParams p);
@@ -994,6 +994,8 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source);
+TC_API void tuiI_decodeEncodedSourceBestFit(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSourceBestFit(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight);
+TC_API void tuiI_decodeEncodedSourceExplicit(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSourceExplicitRatio(totalcross.ui.image.EncodedImageSource source, int numerator, int denominator);
 TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSourceTargeted(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight);
 TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p) // totalcross/ui/image/Image native private void decodeEncodedSourceTiered(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight, int denominator);
 TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/Image native private static void failNextNativeMaterializationForTestNative();
@@ -1049,14 +1051,6 @@ TC_API void tuiI_createJpgNative_si(NMParams p) // totalcross/ui/image/Image nat
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p) // totalcross/ui/image/Image native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_getJpegBestFit_sii(NMParams p) // totalcross/ui/image/Image native public static totalcross.ui.image.Image getJpegBestFit(String path, int targetWidth, int targetHeight) throws java.io.IOException, totalcross.ui.image.ImageException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_getJpegScaled_sii(NMParams p) // totalcross/ui/image/Image native public static totalcross.ui.image.Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator) throws java.io.IOException, totalcross.ui.image.ImageException;
 {
 }
 //////////////////////////////////////////////////////////////////////////

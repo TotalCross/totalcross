@@ -86,6 +86,7 @@ public class Image extends GfxSurface {
   static int presentationOnlyPlanRecreationCountForTest;
   static int fullDecodeInvocationCountForTest;
   static int targetedDecodeInvocationCountForTest;
+  static int materializationCountForTest;
   static int targetedDecodeRequestWidthForTest;
   static int targetedDecodeRequestHeightForTest;
   static int targetedDecodeDenominatorForTest;
@@ -161,6 +162,10 @@ public class Image extends GfxSurface {
     return targetedDecodeInvocationCountForTest;
   }
 
+  static int materializationCountForTest() {
+    return materializationCountForTest;
+  }
+
   static int targetedDecodeWidthForTest() {
     return targetedDecodeWidthForTest;
   }
@@ -211,6 +216,7 @@ public class Image extends GfxSurface {
     presentationOnlyPlanRecreationCountForTest = 0;
     fullDecodeInvocationCountForTest = 0;
     targetedDecodeInvocationCountForTest = 0;
+    materializationCountForTest = 0;
     targetedDecodeRequestWidthForTest = 0;
     targetedDecodeRequestHeightForTest = 0;
     targetedDecodeDenominatorForTest = 0;
@@ -268,6 +274,12 @@ public class Image extends GfxSurface {
   static void recordImagePipelineCreatedForTest() {
     if (imageOperationAccountingForTest) {
       imagePipelineCreatedCountForTest++;
+    }
+  }
+
+  private static void recordMaterializationForTest() {
+    if (imageOperationAccountingForTest) {
+      materializationCountForTest++;
     }
   }
 
@@ -831,15 +843,30 @@ public class Image extends GfxSurface {
   }
 
   private void initializeDeferred(EncodedImageSource source) {
-    pipeline = new ImagePipeline(source);
-    width = source.getFrameCount() > 1 ? source.getLogicalWidth() : source.getIntrinsicWidth();
-    height = source.getIntrinsicHeight();
-    widthOfAllFrames = source.getIntrinsicWidth();
-    logicalWidth = source.getLogicalWidth();
-    logicalHeight = source.getLogicalHeight();
-    frameCount = source.getFrameCount();
+    initializeDeferred(new ImagePipeline(source),
+        source.getFrameCount() > 1 ? source.getLogicalWidth() : source.getIntrinsicWidth(),
+        source.getIntrinsicHeight(), source.getLogicalWidth(), source.getLogicalHeight(),
+        source.getFrameCount(), source.getIntrinsicWidth(), source.getComment());
+  }
+
+  private void initializeDeferredJpegFactory(EncodedImageSource source, ImageDecodePolicy policy,
+      int outputWidth, int outputHeight) {
+    initializeDeferred(new ImagePipeline(source, policy, outputWidth, outputHeight, outputWidth, outputHeight,
+        1, outputWidth), outputWidth, outputHeight, outputWidth, outputHeight, 1, outputWidth, null);
+  }
+
+  private void initializeDeferred(ImagePipeline deferred, int deferredWidth, int deferredHeight,
+      int deferredLogicalWidth, int deferredLogicalHeight, int deferredFrameCount,
+      int deferredWidthOfAllFrames, String deferredComment) {
+    pipeline = deferred;
+    width = deferredWidth;
+    height = deferredHeight;
+    widthOfAllFrames = deferredWidthOfAllFrames;
+    logicalWidth = deferredLogicalWidth;
+    logicalHeight = deferredLogicalHeight;
+    frameCount = deferredFrameCount;
     currentFrame = frameCount > 1 ? 0 : -1;
-    comment = source.getComment();
+    comment = deferredComment;
     contentScale = 1;
     surfaceType = 1;
     textureId = -1;
@@ -1497,6 +1524,16 @@ public class Image extends GfxSurface {
       if (cached != null) {
         throw cached;
       }
+      ImageDecodePolicy policy = deferred.decodePolicy();
+      if (policy.kind() != ImageDecodePolicy.TARGET_DECODE) {
+        ImagePipeline policyRoot = deferred;
+        while (policyRoot.previous() != null) {
+          policyRoot = policyRoot.previous();
+        }
+        current = materializeExplicitJpegPolicy(source, policy, policyRoot.width(), policyRoot.height());
+        recordMaterializationForTest();
+        return current;
+      }
       int requestedWidth = scaledDimensionAllowingZero(deferred.logicalWidth(), destinationScale);
       int requestedHeight = scaledDimension(deferred.logicalHeight(), destinationScale);
       int requestedDenominator = ImageDecodeRequirement.choose(source, deferred, requestedWidth, requestedHeight);
@@ -1545,6 +1582,7 @@ public class Image extends GfxSurface {
         }
         current = decoded;
       }
+      recordMaterializationForTest();
     } else {
       current = root instanceof BackingImageSource
           ? ((BackingImageSource) root).materialize()
@@ -1552,6 +1590,78 @@ public class Image extends GfxSurface {
     }
 
     return current;
+  }
+
+  private Image materializeExplicitJpegPolicy(EncodedImageSource source, ImageDecodePolicy policy,
+      int outputWidth, int outputHeight) throws ImageException {
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || outputWidth <= 0 || outputHeight <= 0) {
+      throw new DeterministicImageDecodeException("Explicit JPEG policy has invalid source metadata");
+    }
+    Image decoded = new Image();
+    decoded.initializeDecodeTarget(source);
+    try {
+      if (policy.kind() == ImageDecodePolicy.BEST_FIT) {
+        int denominator = jpegBestFitScaleDenominator(source.getIntrinsicWidth(), source.getIntrinsicHeight(),
+            policy.parameter1(), policy.parameter2());
+        if (Settings.onJavaSE) {
+          if (denominator == 1) {
+            decoded.decodeEncodedSource(source);
+          } else {
+            decoded.decodeEncodedSourceTiered(source, policy.parameter1(), policy.parameter2(), denominator);
+          }
+        } else {
+          decoded.decodeEncodedSourceBestFit(source, policy.parameter1(), policy.parameter2());
+        }
+        if (decoded.backing == null || !decoded.backing.isValid() || decoded.width != outputWidth
+            || decoded.height != outputHeight) {
+          throw new DeterministicImageDecodeException("JPEG best-fit dimensions do not match metadata");
+        }
+        consumeTargetedDecodeInitializationFailureForTest();
+        decoded.init(true);
+      } else if (policy.kind() == ImageDecodePolicy.EXPLICIT_RATIO) {
+        if (Settings.onJavaSE) {
+          decoded.decodeEncodedSource(source);
+          if (decoded.backing == null || !decoded.backing.isValid() || decoded.width <= 0 || decoded.height <= 0) {
+            throw new DeterministicImageDecodeException("Could not decode explicit-ratio JPEG source");
+          }
+          decoded.init(true);
+          try {
+            verifyDecodedMetadata(source, decoded);
+          } catch (DeterministicImageDecodeException failure) {
+            source.cacheDecodeFailure(failure);
+            throw failure;
+          }
+          if (decoded.width != outputWidth || decoded.height != outputHeight) {
+            decoded = decoded.eagerSmoothScaledInstance(outputWidth, outputHeight);
+          }
+        } else {
+          decoded.decodeEncodedSourceExplicitRatio(source, policy.parameter1(), policy.parameter2());
+          if (decoded.backing == null || !decoded.backing.isValid() || decoded.width != outputWidth
+              || decoded.height != outputHeight) {
+            throw new DeterministicImageDecodeException("JPEG explicit-ratio dimensions do not match metadata");
+          }
+          consumeTargetedDecodeInitializationFailureForTest();
+          decoded.init(true);
+        }
+      } else {
+        throw new IllegalStateException("Unknown explicit JPEG policy");
+      }
+    } catch (DeterministicImageDecodeException failure) {
+      source.cacheDecodeFailure(failure);
+      throw failure;
+    } catch (TransientImageMaterializationException failure) {
+      throw failure;
+    }
+    decoded.width = outputWidth;
+    decoded.height = outputHeight;
+    decoded.logicalWidth = outputWidth;
+    decoded.logicalHeight = outputHeight;
+    decoded.widthOfAllFrames = outputWidth;
+    decoded.frameCount = 1;
+    decoded.currentFrame = -1;
+    decoded.contentScale = 1;
+    decoded.comment = null;
+    return decoded;
   }
 
   private Image materializeCachedEncodedSource(EncodedImageSource source, ImageBacking cachedBacking)
@@ -2069,6 +2179,44 @@ public class Image extends GfxSurface {
     } catch (Throwable e) {
       throw new TransientImageMaterializationException(e);
     }
+  }
+
+  /** Deploy replacement preserves the public JPEG best-fit denominator policy. */
+  @ReplacedByNativeOnDeploy
+  private void decodeEncodedSourceBestFit(EncodedImageSource source, int targetWidth, int targetHeight)
+      throws ImageException {
+    byte[] input = source.bytesForInternalDecode();
+    if (input == null) {
+      throw new ImageException("Encoded source has no Java backing");
+    }
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || targetWidth <= 0 || targetHeight <= 0) {
+      throw new ImageException("JPEG best-fit decode requires a JPEG image and positive dimensions");
+    }
+    int denominator = jpegBestFitScaleDenominator(source.getIntrinsicWidth(), source.getIntrinsicHeight(),
+        targetWidth, targetHeight);
+    if (denominator == 1) {
+      decodeEncodedSource(source);
+    } else {
+      decodeEncodedSourceTiered(source, targetWidth, targetHeight, denominator);
+    }
+  }
+
+  /** Deploy replacement passes the caller's exact positive ratio to libjpeg. */
+  @ReplacedByNativeOnDeploy
+  private void decodeEncodedSourceExplicitRatio(EncodedImageSource source, int numerator, int denominator)
+      throws ImageException {
+    byte[] input = source.bytesForInternalDecode();
+    if (input == null) {
+      throw new ImageException("Encoded source has no Java backing");
+    }
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || numerator <= 0 || denominator <= 0) {
+      throw new ImageException("JPEG explicit-ratio decode requires a JPEG image and positive ratio");
+    }
+    // JavaSE resolves arbitrary ratios with the full decoder plus the existing
+    // smooth resampler. This body is replaced by the native libjpeg bridge on
+    // deployed targets; retaining a safe full-decode fallback keeps the method
+    // valid if called by a non-deployed harness.
+    decodeEncodedSource(source);
   }
 
   /** Deploy replacement uses the encoded native bag and jpegLoad's target sizing. */
@@ -4965,14 +5113,12 @@ public class Image extends GfxSurface {
     return source;
   }
 
-  private static Image imageForCapturedSource(String path, EncodedImageSource source) {
+  private static Image imageForCapturedSource(String path) {
     Image image = new Image();
     image.path = path;
-    image.initializeDeferred(source);
     return image;
   }
 
-  @ReplacedByNativeOnDeploy
   public static Image getJpegBestFit(String path, int targetWidth, int targetHeight)
       throws java.io.IOException, ImageException {
     validateJpegScaleArguments(targetWidth, targetHeight);
@@ -4982,13 +5128,12 @@ public class Image extends GfxSurface {
         source.getIntrinsicWidth(), source.getIntrinsicHeight(), targetWidth, targetHeight);
     final int scaledWidth = jpegScaledDimension(source.getIntrinsicWidth(), 1, scaleDenominator);
     final int scaledHeight = jpegScaledDimension(source.getIntrinsicHeight(), 1, scaleDenominator);
-    Image image = imageForCapturedSource(path, source);
-    Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
-    result.materializeCanonicalChecked();
-    return result;
+    Image image = imageForCapturedSource(path);
+    image.initializeDeferredJpegFactory(source, ImageDecodePolicy.bestFit(targetWidth, targetHeight),
+        scaledWidth, scaledHeight);
+    return image;
   }
 
-  @ReplacedByNativeOnDeploy
   public static Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
       throws java.io.IOException, ImageException {
     validateJpegScaleArguments(scaleNumerator, scaleDenominator);
@@ -4996,10 +5141,10 @@ public class Image extends GfxSurface {
 
     final int scaledWidth = jpegScaledDimension(source.getIntrinsicWidth(), scaleNumerator, scaleDenominator);
     final int scaledHeight = jpegScaledDimension(source.getIntrinsicHeight(), scaleNumerator, scaleDenominator);
-    Image image = imageForCapturedSource(path, source);
-    Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
-    result.materializeCanonicalChecked();
-    return result;
+    Image image = imageForCapturedSource(path);
+    image.initializeDeferredJpegFactory(source,
+        ImageDecodePolicy.explicitRatio(scaleNumerator, scaleDenominator), scaledWidth, scaledHeight);
+    return image;
   }
 
   @Override

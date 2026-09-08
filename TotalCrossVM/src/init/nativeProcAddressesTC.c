@@ -109,6 +109,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageLoad_s"), &tuiI_imageLoad_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageParse_sB"), &tuiI_imageParse_sB);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSource_e"), &tuiI_decodeEncodedSource_e);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceBestFit"), &tuiI_decodeEncodedSourceBestFit);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceExplicit"), &tuiI_decodeEncodedSourceExplicit);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceTargeted"), &tuiI_decodeEncodedSourceTargeted);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceTiered_e"), &tuiI_decodeEncodedSourceTiered_e);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextNativeMaterializati"), &tuiI_failNextNativeMaterializati);
@@ -125,8 +127,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyFadeNative_i"), &tuiI_applyFadeNative_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpgNative_si"), &tuiI_createJpgNative_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeResizeJpeg_ssi"), &tuiI_nativeResizeJpeg_ssi);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getJpegBestFit_sii"), &tuiI_getJpegBestFit_sii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getJpegScaled_sii"), &tuiI_getJpegScaled_sii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_captureNative_Bi"), &tuiEIS_captureNative_Bi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_captureNativePath_s"), &tuiEIS_captureNativePath_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_releaseNativeBag"), &tuiEIS_releaseNativeBag);
