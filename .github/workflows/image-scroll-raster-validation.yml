@@ -41,11 +41,15 @@ jobs:
             platform: linux
             arch: x86_64
             expected_machine: x86-64
+            docker_image: totalcross/linux-amd64:v1.0.7
+            docker_platform: linux/amd64
           - lane: linux-arm64
             runner: ubuntu-24.04-arm
             platform: linux
             arch: aarch64
             expected_machine: ARM aarch64
+            docker_image: totalcross/linux-arm64:v1.0.7
+            docker_platform: linux/arm64
           - lane: windows-x86-64
             runner: windows-2022
             platform: windows
@@ -187,10 +191,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cmake -S TotalCrossVM -B build-image-scroll -DCMAKE_BUILD_TYPE=Release \
-            -DTCVM_SHARED=ON -G Ninja > "$RUNNER_TEMP/native-configure.log" 2>&1
-          cmake --build build-image-scroll --target tcvm Launcher --parallel \
-            > "$RUNNER_TEMP/native-build.log" 2>&1
+          mkdir -p build-image-scroll
+          docker run --platform "${{ matrix.docker_platform }}" \
+            -v "${PWD}/build-image-scroll:/build" \
+            -v "${PWD}:/sources" \
+            -t "${{ matrix.docker_image }}" bash -lc '
+            set -e
+            cmake /sources/TotalCrossVM -B /build -DCMAKE_BUILD_TYPE=Release \
+              -DTCVM_SHARED=ON -G Ninja
+            ninja -C /build tcvm Launcher
+          ' > "$RUNNER_TEMP/native-build.log" 2>&1
           file "$(find build-image-scroll -type f -name libtcvm.so -print -quit)" \
             "$(find build-image-scroll -type f -name Launcher -perm -u+x -print -quit)" \
             | tee "$RUNNER_TEMP/native-identity.log"
