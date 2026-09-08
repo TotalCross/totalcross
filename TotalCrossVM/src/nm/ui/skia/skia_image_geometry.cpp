@@ -853,10 +853,18 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
             || !compileGeometry(plan, frameOverride, &transform)) {
             return false;
         }
-        return geometryDrawCompiled(canvas, image.get(), transform, srcLeft, srcTop, srcRight, srcBottom,
-                                    dstLeft, dstTop, dstRight, dstBottom, plan->alphaMask,
-                                    std::abs(plan->outputContentScale - 1.0) < 0.000001,
-                                    &colorFilters);
+        const bool drawn = geometryDrawCompiled(canvas, image.get(), transform, srcLeft, srcTop,
+                                                srcRight, srcBottom, dstLeft, dstTop, dstRight,
+                                                dstBottom, plan->alphaMask,
+                                                std::abs(plan->outputContentScale - 1.0) < 0.000001,
+                                                &colorFilters);
+        if (drawn) {
+            skia_image_backing_record_generic_geometry_draw_for_test();
+            if (transform.smooth) {
+                skia_image_backing_record_smooth_resample_draw_for_test();
+            }
+        }
+        return drawn;
     } catch (const std::bad_alloc&) {
         return false;
     }

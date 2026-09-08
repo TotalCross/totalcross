@@ -61,6 +61,30 @@ final class ImageRasterBenchmarkSupport {
     }
   }
 
+  static void configureApplicationRasterFeatures(String scenario) {
+    require("pre".equals(scenario) || "post-disabled".equals(scenario)
+        || "post-enabled".equals(scenario), "invalid scenario");
+    ImageOptimizationSettings.resetForTest();
+    if ("pre".equals(scenario)) {
+      return;
+    }
+    for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
+      ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
+    }
+    int[] enabled = {
+        ImageOptimizationSettings.DECODE_ZERO_COPY,
+        ImageOptimizationSettings.RASTER_OPACITY_METADATA,
+        ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
+        ImageOptimizationSettings.RASTER_ROW_READBACK,
+        ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION,
+        ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+        ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING
+    };
+    for (int feature : enabled) {
+      ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
+    }
+  }
+
   static long targetColorAttemptsForTest() {
     return NativeImageBacking.targetColorAttemptsForTest();
   }
@@ -79,6 +103,14 @@ final class ImageRasterBenchmarkSupport {
 
   static long targetColorConvertedBytesForTest() {
     return NativeImageBacking.targetColorConvertedBytesForTest();
+  }
+
+  static long genericGeometryDrawsForTest() {
+    return NativeImageBacking.genericGeometryDrawsForTest();
+  }
+
+  static long smoothResampleDrawsForTest() {
+    return NativeImageBacking.smoothResampleDrawsForTest();
   }
 
   static long physicalVariantLookupsForTest() {

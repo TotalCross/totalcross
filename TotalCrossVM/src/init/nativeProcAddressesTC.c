@@ -168,6 +168,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsHitsTest"), &tuiNIB_writePixelsHitsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsFallbacksTest"), &tuiNIB_writePixelsFallbacksTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsCopyBytesTest"), &tuiNIB_writePixelsCopyBytesTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_genericGeometryDrawsTest"), &tuiNIB_genericGeometryDrawsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_smoothResampleDrawsTest"), &tuiNIB_smoothResampleDrawsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityAttemptsT"), &tuiNIB_physicalIdentityAttemptsT);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityHitsTest"), &tuiNIB_physicalIdentityHitsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityFallbacks"), &tuiNIB_physicalIdentityFallbacks);
