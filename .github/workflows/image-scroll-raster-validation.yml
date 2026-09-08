@@ -192,7 +192,28 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build-image-scroll
+          DOCKER_ENV_ARGS=(
+            -e SQLITE3_GITHUB_TOKEN
+            -e ZLIB_NG_GITHUB_TOKEN
+            -e LIBPNG_GITHUB_TOKEN
+            -e MBEDTLS_GITHUB_TOKEN
+            -e LIBJPEG_TURBO_GITHUB_TOKEN
+          )
+          for env_name in \
+            SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
+            ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
+            MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO \
+            LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+            LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
+            MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+            SKIA_RELEASE_TAG SKIA_GITHUB_REPO
+          do
+            if [ -n "${!env_name:-}" ]; then
+              DOCKER_ENV_ARGS+=(-e "$env_name")
+            fi
+          done
           docker run --platform "${{ matrix.docker_platform }}" \
+            "${DOCKER_ENV_ARGS[@]}" \
             -v "${PWD}/build-image-scroll:/build" \
             -v "${PWD}:/sources" \
             -t "${{ matrix.docker_image }}" bash -lc '
