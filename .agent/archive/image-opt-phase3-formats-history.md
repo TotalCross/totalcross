@@ -13,8 +13,24 @@ by the active plan.
 ## Bootstrap
 
 - Branch: `perf/image-opt-phase3-formats`
-- Exact Phase-2 parent: `86bfeafe388ce866236c3ae58eecb144664895e2`
+- Initial Phase-2 parent (historical bootstrap):
+  `86bfeafe388ce866236c3ae58eecb144664895e2`
 - No runtime or benchmark changes in the bootstrap slice.
+
+## Exact-base rebase handoff
+
+- Old Phase-3 HEAD: `9d5c6133318f97baeb88d382cb7837c3f585f122`.
+- Frozen Phase-2 parent verified at
+  `origin/perf/image-opt-phase2-raster`:
+  `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`.
+- Rebasing produced Phase-3 implementation HEAD
+  `15ab7d72e28f860f67106796bdd4cd7329075e56`.
+- All 21 Phase-3 commits were replayed in their original order. Conflicts in
+  build registration and compact-backing Java/native integration retained the
+  finalized Phase-2 raster architecture and genuine compact-format changes.
+- Focused SDK image tests, SDK distribution, Release macOS software-Skia
+  build, and compact-format smoke passed after the rebase. Benchmarks remain
+  historical and were not rerun.
 
 ## Compact backing completion
 

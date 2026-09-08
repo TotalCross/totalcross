@@ -10,9 +10,10 @@ This factual handoff is updated at Phase-3 milestone completion. It will
 distinguish delivered compact backing behavior, measured benchmark results,
 supported validation scope, limitations, and disabled defaults.
 
-## Bootstrap
+## Prior documented handoff (historical)
 
-Phase 3 is now replayed directly on the accepted Phase-2 runtime at
+The prior history correction replayed Phase 3 directly on the then-accepted
+Phase-2 runtime at
 `4d3177801a29752bc3e7b17754400001fef6270f` on branch
 `perf/image-opt-phase3-formats`. The rebased implementation checkpoint is
 `5dbadf3bb7ea44ee14472ba25ab2b27b2fb3a2b9`; the corrective runtime and
@@ -28,6 +29,20 @@ their exact-base controls ran on `86bfeafe388ce866236c3ae58eecb144664895e2`
 and their final runtime measurements used the original pre-rebase Phase-3
 checkpoints. The production and permanent-test tree was replayed without
 rerunning the full benchmark matrix or changing those measurements.
+
+## Exact-base rebase handoff
+
+On 2026-09-07, the branch was rebased from old HEAD
+`9d5c6133318f97baeb88d382cb7837c3f585f122` onto the frozen Phase-2 SHA
+`6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`, verified from
+`origin/perf/image-opt-phase2-raster`. The new Phase-3 implementation HEAD is
+`15ab7d72e28f860f67106796bdd4cd7329075e56`; all 21 Phase-3 commits remain in
+the original order. Rebase conflicts were resolved by retaining the finalized
+Phase-2 raster architecture and replaying the genuine compact-format changes.
+
+Focused `totalcross.ui.image.*` tests, SDK `dist -x test`, the Release macOS
+software-Skia build, and `runImageCompactFormatsSmokeMacOS` passed against the
+rebased tree. No Phase-3 benchmarks were run for this handoff.
 
 ## Delivered behavior
 

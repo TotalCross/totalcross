@@ -6,9 +6,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 3 state
 
-Updated: 2026-09-07T03:20:00-03:00
+Updated: 2026-09-07T23:13:03-03:00
 Branch: `perf/image-opt-phase3-formats`
-Phase-2 parent SHA: `4d3177801a29752bc3e7b17754400001fef6270f`
+Phase-2 parent SHA: `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`
 Plan: `.agent/plans/exec-plan-image-opt-phase3-formats.md`
 
 ## Active milestone
@@ -17,6 +17,22 @@ Milestone 8 — corrective closure and final validation complete. Compact
 backing implementation, isolated format matrices, promotion matrix, both
 combined matrices, correctness matrix, and 200-sample RSS gates are complete;
 focused validation, evidence cleanup, and report handoff are complete.
+
+## Exact-base rebase handoff
+
+On 2026-09-07, the complete Phase-3 sequence was rebased from old HEAD
+`9d5c6133318f97baeb88d382cb7837c3f585f122` onto the frozen Phase-2 tip
+`6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`, which was verified as
+`origin/perf/image-opt-phase2-raster`. The rebased Phase-3 implementation HEAD
+is `15ab7d72e28f860f67106796bdd4cd7329075e56`; all 21 Phase-3 commits retain
+their original order and subjects. Conflicts were limited to the SDK build
+registration and the Java/native compact-backing integration; finalized
+Phase-2 raster architecture was retained and only compact-format changes were
+replayed.
+
+Post-rebase focused `totalcross.ui.image.*` tests, SDK `dist -x test`, the
+Release macOS software-Skia CMake/Ninja build, and
+`runImageCompactFormatsSmokeMacOS` passed. No Phase-3 benchmarks were rerun.
 
 ## Last completed slice
 
@@ -29,8 +45,8 @@ recheck has digest
 `edd9a79ebb30d081681b141a245a8525788b74df4a55712113ecf7a9c2335d7d`.
 RGB565 S1 is captured under `.agent/benchmarks/image-opt-phase3-formats/rgb565/s1/`
 on exact pre-rebase runtime `86bfeafe388ce866236c3ae58eecb144664895e2`.
-Compact backing implementation is rebased checkpoint
-`5dbadf3bb7ea44ee14472ba25ab2b27b2fb3a2b9`; final benchmark-control corrections
+Compact backing implementation checkpoint from the prior documented rebase
+is historical (`5dbadf3bb7ea44ee14472ba25ab2b27b2fb3a2b9`); final benchmark-control corrections
 are `9443ca28e55c3f69859602097b0db8a815e6cd6e`,
 `2f3d692d4ba2c015c46422dc2e1a6ca7e6d30ed7`, and
 `91b277c10ef5ad7ed622d556a01c6a56ff4ec910`. The corrective runtime commit is
@@ -51,11 +67,11 @@ are `9443ca28e55c3f69859602097b0db8a815e6cd6e`,
 - Exact pre-item S1 runtime SHA (historical pre-rebase evidence):
   `86bfeafe388ce866236c3ae58eecb144664895e2`.
 - Exact true-base dylib SHA-256: `32926d24c475ca3b6f04134ce4d6556c37d926862d6877d122cdec517213c4ca`.
-- Final Phase-3 HEAD: the tip of `perf/image-opt-phase3-formats` after the
-  documentation-only history correction.
+- Rebased Phase-3 implementation HEAD: `15ab7d72e28f860f67106796bdd4cd7329075e56`.
 - Final dylib SHA-256: `2864d0ee3ace6d52729bcaccad727902088327caa2bafe0769e66cbc2c0a9caa`.
 - Harness digest: `9a0bc2a348b197f597a11f10b2ca9d5787ab7b0f2937c70a643e4fc6f09018ae`.
-- Rebased implementation checkpoint: `5dbadf3bb7ea44ee14472ba25ab2b27b2fb3a2b9`.
+- Prior documented implementation checkpoint (historical):
+  `5dbadf3bb7ea44ee14472ba25ab2b27b2fb3a2b9`.
 - RGB565: exact S1 plus 60-sample S2/S3 complete; S2 median 63 ms vs 62 ms,
   S3 selects RGB565 and uses 1,048,576 compact bytes.
 - GRAY8: exact-base S1 and matched final-harness S1 preserved; S2/S3 complete,
@@ -92,18 +108,16 @@ not changed.
 
 ## Validation
 
-Native rebuild, SDK distribution, compact smoke, decode and promotion
+Post-rebase native rebuild, SDK distribution, compact smoke, decode and promotion
 failure/retry checks, exact RGB565/GRAY8 parity, all isolated 60-sample
 matrices, promotion, both combined matrices, and the initial corrective RSS
 gate passed. The authoritative three-pair ARGB4444 recheck is complete and
 rejects the anomaly under the frozen rule without a runtime change. Focused SDK
-tests, final header validation, generated-log cleanup, and report size checks
-also passed before the history correction. These measurements and their
-benchmark artifacts are historical pre-rebase evidence; they were not rerun
-or relabeled as measurements on the rebased SHAs. The exact detached-base
-CMake configure was deferred after the pinned qrcodegen asset returned HTTP 404;
-the native source tree is byte-equivalent to the current branch and the existing
-Release dylib was used as the exact Phase-2-compatible runtime.
+tests also passed after this exact-base rebase. Final header validation,
+generated-log cleanup, report size checks, and all benchmark measurements remain
+historical pre-rebase evidence; they were not rerun or relabeled as measurements
+on the rebased SHAs. The post-rebase build used the current source tree and a
+fresh Release software-Skia dylib.
 
 ## Deferred validation
 
@@ -125,5 +139,5 @@ scope: `TotalCrossVM/deps/wince-deps/` and `TotalCrossVM/xcode/generated/`.
 
 ## Next exact command
 
-No further Phase-3 validation command is pending. Phase 4 starts from the final
-HEAD of this branch; do not begin Phase 4 here.
+No further Phase-3 rebase validation command is pending. Phase 4 starts from
+the rebased implementation HEAD recorded above; do not begin Phase 4 here.
