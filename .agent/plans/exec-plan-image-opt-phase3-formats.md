@@ -29,7 +29,7 @@ Branch:
     perf/image-opt-phase3-formats
 
 Create it from the final accepted HEAD of `perf/image-opt-phase2-raster`.
-Current accepted Phase-2 HEAD:
+Previously accepted Phase-2 HEAD (historical prior handoff):
 
     4d3177801a29752bc3e7b17754400001fef6270f
 
@@ -43,6 +43,16 @@ Record the actual parent SHA at bootstrap. Do not branch from master or rewrite
 history during Phase-3 execution. The post-completion history correction is
 documented above and preserves the original 21-commit sequence. Phase 4 starts
 from the final Phase-3 HEAD; record its SHA in Phase-4 state.
+
+For the exact-base rebase handoff on 2026-09-07, the frozen Phase-2 parent was
+verified as
+`6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee` on
+`origin/perf/image-opt-phase2-raster`. The old Phase-3 HEAD was
+`9d5c6133318f97baeb88d382cb7837c3f585f122`; the rebased Phase-3
+implementation HEAD is `15ab7d72e28f860f67106796bdd4cd7329075e56`, with all
+21 commits preserved in order. Focused image tests, SDK distribution, the
+Release macOS software-Skia build, and compact-format smoke passed; no
+benchmarks were rerun.
 
 Plan/support:
 
@@ -435,9 +445,10 @@ Preserve historical evidence. The corrective RSS evidence and the synchronized
 state/evidence/archive/editorial/Outcomes records are committed separately from
 the benchmark artifacts. Phase 4 starts from the final HEAD of this branch.
 
-The final Phase-3 tree is the original production/test result replayed on
-`4d3177801a29752bc3e7b17754400001fef6270f`; benchmark measurements in this
-plan were made on the pre-rebase true-base/runtime checkpoints and remain
+The final Phase-3 tree from the prior documented correction was replayed on
+`4d3177801a29752bc3e7b17754400001fef6270f`; the current exact-base handoff is
+the rebased implementation HEAD recorded above. Benchmark measurements in
+this plan were made on pre-rebase true-base/runtime checkpoints and remain
 explicitly historical.
 
 ## Validation and completion gate
