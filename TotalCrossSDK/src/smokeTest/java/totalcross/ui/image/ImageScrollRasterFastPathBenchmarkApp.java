@@ -37,6 +37,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     String screenScale = "unknown";
     boolean overallPass = false;
     try {
+      Vm.debug("raster-stage=init");
       ImageRasterBenchmarkSupport.require("clipped".equals(testCase) || "unclipped".equals(testCase),
           "case must be clipped or unclipped");
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
@@ -44,15 +45,22 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
           ImageOptimizationSettings.ENABLED);
       byte[] encoded = ImageRasterBenchmarkSupport.resource("image-abi/lena512.jpg");
       Image[] images = lazyTiles(encoded);
+      Vm.debug("raster-stage=tiles");
       ScrollContainer scroll = buildScroll(images, clip);
+      Vm.debug("raster-stage=scroll");
       Graphics screenGraphics = scroll.getGraphics();
       ImageRasterBenchmarkSupport.require(screenGraphics != null, "scroll graphics");
       screenScale = String.valueOf(screenGraphics.getContentScale());
       pixelHash = verifyPixelParity(encoded);
+      Vm.debug("raster-stage=pixels");
       cold = runScrollPass(scroll, true);
+      Vm.debug("raster-stage=cold");
       warmReverse = runScrollPass(scroll, false);
+      Vm.debug("raster-stage=reverse");
       warmForward = runScrollPass(scroll, true);
+      Vm.debug("raster-stage=forward");
       variant = runVariantScenario(encoded);
+      Vm.debug("raster-stage=variant");
       ImageRasterBenchmarkSupport.require(cold.frames > 0 && warmReverse.frames > 0
           && warmForward.frames > 0, "scroll passes did not paint");
       completed = 1;
