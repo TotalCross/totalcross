@@ -173,6 +173,14 @@ jobs:
           ./TotalCrossSDK/gradlew-agent dist -x test --no-daemon --console=plain > "$RUNNER_TEMP/sdk-dist.log" 2>&1
           ./TotalCrossSDK/gradlew-agent jarImageScrollRasterFastPathBenchmark --no-daemon --console=plain > "$RUNNER_TEMP/sdk-fixture.log" 2>&1
 
+      - name: Install Linux graphics link dependencies
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libegl1-mesa-dev libgles2-mesa-dev xvfb
+
       - name: Build fresh Linux VM and launcher
         if: matrix.platform == 'linux'
         shell: bash
@@ -209,7 +217,7 @@ jobs:
           run_dir="$RUNNER_TEMP/image-scroll-raster"
           mkdir -p "$run_dir"
           (cd "$classes_dir" && java -cp "$GITHUB_WORKSPACE/TotalCrossSDK/dist/totalcross-sdk.jar:$GITHUB_WORKSPACE/TotalCrossSDK/dist/libs/*" \
-            tc.Deploy ImageScrollRasterFastPathBenchmarkApp.jar -o "$run_dir" \
+            tc.Deploy ImageScrollRasterFastPathBenchmarkApp.jar /o "$run_dir" \
             > "$RUNNER_TEMP/deploy.log" 2>&1)
           launcher="$(find build-image-scroll -type f -name Launcher -perm -u+x -print -quit)"
           runtime="$(find build-image-scroll -type f -name libtcvm.so -print -quit)"
@@ -221,10 +229,6 @@ jobs:
           source_hash="$(sha256sum "$runtime" | awk '{print $1}')"
           deployed_hash="$(sha256sum "$run_dir/libtcvm.so" | awk '{print $1}')"
           test "$source_hash" = "$deployed_hash"
-          if ! command -v xvfb-run >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y xvfb
-          fi
           xvfb-run -a -s '-screen 0 1024x768x24' "$run_dir/ImageScrollRasterFastPathBenchmarkApp" \
             2>&1 | tee "$RUNNER_TEMP/image-scroll-raster/run.log"
           grep -q 'fixture=ImageScrollRasterFastPathBenchmarkApp' "$RUNNER_TEMP/image-scroll-raster/run.log"
@@ -249,7 +253,7 @@ jobs:
           $classpath = (Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/dist/totalcross-sdk.jar') + ';' +
             (Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/dist/libs/*')
           Push-Location $classesDir
-          java -cp $classpath tc.Deploy ImageScrollRasterFastPathBenchmarkApp.jar -o $runDir `
+          java -cp $classpath tc.Deploy ImageScrollRasterFastPathBenchmarkApp.jar /o $runDir `
             *> (Join-Path $env:RUNNER_TEMP 'deploy.log')
           if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
           Pop-Location
