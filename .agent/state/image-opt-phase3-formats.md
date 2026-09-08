@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image optimization phase 3 state
 
-Updated: 2026-09-08T00:58:33-03:00
+Updated: 2026-09-08T02:27:33-03:00
 Branch: `perf/image-opt-phase3-formats`
 Phase-2 parent SHA: `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`
 Plans: `.agent/plans/exec-plan-image-opt-phase3-milestone9a.md`,
@@ -14,9 +14,10 @@ Plans: `.agent/plans/exec-plan-image-opt-phase3-milestone9a.md`,
 
 ## Active milestone
 
-Milestone 9A — correctness and final-stack harness is complete. Runtime and
-harness are frozen for the handoff to Plan 9B; no authoritative Milestone-9
-sample was captured.
+Milestone 9B — authoritative matrices, platform closeout, and final
+integration are complete. `PHASE3_RUNTIME_CANDIDATE` is
+`d2f8195b9faf828f4ee04154c93a93e1136c5bd4`; only documentation closeout
+remains before the final Phase-3 tip is frozen.
 
 The previous Milestone-8 rebase and benchmark handoff are historical and remain
 unchanged. No authoritative Milestone-9 samples have been captured.
@@ -32,6 +33,12 @@ unchanged. No authoritative Milestone-9 samples have been captured.
 - [x] Run focused build/smoke validation and hand off to Plan 9B.
 - [x] Correct combined target-color dispatch and complete the corrective 9A
       gate without capturing authoritative samples.
+- [x] Capture authoritative Matrix A and Matrix B S1/S2/S3 evidence with the
+      frozen exact-base adapter and complete the required 200-sample RSS gate.
+- [x] Validate the exact runtime candidate with the existing GitHub matrix and
+      physical Android GPU compact-format smoke.
+- [x] Reconcile the final Phase-3 state, evidence, history, and editorial
+      handoff; leave Phase 4 unstarted.
 
 ## Exact-base rebase handoff
 
@@ -190,6 +197,58 @@ not changed.
   promotion, and independent full-decode pixel parity.
 - No authoritative Milestone-9 S1/S2/S3 samples were captured.
 
+## Milestone-9B final closeout
+
+- Frozen Phase-2 base: `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`.
+- Last 9A runtime correction: `8b455f2ad`. No 9B runtime fix was required.
+- Final Android-aware smoke harness: `d2f8195b9faf828f4ee04154c93a93e1136c5bd4`.
+- Exact-base adapter digest: `f2292c73893fb1568c3ba5e56803f4fb0b37d3ff5b7f193f9a992a3e91472f42`.
+- `PHASE3_RUNTIME_CANDIDATE`:
+  `d2f8195b9faf828f4ee04154c93a93e1136c5bd4`.
+
+Matrix A (`.agent/benchmarks/image-opt-phase3-formats/milestone9/isolated/`)
+passed 60 samples for S1/S2/S3 with medians `266/264/184` ms and peak RSS
+`150912/152128/139840` KiB. S2 deltas were `-0.75%` elapsed and `+0.81%`
+RSS. S3 selected `RGB565|RGB565|GRAY8|GRAY8|ARGB4444`, with model max error
+1, black/white composite max error 16, zero promotions, and zero temporary
+RGBA decode bytes.
+
+Matrix B (`.agent/benchmarks/image-opt-phase3-formats/milestone9/full-stack/`)
+passed 60 samples with medians `162/159/163` ms and peak RSS
+`141792/155472/155840` KiB. The first S2 delta was `-1.85%` elapsed and
+`+9.65%` RSS, so the frozen 200-sample escalation ran under
+`full-stack/escalation-200/`: medians `162/161` ms, peak RSS
+`141408/153568` KiB, deltas `-0.62%` elapsed and `+8.60%` RSS. Matched
+`vmmap -summary`/`ps` checkpoints at samples 100 and 150 are under
+`full-stack/matched-diagnostics/`; physical and writable residency did not
+reproduce monotonic private growth, so the signal is unconfirmed
+allocator/residency variation and no runtime change was made.
+
+The existing PR workflow passed at exact candidate head in run
+`34190415679`:
+`https://github.com/TotalCross/totalcross/actions/runs/34190415679`.
+SDK, macOS ARM64, Android, iOS archive, Windows, Windows native/legacy, Linux
+amd64, and native Linux ARM64 all passed; the intentionally disabled Linux
+arm32 cross job was skipped.
+
+Physical Android provenance: Xiaomi `2312DRA50G`, Android 13,
+MIUI `V14.0.9.0.TNRMIXM`, Qualcomm Adreno (TM) 710, OpenGL ES 3.2,
+driver `V@0615.73`. The candidate APK SHA-256 was
+`b1a55bb8faaed5eb702dad94ba82b2dfe66466803bce8d02086d12fd2a1ca20c`, and
+its arm64 `libtcvm.so` SHA-256 was
+`60c8d16fd2582ef1be4cf51fccb65fbdd815032f2a345fb9a10b86003fa80923`.
+The smoke reported compact direct decodes `5`, compact bytes `2097152`,
+observer hashes stable, quality `max=32/rmse=8.056096554759305`, visible
+screen draw complete, and all raster/promotion/temp-RGBA counters zero. The
+diagnostic package was removed after the run.
+
+Hosted Windows/Linux S1/S2/S3 performance is `NOT AVAILABLE`, not failed.
+Remaining limitations are that S3 has no speedup requirement, live compact
+byte counters are GC-sensitive, Android supplies correctness/GPU evidence but
+no timing or RSS claim, and the final docs tip will differ from the runtime
+candidate. Phase 4 must start from that final Phase-3 branch tip; it has not
+started.
+
 ## Validation
 
 Milestone-9 bootstrap checks passed: branch and SHA identity match the plan,
@@ -235,9 +294,25 @@ Milestone-9A focused validation passed:
 - Final source headers and `git diff --check` passed. No authoritative
   Milestone-9 samples were captured before the harness freeze.
 
+Milestone-9B validation passed:
+
+- Fresh exact-base adapter/build and current Release software-Skia/SDL native
+  build; native hashes are preserved in the evidence index.
+- Active and exact-base SDK distributions, six 3-sample dry runs, six 60-sample
+  captures, Matrix B 200-sample escalation, and matched `vmmap`/`ps` diagnostics.
+- Artifact validator: `2` matrices, `6` scenarios, `2` escalation runs, and
+  `23` JSONL evidence records parsed successfully.
+- Updated macOS final-stack screen-draw smoke passed.
+- Android release dependency fetch/build, APK deployment, physical GPU smoke,
+  and diagnostic-app removal passed without defining `TC_GRAPHICS_SOFTWARE`.
+- Existing GitHub PR workflow run `34190415679` passed at the exact candidate
+  SHA. Focused headers and `git diff --check` passed.
+
 ## Deferred validation
 
-Android, iOS, Windows, Linux, and GPU remain outside this phase contract.
+Hosted Windows/Linux performance remains unavailable by plan; Android GPU
+correctness and the existing iOS/Windows/Linux build jobs are complete for this
+milestone. No hosted benchmark performance workflow was added.
 
 ## Decisions still active
 
@@ -245,7 +320,8 @@ Android, iOS, Windows, Linux, and GPU remain outside this phase contract.
 - Precedence is GRAY8 > RGB565 > ARGB4444 > RGBA8888.
 - Compact formats are source-only; mutable/full-precision barriers promote
   transactionally to RGBA8888.
-- The Phase-2 true-base adapter is committed before the Plan-9B measurements.
+- The Phase-2 true-base adapter and final candidate provenance are recorded in
+  the evidence index; the final docs tip is intentionally separate.
 - Unrelated generated/untracked files remain untouched.
 
 ## Blockers and deliberate out-of-scope files
@@ -255,6 +331,7 @@ scope: `TotalCrossVM/deps/wince-deps/` and `TotalCrossVM/xcode/generated/`.
 
 ## Next exact command
 
-Execute Plan 9B Milestone 9.4 authoritative S1/S2/S3 measurements using the
-frozen runtime, final harness, exact Phase-2 adapter, and recorded digest; make
-no further runtime edits unless a new correctness failure blocks the gate.
+Create the final docs-only closeout commit
+`docs(image): close phase 3 final integration`, then record its SHA as
+`PHASE3_FINAL_TIP`. Phase 4 must branch or rebase from that tip while retaining
+`d2f8195b9faf828f4ee04154c93a93e1136c5bd4` as runtime provenance.

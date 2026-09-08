@@ -71,3 +71,30 @@ by the active plan.
   `-4.9%`, `-2.6%`, and `+2.0%`. `vmmap -summary`/`ps` checkpoints showed
   order-dependent allocator/page residency, not a reproducible disabled-path
   regression. Runtime source was unchanged.
+
+## Milestone 9B final integration
+
+- The authoritative final-stack candidate is `d2f8195b9faf828f4ee04154c93a93e1136c5bd4`,
+  built from frozen Phase-2 base `6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee`.
+  The last 9A runtime correction was `8b455f2ad`; no 9B runtime fix was needed.
+  Final adapter digest: `f2292c73893fb1568c3ba5e56803f4fb0b37d3ff5b7f193f9a992a3e91472f42`.
+- Matrix A isolated and Matrix B full-stack authoritative artifacts are under
+  `.agent/benchmarks/image-opt-phase3-formats/milestone9/`. Matrix A medians
+  were `266/264/184` ms with S2 RSS delta `+0.81%`; Matrix B medians were
+  `162/159/163` ms with first S2 RSS delta `+9.65%`. The required Matrix B
+  200-sample rerun reduced the elapsed delta to `-0.62%` while RSS remained
+  `+8.60%`; matched `vmmap`/`ps` checkpoints classified the signal as
+  unconfirmed allocator/residency variation, with no runtime change.
+- Existing PR workflow run
+  `34190415679` passed at the exact candidate SHA across SDK, macOS ARM64,
+  Android, iOS, Windows, Windows native/legacy, Linux amd64, and Linux ARM64;
+  Linux arm32 cross remained intentionally skipped.
+- Physical Android validation passed on Xiaomi `2312DRA50G`, Android 13,
+  Adreno 710 / OpenGL ES 3.2 `V@0615.73`. All five compact formats were
+  selected, direct decode was `5` / `2097152` bytes, quality was
+  `max=32/rmse=8.056096554759305`, screen draw completed, and raster,
+  promotion, and temporary-RGBA counters were zero. The diagnostic package
+  was removed afterward.
+- Hosted Windows/Linux S1/S2/S3 performance remains `NOT AVAILABLE`; no
+  benchmark CI workflow was added. Phase 4 starts from the final docs tip,
+  while runtime provenance remains the candidate SHA above.
