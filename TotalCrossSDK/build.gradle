@@ -847,6 +847,19 @@ registerImageMacSmoke('ImageCompactFormatsSmoke', 'ImageCompactFormatsSmokeApp',
         'overallPass=true'
     ], ['image-opt-phase3/**'])
 
+registerImageMacSmoke('ImageCompactFormatsFinalStackSmoke', 'ImageCompactFormatsFinalStackSmokeApp',
+    'image-compact-formats-final-stack-smoke', false, false, [
+        'fixture=ImageCompactFormatsFinalStackSmokeApp',
+        'physicalIdentity=true',
+        'physicalVariant=true',
+        'targetColorPhysicalVariant=true',
+        'invalidation=true',
+        'observers=true',
+        'writePixels=true',
+        'adaptiveJpeg=true',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
+
 registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
     'image-diagnostic-accounting-gate-benchmark', false, false, [
         'fixture=ImageDiagnosticAccountingGateBenchmarkApp',
