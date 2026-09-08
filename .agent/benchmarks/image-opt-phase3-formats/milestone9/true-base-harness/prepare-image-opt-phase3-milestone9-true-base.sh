@@ -43,7 +43,7 @@ cp "$LAUNCHER" "$BASE_WORKTREE/TotalCrossSDK/etc/launchers/macos/Launcher"
 mkdir -p "$BASE_WORKTREE/TotalCrossSDK/dist/vm/macos"
 cp "$NATIVE_RUNTIME" "$BASE_WORKTREE/TotalCrossSDK/dist/vm/macos/libtcvm.dylib"
 
-BASE_WORKTREE="$BASE_WORKTREE" HARNESS_FILES="$HARNESS_FILES" python3 - <<'PY'
+BASE_WORKTREE="$BASE_WORKTREE" HARNESS_FILES="$HARNESS_FILES" SOURCE_COMMIT="$SOURCE_COMMIT" python3 - <<'PY'
 import hashlib
 import os
 from pathlib import Path
