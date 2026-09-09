@@ -24,7 +24,7 @@ do not change production cache code. If counters prove repeated warm
 resampling/rebuilding remains, repair the existing cache lookup/population path
 without adding a second cache.
 
-Then validate the real 120-image scroll workload and finish the branch.
+Then validate the real customer 663-JPEG scroll workload and finish the branch.
 
 No async decode/prefetch is added. Cold first-use decode is measured and, if
 still significant, documented as follow-up.
@@ -65,6 +65,11 @@ Use UTC timestamps.
       Linux x86-64 and Linux ARM64 passed; Windows x86-64 reproduced the same
       pre-fixture access violation before fixture output. Only plan records
       changed after this validation.
+- [x] 2026-09-09T17:45Z Added and committed the reusable real-customer fixture
+      and macOS runner, then executed all 12 fresh-process passes against the
+      external 663-JPEG corpus at both required resolutions and both physical
+      variant-cache profiles. Full metrics and interpretation are recorded in
+      `Real customer workload validation` below.
 
 ## Surprises & Discoveries
 
@@ -120,6 +125,18 @@ Implementation and validation discoveries:
 - Repaint diagnostics were not part of the raster API contract. Removing them
   also removes their per-call branches and the public `Window` test methods;
   workflow markers now use fixture-owned counters.
+- The customer corpus contains exactly 663 JPEGs under the supplied
+  `~/Downloads/win32` tree. The reusable fixture recursively filters only
+  `.jpg`/`.jpeg`, sorts the resulting paths, and builds 221 rows with exactly
+  three `ImageControl`s per row using the Tcsort `AFTER + 1` / `AFTER + 2`
+  layout. Its tile width is `(width - 3) / 3`: 159 at 480x720 and 179 at
+  540x960.
+- Tcsort's default `ImageControl` drawing path uses `Graphics.copyRect`, so
+  the existing physical-identity, target-color, physical-variant, generic
+  geometry, and smooth-resample counters remain zero in this real fixture.
+  The existing decode/materialization and backing counters still account for
+  first-use work, while the measured warm frame time captures the recurring
+  copyRect/UI paint cost.
 
 ## Decision Log
 
@@ -148,10 +165,10 @@ Fixed decisions:
 
 At completion record:
 
-- the final branch tip consists of plan-only closeout commits after the
-  runtime candidate validated remotely; that candidate was
-  `938be26003002a7e29b9aa84fae7abd8f1772244`, so the tested code is unchanged
-  at the branch tip;
+- the raster runtime candidate validated remotely was
+  `938be26003002a7e29b9aa84fae7abd8f1772244`. The later commits add only the
+  real-customer benchmark fixture, runner, launcher mapping clarification, and
+  plan evidence; they do not change production raster behavior;
 - implementation commits are `bb935dfba` (`fix(skia-image): preserve handled
   no-op draws`), `3a06b2242` (`test(image): harden clipped scroll validation`),
   and `39784ba42` (`refactor(ui): remove repaint diagnostic hooks`); the later
@@ -190,11 +207,70 @@ At completion record:
 - cold first-use work remains synchronous; async decode/prefetch stays outside
   this sequence. No new physical cache, public `Window` diagnostic API, or
   optimization feature number was added.
+- the real-customer fixture and runner are reusable and keep the 663 JPEG
+  corpus external; generated benchmark logs/results and JPEGs remain outside
+  the repository.
 
 The in-scope raster acceptance gate is complete: local SDK/macOS/fixture
 validation and remote Linux x86-64/ARM64 passed. Windows x86-64 remains only
 the known pre-fixture blocker, with no new startup/heap/register work in this
 branch.
+
+## Real customer workload validation
+
+The reusable fixture and runner were validated from committed candidate
+`2b3b4a63d` with:
+
+    python3 scripts/run-image-scroll-real-workload-benchmark.py \
+      --image-dir /Users/flsobral/Downloads/win32
+
+The runner found exactly `663` recursive `.jpg`/`.jpeg` files, sorted their
+paths deterministically, and ran each case in a fresh process. The native
+launcher mapping used `/scr -2,-2,width,height` for the required simulator
+specifications `480x720x24` and `540x960x24`. Every pass built `221` rows and
+`663` image controls, and used tile widths `159` and `179`, respectively.
+
+All times are milliseconds. The range column is `scroll_start -> scroll_end /
+scroll_max`; `frame` is min/p50/p95/p99/max.
+
+| resolution/profile/pass | UI build | range | elapsed | frames | frame | >=17/>=34 | targeted/full JPEG | native geom | backing live/peak |
+| --- | ---: | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| 480x720 disabled cold | 255 | 0 -> 34911 / 34911 | 12333 | 292 | 3/54/57/59/262 | 217/217 | 659/4 | 669 | 940232584/940232584 |
+| 480x720 disabled warm | 255 | 34911 -> 0 / 34911 | 1461 | 292 | 3/4/9/16/16 | 0/0 | 0/0 | 0 | 940232584/940232584 |
+| 480x720 disabled warm2 | 255 | 0 -> 34911 / 34911 | 1379 | 292 | 3/4/9/15/15 | 0/0 | 0/0 | 0 | 940232584/940232584 |
+| 480x720 enabled cold | 198 | 0 -> 34911 / 34911 | 12842 | 292 | 8/54/58/61/256 | 217/217 | 659/4 | 669 | 940232584/940232584 |
+| 480x720 enabled warm | 198 | 34911 -> 0 / 34911 | 2433 | 292 | 7/8/9/10/10 | 0/0 | 0/0 | 0 | 940232584/940232584 |
+| 480x720 enabled warm2 | 198 | 0 -> 34911 / 34911 | 2433 | 292 | 7/8/9/10/10 | 0/0 | 0/0 | 0 | 940232584/940232584 |
+| 540x960 disabled cold | 202 | 0 -> 39091 / 39091 | 15780 | 327 | 8/66/69/71/374 | 216/216 | 655/8 | 669 | 1019597208/1019597208 |
+| 540x960 disabled warm | 202 | 39091 -> 0 / 39091 | 2725 | 327 | 7/8/9/9/10 | 0/0 | 0/0 | 0 | 1019597208/1019597208 |
+| 540x960 disabled warm2 | 202 | 0 -> 39091 / 39091 | 2725 | 327 | 7/8/9/10/10 | 0/0 | 0/0 | 0 | 1019597208/1019597208 |
+| 540x960 enabled cold | 205 | 0 -> 39091 / 39091 | 15768 | 327 | 8/66/69/71/374 | 216/216 | 655/8 | 669 | 1019597208/1019597208 |
+| 540x960 enabled warm | 205 | 39091 -> 0 / 39091 | 2724 | 327 | 7/8/9/9/9 | 0/0 | 0/0 | 0 | 1019597208/1019597208 |
+| 540x960 enabled warm2 | 205 | 0 -> 39091 / 39091 | 2725 | 327 | 7/8/9/9/10 | 0/0 | 0/0 | 0 | 1019597208/1019597208 |
+
+The remaining required counters were zero in every pass: physical identity
+attempts/hits/fallbacks, target-color attempts/hits/materializations, physical
+variant lookups/hits/misses/stores, generic geometry draws, and smooth-resample
+draws. Warm and warm2 also recorded zero JPEG decodes and zero native geometry
+materializations, while retaining the cold-created backing memory and cache
+state. Thus enabling the physical variant cache made no structural difference
+for this Tcsort path: `ImageControl` uses `Graphics.copyRect`, not the geometry
+draw path that exercises those counters.
+
+At 480x720, enabled versus disabled changed cold elapsed time by `+509 ms`
+and warm/warm2 by `+972/+1054 ms`, with no counter difference. At 540x960,
+the corresponding deltas were `-12/-1/0 ms`, also with no counter difference.
+The primary disabled profile's 540x960 case increased cold time by `3447 ms`
+and warm time by `1264 ms` as tile width grew from `159` to `179` and the
+scroll range grew by `4180` logical pixels; warm p95 remained `9 ms`.
+
+The bottleneck is synchronous first-use JPEG decode plus native geometry
+materialization: cold passes spent `12.3--15.8 s`, with `655--659` targeted
+decodes, `4--8` full decodes, and `669` geometry materializations. Warm and
+warm2 passes had p95 `9 ms` or less, no frames at or above `17 ms`, and no
+repeated decode/materialization/resample work. Because warm scrolling is fast
+but cold startup remains dominated by first-use work, asynchronous decode or
+prefetch is the next candidate; it was intentionally not implemented here.
 
 ## Context and Orientation
 
@@ -223,8 +299,10 @@ Variant-cache profile: the same flags plus:
 
     RASTER_PHYSICAL_VARIANT_CACHE = enabled
 
-The real workload remains 120 square JPEGs, 3 columns, ~4 visible rows,
-deterministic clipped vertical scrolling, cold/warm/warm passes.
+The historical synthetic validation workload remains 120 square JPEGs, while
+the real-customer fixture uses 663 JPEGs, 3 columns, Tcsort's nested
+`ScrollContainer`s, deterministic 120-logical-pixel scrolling, and cold/warm/
+warm2 passes.
 
 ## Plan of Work
 
