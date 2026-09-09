@@ -168,6 +168,13 @@ int skia_image_backing_try_write_pixels(void* targetCanvas, int64_t sourceHandle
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);
+int skia_image_backing_try_physical_geometry_to_surface(int32 targetSurface,
+    const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
+    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
+    float clipLeft, float clipTop, float clipRight, float clipBottom);
+int skia_image_backing_draw_generic_geometry_to_surface(int32 targetSurface,
+    const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
+    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);
 int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan);
 int32 skia_image_backing_width(int64_t handle);
 int32 skia_image_backing_height(int64_t handle);

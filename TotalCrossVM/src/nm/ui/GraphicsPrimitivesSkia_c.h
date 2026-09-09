@@ -161,6 +161,14 @@ static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObj
       if (srcY + height > data.outputHeight) {
          height = data.outputHeight - srcY;
       }
+      if (skia_image_backing_try_physical_geometry_to_surface(surfaceId, &data,
+            (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
+            (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height),
+            (float)Graphics_clipX1(dstSurf), (float)Graphics_clipY1(dstSurf),
+            (float)Graphics_clipX2(dstSurf), (float)Graphics_clipY2(dstSurf))) {
+         UNUSED(currentContext)
+         return true;
+      }
       if (dstX < Graphics_clipX1(dstSurf)) {
          int32 delta = Graphics_clipX1(dstSurf) - dstX;
          dstX = Graphics_clipX1(dstSurf);
@@ -185,9 +193,13 @@ static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObj
       skia_setClip(surfaceId, Get_Clip(dstSurf));
       clipSet = true;
    }
-   int result = skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
-      (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
-      (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height));
+   int result = doClip
+      ? skia_image_backing_draw_generic_geometry_to_surface(surfaceId, &data,
+         (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
+         (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height))
+      : skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
+         (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
+         (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height));
    if (clipSet) {
       skia_restoreClip(surfaceId);
    }

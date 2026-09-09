@@ -352,8 +352,13 @@ static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan);
 
 struct RasterPhysicalPlan {
     GeometryTransform transform;
+    SkRect fullSourcePixels;
+    SkRect fullDestinationPixels;
     SkRect sourcePixels;
     SkRect destinationPixels;
+    SkRect visibleSourceLogical;
+    SkRect visibleDestinationLogical;
+    bool empty;
 };
 
 static SkPoint mapPoint(const SkMatrix& matrix, float x, float y) {
@@ -409,8 +414,8 @@ static bool purePhysicalGeometry(const SkiaImageDrawPlanData* plan) {
 static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
                                     NativeImageBackingRecord* source, float srcLeft, float srcTop,
                                     float srcRight, float srcBottom, float dstLeft, float dstTop,
-                                    float dstRight, float dstBottom, RasterPhysicalPlan* result,
-                                    int32* rejectionReason) {
+                                    float dstRight, float dstBottom, const SkRect* explicitClip,
+                                    RasterPhysicalPlan* result, int32* rejectionReason) {
     if (!plan || !source || !result || !purePhysicalGeometry(plan)
         || plan->alphaMask != 255 || plan->materializeAlphaMask != 255
         || plan->outputAlphaMask != 255) {
@@ -432,11 +437,6 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_DEVICE_CLIP_FOR_TEST);
     }
-    if (deviceClip != SkIRect::MakeWH(targetPixels.width(), targetPixels.height())) {
-        return rejectRasterPhysicalPlan(rejectionReason,
-                                        SKIA_RASTER_REJECT_PARTIAL_INTERSECTION_FOR_TEST);
-    }
-
     GeometryTransform transform;
     if (!compileGeometry(plan, -1, &transform)) {
         return rejectRasterPhysicalPlan(rejectionReason,
@@ -518,11 +518,6 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
     }
-    if (destinationLeft < 0 || destinationTop < 0
-        || destinationRight > targetPixels.width() || destinationBottom > targetPixels.height()) {
-        return rejectRasterPhysicalPlan(rejectionReason,
-                                        SKIA_RASTER_REJECT_PARTIAL_INTERSECTION_FOR_TEST);
-    }
     if (sourceLeft < 0 || sourceTop < 0 || sourceRight > source->width || sourceBottom > source->height) {
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_BACKING_INCOMPATIBLE_FOR_TEST);
@@ -550,13 +545,149 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
     }
+    SkRect effectiveClip = SkRect::MakeLTRB(static_cast<float>(deviceClip.left()),
+                                            static_cast<float>(deviceClip.top()),
+                                            static_cast<float>(deviceClip.right()),
+                                            static_cast<float>(deviceClip.bottom()));
+    if (explicitClip) {
+        const SkPoint clipTopLeft = mapPoint(canvasMatrix, explicitClip->fLeft, explicitClip->fTop);
+        const SkPoint clipTopRight = mapPoint(canvasMatrix, explicitClip->fRight, explicitClip->fTop);
+        const SkPoint clipBottomLeft = mapPoint(canvasMatrix, explicitClip->fLeft, explicitClip->fBottom);
+        const SkPoint clipBottomRight = mapPoint(canvasMatrix, explicitClip->fRight, explicitClip->fBottom);
+        if (!exactValue(clipTopRight.fY, clipTopLeft.fY)
+            || !exactValue(clipBottomLeft.fX, clipTopLeft.fX)
+            || !exactValue(clipBottomRight.fX, clipTopRight.fX)
+            || !exactValue(clipBottomRight.fY, clipBottomLeft.fY)
+            || clipTopRight.fX <= clipTopLeft.fX || clipBottomLeft.fY <= clipTopLeft.fY) {
+            return rejectRasterPhysicalPlan(rejectionReason,
+                                            SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
+        }
+        int32 clipLeft;
+        int32 clipTop;
+        int32 clipRight;
+        int32 clipBottom;
+        if (!integerValue(clipTopLeft.fX, &clipLeft)
+            || !integerValue(clipTopLeft.fY, &clipTop)
+            || !integerValue(clipTopRight.fX, &clipRight)
+            || !integerValue(clipBottomLeft.fY, &clipBottom)) {
+            return rejectRasterPhysicalPlan(rejectionReason,
+                                            SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
+        }
+        effectiveClip = SkRect::MakeLTRB(static_cast<float>(clipLeft), static_cast<float>(clipTop),
+                                          static_cast<float>(clipRight), static_cast<float>(clipBottom));
+        effectiveClip.intersect(SkRect::MakeLTRB(static_cast<float>(deviceClip.left()),
+                                                  static_cast<float>(deviceClip.top()),
+                                                  static_cast<float>(deviceClip.right()),
+                                                  static_cast<float>(deviceClip.bottom())));
+    }
+
+    const SkRect fullDestination = SkRect::MakeLTRB(static_cast<float>(destinationLeft),
+                                                    static_cast<float>(destinationTop),
+                                                    static_cast<float>(destinationRight),
+                                                    static_cast<float>(destinationBottom));
+    SkRect visibleDestination = fullDestination;
+    if (!visibleDestination.intersect(effectiveClip)) {
+        result->transform = transform;
+        result->fullSourcePixels = SkRect::MakeLTRB(static_cast<float>(sourceLeft),
+                                                    static_cast<float>(sourceTop),
+                                                    static_cast<float>(sourceRight),
+                                                    static_cast<float>(sourceBottom));
+        result->fullDestinationPixels = fullDestination;
+        result->sourcePixels = SkRect::MakeEmpty();
+        result->destinationPixels = SkRect::MakeEmpty();
+        result->visibleSourceLogical = SkRect::MakeEmpty();
+        result->visibleDestinationLogical = SkRect::MakeEmpty();
+        result->empty = true;
+        return true;
+    }
+
+    int32 visibleDestinationLeft;
+    int32 visibleDestinationTop;
+    int32 visibleDestinationRight;
+    int32 visibleDestinationBottom;
+    if (!integerValue(visibleDestination.fLeft, &visibleDestinationLeft)
+        || !integerValue(visibleDestination.fTop, &visibleDestinationTop)
+        || !integerValue(visibleDestination.fRight, &visibleDestinationRight)
+        || !integerValue(visibleDestination.fBottom, &visibleDestinationBottom)) {
+        return rejectRasterPhysicalPlan(rejectionReason,
+                                        SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
+    }
+    const int32 visibleSourceLeft = sourceLeft + visibleDestinationLeft - destinationLeft;
+    const int32 visibleSourceTop = sourceTop + visibleDestinationTop - destinationTop;
+    const int32 visibleSourceRight = sourceRight + visibleDestinationRight - destinationRight;
+    const int32 visibleSourceBottom = sourceBottom + visibleDestinationBottom - destinationBottom;
+    if (visibleSourceRight <= visibleSourceLeft || visibleSourceBottom <= visibleSourceTop
+        || visibleDestinationRight - visibleDestinationLeft != visibleSourceRight - visibleSourceLeft
+        || visibleDestinationBottom - visibleDestinationTop != visibleSourceBottom - visibleSourceTop
+        || visibleSourceLeft < validRootLeft || visibleSourceTop < validRootTop
+        || visibleSourceRight > validRootRight || visibleSourceBottom > validRootBottom) {
+        return rejectRasterPhysicalPlan(rejectionReason,
+                                        SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
+    }
+
+    const double pixelsPerDestinationX = (dstRight - dstLeft)
+        / static_cast<double>(destinationRight - destinationLeft);
+    const double pixelsPerDestinationY = (dstBottom - dstTop)
+        / static_cast<double>(destinationBottom - destinationTop);
+    const double pixelsPerSourceX = (srcRight - srcLeft)
+        / static_cast<double>(sourceRight - sourceLeft);
+    const double pixelsPerSourceY = (srcBottom - srcTop)
+        / static_cast<double>(sourceBottom - sourceTop);
+    if (!std::isfinite(pixelsPerDestinationX) || !std::isfinite(pixelsPerDestinationY)
+        || !std::isfinite(pixelsPerSourceX) || !std::isfinite(pixelsPerSourceY)) {
+        return rejectRasterPhysicalPlan(rejectionReason,
+                                        SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
+    }
+    const float visibleDestinationLogicalLeft = static_cast<float>(dstLeft
+        + (visibleDestinationLeft - destinationLeft) * pixelsPerDestinationX);
+    const float visibleDestinationLogicalTop = static_cast<float>(dstTop
+        + (visibleDestinationTop - destinationTop) * pixelsPerDestinationY);
+    const float visibleDestinationLogicalRight = static_cast<float>(dstLeft
+        + (visibleDestinationRight - destinationLeft) * pixelsPerDestinationX);
+    const float visibleDestinationLogicalBottom = static_cast<float>(dstTop
+        + (visibleDestinationBottom - destinationTop) * pixelsPerDestinationY);
+    const float visibleSourceLogicalLeft = static_cast<float>(srcLeft
+        + (visibleSourceLeft - sourceLeft) * pixelsPerSourceX);
+    const float visibleSourceLogicalTop = static_cast<float>(srcTop
+        + (visibleSourceTop - sourceTop) * pixelsPerSourceY);
+    const float visibleSourceLogicalRight = static_cast<float>(srcLeft
+        + (visibleSourceRight - sourceLeft) * pixelsPerSourceX);
+    const float visibleSourceLogicalBottom = static_cast<float>(srcTop
+        + (visibleSourceBottom - sourceTop) * pixelsPerSourceY);
+    if (!std::isfinite(visibleDestinationLogicalLeft)
+        || !std::isfinite(visibleDestinationLogicalTop)
+        || !std::isfinite(visibleDestinationLogicalRight)
+        || !std::isfinite(visibleDestinationLogicalBottom)
+        || !std::isfinite(visibleSourceLogicalLeft)
+        || !std::isfinite(visibleSourceLogicalTop)
+        || !std::isfinite(visibleSourceLogicalRight)
+        || !std::isfinite(visibleSourceLogicalBottom)) {
+        return rejectRasterPhysicalPlan(rejectionReason,
+                                        SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
+    }
     result->transform = transform;
-    result->sourcePixels = SkRect::MakeLTRB(static_cast<float>(sourceLeft), static_cast<float>(sourceTop),
-                                             static_cast<float>(sourceRight), static_cast<float>(sourceBottom));
-    result->destinationPixels = SkRect::MakeLTRB(static_cast<float>(destinationLeft),
-                                                  static_cast<float>(destinationTop),
-                                                  static_cast<float>(destinationRight),
-                                                  static_cast<float>(destinationBottom));
+    result->fullSourcePixels = SkRect::MakeLTRB(static_cast<float>(sourceLeft),
+                                                static_cast<float>(sourceTop),
+                                                static_cast<float>(sourceRight),
+                                                static_cast<float>(sourceBottom));
+    result->fullDestinationPixels = fullDestination;
+    result->sourcePixels = SkRect::MakeLTRB(static_cast<float>(visibleSourceLeft),
+                                             static_cast<float>(visibleSourceTop),
+                                             static_cast<float>(visibleSourceRight),
+                                             static_cast<float>(visibleSourceBottom));
+    result->destinationPixels = SkRect::MakeLTRB(static_cast<float>(visibleDestinationLeft),
+                                                  static_cast<float>(visibleDestinationTop),
+                                                  static_cast<float>(visibleDestinationRight),
+                                                  static_cast<float>(visibleDestinationBottom));
+    result->visibleSourceLogical = SkRect::MakeLTRB(visibleSourceLogicalLeft,
+                                                     visibleSourceLogicalTop,
+                                                     visibleSourceLogicalRight,
+                                                     visibleSourceLogicalBottom);
+    result->visibleDestinationLogical = SkRect::MakeLTRB(visibleDestinationLogicalLeft,
+                                                          visibleDestinationLogicalTop,
+                                                          visibleDestinationLogicalRight,
+                                                          visibleDestinationLogicalBottom);
+    result->empty = false;
     return true;
 }
 
@@ -674,14 +805,14 @@ static RasterVariantKey makeTargetColorVariantKey(const NativeImageBackingRecord
     RasterVariantKey key;
     key.sourceGeneration = source->generation;
     key.sourceDecodeGeneration = static_cast<uint64_t>(sourceDecodeGeneration);
-    key.sourceLeft = static_cast<int32>(physicalPlan.sourcePixels.fLeft);
-    key.sourceTop = static_cast<int32>(physicalPlan.sourcePixels.fTop);
-    key.sourceRight = static_cast<int32>(physicalPlan.sourcePixels.fRight);
-    key.sourceBottom = static_cast<int32>(physicalPlan.sourcePixels.fBottom);
-    key.destinationLeft = static_cast<int32>(physicalPlan.destinationPixels.fLeft);
-    key.destinationTop = static_cast<int32>(physicalPlan.destinationPixels.fTop);
-    key.destinationRight = static_cast<int32>(physicalPlan.destinationPixels.fRight);
-    key.destinationBottom = static_cast<int32>(physicalPlan.destinationPixels.fBottom);
+    key.sourceLeft = static_cast<int32>(physicalPlan.fullSourcePixels.fLeft);
+    key.sourceTop = static_cast<int32>(physicalPlan.fullSourcePixels.fTop);
+    key.sourceRight = static_cast<int32>(physicalPlan.fullSourcePixels.fRight);
+    key.sourceBottom = static_cast<int32>(physicalPlan.fullSourcePixels.fBottom);
+    key.destinationLeft = static_cast<int32>(physicalPlan.fullDestinationPixels.fLeft);
+    key.destinationTop = static_cast<int32>(physicalPlan.fullDestinationPixels.fTop);
+    key.destinationRight = static_cast<int32>(physicalPlan.fullDestinationPixels.fRight);
+    key.destinationBottom = static_cast<int32>(physicalPlan.fullDestinationPixels.fBottom);
     key.targetWidth = targetPixels.width();
     key.targetHeight = targetPixels.height();
     key.targetColorType = static_cast<int32>(targetPixels.colorType());
@@ -692,7 +823,8 @@ static RasterVariantKey makeTargetColorVariantKey(const NativeImageBackingRecord
 static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
                                    NativeImageBackingRecord* source, float srcLeft, float srcTop,
                                    float srcRight, float srcBottom, float dstLeft, float dstTop,
-                                   float dstRight, float dstBottom) {
+                                   float dstRight, float dstBottom,
+                                   const SkRect* explicitClip) {
     constexpr int32 kTargetColorConversionBit = 1 << 13;
     constexpr int32 kPhysicalVariantCacheBit = 1 << 14;
     if (!plan || (plan->optimizationMask & kTargetColorConversionBit) == 0) {
@@ -713,9 +845,13 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
     skia_image_backing_internal::recordTargetColorAttemptForTest();
     RasterPhysicalPlan physicalPlan;
     if (!buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                                 dstLeft, dstTop, dstRight, dstBottom, &physicalPlan, nullptr)) {
+                                 dstLeft, dstTop, dstRight, dstBottom, explicitClip,
+                                 &physicalPlan, nullptr)) {
         skia_image_backing_internal::recordTargetColorFallbackForTest();
         return false;
+    }
+    if (physicalPlan.empty) {
+        return true;
     }
     if (!skia_image_backing_internal::proveOpaque(source)) {
         skia_image_backing_internal::recordTargetColorFallbackForTest();
@@ -733,7 +869,10 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
     }
     if (skia_image_backing_internal::tryWritePixelsImage(
             canvas, variant.get(), source->width, source->height, true,
-            srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+            physicalPlan.visibleSourceLogical.fLeft, physicalPlan.visibleSourceLogical.fTop,
+            physicalPlan.visibleSourceLogical.fRight, physicalPlan.visibleSourceLogical.fBottom,
+            physicalPlan.visibleDestinationLogical.fLeft, physicalPlan.visibleDestinationLogical.fTop,
+            physicalPlan.visibleDestinationLogical.fRight, physicalPlan.visibleDestinationLogical.fBottom,
             plan->alphaMask, plan->optimizationMask)) {
         return true;
     }
@@ -741,8 +880,15 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
     identityTransform.smooth = false;
     identityTransform.validRoot = physicalPlan.sourcePixels;
     SkiaImageDrawColorFilters colorFilters;
-    if (geometryDrawCompiled(canvas, variant.get(), identityTransform, srcLeft, srcTop,
-                             srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+    if (geometryDrawCompiled(canvas, variant.get(), identityTransform,
+                             physicalPlan.visibleSourceLogical.fLeft,
+                             physicalPlan.visibleSourceLogical.fTop,
+                             physicalPlan.visibleSourceLogical.fRight,
+                             physicalPlan.visibleSourceLogical.fBottom,
+                             physicalPlan.visibleDestinationLogical.fLeft,
+                             physicalPlan.visibleDestinationLogical.fTop,
+                             physicalPlan.visibleDestinationLogical.fRight,
+                             physicalPlan.visibleDestinationLogical.fBottom,
                              plan->alphaMask, false, &colorFilters)) {
         return true;
     }
@@ -759,11 +905,6 @@ static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkC
         || canvas->getSaveCount() != 1 || targetPixels.width() <= 0 || targetPixels.height() <= 0) {
         return false;
     }
-    SkIRect deviceClip;
-    if (!canvas->getDeviceClipBounds(&deviceClip)
-        || deviceClip != SkIRect::MakeWH(targetPixels.width(), targetPixels.height())) {
-        return false;
-    }
     const SkMatrix matrix = canvas->getTotalMatrix();
     if (matrix.hasPerspective() || matrix.getSkewX() != 0 || matrix.getSkewY() != 0
         || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0
@@ -777,7 +918,8 @@ static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkC
 static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
                                NativeImageBackingRecord* source, float srcLeft, float srcTop,
                                float srcRight, float srcBottom, float dstLeft, float dstTop,
-                               float dstRight, float dstBottom) {
+                               float dstRight, float dstBottom,
+                               const SkRect* explicitClip) {
     constexpr int32 kPhysicalVariantCacheBit = 1 << 14;
     constexpr int32 kPhysicalIdentityFoldingBit = 1 << 15;
     if (!plan || (plan->optimizationMask & kPhysicalVariantCacheBit) == 0) {
@@ -788,12 +930,17 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
         || !physicalVariantCanvasEligible(plan, canvas, targetPixels)) {
         return false;
     }
+    RasterPhysicalPlan physicalPlan;
+    if (!buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                                 dstLeft, dstTop, dstRight, dstBottom, explicitClip,
+                                 &physicalPlan, nullptr)) {
+        return false;
+    }
+    if (physicalPlan.empty) {
+        return true;
+    }
     if ((plan->optimizationMask & kPhysicalIdentityFoldingBit) != 0) {
-        RasterPhysicalPlan identityPlan;
-        if (buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                                    dstLeft, dstTop, dstRight, dstBottom, &identityPlan, nullptr)) {
-            return false;
-        }
+        return false;
     }
     const SkColorType colorType = physicalVariantColorType(plan, source, targetPixels);
     const RasterVariantKey key = makePhysicalVariantKey(plan, source, targetPixels, colorType);
@@ -818,33 +965,45 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
     variantTransform.smooth = false;
     variantTransform.hasFill = false;
     variantTransform.fillColor = 0;
-    return geometryDrawCompiled(canvas, variant.get(), variantTransform, srcLeft, srcTop,
-                                srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+    return geometryDrawCompiled(canvas, variant.get(), variantTransform,
+                                physicalPlan.visibleSourceLogical.fLeft,
+                                physicalPlan.visibleSourceLogical.fTop,
+                                physicalPlan.visibleSourceLogical.fRight,
+                                physicalPlan.visibleSourceLogical.fBottom,
+                                physicalPlan.visibleDestinationLogical.fLeft,
+                                physicalPlan.visibleDestinationLogical.fTop,
+                                physicalPlan.visibleDestinationLogical.fRight,
+                                physicalPlan.visibleDestinationLogical.fBottom,
                                 plan->alphaMask, false, nullptr);
 }
 
-#endif
-
-static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, float srcLeft,
-                         float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop,
-                         float dstRight, float dstBottom, int frameOverride) {
-    NativeImageBackingRecord* source = plan ? findBacking(plan->rootHandle) : nullptr;
-    if (!source || !canvas) {
-        return false;
-    }
-#if TC_GRAPHICS_SOFTWARE
+static bool drawPhysicalFastPath(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                 NativeImageBackingRecord* source, float srcLeft, float srcTop,
+                                 float srcRight, float srcBottom, float dstLeft, float dstTop,
+                                 float dstRight, float dstBottom, const SkRect* explicitClip) {
     constexpr int32 kPhysicalIdentityFoldingBit = 1 << 15;
     if (plan->optimizationMask & kPhysicalIdentityFoldingBit) {
         skia_image_backing_record_physical_identity_attempt_for_test();
         RasterPhysicalPlan physicalPlan;
         int32 rejectionReason = SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST;
         if (buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                                    dstLeft, dstTop, dstRight, dstBottom, &physicalPlan,
-                                    &rejectionReason)) {
+                                    dstLeft, dstTop, dstRight, dstBottom, explicitClip,
+                                    &physicalPlan, &rejectionReason)) {
+            if (physicalPlan.empty) {
+                skia_image_backing_record_physical_identity_hit_for_test();
+                return true;
+            }
             if (isTrivialWritePixelsPlan(plan)
-                && skia_image_backing_try_write_pixels(canvas, plan->rootHandle, srcLeft, srcTop,
-                    srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, plan->alphaMask,
-                    plan->optimizationMask)) {
+                && skia_image_backing_try_write_pixels(canvas, plan->rootHandle,
+                    physicalPlan.visibleSourceLogical.fLeft,
+                    physicalPlan.visibleSourceLogical.fTop,
+                    physicalPlan.visibleSourceLogical.fRight,
+                    physicalPlan.visibleSourceLogical.fBottom,
+                    physicalPlan.visibleDestinationLogical.fLeft,
+                    physicalPlan.visibleDestinationLogical.fTop,
+                    physicalPlan.visibleDestinationLogical.fRight,
+                    physicalPlan.visibleDestinationLogical.fBottom,
+                    plan->alphaMask, plan->optimizationMask)) {
                 skia_image_backing_record_physical_identity_hit_for_test();
                 skia_image_backing_record_physical_identity_resample_avoided_for_test();
                 return true;
@@ -856,8 +1015,15 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
                     identityTransform.smooth = false;
                     identityTransform.validRoot = physicalPlan.sourcePixels;
                     SkiaImageDrawColorFilters colorFilters;
-                    if (geometryDrawCompiled(canvas, image.get(), identityTransform, srcLeft, srcTop,
-                                             srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+                    if (geometryDrawCompiled(canvas, image.get(), identityTransform,
+                                             physicalPlan.visibleSourceLogical.fLeft,
+                                             physicalPlan.visibleSourceLogical.fTop,
+                                             physicalPlan.visibleSourceLogical.fRight,
+                                             physicalPlan.visibleSourceLogical.fBottom,
+                                             physicalPlan.visibleDestinationLogical.fLeft,
+                                             physicalPlan.visibleDestinationLogical.fTop,
+                                             physicalPlan.visibleDestinationLogical.fRight,
+                                             physicalPlan.visibleDestinationLogical.fBottom,
                                              plan->alphaMask, false, &colorFilters)) {
                         skia_image_backing_record_physical_identity_hit_for_test();
                         skia_image_backing_record_physical_identity_resample_avoided_for_test();
@@ -871,12 +1037,34 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
         skia_image_backing_record_physical_identity_fallback_for_test();
     }
     if (drawTargetColorVariant(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                               dstLeft, dstTop, dstRight, dstBottom)) {
+                               dstLeft, dstTop, dstRight, dstBottom, explicitClip)) {
         return true;
     }
     if (drawPhysicalVariant(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                            dstLeft, dstTop, dstRight, dstBottom)) {
+                            dstLeft, dstTop, dstRight, dstBottom, explicitClip)) {
         return true;
+    }
+    return false;
+}
+
+#endif
+
+static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, float srcLeft,
+                         float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop,
+                         float dstRight, float dstBottom, int frameOverride,
+                         const SkRect* explicitClip, bool physicalOnly, bool skipPhysical) {
+    NativeImageBackingRecord* source = plan ? findBacking(plan->rootHandle) : nullptr;
+    if (!source || !canvas) {
+        return false;
+    }
+#if TC_GRAPHICS_SOFTWARE
+    if (!skipPhysical && drawPhysicalFastPath(plan, canvas, source, srcLeft, srcTop, srcRight,
+                                              srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+                                              explicitClip)) {
+        return true;
+    }
+    if (physicalOnly) {
+        return false;
     }
 #endif
     if (isTrivialWritePixelsPlan(plan)
@@ -932,7 +1120,34 @@ int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom) {
     const int result = geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight,
-                                    srcBottom, dstLeft, dstTop, dstRight, dstBottom, -1) ? 1 : 0;
+                                    srcBottom, dstLeft, dstTop, dstRight, dstBottom, -1, nullptr,
+                                    false, false) ? 1 : 0;
+    if (result != 0) {
+        skia_image_backing_mark_surface_mutated(targetSurface);
+    }
+    return result;
+}
+
+int skia_image_backing_try_physical_geometry_to_surface(int32 targetSurface,
+    const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
+    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
+    float clipLeft, float clipTop, float clipRight, float clipBottom) {
+    const SkRect explicitClip = SkRect::MakeLTRB(clipLeft, clipTop, clipRight, clipBottom);
+    const int result = geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight,
+                                    srcBottom, dstLeft, dstTop, dstRight, dstBottom, -1,
+                                    &explicitClip, true, false) ? 1 : 0;
+    if (result != 0) {
+        skia_image_backing_mark_surface_mutated(targetSurface);
+    }
+    return result;
+}
+
+int skia_image_backing_draw_generic_geometry_to_surface(int32 targetSurface,
+    const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
+    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom) {
+    const int result = geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight,
+                                    srcBottom, dstLeft, dstTop, dstRight, dstBottom, -1, nullptr,
+                                    false, true) ? 1 : 0;
     if (result != 0) {
         skia_image_backing_mark_surface_mutated(targetSurface);
     }
