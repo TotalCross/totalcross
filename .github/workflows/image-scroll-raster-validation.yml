@@ -361,7 +361,7 @@ jobs:
               -ErrorAction SilentlyContinue
             if ($cdb) {
               $crashLog = Join-Path $env:RUNNER_TEMP 'native-crash.log'
-              & $cdb.FullName -g -c 'sxe av; g; k; q' `
+              & $cdb.FullName -g -c 'sxe av; g; r rax rcx rdx r8 rdi rsi; k; q' `
                 (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe') *> $crashLog
             }
           }
