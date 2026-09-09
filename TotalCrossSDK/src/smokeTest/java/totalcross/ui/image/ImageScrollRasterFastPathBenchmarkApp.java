@@ -4,13 +4,13 @@
 
 package totalcross.ui.image;
 
+import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.ui.Control;
 import totalcross.ui.MainWindow;
 import totalcross.ui.ScrollContainer;
 import totalcross.ui.Window;
-import totalcross.ui.event.TimerEvent;
-import totalcross.ui.event.TimerListener;
+import totalcross.ui.event.PenEvent;
 import totalcross.ui.gfx.Graphics;
 
 /** Native-deployed clipped scrolling workload for lazy JPEG raster accounting. */
@@ -30,7 +30,9 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
   public void initUI() {
     String scenario = ImageRasterBenchmarkSupport.argument(getCommandLine(), "scenario", "post-enabled");
     String testCase = ImageRasterBenchmarkSupport.argument(getCommandLine(), "case", "clipped");
+    String framePath = ImageRasterBenchmarkSupport.argument(getCommandLine(), "frame-path", "manual");
     boolean clip = "clipped".equals(testCase);
+    boolean naturalFramePath = "natural".equals(framePath);
     int completed = 0;
     String error = "";
     String cold = null;
@@ -43,9 +45,12 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     String pixelHash = null;
     String screenScale = "unknown";
     boolean overallPass = false;
+    boolean previousFingerTouch = Settings.fingerTouch;
     try {
       ImageRasterBenchmarkSupport.require("clipped".equals(testCase) || "unclipped".equals(testCase),
           "case must be clipped or unclipped");
+      ImageRasterBenchmarkSupport.require("manual".equals(framePath) || naturalFramePath,
+          "frame-path must be manual or natural");
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
       ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
           ImageOptimizationSettings.ENABLED);
@@ -53,30 +58,42 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       byte[] encoded = ImageRasterBenchmarkSupport.resource("image-abi/lena512.jpg");
       Image[] images = lazyTiles(encoded);
       ScrollContainer scroll = buildScroll(images, clip);
+      if (naturalFramePath) {
+        // Keep the existing scrollbar construction; the normal pen-event path
+        // consults this flag when dispatching drag events.
+        Settings.fingerTouch = true;
+      }
       Graphics screenGraphics = scroll.getGraphics();
       ImageRasterBenchmarkSupport.require(screenGraphics != null, "scroll graphics");
       screenScale = String.valueOf(screenGraphics.getContentScale());
       pixelHash = verifyPixelParity(encoded);
-      cold = runScrollPass(scroll, true);
-      coldFrames = lastScrollPassFramesForTest;
-      warmReverse = runScrollPass(scroll, false);
-      warmReverseFrames = lastScrollPassFramesForTest;
-      warmForward = runScrollPass(scroll, true);
-      warmForwardFrames = lastScrollPassFramesForTest;
-      runTimerUpdateProbe(scroll);
+      if (naturalFramePath) {
+        cold = runNaturalScrollScenario(scroll);
+        coldFrames = lastScrollPassFramesForTest;
+      } else {
+        cold = runScrollPass(scroll, true);
+        coldFrames = lastScrollPassFramesForTest;
+        warmReverse = runScrollPass(scroll, false);
+        warmReverseFrames = lastScrollPassFramesForTest;
+        warmForward = runScrollPass(scroll, true);
+        warmForwardFrames = lastScrollPassFramesForTest;
+      }
       variant = runVariantScenario(encoded);
-      ImageRasterBenchmarkSupport.require(coldFrames > 0 && warmReverseFrames > 0
-          && warmForwardFrames > 0,
+      ImageRasterBenchmarkSupport.require(coldFrames > 0
+          && (naturalFramePath || (warmReverseFrames > 0 && warmForwardFrames > 0)),
           "scroll passes did not paint");
       completed = 1;
       overallPass = true;
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_');
+    } finally {
+      Settings.fingerTouch = previousFingerTouch;
     }
 
     String details = "case=" + testCase + ",image_count=" + IMAGE_COUNT
         + ",columns=" + COLUMN_COUNT + ",visible_rows=" + VISIBLE_ROWS
+        + ",frame_path=" + framePath
         + ",tile_logical=" + TILE_SIZE + ",screen_scale=" + screenScale
         + ",validation_scale=2,pixel_hash=" + String.valueOf(pixelHash)
         + ",cold_forward=" + (cold == null ? "missing" : cold)
@@ -158,31 +175,35 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     }
   }
 
-  private void runTimerUpdateProbe(final ScrollContainer scroll) {
-    final int[] frames = { 0 };
-    TimerListener listener = new TimerListener() {
-      @Override
-      public void timerTriggered(TimerEvent event) {
-        if (frames[0] < 4) {
-          scroll.scrollContent(0, SCROLL_STEP, true);
-          Control.repaint();
-          frames[0]++;
-        }
-      }
-    };
-    scroll.addTimerListener(listener);
-    TimerEvent timer = scroll.addTimer(1);
-    try {
-      for (int i = 0; i < 4; i++) {
-        timer.lastTick = Vm.getTimeStamp() - timer.millis;
-        Vm.sleep(2);
-        _onTimerTick(true);
-      }
-    } finally {
-      scroll.removeTimer(timer);
-      scroll.removeTimerListener(listener);
+  private String runNaturalScrollScenario(ScrollContainer scroll) {
+    Image.resetImageOperationAccountingForTest();
+    Window.needsPaint = false;
+    int startValue = scroll.sbV == null ? 0 : scroll.sbV.getValue();
+    int x = Math.max(1, scroll.getWidth() / 2);
+    int y = Math.max(2, scroll.getHeight() - 12);
+    long start = Vm.getTimeStamp();
+    int events = 0;
+    int timerTicks = 0;
+    this._postEvent(PenEvent.PEN_DOWN, 0, x, y, 0, (int) Vm.getTimeStamp());
+    events++;
+    int currentY = y;
+    for (int i = 0; i < 36; i++) {
+      currentY -= 4;
+      Vm.sleep(17);
+      this._postEvent(PenEvent.PEN_DRAG, 0, x, currentY, 0, (int) Vm.getTimeStamp());
+      events++;
+      Vm.sleep(17);
+      _onTimerTick(true);
+      timerTicks++;
     }
-    ImageRasterBenchmarkSupport.require(frames[0] == 4, "timer probe did not trigger");
+    this._postEvent(PenEvent.PEN_UP, 0, x, currentY, 0, (int) Vm.getTimeStamp());
+    events++;
+    int endValue = scroll.sbV == null ? startValue : scroll.sbV.getValue();
+    ImageRasterBenchmarkSupport.require(endValue > startValue, "natural scroll did not move");
+    lastScrollPassFramesForTest = (int) Window.effectivePaintsForTest();
+    return "elapsed_ms=" + (Vm.getTimeStamp() - start) + ",events=" + events
+        + ",timer_ticks=" + timerTicks + ",scroll_start=" + startValue
+        + ",scroll_end=" + endValue + ",frames=" + lastScrollPassFramesForTest + counterDetails();
   }
 
   private static String verifyPixelParity(byte[] encoded) throws Exception {
