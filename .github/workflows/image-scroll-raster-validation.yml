@@ -276,13 +276,15 @@ jobs:
           deployed_hash="$(sha256sum "$run_dir/libtcvm.so" | awk '{print $1}')"
           test "$source_hash" = "$deployed_hash"
           : > "$run_dir/run.log"
-          for frame_path in manual natural; do
-            for test_case in clipped unclipped; do
-              case_log="$run_dir/run-$frame_path-$test_case.log"
-              (cd "$run_dir" && xvfb-run -a -s '-screen 0 1024x768x24' \
-                ./ImageScrollRasterFastPathBenchmarkApp \
-                --scenario=post-enabled --case="$test_case" --frame-path="$frame_path" 2>&1) \
-                | tee "$case_log" | tee -a "$run_dir/run.log"
+          for variant_cache in disabled enabled; do
+            for frame_path in manual natural; do
+              for test_case in clipped unclipped; do
+                case_log="$run_dir/run-$variant_cache-$frame_path-$test_case.log"
+                (cd "$run_dir" && xvfb-run -a -s '-screen 0 1024x768x24' \
+                  ./ImageScrollRasterFastPathBenchmarkApp \
+                  --scenario=post-enabled --case="$test_case" --frame-path="$frame_path" \
+                  --variant-cache="$variant_cache" 2>&1) \
+                  | tee "$case_log" | tee -a "$run_dir/run.log"
               grep -q 'fixture=ImageScrollRasterFastPathBenchmarkApp' "$case_log"
               grep -q 'overallPass=true' "$case_log"
               grep -q 'physical_identity_attempts=' "$case_log"
@@ -290,10 +292,13 @@ jobs:
               grep -q "frame_path=$frame_path" "$case_log"
               grep -q 'repaint_frame=' "$case_log"
               grep -q 'native_present_calls=' "$case_log"
+              grep -q "variant_cache_profile=$variant_cache" "$case_log"
+              grep -q 'variant_cache=' "$case_log"
               if [ "$frame_path" = natural ]; then
                 grep -q 'scheduler_due_updates=' "$case_log"
                 grep -q 'back_to_back_paints=' "$case_log"
               fi
+              done
             done
           done
           {
@@ -372,7 +377,8 @@ jobs:
           }
           foreach ($marker in @('fixture=ImageScrollRasterFastPathBenchmarkApp', 'overallPass=true',
               'physical_identity_attempts=', 'physical_identity_rejections_canvas_state=',
-              'repaint_frame=', 'native_present_calls=', 'variant_cache=')) {
+              'repaint_frame=', 'native_present_calls=', 'variant_cache_profile=',
+              'variant_cache=')) {
             if ($output.IndexOf($marker, [StringComparison]::Ordinal) -lt 0) {
               throw "Missing runtime marker: $marker"
             }
