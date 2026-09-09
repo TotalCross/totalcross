@@ -8,7 +8,6 @@
 import argparse
 import csv
 import hashlib
-import os
 from pathlib import Path
 import platform
 import shutil
@@ -119,6 +118,8 @@ def main(argv):
         for profile in PROFILES:
             run_name = f"{width}x{height}-{profile}"
             log_path = output_dir / f"{run_name}.log"
+            # The simulator notation `/scr WIDTHxHEIGHTx24` maps to the
+            # native desktop launcher's `/scr x,y,width,height` form.
             command = [
                 str(executable),
                 "/scr", f"-2,-2,{width},{height}",
