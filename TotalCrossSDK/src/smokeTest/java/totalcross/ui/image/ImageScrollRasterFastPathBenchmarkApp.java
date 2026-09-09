@@ -43,6 +43,8 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     int warmReverseFrames = 0;
     int warmForwardFrames = 0;
     String pixelHash = null;
+    String partialClipHash = null;
+    String transformedFallbackHash = null;
     String screenScale = "unknown";
     boolean overallPass = false;
     boolean previousFingerTouch = Settings.fingerTouch;
@@ -67,12 +69,18 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(screenGraphics != null, "scroll graphics");
       screenScale = String.valueOf(screenGraphics.getContentScale());
       pixelHash = verifyPixelParity(encoded);
+      partialClipHash = verifyPartialClipParity(scenario);
+      transformedFallbackHash = verifyTransformedFallbackParity(scenario);
       if (naturalFramePath) {
         cold = runNaturalScrollScenario(scroll);
         coldFrames = lastScrollPassFramesForTest;
       } else {
         cold = runScrollPass(scroll, true);
         coldFrames = lastScrollPassFramesForTest;
+        if ("post-enabled".equals(scenario) && clip) {
+          ImageRasterBenchmarkSupport.require(NativeImageBacking.physicalIdentityHitsForTest() > 0,
+              "fully visible clipped physical identity path was not used");
+        }
         warmReverse = runScrollPass(scroll, false);
         warmReverseFrames = lastScrollPassFramesForTest;
         warmForward = runScrollPass(scroll, true);
@@ -96,6 +104,8 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
         + ",frame_path=" + framePath
         + ",tile_logical=" + TILE_SIZE + ",screen_scale=" + screenScale
         + ",validation_scale=2,pixel_hash=" + String.valueOf(pixelHash)
+        + ",partial_clip_hash=" + String.valueOf(partialClipHash)
+        + ",transformed_fallback_hash=" + String.valueOf(transformedFallbackHash)
         + ",cold_forward=" + (cold == null ? "missing" : cold)
         + ",warm_reverse=" + (warmReverse == null ? "missing" : warmReverse)
         + ",warm_forward=" + (warmForward == null ? "missing" : warmForward)
@@ -220,11 +230,132 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     return ImageRasterBenchmarkSupport.hashString(clippedHash);
   }
 
+  private static String verifyPartialClipParity(String scenario) throws Exception {
+    final int[][] clips = {
+        {16, 8, 56, 64},  // left
+        {8, 16, 64, 56},  // top
+        {8, 8, 56, 64},   // right
+        {8, 8, 64, 56},   // bottom
+        {16, 16, 56, 56}, // corner
+        {0, 0, 4, 4}      // no intersection
+    };
+    Image.resetImageOperationAccountingForTest();
+    long firstHash = 0;
+    long optimizedIdentityHits = 0;
+    try {
+      for (int scale = 1; scale <= 2; scale++) {
+        Image source = Image.createLogical(TILE_SIZE, TILE_SIZE, scale);
+        Graphics sourceGraphics = source.getGraphics();
+        ImageRasterBenchmarkSupport.require(sourceGraphics != null, "partial clip source graphics");
+        sourceGraphics.backColor = 0x102030;
+        sourceGraphics.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+        sourceGraphics.backColor = 0x405060;
+        sourceGraphics.fillRect(0, 0, TILE_SIZE / 2, TILE_SIZE / 2);
+        sourceGraphics.backColor = 0x708090;
+        sourceGraphics.fillRect(TILE_SIZE / 2, TILE_SIZE / 2, TILE_SIZE / 2, TILE_SIZE / 2);
+        if (scale == 2) {
+          source = source.getSmoothScaledInstance(TILE_SIZE, TILE_SIZE);
+        }
+        for (int[] clip : clips) {
+          long identityHitsBefore = NativeImageBacking.physicalIdentityHitsForTest();
+          Image optimized = renderClipped(source, scale, clip);
+          long optimizedHash = ImageRasterBenchmarkSupport.fullPixelHash(optimized);
+          if (firstHash == 0) {
+            firstHash = optimizedHash;
+          }
+          optimizedIdentityHits += NativeImageBacking.physicalIdentityHitsForTest()
+              - identityHitsBefore;
+
+          ImageOptimizationSettings.resetForTest();
+          ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+              ImageOptimizationSettings.ENABLED);
+          Image reference = renderClipped(source, scale, clip);
+          long referenceHash = ImageRasterBenchmarkSupport.fullPixelHash(reference);
+          ImageRasterBenchmarkSupport.require(optimizedHash == referenceHash,
+              "partial clip pixel mismatch scale=" + scale + ",clip=" + clip[0] + ":"
+                  + clip[1] + ":" + clip[2] + ":" + clip[3] + ",optimized="
+                  + ImageRasterBenchmarkSupport.hashString(optimizedHash) + ",reference="
+                  + ImageRasterBenchmarkSupport.hashString(referenceHash) + ",first="
+                  + firstPixelMismatch(optimized.getPixels(), reference.getPixels()));
+          ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
+        }
+      }
+    } finally {
+      ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
+    }
+    return ImageRasterBenchmarkSupport.hashString(firstHash) + ":identity_hits="
+        + optimizedIdentityHits;
+  }
+
+  private static Image renderClipped(Image source, int scale, int[] clip) throws Exception {
+    Image target = Image.createLogical(TILE_SIZE + 16, TILE_SIZE + 16, scale);
+    Graphics graphics = target.getGraphics();
+    ImageRasterBenchmarkSupport.require(graphics != null, "partial clip target graphics");
+    graphics.backColor = 0x102030;
+    graphics.fillRect(0, 0, target.getWidth(), target.getHeight());
+    graphics.setClip(clip[0], clip[1], clip[2], clip[3]);
+    graphics.drawImage(source, 8, 8, true);
+    return target;
+  }
+
+  private static String firstPixelMismatch(int[] actual, int[] expected) {
+    int length = Math.min(actual.length, expected.length);
+    for (int i = 0; i < length; i++) {
+      if (actual[i] != expected[i]) {
+        return i + ":" + Integer.toHexString(actual[i]) + "/" + Integer.toHexString(expected[i]);
+      }
+    }
+    return actual.length + "/" + expected.length;
+  }
+
+  private static String verifyTransformedFallbackParity(String scenario) throws Exception {
+    Image source = Image.createLogical(TILE_SIZE, TILE_SIZE, 2);
+    Graphics sourceGraphics = source.getGraphics();
+    ImageRasterBenchmarkSupport.require(sourceGraphics != null, "transformed source graphics");
+    sourceGraphics.backColor = 0x204060;
+    sourceGraphics.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+    sourceGraphics.backColor = 0xA0C0E0;
+    sourceGraphics.fillRect(8, 8, TILE_SIZE - 16, TILE_SIZE - 16);
+    Image transformed = source.getRotatedScaledInstance(100, 17, 0);
+    Image.resetImageOperationAccountingForTest();
+    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    Image optimized = renderTransformed(transformed);
+    long optimizedHash = ImageRasterBenchmarkSupport.fullPixelHash(optimized);
+    long optimizedGenericDraws = ImageRasterBenchmarkSupport.genericGeometryDrawsForTest();
+    ImageOptimizationSettings.resetForTest();
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    Image reference = renderTransformed(transformed);
+    long referenceHash = ImageRasterBenchmarkSupport.fullPixelHash(reference);
+    ImageRasterBenchmarkSupport.require(optimizedHash == referenceHash,
+        "transformed pixel mismatch optimized=" + ImageRasterBenchmarkSupport.hashString(optimizedHash)
+            + ",reference=" + ImageRasterBenchmarkSupport.hashString(referenceHash));
+    ImageRasterBenchmarkSupport.require(optimizedGenericDraws > 0,
+        "transformed draw did not use generic fallback");
+    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
+    return ImageRasterBenchmarkSupport.hashString(optimizedHash) + ":generic=" + optimizedGenericDraws;
+  }
+
+  private static Image renderTransformed(Image source) throws Exception {
+    Image target = Image.createLogical(TILE_SIZE + 16, TILE_SIZE + 16, 2);
+    Graphics graphics = target.getGraphics();
+    ImageRasterBenchmarkSupport.require(graphics != null, "transformed target graphics");
+    graphics.backColor = 0x102030;
+    graphics.fillRect(0, 0, target.getWidth(), target.getHeight());
+    graphics.setClip(8, 8, TILE_SIZE, TILE_SIZE);
+    graphics.drawImage(source, 8, 8, true);
+    return target;
+  }
+
   private static String runVariantScenario(byte[] encoded) throws Exception {
     ImageOptimizationSettings.resetForTest();
     for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
       ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
     }
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.DECODE_ZERO_COPY,
         ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_OPACITY_METADATA,
@@ -233,9 +364,10 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
         ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
         ImageOptimizationSettings.ENABLED);
-    Image image = new Image(encoded, encoded.length).getSmoothScaledInstance(TILE_SIZE - 8, TILE_SIZE - 8);
+    Image image = variantSource().getSmoothScaledInstance(TILE_SIZE - 8, TILE_SIZE - 8);
     Image target = Image.createLogical(TILE_SIZE, TILE_SIZE, 2);
     Graphics graphics = target.getGraphics();
+    graphics.setClip(4, 4, TILE_SIZE - 8, TILE_SIZE - 8);
     for (int warmup = 0; warmup < 2; warmup++) {
       graphics.drawImage(image, 0, 0, false);
     }
@@ -244,7 +376,23 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       graphics.drawImage(image, 0, 0, false);
     }
     long elapsed = Vm.getTimeStamp() - start;
+    ImageRasterBenchmarkSupport.require(NativeImageBacking.physicalVariantHitsForTest() > 0,
+        "cached clipped physical variant was not reused");
     return "elapsed_ms=" + elapsed + counterDetails();
+  }
+
+  private static Image variantSource() throws Exception {
+    Image source = Image.createLogical(200, 200, 2);
+    Graphics graphics = source.getGraphics();
+    ImageRasterBenchmarkSupport.require(graphics != null, "variant source graphics");
+    for (int y = 0; y < 200; y += 16) {
+      for (int x = 0; x < 200; x += 16) {
+        graphics.foreColor = 0xFF000000 | ((x * 11) & 0xFF) << 16
+            | ((y * 13) & 0xFF) << 8 | ((x + y * 3) & 0xFF);
+        graphics.fillRect(x, y, Math.min(16, 200 - x), Math.min(16, 200 - y));
+      }
+    }
+    return source;
   }
 
   private static final class ScrollImageTile extends Control {

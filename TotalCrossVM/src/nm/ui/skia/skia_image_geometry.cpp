@@ -691,6 +691,113 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
     return true;
 }
 
+static bool buildPhysicalVisibleClip(SkCanvas* canvas, float dstLeft, float dstTop,
+                                     float dstRight, float dstBottom, const SkRect* explicitClip,
+                                     SkRect* visibleDestinationLogical, bool* empty) {
+    if (!canvas || !visibleDestinationLogical || !empty) {
+        return false;
+    }
+    SkPixmap targetPixels;
+    if (!canvas->peekPixels(&targetPixels) || targetPixels.width() <= 0 || targetPixels.height() <= 0) {
+        return false;
+    }
+    SkIRect deviceClip;
+    if (!canvas->getDeviceClipBounds(&deviceClip)) {
+        return false;
+    }
+    const SkMatrix canvasMatrix = canvas->getTotalMatrix();
+    const SkPoint destinationTopLeft = mapPoint(canvasMatrix, dstLeft, dstTop);
+    const SkPoint destinationTopRight = mapPoint(canvasMatrix, dstRight, dstTop);
+    const SkPoint destinationBottomLeft = mapPoint(canvasMatrix, dstLeft, dstBottom);
+    const SkPoint destinationBottomRight = mapPoint(canvasMatrix, dstRight, dstBottom);
+    if (!exactValue(destinationTopRight.fY, destinationTopLeft.fY)
+        || !exactValue(destinationBottomLeft.fX, destinationTopLeft.fX)
+        || !exactValue(destinationBottomRight.fX, destinationTopRight.fX)
+        || !exactValue(destinationBottomRight.fY, destinationBottomLeft.fY)
+        || destinationTopRight.fX <= destinationTopLeft.fX
+        || destinationBottomLeft.fY <= destinationTopLeft.fY) {
+        return false;
+    }
+    int32 destinationPixelLeft;
+    int32 destinationPixelTop;
+    int32 destinationPixelRight;
+    int32 destinationPixelBottom;
+    if (!integerValue(destinationTopLeft.fX, &destinationPixelLeft)
+        || !integerValue(destinationTopLeft.fY, &destinationPixelTop)
+        || !integerValue(destinationTopRight.fX, &destinationPixelRight)
+        || !integerValue(destinationBottomLeft.fY, &destinationPixelBottom)) {
+        return false;
+    }
+    SkRect effectiveClip = SkRect::MakeLTRB(static_cast<float>(deviceClip.left()),
+                                            static_cast<float>(deviceClip.top()),
+                                            static_cast<float>(deviceClip.right()),
+                                            static_cast<float>(deviceClip.bottom()));
+    if (explicitClip) {
+        const SkPoint clipTopLeft = mapPoint(canvasMatrix, explicitClip->fLeft, explicitClip->fTop);
+        const SkPoint clipTopRight = mapPoint(canvasMatrix, explicitClip->fRight, explicitClip->fTop);
+        const SkPoint clipBottomLeft = mapPoint(canvasMatrix, explicitClip->fLeft, explicitClip->fBottom);
+        const SkPoint clipBottomRight = mapPoint(canvasMatrix, explicitClip->fRight, explicitClip->fBottom);
+        if (!exactValue(clipTopRight.fY, clipTopLeft.fY)
+            || !exactValue(clipBottomLeft.fX, clipTopLeft.fX)
+            || !exactValue(clipBottomRight.fX, clipTopRight.fX)
+            || !exactValue(clipBottomRight.fY, clipBottomLeft.fY)
+            || clipTopRight.fX <= clipTopLeft.fX || clipBottomLeft.fY <= clipTopLeft.fY) {
+            return false;
+        }
+        int32 clipLeft;
+        int32 clipTop;
+        int32 clipRight;
+        int32 clipBottom;
+        if (!integerValue(clipTopLeft.fX, &clipLeft)
+            || !integerValue(clipTopLeft.fY, &clipTop)
+            || !integerValue(clipTopRight.fX, &clipRight)
+            || !integerValue(clipBottomLeft.fY, &clipBottom)) {
+            return false;
+        }
+        effectiveClip = SkRect::MakeLTRB(static_cast<float>(clipLeft), static_cast<float>(clipTop),
+                                          static_cast<float>(clipRight), static_cast<float>(clipBottom));
+        effectiveClip.intersect(SkRect::MakeLTRB(static_cast<float>(deviceClip.left()),
+                                                  static_cast<float>(deviceClip.top()),
+                                                  static_cast<float>(deviceClip.right()),
+                                                  static_cast<float>(deviceClip.bottom())));
+    }
+    SkRect visibleDestination = SkRect::MakeLTRB(static_cast<float>(destinationPixelLeft),
+                                                 static_cast<float>(destinationPixelTop),
+                                                 static_cast<float>(destinationPixelRight),
+                                                 static_cast<float>(destinationPixelBottom));
+    if (!visibleDestination.intersect(effectiveClip)) {
+        *visibleDestinationLogical = SkRect::MakeEmpty();
+        *empty = true;
+        return true;
+    }
+    int32 visibleLeft;
+    int32 visibleTop;
+    int32 visibleRight;
+    int32 visibleBottom;
+    if (!integerValue(visibleDestination.fLeft, &visibleLeft)
+        || !integerValue(visibleDestination.fTop, &visibleTop)
+        || !integerValue(visibleDestination.fRight, &visibleRight)
+        || !integerValue(visibleDestination.fBottom, &visibleBottom)) {
+        return false;
+    }
+    SkMatrix canvasInverse;
+    if (!canvasMatrix.invert(&canvasInverse)) {
+        return false;
+    }
+    const SkPoint visibleTopLeft = mapPoint(canvasInverse, visibleLeft, visibleTop);
+    const SkPoint visibleBottomRight = mapPoint(canvasInverse, visibleRight, visibleBottom);
+    if (!std::isfinite(visibleTopLeft.fX) || !std::isfinite(visibleTopLeft.fY)
+        || !std::isfinite(visibleBottomRight.fX) || !std::isfinite(visibleBottomRight.fY)
+        || visibleBottomRight.fX <= visibleTopLeft.fX
+        || visibleBottomRight.fY <= visibleTopLeft.fY) {
+        return false;
+    }
+    *visibleDestinationLogical = SkRect::MakeLTRB(visibleTopLeft.fX, visibleTopLeft.fY,
+                                                   visibleBottomRight.fX, visibleBottomRight.fY);
+    *empty = false;
+    return true;
+}
+
 #endif
 
 static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan) {
@@ -930,17 +1037,47 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
         || !physicalVariantCanvasEligible(plan, canvas, targetPixels)) {
         return false;
     }
-    RasterPhysicalPlan physicalPlan;
-    if (!buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                                 dstLeft, dstTop, dstRight, dstBottom, explicitClip,
-                                 &physicalPlan, nullptr)) {
+    SkRect visibleDestinationLogical;
+    bool empty = false;
+    if (!buildPhysicalVisibleClip(canvas, dstLeft, dstTop, dstRight, dstBottom, explicitClip,
+                                  &visibleDestinationLogical, &empty)) {
         return false;
     }
-    if (physicalPlan.empty) {
+    if (empty) {
         return true;
     }
-    if ((plan->optimizationMask & kPhysicalIdentityFoldingBit) != 0) {
+    const double destinationWidth = dstRight - dstLeft;
+    const double destinationHeight = dstBottom - dstTop;
+    const double sourceWidth = srcRight - srcLeft;
+    const double sourceHeight = srcBottom - srcTop;
+    if (!std::isfinite(destinationWidth) || !std::isfinite(destinationHeight)
+        || !std::isfinite(sourceWidth) || !std::isfinite(sourceHeight)
+        || destinationWidth <= 0 || destinationHeight <= 0
+        || sourceWidth <= 0 || sourceHeight <= 0) {
         return false;
+    }
+    const SkRect visibleSourceLogical = SkRect::MakeLTRB(
+        static_cast<float>(srcLeft + (visibleDestinationLogical.fLeft - dstLeft)
+            * sourceWidth / destinationWidth),
+        static_cast<float>(srcTop + (visibleDestinationLogical.fTop - dstTop)
+            * sourceHeight / destinationHeight),
+        static_cast<float>(srcLeft + (visibleDestinationLogical.fRight - dstLeft)
+            * sourceWidth / destinationWidth),
+        static_cast<float>(srcTop + (visibleDestinationLogical.fBottom - dstTop)
+            * sourceHeight / destinationHeight));
+    if (!std::isfinite(visibleSourceLogical.fLeft)
+        || !std::isfinite(visibleSourceLogical.fTop)
+        || !std::isfinite(visibleSourceLogical.fRight)
+        || !std::isfinite(visibleSourceLogical.fBottom)) {
+        return false;
+    }
+    if ((plan->optimizationMask & kPhysicalIdentityFoldingBit) != 0) {
+        RasterPhysicalPlan identityPlan;
+        if (buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                                    dstLeft, dstTop, dstRight, dstBottom, explicitClip,
+                                    &identityPlan, nullptr)) {
+            return false;
+        }
     }
     const SkColorType colorType = physicalVariantColorType(plan, source, targetPixels);
     const RasterVariantKey key = makePhysicalVariantKey(plan, source, targetPixels, colorType);
@@ -966,14 +1103,10 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
     variantTransform.hasFill = false;
     variantTransform.fillColor = 0;
     return geometryDrawCompiled(canvas, variant.get(), variantTransform,
-                                physicalPlan.visibleSourceLogical.fLeft,
-                                physicalPlan.visibleSourceLogical.fTop,
-                                physicalPlan.visibleSourceLogical.fRight,
-                                physicalPlan.visibleSourceLogical.fBottom,
-                                physicalPlan.visibleDestinationLogical.fLeft,
-                                physicalPlan.visibleDestinationLogical.fTop,
-                                physicalPlan.visibleDestinationLogical.fRight,
-                                physicalPlan.visibleDestinationLogical.fBottom,
+                                visibleSourceLogical.fLeft, visibleSourceLogical.fTop,
+                                visibleSourceLogical.fRight, visibleSourceLogical.fBottom,
+                                visibleDestinationLogical.fLeft, visibleDestinationLogical.fTop,
+                                visibleDestinationLogical.fRight, visibleDestinationLogical.fBottom,
                                 plan->alphaMask, false, nullptr);
 }
 
