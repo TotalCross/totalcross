@@ -33,12 +33,17 @@ still significant, documented as follow-up.
 
 Use UTC timestamps.
 
-- [ ] Read Plan 02 handoff and record start SHA.
-- [ ] Prove current physical-variant behavior with clipping fixed.
-- [ ] If necessary, repair existing cache reuse/invalidation.
-- [ ] Add/adjust warm-reuse tests.
-- [ ] Run final application-equivalent and variant-cache scroll passes.
-- [ ] Run final local SDK + macOS native validation.
+- [x] 2026-09-09T13:10Z Read Plan 02 handoff; start SHA was
+      `30d2e6d994b1db0e32859a4b6173d836fffcda92`.
+- [x] 2026-09-09T13:10Z Proved the existing physical-variant key, lookup,
+      population, and generation invalidation path; no production cache repair
+      was needed.
+- [x] 2026-09-09T13:10Z Added deterministic warm-reuse and position-shift
+      pixel assertions plus cache-enabled scroll-profile coverage in commit
+      `d5a4e70c513d5dbf6ad4873ccb109d5379e2b56`.
+- [x] 2026-09-09T13:10Z Ran application-equivalent and cache-enabled 120-image
+      scroll passes locally, including manual and natural frame paths.
+- [x] 2026-09-09T13:10Z Ran final local SDK + macOS native validation.
 - [ ] Run final Windows x86-64, Linux x86-64, Linux ARM64 workflow.
 - [ ] Verify file sizes, commit plan outcomes, leave clean branch.
 
@@ -56,6 +61,25 @@ Important known constraints:
 - JPEG target-aware decode may make some draws physical-identity eligible
   without the variant cache, while other source/output ratios still require one
   realization into an exact physical variant.
+
+Implementation and validation discoveries:
+
+- `makePhysicalVariantKey` in
+  `TotalCrossVM/src/nm/ui/skia/skia_image_geometry.cpp` contains source,
+  decode-generation, physical output, target, and geometry identity, but no
+  destination position. `acquireVariant` in
+  `TotalCrossVM/src/nm/ui/skia/skia_image_backing.cpp` preserves the existing
+  observation/materialization/hit and generation invalidation semantics.
+- The 120-image JPEG scroll workload does not require physical variants on the
+  tested macOS software-raster path: its clipped draws are handled by physical
+  identity or the existing generic/target-color fallback, so the real-scroll
+  cache-enabled profile reported zero variant lookups/stores and zero smooth
+  resamples on its warm traversal. The dedicated scaled clipped microcase is
+  the eligible cache exercise and reported one population store followed by
+  12/12 position-shifted hits with zero additional stores or smooth resamples.
+- The parity helpers reset optimization settings; the scroll fixture reapplies
+  the selected cache profile immediately before the scroll passes so the two
+  profiles are actually tested.
 
 ## Decision Log
 
@@ -84,15 +108,29 @@ Fixed decisions:
 
 At completion record:
 
-- final branch SHA;
-- whether production cache code changed or Plan 02 alone unlocked reuse;
-- cold/warm/warm counters/times for application-equivalent profile;
-- cold/warm/warm counters/times for variant-cache profile;
-- physical variant lookups/hits/stores and smooth resample counts;
-- local SDK/macOS results;
-- final GitHub Actions run URL/ID/result for every required lane;
-- remaining cold-decode cost and explicit follow-up, if any;
-- confirmation that no new cache/public API was added.
+- final branch SHA: pending final plan closeout commit;
+- production cache code did not change; Plan 02's clip-aware ordering unlocked
+  the existing reuse path;
+- application-equivalent clipped manual pass: cold `389 ms` with
+  `444/444/0` identity attempts/hits/fallbacks, warm reverse `10 ms` with
+  `12/12/0`, and warm forward `308 ms` with `444/30/414`; all three had zero
+  physical-variant lookups/stores and zero smooth resamples;
+- cache-enabled clipped manual pass: cold `388 ms`, warm reverse `9 ms`, and
+  warm forward `309 ms`, with the same identity counters and zero real-scroll
+  variant lookups/stores or smooth resamples. Its eligible clipped microcase
+  recorded `14` lookups, `12` hits, `2` misses, `1` store, and `1` initial
+  smooth materialization; the 12 measured warm draws added `12` hits and zero
+  misses/stores/smooth resamples. Optimized/reference pixel hashes matched.
+- local SDK test, SDK distribution, Release arm64 macOS CMake/Ninja build,
+  and native fixture runs passed. The native dylib was deployed from
+  `build-image-scroll-raster/libtcvm.dylib` and hashed
+  `9a0c07ff3da66364282a75e558f51db07fdec4a2e9252e96202ab013cbde4157`.
+- final GitHub Actions run URL/ID/result for every required lane: pending;
+- cold first-use work remains synchronous (manual cold was roughly
+  `367–389 ms`, versus `307–309 ms` warm; natural event-driven passes were
+  `1640 ms`); async decode/prefetch is an explicit follow-up outside this
+  sequence;
+- no new physical cache, public API, or optimization feature number was added.
 
 ## Context and Orientation
 
