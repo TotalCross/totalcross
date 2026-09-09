@@ -1634,6 +1634,7 @@ public class Control extends GfxSurface {
    * @see #repaintNow()
    */
   public static void repaint() {
+    Window.recordRepaintRequestForTest();
     Window.needsPaint = true;
   }
 
@@ -1646,6 +1647,7 @@ public class Control extends GfxSurface {
    * @see #repaint()
    */
   public void repaintNow() {
+    Window.recordRepaintNowForTest();
     if (!Control.enableUpdateScreen) {
       return;
     }
@@ -2114,12 +2116,18 @@ public class Control extends GfxSurface {
    */
   public static void safeUpdateScreen() {
     if (MainWindow.isMainThread()) {
+      if (enableUpdateScreen) {
+        Window.recordUpdateScreenForTest();
+      }
       updateScreen();
     } else if (!callingUpdScr) {
       callingUpdScr = true;
       MainWindow.getMainWindow().runOnMainThread(new Runnable() {
         @Override
         public void run() {
+          if (enableUpdateScreen) {
+            Window.recordUpdateScreenForTest();
+          }
           updateScreen();
           Thread.yield();
           callingUpdScr = false;

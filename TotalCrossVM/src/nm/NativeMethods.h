@@ -160,6 +160,8 @@ TC_API void tuiNIB_physicalIdentityAttemptsT(NMParams p);
 TC_API void tuiNIB_physicalIdentityHitsTest(NMParams p);
 TC_API void tuiNIB_physicalIdentityFallbacks(NMParams p);
 TC_API void tuiNIB_physicalIdentityResamples(NMParams p);
+TC_API void tuiNIB_screenUpdateCallsTest(NMParams p);
+TC_API void tuiNIB_screenPresentCallsTest(NMParams p);
 TC_API void tuiNIB_targetColorAttemptsTest(NMParams p);
 TC_API void tuiNIB_targetColorMatsTest(NMParams p);
 TC_API void tuiNIB_targetColorHitsTest(NMParams p);

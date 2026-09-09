@@ -43,6 +43,23 @@ bool imageInstallNativeBacking(Context context, TCObject imageObj, int64 handle,
 #endif
 }
 
+#if TC_RENDERER_SKIA
+/* Keep the existing Java diagnostic getters ABI-compatible while exposing two
+ * rejection counters in each unused upper 16-bit lane. */
+static uint64_t physicalIdentityCounterWithRejectionsForTest(uint64_t value,
+                                                             int32 firstReason,
+                                                             int32 reasonCount)
+{
+   uint64_t packed = value & 0xffffu;
+   for (int32 i = 0; i < reasonCount; i++)
+   {
+      uint64_t rejection = skia_image_backing_physical_identity_rejections_for_test(firstReason + i);
+      packed |= (rejection & 0xffffu) << (16 + i * 16);
+   }
+   return packed;
+}
+#endif
+
 bool imageReplaceNativeBacking(Context context, TCObject imageObj, int64 handle,
                                int32 width, int32 height)
 {
@@ -115,6 +132,7 @@ TC_API void tuiNIB_clearAccountingTestNative(NMParams p) // totalcross/ui/image/
 {
 #if TC_RENDERER_SKIA
    skia_image_backing_clear_accounting_counters_for_test();
+   screen_diagnostics_clear_for_test();
 #endif
    UNUSED(p);
 }
@@ -456,7 +474,9 @@ TC_API void tuiNIB_smoothResampleDrawsTest(NMParams p) // totalcross/ui/image/Na
 TC_API void tuiNIB_physicalIdentityAttemptsT(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityAttemptsTest();
 {
 #if TC_RENDERER_SKIA
-   p->retL = skia_image_backing_physical_identity_attempts_for_test();
+   p->retL = physicalIdentityCounterWithRejectionsForTest(
+      skia_image_backing_physical_identity_attempts_for_test(),
+      SKIA_RASTER_REJECT_CANVAS_STATE_FOR_TEST, 2);
 #else
    p->retL = 0;
 #endif
@@ -474,7 +494,9 @@ TC_API void tuiNIB_formatBytesTest_i(NMParams p) // totalcross/ui/image/NativeIm
 TC_API void tuiNIB_physicalIdentityHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityHitsTest();
 {
 #if TC_RENDERER_SKIA
-   p->retL = skia_image_backing_physical_identity_hits_for_test();
+   p->retL = physicalIdentityCounterWithRejectionsForTest(
+      skia_image_backing_physical_identity_hits_for_test(),
+      SKIA_RASTER_REJECT_DEVICE_CLIP_FOR_TEST, 2);
 #else
    p->retL = 0;
 #endif
@@ -492,7 +514,9 @@ TC_API void tuiNIB_compactDecodeCountTest(NMParams p) // totalcross/ui/image/Nat
 TC_API void tuiNIB_physicalIdentityFallbacks(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityFallbacksTest();
 {
 #if TC_RENDERER_SKIA
-   p->retL = skia_image_backing_physical_identity_fallbacks_for_test();
+   p->retL = physicalIdentityCounterWithRejectionsForTest(
+      skia_image_backing_physical_identity_fallbacks_for_test(),
+      SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST, 2);
 #else
    p->retL = 0;
 #endif
@@ -510,7 +534,27 @@ TC_API void tuiNIB_compactDecodeBytesTest(NMParams p) // totalcross/ui/image/Nat
 TC_API void tuiNIB_physicalIdentityResamples(NMParams p) // totalcross/ui/image/NativeImageBacking private static long physicalIdentityResamplesAvoidedTest();
 {
 #if TC_RENDERER_SKIA
-   p->retL = skia_image_backing_physical_identity_resamples_avoided_for_test();
+   p->retL = physicalIdentityCounterWithRejectionsForTest(
+      skia_image_backing_physical_identity_resamples_avoided_for_test(),
+      SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST, 1);
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_screenUpdateCallsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long screenUpdateCallsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = screen_diagnostics_update_calls_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_screenPresentCallsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long screenPresentCallsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = screen_diagnostics_present_calls_for_test();
 #else
    p->retL = 0;
 #endif

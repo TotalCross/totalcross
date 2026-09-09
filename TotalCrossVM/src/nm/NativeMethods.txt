@@ -147,6 +147,8 @@ totalcross/ui/image/NativeImageBacking|native private static long physicalIdenti
 totalcross/ui/image/NativeImageBacking|native private static long physicalIdentityHitsTest();
 totalcross/ui/image/NativeImageBacking|native private static long physicalIdentityFallbacksTest();
 totalcross/ui/image/NativeImageBacking|native private static long physicalIdentityResamplesAvoidedTest();
+totalcross/ui/image/NativeImageBacking|native private static long screenUpdateCallsTest();
+totalcross/ui/image/NativeImageBacking|native private static long screenPresentCallsTest();
 totalcross/ui/image/NativeImageBacking|native private static long targetColorAttemptsTest();
 totalcross/ui/image/NativeImageBacking|native private static long targetColorMatsTest();
 totalcross/ui/image/NativeImageBacking|native private static long targetColorHitsTest();

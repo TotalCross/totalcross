@@ -555,6 +555,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
    */
   @Override
   final public void _onTimerTick(boolean canUpdate) {
+    Window.setRepaintDiagnosticSourceForTest(Window.REPAINT_DIAGNOSTIC_SOURCE_TIMER_UPDATE_FOR_TEST);
     if (startTimer != null) // guich@567_17
     {
       TimerEvent t = startTimer;
@@ -641,6 +642,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
       // guich@tc100: make sure that any pending screen update is committed. - if not called from addTimer/removeTimer (otherwise, an open combobox will flicker)
       safeUpdateScreen();
     }
+    Window.setRepaintDiagnosticSourceForTest(Window.REPAINT_DIAGNOSTIC_SOURCE_UNKNOWN_FOR_TEST);
   }
 
   @ReplacedByNativeOnDeploy

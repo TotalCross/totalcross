@@ -174,6 +174,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityHitsTest"), &tuiNIB_physicalIdentityHitsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityFallbacks"), &tuiNIB_physicalIdentityFallbacks);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_physicalIdentityResamples"), &tuiNIB_physicalIdentityResamples);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_screenUpdateCallsTest"), &tuiNIB_screenUpdateCallsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_screenPresentCallsTest"), &tuiNIB_screenPresentCallsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorAttemptsTest"), &tuiNIB_targetColorAttemptsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorMatsTest"), &tuiNIB_targetColorMatsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_targetColorHitsTest"), &tuiNIB_targetColorHitsTest);

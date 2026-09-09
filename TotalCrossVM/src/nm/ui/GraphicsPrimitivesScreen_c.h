@@ -58,6 +58,7 @@ static bool checkScreenPixels()
 
 void updateScreen(Context currentContext)
 {
+   screen_diagnostics_record_update_for_test();
 #ifdef ANDROID
    if (appPaused) return;
 #endif
@@ -74,6 +75,7 @@ void updateScreen(Context currentContext)
          UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
 #endif
          graphicsUpdateScreen(currentContext, &screen);
+         screen_diagnostics_record_present_for_test();
 #ifdef darwin
          LOCKVAR(screen);
 #else
