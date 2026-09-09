@@ -90,15 +90,15 @@ def main(argv):
 
     if not args.skip_build:
         run_command(
-            [str(gradle), "dist", "-x", "test", "--no-daemon", "--console=plain"],
+            ["bash", str(gradle), "dist", "-x", "test", "--no-daemon", "--console=plain"],
             repo / "TotalCrossSDK", output_dir / "sdk-dist.log",
         )
         run_command(
-            [str(gradle), "jarImageScrollRealWorkloadBenchmark", "--no-daemon", "--console=plain"],
+            ["bash", str(gradle), "jarImageScrollRealWorkloadBenchmark", "--no-daemon", "--console=plain"],
             repo / "TotalCrossSDK", output_dir / "fixture-jar.log",
         )
         run_command(
-            [str(gradle), "deployImageScrollRealWorkloadBenchmarkMacOS", "--no-daemon", "--console=plain"],
+            ["bash", str(gradle), "deployImageScrollRealWorkloadBenchmarkMacOS", "--no-daemon", "--console=plain"],
             repo / "TotalCrossSDK", output_dir / "fixture-deploy.log",
         )
 
