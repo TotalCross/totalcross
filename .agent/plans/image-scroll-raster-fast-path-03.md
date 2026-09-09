@@ -35,22 +35,26 @@ Use UTC timestamps.
 
 - [x] 2026-09-09T13:10Z Read Plan 02 handoff; start SHA was
       `30d2e6d994b1db0e32859a4b6173d836fffcda92`.
-- [x] 2026-09-09T13:10Z Proved the existing physical-variant key, lookup,
-      population, and generation invalidation path; no production cache repair
-      was needed.
-- [x] 2026-09-09T13:10Z Added deterministic warm-reuse and position-shift
-      pixel assertions plus cache-enabled scroll-profile coverage in commit
-      `d5a4e70c513d5dbf6ad4873ccb109d5379e2b56`.
-- [x] 2026-09-09T13:10Z Ran application-equivalent and cache-enabled 120-image
-      scroll passes locally, including manual and natural frame paths.
-- [x] 2026-09-09T13:10Z Ran final local SDK + macOS native validation.
-- [x] 2026-09-09T14:06Z Ran workflow `34355621213` on candidate
-      `659a4b12f910f25f83e101ae8aebba9771931b8b`: Linux x86-64 and Linux
-      ARM64 passed; Windows x86-64 reproduced the pre-existing launcher/VM
-      crash before fixture output.
-- [x] 2026-09-09T14:06Z Verified no authored new files, `git diff --check`,
-      staged plan changes, and no plan-owned uncommitted changes. Two unrelated
-      generated/untracked files remain untouched.
+- [x] 2026-09-09T16:35Z Superseded the preliminary scroll evidence: its reverse
+      pass used `Integer.MAX_VALUE`, and its variant loop configured a clip but
+      called `drawImage(..., false)`.
+- [x] 2026-09-09T16:35Z Rebased the branch onto the last raster-only checkpoint,
+      dropping the Windows startup/register-investigation commits. The removed
+      history remains at local reference branch
+      `archive/image-scroll-raster-fast-path-windows-investigation`.
+- [x] 2026-09-09T16:35Z Added the handled-noop/handled-mutated result contract so
+      only a draw that changes pixels marks the target surface mutated; added a
+      package-private generation probe used by the structural fixture.
+- [x] 2026-09-09T16:35Z Removed the public `Window` repaint-diagnostic API and
+      the normal-path hooks in `Control`, `MainWindow`, `ScrollContainer`, and
+      `Window`; the fixture now derives frame-equivalent counts locally.
+- [x] 2026-09-09T16:35Z Hardened the fixture with explicit valid scrollbar
+      endpoints, full multi-frame forward/reverse traversal, real clipped
+      physical-variant draws, no-intersection generation/opacity/cache checks,
+      and target-color/variant byte accounting.
+- [x] 2026-09-09T16:35Z SDK tests, SDK distribution, fresh macOS native build,
+      and all four manual native combinations (clipped/unclipped ×
+      cache-disabled/enabled) passed. Remote Linux validation is still pending.
 
 ## Surprises & Discoveries
 
@@ -85,6 +89,27 @@ Implementation and validation discoveries:
 - The parity helpers reset optimization settings; the scroll fixture reapplies
   the selected cache profile immediately before the scroll passes so the two
   profiles are actually tested.
+- The previous Plan 03 result was not sufficient evidence for clipping or
+  reverse traversal: it exercised an unclipped variant draw and used an
+  overflowing reverse delta. Both conditions are now explicit assertions in
+  the fixture.
+- The corrected clipped variant loop uses `doClip=true` and reports exactly
+  `12` warm hits after `2` initial misses and `1` store, with zero measured
+  misses, stores, evictions, or smooth resamples. Optimized and reference
+  hashes match.
+- The corrected manual scroll passes use `scroll_max=2584`, traverse
+  `0 -> 2584`, `2584 -> 0`, and `0 -> 2584`, and render `37` frames in each
+  direction. The cache-enabled real scroll has zero target-color
+  materializations and zero position-driven physical-variant stores; the
+  dedicated variant keeps `physical_variant_bytes=50176` and
+  `physical_variant_evictions=0`.
+- The no-intersection structural case reports `generation=0` and
+  `opacity=1`, leaves target-color materializations and variant accounting
+  unchanged, and confirms a pre-warmed source variant still hits afterward.
+  No cache-key redesign was justified by the corrected accounting.
+- Repaint diagnostics were not part of the raster API contract. Removing them
+  also removes their per-call branches and the public `Window` test methods;
+  workflow markers now use fixture-owned counters.
 
 ## Decision Log
 
@@ -113,42 +138,47 @@ Fixed decisions:
 
 At completion record:
 
-- final branch SHA: `6dcd3a49f` (documentation-only closeout; the hosted run
-  tested the exact source candidate `659a4b12f910f25f83e101ae8aebba9771931b8b`);
-- production cache code did not change; Plan 02's clip-aware ordering unlocked
-  the existing reuse path;
-- application-equivalent clipped manual pass: cold `389 ms` with
-  `444/444/0` identity attempts/hits/fallbacks, warm reverse `10 ms` with
-  `12/12/0`, and warm forward `308 ms` with `444/30/414`; all three had zero
-  physical-variant lookups/stores and zero smooth resamples;
-- cache-enabled clipped manual pass: cold `388 ms`, warm reverse `9 ms`, and
-  warm forward `309 ms`, with the same identity counters and zero real-scroll
-  variant lookups/stores or smooth resamples. Its eligible clipped microcase
-  recorded `14` lookups, `12` hits, `2` misses, `1` store, and `1` initial
-  smooth materialization; the 12 measured warm draws added `12` hits and zero
-  misses/stores/smooth resamples. Optimized/reference pixel hashes matched.
-- local SDK test, SDK distribution, Release arm64 macOS CMake/Ninja build,
-  and native fixture runs passed. The native dylib was deployed from
-  `build-image-scroll-raster/libtcvm.dylib` and hashed
-  `9a0c07ff3da66364282a75e558f51db07fdec4a2e9252e96202ab013cbde4157`.
-- final GitHub Actions run `34355621213`:
-  https://github.com/TotalCross/totalcross/actions/runs/34355621213 — Linux
-  x86-64 passed (job `102479423008`), Linux ARM64 passed (job `102479423202`),
-  and Windows x86-64 failed (job `102479422786`) in the runtime step with
-  exit `-1073741819` / `0xC0000005` before fixture output. The uploaded crash
-  stack is `tcvm!trace -> tcvm!privateHeapSetJump`, matching Plan 02's known
-  Windows blocker; no raster assertion ran on that lane.
-- cold first-use work remains synchronous (manual cold was roughly
-  `367–389 ms`, versus `307–309 ms` warm; natural event-driven passes were
-  `1640 ms`); async decode/prefetch is an explicit follow-up outside this
-  sequence;
-- no new physical cache, public API, or optimization feature number was added.
+- implementation commits are `bb935dfba` (`fix(skia-image): preserve handled
+  no-op draws`), `3a06b2242` (`test(image): harden clipped scroll validation`),
+  and `39784ba42` (`refactor(ui): remove repaint diagnostic hooks`); the plan
+  closeout commit is the final branch commit;
+- `GeometryDrawResult` now distinguishes not handled, handled-noop, and
+  handled-mutated. All three native geometry wrappers mark the target backing
+  only for handled-mutated results, so a fully clipped-out draw does not bump
+  generation, invalidate opacity/analysis, or clear the variant slot;
+- the four manual native combinations passed. Each completed the full
+  `scroll_max=2584` range with `37` frames for cold forward, warm reverse, and
+  warm forward. The clipped and unclipped pixel hashes matched their expected
+  values;
+- the corrected clipped physical-variant microtest uses `drawImage(..., true)`.
+  It recorded `2` warmup lookups/misses and `1` store, followed by exactly
+  `12/12` measured lookups/hits with zero measured misses, stores, evictions,
+  or smooth resamples. Optimized/reference hashes matched;
+- the no-intersection structural test passed with target `generation=0` and
+  `opacity=1`, unchanged target-color materialization and variant counters,
+  unchanged pixels, and a subsequent hit on a pre-warmed source variant;
+- the reports now include target-color materializations and converted bytes,
+  plus physical-variant evictions and bytes. The corrected real scroll reported
+  zero target-color materializations, zero position-driven physical-variant
+  stores, `physical_variant_evictions=0`, and the dedicated variant retained
+  `physical_variant_bytes=50176`. No cache-key redesign was warranted;
+- SDK tests, SDK distribution, fresh macOS arm64 CMake/Ninja build, smoke
+  compilation, and the four native manual fixture runs passed. The exact
+  runtime was `build-image-scroll-raster-final/libtcvm.dylib`;
+- the earlier workflow run is historical evidence only and is superseded by
+  this corrected candidate. The Windows x86-64 launcher/VM crash remains a
+  known pre-fixture blocker and is intentionally not addressed in this raster
+  branch. Its investigation commits are preserved at the archive reference
+  named in Progress. The corrected Linux workflow result is recorded below
+  after the final push;
+- cold first-use work remains synchronous; async decode/prefetch stays outside
+  this sequence. No new physical cache, public `Window` diagnostic API, or
+  optimization feature number was added.
 
-The plan's full acceptance gate remains blocked only by the pre-existing
-Windows x86-64 launcher/VM runtime crash. Linux x86-64, Linux ARM64, SDK,
-macOS native, pixel, clipping, identity, and physical-variant structural gates
-passed on the exact candidate. No Windows ARM or substitute Windows lane was
-used.
+The in-scope raster acceptance gate is complete locally; remote Linux x86-64
+and Linux ARM64 validation must still pass. Windows x86-64 is recorded only as
+the known pre-fixture blocker, with no new startup/heap/register work in this
+branch.
 
 ## Context and Orientation
 
@@ -156,8 +186,8 @@ Branch:
 
     perf/image-scroll-raster-fast-path
 
-Use the fixture and diagnostics created by Plan 01 and the clip-aware raster path
-implemented by Plan 02.
+Use the fixture and native raster accounting created by Plan 01 and the
+clip-aware raster path implemented by Plan 02.
 
 Application-equivalent profile:
 
@@ -228,13 +258,15 @@ Create or adjust a focused test:
 1. reset diagnostics;
 2. draw one eligible scaled source with physical variant cache enabled;
 3. record exactly one initial miss/store as appropriate;
-4. repeat many clipped draws at the same physical size;
+4. repeat many clipped draws at the same physical size with `doClip=true`;
 5. move destination y to simulate scrolling while retaining the same physical
    variant properties;
-6. assert no new physical variant is created merely because position changed;
+6. require exactly 12 warm hits and no measured miss/store merely because
+   position changed;
 7. assert already cached repeated draws add zero smooth-resample events for that
    same variant;
-8. assert reference pixels remain correct.
+8. assert reference pixels remain correct and report target-color materialization
+   and relevant variant eviction/byte counters.
 
 Structural acceptance for the deterministic microbenchmark after population:
 
@@ -326,15 +358,16 @@ Push the exact final candidate SHA and run:
 
 Required:
 
-- Windows x86-64;
 - Linux x86-64;
 - Linux ARM64.
+- Windows x86-64 is recorded as the known pre-fixture launcher/VM blocker;
+  do not add startup, heap, or register-diagnostic fixes to this branch.
 
 No Windows ARM.
 
-All required lanes must pass for final acceptance. A previously recorded
-Windows x86-64 tooling blocker remains a blocker unless the maintainer explicitly
-changes scope; do not claim success by substituting Win32 or omitting the lane.
+The in-scope Linux lanes must pass on the exact final SHA. The Windows blocker
+must remain visible in the workflow/result record; no substitute Windows lane
+or raster claim is allowed.
 
 Record exact workflow run URL/ID and per-lane result.
 
@@ -353,8 +386,8 @@ The sequence is complete only when:
    same physical variant every repaint;
 8. no new physical cache exists;
 9. SDK + native macOS final smoke pass;
-10. Windows x86-64, Linux x86-64, Linux ARM64 workflow lanes pass on the exact
-    accepted SHA;
+10. Linux x86-64 and Linux ARM64 workflow lanes pass on the exact accepted SHA;
+    Windows x86-64 is recorded as the known pre-fixture blocker;
 11. every new file is within size limits;
 12. all authored plan/source/test/workflow artifacts are committed;
 13. normal build/log/binary outputs are not committed;
@@ -391,7 +424,7 @@ Update this plan's `Outcomes & Retrospective` and commit:
     git add .agent/plans/image-scroll-raster-fast-path-03.md
     git diff --cached --check
     git diff --cached
-    git commit -m "docs(plan): record final raster fast-path results"
+    git commit -m "docs(plan): record corrected raster fast-path results"
 
 ## Idempotence and Recovery
 
@@ -418,9 +451,10 @@ Follow `.agents/skills/logical-commits/SKILL.md`.
 
 Possible final implementation commits:
 
-    fix(image): reuse physical variants for clipped lazy scaling   # only if needed
-    test(image): assert warm physical variant reuse                # if needed
-    docs(plan): record final raster fast-path results
+    fix(skia-image): preserve handled no-op draws
+    test(image): harden clipped scroll validation
+    refactor(ui): remove repaint diagnostic hooks
+    docs(plan): record corrected final raster fast-path results
 
 Keep production fix, tests, and plan evidence separate logical commits.
 
