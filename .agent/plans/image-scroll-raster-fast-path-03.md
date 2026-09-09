@@ -60,6 +60,10 @@ Use UTC timestamps.
       ARM64 passed. Windows x86-64 reproduced the known pre-fixture access
       violation (`0xC0000005`) in `tcvm!trace -> privateHeapSetJump` before
       fixture output; no Windows fix was attempted.
+- [x] 2026-09-09T16:55Z Repeated the workflow on final commit
+      `938be26003002a7e29b9aa84fae7abd8f1772244` as run `34379073420`:
+      Linux x86-64 and Linux ARM64 passed; Windows x86-64 reproduced the same
+      pre-fixture access violation before fixture output.
 
 ## Surprises & Discoveries
 
@@ -170,11 +174,11 @@ At completion record:
 - SDK tests, SDK distribution, fresh macOS arm64 CMake/Ninja build, smoke
   compilation, and the four native manual fixture runs passed. The exact
   runtime was `build-image-scroll-raster-final/libtcvm.dylib`;
-- workflow run `34378213068`
-  ([GitHub Actions](https://github.com/TotalCross/totalcross/actions/runs/34378213068))
-  validated commit `6d976c130ac790e263787b227eadc973e5d047b4`: Linux x86-64
-  and Linux ARM64 passed. Windows x86-64 failed before fixture output with
-  the known `0xC0000005` access violation in
+- final workflow run `34379073420`
+  ([GitHub Actions](https://github.com/TotalCross/totalcross/actions/runs/34379073420))
+  validated the final commit `938be26003002a7e29b9aa84fae7abd8f1772244`:
+  Linux x86-64 and Linux ARM64 passed. Windows x86-64 failed before fixture
+  output with the known `0xC0000005` access violation in
   `tcvm!trace -> privateHeapSetJump`; no raster assertion ran on that lane and
   no Windows fix was attempted. Its investigation commits are preserved at
   the archive reference named in Progress;
