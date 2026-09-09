@@ -45,7 +45,7 @@ static Context initAll(CharP* args)
    Context c = null;
    bool ok = true; // structured this way to make debugging easier
 #if defined WIN32 && !defined WINCE
-   char appPathTemp[MAX_PATHNAME];
+   char appPathTemp[MAX_PATHNAME] = { 0 };
    CharP auxP;
 #else
    UNUSED(args);
@@ -55,12 +55,14 @@ static Context initAll(CharP* args)
 #endif
 #if defined WIN32 && !defined WINCE
    if ((auxP = xstrstr(*args, " /cmd ")) != null) // check if there's a cmd line
-      xstrncpy(appPathTemp, *args, (auxP - *args) * sizeof(char));
-   if ((auxP = xstrrchr(appPathTemp, '/')) != null)
    {
-      *auxP = 0;
-      xstrcpy(appPath, appPathTemp);
-      *args += xstrlen(appPathTemp) + 1;
+      xstrncpy(appPathTemp, *args, (auxP - *args) * sizeof(char));
+      if ((auxP = xstrrchr(appPathTemp, '/')) != null)
+      {
+         *auxP = 0;
+         xstrcpy(appPath, appPathTemp);
+         *args += xstrlen(appPathTemp) + 1;
+      }
    }
 #endif
    ok = ok && initDebug();
