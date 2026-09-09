@@ -329,7 +329,7 @@ jobs:
           Remove-Item $runLog, $errorLog, $fixtureLog -Force -ErrorAction SilentlyContinue
           try {
             $process = Start-Process -FilePath (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe') `
-              -WorkingDirectory $runDir -ArgumentList '-t' -Wait -PassThru `
+              -WorkingDirectory $runDir -Wait -PassThru `
               -RedirectStandardOutput $runLog -RedirectStandardError $errorLog
             $processExitCode = $process.ExitCode
             Set-Content (Join-Path $runDir 'process-exit.txt') $processExitCode
