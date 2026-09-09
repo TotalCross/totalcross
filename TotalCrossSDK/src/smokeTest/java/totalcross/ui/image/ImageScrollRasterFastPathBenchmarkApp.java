@@ -48,6 +48,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     String pixelHash = null;
     String partialClipHash = null;
     String transformedFallbackHash = null;
+    String noIntersection = "skipped";
     String screenScale = "unknown";
     boolean overallPass = false;
     boolean previousFingerTouch = Settings.fingerTouch;
@@ -61,7 +62,6 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
       ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
           ImageOptimizationSettings.ENABLED);
-      Window.resetRepaintDiagnosticsForTest();
       byte[] encoded = ImageRasterBenchmarkSupport.resource("image-abi/lena512.jpg");
       Image[] images = lazyTiles(encoded);
       ScrollContainer scroll = buildScroll(images, clip);
@@ -75,6 +75,9 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       screenScale = String.valueOf(screenGraphics.getContentScale());
       pixelHash = verifyPixelParity(encoded);
       partialClipHash = verifyPartialClipParity(scenario);
+      if ("post-enabled".equals(scenario)) {
+        noIntersection = verifyNoIntersectionInvariants(scenario);
+      }
       transformedFallbackHash = verifyTransformedFallbackParity(scenario);
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
       if (variantCacheEnabled) {
@@ -134,11 +137,11 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
         + ",tile_logical=" + TILE_SIZE + ",screen_scale=" + screenScale
         + ",validation_scale=2,pixel_hash=" + String.valueOf(pixelHash)
         + ",partial_clip_hash=" + String.valueOf(partialClipHash)
+        + ",no_intersection=" + noIntersection
         + ",transformed_fallback_hash=" + String.valueOf(transformedFallbackHash)
         + ",cold_forward=" + (cold == null ? "missing" : cold)
         + ",warm_reverse=" + (warmReverse == null ? "missing" : warmReverse)
         + ",warm_forward=" + (warmForward == null ? "missing" : warmForward)
-        + ",repaint_frame=" + Window.repaintDiagnosticsForTest()
         + ",native_update_screen_calls=" + NativeImageBacking.screenUpdateCallsForTest()
         + ",native_present_calls=" + NativeImageBacking.screenPresentCallsForTest()
         + ",variant_cache=" + (variant == null ? "missing" : variant);
@@ -178,40 +181,66 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
   }
 
   private static String runScrollPass(ScrollContainer scroll, boolean forward) {
-    if (forward) {
-      scroll.scrollToOrigin();
-    } else {
-      scroll.scrollContent(0, Integer.MAX_VALUE, true);
-    }
+    ImageRasterBenchmarkSupport.require(scroll.sbV != null, "vertical scrollbar");
+    int minimum = scroll.sbV.getMinimum();
+    int maximum = validMaximum(scroll);
+    int startValue = moveToEndpoint(scroll, forward ? minimum : maximum);
+    ImageRasterBenchmarkSupport.require(startValue == (forward ? minimum : maximum),
+        "scroll pass did not reach its explicit endpoint");
     Image.resetImageOperationAccountingForTest();
     long start = Vm.getTimeStamp();
     int frames = 0;
     paintFrame(scroll);
     frames++;
     while (true) {
-      int before = scroll.sbV == null ? 0 : scroll.sbV.getValue();
-      scroll.scrollContent(0, forward ? SCROLL_STEP : -SCROLL_STEP, true);
-      int after = scroll.sbV == null ? before : scroll.sbV.getValue();
+      int before = scroll.sbV.getValue();
+      int distance = forward ? maximum - before : before - minimum;
+      int delta = forward ? Math.min(SCROLL_STEP, distance) : -Math.min(SCROLL_STEP, distance);
+      if (delta == 0) {
+        break;
+      }
+      scroll.scrollContent(0, delta, true);
+      int after = scroll.sbV.getValue();
       if (before == after) {
         break;
       }
       paintFrame(scroll);
       frames++;
     }
+    int endValue = scroll.sbV.getValue();
+    ImageRasterBenchmarkSupport.require(endValue == (forward ? maximum : minimum),
+        "scroll pass did not traverse the full scrollbar range");
+    ImageRasterBenchmarkSupport.require(frames > 1, "scroll pass needs multiple equivalent frames");
     lastScrollPassFramesForTest = frames;
-    return "elapsed_ms=" + (Vm.getTimeStamp() - start) + ",frames=" + frames + counterDetails();
+    return "elapsed_ms=" + (Vm.getTimeStamp() - start) + ",scroll_start=" + startValue
+        + ",scroll_end=" + endValue + ",scroll_max=" + maximum + ",frames=" + frames
+        + counterDetails();
+  }
+
+  private static int validMaximum(ScrollContainer scroll) {
+    int maximum = scroll.sbV.getMaximum() - scroll.sbV.getVisibleItems();
+    return Math.max(scroll.sbV.getMinimum(), maximum);
+  }
+
+  private static int moveToEndpoint(ScrollContainer scroll, int endpoint) {
+    int current = scroll.sbV.getValue();
+    while (current != endpoint) {
+      int distance = endpoint > current ? endpoint - current : current - endpoint;
+      int step = Math.min(SCROLL_STEP, distance);
+      scroll.scrollContent(0, endpoint > current ? step : -step, true);
+      int next = scroll.sbV.getValue();
+      ImageRasterBenchmarkSupport.require(next != current || step == 0,
+          "scroll endpoint did not advance");
+      current = next;
+    }
+    return current;
   }
 
   private static void paintFrame(ScrollContainer scroll) {
     Graphics graphics = scroll.getGraphics();
     ImageRasterBenchmarkSupport.require(graphics != null, "scroll frame graphics");
-    Window.setRepaintDiagnosticSourceForTest(Window.REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST);
-    try {
-      Control.repaint();
-      Window.repaintActiveWindows();
-    } finally {
-      Window.setRepaintDiagnosticSourceForTest(Window.REPAINT_DIAGNOSTIC_SOURCE_UNKNOWN_FOR_TEST);
-    }
+    Control.repaint();
+    Window.repaintActiveWindows();
   }
 
   private String runNaturalScrollScenario(ScrollContainer scroll) {
@@ -239,7 +268,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     events++;
     int endValue = scroll.sbV == null ? startValue : scroll.sbV.getValue();
     ImageRasterBenchmarkSupport.require(endValue > startValue, "natural scroll did not move");
-    lastScrollPassFramesForTest = (int) Window.effectivePaintsForTest();
+    lastScrollPassFramesForTest = timerTicks;
     return "elapsed_ms=" + (Vm.getTimeStamp() - start) + ",events=" + events
         + ",timer_ticks=" + timerTicks + ",scroll_start=" + startValue
         + ",scroll_end=" + endValue + ",frames=" + lastScrollPassFramesForTest + counterDetails();
@@ -314,6 +343,70 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     }
     return ImageRasterBenchmarkSupport.hashString(firstHash) + ":identity_hits="
         + optimizedIdentityHits;
+  }
+
+  private static String verifyNoIntersectionInvariants(String scenario) throws Exception {
+    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+        ImageOptimizationSettings.ENABLED);
+    Image source = Image.createLogical(TILE_SIZE, TILE_SIZE, 2);
+    Image target = Image.createTestRaster(TILE_SIZE, TILE_SIZE, 2,
+        NativeImageBacking.TEST_COLOR_RGB565);
+    ImageRasterBenchmarkSupport.require(target.backing instanceof NativeImageBacking,
+        "no-intersection native target");
+    NativeImageBacking targetBacking = (NativeImageBacking) target.backing;
+    Image scaledTarget = target.getSmoothScaledInstance(TILE_SIZE - 8, TILE_SIZE - 8);
+    Image variantProbe = Image.createLogical(TILE_SIZE, TILE_SIZE, 2);
+    Graphics probeGraphics = variantProbe.getGraphics();
+    ImageRasterBenchmarkSupport.require(probeGraphics != null, "no-intersection variant probe");
+    probeGraphics.setClip(0, 0, TILE_SIZE, TILE_SIZE);
+    for (int i = 0; i < 3; i++) {
+      probeGraphics.drawImage(scaledTarget, 0, 0, true);
+    }
+    long variantLookupsBefore = NativeImageBacking.physicalVariantLookupsForTest();
+    long variantHitsBefore = NativeImageBacking.physicalVariantHitsForTest();
+    long variantMissesBefore = NativeImageBacking.physicalVariantMissesForTest();
+    long variantStoresBefore = NativeImageBacking.physicalVariantMaterializationsForTest();
+    long generationBefore = targetBacking.generationForTest();
+    int opacityBefore = targetBacking.opacityForTest();
+    long targetMaterializationsBefore = NativeImageBacking.targetColorMaterializationsForTest();
+    long variantEvictionsBefore = NativeImageBacking.physicalVariantEvictionsForTest();
+    long variantBytesBefore = NativeImageBacking.physicalVariantBytesForTest();
+    int[] pixelsBefore = target.getPixels();
+    Graphics graphics = target.getGraphics();
+    ImageRasterBenchmarkSupport.require(graphics != null, "no-intersection target graphics");
+    graphics.setClip(0, 0, 4, 4);
+    graphics.drawImage(source, 8, 8, true);
+    int[] pixelsAfter = target.getPixels();
+    ImageRasterBenchmarkSupport.require(generationBefore == targetBacking.generationForTest(),
+        "no-intersection draw changed target generation");
+    ImageRasterBenchmarkSupport.require(opacityBefore == targetBacking.opacityForTest(),
+        "no-intersection draw invalidated target opacity");
+    ImageRasterBenchmarkSupport.require(targetMaterializationsBefore
+        == NativeImageBacking.targetColorMaterializationsForTest()
+        && variantEvictionsBefore == NativeImageBacking.physicalVariantEvictionsForTest()
+        && variantBytesBefore == NativeImageBacking.physicalVariantBytesForTest()
+        && variantLookupsBefore == NativeImageBacking.physicalVariantLookupsForTest()
+        && variantHitsBefore == NativeImageBacking.physicalVariantHitsForTest()
+        && variantMissesBefore == NativeImageBacking.physicalVariantMissesForTest()
+        && variantStoresBefore == NativeImageBacking.physicalVariantMaterializationsForTest(),
+        "no-intersection draw changed raster variant accounting");
+    ImageRasterBenchmarkSupport.require(firstPixelMismatch(pixelsAfter, pixelsBefore)
+        .equals(pixelsBefore.length + "/" + pixelsAfter.length),
+        "no-intersection draw changed pixels");
+    probeGraphics.drawImage(scaledTarget, 0, 0, true);
+    ImageRasterBenchmarkSupport.require(NativeImageBacking.physicalVariantHitsForTest()
+        == variantHitsBefore + 1
+        && NativeImageBacking.physicalVariantMissesForTest() == variantMissesBefore
+        && NativeImageBacking.physicalVariantMaterializationsForTest() == variantStoresBefore,
+        "no-intersection draw cleared the source raster variant");
+    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
+    return "generation=" + generationBefore + ",opacity=" + opacityBefore
+        + ",target_color_materializations=" + targetMaterializationsBefore
+        + ",physical_variant_evictions=" + variantEvictionsBefore
+        + ",physical_variant_bytes=" + variantBytesBefore;
   }
 
   private static Image renderClipped(Image source, int scale, int[] clip) throws Exception {
@@ -454,7 +547,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
   private static void drawVariantSequence(Graphics graphics, Image image, int firstDraw,
       int draws) {
     for (int draw = firstDraw; draw < firstDraw + draws; draw++) {
-      graphics.drawImage(image, 0, drawVariantY(draw), false);
+      graphics.drawImage(image, 0, drawVariantY(draw), true);
     }
   }
 
@@ -524,7 +617,13 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
         + ",physical_variant_lookups=" + NativeImageBacking.physicalVariantLookupsForTest()
         + ",physical_variant_hits=" + NativeImageBacking.physicalVariantHitsForTest()
         + ",physical_variant_stores=" + NativeImageBacking.physicalVariantMaterializationsForTest()
+        + ",physical_variant_evictions=" + NativeImageBacking.physicalVariantEvictionsForTest()
+        + ",physical_variant_bytes=" + NativeImageBacking.physicalVariantBytesForTest()
         + ",target_color_attempts=" + NativeImageBacking.targetColorAttemptsForTest()
+        + ",target_color_materializations="
+        + NativeImageBacking.targetColorMaterializationsForTest()
+        + ",target_color_converted_bytes="
+        + NativeImageBacking.targetColorConvertedBytesForTest()
         + ",target_color_hits=" + NativeImageBacking.targetColorHitsForTest()
         + ",target_color_fallbacks=" + NativeImageBacking.targetColorFallbacksForTest()
         + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()

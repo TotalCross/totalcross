@@ -290,13 +290,15 @@ jobs:
               grep -q 'physical_identity_attempts=' "$case_log"
               grep -q 'physical_identity_rejections_canvas_state=' "$case_log"
               grep -q "frame_path=$frame_path" "$case_log"
-              grep -q 'repaint_frame=' "$case_log"
+              grep -q 'no_intersection=' "$case_log"
+              grep -q 'target_color_materializations=' "$case_log"
+              grep -q 'physical_variant_evictions=' "$case_log"
               grep -q 'native_present_calls=' "$case_log"
               grep -q "variant_cache_profile=$variant_cache" "$case_log"
               grep -q 'variant_cache=' "$case_log"
               if [ "$frame_path" = natural ]; then
-                grep -q 'scheduler_due_updates=' "$case_log"
-                grep -q 'back_to_back_paints=' "$case_log"
+                grep -q 'timer_ticks=' "$case_log"
+                grep -q 'frames=' "$case_log"
               fi
               done
             done
@@ -377,7 +379,8 @@ jobs:
           }
           foreach ($marker in @('fixture=ImageScrollRasterFastPathBenchmarkApp', 'overallPass=true',
               'physical_identity_attempts=', 'physical_identity_rejections_canvas_state=',
-              'repaint_frame=', 'native_present_calls=', 'variant_cache_profile=',
+              'no_intersection=', 'target_color_materializations=',
+              'physical_variant_evictions=', 'native_present_calls=', 'variant_cache_profile=',
               'variant_cache=')) {
             if ($output.IndexOf($marker, [StringComparison]::Ordinal) -lt 0) {
               throw "Missing runtime marker: $marker"
