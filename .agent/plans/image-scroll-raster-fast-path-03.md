@@ -113,8 +113,8 @@ Fixed decisions:
 
 At completion record:
 
-- final branch SHA: `659a4b12f910f25f83e101ae8aebba9771931b8b` before this final
-  documentation-only closeout;
+- final branch SHA: `6dcd3a49f` (documentation-only closeout; the hosted run
+  tested the exact source candidate `659a4b12f910f25f83e101ae8aebba9771931b8b`);
 - production cache code did not change; Plan 02's clip-aware ordering unlocked
   the existing reuse path;
 - application-equivalent clipped manual pass: cold `389 ms` with
