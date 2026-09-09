@@ -60,6 +60,8 @@ Use UTC timestamps.
 - [x] Add test-only physical-raster rejection reasons, repaint/frame accounting, and native update/present counters in checkpoint `151007d8b` (2026-09-09 UTC).
 - [x] Run the six local `pre`/`post-disabled`/`post-enabled` × `clipped`/`unclipped` fixture cases; all passed with matching pixel hashes.
 - [x] Run the exact Linux Docker build/runtime lanes from checkpoint `151007d8b`; Linux x86-64 and ARM64 passed, while Windows x86-64 retained its pre-fixture native crash.
+- [x] Replace the artificial repaint/timer probe with a natural pen-event plus existing timer-update scenario, and correct scheduler-deadline and back-to-back frame diagnostics in checkpoint `1aa9ea2c3` (2026-09-09 UTC).
+- [x] Run the corrected local natural clipped/unclipped cases and the exact Linux Docker lanes from checkpoint `1aa9ea2c3`; both Linux architectures passed all four frame-path/case combinations, while Windows retained its pre-fixture native crash.
 
 ## Surprises & Discoveries
 
@@ -124,6 +126,31 @@ Known at authoring time:
   fixture output; cdb reports the access violation in `tcvm!strcasecmp` from
   `trace`/`startVM`. This is recorded as a Windows runtime blocker, not as a
   Linux build or raster result.
+- The corrected natural fixture drives `_postEvent(PEN_DOWN/DRAG/UP)` and the
+  existing `_onTimerTick(true)` path; it does not call `Control.repaint()`,
+  `Window.repaintActiveWindows()`, or force `repaintNow`. A 36-frame run moved
+  the real scrollbar from zero to about 136-137 logical pixels and produced
+  one event-origin paint plus 35 timer-update-origin paints.
+- Natural macOS results were 35 repaint requests, 36 active-window calls, and
+  36 effective paints in both cases, with no `repaintNow` calls. Clipped paint
+  duration p50/p95/p99/max was `27/30/45/45 ms`, with 36 paints over 16.67 ms
+  and 1 over 33.33 ms; unclipped was `8/14/28/28 ms`, with 1 over 16.67 ms
+  and none over 33.33 ms. The corrected deadline-based late count and
+  end-to-next-start back-to-back count were both zero locally; start-to-start
+  intervals were `66/68/69 ms` clipped and `48/50/54 ms` unclipped.
+- The natural counters show no meaningful request coalescing in this fixture:
+  35 `ScrollContainer` invalidations led to 36 effective paints (one extra
+  scheduler paint), while 36 Java update-screen requests were recorded. The
+  macOS and Xvfb Linux harnesses reported zero native update/present calls, so
+  present-per-paint and present intervals remain unavailable rather than being
+  inferred from Java requests.
+- The exact Linux CI natural results vary with architecture but preserve the
+  same shape. x86-64 clipped/unclipped had 36 paints, duration p50/p95/p99
+  `33/36/50` and `10/16/28 ms`, respectively, with late/back-to-back
+  `0/0` and `2/0`; ARM64 had `18/21/31` and `6/10/21 ms`, with `3/0` and
+  `0/0`. All four Linux natural and manual cases had `overallPass=true` and
+  pixel hash `00009D4A00006964`. The manual path's forced paint counts are
+  retained only for raster-cost control and are not scheduler evidence.
 
 Append only discoveries that materially affect Plan 02.
 
@@ -253,6 +280,50 @@ Final Plan 01 handoff (2026-09-09 UTC):
   canvas-state eligibility constraint can be relaxed while retaining pixel
   correctness; scheduler/30-FPS policy and production fast-path behavior were
   not changed here.
+
+Corrected natural repaint/frame handoff (2026-09-09 UTC):
+
+- Current implementation checkpoint: `1aa9ea2c340eb2342da20838ae956f72f9712312`.
+  The code changes are diagnostic/fixture-only; no production raster fast-path
+  or scheduler policy was changed.
+- Natural invocation:
+  `ImageScrollRasterFastPathBenchmarkApp --scenario=post-enabled --case=clipped --frame-path=natural`
+  and the same command with `--case=unclipped`. The fixture sends real pen
+  down/drag/up events through `Window._postEvent`, lets the normal
+  `ScrollContainer` drag path mark `Window.needsPaint`, and calls the existing
+  `MainWindow._onTimerTick(true)` so the scheduler path consumes that state.
+  It does not directly call `Control.repaint()`, `Window.repaintActiveWindows()`,
+  or `repaintNow`; the manual path remains available as a pure raster-cost
+  control.
+- Natural diagnostic mapping: `repaint_requests` counts actual scroll dirty
+  invalidations; `repaint_active_windows_calls` counts scheduler traversals;
+  `effective_paints` counts `_doPaint` entries; `paint_from_event` and
+  `paint_from_timer_update` identify origins; `scheduler_due_*` records the
+  event/timer due timestamp; `late_paint_starts` compares paint start with
+  that due timestamp; `back_to_back_paints` compares each paint start with the
+  previous paint end; `update_screen_*` records Java update-screen requests;
+  native update/present counters are reported when the runtime reaches them.
+- Final local macOS natural results: clipped `35/36/36` requests/active
+  calls/effective paints, event/timer origins `1/35`, duration p50/p95/p99/max
+  `27/30/45/45 ms`, over-16.67/over-33.33 `36/1`, intervals
+  `66/68/69 ms`, late/back-to-back `0/0`; unclipped has the same
+  `35/36/36` and `1/35`, duration `8/14/28/28 ms`, over-16.67/over-33.33
+  `1/0`, intervals `48/50/54 ms`, late/back-to-back `0/0`. Both moved the
+  scrollbar and passed with pixel hash `00009D4A00006964`; native update and
+  present calls were zero in the headless macOS harness.
+- Exact Linux Docker validation run:
+  `https://github.com/TotalCross/totalcross/actions/runs/34320669169`.
+  Linux x86-64 job `102366347138` and ARM64 job `102366346713` passed the
+  direct `.github/workflows/build.yml`-based container build, deploy,
+  architecture checks, and all manual/natural clipped/unclipped runtime
+  markers. Linux Xvfb also reported zero native update/present calls. The
+  Windows x86-64 job `102366347059` built but retained the known
+  `0xC0000005` crash before fixture output.
+- The measurements do not justify a scheduler change: the natural scenario
+  has no observed coalescing, no local back-to-back burst, and platform/headless
+  native presentation is unavailable. Plan 02 may use the raster rejection
+  data and this frame evidence, but must obtain non-headless presentation
+  evidence before making a frame-pacing claim. Plan 02 has not started.
 
 Plan 02 should read only this section plus its own plan unless a specific source
 file needs inspection.
