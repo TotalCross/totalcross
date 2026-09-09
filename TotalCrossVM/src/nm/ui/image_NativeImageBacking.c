@@ -417,6 +417,15 @@ TC_API void tuiNIB_opacityNative(NMParams p) // totalcross/ui/image/NativeImageB
 #endif
 }
 
+TC_API void tuiNIB_generationNative(NMParams p) // totalcross/ui/image/NativeImageBacking private long generationNative();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_generation_for_test(NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_writePixelsAttemptsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsAttemptsTest();
 {
 #if TC_RENDERER_SKIA

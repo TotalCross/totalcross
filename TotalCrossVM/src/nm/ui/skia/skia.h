@@ -235,6 +235,7 @@ uint64_t skia_image_backing_physical_variant_materializations_for_test(void);
 uint64_t skia_image_backing_physical_variant_evictions_for_test(void);
 uint64_t skia_image_backing_physical_variant_bytes_for_test(void);
 int32 skia_image_backing_format_for_test(int64_t handle);
+uint64_t skia_image_backing_generation_for_test(int64_t handle);
 uint64_t skia_image_backing_bytes_for_format_for_test(ImageBackingFormat format);
 uint64_t skia_image_backing_compact_direct_decode_count_for_test(void);
 uint64_t skia_image_backing_compact_direct_decode_bytes_for_test(void);

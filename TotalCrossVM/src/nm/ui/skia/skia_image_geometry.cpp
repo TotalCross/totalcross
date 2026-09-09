@@ -348,6 +348,12 @@ static bool geometryDrawCompiled(SkCanvas* canvas, const SkImage* image,
 
 static bool isTrivialWritePixelsPlan(const SkiaImageDrawPlanData* plan);
 
+enum GeometryDrawResult {
+    GEOMETRY_NOT_HANDLED = 0,
+    GEOMETRY_HANDLED_NOOP = 1,
+    GEOMETRY_HANDLED_MUTATED = 2,
+};
+
 #if TC_GRAPHICS_SOFTWARE
 
 struct RasterPhysicalPlan {
@@ -927,27 +933,28 @@ static RasterVariantKey makeTargetColorVariantKey(const NativeImageBackingRecord
     return key;
 }
 
-static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
-                                   NativeImageBackingRecord* source, float srcLeft, float srcTop,
-                                   float srcRight, float srcBottom, float dstLeft, float dstTop,
-                                   float dstRight, float dstBottom,
-                                   const SkRect* explicitClip) {
+static GeometryDrawResult drawTargetColorVariant(const SkiaImageDrawPlanData* plan,
+                                                 SkCanvas* canvas,
+                                                 NativeImageBackingRecord* source, float srcLeft,
+                                                 float srcTop, float srcRight, float srcBottom,
+                                                 float dstLeft, float dstTop, float dstRight,
+                                                 float dstBottom, const SkRect* explicitClip) {
     constexpr int32 kTargetColorConversionBit = 1 << 13;
     constexpr int32 kPhysicalVariantCacheBit = 1 << 14;
     if (!plan || (plan->optimizationMask & kTargetColorConversionBit) == 0) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     // Compact sources use the physical-variant slot as their only target-color
     // representation. Noncompact sources retain the original target-color
     // probe and fallback accounting before the combined physical path runs.
     if ((plan->optimizationMask & kPhysicalVariantCacheBit) != 0
         && source && source->format != IMAGE_BACKING_FORMAT_RGBA8888) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     SkPixmap targetPixels;
     if (!canvas || !canvas->peekPixels(&targetPixels)
         || !targetColorTypeSupported(targetPixels.colorType())) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     skia_image_backing_internal::recordTargetColorAttemptForTest();
     RasterPhysicalPlan physicalPlan;
@@ -955,14 +962,14 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
                                  dstLeft, dstTop, dstRight, dstBottom, explicitClip,
                                  &physicalPlan, nullptr)) {
         skia_image_backing_internal::recordTargetColorFallbackForTest();
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     if (physicalPlan.empty) {
-        return true;
+        return GEOMETRY_HANDLED_NOOP;
     }
     if (!skia_image_backing_internal::proveOpaque(source)) {
         skia_image_backing_internal::recordTargetColorFallbackForTest();
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     const SkColorType targetColorType = targetPixels.colorType();
     const RasterVariantKey key = makeTargetColorVariantKey(source, physicalPlan, targetPixels,
@@ -972,7 +979,7 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
         source, key, targetColorType, &variant);
     if (use != skia_image_backing_internal::RASTER_VARIANT_HIT
         && use != skia_image_backing_internal::RASTER_VARIANT_MATERIALIZED) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     if (skia_image_backing_internal::tryWritePixelsImage(
             canvas, variant.get(), source->width, source->height, true,
@@ -981,7 +988,7 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
             physicalPlan.visibleDestinationLogical.fLeft, physicalPlan.visibleDestinationLogical.fTop,
             physicalPlan.visibleDestinationLogical.fRight, physicalPlan.visibleDestinationLogical.fBottom,
             plan->alphaMask, plan->optimizationMask)) {
-        return true;
+        return GEOMETRY_HANDLED_MUTATED;
     }
     GeometryTransform identityTransform = physicalPlan.transform;
     identityTransform.smooth = false;
@@ -997,9 +1004,9 @@ static bool drawTargetColorVariant(const SkiaImageDrawPlanData* plan, SkCanvas* 
                              physicalPlan.visibleDestinationLogical.fRight,
                              physicalPlan.visibleDestinationLogical.fBottom,
                              plan->alphaMask, false, &colorFilters)) {
-        return true;
+        return GEOMETRY_HANDLED_MUTATED;
     }
-    return false;
+    return GEOMETRY_NOT_HANDLED;
 }
 
 static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
@@ -1022,29 +1029,29 @@ static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkC
     return true;
 }
 
-static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
-                               NativeImageBackingRecord* source, float srcLeft, float srcTop,
-                               float srcRight, float srcBottom, float dstLeft, float dstTop,
-                               float dstRight, float dstBottom,
-                               const SkRect* explicitClip) {
+static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                              NativeImageBackingRecord* source, float srcLeft,
+                                              float srcTop, float srcRight, float srcBottom,
+                                              float dstLeft, float dstTop, float dstRight,
+                                              float dstBottom, const SkRect* explicitClip) {
     constexpr int32 kPhysicalVariantCacheBit = 1 << 14;
     constexpr int32 kPhysicalIdentityFoldingBit = 1 << 15;
     if (!plan || (plan->optimizationMask & kPhysicalVariantCacheBit) == 0) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     SkPixmap targetPixels;
     if (!canvas || !canvas->peekPixels(&targetPixels)
         || !physicalVariantCanvasEligible(plan, canvas, targetPixels)) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     SkRect visibleDestinationLogical;
     bool empty = false;
     if (!buildPhysicalVisibleClip(canvas, dstLeft, dstTop, dstRight, dstBottom, explicitClip,
                                   &visibleDestinationLogical, &empty)) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     if (empty) {
-        return true;
+        return GEOMETRY_HANDLED_NOOP;
     }
     const double destinationWidth = dstRight - dstLeft;
     const double destinationHeight = dstBottom - dstTop;
@@ -1054,7 +1061,7 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
         || !std::isfinite(sourceWidth) || !std::isfinite(sourceHeight)
         || destinationWidth <= 0 || destinationHeight <= 0
         || sourceWidth <= 0 || sourceHeight <= 0) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     const SkRect visibleSourceLogical = SkRect::MakeLTRB(
         static_cast<float>(srcLeft + (visibleDestinationLogical.fLeft - dstLeft)
@@ -1069,14 +1076,14 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
         || !std::isfinite(visibleSourceLogical.fTop)
         || !std::isfinite(visibleSourceLogical.fRight)
         || !std::isfinite(visibleSourceLogical.fBottom)) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     if ((plan->optimizationMask & kPhysicalIdentityFoldingBit) != 0) {
         RasterPhysicalPlan identityPlan;
         if (buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
                                     dstLeft, dstTop, dstRight, dstBottom, explicitClip,
                                     &identityPlan, nullptr)) {
-            return false;
+            return identityPlan.empty ? GEOMETRY_HANDLED_NOOP : GEOMETRY_NOT_HANDLED;
         }
     }
     const SkColorType colorType = physicalVariantColorType(plan, source, targetPixels);
@@ -1086,7 +1093,7 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
         source, key, plan, colorType, &variant);
     if (use != skia_image_backing_internal::RASTER_VARIANT_HIT
         && use != skia_image_backing_internal::RASTER_VARIANT_MATERIALIZED) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     GeometryTransform variantTransform;
     variantTransform.a = plan->outputContentScale;
@@ -1107,13 +1114,15 @@ static bool drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* can
                                 visibleSourceLogical.fRight, visibleSourceLogical.fBottom,
                                 visibleDestinationLogical.fLeft, visibleDestinationLogical.fTop,
                                 visibleDestinationLogical.fRight, visibleDestinationLogical.fBottom,
-                                plan->alphaMask, false, nullptr);
+                                plan->alphaMask, false, nullptr)
+        ? GEOMETRY_HANDLED_MUTATED : GEOMETRY_NOT_HANDLED;
 }
 
-static bool drawPhysicalFastPath(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
-                                 NativeImageBackingRecord* source, float srcLeft, float srcTop,
-                                 float srcRight, float srcBottom, float dstLeft, float dstTop,
-                                 float dstRight, float dstBottom, const SkRect* explicitClip) {
+static GeometryDrawResult drawPhysicalFastPath(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                               NativeImageBackingRecord* source, float srcLeft,
+                                               float srcTop, float srcRight, float srcBottom,
+                                               float dstLeft, float dstTop, float dstRight,
+                                               float dstBottom, const SkRect* explicitClip) {
     constexpr int32 kPhysicalIdentityFoldingBit = 1 << 15;
     if (plan->optimizationMask & kPhysicalIdentityFoldingBit) {
         skia_image_backing_record_physical_identity_attempt_for_test();
@@ -1124,7 +1133,7 @@ static bool drawPhysicalFastPath(const SkiaImageDrawPlanData* plan, SkCanvas* ca
                                     &physicalPlan, &rejectionReason)) {
             if (physicalPlan.empty) {
                 skia_image_backing_record_physical_identity_hit_for_test();
-                return true;
+                return GEOMETRY_HANDLED_NOOP;
             }
             if (isTrivialWritePixelsPlan(plan)
                 && skia_image_backing_try_write_pixels(canvas, plan->rootHandle,
@@ -1139,7 +1148,7 @@ static bool drawPhysicalFastPath(const SkiaImageDrawPlanData* plan, SkCanvas* ca
                     plan->alphaMask, plan->optimizationMask)) {
                 skia_image_backing_record_physical_identity_hit_for_test();
                 skia_image_backing_record_physical_identity_resample_avoided_for_test();
-                return true;
+                return GEOMETRY_HANDLED_MUTATED;
             }
             try {
                 sk_sp<SkImage> image = source->snapshot();
@@ -1160,7 +1169,7 @@ static bool drawPhysicalFastPath(const SkiaImageDrawPlanData* plan, SkCanvas* ca
                                              plan->alphaMask, false, &colorFilters)) {
                         skia_image_backing_record_physical_identity_hit_for_test();
                         skia_image_backing_record_physical_identity_resample_avoided_for_test();
-                        return true;
+                        return GEOMETRY_HANDLED_MUTATED;
                     }
                 }
             } catch (const std::bad_alloc&) {
@@ -1169,42 +1178,50 @@ static bool drawPhysicalFastPath(const SkiaImageDrawPlanData* plan, SkCanvas* ca
         skia_image_backing_record_physical_identity_rejection_for_test(rejectionReason);
         skia_image_backing_record_physical_identity_fallback_for_test();
     }
-    if (drawTargetColorVariant(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                               dstLeft, dstTop, dstRight, dstBottom, explicitClip)) {
-        return true;
+    const GeometryDrawResult targetColorResult = drawTargetColorVariant(
+        plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight,
+        dstBottom, explicitClip);
+    if (targetColorResult != GEOMETRY_NOT_HANDLED) {
+        return targetColorResult;
     }
-    if (drawPhysicalVariant(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
-                            dstLeft, dstTop, dstRight, dstBottom, explicitClip)) {
-        return true;
+    const GeometryDrawResult physicalVariantResult = drawPhysicalVariant(
+        plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight,
+        dstBottom, explicitClip);
+    if (physicalVariantResult != GEOMETRY_NOT_HANDLED) {
+        return physicalVariantResult;
     }
-    return false;
+    return GEOMETRY_NOT_HANDLED;
 }
 
 #endif
 
-static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, float srcLeft,
-                         float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop,
-                         float dstRight, float dstBottom, int frameOverride,
-                         const SkRect* explicitClip, bool physicalOnly, bool skipPhysical) {
+static GeometryDrawResult geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                       float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                       float dstLeft, float dstTop, float dstRight, float dstBottom,
+                                       int frameOverride, const SkRect* explicitClip,
+                                       bool physicalOnly, bool skipPhysical) {
     NativeImageBackingRecord* source = plan ? findBacking(plan->rootHandle) : nullptr;
     if (!source || !canvas) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
 #if TC_GRAPHICS_SOFTWARE
-    if (!skipPhysical && drawPhysicalFastPath(plan, canvas, source, srcLeft, srcTop, srcRight,
-                                              srcBottom, dstLeft, dstTop, dstRight, dstBottom,
-                                              explicitClip)) {
-        return true;
+    if (!skipPhysical) {
+        const GeometryDrawResult physicalResult = drawPhysicalFastPath(
+            plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop,
+            dstRight, dstBottom, explicitClip);
+        if (physicalResult != GEOMETRY_NOT_HANDLED) {
+            return physicalResult;
+        }
     }
 #endif
     if (physicalOnly) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
     if (isTrivialWritePixelsPlan(plan)
         && skia_image_backing_try_write_pixels(canvas, plan->rootHandle, srcLeft, srcTop,
             srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, plan->alphaMask,
             plan->optimizationMask)) {
-        return true;
+        return GEOMETRY_HANDLED_MUTATED;
     }
     try {
         sk_sp<SkImage> image = source->snapshot();
@@ -1212,7 +1229,7 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
         GeometryTransform transform;
         if (!image || !skia_image_draw_color_filters(plan, &colorFilters)
             || !compileGeometry(plan, frameOverride, &transform)) {
-            return false;
+            return GEOMETRY_NOT_HANDLED;
         }
         const bool drawn = geometryDrawCompiled(canvas, image.get(), transform, srcLeft, srcTop,
                                                 srcRight, srcBottom, dstLeft, dstTop, dstRight,
@@ -1225,9 +1242,9 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
                 skia_image_backing_record_smooth_resample_draw_for_test();
             }
         }
-        return drawn;
+        return drawn ? GEOMETRY_HANDLED_MUTATED : GEOMETRY_NOT_HANDLED;
     } catch (const std::bad_alloc&) {
-        return false;
+        return GEOMETRY_NOT_HANDLED;
     }
 }
 
@@ -1252,10 +1269,11 @@ bool skia_image_geometry_draw_compiled(SkCanvas* canvas, const SkImage* image,
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom) {
-    const int result = geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight,
-                                    srcBottom, dstLeft, dstTop, dstRight, dstBottom, -1, nullptr,
-                                    false, false) ? 1 : 0;
-    if (result != 0) {
+    const GeometryDrawResult drawResult = geometryDraw(
+        plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop,
+        dstRight, dstBottom, -1, nullptr, false, false);
+    const int result = drawResult == GEOMETRY_NOT_HANDLED ? 0 : 1;
+    if (drawResult == GEOMETRY_HANDLED_MUTATED) {
         skia_image_backing_mark_surface_mutated(targetSurface);
     }
     return result;
@@ -1266,10 +1284,11 @@ int skia_image_backing_try_physical_geometry_to_surface(int32 targetSurface,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
     float clipLeft, float clipTop, float clipRight, float clipBottom) {
     const SkRect explicitClip = SkRect::MakeLTRB(clipLeft, clipTop, clipRight, clipBottom);
-    const int result = geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight,
-                                    srcBottom, dstLeft, dstTop, dstRight, dstBottom, -1,
-                                    &explicitClip, true, false) ? 1 : 0;
-    if (result != 0) {
+    const GeometryDrawResult drawResult = geometryDraw(
+        plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop,
+        dstRight, dstBottom, -1, &explicitClip, true, false);
+    const int result = drawResult == GEOMETRY_NOT_HANDLED ? 0 : 1;
+    if (drawResult == GEOMETRY_HANDLED_MUTATED) {
         skia_image_backing_mark_surface_mutated(targetSurface);
     }
     return result;
@@ -1278,10 +1297,11 @@ int skia_image_backing_try_physical_geometry_to_surface(int32 targetSurface,
 int skia_image_backing_draw_generic_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom) {
-    const int result = geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight,
-                                    srcBottom, dstLeft, dstTop, dstRight, dstBottom, -1, nullptr,
-                                    false, true) ? 1 : 0;
-    if (result != 0) {
+    const GeometryDrawResult drawResult = geometryDraw(
+        plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop,
+        dstRight, dstBottom, -1, nullptr, false, true);
+    const int result = drawResult == GEOMETRY_NOT_HANDLED ? 0 : 1;
+    if (drawResult == GEOMETRY_HANDLED_MUTATED) {
         skia_image_backing_mark_surface_mutated(targetSurface);
     }
     return result;

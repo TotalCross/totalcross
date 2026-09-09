@@ -1445,6 +1445,11 @@ int32 skia_image_backing_format_for_test(int64_t handle) {
     return backing ? static_cast<int32>(backing->format) : -1;
 }
 
+uint64_t skia_image_backing_generation_for_test(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    return backing ? backing->generation : 0;
+}
+
 uint64_t skia_image_backing_bytes_for_format_for_test(ImageBackingFormat format) {
     return format >= IMAGE_BACKING_FORMAT_RGBA8888 && format <= IMAGE_BACKING_FORMAT_ARGB4444
         ? backingBytesLiveByFormatForTest[static_cast<int32>(format)] : 0;

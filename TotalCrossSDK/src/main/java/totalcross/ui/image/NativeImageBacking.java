@@ -401,6 +401,10 @@ final class NativeImageBacking extends ImageBacking {
     return isValid() ? opacityNative() : OPACITY_UNKNOWN;
   }
 
+  long generationForTest() {
+    return isValid() ? generationNative() : -1;
+  }
+
   int currentFormatForTest() {
     return isValid() ? currentFormatNative() : -1;
   }
@@ -745,6 +749,11 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private int opacityNative() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private long generationNative() {
     return 0;
   }
 
