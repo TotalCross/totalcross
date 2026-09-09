@@ -124,7 +124,6 @@ public class Window extends Container {
   public static final int REPAINT_DIAGNOSTIC_SOURCE_TIMER_UPDATE_FOR_TEST = 2;
 
   private static final int REPAINT_DIAGNOSTIC_MAX_SAMPLES_FOR_TEST = 4096;
-  private static final long REPAINT_DIAGNOSTIC_FRAME_INTERVAL_MS_FOR_TEST = 17;
   private static boolean repaintDiagnosticsEnabledForTest;
   private static int repaintDiagnosticSourceForTest;
   private static long repaintRequestsForTest;
@@ -135,14 +134,17 @@ public class Window extends Container {
   private static long timerUpdatePaintsForTest;
   private static long unknownPaintsForTest;
   private static long updateScreenRequestsForTest;
+  private static long schedulerDueUpdatesForTest;
+  private static long schedulerDueEventUpdatesForTest;
+  private static long schedulerDueTimerUpdatesForTest;
   private static long latePaintStartsForTest;
-  private static long backToBackLatePaintsForTest;
+  private static long backToBackPaintsForTest;
   private static long paintsOver16msForTest;
   private static long paintsOver33msForTest;
   private static long lastPaintStartForTest = -1;
   private static long lastPaintEndForTest = -1;
   private static long lastUpdateScreenForTest = -1;
-  private static boolean lastPaintWasLateForTest;
+  private static long pendingSchedulerDueAtForTest = -1;
   private static final long[] paintDurationsForTest =
       new long[REPAINT_DIAGNOSTIC_MAX_SAMPLES_FOR_TEST];
   private static final long[] paintIntervalsForTest =
@@ -165,14 +167,17 @@ public class Window extends Container {
     timerUpdatePaintsForTest = 0;
     unknownPaintsForTest = 0;
     updateScreenRequestsForTest = 0;
+    schedulerDueUpdatesForTest = 0;
+    schedulerDueEventUpdatesForTest = 0;
+    schedulerDueTimerUpdatesForTest = 0;
     latePaintStartsForTest = 0;
-    backToBackLatePaintsForTest = 0;
+    backToBackPaintsForTest = 0;
     paintsOver16msForTest = 0;
     paintsOver33msForTest = 0;
     lastPaintStartForTest = -1;
     lastPaintEndForTest = -1;
     lastUpdateScreenForTest = -1;
-    lastPaintWasLateForTest = false;
+    pendingSchedulerDueAtForTest = -1;
     paintDurationSamplesForTest = 0;
     paintIntervalSamplesForTest = 0;
     updateScreenIntervalSamplesForTest = 0;
@@ -201,6 +206,9 @@ public class Window extends Container {
         + ",paint_from_event=" + eventPaintsForTest
         + ",paint_from_timer_update=" + timerUpdatePaintsForTest
         + ",paint_from_unknown=" + unknownPaintsForTest
+        + ",scheduler_due_updates=" + schedulerDueUpdatesForTest
+        + ",scheduler_due_event_updates=" + schedulerDueEventUpdatesForTest
+        + ",scheduler_due_timer_updates=" + schedulerDueTimerUpdatesForTest
         + ",paint_duration_samples=" + paintDurationSamplesForTest
         + ",paint_duration_ms_min=" + sampleMin(paintDurationsForTest, paintDurationSamplesForTest)
         + ",paint_duration_ms_median=" + samplePercentile(paintDurationsForTest,
@@ -228,7 +236,7 @@ public class Window extends Container {
         + ",update_screen_interval_ms_p99=" + samplePercentile(updateScreenIntervalsForTest,
             updateScreenIntervalSamplesForTest, 99)
         + ",late_paint_starts=" + latePaintStartsForTest
-        + ",back_to_back_late_paints=" + backToBackLatePaintsForTest;
+        + ",back_to_back_paints=" + backToBackPaintsForTest;
   }
 
   private static long diagnosticPaintStartedForTest() {
@@ -236,18 +244,19 @@ public class Window extends Container {
       return -1;
     }
     long now = Vm.getTimeStamp();
+    if (pendingSchedulerDueAtForTest >= 0) {
+      if (pendingSchedulerDueAtForTest < now) {
+        latePaintStartsForTest++;
+      }
+      pendingSchedulerDueAtForTest = -1;
+    }
     if (lastPaintStartForTest >= 0 && paintIntervalSamplesForTest < paintIntervalsForTest.length) {
       paintIntervalsForTest[paintIntervalSamplesForTest++] = Math.max(0, now - lastPaintStartForTest);
     }
-    boolean late = lastPaintStartForTest >= 0
-        && now > lastPaintStartForTest + REPAINT_DIAGNOSTIC_FRAME_INTERVAL_MS_FOR_TEST;
-    if (late) {
-      latePaintStartsForTest++;
-      if (lastPaintWasLateForTest && lastPaintEndForTest >= 0 && now - lastPaintEndForTest <= 1) {
-        backToBackLatePaintsForTest++;
-      }
+    if (lastPaintEndForTest >= 0 && now >= lastPaintEndForTest
+        && now - lastPaintEndForTest <= 1) {
+      backToBackPaintsForTest++;
     }
-    lastPaintWasLateForTest = late;
     lastPaintStartForTest = now;
     effectivePaintsForTest++;
     if (repaintDiagnosticSourceForTest == REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST) {
@@ -308,6 +317,23 @@ public class Window extends Container {
     if (repaintDiagnosticsEnabledForTest) {
       repaintActiveWindowsCallsForTest++;
     }
+  }
+
+  static void recordSchedulerUpdateDueForTest(long dueAt, int source) {
+    if (!repaintDiagnosticsEnabledForTest) {
+      return;
+    }
+    schedulerDueUpdatesForTest++;
+    if (source == REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST) {
+      schedulerDueEventUpdatesForTest++;
+    } else if (source == REPAINT_DIAGNOSTIC_SOURCE_TIMER_UPDATE_FOR_TEST) {
+      schedulerDueTimerUpdatesForTest++;
+    }
+    pendingSchedulerDueAtForTest = dueAt >= 0 ? dueAt : Vm.getTimeStamp();
+  }
+
+  public static long effectivePaintsForTest() {
+    return effectivePaintsForTest;
   }
 
   static long diagnosticPaintStartForTest() {
@@ -790,6 +816,7 @@ public class Window extends Container {
    * Called by the VM to post key and pen events.
    */
   final public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp) {
+    setRepaintDiagnosticSourceForTest(REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST);
     boolean isPenEvent = !multiTouching && PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
     boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
     if (isKeyEvent && Settings.optionalBackspaceKey != 0 && key == Settings.optionalBackspaceKey) {
@@ -2024,6 +2051,9 @@ public class Window extends Container {
     boolean eas = enableUpdateScreen;
     enableUpdateScreen = false;
     boolean neededPaint = needsPaint;
+    if (neededPaint && pendingSchedulerDueAtForTest < 0) {
+      recordSchedulerUpdateDueForTest(Vm.getTimeStamp(), repaintDiagnosticSourceForTest);
+    }
     needsPaint = false; // prevent from updating the screen
     // guich@400_73 guich@400_76
     boolean callUS = true;

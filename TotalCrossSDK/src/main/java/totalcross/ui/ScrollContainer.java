@@ -429,6 +429,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     }
 
     if (scrolled) {
+      Window.recordRepaintRequestForTest();
       Window.needsPaint = true;
     }
     return scrolled;

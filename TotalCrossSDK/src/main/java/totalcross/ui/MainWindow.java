@@ -573,6 +573,7 @@ public class MainWindow extends Window implements totalcross.MainClass {
     }
     int minInterval = 0;
     TimerEvent timer = firstTimer;
+    long timerDueAt = -1;
 
     
     long timestamp = Vm.getTimeStamp();
@@ -606,6 +607,10 @@ public class MainWindow extends Window implements totalcross.MainClass {
       }
       int interval;
       if (diff >= timer.millis) {
+        long scheduledAt = (long) timer.lastTick + timer.millis;
+        if (timerDueAt < 0 || scheduledAt < timerDueAt) {
+          timerDueAt = scheduledAt;
+        }
         // post TIMER event
         timer.triggered = true; // guich@220_39
         ((Control) timer.target).postEvent(timer);
@@ -637,6 +642,8 @@ public class MainWindow extends Window implements totalcross.MainClass {
 
     // guich@200b4_1: corrected the infinit repaint on popup windows
     if (Window.needsPaint) {
+      Window.recordSchedulerUpdateDueForTest(timerDueAt >= 0 ? timerDueAt : timestamp,
+          Window.REPAINT_DIAGNOSTIC_SOURCE_TIMER_UPDATE_FOR_TEST);
       repaintActiveWindows(); // already calls updateScreen
     } else if (canUpdate && Graphics.needsUpdate) {
       // guich@tc100: make sure that any pending screen update is committed. - if not called from addTimer/removeTimer (otherwise, an open combobox will flicker)
