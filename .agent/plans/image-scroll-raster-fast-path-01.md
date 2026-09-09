@@ -48,15 +48,15 @@ images every frame: `ClippedContainer` already culls offscreen children.
 
 Use UTC timestamps.
 
-- [ ] Record actual fetched base SHA.
-- [ ] Create `perf/image-scroll-raster-fast-path`.
-- [ ] Commit all three ExecPlans.
-- [ ] Add deterministic clipped-scroll fixture.
-- [ ] Add/reset/report required raster diagnostics.
-- [ ] Add dedicated Windows/Linux GitHub validation workflow.
-- [ ] Run milestone-end SDK + macOS native validation only.
-- [ ] Run remote Windows x86-64, Linux x86-64, Linux ARM64 baseline.
-- [ ] Record baseline and handoff; commit the updated plan.
+- [x] Record actual fetched base SHA: `9ca331017d32ca553155d7fda59b22378fd8198a`.
+- [x] Create `perf/image-scroll-raster-fast-path` in the isolated sibling worktree.
+- [x] Commit all three ExecPlans (`7f897cdef`).
+- [x] Add deterministic clipped-scroll fixture (`840f871e7`).
+- [x] Add/reset/report required raster diagnostics (`b17763cea`).
+- [x] Add dedicated Windows/Linux GitHub validation workflow (`454bb64fc`).
+- [x] Run milestone-end SDK + macOS native validation only.
+- [x] Run remote Windows x86-64, Linux x86-64, Linux ARM64 baseline; Linux passed and Windows x64 exposed a pre-existing native crash.
+- [x] Record baseline and handoff; commit the updated plan.
 
 ## Surprises & Discoveries
 
@@ -77,6 +77,25 @@ Known at authoring time:
 - first use of an encoded image can synchronously decode/materialize during
   paint; warm passes distinguish that cost from repeated raster work.
 - the physical-variant cache key is already position-independent.
+- the existing dependency-preparation script stages most Windows libraries as
+  `windows/x86`; the dedicated workflow fetches each lane's exact architecture
+  so its Windows job configures and runs a real x86-64 binary.
+- `physicalVariantMaterializations` is the existing counter mapped to the
+  plan's `physicalVariantStores`; generic geometry and smooth-resample counts
+  are recorded only for successful final generic geometry draws.
+- The Linux validation job now mirrors `.github/workflows/build.yml` directly:
+  it uses `totalcross/linux-amd64:v1.0.7` and
+  `totalcross/linux-arm64:v1.0.7`, mounts the source/build/cache paths, and
+  runs the same in-container `cmake ... -G Ninja && ninja` sequence. Host apt
+  packages are only for the post-build Xvfb runtime.
+- The Linux native launcher required `PATH_MAX` for glibc's fortified
+  `realpath`; the old 1024-byte `MAX_PATHNAME` caused a buffer-overflow abort
+  before module loading. The runtime bundle also needs every `TotalCrossSDK/dist/vm/*.tcz`,
+  not only the application TCZ.
+- The required Windows x86-64 lane builds successfully but the fresh runtime
+  exits with `0xC0000005` before Java fixture startup. WinDbg reports the
+  fault in `tcvm!trace` from `startVM`; this remains an upstream/runtime
+  compatibility issue outside the Linux raster baseline.
 
 Append only discoveries that materially affect Plan 02.
 
@@ -126,6 +145,39 @@ Record:
 - GitHub Actions run URL/ID and result for each required lane;
 - exact functions proven to reject clipped fast paths;
 - any unexpected dominant path.
+
+Baseline handoff:
+
+- Base SHA: `9ca331017d32ca553155d7fda59b22378fd8198a`.
+- Current checkpoint: `85c5b731006756f9a8decb0a28ad06918b5f79a0`.
+- Fixture: `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageScrollRasterFastPathBenchmarkApp.java`.
+  The Gradle task is `jarImageScrollRasterFastPathBenchmark`; the native
+  launcher runs the generated `ImageScrollRasterFastPathBenchmarkApp.tcz`.
+- Diagnostic mapping: physical identity attempts/hits/fallbacks,
+  physical variant lookups/hits/stores, target-color attempts/hits/fallbacks,
+  opaque write-pixel attempts/hits, generic geometry draws, and smooth
+  resample draws. The counters are exposed through package-private SDK test
+  accessors and native bindings.
+- Local validation: `./TotalCrossSDK/gradlew-agent test --no-daemon
+  --console=plain`, `./TotalCrossSDK/gradlew-agent dist -x test --no-daemon
+  --console=plain`, and the fixture jar task passed. macOS native CMake/Ninja
+  build and fresh deploy/run passed with `overallPass=true`; clipped and
+  unclipped pixel hash was `00009D4A00006964` at scale 2. Clipped cold pass:
+  37 frames, 444 identity attempts, 0 hits, 444 fallbacks, 444 generic and
+  smooth draws. Unclipped cold pass: 37 frames, 444 identity attempts, 444
+  hits, 0 fallbacks, and 0 generic/smooth draws. Warm reverse/forward passes
+  and the variant-cache scenario passed.
+- Remote workflow:
+  `https://github.com/TotalCross/totalcross/actions/runs/34295746881`.
+  Linux x86-64 and Linux ARM64 passed build, native identity checks, deploy,
+  and runtime markers. Windows x86-64 built but failed before fixture output
+  with process exit `-1073741819` (`0xC0000005`); cdb placed the fault in
+  `tcvm!trace` during `startVM`.
+- The clipped path is rejected by the existing full-device-clip/modified-canvas
+  eligibility checks in `physicalIdentityCanvasEligible` and
+  `physicalVariantCanvasEligible`; the unclipped control reaches the physical
+  identity fast path. No production raster fast-path behavior was changed in
+  this plan.
 
 Plan 02 should read only this section plus its own plan unless a specific source
 file needs inspection.
