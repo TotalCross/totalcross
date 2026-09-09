@@ -319,12 +319,23 @@ jobs:
           $deployedHash = (Get-FileHash (Join-Path $runDir 'tcvm.dll') -Algorithm SHA256).Hash
           if ($sourceHash -ne $deployedHash) { throw 'Deployed native runtime hash differs' }
           $runLog = Join-Path $runDir 'run.log'
+          $fixtureLog = Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.log'
+          Remove-Item $runLog, $fixtureLog -Force -ErrorAction SilentlyContinue
           Push-Location $runDir
-          & '.\ImageScrollRasterFastPathBenchmarkApp.exe' 2>&1 |
-            Tee-Object -FilePath $runLog
+          cmd /c ".\ImageScrollRasterFastPathBenchmarkApp.exe > run.log 2>&1"
+          $processExitCode = $LASTEXITCODE
           Pop-Location
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $output = Get-Content $runLog -Raw
+          if (Test-Path $fixtureLog) {
+            $output = Get-Content $fixtureLog -Raw
+          } elseif (Test-Path $runLog) {
+            $output = Get-Content $runLog -Raw
+          } else {
+            throw "Windows runtime produced no diagnostic report (exit=$processExitCode)"
+          }
+          if ($processExitCode -ne 0) {
+            Write-Output $output
+            exit $processExitCode
+          }
           foreach ($marker in @('fixture=ImageScrollRasterFastPathBenchmarkApp', 'overallPass=true',
               'physical_identity_attempts=', 'variant_cache=')) {
             if ($output.IndexOf($marker, [StringComparison]::Ordinal) -lt 0) {
