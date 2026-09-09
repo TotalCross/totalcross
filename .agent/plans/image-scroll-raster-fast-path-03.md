@@ -44,8 +44,13 @@ Use UTC timestamps.
 - [x] 2026-09-09T13:10Z Ran application-equivalent and cache-enabled 120-image
       scroll passes locally, including manual and natural frame paths.
 - [x] 2026-09-09T13:10Z Ran final local SDK + macOS native validation.
-- [ ] Run final Windows x86-64, Linux x86-64, Linux ARM64 workflow.
-- [ ] Verify file sizes, commit plan outcomes, leave clean branch.
+- [x] 2026-09-09T14:06Z Ran workflow `34355621213` on candidate
+      `659a4b12f910f25f83e101ae8aebba9771931b8b`: Linux x86-64 and Linux
+      ARM64 passed; Windows x86-64 reproduced the pre-existing launcher/VM
+      crash before fixture output.
+- [x] 2026-09-09T14:06Z Verified no authored new files, `git diff --check`,
+      staged plan changes, and no plan-owned uncommitted changes. Two unrelated
+      generated/untracked files remain untouched.
 
 ## Surprises & Discoveries
 
@@ -108,7 +113,8 @@ Fixed decisions:
 
 At completion record:
 
-- final branch SHA: pending final plan closeout commit;
+- final branch SHA: `659a4b12f910f25f83e101ae8aebba9771931b8b` before this final
+  documentation-only closeout;
 - production cache code did not change; Plan 02's clip-aware ordering unlocked
   the existing reuse path;
 - application-equivalent clipped manual pass: cold `389 ms` with
@@ -125,12 +131,24 @@ At completion record:
   and native fixture runs passed. The native dylib was deployed from
   `build-image-scroll-raster/libtcvm.dylib` and hashed
   `9a0c07ff3da66364282a75e558f51db07fdec4a2e9252e96202ab013cbde4157`.
-- final GitHub Actions run URL/ID/result for every required lane: pending;
+- final GitHub Actions run `34355621213`:
+  https://github.com/TotalCross/totalcross/actions/runs/34355621213 — Linux
+  x86-64 passed (job `102479423008`), Linux ARM64 passed (job `102479423202`),
+  and Windows x86-64 failed (job `102479422786`) in the runtime step with
+  exit `-1073741819` / `0xC0000005` before fixture output. The uploaded crash
+  stack is `tcvm!trace -> tcvm!privateHeapSetJump`, matching Plan 02's known
+  Windows blocker; no raster assertion ran on that lane.
 - cold first-use work remains synchronous (manual cold was roughly
   `367–389 ms`, versus `307–309 ms` warm; natural event-driven passes were
   `1640 ms`); async decode/prefetch is an explicit follow-up outside this
   sequence;
 - no new physical cache, public API, or optimization feature number was added.
+
+The plan's full acceptance gate remains blocked only by the pre-existing
+Windows x86-64 launcher/VM runtime crash. Linux x86-64, Linux ARM64, SDK,
+macOS native, pixel, clipping, identity, and physical-variant structural gates
+passed on the exact candidate. No Windows ARM or substitute Windows lane was
+used.
 
 ## Context and Orientation
 
