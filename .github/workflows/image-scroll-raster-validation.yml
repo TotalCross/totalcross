@@ -318,19 +318,29 @@ jobs:
           $sourceHash = (Get-FileHash $runtime.FullName -Algorithm SHA256).Hash
           $deployedHash = (Get-FileHash (Join-Path $runDir 'tcvm.dll') -Algorithm SHA256).Hash
           if ($sourceHash -ne $deployedHash) { throw 'Deployed native runtime hash differs' }
+          $dependentLog = Join-Path $env:RUNNER_TEMP 'native-dependents.log'
+          $dumpbin = Get-Command dumpbin.exe -ErrorAction SilentlyContinue
+          if ($dumpbin) {
+            & $dumpbin.Source /DEPENDENTS $runtime.FullName *> $dependentLog
+          }
           $runLog = Join-Path $runDir 'run.log'
+          $errorLog = Join-Path $runDir 'run-error.log'
           $fixtureLog = Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.log'
-          Remove-Item $runLog, $fixtureLog -Force -ErrorAction SilentlyContinue
-          Push-Location $runDir
-          cmd /c ".\ImageScrollRasterFastPathBenchmarkApp.exe > run.log 2>&1"
-          $processExitCode = $LASTEXITCODE
-          Pop-Location
+          Remove-Item $runLog, $errorLog, $fixtureLog -Force -ErrorAction SilentlyContinue
+          try {
+            $process = Start-Process -FilePath (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe') `
+              -WorkingDirectory $runDir -Wait -PassThru `
+              -RedirectStandardOutput $runLog -RedirectStandardError $errorLog
+            $processExitCode = $process.ExitCode
+          } catch {
+            $_ | Out-String | Set-Content $errorLog
+            throw
+          }
           if (Test-Path $fixtureLog) {
             $output = Get-Content $fixtureLog -Raw
-          } elseif (Test-Path $runLog) {
-            $output = Get-Content $runLog -Raw
           } else {
-            throw "Windows runtime produced no diagnostic report (exit=$processExitCode)"
+            $output = (Get-Content $runLog -Raw -ErrorAction SilentlyContinue) +
+              (Get-Content $errorLog -Raw -ErrorAction SilentlyContinue)
           }
           if ($processExitCode -ne 0) {
             Write-Output $output
