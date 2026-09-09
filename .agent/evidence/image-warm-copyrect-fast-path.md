@@ -19,3 +19,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   `9e959282c5f6f39d79e4c3c12d96d96c342aef44` — PASS — six hash-checked
   materialized/deferred full and partial cases; artifact:
   `image-warm-copyrect-fast-path/baseline/warm-micro.log`.
+- `2026-09-09T23:36:40Z` — milestone-1-default-policy — working tree at
+  `770c0b43258509bc850c93f153f19cd0f2bd6208` — PASS — focused
+  `ImageOptimizationSettingsTest`; log:
+  `/tmp/image-warm-copyrect-m1-settings-test.log`.

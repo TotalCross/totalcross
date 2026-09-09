@@ -206,6 +206,14 @@ public class Image extends GfxSurface {
     nativeOptimizationMaskForDecode = (int) mask;
   }
 
+  static long nativeOptimizationMaskForDrawForTest() {
+    return nativeOptimizationMaskForDraw & 0xFFFFFFFFL;
+  }
+
+  static long nativeOptimizationMaskForDecodeForTest() {
+    return nativeOptimizationMaskForDecode & 0xFFFFFFFFL;
+  }
+
   static void clearImageOperationAccountingCountersForTest() {
     imageCreatedCountForTest = 0;
     imageFinalizedCountForTest = 0;

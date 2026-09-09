@@ -54,15 +54,15 @@ final class ImageOptimizationSettings {
     return states[feature];
   }
 
-  static boolean isEnabled(int feature, boolean defaultEnabled) {
+  static boolean isEnabled(int feature) {
     int featureState = state(feature);
-    return featureState == ENABLED || featureState == DEFAULT && defaultEnabled;
+    return featureState == ENABLED || featureState == DEFAULT && defaultEnabled(feature);
   }
 
   static long effectiveMask() {
     long mask = 0;
     for (int feature = 0; feature < FEATURE_COUNT; feature++) {
-      if (states[feature] == ENABLED) {
+      if (isEnabled(feature)) {
         mask |= 1L << feature;
       }
     }
@@ -98,8 +98,9 @@ final class ImageOptimizationSettings {
     cacheMaxBytes = DEFAULT_CACHE_MAX_BYTES;
     mmapThresholdBytes = DEFAULT_MMAP_THRESHOLD_BYTES;
     Image.setDiagnosticAccountingForTest(false);
-    Image.setNativeOptimizationMaskForDrawForTest(0);
-    Image.setNativeOptimizationMaskForDecodeForTest(0);
+    long mask = effectiveMask();
+    Image.setNativeOptimizationMaskForDrawForTest(mask);
+    Image.setNativeOptimizationMaskForDecodeForTest(mask);
   }
 
   static void triggerMemoryPressureForTest() {
@@ -158,6 +159,20 @@ final class ImageOptimizationSettings {
   private static void checkState(int state) {
     if (state < DEFAULT || state > DISABLED) {
       throw new IllegalArgumentException("Invalid optimization state: " + state);
+    }
+  }
+
+  private static boolean defaultEnabled(int feature) {
+    switch (feature) {
+    case DECODE_ZERO_COPY:
+    case RASTER_OPACITY_METADATA:
+    case RASTER_OPAQUE_WRITE_PIXELS:
+    case RASTER_ROW_READBACK:
+    case RASTER_DIRECT_COLOR_MATERIALIZATION:
+    case RASTER_PHYSICAL_IDENTITY_FOLDING:
+      return true;
+    default:
+      return false;
     }
   }
 }

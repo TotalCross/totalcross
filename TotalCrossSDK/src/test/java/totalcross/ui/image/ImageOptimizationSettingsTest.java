@@ -19,12 +19,20 @@ class ImageOptimizationSettingsTest {
   }
 
   @Test
-  void defaultsAreTriStateAndDisabledForOptimizationCallers() {
+  void defaultsAreTriStateAndResolveThroughTheProductPolicy() {
     assertEquals(ImageOptimizationSettings.DEFAULT,
         ImageOptimizationSettings.state(ImageOptimizationSettings.DECODE_ZERO_COPY));
-    assertFalse(ImageOptimizationSettings.isEnabled(ImageOptimizationSettings.DECODE_ZERO_COPY, false));
-    assertTrue(ImageOptimizationSettings.isEnabled(ImageOptimizationSettings.DECODE_ZERO_COPY, true));
-    assertEquals(0L, ImageOptimizationSettings.effectiveMask());
+    assertTrue(ImageOptimizationSettings.isEnabled(ImageOptimizationSettings.DECODE_ZERO_COPY));
+    assertTrue(ImageOptimizationSettings.isEnabled(ImageOptimizationSettings.RASTER_ROW_READBACK));
+    assertTrue(ImageOptimizationSettings.isEnabled(
+        ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING));
+    assertFalse(ImageOptimizationSettings.isEnabled(
+        ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION));
+    assertFalse(ImageOptimizationSettings.isEnabled(
+        ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE));
+    assertEquals(defaultMask(), ImageOptimizationSettings.effectiveMask());
+    assertEquals(defaultMask(), Image.nativeOptimizationMaskForDrawForTest());
+    assertEquals(defaultMask(), Image.nativeOptimizationMaskForDecodeForTest());
   }
 
   @Test
@@ -69,7 +77,7 @@ class ImageOptimizationSettingsTest {
   }
 
   @Test
-  void effectiveMaskContainsOnlyExplicitlyEnabledFeatures() {
+  void effectiveMaskCombinesDefaultsAndExplicitStates() {
     ImageOptimizationSettings.setState(ImageOptimizationSettings.DECODE_ZERO_COPY,
         ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
@@ -82,27 +90,39 @@ class ImageOptimizationSettingsTest {
         ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
         ImageOptimizationSettings.ENABLED);
-    long expected = (1L << ImageOptimizationSettings.DECODE_ZERO_COPY)
+    long expected = defaultMask()
         | (1L << ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING)
         | (1L << ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION)
-        | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE)
-        | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING);
+        | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
     assertEquals(expected, ImageOptimizationSettings.effectiveMask());
+    assertEquals(expected, Image.nativeOptimizationMaskForDrawForTest());
+    assertEquals(expected, Image.nativeOptimizationMaskForDecodeForTest());
   }
 
   @Test
-  void newRasterReservationsAreDefaultDisabledAndCanBeExplicitlyEnabled() {
+  void defaultDisabledFeaturesRemainOptIn() {
     int[] newFeatures = {
         ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
         ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
-        ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING
+        ImageOptimizationSettings.STORAGE_RGB565,
+        ImageOptimizationSettings.CACHE_BYTE_BUDGET
     };
     for (int feature : newFeatures) {
       assertEquals(ImageOptimizationSettings.DEFAULT, ImageOptimizationSettings.state(feature));
-      assertFalse(ImageOptimizationSettings.isEnabled(feature, false));
+      assertFalse(ImageOptimizationSettings.isEnabled(feature));
       ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
-      assertTrue(ImageOptimizationSettings.isEnabled(feature, false));
+      assertTrue(ImageOptimizationSettings.isEnabled(feature));
     }
+  }
+
+  @Test
+  void explicitDisabledOverridesAnEnabledDefaultAndDefaultRestoresIt() {
+    int feature = ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS;
+    assertTrue(ImageOptimizationSettings.isEnabled(feature));
+    ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
+    assertFalse(ImageOptimizationSettings.isEnabled(feature));
+    ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DEFAULT);
+    assertTrue(ImageOptimizationSettings.isEnabled(feature));
   }
 
   @Test
@@ -132,13 +152,17 @@ class ImageOptimizationSettingsTest {
     ImageOptimizationSettings.setCacheMaxBytes(1);
     ImageOptimizationSettings.setMmapThresholdBytes(2);
     ImageOptimizationSettings.resetForTest();
-    assertEquals(0L, ImageOptimizationSettings.effectiveMask());
+    assertEquals(defaultMask(), ImageOptimizationSettings.effectiveMask());
     assertEquals(ImageOptimizationSettings.DEFAULT,
         ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION));
     assertEquals(ImageOptimizationSettings.DEFAULT,
         ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE));
     assertEquals(ImageOptimizationSettings.DEFAULT,
         ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING));
+    assertTrue(ImageOptimizationSettings.isEnabled(
+        ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING));
+    assertEquals(defaultMask(), Image.nativeOptimizationMaskForDrawForTest());
+    assertEquals(defaultMask(), Image.nativeOptimizationMaskForDecodeForTest());
     assertEquals(64L * 1024 * 1024, ImageOptimizationSettings.cacheMaxBytes());
     assertEquals(4L * 1024 * 1024, ImageOptimizationSettings.mmapThresholdBytes());
     assertFalse(Image.imageOperationAccountingForTest);
@@ -265,5 +289,14 @@ class ImageOptimizationSettingsTest {
   @Test
   void memoryPressureHookIsSafeBeforeTheManagerExists() {
     ImageOptimizationSettings.triggerMemoryPressureForTest();
+  }
+
+  private static long defaultMask() {
+    return (1L << ImageOptimizationSettings.DECODE_ZERO_COPY)
+        | (1L << ImageOptimizationSettings.RASTER_OPACITY_METADATA)
+        | (1L << ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS)
+        | (1L << ImageOptimizationSettings.RASTER_ROW_READBACK)
+        | (1L << ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION)
+        | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING);
   }
 }
