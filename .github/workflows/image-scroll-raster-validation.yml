@@ -337,6 +337,15 @@ jobs:
             $_ | Out-String | Set-Content $errorLog
             throw
           }
+          if ($processExitCode -ne 0) {
+            $cdb = Get-Item (Join-Path ${env:ProgramFiles(x86)} 'Windows Kits/10/Debuggers/x64/cdb.exe') `
+              -ErrorAction SilentlyContinue
+            if ($cdb) {
+              $crashLog = Join-Path $env:RUNNER_TEMP 'native-crash.log'
+              & $cdb.FullName -g -c 'sxe av; g; k; q' `
+                (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe') *> $crashLog
+            }
+          }
           if (Test-Path $fixtureLog) {
             $output = Get-Content $fixtureLog -Raw
           } else {
