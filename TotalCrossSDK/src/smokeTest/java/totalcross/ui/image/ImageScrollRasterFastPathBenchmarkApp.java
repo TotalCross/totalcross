@@ -31,8 +31,11 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     String scenario = ImageRasterBenchmarkSupport.argument(getCommandLine(), "scenario", "post-enabled");
     String testCase = ImageRasterBenchmarkSupport.argument(getCommandLine(), "case", "clipped");
     String framePath = ImageRasterBenchmarkSupport.argument(getCommandLine(), "frame-path", "manual");
+    String variantCacheProfile = ImageRasterBenchmarkSupport.argument(
+        getCommandLine(), "variant-cache", "disabled");
     boolean clip = "clipped".equals(testCase);
     boolean naturalFramePath = "natural".equals(framePath);
+    boolean variantCacheEnabled = "enabled".equals(variantCacheProfile);
     int completed = 0;
     String error = "";
     String cold = null;
@@ -53,6 +56,8 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
           "case must be clipped or unclipped");
       ImageRasterBenchmarkSupport.require("manual".equals(framePath) || naturalFramePath,
           "frame-path must be manual or natural");
+      ImageRasterBenchmarkSupport.require("disabled".equals(variantCacheProfile)
+          || variantCacheEnabled, "variant-cache must be disabled or enabled");
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
       ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
           ImageOptimizationSettings.ENABLED);
@@ -71,6 +76,13 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       pixelHash = verifyPixelParity(encoded);
       partialClipHash = verifyPartialClipParity(scenario);
       transformedFallbackHash = verifyTransformedFallbackParity(scenario);
+      ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
+      if (variantCacheEnabled) {
+        ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+            ImageOptimizationSettings.ENABLED);
+      }
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+          ImageOptimizationSettings.ENABLED);
       if (naturalFramePath) {
         cold = runNaturalScrollScenario(scroll);
         coldFrames = lastScrollPassFramesForTest;
@@ -80,13 +92,29 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
         if ("post-enabled".equals(scenario) && clip) {
           ImageRasterBenchmarkSupport.require(NativeImageBacking.physicalIdentityHitsForTest() > 0,
               "fully visible clipped physical identity path was not used");
+          if (!variantCacheEnabled) {
+            ImageRasterBenchmarkSupport.require(
+                NativeImageBacking.physicalVariantLookupsForTest() == 0,
+                "application profile unexpectedly used physical variants");
+          }
         }
         warmReverse = runScrollPass(scroll, false);
         warmReverseFrames = lastScrollPassFramesForTest;
         warmForward = runScrollPass(scroll, true);
         warmForwardFrames = lastScrollPassFramesForTest;
+        if ("post-enabled".equals(scenario) && clip && variantCacheEnabled) {
+          long variantLookups = NativeImageBacking.physicalVariantLookupsForTest();
+          long variantHits = NativeImageBacking.physicalVariantHitsForTest();
+          long variantMisses = NativeImageBacking.physicalVariantMissesForTest();
+          long variantStores = NativeImageBacking.physicalVariantMaterializationsForTest();
+          ImageRasterBenchmarkSupport.require(variantLookups == variantHits + variantMisses,
+              "warm scroll physical variant accounting mismatch");
+          ImageRasterBenchmarkSupport.require(
+              variantStores <= variantMisses && variantStores <= IMAGE_COUNT,
+              "warm scroll created position-specific physical variants");
+        }
       }
-      variant = runVariantScenario(encoded);
+      variant = runVariantScenario(scenario);
       ImageRasterBenchmarkSupport.require(coldFrames > 0
           && (naturalFramePath || (warmReverseFrames > 0 && warmForwardFrames > 0)),
           "scroll passes did not paint");
@@ -102,6 +130,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     String details = "case=" + testCase + ",image_count=" + IMAGE_COUNT
         + ",columns=" + COLUMN_COUNT + ",visible_rows=" + VISIBLE_ROWS
         + ",frame_path=" + framePath
+        + ",variant_cache_profile=" + variantCacheProfile
         + ",tile_logical=" + TILE_SIZE + ",screen_scale=" + screenScale
         + ",validation_scale=2,pixel_hash=" + String.valueOf(pixelHash)
         + ",partial_clip_hash=" + String.valueOf(partialClipHash)
@@ -349,7 +378,12 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     return target;
   }
 
-  private static String runVariantScenario(byte[] encoded) throws Exception {
+  private static String runVariantScenario(String scenario) throws Exception {
+    Image image = variantSource().getSmoothScaledInstance(TILE_SIZE - 8, TILE_SIZE - 8);
+    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
+    long referenceHash = renderVariantSequence(image, 14);
+
+    Image.resetImageOperationAccountingForTest();
     ImageOptimizationSettings.resetForTest();
     for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
       ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
@@ -364,21 +398,68 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
         ImageOptimizationSettings.ENABLED);
     ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
         ImageOptimizationSettings.ENABLED);
-    Image image = variantSource().getSmoothScaledInstance(TILE_SIZE - 8, TILE_SIZE - 8);
     Image target = Image.createLogical(TILE_SIZE, TILE_SIZE, 2);
     Graphics graphics = target.getGraphics();
+    ImageRasterBenchmarkSupport.require(graphics != null, "variant target graphics");
     graphics.setClip(4, 4, TILE_SIZE - 8, TILE_SIZE - 8);
-    for (int warmup = 0; warmup < 2; warmup++) {
-      graphics.drawImage(image, 0, 0, false);
-    }
     long start = Vm.getTimeStamp();
-    for (int draw = 0; draw < 12; draw++) {
-      graphics.drawImage(image, 0, 0, false);
+    drawVariantSequence(graphics, image, 0, 2);
+    long warmupLookups = NativeImageBacking.physicalVariantLookupsForTest();
+    long warmupHits = NativeImageBacking.physicalVariantHitsForTest();
+    long warmupMisses = NativeImageBacking.physicalVariantMissesForTest();
+    long warmupStores = NativeImageBacking.physicalVariantMaterializationsForTest();
+    long warmupSmoothResamples = ImageRasterBenchmarkSupport.smoothResampleDrawsForTest();
+    ImageRasterBenchmarkSupport.require(warmupLookups == 2 && warmupHits == 0
+        && warmupMisses == 2 && warmupStores == 1 && warmupSmoothResamples == 1,
+        "unexpected physical variant population counters" + counterDetails());
+    for (int draw = 2; draw < 14; draw++) {
+      drawVariantSequence(graphics, image, draw, 1);
     }
     long elapsed = Vm.getTimeStamp() - start;
-    ImageRasterBenchmarkSupport.require(NativeImageBacking.physicalVariantHitsForTest() > 0,
-        "cached clipped physical variant was not reused");
-    return "elapsed_ms=" + elapsed + counterDetails();
+    long measuredLookups = NativeImageBacking.physicalVariantLookupsForTest() - warmupLookups;
+    long measuredHits = NativeImageBacking.physicalVariantHitsForTest() - warmupHits;
+    long measuredMisses = NativeImageBacking.physicalVariantMissesForTest() - warmupMisses;
+    long measuredStores = NativeImageBacking.physicalVariantMaterializationsForTest() - warmupStores;
+    long measuredSmoothResamples = ImageRasterBenchmarkSupport.smoothResampleDrawsForTest()
+        - warmupSmoothResamples;
+    ImageRasterBenchmarkSupport.require(measuredLookups == 12 && measuredHits == 12
+        && measuredHits * 100 >= measuredLookups * 95 && measuredMisses == 0
+        && measuredStores == 0 && measuredSmoothResamples == 0,
+        "warm physical variant was not reused" + counterDetails());
+    long optimizedHash = ImageRasterBenchmarkSupport.fullPixelHash(target);
+    ImageRasterBenchmarkSupport.require(optimizedHash == referenceHash,
+        "cached physical variant pixel mismatch optimized="
+            + ImageRasterBenchmarkSupport.hashString(optimizedHash) + ",reference="
+            + ImageRasterBenchmarkSupport.hashString(referenceHash));
+    return "elapsed_ms=" + elapsed + ",optimized_hash="
+        + ImageRasterBenchmarkSupport.hashString(optimizedHash) + ",reference_hash="
+        + ImageRasterBenchmarkSupport.hashString(referenceHash)
+        + ",warmup_lookups=" + warmupLookups + ",warmup_hits=" + warmupHits
+        + ",warmup_misses=" + warmupMisses + ",warmup_stores=" + warmupStores
+        + ",warmup_smooth_resamples=" + warmupSmoothResamples
+        + ",measured_lookups=" + measuredLookups + ",measured_hits=" + measuredHits
+        + ",measured_misses=" + measuredMisses + ",measured_stores=" + measuredStores
+        + ",measured_smooth_resamples=" + measuredSmoothResamples + counterDetails();
+  }
+
+  private static long renderVariantSequence(Image image, int draws) throws Exception {
+    Image target = Image.createLogical(TILE_SIZE, TILE_SIZE, 2);
+    Graphics graphics = target.getGraphics();
+    ImageRasterBenchmarkSupport.require(graphics != null, "variant reference graphics");
+    graphics.setClip(4, 4, TILE_SIZE - 8, TILE_SIZE - 8);
+    drawVariantSequence(graphics, image, 0, draws);
+    return ImageRasterBenchmarkSupport.fullPixelHash(target);
+  }
+
+  private static void drawVariantSequence(Graphics graphics, Image image, int firstDraw,
+      int draws) {
+    for (int draw = firstDraw; draw < firstDraw + draws; draw++) {
+      graphics.drawImage(image, 0, drawVariantY(draw), false);
+    }
+  }
+
+  private static int drawVariantY(int draw) {
+    return draw < 2 ? draw : 2 + ((draw - 2) % 3);
   }
 
   private static Image variantSource() throws Exception {
