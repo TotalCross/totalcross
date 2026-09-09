@@ -828,6 +828,12 @@ registerImageMacSmoke('ImageScrollRasterFastPathBenchmark', 'ImageScrollRasterFa
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageScrollRealWorkloadBenchmark', 'ImageScrollRealWorkloadBenchmarkApp',
+    'image-scroll-real-workload-benchmark', false, false, [
+        'fixture=ImageScrollRealWorkloadBenchmarkApp',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageRasterPhysicalVariantSmoke', 'ImageRasterPhysicalVariantSmokeApp',
     'image-raster-physical-variant-smoke', false, false, [
         'fixture=ImageRasterPhysicalVariantSmokeApp',
