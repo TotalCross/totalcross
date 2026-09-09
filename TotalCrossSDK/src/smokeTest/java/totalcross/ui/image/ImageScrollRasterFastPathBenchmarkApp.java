@@ -73,6 +73,12 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     boolean pass = ImageRasterBenchmarkSupport.finish(
         "ImageScrollRasterFastPathBenchmarkApp", scenario, 1, completed, details,
         overallPass && error.length() == 0 ? "" : error.length() == 0 ? "assertion_failed" : error);
+    ImageRasterBenchmarkSupport.writeReport(
+        "ImageScrollRasterFastPathBenchmarkApp.log",
+        "fixture=ImageScrollRasterFastPathBenchmarkApp,scenario=" + scenario
+            + ",completed_samples=" + completed + "," + details
+            + ",overallPass=" + pass
+            + (error.length() == 0 ? "" : ",error=" + error));
     exit(pass ? 0 : 1);
   }
 

@@ -5,6 +5,7 @@
 package totalcross.ui.image;
 
 import totalcross.io.ByteArrayStream;
+import totalcross.io.File;
 import totalcross.sys.Vm;
 import totalcross.ui.gfx.Graphics;
 
@@ -236,6 +237,17 @@ final class ImageRasterBenchmarkSupport {
   static void require(boolean condition, String message) {
     if (!condition) {
       throw new IllegalStateException(message);
+    }
+  }
+
+  static void writeReport(String path, String contents) {
+    try {
+      byte[] bytes = contents.getBytes();
+      File file = new File(path, File.CREATE_EMPTY);
+      file.writeBytes(bytes, 0, bytes.length);
+      file.close();
+    } catch (Throwable ignored) {
+      // The console remains the primary report channel on platforms that have one.
     }
   }
 
