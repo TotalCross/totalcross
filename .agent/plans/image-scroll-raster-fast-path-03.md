@@ -60,10 +60,11 @@ Use UTC timestamps.
       ARM64 passed. Windows x86-64 reproduced the known pre-fixture access
       violation (`0xC0000005`) in `tcvm!trace -> privateHeapSetJump` before
       fixture output; no Windows fix was attempted.
-- [x] 2026-09-09T16:55Z Repeated the workflow on final commit
+- [x] 2026-09-09T16:55Z Repeated the workflow on raster candidate
       `938be26003002a7e29b9aa84fae7abd8f1772244` as run `34379073420`:
       Linux x86-64 and Linux ARM64 passed; Windows x86-64 reproduced the same
-      pre-fixture access violation before fixture output.
+      pre-fixture access violation before fixture output. Only plan records
+      changed after this validation.
 
 ## Surprises & Discoveries
 
@@ -147,6 +148,10 @@ Fixed decisions:
 
 At completion record:
 
+- final branch tip is `99fe7fe7951c85b1fd0db6dba203b4928da6f992`; the runtime
+  candidate validated remotely is its code-equivalent parent
+  `938be26003002a7e29b9aa84fae7abd8f1772244`, with only plan documentation
+  commits after that validation;
 - implementation commits are `bb935dfba` (`fix(skia-image): preserve handled
   no-op draws`), `3a06b2242` (`test(image): harden clipped scroll validation`),
   and `39784ba42` (`refactor(ui): remove repaint diagnostic hooks`); the plan
@@ -176,7 +181,7 @@ At completion record:
   runtime was `build-image-scroll-raster-final/libtcvm.dylib`;
 - final workflow run `34379073420`
   ([GitHub Actions](https://github.com/TotalCross/totalcross/actions/runs/34379073420))
-  validated the final commit `938be26003002a7e29b9aa84fae7abd8f1772244`:
+  validated raster candidate `938be26003002a7e29b9aa84fae7abd8f1772244`:
   Linux x86-64 and Linux ARM64 passed. Windows x86-64 failed before fixture
   output with the known `0xC0000005` access violation in
   `tcvm!trace -> privateHeapSetJump`; no raster assertion ran on that lane and
