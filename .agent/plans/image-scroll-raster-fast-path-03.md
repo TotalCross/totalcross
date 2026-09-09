@@ -51,6 +51,18 @@ Use UTC timestamps.
 - [x] 2026-09-09T14:06Z Verified no authored new files, `git diff --check`,
       staged plan changes, and no plan-owned uncommitted changes. Two unrelated
       generated/untracked files remain untouched.
+- [x] 2026-09-09T15:02Z Investigated the Windows pre-fixture crash instead of
+      treating it as a raster failure. Commit `8e0f3dd18` guarded an existing
+      uninitialized no-`/cmd` startup-path buffer, but the hosted runtime still
+      failed in module loading at `privateHeapSetJump`.
+- [x] 2026-09-09T15:32Z Re-ran the exact matrix on `8e0f3dd18`, then captured
+      Windows debugger registers on `042e84a10`. Linux x86-64 and ARM64 passed
+      in runs `34364146358`, `34365115718`, and `34365745322`; Windows failed
+      identically before fixture output. The crash receives heap pointer
+      `0x50004ec660` and faults writing its `setjmpFile` field at
+      `0x50004ec6f0`, proving the blocker is native Windows heap/startup state,
+      not a raster assertion. Diagnostic workflow commits are `3876fe1be` and
+      `042e84a10`.
 
 ## Surprises & Discoveries
 
@@ -113,8 +125,8 @@ Fixed decisions:
 
 At completion record:
 
-- final branch SHA: `6dcd3a49f` (documentation-only closeout; the hosted run
-  tested the exact source candidate `659a4b12f910f25f83e101ae8aebba9771931b8b`);
+- final implementation candidate: `042e84a10` (the final plan-documentation
+  commit may advance the branch without changing source behavior);
 - production cache code did not change; Plan 02's clip-aware ordering unlocked
   the existing reuse path;
 - application-equivalent clipped manual pass: cold `389 ms` with
@@ -131,13 +143,14 @@ At completion record:
   and native fixture runs passed. The native dylib was deployed from
   `build-image-scroll-raster/libtcvm.dylib` and hashed
   `9a0c07ff3da66364282a75e558f51db07fdec4a2e9252e96202ab013cbde4157`.
-- final GitHub Actions run `34355621213`:
-  https://github.com/TotalCross/totalcross/actions/runs/34355621213 — Linux
-  x86-64 passed (job `102479423008`), Linux ARM64 passed (job `102479423202`),
-  and Windows x86-64 failed (job `102479422786`) in the runtime step with
-  exit `-1073741819` / `0xC0000005` before fixture output. The uploaded crash
-  stack is `tcvm!trace -> tcvm!privateHeapSetJump`, matching Plan 02's known
-  Windows blocker; no raster assertion ran on that lane.
+- final implementation-candidate GitHub Actions run `34365745322`:
+  https://github.com/TotalCross/totalcross/actions/runs/34365745322 — Linux
+  x86-64 and Linux ARM64 passed; Windows x86-64 failed in the runtime step
+  with exit `-1073741819` / `0xC0000005` before fixture output. The uploaded
+  CDB register dump shows `privateHeapSetJump` receiving heap pointer
+  `0x50004ec660` and faulting while copying into `0x50004ec6f0`; no raster
+  assertion ran on that lane. Runs `34364146358` and `34365115718` reproduced
+  the same Windows failure while both Linux lanes passed.
 - cold first-use work remains synchronous (manual cold was roughly
   `367–389 ms`, versus `307–309 ms` warm; natural event-driven passes were
   `1640 ms`); async decode/prefetch is an explicit follow-up outside this
@@ -145,10 +158,11 @@ At completion record:
 - no new physical cache, public API, or optimization feature number was added.
 
 The plan's full acceptance gate remains blocked only by the pre-existing
-Windows x86-64 launcher/VM runtime crash. Linux x86-64, Linux ARM64, SDK,
-macOS native, pixel, clipping, identity, and physical-variant structural gates
-passed on the exact candidate. No Windows ARM or substitute Windows lane was
-used.
+Windows x86-64 launcher/VM runtime crash. The additional guarded startup-path
+fix did not change that result, so no broader Windows port or speculative heap
+rewrite was attempted. Linux x86-64, Linux ARM64, SDK, macOS native, pixel,
+clipping, identity, and physical-variant structural gates passed on the exact
+implementation candidate. No Windows ARM or substitute Windows lane was used.
 
 ## Context and Orientation
 
