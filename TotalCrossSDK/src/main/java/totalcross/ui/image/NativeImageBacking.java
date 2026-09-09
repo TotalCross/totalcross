@@ -185,19 +185,44 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   static long physicalIdentityAttemptsForTest() {
-    return physicalIdentityAttemptsTest();
+    // The native test bridge multiplexes rejection diagnostics above the low 16 bits.
+    return physicalIdentityAttemptsTest() & 0xffffL;
   }
 
   static long physicalIdentityHitsForTest() {
-    return physicalIdentityHitsTest();
+    return physicalIdentityHitsTest() & 0xffffL;
   }
 
   static long physicalIdentityFallbacksForTest() {
-    return physicalIdentityFallbacksTest();
+    return physicalIdentityFallbacksTest() & 0xffffL;
   }
 
   static long physicalIdentityResamplesAvoidedForTest() {
+    return physicalIdentityResamplesAvoidedTest() & 0xffffL;
+  }
+
+  static long physicalIdentityRejectionAttemptsChannelForTest() {
+    return physicalIdentityAttemptsTest();
+  }
+
+  static long physicalIdentityRejectionHitsChannelForTest() {
+    return physicalIdentityHitsTest();
+  }
+
+  static long physicalIdentityRejectionFallbacksChannelForTest() {
+    return physicalIdentityFallbacksTest();
+  }
+
+  static long physicalIdentityRejectionResamplesChannelForTest() {
     return physicalIdentityResamplesAvoidedTest();
+  }
+
+  static long screenUpdateCallsForTest() {
+    return screenUpdateCallsTest();
+  }
+
+  static long screenPresentCallsForTest() {
+    return screenPresentCallsTest();
   }
 
   static long targetColorAttemptsForTest() {
@@ -557,6 +582,16 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long physicalIdentityResamplesAvoidedTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long screenUpdateCallsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long screenPresentCallsTest() {
     return 0;
   }
 

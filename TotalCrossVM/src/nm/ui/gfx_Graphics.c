@@ -14,6 +14,48 @@
 #endif
 #include "GraphicsPrimitives_c.h"
 
+uint64_t screenUpdateCallsForTest;
+uint64_t screenPresentCallsForTest;
+bool screenDiagnosticsEnabledForTest;
+
+void screen_diagnostics_set_for_test(int enabled)
+{
+   screenDiagnosticsEnabledForTest = enabled != 0;
+   if (!screenDiagnosticsEnabledForTest)
+   {
+      screenUpdateCallsForTest = 0;
+      screenPresentCallsForTest = 0;
+   }
+}
+
+void screen_diagnostics_clear_for_test(void)
+{
+   screenUpdateCallsForTest = 0;
+   screenPresentCallsForTest = 0;
+}
+
+void screen_diagnostics_record_update_for_test(void)
+{
+   if (screenDiagnosticsEnabledForTest)
+      ++screenUpdateCallsForTest;
+}
+
+void screen_diagnostics_record_present_for_test(void)
+{
+   if (screenDiagnosticsEnabledForTest)
+      ++screenPresentCallsForTest;
+}
+
+uint64_t screen_diagnostics_update_calls_for_test(void)
+{
+   return screenUpdateCallsForTest;
+}
+
+uint64_t screen_diagnostics_present_calls_for_test(void)
+{
+   return screenPresentCallsForTest;
+}
+
 #if defined(WINCE) || (defined(WIN32) && TC_WINDOWING_NATIVE)
  #include "win/gfx_Graphics_c.h"
 #elif TC_GRAPHICS_GLES

@@ -46,6 +46,7 @@ uint64_t physicalIdentityAttemptsForTest;
 uint64_t physicalIdentityHitsForTest;
 uint64_t physicalIdentityFallbacksForTest;
 uint64_t physicalIdentityResamplesAvoidedForTest;
+uint64_t physicalIdentityRejectionsForTest[SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST];
 uint64_t targetColorAttemptsForTest;
 uint64_t targetColorMaterializationsForTest;
 uint64_t targetColorHitsForTest;
@@ -1216,6 +1217,8 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     physicalIdentityHitsForTest = 0;
     physicalIdentityFallbacksForTest = 0;
     physicalIdentityResamplesAvoidedForTest = 0;
+    std::fill(std::begin(physicalIdentityRejectionsForTest),
+              std::end(physicalIdentityRejectionsForTest), 0);
     targetColorAttemptsForTest = 0;
     targetColorMaterializationsForTest = 0;
     targetColorHitsForTest = 0;
@@ -1234,6 +1237,7 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
 
 void skia_image_backing_set_accounting_for_test(int enabled) {
     backingAccountingForTest = enabled != 0;
+    screen_diagnostics_set_for_test(enabled);
     if (!backingAccountingForTest) {
         backingRecordsCreatedForTest = 0;
         backingRecordsReleasedForTest = 0;
@@ -1264,6 +1268,8 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
         physicalIdentityHitsForTest = 0;
         physicalIdentityFallbacksForTest = 0;
         physicalIdentityResamplesAvoidedForTest = 0;
+        std::fill(std::begin(physicalIdentityRejectionsForTest),
+                  std::end(physicalIdentityRejectionsForTest), 0);
         targetColorAttemptsForTest = 0;
         targetColorMaterializationsForTest = 0;
         targetColorHitsForTest = 0;
@@ -1362,6 +1368,13 @@ void skia_image_backing_record_physical_identity_resample_avoided_for_test(void)
     }
 }
 
+void skia_image_backing_record_physical_identity_rejection_for_test(int32 reason) {
+    if (backingAccountingForTest && reason >= 0
+        && reason < SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST) {
+        ++physicalIdentityRejectionsForTest[reason];
+    }
+}
+
 uint64_t skia_image_backing_physical_identity_attempts_for_test(void) {
     return physicalIdentityAttemptsForTest;
 }
@@ -1376,6 +1389,11 @@ uint64_t skia_image_backing_physical_identity_fallbacks_for_test(void) {
 
 uint64_t skia_image_backing_physical_identity_resamples_avoided_for_test(void) {
     return physicalIdentityResamplesAvoidedForTest;
+}
+
+uint64_t skia_image_backing_physical_identity_rejections_for_test(int32 reason) {
+    return reason >= 0 && reason < SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST
+        ? physicalIdentityRejectionsForTest[reason] : 0;
 }
 
 uint64_t skia_image_backing_target_color_attempts_for_test(void) {

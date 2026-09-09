@@ -8,6 +8,9 @@ import totalcross.sys.Vm;
 import totalcross.ui.Control;
 import totalcross.ui.MainWindow;
 import totalcross.ui.ScrollContainer;
+import totalcross.ui.Window;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.event.TimerListener;
 import totalcross.ui.gfx.Graphics;
 
 /** Native-deployed clipped scrolling workload for lazy JPEG raster accounting. */
@@ -21,6 +24,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
   private static final int VIEWPORT_WIDTH = COLUMN_COUNT * TILE_PITCH;
   private static final int VIEWPORT_HEIGHT = VISIBLE_ROWS * TILE_PITCH;
   private static final int SCROLL_STEP = TILE_PITCH;
+  private static int lastScrollPassFramesForTest;
 
   @Override
   public void initUI() {
@@ -29,10 +33,13 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     boolean clip = "clipped".equals(testCase);
     int completed = 0;
     String error = "";
-    ScrollRun cold = null;
-    ScrollRun warmReverse = null;
-    ScrollRun warmForward = null;
-    VariantRun variant = null;
+    String cold = null;
+    String warmReverse = null;
+    String warmForward = null;
+    String variant = null;
+    int coldFrames = 0;
+    int warmReverseFrames = 0;
+    int warmForwardFrames = 0;
     String pixelHash = null;
     String screenScale = "unknown";
     boolean overallPass = false;
@@ -42,6 +49,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario);
       ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
           ImageOptimizationSettings.ENABLED);
+      Window.resetRepaintDiagnosticsForTest();
       byte[] encoded = ImageRasterBenchmarkSupport.resource("image-abi/lena512.jpg");
       Image[] images = lazyTiles(encoded);
       ScrollContainer scroll = buildScroll(images, clip);
@@ -50,11 +58,16 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       screenScale = String.valueOf(screenGraphics.getContentScale());
       pixelHash = verifyPixelParity(encoded);
       cold = runScrollPass(scroll, true);
+      coldFrames = lastScrollPassFramesForTest;
       warmReverse = runScrollPass(scroll, false);
+      warmReverseFrames = lastScrollPassFramesForTest;
       warmForward = runScrollPass(scroll, true);
+      warmForwardFrames = lastScrollPassFramesForTest;
+      runTimerUpdateProbe(scroll);
       variant = runVariantScenario(encoded);
-      ImageRasterBenchmarkSupport.require(cold.frames > 0 && warmReverse.frames > 0
-          && warmForward.frames > 0, "scroll passes did not paint");
+      ImageRasterBenchmarkSupport.require(coldFrames > 0 && warmReverseFrames > 0
+          && warmForwardFrames > 0,
+          "scroll passes did not paint");
       completed = 1;
       overallPass = true;
     } catch (Throwable failure) {
@@ -66,10 +79,13 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
         + ",columns=" + COLUMN_COUNT + ",visible_rows=" + VISIBLE_ROWS
         + ",tile_logical=" + TILE_SIZE + ",screen_scale=" + screenScale
         + ",validation_scale=2,pixel_hash=" + String.valueOf(pixelHash)
-        + passDetails("cold_forward", cold)
-        + passDetails("warm_reverse", warmReverse)
-        + passDetails("warm_forward", warmForward)
-        + variantDetails(variant);
+        + ",cold_forward=" + (cold == null ? "missing" : cold)
+        + ",warm_reverse=" + (warmReverse == null ? "missing" : warmReverse)
+        + ",warm_forward=" + (warmForward == null ? "missing" : warmForward)
+        + ",repaint_frame=" + Window.repaintDiagnosticsForTest()
+        + ",native_update_screen_calls=" + NativeImageBacking.screenUpdateCallsForTest()
+        + ",native_present_calls=" + NativeImageBacking.screenPresentCallsForTest()
+        + ",variant_cache=" + (variant == null ? "missing" : variant);
     boolean pass = ImageRasterBenchmarkSupport.finish(
         "ImageScrollRasterFastPathBenchmarkApp", scenario, 1, completed, details,
         overallPass && error.length() == 0 ? "" : error.length() == 0 ? "assertion_failed" : error);
@@ -105,7 +121,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     return scroll;
   }
 
-  private static ScrollRun runScrollPass(ScrollContainer scroll, boolean forward) {
+  private static String runScrollPass(ScrollContainer scroll, boolean forward) {
     if (forward) {
       scroll.scrollToOrigin();
     } else {
@@ -126,14 +142,47 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       paintFrame(scroll);
       frames++;
     }
-    return new ScrollRun(Vm.getTimeStamp() - start, frames, Counters.capture());
+    lastScrollPassFramesForTest = frames;
+    return "elapsed_ms=" + (Vm.getTimeStamp() - start) + ",frames=" + frames + counterDetails();
   }
 
   private static void paintFrame(ScrollContainer scroll) {
     Graphics graphics = scroll.getGraphics();
     ImageRasterBenchmarkSupport.require(graphics != null, "scroll frame graphics");
-    scroll.onPaint(graphics);
-    scroll.paintChildren();
+    Window.setRepaintDiagnosticSourceForTest(Window.REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST);
+    try {
+      Control.repaint();
+      Window.repaintActiveWindows();
+    } finally {
+      Window.setRepaintDiagnosticSourceForTest(Window.REPAINT_DIAGNOSTIC_SOURCE_UNKNOWN_FOR_TEST);
+    }
+  }
+
+  private void runTimerUpdateProbe(final ScrollContainer scroll) {
+    final int[] frames = { 0 };
+    TimerListener listener = new TimerListener() {
+      @Override
+      public void timerTriggered(TimerEvent event) {
+        if (frames[0] < 4) {
+          scroll.scrollContent(0, SCROLL_STEP, true);
+          Control.repaint();
+          frames[0]++;
+        }
+      }
+    };
+    scroll.addTimerListener(listener);
+    TimerEvent timer = scroll.addTimer(1);
+    try {
+      for (int i = 0; i < 4; i++) {
+        timer.lastTick = Vm.getTimeStamp() - timer.millis;
+        Vm.sleep(2);
+        _onTimerTick(true);
+      }
+    } finally {
+      scroll.removeTimer(timer);
+      scroll.removeTimerListener(listener);
+    }
+    ImageRasterBenchmarkSupport.require(frames[0] == 4, "timer probe did not trigger");
   }
 
   private static String verifyPixelParity(byte[] encoded) throws Exception {
@@ -150,7 +199,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     return ImageRasterBenchmarkSupport.hashString(clippedHash);
   }
 
-  private static VariantRun runVariantScenario(byte[] encoded) throws Exception {
+  private static String runVariantScenario(byte[] encoded) throws Exception {
     ImageOptimizationSettings.resetForTest();
     for (int feature = 0; feature < ImageOptimizationSettings.FEATURE_COUNT; feature++) {
       ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
@@ -174,15 +223,7 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
       graphics.drawImage(image, 0, 0, false);
     }
     long elapsed = Vm.getTimeStamp() - start;
-    return new VariantRun(elapsed, Counters.capture());
-  }
-
-  private static String passDetails(String name, ScrollRun run) {
-    return "," + name + "=" + (run == null ? "missing" : run.details());
-  }
-
-  private static String variantDetails(VariantRun run) {
-    return ",variant_cache=" + (run == null ? "missing" : run.details());
+    return "elapsed_ms=" + elapsed + counterDetails();
   }
 
   private static final class ScrollImageTile extends Control {
@@ -200,69 +241,45 @@ public class ImageScrollRasterFastPathBenchmarkApp extends MainWindow {
     }
   }
 
-  private static final class ScrollRun {
-    final long elapsed;
-    final int frames;
-    final Counters counters;
-
-    ScrollRun(long elapsed, int frames, Counters counters) {
-      this.elapsed = elapsed;
-      this.frames = frames;
-      this.counters = counters;
-    }
-
-    String details() {
-      return "elapsed_ms=" + elapsed + ",frames=" + frames + counters.details();
-    }
-  }
-
-  private static final class VariantRun {
-    final long elapsed;
-    final Counters counters;
-
-    VariantRun(long elapsed, Counters counters) {
-      this.elapsed = elapsed;
-      this.counters = counters;
-    }
-
-    String details() {
-      return "elapsed_ms=" + elapsed + counters.details();
-    }
-  }
-
-  private static final class Counters {
-    final long identityAttempts = NativeImageBacking.physicalIdentityAttemptsForTest();
-    final long identityHits = NativeImageBacking.physicalIdentityHitsForTest();
-    final long identityFallbacks = NativeImageBacking.physicalIdentityFallbacksForTest();
-    final long variantLookups = NativeImageBacking.physicalVariantLookupsForTest();
-    final long variantHits = NativeImageBacking.physicalVariantHitsForTest();
-    final long variantStores = NativeImageBacking.physicalVariantMaterializationsForTest();
-    final long targetColorAttempts = NativeImageBacking.targetColorAttemptsForTest();
-    final long targetColorHits = NativeImageBacking.targetColorHitsForTest();
-    final long targetColorFallbacks = NativeImageBacking.targetColorFallbacksForTest();
-    final long writePixelsAttempts = NativeImageBacking.writePixelsAttemptsForTest();
-    final long writePixelsHits = NativeImageBacking.writePixelsHitsForTest();
-    final long genericGeometryDraws = ImageRasterBenchmarkSupport.genericGeometryDrawsForTest();
-    final long smoothResampleDraws = ImageRasterBenchmarkSupport.smoothResampleDrawsForTest();
-
-    static Counters capture() {
-      return new Counters();
-    }
-
-    String details() {
-      return ",physical_identity_attempts=" + identityAttempts
-          + ",physical_identity_hits=" + identityHits
-          + ",physical_identity_fallbacks=" + identityFallbacks
-          + ",physical_variant_lookups=" + variantLookups
-          + ",physical_variant_hits=" + variantHits
-          + ",physical_variant_stores=" + variantStores
-          + ",target_color_attempts=" + targetColorAttempts
-          + ",target_color_hits=" + targetColorHits
-          + ",target_color_fallbacks=" + targetColorFallbacks
-          + ",write_pixels_attempts=" + writePixelsAttempts
-          + ",write_pixels_hits=" + writePixelsHits
-          + ",generic_geometry_draws=" + genericGeometryDraws
-          + ",smooth_resample_draws=" + smoothResampleDraws;
-    }
+  private static String counterDetails() {
+    long attemptsChannel = NativeImageBacking.physicalIdentityRejectionAttemptsChannelForTest();
+    long hitsChannel = NativeImageBacking.physicalIdentityRejectionHitsChannelForTest();
+    long fallbacksChannel = NativeImageBacking.physicalIdentityRejectionFallbacksChannelForTest();
+    long resamplesChannel = NativeImageBacking.physicalIdentityRejectionResamplesChannelForTest();
+    long rejectionCanvasState = (attemptsChannel >>> 16) & 0xffffL;
+    long rejectionSurfaceDestination = (attemptsChannel >>> 32) & 0xffffL;
+    long rejectionDeviceClip = (hitsChannel >>> 16) & 0xffffL;
+    long rejectionPartialIntersection = (hitsChannel >>> 32) & 0xffffL;
+    long rejectionMappingGeometry = (fallbacksChannel >>> 16) & 0xffffL;
+    long rejectionBackingIncompatible = (fallbacksChannel >>> 32) & 0xffffL;
+    long rejectionExecutionFailure = (resamplesChannel >>> 16) & 0xffffL;
+    long identityAttempts = attemptsChannel & 0xffffL;
+    long identityHits = hitsChannel & 0xffffL;
+    long identityFallbacks = fallbacksChannel & 0xffffL;
+    long rejectionTotal = rejectionCanvasState + rejectionSurfaceDestination + rejectionDeviceClip
+        + rejectionPartialIntersection + rejectionMappingGeometry + rejectionBackingIncompatible
+        + rejectionExecutionFailure;
+    ImageRasterBenchmarkSupport.require(identityAttempts == identityHits + identityFallbacks
+        && rejectionTotal == identityFallbacks, "physical identity accounting mismatch");
+    return ",physical_identity_attempts=" + identityAttempts
+        + ",physical_identity_hits=" + identityHits
+        + ",physical_identity_fallbacks=" + identityFallbacks
+        + ",physical_identity_rejections_canvas_state=" + rejectionCanvasState
+        + ",physical_identity_rejections_surface_destination=" + rejectionSurfaceDestination
+        + ",physical_identity_rejections_device_clip=" + rejectionDeviceClip
+        + ",physical_identity_rejections_partial_intersection=" + rejectionPartialIntersection
+        + ",physical_identity_rejections_mapping_geometry=" + rejectionMappingGeometry
+        + ",physical_identity_rejections_backing_incompatible=" + rejectionBackingIncompatible
+        + ",physical_identity_rejections_execution_failure=" + rejectionExecutionFailure
+        + ",physical_variant_lookups=" + NativeImageBacking.physicalVariantLookupsForTest()
+        + ",physical_variant_hits=" + NativeImageBacking.physicalVariantHitsForTest()
+        + ",physical_variant_stores=" + NativeImageBacking.physicalVariantMaterializationsForTest()
+        + ",target_color_attempts=" + NativeImageBacking.targetColorAttemptsForTest()
+        + ",target_color_hits=" + NativeImageBacking.targetColorHitsForTest()
+        + ",target_color_fallbacks=" + NativeImageBacking.targetColorFallbacksForTest()
+        + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()
+        + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
+        + ",generic_geometry_draws=" + ImageRasterBenchmarkSupport.genericGeometryDrawsForTest()
+        + ",smooth_resample_draws=" + ImageRasterBenchmarkSupport.smoothResampleDrawsForTest();
   }
 }

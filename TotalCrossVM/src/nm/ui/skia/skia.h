@@ -19,6 +19,17 @@
 #define SKIA_TEST_COLOR_BGRA8888 1
 #define SKIA_TEST_COLOR_RGB565 2
 
+enum SkiaRasterRejectReasonForTest {
+    SKIA_RASTER_REJECT_CANVAS_STATE_FOR_TEST = 0,
+    SKIA_RASTER_REJECT_SURFACE_DESTINATION_FOR_TEST = 1,
+    SKIA_RASTER_REJECT_DEVICE_CLIP_FOR_TEST = 2,
+    SKIA_RASTER_REJECT_PARTIAL_INTERSECTION_FOR_TEST = 3,
+    SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST = 4,
+    SKIA_RASTER_REJECT_BACKING_INCOMPATIBLE_FOR_TEST = 5,
+    SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST = 6,
+    SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST = 7
+};
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -177,6 +188,10 @@ void skia_image_backing_release(int64_t handle);
 void skia_image_backing_reset_accounting_for_test(void);
 void skia_image_backing_clear_accounting_counters_for_test(void);
 void skia_image_backing_set_accounting_for_test(int enabled);
+void screen_diagnostics_set_for_test(int enabled);
+void screen_diagnostics_clear_for_test(void);
+uint64_t screen_diagnostics_update_calls_for_test(void);
+uint64_t screen_diagnostics_present_calls_for_test(void);
 uint64_t skia_image_backing_records_created_for_test(void);
 uint64_t skia_image_backing_records_released_for_test(void);
 uint64_t skia_image_backing_records_live_for_test(void);
@@ -193,12 +208,14 @@ void skia_image_backing_record_physical_identity_attempt_for_test(void);
 void skia_image_backing_record_physical_identity_hit_for_test(void);
 void skia_image_backing_record_physical_identity_fallback_for_test(void);
 void skia_image_backing_record_physical_identity_resample_avoided_for_test(void);
+void skia_image_backing_record_physical_identity_rejection_for_test(int32 reason);
 void skia_image_backing_record_generic_geometry_draw_for_test(void);
 void skia_image_backing_record_smooth_resample_draw_for_test(void);
 uint64_t skia_image_backing_physical_identity_attempts_for_test(void);
 uint64_t skia_image_backing_physical_identity_hits_for_test(void);
 uint64_t skia_image_backing_physical_identity_fallbacks_for_test(void);
 uint64_t skia_image_backing_physical_identity_resamples_avoided_for_test(void);
+uint64_t skia_image_backing_physical_identity_rejections_for_test(int32 reason);
 uint64_t skia_image_backing_target_color_attempts_for_test(void);
 uint64_t skia_image_backing_target_color_materializations_for_test(void);
 uint64_t skia_image_backing_target_color_hits_for_test(void);
