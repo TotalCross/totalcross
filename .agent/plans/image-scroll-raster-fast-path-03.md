@@ -148,14 +148,14 @@ Fixed decisions:
 
 At completion record:
 
-- final branch tip is `99fe7fe7951c85b1fd0db6dba203b4928da6f992`; the runtime
-  candidate validated remotely is its code-equivalent parent
-  `938be26003002a7e29b9aa84fae7abd8f1772244`, with only plan documentation
-  commits after that validation;
+- the final branch tip consists of plan-only closeout commits after the
+  runtime candidate validated remotely; that candidate was
+  `938be26003002a7e29b9aa84fae7abd8f1772244`, so the tested code is unchanged
+  at the branch tip;
 - implementation commits are `bb935dfba` (`fix(skia-image): preserve handled
   no-op draws`), `3a06b2242` (`test(image): harden clipped scroll validation`),
-  and `39784ba42` (`refactor(ui): remove repaint diagnostic hooks`); the plan
-  closeout commit is the final branch commit;
+  and `39784ba42` (`refactor(ui): remove repaint diagnostic hooks`); the later
+  plan commits are documentation-only closeout records;
 - `GeometryDrawResult` now distinguishes not handled, handled-noop, and
   handled-mutated. All three native geometry wrappers mark the target backing
   only for handled-mutated results, so a fully clipped-out draw does not bump
