@@ -57,6 +57,9 @@ Use UTC timestamps.
 - [x] Run milestone-end SDK + macOS native validation only.
 - [x] Run remote Windows x86-64, Linux x86-64, Linux ARM64 baseline; Linux passed and Windows x64 exposed a pre-existing native crash.
 - [x] Record baseline and handoff; commit the updated plan.
+- [x] Add test-only physical-raster rejection reasons, repaint/frame accounting, and native update/present counters in checkpoint `151007d8b` (2026-09-09 UTC).
+- [x] Run the six local `pre`/`post-disabled`/`post-enabled` × `clipped`/`unclipped` fixture cases; all passed with matching pixel hashes.
+- [x] Run the exact Linux Docker build/runtime lanes from checkpoint `151007d8b`; Linux x86-64 and ARM64 passed, while Windows x86-64 retained its pre-fixture native crash.
 
 ## Surprises & Discoveries
 
@@ -96,6 +99,31 @@ Known at authoring time:
   exits with `0xC0000005` before Java fixture startup. WinDbg reports the
   fault in `tcvm!trace` from `startVM`; this remains an upstream/runtime
   compatibility issue outside the Linux raster baseline.
+- In the real clipped UI path, all 444 cold identity attempts were rejected by
+  the canvas-state gate (`canvas->getSaveCount() != 1`), not by device-clip or
+  partial-intersection geometry. The matching `doClip=false` control had 444
+  identity hits and no generic/smooth draws. The test-only counters therefore
+  distinguish canvas state, surface/destination, device clip, partial
+  intersection, mapping geometry, backing incompatibility, and execution
+  failure without changing the production decision.
+- Adding new native diagnostic methods to the AOT-deployed
+  `NativeImageBacking` caused a pre-fixture `NoSuchMethodError`/native crash.
+  The final bridge preserves the existing getter ABI and multiplexes the seven
+  rejection counters into unused upper 16-bit lanes; the SDK accessors mask the
+  original low 16-bit counter. The existing physical-identity benchmark still
+  passed its focused two-sample regression.
+- The frame probe produced 79 repaint requests, 79 active-window traversals,
+  and 79 effective paints: 75 event paints plus 4 timer-update paints, with no
+  `repaintNow` calls. Java recorded 79 update-screen requests, but the macOS
+  headless harness reached zero native update/present calls, so it does not
+  provide evidence about presentation frequency. Clipped paint duration was
+  median/p95/p99/max `21/32/41/41 ms` with 40 over 16.67 ms, 1 over 33.33 ms,
+  and 15 back-to-back late starts; unclipped was `5/9/18/18 ms`, with 1 over
+  16.67 ms, 0 over 33.33 ms, and no back-to-back late starts.
+- The Windows x86-64 job still exits `-1073741819` (`0xC0000005`) before
+  fixture output; cdb reports the access violation in `tcvm!strcasecmp` from
+  `trace`/`startVM`. This is recorded as a Windows runtime blocker, not as a
+  Linux build or raster result.
 
 Append only discoveries that materially affect Plan 02.
 
@@ -178,6 +206,53 @@ Baseline handoff:
   `physicalVariantCanvasEligible`; the unclipped control reaches the physical
   identity fast path. No production raster fast-path behavior was changed in
   this plan.
+
+Final Plan 01 handoff (2026-09-09 UTC):
+
+- Base SHA: `9ca331017d32ca553155d7fda59b22378fd8198a`; implementation
+  checkpoint: `151007d8be1645d052aa1bb8c4a6d1a60d395d03`.
+- Fixture invocation after `jarImageScrollRasterFastPathBenchmark`:
+  `ImageScrollRasterFastPathBenchmarkApp --scenario=post-enabled --case=clipped`
+  and the same command with `--case=unclipped`. The local matrix also ran
+  both cases for `pre` and `post-disabled`. Every case reported
+  `overallPass=true` and pixel hash `00009D4A00006964` at validation scale 2.
+- Rejection mapping is exposed as
+  `physical_identity_rejections_{canvas_state,surface_destination,device_clip,partial_intersection,mapping_geometry,backing_incompatible,execution_failure}`.
+  The existing attempts/hits/fallbacks counters remain semantically unchanged.
+  The repaint report is `repaint_frame=...`; native counters are
+  `native_update_screen_calls` and `native_present_calls`.
+- Representative `post-enabled` macOS results were:
+  clipped: cold `1220 ms/37 frames`, `444/0/444` identity attempts/hits/fallbacks,
+  `444` canvas-state rejections and `444` generic plus `444` smooth draws;
+  warm reverse `30 ms/1 frame` with `12/0/12`; warm forward
+  `353 ms/37 frames` with `30/0/30`. Unclipped: cold `377 ms/37 frames`,
+  `444/444/0` and zero generic/smooth draws; warm reverse `6 ms/1 frame`
+  with `12/12/0`; warm forward `271 ms/37 frames` with `444/444/0`.
+  The separate variant-cache probe reported 14 lookups, 12 hits, and 1 store.
+- The proven clipped rejection gate is `buildRasterPhysicalPlan`, called from
+  `geometryDraw`; its first real-path failure is the modified-canvas/save-count
+  check. The same helper contains the device-clip, destination-intersection,
+  mapping, and backing bounds classifications. `drawPhysicalVariant` uses the
+  helper for its eligibility check as well.
+- Local validation passed for SDK tests, SDK distribution, fixture packaging,
+  macOS native `tcvm`/`Launcher` build, deploy, the six fixture cases, and the
+  focused two-sample existing physical-identity benchmark. The default
+  60-sample physical benchmark was not completed because its runtime was about
+  one second per sample; no full-60 claim is made.
+- The Linux workflow is based directly on `.github/workflows/build.yml`: the
+  x86-64 and ARM64 jobs use its versioned Docker images, dependency environment
+  forwarding, source/build/cache mounts, and in-container `cmake ... -G Ninja`
+  followed by `ninja`. Run
+  `https://github.com/TotalCross/totalcross/actions/runs/34317998230` at the
+  exact implementation SHA passed Linux x86-64 (job
+  `102358200282`) and Linux ARM64 (job `102358200103`), including build,
+  architecture check, deploy, and clipped/unclipped runtime markers. Windows
+  x86-64 built successfully but failed its fresh runtime (job `102358200362`)
+  with the pre-fixture crash above.
+- Plan 02 has not started. Its next decision is whether the measured
+  canvas-state eligibility constraint can be relaxed while retaining pixel
+  correctness; scheduler/30-FPS policy and production fast-path behavior were
+  not changed here.
 
 Plan 02 should read only this section plus its own plan unless a specific source
 file needs inspection.
