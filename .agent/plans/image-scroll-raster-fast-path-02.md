@@ -40,14 +40,19 @@ No Windows ARM.
 
 Use UTC timestamps.
 
-- [ ] Read Plan 01 handoff and record baseline checkpoint SHA.
-- [ ] Make clip an explicit input to physical raster eligibility.
-- [ ] Attempt physical fast paths before canvas clip mutation.
-- [ ] Implement exact partially clipped physical copies.
-- [ ] Add focused correctness/path tests.
-- [ ] Run milestone-end SDK + macOS native validation only.
-- [ ] Run all required remote lanes.
-- [ ] Record results and handoff to Plan 03.
+- [x] 2026-09-09T07:46Z Read Plan 01 handoff; baseline checkpoint was
+      `151007d8be1645d052aa1bb8c4a6d1a60d395d03` and execution started from
+      `bfc777769f9865495bf49cb4f28cf510ebdece8a`.
+- [x] 2026-09-09T04:39Z Made clip an explicit input to physical raster
+      eligibility and evaluated physical paths before canvas clip mutation.
+- [x] 2026-09-09T04:39Z Implemented exact partially clipped physical copies.
+- [x] 2026-09-09T07:37Z Added focused pixel/path tests for partial edges,
+      corners, no intersection, scale 1/2, transformed fallback, and cached
+      physical variants.
+- [x] 2026-09-09T07:37Z Ran milestone-end SDK + macOS native validation.
+- [x] 2026-09-09T07:44Z Ran the required remote matrix on checkpoint
+      `d9a7ddef7ddd6cffaec92355747a084c0400b054`.
+- [x] 2026-09-09T07:46Z Recorded results and handoff to Plan 03.
 
 ## Surprises & Discoveries
 
@@ -61,6 +66,18 @@ Expected relevant facts:
 - current physical eligibility rejects altered save count/full-device-clip
   mismatch;
 - synthetic `doClip=false` benchmarks avoid this state.
+
+Implementation discoveries:
+
+- `skiaDrawGeometryPlan` must preflight the physical path with the logical
+  Graphics clip before `skia_setClip(...)`; a clipped decline then uses a
+  generic-only wrapper so the existing canvas clip flow is preserved.
+- Physical identity and physical variant planning need separate visible-clip
+  logic. A cached variant is already physicalized, so requiring the identity
+  planner to accept it would incorrectly reject clipped variant reuse.
+- The focused deterministic partial-clip source validates pixels at scale 1
+  and 2; the application-equivalent clipped JPEG scroll pass is the identity
+  counter assertion.
 
 Append implementation-specific discoveries with exact function/path evidence.
 
@@ -97,15 +114,42 @@ Architecture is fixed:
 
 Before Plan 03, record:
 
-- start and end SHA;
-- exact native functions changed;
-- whether full clipped identity draws now hit;
-- whether partial clips use physical subrect copies;
-- pixel-correct test results;
-- warm fixture counter delta versus Plan 01;
-- local macOS result;
-- remote run URL/ID/result for all required lanes;
-- any remaining repeated resample/variant-cache miss proven by counters.
+- Start SHA: `bfc777769f9865495bf49cb4f28cf510ebdece8a`.
+- Implementation checkpoint: `d9a7ddef7ddd6cffaec92355747a084c0400b054`.
+  The final plan-update commit is the end SHA recorded by Git history.
+- Native functions changed: `skiaDrawGeometryPlan` in
+  `TotalCrossVM/src/nm/ui/GraphicsPrimitivesSkia_c.h`, the internal clip
+  declarations in `TotalCrossVM/src/nm/ui/skia/skia.h`, and
+  `buildRasterPhysicalPlan`, `buildPhysicalVisibleClip`,
+  `drawTargetColorVariant`, `drawPhysicalVariant`, `drawPhysicalFastPath`,
+  and `geometryDraw` in `TotalCrossVM/src/nm/ui/skia/skia_image_geometry.cpp`.
+- Full clipped identity draws now hit: the clipped macOS cold pass recorded
+  444 attempts / 444 hits / 0 fallbacks, matching the 444-draw workload.
+- Partial clips use physical subrects: left/top/right/bottom/corner and empty
+  intersection cases matched the reference hash at surface scales 1 and 2;
+  the no-intersection target remained unchanged. The focused hash was
+  `0000DD4000009725`.
+- Unsupported transformed geometry matched its reference and recorded
+  `generic=1`, hash `0000DD600000CC65`.
+- Warm fixture delta versus Plan 01: reverse pass was 12/12 identity hits;
+  forward pass was 444 attempts with 30 identity hits and 414 mapping-geometry
+  declines, with 0 generic or smooth-resample draws. The variant scenario
+  recorded 14 lookups, 12 hits, 1 store, 1 generic materialization, and 1
+  smooth materialization.
+- Local macOS passed: SDK `test`, SDK `dist -x test`, CMake configure, native
+  `tcvm Launcher` build, clipped fixture, and unclipped control. The clipped
+  and unclipped pixel hash was `00009D4A00006964`; each reported
+  `overallPass=true`.
+- Remote run `34325072695`:
+  https://github.com/TotalCross/totalcross/actions/runs/34325072695
+  passed Linux x86-64 (job `102380349593`) and Linux ARM64 (job
+  `102380349761`). Windows x86-64 (job `102380349926`) reached the runtime
+  step but hit the pre-existing launcher/VM access violation `0xC0000005`
+  (`-1073741819`) in `tcvm!trace` before fixture output, matching the Plan 01
+  Windows failure; no raster assertion ran. Windows ARM was not run.
+- No new repeated smooth resampling or physical-variant miss was proven by
+  the counters; the first variant materialization was followed by clipped
+  cache hits.
 
 Plan 03 reads only this handoff plus its own plan.
 
