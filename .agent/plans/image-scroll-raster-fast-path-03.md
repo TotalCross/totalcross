@@ -54,7 +54,12 @@ Use UTC timestamps.
       and target-color/variant byte accounting.
 - [x] 2026-09-09T16:35Z SDK tests, SDK distribution, fresh macOS native build,
       and all four manual native combinations (clipped/unclipped ×
-      cache-disabled/enabled) passed. Remote Linux validation is still pending.
+      cache-disabled/enabled) passed.
+- [x] 2026-09-09T16:47Z Workflow run `34378213068` validated commit
+      `6d976c130ac790e263787b227eadc973e5d047b4`: Linux x86-64 and Linux
+      ARM64 passed. Windows x86-64 reproduced the known pre-fixture access
+      violation (`0xC0000005`) in `tcvm!trace -> privateHeapSetJump` before
+      fixture output; no Windows fix was attempted.
 
 ## Surprises & Discoveries
 
@@ -165,18 +170,20 @@ At completion record:
 - SDK tests, SDK distribution, fresh macOS arm64 CMake/Ninja build, smoke
   compilation, and the four native manual fixture runs passed. The exact
   runtime was `build-image-scroll-raster-final/libtcvm.dylib`;
-- the earlier workflow run is historical evidence only and is superseded by
-  this corrected candidate. The Windows x86-64 launcher/VM crash remains a
-  known pre-fixture blocker and is intentionally not addressed in this raster
-  branch. Its investigation commits are preserved at the archive reference
-  named in Progress. The corrected Linux workflow result is recorded below
-  after the final push;
+- workflow run `34378213068`
+  ([GitHub Actions](https://github.com/TotalCross/totalcross/actions/runs/34378213068))
+  validated commit `6d976c130ac790e263787b227eadc973e5d047b4`: Linux x86-64
+  and Linux ARM64 passed. Windows x86-64 failed before fixture output with
+  the known `0xC0000005` access violation in
+  `tcvm!trace -> privateHeapSetJump`; no raster assertion ran on that lane and
+  no Windows fix was attempted. Its investigation commits are preserved at
+  the archive reference named in Progress;
 - cold first-use work remains synchronous; async decode/prefetch stays outside
   this sequence. No new physical cache, public `Window` diagnostic API, or
   optimization feature number was added.
 
-The in-scope raster acceptance gate is complete locally; remote Linux x86-64
-and Linux ARM64 validation must still pass. Windows x86-64 is recorded only as
+The in-scope raster acceptance gate is complete: local SDK/macOS/fixture
+validation and remote Linux x86-64/ARM64 passed. Windows x86-64 remains only
 the known pre-fixture blocker, with no new startup/heap/register work in this
 branch.
 
