@@ -332,6 +332,7 @@ jobs:
               -WorkingDirectory $runDir -ArgumentList '-t' -Wait -PassThru `
               -RedirectStandardOutput $runLog -RedirectStandardError $errorLog
             $processExitCode = $process.ExitCode
+            Set-Content (Join-Path $runDir 'process-exit.txt') $processExitCode
           } catch {
             $_ | Out-String | Set-Content $errorLog
             throw
