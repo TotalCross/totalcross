@@ -115,31 +115,35 @@ def main(argv):
 
     all_records = []
     for width, height, screen_spec in RESOLUTIONS:
-        for profile in PROFILES:
-            run_name = f"{width}x{height}-{profile}"
-            log_path = output_dir / f"{run_name}.log"
-            # The simulator notation `/scr WIDTHxHEIGHTx24` maps to the
-            # native desktop launcher's `/scr x,y,width,height` form.
-            command = [
-                str(executable),
-                "/scr", f"-2,-2,{width},{height}",
-                f"--image-dir={image_dir}",
-                f"--variant-cache={profile}",
-            ]
-            run_command(command, install_dir, log_path)
-            records = parse_pass_records(log_path)
-            if len(records) != 3:
-                raise RuntimeError(f"{run_name} recorded {len(records)} passes; see {log_path}")
-            for record in records:
-                if record.get("resolution") != f"{width}x{height}":
-                    raise RuntimeError(f"{run_name} used unexpected resolution; see {log_path}")
-                if record.get("variant_cache_profile") != profile:
-                    raise RuntimeError(f"{run_name} used unexpected cache profile; see {log_path}")
-                if record.get("image_count") != str(EXPECTED_JPEGS):
-                    raise RuntimeError(f"{run_name} used an unexpected corpus; see {log_path}")
-                record["screen_spec"] = screen_spec
-                record["run"] = run_name
-                all_records.append(record)
+        for target_color in PROFILES:
+            for variant_cache in PROFILES:
+                run_name = f"{width}x{height}-target-{target_color}-variant-{variant_cache}"
+                log_path = output_dir / f"{run_name}.log"
+                # The simulator notation `/scr WIDTHxHEIGHTx24` maps to the
+                # native desktop launcher's `/scr x,y,width,height` form.
+                command = [
+                    str(executable),
+                    "/scr", f"-2,-2,{width},{height}",
+                    f"--image-dir={image_dir}",
+                    f"--target-color={target_color}",
+                    f"--variant-cache={variant_cache}",
+                ]
+                run_command(command, install_dir, log_path)
+                records = parse_pass_records(log_path)
+                if len(records) != 3:
+                    raise RuntimeError(f"{run_name} recorded {len(records)} passes; see {log_path}")
+                for record in records:
+                    if record.get("resolution") != f"{width}x{height}":
+                        raise RuntimeError(f"{run_name} used unexpected resolution; see {log_path}")
+                    if record.get("target_color_profile") != target_color:
+                        raise RuntimeError(f"{run_name} used unexpected target-color profile; see {log_path}")
+                    if record.get("variant_cache_profile") != variant_cache:
+                        raise RuntimeError(f"{run_name} used unexpected variant-cache profile; see {log_path}")
+                    if record.get("image_count") != str(EXPECTED_JPEGS):
+                        raise RuntimeError(f"{run_name} used an unexpected corpus; see {log_path}")
+                    record["screen_spec"] = screen_spec
+                    record["run"] = run_name
+                    all_records.append(record)
 
     results_path = output_dir / "results.csv"
     fields = sorted({key for record in all_records for key in record})
@@ -157,6 +161,8 @@ def main(argv):
             f"frame_p95_ms={record['frame_time_p95_ms']} "
             f"targeted_jpeg_decodes={record['targeted_jpeg_decodes']} "
             f"full_jpeg_decodes={record['full_jpeg_decodes']} "
+            f"draw_plan_cache_hits={record['draw_plan_cache_hits']} "
+            f"write_pixels_hits={record['write_pixels_hits']} "
             f"smooth_resample_draws={record['smooth_resample_draws']}"
         )
     return 0

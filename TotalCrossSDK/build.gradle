@@ -834,6 +834,17 @@ registerImageMacSmoke('ImageScrollRealWorkloadBenchmark', 'ImageScrollRealWorklo
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageWarmCopyRectBenchmark', 'ImageWarmCopyRectBenchmarkApp',
+    'image-warm-copyrect-benchmark', false, false, [
+        'fixture=ImageWarmCopyRectBenchmarkApp',
+        'record=case',
+        'operation=materialized',
+        'operation=deferred-drawImage',
+        'operation=deferred-copyRect',
+        'clip=partial',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageRasterPhysicalVariantSmoke', 'ImageRasterPhysicalVariantSmokeApp',
     'image-raster-physical-variant-smoke', false, false, [
         'fixture=ImageRasterPhysicalVariantSmokeApp',

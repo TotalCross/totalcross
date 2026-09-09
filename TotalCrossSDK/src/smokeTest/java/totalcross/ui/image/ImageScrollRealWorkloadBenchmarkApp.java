@@ -29,6 +29,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
   private int imageControlCount;
   private long uiBuildElapsedMillis;
   private String imageDir;
+  private String targetColorProfile;
   private String variantCacheProfile;
 
   public ImageScrollRealWorkloadBenchmarkApp() {
@@ -48,10 +49,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
     boolean overallPass = false;
     try {
       imageDir = ImageRasterBenchmarkSupport.argument(getCommandLine(), "image-dir", null);
+      targetColorProfile = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "target-color", "disabled");
       variantCacheProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "variant-cache", "disabled");
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
           "missing --image-dir=<dir>");
+      ImageRasterBenchmarkSupport.require("disabled".equals(targetColorProfile)
+          || "enabled".equals(targetColorProfile),
+          "target-color must be disabled or enabled");
       ImageRasterBenchmarkSupport.require("disabled".equals(variantCacheProfile)
           || "enabled".equals(variantCacheProfile),
           "variant-cache must be disabled or enabled");
@@ -87,6 +93,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
 
     String summary = "fixture=ImageScrollRealWorkloadBenchmarkApp,record=summary"
         + ",resolution=" + width + "x" + height
+        + ",target_color_profile=" + String.valueOf(targetColorProfile)
         + ",variant_cache_profile=" + String.valueOf(variantCacheProfile)
         + ",image_dir=" + String.valueOf(imageDir)
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
@@ -101,10 +108,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
   }
 
   private void configureProfile() {
-    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled");
-    ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
-        "enabled".equals(variantCacheProfile)
-            ? ImageOptimizationSettings.ENABLED : ImageOptimizationSettings.DISABLED);
+    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled",
+        "enabled".equals(targetColorProfile), "enabled".equals(variantCacheProfile));
     ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
         ImageOptimizationSettings.ENABLED);
   }
@@ -211,6 +216,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
   private void printPass(PassResult result) {
     System.out.println("fixture=ImageScrollRealWorkloadBenchmarkApp,record=pass"
         + ",resolution=" + width + "x" + height
+        + ",target_color_profile=" + targetColorProfile
         + ",variant_cache_profile=" + variantCacheProfile
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
@@ -281,7 +287,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
   private static final class Counters {
     final long targetedJpegDecodes = Image.targetedDecodeInvocationCountForTest();
     final long fullJpegDecodes = Image.fullDecodeInvocationCountForTest();
+    final long imageMaterializations = Image.materializationCountForTest();
+    final long imagePipelines = Image.imagePipelineCreatedCountForTest();
+    final long drawPlansCreated = Image.imageDrawPlanCreatedCountForTest();
+    final long drawPlanCacheHits = Image.imageDrawPlanCacheHitCountForTest();
+    final long directDrawPlanExecutions = Image.directDrawPlanExecutionCountForTest();
     final long nativeGeometryMaterializations = Image.nativeGeometryMaterializationCountForTest();
+    final long writePixelsAttempts = NativeImageBacking.writePixelsAttemptsForTest();
+    final long writePixelsHits = NativeImageBacking.writePixelsHitsForTest();
+    final long writePixelsFallbacks = NativeImageBacking.writePixelsFallbacksForTest();
+    final long writePixelsCopiedBytes = NativeImageBacking.writePixelsCopiedBytesForTest();
     final long physicalIdentityAttempts = NativeImageBacking.physicalIdentityAttemptsForTest();
     final long physicalIdentityHits = NativeImageBacking.physicalIdentityHitsForTest();
     final long physicalIdentityFallbacks = NativeImageBacking.physicalIdentityFallbacksForTest();
@@ -304,7 +319,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
     String details() {
       return ",targeted_jpeg_decodes=" + targetedJpegDecodes
           + ",full_jpeg_decodes=" + fullJpegDecodes
+          + ",image_materializations=" + imageMaterializations
+          + ",image_pipelines=" + imagePipelines
+          + ",draw_plans_created=" + drawPlansCreated
+          + ",draw_plan_cache_hits=" + drawPlanCacheHits
+          + ",direct_draw_plan_executions=" + directDrawPlanExecutions
           + ",native_geometry_materializations=" + nativeGeometryMaterializations
+          + ",write_pixels_attempts=" + writePixelsAttempts
+          + ",write_pixels_hits=" + writePixelsHits
+          + ",write_pixels_fallbacks=" + writePixelsFallbacks
+          + ",write_pixels_copied_bytes=" + writePixelsCopiedBytes
           + ",physical_identity_attempts=" + physicalIdentityAttempts
           + ",physical_identity_hits=" + physicalIdentityHits
           + ",physical_identity_fallbacks=" + physicalIdentityFallbacks

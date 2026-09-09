@@ -63,6 +63,11 @@ final class ImageRasterBenchmarkSupport {
   }
 
   static void configureApplicationRasterFeatures(String scenario) {
+    configureApplicationRasterFeatures(scenario, true, false);
+  }
+
+  static void configureApplicationRasterFeatures(String scenario, boolean targetColorConversion,
+      boolean physicalVariantCache) {
     require("pre".equals(scenario) || "post-disabled".equals(scenario)
         || "post-enabled".equals(scenario), "invalid scenario");
     ImageOptimizationSettings.resetForTest();
@@ -78,11 +83,18 @@ final class ImageRasterBenchmarkSupport {
         ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
         ImageOptimizationSettings.RASTER_ROW_READBACK,
         ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION,
-        ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
         ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING
     };
     for (int feature : enabled) {
       ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
+    }
+    if (targetColorConversion) {
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+          ImageOptimizationSettings.ENABLED);
+    }
+    if (physicalVariantCache) {
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+          ImageOptimizationSettings.ENABLED);
     }
   }
 
