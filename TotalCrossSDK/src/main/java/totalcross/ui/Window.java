@@ -7,8 +7,6 @@
 
 package totalcross.ui;
 
-import java.util.Arrays;
-
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 import totalcross.Launcher;
@@ -118,267 +116,6 @@ import totalcross.util.Vector;
 public class Window extends Container {
   /** True if some area of any window is invalidated */
   public static boolean needsPaint;
-
-  public static final int REPAINT_DIAGNOSTIC_SOURCE_UNKNOWN_FOR_TEST = 0;
-  public static final int REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST = 1;
-  public static final int REPAINT_DIAGNOSTIC_SOURCE_TIMER_UPDATE_FOR_TEST = 2;
-
-  private static final int REPAINT_DIAGNOSTIC_MAX_SAMPLES_FOR_TEST = 4096;
-  private static boolean repaintDiagnosticsEnabledForTest;
-  private static int repaintDiagnosticSourceForTest;
-  private static long repaintRequestsForTest;
-  private static long repaintActiveWindowsCallsForTest;
-  private static long repaintNowCallsForTest;
-  private static long effectivePaintsForTest;
-  private static long eventPaintsForTest;
-  private static long timerUpdatePaintsForTest;
-  private static long unknownPaintsForTest;
-  private static long updateScreenRequestsForTest;
-  private static long schedulerDueUpdatesForTest;
-  private static long schedulerDueEventUpdatesForTest;
-  private static long schedulerDueTimerUpdatesForTest;
-  private static long latePaintStartsForTest;
-  private static long backToBackPaintsForTest;
-  private static long paintsOver16msForTest;
-  private static long paintsOver33msForTest;
-  private static long lastPaintStartForTest = -1;
-  private static long lastPaintEndForTest = -1;
-  private static long lastUpdateScreenForTest = -1;
-  private static long pendingSchedulerDueAtForTest = -1;
-  private static final long[] paintDurationsForTest =
-      new long[REPAINT_DIAGNOSTIC_MAX_SAMPLES_FOR_TEST];
-  private static final long[] paintIntervalsForTest =
-      new long[REPAINT_DIAGNOSTIC_MAX_SAMPLES_FOR_TEST];
-  private static final long[] updateScreenIntervalsForTest =
-      new long[REPAINT_DIAGNOSTIC_MAX_SAMPLES_FOR_TEST];
-  private static int paintDurationSamplesForTest;
-  private static int paintIntervalSamplesForTest;
-  private static int updateScreenIntervalSamplesForTest;
-
-  /** Test-only repaint/frame diagnostics. */
-  public static void resetRepaintDiagnosticsForTest() {
-    repaintDiagnosticsEnabledForTest = true;
-    repaintDiagnosticSourceForTest = REPAINT_DIAGNOSTIC_SOURCE_UNKNOWN_FOR_TEST;
-    repaintRequestsForTest = 0;
-    repaintActiveWindowsCallsForTest = 0;
-    repaintNowCallsForTest = 0;
-    effectivePaintsForTest = 0;
-    eventPaintsForTest = 0;
-    timerUpdatePaintsForTest = 0;
-    unknownPaintsForTest = 0;
-    updateScreenRequestsForTest = 0;
-    schedulerDueUpdatesForTest = 0;
-    schedulerDueEventUpdatesForTest = 0;
-    schedulerDueTimerUpdatesForTest = 0;
-    latePaintStartsForTest = 0;
-    backToBackPaintsForTest = 0;
-    paintsOver16msForTest = 0;
-    paintsOver33msForTest = 0;
-    lastPaintStartForTest = -1;
-    lastPaintEndForTest = -1;
-    lastUpdateScreenForTest = -1;
-    pendingSchedulerDueAtForTest = -1;
-    paintDurationSamplesForTest = 0;
-    paintIntervalSamplesForTest = 0;
-    updateScreenIntervalSamplesForTest = 0;
-    Arrays.fill(paintDurationsForTest, 0);
-    Arrays.fill(paintIntervalsForTest, 0);
-    Arrays.fill(updateScreenIntervalsForTest, 0);
-  }
-
-  /** Test-only source marker used by the scroll fixture. */
-  public static void setRepaintDiagnosticSourceForTest(int source) {
-    repaintDiagnosticSourceForTest = source;
-  }
-
-  /** Test-only switch to stop collecting repaint/frame diagnostics. */
-  public static void disableRepaintDiagnosticsForTest() {
-    repaintDiagnosticsEnabledForTest = false;
-    repaintDiagnosticSourceForTest = REPAINT_DIAGNOSTIC_SOURCE_UNKNOWN_FOR_TEST;
-  }
-
-  /** Test-only compact report of repaint/frame diagnostics. */
-  public static String repaintDiagnosticsForTest() {
-    return "repaint_requests=" + repaintRequestsForTest
-        + ",repaint_active_windows_calls=" + repaintActiveWindowsCallsForTest
-        + ",repaint_now_calls=" + repaintNowCallsForTest
-        + ",effective_paints=" + effectivePaintsForTest
-        + ",paint_from_event=" + eventPaintsForTest
-        + ",paint_from_timer_update=" + timerUpdatePaintsForTest
-        + ",paint_from_unknown=" + unknownPaintsForTest
-        + ",scheduler_due_updates=" + schedulerDueUpdatesForTest
-        + ",scheduler_due_event_updates=" + schedulerDueEventUpdatesForTest
-        + ",scheduler_due_timer_updates=" + schedulerDueTimerUpdatesForTest
-        + ",paint_duration_samples=" + paintDurationSamplesForTest
-        + ",paint_duration_ms_min=" + sampleMin(paintDurationsForTest, paintDurationSamplesForTest)
-        + ",paint_duration_ms_median=" + samplePercentile(paintDurationsForTest,
-            paintDurationSamplesForTest, 50)
-        + ",paint_duration_ms_p95=" + samplePercentile(paintDurationsForTest,
-            paintDurationSamplesForTest, 95)
-        + ",paint_duration_ms_p99=" + samplePercentile(paintDurationsForTest,
-            paintDurationSamplesForTest, 99)
-        + ",paint_duration_ms_max=" + sampleMax(paintDurationsForTest, paintDurationSamplesForTest)
-        + ",paint_over_16_67ms=" + paintsOver16msForTest
-        + ",paint_over_33_33ms=" + paintsOver33msForTest
-        + ",paint_interval_samples=" + paintIntervalSamplesForTest
-        + ",paint_interval_ms_median=" + samplePercentile(paintIntervalsForTest,
-            paintIntervalSamplesForTest, 50)
-        + ",paint_interval_ms_p95=" + samplePercentile(paintIntervalsForTest,
-            paintIntervalSamplesForTest, 95)
-        + ",paint_interval_ms_p99=" + samplePercentile(paintIntervalsForTest,
-            paintIntervalSamplesForTest, 99)
-        + ",update_screen_requests=" + updateScreenRequestsForTest
-        + ",update_screen_interval_samples=" + updateScreenIntervalSamplesForTest
-        + ",update_screen_interval_ms_median=" + samplePercentile(updateScreenIntervalsForTest,
-            updateScreenIntervalSamplesForTest, 50)
-        + ",update_screen_interval_ms_p95=" + samplePercentile(updateScreenIntervalsForTest,
-            updateScreenIntervalSamplesForTest, 95)
-        + ",update_screen_interval_ms_p99=" + samplePercentile(updateScreenIntervalsForTest,
-            updateScreenIntervalSamplesForTest, 99)
-        + ",late_paint_starts=" + latePaintStartsForTest
-        + ",back_to_back_paints=" + backToBackPaintsForTest;
-  }
-
-  private static long diagnosticPaintStartedForTest() {
-    if (!repaintDiagnosticsEnabledForTest) {
-      return -1;
-    }
-    long now = Vm.getTimeStamp();
-    if (pendingSchedulerDueAtForTest >= 0) {
-      if (pendingSchedulerDueAtForTest < now) {
-        latePaintStartsForTest++;
-      }
-      pendingSchedulerDueAtForTest = -1;
-    }
-    if (lastPaintStartForTest >= 0 && paintIntervalSamplesForTest < paintIntervalsForTest.length) {
-      paintIntervalsForTest[paintIntervalSamplesForTest++] = Math.max(0, now - lastPaintStartForTest);
-    }
-    if (lastPaintEndForTest >= 0 && now >= lastPaintEndForTest
-        && now - lastPaintEndForTest <= 1) {
-      backToBackPaintsForTest++;
-    }
-    lastPaintStartForTest = now;
-    effectivePaintsForTest++;
-    if (repaintDiagnosticSourceForTest == REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST) {
-      eventPaintsForTest++;
-    } else if (repaintDiagnosticSourceForTest
-        == REPAINT_DIAGNOSTIC_SOURCE_TIMER_UPDATE_FOR_TEST) {
-      timerUpdatePaintsForTest++;
-    } else {
-      unknownPaintsForTest++;
-    }
-    return now;
-  }
-
-  private static void diagnosticPaintFinishedForTest(long start) {
-    if (!repaintDiagnosticsEnabledForTest || start < 0) {
-      return;
-    }
-    long duration = Math.max(0, Vm.getTimeStamp() - start);
-    if (paintDurationSamplesForTest < paintDurationsForTest.length) {
-      paintDurationsForTest[paintDurationSamplesForTest++] = duration;
-    }
-    if (duration >= 17) {
-      paintsOver16msForTest++;
-    }
-    if (duration >= 34) {
-      paintsOver33msForTest++;
-    }
-    lastPaintEndForTest = Vm.getTimeStamp();
-  }
-
-  private static void diagnosticUpdateScreenForTest() {
-    if (!repaintDiagnosticsEnabledForTest) {
-      return;
-    }
-    long now = Vm.getTimeStamp();
-    if (lastUpdateScreenForTest >= 0
-        && updateScreenIntervalSamplesForTest < updateScreenIntervalsForTest.length) {
-      updateScreenIntervalsForTest[updateScreenIntervalSamplesForTest++] =
-          Math.max(0, now - lastUpdateScreenForTest);
-    }
-    lastUpdateScreenForTest = now;
-    updateScreenRequestsForTest++;
-  }
-
-  static void recordRepaintRequestForTest() {
-    if (repaintDiagnosticsEnabledForTest) {
-      repaintRequestsForTest++;
-    }
-  }
-
-  static void recordRepaintNowForTest() {
-    if (repaintDiagnosticsEnabledForTest) {
-      repaintNowCallsForTest++;
-    }
-  }
-
-  static void recordRepaintActiveWindowsForTest() {
-    if (repaintDiagnosticsEnabledForTest) {
-      repaintActiveWindowsCallsForTest++;
-    }
-  }
-
-  static void recordSchedulerUpdateDueForTest(long dueAt, int source) {
-    if (!repaintDiagnosticsEnabledForTest) {
-      return;
-    }
-    schedulerDueUpdatesForTest++;
-    if (source == REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST) {
-      schedulerDueEventUpdatesForTest++;
-    } else if (source == REPAINT_DIAGNOSTIC_SOURCE_TIMER_UPDATE_FOR_TEST) {
-      schedulerDueTimerUpdatesForTest++;
-    }
-    pendingSchedulerDueAtForTest = dueAt >= 0 ? dueAt : Vm.getTimeStamp();
-  }
-
-  public static long effectivePaintsForTest() {
-    return effectivePaintsForTest;
-  }
-
-  static long diagnosticPaintStartForTest() {
-    return diagnosticPaintStartedForTest();
-  }
-
-  static void diagnosticPaintEndForTest(long start) {
-    diagnosticPaintFinishedForTest(start);
-  }
-
-  static void recordUpdateScreenForTest() {
-    diagnosticUpdateScreenForTest();
-  }
-
-  private static long sampleMin(long[] samples, int size) {
-    if (size <= 0) {
-      return 0;
-    }
-    long value = samples[0];
-    for (int i = 1; i < size; i++) {
-      value = Math.min(value, samples[i]);
-    }
-    return value;
-  }
-
-  private static long sampleMax(long[] samples, int size) {
-    if (size <= 0) {
-      return 0;
-    }
-    long value = samples[0];
-    for (int i = 1; i < size; i++) {
-      value = Math.max(value, samples[i]);
-    }
-    return value;
-  }
-
-  private static long samplePercentile(long[] samples, int size, int percentile) {
-    if (size <= 0) {
-      return 0;
-    }
-    long[] sorted = Arrays.copyOf(samples, size);
-    Arrays.sort(sorted);
-    int index = (percentile * size + 99) / 100 - 1;
-    return sorted[Math.max(0, Math.min(size - 1, index))];
-  }
   /** Window's title */
   protected String title; // guich@102
   /** When this window is the top most and the user clicks outside, a beep is thrown. Set this to false do disable the beep. */
@@ -816,7 +553,6 @@ public class Window extends Container {
    * Called by the VM to post key and pen events.
    */
   final public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp) {
-    setRepaintDiagnosticSourceForTest(REPAINT_DIAGNOSTIC_SOURCE_EVENT_FOR_TEST);
     boolean isPenEvent = !multiTouching && PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
     boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
     if (isKeyEvent && Settings.optionalBackspaceKey != 0 && key == Settings.optionalBackspaceKey) {
@@ -1735,24 +1471,19 @@ public class Window extends Container {
    * Called by the VM to repaint an area.
    */
   public void _doPaint() {
-    long diagnosticPaintStart = diagnosticPaintStartForTest();
-    try {
-      Graphics gg = getGraphics();
-      if (offscreen != null) {
-        gg.drawImage(offscreen, 0, 0);
-        if (offscreen0 != null) {
-          gg.drawImage(offscreen0, 0, 0);
-        }
-      } else {
-        // clear background
-        paintWindowBackground(gg);
-        paintChildren();
+    Graphics gg = getGraphics();
+    if (offscreen != null) {
+      gg.drawImage(offscreen, 0, 0);
+      if (offscreen0 != null) {
+        gg.drawImage(offscreen0, 0, 0);
       }
-      if (offscreen == null && Settings.onJavaSE) {
-        safeUpdateScreen();
-      }
-    } finally {
-      diagnosticPaintEndForTest(diagnosticPaintStart);
+    } else {
+      // clear background
+      paintWindowBackground(gg);
+      paintChildren();
+    }
+    if (offscreen == null && Settings.onJavaSE) {
+      safeUpdateScreen();
     }
   }
 
@@ -2046,14 +1777,10 @@ public class Window extends Container {
   /** Repaints the window stack from 0 to zStack.size().
    */  
   public static void repaintActiveWindows() {
-    recordRepaintActiveWindowsForTest();
     int i, j, n;
     boolean eas = enableUpdateScreen;
     enableUpdateScreen = false;
     boolean neededPaint = needsPaint;
-    if (neededPaint && pendingSchedulerDueAtForTest < 0) {
-      recordSchedulerUpdateDueForTest(Vm.getTimeStamp(), repaintDiagnosticSourceForTest);
-    }
     needsPaint = false; // prevent from updating the screen
     // guich@400_73 guich@400_76
     boolean callUS = true;
