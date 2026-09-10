@@ -1039,7 +1039,7 @@ public class Image extends GfxSurface {
       resolveForDrawing(request.destinationScale);
       pipeline.clearCachedDrawPlans();
       if (pipeline.root() instanceof EncodedImageSource) {
-        ((EncodedImageSource) pipeline.root()).releaseDecodedBackingAfterMaterialization();
+        ((EncodedImageSource) pipeline.root()).releaseDecodedBackingAfterMaterialization(pipeline);
       }
     } else {
       drawPlanForDrawing(request.destinationScale);

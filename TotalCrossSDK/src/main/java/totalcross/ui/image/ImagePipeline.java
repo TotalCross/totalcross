@@ -406,6 +406,11 @@ final class ImagePipeline {
             && cachedVariantGeneration2 == sourceDecodeGeneration);
   }
 
+  boolean hasCachedVariantBacking(ImageBacking backing) {
+    return (cachedVariant1 != null && cachedVariant1.backing == backing)
+        || (cachedVariant2 != null && cachedVariant2.backing == backing);
+  }
+
   /** Caches a materialized variant on this node for later prefix reuse. */
   void cacheMaterializedVariant(long scaleBits, Image variant, long sourceDecodeGeneration) {
     long use = ++cacheUseCounter;

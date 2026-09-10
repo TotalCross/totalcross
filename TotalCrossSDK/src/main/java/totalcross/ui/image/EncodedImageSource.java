@@ -251,7 +251,13 @@ final class EncodedImageSource extends ImageSource {
   }
 
   /** Releases the intermediate decode after a COPY_READY raster owns the final pixels. */
-  void releaseDecodedBackingAfterMaterialization() {
+  void releaseDecodedBackingAfterMaterialization(ImagePipeline pipeline) {
+    if (decodedBacking == null || pipeline.hasCachedVariantBacking(decodedBacking)) {
+      return;
+    }
+    if (decodedBacking instanceof NativeImageBacking) {
+      ((NativeImageBacking) decodedBacking).release();
+    }
     decodedBacking = null;
     decodedWidth = 0;
     decodedHeight = 0;
