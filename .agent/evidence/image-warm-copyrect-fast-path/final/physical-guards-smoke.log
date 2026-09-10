@@ -1,0 +1,34 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :copySdkDependencies UP-TO-DATE
+> Task :compileSmokeTestJava UP-TO-DATE
+> Task :processSmokeTestResources UP-TO-DATE
+> Task :smokeTestClasses UP-TO-DATE
+> Task :compileImageRasterPhysicalIdentityBenchmark UP-TO-DATE
+> Task :jarImageRasterPhysicalIdentityBenchmark
+
+> Task :deployImageRasterPhysicalIdentityBenchmarkMacOS
+TotalCross SDK version 7.2.2.0 running on mac os x with JDK 17.0
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+File /private/tmp/image-warm-copyrect-fast-path/TotalCrossSDK/build/image-raster-physical-identity-benchmark/classes/ImageRasterPhysicalIdentityBenchmarkApp.tcz written (52% - 7652761 bytes)
+Application title not provided, using: ImageRasterPhysicalIdentityBenchmarkApp
+Application id not provided. Created from "ImageRasterPhysicalIdentityBenchmarkApp": xLFC
+... Files written to folder /private/tmp/image-warm-copyrect-fast-path/TotalCrossSDK/build/image-raster-physical-identity-benchmark/classes/install/macos/
+
+> Task :runImageRasterPhysicalIdentityBenchmarkMacOS
+sample=1,elapsed_ms=1044,case=guards,filter=smooth,draws=1024,pixel_hash=000000D600000165,source_physical=200x200,target_physical=200x200,physical_identity_attempts=1024,physical_identity_hits=1024,physical_identity_fallbacks=0,physical_identity_resamples_avoided=1024
+
+fixture=ImageRasterPhysicalIdentityBenchmarkApp,scenario=post-enabled,samples=1,completed_samples=1,case=guards,filter=smooth,draws=1024,pixel_hash=000000D600000165,guard_pass=true,physical_identity_attempts=1024,physical_identity_hits=1024,physical_identity_fallbacks=0,physical_identity_resamples_avoided=1024,overallPass=true
+
+tuMW_exit_i
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 13s
+7 actionable tasks: 3 executed, 4 up-to-date

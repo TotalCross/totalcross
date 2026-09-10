@@ -1,0 +1,4 @@
+status=success
+duration_seconds=5
+full_log=agent-logs/20260909-210502-jarImageScrollRealWorkloadBenchmark-full.log
+agent_log=agent-logs/20260909-210502-jarImageScrollRealWorkloadBenchmark-agent.log

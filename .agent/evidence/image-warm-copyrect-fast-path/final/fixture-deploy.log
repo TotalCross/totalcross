@@ -1,0 +1,4 @@
+status=success
+duration_seconds=7
+full_log=agent-logs/20260909-210507-deployImageScrollRealWorkloadBenchmarkMacOS-full.log
+agent_log=agent-logs/20260909-210507-deployImageScrollRealWorkloadBenchmarkMacOS-agent.log

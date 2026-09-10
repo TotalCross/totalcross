@@ -23,3 +23,16 @@ SPDX-License-Identifier: LGPL-2.1-only
   `770c0b43258509bc850c93f153f19cd0f2bd6208` — PASS — focused
   `ImageOptimizationSettingsTest`; log:
   `/tmp/image-warm-copyrect-m1-settings-test.log`.
+- `2026-09-10T00:36:32Z` — milestone-3-final-matrix — revision
+  `da2c0ba94` — PASS — corrected 663-JPEG matrix across two resolutions,
+  four target/variant profiles, and three passes; runtime SHA-256
+  `6d2ae5b79c6c886079190657940345b9d55e0502a0af29777b844aac9e2aeab9`;
+  artifacts: `image-warm-copyrect-fast-path/final/`.
+- `2026-09-10T00:36:32Z` — milestone-3-final-warm-micro — revision
+  `da2c0ba94` — PASS — six hash-checked materialized/deferred full and
+  partial cases; artifact:
+  `image-warm-copyrect-fast-path/final/warm-micro.log`.
+- `2026-09-10T00:36:32Z` — milestone-3-direct-copy-smokes — revision
+  `da2c0ba94` — PASS — physical identity, guard, and copyRect fallback/gate
+  smoke coverage; artifacts:
+  `image-warm-copyrect-fast-path/final/{physical-identity-smoke,physical-guards-smoke,copyrect-smoke}.log`.
