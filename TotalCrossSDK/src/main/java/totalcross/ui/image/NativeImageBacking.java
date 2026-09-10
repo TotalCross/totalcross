@@ -217,6 +217,28 @@ final class NativeImageBacking extends ImageBacking {
     return physicalIdentityResamplesAvoidedTest();
   }
 
+  static long physicalIdentityRejectionCountForTest(int reason) {
+    if (reason < 0 || reason > 6) {
+      return 0;
+    }
+    long channel;
+    int lane;
+    if (reason <= 1) {
+      channel = physicalIdentityRejectionAttemptsChannelForTest();
+      lane = reason;
+    } else if (reason <= 3) {
+      channel = physicalIdentityRejectionHitsChannelForTest();
+      lane = reason - 2;
+    } else if (reason <= 5) {
+      channel = physicalIdentityRejectionFallbacksChannelForTest();
+      lane = reason - 4;
+    } else {
+      channel = physicalIdentityRejectionResamplesChannelForTest();
+      lane = 0;
+    }
+    return (channel >>> (lane * 16)) & 0xffffL;
+  }
+
   static long screenUpdateCallsForTest() {
     return screenUpdateCallsTest();
   }

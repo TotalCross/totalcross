@@ -163,7 +163,11 @@ def main(argv):
             f"full_jpeg_decodes={record['full_jpeg_decodes']} "
             f"draw_plan_cache_hits={record['draw_plan_cache_hits']} "
             f"write_pixels_hits={record['write_pixels_hits']} "
-            f"smooth_resample_draws={record['smooth_resample_draws']}"
+            f"smooth_resample_draws={record['smooth_resample_draws']} "
+            f"target_color_converted_bytes={record['target_color_converted_bytes']} "
+            f"physical_variant_bytes={record['physical_variant_bytes']} "
+            f"physical_identity_reject_mapping={record['physical_identity_reject_mapping']} "
+            f"physical_identity_reject_backing={record['physical_identity_reject_backing']}"
         )
     return 0
 
