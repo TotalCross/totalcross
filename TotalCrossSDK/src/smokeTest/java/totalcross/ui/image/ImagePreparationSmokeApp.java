@@ -92,7 +92,7 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
     try {
       if (callbackSeen && screen != null) {
         int before = Image.fullDecodeInvocationCountForTest() + Image.targetedDecodeInvocationCountForTest();
-        screen.drawImage(image, 0, 0, true);
+        screen.copyRect(image, 0, 0, image.getWidth(), image.getHeight(), 0, 0);
         drew = before == Image.fullDecodeInvocationCountForTest() + Image.targetedDecodeInvocationCountForTest();
       }
     } catch (Throwable ignored) {
