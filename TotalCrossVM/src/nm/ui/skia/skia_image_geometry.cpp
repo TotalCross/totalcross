@@ -1063,10 +1063,10 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
                                               explicitClip)) {
         return true;
     }
+#endif
     if (physicalOnly) {
         return false;
     }
-#endif
     if (isTrivialWritePixelsPlan(plan)
         && skia_image_backing_try_write_pixels(canvas, plan->rootHandle, srcLeft, srcTop,
             srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, plan->alphaMask,
