@@ -7,20 +7,20 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Warm image copyRect execution state
 
 - Plan: `.agent/plans/image-warm-copyrect-fast-path-execplan.md`
-- Active milestone: Milestone 1 — startup defaults compatibility fix; Milestone 2 next
+- Active milestone: Milestone 2 — rejection diagnostics
 - Working tree: `/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path`
 - Remote branch after rewrite: `perf/image-scroll-raster-fast-path`
-- Last completed checkpoint: `86f91da7d` rejection and byte accounting fields
-- Current slice: keep startup default masks compile-time safe for native launch
-- Active paths: `ImageOptimizationSettings.java`, `Image.java`, and startup smoke
+- Last completed checkpoint: `bb46392d7` startup policy initialization safety fix
+- Current slice: decode packed native rejection lanes correctly
+- Active paths: `NativeImageBacking.java`, real-workload counters, and benchmark runner
 - Focused validation completed: Python syntax check, `git diff --check`, SDK
   distribution, focused `ImageOptimizationSettingsTest`, smoke compilation,
   and fresh-process startup-default smoke.
 - Evidence: `.agent/evidence/image-warm-copyrect-fast-path.md` and
   `.agent/evidence/image-warm-copyrect-fast-path/{baseline,final}/`
 - Verified remote head before this slice: `7c5f633b83690628d10f1d2e07c420638adf6b8f`.
-- Next action: rerun the 663-JPEG workload from a writable `/private/tmp`
-  worktree and record the dominant rejection reason after this compatibility fix.
+- Next action: rerun the 663-JPEG workload at both resolutions and record the
+  dominant rejection reason after the lane-offset fix.
 - Deferred validation: full cross-platform release matrix remains outside this
   focused macOS image-path change.
 - Recovery: preserve the untracked generated launcher, benchmark log, and

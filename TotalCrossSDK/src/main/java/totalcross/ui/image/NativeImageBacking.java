@@ -236,7 +236,7 @@ final class NativeImageBacking extends ImageBacking {
       channel = physicalIdentityRejectionResamplesChannelForTest();
       lane = 0;
     }
-    return (channel >>> (lane * 16)) & 0xffffL;
+    return (channel >>> (16 + lane * 16)) & 0xffffL;
   }
 
   static long screenUpdateCallsForTest() {
