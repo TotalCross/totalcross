@@ -21,6 +21,9 @@ RESOLUTIONS = ((480, 720, "480x720x24"), (540, 960, "540x960x24"))
 PROFILES = ("disabled", "enabled")
 PREFETCH_PROFILES = ("disabled", "all")
 FIXTURE = "ImageScrollRealWorkloadBenchmarkApp"
+MAX_PREFETCH_COLD_P95_MS = 17
+MAX_PREFETCH_COLD_SLOW_FRAMES = 3
+MAX_PREFETCH_COLD_MATERIALIZATIONS = 3
 
 
 def jpeg_paths(directory):
@@ -56,6 +59,56 @@ def parse_pass_records(log_path):
                 record[key] = value
         records.append(record)
     return records
+
+
+def parse_summary(log_path):
+    summaries = []
+    for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line.startswith("fixture=" + FIXTURE + ",record=summary"):
+            continue
+        record = {}
+        for field in line.split(","):
+            key, separator, value = field.partition("=")
+            if separator:
+                record[key] = value
+        summaries.append(record)
+    return summaries
+
+
+def integer(record, key, run_name):
+    try:
+        return int(record[key])
+    except (KeyError, TypeError, ValueError) as error:
+        raise RuntimeError(f"{run_name} has invalid {key}; see benchmark output") from error
+
+
+def require_record(record, key, expected, run_name):
+    if record.get(key) != str(expected):
+        raise RuntimeError(f"{run_name} {key}={record.get(key)!r}, expected {expected}")
+
+
+def validate_prefetch_record(record, run_name):
+    pass_name = record.get("pass")
+    if pass_name == "cold":
+        require_record(record, "prefetch_request_count", EXPECTED_JPEGS, run_name)
+        require_record(record, "prefetch_ready_count", EXPECTED_JPEGS - 3, run_name)
+        require_record(record, "prefetch_failed_count", 0, run_name)
+        require_record(record, "prefetch_not_prefetchable_count", 3, run_name)
+        require_record(record, "targeted_jpeg_decodes", 0, run_name)
+        require_record(record, "full_jpeg_decodes", 3, run_name)
+        if integer(record, "frame_time_p95_ms", run_name) > MAX_PREFETCH_COLD_P95_MS:
+            raise RuntimeError(f"{run_name} cold p95 exceeds {MAX_PREFETCH_COLD_P95_MS}ms")
+        if integer(record, "frames_ge_34_ms", run_name) > MAX_PREFETCH_COLD_SLOW_FRAMES:
+            raise RuntimeError(f"{run_name} cold frames >=34ms exceed {MAX_PREFETCH_COLD_SLOW_FRAMES}")
+        if integer(record, "image_materializations", run_name) > MAX_PREFETCH_COLD_MATERIALIZATIONS:
+            raise RuntimeError(f"{run_name} cold final materializations exceed {MAX_PREFETCH_COLD_MATERIALIZATIONS}")
+        if integer(record, "native_geometry_materializations", run_name) > MAX_PREFETCH_COLD_MATERIALIZATIONS:
+            raise RuntimeError(f"{run_name} cold native geometry materializations exceed {MAX_PREFETCH_COLD_MATERIALIZATIONS}")
+    else:
+        require_record(record, "targeted_jpeg_decodes", 0, run_name)
+        require_record(record, "full_jpeg_decodes", 0, run_name)
+        require_record(record, "image_materializations", 0, run_name)
+        require_record(record, "native_geometry_materializations", 0, run_name)
 
 
 def main(argv):
@@ -136,6 +189,9 @@ def main(argv):
                     records = parse_pass_records(log_path)
                     if len(records) != 3:
                         raise RuntimeError(f"{run_name} recorded {len(records)} passes; see {log_path}")
+                    summaries = parse_summary(log_path)
+                    if len(summaries) != 1 or summaries[0].get("overallPass") != "true":
+                        raise RuntimeError(f"{run_name} did not report overallPass=true; see {log_path}")
                     for record in records:
                         if record.get("resolution") != f"{width}x{height}":
                             raise RuntimeError(f"{run_name} used unexpected resolution; see {log_path}")
@@ -147,9 +203,29 @@ def main(argv):
                             raise RuntimeError(f"{run_name} used unexpected prefetch profile; see {log_path}")
                         if record.get("image_count") != str(EXPECTED_JPEGS):
                             raise RuntimeError(f"{run_name} used an unexpected corpus; see {log_path}")
+                        if prefetch == "all":
+                            validate_prefetch_record(record, run_name)
+                        else:
+                            require_record(record, "prefetch_request_count", 0, run_name)
+                            require_record(record, "prefetch_ready_count", 0, run_name)
+                            require_record(record, "prefetch_failed_count", 0, run_name)
+                            require_record(record, "prefetch_not_prefetchable_count", 0, run_name)
                         record["screen_spec"] = screen_spec
                         record["run"] = run_name
                         all_records.append(record)
+
+    by_key = {(record["resolution"], record["target_color_profile"],
+               record["variant_cache_profile"], record["prefetch_profile"], record["pass"]): record
+              for record in all_records}
+    for record in all_records:
+        if record["prefetch_profile"] != "all" or record["pass"] not in ("warm", "warm2"):
+            continue
+        baseline = by_key[(record["resolution"], record["target_color_profile"],
+                          record["variant_cache_profile"], "disabled", record["pass"])]
+        prefetch_p95 = integer(record, "frame_time_p95_ms", record["run"])
+        baseline_p95 = integer(baseline, "frame_time_p95_ms", record["run"])
+        if prefetch_p95 * 10 > baseline_p95 * 11:
+            raise RuntimeError(f"{record['run']} warm p95 exceeds disabled baseline by more than 10%")
 
     results_path = output_dir / "results.csv"
     fields = sorted({key for record in all_records for key in record})
@@ -170,6 +246,9 @@ def main(argv):
             f"frame_p95_ms={record['frame_time_p95_ms']} "
             f"targeted_jpeg_decodes={record['targeted_jpeg_decodes']} "
             f"full_jpeg_decodes={record['full_jpeg_decodes']} "
+            f"image_materializations={record['image_materializations']} "
+            f"native_geometry_materializations={record['native_geometry_materializations']} "
+            f"prefetch_native_geometry_materializations={record['prefetch_native_geometry_materializations']} "
             f"draw_plan_cache_hits={record['draw_plan_cache_hits']} "
             f"write_pixels_hits={record['write_pixels_hits']} "
             f"smooth_resample_draws={record['smooth_resample_draws']} "

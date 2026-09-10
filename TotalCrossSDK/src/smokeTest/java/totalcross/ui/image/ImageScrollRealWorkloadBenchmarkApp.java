@@ -41,6 +41,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private long prefetchNotPrefetchableCount;
   private long prefetchBackingLiveBytes;
   private long prefetchBackingPeakBytes;
+  private long prefetchTargetedJpegDecodes;
+  private long prefetchFullJpegDecodes;
+  private long prefetchImageMaterializations;
+  private long prefetchNativeGeometryMaterializations;
   private boolean benchmarkStarted;
   private boolean prefetchComplete;
   private TimerEvent prefetchTimer;
@@ -153,6 +157,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     prefetchNotPrefetchableCount = ImagePreparation.notPrefetchableCountForTest();
     prefetchBackingLiveBytes = NativeImageBacking.backingBytesLiveForTest();
     prefetchBackingPeakBytes = NativeImageBacking.backingBytesPeakLiveForTest();
+    prefetchTargetedJpegDecodes = Image.targetedDecodeInvocationCountForTest();
+    prefetchFullJpegDecodes = Image.fullDecodeInvocationCountForTest();
+    prefetchImageMaterializations = Image.materializationCountForTest();
+    prefetchNativeGeometryMaterializations = Image.nativeGeometryMaterializationCountForTest();
   }
 
   private void finishBenchmark(boolean overallPass, String error) {
@@ -172,6 +180,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",prefetch_not_prefetchable_count=" + prefetchNotPrefetchableCount
         + ",prefetch_backing_live_bytes=" + prefetchBackingLiveBytes
         + ",prefetch_backing_peak_bytes=" + prefetchBackingPeakBytes
+        + ",prefetch_targeted_jpeg_decodes=" + prefetchTargetedJpegDecodes
+        + ",prefetch_full_jpeg_decodes=" + prefetchFullJpegDecodes
+        + ",prefetch_image_materializations=" + prefetchImageMaterializations
+        + ",prefetch_native_geometry_materializations=" + prefetchNativeGeometryMaterializations
         + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error);
     System.out.println(summary);
@@ -309,6 +321,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",prefetch_not_prefetchable_count=" + prefetchNotPrefetchableCount
         + ",prefetch_backing_live_bytes=" + prefetchBackingLiveBytes
         + ",prefetch_backing_peak_bytes=" + prefetchBackingPeakBytes
+        + ",prefetch_targeted_jpeg_decodes=" + prefetchTargetedJpegDecodes
+        + ",prefetch_full_jpeg_decodes=" + prefetchFullJpegDecodes
+        + ",prefetch_image_materializations=" + prefetchImageMaterializations
+        + ",prefetch_native_geometry_materializations=" + prefetchNativeGeometryMaterializations
         + ",pass=" + result.name + ",direction=" + (result.forward ? "top-to-bottom" : "bottom-to-top")
         + ",scroll_start=" + result.start + ",scroll_end=" + result.end
         + ",scroll_max=" + result.maximum + ",scroll_distance=" + (result.maximum - result.minimum)
