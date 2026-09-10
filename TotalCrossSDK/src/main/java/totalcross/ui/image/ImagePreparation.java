@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import totalcross.ui.MainWindow;
 
-/** Internal single-worker coordinator for detached display preparation. */
+/** Internal serialized coordinator for detached display preparation. */
 final class ImagePreparation {
   static final int READY = 0;
   static final int FAILED = 1;
@@ -16,8 +16,8 @@ final class ImagePreparation {
 
   private static final Object LOCK = new Object();
   private static final ArrayList<Entry> entries = new ArrayList<Entry>();
-  private static final ArrayList<Work> workQueue = new ArrayList<Work>();
-  private static Thread worker;
+  private static final ArrayList<Entry> pending = new ArrayList<Entry>();
+  private static Entry activeEntry;
   private static volatile Runnable beforeAdoptionHookForTest;
   private static volatile boolean runUiInlineForTest;
   private static long requestCount;
@@ -104,21 +104,16 @@ final class ImagePreparation {
       return;
     }
     Entry entry = null;
-    boolean enqueue = false;
+    boolean schedule = false;
     synchronized (LOCK) {
       entry = findEntry(request);
       if (entry == null) {
         entry = new Entry(request, request.requirement);
         entries.add(entry);
         entry.callbacks.add(onComplete);
-        if (request.alreadyDecoded) {
-          entry.state = State.ADOPTING;
-          enqueue = true;
-        } else {
-          entry.state = State.QUEUED;
-          workQueue.add(new Work(entry));
-          ensureWorkerLocked();
-        }
+        entry.state = State.QUEUED;
+        pending.add(entry);
+        schedule = true;
       } else if (entry.state == State.QUEUED || entry.state == State.DECODING
           || entry.state == State.ADOPTING) {
         if (request.requirement > entry.requirement) {
@@ -127,13 +122,8 @@ final class ImagePreparation {
         entry.callbacks.add(onComplete);
       }
     }
-    if (enqueue) {
-      postUi(new Runnable() {
-        @Override
-        public void run() {
-          adoptAlreadyDecoded(request);
-        }
-      });
+    if (schedule) {
+      scheduleNext();
     }
   }
 
@@ -142,63 +132,60 @@ final class ImagePreparation {
       Entry entry = entries.get(i);
       if (entry.request.image == request.image && entry.request.pipeline == request.pipeline
           && entry.request.scaleBits == request.scaleBits
-          && entry.request.sourceGeneration == request.sourceGeneration) {
+          && entry.request.sourceContentIdentity == request.sourceContentIdentity) {
         return entry;
       }
     }
     return null;
   }
 
-  private static void ensureWorkerLocked() {
-    if (worker != null) {
+  private static void scheduleNext() {
+    final Entry entry;
+    final boolean alreadyDecoded;
+    synchronized (LOCK) {
+      if (activeEntry != null || pending.isEmpty()) {
+        return;
+      }
+      entry = pending.remove(0);
+      activeEntry = entry;
+      alreadyDecoded = entry.request.alreadyDecoded;
+      entry.state = alreadyDecoded ? State.ADOPTING : State.DECODING;
+    }
+    if (alreadyDecoded) {
+      try {
+        postUi(new Runnable() {
+          @Override
+          public void run() {
+            adoptAlreadyDecoded(entry);
+          }
+        });
+      } catch (Throwable failure) {
+        finish(entry, FAILED);
+      }
       return;
     }
-    worker = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        workerLoop();
-      }
-    });
-    worker.start();
-  }
-
-  private static void workerLoop() {
-    while (true) {
-      Work work = null;
-      synchronized (LOCK) {
-        if (workQueue.isEmpty()) {
-          worker = null;
-          return;
+    try {
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          decode(entry);
         }
-        work = workQueue.remove(0);
-        work.entry.state = State.DECODING;
-      }
-      decode(work.entry);
-    }
-  }
-
-  private static void waitForAdoption(Entry entry) {
-    while (true) {
-      synchronized (LOCK) {
-        if (!entry.awaitingAdoption) {
-          return;
-        }
-      }
-      Thread.yield();
+      }).start();
+    } catch (Throwable failure) {
+      finish(entry, FAILED);
     }
   }
 
   private static void decode(final Entry entry) {
-    JavaResult javaResult = null;
-    long nativeHandle = 0;
+    DetachedCandidate candidate = null;
     try {
       if (entry.request.nativeAvailable) {
-        nativeHandle = entry.request.image.createNativePreparationHandle(entry.request);
+        candidate = DetachedCandidate.fromNativeHandle(
+            entry.request.image.createNativePreparationHandle(entry.request));
       } else {
-        javaResult = entry.request.image.createJavaPreparationResult(entry.request);
+        candidate = DetachedCandidate.fromJavaResult(
+            entry.request.image.createJavaPreparationResult(entry.request));
       }
-      final JavaResult decoded = javaResult;
-      final long decodedNativeHandle = nativeHandle;
       Runnable adoptionHook = beforeAdoptionHookForTest;
       beforeAdoptionHookForTest = null;
       if (adoptionHook != null) {
@@ -206,76 +193,52 @@ final class ImagePreparation {
       }
       synchronized (LOCK) {
         if (entry.state != State.DECODING) {
-          if (decodedNativeHandle != 0) {
-            NativeImageBacking.releaseDetachedNative(decodedNativeHandle);
-          }
+          candidate.release();
           return;
         }
         entry.state = State.ADOPTING;
-        entry.awaitingAdoption = true;
       }
+      final DetachedCandidate detached = candidate;
       postUi(new Runnable() {
         @Override
         public void run() {
-          adopt(entry, decoded, decodedNativeHandle);
+          adopt(entry, detached);
         }
       });
-      waitForAdoption(entry);
     } catch (Throwable failure) {
-      if (nativeHandle != 0) {
-        NativeImageBacking.releaseDetachedNative(nativeHandle);
+      if (candidate != null) {
+        candidate.release();
       }
       finish(entry, FAILED);
     }
   }
 
-  private static void adoptAlreadyDecoded(final Request request) {
-    Entry entry;
-    synchronized (LOCK) {
-      entry = findEntry(request);
-    }
-    if (entry == null) {
-      return;
-    }
+  private static void adoptAlreadyDecoded(final Entry entry) {
     try {
-      if (request.image.sourceDecodeGenerationForPreparation(request) != request.sourceGeneration) {
-        finish(entry, FAILED);
-        return;
-      }
-      request.image.finishPreparation(request, entry.requirement);
+      entry.request.image.finishPreparation(entry.request, entry.requirement);
       finish(entry, READY);
     } catch (Throwable failure) {
       finish(entry, FAILED);
     }
   }
 
-  private static void adopt(final Entry entry, JavaResult javaResult, long nativeHandle) {
+  private static void adopt(final Entry entry, DetachedCandidate candidate) {
     try {
-      if (entry.request.image.sourceDecodeGenerationForPreparation(entry.request)
-          != entry.request.sourceGeneration) {
-        if (nativeHandle != 0) {
-          NativeImageBacking.releaseDetachedNative(nativeHandle);
-        }
-        finish(entry, FAILED);
-        return;
-      }
       if (!entry.request.image.isPreparationCurrent(entry.request)) {
-        if (nativeHandle != 0) {
-          NativeImageBacking.releaseDetachedNative(nativeHandle);
-        }
+        candidate.release();
         finish(entry, FAILED);
         return;
       }
-      if (javaResult != null) {
-        entry.request.image.adoptJavaPreparationResult(entry.request, javaResult);
+      if (candidate.javaResult != null) {
+        entry.request.image.adoptJavaPreparationResult(entry.request, candidate.javaResult);
+        candidate.javaResult = null;
       } else {
-        long handle = nativeHandle;
-        nativeHandle = 0;
-        entry.request.image.adoptNativePreparationHandle(entry.request, handle);
+        entry.request.image.adoptNativePreparationHandle(entry.request, candidate.takeNativeHandle());
       }
       entry.request.image.finishPreparation(entry.request, entry.requirement);
       finish(entry, READY);
     } catch (Throwable failure) {
+      candidate.release();
       finish(entry, FAILED);
     }
   }
@@ -288,7 +251,9 @@ final class ImagePreparation {
       }
       entry.state = state == READY ? State.READY : State.FAILED;
       entries.remove(entry);
-      entry.awaitingAdoption = false;
+      if (activeEntry == entry) {
+        activeEntry = null;
+      }
       callbacks = new ArrayList<Runnable>(entry.callbacks);
       entry.callbacks.clear();
       recordOutcomeLocked(state == READY ? READY : FAILED, callbacks.size());
@@ -296,6 +261,7 @@ final class ImagePreparation {
     for (int i = 0; i < callbacks.size(); i++) {
       postCompletion(callbacks.get(i));
     }
+    scheduleNext();
   }
 
   private static void recordOutcome(int state, long count) {
@@ -330,14 +296,6 @@ final class ImagePreparation {
     }
   }
 
-  private static final class Work {
-    final Entry entry;
-
-    Work(Entry entry) {
-      this.entry = entry;
-    }
-  }
-
   static final class JavaResult {
     final ImageBacking backing;
     final int width;
@@ -352,11 +310,44 @@ final class ImagePreparation {
     }
   }
 
+  private static final class DetachedCandidate {
+    JavaResult javaResult;
+    long nativeHandle;
+
+    static DetachedCandidate fromJavaResult(JavaResult result) {
+      DetachedCandidate candidate = new DetachedCandidate();
+      candidate.javaResult = result;
+      return candidate;
+    }
+
+    static DetachedCandidate fromNativeHandle(long handle) {
+      DetachedCandidate candidate = new DetachedCandidate();
+      candidate.nativeHandle = handle;
+      return candidate;
+    }
+
+    long takeNativeHandle() {
+      long handle = nativeHandle;
+      nativeHandle = 0;
+      return handle;
+    }
+
+    void release() {
+      if (javaResult != null && javaResult.backing instanceof NativeImageBacking) {
+        ((NativeImageBacking) javaResult.backing).release();
+      }
+      javaResult = null;
+      if (nativeHandle != 0) {
+        NativeImageBacking.releaseDetachedNative(nativeHandle);
+        nativeHandle = 0;
+      }
+    }
+  }
+
   private static final class Entry {
     final Request request;
     final ArrayList<Runnable> callbacks = new ArrayList<Runnable>();
     int requirement;
-    boolean awaitingAdoption;
     int state = State.QUEUED;
 
     Entry(Request request, int requirement) {
@@ -382,7 +373,7 @@ final class ImagePreparation {
     final EncodedImageSource source;
     final double destinationScale;
     final long scaleBits;
-    final long sourceGeneration;
+    final long sourceContentIdentity;
     final int targetWidth;
     final int targetHeight;
     final int denominator;
@@ -393,14 +384,14 @@ final class ImagePreparation {
     int status;
 
     Request(Image image, ImagePipeline pipeline, EncodedImageSource source, double destinationScale,
-        long scaleBits, long sourceGeneration, int targetWidth, int targetHeight, int denominator,
+        long scaleBits, long sourceContentIdentity, int targetWidth, int targetHeight, int denominator,
         boolean alreadyDecoded, boolean nativeAvailable, int requirement, int optimizationMask, int status) {
       this.image = image;
       this.pipeline = pipeline;
       this.source = source;
       this.destinationScale = destinationScale;
       this.scaleBits = scaleBits;
-      this.sourceGeneration = sourceGeneration;
+      this.sourceContentIdentity = sourceContentIdentity;
       this.targetWidth = targetWidth;
       this.targetHeight = targetHeight;
       this.denominator = denominator;
