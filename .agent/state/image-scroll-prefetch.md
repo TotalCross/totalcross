@@ -10,16 +10,16 @@ SPDX-License-Identifier: LGPL-2.1-only
 - parent_head: `702139cedfad946cde133f8bfaeb4ec4ad239897`
 - active_milestone: complete — asynchronous shared-source prefetch closeout
 - active_slice: continuation pipeline, shared-source lifecycle tests, and
-  definitive 16-process matrix complete; closeout docs pending publication
-- last_commit: `600550cc6`
+  definitive 16-process matrix committed and published
+- last_commit: `c4c6311cb`
 - active_paths: `.agent/state/image-scroll-prefetch.md`,
   `.agent/evidence/image-scroll-prefetch.md`,
   `scripts/run-image-scroll-real-workload-benchmark.py`,
   `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
   `TotalCrossSDK/src/main/java/totalcross/ui/`,
   focused image/ScrollContainer smoke fixtures
-- next_action: commit closeout docs/evidence, push normally, then verify local
-  and `origin/perf/image-scroll-prefetch` heads are identical
+- next_action: none; local and `origin/perf/image-scroll-prefetch` heads are
+  synchronized after the closeout publication
 - focused_validation: focused Java regressions including shared DRAW/COPY
   source lifecycles passed; Release SDK dist passed; Release macOS tcvm build
   passed; definitive 16-process/48-record matrix passed; ImagePreparation
