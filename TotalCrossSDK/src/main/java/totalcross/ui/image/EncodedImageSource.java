@@ -10,6 +10,7 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 import totalcross.Launcher;
 import totalcross.io.File;
+import totalcross.io.FileNotFoundException;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 
@@ -278,6 +279,8 @@ final class EncodedImageSource extends ImageSource {
     if (input == null) {
       try (File file = new File(path, File.READ_ONLY)) {
         input = file.read();
+      } catch (FileNotFoundException e) {
+        throw new ImageException("ERROR: can't open image file " + path);
       }
     }
     if (input == null) {
