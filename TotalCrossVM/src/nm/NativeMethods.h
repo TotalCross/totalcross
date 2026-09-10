@@ -190,6 +190,7 @@ TC_API void tuiNIB_createFromArgbPixels_Iii(NMParams p);
 TC_API void tuiNIB_snapshotNative(NMParams p);
 TC_API void tuiNIB_failNextSnapshotNative(NMParams p);
 TC_API void tuiNIB_failNextPromotionNative(NMParams p);
+TC_API void tuiNIB_failNextAdoptionNative(NMParams p);
 TC_API void tuiNIB_makeMutableNative(NMParams p);
 TC_API void tuiNIB_mutateForTestNative(NMParams p);
 TC_API void tuiNIB_currentFormatNative(NMParams p);

@@ -29,6 +29,7 @@ int64_t nextHandle = 1;
 int32 nextSurfaceAlias = std::numeric_limits<int32>::min() + 1;
 bool failNextSnapshotAllocationForTest;
 bool failNextPromotionAllocationForTest;
+bool failNextDetachedAdoptionForTest;
 bool backingAccountingForTest;
 uint64_t backingRecordsCreatedForTest;
 uint64_t backingRecordsReleasedForTest;
@@ -655,10 +656,6 @@ SkImageInfo rasterInfo(int32 width, int32 height, ImageBackingFormat format) {
 }
 }
 
-void releaseOwnedPixels(const void* pixels, void*) {
-    delete[] static_cast<const uint8_t*>(pixels);
-}
-
 void releaseMallocPixels(const void* pixels, void*) {
     std::free(const_cast<void*>(pixels));
 }
@@ -684,7 +681,7 @@ static int64_t createFromRgbaPixelsImpl(void* pixels, int32 width, int32 height,
     const size_t rowBytes = static_cast<size_t>(width) * 4;
     const size_t byteCount = static_cast<size_t>(pixelCount) * 4;
     try {
-        sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseOwnedPixels, nullptr);
+        sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseMallocPixels, nullptr);
         sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height), data, rowBytes);
         if (!image) {
             return 0;
@@ -1138,6 +1135,10 @@ int64_t skia_image_backing_adopt_detached(int64_t handle) {
         return 0;
     }
     std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing(raw);
+    if (failNextDetachedAdoptionForTest) {
+        failNextDetachedAdoptionForTest = false;
+        return 0;
+    }
     return registerBackingRecord(std::move(backing));
 }
 
@@ -1219,6 +1220,10 @@ void skia_image_backing_fail_next_snapshot_for_test(void) {
 
 void skia_image_backing_fail_next_promotion_for_test(void) {
     failNextPromotionAllocationForTest = true;
+}
+
+void skia_image_backing_fail_next_adoption_for_test(void) {
+    failNextDetachedAdoptionForTest = true;
 }
 
 int skia_image_backing_make_mutable(int64_t handle) {

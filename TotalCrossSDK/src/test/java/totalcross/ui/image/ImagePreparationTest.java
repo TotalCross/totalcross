@@ -6,14 +6,20 @@ package totalcross.ui.image;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
+
+import totalcross.ui.MainWindow;
 
 class ImagePreparationTest {
   @Test
@@ -37,6 +43,74 @@ class ImagePreparationTest {
     assertEquals(1, source.decodedGeneration());
     assertNotNull(source.decodedBackingForReuse(first.denominator));
     assertSame(first.pipeline, image.pipelineForSmoke());
+  }
+
+  @Test
+  void drawReadyLeavesFinalRasterDeferred() throws Exception {
+    Image image = new Image(jpeg(64, 48)).getSmoothScaledInstance(16, 12);
+    ImagePreparation.Request request = image.createPreparationRequest(1, false,
+        ImageDrawingBridge.DRAW_READY);
+    ImagePreparationCandidate candidate = image.createPreparationCandidate(request);
+
+    image.adoptPreparationCandidate(request, candidate);
+    image.finishPreparation(request, ImageDrawingBridge.DRAW_READY);
+
+    assertNull(image.cachedMaterializedForDrawing(1));
+    assertSame(request.pipeline, image.pipelineForSmoke());
+  }
+
+  @Test
+  void copyReadyCachesFinalRasterAndRepeatedRequestDoesNoWork() throws Exception {
+    Image image = new Image(jpeg(64, 48)).getSmoothScaledInstance(16, 12);
+    ImagePreparation.Request request = image.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    ImagePreparationCandidate candidate = image.createPreparationCandidate(request);
+
+    image.adoptPreparationCandidate(request, candidate);
+    image.finishPreparation(request, ImageDrawingBridge.COPY_READY);
+    int materializations = Image.materializationCountForTest();
+
+    assertNotNull(image.cachedMaterializedForDrawing(1));
+    ImagePreparation.Request repeated = image.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    assertEquals(ImagePreparation.READY, repeated.status);
+    assertEquals(materializations, Image.materializationCountForTest());
+  }
+
+  @Test
+  void terminalFailureIsRemovedAndSameKeyCanRetry() throws Exception {
+    MainWindow.resetPreviewState();
+    ImagePreparation.resetAccountingForTest();
+    Image image = new Image(jpeg(512, 384)).getSmoothScaledInstance(128, 96);
+    Image.failNextTargetedDecodeInfrastructureForTest();
+    CountDownLatch failed = new CountDownLatch(1);
+
+    ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, failed::countDown);
+    assertTrue(failed.await(5, TimeUnit.SECONDS));
+    assertEquals(0, ImagePreparation.activeEntryCountForTest());
+    assertEquals(1, ImagePreparation.failedCountForTest());
+
+    CountDownLatch retried = new CountDownLatch(1);
+    ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, retried::countDown);
+    assertTrue(retried.await(5, TimeUnit.SECONDS));
+    assertEquals(0, ImagePreparation.activeEntryCountForTest());
+    assertEquals(1, ImagePreparation.readyCountForTest());
+  }
+
+  @Test
+  void inFlightDrawRequestPromotesToCopyReady() throws Exception {
+    MainWindow.resetPreviewState();
+    ImagePreparation.resetAccountingForTest();
+    Image image = new Image(jpeg(1024, 768)).getSmoothScaledInstance(256, 192);
+    CountDownLatch completed = new CountDownLatch(2);
+
+    ImagePreparation.request(image, 1, ImageDrawingBridge.DRAW_READY, completed::countDown);
+    ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, completed::countDown);
+
+    assertTrue(completed.await(5, TimeUnit.SECONDS));
+    assertEquals(0, ImagePreparation.activeEntryCountForTest());
+    assertNotNull(image.cachedMaterializedForDrawing(1));
+    assertEquals(2, ImagePreparation.readyCountForTest());
   }
 
   @Test

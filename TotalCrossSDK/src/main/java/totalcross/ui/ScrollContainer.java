@@ -126,12 +126,12 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
 
   /** Asynchronously prepares every image descendant of the scrolling content. */
   public void prepareForDisplay(final Runnable onComplete) {
-    final double destinationScale = Graphics.getMainWindowContentScale();
-    final long generation = displayPreparationGeneration;
-    final long scaleBits = Double.doubleToLongBits(destinationScale);
     Runnable request = new Runnable() {
       @Override
       public void run() {
+        double destinationScale = Graphics.getMainWindowContentScale();
+        long generation = displayPreparationGeneration;
+        long scaleBits = Double.doubleToLongBits(destinationScale);
         DisplayPreparationBatch active = displayPreparationBatch;
         if (active != null && !active.completed && active.generation == generation
             && active.scaleBits == scaleBits) {
@@ -150,6 +150,19 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     } else {
       mainWindow.runOnMainThread(request, false);
     }
+  }
+
+  void invalidateDisplayPreparation() {
+    displayPreparationGeneration++;
+    DisplayPreparationBatch active = displayPreparationBatch;
+    displayPreparationBatch = null;
+    if (active != null) {
+      active.invalidate();
+    }
+  }
+
+  long displayPreparationGenerationForTest() {
+    return displayPreparationGeneration;
   }
 
   private final class DisplayPreparationBatch {
@@ -183,9 +196,9 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       bag.prepareForDisplay(new DisplayPreparationContext(destinationScale, generation),
           new DisplayPreparationSink() {
             @Override
-            public void request(Image image) {
+            public void request(Image image, int requirement) {
               pending++;
-              ImageDrawingBridge.prepareForDisplay(image, destinationScale, new Runnable() {
+              ImageDrawingBridge.prepareForDisplay(image, destinationScale, requirement, new Runnable() {
                 @Override
                 public void run() {
                   completeOne();
@@ -209,13 +222,18 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     }
 
     void completeBatch() {
-      if (completed || displayPreparationBatch != this) {
+      if (completed || displayPreparationBatch != this || generation != displayPreparationGeneration) {
         return;
       }
       completed = true;
       for (int i = 0; i < completions.size(); i++) {
         completions.get(i).run();
       }
+      completions.clear();
+    }
+
+    void invalidate() {
+      completed = true;
       completions.clear();
     }
   }
@@ -542,7 +560,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   /** Adds a child control to the bag container. */
   @Override
   public void add(Control control) {
-    displayPreparationGeneration++;
+    invalidateDisplayPreparation();
     changed = true;
     if(control.floating)
     	bag0.add(control);
@@ -560,14 +578,14 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
    */
   @Override
   public void remove(Control control) {
-    displayPreparationGeneration++;
+    invalidateDisplayPreparation();
     changed = true;
     bag.remove(control);
   }
 
   @Override
   protected void onBoundsChanged(boolean screenChanged) {
-    displayPreparationGeneration++;
+    invalidateDisplayPreparation();
     bag0.setRect(LEFT, TOP, FILL, FILL, null, screenChanged);
     bagSetRect(contentInsets.left - lastH, contentInsets.top - lastV, FILL, FILL, screenChanged);
   }
@@ -634,7 +652,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
 
   /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
   public void resize(int maxX, int maxY) {
-    displayPreparationGeneration++;
+    invalidateDisplayPreparation();
     int oldH = sbH == null ? 0 : sbH.value;
     int oldV = sbV == null ? 0 : sbV.value;
     bagSetRect(contentInsets.left - oldH, contentInsets.top - oldV, maxX, maxY, false);

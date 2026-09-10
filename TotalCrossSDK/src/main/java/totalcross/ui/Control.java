@@ -432,6 +432,14 @@ public class Control extends GfxSurface {
   void prepareForDisplay(DisplayPreparationContext context, DisplayPreparationSink sink) {
   }
 
+  void invalidateDisplayPreparationAncestors() {
+    for (Control control = parent; control != null; control = control.parent) {
+      if (control instanceof ScrollContainer) {
+        ((ScrollContainer) control).invalidateDisplayPreparation();
+      }
+    }
+  }
+
   private void takeScreenShot(int nr) {
     try {
       if (nr == 1) {

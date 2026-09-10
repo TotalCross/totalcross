@@ -341,6 +341,13 @@ final class ImagePipeline {
     return null;
   }
 
+  boolean hasCachedDrawPlan(long scaleBits, long sourceDecodeGeneration) {
+    return (cachedDrawPlan1 != null && cachedDrawScale1Bits == scaleBits
+        && cachedDrawGeneration1 == sourceDecodeGeneration)
+        || (cachedDrawPlan2 != null && cachedDrawScale2Bits == scaleBits
+            && cachedDrawGeneration2 == sourceDecodeGeneration);
+  }
+
   void cacheDrawPlan(long scaleBits, ImageDrawPlan plan) {
     long use = ++cachedDrawUseCounter;
     if (cachedDrawPlan1 != null && cachedDrawScale1Bits == scaleBits) {
@@ -381,6 +388,13 @@ final class ImagePipeline {
       return cachedVariant2;
     }
     return null;
+  }
+
+  boolean hasCachedMaterializedVariant(long scaleBits, long sourceDecodeGeneration) {
+    return (cachedVariant1 != null && cachedScale1Bits == scaleBits
+        && cachedVariantGeneration1 == sourceDecodeGeneration)
+        || (cachedVariant2 != null && cachedScale2Bits == scaleBits
+            && cachedVariantGeneration2 == sourceDecodeGeneration);
   }
 
   /** Caches a materialized variant on this node for later prefix reuse. */

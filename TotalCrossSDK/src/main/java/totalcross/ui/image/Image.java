@@ -91,6 +91,7 @@ public class Image extends GfxSurface {
   static int targetedDecodeRequestWidthForTest;
   static int targetedDecodeRequestHeightForTest;
   static int targetedDecodeDenominatorForTest;
+  static int detachedDecodeOptimizationMaskForTest;
   static int targetedDecodeWidthForTest;
   static int targetedDecodeHeightForTest;
   static int nativeGeometryMaterializationCountForTest;
@@ -193,6 +194,10 @@ public class Image extends GfxSurface {
     return targetedDecodeDenominatorForTest;
   }
 
+  static int detachedDecodeOptimizationMaskForTest() {
+    return detachedDecodeOptimizationMaskForTest;
+  }
+
   static void resetImageOperationAccountingForTest() {
     setDiagnosticAccountingForTest(true);
     clearImageOperationAccountingCountersForTest();
@@ -236,6 +241,7 @@ public class Image extends GfxSurface {
     targetedDecodeRequestWidthForTest = 0;
     targetedDecodeRequestHeightForTest = 0;
     targetedDecodeDenominatorForTest = 0;
+    detachedDecodeOptimizationMaskForTest = 0;
     targetedDecodeWidthForTest = 0;
     targetedDecodeHeightForTest = 0;
     targetedDecodeInitializationFailureForTest = false;
@@ -907,32 +913,40 @@ public class Image extends GfxSurface {
   }
 
   ImagePreparation.Request createPreparationRequest(double destinationScale) throws ImageException {
-    return createPreparationRequest(destinationScale, !Settings.onJavaSE);
+    return createPreparationRequest(destinationScale, !Settings.onJavaSE, ImageDrawingBridge.DRAW_READY);
   }
 
   ImagePreparation.Request createPreparationRequest(double destinationScale, boolean nativeAvailable)
       throws ImageException {
+    return createPreparationRequest(destinationScale, nativeAvailable, ImageDrawingBridge.DRAW_READY);
+  }
+
+  ImagePreparation.Request createPreparationRequest(double destinationScale, boolean nativeAvailable,
+      int requirement) throws ImageException {
     if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
       throw new ImageException("Image destination scale must be finite and positive.");
     }
+    if (requirement != ImageDrawingBridge.DRAW_READY && requirement != ImageDrawingBridge.COPY_READY) {
+      throw new IllegalArgumentException("Invalid image preparation requirement");
+    }
+    int optimizationMask = (int) ImageOptimizationSettings.effectiveMask();
     ImagePipeline deferred = pipeline;
     if (deferred == null) {
       return new ImagePreparation.Request(this, null, null, destinationScale,
           Double.doubleToLongBits(destinationScale), 0, 0, 0, 1, true, nativeAvailable,
-          ImagePreparation.READY);
+          requirement, optimizationMask, ImagePreparation.READY);
     }
     if (!(deferred.root() instanceof EncodedImageSource)
         || deferred.decodePolicy().kind() != ImageDecodePolicy.TARGET_DECODE) {
       return new ImagePreparation.Request(this, deferred, null, destinationScale,
           Double.doubleToLongBits(destinationScale), 0, 0, 0, 1, false, nativeAvailable,
-          ImagePreparation.NOT_PREFETCHABLE);
+          requirement, optimizationMask, ImagePreparation.NOT_PREFETCHABLE);
     }
     EncodedImageSource source = (EncodedImageSource) deferred.root();
     if (source.getFormat() != ImageEncodedStructure.Format.JPEG) {
       return new ImagePreparation.Request(this, deferred, source, destinationScale,
           Double.doubleToLongBits(destinationScale), source.decodedGeneration(), 0, 0, 1, false,
-          nativeAvailable,
-          ImagePreparation.NOT_PREFETCHABLE);
+          nativeAvailable, requirement, optimizationMask, ImagePreparation.NOT_PREFETCHABLE);
     }
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
     int targetWidth = scaledDimensionAllowingZero(deferred.logicalWidth(), effectiveScale);
@@ -940,9 +954,13 @@ public class Image extends GfxSurface {
     int denominator = ImageDecodeRequirement.choose(source, deferred, targetWidth, targetHeight);
     long sourceGeneration = source.decodedGeneration();
     boolean alreadyDecoded = source.decodedBackingForReuse(denominator) != null;
-    return new ImagePreparation.Request(this, deferred, source, destinationScale,
+    ImagePreparation.Request request = new ImagePreparation.Request(this, deferred, source, destinationScale,
         Double.doubleToLongBits(destinationScale), sourceGeneration, targetWidth, targetHeight,
-        denominator, alreadyDecoded, nativeAvailable, -1);
+        denominator, alreadyDecoded, nativeAvailable, requirement, optimizationMask, -1);
+    if (isPreparationReady(request)) {
+      request.status = ImagePreparation.READY;
+    }
+    return request;
   }
 
   ImagePreparationCandidate createPreparationCandidate(ImagePreparation.Request request)
@@ -963,11 +981,15 @@ public class Image extends GfxSurface {
 
   long createNativePreparationHandle(ImagePreparation.Request request) throws ImageException {
     return decodeEncodedSourceCandidateHandle(request.source, request.targetWidth, request.targetHeight,
-        request.denominator);
+        request.denominator, request.optimizationMask);
   }
 
   long sourceDecodeGenerationForPreparation(ImagePreparation.Request request) {
     return request.source == null ? request.sourceGeneration : request.source.decodedGeneration();
+  }
+
+  boolean isPreparationCurrent(ImagePreparation.Request request) {
+    return pipeline == request.pipeline && request.source != null && request.source == pipeline.root();
   }
 
   void adoptPreparationCandidate(ImagePreparation.Request request, ImagePreparationCandidate candidate)
@@ -1006,10 +1028,30 @@ public class Image extends GfxSurface {
   }
 
   void finishPreparation(ImagePreparation.Request request) throws ImageException {
+    finishPreparation(request, ImageDrawingBridge.DRAW_READY);
+  }
+
+  void finishPreparation(ImagePreparation.Request request, int requirement) throws ImageException {
     if (pipeline != request.pipeline) {
       throw new ImageException("Image preparation request is stale");
     }
-    drawPlanForDrawing(request.destinationScale);
+    if (requirement == ImageDrawingBridge.COPY_READY) {
+      resolveForDrawing(request.destinationScale);
+    } else {
+      drawPlanForDrawing(request.destinationScale);
+    }
+  }
+
+  boolean isPreparationReady(ImagePreparation.Request request) {
+    if (pipeline == null || pipeline != request.pipeline) {
+      return pipeline == request.pipeline;
+    }
+    double effectiveScale = pipeline.hasGeometricNode() ? request.destinationScale : 1;
+    long scaleBits = Double.doubleToLongBits(effectiveScale);
+    long generation = sourceDecodeGeneration(pipeline);
+    return request.requirement == ImageDrawingBridge.COPY_READY
+        ? pipeline.hasCachedMaterializedVariant(scaleBits, generation)
+        : pipeline.hasCachedDrawPlan(scaleBits, generation);
   }
 
   /** Test-only representation probe that does not expose the native handle. */
@@ -1513,7 +1555,7 @@ public class Image extends GfxSurface {
 
   @ReplacedByNativeOnDeploy
   private static long decodeEncodedSourceCandidateHandle(EncodedImageSource source,
-      int targetWidth, int targetHeight, int denominator) throws ImageException {
+      int targetWidth, int targetHeight, int denominator, int optimizationMask) throws ImageException {
     throw new ImageException("Native image preparation is unavailable");
   }
 

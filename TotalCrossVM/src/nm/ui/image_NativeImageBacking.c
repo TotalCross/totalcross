@@ -251,6 +251,14 @@ TC_API void tuiNIB_failNextPromotionNative(NMParams p) // totalcross/ui/image/Na
    UNUSED(p);
 }
 
+TC_API void tuiNIB_failNextAdoptionNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static void failNextAdoptionNative();
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_fail_next_adoption_for_test();
+#endif
+   UNUSED(p);
+}
+
 TC_API void tuiNIB_makeMutableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private boolean makeMutableNative();
 {
 #if TC_RENDERER_SKIA

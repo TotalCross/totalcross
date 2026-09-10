@@ -164,6 +164,7 @@ totalcross/ui/image/NativeImageBacking|native private static long createFromArgb
 totalcross/ui/image/NativeImageBacking|native private long snapshotNative();
 totalcross/ui/image/NativeImageBacking|native private static void failNextSnapshotNative();
 totalcross/ui/image/NativeImageBacking|native private static void failNextPromotionNative();
+totalcross/ui/image/NativeImageBacking|native private static void failNextAdoptionNative();
 totalcross/ui/image/NativeImageBacking|native private boolean makeMutableNative();
 totalcross/ui/image/NativeImageBacking|native private boolean mutateForTestNative();
 totalcross/ui/image/NativeImageBacking|native private int currentFormatNative();

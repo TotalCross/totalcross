@@ -15,6 +15,7 @@ typedef struct {
    int32* targetedDecodeDenominator;
    int32* targetedDecodeWidth;
    int32* targetedDecodeHeight;
+   int32* detachedDecodeOptimizationMask;
    int32* fullDecodeInvocationCount;
    int32* nativeGeometryMaterializationCount;
    int32* nativeColorReadbackCount;
@@ -41,6 +42,7 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
    imageTestAccountingState.targetedDecodeDenominator = null;
    imageTestAccountingState.targetedDecodeWidth = null;
    imageTestAccountingState.targetedDecodeHeight = null;
+   imageTestAccountingState.detachedDecodeOptimizationMask = null;
    imageTestAccountingState.fullDecodeInvocationCount = null;
    imageTestAccountingState.nativeGeometryMaterializationCount = null;
    imageTestAccountingState.nativeColorReadbackCount = null;
@@ -73,6 +75,8 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
       getStaticFieldInt(imageClass, "targetedDecodeWidthForTest");
    imageTestAccountingState.targetedDecodeHeight =
       getStaticFieldInt(imageClass, "targetedDecodeHeightForTest");
+   imageTestAccountingState.detachedDecodeOptimizationMask =
+      getStaticFieldInt(imageClass, "detachedDecodeOptimizationMaskForTest");
    imageTestAccountingState.fullDecodeInvocationCount =
       getStaticFieldInt(imageClass, "fullDecodeInvocationCountForTest");
    imageTestAccountingState.nativeGeometryMaterializationCount =
@@ -122,6 +126,9 @@ static int32* imageTestAccountingField(const char* fieldName) {
    }
    if (strcmp(fieldName, "targetedDecodeHeightForTest") == 0) {
       return imageTestAccountingState.targetedDecodeHeight;
+   }
+   if (strcmp(fieldName, "detachedDecodeOptimizationMaskForTest") == 0) {
+      return imageTestAccountingState.detachedDecodeOptimizationMask;
    }
    if (strcmp(fieldName, "fullDecodeInvocationCountForTest") == 0) {
       return imageTestAccountingState.fullDecodeInvocationCount;

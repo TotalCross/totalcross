@@ -6,7 +6,6 @@ package totalcross.ui.image;
 
 import java.util.ArrayList;
 
-import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
 
 /** Internal single-worker coordinator for detached display preparation. */
@@ -19,6 +18,8 @@ final class ImagePreparation {
   private static final ArrayList<Entry> entries = new ArrayList<Entry>();
   private static final ArrayList<Work> workQueue = new ArrayList<Work>();
   private static Thread worker;
+  private static volatile Runnable beforeAdoptionHookForTest;
+  private static volatile boolean runUiInlineForTest;
   private static long requestCount;
   private static long readyCount;
   private static long failedCount;
@@ -60,27 +61,46 @@ final class ImagePreparation {
     }
   }
 
+  static int activeEntryCountForTest() {
+    synchronized (LOCK) {
+      return entries.size();
+    }
+  }
+
+  static void setBeforeAdoptionHookForTest(Runnable hook) {
+    beforeAdoptionHookForTest = hook;
+  }
+
+  static void setRunUiInlineForTest(boolean runInline) {
+    runUiInlineForTest = runInline;
+  }
+
   static void request(final Image image, final double destinationScale, final Runnable onComplete) {
+    request(image, destinationScale, ImageDrawingBridge.DRAW_READY, onComplete);
+  }
+
+  static void request(final Image image, final double destinationScale, final int requirement,
+      final Runnable onComplete) {
     synchronized (LOCK) {
       requestCount++;
     }
     if (image == null) {
       recordOutcome(NOT_PREFETCHABLE, 1);
-      completeImmediate(onComplete);
+      postCompletion(onComplete);
       return;
     }
 
     final Request request;
     try {
-      request = image.createPreparationRequest(destinationScale, NativeImageBacking.isAvailable());
+      request = image.createPreparationRequest(destinationScale, NativeImageBacking.isAvailable(), requirement);
     } catch (Throwable failure) {
       recordOutcome(FAILED, 1);
-      completeImmediate(onComplete);
+      postCompletion(onComplete);
       return;
     }
     if (request.status != -1) {
       recordOutcome(request.status, 1);
-      completeImmediate(onComplete);
+      postCompletion(onComplete);
       return;
     }
     Entry entry = null;
@@ -88,7 +108,7 @@ final class ImagePreparation {
     synchronized (LOCK) {
       entry = findEntry(request);
       if (entry == null) {
-        entry = new Entry(request);
+        entry = new Entry(request, request.requirement);
         entries.add(entry);
         entry.callbacks.add(onComplete);
         if (request.alreadyDecoded) {
@@ -101,9 +121,10 @@ final class ImagePreparation {
         }
       } else if (entry.state == State.QUEUED || entry.state == State.DECODING
           || entry.state == State.ADOPTING) {
+        if (request.requirement > entry.requirement) {
+          entry.requirement = request.requirement;
+        }
         entry.callbacks.add(onComplete);
-      } else {
-        postCompletion(onComplete);
       }
     }
     if (enqueue) {
@@ -145,16 +166,25 @@ final class ImagePreparation {
     while (true) {
       Work work = null;
       synchronized (LOCK) {
-        if (!workQueue.isEmpty()) {
-          work = workQueue.remove(0);
-          work.entry.state = State.DECODING;
+        if (workQueue.isEmpty()) {
+          worker = null;
+          return;
+        }
+        work = workQueue.remove(0);
+        work.entry.state = State.DECODING;
+      }
+      decode(work.entry);
+    }
+  }
+
+  private static void waitForAdoption(Entry entry) {
+    while (true) {
+      synchronized (LOCK) {
+        if (!entry.awaitingAdoption) {
+          return;
         }
       }
-      if (work != null) {
-        decode(work.entry);
-      } else {
-        Vm.safeSleep(20);
-      }
+      Thread.yield();
     }
   }
 
@@ -169,6 +199,11 @@ final class ImagePreparation {
       }
       final JavaResult decoded = javaResult;
       final long decodedNativeHandle = nativeHandle;
+      Runnable adoptionHook = beforeAdoptionHookForTest;
+      beforeAdoptionHookForTest = null;
+      if (adoptionHook != null) {
+        adoptionHook.run();
+      }
       synchronized (LOCK) {
         if (entry.state != State.DECODING) {
           if (decodedNativeHandle != 0) {
@@ -177,6 +212,7 @@ final class ImagePreparation {
           return;
         }
         entry.state = State.ADOPTING;
+        entry.awaitingAdoption = true;
       }
       postUi(new Runnable() {
         @Override
@@ -184,6 +220,7 @@ final class ImagePreparation {
           adopt(entry, decoded, decodedNativeHandle);
         }
       });
+      waitForAdoption(entry);
     } catch (Throwable failure) {
       if (nativeHandle != 0) {
         NativeImageBacking.releaseDetachedNative(nativeHandle);
@@ -205,7 +242,7 @@ final class ImagePreparation {
         finish(entry, FAILED);
         return;
       }
-      request.image.finishPreparation(request);
+      request.image.finishPreparation(request, entry.requirement);
       finish(entry, READY);
     } catch (Throwable failure) {
       finish(entry, FAILED);
@@ -222,18 +259,23 @@ final class ImagePreparation {
         finish(entry, FAILED);
         return;
       }
+      if (!entry.request.image.isPreparationCurrent(entry.request)) {
+        if (nativeHandle != 0) {
+          NativeImageBacking.releaseDetachedNative(nativeHandle);
+        }
+        finish(entry, FAILED);
+        return;
+      }
       if (javaResult != null) {
         entry.request.image.adoptJavaPreparationResult(entry.request, javaResult);
       } else {
-        entry.request.image.adoptNativePreparationHandle(entry.request, nativeHandle);
+        long handle = nativeHandle;
+        nativeHandle = 0;
+        entry.request.image.adoptNativePreparationHandle(entry.request, handle);
       }
-      nativeHandle = 0;
-      entry.request.image.finishPreparation(entry.request);
+      entry.request.image.finishPreparation(entry.request, entry.requirement);
       finish(entry, READY);
     } catch (Throwable failure) {
-      if (nativeHandle != 0) {
-        NativeImageBacking.releaseDetachedNative(nativeHandle);
-      }
       finish(entry, FAILED);
     }
   }
@@ -241,7 +283,12 @@ final class ImagePreparation {
   private static void finish(final Entry entry, int state) {
     ArrayList<Runnable> callbacks;
     synchronized (LOCK) {
+      if (entry.state == State.READY || entry.state == State.FAILED) {
+        return;
+      }
       entry.state = state == READY ? State.READY : State.FAILED;
+      entries.remove(entry);
+      entry.awaitingAdoption = false;
       callbacks = new ArrayList<Runnable>(entry.callbacks);
       entry.callbacks.clear();
       recordOutcomeLocked(state == READY ? READY : FAILED, callbacks.size());
@@ -274,15 +321,9 @@ final class ImagePreparation {
     postUi(callback);
   }
 
-  private static void completeImmediate(Runnable callback) {
-    if (callback != null) {
-      callback.run();
-    }
-  }
-
   private static void postUi(final Runnable runnable) {
     MainWindow mainWindow = MainWindow.getMainWindow();
-    if (MainWindow.isMainThread() || mainWindow == null) {
+    if (runUiInlineForTest || MainWindow.isMainThread() || mainWindow == null) {
       runnable.run();
     } else {
       mainWindow.runOnMainThread(runnable, false);
@@ -314,10 +355,13 @@ final class ImagePreparation {
   private static final class Entry {
     final Request request;
     final ArrayList<Runnable> callbacks = new ArrayList<Runnable>();
+    int requirement;
+    boolean awaitingAdoption;
     int state = State.QUEUED;
 
-    Entry(Request request) {
+    Entry(Request request, int requirement) {
       this.request = request;
+      this.requirement = requirement;
     }
   }
 
@@ -344,11 +388,13 @@ final class ImagePreparation {
     final int denominator;
     final boolean alreadyDecoded;
     final boolean nativeAvailable;
-    final int status;
+    final int requirement;
+    final int optimizationMask;
+    int status;
 
     Request(Image image, ImagePipeline pipeline, EncodedImageSource source, double destinationScale,
         long scaleBits, long sourceGeneration, int targetWidth, int targetHeight, int denominator,
-        boolean alreadyDecoded, boolean nativeAvailable, int status) {
+        boolean alreadyDecoded, boolean nativeAvailable, int requirement, int optimizationMask, int status) {
       this.image = image;
       this.pipeline = pipeline;
       this.source = source;
@@ -360,6 +406,8 @@ final class ImagePreparation {
       this.denominator = denominator;
       this.alreadyDecoded = alreadyDecoded;
       this.nativeAvailable = nativeAvailable;
+      this.requirement = requirement;
+      this.optimizationMask = optimizationMask;
       this.status = status;
     }
   }

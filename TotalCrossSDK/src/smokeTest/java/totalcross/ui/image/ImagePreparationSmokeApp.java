@@ -21,11 +21,15 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
   private ScrollContainer scroll;
   private TimerEvent timer;
   private boolean callbackSeen;
+  private boolean retryRequested;
+  private boolean adoptionFailureRetried;
+  private int callbackCount;
   private String callbackThread;
   private int timerTicks;
   private long generationBeforeDraw = -1;
   private int targetedBeforeDraw = -1;
   private int denominatorBeforeDraw = -1;
+  private int detachedOptimizationMask = -1;
   private long started;
 
   @Override
@@ -38,6 +42,7 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
     try {
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled");
       Image.resetImageOperationAccountingForTest();
+      NativeImageBacking.failNextAdoptionForTest();
       screen = getGraphics();
       image = new Image("image-abi/lena512.jpg").getSmoothScaledInstance(128, 128);
       source = (EncodedImageSource) image.pipelineForSmoke().root();
@@ -52,8 +57,7 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
       scroll.prepareForDisplay(new Runnable() {
             @Override
             public void run() {
-              callbackSeen = true;
-              callbackThread = Thread.currentThread().getName();
+              preparationCompleted();
             }
           });
       addTimerListener(this);
@@ -77,10 +81,12 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
     boolean callbackOnUi = callbackSeen && callbackThread != null
         && callbackThread.equals(Thread.currentThread().getName());
     boolean decoded = source != null && source.decodedGeneration() == 1
-        && Image.fullDecodeInvocationCountForTest() + Image.targetedDecodeInvocationCountForTest() == 1;
+        && Image.fullDecodeInvocationCountForTest() + Image.targetedDecodeInvocationCountForTest() == 2;
     generationBeforeDraw = source == null ? -1 : source.decodedGeneration();
     denominatorBeforeDraw = source == null ? -1 : source.decodedDenominator();
     targetedBeforeDraw = Image.targetedDecodeInvocationCountForTest();
+    detachedOptimizationMask = Image.detachedDecodeOptimizationMaskForTest();
+    boolean capturedOptimizationMask = detachedOptimizationMask == (int) ImageOptimizationSettings.effectiveMask();
     boolean stillDeferred = image != null && image.pipelineForSmoke() != null;
     boolean drew = false;
     try {
@@ -97,8 +103,26 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
       return;
     }
     if (callbackSeen) {
-      finish(decoded && drew, callbackOnUi, timerTicks > 0, stillDeferred, "");
+      finish(decoded && drew && adoptionFailureRetried && capturedOptimizationMask,
+          callbackOnUi, timerTicks > 0, stillDeferred, "");
     }
+  }
+
+  private void preparationCompleted() {
+    callbackCount++;
+    if (!retryRequested) {
+      retryRequested = true;
+      scroll.prepareForDisplay(new Runnable() {
+        @Override
+        public void run() {
+          adoptionFailureRetried = true;
+          preparationCompleted();
+        }
+      });
+      return;
+    }
+    callbackSeen = true;
+    callbackThread = Thread.currentThread().getName();
   }
 
   private void finish(boolean detachedAdoption, boolean uiCompletion, boolean responsive,
@@ -111,6 +135,7 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
     System.out.println("fixture=ImagePreparationSmokeApp,detachedAdoption=" + detachedAdoption
         + ",uiCompletion=" + uiCompletion + ",responsive=" + responsive
         + ",deferredPlan=" + deferredPlan + ",timerTicks=" + timerTicks
+        + ",callbackCount=" + callbackCount + ",adoptionFailureRetried=" + adoptionFailureRetried
         + ",decodedGeneration=" + (source == null ? -1 : source.decodedGeneration())
         + ",generationBeforeDraw=" + generationBeforeDraw
         + ",denominatorBeforeDraw=" + denominatorBeforeDraw
@@ -118,6 +143,7 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
         + ",targetedDecodes=" + Image.targetedDecodeInvocationCountForTest()
         + ",targetedBeforeDraw=" + targetedBeforeDraw
         + ",targetedDenominator=" + Image.targetedDecodeDenominatorForTest()
+        + ",detachedOptimizationMask=" + detachedOptimizationMask
         + ",overallPass=" + pass + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();
     exit(pass ? 0 : 1);

@@ -109,6 +109,7 @@ void skia_image_backing_fail_next_snapshot_for_test(void);
 int skia_image_backing_make_mutable(int64_t handle);
 int skia_image_backing_mutate_for_test(int64_t handle);
 void skia_image_backing_fail_next_promotion_for_test(void);
+void skia_image_backing_fail_next_adoption_for_test(void);
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth);
 #define SKIA_IMAGE_COLOR_APPLY_FADE 0
 #define SKIA_IMAGE_COLOR_FADE_INSTANCE 1

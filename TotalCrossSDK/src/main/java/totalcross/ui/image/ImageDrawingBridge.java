@@ -12,6 +12,11 @@ package totalcross.ui.image;
  */
 @Deprecated
 public final class ImageDrawingBridge {
+  /** @hidden */
+  public static final int DRAW_READY = 0;
+  /** @hidden */
+  public static final int COPY_READY = 1;
+
   private ImageDrawingBridge() {
   }
 
@@ -49,6 +54,13 @@ public final class ImageDrawingBridge {
   /** @hidden */
   @Deprecated
   public static void prepareForDisplay(Image image, double destinationScale, Runnable onComplete) {
-    ImagePreparation.request(image, destinationScale, onComplete);
+    prepareForDisplay(image, destinationScale, DRAW_READY, onComplete);
+  }
+
+  /** @hidden */
+  @Deprecated
+  public static void prepareForDisplay(Image image, double destinationScale, int requirement,
+      Runnable onComplete) {
+    ImagePreparation.request(image, destinationScale, requirement, onComplete);
   }
 }

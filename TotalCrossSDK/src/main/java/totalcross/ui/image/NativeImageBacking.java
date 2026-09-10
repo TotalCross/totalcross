@@ -499,6 +499,10 @@ final class NativeImageBacking extends ImageBacking {
     failNextPromotionNative();
   }
 
+  static void failNextAdoptionForTest() {
+    failNextAdoptionNative();
+  }
+
   void release() {
     long handle = nativeHandle;
     nativeHandle = 0;
@@ -755,6 +759,10 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static void failNextPromotionNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failNextAdoptionNative() {
   }
 
   @ReplacedByNativeOnDeploy

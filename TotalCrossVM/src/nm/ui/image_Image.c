@@ -473,7 +473,7 @@ TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p) // totalcross/ui/image/
    decodeEncodedSourceAtDenominator(p, p->i32[2], true);
 }
 
-TC_API void tuiI_decodeEncodedSourceCandidat(NMParams p) // totalcross/ui/image/Image private static long decodeEncodedSourceCandidateHandle(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight, int denominator);
+TC_API void tuiI_decodeEncodedSourceCandidat(NMParams p) // totalcross/ui/image/Image private static long decodeEncodedSourceCandidateHandle(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight, int denominator, int optimizationMask);
 {
 #if TC_RENDERER_SKIA
    TCObject sourceObj = p->obj[0];
@@ -481,10 +481,14 @@ TC_API void tuiI_decodeEncodedSourceCandidat(NMParams p) // totalcross/ui/image/
    int32 targetWidth = p->i32[0];
    int32 targetHeight = p->i32[1];
    int32 denominator = p->i32[2];
+   int32 optimizationMask = p->i32[3];
+   int32* capturedMask = imageTestAccountingField("detachedDecodeOptimizationMaskForTest");
    int64 detachedHandle = 0;
    ImageDecodeStatus status;
 
    p->retL = 0;
+   if (capturedMask != null)
+      *capturedMask = optimizationMask;
    if (!bag || !bag->bytes || bag->length <= 0
          || EncodedImageSource_formatCode(sourceObj) != IMAGE_ENCODED_JPEG
          || targetWidth <= 0 || targetHeight <= 0
@@ -513,7 +517,9 @@ TC_API void tuiI_decodeEncodedSourceCandidat(NMParams p) // totalcross/ui/image/
       (const char*)bag->bytes, bag->length,
       denominator == 1 ? JPEG_DECODE_FULL : JPEG_DECODE_EXPLICIT_RATIO,
       denominator == 1 ? 0 : 1, denominator == 1 ? 0 : denominator,
-      false, false, 0,
+      (optimizationMask & IMAGE_OPT_DECODE_ZERO_COPY) != 0,
+      (optimizationMask & IMAGE_OPT_RASTER_OPACITY_METADATA) != 0,
+      optimizationMask,
       &detachedHandle);
    if (status != IMAGE_DECODE_SUCCESS || detachedHandle == 0) {
       if (detachedHandle != 0)

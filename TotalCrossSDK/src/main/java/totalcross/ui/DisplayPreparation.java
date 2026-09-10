@@ -27,5 +27,5 @@ final class DisplayPreparationContext {
 
 /** Internal image request sink used while traversing controls. */
 interface DisplayPreparationSink {
-  void request(Image image);
+  void request(Image image, int requirement);
 }
