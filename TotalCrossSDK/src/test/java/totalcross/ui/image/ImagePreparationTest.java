@@ -5,6 +5,7 @@
 package totalcross.ui.image;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -78,6 +79,34 @@ class ImagePreparationTest {
   }
 
   @Test
+  void copyReadyCopyRectMatchesNormalDeferredPixels() throws Exception {
+    Image normal = new Image(jpeg(64, 48)).getSmoothScaledInstance(16, 12);
+    Image expected = Image.createLogical(16, 12, 1);
+    expected.getGraphics().copyRect(normal, 0, 0, 16, 12, 0, 0);
+
+    Image prepared = new Image(jpeg(64, 48)).getSmoothScaledInstance(16, 12);
+    ImagePreparation.Request request = prepared.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    ImagePreparationCandidate candidate = prepared.createPreparationCandidate(request);
+    prepared.adoptPreparationCandidate(request, candidate);
+    prepared.finishPreparation(request, ImageDrawingBridge.COPY_READY);
+
+    Image actual = Image.createLogical(16, 12, 1);
+    actual.getGraphics().copyRect(prepared, 0, 0, 16, 12, 0, 0);
+    assertArrayEquals(expected.getPixels(), actual.getPixels());
+  }
+
+  @Test
+  void nonPrefetchableImageRetainsNormalFallback() throws Exception {
+    Image image = new Image(png(2, 2)).getSmoothScaledInstance(2, 2);
+    ImagePreparation.Request request = image.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+
+    assertEquals(ImagePreparation.NOT_PREFETCHABLE, request.status);
+    assertEquals(0, ImagePreparation.activeEntryCountForTest());
+  }
+
+  @Test
   void terminalFailureIsRemovedAndSameKeyCanRetry() throws Exception {
     MainWindow.resetPreviewState();
     ImagePreparation.resetAccountingForTest();
@@ -101,6 +130,7 @@ class ImagePreparationTest {
   void inFlightDrawRequestPromotesToCopyReady() throws Exception {
     MainWindow.resetPreviewState();
     ImagePreparation.resetAccountingForTest();
+    Image.resetImageOperationAccountingForTest();
     Image image = new Image(jpeg(1024, 768)).getSmoothScaledInstance(256, 192);
     CountDownLatch completed = new CountDownLatch(2);
 
@@ -111,6 +141,8 @@ class ImagePreparationTest {
     assertEquals(0, ImagePreparation.activeEntryCountForTest());
     assertNotNull(image.cachedMaterializedForDrawing(1));
     assertEquals(2, ImagePreparation.readyCountForTest());
+    assertEquals(1, Image.targetedDecodeInvocationCountForTest()
+        + Image.fullDecodeInvocationCountForTest());
   }
 
   @Test
@@ -137,6 +169,13 @@ class ImagePreparationTest {
     BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     ImageIO.write(image, "jpeg", bytes);
+    return bytes.toByteArray();
+  }
+
+  private static byte[] png(int width, int height) throws Exception {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    ImageIO.write(image, "png", bytes);
     return bytes.toByteArray();
   }
 }
