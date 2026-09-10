@@ -429,6 +429,9 @@ public class Control extends GfxSurface {
     textShadowColor = UIColors.textShadowColor;
   }
 
+  void prepareForDisplay(DisplayPreparationContext context, DisplayPreparationSink sink) {
+  }
+
   private void takeScreenShot(int nr) {
     try {
       if (nr == 1) {

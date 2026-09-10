@@ -601,6 +601,13 @@ public class Container extends Control {
     }
   }
 
+  @Override
+  void prepareForDisplay(DisplayPreparationContext context, DisplayPreparationSink sink) {
+    for (Control child = children; child != null; child = child.next) {
+      child.prepareForDisplay(context, sink);
+    }
+  }
+
   /** Called by the system to draw the children of the container. */
   public void paintChildren() {
     for (Control child = children; child != null; child = child.next) {
