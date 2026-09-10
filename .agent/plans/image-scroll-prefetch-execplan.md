@@ -66,6 +66,7 @@ Committed benchmark evidence:
 
 - `.agent/evidence/image-scroll-prefetch/baseline/`
 - `.agent/evidence/image-scroll-prefetch/final/`
+- `.agent/benchmarks/image-scroll-prefetch/final-fixed/`
 
 On resume, read state first and then only active paths.
 
@@ -126,10 +127,11 @@ pipeline owns deferred operations. Destination surface owns content scale. Keep
 those responsibilities separate.
 
 Preparation means doing expensive work that next draw would otherwise trigger,
-without drawing pixels. For supported deferred encoded images, prepare targeted
-decoded backing and cached draw plan for requested destination scale. Do not
-eagerly create a final resized raster when the plan-aware physical identity path
-from the first plan can draw from targeted decoded backing.
+without drawing pixels. `DRAW_READY` prepares targeted decoded backing and a
+cached draw plan for the requested destination scale. `COPY_READY`, used by the
+default `ImageControl` copyRect path, additionally materializes and caches the
+final raster before scrolling. Repeated `COPY_READY` requests use that final
+cache without new work.
 
 The native backing registry is global and must not be mutated concurrently from
 an arbitrary worker while UI draw uses it. Therefore background prefetch has two
@@ -138,11 +140,14 @@ stages:
 1. worker: read/decode immutable encoded image data into a detached prepared
    backing candidate not registered in the global backing map;
 2. UI: adopt/install that candidate into the encoded source, update decode
-   generation through existing source semantics, and build/cache draw plan.
+   generation through existing source semantics, and satisfy the requested
+   readiness level by building a draw plan or materializing/caching the final
+   raster.
 
 Worker stage must not call `registerBackingRecord`, mutate live
-`NativeImageBackingRecord`, or touch `SkCanvas`. UI adoption must be short and
-must not perform JPEG decode or smooth resampling.
+`NativeImageBackingRecord`, or touch `SkCanvas`. UI adoption must not perform
+JPEG decode. `COPY_READY` may perform the required final materialization on the
+UI side, after detached decode and adoption have completed.
 
 Use one background decode worker initially. Queue all requests but keep active
 decode concurrency at one.
@@ -155,7 +160,11 @@ force a large synchronous fallback from worker; report them as
 not-prefetchable.
 
 This plan intentionally does not implement cache eviction. Record PREFETCH_ALL
-memory cost instead of hiding it.
+
+After `COPY_READY` has a final cached variant, the intermediate decoded source
+backing and transient draw plan may be released when no final cached variant
+still references that backing. This is preparation lifecycle cleanup, not an
+LRU, viewport, or memory-pressure eviction policy.
 
 ## Plan of Work
 
@@ -219,13 +228,15 @@ For supported encoded immutable sources:
 3. post adoption with `MainWindow.getMainWindow().runOnMainThread(...)`;
 4. adopt through existing encoded-source decoded-backing installation and
    update generation exactly once;
-5. build/cache draw plan for requested scale;
+5. for `DRAW_READY`, build/cache the draw plan; for `COPY_READY`, materialize
+   and cache the final raster, then release only unreferenced intermediates;
 6. complete callbacks on UI thread.
 
 Do not duplicate JPEG denominator/resize policy in UI classes.
 
-Do not perform final smooth resampling if pipeline is draw-fusable and targeted
-backing is sufficient for first-plan physical identity path.
+`DRAW_READY` must not perform final smooth resampling when the draw-fusable
+physical identity path can use the targeted backing. `COPY_READY` intentionally
+does the final materialization required by copyRect before completion.
 
 Cancellation is generation-based in this version: stale request may finish and
 its immutable decoded result may remain cacheable, but it must not complete a
@@ -376,9 +387,11 @@ Acceptance for `prefetch=all`:
 - responsiveness smoke shows update/timer progress while worker decode is active;
 - after accounting reset, cold scroll performs no first-use JPEG decode for
   successfully prefetched images;
-- no final smooth materialization is introduced when first-plan draw-plan path
-  can use targeted backing;
-- warm behavior does not regress;
+- default `ImageControl` requests `COPY_READY`, so cold scroll has at most the
+  three non-prefetchable/full-decode cases and at most three final/native
+  materializations;
+- warm behavior has zero new decodes/materializations and no p95 regression
+  beyond the rounded 10% disabled-profile ceiling;
 - all 13/14 combinations remain correct and separately measured.
 
 Report:
@@ -388,7 +401,9 @@ Report:
 - live/peak backing memory after prefetch;
 - warm metrics.
 
-Do not add eviction heuristics because PREFETCH_ALL uses memory.
+Do not add viewport, LRU, or memory-pressure eviction heuristics. Report the
+live/peak backing memory after `COPY_READY` releases only unreferenced decoded
+source intermediates.
 
 For disabled profile, performance must remain within normal benchmark noise of
 baseline. If repeated warm p95 regresses >10%, identify/correct before closeout.
@@ -409,7 +424,12 @@ unexpected final resampling, batch/layout race, or disabled-profile regression.
   batch identity; the captured scale still keys each preparation request.
 - Benchmark execution is deferred to the next UI timer tick after the async
   completion runner so `repaintNow()` is not suppressed by the runner drain.
-- No disabled-profile warm regression beyond normal noise was observed.
+- The original final matrix removed JPEG decode but still performed roughly
+  645--648 final/native materializations during cold scrolling. The corrected
+  matrix moves those materializations into `COPY_READY` preparation and leaves
+  at most three cold materializations.
+- Releasing the decoded source after final caching reduced corrected live
+  backing memory to 282--357 MB without adding general cache eviction.
 
 Preserve fixed architecture: worker decode remains detached; global backing
 adoption remains on UI thread.
@@ -424,6 +444,9 @@ adoption remains on UI thread.
 - Worker produces detached candidates; UI thread adopts global backing.
 - Use one worker initially.
 - Do not integrate cache eviction here.
+- `COPY_READY` is the explicit contract for default copyRect descendants;
+  releasing unreferenced intermediate source backing is part of that lifecycle,
+  not a cache policy.
 
 ## Validation and Acceptance
 
@@ -480,10 +503,19 @@ At completion summarize parent/final commits, preparation worker/adoption
 behavior, ScrollContainer batch semantics, request/ready/failure counts,
 disabled versus all-prefetch cold metrics, warm metrics, 13/14 results,
 prefetch time/memory cost, and limitations for later viewport-sized prefetch.
+The corrected final matrix passed 16 macOS processes and 48 records: 663
+requests/660 ready/0 failed/3 not-prefetchable, zero cold targeted decodes,
+at most three cold final/native materializations, zero warm decodes or
+materializations, cold p95 at most 6 ms, warm all-prefetch p95 at most 5 ms,
+and live backing memory of 282--357 MB. See the committed final-fixed summary
+and editorial report for the complete matrix.
 
 Point to committed evidence instead of duplicating raw output.
 
 ## Revision Note
 
-Initial plan. PREFETCH_ALL, single-worker detached decode, UI-thread adoption,
-and explicit ScrollContainer completion are fixed decisions.
+Closed on 2026-09-10. The corrected implementation adds explicit
+`DRAW_READY`/`COPY_READY` semantics, bounded detached preparation, UI-thread
+adoption, active-batch invalidation, per-request optimization-mask capture,
+and final-raster caching for copyRect descendants. `PREFETCH_ALL`, one worker,
+and no general cache-eviction policy remain fixed decisions.

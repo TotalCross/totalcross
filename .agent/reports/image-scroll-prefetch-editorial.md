@@ -15,27 +15,42 @@ enabled prefetch profiles without changing the four feature-13/14 profiles.
 
 ## Result
 
-The final matrix passed all 16 fresh processes and 48 pass records using the
-663-JPEG corpus. Enabled prefetch accounted for every request with 660 ready,
-zero failures, and three not-prefetchable images. Successful prefetched images
-did not perform first-use targeted JPEG decodes during cold scrolling.
+The branch has two explicitly distinguished benchmark generations. The earlier
+`final/` implementation removed first-use JPEG decode but left roughly 645--648
+final image/native-geometry materializations in the cold scroll. That was
+insufficient for the copyRect contract.
 
-Warm p95 stayed at 9 ms or below except for one 10 ms sample at 540x960 with
-variant caching enabled; this is within the plan's allowed benchmark noise and
-does not exceed the 10% regression gate. Prefetch intentionally retains its
-detached backing memory: final live/peak usage was approximately 666--677 MB.
+The corrected implementation uses `COPY_READY` for the default
+`ImageControl`: worker decode is adopted on the UI thread, the final raster is
+materialized and cached before scrolling, and the intermediate decoded source
+backing is released only when no cached final variant still references it. The
+corrected `final-fixed/` matrix passed all 16 fresh processes and 48 records
+using the exact 663-JPEG corpus.
+
+Enabled prefetch accounted for every request with 660 ready, zero failures,
+and three not-prefetchable images. Cold scroll had zero targeted JPEG decodes,
+three full decodes for the non-prefetchable cases, at most three final raster
+materializations, and at most three native geometry materializations. Warm
+targeted/full decodes and materializations were zero.
+
+In the final run, cold p95 was at most 6 ms, warm all-prefetch p95 at most 5
+ms, disabled warm p95 at most 9 ms, and cold frames at or above 34 ms at most
+one. Prefetch elapsed time was 11.5--14.2 seconds; live backing memory after
+the corrected lifecycle was 282--357 MB.
 
 ## Review notes
 
 - Worker decode is detached from UI adoption; completion is marshalled to the
   UI thread and stale batches are rejected by active-batch identity.
 - The benchmark starts on a subsequent UI timer tick so repaint accounting is
-  not suppressed while runner callbacks are being drained.
+  not suppressed while runner callbacks are being drained; the cold pass also
+  explicitly resets the scrollbar to its declared minimum.
 - The batch completion check does not re-read a mutable content scale after
   discovery; the captured scale remains the request key, while active-batch
   identity protects against completing an obsolete batch.
-- No eviction policy was added, as `PREFETCH_ALL` is explicitly an
-  all-descendants, memory-first profile.
+- No general eviction policy was added. Releasing a decoded source after its
+  COPY_READY final raster is cached is an intermediate-lifecycle cleanup, not
+  an LRU or memory-pressure policy.
 
 ## Validation
 
@@ -43,8 +58,8 @@ detached backing memory: final live/peak usage was approximately 666--677 MB.
   ScrollContainer insets: passed.
 - Release SDK distribution, benchmark compile/deploy, and macOS `tcvm` build:
   passed.
-- ImagePreparation macOS native smoke: passed with detached adoption, UI
-  completion, timer responsiveness, deferred draw plan, and one targeted
-  decode before first draw.
-- Final real-workload matrix: passed; raw logs and CSV are in
-  `.agent/benchmarks/image-scroll-prefetch/final/`.
+- ImagePreparation macOS native smoke: passed with injected adoption failure,
+  retry, detached adoption, UI completion, timer responsiveness, captured
+  optimization mask, deferred pipeline, and no extra decode during copyRect.
+- Corrected final real-workload matrix: passed; raw logs, CSV, and summary are
+  in `.agent/benchmarks/image-scroll-prefetch/final-fixed/`.

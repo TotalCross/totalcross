@@ -8,25 +8,27 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - branch: `perf/image-scroll-prefetch`
 - parent_head: `702139cedfad946cde133f8bfaeb4ec4ad239897`
-- active_milestone: complete — final benchmark and closeout
-- active_slice: final matrix, native smoke, evidence, and editorial report committed
-- last_commit: `38446c9e1`
+- active_milestone: complete — corrected COPY_READY implementation and closeout
+- active_slice: corrected final evidence committed; plan/report closeout pending
+- last_commit: `b7f70b11a`
 - active_paths: `.agent/state/image-scroll-prefetch.md`,
   `.agent/evidence/image-scroll-prefetch.md`,
   `scripts/run-image-scroll-real-workload-benchmark.py`,
   `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
   `TotalCrossSDK/src/main/java/totalcross/ui/`,
   focused image/ScrollContainer smoke fixtures
-- next_action: none; local and `origin/perf/image-scroll-prefetch` both point to
-  `d9375d601`
-- focused_validation: baseline runner passed 24 records across eight fresh
-  profiles; focused SDK tests, Release SDK distribution, macOS tcvm build,
-  ImagePreparation macOS smoke, benchmark harness validation, and the final
-  16-process/48-record matrix all passed
+- next_action: commit plan/report/state closeout, verify remote head, and push
+  `perf/image-scroll-prefetch`
+- focused_validation: focused Java regressions passed; Release SDK dist passed;
+  Release macOS tcvm build passed; corrected 16-process/48-record matrix
+  passed; ImagePreparation macOS smoke passed with adoption failure/retry,
+  copyRect no-extra-decode, and captured detached optimization mask
 - deferred_validation: Android, Linux, Windows, and iOS builds were not run;
   the ExecPlan restricts local validation to SDK and macOS
-- decisions_active: `PREFETCH_ALL`, explicit asynchronous API, one decode
-  worker, detached worker candidates, UI-thread adoption, no eviction
+- decisions_active: `PREFETCH_ALL`, explicit asynchronous API, one bounded
+  decode worker, DRAW_READY/COPY_READY requirements, detached worker
+  candidates, UI-thread adoption, per-request optimization mask, no general
+  eviction; release unreferenced COPY_READY intermediates
 - blockers: none; `TC_IMAGE_CORPUS` is available as
   `/Users/flsobral/Downloads/win32` but is not exported by default
 - deliberate_out_of_scope: pre-existing untracked files and generated/local
