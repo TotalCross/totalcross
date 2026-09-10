@@ -25,7 +25,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Warm all-prefetch p95 was at most 5 ms versus at most 9 ms for disabled
   prefetch in this run; the integer-ms comparison uses the rounded 10% ceiling.
 - Prefetch elapsed time was 11,511--14,195 ms. Live backing memory after the
-  corrected COPY_READY lifecycle was 282,405,544--356,793,048 bytes.
+  corrected COPY_READY lifecycle was 282,405,544--356,793,048 bytes, with
+  peak values of 283,405,544--357,793,048 bytes.
+- After cold and warm scrolling, live and peak backing bytes were
+  295,619,032--370,331,016. Target-color converted bytes and physical-variant
+  bytes were both zero for the all-prefetch records.
 
 ## Corrected versus previous implementation
 

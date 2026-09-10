@@ -48,6 +48,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   `.agent/benchmarks/image-scroll-prefetch/final-fixed/`; all prefetch cold
   records were 663 requests/660 ready/0 failed/3 not-prefetchable, cold
   targeted decodes were 0, cold final/native materializations were at most 3,
-  warm decodes/materializations were 0, and the strict runner gates passed;
+  warm decodes/materializations were 0, live/peak backing after prefetch was
+  `282405544--356793048`/`283405544--357793048`, after cold/warm was
+  `295619032--370331016`, target-color and physical-variant bytes were zero,
+  and the strict runner gates passed;
   runtime SHA-256 is
   `6ad937b552e9305a39b17c363b655fc50f93d977181cd3435a4fdd770797d72c`

@@ -35,8 +35,10 @@ targeted/full decodes and materializations were zero.
 
 In the final run, cold p95 was at most 6 ms, warm all-prefetch p95 at most 5
 ms, disabled warm p95 at most 9 ms, and cold frames at or above 34 ms at most
-one. Prefetch elapsed time was 11.5--14.2 seconds; live backing memory after
-the corrected lifecycle was 282--357 MB.
+one. Prefetch elapsed time was 11.5--14.2 seconds; live/peak backing memory at
+prefetch completion was 282--357 MB, and after cold/warm scrolling it was
+296--370 MB. Target-color converted and physical-variant bytes were zero in
+the all-prefetch records.
 
 ## Review notes
 
@@ -55,7 +57,8 @@ the corrected lifecycle was 282--357 MB.
 ## Validation
 
 - Focused SDK tests for image preparation, deferred graphics, traversal, and
-  ScrollContainer insets: passed.
+  ScrollContainer insets, including COPY_READY pixel parity, deduplication,
+  terminal cleanup, retry, and non-prefetchable fallback: passed.
 - Release SDK distribution, benchmark compile/deploy, and macOS `tcvm` build:
   passed.
 - ImagePreparation macOS native smoke: passed with injected adoption failure,

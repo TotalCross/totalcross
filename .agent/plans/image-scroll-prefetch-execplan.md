@@ -508,6 +508,8 @@ requests/660 ready/0 failed/3 not-prefetchable, zero cold targeted decodes,
 at most three cold final/native materializations, zero warm decodes or
 materializations, cold p95 at most 6 ms, warm all-prefetch p95 at most 5 ms,
 and live backing memory of 282--357 MB. See the committed final-fixed summary
+and 295--370 MB after cold/warm scrolling; target-color and physical-variant
+bytes were zero in all-prefetch records. See the committed final-fixed summary
 and editorial report for the complete matrix.
 
 Point to committed evidence instead of duplicating raw output.
