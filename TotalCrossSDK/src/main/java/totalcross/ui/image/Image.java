@@ -109,7 +109,7 @@ public class Image extends GfxSurface {
   static int fullScratchBytesForTest;
   static int directColorMaterializationCountForTest;
   private static final int INITIAL_NATIVE_OPTIMIZATION_MASK =
-      (int) ImageOptimizationSettings.effectiveMask();
+      (int) ImageOptimizationSettings.DEFAULT_EFFECTIVE_MASK;
   private static int nativeOptimizationMaskForDecode = INITIAL_NATIVE_OPTIMIZATION_MASK;
   private static int nativeOptimizationMaskForDraw = INITIAL_NATIVE_OPTIMIZATION_MASK;
   private static boolean backingReadbackAccountingForTest;

@@ -27,6 +27,12 @@ final class ImageOptimizationSettings {
   static final int RASTER_PHYSICAL_VARIANT_CACHE = 14;
   static final int RASTER_PHYSICAL_IDENTITY_FOLDING = 15;
   static final int FEATURE_COUNT = 16;
+  static final long DEFAULT_EFFECTIVE_MASK = (1L << DECODE_ZERO_COPY)
+      | (1L << RASTER_OPACITY_METADATA)
+      | (1L << RASTER_OPAQUE_WRITE_PIXELS)
+      | (1L << RASTER_ROW_READBACK)
+      | (1L << RASTER_DIRECT_COLOR_MATERIALIZATION)
+      | (1L << RASTER_PHYSICAL_IDENTITY_FOLDING);
 
   private static final long DEFAULT_CACHE_MAX_BYTES = 64L * 1024 * 1024;
   private static final long DEFAULT_MMAP_THRESHOLD_BYTES = 4L * 1024 * 1024;
