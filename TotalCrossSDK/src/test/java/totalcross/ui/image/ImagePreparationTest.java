@@ -20,6 +20,7 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
+import totalcross.sys.Settings;
 import totalcross.ui.MainWindow;
 
 class ImagePreparationTest {
@@ -146,11 +147,84 @@ class ImagePreparationTest {
   }
 
   @Test
-  void sourceGenerationChangesPreparationKeyAfterEviction() throws Exception {
+  void sharedSourceCopyReadyVariantsSurviveSiblingCleanup() throws Exception {
+    Image base = new Image(jpeg(1024, 768));
+    Image small = base.getSmoothScaledInstance(128, 96);
+    Image large = base.getSmoothScaledInstance(512, 384);
+    ImagePreparation.Request smallRequest = small.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    ImagePreparation.Request largeRequest = large.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+
+    assertSame(smallRequest.source, largeRequest.source);
+    assertTrue(smallRequest.denominator > largeRequest.denominator);
+    ImagePreparationCandidate smallCandidate = small.createPreparationCandidate(smallRequest);
+    ImagePreparationCandidate largeCandidate = large.createPreparationCandidate(largeRequest);
+
+    large.adoptPreparationCandidate(largeRequest, largeCandidate);
+    large.finishPreparation(largeRequest, ImageDrawingBridge.COPY_READY);
+    Image largeRaster = large.cachedMaterializedForDrawing(1);
+    assertNotNull(largeRaster);
+
+    small.adoptPreparationCandidate(smallRequest, smallCandidate);
+    small.finishPreparation(smallRequest, ImageDrawingBridge.COPY_READY);
+    Image smallRaster = small.cachedMaterializedForDrawing(1);
+    assertNotNull(smallRaster);
+    int materializations = Image.materializationCountForTest();
+
+    ImagePreparation.Request repeatedLarge = large.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    ImagePreparation.Request repeatedSmall = small.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    assertEquals(ImagePreparation.READY, repeatedLarge.status);
+    assertEquals(ImagePreparation.READY, repeatedSmall.status);
+    assertSame(largeRaster, large.cachedMaterializedForDrawing(1));
+    assertSame(smallRaster, small.cachedMaterializedForDrawing(1));
+
+    Image target = Image.createLogical(512, 384, 1);
+    target.getGraphics().copyRect(large, 0, 0, 512, 384, 0, 0);
+    target.getGraphics().copyRect(small, 0, 0, 128, 96, 0, 0);
+    assertEquals(materializations, Image.materializationCountForTest());
+    assertEquals(0, ImagePreparation.activeEntryCountForTest());
+  }
+
+  @Test
+  void sharedSourceDrawPlanSurvivesCopySiblingCleanup() throws Exception {
+    Image base = new Image(jpeg(1024, 768));
+    Image draw = base.getSmoothScaledInstance(512, 384);
+    Image copy = base.getSmoothScaledInstance(128, 96);
+    ImagePreparation.Request drawRequest = draw.createPreparationRequest(1, false,
+        ImageDrawingBridge.DRAW_READY);
+    ImagePreparation.Request copyRequest = copy.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    ImagePreparationCandidate drawCandidate = draw.createPreparationCandidate(drawRequest);
+    ImagePreparationCandidate copyCandidate = copy.createPreparationCandidate(copyRequest);
+
+    draw.adoptPreparationCandidate(drawRequest, drawCandidate);
+    draw.finishPreparation(drawRequest, ImageDrawingBridge.DRAW_READY);
+    EncodedImageSource source = drawRequest.source;
+    ImageBacking higherDetail = source.decodedBackingForReuse(copyRequest.denominator);
+    assertNotNull(higherDetail);
+    long generation = source.decodedGeneration();
+
+    copy.adoptPreparationCandidate(copyRequest, copyCandidate);
+    assertSame(higherDetail, source.decodedBackingForReuse(copyRequest.denominator));
+    assertEquals(generation, source.decodedGeneration());
+    copy.finishPreparation(copyRequest, ImageDrawingBridge.COPY_READY);
+    assertNotNull(copy.cachedMaterializedForDrawing(1));
+    assertEquals(generation, source.decodedGeneration());
+    if (!Settings.onJavaSE) {
+      assertNotNull(draw.drawPlanForDrawing(1));
+    }
+    assertEquals(0, ImagePreparation.activeEntryCountForTest());
+  }
+
+  @Test
+  void sourceContentIdentitySurvivesDecodedBackingEviction() throws Exception {
     Image image = new Image(jpeg(64, 48)).getSmoothScaledInstance(16, 12);
     ImagePreparation.Request first = image.createPreparationRequest(1);
     ImagePreparation.Request same = image.createPreparationRequest(1);
-    assertEquals(first.sourceGeneration, same.sourceGeneration);
+    assertEquals(first.sourceContentIdentity, same.sourceContentIdentity);
     assertEquals(first.scaleBits, same.scaleBits);
 
     EncodedImageSource source = first.source;
@@ -159,10 +233,9 @@ class ImagePreparationTest {
     source.evictDecodedBacking();
     ImagePreparation.Request afterGenerationChange = image.createPreparationRequest(1);
 
-    assertEquals(1, afterEviction.sourceGeneration);
-    assertEquals(2, afterGenerationChange.sourceGeneration);
-    org.junit.jupiter.api.Assertions.assertNotEquals(first.sourceGeneration,
-        afterGenerationChange.sourceGeneration);
+    assertEquals(first.sourceContentIdentity, afterEviction.sourceContentIdentity);
+    assertEquals(first.sourceContentIdentity, afterGenerationChange.sourceContentIdentity);
+    assertEquals(-1, afterGenerationChange.status);
   }
 
   private static byte[] jpeg(int width, int height) throws Exception {
