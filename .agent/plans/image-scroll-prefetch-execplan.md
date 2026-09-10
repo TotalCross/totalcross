@@ -112,7 +112,7 @@ validation. Do not run other local platform builds.
 - [x] Add reusable asynchronous image preparation.
 - [x] Add ScrollContainer `PREFETCH_ALL` traversal/batch completion.
 - [x] Extend customer benchmark for disabled versus all-prefetch.
-- [ ] Run final matrix/smokes, commit evidence/report, and push.
+- [x] Run final matrix/smokes, commit evidence/report, and push.
 
 ## Current Architecture and Scope
 
@@ -403,6 +403,13 @@ normally:
 
 Record only observations that change remaining work: detached decode limitation,
 unexpected final resampling, batch/layout race, or disabled-profile regression.
+
+- The startup layout can change the content-scale value after a preparation
+  batch captures its request key. Batch completion therefore relies on active
+  batch identity; the captured scale still keys each preparation request.
+- Benchmark execution is deferred to the next UI timer tick after the async
+  completion runner so `repaintNow()` is not suppressed by the runner drain.
+- No disabled-profile warm regression beyond normal noise was observed.
 
 Preserve fixed architecture: worker decode remains detached; global backing
 adoption remains on UI thread.
