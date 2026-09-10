@@ -7,6 +7,7 @@ package totalcross.ui.image;
 import java.util.ArrayList;
 
 import totalcross.ui.MainWindow;
+import totalcross.util.concurrent.Lock;
 
 /** Internal serialized coordinator for detached display preparation. */
 final class ImagePreparation {
@@ -14,7 +15,7 @@ final class ImagePreparation {
   static final int FAILED = 1;
   static final int NOT_PREFETCHABLE = 2;
 
-  private static final Object LOCK = new Object();
+  private static final Lock LOCK = new Lock();
   private static final ArrayList<Entry> entries = new ArrayList<Entry>();
   private static final ArrayList<Entry> pending = new ArrayList<Entry>();
   private static Entry activeEntry;
