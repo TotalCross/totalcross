@@ -395,7 +395,7 @@ Before/after benchmark evidence is mandatory and committed.
 No architectural choices are intentionally left to the executor.
 
 Do not enable 13/14 by default, add a new long-lived raster cache, weaken
-correctness for benchmark hits, or broaden into eviction/prefetch.
+correctness for benchmark hits, or broaden into unbounded eviction/prefetch.
 
 If a source format cannot safely use direct copy, retain fallback and record the
 limitation.
@@ -424,20 +424,24 @@ Initial plan. Architecture and validation policy are fixed for Luna execution.
 
 ## Execution Outcome
 
-The plan was completed through the macOS closeout and cached-final copyRect
-correction at code revision `efe0f3b24`. `copyRect(Image, ...)` now checks the
+The plan was completed through the final cached-raster transition correction at
+code revision `e5aa150da`. `copyRect(Image, ...)` checks the
 destination-scale/source-generation materialized variant before constructing a
 draw plan; a hit uses normal native copyRect, while a miss preserves the
-draw-plan and materialization fallbacks. `drawImage` ordering is unchanged.
+draw-plan and materialization fallbacks. A successful final geometry
+materialization evicts only an equivalent resident physical variant from the
+same bounded slot; scale, generation, color type, frame/layout, and geometry
+signature mismatches remain resident. `drawImage` ordering is unchanged.
 
 The focused smoke covers full and partial hash parity, first fallback
 materialization, cached repeats with no new plan or physical variant, scale and
-decode-generation invalidation, feature-14 creation when no final raster is
-available, and drawImage plan execution. The corrected 663-JPEG matrix passed
-all 24 cold/warm/warm2 records at both resolutions and all four profiles. Warm
-JPEG decodes and physical-variant stores/bytes were zero because cached final
-rasters served copyRect directly; warm p95 was 9 ms at 480x720 and 9–13 ms at
-540x960. Evidence is in
+decode-generation invalidation, the variant-first → final-raster transition
+with one equivalent eviction and zero non-equivalent evictions, feature-14
+creation when no final raster is available, and drawImage plan execution. The
+final 663-JPEG matrix passed all 24 cold/warm/warm2 records at both resolutions
+and all four profiles. Warm JPEG decodes and physical-variant stores/bytes were
+zero because cached final rasters served copyRect directly; warm p95 was 9 ms
+at both 480x720 and 540x960. Evidence is in
 `.agent/evidence/image-warm-copyrect-fast-path/copyrect-revalidated/`.
 
 Android, Linux, Windows, and iOS builds remain deferred because this plan
