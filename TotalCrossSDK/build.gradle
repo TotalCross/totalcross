@@ -856,6 +856,16 @@ registerImageMacSmoke('ImageCopyRectDrawPlanSmoke', 'ImageCopyRectDrawPlanSmokeA
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageStartupOptimizationDefaultsSmoke',
+    'ImageStartupOptimizationDefaultsSmokeApp',
+    'image-startup-optimization-defaults-smoke', false, false, [
+        'fixture=ImageStartupOptimizationDefaultsSmokeApp',
+        'startupBeforeSettingsApi=true',
+        'drawPass=true',
+        'decodePass=true',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageRasterPhysicalVariantSmoke', 'ImageRasterPhysicalVariantSmokeApp',
     'image-raster-physical-variant-smoke', false, false, [
         'fixture=ImageRasterPhysicalVariantSmokeApp',

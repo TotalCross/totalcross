@@ -7,23 +7,21 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Warm image copyRect execution state
 
 - Plan: `.agent/plans/image-warm-copyrect-fast-path-execplan.md`
-- Active milestone: Milestone 3 — complete
-- Working tree: `/private/tmp/image-warm-copyrect-fast-path` (detached at the
-  rewritten feature-branch head while the user worktrees remain untouched)
+- Active milestone: Milestone 1 — startup defaults complete; Milestone 2 next
+- Working tree: `/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path`
 - Remote branch after rewrite: `perf/image-scroll-raster-fast-path`
-- Last completed checkpoint: `da2c0ba94` copyRect fallback-preservation fix
-- Current slice: complete
-- Active paths: final matrix, final warm microbenchmark, and evidence index
+- Last completed checkpoint: `fb5d3d045` plan-state commit
+- Current slice: initialize optimization masks at real Image startup
+- Active paths: `Image.java`, startup smoke, and focused settings validation
 - Focused validation completed: Python syntax check, `git diff --check`, SDK
-  distribution, smoke compilation, macOS native builds, copyRect draw-plan
-  smoke, physical-identity benchmark/guard smoke, final workload matrix, and
-  final warm microbenchmark.
+  distribution, focused `ImageOptimizationSettingsTest`, smoke compilation,
+  and fresh-process startup-default smoke.
 - Evidence: `.agent/evidence/image-warm-copyrect-fast-path.md` and
   `.agent/evidence/image-warm-copyrect-fast-path/{baseline,final}/`
-- Verified remote head: `7b3e0129aa7c18320b4102ea623bc22c9202f5a9` on
-  `perf/image-scroll-raster-fast-path`.
-- Next action: none; plan execution is complete.
+- Verified remote head before this slice: `7c5f633b83690628d10f1d2e07c420638adf6b8f`.
+- Next action: commit startup initialization, then add rejection diagnostics
+  and measure the 663-JPEG disabled/disabled profile.
 - Deferred validation: full cross-platform release matrix remains outside this
   focused macOS image-path change.
-- Recovery: do not touch untracked files in the shared checkout or the existing
-  branch worktree; use this isolated worktree and new evidence directories.
+- Recovery: preserve the untracked generated launcher, benchmark log, and
+  `IOSDateFixture.tcz`; continue in this feature worktree.
