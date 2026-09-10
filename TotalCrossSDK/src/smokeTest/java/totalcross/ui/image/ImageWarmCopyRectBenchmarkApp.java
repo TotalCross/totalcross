@@ -25,18 +25,21 @@ public class ImageWarmCopyRectBenchmarkApp extends MainWindow {
           ImageOptimizationSettings.ENABLED);
       byte[] encoded = ImageRasterBenchmarkSupport.opaquePng(IMAGE_SIZE, IMAGE_SIZE);
       Image materialized = ImageRasterBenchmarkSupport.materialize(encoded);
-      Image deferred = new Image(encoded, encoded.length).getSmoothScaledInstance(
+      Image deferredDraw = new Image(encoded, encoded.length).getSmoothScaledInstance(
+          IMAGE_SIZE, IMAGE_SIZE);
+      Image deferredCopy = new Image(encoded, encoded.length).getSmoothScaledInstance(
           IMAGE_SIZE, IMAGE_SIZE);
       long expectedHash = runCase(materialized, "materialized", false);
-      long deferredDrawHash = runCase(deferred, "deferred-drawImage", false);
-      long deferredCopyHash = runCase(deferred, "deferred-copyRect", false);
+      long deferredDrawHash = runCase(deferredDraw, "deferred-drawImage", false);
+      long deferredCopyHash = runCase(deferredCopy, "deferred-copyRect", false);
       ImageRasterBenchmarkSupport.require(expectedHash == deferredDrawHash
           && expectedHash == deferredCopyHash, "full draw hashes differ");
       long clippedExpectedHash = runCase(materialized, "materialized", true);
-      long clippedDrawHash = runCase(deferred, "deferred-drawImage", true);
-      long clippedCopyHash = runCase(deferred, "deferred-copyRect", true);
+      long clippedDrawHash = runCase(deferredDraw, "deferred-drawImage", true);
+      long clippedCopyHash = runCase(deferredCopy, "deferred-copyRect", true);
       ImageRasterBenchmarkSupport.require(clippedExpectedHash == clippedDrawHash
           && clippedExpectedHash == clippedCopyHash, "partial draw hashes differ");
+      runIdentityCase();
       overallPass = true;
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":"
@@ -52,6 +55,7 @@ public class ImageWarmCopyRectBenchmarkApp extends MainWindow {
     Image target = Image.createLogical(96, 96, 1);
     Graphics canvas = target.getGraphics();
     ImageRasterBenchmarkSupport.require(canvas != null, "target graphics");
+    Image.resetImageOperationAccountingForTest();
     for (int warmup = 0; warmup < WARMUP_COUNT; warmup++) {
       runBatch(canvas, image, operation, clip);
     }
@@ -72,12 +76,61 @@ public class ImageWarmCopyRectBenchmarkApp extends MainWindow {
         + ",native_geometry_materializations=" + Image.nativeGeometryMaterializationCountForTest()
         + ",physical_identity_attempts=" + NativeImageBacking.physicalIdentityAttemptsForTest()
         + ",physical_identity_hits=" + NativeImageBacking.physicalIdentityHitsForTest()
+        + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()
         + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
+        + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
         + ",write_pixels_copied_bytes=" + NativeImageBacking.writePixelsCopiedBytesForTest()
         + ",generic_geometry_draws=" + NativeImageBacking.genericGeometryDrawsForTest()
         + ",smooth_resample_draws=" + NativeImageBacking.smoothResampleDrawsForTest());
     canvas.clearClip();
     return hash;
+  }
+
+  private void runIdentityCase() throws Exception {
+    Image source = Image.createLogical(IMAGE_SIZE, IMAGE_SIZE, 2);
+    Graphics sourceCanvas = source.getGraphics();
+    ImageRasterBenchmarkSupport.require(sourceCanvas != null, "identity source graphics");
+    sourceCanvas.foreColor = 0xFF284868;
+    sourceCanvas.fillRect(0, 0, IMAGE_SIZE, IMAGE_SIZE);
+    Image transformed = source.getSmoothScaledInstance(IMAGE_SIZE, IMAGE_SIZE);
+    Image target = Image.createLogical(96, 96, 2);
+    Graphics canvas = target.getGraphics();
+    ImageRasterBenchmarkSupport.require(canvas != null, "identity target graphics");
+    Image.resetImageOperationAccountingForTest();
+    for (int warmup = 0; warmup < WARMUP_COUNT; warmup++) {
+      runIdentityBatch(canvas, transformed);
+    }
+    Image.resetImageOperationAccountingForTest();
+    long total = 0;
+    long hash = 0;
+    for (int sample = 0; sample < SAMPLE_COUNT; sample++) {
+      long start = Vm.getTimeStamp();
+      runIdentityBatch(canvas, transformed);
+      total += Vm.getTimeStamp() - start;
+      hash = ImageRasterBenchmarkSupport.fullPixelHash(target);
+    }
+    ImageRasterBenchmarkSupport.require(
+        NativeImageBacking.physicalIdentityHitsForTest() > 0
+            && NativeImageBacking.writePixelsHitsForTest() > 0
+            && NativeImageBacking.genericGeometryDrawsForTest() == 0
+            && NativeImageBacking.smoothResampleDrawsForTest() == 0,
+        "identity direct counters");
+    System.out.println("fixture=ImageWarmCopyRectBenchmarkApp,record=identity-direct"
+        + ",average_ms=" + total / (double) SAMPLE_COUNT
+        + ",operations=" + OPERATIONS_PER_SAMPLE
+        + ",hash=" + ImageRasterBenchmarkSupport.hashString(hash)
+        + ",physical_identity_hits=" + NativeImageBacking.physicalIdentityHitsForTest()
+        + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
+        + ",generic_geometry_draws=" + NativeImageBacking.genericGeometryDrawsForTest()
+        + ",smooth_resample_draws=" + NativeImageBacking.smoothResampleDrawsForTest());
+    canvas.clearClip();
+  }
+
+  private static void runIdentityBatch(Graphics canvas, Image source) {
+    canvas.clearClip();
+    for (int index = 0; index < OPERATIONS_PER_SAMPLE; index++) {
+      canvas.drawImage(source, 16, 16, false);
+    }
   }
 
   private static void runBatch(Graphics canvas, Image image, String operation, boolean clip) {

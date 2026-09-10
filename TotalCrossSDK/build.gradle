@@ -842,6 +842,11 @@ registerImageMacSmoke('ImageWarmCopyRectBenchmark', 'ImageWarmCopyRectBenchmarkA
         'operation=deferred-drawImage',
         'operation=deferred-copyRect',
         'clip=partial',
+        'record=identity-direct',
+        'physical_identity_hits=',
+        'write_pixels_hits=',
+        'generic_geometry_draws=0',
+        'smooth_resample_draws=0',
         'overallPass=true'
     ])
 
