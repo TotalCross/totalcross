@@ -10,7 +10,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Active milestone: Complete — final transition validated and pushed
 - Working tree: `/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path`
 - Remote branch after rewrite: `perf/image-scroll-raster-fast-path`
-- Last completed checkpoint: `e5faefe62` final evidence/docs closeout
+- Last completed checkpoint: `434ca0966` final remote verification
 - Current slice: remote verification after normal fast-forward push
 - Active paths: `.agent/evidence/.../copyrect-revalidated/`, state, and plan
 - Focused validation completed: copyRect full/partial hashes, one first
@@ -29,7 +29,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Runtime SHA-256: `32cce8727e61f1f6f1bc06301e62fdd466e507d3a439c513e3b8e00fd251e832`.
 - Verified remote head before this slice: `8c9bebd8f`.
 - Remote verification: `origin/perf/image-scroll-raster-fast-path` equals
-  `e5faefe62` after the normal fast-forward push.
+  `434ca0966` after the normal fast-forward pushes.
 - Next action: none; the execution plan is complete.
 - Deferred validation: full cross-platform release matrix remains outside this
   focused macOS image-path change.
