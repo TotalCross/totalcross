@@ -23,6 +23,8 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
     boolean noIntersectionPass = false;
     boolean framePass = false;
     boolean fallbackPass = false;
+    boolean feature15DefaultPass = false;
+    boolean feature15DisabledPass = false;
     String error = "";
     try {
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled", false, false);
@@ -36,20 +38,26 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
       noIntersectionPass = noIntersection(deferred);
       framePass = frameCopy();
       fallbackPass = unsupportedFallback(source);
+      feature15DefaultPass = identityFeatureState(true);
+      feature15DisabledPass = identityFeatureState(false);
       ImageRasterBenchmarkSupport.require(fullPass, "full copyRect plan path");
       ImageRasterBenchmarkSupport.require(clippedPass, "clipped copyRect plan path");
       ImageRasterBenchmarkSupport.require(noIntersectionPass, "no-intersection copyRect");
       ImageRasterBenchmarkSupport.require(framePass, "frame copyRect plan path");
       ImageRasterBenchmarkSupport.require(fallbackPass, "unsupported copyRect fallback");
+      ImageRasterBenchmarkSupport.require(feature15DefaultPass, "feature 15 default");
+      ImageRasterBenchmarkSupport.require(feature15DisabledPass, "feature 15 disabled");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_').replace(',', '_');
     }
     boolean pass = fullPass && clippedPass && noIntersectionPass && framePass && fallbackPass
-        && error.length() == 0;
+        && feature15DefaultPass && feature15DisabledPass && error.length() == 0;
     System.out.println("fixture=ImageCopyRectDrawPlanSmokeApp,full=" + fullPass
         + ",clipped=" + clippedPass + ",noIntersection=" + noIntersectionPass
         + ",frame=" + framePass + ",fallback=" + fallbackPass
+        + ",feature15Default=" + feature15DefaultPass
+        + ",feature15Disabled=" + feature15DisabledPass
         + ",directDrawPlans=" + Image.directDrawPlanExecutionCountForTest()
         + ",physicalIdentityHits=" + NativeImageBacking.physicalIdentityHitsForTest()
         + ",genericGeometryDraws=" + NativeImageBacking.genericGeometryDrawsForTest()
@@ -78,6 +86,7 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
     boolean direct = Image.directDrawPlanExecutionCountForTest() > 0
         && Image.nativeGeometryMaterializationCountForTest() == 0;
     boolean raster = NativeImageBacking.physicalIdentityHitsForTest() > 0
+        && NativeImageBacking.writePixelsHitsForTest() > 0
         && NativeImageBacking.genericGeometryDrawsForTest() == 0
         && NativeImageBacking.smoothResampleDrawsForTest() == 0;
     return pixels && direct && raster;
@@ -133,6 +142,37 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
         && Image.directDrawPlanExecutionCountForTest() == 0
         && NativeImageBacking.physicalIdentityAttemptsForTest() == 0
         && Image.nativeGeometryMaterializationCountForTest() > 0;
+  }
+
+  private static boolean identityFeatureState(boolean defaultEnabled) throws Exception {
+    ImageOptimizationSettings.resetForTest();
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    if (!defaultEnabled) {
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
+          ImageOptimizationSettings.DISABLED);
+    }
+    Image source = patternedSource(SOURCE_WIDTH, SOURCE_HEIGHT);
+    Image deferred = source.getSmoothScaledInstance(SOURCE_WIDTH, SOURCE_HEIGHT);
+    Image expectedSource = deferred.resolveForDrawing(2);
+    Image expected = target();
+    Image actual = target();
+    expected.getGraphics().copyRect(expectedSource, 0, 0, SOURCE_WIDTH, SOURCE_HEIGHT, DEST_X, DEST_Y);
+    Image.resetImageOperationAccountingForTest();
+    actual.getGraphics().copyRect(deferred, 0, 0, SOURCE_WIDTH, SOURCE_HEIGHT, DEST_X, DEST_Y);
+    boolean parity = samePixels(expected.getPixels(), actual.getPixels());
+    if (defaultEnabled) {
+      return parity && Image.directDrawPlanExecutionCountForTest() > 0
+          && Image.nativeGeometryMaterializationCountForTest() == 0
+          && NativeImageBacking.physicalIdentityHitsForTest() > 0
+          && NativeImageBacking.writePixelsHitsForTest() > 0
+          && NativeImageBacking.genericGeometryDrawsForTest() == 0;
+    }
+    return parity && Image.directDrawPlanExecutionCountForTest() > 0
+        && Image.nativeGeometryMaterializationCountForTest() == 0
+        && NativeImageBacking.physicalIdentityAttemptsForTest() == 0
+        && NativeImageBacking.genericGeometryDrawsForTest() > 0
+        && NativeImageBacking.smoothResampleDrawsForTest() > 0;
   }
 
   private static Image target() throws Exception {

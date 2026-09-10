@@ -96,6 +96,10 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
                         bool sourceOpaque, float srcLeft, float srcTop, float srcRight,
                         float srcBottom, float dstLeft, float dstTop, float dstRight,
                         float dstBottom, int32 alphaMask, int32 optimizationMask);
+int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
+                          int32 sourceLeft, int32 sourceTop, int32 sourceRight, int32 sourceBottom,
+                          int32 destinationLeft, int32 destinationTop, int32 destinationRight,
+                          int32 destinationBottom, int32 alphaMask, int32 optimizationMask);
 bool proveOpaque(NativeImageBackingRecord* source);
 void recordTargetColorAttemptForTest();
 void recordTargetColorFallbackForTest();

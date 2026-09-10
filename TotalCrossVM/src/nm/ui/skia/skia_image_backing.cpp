@@ -240,6 +240,42 @@ bool proveOpaqueForWritePixels(NativeImageBackingRecord* source) {
     return opaque;
 }
 
+bool proveOpaqueWithoutSnapshot(NativeImageBackingRecord* source) {
+    if (!source) {
+        return false;
+    }
+    if (source->opacity == SKIA_IMAGE_OPACITY_OPAQUE) {
+        return true;
+    }
+    if (source->opacity == SKIA_IMAGE_OPACITY_TRANSLUCENT) {
+        return false;
+    }
+    if (source->format != IMAGE_BACKING_FORMAT_RGBA8888) {
+        return false;
+    }
+    SkPixmap pixmap;
+    const bool peeked = source->image
+        ? source->image->peekPixels(&pixmap)
+        : source->surface && source->surface->peekPixels(&pixmap);
+    if (!peeked) {
+        return false;
+    }
+    for (int32 y = 0; y < source->height; ++y) {
+        const uint8_t* row = static_cast<const uint8_t*>(pixmap.addr(0, y));
+        if (!row) {
+            return false;
+        }
+        for (int32 x = 0; x < source->width; ++x) {
+            if (row[static_cast<size_t>(x) * 4 + 3] != 0xff) {
+                source->opacity = SKIA_IMAGE_OPACITY_TRANSLUCENT;
+                return false;
+            }
+        }
+    }
+    source->opacity = SKIA_IMAGE_OPACITY_OPAQUE;
+    return true;
+}
+
 bool readRgbaBytes(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
                    int32 width, int32 height);
 
@@ -390,6 +426,95 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
     UNUSED(dstTop)
     UNUSED(dstRight)
     UNUSED(dstBottom)
+    UNUSED(alphaMask)
+    UNUSED(optimizationMask)
+    return 0;
+#endif
+}
+
+int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
+                          int32 sourceLeft, int32 sourceTop, int32 sourceRight, int32 sourceBottom,
+                          int32 destinationLeft, int32 destinationTop, int32 destinationRight,
+                          int32 destinationBottom, int32 alphaMask, int32 optimizationMask) {
+#if TC_GRAPHICS_SOFTWARE
+    constexpr int32 kOpaqueWritePixelsBit = 1 << 2;
+    constexpr int32 kTargetColorConversionBit = 1 << 13;
+    if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
+        return 0;
+    }
+    ++writePixelsAttemptsForTest;
+    auto fallback = []() {
+        ++writePixelsFallbacksForTest;
+        return 0;
+    };
+    const int32 width = sourceRight - sourceLeft;
+    const int32 height = sourceBottom - sourceTop;
+    if (!targetCanvas || !source || alphaMask != 255 || width <= 0 || height <= 0
+        || width != destinationRight - destinationLeft
+        || height != destinationBottom - destinationTop
+        || sourceLeft < 0 || sourceTop < 0 || sourceRight > source->width
+        || sourceBottom > source->height || !std::isfinite(static_cast<float>(destinationLeft))
+        || !std::isfinite(static_cast<float>(destinationTop))) {
+        return fallback();
+    }
+    if (source->format != IMAGE_BACKING_FORMAT_RGBA8888
+        && (optimizationMask & kTargetColorConversionBit) == 0) {
+        return fallback();
+    }
+    if (!proveOpaqueWithoutSnapshot(source)) {
+        return fallback();
+    }
+    SkPixmap targetPixels;
+    if (!targetCanvas->peekPixels(&targetPixels)
+        || destinationLeft < 0 || destinationTop < 0
+        || destinationRight > targetPixels.width() || destinationBottom > targetPixels.height()) {
+        return fallback();
+    }
+    try {
+        if (source->format == IMAGE_BACKING_FORMAT_RGBA8888) {
+            SkPixmap pixmap;
+            SkPixmap subset;
+            const SkIRect sourceRect = SkIRect::MakeLTRB(sourceLeft, sourceTop,
+                                                         sourceRight, sourceBottom);
+            const bool peeked = source->image
+                ? source->image->peekPixels(&pixmap)
+                : source->surface && source->surface->peekPixels(&pixmap);
+            if (!peeked
+                || !pixmap.extractSubset(&subset, sourceRect)
+                || !targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
+                                              destinationLeft, destinationTop)) {
+                return fallback();
+            }
+        } else {
+            const size_t rowBytes = static_cast<size_t>(width) * 4;
+            std::vector<uint8_t> rgba(rowBytes);
+            const SkImageInfo info = rasterInfo(width, 1, IMAGE_BACKING_FORMAT_RGBA8888);
+            for (int32 row = 0; row < height; ++row) {
+                if (!readRgbaBytes(source, rgba.data(), sourceLeft, sourceTop + row, width, 1)
+                    || !targetCanvas->writePixels(info, rgba.data(), rowBytes,
+                                                  destinationLeft, destinationTop + row)) {
+                    return fallback();
+                }
+            }
+        }
+        ++writePixelsHitsForTest;
+        writePixelsCopiedBytesForTest += static_cast<uint64_t>(width)
+            * static_cast<uint64_t>(height) * 4;
+        return 1;
+    } catch (const std::bad_alloc&) {
+        return fallback();
+    }
+#else
+    UNUSED(targetCanvas)
+    UNUSED(source)
+    UNUSED(sourceLeft)
+    UNUSED(sourceTop)
+    UNUSED(sourceRight)
+    UNUSED(sourceBottom)
+    UNUSED(destinationLeft)
+    UNUSED(destinationTop)
+    UNUSED(destinationRight)
+    UNUSED(destinationBottom)
     UNUSED(alphaMask)
     UNUSED(optimizationMask)
     return 0;
@@ -556,6 +681,15 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
     return ::tryWritePixelsImage(targetCanvas, image, width, height, sourceOpaque, srcLeft,
                                  srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight,
                                  dstBottom, alphaMask, optimizationMask);
+}
+
+int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
+                          int32 sourceLeft, int32 sourceTop, int32 sourceRight, int32 sourceBottom,
+                          int32 destinationLeft, int32 destinationTop, int32 destinationRight,
+                          int32 destinationBottom, int32 alphaMask, int32 optimizationMask) {
+    return ::tryDirectPhysicalCopy(targetCanvas, source, sourceLeft, sourceTop, sourceRight,
+                                   sourceBottom, destinationLeft, destinationTop, destinationRight,
+                                   destinationBottom, alphaMask, optimizationMask);
 }
 
 bool proveOpaque(NativeImageBackingRecord* source) {

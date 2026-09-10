@@ -1135,6 +1135,21 @@ static GeometryDrawResult drawPhysicalFastPath(const SkiaImageDrawPlanData* plan
                 skia_image_backing_record_physical_identity_hit_for_test();
                 return GEOMETRY_HANDLED_NOOP;
             }
+            if (skia_image_backing_internal::tryDirectPhysicalCopy(
+                    canvas, source,
+                    static_cast<int32>(physicalPlan.sourcePixels.fLeft),
+                    static_cast<int32>(physicalPlan.sourcePixels.fTop),
+                    static_cast<int32>(physicalPlan.sourcePixels.fRight),
+                    static_cast<int32>(physicalPlan.sourcePixels.fBottom),
+                    static_cast<int32>(physicalPlan.destinationPixels.fLeft),
+                    static_cast<int32>(physicalPlan.destinationPixels.fTop),
+                    static_cast<int32>(physicalPlan.destinationPixels.fRight),
+                    static_cast<int32>(physicalPlan.destinationPixels.fBottom),
+                    plan->alphaMask, plan->optimizationMask)) {
+                skia_image_backing_record_physical_identity_hit_for_test();
+                skia_image_backing_record_physical_identity_resample_avoided_for_test();
+                return GEOMETRY_HANDLED_MUTATED;
+            }
             if (isTrivialWritePixelsPlan(plan)
                 && skia_image_backing_try_write_pixels(canvas, plan->rootHandle,
                     physicalPlan.visibleSourceLogical.fLeft,
