@@ -6,6 +6,47 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Warm copyRect evidence index
 
+## Cached-final copyRect correction
+
+- `2026-09-10` — revision `efe0f3b24` — PASS — `Graphics.copyRect(Image,
+  ...)` now checks the final materialized variant for destination scale and
+  source decode generation before creating a draw plan. The focused smoke
+  recorded one first fallback materialization and plan, zero physical-variant
+  stores, cache-served full and partial copies, correct scale and decode
+  generation invalidation, and unchanged drawImage plan execution. Artifacts:
+  `image-warm-copyrect-fast-path/copyrect-revalidated/`.
+- The fresh-process 663-JPEG matrix passed all 24 cold/warm/warm2 records at
+  480x720 and 540x960 across the four target-color/physical-variant profiles.
+  Warm JPEG decodes were zero; warm physical-variant stores and bytes were
+  zero because the cached final raster served copyRect directly. Warm p95 was
+  9 ms at 480x720 and 9–13 ms at 540x960. Cold backing live/peak bytes were
+  `940232584` and `1019597208`, respectively.
+- Feature-14 physical-variant creation remains covered by the mutation smoke
+  when no final materialization is available: one materialization and
+  `160000` variant bytes with passing pixel parity. Startup defaults and warm
+  full/partial hash lanes also passed. Runtime SHA-256:
+  `efef5fb8b062df88054daa7c2e4aeeff98b1b1dd1c2ea49e00aad48ce188a61a`.
+
+## Authoritative revalidation
+
+- `2026-09-09T23:15:00-03:00` — code revision `0366e909f` — PASS — startup
+  defaults, direct physical-variant smoke, corrected warm micro, and the
+  fresh-process 663-JPEG matrix were rerun after the direct-copy fix. The
+  authoritative artifacts are in
+  `image-warm-copyrect-fast-path/final-revalidated/`.
+- Final matrix: 24 pass records across 480x720/540x960, target-color
+  disabled/enabled, and physical-variant disabled/enabled, with three passes
+  each. Warm p95 is 9 ms everywhere; warm JPEG decodes are zero everywhere.
+  Variant-enabled warm writes are 4509 and 5898 hits at the two resolutions.
+- Rejection diagnostics: mapping geometry dominates at 4509 and 5898 rejects
+  per pass; backing rejects are zero. Cold physical-variant bytes are
+  268180848 and 339890928. `target_color_converted_bytes` is emitted and zero
+  for this macOS target.
+- Runtime SHA-256:
+  `efef5fb8b062df88054daa7c2e4aeeff98b1b1dd1c2ea49e00aad48ce188a61a`.
+- Scope: macOS SDK/native validation only; Android, Linux, Windows, and iOS
+  were intentionally deferred.
+
 - `2026-09-09T23:22:23Z` — rewrite — remote
   `perf/image-scroll-raster-fast-path` moved from `640e327cd584342e3137260272e733f5b47a39f7`
   to `81bb027e650712af29d7df8ecde6a6caadaf763e` with the required lease.

@@ -1,4 +1,0 @@
-[1/3] Building CXX object CMakeFiles/tcvm.dir/src/nm/ui/skia/skia_image_geometry_materialize.cpp.o
-[2/3] Building CXX object CMakeFiles/tcvm.dir/src/nm/ui/skia/skia_image_backing.cpp.o
-[3/3] Linking CXX shared library libtcvm.dylib
-ld: warning: ignoring duplicate libraries: '-lc++', '/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/TotalCrossVM/deps/totalcross-depot-tools/libpng/local/macos/arm64/lib/libpng16.a', '/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/TotalCrossVM/deps/totalcross-depot-tools/zlib-ng/local/macos/arm64/lib/libz.a'

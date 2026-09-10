@@ -98,12 +98,13 @@ validation. Do not run Android, Linux, Windows, or iOS local builds.
 
 ## Progress
 
-- [ ] Rewrite the branch and remove `640e327cd`.
-- [ ] Add the 13/14 benchmark matrix and commit baseline evidence.
-- [ ] Implement central effective defaults.
-- [ ] Make `copyRect(Image, ...)` draw-plan aware.
-- [ ] Add the direct physical-identity warm-copy path.
-- [ ] Run final benchmarks/smokes, commit evidence/report, and push.
+- [x] Rewrite the branch and remove `640e327cd`.
+- [x] Add the 13/14 benchmark matrix and commit baseline evidence.
+- [x] Implement central effective defaults.
+- [x] Make `copyRect(Image, ...)` draw-plan aware.
+- [x] Add the direct physical-identity warm-copy path.
+- [x] Run final benchmarks/smokes, commit evidence/report, and push.
+- [x] Correct copyRect to prefer a valid cached final raster before a draw plan.
 
 Update progress only at logical commits or milestone boundaries.
 
@@ -112,9 +113,9 @@ Update progress only at logical commits or milestone boundaries.
 `Graphics.drawImage` first obtains a cached native draw plan and attempts native
 geometry execution. It materializes only if that path cannot handle the draw.
 
-`Graphics.copyRect(GfxSurface, ...)` currently resolves/materializes an `Image`
-before native copy, preventing deferred pipelines from reaching the same raster
-optimizations.
+`Graphics.copyRect(GfxSurface, ...)` checks for a valid final materialized raster
+for the destination scale and source decode generation before attempting a draw
+plan. A cache miss still follows the draw-plan/native fallback sequence.
 
 `ImagePipeline` already caches draw plans by destination scale and source decode
 generation. Do not add another Java draw-plan cache.
@@ -423,14 +424,21 @@ Initial plan. Architecture and validation policy are fixed for Luna execution.
 
 ## Execution Outcome
 
-The plan was executed through the macOS closeout slice at code revision
-`0366e909f`. Startup defaults, compact rejection diagnostics, direct physical
-variant copying, and independent warm micro lanes are implemented and covered
-by fresh-process smoke tests. The final matrix is recorded under
-`.agent/evidence/image-warm-copyrect-fast-path/final-revalidated/`.
+The plan was completed through the macOS closeout and cached-final copyRect
+correction at code revision `efe0f3b24`. `copyRect(Image, ...)` now checks the
+destination-scale/source-generation materialized variant before constructing a
+draw plan; a hit uses normal native copyRect, while a miss preserves the
+draw-plan and materialization fallbacks. `drawImage` ordering is unchanged.
 
-The measured result is a 9 ms warm p95 at both 480x720 and 540x960 for all
-four 13/14 profiles, with zero warm JPEG decodes. Mapping geometry is the
-dominant physical-identity rejection. Android, Linux, Windows, and iOS builds
-remain deferred because this plan explicitly limits local validation to the
-SDK and macOS native runtime.
+The focused smoke covers full and partial hash parity, first fallback
+materialization, cached repeats with no new plan or physical variant, scale and
+decode-generation invalidation, feature-14 creation when no final raster is
+available, and drawImage plan execution. The corrected 663-JPEG matrix passed
+all 24 cold/warm/warm2 records at both resolutions and all four profiles. Warm
+JPEG decodes and physical-variant stores/bytes were zero because cached final
+rasters served copyRect directly; warm p95 was 9 ms at 480x720 and 9–13 ms at
+540x960. Evidence is in
+`.agent/evidence/image-warm-copyrect-fast-path/copyrect-revalidated/`.
+
+Android, Linux, Windows, and iOS builds remain deferred because this plan
+limits local validation to the SDK and macOS native runtime.
