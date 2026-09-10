@@ -420,3 +420,17 @@ cost. Point to evidence instead of copying raw output.
 ## Revision Note
 
 Initial plan. Architecture and validation policy are fixed for Luna execution.
+
+## Execution Outcome
+
+The plan was executed through the macOS closeout slice at code revision
+`0366e909f`. Startup defaults, compact rejection diagnostics, direct physical
+variant copying, and independent warm micro lanes are implemented and covered
+by fresh-process smoke tests. The final matrix is recorded under
+`.agent/evidence/image-warm-copyrect-fast-path/final-revalidated/`.
+
+The measured result is a 9 ms warm p95 at both 480x720 and 540x960 for all
+four 13/14 profiles, with zero warm JPEG decodes. Mapping geometry is the
+dominant physical-identity rejection. Android, Linux, Windows, and iOS builds
+remain deferred because this plan explicitly limits local validation to the
+SDK and macOS native runtime.
