@@ -110,8 +110,36 @@ static void waitUntilStarted() // waits until the window is shown in windows ce 
 typedef struct
 {
    HWND hWnd;
+   DWORD currentProcessId;
+   TCHAR exePath[MAX_PATHNAME];
 } TWindowBeingSearched, *WindowBeingSearched;
 
+#if defined(WIN32) && !defined(WINCE)
+static BOOL CALLBACK SearchWindowProc(HWND hwnd, LPARAM lParam)
+{
+   DWORD processId;
+   TCHAR processPath[MAX_PATHNAME];
+   DWORD processPathLength = MAX_PATHNAME;
+   WindowBeingSearched wbs = (WindowBeingSearched)lParam;
+   if (GetWindowThreadProcessId(hwnd, &processId) == 0
+      || processId == wbs->currentProcessId)
+   {
+      return true;
+   }
+   HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
+   if (process == null)
+      return true;
+   if (QueryFullProcessImageName(process, 0, processPath, &processPathLength)
+      && lstrcmpi(processPath, wbs->exePath) == 0)
+   {
+      wbs->hWnd = hwnd;
+      CloseHandle(process);
+      return false;
+   }
+   CloseHandle(process);
+   return true; // continue enumeration
+}
+#else
 static BOOL CALLBACK SearchWindowProc(HWND hwnd, LPARAM lParam)
 {
    TCHAR wclass[256];
@@ -125,15 +153,24 @@ static BOOL CALLBACK SearchWindowProc(HWND hwnd, LPARAM lParam)
    }
    return true; // continue enumeration
 }
+#endif
 
 static bool checkIfRunning()
 {
    TWindowBeingSearched wbs;
 
    tzero(wbs);
-   EnumWindows(SearchWindowProc, (long)&wbs); // both window text and class must be tested, otherwise an Explorer window browsing the Painter folder will be incorrectly recognized as a Painter application
+   wbs.currentProcessId = GetCurrentProcessId();
+#if defined(WIN32) && !defined(WINCE)
+   GetModuleFileName(GetModuleHandle(null), wbs.exePath, MAX_PATHNAME);
+#endif
+   EnumWindows(SearchWindowProc, (LPARAM)&wbs);
    if (wbs.hWnd != null)
+   {
+      if (IsIconic(wbs.hWnd))
+         ShowWindow(wbs.hWnd, SW_RESTORE);
       SetForegroundWindow(wbs.hWnd);
+   }
    return wbs.hWnd != null;
 }
 
