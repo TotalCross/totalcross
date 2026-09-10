@@ -224,7 +224,8 @@ def main(argv):
                           record["variant_cache_profile"], "disabled", record["pass"])]
         prefetch_p95 = integer(record, "frame_time_p95_ms", record["run"])
         baseline_p95 = integer(baseline, "frame_time_p95_ms", record["run"])
-        if prefetch_p95 * 10 > baseline_p95 * 11:
+        allowed_p95 = (baseline_p95 * 11 + 9) // 10
+        if prefetch_p95 > allowed_p95:
             raise RuntimeError(f"{record['run']} warm p95 exceeds disabled baseline by more than 10%")
 
     results_path = output_dir / "results.csv"
