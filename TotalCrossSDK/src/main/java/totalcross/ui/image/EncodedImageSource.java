@@ -250,6 +250,14 @@ final class EncodedImageSource extends ImageSource {
     decodedGeneration++;
   }
 
+  /** Releases the intermediate decode after a COPY_READY raster owns the final pixels. */
+  void releaseDecodedBackingAfterMaterialization() {
+    decodedBacking = null;
+    decodedWidth = 0;
+    decodedHeight = 0;
+    decodedDenominator = 0;
+  }
+
   void releaseForSmoke() {
     releaseNativeBag();
   }
