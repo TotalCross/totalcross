@@ -7,11 +7,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Warm image copyRect execution state
 
 - Plan: `.agent/plans/image-warm-copyrect-fast-path-execplan.md`
-- Active milestone: Complete — cached-final copyRect correction validated
+- Active milestone: Complete — evidence closeout pushed
 - Working tree: `/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path`
 - Remote branch after rewrite: `perf/image-scroll-raster-fast-path`
-- Last completed checkpoint: `efe0f3b24` cached-final copyRect correction
-- Current slice: evidence and plan closeout after code push
+- Last completed checkpoint: `d55be3907` final evidence and state closeout
+- Current slice: remote verification after normal push
 - Active paths: `.agent/evidence/.../copyrect-revalidated/`, state, and plan
 - Focused validation completed: copyRect full/partial hashes, one first
   fallback materialization and plan, zero cached-repeat plans or physical
@@ -29,9 +29,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Verified remote head before this slice:
   `72a1ee599cd538c3343f8b6ed5292eba968e9246`.
 - Remote verification: `origin/perf/image-scroll-raster-fast-path` equals
-  `efe0f3b24` after the normal fast-forward code push.
-- Next action: commit documentation/evidence, push normally without force, and
-  record the final remote verification.
+  `d55be3907` after normal fast-forward pushes of code and evidence.
+- Next action: none; the execution plan is complete.
 - Deferred validation: full cross-platform release matrix remains outside this
   focused macOS image-path change.
 - Recovery: preserve the untracked generated launcher, benchmark log, and
