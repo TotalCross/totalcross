@@ -129,7 +129,7 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
 
 static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
                                  int32 srcX, int32 srcY, int32 width, int32 height,
-                                 int32 dstX, int32 dstY, int32 doClip)
+                                 int32 dstX, int32 dstY, int32 doClip, bool physicalOnly)
 {
    SkiaImageDrawPlanData data;
    int32 surfaceId;
@@ -168,6 +168,10 @@ static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObj
             (float)Graphics_clipX2(dstSurf), (float)Graphics_clipY2(dstSurf))) {
          UNUSED(currentContext)
          return true;
+      }
+      if (physicalOnly) {
+         UNUSED(currentContext)
+         return false;
       }
       if (dstX < Graphics_clipX1(dstSurf)) {
          int32 delta = Graphics_clipX1(dstSurf) - dstX;

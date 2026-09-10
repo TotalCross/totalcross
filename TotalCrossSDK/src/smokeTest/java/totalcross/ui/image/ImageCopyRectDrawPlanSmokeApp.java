@@ -168,11 +168,10 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
           && NativeImageBacking.writePixelsHitsForTest() > 0
           && NativeImageBacking.genericGeometryDrawsForTest() == 0;
     }
-    return parity && Image.directDrawPlanExecutionCountForTest() > 0
-        && Image.nativeGeometryMaterializationCountForTest() == 0
+    return parity && Image.directDrawPlanExecutionCountForTest() == 0
         && NativeImageBacking.physicalIdentityAttemptsForTest() == 0
-        && NativeImageBacking.genericGeometryDrawsForTest() > 0
-        && NativeImageBacking.smoothResampleDrawsForTest() > 0;
+        && NativeImageBacking.genericGeometryDrawsForTest() == 0
+        && NativeImageBacking.smoothResampleDrawsForTest() == 0;
   }
 
   private static Image target() throws Exception {

@@ -70,6 +70,10 @@ public class ImageWarmCopyRectBenchmarkApp extends MainWindow {
         + ",hash=" + ImageRasterBenchmarkSupport.hashString(hash)
         + ",materializations=" + Image.materializationCountForTest()
         + ",native_geometry_materializations=" + Image.nativeGeometryMaterializationCountForTest()
+        + ",physical_identity_attempts=" + NativeImageBacking.physicalIdentityAttemptsForTest()
+        + ",physical_identity_hits=" + NativeImageBacking.physicalIdentityHitsForTest()
+        + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
+        + ",write_pixels_copied_bytes=" + NativeImageBacking.writePixelsCopiedBytesForTest()
         + ",generic_geometry_draws=" + NativeImageBacking.genericGeometryDrawsForTest()
         + ",smooth_resample_draws=" + NativeImageBacking.smoothResampleDrawsForTest());
     canvas.clearClip();
