@@ -82,6 +82,7 @@ public class Image extends GfxSurface {
   static int imagePipelineCreatedCountForTest;
   static int imageDrawPlanCreatedCountForTest;
   static int imageDrawPlanCacheHitCountForTest;
+  static int materializedVariantCacheHitCountForTest;
   static int imageDrawPlanCapabilitiesAllocatedCountForTest;
   static int presentationOnlyPlanRecreationCountForTest;
   static int fullDecodeInvocationCountForTest;
@@ -168,6 +169,10 @@ public class Image extends GfxSurface {
     return materializationCountForTest;
   }
 
+  static int materializedVariantCacheHitCountForTest() {
+    return materializedVariantCacheHitCountForTest;
+  }
+
   static int targetedDecodeWidthForTest() {
     return targetedDecodeWidthForTest;
   }
@@ -222,6 +227,7 @@ public class Image extends GfxSurface {
     imagePipelineCreatedCountForTest = 0;
     imageDrawPlanCreatedCountForTest = 0;
     imageDrawPlanCacheHitCountForTest = 0;
+    materializedVariantCacheHitCountForTest = 0;
     imageDrawPlanCapabilitiesAllocatedCountForTest = 0;
     presentationOnlyPlanRecreationCountForTest = 0;
     fullDecodeInvocationCountForTest = 0;
@@ -302,6 +308,12 @@ public class Image extends GfxSurface {
   static void recordImageDrawPlanCacheHitForTest() {
     if (imageOperationAccountingForTest) {
       imageDrawPlanCacheHitCountForTest++;
+    }
+  }
+
+  static void recordMaterializedVariantCacheHitForTest() {
+    if (imageOperationAccountingForTest) {
+      materializedVariantCacheHitCountForTest++;
     }
   }
 
@@ -1247,9 +1259,8 @@ public class Image extends GfxSurface {
     pipeline = null;
   }
 
-  /** Resolves a deferred image for a destination without adopting the result. */
-  /** Resolves this image for a destination raster without adopting the result. */
-  Image resolveForDrawing(double destinationScale) throws ImageException {
+  /** Returns the final raster already materialized for this destination, if present. */
+  Image cachedMaterializedForDrawing(double destinationScale) throws ImageException {
     if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
       throw new ImageException("Image destination scale must be finite and positive.");
     }
@@ -1263,8 +1274,24 @@ public class Image extends GfxSurface {
     Image cached = deferred.cachedMaterializedVariant(scaleBits, sourceDecodeGeneration);
     if (cached != null) {
       synchronizePresentationState(cached);
+      recordMaterializedVariantCacheHitForTest();
       return cached;
     }
+    return null;
+  }
+
+  /** Resolves this image for a destination raster without adopting the result. */
+  Image resolveForDrawing(double destinationScale) throws ImageException {
+    Image cached = cachedMaterializedForDrawing(destinationScale);
+    if (cached != null) {
+      return cached;
+    }
+    ImagePipeline deferred = pipeline;
+    if (deferred == null) {
+      return this;
+    }
+    double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
+    long scaleBits = Double.doubleToLongBits(effectiveScale);
     Image resolved = resolvePipeline(deferred, effectiveScale);
     synchronizePresentationState(resolved);
     deferred.cacheMaterializedVariant(scaleBits, resolved, sourceDecodeGeneration(deferred));

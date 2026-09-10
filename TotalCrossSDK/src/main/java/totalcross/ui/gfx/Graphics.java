@@ -1497,12 +1497,17 @@ public final class Graphics {
   public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
     if (surface instanceof Image) {
       Image image = (Image) surface;
-      Object drawPlan = resolveDrawPlanForDrawing(image);
-      if (!Settings.onJavaSE && ImageDrawingBridge.isCopyRectCompatible(drawPlan)
-          && copyGeometryNative(drawPlan, x, y, width, height, dstX, dstY, true)) {
-        return;
+      Image cached = resolveCachedImageForDrawing(image);
+      if (cached != null) {
+        surface = cached;
+      } else {
+        Object drawPlan = resolveDrawPlanForDrawing(image);
+        if (!Settings.onJavaSE && ImageDrawingBridge.isCopyRectCompatible(drawPlan)
+            && copyGeometryNative(drawPlan, x, y, width, height, dstX, dstY, true)) {
+          return;
+        }
+        surface = resolveImageForDrawing(image);
       }
-      surface = resolveImageForDrawing(image);
     }
     if (!Settings.onJavaSE) {
       copyRectNative(surface, x, y, width, height, dstX, dstY);
@@ -1732,6 +1737,14 @@ public final class Graphics {
       return ImageDrawingBridge.resolveForDrawing(image, getContentScale());
     } catch (ImageException failure) {
       throw new IllegalStateException("Could not resolve image for drawing", failure);
+    }
+  }
+
+  private Image resolveCachedImageForDrawing(Image image) {
+    try {
+      return ImageDrawingBridge.cachedMaterializedForDrawing(image, getContentScale());
+    } catch (ImageException failure) {
+      throw new IllegalStateException("Could not inspect cached image raster", failure);
     }
   }
 

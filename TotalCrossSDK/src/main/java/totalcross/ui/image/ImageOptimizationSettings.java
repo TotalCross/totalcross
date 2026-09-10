@@ -169,16 +169,6 @@ final class ImageOptimizationSettings {
   }
 
   private static boolean defaultEnabled(int feature) {
-    switch (feature) {
-    case DECODE_ZERO_COPY:
-    case RASTER_OPACITY_METADATA:
-    case RASTER_OPAQUE_WRITE_PIXELS:
-    case RASTER_ROW_READBACK:
-    case RASTER_DIRECT_COLOR_MATERIALIZATION:
-    case RASTER_PHYSICAL_IDENTITY_FOLDING:
-      return true;
-    default:
-      return false;
-    }
+    return (DEFAULT_EFFECTIVE_MASK & (1L << feature)) != 0;
   }
 }

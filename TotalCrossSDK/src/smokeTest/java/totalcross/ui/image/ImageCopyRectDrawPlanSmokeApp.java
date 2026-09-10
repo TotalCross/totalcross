@@ -25,6 +25,7 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
     boolean fallbackPass = false;
     boolean feature15DefaultPass = false;
     boolean feature15DisabledPass = false;
+    boolean cachedFinalReusePass = false;
     String error = "";
     try {
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled", false, false);
@@ -40,6 +41,7 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
       fallbackPass = unsupportedFallback(source);
       feature15DefaultPass = identityFeatureState(true);
       feature15DisabledPass = identityFeatureState(false);
+      cachedFinalReusePass = cachedFinalReuse();
       ImageRasterBenchmarkSupport.require(fullPass, "full copyRect plan path");
       ImageRasterBenchmarkSupport.require(clippedPass, "clipped copyRect plan path");
       ImageRasterBenchmarkSupport.require(noIntersectionPass, "no-intersection copyRect");
@@ -47,17 +49,20 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(fallbackPass, "unsupported copyRect fallback");
       ImageRasterBenchmarkSupport.require(feature15DefaultPass, "feature 15 default");
       ImageRasterBenchmarkSupport.require(feature15DisabledPass, "feature 15 disabled");
+      ImageRasterBenchmarkSupport.require(cachedFinalReusePass, "cached final copyRect reuse");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_').replace(',', '_');
     }
     boolean pass = fullPass && clippedPass && noIntersectionPass && framePass && fallbackPass
-        && feature15DefaultPass && feature15DisabledPass && error.length() == 0;
+        && feature15DefaultPass && feature15DisabledPass && cachedFinalReusePass
+        && error.length() == 0;
     System.out.println("fixture=ImageCopyRectDrawPlanSmokeApp,full=" + fullPass
         + ",clipped=" + clippedPass + ",noIntersection=" + noIntersectionPass
         + ",frame=" + framePass + ",fallback=" + fallbackPass
         + ",feature15Default=" + feature15DefaultPass
         + ",feature15Disabled=" + feature15DisabledPass
+        + ",cachedFinalReuse=" + cachedFinalReusePass
         + ",directDrawPlans=" + Image.directDrawPlanExecutionCountForTest()
         + ",physicalIdentityHits=" + NativeImageBacking.physicalIdentityHitsForTest()
         + ",genericGeometryDraws=" + NativeImageBacking.genericGeometryDrawsForTest()
@@ -152,9 +157,10 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
       ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
           ImageOptimizationSettings.DISABLED);
     }
-    Image source = patternedSource(SOURCE_WIDTH, SOURCE_HEIGHT);
-    Image deferred = source.getSmoothScaledInstance(SOURCE_WIDTH, SOURCE_HEIGHT);
-    Image expectedSource = deferred.resolveForDrawing(2);
+    Image expectedSource = patternedSource(SOURCE_WIDTH, SOURCE_HEIGHT)
+        .getSmoothScaledInstance(SOURCE_WIDTH, SOURCE_HEIGHT).resolveForDrawing(2);
+    Image deferred = patternedSource(SOURCE_WIDTH, SOURCE_HEIGHT)
+        .getSmoothScaledInstance(SOURCE_WIDTH, SOURCE_HEIGHT);
     Image expected = target();
     Image actual = target();
     expected.getGraphics().copyRect(expectedSource, 0, 0, SOURCE_WIDTH, SOURCE_HEIGHT, DEST_X, DEST_Y);
@@ -174,11 +180,108 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
         && NativeImageBacking.smoothResampleDrawsForTest() == 0;
   }
 
+  private static boolean cachedFinalReuse() throws Exception {
+    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled", false, true);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    byte[] encoded = ImageRasterBenchmarkSupport.opaquePng(SOURCE_WIDTH, SOURCE_HEIGHT);
+    Image expectedSource = new Image(encoded, encoded.length).getRotatedScaledInstance(
+        SOURCE_HEIGHT, SOURCE_WIDTH, 0).resolveForDrawing(2);
+    Image deferred = new Image(encoded, encoded.length).getRotatedScaledInstance(
+        SOURCE_HEIGHT, SOURCE_WIDTH, 0);
+
+    Image expected = target(160, 140, 2);
+    Image actual = target(160, 140, 2);
+    expected.getGraphics().copyRect(expectedSource, 0, 0, SOURCE_HEIGHT, SOURCE_WIDTH, DEST_X, DEST_Y);
+    Image.resetImageOperationAccountingForTest();
+    actual.getGraphics().copyRect(deferred, 0, 0, SOURCE_HEIGHT, SOURCE_WIDTH, DEST_X, DEST_Y);
+    long firstHash = ImageRasterBenchmarkSupport.fullPixelHash(actual);
+    int firstMaterializations = Image.nativeGeometryMaterializationCountForTest();
+    int firstPlans = Image.imageDrawPlanCreatedCountForTest();
+    long firstVariantStores = NativeImageBacking.physicalVariantMaterializationsForTest();
+
+    Image.resetImageOperationAccountingForTest();
+    Image partialExpected = target(160, 140, 2);
+    Image partialActual = target(160, 140, 2);
+    partialExpected.getGraphics().setClip(10, 10, 60, 55);
+    partialActual.getGraphics().setClip(10, 10, 60, 55);
+    partialExpected.getGraphics().copyRect(expectedSource, 0, 0, SOURCE_HEIGHT, SOURCE_WIDTH,
+        DEST_X, DEST_Y);
+    partialActual.getGraphics().copyRect(deferred, 0, 0, SOURCE_HEIGHT, SOURCE_WIDTH, DEST_X, DEST_Y);
+    long secondHash = ImageRasterBenchmarkSupport.fullPixelHash(actual);
+    long partialExpectedHash = ImageRasterBenchmarkSupport.fullPixelHash(partialExpected);
+    long partialActualHash = ImageRasterBenchmarkSupport.fullPixelHash(partialActual);
+    boolean reused = firstHash == ImageRasterBenchmarkSupport.fullPixelHash(expected)
+        && secondHash == firstHash && partialExpectedHash == partialActualHash
+        && firstMaterializations == 1 && firstPlans > 0
+        && Image.nativeGeometryMaterializationCountForTest() == 0
+        && Image.imageDrawPlanCreatedCountForTest() == 0
+        && Image.materializedVariantCacheHitCountForTest() > 0
+        && NativeImageBacking.physicalVariantMaterializationsForTest() == firstVariantStores;
+
+    Image scaleExpectedSource = new Image(encoded, encoded.length).getRotatedScaledInstance(
+        SOURCE_HEIGHT, SOURCE_WIDTH, 0).resolveForDrawing(1);
+    Image scaleExpected = target(160, 140, 1);
+    Image scaleActual = target(160, 140, 1);
+    scaleExpected.getGraphics().copyRect(scaleExpectedSource, 0, 0, SOURCE_HEIGHT, SOURCE_WIDTH,
+        DEST_X, DEST_Y);
+    Image.resetImageOperationAccountingForTest();
+    scaleActual.getGraphics().copyRect(deferred, 0, 0, SOURCE_HEIGHT, SOURCE_WIDTH, DEST_X, DEST_Y);
+    boolean scaleInvalidated = ImageRasterBenchmarkSupport.fullPixelHash(scaleExpected)
+        == ImageRasterBenchmarkSupport.fullPixelHash(scaleActual)
+        && Image.nativeGeometryMaterializationCountForTest() == 1
+        && Image.materializedVariantCacheHitCountForTest() == 0;
+
+    Object root = deferred.pipelineForSmoke().root();
+    ImageRasterBenchmarkSupport.require(root instanceof EncodedImageSource,
+        "cached copyRect encoded root");
+    ((EncodedImageSource) root).evictDecodedBacking();
+    Image generationExpectedSource = new Image(encoded, encoded.length).getRotatedScaledInstance(
+        SOURCE_HEIGHT, SOURCE_WIDTH, 0).resolveForDrawing(2);
+    Image generationExpected = target(160, 140, 2);
+    Image generationActual = target(160, 140, 2);
+    generationExpected.getGraphics().copyRect(generationExpectedSource, 0, 0, SOURCE_HEIGHT,
+        SOURCE_WIDTH, DEST_X, DEST_Y);
+    Image.resetImageOperationAccountingForTest();
+    generationActual.getGraphics().copyRect(deferred, 0, 0, SOURCE_HEIGHT, SOURCE_WIDTH,
+        DEST_X, DEST_Y);
+    boolean generationInvalidated = ImageRasterBenchmarkSupport.fullPixelHash(generationExpected)
+        == ImageRasterBenchmarkSupport.fullPixelHash(generationActual)
+        && Image.nativeGeometryMaterializationCountForTest() == 1
+        && Image.materializedVariantCacheHitCountForTest() == 0;
+
+    Image drawExpectedSource = patternedSource(200, 200).getSmoothScaledInstance(100, 100)
+        .resolveForDrawing(2);
+    Image drawSource = patternedSource(200, 200).getSmoothScaledInstance(100, 100);
+    Image drawExpected = target(160, 140, 2);
+    Image drawActual = target(160, 140, 2);
+    drawExpected.getGraphics().drawImage(drawExpectedSource, DEST_X, DEST_Y, true);
+    Image.resetImageOperationAccountingForTest();
+    drawActual.getGraphics().drawImage(drawSource, DEST_X, DEST_Y, true);
+    boolean drawImageUnchanged = ImageRasterBenchmarkSupport.fullPixelHash(drawExpected)
+        == ImageRasterBenchmarkSupport.fullPixelHash(drawActual)
+        && Image.directDrawPlanExecutionCountForTest() > 0
+        && Image.imageDrawPlanCreatedCountForTest() > 0
+        && Image.materializedVariantCacheHitCountForTest() == 0;
+    System.out.println("fixture=ImageCopyRectDrawPlanSmokeApp,record=cached-final");
+    System.out.println("fixture=ImageCopyRectDrawPlanSmokeApp,first_materializations="
+        + firstMaterializations + ",first_plans=" + firstPlans
+        + ",physical_variant_stores=" + firstVariantStores
+        + ",scale_invalidated=" + scaleInvalidated
+        + ",generation_invalidated=" + generationInvalidated
+        + ",drawImageUnchanged=" + drawImageUnchanged);
+    return reused && scaleInvalidated && generationInvalidated && drawImageUnchanged;
+  }
+
   private static Image target() throws Exception {
-    Image image = Image.createLogical(TARGET_WIDTH, TARGET_HEIGHT, 2);
+    return target(TARGET_WIDTH, TARGET_HEIGHT, 2);
+  }
+
+  private static Image target(int width, int height, double scale) throws Exception {
+    Image image = Image.createLogical(width, height, scale);
     Graphics graphics = image.getGraphics();
     graphics.backColor = 0x102030;
-    graphics.fillRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+    graphics.fillRect(0, 0, width, height);
     return image;
   }
 

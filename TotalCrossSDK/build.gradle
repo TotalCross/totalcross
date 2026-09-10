@@ -858,6 +858,7 @@ registerImageMacSmoke('ImageCopyRectDrawPlanSmoke', 'ImageCopyRectDrawPlanSmokeA
         'noIntersection=true',
         'frame=true',
         'fallback=true',
+        'cachedFinalReuse=true',
         'overallPass=true'
     ])
 
