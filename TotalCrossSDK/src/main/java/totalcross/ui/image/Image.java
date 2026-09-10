@@ -1037,6 +1037,7 @@ public class Image extends GfxSurface {
     }
     if (requirement == ImageDrawingBridge.COPY_READY) {
       resolveForDrawing(request.destinationScale);
+      pipeline.clearCachedDrawPlans();
       if (pipeline.root() instanceof EncodedImageSource) {
         ((EncodedImageSource) pipeline.root()).releaseDecodedBackingAfterMaterialization();
       }

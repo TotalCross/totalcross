@@ -306,6 +306,15 @@ final class ImagePipeline {
     }
   }
 
+  void clearCachedDrawPlans() {
+    cachedDrawPlan1 = null;
+    cachedDrawPlan2 = null;
+    cachedDrawUse1 = cachedDrawUse2 = 0;
+    cachedDrawScale1Bits = cachedDrawScale2Bits = 0;
+    cachedDrawGeneration1 = cachedDrawGeneration2 = 0;
+    cachedDrawUseCounter = 0;
+  }
+
   void clearCachedVariants() {
     releaseCachedVariantTextures();
     cachedVariant1 = null;
