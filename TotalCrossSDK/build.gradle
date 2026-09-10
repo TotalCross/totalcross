@@ -845,6 +845,17 @@ registerImageMacSmoke('ImageWarmCopyRectBenchmark', 'ImageWarmCopyRectBenchmarkA
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageCopyRectDrawPlanSmoke', 'ImageCopyRectDrawPlanSmokeApp',
+    'image-copyrect-draw-plan-smoke', false, false, [
+        'fixture=ImageCopyRectDrawPlanSmokeApp',
+        'full=true',
+        'clipped=true',
+        'noIntersection=true',
+        'frame=true',
+        'fallback=true',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageRasterPhysicalVariantSmoke', 'ImageRasterPhysicalVariantSmokeApp',
     'image-raster-physical-variant-smoke', false, false, [
         'fixture=ImageRasterPhysicalVariantSmokeApp',

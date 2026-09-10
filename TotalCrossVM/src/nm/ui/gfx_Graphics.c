@@ -359,13 +359,13 @@ TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphi
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip);
+TC_API void tugG_copyGeometryNative_oiiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean copyGeometryNative(Object plan, int x, int y, int width, int height, int dstX, int dstY, boolean doClip);
 {
 #if defined SKIA_H
    TCObject g = p->obj[0];
    TCObject plan = p->obj[1];
    p->retI = skiaDrawGeometryPlan(p->currentContext, g, plan, p->i32[0], p->i32[1],
-      p->i32[2], p->i32[3], 0, 0, p->i32[4]);
+      p->i32[2], p->i32[3], p->i32[4], p->i32[5], p->i32[6]);
    if (p->retI) {
       imageRecordTestCounter("directDrawPlanExecutionCountForTest");
    }

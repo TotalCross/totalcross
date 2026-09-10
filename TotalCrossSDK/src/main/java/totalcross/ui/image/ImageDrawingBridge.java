@@ -29,4 +29,10 @@ public final class ImageDrawingBridge {
     }
     return image.drawPlanForDrawing(destinationScale);
   }
+
+  /** @hidden */
+  @Deprecated
+  public static boolean isCopyRectCompatible(Object drawPlan) {
+    return drawPlan instanceof ImageDrawPlan && ((ImageDrawPlan) drawPlan).isCopyRectCompatible();
+  }
 }

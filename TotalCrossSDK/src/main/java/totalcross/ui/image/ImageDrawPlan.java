@@ -150,4 +150,13 @@ final class ImageDrawPlan {
     }
     return capabilities;
   }
+
+  boolean isCopyRectCompatible() {
+    for (int operation : operations) {
+      if (operation == ImagePipeline.ROTATE_SCALE) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
