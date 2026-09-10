@@ -12,7 +12,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   rewritten feature-branch head while the user worktrees remain untouched)
 - Remote branch after rewrite: `perf/image-scroll-raster-fast-path`
 - Last completed checkpoint: `da2c0ba94` copyRect fallback-preservation fix
-- Current slice: closeout and remote verification
+- Current slice: complete
 - Active paths: final matrix, final warm microbenchmark, and evidence index
 - Focused validation completed: Python syntax check, `git diff --check`, SDK
   distribution, smoke compilation, macOS native builds, copyRect draw-plan
@@ -20,8 +20,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   final warm microbenchmark.
 - Evidence: `.agent/evidence/image-warm-copyrect-fast-path.md` and
   `.agent/evidence/image-warm-copyrect-fast-path/{baseline,final}/`
-- Next action: commit closeout evidence, push normally, and verify the remote
-  branch head.
+- Verified remote head: `7b3e0129aa7c18320b4102ea623bc22c9202f5a9` on
+  `perf/image-scroll-raster-fast-path`.
+- Next action: none; plan execution is complete.
 - Deferred validation: full cross-platform release matrix remains outside this
   focused macOS image-path change.
 - Recovery: do not touch untracked files in the shared checkout or the existing
