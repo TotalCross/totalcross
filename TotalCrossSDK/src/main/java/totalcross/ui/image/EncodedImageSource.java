@@ -13,11 +13,10 @@ import totalcross.io.File;
 import totalcross.io.FileNotFoundException;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
+import totalcross.sys.Vm;
 
 /** Immutable, eagerly captured encoded image source. */
 final class EncodedImageSource extends ImageSource {
-  private static long nextContentIdentity;
-  private final long contentIdentity = allocateContentIdentity();
   private int formatCode;
   private byte[] bytes;
   private int length;
@@ -36,10 +35,6 @@ final class EncodedImageSource extends ImageSource {
   private ImageException decodeFailure;
 
   private EncodedImageSource() {
-  }
-
-  private static synchronized long allocateContentIdentity() {
-    return ++nextContentIdentity;
   }
 
   static EncodedImageSource fromBytes(byte[] input) throws ImageException {
@@ -230,7 +225,7 @@ final class EncodedImageSource extends ImageSource {
   }
 
   long contentIdentity() {
-    return contentIdentity;
+    return Vm.identityHashCode(this) & 0xFFFFFFFFL;
   }
 
   void installDecodedBacking(ImageBacking backing, int width, int height, int denominator) {
