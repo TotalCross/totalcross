@@ -21,11 +21,18 @@ final image/native-geometry materializations in the cold scroll. That was
 insufficient for the copyRect contract.
 
 The corrected implementation uses `COPY_READY` for the default
-`ImageControl`: worker decode is adopted on the UI thread, the final raster is
-materialized and cached before scrolling, and the intermediate decoded source
-backing is released only when no cached final variant still references it. The
-corrected `final-fixed/` matrix passed all 16 fresh processes and 48 records
-using the exact 663-JPEG corpus.
+`ImageControl`: one short-lived background `Thread` decodes one detached
+candidate, UI-thread adoption/finalization completes it, and only then does
+`scheduleNext()` authorize another candidate. There is no persistent worker,
+`waitForAdoption`, busy waiting, or additional concurrency primitive. The
+TCVM-compatible coordinator uses `totalcross.util.concurrent.Lock`.
+
+Shared `EncodedImageSource` instances use stable content identity for final
+materialized variants, while decoded-backing generation remains specific to
+draw-plan validity. `COPY_READY` drops source ownership of intermediate
+decoded backing without explicitly releasing a backing still referenced by a
+sibling plan. The earlier `final-fixed/` matrix is retained as historical
+evidence; the authoritative result is `final-definitive-pass/`.
 
 Enabled prefetch accounted for every request with 660 ready, zero failures,
 and three not-prefetchable images. Cold scroll had zero targeted JPEG decodes,
@@ -33,26 +40,28 @@ three full decodes for the non-prefetchable cases, at most three final raster
 materializations, and at most three native geometry materializations. Warm
 targeted/full decodes and materializations were zero.
 
-In the final run, cold p95 was at most 6 ms, warm all-prefetch p95 at most 5
-ms, disabled warm p95 at most 9 ms, and cold frames at or above 34 ms at most
-one. Prefetch elapsed time was 11.5--14.2 seconds; live/peak backing memory at
-prefetch completion was 282--357 MB, and after cold/warm scrolling it was
-296--370 MB. Target-color converted and physical-variant bytes were zero in
-the all-prefetch records.
+In the authoritative final run, cold p95 was at most 5 ms, warm/warm2 p95 was
+at most 5 ms, and cold frames at or above 34 ms were at most 2. All prefetch
+runs reported 663 requests, 660 READY, 0 FAILED, and 3 NOT_PREFETCHABLE.
+Cold targeted JPEG decodes were zero, cold final/native materializations were
+at most 3, and warm/warm2 JPEG decodes and materializations were zero. Both
+target-color converted bytes and physical-variant bytes were zero. The
+benchmark resets image, native-backing, and preparation accounting after UI
+construction and immediately before `prepareForDisplay`.
 
 ## Review notes
 
-- Worker decode is detached from UI adoption; completion is marshalled to the
-  UI thread and stale batches are rejected by active-batch identity.
+- Detached decode candidates are marshalled to the UI thread; terminal success
+  and failure paths clear the active slot before the next decode starts.
 - The benchmark starts on a subsequent UI timer tick so repaint accounting is
   not suppressed while runner callbacks are being drained; the cold pass also
   explicitly resets the scrollbar to its declared minimum.
 - The batch completion check does not re-read a mutable content scale after
   discovery; the captured scale remains the request key, while active-batch
   identity protects against completing an obsolete batch.
-- No general eviction policy was added. Releasing a decoded source after its
-  COPY_READY final raster is cached is an intermediate-lifecycle cleanup, not
-  an LRU or memory-pressure policy.
+- No general eviction/LRU policy was added. Dropping source ownership after a
+  COPY_READY final raster is cached is intermediate-lifecycle cleanup and does
+  not explicitly destroy sibling-referenced backing.
 
 ## Validation
 
@@ -64,5 +73,9 @@ the all-prefetch records.
 - ImagePreparation macOS native smoke: passed with injected adoption failure,
   retry, detached adoption, UI completion, timer responsiveness, captured
   optimization mask, deferred pipeline, and no extra decode during copyRect.
-- Corrected final real-workload matrix: passed; raw logs, CSV, and summary are
-  in `.agent/benchmarks/image-scroll-prefetch/final-fixed/`.
+- TCVM-compatible `Lock` focused validation: passed; shared-source lifecycle
+  regressions and existing ScrollContainer/traversal tests passed.
+- Authoritative final real-workload matrix: passed; the committed CSV and
+  summary are in `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`.
+- Earlier `final/` and `final-fixed/` evidence remains preserved as historical
+  and superseded material.

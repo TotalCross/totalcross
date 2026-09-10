@@ -105,12 +105,6 @@ validation. Do not run Android, Linux, Windows, or iOS local builds.
 - [x] Add the direct physical-identity warm-copy path.
 - [x] Run final benchmarks/smokes, commit evidence/report, and push.
 - [x] Correct copyRect to prefer a valid cached final raster before a draw plan.
-- [x] Replace the persistent prefetch worker and wait loop with serialized
-  asynchronous decode-to-UI continuation.
-- [x] Preserve shared encoded-source preparations across decoded-backing
-  generations and add DRAW/COPY sibling lifecycle regressions.
-- [x] Reset benchmark accounting after UI construction and before prefetch.
-- [x] Re-run the definitive 16-process/48-record matrix with fresh processes.
 
 Update progress only at logical commits or milestone boundaries.
 
@@ -143,10 +137,8 @@ Features 13/14 are:
 They stay disabled by default. Benchmark 00, 10, 01, and 11 for these two bits
 while holding all other benchmark features constant.
 
-Out of scope: general cache eviction, memory-pressure policy, GPU residency,
-mmap allocation, and rendering scheduler changes. Prefetch lifecycle work is
-limited to the bounded serialized continuation described below; it does not
-introduce pools, new concurrency primitives, or an eviction policy.
+Out of scope: cache eviction, memory-pressure policy, prefetch, GPU residency,
+mmap allocation, and rendering scheduler changes.
 
 ## Plan of Work
 
@@ -373,13 +365,6 @@ Record only discoveries that change remaining implementation, such as a format
 restriction, unexpected warm materialization, or benchmark flaw. Do not use this
 as a command log.
 
-- `EncodedImageSource` has native VM field offsets; a temporary instance field
-  for source identity caused a native-bag crash. The final identity uses the
-  device-safe `Vm.identityHashCode` without changing the native layout.
-- A preliminary matrix had one warm2 p95 outlier (13 ms versus a 9 ms
-  baseline). Three fresh reruns passed, and a second complete 16-process matrix
-  passed all gates; the outlier evidence is retained separately.
-
 ## Decision Log
 
 - Remove `640e327cd...` before implementation; compatibility belongs in
@@ -388,13 +373,6 @@ as a command log.
 - Keep features 13 and 14 disabled by default.
 - Decide direct warm copy from proven physical mapping, not operation name.
 - Preserve all current generic/materialization fallbacks.
-- Serialize prefetch as queue -> one short-lived background decode -> one UI
-  adoption/finalization, with the terminal path authorizing the next entry.
-- Treat immutable encoded-source identity plus pipeline and scale as the final
-  materialized-variant key; decoded generation remains specific to draw-plan
-  validity.
-- Drop decoded source ownership after COPY_READY without explicitly releasing
-  a native backing that may still be held by a sibling plan or variant.
 
 ## Validation and Acceptance
 
@@ -468,20 +446,3 @@ at both 480x720 and 540x960. Evidence is in
 
 Android, Linux, Windows, and iOS builds remain deferred because this plan
 limits local validation to the SDK and macOS native runtime.
-
-The prefetch closeout then added commits `7f0fb32d6`, `7059d5cfd`,
-`b1ee6a57f`, `9d5ae2a9c`, and `600550cc6`. `ImagePreparation` now chains one
-short-lived decode thread into one UI adoption and schedules the next request
-only after success or failure clears the active slot. Shared encoded sources
-use immutable object identity for final materialized variants, preserve sibling
-draw plans and preparations, and discard lower-detail candidates without
-replacing higher-detail decoded backings. The benchmark resets image,
-native-backing, and preparation accounting after UI construction and directly
-before prefetch.
-
-The definitive evidence is in
-`.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`. Its 48
-records passed with 663/660/0/3 prefetch accounting, cold p95 at most 5 ms,
-zero warm decode/materialization work, zero physical variant bytes, and a
-worst warm prefetch ratio of 55.6% of the matching disabled baseline. The
-intermediate `final-fixed/` evidence remains preserved unchanged.

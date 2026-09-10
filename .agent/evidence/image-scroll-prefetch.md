@@ -43,7 +43,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   exact ImagePreparation macOS smoke passed; smoke reported detached adoption,
   retry after injected adoption failure, UI completion, captured mask, and no
   extra decode during copyRect
-- 2026-09-10 | milestone 5 | corrected final benchmark | pass | 16 fresh
+- 2026-09-10 | milestone 5 | historical corrected final benchmark | pass | 16 fresh
   macOS processes and 48 records in
   `.agent/benchmarks/image-scroll-prefetch/final-fixed/`; all prefetch cold
   records were 663 requests/660 ready/0 failed/3 not-prefetchable, cold
@@ -54,3 +54,18 @@ SPDX-License-Identifier: LGPL-2.1-only
   and the strict runner gates passed;
   runtime SHA-256 is
   `6ad937b552e9305a39b17c363b655fc50f93d977181cd3435a4fdd770797d72c`
+- 2026-09-10 | milestone 6 | TCVM-compatible lock | pass | replaced the
+  preparation coordinator's `Object` lock with `totalcross.util.concurrent.Lock`
+  without changing synchronized sections or the one-active-candidate
+  continuation architecture; commit `39998c5e5`; focused ImagePreparation,
+  shared-source, ScrollContainer, and traversal tests passed
+- 2026-09-10 | milestone 6 | authoritative final benchmark | pass | 16 fresh
+  macOS processes and 48 pass records in
+  `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`; every
+  prefetch run reported 663 requests/660 READY/0 FAILED/3 NOT_PREFETCHABLE,
+  cold targeted JPEG decodes were 0, cold final/native materializations were
+  at most 3, cold p95 was at most 5 ms, frames >=34 ms were at most 2, warm
+  and warm2 JPEG decodes/materializations were 0 with p95 at most 5 ms, and
+  target-color converted bytes and physical-variant bytes were 0; accounting
+  reset after UI construction; shared-source regressions passed; runtime
+  SHA-256 is `6ad937b552e9305a39b17c363b655fc50f93d977181cd3435a4fdd770797d72c`

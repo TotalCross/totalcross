@@ -149,11 +149,15 @@ Worker stage must not call `registerBackingRecord`, mutate live
 JPEG decode. `COPY_READY` may perform the required final materialization on the
 UI side, after detached decode and adoption have completed.
 
-Use one background decode worker initially. Queue all requests but keep active
-decode concurrency at one.
+Do not keep a persistent worker. Queue requests behind one lock-protected
+active entry; each entry gets one short-lived background `Thread` that decodes
+exactly one candidate, returns after posting UI adoption, and is followed by
+the next thread only after `finish()` clears the active entry.
 
-If an image is already ready for same destination scale and source generation,
-complete from cache. Duplicate in-flight requests join the same request.
+If an image is already ready for the same pipeline, destination scale, and
+stable encoded-source content identity, complete from cache. Decoded-backing
+generation remains relevant to draw-plan validity, not final materialized
+variant validity. Duplicate in-flight requests join the same request.
 
 Unsupported mutable/non-encoded cases retain normal draw behavior. They must not
 force a large synchronous fallback from worker; report them as
@@ -161,10 +165,11 @@ not-prefetchable.
 
 This plan intentionally does not implement cache eviction. Record PREFETCH_ALL
 
-After `COPY_READY` has a final cached variant, the intermediate decoded source
-backing and transient draw plan may be released when no final cached variant
-still references that backing. This is preparation lifecycle cleanup, not an
-LRU, viewport, or memory-pressure eviction policy.
+After `COPY_READY` has a final cached variant, drop the encoded source's
+ownership of the intermediate decoded backing. Do not explicitly release a
+native backing that a sibling draw plan or preparation may still reference.
+This is preparation lifecycle cleanup, not an LRU, viewport, or
+memory-pressure eviction policy.
 
 ## Plan of Work
 
@@ -207,7 +212,7 @@ Use preparation key:
 ```text
 Image identity / pipeline
 destination contentScale
-source decode generation
+stable encoded-source content identity
 ```
 
 Required states:
@@ -224,12 +229,14 @@ For supported encoded immutable sources:
 
 1. resolve target decode size from existing pipeline and requested destination
    scale, reusing draw target-decode policy;
-2. decode on the single worker into detached native candidate;
+2. start one short-lived background Thread that decodes exactly one detached
+   native candidate;
 3. post adoption with `MainWindow.getMainWindow().runOnMainThread(...)`;
-4. adopt through existing encoded-source decoded-backing installation and
-   update generation exactly once;
+4. adopt through existing encoded-source decoded-backing installation; a
+   decoded-backing generation changes only when the source backing changes;
 5. for `DRAW_READY`, build/cache the draw plan; for `COPY_READY`, materialize
-   and cache the final raster, then release only unreferenced intermediates;
+   and cache the final raster, then drop source ownership without explicitly
+   releasing a backing still referenced by sibling plans;
 6. complete callbacks on UI thread.
 
 Do not duplicate JPEG denominator/resize policy in UI classes.
@@ -238,9 +245,10 @@ Do not duplicate JPEG denominator/resize policy in UI classes.
 physical identity path can use the targeted backing. `COPY_READY` intentionally
 does the final materialization required by copyRect before completion.
 
-Cancellation is generation-based in this version: stale request may finish and
-its immutable decoded result may remain cacheable, but it must not complete a
-newer batch. Do not build a general cancellation framework.
+Stale image or pipeline mutations still reject adoption. A decoded-generation
+change caused by a sibling source preparation does not invalidate a final
+materialized variant or fail a sibling preparation. Do not build a general
+cancellation framework.
 
 Expose cross-package access through the existing hidden
 `ImageDrawingBridge`; avoid a broad new public Image API.
@@ -402,8 +410,8 @@ Report:
 - warm metrics.
 
 Do not add viewport, LRU, or memory-pressure eviction heuristics. Report the
-live/peak backing memory after `COPY_READY` releases only unreferenced decoded
-source intermediates.
+live/peak backing memory after `COPY_READY` drops source ownership without
+explicitly destroying a decoded backing still referenced by a sibling.
 
 For disabled profile, performance must remain within normal benchmark noise of
 baseline. If repeated warm p95 regresses >10%, identify/correct before closeout.
@@ -428,11 +436,14 @@ unexpected final resampling, batch/layout race, or disabled-profile regression.
   645--648 final/native materializations during cold scrolling. The corrected
   matrix moves those materializations into `COPY_READY` preparation and leaves
   at most three cold materializations.
-- Releasing the decoded source after final caching reduced corrected live
-  backing memory to 282--357 MB without adding general cache eviction.
+- The superseded `final-fixed/` run reported 282--357 MB after its release
+  behavior; the authoritative `final-definitive-pass/` run preserves sibling
+  references and reports 371794316..452295356 live and
+  379123836..452295356 peak prefetch backing bytes.
 
-Preserve fixed architecture: worker decode remains detached; global backing
-adoption remains on UI thread.
+Preserve fixed architecture: no persistent worker or wait/busy loop remains;
+each detached decode Thread exits after posting UI adoption, and global backing
+adoption remains on the UI thread before `scheduleNext()` authorizes another.
 
 ## Decision Log
 
@@ -441,11 +452,13 @@ adoption remains on UI thread.
 - Prefetch is explicit and asynchronous.
 - ScrollContainer owns discovery; Image owns preparation.
 - Destination content scale is captured once per batch.
-- Worker produces detached candidates; UI thread adopts global backing.
-- Use one worker initially.
+- Background Threads produce detached candidates; the UI thread adopts global
+  backing and authorizes the next decode only from the terminal path.
+- Use one short-lived decode Thread per prepared image; never keep a persistent
+  worker.
 - Do not integrate cache eviction here.
 - `COPY_READY` is the explicit contract for default copyRect descendants;
-  releasing unreferenced intermediate source backing is part of that lifecycle,
+  dropping source ownership of intermediate backing is part of that lifecycle,
   not a cache policy.
 
 ## Validation and Acceptance
@@ -503,14 +516,13 @@ At completion summarize parent/final commits, preparation worker/adoption
 behavior, ScrollContainer batch semantics, request/ready/failure counts,
 disabled versus all-prefetch cold metrics, warm metrics, 13/14 results,
 prefetch time/memory cost, and limitations for later viewport-sized prefetch.
-The corrected final matrix passed 16 macOS processes and 48 records: 663
-requests/660 ready/0 failed/3 not-prefetchable, zero cold targeted decodes,
-at most three cold final/native materializations, zero warm decodes or
-materializations, cold p95 at most 6 ms, warm all-prefetch p95 at most 5 ms,
-and live backing memory of 282--357 MB. See the committed final-fixed summary
-and 295--370 MB after cold/warm scrolling; target-color and physical-variant
-bytes were zero in all-prefetch records. See the committed final-fixed summary
-and editorial report for the complete matrix.
+The authoritative final matrix passed 16 fresh macOS processes and 48 records:
+663 requests/660 ready/0 failed/3 not-prefetchable, zero cold targeted
+decodes, at most three cold final/native materializations, zero warm/warm2
+decodes or materializations, cold and warm p95 at most 5 ms, and zero
+target-color converted or physical-variant bytes. See the committed
+`final-definitive-pass/` summary and CSV; earlier `final/` and `final-fixed/`
+evidence remain historical and are not deleted.
 
 Point to committed evidence instead of duplicating raw output.
 
@@ -519,5 +531,6 @@ Point to committed evidence instead of duplicating raw output.
 Closed on 2026-09-10. The corrected implementation adds explicit
 `DRAW_READY`/`COPY_READY` semantics, bounded detached preparation, UI-thread
 adoption, active-batch invalidation, per-request optimization-mask capture,
-and final-raster caching for copyRect descendants. `PREFETCH_ALL`, one worker,
-and no general cache-eviction policy remain fixed decisions.
+and final-raster caching for copyRect descendants. `PREFETCH_ALL`, one active
+short-lived decode Thread at a time, stable source-content identity for final
+variants, and no general cache-eviction policy remain fixed decisions.
