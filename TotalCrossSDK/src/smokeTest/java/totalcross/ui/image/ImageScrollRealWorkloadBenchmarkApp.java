@@ -99,6 +99,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       int maximum = validMaximum();
       ImageRasterBenchmarkSupport.require(maximum > minimum,
           "real workload content did not extend beyond the viewport");
+      scroll.sbV.setValue(minimum);
 
       if ("all".equals(prefetchProfile)) {
         final long prefetchStart = Vm.getTimeStamp();
