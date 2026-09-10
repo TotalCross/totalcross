@@ -19,13 +19,54 @@ final class ImagePreparation {
   private static final ArrayList<Entry> entries = new ArrayList<Entry>();
   private static final ArrayList<Work> workQueue = new ArrayList<Work>();
   private static Thread worker;
+  private static long requestCount;
+  private static long readyCount;
+  private static long failedCount;
+  private static long notPrefetchableCount;
 
   private ImagePreparation() {
   }
 
+  static void resetAccountingForTest() {
+    synchronized (LOCK) {
+      requestCount = 0;
+      readyCount = 0;
+      failedCount = 0;
+      notPrefetchableCount = 0;
+    }
+  }
+
+  static long requestCountForTest() {
+    synchronized (LOCK) {
+      return requestCount;
+    }
+  }
+
+  static long readyCountForTest() {
+    synchronized (LOCK) {
+      return readyCount;
+    }
+  }
+
+  static long failedCountForTest() {
+    synchronized (LOCK) {
+      return failedCount;
+    }
+  }
+
+  static long notPrefetchableCountForTest() {
+    synchronized (LOCK) {
+      return notPrefetchableCount;
+    }
+  }
+
   static void request(final Image image, final double destinationScale, final Runnable onComplete) {
+    synchronized (LOCK) {
+      requestCount++;
+    }
     if (image == null) {
-      postCompletion(onComplete);
+      recordOutcome(NOT_PREFETCHABLE, 1);
+      completeImmediate(onComplete);
       return;
     }
 
@@ -33,11 +74,13 @@ final class ImagePreparation {
     try {
       request = image.createPreparationRequest(destinationScale, NativeImageBacking.isAvailable());
     } catch (Throwable failure) {
-      postCompletion(onComplete);
+      recordOutcome(FAILED, 1);
+      completeImmediate(onComplete);
       return;
     }
     if (request.status != -1) {
-      postCompletion(onComplete);
+      recordOutcome(request.status, 1);
+      completeImmediate(onComplete);
       return;
     }
     Entry entry = null;
@@ -201,9 +244,26 @@ final class ImagePreparation {
       entry.state = state == READY ? State.READY : State.FAILED;
       callbacks = new ArrayList<Runnable>(entry.callbacks);
       entry.callbacks.clear();
+      recordOutcomeLocked(state == READY ? READY : FAILED, callbacks.size());
     }
     for (int i = 0; i < callbacks.size(); i++) {
       postCompletion(callbacks.get(i));
+    }
+  }
+
+  private static void recordOutcome(int state, long count) {
+    synchronized (LOCK) {
+      recordOutcomeLocked(state, count);
+    }
+  }
+
+  private static void recordOutcomeLocked(int state, long count) {
+    if (state == READY) {
+      readyCount += count;
+    } else if (state == NOT_PREFETCHABLE) {
+      notPrefetchableCount += count;
+    } else {
+      failedCount += count;
     }
   }
 
@@ -214,9 +274,15 @@ final class ImagePreparation {
     postUi(callback);
   }
 
+  private static void completeImmediate(Runnable callback) {
+    if (callback != null) {
+      callback.run();
+    }
+  }
+
   private static void postUi(final Runnable runnable) {
     MainWindow mainWindow = MainWindow.getMainWindow();
-    if (mainWindow == null) {
+    if (MainWindow.isMainThread() || mainWindow == null) {
       runnable.run();
     } else {
       mainWindow.runOnMainThread(runnable, false);

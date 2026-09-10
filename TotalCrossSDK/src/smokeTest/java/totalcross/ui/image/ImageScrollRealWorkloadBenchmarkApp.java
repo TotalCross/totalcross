@@ -15,9 +15,11 @@ import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
 import totalcross.ui.ScrollContainer;
 import totalcross.ui.Window;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.event.TimerListener;
 
 /** Real-corpus scrolling workload based on the customer-provided Tcsort layout. */
-public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
+public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements TimerListener {
   private static final int IMAGE_COUNT = 663;
   private static final int COLUMN_COUNT = 3;
   private static final int SCROLL_STEP = 120;
@@ -31,6 +33,17 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
   private String imageDir;
   private String targetColorProfile;
   private String variantCacheProfile;
+  private String prefetchProfile;
+  private long prefetchElapsedMillis;
+  private long prefetchRequestCount;
+  private long prefetchReadyCount;
+  private long prefetchFailedCount;
+  private long prefetchNotPrefetchableCount;
+  private long prefetchBackingLiveBytes;
+  private long prefetchBackingPeakBytes;
+  private boolean benchmarkStarted;
+  private boolean prefetchComplete;
+  private TimerEvent prefetchTimer;
 
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
@@ -45,14 +58,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
   @Override
   public void initUI() {
     super.initUI();
-    String error = "";
-    boolean overallPass = false;
     try {
       imageDir = ImageRasterBenchmarkSupport.argument(getCommandLine(), "image-dir", null);
       targetColorProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "target-color", "disabled");
       variantCacheProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "variant-cache", "disabled");
+      prefetchProfile = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "prefetch", "disabled");
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
           "missing --image-dir=<dir>");
       ImageRasterBenchmarkSupport.require("disabled".equals(targetColorProfile)
@@ -61,7 +74,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.require("disabled".equals(variantCacheProfile)
           || "enabled".equals(variantCacheProfile),
           "variant-cache must be disabled or enabled");
+      ImageRasterBenchmarkSupport.require("disabled".equals(prefetchProfile)
+          || "all".equals(prefetchProfile),
+          "prefetch must be disabled or all");
       configureProfile();
+      ImagePreparation.resetAccountingForTest();
 
       long buildStart = Vm.getTimeStamp();
       String[] imagePaths = sortedJpegPaths(imageDir);
@@ -79,32 +96,95 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(maximum > minimum,
           "real workload content did not extend beyond the viewport");
 
+      if ("all".equals(prefetchProfile)) {
+        final long prefetchStart = Vm.getTimeStamp();
+        addTimerListener(this);
+        prefetchTimer = addTimer(10);
+        scroll.prepareForDisplay(new Runnable() {
+          @Override
+          public void run() {
+            prefetchElapsedMillis = Vm.getTimeStamp() - prefetchStart;
+            capturePrefetchAccounting();
+            prefetchComplete = true;
+          }
+        });
+        return;
+      }
+      executeBenchmark();
+    } catch (Throwable failure) {
+      String error = failure.getClass().getName() + ":"
+          + String.valueOf(failure.getMessage()).replace(' ', '_').replace(',', '_');
+      finishBenchmark(false, error);
+      return;
+    }
+  }
+
+  private void executeBenchmark() {
+    if (benchmarkStarted) {
+      return;
+    }
+    benchmarkStarted = true;
+    if (prefetchTimer != null) {
+      removeTimer(prefetchTimer);
+      prefetchTimer = null;
+    }
+    try {
+      Image.resetImageOperationAccountingForTest();
+      int minimum = scroll.sbV.getMinimum();
+      int maximum = validMaximum();
       PassResult cold = runPass("cold", true, minimum, maximum);
       printPass(cold);
       PassResult warm = runPass("warm", false, maximum, maximum);
       printPass(warm);
       PassResult warm2 = runPass("warm2", true, minimum, maximum);
       printPass(warm2);
-      overallPass = true;
+      finishBenchmark(true, "");
     } catch (Throwable failure) {
-      error = failure.getClass().getName() + ":"
+      String error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_').replace(',', '_');
+      finishBenchmark(false, error);
     }
+  }
 
+  private void capturePrefetchAccounting() {
+    prefetchRequestCount = ImagePreparation.requestCountForTest();
+    prefetchReadyCount = ImagePreparation.readyCountForTest();
+    prefetchFailedCount = ImagePreparation.failedCountForTest();
+    prefetchNotPrefetchableCount = ImagePreparation.notPrefetchableCountForTest();
+    prefetchBackingLiveBytes = NativeImageBacking.backingBytesLiveForTest();
+    prefetchBackingPeakBytes = NativeImageBacking.backingBytesPeakLiveForTest();
+  }
+
+  private void finishBenchmark(boolean overallPass, String error) {
     String summary = "fixture=ImageScrollRealWorkloadBenchmarkApp,record=summary"
         + ",resolution=" + width + "x" + height
         + ",target_color_profile=" + String.valueOf(targetColorProfile)
         + ",variant_cache_profile=" + String.valueOf(variantCacheProfile)
+        + ",prefetch_profile=" + String.valueOf(prefetchProfile)
         + ",image_dir=" + String.valueOf(imageDir)
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
         + ",ui_build_elapsed_ms=" + uiBuildElapsedMillis
+        + ",prefetch_elapsed_ms=" + prefetchElapsedMillis
+        + ",prefetch_request_count=" + prefetchRequestCount
+        + ",prefetch_ready_count=" + prefetchReadyCount
+        + ",prefetch_failed_count=" + prefetchFailedCount
+        + ",prefetch_not_prefetchable_count=" + prefetchNotPrefetchableCount
+        + ",prefetch_backing_live_bytes=" + prefetchBackingLiveBytes
+        + ",prefetch_backing_peak_bytes=" + prefetchBackingPeakBytes
         + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error);
     System.out.println(summary);
     System.out.flush();
     ImageRasterBenchmarkSupport.writeReport("ImageScrollRealWorkloadBenchmarkApp.log", summary);
     exit(overallPass ? 0 : 1);
+  }
+
+  @Override
+  public void timerTriggered(TimerEvent event) {
+    if (prefetchComplete) {
+      executeBenchmark();
+    }
   }
 
   private void configureProfile() {
@@ -218,9 +298,17 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow {
         + ",resolution=" + width + "x" + height
         + ",target_color_profile=" + targetColorProfile
         + ",variant_cache_profile=" + variantCacheProfile
+        + ",prefetch_profile=" + prefetchProfile
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
         + ",ui_build_elapsed_ms=" + uiBuildElapsedMillis
+        + ",prefetch_elapsed_ms=" + prefetchElapsedMillis
+        + ",prefetch_request_count=" + prefetchRequestCount
+        + ",prefetch_ready_count=" + prefetchReadyCount
+        + ",prefetch_failed_count=" + prefetchFailedCount
+        + ",prefetch_not_prefetchable_count=" + prefetchNotPrefetchableCount
+        + ",prefetch_backing_live_bytes=" + prefetchBackingLiveBytes
+        + ",prefetch_backing_peak_bytes=" + prefetchBackingPeakBytes
         + ",pass=" + result.name + ",direction=" + (result.forward ? "top-to-bottom" : "bottom-to-top")
         + ",scroll_start=" + result.start + ",scroll_end=" + result.end
         + ",scroll_max=" + result.maximum + ",scroll_distance=" + (result.maximum - result.minimum)

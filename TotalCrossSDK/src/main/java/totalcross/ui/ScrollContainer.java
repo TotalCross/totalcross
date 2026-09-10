@@ -209,8 +209,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     }
 
     void completeBatch() {
-      if (completed || displayPreparationBatch != this || generation != displayPreparationGeneration
-          || scaleBits != Double.doubleToLongBits(Graphics.getMainWindowContentScale())) {
+      if (completed || displayPreparationBatch != this) {
         return;
       }
       completed = true;
