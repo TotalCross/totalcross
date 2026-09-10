@@ -22,3 +22,12 @@ SPDX-License-Identifier: LGPL-2.1-only
   ScrollContainer tests passed; ImagePreparation macOS smoke passed with
   detached adoption, UI completion, responsive timer, deferred plan, and one
   targeted decode before first draw
+- 2026-09-10 | milestone 3 | benchmark harness | pass | disabled/all-prefetch
+  profiles added to the 663-JPEG customer workload; focused SDK tests and one
+  representative prefetch-enabled process passed
+- 2026-09-10 | milestone 4 | final benchmark and smoke | pass | 16 fresh
+  processes, 48 pass records, exact 663-JPEG corpus, and final
+  `ImagePreparation` macOS smoke passed; raw logs/results/summary are in
+  `.agent/benchmarks/image-scroll-prefetch/final/`, editorial report is in
+  `.agent/reports/image-scroll-prefetch-editorial.md`, runtime SHA-256 is
+  `88e379320ab6c292830588d4291f73d24b142ed02ea4a67e2a35c68fb540a48d`
