@@ -31,3 +31,23 @@ SPDX-License-Identifier: LGPL-2.1-only
   `.agent/benchmarks/image-scroll-prefetch/final/`, editorial report is in
   `.agent/reports/image-scroll-prefetch-editorial.md`, runtime SHA-256 is
   `88e379320ab6c292830588d4291f73d24b142ed02ea4a67e2a35c68fb540a48d`
+- 2026-09-10 | milestone 5 | corrected implementation | pass | `COPY_READY`
+  now materializes/caches the final raster before copyRect scrolling, promotes
+  joined work from `DRAW_READY`, removes terminal in-flight entries, releases
+  detached handles exactly once, invalidates ancestor batches, and captures
+  the native optimization mask per request; implementation commits are
+  `c57f948e5`, `2879d6920`, `c7de9d72e`, `8adfb169c`, `decf5398f`,
+  `db10fecb7`, `53bcc7d41`, and `203a8013f`
+- 2026-09-10 | milestone 5 | corrected focused validation | pass | focused
+  SDK tests, Release SDK `dist -x test`, benchmark macOS redeploy, and the
+  exact ImagePreparation macOS smoke passed; smoke reported detached adoption,
+  retry after injected adoption failure, UI completion, captured mask, and no
+  extra decode during copyRect
+- 2026-09-10 | milestone 5 | corrected final benchmark | pass | 16 fresh
+  macOS processes and 48 records in
+  `.agent/benchmarks/image-scroll-prefetch/final-fixed/`; all prefetch cold
+  records were 663 requests/660 ready/0 failed/3 not-prefetchable, cold
+  targeted decodes were 0, cold final/native materializations were at most 3,
+  warm decodes/materializations were 0, and the strict runner gates passed;
+  runtime SHA-256 is
+  `6ad937b552e9305a39b17c363b655fc50f93d977181cd3435a4fdd770797d72c`
