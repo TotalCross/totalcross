@@ -9,16 +9,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 - branch: `perf/image-scroll-prefetch`
 - parent_head: `702139cedfad946cde133f8bfaeb4ec4ad239897`
 - active_milestone: complete — corrected COPY_READY implementation and closeout
-- active_slice: corrected final evidence committed; plan/report closeout pending
-- last_commit: `b7f70b11a`
+- active_slice: corrected evidence, plan, and editorial closeout committed
+- last_commit: `90d915b1d`
 - active_paths: `.agent/state/image-scroll-prefetch.md`,
   `.agent/evidence/image-scroll-prefetch.md`,
   `scripts/run-image-scroll-real-workload-benchmark.py`,
   `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
   `TotalCrossSDK/src/main/java/totalcross/ui/`,
   focused image/ScrollContainer smoke fixtures
-- next_action: commit plan/report/state closeout, verify remote head, and push
-  `perf/image-scroll-prefetch`
+- next_action: verify remote head and push `perf/image-scroll-prefetch`
 - focused_validation: focused Java regressions passed; Release SDK dist passed;
   Release macOS tcvm build passed; corrected 16-process/48-record matrix
   passed; ImagePreparation macOS smoke passed with adoption failure/retry,
