@@ -834,6 +834,16 @@ registerImageMacSmoke('ImageScrollRealWorkloadBenchmark', 'ImageScrollRealWorklo
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImagePreparation', 'ImagePreparationSmokeApp',
+    'image-preparation-smoke', true, false, [
+        'fixture=ImagePreparationSmokeApp',
+        'detachedAdoption=true',
+        'uiCompletion=true',
+        'responsive=true',
+        'deferredPlan=true',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageWarmCopyRectBenchmark', 'ImageWarmCopyRectBenchmarkApp',
     'image-warm-copyrect-benchmark', false, false, [
         'fixture=ImageWarmCopyRectBenchmarkApp',

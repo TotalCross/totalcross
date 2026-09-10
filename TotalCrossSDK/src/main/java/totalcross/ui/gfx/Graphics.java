@@ -13,6 +13,7 @@ import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.ui.Control;
+import totalcross.ui.MainWindow;
 import totalcross.ui.UIColors;
 import totalcross.ui.Window;
 import totalcross.ui.font.Font;
@@ -225,6 +226,7 @@ public final class Graphics {
     mainWindowLogicalWidth = logicalWidth;
     mainWindowLogicalHeight = logicalHeight;
     mainWindowContentScale = contentScale;
+    Settings.screenDensity = contentScale;
     mainWindowPixelWidth = pixelWidth;
     mainWindowPixelHeight = pixelHeight;
     if (changed || mainWindowPixels == null || mainWindowPixels.length != pixelCount) {
@@ -244,7 +246,14 @@ public final class Graphics {
 
   /** Returns the physical pixels represented by one logical screen unit. */
   public static double getMainWindowContentScale() {
-    return mainWindowContentScale;
+    MainWindow mainWindow = MainWindow.getMainWindow();
+    if (mainWindow != null) {
+      Graphics graphics = mainWindow.getGraphics();
+      if (graphics != null && Double.isFinite(graphics.contentScale) && graphics.contentScale > 0) {
+        return graphics.contentScale;
+      }
+    }
+    return Settings.screenDensity > 0 ? Settings.screenDensity : mainWindowContentScale;
   }
 
   private static int scaleSurfaceDimension(int logicalSize, double scale) {

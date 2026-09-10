@@ -18,3 +18,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   columns; future commits will use the required wrapped format
 - 2026-09-10 | milestone 1 | focused validation | pass | Image preparation SDK
   tests passed; macOS `tcvm` Release build passed; `git diff --check` passed
+- 2026-09-10 | milestone 2 | focused validation | pass | traversal and existing
+  ScrollContainer tests passed; ImagePreparation macOS smoke passed with
+  detached adoption, UI completion, responsive timer, deferred plan, and one
+  targeted decode before first draw

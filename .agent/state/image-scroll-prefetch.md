@@ -8,9 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - branch: `perf/image-scroll-prefetch`
 - parent_head: `702139cedfad946cde133f8bfaeb4ec4ad239897`
-- active_milestone: 1 — reusable asynchronous image preparation
-- active_slice: reusable asynchronous image preparation implemented; focused SDK/native validation passed; ScrollContainer traversal pending
-- last_commit: `09cdb5da9`
+- active_milestone: 3 — customer benchmark extension
+- active_slice: ScrollContainer PREFETCH_ALL traversal and batch completion implemented; benchmark extension pending
+- last_commit: `78c12e72a`
 - active_paths: `.agent/state/image-scroll-prefetch.md`,
   `.agent/evidence/image-scroll-prefetch.md`,
   `scripts/run-image-scroll-real-workload-benchmark.py`,
@@ -21,8 +21,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   ScrollContainer PREFETCH_ALL batch completion
 - focused_validation: parent local and remote heads matched; target branch was
   created from the parent and pushed; baseline runner passed 24 records across
-  eight fresh profiles using exactly 663 JPEGs; focused SDK tests and the
-  macOS tcvm build passed for asynchronous image preparation
+  eight fresh profiles using exactly 663 JPEGs; focused SDK tests, macOS tcvm
+  build, and ImagePreparation macOS smoke passed
 - deferred_validation: the caller shell does not export `TC_IMAGE_CORPUS`; the
   baseline used the verified local corpus path explicitly; native smoke remains
   deferred until the related implementation milestone
