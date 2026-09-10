@@ -82,7 +82,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           || "all".equals(prefetchProfile),
           "prefetch must be disabled or all");
       configureProfile();
-      ImagePreparation.resetAccountingForTest();
 
       long buildStart = Vm.getTimeStamp();
       String[] imagePaths = sortedJpegPaths(imageDir);
@@ -102,6 +101,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       scroll.sbV.setValue(minimum);
 
       if ("all".equals(prefetchProfile)) {
+        Image.resetImageOperationAccountingForTest();
+        ImagePreparation.resetAccountingForTest();
         final long prefetchStart = Vm.getTimeStamp();
         addTimerListener(this);
         prefetchTimer = addTimer(10);
