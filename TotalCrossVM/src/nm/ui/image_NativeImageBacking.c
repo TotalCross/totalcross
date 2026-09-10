@@ -207,6 +207,22 @@ TC_API void tuiNIB_createFromArgbPixels_Iii(NMParams p) // totalcross/ui/image/N
 #endif
 }
 
+TC_API void tuiNIB_adoptDetachedNativeImpl_l(NMParams p) // totalcross/ui/image/NativeImageBacking private static long adoptDetachedNativeImpl(long nativeHandle);
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_adopt_detached(p->i64[0]);
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_releaseDetachedNativeImpl(NMParams p) // totalcross/ui/image/NativeImageBacking private static void releaseDetachedNativeImpl(long nativeHandle);
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_release_detached(p->i64[0]);
+#endif
+}
+
 TC_API void tuiNIB_snapshotNative(NMParams p) // totalcross/ui/image/NativeImageBacking private long snapshotNative();
 {
 #if TC_RENDERER_SKIA

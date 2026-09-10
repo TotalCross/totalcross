@@ -88,9 +88,16 @@ int64_t skia_image_backing_create_from_owned_rgba_pixels(void* pixels, int32 wid
 int64_t skia_image_backing_create_from_owned_pixels(void* pixels, int32 width, int32 height,
     ImageBackingFormat format);
 int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 width, int32 height);
+int64_t skia_image_backing_create_detached_from_owned_rgba_pixels(void* pixels, int32 width, int32 height);
+int64_t skia_image_backing_create_detached_from_owned_pixels(void* pixels, int32 width, int32 height,
+    ImageBackingFormat format);
+int64_t skia_image_backing_create_detached_from_argb_pixels(const void* pixels, int32 width, int32 height);
+int64_t skia_image_backing_adopt_detached(int64_t handle);
+void skia_image_backing_release_detached(int64_t handle);
 #define SKIA_IMAGE_OPACITY_UNKNOWN 0
 #define SKIA_IMAGE_OPACITY_OPAQUE 1
 #define SKIA_IMAGE_OPACITY_TRANSLUCENT 2
+void skia_image_backing_set_detached_opacity(int64_t handle, int32 opacity);
 void skia_image_backing_set_opacity(int64_t handle, int32 opacity);
 int32 skia_image_backing_opacity(int64_t handle);
 #define SKIA_IMAGE_BACKING_SNAPSHOT_OK 0

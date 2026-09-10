@@ -45,4 +45,10 @@ public final class ImageDrawingBridge {
   public static boolean isCopyRectCompatible(Object drawPlan) {
     return drawPlan instanceof ImageDrawPlan && ((ImageDrawPlan) drawPlan).isCopyRectCompatible();
   }
+
+  /** @hidden */
+  @Deprecated
+  public static void prepareForDisplay(Image image, double destinationScale, Runnable onComplete) {
+    ImagePreparation.request(image, destinationScale, onComplete);
+  }
 }

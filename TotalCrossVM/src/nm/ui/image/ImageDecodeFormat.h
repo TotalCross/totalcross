@@ -11,5 +11,7 @@
 /* Chooses a compact format from structural source metadata and the decode mask. */
 ImageBackingFormat imageSelectDecodeStorageFormat(TCObject imageObj, bool sourceIsGray,
       bool sourceHasAlpha);
+ImageBackingFormat imageSelectDecodeStorageFormatWithMask(int32 mask, bool sourceIsGray,
+      bool sourceHasAlpha);
 
 #endif

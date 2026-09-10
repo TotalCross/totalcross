@@ -171,9 +171,9 @@ static void jpegReleaseDecodeStorage(JPEGDecodeAllocationState* allocation)
 }
 
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
+static ImageDecodeStatus jpegLoadInternal(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
       TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2,
-      bool zeroCopy, bool opacityMetadata)
+      bool zeroCopy, bool opacityMetadata, bool detached, int32 decodeMask, int64* detachedHandle)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -280,8 +280,11 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    jpeg_calc_output_dimensions(&cinfo); /* Calculate output image dimensions so we can allocate space */
 
 #if TC_RENDERER_SKIA
-   allocation->storageFormat = imageSelectDecodeStorageFormat(imageObj,
-      cinfo.jpeg_color_space == JCS_GRAYSCALE || cinfo.num_components == 1, false);
+   allocation->storageFormat = detached
+      ? imageSelectDecodeStorageFormatWithMask(decodeMask,
+         cinfo.jpeg_color_space == JCS_GRAYSCALE || cinfo.num_components == 1, false)
+      : imageSelectDecodeStorageFormat(imageObj,
+         cinfo.jpeg_color_space == JCS_GRAYSCALE || cinfo.num_components == 1, false);
 #else
    allocation->storageFormat = IMAGE_BACKING_FORMAT_RGBA8888;
 #endif
@@ -305,7 +308,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       jpegReleaseDecodeStorage(allocation);
       free(allocation);
       heapDestroy(heap);
-      Image_backing(imageObj) = null;
+      if (!detached && imageObj)
+         Image_backing(imageObj) = null;
       return status;
    }
 #if TC_RENDERER_SKIA
@@ -319,7 +323,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       jpegReleaseDecodeStorage(allocation);
       free(allocation);
       heapDestroy(heap);
-      Image_backing(imageObj) = null;
+      if (!detached && imageObj)
+         Image_backing(imageObj) = null;
       return status;
    }
    if (allocation->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
@@ -335,7 +340,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
          jpegReleaseDecodeStorage(allocation);
          free(allocation);
          heapDestroy(heap);
-         Image_backing(imageObj) = null;
+         if (!detached && imageObj)
+            Image_backing(imageObj) = null;
          return status;
       }
       if (imageDecodeConsumeFinalBufferFailureForTest()) {
@@ -354,7 +360,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
          jpegReleaseDecodeStorage(allocation);
          free(allocation);
          heapDestroy(heap);
-         Image_backing(imageObj) = null;
+         if (!detached && imageObj)
+            Image_backing(imageObj) = null;
          return status;
       }
       if (imageDecodeConsumeFinalBufferFailureForTest()) {
@@ -373,7 +380,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
          jpegReleaseDecodeStorage(allocation);
          free(allocation);
          heapDestroy(heap);
-         Image_backing(imageObj) = null;
+         if (!detached && imageObj)
+            Image_backing(imageObj) = null;
          return status;
       }
    }
@@ -389,7 +397,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       jpegReleaseDecodeStorage(allocation);
       free(allocation);
       heapDestroy(heap);
-      Image_backing(imageObj) = null;
+      if (!detached && imageObj)
+         Image_backing(imageObj) = null;
       return status;
    }
    setObjectLock(pixelsObj, UNLOCKED);
@@ -407,7 +416,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    RasterImageBacking_frameCount(backing) = 1;
    RasterImageBacking_widthOfAllFrames(backing) = width;
    setObjectLock(backing, UNLOCKED);
-   Image_backing(imageObj) = backing;
+      if (!detached && imageObj)
+         Image_backing(imageObj) = backing;
    pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
 #endif
 
@@ -462,8 +472,10 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    }
 
    // now that everything went fine, set the image's width/height
-   Image_width(imageObj) = width;
-   Image_height(imageObj) = height;
+   if (!detached && imageObj) {
+      Image_width(imageObj) = width;
+      Image_height(imageObj) = height;
+   }
    // Finish decompression and release memory. Do it in this order because output module
    // has allocated memory of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
    jpeg_finish_decompress(&cinfo);
@@ -474,24 +486,39 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       const int32 compactBytes = (int32)((uint64)width * height
          * (allocation->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2));
       if (allocation->compactStorage) {
-         nativeHandle = skia_image_backing_create_from_owned_pixels(allocation->compactStorage,
+         nativeHandle = detached
+            ? skia_image_backing_create_detached_from_owned_pixels(allocation->compactStorage,
+               width, height, allocation->storageFormat)
+            : skia_image_backing_create_from_owned_pixels(allocation->compactStorage,
             width, height, allocation->storageFormat);
          allocation->compactStorage = null;
       } else if (zeroCopy) {
-         nativeHandle = skia_image_backing_create_from_owned_rgba_pixels(
-            allocation->rgbaStorage, width, height);
+         nativeHandle = detached
+            ? skia_image_backing_create_detached_from_owned_rgba_pixels(
+               allocation->rgbaStorage, width, height)
+            : skia_image_backing_create_from_owned_rgba_pixels(
+               allocation->rgbaStorage, width, height);
          allocation->rgbaStorage = null;
       } else {
-         nativeHandle = skia_image_backing_create_from_argb_pixels(
-            allocation->pixelStorage, width, height);
+         nativeHandle = detached
+            ? skia_image_backing_create_detached_from_argb_pixels(
+               allocation->pixelStorage, width, height)
+            : skia_image_backing_create_from_argb_pixels(
+               allocation->pixelStorage, width, height);
          xfree(allocation->pixelStorage);
          allocation->pixelStorage = null;
       }
       if (nativeHandle) {
          if (allocation->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
-            skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+            if (detached)
+               skia_image_backing_set_detached_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+            else
+               skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
          } else if (opacityMetadata) {
-            skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+            if (detached)
+               skia_image_backing_set_detached_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+            else
+               skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
             imageRecordTestCounter("opacityKnownFromSourceForTest");
          }
          if (allocation->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
@@ -509,7 +536,14 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
          }
       }
    }
-   if (!nativeHandle || !imageInstallNativeBacking(currentContext, imageObj, nativeHandle, width, height)) {
+   if (detached) {
+      if (nativeHandle && detachedHandle)
+         *detachedHandle = nativeHandle;
+      else if (nativeHandle)
+         skia_image_backing_release_detached(nativeHandle);
+      if (!nativeHandle || !detachedHandle)
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+   } else if (!nativeHandle || !imageInstallNativeBacking(currentContext, imageObj, nativeHandle, width, height)) {
       status = IMAGE_DECODE_RESOURCE_FAILURE;
       Image_width(imageObj) = 0;
       Image_height(imageObj) = 0;
@@ -522,6 +556,23 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    heapDestroy(heap);
 
    return status;
+}
+
+ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
+      TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2,
+      bool zeroCopy, bool opacityMetadata)
+{
+   return jpegLoadInternal(currentContext, imageObj, inputStreamObj, bufObj, tcz, first4, size,
+      mode, modeArg1, modeArg2, zeroCopy, opacityMetadata, false, 0, null);
+}
+
+ImageDecodeStatus jpegLoadDetached(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
+      TCObject bufObj, TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode,
+      int32 modeArg1, int32 modeArg2, bool zeroCopy, bool opacityMetadata, int32 decodeMask,
+      int64* detachedHandle)
+{
+   return jpegLoadInternal(currentContext, imageObj, inputStreamObj, bufObj, tcz, first4, size,
+      mode, modeArg1, modeArg2, zeroCopy, opacityMetadata, true, decodeMask, detachedHandle);
 }
 
 bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStreamObj, int32 width, int32 height)

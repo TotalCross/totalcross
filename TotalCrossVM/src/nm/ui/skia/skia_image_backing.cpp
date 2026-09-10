@@ -663,6 +663,84 @@ void releaseMallocPixels(const void* pixels, void*) {
     std::free(const_cast<void*>(pixels));
 }
 
+static int64_t detachedHandle(
+    std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing) {
+    return backing ? reinterpret_cast<int64_t>(backing.release()) : 0;
+}
+
+static skia_image_backing_internal::NativeImageBackingRecord* detachedRecord(int64_t handle) {
+    return handle == 0 ? nullptr : reinterpret_cast<skia_image_backing_internal::NativeImageBackingRecord*>(
+        static_cast<uintptr_t>(handle));
+}
+
+static int64_t createFromRgbaPixelsImpl(void* pixels, int32 width, int32 height, bool detached) {
+    if (!pixels || width <= 0 || height <= 0) {
+        return 0;
+    }
+    const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
+    if (pixelCount > std::numeric_limits<size_t>::max() / 4) {
+        return 0;
+    }
+    const size_t rowBytes = static_cast<size_t>(width) * 4;
+    const size_t byteCount = static_cast<size_t>(pixelCount) * 4;
+    try {
+        sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseOwnedPixels, nullptr);
+        sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height), data, rowBytes);
+        if (!image) {
+            return 0;
+        }
+        std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing(
+            new skia_image_backing_internal::NativeImageBackingRecord());
+        backing->image = std::move(image);
+        backing->width = width;
+        backing->height = height;
+        backing->rowBytes = rowBytes;
+        return detached ? detachedHandle(std::move(backing)) : registerBackingRecord(std::move(backing));
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
+static int64_t createFromOwnedPixelsImpl(void* pixels, int32 width, int32 height,
+                                         ImageBackingFormat format, bool detached) {
+    if (!pixels || width <= 0 || height <= 0) {
+        return 0;
+    }
+    if (format < IMAGE_BACKING_FORMAT_RGBA8888 || format > IMAGE_BACKING_FORMAT_ARGB4444) {
+        return 0;
+    }
+    const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
+    const size_t pixelBytes = bytesPerPixel(format);
+    if (pixelCount > std::numeric_limits<size_t>::max() / pixelBytes) {
+        return 0;
+    }
+    std::unique_ptr<uint8_t, decltype(&std::free)> owner(
+        static_cast<uint8_t*>(pixels), &std::free);
+    const size_t rowBytes = static_cast<size_t>(width) * pixelBytes;
+    const size_t byteCount = static_cast<size_t>(pixelCount) * pixelBytes;
+    try {
+        sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseMallocPixels, nullptr);
+        if (!data) {
+            return 0;
+        }
+        owner.release();
+        sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height, format), data, rowBytes);
+        if (!image) {
+            return 0;
+        }
+        std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing(
+            new skia_image_backing_internal::NativeImageBackingRecord());
+        backing->image = std::move(image);
+        backing->width = width;
+        backing->height = height;
+        backing->format = format;
+        backing->rowBytes = rowBytes;
+        return detached ? detachedHandle(std::move(backing)) : registerBackingRecord(std::move(backing));
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
 bool readRgbaBytes(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
                    int32 width, int32 height) {
     if (!backing || !output || x < 0 || y < 0 || width <= 0 || height <= 0 ||
@@ -983,74 +1061,17 @@ int64_t skia_image_backing_create_empty_for_test(int32 width, int32 height, int3
 }
 
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height) {
-    if (!pixels || width <= 0 || height <= 0) {
-        return 0;
-    }
-    const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
-    if (pixelCount > std::numeric_limits<size_t>::max() / 4) {
-        return 0;
-    }
-    const size_t rowBytes = static_cast<size_t>(width) * 4;
-    const size_t byteCount = static_cast<size_t>(pixelCount) * 4;
-    try {
-        sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseOwnedPixels, nullptr);
-        sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height), data, rowBytes);
-        if (!image) {
-            return 0;
-        }
-        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
-        backing->image = std::move(image);
-        backing->width = width;
-        backing->height = height;
-        backing->rowBytes = rowBytes;
-        return registerBackingRecord(std::move(backing));
-    } catch (const std::bad_alloc&) {
-        return 0;
-    }
+    return createFromRgbaPixelsImpl(pixels, width, height, false);
 }
 
 int64_t skia_image_backing_create_from_owned_pixels(void* pixels, int32 width, int32 height,
                                                     ImageBackingFormat format) {
-    if (!pixels || width <= 0 || height <= 0) {
-        return 0;
-    }
-    if (format < IMAGE_BACKING_FORMAT_RGBA8888 || format > IMAGE_BACKING_FORMAT_ARGB4444) {
-        return 0;
-    }
-    const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
-    const size_t pixelBytes = bytesPerPixel(format);
-    if (pixelCount > std::numeric_limits<size_t>::max() / pixelBytes) {
-        return 0;
-    }
-    std::unique_ptr<uint8_t, decltype(&std::free)> owner(
-        static_cast<uint8_t*>(pixels), &std::free);
-    const size_t rowBytes = static_cast<size_t>(width) * pixelBytes;
-    const size_t byteCount = static_cast<size_t>(pixelCount) * pixelBytes;
-    try {
-        sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseMallocPixels, nullptr);
-        if (!data) {
-            return 0;
-        }
-        owner.release();
-        sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height, format), data, rowBytes);
-        if (!image) {
-            return 0;
-        }
-        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
-        backing->image = std::move(image);
-        backing->width = width;
-        backing->height = height;
-        backing->format = format;
-        backing->rowBytes = rowBytes;
-        return registerBackingRecord(std::move(backing));
-    } catch (const std::bad_alloc&) {
-        return 0;
-    }
+    return createFromOwnedPixelsImpl(pixels, width, height, format, false);
 }
 
 int64_t skia_image_backing_create_from_owned_rgba_pixels(void* pixels, int32 width, int32 height) {
-    return skia_image_backing_create_from_owned_pixels(pixels, width, height,
-        IMAGE_BACKING_FORMAT_RGBA8888);
+    return createFromOwnedPixelsImpl(pixels, width, height,
+        IMAGE_BACKING_FORMAT_RGBA8888, false);
 }
 
 int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 width, int32 height) {
@@ -1071,10 +1092,67 @@ int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 wid
             rgba[i * 4 + 3] = source[i * 4];
         }
         uint8_t* owned = rgba.release();
-        return skia_image_backing_create_from_rgba_pixels(owned, width, height);
+        return createFromRgbaPixelsImpl(owned, width, height, false);
     } catch (const std::bad_alloc&) {
         return 0;
     }
+}
+
+int64_t skia_image_backing_create_detached_from_owned_pixels(void* pixels, int32 width, int32 height,
+                                                             ImageBackingFormat format) {
+    return createFromOwnedPixelsImpl(pixels, width, height, format, true);
+}
+
+int64_t skia_image_backing_create_detached_from_owned_rgba_pixels(void* pixels, int32 width, int32 height) {
+    return createFromOwnedPixelsImpl(pixels, width, height,
+        IMAGE_BACKING_FORMAT_RGBA8888, true);
+}
+
+int64_t skia_image_backing_create_detached_from_argb_pixels(const void* pixels, int32 width, int32 height) {
+    if (!pixels || width <= 0 || height <= 0) {
+        return 0;
+    }
+    const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
+    if (pixelCount > std::numeric_limits<size_t>::max() / 4) {
+        return 0;
+    }
+    try {
+        const uint8_t* source = static_cast<const uint8_t*>(pixels);
+        std::unique_ptr<uint8_t[]> rgba(new uint8_t[static_cast<size_t>(pixelCount) * 4]);
+        for (size_t i = 0; i < static_cast<size_t>(pixelCount); ++i) {
+            rgba[i * 4] = source[i * 4 + 3];
+            rgba[i * 4 + 1] = source[i * 4 + 2];
+            rgba[i * 4 + 2] = source[i * 4 + 1];
+            rgba[i * 4 + 3] = source[i * 4];
+        }
+        uint8_t* owned = rgba.release();
+        return createFromRgbaPixelsImpl(owned, width, height, true);
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
+int64_t skia_image_backing_adopt_detached(int64_t handle) {
+    skia_image_backing_internal::NativeImageBackingRecord* raw = detachedRecord(handle);
+    if (!raw) {
+        return 0;
+    }
+    std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing(raw);
+    return registerBackingRecord(std::move(backing));
+}
+
+void skia_image_backing_release_detached(int64_t handle) {
+    delete detachedRecord(handle);
+}
+
+void skia_image_backing_set_detached_opacity(int64_t handle, int32 opacity) {
+    skia_image_backing_internal::NativeImageBackingRecord* backing = detachedRecord(handle);
+    if (!backing || (opacity != SKIA_IMAGE_OPACITY_UNKNOWN
+        && opacity != SKIA_IMAGE_OPACITY_OPAQUE
+        && opacity != SKIA_IMAGE_OPACITY_TRANSLUCENT)) {
+        return;
+    }
+    backing->opacity = opacity;
 }
 
 void skia_image_backing_set_opacity(int64_t handle, int32 opacity) {

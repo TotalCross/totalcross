@@ -49,7 +49,13 @@ ImageBackingFormat imageSelectDecodeStorageFormat(TCObject imageObj, bool source
 {
    int32* featureMask = imageObj == null
       ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
-   int32 mask = featureMask ? *featureMask : 0;
+   return imageSelectDecodeStorageFormatWithMask(featureMask ? *featureMask : 0,
+      sourceIsGray, sourceHasAlpha);
+}
+
+ImageBackingFormat imageSelectDecodeStorageFormatWithMask(int32 mask, bool sourceIsGray,
+      bool sourceHasAlpha)
+{
    if (sourceIsGray && !sourceHasAlpha && (mask & (1 << 6)) != 0)
       return IMAGE_BACKING_FORMAT_GRAY8;
    if (!sourceHasAlpha && (mask & (1 << 5)) != 0)
@@ -465,6 +471,62 @@ TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p) // totalcross/ui/image/
 TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSourceTiered(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight, int denominator);
 {
    decodeEncodedSourceAtDenominator(p, p->i32[2], true);
+}
+
+TC_API void tuiI_decodeEncodedSourceCandidat(NMParams p) // totalcross/ui/image/Image private static long decodeEncodedSourceCandidateHandle(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight, int denominator);
+{
+#if TC_RENDERER_SKIA
+   TCObject sourceObj = p->obj[0];
+   ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
+   int32 targetWidth = p->i32[0];
+   int32 targetHeight = p->i32[1];
+   int32 denominator = p->i32[2];
+   int64 detachedHandle = 0;
+   ImageDecodeStatus status;
+
+   p->retL = 0;
+   if (!bag || !bag->bytes || bag->length <= 0
+         || EncodedImageSource_formatCode(sourceObj) != IMAGE_ENCODED_JPEG
+         || targetWidth <= 0 || targetHeight <= 0
+         || (denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8)) {
+      throwException(p->currentContext, ImageException,
+         "Image preparation requires a JPEG and positive dimensions");
+      return;
+   }
+   if (denominator == 1)
+      imageRecordTestCounter("fullDecodeInvocationCountForTest");
+   else {
+      imageRecordTestCounter("targetedDecodeInvocationCountForTest");
+      {
+         int32* targetedRequestWidth = imageTestAccountingField("targetedDecodeRequestWidthForTest");
+         int32* targetedRequestHeight = imageTestAccountingField("targetedDecodeRequestHeightForTest");
+         int32* targetedDenominator = imageTestAccountingField("targetedDecodeDenominatorForTest");
+         if (targetedRequestWidth != null)
+            *targetedRequestWidth = targetWidth;
+         if (targetedRequestHeight != null)
+            *targetedRequestHeight = targetHeight;
+         if (targetedDenominator != null)
+            *targetedDenominator = denominator;
+      }
+   }
+   status = jpegLoadDetached(p->currentContext, null, null, null, null,
+      (const char*)bag->bytes, bag->length,
+      denominator == 1 ? JPEG_DECODE_FULL : JPEG_DECODE_EXPLICIT_RATIO,
+      denominator == 1 ? 0 : 1, denominator == 1 ? 0 : denominator,
+      false, false, 0,
+      &detachedHandle);
+   if (status != IMAGE_DECODE_SUCCESS || detachedHandle == 0) {
+      if (detachedHandle != 0)
+         skia_image_backing_release_detached(detachedHandle);
+      throwImageDecodeStatus(p->currentContext, status == IMAGE_DECODE_SUCCESS
+         ? IMAGE_DECODE_RESOURCE_FAILURE : status);
+      return;
+   }
+   p->retL = detachedHandle;
+#else
+   p->retL = 0;
+   UNUSED(p);
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/Image native private static void failNextNativeMaterializationForTestNative();

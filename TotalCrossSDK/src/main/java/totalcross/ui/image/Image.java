@@ -906,6 +906,112 @@ public class Image extends GfxSurface {
     return pipeline;
   }
 
+  ImagePreparation.Request createPreparationRequest(double destinationScale) throws ImageException {
+    return createPreparationRequest(destinationScale, !Settings.onJavaSE);
+  }
+
+  ImagePreparation.Request createPreparationRequest(double destinationScale, boolean nativeAvailable)
+      throws ImageException {
+    if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
+      throw new ImageException("Image destination scale must be finite and positive.");
+    }
+    ImagePipeline deferred = pipeline;
+    if (deferred == null) {
+      return new ImagePreparation.Request(this, null, null, destinationScale,
+          Double.doubleToLongBits(destinationScale), 0, 0, 0, 1, true, nativeAvailable,
+          ImagePreparation.READY);
+    }
+    if (!(deferred.root() instanceof EncodedImageSource)
+        || deferred.decodePolicy().kind() != ImageDecodePolicy.TARGET_DECODE) {
+      return new ImagePreparation.Request(this, deferred, null, destinationScale,
+          Double.doubleToLongBits(destinationScale), 0, 0, 0, 1, false, nativeAvailable,
+          ImagePreparation.NOT_PREFETCHABLE);
+    }
+    EncodedImageSource source = (EncodedImageSource) deferred.root();
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG) {
+      return new ImagePreparation.Request(this, deferred, source, destinationScale,
+          Double.doubleToLongBits(destinationScale), source.decodedGeneration(), 0, 0, 1, false,
+          nativeAvailable,
+          ImagePreparation.NOT_PREFETCHABLE);
+    }
+    double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
+    int targetWidth = scaledDimensionAllowingZero(deferred.logicalWidth(), effectiveScale);
+    int targetHeight = scaledDimension(deferred.logicalHeight(), effectiveScale);
+    int denominator = ImageDecodeRequirement.choose(source, deferred, targetWidth, targetHeight);
+    long sourceGeneration = source.decodedGeneration();
+    boolean alreadyDecoded = source.decodedBackingForReuse(denominator) != null;
+    return new ImagePreparation.Request(this, deferred, source, destinationScale,
+        Double.doubleToLongBits(destinationScale), sourceGeneration, targetWidth, targetHeight,
+        denominator, alreadyDecoded, nativeAvailable, -1);
+  }
+
+  ImagePreparationCandidate createPreparationCandidate(ImagePreparation.Request request)
+      throws ImageException {
+    Image decoded = decodeEncodedSourceJava(request.source, request.targetWidth, request.targetHeight,
+        request.denominator);
+    return ImagePreparationCandidate.fromBacking(decoded.backing, decoded.width, decoded.height,
+        request.denominator);
+  }
+
+  ImagePreparation.JavaResult createJavaPreparationResult(ImagePreparation.Request request)
+      throws ImageException {
+    Image decoded = decodeEncodedSourceJava(request.source, request.targetWidth, request.targetHeight,
+        request.denominator);
+    return new ImagePreparation.JavaResult(decoded.backing, decoded.width, decoded.height,
+        request.denominator);
+  }
+
+  long createNativePreparationHandle(ImagePreparation.Request request) throws ImageException {
+    return decodeEncodedSourceCandidateHandle(request.source, request.targetWidth, request.targetHeight,
+        request.denominator);
+  }
+
+  long sourceDecodeGenerationForPreparation(ImagePreparation.Request request) {
+    return request.source == null ? request.sourceGeneration : request.source.decodedGeneration();
+  }
+
+  void adoptPreparationCandidate(ImagePreparation.Request request, ImagePreparationCandidate candidate)
+      throws ImageException {
+    if (pipeline != request.pipeline || request.source != pipeline.root()) {
+      throw new ImageException("Image preparation request is stale");
+    }
+    ImageBacking prepared = candidate.takeBackingForAdoption();
+    request.source.installDecodedBacking(prepared, candidate.width(), candidate.height(), candidate.denominator());
+  }
+
+  void adoptJavaPreparationResult(ImagePreparation.Request request, ImagePreparation.JavaResult result)
+      throws ImageException {
+    if (pipeline != request.pipeline || request.source != pipeline.root() || result == null
+        || result.backing == null) {
+      throw new ImageException("Image preparation request is stale");
+    }
+    request.source.installDecodedBacking(result.backing, result.width, result.height, result.denominator);
+  }
+
+  void adoptNativePreparationHandle(ImagePreparation.Request request, long nativeHandle)
+      throws ImageException {
+    if (pipeline != request.pipeline || request.source != pipeline.root() || nativeHandle == 0) {
+      throw new ImageException("Image preparation request is stale");
+    }
+    long adoptedHandle = NativeImageBacking.adoptDetachedNative(nativeHandle);
+    if (adoptedHandle == 0) {
+      throw new ImageException("Could not adopt image preparation candidate");
+    }
+    int width = (int) (((long) request.source.getIntrinsicWidth() + request.denominator - 1)
+        / request.denominator);
+    int height = (int) (((long) request.source.getIntrinsicHeight() + request.denominator - 1)
+        / request.denominator);
+    request.source.installDecodedBacking(NativeImageBacking.fromHandle(adoptedHandle, width, height),
+        width, height, request.denominator);
+  }
+
+  void finishPreparation(ImagePreparation.Request request) throws ImageException {
+    if (pipeline != request.pipeline) {
+      throw new ImageException("Image preparation request is stale");
+    }
+    drawPlanForDrawing(request.destinationScale);
+  }
+
   /** Test-only representation probe that does not expose the native handle. */
   boolean hasNativeBackingForSmoke() {
     materializeCanonicalUnchecked();
@@ -1383,6 +1489,32 @@ public class Image extends GfxSurface {
   private static long sourceDecodeGeneration(ImagePipeline pipeline) {
     return pipeline.root() instanceof EncodedImageSource
         ? ((EncodedImageSource) pipeline.root()).decodedGeneration() : 0;
+  }
+
+  private static Image decodeEncodedSourceJava(EncodedImageSource source,
+      int targetWidth, int targetHeight, int denominator) throws ImageException {
+    if (source == null || source.getFormat() != ImageEncodedStructure.Format.JPEG
+        || targetWidth <= 0 || targetHeight <= 0
+        || (denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8)) {
+      throw new ImageException("Image preparation requires a JPEG and positive dimensions");
+    }
+    Image decoded = new Image();
+    decoded.initializeDecodeTarget(source);
+    if (denominator == 1) {
+      decoded.decodeEncodedSource(source);
+    } else {
+      decoded.decodeEncodedSourceTiered(source, targetWidth, targetHeight, denominator);
+    }
+    if (decoded.backing == null || !decoded.backing.isValid() || decoded.width <= 0 || decoded.height <= 0) {
+      throw new DeterministicImageDecodeException("Could not decode encoded image");
+    }
+    return decoded;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long decodeEncodedSourceCandidateHandle(EncodedImageSource source,
+      int targetWidth, int targetHeight, int denominator) throws ImageException {
+    throw new ImageException("Native image preparation is unavailable");
   }
 
   private static int multiplyAlphaMasks(int first, int second) {

@@ -33,6 +33,16 @@ final class NativeImageBacking extends ImageBacking {
     return new NativeImageBacking(nativeHandle, width, height);
   }
 
+  static long adoptDetachedNative(long nativeHandle) {
+    return nativeHandle == 0 ? 0 : adoptDetachedNativeImpl(nativeHandle);
+  }
+
+  static void releaseDetachedNative(long nativeHandle) {
+    if (nativeHandle != 0) {
+      releaseDetachedNativeImpl(nativeHandle);
+    }
+  }
+
   static NativeImageBacking materializeGeometry(ImageDrawPlan plan) throws ImageException {
     if (plan == null) {
       throw new ImageException("Invalid native image geometry plan.");
@@ -723,6 +733,15 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private static long createFromArgbPixelsNative(int[] pixels, int width, int height) {
     return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long adoptDetachedNativeImpl(long nativeHandle) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void releaseDetachedNativeImpl(long nativeHandle) {
   }
 
   @ReplacedByNativeOnDeploy

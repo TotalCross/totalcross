@@ -54,7 +54,7 @@ Observable result:
 
 Execution plan path:
 
-- `.agent/plans/image-scroll-prefetch.md`
+- `.agent/plans/image-scroll-prefetch-execplan.md`
 
 Supporting files:
 
@@ -109,7 +109,7 @@ validation. Do not run other local platform builds.
 
 - [x] Verify completed parent and create `perf/image-scroll-prefetch`.
 - [x] Run and commit prefetch-plan baseline benchmark matrix.
-- [ ] Add reusable asynchronous image preparation.
+- [x] Add reusable asynchronous image preparation.
 - [ ] Add ScrollContainer `PREFETCH_ALL` traversal/batch completion.
 - [ ] Extend customer benchmark for disabled versus all-prefetch.
 - [ ] Run final matrix/smokes, commit evidence/report, and push.

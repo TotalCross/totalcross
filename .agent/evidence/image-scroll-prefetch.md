@@ -13,3 +13,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   two resolutions, four feature-13/14 profiles, three passes each; runtime
   `efef5fb8b062df88054daa7c2e4aeeff98b1b1dd1c2ea49e00aad48ce188a61a` | raw
   logs/results and summary in `.agent/benchmarks/image-scroll-prefetch/baseline/`
+- 2026-09-10 | milestone 0 | commit-message check | fail | `09cdb5da9` was
+  committed and not rewritten; the validator reported one body line over 80
+  columns; future commits will use the required wrapped format
+- 2026-09-10 | milestone 1 | focused validation | pass | Image preparation SDK
+  tests passed; macOS `tcvm` Release build passed; `git diff --check` passed

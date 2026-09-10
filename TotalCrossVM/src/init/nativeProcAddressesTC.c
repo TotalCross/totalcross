@@ -113,6 +113,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceExplicit"), &tuiI_decodeEncodedSourceExplicit);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceTargeted"), &tuiI_decodeEncodedSourceTargeted);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceTiered_e"), &tuiI_decodeEncodedSourceTiered_e);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceCandidat"), &tuiI_decodeEncodedSourceCandidat);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextNativeMaterializati"), &tuiI_failNextNativeMaterializati);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextZeroCopyDecodeAfter"), &tuiI_failNextZeroCopyDecodeAfter);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_setDiagnosticAccountingTest"), &tuiI_setDiagnosticAccountingTest);
@@ -132,6 +133,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_releaseNativeBag"), &tuiEIS_releaseNativeBag);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createEmptyNative_ii"), &tuiNIB_createEmptyNative_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createEmptyForTestNative"), &tuiNIB_createEmptyForTestNative_iii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_adoptDetachedNativeImpl_l"), &tuiNIB_adoptDetachedNativeImpl_l);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_releaseDetachedNativeImpl"), &tuiNIB_releaseDetachedNativeImpl);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_isAvailableNative"), &tuiNIB_isAvailableNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_resetAccountingTestNative"), &tuiNIB_resetAccountingTestNative);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_clearAccountingTestNative"), &tuiNIB_clearAccountingTestNative);

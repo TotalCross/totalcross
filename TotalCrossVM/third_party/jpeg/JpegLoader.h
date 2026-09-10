@@ -56,6 +56,10 @@ typedef enum
 ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
                            TCZFile tcz, const char *first4, int32 size, JpegDecodeMode mode,
                            int32 modeArg1, int32 modeArg2, bool zeroCopy, bool opacityMetadata);
+ImageDecodeStatus jpegLoadDetached(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
+                           TCObject bufObj, TCZFile tcz, const char *first4, int32 size,
+                           JpegDecodeMode mode, int32 modeArg1, int32 modeArg2, bool zeroCopy,
+                           bool opacityMetadata, int32 decodeMask, int64* detachedHandle);
 bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality);
 
 void jpeg_tc_src(j_decompress_ptr cinfo);
