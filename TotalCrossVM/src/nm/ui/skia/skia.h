@@ -176,6 +176,8 @@ int skia_image_backing_draw_generic_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);
 int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan);
+void skia_image_backing_clear_physical_variant_if_equivalent(
+    const SkiaImageDrawPlanData* plan);
 int32 skia_image_backing_width(int64_t handle);
 int32 skia_image_backing_height(int64_t handle);
 int skia_image_backing_read_pixels(int64_t handle, void* output, int32 x, int32 y, int32 width, int32 height);

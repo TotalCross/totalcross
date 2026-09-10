@@ -810,6 +810,12 @@ void recordTargetColorFallbackForTest() {
     }
 }
 
+void recordPhysicalVariantEvictionForTest() {
+    if (backingAccountingForTest) {
+        ++physicalVariantEvictionsForTest;
+    }
+}
+
 static SkImageInfo testRasterInfo(int32 width, int32 height, int32 colorType) {
     SkColorType skColorType = kUnknown_SkColorType;
     SkAlphaType alphaType = kUnpremul_SkAlphaType;

@@ -342,6 +342,7 @@ TC_API void tuiNIB_materializeGeometryNative(NMParams p) // totalcross/ui/image/
    p->retL = skia_image_backing_materialize_geometry(&data);
    if (p->retL != 0) {
       imageRecordTestCounter("nativeGeometryMaterializationCountForTest");
+      skia_image_backing_clear_physical_variant_if_equivalent(&data);
    }
 #else
    p->retL = 0;

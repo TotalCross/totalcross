@@ -26,6 +26,7 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
     boolean feature15DefaultPass = false;
     boolean feature15DisabledPass = false;
     boolean cachedFinalReusePass = false;
+    boolean variantTransitionPass = false;
     String error = "";
     try {
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled", false, false);
@@ -42,6 +43,7 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
       feature15DefaultPass = identityFeatureState(true);
       feature15DisabledPass = identityFeatureState(false);
       cachedFinalReusePass = cachedFinalReuse();
+      variantTransitionPass = variantFirstFinalTransition();
       ImageRasterBenchmarkSupport.require(fullPass, "full copyRect plan path");
       ImageRasterBenchmarkSupport.require(clippedPass, "clipped copyRect plan path");
       ImageRasterBenchmarkSupport.require(noIntersectionPass, "no-intersection copyRect");
@@ -50,12 +52,14 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
       ImageRasterBenchmarkSupport.require(feature15DefaultPass, "feature 15 default");
       ImageRasterBenchmarkSupport.require(feature15DisabledPass, "feature 15 disabled");
       ImageRasterBenchmarkSupport.require(cachedFinalReusePass, "cached final copyRect reuse");
+      ImageRasterBenchmarkSupport.require(variantTransitionPass, "physical variant final transition");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_').replace(',', '_');
     }
     boolean pass = fullPass && clippedPass && noIntersectionPass && framePass && fallbackPass
         && feature15DefaultPass && feature15DisabledPass && cachedFinalReusePass
+        && variantTransitionPass
         && error.length() == 0;
     System.out.println("fixture=ImageCopyRectDrawPlanSmokeApp,full=" + fullPass
         + ",clipped=" + clippedPass + ",noIntersection=" + noIntersectionPass
@@ -63,6 +67,7 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
         + ",feature15Default=" + feature15DefaultPass
         + ",feature15Disabled=" + feature15DisabledPass
         + ",cachedFinalReuse=" + cachedFinalReusePass
+        + ",variantTransition=" + variantTransitionPass
         + ",directDrawPlans=" + Image.directDrawPlanExecutionCountForTest()
         + ",physicalIdentityHits=" + NativeImageBacking.physicalIdentityHitsForTest()
         + ",genericGeometryDraws=" + NativeImageBacking.genericGeometryDrawsForTest()
@@ -271,6 +276,74 @@ public class ImageCopyRectDrawPlanSmokeApp extends MainWindow {
         + ",generation_invalidated=" + generationInvalidated
         + ",drawImageUnchanged=" + drawImageUnchanged);
     return reused && scaleInvalidated && generationInvalidated && drawImageUnchanged;
+  }
+
+  private static boolean variantFirstFinalTransition() throws Exception {
+    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled", false, true);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    Image source = patternedSource(200, 200).getSmoothScaledInstance(100, 100);
+    Image variantTarget = Image.createLogical(100, 100, 2);
+    Graphics variantGraphics = variantTarget.getGraphics();
+    Image.resetImageOperationAccountingForTest();
+    variantGraphics.drawImage(source, 0, 0, false);
+    variantGraphics.drawImage(source, 0, 0, false);
+    long variantStores = NativeImageBacking.physicalVariantMaterializationsForTest();
+    long variantHash = ImageRasterBenchmarkSupport.fullPixelHash(variantTarget);
+
+    Image.resetImageOperationAccountingForTest();
+    variantGraphics.drawImage(source, 0, 0, false);
+    boolean resident = NativeImageBacking.physicalVariantHitsForTest() == 1
+        && NativeImageBacking.physicalVariantMaterializationsForTest() == 0;
+
+    Image finalRaster = source.resolveForDrawing(2);
+    long finalHash = ImageRasterBenchmarkSupport.fullPixelHash(finalRaster);
+    long equivalentEvictions = NativeImageBacking.physicalVariantEvictionsForTest();
+    boolean evicted = variantStores == 1
+        && variantHash == finalHash
+        && equivalentEvictions == 1;
+
+    Image.resetImageOperationAccountingForTest();
+    variantGraphics.drawImage(source, 0, 0, false);
+    boolean noLongerResident = NativeImageBacking.physicalVariantHitsForTest() == 0
+        && NativeImageBacking.physicalVariantMissesForTest() == 1
+        && NativeImageBacking.physicalVariantMaterializationsForTest() == 0;
+
+    Image expected = target(160, 140, 2);
+    Image actual = target(160, 140, 2);
+    expected.getGraphics().copyRect(finalRaster, 0, 0, 100, 100, DEST_X, DEST_Y);
+    Image.resetImageOperationAccountingForTest();
+    actual.getGraphics().copyRect(source, 0, 0, 100, 100, DEST_X, DEST_Y);
+    boolean cachedFinal = ImageRasterBenchmarkSupport.fullPixelHash(expected)
+        == ImageRasterBenchmarkSupport.fullPixelHash(actual)
+        && Image.materializedVariantCacheHitCountForTest() > 0
+        && Image.imageDrawPlanCreatedCountForTest() == 0
+        && Image.nativeGeometryMaterializationCountForTest() == 0
+        && NativeImageBacking.physicalVariantLookupsForTest() == 0;
+
+    Image nonEquivalent = patternedSource(200, 200).getSmoothScaledInstance(100, 100);
+    Image scaleOneTarget = Image.createLogical(100, 100, 1);
+    Graphics scaleOneGraphics = scaleOneTarget.getGraphics();
+    Image.resetImageOperationAccountingForTest();
+    scaleOneGraphics.drawImage(nonEquivalent, 0, 0, false);
+    scaleOneGraphics.drawImage(nonEquivalent, 0, 0, false);
+    long nonEquivalentStores = NativeImageBacking.physicalVariantMaterializationsForTest();
+    nonEquivalent.resolveForDrawing(2);
+    Image.resetImageOperationAccountingForTest();
+    scaleOneGraphics.drawImage(nonEquivalent, 0, 0, false);
+    boolean nonEquivalentRetained = nonEquivalentStores == 1
+        && NativeImageBacking.physicalVariantEvictionsForTest() == 0
+        && NativeImageBacking.physicalVariantHitsForTest() == 1
+        && NativeImageBacking.physicalVariantMaterializationsForTest() == 0;
+
+    System.out.println("fixture=ImageCopyRectDrawPlanSmokeApp,record=variant-transition"
+        + ",resident=" + resident + ",evicted=" + evicted
+        + ",noLongerResident=" + noLongerResident + ",cachedFinal=" + cachedFinal
+        + ",nonEquivalentRetained=" + nonEquivalentRetained
+        + ",variant_stores=" + variantStores + ",equivalent_evictions="
+        + equivalentEvictions + ",non_equivalent_evictions="
+        + NativeImageBacking.physicalVariantEvictionsForTest());
+    return resident && evicted && noLongerResident && cachedFinal && nonEquivalentRetained;
   }
 
   private static Image target() throws Exception {

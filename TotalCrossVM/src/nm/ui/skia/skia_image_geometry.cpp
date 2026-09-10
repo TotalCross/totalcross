@@ -853,7 +853,7 @@ static void appendGeometrySignature(RasterVariantKey* key, double value) {
 
 static RasterVariantKey makePhysicalVariantKey(const SkiaImageDrawPlanData* plan,
                                                const NativeImageBackingRecord* source,
-                                               const SkPixmap& targetPixels,
+                                               int32 targetWidth, int32 targetHeight,
                                                SkColorType colorType) {
     RasterVariantKey key;
     key.sourceGeneration = source->generation;
@@ -862,8 +862,8 @@ static RasterVariantKey makePhysicalVariantKey(const SkiaImageDrawPlanData* plan
     key.sourceBottom = plan->rootHeight;
     key.destinationRight = plan->outputWidth;
     key.destinationBottom = plan->outputHeight;
-    key.targetWidth = targetPixels.width();
-    key.targetHeight = targetPixels.height();
+    key.targetWidth = targetWidth;
+    key.targetHeight = targetHeight;
     key.targetColorType = static_cast<int32>(colorType);
     key.kind = skia_image_backing_internal::RASTER_VARIANT_PHYSICAL;
     key.geometrySignature.reserve(static_cast<size_t>(plan->operationCount) * 7 + 24);
@@ -1128,7 +1128,8 @@ static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan,
         }
     }
     const SkColorType colorType = physicalVariantColorType(plan, source, targetPixels);
-    const RasterVariantKey key = makePhysicalVariantKey(plan, source, targetPixels, colorType);
+    const RasterVariantKey key = makePhysicalVariantKey(plan, source, targetPixels.width(),
+                                                         targetPixels.height(), colorType);
     sk_sp<SkImage> variant;
     const RasterVariantUse use = skia_image_backing_internal::acquirePhysicalVariant(
         source, key, plan, colorType, &variant);
@@ -1325,6 +1326,41 @@ static GeometryDrawResult geometryDraw(const SkiaImageDrawPlanData* plan, SkCanv
     }
 }
 
+}
+
+void skia_image_backing_clear_physical_variant_if_equivalent(
+    const SkiaImageDrawPlanData* plan) {
+#if TC_GRAPHICS_SOFTWARE
+    if (!plan) {
+        return;
+    }
+    NativeImageBackingRecord* source = findBacking(plan->rootHandle);
+    if (!source || !source->rasterVariant.valid) {
+        return;
+    }
+    const RasterVariantKey expected = makePhysicalVariantKey(
+        plan, source, 0, 0, kRGBA_8888_SkColorType);
+    const RasterVariantKey& actual = source->rasterVariant.key;
+    const bool equivalent = actual.kind == skia_image_backing_internal::RASTER_VARIANT_PHYSICAL
+        && actual.sourceGeneration == expected.sourceGeneration
+        && actual.sourceDecodeGeneration == expected.sourceDecodeGeneration
+        && actual.sourceLeft == expected.sourceLeft
+        && actual.sourceTop == expected.sourceTop
+        && actual.sourceRight == expected.sourceRight
+        && actual.sourceBottom == expected.sourceBottom
+        && actual.destinationLeft == expected.destinationLeft
+        && actual.destinationTop == expected.destinationTop
+        && actual.destinationRight == expected.destinationRight
+        && actual.destinationBottom == expected.destinationBottom
+        && actual.targetColorType == expected.targetColorType
+        && actual.geometrySignature == expected.geometrySignature;
+    if (equivalent) {
+        skia_image_backing_internal::clearRasterVariant(source);
+        skia_image_backing_internal::recordPhysicalVariantEvictionForTest();
+    }
+#else
+    (void)plan;
+#endif
 }
 
 bool skia_image_geometry_compile(const SkiaImageDrawPlanData* plan, int frameOverride,

@@ -109,6 +109,7 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
 bool proveOpaque(NativeImageBackingRecord* source);
 void recordTargetColorAttemptForTest();
 void recordTargetColorFallbackForTest();
+void recordPhysicalVariantEvictionForTest();
 
 enum RasterVariantUse : uint8_t {
     RASTER_VARIANT_NOT_USED = 0,
