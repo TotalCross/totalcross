@@ -17,8 +17,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
   `TotalCrossSDK/src/main/java/totalcross/ui/`,
   focused image/ScrollContainer smoke fixtures
-- next_action: none; local and `origin/perf/image-scroll-prefetch` both point to
-  `5b01e4195`
+- next_action: none; local and `origin/perf/image-scroll-prefetch` heads are
+  synchronized
 - focused_validation: focused Java regressions including parity/fallback passed;
   Release SDK dist passed;
   Release macOS tcvm build passed; corrected 16-process/48-record matrix
