@@ -40,7 +40,8 @@ static bool preservesOpaquePixels(const SkiaImageDrawPlanData* plan,
     }
     for (int i = 0; i < prefixOperationCount; ++i) {
         const int operation = plan->operations[i];
-        if (operation != 0 && operation != 1 && operation != 12 && operation != 13) {
+        if (operation != 0 && operation != 1 && operation != 11 && operation != 12
+            && operation != 13) {
             return false;
         }
     }
@@ -117,7 +118,9 @@ static sk_sp<SkImage> materializeGeometryImage(const SkiaImageDrawPlanData* plan
         if (!image) {
             return nullptr;
         }
-        const SkAlphaType alphaType = colorType == kRGB_565_SkColorType
+        const bool preservesOpaque = preservesOpaquePixels(plan, source,
+            dimensions->prefixOperationCount);
+        const SkAlphaType alphaType = colorType == kRGB_565_SkColorType || preservesOpaque
             ? kOpaque_SkAlphaType : kUnpremul_SkAlphaType;
         const SkImageInfo info = SkImageInfo::Make(dimensions->fullWidth,
                                                   dimensions->physicalHeight, colorType, alphaType);

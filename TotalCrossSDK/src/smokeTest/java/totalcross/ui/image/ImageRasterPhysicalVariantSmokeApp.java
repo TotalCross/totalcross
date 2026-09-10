@@ -34,8 +34,7 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         ImageCompactFormatsBenchmarkSupport.configurePhase2WithStorage(scenario,
             ImageOptimizationSettings.STORAGE_RGB565);
       } else {
-        ImageRasterBenchmarkSupport.configure(scenario,
-            ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE);
+        ImageRasterBenchmarkSupport.configureApplicationRasterFeatures(scenario, false, true);
       }
       if ("identity".equals(testCase) && "post-enabled".equals(scenario)) {
         ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING,
@@ -110,7 +109,13 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         } else if ("hwscale".equals(testCase)) {
           image.hwScaleW = 0.75;
         }
-        drawBatch(canvas, image, 3);
+        if ("repeat".equals(testCase)) {
+          drawBatch(canvas, image, 2);
+          Image.resetImageOperationAccountingForTest();
+          drawBatch(canvas, image, 1);
+        } else {
+          drawBatch(canvas, image, 3);
+        }
       }
       long elapsed = Vm.getTimeStamp() - start;
       hash = ImageRasterBenchmarkSupport.hashString(
@@ -156,7 +161,12 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
         + ",physical_variant_materializations="
         + NativeImageBacking.physicalVariantMaterializationsForTest()
         + ",physical_variant_evictions=" + NativeImageBacking.physicalVariantEvictionsForTest()
-        + ",physical_variant_bytes=" + NativeImageBacking.physicalVariantBytesForTest();
+        + ",physical_variant_bytes=" + NativeImageBacking.physicalVariantBytesForTest()
+        + ",write_pixels_attempts=" + NativeImageBacking.writePixelsAttemptsForTest()
+        + ",write_pixels_hits=" + NativeImageBacking.writePixelsHitsForTest()
+        + ",write_pixels_fallbacks=" + NativeImageBacking.writePixelsFallbacksForTest()
+        + ",generic_geometry_draws=" + NativeImageBacking.genericGeometryDrawsForTest()
+        + ",smooth_resample_draws=" + NativeImageBacking.smoothResampleDrawsForTest();
   }
 
   private static void assertCounters(String scenario, String testCase) {
@@ -166,6 +176,9 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
     long materializations = NativeImageBacking.physicalVariantMaterializationsForTest();
     long evictions = NativeImageBacking.physicalVariantEvictionsForTest();
     long bytes = NativeImageBacking.physicalVariantBytesForTest();
+    long writePixelsHits = NativeImageBacking.writePixelsHitsForTest();
+    long genericGeometryDraws = NativeImageBacking.genericGeometryDrawsForTest();
+    long smoothResampleDraws = NativeImageBacking.smoothResampleDrawsForTest();
     if (!"post-enabled".equals(scenario)) {
       ImageRasterBenchmarkSupport.require(lookups == 0 && hits == 0 && misses == 0
           && materializations == 0 && evictions == 0 && bytes == 0,
@@ -215,8 +228,9 @@ public class ImageRasterPhysicalVariantSmokeApp extends MainWindow {
           && NativeImageBacking.targetColorConvertedBytesForTest() == 0,
           "combined target color counters");
     } else {
-      ImageRasterBenchmarkSupport.require(lookups == 3 && hits == 1 && misses == 2
-          && materializations == 1 && evictions == 0 && bytes == 160000,
+      ImageRasterBenchmarkSupport.require(lookups == 1 && hits == 1 && misses == 0
+          && materializations == 0 && evictions == 0 && bytes == 0
+          && writePixelsHits > 0 && genericGeometryDraws == 0 && smoothResampleDraws == 0,
           "physical variant counters" + counters());
     }
   }

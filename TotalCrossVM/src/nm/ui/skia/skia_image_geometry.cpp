@@ -1029,6 +1029,47 @@ static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkC
     return true;
 }
 
+static bool physicalVariantCopyRect(const SkiaImageDrawPlanData* plan,
+                                    const SkImage* variant, const SkPixmap& targetPixels,
+                                    const SkRect& visibleSourceLogical,
+                                    const SkRect& visibleDestinationLogical,
+                                    int32* sourceLeft, int32* sourceTop, int32* sourceRight,
+                                    int32* sourceBottom, int32* destinationLeft,
+                                    int32* destinationTop, int32* destinationRight,
+                                    int32* destinationBottom) {
+    if (!plan || !variant || !sourceLeft || !sourceTop || !sourceRight || !sourceBottom
+        || !destinationLeft || !destinationTop || !destinationRight || !destinationBottom
+        || !std::isfinite(plan->outputContentScale) || plan->outputContentScale <= 0) {
+        return false;
+    }
+    const double scale = plan->outputContentScale;
+    const float sourcePhysicalLeft = static_cast<float>(visibleSourceLogical.fLeft * scale);
+    const float sourcePhysicalTop = static_cast<float>(visibleSourceLogical.fTop * scale);
+    const float sourcePhysicalRight = static_cast<float>(visibleSourceLogical.fRight * scale);
+    const float sourcePhysicalBottom = static_cast<float>(visibleSourceLogical.fBottom * scale);
+    const float destinationPhysicalLeft = static_cast<float>(visibleDestinationLogical.fLeft * scale);
+    const float destinationPhysicalTop = static_cast<float>(visibleDestinationLogical.fTop * scale);
+    const float destinationPhysicalRight = static_cast<float>(visibleDestinationLogical.fRight * scale);
+    const float destinationPhysicalBottom = static_cast<float>(visibleDestinationLogical.fBottom * scale);
+    if (!integerValue(sourcePhysicalLeft, sourceLeft)
+        || !integerValue(sourcePhysicalTop, sourceTop)
+        || !integerValue(sourcePhysicalRight, sourceRight)
+        || !integerValue(sourcePhysicalBottom, sourceBottom)
+        || !integerValue(destinationPhysicalLeft, destinationLeft)
+        || !integerValue(destinationPhysicalTop, destinationTop)
+        || !integerValue(destinationPhysicalRight, destinationRight)
+        || !integerValue(destinationPhysicalBottom, destinationBottom)
+        || *sourceRight <= *sourceLeft || *sourceBottom <= *sourceTop
+        || *destinationRight - *destinationLeft != *sourceRight - *sourceLeft
+        || *destinationBottom - *destinationTop != *sourceBottom - *sourceTop
+        || *sourceLeft < 0 || *sourceTop < 0 || *sourceRight > variant->width()
+        || *sourceBottom > variant->height() || *destinationLeft < 0 || *destinationTop < 0
+        || *destinationRight > targetPixels.width() || *destinationBottom > targetPixels.height()) {
+        return false;
+    }
+    return true;
+}
+
 static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
                                               NativeImageBackingRecord* source, float srcLeft,
                                               float srcTop, float srcRight, float srcBottom,
@@ -1094,6 +1135,27 @@ static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan,
     if (use != skia_image_backing_internal::RASTER_VARIANT_HIT
         && use != skia_image_backing_internal::RASTER_VARIANT_MATERIALIZED) {
         return GEOMETRY_NOT_HANDLED;
+    }
+    int32 sourcePhysicalLeft;
+    int32 sourcePhysicalTop;
+    int32 sourcePhysicalRight;
+    int32 sourcePhysicalBottom;
+    int32 destinationPhysicalLeft;
+    int32 destinationPhysicalTop;
+    int32 destinationPhysicalRight;
+    int32 destinationPhysicalBottom;
+    if (physicalVariantCopyRect(plan, variant.get(), targetPixels, visibleSourceLogical,
+                                visibleDestinationLogical, &sourcePhysicalLeft,
+                                &sourcePhysicalTop, &sourcePhysicalRight, &sourcePhysicalBottom,
+                                &destinationPhysicalLeft, &destinationPhysicalTop,
+                                &destinationPhysicalRight, &destinationPhysicalBottom)
+        && skia_image_backing_internal::tryDirectImageCopy(
+            canvas, variant.get(), sourcePhysicalLeft, sourcePhysicalTop, sourcePhysicalRight,
+            sourcePhysicalBottom, destinationPhysicalLeft, destinationPhysicalTop,
+            destinationPhysicalRight, destinationPhysicalBottom,
+            source->rasterVariant.opaque, plan->alphaMask,
+            plan->optimizationMask)) {
+        return GEOMETRY_HANDLED_MUTATED;
     }
     GeometryTransform variantTransform;
     variantTransform.a = plan->outputContentScale;

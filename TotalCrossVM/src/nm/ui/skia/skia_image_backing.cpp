@@ -432,6 +432,66 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
 #endif
 }
 
+int tryDirectImageCopy(SkCanvas* targetCanvas, const SkImage* image,
+                       int32 sourceLeft, int32 sourceTop, int32 sourceRight, int32 sourceBottom,
+                       int32 destinationLeft, int32 destinationTop, int32 destinationRight,
+                       int32 destinationBottom, bool sourceOpaque, int32 alphaMask,
+                       int32 optimizationMask) {
+#if TC_GRAPHICS_SOFTWARE
+    constexpr int32 kOpaqueWritePixelsBit = 1 << 2;
+    if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
+        return 0;
+    }
+    ++writePixelsAttemptsForTest;
+    auto fallback = []() {
+        ++writePixelsFallbacksForTest;
+        return 0;
+    };
+    const int32 width = sourceRight - sourceLeft;
+    const int32 height = sourceBottom - sourceTop;
+    if (!targetCanvas || !image || !sourceOpaque || alphaMask != 255 || width <= 0 || height <= 0
+        || width != destinationRight - destinationLeft
+        || height != destinationBottom - destinationTop
+        || sourceLeft < 0 || sourceTop < 0 || sourceRight > image->width()
+        || sourceBottom > image->height()) {
+        return fallback();
+    }
+    SkPixmap targetPixels;
+    if (!targetCanvas->peekPixels(&targetPixels)
+        || destinationLeft < 0 || destinationTop < 0
+        || destinationRight > targetPixels.width() || destinationBottom > targetPixels.height()) {
+        return fallback();
+    }
+    SkPixmap pixmap;
+    SkPixmap subset;
+    const SkIRect sourceRect = SkIRect::MakeLTRB(sourceLeft, sourceTop, sourceRight, sourceBottom);
+    if (!image->peekPixels(&pixmap) || !pixmap.extractSubset(&subset, sourceRect)
+        || !targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
+                                      destinationLeft, destinationTop)) {
+        return fallback();
+    }
+    ++writePixelsHitsForTest;
+    writePixelsCopiedBytesForTest += static_cast<uint64_t>(width)
+        * static_cast<uint64_t>(height) * 4;
+    return 1;
+#else
+    UNUSED(targetCanvas)
+    UNUSED(image)
+    UNUSED(sourceLeft)
+    UNUSED(sourceTop)
+    UNUSED(sourceRight)
+    UNUSED(sourceBottom)
+    UNUSED(destinationLeft)
+    UNUSED(destinationTop)
+    UNUSED(destinationRight)
+    UNUSED(destinationBottom)
+    UNUSED(sourceOpaque)
+    UNUSED(alphaMask)
+    UNUSED(optimizationMask)
+    return 0;
+#endif
+}
+
 int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
                           int32 sourceLeft, int32 sourceTop, int32 sourceRight, int32 sourceBottom,
                           int32 destinationLeft, int32 destinationTop, int32 destinationRight,
@@ -524,6 +584,38 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
 static size_t rasterVariantBytes(SkColorType colorType, int32 width, int32 height) {
     const size_t bytesPerPixel = colorType == kRGB_565_SkColorType ? 2 : 4;
     return static_cast<size_t>(width) * static_cast<size_t>(height) * bytesPerPixel;
+}
+
+static bool rasterImageOpaque(const SkImage* image) {
+    if (!image) {
+        return false;
+    }
+    if (image->isOpaque()) {
+        return true;
+    }
+    SkPixmap pixmap;
+    if (!image->peekPixels(&pixmap)) {
+        return false;
+    }
+    const SkColorType colorType = pixmap.colorType();
+    if (colorType == kRGB_565_SkColorType || colorType == kGray_8_SkColorType) {
+        return true;
+    }
+    if (colorType != kRGBA_8888_SkColorType && colorType != kBGRA_8888_SkColorType) {
+        return false;
+    }
+    for (int32 y = 0; y < pixmap.height(); ++y) {
+        const uint8_t* row = static_cast<const uint8_t*>(pixmap.addr(0, y));
+        if (!row) {
+            return false;
+        }
+        for (int32 x = 0; x < pixmap.width(); ++x) {
+            if (row[static_cast<size_t>(x) * 4 + 3] != 0xff) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 static sk_sp<SkImage> makeTargetColorVariant(NativeImageBackingRecord* source,
@@ -683,6 +775,16 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
                                  dstBottom, alphaMask, optimizationMask);
 }
 
+int tryDirectImageCopy(SkCanvas* targetCanvas, const SkImage* image,
+                       int32 sourceLeft, int32 sourceTop, int32 sourceRight, int32 sourceBottom,
+                       int32 destinationLeft, int32 destinationTop, int32 destinationRight,
+                       int32 destinationBottom, bool sourceOpaque, int32 alphaMask,
+                       int32 optimizationMask) {
+    return ::tryDirectImageCopy(targetCanvas, image, sourceLeft, sourceTop, sourceRight,
+                                sourceBottom, destinationLeft, destinationTop, destinationRight,
+                                destinationBottom, sourceOpaque, alphaMask, optimizationMask);
+}
+
 int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
                           int32 sourceLeft, int32 sourceTop, int32 sourceRight, int32 sourceBottom,
                           int32 destinationLeft, int32 destinationTop, int32 destinationRight,
@@ -737,6 +839,7 @@ void clearRasterVariant(NativeImageBackingRecord* backing) {
         return;
     }
     backing->rasterVariant.image.reset();
+    backing->rasterVariant.opaque = false;
     backing->rasterVariant.valid = false;
     backing->pendingRasterVariant = false;
     backing->pendingRasterVariantObservations = 0;
@@ -791,6 +894,7 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
     }
     source->rasterVariant.image = std::move(candidate);
     source->rasterVariant.key = key;
+    source->rasterVariant.opaque = rasterImageOpaque(source->rasterVariant.image.get());
     source->rasterVariant.valid = true;
     source->pendingRasterVariant = false;
     source->pendingRasterVariantObservations = 0;
