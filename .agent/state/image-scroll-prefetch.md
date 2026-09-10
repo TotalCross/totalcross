@@ -8,24 +8,24 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - branch: `perf/image-scroll-prefetch`
 - parent_head: `702139cedfad946cde133f8bfaeb4ec4ad239897`
-- active_milestone: 3 — customer benchmark extension
-- active_slice: ScrollContainer PREFETCH_ALL traversal and batch completion implemented; benchmark extension pending
-- last_commit: `78c12e72a`
+- active_milestone: 4 — final benchmark and closeout
+- active_slice: customer benchmark harness committed; final matrix and closeout evidence pending
+- last_commit: `4d2d40fc3`
 - active_paths: `.agent/state/image-scroll-prefetch.md`,
   `.agent/evidence/image-scroll-prefetch.md`,
   `scripts/run-image-scroll-real-workload-benchmark.py`,
   `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
   `TotalCrossSDK/src/main/java/totalcross/ui/`,
   focused image/ScrollContainer smoke fixtures
-- next_action: add the package-private display-preparation traversal and
-  ScrollContainer PREFETCH_ALL batch completion
-- focused_validation: parent local and remote heads matched; target branch was
-  created from the parent and pushed; baseline runner passed 24 records across
-  eight fresh profiles using exactly 663 JPEGs; focused SDK tests, macOS tcvm
-  build, and ImagePreparation macOS smoke passed
-- deferred_validation: the caller shell does not export `TC_IMAGE_CORPUS`; the
-  baseline used the verified local corpus path explicitly; native smoke remains
-  deferred until the related implementation milestone
+- next_action: run the final 16-process benchmark matrix, focused final smokes,
+  and commit the evidence/report
+- focused_validation: baseline runner passed 24 records across eight fresh
+  profiles using exactly 663 JPEGs; focused SDK tests, macOS tcvm build,
+  ImagePreparation macOS smoke, benchmark harness tests, and one representative
+  prefetch-enabled real-workload process passed
+- deferred_validation: the caller shell does not export `TC_IMAGE_CORPUS`; both
+  baseline and final runs use the verified local corpus path explicitly; final
+  matrix and closeout native smoke remain pending
 - decisions_active: `PREFETCH_ALL`, explicit asynchronous API, one decode
   worker, detached worker candidates, UI-thread adoption, no eviction
 - blockers: none; `TC_IMAGE_CORPUS` is available as

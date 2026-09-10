@@ -111,7 +111,7 @@ validation. Do not run other local platform builds.
 - [x] Run and commit prefetch-plan baseline benchmark matrix.
 - [x] Add reusable asynchronous image preparation.
 - [x] Add ScrollContainer `PREFETCH_ALL` traversal/batch completion.
-- [ ] Extend customer benchmark for disabled versus all-prefetch.
+- [x] Extend customer benchmark for disabled versus all-prefetch.
 - [ ] Run final matrix/smokes, commit evidence/report, and push.
 
 ## Current Architecture and Scope
