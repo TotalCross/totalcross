@@ -16,6 +16,8 @@ import totalcross.io.Stream;
 
 /** Immutable, eagerly captured encoded image source. */
 final class EncodedImageSource extends ImageSource {
+  private static long nextContentIdentity;
+  private final long contentIdentity = allocateContentIdentity();
   private int formatCode;
   private byte[] bytes;
   private int length;
@@ -34,6 +36,10 @@ final class EncodedImageSource extends ImageSource {
   private ImageException decodeFailure;
 
   private EncodedImageSource() {
+  }
+
+  private static synchronized long allocateContentIdentity() {
+    return ++nextContentIdentity;
   }
 
   static EncodedImageSource fromBytes(byte[] input) throws ImageException {
@@ -223,6 +229,10 @@ final class EncodedImageSource extends ImageSource {
     return decodedGeneration;
   }
 
+  long contentIdentity() {
+    return contentIdentity;
+  }
+
   void installDecodedBacking(ImageBacking backing, int width, int height, int denominator) {
     if (backing == null || !backing.isValid() || width <= 0 || height <= 0
         || (denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8)) {
@@ -230,6 +240,12 @@ final class EncodedImageSource extends ImageSource {
     }
     if (decodedBacking == backing && decodedWidth == width && decodedHeight == height
         && decodedDenominator == denominator) {
+      return;
+    }
+    if (decodedBackingForReuse(denominator) != null) {
+      if (backing != decodedBacking && backing instanceof NativeImageBacking) {
+        ((NativeImageBacking) backing).release();
+      }
       return;
     }
     decodedBacking = backing;
@@ -250,13 +266,10 @@ final class EncodedImageSource extends ImageSource {
     decodedGeneration++;
   }
 
-  /** Releases the intermediate decode after a COPY_READY raster owns the final pixels. */
+  /** Drops source ownership after a COPY_READY raster owns the final pixels. */
   void releaseDecodedBackingAfterMaterialization(ImagePipeline pipeline) {
-    if (decodedBacking == null || pipeline.hasCachedVariantBacking(decodedBacking)) {
+    if (decodedBacking == null) {
       return;
-    }
-    if (decodedBacking instanceof NativeImageBacking) {
-      ((NativeImageBacking) decodedBacking).release();
     }
     decodedBacking = null;
     decodedWidth = 0;

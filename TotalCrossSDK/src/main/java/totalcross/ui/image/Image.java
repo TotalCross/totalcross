@@ -945,17 +945,17 @@ public class Image extends GfxSurface {
     EncodedImageSource source = (EncodedImageSource) deferred.root();
     if (source.getFormat() != ImageEncodedStructure.Format.JPEG) {
       return new ImagePreparation.Request(this, deferred, source, destinationScale,
-          Double.doubleToLongBits(destinationScale), source.decodedGeneration(), 0, 0, 1, false,
+          Double.doubleToLongBits(destinationScale), source.contentIdentity(), 0, 0, 1, false,
           nativeAvailable, requirement, optimizationMask, ImagePreparation.NOT_PREFETCHABLE);
     }
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
     int targetWidth = scaledDimensionAllowingZero(deferred.logicalWidth(), effectiveScale);
     int targetHeight = scaledDimension(deferred.logicalHeight(), effectiveScale);
     int denominator = ImageDecodeRequirement.choose(source, deferred, targetWidth, targetHeight);
-    long sourceGeneration = source.decodedGeneration();
+    long sourceContentIdentity = source.contentIdentity();
     boolean alreadyDecoded = source.decodedBackingForReuse(denominator) != null;
     ImagePreparation.Request request = new ImagePreparation.Request(this, deferred, source, destinationScale,
-        Double.doubleToLongBits(destinationScale), sourceGeneration, targetWidth, targetHeight,
+        Double.doubleToLongBits(destinationScale), sourceContentIdentity, targetWidth, targetHeight,
         denominator, alreadyDecoded, nativeAvailable, requirement, optimizationMask, -1);
     if (isPreparationReady(request)) {
       request.status = ImagePreparation.READY;
@@ -982,10 +982,6 @@ public class Image extends GfxSurface {
   long createNativePreparationHandle(ImagePreparation.Request request) throws ImageException {
     return decodeEncodedSourceCandidateHandle(request.source, request.targetWidth, request.targetHeight,
         request.denominator, request.optimizationMask);
-  }
-
-  long sourceDecodeGenerationForPreparation(ImagePreparation.Request request) {
-    return request.source == null ? request.sourceGeneration : request.source.decodedGeneration();
   }
 
   boolean isPreparationCurrent(ImagePreparation.Request request) {
@@ -1052,10 +1048,10 @@ public class Image extends GfxSurface {
     }
     double effectiveScale = pipeline.hasGeometricNode() ? request.destinationScale : 1;
     long scaleBits = Double.doubleToLongBits(effectiveScale);
-    long generation = sourceDecodeGeneration(pipeline);
+    long sourceContentIdentity = sourceContentIdentity(pipeline);
     return request.requirement == ImageDrawingBridge.COPY_READY
-        ? pipeline.hasCachedMaterializedVariant(scaleBits, generation)
-        : pipeline.hasCachedDrawPlan(scaleBits, generation);
+        ? pipeline.hasCachedMaterializedVariant(scaleBits, sourceContentIdentity)
+        : pipeline.hasCachedDrawPlan(scaleBits, sourceDecodeGeneration(pipeline));
   }
 
   /** Test-only representation probe that does not expose the native handle. */
@@ -1422,8 +1418,8 @@ public class Image extends GfxSurface {
     }
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
     long scaleBits = Double.doubleToLongBits(effectiveScale);
-    long sourceDecodeGeneration = sourceDecodeGeneration(deferred);
-    Image cached = deferred.cachedMaterializedVariant(scaleBits, sourceDecodeGeneration);
+    long sourceContentIdentity = sourceContentIdentity(deferred);
+    Image cached = deferred.cachedMaterializedVariant(scaleBits, sourceContentIdentity);
     if (cached != null) {
       synchronizePresentationState(cached);
       recordMaterializedVariantCacheHitForTest();
@@ -1446,7 +1442,7 @@ public class Image extends GfxSurface {
     long scaleBits = Double.doubleToLongBits(effectiveScale);
     Image resolved = resolvePipeline(deferred, effectiveScale);
     synchronizePresentationState(resolved);
-    deferred.cacheMaterializedVariant(scaleBits, resolved, sourceDecodeGeneration(deferred));
+    deferred.cacheMaterializedVariant(scaleBits, resolved, sourceContentIdentity(deferred));
     return resolved;
   }
 
@@ -1535,6 +1531,11 @@ public class Image extends GfxSurface {
   private static long sourceDecodeGeneration(ImagePipeline pipeline) {
     return pipeline.root() instanceof EncodedImageSource
         ? ((EncodedImageSource) pipeline.root()).decodedGeneration() : 0;
+  }
+
+  private static long sourceContentIdentity(ImagePipeline pipeline) {
+    return pipeline.root() instanceof EncodedImageSource
+        ? ((EncodedImageSource) pipeline.root()).contentIdentity() : 0;
   }
 
   private static Image decodeEncodedSourceJava(EncodedImageSource source,

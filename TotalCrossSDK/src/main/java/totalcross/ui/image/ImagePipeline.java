@@ -37,9 +37,8 @@ final class ImagePipeline {
   private final double contentScale;
   private final ImageDecodePolicy decodePolicy;
 
-  // Each pipeline node owns two materialized-variant slots. The cache is
-  // deliberately not shared by roots or images so encoded sources remain
-  // authoritative after eviction.
+  // Each pipeline node owns two materialized-variant slots. Final variants are
+  // keyed by immutable encoded-source identity, not decoded-backing lifetime.
   private long cachedScale1Bits;
   private long cachedScale2Bits;
   private Image cachedVariant1;
@@ -47,8 +46,8 @@ final class ImagePipeline {
   private long cacheUseCounter;
   private long cachedUse1;
   private long cachedUse2;
-  private long cachedVariantGeneration1;
-  private long cachedVariantGeneration2;
+  private long cachedVariantSourceIdentity1;
+  private long cachedVariantSourceIdentity2;
   private long cachedDrawScale1Bits;
   private long cachedDrawScale2Bits;
   private ImageDrawPlan cachedDrawPlan1;
@@ -321,7 +320,7 @@ final class ImagePipeline {
     cachedVariant2 = null;
     cachedUse1 = cachedUse2 = 0;
     cachedScale1Bits = cachedScale2Bits = 0;
-    cachedVariantGeneration1 = cachedVariantGeneration2 = 0;
+    cachedVariantSourceIdentity1 = cachedVariantSourceIdentity2 = 0;
     cachedDrawPlan1 = null;
     cachedDrawPlan2 = null;
     cachedDrawUse1 = cachedDrawUse2 = 0;
@@ -381,16 +380,16 @@ final class ImagePipeline {
   }
 
   /** Returns a materialized variant cached by this node, including a prefix node. */
-  Image cachedMaterializedVariant(long scaleBits, long sourceDecodeGeneration) {
+  Image cachedMaterializedVariant(long scaleBits, long sourceContentIdentity) {
     if (cachedVariant1 != null && cachedScale1Bits == scaleBits) {
-      if (cachedVariantGeneration1 != sourceDecodeGeneration) {
+      if (cachedVariantSourceIdentity1 != sourceContentIdentity) {
         return null;
       }
       cachedUse1 = ++cacheUseCounter;
       return cachedVariant1;
     }
     if (cachedVariant2 != null && cachedScale2Bits == scaleBits) {
-      if (cachedVariantGeneration2 != sourceDecodeGeneration) {
+      if (cachedVariantSourceIdentity2 != sourceContentIdentity) {
         return null;
       }
       cachedUse2 = ++cacheUseCounter;
@@ -399,11 +398,11 @@ final class ImagePipeline {
     return null;
   }
 
-  boolean hasCachedMaterializedVariant(long scaleBits, long sourceDecodeGeneration) {
+  boolean hasCachedMaterializedVariant(long scaleBits, long sourceContentIdentity) {
     return (cachedVariant1 != null && cachedScale1Bits == scaleBits
-        && cachedVariantGeneration1 == sourceDecodeGeneration)
+        && cachedVariantSourceIdentity1 == sourceContentIdentity)
         || (cachedVariant2 != null && cachedScale2Bits == scaleBits
-            && cachedVariantGeneration2 == sourceDecodeGeneration);
+            && cachedVariantSourceIdentity2 == sourceContentIdentity);
   }
 
   boolean hasCachedVariantBacking(ImageBacking backing) {
@@ -412,17 +411,17 @@ final class ImagePipeline {
   }
 
   /** Caches a materialized variant on this node for later prefix reuse. */
-  void cacheMaterializedVariant(long scaleBits, Image variant, long sourceDecodeGeneration) {
+  void cacheMaterializedVariant(long scaleBits, Image variant, long sourceContentIdentity) {
     long use = ++cacheUseCounter;
     if (cachedVariant1 != null && cachedScale1Bits == scaleBits) {
       cachedVariant1.releaseTextureOnly();
       cachedVariant1 = variant;
-      cachedVariantGeneration1 = sourceDecodeGeneration;
+      cachedVariantSourceIdentity1 = sourceContentIdentity;
       cachedUse1 = use;
     } else if (cachedVariant2 != null && cachedScale2Bits == scaleBits) {
       cachedVariant2.releaseTextureOnly();
       cachedVariant2 = variant;
-      cachedVariantGeneration2 = sourceDecodeGeneration;
+      cachedVariantSourceIdentity2 = sourceContentIdentity;
       cachedUse2 = use;
     } else if (cachedVariant1 == null || cachedUse1 <= cachedUse2) {
       if (cachedVariant1 != null) {
@@ -430,7 +429,7 @@ final class ImagePipeline {
       }
       cachedScale1Bits = scaleBits;
       cachedVariant1 = variant;
-      cachedVariantGeneration1 = sourceDecodeGeneration;
+      cachedVariantSourceIdentity1 = sourceContentIdentity;
       cachedUse1 = use;
     } else {
       if (cachedVariant2 != null) {
@@ -438,7 +437,7 @@ final class ImagePipeline {
       }
       cachedScale2Bits = scaleBits;
       cachedVariant2 = variant;
-      cachedVariantGeneration2 = sourceDecodeGeneration;
+      cachedVariantSourceIdentity2 = sourceContentIdentity;
       cachedUse2 = use;
     }
   }
