@@ -1,0 +1,9 @@
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=materialized,clip=full,average_ms=4.0,operations=256,hash=0000B1E6000027A5,materializations=1,native_geometry_materializations=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=deferred-drawImage,clip=full,average_ms=3.9,operations=256,hash=0000B1E6000027A5,materializations=2,native_geometry_materializations=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=deferred-copyRect,clip=full,average_ms=3.9,operations=256,hash=0000B1E6000027A5,materializations=2,native_geometry_materializations=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=materialized,clip=partial,average_ms=1.9,operations=256,hash=0000E15200004025,materializations=2,native_geometry_materializations=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=deferred-drawImage,clip=partial,average_ms=1.8,operations=256,hash=0000E15200004025,materializations=2,native_geometry_materializations=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=deferred-copyRect,clip=partial,average_ms=1.9,operations=256,hash=0000E15200004025,materializations=2,native_geometry_materializations=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,overallPass=true
+
+tuMW_exit_i

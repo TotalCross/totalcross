@@ -1,0 +1,12 @@
+scenario=post-disabled
+revision=f66561b99c7b06ee1f7e7d627583de7066c39f0a
+executable=/Users/flsobral/repos/totalcross-github/TotalCrossSDK/build/image-raster-combined-benchmark/classes/install/macos/ImageRasterCombinedBenchmarkApp
+expected_samples=200
+recorded_samples=200
+peak_rss_kb=125504
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count

@@ -14,6 +14,48 @@
 #endif
 #include "GraphicsPrimitives_c.h"
 
+uint64_t screenUpdateCallsForTest;
+uint64_t screenPresentCallsForTest;
+bool screenDiagnosticsEnabledForTest;
+
+void screen_diagnostics_set_for_test(int enabled)
+{
+   screenDiagnosticsEnabledForTest = enabled != 0;
+   if (!screenDiagnosticsEnabledForTest)
+   {
+      screenUpdateCallsForTest = 0;
+      screenPresentCallsForTest = 0;
+   }
+}
+
+void screen_diagnostics_clear_for_test(void)
+{
+   screenUpdateCallsForTest = 0;
+   screenPresentCallsForTest = 0;
+}
+
+void screen_diagnostics_record_update_for_test(void)
+{
+   if (screenDiagnosticsEnabledForTest)
+      ++screenUpdateCallsForTest;
+}
+
+void screen_diagnostics_record_present_for_test(void)
+{
+   if (screenDiagnosticsEnabledForTest)
+      ++screenPresentCallsForTest;
+}
+
+uint64_t screen_diagnostics_update_calls_for_test(void)
+{
+   return screenUpdateCallsForTest;
+}
+
+uint64_t screen_diagnostics_present_calls_for_test(void)
+{
+   return screenPresentCallsForTest;
+}
+
 #if defined(WINCE) || (defined(WIN32) && TC_WINDOWING_NATIVE)
  #include "win/gfx_Graphics_c.h"
 #elif TC_GRAPHICS_GLES
@@ -308,24 +350,24 @@ TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphi
    TCObject plan = p->obj[1];
    p->retI = skiaDrawGeometryPlan(p->currentContext, g, plan, 0, 0,
       ImageDrawPlan_outputWidth(plan), ImageDrawPlan_outputHeight(plan),
-      p->i32[0], p->i32[1], p->i32[2]);
+      p->i32[0], p->i32[1], p->i32[2], false);
    if (p->retI) {
-      imageRecordTestCounter(p->currentContext, "directDrawPlanExecutionCountForTest");
+      imageRecordTestCounter("directDrawPlanExecutionCountForTest");
    }
 #else
    p->retI = 0;
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip);
+TC_API void tugG_copyGeometryNative_oiiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean copyGeometryNative(Object plan, int x, int y, int width, int height, int dstX, int dstY, boolean doClip);
 {
 #if defined SKIA_H
    TCObject g = p->obj[0];
    TCObject plan = p->obj[1];
    p->retI = skiaDrawGeometryPlan(p->currentContext, g, plan, p->i32[0], p->i32[1],
-      p->i32[2], p->i32[3], 0, 0, p->i32[4]);
+      p->i32[2], p->i32[3], p->i32[4], p->i32[5], p->i32[6], true);
    if (p->retI) {
-      imageRecordTestCounter(p->currentContext, "directDrawPlanExecutionCountForTest");
+      imageRecordTestCounter("directDrawPlanExecutionCountForTest");
    }
 #else
    p->retI = 0;

@@ -35,6 +35,7 @@ final class ImagePipeline {
   private final int frameCount;
   private final int widthOfAllFrames;
   private final double contentScale;
+  private final ImageDecodePolicy decodePolicy;
 
   // Each pipeline node owns two materialized-variant slots. The cache is
   // deliberately not shared by roots or images so encoded sources remain
@@ -59,20 +60,34 @@ final class ImagePipeline {
   private long cachedDrawGeneration2;
 
   ImagePipeline(ImageSource root) {
+    this(root, ImageDecodePolicy.targetDecode());
+  }
+
+  ImagePipeline(ImageSource root, ImageDecodePolicy decodePolicy) {
+    this(root, decodePolicy, root.width(), root.height(), root.logicalWidth(), root.logicalHeight(),
+        root.frameCount(), root.widthOfAllFrames());
+  }
+
+  ImagePipeline(ImageSource root, ImageDecodePolicy decodePolicy, int width, int height,
+      int logicalWidth, int logicalHeight, int frameCount, int widthOfAllFrames) {
     if (root == null) {
       throw new NullPointerException("root");
+    }
+    if (decodePolicy == null) {
+      throw new NullPointerException("decodePolicy");
     }
     this.root = root;
     previous = null;
     operationType = -1;
     parameter1 = parameter2 = parameter3 = parameter4 = 0;
-    width = root.width();
-    height = root.height();
-    logicalWidth = root.logicalWidth();
-    logicalHeight = root.logicalHeight();
-    frameCount = root.frameCount();
-    widthOfAllFrames = root.widthOfAllFrames();
+    this.width = width;
+    this.height = height;
+    this.logicalWidth = logicalWidth;
+    this.logicalHeight = logicalHeight;
+    this.frameCount = frameCount;
+    this.widthOfAllFrames = widthOfAllFrames;
     contentScale = root.contentScale();
+    this.decodePolicy = decodePolicy;
     Image.recordImagePipelineCreatedForTest();
   }
 
@@ -93,6 +108,7 @@ final class ImagePipeline {
     this.frameCount = frameCount;
     this.widthOfAllFrames = widthOfAllFrames;
     this.contentScale = previous.contentScale;
+    this.decodePolicy = previous.decodePolicy;
     Image.recordImagePipelineCreatedForTest();
   }
 
@@ -150,6 +166,10 @@ final class ImagePipeline {
 
   double contentScale() {
     return contentScale;
+  }
+
+  ImageDecodePolicy decodePolicy() {
+    return decodePolicy;
   }
 
   ImagePipeline append(int operationType, int parameter1, int parameter2, int parameter3, int parameter4,

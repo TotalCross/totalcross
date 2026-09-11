@@ -15,10 +15,14 @@
 #include "JpegLoader.h"
 #include "jerror-tc.h"
 #include "jerror.h"
+#include "ui/ImageTestAccounting_c.h"
+#include "ui/image/ImageDecodeFormat.h"
 #if TC_RENDERER_SKIA
 #include "ui/NativeImageBacking.h"
 #include "ui/skia/skia.h"
 #endif
+
+#include <stdlib.h>
 
 #if defined _WINDOWS || defined WINCE
 #ifndef fmin
@@ -141,13 +145,39 @@ static int32 jpegTargetDecodeScaleDenominator(JDIMENSION sourceWidth, JDIMENSION
    return 1;
 }
 
+typedef struct {
+   Pixel* pixelStorage;
+   uint8* rgbaStorage;
+   uint8* compactStorage;
+   ImageBackingFormat storageFormat;
+} JPEGDecodeAllocationState;
+
+static void jpegReleaseDecodeStorage(JPEGDecodeAllocationState* allocation)
+{
+   if (!allocation)
+      return;
+   if (allocation->rgbaStorage) {
+      free(allocation->rgbaStorage);
+      allocation->rgbaStorage = null;
+   }
+   if (allocation->pixelStorage) {
+      xfree(allocation->pixelStorage);
+      allocation->pixelStorage = null;
+   }
+   if (allocation->compactStorage) {
+      free(allocation->compactStorage);
+      allocation->compactStorage = null;
+   }
+}
+
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
 ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
-      TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2)
+      TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2,
+      bool zeroCopy, bool opacityMetadata)
 {
    JPEGFILE file;
    Pixel *pixels;
-   Pixel *pixelStorage;
+   JPEGDecodeAllocationState* allocation;
    Heap heap;
    TCJpegErrorManager errbase;
    JSAMPARRAY buffer0; // Output pixel-row buffer
@@ -166,9 +196,16 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    xmemzero(&io, sizeof(io));
    xmemzero(&file, sizeof(file));
 
+   allocation = (JPEGDecodeAllocationState*)calloc(1, sizeof(*allocation));
+   if (!allocation)
+      return IMAGE_DECODE_RESOURCE_FAILURE;
+
    heap = heapCreate();
    if (!heap)
+   {
+      free(allocation);
       return IMAGE_DECODE_RESOURCE_FAILURE;
+   }
 
    file.currentContext = currentContext;
    if (tcz != null)
@@ -191,6 +228,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    {
       if (status == IMAGE_DECODE_SUCCESS)
          status = IMAGE_DECODE_RESOURCE_FAILURE;
+      jpegReleaseDecodeStorage(allocation);
+      free(allocation);
       heapDestroy(heap);
       if (tcz != null)
          tczClose(tcz);
@@ -240,6 +279,13 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
 
    jpeg_calc_output_dimensions(&cinfo); /* Calculate output image dimensions so we can allocate space */
 
+#if TC_RENDERER_SKIA
+   allocation->storageFormat = imageSelectDecodeStorageFormat(imageObj,
+      cinfo.jpeg_color_space == JCS_GRAYSCALE || cinfo.num_components == 1, false);
+#else
+   allocation->storageFormat = IMAGE_BACKING_FORMAT_RGBA8888;
+#endif
+
    /* Create space for the pixels. and get the drawRow method */
    width = cinfo.output_width;
    height = cinfo.output_height;
@@ -256,6 +302,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       jpeg_destroy_decompress(&cinfo);
       if (tcz != null)
          tczClose(tcz);
+      jpegReleaseDecodeStorage(allocation);
+      free(allocation);
       heapDestroy(heap);
       Image_backing(imageObj) = null;
       return status;
@@ -268,21 +316,66 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       jpeg_destroy_decompress(&cinfo);
       if (tcz != null)
          tczClose(tcz);
+      jpegReleaseDecodeStorage(allocation);
+      free(allocation);
       heapDestroy(heap);
       Image_backing(imageObj) = null;
       return status;
    }
-   pixelStorage = pixels = (Pixel*)xmalloc((int32)((uint64)width * height * sizeof(Pixel)));
-   if (!pixelStorage)
-   {
-      status = IMAGE_DECODE_RESOURCE_FAILURE;
-      jpeg_abort_decompress(&cinfo);
-      jpeg_destroy_decompress(&cinfo);
-      if (tcz != null)
-         tczClose(tcz);
-      heapDestroy(heap);
-      Image_backing(imageObj) = null;
-      return status;
+   if (allocation->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
+      const size_t bytesPerPixel = allocation->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2;
+      allocation->compactStorage = (uint8*)malloc((size_t)width * height * bytesPerPixel);
+      if (!allocation->compactStorage)
+      {
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+         jpeg_abort_decompress(&cinfo);
+         jpeg_destroy_decompress(&cinfo);
+         if (tcz != null)
+            tczClose(tcz);
+         jpegReleaseDecodeStorage(allocation);
+         free(allocation);
+         heapDestroy(heap);
+         Image_backing(imageObj) = null;
+         return status;
+      }
+      if (imageDecodeConsumeFinalBufferFailureForTest()) {
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+         HEAP_ERROR(heap, 997);
+      }
+   } else if (zeroCopy) {
+      allocation->rgbaStorage = (uint8*)malloc((size_t)width * height * 4);
+      if (!allocation->rgbaStorage)
+      {
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+         jpeg_abort_decompress(&cinfo);
+         jpeg_destroy_decompress(&cinfo);
+         if (tcz != null)
+            tczClose(tcz);
+         jpegReleaseDecodeStorage(allocation);
+         free(allocation);
+         heapDestroy(heap);
+         Image_backing(imageObj) = null;
+         return status;
+      }
+      if (imageDecodeConsumeFinalBufferFailureForTest()) {
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+         HEAP_ERROR(heap, 997);
+      }
+   } else {
+      allocation->pixelStorage = pixels = (Pixel*)xmalloc((int32)((uint64)width * height * sizeof(Pixel)));
+      if (!allocation->pixelStorage)
+      {
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+         jpeg_abort_decompress(&cinfo);
+         jpeg_destroy_decompress(&cinfo);
+         if (tcz != null)
+            tczClose(tcz);
+         jpegReleaseDecodeStorage(allocation);
+         free(allocation);
+         heapDestroy(heap);
+         Image_backing(imageObj) = null;
+         return status;
+      }
    }
 #else
    pixelsObj = createIntArray(currentContext, width*height);
@@ -293,6 +386,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       jpeg_destroy_decompress(&cinfo);
       if (tcz != null)
          tczClose(tcz);
+      jpegReleaseDecodeStorage(allocation);
+      free(allocation);
       heapDestroy(heap);
       Image_backing(imageObj) = null;
       return status;
@@ -313,7 +408,7 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    RasterImageBacking_widthOfAllFrames(backing) = width;
    setObjectLock(backing, UNLOCKED);
    Image_backing(imageObj) = backing;
-   pixelStorage = pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+   pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
 #endif
 
    /* Create decompressor output buffer. */
@@ -324,7 +419,41 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    {
       buffer = buffer0[0];
       jpeg_read_scanlines(&cinfo, buffer0, 1);
-      if (cinfo.out_color_components == 1) // guich@tc114_12
+      if (allocation->compactStorage) {
+         uint8* destination = allocation->compactStorage
+            + (size_t)(cinfo.output_scanline - 1) * width
+               * (allocation->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2);
+         if (allocation->storageFormat == IMAGE_BACKING_FORMAT_GRAY8) {
+            for (x = 0; x < width; x++, buffer++)
+               destination[x] = (uint8)buffer[0];
+         } else {
+            for (x = 0; x < width; x++, buffer += 3) {
+               const uint16 packed = (uint16)((((uint16)buffer[0] * 31 + 127) / 255) << 11)
+                  | (uint16)((((uint16)buffer[1] * 63 + 127) / 255) << 5)
+                  | (uint16)(((uint16)buffer[2] * 31 + 127) / 255);
+               destination[x * 2] = (uint8)(packed & 0xff);
+               destination[x * 2 + 1] = (uint8)(packed >> 8);
+            }
+         }
+      } else if (zeroCopy) {
+         uint8* destination = allocation->rgbaStorage
+            + (size_t)(cinfo.output_scanline - 1) * width * 4;
+         if (cinfo.out_color_components == 1) {
+            for (x = 0; x < width; x++, buffer++, destination += 4) {
+               destination[0] = (uint8)buffer[0];
+               destination[1] = (uint8)buffer[0];
+               destination[2] = (uint8)buffer[0];
+               destination[3] = 0xFF;
+            }
+         } else {
+            for (x = 0; x < width; x++, buffer += 3, destination += 4) {
+               destination[0] = (uint8)buffer[0];
+               destination[1] = (uint8)buffer[1];
+               destination[2] = (uint8)buffer[2];
+               destination[3] = 0xFF;
+            }
+         }
+      } else if (cinfo.out_color_components == 1) // guich@tc114_12
          for (x = 0; x < width; x++, buffer++)
             *pixels++ = makePixelA(0xFF,(uint8)buffer[0], (uint8)buffer[0], (uint8)buffer[0]);
       else
@@ -340,9 +469,46 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    jpeg_finish_decompress(&cinfo);
    jpeg_destroy_decompress(&cinfo);
 #if TC_RENDERER_SKIA
-   nativeHandle = skia_image_backing_create_from_argb_pixels(pixelStorage, width, height);
-   xfree(pixelStorage);
-   pixelStorage = null;
+   {
+      const int32 pixelBytes = (int32)((uint64)width * height * 4);
+      const int32 compactBytes = (int32)((uint64)width * height
+         * (allocation->storageFormat == IMAGE_BACKING_FORMAT_GRAY8 ? 1 : 2));
+      if (allocation->compactStorage) {
+         nativeHandle = skia_image_backing_create_from_owned_pixels(allocation->compactStorage,
+            width, height, allocation->storageFormat);
+         allocation->compactStorage = null;
+      } else if (zeroCopy) {
+         nativeHandle = skia_image_backing_create_from_owned_rgba_pixels(
+            allocation->rgbaStorage, width, height);
+         allocation->rgbaStorage = null;
+      } else {
+         nativeHandle = skia_image_backing_create_from_argb_pixels(
+            allocation->pixelStorage, width, height);
+         xfree(allocation->pixelStorage);
+         allocation->pixelStorage = null;
+      }
+      if (nativeHandle) {
+         if (allocation->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
+            skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+         } else if (opacityMetadata) {
+            skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+            imageRecordTestCounter("opacityKnownFromSourceForTest");
+         }
+         if (allocation->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
+            skia_image_backing_record_compact_decode_for_test(allocation->storageFormat,
+               (uint64_t)compactBytes);
+            imageAddTestCounter("decodeFinalBufferBytesForTest", compactBytes);
+         } else if (zeroCopy) {
+            imageRecordTestCounter("zeroCopyDecodeCountForTest");
+         } else {
+            imageRecordTestCounter("copiedDecodeCountForTest");
+            imageAddTestCounter("decodeCopiedBytesForTest", pixelBytes);
+         }
+         if (allocation->storageFormat == IMAGE_BACKING_FORMAT_RGBA8888) {
+            imageAddTestCounter("decodeFinalBufferBytesForTest", pixelBytes);
+         }
+      }
+   }
    if (!nativeHandle || !imageInstallNativeBacking(currentContext, imageObj, nativeHandle, width, height)) {
       status = IMAGE_DECODE_RESOURCE_FAILURE;
       Image_width(imageObj) = 0;
@@ -351,6 +517,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
 #endif
    if (tcz != null)
       tczClose(tcz);
+   jpegReleaseDecodeStorage(allocation);
+   free(allocation);
    heapDestroy(heap);
 
    return status;

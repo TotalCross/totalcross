@@ -1,0 +1,3 @@
+fixture=ImageCopyRectDrawPlanSmokeApp,record=cached-final
+fixture=ImageCopyRectDrawPlanSmokeApp,first_materializations=1,first_plans=1,physical_variant_stores=0,scale_invalidated=true,generation_invalidated=true,drawImageUnchanged=true
+fixture=ImageCopyRectDrawPlanSmokeApp,full=true,clipped=true,noIntersection=true,frame=true,fallback=true,feature15Default=true,feature15Disabled=true,cachedFinalReuse=true,directDrawPlans=1,physicalIdentityHits=0,genericGeometryDraws=1,smoothResampleDraws=1,nativeGeometryMaterializations=0,overallPass=true

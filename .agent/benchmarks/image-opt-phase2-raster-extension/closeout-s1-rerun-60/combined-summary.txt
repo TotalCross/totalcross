@@ -1,0 +1,12 @@
+scenario=pre
+revision=a8a9480bd61aa510de423569af494d8dde69e8f2
+executable=/private/tmp/image-opt-phase2-extension-03-true-base-2BUgiY/TotalCrossSDK/build/image-raster-combined-benchmark/classes/install/macos/ImageRasterCombinedBenchmarkApp
+expected_samples=60
+recorded_samples=60
+peak_rss_kb=114432
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count

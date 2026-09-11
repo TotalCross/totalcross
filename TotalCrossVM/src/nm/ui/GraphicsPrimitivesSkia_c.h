@@ -28,7 +28,10 @@ static int32 skiaSurfaceForGraphics(TCObject g)
       surfaceId = SKIA_INVALID_SURFACE_ID;
       TCObject backing = Image_backing(image);
       if (isNativeImageBacking(backing)) {
-         surfaceId = skia_image_backing_surface_id(NativeImageBacking_nativeHandle(backing));
+         int64 nativeHandle = NativeImageBacking_nativeHandle(backing);
+         if (skia_image_backing_make_mutable(nativeHandle)) {
+            surfaceId = skia_image_backing_surface_id(nativeHandle);
+         }
       }
       if (surfaceId == SKIA_INVALID_SURFACE_ID)
          surfaceId = Image_textureId(image);
@@ -99,6 +102,7 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
    data->hwScaleH = ImageDrawPlan_hwScaleH(plan);
    data->rootHwScaleW = ImageDrawPlan_rootHwScaleW(plan);
    data->rootHwScaleH = ImageDrawPlan_rootHwScaleH(plan);
+   data->optimizationMask = 0;
    TCObject presentation = ImageDrawPlan_presentation(plan);
    if (!presentation) {
       presentation = root;
@@ -113,6 +117,11 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
          : (data->materializeAlphaMask * presentationAlpha + 127) / 255;
       data->hwScaleW = Image_hwScaleW(presentation);
       data->hwScaleH = Image_hwScaleH(presentation);
+      int32* optimizationMaskField = getStaticFieldInt(
+         OBJ_CLASS(presentation), "nativeOptimizationMaskForDraw");
+      if (optimizationMaskField) {
+         data->optimizationMask = *optimizationMaskField;
+      }
    }
    return data->operationCount > 0 && data->operationCount * 4 <= ARRAYOBJ_LEN(parameters)
       && data->operationCount * 2 <= ARRAYOBJ_LEN(dimensions);
@@ -120,7 +129,7 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
 
 static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
                                  int32 srcX, int32 srcY, int32 width, int32 height,
-                                 int32 dstX, int32 dstY, int32 doClip)
+                                 int32 dstX, int32 dstY, int32 doClip, bool physicalOnly)
 {
    SkiaImageDrawPlanData data;
    int32 surfaceId;
@@ -152,6 +161,18 @@ static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObj
       if (srcY + height > data.outputHeight) {
          height = data.outputHeight - srcY;
       }
+      if (skia_image_backing_try_physical_geometry_to_surface(surfaceId, &data,
+            (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
+            (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height),
+            (float)Graphics_clipX1(dstSurf), (float)Graphics_clipY1(dstSurf),
+            (float)Graphics_clipX2(dstSurf), (float)Graphics_clipY2(dstSurf))) {
+         UNUSED(currentContext)
+         return true;
+      }
+      if (physicalOnly) {
+         UNUSED(currentContext)
+         return false;
+      }
       if (dstX < Graphics_clipX1(dstSurf)) {
          int32 delta = Graphics_clipX1(dstSurf) - dstX;
          dstX = Graphics_clipX1(dstSurf);
@@ -176,9 +197,13 @@ static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObj
       skia_setClip(surfaceId, Get_Clip(dstSurf));
       clipSet = true;
    }
-   int result = skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
-      (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
-      (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height));
+   int result = doClip
+      ? skia_image_backing_draw_generic_geometry_to_surface(surfaceId, &data,
+         (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
+         (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height))
+      : skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
+         (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
+         (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height));
    if (clipSet) {
       skia_restoreClip(surfaceId);
    }
@@ -465,6 +490,9 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 
       TCObject backing = Image_backing(srcSurf);
       if (isNativeImageBacking(backing)) {
+         int32* optimizationMaskField = getStaticFieldInt(
+            OBJ_CLASS(srcSurf), "nativeOptimizationMaskForDraw");
+         const int32 optimizationMask = optimizationMaskField ? *optimizationMaskField : 0;
          if (!skia_image_backing_draw_to_surface(skiaSurfaceForGraphics(dstSurf),
                NativeImageBacking_nativeHandle(backing),
                (float)(srcX / scaleW + frame * Image_width(srcSurf)),
@@ -472,7 +500,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
                (float)((srcX + w) / scaleW + frame * Image_width(srcSurf)),
                (float)((srcY + h) / scaleH),
                (float)dstX, (float)dstY, (float)(dstX + w), (float)(dstY + h),
-               Image_alphaMask(srcSurf))) {
+               Image_alphaMask(srcSurf), optimizationMask)) {
             if (clipSet) {
                skia_restoreClip(skiaSurfaceForGraphics(dstSurf));
             }

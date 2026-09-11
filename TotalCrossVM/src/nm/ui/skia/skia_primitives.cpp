@@ -24,6 +24,7 @@ void skia_drawLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pi
     if (!targetCanvas) return;
     forePaint.setColor(skiaColorFromPixel(pixel));
     targetCanvas->drawLine(x1, y1, x2, y2, forePaint);
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 void skia_drawRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel)
@@ -33,6 +34,7 @@ void skia_drawRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel 
     if (!targetCanvas) return;
     forePaint.setColor(skiaColorFromPixel(pixel));
     targetCanvas->drawRect(SkRect::MakeXYWH(x, y, w, h), forePaint);
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 void skia_fillRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel pixel)
@@ -43,6 +45,7 @@ void skia_fillRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, Pixel 
     if (!targetCanvas) return;
     backPaint.setColor(skiaColorFromPixel(pixel));
     targetCanvas->drawRect(SkRect::MakeXYWH(x, y, w, h), backPaint);
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x0, double y0, Pixel foreColor, int32 justifyWidth, double fontSize, int32 typefaceIndex, int32 bold)
@@ -63,6 +66,7 @@ void skia_drawText(int32 skiaSurface, const void *text, int32 chrCount, double x
         backPaint.setColor(skiaColorFromPixel(foreColor));
     }
     targetCanvas->drawTextBlob(SkTextBlob::MakeFromText(text,chrCount,skFont,SkTextEncoding::kUTF16),x0,y0,backPaint);
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, int32 fill, int32 gradient)
@@ -91,6 +95,7 @@ void skia_ellipseDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx, in
         forePaint.setColor(skiaColorFromPixel(pc1));
         targetCanvas->drawOval(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), forePaint);
     }
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 SkPath _skia_makePath(int32 *x, int32 *y, int32 n)
@@ -123,6 +128,7 @@ void skia_drawPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 n
     targetCanvas->translate(tx, ty);
     targetCanvas->drawPath(_skia_makePath(xPoints, yPoints, nPoints), forePaint);
     targetCanvas->translate(-tx, -ty);
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 nPoints, int32 tx, int32 ty, Pixel c1, Pixel c2, int32 gradient, int32 isPie)
@@ -153,6 +159,7 @@ void skia_fillPolygon(int32 skiaSurface, int32 *xPoints, int32 *yPoints, int32 n
     if (gradient != 0) {
         backPaint.setShader(nullptr);
     }
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 // Adapted from SkPathPriv::CreateDrawArcPath
@@ -233,6 +240,7 @@ void skia_arcPiePointDrawAndFill(int32 skiaSurface, int32 xc, int32 yc, int32 rx
         forePaint.setColor(skiaColorFromPixel(c));
         targetCanvas->drawArc(SkRect::MakeXYWH(xc - rx, yc - ry, rx * 2, ry * 2), start, sweepAngle, usePie, forePaint);
     }
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 void skia_drawRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c)
@@ -242,6 +250,7 @@ void skia_drawRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, i
     if (!targetCanvas) return;
     forePaint.setColor(skiaColorFromPixel(c));
     targetCanvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), r, r), forePaint);
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, int32 r, Pixel c)
@@ -251,6 +260,7 @@ void skia_fillRoundRect(int32 skiaSurface, int32 x, int32 y, int32 w, int32 h, i
     if (!targetCanvas) return;
     backPaint.setColor(skiaColorFromPixel(c));
     targetCanvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), r, r), backPaint);
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, int32 vertical)
@@ -278,4 +288,5 @@ void skia_drawRoundGradient(int32 skiaSurface, int32 startX, int32 startY, int32
 
     targetCanvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(startX, startY, w, h), topLeftRadius, topLeftRadius), backPaint);
     backPaint.setShader(nullptr);
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }

@@ -1,0 +1,1 @@
+ 5222 01:03 113744 435717952 /Users/flsobral/repos/totalcross-github/TotalCrossSDK/build/image-compact-formats-benchmark/classes/install/macos/ImageCompactFormatsBenchmarkApp --scenario=post-disabled --samples=200 --workload=argb4444 --phase2=false

@@ -1496,7 +1496,18 @@ public final class Graphics {
    */
   public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
     if (surface instanceof Image) {
-      surface = resolveImageForDrawing((Image) surface);
+      Image image = (Image) surface;
+      Image cached = resolveCachedImageForDrawing(image);
+      if (cached != null) {
+        surface = cached;
+      } else {
+        Object drawPlan = resolveDrawPlanForDrawing(image);
+        if (!Settings.onJavaSE && ImageDrawingBridge.isCopyRectCompatible(drawPlan)
+            && copyGeometryNative(drawPlan, x, y, width, height, dstX, dstY, true)) {
+          return;
+        }
+        surface = resolveImageForDrawing(image);
+      }
     }
     if (!Settings.onJavaSE) {
       copyRectNative(surface, x, y, width, height, dstX, dstY);
@@ -1680,7 +1691,7 @@ public final class Graphics {
   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip) {
     Object drawPlan = resolveDrawPlanForDrawing(src);
     if (!Settings.onJavaSE && drawPlan != null
-        && copyGeometryNative(drawPlan, x, y, width, height, doClip)) {
+        && copyGeometryNative(drawPlan, x, y, width, height, 0, 0, doClip)) {
       return;
     }
     src = resolveImageForDrawing(src);
@@ -1729,6 +1740,14 @@ public final class Graphics {
     }
   }
 
+  private Image resolveCachedImageForDrawing(Image image) {
+    try {
+      return ImageDrawingBridge.cachedMaterializedForDrawing(image, getContentScale());
+    } catch (ImageException failure) {
+      throw new IllegalStateException("Could not inspect cached image raster", failure);
+    }
+  }
+
   private Object resolveDrawPlanForDrawing(Image image) {
     if (image == null) {
       throw new NullPointerException("image");
@@ -1750,7 +1769,7 @@ public final class Graphics {
 
   @ReplacedByNativeOnDeploy
   private boolean copyGeometryNative(Object plan, int x, int y, int width, int height,
-      boolean doClip) {
+      int dstX, int dstY, boolean doClip) {
     return false;
   }
 
