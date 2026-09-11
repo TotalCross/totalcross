@@ -1,0 +1,46 @@
+======================================================================
+ImageRasterCombinedBenchmarkApp [84126]: 64-bit    Footprint: 77 MB (16384 bytes per page)
+======================================================================
+
+  Dirty      Clean  Reclaimable    Regions    Category
+    ---        ---          ---        ---    ---
+  31 MB        0 B      9520 KB         18    MALLOC_SMALL
+  15 MB        0 B          0 B         28    IOSurface
+  15 MB        0 B          0 B          2    MALLOC_LARGE
+8320 KB        0 B          0 B         27    IOAccelerator (graphics)
+1648 KB        0 B          0 B         12    Owned physical footprint (unmapped) (graphics)
+1591 KB        0 B          0 B        869    __DATA_DIRTY
+ 988 KB        0 B          0 B        965    __DATA
+ 848 KB        0 B          0 B         10    MALLOC metadata
+ 625 KB        0 B          0 B          1    page table
+ 400 KB        0 B          0 B          1    MALLOC_TINY
+ 368 KB        0 B          0 B          3    CoreUI image data
+ 336 KB        0 B          0 B         22    untagged (VM_ALLOCATE)
+ 256 KB        0 B          0 B          1    libdispatch
+ 224 KB      16 KB          0 B       1022    __DATA_CONST
+ 224 KB        0 B          0 B          8    stack
+ 223 KB        0 B          0 B       2530    unused dyld shared cache area
+ 190 KB        0 B          0 B        627    __AUTH
+ 128 KB        0 B          0 B          2    __TPRO_CONST
+ 112 KB        0 B          0 B       1014    __AUTH_CONST
+  96 KB        0 B          0 B          8    CoreAnimation
+  64 KB        0 B          0 B          2    IOAccelerator
+  64 KB        0 B          0 B          7    IOKit
+  48 KB        0 B          0 B          3    CoreGraphics
+  32 KB        0 B          0 B          1    Activity Tracing
+  16 KB        0 B          0 B          1    tag 22
+  16 KB        0 B          0 B          1    os_alloc_once
+  16 KB        0 B          0 B          1    Foundation
+  16 KB        0 B          0 B          1    ColorSync
+    0 B      14 MB          0 B         27    mapped file
+    0 B    4976 KB          0 B       1044    __TEXT
+    0 B     640 KB          0 B          6    __LINKEDIT
+    0 B        0 B          0 B          1    __FONT_DATA
+    0 B        0 B          0 B          1    __CTF
+    0 B        0 B          0 B          7    Owned physical footprint (unmapped)
+    ---        ---          ---        ---    ---
+  77 MB      19 MB      9520 KB       8275    TOTAL
+
+Auxiliary data:
+    phys_footprint: 77 MB
+    phys_footprint_peak: 84 MB

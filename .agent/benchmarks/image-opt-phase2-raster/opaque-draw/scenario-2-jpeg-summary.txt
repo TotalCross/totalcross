@@ -1,0 +1,12 @@
+scenario=post-disabled
+revision=c590ec2900f1862c609ddf58c4b3bb3eb51a07c9
+executable=/Users/flsobral/repos/totalcross-github/TotalCrossSDK/build/image-raster-opaque-draw-benchmark/classes/install/macos/ImageRasterOpaqueDrawBenchmarkApp
+expected_samples=60
+recorded_samples=60
+peak_rss_kb=117808
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count

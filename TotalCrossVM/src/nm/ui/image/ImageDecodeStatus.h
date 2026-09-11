@@ -13,5 +13,6 @@ typedef enum
 } ImageDecodeStatus;
 
 int imageDecodeConsumeAllocationFailureForTest(void);
+int imageDecodeConsumeFinalBufferFailureForTest(void);
 
 #endif
