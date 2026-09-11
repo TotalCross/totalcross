@@ -8,6 +8,7 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 /** Opaque native backing used by deployed Skia images. */
 final class NativeImageBacking extends ImageBacking {
+  private static boolean backingAccountingEnabledForTest;
   private long nativeHandle;
   private final int width;
   private final int height;
@@ -96,6 +97,19 @@ final class NativeImageBacking extends ImageBacking {
 
   static void resetBackingAccountingForTest() {
     resetAccountingTestNative();
+    backingAccountingEnabledForTest = true;
+  }
+
+  static void clearBackingAccountingCountersForTest() {
+    clearAccountingTestNative();
+  }
+
+  static void setBackingAccountingForTest(boolean enabled) {
+    backingAccountingEnabledForTest = enabled;
+  }
+
+  static boolean backingAccountingEnabledForTest() {
+    return backingAccountingEnabledForTest;
   }
 
   static long backingRecordsCreatedForTest() {
@@ -254,6 +268,10 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static void resetAccountingTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void clearAccountingTestNative() {
   }
 
   @ReplacedByNativeOnDeploy

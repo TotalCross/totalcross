@@ -730,6 +730,24 @@ registerImageMacSmoke('ImageDeferredFrameFadeLayout', 'ImageDeferredFrameFadeLay
         'overallPass=true'
     ])
 
+registerImageMacSmoke('ImageOptimizationControlBenchmark', 'ImageOptimizationControlBenchmarkApp',
+    'image-optimization-control-benchmark', false, false, [
+        'fixture=ImageOptimizationControlBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
+    'image-diagnostic-accounting-gate-benchmark', false, false, [
+        'fixture=ImageDiagnosticAccountingGateBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageDiagnosticAccountingGate', 'ImageDiagnosticAccountingGateSmokeApp',
+    'image-diagnostic-accounting-gate-smoke', false, false, [
+        'fixture=ImageDiagnosticAccountingGateSmokeApp',
+        'overallPass=true'
+    ])
+
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

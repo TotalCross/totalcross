@@ -100,6 +100,7 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p);
 TC_API void tuiI_failNextNativeMaterializati(NMParams p);
+TC_API void tuiI_setDiagnosticAccountingTest(NMParams p);
 TC_API void tuiI_changeColorsNative_ii(NMParams p);
 TC_API void tuiI_getPixelRowNative_Bi(NMParams p);
 TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p);
@@ -964,6 +965,10 @@ TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_setDiagnosticAccountingTest(NMParams p) // totalcross/ui/image/Image native private static void setDiagnosticAccountingTestNative(boolean enabled);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_changeColorsNative_ii(NMParams p) // totalcross/ui/image/Image native private void changeColorsNative(int from, int to);
 {
 }
@@ -1037,6 +1042,10 @@ TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeIm
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_resetAccountingTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void resetAccountingTestNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_clearAccountingTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void clearAccountingTestNative();
 {
 }
 //////////////////////////////////////////////////////////////////////////
