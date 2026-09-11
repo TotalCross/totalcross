@@ -671,6 +671,9 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
              if (decodePtr != null && drawPtr != null) {
                 imageOptimizationMaskForDecodePtr = decodePtr;
                 imageOptimizationMaskForDrawPtr = drawPtr;
+             } else {
+                imageOptimizationMaskForDecodePtr = null;
+                imageOptimizationMaskForDrawPtr = null;
              }
           }
           weakReferenceClass = loadClass(currentContext, "java.lang.ref.WeakReference", false);
@@ -755,6 +758,9 @@ jumpArgument:
       if (decodePtr != null && drawPtr != null) {
          imageOptimizationMaskForDecodePtr = decodePtr;
          imageOptimizationMaskForDrawPtr = drawPtr;
+      } else {
+         imageOptimizationMaskForDecodePtr = null;
+         imageOptimizationMaskForDrawPtr = null;
       }
    }
    weakReferenceClass = loadClass(currentContext, "java.lang.ref.WeakReference", false);
