@@ -1018,6 +1018,10 @@ TC_API void tuiI_setDiagnosticAccountingTest(NMParams p) // totalcross/ui/image/
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_nativeOptimizationMaskObser(NMParams p) // totalcross/ui/image/Image native private static int nativeOptimizationMaskObservedForTestNative(totalcross.ui.image.Image image, boolean draw);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_changeColorsNative_ii(NMParams p) // totalcross/ui/image/Image native private void changeColorsNative(int from, int to);
 {
 }

@@ -86,6 +86,14 @@ TC_API void tuiI_setDiagnosticAccountingTest(NMParams p) // totalcross/ui/image/
 #endif
 }
 
+TC_API void tuiI_nativeOptimizationMaskObser(NMParams p) // totalcross/ui/image/Image native private static int nativeOptimizationMaskObservedForTestNative(totalcross.ui.image.Image image, boolean draw);
+{
+   TCObject imageObj = p->obj[0];
+   CharP fieldName = p->i32[0] ? "nativeOptimizationMaskForDraw" : "nativeOptimizationMaskForDecode";
+   int32* featureMask = imageObj == null ? null : getStaticFieldInt(OBJ_CLASS(imageObj), fieldName);
+   p->retI = featureMask == null ? -1 : *featureMask;
+}
+
 static int32 jpegTargetDecodeDenominatorForTest(int32 sourceWidth, int32 sourceHeight,
    int32 targetWidth, int32 targetHeight)
 {

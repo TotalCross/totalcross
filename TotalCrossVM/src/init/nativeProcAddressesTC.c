@@ -117,6 +117,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextNativeMaterializati"), &tuiI_failNextNativeMaterializati);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextZeroCopyDecodeAfter"), &tuiI_failNextZeroCopyDecodeAfter);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_setDiagnosticAccountingTest"), &tuiI_setDiagnosticAccountingTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeOptimizationMaskObser"), &tuiI_nativeOptimizationMaskObser);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_changeColorsNative_ii"), &tuiI_changeColorsNative_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getPixelRowNative_Bi"), &tuiI_getPixelRowNative_Bi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_getModifiedNative_iiiiiii"), &tuiI_getModifiedNative_iiiiiii);

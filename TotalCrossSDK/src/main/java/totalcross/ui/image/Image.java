@@ -226,6 +226,11 @@ public class Image extends GfxSurface {
     return nativeOptimizationMaskForDecode & 0xFFFFFFFFL;
   }
 
+  /** Test-only native probe for the mask transport used by an exact image or subclass. */
+  static int nativeOptimizationMaskObservedForTest(Image image, boolean draw) {
+    return nativeOptimizationMaskObservedForTestNative(image, draw);
+  }
+
   static void clearImageOperationAccountingCountersForTest() {
     imageCreatedCountForTest = 0;
     imageFinalizedCountForTest = 0;
@@ -484,6 +489,11 @@ public class Image extends GfxSurface {
 
   @ReplacedByNativeOnDeploy
   private static void setDiagnosticAccountingTestNative(boolean enabled) {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static int nativeOptimizationMaskObservedForTestNative(Image image, boolean draw) {
+    return -1;
   }
 
   private static boolean consumeDecodedRasterAllocationFailureForTest() {

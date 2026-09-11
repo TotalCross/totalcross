@@ -524,6 +524,25 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
             if (!executable.isFile()) {
                 throw new GradleException('Native smoke executable not found: ' + executable)
             }
+            def linkageResult = providers.exec {
+                commandLine 'otool', '-L', executable.absolutePath
+                ignoreExitValue = true
+            }
+            def loaderResult = providers.exec {
+                commandLine 'strings', executable.absolutePath
+                ignoreExitValue = true
+            }
+            def linkageText = linkageResult.standardOutput.asText.get() + linkageResult.standardError.asText.get()
+            def loaderText = loaderResult.standardOutput.asText.get() + loaderResult.standardError.asText.get()
+            if (linkageResult.result.get().exitValue != 0 || loaderResult.result.get().exitValue != 0
+                || !loaderText.contains('libtcvm')) {
+                throw new GradleException('Native executable does not expose the repository libtcvm loader:\n'
+                    + linkageText)
+            }
+            logger.lifecycle('[IMAGE_SMOKE_RUNTIME] source=' + nativeRuntimeFile.absolutePath
+                + ',deployed=' + deployedRuntime.absolutePath + ',sourceSha256=' + sourceHash
+                + ',deployedSha256=' + deployedHash + ',otool='
+                + linkageText.trim().replace(System.lineSeparator(), '; '))
             def smokeArguments = project.findProperty('smokeArgs')
             if (smokeArguments) {
                 commandLine([executable.absolutePath] + smokeArguments.toString().trim().split(/\s+/).findAll { it })
@@ -880,6 +899,26 @@ registerImageMacSmoke('ImageStartupOptimizationDefaultsSmoke',
         'startupBeforeSettingsApi=true',
         'drawPass=true',
         'decodePass=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageOptimizationMask', 'ImageOptimizationMaskSmokeApp',
+    'image-optimization-mask-smoke', true, false, [
+        'fixture=ImageOptimizationMaskSmokeApp',
+        'expectedMask=32799',
+        'javaMaskPass=true',
+        'exactDrawMask=',
+        'exactDecodeMask=',
+        'subclassDrawMask=',
+        'subclassDecodeMask=',
+        'exactRuntimeClass=totalcross.ui.image.Image',
+        'subclassRuntimeClass=',
+        'exactRuntimePass=true',
+        'exactProbePass=true',
+        'zeroCopyPass=true',
+        'physicalIdentityPass=true',
+        'classification=',
+        'diagnosticComplete=true',
         'overallPass=true'
     ])
 
