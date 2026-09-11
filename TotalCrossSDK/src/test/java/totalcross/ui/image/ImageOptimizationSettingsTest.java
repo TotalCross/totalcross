@@ -37,6 +37,7 @@ class ImageOptimizationSettingsTest {
 
   @Test
   void preservesExistingFeatureIdsAndAppendsRasterReservations() {
+    assertEquals(32799L, ImageOptimizationSettings.DEFAULT_EFFECTIVE_MASK);
     assertEquals(0, ImageOptimizationSettings.DECODE_ZERO_COPY);
     assertEquals(1, ImageOptimizationSettings.RASTER_OPACITY_METADATA);
     assertEquals(2, ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS);
@@ -123,6 +124,58 @@ class ImageOptimizationSettingsTest {
     assertFalse(ImageOptimizationSettings.isEnabled(feature));
     ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DEFAULT);
     assertTrue(ImageOptimizationSettings.isEnabled(feature));
+  }
+
+  @Test
+  void defaultRestoresEveryDefaultEnabledFeatureAndBothNativeMirrors() {
+    int[] defaultEnabledFeatures = {
+        ImageOptimizationSettings.DECODE_ZERO_COPY,
+        ImageOptimizationSettings.RASTER_OPACITY_METADATA,
+        ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
+        ImageOptimizationSettings.RASTER_ROW_READBACK,
+        ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION,
+        ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING
+    };
+    for (int feature : defaultEnabledFeatures) {
+      ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DISABLED);
+      assertFalse(ImageOptimizationSettings.isEnabled(feature));
+      assertEquals(defaultMask() & ~(1L << feature), ImageOptimizationSettings.effectiveMask());
+      assertNativeMasks(defaultMask() & ~(1L << feature));
+
+      ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DEFAULT);
+      assertEquals(ImageOptimizationSettings.DEFAULT, ImageOptimizationSettings.state(feature));
+      assertTrue(ImageOptimizationSettings.isEnabled(feature));
+      assertEquals(defaultMask(), ImageOptimizationSettings.effectiveMask());
+      assertNativeMasks(defaultMask());
+    }
+  }
+
+  @Test
+  void defaultClearsExplicitlyEnabledDefaultDisabledFeaturesAndDiagnosticSideEffects() {
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.ENABLED);
+    assertTrue(Image.imageOperationAccountingForTest);
+    assertTrue(Image.backingReadbackAccountingEnabledForTest());
+    assertTrue(NativeImageBacking.backingAccountingEnabledForTest());
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.DEFAULT);
+    assertEquals(ImageOptimizationSettings.DEFAULT,
+        ImageOptimizationSettings.state(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING));
+    assertFalse(ImageOptimizationSettings.isEnabled(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING));
+    assertFalse(Image.imageOperationAccountingForTest);
+    assertFalse(Image.backingReadbackAccountingEnabledForTest());
+    assertFalse(NativeImageBacking.backingAccountingEnabledForTest());
+    assertEquals(defaultMask(), ImageOptimizationSettings.effectiveMask());
+    assertNativeMasks(defaultMask());
+
+    int feature = ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION;
+    ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.ENABLED);
+    assertTrue(ImageOptimizationSettings.isEnabled(feature));
+    ImageOptimizationSettings.setState(feature, ImageOptimizationSettings.DEFAULT);
+    assertEquals(ImageOptimizationSettings.DEFAULT, ImageOptimizationSettings.state(feature));
+    assertFalse(ImageOptimizationSettings.isEnabled(feature));
+    assertEquals(defaultMask(), ImageOptimizationSettings.effectiveMask());
+    assertNativeMasks(defaultMask());
   }
 
   @Test
@@ -298,5 +351,10 @@ class ImageOptimizationSettingsTest {
         | (1L << ImageOptimizationSettings.RASTER_ROW_READBACK)
         | (1L << ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION)
         | (1L << ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING);
+  }
+
+  private static void assertNativeMasks(long expected) {
+    assertEquals(expected, Image.nativeOptimizationMaskForDrawForTest());
+    assertEquals(expected, Image.nativeOptimizationMaskForDecodeForTest());
   }
 }

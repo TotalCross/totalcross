@@ -48,8 +48,12 @@ final class ImageOptimizationSettings {
     checkState(state);
     states[feature] = state;
     if (feature == DIAGNOSTIC_ACCOUNTING) {
-      Image.setDiagnosticAccountingForTest(state == ENABLED);
+      Image.setDiagnosticAccountingForTest(isEnabled(feature));
     }
+    synchronizeNativeOptimizationMasks();
+  }
+
+  private static void synchronizeNativeOptimizationMasks() {
     long mask = effectiveMask();
     Image.setNativeOptimizationMaskForDrawForTest(mask);
     Image.setNativeOptimizationMaskForDecodeForTest(mask);
@@ -103,10 +107,8 @@ final class ImageOptimizationSettings {
     }
     cacheMaxBytes = DEFAULT_CACHE_MAX_BYTES;
     mmapThresholdBytes = DEFAULT_MMAP_THRESHOLD_BYTES;
-    Image.setDiagnosticAccountingForTest(false);
-    long mask = effectiveMask();
-    Image.setNativeOptimizationMaskForDrawForTest(mask);
-    Image.setNativeOptimizationMaskForDecodeForTest(mask);
+    Image.setDiagnosticAccountingForTest(isEnabled(DIAGNOSTIC_ACCOUNTING));
+    synchronizeNativeOptimizationMasks();
   }
 
   static void triggerMemoryPressureForTest() {
