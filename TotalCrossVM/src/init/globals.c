@@ -76,6 +76,8 @@ TCClass uiColorsClass = { 0 };
 int32* unsafeAreaColorP = NULL;
 int32* vistaFadeStepP = NULL;
 TCClass imageClass;
+int32* imageOptimizationMaskForDecodePtr = NULL;
+int32* imageOptimizationMaskForDrawPtr = NULL;
 int32 totalTextureLoaded;
 
 

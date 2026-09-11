@@ -30,27 +30,29 @@ ImageTestAccountingState imageTestAccountingState;
 #define IMAGE_OPT_RASTER_OPACITY_METADATA (1 << 1)
 #define IMAGE_OPT_RASTER_OPAQUE_WRITE_PIXELS (1 << 2)
 
-static bool imageDecodeZeroCopyEnabled(TCObject imageObj)
+static int32 imageDecodeOptimizationMask(void)
 {
-   int32* featureMask = imageObj == null
-      ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
-   return featureMask != null && ((*featureMask & IMAGE_OPT_DECODE_ZERO_COPY) != 0);
+   return imageOptimizationMaskForDecodePtr != null
+      ? *imageOptimizationMaskForDecodePtr
+      : 0;
 }
 
-static bool imageDecodeOpacityMetadataEnabled(TCObject imageObj)
+static bool imageDecodeZeroCopyEnabled(void)
 {
-   int32* featureMask = imageObj == null
-      ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
-   return featureMask != null && ((*featureMask & IMAGE_OPT_RASTER_OPACITY_METADATA) != 0);
+   return (imageDecodeOptimizationMask() & IMAGE_OPT_DECODE_ZERO_COPY) != 0;
+}
+
+static bool imageDecodeOpacityMetadataEnabled(void)
+{
+   return (imageDecodeOptimizationMask() & IMAGE_OPT_RASTER_OPACITY_METADATA) != 0;
 }
 
 ImageBackingFormat imageSelectDecodeStorageFormat(TCObject imageObj, bool sourceIsGray,
       bool sourceHasAlpha)
 {
-   int32* featureMask = imageObj == null
-      ? null : getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDecode");
-   return imageSelectDecodeStorageFormatWithMask(featureMask ? *featureMask : 0,
-      sourceIsGray, sourceHasAlpha);
+   (void)imageObj;
+   return imageSelectDecodeStorageFormatWithMask(imageDecodeOptimizationMask(), sourceIsGray,
+      sourceHasAlpha);
 }
 
 ImageBackingFormat imageSelectDecodeStorageFormatWithMask(int32 mask, bool sourceIsGray,
@@ -88,9 +90,9 @@ TC_API void tuiI_setDiagnosticAccountingTest(NMParams p) // totalcross/ui/image/
 
 TC_API void tuiI_nativeOptimizationMaskObser(NMParams p) // totalcross/ui/image/Image native private static int nativeOptimizationMaskObservedForTestNative(totalcross.ui.image.Image image, boolean draw);
 {
-   TCObject imageObj = p->obj[0];
-   CharP fieldName = p->i32[0] ? "nativeOptimizationMaskForDraw" : "nativeOptimizationMaskForDecode";
-   int32* featureMask = imageObj == null ? null : getStaticFieldInt(OBJ_CLASS(imageObj), fieldName);
+   int32* featureMask = p->i32[0]
+      ? imageOptimizationMaskForDrawPtr
+      : imageOptimizationMaskForDecodePtr;
    p->retI = featureMask == null ? -1 : *featureMask;
 }
 
@@ -288,11 +290,11 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
       if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
          throwImageDecodeStatus(p->currentContext,
             pngLoad(p->currentContext, imageObj, null, null, tcz, magic, null, 0,
-               imageDecodeZeroCopyEnabled(imageObj), imageDecodeOpacityMetadataEnabled(imageObj)));
+               imageDecodeZeroCopyEnabled(), imageDecodeOpacityMetadataEnabled()));
       } else
          throwImageDecodeStatus(p->currentContext,
             jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, JPEG_DECODE_FULL, 0, 0,
-               imageDecodeZeroCopyEnabled(imageObj), imageDecodeOpacityMetadataEnabled(imageObj)));
+               imageDecodeZeroCopyEnabled(), imageDecodeOpacityMetadataEnabled()));
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -307,11 +309,11 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
    if ((magic[0] & 0xFF) == 0x89 && magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
       throwImageDecodeStatus(p->currentContext,
          pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, null, 0,
-            imageDecodeZeroCopyEnabled(imageObj), imageDecodeOpacityMetadataEnabled(imageObj)));
+            imageDecodeZeroCopyEnabled(), imageDecodeOpacityMetadataEnabled()));
    } else
       throwImageDecodeStatus(p->currentContext,
          jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, JPEG_DECODE_FULL, 0, 0,
-            imageDecodeZeroCopyEnabled(imageObj), imageDecodeOpacityMetadataEnabled(imageObj)));
+            imageDecodeZeroCopyEnabled(), imageDecodeOpacityMetadataEnabled()));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source);
@@ -328,11 +330,10 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
    ImageDecodeStatus status;
    if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_PNG)
       status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length,
-         imageDecodeZeroCopyEnabled(imageObj), imageDecodeOpacityMetadataEnabled(imageObj));
+         imageDecodeZeroCopyEnabled(), imageDecodeOpacityMetadataEnabled());
    else if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_JPEG)
       status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
-         JPEG_DECODE_FULL, 0, 0, imageDecodeZeroCopyEnabled(imageObj),
-         imageDecodeOpacityMetadataEnabled(imageObj));
+         JPEG_DECODE_FULL, 0, 0, imageDecodeZeroCopyEnabled(), imageDecodeOpacityMetadataEnabled());
    else {
       throwException(p->currentContext, ImageException, "Unsupported deployed encoded image format");
       return;
@@ -387,7 +388,7 @@ static void decodeEncodedSourceAtDenominator(NMParams p, int32 denominator, bool
    status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
       explicitRatio ? JPEG_DECODE_EXPLICIT_RATIO : JPEG_DECODE_TARGET_DECODE,
       explicitRatio ? 1 : targetWidth, explicitRatio ? denominator : targetHeight,
-      imageDecodeZeroCopyEnabled(imageObj), imageDecodeOpacityMetadataEnabled(imageObj));
+      imageDecodeZeroCopyEnabled(), imageDecodeOpacityMetadataEnabled());
    if (status == IMAGE_DECODE_SUCCESS) {
       if (targetedWidth != null)
          (*targetedWidth) = Image_width(imageObj);
@@ -421,8 +422,8 @@ TC_API void tuiI_decodeEncodedSourceBestFit(NMParams p) // totalcross/ui/image/I
    if (targetedRequestHeight != null)
       (*targetedRequestHeight) = targetHeight;
    status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
-      JPEG_DECODE_BEST_FIT, targetWidth, targetHeight, imageDecodeZeroCopyEnabled(imageObj),
-      imageDecodeOpacityMetadataEnabled(imageObj));
+      JPEG_DECODE_BEST_FIT, targetWidth, targetHeight, imageDecodeZeroCopyEnabled(),
+      imageDecodeOpacityMetadataEnabled());
    throwImageDecodeStatus(p->currentContext, status);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -463,8 +464,8 @@ TC_API void tuiI_decodeEncodedSourceExplicit(NMParams p) // totalcross/ui/image/
    if (targetedDenominator != null)
       (*targetedDenominator) = denominator;
    status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
-      JPEG_DECODE_EXPLICIT_RATIO, numerator, denominator, imageDecodeZeroCopyEnabled(imageObj),
-      imageDecodeOpacityMetadataEnabled(imageObj));
+      JPEG_DECODE_EXPLICIT_RATIO, numerator, denominator, imageDecodeZeroCopyEnabled(),
+      imageDecodeOpacityMetadataEnabled());
    throwImageDecodeStatus(p->currentContext, status);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -612,18 +613,20 @@ static int32 applyNativeColorMutation(Context currentContext, TCObject imageObj,
 {
    int32 frameCount;
    int32 visibleWidth;
-   int32* optimizationMask;
+   int32 optimizationMask;
    int32 result;
    if (!imageUsesNativeBacking(imageObj)) {
       return false;
    }
    frameCount = Image_frameCount(imageObj);
    visibleWidth = Image_width(imageObj);
-   optimizationMask = getStaticFieldInt(OBJ_CLASS(imageObj), "nativeOptimizationMaskForDraw");
+   optimizationMask = imageOptimizationMaskForDrawPtr != null
+      ? *imageOptimizationMaskForDrawPtr
+      : 0;
    result = skia_image_backing_apply_color_mutation(
          NativeImageBacking_nativeHandle(Image_backing(imageObj)), operation, parameter1,
          parameter2, frameCount, visibleWidth, Image_currentFrame(imageObj),
-         optimizationMask ? *optimizationMask : 0);
+         optimizationMask);
    if (result == 0) {
       return 0;
    }
