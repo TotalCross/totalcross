@@ -8,6 +8,14 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 /** Opaque native backing used by deployed Skia images. */
 final class NativeImageBacking extends ImageBacking {
+  static final int OPACITY_UNKNOWN = 0;
+  static final int OPACITY_OPAQUE = 1;
+  static final int OPACITY_TRANSLUCENT = 2;
+  static final int TEST_COLOR_RGBA8888 = 0;
+  static final int TEST_COLOR_BGRA8888 = 1;
+  static final int TEST_COLOR_RGB565 = 2;
+
+  private static boolean backingAccountingEnabledForTest;
   private long nativeHandle;
   private final int width;
   private final int height;
@@ -79,6 +87,19 @@ final class NativeImageBacking extends ImageBacking {
     return new NativeImageBacking(handle, width, height);
   }
 
+  static NativeImageBacking createEmptyForTest(int width, int height, int colorType)
+      throws ImageException {
+    if (width <= 0 || height <= 0 || colorType < TEST_COLOR_RGBA8888
+        || colorType > TEST_COLOR_RGB565) {
+      throw new ImageException("Invalid test raster surface.");
+    }
+    long handle = createEmptyForTestNative(width, height, colorType);
+    if (handle == 0) {
+      throw new ImageException("Could not create test raster surface.");
+    }
+    return new NativeImageBacking(handle, width, height);
+  }
+
   static NativeImageBacking createFromArgbPixels(int[] pixels, int width, int height) throws ImageException {
     if (pixels == null || width <= 0 || height <= 0 || (long) width * height > pixels.length) {
       throw new ImageException("Invalid native image pixels.");
@@ -96,6 +117,19 @@ final class NativeImageBacking extends ImageBacking {
 
   static void resetBackingAccountingForTest() {
     resetAccountingTestNative();
+    backingAccountingEnabledForTest = true;
+  }
+
+  static void clearBackingAccountingCountersForTest() {
+    clearAccountingTestNative();
+  }
+
+  static void setBackingAccountingForTest(boolean enabled) {
+    backingAccountingEnabledForTest = enabled;
+  }
+
+  static boolean backingAccountingEnabledForTest() {
+    return backingAccountingEnabledForTest;
   }
 
   static long backingRecordsCreatedForTest() {
@@ -120,6 +154,82 @@ final class NativeImageBacking extends ImageBacking {
 
   static long backingBytesPeakLiveForTest() {
     return backingPeakBytesTest();
+  }
+
+  static long writePixelsAttemptsForTest() {
+    return writePixelsAttemptsTest();
+  }
+
+  static long writePixelsHitsForTest() {
+    return writePixelsHitsTest();
+  }
+
+  static long writePixelsFallbacksForTest() {
+    return writePixelsFallbacksTest();
+  }
+
+  static long writePixelsCopiedBytesForTest() {
+    return writePixelsCopyBytesTest();
+  }
+
+  static long physicalIdentityAttemptsForTest() {
+    return physicalIdentityAttemptsTest();
+  }
+
+  static long physicalIdentityHitsForTest() {
+    return physicalIdentityHitsTest();
+  }
+
+  static long physicalIdentityFallbacksForTest() {
+    return physicalIdentityFallbacksTest();
+  }
+
+  static long physicalIdentityResamplesAvoidedForTest() {
+    return physicalIdentityResamplesAvoidedTest();
+  }
+
+  static long targetColorAttemptsForTest() {
+    return targetColorAttemptsTest();
+  }
+
+  static long targetColorMaterializationsForTest() {
+    return targetColorMatsTest();
+  }
+
+  static long targetColorHitsForTest() {
+    return targetColorHitsTest();
+  }
+
+  static long targetColorFallbacksForTest() {
+    return targetColorFallbacksTest();
+  }
+
+  static long targetColorConvertedBytesForTest() {
+    return targetColorBytesTest();
+  }
+
+  static long physicalVariantLookupsForTest() {
+    return variantLookupsTest();
+  }
+
+  static long physicalVariantHitsForTest() {
+    return variantHitsTest();
+  }
+
+  static long physicalVariantMissesForTest() {
+    return variantMissesTest();
+  }
+
+  static long physicalVariantMaterializationsForTest() {
+    return variantMatsTest();
+  }
+
+  static long physicalVariantEvictionsForTest() {
+    return variantEvictionsTest();
+  }
+
+  static long physicalVariantBytesForTest() {
+    return variantBytesTest();
   }
 
   @Override
@@ -152,8 +262,17 @@ final class NativeImageBacking extends ImageBacking {
     if (visibleWidth == 0) {
       return new int[0];
     }
-    Image.recordBackingReadbackForTest();
     int[] output = new int[visibleWidth * outputHeight];
+    if (ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_ROW_READBACK)
+        == ImageOptimizationSettings.ENABLED && frame == 0 && visibleWidth == width) {
+      if (!readArgbRowsNative(output, 0, visibleWidth, outputHeight)) {
+        throw new IllegalStateException("Could not read native image backing rows");
+      }
+      Image.recordRowReadbacksForTest(outputHeight, visibleWidth * 4);
+      return output;
+    }
+    Image.recordBackingReadbackForTest();
+    Image.recordFullReadbackForTest(width * outputHeight * 4);
     if (!readPixels(output, 0, visibleWidth * Math.max(0, frame), 0, visibleWidth, outputHeight)) {
       throw new IllegalStateException("Could not read native image backing");
     }
@@ -174,12 +293,23 @@ final class NativeImageBacking extends ImageBacking {
 
   @Override
   boolean readRgbaRow(byte[] output, int y) {
-    return isValid() && output != null && y >= 0 && y < height && output.length >= width * 4
-        && readRgbaRowNative(output, y, width);
+    boolean valid = isValid() && output != null && y >= 0 && y < height && output.length >= width * 4;
+    if (!valid) {
+      return false;
+    }
+    if (ImageOptimizationSettings.state(ImageOptimizationSettings.RASTER_ROW_READBACK)
+        == ImageOptimizationSettings.ENABLED) {
+      Image.recordRowReadbackForTest(width * 4);
+    }
+    return readRgbaRowNative(output, y, width);
   }
 
   long nativeHandleForBridge() {
     return nativeHandle;
+  }
+
+  int opacityForTest() {
+    return isValid() ? opacityNative() : OPACITY_UNKNOWN;
   }
 
   boolean makeMutable() {
@@ -187,6 +317,13 @@ final class NativeImageBacking extends ImageBacking {
       throw new IllegalStateException("Native image backing has been released");
     }
     return makeMutableNative();
+  }
+
+  boolean mutateForTest() {
+    if (nativeHandle == 0) {
+      throw new IllegalStateException("Native image backing has been released");
+    }
+    return mutateForTestNative();
   }
 
   boolean readPixels(int[] output, int offset, int x, int y, int width, int height) {
@@ -248,12 +385,21 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private static long createEmptyForTestNative(int width, int height, int colorType) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
   private static boolean isAvailableNative() {
     return false;
   }
 
   @ReplacedByNativeOnDeploy
   private static void resetAccountingTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void clearAccountingTestNative() {
   }
 
   @ReplacedByNativeOnDeploy
@@ -287,6 +433,101 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private static long writePixelsAttemptsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsFallbacksTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsCopyBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long physicalIdentityAttemptsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long physicalIdentityHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long physicalIdentityFallbacksTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long physicalIdentityResamplesAvoidedTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorAttemptsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorMatsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorFallbacksTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetColorBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantLookupsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantMissesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantMatsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantEvictionsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long variantBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
   private static long createFromArgbPixelsNative(int[] pixels, int width, int height) {
     return 0;
   }
@@ -306,6 +547,11 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private boolean mutateForTestNative() {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
   private boolean readPixelsNative(int[] output, int offset, int x, int y, int width, int height) {
     return false;
   }
@@ -313,6 +559,16 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private boolean readRgbaRowNative(byte[] output, int y, int width) {
     return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean readArgbRowsNative(int[] output, int y, int width, int height) {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int opacityNative() {
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy

@@ -31,5 +31,7 @@ bool skia_image_geometry_draw_compiled(SkCanvas* canvas, const SkImage* image,
                                        float dstTop, float dstRight, float dstBottom, int32 alphaMask,
                                        bool applyPixelCenterOffset,
                                        const SkiaImageDrawColorFilters* colorFilters);
+sk_sp<SkImage> skia_image_backing_materialize_geometry_variant(
+    const SkiaImageDrawPlanData* plan, SkColorType colorType, int32* width, int32* height);
 
 #endif

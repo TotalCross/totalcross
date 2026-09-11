@@ -12,6 +12,16 @@ import static totalcross.ui.image.ImageNativeColorFilterSmokeSupport.*;
 
 /** Deployed macOS smoke for native color mutations and mixed pipelines. */
 public class ImageNativeColorFilterSmokeApp extends MainWindow {
+  private static int[] applyColor2Pixels(Image image, int color, boolean direct) throws Exception {
+    ImageOptimizationSettings.resetForTest();
+    if (direct) {
+      ImageOptimizationSettings.setState(ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION,
+          ImageOptimizationSettings.ENABLED);
+    }
+    image.applyColor2(color);
+    return image.getPixels();
+  }
+
   @Override
   public void initUI() {
     boolean nativeBacking = false;
@@ -19,6 +29,7 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
     boolean alpha = false;
     boolean faded = false;
     boolean applyColor2 = false;
+    boolean directColorParity = false;
     boolean applyColor2Cache = false;
     boolean touchUp = false;
     boolean applyColor = false;
@@ -78,6 +89,15 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
       applyColor2 = color2Pixels[0] == applyColor2(SOURCE[0], 0xAA4080C0)
           && color2Pixels[3] == applyColor2(SOURCE[3], 0xAA4080C0);
       require(applyColor2, "applyColor2 mapping");
+
+      int[] disabledNormal = applyColor2Pixels(alphaImage(), 0x204080C0, false);
+      int[] enabledNormal = applyColor2Pixels(alphaImage(), 0x204080C0, true);
+      int[] disabledAlpha = applyColor2Pixels(alphaImage(), 0xAA4080C0, false);
+      int[] enabledAlpha = applyColor2Pixels(alphaImage(), 0xAA4080C0, true);
+      directColorParity = sameArray(disabledNormal, enabledNormal)
+          && sameArray(disabledAlpha, enabledAlpha);
+      require(directColorParity, "direct applyColor2 parity");
+      ImageOptimizationSettings.resetForTest();
 
       Image changed = sourceImage();
       changed.changeColors(SOURCE[0], 0xFFAABBCC);
@@ -303,12 +323,14 @@ public class ImageNativeColorFilterSmokeApp extends MainWindow {
     }
 
     boolean overallPass = nativeBacking && frameScopedFade && alpha && faded && applyColor && applyColor2
+        && directColorParity
         && touchUp && exactColors && mixedPipeline && touchUpThreshold && drawColorStages && drawPrefixStages
         && applyColor2Cache && encodedSourceCache && drawAndSave;
     overallPass = overallPass && drawPlanGeneration;
     System.out.println("fixture=ImageNativeColorFilterSmokeApp,nativeBacking=" + nativeBacking
         + ",frameScopedFade=" + frameScopedFade + ",alpha=" + alpha + ",faded=" + faded
         + ",applyColor=" + applyColor + ",applyColor2=" + applyColor2
+        + ",directColorParity=" + directColorParity
         + ",touchUp=" + touchUp + ",exactColors=" + exactColors
         + ",mixedPipeline=" + mixedPipeline + ",touchUpThreshold=" + touchUpThreshold
         + ",drawColorStages=" + drawColorStages + ",drawInPlaceStages=" + drawInPlaceStages

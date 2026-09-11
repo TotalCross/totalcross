@@ -171,6 +171,7 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
             *texture, srcRect, dstRect, &alphaPaint,
             fullSource ? SkCanvas::kFast_SrcRectConstraint : SkCanvas::kStrict_SrcRectConstraint);
     }
+    skia_image_backing_mark_surface_mutated(skiaSurface);
 }
 
 Pixel skia_getPixel(int32 skiaSurface, int32 x, int32 y) {
@@ -220,6 +221,7 @@ void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel) {
         targetCanvas->resetMatrix();
         targetCanvas->drawRect(SkRect::MakeXYWH(x, y, 1, 1), backPaint);
         targetCanvas->restore();
+        skia_image_backing_mark_surface_mutated(skiaSurface);
     }
 }
 
@@ -290,5 +292,9 @@ int32 skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
         }
     }
 
-    return targetCanvas->writePixels(pixelBitmap, x, y) ? 1 : 0;
+    const int result = targetCanvas->writePixels(pixelBitmap, x, y) ? 1 : 0;
+    if (result != 0) {
+        skia_image_backing_mark_surface_mutated(skiaSurface);
+    }
+    return result;
 }

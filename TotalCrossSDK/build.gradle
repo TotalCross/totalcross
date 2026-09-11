@@ -447,6 +447,7 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
         dependsOn sourceSets.smokeTest.classesTaskName
         from(smokeTestClassesDir) {
             include 'totalcross/ui/image/' + appClass + '*.class'
+            include 'totalcross/ui/image/ImageRasterBenchmarkSupport*.class'
         }
         if (includeImageAbiResources) {
             from(smokeTestResourcesDir) {
@@ -521,7 +522,12 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
             if (!executable.isFile()) {
                 throw new GradleException('Native smoke executable not found: ' + executable)
             }
-            commandLine executable.absolutePath
+            def smokeArguments = project.findProperty('smokeArgs')
+            if (smokeArguments) {
+                commandLine([executable.absolutePath] + smokeArguments.toString().trim().split(/\s+/).findAll { it })
+            } else {
+                commandLine executable.absolutePath
+            }
             smokeOutput.reset()
             standardOutput = smokeOutput
             errorOutput = smokeOutput
@@ -689,6 +695,36 @@ registerImageMacSmoke('ImageNativeMaterialization', 'ImageNativeMaterializationS
         'pass=true'
     ])
 
+registerImageMacSmoke('ImageZeroCopyDecode', 'ImageZeroCopyDecodeSmokeApp',
+    'image-zero-copy-decode-smoke', true, false, [
+        'fixture=ImageZeroCopyDecodeSmokeApp',
+        'pngParity=true',
+        'jpegParity=true',
+        'pngCounter=true',
+        'jpegCounter=true',
+        'retry=true',
+        'pngFailureCleanup=true',
+        'jpegFailureCleanup=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterOpacityMutation', 'ImageRasterOpacityMutationSmokeApp',
+    'image-raster-opacity-mutation-smoke', true, false, [
+        'fixture=ImageRasterOpacityMutationSmokeApp',
+        'decodedOpaque=true',
+        'invalidated=true',
+        'drawParity=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterDrawPlanWritePixels', 'ImageRasterDrawPlanWritePixelsSmokeApp',
+    'image-raster-draw-plan-write-pixels-smoke', false, false, [
+        'fixture=ImageRasterDrawPlanWritePixelsSmokeApp',
+        'parity=true',
+        'fastHit=true',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageDrawPresentationState', 'ImageDrawPresentationStateSmokeApp',
     'image-draw-presentation-state-smoke', false, false, [
         'fixture=ImageDrawPresentationStateSmokeApp',
@@ -727,6 +763,78 @@ registerImageMacSmoke('ImageDeferredFrameFadeLayout', 'ImageDeferredFrameFadeLay
         'selectScaleSelectZero=true',
         'layoutSelectZero=true',
         'layoutSelectOne=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageOptimizationControlBenchmark', 'ImageOptimizationControlBenchmarkApp',
+    'image-optimization-control-benchmark', false, false, [
+        'fixture=ImageOptimizationControlBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterDecodeBenchmark', 'ImageRasterDecodeBenchmarkApp',
+    'image-raster-decode-benchmark', true, false, [
+        'fixture=ImageRasterDecodeBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterOpacityBenchmark', 'ImageRasterOpacityBenchmarkApp',
+    'image-raster-opacity-benchmark', true, false, [
+        'fixture=ImageRasterOpacityBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterOpaqueDrawBenchmark', 'ImageRasterOpaqueDrawBenchmarkApp',
+    'image-raster-opaque-draw-benchmark', true, false, [
+        'fixture=ImageRasterOpaqueDrawBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterReadbackBenchmark', 'ImageRasterReadbackBenchmarkApp',
+    'image-raster-readback-benchmark', true, false, [
+        'fixture=ImageRasterReadbackBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterCombinedBenchmark', 'ImageRasterCombinedBenchmarkApp',
+    'image-raster-combined-benchmark', true, false, [
+        'fixture=ImageRasterCombinedBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterPhysicalIdentityBenchmark', 'ImageRasterPhysicalIdentityBenchmarkApp',
+    'image-raster-physical-identity-benchmark', false, false, [
+        'fixture=ImageRasterPhysicalIdentityBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterTargetColorBenchmark', 'ImageRasterTargetColorBenchmarkApp',
+    'image-raster-target-color-benchmark', false, false, [
+        'fixture=ImageRasterTargetColorBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterVariantBenchmark', 'ImageRasterVariantBenchmarkApp',
+    'image-raster-variant-benchmark', false, false, [
+        'fixture=ImageRasterVariantBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterPhysicalVariantSmoke', 'ImageRasterPhysicalVariantSmokeApp',
+    'image-raster-physical-variant-smoke', false, false, [
+        'fixture=ImageRasterPhysicalVariantSmokeApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
+    'image-diagnostic-accounting-gate-benchmark', false, false, [
+        'fixture=ImageDiagnosticAccountingGateBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageDiagnosticAccountingGate', 'ImageDiagnosticAccountingGateSmokeApp',
+    'image-diagnostic-accounting-gate-smoke', false, false, [
+        'fixture=ImageDiagnosticAccountingGateSmokeApp',
         'overallPass=true'
     ])
 
