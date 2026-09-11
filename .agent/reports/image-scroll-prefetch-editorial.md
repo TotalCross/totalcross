@@ -53,6 +53,10 @@ construction and immediately before `prepareForDisplay`.
 
 - Detached decode candidates are marshalled to the UI thread; terminal success
   and failure paths clear the active slot before the next decode starts.
+- Already-decoded `COPY_READY` requests use an unconditional MainWindow event
+  queue continuation when a window exists, with a direct no-window fallback for
+  tests/non-UI contexts. The terminal path queues the next adoption, so no
+  inline recursive adoption chain remains during discovery.
 - The benchmark starts on a subsequent UI timer tick so repaint accounting is
   not suppressed while runner callbacks are being drained; the cold pass also
   explicitly resets the scrollbar to its declared minimum.
@@ -75,7 +79,12 @@ construction and immediately before `prepareForDisplay`.
   optimization mask, deferred pipeline, and no extra decode during copyRect.
 - TCVM-compatible `Lock` focused validation: passed; shared-source lifecycle
   regressions and existing ScrollContainer/traversal tests passed.
+- Already-decoded scheduling regressions passed: request-time materialization is
+  deferred, queued continuations iterate one active entry at a time, callbacks
+  complete, active entries return to zero, and `COPY_READY` adds no JPEG decode.
 - Authoritative final real-workload matrix: passed; the committed CSV and
   summary are in `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`.
 - Earlier `final/` and `final-fixed/` evidence remains preserved as historical
   and superseded material.
+- The 663-JPEG matrix was not rerun for this scheduling-only correction because
+  image/decode behavior and benchmark gates were unchanged.

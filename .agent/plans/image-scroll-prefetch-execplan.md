@@ -64,9 +64,12 @@ Supporting files:
 
 Committed benchmark evidence:
 
-- `.agent/evidence/image-scroll-prefetch/baseline/`
-- `.agent/evidence/image-scroll-prefetch/final/`
+- `.agent/benchmarks/image-scroll-prefetch/baseline/`
+- `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`
+  (authoritative final evidence)
+- `.agent/benchmarks/image-scroll-prefetch/final/` (historical/superseded)
 - `.agent/benchmarks/image-scroll-prefetch/final-fixed/`
+  (historical/superseded)
 
 On resume, read state first and then only active paths.
 
@@ -486,7 +489,6 @@ Do not:
 
 - make ScrollContainer decode JPEGs;
 - call child `getGraphics()` for content scale;
-- spawn one thread per image;
 - register native backings from worker;
 - add global draw-path locking;
 - automatically manage application spinner visibility;

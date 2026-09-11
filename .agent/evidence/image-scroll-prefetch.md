@@ -69,3 +69,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   target-color converted bytes and physical-variant bytes were 0; accounting
   reset after UI construction; shared-source regressions passed; runtime
   SHA-256 is `6ad937b552e9305a39b17c363b655fc50f93d977181cd3435a4fdd770797d72c`
+- 2026-09-10 | milestone 7 | alreadyDecoded scheduling closeout | pass |
+  alreadyDecoded COPY_READY adoption is always deferred through the MainWindow
+  event queue when available, so request/discovery cannot finalize inline and
+  terminal continuations do not recurse through multiple entries; focused
+  ImagePreparation, shared-source, ScrollContainer, and traversal tests passed,
+  Release SDK dist passed, and the existing ImagePreparation macOS smoke passed;
+  the 663-JPEG matrix was not rerun because image/decode behavior was unchanged
