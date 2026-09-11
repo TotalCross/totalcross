@@ -141,6 +141,21 @@ class EncodedImageSourceTest {
   }
 
   @Test
+  void missingPathIsReportedAsImageException() throws Exception {
+    Path file = Files.createTempFile("totalcross-missing-image-source", ".png");
+    Files.delete(file);
+    tc.simulator.Launcher previous = Launcher.instance;
+    try {
+      Launcher.instance = null;
+      ImageException failure = assertThrows(ImageException.class, () -> new Image(file.toString()));
+      assertEquals(ImageException.class, failure.getClass());
+    } finally {
+      Files.deleteIfExists(file);
+      Launcher.instance = previous;
+    }
+  }
+
+  @Test
   void rejectsBadPngCrcAndTruncatedChunks() throws Exception {
     assertThrows(ImageException.class, () -> EncodedImageSource.fromBytes(new byte[0]));
     byte[] valid = png(null, new byte[] { 1 });

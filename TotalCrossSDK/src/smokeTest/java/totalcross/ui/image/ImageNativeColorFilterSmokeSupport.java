@@ -30,6 +30,19 @@ final class ImageNativeColorFilterSmokeSupport {
     return image;
   }
 
+  static Image alphaImage() throws Exception {
+    Image image = new Image(WIDTH, HEIGHT);
+    Graphics graphics = image.getGraphics();
+    int[] alphas = { 0xFF000000, 0x80000000, 0x00000000, 0xFF000000 };
+    for (int x = 0; x < SOURCE.length; x++) {
+      graphics.foreColor = SOURCE[x];
+      graphics.alpha = alphas[x];
+      graphics.setPixel(x, 0);
+    }
+    graphics.alpha = 0xFF000000;
+    return image;
+  }
+
   static Image frameStripImage() throws Exception {
     Image image = new Image(FRAME_STRIP_WIDTH, FRAME_STRIP_HEIGHT);
     Graphics graphics = image.getGraphics();

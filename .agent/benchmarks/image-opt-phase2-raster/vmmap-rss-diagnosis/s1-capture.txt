@@ -1,0 +1,3 @@
+capture_point=sample=100
+pid=19763
+rss_kb=101984

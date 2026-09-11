@@ -1,0 +1,1 @@
+ 3433 04:38 118832 435718752 /private/tmp/image-opt-phase3-milestone9b-true-base/TotalCrossSDK/build/image-compact-formats-benchmark/classes/install/macos/ImageCompactFormatsBenchmarkApp --scenario=pre --samples=200 --workload=milestone9-full-stack --phase2=true
