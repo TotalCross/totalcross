@@ -10,9 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +22,7 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
+import totalcross.Launcher;
 import totalcross.sys.Settings;
 import totalcross.ui.MainWindow;
 
@@ -125,6 +128,93 @@ class ImagePreparationTest {
     assertTrue(retried.await(5, TimeUnit.SECONDS));
     assertEquals(0, ImagePreparation.activeEntryCountForTest());
     assertEquals(1, ImagePreparation.readyCountForTest());
+  }
+
+  @Test
+  void alreadyDecodedCopyReadyAdoptionIsDeferredOnUiThread() throws Exception {
+    new Launcher();
+    MainWindow.resetPreviewState();
+    QueuedMainWindow mainWindow = new QueuedMainWindow();
+    ImagePreparation.setRunUiInlineForTest(true);
+    Image.resetImageOperationAccountingForTest();
+    ImagePreparation.resetAccountingForTest();
+    try {
+      Image image = alreadyDecodedImage();
+      Image.resetImageOperationAccountingForTest();
+      int materializations = Image.materializationCountForTest();
+      CountDownLatch completed = new CountDownLatch(1);
+
+      ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY,
+          completed::countDown);
+
+      assertEquals(1, ImagePreparation.activeEntryCountForTest());
+      assertEquals(1, mainWindow.queuedCount());
+      assertEquals(materializations, Image.materializationCountForTest());
+      assertEquals(1, completed.getCount());
+
+      mainWindow.runNext();
+
+      assertTrue(completed.await(0, TimeUnit.MILLISECONDS));
+      assertEquals(0, ImagePreparation.activeEntryCountForTest());
+      assertEquals(materializations + 1, Image.materializationCountForTest());
+      assertEquals(0, Image.targetedDecodeInvocationCountForTest()
+          + Image.fullDecodeInvocationCountForTest());
+    } finally {
+      while (mainWindow.queuedCount() > 0) {
+        mainWindow.runNext();
+      }
+      ImagePreparation.setRunUiInlineForTest(false);
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
+  void alreadyDecodedEntriesUseQueuedContinuations() throws Exception {
+    new Launcher();
+    MainWindow.resetPreviewState();
+    QueuedMainWindow mainWindow = new QueuedMainWindow();
+    ImagePreparation.setRunUiInlineForTest(true);
+    Image.resetImageOperationAccountingForTest();
+    ImagePreparation.resetAccountingForTest();
+    try {
+      final int count = 3;
+      ArrayList<Image> images = new ArrayList<Image>(count);
+      CountDownLatch completed = new CountDownLatch(count);
+      for (int i = 0; i < count; i++) {
+        Image image = alreadyDecodedImage();
+        images.add(image);
+        ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY,
+            completed::countDown);
+      }
+      Image.resetImageOperationAccountingForTest();
+      int materializations = Image.materializationCountForTest();
+
+      assertEquals(count, ImagePreparation.activeEntryCountForTest());
+      assertEquals(1, mainWindow.queuedCount());
+      assertEquals(materializations, Image.materializationCountForTest());
+      assertEquals(count, completed.getCount());
+
+      for (int i = 0; i < count; i++) {
+        mainWindow.runNext();
+        assertEquals(count - i - 1, ImagePreparation.activeEntryCountForTest());
+        assertEquals(i + 1 < count ? 1 : 0, mainWindow.queuedCount());
+      }
+
+      assertTrue(completed.await(0, TimeUnit.MILLISECONDS));
+      assertEquals(0, ImagePreparation.activeEntryCountForTest());
+      assertEquals(materializations + count, Image.materializationCountForTest());
+      assertEquals(0, Image.targetedDecodeInvocationCountForTest()
+          + Image.fullDecodeInvocationCountForTest());
+      for (Image image : images) {
+        assertNotNull(image.cachedMaterializedForDrawing(1));
+      }
+    } finally {
+      while (mainWindow.queuedCount() > 0) {
+        mainWindow.runNext();
+      }
+      ImagePreparation.setRunUiInlineForTest(false);
+      MainWindow.resetPreviewState();
+    }
   }
 
   @Test
@@ -250,5 +340,32 @@ class ImagePreparationTest {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     ImageIO.write(image, "png", bytes);
     return bytes.toByteArray();
+  }
+
+  private static Image alreadyDecodedImage() throws Exception {
+    Image image = new Image(jpeg(64, 48)).getSmoothScaledInstance(16, 12);
+    ImagePreparation.Request request = image.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    ImagePreparationCandidate candidate = image.createPreparationCandidate(request);
+    image.adoptPreparationCandidate(request, candidate);
+    return image;
+  }
+
+  private static final class QueuedMainWindow extends MainWindow {
+    private final ArrayList<Runnable> queued = new ArrayList<Runnable>();
+
+    @Override
+    public void runOnMainThread(Runnable runnable, boolean singleInstance) {
+      queued.add(runnable);
+    }
+
+    int queuedCount() {
+      return queued.size();
+    }
+
+    void runNext() {
+      assertFalse(queued.isEmpty());
+      queued.remove(0).run();
+    }
   }
 }

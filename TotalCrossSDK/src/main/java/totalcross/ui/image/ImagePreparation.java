@@ -154,7 +154,7 @@ final class ImagePreparation {
     }
     if (alreadyDecoded) {
       try {
-        postUi(new Runnable() {
+        postUiAsync(new Runnable() {
           @Override
           public void run() {
             adoptAlreadyDecoded(entry);
@@ -291,6 +291,15 @@ final class ImagePreparation {
   private static void postUi(final Runnable runnable) {
     MainWindow mainWindow = MainWindow.getMainWindow();
     if (runUiInlineForTest || MainWindow.isMainThread() || mainWindow == null) {
+      runnable.run();
+    } else {
+      mainWindow.runOnMainThread(runnable, false);
+    }
+  }
+
+  private static void postUiAsync(final Runnable runnable) {
+    MainWindow mainWindow = MainWindow.getMainWindow();
+    if (mainWindow == null) {
       runnable.run();
     } else {
       mainWindow.runOnMainThread(runnable, false);
