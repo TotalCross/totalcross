@@ -49,8 +49,11 @@ copy raw logs into the plan.
   mapping verified as bits 0–15 with default mask 32799.
 - [x] Repository and ExecPlan instructions read; unavailable
   `logical-commits` skill noted.
-- [ ] Checkpoint 1: explicit mask API, validation, and tests.
-- [ ] Checkpoint 2: CLI, external corpus, and one cold scroll process.
+- [x] Checkpoint 1 — commit `beac137c3`: public process mask override,
+  unknown-bit rejection, zero-mask semantics, and focused tests passed.
+- [ ] Checkpoint 2: CLI, external corpus, and one cold scroll process; the
+  existing real-workload app now accepts the new arguments and emits a minimal
+  per-run JSON, with timed pacing and complete result schema still pending.
 - [ ] Checkpoint 3: time-based frame timing, counters, and `NOT_EXERCISED`.
 - [ ] Checkpoint 4: low-overhead memory and environment collection.
 - [ ] Checkpoint 5: result schema, self-test, aggregation, and Java ZIP.
