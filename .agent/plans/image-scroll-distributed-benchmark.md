@@ -54,10 +54,13 @@ copy raw logs into the plan.
 - [x] Checkpoint 2 — commit `9aa9d099d`: existing real-workload app accepts
   mask/prefetch/run/output/corpus arguments, validates the 663 image entries,
   keeps the corpus external, and runs one cold pass per process.
-- [x] Checkpoint 3 — pending commit: time-based pacing, raw frames/timeline,
-  percentile/stall metrics, and feature-hit/`NOT_EXERCISED` classification are
-  implemented; focused SDK test and benchmark-JAR compilation passed.
-- [ ] Checkpoint 4: low-overhead memory and environment collection.
+- [x] Checkpoint 3 — commit `495b1133d`: time-based pacing, raw frames/timeline,
+  percentile/stall metrics, and feature-hit/`NOT_EXERCISED` classification;
+  focused SDK test and benchmark-JAR compilation passed.
+- [x] Checkpoint 4 — pending commit: low-overhead process memory, lifecycle
+  checkpoints, Skia surface metadata, and common environment fields are
+  implemented; native Release build, focused SDK test, benchmark-JAR
+  compilation, header validation, and whitespace validation passed.
 - [ ] Checkpoint 5: result schema, self-test, aggregation, and Java ZIP.
 - [ ] Checkpoint 6: deterministic suite plan and platform launchers.
 - [ ] Checkpoint 7: package-SDK deploy tooling and five bundle formats.

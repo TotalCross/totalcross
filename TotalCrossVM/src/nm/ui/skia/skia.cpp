@@ -329,4 +329,28 @@ int32 colorType(uint32 pixelformat) {
     debug("Unsupported pixel format %s, try mapping your color format on %s - %s", SDL_GetPixelFormatName(pixelformat), __FILE__, __FUNCTION__);
     return kUnknown_SkColorType;
 }
+
 #endif
+
+int64_t skia_benchmark_native_metric(int32 kind) {
+    if (!surface) {
+        return -1;
+    }
+    const SkImageInfo info = surface->imageInfo();
+    switch (kind) {
+    case 0:
+        return static_cast<int64_t>(info.colorType());
+    case 1:
+        return static_cast<int64_t>(info.alphaType());
+    case 2:
+        return static_cast<int64_t>(info.minRowBytes());
+    case 3:
+        return static_cast<int64_t>(info.width());
+    case 4:
+        return static_cast<int64_t>(info.height());
+    case 5:
+        return static_cast<int64_t>(kN32_SkColorType);
+    default:
+        return -1;
+    }
+}

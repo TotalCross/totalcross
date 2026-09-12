@@ -15,6 +15,7 @@
 #include "util/utils.h"
 #include "ui/image/ImageEncodedBag.h"
 #include "ui/image/ImageDecodeFormat.h"
+#include <string.h>
 #if POSIX
    #include <sys/mman.h>
    #include <errno.h>
@@ -22,6 +23,20 @@
 
 #if defined darwin
 #include "darwin/image_Image_c.h"
+#endif
+
+#if defined(WIN32) && !defined(WINCE)
+#include <psapi.h>
+#elif defined(darwin)
+#include <mach/mach.h>
+#include <sys/resource.h>
+#elif defined(POSIX)
+#include <stdio.h>
+#include <string.h>
+#endif
+
+#if TC_RENDERER_SKIA
+#include "ui/skia/skia.h"
 #endif
 
 ImageTestAccountingState imageTestAccountingState;
@@ -94,6 +109,107 @@ TC_API void tuiI_nativeOptimizationMaskObser(NMParams p) // totalcross/ui/image/
       ? imageOptimizationMaskForDrawPtr
       : imageOptimizationMaskForDecodePtr;
    p->retI = featureMask == null ? -1 : *featureMask;
+}
+
+#if defined(POSIX)
+static int64 imageProcessStatusBytes(const char* key)
+{
+   FILE* status = fopen("/proc/self/status", "r");
+   char line[128];
+   if (status == null)
+      return -1;
+   while (fgets(line, sizeof(line), status) != null)
+   {
+      long long kilobytes;
+      if (strncmp(line, key, strlen(key)) == 0
+         && sscanf(line + strlen(key), "%lld", &kilobytes) == 1)
+      {
+         fclose(status);
+         return (int64)(kilobytes * 1024);
+      }
+   }
+   fclose(status);
+   return -1;
+}
+#endif
+
+static int64 imageBenchmarkNativeMetric(int32 kind)
+{
+   if (kind == 4)
+   {
+      uint16 marker = 1;
+      return ((uint8*)&marker)[0] == 1 ? 1 : 2;
+   }
+   if (kind == 5)
+   {
+#if TC_RENDERER_SKIA
+      return 1;
+#else
+      return 0;
+#endif
+   }
+#if defined(WIN32) && !defined(WINCE)
+   {
+      PROCESS_MEMORY_COUNTERS_EX counters;
+      memset(&counters, 0, sizeof(counters));
+      if (!GetProcessMemoryInfo(GetCurrentProcess(),
+         (PROCESS_MEMORY_COUNTERS*)&counters, sizeof(counters)))
+         return -1;
+      if (kind == 0)
+         return (int64)counters.WorkingSetSize;
+      if (kind == 1)
+         return (int64)counters.PeakWorkingSetSize;
+      if (kind == 2)
+         return (int64)counters.PrivateUsage;
+      return -1;
+   }
+#elif defined(darwin)
+   {
+      mach_task_basic_info_data_t basic;
+      mach_msg_type_number_t basicCount = MACH_TASK_BASIC_INFO_COUNT;
+      if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO,
+         (task_info_t)&basic, &basicCount) != KERN_SUCCESS)
+         return -1;
+      if (kind == 0)
+         return (int64)basic.resident_size;
+      if (kind == 1)
+      {
+         struct rusage usage;
+         return getrusage(RUSAGE_SELF, &usage) == 0 ? (int64)usage.ru_maxrss : -1;
+      }
+      if (kind == 3)
+      {
+         task_vm_info_data_t vmInfo;
+         mach_msg_type_number_t vmInfoCount = TASK_VM_INFO_COUNT;
+         if (task_info(mach_task_self(), TASK_VM_INFO,
+            (task_info_t)&vmInfo, &vmInfoCount) == KERN_SUCCESS)
+            return (int64)vmInfo.phys_footprint;
+      }
+      return -1;
+   }
+#elif defined(POSIX)
+   if (kind == 0)
+      return imageProcessStatusBytes("VmRSS:");
+   if (kind == 1)
+      return imageProcessStatusBytes("VmHWM:");
+   return -1;
+#else
+   return -1;
+#endif
+}
+
+TC_API void tuiI_benchmarkMetricNative_il(NMParams p) // totalcross/ui/image/Image native private static long benchmarkMetricNative(int kind);
+{
+   if (p->i32[0] >= 6)
+   {
+#if TC_RENDERER_SKIA
+      p->retL = skia_benchmark_native_metric(p->i32[0] - 6);
+#else
+      p->retL = -1;
+#endif
+      return;
+   }
+   p->retL = imageBenchmarkNativeMetric(p->i32[0]);
 }
 
 static int32 jpegTargetDecodeDenominatorForTest(int32 sourceWidth, int32 sourceHeight,
