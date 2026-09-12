@@ -466,13 +466,17 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private String benchmarkExecutable() throws Exception {
     String base = "ImageScrollRealWorkloadBenchmarkApp";
+    String separator = Settings.WIN32.equals(Settings.platform) ? "\\" : "/";
     if (Settings.WIN32.equals(Settings.platform)) {
-      String withExtension = ImageRasterBenchmarkSupport.joinPath(Settings.appPath, base + ".exe");
+      String withExtension = Settings.appPath + base + ".exe";
       if (new File(withExtension).exists()) {
         return withExtension;
       }
     }
-    String executable = ImageRasterBenchmarkSupport.joinPath(Settings.appPath, base);
+    String executable = Settings.appPath + base;
+    if (Settings.appPath == null || Settings.appPath.length() == 0) {
+      executable = "." + separator + base;
+    }
     return Settings.WIN32.equals(Settings.platform) ? executable : "./" + base;
   }
 
@@ -541,8 +545,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     ZipStream zip = new ZipStream(archive, CompressedStream.DEFLATE);
     String[] files = File.listFiles(output, true);
     for (String path : files) {
-      if (path.endsWith("/") || path.equals(zipPath) || path.indexOf("/self-test/") >= 0
-          || path.endsWith("/self-test.zip")) {
+      if (path.endsWith("/") || path.equals(zipPath)
+          || path.indexOf("/totalcross-image-benchmark-results-") >= 0
+          || path.indexOf("/self-test/") >= 0 || path.endsWith("/self-test.zip")) {
         continue;
       }
       String relative = path.startsWith(output) ? path.substring(output.length()) : path;
