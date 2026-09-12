@@ -31,6 +31,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private int imageControlCount;
   private long uiBuildElapsedMillis;
   private String imageDir;
+  private String maskArgument;
+  private long runNumber;
+  private String outputDir;
+  private String runOutputDir;
   private String targetColorProfile;
   private String variantCacheProfile;
   private String prefetchProfile;
@@ -48,6 +52,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private boolean benchmarkStarted;
   private boolean prefetchComplete;
   private TimerEvent prefetchTimer;
+  private boolean benchmarkReady;
 
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
@@ -63,30 +68,44 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   public void initUI() {
     super.initUI();
     try {
-      imageDir = ImageRasterBenchmarkSupport.argument(getCommandLine(), "image-dir", null);
+      imageDir = ImageRasterBenchmarkSupport.argument(getCommandLine(), "corpus", null);
+      if (imageDir == null) {
+        imageDir = ImageRasterBenchmarkSupport.argument(getCommandLine(), "image-dir", null);
+      }
+      maskArgument = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "image-optimization", null);
+      runNumber = parseRunNumber(ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "run", "0"));
+      outputDir = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "output", "benchmark-output");
       targetColorProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "target-color", "disabled");
       variantCacheProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "variant-cache", "disabled");
       prefetchProfile = ImageRasterBenchmarkSupport.argument(
-          getCommandLine(), "prefetch", "disabled");
+          getCommandLine(), "prefetch", "off");
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
-          "missing --image-dir=<dir>");
+          "missing --corpus=<dir>");
+      ImageRasterBenchmarkSupport.ensureDirectory(outputDir);
+      runOutputDir = ImageRasterBenchmarkSupport.joinPath(outputDir, runName());
+      ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
+      configureMask();
       ImageRasterBenchmarkSupport.require("disabled".equals(targetColorProfile)
           || "enabled".equals(targetColorProfile),
           "target-color must be disabled or enabled");
       ImageRasterBenchmarkSupport.require("disabled".equals(variantCacheProfile)
           || "enabled".equals(variantCacheProfile),
           "variant-cache must be disabled or enabled");
-      ImageRasterBenchmarkSupport.require("disabled".equals(prefetchProfile)
+      ImageRasterBenchmarkSupport.require("off".equals(prefetchProfile)
+          || "on".equals(prefetchProfile)
+          || "disabled".equals(prefetchProfile)
           || "all".equals(prefetchProfile),
-          "prefetch must be disabled or all");
-      configureProfile();
+          "prefetch must be off or on");
 
       long buildStart = Vm.getTimeStamp();
-      String[] imagePaths = sortedJpegPaths(imageDir);
+      String[] imagePaths = sortedCorpusPaths(imageDir);
       ImageRasterBenchmarkSupport.require(imagePaths.length == IMAGE_COUNT,
-          "expected exactly " + IMAGE_COUNT + " JPEGs but found " + imagePaths.length);
+          "expected exactly " + IMAGE_COUNT + " corpus files but found " + imagePaths.length);
       buildUi(imagePaths);
       uiBuildElapsedMillis = Vm.getTimeStamp() - buildStart;
       ImageRasterBenchmarkSupport.require(rowCount == IMAGE_COUNT / COLUMN_COUNT,
@@ -100,7 +119,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           "real workload content did not extend beyond the viewport");
       scroll.sbV.setValue(minimum);
 
-      if ("all".equals(prefetchProfile)) {
+      if (prefetchEnabled()) {
         Image.resetImageOperationAccountingForTest();
         ImagePreparation.resetAccountingForTest();
         final long prefetchStart = Vm.getTimeStamp();
@@ -116,7 +135,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         });
         return;
       }
-      executeBenchmark();
+      benchmarkReady = true;
+      prefetchTimer = addTimer(50);
     } catch (Throwable failure) {
       String error = failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_').replace(',', '_');
@@ -126,7 +146,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void executeBenchmark() {
-    if (benchmarkStarted) {
+    if (benchmarkStarted || !benchmarkReady && !prefetchComplete) {
       return;
     }
     benchmarkStarted = true;
@@ -140,10 +160,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       int maximum = validMaximum();
       PassResult cold = runPass("cold", true, minimum, maximum);
       printPass(cold);
-      PassResult warm = runPass("warm", false, maximum, maximum);
-      printPass(warm);
-      PassResult warm2 = runPass("warm2", true, minimum, maximum);
-      printPass(warm2);
+      writeRunSummary(cold);
       finishBenchmark(true, "");
     } catch (Throwable failure) {
       String error = failure.getClass().getName() + ":"
@@ -171,6 +188,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",target_color_profile=" + String.valueOf(targetColorProfile)
         + ",variant_cache_profile=" + String.valueOf(variantCacheProfile)
         + ",prefetch_profile=" + String.valueOf(prefetchProfile)
+        + ",requested_mask=" + (maskArgument == null ? "default" : maskArgument)
+        + ",effective_mask=" + ImageOptimizationSettings.getEffectiveMask()
+        + ",run=" + runNumber
+        + ",output_dir=" + String.valueOf(runOutputDir)
         + ",image_dir=" + String.valueOf(imageDir)
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
@@ -196,24 +217,57 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   @Override
   public void timerTriggered(TimerEvent event) {
-    if (prefetchComplete) {
+    if (prefetchComplete || benchmarkReady) {
       executeBenchmark();
     }
   }
 
   private void configureProfile() {
-    ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled",
-        "enabled".equals(targetColorProfile), "enabled".equals(variantCacheProfile));
-    ImageOptimizationSettings.setState(ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
-        ImageOptimizationSettings.ENABLED);
+    if (maskArgument == null) {
+      ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled",
+          "enabled".equals(targetColorProfile), "enabled".equals(variantCacheProfile));
+    }
   }
 
-  private static String[] sortedJpegPaths(String directory) throws Exception {
+  private void configureMask() {
+    ImageOptimizationSettings.resetForTest();
+    if (maskArgument != null) {
+      try {
+        ImageOptimizationSettings.setMask(Long.parseLong(maskArgument));
+      } catch (NumberFormatException error) {
+        throw new IllegalArgumentException("image-optimization must be decimal: " + maskArgument);
+      }
+    }
+    configureProfile();
+  }
+
+  private static long parseRunNumber(String value) {
+    try {
+      long run = Long.parseLong(value);
+      if (run < 0) {
+        throw new NumberFormatException();
+      }
+      return run;
+    } catch (NumberFormatException error) {
+      throw new IllegalArgumentException("run must be a non-negative integer: " + value);
+    }
+  }
+
+  private String runName() {
+    return "mask-" + (maskArgument == null ? "default" : maskArgument)
+        + "-prefetch-" + prefetchProfile + "-run-" + runNumber;
+  }
+
+  private boolean prefetchEnabled() {
+    return "on".equals(prefetchProfile) || "all".equals(prefetchProfile);
+  }
+
+  private static String[] sortedCorpusPaths(String directory) throws Exception {
     String[] entries = File.listFiles(directory, true);
     String[] paths = new String[entries.length];
     int count = 0;
     for (String entry : entries) {
-      if (entry.endsWith("/") || !isJpeg(entry)) {
+      if (entry.endsWith("/") || !isCorpusImage(entry)) {
         continue;
       }
       paths[count++] = entry;
@@ -223,7 +277,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     return paths;
   }
 
-  private static boolean isJpeg(String path) {
+  private static boolean isCorpusImage(String path) {
     String lower = path.toLowerCase();
     return lower.endsWith(".jpg") || lower.endsWith(".jpeg");
   }
@@ -313,6 +367,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",target_color_profile=" + targetColorProfile
         + ",variant_cache_profile=" + variantCacheProfile
         + ",prefetch_profile=" + prefetchProfile
+        + ",requested_mask=" + (maskArgument == null ? "default" : maskArgument)
+        + ",effective_mask=" + ImageOptimizationSettings.getEffectiveMask()
+        + ",run=" + runNumber
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
         + ",ui_build_elapsed_ms=" + uiBuildElapsedMillis
@@ -340,6 +397,28 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",frames_ge_34_ms=" + result.countAtLeast(34)
         + result.counters.details());
     System.out.flush();
+  }
+
+  private void writeRunSummary(PassResult result) throws Exception {
+    String json = "{\n"
+        + "  \"fixture\":\"ImageScrollRealWorkloadBenchmarkApp\",\n"
+        + "  \"run\":" + runNumber + ",\n"
+        + "  \"corpus\":\"" + escapeJson(imageDir) + "\",\n"
+        + "  \"imageCount\":" + imageControlCount + ",\n"
+        + "  \"columns\":" + COLUMN_COUNT + ",\n"
+        + "  \"prefetch\":\"" + prefetchProfile + "\",\n"
+        + "  \"requestedMask\":" + (maskArgument == null
+            ? ImageOptimizationSettings.getMask() : maskArgument) + ",\n"
+        + "  \"effectiveMask\":" + ImageOptimizationSettings.getEffectiveMask() + ",\n"
+        + "  \"durationMs\":" + result.elapsed + ",\n"
+        + "  \"frameCount\":" + result.frames + "\n"
+        + "}\n";
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "summary.json"), json);
+  }
+
+  private static String escapeJson(String value) {
+    return value.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 
   private static final class PassResult {

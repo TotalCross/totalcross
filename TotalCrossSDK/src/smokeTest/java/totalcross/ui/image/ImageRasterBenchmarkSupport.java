@@ -263,6 +263,33 @@ final class ImageRasterBenchmarkSupport {
     }
   }
 
+  static void ensureDirectory(String path) throws Exception {
+    require(path != null && path.length() > 0, "directory path is empty");
+    File directory = new File(path);
+    if (directory.exists()) {
+      require(directory.isDir(), "not a directory: " + path);
+      return;
+    }
+    directory.createDir();
+  }
+
+  static void writeUtf8(String path, String contents) throws Exception {
+    byte[] bytes = contents.getBytes("UTF-8");
+    File file = new File(path, File.CREATE_EMPTY);
+    try {
+      file.writeBytes(bytes, 0, bytes.length);
+    } finally {
+      file.close();
+    }
+  }
+
+  static String joinPath(String parent, String child) {
+    if (parent.endsWith("/")) {
+      return parent + child;
+    }
+    return parent + "/" + child;
+  }
+
   static boolean finish(String fixture, String scenario, int samples, int completedSamples,
       String details, String error) {
     boolean pass = completedSamples == samples && error.length() == 0;
