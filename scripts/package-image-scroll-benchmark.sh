@@ -74,8 +74,12 @@ corpus_count=$(find "$corpus_dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \
 
 benchmark_gradle="$repo_dir/TotalCrossSDK/gradlew-agent"
 benchmark_jar="$repo_dir/TotalCrossSDK/build/image-scroll-real-workload-benchmark/classes/ImageScrollRealWorkloadBenchmarkApp.jar"
-if [ ! -f "$benchmark_jar" ]; then
-   "$benchmark_gradle" -p "$repo_dir/TotalCrossSDK" jarImageScrollRealWorkloadBenchmark --no-daemon --console=plain
+benchmark_build_log="${TMPDIR:-/tmp}/totalcross-image-scroll-benchmark-build-$$.log"
+if ! "$benchmark_gradle" -p "$repo_dir/TotalCrossSDK" jarImageScrollRealWorkloadBenchmark \
+      --no-daemon --console=plain > "$benchmark_build_log" 2>&1; then
+   tail -100 "$benchmark_build_log" >&2
+   echo "Benchmark JAR compilation failed; full log: $benchmark_build_log" >&2
+   exit 1
 fi
 [ -f "$benchmark_jar" ] || { echo "Benchmark JAR not found: $benchmark_jar" >&2; exit 1; }
 

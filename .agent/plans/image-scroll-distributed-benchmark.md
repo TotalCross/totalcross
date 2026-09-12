@@ -71,7 +71,7 @@ copy raw logs into the plan.
 - [x] Checkpoint 7 — pending commit: package-SDK deploy tooling consumes a
   real package.yml SDK ZIP, uses `tc.Deploy` without native overlay, and emits
   all five requested bundle formats; structure and 663-file corpus checks
-  passed on the host.
+  passed on the host (`/tmp/image-scroll-final-packages.m4ZZrI`).
 - [ ] Final closeout: required tests, four-combination smoke, packaged-SDK
   validation when available, scoped status/log evidence, and no new local
   changes left uncommitted.
