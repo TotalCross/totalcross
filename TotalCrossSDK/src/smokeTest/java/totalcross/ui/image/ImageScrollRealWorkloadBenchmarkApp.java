@@ -17,6 +17,7 @@ import totalcross.ui.ScrollContainer;
 import totalcross.ui.Window;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
+import totalcross.ui.gfx.Graphics;
 
 /** Real-corpus scrolling workload based on the customer-provided Tcsort layout. */
 public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements TimerListener {
@@ -63,6 +64,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private boolean prefetchComplete;
   private TimerEvent prefetchTimer;
   private boolean benchmarkReady;
+  private final MemorySampler memory = new MemorySampler();
 
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
@@ -100,6 +102,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       runOutputDir = ImageRasterBenchmarkSupport.joinPath(outputDir, runName());
       ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
       configureMask();
+      memory.record("process_start", Vm.getTimeStamp());
       ImageRasterBenchmarkSupport.require("disabled".equals(targetColorProfile)
           || "enabled".equals(targetColorProfile),
           "target-color must be disabled or enabled");
@@ -128,6 +131,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.require(maximum > minimum,
           "real workload content did not extend beyond the viewport");
       scroll.sbV.setValue(minimum);
+      memory.record("before_prefetch", Vm.getTimeStamp());
 
       if (prefetchEnabled()) {
         Image.resetImageOperationAccountingForBenchmarkTest();
@@ -140,6 +144,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           public void run() {
             prefetchElapsedMillis = Vm.getTimeStamp() - prefetchStart;
             capturePrefetchAccounting();
+            memory.record("after_prefetch", Vm.getTimeStamp());
             prefetchComplete = true;
           }
         });
@@ -171,6 +176,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       PassResult cold = runPass("cold", true, minimum, maximum);
       printPass(cold);
       writeRunFrames(cold);
+      memory.record("after_scroll", Vm.getTimeStamp());
       writeRunSummary(cold);
       finishBenchmark(true, "");
     } catch (Throwable failure) {
@@ -194,6 +200,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void finishBenchmark(boolean overallPass, String error) {
+    memory.record("process_end", Vm.getTimeStamp());
     String summary = "fixture=ImageScrollRealWorkloadBenchmarkApp,record=summary"
         + ",resolution=" + width + "x" + height
         + ",target_color_profile=" + String.valueOf(targetColorProfile)
@@ -223,6 +230,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     System.out.println(summary);
     System.out.flush();
     ImageRasterBenchmarkSupport.writeReport("ImageScrollRealWorkloadBenchmarkApp.log", summary);
+    try {
+      writeEnvironment();
+      writeMemory();
+      writeTimeline();
+    } catch (Throwable outputFailure) {
+      overallPass = false;
+      System.out.println("benchmark_output_error=" + outputFailure.getClass().getName());
+    }
     exit(overallPass ? 0 : 1);
   }
 
@@ -341,6 +356,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         name + " did not start at the expected scrollbar endpoint");
     Image.resetImageOperationAccountingForBenchmarkTest();
     long elapsedStart = Vm.getTimeStamp();
+    memory.record("before_scroll", elapsedStart);
     int[] frameTimes = new int[256];
     long[] frameElapsed = new long[256];
     int[] framePositions = new int[256];
@@ -374,6 +390,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       frameElapsed[frames] = sinceStart;
       framePositions[frames] = scroll.sbV.getValue();
       frames++;
+      memory.sampleIfDue(frameStart);
       previousFrameStart = frameStart;
       if (scroll.sbV.getValue() == endpoint && sinceStart >= SCROLL_DURATION_MILLIS) {
         break;
@@ -452,14 +469,100 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "frames.csv"), frames.toString());
-    StringBuilder timeline = new StringBuilder(512);
-    timeline.append("event,elapsed_ms,value\n")
-        .append("process_start,0,1\n")
-        .append("before_scroll,0,").append(result.start).append('\n')
-        .append("after_scroll,").append(result.elapsed).append(',').append(result.end).append('\n')
-        .append("process_end,").append(result.elapsed).append(',').append(result.end).append('\n');
+  }
+
+  private void writeEnvironment() throws Exception {
+    long surfaceColorType = Image.nativeMetricForBenchmarkTest(6);
+    long surfaceAlphaType = Image.nativeMetricForBenchmarkTest(7);
+    long surfaceRowBytes = Image.nativeMetricForBenchmarkTest(8);
+    long surfaceWidth = Image.nativeMetricForBenchmarkTest(9);
+    long surfaceHeight = Image.nativeMetricForBenchmarkTest(10);
+    long n32ColorType = Image.nativeMetricForBenchmarkTest(11);
+    String json = "{\n"
+        + "  \"os\":\"" + escapeJson(property("os.name")) + "\",\n"
+        + "  \"osVersion\":\"" + escapeJson(property("os.version")) + "\",\n"
+        + "  \"architecture\":\"" + escapeJson(property("os.arch")) + "\",\n"
+        + "  \"endianness\":\"" + endianness(Image.nativeMetricForBenchmarkTest(4)) + "\",\n"
+        + "  \"cpu\":\"unavailable\",\n"
+        + "  \"gpu\":\"unavailable\",\n"
+        + "  \"ramTotalBytes\":null,\n"
+        + "  \"windowLogicalWidth\":" + width + ",\n"
+        + "  \"windowLogicalHeight\":" + height + ",\n"
+        + "  \"windowPhysicalWidth\":" + jsonMetric(surfaceWidth) + ",\n"
+        + "  \"windowPhysicalHeight\":" + jsonMetric(surfaceHeight) + ",\n"
+        + "  \"totalCrossScreenWidth\":" + Settings.screenWidth + ",\n"
+        + "  \"totalCrossScreenHeight\":" + Settings.screenHeight + ",\n"
+        + "  \"density\":" + Settings.screenDensity + ",\n"
+        + "  \"systemDisplayScale\":" + Graphics.getMainWindowContentScale() + ",\n"
+        + "  \"refreshRate\":null,\n"
+        + "  \"sdlDrawableWidth\":" + jsonMetric(surfaceWidth) + ",\n"
+        + "  \"sdlDrawableHeight\":" + jsonMetric(surfaceHeight) + ",\n"
+        + "  \"skiaSurfaceWidth\":" + jsonMetric(surfaceWidth) + ",\n"
+        + "  \"skiaSurfaceHeight\":" + jsonMetric(surfaceHeight) + ",\n"
+        + "  \"rendererBackend\":\"" + rendererBackend() + "\",\n"
+        + "  \"kN32SkColorType\":" + jsonMetric(n32ColorType) + ",\n"
+        + "  \"skiaSurfaceColorType\":" + jsonMetric(surfaceColorType) + ",\n"
+        + "  \"skiaSurfaceAlphaType\":" + jsonMetric(surfaceAlphaType) + ",\n"
+        + "  \"skiaSurfaceRowBytes\":" + jsonMetric(surfaceRowBytes) + ",\n"
+        + "  \"totalCrossVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
+        + "  \"sdkVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
+        + "  \"benchmarkVersion\":\"1\",\n"
+        + "  \"datasetFileCount\":" + IMAGE_COUNT + ",\n"
+        + "  \"datasetHash\":\"unavailable\",\n"
+        + "  \"columns\":" + COLUMN_COUNT + "\n"
+        + "}\n";
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "environment.json"), json);
+  }
+
+  private void writeMemory() throws Exception {
+    StringBuilder csv = new StringBuilder(2048);
+    csv.append("checkpoint,elapsed_ms,current_resident_bytes,peak_resident_bytes,private_bytes,phys_footprint_bytes\n");
+    for (int i = 0; i < memory.count; i++) {
+      csv.append(memory.names[i]).append(',').append(memory.elapsed[i]).append(',')
+          .append(csvMetric(memory.current[i])).append(',').append(csvMetric(memory.peak[i])).append(',')
+          .append(csvMetric(memory.privateBytes[i])).append(',').append(csvMetric(memory.physFootprint[i]))
+          .append('\n');
+    }
+    csv.append("global_peak,0,").append(csvMetric(memory.globalPeak)).append("\n");
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "memory.csv"), csv.toString());
+  }
+
+  private void writeTimeline() throws Exception {
+    StringBuilder timeline = new StringBuilder(1024);
+    timeline.append("event,elapsed_ms,value\n");
+    for (int i = 0; i < memory.count; i++) {
+      timeline.append(memory.names[i]).append(',').append(memory.elapsed[i]).append(',')
+          .append(csvMetric(memory.current[i])).append('\n');
+    }
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "timeline.csv"), timeline.toString());
+  }
+
+  private static String property(String name) {
+    try {
+      String value = System.getProperty(name);
+      return value == null || value.length() == 0 ? "unavailable" : value;
+    } catch (Throwable ignored) {
+      return "unavailable";
+    }
+  }
+
+  private static String endianness(long value) {
+    return value == 1 ? "little" : value == 2 ? "big" : "unavailable";
+  }
+
+  private static String rendererBackend() {
+    return Image.nativeMetricForBenchmarkTest(5) == 1 ? "skia" : "unavailable";
+  }
+
+  private static String jsonMetric(long value) {
+    return value < 0 ? "null" : String.valueOf(value);
+  }
+
+  private static String csvMetric(long value) {
+    return value < 0 ? "unavailable" : String.valueOf(value);
   }
 
   private void writeRunSummary(PassResult result) throws Exception {
@@ -546,6 +649,50 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         maximum = Math.max(maximum, current);
       }
       return maximum;
+    }
+  }
+
+  private static final class MemorySampler {
+    private static final int MAX_CHECKPOINTS = 64;
+    final String[] names = new String[MAX_CHECKPOINTS];
+    final long[] elapsed = new long[MAX_CHECKPOINTS];
+    final long[] current = new long[MAX_CHECKPOINTS];
+    final long[] peak = new long[MAX_CHECKPOINTS];
+    final long[] privateBytes = new long[MAX_CHECKPOINTS];
+    final long[] physFootprint = new long[MAX_CHECKPOINTS];
+    int count;
+    long globalPeak = -1;
+    long nextSampleMillis;
+    long originMillis = -1;
+
+    void record(String name, long timestamp) {
+      long currentBytes = Image.nativeMetricForBenchmarkTest(0);
+      long peakBytes = Image.nativeMetricForBenchmarkTest(1);
+      if (originMillis < 0) {
+        originMillis = timestamp;
+      }
+      if (count < MAX_CHECKPOINTS) {
+        names[count] = name;
+        elapsed[count] = timestamp - originMillis;
+        current[count] = currentBytes;
+        peak[count] = peakBytes;
+        privateBytes[count] = Image.nativeMetricForBenchmarkTest(2);
+        physFootprint[count] = Image.nativeMetricForBenchmarkTest(3);
+        count++;
+      }
+      if (currentBytes > globalPeak) {
+        globalPeak = currentBytes;
+      }
+      if (nextSampleMillis == 0) {
+        nextSampleMillis = timestamp + 250;
+      }
+    }
+
+    void sampleIfDue(long timestamp) {
+      if (timestamp >= nextSampleMillis) {
+        record("during_scroll", timestamp);
+        nextSampleMillis = timestamp + 250;
+      }
     }
   }
 

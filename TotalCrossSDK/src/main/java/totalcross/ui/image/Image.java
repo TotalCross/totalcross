@@ -237,6 +237,10 @@ public class Image extends GfxSurface {
     return nativeOptimizationMaskObservedForTestNative(image, draw);
   }
 
+  static long nativeMetricForBenchmarkTest(int kind) {
+    return benchmarkMetricNative(kind);
+  }
+
   static void clearImageOperationAccountingCountersForTest() {
     imageCreatedCountForTest = 0;
     imageFinalizedCountForTest = 0;
@@ -499,6 +503,11 @@ public class Image extends GfxSurface {
 
   @ReplacedByNativeOnDeploy
   private static int nativeOptimizationMaskObservedForTestNative(Image image, boolean draw) {
+    return -1;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long benchmarkMetricNative(int kind) {
     return -1;
   }
 
