@@ -33,6 +33,56 @@ class ImageOptimizationSettingsTest {
     assertEquals(defaultMask(), ImageOptimizationSettings.effectiveMask());
     assertEquals(defaultMask(), Image.nativeOptimizationMaskForDrawForTest());
     assertEquals(defaultMask(), Image.nativeOptimizationMaskForDecodeForTest());
+    assertEquals(defaultMask(), ImageOptimizationSettings.getMask());
+    assertEquals(defaultMask(), ImageOptimizationSettings.getEffectiveMask());
+  }
+
+  @Test
+  void explicitMaskReplacesDefaultsIncludingZero() {
+    ImageOptimizationSettings.setMask(0);
+    assertEquals(0L, ImageOptimizationSettings.getMask());
+    assertEquals(0L, ImageOptimizationSettings.getEffectiveMask());
+    assertFalse(ImageOptimizationSettings.isEnabled(ImageOptimizationSettings.DECODE_ZERO_COPY));
+    assertEquals(0L, Image.nativeOptimizationMaskForDrawForTest());
+    assertEquals(0L, Image.nativeOptimizationMaskForDecodeForTest());
+
+    ImageOptimizationSettings.setMask(32799L);
+    assertEquals(32799L, ImageOptimizationSettings.getMask());
+    assertEquals(32799L, ImageOptimizationSettings.getEffectiveMask());
+    assertNativeMasks(32799L);
+  }
+
+  @Test
+  void rejectsUnknownMaskBitsWithoutChangingConfiguration() {
+    ImageOptimizationSettings.setMask(32799L);
+    assertThrows(IllegalArgumentException.class, () -> ImageOptimizationSettings.setMask(65536L));
+    assertThrows(IllegalArgumentException.class, () -> ImageOptimizationSettings.setMask(-1L));
+    assertEquals(32799L, ImageOptimizationSettings.getMask());
+    assertEquals(32799L, ImageOptimizationSettings.getEffectiveMask());
+    assertNativeMasks(32799L);
+  }
+
+  @Test
+  void everyKnownMaskRoundTripsWithoutFiltering() {
+    long[] masks = {0L, 1L, 2L, 4L, 8L, 16L, 32L, 64L, 128L, 256L, 512L,
+        1024L, 2048L, 4096L, 8192L, 16384L, 32768L, 32799L, 40991L, 49183L, 57375L};
+    for (long mask : masks) {
+      ImageOptimizationSettings.setMask(mask);
+      assertEquals(mask, ImageOptimizationSettings.getMask());
+      assertEquals(mask, ImageOptimizationSettings.getEffectiveMask());
+      assertNativeMasks(mask);
+    }
+  }
+
+  @Test
+  void stateChangesDoNotOverrideAnExplicitMask() {
+    ImageOptimizationSettings.setMask(0);
+    ImageOptimizationSettings.setState(ImageOptimizationSettings.DECODE_ZERO_COPY,
+        ImageOptimizationSettings.ENABLED);
+    assertEquals(ImageOptimizationSettings.ENABLED,
+        ImageOptimizationSettings.state(ImageOptimizationSettings.DECODE_ZERO_COPY));
+    assertEquals(0L, ImageOptimizationSettings.getEffectiveMask());
+    assertFalse(Image.imageOperationAccountingForTest);
   }
 
   @Test
@@ -166,6 +216,7 @@ class ImageOptimizationSettingsTest {
     assertFalse(Image.backingReadbackAccountingEnabledForTest());
     assertFalse(NativeImageBacking.backingAccountingEnabledForTest());
     assertEquals(defaultMask(), ImageOptimizationSettings.effectiveMask());
+    assertEquals(defaultMask(), ImageOptimizationSettings.getMask());
     assertNativeMasks(defaultMask());
 
     int feature = ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION;

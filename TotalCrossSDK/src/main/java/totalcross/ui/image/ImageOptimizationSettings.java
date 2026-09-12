@@ -4,8 +4,8 @@
 
 package totalcross.ui.image;
 
-/** Internal process-global switches reserved for the image optimization series. */
-final class ImageOptimizationSettings {
+/** Process-global image optimization switches and mask configuration. */
+public final class ImageOptimizationSettings {
   static final int DEFAULT = 0;
   static final int ENABLED = 1;
   static final int DISABLED = 2;
@@ -36,9 +36,12 @@ final class ImageOptimizationSettings {
 
   private static final long DEFAULT_CACHE_MAX_BYTES = 64L * 1024 * 1024;
   private static final long DEFAULT_MMAP_THRESHOLD_BYTES = 4L * 1024 * 1024;
+  private static final long KNOWN_MASK = (1L << FEATURE_COUNT) - 1;
   private static final int[] states = new int[FEATURE_COUNT];
   private static long cacheMaxBytes = DEFAULT_CACHE_MAX_BYTES;
   private static long mmapThresholdBytes = DEFAULT_MMAP_THRESHOLD_BYTES;
+  private static boolean maskWasSet;
+  private static long requestedMask;
 
   private ImageOptimizationSettings() {
   }
@@ -66,10 +69,16 @@ final class ImageOptimizationSettings {
 
   static boolean isEnabled(int feature) {
     int featureState = state(feature);
+    if (maskWasSet) {
+      return (requestedMask & (1L << feature)) != 0;
+    }
     return featureState == ENABLED || featureState == DEFAULT && defaultEnabled(feature);
   }
 
   static long effectiveMask() {
+    if (maskWasSet) {
+      return requestedMask;
+    }
     long mask = 0;
     for (int feature = 0; feature < FEATURE_COUNT; feature++) {
       if (isEnabled(feature)) {
@@ -77,6 +86,25 @@ final class ImageOptimizationSettings {
       }
     }
     return mask;
+  }
+
+  /** Replaces the complete process-level optimization configuration. */
+  public static void setMask(long mask) {
+    validateMask(mask);
+    requestedMask = mask;
+    maskWasSet = true;
+    synchronizeNativeOptimizationMasks();
+    Image.setDiagnosticAccountingForTest(isEnabled(DIAGNOSTIC_ACCOUNTING));
+  }
+
+  /** Returns the configured mask, or the current effective default when unset. */
+  public static long getMask() {
+    return maskWasSet ? requestedMask : effectiveMask();
+  }
+
+  /** Returns the mask active after validation and capability filtering. */
+  public static long getEffectiveMask() {
+    return effectiveMask();
   }
 
   static void setCacheMaxBytes(long value) {
@@ -107,6 +135,8 @@ final class ImageOptimizationSettings {
     }
     cacheMaxBytes = DEFAULT_CACHE_MAX_BYTES;
     mmapThresholdBytes = DEFAULT_MMAP_THRESHOLD_BYTES;
+    maskWasSet = false;
+    requestedMask = 0;
     Image.setDiagnosticAccountingForTest(isEnabled(DIAGNOSTIC_ACCOUNTING));
     synchronizeNativeOptimizationMasks();
   }
@@ -167,6 +197,12 @@ final class ImageOptimizationSettings {
   private static void checkState(int state) {
     if (state < DEFAULT || state > DISABLED) {
       throw new IllegalArgumentException("Invalid optimization state: " + state);
+    }
+  }
+
+  private static void validateMask(long mask) {
+    if (mask < 0 || (mask & ~KNOWN_MASK) != 0) {
+      throw new IllegalArgumentException("Unknown image optimization mask bits: " + mask);
     }
   }
 
