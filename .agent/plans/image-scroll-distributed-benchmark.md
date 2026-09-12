@@ -51,10 +51,12 @@ copy raw logs into the plan.
   `logical-commits` skill noted.
 - [x] Checkpoint 1 — commit `beac137c3`: public process mask override,
   unknown-bit rejection, zero-mask semantics, and focused tests passed.
-- [ ] Checkpoint 2: CLI, external corpus, and one cold scroll process; the
-  existing real-workload app now accepts the new arguments and emits a minimal
-  per-run JSON, with timed pacing and complete result schema still pending.
-- [ ] Checkpoint 3: time-based frame timing, counters, and `NOT_EXERCISED`.
+- [x] Checkpoint 2 — commit `9aa9d099d`: existing real-workload app accepts
+  mask/prefetch/run/output/corpus arguments, validates the 663 image entries,
+  keeps the corpus external, and runs one cold pass per process.
+- [x] Checkpoint 3 — pending commit: time-based pacing, raw frames/timeline,
+  percentile/stall metrics, and feature-hit/`NOT_EXERCISED` classification are
+  implemented; focused SDK test and benchmark-JAR compilation passed.
 - [ ] Checkpoint 4: low-overhead memory and environment collection.
 - [ ] Checkpoint 5: result schema, self-test, aggregation, and Java ZIP.
 - [ ] Checkpoint 6: deterministic suite plan and platform launchers.

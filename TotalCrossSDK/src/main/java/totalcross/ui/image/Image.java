@@ -203,6 +203,12 @@ public class Image extends GfxSurface {
     clearImageOperationAccountingCountersForTest();
   }
 
+  /** Resets benchmark counters without making DIAGNOSTIC_ACCOUNTING part of the workload mask. */
+  static void resetImageOperationAccountingForBenchmarkTest() {
+    setDiagnosticAccountingForTest(true);
+    clearImageOperationAccountingCountersForTest();
+  }
+
   static void setDiagnosticAccountingForTest(boolean enabled) {
     imageOperationAccountingForTest = enabled;
     backingReadbackAccountingForTest = enabled;

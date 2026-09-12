@@ -23,6 +23,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final int IMAGE_COUNT = 663;
   private static final int COLUMN_COUNT = 3;
   private static final int SCROLL_STEP = 120;
+  private static final int SCROLL_DURATION_MILLIS = 3000;
+  private static final int FRAME_INTERVAL_MILLIS = 16;
+  private static final String[] FEATURE_NAMES = {
+      "DECODE_ZERO_COPY", "RASTER_OPACITY_METADATA", "RASTER_OPAQUE_WRITE_PIXELS",
+      "RASTER_ROW_READBACK", "RASTER_DIRECT_COLOR_MATERIALIZATION", "STORAGE_RGB565",
+      "STORAGE_GRAY8", "STORAGE_ARGB4444", "CACHE_BYTE_BUDGET",
+      "CACHE_MEMORY_PRESSURE_EVICTION", "GPU_DISCARD_CPU_BACKING", "STORAGE_MMAP_LARGE_BACKINGS",
+      "DIAGNOSTIC_ACCOUNTING", "RASTER_TARGET_COLORTYPE_CONVERSION",
+      "RASTER_PHYSICAL_VARIANT_CACHE", "RASTER_PHYSICAL_IDENTITY_FOLDING"
+  };
 
   private ScrollContainer mainContainer;
   private ScrollContainer scroll;
@@ -120,7 +130,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       scroll.sbV.setValue(minimum);
 
       if (prefetchEnabled()) {
-        Image.resetImageOperationAccountingForTest();
+        Image.resetImageOperationAccountingForBenchmarkTest();
         ImagePreparation.resetAccountingForTest();
         final long prefetchStart = Vm.getTimeStamp();
         addTimerListener(this);
@@ -155,11 +165,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       prefetchTimer = null;
     }
     try {
-      Image.resetImageOperationAccountingForTest();
+      Image.resetImageOperationAccountingForBenchmarkTest();
       int minimum = scroll.sbV.getMinimum();
       int maximum = validMaximum();
       PassResult cold = runPass("cold", true, minimum, maximum);
       printPass(cold);
+      writeRunFrames(cold);
       writeRunSummary(cold);
       finishBenchmark(true, "");
     } catch (Throwable failure) {
@@ -328,20 +339,45 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     int endpoint = forward ? maximum : minimum;
     ImageRasterBenchmarkSupport.require(scroll.sbV.getValue() == expectedStart,
         name + " did not start at the expected scrollbar endpoint");
-    Image.resetImageOperationAccountingForTest();
+    Image.resetImageOperationAccountingForBenchmarkTest();
     long elapsedStart = Vm.getTimeStamp();
-    int[] frameTimes = new int[Math.max(8, (maximum - minimum) / SCROLL_STEP + 4)];
+    int[] frameTimes = new int[256];
+    long[] frameElapsed = new long[256];
+    int[] framePositions = new int[256];
     int frames = 0;
-    frameTimes[frames++] = paintFrame();
-    while (scroll.sbV.getValue() != endpoint) {
+    long previousFrameStart = elapsedStart;
+    while (true) {
+      long frameStart = Vm.getTimeStamp();
+      long sinceStart = frameStart - elapsedStart;
+      if (frames > 0 && sinceStart < (long) frames * FRAME_INTERVAL_MILLIS) {
+        Vm.sleep((int) Math.min(4, (long) frames * FRAME_INTERVAL_MILLIS - sinceStart));
+        continue;
+      }
+      int target = sinceStart >= SCROLL_DURATION_MILLIS
+          ? endpoint
+          : minimum + (int) ((long) (maximum - minimum) * sinceStart / SCROLL_DURATION_MILLIS);
       int before = scroll.sbV.getValue();
-      scroll.scrollContent(0, forward ? SCROLL_STEP : -SCROLL_STEP, true);
-      int after = scroll.sbV.getValue();
-      ImageRasterBenchmarkSupport.require(after != before,
-          name + " stopped before reaching scrollbar endpoint");
-      ImageRasterBenchmarkSupport.require(frames < frameTimes.length,
-          name + " exceeded deterministic frame capacity");
-      frameTimes[frames++] = paintFrame();
+      if (target != before) {
+        ImageRasterBenchmarkSupport.require(scroll.scrollContent(0, target - before, true),
+            name + " stopped before reaching time-based target");
+      }
+      int paintMillis = paintFrame();
+      int frameMillis = frames == 0
+          ? paintMillis : (int) Math.max(0, frameStart - previousFrameStart);
+      if (frames == frameTimes.length) {
+        int newLength = frameTimes.length * 2;
+        frameTimes = Arrays.copyOf(frameTimes, newLength);
+        frameElapsed = Arrays.copyOf(frameElapsed, newLength);
+        framePositions = Arrays.copyOf(framePositions, newLength);
+      }
+      frameTimes[frames] = frameMillis;
+      frameElapsed[frames] = sinceStart;
+      framePositions[frames] = scroll.sbV.getValue();
+      frames++;
+      previousFrameStart = frameStart;
+      if (scroll.sbV.getValue() == endpoint && sinceStart >= SCROLL_DURATION_MILLIS) {
+        break;
+      }
     }
     ImageRasterBenchmarkSupport.require(scroll.sbV.getValue() == endpoint,
         name + " did not reach the full scrollbar extent");
@@ -349,10 +385,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         name + " did not traverse multiple frames");
     long elapsed = Vm.getTimeStamp() - elapsedStart;
     Counters counters = Counters.capture();
-    int[] sortedFrameTimes = Arrays.copyOf(frameTimes, frames);
+    int[] actualFrameTimes = Arrays.copyOf(frameTimes, frames);
+    long[] actualFrameElapsed = Arrays.copyOf(frameElapsed, frames);
+    int[] actualFramePositions = Arrays.copyOf(framePositions, frames);
+    int[] sortedFrameTimes = Arrays.copyOf(actualFrameTimes, frames);
     Arrays.sort(sortedFrameTimes);
     return new PassResult(name, forward, minimum, endpoint, maximum, elapsed, frames,
-        sortedFrameTimes, counters);
+        actualFrameTimes, actualFrameElapsed, actualFramePositions, sortedFrameTimes, counters);
   }
 
   private int paintFrame() {
@@ -389,14 +428,38 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",scroll_max=" + result.maximum + ",scroll_distance=" + (result.maximum - result.minimum)
         + ",elapsed_total_ms=" + result.elapsed + ",frames=" + result.frames
         + ",frame_time_min_ms=" + result.percentile(0)
+        + ",frame_time_p90_ms=" + result.percentile(90)
         + ",frame_time_p50_ms=" + result.percentile(50)
         + ",frame_time_p95_ms=" + result.percentile(95)
         + ",frame_time_p99_ms=" + result.percentile(99)
         + ",frame_time_max_ms=" + result.percentile(100)
-        + ",frames_ge_17_ms=" + result.countAtLeast(17)
-        + ",frames_ge_34_ms=" + result.countAtLeast(34)
-        + result.counters.details());
+        + ",frames_over_16_67_ms=" + result.countAtLeast(17)
+        + ",frames_over_33_3_ms=" + result.countAtLeast(34)
+        + ",frames_over_50_ms=" + result.countAtLeast(51)
+        + ",frames_over_100_ms=" + result.countAtLeast(101)
+        + ",largest_stall_ms=" + result.percentile(100)
+        + ",largest_consecutive_over_33_3=" + result.maxConsecutiveAtLeast(34)
+        + result.counters.details() + result.counters.featureDetails());
     System.out.flush();
+  }
+
+  private void writeRunFrames(PassResult result) throws Exception {
+    StringBuilder frames = new StringBuilder(4096);
+    frames.append("frame_index,elapsed_ms,frame_time_ms,scroll_value\n");
+    for (int i = 0; i < result.frames; i++) {
+      frames.append(i).append(',').append(result.frameElapsed[i]).append(',')
+          .append(result.frameTimes[i]).append(',').append(result.framePositions[i]).append('\n');
+    }
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "frames.csv"), frames.toString());
+    StringBuilder timeline = new StringBuilder(512);
+    timeline.append("event,elapsed_ms,value\n")
+        .append("process_start,0,1\n")
+        .append("before_scroll,0,").append(result.start).append('\n')
+        .append("after_scroll,").append(result.elapsed).append(',').append(result.end).append('\n')
+        .append("process_end,").append(result.elapsed).append(',').append(result.end).append('\n');
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "timeline.csv"), timeline.toString());
   }
 
   private void writeRunSummary(PassResult result) throws Exception {
@@ -430,11 +493,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final int maximum;
     final long elapsed;
     final int frames;
+    final int[] frameTimes;
+    final long[] frameElapsed;
+    final int[] framePositions;
     final int[] sortedFrameTimes;
     final Counters counters;
 
     PassResult(String name, boolean forward, int minimum, int end, int maximum, long elapsed,
-        int frames, int[] sortedFrameTimes, Counters counters) {
+        int frames, int[] frameTimes, long[] frameElapsed, int[] framePositions,
+        int[] sortedFrameTimes, Counters counters) {
       this.name = name;
       this.forward = forward;
       this.minimum = minimum;
@@ -443,6 +510,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       this.maximum = maximum;
       this.elapsed = elapsed;
       this.frames = frames;
+      this.frameTimes = frameTimes;
+      this.frameElapsed = frameElapsed;
+      this.framePositions = framePositions;
       this.sortedFrameTimes = sortedFrameTimes;
       this.counters = counters;
     }
@@ -466,6 +536,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         }
       }
       return count;
+    }
+
+    int maxConsecutiveAtLeast(int threshold) {
+      int maximum = 0;
+      int current = 0;
+      for (int time : frameTimes) {
+        current = time >= threshold ? current + 1 : 0;
+        maximum = Math.max(maximum, current);
+      }
+      return maximum;
     }
   }
 
@@ -546,6 +626,52 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           + ",smooth_resample_draws=" + smoothResampleDraws
           + ",backing_live_bytes=" + backingLiveBytes
           + ",backing_peak_bytes=" + backingPeakBytes;
+    }
+
+    long featureHits(int feature) {
+      switch (feature) {
+      case ImageOptimizationSettings.DECODE_ZERO_COPY:
+        return Image.zeroCopyDecodeCountForTest();
+      case ImageOptimizationSettings.RASTER_OPACITY_METADATA:
+        return Image.opacityKnownFromSourceForTest() + Image.opacityDeterminedDuringDecodeForTest();
+      case ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS:
+        return writePixelsHits;
+      case ImageOptimizationSettings.RASTER_ROW_READBACK:
+        return Image.rowReadbackCountForTest();
+      case ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION:
+        return Image.directColorMaterializationCountForTest();
+      case ImageOptimizationSettings.STORAGE_RGB565:
+        return NativeImageBacking.rgb565BackingBytesForTest() > 0 ? 1 : 0;
+      case ImageOptimizationSettings.STORAGE_GRAY8:
+        return NativeImageBacking.gray8BackingBytesForTest() > 0 ? 1 : 0;
+      case ImageOptimizationSettings.STORAGE_ARGB4444:
+        return NativeImageBacking.argb4444BackingBytesForTest() > 0 ? 1 : 0;
+      case ImageOptimizationSettings.CACHE_MEMORY_PRESSURE_EVICTION:
+        return NativeImageBacking.physicalVariantEvictionsForTest();
+      case ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING:
+        return 1;
+      case ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION:
+        return targetColorHits;
+      case ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE:
+        return physicalVariantHits;
+      case ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING:
+        return physicalIdentityHits;
+      default:
+        return 0;
+      }
+    }
+
+    String featureDetails() {
+      StringBuilder details = new StringBuilder(1024);
+      long enabledMask = ImageOptimizationSettings.getEffectiveMask();
+      for (int feature = 0; feature < FEATURE_NAMES.length; feature++) {
+        long hits = featureHits(feature);
+        String status = (enabledMask & (1L << feature)) == 0
+            ? "DISABLED" : hits == 0 ? "NOT_EXERCISED" : "EXERCISED";
+        details.append(",feature_").append(FEATURE_NAMES[feature]).append("_hits=").append(hits)
+            .append(",feature_").append(FEATURE_NAMES[feature]).append("_status=").append(status);
+      }
+      return details.toString();
     }
   }
 }
