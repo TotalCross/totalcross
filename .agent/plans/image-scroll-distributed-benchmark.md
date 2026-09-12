@@ -65,10 +65,13 @@ copy raw logs into the plan.
   mask plan, short fresh-process self-test, same-machine mask-zero
   aggregation, internal accounting fields, and application-owned ZIP
   creation; deploy conversion and focused SDK test passed.
-- [x] Checkpoint 6 — pending commit: run-all controller/launchers execute the
-  five-round fresh-process matrix, and the packager emits the platform-specific
-  launcher templates with a root bundle manifest.
-- [ ] Checkpoint 7: package-SDK deploy tooling and five bundle formats.
+- [x] Checkpoint 6 — commit `30ff7efa5`: run-all controller/launchers execute
+  the five-round fresh-process matrix, and the packager emits the
+  platform-specific launcher templates with a root bundle manifest.
+- [x] Checkpoint 7 — pending commit: package-SDK deploy tooling consumes a
+  real package.yml SDK ZIP, uses `tc.Deploy` without native overlay, and emits
+  all five requested bundle formats; structure and 663-file corpus checks
+  passed on the host.
 - [ ] Final closeout: required tests, four-combination smoke, packaged-SDK
   validation when available, scoped status/log evidence, and no new local
   changes left uncommitted.
