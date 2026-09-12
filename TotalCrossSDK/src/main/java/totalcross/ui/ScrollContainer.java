@@ -14,6 +14,8 @@ import totalcross.sys.Settings;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.Rect;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageDrawingBridge;
 
 /**
  * ScrollContainer is a container with a horizontal only, vertical only, both or no
@@ -81,6 +83,8 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   private final Insets contentInsets = new Insets();
   private int contentExtentWidth;
   private int contentExtentHeight;
+  private long displayPreparationGeneration;
+  private DisplayPreparationBatch displayPreparationBatch;
 
   /** Automatically scrolls the container when an item is clicked.
    * @see #hsIgnoreAutoScroll 
@@ -118,6 +122,120 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     r.width -= sbVsize;
     r.height -= sbHsize;
     return r;
+  }
+
+  /** Asynchronously prepares every image descendant of the scrolling content. */
+  public void prepareForDisplay(final Runnable onComplete) {
+    Runnable request = new Runnable() {
+      @Override
+      public void run() {
+        double destinationScale = Graphics.getMainWindowContentScale();
+        long generation = displayPreparationGeneration;
+        long scaleBits = Double.doubleToLongBits(destinationScale);
+        DisplayPreparationBatch active = displayPreparationBatch;
+        if (active != null && !active.completed && active.generation == generation
+            && active.scaleBits == scaleBits) {
+          active.addCompletion(onComplete);
+          return;
+        }
+        final DisplayPreparationBatch batch = new DisplayPreparationBatch(generation, scaleBits,
+            destinationScale, onComplete);
+        displayPreparationBatch = batch;
+        batch.discover();
+      }
+    };
+    MainWindow mainWindow = MainWindow.getMainWindow();
+    if (mainWindow == null) {
+      request.run();
+    } else {
+      mainWindow.runOnMainThread(request, false);
+    }
+  }
+
+  void invalidateDisplayPreparation() {
+    displayPreparationGeneration++;
+    DisplayPreparationBatch active = displayPreparationBatch;
+    displayPreparationBatch = null;
+    if (active != null) {
+      active.invalidate();
+    }
+  }
+
+  long displayPreparationGenerationForTest() {
+    return displayPreparationGeneration;
+  }
+
+  private final class DisplayPreparationBatch {
+    final long generation;
+    final long scaleBits;
+    final double destinationScale;
+    final ArrayList<Runnable> completions = new ArrayList<Runnable>();
+    int pending;
+    boolean discovering = true;
+    boolean completed;
+
+    DisplayPreparationBatch(long generation, long scaleBits, double destinationScale, Runnable completion) {
+      this.generation = generation;
+      this.scaleBits = scaleBits;
+      this.destinationScale = destinationScale;
+      addCompletion(completion);
+    }
+
+    void addCompletion(Runnable completion) {
+      if (completion == null) {
+        return;
+      }
+      if (completed) {
+        completion.run();
+      } else {
+        completions.add(completion);
+      }
+    }
+
+    void discover() {
+      bag.prepareForDisplay(new DisplayPreparationContext(destinationScale, generation),
+          new DisplayPreparationSink() {
+            @Override
+            public void request(Image image, int requirement) {
+              pending++;
+              ImageDrawingBridge.prepareForDisplay(image, destinationScale, requirement, new Runnable() {
+                @Override
+                public void run() {
+                  completeOne();
+                }
+              });
+            }
+          });
+      discovering = false;
+      if (pending == 0) {
+        completeBatch();
+      }
+    }
+
+    void completeOne() {
+      if (pending > 0) {
+        pending--;
+      }
+      if (!discovering && pending == 0) {
+        completeBatch();
+      }
+    }
+
+    void completeBatch() {
+      if (completed || displayPreparationBatch != this || generation != displayPreparationGeneration) {
+        return;
+      }
+      completed = true;
+      for (int i = 0; i < completions.size(); i++) {
+        completions.get(i).run();
+      }
+      completions.clear();
+    }
+
+    void invalidate() {
+      completed = true;
+      completions.clear();
+    }
   }
 
   /** Returns the client rect from the ScrollContainer control */
@@ -442,6 +560,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   /** Adds a child control to the bag container. */
   @Override
   public void add(Control control) {
+    invalidateDisplayPreparation();
     changed = true;
     if(control.floating)
     	bag0.add(control);
@@ -459,12 +578,14 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
    */
   @Override
   public void remove(Control control) {
+    invalidateDisplayPreparation();
     changed = true;
     bag.remove(control);
   }
 
   @Override
   protected void onBoundsChanged(boolean screenChanged) {
+    invalidateDisplayPreparation();
     bag0.setRect(LEFT, TOP, FILL, FILL, null, screenChanged);
     bagSetRect(contentInsets.left - lastH, contentInsets.top - lastV, FILL, FILL, screenChanged);
   }
@@ -531,6 +652,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
 
   /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
   public void resize(int maxX, int maxY) {
+    invalidateDisplayPreparation();
     int oldH = sbH == null ? 0 : sbH.value;
     int oldV = sbV == null ? 0 : sbV.value;
     bagSetRect(contentInsets.left - oldH, contentInsets.top - oldV, maxX, maxY, false);

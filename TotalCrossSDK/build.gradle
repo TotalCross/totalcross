@@ -447,6 +447,9 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
         dependsOn sourceSets.smokeTest.classesTaskName
         from(smokeTestClassesDir) {
             include 'totalcross/ui/image/' + appClass + '*.class'
+            include 'totalcross/ui/image/ImageRasterBenchmarkSupport*.class'
+            include 'totalcross/ui/image/ImageCompactFormatsBenchmarkSupport*.class'
+            include 'totalcross/ui/image/ImageCompactFormatsNativeHooks*.class'
         }
         if (includeImageAbiResources) {
             from(smokeTestResourcesDir) {
@@ -521,7 +524,31 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
             if (!executable.isFile()) {
                 throw new GradleException('Native smoke executable not found: ' + executable)
             }
-            commandLine executable.absolutePath
+            def linkageResult = providers.exec {
+                commandLine 'otool', '-L', executable.absolutePath
+                ignoreExitValue = true
+            }
+            def loaderResult = providers.exec {
+                commandLine 'strings', executable.absolutePath
+                ignoreExitValue = true
+            }
+            def linkageText = linkageResult.standardOutput.asText.get() + linkageResult.standardError.asText.get()
+            def loaderText = loaderResult.standardOutput.asText.get() + loaderResult.standardError.asText.get()
+            if (linkageResult.result.get().exitValue != 0 || loaderResult.result.get().exitValue != 0
+                || !loaderText.contains('libtcvm')) {
+                throw new GradleException('Native executable does not expose the repository libtcvm loader:\n'
+                    + linkageText)
+            }
+            logger.lifecycle('[IMAGE_SMOKE_RUNTIME] source=' + nativeRuntimeFile.absolutePath
+                + ',deployed=' + deployedRuntime.absolutePath + ',sourceSha256=' + sourceHash
+                + ',deployedSha256=' + deployedHash + ',otool='
+                + linkageText.trim().replace(System.lineSeparator(), '; '))
+            def smokeArguments = project.findProperty('smokeArgs')
+            if (smokeArguments) {
+                commandLine([executable.absolutePath] + smokeArguments.toString().trim().split(/\s+/).findAll { it })
+            } else {
+                commandLine executable.absolutePath
+            }
             smokeOutput.reset()
             standardOutput = smokeOutput
             errorOutput = smokeOutput
@@ -689,6 +716,36 @@ registerImageMacSmoke('ImageNativeMaterialization', 'ImageNativeMaterializationS
         'pass=true'
     ])
 
+registerImageMacSmoke('ImageZeroCopyDecode', 'ImageZeroCopyDecodeSmokeApp',
+    'image-zero-copy-decode-smoke', true, false, [
+        'fixture=ImageZeroCopyDecodeSmokeApp',
+        'pngParity=true',
+        'jpegParity=true',
+        'pngCounter=true',
+        'jpegCounter=true',
+        'retry=true',
+        'pngFailureCleanup=true',
+        'jpegFailureCleanup=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterOpacityMutation', 'ImageRasterOpacityMutationSmokeApp',
+    'image-raster-opacity-mutation-smoke', true, false, [
+        'fixture=ImageRasterOpacityMutationSmokeApp',
+        'decodedOpaque=true',
+        'invalidated=true',
+        'drawParity=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterDrawPlanWritePixels', 'ImageRasterDrawPlanWritePixelsSmokeApp',
+    'image-raster-draw-plan-write-pixels-smoke', false, false, [
+        'fixture=ImageRasterDrawPlanWritePixelsSmokeApp',
+        'parity=true',
+        'fastHit=true',
+        'overallPass=true'
+    ])
+
 registerImageMacSmoke('ImageDrawPresentationState', 'ImageDrawPresentationStateSmokeApp',
     'image-draw-presentation-state-smoke', false, false, [
         'fixture=ImageDrawPresentationStateSmokeApp',
@@ -729,6 +786,267 @@ registerImageMacSmoke('ImageDeferredFrameFadeLayout', 'ImageDeferredFrameFadeLay
         'layoutSelectOne=true',
         'overallPass=true'
     ])
+
+registerImageMacSmoke('ImageOptimizationControlBenchmark', 'ImageOptimizationControlBenchmarkApp',
+    'image-optimization-control-benchmark', false, false, [
+        'fixture=ImageOptimizationControlBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterDecodeBenchmark', 'ImageRasterDecodeBenchmarkApp',
+    'image-raster-decode-benchmark', true, false, [
+        'fixture=ImageRasterDecodeBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterOpacityBenchmark', 'ImageRasterOpacityBenchmarkApp',
+    'image-raster-opacity-benchmark', true, false, [
+        'fixture=ImageRasterOpacityBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterOpaqueDrawBenchmark', 'ImageRasterOpaqueDrawBenchmarkApp',
+    'image-raster-opaque-draw-benchmark', true, false, [
+        'fixture=ImageRasterOpaqueDrawBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterReadbackBenchmark', 'ImageRasterReadbackBenchmarkApp',
+    'image-raster-readback-benchmark', true, false, [
+        'fixture=ImageRasterReadbackBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterCombinedBenchmark', 'ImageRasterCombinedBenchmarkApp',
+    'image-raster-combined-benchmark', true, false, [
+        'fixture=ImageRasterCombinedBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterPhysicalIdentityBenchmark', 'ImageRasterPhysicalIdentityBenchmarkApp',
+    'image-raster-physical-identity-benchmark', false, false, [
+        'fixture=ImageRasterPhysicalIdentityBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterTargetColorBenchmark', 'ImageRasterTargetColorBenchmarkApp',
+    'image-raster-target-color-benchmark', false, false, [
+        'fixture=ImageRasterTargetColorBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterVariantBenchmark', 'ImageRasterVariantBenchmarkApp',
+    'image-raster-variant-benchmark', false, false, [
+        'fixture=ImageRasterVariantBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageScrollRasterFastPathBenchmark', 'ImageScrollRasterFastPathBenchmarkApp',
+    'image-scroll-raster-fast-path-benchmark', true, false, [
+        'fixture=ImageScrollRasterFastPathBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageScrollRealWorkloadBenchmark', 'ImageScrollRealWorkloadBenchmarkApp',
+    'image-scroll-real-workload-benchmark', false, false, [
+        'fixture=ImageScrollRealWorkloadBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImagePreparation', 'ImagePreparationSmokeApp',
+    'image-preparation-smoke', true, false, [
+        'fixture=ImagePreparationSmokeApp',
+        'detachedAdoption=true',
+        'uiCompletion=true',
+        'responsive=true',
+        'deferredPlan=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageWarmCopyRectBenchmark', 'ImageWarmCopyRectBenchmarkApp',
+    'image-warm-copyrect-benchmark', false, false, [
+        'fixture=ImageWarmCopyRectBenchmarkApp',
+        'record=case',
+        'operation=materialized',
+        'operation=deferred-drawImage',
+        'operation=deferred-copyRect',
+        'clip=partial',
+        'record=identity-direct',
+        'physical_identity_hits=',
+        'write_pixels_hits=',
+        'generic_geometry_draws=0',
+        'smooth_resample_draws=0',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageCopyRectDrawPlanSmoke', 'ImageCopyRectDrawPlanSmokeApp',
+    'image-copyrect-draw-plan-smoke', false, false, [
+        'fixture=ImageCopyRectDrawPlanSmokeApp',
+        'full=true',
+        'clipped=true',
+        'noIntersection=true',
+        'frame=true',
+        'fallback=true',
+        'cachedFinalReuse=true',
+        'variantTransition=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageStartupOptimizationDefaultsSmoke',
+    'ImageStartupOptimizationDefaultsSmokeApp',
+    'image-startup-optimization-defaults-smoke', false, false, [
+        'fixture=ImageStartupOptimizationDefaultsSmokeApp',
+        'startupBeforeSettingsApi=true',
+        'drawPass=true',
+        'decodePass=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageOptimizationMask', 'ImageOptimizationMaskSmokeApp',
+    'image-optimization-mask-smoke', true, false, [
+        'fixture=ImageOptimizationMaskSmokeApp',
+        'expectedMask=32799',
+        'javaMaskPass=true',
+        'exactDrawMask=32799',
+        'exactDecodeMask=32799',
+        'subclassDrawMask=32799',
+        'subclassDecodeMask=32799',
+        'exactRuntimeClass=totalcross.ui.image.Image',
+        'subclassRuntimeClass=totalcross.ui.image.ImageOptimizationMaskSmokeApp$SmokeImage',
+        'exactRuntimePass=true',
+        'probePass=true',
+        'zeroCopyDefault=',
+        'zeroCopyDisabled=',
+        'zeroCopyRestored=',
+        'zeroCopyDefaultCopied=',
+        'zeroCopyDisabledCopied=',
+        'zeroCopyRestoredCopied=',
+        'zeroCopyDefaultNativeMask=32799',
+        'zeroCopyDisabledNativeMask=32798',
+        'zeroCopyRestoredNativeMask=32799',
+        'zeroCopyPass=true',
+        'physicalIdentityDefaultAttempts=1',
+        'physicalIdentityDefaultHits=1',
+        'physicalIdentityDefaultFallbacks=0',
+        'physicalIdentityDefaultResamplesAvoided=1',
+        'physicalIdentityDisabledAttempts=0',
+        'physicalIdentityDisabledHits=0',
+        'physicalIdentityDisabledFallbacks=0',
+        'physicalIdentityDisabledResamplesAvoided=0',
+        'physicalIdentityRestoredAttempts=1',
+        'physicalIdentityRestoredHits=1',
+        'physicalIdentityRestoredFallbacks=0',
+        'physicalIdentityRestoredResamplesAvoided=1',
+        'physicalDefaultNativeMask=32799',
+        'physicalDisabledNativeMask=31',
+        'physicalRestoredNativeMask=32799',
+        'physicalIdentityPass=true',
+        'targetDefaultMask=32799',
+        'targetEnabledMask=40991',
+        'targetRestoredMask=32799',
+        'targetDefaultNativeMask=32799',
+        'targetEnabledNativeMask=40991',
+        'targetRestoredNativeMask=32799',
+        'targetDefaultNativeDecodeMask=32799',
+        'targetEnabledNativeDecodeMask=40991',
+        'targetRestoredNativeDecodeMask=32799',
+        'defaultDisabledPass=true',
+        'diagnosticComplete=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterPhysicalVariantSmoke', 'ImageRasterPhysicalVariantSmokeApp',
+    'image-raster-physical-variant-smoke', false, false, [
+        'fixture=ImageRasterPhysicalVariantSmokeApp',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
+
+registerImageMacSmoke('ImageCompactFormatsBenchmark', 'ImageCompactFormatsBenchmarkApp',
+    'image-compact-formats-benchmark', false, false, [
+        'fixture=ImageCompactFormatsBenchmarkApp',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
+
+registerImageMacSmoke('ImageCompactFormatsSmoke', 'ImageCompactFormatsSmokeApp',
+    'image-compact-formats-smoke', false, false, [
+        'fixture=ImageCompactFormatsSmokeApp',
+        'selection=true',
+        'observerNonPromotion=true',
+        'promotion=true',
+        'decodeFailureRetry=true',
+        'promotionFailureRetry=true',
+        'writePixelsParity=true',
+        'writePixelsFallback=true',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
+
+registerImageMacSmoke('ImageCompactFormatsFinalStackSmoke', 'ImageCompactFormatsFinalStackSmokeApp',
+    'image-compact-formats-final-stack-smoke', false, false, [
+        'fixture=ImageCompactFormatsFinalStackSmokeApp',
+        'physicalIdentity=true',
+        'physicalVariant=true',
+        'targetColorPhysicalVariant=true',
+        'invalidation=true',
+        'observers=true',
+        'writePixels=true',
+        'adaptiveJpeg=true',
+        'screenDraw=true',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
+
+registerImageMacSmoke('ImageCompactFormatsAdaptiveJpegSmoke',
+    'ImageCompactFormatsAdaptiveJpegSmokeApp',
+    'image-compact-formats-adaptive-jpeg-smoke', false, false, [
+        'fixture=ImageCompactFormatsAdaptiveJpegSmokeApp',
+        'rgb565=true',
+        'gray8=true',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
+
+registerImageMacSmoke('ImageDiagnosticAccountingGateBenchmark', 'ImageDiagnosticAccountingGateBenchmarkApp',
+    'image-diagnostic-accounting-gate-benchmark', false, false, [
+        'fixture=ImageDiagnosticAccountingGateBenchmarkApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageDiagnosticAccountingGate', 'ImageDiagnosticAccountingGateSmokeApp',
+    'image-diagnostic-accounting-gate-smoke', false, false, [
+        'fixture=ImageDiagnosticAccountingGateSmokeApp',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageJpegFactoryBenchmark', 'ImageJpegFactoryBenchmarkApp',
+    'image-jpeg-factory-benchmark', true, true, [
+        'fixture=ImageJpegFactoryBenchmarkApp',
+        'factory_only_zero_decode=true',
+        'first_draw_one_decode=true',
+        'repeated_draw_one_decode=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageJpegFactorySmoke', 'ImageJpegFactorySmokeApp',
+    'image-jpeg-factory-smoke', true, true, [
+        'fixture=ImageJpegFactorySmokeApp',
+        'bestFitLazy=true',
+        'explicitRatioLazy=true',
+        'referenceParity=true',
+        'screenDraw=true',
+        'repeatedDrawReuse=true',
+        'gpuBacking=true',
+        'nativeSourceCapture=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageCompactFormatsLazyJpegFactorySmoke',
+    'ImageCompactFormatsLazyJpegFactorySmokeApp',
+    'image-compact-formats-lazy-jpeg-factory-smoke', false, false, [
+        'fixture=ImageCompactFormatsLazyJpegFactorySmokeApp',
+        'rgb565=true',
+        'gray8=true',
+        'screenDraw=true',
+        'rasterCountersZero=true',
+        'overallPass=true'
+    ], ['image-opt-phase3/**'])
 
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

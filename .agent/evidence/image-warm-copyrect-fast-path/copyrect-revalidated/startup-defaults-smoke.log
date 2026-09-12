@@ -1,0 +1,1 @@
+fixture=ImageStartupOptimizationDefaultsSmokeApp,startupBeforeSettingsApi=true,drawMask=32799,decodeMask=32799,expectedMask=32799,drawPass=true,decodePass=true,overallPass=true

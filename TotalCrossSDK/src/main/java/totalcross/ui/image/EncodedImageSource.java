@@ -9,8 +9,11 @@ import java.io.ByteArrayOutputStream;
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 import totalcross.Launcher;
+import totalcross.io.File;
+import totalcross.io.FileNotFoundException;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
+import totalcross.sys.Vm;
 
 /** Immutable, eagerly captured encoded image source. */
 final class EncodedImageSource extends ImageSource {
@@ -221,6 +224,10 @@ final class EncodedImageSource extends ImageSource {
     return decodedGeneration;
   }
 
+  long contentIdentity() {
+    return Vm.identityHashCode(this) & 0xFFFFFFFFL;
+  }
+
   void installDecodedBacking(ImageBacking backing, int width, int height, int denominator) {
     if (backing == null || !backing.isValid() || width <= 0 || height <= 0
         || (denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8)) {
@@ -228,6 +235,12 @@ final class EncodedImageSource extends ImageSource {
     }
     if (decodedBacking == backing && decodedWidth == width && decodedHeight == height
         && decodedDenominator == denominator) {
+      return;
+    }
+    if (decodedBackingForReuse(denominator) != null) {
+      if (backing != decodedBacking && backing instanceof NativeImageBacking) {
+        ((NativeImageBacking) backing).release();
+      }
       return;
     }
     decodedBacking = backing;
@@ -246,6 +259,17 @@ final class EncodedImageSource extends ImageSource {
     decodedHeight = 0;
     decodedDenominator = 0;
     decodedGeneration++;
+  }
+
+  /** Drops source ownership after a COPY_READY raster owns the final pixels. */
+  void releaseDecodedBackingAfterMaterialization(ImagePipeline pipeline) {
+    if (decodedBacking == null) {
+      return;
+    }
+    decodedBacking = null;
+    decodedWidth = 0;
+    decodedHeight = 0;
+    decodedDenominator = 0;
   }
 
   void releaseForSmoke() {
@@ -270,10 +294,17 @@ final class EncodedImageSource extends ImageSource {
   /** Replaced on deployed targets by TCZ-first native path capture. */
   @ReplacedByNativeOnDeploy
   private void captureNativePath(String path) throws ImageException, IOException {
-    if (path == null || Launcher.instance == null) {
+    if (path == null) {
       throw new ImageException("ERROR: can't open image file " + path);
     }
-    byte[] input = Launcher.instance.readBytes(path);
+    byte[] input = Launcher.instance == null ? null : Launcher.instance.readBytes(path);
+    if (input == null) {
+      try (File file = new File(path, File.READ_ONLY)) {
+        input = file.read();
+      } catch (FileNotFoundException e) {
+        throw new ImageException("ERROR: can't open image file " + path);
+      }
+    }
     if (input == null) {
       throw new ImageException("ERROR: can't open image file " + path);
     }
