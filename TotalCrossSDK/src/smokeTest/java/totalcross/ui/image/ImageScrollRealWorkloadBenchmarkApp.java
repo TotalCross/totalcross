@@ -18,6 +18,9 @@ import totalcross.ui.Window;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
 import totalcross.ui.gfx.Graphics;
+import totalcross.util.zip.CompressedStream;
+import totalcross.util.zip.ZipEntry;
+import totalcross.util.zip.ZipStream;
 
 /** Real-corpus scrolling workload based on the customer-provided Tcsort layout. */
 public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements TimerListener {
@@ -26,6 +29,17 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final int SCROLL_STEP = 120;
   private static final int SCROLL_DURATION_MILLIS = 3000;
   private static final int FRAME_INTERVAL_MILLIS = 16;
+  private static final String MODE_BENCHMARK = "benchmark";
+  private static final String MODE_RUN_ALL = "run-all";
+  private static final String MODE_SELF_TEST = "self-test";
+  private static final String MODE_AGGREGATE = "aggregate";
+  private static final long SUITE_SEED = 73001L;
+  private static final int SUITE_ROUNDS = 5;
+  private static final int EXPECTED_SUITE_PROCESSES = 210;
+  private static final long[] SUITE_MASKS = {
+      0L, 1L, 2L, 4L, 8L, 16L, 32L, 64L, 128L, 256L, 512L, 1024L, 2048L,
+      4096L, 8192L, 16384L, 32768L, 32799L, 40991L, 49183L, 57375L
+  };
   private static final String[] FEATURE_NAMES = {
       "DECODE_ZERO_COPY", "RASTER_OPACITY_METADATA", "RASTER_OPAQUE_WRITE_PIXELS",
       "RASTER_ROW_READBACK", "RASTER_DIRECT_COLOR_MATERIALIZATION", "STORAGE_RGB565",
@@ -46,6 +60,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private long runNumber;
   private String outputDir;
   private String runOutputDir;
+  private String datasetHashArgument;
   private String targetColorProfile;
   private String variantCacheProfile;
   private String prefetchProfile;
@@ -64,7 +79,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private boolean prefetchComplete;
   private TimerEvent prefetchTimer;
   private boolean benchmarkReady;
-  private final MemorySampler memory = new MemorySampler();
+  private int scrollDurationMillis = SCROLL_DURATION_MILLIS;
+  private MemorySampler memory;
 
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
@@ -79,7 +95,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   @Override
   public void initUI() {
     super.initUI();
+    memory = new MemorySampler();
     try {
+      String mode = ImageRasterBenchmarkSupport.argument(getCommandLine(), "mode", MODE_BENCHMARK);
+      if (MODE_RUN_ALL.equals(mode) || MODE_SELF_TEST.equals(mode) || MODE_AGGREGATE.equals(mode)) {
+        runController(mode);
+        return;
+      }
+      ImageRasterBenchmarkSupport.require(MODE_BENCHMARK.equals(mode),
+          "unsupported mode: " + mode);
       imageDir = ImageRasterBenchmarkSupport.argument(getCommandLine(), "corpus", null);
       if (imageDir == null) {
         imageDir = ImageRasterBenchmarkSupport.argument(getCommandLine(), "image-dir", null);
@@ -90,6 +114,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           getCommandLine(), "run", "0"));
       outputDir = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "output", "benchmark-output");
+      datasetHashArgument = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "dataset-hash", "unavailable");
+      scrollDurationMillis = ImageRasterBenchmarkSupport.integerArgument(
+          getCommandLine(), "duration", SCROLL_DURATION_MILLIS);
+      ImageRasterBenchmarkSupport.require(scrollDurationMillis > 0,
+          "duration must be positive");
       targetColorProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "target-color", "disabled");
       variantCacheProfile = ImageRasterBenchmarkSupport.argument(
@@ -99,10 +129,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
           "missing --corpus=<dir>");
       ImageRasterBenchmarkSupport.ensureDirectory(outputDir);
-      runOutputDir = ImageRasterBenchmarkSupport.joinPath(outputDir, runName());
+      ImageRasterBenchmarkSupport.ensureDirectory(
+          ImageRasterBenchmarkSupport.joinPath(outputDir, "runs"));
+      runOutputDir = ImageRasterBenchmarkSupport.joinPath(
+          ImageRasterBenchmarkSupport.joinPath(outputDir, "runs"), runName());
       ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
       configureMask();
-      memory.record("process_start", Vm.getTimeStamp());
+      recordMemory("process_start", Vm.getTimeStamp());
       ImageRasterBenchmarkSupport.require("disabled".equals(targetColorProfile)
           || "enabled".equals(targetColorProfile),
           "target-color must be disabled or enabled");
@@ -131,7 +164,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.require(maximum > minimum,
           "real workload content did not extend beyond the viewport");
       scroll.sbV.setValue(minimum);
-      memory.record("before_prefetch", Vm.getTimeStamp());
+      recordMemory("before_prefetch", Vm.getTimeStamp());
 
       if (prefetchEnabled()) {
         Image.resetImageOperationAccountingForBenchmarkTest();
@@ -144,7 +177,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           public void run() {
             prefetchElapsedMillis = Vm.getTimeStamp() - prefetchStart;
             capturePrefetchAccounting();
-            memory.record("after_prefetch", Vm.getTimeStamp());
+            recordMemory("after_prefetch", Vm.getTimeStamp());
             prefetchComplete = true;
           }
         });
@@ -153,10 +186,485 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       benchmarkReady = true;
       prefetchTimer = addTimer(50);
     } catch (Throwable failure) {
-      String error = failure.getClass().getName() + ":"
-          + String.valueOf(failure.getMessage()).replace(' ', '_').replace(',', '_');
+      String error = failure.toString();
       finishBenchmark(false, error);
       return;
+    }
+  }
+
+  private void runController(String mode) {
+    boolean pass = false;
+    try {
+      String corpus = ImageRasterBenchmarkSupport.argument(getCommandLine(), "corpus", null);
+      String output = ImageRasterBenchmarkSupport.argument(getCommandLine(), "output", "results");
+      ImageRasterBenchmarkSupport.require(corpus != null && corpus.length() > 0,
+          "missing --corpus=<dir>");
+      ImageRasterBenchmarkSupport.ensureDirectory(output);
+      String datasetHash = validateCorpusAndHash(corpus);
+      if (MODE_SELF_TEST.equals(mode)) {
+        selfTest(corpus, output, datasetHash);
+      } else if (MODE_AGGREGATE.equals(mode)) {
+        aggregateResults(output);
+        writeResultsZip(output);
+      } else {
+        selfTest(corpus, output + "/self-test", datasetHash);
+        writeManifest(output, corpus, datasetHash);
+        writeSuitePlan(output);
+        runSuite(corpus, output, datasetHash);
+        aggregateResults(output);
+        writeResultsZip(output);
+      }
+      System.out.println("image-scroll benchmark complete,output=" + output);
+      System.out.flush();
+      pass = true;
+    } catch (Throwable failure) {
+      String message = failure.toString();
+      System.out.println("image-scroll benchmark failed,error=" + message);
+      System.out.flush();
+    }
+    exit(pass ? 0 : 1);
+  }
+
+  private void selfTest(String corpus, String output, String datasetHash) throws Exception {
+    ImageRasterBenchmarkSupport.ensureDirectory(output);
+    ImageOptimizationSettings.resetForTest();
+    ImageOptimizationSettings.setMask(0);
+    ImageRasterBenchmarkSupport.require(ImageOptimizationSettings.getMask() == 0
+        && ImageOptimizationSettings.getEffectiveMask() == 0, "setMask(0) did not disable features");
+    ImageOptimizationSettings.setMask(32799);
+    ImageRasterBenchmarkSupport.require(ImageOptimizationSettings.getEffectiveMask() == 32799,
+        "default mask did not resolve to 32799");
+    ImageOptimizationSettings.setMask(57375);
+    ImageRasterBenchmarkSupport.require(ImageOptimizationSettings.getEffectiveMask() == 57375,
+        "matrix mask did not resolve to 57375");
+    ImageRasterBenchmarkSupport.require(ImageOptimizationSettings.FEATURE_COUNT == 16,
+        "expected 16 image optimization flags");
+    int[] expectedFeatureIds = {
+        ImageOptimizationSettings.DECODE_ZERO_COPY,
+        ImageOptimizationSettings.RASTER_OPACITY_METADATA,
+        ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS,
+        ImageOptimizationSettings.RASTER_ROW_READBACK,
+        ImageOptimizationSettings.RASTER_DIRECT_COLOR_MATERIALIZATION,
+        ImageOptimizationSettings.STORAGE_RGB565,
+        ImageOptimizationSettings.STORAGE_GRAY8,
+        ImageOptimizationSettings.STORAGE_ARGB4444,
+        ImageOptimizationSettings.CACHE_BYTE_BUDGET,
+        ImageOptimizationSettings.CACHE_MEMORY_PRESSURE_EVICTION,
+        ImageOptimizationSettings.GPU_DISCARD_CPU_BACKING,
+        ImageOptimizationSettings.STORAGE_MMAP_LARGE_BACKINGS,
+        ImageOptimizationSettings.DIAGNOSTIC_ACCOUNTING,
+        ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION,
+        ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE,
+        ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING
+    };
+    for (int feature = 0; feature < expectedFeatureIds.length; feature++) {
+      ImageRasterBenchmarkSupport.require(expectedFeatureIds[feature] == feature,
+          "image optimization feature id changed at bit " + feature);
+    }
+    for (int i = 0; i < SUITE_MASKS.length; i++) {
+      ImageRasterBenchmarkSupport.require(SUITE_MASKS[i] >= 0 && SUITE_MASKS[i] < (1L << 16),
+          "invalid suite mask " + SUITE_MASKS[i]);
+      for (int j = 0; j < i; j++) {
+        ImageRasterBenchmarkSupport.require(SUITE_MASKS[i] != SUITE_MASKS[j],
+            "duplicate suite mask " + SUITE_MASKS[i]);
+      }
+    }
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(output, "self-test-marker.txt"), "ok\n");
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(output, "dataset-manifest.json"),
+        "{\"fileCount\":" + IMAGE_COUNT + ",\"datasetHash\":\"" + datasetHash + "\"}\n");
+    String datasetManifest = readText(
+        ImageRasterBenchmarkSupport.joinPath(output, "dataset-manifest.json"));
+    ImageRasterBenchmarkSupport.require(datasetManifest.indexOf("\"fileCount\":663") >= 0
+        && datasetManifest.indexOf("\"datasetHash\":\"" + datasetHash + "\"") >= 0,
+        "self-test dataset manifest mismatch");
+
+    String runOutput = ImageRasterBenchmarkSupport.joinPath(output, "smoke");
+    String args = "--mode=" + MODE_BENCHMARK
+        + " --image-optimization=0 --prefetch=off --run=0"
+        + " --duration=100 --output=" + runOutput
+        + " --corpus=" + corpus + " --dataset-hash=" + datasetHash;
+    int childStatus = Vm.exec(benchmarkExecutable(), args, 0, true);
+    ImageRasterBenchmarkSupport.require(childStatus == 0,
+        "self-test benchmark exited with " + childStatus);
+    String runDir = ImageRasterBenchmarkSupport.joinPath(
+        ImageRasterBenchmarkSupport.joinPath(runOutput, "runs"),
+        "mask-0-prefetch-off-run-0");
+    ImageRasterBenchmarkSupport.require(new File(
+        ImageRasterBenchmarkSupport.joinPath(runDir, "summary.json")).exists(),
+        "self-test summary was not written");
+    ImageRasterBenchmarkSupport.require(new File(
+        ImageRasterBenchmarkSupport.joinPath(runDir, "frames.csv")).exists(),
+        "self-test frames were not written");
+    String environment = readText(ImageRasterBenchmarkSupport.joinPath(runOutput, "environment.json"));
+    ImageRasterBenchmarkSupport.require(environment.indexOf("\"datasetFileCount\":663") >= 0,
+        "self-test environment did not record 663 files");
+    ImageRasterBenchmarkSupport.require(environment.indexOf("\"datasetHash\":\"" + datasetHash + "\"") >= 0,
+        "self-test dataset hash mismatch");
+    ImageRasterBenchmarkSupport.require(environment.indexOf("\"rendererBackend\":") >= 0,
+        "self-test renderer metadata was not written");
+    ImageRasterBenchmarkSupport.require(environment.indexOf("\"skiaSurfaceColorType\":") >= 0
+        && environment.indexOf("\"endianness\":") >= 0,
+        "self-test surface metadata was not written");
+    writeTestZip(output);
+  }
+
+  private void writeTestZip(String output) throws Exception {
+    String zipPath = ImageRasterBenchmarkSupport.joinPath(output, "self-test.zip");
+    File archive = new File(zipPath, File.CREATE_EMPTY);
+    ZipStream zip = new ZipStream(archive, CompressedStream.DEFLATE);
+    byte[] expected = "image-scroll-self-test\n".getBytes("UTF-8");
+    ZipEntry entry = new ZipEntry("self-test.txt");
+    zip.putNextEntry(entry);
+    zip.writeBytes(expected, 0, expected.length);
+    zip.closeEntry();
+    zip.close();
+    archive.close();
+
+    File inputFile = new File(zipPath, File.READ_ONLY);
+    ZipStream input = new ZipStream(inputFile, CompressedStream.INFLATE);
+    ZipEntry readEntry = input.getNextEntry();
+    ImageRasterBenchmarkSupport.require(readEntry != null
+        && "self-test.txt".equals(readEntry.getName()), "test ZIP entry missing");
+    byte[] actual = new byte[expected.length];
+    ImageRasterBenchmarkSupport.require(input.readBytes(actual, 0, actual.length) == actual.length,
+        "test ZIP entry length mismatch");
+    for (int i = 0; i < actual.length; i++) {
+      ImageRasterBenchmarkSupport.require(actual[i] == expected[i], "test ZIP entry mismatch");
+    }
+    input.closeEntry();
+    input.close();
+    inputFile.close();
+  }
+
+  private String validateCorpusAndHash(String corpus) throws Exception {
+    String[] paths = sortedCorpusPaths(corpus);
+    ImageRasterBenchmarkSupport.require(paths.length == IMAGE_COUNT,
+        "expected exactly " + IMAGE_COUNT + " corpus files but found " + paths.length);
+    long hash = 0xcbf29ce484222325L;
+    for (String path : paths) {
+      String relative = path.startsWith(corpus) ? path.substring(corpus.length()) : path;
+      while (relative.startsWith("/")) {
+        relative = relative.substring(1);
+      }
+      byte[] name = relative.getBytes("UTF-8");
+      hash = updateHash(hash, name, 0, name.length);
+      hash = updateHash(hash, new byte[] { 0 }, 0, 1);
+      File input = new File(path, File.READ_ONLY);
+      byte[] buffer = new byte[16384];
+      try {
+        int count;
+        while ((count = input.readBytes(buffer, 0, buffer.length)) > 0) {
+          hash = updateHash(hash, buffer, 0, count);
+        }
+      } finally {
+        input.close();
+      }
+    }
+    return hexHash(hash);
+  }
+
+  private static long updateHash(long hash, byte[] bytes, int offset, int length) {
+    for (int i = offset; i < offset + length; i++) {
+      hash ^= bytes[i] & 0xffL;
+      hash *= 0x100000001b3L;
+    }
+    return hash;
+  }
+
+  private static String hexHash(long hash) {
+    StringBuilder result = new StringBuilder(16);
+    for (int shift = 60; shift >= 0; shift -= 4) {
+      int nibble = (int) ((hash >>> shift) & 0x0f);
+      result.append((char) (nibble < 10 ? '0' + nibble : 'a' + nibble - 10));
+    }
+    return result.toString();
+  }
+
+  private void writeManifest(String output, String corpus, String datasetHash) throws Exception {
+    StringBuilder json = new StringBuilder(2048);
+    json.append("{\n")
+        .append("  \"schemaVersion\":1,\n")
+        .append("  \"benchmarkVersion\":\"1\",\n")
+        .append("  \"fixture\":\"ImageScrollRealWorkloadBenchmarkApp\",\n")
+        .append("  \"seed\":").append(SUITE_SEED).append(",\n")
+        .append("  \"rounds\":").append(SUITE_ROUNDS).append(",\n")
+        .append("  \"expectedProcessCount\":").append(EXPECTED_SUITE_PROCESSES).append(",\n")
+        .append("  \"datasetFileCount\":").append(IMAGE_COUNT).append(",\n")
+        .append("  \"columns\":").append(COLUMN_COUNT).append(",\n")
+        .append("  \"corpus\":\"").append(escapeJson(corpus)).append("\",\n")
+        .append("  \"datasetHash\":\"").append(datasetHash).append("\",\n")
+        .append("  \"masks\":[");
+    for (int i = 0; i < SUITE_MASKS.length; i++) {
+      json.append(SUITE_MASKS[i]).append(i == SUITE_MASKS.length - 1 ? "]\n" : ",");
+    }
+    json.append("}\n");
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(output, "manifest.json"), json.toString());
+  }
+
+  private void writeSuitePlan(String output) throws Exception {
+    StringBuilder plan = new StringBuilder(8192);
+    plan.append("round\torder\trun\tmask\tprefetch\n");
+    int order = 0;
+    for (int round = 0; round < SUITE_ROUNDS; round++) {
+      int[] combinations = shuffledCombinations(round);
+      for (int combination : combinations) {
+        long mask = SUITE_MASKS[combination / 2];
+        String prefetch = combination % 2 == 0 ? "off" : "on";
+        plan.append(round + 1).append('\t').append(order++).append('\t').append(round + 1)
+            .append('\t').append(mask).append('\t').append(prefetch).append('\n');
+      }
+    }
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(output, "suite-plan.tsv"), plan.toString());
+  }
+
+  private static int[] shuffledCombinations(int round) {
+    int[] combinations = new int[SUITE_MASKS.length * 2];
+    for (int i = 0; i < combinations.length; i++) {
+      combinations[i] = i;
+    }
+    long state = SUITE_SEED + 0x9e3779b97f4a7c15L * (round + 1);
+    for (int i = combinations.length - 1; i > 0; i--) {
+      state = state * 6364136223846793005L + 1442695040888963407L;
+      int j = (int) ((state >>> 1) % (i + 1));
+      int swap = combinations[i];
+      combinations[i] = combinations[j];
+      combinations[j] = swap;
+    }
+    return combinations;
+  }
+
+  private void runSuite(String corpus, String output, String datasetHash) throws Exception {
+    int completed = 0;
+    for (int round = 0; round < SUITE_ROUNDS; round++) {
+      int[] combinations = shuffledCombinations(round);
+      for (int combination : combinations) {
+        long mask = SUITE_MASKS[combination / 2];
+        String prefetch = combination % 2 == 0 ? "off" : "on";
+        String args = "--mode=" + MODE_BENCHMARK
+            + " --image-optimization=" + mask
+            + " --prefetch=" + prefetch
+            + " --run=" + (round + 1)
+            + " --output=" + output
+            + " --corpus=" + corpus
+            + " --dataset-hash=" + datasetHash;
+        int status = Vm.exec(benchmarkExecutable(), args, 0, true);
+        ImageRasterBenchmarkSupport.require(status == 0,
+            "benchmark process failed for mask=" + mask + ",prefetch=" + prefetch
+                + ",run=" + (round + 1) + ",status=" + status);
+        completed++;
+        System.out.println("image-scroll benchmark progress=" + completed + "/"
+            + EXPECTED_SUITE_PROCESSES);
+      }
+    }
+    ImageRasterBenchmarkSupport.require(completed == EXPECTED_SUITE_PROCESSES,
+        "suite completed " + completed + " processes");
+  }
+
+  private String benchmarkExecutable() throws Exception {
+    String base = "ImageScrollRealWorkloadBenchmarkApp";
+    if (Settings.WIN32.equals(Settings.platform)) {
+      String withExtension = ImageRasterBenchmarkSupport.joinPath(Settings.appPath, base + ".exe");
+      if (new File(withExtension).exists()) {
+        return withExtension;
+      }
+    }
+    String executable = ImageRasterBenchmarkSupport.joinPath(Settings.appPath, base);
+    return Settings.WIN32.equals(Settings.platform) ? executable : "./" + base;
+  }
+
+  private void aggregateResults(String output) throws Exception {
+    String runsDir = ImageRasterBenchmarkSupport.joinPath(output, "runs");
+    String[] paths = File.listFiles(runsDir, true);
+    RunRecord[] records = new RunRecord[EXPECTED_SUITE_PROCESSES];
+    int count = 0;
+    for (String path : paths) {
+      if (!path.endsWith("/summary.json")) {
+        continue;
+      }
+      ImageRasterBenchmarkSupport.require(count < records.length, "too many benchmark summaries");
+      RunRecord record = RunRecord.read(path);
+      ImageRasterBenchmarkSupport.require(record.status.equals("PASS"),
+          "invalid run status for " + path + ": " + record.status);
+      ImageRasterBenchmarkSupport.require(record.requestedMask == record.effectiveMask,
+          "requested/effective mask mismatch for " + path);
+      ImageRasterBenchmarkSupport.require(record.imageCount == IMAGE_COUNT && record.frameCount > 1,
+          "incomplete benchmark summary for " + path);
+      records[count++] = record;
+    }
+    ImageRasterBenchmarkSupport.require(count == EXPECTED_SUITE_PROCESSES,
+        "expected " + EXPECTED_SUITE_PROCESSES + " summaries but found " + count);
+    StringBuilder csv = new StringBuilder(32768);
+    csv.append("run,prefetch,mask,status,frame_count,frame_p50_ms,frame_p90_ms,frame_p95_ms,frame_p99_ms,frame_max_ms,frames_over_16_67_ms,frames_over_33_3_ms,frames_over_50_ms,frames_over_100_ms,largest_stall_ms,largest_consecutive_over_33_3,prefetch_elapsed_ms,memory_peak_resident_bytes,baseline_scope,baseline_mask0_p50_ms,delta_p50_ms,baseline_mask0_p95_ms,delta_p95_ms\n");
+    for (String prefetch : new String[] { "off", "on" }) {
+      long baselineP50Sum = 0;
+      long baselineP95Sum = 0;
+      int baselineCount = 0;
+      for (RunRecord record : records) {
+        if (prefetch.equals(record.prefetch) && record.requestedMask == 0) {
+          baselineP50Sum += record.p50;
+          baselineP95Sum += record.p95;
+          baselineCount++;
+        }
+      }
+      ImageRasterBenchmarkSupport.require(baselineCount == SUITE_ROUNDS,
+          "missing mask=0 baseline for prefetch=" + prefetch);
+      long baselineP50 = baselineP50Sum / baselineCount;
+      long baselineP95 = baselineP95Sum / baselineCount;
+      for (RunRecord record : records) {
+        if (!prefetch.equals(record.prefetch)) {
+          continue;
+        }
+        csv.append(record.run).append(',').append(record.prefetch).append(',')
+            .append(record.requestedMask).append(',').append(record.status).append(',')
+            .append(record.frameCount).append(',').append(record.p50).append(',')
+            .append(record.p90).append(',').append(record.p95).append(',').append(record.p99).append(',')
+            .append(record.max).append(',').append(record.over16).append(',').append(record.over33).append(',')
+            .append(record.over50).append(',').append(record.over100).append(',').append(record.stall).append(',')
+            .append(record.consecutive).append(',').append(record.prefetchElapsed).append(',')
+            .append(record.memoryPeak).append(",same-machine-same-prefetch-mask0,")
+            .append(baselineP50).append(',').append(record.p50 - baselineP50).append(',')
+            .append(baselineP95).append(',').append(record.p95 - baselineP95).append('\n');
+      }
+    }
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(output, "summary.csv"), csv.toString());
+  }
+
+  private void writeResultsZip(String output) throws Exception {
+    String filename = "totalcross-image-benchmark-results-" + Vm.getTimeStamp() + ".zip";
+    String zipPath = ImageRasterBenchmarkSupport.joinPath(output, filename);
+    File archive = new File(zipPath, File.CREATE_EMPTY);
+    ZipStream zip = new ZipStream(archive, CompressedStream.DEFLATE);
+    String[] files = File.listFiles(output, true);
+    for (String path : files) {
+      if (path.endsWith("/") || path.equals(zipPath) || path.indexOf("/self-test/") >= 0
+          || path.endsWith("/self-test.zip")) {
+        continue;
+      }
+      String relative = path.startsWith(output) ? path.substring(output.length()) : path;
+      while (relative.startsWith("/")) {
+        relative = relative.substring(1);
+      }
+      addZipFile(zip, path, "results/" + relative);
+    }
+    zip.close();
+    archive.close();
+    System.out.println("image-scroll benchmark results ZIP=" + zipPath);
+  }
+
+  private static void addZipFile(ZipStream zip, String path, String entryName) throws Exception {
+    File input = new File(path, File.READ_ONLY);
+    ZipEntry entry = new ZipEntry(entryName);
+    zip.putNextEntry(entry);
+    byte[] buffer = new byte[16384];
+    try {
+      int count;
+      while ((count = input.readBytes(buffer, 0, buffer.length)) > 0) {
+        zip.writeBytes(buffer, 0, count);
+      }
+    } finally {
+      input.close();
+    }
+    zip.closeEntry();
+  }
+
+  private static String readText(String path) throws Exception {
+    File input = new File(path, File.READ_ONLY);
+    try {
+      int size = input.getSize();
+      byte[] bytes = new byte[size];
+      int offset = 0;
+      while (offset < bytes.length) {
+        int count = input.readBytes(bytes, offset, bytes.length - offset);
+        if (count <= 0) {
+          break;
+        }
+        offset += count;
+      }
+      return new String(bytes, 0, offset, "UTF-8");
+    } finally {
+      input.close();
+    }
+  }
+
+  private static final class RunRecord {
+    String status;
+    String prefetch;
+    long requestedMask;
+    long effectiveMask;
+    long run;
+    long imageCount;
+    long frameCount;
+    long p50;
+    long p90;
+    long p95;
+    long p99;
+    long max;
+    long over16;
+    long over33;
+    long over50;
+    long over100;
+    long stall;
+    long consecutive;
+    long prefetchElapsed;
+    long memoryPeak;
+
+    static RunRecord read(String path) throws Exception {
+      String json = readText(path);
+      RunRecord record = new RunRecord();
+      record.status = jsonString(json, "status");
+      record.prefetch = jsonString(json, "prefetch");
+      record.requestedMask = jsonLong(json, "requestedMask");
+      record.effectiveMask = jsonLong(json, "effectiveMask");
+      record.run = jsonLong(json, "run");
+      record.imageCount = jsonLong(json, "imageCount");
+      record.frameCount = jsonLong(json, "frameCount");
+      record.p50 = jsonLong(json, "frameTimeP50Ms");
+      record.p90 = jsonLong(json, "frameTimeP90Ms");
+      record.p95 = jsonLong(json, "frameTimeP95Ms");
+      record.p99 = jsonLong(json, "frameTimeP99Ms");
+      record.max = jsonLong(json, "frameTimeMaxMs");
+      record.over16 = jsonLong(json, "framesOver16_67Ms");
+      record.over33 = jsonLong(json, "framesOver33_3Ms");
+      record.over50 = jsonLong(json, "framesOver50Ms");
+      record.over100 = jsonLong(json, "framesOver100Ms");
+      record.stall = jsonLong(json, "largestStallMs");
+      record.consecutive = jsonLong(json, "largestConsecutiveOver33_3");
+      record.prefetchElapsed = jsonLong(json, "prefetchElapsedMs");
+      record.memoryPeak = jsonLong(json, "memoryPeakResidentBytes");
+      return record;
+    }
+
+    private static String jsonString(String json, String key) {
+      String token = "\"" + key + "\":\"";
+      int start = json.indexOf(token);
+      if (start < 0) {
+        throw new IllegalStateException("missing JSON field " + key);
+      }
+      start += token.length();
+      int end = json.indexOf('"', start);
+      if (end < 0) {
+        throw new IllegalStateException("unterminated JSON field " + key);
+      }
+      return json.substring(start, end);
+    }
+
+    private static long jsonLong(String json, String key) {
+      String token = "\"" + key + "\":";
+      int start = json.indexOf(token);
+      if (start < 0) {
+        throw new IllegalStateException("missing JSON field " + key);
+      }
+      start += token.length();
+      int end = start;
+      while (end < json.length() && "-0123456789".indexOf(json.charAt(end)) >= 0) {
+        end++;
+      }
+      return Long.parseLong(json.substring(start, end));
     }
   }
 
@@ -176,12 +684,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       PassResult cold = runPass("cold", true, minimum, maximum);
       printPass(cold);
       writeRunFrames(cold);
-      memory.record("after_scroll", Vm.getTimeStamp());
+      recordMemory("after_scroll", Vm.getTimeStamp());
       writeRunSummary(cold);
       finishBenchmark(true, "");
     } catch (Throwable failure) {
-      String error = failure.getClass().getName() + ":"
-          + String.valueOf(failure.getMessage()).replace(' ', '_').replace(',', '_');
+      String error = failure.toString();
       finishBenchmark(false, error);
     }
   }
@@ -200,14 +707,22 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void finishBenchmark(boolean overallPass, String error) {
-    memory.record("process_end", Vm.getTimeStamp());
+    if (overallPass) {
+      recordMemory("process_end", Vm.getTimeStamp());
+    }
+    long requestedMask = ImageOptimizationSettings.getMask();
+    long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
+    if (requestedMask != effectiveMask) {
+      overallPass = false;
+      error = error.length() == 0 ? "INVALID_CONFIGURATION" : error + "_INVALID_CONFIGURATION";
+    }
     String summary = "fixture=ImageScrollRealWorkloadBenchmarkApp,record=summary"
         + ",resolution=" + width + "x" + height
         + ",target_color_profile=" + String.valueOf(targetColorProfile)
         + ",variant_cache_profile=" + String.valueOf(variantCacheProfile)
         + ",prefetch_profile=" + String.valueOf(prefetchProfile)
-        + ",requested_mask=" + (maskArgument == null ? "default" : maskArgument)
-        + ",effective_mask=" + ImageOptimizationSettings.getEffectiveMask()
+        + ",requested_mask=" + requestedMask
+        + ",effective_mask=" + effectiveMask
         + ",run=" + runNumber
         + ",output_dir=" + String.valueOf(runOutputDir)
         + ",image_dir=" + String.valueOf(imageDir)
@@ -356,7 +871,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         name + " did not start at the expected scrollbar endpoint");
     Image.resetImageOperationAccountingForBenchmarkTest();
     long elapsedStart = Vm.getTimeStamp();
-    memory.record("before_scroll", elapsedStart);
+    recordMemory("before_scroll", elapsedStart);
     int[] frameTimes = new int[256];
     long[] frameElapsed = new long[256];
     int[] framePositions = new int[256];
@@ -369,9 +884,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         Vm.sleep((int) Math.min(4, (long) frames * FRAME_INTERVAL_MILLIS - sinceStart));
         continue;
       }
-      int target = sinceStart >= SCROLL_DURATION_MILLIS
+      int target = sinceStart >= scrollDurationMillis
           ? endpoint
-          : minimum + (int) ((long) (maximum - minimum) * sinceStart / SCROLL_DURATION_MILLIS);
+          : minimum + (int) ((long) (maximum - minimum) * sinceStart / scrollDurationMillis);
       int before = scroll.sbV.getValue();
       if (target != before) {
         ImageRasterBenchmarkSupport.require(scroll.scrollContent(0, target - before, true),
@@ -390,9 +905,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       frameElapsed[frames] = sinceStart;
       framePositions[frames] = scroll.sbV.getValue();
       frames++;
-      memory.sampleIfDue(frameStart);
+      if (memory != null) {
+        memory.sampleIfDue(frameStart);
+      }
       previousFrameStart = frameStart;
-      if (scroll.sbV.getValue() == endpoint && sinceStart >= SCROLL_DURATION_MILLIS) {
+      if (scroll.sbV.getValue() == endpoint && sinceStart >= scrollDurationMillis) {
         break;
       }
     }
@@ -479,9 +996,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long surfaceHeight = Image.nativeMetricForBenchmarkTest(10);
     long n32ColorType = Image.nativeMetricForBenchmarkTest(11);
     String json = "{\n"
-        + "  \"os\":\"" + escapeJson(property("os.name")) + "\",\n"
-        + "  \"osVersion\":\"" + escapeJson(property("os.version")) + "\",\n"
-        + "  \"architecture\":\"" + escapeJson(property("os.arch")) + "\",\n"
+        + "  \"os\":\"" + escapeJson(Settings.platform) + "\",\n"
+        + "  \"osVersion\":\"unavailable\",\n"
+        + "  \"architecture\":\"unavailable\",\n"
         + "  \"endianness\":\"" + endianness(Image.nativeMetricForBenchmarkTest(4)) + "\",\n"
         + "  \"cpu\":\"unavailable\",\n"
         + "  \"gpu\":\"unavailable\",\n"
@@ -508,23 +1025,36 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"sdkVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"benchmarkVersion\":\"1\",\n"
         + "  \"datasetFileCount\":" + IMAGE_COUNT + ",\n"
-        + "  \"datasetHash\":\"unavailable\",\n"
+        + "  \"datasetHash\":\"" + escapeJson(datasetHashArgument) + "\",\n"
         + "  \"columns\":" + COLUMN_COUNT + "\n"
         + "}\n";
     ImageRasterBenchmarkSupport.writeUtf8(
-        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "environment.json"), json);
+        ImageRasterBenchmarkSupport.joinPath(outputDir, "environment.json"), json);
+  }
+
+  private void recordMemory(String name, long timestamp) {
+    if (memory == null) {
+      memory = new MemorySampler();
+    }
+    try {
+      memory.record(name, timestamp);
+    } catch (Throwable ignored) {
+      memory = null;
+    }
   }
 
   private void writeMemory() throws Exception {
     StringBuilder csv = new StringBuilder(2048);
     csv.append("checkpoint,elapsed_ms,current_resident_bytes,peak_resident_bytes,private_bytes,phys_footprint_bytes\n");
-    for (int i = 0; i < memory.count; i++) {
+    int memoryCount = memory == null ? 0 : memory.count;
+    for (int i = 0; i < memoryCount; i++) {
       csv.append(memory.names[i]).append(',').append(memory.elapsed[i]).append(',')
           .append(csvMetric(memory.current[i])).append(',').append(csvMetric(memory.peak[i])).append(',')
           .append(csvMetric(memory.privateBytes[i])).append(',').append(csvMetric(memory.physFootprint[i]))
           .append('\n');
     }
-    csv.append("global_peak,0,").append(csvMetric(memory.globalPeak)).append("\n");
+    csv.append("global_peak,0,").append(csvMetric(memory.globalPeak))
+        .append(",unavailable,unavailable,unavailable\n");
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "memory.csv"), csv.toString());
   }
@@ -532,21 +1062,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private void writeTimeline() throws Exception {
     StringBuilder timeline = new StringBuilder(1024);
     timeline.append("event,elapsed_ms,value\n");
-    for (int i = 0; i < memory.count; i++) {
+    int memoryCount = memory == null ? 0 : memory.count;
+    for (int i = 0; i < memoryCount; i++) {
       timeline.append(memory.names[i]).append(',').append(memory.elapsed[i]).append(',')
           .append(csvMetric(memory.current[i])).append('\n');
     }
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "timeline.csv"), timeline.toString());
-  }
-
-  private static String property(String name) {
-    try {
-      String value = System.getProperty(name);
-      return value == null || value.length() == 0 ? "unavailable" : value;
-    } catch (Throwable ignored) {
-      return "unavailable";
-    }
   }
 
   private static String endianness(long value) {
@@ -566,21 +1088,107 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void writeRunSummary(PassResult result) throws Exception {
+    long requestedMask = ImageOptimizationSettings.getMask();
+    long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
     String json = "{\n"
         + "  \"fixture\":\"ImageScrollRealWorkloadBenchmarkApp\",\n"
+        + "  \"status\":\"" + (requestedMask == effectiveMask ? "PASS" : "INVALID_CONFIGURATION") + "\",\n"
         + "  \"run\":" + runNumber + ",\n"
         + "  \"corpus\":\"" + escapeJson(imageDir) + "\",\n"
         + "  \"imageCount\":" + imageControlCount + ",\n"
         + "  \"columns\":" + COLUMN_COUNT + ",\n"
         + "  \"prefetch\":\"" + prefetchProfile + "\",\n"
-        + "  \"requestedMask\":" + (maskArgument == null
-            ? ImageOptimizationSettings.getMask() : maskArgument) + ",\n"
-        + "  \"effectiveMask\":" + ImageOptimizationSettings.getEffectiveMask() + ",\n"
+        + "  \"requestedMask\":" + requestedMask + ",\n"
+        + "  \"effectiveMask\":" + effectiveMask + ",\n"
+        + "  \"uiBuildElapsedMs\":" + uiBuildElapsedMillis + ",\n"
+        + "  \"prefetchElapsedMs\":" + prefetchElapsedMillis + ",\n"
+        + "  \"memoryPeakResidentBytes\":" + (memory == null ? -1 : memory.globalPeak) + ",\n"
         + "  \"durationMs\":" + result.elapsed + ",\n"
-        + "  \"frameCount\":" + result.frames + "\n"
+        + "  \"frameCount\":" + result.frames + ",\n"
+        + "  \"frameTimeP50Ms\":" + result.percentile(50) + ",\n"
+        + "  \"frameTimeP90Ms\":" + result.percentile(90) + ",\n"
+        + "  \"frameTimeP95Ms\":" + result.percentile(95) + ",\n"
+        + "  \"frameTimeP99Ms\":" + result.percentile(99) + ",\n"
+        + "  \"frameTimeMaxMs\":" + result.percentile(100) + ",\n"
+        + "  \"framesOver16_67Ms\":" + result.countAtLeast(17) + ",\n"
+        + "  \"framesOver33_3Ms\":" + result.countAtLeast(34) + ",\n"
+        + "  \"framesOver50Ms\":" + result.countAtLeast(51) + ",\n"
+        + "  \"framesOver100Ms\":" + result.countAtLeast(101) + ",\n"
+        + "  \"largestStallMs\":" + result.percentile(100) + ",\n"
+        + "  \"largestConsecutiveOver33_3\":" + result.maxConsecutiveAtLeast(34) + "\n"
         + "}\n";
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "summary.json"), json);
+    writeCounters(result.counters);
+  }
+
+  private void writeCounters(Counters counters) throws Exception {
+    StringBuilder json = new StringBuilder(4096);
+    json.append("{\n");
+    appendCounter(json, "targetedJpegDecodes", counters.targetedJpegDecodes, true);
+    appendCounter(json, "fullJpegDecodes", counters.fullJpegDecodes, true);
+    appendCounter(json, "imageMaterializations", counters.imageMaterializations, true);
+    appendCounter(json, "imagePipelines", counters.imagePipelines, true);
+    appendCounter(json, "drawPlansCreated", counters.drawPlansCreated, true);
+    appendCounter(json, "drawPlanCacheHits", counters.drawPlanCacheHits, true);
+    appendCounter(json, "directDrawPlanExecutions", counters.directDrawPlanExecutions, true);
+    appendCounter(json, "nativeGeometryMaterializations", counters.nativeGeometryMaterializations, true);
+    appendCounter(json, "writePixelsAttempts", counters.writePixelsAttempts, true);
+    appendCounter(json, "writePixelsHits", counters.writePixelsHits, true);
+    appendCounter(json, "writePixelsFallbacks", counters.writePixelsFallbacks, true);
+    appendCounter(json, "writePixelsCopiedBytes", counters.writePixelsCopiedBytes, true);
+    appendCounter(json, "physicalIdentityAttempts", counters.physicalIdentityAttempts, true);
+    appendCounter(json, "physicalIdentityHits", counters.physicalIdentityHits, true);
+    appendCounter(json, "physicalIdentityFallbacks", counters.physicalIdentityFallbacks, true);
+    appendCounter(json, "targetColorAttempts", counters.targetColorAttempts, true);
+    appendCounter(json, "targetColorHits", counters.targetColorHits, true);
+    appendCounter(json, "targetColorMaterializations", counters.targetColorMaterializations, true);
+    appendCounter(json, "physicalVariantLookups", counters.physicalVariantLookups, true);
+    appendCounter(json, "physicalVariantHits", counters.physicalVariantHits, true);
+    appendCounter(json, "physicalVariantMisses", counters.physicalVariantMisses, true);
+    appendCounter(json, "physicalVariantStores", counters.physicalVariantStores, true);
+    appendCounter(json, "physicalVariantBytes", counters.physicalVariantBytes, true);
+    appendCounter(json, "backingLiveBytes", counters.backingLiveBytes, true);
+    appendCounter(json, "backingPeakBytes", counters.backingPeakBytes, true);
+    json.append("  \"features\":{\n");
+    long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
+    for (int feature = 0; feature < FEATURE_NAMES.length; feature++) {
+      long hits = counters.featureHits(feature);
+      String status = (effectiveMask & (1L << feature)) == 0
+          ? "DISABLED" : hits == 0 ? "NOT_EXERCISED" : "EXERCISED";
+      json.append("    \"").append(FEATURE_NAMES[feature]).append("\":{\"bit\":")
+          .append(feature).append(",\"enabled\":")
+          .append((effectiveMask & (1L << feature)) != 0)
+          .append(",\"hits\":").append(hits).append(",\"status\":\"")
+          .append(status).append("\"}")
+          .append(feature == FEATURE_NAMES.length - 1 ? "\n" : ",\n");
+    }
+    json.append("  },\n  \"accounting\":{\n")
+        .append("    \"encoded\":{\"count\":").append(imageControlCount)
+        .append(",\"bytes\":null},\n")
+        .append("    \"decoded\":{\"count\":").append(counters.fullJpegDecodes + counters.targetedJpegDecodes)
+        .append(",\"bytes\":").append(jsonMetric(counters.decodeFinalBufferBytes)).append("},\n")
+        .append("    \"raster\":{\"count\":").append(counters.imageMaterializations)
+        .append(",\"bytes\":").append(jsonMetric(counters.rasterBytes())).append("},\n")
+        .append("    \"physicalVariant\":{\"count\":").append(counters.physicalVariantStores)
+        .append(",\"bytes\":").append(jsonMetric(counters.physicalVariantBytes)).append("},\n")
+        .append("    \"prefetch\":{\"count\":").append(prefetchRequestCount)
+        .append(",\"bytes\":").append(jsonMetric(prefetchBackingPeakBytes)).append("},\n")
+        .append("    \"trackedTexture\":{\"count\":null,\"bytes\":null},\n")
+        .append("    \"image\":{\"count\":").append(counters.imageCreated).append(",\"bytes\":null},\n")
+        .append("    \"backing\":{\"count\":null,\"bytes\":").append(jsonMetric(counters.backingPeakBytes)).append("},\n")
+        .append("    \"colorType\":{\"rgba8888Bytes\":").append(jsonMetric(counters.rgba8888Bytes))
+        .append(",\"rgb565Bytes\":").append(jsonMetric(counters.rgb565Bytes))
+        .append(",\"gray8Bytes\":").append(jsonMetric(counters.gray8Bytes))
+        .append(",\"argb4444Bytes\":").append(jsonMetric(counters.argb4444Bytes)).append("}\n")
+        .append("  }\n}\n");
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "counters.json"), json.toString());
+  }
+
+  private static void appendCounter(StringBuilder json, String name, long value, boolean comma) {
+    json.append("  \"").append(name).append("\":").append(value)
+        .append(comma ? ",\n" : "\n");
   }
 
   private static String escapeJson(String value) {
@@ -697,8 +1305,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private static final class Counters {
+    final long imageCreated = Image.imageCreatedCountForTest();
     final long targetedJpegDecodes = Image.targetedDecodeInvocationCountForTest();
     final long fullJpegDecodes = Image.fullDecodeInvocationCountForTest();
+    final long decodeFinalBufferBytes = Image.decodeFinalBufferBytesForTest();
     final long imageMaterializations = Image.materializationCountForTest();
     final long imagePipelines = Image.imagePipelineCreatedCountForTest();
     final long drawPlansCreated = Image.imageDrawPlanCreatedCountForTest();
@@ -732,9 +1342,20 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long smoothResampleDraws = NativeImageBacking.smoothResampleDrawsForTest();
     final long backingLiveBytes = NativeImageBacking.backingBytesLiveForTest();
     final long backingPeakBytes = NativeImageBacking.backingBytesPeakLiveForTest();
+    final long rgba8888Bytes = NativeImageBacking.rgba8888BackingBytesForTest();
+    final long rgb565Bytes = NativeImageBacking.rgb565BackingBytesForTest();
+    final long gray8Bytes = NativeImageBacking.gray8BackingBytesForTest();
+    final long argb4444Bytes = NativeImageBacking.argb4444BackingBytesForTest();
 
     static Counters capture() {
       return new Counters();
+    }
+
+    long rasterBytes() {
+      if (rgba8888Bytes < 0 || rgb565Bytes < 0 || gray8Bytes < 0 || argb4444Bytes < 0) {
+        return -1;
+      }
+      return rgba8888Bytes + rgb565Bytes + gray8Bytes + argb4444Bytes;
     }
 
     String details() {
