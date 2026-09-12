@@ -57,11 +57,14 @@ copy raw logs into the plan.
 - [x] Checkpoint 3 — commit `495b1133d`: time-based pacing, raw frames/timeline,
   percentile/stall metrics, and feature-hit/`NOT_EXERCISED` classification;
   focused SDK test and benchmark-JAR compilation passed.
-- [x] Checkpoint 4 — pending commit: low-overhead process memory, lifecycle
-  checkpoints, Skia surface metadata, and common environment fields are
-  implemented; native Release build, focused SDK test, benchmark-JAR
-  compilation, header validation, and whitespace validation passed.
-- [ ] Checkpoint 5: result schema, self-test, aggregation, and Java ZIP.
+- [x] Checkpoint 4 — commit `43225cbfe`: low-overhead process memory,
+  lifecycle checkpoints, Skia surface metadata, and common environment fields;
+  native Release build, focused SDK test, benchmark-JAR compilation, header
+  validation, and whitespace validation passed.
+- [x] Checkpoint 5 — pending commit: common results schema, deterministic mask
+  plan, short fresh-process self-test, same-machine mask-zero aggregation,
+  internal accounting fields, and application-owned ZIP creation are
+  implemented; deploy conversion and focused SDK test passed.
 - [ ] Checkpoint 6: deterministic suite plan and platform launchers.
 - [ ] Checkpoint 7: package-SDK deploy tooling and five bundle formats.
 - [ ] Final closeout: required tests, four-combination smoke, packaged-SDK

@@ -238,7 +238,11 @@ public class Image extends GfxSurface {
   }
 
   static long nativeMetricForBenchmarkTest(int kind) {
-    return benchmarkMetricNative(kind);
+    try {
+      return benchmarkMetricNative(kind);
+    } catch (Throwable ignored) {
+      return -1;
+    }
   }
 
   static void clearImageOperationAccountingCountersForTest() {
