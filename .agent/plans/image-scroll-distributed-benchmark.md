@@ -61,11 +61,13 @@ copy raw logs into the plan.
   lifecycle checkpoints, Skia surface metadata, and common environment fields;
   native Release build, focused SDK test, benchmark-JAR compilation, header
   validation, and whitespace validation passed.
-- [x] Checkpoint 5 — pending commit: common results schema, deterministic mask
-  plan, short fresh-process self-test, same-machine mask-zero aggregation,
-  internal accounting fields, and application-owned ZIP creation are
-  implemented; deploy conversion and focused SDK test passed.
-- [ ] Checkpoint 6: deterministic suite plan and platform launchers.
+- [x] Checkpoint 5 — commit `44f0f1061`: common results schema, deterministic
+  mask plan, short fresh-process self-test, same-machine mask-zero
+  aggregation, internal accounting fields, and application-owned ZIP
+  creation; deploy conversion and focused SDK test passed.
+- [x] Checkpoint 6 — pending commit: run-all controller/launchers execute the
+  five-round fresh-process matrix, and the packager emits the platform-specific
+  launcher templates with a root bundle manifest.
 - [ ] Checkpoint 7: package-SDK deploy tooling and five bundle formats.
 - [ ] Final closeout: required tests, four-combination smoke, packaged-SDK
   validation when available, scoped status/log evidence, and no new local
