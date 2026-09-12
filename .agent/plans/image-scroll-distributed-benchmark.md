@@ -68,13 +68,16 @@ copy raw logs into the plan.
 - [x] Checkpoint 6 — commit `30ff7efa5`: run-all controller/launchers execute
   the five-round fresh-process matrix, and the packager emits the
   platform-specific launcher templates with a root bundle manifest.
-- [x] Checkpoint 7 — pending commit: package-SDK deploy tooling consumes a
+- [x] Checkpoint 7 — commits `216d47787`, `ba7d51b19`: package-SDK deploy tooling consumes a
   real package.yml SDK ZIP, uses `tc.Deploy` without native overlay, and emits
   all five requested bundle formats; structure and 663-file corpus checks
   passed on the host (`/tmp/image-scroll-final-packages.m4ZZrI`).
 - [ ] Final closeout: required tests, four-combination smoke, packaged-SDK
   validation when available, scoped status/log evidence, and no new local
-  changes left uncommitted.
+  changes left uncommitted. The real package artifact used for packaging came
+  from run `34642063968` on `perf/image-scroll-prefetch`; dispatching
+  `package.yml` for this local branch was unavailable because the branch is
+  not published on `origin`.
 
 ## Current Architecture and Scope
 
