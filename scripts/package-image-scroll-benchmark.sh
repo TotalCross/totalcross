@@ -92,9 +92,20 @@ cleanup() {
 trap cleanup EXIT
 
 # Extraction must precede compilation so the source is always compiled against
-# the SDK shipped by the caller, never against TotalCrossSDK/dist.
+# the SDK shipped by the caller, never against a repository-generated SDK.
 (cd "$work_dir" && jar xf "$sdk_zip")
 sdk_root="$work_dir/TotalCross"
+if [ ! -d "$sdk_root" ]; then
+   nested_sdk_zip=$(find "$work_dir" -maxdepth 1 -type f -name '*.zip' -print -quit)
+   [ -n "$nested_sdk_zip" ] || {
+      echo "SDK ZIP did not contain a TotalCross directory" >&2
+      exit 1
+   }
+   nested_root="$work_dir/nested-sdk"
+   mkdir -p "$nested_root"
+   (cd "$nested_root" && jar xf "$nested_sdk_zip")
+   sdk_root="$nested_root/TotalCross"
+fi
 sdk_jar="$sdk_root/dist/totalcross-sdk.jar"
 [ -f "$sdk_jar" ] || {
    echo "Official ZIP must contain TotalCross/dist/totalcross-sdk.jar" >&2
@@ -107,7 +118,8 @@ support_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/I
 compiled_dir="$work_dir/benchmark-classes"
 benchmark_build_log="$work_dir/benchmark-javac.log"
 mkdir -p "$compiled_dir"
-if ! javac -source 17 -target 17 -encoding UTF-8 -cp "$sdk_jar" -d "$compiled_dir"       "$benchmark_source" "$support_source" > "$benchmark_build_log" 2>&1; then
+if ! javac -source 17 -target 17 -encoding UTF-8 -cp "$sdk_jar" -d "$compiled_dir" \
+      "$benchmark_source" "$support_source" > "$benchmark_build_log" 2>&1; then
    tail -100 "$benchmark_build_log" >&2
    echo "Benchmark JAR compilation failed; full log: $benchmark_build_log" >&2
    exit 1
@@ -115,9 +127,12 @@ fi
 benchmark_jar="$work_dir/ImageScrollRealWorkloadBenchmarkApp.jar"
 (
    cd "$compiled_dir"
-   jar -cf "$benchmark_jar"       totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp*.class       totalcross/ui/image/ImageRasterBenchmarkSupport*.class
+   jar -cf "$benchmark_jar" \
+      totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp*.class \
+      totalcross/ui/image/ImageRasterBenchmarkSupport*.class
 )
-jar tf "$benchmark_jar" | grep -Fqx    'totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.class' || {
+jar tf "$benchmark_jar" | grep -Fqx \
+   'totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.class' || {
    echo "Benchmark JAR does not contain ImageScrollRealWorkloadBenchmarkApp" >&2
    exit 1
 }
@@ -126,7 +141,8 @@ chime_resource_dir="$work_dir/chime-resource"
 mkdir -p "$chime_resource_dir"
 chime_resource_jar="$sdk_jar"
 if ! jar tf "$chime_resource_jar" | grep -Fqx 'totalcross/res/mp3/chime.mp3'; then
-   chime_resource_jar=$(find "$sdk_root/dist" -maxdepth 1 -type f       -name 'totalcross-sdk-*-sources.jar' -print -quit)
+   chime_resource_jar=$(find "$sdk_root/dist" -maxdepth 1 -type f \
+      -name 'totalcross-sdk-*-sources.jar' -print -quit)
 fi
 [ -f "$chime_resource_jar" ] || {
    echo "Official SDK resource JAR not found: totalcross/res/mp3/chime.mp3" >&2
@@ -191,7 +207,8 @@ deploy_target() {
    cp "$benchmark_jar" "$deploy_dir/ImageScrollRealWorkloadBenchmarkApp.jar"
    (
       cd "$deploy_dir"
-      TOTALCROSS3_HOME="$sdk_root" java -cp "$deploy_classpath" tc.Deploy          ImageScrollRealWorkloadBenchmarkApp.jar "$deploy_platform" > "$work_dir/deploy-$target.log" 2>&1
+      TOTALCROSS3_HOME="$sdk_root" java -cp "$deploy_classpath" tc.Deploy \
+         ImageScrollRealWorkloadBenchmarkApp.jar "$deploy_platform" > "$work_dir/deploy-$target.log" 2>&1
    ) || {
       tail -80 "$work_dir/deploy-$target.log" >&2
       echo "tc.Deploy failed for $target; full log: $work_dir/deploy-$target.log" >&2
