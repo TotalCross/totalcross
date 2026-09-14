@@ -79,10 +79,15 @@ copy raw logs into the plan.
   added packaged-ZIP wrapper handling.
 - [x] Checkpoint 9 — commit `882b31a3c`: the distributed runner bounds every
   native process to 180 seconds and records a fail-fast timeout in its log.
+- [x] Checkpoint 10 — commit `ff3a5c180`: the benchmark timer listener is
+  registered once before the prefetch branch, and dispatch is restricted to
+  the active benchmark timer.
 - [ ] Final closeout: the external self-test passed, but the first smoke
-  (`0/off`) was terminated after more than six minutes without output or
-  artifacts; no other smoke or matrix process was started. The bundle used the
-  official `TotalCross-7.2.2` artifact from Actions run `34883508658`.
+  (`0/off`) opened the UI, started scrolling, and produced the individual
+  pass/summary records, but the native process terminated with `SIGSEGV`
+  after 11 frames before all artifacts were written; no other smoke or matrix
+  process was started. The bundle used the official `TotalCross-7.2.2`
+  artifact from Actions run `34883508658`.
 
 ## Current Architecture and Scope
 
@@ -278,13 +283,14 @@ from the latest checkpoint commit and inspecting only the active paths.
 ## Outcomes & Retrospective
 
 The implementation commits are `e1bccc8c9`, `4ac0a53b5`, `5f97ba301`,
-`6b807c5d9`, `1b6007483`, and `882b31a3c`. The official package artifact was
+`6b807c5d9`, `1b6007483`, `882b31a3c`, and `ff3a5c180`. The official package
+artifact was
 downloaded, extracted, compiled, deployed, and passed manifest/corpus/hash
 checks; the extracted SDK JAR SHA-256 was
 `229ec02e9dcd60e7d9d114aabe098ce9b9f44f26ac7509fe3b13b4745aa0d2c1` for both
-compile and deploy. The external self-test passed. The required smoke
-sequence halted at `0/off` after a native-process hang, so no matrix ZIP
-exists.
+compile and deploy. The external self-test passed. The listener correction
+allowed `0/off` to reach the scrolling measurement, but the process then
+terminated with `SIGSEGV` after 11 frames; therefore no matrix ZIP exists.
 
 ## Revision Note
 
