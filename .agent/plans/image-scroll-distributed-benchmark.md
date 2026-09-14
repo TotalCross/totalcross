@@ -283,14 +283,17 @@ from the latest checkpoint commit and inspecting only the active paths.
 ## Outcomes & Retrospective
 
 The implementation commits are `e1bccc8c9`, `4ac0a53b5`, `5f97ba301`,
-`6b807c5d9`, `1b6007483`, `882b31a3c`, and `ff3a5c180`. The official package
-artifact was
-downloaded, extracted, compiled, deployed, and passed manifest/corpus/hash
-checks; the extracted SDK JAR SHA-256 was
+`6b807c5d9`, `1b6007483`, `882b31a3c`, `ff3a5c180`, `d50fffe46`,
+`da7728d0f`, `3a75c8c33`, `f229919fd`, `8463ae342`, and `fdfa8efce`. The
+official package artifact was downloaded, extracted, compiled, deployed, and
+passed manifest/corpus/hash checks; the extracted SDK JAR SHA-256 was
 `229ec02e9dcd60e7d9d114aabe098ce9b9f44f26ac7509fe3b13b4745aa0d2c1` for both
-compile and deploy. The external self-test passed. The listener correction
-allowed `0/off` to reach the scrolling measurement, but the process then
-terminated with `SIGSEGV` after 11 frames; therefore no matrix ZIP exists.
+compile and deploy. The external self-test passed. On the final macOS ARM64
+bundle, `0/off` and `0/on` both passed with `540x960`, complete scrolling,
+matching mask values, the expected prefetch counts, and all six artifacts.
+The official runtime still emits its chime warning, which was explicitly
+accepted for continuation; the 210-process matrix remains intentionally
+deferred.
 
 ## Revision Note
 
