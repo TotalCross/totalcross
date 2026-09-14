@@ -9,9 +9,9 @@
 #include "ui/ImageBackingFormat.h"
 
 /* Chooses a compact format from structural source metadata and the decode mask. */
-ImageBackingFormat imageSelectDecodeStorageFormat(TCObject imageObj, bool sourceIsGray,
-      bool sourceHasAlpha);
-ImageBackingFormat imageSelectDecodeStorageFormatWithMask(int32 mask, bool sourceIsGray,
-      bool sourceHasAlpha);
+ImageBackingFormat imageSelectDecodeStorageFormat(TCObject imageObj, int32 sourceIsGray,
+      int32 sourceHasAlpha);
+ImageBackingFormat imageSelectDecodeStorageFormatWithMask(int32 mask, int32 sourceIsGray,
+      int32 sourceHasAlpha);
 
 #endif

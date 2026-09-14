@@ -62,16 +62,16 @@ static bool imageDecodeOpacityMetadataEnabled(void)
    return (imageDecodeOptimizationMask() & IMAGE_OPT_RASTER_OPACITY_METADATA) != 0;
 }
 
-ImageBackingFormat imageSelectDecodeStorageFormat(TCObject imageObj, bool sourceIsGray,
-      bool sourceHasAlpha)
+ImageBackingFormat imageSelectDecodeStorageFormat(TCObject imageObj, int32 sourceIsGray,
+      int32 sourceHasAlpha)
 {
    (void)imageObj;
    return imageSelectDecodeStorageFormatWithMask(imageDecodeOptimizationMask(), sourceIsGray,
       sourceHasAlpha);
 }
 
-ImageBackingFormat imageSelectDecodeStorageFormatWithMask(int32 mask, bool sourceIsGray,
-      bool sourceHasAlpha)
+ImageBackingFormat imageSelectDecodeStorageFormatWithMask(int32 mask, int32 sourceIsGray,
+      int32 sourceHasAlpha)
 {
    if (sourceIsGray && !sourceHasAlpha && (mask & (1 << 6)) != 0)
       return IMAGE_BACKING_FORMAT_GRAY8;
