@@ -134,11 +134,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           "real workload content did not extend beyond the viewport");
       scroll.sbV.setValue(minimum);
 
+      addTimerListener(this);
       if (prefetchEnabled()) {
         Image.resetImageOperationAccountingForBenchmarkTest();
         ImagePreparation.resetAccountingForTest();
         final long prefetchStart = Vm.getTimeStamp();
-        addTimerListener(this);
         prefetchTimer = addTimer(10);
         scroll.prepareForDisplay(new Runnable() {
           @Override
@@ -252,7 +252,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   @Override
   public void timerTriggered(TimerEvent event) {
-    if (prefetchComplete || benchmarkReady) {
+    if (event == prefetchTimer && (prefetchComplete || benchmarkReady)) {
       executeBenchmark();
     }
   }
