@@ -32,6 +32,18 @@ PROCESS_TIMEOUT_SECONDS = 180
 FIXTURE = "ImageScrollRealWorkloadBenchmarkApp"
 FNV_OFFSET = 0xCBF29CE484222325
 FNV_PRIME = 0x100000001B3
+TEMPORAL_SUMMARY_FIELDS = (
+    "uiBuildElapsedNs", "prefetchElapsedNs", "durationNs",
+    "frameTimeP50Ns", "frameTimeP90Ns", "frameTimeP95Ns", "frameTimeP99Ns",
+    "frameTimeMaxNs", "framesOver16_67Ns", "framesOver33_3Ns",
+    "framesOver50Ns", "framesOver100Ns", "largestStallNs",
+)
+FRAME_FIELDS = ("frame_index", "elapsed_ns", "frame_time_ns", "scroll_value")
+MEMORY_FIELDS = (
+    "checkpoint", "elapsed_ns", "current_resident_bytes", "peak_resident_bytes",
+    "private_bytes", "phys_footprint_bytes",
+)
+TIMELINE_FIELDS = ("event", "elapsed_ns", "value")
 
 
 class BenchmarkFailure(RuntimeError):
@@ -168,6 +180,52 @@ def parse_record(line):
     return record
 
 
+def require_nonnegative_ns(value, description):
+    require(type(value) is int and value >= 0,
+            f"{description} must be a non-negative integer in ns")
+
+
+def require_record_ns(record, key, description):
+    value = record.get(key)
+    try:
+        value = int(value)
+    except (TypeError, ValueError) as error:
+        raise BenchmarkFailure(f"{description} must be an integer in ns") from error
+    require_nonnegative_ns(value, description)
+
+
+def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_record):
+    for field in TEMPORAL_SUMMARY_FIELDS:
+        require_nonnegative_ns(run_summary.get(field), f"{run_dir}/summary.json {field}")
+    for field in (
+        "ui_build_elapsed_ns", "prefetch_elapsed_ns", "elapsed_total_ns",
+        "frame_time_min_ns", "frame_time_p90_ns", "frame_time_p50_ns",
+        "frame_time_p95_ns", "frame_time_p99_ns", "frame_time_max_ns",
+        "largest_stall_ns",
+    ):
+        require_record_ns(pass_record, field, f"{field} in pass record")
+    for field in ("ui_build_elapsed_ns", "prefetch_elapsed_ns"):
+        require_record_ns(summary_record, field, f"{field} in summary record")
+
+    frames_path = run_dir / "frames.csv"
+    with frames_path.open(newline="", encoding="utf-8") as source:
+        reader = csv.reader(source)
+        require(tuple(next(reader, ())) == FRAME_FIELDS,
+                f"{frames_path} must use canonical ns fields")
+        for row in reader:
+            require(len(row) == len(FRAME_FIELDS), f"invalid row in {frames_path}")
+            require_nonnegative_ns(int(row[1]), f"{frames_path} elapsed_ns")
+            require_nonnegative_ns(int(row[2]), f"{frames_path} frame_time_ns")
+
+    for path, expected_fields in (
+        (run_dir / "memory.csv", MEMORY_FIELDS),
+        (run_dir / "timeline.csv", TIMELINE_FIELDS),
+    ):
+        with path.open(newline="", encoding="utf-8") as source:
+            header = tuple(next(csv.reader(source), ()))
+        require(header == expected_fields, f"{path} must use canonical ns fields")
+
+
 def tail(path, count=60):
     return "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[-count:])
 
@@ -244,6 +302,7 @@ def validate_run_artifacts(output, log_path, mask, prefetch, run, dataset_digest
             f"{run_dir}/summary.json image count mismatch")
     require(run_summary.get("frameCount", 0) > 1,
             f"{run_dir}/summary.json has no measured frames")
+    validate_temporal_artifacts(run_dir, run_summary, record, summary_record)
     require(environment.get("expectedLogicalWidth") == 540
             and environment.get("expectedLogicalHeight") == 960
             and environment.get("effectiveLogicalWidth") == 540
@@ -376,6 +435,8 @@ def aggregate(output, plan):
         require(summary.get("requestedMask") == mask
                 and summary.get("effectiveMask") == mask,
                 f"matrix mask mismatch: {path}")
+        for field in TEMPORAL_SUMMARY_FIELDS:
+            require_nonnegative_ns(summary.get(field), f"{path} {field}")
         records.append({
             "order": order,
             "run": run,
@@ -383,18 +444,18 @@ def aggregate(output, plan):
             "mask": mask,
             "status": summary["status"],
             "frame_count": summary["frameCount"],
-            "frame_p50_ms": summary["frameTimeP50Ms"],
-            "frame_p90_ms": summary["frameTimeP90Ms"],
-            "frame_p95_ms": summary["frameTimeP95Ms"],
-            "frame_p99_ms": summary["frameTimeP99Ms"],
-            "frame_max_ms": summary["frameTimeMaxMs"],
-            "frames_over_16_67_ms": summary["framesOver16_67Ms"],
-            "frames_over_33_3_ms": summary["framesOver33_3Ms"],
-            "frames_over_50_ms": summary["framesOver50Ms"],
-            "frames_over_100_ms": summary["framesOver100Ms"],
-            "largest_stall_ms": summary["largestStallMs"],
+            "frame_p50_ns": summary["frameTimeP50Ns"],
+            "frame_p90_ns": summary["frameTimeP90Ns"],
+            "frame_p95_ns": summary["frameTimeP95Ns"],
+            "frame_p99_ns": summary["frameTimeP99Ns"],
+            "frame_max_ns": summary["frameTimeMaxNs"],
+            "frames_over_16_67_ns": summary["framesOver16_67Ns"],
+            "frames_over_33_3_ns": summary["framesOver33_3Ns"],
+            "frames_over_50_ns": summary["framesOver50Ns"],
+            "frames_over_100_ns": summary["framesOver100Ns"],
+            "largest_stall_ns": summary["largestStallNs"],
             "largest_consecutive_over_33_3": summary["largestConsecutiveOver33_3"],
-            "prefetch_elapsed_ms": summary["prefetchElapsedMs"],
+            "prefetch_elapsed_ns": summary["prefetchElapsedNs"],
             "memory_peak_resident_bytes": summary["memoryPeakResidentBytes"],
         })
     require(len(records) == EXPECTED_PROCESSES, "aggregation did not find 210 summaries")
@@ -403,25 +464,25 @@ def aggregate(output, plan):
         baseline = [record for record in records
                     if record["prefetch"] == prefetch and record["mask"] == 0]
         require(len(baseline) == ROUNDS, f"missing mask zero baseline for {prefetch}")
-        baseline_p50 = sum(record["frame_p50_ms"] for record in baseline) // len(baseline)
-        baseline_p95 = sum(record["frame_p95_ms"] for record in baseline) // len(baseline)
+        baseline_p50 = sum(record["frame_p50_ns"] for record in baseline) // len(baseline)
+        baseline_p95 = sum(record["frame_p95_ns"] for record in baseline) // len(baseline)
         for record in records:
             if record["prefetch"] != prefetch:
                 continue
             row = dict(record)
             row["baseline_scope"] = "same-machine-same-prefetch-mask0"
-            row["baseline_mask0_p50_ms"] = baseline_p50
-            row["delta_p50_ms"] = record["frame_p50_ms"] - baseline_p50
-            row["baseline_mask0_p95_ms"] = baseline_p95
-            row["delta_p95_ms"] = record["frame_p95_ms"] - baseline_p95
+            row["baseline_mask0_p50_ns"] = baseline_p50
+            row["delta_p50_ns"] = record["frame_p50_ns"] - baseline_p50
+            row["baseline_mask0_p95_ns"] = baseline_p95
+            row["delta_p95_ns"] = record["frame_p95_ns"] - baseline_p95
             rows.append(row)
     fields = [
-        "order", "run", "prefetch", "mask", "status", "frame_count", "frame_p50_ms",
-        "frame_p90_ms", "frame_p95_ms", "frame_p99_ms", "frame_max_ms",
-        "frames_over_16_67_ms", "frames_over_33_3_ms", "frames_over_50_ms",
-        "frames_over_100_ms", "largest_stall_ms", "largest_consecutive_over_33_3",
-        "prefetch_elapsed_ms", "memory_peak_resident_bytes", "baseline_scope",
-        "baseline_mask0_p50_ms", "delta_p50_ms", "baseline_mask0_p95_ms", "delta_p95_ms",
+        "order", "run", "prefetch", "mask", "status", "frame_count", "frame_p50_ns",
+        "frame_p90_ns", "frame_p95_ns", "frame_p99_ns", "frame_max_ns",
+        "frames_over_16_67_ns", "frames_over_33_3_ns", "frames_over_50_ns",
+        "frames_over_100_ns", "largest_stall_ns", "largest_consecutive_over_33_3",
+        "prefetch_elapsed_ns", "memory_peak_resident_bytes", "baseline_scope",
+        "baseline_mask0_p50_ns", "delta_p50_ns", "baseline_mask0_p95_ns", "delta_p95_ns",
     ]
     path = output / "summary.csv"
     with path.open("w", newline="", encoding="utf-8") as destination:
@@ -437,7 +498,7 @@ def aggregate(output, plan):
 
 
 def write_zip(bundle, output):
-    archive = output / f"totalcross-image-benchmark-results-{int(time.time() * 1000)}.zip"
+    archive = output / f"totalcross-image-benchmark-results-{time.time_ns()}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as destination:
         for path in sorted(bundle.rglob("*")):
             if (path.is_file() and path != archive
