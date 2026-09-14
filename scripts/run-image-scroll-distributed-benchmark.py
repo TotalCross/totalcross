@@ -113,9 +113,13 @@ def validate_bundle(bundle, manifest):
             "bundle corpus must contain exactly 663 JPEG files and no extra files")
     require(dataset_hash(corpus, images) == manifest.get("datasetHash"),
             "bundle dataset hash differs from manifest")
-    chime = bundle / "device" / "chime.mp3"
+    require(not (bundle / "device").exists(),
+            "bundle must not contain a physical device directory")
+    require(manifest.get("chime") == "chime.mp3",
+            "manifest chime path must be the application root")
+    chime = bundle / "chime.mp3"
     require(chime.is_file() and chime.stat().st_size > 0,
-            "official device/chime.mp3 is missing")
+            "official root chime.mp3 is missing")
     require(sha256_file(chime) == manifest.get("chimeSha256"),
             "bundle chime differs from manifest")
     executable = executable_path(bundle, manifest)

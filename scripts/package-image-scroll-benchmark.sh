@@ -227,9 +227,8 @@ deploy_target() {
       cp "$image_path" "$destination"
    done < <(find "$corpus_dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
 
-   mkdir -p "$bundle_dir/device"
-   cp "$chime_resource" "$bundle_dir/device/chime.mp3"
-   cmp -s "$chime_resource" "$bundle_dir/device/chime.mp3" || {
+   cp "$chime_resource" "$bundle_dir/chime.mp3"
+   cmp -s "$chime_resource" "$bundle_dir/chime.mp3" || {
       echo "Bundle chime resource differs from the official SDK resource" >&2
       exit 1
    }
@@ -261,6 +260,7 @@ deploy_target() {
   "executable": "$executable_name",
   "runtime": "$runtime_name",
   "runner": "run-benchmark.py",
+  "chime": "chime.mp3",
   "datasetFileCount": 663,
   "datasetHash": "$dataset_hash",
   "columns": 3,
