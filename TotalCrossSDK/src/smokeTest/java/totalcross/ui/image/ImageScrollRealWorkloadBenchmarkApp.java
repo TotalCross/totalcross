@@ -84,22 +84,32 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private boolean benchmarkReady;
   private int scrollDurationMillis = SCROLL_DURATION_MILLIS;
 
+  static {
+    diagnosticMarker("class-init");
+  }
+
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
+    diagnosticMarker("constructor-after-super");
     Flick.defaultShortestFlick = 200;
     Flick.defaultLongestFlick = 2500;
     Flick.defaultFlickAcceleration = 1.8;
     Settings.scrollDistanceOnMouseWheelMove = SCROLL_STEP;
     setDeviceTitle("image-scroll-real-workload");
+    diagnosticMarker("before-set-ui-style");
     setUIStyle(Settings.ANDROID_UI);
+    diagnosticMarker("after-set-ui-style");
   }
 
   @Override
   public void initUI() {
+    diagnosticMarker("init-ui-entry");
     super.initUI();
+    diagnosticMarker("init-ui-after-super");
     try {
       String mode = ImageRasterBenchmarkSupport.argument(getCommandLine(), "mode", MODE_BENCHMARK);
       if (MODE_RUN_ALL.equals(mode) || MODE_SELF_TEST.equals(mode) || MODE_AGGREGATE.equals(mode)) {
+        diagnosticMarker("before-controller");
         runController(mode);
         return;
       }
@@ -135,8 +145,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       runOutputDir = ImageRasterBenchmarkSupport.joinPath(
           ImageRasterBenchmarkSupport.joinPath(outputDir, "runs"), runName());
       ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
+      diagnosticMarker("before-resolution");
       requireBenchmarkResolution();
+      diagnosticMarker("after-resolution");
       configureMask();
+      diagnosticMarker("after-mask");
       ImageRasterBenchmarkSupport.require("disabled".equals(targetColorProfile)
           || "enabled".equals(targetColorProfile),
           "target-color must be disabled or enabled");
@@ -150,10 +163,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           "prefetch must be off or on");
 
       long buildStart = Vm.getTimeStamp();
+      diagnosticMarker("before-corpus");
       String[] imagePaths = sortedCorpusPaths(imageDir);
       ImageRasterBenchmarkSupport.require(imagePaths.length == IMAGE_COUNT,
           "expected exactly " + IMAGE_COUNT + " corpus files but found " + imagePaths.length);
+      diagnosticMarker("before-build-ui");
       buildUi(imagePaths);
+      diagnosticMarker("after-build-ui");
       uiBuildElapsedMillis = Vm.getTimeStamp() - buildStart;
       ImageRasterBenchmarkSupport.require(rowCount == IMAGE_COUNT / COLUMN_COUNT,
           "unexpected row count " + rowCount);
@@ -182,6 +198,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         });
         return;
       }
+      diagnosticMarker("before-benchmark");
       benchmarkReady = true;
       prefetchTimer = addTimer(50);
     } catch (Throwable failure) {
@@ -380,6 +397,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       result.append((char) (nibble < 10 ? '0' + nibble : 'a' + nibble - 10));
     }
     return result.toString();
+  }
+
+  private static void diagnosticMarker(String phase) {
+    System.out.println("image-scroll diagnostic phase=" + phase);
+    System.out.flush();
+    ImageRasterBenchmarkSupport.writeReport(
+        "/tmp/ImageScrollRealWorkloadBenchmarkApp." + phase + ".marker", phase + "\n");
   }
 
   private void writeManifest(String output, String corpus, String datasetHash) throws Exception {
