@@ -17,7 +17,6 @@ import totalcross.ui.ScrollContainer;
 import totalcross.ui.Window;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
-import totalcross.ui.gfx.Graphics;
 
 /** Real-corpus scrolling workload based on the customer-provided Tcsort layout. */
 public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements TimerListener {
@@ -467,17 +466,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void writeEnvironment() throws Exception {
-    long surfaceColorType = Image.nativeMetricForBenchmarkTest(6);
-    long surfaceAlphaType = Image.nativeMetricForBenchmarkTest(7);
-    long surfaceRowBytes = Image.nativeMetricForBenchmarkTest(8);
-    long surfaceWidth = Image.nativeMetricForBenchmarkTest(9);
-    long surfaceHeight = Image.nativeMetricForBenchmarkTest(10);
-    long n32ColorType = Image.nativeMetricForBenchmarkTest(11);
     String json = "{\n"
         + "  \"os\":\"" + escapeJson(Settings.platform) + "\",\n"
         + "  \"osVersion\":\"unavailable\",\n"
         + "  \"architecture\":\"unavailable\",\n"
-        + "  \"endianness\":\"" + endianness(Image.nativeMetricForBenchmarkTest(4)) + "\",\n"
+        + "  \"endianness\":\"unavailable\",\n"
         + "  \"cpu\":\"unavailable\",\n"
         + "  \"gpu\":\"unavailable\",\n"
         + "  \"ramTotalBytes\":null,\n"
@@ -487,22 +480,22 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"effectiveLogicalHeight\":" + Settings.screenHeight + ",\n"
         + "  \"windowLogicalWidth\":" + Settings.screenWidth + ",\n"
         + "  \"windowLogicalHeight\":" + Settings.screenHeight + ",\n"
-        + "  \"windowPhysicalWidth\":" + jsonMetric(surfaceWidth) + ",\n"
-        + "  \"windowPhysicalHeight\":" + jsonMetric(surfaceHeight) + ",\n"
+        + "  \"windowPhysicalWidth\":null,\n"
+        + "  \"windowPhysicalHeight\":null,\n"
         + "  \"totalCrossScreenWidth\":" + Settings.screenWidth + ",\n"
         + "  \"totalCrossScreenHeight\":" + Settings.screenHeight + ",\n"
         + "  \"density\":" + Settings.screenDensity + ",\n"
-        + "  \"systemDisplayScale\":" + Graphics.getMainWindowContentScale() + ",\n"
+        + "  \"systemDisplayScale\":null,\n"
         + "  \"refreshRate\":null,\n"
-        + "  \"sdlDrawableWidth\":" + jsonMetric(surfaceWidth) + ",\n"
-        + "  \"sdlDrawableHeight\":" + jsonMetric(surfaceHeight) + ",\n"
-        + "  \"skiaSurfaceWidth\":" + jsonMetric(surfaceWidth) + ",\n"
-        + "  \"skiaSurfaceHeight\":" + jsonMetric(surfaceHeight) + ",\n"
-        + "  \"rendererBackend\":\"" + rendererBackend() + "\",\n"
-        + "  \"kN32SkColorType\":" + jsonMetric(n32ColorType) + ",\n"
-        + "  \"skiaSurfaceColorType\":" + jsonMetric(surfaceColorType) + ",\n"
-        + "  \"skiaSurfaceAlphaType\":" + jsonMetric(surfaceAlphaType) + ",\n"
-        + "  \"skiaSurfaceRowBytes\":" + jsonMetric(surfaceRowBytes) + ",\n"
+        + "  \"sdlDrawableWidth\":null,\n"
+        + "  \"sdlDrawableHeight\":null,\n"
+        + "  \"skiaSurfaceWidth\":null,\n"
+        + "  \"skiaSurfaceHeight\":null,\n"
+        + "  \"rendererBackend\":\"unavailable\",\n"
+        + "  \"kN32SkColorType\":null,\n"
+        + "  \"skiaSurfaceColorType\":null,\n"
+        + "  \"skiaSurfaceAlphaType\":null,\n"
+        + "  \"skiaSurfaceRowBytes\":null,\n"
         + "  \"totalCrossVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"sdkVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"benchmarkVersion\":\"1\",\n"
@@ -532,14 +525,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static String reportFailure(Throwable failure) {
     failure.printStackTrace();
     return failure.toString();
-  }
-
-  private static String endianness(long value) {
-    return value == 1 ? "little" : value == 2 ? "big" : "unavailable";
-  }
-
-  private static String rendererBackend() {
-    return Image.nativeMetricForBenchmarkTest(5) == 1 ? "skia" : "unavailable";
   }
 
   private static String jsonMetric(long value) {
