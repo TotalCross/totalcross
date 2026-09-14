@@ -285,7 +285,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + " --image-optimization=0 --prefetch=off --run=0"
         + " --duration=100 --output=" + runOutput
         + " --corpus=" + corpus + " --dataset-hash=" + datasetHash;
-    int childStatus = Vm.exec(benchmarkExecutable(), args, 0, true);
+    int childStatus = executeBenchmarkProcess(args);
     ImageRasterBenchmarkSupport.require(childStatus == 0,
         "self-test benchmark exited with " + childStatus);
     String runDir = ImageRasterBenchmarkSupport.joinPath(
@@ -451,7 +451,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
             + " --output=" + output
             + " --corpus=" + corpus
             + " --dataset-hash=" + datasetHash;
-        int status = Vm.exec(benchmarkExecutable(), args, 0, true);
+        int status = executeBenchmarkProcess(args);
         ImageRasterBenchmarkSupport.require(status == 0,
             "benchmark process failed for mask=" + mask + ",prefetch=" + prefetch
                 + ",run=" + (round + 1) + ",status=" + status);
@@ -478,6 +478,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       executable = "." + separator + base;
     }
     return Settings.WIN32.equals(Settings.platform) ? executable : "./" + base;
+  }
+
+  private int executeBenchmarkProcess(String args) throws Exception {
+    String executable = benchmarkExecutable();
+    if (Settings.WIN32.equals(Settings.platform)) {
+      return Vm.exec(executable, args, 0, true);
+    }
+    return Vm.exec(executable + " " + args, null, 0, true);
   }
 
   private static void requireBenchmarkResolution() {
