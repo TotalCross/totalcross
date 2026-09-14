@@ -99,6 +99,24 @@ sdk_jar="$sdk_root/dist/totalcross-sdk.jar"
 }
 [ -f "$sdk_jar" ] || { echo "Packaged SDK JAR not found in $sdk_root" >&2; exit 1; }
 
+chime_resource_dir="$work_dir/chime-resource"
+mkdir -p "$chime_resource_dir"
+chime_resource_jar="$sdk_jar"
+if ! jar tf "$chime_resource_jar" | grep -Fqx 'totalcross/res/mp3/chime.mp3'; then
+   chime_resource_jar=$(find "$sdk_root/dist" -maxdepth 1 -type f \
+      -name 'totalcross-sdk-*-sources.jar' -print -quit)
+fi
+[ -f "$chime_resource_jar" ] || {
+   echo "Official SDK resource JAR not found: totalcross/res/mp3/chime.mp3" >&2
+   exit 1
+}
+(cd "$chime_resource_dir" && jar xf "$chime_resource_jar" totalcross/res/mp3/chime.mp3)
+chime_resource="$chime_resource_dir/totalcross/res/mp3/chime.mp3"
+[ -f "$chime_resource" ] || {
+   echo "Official SDK resource not found: totalcross/res/mp3/chime.mp3" >&2
+   exit 1
+}
+
 deploy_classpath="$sdk_jar"
 for dependency in "$sdk_root"/dist/libs/*.jar; do
    [ -f "$dependency" ] || continue
@@ -141,6 +159,12 @@ deploy_target() {
       mkdir -p "$(dirname "$destination")"
       cp "$image_path" "$destination"
    done < <(find "$corpus_dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
+   mkdir -p "$bundle_dir/device"
+   cp "$chime_resource" "$bundle_dir/device/chime.mp3"
+   cmp -s "$chime_resource" "$bundle_dir/device/chime.mp3" || {
+      echo "Bundle chime resource differs from the official SDK resource" >&2
+      exit 1
+   }
    local bundle_file_count bundle_image_count
    bundle_file_count=$(find "$bundle_dir/corpus" -type f -print | wc -l | tr -d ' ')
    bundle_image_count=$(find "$bundle_dir/corpus" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print | wc -l | tr -d ' ')

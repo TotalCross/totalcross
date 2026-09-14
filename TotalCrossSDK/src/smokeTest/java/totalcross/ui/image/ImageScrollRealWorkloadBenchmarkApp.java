@@ -10,7 +10,6 @@ import totalcross.io.File;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.ui.Container;
-import totalcross.ui.Control;
 import totalcross.ui.Flick;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
@@ -92,9 +91,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     Flick.defaultFlickAcceleration = 1.8;
     Settings.scrollDistanceOnMouseWheelMove = SCROLL_STEP;
     setDeviceTitle("image-scroll-real-workload");
-    Settings.uiStyle = Settings.ANDROID_UI;
-    Settings.fingerTouch = true;
-    Control.uiStyleChanged();
+    setUIStyle(Settings.ANDROID_UI);
   }
 
   @Override
