@@ -623,6 +623,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/lang/Object.c
     ${TC_SRCDIR}/nm/lang/String.c
     ${TC_SRCDIR}/nm/lang/StringBuffer.c
+    ${TC_SRCDIR}/nm/lang/System.c
     ${TC_SRCDIR}/nm/lang/Thread.c
     ${TC_SRCDIR}/nm/lang/Throwable.c
     ${TC_SRCDIR}/nm/lang/Process.c

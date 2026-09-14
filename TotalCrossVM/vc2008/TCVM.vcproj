@@ -1204,6 +1204,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\nm\lang\System.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\nm\lang\Thread.c"
 					>
 				</File>

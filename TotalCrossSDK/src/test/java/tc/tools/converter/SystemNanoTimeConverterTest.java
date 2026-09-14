@@ -5,6 +5,7 @@
 package tc.tools.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Modifier;
@@ -68,6 +69,38 @@ class SystemNanoTimeConverterTest {
   }
 
   @Test
+  void nativeImplementationsUsePlatformMonotonicClocks() throws Exception {
+    Path vmRoot = Path.of("..", "TotalCrossVM");
+    String posix = Files.readString(vmRoot.resolve("src/util/posix/utils_c.h"));
+    String posixNanoTime = between(posix, "static int64 privateGetNanoTime()", "static int32 privateGetTimeStamp()");
+    String win = Files.readString(vmRoot.resolve("src/util/win/utils_c.h"));
+    String winNanoTime = between(win, "static int64 privateGetNanoTime()", "static Err privateListFiles");
+    String nativeSource = Files.readString(vmRoot.resolve("src/nm/lang/System.c"));
+    String cmake = Files.readString(vmRoot.resolve("CMakeLists.txt"));
+    String vcproj = Files.readString(vmRoot.resolve("vc2008/TCVM.vcproj"));
+
+    assertTrue(posixNanoTime.contains("clock_gettime(CLOCK_MONOTONIC"));
+    assertFalse(posixNanoTime.contains("gettimeofday"));
+    assertTrue(posix.contains("mach_absolute_time"));
+    assertTrue(posix.contains("mach_timebase_info"));
+    assertTrue(posixNanoTime.contains("pthread_once"));
+    assertTrue(posixNanoTime.contains("wholeTicks = ticks / nanoTimeTimebase.denom"));
+    assertTrue(posixNanoTime.contains("remainderTicks = ticks % nanoTimeTimebase.denom"));
+
+    assertTrue(winNanoTime.contains("QueryPerformanceFrequency"));
+    assertTrue(winNanoTime.contains("QueryPerformanceCounter"));
+    assertTrue(winNanoTime.contains("count / frequencyValueUnsigned"));
+    assertTrue(winNanoTime.contains("remainder * 1000000000ULL"));
+    assertTrue(winNanoTime.contains("privateGetTimeStamp()"));
+    assertTrue(winNanoTime.contains("1000000LL"));
+    assertFalse(winNanoTime.contains("__int128"));
+
+    assertTrue(nativeSource.contains("p->retL = getNanoTime();"));
+    assertTrue(cmake.contains("${TC_SRCDIR}/nm/lang/System.c"));
+    assertTrue(vcproj.contains("..\\..\\src\\nm\\lang\\System.c"));
+  }
+
+  @Test
   void converterEmitsJavaSystemNanoTimeCallWithLongReturn() throws Exception {
     GlobalConstantPool.init();
     J2TC.htAddedClasses.clear();
@@ -105,6 +138,15 @@ class SystemNanoTimeConverterTest {
       }
     }
     throw new AssertionError("Converted System.nanoTime call not found");
+  }
+
+  private static String between(String source, String start, String end) {
+    int startIndex = source.indexOf(start);
+    int endIndex = source.indexOf(end, startIndex + start.length());
+    if (startIndex < 0 || endIndex < 0) {
+      throw new AssertionError("Could not isolate source section: " + start);
+    }
+    return source.substring(startIndex, endIndex);
   }
 
   private static byte[] callerClass() {

@@ -45,10 +45,11 @@ scope and must remain untouched.
 - [x] (2026-09-14) Read the user-provided requirements, repository guidance, and
   execution-plan rules; switched from `perf/image-scroll-distributed-benchmark`
   through updated `perf/image-scroll-prefetch` to `feat/system-nanotime`.
-- [ ] Milestone 1: add the `System4D` API, converter coverage, native metadata
-  contract, and focused non-build tests; commit the logical slice.
-- [ ] Milestone 2: add shared POSIX, Darwin, Win32, and WinCE monotonic-clock
-  implementations and native structural/unit coverage; commit the logical slice.
+- [x] (2026-09-14) Milestone 1: add the `System4D` API, converter coverage,
+  native metadata contract, and focused tests; commit `276b5c6c6`.
+- [x] (2026-09-14) Milestone 2: add shared POSIX, Darwin, Win32, and WinCE
+  monotonic-clock implementations and native structural coverage; macOS native
+  build passed; commit the logical slice.
 - [ ] Milestone 3: add and run the macOS native smoke test, then perform only the
   permitted final SDK/macOS validations.
 
@@ -187,4 +188,6 @@ the evidence/history files; do not turn this section into a command diary.
 
 ## Revision Note
 
-Initial plan created on 2026-09-14 after architecture reconnaissance.
+Initial plan created on 2026-09-14 after architecture reconnaissance. Milestones
+1 and 2 completed with focused SDK/static evidence and a passing macOS native
+build; the macOS smoke is the active slice.

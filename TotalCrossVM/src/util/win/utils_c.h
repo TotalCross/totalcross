@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -44,6 +45,40 @@ int32 getUsedMemory()
 static int32 privateGetTimeStamp()
 {
    return GetTickCount() & 0x3FFFFFFF;
+}
+
+static int64 privateGetNanoTime()
+{
+#if defined(WINCE)
+   // WinCE has no high-resolution counter; preserve its existing millisecond clock.
+   return (int64) privateGetTimeStamp() * 1000000LL;
+#else
+   static int64 frequency = 0;
+   LARGE_INTEGER counter;
+   LARGE_INTEGER frequencyValue;
+   uint64 count;
+   uint64 frequencyValueUnsigned;
+   uint64 seconds;
+   uint64 remainder;
+   uint64 nanos;
+
+   if (frequency == 0)
+   {
+      if (!QueryPerformanceFrequency(&frequencyValue))
+         return 0;
+      frequency = frequencyValue.QuadPart;
+   }
+   if (frequency <= 0 || !QueryPerformanceCounter(&counter))
+      return 0;
+
+   count = (uint64) counter.QuadPart;
+   frequencyValueUnsigned = (uint64) frequency;
+   seconds = count / frequencyValueUnsigned;
+   remainder = count % frequencyValueUnsigned;
+   nanos = seconds * 1000000000ULL;
+   nanos += (remainder * 1000000000ULL) / frequencyValueUnsigned;
+   return (int64) nanos;
+#endif
 }
 
 static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options)

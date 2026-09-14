@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -17,6 +18,16 @@
 
 #include <mach/mach.h>
 #include <mach/mach_host.h>
+#include <mach/mach_time.h>
+#include <pthread.h>
+
+static mach_timebase_info_data_t nanoTimeTimebase;
+static pthread_once_t nanoTimeTimebaseOnce = PTHREAD_ONCE_INIT;
+
+static void initializeNanoTimeTimebase(void)
+{
+   mach_timebase_info(&nanoTimeTimebase);
+}
 
 //flsobral@tc126_66: fixed implementation of Vm.getFreeMemory on iPhone.
 static int32 privateGetFreeMemory(bool maxblock)
@@ -140,6 +151,36 @@ static void privateSleep(uint32 millis)
 {
    usleep(1000UL * millis);
 }
+
+#if __APPLE__
+static int64 privateGetNanoTime()
+{
+   uint64 ticks;
+   uint64 wholeTicks;
+   uint64 remainderTicks;
+   uint64 nanos;
+
+   pthread_once(&nanoTimeTimebaseOnce, initializeNanoTimeTimebase);
+   if (nanoTimeTimebase.denom == 0)
+      return 0;
+
+   ticks = (uint64) mach_absolute_time();
+   wholeTicks = ticks / nanoTimeTimebase.denom;
+   remainderTicks = ticks % nanoTimeTimebase.denom;
+   nanos = wholeTicks * nanoTimeTimebase.numer;
+   nanos += (remainderTicks * nanoTimeTimebase.numer) / nanoTimeTimebase.denom;
+   return (int64) nanos;
+}
+#else
+static int64 privateGetNanoTime()
+{
+   struct timespec now;
+
+   if (clock_gettime(CLOCK_MONOTONIC, &now) != 0)
+      return 0;
+   return (int64) ((uint64) now.tv_sec * 1000000000ULL + (uint64) now.tv_nsec);
+}
+#endif
 
 static int32 privateGetTimeStamp()
 {
@@ -281,4 +322,3 @@ static void privateGetDateTime(int32* year, int32* month, int32* day, int32* hou
    *second = tm.tm_sec;
    *millis = tv.tv_usec/1000;;
 }
-
