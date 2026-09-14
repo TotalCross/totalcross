@@ -16,6 +16,7 @@ import tc.tools.RegisterSDK;
 import tc.tools.AnonymousUserData;
 import tc.tools.converter.J2TC;
 import tc.tools.deployer.Bitmaps;
+import tc.tools.deployer.AndroidToolLocator;
 import tc.tools.deployer.DeploySettings;
 import tc.tools.deployer.Deployer4Android;
 import tc.tools.deployer.Deployer4Applet;
@@ -69,6 +70,15 @@ public class Deploy {
       configureLogging(args);
       DeployLogger.debug("Command line: " + Utils.toString(args));
       DeploySettings.init();
+      if (isDownloadToolsCommand(args)) {
+        AndroidToolLocator.prepareForOfflineUse();
+        System.out.println("\nAndroid deployment tools prepared for offline use.\n");
+        System.out.println("SDK etc directory:");
+        System.out.println("  " + AndroidToolLocator.normalizedEtcDirectory());
+        System.out.println("\nPrepared structure:");
+        System.out.print(AndroidToolLocator.preparedToolsTree());
+        return;
+      }
       Deployer4IPhoneIPA.resetIosDeploymentState();
 
       checkClasspath();
@@ -243,6 +253,10 @@ public class Deploy {
     } catch (ClassNotFoundException cd) {
       throw new DeployerException("You must also add /TotalCross3/lib/TotalCross.jar to the classpath!");
     }
+  }
+
+  static boolean isDownloadToolsCommand(String[] args) {
+    return args != null && args.length > 0 && "-download-tools".equalsIgnoreCase(args[0]);
   }
 
   private int parseOptions(String[] args) throws Exception {
@@ -507,6 +521,7 @@ public class Deploy {
 
   private void usage() {
     System.out.println("\n" + "Format: tc.Deploy <what to deploy> <platforms to deploy> <options>\n" + "\n"
+        + "Use 'tc.Deploy -download-tools' to prepare all Android deployment tools for copying the SDK to environments without Internet access.\n"
         + "<what to deploy> is the path to search for class files, or a class that\n"
         + "extends MainWindow or implements MainClass, or a jar file containing all files to package (the name of the jar must match the MainWindow's name).\n"
         + "You can also specify a .tcz that will be converted to the target platforms.\n"

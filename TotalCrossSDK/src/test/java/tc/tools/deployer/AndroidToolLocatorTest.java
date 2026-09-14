@@ -6,6 +6,7 @@ package tc.tools.deployer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ class AndroidToolLocatorTest {
   private String originalEtcDir;
   private String originalOsName;
   private String originalOsArch;
+  private String[] originalPath;
 
   @BeforeEach
   void setUp() throws IOException {
@@ -33,8 +35,10 @@ class AndroidToolLocatorTest {
     originalEtcDir = DeploySettings.etcDir;
     originalOsName = DeploySettings.osName;
     originalOsArch = System.getProperty("os.arch");
+    originalPath = DeploySettings.path;
     DeploySettings.etcDir = tempDirectory.resolve("etc").toString();
     DeploySettings.osName = "linux";
+    DeploySettings.path = new String[] { Path.of(System.getProperty("java.home"), "bin").toString() };
     System.setProperty("os.arch", "x86_64");
   }
 
@@ -43,6 +47,7 @@ class AndroidToolLocatorTest {
     AndroidToolLocator.resetTestHooks();
     DeploySettings.etcDir = originalEtcDir;
     DeploySettings.osName = originalOsName;
+    DeploySettings.path = originalPath;
     if (originalOsArch == null) {
       System.clearProperty("os.arch");
     } else {
@@ -115,7 +120,7 @@ class AndroidToolLocatorTest {
     List<String> downloads = new ArrayList<>();
     AndroidToolLocator.setTestHooks((url, output) -> {
       downloads.add(url);
-      writeProtocArchive(output);
+      writeProtocArchive(output, url.endsWith("win64.zip"));
     }, (command, expected) -> true);
 
     String actual = AndroidToolLocator.protoc();
@@ -128,11 +133,97 @@ class AndroidToolLocatorTest {
     assertFalse(Files.exists(AndroidToolLocator.protocPath("osx-universal_binary")));
   }
 
-  private static void writeProtocArchive(Path output) throws IOException {
+  @Test
+  void provisionsBundletoolAndAllSupportedProtocPlatforms() throws IOException {
+    List<String> downloads = installFakeTooling();
+
+    AndroidToolLocator.prepareForOfflineUse();
+
+    assertEquals(5, downloads.size());
+    assertTrue(downloads.get(0).contains("bundletool-all-1.10.0.jar"));
+    for (String platform : AndroidToolLocator.PROTOC_PLATFORMS) {
+      assertTrue(downloads.contains(AndroidToolLocator.protocDownloadUrl(platform)), platform);
+      assertTrue(Files.isRegularFile(AndroidToolLocator.protocPath(platform)), platform);
+      assertTrue(Files.size(AndroidToolLocator.protocPath(platform)) > 0, platform);
+    }
+  }
+
+  @Test
+  void reusesPreparedToolsWithoutDownloadingAgain() throws IOException {
+    List<String> downloads = installFakeTooling();
+
+    AndroidToolLocator.prepareForOfflineUse();
+    AndroidToolLocator.prepareForOfflineUse();
+
+    assertEquals(5, downloads.size());
+  }
+
+  @Test
+  void doesNotProbeForeignPlatformProtocBinaries() throws IOException {
+    List<String> probes = new ArrayList<>();
+    installFakeTooling(probes);
+
+    AndroidToolLocator.prepareForOfflineUse();
+
+    for (String platform : AndroidToolLocator.PROTOC_PLATFORMS) {
+      if (!platform.equals(AndroidToolLocator.protocPlatform())) {
+        assertFalse(probes.stream().anyMatch(command -> command.contains("/" + platform + "/")), platform);
+      }
+    }
+  }
+
+  @Test
+  void reportsToolVersionAndPlatformWhenProvisioningFails() {
+    AndroidToolLocator.setTestHooks((url, output) -> {
+      throw new IOException("offline");
+    }, (command, expected) -> true);
+
+    RuntimeException failure = assertThrows(RuntimeException.class, AndroidToolLocator::prepareForOfflineUse);
+
+    assertTrue(failure.getMessage().contains("bundletool 1.10.0"));
+    assertTrue(failure.getMessage().contains("all-platforms"));
+  }
+
+  @Test
+  void rendersTheActualPreparedFilesystemTree() throws IOException {
+    installFakeTooling();
+    AndroidToolLocator.prepareForOfflineUse();
+    Path androidRoot = tempDirectory.resolve("etc/tools/android");
+    Files.write(androidRoot.resolve("filesystem-marker.bin"), new byte[] { 1 });
+
+    String tree = AndroidToolLocator.preparedToolsTree();
+
+    assertTrue(tree.startsWith("etc\n└── tools\n    └── android\n"));
+    assertTrue(tree.contains("bundletool-all-1.10.0.jar"));
+    assertTrue(tree.contains("filesystem-marker.bin"));
+    assertTrue(tree.contains("linux-x86_64"));
+  }
+
+  private List<String> installFakeTooling() {
+    return installFakeTooling(new ArrayList<>());
+  }
+
+  private List<String> installFakeTooling(List<String> probes) {
+    List<String> downloads = new ArrayList<>();
+    AndroidToolLocator.setTestHooks((url, output) -> {
+      downloads.add(url);
+      if (url.endsWith(".zip")) {
+        writeProtocArchive(output, url.endsWith("win64.zip"));
+      } else {
+        writeNonEmpty(output);
+      }
+    }, (command, expected) -> {
+      probes.add(String.join(" ", command));
+      return true;
+    });
+    return downloads;
+  }
+
+  private static void writeProtocArchive(Path output, boolean windows) throws IOException {
     Files.createDirectories(output.getParent());
     try (OutputStream stream = Files.newOutputStream(output);
         ZipOutputStream zip = new ZipOutputStream(stream)) {
-      zip.putNextEntry(new ZipEntry("bin/protoc"));
+      zip.putNextEntry(new ZipEntry("bin/protoc" + (windows ? ".exe" : "")));
       zip.write(1);
       zip.closeEntry();
     }

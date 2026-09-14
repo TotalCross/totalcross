@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.zip.ZipInputStream;
 
 /** Locates verified Android tools and downloads missing SDK-local tools. */
-final class AndroidToolLocator {
+public final class AndroidToolLocator {
   private static final String PROTOC_PROPERTY = "totalcross.tooling.android.protoc";
   private static final String BUNDLETOOL_PROPERTY = "totalcross.tooling.android.bundletool";
 
@@ -80,7 +80,7 @@ final class AndroidToolLocator {
       return legacy.toString();
     }
 
-    return downloadProtoc(platform).toString();
+    return downloadProtoc(platform, true).toString();
   }
 
   static String bundletool() {
@@ -89,26 +89,15 @@ final class AndroidToolLocator {
       return verifiedBundletool(Path.of(configured)).toString();
     }
 
-    Path root = Path.of(DeploySettings.etcDir, "tools", "android");
-    Path preferred = root.resolve(BUNDLETOOL_FILE_NAME);
+    Path preferred = bundletoolPath();
+    Path root = preferred.getParent();
     Path local = findValidBundletool(root, preferred);
     if (local != null) {
       warnLegacy();
       return local.toString();
     }
 
-    try {
-      DeployLogger.normal("Downloading bundletool...");
-      downloadTo(BUNDLETOOL_DOWNLOAD_URL, preferred);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to download bundletool at: " + BUNDLETOOL_DOWNLOAD_URL
-          + " ; You may download it yourself and place the jar into the folder: "
-          + root.toAbsolutePath(), e);
-    }
-
-    if (!isValidBundletool(preferred)) {
-      throw new RuntimeException("Downloaded bundletool failed its version probe: " + preferred);
-    }
+    downloadBundletool();
     warnLegacy();
     return preferred.toString();
   }
@@ -131,6 +120,14 @@ final class AndroidToolLocator {
   private static boolean isValidProtoc(Path path) {
     return Files.isRegularFile(path)
         && probe(List.of(path.toString(), "--version"), PROTOC_VERSION);
+  }
+
+  public static void prepareForOfflineUse() {
+    ensureBundletoolForOfflineUse();
+    String currentPlatform = protocPlatform();
+    for (String platform : PROTOC_PLATFORMS) {
+      ensureProtoc(platform, currentPlatform);
+    }
   }
 
   static Path protocPath(String platform) {
@@ -164,10 +161,18 @@ final class AndroidToolLocator {
   }
 
   private static Path androidToolsRoot() {
+    return normalizedEtcDirectory().resolve("tools").resolve("android");
+  }
+
+  public static Path normalizedEtcDirectory() {
     if (DeploySettings.etcDir == null || DeploySettings.etcDir.isBlank()) {
       throw new RuntimeException("Could not locate the SDK etc directory for Android tools");
     }
-    return Path.of(DeploySettings.etcDir, "tools", "android").toAbsolutePath().normalize();
+    return Path.of(DeploySettings.etcDir).toAbsolutePath().normalize();
+  }
+
+  private static Path bundletoolPath() {
+    return androidToolsRoot().resolve(BUNDLETOOL_FILE_NAME);
   }
 
   private static Path legacyProtocPath(String platform) {
@@ -187,7 +192,7 @@ final class AndroidToolLocator {
     }
   }
 
-  private static Path downloadProtoc(String platform) {
+  private static Path downloadProtoc(String platform, boolean verifyWithProbe) {
     Path executable = protocPath(platform);
     String downloadUrl = protocDownloadUrl(platform);
     try {
@@ -198,11 +203,50 @@ final class AndroidToolLocator {
       throw toolDownloadFailure(PROTOC_NAME, PROTOC_VERSION, platform, downloadUrl, e);
     }
 
-    if (!isValidProtoc(executable)) {
+    if (verifyWithProbe && !isValidProtoc(executable)) {
       throw new RuntimeException("Downloaded protoc " + PROTOC_VERSION + " for " + platform
           + " failed its version probe: " + executable);
     }
+    if (!isRegularNonEmptyFile(executable)) {
+      throw new RuntimeException("Downloaded protoc " + PROTOC_VERSION + " for " + platform
+          + " is missing or empty: " + executable);
+    }
     return executable;
+  }
+
+  private static Path ensureProtoc(String platform, String currentPlatform) {
+    Path executable = protocPath(platform);
+    prepareProtoc(executable, platform);
+    boolean prepared = isRegularNonEmptyFile(executable)
+        && (!platform.equals(currentPlatform) || isValidProtoc(executable));
+    if (prepared) {
+      return executable;
+    }
+    return downloadProtoc(platform, platform.equals(currentPlatform));
+  }
+
+  private static Path ensureBundletoolForOfflineUse() {
+    Path preferred = bundletoolPath();
+    if (isValidBundletool(preferred)) {
+      return preferred;
+    }
+    return downloadBundletool();
+  }
+
+  private static Path downloadBundletool() {
+    Path preferred = bundletoolPath();
+    try {
+      DeployLogger.normal("Downloading bundletool " + BUNDLETOOL_VERSION + "...");
+      downloadTo(BUNDLETOOL_DOWNLOAD_URL, preferred);
+    } catch (Exception e) {
+      throw toolDownloadFailure(
+          "bundletool", BUNDLETOOL_VERSION, "all-platforms", BUNDLETOOL_DOWNLOAD_URL, e);
+    }
+    if (!isValidBundletool(preferred)) {
+      throw new RuntimeException("Downloaded bundletool " + BUNDLETOOL_VERSION
+          + " for all-platforms failed its version probe: " + preferred);
+    }
+    return preferred;
   }
 
   static String protocDownloadUrl(String platform) {
@@ -212,7 +256,7 @@ final class AndroidToolLocator {
   }
 
   private static boolean isValidBundletool(Path path) {
-    return Files.isRegularFile(path)
+    return isRegularNonEmptyFile(path)
         && probe(List.of(javaExecutable(), "-jar", path.toString(), "version"), null);
   }
 
@@ -389,6 +433,45 @@ final class AndroidToolLocator {
       return Files.isRegularFile(path) && Files.size(path) > 0;
     } catch (IOException e) {
       return false;
+    }
+  }
+
+  public static String preparedToolsTree() {
+    Path etcDirectory = normalizedEtcDirectory();
+    Path androidDirectory = androidToolsRoot();
+    if (!Files.isDirectory(androidDirectory)) {
+      throw new RuntimeException("Android tools directory was not prepared: " + androidDirectory);
+    }
+
+    StringBuilder tree = new StringBuilder();
+    Path etcName = etcDirectory.getFileName();
+    tree.append(etcName == null ? etcDirectory : etcName).append('\n');
+    tree.append("└── tools\n");
+    tree.append("    └── android\n");
+    try {
+      appendTree(androidDirectory, "        ", tree);
+    } catch (IOException e) {
+      throw new RuntimeException("Could not list prepared Android tools: " + androidDirectory, e);
+    }
+    return tree.toString();
+  }
+
+  private static void appendTree(Path directory, String prefix, StringBuilder tree) throws IOException {
+    List<Path> children = new java.util.ArrayList<>();
+    try (java.nio.file.DirectoryStream<Path> entries = Files.newDirectoryStream(directory)) {
+      for (Path entry : entries) {
+        children.add(entry);
+      }
+    }
+    children.sort(Comparator.comparing(path -> path.getFileName().toString()));
+    for (int i = 0; i < children.size(); i++) {
+      Path child = children.get(i);
+      boolean last = i == children.size() - 1;
+      tree.append(prefix).append(last ? "└── " : "├── ")
+          .append(child.getFileName()).append('\n');
+      if (Files.isDirectory(child)) {
+        appendTree(child, prefix + (last ? "    " : "│   "), tree);
+      }
     }
   }
 
