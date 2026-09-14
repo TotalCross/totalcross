@@ -82,12 +82,13 @@ copy raw logs into the plan.
 - [x] Checkpoint 10 — commit `ff3a5c180`: the benchmark timer listener is
   registered once before the prefetch branch, and dispatch is restricted to
   the active benchmark timer.
-- [ ] Final closeout: the external self-test passed, but the first smoke
-  (`0/off`) opened the UI, started scrolling, and produced the individual
-  pass/summary records, but the native process terminated with `SIGSEGV`
-  after 11 frames before all artifacts were written; no other smoke or matrix
-  process was started. The bundle used the official `TotalCross-7.2.2`
-  artifact from Actions run `34883508658`.
+- [x] Follow-up (2026-09-14) — commits `b063b5f8d`, `6cc94a5db`, and
+  `330c641b1`: benchmark timing is measured with `System.nanoTime()` and
+  stored canonically in ns; the deterministic matrix is now three rounds and
+  126 fresh processes.
+- [x] Follow-up closeout (2026-09-14): the bundle self-test and all four
+  fresh-process smokes (`0/off`, `0/on`, `32799/off`, `32799/on`) passed with
+  ns artifacts. The 126-process matrix was intentionally not rerun.
 
 ## Current Architecture and Scope
 
@@ -97,6 +98,9 @@ scroll measurement. The external runner owns validation, fresh native-process
 launches, the deterministic 126-process plan, aggregation, and ZIP creation.
 The packaged bundle carries exactly 663 JPEGs, the official device chime, the
 540x960 screen argument, and compile/deploy SDK SHA-256 values that must match.
+All benchmark timing measurements use `System.nanoTime()` and remain `long`
+nanosecond values through frame metrics, percentiles, validation, and
+aggregation. Temporal artifact fields use `*_ns` or their `*Ns` JSON form.
 
 Native accounting is currently exposed through test helpers in `Image` and
 `NativeImageBacking`, while the Skia backing manager owns the physical/raster
@@ -135,7 +139,7 @@ Commit: `feat(sdk): run cold image scroll workloads`.
 
 ### Checkpoint 3 — pacing and feature hits
 
-Drive scroll position from elapsed monotonic time, preserving the existing
+Drive scroll position from elapsed monotonic time in ns, preserving the existing
 trajectory and endpoint. Record frame durations and all requested percentile,
 threshold, stall, and consecutive-stall metrics. Add low-overhead per-feature
 and per-path hit counters for paths exercised by the workload; emit counters
@@ -161,7 +165,8 @@ Commit: `feat(sdk): capture benchmark memory environment`.
 
 ### Checkpoint 5 — results, self-test, and ZIP
 
-Implement the common `results/` schema, parseable `summary.csv`, validation
+Implement the common `results/` schema with canonical ns timing fields,
+parseable `summary.csv`, validation
 of requested/effective masks and invalid configurations, and deterministic
 aggregation against same-machine same-prefetch mask-zero baselines only.
 Implement the pre-matrix self-test, including corpus/hash/output/flags/mask
@@ -250,6 +255,9 @@ requested/effective masks, prefetch values, the external corpus, and the
 distinct prefetch paths. The 126-process matrix is intentionally deferred for
 this update; when run later, aggregate it and verify the final ZIP can be
 opened.
+Verify that `frames.csv`, `memory.csv`, `timeline.csv`, `summary.json`, and
+`summary.csv` contain no legacy millisecond timing fields and that percentile
+and baseline calculations consume ns values directly.
 Validate the packager against the real package.yml SDK artifact from Actions
 run `34883508658`; record its published artifact digest and the extracted
 SDK-JAR SHA-256 in the final evidence. Do not substitute a local SDK or native
@@ -285,16 +293,14 @@ from the latest checkpoint commit and inspecting only the active paths.
 
 The implementation commits are `e1bccc8c9`, `4ac0a53b5`, `5f97ba301`,
 `6b807c5d9`, `1b6007483`, `882b31a3c`, `ff3a5c180`, `d50fffe46`,
-`da7728d0f`, `3a75c8c33`, `f229919fd`, `8463ae342`, and `fdfa8efce`. The
-official package artifact was downloaded, extracted, compiled, deployed, and
-passed manifest/corpus/hash checks; the extracted SDK JAR SHA-256 was
-`229ec02e9dcd60e7d9d114aabe098ce9b9f44f26ac7509fe3b13b4745aa0d2c1` for both
-compile and deploy. The external self-test passed. On the final macOS ARM64
-bundle, `0/off` and `0/on` both passed with `540x960`, complete scrolling,
-matching mask values, the expected prefetch counts, and all six artifacts.
-The official runtime still emits its chime warning, which was explicitly
-accepted for continuation. The three-round matrix is specified as 126 fresh
-processes and remains intentionally deferred for this update.
+`da7728d0f`, `3a75c8c33`, `f229919fd`, `8463ae342`, and `fdfa8efce`.
+This update adds `b063b5f8d`, `6cc94a5db`, and `330c641b1`: all benchmark
+timing measurements and aggregations use ns, and the deterministic matrix is
+21 masks × 2 prefetch profiles × 3 rounds = 126 fresh processes. The bundle
+self-test and all four requested macOS ARM64 smokes passed with `540x960`,
+663 JPEGs, matching masks, and canonical ns artifacts. The archived SDK ZIP
+available locally predates the branch mask APIs, so the smokes used the local
+branch SDK/runtime build; the full matrix remains intentionally deferred.
 
 ## Revision Note
 
