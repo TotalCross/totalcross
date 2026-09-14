@@ -23,8 +23,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final int IMAGE_COUNT = 663;
   private static final int COLUMN_COUNT = 3;
   private static final int SCROLL_STEP = 120;
-  private static final int SCROLL_DURATION_MILLIS = 3000;
-  private static final int FRAME_INTERVAL_MILLIS = 16;
+  private static final int SCROLL_DURATION_MS = 3000;
+  private static final int FRAME_INTERVAL_MS = 16;
+  private static final long NANOS_PER_MILLISECOND = 1000000L;
+  private static final long FRAME_INTERVAL_NS = FRAME_INTERVAL_MS * NANOS_PER_MILLISECOND;
+  private static final long FRAME_THRESHOLD_16_67_NS = 17L * NANOS_PER_MILLISECOND;
+  private static final long FRAME_THRESHOLD_33_3_NS = 34L * NANOS_PER_MILLISECOND;
+  private static final long FRAME_THRESHOLD_50_NS = 51L * NANOS_PER_MILLISECOND;
+  private static final long FRAME_THRESHOLD_100_NS = 101L * NANOS_PER_MILLISECOND;
   private static final int EXPECTED_LOGICAL_WIDTH = 540;
   private static final int EXPECTED_LOGICAL_HEIGHT = 960;
   private static final String MODE_BENCHMARK = "benchmark";
@@ -42,7 +48,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private int tileWidth;
   private int rowCount;
   private int imageControlCount;
-  private long uiBuildElapsedMillis;
+  private long uiBuildElapsedNs;
   private String imageDir;
   private String maskArgument;
   private long runNumber;
@@ -50,7 +56,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String runOutputDir;
   private String datasetHashArgument;
   private String prefetchProfile;
-  private long prefetchElapsedMillis;
+  private long prefetchElapsedNs;
   private long prefetchRequestCount;
   private long prefetchReadyCount;
   private long prefetchFailedCount;
@@ -65,7 +71,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private boolean prefetchComplete;
   private TimerEvent prefetchTimer;
   private boolean benchmarkReady;
-  private int scrollDurationMillis = SCROLL_DURATION_MILLIS;
+  private long scrollDurationNs = SCROLL_DURATION_MS * NANOS_PER_MILLISECOND;
 
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
@@ -99,15 +105,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           getCommandLine(), "output", "benchmark-output");
       datasetHashArgument = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "dataset-hash", "unavailable");
-      scrollDurationMillis = ImageRasterBenchmarkSupport.integerArgument(
-          getCommandLine(), "duration", SCROLL_DURATION_MILLIS);
+      int scrollDurationMs = ImageRasterBenchmarkSupport.integerArgument(
+          getCommandLine(), "duration", SCROLL_DURATION_MS);
+      scrollDurationNs = (long) scrollDurationMs * NANOS_PER_MILLISECOND;
       prefetchProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "prefetch", "off");
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
           "missing --corpus=<dir>");
       ImageRasterBenchmarkSupport.require(maskArgument != null && maskArgument.length() > 0,
           "missing --image-optimization=<mask>");
-      ImageRasterBenchmarkSupport.require(scrollDurationMillis > 0,
+      ImageRasterBenchmarkSupport.require(scrollDurationNs > 0,
           "duration must be positive");
       ImageRasterBenchmarkSupport.require("off".equals(prefetchProfile)
           || "on".equals(prefetchProfile),
@@ -121,12 +128,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       requireBenchmarkResolution();
       configureMask();
 
-      long buildStart = Vm.getTimeStamp();
+      long buildStartNs = System.nanoTime();
       String[] imagePaths = sortedCorpusPaths(imageDir);
       ImageRasterBenchmarkSupport.require(imagePaths.length == IMAGE_COUNT,
           "expected exactly " + IMAGE_COUNT + " corpus files but found " + imagePaths.length);
       buildUi(imagePaths);
-      uiBuildElapsedMillis = Vm.getTimeStamp() - buildStart;
+      uiBuildElapsedNs = System.nanoTime() - buildStartNs;
       ImageRasterBenchmarkSupport.require(rowCount == IMAGE_COUNT / COLUMN_COUNT,
           "unexpected row count " + rowCount);
       ImageRasterBenchmarkSupport.require(imageControlCount == IMAGE_COUNT,
@@ -142,12 +149,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       if (prefetchEnabled()) {
         Image.resetImageOperationAccountingForBenchmarkTest();
         ImagePreparation.resetAccountingForTest();
-        final long prefetchStart = Vm.getTimeStamp();
+        final long prefetchStartNs = System.nanoTime();
         prefetchTimer = addTimer(10);
         scroll.prepareForDisplay(new Runnable() {
           @Override
           public void run() {
-            prefetchElapsedMillis = Vm.getTimeStamp() - prefetchStart;
+            prefetchElapsedNs = System.nanoTime() - prefetchStartNs;
             capturePrefetchAccounting();
             prefetchComplete = true;
           }
@@ -225,8 +232,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",image_dir=" + String.valueOf(imageDir)
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
-        + ",ui_build_elapsed_ms=" + uiBuildElapsedMillis
-        + ",prefetch_elapsed_ms=" + prefetchElapsedMillis
+        + ",ui_build_elapsed_ns=" + uiBuildElapsedNs
+        + ",prefetch_elapsed_ns=" + prefetchElapsedNs
         + ",prefetch_request_count=" + prefetchRequestCount
         + ",prefetch_ready_count=" + prefetchReadyCount
         + ",prefetch_failed_count=" + prefetchFailedCount
@@ -358,42 +365,46 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     ImageRasterBenchmarkSupport.require(scroll.sbV.getValue() == expectedStart,
         name + " did not start at the expected scrollbar endpoint");
     Image.resetImageOperationAccountingForBenchmarkTest();
-    long elapsedStart = Vm.getTimeStamp();
-    int[] frameTimes = new int[256];
-    long[] frameElapsed = new long[256];
+    long startNs = System.nanoTime();
+    long[] frameTimesNs = new long[256];
+    long[] frameElapsedNs = new long[256];
     int[] framePositions = new int[256];
     int frames = 0;
-    long previousFrameStart = elapsedStart;
+    long previousFrameStartNs = startNs;
     while (true) {
-      long frameStart = Vm.getTimeStamp();
-      long sinceStart = frameStart - elapsedStart;
-      if (frames > 0 && sinceStart < (long) frames * FRAME_INTERVAL_MILLIS) {
-        Vm.sleep((int) Math.min(4, (long) frames * FRAME_INTERVAL_MILLIS - sinceStart));
+      long frameStartNs = System.nanoTime();
+      long elapsedNs = frameStartNs - startNs;
+      long nextFrameNs = (long) frames * FRAME_INTERVAL_NS;
+      if (frames > 0 && elapsedNs < nextFrameNs) {
+        long remainingNs = nextFrameNs - elapsedNs;
+        long sleepMs = Math.max(1L,
+            (remainingNs + NANOS_PER_MILLISECOND - 1) / NANOS_PER_MILLISECOND);
+        Vm.sleep((int) Math.min(4L, sleepMs));
         continue;
       }
-      int target = sinceStart >= scrollDurationMillis
+      int target = elapsedNs >= scrollDurationNs
           ? endpoint
-          : minimum + (int) ((long) (maximum - minimum) * sinceStart / scrollDurationMillis);
+          : minimum + (int) ((long) (maximum - minimum) * elapsedNs / scrollDurationNs);
       int before = scroll.sbV.getValue();
       if (target != before) {
         ImageRasterBenchmarkSupport.require(scroll.scrollContent(0, target - before, true),
             name + " stopped before reaching time-based target");
       }
-      int paintMillis = paintFrame();
-      int frameMillis = frames == 0
-          ? paintMillis : (int) Math.max(0, frameStart - previousFrameStart);
-      if (frames == frameTimes.length) {
-        int newLength = frameTimes.length * 2;
-        frameTimes = Arrays.copyOf(frameTimes, newLength);
-        frameElapsed = Arrays.copyOf(frameElapsed, newLength);
+      long paintTimeNs = paintFrameNs();
+      long frameTimeNs = frames == 0
+          ? paintTimeNs : Math.max(0, frameStartNs - previousFrameStartNs);
+      if (frames == frameTimesNs.length) {
+        int newLength = frameTimesNs.length * 2;
+        frameTimesNs = Arrays.copyOf(frameTimesNs, newLength);
+        frameElapsedNs = Arrays.copyOf(frameElapsedNs, newLength);
         framePositions = Arrays.copyOf(framePositions, newLength);
       }
-      frameTimes[frames] = frameMillis;
-      frameElapsed[frames] = sinceStart;
+      frameTimesNs[frames] = frameTimeNs;
+      frameElapsedNs[frames] = elapsedNs;
       framePositions[frames] = scroll.sbV.getValue();
       frames++;
-      previousFrameStart = frameStart;
-      if (scroll.sbV.getValue() == endpoint && sinceStart >= scrollDurationMillis) {
+      previousFrameStartNs = frameStartNs;
+      if (scroll.sbV.getValue() == endpoint && elapsedNs >= scrollDurationNs) {
         break;
       }
     }
@@ -401,21 +412,22 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         name + " did not reach the full scrollbar extent");
     ImageRasterBenchmarkSupport.require(frames > 1,
         name + " did not traverse multiple frames");
-    long elapsed = Vm.getTimeStamp() - elapsedStart;
+    long elapsedNs = System.nanoTime() - startNs;
     Counters counters = Counters.capture();
-    int[] actualFrameTimes = Arrays.copyOf(frameTimes, frames);
-    long[] actualFrameElapsed = Arrays.copyOf(frameElapsed, frames);
+    long[] actualFrameTimesNs = Arrays.copyOf(frameTimesNs, frames);
+    long[] actualFrameElapsedNs = Arrays.copyOf(frameElapsedNs, frames);
     int[] actualFramePositions = Arrays.copyOf(framePositions, frames);
-    int[] sortedFrameTimes = Arrays.copyOf(actualFrameTimes, frames);
-    Arrays.sort(sortedFrameTimes);
-    return new PassResult(name, forward, minimum, endpoint, maximum, elapsed, frames,
-        actualFrameTimes, actualFrameElapsed, actualFramePositions, sortedFrameTimes, counters);
+    long[] sortedFrameTimesNs = Arrays.copyOf(actualFrameTimesNs, frames);
+    Arrays.sort(sortedFrameTimesNs);
+    return new PassResult(name, forward, minimum, endpoint, maximum, elapsedNs, frames,
+        actualFrameTimesNs, actualFrameElapsedNs, actualFramePositions, sortedFrameTimesNs,
+        counters);
   }
 
-  private int paintFrame() {
-    long start = Vm.getTimeStamp();
+  private long paintFrameNs() {
+    long startNs = System.nanoTime();
     scroll.repaintNow();
-    return (int) Math.max(0, Vm.getTimeStamp() - start);
+    return Math.max(0, System.nanoTime() - startNs);
   }
 
   private void printPass(PassResult result) {
@@ -427,8 +439,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",run=" + runNumber
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
-        + ",ui_build_elapsed_ms=" + uiBuildElapsedMillis
-        + ",prefetch_elapsed_ms=" + prefetchElapsedMillis
+        + ",ui_build_elapsed_ns=" + uiBuildElapsedNs
+        + ",prefetch_elapsed_ns=" + prefetchElapsedNs
         + ",prefetch_request_count=" + prefetchRequestCount
         + ",prefetch_ready_count=" + prefetchReadyCount
         + ",prefetch_failed_count=" + prefetchFailedCount
@@ -442,29 +454,30 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",pass=" + result.name + ",direction=" + (result.forward ? "top-to-bottom" : "bottom-to-top")
         + ",scroll_start=" + result.start + ",scroll_end=" + result.end
         + ",scroll_max=" + result.maximum + ",scroll_distance=" + (result.maximum - result.minimum)
-        + ",elapsed_total_ms=" + result.elapsed + ",frames=" + result.frames
-        + ",frame_time_min_ms=" + result.percentile(0)
-        + ",frame_time_p90_ms=" + result.percentile(90)
-        + ",frame_time_p50_ms=" + result.percentile(50)
-        + ",frame_time_p95_ms=" + result.percentile(95)
-        + ",frame_time_p99_ms=" + result.percentile(99)
-        + ",frame_time_max_ms=" + result.percentile(100)
-        + ",frames_over_16_67_ms=" + result.countAtLeast(17)
-        + ",frames_over_33_3_ms=" + result.countAtLeast(34)
-        + ",frames_over_50_ms=" + result.countAtLeast(51)
-        + ",frames_over_100_ms=" + result.countAtLeast(101)
-        + ",largest_stall_ms=" + result.percentile(100)
-        + ",largest_consecutive_over_33_3=" + result.maxConsecutiveAtLeast(34)
+        + ",elapsed_total_ns=" + result.elapsedNs + ",frames=" + result.frames
+        + ",frame_time_min_ns=" + result.percentileNs(0)
+        + ",frame_time_p90_ns=" + result.percentileNs(90)
+        + ",frame_time_p50_ns=" + result.percentileNs(50)
+        + ",frame_time_p95_ns=" + result.percentileNs(95)
+        + ",frame_time_p99_ns=" + result.percentileNs(99)
+        + ",frame_time_max_ns=" + result.percentileNs(100)
+        + ",frames_over_16_67_ns=" + result.countAtLeastNs(FRAME_THRESHOLD_16_67_NS)
+        + ",frames_over_33_3_ns=" + result.countAtLeastNs(FRAME_THRESHOLD_33_3_NS)
+        + ",frames_over_50_ns=" + result.countAtLeastNs(FRAME_THRESHOLD_50_NS)
+        + ",frames_over_100_ns=" + result.countAtLeastNs(FRAME_THRESHOLD_100_NS)
+        + ",largest_stall_ns=" + result.percentileNs(100)
+        + ",largest_consecutive_over_33_3="
+        + result.maxConsecutiveAtLeastNs(FRAME_THRESHOLD_33_3_NS)
         + result.counters.details() + result.counters.featureDetails());
     System.out.flush();
   }
 
   private void writeRunFrames(PassResult result) throws Exception {
     StringBuilder frames = new StringBuilder(4096);
-    frames.append("frame_index,elapsed_ms,frame_time_ms,scroll_value\n");
+    frames.append("frame_index,elapsed_ns,frame_time_ns,scroll_value\n");
     for (int i = 0; i < result.frames; i++) {
-      frames.append(i).append(',').append(result.frameElapsed[i]).append(',')
-          .append(result.frameTimes[i]).append(',').append(result.framePositions[i]).append('\n');
+      frames.append(i).append(',').append(result.frameElapsedNs[i]).append(',')
+          .append(result.frameTimesNs[i]).append(',').append(result.framePositions[i]).append('\n');
     }
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "frames.csv"), frames.toString());
@@ -514,7 +527,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private void writeMemory() throws Exception {
     StringBuilder csv = new StringBuilder(2048);
-    csv.append("checkpoint,elapsed_ms,current_resident_bytes,peak_resident_bytes,private_bytes,phys_footprint_bytes\n");
+    csv.append("checkpoint,elapsed_ns,current_resident_bytes,peak_resident_bytes,private_bytes,phys_footprint_bytes\n");
     csv.append("memory_unavailable,0,unavailable,unavailable,unavailable,unavailable\n");
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "memory.csv"), csv.toString());
@@ -522,7 +535,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private void writeTimeline() throws Exception {
     StringBuilder timeline = new StringBuilder(1024);
-    timeline.append("event,elapsed_ms,value\n");
+    timeline.append("event,elapsed_ns,value\n");
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "timeline.csv"), timeline.toString());
   }
@@ -549,22 +562,23 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"prefetch\":\"" + prefetchProfile + "\",\n"
         + "  \"requestedMask\":" + requestedMask + ",\n"
         + "  \"effectiveMask\":" + effectiveMask + ",\n"
-        + "  \"uiBuildElapsedMs\":" + uiBuildElapsedMillis + ",\n"
-        + "  \"prefetchElapsedMs\":" + prefetchElapsedMillis + ",\n"
+        + "  \"uiBuildElapsedNs\":" + uiBuildElapsedNs + ",\n"
+        + "  \"prefetchElapsedNs\":" + prefetchElapsedNs + ",\n"
         + "  \"memoryPeakResidentBytes\":-1,\n"
-        + "  \"durationMs\":" + result.elapsed + ",\n"
+        + "  \"durationNs\":" + result.elapsedNs + ",\n"
         + "  \"frameCount\":" + result.frames + ",\n"
-        + "  \"frameTimeP50Ms\":" + result.percentile(50) + ",\n"
-        + "  \"frameTimeP90Ms\":" + result.percentile(90) + ",\n"
-        + "  \"frameTimeP95Ms\":" + result.percentile(95) + ",\n"
-        + "  \"frameTimeP99Ms\":" + result.percentile(99) + ",\n"
-        + "  \"frameTimeMaxMs\":" + result.percentile(100) + ",\n"
-        + "  \"framesOver16_67Ms\":" + result.countAtLeast(17) + ",\n"
-        + "  \"framesOver33_3Ms\":" + result.countAtLeast(34) + ",\n"
-        + "  \"framesOver50Ms\":" + result.countAtLeast(51) + ",\n"
-        + "  \"framesOver100Ms\":" + result.countAtLeast(101) + ",\n"
-        + "  \"largestStallMs\":" + result.percentile(100) + ",\n"
-        + "  \"largestConsecutiveOver33_3\":" + result.maxConsecutiveAtLeast(34) + "\n"
+        + "  \"frameTimeP50Ns\":" + result.percentileNs(50) + ",\n"
+        + "  \"frameTimeP90Ns\":" + result.percentileNs(90) + ",\n"
+        + "  \"frameTimeP95Ns\":" + result.percentileNs(95) + ",\n"
+        + "  \"frameTimeP99Ns\":" + result.percentileNs(99) + ",\n"
+        + "  \"frameTimeMaxNs\":" + result.percentileNs(100) + ",\n"
+        + "  \"framesOver16_67Ns\":" + result.countAtLeastNs(FRAME_THRESHOLD_16_67_NS) + ",\n"
+        + "  \"framesOver33_3Ns\":" + result.countAtLeastNs(FRAME_THRESHOLD_33_3_NS) + ",\n"
+        + "  \"framesOver50Ns\":" + result.countAtLeastNs(FRAME_THRESHOLD_50_NS) + ",\n"
+        + "  \"framesOver100Ns\":" + result.countAtLeastNs(FRAME_THRESHOLD_100_NS) + ",\n"
+        + "  \"largestStallNs\":" + result.percentileNs(100) + ",\n"
+        + "  \"largestConsecutiveOver33_3\":"
+        + result.maxConsecutiveAtLeastNs(FRAME_THRESHOLD_33_3_NS) + "\n"
         + "}\n";
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "summary.json"), json);
@@ -651,58 +665,58 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final int start;
     final int end;
     final int maximum;
-    final long elapsed;
+    final long elapsedNs;
     final int frames;
-    final int[] frameTimes;
-    final long[] frameElapsed;
+    final long[] frameTimesNs;
+    final long[] frameElapsedNs;
     final int[] framePositions;
-    final int[] sortedFrameTimes;
+    final long[] sortedFrameTimesNs;
     final Counters counters;
 
-    PassResult(String name, boolean forward, int minimum, int end, int maximum, long elapsed,
-        int frames, int[] frameTimes, long[] frameElapsed, int[] framePositions,
-        int[] sortedFrameTimes, Counters counters) {
+    PassResult(String name, boolean forward, int minimum, int end, int maximum, long elapsedNs,
+        int frames, long[] frameTimesNs, long[] frameElapsedNs, int[] framePositions,
+        long[] sortedFrameTimesNs, Counters counters) {
       this.name = name;
       this.forward = forward;
       this.minimum = minimum;
       this.start = forward ? minimum : maximum;
       this.end = end;
       this.maximum = maximum;
-      this.elapsed = elapsed;
+      this.elapsedNs = elapsedNs;
       this.frames = frames;
-      this.frameTimes = frameTimes;
-      this.frameElapsed = frameElapsed;
+      this.frameTimesNs = frameTimesNs;
+      this.frameElapsedNs = frameElapsedNs;
       this.framePositions = framePositions;
-      this.sortedFrameTimes = sortedFrameTimes;
+      this.sortedFrameTimesNs = sortedFrameTimesNs;
       this.counters = counters;
     }
 
-    int percentile(int percent) {
+    long percentileNs(int percent) {
       if (percent <= 0) {
-        return sortedFrameTimes[0];
+        return sortedFrameTimesNs[0];
       }
       if (percent >= 100) {
-        return sortedFrameTimes[sortedFrameTimes.length - 1];
+        return sortedFrameTimesNs[sortedFrameTimesNs.length - 1];
       }
-      int index = (int) Math.ceil(sortedFrameTimes.length * percent / 100.0) - 1;
-      return sortedFrameTimes[Math.max(0, Math.min(sortedFrameTimes.length - 1, index))];
+      int index = (int) Math.ceil(sortedFrameTimesNs.length * percent / 100.0) - 1;
+      return sortedFrameTimesNs[Math.max(0, Math.min(sortedFrameTimesNs.length - 1, index))];
     }
 
-    int countAtLeast(int threshold) {
+    int countAtLeastNs(long thresholdNs) {
       int count = 0;
-      for (int time : sortedFrameTimes) {
-        if (time >= threshold) {
+      for (long frameTimeNs : sortedFrameTimesNs) {
+        if (frameTimeNs >= thresholdNs) {
           count++;
         }
       }
       return count;
     }
 
-    int maxConsecutiveAtLeast(int threshold) {
+    int maxConsecutiveAtLeastNs(long thresholdNs) {
       int maximum = 0;
       int current = 0;
-      for (int time : frameTimes) {
-        current = time >= threshold ? current + 1 : 0;
+      for (long frameTimeNs : frameTimesNs) {
+        current = frameTimeNs >= thresholdNs ? current + 1 : 0;
         maximum = Math.max(maximum, current);
       }
       return maximum;
