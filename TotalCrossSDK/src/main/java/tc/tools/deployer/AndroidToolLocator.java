@@ -346,8 +346,8 @@ public final class AndroidToolLocator {
     Path temporaryDirectory = Files.createTempDirectory(parent, ".totalcross-protoc-");
     try {
       downloadTo(fileUrl, temporaryZip);
-      unzip(temporaryZip, temporaryDirectory);
       Path relativeExecutable = outputDirectory.relativize(expectedExecutable);
+      unzip(temporaryZip, temporaryDirectory, relativeExecutable);
       Path extractedExecutable = temporaryDirectory.resolve(relativeExecutable);
       if (!isRegularNonEmptyFile(extractedExecutable)) {
         throw new IOException("Downloaded archive did not contain a non-empty executable at "
@@ -393,8 +393,9 @@ public final class AndroidToolLocator {
     }
   }
 
-  private static void unzip(Path zipFile, Path destination) throws IOException {
+  private static void unzip(Path zipFile, Path destination, Path expectedRelativePath) throws IOException {
     Path normalizedDestination = destination.toAbsolutePath().normalize();
+    Path expectedTarget = normalizedDestination.resolve(expectedRelativePath).normalize();
     try (ZipInputStream input = new ZipInputStream(new FileInputStream(zipFile.toFile()))) {
       java.util.zip.ZipEntry entry;
       while ((entry = input.getNextEntry()) != null) {
@@ -402,9 +403,7 @@ public final class AndroidToolLocator {
         if (!target.startsWith(normalizedDestination)) {
           throw new IOException("Refusing to extract file outside Android tools directory: " + entry.getName());
         }
-        if (entry.isDirectory()) {
-          Files.createDirectories(target);
-        } else {
+        if (!entry.isDirectory() && target.equals(expectedTarget)) {
           Files.createDirectories(target.getParent());
           try (BufferedOutputStream output =
               new BufferedOutputStream(new FileOutputStream(target.toFile()))) {

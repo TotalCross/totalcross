@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -214,6 +215,22 @@ class AndroidToolLocatorTest {
     assertTrue(tree.contains("linux-x86_64"));
   }
 
+  @Test
+  void extractsOnlyTheProtocExecutableFromArchive() throws IOException {
+    AndroidToolLocator.setTestHooks((url, output) -> writeProtocArchive(output, false, true),
+        (command, expected) -> true);
+
+    AndroidToolLocator.protoc();
+
+    Path executable = AndroidToolLocator.protocPath("linux-x86_64");
+    Path platformDirectory = executable.getParent().getParent();
+    try (var paths = Files.walk(platformDirectory)) {
+      assertEquals(List.of(executable), paths.filter(Files::isRegularFile).collect(Collectors.toList()));
+    }
+    assertFalse(Files.exists(platformDirectory.resolve("include")));
+    assertFalse(Files.exists(platformDirectory.resolve("bin/unused")));
+  }
+
   private List<String> installFakeTooling() {
     return installFakeTooling(new ArrayList<>());
   }
@@ -275,12 +292,27 @@ class AndroidToolLocatorTest {
   }
 
   private static void writeProtocArchive(Path output, boolean windows) throws IOException {
+    writeProtocArchive(output, windows, false);
+  }
+
+  private static void writeProtocArchive(Path output, boolean windows, boolean withExtras) throws IOException {
     Files.createDirectories(output.getParent());
     try (OutputStream stream = Files.newOutputStream(output);
         ZipOutputStream zip = new ZipOutputStream(stream)) {
       zip.putNextEntry(new ZipEntry("bin/protoc" + (windows ? ".exe" : "")));
       zip.write(1);
       zip.closeEntry();
+      if (withExtras) {
+        zip.putNextEntry(new ZipEntry("bin/unused"));
+        zip.write(2);
+        zip.closeEntry();
+        zip.putNextEntry(new ZipEntry("include/google/protobuf/descriptor.proto"));
+        zip.write(3);
+        zip.closeEntry();
+        zip.putNextEntry(new ZipEntry("readme.txt"));
+        zip.write(4);
+        zip.closeEntry();
+      }
     }
   }
 
