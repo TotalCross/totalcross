@@ -36,9 +36,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final long SUITE_SEED = 73001L;
   private static final int SUITE_ROUNDS = 5;
   private static final int EXPECTED_SUITE_PROCESSES = 210;
-  private static final long[] SUITE_MASKS = {
-      0L, 1L, 2L, 4L, 8L, 16L, 32L, 64L, 128L, 256L, 512L, 1024L, 2048L,
-      4096L, 8192L, 16384L, 32768L, 32799L, 40991L, 49183L, 57375L
+  private static final int[] SUITE_MASKS = {
+      0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
+      4096, 8192, 16384, 32768, 32799, 40991, 49183, 57375
   };
   private static final String[] FEATURE_NAMES = {
       "DECODE_ZERO_COPY", "RASTER_OPACITY_METADATA", "RASTER_OPAQUE_WRITE_PIXELS",
@@ -95,7 +95,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   @Override
   public void initUI() {
     super.initUI();
-    memory = new MemorySampler();
     try {
       String mode = ImageRasterBenchmarkSupport.argument(getCommandLine(), "mode", MODE_BENCHMARK);
       if (MODE_RUN_ALL.equals(mode) || MODE_SELF_TEST.equals(mode) || MODE_AGGREGATE.equals(mode)) {
@@ -186,7 +185,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       benchmarkReady = true;
       prefetchTimer = addTimer(50);
     } catch (Throwable failure) {
-      String error = failure.toString();
+      String error = reportFailure(failure);
       finishBenchmark(false, error);
       return;
     }
@@ -218,7 +217,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       System.out.flush();
       pass = true;
     } catch (Throwable failure) {
-      String message = failure.toString();
+      String message = reportFailure(failure);
       System.out.println("image-scroll benchmark failed,error=" + message);
       System.out.flush();
     }
@@ -693,7 +692,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       writeRunSummary(cold);
       finishBenchmark(true, "");
     } catch (Throwable failure) {
-      String error = failure.toString();
+      String error = reportFailure(failure);
       finishBenchmark(false, error);
     }
   }
@@ -756,7 +755,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       writeTimeline();
     } catch (Throwable outputFailure) {
       overallPass = false;
-      System.out.println("benchmark_output_error=" + outputFailure.getClass().getName());
+      String message = reportFailure(outputFailure);
+      System.out.println("benchmark_output_error=" + message);
     }
     exit(overallPass ? 0 : 1);
   }
@@ -1039,27 +1039,31 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private void recordMemory(String name, long timestamp) {
     if (memory == null) {
-      memory = new MemorySampler();
+      // Native runtimes may omit the optional memory sampler fields.
+      return;
     }
     try {
       memory.record(name, timestamp);
-    } catch (Throwable ignored) {
-      memory = null;
+    } catch (Throwable failure) {
+      reportFailure(failure);
     }
   }
 
   private void writeMemory() throws Exception {
     StringBuilder csv = new StringBuilder(2048);
     csv.append("checkpoint,elapsed_ms,current_resident_bytes,peak_resident_bytes,private_bytes,phys_footprint_bytes\n");
-    int memoryCount = memory == null ? 0 : memory.count;
-    for (int i = 0; i < memoryCount; i++) {
-      csv.append(memory.names[i]).append(',').append(memory.elapsed[i]).append(',')
-          .append(csvMetric(memory.current[i])).append(',').append(csvMetric(memory.peak[i])).append(',')
-          .append(csvMetric(memory.privateBytes[i])).append(',').append(csvMetric(memory.physFootprint[i]))
-          .append('\n');
+    if (memory != null) {
+      for (int i = 0; i < memory.count; i++) {
+        csv.append(memory.names[i]).append(',').append(memory.elapsed[i]).append(',')
+            .append(csvMetric(memory.current[i])).append(',').append(csvMetric(memory.peak[i])).append(',')
+            .append(csvMetric(memory.privateBytes[i])).append(',').append(csvMetric(memory.physFootprint[i]))
+            .append('\n');
+      }
+      csv.append("global_peak,0,").append(csvMetric(memory.globalPeak))
+          .append(",unavailable,unavailable,unavailable\n");
+    } else {
+      csv.append("memory_unavailable,0,unavailable,unavailable,unavailable,unavailable\n");
     }
-    csv.append("global_peak,0,").append(csvMetric(memory.globalPeak))
-        .append(",unavailable,unavailable,unavailable\n");
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "memory.csv"), csv.toString());
   }
@@ -1074,6 +1078,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "timeline.csv"), timeline.toString());
+  }
+
+  private static String reportFailure(Throwable failure) {
+    failure.printStackTrace();
+    return failure.toString();
   }
 
   private static String endianness(long value) {

@@ -58,6 +58,7 @@ done
 [ -f "$sdk_zip" ] || { echo "SDK ZIP not found: $sdk_zip" >&2; exit 2; }
 [ -n "$corpus_dir" ] || { usage; echo "Missing --corpus or TC_IMAGE_CORPUS" >&2; exit 2; }
 [ -d "$corpus_dir" ] || { echo "Corpus directory not found: $corpus_dir" >&2; exit 2; }
+corpus_dir=$(cd "$corpus_dir" && pwd)
 [ -n "$output_dir" ] || { usage; echo "Missing --output" >&2; exit 2; }
 [ "${#targets[@]}" -gt 0 ] || targets=(windows-x64 macos-arm64 linux-x64 linux-arm64 linux-armv7)
 
@@ -133,7 +134,20 @@ deploy_target() {
    rm -rf "$bundle_dir"
    mkdir -p "$bundle_dir/corpus"
    cp -R "$install_dir/." "$bundle_dir/"
-   cp -R "$corpus_dir/." "$bundle_dir/corpus/"
+   local image_path relative_path destination
+   while IFS= read -r -d '' image_path; do
+      relative_path="${image_path#"$corpus_dir/"}"
+      destination="$bundle_dir/corpus/$relative_path"
+      mkdir -p "$(dirname "$destination")"
+      cp "$image_path" "$destination"
+   done < <(find "$corpus_dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
+   local bundle_file_count bundle_image_count
+   bundle_file_count=$(find "$bundle_dir/corpus" -type f -print | wc -l | tr -d ' ')
+   bundle_image_count=$(find "$bundle_dir/corpus" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print | wc -l | tr -d ' ')
+   [ "$bundle_file_count" -eq 663 ] && [ "$bundle_image_count" -eq 663 ] || {
+      echo "Bundle corpus must contain exactly 663 JPEG files and no extras; found $bundle_file_count files and $bundle_image_count JPEGs" >&2
+      exit 1
+   }
    cat > "$bundle_dir/manifest.json" <<EOF
 {
   "schemaVersion": 1,
