@@ -6,9 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Build a distributable image-scroll benchmark suite
 
-This ExecPlan follows `AGENTS.md` and `.agent/PLANS.md`. The requested
-`logical-commits` skill is not installed in this environment; its required
-small, semantic checkpoint discipline is applied manually below.
+This ExecPlan follows `AGENTS.md`, `.agent/PLANS.md`, and the
+`.agents/skills/logical-commits/SKILL.md` workflow.
 
 ## Purpose / Big Picture
 
@@ -72,6 +71,10 @@ copy raw logs into the plan.
   real package.yml SDK ZIP, uses `tc.Deploy` without native overlay, and emits
   all five requested bundle formats; structure and 663-file corpus checks
   passed on the host (`/tmp/image-scroll-final-packages.m4ZZrI`).
+- [x] Checkpoint 8 — commits `e1bccc8c9`, `4ac0a53b5`: the benchmark app is
+  one-process/one-cold-measurement only; SDK extraction, compilation, and
+  deployment are bound to one official JAR; and the bundle runner owns the
+  self-test, four smokes, 210-process matrix, aggregation, and final ZIP.
 - [ ] Final closeout: required tests, four-combination smoke, packaged-SDK
   validation when available, scoped status/log evidence, and no new local
   changes left uncommitted. The real package artifact used for packaging came
@@ -190,6 +193,20 @@ launcher/runtime from the SDK. Produce:
 
 Commit: `build(benchmark): package cross-platform image bundles`.
 
+### Checkpoint 8 — harness correction
+
+Remove controller behavior from `ImageScrollRealWorkloadBenchmarkApp`, keep
+the individual artifact schema, and require `/scr -1,-1,540,960` with an
+explicit mask and `off|on` prefetch setting. Compile only the app and shared
+benchmark support against the extracted official SDK JAR, use that same JAR
+for `tc.Deploy`, record matching SHA-256 values, and copy one external Python
+runner into each bundle. The runner validates the manifest/corpus/chime,
+executes every combination in a fresh native process, and stops on the first
+nonzero exit or signal.
+
+Commits: `e1bccc8c9` and `4ac0a53b5`; legacy runner removal and final plan
+closeout remain active.
+
 ## Decision Log
 
 - Decision: use the existing real-workload application and Gradle JAR task.
@@ -221,9 +238,12 @@ Required final commands:
     ./TotalCrossSDK/gradlew-agent jarImageScrollRasterFastPathBenchmark --no-daemon --console=plain
     git diff --check
 
-Also perform four fresh-process smoke runs for masks 0 and 32799 with prefetch
-off/on, parse JSON/CSV/timeline outputs, verify external corpus and distinct
-prefetch paths, and verify the final ZIP can be opened by the Java reader.
+Also perform one external bundle self-test followed by four fresh-process
+smoke runs (`0/off`, `0/on`, `32799/off`, `32799/on`). Stop immediately on a
+nonzero exit or signal, parse JSON/CSV/timeline outputs, verify `540x960`,
+requested/effective masks, prefetch values, the external corpus, and the
+distinct prefetch paths. Only if all four smokes pass, run the 210-process
+matrix, aggregate it, and verify the final ZIP can be opened.
 Validate the packager against a real package.yml SDK artifact when GitHub
 workflow access and artifact download are available; otherwise use the newest
 packaged SDK already present and report the infrastructure limitation. Do not
