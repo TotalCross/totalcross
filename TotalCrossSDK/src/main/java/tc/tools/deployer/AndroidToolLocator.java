@@ -46,6 +46,8 @@ public final class AndroidToolLocator {
   private static boolean legacyWarningShown;
   private static Downloader downloader = AndroidToolLocator::downloadFileFromNetwork;
   private static Prober prober = AndroidToolLocator::probeProcess;
+  private static PermissionSetter permissionSetter = AndroidToolLocator::setPosixPermissions;
+  private static QuarantineRemover quarantineRemover = AndroidToolLocator::removeMacQuarantine;
 
   @FunctionalInterface
   interface Downloader {
@@ -55,6 +57,16 @@ public final class AndroidToolLocator {
   @FunctionalInterface
   interface Prober {
     boolean probe(List<String> command, String expectedOutput);
+  }
+
+  @FunctionalInterface
+  interface PermissionSetter {
+    void set(Path executable) throws IOException;
+  }
+
+  @FunctionalInterface
+  interface QuarantineRemover {
+    void remove(Path executable);
   }
 
   private AndroidToolLocator() {
@@ -283,14 +295,15 @@ public final class AndroidToolLocator {
     if (!Files.isRegularFile(executable)) {
       return;
     }
+    if (!platform.equals(protocPlatform())) {
+      return;
+    }
     if (DeploySettings.isMac() && "osx-universal_binary".equals(platform)) {
-      removeMacQuarantine(executable);
+      quarantineRemover.remove(executable);
     }
     if (!"win64".equals(platform)) {
       try {
-        Files.setPosixFilePermissions(
-            executable,
-            PosixFilePermissions.fromString("rwxr-xr-x"));
+        permissionSetter.set(executable);
       } catch (IOException | UnsupportedOperationException e) {
         throw new RuntimeException("Failed to set execution permission to: " + executable, e);
       }
@@ -317,6 +330,12 @@ public final class AndroidToolLocator {
       DeployLogger.warn(
           "Could not start xattr to remove the macOS quarantine attribute from protoc; continuing with deployment.");
     }
+  }
+
+  private static void setPosixPermissions(Path executable) throws IOException {
+    Files.setPosixFilePermissions(
+        executable,
+        PosixFilePermissions.fromString("rwxr-xr-x"));
   }
 
   private static void downloadAndUnzip(
@@ -522,7 +541,16 @@ public final class AndroidToolLocator {
     prober = testProber == null ? AndroidToolLocator::probeProcess : testProber;
   }
 
+  static void setTestPreparationHooks(
+      PermissionSetter testPermissionSetter, QuarantineRemover testQuarantineRemover) {
+    permissionSetter = testPermissionSetter == null
+        ? AndroidToolLocator::setPosixPermissions : testPermissionSetter;
+    quarantineRemover = testQuarantineRemover == null
+        ? AndroidToolLocator::removeMacQuarantine : testQuarantineRemover;
+  }
+
   static void resetTestHooks() {
     setTestHooks(null, null);
+    setTestPreparationHooks(null, null);
   }
 }

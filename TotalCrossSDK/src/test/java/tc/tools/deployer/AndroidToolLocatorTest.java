@@ -149,6 +149,21 @@ class AndroidToolLocatorTest {
   }
 
   @Test
+  void provisionsAllPlatformsOnSimulatedWindowsWithoutForeignPreparation() throws IOException {
+    assertOfflineProvisioningForHost("windows 11", "x86_64", "win64");
+  }
+
+  @Test
+  void provisionsAllPlatformsOnSimulatedLinuxWithHostOnlyPreparation() throws IOException {
+    assertOfflineProvisioningForHost("linux", "x86_64", "linux-x86_64");
+  }
+
+  @Test
+  void provisionsAllPlatformsOnSimulatedMacWithHostOnlyPreparation() throws IOException {
+    assertOfflineProvisioningForHost("mac os x", "x86_64", "osx-universal_binary");
+  }
+
+  @Test
   void reusesPreparedToolsWithoutDownloadingAgain() throws IOException {
     List<String> downloads = installFakeTooling();
 
@@ -217,6 +232,46 @@ class AndroidToolLocatorTest {
       return true;
     });
     return downloads;
+  }
+
+  private void assertOfflineProvisioningForHost(
+      String osName, String architecture, String currentPlatform) throws IOException {
+    DeploySettings.osName = osName;
+    System.setProperty("os.arch", architecture);
+    if (DeploySettings.isWindows()) {
+      Path fakeJava = tempDirectory.resolve("java.exe");
+      writeNonEmpty(fakeJava);
+      DeploySettings.path = new String[] { tempDirectory.toString() };
+    }
+
+    List<String> probes = new ArrayList<>();
+    List<Path> permissioned = new ArrayList<>();
+    List<Path> quarantined = new ArrayList<>();
+    installFakeTooling(probes);
+    AndroidToolLocator.setTestPreparationHooks(
+        permissioned::add, quarantined::add);
+
+    AndroidToolLocator.prepareForOfflineUse();
+
+    for (String platform : AndroidToolLocator.PROTOC_PLATFORMS) {
+      assertTrue(Files.isRegularFile(AndroidToolLocator.protocPath(platform)), platform);
+      assertTrue(Files.size(AndroidToolLocator.protocPath(platform)) > 0, platform);
+      if (!platform.equals(currentPlatform)) {
+        assertFalse(probes.stream().anyMatch(command -> command.contains("/" + platform + "/")), platform);
+        assertFalse(permissioned.contains(AndroidToolLocator.protocPath(platform)), platform);
+        assertFalse(quarantined.contains(AndroidToolLocator.protocPath(platform)), platform);
+      }
+    }
+    if ("win64".equals(currentPlatform)) {
+      assertTrue(permissioned.isEmpty());
+    } else {
+      assertEquals(List.of(AndroidToolLocator.protocPath(currentPlatform)), permissioned);
+    }
+    if ("osx-universal_binary".equals(currentPlatform)) {
+      assertEquals(List.of(AndroidToolLocator.protocPath(currentPlatform)), quarantined);
+    } else {
+      assertTrue(quarantined.isEmpty());
+    }
   }
 
   private static void writeProtocArchive(Path output, boolean windows) throws IOException {
