@@ -166,7 +166,7 @@ EOF
 @echo off
 setlocal
 cd /d "%~dp0"
-ImageScrollRealWorkloadBenchmarkApp.exe --mode=run-all --corpus=corpus --output=results
+ImageScrollRealWorkloadBenchmarkApp.exe /scr -1,-1,720,1280 --mode=run-all --corpus=corpus --output=results
 exit /b %ERRORLEVEL%
 EOF
          ;;
@@ -175,7 +175,7 @@ EOF
 #!/bin/sh
 set -eu
 cd "$(dirname "$0")"
-exec ./ImageScrollRealWorkloadBenchmarkApp --mode=run-all --corpus=corpus --output=results
+exec ./ImageScrollRealWorkloadBenchmarkApp /scr -1,-1,720,1280 --mode=run-all --corpus=corpus --output=results
 EOF
          chmod +x "$bundle_dir/run-all.command"
          ;;
@@ -184,7 +184,7 @@ EOF
 #!/bin/sh
 set -eu
 cd "$(dirname "$0")"
-exec ./ImageScrollRealWorkloadBenchmarkApp --mode=run-all --corpus=corpus --output=results
+exec ./ImageScrollRealWorkloadBenchmarkApp /scr -1,-1,720,1280 --mode=run-all --corpus=corpus --output=results
 EOF
          chmod +x "$bundle_dir/run-all.sh"
          ;;

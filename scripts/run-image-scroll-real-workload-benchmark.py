@@ -17,7 +17,7 @@ import tempfile
 
 
 EXPECTED_JPEGS = 663
-RESOLUTIONS = ((480, 720, "480x720x24"), (540, 960, "540x960x24"))
+RESOLUTIONS = ((720, 1280, "720x1280x24"),)
 PROFILES = ("disabled", "enabled")
 PREFETCH_PROFILES = ("disabled", "all")
 FIXTURE = "ImageScrollRealWorkloadBenchmarkApp"
@@ -175,11 +175,11 @@ def main(argv):
                     run_name = (f"{width}x{height}-prefetch-{prefetch}-target-"
                                 f"{target_color}-variant-{variant_cache}")
                     log_path = output_dir / f"{run_name}.log"
-                    # The simulator notation `/scr WIDTHxHEIGHTx24` maps to the
-                    # native desktop launcher's `/scr x,y,width,height` form.
+                    # Keep every native process at the benchmark's portrait
+                    # logical resolution.
                     command = [
                         str(executable),
-                        "/scr", f"-2,-2,{width},{height}",
+                        "/scr", "-1,-1,720,1280",
                         f"--image-dir={image_dir}",
                         f"--target-color={target_color}",
                         f"--variant-cache={variant_cache}",

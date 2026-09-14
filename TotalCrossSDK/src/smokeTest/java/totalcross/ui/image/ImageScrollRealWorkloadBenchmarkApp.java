@@ -10,6 +10,7 @@ import totalcross.io.File;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.ui.Container;
+import totalcross.ui.Control;
 import totalcross.ui.Flick;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
@@ -29,6 +30,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final int SCROLL_STEP = 120;
   private static final int SCROLL_DURATION_MILLIS = 3000;
   private static final int FRAME_INTERVAL_MILLIS = 16;
+  private static final int EXPECTED_LOGICAL_WIDTH = 720;
+  private static final int EXPECTED_LOGICAL_HEIGHT = 1280;
+  private static final String SCREEN_ARGUMENT = "/scr -1,-1,720,1280";
   private static final String MODE_BENCHMARK = "benchmark";
   private static final String MODE_RUN_ALL = "run-all";
   private static final String MODE_SELF_TEST = "self-test";
@@ -88,7 +92,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     Flick.defaultFlickAcceleration = 1.8;
     Settings.scrollDistanceOnMouseWheelMove = SCROLL_STEP;
     setDeviceTitle("image-scroll-real-workload");
-    setUIStyle(Settings.ANDROID_UI);
+    Settings.uiStyle = Settings.ANDROID_UI;
+    Settings.fingerTouch = true;
+    Control.uiStyleChanged();
   }
 
   @Override
@@ -132,6 +138,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       runOutputDir = ImageRasterBenchmarkSupport.joinPath(
           ImageRasterBenchmarkSupport.joinPath(outputDir, "runs"), runName());
       ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
+      requireBenchmarkResolution();
       configureMask();
       ImageRasterBenchmarkSupport.require("disabled".equals(targetColorProfile)
           || "enabled".equals(targetColorProfile),
@@ -190,6 +197,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private void runController(String mode) {
     boolean pass = false;
     try {
+      requireBenchmarkResolution();
       String corpus = ImageRasterBenchmarkSupport.argument(getCommandLine(), "corpus", null);
       String output = ImageRasterBenchmarkSupport.argument(getCommandLine(), "output", "results");
       ImageRasterBenchmarkSupport.require(corpus != null && corpus.length() > 0,
@@ -276,7 +284,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         "self-test dataset manifest mismatch");
 
     String runOutput = ImageRasterBenchmarkSupport.joinPath(output, "smoke");
-    String args = "--mode=" + MODE_BENCHMARK
+    String args = SCREEN_ARGUMENT + " --mode=" + MODE_BENCHMARK
         + " --image-optimization=0 --prefetch=off --run=0"
         + " --duration=100 --output=" + runOutput
         + " --corpus=" + corpus + " --dataset-hash=" + datasetHash;
@@ -439,7 +447,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       for (int combination : combinations) {
         long mask = SUITE_MASKS[combination / 2];
         String prefetch = combination % 2 == 0 ? "off" : "on";
-        String args = "--mode=" + MODE_BENCHMARK
+        String args = SCREEN_ARGUMENT + " --mode=" + MODE_BENCHMARK
             + " --image-optimization=" + mask
             + " --prefetch=" + prefetch
             + " --run=" + (round + 1)
@@ -473,6 +481,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       executable = "." + separator + base;
     }
     return Settings.WIN32.equals(Settings.platform) ? executable : "./" + base;
+  }
+
+  private static void requireBenchmarkResolution() {
+    ImageRasterBenchmarkSupport.require(
+        Settings.screenWidth == EXPECTED_LOGICAL_WIDTH
+            && Settings.screenHeight == EXPECTED_LOGICAL_HEIGHT,
+        "benchmark requires logical resolution " + EXPECTED_LOGICAL_WIDTH + "x"
+            + EXPECTED_LOGICAL_HEIGHT + " but got " + Settings.screenWidth + "x"
+            + Settings.screenHeight);
   }
 
   private void aggregateResults(String output) throws Exception {
@@ -996,8 +1013,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"cpu\":\"unavailable\",\n"
         + "  \"gpu\":\"unavailable\",\n"
         + "  \"ramTotalBytes\":null,\n"
-        + "  \"windowLogicalWidth\":" + width + ",\n"
-        + "  \"windowLogicalHeight\":" + height + ",\n"
+        + "  \"expectedLogicalWidth\":" + EXPECTED_LOGICAL_WIDTH + ",\n"
+        + "  \"expectedLogicalHeight\":" + EXPECTED_LOGICAL_HEIGHT + ",\n"
+        + "  \"effectiveLogicalWidth\":" + Settings.screenWidth + ",\n"
+        + "  \"effectiveLogicalHeight\":" + Settings.screenHeight + ",\n"
+        + "  \"windowLogicalWidth\":" + Settings.screenWidth + ",\n"
+        + "  \"windowLogicalHeight\":" + Settings.screenHeight + ",\n"
         + "  \"windowPhysicalWidth\":" + jsonMetric(surfaceWidth) + ",\n"
         + "  \"windowPhysicalHeight\":" + jsonMetric(surfaceHeight) + ",\n"
         + "  \"totalCrossScreenWidth\":" + Settings.screenWidth + ",\n"
