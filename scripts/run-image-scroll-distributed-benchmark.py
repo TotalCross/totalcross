@@ -423,7 +423,8 @@ def write_zip(bundle, output):
     archive = output / f"totalcross-image-benchmark-results-{int(time.time() * 1000)}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as destination:
         for path in sorted(bundle.rglob("*")):
-            if path.is_file() and path != archive:
+            if (path.is_file() and path != archive
+                    and not path.name.startswith("totalcross-image-benchmark-results-")):
                 destination.write(path, path.relative_to(bundle).as_posix())
     print(f"final ZIP={archive}")
     return archive
