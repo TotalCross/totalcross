@@ -28,6 +28,7 @@ PREFETCH_PROFILES = ("off", "on")
 ROUNDS = 5
 SEED = 73001
 EXPECTED_PROCESSES = len(MASKS) * len(PREFETCH_PROFILES) * ROUNDS
+PROCESS_TIMEOUT_SECONDS = 180
 FIXTURE = "ImageScrollRealWorkloadBenchmarkApp"
 FNV_OFFSET = 0xCBF29CE484222325
 FNV_PRIME = 0x100000001B3
@@ -268,11 +269,21 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, la
         f"--run={run}",
         f"--dataset-hash={corpus_digest}",
     ]
-    with log_path.open("w", encoding="utf-8") as log:
-        completed = subprocess.run(
-            command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, text=True,
-            check=False
-        )
+    try:
+        with log_path.open("w", encoding="utf-8") as log:
+            completed = subprocess.run(
+                command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, text=True,
+                check=False, timeout=PROCESS_TIMEOUT_SECONDS
+            )
+    except subprocess.TimeoutExpired:
+        with log_path.open("a", encoding="utf-8") as log:
+            log.write(
+                f"\nbenchmark_timeout_seconds={PROCESS_TIMEOUT_SECONDS}\n"
+            )
+        reason = f"timed out after {PROCESS_TIMEOUT_SECONDS} seconds"
+        print(f"{label} failed: {reason}; log={log_path}", file=sys.stderr)
+        print(tail(log_path), file=sys.stderr)
+        raise BenchmarkFailure(f"{label} failed: {reason}")
     if completed.returncode:
         if completed.returncode < 0:
             signal_name = signal.Signals(-completed.returncode).name
