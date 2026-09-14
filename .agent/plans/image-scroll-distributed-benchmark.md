@@ -77,12 +77,12 @@ copy raw logs into the plan.
   self-test, four smokes, 210-process matrix, aggregation, and final ZIP;
   commits `5f97ba301` and `6b807c5d9` removed the legacy native runner and
   added packaged-ZIP wrapper handling.
+- [x] Checkpoint 9 — commit `882b31a3c`: the distributed runner bounds every
+  native process to 180 seconds and records a fail-fast timeout in its log.
 - [ ] Final closeout: the external self-test passed, but the first smoke
-  (`0/off`) stopped with exit code 1 because the deployed process reported
-  `NoSuchMethodError` for native `Graphics.copyGeometryNative`; no other smoke
-  or matrix process was started. The validation bundle was assembled in `/tmp`
-  from the current branch SDK distribution because the available published
-  7.2.2 ZIP predates the required image instrumentation APIs.
+  (`0/off`) was terminated after more than six minutes without output or
+  artifacts; no other smoke or matrix process was started. The bundle used the
+  official `TotalCross-7.2.2` artifact from Actions run `34883508658`.
 
 ## Current Architecture and Scope
 
@@ -244,12 +244,10 @@ nonzero exit or signal, parse JSON/CSV/timeline outputs, verify `540x960`,
 requested/effective masks, prefetch values, the external corpus, and the
 distinct prefetch paths. Only if all four smokes pass, run the 210-process
 matrix, aggregate it, and verify the final ZIP can be opened.
-Validate the packager against a real package.yml SDK artifact when GitHub
-workflow access and artifact download are available. For this run, the
-available published ZIP predates the branch's instrumentation API, so the
-packager was exercised with an explicit temporary ZIP assembled from the
-current branch distribution; report that provenance and do not treat it as a
-published package.yml artifact.
+Validate the packager against the real package.yml SDK artifact from Actions
+run `34883508658`; record its published artifact digest and the extracted
+SDK-JAR SHA-256 in the final evidence. Do not substitute a local SDK or native
+runtime for that artifact.
 
 Expected validation level is 2 for Java/API slices, 3 for frame/memory/native
 instrumentation, and 4 for final packaging and the requested matrix. Expensive
@@ -280,10 +278,13 @@ from the latest checkpoint commit and inspecting only the active paths.
 ## Outcomes & Retrospective
 
 The implementation commits are `e1bccc8c9`, `4ac0a53b5`, `5f97ba301`,
-`6b807c5d9`, and `1b6007483`. Static validation, package extraction, manifest
-checks, and the external self-test passed. The required smoke sequence was
-halted at `0/off` by the native method mismatch described above; therefore no
-matrix ZIP exists.
+`6b807c5d9`, `1b6007483`, and `882b31a3c`. The official package artifact was
+downloaded, extracted, compiled, deployed, and passed manifest/corpus/hash
+checks; the extracted SDK JAR SHA-256 was
+`229ec02e9dcd60e7d9d114aabe098ce9b9f44f26ac7509fe3b13b4745aa0d2c1` for both
+compile and deploy. The external self-test passed. The required smoke
+sequence halted at `0/off` after a native-process hang, so no matrix ZIP
+exists.
 
 ## Revision Note
 
