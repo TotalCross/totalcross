@@ -25,7 +25,7 @@ MASKS = (
     4096, 8192, 16384, 32768, 32799, 40991, 49183, 57375,
 )
 PREFETCH_PROFILES = ("off", "on")
-ROUNDS = 5
+ROUNDS = 3
 SEED = 73001
 EXPECTED_PROCESSES = len(MASKS) * len(PREFETCH_PROFILES) * ROUNDS
 PROCESS_TIMEOUT_SECONDS = 180
@@ -395,7 +395,19 @@ def write_suite_plan(output):
             lines.append(f"{run}\t{order}\t{run}\t{mask}\t{prefetch}")
             planned.append((round_number, order, run, mask, prefetch))
             order += 1
-    require(len(planned) == EXPECTED_PROCESSES, "suite plan does not contain 210 processes")
+    require(len(planned) == EXPECTED_PROCESSES,
+            f"suite plan does not contain {EXPECTED_PROCESSES} processes")
+    combination_counts = {}
+    for _, _, _, mask, prefetch in planned:
+        key = (mask, prefetch)
+        combination_counts[key] = combination_counts.get(key, 0) + 1
+    require(set(combination_counts) == {
+        (mask, prefetch) for mask in MASKS for prefetch in PREFETCH_PROFILES
+    }, "suite plan combinations differ")
+    require(all(count == ROUNDS for count in combination_counts.values()),
+            "suite plan does not contain three runs per combination")
+    require(len({(run, mask, prefetch) for _, _, run, mask, prefetch in planned})
+            == EXPECTED_PROCESSES, "suite plan contains duplicate runs")
     (output / "suite-plan.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
     return planned
 
@@ -419,7 +431,8 @@ def run_matrix(bundle, manifest, output, corpus_digest):
         )
         completed += 1
         print(f"matrix progress={completed}/{EXPECTED_PROCESSES}")
-    require(completed == EXPECTED_PROCESSES, "matrix did not complete 210 processes")
+    require(completed == EXPECTED_PROCESSES,
+            f"matrix did not complete {EXPECTED_PROCESSES} processes")
     return plan
 
 
@@ -458,7 +471,8 @@ def aggregate(output, plan):
             "prefetch_elapsed_ns": summary["prefetchElapsedNs"],
             "memory_peak_resident_bytes": summary["memoryPeakResidentBytes"],
         })
-    require(len(records) == EXPECTED_PROCESSES, "aggregation did not find 210 summaries")
+    require(len(records) == EXPECTED_PROCESSES,
+            f"aggregation did not find {EXPECTED_PROCESSES} summaries")
     rows = []
     for prefetch in PREFETCH_PROFILES:
         baseline = [record for record in records

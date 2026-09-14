@@ -17,7 +17,7 @@ Create `perf/image-scroll-distributed-benchmark` from
 real-corpus image-scroll benchmark. It will consume an already packaged
 `TotalCross-<version>.zip`, deploy the Java app with `tc.Deploy`, keep the 663
 files external under `corpus/`, run the deterministic 21-mask × 2-prefetch ×
-5-sample matrix, and produce reproducible JSON/CSV/TSV results and a final
+3-round matrix, and produce reproducible JSON/CSV/TSV results and a final
 application-created ZIP.
 
 ## Working Set and Resume Protocol
@@ -65,7 +65,7 @@ copy raw logs into the plan.
   aggregation, internal accounting fields, and application-owned ZIP
   creation; deploy conversion and focused SDK test passed.
 - [x] Checkpoint 6 — commit `30ff7efa5`: run-all controller/launchers execute
-  the five-round fresh-process matrix, and the packager emits the
+  the three-round fresh-process matrix, and the packager emits the
   platform-specific launcher templates with a root bundle manifest.
 - [x] Checkpoint 7 — commits `216d47787`, `ba7d51b19`: package-SDK deploy tooling consumes a
   real package.yml SDK ZIP, uses `tc.Deploy` without native overlay, and emits
@@ -74,7 +74,7 @@ copy raw logs into the plan.
 - [x] Checkpoint 8 — commits `e1bccc8c9`, `4ac0a53b5`: the benchmark app is
   one-process/one-cold-measurement only; SDK extraction, compilation, and
   deployment are bound to one official JAR; and the bundle runner owns the
-  self-test, four smokes, 210-process matrix, aggregation, and final ZIP;
+  self-test, four smokes, 126-process matrix, aggregation, and final ZIP;
   commits `5f97ba301` and `6b807c5d9` removed the legacy native runner and
   added packaged-ZIP wrapper handling.
 - [x] Checkpoint 9 — commit `882b31a3c`: the distributed runner bounds every
@@ -94,7 +94,7 @@ copy raw logs into the plan.
 The benchmark app now accepts only `--mode=benchmark` plus the explicit corpus,
 mask, prefetch, run, output, and dataset-hash arguments needed for one cold
 scroll measurement. The external runner owns validation, fresh native-process
-launches, the deterministic 210-process plan, aggregation, and ZIP creation.
+launches, the deterministic 126-process plan, aggregation, and ZIP creation.
 The packaged bundle carries exactly 663 JPEGs, the official device chime, the
 540x960 screen argument, and compile/deploy SDK SHA-256 values that must match.
 
@@ -174,9 +174,9 @@ Commit: `feat(sdk): aggregate image benchmark results`.
 ### Checkpoint 6 — suite plan and launchers
 
 Generate the 21 unique masks exactly as specified, with seed 73001 and a
-deterministic pseudo-random permutation in each of five rounds. Write
+deterministic pseudo-random permutation in each of three rounds. Write
 `manifest.json`, `environment.json`, and `suite-plan.tsv`; run every one of
-the 42 combinations once per round in fresh processes, for 210 processes.
+the 42 combinations once per round in fresh processes, for 126 processes.
 Provide only `run-all.bat`, `run-all.command`, or `run-all.sh` in each platform
 bundle and make the launcher perform self-test, matrix execution, aggregation,
 ZIP creation, and the completion message.
@@ -247,8 +247,9 @@ Also perform one external bundle self-test followed by four fresh-process
 smoke runs (`0/off`, `0/on`, `32799/off`, `32799/on`). Stop immediately on a
 nonzero exit or signal, parse JSON/CSV/timeline outputs, verify `540x960`,
 requested/effective masks, prefetch values, the external corpus, and the
-distinct prefetch paths. Only if all four smokes pass, run the 210-process
-matrix, aggregate it, and verify the final ZIP can be opened.
+distinct prefetch paths. The 126-process matrix is intentionally deferred for
+this update; when run later, aggregate it and verify the final ZIP can be
+opened.
 Validate the packager against the real package.yml SDK artifact from Actions
 run `34883508658`; record its published artifact digest and the extracted
 SDK-JAR SHA-256 in the final evidence. Do not substitute a local SDK or native
@@ -292,8 +293,8 @@ compile and deploy. The external self-test passed. On the final macOS ARM64
 bundle, `0/off` and `0/on` both passed with `540x960`, complete scrolling,
 matching mask values, the expected prefetch counts, and all six artifacts.
 The official runtime still emits its chime warning, which was explicitly
-accepted for continuation; the 210-process matrix remains intentionally
-deferred.
+accepted for continuation. The three-round matrix is specified as 126 fresh
+processes and remains intentionally deferred for this update.
 
 ## Revision Note
 
