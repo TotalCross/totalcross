@@ -429,6 +429,95 @@ tasks.register('smokeTest', Test) {
     classpath = files(sourceSets.main.output) + sourceSets.smokeTest.runtimeClasspath
     useJUnitPlatform()
 }
+
+def systemNanoTimeSmokeClassesDir = layout.buildDirectory.dir('system-nanotime-smoke/classes')
+
+tasks.register('compileSystemNanoTimeSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the System.nanoTime() macOS smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/sys/SystemNanoTimeSmokeApp.class'
+    }
+    into systemNanoTimeSmokeClassesDir
+}
+
+tasks.register('jarSystemNanoTimeSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the System.nanoTime() macOS smoke app for deployment.'
+    dependsOn 'compileSystemNanoTimeSmoke'
+    archiveFileName = 'SystemNanoTimeSmokeApp.jar'
+    destinationDirectory = systemNanoTimeSmokeClassesDir
+    from(systemNanoTimeSmokeClassesDir)
+}
+
+tasks.register('deploySystemNanoTimeSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the System.nanoTime() smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarSystemNanoTimeSmoke'
+
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir systemNanoTimeSmokeClassesDir.get().asFile
+    args = [
+        'SystemNanoTimeSmokeApp.jar',
+        '-macos'
+    ]
+}
+
+tasks.register('runSystemNanoTimeSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the System.nanoTime() smoke app with the exact macOS dylib.'
+    dependsOn 'deploySystemNanoTimeSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runSystemNanoTimeSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException('Native runtime not found: ' + nativeRuntimeFile)
+        }
+
+        def installDir = systemNanoTimeSmokeClassesDir.get().dir('install/macos').asFile
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def executable = new File(installDir, 'SystemNanoTimeSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException('Native smoke executable not found: ' + executable)
+        }
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir systemNanoTimeSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def requiredFields = [
+            'fixture=SystemNanoTimeSmokeApp',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !output.contains(it) }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('System.nanoTime() native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
 def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
 def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')
 def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scaling/danfe') {

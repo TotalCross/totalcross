@@ -50,8 +50,8 @@ scope and must remain untouched.
 - [x] (2026-09-14) Milestone 2: add shared POSIX, Darwin, Win32, and WinCE
   monotonic-clock implementations and native structural coverage; macOS native
   build passed; commit the logical slice.
-- [ ] Milestone 3: add and run the macOS native smoke test, then perform only the
-  permitted final SDK/macOS validations.
+- [x] (2026-09-14) Milestone 3: add and run the macOS native smoke test, then
+  perform only the permitted final SDK/macOS validations.
 
 ## Current Architecture and Scope
 
@@ -183,11 +183,15 @@ dependencies or use destructive Git commands.
 
 ## Outcomes & Retrospective
 
-Pending milestone completion. Record only milestone-level outcomes and point to
-the evidence/history files; do not turn this section into a command diary.
+Completed on 2026-09-14. `System.nanoTime()` now has a Java/device declaration,
+converter/native registration, shared platform implementations, and a passing
+macOS deployment smoke. The focused test and validation details are indexed in
+`.agent/evidence/system-nanotime.md`; completed rationale is in
+`.agent/archive/system-nanotime-history.md` and the factual handoff is in
+`.agent/reports/system-nanotime-editorial.md`.
 
 ## Revision Note
 
-Initial plan created on 2026-09-14 after architecture reconnaissance. Milestones
-1 and 2 completed with focused SDK/static evidence and a passing macOS native
-build; the macOS smoke is the active slice.
+Initial plan created on 2026-09-14 after architecture reconnaissance. All three
+milestones completed with passing final SDK, macOS native, focused-test, and
+smoke validation.

@@ -29,3 +29,14 @@ Implemented on 2026-09-14 in the pending native milestone slice:
   structural coverage for platform clock selection and overflow-safe formulas.
 - The macOS native build passed after including the SDK's dedicated
   `mach/mach_time.h` header.
+
+## Milestone 3 — native validation
+
+Completed on 2026-09-14:
+
+- Added `SystemNanoTimeSmokeApp` and Gradle compile, JAR, deploy, and run tasks
+  for macOS.
+- Final SDK distribution build and focused converter/API/structural test passed.
+- Final macOS native rebuild passed.
+- The deployed smoke passed after `Vm.sleep(20)` with a measured nanosecond
+  delta of `21110084`.

@@ -20,3 +20,12 @@ Append-only milestone validation index.
 - Milestone 2 macOS native build passed after adding `mach/mach_time.h`; command
   logs are in `/tmp/system-nanotime-macos-build.log`, and the produced runtime
   is `build/system-nanotime-macos/libtcvm.dylib`.
+- The first macOS native configure/build attempt failed because the Darwin
+  helper omitted `mach/mach_time.h`; the include was added and the rerun passed.
+- Milestone 3 SDK distribution build passed (`/tmp/system-nanotime-sdk-dist.log`)
+  and the focused converter/API/structural test passed
+  (`/tmp/system-nanotime-sdk-test.log`).
+- Milestone 3 macOS native rebuild passed (`/tmp/system-nanotime-macos-final-build.log`).
+- The first smoke deployment failed because `tc.Deploy` requires a JAR rather
+  than a standalone class; after adding the JAR task, the smoke passed with
+  `deltaNanos=21110084`, `overallPass=true`.

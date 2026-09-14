@@ -8,9 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 Updated: 2026-09-14
 Branch: `feat/system-nanotime`
-Active milestone: Milestone 3 — native validation
-Last commit: `276b5c6c6 feat(system): add nanoTime device API`; Milestone 2
-changes are ready for `feat(vm): implement monotonic nanoTime clocks`
+Active milestone: complete
+Last commit: `test(system): add nanoTime macOS smoke` (final milestone)
 
 ## Active paths
 
@@ -50,13 +49,21 @@ Milestone 2 boundary. Do not run other platform builds.
   -DCMAKE_BUILD_TYPE=Release` followed by `cmake --build
   build/system-nanotime-macos`; log: `/tmp/system-nanotime-macos-build.log`;
   output: `build/system-nanotime-macos/libtcvm.dylib`.
+- Milestone 3 SDK distribution build passed; log: `/tmp/system-nanotime-sdk-dist.log`.
+- Milestone 3 focused SDK test passed; log: `/tmp/system-nanotime-sdk-test.log`.
+- Milestone 3 final macOS native rebuild passed; log:
+  `/tmp/system-nanotime-macos-final-build.log`.
+- Milestone 3 macOS smoke passed with `deltaNanos=21110084`; log:
+  `TotalCrossSDK/agent-logs/20260914-190516-runSystemNanoTimeSmokeMacOS-full.log`.
 
 ## Deferred validation
 
 The SDK focused test ran at the end of Milestone 1. The macOS native build ran
-at the end of Milestone 2 and passed. The focused SDK test, SDK distribution
-build, and macOS smoke remain for the final Milestone 3 validation window. All
-other platform builds are prohibited locally.
+at the end of Milestone 2 and passed. The final SDK distribution build, focused
+test, native rebuild, and smoke all passed. The first smoke deployment attempt
+failed because the task passed a standalone class to `tc.Deploy`; the task was
+corrected to create a JAR and the rerun passed. No other platform builds were
+run.
 
 ## Active decisions and blockers
 
@@ -71,4 +78,4 @@ and existing `.agent/plans/image-optimization-mask-*` files untouched.
 
 ## Resume command
 
-`git status --short -- .agent/plans/system-nanotime.md .agent/state/system-nanotime.md TotalCrossSDK/src/smokeTest TotalCrossSDK/build.gradle TotalCrossSDK/src/test/java/tc/tools/converter TotalCrossVM/src/nm TotalCrossVM/src/util TotalCrossVM/CMakeLists.txt TotalCrossVM/vc2008/TCVM.vcproj`
+`git status --short -- .agent/plans/system-nanotime.md .agent/state/system-nanotime.md .agent/evidence/system-nanotime.md .agent/archive/system-nanotime-history.md .agent/reports/system-nanotime-editorial.md TotalCrossSDK/build.gradle TotalCrossSDK/src/smokeTest/java/totalcross/sys/SystemNanoTimeSmokeApp.java TotalCrossSDK/src/test/java/tc/tools/converter TotalCrossVM/src/nm TotalCrossVM/src/util TotalCrossVM/CMakeLists.txt TotalCrossVM/vc2008/TCVM.vcproj`
