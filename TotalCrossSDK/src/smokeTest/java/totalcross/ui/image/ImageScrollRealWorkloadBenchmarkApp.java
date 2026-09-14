@@ -80,7 +80,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private TimerEvent prefetchTimer;
   private boolean benchmarkReady;
   private int scrollDurationMillis = SCROLL_DURATION_MILLIS;
-  private MemorySampler memory;
 
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
@@ -134,7 +133,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           ImageRasterBenchmarkSupport.joinPath(outputDir, "runs"), runName());
       ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
       configureMask();
-      recordMemory("process_start", Vm.getTimeStamp());
       ImageRasterBenchmarkSupport.require("disabled".equals(targetColorProfile)
           || "enabled".equals(targetColorProfile),
           "target-color must be disabled or enabled");
@@ -163,7 +161,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.require(maximum > minimum,
           "real workload content did not extend beyond the viewport");
       scroll.sbV.setValue(minimum);
-      recordMemory("before_prefetch", Vm.getTimeStamp());
 
       if (prefetchEnabled()) {
         Image.resetImageOperationAccountingForBenchmarkTest();
@@ -176,7 +173,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           public void run() {
             prefetchElapsedMillis = Vm.getTimeStamp() - prefetchStart;
             capturePrefetchAccounting();
-            recordMemory("after_prefetch", Vm.getTimeStamp());
             prefetchComplete = true;
           }
         });
@@ -688,7 +684,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       PassResult cold = runPass("cold", true, minimum, maximum);
       printPass(cold);
       writeRunFrames(cold);
-      recordMemory("after_scroll", Vm.getTimeStamp());
       writeRunSummary(cold);
       finishBenchmark(true, "");
     } catch (Throwable failure) {
@@ -711,9 +706,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void finishBenchmark(boolean overallPass, String error) {
-    if (overallPass) {
-      recordMemory("process_end", Vm.getTimeStamp());
-    }
     long requestedMask = ImageOptimizationSettings.getMask();
     long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
     if (requestedMask != effectiveMask) {
@@ -876,7 +868,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         name + " did not start at the expected scrollbar endpoint");
     Image.resetImageOperationAccountingForBenchmarkTest();
     long elapsedStart = Vm.getTimeStamp();
-    recordMemory("before_scroll", elapsedStart);
     int[] frameTimes = new int[256];
     long[] frameElapsed = new long[256];
     int[] framePositions = new int[256];
@@ -910,9 +901,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       frameElapsed[frames] = sinceStart;
       framePositions[frames] = scroll.sbV.getValue();
       frames++;
-      if (memory != null) {
-        memory.sampleIfDue(frameStart);
-      }
       previousFrameStart = frameStart;
       if (scroll.sbV.getValue() == endpoint && sinceStart >= scrollDurationMillis) {
         break;
@@ -1037,33 +1025,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         ImageRasterBenchmarkSupport.joinPath(outputDir, "environment.json"), json);
   }
 
-  private void recordMemory(String name, long timestamp) {
-    if (memory == null) {
-      // Native runtimes may omit the optional memory sampler fields.
-      return;
-    }
-    try {
-      memory.record(name, timestamp);
-    } catch (Throwable failure) {
-      reportFailure(failure);
-    }
-  }
-
   private void writeMemory() throws Exception {
     StringBuilder csv = new StringBuilder(2048);
     csv.append("checkpoint,elapsed_ms,current_resident_bytes,peak_resident_bytes,private_bytes,phys_footprint_bytes\n");
-    if (memory != null) {
-      for (int i = 0; i < memory.count; i++) {
-        csv.append(memory.names[i]).append(',').append(memory.elapsed[i]).append(',')
-            .append(csvMetric(memory.current[i])).append(',').append(csvMetric(memory.peak[i])).append(',')
-            .append(csvMetric(memory.privateBytes[i])).append(',').append(csvMetric(memory.physFootprint[i]))
-            .append('\n');
-      }
-      csv.append("global_peak,0,").append(csvMetric(memory.globalPeak))
-          .append(",unavailable,unavailable,unavailable\n");
-    } else {
-      csv.append("memory_unavailable,0,unavailable,unavailable,unavailable,unavailable\n");
-    }
+    csv.append("memory_unavailable,0,unavailable,unavailable,unavailable,unavailable\n");
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "memory.csv"), csv.toString());
   }
@@ -1071,11 +1036,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private void writeTimeline() throws Exception {
     StringBuilder timeline = new StringBuilder(1024);
     timeline.append("event,elapsed_ms,value\n");
-    int memoryCount = memory == null ? 0 : memory.count;
-    for (int i = 0; i < memoryCount; i++) {
-      timeline.append(memory.names[i]).append(',').append(memory.elapsed[i]).append(',')
-          .append(csvMetric(memory.current[i])).append('\n');
-    }
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "timeline.csv"), timeline.toString());
   }
@@ -1097,10 +1057,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     return value < 0 ? "null" : String.valueOf(value);
   }
 
-  private static String csvMetric(long value) {
-    return value < 0 ? "unavailable" : String.valueOf(value);
-  }
-
   private void writeRunSummary(PassResult result) throws Exception {
     long requestedMask = ImageOptimizationSettings.getMask();
     long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
@@ -1116,7 +1072,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"effectiveMask\":" + effectiveMask + ",\n"
         + "  \"uiBuildElapsedMs\":" + uiBuildElapsedMillis + ",\n"
         + "  \"prefetchElapsedMs\":" + prefetchElapsedMillis + ",\n"
-        + "  \"memoryPeakResidentBytes\":" + (memory == null ? -1 : memory.globalPeak) + ",\n"
+        + "  \"memoryPeakResidentBytes\":-1,\n"
         + "  \"durationMs\":" + result.elapsed + ",\n"
         + "  \"frameCount\":" + result.frames + ",\n"
         + "  \"frameTimeP50Ms\":" + result.percentile(50) + ",\n"
@@ -1271,50 +1227,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         maximum = Math.max(maximum, current);
       }
       return maximum;
-    }
-  }
-
-  private static final class MemorySampler {
-    private static final int MAX_CHECKPOINTS = 64;
-    final String[] names = new String[MAX_CHECKPOINTS];
-    final long[] elapsed = new long[MAX_CHECKPOINTS];
-    final long[] current = new long[MAX_CHECKPOINTS];
-    final long[] peak = new long[MAX_CHECKPOINTS];
-    final long[] privateBytes = new long[MAX_CHECKPOINTS];
-    final long[] physFootprint = new long[MAX_CHECKPOINTS];
-    int count;
-    long globalPeak = -1;
-    long nextSampleMillis;
-    long originMillis = -1;
-
-    void record(String name, long timestamp) {
-      long currentBytes = Image.nativeMetricForBenchmarkTest(0);
-      long peakBytes = Image.nativeMetricForBenchmarkTest(1);
-      if (originMillis < 0) {
-        originMillis = timestamp;
-      }
-      if (count < MAX_CHECKPOINTS) {
-        names[count] = name;
-        elapsed[count] = timestamp - originMillis;
-        current[count] = currentBytes;
-        peak[count] = peakBytes;
-        privateBytes[count] = Image.nativeMetricForBenchmarkTest(2);
-        physFootprint[count] = Image.nativeMetricForBenchmarkTest(3);
-        count++;
-      }
-      if (currentBytes > globalPeak) {
-        globalPeak = currentBytes;
-      }
-      if (nextSampleMillis == 0) {
-        nextSampleMillis = timestamp + 250;
-      }
-    }
-
-    void sampleIfDue(long timestamp) {
-      if (timestamp >= nextSampleMillis) {
-        record("during_scroll", timestamp);
-        nextSampleMillis = timestamp + 250;
-      }
     }
   }
 
