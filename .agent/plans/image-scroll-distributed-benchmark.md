@@ -46,8 +46,8 @@ copy raw logs into the plan.
 
 - [x] Branch created from `origin/perf/image-scroll-prefetch`; baseline feature
   mapping verified as bits 0–15 with default mask 32799.
-- [x] Repository and ExecPlan instructions read; unavailable
-  `logical-commits` skill noted.
+- [x] Repository, ExecPlan, `logical-commits`, and header-validation
+  instructions read and followed.
 - [x] Checkpoint 1 — commit `beac137c3`: public process mask override,
   unknown-bit rejection, zero-mask semantics, and focused tests passed.
 - [x] Checkpoint 2 — commit `9aa9d099d`: existing real-workload app accepts
@@ -74,24 +74,24 @@ copy raw logs into the plan.
 - [x] Checkpoint 8 — commits `e1bccc8c9`, `4ac0a53b5`: the benchmark app is
   one-process/one-cold-measurement only; SDK extraction, compilation, and
   deployment are bound to one official JAR; and the bundle runner owns the
-  self-test, four smokes, 210-process matrix, aggregation, and final ZIP.
-- [ ] Final closeout: required tests, four-combination smoke, packaged-SDK
-  validation when available, scoped status/log evidence, and no new local
-  changes left uncommitted. The real package artifact used for packaging came
-  from run `34642063968` on `perf/image-scroll-prefetch`; dispatching
-  `package.yml` for this local branch was unavailable because the branch is
-  not published on `origin`.
+  self-test, four smokes, 210-process matrix, aggregation, and final ZIP;
+  commits `5f97ba301` and `6b807c5d9` removed the legacy native runner and
+  added packaged-ZIP wrapper handling.
+- [ ] Final closeout: the external self-test passed, but the first smoke
+  (`0/off`) stopped with exit code 1 because the deployed process reported
+  `NoSuchMethodError` for native `Graphics.copyGeometryNative`; no other smoke
+  or matrix process was started. The validation bundle was assembled in `/tmp`
+  from the current branch SDK distribution because the available published
+  7.2.2 ZIP predates the required image instrumentation APIs.
 
 ## Current Architecture and Scope
 
-The Java settings class currently has a tri-state per-feature API and a
-`DEFAULT_EFFECTIVE_MASK` of 32799, but no process-level mask override. Native
-draw/decode mirrors are private static `Image` fields. The existing real
-workload accepts `--image-dir`, target-color, variant-cache, and legacy
-prefetch profiles, builds 663 JPEG-named files in 221 rows of three, and runs
-three passes in one process. The distributed suite must replace that benchmark
-control flow with one cold measured scroll per process while preserving the
-same dimensions, layout, image paths, and scroll endpoint trajectory.
+The benchmark app now accepts only `--mode=benchmark` plus the explicit corpus,
+mask, prefetch, run, output, and dataset-hash arguments needed for one cold
+scroll measurement. The external runner owns validation, fresh native-process
+launches, the deterministic 210-process plan, aggregation, and ZIP creation.
+The packaged bundle carries exactly 663 JPEGs, the official device chime, the
+540x960 screen argument, and compile/deploy SDK SHA-256 values that must match.
 
 Native accounting is currently exposed through test helpers in `Image` and
 `NativeImageBacking`, while the Skia backing manager owns the physical/raster
@@ -231,11 +231,11 @@ Per checkpoint, run focused tests plus `git diff --check` before committing;
 stage only intended paths and validate cached whitespace. Use the SDK wrapper
 `TotalCrossSDK/gradlew-agent` and save verbose logs outside tracked source.
 
-Required final commands:
+Required harness commands:
 
-    ./TotalCrossSDK/gradlew-agent test --no-daemon --console=plain
-    ./TotalCrossSDK/gradlew-agent dist -x test --no-daemon --console=plain
-    ./TotalCrossSDK/gradlew-agent jarImageScrollRasterFastPathBenchmark --no-daemon --console=plain
+    bash -n scripts/package-image-scroll-benchmark.sh
+    PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile scripts/run-image-scroll-distributed-benchmark.py
+    python3 scripts/validate-copyright-headers.sh --files <changed files>
     git diff --check
 
 Also perform one external bundle self-test followed by four fresh-process
@@ -245,9 +245,11 @@ requested/effective masks, prefetch values, the external corpus, and the
 distinct prefetch paths. Only if all four smokes pass, run the 210-process
 matrix, aggregate it, and verify the final ZIP can be opened.
 Validate the packager against a real package.yml SDK artifact when GitHub
-workflow access and artifact download are available; otherwise use the newest
-packaged SDK already present and report the infrastructure limitation. Do not
-substitute a local native rebuild for the package.yml artifact.
+workflow access and artifact download are available. For this run, the
+available published ZIP predates the branch's instrumentation API, so the
+packager was exercised with an explicit temporary ZIP assembled from the
+current branch distribution; report that provenance and do not treat it as a
+published package.yml artifact.
 
 Expected validation level is 2 for Java/API slices, 3 for frame/memory/native
 instrumentation, and 4 for final packaging and the requested matrix. Expensive
@@ -277,9 +279,11 @@ from the latest checkpoint commit and inspecting only the active paths.
 
 ## Outcomes & Retrospective
 
-Pending. At completion, record the seven commit IDs, focused/final validation,
-smoke results, bundle locations, package.yml artifact provenance, and optional
-metrics unavailable on each platform.
+The implementation commits are `e1bccc8c9`, `4ac0a53b5`, `5f97ba301`,
+`6b807c5d9`, and `1b6007483`. Static validation, package extraction, manifest
+checks, and the external self-test passed. The required smoke sequence was
+halted at `0/off` by the native method mismatch described above; therefore no
+matrix ZIP exists.
 
 ## Revision Note
 
