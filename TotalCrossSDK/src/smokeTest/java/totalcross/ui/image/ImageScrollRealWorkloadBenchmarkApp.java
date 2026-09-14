@@ -76,9 +76,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     setDeviceTitle("image-scroll-real-workload");
     String applicationRoot = ImageRasterBenchmarkSupport.argument(
         getCommandLine(), "app-root", null);
-    if (applicationRoot == null || applicationRoot.length() == 0) {
-      applicationRoot = System.getProperty("user.dir");
-    }
     if (applicationRoot != null && applicationRoot.length() > 0) {
       Settings.appPath = applicationRoot;
     }
