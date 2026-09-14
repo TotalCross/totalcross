@@ -14,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -22,18 +23,20 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.zip.ZipInputStream;
 
-/** Locates verified Android tools and downloads the legacy SDK fallback when needed. */
+/** Locates verified Android tools and downloads missing SDK-local tools. */
 final class AndroidToolLocator {
   private static final String PROTOC_PROPERTY = "totalcross.tooling.android.protoc";
   private static final String BUNDLETOOL_PROPERTY = "totalcross.tooling.android.bundletool";
 
-  private static final String PROTOC_NAME = "protoc";
-  private static final String PROTOC_VERSION = "21.0";
+  static final String PROTOC_NAME = "protoc";
+  static final String PROTOC_VERSION = "21.0";
   private static final String PROTOC_BASE_URL =
       "https://github.com/protocolbuffers/protobuf/releases/download/v";
+  static final List<String> PROTOC_PLATFORMS = List.of(
+      "win64", "linux-x86_64", "linux-aarch_64", "osx-universal_binary");
 
-  private static final String BUNDLETOOL_NAME = "bundletool-all";
-  private static final String BUNDLETOOL_VERSION = "1.10.0";
+  static final String BUNDLETOOL_NAME = "bundletool-all";
+  static final String BUNDLETOOL_VERSION = "1.10.0";
   private static final String BUNDLETOOL_FILE_NAME =
       BUNDLETOOL_NAME + "-" + BUNDLETOOL_VERSION + ".jar";
   private static final String BUNDLETOOL_DOWNLOAD_URL =
@@ -41,6 +44,18 @@ final class AndroidToolLocator {
           + BUNDLETOOL_VERSION + "/" + BUNDLETOOL_FILE_NAME;
 
   private static boolean legacyWarningShown;
+  private static Downloader downloader = AndroidToolLocator::downloadFileFromNetwork;
+  private static Prober prober = AndroidToolLocator::probeProcess;
+
+  @FunctionalInterface
+  interface Downloader {
+    void download(String fileUrl, Path outputFile) throws IOException;
+  }
+
+  @FunctionalInterface
+  interface Prober {
+    boolean probe(List<String> command, String expectedOutput);
+  }
 
   private AndroidToolLocator() {
   }
@@ -51,31 +66,21 @@ final class AndroidToolLocator {
       return verifiedProtoc(Path.of(configured)).toString();
     }
 
-    Path base = Path.of(DeploySettings.etcDir, "tools", "android", "protoc");
-    Path executable = base.resolve(DeploySettings.appendDotExe("bin/protoc"));
-    prepareProtoc(executable);
+    String platform = protocPlatform();
+    Path executable = protocPath(platform);
+    prepareProtoc(executable, platform);
     if (isValidProtoc(executable)) {
-      warnLegacy();
       return executable.toString();
     }
 
-    String downloadUrl = PROTOC_BASE_URL + PROTOC_VERSION + "/"
-        + PROTOC_NAME + '-' + PROTOC_VERSION + '-' + protocPlatform() + ".zip";
-    try {
-      DeployLogger.normal("Downloading protoc...");
-      downloadAndUnzip(downloadUrl, base);
-      prepareProtoc(executable);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to download protoc at: " + downloadUrl
-          + " ; You may download it yourself and unzip the contents into the folder: "
-          + base.toAbsolutePath(), e);
+    Path legacy = legacyProtocPath(platform);
+    prepareProtoc(legacy, platform);
+    if (isValidProtoc(legacy)) {
+      warnLegacy();
+      return legacy.toString();
     }
 
-    if (!isValidProtoc(executable)) {
-      throw new RuntimeException("Downloaded protoc failed its version probe: " + executable);
-    }
-    warnLegacy();
-    return executable.toString();
+    return downloadProtoc(platform).toString();
   }
 
   static String bundletool() {
@@ -94,7 +99,7 @@ final class AndroidToolLocator {
 
     try {
       DeployLogger.normal("Downloading bundletool...");
-      downloadFile(BUNDLETOOL_DOWNLOAD_URL, preferred);
+      downloadTo(BUNDLETOOL_DOWNLOAD_URL, preferred);
     } catch (Exception e) {
       throw new RuntimeException("Failed to download bundletool at: " + BUNDLETOOL_DOWNLOAD_URL
           + " ; You may download it yourself and place the jar into the folder: "
@@ -109,7 +114,7 @@ final class AndroidToolLocator {
   }
 
   private static Path verifiedProtoc(Path path) {
-    prepareProtoc(path);
+    prepareProtoc(path, protocPlatform());
     if (!isValidProtoc(path)) {
       throw new RuntimeException("External Android protoc failed its version probe: " + path);
     }
@@ -126,6 +131,84 @@ final class AndroidToolLocator {
   private static boolean isValidProtoc(Path path) {
     return Files.isRegularFile(path)
         && probe(List.of(path.toString(), "--version"), PROTOC_VERSION);
+  }
+
+  static Path protocPath(String platform) {
+    requireSupportedProtocPlatform(platform);
+    return androidToolsRoot()
+        .resolve("protoc")
+        .resolve(PROTOC_VERSION)
+        .resolve(platform)
+        .resolve("bin")
+        .resolve(protocExecutableName(platform));
+  }
+
+  static String protocPlatform() {
+    if (DeploySettings.isWindows()) {
+      return "win64";
+    }
+    if (DeploySettings.isMac()) {
+      return "osx-universal_binary";
+    }
+
+    String architecture = System.getProperty("os.arch");
+    if ("aarch64".equals(architecture) || "arm64".equals(architecture)) {
+      architecture = "aarch_64";
+    } else if ("x86_64".equals(architecture) || "amd64".equals(architecture)) {
+      architecture = "x86_64";
+    } else {
+      DeployLogger.warn("Couldn't detect system architecture, trying with x86_64");
+      architecture = "x86_64";
+    }
+    return "linux-" + architecture;
+  }
+
+  private static Path androidToolsRoot() {
+    if (DeploySettings.etcDir == null || DeploySettings.etcDir.isBlank()) {
+      throw new RuntimeException("Could not locate the SDK etc directory for Android tools");
+    }
+    return Path.of(DeploySettings.etcDir, "tools", "android").toAbsolutePath().normalize();
+  }
+
+  private static Path legacyProtocPath(String platform) {
+    return androidToolsRoot()
+        .resolve("protoc")
+        .resolve("bin")
+        .resolve(protocExecutableName(platform));
+  }
+
+  private static String protocExecutableName(String platform) {
+    return "win64".equals(platform) ? "protoc.exe" : PROTOC_NAME;
+  }
+
+  private static void requireSupportedProtocPlatform(String platform) {
+    if (!PROTOC_PLATFORMS.contains(platform)) {
+      throw new IllegalArgumentException("Unsupported protoc platform: " + platform);
+    }
+  }
+
+  private static Path downloadProtoc(String platform) {
+    Path executable = protocPath(platform);
+    String downloadUrl = protocDownloadUrl(platform);
+    try {
+      DeployLogger.normal("Downloading protoc " + PROTOC_VERSION + " for " + platform + "...");
+      downloadAndUnzip(downloadUrl, executable.getParent().getParent(), executable);
+      prepareProtoc(executable, platform);
+    } catch (Exception e) {
+      throw toolDownloadFailure(PROTOC_NAME, PROTOC_VERSION, platform, downloadUrl, e);
+    }
+
+    if (!isValidProtoc(executable)) {
+      throw new RuntimeException("Downloaded protoc " + PROTOC_VERSION + " for " + platform
+          + " failed its version probe: " + executable);
+    }
+    return executable;
+  }
+
+  static String protocDownloadUrl(String platform) {
+    requireSupportedProtocPlatform(platform);
+    return PROTOC_BASE_URL + PROTOC_VERSION + "/"
+        + PROTOC_NAME + '-' + PROTOC_VERSION + '-' + platform + ".zip";
   }
 
   private static boolean isValidBundletool(Path path) {
@@ -152,34 +235,14 @@ final class AndroidToolLocator {
     return null;
   }
 
-  private static String protocPlatform() {
-    if (DeploySettings.isWindows()) {
-      return "win64";
-    }
-    if (DeploySettings.isMac()) {
-      return "osx-universal_binary";
-    }
-
-    String architecture = System.getProperty("os.arch");
-    if ("aarch64".equals(architecture) || "arm64".equals(architecture)) {
-      architecture = "aarch_64";
-    } else if ("x86_64".equals(architecture) || "amd64".equals(architecture)) {
-      architecture = "x86_64";
-    } else {
-      DeployLogger.warn("Couldn't detect system architecture, trying with x86_64");
-      architecture = "x86_64";
-    }
-    return "linux-" + architecture;
-  }
-
-  private static void prepareProtoc(Path executable) {
+  private static void prepareProtoc(Path executable, String platform) {
     if (!Files.isRegularFile(executable)) {
       return;
     }
-    if (DeploySettings.isMac()) {
+    if (DeploySettings.isMac() && "osx-universal_binary".equals(platform)) {
       removeMacQuarantine(executable);
     }
-    if (!DeploySettings.isWindows()) {
+    if (!"win64".equals(platform)) {
       try {
         Files.setPosixFilePermissions(
             executable,
@@ -212,18 +275,36 @@ final class AndroidToolLocator {
     }
   }
 
-  private static void downloadAndUnzip(String fileUrl, Path outputDirectory) throws IOException {
-    Path temporaryZip = Files.createTempFile("totalcross-protoc-", ".zip");
+  private static void downloadAndUnzip(
+      String fileUrl, Path outputDirectory, Path expectedExecutable) throws IOException {
+    Path parent = outputDirectory.toAbsolutePath().getParent();
+    Files.createDirectories(parent);
+    Path temporaryZip = Files.createTempFile(parent, "totalcross-protoc-", ".zip");
+    Path temporaryDirectory = Files.createTempDirectory(parent, ".totalcross-protoc-");
     try {
-      downloadFile(fileUrl, temporaryZip);
-      Files.createDirectories(outputDirectory);
-      unzip(temporaryZip, outputDirectory);
+      downloadTo(fileUrl, temporaryZip);
+      unzip(temporaryZip, temporaryDirectory);
+      Path relativeExecutable = outputDirectory.relativize(expectedExecutable);
+      Path extractedExecutable = temporaryDirectory.resolve(relativeExecutable);
+      if (!isRegularNonEmptyFile(extractedExecutable)) {
+        throw new IOException("Downloaded archive did not contain a non-empty executable at "
+            + relativeExecutable);
+      }
+      replaceDirectory(temporaryDirectory, outputDirectory);
+      temporaryDirectory = null;
     } finally {
       Files.deleteIfExists(temporaryZip);
+      if (temporaryDirectory != null) {
+        deleteTree(temporaryDirectory);
+      }
     }
   }
 
-  private static void downloadFile(String fileUrl, Path outputFile) throws IOException {
+  private static void downloadTo(String fileUrl, Path outputFile) throws IOException {
+    downloader.download(fileUrl, outputFile);
+  }
+
+  private static void downloadFileFromNetwork(String fileUrl, Path outputFile) throws IOException {
     Path parent = outputFile.toAbsolutePath().getParent();
     Files.createDirectories(parent);
     Path temporaryFile = Files.createTempFile(parent, outputFile.getFileName().toString(), ".download");
@@ -242,7 +323,7 @@ final class AndroidToolLocator {
           output.write(buffer, 0, length);
         }
       }
-      Files.move(temporaryFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
+      moveAtomically(temporaryFile, outputFile);
     } finally {
       connection.disconnect();
       Files.deleteIfExists(temporaryFile);
@@ -276,6 +357,41 @@ final class AndroidToolLocator {
     }
   }
 
+  private static void replaceDirectory(Path source, Path destination) throws IOException {
+    if (Files.exists(destination, LinkOption.NOFOLLOW_LINKS)) {
+      deleteTree(destination);
+    }
+    moveAtomically(source, destination);
+  }
+
+  private static void moveAtomically(Path source, Path destination) throws IOException {
+    try {
+      Files.move(source, destination,
+          StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+    } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+      Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
+    }
+  }
+
+  private static void deleteTree(Path path) throws IOException {
+    if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
+      try (java.nio.file.DirectoryStream<Path> entries = Files.newDirectoryStream(path)) {
+        for (Path entry : entries) {
+          deleteTree(entry);
+        }
+      }
+    }
+    Files.deleteIfExists(path);
+  }
+
+  private static boolean isRegularNonEmptyFile(Path path) {
+    try {
+      return Files.isRegularFile(path) && Files.size(path) > 0;
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
   private static void warnLegacy() {
     if (!legacyWarningShown) {
       legacyWarningShown = true;
@@ -285,6 +401,10 @@ final class AndroidToolLocator {
   }
 
   private static boolean probe(List<String> command, String expectedOutput) {
+    return prober.probe(command, expectedOutput);
+  }
+
+  private static boolean probeProcess(List<String> command, String expectedOutput) {
     try {
       Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
       String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
@@ -306,5 +426,20 @@ final class AndroidToolLocator {
       throw new RuntimeException("Could not locate Java to verify Android bundletool");
     }
     return executable;
+  }
+
+  private static RuntimeException toolDownloadFailure(
+      String tool, String version, String platform, String url, Exception cause) {
+    return new RuntimeException("Failed to prepare " + tool + " " + version + " for " + platform
+        + " from " + url, cause);
+  }
+
+  static void setTestHooks(Downloader testDownloader, Prober testProber) {
+    downloader = testDownloader == null ? AndroidToolLocator::downloadFileFromNetwork : testDownloader;
+    prober = testProber == null ? AndroidToolLocator::probeProcess : testProber;
+  }
+
+  static void resetTestHooks() {
+    setTestHooks(null, null);
   }
 }
