@@ -416,7 +416,7 @@ def aggregate(output, plan):
             row["delta_p95_ms"] = record["frame_p95_ms"] - baseline_p95
             rows.append(row)
     fields = [
-        "run", "prefetch", "mask", "status", "frame_count", "frame_p50_ms",
+        "order", "run", "prefetch", "mask", "status", "frame_count", "frame_p50_ms",
         "frame_p90_ms", "frame_p95_ms", "frame_p99_ms", "frame_max_ms",
         "frames_over_16_67_ms", "frames_over_33_3_ms", "frames_over_50_ms",
         "frames_over_100_ms", "largest_stall_ms", "largest_consecutive_over_33_3",
