@@ -413,6 +413,7 @@ TC_API void jlSB_append_i(NMParams p);
 TC_API void jlSB_append_l(NMParams p);
 TC_API void jlSB_append_d(NMParams p);
 TC_API void jlSB_delete_ii(NMParams p);
+TC_API void jlS_nanoTime(NMParams p);
 TC_API void jlT_printStackTraceNative(NMParams p);
 TC_API void jlT_yield(NMParams p);
 TC_API void jlT_start(NMParams p);
@@ -2300,6 +2301,10 @@ TC_API void jlSB_append_d(NMParams p) // java/lang/StringBuffer native public St
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_delete_ii(NMParams p) // java/lang/StringBuffer native public StringBuffer delete(int start, int end);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlS_nanoTime(NMParams p) // java/lang/System native public static long nanoTime();
 {
 }
 //////////////////////////////////////////////////////////////////////////

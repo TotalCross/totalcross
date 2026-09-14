@@ -444,6 +444,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jlSB_append_l"), &jlSB_append_l);
    htPutPtr(&htNativeProcAddresses, hashCode("jlSB_append_d"), &jlSB_append_d);
    htPutPtr(&htNativeProcAddresses, hashCode("jlSB_delete_ii"), &jlSB_delete_ii);
+   htPutPtr(&htNativeProcAddresses, hashCode("jlS_nanoTime"), &jlS_nanoTime);
    htPutPtr(&htNativeProcAddresses, hashCode("jlT_printStackTraceNative"), &jlT_printStackTraceNative);
    htPutPtr(&htNativeProcAddresses, hashCode("jlT_yield"), &jlT_yield);
    htPutPtr(&htNativeProcAddresses, hashCode("jlT_start"), &jlT_start);

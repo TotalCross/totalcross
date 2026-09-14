@@ -461,6 +461,7 @@ TC_API void jlSB_append_i(NMParams p);
 TC_API void jlSB_append_l(NMParams p);
 TC_API void jlSB_append_d(NMParams p);
 TC_API void jlSB_delete_ii(NMParams p);
+TC_API void jlS_nanoTime(NMParams p);
 TC_API void jlT_printStackTraceNative(NMParams p);
 TC_API void jlT_yield(NMParams p);
 TC_API void jlT_start(NMParams p);

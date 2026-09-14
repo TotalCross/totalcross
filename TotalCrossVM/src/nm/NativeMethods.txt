@@ -419,6 +419,7 @@ java/lang/StringBuffer|native public StringBuffer append(int i);
 java/lang/StringBuffer|native public StringBuffer append(long l);
 java/lang/StringBuffer|native public StringBuffer append(double d);
 java/lang/StringBuffer|native public StringBuffer delete(int start, int end);
+java/lang/System|native public static long nanoTime();
 java/lang/Throwable|native private void printStackTraceNative();
 java/lang/Thread|native public static void yield();
 java/lang/Thread|native public void start();       

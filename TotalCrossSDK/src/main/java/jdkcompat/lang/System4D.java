@@ -1,4 +1,5 @@
-// Copyright (C) 2017-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2017-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -83,6 +84,8 @@ public class System4D {
 
   public static final PrintStream err = instance;
   public static final PrintStream out = instance;
+
+  public static native long nanoTime();
   
     /**
      * Copies the number of {@code length} elements of the Array {@code src}
