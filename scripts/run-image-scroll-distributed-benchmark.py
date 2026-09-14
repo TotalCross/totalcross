@@ -266,6 +266,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, la
         str(executable),
         "/scr", SCREEN_SPEC,
         "-p", str(bundle),
+        f"--app-root={bundle}",
         "--mode=benchmark",
         "--corpus=corpus",
         "--output=results",

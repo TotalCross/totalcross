@@ -74,6 +74,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     Flick.defaultFlickAcceleration = 1.8;
     Settings.scrollDistanceOnMouseWheelMove = SCROLL_STEP;
     setDeviceTitle("image-scroll-real-workload");
+    String applicationRoot = ImageRasterBenchmarkSupport.argument(
+        getCommandLine(), "app-root", null);
+    if (applicationRoot != null && applicationRoot.length() > 0) {
+      Settings.appPath = applicationRoot;
+    }
     setUIStyle(Settings.ANDROID_UI);
   }
 
