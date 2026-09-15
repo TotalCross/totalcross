@@ -86,9 +86,12 @@ copy raw logs into the plan.
   `330c641b1`: benchmark timing is measured with `System.nanoTime()` and
   stored canonically in ns; the deterministic matrix is now three rounds and
   126 fresh processes.
-- [x] Follow-up closeout (2026-09-14): the bundle self-test and all four
-  fresh-process smokes (`0/off`, `0/on`, `32799/off`, `32799/on`) passed with
-  ns artifacts. The 126-process matrix was intentionally not rerun.
+- [x] Post-fix smoke closeout (2026-09-14) — after commits `0ff7cf133` and
+  `58fe8a716`, the benchmark was repackaged with the SDK ZIP from Actions run
+  `34912920763`. Self-test and all four fresh-process smokes (`0/off`, `0/on`,
+  `32799/off`, `32799/on`) passed with `540x960`, 663 JPEGs, matching masks,
+  expected prefetch counts, canonical ns artifacts, and the `*Count` schema.
+  The 126-process matrix was intentionally not rerun.
 
 ## Current Architecture and Scope
 
@@ -261,7 +264,7 @@ Verify that `frames.csv`, `memory.csv`, `timeline.csv`, `summary.json`, and
 `summary.csv` contain no legacy millisecond timing fields and that percentile
 and baseline calculations consume ns values directly.
 Validate the packager against the real package.yml SDK artifact from Actions
-run `34883508658`; record its published artifact digest and the extracted
+run `34912920763`; record its published artifact digest and the extracted
 SDK-JAR SHA-256 in the final evidence. Do not substitute a local SDK or native
 runtime for that artifact.
 
@@ -298,11 +301,14 @@ The implementation commits are `e1bccc8c9`, `4ac0a53b5`, `5f97ba301`,
 `da7728d0f`, `3a75c8c33`, `f229919fd`, `8463ae342`, and `fdfa8efce`.
 This update adds `b063b5f8d`, `6cc94a5db`, and `330c641b1`: all benchmark
 timing measurements and aggregations use ns, and the deterministic matrix is
-21 masks × 2 prefetch profiles × 3 rounds = 126 fresh processes. The bundle
-self-test and all four requested macOS ARM64 smokes passed with `540x960`,
-663 JPEGs, matching masks, and canonical ns artifacts. The archived SDK ZIP
-available locally predates the branch mask APIs, so the smokes used the local
-branch SDK/runtime build; the full matrix remains intentionally deferred.
+21 masks × 2 prefetch profiles × 3 rounds = 126 fresh processes. The initial
+bundle self-test and smoke evidence used the local branch SDK/runtime because
+the archived SDK ZIP predated the branch mask APIs. After `0ff7cf133` and
+`58fe8a716`, the benchmark was repackaged with the updated SDK artifact from
+Actions run `34912920763`; self-test and all four fresh macOS ARM64 smokes
+passed with `540x960`, 663 JPEGs, matching masks, expected prefetch counts,
+and canonical ns/`*Count` artifacts. The full matrix remains intentionally
+deferred.
 
 ## Revision Note
 
