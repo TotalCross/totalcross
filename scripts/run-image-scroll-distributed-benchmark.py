@@ -171,6 +171,14 @@ def validate_bundle(bundle, manifest):
     require(decode_tcz == "ImageDecodeBenchmarkApp.tcz"
             and (bundle / decode_tcz).is_file(),
             "decode application TCZ is missing")
+    decode_runner = manifest.get("decodeRunner")
+    require(decode_runner == "run-image-decode-benchmark.py"
+            and (bundle / decode_runner).is_file(),
+            "decode benchmark runner is missing")
+    decode_aggregator = manifest.get("decodeAggregator")
+    require(decode_aggregator == "aggregate-image-decode-benchmark.py"
+            and (bundle / decode_aggregator).is_file(),
+            "decode benchmark aggregator is missing")
     require(not (bundle / "device").exists(),
             "bundle must not contain a physical device directory")
     require(manifest.get("chime") == "chime.mp3",
@@ -591,7 +599,22 @@ def write_zip(bundle, output):
     return archive
 
 
+def run_decode_phase(bundle, phase):
+    script = bundle / "run-image-decode-benchmark.py"
+    require(script.is_file(), f"decode benchmark runner is missing: {script}")
+    completed = subprocess.run(
+        [sys.executable, str(script), "--bundle", str(bundle), "--phase", phase],
+        cwd=bundle, check=False,
+    )
+    require(completed.returncode == 0,
+            f"decode {phase} phase failed with exit code {completed.returncode}")
+
+
 def run_phase(bundle, phase):
+    if phase in ("decode-self-test", "decode-smokes"):
+        decode_phase = "self-test" if phase == "decode-self-test" else "smokes"
+        run_decode_phase(bundle, decode_phase)
+        return
     manifest = load_manifest(bundle)
     output = bundle / "results"
     if phase in ("self-test", "full"):
@@ -614,6 +637,8 @@ def run_phase(bundle, phase):
     require_smokes_completed(output, corpus_digest)
     plan = run_matrix(bundle, manifest, output, corpus_digest)
     aggregate(output, plan)
+    if phase == "full":
+        run_decode_phase(bundle, "full")
     write_zip(bundle, output)
 
 
@@ -624,8 +649,9 @@ def main(argv):
         help="bundle directory (defaults to the current directory)",
     )
     parser.add_argument(
-        "--phase", choices=("self-test", "smokes", "matrix", "full"), default="full",
-        help="run only the requested fail-fast phase; full runs everything",
+        "--phase", choices=("self-test", "smokes", "matrix", "full",
+                            "decode-self-test", "decode-smokes"), default="full",
+        help="run one fail-fast phase; full includes scroll and decode matrices",
     )
     args = parser.parse_args(argv[1:])
     bundle = args.bundle.expanduser().resolve()

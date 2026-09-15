@@ -230,6 +230,10 @@ sdk_deploy_sha256=$(sha256_file "$sdk_jar")
 }
 runner_source="$repo_dir/scripts/run-image-scroll-distributed-benchmark.py"
 [ -f "$runner_source" ] || { echo "Official distributed runner not found: $runner_source" >&2; exit 1; }
+decode_runner_source="$repo_dir/scripts/run-image-decode-benchmark.py"
+[ -f "$decode_runner_source" ] || { echo "Decode runner not found: $decode_runner_source" >&2; exit 1; }
+decode_aggregator_source="$repo_dir/scripts/aggregate-image-decode-benchmark.py"
+[ -f "$decode_aggregator_source" ] || { echo "Decode aggregator not found: $decode_aggregator_source" >&2; exit 1; }
 
 target_supported() {
    case "$1" in
@@ -321,6 +325,10 @@ deploy_target() {
 
    cp "$runner_source" "$bundle_dir/run-benchmark.py"
    chmod +x "$bundle_dir/run-benchmark.py"
+   cp "$decode_runner_source" "$bundle_dir/run-image-decode-benchmark.py"
+   cp "$decode_aggregator_source" "$bundle_dir/aggregate-image-decode-benchmark.py"
+   chmod +x "$bundle_dir/run-image-decode-benchmark.py" \
+      "$bundle_dir/aggregate-image-decode-benchmark.py"
    cat > "$bundle_dir/manifest.json" <<EOF
 {
   "schemaVersion": 1,
@@ -331,6 +339,8 @@ deploy_target() {
   "runtime": "$runtime_name",
   "decodeExecutable": "$decode_executable_name",
   "decodeApplicationTcz": "ImageDecodeBenchmarkApp.tcz",
+  "decodeRunner": "run-image-decode-benchmark.py",
+  "decodeAggregator": "aggregate-image-decode-benchmark.py",
   "runner": "run-benchmark.py",
   "chime": "chime.mp3",
   "datasetFileCount": 663,
