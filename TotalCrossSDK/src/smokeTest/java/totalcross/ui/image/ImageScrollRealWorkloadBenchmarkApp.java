@@ -27,10 +27,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final int FRAME_INTERVAL_MS = 16;
   private static final long NANOS_PER_MILLISECOND = 1000000L;
   private static final long FRAME_INTERVAL_NS = FRAME_INTERVAL_MS * NANOS_PER_MILLISECOND;
-  private static final long FRAME_THRESHOLD_16_67_NS = 17L * NANOS_PER_MILLISECOND;
-  private static final long FRAME_THRESHOLD_33_3_NS = 34L * NANOS_PER_MILLISECOND;
-  private static final long FRAME_THRESHOLD_50_NS = 51L * NANOS_PER_MILLISECOND;
-  private static final long FRAME_THRESHOLD_100_NS = 101L * NANOS_PER_MILLISECOND;
+  private static final long FRAME_THRESHOLD_16_67_NS = 16_670_000L;
+  private static final long FRAME_THRESHOLD_33_3_NS = 33_300_000L;
+  private static final long FRAME_THRESHOLD_50_NS = 50_000_000L;
+  private static final long FRAME_THRESHOLD_100_NS = 100_000_000L;
   private static final int EXPECTED_LOGICAL_WIDTH = 540;
   private static final int EXPECTED_LOGICAL_HEIGHT = 960;
   private static final String MODE_BENCHMARK = "benchmark";
@@ -461,13 +461,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",frame_time_p95_ns=" + result.percentileNs(95)
         + ",frame_time_p99_ns=" + result.percentileNs(99)
         + ",frame_time_max_ns=" + result.percentileNs(100)
-        + ",frames_over_16_67_ns=" + result.countAtLeastNs(FRAME_THRESHOLD_16_67_NS)
-        + ",frames_over_33_3_ns=" + result.countAtLeastNs(FRAME_THRESHOLD_33_3_NS)
-        + ",frames_over_50_ns=" + result.countAtLeastNs(FRAME_THRESHOLD_50_NS)
-        + ",frames_over_100_ns=" + result.countAtLeastNs(FRAME_THRESHOLD_100_NS)
+        + ",frames_over_16_67_ns=" + result.countOverNs(FRAME_THRESHOLD_16_67_NS)
+        + ",frames_over_33_3_ns=" + result.countOverNs(FRAME_THRESHOLD_33_3_NS)
+        + ",frames_over_50_ns=" + result.countOverNs(FRAME_THRESHOLD_50_NS)
+        + ",frames_over_100_ns=" + result.countOverNs(FRAME_THRESHOLD_100_NS)
         + ",largest_stall_ns=" + result.percentileNs(100)
         + ",largest_consecutive_over_33_3="
-        + result.maxConsecutiveAtLeastNs(FRAME_THRESHOLD_33_3_NS)
+        + result.maxConsecutiveOverNs(FRAME_THRESHOLD_33_3_NS)
         + result.counters.details() + result.counters.featureDetails());
     System.out.flush();
   }
@@ -572,13 +572,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"frameTimeP95Ns\":" + result.percentileNs(95) + ",\n"
         + "  \"frameTimeP99Ns\":" + result.percentileNs(99) + ",\n"
         + "  \"frameTimeMaxNs\":" + result.percentileNs(100) + ",\n"
-        + "  \"framesOver16_67Ns\":" + result.countAtLeastNs(FRAME_THRESHOLD_16_67_NS) + ",\n"
-        + "  \"framesOver33_3Ns\":" + result.countAtLeastNs(FRAME_THRESHOLD_33_3_NS) + ",\n"
-        + "  \"framesOver50Ns\":" + result.countAtLeastNs(FRAME_THRESHOLD_50_NS) + ",\n"
-        + "  \"framesOver100Ns\":" + result.countAtLeastNs(FRAME_THRESHOLD_100_NS) + ",\n"
+        + "  \"framesOver16_67Ns\":" + result.countOverNs(FRAME_THRESHOLD_16_67_NS) + ",\n"
+        + "  \"framesOver33_3Ns\":" + result.countOverNs(FRAME_THRESHOLD_33_3_NS) + ",\n"
+        + "  \"framesOver50Ns\":" + result.countOverNs(FRAME_THRESHOLD_50_NS) + ",\n"
+        + "  \"framesOver100Ns\":" + result.countOverNs(FRAME_THRESHOLD_100_NS) + ",\n"
         + "  \"largestStallNs\":" + result.percentileNs(100) + ",\n"
         + "  \"largestConsecutiveOver33_3\":"
-        + result.maxConsecutiveAtLeastNs(FRAME_THRESHOLD_33_3_NS) + "\n"
+        + result.maxConsecutiveOverNs(FRAME_THRESHOLD_33_3_NS) + "\n"
         + "}\n";
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "summary.json"), json);
@@ -702,21 +702,21 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       return sortedFrameTimesNs[Math.max(0, Math.min(sortedFrameTimesNs.length - 1, index))];
     }
 
-    int countAtLeastNs(long thresholdNs) {
+    int countOverNs(long thresholdNs) {
       int count = 0;
       for (long frameTimeNs : sortedFrameTimesNs) {
-        if (frameTimeNs >= thresholdNs) {
+        if (frameTimeNs > thresholdNs) {
           count++;
         }
       }
       return count;
     }
 
-    int maxConsecutiveAtLeastNs(long thresholdNs) {
+    int maxConsecutiveOverNs(long thresholdNs) {
       int maximum = 0;
       int current = 0;
       for (long frameTimeNs : frameTimesNs) {
-        current = frameTimeNs >= thresholdNs ? current + 1 : 0;
+        current = frameTimeNs > thresholdNs ? current + 1 : 0;
         maximum = Math.max(maximum, current);
       }
       return maximum;
