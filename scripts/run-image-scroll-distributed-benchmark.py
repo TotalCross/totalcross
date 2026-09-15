@@ -18,6 +18,18 @@ import zipfile
 
 
 EXPECTED_JPEGS = 663
+CORPUS_VARIANTS = (
+    "imag", "lossless", "decode-baseline", "decode-fast",
+    "aggresive-480", "aggresive-540",
+)
+DECODE_LIBRARIES = {
+    "imag": "DecodeImagLib.tcz",
+    "lossless": "DecodeLosslessLib.tcz",
+    "decode-baseline": "DecodeBaselineLib.tcz",
+    "decode-fast": "DecodeFastLib.tcz",
+    "aggresive-480": "DecodeAggresive480Lib.tcz",
+    "aggresive-540": "DecodeAggresive540Lib.tcz",
+}
 SCREEN_SPEC = "-1,-1,540,960"
 SCREEN_ARGUMENT = "/scr " + SCREEN_SPEC
 MASKS = (
@@ -75,6 +87,14 @@ def load_manifest(bundle):
     require(manifest.get("seed") == SEED, "manifest seed differs")
     require(manifest.get("expectedProcessCount") == EXPECTED_PROCESSES,
             "manifest expectedProcessCount differs")
+    require(tuple(manifest.get("corpusVariants", ())) == CORPUS_VARIANTS,
+            "manifest decode corpus variants differ")
+    require(manifest.get("decodeImageCount") == EXPECTED_JPEGS,
+            "manifest decode image count is not 663")
+    require(manifest.get("decodeExpectedProcessCount") == 90,
+            "manifest decode process count is not 90")
+    require(manifest.get("decodeLibraries") == DECODE_LIBRARIES,
+            "manifest decode library names differ")
     require(manifest.get("screenArgument") == SCREEN_ARGUMENT,
             "manifest screen argument differs")
     return manifest
@@ -122,12 +142,27 @@ def executable_path(bundle, manifest):
 def validate_bundle(bundle, manifest):
     corpus = bundle / "corpus"
     require(corpus.is_dir(), f"bundle corpus not found: {corpus}")
-    all_files = sorted(path for path in corpus.rglob("*") if path.is_file())
-    images = jpeg_paths(corpus)
-    require(len(all_files) == EXPECTED_JPEGS and len(images) == EXPECTED_JPEGS,
-            "bundle corpus must contain exactly 663 JPEG files and no extra files")
-    require(dataset_hash(corpus, images) == manifest.get("datasetHash"),
+    require(tuple(sorted(path.name for path in corpus.iterdir() if path.is_dir()))
+            == tuple(sorted(CORPUS_VARIANTS)),
+            "bundle corpus must contain the six declared variants")
+    images = jpeg_paths(corpus / "imag")
+    require(len(images) == EXPECTED_JPEGS,
+            "bundle corpus imag must contain exactly 663 JPEG files")
+    base_names = [path.relative_to(corpus / "imag").as_posix() for path in images]
+    for variant in CORPUS_VARIANTS:
+        variant_root = corpus / variant
+        variant_files = sorted(path for path in variant_root.rglob("*") if path.is_file())
+        variant_images = jpeg_paths(variant_root)
+        names = [path.relative_to(variant_root).as_posix() for path in variant_images]
+        require(len(variant_files) == EXPECTED_JPEGS and len(variant_images) == EXPECTED_JPEGS,
+                f"bundle corpus {variant} must contain exactly 663 files")
+        require(names == base_names, f"bundle corpus {variant} names differ from imag")
+    require(dataset_hash(corpus / "imag", images) == manifest.get("datasetHash"),
             "bundle dataset hash differs from manifest")
+    for variant, library_name in DECODE_LIBRARIES.items():
+        library = bundle / library_name
+        require(library.is_file() and library.stat().st_size > 0,
+                f"decode library is missing: {library_name}")
     require(not (bundle / "device").exists(),
             "bundle must not contain a physical device directory")
     require(manifest.get("chime") == "chime.mp3",
@@ -351,7 +386,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, la
         "-p", str(bundle),
         f"--app-root={bundle}",
         "--mode=benchmark",
-        "--corpus=corpus",
+        "--corpus=corpus/imag",
         "--output=results",
         f"--image-optimization={mask}",
         f"--prefetch={prefetch}",

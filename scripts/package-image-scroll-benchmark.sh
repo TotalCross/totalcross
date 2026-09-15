@@ -7,7 +7,7 @@
 set -euo pipefail
 
 usage() {
-   echo "Usage: $0 --sdk-zip <TotalCross-version.zip> --corpus <dir> --output <dir> [--target <target>|--all]" >&2
+   echo "Usage: $0 --sdk-zip <TotalCross-version.zip> --corpus <variant-root> --output <dir> [--target <target>|--all]" >&2
    echo "Targets: windows-x64 macos-arm64 linux-x64 linux-arm64 linux-armv7" >&2
 }
 
@@ -79,17 +79,15 @@ case "$(uname -s)" in
    *) echo "Unsupported packaging host: $(uname -s)" >&2; exit 2 ;;
 esac
 
-corpus_count=$(find "$corpus_dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print | wc -l | tr -d ' ')
-[ "$corpus_count" -eq 663 ] || {
-   echo "Expected exactly 663 JPEG-named corpus files, found $corpus_count" >&2
-   exit 2
-}
-
 work_dir=$(mktemp -d "${TMPDIR:-/tmp}/totalcross-image-scroll-package.XXXXXX")
 cleanup() {
    rm -rf "$work_dir"
 }
 trap cleanup EXIT
+
+staged_corpus="$work_dir/corpus"
+python3 "$repo_dir/scripts/package-image-decode-corpus.py" \
+   "$corpus_dir" "$staged_corpus"
 
 # Extraction must precede compilation so the source is always compiled against
 # the SDK shipped by the caller, never against a repository-generated SDK.
@@ -112,6 +110,38 @@ sdk_jar="$sdk_root/dist/totalcross-sdk.jar"
    exit 1
 }
 sdk_compile_sha256=$(sha256_file "$sdk_jar")
+deploy_classpath="$sdk_jar:$sdk_root/dist/libs/*"
+
+tcz_builder_source="$repo_dir/scripts/BuildImageDecodeLibraryTcz.java"
+tcz_builder_classes="$work_dir/tcz-builder-classes"
+tcz_builder_log="$work_dir/tcz-builder-javac.log"
+mkdir -p "$tcz_builder_classes"
+if ! javac -source 17 -target 17 -encoding UTF-8 -cp "$deploy_classpath" \
+      -d "$tcz_builder_classes" "$tcz_builder_source" \
+      > "$tcz_builder_log" 2>&1; then
+   tail -100 "$tcz_builder_log" >&2
+   echo "TCZ builder compilation failed; full log: $tcz_builder_log" >&2
+   exit 1
+fi
+decode_library_dir="$work_dir/decode-libraries"
+mkdir -p "$decode_library_dir"
+for variant in imag lossless decode-baseline decode-fast aggresive-480 aggresive-540; do
+   case "$variant" in
+      imag) library_name=DecodeImagLib.tcz ;;
+      lossless) library_name=DecodeLosslessLib.tcz ;;
+      decode-baseline) library_name=DecodeBaselineLib.tcz ;;
+      decode-fast) library_name=DecodeFastLib.tcz ;;
+      aggresive-480) library_name=DecodeAggresive480Lib.tcz ;;
+      aggresive-540) library_name=DecodeAggresive540Lib.tcz ;;
+   esac
+   java -cp "$deploy_classpath:$tcz_builder_classes" BuildImageDecodeLibraryTcz \
+      "$staged_corpus/$variant" "$variant" "$decode_library_dir/$library_name" \
+      > "$work_dir/tcz-$variant.log" 2>&1 || {
+      tail -80 "$work_dir/tcz-$variant.log" >&2
+      echo "TCZ creation failed for $variant; full log: $work_dir/tcz-$variant.log" >&2
+      exit 1
+   }
+done
 
 benchmark_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.java"
 support_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageRasterBenchmarkSupport.java"
@@ -156,7 +186,7 @@ chime_resource="$chime_resource_dir/totalcross/res/mp3/chime.mp3"
 }
 chime_sha256=$(sha256_file "$chime_resource")
 
-dataset_hash=$(python3 - "$corpus_dir" <<'PY'
+dataset_hash=$(python3 - "$staged_corpus/imag" <<'PY'
 import pathlib
 import sys
 
@@ -179,7 +209,6 @@ print(f"{value:016x}")
 PY
 )
 
-deploy_classpath="$sdk_jar:$sdk_root/dist/libs/*"
 sdk_deploy_sha256=$(sha256_file "$sdk_jar")
 [ "$sdk_compile_sha256" = "$sdk_deploy_sha256" ] || {
    echo "SDK JAR changed between compile and deploy" >&2
@@ -219,13 +248,8 @@ deploy_target() {
    rm -rf "$bundle_dir"
    mkdir -p "$bundle_dir/corpus"
    cp -R "$install_dir"/. "$bundle_dir/"
-   local image_path relative_path destination
-   while IFS= read -r -d '' image_path; do
-      relative_path="${image_path#"$corpus_dir/"}"
-      destination="$bundle_dir/corpus/$relative_path"
-      mkdir -p "$(dirname "$destination")"
-      cp "$image_path" "$destination"
-   done < <(find "$corpus_dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
+   cp -R "$staged_corpus/." "$bundle_dir/corpus/"
+   cp "$decode_library_dir"/*.tcz "$bundle_dir/"
 
    cp "$chime_resource" "$bundle_dir/chime.mp3"
    cmp -s "$chime_resource" "$bundle_dir/chime.mp3" || {
@@ -233,11 +257,12 @@ deploy_target() {
       exit 1
    }
 
-   local bundle_file_count bundle_image_count
-   bundle_file_count=$(find "$bundle_dir/corpus" -type f -print | wc -l | tr -d ' ')
-   bundle_image_count=$(find "$bundle_dir/corpus" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print | wc -l | tr -d ' ')
-   [ "$bundle_file_count" -eq 663 ] && [ "$bundle_image_count" -eq 663 ] || {
-      echo "Bundle corpus must contain exactly 663 JPEG files and no extras; found $bundle_file_count files and $bundle_image_count JPEGs" >&2
+   local variant_count image_count library_count
+   variant_count=$(find "$bundle_dir/corpus" -mindepth 1 -maxdepth 1 -type d -print | wc -l | tr -d ' ')
+   image_count=$(find "$bundle_dir/corpus" -type f -iname '*.jpg' -print | wc -l | tr -d ' ')
+   library_count=$(find "$bundle_dir" -maxdepth 1 -type f -name 'Decode*Lib.tcz' -print | wc -l | tr -d ' ')
+   [ "$variant_count" -eq 6 ] && [ "$image_count" -eq 3978 ] && [ "$library_count" -eq 6 ] || {
+      echo "Bundle must contain six 663-image variants and six decode libraries; found variants=$variant_count images=$image_count libraries=$library_count" >&2
       exit 1
    }
    [ -f "$bundle_dir/$executable_name" ] || {
@@ -263,6 +288,17 @@ deploy_target() {
   "chime": "chime.mp3",
   "datasetFileCount": 663,
   "datasetHash": "$dataset_hash",
+  "corpusVariants": ["imag", "lossless", "decode-baseline", "decode-fast", "aggresive-480", "aggresive-540"],
+  "decodeImageCount": 663,
+  "decodeExpectedProcessCount": 90,
+  "decodeLibraries": {
+    "imag": "DecodeImagLib.tcz",
+    "lossless": "DecodeLosslessLib.tcz",
+    "decode-baseline": "DecodeBaselineLib.tcz",
+    "decode-fast": "DecodeFastLib.tcz",
+    "aggresive-480": "DecodeAggresive480Lib.tcz",
+    "aggresive-540": "DecodeAggresive540Lib.tcz"
+  },
   "columns": 3,
   "masks": [0,1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,32799,40991,49183,57375],
   "prefetchProfiles": ["off","on"],
