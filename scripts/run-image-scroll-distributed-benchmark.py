@@ -35,8 +35,11 @@ FNV_PRIME = 0x100000001B3
 TEMPORAL_SUMMARY_FIELDS = (
     "uiBuildElapsedNs", "prefetchElapsedNs", "durationNs",
     "frameTimeP50Ns", "frameTimeP90Ns", "frameTimeP95Ns", "frameTimeP99Ns",
-    "frameTimeMaxNs", "framesOver16_67Ns", "framesOver33_3Ns",
-    "framesOver50Ns", "framesOver100Ns", "largestStallNs",
+    "frameTimeMaxNs", "largestStallNs",
+)
+FRAME_THRESHOLD_COUNT_FIELDS = (
+    "framesOver16_67Count", "framesOver33_3Count",
+    "framesOver50Count", "framesOver100Count",
 )
 FRAME_FIELDS = ("frame_index", "elapsed_ns", "frame_time_ns", "scroll_value")
 MEMORY_FIELDS = (
@@ -194,9 +197,25 @@ def require_record_ns(record, key, description):
     require_nonnegative_ns(value, description)
 
 
+def require_nonnegative_count(value, description):
+    require(type(value) is int and value >= 0,
+            f"{description} must be a non-negative integer count")
+
+
+def require_record_count(record, key, description):
+    value = record.get(key)
+    try:
+        value = int(value)
+    except (TypeError, ValueError) as error:
+        raise BenchmarkFailure(f"{description} must be an integer count") from error
+    require_nonnegative_count(value, description)
+
+
 def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_record):
     for field in TEMPORAL_SUMMARY_FIELDS:
         require_nonnegative_ns(run_summary.get(field), f"{run_dir}/summary.json {field}")
+    for field in FRAME_THRESHOLD_COUNT_FIELDS:
+        require_nonnegative_count(run_summary.get(field), f"{run_dir}/summary.json {field}")
     for field in (
         "ui_build_elapsed_ns", "prefetch_elapsed_ns", "elapsed_total_ns",
         "frame_time_min_ns", "frame_time_p90_ns", "frame_time_p50_ns",
@@ -204,6 +223,11 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
         "largest_stall_ns",
     ):
         require_record_ns(pass_record, field, f"{field} in pass record")
+    for field in (
+        "frames_over_16_67_count", "frames_over_33_3_count",
+        "frames_over_50_count", "frames_over_100_count",
+    ):
+        require_record_count(pass_record, field, f"{field} in pass record")
     for field in ("ui_build_elapsed_ns", "prefetch_elapsed_ns"):
         require_record_ns(summary_record, field, f"{field} in summary record")
 
@@ -450,6 +474,8 @@ def aggregate(output, plan):
                 f"matrix mask mismatch: {path}")
         for field in TEMPORAL_SUMMARY_FIELDS:
             require_nonnegative_ns(summary.get(field), f"{path} {field}")
+        for field in FRAME_THRESHOLD_COUNT_FIELDS:
+            require_nonnegative_count(summary.get(field), f"{path} {field}")
         records.append({
             "order": order,
             "run": run,
@@ -462,10 +488,10 @@ def aggregate(output, plan):
             "frame_p95_ns": summary["frameTimeP95Ns"],
             "frame_p99_ns": summary["frameTimeP99Ns"],
             "frame_max_ns": summary["frameTimeMaxNs"],
-            "frames_over_16_67_ns": summary["framesOver16_67Ns"],
-            "frames_over_33_3_ns": summary["framesOver33_3Ns"],
-            "frames_over_50_ns": summary["framesOver50Ns"],
-            "frames_over_100_ns": summary["framesOver100Ns"],
+            "frames_over_16_67_count": summary["framesOver16_67Count"],
+            "frames_over_33_3_count": summary["framesOver33_3Count"],
+            "frames_over_50_count": summary["framesOver50Count"],
+            "frames_over_100_count": summary["framesOver100Count"],
             "largest_stall_ns": summary["largestStallNs"],
             "largest_consecutive_over_33_3": summary["largestConsecutiveOver33_3"],
             "prefetch_elapsed_ns": summary["prefetchElapsedNs"],
@@ -493,8 +519,8 @@ def aggregate(output, plan):
     fields = [
         "order", "run", "prefetch", "mask", "status", "frame_count", "frame_p50_ns",
         "frame_p90_ns", "frame_p95_ns", "frame_p99_ns", "frame_max_ns",
-        "frames_over_16_67_ns", "frames_over_33_3_ns", "frames_over_50_ns",
-        "frames_over_100_ns", "largest_stall_ns", "largest_consecutive_over_33_3",
+        "frames_over_16_67_count", "frames_over_33_3_count", "frames_over_50_count",
+        "frames_over_100_count", "largest_stall_ns", "largest_consecutive_over_33_3",
         "prefetch_elapsed_ns", "memory_peak_resident_bytes", "baseline_scope",
         "baseline_mask0_p50_ns", "delta_p50_ns", "baseline_mask0_p95_ns", "delta_p95_ns",
     ]

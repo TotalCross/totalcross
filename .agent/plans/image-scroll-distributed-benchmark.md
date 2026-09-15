@@ -100,7 +100,9 @@ The packaged bundle carries exactly 663 JPEGs, the official device chime, the
 540x960 screen argument, and compile/deploy SDK SHA-256 values that must match.
 All benchmark timing measurements use `System.nanoTime()` and remain `long`
 nanosecond values through frame metrics, percentiles, validation, and
-aggregation. Temporal artifact fields use `*_ns` or their `*Ns` JSON form.
+aggregation. Temporal duration fields use `*_ns` or their `*Ns` JSON form;
+frame threshold metrics are separate non-temporal counts using `*_count` or
+their `*Count` JSON form.
 
 Native accounting is currently exposed through test helpers in `Image` and
 `NativeImageBacking`, while the Skia backing manager owns the physical/raster

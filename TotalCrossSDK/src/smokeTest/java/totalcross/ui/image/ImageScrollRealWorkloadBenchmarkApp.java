@@ -461,10 +461,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",frame_time_p95_ns=" + result.percentileNs(95)
         + ",frame_time_p99_ns=" + result.percentileNs(99)
         + ",frame_time_max_ns=" + result.percentileNs(100)
-        + ",frames_over_16_67_ns=" + result.countOverNs(FRAME_THRESHOLD_16_67_NS)
-        + ",frames_over_33_3_ns=" + result.countOverNs(FRAME_THRESHOLD_33_3_NS)
-        + ",frames_over_50_ns=" + result.countOverNs(FRAME_THRESHOLD_50_NS)
-        + ",frames_over_100_ns=" + result.countOverNs(FRAME_THRESHOLD_100_NS)
+        + ",frames_over_16_67_count=" + result.countOverNs(FRAME_THRESHOLD_16_67_NS)
+        + ",frames_over_33_3_count=" + result.countOverNs(FRAME_THRESHOLD_33_3_NS)
+        + ",frames_over_50_count=" + result.countOverNs(FRAME_THRESHOLD_50_NS)
+        + ",frames_over_100_count=" + result.countOverNs(FRAME_THRESHOLD_100_NS)
         + ",largest_stall_ns=" + result.percentileNs(100)
         + ",largest_consecutive_over_33_3="
         + result.maxConsecutiveOverNs(FRAME_THRESHOLD_33_3_NS)
@@ -572,10 +572,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"frameTimeP95Ns\":" + result.percentileNs(95) + ",\n"
         + "  \"frameTimeP99Ns\":" + result.percentileNs(99) + ",\n"
         + "  \"frameTimeMaxNs\":" + result.percentileNs(100) + ",\n"
-        + "  \"framesOver16_67Ns\":" + result.countOverNs(FRAME_THRESHOLD_16_67_NS) + ",\n"
-        + "  \"framesOver33_3Ns\":" + result.countOverNs(FRAME_THRESHOLD_33_3_NS) + ",\n"
-        + "  \"framesOver50Ns\":" + result.countOverNs(FRAME_THRESHOLD_50_NS) + ",\n"
-        + "  \"framesOver100Ns\":" + result.countOverNs(FRAME_THRESHOLD_100_NS) + ",\n"
+        + "  \"framesOver16_67Count\":" + result.countOverNs(FRAME_THRESHOLD_16_67_NS) + ",\n"
+        + "  \"framesOver33_3Count\":" + result.countOverNs(FRAME_THRESHOLD_33_3_NS) + ",\n"
+        + "  \"framesOver50Count\":" + result.countOverNs(FRAME_THRESHOLD_50_NS) + ",\n"
+        + "  \"framesOver100Count\":" + result.countOverNs(FRAME_THRESHOLD_100_NS) + ",\n"
         + "  \"largestStallNs\":" + result.percentileNs(100) + ",\n"
         + "  \"largestConsecutiveOver33_3\":"
         + result.maxConsecutiveOverNs(FRAME_THRESHOLD_33_3_NS) + "\n"
