@@ -377,7 +377,7 @@ EOF
          ;;
       linux-*)
          archive="$output_dir/image-scroll-benchmark-$target.tar.gz"
-         (cd "$output_dir" && tar -czf "$(basename "$archive")" "$(basename "$bundle_dir")")
+         (cd "$output_dir" && COPYFILE_DISABLE=1 tar -czf "$(basename "$archive")" "$(basename "$bundle_dir")")
          ;;
    esac
    echo "created $archive"
@@ -392,6 +392,6 @@ for target in "${targets[@]}"; do
       macos-arm64) deploy_target "$target" -macos macos ImageScrollRealWorkloadBenchmarkApp libtcvm.dylib ;;
       linux-x64) deploy_target "$target" -linux linux ImageScrollRealWorkloadBenchmarkApp libtcvm.so ;;
       linux-arm64) deploy_target "$target" -linux_arm linux_arm64 ImageScrollRealWorkloadBenchmarkApp libtcvm.so ;;
-      linux-armv7) deploy_target "$target" -linux_arm linux ImageScrollRealWorkloadBenchmarkApp libtcvm.so ;;
+      linux-armv7) deploy_target "$target" -linux_arm linux_arm ImageScrollRealWorkloadBenchmarkApp libtcvm.so ;;
    esac
 done
