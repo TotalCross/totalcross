@@ -10,6 +10,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Branch: `perf/image-decode-distributed-benchmark`, created from the checked
   out `perf/image-scroll-distributed-benchmark` HEAD.
 - Last implementation commit: `56427147b feat(benchmark): integrate decode into distributed suite`.
+- Documentation commit: `88a275c54 docs(benchmark): explain distributed image bundle workflow`.
 - Closeout paths: `scripts/README-image-benchmarks.md`,
   `.agent/plans/image-decode-distributed-benchmark.md`,
   `.agent/state/image-decode-distributed-benchmark.md`, and
@@ -26,9 +27,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   and `aggressive-*` source to `aggresive-*` bundle mapping.
 - Deliberate local paths: downloaded SDK artifact under `/tmp`, original corpus
   under `~/Downloads/win32/win32`, and all unrelated `.agent/benchmarks`.
-- Commit-message checks reported over-80-character body lines for `37cfd87d7`
-  and `56427147b`; neither commit was rewritten. Commits `d2a2626f1`,
-  `b6525af5d`, and `91ef824aa` passed. The final documentation commit body is
-  wrapped to at most 80 characters per line.
+- Commit-message checks reported over-80-character body lines for `37cfd87d7`,
+  `56427147b`, and `88a275c54`; none were rewritten. Commits `d2a2626f1`,
+  `b6525af5d`, and `91ef824aa` passed. This record correction preserves the
+  history and documents the final checker result.
 - Resume command: read this state and the active milestone in
   `.agent/plans/image-decode-distributed-benchmark.md`.

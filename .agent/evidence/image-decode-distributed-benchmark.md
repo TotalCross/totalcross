@@ -53,3 +53,6 @@ SPDX-License-Identifier: LGPL-2.1-only
   and focused copyright-header validation passed.
 - Commit-message validation failed for `56427147b` on body line length; the
   commit was preserved per the logical-commits skill's no-rewrite rule.
+- The documentation closeout commit `88a275c54` also failed the local message
+  check on body line length. It was preserved; this follow-up corrects the
+  recorded result without rewriting commit history.
