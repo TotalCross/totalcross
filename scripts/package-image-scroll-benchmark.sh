@@ -144,12 +144,14 @@ for variant in imag lossless decode-baseline decode-fast aggresive-480 aggresive
 done
 
 benchmark_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.java"
+decode_benchmark_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageDecodeBenchmarkApp.java"
 support_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageRasterBenchmarkSupport.java"
 compiled_dir="$work_dir/benchmark-classes"
 benchmark_build_log="$work_dir/benchmark-javac.log"
 mkdir -p "$compiled_dir"
 if ! javac -source 17 -target 17 -encoding UTF-8 -cp "$sdk_jar" -d "$compiled_dir" \
-      "$benchmark_source" "$support_source" > "$benchmark_build_log" 2>&1; then
+      "$benchmark_source" "$decode_benchmark_source" "$support_source" \
+      > "$benchmark_build_log" 2>&1; then
    tail -100 "$benchmark_build_log" >&2
    echo "Benchmark JAR compilation failed; full log: $benchmark_build_log" >&2
    exit 1
@@ -164,6 +166,18 @@ benchmark_jar="$work_dir/ImageScrollRealWorkloadBenchmarkApp.jar"
 jar tf "$benchmark_jar" | grep -Fqx \
    'totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.class' || {
    echo "Benchmark JAR does not contain ImageScrollRealWorkloadBenchmarkApp" >&2
+   exit 1
+}
+decode_benchmark_jar="$work_dir/ImageDecodeBenchmarkApp.jar"
+(
+   cd "$compiled_dir"
+   jar -cf "$decode_benchmark_jar" \
+      totalcross/ui/image/ImageDecodeBenchmarkApp*.class \
+      totalcross/ui/image/ImageRasterBenchmarkSupport*.class
+)
+jar tf "$decode_benchmark_jar" | grep -Fqx \
+   'totalcross/ui/image/ImageDecodeBenchmarkApp.class' || {
+   echo "Decode benchmark JAR does not contain ImageDecodeBenchmarkApp" >&2
    exit 1
 }
 
@@ -231,6 +245,7 @@ deploy_target() {
    local executable_name=$4
    local runtime_name=$5
    local deploy_dir="$work_dir/deploy-$target"
+   local decode_deploy_dir="$work_dir/deploy-$target-decode"
    local bundle_dir="$output_dir/image-scroll-benchmark-$target"
    mkdir -p "$deploy_dir"
    cp "$benchmark_jar" "$deploy_dir/ImageScrollRealWorkloadBenchmarkApp.jar"
@@ -245,9 +260,39 @@ deploy_target() {
    }
    local install_dir="$deploy_dir/install/$install_name"
    [ -d "$install_dir" ] || { echo "Deployment output not found: $install_dir" >&2; exit 1; }
+
+   mkdir -p "$decode_deploy_dir"
+   cp "$decode_benchmark_jar" "$decode_deploy_dir/ImageDecodeBenchmarkApp.jar"
+   (
+      cd "$decode_deploy_dir"
+      TOTALCROSS3_HOME="$sdk_root" java -cp "$deploy_classpath" tc.Deploy \
+         ImageDecodeBenchmarkApp.jar "$deploy_platform" \
+         > "$work_dir/deploy-$target-decode.log" 2>&1
+   ) || {
+      tail -80 "$work_dir/deploy-$target-decode.log" >&2
+      echo "Decode tc.Deploy failed for $target; full log: $work_dir/deploy-$target-decode.log" >&2
+      exit 1
+   }
+   local decode_install_dir="$decode_deploy_dir/install/$install_name"
+   [ -d "$decode_install_dir" ] || {
+      echo "Decode deployment output not found: $decode_install_dir" >&2
+      exit 1
+   }
+   local decode_executable_name=ImageDecodeBenchmarkApp
+   [ "$target" != windows-x64 ] || decode_executable_name=ImageDecodeBenchmarkApp.exe
+   [ -f "$decode_install_dir/$decode_executable_name" ] || {
+      echo "Decode executable not found: $decode_install_dir/$decode_executable_name" >&2
+      exit 1
+   }
+   [ -f "$decode_install_dir/ImageDecodeBenchmarkApp.tcz" ] || {
+      echo "Decode application TCZ not found in $decode_install_dir" >&2
+      exit 1
+   }
    rm -rf "$bundle_dir"
    mkdir -p "$bundle_dir/corpus"
    cp -R "$install_dir"/. "$bundle_dir/"
+   cp "$decode_install_dir/$decode_executable_name" "$bundle_dir/"
+   cp "$decode_install_dir/ImageDecodeBenchmarkApp.tcz" "$bundle_dir/"
    cp -R "$staged_corpus/." "$bundle_dir/corpus/"
    cp "$decode_library_dir"/*.tcz "$bundle_dir/"
 
@@ -284,6 +329,8 @@ deploy_target() {
   "screenArgument": "/scr -1,-1,540,960",
   "executable": "$executable_name",
   "runtime": "$runtime_name",
+  "decodeExecutable": "$decode_executable_name",
+  "decodeApplicationTcz": "ImageDecodeBenchmarkApp.tcz",
   "runner": "run-benchmark.py",
   "chime": "chime.mp3",
   "datasetFileCount": 663,

@@ -163,6 +163,14 @@ def validate_bundle(bundle, manifest):
         library = bundle / library_name
         require(library.is_file() and library.stat().st_size > 0,
                 f"decode library is missing: {library_name}")
+    decode_executable = manifest.get("decodeExecutable")
+    require(isinstance(decode_executable, str) and decode_executable
+            and (bundle / decode_executable).is_file(),
+            "decode benchmark executable is missing")
+    decode_tcz = manifest.get("decodeApplicationTcz")
+    require(decode_tcz == "ImageDecodeBenchmarkApp.tcz"
+            and (bundle / decode_tcz).is_file(),
+            "decode application TCZ is missing")
     require(not (bundle / "device").exists(),
             "bundle must not contain a physical device directory")
     require(manifest.get("chime") == "chime.mp3",
