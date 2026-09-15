@@ -417,9 +417,20 @@ def run_matrix(bundle, results, executable, plan):
     print("decode matrix passed,processes=90,images_per_process=663")
 
 
+def run_aggregation(bundle):
+    aggregator = bundle / "aggregate-image-decode-benchmark.py"
+    require(aggregator.is_file(), f"decode aggregator is missing: {aggregator}")
+    completed = subprocess.run(
+        [sys.executable, str(aggregator), "--bundle", str(bundle)],
+        cwd=bundle, check=False,
+    )
+    require(completed.returncode == 0,
+            f"decode aggregation failed with exit code {completed.returncode}")
+
+
 def run_phase(bundle, phase):
     manifest = load_manifest(bundle)
-    if phase in ("self-test", "smokes"):
+    if phase in ("self-test", "smokes", "full"):
         manifest, results, executable, plan = self_test(bundle, manifest)
     else:
         ids_by_variant, executable = validate_bundle(bundle, manifest)
@@ -435,6 +446,13 @@ def run_phase(bundle, phase):
     if phase == "matrix":
         run_matrix(bundle, results, executable, plan)
         return
+    if phase == "aggregate":
+        run_aggregation(bundle)
+        return
+    if phase == "full":
+        run_matrix(bundle, results, executable, plan)
+        run_aggregation(bundle)
+        return
     raise BenchmarkFailure(f"unsupported decode phase: {phase}")
 
 
@@ -442,7 +460,8 @@ def main(argv):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bundle", type=Path, default=Path.cwd())
     parser.add_argument(
-        "--phase", choices=("self-test", "smokes", "matrix"), default="self-test",
+        "--phase", choices=("self-test", "smokes", "matrix", "aggregate", "full"),
+        default="self-test",
     )
     args = parser.parse_args(argv[1:])
     bundle = args.bundle.expanduser().resolve()
