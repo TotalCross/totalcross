@@ -486,7 +486,17 @@ jobs:
         findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         cmake --build . --config Release
         if not exist Release\tcvm.dll exit /b 1
+        if not exist Release\Launcher.exe exit /b 1
         popd
+
+    - name: Upload Windows Native Legacy build artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-native-legacy
+        path: |
+          TotalCrossVM/vc2022-native-legacy-runtime-fix/Release/*.dll
+          TotalCrossVM/vc2022-native-legacy-runtime-fix/Release/*.exe
+        if-no-files-found: error
 
   build-macos-arm64:
     name: Build `macos-arm64`
