@@ -383,8 +383,53 @@ jobs:
         cmake ..\ -G"Visual Studio 17 2022" -A Win32
         findstr /C:"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
+        findstr /C:"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>" Launcher.vcxproj >NUL || exit /b 1
+        findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" Launcher.vcxproj >NUL || exit /b 1
         cmake --build . --config Release
         popd
+
+    - name: Verify static Windows runtime dependencies
+      shell: pwsh
+      run: |
+        $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+        if (-not (Test-Path $vswhere)) {
+          throw "Visual Studio vswhere.exe was not found"
+        }
+        $dumpbin = & $vswhere -latest -products * `
+          -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+          -find 'VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe' |
+          Select-Object -First 1
+        if (-not $dumpbin) {
+          $dumpbin = & $vswhere -latest -products * `
+            -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -find 'VC\Tools\MSVC\*\bin\Hostx86\x86\dumpbin.exe' |
+            Select-Object -First 1
+        }
+        if (-not $dumpbin -or -not (Test-Path $dumpbin)) {
+          throw "dumpbin.exe was not found through Visual Studio"
+        }
+
+        $binaries = @(
+          'TotalCrossVM\vc2022\Release\Launcher.exe',
+          'TotalCrossVM\vc2022\Release\tcvm.dll'
+        )
+        $dynamicRuntimePattern = '(?i)\b(?:VCRUNTIME[^ \t\r\n]*|MSVCP[^ \t\r\n]*|MSVCRT[^ \t\r\n]*|UCRTBASE|CONCRT[^ \t\r\n]*|API-MS-WIN-CRT-[^ \t\r\n]*)\.DLL\b'
+        foreach ($binary in $binaries) {
+          if (-not (Test-Path $binary)) {
+            throw "Expected Windows binary was not produced: $binary"
+          }
+          Write-Host "Dependencies for $binary"
+          $dependencies = & $dumpbin /DEPENDENTS $binary 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            throw "dumpbin failed for $binary"
+          }
+          $dependencies | Write-Host
+          $dynamicRuntime = $dependencies |
+            Select-String -Pattern $dynamicRuntimePattern
+          if ($dynamicRuntime) {
+            throw "Dynamic MSVC/UCRT runtime imported by ${binary}: $($dynamicRuntime -join '; ')"
+          }
+        }
 
     - name: Upload Windows build artifacts
       uses: actions/upload-artifact@v7

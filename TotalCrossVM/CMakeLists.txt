@@ -1544,7 +1544,7 @@ include_directories(${TC_SRCDIR}/util)
 
 if(MSVC)
   set(CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB  /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE:NO"
+    "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE:NO"
   )
   set(LAUNCHER_PATH
     "win"
@@ -1570,14 +1570,9 @@ if(TC_TARGET_WINCE)
   target_link_options(Launcher PRIVATE /STACK:0x200000 /ENTRY:)
 endif()
 
-if(MSVC)
-  target_link_libraries(Launcher MSVCRT.lib)
-  if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 17 2022")
-    target_link_libraries(Launcher vcruntime.lib libucrt.lib)
-  endif()
-else()
+if(NOT MSVC)
   target_link_libraries(Launcher dl)
-endif(MSVC)
+endif()
 endif()
 
 # Disabled for the time being
