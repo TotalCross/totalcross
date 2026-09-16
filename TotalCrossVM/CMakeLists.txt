@@ -886,6 +886,32 @@ if(TC_BUILD_NATIVE_STARTUP_TEST)
     $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra>
   )
 
+  if(TC_TARGET_DESKTOP AND TC_WINDOWING_SDL)
+    add_executable(startup_command_line_native_test
+      ${TC_SRCDIR}/tests/startup_command_line_native_test.c
+    )
+    target_include_directories(startup_command_line_native_test PRIVATE
+      "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+      "${TC_SRCDIR}"
+      "${TC_SRCDIR}/tcvm"
+    )
+    target_compile_definitions(startup_command_line_native_test PRIVATE
+      TC_PLATFORM_CONFIGURED=1
+    )
+    add_dependencies(startup_command_line_native_test tcvm)
+    set_target_properties(startup_command_line_native_test PROPERTIES
+      BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR}"
+    )
+    target_link_libraries(startup_command_line_native_test PRIVATE
+      "$<TARGET_FILE:tcvm>"
+      SDL2::SDL2
+      Skia::Skia
+    )
+    target_compile_options(startup_command_line_native_test PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra>
+    )
+  endif()
+
   add_executable(window_startup_abi_c_test
     ${TC_SRCDIR}/tests/window_startup_abi_c_test.c
   )

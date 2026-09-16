@@ -518,7 +518,8 @@ static bool filterDesktopCommandLine(CharP command,
          while (*pathEnd != '\0' && *pathEnd != ' ')
             pathEnd++;
          if (pathEnd != path)
-            xstrncpy(options->path, path, sizeof(options->path) - 1);
+            xstrncpy(options->path, path,
+               min32((int32)(pathEnd - path), sizeof(options->path) - 1));
          read = pathEnd;
          continue;
       }
@@ -566,50 +567,83 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 {
    CharP cmdline;
    TCZFile loadedTCZ;
-   char args[256];
-   char argsLower[256];
+   CharP args = null;
+   CharP argsLower = null;
 #if TC_OS_DESKTOP
-   char vmCommandLine[512];
-   char applicationCommandLine[256] = { 0 };
+   CharP vmCommandLine = null;
+   CharP applicationCommandLine = null;
    DesktopCommandLineOptions desktopCommandLineOptions = { 0 };
 #endif
    CharP tczName;
    int32 argsOriginalLen = argsOriginal ? xstrlen(argsOriginal) : 0;
+   int32 rc;
    CharP c;
    CharP commandLineToParse;
    Context currentContext;
    TCObject name;
+   size_t argsCapacity;
+
+   argsCapacity = (size_t)argsOriginalLen + 1;
+#if defined(darwin) || defined(ANDROID)
+   argsCapacity += sizeof(".tcz") - 1;
+#endif
+   if (argsCapacity < sizeof(" /cmd -testsuite"))
+      argsCapacity = sizeof(" /cmd -testsuite");
 
 #if defined(WINCE)
  #if _WIN32_WCE >= 300 // splitted because HPC211 must be just ignored.
     if (isWakeUpCall(argsOriginal))
-      return 109;
+   {
+      rc = 109;
+      goto cleanup;
+   }
  #endif
 #elif TC_OS_DESKTOP
    if (argsOriginalLen > 0)
    {
-      xstrncpy(vmCommandLine, argsOriginal, sizeof(vmCommandLine) - 1);
+      vmCommandLine = (CharP)malloc((size_t)argsOriginalLen + 1);
+      applicationCommandLine = (CharP)malloc((size_t)argsOriginalLen + 1);
+      if (vmCommandLine == null || applicationCommandLine == null)
+      {
+         rc = 110;
+         goto cleanup;
+      }
+      xstrncpy(vmCommandLine, argsOriginal, argsOriginalLen);
       if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
-         sizeof(applicationCommandLine), &desktopCommandLineOptions))
-         return 110;
+         argsOriginalLen + 1, &desktopCommandLineOptions))
+      {
+         rc = 110;
+         goto cleanup;
+      }
       argsOriginal = vmCommandLine;
       argsOriginalLen = xstrlen(vmCommandLine);
    }
 #endif
 
-   xstrncpy(args, argsOriginal, min32(sizeof(args)-1, argsOriginalLen));
+   args = (CharP)malloc(argsCapacity);
+   argsLower = (CharP)malloc((size_t)argsOriginalLen + 1);
+   if (args == null || argsLower == null)
+   {
+      rc = 110;
+      goto cleanup;
+   }
+   xstrncpy(args, argsOriginal ? argsOriginal : (CharP)"", argsOriginalLen);
    tczName = args;
 
    *cOut = currentContext = initAll(&tczName);
    if (currentContext == null)
-      return 100;
+   {
+      rc = 100;
+      goto cleanup;
+   }
 
    for (size_t i = 0; i < moduleCount; ++i) {
       const char *module = modules[i];
 
       if (!tczLoad(currentContext, module)) {
          alert("%s not found or corrupted. Please reinstall TotalCross", module);
-         return 101;
+         rc = 101;
+         goto cleanup;
       }
    }
 
@@ -659,7 +693,8 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
           if (!initGraphicsBeforeSettings(currentContext,0) || !initGraphicsAfterSettings(currentContext))
           {
              alert("Could not start graphics. Out of memory or problem with the fonts?");
-             return exitProgram(103);
+             rc = exitProgram(103);
+             goto cleanup;
           }
           waitUntilStarted();
           imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
@@ -687,7 +722,8 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
          #else
           alert("The test suite is not\nlinked with the VM!\nExiting...");
          #endif
-          return exitProgram(-1);
+          rc = exitProgram(-1);
+          goto cleanup;
       }
 #if TC_OS_DESKTOP
       if (commandLineToParse != null)
@@ -794,7 +830,10 @@ jumpArgument:
    setObjectLock(name, UNLOCKED);
 
    if ((loadedTCZ = tczLoad(currentContext, tczName)) == null)
-      return exitProgram(104);
+   {
+      rc = exitProgram(104);
+      goto cleanup;
+   }
    else
    {
       CharP mainClassName = loadedTCZ->header->names[0];
@@ -803,33 +842,64 @@ jumpArgument:
 #endif      
       // 0. Initialize tcSettings structure
       if (!initSettings(currentContext, mainClassName, loadedTCZ))
-         return exitProgram(105); // used at exit!
+      {
+         rc = exitProgram(105); // used at exit!
+         goto cleanup;
+      }
       else
       {
 #if defined (WIN32) || (WINCE)
          // 0.5. Only one instance of the application allowed?
          if (!*tcSettings.multipleInstances && checkIfRunning())
-            return exitProgram(106);
+         {
+            rc = exitProgram(106);
+            goto cleanup;
+         }
 #endif
          // 1. Initialize the graphics
          isMainWindow = (loadedTCZ->header->attr & ATTR_HAS_MAINWINDOW) != 0;
          if (isMainWindow && !initEvent())
-            return exitProgram(102);
+         {
+            rc = exitProgram(102);
+            goto cleanup;
+         }
 
          if (isMainWindow && (!initGraphicsBeforeSettings(currentContext,loadedTCZ->header->attr) || !keepRunning))
-            return exitProgram(107);
+         {
+            rc = exitProgram(107);
+            goto cleanup;
+         }
          else
          {
             // 2. Retrieve the settings
             if (!retrieveSettings(currentContext, mainClassName) || !keepRunning) // Settings must always be initialized before the application
-               return exitProgram(108); // used at exit!
+            {
+               rc = exitProgram(108); // used at exit!
+               goto cleanup;
+            }
             else
             if (isMainWindow && (!initGraphicsAfterSettings(currentContext) || !keepRunning))
-               return exitProgram(109);
+            {
+               rc = exitProgram(109);
+               goto cleanup;
+            }
          }
       }
    }
-   return 0; // sucessfull startup
+   rc = 0; // sucessfull startup
+
+cleanup:
+#if TC_OS_DESKTOP
+   if (applicationCommandLine != null)
+      free(applicationCommandLine);
+   if (vmCommandLine != null)
+      free(vmCommandLine);
+#endif
+   if (argsLower != null)
+      free(argsLower);
+   if (args != null)
+      free(args);
+   return rc;
 }
 
 

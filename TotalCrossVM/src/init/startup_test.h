@@ -5,19 +5,29 @@
 TESTCASE(startup_filterApplicationCommandLine)
 {
 #if TC_OS_DESKTOP && TC_WINDOWING_SDL
-   char vmCommandLine[512] =
+   const char *initialCommandLine =
       "App.tcz -t /cmdlike /scr -2,-2,800,600 /cmd foo /fullscreen bar "
       "-p /tmp/app baz -testsuite qux /sdlPixelFormat auto "
       "/scrSomething /cmdlike -testsuitelike";
-   char applicationCommandLine[256];
+   int32 commandLineSize = xstrlen(initialCommandLine) + 1;
+   CharP vmCommandLine = null;
+   CharP applicationCommandLine = null;
    char oldAppPath[MAX_PATHNAME];
    TCWindowStartupOptions oldStartupOptions = desktopWindowStartupOptions;
    DesktopCommandLineOptions desktopCommandLineOptions;
 
    xstrcpy(oldAppPath, appPath);
+   vmCommandLine = (CharP)malloc(commandLineSize);
+   applicationCommandLine = (CharP)malloc(commandLineSize);
+   if (vmCommandLine == null || applicationCommandLine == null)
+   {
+      TEST_FAIL(tc, "Could not allocate command-line test buffers");
+      goto cleanup;
+   }
+   xstrcpy(vmCommandLine, (CharP)initialCommandLine);
    desktopWindowStartupOptions.initialState = TC_INITIAL_WINDOW_NORMAL;
    if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
-      sizeof(applicationCommandLine), &desktopCommandLineOptions))
+      commandLineSize, &desktopCommandLineOptions))
    {
       TEST_FAIL(tc, "Could not prepare the desktop command line");
       goto cleanup;
@@ -50,7 +60,7 @@ TESTCASE(startup_filterApplicationCommandLine)
       "App.tcz /cmd /admin W DEBUG /scr -2, -2, 480, 720");
    desktopWindowStartupOptions.initialState = TC_INITIAL_WINDOW_NORMAL;
    if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
-      sizeof(applicationCommandLine), &desktopCommandLineOptions)
+      commandLineSize, &desktopCommandLineOptions)
       || desktopWindowStartupOptions.x != -2
       || desktopWindowStartupOptions.y != -2
       || desktopWindowStartupOptions.width != 480
@@ -66,6 +76,10 @@ TESTCASE(startup_filterApplicationCommandLine)
 cleanup:
    xstrcpy(appPath, oldAppPath);
    desktopWindowStartupOptions = oldStartupOptions;
+   if (applicationCommandLine != null)
+      free(applicationCommandLine);
+   if (vmCommandLine != null)
+      free(vmCommandLine);
 #else
    TEST_SKIP;
 #endif

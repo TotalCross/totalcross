@@ -41,11 +41,13 @@ static void runCase(const char *name, const char *commandLine,
    const char *widthEnvironment, const char *heightEnvironment,
    int expectedWidth, int expectedHeight, bool expectCentered)
 {
-   char vmCommandLine[512];
-   char applicationCommandLine[256];
+   CharP vmCommandLine = NULL;
+   CharP applicationCommandLine = NULL;
    DesktopCommandLineOptions commandOptions;
    TScreenSurface screen;
    SDL_Rect displayBounds;
+   size_t commandLineSize = strlen(commandLine) + 1;
+   bool windowInitialized = false;
    int width = 0;
    int height = 0;
    int x = 0;
@@ -58,34 +60,41 @@ static void runCase(const char *name, const char *commandLine,
       setenv("TC_HEIGHT", heightEnvironment, 1);
 
    memset(&screen, 0, sizeof(screen));
-   strcpy(vmCommandLine, commandLine);
+   vmCommandLine = (CharP)malloc(commandLineSize);
+   applicationCommandLine = (CharP)malloc(commandLineSize);
+   if (vmCommandLine == NULL || applicationCommandLine == NULL)
+   {
+      failCase(name, "could not allocate command-line buffers");
+      goto cleanup;
+   }
+   memcpy(vmCommandLine, commandLine, commandLineSize);
    applicationCommandLine[0] = '\0';
    if (!prepareDesktopCommandLines(vmCommandLine, applicationCommandLine,
-      sizeof(applicationCommandLine), &commandOptions))
+      (int32)commandLineSize, &commandOptions))
    {
       failCase(name, "startup command-line parsing failed");
-      return;
+      goto cleanup;
    }
 
    if (strstr(vmCommandLine, "/scr") != NULL
       || strstr(applicationCommandLine, "/scr") != NULL)
    {
       failCase(name, "/scr was not removed from the delivered command line");
-      return;
+      goto cleanup;
    }
 
    if (!TCSDL_Init(&screen, "TotalCross startup integration", false, 0))
    {
       failCase(name, "TCSDL_Init failed");
-      return;
+      goto cleanup;
    }
+   windowInitialized = true;
 
    TCSDL_GetWindowSize(&screen, &width, &height);
    if (SCREEN_EX(&screen) == NULL || SCREEN_EX(&screen)->window == NULL)
    {
       failCase(name, "SDL window handle was not available");
-      TCSDL_DestroyWindow(&screen);
-      return;
+      goto cleanup;
    }
    SDL_GetWindowPosition(SCREEN_EX(&screen)->window, &x, &y);
    SDL_GetDisplayBounds(0, &displayBounds);
@@ -101,7 +110,13 @@ static void runCase(const char *name, const char *commandLine,
          || abs((y * 2 + height) - (displayBounds.y * 2 + displayBounds.h)) > 4))
       failCase(name, "created SDL window was not centered");
 
-   TCSDL_DestroyWindow(&screen);
+cleanup:
+   if (windowInitialized)
+      TCSDL_DestroyWindow(&screen);
+   if (applicationCommandLine != NULL)
+      free(applicationCommandLine);
+   if (vmCommandLine != NULL)
+      free(vmCommandLine);
 }
 
 int main(void)
