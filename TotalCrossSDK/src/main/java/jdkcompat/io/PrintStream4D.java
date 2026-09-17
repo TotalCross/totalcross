@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+import totalcross.sys.VmStandardOutputStream;
 import totalcross.util.concurrent.Lock;
 
 public class PrintStream4D extends FilterOutputStream implements Appendable, Closeable {
@@ -37,7 +38,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
       try {
         out.write(b);
         if (autoFlush && (b & 0xff) == '\n') {
-          out.flush();
+          logicalFlush();
         }
       } catch (IOException e) {
         setError();
@@ -60,7 +61,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
       try {
         out.write(bytes, offset, length);
         if (autoFlush) {
-          out.flush();
+          logicalFlush();
         }
       } catch (IOException e) {
         setError();
@@ -227,7 +228,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
       try {
         out.write(bytes, 0, bytes.length);
         if (autoFlush && containsNewline(value)) {
-          out.flush();
+          logicalFlush();
         }
       } catch (IOException e) {
         setError();
@@ -247,7 +248,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
         }
         out.write('\n');
         if (autoFlush) {
-          out.flush();
+          logicalFlush();
         }
       } catch (IOException e) {
         setError();
@@ -261,6 +262,14 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
       return false;
     }
     return true;
+  }
+
+  private void logicalFlush() throws IOException {
+    if (out instanceof VmStandardOutputStream) {
+      ((VmStandardOutputStream) out).logicalFlush();
+    } else {
+      out.flush();
+    }
   }
 
   private static boolean containsNewline(String value) {

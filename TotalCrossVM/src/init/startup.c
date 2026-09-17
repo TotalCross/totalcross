@@ -12,6 +12,7 @@
 #include "tcvm.h"
 #include "tcz.h"
 #include "nativeProcAddressesTC.h"
+#include "../util/standard_stream.h"
 #if TC_WINDOWING_SDL
  #include "tcsdl.h"
 #endif
@@ -65,6 +66,7 @@ static Context initAll(CharP* args)
 #endif
    ok = ok && initDebug();
    ok = ok && initGlobals();
+   ok = ok && standardStreamInit();
    ok = ok && initMem();
    if (ok) firstTS = getTimeStamp();
    ok = ok && (c=initContexts()) != null;
@@ -92,6 +94,7 @@ static void destroyAll() // must be in inverse order of initAll calls
    xmemzero(&tcSettings, sizeof(tcSettings));
    destroyTCZ();
    destroyMem();    
+   standardStreamDestroy();
    destroyDebug(); // must be after destroy mem, because mem leaks may be written to the debug
    destroyGlobals();
 }

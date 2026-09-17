@@ -318,6 +318,9 @@ TC_API void tsV_showKeyCodes_b(NMParams p);
 TC_API void tsV_turnScreenOn_b(NMParams p);
 TC_API void tsV_vibrate_i(NMParams p);
 TC_API void tsV_identityHashCode_o(NMParams p);
+TC_API void tsVSOS_standardWrite_iBii(NMParams p);
+TC_API void tsVSOS_standardFlush_ib(NMParams p);
+TC_API void tsVSOS_standardClose_i(NMParams p);
 TC_API void tsR_getInt_iss(NMParams p);
 TC_API void tsR_getString_iss(NMParams p);
 TC_API void tsR_getBlob_iss(NMParams p);
@@ -1989,6 +1992,18 @@ TC_API void tsV_vibrate_i(NMParams p) // totalcross/sys/Vm native public static 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_identityHashCode_o(NMParams p) // totalcross/sys/Vm native public static int identityHashCode(Object o);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsVSOS_standardWrite_iBii(NMParams p) // totalcross/sys/VmStandardOutputStream native private static boolean standardWrite(int stream, byte []bytes, int offset, int length);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsVSOS_standardFlush_ib(NMParams p) // totalcross/sys/VmStandardOutputStream native private static boolean standardFlush(int stream, boolean durable);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsVSOS_standardClose_i(NMParams p) // totalcross/sys/VmStandardOutputStream native private static boolean standardClose(int stream);
 {
 }
 //////////////////////////////////////////////////////////////////////////

@@ -359,6 +359,9 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_turnScreenOn_b"), &tsV_turnScreenOn_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_vibrate_i"), &tsV_vibrate_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_identityHashCode_o"), &tsV_identityHashCode_o);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsVSOS_standardWrite_iBii"), &tsVSOS_standardWrite_iBii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsVSOS_standardFlush_ib"), &tsVSOS_standardFlush_ib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsVSOS_standardClose_i"), &tsVSOS_standardClose_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tsR_getInt_iss"), &tsR_getInt_iss);
    htPutPtr(&htNativeProcAddresses, hashCode("tsR_getString_iss"), &tsR_getString_iss);
    htPutPtr(&htNativeProcAddresses, hashCode("tsR_getBlob_iss"), &tsR_getBlob_iss);
