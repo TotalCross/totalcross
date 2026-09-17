@@ -9,7 +9,6 @@ import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 import totalcross.sys.VmStandardOutputStream;
 import totalcross.util.concurrent.Lock;
@@ -220,7 +219,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
   }
 
   private void writeString(String value) {
-    byte[] bytes = String.valueOf(value).getBytes(StandardCharsets.UTF_8);
+    byte[] bytes = utf8(String.valueOf(value));
     synchronized (lock) {
       if (!ensureOpen()) {
         return;
@@ -243,7 +242,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
       }
       try {
         if (hasValue) {
-          byte[] bytes = String.valueOf(value).getBytes(StandardCharsets.UTF_8);
+          byte[] bytes = utf8(String.valueOf(value));
           out.write(bytes, 0, bytes.length);
         }
         out.write('\n');
@@ -274,6 +273,14 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
 
   private static boolean containsNewline(String value) {
     return value != null && value.indexOf('\n') >= 0;
+  }
+
+  private static byte[] utf8(String value) {
+    try {
+      return value.getBytes("UTF-8");
+    } catch (java.io.UnsupportedEncodingException e) {
+      throw new RuntimeException("UTF-8 is unavailable", e);
+    }
   }
 
   private static void checkWriteRange(byte[] bytes, int offset, int length) {
