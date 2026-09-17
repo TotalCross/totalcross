@@ -110,8 +110,8 @@ section required by the next action.
   with compact state/evidence artifacts.
 - [x] 2026-09-17 — Milestone 1: completed the supported non-formatter
   `PrintStream4D` core and focused JUnit coverage; the SDK test passed.
-- [ ] Milestone 2: add the Java/native bridge, router, platform sinks, and
-  lifecycle registration, then run the permitted macOS build.
+- [x] 2026-09-17 — Milestone 2: added the Java/native bridge, router, platform
+  sinks, lifecycle registration, and passed the permitted macOS build.
 - [ ] Milestone 3: extract the shared legacy writer and add native smoke
   coverage.
 - [ ] Milestone 4: run final acceptance and prepare the handoff report.
