@@ -586,6 +586,7 @@ set(SOURCES
     ${TC_SRCDIR}/util/jchar.c
     ${TC_SRCDIR}/util/datastructures.c
     ${TC_SRCDIR}/util/debug.c
+    ${TC_SRCDIR}/util/legacy_debug_console.c
     ${TC_SRCDIR}/util/standard_stream.c
     ${TC_SRCDIR}/util/tcz.c
     ${TC_SRCDIR}/util/utils.c

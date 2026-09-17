@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -14,27 +15,14 @@ static CharP stripUnicode(CharP s)
    return s0;
 }
 
-static FILE* fdebug;
-
 static bool privateInitDebug()
 {
    return true;
 }
 
-void closeDebug()
-{
-   if (fdebug != NULL)
-      fclose(fdebug);
-   fdebug = NULL;
-}
-
 static void privateDestroyDebug()
 {
-   if (fdebug)
-   {
-      fputs("===============\n",fdebug);
-      closeDebug();
-   }
+   legacyDebugConsoleDestroy("===============\n");
 }
 
 static bool privateDebug(char* str)
@@ -43,27 +31,14 @@ static bool privateDebug(char* str)
       return true;
    else
    {
-      static char debugPath[MAX_PATHNAME];
       bool err = true;
-      if (!fdebug)
+      if (strEq(str,ERASE_DEBUG_STR))
+         legacyDebugConsoleErase();
+      else
       {
-         xstrprintf(debugPath, "%s/DebugConsole.txt", appPath);
-         fdebug = fopen(debugPath, "ab+"); //flsobral@tc110: replaced mode "wb" with "ab+".
-      }
-      if (fdebug)
-      {
-         if (strEq(str,ERASE_DEBUG_STR))
-         {
-            closeDebug();
-            remove(debugPath);
-         }
-         else
-         {
-            fputs(str,fdebug);
-            err = (fputs("\n",fdebug) >= 0);
-            fflush(fdebug);
-            fsync(fileno(fdebug));
-         }
+         err = legacyDebugConsoleDebugLine(str, "\n", true);
+         if (!legacyDebugConsoleIsOpen())
+            err = true;
       }
       return err;
    }
