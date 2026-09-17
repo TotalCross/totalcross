@@ -520,6 +520,127 @@ tasks.register('runSystemNanoTimeSmokeMacOS', Exec) {
 
 def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
 def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')
+def standardStreamsSmokeClassesDir = layout.buildDirectory.dir('standard-streams-smoke/classes')
+
+tasks.register('compileStandardStreamsSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the standard-stream macOS smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+
+    from(smokeTestClassesDir) {
+        include 'totalcross/sys/StandardStreamsSmokeApp.class'
+    }
+    into standardStreamsSmokeClassesDir
+}
+
+tasks.register('jarStandardStreamsSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the standard-stream macOS smoke app for deployment.'
+    dependsOn 'compileStandardStreamsSmoke'
+    archiveFileName = 'StandardStreamsSmokeApp.jar'
+    destinationDirectory = standardStreamsSmokeClassesDir
+    from(standardStreamsSmokeClassesDir)
+}
+
+tasks.register('deployStandardStreamsSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the standard-stream smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarStandardStreamsSmoke'
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir standardStreamsSmokeClassesDir.get().asFile
+    args = ['StandardStreamsSmokeApp.jar', '-macos']
+}
+
+tasks.register('runStandardStreamsSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the standard-stream smoke with separate macOS captures.'
+    dependsOn 'deployStandardStreamsSmokeMacOS'
+    ignoreExitValue = true
+    def standardOutputCapture = new ByteArrayOutputStream()
+    def standardErrorCapture = new ByteArrayOutputStream()
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runStandardStreamsSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        if (!nativeRuntimeFile.isFile()) {
+            throw new GradleException('Native runtime not found: ' + nativeRuntimeFile)
+        }
+
+        def installDir = standardStreamsSmokeClassesDir.get().dir('install/macos').asFile
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def executable = new File(installDir, 'StandardStreamsSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException('Native smoke executable not found: ' + executable)
+        }
+        def debugConsole = new File(installDir, 'DebugConsole.txt')
+        if (debugConsole.exists() && !debugConsole.delete()) {
+            throw new GradleException('Could not reset smoke DebugConsole.txt')
+        }
+        commandLine executable.absolutePath
+        standardOutputCapture.reset()
+        standardErrorCapture.reset()
+        standardOutput = standardOutputCapture
+        errorOutput = standardErrorCapture
+    }
+    workingDir standardStreamsSmokeClassesDir.map { it.dir('install/macos').asFile }
+
+    doLast {
+        def standardOutputText = standardOutputCapture.toString('UTF-8')
+        def standardErrorText = standardErrorCapture.toString('UTF-8')
+        def installDir = standardStreamsSmokeClassesDir.get().dir('install/macos').asFile
+        def debugConsoleFile = new File(installDir, 'DebugConsole.txt')
+        def debugConsoleText = debugConsoleFile.isFile() ? debugConsoleFile.getText('UTF-8') : ''
+        def exitCode = executionResult.get().exitValue
+        def requiredOutput = [
+            'standard-out-pre-erase:discard',
+            'standard-out-post-erase',
+            'standard-out-disabled',
+            'fixture=StandardStreamsSmokeApp,overallPass=true'
+        ]
+        def requiredError = [
+            'standard-err-pre-erase:discard',
+            'standard-err-post-erase',
+            'standard-err-disabled'
+        ]
+        def requiredFile = [
+            'standard-out-post-erase',
+            'standard-err-post-erase',
+            '!erase debug!',
+            'legacy-post-erase'
+        ]
+        def absentFile = [
+            'standard-out-pre-erase:discard',
+            'standard-err-pre-erase:discard',
+            'legacy-pre-erase',
+            'legacy-disabled'
+        ]
+        def missing = requiredOutput.findAll { !standardOutputText.contains(it) }
+        missing += requiredError.findAll { !standardErrorText.contains(it) }
+        missing += requiredFile.findAll { !debugConsoleText.contains(it) }
+        def unexpected = absentFile.findAll { debugConsoleText.contains(it) }
+        if (standardErrorText.contains('standard-out-') || standardOutputText.contains('standard-err-')) {
+            missing << 'separate stdout/stderr capture'
+        }
+        if (exitCode != 0 || !missing.isEmpty() || !unexpected.isEmpty()) {
+            throw new GradleException('StandardStreams native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing + ', unexpected=' + unexpected
+                + ', stdoutBytes=' + standardOutputText.length() + ', stderrBytes=' + standardErrorText.length())
+        }
+        logger.lifecycle('StandardStreams smoke passed: stdoutBytes=' + standardOutputText.length()
+            + ', stderrBytes=' + standardErrorText.length() + ', debugConsoleBytes=' + debugConsoleText.length())
+    }
+}
+
 def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scaling/danfe') {
 	include '*.java'
 }
