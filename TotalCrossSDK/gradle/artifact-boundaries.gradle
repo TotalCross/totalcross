@@ -16,6 +16,7 @@ registerBoundaryJar('totalcrossApiJar', 'totalcross-api') {
     include 'totalcross/lang/**', 'totalcross/sys/**', 'totalcross/util/**', 'totalcross/ui/**'
     include 'jdkcompat/**'
     exclude 'totalcross/preview/**', 'totalcross/Launcher*', 'totalcross/PreviewRunner*'
+    exclude 'totalcross/sys/VmStandardOutputStream.class'
     exclude '**/*4D.class', '**/*4D$*.class', '**/*4D*.class'
 }
 
