@@ -92,7 +92,7 @@ static bool pngInspect(const uint8* b, int32 n, ImageEncodedInspection* out) {
    static const uint8 signature[] = {0x89, 'P', 'N', 'G', 0x0d, 0x0a, 0x1a, 0x0a};
    int32 p = 8, width = 0, height = 0;
    bool ihdr = false, idat = false, idatEnded = false, iend = false, palette = false, trns = false;
-   int32 color = -1, depth = -1, paletteEntries = 0;
+   int32 color = -1, bitDepth = -1, paletteEntries = 0;
    const uint8* comment = null;
    int32 commentLength = 0;
    int32 i;
@@ -110,25 +110,24 @@ static bool pngInspect(const uint8* b, int32 n, ImageEncodedInspection* out) {
       if (!ihdr && !typeIs(type, "IHDR")) return false;
       if (crc32Bytes(type, dataLength + 4) != readBE32(data + dataLength)) return false;
       if (typeIs(type, "IHDR")) {
-         int32 depth;
          if (ihdr || dataLength != 13) return false;
          if (readBE32(data) == 0 || readBE32(data + 4) == 0 || readBE32(data) > 0x7fffffffU
                || readBE32(data + 4) > 0x7fffffffU) return false;
          width = (int32)readBE32(data);
          height = (int32)readBE32(data + 4);
-         depth = data[8];
+         bitDepth = data[8];
          color = data[9];
-         if (!((color == 0 && (depth == 1 || depth == 2 || depth == 4 || depth == 8 || depth == 16))
-               || (color == 2 && (depth == 8 || depth == 16))
-               || (color == 3 && (depth == 1 || depth == 2 || depth == 4 || depth == 8))
-               || (color == 6 && (depth == 8 || depth == 16)))
+         if (!((color == 0 && (bitDepth == 1 || bitDepth == 2 || bitDepth == 4 || bitDepth == 8 || bitDepth == 16))
+               || (color == 2 && (bitDepth == 8 || bitDepth == 16))
+               || (color == 3 && (bitDepth == 1 || bitDepth == 2 || bitDepth == 4 || bitDepth == 8))
+               || (color == 6 && (bitDepth == 8 || bitDepth == 16)))
                || data[10] != 0 || data[11] != 0 || data[12] > 1) return false;
          ihdr = true;
       } else if (typeIs(type, "PLTE")) {
          if (palette || idat || (color != 2 && color != 3 && color != 6)
                || dataLength == 0 || dataLength % 3 != 0 || dataLength > 768) return false;
          paletteEntries = dataLength / 3;
-         if (color == 3 && paletteEntries > (1 << depth)) return false;
+         if (color == 3 && paletteEntries > (1U << bitDepth)) return false;
          palette = true;
       } else if (typeIs(type, "tRNS")) {
          if (trns || idat) return false;
