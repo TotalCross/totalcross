@@ -1,62 +1,48 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-// Debug
 #include<unistd.h>
-
-static FILE* fdebug;
 
 static bool privateInitDebug()
 {
    return true;
 }
 
-void closeDebug()
-{
-   if (fdebug != NULL)
-      fclose(fdebug);
-   fdebug = NULL;
-}
-
 static void privateDestroyDebug()
 {
-   if (fdebug)
-   {
-      fputs("===============\n",fdebug);
-      closeDebug();
-   }
+   legacyDebugConsoleDestroy("===============\n");
 }
 
 static bool privateDebug(char* str)
 {
     bool err = true;
-   static char debugPath[MAX_PATHNAME];
 #if __APPLE__ && !defined darwin
+   if (strEq(str,ERASE_DEBUG_STR))
+      legacyDebugConsoleErase();
+   else
+   {
+      err = legacyDebugConsoleDebugLine(str, "\n", true);
+      if (!legacyDebugConsoleIsOpen())
+         err = true;
+   }
+   /* Keep desktop macOS's historical stdout output while sharing its file sink. */
    printf(str);
    printf("\n");
 #else
-   if (!fdebug)
+   if (strEq(str,ERASE_DEBUG_STR))
+      legacyDebugConsoleErase();
+   else
    {
-      xstrprintf(debugPath, "%s/DebugConsole.txt", appPath);
-      fdebug = fopen(debugPath, "ab+"); //flsobral@tc110: replaced mode "wb" with "ab+".
-   }
-   if (fdebug)
-   {
-      if (strEq(str,ERASE_DEBUG_STR))
+      err = legacyDebugConsoleDebugLine(str, "\n", true);
+      if (!legacyDebugConsoleIsOpen())
+         err = true;
+      if (legacyDebugConsoleIsOpen())
       {
-         closeDebug();
-         remove(debugPath);
-      }
-      else
-      {
-         fputs(str,fdebug);   
          printf(str);
          printf("\n");
-         err = (fputs("\n",fdebug) >= 0);
-         fflush(fdebug);
-         fsync(fileno(fdebug));
       }
    }
 #endif

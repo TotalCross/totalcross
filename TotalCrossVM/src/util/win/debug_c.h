@@ -6,28 +6,14 @@
 
 // Debug
 
-static FILE* fdebug;
-static char debugPath[MAX_PATHNAME];
-
 static bool privateInitDebug()
 {
    return true;
 }
 
-void closeDebug()
-{
-   if (fdebug != NULL)
-      fclose(fdebug);
-   fdebug = null;
-}
-
 static void privateDestroyDebug()
 {
-   if (fdebug)
-   {
-      fputs("===============\r\n",fdebug);
-      closeDebug();
-   }
+   legacyDebugConsoleDestroy("===============\r\n");
 }
 
 static bool privateDebug(char* str)
@@ -47,25 +33,11 @@ static bool privateDebug(char* str)
    return true;
 #else
    bool err = true;
-   if (!fdebug)
+   if (strEq(str,ERASE_DEBUG_STR))
+      legacyDebugConsoleErase();
+   else
    {
-      xstrprintf(debugPath, "%s\\DebugConsole.txt",appPath);
-      fdebug = fopen(debugPath,"ab+");
-   }
-   if (fdebug)
-   {
-      if (strEq(str,ERASE_DEBUG_STR))
-      {
-         TCHAR debugPath2[MAX_PATHNAME];
-         CharP2TCHARPBuf(debugPath, debugPath2);
-         closeDebug();
-         DeleteFile(debugPath2);
-      }
-      else
-      {
-         fprintf(fdebug, "%s\r\n", str);
-         fflush(fdebug);
-      }
+      legacyDebugConsoleDebugLine(str, "\r\n", false);
    }
 #if defined(WINCE) && defined(_DEBUG)
 {
