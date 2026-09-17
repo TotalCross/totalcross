@@ -61,6 +61,24 @@ configure/build, and macOS smoke passed. Headers, whitespace, prohibited
 scope, new-file sizes, and all task commit messages were audited. The two
 historical message deviations remain documented; all later commits pass.
 
+### Review correction pass
+
+The follow-up review identified six implementation issues and one plan
+artifact issue. Commits `a4c321804` and `a0011d954` corrected the Java subset:
+null `char[]` now throws, underlying `PrintStream` trouble propagates,
+generic encoding remains platform-default, standard encoding remains UTF-8,
+and each value-bearing `println` is one write. Commit `cfeb4f51c` restored
+desktop macOS `Vm.debug` stdout-only behavior, retained Windows legacy
+`fflush`, and added Windows desktop `FlushFileBuffers` for durable explicit
+stream flush. Commit `e36203795` removed the internal bridge from
+`totalcross-api` and added boundary coverage. Commit `4d0ded3db` replaced the
+oversized active plan with bounded plan/reference artifacts. The corrected
+macOS smoke retains pre-erase standard records, rejects legacy debug markers
+in the file, and requires legacy macOS markers on stdout only.
+
+The corrected gate passed focused SDK tests, the dedicated artifact-boundary
+task, clean `dist`, native macOS configure/build, and the updated macOS smoke.
+
 ## Decisions preserved
 
 - OUT and ERR have independent Java stream state and native channels.
@@ -72,6 +90,8 @@ historical message deviations remain documented; all later commits pass.
 - `Vm.debug` retains debug commands and disabling semantics.
 - Windows, Linux, Android, and iOS builds were not run because the plan
   explicitly forbids them. Full image benchmark matrices were not part of V1.
+- The active plan is 11,288 bytes/254 lines and the technical reference is
+  6,446 bytes/145 lines; both satisfy the bounded plan-artifact guideline.
 
 ## Evidence
 
