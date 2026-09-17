@@ -78,6 +78,7 @@ in the file, and requires legacy macOS markers on stdout only.
 
 The corrected gate passed focused SDK tests, the dedicated artifact-boundary
 task, clean `dist`, native macOS configure/build, and the updated macOS smoke.
+The correction closure documentation was committed in `888537b29`.
 
 ## Decisions preserved
 
