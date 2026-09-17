@@ -103,6 +103,19 @@ Do not reread this entire plan after every context compaction. Resume from the
 state file, inspect the active diff and active paths, and open only the plan
 section required by the next action.
 
+## Progress
+
+- [x] 2026-09-17 — Milestone 0: created `feat/standard-streams-v1` from
+  `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b` and committed the supplied plan
+  with compact state/evidence artifacts.
+- [x] 2026-09-17 — Milestone 1: completed the supported non-formatter
+  `PrintStream4D` core and focused JUnit coverage; the SDK test passed.
+- [ ] Milestone 2: add the Java/native bridge, router, platform sinks, and
+  lifecycle registration, then run the permitted macOS build.
+- [ ] Milestone 3: extract the shared legacy writer and add native smoke
+  coverage.
+- [ ] Milestone 4: run final acceptance and prepare the handoff report.
+
 ## File-size and artifact policy
 
 Every new file created by this plan must remain below both practical limits:
