@@ -6,6 +6,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Standard streams V1 editorial handoff
 
+The corrected handoff is recorded at implementation/documentation closure
+commit `888537b29`.
+
 ## Editorial Summary
 
 Standard streams V1 gives TotalCross independent Java `System.out` and

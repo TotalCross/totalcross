@@ -63,7 +63,7 @@ Inspect only the active paths named in state before expanding the investigation.
   handoff artifacts.
 - [x] 2026-09-17 M5: applied the review corrections, split the oversized plan
   into bounded plan/reference/history artifacts, reran the required final
-  SDK/macOS/smoke gate, and prepared the final HEAD records.
+  SDK/macOS/smoke gate, and closed the corrected handoff in `888537b29`.
 
 ## Current Architecture and Scope
 
