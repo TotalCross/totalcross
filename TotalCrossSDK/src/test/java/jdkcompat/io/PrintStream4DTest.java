@@ -14,9 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
+
+import totalcross.sys.VmStandardOutputStream;
 
 class PrintStream4DTest {
   @Test
@@ -41,6 +44,26 @@ class PrintStream4DTest {
     stream.print((Object) null);
 
     assertEquals("true 12 34 1.5 2.5 xy café null", text(bytes));
+  }
+
+  @Test
+  void genericStreamsRetainPlatformDefaultEncoding() {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    PrintStream4D stream = new PrintStream4D(bytes);
+
+    stream.print("café");
+
+    assertArrayEquals("café".getBytes(), bytes.toByteArray());
+  }
+
+  @Test
+  void standardBridgeUsesUtf8Encoding() throws Exception {
+    PrintStream4D stream = new PrintStream4D(new VmStandardOutputStream(VmStandardOutputStream.OUT));
+    Method encode = PrintStream4D.class.getDeclaredMethod("encode", String.class);
+    encode.setAccessible(true);
+
+    assertArrayEquals("café".getBytes(StandardCharsets.UTF_8),
+        (byte[]) encode.invoke(stream, "café"));
   }
 
   @Test
