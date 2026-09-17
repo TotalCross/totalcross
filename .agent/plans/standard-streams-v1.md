@@ -112,9 +112,13 @@ section required by the next action.
   `PrintStream4D` core and focused JUnit coverage; the SDK test passed.
 - [x] 2026-09-17 — Milestone 2: added the Java/native bridge, router, platform
   sinks, lifecycle registration, and passed the permitted macOS build.
-- [ ] Milestone 3: extract the shared legacy writer and add native smoke
-  coverage.
-- [ ] Milestone 4: run final acceptance and prepare the handoff report.
+- [x] 2026-09-17 — Milestone 3: extracted the shared legacy writer, preserved
+  `Vm.debug` ownership, and added the native macOS smoke fixture/runner. The
+  initial smoke exposed an unavailable deployed charset class; the supported
+  UTF-8 follow-up fixed it and the rerun passed.
+- [x] 2026-09-17 — Milestone 4: final focused SDK tests, clean SDK
+  distribution, permitted macOS native build, smoke, headers, diff, scope,
+  and commit-message audits passed; platform deferrals remain intentional.
 
 ## File-size and artifact policy
 
@@ -1236,7 +1240,19 @@ On interruption:
 
 ## Outcomes & Retrospective
 
-Keep this section short while the plan is active.
+The V1 contracts are implemented in commits `b8eefe31c`, `8e644678a`,
+`a9e973480`, `67bcc1076`, and `a6edf33dc`. The Java core now provides the
+supported non-formatter `PrintStream4D` API, the Java/native bridge routes
+independent OUT and ERR channels, and the POSIX, Windows, Android, Darwin, and
+legacy shared-writer paths are present. Only macOS was locally built and
+smoke-tested; the other platform builds remain deferred by explicit plan
+scope. The smoke demonstrates that the benchmark can capture native stdout and
+stderr without relying on `Vm.debug()`. Formatter support and rolling
+`DebugConsole.log` remain V2 work.
+
+Milestone history is archived in
+`.agent/archive/standard-streams-v1-history.md`; the factual handoff is in
+`.agent/reports/standard-streams-v1-editorial.md`.
 
 At each milestone completion record only:
 
