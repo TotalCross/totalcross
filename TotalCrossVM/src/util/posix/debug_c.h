@@ -20,15 +20,7 @@ static bool privateDebug(char* str)
 {
     bool err = true;
 #if __APPLE__ && !defined darwin
-   if (strEq(str,ERASE_DEBUG_STR))
-      legacyDebugConsoleErase();
-   else
-   {
-      err = legacyDebugConsoleDebugLine(str, "\n", true);
-      if (!legacyDebugConsoleIsOpen())
-         err = true;
-   }
-   /* Keep desktop macOS's historical stdout output while sharing its file sink. */
+   /* Desktop macOS historically writes Vm.debug messages to stdout only. */
    printf(str);
    printf("\n");
 #else
