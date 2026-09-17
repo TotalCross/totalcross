@@ -6,17 +6,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Standard streams V1 state
 
-- Active milestone/slice: Milestone 4 — final handoff reconciliation.
+- Active milestone/slice: Milestone 4 — completed handoff.
 - Branch: `feat/standard-streams-v1`.
 - Base SHA: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 - Last implementation commit: `a6edf33dc` (`test(runtime): cover native
   standard stream routing`); preceding fix is `67bcc1076`, shared-writer
   refactor is `a9e973480`, and the M2 router commit is `8e644678a`.
+- Final handoff commit: `535e3f14a` (`docs(agent): finalize standard streams
+  v1 handoff`).
 - Active paths: the completed standard-stream Java/native bridge, five platform
   sink headers, shared `DebugConsole.txt` writer, smoke fixture/runner, and
   `.agent/{plan,state,evidence,archive,reports}` handoff artifacts.
-- Next concrete action: update the plan, append final evidence, create the
-  history archive and editorial report, then commit the handoff documents.
+- Next concrete action: no further V1 implementation work; retain the
+  recorded platform and benchmark deferrals for future CI or V2 planning.
 - Focused validation completed: final focused SDK tests passed at
   `/tmp/tc-standard-streams-v1-final-test.log`; clean SDK `dist` passed with
   agent log `TotalCrossSDK/agent-logs/20260917-200150-clean-agent.log`; the
