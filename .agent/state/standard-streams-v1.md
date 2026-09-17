@@ -6,19 +6,20 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Standard streams V1 state
 
-- Active milestone/slice: Milestone 5 — corrected final handoff reconciliation.
+- Active milestone/slice: Milestone 5 — corrected handoff complete.
 - Branch: `feat/standard-streams-v1`.
 - Base SHA: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 - Last implementation commit: `a0011d954` (`test(sdk): cover corrected stream
   semantics`); preceding artifact fix is `e36203795`, runtime fix is
   `cfeb4f51c`, and plan consolidation is `4d0ded3db`.
-- Earlier handoff commits remain `535e3f14a`, `39dcb0b41`, and `c3cba7e9b`;
-  corrected final documentation is pending.
+- Correction closure commit: `888537b29` (`docs(agent): close standard
+  streams v1 plan`); earlier handoff commits remain `535e3f14a`, `39dcb0b41`,
+  and `c3cba7e9b`.
 - Active paths: corrected Java stream semantics, shared legacy writer/backend
   semantics, artifact boundaries, bounded plan/reference artifacts, smoke
   fixture/runner, and final handoff files.
-- Next concrete action: commit the corrected plan/evidence/archive/report;
-  then record the actual final HEAD and leave task-scoped paths clean.
+- Next concrete action: none for V1; leave the task-scoped paths clean and
+  retain the recorded platform/V2 deferrals.
 - Focused validation completed: corrected focused SDK tests passed with agent
   log `TotalCrossSDK/agent-logs/20260917-203241-test-agent.log`; the dedicated
   artifact-boundary task passed with agent log
@@ -31,7 +32,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   `/tmp/tc-standard-streams-v1-corrected-macos-build.log`; corrected native
   smoke passed with agent log
   `TotalCrossSDK/agent-logs/20260917-203407-runStandardStreamsSmokeMacOS-agent.log`.
-  Headers, diff, static, and bounded-size checks remain required at closure.
+  Header, diff, static, bounded-size, and commit-message audits passed at
+  closure; the two historical M0/M1 message deviations remain documented.
 - Deferred validation: Windows, Linux, Android, and iOS builds remain forbidden
   by the active plan. Full image benchmarks remain out of scope.
 - Blockers/discoveries: the Milestone 0 and Milestone 1 commit-message checks
@@ -45,8 +47,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   the oversized plan into bounded artifacts. Existing unrelated untracked
   files and benchmark artifacts remain untouched.
 - The supplied plan was already 39,677 bytes and 1,287 lines, above the
-  plan's soft size guideline; it was preserved as user-provided input. The
-  current reconciled file is 40,760 bytes and 1,303 lines.
+  plan's soft size guideline; it was consolidated rather than discarded. The
+  current active plan is 11,739 bytes and 261 lines, and its technical
+  reference is 6,446 bytes and 145 lines.
 - Active decisions: standard-stream close is logical and never closes the
   shared legacy file; auto-flush is logical while explicit `flush()` is
   durable; `Vm.debug` remains a separate debug command path.
