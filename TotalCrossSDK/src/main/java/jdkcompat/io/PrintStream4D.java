@@ -25,6 +25,9 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
 
   public PrintStream4D(OutputStream out, boolean autoFlush) {
     super(out);
+    if (out == null) {
+      throw new NullPointerException("out");
+    }
     this.autoFlush = autoFlush;
   }
 
@@ -97,7 +100,10 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
   }
 
   public void print(char[] value) {
-    print(value == null ? null : new String(value));
+    if (value == null) {
+      throw new NullPointerException("value");
+    }
+    print(new String(value));
   }
 
   public void print(String value) {
@@ -137,7 +143,10 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
   }
 
   public void println(char[] value) {
-    printlnValue(value == null ? null : new String(value), true);
+    if (value == null) {
+      throw new NullPointerException("value");
+    }
+    printlnValue(new String(value), true);
   }
 
   public void println(String value) {
@@ -162,8 +171,11 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
 
   @Override
   public PrintStream4D append(CharSequence value, int start, int end) {
-    String text = String.valueOf(value);
-    print(text.substring(start, end));
+    CharSequence text = value == null ? "null" : value;
+    if (start < 0 || end < start || end > text.length()) {
+      throw new IndexOutOfBoundsException();
+    }
+    print(text.subSequence(start, end).toString());
     return this;
   }
 
@@ -204,7 +216,8 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
   public boolean checkError() {
     flush();
     synchronized (lock) {
-      return errorFound;
+      return errorFound || (out instanceof java.io.PrintStream
+          && ((java.io.PrintStream) out).checkError());
     }
   }
 
@@ -219,7 +232,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
   }
 
   private void writeString(String value) {
-    byte[] bytes = utf8(String.valueOf(value));
+    byte[] bytes = encode(value);
     synchronized (lock) {
       if (!ensureOpen()) {
         return;
@@ -242,10 +255,14 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
       }
       try {
         if (hasValue) {
-          byte[] bytes = utf8(String.valueOf(value));
-          out.write(bytes, 0, bytes.length);
+          byte[] bytes = encode(value);
+          byte[] record = new byte[bytes.length + 1];
+          System.arraycopy(bytes, 0, record, 0, bytes.length);
+          record[bytes.length] = '\n';
+          out.write(record, 0, record.length);
+        } else {
+          out.write('\n');
         }
-        out.write('\n');
         if (autoFlush) {
           logicalFlush();
         }
@@ -273,6 +290,14 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
 
   private static boolean containsNewline(String value) {
     return value != null && value.indexOf('\n') >= 0;
+  }
+
+  private byte[] encode(String value) {
+    String text = String.valueOf(value);
+    if (!(out instanceof VmStandardOutputStream)) {
+      return text.getBytes();
+    }
+    return utf8(text);
   }
 
   private static byte[] utf8(String value) {

@@ -56,12 +56,32 @@ class PrintStream4DTest {
     stream.println(3.0f);
     stream.println(4.0d);
     stream.println(new char[] { 'a', 'b' });
-    stream.println((char[]) null);
     stream.println("text");
     stream.println((String) null);
     stream.println((Object) null);
 
-    assertEquals("\nfalse\nc\n1\n2\n3.0\n4.0\nab\nnull\ntext\nnull\nnull\n", text(bytes));
+    assertEquals("\nfalse\nc\n1\n2\n3.0\n4.0\nab\ntext\nnull\nnull\n", text(bytes));
+  }
+
+  @Test
+  void charArrayNullMatchesPrintStreamContract() {
+    PrintStream4D stream = new PrintStream4D(new ByteArrayOutputStream());
+
+    assertThrows(NullPointerException.class, () -> stream.print((char[]) null));
+    assertThrows(NullPointerException.class, () -> stream.println((char[]) null));
+  }
+
+  @Test
+  void printlnUsesOneUnderlyingWriteForEachRecord() {
+    RecordingOutputStream output = new RecordingOutputStream();
+    PrintStream4D stream = new PrintStream4D(output);
+
+    stream.println("atomic");
+    stream.println(7);
+    stream.println();
+
+    assertEquals(3, output.writeCalls);
+    assertEquals("atomic\n7\n\n", text(output));
   }
 
   @Test
@@ -145,6 +165,21 @@ class PrintStream4DTest {
     assertFalse(stream.checkError());
   }
 
+  @Test
+  void checkErrorIncludesUnderlyingPrintStreamTrouble() {
+    java.io.PrintStream underlying = new java.io.PrintStream(new FailingOutputStream());
+    underlying.print("fails");
+    assertTrue(underlying.checkError());
+
+    PrintStream4D stream = new PrintStream4D(underlying);
+    assertTrue(stream.checkError());
+  }
+
+  @Test
+  void constructorRejectsNullOutput() {
+    assertThrows(NullPointerException.class, () -> new PrintStream4D((OutputStream) null));
+  }
+
   private static String text(ByteArrayOutputStream bytes) {
     return new String(bytes.toByteArray(), StandardCharsets.UTF_8);
   }
@@ -156,6 +191,22 @@ class PrintStream4DTest {
     public void flush() throws IOException {
       flushes++;
       super.flush();
+    }
+  }
+
+  private static final class RecordingOutputStream extends ByteArrayOutputStream {
+    private int writeCalls;
+
+    @Override
+    public void write(byte[] bytes, int offset, int length) {
+      writeCalls++;
+      super.write(bytes, offset, length);
+    }
+
+    @Override
+    public void write(int value) {
+      writeCalls++;
+      super.write(value);
     }
   }
 
