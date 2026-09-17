@@ -61,9 +61,9 @@ Inspect only the active paths named in state before expanding the investigation.
   and prove standard-stream routing.
 - [x] M4: pass the original final SDK/macOS gate and produce the initial
   handoff artifacts.
-- [ ] M5: apply the review corrections, split the oversized plan into bounded
-  plan/reference/history artifacts, rerun the required final gate, and update
-  the final HEAD records.
+- [x] 2026-09-17 M5: applied the review corrections, split the oversized plan
+  into bounded plan/reference/history artifacts, reran the required final
+  SDK/macOS/smoke gate, and prepared the final HEAD records.
 
 ## Current Architecture and Scope
 
@@ -243,11 +243,18 @@ Update state after each logical correction slice and append compact evidence.
 
 ## Outcomes & Retrospective
 
-At final completion record the corrected contract, the five required platform
-targets (POSIX/Linux, Windows, Android, macOS, and iOS, with a shared Darwin
-adapter), the one locally built/smoke-tested target (macOS), deferred platform
-validation, and intentionally absent V2 formatter/rolling-log work. State
-whether the benchmark can capture native stdout/stderr without `Vm.debug()`.
+V1 now preserves desktop macOS stdout-only `Vm.debug`, Windows legacy
+`fflush`, POSIX/Android legacy durability, atomic value-bearing `println`
+records, JDK-compatible null/error behavior, standard-only UTF-8, the internal
+bridge artifact boundary, and durable Windows desktop explicit flush. The five
+required targets are POSIX/Linux, Windows, Android, macOS, and iOS, with a
+shared Darwin adapter; only macOS was locally built and smoke-tested. Formatter
+and rolling-log work remains intentionally absent. The benchmark can capture
+native stdout/stderr without `Vm.debug()`.
+
+The oversized supplied plan was consolidated into this bounded active plan and
+`.agent/reference/standard-streams-v1-reference.md`; history, evidence, and
+editorial handoff remain in their bounded supporting files.
 
 The bounded technical reference, history archive, evidence index, and editorial
 report are required final artifacts. Every new plan-related file must remain
