@@ -586,6 +586,7 @@ set(SOURCES
     ${TC_SRCDIR}/util/jchar.c
     ${TC_SRCDIR}/util/datastructures.c
     ${TC_SRCDIR}/util/debug.c
+    ${TC_SRCDIR}/util/standard_stream.c
     ${TC_SRCDIR}/util/tcz.c
     ${TC_SRCDIR}/util/utils.c
     ${TC_SRCDIR}/util/dlmalloc.c
@@ -648,6 +649,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/sys/CharacterConverter.c
     ${TC_SRCDIR}/nm/sys/Registry.c
     ${TC_SRCDIR}/nm/sys/Vm.c
+    ${TC_SRCDIR}/nm/sys/VmStandardOutputStream.c
     ${TC_SRCDIR}/nm/sys/Time.c
     ${TC_SRCDIR}/nm/sys/Convert.c
 
