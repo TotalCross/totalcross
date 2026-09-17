@@ -605,6 +605,9 @@ tasks.register('runStandardStreamsSmokeMacOS', Exec) {
             'standard-out-pre-erase:discard',
             'standard-out-post-erase',
             'standard-out-disabled',
+            'legacy-pre-erase',
+            '!erase debug!',
+            'legacy-post-erase',
             'fixture=StandardStreamsSmokeApp,overallPass=true'
         ]
         def requiredError = [
@@ -613,16 +616,18 @@ tasks.register('runStandardStreamsSmokeMacOS', Exec) {
             'standard-err-disabled'
         ]
         def requiredFile = [
+            'standard-out-pre-erase:discard',
+            'standard-err-pre-erase:discard',
             'standard-out-post-erase',
             'standard-err-post-erase',
             '!erase debug!',
-            'legacy-post-erase'
+            'standard-out-disabled',
+            'standard-err-disabled'
         ]
         def absentFile = [
-            'standard-out-pre-erase:discard',
-            'standard-err-pre-erase:discard',
             'legacy-pre-erase',
-            'legacy-disabled'
+            'legacy-disabled',
+            'legacy-post-erase'
         ]
         def missing = requiredOutput.findAll { !standardOutputText.contains(it) }
         missing += requiredError.findAll { !standardErrorText.contains(it) }

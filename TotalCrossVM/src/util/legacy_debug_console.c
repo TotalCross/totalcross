@@ -8,6 +8,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(WIN32) && !defined(WINCE)
+#include <io.h>
+#endif
+
 #if defined(WINCE) || defined(WIN32)
 static CRITICAL_SECTION legacyDebugConsoleMutex;
 #else
@@ -65,6 +69,13 @@ static bool flushLegacyDebugFileLocked(bool durable)
 #if !defined(WINCE) && !defined(WIN32)
    if (durable && fsync(fileno(legacyDebugFile)) != 0)
       return false;
+#elif defined(WIN32) && !defined(WINCE)
+   if (durable)
+   {
+      HANDLE handle = (HANDLE)_get_osfhandle(_fileno(legacyDebugFile));
+      if (handle == INVALID_HANDLE_VALUE || !FlushFileBuffers(handle))
+         return false;
+   }
 #else
    UNUSED(durable);
 #endif
@@ -168,8 +179,8 @@ bool legacyDebugConsoleDebugLine(const char *line, const char *lineEnding, bool 
    result = openLegacyDebugFileLocked()
       && fputs(line, legacyDebugFile) >= 0
       && fputs(lineEnding, legacyDebugFile) >= 0;
-   if (result && durable)
-      result = flushLegacyDebugFileLocked(true);
+   if (result)
+      result = flushLegacyDebugFileLocked(durable);
    unlockLegacyDebugConsole();
    return result;
 }
