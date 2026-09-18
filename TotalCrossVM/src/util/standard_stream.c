@@ -30,7 +30,7 @@ static bool validStandardStream(int32 stream)
    return stream == STANDARD_STREAM_OUT || stream == STANDARD_STREAM_ERR;
 }
 
-bool standardStreamInit()
+/* bool */ int32 standardStreamInit()
 {
    int result;
 
@@ -91,7 +91,7 @@ void standardStreamDestroy()
    standardStreamInitialized = false;
 }
 
-bool standardStreamWrite(int32 stream, const uint8 *bytes, int32 length)
+/* bool */ int32 standardStreamWrite(int32 stream, const uint8 *bytes, int32 length)
 {
    bool platformResult;
    bool legacyResult;
@@ -112,7 +112,7 @@ bool standardStreamWrite(int32 stream, const uint8 *bytes, int32 length)
    return platformResult && legacyResult;
 }
 
-bool standardStreamFlush(int32 stream, bool durable)
+/* bool */ int32 standardStreamFlush(int32 stream, /* bool */ int32 durable)
 {
    bool platformResult;
    bool legacyResult;
@@ -133,7 +133,7 @@ bool standardStreamFlush(int32 stream, bool durable)
    return platformResult && legacyResult;
 }
 
-bool standardStreamClose(int32 stream)
+/* bool */ int32 standardStreamClose(int32 stream)
 {
    bool platformResult;
    bool legacyResult;
