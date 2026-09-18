@@ -16,11 +16,11 @@ enum {
    STANDARD_STREAM_ERR = 1
 };
 
-bool standardStreamInit();
+/* bool */ int32 standardStreamInit();
 void standardStreamDestroy();
-bool standardStreamWrite(int32 stream, const uint8 *bytes, int32 length);
-bool standardStreamFlush(int32 stream, bool durable);
-bool standardStreamClose(int32 stream);
+/* bool */ int32 standardStreamWrite(int32 stream, const uint8 *bytes, int32 length);
+/* bool */ int32 standardStreamFlush(int32 stream, /* bool */ int32 durable);
+/* bool */ int32 standardStreamClose(int32 stream);
 
 #ifdef __cplusplus
 }
