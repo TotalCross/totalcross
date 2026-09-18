@@ -6,19 +6,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Standard streams V1 state
 
-- Active milestone/slice: Milestone 6 — closed-flush compatibility correction.
+- Active milestone/slice: Milestone 6 — closed-flush correction complete.
 - Branch: `feat/standard-streams-v1`.
 - Base SHA: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 - Last implementation commit: `cd5d5a0d8` (`test(sdk): update closed flush
   expectation`); the behavior fix is `b662c3939`, and preceding implementation
   commits include `a0011d954`, `e36203795`, and `cfeb4f51c`.
-- Earlier correction closure is `888537b29` (`docs(agent): close standard
-  streams v1 plan`); the closed-flush documentation closure is pending.
+- Correction documentation closure is `72e34070d` (`docs(agent): record closed
+  flush correction`); earlier closure is `888537b29`.
 - Active paths: corrected Java stream semantics, shared legacy writer/backend
   semantics, artifact boundaries, bounded plan/reference artifacts, smoke
   fixture/runner, and final handoff files.
-- Next concrete action: update the bounded correction records, commit the
-  documentation closure, and leave task-scoped paths clean.
+- Next concrete action: none; leave task-scoped paths clean and retain the
+  recorded platform/V2 deferrals.
 - Focused validation completed: corrected focused SDK tests passed with agent
   log `TotalCrossSDK/agent-logs/20260917-203241-test-agent.log`; the dedicated
   artifact-boundary task passed with agent log
@@ -36,6 +36,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Closed-flush focused rerun passed with agent log
   `TotalCrossSDK/agent-logs/20260917-210927-test-agent.log`; no native rebuild
   was needed because the correction changed only SDK Java/test files.
+- The correction records are ready for final HEAD bookkeeping; no native or
+  packaging validation is required for this SDK-only change.
 - Deferred validation: Windows, Linux, Android, and iOS builds remain forbidden
   by the active plan. Full image benchmarks remain out of scope.
 - Blockers/discoveries: the Milestone 0 and Milestone 1 commit-message checks

@@ -87,6 +87,7 @@ Review found that `PrintStream4D.flush()` silently returned after close. Commit
 commit `cd5d5a0d8` updates the existing close test and preserves the required
 close/reset/flush/`checkError()` regression. The focused `PrintStream4DTest`
 and `System4DTest` rerun passed. No native source or architecture changed.
+The correction documentation was closed in `72e34070d`.
 
 ## Decisions preserved
 
