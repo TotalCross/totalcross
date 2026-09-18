@@ -186,6 +186,58 @@ final class NativeImageBacking extends ImageBacking {
     return writePixelsCopyBytesTest();
   }
 
+  static long writePixelsRejectInvalidTargetOrSourceForTest() {
+    return writePixelsRejectInvalidTargetOrSourceTest();
+  }
+
+  static long writePixelsRejectAlphaMaskForTest() {
+    return writePixelsRejectAlphaMaskTest();
+  }
+
+  static long writePixelsRejectMatrixForTest() {
+    return writePixelsRejectMatrixTest();
+  }
+
+  static long writePixelsRejectSaveCountForTest() {
+    return writePixelsRejectSaveCountTest();
+  }
+
+  static long writePixelsRejectSourceRectForTest() {
+    return writePixelsRejectSourceRectTest();
+  }
+
+  static long writePixelsRejectSizeMismatchForTest() {
+    return writePixelsRejectSizeMismatchTest();
+  }
+
+  static long writePixelsRejectFractionalDestinationForTest() {
+    return writePixelsRejectFractionalDestinationTest();
+  }
+
+  static long writePixelsRejectDestinationBoundsForTest() {
+    return writePixelsRejectDestinationBoundsTest();
+  }
+
+  static long writePixelsRejectOpacityForTest() {
+    return writePixelsRejectOpacityTest();
+  }
+
+  static long writePixelsRejectSourcePixelsForTest() {
+    return writePixelsRejectSourcePixelsTest();
+  }
+
+  static long writePixelsRejectWriteFailureForTest() {
+    return writePixelsRejectWriteFailureTest();
+  }
+
+  static long writePixelsDeviceOneToOneCandidatesForTest() {
+    return writePixelsDeviceOneToOneCandidatesTest();
+  }
+
+  static long writePixelsDeviceOneToOneKnownOpaqueCandidatesForTest() {
+    return writePixelsDeviceOneToOneKnownOpaqueCandidatesTest();
+  }
+
   static long genericGeometryDrawsForTest() {
     return genericGeometryDrawsTest();
   }
@@ -586,6 +638,71 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long writePixelsCopyBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectInvalidTargetOrSourceTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectAlphaMaskTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectMatrixTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectSaveCountTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectSourceRectTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectSizeMismatchTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectFractionalDestinationTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectDestinationBoundsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectOpacityTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectSourcePixelsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRejectWriteFailureTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsDeviceOneToOneCandidatesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsDeviceOneToOneKnownOpaqueCandidatesTest() {
     return 0;
   }
 
