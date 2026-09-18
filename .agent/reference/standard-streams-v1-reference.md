@@ -47,7 +47,8 @@ The compatibility rules are:
 - I/O failures set trouble and do not escape ordinary print operations;
 - output after close sets trouble; close is idempotent;
 - `checkError()` flushes and includes trouble reported by an underlying
-  `java.io.PrintStream`;
+  `java.io.PrintStream` while open; after a successful close it reports the
+  existing trouble state without invoking closed-stream flush behavior;
 - every value-bearing `println` creates one `value + '\n'` byte record and
   makes one underlying write; `println()` makes one newline write.
 
