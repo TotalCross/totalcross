@@ -12,8 +12,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Last implementation commit: `cd5d5a0d8` (`test(sdk): update closed flush
   expectation`); the behavior fix is `b662c3939`, and preceding implementation
   commits include `a0011d954`, `e36203795`, and `cfeb4f51c`.
-- Correction documentation closure is `72e34070d` (`docs(agent): record closed
-  flush correction`); earlier closure is `888537b29`.
+- Correction documentation closure is `37d4c0ec8` (`docs(agent): finalize
+  closed flush handoff`); earlier closure is `72e34070d`.
 - Active paths: corrected Java stream semantics, shared legacy writer/backend
   semantics, artifact boundaries, bounded plan/reference artifacts, smoke
   fixture/runner, and final handoff files.
@@ -36,8 +36,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Closed-flush focused rerun passed with agent log
   `TotalCrossSDK/agent-logs/20260917-210927-test-agent.log`; no native rebuild
   was needed because the correction changed only SDK Java/test files.
-- The correction records are ready for final HEAD bookkeeping; no native or
-  packaging validation is required for this SDK-only change.
+- Final functional/documentation HEAD before this state-only reconciliation is
+  `37d4c0ec8`; no native or packaging validation is required for this SDK-only
+  change.
 - Deferred validation: Windows, Linux, Android, and iOS builds remain forbidden
   by the active plan. Full image benchmarks remain out of scope.
 - Blockers/discoveries: the Milestone 0 and Milestone 1 commit-message checks
@@ -53,7 +54,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   files and benchmark artifacts remain untouched.
 - The supplied plan was already 39,677 bytes and 1,287 lines, above the
   plan's soft size guideline; it was consolidated rather than discarded. The
-  current active plan is 11,739 bytes and 261 lines, and its technical
+  current active plan is 12,116 bytes and 267 lines, and its technical
   reference is 6,446 bytes and 145 lines.
 - Active decisions: standard-stream close is logical and never closes the
   shared legacy file; auto-flush is logical while explicit `flush()` is
