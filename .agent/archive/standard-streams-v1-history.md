@@ -100,7 +100,7 @@ The correction documentation was closed in `72e34070d`.
 - `Vm.debug` retains debug commands and disabling semantics.
 - Windows, Linux, Android, and iOS builds were not run because the plan
   explicitly forbids them. Full image benchmark matrices were not part of V1.
-- The active plan is 11,288 bytes/254 lines and the technical reference is
+- The active plan is 12,116 bytes/267 lines and the technical reference is
   6,446 bytes/145 lines; both satisfy the bounded plan-artifact guideline.
 
 ## Evidence

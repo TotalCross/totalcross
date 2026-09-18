@@ -67,7 +67,7 @@ Inspect only the active paths named in state before expanding the investigation.
 - [x] 2026-09-17 M6: aligned `PrintStream4D.flush()` after close with JDK
   trouble reporting, updated the stale close expectation, and passed the
   focused SDK regression tests in `b662c3939` and `cd5d5a0d8`; recorded the
-  correction in documentation commit `72e34070d`.
+  correction in documentation commit `37d4c0ec8`.
 
 ## Current Architecture and Scope
 
