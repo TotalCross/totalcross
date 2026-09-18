@@ -8,11 +8,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone: Milestone 1, Slice 1A — native writePixels diagnostics.
-- Last checkpoint commit: `73519be8b`.
-- Next action: inspect the existing Skia backing accounting declaration and
-  implementation, then add policy-neutral writePixels rejection and candidate
-  counters through the existing accounting bridge.
+- Milestone: Milestone 1, Slice 1B — native JPEG timing and tier diagnostics.
+- Last checkpoint commit: `12490a1ab`.
+- Next action: add gated native JPEG timing, actual denominator buckets, and
+  requested-mode counters through `ImageTestAccounting_c.h`, `Image.java`, and
+  `JpegLoader.c`.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Starting HEAD: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 
@@ -43,6 +43,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   the plan forbids amend/rewrite; future commit bodies will be wrapped and
   separated correctly.
 - No SDK/native build or smoke is allowed at bootstrap.
+- Slice 1A static/header/whitespace validation passed.
+- Milestone 1 SDK/native gate is deferred until Slice 1B is complete.
 
 ## Decisions still active
 

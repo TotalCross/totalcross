@@ -19,3 +19,13 @@ defers verbose output to an external log when one exists.
 - Commit-message checker: reported one overlong line because the body used
   literal `\\n` escapes; no amend/rewrite was performed per plan.
 - Build/smoke: intentionally not run at bootstrap.
+
+## 2026-09-18 — Milestone 1 Slice 1A
+
+- Commit: `12490a1ab` (`perf(vm): diagnose opaque write pixel fallbacks`).
+- Delivered: gated structural/downstream writePixels rejection counters,
+  device one-to-one candidate counters, and Java/native accounting getters.
+- Static checks: focused header validation and `git diff --check` passed.
+- SDK/native build and smoke: deferred to the Milestone 1 gate.
+- Commit-message checker: the body exceeded 80 columns; no amend/rewrite was
+  performed per plan.
