@@ -210,6 +210,19 @@ class PrintStream4DTest {
   }
 
   @Test
+  void closedCheckErrorIgnoresUnderlyingPrintStreamTrouble() {
+    java.io.PrintStream underlying = new java.io.PrintStream(new FailingOutputStream());
+    underlying.print("fails");
+    assertTrue(underlying.checkError());
+
+    TestPrintStream stream = new TestPrintStream(underlying);
+    stream.close();
+    stream.resetError();
+
+    assertFalse(stream.checkError());
+  }
+
+  @Test
   void constructorRejectsNullOutput() {
     assertThrows(NullPointerException.class, () -> new PrintStream4D((OutputStream) null));
   }
