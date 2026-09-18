@@ -120,9 +120,9 @@ successful loader allocation/storage/backing work from the Plan 1 start point.
 
 ## Progress
 
-- [ ] Bootstrap Plan 2 state/evidence and verify Plan 1 preconditions.
-- [ ] Milestone 1: build/package exact final macOS revision and run final smoke.
-- [ ] Milestone 2: execute full benchmark, validate, summarize, commit closeout.
+- [x] Bootstrap Plan 2 state/evidence and verify Plan 1 preconditions.
+- [x] Milestone 1: build/package exact final macOS revision and run final smoke.
+- [x] Milestone 2: execute full benchmark, validate, summarize, commit closeout.
 
 ## Milestone 1 — exact final macOS build and package
 
@@ -393,18 +393,23 @@ impact, validation, and important deferrals. Do not push.
 
 ## Outcomes & Retrospective
 
-At completion record:
+Plan 2 completed successfully on benchmark revision `a43535e48`.
 
-- exact build/package hashes;
-- full benchmark PASS/failure counts;
-- raw output and ZIP paths/hashes;
-- observed writePixels rejection distribution;
-- observed device-one-to-one candidate count;
-- observed JPEG tier/time distribution;
-- whether the expected macOS half dominance was confirmed;
-- deviations/retries.
-
-No optimization policy change belongs in this plan.
+- SDK and macOS ARM64 `tcvm`/`Launcher` build/package passed; hashes and
+  absolute output paths are recorded in state, evidence, and summary.
+- The scroll suite produced 126/126 PASS rows with unique matrix keys. The
+  existing decode suite produced 90 processes, 59,670 detailed image rows,
+  and zero failed image rows.
+- Every run passed attempts/hits/fallback, candidate, JPEG bucket, and frame
+  delta invariants. Mask 4 remained `ATTEMPTED_NO_HIT`; matrix and save-count
+  rejections were present in every mask-4 run, with overlapping reasons as
+  defined by Plan 1.
+- Half-resolution decoding dominated observed JPEG work: scroll-off runs were
+  almost entirely half, and prefetch-on runs were 655 half plus 5 full; no
+  quarter, eighth, or other bucket was observed in the selected cells.
+- The only deviation was an initial self-test invocation missing `--bundle`;
+  the prescribed invocation passed. The full benchmark required no retry.
+- No optimization policy or other platform was changed.
 
 ## Revision Note
 

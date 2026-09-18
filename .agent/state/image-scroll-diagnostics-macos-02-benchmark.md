@@ -8,13 +8,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Plan 2 bootstrap complete; final build/package milestone is next.
+- Plan 2 completed successfully on benchmark revision `a43535e48`.
+- Closeout artifact commit: pending in this slice.
 - Required branch: `perf/image-decode-distributed-benchmark`.
-- Starting HEAD: `d0c8aabf97900db2dc75e1d3c3c9c58bfb78c018`.
-- Plan 1 preconditions passed; no implementation paths changed afterward.
 - Corpus: `/Users/flsobral/Downloads/win32/win32`.
-- Next action: build SDK and macOS ARM64 `tcvm`/`Launcher`, package, and run
-  the final self-test/smoke gate before the full benchmark.
+- Final raw results and combined ZIP are recorded in the evidence, summary,
+  and editorial report.
 
 ## Working set
 
@@ -37,15 +36,44 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Progress
 
 - [x] Bootstrap state/evidence and verify Plan 1/corpus preconditions.
-- [ ] Build/package the exact macOS revision and pass the final smoke gate.
-- [ ] Run the complete 126-process scroll and 90-process decode suite.
-- [ ] Validate, summarize, and commit the compact closeout artifacts.
+- [x] Build/package the exact macOS revision and pass the final smoke gate.
+- [x] Run the complete 126-process scroll and 90-process decode suite.
+- [x] Validate, summarize, and prepare the compact closeout artifacts.
 
-## Validation and deferrals
+## Validation and results
 
-- No Plan 2 SDK/native build or smoke has run yet.
-- No other platform or platform matrix build is allowed.
-- Raw benchmark output, logs, and ZIPs remain outside Git.
+- SDK package passed; log `/tmp/image-scroll-diagnostics-plan2-sdk-package.log`.
+- macOS ARM64 configure/build passed; logs
+  `/tmp/image-scroll-diagnostics-plan2-cmake-configure.log` and
+  `/tmp/image-scroll-diagnostics-plan2-cmake-build.log`.
+- Fresh SDK ZIP and macOS-only bundle passed; logs
+  `/tmp/image-scroll-diagnostics-plan2-sdk-zip.log` and
+  `/tmp/image-scroll-diagnostics-plan2-package-bundle.log`.
+- Self-test, four smokes, mask-4 off/on, and decode self-test passed; logs
+  `/tmp/image-scroll-diagnostics-plan2-self-test.log`,
+  `/tmp/image-scroll-diagnostics-plan2-smokes.log`,
+  `/tmp/image-scroll-diagnostics-plan2-mask4.log`, and
+  `/tmp/image-scroll-diagnostics-plan2-decode-self-test.log`.
+- Full suite passed in 2,242 seconds; log
+  `/tmp/image-scroll-diagnostics-plan2-full.log`.
+- Scroll: 126/126 PASS rows and unique keys. Decode: 90/90 processes,
+  59,670 detailed image rows, zero failed image rows.
+- Independent invariant audit passed for every scroll run.
+- Benchmark revision hashes: SDK ZIP
+  `d9055df2dfad516d1fce114dcd370405c68b2d6706f2ac97da73d4d4e4f01fc7`, SDK
+  JAR `0eb93da0a557010e992b00e611533f1f1ac19a580c128eb7fc1af0736a98c63a`,
+  dylib `caec5b46d1b58ce65cbe7e43eeb8e25e13fe6a493df7f81b49f1fb2d81b649b2`,
+  Launcher `ef6f924f3beda71e6615badf94dd93d5dd167a332250aa22e6dc3855cbcf384a`.
+- Combined ZIP SHA-256:
+  `2eb68a53125b25cec27cd46fdcb1b961ec59c80a99139228a2f4df57dbd8ae45`.
+- Raw results:
+  `/private/tmp/image-scroll-diagnostics-plan2-a43535e/bundle/image-scroll-benchmark-macos-arm64/results`.
+- Combined ZIP:
+  `/private/tmp/image-scroll-diagnostics-plan2-a43535e/bundle/image-scroll-benchmark-macos-arm64/results/totalcross-image-benchmark-results-1789775641349415000.zip`.
+- Initial self-test invocation omitted `--bundle`; the corrected invocation
+  passed. The full benchmark required no retry.
+- No other platform or platform matrix build ran. Raw output remains outside
+  Git; compact artifacts are the only committed benchmark results.
 
 ## Deliberate local files
 
