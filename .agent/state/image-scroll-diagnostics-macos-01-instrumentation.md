@@ -8,10 +8,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone: Milestone 1 gate — SDK and macOS ARM64 native builds.
-- Last checkpoint commit: `0563e08b8`.
-- Next action: run focused SDK compilation, SDK distribution build, and only
-  the macOS ARM64 `tcvm` and `Launcher` native targets.
+- Milestone: Milestone 2, Slice 2A — benchmark phase/frame integration.
+- Last checkpoint commit: `b45df2945`.
+- Next action: extend `ImageScrollRealWorkloadBenchmarkApp` with prefetch,
+  scroll, frame JPEG snapshots, detailed writePixels counters, status fixes,
+  and consistency checks.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Starting HEAD: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 
@@ -45,7 +46,16 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Slice 1A static/header/whitespace validation passed.
 - Milestone 1 SDK/native gate is deferred until Slice 1B is complete.
 - Slice 1B static/header/whitespace validation passed.
-- No native or SDK build has failed or been run yet for this milestone.
+- Focused SDK image tests passed; wrapper log:
+  `/tmp/image-scroll-diagnostics-sdk-image-tests.log`.
+- SDK distribution build passed; wrapper log:
+  `/tmp/image-scroll-diagnostics-sdk-dist.log`.
+- macOS ARM64 CMake/Ninja gate passed for `tcvm` and `Launcher`; logs:
+  `/tmp/image-scroll-diagnostics-cmake-configure.log` and
+  `/tmp/image-scroll-diagnostics-cmake-build.log`.
+- No other platform was built. Gate warnings were existing compiler/linker
+  warnings and did not prevent the two requested targets from linking.
+- Milestone 1 accepted; no benchmark smoke has run yet.
 
 ## Decisions still active
 

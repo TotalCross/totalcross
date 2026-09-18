@@ -37,3 +37,17 @@ defers verbose output to an external log when one exists.
   requested-mode success counts, and JPEG failure accounting.
 - Static checks: focused header validation and `git diff --check` passed.
 - Milestone 1 gate: next action; SDK/native builds remain pending.
+
+## 2026-09-18 — Milestone 1 gate
+
+- Focused SDK tests: passed (`totalcross.ui.image.*`). Wrapper log:
+  `/tmp/image-scroll-diagnostics-sdk-image-tests.log`.
+- SDK distribution: passed with `dist -x test`. Wrapper log:
+  `/tmp/image-scroll-diagnostics-sdk-dist.log`.
+- Native configure: passed for macOS ARM64. Log:
+  `/tmp/image-scroll-diagnostics-cmake-configure.log`.
+- Native build: passed for only `tcvm` and `Launcher` (121/121). Log:
+  `/tmp/image-scroll-diagnostics-cmake-build.log`.
+- Warnings: existing compiler warnings and duplicate static-library linker
+  warnings; no task failure.
+- Platform scope: no Android, iOS, Windows, or Linux build was run.
