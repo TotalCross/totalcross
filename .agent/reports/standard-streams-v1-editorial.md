@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 The original corrected handoff is recorded at implementation/documentation
 closure commit `888537b29`; the closed-flush compatibility correction follows
-in `b662c3939` and `cd5d5a0d8`.
+in `b662c3939` and `cd5d5a0d8`, with documentation closure in `72e34070d`.
 
 ## Editorial Summary
 
