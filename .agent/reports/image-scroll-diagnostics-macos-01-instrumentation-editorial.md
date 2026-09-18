@@ -4,101 +4,137 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Editorial handoff — image-scroll diagnostics macOS instrumentation
+# Editorial Summary
 
-Plan 1 completed successfully. This factual handoff records the delivered
-diagnostics, validation, limitations, and next action without claiming an
-optimization result.
+Plan 1 completed successfully. It added policy-neutral diagnostics to the
+existing 663-image macOS image-scroll benchmark and passed the focused SDK,
+macOS ARM64, packaging, self-test, and smoke gates. No rendering, cache,
+JPEG-selection, or optimization policy changed. Plan 2 at
+`.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md` is the only next
+action.
 
-## Purpose / Big Picture
+## Original Plan versus Actual Outcome
 
-Instrument the existing 663-image macOS image-scroll benchmark for writePixels
-fallback classification and native JPEG timing. The work is diagnostic only:
-no render, cache, JPEG-selection, or optimization policy changed.
+The original plan was to explain why `RASTER_OPAQUE_WRITE_PIXELS` had attempts
+but no hits, and to measure native JPEG work and actual decode tiers during
+scroll, without changing runtime policy. The actual outcome delivered gated
+writePixels rejection and candidate accounting, actual JPEG denominator timing,
+prefetch-versus-scroll separation, per-frame deltas, compact summaries, and
+schema invariants. The full macOS benchmark matrix remains Plan 2 work.
 
-## Working Set and Resume Protocol
+## What Changed
 
-- Plan 1: `.agent/plans/image-scroll-diagnostics-macos-01-instrumentation.md`
-- State: `.agent/state/image-scroll-diagnostics-macos-01-instrumentation.md`
-- Evidence: `.agent/evidence/image-scroll-diagnostics-macos-01-instrumentation.md`
-- Next plan: `.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md`
-
-Read state first on resume; evidence is append-only. Plan 2 is the only next
-action after this closeout.
-
-## Progress
-
-- Milestone 1 delivered gated writePixels structural/downstream counters and
-  native JPEG denominator timing.
-- Milestone 2 delivered prefetch/scroll separation, per-frame deltas, compact
-  summaries, schema checks, and explicit attempt-based statuses.
-- The final correction restored the original disabled-accounting short circuit
-  while retaining independent rejection counters when accounting is enabled.
-
-## Current Architecture and Scope
-
-The existing `RASTER_OPAQUE_WRITE_PIXELS` path remains unchanged. Accounting is
-gated by `backingAccountingForTest`; mask 4 is authoritative for that feature.
-Detailed rejection/candidate counters cover regular `tryWritePixels*` calls.
-
-JPEG timing records actual denominator buckets, requested modes, failures, and
-prefetch versus scroll phase/frame deltas. The distributed schema validates
-attempt, hit, fallback, candidate, JPEG, and frame-sum invariants.
-
-## Plan of Work
-
-Plan 1 added only instrumentation, schema validation, and the private bridge
-names needed to expose it. The exact task commits include `e1c3bab55`
-(`fix(benchmark): gate write pixel diagnostics`) and `58699d768`
-(`docs(benchmark): add macos diagnostics benchmark plan`).
-
-## Decision Log
-
-- Disabled accounting preserves the original short-circuit evaluation.
-- Enabled accounting evaluates independent diagnostic rejection conditions.
-- Global attempts/hits/fallbacks may include `tryDirectImageCopy()` and
-  `tryDirectPhysicalCopy()` under composite masks; detailed counters do not.
-  Mask 4 remains the authoritative analysis mask.
-- The native resolver limitation was fixed by `f803d4a4d`; public wrappers and
+- Native writePixels accounting now exposes structural and downstream reasons,
+  observational physical-1:1 candidates, and existing attempt/hit/fallback
+  counters without changing eligibility or fallback control flow.
+- The final disabled-accounting short-circuit correction was implemented and
+  revalidated. With accounting disabled, the original short-circuit expression
+  is preserved; with accounting enabled, rejection conditions remain
+  independently observable.
+- JPEG accounting records actual denominator buckets, requested modes,
+  failures, nanoseconds, and prefetch/scroll phase and frame deltas.
+- The benchmark schema validates writePixels, JPEG, phase, and frame-sum
+  invariants.
+- The VM native resolver issue was fixed in `f803d4a4d`; public wrappers and
   output schema were unchanged.
 
-## Validation and Acceptance
+## Decisions and Trade-offs
 
-Passed: focused SDK image tests; SDK packaging; macOS ARM64 CMake configure;
-`tcvm`/`Launcher` build; macOS-only bundle packaging; bundle self-test; four
-prescribed smokes (`0/off`, `0/on`, `32799/off`, `32799/on`); and mask-4
-`off`/`on` runner-validated processes.
+Diagnostics remain gated by `backingAccountingForTest`, so normal applications
+do not pay for timing or diagnostic counter updates. Structural rejection
+counters are intentionally non-exclusive, and candidate counters are
+observational only; neither changes writePixels policy.
 
-Fresh mask-4 results reported attempts/hits/fallbacks of `220/0/220` off and
-`3414/0/3414` on; candidates were `198` and `3414`; both were
-`ATTEMPTED_NO_HIT`. JPEG/frame invariants passed, with prefetch JPEG count 660
-and scroll JPEG count 0 for mask 4/on.
+The JPEG timer includes allocation, libjpeg decompression, pixel/storage
+conversion, and native backing creation in the successful loader path. It is
+not a claim about pure IDCT time. Mask 4 remains the authoritative mask for
+`OPAQUE_WRITE_PIXELS` analysis.
 
-No other platform or full decode matrix was built; those are intentionally
-deferred to Plan 2.
+## Unexpected Problems and Discoveries
 
-## Risks and Open Questions
+The first packaged smoke found the VM's 32-character native resolver limit:
+long diagnostic getter names produced `NoSuchMethodError`, and two candidate
+names would have collided after truncation. The private bridge names were
+shortened consistently, and the macOS gate was rerun successfully.
 
-Composite-mask global counters are broader than the detailed regular-path
-counters. Do not interpret them as mask-4-only measurements. Plan 2 must retain
-this limitation in its report and use mask 4 for the authoritative feature
-analysis.
+The first package attempt ran out of disk space. After task-output cleanup and
+space being released, packaging and smokes completed successfully. No
+unrelated repository files were removed.
 
-## Idempotence and Recovery
+The preserved commits `e1c3bab55` and `3f0ba4067` contain body lines over the
+80-character checker limit. They were not amended because the plan forbids
+history rewriting. The later Plan 2 commit passed the checker; this exception
+is recorded factually rather than hidden or rewritten.
 
-Task-specific build/package directories and raw smoke output were used. No
-unrelated repository files were removed; existing local changes remain
-preserved. Full logs and raw results remain outside Git under `/tmp`.
+## Validation and Measurable Results
 
-## Outcomes & Retrospective
+Focused SDK image tests, SDK packaging, macOS ARM64 CMake configure, and only
+the `tcvm` and `Launcher` targets passed. The macOS-only bundle package,
+self-test, prescribed smokes (`0/off`, `0/on`, `32799/off`, `32799/on`), and
+mask-4 `off`/`on` processes also passed.
 
-Plan 1 completed successfully. The resolver fix and complete rerun passed, the
-short-circuit fix passed its focused post-fix gate, and no rendering or
-optimization policy changed. The only material discovery was the VM's
-32-character native resolver limit, corrected before closeout.
+Final mask-4 evidence was:
 
-## Next Action
+- off: `220/0/220` attempts/hits/fallbacks and `198` physical-1:1 candidates;
+- on: `3414/0/3414` attempts/hits/fallbacks and `3414` candidates;
+- both runs: `ATTEMPTED_NO_HIT`.
 
-Execute Plan 2's full macOS diagnostics benchmark. It will build SDK/macOS
-only, preserve raw results outside Git, and record absolute raw-results and ZIP
-paths in its compact evidence and report.
+JPEG phase/frame invariants passed. For mask 4/on, prefetch recorded 660 JPEG
+decodes and scroll recorded 0. No Android, iOS, Windows, or Linux build ran,
+and the full decode matrix was not run.
+
+## Useful Evidence and Examples
+
+The final validation logs are under `/tmp`:
+
+- `/tmp/image-scroll-diagnostics-plan1-fix-sdk-tests.log`
+- `/tmp/image-scroll-diagnostics-plan1-fix-sdk-package.log`
+- `/tmp/image-scroll-diagnostics-plan1-fix-cmake-configure.log`
+- `/tmp/image-scroll-diagnostics-plan1-fix-cmake-build.log`
+- `/tmp/image-scroll-diagnostics-plan1-fix-self-test.log`
+- `/tmp/image-scroll-diagnostics-plan1-fix-smokes.log`
+- `/tmp/image-scroll-diagnostics-plan1-fix-mask4.log`
+
+The final macOS-only bundle output was
+`/tmp/image-scroll-diagnostics-plan1-fix/bundle/`. The SDK ZIP SHA-256 was
+`5fb07ada2df36d2267c43eace387b44e8f4de8a6570bbac4ec2beeeabf91338a`.
+
+## Limitations, Remaining Work, and Open Questions
+
+Global `writePixelsAttempts`, `writePixelsHits`, and `writePixelsFallbacks`
+may include `tryDirectImageCopy()` and `tryDirectPhysicalCopy()` under
+composite masks. The detailed rejection and candidate counters cover regular
+`tryWritePixels*`; mask 4 is authoritative for `OPAQUE_WRITE_PIXELS`.
+
+The smoke results do not establish a policy or performance improvement. The
+JPEG timer's broader loader-path scope must be retained in later analysis.
+Plan 2 must run the full macOS diagnostics benchmark, keep raw results outside
+Git, and report absolute raw-results and final ZIP paths. It is the only next
+action.
+
+## Possible Article Angles
+
+- How policy-neutral instrumentation explains a fallback-heavy raster path.
+- Why attempts, candidates, and successful writePixels hits are distinct.
+- How prefetch and scroll phases separate JPEG work without changing caching.
+- How a native resolver-name limit was discovered by a packaged smoke.
+
+## Suggested Narrative
+
+Start with the two unanswered diagnostic questions. Explain the gated counters,
+actual JPEG denominator timing, and phase/frame snapshots. Show how the first
+packaged smoke exposed the resolver limit, then describe the focused fix and
+successful rerun. Present the final mask-4 counts and the composite-mask
+limitation together, and close by handing off the full macOS measurement to
+Plan 2 without implying an optimization result.
+
+## Claims Requiring Human Review
+
+- Confirm that the wording “original short-circuit preserved” is appropriate
+  for the supported runtime configurations beyond the validated macOS gate.
+- Confirm that the composite-mask counter limitation is clear enough for any
+  article or benchmark interpretation.
+- Do not turn the 660 prefetch versus 0 scroll observation into a performance
+  or cache-policy claim; it is diagnostic evidence for mask 4/on only.
+- Confirm that the resolver fix is described as private bridge compatibility,
+  not as a public API change.
