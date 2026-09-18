@@ -305,6 +305,19 @@ bool writePixelsStructuralChecksPass(SkCanvas* targetCanvas, bool validSource,
                                      float srcLeft, float srcTop, float srcRight,
                                      float srcBottom, float dstLeft, float dstTop,
                                      float dstRight, float dstBottom, int32 alphaMask) {
+    if (!backingAccountingForTest) {
+        return targetCanvas != nullptr && validSource
+            && sourceWidth > 0 && sourceHeight > 0
+            && alphaMask == 255
+            && targetCanvas->getTotalMatrix().isIdentity()
+            && targetCanvas->getSaveCount() == 1
+            && srcLeft == 0.0f && srcTop == 0.0f
+            && srcRight == sourceWidth && srcBottom == sourceHeight
+            && srcRight - srcLeft == dstRight - dstLeft
+            && srcBottom - srcTop == dstBottom - dstTop
+            && integralWritePixelsCoordinate(dstLeft)
+            && integralWritePixelsCoordinate(dstTop);
+    }
     const bool validTargetOrSource = targetCanvas != nullptr && validSource
         && sourceWidth > 0 && sourceHeight > 0;
     const bool alphaMaskValid = alphaMask == 255;
