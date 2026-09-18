@@ -170,7 +170,7 @@ class PrintStream4DTest {
     stream.close();
     stream.close();
     assertEquals(1, output.flushes);
-    assertTrue(stream.checkError());
+    assertFalse(stream.checkError());
 
     stream.print("ignored");
     assertTrue(stream.checkError());
