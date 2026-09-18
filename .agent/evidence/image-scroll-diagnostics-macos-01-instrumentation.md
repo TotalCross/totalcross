@@ -14,4 +14,8 @@ defers verbose output to an external log when one exists.
 - Revision before work: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 - Branch check: passed for `perf/image-decode-distributed-benchmark`.
 - Scoped pre-existing change: the untracked task plan only.
+- Bootstrap commit: `73519be8b` (`docs(benchmark): plan macos image diagnostics`).
+- Header, size, and staged whitespace checks: passed.
+- Commit-message checker: reported one overlong line because the body used
+  literal `\\n` escapes; no amend/rewrite was performed per plan.
 - Build/smoke: intentionally not run at bootstrap.

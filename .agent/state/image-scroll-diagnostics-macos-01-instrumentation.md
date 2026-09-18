@@ -8,9 +8,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone: bootstrap checkpoint.
-- Next action: commit the plan, state, evidence, and editorial artifacts,
-  then begin Milestone 1 Slice 1A.
+- Milestone: Milestone 1, Slice 1A — native writePixels diagnostics.
+- Last checkpoint commit: `73519be8b`.
+- Next action: inspect the existing Skia backing accounting declaration and
+  implementation, then add policy-neutral writePixels rejection and candidate
+  counters through the existing accounting bridge.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Starting HEAD: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 
@@ -32,7 +34,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Validation and deferrals
 
 - Bootstrap branch and HEAD checks passed.
-- New-file size checks are pending until the artifact set is created.
+- New-file size checks passed: all four artifacts are <= 20 KiB and <= 600
+  lines.
+- Copyright validation passed for all four artifacts.
+- Staged whitespace validation passed.
+- Commit-message validation found an overlong bootstrap body line caused by
+  literal `\\n` text in the commit argument. The commit is preserved because
+  the plan forbids amend/rewrite; future commit bodies will be wrapped and
+  separated correctly.
 - No SDK/native build or smoke is allowed at bootstrap.
 
 ## Decisions still active
