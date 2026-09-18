@@ -61,10 +61,10 @@ The first package attempt ran out of disk space. After task-output cleanup and
 space being released, packaging and smokes completed successfully. No
 unrelated repository files were removed.
 
-The preserved commits `e1c3bab55` and `3f0ba4067` contain body lines over the
-80-character checker limit. They were not amended because the plan forbids
-history rewriting. The later Plan 2 commit passed the checker; this exception
-is recorded factually rather than hidden or rewritten.
+The preserved commits `e1c3bab55`, `3f0ba4067`, and `5e78c6168` contain body
+lines over the 80-character checker limit. They were not amended because the
+plan forbids history rewriting. The later Plan 2 commit passed the checker;
+this exception is recorded factually rather than hidden or rewritten.
 
 ## Validation and Measurable Results
 
