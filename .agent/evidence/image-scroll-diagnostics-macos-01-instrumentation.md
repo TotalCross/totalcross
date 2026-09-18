@@ -29,3 +29,11 @@ defers verbose output to an external log when one exists.
 - SDK/native build and smoke: deferred to the Milestone 1 gate.
 - Commit-message checker: the body exceeded 80 columns; no amend/rewrite was
   performed per plan.
+
+## 2026-09-18 — Milestone 1 Slice 1B
+
+- Commit: `0563e08b8` (`perf(vm): measure jpeg decode tiers`).
+- Delivered: gated nanosecond timing, actual denominator count/ns buckets,
+  requested-mode success counts, and JPEG failure accounting.
+- Static checks: focused header validation and `git diff --check` passed.
+- Milestone 1 gate: next action; SDK/native builds remain pending.

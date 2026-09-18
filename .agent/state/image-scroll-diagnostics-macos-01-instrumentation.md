@@ -8,11 +8,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone: Milestone 1, Slice 1B — native JPEG timing and tier diagnostics.
-- Last checkpoint commit: `12490a1ab`.
-- Next action: add gated native JPEG timing, actual denominator buckets, and
-  requested-mode counters through `ImageTestAccounting_c.h`, `Image.java`, and
-  `JpegLoader.c`.
+- Milestone: Milestone 1 gate — SDK and macOS ARM64 native builds.
+- Last checkpoint commit: `0563e08b8`.
+- Next action: run focused SDK compilation, SDK distribution build, and only
+  the macOS ARM64 `tcvm` and `Launcher` native targets.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Starting HEAD: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 
@@ -45,6 +44,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - No SDK/native build or smoke is allowed at bootstrap.
 - Slice 1A static/header/whitespace validation passed.
 - Milestone 1 SDK/native gate is deferred until Slice 1B is complete.
+- Slice 1B static/header/whitespace validation passed.
+- No native or SDK build has failed or been run yet for this milestone.
 
 ## Decisions still active
 
