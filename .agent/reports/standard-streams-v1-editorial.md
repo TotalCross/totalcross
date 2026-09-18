@@ -46,6 +46,8 @@ forbids those local builds.
   `fflush`-only.
 - `PrintStream4D.flush()` after close now marks trouble as JDK-compatible,
   while `close()` remains idempotent and the regression sequence is covered.
+- `checkError()` no longer creates trouble after a successful close; it still
+  flushes and propagates underlying trouble while open.
 - `VmStandardOutputStream` is excluded from `totalcross-api` and covered by a
   dedicated artifact-boundary test.
 - A focused Java test, system-stream test, smoke fixture, and macOS Gradle
@@ -69,12 +71,15 @@ macOS legacy file behavior; those assertions and the backend were corrected.
 Native-method generation also revealed unrelated generated-file drift; the
 change retained only the focused standard-stream metadata. The original plan
 exceeded its soft size limit and was consolidated into bounded active and
-reference artifacts. A final compatibility review found the closed-flush
-trouble-state deviation; it was fixed without touching native code.
+reference artifacts. A final compatibility review found two related closed
+stream deviations: explicit flush needed to set trouble, while checkError had
+to avoid setting it merely by observing a clean close. Both were fixed without
+touching native code.
 
 ## Validation and Measurable Results
 
-Final focused SDK tests, including the closed-flush regression, the dedicated
+Final focused SDK tests, including both closed-flush/checkError regressions,
+the dedicated
 artifact-boundary task, `clean dist`,
 macOS native configure/build, headers, diff checks, static scope checks,
 bounded file-size checks, and the corrected macOS smoke passed. The smoke

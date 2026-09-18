@@ -68,6 +68,8 @@ Inspect only the active paths named in state before expanding the investigation.
   trouble reporting, updated the stale close expectation, and passed the
   focused SDK regression tests in `b662c3939` and `cd5d5a0d8`; recorded the
   correction in documentation commit `37d4c0ec8`.
+- [x] 2026-09-17 M7: separated closed-stream `checkError()` from explicit
+  closed `flush()` trouble behavior; focused SDK tests passed in `566aed163`.
 
 ## Current Architecture and Scope
 
@@ -192,6 +194,8 @@ test. It may remain in `totalcross-runtime-java`.
 - Make explicit flush durable on Windows desktop without changing WinCE.
 - Mark explicit `flush()` after `PrintStream4D.close()` as trouble while
   preserving idempotent close.
+- Keep `checkError()` from creating trouble merely by observing a successfully
+  closed stream; preserve underlying `PrintStream` propagation while open.
 - Defer formatter and configurable rolling `DebugConsole.log` work to V2.
 
 ## Validation and Acceptance
