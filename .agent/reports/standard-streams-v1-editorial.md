@@ -9,7 +9,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 The original corrected handoff is recorded at implementation/documentation
 closure commit `888537b29`; the closed-flush compatibility correction follows
 in `b662c3939` and `cd5d5a0d8`, with final documentation closure in
-`37d4c0ec8`; the final check-error correction is documented in `de68b18da`.
+`37d4c0ec8`; the final check-error correction is documented in `de68b18da`
+and completed in implementation commit `7094dc765`.
 
 ## Editorial Summary
 
@@ -46,8 +47,9 @@ forbids those local builds.
   `fflush`-only.
 - `PrintStream4D.flush()` after close now marks trouble as JDK-compatible,
   while `close()` remains idempotent and the regression sequence is covered.
-- `checkError()` no longer creates trouble after a successful close; it still
-  flushes and propagates underlying trouble while open.
+- `checkError()` no longer flushes or queries the wrapped stream after a
+  successful close; it still flushes and propagates underlying trouble while
+  open.
 - `VmStandardOutputStream` is excluded from `totalcross-api` and covered by a
   dedicated artifact-boundary test.
 - A focused Java test, system-stream test, smoke fixture, and macOS Gradle
@@ -74,12 +76,14 @@ exceeded its soft size limit and was consolidated into bounded active and
 reference artifacts. A final compatibility review found two related closed
 stream deviations: explicit flush needed to set trouble, while checkError had
 to avoid setting it merely by observing a clean close. Both were fixed without
-touching native code.
+touching native code. The completion audit then found that closed `checkError()`
+still propagated a wrapped `java.io.PrintStream`'s trouble state; `7094dc765`
+closed that remaining edge case and added the exact close/reset regression.
 
 ## Validation and Measurable Results
 
-Final focused SDK tests, including both closed-flush/checkError regressions,
-the dedicated
+Final focused SDK tests, including both closed-flush/checkError regressions and
+the wrapped-`PrintStream` close/reset regression, the dedicated
 artifact-boundary task, `clean dist`,
 macOS native configure/build, headers, diff checks, static scope checks,
 bounded file-size checks, and the corrected macOS smoke passed. The smoke
