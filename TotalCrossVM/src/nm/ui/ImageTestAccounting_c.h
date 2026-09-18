@@ -29,6 +29,23 @@ typedef struct {
    int32* opacityFallbackScans;
    int32* opacityFallbackPixels;
    int32* directColorMaterializationCount;
+   int64* jpegNativeDecodeCount;
+   int64* jpegNativeDecodeNs;
+   int64* jpegNativeDecodeFullCount;
+   int64* jpegNativeDecodeFullNs;
+   int64* jpegNativeDecodeHalfCount;
+   int64* jpegNativeDecodeHalfNs;
+   int64* jpegNativeDecodeQuarterCount;
+   int64* jpegNativeDecodeQuarterNs;
+   int64* jpegNativeDecodeEighthCount;
+   int64* jpegNativeDecodeEighthNs;
+   int64* jpegNativeDecodeOtherCount;
+   int64* jpegNativeDecodeOtherNs;
+   int64* jpegNativeDecodeRequestedFullCount;
+   int64* jpegNativeDecodeRequestedTargetCount;
+   int64* jpegNativeDecodeRequestedExplicitRatioCount;
+   int64* jpegNativeDecodeRequestedBestFitCount;
+   int64* jpegNativeDecodeFailureCount;
 } ImageTestAccountingState;
 
 extern ImageTestAccountingState imageTestAccountingState;
@@ -56,6 +73,23 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
    imageTestAccountingState.opacityFallbackScans = null;
    imageTestAccountingState.opacityFallbackPixels = null;
    imageTestAccountingState.directColorMaterializationCount = null;
+   imageTestAccountingState.jpegNativeDecodeCount = null;
+   imageTestAccountingState.jpegNativeDecodeNs = null;
+   imageTestAccountingState.jpegNativeDecodeFullCount = null;
+   imageTestAccountingState.jpegNativeDecodeFullNs = null;
+   imageTestAccountingState.jpegNativeDecodeHalfCount = null;
+   imageTestAccountingState.jpegNativeDecodeHalfNs = null;
+   imageTestAccountingState.jpegNativeDecodeQuarterCount = null;
+   imageTestAccountingState.jpegNativeDecodeQuarterNs = null;
+   imageTestAccountingState.jpegNativeDecodeEighthCount = null;
+   imageTestAccountingState.jpegNativeDecodeEighthNs = null;
+   imageTestAccountingState.jpegNativeDecodeOtherCount = null;
+   imageTestAccountingState.jpegNativeDecodeOtherNs = null;
+   imageTestAccountingState.jpegNativeDecodeRequestedFullCount = null;
+   imageTestAccountingState.jpegNativeDecodeRequestedTargetCount = null;
+   imageTestAccountingState.jpegNativeDecodeRequestedExplicitRatioCount = null;
+   imageTestAccountingState.jpegNativeDecodeRequestedBestFitCount = null;
+   imageTestAccountingState.jpegNativeDecodeFailureCount = null;
    if (!imageTestAccountingState.enabled) {
       return;
    }
@@ -103,6 +137,40 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
       getStaticFieldInt(imageClass, "opacityFallbackPixelsForTest");
    imageTestAccountingState.directColorMaterializationCount =
       getStaticFieldInt(imageClass, "directColorMaterializationCountForTest");
+   imageTestAccountingState.jpegNativeDecodeCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeCountForTest");
+   imageTestAccountingState.jpegNativeDecodeNs =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeNsForTest");
+   imageTestAccountingState.jpegNativeDecodeFullCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeFullCountForTest");
+   imageTestAccountingState.jpegNativeDecodeFullNs =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeFullNsForTest");
+   imageTestAccountingState.jpegNativeDecodeHalfCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeHalfCountForTest");
+   imageTestAccountingState.jpegNativeDecodeHalfNs =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeHalfNsForTest");
+   imageTestAccountingState.jpegNativeDecodeQuarterCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeQuarterCountForTest");
+   imageTestAccountingState.jpegNativeDecodeQuarterNs =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeQuarterNsForTest");
+   imageTestAccountingState.jpegNativeDecodeEighthCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeEighthCountForTest");
+   imageTestAccountingState.jpegNativeDecodeEighthNs =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeEighthNsForTest");
+   imageTestAccountingState.jpegNativeDecodeOtherCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeOtherCountForTest");
+   imageTestAccountingState.jpegNativeDecodeOtherNs =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeOtherNsForTest");
+   imageTestAccountingState.jpegNativeDecodeRequestedFullCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeRequestedFullCountForTest");
+   imageTestAccountingState.jpegNativeDecodeRequestedTargetCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeRequestedTargetCountForTest");
+   imageTestAccountingState.jpegNativeDecodeRequestedExplicitRatioCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeRequestedExplicitRatioCountForTest");
+   imageTestAccountingState.jpegNativeDecodeRequestedBestFitCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeRequestedBestFitCountForTest");
+   imageTestAccountingState.jpegNativeDecodeFailureCount =
+      getStaticFieldLong(imageClass, "jpegNativeDecodeFailureCountForTest");
 }
 
 static int32* imageTestAccountingField(const char* fieldName) {
@@ -181,6 +249,78 @@ static void imageRecordTestCounter(const char* fieldName) {
 
 static void imageAddTestCounter(const char* fieldName, int32 amount) {
    int32* counter = imageTestAccountingField(fieldName);
+   if (counter) {
+      (*counter) += amount;
+   }
+}
+
+static int64* imageTestAccountingLongField(const char* fieldName) {
+   if (!imageTestAccountingState.enabled) {
+      return null;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeNsForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeNs;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeFullCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeFullCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeFullNsForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeFullNs;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeHalfCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeHalfCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeHalfNsForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeHalfNs;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeQuarterCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeQuarterCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeQuarterNsForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeQuarterNs;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeEighthCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeEighthCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeEighthNsForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeEighthNs;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeOtherCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeOtherCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeOtherNsForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeOtherNs;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeRequestedFullCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeRequestedFullCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeRequestedTargetCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeRequestedTargetCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeRequestedExplicitRatioCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeRequestedExplicitRatioCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeRequestedBestFitCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeRequestedBestFitCount;
+   }
+   if (strcmp(fieldName, "jpegNativeDecodeFailureCountForTest") == 0) {
+      return imageTestAccountingState.jpegNativeDecodeFailureCount;
+   }
+   return null;
+}
+
+static void imageRecordTestLongCounter(const char* fieldName) {
+   int64* counter = imageTestAccountingLongField(fieldName);
+   if (counter) {
+      (*counter)++;
+   }
+}
+
+static void imageAddTestLongCounter(const char* fieldName, int64 amount) {
+   int64* counter = imageTestAccountingLongField(fieldName);
    if (counter) {
       (*counter) += amount;
    }

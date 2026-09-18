@@ -23,6 +23,14 @@
 #endif
 
 #include <stdlib.h>
+#include <stdint.h>
+#include <time.h>
+
+#if defined(_WIN32) || defined(_WINDOWS) || defined(WINCE)
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <mach/mach_time.h>
+#endif
 
 #if defined _WINDOWS || defined WINCE
 #ifndef fmin
@@ -145,6 +153,83 @@ static int32 jpegTargetDecodeScaleDenominator(JDIMENSION sourceWidth, JDIMENSION
    return 1;
 }
 
+static uint64_t jpegNowNanoseconds(void)
+{
+#if defined(_WIN32) || defined(_WINDOWS) || defined(WINCE)
+   LARGE_INTEGER counter;
+   LARGE_INTEGER frequency;
+   if (!QueryPerformanceCounter(&counter) || !QueryPerformanceFrequency(&frequency)
+       || frequency.QuadPart <= 0)
+      return 0U;
+   return (uint64_t)((double)counter.QuadPart * 1000000000.0
+      / (double)frequency.QuadPart);
+#elif defined(__APPLE__)
+   static mach_timebase_info_data_t timebase;
+   uint64_t ticks;
+   if (timebase.denom == 0U)
+      (void)mach_timebase_info(&timebase);
+   ticks = mach_continuous_time();
+   return (uint64_t)((__uint128_t)ticks * timebase.numer / timebase.denom);
+#else
+   struct timespec timestamp;
+   if (clock_gettime(CLOCK_MONOTONIC_RAW, &timestamp) != 0)
+      return 0U;
+   return (uint64_t)timestamp.tv_sec * UINT64_C(1000000000)
+      + (uint64_t)timestamp.tv_nsec;
+#endif
+}
+
+static void jpegRecordDecodeFailureForTest(void)
+{
+   imageRecordTestLongCounter("jpegNativeDecodeFailureCountForTest");
+}
+
+static void jpegRecordSuccessfulDecodeForTest(int32 actualDenominator,
+      JpegDecodeMode requestedMode, int64 decodeNs)
+{
+   const char* countField = "jpegNativeDecodeOtherCountForTest";
+   const char* nsField = "jpegNativeDecodeOtherNsForTest";
+   imageRecordTestLongCounter("jpegNativeDecodeCountForTest");
+   imageAddTestLongCounter("jpegNativeDecodeNsForTest", decodeNs);
+   switch (actualDenominator) {
+      case 1:
+         countField = "jpegNativeDecodeFullCountForTest";
+         nsField = "jpegNativeDecodeFullNsForTest";
+         break;
+      case 2:
+         countField = "jpegNativeDecodeHalfCountForTest";
+         nsField = "jpegNativeDecodeHalfNsForTest";
+         break;
+      case 4:
+         countField = "jpegNativeDecodeQuarterCountForTest";
+         nsField = "jpegNativeDecodeQuarterNsForTest";
+         break;
+      case 8:
+         countField = "jpegNativeDecodeEighthCountForTest";
+         nsField = "jpegNativeDecodeEighthNsForTest";
+         break;
+      default:
+         break;
+   }
+   imageRecordTestLongCounter(countField);
+   imageAddTestLongCounter(nsField, decodeNs);
+   switch (requestedMode) {
+      case JPEG_DECODE_BEST_FIT:
+         imageRecordTestLongCounter("jpegNativeDecodeRequestedBestFitCountForTest");
+         break;
+      case JPEG_DECODE_TARGET_DECODE:
+         imageRecordTestLongCounter("jpegNativeDecodeRequestedTargetCountForTest");
+         break;
+      case JPEG_DECODE_EXPLICIT_RATIO:
+         imageRecordTestLongCounter("jpegNativeDecodeRequestedExplicitRatioCountForTest");
+         break;
+      case JPEG_DECODE_FULL:
+      default:
+         imageRecordTestLongCounter("jpegNativeDecodeRequestedFullCountForTest");
+         break;
+   }
+}
+
 typedef struct {
    Pixel* pixelStorage;
    uint8* rgbaStorage;
@@ -183,6 +268,8 @@ static ImageDecodeStatus jpegLoadInternal(Context currentContext, TCObject image
    JSAMPARRAY buffer0; // Output pixel-row buffer
    uint8* buffer;
    int32 x,width,height;
+   int32 actualScaleDenominator = 1;
+   uint64_t jpegDecodeStartNs = 0U;
    struct jpeg_decompress_struct cinfo;
    TCJpegIOContext io;
    TCObject pixelsObj;
@@ -278,6 +365,7 @@ static ImageDecodeStatus jpegLoadInternal(Context currentContext, TCObject image
    }
 
    jpeg_calc_output_dimensions(&cinfo); /* Calculate output image dimensions so we can allocate space */
+   actualScaleDenominator = cinfo.scale_denom;
 
 #if TC_RENDERER_SKIA
    allocation->storageFormat = detached
@@ -297,6 +385,9 @@ static ImageDecodeStatus jpegLoadInternal(Context currentContext, TCObject image
       status = IMAGE_DECODE_CORRUPT;
       HEAP_ERROR(heap, 998);
    }
+
+   if (imageTestAccountingState.enabled)
+      jpegDecodeStartNs = jpegNowNanoseconds();
 
    if (imageDecodeConsumeAllocationFailureForTest())
    {
@@ -555,6 +646,14 @@ static ImageDecodeStatus jpegLoadInternal(Context currentContext, TCObject image
    free(allocation);
    heapDestroy(heap);
 
+   if (status == IMAGE_DECODE_SUCCESS && imageTestAccountingState.enabled) {
+      const uint64_t endNs = jpegNowNanoseconds();
+      const uint64_t decodeNs = endNs >= jpegDecodeStartNs
+         ? endNs - jpegDecodeStartNs : 0U;
+      jpegRecordSuccessfulDecodeForTest(actualScaleDenominator, mode,
+         (int64)decodeNs);
+   }
+
    return status;
 }
 
@@ -562,8 +661,11 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2,
       bool zeroCopy, bool opacityMetadata)
 {
-   return jpegLoadInternal(currentContext, imageObj, inputStreamObj, bufObj, tcz, first4, size,
+   ImageDecodeStatus status = jpegLoadInternal(currentContext, imageObj, inputStreamObj, bufObj, tcz, first4, size,
       mode, modeArg1, modeArg2, zeroCopy, opacityMetadata, false, 0, null);
+   if (status != IMAGE_DECODE_SUCCESS)
+      jpegRecordDecodeFailureForTest();
+   return status;
 }
 
 ImageDecodeStatus jpegLoadDetached(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
@@ -571,8 +673,11 @@ ImageDecodeStatus jpegLoadDetached(Context currentContext, TCObject imageObj, TC
       int32 modeArg1, int32 modeArg2, bool zeroCopy, bool opacityMetadata, int32 decodeMask,
       int64* detachedHandle)
 {
-   return jpegLoadInternal(currentContext, imageObj, inputStreamObj, bufObj, tcz, first4, size,
+   ImageDecodeStatus status = jpegLoadInternal(currentContext, imageObj, inputStreamObj, bufObj, tcz, first4, size,
       mode, modeArg1, modeArg2, zeroCopy, opacityMetadata, true, decodeMask, detachedHandle);
+   if (status != IMAGE_DECODE_SUCCESS)
+      jpegRecordDecodeFailureForTest();
+   return status;
 }
 
 bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStreamObj, int32 width, int32 height)
