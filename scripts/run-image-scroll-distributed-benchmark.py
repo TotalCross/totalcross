@@ -53,7 +53,19 @@ FRAME_THRESHOLD_COUNT_FIELDS = (
     "framesOver16_67Count", "framesOver33_3Count",
     "framesOver50Count", "framesOver100Count",
 )
-FRAME_FIELDS = ("frame_index", "elapsed_ns", "frame_time_ns", "scroll_value")
+FRAME_FIELDS = (
+    "frame_index", "elapsed_ns", "frame_time_ns", "scroll_value",
+    "jpeg_decode_count", "jpeg_decode_ns", "jpeg_full_count", "jpeg_full_ns",
+    "jpeg_half_count", "jpeg_half_ns", "jpeg_quarter_count", "jpeg_quarter_ns",
+    "jpeg_eighth_count", "jpeg_eighth_ns", "jpeg_other_count", "jpeg_other_ns",
+)
+DIAGNOSTIC_SUMMARY_FIELDS = (
+    "jpeg_decode_count", "jpeg_decode_ns", "jpeg_full_count", "jpeg_half_count",
+    "jpeg_quarter_count", "jpeg_eighth_count", "write_pixels_attempts",
+    "write_pixels_hits", "write_pixels_fallbacks", "write_pixels_device_1to1_candidates",
+    "write_pixels_device_1to1_known_opaque_candidates", "write_pixels_reject_matrix",
+    "write_pixels_reject_save_count", "write_pixels_reject_size_mismatch",
+)
 MEMORY_FIELDS = (
     "checkpoint", "elapsed_ns", "current_resident_bytes", "peak_resident_bytes",
     "private_bytes", "phys_footprint_bytes",
@@ -262,6 +274,101 @@ def require_record_count(record, key, description):
     require_nonnegative_count(value, description)
 
 
+def counter_value(mapping, key, description):
+    value = mapping.get(key)
+    require_nonnegative_count(value, description)
+    return value
+
+
+def validate_jpeg_counter_section(section, description):
+    require(isinstance(section, dict), f"{description} jpeg section is invalid")
+    count = counter_value(section, "count", f"{description} jpeg count")
+    decode_ns = counter_value(section, "ns", f"{description} jpeg ns")
+    bucket_counts = []
+    bucket_ns = []
+    for bucket in ("full", "half", "quarter", "eighth", "other"):
+        values = section.get(bucket)
+        require(isinstance(values, dict), f"{description} {bucket} jpeg section is invalid")
+        bucket_counts.append(counter_value(values, "count", f"{description} {bucket} count"))
+        bucket_ns.append(counter_value(values, "ns", f"{description} {bucket} ns"))
+    requested = section.get("requested")
+    require(isinstance(requested, dict), f"{description} requested jpeg section is invalid")
+    requested_count = sum(
+        counter_value(requested, mode, f"{description} requested {mode} count")
+        for mode in ("full", "target", "explicitRatio", "bestFit")
+    )
+    failures = counter_value(section, "failures", f"{description} jpeg failures")
+    require(count == sum(bucket_counts), f"{description} jpeg denominator count mismatch")
+    require(decode_ns == sum(bucket_ns), f"{description} jpeg denominator ns mismatch")
+    require(count == requested_count, f"{description} jpeg requested mode count mismatch")
+    return count, decode_ns, bucket_counts
+
+
+def validate_diagnostic_counters(counters, run_dir):
+    require(isinstance(counters, dict), f"{run_dir}/counters.json is invalid")
+    jpeg_decode = counters.get("jpegDecode")
+    require(isinstance(jpeg_decode, dict), f"{run_dir}/counters.json lacks jpegDecode")
+    require(set(("prefetch", "scroll")) <= set(jpeg_decode),
+            f"{run_dir}/counters.json lacks distinct JPEG phases")
+    scroll = jpeg_decode["scroll"]
+    validate_jpeg_counter_section(jpeg_decode["prefetch"], f"{run_dir} prefetch")
+    scroll_count, scroll_ns, bucket_counts = validate_jpeg_counter_section(
+        scroll, f"{run_dir} scroll"
+    )
+    required_counters = {
+        "writePixelsAttempts": "writePixels attempts",
+        "writePixelsHits": "writePixels hits",
+        "writePixelsFallbacks": "writePixels fallbacks",
+        "writePixelsDeviceOneToOneCandidates": "writePixels candidates",
+        "writePixelsDeviceOneToOneKnownOpaqueCandidates": "writePixels known-opaque candidates",
+        "writePixelsRejectMatrix": "writePixels matrix rejects",
+        "writePixelsRejectSaveCount": "writePixels save-count rejects",
+        "writePixelsRejectSizeMismatch": "writePixels size-mismatch rejects",
+    }
+    values = {
+        key: counter_value(counters, key, f"{run_dir} {description}")
+        for key, description in required_counters.items()
+    }
+    require(values["writePixelsAttempts"] == values["writePixelsHits"]
+            + values["writePixelsFallbacks"],
+            f"{run_dir} writePixels attempts do not equal hits plus fallbacks")
+    require(values["writePixelsDeviceOneToOneCandidates"] <= values["writePixelsAttempts"],
+            f"{run_dir} writePixels candidates exceed attempts")
+    require(values["writePixelsDeviceOneToOneKnownOpaqueCandidates"]
+            <= values["writePixelsDeviceOneToOneCandidates"],
+            f"{run_dir} writePixels known-opaque candidates exceed candidates")
+    features = counters.get("features")
+    require(isinstance(features, dict), f"{run_dir}/counters.json lacks features")
+    for name in (
+        "RASTER_OPAQUE_WRITE_PIXELS", "RASTER_TARGET_COLORTYPE_CONVERSION",
+        "RASTER_PHYSICAL_VARIANT_CACHE", "RASTER_PHYSICAL_IDENTITY_FOLDING",
+    ):
+        feature = features.get(name)
+        require(isinstance(feature, dict), f"{run_dir} feature {name} is invalid")
+        counter_value(feature, "hits", f"{run_dir} feature {name} hits")
+        require(feature.get("status") in (
+            "DISABLED", "NOT_REACHED", "ATTEMPTED_NO_HIT", "EXERCISED",
+        ), f"{run_dir} feature {name} status is invalid")
+    return {
+        "jpeg_decode_count": scroll_count,
+        "jpeg_decode_ns": scroll_ns,
+        "jpeg_full_count": bucket_counts[0],
+        "jpeg_half_count": bucket_counts[1],
+        "jpeg_quarter_count": bucket_counts[2],
+        "jpeg_eighth_count": bucket_counts[3],
+        "write_pixels_attempts": values["writePixelsAttempts"],
+        "write_pixels_hits": values["writePixelsHits"],
+        "write_pixels_fallbacks": values["writePixelsFallbacks"],
+        "write_pixels_device_1to1_candidates": values["writePixelsDeviceOneToOneCandidates"],
+        "write_pixels_device_1to1_known_opaque_candidates": values[
+            "writePixelsDeviceOneToOneKnownOpaqueCandidates"
+        ],
+        "write_pixels_reject_matrix": values["writePixelsRejectMatrix"],
+        "write_pixels_reject_save_count": values["writePixelsRejectSaveCount"],
+        "write_pixels_reject_size_mismatch": values["writePixelsRejectSizeMismatch"],
+    }
+
+
 def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_record):
     for field in TEMPORAL_SUMMARY_FIELDS:
         require_nonnegative_ns(run_summary.get(field), f"{run_dir}/summary.json {field}")
@@ -291,6 +398,10 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
             require(len(row) == len(FRAME_FIELDS), f"invalid row in {frames_path}")
             require_nonnegative_ns(int(row[1]), f"{frames_path} elapsed_ns")
             require_nonnegative_ns(int(row[2]), f"{frames_path} frame_time_ns")
+            for index in (4, 6, 8, 10, 12, 14):
+                require_nonnegative_count(int(row[index]), f"{frames_path} {FRAME_FIELDS[index]}")
+            for index in (5, 7, 9, 11, 13, 15):
+                require_nonnegative_ns(int(row[index]), f"{frames_path} {FRAME_FIELDS[index]}")
 
     for path, expected_fields in (
         (run_dir / "memory.csv", MEMORY_FIELDS),
@@ -386,8 +497,7 @@ def validate_run_artifacts(output, log_path, mask, prefetch, run, dataset_digest
     require(environment.get("datasetFileCount") == EXPECTED_JPEGS
             and environment.get("datasetHash") == dataset_digest,
             f"{output}/environment.json dataset mismatch")
-    require(isinstance(counters, dict) and "features" in counters,
-            f"{run_dir}/counters.json is invalid")
+    validate_diagnostic_counters(counters, run_dir)
     return run_summary
 
 
@@ -523,6 +633,12 @@ def aggregate(output, plan):
         require(summary.get("requestedMask") == mask
                 and summary.get("effectiveMask") == mask,
                 f"matrix mask mismatch: {path}")
+        counters_path = path.parent / "counters.json"
+        try:
+            counters = json.loads(counters_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            raise BenchmarkFailure(f"invalid matrix counters: {counters_path}") from error
+        diagnostics = validate_diagnostic_counters(counters, path.parent)
         for field in TEMPORAL_SUMMARY_FIELDS:
             require_nonnegative_ns(summary.get(field), f"{path} {field}")
         for field in FRAME_THRESHOLD_COUNT_FIELDS:
@@ -547,6 +663,7 @@ def aggregate(output, plan):
             "largest_consecutive_over_33_3": summary["largestConsecutiveOver33_3"],
             "prefetch_elapsed_ns": summary["prefetchElapsedNs"],
             "memory_peak_resident_bytes": summary["memoryPeakResidentBytes"],
+            **diagnostics,
         })
     require(len(records) == EXPECTED_PROCESSES,
             f"aggregation did not find {EXPECTED_PROCESSES} summaries")
@@ -572,7 +689,9 @@ def aggregate(output, plan):
         "frame_p90_ns", "frame_p95_ns", "frame_p99_ns", "frame_max_ns",
         "frames_over_16_67_count", "frames_over_33_3_count", "frames_over_50_count",
         "frames_over_100_count", "largest_stall_ns", "largest_consecutive_over_33_3",
-        "prefetch_elapsed_ns", "memory_peak_resident_bytes", "baseline_scope",
+        "prefetch_elapsed_ns", "memory_peak_resident_bytes",
+    ] + list(DIAGNOSTIC_SUMMARY_FIELDS) + [
+        "baseline_scope",
         "baseline_mask0_p50_ns", "delta_p50_ns", "baseline_mask0_p95_ns", "delta_p95_ns",
     ]
     path = output / "summary.csv"

@@ -38,6 +38,14 @@ nanoseconds in `results/decode/decode-detailed.csv`; process and variant
 summaries are in `process-summary.csv` and `decode-summary.csv` in that same
 directory.
 
+The scroll `results/summary.csv` retains its baseline and frame timing columns
+and also carries compact JPEG decode count/ns fields plus writePixels attempts,
+hits, fallbacks, candidate counts, and the matrix/save-count/size-mismatch
+reject counts. Detailed reject reasons, phase-separated `jpegDecode` data, and
+feature statuses remain in each run's `counters.json`. Attempt-based features
+use `NOT_REACHED`, `ATTEMPTED_NO_HIT`, or `EXERCISED` in addition to
+`DISABLED`.
+
 For package checks without either full matrix, `--phase self-test` validates
 the bundle and `--phase smokes` runs the four scroll smoke processes. Decode
 checks are separate: run `--phase decode-self-test` before
