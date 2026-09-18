@@ -69,8 +69,9 @@ Inspect only the active paths named in state before expanding the investigation.
   focused SDK regression tests in `b662c3939` and `cd5d5a0d8`; recorded the
   correction in documentation commit `37d4c0ec8`.
 - [x] 2026-09-17 M7: separated closed-stream `checkError()` from explicit
-  closed `flush()` trouble behavior; focused SDK tests passed in `566aed163`.
-  Documentation closure is recorded in `de68b18da`.
+  closed `flush()` trouble behavior; focused SDK tests passed in `7094dc765`,
+  including the underlying `java.io.PrintStream` close/reset regression.
+  Documentation closure is recorded in the final reconciliation commit.
 
 ## Current Architecture and Scope
 

@@ -9,11 +9,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Active milestone/slice: Milestone 7 — closed check-error correction complete.
 - Branch: `feat/standard-streams-v1`.
 - Base SHA: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
-- Last implementation commit: `566aed163` (`fix(sdk): preserve closed print
-  stream error state`); its focused test update is in the same commit, and
+- Last implementation commit: `7094dc765` (`fix(sdk): stop closed stream error
+  propagation`); it adds the wrapped-`PrintStream` close/reset regression, and
   preceding closed-flush commits are `b662c3939` and `cd5d5a0d8`.
-- Final check-error documentation closure is `de68b18da` (`docs(agent): record
-  closed check error correction`); earlier closure is `37d4c0ec8`.
+- The prior check-error documentation closure is `de68b18da`; the final
+  reconciliation records implementation commit `7094dc765`.
 - Active paths: corrected Java stream semantics, shared legacy writer/backend
   semantics, artifact boundaries, bounded plan/reference artifacts, smoke
   fixture/runner, and final handoff files.
@@ -37,11 +37,11 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/agent-logs/20260917-210927-test-agent.log`; no native rebuild
   was needed because the correction changed only SDK Java/test files.
 - Closed-check-error focused rerun passed with agent log
-  `TotalCrossSDK/agent-logs/20260917-213211-test-agent.log`; the earlier
-  post-close assertion failure is recorded in evidence and corrected without
-  native changes.
-- Final functional/documentation HEAD before this state-only reconciliation is
-  `37d4c0ec8`; no native or packaging validation is required for this SDK-only
+  `TotalCrossSDK/agent-logs/20260917-213211-test-agent.log`; the completion
+  audit found the wrapped-`PrintStream` query edge case, and the final focused
+  rerun passed with `TotalCrossSDK/agent-logs/20260917-220422-test-agent.log`.
+- Final implementation HEAD before this artifact reconciliation is
+  `7094dc765`; no native or packaging validation is required for this SDK-only
   change.
 - Deferred validation: Windows, Linux, Android, and iOS builds remain forbidden
   by the active plan. Full image benchmarks remain out of scope.
@@ -58,8 +58,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   files and benchmark artifacts remain untouched.
 - The supplied plan was already 39,677 bytes and 1,287 lines, above the
   plan's soft size guideline; it was consolidated rather than discarded. The
-  current active plan is 12,474 bytes and 272 lines, and its technical
-  reference is 6,569 bytes and 146 lines.
+  current active plan is 12,567 bytes and 273 lines, and its technical
+  reference is 6,588 bytes and 147 lines.
 - Active decisions: standard-stream close is logical and never closes the
   shared legacy file; auto-flush is logical while explicit `flush()` is
   durable; `Vm.debug` remains a separate debug command path.

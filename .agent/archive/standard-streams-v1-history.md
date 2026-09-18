@@ -99,6 +99,15 @@ closed `flush()` error reporting unchanged. The focused test now independently
 asserts clean `close()`/`checkError()` and close/reset/flush/`checkError()`.
 The documentation closure was recorded in `de68b18da`.
 
+### Closed underlying-print-stream propagation correction
+
+The completion audit found that the prior correction still queried an
+underlying `java.io.PrintStream` after the wrapper closed. Commit `7094dc765`
+returns the wrapper trouble state immediately after close, while preserving
+flush and underlying trouble propagation while open. Its focused regression
+proves that a troubled wrapped stream does not make a clean closed wrapper
+report trouble after `close()` and `resetError()`.
+
 ## Decisions preserved
 
 - OUT and ERR have independent Java stream state and native channels.
