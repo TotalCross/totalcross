@@ -1248,55 +1248,55 @@ TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/N
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectInvalidTargetOrSourceTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectInvalidTargetOrSourceTest();
+TC_API void tuiNIB_writePixelsRejectInvalid(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectInvalid();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectAlphaMaskTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectAlphaMaskTest();
+TC_API void tuiNIB_writePixelsRejectAlpha(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectAlpha();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectMatrixTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectMatrixTest();
+TC_API void tuiNIB_writePixelsRejectMatrix(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectMatrix();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectSaveCountTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectSaveCountTest();
+TC_API void tuiNIB_writePixelsRejectSave(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectSave();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectSourceRectTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectSourceRectTest();
+TC_API void tuiNIB_writePixelsRejectRect(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectRect();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectSizeMismatchTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectSizeMismatchTest();
+TC_API void tuiNIB_writePixelsRejectSize(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectSize();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectFractionalDestinationTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectFractionalDestinationTest();
+TC_API void tuiNIB_writePixelsRejectFraction(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectFraction();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectDestinationBoundsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectDestinationBoundsTest();
+TC_API void tuiNIB_writePixelsRejectBounds(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectBounds();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectOpacityTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectOpacityTest();
+TC_API void tuiNIB_writePixelsRejectOpacity(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectOpacity();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectSourcePixelsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectSourcePixelsTest();
+TC_API void tuiNIB_writePixelsRejectSource(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectSource();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRejectWriteFailureTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectWriteFailureTest();
+TC_API void tuiNIB_writePixelsRejectFailure(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRejectFailure();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsDeviceOneToOneCandidatesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsDeviceOneToOneCandidatesTest();
+TC_API void tuiNIB_writePixelsCandidates(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsCandidates();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsDeviceOneToOneKnownOpaqueCandidatesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsDeviceOneToOneKnownOpaqueCandidatesTest();
+TC_API void tuiNIB_writePixelsOpaque(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsOpaque();
 {
 }
 //////////////////////////////////////////////////////////////////////////
