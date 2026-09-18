@@ -100,7 +100,7 @@ Record starting HEAD and any deliberate pre-existing task-path changes in state.
 - [x] Milestone 2: expose phase/frame diagnostics through the scroll benchmark.
 - [x] Close Plan 1 and leave Plan 2 as the only next action.
 
-## Current Architecture and Fixed Decisions
+## Current Architecture and Scope
 
 ### writePixels
 
@@ -476,7 +476,15 @@ Plan 1 completes only when:
 - no other platform was built;
 - all plan artifacts are committed.
 
-## Risks and Discoveries Policy
+## Decision Log
+
+- Keep diagnostics gated by `backingAccountingForTest`; disabled accounting
+  preserves the original `writePixelsStructuralChecksPass()` short-circuit.
+- Keep detailed rejection counters independent only when accounting is enabled.
+- Treat mask 4 as authoritative for `RASTER_OPAQUE_WRITE_PIXELS`; composite
+  direct-copy paths may contribute to the global writePixels counters.
+
+## Risks and Open Questions
 
 Known facts to preserve:
 
@@ -492,36 +500,35 @@ leave policy changes for a later plan.
 
 ## Idempotence and Recovery
 
-Use task-specific build/package directories. Do not delete unrelated caches,
-logs, benchmark outputs, or local changes.
+Use task-specific build/package directories; preserve unrelated caches, logs,
+benchmark outputs, and local changes.
 
 New counters must reset to zero through the existing benchmark reset path.
 Rerunning a smoke must produce fresh output under the existing runner contract.
 
-State is the first resume read. Evidence is append-only and compact. Do not
-amend commits. Use a focused follow-up commit for validation fixes.
+State is the first resume read; evidence is append-only. Do not amend commits.
 
 ## Logical Commits
 
 Follow `.agents/skills/logical-commits/SKILL.md`. Expected commit family:
 
 - `docs(benchmark): plan macos image diagnostics`
+- `docs(benchmark): add macos diagnostics benchmark plan`
 - `perf(vm): diagnose opaque write pixel fallbacks`
 - `perf(vm): measure jpeg decode tiers`
 - `perf(benchmark): record scroll decode diagnostics`
 - `test(benchmark): validate diagnostic result schema`
+- `fix(benchmark): gate write pixel diagnostics`
 
-Non-trivial commit bodies must state why, behavior/compatibility impact,
-focused validation, and milestone builds still deferred when applicable.
+Commit bodies state why, compatibility impact, validation, and deferred gates.
 
 ## Outcomes & Retrospective
 
 Completed factual outcomes:
 
 - Delivered gated writePixels rejection/candidate accounting, native JPEG
-  denominator timing/tier accounting, prefetch-versus-scroll separation,
-  per-frame JPEG deltas, compact distributed summary fields, and explicit
-  attempt-feature statuses.
+  denominator timing, prefetch-versus-scroll separation, per-frame deltas,
+  compact summary fields, and explicit attempt-feature statuses.
 - Milestone 1 passed focused SDK tests, SDK distribution packaging, and the
   macOS ARM64 `tcvm`/`Launcher` build. Milestone 2 passed the static checks,
   rebuilt SDK/native/package gate, bundle self-test, four prescribed smokes,
@@ -529,22 +536,16 @@ Completed factual outcomes:
   zero hits, `ATTEMPTED_NO_HIT`, and valid candidate/rejection counters.
 - Exact task commits: `73519be8b`, `621cf45d4`, `12490a1ab`, `7e1914b29`,
   `0563e08b8`, `b45df2945`, `49cbc7bdc`, `4d781d5a2`, `72fe224f2`,
-  `a6a5255db`, and `f803d4a4d`.
+  `a6a5255db`, `f803d4a4d`, `e1c3bab55`, and `58699d768`.
 - The first Milestone 2 smoke exposed the VM's 32-character native resolver
-  limit and a candidate-name truncation collision. A focused bridge-name fix
-  was committed and the complete macOS gate was rerun successfully. A first
-  package attempt also ran out of disk space; after task-output cleanup and
-  user-provided disk space, the macOS package and smokes passed.
+  limit and a candidate-name truncation collision. The focused bridge-name
+  fix was committed and the complete macOS gate reran successfully. A first
+  package attempt ran out of disk space; after task-output cleanup and freed
+  space, packaging and smokes passed.
 - No optimization policy, JPEG tier selection, rendering policy, or cache
   behavior changed.
-
-Then set the next action to Plan 2:
-`.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md`.
+- Composite masks add copy work to global counters; counters
+  cover `tryWritePixels*`; mask 4 is authoritative.
 
 Plan 1 is closed. The next action is Plan 2:
 `.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md`.
-
-## Revision Note
-
-Initial Plan 1: implement and smoke-validate diagnostic-only writePixels and JPEG
-instrumentation on `perf/image-decode-distributed-benchmark`.

@@ -8,8 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone: Plan 1 closed after the Milestone 2 gate.
-- Last checkpoint commit: `f803d4a4d`.
+- Milestone: Plan 1 closed after the final short-circuit gate.
+- Last functional checkpoint commit: `e1c3bab55`.
+- Closeout documentation commit: pending in this slice.
 - Next action: Plan 2 at
   `.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md`.
 - Required branch: `perf/image-decode-distributed-benchmark`.
@@ -25,8 +26,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Deliberate local files
 
-- The plan file was already untracked at bootstrap and is the user-provided
-  task specification. It is included in the bootstrap artifact set.
+- The Plan 1 file was user-provided at bootstrap and is now tracked with the
+  closeout edits; Plan 2 is the next tracked plan.
 - No source, build, package, or benchmark-output changes are in scope at
   bootstrap.
 
@@ -85,12 +86,31 @@ SPDX-License-Identifier: LGPL-2.1-only
   `32799/on`; log `/tmp/image-scroll-diagnostics-m2-fixed-smokes.log`.
 - Additional mask-4 `off`/`on` processes passed through the runner's artifact
   validator; log `/tmp/image-scroll-diagnostics-m2-mask4-smokes.log`.
-- Mask 4 observed `writePixelsAttempts=220`/`3411`, hits `0`, fallbacks
-  `220`/`3411`, and `ATTEMPTED_NO_HIT`; candidate/rejection counters parsed.
+- The final correction gate passed focused SDK image tests; log:
+  `/tmp/image-scroll-diagnostics-plan1-fix-sdk-tests.log`.
+- Final SDK package passed; log:
+  `/tmp/image-scroll-diagnostics-plan1-fix-sdk-package.log`.
+- Final macOS ARM64 configure/build passed; logs:
+  `/tmp/image-scroll-diagnostics-plan1-fix-cmake-configure.log` and
+  `/tmp/image-scroll-diagnostics-plan1-fix-cmake-build.log`.
+- Final macOS-only bundle package, self-test, prescribed smokes, and mask-4
+  runner validation passed; logs:
+  `/tmp/image-scroll-diagnostics-plan1-fix-package-bundle.log`,
+  `/tmp/image-scroll-diagnostics-plan1-fix-self-test.log`,
+  `/tmp/image-scroll-diagnostics-plan1-fix-smokes.log`, and
+  `/tmp/image-scroll-diagnostics-plan1-fix-mask4.log`.
+- Final mask 4 observed attempts/hits/fallbacks `220/0/220` off and
+  `3414/0/3414` on; candidates were `198` and `3414`, with
+  `ATTEMPTED_NO_HIT`. JPEG/frame invariants passed.
+- Final SDK ZIP SHA-256:
+  `5fb07ada2df36d2267c43eace387b44e8f4de8a6570bbac4ec2beeeabf91338a`.
+- Final package output: `/tmp/image-scroll-diagnostics-plan1-fix/bundle/`.
+- Final correction commit: `e1c3bab55`; Plan 2 document commit:
+  `58699d768`.
   JPEG phase/frame denominator count/ns invariants passed, including prefetch
   `660` versus scroll `0` for mask 4/on.
-- Plan 1 closed. No other platform was built and no optimization policy was
-  changed.
+- No other platform or full decode matrix was built; no optimization policy
+  changed. Plan 1 is closed and Plan 2 is the only next action.
 
 ## Decisions still active
 
@@ -98,6 +118,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   existing accounting enablement.
 - Preserve existing benchmark reset and prefetch-versus-scroll separation.
 - Build and smoke only SDK plus macOS ARM64 native targets at milestone gates.
+- Global writePixels counters may include direct image/physical copies under
+  composite masks; detailed counters cover regular `tryWritePixels*`, and mask
+  4 is authoritative.
 
 ## Resume command
 

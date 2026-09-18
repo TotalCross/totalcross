@@ -110,3 +110,33 @@ defers verbose output to an external log when one exists.
   available. No unrelated repository files were removed.
 - Plan 1 is complete; no other platform was built and no optimization policy
   changed. Plan 2 is the only next action.
+
+## 2026-09-18 — final disabled-accounting short-circuit correction
+
+- Commit: `e1c3bab55` (`fix(benchmark): gate write pixel diagnostics`). When
+  `backingAccountingForTest` is disabled, `writePixelsStructuralChecksPass()`
+  now returns through the original short-circuit expression; enabled accounting
+  retains independent rejection counters.
+- Focused SDK image tests and SDK packaging passed. Logs:
+  `/tmp/image-scroll-diagnostics-plan1-fix-sdk-tests.log` and
+  `/tmp/image-scroll-diagnostics-plan1-fix-sdk-package.log`.
+- macOS ARM64 configure/build of only `tcvm` and `Launcher` passed. Logs:
+  `/tmp/image-scroll-diagnostics-plan1-fix-cmake-configure.log` and
+  `/tmp/image-scroll-diagnostics-plan1-fix-cmake-build.log`.
+- Fresh macOS-only package, bundle self-test, prescribed smokes, and mask-4
+  `off`/`on` validation passed. Logs:
+  `/tmp/image-scroll-diagnostics-plan1-fix-package-bundle.log`,
+  `/tmp/image-scroll-diagnostics-plan1-fix-self-test.log`,
+  `/tmp/image-scroll-diagnostics-plan1-fix-smokes.log`, and
+  `/tmp/image-scroll-diagnostics-plan1-fix-mask4.log`.
+- Mask 4 results: attempts/hits/fallbacks `220/0/220` off and `3414/0/3414`
+  on; candidates `198` and `3414`; both `ATTEMPTED_NO_HIT`. JPEG phase/frame
+  invariants passed, including prefetch count `660` versus scroll count `0`
+  for mask 4/on.
+- Fresh SDK ZIP SHA-256:
+  `5fb07ada2df36d2267c43eace387b44e8f4de8a6570bbac4ec2beeeabf91338a`.
+- Global attempts/hits/fallbacks may include `tryDirectImageCopy()` and
+  `tryDirectPhysicalCopy()` under composite masks. Detailed counters cover
+  regular `tryWritePixels*`; mask 4 remains authoritative.
+- Scope: no other platform or full decode matrix was built; no optimization
+  policy changed. Plan 1 is complete and Plan 2 is next.
