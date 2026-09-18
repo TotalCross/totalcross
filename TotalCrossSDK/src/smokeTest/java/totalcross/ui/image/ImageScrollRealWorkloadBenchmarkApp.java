@@ -67,6 +67,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private long prefetchFullJpegDecodes;
   private long prefetchImageMaterializations;
   private long prefetchNativeGeometryMaterializations;
+  private Counters prefetchCounters;
   private boolean benchmarkStarted;
   private boolean prefetchComplete;
   private TimerEvent prefetchTimer;
@@ -213,6 +214,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     prefetchFullJpegDecodes = Image.fullDecodeInvocationCountForTest();
     prefetchImageMaterializations = Image.materializationCountForTest();
     prefetchNativeGeometryMaterializations = Image.nativeGeometryMaterializationCountForTest();
+    prefetchCounters = Counters.capture();
+    validateJpegDiagnostics(prefetchCounters, "prefetch");
   }
 
   private void finishBenchmark(boolean overallPass, String error) {
@@ -369,6 +372,18 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long[] frameTimesNs = new long[256];
     long[] frameElapsedNs = new long[256];
     int[] framePositions = new int[256];
+    long[] frameJpegDecodeCounts = new long[256];
+    long[] frameJpegDecodeNs = new long[256];
+    long[] frameJpegFullCounts = new long[256];
+    long[] frameJpegFullNs = new long[256];
+    long[] frameJpegHalfCounts = new long[256];
+    long[] frameJpegHalfNs = new long[256];
+    long[] frameJpegQuarterCounts = new long[256];
+    long[] frameJpegQuarterNs = new long[256];
+    long[] frameJpegEighthCounts = new long[256];
+    long[] frameJpegEighthNs = new long[256];
+    long[] frameJpegOtherCounts = new long[256];
+    long[] frameJpegOtherNs = new long[256];
     int frames = 0;
     long previousFrameStartNs = startNs;
     while (true) {
@@ -385,12 +400,36 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       int target = elapsedNs >= scrollDurationNs
           ? endpoint
           : minimum + (int) ((long) (maximum - minimum) * elapsedNs / scrollDurationNs);
+      long jpegDecodeCountBefore = Image.jpegNativeDecodeCountForTest;
+      long jpegDecodeNsBefore = Image.jpegNativeDecodeNsForTest;
+      long jpegFullCountBefore = Image.jpegNativeDecodeFullCountForTest;
+      long jpegFullNsBefore = Image.jpegNativeDecodeFullNsForTest;
+      long jpegHalfCountBefore = Image.jpegNativeDecodeHalfCountForTest;
+      long jpegHalfNsBefore = Image.jpegNativeDecodeHalfNsForTest;
+      long jpegQuarterCountBefore = Image.jpegNativeDecodeQuarterCountForTest;
+      long jpegQuarterNsBefore = Image.jpegNativeDecodeQuarterNsForTest;
+      long jpegEighthCountBefore = Image.jpegNativeDecodeEighthCountForTest;
+      long jpegEighthNsBefore = Image.jpegNativeDecodeEighthNsForTest;
+      long jpegOtherCountBefore = Image.jpegNativeDecodeOtherCountForTest;
+      long jpegOtherNsBefore = Image.jpegNativeDecodeOtherNsForTest;
       int before = scroll.sbV.getValue();
       if (target != before) {
         ImageRasterBenchmarkSupport.require(scroll.scrollContent(0, target - before, true),
             name + " stopped before reaching time-based target");
       }
       long paintTimeNs = paintFrameNs();
+      long jpegDecodeCountAfter = Image.jpegNativeDecodeCountForTest;
+      long jpegDecodeNsAfter = Image.jpegNativeDecodeNsForTest;
+      long jpegFullCountAfter = Image.jpegNativeDecodeFullCountForTest;
+      long jpegFullNsAfter = Image.jpegNativeDecodeFullNsForTest;
+      long jpegHalfCountAfter = Image.jpegNativeDecodeHalfCountForTest;
+      long jpegHalfNsAfter = Image.jpegNativeDecodeHalfNsForTest;
+      long jpegQuarterCountAfter = Image.jpegNativeDecodeQuarterCountForTest;
+      long jpegQuarterNsAfter = Image.jpegNativeDecodeQuarterNsForTest;
+      long jpegEighthCountAfter = Image.jpegNativeDecodeEighthCountForTest;
+      long jpegEighthNsAfter = Image.jpegNativeDecodeEighthNsForTest;
+      long jpegOtherCountAfter = Image.jpegNativeDecodeOtherCountForTest;
+      long jpegOtherNsAfter = Image.jpegNativeDecodeOtherNsForTest;
       long frameTimeNs = frames == 0
           ? paintTimeNs : Math.max(0, frameStartNs - previousFrameStartNs);
       if (frames == frameTimesNs.length) {
@@ -398,10 +437,34 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         frameTimesNs = Arrays.copyOf(frameTimesNs, newLength);
         frameElapsedNs = Arrays.copyOf(frameElapsedNs, newLength);
         framePositions = Arrays.copyOf(framePositions, newLength);
+        frameJpegDecodeCounts = Arrays.copyOf(frameJpegDecodeCounts, newLength);
+        frameJpegDecodeNs = Arrays.copyOf(frameJpegDecodeNs, newLength);
+        frameJpegFullCounts = Arrays.copyOf(frameJpegFullCounts, newLength);
+        frameJpegFullNs = Arrays.copyOf(frameJpegFullNs, newLength);
+        frameJpegHalfCounts = Arrays.copyOf(frameJpegHalfCounts, newLength);
+        frameJpegHalfNs = Arrays.copyOf(frameJpegHalfNs, newLength);
+        frameJpegQuarterCounts = Arrays.copyOf(frameJpegQuarterCounts, newLength);
+        frameJpegQuarterNs = Arrays.copyOf(frameJpegQuarterNs, newLength);
+        frameJpegEighthCounts = Arrays.copyOf(frameJpegEighthCounts, newLength);
+        frameJpegEighthNs = Arrays.copyOf(frameJpegEighthNs, newLength);
+        frameJpegOtherCounts = Arrays.copyOf(frameJpegOtherCounts, newLength);
+        frameJpegOtherNs = Arrays.copyOf(frameJpegOtherNs, newLength);
       }
       frameTimesNs[frames] = frameTimeNs;
       frameElapsedNs[frames] = elapsedNs;
       framePositions[frames] = scroll.sbV.getValue();
+      frameJpegDecodeCounts[frames] = jpegDecodeCountAfter - jpegDecodeCountBefore;
+      frameJpegDecodeNs[frames] = jpegDecodeNsAfter - jpegDecodeNsBefore;
+      frameJpegFullCounts[frames] = jpegFullCountAfter - jpegFullCountBefore;
+      frameJpegFullNs[frames] = jpegFullNsAfter - jpegFullNsBefore;
+      frameJpegHalfCounts[frames] = jpegHalfCountAfter - jpegHalfCountBefore;
+      frameJpegHalfNs[frames] = jpegHalfNsAfter - jpegHalfNsBefore;
+      frameJpegQuarterCounts[frames] = jpegQuarterCountAfter - jpegQuarterCountBefore;
+      frameJpegQuarterNs[frames] = jpegQuarterNsAfter - jpegQuarterNsBefore;
+      frameJpegEighthCounts[frames] = jpegEighthCountAfter - jpegEighthCountBefore;
+      frameJpegEighthNs[frames] = jpegEighthNsAfter - jpegEighthNsBefore;
+      frameJpegOtherCounts[frames] = jpegOtherCountAfter - jpegOtherCountBefore;
+      frameJpegOtherNs[frames] = jpegOtherNsAfter - jpegOtherNsBefore;
       frames++;
       previousFrameStartNs = frameStartNs;
       if (scroll.sbV.getValue() == endpoint && elapsedNs >= scrollDurationNs) {
@@ -417,11 +480,169 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long[] actualFrameTimesNs = Arrays.copyOf(frameTimesNs, frames);
     long[] actualFrameElapsedNs = Arrays.copyOf(frameElapsedNs, frames);
     int[] actualFramePositions = Arrays.copyOf(framePositions, frames);
+    long[] actualFrameJpegDecodeCounts = Arrays.copyOf(frameJpegDecodeCounts, frames);
+    long[] actualFrameJpegDecodeNs = Arrays.copyOf(frameJpegDecodeNs, frames);
+    long[] actualFrameJpegFullCounts = Arrays.copyOf(frameJpegFullCounts, frames);
+    long[] actualFrameJpegFullNs = Arrays.copyOf(frameJpegFullNs, frames);
+    long[] actualFrameJpegHalfCounts = Arrays.copyOf(frameJpegHalfCounts, frames);
+    long[] actualFrameJpegHalfNs = Arrays.copyOf(frameJpegHalfNs, frames);
+    long[] actualFrameJpegQuarterCounts = Arrays.copyOf(frameJpegQuarterCounts, frames);
+    long[] actualFrameJpegQuarterNs = Arrays.copyOf(frameJpegQuarterNs, frames);
+    long[] actualFrameJpegEighthCounts = Arrays.copyOf(frameJpegEighthCounts, frames);
+    long[] actualFrameJpegEighthNs = Arrays.copyOf(frameJpegEighthNs, frames);
+    long[] actualFrameJpegOtherCounts = Arrays.copyOf(frameJpegOtherCounts, frames);
+    long[] actualFrameJpegOtherNs = Arrays.copyOf(frameJpegOtherNs, frames);
     long[] sortedFrameTimesNs = Arrays.copyOf(actualFrameTimesNs, frames);
     Arrays.sort(sortedFrameTimesNs);
+    for (int i = 0; i < frames; i++) {
+      ImageRasterBenchmarkSupport.require(actualFrameTimesNs[i] >= 0,
+          name + " has a negative frame time");
+      ImageRasterBenchmarkSupport.require(actualFrameElapsedNs[i] >= 0,
+          name + " has a negative frame elapsed time");
+    }
+    validateFrameDiagnostics(counters, actualFrameJpegDecodeCounts, actualFrameJpegDecodeNs,
+        actualFrameJpegFullCounts, actualFrameJpegFullNs, actualFrameJpegHalfCounts,
+        actualFrameJpegHalfNs, actualFrameJpegQuarterCounts, actualFrameJpegQuarterNs,
+        actualFrameJpegEighthCounts, actualFrameJpegEighthNs, actualFrameJpegOtherCounts,
+        actualFrameJpegOtherNs);
     return new PassResult(name, forward, minimum, endpoint, maximum, elapsedNs, frames,
         actualFrameTimesNs, actualFrameElapsedNs, actualFramePositions, sortedFrameTimesNs,
-        counters);
+        actualFrameJpegDecodeCounts, actualFrameJpegDecodeNs, actualFrameJpegFullCounts,
+        actualFrameJpegFullNs, actualFrameJpegHalfCounts, actualFrameJpegHalfNs,
+        actualFrameJpegQuarterCounts, actualFrameJpegQuarterNs, actualFrameJpegEighthCounts,
+        actualFrameJpegEighthNs, actualFrameJpegOtherCounts, actualFrameJpegOtherNs, counters);
+  }
+
+  private static void validateJpegDiagnostics(Counters counters, String phase) {
+    ImageRasterBenchmarkSupport.require(counters != null, phase + " counters are missing");
+    requireNonNegative(counters.jpegDecodeCount, phase + " jpeg decode count");
+    requireNonNegative(counters.jpegDecodeNs, phase + " jpeg decode ns");
+    requireNonNegative(counters.jpegFullCount, phase + " full jpeg count");
+    requireNonNegative(counters.jpegFullNs, phase + " full jpeg ns");
+    requireNonNegative(counters.jpegHalfCount, phase + " half jpeg count");
+    requireNonNegative(counters.jpegHalfNs, phase + " half jpeg ns");
+    requireNonNegative(counters.jpegQuarterCount, phase + " quarter jpeg count");
+    requireNonNegative(counters.jpegQuarterNs, phase + " quarter jpeg ns");
+    requireNonNegative(counters.jpegEighthCount, phase + " eighth jpeg count");
+    requireNonNegative(counters.jpegEighthNs, phase + " eighth jpeg ns");
+    requireNonNegative(counters.jpegOtherCount, phase + " other jpeg count");
+    requireNonNegative(counters.jpegOtherNs, phase + " other jpeg ns");
+    requireNonNegative(counters.jpegRequestedFullCount, phase + " requested full jpeg count");
+    requireNonNegative(counters.jpegRequestedTargetCount, phase + " requested target count");
+    requireNonNegative(counters.jpegRequestedExplicitRatioCount,
+        phase + " requested explicit ratio count");
+    requireNonNegative(counters.jpegRequestedBestFitCount, phase + " requested best-fit count");
+    requireNonNegative(counters.jpegDecodeFailureCount, phase + " jpeg decode failures");
+    ImageRasterBenchmarkSupport.require(
+        counters.jpegDecodeCount == counters.jpegFullCount + counters.jpegHalfCount
+            + counters.jpegQuarterCount + counters.jpegEighthCount + counters.jpegOtherCount,
+        phase + " jpeg denominator count mismatch");
+    ImageRasterBenchmarkSupport.require(
+        counters.jpegDecodeNs == counters.jpegFullNs + counters.jpegHalfNs
+            + counters.jpegQuarterNs + counters.jpegEighthNs + counters.jpegOtherNs,
+        phase + " jpeg denominator ns mismatch");
+    ImageRasterBenchmarkSupport.require(
+        counters.jpegDecodeCount == counters.jpegRequestedFullCount
+            + counters.jpegRequestedTargetCount + counters.jpegRequestedExplicitRatioCount
+            + counters.jpegRequestedBestFitCount,
+        phase + " jpeg requested mode count mismatch");
+    ImageRasterBenchmarkSupport.require(
+        ImageOptimizationSettings.getMask() == ImageOptimizationSettings.getEffectiveMask(),
+        "requested mask != effective mask");
+  }
+
+  private static void validateFrameDiagnostics(Counters counters, long[] decodeCounts,
+      long[] decodeNs, long[] fullCounts, long[] fullNs, long[] halfCounts, long[] halfNs,
+      long[] quarterCounts, long[] quarterNs, long[] eighthCounts, long[] eighthNs,
+      long[] otherCounts, long[] otherNs) {
+    validateJpegDiagnostics(counters, "scroll");
+    validateWritePixelsDiagnostics(counters);
+    long decodeCount = 0;
+    long decodeNsTotal = 0;
+    long fullCount = 0;
+    long fullNsTotal = 0;
+    long halfCount = 0;
+    long halfNsTotal = 0;
+    long quarterCount = 0;
+    long quarterNsTotal = 0;
+    long eighthCount = 0;
+    long eighthNsTotal = 0;
+    long otherCount = 0;
+    long otherNsTotal = 0;
+    for (int i = 0; i < decodeCounts.length; i++) {
+      requireNonNegative(decodeCounts[i], "frame jpeg decode count");
+      requireNonNegative(decodeNs[i], "frame jpeg decode ns");
+      requireNonNegative(fullCounts[i], "frame full jpeg count");
+      requireNonNegative(fullNs[i], "frame full jpeg ns");
+      requireNonNegative(halfCounts[i], "frame half jpeg count");
+      requireNonNegative(halfNs[i], "frame half jpeg ns");
+      requireNonNegative(quarterCounts[i], "frame quarter jpeg count");
+      requireNonNegative(quarterNs[i], "frame quarter jpeg ns");
+      requireNonNegative(eighthCounts[i], "frame eighth jpeg count");
+      requireNonNegative(eighthNs[i], "frame eighth jpeg ns");
+      requireNonNegative(otherCounts[i], "frame other jpeg count");
+      requireNonNegative(otherNs[i], "frame other jpeg ns");
+      decodeCount += decodeCounts[i];
+      decodeNsTotal += decodeNs[i];
+      fullCount += fullCounts[i];
+      fullNsTotal += fullNs[i];
+      halfCount += halfCounts[i];
+      halfNsTotal += halfNs[i];
+      quarterCount += quarterCounts[i];
+      quarterNsTotal += quarterNs[i];
+      eighthCount += eighthCounts[i];
+      eighthNsTotal += eighthNs[i];
+      otherCount += otherCounts[i];
+      otherNsTotal += otherNs[i];
+    }
+    ImageRasterBenchmarkSupport.require(decodeCount == counters.jpegDecodeCount,
+        "frame jpeg decode counts do not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(decodeNsTotal == counters.jpegDecodeNs,
+        "frame jpeg decode ns does not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(fullCount == counters.jpegFullCount,
+        "frame full jpeg counts do not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(fullNsTotal == counters.jpegFullNs,
+        "frame full jpeg ns does not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(halfCount == counters.jpegHalfCount,
+        "frame half jpeg counts do not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(halfNsTotal == counters.jpegHalfNs,
+        "frame half jpeg ns does not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(quarterCount == counters.jpegQuarterCount,
+        "frame quarter jpeg counts do not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(quarterNsTotal == counters.jpegQuarterNs,
+        "frame quarter jpeg ns does not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(eighthCount == counters.jpegEighthCount,
+        "frame eighth jpeg counts do not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(eighthNsTotal == counters.jpegEighthNs,
+        "frame eighth jpeg ns does not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(otherCount == counters.jpegOtherCount,
+        "frame other jpeg counts do not match scroll aggregate");
+    ImageRasterBenchmarkSupport.require(otherNsTotal == counters.jpegOtherNs,
+        "frame other jpeg ns does not match scroll aggregate");
+  }
+
+  private static void validateWritePixelsDiagnostics(Counters counters) {
+    requireNonNegative(counters.writePixelsAttempts, "writePixels attempts");
+    requireNonNegative(counters.writePixelsHits, "writePixels hits");
+    requireNonNegative(counters.writePixelsFallbacks, "writePixels fallbacks");
+    requireNonNegative(counters.writePixelsDeviceOneToOneCandidates,
+        "writePixels one-to-one candidates");
+    requireNonNegative(counters.writePixelsDeviceOneToOneKnownOpaqueCandidates,
+        "writePixels known-opaque candidates");
+    ImageRasterBenchmarkSupport.require(
+        counters.writePixelsAttempts == counters.writePixelsHits + counters.writePixelsFallbacks,
+        "writePixels attempts do not equal hits plus fallbacks");
+    ImageRasterBenchmarkSupport.require(
+        counters.writePixelsDeviceOneToOneCandidates <= counters.writePixelsAttempts,
+        "writePixels candidates exceed attempts");
+    ImageRasterBenchmarkSupport.require(
+        counters.writePixelsDeviceOneToOneKnownOpaqueCandidates
+            <= counters.writePixelsDeviceOneToOneCandidates,
+        "writePixels known-opaque candidates exceed candidates");
+  }
+
+  private static void requireNonNegative(long value, String description) {
+    ImageRasterBenchmarkSupport.require(value >= 0, "negative " + description);
   }
 
   private long paintFrameNs() {
@@ -474,10 +695,18 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private void writeRunFrames(PassResult result) throws Exception {
     StringBuilder frames = new StringBuilder(4096);
-    frames.append("frame_index,elapsed_ns,frame_time_ns,scroll_value\n");
+    frames.append("frame_index,elapsed_ns,frame_time_ns,scroll_value,jpeg_decode_count,jpeg_decode_ns,")
+        .append("jpeg_full_count,jpeg_full_ns,jpeg_half_count,jpeg_half_ns,jpeg_quarter_count,")
+        .append("jpeg_quarter_ns,jpeg_eighth_count,jpeg_eighth_ns,jpeg_other_count,jpeg_other_ns\n");
     for (int i = 0; i < result.frames; i++) {
       frames.append(i).append(',').append(result.frameElapsedNs[i]).append(',')
-          .append(result.frameTimesNs[i]).append(',').append(result.framePositions[i]).append('\n');
+          .append(result.frameTimesNs[i]).append(',').append(result.framePositions[i]).append(',')
+          .append(result.frameJpegDecodeCounts[i]).append(',').append(result.frameJpegDecodeNs[i]).append(',')
+          .append(result.frameJpegFullCounts[i]).append(',').append(result.frameJpegFullNs[i]).append(',')
+          .append(result.frameJpegHalfCounts[i]).append(',').append(result.frameJpegHalfNs[i]).append(',')
+          .append(result.frameJpegQuarterCounts[i]).append(',').append(result.frameJpegQuarterNs[i]).append(',')
+          .append(result.frameJpegEighthCounts[i]).append(',').append(result.frameJpegEighthNs[i]).append(',')
+          .append(result.frameJpegOtherCounts[i]).append(',').append(result.frameJpegOtherNs[i]).append('\n');
     }
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(runOutputDir, "frames.csv"), frames.toString());
@@ -600,6 +829,29 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendCounter(json, "writePixelsHits", counters.writePixelsHits, true);
     appendCounter(json, "writePixelsFallbacks", counters.writePixelsFallbacks, true);
     appendCounter(json, "writePixelsCopiedBytes", counters.writePixelsCopiedBytes, true);
+    appendCounter(json, "writePixelsRejectInvalidTargetOrSource",
+        counters.writePixelsRejectInvalidTargetOrSource, true);
+    appendCounter(json, "writePixelsRejectAlphaMask", counters.writePixelsRejectAlphaMask, true);
+    appendCounter(json, "writePixelsRejectMatrix", counters.writePixelsRejectMatrix, true);
+    appendCounter(json, "writePixelsRejectSaveCount", counters.writePixelsRejectSaveCount, true);
+    appendCounter(json, "writePixelsRejectSourceRect", counters.writePixelsRejectSourceRect, true);
+    appendCounter(json, "writePixelsRejectSizeMismatch", counters.writePixelsRejectSizeMismatch, true);
+    appendCounter(json, "writePixelsRejectFractionalDestination",
+        counters.writePixelsRejectFractionalDestination, true);
+    appendCounter(json, "writePixelsRejectDestinationBounds",
+        counters.writePixelsRejectDestinationBounds, true);
+    appendCounter(json, "writePixelsRejectOpacity", counters.writePixelsRejectOpacity, true);
+    appendCounter(json, "writePixelsRejectSourcePixels", counters.writePixelsRejectSourcePixels, true);
+    appendCounter(json, "writePixelsRejectWriteFailure",
+        counters.writePixelsRejectWriteFailure, true);
+    appendCounter(json, "writePixelsDeviceOneToOneCandidates",
+        counters.writePixelsDeviceOneToOneCandidates, true);
+    appendCounter(json, "writePixelsDeviceOneToOneKnownOpaqueCandidates",
+        counters.writePixelsDeviceOneToOneKnownOpaqueCandidates, true);
+    json.append("  \"jpegDecode\":{\n");
+    appendJpegDecodeSection(json, "prefetch", prefetchCounters, true);
+    appendJpegDecodeSection(json, "scroll", counters, false);
+    json.append("  },\n");
     appendCounter(json, "physicalIdentityAttempts", counters.physicalIdentityAttempts, true);
     appendCounter(json, "physicalIdentityHits", counters.physicalIdentityHits, true);
     appendCounter(json, "physicalIdentityFallbacks", counters.physicalIdentityFallbacks, true);
@@ -617,8 +869,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
     for (int feature = 0; feature < FEATURE_NAMES.length; feature++) {
       long hits = counters.featureHits(feature);
-      String status = (effectiveMask & (1L << feature)) == 0
-          ? "DISABLED" : hits == 0 ? "NOT_EXERCISED" : "EXERCISED";
+      String status = counters.featureStatus(feature, effectiveMask, hits);
       json.append("    \"").append(FEATURE_NAMES[feature]).append("\":{\"bit\":")
           .append(feature).append(",\"enabled\":")
           .append((effectiveMask & (1L << feature)) != 0)
@@ -654,6 +905,45 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(comma ? ",\n" : "\n");
   }
 
+  private static void appendJpegDecodeSection(StringBuilder json, String name, Counters counters,
+      boolean comma) {
+    long count = counters == null ? 0 : counters.jpegDecodeCount;
+    long ns = counters == null ? 0 : counters.jpegDecodeNs;
+    long fullCount = counters == null ? 0 : counters.jpegFullCount;
+    long fullNs = counters == null ? 0 : counters.jpegFullNs;
+    long halfCount = counters == null ? 0 : counters.jpegHalfCount;
+    long halfNs = counters == null ? 0 : counters.jpegHalfNs;
+    long quarterCount = counters == null ? 0 : counters.jpegQuarterCount;
+    long quarterNs = counters == null ? 0 : counters.jpegQuarterNs;
+    long eighthCount = counters == null ? 0 : counters.jpegEighthCount;
+    long eighthNs = counters == null ? 0 : counters.jpegEighthNs;
+    long otherCount = counters == null ? 0 : counters.jpegOtherCount;
+    long otherNs = counters == null ? 0 : counters.jpegOtherNs;
+    long requestedFull = counters == null ? 0 : counters.jpegRequestedFullCount;
+    long requestedTarget = counters == null ? 0 : counters.jpegRequestedTargetCount;
+    long requestedExplicitRatio = counters == null ? 0 : counters.jpegRequestedExplicitRatioCount;
+    long requestedBestFit = counters == null ? 0 : counters.jpegRequestedBestFitCount;
+    long failures = counters == null ? 0 : counters.jpegDecodeFailureCount;
+    json.append("    \"").append(name).append("\":{\"count\":").append(count)
+        .append(",\"ns\":").append(ns)
+        .append(",\"full\":{\"count\":").append(fullCount)
+        .append(",\"ns\":").append(fullNs).append("}")
+        .append(",\"half\":{\"count\":").append(halfCount)
+        .append(",\"ns\":").append(halfNs).append("}")
+        .append(",\"quarter\":{\"count\":").append(quarterCount)
+        .append(",\"ns\":").append(quarterNs).append("}")
+        .append(",\"eighth\":{\"count\":").append(eighthCount)
+        .append(",\"ns\":").append(eighthNs).append("}")
+        .append(",\"other\":{\"count\":").append(otherCount)
+        .append(",\"ns\":").append(otherNs).append("}")
+        .append(",\"requested\":{\"full\":").append(requestedFull)
+        .append(",\"target\":").append(requestedTarget)
+        .append(",\"explicitRatio\":").append(requestedExplicitRatio)
+        .append(",\"bestFit\":").append(requestedBestFit).append("}")
+        .append(",\"failures\":").append(failures).append("}")
+        .append(comma ? ",\n" : "\n");
+  }
+
   private static String escapeJson(String value) {
     return value.replace("\\", "\\\\").replace("\"", "\\\"");
   }
@@ -671,11 +961,27 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long[] frameElapsedNs;
     final int[] framePositions;
     final long[] sortedFrameTimesNs;
+    final long[] frameJpegDecodeCounts;
+    final long[] frameJpegDecodeNs;
+    final long[] frameJpegFullCounts;
+    final long[] frameJpegFullNs;
+    final long[] frameJpegHalfCounts;
+    final long[] frameJpegHalfNs;
+    final long[] frameJpegQuarterCounts;
+    final long[] frameJpegQuarterNs;
+    final long[] frameJpegEighthCounts;
+    final long[] frameJpegEighthNs;
+    final long[] frameJpegOtherCounts;
+    final long[] frameJpegOtherNs;
     final Counters counters;
 
     PassResult(String name, boolean forward, int minimum, int end, int maximum, long elapsedNs,
         int frames, long[] frameTimesNs, long[] frameElapsedNs, int[] framePositions,
-        long[] sortedFrameTimesNs, Counters counters) {
+        long[] sortedFrameTimesNs, long[] frameJpegDecodeCounts, long[] frameJpegDecodeNs,
+        long[] frameJpegFullCounts, long[] frameJpegFullNs, long[] frameJpegHalfCounts,
+        long[] frameJpegHalfNs, long[] frameJpegQuarterCounts, long[] frameJpegQuarterNs,
+        long[] frameJpegEighthCounts, long[] frameJpegEighthNs,
+        long[] frameJpegOtherCounts, long[] frameJpegOtherNs, Counters counters) {
       this.name = name;
       this.forward = forward;
       this.minimum = minimum;
@@ -688,6 +994,18 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       this.frameElapsedNs = frameElapsedNs;
       this.framePositions = framePositions;
       this.sortedFrameTimesNs = sortedFrameTimesNs;
+      this.frameJpegDecodeCounts = frameJpegDecodeCounts;
+      this.frameJpegDecodeNs = frameJpegDecodeNs;
+      this.frameJpegFullCounts = frameJpegFullCounts;
+      this.frameJpegFullNs = frameJpegFullNs;
+      this.frameJpegHalfCounts = frameJpegHalfCounts;
+      this.frameJpegHalfNs = frameJpegHalfNs;
+      this.frameJpegQuarterCounts = frameJpegQuarterCounts;
+      this.frameJpegQuarterNs = frameJpegQuarterNs;
+      this.frameJpegEighthCounts = frameJpegEighthCounts;
+      this.frameJpegEighthNs = frameJpegEighthNs;
+      this.frameJpegOtherCounts = frameJpegOtherCounts;
+      this.frameJpegOtherNs = frameJpegOtherNs;
       this.counters = counters;
     }
 
@@ -727,6 +1045,23 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long imageCreated = Image.imageCreatedCountForTest();
     final long targetedJpegDecodes = Image.targetedDecodeInvocationCountForTest();
     final long fullJpegDecodes = Image.fullDecodeInvocationCountForTest();
+    final long jpegDecodeCount = Image.jpegNativeDecodeCountForTest;
+    final long jpegDecodeNs = Image.jpegNativeDecodeNsForTest;
+    final long jpegFullCount = Image.jpegNativeDecodeFullCountForTest;
+    final long jpegFullNs = Image.jpegNativeDecodeFullNsForTest;
+    final long jpegHalfCount = Image.jpegNativeDecodeHalfCountForTest;
+    final long jpegHalfNs = Image.jpegNativeDecodeHalfNsForTest;
+    final long jpegQuarterCount = Image.jpegNativeDecodeQuarterCountForTest;
+    final long jpegQuarterNs = Image.jpegNativeDecodeQuarterNsForTest;
+    final long jpegEighthCount = Image.jpegNativeDecodeEighthCountForTest;
+    final long jpegEighthNs = Image.jpegNativeDecodeEighthNsForTest;
+    final long jpegOtherCount = Image.jpegNativeDecodeOtherCountForTest;
+    final long jpegOtherNs = Image.jpegNativeDecodeOtherNsForTest;
+    final long jpegRequestedFullCount = Image.jpegNativeDecodeRequestedFullCountForTest;
+    final long jpegRequestedTargetCount = Image.jpegNativeDecodeRequestedTargetCountForTest;
+    final long jpegRequestedExplicitRatioCount = Image.jpegNativeDecodeRequestedExplicitRatioCountForTest;
+    final long jpegRequestedBestFitCount = Image.jpegNativeDecodeRequestedBestFitCountForTest;
+    final long jpegDecodeFailureCount = Image.jpegNativeDecodeFailureCountForTest;
     final long decodeFinalBufferBytes = Image.decodeFinalBufferBytesForTest();
     final long imageMaterializations = Image.materializationCountForTest();
     final long imagePipelines = Image.imagePipelineCreatedCountForTest();
@@ -738,6 +1073,19 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long writePixelsHits = NativeImageBacking.writePixelsHitsForTest();
     final long writePixelsFallbacks = NativeImageBacking.writePixelsFallbacksForTest();
     final long writePixelsCopiedBytes = NativeImageBacking.writePixelsCopiedBytesForTest();
+    final long writePixelsRejectInvalidTargetOrSource = NativeImageBacking.writePixelsRejectInvalidTargetOrSourceForTest();
+    final long writePixelsRejectAlphaMask = NativeImageBacking.writePixelsRejectAlphaMaskForTest();
+    final long writePixelsRejectMatrix = NativeImageBacking.writePixelsRejectMatrixForTest();
+    final long writePixelsRejectSaveCount = NativeImageBacking.writePixelsRejectSaveCountForTest();
+    final long writePixelsRejectSourceRect = NativeImageBacking.writePixelsRejectSourceRectForTest();
+    final long writePixelsRejectSizeMismatch = NativeImageBacking.writePixelsRejectSizeMismatchForTest();
+    final long writePixelsRejectFractionalDestination = NativeImageBacking.writePixelsRejectFractionalDestinationForTest();
+    final long writePixelsRejectDestinationBounds = NativeImageBacking.writePixelsRejectDestinationBoundsForTest();
+    final long writePixelsRejectOpacity = NativeImageBacking.writePixelsRejectOpacityForTest();
+    final long writePixelsRejectSourcePixels = NativeImageBacking.writePixelsRejectSourcePixelsForTest();
+    final long writePixelsRejectWriteFailure = NativeImageBacking.writePixelsRejectWriteFailureForTest();
+    final long writePixelsDeviceOneToOneCandidates = NativeImageBacking.writePixelsDeviceOneToOneCandidatesForTest();
+    final long writePixelsDeviceOneToOneKnownOpaqueCandidates = NativeImageBacking.writePixelsDeviceOneToOneKnownOpaqueCandidatesForTest();
     final long physicalIdentityAttempts = NativeImageBacking.physicalIdentityAttemptsForTest();
     final long physicalIdentityHits = NativeImageBacking.physicalIdentityHitsForTest();
     final long physicalIdentityFallbacks = NativeImageBacking.physicalIdentityFallbacksForTest();
@@ -780,6 +1128,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     String details() {
       return ",targeted_jpeg_decodes=" + targetedJpegDecodes
           + ",full_jpeg_decodes=" + fullJpegDecodes
+          + ",jpeg_decode_count=" + jpegDecodeCount
+          + ",jpeg_decode_ns=" + jpegDecodeNs
+          + ",jpeg_full_count=" + jpegFullCount
+          + ",jpeg_half_count=" + jpegHalfCount
+          + ",jpeg_quarter_count=" + jpegQuarterCount
+          + ",jpeg_eighth_count=" + jpegEighthCount
+          + ",jpeg_other_count=" + jpegOtherCount
           + ",image_materializations=" + imageMaterializations
           + ",image_pipelines=" + imagePipelines
           + ",draw_plans_created=" + drawPlansCreated
@@ -790,6 +1145,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           + ",write_pixels_hits=" + writePixelsHits
           + ",write_pixels_fallbacks=" + writePixelsFallbacks
           + ",write_pixels_copied_bytes=" + writePixelsCopiedBytes
+          + ",write_pixels_device_1to1_candidates=" + writePixelsDeviceOneToOneCandidates
+          + ",write_pixels_device_1to1_known_opaque_candidates="
+          + writePixelsDeviceOneToOneKnownOpaqueCandidates
+          + ",write_pixels_reject_matrix=" + writePixelsRejectMatrix
+          + ",write_pixels_reject_save_count=" + writePixelsRejectSaveCount
+          + ",write_pixels_reject_size_mismatch=" + writePixelsRejectSizeMismatch
           + ",physical_identity_attempts=" + physicalIdentityAttempts
           + ",physical_identity_hits=" + physicalIdentityHits
           + ",physical_identity_fallbacks=" + physicalIdentityFallbacks
@@ -848,13 +1209,45 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       }
     }
 
+    private static boolean isAttemptFeature(int feature) {
+      return feature == ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS
+          || feature == ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION
+          || feature == ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE
+          || feature == ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING;
+    }
+
+    long featureActivity(int feature) {
+      switch (feature) {
+      case ImageOptimizationSettings.RASTER_OPAQUE_WRITE_PIXELS:
+        return writePixelsAttempts;
+      case ImageOptimizationSettings.RASTER_TARGET_COLORTYPE_CONVERSION:
+        return targetColorAttempts;
+      case ImageOptimizationSettings.RASTER_PHYSICAL_VARIANT_CACHE:
+        return physicalVariantLookups;
+      case ImageOptimizationSettings.RASTER_PHYSICAL_IDENTITY_FOLDING:
+        return physicalIdentityAttempts;
+      default:
+        return featureHits(feature);
+      }
+    }
+
+    String featureStatus(int feature, long enabledMask, long hits) {
+      if ((enabledMask & (1L << feature)) == 0) {
+        return "DISABLED";
+      }
+      if (isAttemptFeature(feature)) {
+        long activity = featureActivity(feature);
+        return activity == 0 ? "NOT_REACHED" : hits == 0 ? "ATTEMPTED_NO_HIT" : "EXERCISED";
+      }
+      return hits == 0 ? "NOT_EXERCISED" : "EXERCISED";
+    }
+
     String featureDetails() {
       StringBuilder details = new StringBuilder(1024);
       long enabledMask = ImageOptimizationSettings.getEffectiveMask();
       for (int feature = 0; feature < FEATURE_NAMES.length; feature++) {
         long hits = featureHits(feature);
-        String status = (enabledMask & (1L << feature)) == 0
-            ? "DISABLED" : hits == 0 ? "NOT_EXERCISED" : "EXERCISED";
+        String status = featureStatus(feature, enabledMask, hits);
         details.append(",feature_").append(FEATURE_NAMES[feature]).append("_hits=").append(hits)
             .append(",feature_").append(FEATURE_NAMES[feature]).append("_status=").append(status);
       }
