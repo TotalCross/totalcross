@@ -109,8 +109,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Final correction commit: `e1c3bab55`; Plan 2 document commit:
   `58699d768`.
 - The post-commit checker found overlong body lines in the preserved
-  follow-up commits `e1c3bab55` and `3f0ba4067`; neither was amended because
-  the plan forbids history rewriting. The Plan 2 commit passed the checker.
+  follow-up commits `e1c3bab55`, `3f0ba4067`, and `5e78c6168`; none was
+  amended because the plan forbids history rewriting. The Plan 2 commit passed
+  the checker.
   JPEG phase/frame denominator count/ns invariants passed, including prefetch
   `660` versus scroll `0` for mask 4/on.
 - No other platform or full decode matrix was built; no optimization policy
