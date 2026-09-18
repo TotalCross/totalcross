@@ -8,11 +8,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone: Milestone 2, Slice 2A — benchmark phase/frame integration.
-- Last checkpoint commit: `b45df2945`.
-- Next action: extend `ImageScrollRealWorkloadBenchmarkApp` with prefetch,
-  scroll, frame JPEG snapshots, detailed writePixels counters, status fixes,
-  and consistency checks.
+- Milestone: Milestone 2 gate after Slice 2B — benchmark phase/frame
+  integration and distributed result-schema validation.
+- Last checkpoint commit: `72fe224f2`.
+- Next action: run the Milestone 2 static checks, macOS ARM64 rebuild/package,
+  benchmark self-test, four existing smokes, and mask-4 diagnostics smoke.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Starting HEAD: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 
@@ -56,6 +56,17 @@ SPDX-License-Identifier: LGPL-2.1-only
 - No other platform was built. Gate warnings were existing compiler/linker
   warnings and did not prevent the two requested targets from linking.
 - Milestone 1 accepted; no benchmark smoke has run yet.
+- Slice 2A commit: `4d781d5a2` (`perf(benchmark): record scroll decode
+  diagnostics`). Added prefetch/scroll JPEG snapshots, per-frame JPEG deltas,
+  detailed writePixels counters, four attempt-feature statuses, and runtime
+  consistency checks.
+- Slice 2B commit: `72fe224f2` (`test(benchmark): validate diagnostic result
+  schema`). Added expanded frame-schema validation, compact diagnostic fields
+  in distributed `summary.csv`, and README field/status documentation.
+- Slice 2A/2B static checks passed: focused header validation, `git diff
+  --check`, `bash -n scripts/package-image-scroll-benchmark.sh`, Python
+  compilation, and a deterministic diagnostic parser fixture. No SDK/native
+  build ran between the two slices, per plan.
 
 ## Decisions still active
 

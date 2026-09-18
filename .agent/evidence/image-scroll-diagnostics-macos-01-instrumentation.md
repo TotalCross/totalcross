@@ -51,3 +51,26 @@ defers verbose output to an external log when one exists.
 - Warnings: existing compiler warnings and duplicate static-library linker
   warnings; no task failure.
 - Platform scope: no Android, iOS, Windows, or Linux build was run.
+
+## 2026-09-18 — Milestone 2 Slice 2A
+
+- Commit: `4d781d5a2` (`perf(benchmark): record scroll decode diagnostics`).
+- Delivered: prefetch/scroll JPEG phase snapshots, primitive per-frame JPEG
+  deltas, detailed writePixels counters, corrected attempt-feature statuses,
+  and runtime diagnostic invariants.
+- Focused header validation and `git diff --check`: passed.
+- No SDK/native build ran between Slice 2A and Slice 2B, as required.
+
+## 2026-09-18 — Milestone 2 Slice 2B
+
+- Commit: `72fe224f2` (`test(benchmark): validate diagnostic result schema`).
+- Delivered: expanded `frames.csv` parsing, compact diagnostic fields in
+  distributed `summary.csv`, counters-schema validation, and README updates.
+- `bash -n scripts/package-image-scroll-benchmark.sh`: passed.
+- `PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile
+  scripts/run-image-scroll-distributed-benchmark.py`: passed.
+- Deterministic parser fixture: passed; it verified JPEG denominator and
+  writePixels invariants plus phase separation.
+- Focused header validation and `git diff --check`: passed.
+- Milestone 2 gate: next action; macOS package and benchmark smokes remain
+  pending.
