@@ -6,20 +6,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Standard streams V1 state
 
-- Active milestone/slice: Milestone 5 — corrected handoff complete.
+- Active milestone/slice: Milestone 6 — closed-flush compatibility correction.
 - Branch: `feat/standard-streams-v1`.
 - Base SHA: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
-- Last implementation commit: `a0011d954` (`test(sdk): cover corrected stream
-  semantics`); preceding artifact fix is `e36203795`, runtime fix is
-  `cfeb4f51c`, and plan consolidation is `4d0ded3db`.
-- Correction closure commit: `888537b29` (`docs(agent): close standard
-  streams v1 plan`); earlier handoff commits remain `535e3f14a`, `39dcb0b41`,
-  and `c3cba7e9b`.
+- Last implementation commit: `cd5d5a0d8` (`test(sdk): update closed flush
+  expectation`); the behavior fix is `b662c3939`, and preceding implementation
+  commits include `a0011d954`, `e36203795`, and `cfeb4f51c`.
+- Earlier correction closure is `888537b29` (`docs(agent): close standard
+  streams v1 plan`); the closed-flush documentation closure is pending.
 - Active paths: corrected Java stream semantics, shared legacy writer/backend
   semantics, artifact boundaries, bounded plan/reference artifacts, smoke
   fixture/runner, and final handoff files.
-- Next concrete action: none for V1; leave the task-scoped paths clean and
-  retain the recorded platform/V2 deferrals.
+- Next concrete action: update the bounded correction records, commit the
+  documentation closure, and leave task-scoped paths clean.
 - Focused validation completed: corrected focused SDK tests passed with agent
   log `TotalCrossSDK/agent-logs/20260917-203241-test-agent.log`; the dedicated
   artifact-boundary task passed with agent log
@@ -34,6 +33,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/agent-logs/20260917-203407-runStandardStreamsSmokeMacOS-agent.log`.
   Header, diff, static, bounded-size, and commit-message audits passed at
   closure; the two historical M0/M1 message deviations remain documented.
+- Closed-flush focused rerun passed with agent log
+  `TotalCrossSDK/agent-logs/20260917-210927-test-agent.log`; no native rebuild
+  was needed because the correction changed only SDK Java/test files.
 - Deferred validation: Windows, Linux, Android, and iOS builds remain forbidden
   by the active plan. Full image benchmarks remain out of scope.
 - Blockers/discoveries: the Milestone 0 and Milestone 1 commit-message checks
@@ -43,8 +45,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   The first M3 smoke attempt exposed an unavailable deployed
   `java.nio.charset.StandardCharsets`; the supported UTF-8 path fixed it and
   the rerun passed. The review correction restored desktop macOS legacy
-  stdout-only behavior, added Windows durable explicit flush, and consolidated
-  the oversized plan into bounded artifacts. Existing unrelated untracked
+  stdout-only behavior, added Windows durable explicit flush, consolidated
+  the oversized plan into bounded artifacts, and corrected closed-flush
+  trouble reporting. Existing unrelated untracked
   files and benchmark artifacts remain untouched.
 - The supplied plan was already 39,677 bytes and 1,287 lines, above the
   plan's soft size guideline; it was consolidated rather than discarded. The

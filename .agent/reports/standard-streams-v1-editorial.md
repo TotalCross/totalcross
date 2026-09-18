@@ -6,8 +6,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Standard streams V1 editorial handoff
 
-The corrected handoff is recorded at implementation/documentation closure
-commit `888537b29`.
+The original corrected handoff is recorded at implementation/documentation
+closure commit `888537b29`; the closed-flush compatibility correction follows
+in `b662c3939` and `cd5d5a0d8`.
 
 ## Editorial Summary
 
@@ -42,6 +43,8 @@ forbids those local builds.
 - Desktop macOS legacy debug remains stdout-only; Windows explicit standard
   flush now uses `FlushFileBuffers`, while legacy Windows debug remains
   `fflush`-only.
+- `PrintStream4D.flush()` after close now marks trouble as JDK-compatible,
+  while `close()` remains idempotent and the regression sequence is covered.
 - `VmStandardOutputStream` is excluded from `totalcross-api` and covered by a
   dedicated artifact-boundary test.
 - A focused Java test, system-stream test, smoke fixture, and macOS Gradle
@@ -65,11 +68,13 @@ macOS legacy file behavior; those assertions and the backend were corrected.
 Native-method generation also revealed unrelated generated-file drift; the
 change retained only the focused standard-stream metadata. The original plan
 exceeded its soft size limit and was consolidated into bounded active and
-reference artifacts.
+reference artifacts. A final compatibility review found the closed-flush
+trouble-state deviation; it was fixed without touching native code.
 
 ## Validation and Measurable Results
 
-Final focused SDK tests, the dedicated artifact-boundary task, `clean dist`,
+Final focused SDK tests, including the closed-flush regression, the dedicated
+artifact-boundary task, `clean dist`,
 macOS native configure/build, headers, diff checks, static scope checks,
 bounded file-size checks, and the corrected macOS smoke passed. The smoke
 reported `stdoutBytes=201`, `stderrBytes=77`, and `debugConsoleBytes=233`,

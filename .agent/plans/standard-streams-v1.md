@@ -64,6 +64,9 @@ Inspect only the active paths named in state before expanding the investigation.
 - [x] 2026-09-17 M5: applied the review corrections, split the oversized plan
   into bounded plan/reference/history artifacts, reran the required final
   SDK/macOS/smoke gate, and closed the corrected handoff in `888537b29`.
+- [x] 2026-09-17 M6: aligned `PrintStream4D.flush()` after close with JDK
+  trouble reporting, updated the stale close expectation, and passed the
+  focused SDK regression tests in `b662c3939` and `cd5d5a0d8`.
 
 ## Current Architecture and Scope
 
@@ -186,6 +189,8 @@ test. It may remain in `totalcross-runtime-java`.
 - Scope UTF-8 to the standard bridge; do not change generic stream encoding.
 - Keep the bridge internal at the API artifact boundary.
 - Make explicit flush durable on Windows desktop without changing WinCE.
+- Mark explicit `flush()` after `PrintStream4D.close()` as trouble while
+  preserving idempotent close.
 - Defer formatter and configurable rolling `DebugConsole.log` work to V2.
 
 ## Validation and Acceptance

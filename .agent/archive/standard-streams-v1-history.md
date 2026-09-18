@@ -80,6 +80,14 @@ The corrected gate passed focused SDK tests, the dedicated artifact-boundary
 task, clean `dist`, native macOS configure/build, and the updated macOS smoke.
 The correction closure documentation was committed in `888537b29`.
 
+### Closed-flush compatibility correction
+
+Review found that `PrintStream4D.flush()` silently returned after close. Commit
+`b662c3939` makes that path set trouble without changing idempotent `close()`;
+commit `cd5d5a0d8` updates the existing close test and preserves the required
+close/reset/flush/`checkError()` regression. The focused `PrintStream4DTest`
+and `System4DTest` rerun passed. No native source or architecture changed.
+
 ## Decisions preserved
 
 - OUT and ERR have independent Java stream state and native channels.
