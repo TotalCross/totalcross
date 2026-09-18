@@ -140,6 +140,13 @@ Do not change the standalone 90-process decode matrix in this plan.
 
 Keep existing attempts/hits/fallbacks/copied-byte counters.
 
+The global `writePixelsAttempts`, `writePixelsHits`, and
+`writePixelsFallbacks` counters may also include `tryDirectImageCopy()` and
+`tryDirectPhysicalCopy()` when composite masks enable those paths. The new
+detailed rejection and candidate counters instrument the regular
+`tryWritePixels*` path. This does not invalidate mask 4; mask 4 remains the
+authoritative mask for analyzing `RASTER_OPAQUE_WRITE_PIXELS`.
+
 Add these structural rejection counters. Evaluate them independently when the
 state is cheap to inspect:
 
