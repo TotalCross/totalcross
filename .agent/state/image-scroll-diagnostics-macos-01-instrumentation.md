@@ -10,7 +10,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Milestone: Plan 1 closed after the final short-circuit gate.
 - Last functional checkpoint commit: `e1c3bab55`.
-- Closeout documentation commit: pending in this slice.
+- Closeout documentation commit: `3f0ba4067`; validation note commit:
+  `03a41b7aa`.
 - Next action: Plan 2 at
   `.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md`.
 - Required branch: `perf/image-decode-distributed-benchmark`.
