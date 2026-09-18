@@ -178,6 +178,17 @@ class PrintStream4DTest {
   }
 
   @Test
+  void flushingAfterCloseSetsError() {
+    TestPrintStream stream = new TestPrintStream(new ByteArrayOutputStream());
+
+    stream.close();
+    stream.resetError();
+    stream.flush();
+
+    assertTrue(stream.checkError());
+  }
+
+  @Test
   void clearAndSetErrorRemainProtectedHooks() {
     TestPrintStream stream = new TestPrintStream(new ByteArrayOutputStream());
 
