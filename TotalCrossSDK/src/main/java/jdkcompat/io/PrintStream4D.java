@@ -183,6 +183,7 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
   public void flush() {
     synchronized (lock) {
       if (closed) {
+        setError();
         return;
       }
       try {
