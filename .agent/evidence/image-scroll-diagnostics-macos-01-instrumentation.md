@@ -74,3 +74,39 @@ defers verbose output to an external log when one exists.
 - Focused header validation and `git diff --check`: passed.
 - Milestone 2 gate: next action; macOS package and benchmark smokes remain
   pending.
+
+## 2026-09-18 — Milestone 2 gate and Plan 1 close
+
+- First macOS smoke failure: the packaged Java benchmark called a new native
+  getter that the VM resolved under its 32-character truncated identifier.
+  The full bridge name was not registered under that identifier; the two
+  candidate names would also have collided. NoSuchMethodError was reproduced
+  in the bundle log.
+- Follow-up commit: `f803d4a4d` (`fix(benchmark): shorten native diagnostic
+  bridge names`). Private bridge names were shortened consistently across Java,
+  native declarations, generated prototypes, C implementations, and the
+  native registry. Public diagnostic wrapper names and output schema were
+  unchanged.
+- Post-fix focused SDK image tests: passed. Log:
+  `/tmp/image-scroll-diagnostics-m2-bridge-sdk-image-tests.log`.
+- Post-fix SDK packaging: passed. Log:
+  `/tmp/image-scroll-diagnostics-m2-bridge-package-sdk.log`.
+- Post-fix macOS ARM64 configure/build: passed. Logs:
+  `/tmp/image-scroll-diagnostics-m2-bridge-cmake-configure.log` and
+  `/tmp/image-scroll-diagnostics-m2-bridge-cmake-build.log`.
+- macOS-only package: passed. Log:
+  `/tmp/image-scroll-diagnostics-m2-package-fixed.log`.
+- Bundle self-test and prescribed smokes (`0/off`, `0/on`, `32799/off`,
+  `32799/on`): passed. Logs:
+  `/tmp/image-scroll-diagnostics-m2-fixed-self-test.log` and
+  `/tmp/image-scroll-diagnostics-m2-fixed-smokes.log`.
+- Additional mask-4 `off`/`on` runner-validated processes: passed. Log:
+  `/tmp/image-scroll-diagnostics-m2-mask4-smokes.log`.
+- Mask 4 produced nonzero attempts with zero hits and
+  `ATTEMPTED_NO_HIT`; JPEG phase/frame invariants and detailed counter parsing
+  passed. Prefetch and scroll sections remained distinct.
+- First package attempt ran out of disk space; failed task-generated package
+  output was removed, then the package succeeded after disk space was made
+  available. No unrelated repository files were removed.
+- Plan 1 is complete; no other platform was built and no optimization policy
+  changed. Plan 2 is the only next action.

@@ -8,11 +8,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone: Milestone 2 gate after Slice 2B — benchmark phase/frame
-  integration and distributed result-schema validation.
-- Last checkpoint commit: `72fe224f2`.
-- Next action: run the Milestone 2 static checks, macOS ARM64 rebuild/package,
-  benchmark self-test, four existing smokes, and mask-4 diagnostics smoke.
+- Milestone: Plan 1 closed after the Milestone 2 gate.
+- Last checkpoint commit: `f803d4a4d`.
+- Next action: Plan 2 at
+  `.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md`.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Starting HEAD: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
 
@@ -67,6 +66,31 @@ SPDX-License-Identifier: LGPL-2.1-only
   --check`, `bash -n scripts/package-image-scroll-benchmark.sh`, Python
   compilation, and a deterministic diagnostic parser fixture. No SDK/native
   build ran between the two slices, per plan.
+- Milestone 2 static gate passed: `bash -n
+  scripts/package-image-scroll-benchmark.sh` and Python compilation.
+- Bridge follow-up `f803d4a4d` shortened private native diagnostic method names
+  to the VM resolver limit after the first packaged smoke found
+  `NoSuchMethodError`; focused header validation and `git diff --check` passed.
+- Post-fix focused SDK image tests passed; log:
+  `/tmp/image-scroll-diagnostics-m2-bridge-sdk-image-tests.log`.
+- Post-fix SDK package passed; log:
+  `/tmp/image-scroll-diagnostics-m2-bridge-package-sdk.log`.
+- Post-fix macOS ARM64 CMake configure/build passed; logs:
+  `/tmp/image-scroll-diagnostics-m2-bridge-cmake-configure.log` and
+  `/tmp/image-scroll-diagnostics-m2-bridge-cmake-build.log`.
+- macOS-only benchmark package passed; log:
+  `/tmp/image-scroll-diagnostics-m2-package-fixed.log`. Bundle self-test passed;
+  log `/tmp/image-scroll-diagnostics-m2-fixed-self-test.log`.
+- Prescribed scroll smokes passed for `0/off`, `0/on`, `32799/off`, and
+  `32799/on`; log `/tmp/image-scroll-diagnostics-m2-fixed-smokes.log`.
+- Additional mask-4 `off`/`on` processes passed through the runner's artifact
+  validator; log `/tmp/image-scroll-diagnostics-m2-mask4-smokes.log`.
+- Mask 4 observed `writePixelsAttempts=220`/`3411`, hits `0`, fallbacks
+  `220`/`3411`, and `ATTEMPTED_NO_HIT`; candidate/rejection counters parsed.
+  JPEG phase/frame denominator count/ns invariants passed, including prefetch
+  `660` versus scroll `0` for mask 4/on.
+- Plan 1 closed. No other platform was built and no optimization policy was
+  changed.
 
 ## Decisions still active
 

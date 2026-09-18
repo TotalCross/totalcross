@@ -95,10 +95,10 @@ Record starting HEAD and any deliberate pre-existing task-path changes in state.
 
 ## Progress
 
-- [ ] Bootstrap plan/state/evidence and commit the execution contract.
-- [ ] Milestone 1: add native writePixels and JPEG diagnostic accounting.
-- [ ] Milestone 2: expose phase/frame diagnostics through the scroll benchmark.
-- [ ] Close Plan 1 and leave Plan 2 as the only next action.
+- [x] Bootstrap plan/state/evidence and commit the execution contract.
+- [x] Milestone 1: add native writePixels and JPEG diagnostic accounting.
+- [x] Milestone 2: expose phase/frame diagnostics through the scroll benchmark.
+- [x] Close Plan 1 and leave Plan 2 as the only next action.
 
 ## Current Architecture and Fixed Decisions
 
@@ -509,15 +509,32 @@ focused validation, and milestone builds still deferred when applicable.
 
 ## Outcomes & Retrospective
 
-At completion record only factual outcomes:
+Completed factual outcomes:
 
-- delivered counter/schema contracts;
-- Milestone 1/2 build and smoke results;
-- exact commits;
-- any deviations or discoveries;
-- statement that no optimization policy changed.
+- Delivered gated writePixels rejection/candidate accounting, native JPEG
+  denominator timing/tier accounting, prefetch-versus-scroll separation,
+  per-frame JPEG deltas, compact distributed summary fields, and explicit
+  attempt-feature statuses.
+- Milestone 1 passed focused SDK tests, SDK distribution packaging, and the
+  macOS ARM64 `tcvm`/`Launcher` build. Milestone 2 passed the static checks,
+  rebuilt SDK/native/package gate, bundle self-test, four prescribed smokes,
+  and additional mask-4 `off`/`on` smokes. Mask 4 reported nonzero attempts,
+  zero hits, `ATTEMPTED_NO_HIT`, and valid candidate/rejection counters.
+- Exact task commits: `73519be8b`, `621cf45d4`, `12490a1ab`, `7e1914b29`,
+  `0563e08b8`, `b45df2945`, `49cbc7bdc`, `4d781d5a2`, `72fe224f2`,
+  `a6a5255db`, and `f803d4a4d`.
+- The first Milestone 2 smoke exposed the VM's 32-character native resolver
+  limit and a candidate-name truncation collision. A focused bridge-name fix
+  was committed and the complete macOS gate was rerun successfully. A first
+  package attempt also ran out of disk space; after task-output cleanup and
+  user-provided disk space, the macOS package and smokes passed.
+- No optimization policy, JPEG tier selection, rendering policy, or cache
+  behavior changed.
 
 Then set the next action to Plan 2:
+`.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md`.
+
+Plan 1 is closed. The next action is Plan 2:
 `.agent/plans/image-scroll-diagnostics-macos-02-benchmark.md`.
 
 ## Revision Note
