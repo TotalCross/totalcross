@@ -9,7 +9,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Active slice
 
 - Plan 2 completed successfully on benchmark revision `a43535e48`.
-- Closeout artifact commit: pending in this slice.
+- Closeout artifact commit: `fe54b5e21`.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Corpus: `/Users/flsobral/Downloads/win32/win32`.
 - Final raw results and combined ZIP are recorded in the evidence, summary,

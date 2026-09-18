@@ -9,7 +9,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Run identity and artifacts
 
 - Benchmark revision: `a43535e48`.
-- Closeout artifact commit: recorded in the final closeout state.
+- Closeout artifact commit: `fe54b5e21`.
 - Target: macOS ARM64; no other platform was built.
 - Corpus: `/Users/flsobral/Downloads/win32/win32`, 3,978 JPEG files.
 - Packager dataset hash: `af39fea695191a27`.
