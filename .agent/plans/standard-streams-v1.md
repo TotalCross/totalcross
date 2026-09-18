@@ -70,6 +70,7 @@ Inspect only the active paths named in state before expanding the investigation.
   correction in documentation commit `37d4c0ec8`.
 - [x] 2026-09-17 M7: separated closed-stream `checkError()` from explicit
   closed `flush()` trouble behavior; focused SDK tests passed in `566aed163`.
+  Documentation closure is recorded in `de68b18da`.
 
 ## Current Architecture and Scope
 

@@ -12,14 +12,13 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Last implementation commit: `566aed163` (`fix(sdk): preserve closed print
   stream error state`); its focused test update is in the same commit, and
   preceding closed-flush commits are `b662c3939` and `cd5d5a0d8`.
-- Earlier correction documentation closure is `37d4c0ec8` (`docs(agent):
-  finalize closed flush handoff`); the closed-check-error documentation
-  closure is pending.
+- Final check-error documentation closure is `de68b18da` (`docs(agent): record
+  closed check error correction`); earlier closure is `37d4c0ec8`.
 - Active paths: corrected Java stream semantics, shared legacy writer/backend
   semantics, artifact boundaries, bounded plan/reference artifacts, smoke
   fixture/runner, and final handoff files.
-- Next concrete action: update the bounded correction records, commit the
-  documentation closure, and leave task-scoped paths clean.
+- Next concrete action: none; leave task-scoped paths clean and retain the
+  recorded platform/V2 deferrals.
 - Focused validation completed: corrected focused SDK tests passed with agent
   log `TotalCrossSDK/agent-logs/20260917-203241-test-agent.log`; the dedicated
   artifact-boundary task passed with agent log
@@ -59,7 +58,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   files and benchmark artifacts remain untouched.
 - The supplied plan was already 39,677 bytes and 1,287 lines, above the
   plan's soft size guideline; it was consolidated rather than discarded. The
-  current active plan is 12,422 bytes and 271 lines, and its technical
+  current active plan is 12,474 bytes and 272 lines, and its technical
   reference is 6,569 bytes and 146 lines.
 - Active decisions: standard-stream close is logical and never closes the
   shared legacy file; auto-flush is logical while explicit `flush()` is
