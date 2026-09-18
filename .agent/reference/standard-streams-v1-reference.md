@@ -77,6 +77,11 @@ The VM initializes the router after globals and destroys it before the shared
 debug writer. The native method metadata and registration contain only the
 focused bridge symbols.
 
+The public standard-stream C functions preserve their boolean contract as
+`/* bool */ int32` in both declarations and definitions. `standardStreamFlush`
+uses the same form for `durable`, avoiding an iOS declaration/definition
+mismatch after Apple headers change the meaning of `bool`.
+
 ## Platform mapping
 
 Five required targets are represented by four dedicated sink headers, with the

@@ -6,14 +6,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Standard streams V1 state
 
-- Active milestone/slice: Milestone 7 — closed check-error correction complete.
+- Active milestone/slice: Milestone 8 — iOS standard-stream bool ABI correction
+  complete.
 - Branch: `feat/standard-streams-v1`.
 - Base SHA: `5917a4aa3e20123a1ff02c1a5b0cedd9640c0c6b`.
-- Last implementation commit: `7094dc765` (`fix(sdk): stop closed stream error
-  propagation`); it adds the wrapped-`PrintStream` close/reset regression, and
-  preceding closed-flush commits are `b662c3939` and `cd5d5a0d8`.
-- The prior check-error documentation closure is `de68b18da`; the final
-  reconciliation records implementation commit `7094dc765`.
+- Last implementation commit: `b7ef55ce5` (`fix(ios): avoid bool ABI conflict
+  in standard streams`); it aligns both public signatures and `durable` in the
+  header and implementation after CI failure `35296909437`.
+- The prior check-error documentation closure is `dfd8141a3`; the final
+  reconciliation records implementation commit `b7ef55ce5`.
 - Active paths: corrected Java stream semantics, shared legacy writer/backend
   semantics, artifact boundaries, bounded plan/reference artifacts, smoke
   fixture/runner, and final handoff files.
@@ -41,10 +42,13 @@ SPDX-License-Identifier: LGPL-2.1-only
   audit found the wrapped-`PrintStream` query edge case, and the final focused
   rerun passed with `TotalCrossSDK/agent-logs/20260917-220422-test-agent.log`.
 - Final implementation HEAD before this artifact reconciliation is
-  `7094dc765`; no native or packaging validation is required for this SDK-only
-  change.
-- Deferred validation: Windows, Linux, Android, and iOS builds remain forbidden
-  by the active plan. Full image benchmarks remain out of scope.
+  `b7ef55ce5`; the permitted macOS native regression configure/build passed
+  with logs `/tmp/tc-standard-streams-v1-ios-bool-fix-cmake.log` and
+  `/tmp/tc-standard-streams-v1-ios-bool-fix-build.log`.
+- Deferred validation: Windows, Linux, Android, and iOS local builds remain
+  forbidden by the active plan; iOS CI failure `35296909437` is addressed by
+  the source-level ABI correction and macOS regression build. Full image
+  benchmarks remain out of scope.
 - Blockers/discoveries: the Milestone 0 and Milestone 1 commit-message checks
   reported body-format deviations; those commits remain unamended. Running the
   native-method generator exposed pre-existing unrelated generated-file drift,
@@ -55,11 +59,14 @@ SPDX-License-Identifier: LGPL-2.1-only
   stdout-only behavior, added Windows durable explicit flush, consolidated
   the oversized plan into bounded artifacts, and corrected closed-flush
   trouble reporting. Existing unrelated untracked
-  files and benchmark artifacts remain untouched.
+  files and benchmark artifacts remain untouched. iOS CI failure `35296909437`
+  confirmed that Apple-header `bool` changes could split the standard-stream
+  declarations from definitions; the public signatures now use commented
+  `int32` consistently without changing runtime values.
 - The supplied plan was already 39,677 bytes and 1,287 lines, above the
   plan's soft size guideline; it was consolidated rather than discarded. The
-  current active plan is 12,567 bytes and 273 lines, and its technical
-  reference is 6,588 bytes and 147 lines.
+  current active plan is 12,991 bytes and 279 lines, and its technical
+  reference is 6,874 bytes and 152 lines.
 - Active decisions: standard-stream close is logical and never closes the
   shared legacy file; auto-flush is logical while explicit `flush()` is
   durable; `Vm.debug` remains a separate debug command path.

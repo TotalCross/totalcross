@@ -72,6 +72,10 @@ Inspect only the active paths named in state before expanding the investigation.
   closed `flush()` trouble behavior; focused SDK tests passed in `7094dc765`,
   including the underlying `java.io.PrintStream` close/reset regression.
   Documentation closure is recorded in the final reconciliation commit.
+- [x] 2026-09-17 M8: corrected iOS CI failure `35296909437` by using
+  `/* bool */ int32` for the four public standard-stream results and the
+  `durable` parameter in both `standard_stream.h` and `standard_stream.c`;
+  the permitted macOS native regression build passed.
 
 ## Current Architecture and Scope
 
@@ -193,6 +197,8 @@ test. It may remain in `totalcross-runtime-java`.
 - Use one native write for each `println` record.
 - Scope UTF-8 to the standard bridge; do not change generic stream encoding.
 - Keep the bridge internal at the API artifact boundary.
+- Keep public standard-stream C results and `durable` as `/* bool */ int32` so
+  Apple-header `bool` changes cannot split declarations from definitions.
 - Make explicit flush durable on Windows desktop without changing WinCE.
 - Mark explicit `flush()` after `PrintStream4D.close()` as trouble while
   preserving idempotent close.

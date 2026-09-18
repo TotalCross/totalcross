@@ -10,7 +10,8 @@ The original corrected handoff is recorded at implementation/documentation
 closure commit `888537b29`; the closed-flush compatibility correction follows
 in `b662c3939` and `cd5d5a0d8`, with final documentation closure in
 `37d4c0ec8`; the final check-error correction is documented in `de68b18da`
-and completed in implementation commit `7094dc765`.
+and completed in implementation commit `7094dc765`; the iOS ABI correction is
+in `b7ef55ce5`.
 
 ## Editorial Summary
 
@@ -50,6 +51,8 @@ forbids those local builds.
 - `checkError()` no longer flushes or queries the wrapped stream after a
   successful close; it still flushes and propagates underlying trouble while
   open.
+- The public native standard-stream results and `durable` parameter use
+  `/* bool */ int32` in matching header and implementation signatures.
 - `VmStandardOutputStream` is excluded from `totalcross-api` and covered by a
   dedicated artifact-boundary test.
 - A focused Java test, system-stream test, smoke fixture, and macOS Gradle
@@ -79,13 +82,17 @@ to avoid setting it merely by observing a clean close. Both were fixed without
 touching native code. The completion audit then found that closed `checkError()`
 still propagated a wrapped `java.io.PrintStream`'s trouble state; `7094dc765`
 closed that remaining edge case and added the exact close/reset regression.
+Later iOS CI failure `35296909437` exposed the Apple-header `bool` ABI conflict;
+`b7ef55ce5` corrected only the four public standard-stream signatures and
+`durable` parameter.
 
 ## Validation and Measurable Results
 
 Final focused SDK tests, including both closed-flush/checkError regressions and
 the wrapped-`PrintStream` close/reset regression, the dedicated
 artifact-boundary task, `clean dist`,
-macOS native configure/build, headers, diff checks, static scope checks,
+macOS native configure/build (including the iOS ABI correction), headers, diff
+checks, static scope checks,
 bounded file-size checks, and the corrected macOS smoke passed. The smoke
 reported `stdoutBytes=201`, `stderrBytes=77`, and `debugConsoleBytes=233`,
 with assertions for independent capture, shared standard records, and legacy

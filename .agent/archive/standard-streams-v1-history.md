@@ -108,6 +108,16 @@ flush and underlying trouble propagation while open. Its focused regression
 proves that a troubled wrapped stream does not make a clean closed wrapper
 report trouble after `close()` and `resetError()`.
 
+### iOS standard-stream bool ABI correction
+
+iOS CI failure `35296909437` showed that Apple headers could change the
+meaning of `bool` after the public standard-stream declarations were included.
+Commit `b7ef55ce5` changes `standardStreamInit`, `standardStreamWrite`,
+`standardStreamFlush`, and `standardStreamClose` to `/* bool */ int32` in both
+`standard_stream.h` and `standard_stream.c`, including `standardStreamFlush`'s
+`durable` parameter. Runtime `true`/`false` values remain integer `1`/`0`.
+The permitted macOS Release native regression build passed.
+
 ## Decisions preserved
 
 - OUT and ERR have independent Java stream state and native channels.
@@ -119,8 +129,8 @@ report trouble after `close()` and `resetError()`.
 - `Vm.debug` retains debug commands and disabling semantics.
 - Windows, Linux, Android, and iOS builds were not run because the plan
   explicitly forbids them. Full image benchmark matrices were not part of V1.
-- The active plan is 12,474 bytes/272 lines and the technical reference is
-  6,569 bytes/146 lines; both satisfy the bounded plan-artifact guideline.
+- The active plan is 12,991 bytes/279 lines and the technical reference is
+  6,874 bytes/152 lines; both satisfy the bounded plan-artifact guideline.
 
 ## Evidence
 
