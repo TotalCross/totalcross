@@ -215,8 +215,14 @@ public class PrintStream4D extends FilterOutputStream implements Appendable, Clo
   }
 
   public boolean checkError() {
-    flush();
     synchronized (lock) {
+      if (!closed) {
+        try {
+          out.flush();
+        } catch (IOException e) {
+          setError();
+        }
+      }
       return errorFound || (out instanceof java.io.PrintStream
           && ((java.io.PrintStream) out).checkError());
     }
