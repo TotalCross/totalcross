@@ -50,3 +50,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Commit-message checker deviation: `b97e68583` contains one overlong body
   line because literal `\\n` was passed through the shell; history was not
   rewritten.
+
+## 2026-09-18 — closeout commit note
+
+- `e3ec4778d` also contains one overlong body line for the same literal-`\\n`
+  shell quoting mistake. The commit is retained; no history rewrite was used.

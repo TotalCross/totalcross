@@ -52,8 +52,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   `/tmp/image-write-pixels-policy-01-milestone2-compile-smoke.log` and
   `/tmp/image-write-pixels-policy-01-milestone2-sdk-dist.log`.
 - No native macOS build or smoke has run for this plan.
-- The final profile commit `b97e68583` has one overlong body line because the
-  shell commit command preserved literal `\\n`; the checker failure was
+- Commits `b97e68583` and `e3ec4778d` each have one overlong body line because
+  the shell commit command preserved literal `\\n`; both checker failures were
   recorded without rewriting history.
 - Active-work schema is present in `frames.csv`, `summary.json`, and pass output;
   the source validates nonnegative work and work >= each component.

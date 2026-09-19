@@ -83,9 +83,9 @@ caches, and generated fixtures were preserved.
 The raw frame schema, JSON summaries, pass records, distributed CSV, and
 pairwise comparison contract are ready for Plan 2. No source behavior beyond
 measurement and runner aggregation changed. One commit-message check reported
-an overlong body line in `b97e68583` because the shell preserved literal
-`\\n`; history was not rewritten, and the deviation is recorded in state and
-evidence.
+an overlong body line in `b97e68583` and `e3ec4778d` because the shell
+preserved literal `\\n`; history was not rewritten, and both deviations are
+recorded in state and evidence.
 
 ## Revision Note
 

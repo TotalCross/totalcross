@@ -355,9 +355,10 @@ SDK smoke-source compilation and `dist -x test` passed at both milestone gates;
 the focused 24-process benchmark and all native macOS validation remain
 deferred to Plan 2. No rendering or native optimization policy changed.
 
-The final profile commit used a literal `\\n` in its shell `-m` argument, so
-the local commit checker reported one overlong body line after commit. History
-was not rewritten; the deviation is recorded in state and evidence.
+The profile commit and closeout commit used literal `\\n` in their shell `-m`
+arguments, so the local commit checker reported one overlong body line after
+each commit. History was not rewritten; both deviations are recorded in state
+and evidence.
 
 The editorial report must use the section structure required by `.agent/PLANS.md`.
 
