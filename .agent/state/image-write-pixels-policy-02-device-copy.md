@@ -13,7 +13,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Plan 1 closure revision: `8ab1c6b28a6238c2e2aea53afcd6103bfc46d45b`.
 - Plan 2 specification revision: `9594720fa`.
 - Implementation/fix revision: `5265f38a6`.
-- Final documentation and results commit is the next checkpoint.
+- Final documentation and results revision: `85c1ed5bb`.
 
 ## Working set
 
