@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Bootstrap and Milestone 1 implementation are complete.
+- Bootstrap, Milestone 1, and the M2 evidence-only audit are complete.
 - M1 correction rerun passed at implementation HEAD `31bdef4bf`.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Plan 2 remains an ancestor of the execution HEAD.
@@ -33,7 +33,7 @@ source/evidence paths needed for the next action.
 - [x] (2026-09-19) Implement M1 correctness and benchmark hygiene.
 - [x] (2026-09-19) Correct the native target-metric transport and rerun M1.
 - [x] (2026-09-19) STOP / REVIEW 1 — technically approved and closed.
-- [ ] M2 — next stage authorized, not started in this command.
+- [x] M2 — identity and eligibility audit passed; STOP / REVIEW 2 is ready.
 - [ ] M3–M4 — not started; each remains gated by recorded review approval.
 
 ## M1 correction gate
@@ -78,6 +78,9 @@ benchmark remain deferred.
   slot through all four milestones.
 - M2 is diagnostic-only; structural corrections require explicit review.
 - Do not infer causality from M1 timing alone.
+- M2 observed no target-key acquisition, no physical-variant hit/store, no
+  cross-kind replacement, and no canvas/save-state rejection. Zero-hit causes
+  remain measured eligibility and delayed observation for this workload.
 
 ## Approved M3 changes
 
@@ -98,13 +101,32 @@ of these Plan 3 commits. They are recorded, not amended or rewritten:
 New commits `feea98e56`, `31bdef4bf`, and `5d4b3a300` are signed and
 message-line compliant. History was not rewritten.
 
+## M2 audit gate
+
+Passed: macOS ARM64 native rebuild, SDK distribution, package, self-test, and
+the exact four-process `raster-policy-audit` matrix for masks `8192`, `16384`,
+`32768`, and `57344`, with prefetch and accounting enabled. The package is
+`build/image-raster-policy-03-package-m2/image-scroll-benchmark-macos-arm64`.
+The corpus hash is `588a7e0f4019424a`; SDK JAR hash is
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`; bundle
+hash is `a9fe55d035fd99fe768b801c6f619e1b37741ab3999f8bfc91960edc5a370120`;
+result ZIP hash is
+`95e4d7c97bb95a12b7ee911a350572bc967f25d6001a7464834e2f1d01df9971`.
+
+Aggregate target attempts/fallbacks/hits/materializations are `6/6/0/0`;
+physical-variant lookups/misses/hits/stores/evictions are `6/6/0/0/0`;
+identity attempts/hits/fallbacks are `6/0/6`. All target and identity
+rejections were mapping geometry. Save-state rejects and all shared-slot and
+pending cross-kind replacements are zero. Physical full/no-surface-size keys
+are `2/2`; target key acquisition was `0/0` because eligibility failed first.
+
 ## Next action
 
-M1 is closed. M2 is the next authorized stage, but it was not started in this
-documentation closure.
+STOP / REVIEW 2. Await explicit reviewer recording of exact approved M3
+structural changes. M3 is not authorized and must not start from this state.
 
 ## Resume command
 
-Read this state, the M1 summary, and the active plan gate. Before the next
+Read this state, the M1/M2 summaries, and the active plan gate. Before the next
 commit, validate headers, stage only explicit task paths, run cached
 whitespace checks, inspect the staged diff, and validate the commit message.

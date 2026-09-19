@@ -8,20 +8,21 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Editorial Summary
 
-Milestone 1 correction is complete and passes the SDK/native/package,
-self-test, six-smoke, and exact 20-process A/B gates. The corrected bridge
-reports the real software target `1080x1920`, rowBytes `4320`, BGRA8888,
-alpha `2`, `kN32=4`, and software backend. Median active work improves
-18.66% with accounting on and 18.54% off; tails rise and remain a review
-topic. `STOP / REVIEW 1` is technically approved and closed; M2 is the next
-authorized stage but was not started in this documentation closure.
+Milestone 1 correction and the M2 evidence-only identity audit are complete.
+The corrected bridge reports the real software target `1080x1920`, rowBytes
+`4320`, BGRA8888, alpha `2`, `kN32=4`, and software backend. M2 passed the
+four-process audit profile and found no target-key acquisition, no variant
+hits/stores, no cross-kind replacement, and no canvas/save-state rejection.
+`STOP / REVIEW 1` is closed and `STOP / REVIEW 2` is ready; M3 remains
+unauthorized.
 
 ## Original Plan versus Actual Outcome
 
 The four-milestone plan remains intact. M1 was rerun after correcting the
-target metric transport. No default mask, delayed target-color materialization,
-cache identity, or shared raster-variant slot changed. M2 is authorized but was
-not started; M3–M4 remain gated.
+target metric transport. M2 added accounting-gated identity and eligibility
+diagnostics and ran only its prescribed four-process profile. No default mask,
+delayed target-color materialization, cache identity, or shared raster-variant
+slot changed. M3–M4 remain gated.
 
 ## What Changed
 
@@ -30,6 +31,11 @@ software pitch/rowBytes, alpha type, Skia color type, `kN32` type, stable
 color classification, and backend through a short NativeImageBacking native
 name. Structural validation checks minimum rowBytes for each color class.
 The old unsafe Image probe and packed dimension word were removed.
+
+M2 exposes diagnostic-only counts for normalized target and physical keys,
+pending observations, shared-slot cross-kind transitions, rejection reasons,
+and identity save-count buckets through the established benchmark metric
+path. The accounting-off path remains diagnostics-unavailable.
 
 ## Decisions and Trade-offs
 
@@ -50,6 +56,10 @@ both constraints.
 Historical commit-message checks found lines over 80 characters in
 `82f4af600`, `ed09cf657`, `135050818`, `1f5bdbbea`, `f02f9dcff`, and
 `1fb0b1d35`. These commits were not amended or rewritten.
+
+The first M2 package attempt used a new Java helper absent from the existing
+`TCUI.tcz`, producing `NoSuchMethodError`. The helper was removed in favor of
+the existing native metric method; the rebuilt package passed all M2 checks.
 
 ## Validation and Measurable Results
 
@@ -72,21 +82,50 @@ Mask `4/off` recorded 175 intrinsic-known results and 2 fallback scans
 overall. Mask `32799/off` recorded 175 intrinsic-known, 177
 metadata-known, and 0 fallback scans.
 
+### M2 identity and eligibility results
+
+The authoritative M2 package is
+`build/image-raster-policy-03-package-m2/image-scroll-benchmark-macos-arm64`.
+The corpus hash is `588a7e0f4019424a`, SDK JAR hash is
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`, bundle
+hash is `a9fe55d035fd99fe768b801c6f619e1b37741ab3999f8bfc91960edc5a370120`,
+and result ZIP hash is
+`95e4d7c97bb95a12b7ee911a350572bc967f25d6001a7464834e2f1d01df9971`.
+
+The four masks passed. Aggregate target attempts/fallbacks/hits/materializations
+were `6/6/0/0`; physical-variant lookups/misses/hits/stores/evictions were
+`6/6/0/0/0`; and identity attempts/hits/fallbacks were `6/0/6`. Target and
+identity rejects were all mapping geometry. Physical full keys versus keys
+without surface size were `2/2 = 1.00`. Target full-key ratios are undefined
+because no target key reached acquisition. Save-state rejects were `0/6 = 0%`;
+all shared-slot and pending cross-kind transitions were zero.
+
+The measured zero-hit causes are eligibility and delayed observation: target
+color was rejected before acquisition, physical variants were observed once
+without a second observation, and identity folding fell back on mapping
+geometry. The run does not support destination-position fragmentation,
+surface-dimension fragmentation, cross-kind eviction, or canvas/save-state
+rejection as causes in this workload.
+
 ## Useful Evidence and Examples
 
 See
 `.agent/benchmarks/image-raster-policy-03/m1-write-pixels-accounting.md`
-for all 20 raw rows and medians, and
+for all 20 M1 raw rows and medians,
+`.agent/benchmarks/image-raster-policy-03/m2-variant-audit.md` for M2
+calculations, and
 `.agent/evidence/image-raster-policy-03-audit-and-reuse.md` for hashes,
 historical preservation, and the review boundary.
 
 ## Limitations, Remaining Work, and Open Questions
 
-M2 identity/eligibility diagnostics is the next authorized stage; M3 approved
-structural changes and M4 reuse/RGB565 measurements remain after it. M2 was
-not started here. No performance promotion or structural correction follows
-from M1 alone. The old target dimensions are preserved as historical evidence
-but must not be combined with corrected results.
+M2 is complete, but its one-round workload produced no second observation and
+no target-key acquisition; therefore it cannot establish reuse or key
+fragmentation beyond the observed eligible physical keys. M3 approved
+structural changes and M4 reuse/RGB565 measurements remain after review. No
+performance promotion or structural correction follows from M1 or M2 alone.
+The old target dimensions are preserved as historical evidence but must not be
+combined with corrected results.
 
 ## Possible Article Angles
 
@@ -103,6 +142,6 @@ metadata-enabled mask 32799.
 
 ## Claims Requiring Human Review
 
-M1 review is closed. Any cache-identity, eligibility, materialization,
-default-mask, shared-slot, RGB565, or cross-platform conclusion requires the
-later gates in the active plan.
+M1 review is closed and M2 is ready at `STOP / REVIEW 2`. Any cache-identity,
+eligibility, materialization, default-mask, shared-slot, RGB565, or
+cross-platform correction requires explicit reviewer approval of M3/M4.

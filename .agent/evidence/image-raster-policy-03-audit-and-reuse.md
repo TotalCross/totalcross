@@ -69,6 +69,48 @@ message-line compliant.
 ## Review boundary
 
 `STOP / REVIEW 1` is technically approved and closed. M2 is the next
-authorized stage, but was not started in this documentation closure. No
+authorized stage, and the diagnostic-only audit below has now completed. No
 optimization policy, cache identity, materialization timing, default mask, or
 shared slot has been changed.
+
+## 2026-09-19 — M2 identity and eligibility audit
+
+The M2 package passed self-test and the exact four-process
+`raster-policy-audit` profile: masks `8192`, `16384`, `32768`, and `57344`,
+all with prefetch and accounting enabled. Corpus hash remained
+`588a7e0f4019424a`; SDK JAR hash remained
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`. The
+bundle ZIP hash is
+`a9fe55d035fd99fe768b801c6f619e1b37741ab3999f8bfc91960edc5a370120`; the
+result ZIP hash is
+`95e4d7c97bb95a12b7ee911a350572bc967f25d6001a7464834e2f1d01df9971`.
+
+Aggregate diagnostic evidence:
+
+- target-color: `6` attempts, `6` fallbacks, `0` full keys, `0` unique
+  sources, `0` hits, and `0` materializations; all six classified rejects
+  were mapping geometry;
+- physical variant: `6` lookups and misses, `2` full keys, `2` keys without
+  surface size, `0` hits, `0` stores, `0` evictions, and no rejection;
+- physical identity: `6` attempts, `0` hits, `6` fallbacks, all six rejects
+  classified as mapping geometry;
+- shared slot/pending transitions: all four cross-kind counters are `0`;
+- canvas/save-state rejects: `0`, with save-count buckets all `0`.
+
+The physical ratio is `2 / 2 = 1.00`; target key ratios are undefined because
+no target key reached acquisition. Physical misses were first pending
+observations, so this run does not demonstrate a second-observation
+materialization. The evidence supports eligibility and delayed observation as
+the measured reasons for zero hits; it does not support destination-position,
+surface-dimension, cross-kind replacement, or save-state fragmentation as the
+cause in this workload. Detailed rows and calculations are in
+`.agent/benchmarks/image-raster-policy-03/m2-variant-audit.md`.
+
+The runner, package, and result archive were generated after adding
+accounting-gated diagnostics only. The first attempted package exposed a
+`NoSuchMethodError` when a new Java wrapper was used without a corresponding
+`TCUI.tcz` class; that wrapper was removed in favor of the existing native
+metric method, the package was rebuilt, and the authoritative rerun passed.
+
+`STOP / REVIEW 2` is now ready. M3 remains unauthorized; no structural fix
+was inferred or applied from this audit.
