@@ -19,7 +19,7 @@ import zipfile
 
 EXPECTED_JPEGS = 663
 EXPECTED_TARGET_WIDTH = 1080
-EXPECTED_TARGET_HEIGHT = 896
+EXPECTED_TARGET_HEIGHT = 1920
 CORPUS_VARIANTS = (
     "imag", "lossless", "decode-baseline", "decode-fast",
     "aggresive-480", "aggresive-540",
