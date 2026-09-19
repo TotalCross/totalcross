@@ -8,93 +8,117 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 Date: 2026-09-19
 
-The packaged macOS ARM64 bundle used the required 663-file corpus. Bundle
-self-test passed with dataset hash `588a7e0f4019424a`. The 20-process matrix
-used five interleaved rounds of masks `32795` and `32799`, prefetch `on`, and
-accounting `on`/`off`.
+## Correction rerun and gate
 
-## Build and contract gate
+The authoritative rerun used implementation HEAD `31bdef4bf` and the
+macOS ARM64 bundle
+`build/image-raster-policy-03-package-fixed/image-scroll-benchmark-macos-arm64`.
+It used the required 663-file corpus with self-test hash
+`588a7e0f4019424a`. SDK compile/deploy JAR SHA-256 was
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`.
+The result ZIP SHA-256 was
+`9f2d6ee03838b30814f1b76830b1fa14b80dc30929e5b02d4f58263f134c5264`.
 
-- `skia_surface_test`: passed.
-- Bundle self-test: passed.
-- Six accounting-on smokes passed: masks `0`, `4`, and `32799`, each with
-  prefetch `off` and `on`.
-- The diagnostic `4/off` smoke recorded intrinsic JPEG opacity `157`, source
-  metadata opacity `0`, and fallback scans `2`, with bit 1 disabled.
-- The diagnostic `32799/off` smoke recorded intrinsic JPEG opacity `170` and
-  fallback scans `0`, with bit 1 disabled.
-- The prefetch-on `4/on` smoke produced `3411` writePixels hits and `3408`
-  known-opaque 1:1 candidates. Its opacity counters are phase-local because
-  the benchmark resets them before the scroll pass; the three initial
-  non-intrinsic candidates were resolved by the existing fallback path.
-- `environment.json` reported the active software target as `56x896`, row
-  bytes `4320`, color type `6` (`BGRA8888`), alpha type `2`, and `kN32` type
-  `4`. Renderer backend was `software`.
+The complete build gate passed: SDK distribution, macOS ARM64 `tcvm`,
+`Launcher`, `skia_surface_test`, native surface test, package creation,
+self-test, six accounting-on smokes, and the exact 20-process A/B matrix.
+
+The native target metrics are now untruncated and structurally coherent:
+
+- physical target: `1080x1920`;
+- effective software pitch/rowBytes: `4320`;
+- Skia color type: `6`, classification `BGRA8888`;
+- alpha type: `2`;
+- `kN32_SkColorType`: `4`;
+- backend: `software`.
+
+The former `56x896` report was not a physical target. It was the lower
+10-bit portion of the packed `1080x1920` dimensions. The correction bridge
+reports scalar metrics without truncation and uses the supplied software pitch.
+
+Six smokes passed for masks `0`, `4`, and `32799`, each with prefetch
+off/on and accounting on. Mask `4` is the no-bit-1 intrinsic JPEG proof.
+Mask `32799` includes `RASTER_OPACITY_METADATA` (bit 1), so it is reported
+separately and is not described as bit 1 disabled.
+
+The `4/off` smoke recorded 175 intrinsic-known opacity results and 2
+fallback scans overall; the bit-1-disabled JPEG candidates therefore do not
+depend on metadata. The `32799/off` smoke recorded 175 intrinsic-known,
+177 metadata-known, and 0 fallback scans. The `4/on` smoke produced 3411
+writePixels attempts/hits, zero fallbacks, and 3408 known-opaque candidates.
 
 ## Raw scroll samples
 
-All timing values are nanoseconds. `work_*` is the primary metric; paint
-values are included as context. Accounting-off counters are intentionally
-unavailable and are represented by `--`.
+The exact `write-pixels-accounting-ab` profile used masks `32795` and
+`32799`, prefetch on, accounting on/off, and five interleaved rounds.
+All values are nanoseconds; `work_*` is primary and paint is context.
 
 | accounting | mask | round | work P50 | work P95 | work P99 | work MAX | paint P50 | paint P95 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| on | 32795 | 1 | 4334792 | 5499083 | 26270041 | 31160167 | 4314000 | 5477042 |
-| on | 32795 | 2 | 4375041 | 7520375 | 27152792 | 30890333 | 4353709 | 7494125 |
-| on | 32795 | 3 | 4258292 | 6850000 | 27457292 | 30740750 | 4235250 | 6847208 |
-| on | 32795 | 4 | 4230209 | 5955333 | 30708833 | 35261375 | 4208458 | 5928375 |
-| on | 32795 | 5 | 4320417 | 11682875 | 27006875 | 31726625 | 4294791 | 11662917 |
-| on | 32799 | 1 | 3471667 | 4785500 | 29238958 | 36128125 | 3448042 | 4761583 |
-| on | 32799 | 2 | 3477667 | 5092750 | 26832500 | 33722750 | 3455750 | 4970583 |
-| on | 32799 | 3 | 3477083 | 11916834 | 33056709 | 33235333 | 3456333 | 11898208 |
-| on | 32799 | 4 | 3460417 | 5513250 | 30078083 | 40490000 | 3438125 | 5496750 |
-| on | 32799 | 5 | 3485916 | 6205417 | 32961542 | 39802666 | 3460917 | 6183417 |
-| off | 32795 | 1 | 4331125 | 6686916 | 26772041 | 32186792 | 4309125 | 6667375 |
-| off | 32795 | 2 | 4276250 | 6658375 | 26460334 | 34973834 | 4253666 | 6630042 |
-| off | 32795 | 3 | 4282542 | 7544500 | 28882000 | 32687916 | 4258958 | 7524875 |
-| off | 32795 | 4 | 4287584 | 5805083 | 26422084 | 31835625 | 4266250 | 5784208 |
-| off | 32795 | 5 | 4263792 | 6322500 | 30532041 | 30722208 | 4242458 | 6304959 |
-| off | 32799 | 1 | 3507333 | 6376083 | 27391375 | 30613458 | 3486042 | 6372667 |
-| off | 32799 | 2 | 3517000 | 8846917 | 25603417 | 32571709 | 3493709 | 8821041 |
-| off | 32799 | 3 | 3443334 | 8403292 | 32891375 | 40044375 | 3417834 | 8382833 |
-| off | 32799 | 4 | 3444625 | 6587042 | 27726292 | 29925083 | 3423583 | 6561584 |
-| off | 32799 | 5 | 3461833 | 7720083 | 34132416 | 37121916 | 3438292 | 7694708 |
+| off | 32795 | 1 | 4313417 | 5429958 | 25868209 | 31373834 | 4288208 | 5407958 |
+| off | 32799 | 1 | 3557084 | 6453292 | 26900375 | 35177375 | 3531166 | 6432875 |
+| off | 32795 | 2 | 4253458 | 6307583 | 32448583 | 39941750 | 4232834 | 6286833 |
+| off | 32799 | 2 | 3464666 | 8542625 | 31262875 | 53036959 | 3431833 | 8490500 |
+| off | 32795 | 3 | 4245750 | 5743041 | 27290125 | 31281208 | 4226875 | 5740417 |
+| off | 32799 | 3 | 3520208 | 5971750 | 29654042 | 32904375 | 3499250 | 5950792 |
+| off | 32795 | 4 | 4290708 | 8356834 | 26212250 | 30619208 | 4265459 | 8334292 |
+| off | 32799 | 4 | 3413750 | 6755708 | 27905042 | 30776125 | 3388667 | 6734833 |
+| off | 32795 | 5 | 4227875 | 5856083 | 26478916 | 29855250 | 4205625 | 5832291 |
+| off | 32799 | 5 | 3384417 | 4582250 | 28147333 | 29203000 | 3358083 | 4560208 |
+| on | 32795 | 1 | 4210000 | 4796500 | 26707916 | 29574833 | 4186708 | 4775333 |
+| on | 32799 | 1 | 3491000 | 4982042 | 27140000 | 33984084 | 3470000 | 4958250 |
+| on | 32795 | 2 | 4275208 | 6296750 | 25494042 | 29974834 | 4252917 | 6255208 |
+| on | 32799 | 2 | 3457375 | 6122042 | 30169792 | 30592959 | 3433166 | 6120042 |
+| on | 32795 | 3 | 4299959 | 8111583 | 31031667 | 45339292 | 4277333 | 8087125 |
+| on | 32799 | 3 | 3398500 | 4663000 | 34216125 | 43135875 | 3377583 | 4647375 |
+| on | 32795 | 4 | 4243208 | 6011834 | 25401333 | 31227000 | 4210667 | 5993750 |
+| on | 32799 | 4 | 3473291 | 7701375 | 26967708 | 33452250 | 3449750 | 7676958 |
+| on | 32795 | 5 | 4250584 | 4924250 | 25715667 | 31395333 | 4221834 | 4899000 |
+| on | 32799 | 5 | 3431250 | 7369042 | 25817375 | 32189833 | 3408208 | 7323417 |
 
 ## Five-round summaries
 
-The summaries below are medians of the five per-process percentile values.
-The delta is `32799 - 32795`; negative is faster.
+The delta is `32799 - 32795`; negative is faster. Each value is the median
+of five per-process percentile values.
 
 | accounting | metric | 32795 | 32799 | delta | delta % |
 | --- | --- | ---: | ---: | ---: | ---: |
-| on | work P50 | 4320417 | 3477083 | -843334 | -19.52% |
-| on | work P95 | 6850000 | 5513250 | -1336750 | -19.51% |
-| on | work P99 | 27152792 | 30078083 | 2925291 | +10.77% |
-| on | work MAX | 31160167 | 36128125 | 4967958 | +15.94% |
-| on | paint P50 | 4294791 | 3455750 | -839041 | -19.54% |
-| on | paint P95 | 6847208 | 5496750 | -1350458 | -19.72% |
-| off | work P50 | 4282542 | 3461833 | -820709 | -19.16% |
-| off | work P95 | 6658375 | 7720083 | 1061708 | +15.95% |
-| off | work P99 | 26772041 | 27726292 | 954251 | +3.56% |
-| off | work MAX | 32186792 | 32571709 | 384917 | +1.20% |
-| off | paint P50 | 4258958 | 3438292 | -820666 | -19.27% |
-| off | paint P95 | 6630042 | 7694708 | 1064666 | +16.06% |
+| on | work P50 | 4250584 | 3457375 | -793209 | -18.66% |
+| on | work P95 | 6011834 | 6122042 | 110208 | +1.83% |
+| on | work P99 | 25715667 | 27140000 | 1424333 | +5.54% |
+| on | work MAX | 31227000 | 33452250 | 2225250 | +7.13% |
+| on | paint P50 | 4221834 | 3433166 | -788668 | -18.68% |
+| on | paint P95 | 5993750 | 6120042 | 126292 | +2.11% |
+| off | work P50 | 4253458 | 3464666 | -788792 | -18.54% |
+| off | work P95 | 5856083 | 6453292 | 597209 | +10.20% |
+| off | work P99 | 27290125 | 28147333 | 857208 | +3.14% |
+| off | work MAX | 31281208 | 32904375 | 1623167 | +5.19% |
+| off | paint P50 | 4232834 | 3431833 | -801001 | -18.92% |
+| off | paint P95 | 5832291 | 6432875 | 600584 | +10.30% |
 
-Bit 2 is disabled in `32795` and enabled in `32799`. The median work P50
-improvement is approximately 19% in both accounting modes. The five-round
-P95 and tail distributions do not support treating the P95 increase as a
-single-run artifact or as a settled regression; accounting-on and accounting-
-off show different tail behavior and require later review.
+The accounting-on P50 improvement is 18.66%; accounting-off is 18.54%.
+Accounting-on P95 is effectively flat in this rerun (+1.83%), while
+accounting-off increases 10.20%. Tails increase in both modes. These are
+five-round distributions, not a single-process causal claim.
 
-With accounting on, `32795` had no writePixels attempts. `32799` had
-`3402–3408` attempts per run, all hits and zero fallbacks. With accounting off,
-the run JSON explicitly marked diagnostics unavailable while retaining all
-work/paint timing fields.
+With accounting on, `32795` had no writePixels attempts and `32799` had
+3402–3408 attempts per run, all hits and zero fallbacks. Accounting-off
+artifacts contain timing but explicitly mark diagnostics unavailable.
 
-Stable artifacts:
+## Historical superseded record
 
-- self-test log: `/tmp/image-raster-policy-03-self-test-accounting-fix.log`
-- smoke log: `/tmp/image-raster-policy-03-smokes-accounting-fix.log`
-- matrix log: `/tmp/image-raster-policy-03-accounting-ab-final.log`
-- result summary: `build/image-raster-policy-03-package/image-scroll-benchmark-macos-arm64/results/summary.csv`
-- result archive: `build/image-raster-policy-03-package/image-scroll-benchmark-macos-arm64/results/totalcross-image-benchmark-results-1789789544107088000.zip`
+The earlier package reported `56x896`, with the same rowBytes `4320`.
+That result is preserved as a real historical observation but superseded as
+target-format evidence because both dimensions were packed into 10-bit fields.
+Its earlier five-round P50 deltas were -19.52% (accounting on) and -19.16%
+(accounting off). It must not be combined with this correction rerun.
+
+## Stable artifacts
+
+- SDK log: `/tmp/image-raster-policy-03-package-sdk-fixed.log`
+- native build log: `/tmp/image-raster-policy-03-target-metrics-native-build.log`
+- self-test log: `/tmp/image-raster-policy-03-self-test-fixed.log`
+- smoke log: `/tmp/image-raster-policy-03-smokes-fixed.log`
+- matrix log: `/tmp/image-raster-policy-03-accounting-ab-fixed.log`
+- summary: `build/image-raster-policy-03-package-fixed/image-scroll-benchmark-macos-arm64/results/summary.csv`
+- result archive: `build/image-raster-policy-03-package-fixed/image-scroll-benchmark-macos-arm64/results/totalcross-image-benchmark-results-1789791566290091000.zip`

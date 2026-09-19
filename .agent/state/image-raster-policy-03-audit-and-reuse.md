@@ -8,96 +8,101 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Bootstrap is complete; Milestone 1 is next.
+- Bootstrap and Milestone 1 implementation are complete.
+- M1 correction rerun passed at implementation HEAD `31bdef4bf`.
 - Required branch: `perf/image-decode-distributed-benchmark`.
-- Starting HEAD: `57d0532409c2163ac390d2f0affd8a0787049b07`.
-- Plan 2 is complete at the prior implementation/documentation revisions
-  recorded in `.agent/state/image-write-pixels-policy-02-device-copy.md`.
+- Plan 2 remains an ancestor of the execution HEAD.
+- The compact plan is committed as `5d4b3a300`.
+
+Read this state first on resume, then the active plan section and only the
+source/evidence paths needed for the next action.
 
 ## Working set
 
 - Plan: `.agent/plans/image-raster-policy-03-audit-and-reuse.md`
-- State: this file; rewrite on resume.
 - Evidence: `.agent/evidence/image-raster-policy-03-audit-and-reuse.md`
 - Editorial report:
   `.agent/reports/image-raster-policy-03-audit-and-reuse-editorial.md`
-- Milestone summaries: `.agent/benchmarks/image-raster-policy-03/`
-
-Bootstrap sources were read once: the Plan 2 state, evidence, and benchmark
-summary. Read this state first on resume; read the active plan sections and
-only the active source paths next.
+- M1 summary:
+  `.agent/benchmarks/image-raster-policy-03/m1-write-pixels-accounting.md`
 
 ## Progress
 
-- [x] (2026-09-18) Verify branch, ancestry, and preserve unrelated local files.
+- [x] (2026-09-18) Verify branch, ancestry, and preserve unrelated files.
 - [x] (2026-09-18) Create bootstrap state, evidence, and editorial handoff.
-- [x] (2026-09-19) Milestone 1: correctness and benchmark hygiene.
-- [ ] STOP / REVIEW 1 — awaiting explicit reviewer approval.
-- [ ] Milestones 2–4, each gated by explicit recorded review approval.
+- [x] (2026-09-19) Implement M1 correctness and benchmark hygiene.
+- [x] (2026-09-19) Correct the native target-metric transport and rerun M1.
+- [ ] STOP / REVIEW 1 — ready for explicit reviewer approval.
+- [ ] M2–M4 — not started; each remains gated by recorded review approval.
 
-## Validation and deferrals
+## M1 correction gate
 
-- Bootstrap checks: branch/ancestry, focused header validation, whitespace,
-  and plan syntax/size inspection.
-- Milestone 1 native gate passed: SDK distribution, macOS ARM64 `tcvm`,
-  `Launcher`, `skia_surface_test`, bundle packaging, and bundle self-test.
-- Six accounting-on smokes passed, followed by the 20-process accounting A/B
-  matrix. The required corpus self-test hash was `588a7e0f4019424a`.
-- Detailed samples and aggregate deltas are in
-  `.agent/benchmarks/image-raster-policy-03/m1-write-pixels-accounting.md`.
-- Deferred: all Milestone 2+ work and the historical full profile.
+Passed: SDK distribution; macOS ARM64 `tcvm`, `Launcher`, and
+`skia_surface_test`; native surface test; package; self-test; six accounting-
+on smokes; and the exact 20-process, five-round A/B matrix.
+
+The package is
+`build/image-raster-policy-03-package-fixed/image-scroll-benchmark-macos-arm64`.
+The corpus has 663 files and hash `588a7e0f4019424a`. SDK compile/deploy JAR
+SHA-256 is
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`.
+The result ZIP SHA-256 is
+`9f2d6ee03838b30814f1b76830b1fa14b80dc30929e5b02d4f58263f134c5264`.
+
+The active software target is physically `1080x1920`, with effective
+pitch/rowBytes `4320`, color type `6` (`BGRA8888`), alpha `2`,
+`kN32=4`, and backend `software`. The former `56x896` was packed-field
+truncation, not a physical target; it is preserved only as historical evidence.
+
+The five-round median work P50 delta for `32795 -> 32799` is -18.66% with
+accounting on and -18.54% with accounting off. Work P95 is +1.83% on and
++10.20% off; tails increase in both modes. These are observations, not a
+causal promotion claim.
+
+Mask `4` is the bit-1-disabled intrinsic JPEG proof. Its off smoke recorded
+175 intrinsic-known results and 2 fallback scans overall. Mask `32799`
+includes `RASTER_OPACITY_METADATA` (bit 1); its off smoke recorded 175
+intrinsic-known, 177 metadata-known, and 0 fallback scans. Do not describe
+`32799` as bit 1 disabled.
+
+Accounting-off retains work/paint timing and marks diagnostics unavailable.
+M2 diagnostic work, the historical full profile, and the standalone decode
+benchmark remain deferred.
 
 ## Decisions still active
 
 - Do not change default optimization masks.
 - Preserve delayed target-color materialization and the single raster-variant
   slot through all four milestones.
-- Milestone 2 is diagnostic-only; structural corrections require reviewer
-  approval recorded below.
+- M2 is diagnostic-only; structural corrections require explicit review.
+- Do not infer causality from M1 timing alone.
 
 ## Approved M3 changes
 
-None. Milestone 3 is not authorized until Milestone 2 review.
+None. M3 is not authorized until M2 review.
 
-## Deliberate local files
+## Historical commit-message findings
 
-Preserve the unrelated benchmark logs/directories, earlier optimization plans,
-generated SDK fixtures/launchers, caches, and partial artifacts listed by the
-bootstrap status check. Do not stage them.
+Post-commit validation found historical lines longer than 80 characters in all
+of these Plan 3 commits. They are recorded, not amended or rewritten:
+
+- `82f4af600`: line length 266;
+- `ed09cf657`: line length 141;
+- `135050818`: line length 102;
+- `1f5bdbbea`: line lengths 90 and 122;
+- `f02f9dcff`: line length 273;
+- `1fb0b1d35`: line length 86.
+
+New commits `feea98e56`, `31bdef4bf`, and `5d4b3a300` are signed and
+message-line compliant. History was not rewritten.
 
 ## Next action
 
-Stop for review. Do not begin Milestone 2 until the reviewer explicitly
-approves continuation and that approval is recorded below.
-
-## Milestone 1 outcome
-
-- Strong clipped writePixels proof passed in `skia_surface_test`; outside
-  sentinel pixels remained unchanged.
-- JPEG opacity is published intrinsically on successful native publication;
-  diagnostic smoke evidence shows intrinsic opacity with bit 1 disabled and
-  no scan in the prefetch-off candidate path.
-- Accounting-off retains external work/paint timing and writes unavailable
-  diagnostics markers without requiring counter fields.
-- Native target metrics are captured once from the active Skia target through
-  the established NativeImageBacking bridge. The original Image bridge was
-  unsafe in the deployed VM and was not used for final environment reporting.
-- The five-round A/B median work P50 delta for `32795 -> 32799` was -19.52%
-  with accounting on and -19.16% with accounting off. P95/tail deltas are
-  reported without a causal claim.
-
-## Review record
-
-Pending explicit reviewer approval for Milestone 2.
-
-Commit-message validation notes: commits `82f4af600`, `ed09cf657`,
-`f02f9dcff`, and `1fb0b1d35` contain historical body-line formatting defects
-detected by post-commit checks. History was not rewritten, per the execution
-constraints; the defects are recorded here for reviewer visibility.
+Stop at `STOP / REVIEW 1`. Await explicit reviewer approval. Do not start
+M2.
 
 ## Resume command
 
-Read this state, then the Milestone 1 sections of the active plan and the
-listed primary implementation paths. Before the next commit, validate headers,
-stage only explicit task paths, run cached whitespace checks, and validate the
-commit message.
+Read this state, the M1 summary, and the active plan gate. Before the next
+commit, validate headers, stage only explicit task paths, run cached
+whitespace checks, inspect the staged diff, and validate the commit message.
