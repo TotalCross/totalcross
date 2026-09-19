@@ -372,6 +372,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long[] frameTimesNs = new long[256];
     long[] frameElapsedNs = new long[256];
     int[] framePositions = new int[256];
+    long[] frameScrollWorkNs = new long[256];
+    long[] framePaintWorkNs = new long[256];
+    long[] frameWorkTimeNs = new long[256];
     long[] frameJpegDecodeCounts = new long[256];
     long[] frameJpegDecodeNs = new long[256];
     long[] frameJpegFullCounts = new long[256];
@@ -412,12 +415,19 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       long jpegEighthNsBefore = Image.jpegNativeDecodeEighthNsForTest;
       long jpegOtherCountBefore = Image.jpegNativeDecodeOtherCountForTest;
       long jpegOtherNsBefore = Image.jpegNativeDecodeOtherNsForTest;
+      long workStartNs = System.nanoTime();
       int before = scroll.sbV.getValue();
+      long scrollWorkNs = 0;
       if (target != before) {
+        long scrollWorkStartNs = System.nanoTime();
         ImageRasterBenchmarkSupport.require(scroll.scrollContent(0, target - before, true),
             name + " stopped before reaching time-based target");
+        scrollWorkNs = Math.max(0, System.nanoTime() - scrollWorkStartNs);
       }
-      long paintTimeNs = paintFrameNs();
+      long paintWorkStartNs = System.nanoTime();
+      scroll.repaintNow();
+      long paintWorkNs = Math.max(0, System.nanoTime() - paintWorkStartNs);
+      long workTimeNs = Math.max(0, System.nanoTime() - workStartNs);
       long jpegDecodeCountAfter = Image.jpegNativeDecodeCountForTest;
       long jpegDecodeNsAfter = Image.jpegNativeDecodeNsForTest;
       long jpegFullCountAfter = Image.jpegNativeDecodeFullCountForTest;
@@ -431,12 +441,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       long jpegOtherCountAfter = Image.jpegNativeDecodeOtherCountForTest;
       long jpegOtherNsAfter = Image.jpegNativeDecodeOtherNsForTest;
       long frameTimeNs = frames == 0
-          ? paintTimeNs : Math.max(0, frameStartNs - previousFrameStartNs);
+          ? paintWorkNs : Math.max(0, frameStartNs - previousFrameStartNs);
       if (frames == frameTimesNs.length) {
         int newLength = frameTimesNs.length * 2;
         frameTimesNs = Arrays.copyOf(frameTimesNs, newLength);
         frameElapsedNs = Arrays.copyOf(frameElapsedNs, newLength);
         framePositions = Arrays.copyOf(framePositions, newLength);
+        frameScrollWorkNs = Arrays.copyOf(frameScrollWorkNs, newLength);
+        framePaintWorkNs = Arrays.copyOf(framePaintWorkNs, newLength);
+        frameWorkTimeNs = Arrays.copyOf(frameWorkTimeNs, newLength);
         frameJpegDecodeCounts = Arrays.copyOf(frameJpegDecodeCounts, newLength);
         frameJpegDecodeNs = Arrays.copyOf(frameJpegDecodeNs, newLength);
         frameJpegFullCounts = Arrays.copyOf(frameJpegFullCounts, newLength);
@@ -453,6 +466,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       frameTimesNs[frames] = frameTimeNs;
       frameElapsedNs[frames] = elapsedNs;
       framePositions[frames] = scroll.sbV.getValue();
+      frameScrollWorkNs[frames] = scrollWorkNs;
+      framePaintWorkNs[frames] = paintWorkNs;
+      frameWorkTimeNs[frames] = workTimeNs;
       frameJpegDecodeCounts[frames] = jpegDecodeCountAfter - jpegDecodeCountBefore;
       frameJpegDecodeNs[frames] = jpegDecodeNsAfter - jpegDecodeNsBefore;
       frameJpegFullCounts[frames] = jpegFullCountAfter - jpegFullCountBefore;
@@ -480,6 +496,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long[] actualFrameTimesNs = Arrays.copyOf(frameTimesNs, frames);
     long[] actualFrameElapsedNs = Arrays.copyOf(frameElapsedNs, frames);
     int[] actualFramePositions = Arrays.copyOf(framePositions, frames);
+    long[] actualFrameScrollWorkNs = Arrays.copyOf(frameScrollWorkNs, frames);
+    long[] actualFramePaintWorkNs = Arrays.copyOf(framePaintWorkNs, frames);
+    long[] actualFrameWorkTimeNs = Arrays.copyOf(frameWorkTimeNs, frames);
     long[] actualFrameJpegDecodeCounts = Arrays.copyOf(frameJpegDecodeCounts, frames);
     long[] actualFrameJpegDecodeNs = Arrays.copyOf(frameJpegDecodeNs, frames);
     long[] actualFrameJpegFullCounts = Arrays.copyOf(frameJpegFullCounts, frames);
@@ -494,19 +513,27 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long[] actualFrameJpegOtherNs = Arrays.copyOf(frameJpegOtherNs, frames);
     long[] sortedFrameTimesNs = Arrays.copyOf(actualFrameTimesNs, frames);
     Arrays.sort(sortedFrameTimesNs);
+    long[] sortedWorkTimeNs = Arrays.copyOf(actualFrameWorkTimeNs, frames);
+    Arrays.sort(sortedWorkTimeNs);
+    long[] sortedPaintWorkNs = Arrays.copyOf(actualFramePaintWorkNs, frames);
+    Arrays.sort(sortedPaintWorkNs);
     for (int i = 0; i < frames; i++) {
       ImageRasterBenchmarkSupport.require(actualFrameTimesNs[i] >= 0,
           name + " has a negative frame time");
       ImageRasterBenchmarkSupport.require(actualFrameElapsedNs[i] >= 0,
           name + " has a negative frame elapsed time");
     }
+    validateActiveWorkDiagnostics(name, actualFrameScrollWorkNs, actualFramePaintWorkNs,
+        actualFrameWorkTimeNs);
     validateFrameDiagnostics(counters, actualFrameJpegDecodeCounts, actualFrameJpegDecodeNs,
         actualFrameJpegFullCounts, actualFrameJpegFullNs, actualFrameJpegHalfCounts,
         actualFrameJpegHalfNs, actualFrameJpegQuarterCounts, actualFrameJpegQuarterNs,
         actualFrameJpegEighthCounts, actualFrameJpegEighthNs, actualFrameJpegOtherCounts,
         actualFrameJpegOtherNs);
     return new PassResult(name, forward, minimum, endpoint, maximum, elapsedNs, frames,
-        actualFrameTimesNs, actualFrameElapsedNs, actualFramePositions, sortedFrameTimesNs,
+        actualFrameTimesNs, actualFrameElapsedNs, actualFramePositions, actualFrameScrollWorkNs,
+        actualFramePaintWorkNs, actualFrameWorkTimeNs, sortedFrameTimesNs, sortedWorkTimeNs,
+        sortedPaintWorkNs,
         actualFrameJpegDecodeCounts, actualFrameJpegDecodeNs, actualFrameJpegFullCounts,
         actualFrameJpegFullNs, actualFrameJpegHalfCounts, actualFrameJpegHalfNs,
         actualFrameJpegQuarterCounts, actualFrameJpegQuarterNs, actualFrameJpegEighthCounts,
@@ -641,14 +668,24 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         "writePixels known-opaque candidates exceed candidates");
   }
 
-  private static void requireNonNegative(long value, String description) {
-    ImageRasterBenchmarkSupport.require(value >= 0, "negative " + description);
+  private static void validateActiveWorkDiagnostics(String phase, long[] scrollWorkNs,
+      long[] paintWorkNs, long[] workTimeNs) {
+    ImageRasterBenchmarkSupport.require(scrollWorkNs.length == paintWorkNs.length
+        && scrollWorkNs.length == workTimeNs.length,
+        phase + " active work arrays have different lengths");
+    for (int i = 0; i < workTimeNs.length; i++) {
+      requireNonNegative(scrollWorkNs[i], phase + " frame scroll work ns");
+      requireNonNegative(paintWorkNs[i], phase + " frame paint work ns");
+      requireNonNegative(workTimeNs[i], phase + " frame work ns");
+      ImageRasterBenchmarkSupport.require(workTimeNs[i] >= scrollWorkNs[i],
+          phase + " frame work ns is less than scroll work ns");
+      ImageRasterBenchmarkSupport.require(workTimeNs[i] >= paintWorkNs[i],
+          phase + " frame work ns is less than paint work ns");
+    }
   }
 
-  private long paintFrameNs() {
-    long startNs = System.nanoTime();
-    scroll.repaintNow();
-    return Math.max(0, System.nanoTime() - startNs);
+  private static void requireNonNegative(long value, String description) {
+    ImageRasterBenchmarkSupport.require(value >= 0, "negative " + description);
   }
 
   private void printPass(PassResult result) {
@@ -682,6 +719,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",frame_time_p95_ns=" + result.percentileNs(95)
         + ",frame_time_p99_ns=" + result.percentileNs(99)
         + ",frame_time_max_ns=" + result.percentileNs(100)
+        + ",work_time_p50_ns=" + result.workTimePercentileNs(50)
+        + ",work_time_p95_ns=" + result.workTimePercentileNs(95)
+        + ",work_time_p99_ns=" + result.workTimePercentileNs(99)
+        + ",work_time_max_ns=" + result.workTimePercentileNs(100)
+        + ",paint_time_p50_ns=" + result.paintTimePercentileNs(50)
+        + ",paint_time_p95_ns=" + result.paintTimePercentileNs(95)
+        + ",paint_time_p99_ns=" + result.paintTimePercentileNs(99)
+        + ",paint_time_max_ns=" + result.paintTimePercentileNs(100)
         + ",frames_over_16_67_count=" + result.countOverNs(FRAME_THRESHOLD_16_67_NS)
         + ",frames_over_33_3_count=" + result.countOverNs(FRAME_THRESHOLD_33_3_NS)
         + ",frames_over_50_count=" + result.countOverNs(FRAME_THRESHOLD_50_NS)
@@ -695,12 +740,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private void writeRunFrames(PassResult result) throws Exception {
     StringBuilder frames = new StringBuilder(4096);
-    frames.append("frame_index,elapsed_ns,frame_time_ns,scroll_value,jpeg_decode_count,jpeg_decode_ns,")
+    frames.append("frame_index,elapsed_ns,frame_time_ns,scroll_value,scroll_work_ns,paint_work_ns,work_time_ns,")
+        .append("jpeg_decode_count,jpeg_decode_ns,")
         .append("jpeg_full_count,jpeg_full_ns,jpeg_half_count,jpeg_half_ns,jpeg_quarter_count,")
         .append("jpeg_quarter_ns,jpeg_eighth_count,jpeg_eighth_ns,jpeg_other_count,jpeg_other_ns\n");
     for (int i = 0; i < result.frames; i++) {
       frames.append(i).append(',').append(result.frameElapsedNs[i]).append(',')
           .append(result.frameTimesNs[i]).append(',').append(result.framePositions[i]).append(',')
+          .append(result.frameScrollWorkNs[i]).append(',').append(result.framePaintWorkNs[i]).append(',')
+          .append(result.frameWorkTimeNs[i]).append(',')
           .append(result.frameJpegDecodeCounts[i]).append(',').append(result.frameJpegDecodeNs[i]).append(',')
           .append(result.frameJpegFullCounts[i]).append(',').append(result.frameJpegFullNs[i]).append(',')
           .append(result.frameJpegHalfCounts[i]).append(',').append(result.frameJpegHalfNs[i]).append(',')
@@ -801,6 +849,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"frameTimeP95Ns\":" + result.percentileNs(95) + ",\n"
         + "  \"frameTimeP99Ns\":" + result.percentileNs(99) + ",\n"
         + "  \"frameTimeMaxNs\":" + result.percentileNs(100) + ",\n"
+        + "  \"workTimeP50Ns\":" + result.workTimePercentileNs(50) + ",\n"
+        + "  \"workTimeP95Ns\":" + result.workTimePercentileNs(95) + ",\n"
+        + "  \"workTimeP99Ns\":" + result.workTimePercentileNs(99) + ",\n"
+        + "  \"workTimeMaxNs\":" + result.workTimePercentileNs(100) + ",\n"
+        + "  \"paintTimeP50Ns\":" + result.paintTimePercentileNs(50) + ",\n"
+        + "  \"paintTimeP95Ns\":" + result.paintTimePercentileNs(95) + ",\n"
+        + "  \"paintTimeP99Ns\":" + result.paintTimePercentileNs(99) + ",\n"
+        + "  \"paintTimeMaxNs\":" + result.paintTimePercentileNs(100) + ",\n"
         + "  \"framesOver16_67Count\":" + result.countOverNs(FRAME_THRESHOLD_16_67_NS) + ",\n"
         + "  \"framesOver33_3Count\":" + result.countOverNs(FRAME_THRESHOLD_33_3_NS) + ",\n"
         + "  \"framesOver50Count\":" + result.countOverNs(FRAME_THRESHOLD_50_NS) + ",\n"
@@ -960,7 +1016,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long[] frameTimesNs;
     final long[] frameElapsedNs;
     final int[] framePositions;
+    final long[] frameScrollWorkNs;
+    final long[] framePaintWorkNs;
+    final long[] frameWorkTimeNs;
     final long[] sortedFrameTimesNs;
+    final long[] sortedWorkTimeNs;
+    final long[] sortedPaintWorkNs;
     final long[] frameJpegDecodeCounts;
     final long[] frameJpegDecodeNs;
     final long[] frameJpegFullCounts;
@@ -977,7 +1038,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
     PassResult(String name, boolean forward, int minimum, int end, int maximum, long elapsedNs,
         int frames, long[] frameTimesNs, long[] frameElapsedNs, int[] framePositions,
-        long[] sortedFrameTimesNs, long[] frameJpegDecodeCounts, long[] frameJpegDecodeNs,
+        long[] frameScrollWorkNs, long[] framePaintWorkNs, long[] frameWorkTimeNs,
+        long[] sortedFrameTimesNs, long[] sortedWorkTimeNs, long[] sortedPaintWorkNs,
+        long[] frameJpegDecodeCounts, long[] frameJpegDecodeNs,
         long[] frameJpegFullCounts, long[] frameJpegFullNs, long[] frameJpegHalfCounts,
         long[] frameJpegHalfNs, long[] frameJpegQuarterCounts, long[] frameJpegQuarterNs,
         long[] frameJpegEighthCounts, long[] frameJpegEighthNs,
@@ -993,7 +1056,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       this.frameTimesNs = frameTimesNs;
       this.frameElapsedNs = frameElapsedNs;
       this.framePositions = framePositions;
+      this.frameScrollWorkNs = frameScrollWorkNs;
+      this.framePaintWorkNs = framePaintWorkNs;
+      this.frameWorkTimeNs = frameWorkTimeNs;
       this.sortedFrameTimesNs = sortedFrameTimesNs;
+      this.sortedWorkTimeNs = sortedWorkTimeNs;
+      this.sortedPaintWorkNs = sortedPaintWorkNs;
       this.frameJpegDecodeCounts = frameJpegDecodeCounts;
       this.frameJpegDecodeNs = frameJpegDecodeNs;
       this.frameJpegFullCounts = frameJpegFullCounts;
@@ -1010,14 +1078,26 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
 
     long percentileNs(int percent) {
+      return percentileNs(sortedFrameTimesNs, percent);
+    }
+
+    long workTimePercentileNs(int percent) {
+      return percentileNs(sortedWorkTimeNs, percent);
+    }
+
+    long paintTimePercentileNs(int percent) {
+      return percentileNs(sortedPaintWorkNs, percent);
+    }
+
+    private static long percentileNs(long[] sortedValues, int percent) {
       if (percent <= 0) {
-        return sortedFrameTimesNs[0];
+        return sortedValues[0];
       }
       if (percent >= 100) {
-        return sortedFrameTimesNs[sortedFrameTimesNs.length - 1];
+        return sortedValues[sortedValues.length - 1];
       }
-      int index = (int) Math.ceil(sortedFrameTimesNs.length * percent / 100.0) - 1;
-      return sortedFrameTimesNs[Math.max(0, Math.min(sortedFrameTimesNs.length - 1, index))];
+      int index = (int) Math.ceil(sortedValues.length * percent / 100.0) - 1;
+      return sortedValues[Math.max(0, Math.min(sortedValues.length - 1, index))];
     }
 
     int countOverNs(long thresholdNs) {
