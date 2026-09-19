@@ -1074,7 +1074,7 @@ if(TC_BUILD_NATIVE_STARTUP_TEST)
       )
       set_target_properties(skia_surface_test PROPERTIES
         BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR}"
-        CXX_STANDARD 11
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
       )

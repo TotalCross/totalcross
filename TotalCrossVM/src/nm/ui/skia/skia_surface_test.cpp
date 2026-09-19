@@ -4,9 +4,12 @@
 
 #include "skia.h"
 #include "skia_image_backing.h"
+#include "skia_image_backing_internal.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstdint>
+#include <cstring>
 #include <fstream>
 #include <vector>
 
@@ -159,11 +162,204 @@ static bool testBoldStyle(const char* fontPath) {
     return true;
 }
 
+static bool expectBackingPixel(int64_t handle, int32 x, int32 y, Pixel expected,
+                               const char* message) {
+    Pixel row[8] = {};
+    if (!skia_image_backing_read_argb_rows(handle, row, y, x + 1, 1)) {
+        std::fprintf(stderr, "%s: unable to read backing pixel\n", message);
+        return false;
+    }
+    const Pixel actual = row[x];
+    if (actual == expected) {
+        return true;
+    }
+    std::fprintf(stderr, "%s: expected %#x, got %#x\n", message, expected, actual);
+    return false;
+}
+
+static int runRegularWritePixels(SkCanvas* targetCanvas, const SkImage* sourceImage,
+                                 bool sourceOpaque, float dstLeft, float dstTop,
+                                 float dstRight, float dstBottom, int32 alphaMask) {
+    return skia_image_backing_internal::tryWritePixelsImage(
+        targetCanvas, sourceImage, 2, 2, sourceOpaque, 0, 0, 2, 2,
+        dstLeft, dstTop, dstRight, dstBottom, alphaMask, 1 << 2);
+}
+
+static bool testRegularDeviceSpaceWritePixels() {
+    const std::uint8_t sourceData[] = {
+        0x10, 0x20, 0x30, 0xFF, 0x40, 0x50, 0x60, 0xFF,
+        0x70, 0x80, 0x90, 0xFF, 0xA0, 0xB0, 0xC0, 0xFF,
+    };
+    auto* sourcePixels = static_cast<std::uint8_t*>(std::malloc(sizeof(sourceData)));
+    if (!sourcePixels) {
+        std::fputs("unable to allocate regular writePixels source pixels\n", stderr);
+        return false;
+    }
+    std::memcpy(sourcePixels, sourceData, sizeof(sourceData));
+    const int64_t sourceBacking = skia_image_backing_create_from_rgba_pixels(
+        sourcePixels, 2, 2);
+    auto* sourceRecord = skia_image_backing_internal::findBacking(sourceBacking);
+    const sk_sp<SkImage> sourceImage = sourceRecord ? sourceRecord->snapshot() : nullptr;
+    if (!sourceBacking || !sourceImage) {
+        std::fputs("unable to create regular writePixels source image\n", stderr);
+        skia_image_backing_release(sourceBacking);
+        return false;
+    }
+
+    skia_image_backing_reset_accounting_for_test();
+    constexpr Pixel kTopLeft = 0xFF102030;
+    constexpr Pixel kTopRight = 0xFF405060;
+    constexpr Pixel kBottomLeft = 0xFF708090;
+    constexpr Pixel kBottomRight = 0xFFA0B0C0;
+    bool passed = true;
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        passed = target && canvas
+            && runRegularWritePixels(canvas, sourceImage.get(), true, 1, 1, 3, 3, 255) == 1
+            && expectBackingPixel(target, 1, 1, kTopLeft, "identity writePixels")
+            && expectBackingPixel(target, 2, 2, kBottomRight, "identity writePixels corner");
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->scale(2, 2);
+        }
+        passed = passed && target && canvas
+            && runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 1, 1, 255) == 1
+            && expectBackingPixel(target, 0, 0, kTopLeft, "content-scale writePixels")
+            && expectBackingPixel(target, 1, 1, kBottomRight, "content-scale corner");
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->save();
+            canvas->clipRect(SkRect::MakeLTRB(1, 1, 2, 2));
+        }
+        passed = passed && target && canvas
+            && runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 2, 2, 255) == 1
+            && expectBackingPixel(target, 1, 1, kBottomRight, "saved partial clip writePixels");
+        if (canvas) {
+            canvas->restore();
+        }
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->save();
+            canvas->translate(1, 0);
+            canvas->clipRect(SkRect::MakeLTRB(0, 0, 1, 2));
+        }
+        passed = passed && target && canvas
+            && runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 2, 2, 255) == 1
+            && expectBackingPixel(target, 1, 0, kTopLeft, "translated partial clip top")
+            && expectBackingPixel(target, 1, 1, kBottomLeft, "translated partial clip bottom");
+        if (canvas) {
+            canvas->restore();
+        }
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->save();
+            canvas->skew(0.25f, 0);
+        }
+        const int result = canvas
+            ? runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 2, 2, 255) : 0;
+        passed = passed && target && canvas && result == 0;
+        if (canvas) {
+            canvas->restore();
+        }
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->save();
+            canvas->rotate(15);
+        }
+        const int result = canvas
+            ? runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 2, 2, 255) : 0;
+        passed = passed && target && canvas && result == 0;
+        if (canvas) {
+            canvas->restore();
+        }
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->save();
+            canvas->translate(0.5f, 0);
+        }
+        const int result = canvas
+            ? runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 2, 2, 255) : 0;
+        passed = passed && target && canvas && result == 0;
+        if (canvas) {
+            canvas->restore();
+        }
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        const int result = canvas
+            ? runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 2, 2, 128) : 0;
+        passed = passed && target && canvas && result == 0;
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        const int result = canvas
+            ? runRegularWritePixels(canvas, sourceImage.get(), false, 0, 0, 2, 2, 255) : 0;
+        passed = passed && target && canvas && result == 0;
+        skia_image_backing_release(target);
+    }
+
+    passed = passed
+        && skia_image_backing_write_pixels_regular_attempts_for_test() == 9
+        && skia_image_backing_write_pixels_regular_hits_for_test() == 4
+        && skia_image_backing_write_pixels_regular_fallbacks_for_test() == 5
+        && skia_image_backing_write_pixels_regular_copied_bytes_for_test() == 44
+        && skia_image_backing_write_pixels_regular_clipped_hits_for_test() == 2;
+    if (!passed) {
+        std::fputs("regular device-space writePixels assertions failed\n", stderr);
+        skia_image_backing_release(sourceBacking);
+        return false;
+    }
+    skia_image_backing_release(sourceBacking);
+    std::puts("regular device-space writePixels assertions passed");
+    return true;
+}
+
 int main(int argc, char** argv) {
     if (argc > 1) {
         if (!testTypefaceRegistry(argv[1]) || !testBoldStyle(argv[1])) {
             return 1;
         }
+    }
+    if (!testRegularDeviceSpaceWritePixels()) {
+        return 1;
     }
     Pixel sourcePixels[4] = { 0xFF102030, 0xFF405060, 0xFF708090, 0xFFA0B0C0 };
     Pixel destinationPixels[16] = {};
