@@ -75,10 +75,10 @@ Require Plan 1 state to report:
 
 ## Progress
 
-- [ ] Bootstrap Plan 2 state/evidence.
-- [ ] Milestone 1: implement safe device-space regular writePixels.
-- [ ] Milestone 2: prove clipping/transform correctness and smoke the real path.
-- [ ] Milestone 3: run the focused macOS matrix and close the plan.
+- [x] Bootstrap Plan 2 state/evidence.
+- [x] Milestone 1: implement safe device-space regular writePixels.
+- [x] Milestone 2: prove clipping/transform correctness and smoke the real path.
+- [x] Milestone 3: run the focused macOS matrix and close the plan.
 
 ## Current Architecture and Scope
 
