@@ -33,7 +33,8 @@ source/evidence paths needed for the next action.
 - [x] (2026-09-19) Implement M1 correctness and benchmark hygiene.
 - [x] (2026-09-19) Correct the native target-metric transport and rerun M1.
 - [x] (2026-09-19) STOP / REVIEW 1 — technically approved and closed.
-- [x] M2 — identity and eligibility audit passed; STOP / REVIEW 2 is ready.
+- [x] M2 — identity and eligibility audit passed; review correction rerun passed;
+  STOP / REVIEW 2 is ready.
 - [ ] M3–M4 — not started; each remains gated by recorded review approval.
 
 ## M1 correction gate
@@ -105,20 +106,27 @@ message-line compliant. History was not rewritten.
 
 Passed: macOS ARM64 native rebuild, SDK distribution, package, self-test, and
 the exact four-process `raster-policy-audit` matrix for masks `8192`, `16384`,
-`32768`, and `57344`, with prefetch and accounting enabled. The package is
-`build/image-raster-policy-03-package-m2/image-scroll-benchmark-macos-arm64`.
+`32768`, and `57344`, with prefetch and accounting enabled. The diagnostic
+implementation commit is `ca71cbe0b`. The package is
+`build/image-raster-policy-03-package-m2-review/image-scroll-benchmark-macos-arm64`.
 The corpus hash is `588a7e0f4019424a`; SDK JAR hash is
 `4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`; bundle
-hash is `a9fe55d035fd99fe768b801c6f619e1b37741ab3999f8bfc91960edc5a370120`;
+hash is `e2b97f8d8f7d125f8937d2339007661f6653aa7f654eb4d9aa55787b632c3f7f`;
+runtime hash is `ead97b59f0a3839e549f76a0afdf770be070ceee70f831145bbbc4f00483254f`;
 result ZIP hash is
-`95e4d7c97bb95a12b7ee911a350572bc967f25d6001a7464834e2f1d01df9971`.
+`b94034944425e7a0e83b307062c36e48cc960407fbe7dba7505419b4d0515433`.
 
 Aggregate target attempts/fallbacks/hits/materializations are `6/6/0/0`;
 physical-variant lookups/misses/hits/stores/evictions are `6/6/0/0/0`;
 identity attempts/hits/fallbacks are `6/0/6`. All target and identity
-rejections were mapping geometry. Save-state rejects and all shared-slot and
+rejections were mapping geometry, specifically `root-to-device`; physical
+variants had no mapping rejection. Save-count buckets for target-color,
+physical-variant, and identity are all `[0,0,0,0,0,0]`. All shared-slot and
 pending cross-kind replacements are zero. Physical full/no-surface-size keys
 are `2/2`; target key acquisition was `0/0` because eligibility failed first.
+`PARTIAL_INTERSECTION` is not emitted because no real classified condition
+exists. Each process completed 189 frames and reached the automatic-scroll
+endpoint in about 3.01 seconds; no timeout occurred.
 
 ## Next action
 

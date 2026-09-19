@@ -14,7 +14,9 @@ The corrected bridge reports the real software target `1080x1920`, rowBytes
 four-process audit profile and found no target-key acquisition, no variant
 hits/stores, no cross-kind replacement, and no canvas/save-state rejection.
 `STOP / REVIEW 1` is closed and `STOP / REVIEW 2` is ready; M3 remains
-unauthorized.
+unauthorized. The review-correction rerun also confirmed that the app's
+automatic scroll completes: 189 frames per process, endpoint reached, and no
+timeout.
 
 ## Original Plan versus Actual Outcome
 
@@ -34,8 +36,12 @@ The old unsafe Image probe and packed dimension word were removed.
 
 M2 exposes diagnostic-only counts for normalized target and physical keys,
 pending observations, shared-slot cross-kind transitions, rejection reasons,
-and identity save-count buckets through the established benchmark metric
-path. The accounting-off path remains diagnostics-unavailable.
+feature-specific save-count buckets, and ten mapping subreasons through the
+established benchmark metric path. The accounting-off path remains
+diagnostics-unavailable. The intrinsic target key diagnostic is exactly
+`sourceGeneration + sourceDecodeGeneration + targetColorType`; it is not the
+active cache key. `PARTIAL_INTERSECTION` is not emitted because no real
+condition was classified.
 
 ## Decisions and Trade-offs
 
@@ -84,13 +90,16 @@ metadata-known, and 0 fallback scans.
 
 ### M2 identity and eligibility results
 
-The authoritative M2 package is
-`build/image-raster-policy-03-package-m2/image-scroll-benchmark-macos-arm64`.
+The authoritative corrected M2 package is
+`build/image-raster-policy-03-package-m2-review/image-scroll-benchmark-macos-arm64`.
+The diagnostic implementation commit is `ca71cbe0b`.
 The corpus hash is `588a7e0f4019424a`, SDK JAR hash is
 `4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`, bundle
-hash is `a9fe55d035fd99fe768b801c6f619e1b37741ab3999f8bfc91960edc5a370120`,
-and result ZIP hash is
-`95e4d7c97bb95a12b7ee911a350572bc967f25d6001a7464834e2f1d01df9971`.
+hash is `e2b97f8d8f7d125f8937d2339007661f6653aa7f654eb4d9aa55787b632c3f7f`,
+runtime hash is
+`ead97b59f0a3839e549f76a0afdf770be070ceee70f831145bbbc4f00483254f`, and
+result ZIP hash is
+`b94034944425e7a0e83b307062c36e48cc960407fbe7dba7505419b4d0515433`.
 
 The four masks passed. Aggregate target attempts/fallbacks/hits/materializations
 were `6/6/0/0`; physical-variant lookups/misses/hits/stores/evictions were
@@ -101,11 +110,12 @@ because no target key reached acquisition. Save-state rejects were `0/6 = 0%`;
 all shared-slot and pending cross-kind transitions were zero.
 
 The measured zero-hit causes are eligibility and delayed observation: target
-color was rejected before acquisition, physical variants were observed once
-without a second observation, and identity folding fell back on mapping
-geometry. The run does not support destination-position fragmentation,
-surface-dimension fragmentation, cross-kind eviction, or canvas/save-state
-rejection as causes in this workload.
+color and identity were rejected by the `root-to-device` mapping subreason,
+while physical variants were observed once without a second observation. The
+run does not support destination-position fragmentation, surface-dimension
+fragmentation, cross-kind eviction, or canvas/save-state rejection as causes
+in this workload. Target fallbacks equal target attempts in the applicable
+runs, and all three feature-specific save-count bucket vectors are zero.
 
 ## Useful Evidence and Examples
 

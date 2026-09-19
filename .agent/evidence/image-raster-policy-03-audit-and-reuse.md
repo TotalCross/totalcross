@@ -114,3 +114,39 @@ metric method, the package was rebuilt, and the authoritative rerun passed.
 
 `STOP / REVIEW 2` is now ready. M3 remains unauthorized; no structural fix
 was inferred or applied from this audit.
+
+## 2026-09-19 — M2 review correction rerun
+
+Implementation commit: `ca71cbe0b` (`fix(benchmark): refine M2 raster diagnostics`).
+The corrected run passed the same self-test and exact four-process
+`raster-policy-audit` profile. Each process completed 189 frames and reached
+the automatic-scroll endpoint in approximately 3.01 seconds; no timeout was
+observed. Corpus hash remained `588a7e0f4019424a`; SDK JAR hash remained
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`.
+Native runtime hash is
+`ead97b59f0a3839e549f76a0afdf770be070ceee70f831145bbbc4f00483254f`, bundle
+ZIP hash is `e2b97f8d8f7d125f8937d2339007661f6653aa7f654eb4d9aa55787b632c3f7f`,
+and result ZIP hash is
+`b94034944425e7a0e83b307062c36e48cc960407fbe7dba7505419b4d0515433`.
+
+The correction did not change the active cache key or eligibility. It made
+`targetColorUniqueIntrinsicKeys` hash exactly source generation, source decode
+generation, and target color type; separated save-count buckets for target,
+physical-variant, and identity diagnostics; classified mapping geometry into
+ten accounting-gated subreasons; removed `PARTIAL_INTERSECTION` from the
+published output because no real condition was classified; and moved target
+fallback accounting to the attempt terminal paths so each non-handled attempt
+contributes exactly one fallback.
+
+Aggregate corrected counters are target attempts/fallbacks/hits/materializations
+`6/6/0/0`, physical lookups/misses/hits/stores/evictions `6/6/0/0/0`, and
+identity attempts/hits/fallbacks `6/0/6`. Target and identity mapping totals
+are `root-to-device=6` each; physical-variant mapping totals are zero. The
+target, physical-variant, and identity save-count bucket vectors are all
+`[0,0,0,0,0,0]`. Physical full/no-surface-size keys remain `2/2`; all shared
+slot and pending cross-kind counters remain zero; and target fallback equals
+target attempts in the applicable masks (`3/3` for each target-enabled run).
+
+`PARTIAL_INTERSECTION` remains a legacy native enum value only; it is not part
+of the M2 JSON or runner contract. `STOP / REVIEW 2` remains in force and M3
+is still unauthorized.
