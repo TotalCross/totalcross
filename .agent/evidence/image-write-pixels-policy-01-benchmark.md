@@ -55,3 +55,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - `e3ec4778d` also contains one overlong body line for the same literal-`\\n`
   shell quoting mistake. The commit is retained; no history rewrite was used.
+
+## 2026-09-18 — Plan 2 handoff correction
+
+- Plan 2 specification committed as `9594720fa` at
+  `.agent/plans/image-write-pixels-policy-02-device-copy.md`.
+- Plan 1 editorial report was rewritten to the exact eleven-section structure
+  required by `.agent/PLANS.md`.
+- Plan 1 is fully closed; Plan 2 is the only remaining action.

@@ -14,8 +14,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Milestone 1 commit: `11042035e`.
 - Milestone 1 timer-alignment fix: `28c942ef7`.
 - Milestone 2 commit: `b97e68583`.
-- Next action: Plan 2 may execute the focused 24-process profile on the device
-  copy policy.
+- Plan 2 specification committed: `9594720fa`.
+- Editorial report is compliant with all required `PLANS.md` headings.
+- Plan 1 is fully closed; the only next action is Plan 2 execution of the
+  focused 24-process profile on the device-copy policy.
 
 ## Working set
 
