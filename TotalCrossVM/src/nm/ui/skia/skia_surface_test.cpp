@@ -6,6 +6,8 @@
 #include "skia_image_backing.h"
 #include "skia_image_backing_internal.h"
 
+#include "include/core/SkPath.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
@@ -362,6 +364,243 @@ static bool testRegularDeviceSpaceWritePixels() {
     return true;
 }
 
+static int64_t createGeometryTestSource() {
+    const std::uint8_t rgba[] = {
+        0x10, 0x20, 0x30, 0xFF, 0x40, 0x50, 0x60, 0xFF,
+        0x70, 0x80, 0x90, 0xFF, 0xA0, 0xB0, 0xC0, 0xFF,
+    };
+    auto* owned = static_cast<std::uint8_t*>(std::malloc(sizeof(rgba)));
+    if (!owned) {
+        return 0;
+    }
+    std::memcpy(owned, rgba, sizeof(rgba));
+    const int64_t source = skia_image_backing_create_from_rgba_pixels(owned, 2, 2);
+    if (source) {
+        skia_image_backing_set_opacity(source, SKIA_IMAGE_OPACITY_OPAQUE);
+    }
+    return source;
+}
+
+static SkiaImageDrawPlanData makeGeometryTestPlan(int64_t source, int32 optimizationMask,
+                                                   const int32* operations,
+                                                   const int32* parameters,
+                                                   const int32* dimensions) {
+    SkiaImageDrawPlanData plan{};
+    plan.rootHandle = source;
+    plan.rootWidth = 2;
+    plan.rootHeight = 2;
+    plan.rootLogicalWidth = 2;
+    plan.rootLogicalHeight = 2;
+    plan.rootFrameCount = 1;
+    plan.rootWidthOfAllFrames = 2;
+    plan.rootContentScale = 1.0;
+    plan.operations = operations;
+    plan.parameters = parameters;
+    plan.dimensions = dimensions;
+    plan.sourceDecodeGeneration = 7;
+    plan.operationCount = 1;
+    plan.outputWidth = 2;
+    plan.outputHeight = 2;
+    plan.outputFrameCount = 1;
+    plan.outputWidthOfAllFrames = 2;
+    plan.alphaMask = 255;
+    plan.materializeAlphaMask = 255;
+    plan.outputAlphaMask = 255;
+    plan.destinationScale = 1.0;
+    plan.outputContentScale = 1.0;
+    plan.hwScaleW = 1.0;
+    plan.hwScaleH = 1.0;
+    plan.rootHwScaleW = 1.0;
+    plan.rootHwScaleH = 1.0;
+    plan.optimizationMask = optimizationMask;
+    return plan;
+}
+
+static bool testRasterGeometryPolicyM3() {
+    const int32 operations[] = { SKIA_IMAGE_DRAW_SCALE };
+    const int32 parameters[] = { 0, 0, 0, 0 };
+    const int32 dimensions[] = { 2, 2 };
+    bool passed = true;
+
+    {
+        const int64_t source = createGeometryTestSource();
+        const int64_t target = skia_image_backing_create_empty_for_test(
+            4, 4, SKIA_TEST_COLOR_BGRA8888);
+        const int surface = skia_image_backing_surface_id(target);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 13, operations, parameters, dimensions);
+        skia_image_backing_reset_accounting_for_test();
+        const bool first = skia_image_backing_draw_geometry_to_surface(
+            surface, &plan, 0, 0, 2, 2, 0, 0, 2, 2) != 0;
+        const bool second = skia_image_backing_draw_geometry_to_surface(
+            surface, &plan, 0, 0, 2, 2, 1, 1, 3, 3) != 0;
+        passed = passed && source && target && surface < 0 && first && second
+            && skia_image_backing_target_color_attempts_for_test() == 2
+            && skia_image_backing_target_color_materializations_for_test() == 1;
+        skia_image_backing_release(source);
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t source = createGeometryTestSource();
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        const int surface = skia_image_backing_surface_id(target);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 15, operations, parameters, dimensions);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->rotate(15);
+        }
+        skia_image_backing_reset_accounting_for_test();
+        const bool rotatedDraw = canvas
+            && skia_image_backing_draw_geometry_to_surface(
+                surface, &plan, 0, 0, 2, 2, 0, 0, 2, 2) != 0;
+        passed = passed && source && target && rotatedDraw
+            && skia_image_backing_physical_identity_hits_for_test() == 0
+            && skia_image_backing_physical_identity_fallbacks_for_test() == 1;
+        skia_image_backing_release(source);
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t source = createGeometryTestSource();
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        const int surface = skia_image_backing_surface_id(target);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 15, operations, parameters, dimensions);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->skew(0.25f, 0);
+        }
+        skia_image_backing_reset_accounting_for_test();
+        const bool skewedDraw = canvas
+            && skia_image_backing_draw_geometry_to_surface(
+                surface, &plan, 0, 0, 2, 2, 0, 0, 2, 2) != 0;
+        passed = passed && source && target && skewedDraw
+            && skia_image_backing_physical_identity_hits_for_test() == 0
+            && skia_image_backing_physical_identity_fallbacks_for_test() == 1;
+        skia_image_backing_release(source);
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t source = createGeometryTestSource();
+        const int64_t firstTarget = skia_image_backing_create_empty(4, 4);
+        const int64_t secondTarget = skia_image_backing_create_empty(8, 8);
+        const int firstSurface = skia_image_backing_surface_id(firstTarget);
+        const int secondSurface = skia_image_backing_surface_id(secondTarget);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 14, operations, parameters, dimensions);
+        skia_image_backing_reset_accounting_for_test();
+        const bool first = skia_image_backing_draw_geometry_to_surface(
+            firstSurface, &plan, 0, 0, 2, 2, 0, 0, 2, 2) != 0;
+        const bool second = skia_image_backing_draw_geometry_to_surface(
+            secondSurface, &plan, 0, 0, 2, 2, 0, 0, 2, 2) != 0;
+        passed = passed && source && firstTarget && secondTarget
+            && firstSurface < 0 && secondSurface < 0 && first && second
+            && skia_image_backing_physical_variant_lookups_for_test() == 2
+            && skia_image_backing_physical_variant_materializations_for_test() == 1;
+        skia_image_backing_release(source);
+        skia_image_backing_release(firstTarget);
+        skia_image_backing_release(secondTarget);
+    }
+
+    {
+        const int64_t source = createGeometryTestSource();
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        const int surface = skia_image_backing_surface_id(target);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 15, operations, parameters, dimensions);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->clear(SK_ColorMAGENTA);
+            canvas->translate(1, 1);
+            canvas->scale(1, 1);
+        }
+        skia_image_backing_reset_accounting_for_test();
+        const bool translatedDraw = canvas
+            && skia_image_backing_draw_geometry_to_surface(
+                surface, &plan, 0, 0, 2, 2, 0, 0, 2, 2) != 0;
+        passed = passed && source && target && translatedDraw
+            && skia_image_backing_physical_identity_hits_for_test() == 1
+            && expectBackingPixel(target, 1, 1, 0xFF102030,
+                                  "translated positive-scale raster geometry")
+            && expectBackingPixel(target, 0, 0, 0xFFFF00FF,
+                                  "translated positive-scale raster outside");
+        skia_image_backing_release(source);
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t source = createGeometryTestSource();
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        const int surface = skia_image_backing_surface_id(target);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 15, operations, parameters, dimensions);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->clear(SK_ColorMAGENTA);
+            canvas->save();
+            canvas->clipRect(SkRect::MakeLTRB(1, 1, 2, 2));
+        }
+        skia_image_backing_reset_accounting_for_test();
+        const bool rectangularClipDraw = canvas
+            && skia_image_backing_draw_geometry_to_surface(
+                surface, &plan, 0, 0, 2, 2, 0, 0, 2, 2) != 0;
+        if (canvas) {
+            canvas->restore();
+        }
+        passed = passed && source && target && rectangularClipDraw
+            && skia_image_backing_physical_identity_hits_for_test() == 1
+            && expectBackingPixel(target, 1, 1, 0xFFA0B0C0,
+                                  "saved rectangular raster clip")
+            && expectBackingPixel(target, 0, 0, 0xFFFF00FF,
+                                  "saved rectangular raster clip outside")
+            && expectBackingPixel(target, 2, 2, 0xFFFF00FF,
+                                  "saved rectangular raster clip edge");
+        skia_image_backing_release(source);
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int64_t source = createGeometryTestSource();
+        const int64_t target = skia_image_backing_create_empty(4, 4);
+        const int surface = skia_image_backing_surface_id(target);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 15, operations, parameters, dimensions);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->clear(SK_ColorMAGENTA);
+            SkPath triangle;
+            triangle.moveTo(0, 0);
+            triangle.lineTo(2, 0);
+            triangle.lineTo(0, 2);
+            triangle.close();
+            canvas->save();
+            canvas->clipPath(triangle);
+        }
+        skia_image_backing_reset_accounting_for_test();
+        const bool nonRectangularClipDraw = canvas
+            && skia_image_backing_draw_geometry_to_surface(
+                surface, &plan, 0, 0, 2, 2, 0, 0, 2, 2) != 0;
+        if (canvas) {
+            canvas->restore();
+        }
+        passed = passed && source && target && nonRectangularClipDraw
+            && skia_image_backing_physical_identity_hits_for_test() == 0
+            && skia_image_backing_physical_identity_fallbacks_for_test() == 1;
+        skia_image_backing_release(source);
+        skia_image_backing_release(target);
+    }
+
+    if (!passed) {
+        std::fputs("M3 raster geometry policy assertions failed\n", stderr);
+        return false;
+    }
+    std::puts("M3 raster geometry policy assertions passed");
+    return true;
+}
+
 int main(int argc, char** argv) {
     if (argc > 1) {
         if (!testTypefaceRegistry(argv[1]) || !testBoldStyle(argv[1])) {
@@ -369,6 +608,9 @@ int main(int argc, char** argv) {
         }
     }
     if (!testRegularDeviceSpaceWritePixels()) {
+        return 1;
+    }
+    if (!testRasterGeometryPolicyM3()) {
         return 1;
     }
     Pixel sourcePixels[4] = { 0xFF102030, 0xFF405060, 0xFF708090, 0xFFA0B0C0 };

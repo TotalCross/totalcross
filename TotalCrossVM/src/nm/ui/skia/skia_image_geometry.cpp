@@ -403,6 +403,24 @@ static bool rejectRasterPhysicalPlan(int32* rejectionReason, int32 reason,
     return false;
 }
 
+static bool canvasStateAllowsRasterFastPath(const SkCanvas* canvas) {
+    if (!canvas) {
+        return false;
+    }
+    if (canvas->getSaveCount() == 1) {
+        return true;
+    }
+    // SkCanvas does not expose the individual save-stack entry kinds. A
+    // non-empty rectangular clip is the conservative proof available here:
+    // the fast path only changes pixels inside the current device rectangle,
+    // while non-rectangular clips remain on the generic path.
+    if (!canvas->isClipRect()) {
+        return false;
+    }
+    SkIRect deviceClip;
+    return canvas->getDeviceClipBounds(&deviceClip) && !deviceClip.isEmpty();
+}
+
 static bool purePhysicalGeometry(const SkiaImageDrawPlanData* plan) {
     if (!plan || plan->operationCount <= 0 || !plan->operations) {
         return false;
@@ -437,7 +455,7 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_BACKING_INCOMPATIBLE_FOR_TEST);
     }
-    if (!canvas || canvas->getSaveCount() != 1) {
+    if (!canvasStateAllowsRasterFastPath(canvas)) {
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_CANVAS_STATE_FOR_TEST);
     }
@@ -949,7 +967,6 @@ static void appendGeometrySignature(RasterVariantKey* key, double value) {
 
 static RasterVariantKey makePhysicalVariantKey(const SkiaImageDrawPlanData* plan,
                                                const NativeImageBackingRecord* source,
-                                               int32 targetWidth, int32 targetHeight,
                                                SkColorType colorType) {
     RasterVariantKey key;
     key.sourceGeneration = source->generation;
@@ -958,8 +975,6 @@ static RasterVariantKey makePhysicalVariantKey(const SkiaImageDrawPlanData* plan
     key.sourceBottom = plan->rootHeight;
     key.destinationRight = plan->outputWidth;
     key.destinationBottom = plan->outputHeight;
-    key.targetWidth = targetWidth;
-    key.targetHeight = targetHeight;
     key.targetColorType = static_cast<int32>(colorType);
     key.kind = skia_image_backing_internal::RASTER_VARIANT_PHYSICAL;
     key.geometrySignature.reserve(static_cast<size_t>(plan->operationCount) * 7 + 24);
@@ -1008,23 +1023,12 @@ static SkColorType physicalVariantColorType(const SkiaImageDrawPlanData* plan,
 }
 
 static RasterVariantKey makeTargetColorVariantKey(const NativeImageBackingRecord* source,
-                                                  const RasterPhysicalPlan& physicalPlan,
-                                                  const SkPixmap& targetPixels,
+                                                  SkColorType targetColorType,
                                                   int64_t sourceDecodeGeneration) {
     RasterVariantKey key;
     key.sourceGeneration = source->generation;
     key.sourceDecodeGeneration = static_cast<uint64_t>(sourceDecodeGeneration);
-    key.sourceLeft = static_cast<int32>(physicalPlan.fullSourcePixels.fLeft);
-    key.sourceTop = static_cast<int32>(physicalPlan.fullSourcePixels.fTop);
-    key.sourceRight = static_cast<int32>(physicalPlan.fullSourcePixels.fRight);
-    key.sourceBottom = static_cast<int32>(physicalPlan.fullSourcePixels.fBottom);
-    key.destinationLeft = static_cast<int32>(physicalPlan.fullDestinationPixels.fLeft);
-    key.destinationTop = static_cast<int32>(physicalPlan.fullDestinationPixels.fTop);
-    key.destinationRight = static_cast<int32>(physicalPlan.fullDestinationPixels.fRight);
-    key.destinationBottom = static_cast<int32>(physicalPlan.fullDestinationPixels.fBottom);
-    key.targetWidth = targetPixels.width();
-    key.targetHeight = targetPixels.height();
-    key.targetColorType = static_cast<int32>(targetPixels.colorType());
+    key.targetColorType = static_cast<int32>(targetColorType);
     key.kind = skia_image_backing_internal::RASTER_VARIANT_TARGET_COLOR;
     return key;
 }
@@ -1086,7 +1090,7 @@ static GeometryDrawResult drawTargetColorVariant(const SkiaImageDrawPlanData* pl
         return GEOMETRY_NOT_HANDLED;
     }
     const SkColorType targetColorType = targetPixels.colorType();
-    const RasterVariantKey key = makeTargetColorVariantKey(source, physicalPlan, targetPixels,
+    const RasterVariantKey key = makeTargetColorVariantKey(source, targetColorType,
                                                             plan->sourceDecodeGeneration);
     sk_sp<SkImage> variant;
     const RasterVariantUse use = skia_image_backing_internal::acquireTargetColorVariant(
@@ -1143,7 +1147,7 @@ static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkC
         }
         return false;
     }
-    if (!canvas || canvas->getSaveCount() != 1) {
+    if (!canvasStateAllowsRasterFastPath(canvas)) {
         if (rejectionReason) {
             *rejectionReason = SKIA_RASTER_REJECT_CANVAS_STATE_FOR_TEST;
         }
@@ -1304,8 +1308,7 @@ static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan,
         }
     }
     const SkColorType colorType = physicalVariantColorType(plan, source, targetPixels);
-    const RasterVariantKey key = makePhysicalVariantKey(plan, source, targetPixels.width(),
-                                                         targetPixels.height(), colorType);
+    const RasterVariantKey key = makePhysicalVariantKey(plan, source, colorType);
     sk_sp<SkImage> variant;
     const RasterVariantUse use = skia_image_backing_internal::acquirePhysicalVariant(
         source, key, plan, colorType, &variant);
@@ -1532,8 +1535,7 @@ void skia_image_backing_clear_physical_variant_if_equivalent(
     if (!source || !source->rasterVariant.valid) {
         return;
     }
-    const RasterVariantKey expected = makePhysicalVariantKey(
-        plan, source, 0, 0, kRGBA_8888_SkColorType);
+    const RasterVariantKey expected = makePhysicalVariantKey(plan, source, kRGBA_8888_SkColorType);
     const RasterVariantKey& actual = source->rasterVariant.key;
     const bool equivalent = actual.kind == skia_image_backing_internal::RASTER_VARIANT_PHYSICAL
         && actual.sourceGeneration == expected.sourceGeneration

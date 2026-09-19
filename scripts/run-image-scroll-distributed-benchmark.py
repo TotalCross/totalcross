@@ -40,6 +40,7 @@ MASKS = (
 )
 WRITE_PIXELS_POLICY_MASKS = (0, 4, 2, 6, 32795, 32799)
 RASTER_POLICY_AUDIT_MASKS = (8192, 16384, 32768, 57344)
+RASTER_STRUCTURAL_SMOKE_MASKS = (0, 8192, 16384, 32768, 57344)
 PREFETCH_PROFILES = ("off", "on")
 ACCOUNTING_PROFILES = ("on", "off")
 ROUNDS = 3
@@ -73,6 +74,17 @@ PROFILES = {
         "accounting": ("on",),
         "rounds": 1,
         "expected_processes": len(RASTER_POLICY_AUDIT_MASKS),
+        "require_policy_diagnostics": True,
+    },
+    "raster-structural-smoke": {
+        "masks": RASTER_STRUCTURAL_SMOKE_MASKS,
+        "prefetch": ("on",),
+        "accounting": ("on",),
+        "rounds": 2,
+        "expected_processes": len(RASTER_STRUCTURAL_SMOKE_MASKS) * 2,
+        "require_policy_diagnostics": True,
+        "require_structural_diagnostics": True,
+        "require_standard_smokes": False,
     },
 }
 CONTROLLED_PAIRS = ((0, 4), (2, 6), (32795, 32799))
@@ -514,6 +526,46 @@ def validate_diagnostic_counters(counters, run_dir, accounting,
     }
 
 
+def validate_structural_diagnostics(counters, run_dir, mask):
+    """Require every approved M3 path to expose activity or a measured reject."""
+    path_specs = (
+        (8192, "targetColorAttempts", (
+            "targetColorRejectCanvas", "targetColorRejectSurface", "targetColorRejectClip",
+            "targetColorRejectMapping", "targetColorRejectBacking",
+            "targetColorRejectExecution",
+        )),
+        (16384, "physicalVariantLookups", (
+            "physicalVariantRejectCanvas", "physicalVariantRejectSurface",
+            "physicalVariantRejectClip", "physicalVariantRejectMapping",
+            "physicalVariantRejectBacking", "physicalVariantRejectExecution",
+        )),
+        (32768, "physicalIdentityAttempts", (
+            "physicalIdentityRejectCanvas", "physicalIdentityRejectSurface",
+            "physicalIdentityRejectClip", "physicalIdentityRejectMapping",
+            "physicalIdentityRejectBacking", "physicalIdentityRejectExecution",
+        )),
+    )
+    for bit, attempts_key, reject_keys in path_specs:
+        attempts = counter_value(counters, attempts_key, f"{run_dir} {attempts_key}")
+        measured_rejects = sum(
+            counter_value(counters, key, f"{run_dir} {key}") for key in reject_keys
+        )
+        if mask & bit:
+            require(attempts > 0 or measured_rejects > 0,
+                    f"{run_dir} mask {mask} did not exercise {attempts_key}")
+        else:
+            require(attempts == 0 and measured_rejects == 0,
+                    f"{run_dir} mask {mask} exercised disabled raster path {attempts_key}")
+
+    write_attempts = counter_value(counters, "writePixelsAttempts",
+                                   f"{run_dir} writePixels attempts")
+    write_hits = counter_value(counters, "writePixelsHits", f"{run_dir} writePixels hits")
+    write_fallbacks = counter_value(counters, "writePixelsFallbacks",
+                                    f"{run_dir} writePixels fallbacks")
+    require(write_attempts == write_hits + write_fallbacks,
+            f"{run_dir} writePixels accounting regressed")
+
+
 def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_record):
     for field in TEMPORAL_SUMMARY_FIELDS:
         require_nonnegative_ns(run_summary.get(field), f"{run_dir}/summary.json {field}")
@@ -577,7 +629,8 @@ def expected_run_dir(output, mask, prefetch, accounting, run):
 
 
 def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, dataset_digest,
-                           require_policy_diagnostics=False):
+                           require_policy_diagnostics=False,
+                           require_structural_diagnostics=False):
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     pass_records = [
         parse_record(line) for line in lines
@@ -691,11 +744,14 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
     require(target_row_bytes >= minimum_row_bytes,
             f"{output}/environment.json has an inconsistent target pitch")
     validate_diagnostic_counters(counters, run_dir, accounting, require_policy_diagnostics)
+    if require_structural_diagnostics:
+        require(accounting == "on", f"{run_dir} structural diagnostics require accounting")
+        validate_structural_diagnostics(counters, run_dir, mask)
     return run_summary
 
 
 def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run, label,
-                require_policy_diagnostics=False):
+                require_policy_diagnostics=False, require_structural_diagnostics=False):
     executable = executable_path(bundle, manifest)
     logs = output / "logs"
     logs.mkdir(parents=True, exist_ok=True)
@@ -744,7 +800,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
     try:
         summary = validate_run_artifacts(
             output, log_path, mask, prefetch, accounting, run, corpus_digest,
-            require_policy_diagnostics
+            require_policy_diagnostics, require_structural_diagnostics
         )
     except BenchmarkFailure as error:
         print(f"{label} failed validation; log={log_path}", file=sys.stderr)
@@ -824,7 +880,7 @@ def require_smokes_completed(output, corpus_digest):
 
 def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles,
                accounting_profiles, rounds, expected_processes,
-               require_policy_diagnostics=False):
+               require_policy_diagnostics=False, require_structural_diagnostics=False):
     plan = write_suite_plan(output, masks, prefetch_profiles, accounting_profiles,
                             rounds, expected_processes)
     completed = 0
@@ -832,7 +888,7 @@ def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles
         run_process(
             bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run,
             f"matrix-{run}-{mask}-{prefetch}-{accounting}",
-            require_policy_diagnostics,
+            require_policy_diagnostics, require_structural_diagnostics,
         )
         completed += 1
         print(f"matrix progress={completed}/{expected_processes}")
@@ -945,7 +1001,8 @@ def write_pairwise_comparison(output, records, masks, rounds):
 
 
 def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, rounds,
-              expected_processes, profile_name):
+              expected_processes, profile_name, require_policy_diagnostics=False,
+              require_structural_diagnostics=False):
     records = []
     for _, order, run, mask, prefetch, accounting in plan:
         path = expected_run_dir(output, mask, prefetch, accounting, run) / "summary.json"
@@ -964,8 +1021,12 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
             raise BenchmarkFailure(f"invalid matrix counters: {counters_path}") from error
         diagnostics = validate_diagnostic_counters(
             counters, path.parent, accounting,
-            profile_name == "raster-policy-audit"
+            require_policy_diagnostics
         )
+        if require_structural_diagnostics:
+            require(accounting == "on",
+                    f"{path.parent} structural diagnostics require accounting")
+            validate_structural_diagnostics(counters, path.parent, mask)
         for field in TEMPORAL_SUMMARY_FIELDS:
             require_nonnegative_ns(summary.get(field), f"{path} {field}")
         for field in FRAME_THRESHOLD_COUNT_FIELDS:
@@ -1111,16 +1172,19 @@ def run_phase(bundle, phase, profile_name):
             )
         if phase == "smokes":
             return
-    if 0 in profile["masks"]:
+    if 0 in profile["masks"] and profile.get("require_standard_smokes", True):
         require_smokes_completed(output, corpus_digest)
     plan = run_matrix(
         bundle, manifest, output, corpus_digest, profile["masks"], profile["prefetch"],
         profile["accounting"], profile["rounds"], profile["expected_processes"],
-        profile_name == "raster-policy-audit",
+        profile.get("require_policy_diagnostics", False),
+        profile.get("require_structural_diagnostics", False),
     )
     aggregate(
         output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
         profile["rounds"], profile["expected_processes"], profile_name,
+        profile.get("require_policy_diagnostics", False),
+        profile.get("require_structural_diagnostics", False),
     )
     if phase == "full":
         run_decode_phase(bundle, "full")
