@@ -29,3 +29,24 @@ SPDX-License-Identifier: LGPL-2.1-only
   log: `/tmp/image-write-pixels-policy-01-sdk-dist.log`.
 - Native macOS build/smoke and the focused 24-process benchmark were deferred
   by plan scope.
+
+## 2026-09-18 — milestone 2 and closeout
+
+- Revisions: `28c942ef7` timer alignment and `b97e68583` focused profile.
+- Static checks passed: package-script `bash -n`, runner `py_compile`, focused
+  copyright validation, and `git diff --check`.
+- Deterministic fixture passed: full plan 126, focused plan 24, two runs per
+  focused key, controlled pairs complete, 24 aggregate rows, 12 pairwise rows,
+  new work fields parsed, and work invariants accepted.
+- SDK smoke-source compilation and `dist -x test` passed again after the Java
+  timer-alignment correction; logs:
+  `/tmp/image-write-pixels-policy-01-milestone2-compile-smoke.log` and
+  `/tmp/image-write-pixels-policy-01-milestone2-sdk-dist.log`.
+- The focused profile writes `results/write-pixels-policy-comparison.csv` and
+  marks contradictory two-round work-P50 directions as
+  `INCONCLUSIVE_VARIANCE`.
+- The focused 24-process benchmark and native macOS validation are deferred
+  to Plan 2. No rendering/native optimization policy changed.
+- Commit-message checker deviation: `b97e68583` contains one overlong body
+  line because literal `\\n` was passed through the shell; history was not
+  rewritten.

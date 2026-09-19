@@ -75,10 +75,10 @@ Record starting HEAD and scoped pre-existing changes in state.
 
 ## Progress
 
-- [ ] Bootstrap plan/state/evidence and commit them.
-- [ ] Milestone 1: add same-frame active-work metrics.
-- [ ] Milestone 2: add the focused two-round runner profile.
-- [ ] Close Plan 1 and hand off to Plan 2.
+- [x] Bootstrap plan/state/evidence and commit them.
+- [x] Milestone 1: add same-frame active-work metrics.
+- [x] Milestone 2: add the focused two-round runner profile.
+- [x] Close Plan 1 and hand off to Plan 2.
 
 ## Current Architecture and Scope
 
@@ -342,13 +342,22 @@ Add focused fix commits only when validation discovers a real defect.
 
 ## Outcomes & Retrospective
 
-At completion record:
+The active-work schema is delivered in commit `11042035e`, with the timer
+alignment correction in `28c942ef7`. The runner and documentation are in
+`b97e68583`; the bootstrap/state validation commit is `f16301dd9`.
 
-- active-work schema delivered;
-- focused/full planning counts;
-- SDK validation performed;
-- exact commits and deviations;
-- explicit statement that no native optimization policy changed.
+`frames.csv`, `summary.json`, pass records, and distributed `summary.csv` now
+carry work/paint timing. The deterministic fixture proved full planning at
+126 processes, focused planning at 24, two runs per focused key, complete
+controlled pairs, and pairwise aggregation with variance marking.
+
+SDK smoke-source compilation and `dist -x test` passed at both milestone gates;
+the focused 24-process benchmark and all native macOS validation remain
+deferred to Plan 2. No rendering or native optimization policy changed.
+
+The final profile commit used a literal `\\n` in its shell `-m` argument, so
+the local commit checker reported one overlong body line after commit. History
+was not rewritten; the deviation is recorded in state and evidence.
 
 The editorial report must use the section structure required by `.agent/PLANS.md`.
 
