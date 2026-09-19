@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "skia_internal.h"
+#include "skia_image_backing_internal.h"
 
 #if defined(ANDROID)
 #include <jni.h>
@@ -358,6 +359,9 @@ int32 colorType(uint32 pixelformat) {
 #endif
 
 int64_t skia_benchmark_native_metric(int32 kind) {
+    if (kind >= 100) {
+        return skia_image_backing_diagnostic_metric(kind - 100);
+    }
     if (kind == 7) {
 #if TC_GRAPHICS_SOFTWARE
         return 1;
@@ -385,4 +389,8 @@ int64_t skia_benchmark_native_metric(int32 kind) {
     default:
         return -1;
     }
+}
+
+int64_t skia_image_backing_diagnostic_metric(int32 kind) {
+    return skia_image_backing_internal::diagnosticMetricForTest(kind);
 }

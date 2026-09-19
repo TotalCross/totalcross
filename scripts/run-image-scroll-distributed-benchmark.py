@@ -39,6 +39,7 @@ MASKS = (
     4096, 8192, 16384, 32768, 32799, 40991, 49183, 57375,
 )
 WRITE_PIXELS_POLICY_MASKS = (0, 4, 2, 6, 32795, 32799)
+RASTER_POLICY_AUDIT_MASKS = (8192, 16384, 32768, 57344)
 PREFETCH_PROFILES = ("off", "on")
 ACCOUNTING_PROFILES = ("on", "off")
 ROUNDS = 3
@@ -65,6 +66,13 @@ PROFILES = {
         "accounting": ACCOUNTING_PROFILES,
         "rounds": 5,
         "expected_processes": 2 * 1 * 2 * 5,
+    },
+    "raster-policy-audit": {
+        "masks": RASTER_POLICY_AUDIT_MASKS,
+        "prefetch": ("on",),
+        "accounting": ("on",),
+        "rounds": 1,
+        "expected_processes": len(RASTER_POLICY_AUDIT_MASKS),
     },
 }
 CONTROLLED_PAIRS = ((0, 4), (2, 6), (32795, 32799))
@@ -99,6 +107,29 @@ DIAGNOSTIC_SUMMARY_FIELDS = (
     "write_pixels_regular_attempts", "write_pixels_regular_hits",
     "write_pixels_regular_fallbacks", "write_pixels_regular_copied_bytes",
     "write_pixels_regular_clipped_hits",
+)
+POLICY_DIAGNOSTIC_COUNTERS = (
+    "physicalIdentityRejectCanvas", "physicalIdentityRejectSurface",
+    "physicalIdentityRejectClip", "physicalIdentityRejectPartial",
+    "physicalIdentityRejectMapping", "physicalIdentityRejectBacking",
+    "physicalIdentityRejectExecution", "targetColorUniqueSources",
+    "targetColorFallbacks", "targetColorConvertedBytes",
+    "targetColorUniqueFullKeys", "targetColorUniqueNoDestinationKeys",
+    "targetColorUniqueIntrinsicKeys", "targetColorPendingReplacements",
+    "targetColorRejectCanvas", "targetColorRejectSurface", "targetColorRejectClip",
+    "targetColorRejectPartial", "targetColorRejectMapping", "targetColorRejectBacking",
+    "targetColorRejectExecution", "physicalVariantUniqueFullKeys",
+    "physicalVariantUniqueNoSurfaceSizeKeys", "physicalVariantPendingReplacements",
+    "physicalVariantEvictions",
+    "physicalVariantRejectCanvas", "physicalVariantRejectSurface",
+    "physicalVariantRejectClip", "physicalVariantRejectPartial",
+    "physicalVariantRejectMapping", "physicalVariantRejectBacking",
+    "physicalVariantRejectExecution", "sharedSlotTargetToPhysical",
+    "sharedSlotPhysicalToTarget", "sharedPendingTargetToPhysical",
+    "sharedPendingPhysicalToTarget", "physicalIdentitySaveCount0",
+    "physicalIdentitySaveCount1", "physicalIdentitySaveCount2",
+    "physicalIdentitySaveCount3", "physicalIdentitySaveCount4",
+    "physicalIdentitySaveCount5OrMore",
 )
 MEMORY_FIELDS = (
     "checkpoint", "elapsed_ns", "current_resident_bytes", "peak_resident_bytes",
@@ -346,7 +377,8 @@ def validate_jpeg_counter_section(section, description):
     return count, decode_ns, bucket_counts
 
 
-def validate_diagnostic_counters(counters, run_dir, accounting):
+def validate_diagnostic_counters(counters, run_dir, accounting,
+                                 require_policy_diagnostics=False):
     require(isinstance(counters, dict), f"{run_dir}/counters.json is invalid")
     if accounting == "off":
         require(counters.get("accountingEnabled") is False
@@ -397,6 +429,9 @@ def validate_diagnostic_counters(counters, run_dir, accounting):
     require(values["writePixelsDeviceOneToOneKnownOpaqueCandidates"]
             <= values["writePixelsDeviceOneToOneCandidates"],
             f"{run_dir} writePixels known-opaque candidates exceed candidates")
+    if require_policy_diagnostics:
+        for key in POLICY_DIAGNOSTIC_COUNTERS:
+            counter_value(counters, key, f"{run_dir} {key}")
     features = counters.get("features")
     require(isinstance(features, dict), f"{run_dir}/counters.json lacks features")
     for name in (
@@ -496,7 +531,8 @@ def expected_run_dir(output, mask, prefetch, accounting, run):
     )
 
 
-def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, dataset_digest):
+def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, dataset_digest,
+                           require_policy_diagnostics=False):
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     pass_records = [
         parse_record(line) for line in lines
@@ -609,11 +645,12 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
     }[environment["skiaSurfaceColorClassification"]]
     require(target_row_bytes >= minimum_row_bytes,
             f"{output}/environment.json has an inconsistent target pitch")
-    validate_diagnostic_counters(counters, run_dir, accounting)
+    validate_diagnostic_counters(counters, run_dir, accounting, require_policy_diagnostics)
     return run_summary
 
 
-def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run, label):
+def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run, label,
+                require_policy_diagnostics=False):
     executable = executable_path(bundle, manifest)
     logs = output / "logs"
     logs.mkdir(parents=True, exist_ok=True)
@@ -661,7 +698,8 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         raise BenchmarkFailure(f"{label} failed: {reason}")
     try:
         summary = validate_run_artifacts(
-            output, log_path, mask, prefetch, accounting, run, corpus_digest
+            output, log_path, mask, prefetch, accounting, run, corpus_digest,
+            require_policy_diagnostics
         )
     except BenchmarkFailure as error:
         print(f"{label} failed validation; log={log_path}", file=sys.stderr)
@@ -740,7 +778,8 @@ def require_smokes_completed(output, corpus_digest):
 
 
 def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles,
-               accounting_profiles, rounds, expected_processes):
+               accounting_profiles, rounds, expected_processes,
+               require_policy_diagnostics=False):
     plan = write_suite_plan(output, masks, prefetch_profiles, accounting_profiles,
                             rounds, expected_processes)
     completed = 0
@@ -748,6 +787,7 @@ def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles
         run_process(
             bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run,
             f"matrix-{run}-{mask}-{prefetch}-{accounting}",
+            require_policy_diagnostics,
         )
         completed += 1
         print(f"matrix progress={completed}/{expected_processes}")
@@ -877,7 +917,10 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
             counters = json.loads(counters_path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as error:
             raise BenchmarkFailure(f"invalid matrix counters: {counters_path}") from error
-        diagnostics = validate_diagnostic_counters(counters, path.parent, accounting)
+        diagnostics = validate_diagnostic_counters(
+            counters, path.parent, accounting,
+            profile_name == "raster-policy-audit"
+        )
         for field in TEMPORAL_SUMMARY_FIELDS:
             require_nonnegative_ns(summary.get(field), f"{path} {field}")
         for field in FRAME_THRESHOLD_COUNT_FIELDS:
@@ -1028,6 +1071,7 @@ def run_phase(bundle, phase, profile_name):
     plan = run_matrix(
         bundle, manifest, output, corpus_digest, profile["masks"], profile["prefetch"],
         profile["accounting"], profile["rounds"], profile["expected_processes"],
+        profile_name == "raster-policy-audit",
     )
     aggregate(
         output, plan, profile["masks"], profile["prefetch"], profile["accounting"],

@@ -46,6 +46,7 @@ void imageRecordOpacityFallbackScanForTest(int32 pixels);
 int32 colorType(uint32 pixelformat);
 #endif
 int64_t skia_benchmark_native_metric(int32 kind);
+int64_t skia_image_backing_diagnostic_metric(int32 kind);
 void initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
 void destroySkiaScreen();
 void flushSkia();

@@ -110,6 +110,10 @@ bool proveOpaque(NativeImageBackingRecord* source);
 void recordTargetColorAttemptForTest();
 void recordTargetColorFallbackForTest();
 void recordPhysicalVariantEvictionForTest();
+void recordTargetColorRejectionForTest(int32 reason);
+void recordPhysicalVariantRejectionForTest(int32 reason);
+void recordPhysicalIdentitySaveCountForTest(int32 saveCount);
+int64_t diagnosticMetricForTest(int32 kind);
 
 enum RasterVariantUse : uint8_t {
     RASTER_VARIANT_NOT_USED = 0,

@@ -951,16 +951,20 @@ static GeometryDrawResult drawTargetColorVariant(const SkiaImageDrawPlanData* pl
         && source && source->format != IMAGE_BACKING_FORMAT_RGBA8888) {
         return GEOMETRY_NOT_HANDLED;
     }
+    skia_image_backing_internal::recordTargetColorAttemptForTest();
     SkPixmap targetPixels;
     if (!canvas || !canvas->peekPixels(&targetPixels)
         || !targetColorTypeSupported(targetPixels.colorType())) {
+        skia_image_backing_internal::recordTargetColorRejectionForTest(
+            SKIA_RASTER_REJECT_SURFACE_DESTINATION_FOR_TEST);
         return GEOMETRY_NOT_HANDLED;
     }
-    skia_image_backing_internal::recordTargetColorAttemptForTest();
     RasterPhysicalPlan physicalPlan;
+    int32 rejectionReason = SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST;
     if (!buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
                                  dstLeft, dstTop, dstRight, dstBottom, explicitClip,
-                                 &physicalPlan, nullptr)) {
+                                 &physicalPlan, &rejectionReason)) {
+        skia_image_backing_internal::recordTargetColorRejectionForTest(rejectionReason);
         skia_image_backing_internal::recordTargetColorFallbackForTest();
         return GEOMETRY_NOT_HANDLED;
     }
@@ -968,6 +972,8 @@ static GeometryDrawResult drawTargetColorVariant(const SkiaImageDrawPlanData* pl
         return GEOMETRY_HANDLED_NOOP;
     }
     if (!skia_image_backing_internal::proveOpaque(source)) {
+        skia_image_backing_internal::recordTargetColorRejectionForTest(
+            SKIA_RASTER_REJECT_BACKING_INCOMPATIBLE_FOR_TEST);
         skia_image_backing_internal::recordTargetColorFallbackForTest();
         return GEOMETRY_NOT_HANDLED;
     }
@@ -1006,17 +1012,33 @@ static GeometryDrawResult drawTargetColorVariant(const SkiaImageDrawPlanData* pl
                              plan->alphaMask, false, &colorFilters)) {
         return GEOMETRY_HANDLED_MUTATED;
     }
+    skia_image_backing_internal::recordTargetColorRejectionForTest(
+        SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST);
     return GEOMETRY_NOT_HANDLED;
 }
 
 static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
-                                          const SkPixmap& targetPixels) {
-    if (!plan || !canvas || !purePhysicalGeometry(plan)
+                                          const SkPixmap& targetPixels, int32* rejectionReason) {
+    if (!plan || !purePhysicalGeometry(plan)
         || plan->alphaMask != 255 || plan->materializeAlphaMask != 255
         || plan->outputAlphaMask != 255 || plan->hwScaleW != 1.0 || plan->hwScaleH != 1.0
         || plan->rootHwScaleW != 1.0 || plan->rootHwScaleH != 1.0
-        || !std::isfinite(plan->outputContentScale) || plan->outputContentScale <= 0
-        || canvas->getSaveCount() != 1 || targetPixels.width() <= 0 || targetPixels.height() <= 0) {
+        || !std::isfinite(plan->outputContentScale) || plan->outputContentScale <= 0) {
+        if (rejectionReason) {
+            *rejectionReason = SKIA_RASTER_REJECT_BACKING_INCOMPATIBLE_FOR_TEST;
+        }
+        return false;
+    }
+    if (!canvas || canvas->getSaveCount() != 1) {
+        if (rejectionReason) {
+            *rejectionReason = SKIA_RASTER_REJECT_CANVAS_STATE_FOR_TEST;
+        }
+        return false;
+    }
+    if (targetPixels.width() <= 0 || targetPixels.height() <= 0) {
+        if (rejectionReason) {
+            *rejectionReason = SKIA_RASTER_REJECT_SURFACE_DESTINATION_FOR_TEST;
+        }
         return false;
     }
     const SkMatrix matrix = canvas->getTotalMatrix();
@@ -1024,6 +1046,9 @@ static bool physicalVariantCanvasEligible(const SkiaImageDrawPlanData* plan, SkC
         || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0
         || !exactValue(matrix.getScaleX(), plan->outputContentScale)
         || !exactValue(matrix.getScaleY(), plan->outputContentScale)) {
+        if (rejectionReason) {
+            *rejectionReason = SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST;
+        }
         return false;
     }
     return true;
@@ -1081,14 +1106,22 @@ static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan,
         return GEOMETRY_NOT_HANDLED;
     }
     SkPixmap targetPixels;
-    if (!canvas || !canvas->peekPixels(&targetPixels)
-        || !physicalVariantCanvasEligible(plan, canvas, targetPixels)) {
+    int32 rejectionReason = SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST;
+    if (!canvas || !canvas->peekPixels(&targetPixels)) {
+        skia_image_backing_internal::recordPhysicalVariantRejectionForTest(
+            SKIA_RASTER_REJECT_SURFACE_DESTINATION_FOR_TEST);
+        return GEOMETRY_NOT_HANDLED;
+    }
+    if (!physicalVariantCanvasEligible(plan, canvas, targetPixels, &rejectionReason)) {
+        skia_image_backing_internal::recordPhysicalVariantRejectionForTest(rejectionReason);
         return GEOMETRY_NOT_HANDLED;
     }
     SkRect visibleDestinationLogical;
     bool empty = false;
     if (!buildPhysicalVisibleClip(canvas, dstLeft, dstTop, dstRight, dstBottom, explicitClip,
                                   &visibleDestinationLogical, &empty)) {
+        skia_image_backing_internal::recordPhysicalVariantRejectionForTest(
+            SKIA_RASTER_REJECT_DEVICE_CLIP_FOR_TEST);
         return GEOMETRY_NOT_HANDLED;
     }
     if (empty) {
@@ -1102,6 +1135,8 @@ static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan,
         || !std::isfinite(sourceWidth) || !std::isfinite(sourceHeight)
         || destinationWidth <= 0 || destinationHeight <= 0
         || sourceWidth <= 0 || sourceHeight <= 0) {
+        skia_image_backing_internal::recordPhysicalVariantRejectionForTest(
+            SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
         return GEOMETRY_NOT_HANDLED;
     }
     const SkRect visibleSourceLogical = SkRect::MakeLTRB(
@@ -1117,6 +1152,8 @@ static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan,
         || !std::isfinite(visibleSourceLogical.fTop)
         || !std::isfinite(visibleSourceLogical.fRight)
         || !std::isfinite(visibleSourceLogical.fBottom)) {
+        skia_image_backing_internal::recordPhysicalVariantRejectionForTest(
+            SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST);
         return GEOMETRY_NOT_HANDLED;
     }
     if ((plan->optimizationMask & kPhysicalIdentityFoldingBit) != 0) {
@@ -1135,6 +1172,10 @@ static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan,
         source, key, plan, colorType, &variant);
     if (use != skia_image_backing_internal::RASTER_VARIANT_HIT
         && use != skia_image_backing_internal::RASTER_VARIANT_MATERIALIZED) {
+        if (use == skia_image_backing_internal::RASTER_VARIANT_FAILED) {
+            skia_image_backing_internal::recordPhysicalVariantRejectionForTest(
+                SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST);
+        }
         return GEOMETRY_NOT_HANDLED;
     }
     int32 sourcePhysicalLeft;
@@ -1172,13 +1213,17 @@ static GeometryDrawResult drawPhysicalVariant(const SkiaImageDrawPlanData* plan,
     variantTransform.smooth = false;
     variantTransform.hasFill = false;
     variantTransform.fillColor = 0;
-    return geometryDrawCompiled(canvas, variant.get(), variantTransform,
+    const bool drawn = geometryDrawCompiled(canvas, variant.get(), variantTransform,
                                 visibleSourceLogical.fLeft, visibleSourceLogical.fTop,
                                 visibleSourceLogical.fRight, visibleSourceLogical.fBottom,
                                 visibleDestinationLogical.fLeft, visibleDestinationLogical.fTop,
                                 visibleDestinationLogical.fRight, visibleDestinationLogical.fBottom,
-                                plan->alphaMask, false, nullptr)
-        ? GEOMETRY_HANDLED_MUTATED : GEOMETRY_NOT_HANDLED;
+                                plan->alphaMask, false, nullptr);
+    if (!drawn) {
+        skia_image_backing_internal::recordPhysicalVariantRejectionForTest(
+            SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST);
+    }
+    return drawn ? GEOMETRY_HANDLED_MUTATED : GEOMETRY_NOT_HANDLED;
 }
 
 static GeometryDrawResult drawPhysicalFastPath(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
@@ -1252,6 +1297,10 @@ static GeometryDrawResult drawPhysicalFastPath(const SkiaImageDrawPlanData* plan
                 }
             } catch (const std::bad_alloc&) {
             }
+        }
+        if (rejectionReason == SKIA_RASTER_REJECT_CANVAS_STATE_FOR_TEST && canvas) {
+            skia_image_backing_internal::recordPhysicalIdentitySaveCountForTest(
+                canvas->getSaveCount());
         }
         skia_image_backing_record_physical_identity_rejection_for_test(rejectionReason);
         skia_image_backing_record_physical_identity_fallback_for_test();

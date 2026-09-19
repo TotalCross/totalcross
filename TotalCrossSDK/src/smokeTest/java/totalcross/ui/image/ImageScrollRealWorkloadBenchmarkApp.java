@@ -324,6 +324,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     return "on".equals(accountingProfile);
   }
 
+  private static long diagnosticMetric(int kind) {
+    return NativeImageBacking.benchmarkMetricForTest(100 + kind);
+  }
+
   private void captureTargetMetrics() {
     benchmarkTargetColorType = NativeImageBacking.benchmarkMetricForTest(0);
     benchmarkTargetAlphaType = NativeImageBacking.benchmarkMetricForTest(1);
@@ -1018,11 +1022,62 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendCounter(json, "targetColorAttempts", counters.targetColorAttempts, true);
     appendCounter(json, "targetColorHits", counters.targetColorHits, true);
     appendCounter(json, "targetColorMaterializations", counters.targetColorMaterializations, true);
+    appendCounter(json, "targetColorFallbacks", counters.targetColorFallbacks, true);
+    appendCounter(json, "targetColorConvertedBytes", counters.targetColorConvertedBytes, true);
     appendCounter(json, "physicalVariantLookups", counters.physicalVariantLookups, true);
     appendCounter(json, "physicalVariantHits", counters.physicalVariantHits, true);
     appendCounter(json, "physicalVariantMisses", counters.physicalVariantMisses, true);
     appendCounter(json, "physicalVariantStores", counters.physicalVariantStores, true);
+    appendCounter(json, "physicalVariantEvictions", counters.physicalVariantEvictions, true);
     appendCounter(json, "physicalVariantBytes", counters.physicalVariantBytes, true);
+    appendCounter(json, "physicalIdentityRejectCanvas", counters.physicalIdentityRejectCanvas, true);
+    appendCounter(json, "physicalIdentityRejectSurface", counters.physicalIdentityRejectSurface, true);
+    appendCounter(json, "physicalIdentityRejectClip", counters.physicalIdentityRejectClip, true);
+    appendCounter(json, "physicalIdentityRejectPartial", counters.physicalIdentityRejectPartial, true);
+    appendCounter(json, "physicalIdentityRejectMapping", counters.physicalIdentityRejectMapping, true);
+    appendCounter(json, "physicalIdentityRejectBacking", counters.physicalIdentityRejectBacking, true);
+    appendCounter(json, "physicalIdentityRejectExecution", counters.physicalIdentityRejectExecution, true);
+    appendCounter(json, "targetColorUniqueSources", counters.targetColorUniqueSources, true);
+    appendCounter(json, "targetColorUniqueFullKeys", counters.targetColorUniqueFullKeys, true);
+    appendCounter(json, "targetColorUniqueNoDestinationKeys",
+        counters.targetColorUniqueNoDestinationKeys, true);
+    appendCounter(json, "targetColorUniqueIntrinsicKeys",
+        counters.targetColorUniqueIntrinsicKeys, true);
+    appendCounter(json, "targetColorPendingReplacements",
+        counters.targetColorPendingReplacements, true);
+    appendCounter(json, "targetColorRejectCanvas", counters.targetColorRejectCanvas, true);
+    appendCounter(json, "targetColorRejectSurface", counters.targetColorRejectSurface, true);
+    appendCounter(json, "targetColorRejectClip", counters.targetColorRejectClip, true);
+    appendCounter(json, "targetColorRejectPartial", counters.targetColorRejectPartial, true);
+    appendCounter(json, "targetColorRejectMapping", counters.targetColorRejectMapping, true);
+    appendCounter(json, "targetColorRejectBacking", counters.targetColorRejectBacking, true);
+    appendCounter(json, "targetColorRejectExecution", counters.targetColorRejectExecution, true);
+    appendCounter(json, "physicalVariantUniqueFullKeys", counters.physicalVariantUniqueFullKeys, true);
+    appendCounter(json, "physicalVariantUniqueNoSurfaceSizeKeys",
+        counters.physicalVariantUniqueNoSurfaceSizeKeys, true);
+    appendCounter(json, "physicalVariantPendingReplacements",
+        counters.physicalVariantPendingReplacements, true);
+    appendCounter(json, "physicalVariantRejectCanvas", counters.physicalVariantRejectCanvas, true);
+    appendCounter(json, "physicalVariantRejectSurface", counters.physicalVariantRejectSurface, true);
+    appendCounter(json, "physicalVariantRejectClip", counters.physicalVariantRejectClip, true);
+    appendCounter(json, "physicalVariantRejectPartial", counters.physicalVariantRejectPartial, true);
+    appendCounter(json, "physicalVariantRejectMapping", counters.physicalVariantRejectMapping, true);
+    appendCounter(json, "physicalVariantRejectBacking", counters.physicalVariantRejectBacking, true);
+    appendCounter(json, "physicalVariantRejectExecution",
+        counters.physicalVariantRejectExecution, true);
+    appendCounter(json, "sharedSlotTargetToPhysical", counters.sharedSlotTargetToPhysical, true);
+    appendCounter(json, "sharedSlotPhysicalToTarget", counters.sharedSlotPhysicalToTarget, true);
+    appendCounter(json, "sharedPendingTargetToPhysical",
+        counters.sharedPendingTargetToPhysical, true);
+    appendCounter(json, "sharedPendingPhysicalToTarget",
+        counters.sharedPendingPhysicalToTarget, true);
+    appendCounter(json, "physicalIdentitySaveCount0", counters.physicalIdentitySaveCount0, true);
+    appendCounter(json, "physicalIdentitySaveCount1", counters.physicalIdentitySaveCount1, true);
+    appendCounter(json, "physicalIdentitySaveCount2", counters.physicalIdentitySaveCount2, true);
+    appendCounter(json, "physicalIdentitySaveCount3", counters.physicalIdentitySaveCount3, true);
+    appendCounter(json, "physicalIdentitySaveCount4", counters.physicalIdentitySaveCount4, true);
+    appendCounter(json, "physicalIdentitySaveCount5OrMore",
+        counters.physicalIdentitySaveCount5OrMore, true);
     appendCounter(json, "backingLiveBytes", counters.backingLiveBytes, true);
     appendCounter(json, "backingPeakBytes", counters.backingPeakBytes, true);
     json.append("  \"features\":{\n");
@@ -1225,6 +1280,51 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
   }
 
+  private static void appendPolicyDiagnosticDetails(StringBuilder details, Counters counters) {
+    details.append(",target_color_unique_sources=").append(counters.targetColorUniqueSources)
+        .append(",target_color_unique_full_keys=").append(counters.targetColorUniqueFullKeys)
+        .append(",target_color_unique_no_destination_keys=")
+        .append(counters.targetColorUniqueNoDestinationKeys)
+        .append(",target_color_unique_intrinsic_keys=")
+        .append(counters.targetColorUniqueIntrinsicKeys)
+        .append(",target_color_pending_replacements=")
+        .append(counters.targetColorPendingReplacements)
+        .append(",target_color_reject_canvas=").append(counters.targetColorRejectCanvas)
+        .append(",target_color_reject_surface=").append(counters.targetColorRejectSurface)
+        .append(",target_color_reject_clip=").append(counters.targetColorRejectClip)
+        .append(",target_color_reject_partial=").append(counters.targetColorRejectPartial)
+        .append(",target_color_reject_mapping=").append(counters.targetColorRejectMapping)
+        .append(",target_color_reject_backing=").append(counters.targetColorRejectBacking)
+        .append(",target_color_reject_execution=").append(counters.targetColorRejectExecution)
+        .append(",physical_variant_unique_full_keys=")
+        .append(counters.physicalVariantUniqueFullKeys)
+        .append(",physical_variant_unique_no_surface_size_keys=")
+        .append(counters.physicalVariantUniqueNoSurfaceSizeKeys)
+        .append(",physical_variant_pending_replacements=")
+        .append(counters.physicalVariantPendingReplacements)
+        .append(",physical_variant_reject_canvas=").append(counters.physicalVariantRejectCanvas)
+        .append(",physical_variant_reject_surface=").append(counters.physicalVariantRejectSurface)
+        .append(",physical_variant_reject_clip=").append(counters.physicalVariantRejectClip)
+        .append(",physical_variant_reject_partial=").append(counters.physicalVariantRejectPartial)
+        .append(",physical_variant_reject_mapping=").append(counters.physicalVariantRejectMapping)
+        .append(",physical_variant_reject_backing=").append(counters.physicalVariantRejectBacking)
+        .append(",physical_variant_reject_execution=")
+        .append(counters.physicalVariantRejectExecution)
+        .append(",shared_slot_target_to_physical=").append(counters.sharedSlotTargetToPhysical)
+        .append(",shared_slot_physical_to_target=").append(counters.sharedSlotPhysicalToTarget)
+        .append(",shared_pending_target_to_physical=")
+        .append(counters.sharedPendingTargetToPhysical)
+        .append(",shared_pending_physical_to_target=")
+        .append(counters.sharedPendingPhysicalToTarget)
+        .append(",physical_identity_save_count_0=").append(counters.physicalIdentitySaveCount0)
+        .append(",physical_identity_save_count_1=").append(counters.physicalIdentitySaveCount1)
+        .append(",physical_identity_save_count_2=").append(counters.physicalIdentitySaveCount2)
+        .append(",physical_identity_save_count_3=").append(counters.physicalIdentitySaveCount3)
+        .append(",physical_identity_save_count_4=").append(counters.physicalIdentitySaveCount4)
+        .append(",physical_identity_save_count_5_or_more=")
+        .append(counters.physicalIdentitySaveCount5OrMore);
+  }
+
   private static final class Counters {
     final boolean accountingAvailable = Image.diagnosticAccountingEnabledForTest();
     final long imageCreated = Image.imageCreatedCountForTest();
@@ -1293,12 +1393,46 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long targetColorAttempts = NativeImageBacking.targetColorAttemptsForTest();
     final long targetColorHits = NativeImageBacking.targetColorHitsForTest();
     final long targetColorMaterializations = NativeImageBacking.targetColorMaterializationsForTest();
+    final long targetColorFallbacks = NativeImageBacking.targetColorFallbacksForTest();
     final long targetColorConvertedBytes = NativeImageBacking.targetColorConvertedBytesForTest();
     final long physicalVariantLookups = NativeImageBacking.physicalVariantLookupsForTest();
     final long physicalVariantHits = NativeImageBacking.physicalVariantHitsForTest();
     final long physicalVariantMisses = NativeImageBacking.physicalVariantMissesForTest();
     final long physicalVariantStores = NativeImageBacking.physicalVariantMaterializationsForTest();
+    final long physicalVariantEvictions = NativeImageBacking.physicalVariantEvictionsForTest();
     final long physicalVariantBytes = NativeImageBacking.physicalVariantBytesForTest();
+    final long targetColorUniqueSources = diagnosticMetric(0);
+    final long targetColorUniqueFullKeys = diagnosticMetric(1);
+    final long targetColorUniqueNoDestinationKeys = diagnosticMetric(2);
+    final long targetColorUniqueIntrinsicKeys = diagnosticMetric(3);
+    final long targetColorPendingReplacements = diagnosticMetric(4);
+    final long targetColorRejectCanvas = diagnosticMetric(8);
+    final long targetColorRejectSurface = diagnosticMetric(9);
+    final long targetColorRejectClip = diagnosticMetric(10);
+    final long targetColorRejectPartial = diagnosticMetric(11);
+    final long targetColorRejectMapping = diagnosticMetric(12);
+    final long targetColorRejectBacking = diagnosticMetric(13);
+    final long targetColorRejectExecution = diagnosticMetric(14);
+    final long physicalVariantUniqueFullKeys = diagnosticMetric(16);
+    final long physicalVariantUniqueNoSurfaceSizeKeys = diagnosticMetric(17);
+    final long physicalVariantPendingReplacements = diagnosticMetric(18);
+    final long physicalVariantRejectCanvas = diagnosticMetric(24);
+    final long physicalVariantRejectSurface = diagnosticMetric(25);
+    final long physicalVariantRejectClip = diagnosticMetric(26);
+    final long physicalVariantRejectPartial = diagnosticMetric(27);
+    final long physicalVariantRejectMapping = diagnosticMetric(28);
+    final long physicalVariantRejectBacking = diagnosticMetric(29);
+    final long physicalVariantRejectExecution = diagnosticMetric(30);
+    final long sharedSlotTargetToPhysical = diagnosticMetric(32);
+    final long sharedSlotPhysicalToTarget = diagnosticMetric(33);
+    final long sharedPendingTargetToPhysical = diagnosticMetric(34);
+    final long sharedPendingPhysicalToTarget = diagnosticMetric(35);
+    final long physicalIdentitySaveCount0 = diagnosticMetric(40);
+    final long physicalIdentitySaveCount1 = diagnosticMetric(41);
+    final long physicalIdentitySaveCount2 = diagnosticMetric(42);
+    final long physicalIdentitySaveCount3 = diagnosticMetric(43);
+    final long physicalIdentitySaveCount4 = diagnosticMetric(44);
+    final long physicalIdentitySaveCount5OrMore = diagnosticMetric(45);
     final long genericGeometryDraws = NativeImageBacking.genericGeometryDrawsForTest();
     final long smoothResampleDraws = NativeImageBacking.smoothResampleDrawsForTest();
     final long backingLiveBytes = NativeImageBacking.backingBytesLiveForTest();
@@ -1320,7 +1454,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
 
     String details() {
-      return ",targeted_jpeg_decodes=" + targetedJpegDecodes
+      StringBuilder details = new StringBuilder(",targeted_jpeg_decodes=" + targetedJpegDecodes
           + ",full_jpeg_decodes=" + fullJpegDecodes
           + ",jpeg_decode_count=" + jpegDecodeCount
           + ",jpeg_decode_ns=" + jpegDecodeNs
@@ -1367,12 +1501,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           + ",target_color_attempts=" + targetColorAttempts
           + ",target_color_hits=" + targetColorHits
           + ",target_color_materializations=" + targetColorMaterializations
+          + ",target_color_fallbacks=" + targetColorFallbacks
           + ",target_color_converted_bytes=" + targetColorConvertedBytes
           + ",physical_variant_lookups=" + physicalVariantLookups
           + ",physical_variant_hits=" + physicalVariantHits
           + ",physical_variant_misses=" + physicalVariantMisses
           + ",physical_variant_stores=" + physicalVariantStores
-          + ",physical_variant_bytes=" + physicalVariantBytes
+          + ",physical_variant_evictions=" + physicalVariantEvictions
+          + ",physical_variant_bytes=" + physicalVariantBytes);
+      appendPolicyDiagnosticDetails(details, this);
+      return details
           + ",generic_geometry_draws=" + genericGeometryDraws
           + ",smooth_resample_draws=" + smoothResampleDraws
           + ",backing_live_bytes=" + backingLiveBytes

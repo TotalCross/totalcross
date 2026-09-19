@@ -16,6 +16,7 @@
 #include <memory>
 #include <new>
 #include <iterator>
+#include <set>
 #include <vector>
 
 namespace {
@@ -77,6 +78,21 @@ uint64_t physicalVariantMissesForTest;
 uint64_t physicalVariantMaterializationsForTest;
 uint64_t physicalVariantEvictionsForTest;
 uint64_t physicalVariantBytesForTest;
+std::set<uint64_t> targetColorUniqueSourcesForTest;
+std::set<uint64_t> targetColorUniqueFullKeysForTest;
+std::set<uint64_t> targetColorUniqueNoDestinationKeysForTest;
+std::set<uint64_t> targetColorUniqueIntrinsicKeysForTest;
+uint64_t targetColorPendingReplacementsForTest;
+uint64_t targetColorRejectionsForTest[SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST];
+std::set<uint64_t> physicalVariantUniqueFullKeysForTest;
+std::set<uint64_t> physicalVariantUniqueNoSurfaceSizeKeysForTest;
+uint64_t physicalVariantPendingReplacementsForTest;
+uint64_t physicalVariantRejectionsForTest[SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST];
+uint64_t sharedSlotTargetToPhysicalForTest;
+uint64_t sharedSlotPhysicalToTargetForTest;
+uint64_t sharedPendingTargetToPhysicalForTest;
+uint64_t sharedPendingPhysicalToTargetForTest;
+uint64_t physicalIdentitySaveCountBucketsForTest[6];
 uint64_t backingBytesLiveByFormatForTest[4];
 uint64_t backingBytesPeakByFormatForTest[4];
 uint64_t compactDirectDecodeCountForTest;
@@ -88,6 +104,59 @@ uint64_t promotionAttemptsForTest;
 uint64_t promotionSuccessesForTest;
 uint64_t promotionFailuresForTest;
 uint64_t promotionBytesForTest;
+
+uint64_t diagnosticHash(uint64_t hash, uint64_t value) {
+    hash ^= value + UINT64_C(0x9e3779b97f4a7c15) + (hash << 6) + (hash >> 2);
+    return hash;
+}
+
+uint64_t rasterVariantKeyHash(const skia_image_backing_internal::RasterVariantKey& key,
+                              bool omitDestination, bool omitSurfaceSize) {
+    uint64_t hash = UINT64_C(0xcbf29ce484222325);
+    const uint64_t values[] = {
+        key.sourceGeneration, key.sourceDecodeGeneration,
+        static_cast<uint64_t>(static_cast<int64_t>(key.sourceLeft)),
+        static_cast<uint64_t>(static_cast<int64_t>(key.sourceTop)),
+        static_cast<uint64_t>(static_cast<int64_t>(key.sourceRight)),
+        static_cast<uint64_t>(static_cast<int64_t>(key.sourceBottom)),
+        omitDestination ? 0 : static_cast<uint64_t>(static_cast<int64_t>(key.destinationLeft)),
+        omitDestination ? 0 : static_cast<uint64_t>(static_cast<int64_t>(key.destinationTop)),
+        omitDestination ? 0 : static_cast<uint64_t>(static_cast<int64_t>(key.destinationRight)),
+        omitDestination ? 0 : static_cast<uint64_t>(static_cast<int64_t>(key.destinationBottom)),
+        omitSurfaceSize ? 0 : static_cast<uint64_t>(static_cast<int64_t>(key.targetWidth)),
+        omitSurfaceSize ? 0 : static_cast<uint64_t>(static_cast<int64_t>(key.targetHeight)),
+        static_cast<uint64_t>(static_cast<int64_t>(key.targetColorType)), key.kind,
+    };
+    for (uint64_t value : values) {
+        hash = diagnosticHash(hash, value);
+    }
+    for (uint64_t value : key.geometrySignature) {
+        hash = diagnosticHash(hash, value);
+    }
+    return hash;
+}
+
+void recordRasterVariantIdentityForTest(
+        skia_image_backing_internal::NativeImageBackingRecord* source,
+        const skia_image_backing_internal::RasterVariantKey& key) {
+    if (!backingAccountingForTest || !source) {
+        return;
+    }
+    const bool physical = key.kind == skia_image_backing_internal::RASTER_VARIANT_PHYSICAL;
+    if (physical) {
+        physicalVariantUniqueFullKeysForTest.insert(rasterVariantKeyHash(key, false, false));
+        physicalVariantUniqueNoSurfaceSizeKeysForTest.insert(
+            rasterVariantKeyHash(key, false, true));
+    } else {
+        targetColorUniqueSourcesForTest.insert(diagnosticHash(
+            diagnosticHash(reinterpret_cast<uintptr_t>(source), key.sourceGeneration),
+            key.sourceDecodeGeneration));
+        targetColorUniqueFullKeysForTest.insert(rasterVariantKeyHash(key, false, false));
+        targetColorUniqueNoDestinationKeysForTest.insert(
+            rasterVariantKeyHash(key, true, false));
+        targetColorUniqueIntrinsicKeysForTest.insert(rasterVariantKeyHash(key, true, true));
+    }
+}
 
 size_t bytesPerPixel(ImageBackingFormat format) {
     switch (format) {
@@ -1100,6 +1169,28 @@ void recordPhysicalVariantEvictionForTest() {
     }
 }
 
+void recordTargetColorRejectionForTest(int32 reason) {
+    if (backingAccountingForTest && reason >= 0
+        && reason < SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST) {
+        ++targetColorRejectionsForTest[reason];
+    }
+}
+
+void recordPhysicalVariantRejectionForTest(int32 reason) {
+    if (backingAccountingForTest && reason >= 0
+        && reason < SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST) {
+        ++physicalVariantRejectionsForTest[reason];
+    }
+}
+
+void recordPhysicalIdentitySaveCountForTest(int32 saveCount) {
+    if (!backingAccountingForTest) {
+        return;
+    }
+    const int32 bucket = saveCount <= 0 ? 0 : saveCount >= 5 ? 5 : saveCount;
+    ++physicalIdentitySaveCountBucketsForTest[bucket];
+}
+
 static SkImageInfo testRasterInfo(int32 width, int32 height, int32 colorType) {
     SkColorType skColorType = kUnknown_SkColorType;
     SkAlphaType alphaType = kUnpremul_SkAlphaType;
@@ -1145,6 +1236,9 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
         return RASTER_VARIANT_FAILED;
     }
     const bool physical = key.kind == RASTER_VARIANT_PHYSICAL;
+    if (backingAccountingForTest) {
+        recordRasterVariantIdentityForTest(source, key);
+    }
     if (backingAccountingForTest && physical) {
         ++physicalVariantLookupsForTest;
     }
@@ -1164,6 +1258,20 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
     }
 
     if (!source->pendingRasterVariant || !(source->pendingRasterVariantKey == key)) {
+        if (backingAccountingForTest && source->pendingRasterVariant) {
+            const bool pendingPhysical = source->pendingRasterVariantKey.kind
+                == RASTER_VARIANT_PHYSICAL;
+            if (physical) {
+                ++physicalVariantPendingReplacementsForTest;
+            } else {
+                ++targetColorPendingReplacementsForTest;
+            }
+            if (pendingPhysical && !physical) {
+                ++sharedPendingPhysicalToTargetForTest;
+            } else if (!pendingPhysical && physical) {
+                ++sharedPendingTargetToPhysicalForTest;
+            }
+        }
         source->pendingRasterVariant = true;
         source->pendingRasterVariantKey = key;
         source->pendingRasterVariantObservations = 1;
@@ -1181,8 +1289,16 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
         }
         return RASTER_VARIANT_FAILED;
     }
-    if (backingAccountingForTest && physical && source->rasterVariant.valid) {
-        ++physicalVariantEvictionsForTest;
+    if (backingAccountingForTest && source->rasterVariant.valid) {
+        const bool previousPhysical = source->rasterVariant.key.kind == RASTER_VARIANT_PHYSICAL;
+        if (physical && previousPhysical) {
+            ++physicalVariantEvictionsForTest;
+        }
+        if (previousPhysical && !physical) {
+            ++sharedSlotPhysicalToTargetForTest;
+        } else if (!previousPhysical && physical) {
+            ++sharedSlotTargetToPhysicalForTest;
+        }
     }
     source->rasterVariant.image = std::move(candidate);
     source->rasterVariant.key = key;
@@ -1763,6 +1879,24 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     writePixelsDeviceOneToOneKnownOpaqueCandidatesForTest = 0;
     genericGeometryDrawsForTest = 0;
     smoothResampleDrawsForTest = 0;
+    targetColorUniqueSourcesForTest.clear();
+    targetColorUniqueFullKeysForTest.clear();
+    targetColorUniqueNoDestinationKeysForTest.clear();
+    targetColorUniqueIntrinsicKeysForTest.clear();
+    targetColorPendingReplacementsForTest = 0;
+    std::fill(std::begin(targetColorRejectionsForTest),
+              std::end(targetColorRejectionsForTest), 0);
+    physicalVariantUniqueFullKeysForTest.clear();
+    physicalVariantUniqueNoSurfaceSizeKeysForTest.clear();
+    physicalVariantPendingReplacementsForTest = 0;
+    std::fill(std::begin(physicalVariantRejectionsForTest),
+              std::end(physicalVariantRejectionsForTest), 0);
+    sharedSlotTargetToPhysicalForTest = 0;
+    sharedSlotPhysicalToTargetForTest = 0;
+    sharedPendingTargetToPhysicalForTest = 0;
+    sharedPendingPhysicalToTargetForTest = 0;
+    std::fill(std::begin(physicalIdentitySaveCountBucketsForTest),
+              std::end(physicalIdentitySaveCountBucketsForTest), 0);
     if (!backingAccountingForTest) {
         return;
     }
@@ -1865,6 +1999,24 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
         physicalVariantMaterializationsForTest = 0;
         physicalVariantEvictionsForTest = 0;
         physicalVariantBytesForTest = 0;
+        targetColorUniqueSourcesForTest.clear();
+        targetColorUniqueFullKeysForTest.clear();
+        targetColorUniqueNoDestinationKeysForTest.clear();
+        targetColorUniqueIntrinsicKeysForTest.clear();
+        targetColorPendingReplacementsForTest = 0;
+        std::fill(std::begin(targetColorRejectionsForTest),
+                  std::end(targetColorRejectionsForTest), 0);
+        physicalVariantUniqueFullKeysForTest.clear();
+        physicalVariantUniqueNoSurfaceSizeKeysForTest.clear();
+        physicalVariantPendingReplacementsForTest = 0;
+        std::fill(std::begin(physicalVariantRejectionsForTest),
+                  std::end(physicalVariantRejectionsForTest), 0);
+        sharedSlotTargetToPhysicalForTest = 0;
+        sharedSlotPhysicalToTargetForTest = 0;
+        sharedPendingTargetToPhysicalForTest = 0;
+        sharedPendingPhysicalToTargetForTest = 0;
+        std::fill(std::begin(physicalIdentitySaveCountBucketsForTest),
+                  std::end(physicalIdentitySaveCountBucketsForTest), 0);
     }
 }
 
@@ -2094,6 +2246,50 @@ uint64_t skia_image_backing_physical_variant_evictions_for_test(void) {
 
 uint64_t skia_image_backing_physical_variant_bytes_for_test(void) {
     return physicalVariantBytesForTest;
+}
+
+namespace skia_image_backing_internal {
+
+int64_t diagnosticMetricForTest(int32 kind) {
+    if (kind >= 8 && kind < 15) {
+        return static_cast<int64_t>(targetColorRejectionsForTest[kind - 8]);
+    }
+    if (kind >= 24 && kind < 31) {
+        return static_cast<int64_t>(physicalVariantRejectionsForTest[kind - 24]);
+    }
+    if (kind >= 40 && kind < 46) {
+        return static_cast<int64_t>(physicalIdentitySaveCountBucketsForTest[kind - 40]);
+    }
+    switch (kind) {
+    case 0:
+        return static_cast<int64_t>(targetColorUniqueSourcesForTest.size());
+    case 1:
+        return static_cast<int64_t>(targetColorUniqueFullKeysForTest.size());
+    case 2:
+        return static_cast<int64_t>(targetColorUniqueNoDestinationKeysForTest.size());
+    case 3:
+        return static_cast<int64_t>(targetColorUniqueIntrinsicKeysForTest.size());
+    case 4:
+        return static_cast<int64_t>(targetColorPendingReplacementsForTest);
+    case 16:
+        return static_cast<int64_t>(physicalVariantUniqueFullKeysForTest.size());
+    case 17:
+        return static_cast<int64_t>(physicalVariantUniqueNoSurfaceSizeKeysForTest.size());
+    case 18:
+        return static_cast<int64_t>(physicalVariantPendingReplacementsForTest);
+    case 32:
+        return static_cast<int64_t>(sharedSlotTargetToPhysicalForTest);
+    case 33:
+        return static_cast<int64_t>(sharedSlotPhysicalToTargetForTest);
+    case 34:
+        return static_cast<int64_t>(sharedPendingTargetToPhysicalForTest);
+    case 35:
+        return static_cast<int64_t>(sharedPendingPhysicalToTargetForTest);
+    default:
+        return 0;
+    }
+}
+
 }
 
 int32 skia_image_backing_format_for_test(int64_t handle) {
