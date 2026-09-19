@@ -240,12 +240,17 @@ static bool testRegularDeviceSpaceWritePixels() {
         const int64_t target = skia_image_backing_create_empty(4, 4);
         SkCanvas* canvas = skia_image_backing_canvas(target);
         if (canvas) {
+            canvas->clear(SK_ColorMAGENTA);
             canvas->save();
             canvas->clipRect(SkRect::MakeLTRB(1, 1, 2, 2));
         }
         passed = passed && target && canvas
             && runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 2, 2, 255) == 1
-            && expectBackingPixel(target, 1, 1, kBottomRight, "saved partial clip writePixels");
+            && expectBackingPixel(target, 1, 1, kBottomRight, "saved partial clip writePixels")
+            && expectBackingPixel(target, 0, 1, 0xFFFF00FF, "saved partial clip left edge")
+            && expectBackingPixel(target, 2, 1, 0xFFFF00FF, "saved partial clip right edge")
+            && expectBackingPixel(target, 1, 0, 0xFFFF00FF, "saved partial clip top edge")
+            && expectBackingPixel(target, 1, 2, 0xFFFF00FF, "saved partial clip bottom edge");
         if (canvas) {
             canvas->restore();
         }
@@ -256,6 +261,7 @@ static bool testRegularDeviceSpaceWritePixels() {
         const int64_t target = skia_image_backing_create_empty(4, 4);
         SkCanvas* canvas = skia_image_backing_canvas(target);
         if (canvas) {
+            canvas->clear(SK_ColorMAGENTA);
             canvas->save();
             canvas->translate(1, 0);
             canvas->clipRect(SkRect::MakeLTRB(0, 0, 1, 2));
@@ -263,7 +269,11 @@ static bool testRegularDeviceSpaceWritePixels() {
         passed = passed && target && canvas
             && runRegularWritePixels(canvas, sourceImage.get(), true, 0, 0, 2, 2, 255) == 1
             && expectBackingPixel(target, 1, 0, kTopLeft, "translated partial clip top")
-            && expectBackingPixel(target, 1, 1, kBottomLeft, "translated partial clip bottom");
+            && expectBackingPixel(target, 1, 1, kBottomLeft, "translated partial clip bottom")
+            && expectBackingPixel(target, 0, 0, 0xFFFF00FF, "translated partial clip left edge")
+            && expectBackingPixel(target, 2, 0, 0xFFFF00FF, "translated partial clip right edge")
+            && expectBackingPixel(target, 1, 2, 0xFFFF00FF, "translated partial clip bottom edge")
+            && expectBackingPixel(target, 1, 3, 0xFFFF00FF, "translated partial clip outside bottom");
         if (canvas) {
             canvas->restore();
         }
