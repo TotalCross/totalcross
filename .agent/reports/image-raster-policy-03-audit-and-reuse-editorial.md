@@ -40,8 +40,10 @@ feature-specific save-count buckets, and ten mapping subreasons through the
 established benchmark metric path. The accounting-off path remains
 diagnostics-unavailable. The intrinsic target key diagnostic is exactly
 `sourceGeneration + sourceDecodeGeneration + targetColorType`; it is not the
-active cache key. `PARTIAL_INTERSECTION` is not emitted because no real
-condition was classified.
+active cache key, and all unique-key sets are namespaced by source backing for
+diagnostics. `PARTIAL_INTERSECTION` is not emitted because no real condition
+was classified. The runner enforces that scoped key counts cover the sources
+that reached acquisition or observation.
 
 ## Decisions and Trade-offs
 
@@ -91,31 +93,38 @@ metadata-known, and 0 fallback scans.
 ### M2 identity and eligibility results
 
 The authoritative corrected M2 package is
-`build/image-raster-policy-03-package-m2-review/image-scroll-benchmark-macos-arm64`.
-The diagnostic implementation commit is `ca71cbe0b`.
+`build/image-raster-policy-03-package-m2-scoped/image-scroll-benchmark-macos-arm64`.
+The source-scoping implementation commit is `f4dab5e23`.
 The corpus hash is `588a7e0f4019424a`, SDK JAR hash is
 `4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`, bundle
-hash is `e2b97f8d8f7d125f8937d2339007661f6653aa7f654eb4d9aa55787b632c3f7f`,
+hash is `a261d3f6f60a2b4074bb8c6f6979d201b03cc2aa443145d7c979a28381663b89`,
 runtime hash is
-`ead97b59f0a3839e549f76a0afdf770be070ceee70f831145bbbc4f00483254f`, and
+`7730aff3bf03272396bdd67d4f752d70e00ec9993851fa1685c2109de5182845`, and
 result ZIP hash is
-`b94034944425e7a0e83b307062c36e48cc960407fbe7dba7505419b4d0515433`.
+`72f5602092befc2aae0d4937dc77939ecc9db3587ed3fac24d45a88cdca332eb`.
 
-The four masks passed. Aggregate target attempts/fallbacks/hits/materializations
-were `6/6/0/0`; physical-variant lookups/misses/hits/stores/evictions were
-`6/6/0/0/0`; and identity attempts/hits/fallbacks were `6/0/6`. Target and
-identity rejects were all mapping geometry. Physical full keys versus keys
-without surface size were `2/2 = 1.00`. Target full-key ratios are undefined
-because no target key reached acquisition. Save-state rejects were `0/6 = 0%`;
-all shared-slot and pending cross-kind transitions were zero.
+The four masks passed. Aggregate target attempts/fallbacks/unique
+sources/acquisition sources were `6/6/6/0`, with target full,
+no-destination, and intrinsic keys `0/0/0`; physical-variant
+lookups/misses/unique sources/full/no-surface-size keys were
+`6/6/6/6/6`, with materializations/hits/evictions `0/0/0`; and identity
+attempts/hits/fallbacks were `6/0/6`. Target and identity rejects were all
+mapping geometry. Physical full and no-surface-size keys versus observed
+sources were both `6/6 = 1.00`; target key ratios remain undefined because no
+target key reached acquisition. Save-state rejects were `0/6 = 0%`; all
+shared-slot and pending cross-kind transitions were zero.
 
 The measured zero-hit causes are eligibility and delayed observation: target
 color and identity were rejected by the `root-to-device` mapping subreason,
 while physical variants were observed once without a second observation. The
-run does not support destination-position fragmentation, surface-dimension
-fragmentation, cross-kind eviction, or canvas/save-state rejection as causes
-in this workload. Target fallbacks equal target attempts in the applicable
-runs, and all three feature-specific save-count bucket vectors are zero.
+corrected source-scoped diagnostics changed the physical key count from the
+prior collapsed `2/2` to `6/6`, and changed target unique sources from zero to
+six because rejected requests are now registered at attempt start. These are
+diagnostic corrections only; the run still does not support destination-
+position fragmentation, surface-dimension fragmentation, cross-kind
+eviction, or canvas/save-state rejection as causes. Target fallbacks equal
+target attempts in the applicable runs, and all three feature-specific
+save-count bucket vectors are zero.
 
 ## Useful Evidence and Examples
 

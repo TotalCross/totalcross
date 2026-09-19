@@ -110,24 +110,27 @@ amended because this execution explicitly preserves history.
 
 Passed: macOS ARM64 native rebuild, SDK distribution, package, self-test, and
 the exact four-process `raster-policy-audit` matrix for masks `8192`, `16384`,
-`32768`, and `57344`, with prefetch and accounting enabled. The diagnostic
-implementation commit is `ca71cbe0b`. The package is
-`build/image-raster-policy-03-package-m2-review/image-scroll-benchmark-macos-arm64`.
+`32768`, and `57344`, with prefetch and accounting enabled. The source-scoping
+implementation commit is `f4dab5e23`. The package is
+`build/image-raster-policy-03-package-m2-scoped/image-scroll-benchmark-macos-arm64`.
 The corpus hash is `588a7e0f4019424a`; SDK JAR hash is
 `4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`; bundle
-hash is `e2b97f8d8f7d125f8937d2339007661f6653aa7f654eb4d9aa55787b632c3f7f`;
-runtime hash is `ead97b59f0a3839e549f76a0afdf770be070ceee70f831145bbbc4f00483254f`;
+hash is `a261d3f6f60a2b4074bb8c6f6979d201b03cc2aa443145d7c979a28381663b89`;
+runtime hash is `7730aff3bf03272396bdd67d4f752d70e00ec9993851fa1685c2109de5182845`;
 result ZIP hash is
-`b94034944425e7a0e83b307062c36e48cc960407fbe7dba7505419b4d0515433`.
+`72f5602092befc2aae0d4937dc77939ecc9db3587ed3fac24d45a88cdca332eb`.
 
 Aggregate target attempts/fallbacks/hits/materializations are `6/6/0/0`;
 physical-variant lookups/misses/hits/stores/evictions are `6/6/0/0/0`;
-identity attempts/hits/fallbacks are `6/0/6`. All target and identity
-rejections were mapping geometry, specifically `root-to-device`; physical
-variants had no mapping rejection. Save-count buckets for target-color,
-physical-variant, and identity are all `[0,0,0,0,0,0]`. All shared-slot and
-pending cross-kind replacements are zero. Physical full/no-surface-size keys
-are `2/2`; target key acquisition was `0/0` because eligibility failed first.
+identity attempts/hits/fallbacks are `6/0/6`. Target requests and unique
+sources are `6/6`, with zero target acquisition sources and zero target keys
+because eligibility failed first. Physical lookups/misses/unique sources/full/
+no-surface-size keys are `6/6/6/6/6`; source-scoping corrected the prior
+collapsed physical key count without changing cache behavior. All target and
+identity rejections remain mapping geometry, specifically `root-to-device`;
+physical variants had no mapping rejection. Save-count buckets for
+target-color, physical-variant, and identity are all `[0,0,0,0,0,0]`. All
+shared-slot and pending cross-kind replacements are zero.
 `PARTIAL_INTERSECTION` is not emitted because no real classified condition
 exists. Each process completed 189 frames and reached the automatic-scroll
 endpoint in about 3.01 seconds; no timeout occurred.

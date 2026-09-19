@@ -150,3 +150,43 @@ target attempts in the applicable masks (`3/3` for each target-enabled run).
 `PARTIAL_INTERSECTION` remains a legacy native enum value only; it is not part
 of the M2 JSON or runner contract. `STOP / REVIEW 2` remains in force and M3
 is still unauthorized.
+
+## 2026-09-19 — M2 source-scoped key correction
+
+Implementation commit: `f4dab5e23` (`fix(benchmark): scope raster identity diagnostics by backing`).
+The exact M2 gate passed again: corpus `588a7e0f4019424a`, masks `8192`,
+`16384`, `32768`, and `57344`, prefetch on, accounting on, one round, and
+exactly four processes. The self-test still reported 663 JPEGs and the same
+corpus hash. Every process completed 189 frames and reached the automatic
+scroll endpoint. SDK JAR hash remained
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`;
+runtime hash is
+`7730aff3bf03272396bdd67d4f752d70e00ec9993851fa1685c2109de5182845`, bundle
+ZIP hash is `a261d3f6f60a2b4074bb8c6f6979d201b03cc2aa443145d7c979a28381663b89`,
+and result ZIP hash is
+`72f5602092befc2aae0d4937dc77939ecc9db3587ed3fac24d45a88cdca332eb`.
+
+Unique-key diagnostics now use the `NativeImageBackingRecord` identity only as
+a diagnostic namespace. The real `RasterVariantKey`, equality, slot, lookup,
+eligibility, and materialization policy are unchanged. The intrinsic target
+key remains exactly `sourceGeneration + sourceDecodeGeneration +
+targetColorType` before source namespacing. Target sources are recorded at the
+start of each target-color attempt, so rejected requests are included once.
+
+Corrected aggregate counters are target attempts/fallbacks/unique
+sources/acquisition sources `6/6/6/0`, target full/no-destination/intrinsic
+keys `0/0/0`, physical lookups/misses/unique sources/full/no-surface-size keys
+`6/6/6/6/6`, physical materializations/hits/evictions `0/0/0`, and identity
+attempts/hits/fallbacks `6/0/6`. Each target-enabled run has 3 unique target
+sources; each physical-enabled run has 3 unique sources and 3 scoped full and
+no-surface-size keys. The prior aggregate physical `2/2` was a diagnostic
+collapse and is superseded by `6/6`.
+
+The runner now enforces scoped-key invariants: target key counts cannot be
+below sources that reached acquisition, and physical full/no-surface-size key
+counts cannot be below observed physical sources. All invariants passed with
+accounting enabled. `root-to-device` remains the only nonzero target and
+identity mapping subreason (`6` each); save-count buckets and shared-slot
+transitions remain zero. The source-scoping correction changes only the
+diagnostic counts, not the prior eligibility or delayed-observation
+conclusions. `STOP / REVIEW 2` remains in force; M3 is not authorized.
