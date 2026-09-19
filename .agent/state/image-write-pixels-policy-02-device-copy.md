@@ -8,12 +8,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone 1 implementation is complete; Milestone 2 is active.
+- Plan 2 is complete; all three milestones passed their required gates.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Plan 1 closure revision: `8ab1c6b28a6238c2e2aea53afcd6103bfc46d45b`.
 - Plan 2 specification revision: `9594720fa`.
-- Next action: add the native correctness matrix for regular device-space
-  copies, then build and run the macOS ARM64 native test gate.
+- Implementation/fix revision: `5265f38a6`.
+- Final documentation and results commit is the next checkpoint.
 
 ## Working set
 
@@ -22,6 +22,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Evidence: `.agent/evidence/image-write-pixels-policy-02-device-copy.md`
 - Editorial report:
   `.agent/reports/image-write-pixels-policy-02-device-copy-editorial.md`
+- Benchmark summary:
+  `.agent/benchmarks/image-write-pixels-device-policy/summary.md`
 - Policy source: `TotalCrossVM/src/nm/ui/skia/skia_image_backing.cpp`
 - Internal API:
   `TotalCrossVM/src/nm/ui/skia/skia_image_backing_internal.h`
@@ -46,8 +48,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - [x] Verify Plan 1 closure and commit the Plan 2 specification.
 - [x] Create Plan 2 bootstrap state and evidence.
 - [x] Milestone 1: implement the device-space policy and regular counters.
-- [ ] Milestone 2: add native clipping/transform tests and run focused smokes.
-- [ ] Milestone 3: run the focused macOS matrix and close the plan.
+- [x] Milestone 2: add native clipping/transform tests and run focused smokes.
+- [x] Milestone 3: run the focused macOS matrix and close the plan.
 
 ## Validation and deferrals
 
@@ -57,8 +59,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Milestone 1 checks: focused copyright-header validation, `git diff --check`,
   staged whitespace validation, Python AST parsing for the benchmark runner,
   and commit-message validation.
-- No SDK/native build, native smoke, package, or 24-process benchmark has run
-  for Plan 2; native validation begins at the Milestone 2 gate.
+- Milestone 2 checks: macOS ARM64 CMake/Ninja build of `tcvm`, `Launcher`, and
+  `skia_surface_test`; native assertions; SDK distribution; macOS package;
+  self-test; standard smokes; and focused smokes for
+  `4/6/32795/32799 × off/on` all passed.
+- Milestone 3 checks: exactly 24/24 focused matrix processes passed in two
+  rounds; aggregation and pairwise comparison passed. See the benchmark
+  summary and append-only evidence for paths and metrics.
+- Deferred: full platform matrix, standalone decode matrix, and release
+  packaging outside macOS ARM64; these are outside Plan 2's focused gate.
 - Preserve verbose validation logs outside tracked source and record compact
   paths/results here and in the append-only evidence file.
 
@@ -70,6 +79,6 @@ prior results or generated dependency outputs.
 
 ## Resume command
 
-Read this state first, then the active Plan 2 milestone and only the named
-native source/test paths. Use focused header and staged whitespace checks before
-each logical commit.
+Plan 2 is closed. For audit, read this state, the editorial report, the final
+summary, and the append-only evidence. Do not delete the task-specific package,
+raw result ZIP, or validation logs.
