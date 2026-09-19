@@ -78,6 +78,9 @@ DIAGNOSTIC_SUMMARY_FIELDS = (
     "write_pixels_hits", "write_pixels_fallbacks", "write_pixels_device_1to1_candidates",
     "write_pixels_device_1to1_known_opaque_candidates", "write_pixels_reject_matrix",
     "write_pixels_reject_save_count", "write_pixels_reject_size_mismatch",
+    "write_pixels_regular_attempts", "write_pixels_regular_hits",
+    "write_pixels_regular_fallbacks", "write_pixels_regular_copied_bytes",
+    "write_pixels_regular_clipped_hits",
 )
 MEMORY_FIELDS = (
     "checkpoint", "elapsed_ns", "current_resident_bytes", "peak_resident_bytes",
@@ -350,6 +353,11 @@ def validate_diagnostic_counters(counters, run_dir):
         "writePixelsRejectMatrix": "writePixels matrix rejects",
         "writePixelsRejectSaveCount": "writePixels save-count rejects",
         "writePixelsRejectSizeMismatch": "writePixels size-mismatch rejects",
+        "writePixelsRegularAttempts": "regular writePixels attempts",
+        "writePixelsRegularHits": "regular writePixels hits",
+        "writePixelsRegularFallbacks": "regular writePixels fallbacks",
+        "writePixelsRegularCopiedBytes": "regular writePixels copied bytes",
+        "writePixelsRegularClippedHits": "regular writePixels clipped hits",
     }
     values = {
         key: counter_value(counters, key, f"{run_dir} {description}")
@@ -358,6 +366,11 @@ def validate_diagnostic_counters(counters, run_dir):
     require(values["writePixelsAttempts"] == values["writePixelsHits"]
             + values["writePixelsFallbacks"],
             f"{run_dir} writePixels attempts do not equal hits plus fallbacks")
+    require(values["writePixelsRegularAttempts"] == values["writePixelsRegularHits"]
+            + values["writePixelsRegularFallbacks"],
+            f"{run_dir} regular writePixels attempts do not equal hits plus fallbacks")
+    require(values["writePixelsRegularClippedHits"] <= values["writePixelsRegularHits"],
+            f"{run_dir} regular writePixels clipped hits exceed hits")
     require(values["writePixelsDeviceOneToOneCandidates"] <= values["writePixelsAttempts"],
             f"{run_dir} writePixels candidates exceed attempts")
     require(values["writePixelsDeviceOneToOneKnownOpaqueCandidates"]
@@ -392,6 +405,11 @@ def validate_diagnostic_counters(counters, run_dir):
         "write_pixels_reject_matrix": values["writePixelsRejectMatrix"],
         "write_pixels_reject_save_count": values["writePixelsRejectSaveCount"],
         "write_pixels_reject_size_mismatch": values["writePixelsRejectSizeMismatch"],
+        "write_pixels_regular_attempts": values["writePixelsRegularAttempts"],
+        "write_pixels_regular_hits": values["writePixelsRegularHits"],
+        "write_pixels_regular_fallbacks": values["writePixelsRegularFallbacks"],
+        "write_pixels_regular_copied_bytes": values["writePixelsRegularCopiedBytes"],
+        "write_pixels_regular_clipped_hits": values["writePixelsRegularClippedHits"],
     }
 
 

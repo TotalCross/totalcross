@@ -41,6 +41,11 @@ uint64_t writePixelsAttemptsForTest;
 uint64_t writePixelsHitsForTest;
 uint64_t writePixelsFallbacksForTest;
 uint64_t writePixelsCopiedBytesForTest;
+uint64_t writePixelsRegularAttemptsForTest;
+uint64_t writePixelsRegularHitsForTest;
+uint64_t writePixelsRegularFallbacksForTest;
+uint64_t writePixelsRegularCopiedBytesForTest;
+uint64_t writePixelsRegularClippedHitsForTest;
 uint64_t writePixelsRejectInvalidTargetOrSourceForTest;
 uint64_t writePixelsRejectAlphaMaskForTest;
 uint64_t writePixelsRejectMatrixForTest;
@@ -300,125 +305,135 @@ bool integralWritePixelsCoordinate(float value) {
     return std::isfinite(value) && std::floor(value) == value;
 }
 
-bool writePixelsStructuralChecksPass(SkCanvas* targetCanvas, bool validSource,
-                                     int32 sourceWidth, int32 sourceHeight,
-                                     float srcLeft, float srcTop, float srcRight,
-                                     float srcBottom, float dstLeft, float dstTop,
-                                     float dstRight, float dstBottom, int32 alphaMask) {
-    if (!backingAccountingForTest) {
-        return targetCanvas != nullptr && validSource
-            && sourceWidth > 0 && sourceHeight > 0
-            && alphaMask == 255
-            && targetCanvas->getTotalMatrix().isIdentity()
-            && targetCanvas->getSaveCount() == 1
-            && srcLeft == 0.0f && srcTop == 0.0f
-            && srcRight == sourceWidth && srcBottom == sourceHeight
-            && srcRight - srcLeft == dstRight - dstLeft
-            && srcBottom - srcTop == dstBottom - dstTop
-            && integralWritePixelsCoordinate(dstLeft)
-            && integralWritePixelsCoordinate(dstTop);
-    }
-    const bool validTargetOrSource = targetCanvas != nullptr && validSource
-        && sourceWidth > 0 && sourceHeight > 0;
-    const bool alphaMaskValid = alphaMask == 255;
-    const bool matrixValid = targetCanvas != nullptr
-        && targetCanvas->getTotalMatrix().isIdentity();
-    const bool saveCountValid = targetCanvas != nullptr
-        && targetCanvas->getSaveCount() == 1;
-    const bool sourceRectValid = srcLeft == 0.0f && srcTop == 0.0f
-        && srcRight == sourceWidth && srcBottom == sourceHeight;
-    const bool sizeValid = srcRight - srcLeft == dstRight - dstLeft
-        && srcBottom - srcTop == dstBottom - dstTop;
-    const bool destinationIntegral = integralWritePixelsCoordinate(dstLeft)
-        && integralWritePixelsCoordinate(dstTop);
-    if (backingAccountingForTest) {
-        if (!validTargetOrSource) {
-            ++writePixelsRejectInvalidTargetOrSourceForTest;
-        }
-        if (!alphaMaskValid) {
-            ++writePixelsRejectAlphaMaskForTest;
-        }
-        if (!matrixValid) {
-            ++writePixelsRejectMatrixForTest;
-        }
-        if (!saveCountValid) {
-            ++writePixelsRejectSaveCountForTest;
-        }
-        if (!sourceRectValid) {
-            ++writePixelsRejectSourceRectForTest;
-        }
-        if (!sizeValid) {
-            ++writePixelsRejectSizeMismatchForTest;
-        }
-        if (!destinationIntegral) {
-            ++writePixelsRejectFractionalDestinationForTest;
-        }
-    }
-    return validTargetOrSource && alphaMaskValid && matrixValid && saveCountValid
-        && sourceRectValid && sizeValid && destinationIntegral;
-}
+struct WritePixelsDeviceCopyPlan {
+    SkIRect sourcePixels;
+    SkIRect destinationPixels;
+    bool clipped;
+};
 
-bool writePixelsDestinationBoundsValid(SkCanvas* targetCanvas, int32 sourceWidth,
-                                       int32 sourceHeight, float dstLeft, float dstTop,
-                                       float dstRight, float dstBottom) {
-    if (!targetCanvas) {
+enum class WritePixelsRejectReason {
+    InvalidTargetOrSource,
+    AlphaMask,
+    Matrix,
+    SourceRect,
+    SizeMismatch,
+    FractionalDestination,
+    DestinationBounds,
+};
+
+bool rejectWritePixelsPlan(WritePixelsRejectReason reason) {
+    if (!backingAccountingForTest) {
         return false;
     }
-    const int32 dstX = static_cast<int32>(dstLeft);
-    const int32 dstY = static_cast<int32>(dstTop);
-    const SkImageInfo targetInfo = targetCanvas->imageInfo();
-    return dstX >= 0 && dstY >= 0 && dstX <= targetInfo.width() - sourceWidth
-        && dstY <= targetInfo.height() - sourceHeight
-        && dstRight - dstLeft == sourceWidth && dstBottom - dstTop == sourceHeight;
+    switch (reason) {
+    case WritePixelsRejectReason::InvalidTargetOrSource:
+        ++writePixelsRejectInvalidTargetOrSourceForTest;
+        break;
+    case WritePixelsRejectReason::AlphaMask:
+        ++writePixelsRejectAlphaMaskForTest;
+        break;
+    case WritePixelsRejectReason::Matrix:
+        ++writePixelsRejectMatrixForTest;
+        break;
+    case WritePixelsRejectReason::SourceRect:
+        ++writePixelsRejectSourceRectForTest;
+        break;
+    case WritePixelsRejectReason::SizeMismatch:
+        ++writePixelsRejectSizeMismatchForTest;
+        break;
+    case WritePixelsRejectReason::FractionalDestination:
+        ++writePixelsRejectFractionalDestinationForTest;
+        break;
+    case WritePixelsRejectReason::DestinationBounds:
+        ++writePixelsRejectDestinationBoundsForTest;
+        break;
+    }
+    return false;
 }
 
-void recordWritePixelsDeviceOneToOneCandidateForTest(
+bool buildWritePixelsDeviceCopyPlan(
     SkCanvas* targetCanvas, bool validSource, int32 sourceWidth, int32 sourceHeight,
     float srcLeft, float srcTop, float srcRight, float srcBottom,
     float dstLeft, float dstTop, float dstRight, float dstBottom,
-    int32 alphaMask, bool knownOpaque) {
-    if (!backingAccountingForTest || !targetCanvas || !validSource || alphaMask != 255
-        || sourceWidth <= 0 || sourceHeight <= 0
-        || !integralWritePixelsCoordinate(srcLeft) || !integralWritePixelsCoordinate(srcTop)
+    int32 alphaMask, bool knownOpaque, WritePixelsDeviceCopyPlan* plan) {
+    if (!targetCanvas || !validSource || sourceWidth <= 0 || sourceHeight <= 0 || !plan) {
+        return rejectWritePixelsPlan(WritePixelsRejectReason::InvalidTargetOrSource);
+    }
+    if (alphaMask != 255) {
+        return rejectWritePixelsPlan(WritePixelsRejectReason::AlphaMask);
+    }
+    if (!integralWritePixelsCoordinate(srcLeft) || !integralWritePixelsCoordinate(srcTop)
         || !integralWritePixelsCoordinate(srcRight) || !integralWritePixelsCoordinate(srcBottom)
         || srcRight <= srcLeft || srcBottom <= srcTop
         || srcLeft < 0 || srcTop < 0 || srcRight > sourceWidth || srcBottom > sourceHeight) {
-        return;
+        return rejectWritePixelsPlan(WritePixelsRejectReason::SourceRect);
     }
+
     const SkMatrix matrix = targetCanvas->getTotalMatrix();
     if (matrix.hasPerspective() || matrix.getSkewX() != 0 || matrix.getSkewY() != 0
-        || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0
         || !std::isfinite(matrix.getScaleX()) || !std::isfinite(matrix.getScaleY())
-        || !std::isfinite(matrix.getTranslateX()) || !std::isfinite(matrix.getTranslateY())) {
-        return;
+        || !std::isfinite(matrix.getTranslateX()) || !std::isfinite(matrix.getTranslateY())
+        || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0) {
+        return rejectWritePixelsPlan(WritePixelsRejectReason::Matrix);
     }
+
     const float deviceLeft = matrix.getScaleX() * dstLeft + matrix.getTranslateX();
     const float deviceTop = matrix.getScaleY() * dstTop + matrix.getTranslateY();
     const float deviceRight = matrix.getScaleX() * dstRight + matrix.getTranslateX();
     const float deviceBottom = matrix.getScaleY() * dstBottom + matrix.getTranslateY();
     if (!integralWritePixelsCoordinate(deviceLeft) || !integralWritePixelsCoordinate(deviceTop)
         || !integralWritePixelsCoordinate(deviceRight)
-        || !integralWritePixelsCoordinate(deviceBottom)
-        || deviceRight <= deviceLeft || deviceBottom <= deviceTop
-        || deviceRight - deviceLeft != srcRight - srcLeft
-        || deviceBottom - deviceTop != srcBottom - srcTop) {
-        return;
+        || !integralWritePixelsCoordinate(deviceBottom)) {
+        return rejectWritePixelsPlan(WritePixelsRejectReason::FractionalDestination);
     }
+
+    const SkIRect sourceRect = SkIRect::MakeLTRB(
+        static_cast<int32>(srcLeft), static_cast<int32>(srcTop),
+        static_cast<int32>(srcRight), static_cast<int32>(srcBottom));
+    const SkIRect mappedDestination = SkIRect::MakeLTRB(
+        static_cast<int32>(deviceLeft), static_cast<int32>(deviceTop),
+        static_cast<int32>(deviceRight), static_cast<int32>(deviceBottom));
+    if (mappedDestination.width() != sourceRect.width()
+        || mappedDestination.height() != sourceRect.height()) {
+        return rejectWritePixelsPlan(WritePixelsRejectReason::SizeMismatch);
+    }
+
     SkIRect deviceClip;
-    if (!targetCanvas->getDeviceClipBounds(&deviceClip)) {
-        return;
+    SkPixmap targetPixels;
+    if (!targetCanvas->getDeviceClipBounds(&deviceClip) || !targetCanvas->peekPixels(&targetPixels)) {
+        return rejectWritePixelsPlan(WritePixelsRejectReason::DestinationBounds);
     }
-    SkRect visible = SkRect::MakeLTRB(deviceLeft, deviceTop, deviceRight, deviceBottom);
-    if (!visible.intersect(SkRect::MakeLTRB(static_cast<float>(deviceClip.left()),
-                                            static_cast<float>(deviceClip.top()),
-                                            static_cast<float>(deviceClip.right()),
-                                            static_cast<float>(deviceClip.bottom())))) {
-        return;
+    SkIRect visibleDestination = mappedDestination;
+    if (!visibleDestination.intersect(deviceClip)
+        || !visibleDestination.intersect(SkIRect::MakeWH(targetPixels.width(), targetPixels.height()))) {
+        return rejectWritePixelsPlan(WritePixelsRejectReason::DestinationBounds);
     }
-    ++writePixelsDeviceOneToOneCandidatesForTest;
-    if (knownOpaque) {
-        ++writePixelsDeviceOneToOneKnownOpaqueCandidatesForTest;
+
+    const int32 sourceOffsetX = visibleDestination.left() - mappedDestination.left();
+    const int32 sourceOffsetY = visibleDestination.top() - mappedDestination.top();
+    const SkIRect visibleSource = SkIRect::MakeLTRB(
+        sourceRect.left() + sourceOffsetX, sourceRect.top() + sourceOffsetY,
+        sourceRect.left() + sourceOffsetX + visibleDestination.width(),
+        sourceRect.top() + sourceOffsetY + visibleDestination.height());
+    if (!sourceRect.contains(visibleSource)
+        || visibleSource.width() != visibleDestination.width()
+        || visibleSource.height() != visibleDestination.height()) {
+        return rejectWritePixelsPlan(WritePixelsRejectReason::SourceRect);
     }
+
+    plan->sourcePixels = visibleSource;
+    plan->destinationPixels = visibleDestination;
+    plan->clipped = visibleDestination.left() != mappedDestination.left()
+        || visibleDestination.top() != mappedDestination.top()
+        || visibleDestination.right() != mappedDestination.right()
+        || visibleDestination.bottom() != mappedDestination.bottom();
+    if (backingAccountingForTest) {
+        ++writePixelsDeviceOneToOneCandidatesForTest;
+        if (knownOpaque) {
+            ++writePixelsDeviceOneToOneKnownOpaqueCandidatesForTest;
+        }
+    }
+    return true;
 }
 
 int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 width, int32 height,
@@ -431,49 +446,49 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
         return 0;
     }
     ++writePixelsAttemptsForTest;
-    recordWritePixelsDeviceOneToOneCandidateForTest(
-        targetCanvas, image != nullptr, width, height, srcLeft, srcTop, srcRight, srcBottom,
-        dstLeft, dstTop, dstRight, dstBottom, alphaMask, sourceOpaque);
+    ++writePixelsRegularAttemptsForTest;
     auto fallback = []() {
         ++writePixelsFallbacksForTest;
+        ++writePixelsRegularFallbacksForTest;
         return 0;
     };
-    if (!writePixelsStructuralChecksPass(targetCanvas, image != nullptr, width, height,
-                                         srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop,
-                                         dstRight, dstBottom, alphaMask)) {
-        return fallback() ? 1 : 0;
+    WritePixelsDeviceCopyPlan plan;
+    if (!buildWritePixelsDeviceCopyPlan(
+            targetCanvas, image != nullptr, width, height, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, alphaMask, sourceOpaque, &plan)) {
+        return fallback();
     }
-    if (!writePixelsDestinationBoundsValid(targetCanvas, width, height, dstLeft, dstTop,
-                                           dstRight, dstBottom)) {
-        if (backingAccountingForTest) {
-            ++writePixelsRejectDestinationBoundsForTest;
-        }
-        return fallback() ? 1 : 0;
-    }
-    const int32 dstX = static_cast<int32>(dstLeft);
-    const int32 dstY = static_cast<int32>(dstTop);
     if (!sourceOpaque) {
         if (backingAccountingForTest) {
             ++writePixelsRejectOpacityForTest;
         }
-        return fallback() ? 1 : 0;
+        return fallback();
     }
     SkPixmap pixmap;
-    if (!image->peekPixels(&pixmap)) {
+    SkPixmap subset;
+    if (!image->peekPixels(&pixmap)
+        || !pixmap.extractSubset(&subset, plan.sourcePixels)) {
         if (backingAccountingForTest) {
             ++writePixelsRejectSourcePixelsForTest;
         }
         return fallback();
     }
-    if (!targetCanvas->writePixels(pixmap.info(), pixmap.addr(), pixmap.rowBytes(), dstX, dstY)) {
+    if (!targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
+                                   plan.destinationPixels.left(), plan.destinationPixels.top())) {
         if (backingAccountingForTest) {
             ++writePixelsRejectWriteFailureForTest;
         }
         return fallback();
     }
     ++writePixelsHitsForTest;
-    writePixelsCopiedBytesForTest += static_cast<uint64_t>(width)
-        * static_cast<uint64_t>(height) * 4;
+    ++writePixelsRegularHitsForTest;
+    if (plan.clipped) {
+        ++writePixelsRegularClippedHitsForTest;
+    }
+    const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
+        * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
+    writePixelsCopiedBytesForTest += copiedBytes;
+    writePixelsRegularCopiedBytesForTest += copiedBytes;
     return 1;
 #else
     UNUSED(targetCanvas)
@@ -505,87 +520,97 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
         return 0;
     }
     ++writePixelsAttemptsForTest;
-    recordWritePixelsDeviceOneToOneCandidateForTest(
-        targetCanvas, source != nullptr, source ? source->width : 0, source ? source->height : 0,
-        srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, alphaMask,
-        source && source->opacity == SKIA_IMAGE_OPACITY_OPAQUE);
+    ++writePixelsRegularAttemptsForTest;
     auto fallback = []() {
         ++writePixelsFallbacksForTest;
+        ++writePixelsRegularFallbacksForTest;
         return 0;
     };
-    if (!writePixelsStructuralChecksPass(targetCanvas, source != nullptr,
-                                         source ? source->width : 0, source ? source->height : 0,
-                                         srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop,
-                                         dstRight, dstBottom, alphaMask)) {
-        return fallback() ? 1 : 0;
-    }
-    const int32 dstX = static_cast<int32>(dstLeft);
-    const int32 dstY = static_cast<int32>(dstTop);
-    if (!writePixelsDestinationBoundsValid(targetCanvas, source->width, source->height, dstLeft,
-                                           dstTop, dstRight, dstBottom)) {
-        if (backingAccountingForTest) {
-            ++writePixelsRejectDestinationBoundsForTest;
-        }
-        return fallback() ? 1 : 0;
+    WritePixelsDeviceCopyPlan plan;
+    if (!buildWritePixelsDeviceCopyPlan(
+            targetCanvas, source != nullptr, source ? source->width : 0,
+            source ? source->height : 0, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, alphaMask,
+            source && source->opacity == SKIA_IMAGE_OPACITY_OPAQUE, &plan)) {
+        return fallback();
     }
     if (source->format == IMAGE_BACKING_FORMAT_RGBA8888) {
         if (!proveOpaqueForWritePixels(source)) {
             if (backingAccountingForTest) {
                 ++writePixelsRejectOpacityForTest;
             }
-            return fallback() ? 1 : 0;
+            return fallback();
         }
     } else if (source->format == IMAGE_BACKING_FORMAT_ARGB4444
             && source->opacity != SKIA_IMAGE_OPACITY_OPAQUE) {
         if (backingAccountingForTest) {
             ++writePixelsRejectOpacityForTest;
         }
-        return fallback() ? 1 : 0;
+        return fallback();
     }
     if (source->format != IMAGE_BACKING_FORMAT_RGBA8888) {
         try {
-            const size_t rowBytes = static_cast<size_t>(source->width) * 4;
+            const size_t rowBytes = static_cast<size_t>(plan.sourcePixels.width()) * 4;
             std::vector<uint8_t> rgba(rowBytes);
-            const SkImageInfo info = rasterInfo(source->width, 1,
+            const SkImageInfo info = rasterInfo(plan.sourcePixels.width(), 1,
                 IMAGE_BACKING_FORMAT_RGBA8888);
-            for (int32 row = 0; row < source->height; ++row) {
-                if (!readRgbaBytes(source, rgba.data(), 0, row, source->width, 1)) {
+            for (int32 row = 0; row < plan.sourcePixels.height(); ++row) {
+                if (!readRgbaBytes(source, rgba.data(), plan.sourcePixels.left(),
+                                   plan.sourcePixels.top() + row, plan.sourcePixels.width(), 1)) {
                     if (backingAccountingForTest) {
                         ++writePixelsRejectSourcePixelsForTest;
                     }
-                    return fallback() ? 1 : 0;
+                    return fallback();
                 }
-                if (!targetCanvas->writePixels(info, rgba.data(), rowBytes, dstX, dstY + row)) {
+                if (!targetCanvas->writePixels(info, rgba.data(), rowBytes,
+                                               plan.destinationPixels.left(),
+                                               plan.destinationPixels.top() + row)) {
                     if (backingAccountingForTest) {
                         ++writePixelsRejectWriteFailureForTest;
                     }
-                    return fallback() ? 1 : 0;
+                    return fallback();
                 }
             }
             ++writePixelsHitsForTest;
-            writePixelsCopiedBytesForTest += static_cast<uint64_t>(source->width)
-                * static_cast<uint64_t>(source->height) * 4;
+            ++writePixelsRegularHitsForTest;
+            if (plan.clipped) {
+                ++writePixelsRegularClippedHitsForTest;
+            }
+            const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
+                * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
+            writePixelsCopiedBytesForTest += copiedBytes;
+            writePixelsRegularCopiedBytesForTest += copiedBytes;
             return 1;
         } catch (const std::bad_alloc&) {
-            return fallback() ? 1 : 0;
+            return fallback();
         }
     }
     sk_sp<SkImage> image = source->snapshot();
     SkPixmap pixmap;
-    if (!image || !image->peekPixels(&pixmap)) {
+    SkPixmap subset;
+    if (!image || !image->peekPixels(&pixmap)
+        || !pixmap.extractSubset(&subset, plan.sourcePixels)) {
         if (backingAccountingForTest) {
             ++writePixelsRejectSourcePixelsForTest;
         }
         return fallback();
     }
-    if (!targetCanvas->writePixels(pixmap.info(), pixmap.addr(), pixmap.rowBytes(), dstX, dstY)) {
+    if (!targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
+                                   plan.destinationPixels.left(), plan.destinationPixels.top())) {
         if (backingAccountingForTest) {
             ++writePixelsRejectWriteFailureForTest;
         }
         return fallback();
     }
     ++writePixelsHitsForTest;
-    writePixelsCopiedBytesForTest += backingBytes(*source);
+    ++writePixelsRegularHitsForTest;
+    if (plan.clipped) {
+        ++writePixelsRegularClippedHitsForTest;
+    }
+    const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
+        * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
+    writePixelsCopiedBytesForTest += copiedBytes;
+    writePixelsRegularCopiedBytesForTest += copiedBytes;
     return 1;
 #else
     UNUSED(targetCanvas)
@@ -1693,6 +1718,11 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     writePixelsHitsForTest = 0;
     writePixelsFallbacksForTest = 0;
     writePixelsCopiedBytesForTest = 0;
+    writePixelsRegularAttemptsForTest = 0;
+    writePixelsRegularHitsForTest = 0;
+    writePixelsRegularFallbacksForTest = 0;
+    writePixelsRegularCopiedBytesForTest = 0;
+    writePixelsRegularClippedHitsForTest = 0;
     writePixelsRejectInvalidTargetOrSourceForTest = 0;
     writePixelsRejectAlphaMaskForTest = 0;
     writePixelsRejectMatrixForTest = 0;
@@ -1773,6 +1803,11 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
         writePixelsHitsForTest = 0;
         writePixelsFallbacksForTest = 0;
         writePixelsCopiedBytesForTest = 0;
+        writePixelsRegularAttemptsForTest = 0;
+        writePixelsRegularHitsForTest = 0;
+        writePixelsRegularFallbacksForTest = 0;
+        writePixelsRegularCopiedBytesForTest = 0;
+        writePixelsRegularClippedHitsForTest = 0;
         writePixelsRejectInvalidTargetOrSourceForTest = 0;
         writePixelsRejectAlphaMaskForTest = 0;
         writePixelsRejectMatrixForTest = 0;
@@ -1846,6 +1881,26 @@ uint64_t skia_image_backing_write_pixels_fallbacks_for_test(void) {
 
 uint64_t skia_image_backing_write_pixels_copied_bytes_for_test(void) {
     return writePixelsCopiedBytesForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_regular_attempts_for_test(void) {
+    return writePixelsRegularAttemptsForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_regular_hits_for_test(void) {
+    return writePixelsRegularHitsForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_regular_fallbacks_for_test(void) {
+    return writePixelsRegularFallbacksForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_regular_copied_bytes_for_test(void) {
+    return writePixelsRegularCopiedBytesForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_regular_clipped_hits_for_test(void) {
+    return writePixelsRegularClippedHitsForTest;
 }
 
 uint64_t skia_image_backing_write_pixels_reject_invalid_target_or_source_for_test(void) {

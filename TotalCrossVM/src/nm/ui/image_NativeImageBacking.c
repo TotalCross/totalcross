@@ -487,6 +487,51 @@ TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/N
 #endif
 }
 
+TC_API void tuiNIB_writePixelsRegularAttemptsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularAttemptsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_regular_attempts_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_writePixelsRegularHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularHitsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_regular_hits_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_writePixelsRegularFallbacksTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularFallbacksTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_regular_fallbacks_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_writePixelsRegularCopyBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularCopyBytesTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_regular_copied_bytes_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_writePixelsRegularClippedHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularClippedHitsTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_regular_clipped_hits_for_test();
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_writePixelsRejectInvalid(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRejectInvalid();
 {
 #if TC_RENDERER_SKIA

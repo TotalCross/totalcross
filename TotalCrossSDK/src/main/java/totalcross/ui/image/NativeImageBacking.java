@@ -186,6 +186,26 @@ final class NativeImageBacking extends ImageBacking {
     return writePixelsCopyBytesTest();
   }
 
+  static long writePixelsRegularAttemptsForTest() {
+    return writePixelsRegularAttemptsTest();
+  }
+
+  static long writePixelsRegularHitsForTest() {
+    return writePixelsRegularHitsTest();
+  }
+
+  static long writePixelsRegularFallbacksForTest() {
+    return writePixelsRegularFallbacksTest();
+  }
+
+  static long writePixelsRegularCopiedBytesForTest() {
+    return writePixelsRegularCopyBytesTest();
+  }
+
+  static long writePixelsRegularClippedHitsForTest() {
+    return writePixelsRegularClippedHitsTest();
+  }
+
   static long writePixelsRejectInvalidTargetOrSourceForTest() {
     return writePixelsRejectInvalid();
   }
@@ -638,6 +658,31 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long writePixelsCopyBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRegularAttemptsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRegularHitsTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRegularFallbacksTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRegularCopyBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsRegularClippedHitsTest() {
     return 0;
   }
 

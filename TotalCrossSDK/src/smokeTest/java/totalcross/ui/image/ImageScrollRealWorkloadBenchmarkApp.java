@@ -652,6 +652,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     requireNonNegative(counters.writePixelsAttempts, "writePixels attempts");
     requireNonNegative(counters.writePixelsHits, "writePixels hits");
     requireNonNegative(counters.writePixelsFallbacks, "writePixels fallbacks");
+    requireNonNegative(counters.writePixelsRegularAttempts, "regular writePixels attempts");
+    requireNonNegative(counters.writePixelsRegularHits, "regular writePixels hits");
+    requireNonNegative(counters.writePixelsRegularFallbacks, "regular writePixels fallbacks");
+    requireNonNegative(counters.writePixelsRegularCopiedBytes,
+        "regular writePixels copied bytes");
+    requireNonNegative(counters.writePixelsRegularClippedHits,
+        "regular writePixels clipped hits");
     requireNonNegative(counters.writePixelsDeviceOneToOneCandidates,
         "writePixels one-to-one candidates");
     requireNonNegative(counters.writePixelsDeviceOneToOneKnownOpaqueCandidates,
@@ -659,6 +666,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     ImageRasterBenchmarkSupport.require(
         counters.writePixelsAttempts == counters.writePixelsHits + counters.writePixelsFallbacks,
         "writePixels attempts do not equal hits plus fallbacks");
+    ImageRasterBenchmarkSupport.require(
+        counters.writePixelsRegularAttempts
+            == counters.writePixelsRegularHits + counters.writePixelsRegularFallbacks,
+        "regular writePixels attempts do not equal hits plus fallbacks");
+    ImageRasterBenchmarkSupport.require(
+        counters.writePixelsRegularClippedHits <= counters.writePixelsRegularHits,
+        "regular writePixels clipped hits exceed hits");
     ImageRasterBenchmarkSupport.require(
         counters.writePixelsDeviceOneToOneCandidates <= counters.writePixelsAttempts,
         "writePixels candidates exceed attempts");
@@ -885,6 +899,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendCounter(json, "writePixelsHits", counters.writePixelsHits, true);
     appendCounter(json, "writePixelsFallbacks", counters.writePixelsFallbacks, true);
     appendCounter(json, "writePixelsCopiedBytes", counters.writePixelsCopiedBytes, true);
+    appendCounter(json, "writePixelsRegularAttempts", counters.writePixelsRegularAttempts, true);
+    appendCounter(json, "writePixelsRegularHits", counters.writePixelsRegularHits, true);
+    appendCounter(json, "writePixelsRegularFallbacks", counters.writePixelsRegularFallbacks, true);
+    appendCounter(json, "writePixelsRegularCopiedBytes",
+        counters.writePixelsRegularCopiedBytes, true);
+    appendCounter(json, "writePixelsRegularClippedHits",
+        counters.writePixelsRegularClippedHits, true);
     appendCounter(json, "writePixelsRejectInvalidTargetOrSource",
         counters.writePixelsRejectInvalidTargetOrSource, true);
     appendCounter(json, "writePixelsRejectAlphaMask", counters.writePixelsRejectAlphaMask, true);
@@ -1153,6 +1174,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long writePixelsHits = NativeImageBacking.writePixelsHitsForTest();
     final long writePixelsFallbacks = NativeImageBacking.writePixelsFallbacksForTest();
     final long writePixelsCopiedBytes = NativeImageBacking.writePixelsCopiedBytesForTest();
+    final long writePixelsRegularAttempts = NativeImageBacking.writePixelsRegularAttemptsForTest();
+    final long writePixelsRegularHits = NativeImageBacking.writePixelsRegularHitsForTest();
+    final long writePixelsRegularFallbacks = NativeImageBacking.writePixelsRegularFallbacksForTest();
+    final long writePixelsRegularCopiedBytes = NativeImageBacking.writePixelsRegularCopiedBytesForTest();
+    final long writePixelsRegularClippedHits = NativeImageBacking.writePixelsRegularClippedHitsForTest();
     final long writePixelsRejectInvalidTargetOrSource = NativeImageBacking.writePixelsRejectInvalidTargetOrSourceForTest();
     final long writePixelsRejectAlphaMask = NativeImageBacking.writePixelsRejectAlphaMaskForTest();
     final long writePixelsRejectMatrix = NativeImageBacking.writePixelsRejectMatrixForTest();
@@ -1225,6 +1251,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           + ",write_pixels_hits=" + writePixelsHits
           + ",write_pixels_fallbacks=" + writePixelsFallbacks
           + ",write_pixels_copied_bytes=" + writePixelsCopiedBytes
+          + ",write_pixels_regular_attempts=" + writePixelsRegularAttempts
+          + ",write_pixels_regular_hits=" + writePixelsRegularHits
+          + ",write_pixels_regular_fallbacks=" + writePixelsRegularFallbacks
+          + ",write_pixels_regular_copied_bytes=" + writePixelsRegularCopiedBytes
+          + ",write_pixels_regular_clipped_hits=" + writePixelsRegularClippedHits
           + ",write_pixels_device_1to1_candidates=" + writePixelsDeviceOneToOneCandidates
           + ",write_pixels_device_1to1_known_opaque_candidates="
           + writePixelsDeviceOneToOneKnownOpaqueCandidates
