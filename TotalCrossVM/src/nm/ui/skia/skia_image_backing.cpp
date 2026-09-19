@@ -148,6 +148,43 @@ void recordBackingReleased(const NativeImageBackingRecord& backing) {
     }
 }
 
+void recordWritePixelsAttemptForTest(bool regular) {
+    if (!backingAccountingForTest) {
+        return;
+    }
+    ++writePixelsAttemptsForTest;
+    if (regular) {
+        ++writePixelsRegularAttemptsForTest;
+    }
+}
+
+void recordWritePixelsFallbackForTest(bool regular) {
+    if (!backingAccountingForTest) {
+        return;
+    }
+    ++writePixelsFallbacksForTest;
+    if (regular) {
+        ++writePixelsRegularFallbacksForTest;
+    }
+}
+
+void recordWritePixelsHitForTest(bool regular, bool clipped, uint64_t copiedBytes) {
+    if (!backingAccountingForTest) {
+        return;
+    }
+    ++writePixelsHitsForTest;
+    if (regular) {
+        ++writePixelsRegularHitsForTest;
+        if (clipped) {
+            ++writePixelsRegularClippedHitsForTest;
+        }
+    }
+    writePixelsCopiedBytesForTest += copiedBytes;
+    if (regular) {
+        writePixelsRegularCopiedBytesForTest += copiedBytes;
+    }
+}
+
 skia_image_backing_internal::NativeImageBackingRecord* findBacking(int64_t handle) {
     auto found = backings.find(handle);
     return found == backings.end() ? nullptr : found->second.get();
@@ -445,11 +482,9 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
     if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
         return 0;
     }
-    ++writePixelsAttemptsForTest;
-    ++writePixelsRegularAttemptsForTest;
+    recordWritePixelsAttemptForTest(true);
     auto fallback = []() {
-        ++writePixelsFallbacksForTest;
-        ++writePixelsRegularFallbacksForTest;
+        recordWritePixelsFallbackForTest(true);
         return 0;
     };
     WritePixelsDeviceCopyPlan plan;
@@ -480,15 +515,9 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
         }
         return fallback();
     }
-    ++writePixelsHitsForTest;
-    ++writePixelsRegularHitsForTest;
-    if (plan.clipped) {
-        ++writePixelsRegularClippedHitsForTest;
-    }
     const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
         * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
-    writePixelsCopiedBytesForTest += copiedBytes;
-    writePixelsRegularCopiedBytesForTest += copiedBytes;
+    recordWritePixelsHitForTest(true, plan.clipped, copiedBytes);
     return 1;
 #else
     UNUSED(targetCanvas)
@@ -519,11 +548,9 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
     if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
         return 0;
     }
-    ++writePixelsAttemptsForTest;
-    ++writePixelsRegularAttemptsForTest;
+    recordWritePixelsAttemptForTest(true);
     auto fallback = []() {
-        ++writePixelsFallbacksForTest;
-        ++writePixelsRegularFallbacksForTest;
+        recordWritePixelsFallbackForTest(true);
         return 0;
     };
     WritePixelsDeviceCopyPlan plan;
@@ -571,15 +598,9 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
                     return fallback();
                 }
             }
-            ++writePixelsHitsForTest;
-            ++writePixelsRegularHitsForTest;
-            if (plan.clipped) {
-                ++writePixelsRegularClippedHitsForTest;
-            }
             const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
                 * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
-            writePixelsCopiedBytesForTest += copiedBytes;
-            writePixelsRegularCopiedBytesForTest += copiedBytes;
+            recordWritePixelsHitForTest(true, plan.clipped, copiedBytes);
             return 1;
         } catch (const std::bad_alloc&) {
             return fallback();
@@ -602,15 +623,9 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
         }
         return fallback();
     }
-    ++writePixelsHitsForTest;
-    ++writePixelsRegularHitsForTest;
-    if (plan.clipped) {
-        ++writePixelsRegularClippedHitsForTest;
-    }
     const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
         * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
-    writePixelsCopiedBytesForTest += copiedBytes;
-    writePixelsRegularCopiedBytesForTest += copiedBytes;
+    recordWritePixelsHitForTest(true, plan.clipped, copiedBytes);
     return 1;
 #else
     UNUSED(targetCanvas)
@@ -639,9 +654,9 @@ int tryDirectImageCopy(SkCanvas* targetCanvas, const SkImage* image,
     if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
         return 0;
     }
-    ++writePixelsAttemptsForTest;
+    recordWritePixelsAttemptForTest(false);
     auto fallback = []() {
-        ++writePixelsFallbacksForTest;
+        recordWritePixelsFallbackForTest(false);
         return 0;
     };
     const int32 width = sourceRight - sourceLeft;
@@ -667,9 +682,8 @@ int tryDirectImageCopy(SkCanvas* targetCanvas, const SkImage* image,
                                       destinationLeft, destinationTop)) {
         return fallback();
     }
-    ++writePixelsHitsForTest;
-    writePixelsCopiedBytesForTest += static_cast<uint64_t>(width)
-        * static_cast<uint64_t>(height) * 4;
+    recordWritePixelsHitForTest(false, false, static_cast<uint64_t>(width)
+        * static_cast<uint64_t>(height) * 4);
     return 1;
 #else
     UNUSED(targetCanvas)
@@ -699,9 +713,9 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
     if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
         return 0;
     }
-    ++writePixelsAttemptsForTest;
+    recordWritePixelsAttemptForTest(false);
     auto fallback = []() {
-        ++writePixelsFallbacksForTest;
+        recordWritePixelsFallbackForTest(false);
         return 0;
     };
     const int32 width = sourceRight - sourceLeft;
@@ -754,9 +768,8 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
                 }
             }
         }
-        ++writePixelsHitsForTest;
-        writePixelsCopiedBytesForTest += static_cast<uint64_t>(width)
-            * static_cast<uint64_t>(height) * 4;
+        recordWritePixelsHitForTest(false, false, static_cast<uint64_t>(width)
+            * static_cast<uint64_t>(height) * 4);
         return 1;
     } catch (const std::bad_alloc&) {
         return fallback();
@@ -944,7 +957,7 @@ bool readRgbaBytes(NativeImageBackingRecord* backing, void* output, int32 x, int
     if (pixelCount > std::numeric_limits<size_t>::max() / 4) {
         return false;
     }
-    if (isCompact(backing->format)) {
+    if (backingAccountingForTest && isCompact(backing->format)) {
         ++compactReadbackCountForTest;
         compactRowScratchPeakBytesForTest = std::max(
             compactRowScratchPeakBytesForTest, static_cast<uint64_t>(width) * 4);
@@ -1132,19 +1145,21 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
         return RASTER_VARIANT_FAILED;
     }
     const bool physical = key.kind == RASTER_VARIANT_PHYSICAL;
-    if (physical) {
+    if (backingAccountingForTest && physical) {
         ++physicalVariantLookupsForTest;
     }
     if (source->rasterVariant.valid && source->rasterVariant.key == key) {
         *image = source->rasterVariant.image;
-        if (physical) {
-            ++physicalVariantHitsForTest;
-        } else {
-            ++targetColorHitsForTest;
+        if (backingAccountingForTest) {
+            if (physical) {
+                ++physicalVariantHitsForTest;
+            } else {
+                ++targetColorHitsForTest;
+            }
         }
         return *image ? RASTER_VARIANT_HIT : RASTER_VARIANT_FAILED;
     }
-    if (physical) {
+    if (backingAccountingForTest && physical) {
         ++physicalVariantMissesForTest;
     }
 
@@ -1152,7 +1167,7 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
         source->pendingRasterVariant = true;
         source->pendingRasterVariantKey = key;
         source->pendingRasterVariantObservations = 1;
-        if (!physical) {
+        if (backingAccountingForTest && !physical) {
             ++targetColorFallbacksForTest;
         }
         return RASTER_VARIANT_OBSERVED;
@@ -1161,12 +1176,12 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
     if (!candidate) {
         source->pendingRasterVariant = false;
         source->pendingRasterVariantObservations = 0;
-        if (!physical) {
+        if (backingAccountingForTest && !physical) {
             ++targetColorFallbacksForTest;
         }
         return RASTER_VARIANT_FAILED;
     }
-    if (physical && source->rasterVariant.valid) {
+    if (backingAccountingForTest && physical && source->rasterVariant.valid) {
         ++physicalVariantEvictionsForTest;
     }
     source->rasterVariant.image = std::move(candidate);
@@ -1178,12 +1193,14 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
     const size_t bytes = rasterVariantBytes(key.targetColorType == kRGB_565_SkColorType
         ? kRGB_565_SkColorType : static_cast<SkColorType>(key.targetColorType),
         source->rasterVariant.image->width(), source->rasterVariant.image->height());
-    if (physical) {
-        ++physicalVariantMaterializationsForTest;
-        physicalVariantBytesForTest += bytes;
-    } else {
-        ++targetColorMaterializationsForTest;
-        targetColorConvertedBytesForTest += bytes;
+    if (backingAccountingForTest) {
+        if (physical) {
+            ++physicalVariantMaterializationsForTest;
+            physicalVariantBytesForTest += bytes;
+        } else {
+            ++targetColorMaterializationsForTest;
+            targetColorConvertedBytesForTest += bytes;
+        }
     }
     *image = source->rasterVariant.image;
     return *image ? RASTER_VARIANT_MATERIALIZED : RASTER_VARIANT_FAILED;
@@ -1435,13 +1452,13 @@ int skia_image_backing_make_mutable(int64_t handle) {
     }
     try {
         const bool compact = isCompact(backing->format);
-        if (compact) {
+        if (backingAccountingForTest && compact) {
             ++promotionAttemptsForTest;
         }
         sk_sp<SkSurface> surface = SkSurface::MakeRaster(
             rasterInfo(backing->width, backing->height, IMAGE_BACKING_FORMAT_RGBA8888));
         if (!surface) {
-            if (compact) {
+            if (backingAccountingForTest && compact) {
                 ++promotionFailuresForTest;
             }
             return 0;
@@ -1453,7 +1470,9 @@ int skia_image_backing_make_mutable(int64_t handle) {
                 IMAGE_BACKING_FORMAT_RGBA8888);
             for (int32 row = 0; row < backing->height; ++row) {
                 if (!readRgbaBytes(backing, rgba.data(), 0, row, backing->width, 1)) {
-                    ++promotionFailuresForTest;
+                    if (backingAccountingForTest) {
+                        ++promotionFailuresForTest;
+                    }
                     return 0;
                 }
                 surface->writePixels(SkPixmap(info, rgba.data(), rowBytes), 0, row);
@@ -1463,7 +1482,9 @@ int skia_image_backing_make_mutable(int64_t handle) {
         }
         if (compact && failNextPromotionAllocationForTest) {
             failNextPromotionAllocationForTest = false;
-            ++promotionFailuresForTest;
+            if (backingAccountingForTest) {
+                ++promotionFailuresForTest;
+            }
             return 0;
         }
         if (compact) {
@@ -1489,15 +1510,19 @@ int skia_image_backing_make_mutable(int64_t handle) {
             }
             backing->format = IMAGE_BACKING_FORMAT_RGBA8888;
             backing->rowBytes = newRowBytes;
-            promotionBytesForTest += newBytes;
-            ++promotionSuccessesForTest;
+            if (backingAccountingForTest) {
+                promotionBytesForTest += newBytes;
+                ++promotionSuccessesForTest;
+            }
         }
         backing->surface = std::move(surface);
         backing->image.reset();
         return 1;
     } catch (const std::bad_alloc&) {
         if (isCompact(backing->format)) {
-            ++promotionFailuresForTest;
+            if (backingAccountingForTest) {
+                ++promotionFailuresForTest;
+            }
         }
         return 0;
     }
@@ -1641,7 +1666,7 @@ int skia_image_backing_read_argb_rows(int64_t handle, Pixel* output, int32 y, in
     }
     try {
         const size_t rowBytes = static_cast<size_t>(width) * 4;
-        if (isCompact(backing->format)) {
+        if (backingAccountingForTest && isCompact(backing->format)) {
             compactReadbackCountForTest += static_cast<uint64_t>(height);
             compactRowScratchPeakBytesForTest = std::max(
                 compactRowScratchPeakBytesForTest, static_cast<uint64_t>(rowBytes));
@@ -2123,12 +2148,14 @@ uint64_t skia_image_backing_promotion_bytes_for_test(void) {
 }
 
 void skia_image_backing_record_compact_decode_for_test(ImageBackingFormat format, uint64_t bytes) {
-    if (isCompact(format)) {
+    if (backingAccountingForTest && isCompact(format)) {
         ++compactDirectDecodeCountForTest;
         compactDirectDecodeBytesForTest += bytes;
     }
 }
 
 void skia_image_backing_record_temporary_rgba_decode_for_test(uint64_t bytes) {
-    temporaryRgbaDecodeBytesForTest += bytes;
+    if (backingAccountingForTest) {
+        temporaryRgbaDecodeBytesForTest += bytes;
+    }
 }

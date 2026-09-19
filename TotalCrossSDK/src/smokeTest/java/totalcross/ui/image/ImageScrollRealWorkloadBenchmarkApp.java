@@ -56,6 +56,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String runOutputDir;
   private String datasetHashArgument;
   private String prefetchProfile;
+  private String accountingProfile;
   private long prefetchElapsedNs;
   private long prefetchRequestCount;
   private long prefetchReadyCount;
@@ -111,6 +112,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       scrollDurationNs = (long) scrollDurationMs * NANOS_PER_MILLISECOND;
       prefetchProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "prefetch", "off");
+      accountingProfile = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "accounting", "on");
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
           "missing --corpus=<dir>");
       ImageRasterBenchmarkSupport.require(maskArgument != null && maskArgument.length() > 0,
@@ -120,6 +123,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.require("off".equals(prefetchProfile)
           || "on".equals(prefetchProfile),
           "prefetch must be off or on");
+      ImageRasterBenchmarkSupport.require("off".equals(accountingProfile)
+          || "on".equals(accountingProfile),
+          "accounting must be off or on");
       ImageRasterBenchmarkSupport.ensureDirectory(outputDir);
       ImageRasterBenchmarkSupport.ensureDirectory(
           ImageRasterBenchmarkSupport.joinPath(outputDir, "runs"));
@@ -128,6 +134,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
       requireBenchmarkResolution();
       configureMask();
+      Image.resetImageOperationAccountingForBenchmarkTest(accountingEnabled());
+      ImagePreparation.resetAccountingForTest();
 
       long buildStartNs = System.nanoTime();
       String[] imagePaths = sortedCorpusPaths(imageDir);
@@ -148,7 +156,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
       addTimerListener(this);
       if (prefetchEnabled()) {
-        Image.resetImageOperationAccountingForBenchmarkTest();
+        Image.resetImageOperationAccountingForBenchmarkTest(accountingEnabled());
         ImagePreparation.resetAccountingForTest();
         final long prefetchStartNs = System.nanoTime();
         prefetchTimer = addTimer(10);
@@ -189,7 +197,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       prefetchTimer = null;
     }
     try {
-      Image.resetImageOperationAccountingForBenchmarkTest();
+      Image.resetImageOperationAccountingForBenchmarkTest(accountingEnabled());
       int minimum = scroll.sbV.getMinimum();
       int maximum = validMaximum();
       PassResult cold = runPass("cold", true, minimum, maximum);
@@ -228,6 +236,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     String summary = "fixture=ImageScrollRealWorkloadBenchmarkApp,record=summary"
         + ",resolution=" + width + "x" + height
         + ",prefetch_profile=" + String.valueOf(prefetchProfile)
+        + ",accounting=" + accountingProfile
         + ",requested_mask=" + requestedMask
         + ",effective_mask=" + effectiveMask
         + ",run=" + runNumber
@@ -294,11 +303,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private String runName() {
     return "mask-" + (maskArgument == null ? "default" : maskArgument)
-        + "-prefetch-" + prefetchProfile + "-run-" + runNumber;
+        + "-prefetch-" + prefetchProfile + "-accounting-" + accountingProfile
+        + "-run-" + runNumber;
   }
 
   private boolean prefetchEnabled() {
     return "on".equals(prefetchProfile);
+  }
+
+  private boolean accountingEnabled() {
+    return "on".equals(accountingProfile);
   }
 
   private static String[] sortedCorpusPaths(String directory) throws Exception {
@@ -542,6 +556,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private static void validateJpegDiagnostics(Counters counters, String phase) {
     ImageRasterBenchmarkSupport.require(counters != null, phase + " counters are missing");
+    if (!counters.accountingAvailable) {
+      return;
+    }
     requireNonNegative(counters.jpegDecodeCount, phase + " jpeg decode count");
     requireNonNegative(counters.jpegDecodeNs, phase + " jpeg decode ns");
     requireNonNegative(counters.jpegFullCount, phase + " full jpeg count");
@@ -649,6 +666,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private static void validateWritePixelsDiagnostics(Counters counters) {
+    if (!counters.accountingAvailable) {
+      return;
+    }
     requireNonNegative(counters.writePixelsAttempts, "writePixels attempts");
     requireNonNegative(counters.writePixelsHits, "writePixels hits");
     requireNonNegative(counters.writePixelsFallbacks, "writePixels fallbacks");
@@ -706,6 +726,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     System.out.println("fixture=ImageScrollRealWorkloadBenchmarkApp,record=pass"
         + ",resolution=" + width + "x" + height
         + ",prefetch_profile=" + prefetchProfile
+        + ",accounting=" + accountingProfile
         + ",requested_mask=" + (maskArgument == null ? "default" : maskArgument)
         + ",effective_mask=" + ImageOptimizationSettings.getEffectiveMask()
         + ",run=" + runNumber
@@ -851,6 +872,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"imageCount\":" + imageControlCount + ",\n"
         + "  \"columns\":" + COLUMN_COUNT + ",\n"
         + "  \"prefetch\":\"" + prefetchProfile + "\",\n"
+        + "  \"accounting\":\"" + accountingProfile + "\",\n"
         + "  \"requestedMask\":" + requestedMask + ",\n"
         + "  \"effectiveMask\":" + effectiveMask + ",\n"
         + "  \"uiBuildElapsedNs\":" + uiBuildElapsedNs + ",\n"
@@ -887,6 +909,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private void writeCounters(Counters counters) throws Exception {
     StringBuilder json = new StringBuilder(4096);
     json.append("{\n");
+    if (!counters.accountingAvailable) {
+      json.append("  \"accountingEnabled\":false,\n")
+          .append("  \"diagnosticsAvailable\":false\n}\n");
+      ImageRasterBenchmarkSupport.writeUtf8(
+          ImageRasterBenchmarkSupport.joinPath(runOutputDir, "counters.json"), json.toString());
+      return;
+    }
+    json.append("  \"accountingEnabled\":true,\n")
+        .append("  \"diagnosticsAvailable\":true,\n");
     appendCounter(json, "targetedJpegDecodes", counters.targetedJpegDecodes, true);
     appendCounter(json, "fullJpegDecodes", counters.fullJpegDecodes, true);
     appendCounter(json, "imageMaterializations", counters.imageMaterializations, true);
@@ -1148,6 +1179,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private static final class Counters {
+    final boolean accountingAvailable = Image.diagnosticAccountingEnabledForTest();
     final long imageCreated = Image.imageCreatedCountForTest();
     final long targetedJpegDecodes = Image.targetedDecodeInvocationCountForTest();
     final long fullJpegDecodes = Image.fullDecodeInvocationCountForTest();

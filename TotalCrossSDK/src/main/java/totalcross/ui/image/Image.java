@@ -223,8 +223,16 @@ public class Image extends GfxSurface {
 
   /** Resets benchmark counters without making DIAGNOSTIC_ACCOUNTING part of the workload mask. */
   static void resetImageOperationAccountingForBenchmarkTest() {
-    setDiagnosticAccountingForTest(true);
+    resetImageOperationAccountingForBenchmarkTest(true);
+  }
+
+  static void resetImageOperationAccountingForBenchmarkTest(boolean enabled) {
+    setDiagnosticAccountingForTest(enabled);
     clearImageOperationAccountingCountersForTest();
+  }
+
+  static boolean diagnosticAccountingEnabledForTest() {
+    return imageOperationAccountingForTest;
   }
 
   static void setDiagnosticAccountingForTest(boolean enabled) {
@@ -461,6 +469,9 @@ public class Image extends GfxSurface {
   }
 
   static void recordRowReadbacksForTest(int rowCount, int scratchBytes) {
+    if (!imageOperationAccountingForTest) {
+      return;
+    }
     rowReadbackCountForTest += rowCount;
     if (scratchBytes > rowScratchPeakBytesForTest) {
       rowScratchPeakBytesForTest = scratchBytes;
@@ -468,6 +479,9 @@ public class Image extends GfxSurface {
   }
 
   static void recordFullReadbackForTest(int scratchBytes) {
+    if (!imageOperationAccountingForTest) {
+      return;
+    }
     fullReadbackCountForTest++;
     if (scratchBytes > fullScratchBytesForTest) {
       fullScratchBytesForTest = scratchBytes;

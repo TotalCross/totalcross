@@ -83,7 +83,9 @@ final class ImagePreparation {
   static void request(final Image image, final double destinationScale, final int requirement,
       final Runnable onComplete) {
     synchronized (LOCK) {
-      requestCount++;
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        requestCount++;
+      }
     }
     if (image == null) {
       recordOutcome(NOT_PREFETCHABLE, 1);
@@ -272,6 +274,9 @@ final class ImagePreparation {
   }
 
   private static void recordOutcomeLocked(int state, long count) {
+    if (!Image.diagnosticAccountingEnabledForTest()) {
+      return;
+    }
     if (state == READY) {
       readyCount += count;
     } else if (state == NOT_PREFETCHABLE) {

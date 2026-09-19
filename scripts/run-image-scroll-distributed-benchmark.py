@@ -38,16 +38,32 @@ MASKS = (
 )
 WRITE_PIXELS_POLICY_MASKS = (0, 4, 2, 6, 32795, 32799)
 PREFETCH_PROFILES = ("off", "on")
+ACCOUNTING_PROFILES = ("on", "off")
 ROUNDS = 3
 SEED = 73001
 EXPECTED_PROCESSES = len(MASKS) * len(PREFETCH_PROFILES) * ROUNDS
 PROFILES = {
-    "full": (MASKS, ROUNDS, EXPECTED_PROCESSES),
-    "write-pixels-policy": (
-        WRITE_PIXELS_POLICY_MASKS,
-        2,
-        len(WRITE_PIXELS_POLICY_MASKS) * len(PREFETCH_PROFILES) * 2,
-    ),
+    "full": {
+        "masks": MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("on",),
+        "rounds": ROUNDS,
+        "expected_processes": EXPECTED_PROCESSES,
+    },
+    "write-pixels-policy": {
+        "masks": WRITE_PIXELS_POLICY_MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("on",),
+        "rounds": 2,
+        "expected_processes": len(WRITE_PIXELS_POLICY_MASKS) * len(PREFETCH_PROFILES) * 2,
+    },
+    "write-pixels-accounting-ab": {
+        "masks": (32795, 32799),
+        "prefetch": ("on",),
+        "accounting": ACCOUNTING_PROFILES,
+        "rounds": 5,
+        "expected_processes": 2 * 1 * 2 * 5,
+    },
 }
 CONTROLLED_PAIRS = ((0, 4), (2, 6), (32795, 32799))
 PROCESS_TIMEOUT_SECONDS = 180
@@ -100,15 +116,10 @@ def require(condition, message):
 
 def profile_config(name):
     try:
-        masks, rounds, expected_processes = PROFILES[name]
+        profile = PROFILES[name]
     except KeyError as error:
         raise BenchmarkFailure(f"unknown benchmark profile: {name}") from error
-    return {
-        "name": name,
-        "masks": masks,
-        "rounds": rounds,
-        "expected_processes": expected_processes,
-    }
+    return dict(profile, name=name)
 
 
 def load_manifest(bundle):
@@ -333,8 +344,16 @@ def validate_jpeg_counter_section(section, description):
     return count, decode_ns, bucket_counts
 
 
-def validate_diagnostic_counters(counters, run_dir):
+def validate_diagnostic_counters(counters, run_dir, accounting):
     require(isinstance(counters, dict), f"{run_dir}/counters.json is invalid")
+    if accounting == "off":
+        require(counters.get("accountingEnabled") is False
+                and counters.get("diagnosticsAvailable") is False,
+                f"{run_dir}/counters.json does not mark diagnostics unavailable")
+        return {field: None for field in DIAGNOSTIC_SUMMARY_FIELDS}
+    require(counters.get("accountingEnabled") is True
+            and counters.get("diagnosticsAvailable") is True,
+            f"{run_dir}/counters.json does not mark diagnostics available")
     jpeg_decode = counters.get("jpegDecode")
     require(isinstance(jpeg_decode, dict), f"{run_dir}/counters.json lacks jpegDecode")
     require(set(("prefetch", "scroll")) <= set(jpeg_decode),
@@ -469,11 +488,13 @@ def tail(path, count=60):
     return "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[-count:])
 
 
-def expected_run_dir(output, mask, prefetch, run):
-    return output / "runs" / f"mask-{mask}-prefetch-{prefetch}-run-{run}"
+def expected_run_dir(output, mask, prefetch, accounting, run):
+    return output / "runs" / (
+        f"mask-{mask}-prefetch-{prefetch}-accounting-{accounting}-run-{run}"
+    )
 
 
-def validate_run_artifacts(output, log_path, mask, prefetch, run, dataset_digest):
+def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, dataset_digest):
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     pass_records = [
         parse_record(line) for line in lines
@@ -492,6 +513,7 @@ def validate_run_artifacts(output, log_path, mask, prefetch, run, dataset_digest
         "requested_mask": str(mask),
         "effective_mask": str(mask),
         "prefetch_profile": prefetch,
+        "accounting": accounting,
         "image_count": str(EXPECTED_JPEGS),
         "pass": "cold",
     }
@@ -507,7 +529,12 @@ def validate_run_artifacts(output, log_path, mask, prefetch, run, dataset_digest
             f"{log_path.name} summary mask mismatch")
     require(summary_record.get("prefetch_profile") == prefetch,
             f"{log_path.name} summary prefetch mismatch")
-    if prefetch == "off":
+    if accounting == "off":
+        for key in ("prefetch_request_count", "prefetch_ready_count",
+                    "prefetch_failed_count", "prefetch_not_prefetchable_count"):
+            require(summary_record.get(key) == "0",
+                    f"{log_path.name} {key} must be zero when accounting is off")
+    elif prefetch == "off":
         for key in ("prefetch_request_count", "prefetch_ready_count",
                     "prefetch_failed_count", "prefetch_not_prefetchable_count"):
             require(summary_record.get(key) == "0",
@@ -522,7 +549,7 @@ def validate_run_artifacts(output, log_path, mask, prefetch, run, dataset_digest
         require(summary_record.get("prefetch_not_prefetchable_count") == "3",
                 f"{log_path.name} prefetch not-prefetchable count is not 3")
 
-    run_dir = expected_run_dir(output, mask, prefetch, run)
+    run_dir = expected_run_dir(output, mask, prefetch, accounting, run)
     for name in ("summary.json", "frames.csv", "counters.json", "memory.csv", "timeline.csv"):
         require((run_dir / name).is_file(), f"{run_dir / name} is missing")
     try:
@@ -537,6 +564,8 @@ def validate_run_artifacts(output, log_path, mask, prefetch, run, dataset_digest
             f"{run_dir}/summary.json mask mismatch")
     require(run_summary.get("prefetch") == prefetch,
             f"{run_dir}/summary.json prefetch mismatch")
+    require(run_summary.get("accounting") == accounting,
+            f"{run_dir}/summary.json accounting mismatch")
     require(run_summary.get("imageCount") == EXPECTED_JPEGS,
             f"{run_dir}/summary.json image count mismatch")
     require(run_summary.get("frameCount", 0) > 1,
@@ -550,11 +579,23 @@ def validate_run_artifacts(output, log_path, mask, prefetch, run, dataset_digest
     require(environment.get("datasetFileCount") == EXPECTED_JPEGS
             and environment.get("datasetHash") == dataset_digest,
             f"{output}/environment.json dataset mismatch")
-    validate_diagnostic_counters(counters, run_dir)
+    require(environment.get("skiaSurfaceWidth", 0) > 0
+            and environment.get("skiaSurfaceHeight", 0) > 0
+            and environment.get("skiaSurfaceRowBytes", 0) > 0
+            and environment.get("skiaSurfaceColorType") is not None
+            and environment.get("skiaSurfaceAlphaType") is not None
+            and environment.get("kN32SkColorType") is not None,
+            f"{output}/environment.json lacks native target metrics")
+    require(environment.get("skiaSurfaceColorClassification") in (
+        "BGRA8888", "RGB565", "OTHER",
+    ), f"{output}/environment.json lacks target-color classification")
+    require(environment.get("rendererBackend") in ("software", "gpu"),
+            f"{output}/environment.json lacks renderer backend")
+    validate_diagnostic_counters(counters, run_dir, accounting)
     return run_summary
 
 
-def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, label):
+def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run, label):
     executable = executable_path(bundle, manifest)
     logs = output / "logs"
     logs.mkdir(parents=True, exist_ok=True)
@@ -572,6 +613,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, la
         "--output=results",
         f"--image-optimization={mask}",
         f"--prefetch={prefetch}",
+        f"--accounting={accounting}",
         f"--run={run}",
         f"--dataset-hash={corpus_digest}",
     ]
@@ -601,7 +643,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, la
         raise BenchmarkFailure(f"{label} failed: {reason}")
     try:
         summary = validate_run_artifacts(
-            output, log_path, mask, prefetch, run, corpus_digest
+            output, log_path, mask, prefetch, accounting, run, corpus_digest
         )
     except BenchmarkFailure as error:
         print(f"{label} failed validation; log={log_path}", file=sys.stderr)
@@ -609,45 +651,59 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, la
         raise
     print(f"{label} passed,exit_code=0,resolution=540x960,"
           f"requested_mask={mask},effective_mask={mask},prefetch={prefetch},"
-          f"artifacts={expected_run_dir(output, mask, prefetch, run)}")
+          f"accounting={accounting},"
+          f"artifacts={expected_run_dir(output, mask, prefetch, accounting, run)}")
     return summary
 
 
-def lcg_permutation(round_number, masks):
-    combinations = list(range(len(masks) * len(PREFETCH_PROFILES)))
+def lcg_permutation(round_number, masks, prefetch_profiles, accounting_profiles):
+    combinations = list(
+        range(len(masks) * len(prefetch_profiles) * len(accounting_profiles))
+    )
     state = (SEED + 0x9E3779B97F4A7C15 * (round_number + 1)) & 0xFFFFFFFFFFFFFFFF
     for index in range(len(combinations) - 1, 0, -1):
         state = (state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
         swap = (state >> 1) % (index + 1)
         combinations[index], combinations[swap] = combinations[swap], combinations[index]
+    combinations_per_mask = len(prefetch_profiles) * len(accounting_profiles)
     return tuple(
-        (masks[combination // 2], PREFETCH_PROFILES[combination % 2])
+        (
+            masks[combination // combinations_per_mask],
+            prefetch_profiles[(combination % combinations_per_mask)
+                              // len(accounting_profiles)],
+            accounting_profiles[combination % len(accounting_profiles)],
+        )
         for combination in combinations
     )
 
 
-def write_suite_plan(output, masks, rounds, expected_processes):
-    lines = ["round\torder\trun\tmask\tprefetch"]
+def write_suite_plan(output, masks, prefetch_profiles, accounting_profiles, rounds,
+                     expected_processes):
+    lines = ["round\torder\trun\tmask\tprefetch\taccounting"]
     planned = []
     order = 0
     for round_number in range(rounds):
-        for mask, prefetch in lcg_permutation(round_number, masks):
+        for mask, prefetch, accounting in lcg_permutation(
+                round_number, masks, prefetch_profiles, accounting_profiles):
             run = round_number + 1
-            lines.append(f"{run}\t{order}\t{run}\t{mask}\t{prefetch}")
-            planned.append((round_number, order, run, mask, prefetch))
+            lines.append(f"{run}\t{order}\t{run}\t{mask}\t{prefetch}\t{accounting}")
+            planned.append((round_number, order, run, mask, prefetch, accounting))
             order += 1
     require(len(planned) == expected_processes,
             f"suite plan does not contain {expected_processes} processes")
     combination_counts = {}
-    for _, _, _, mask, prefetch in planned:
-        key = (mask, prefetch)
+    for _, _, _, mask, prefetch, accounting in planned:
+        key = (mask, prefetch, accounting)
         combination_counts[key] = combination_counts.get(key, 0) + 1
     require(set(combination_counts) == {
-        (mask, prefetch) for mask in masks for prefetch in PREFETCH_PROFILES
+        (mask, prefetch, accounting)
+        for mask in masks for prefetch in prefetch_profiles
+        for accounting in accounting_profiles
     }, "suite plan combinations differ")
     require(all(count == rounds for count in combination_counts.values()),
             f"suite plan does not contain {rounds} runs per combination")
-    require(len({(run, mask, prefetch) for _, _, run, mask, prefetch in planned})
+    require(len({(run, mask, prefetch, accounting)
+                 for _, _, run, mask, prefetch, accounting in planned})
             == expected_processes, "suite plan contains duplicate runs")
     (output / "suite-plan.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
     return planned
@@ -656,19 +712,24 @@ def write_suite_plan(output, masks, rounds, expected_processes):
 def require_smokes_completed(output, corpus_digest):
     marker = output / "self-test.json"
     require(marker.is_file(), "self-test marker is missing; refusing to run matrix")
-    for mask, prefetch in ((0, "off"), (0, "on"), (32799, "off"), (32799, "on")):
-        log_path = output / "logs" / f"smoke-{mask}-{prefetch}.log"
+    for mask, prefetch in (
+        (0, "off"), (0, "on"), (4, "off"), (4, "on"),
+        (32799, "off"), (32799, "on"),
+    ):
+        log_path = output / "logs" / f"smoke-{mask}-{prefetch}-accounting-on.log"
         require(log_path.is_file(), f"smoke log is missing: {log_path}")
-        validate_run_artifacts(output, log_path, mask, prefetch, 0, corpus_digest)
+        validate_run_artifacts(output, log_path, mask, prefetch, "on", 0, corpus_digest)
 
 
-def run_matrix(bundle, manifest, output, corpus_digest, masks, rounds, expected_processes):
-    plan = write_suite_plan(output, masks, rounds, expected_processes)
+def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles,
+               accounting_profiles, rounds, expected_processes):
+    plan = write_suite_plan(output, masks, prefetch_profiles, accounting_profiles,
+                            rounds, expected_processes)
     completed = 0
-    for _, _, run, mask, prefetch in plan:
+    for _, _, run, mask, prefetch, accounting in plan:
         run_process(
-            bundle, manifest, output, corpus_digest, mask, prefetch, run,
-            f"matrix-{run}-{mask}-{prefetch}",
+            bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run,
+            f"matrix-{run}-{mask}-{prefetch}-{accounting}",
         )
         completed += 1
         print(f"matrix progress={completed}/{expected_processes}")
@@ -780,10 +841,11 @@ def write_pairwise_comparison(output, records, masks, rounds):
     return path
 
 
-def aggregate(output, plan, masks, rounds, expected_processes, profile_name):
+def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, rounds,
+              expected_processes, profile_name):
     records = []
-    for _, order, run, mask, prefetch in plan:
-        path = expected_run_dir(output, mask, prefetch, run) / "summary.json"
+    for _, order, run, mask, prefetch, accounting in plan:
+        path = expected_run_dir(output, mask, prefetch, accounting, run) / "summary.json"
         try:
             summary = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as error:
@@ -797,7 +859,7 @@ def aggregate(output, plan, masks, rounds, expected_processes, profile_name):
             counters = json.loads(counters_path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as error:
             raise BenchmarkFailure(f"invalid matrix counters: {counters_path}") from error
-        diagnostics = validate_diagnostic_counters(counters, path.parent)
+        diagnostics = validate_diagnostic_counters(counters, path.parent, accounting)
         for field in TEMPORAL_SUMMARY_FIELDS:
             require_nonnegative_ns(summary.get(field), f"{path} {field}")
         for field in FRAME_THRESHOLD_COUNT_FIELDS:
@@ -806,6 +868,7 @@ def aggregate(output, plan, masks, rounds, expected_processes, profile_name):
             "order": order,
             "run": run,
             "prefetch": prefetch,
+            "accounting": accounting,
             "mask": mask,
             "status": summary["status"],
             "frame_count": summary["frameCount"],
@@ -835,24 +898,32 @@ def aggregate(output, plan, masks, rounds, expected_processes, profile_name):
     require(len(records) == expected_processes,
             f"aggregation did not find {expected_processes} summaries")
     rows = []
-    for prefetch in PREFETCH_PROFILES:
-        baseline = [record for record in records
-                    if record["prefetch"] == prefetch and record["mask"] == 0]
-        require(len(baseline) == rounds, f"missing mask zero baseline for {prefetch}")
-        baseline_p50 = sum(record["frame_p50_ns"] for record in baseline) // len(baseline)
-        baseline_p95 = sum(record["frame_p95_ns"] for record in baseline) // len(baseline)
-        for record in records:
-            if record["prefetch"] != prefetch:
-                continue
-            row = dict(record)
-            row["baseline_scope"] = "same-machine-same-prefetch-mask0"
-            row["baseline_mask0_p50_ns"] = baseline_p50
-            row["delta_p50_ns"] = record["frame_p50_ns"] - baseline_p50
-            row["baseline_mask0_p95_ns"] = baseline_p95
-            row["delta_p95_ns"] = record["frame_p95_ns"] - baseline_p95
-            rows.append(row)
+    for prefetch in prefetch_profiles:
+        for accounting in accounting_profiles:
+            baseline = [record for record in records
+                        if record["prefetch"] == prefetch
+                        and record["accounting"] == accounting
+                        and record["mask"] == 0]
+            if 0 in masks:
+                require(len(baseline) == rounds,
+                        f"missing mask zero baseline for {prefetch}/{accounting}")
+                baseline_p50 = sum(record["frame_p50_ns"] for record in baseline) // len(baseline)
+                baseline_p95 = sum(record["frame_p95_ns"] for record in baseline) // len(baseline)
+            for record in records:
+                if record["prefetch"] != prefetch or record["accounting"] != accounting:
+                    continue
+                row = dict(record)
+                row["baseline_scope"] = "same-machine-same-prefetch-mask0"
+                row["baseline_mask0_p50_ns"] = baseline_p50 if 0 in masks else None
+                row["delta_p50_ns"] = (record["frame_p50_ns"] - baseline_p50
+                                        if 0 in masks else None)
+                row["baseline_mask0_p95_ns"] = baseline_p95 if 0 in masks else None
+                row["delta_p95_ns"] = (record["frame_p95_ns"] - baseline_p95
+                                        if 0 in masks else None)
+                rows.append(row)
     fields = [
-        "order", "run", "prefetch", "mask", "status", "frame_count", "frame_p50_ns",
+        "order", "run", "prefetch", "accounting", "mask", "status", "frame_count",
+        "frame_p50_ns",
         "frame_p90_ns", "frame_p95_ns", "frame_p99_ns", "frame_max_ns",
         "work_time_p50_ns", "work_time_p95_ns", "work_time_p99_ns", "work_time_max_ns",
         "paint_time_p50_ns", "paint_time_p95_ns", "paint_time_p99_ns",
@@ -869,10 +940,13 @@ def aggregate(output, plan, masks, rounds, expected_processes, profile_name):
         writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(sorted(rows, key=lambda row: (row["run"], row["prefetch"], row["mask"])))
-    require(sum(1 for row in rows if row["mask"] == 0 and row["prefetch"] == "off") == rounds,
-            "aggregated off baselines are incomplete")
-    require(sum(1 for row in rows if row["mask"] == 0 and row["prefetch"] == "on") == rounds,
-            "aggregated on baselines are incomplete")
+    if 0 in masks:
+        for prefetch in prefetch_profiles:
+            for accounting in accounting_profiles:
+                require(sum(1 for row in rows if row["mask"] == 0
+                            and row["prefetch"] == prefetch
+                            and row["accounting"] == accounting) == rounds,
+                        f"aggregated {prefetch}/{accounting} baselines are incomplete")
     print(f"aggregation passed,summary={path},rows={len(rows)}")
     if profile_name == "write-pixels-policy":
         write_pairwise_comparison(output, records, masks, rounds)
@@ -921,21 +995,25 @@ def run_phase(bundle, phase, profile_name):
     if phase == "self-test":
         return
     if phase in ("smokes", "full"):
-        for mask, prefetch in ((0, "off"), (0, "on"), (32799, "off"), (32799, "on")):
+        for mask, prefetch in (
+            (0, "off"), (0, "on"), (4, "off"), (4, "on"),
+            (32799, "off"), (32799, "on"),
+        ):
             run_process(
-                bundle, manifest, output, corpus_digest, mask, prefetch, 0,
-                f"smoke-{mask}-{prefetch}",
+                bundle, manifest, output, corpus_digest, mask, prefetch, "on", 0,
+                f"smoke-{mask}-{prefetch}-accounting-on",
             )
         if phase == "smokes":
             return
-    require_smokes_completed(output, corpus_digest)
+    if 0 in profile["masks"]:
+        require_smokes_completed(output, corpus_digest)
     plan = run_matrix(
-        bundle, manifest, output, corpus_digest, profile["masks"], profile["rounds"],
-        profile["expected_processes"],
+        bundle, manifest, output, corpus_digest, profile["masks"], profile["prefetch"],
+        profile["accounting"], profile["rounds"], profile["expected_processes"],
     )
     aggregate(
-        output, plan, profile["masks"], profile["rounds"], profile["expected_processes"],
-        profile_name,
+        output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
+        profile["rounds"], profile["expected_processes"], profile_name,
     )
     if phase == "full":
         run_decode_phase(bundle, "full")
