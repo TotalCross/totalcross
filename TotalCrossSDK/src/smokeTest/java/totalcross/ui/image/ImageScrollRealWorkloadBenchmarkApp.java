@@ -325,23 +325,30 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void captureTargetMetrics() {
-    long packed = NativeImageBacking.targetMetricsForBenchmarkTest();
-    benchmarkTargetWidth = unpackMetric(packed, 0, 10);
-    benchmarkTargetHeight = unpackMetric(packed, 10, 10);
-    benchmarkTargetRowBytes = unpackMetric(packed, 20, 16);
-    benchmarkTargetColorType = unpackMetric(packed, 36, 4);
-    benchmarkTargetAlphaType = unpackMetric(packed, 40, 3);
-    benchmarkN32ColorType = unpackMetric(packed, 43, 4);
-    benchmarkTargetColorClass = unpackMetric(packed, 47, 2);
-    benchmarkRendererBackend = unpackMetric(packed, 49, 2);
+    benchmarkTargetColorType = NativeImageBacking.benchmarkMetricForTest(0);
+    benchmarkTargetAlphaType = NativeImageBacking.benchmarkMetricForTest(1);
+    benchmarkTargetRowBytes = NativeImageBacking.benchmarkMetricForTest(2);
+    benchmarkTargetWidth = NativeImageBacking.benchmarkMetricForTest(3);
+    benchmarkTargetHeight = NativeImageBacking.benchmarkMetricForTest(4);
+    benchmarkN32ColorType = NativeImageBacking.benchmarkMetricForTest(5);
+    benchmarkTargetColorClass = NativeImageBacking.benchmarkMetricForTest(6);
+    benchmarkRendererBackend = NativeImageBacking.benchmarkMetricForTest(7);
+    validateTargetMetrics();
   }
 
-  private static long unpackMetric(long packed, int shift, int bits) {
-    if (packed < 0) {
-      return -1;
-    }
-    long encoded = (packed >>> shift) & ((1L << bits) - 1);
-    return encoded == 0 ? -1 : encoded - 1;
+  private void validateTargetMetrics() {
+    ImageRasterBenchmarkSupport.require(
+        benchmarkTargetWidth > 0 && benchmarkTargetHeight > 0
+            && benchmarkTargetRowBytes > 0 && benchmarkTargetColorType >= 0
+            && benchmarkTargetAlphaType >= 0 && benchmarkN32ColorType >= 0
+            && benchmarkTargetColorClass >= 0 && benchmarkTargetColorClass <= 2
+            && (benchmarkRendererBackend == 1 || benchmarkRendererBackend == 2),
+        "native target metrics are incomplete");
+    long minimumRowBytes = benchmarkTargetColorClass == 1
+        ? benchmarkTargetWidth * 4
+        : benchmarkTargetColorClass == 2 ? benchmarkTargetWidth * 2 : benchmarkTargetWidth;
+    ImageRasterBenchmarkSupport.require(benchmarkTargetRowBytes >= minimumRowBytes,
+        "native target rowBytes is smaller than the target color format requires");
   }
 
   private static String[] sortedCorpusPaths(String directory) throws Exception {

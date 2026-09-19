@@ -18,6 +18,8 @@ import zipfile
 
 
 EXPECTED_JPEGS = 663
+EXPECTED_TARGET_WIDTH = 1080
+EXPECTED_TARGET_HEIGHT = 896
 CORPUS_VARIANTS = (
     "imag", "lossless", "decode-baseline", "decode-fast",
     "aggresive-480", "aggresive-540",
@@ -579,18 +581,34 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
     require(environment.get("datasetFileCount") == EXPECTED_JPEGS
             and environment.get("datasetHash") == dataset_digest,
             f"{output}/environment.json dataset mismatch")
-    require(environment.get("skiaSurfaceWidth", 0) > 0
-            and environment.get("skiaSurfaceHeight", 0) > 0
-            and environment.get("skiaSurfaceRowBytes", 0) > 0
-            and environment.get("skiaSurfaceColorType") is not None
-            and environment.get("skiaSurfaceAlphaType") is not None
-            and environment.get("kN32SkColorType") is not None,
+    target_width = environment.get("skiaSurfaceWidth")
+    target_height = environment.get("skiaSurfaceHeight")
+    target_row_bytes = environment.get("skiaSurfaceRowBytes")
+    target_color_type = environment.get("skiaSurfaceColorType")
+    target_alpha_type = environment.get("skiaSurfaceAlphaType")
+    n32_color_type = environment.get("kN32SkColorType")
+    require(isinstance(target_width, int) and target_width > 0
+            and isinstance(target_height, int) and target_height > 0
+            and isinstance(target_row_bytes, int) and target_row_bytes > 0
+            and isinstance(target_color_type, int) and target_color_type >= 0
+            and isinstance(target_alpha_type, int) and target_alpha_type >= 0
+            and isinstance(n32_color_type, int) and n32_color_type >= 0,
             f"{output}/environment.json lacks native target metrics")
     require(environment.get("skiaSurfaceColorClassification") in (
         "BGRA8888", "RGB565", "OTHER",
     ), f"{output}/environment.json lacks target-color classification")
     require(environment.get("rendererBackend") in ("software", "gpu"),
             f"{output}/environment.json lacks renderer backend")
+    require(target_width == EXPECTED_TARGET_WIDTH
+            and target_height == EXPECTED_TARGET_HEIGHT,
+            f"{output}/environment.json has unexpected physical target size")
+    minimum_row_bytes = {
+        "BGRA8888": target_width * 4,
+        "RGB565": target_width * 2,
+        "OTHER": target_width,
+    }[environment["skiaSurfaceColorClassification"]]
+    require(target_row_bytes >= minimum_row_bytes,
+            f"{output}/environment.json has an inconsistent target pitch")
     validate_diagnostic_counters(counters, run_dir, accounting)
     return run_summary
 

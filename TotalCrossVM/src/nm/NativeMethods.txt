@@ -112,7 +112,6 @@ totalcross/ui/image/Image|native private static void failNextNativeMaterializati
 totalcross/ui/image/Image|native private static void failNextZeroCopyDecodeAfterAllocationForTestNative();
 totalcross/ui/image/Image|native private static void setDiagnosticAccountingTestNative(boolean enabled);
 totalcross/ui/image/Image|native private static int nativeOptimizationMaskObservedForTestNative(totalcross.ui.image.Image image, boolean draw);
-totalcross/ui/image/Image|native private static long benchmarkMetricNative(int kind);
 totalcross/ui/image/Image|native private void createJpgNative(totalcross.io.Stream s, int quality);
 totalcross/ui/image/Image|native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
 totalcross/ui/image/EncodedImageSource|native private void captureNative(byte []input, int length);
@@ -121,7 +120,7 @@ totalcross/ui/image/EncodedImageSource|native private void releaseNativeBag();
 totalcross/ui/image/NativeImageBacking|native private static long createEmptyNative(int width, int height);
 totalcross/ui/image/NativeImageBacking|native private static long createEmptyForTestNative(int width, int height, int colorType);
 totalcross/ui/image/NativeImageBacking|native private static boolean isAvailableNative();
-totalcross/ui/image/NativeImageBacking|native private static long targetMetricsForBenchmarkTestNative();
+totalcross/ui/image/NativeImageBacking|native private static long metricForTest(int kind);
 totalcross/ui/image/NativeImageBacking|native private static void resetAccountingTestNative();
 totalcross/ui/image/NativeImageBacking|native private static void clearAccountingTestNative();
 totalcross/ui/image/NativeImageBacking|native private static long backingCreatedTestNative();

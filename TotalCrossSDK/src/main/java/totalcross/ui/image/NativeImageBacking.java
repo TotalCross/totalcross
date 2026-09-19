@@ -146,8 +146,8 @@ final class NativeImageBacking extends ImageBacking {
     return backingAccountingEnabledForTest;
   }
 
-  static long targetMetricsForBenchmarkTest() {
-    return targetMetricsForBenchmarkTestNative();
+  static long benchmarkMetricForTest(int kind) {
+    return metricForTest(kind);
   }
 
   static long backingRecordsCreatedForTest() {
@@ -608,8 +608,8 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
-  private static long targetMetricsForBenchmarkTestNative() {
-    return 0;
+  private static long metricForTest(int kind) {
+    return -1;
   }
 
   @ReplacedByNativeOnDeploy

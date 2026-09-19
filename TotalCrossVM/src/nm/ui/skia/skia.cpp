@@ -127,10 +127,10 @@ std::vector<std::unique_ptr<SkiaImageSurface>> imageSurfaces;
 
 std::map<std::string, int> typefaceIndexMap;
 
-void recordBenchmarkTargetMetrics(const SkImageInfo& info) {
+void recordBenchmarkTargetMetrics(const SkImageInfo& info, size_t rowBytes) {
     benchmarkTargetColorType = static_cast<int64_t>(info.colorType());
     benchmarkTargetAlphaType = static_cast<int64_t>(info.alphaType());
-    benchmarkTargetRowBytes = static_cast<int64_t>(info.minRowBytes());
+    benchmarkTargetRowBytes = static_cast<int64_t>(rowBytes > 0 ? rowBytes : info.minRowBytes());
     benchmarkTargetWidth = static_cast<int64_t>(info.width());
     benchmarkTargetHeight = static_cast<int64_t>(info.height());
     benchmarkTargetColorClass = info.colorType() == kBGRA_8888_SkColorType ? 1
@@ -146,7 +146,8 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
                                            h,
                                            (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), pixels, pitch);
     canvas = new SkCanvas(bitmap);
-    recordBenchmarkTargetMetrics(bitmap.info());
+    recordBenchmarkTargetMetrics(bitmap.info(), pitch > 0 ? static_cast<size_t>(pitch)
+                                                           : bitmap.rowBytes());
 #elif TC_GRAPHICS_GLES
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
     // the different OpenGL variants (Core, ES, etc). Most of the code bellow is dedicated to create
@@ -176,7 +177,7 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     // We cache a reference for the surface and canvas for later use.
     surface = gpuSurface;
     canvas = gpuCanvas;
-    recordBenchmarkTargetMetrics(surface->imageInfo());
+    recordBenchmarkTargetMetrics(surface->imageInfo(), surface->imageInfo().minRowBytes());
 #else
     #error "Unsupported graphics backend"
 #endif
@@ -357,24 +358,6 @@ int32 colorType(uint32 pixelformat) {
 #endif
 
 int64_t skia_benchmark_native_metric(int32 kind) {
-    if (kind == 8) {
-        if (benchmarkTargetWidth < 0) {
-            return -1;
-        }
-        const auto encode = [](int64_t value, int32 bits) -> uint64_t {
-            return value < 0 ? 0 : static_cast<uint64_t>(value + 1)
-                & ((static_cast<uint64_t>(1) << bits) - 1);
-        };
-        const uint64_t packed = encode(benchmarkTargetWidth, 10)
-            | (encode(benchmarkTargetHeight, 10) << 10)
-            | (encode(benchmarkTargetRowBytes, 16) << 20)
-            | (encode(benchmarkTargetColorType, 4) << 36)
-            | (encode(benchmarkTargetAlphaType, 3) << 40)
-            | (encode(kN32_SkColorType, 4) << 43)
-            | (encode(benchmarkTargetColorClass, 2) << 47)
-            | (encode(TC_GRAPHICS_SOFTWARE ? 1 : TC_GRAPHICS_GLES ? 2 : 0, 2) << 49);
-        return static_cast<int64_t>(packed);
-    }
     if (kind == 7) {
 #if TC_GRAPHICS_SOFTWARE
         return 1;
