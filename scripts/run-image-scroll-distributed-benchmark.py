@@ -560,6 +560,13 @@ def validate_structural_diagnostics(counters, run_dir, mask):
                 )
                 require(mapping_root_to_device < attempts,
                         f"{run_dir} mask {mask} remains 100% root-to-device rejects for {attempts_key}")
+            if bit == 8192:
+                acquisition_sources = counter_value(
+                    counters, "targetColorAcquisitionSources",
+                    f"{run_dir} target-color acquisition sources",
+                )
+                require(acquisition_sources > 0,
+                        f"{run_dir} mask {mask} did not acquire a target-color source")
         else:
             require(attempts == 0 and measured_rejects == 0,
                     f"{run_dir} mask {mask} exercised disabled raster path {attempts_key}")
