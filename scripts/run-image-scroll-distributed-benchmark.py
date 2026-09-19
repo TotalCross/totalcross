@@ -121,11 +121,13 @@ POLICY_DIAGNOSTIC_COUNTERS = (
     "physicalIdentityRejectExecution", "targetColorUniqueSources",
     "targetColorFallbacks", "targetColorConvertedBytes",
     "targetColorUniqueFullKeys", "targetColorUniqueNoDestinationKeys",
-    "targetColorUniqueIntrinsicKeys", "targetColorPendingReplacements",
+    "targetColorUniqueIntrinsicKeys", "targetColorAcquisitionSources",
+    "targetColorPendingReplacements",
     "targetColorRejectCanvas", "targetColorRejectSurface", "targetColorRejectClip",
     "targetColorRejectMapping", "targetColorRejectBacking",
     "targetColorRejectExecution", "physicalVariantUniqueFullKeys",
     "physicalVariantUniqueNoSurfaceSizeKeys", "physicalVariantPendingReplacements",
+    "physicalVariantUniqueSources",
     "physicalVariantEvictions",
     "physicalVariantRejectCanvas", "physicalVariantRejectSurface",
     "physicalVariantRejectClip",
@@ -446,8 +448,35 @@ def validate_diagnostic_counters(counters, run_dir, accounting,
             <= values["writePixelsDeviceOneToOneCandidates"],
             f"{run_dir} writePixels known-opaque candidates exceed candidates")
     if require_policy_diagnostics:
-        for key in POLICY_DIAGNOSTIC_COUNTERS:
-            counter_value(counters, key, f"{run_dir} {key}")
+        policy_values = {
+            key: counter_value(counters, key, f"{run_dir} {key}")
+            for key in POLICY_DIAGNOSTIC_COUNTERS
+        }
+        require(
+            policy_values["targetColorUniqueFullKeys"]
+            >= policy_values["targetColorAcquisitionSources"],
+            f"{run_dir} target scoped full keys are fewer than acquisition sources",
+        )
+        require(
+            policy_values["targetColorUniqueNoDestinationKeys"]
+            >= policy_values["targetColorAcquisitionSources"],
+            f"{run_dir} target scoped no-destination keys are fewer than acquisition sources",
+        )
+        require(
+            policy_values["targetColorUniqueIntrinsicKeys"]
+            >= policy_values["targetColorAcquisitionSources"],
+            f"{run_dir} target scoped intrinsic keys are fewer than acquisition sources",
+        )
+        require(
+            policy_values["physicalVariantUniqueFullKeys"]
+            >= policy_values["physicalVariantUniqueSources"],
+            f"{run_dir} physical scoped full keys are fewer than observed sources",
+        )
+        require(
+            policy_values["physicalVariantUniqueNoSurfaceSizeKeys"]
+            >= policy_values["physicalVariantUniqueSources"],
+            f"{run_dir} physical scoped no-surface-size keys are fewer than observed sources",
+        )
     features = counters.get("features")
     require(isinstance(features, dict), f"{run_dir}/counters.json lacks features")
     for name in (

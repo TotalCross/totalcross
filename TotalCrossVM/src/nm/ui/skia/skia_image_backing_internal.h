@@ -108,6 +108,7 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
                           int32 destinationBottom, int32 alphaMask, int32 optimizationMask);
 bool proveOpaque(NativeImageBackingRecord* source);
 void recordTargetColorAttemptForTest();
+void recordTargetColorSourceForTest(NativeImageBackingRecord* source);
 void recordTargetColorFallbackForTest();
 void recordPhysicalVariantEvictionForTest();
 void recordTargetColorRejectionForTest(int32 reason);

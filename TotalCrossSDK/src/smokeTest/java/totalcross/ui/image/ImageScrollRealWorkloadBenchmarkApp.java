@@ -1058,6 +1058,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         counters.targetColorUniqueNoDestinationKeys, true);
     appendCounter(json, "targetColorUniqueIntrinsicKeys",
         counters.targetColorUniqueIntrinsicKeys, true);
+    appendCounter(json, "targetColorAcquisitionSources",
+        counters.targetColorAcquisitionSources, true);
     appendCounter(json, "targetColorPendingReplacements",
         counters.targetColorPendingReplacements, true);
     appendCounter(json, "targetColorRejectCanvas", counters.targetColorRejectCanvas, true);
@@ -1069,6 +1071,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendCounter(json, "physicalVariantUniqueFullKeys", counters.physicalVariantUniqueFullKeys, true);
     appendCounter(json, "physicalVariantUniqueNoSurfaceSizeKeys",
         counters.physicalVariantUniqueNoSurfaceSizeKeys, true);
+    appendCounter(json, "physicalVariantUniqueSources",
+        counters.physicalVariantUniqueSources, true);
     appendCounter(json, "physicalVariantPendingReplacements",
         counters.physicalVariantPendingReplacements, true);
     appendCounter(json, "physicalVariantRejectCanvas", counters.physicalVariantRejectCanvas, true);
@@ -1312,6 +1316,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(counters.targetColorUniqueNoDestinationKeys)
         .append(",target_color_unique_intrinsic_keys=")
         .append(counters.targetColorUniqueIntrinsicKeys)
+        .append(",target_color_acquisition_sources=")
+        .append(counters.targetColorAcquisitionSources)
         .append(",target_color_pending_replacements=")
         .append(counters.targetColorPendingReplacements)
         .append(",target_color_reject_canvas=").append(counters.targetColorRejectCanvas)
@@ -1324,6 +1330,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(counters.physicalVariantUniqueFullKeys)
         .append(",physical_variant_unique_no_surface_size_keys=")
         .append(counters.physicalVariantUniqueNoSurfaceSizeKeys)
+        .append(",physical_variant_unique_sources=")
+        .append(counters.physicalVariantUniqueSources)
         .append(",physical_variant_pending_replacements=")
         .append(counters.physicalVariantPendingReplacements)
         .append(",physical_variant_reject_canvas=").append(counters.physicalVariantRejectCanvas)
@@ -1442,6 +1450,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long targetColorUniqueNoDestinationKeys = diagnosticMetric(2);
     final long targetColorUniqueIntrinsicKeys = diagnosticMetric(3);
     final long targetColorPendingReplacements = diagnosticMetric(4);
+    final long targetColorAcquisitionSources = diagnosticMetric(5);
     final long targetColorRejectCanvas = diagnosticMetric(8);
     final long targetColorRejectSurface = diagnosticMetric(9);
     final long targetColorRejectClip = diagnosticMetric(10);
@@ -1451,6 +1460,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long physicalVariantUniqueFullKeys = diagnosticMetric(16);
     final long physicalVariantUniqueNoSurfaceSizeKeys = diagnosticMetric(17);
     final long physicalVariantPendingReplacements = diagnosticMetric(18);
+    final long physicalVariantUniqueSources = diagnosticMetric(19);
     final long physicalVariantRejectCanvas = diagnosticMetric(24);
     final long physicalVariantRejectSurface = diagnosticMetric(25);
     final long physicalVariantRejectClip = diagnosticMetric(26);

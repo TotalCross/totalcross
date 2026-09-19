@@ -79,6 +79,7 @@ uint64_t physicalVariantMaterializationsForTest;
 uint64_t physicalVariantEvictionsForTest;
 uint64_t physicalVariantBytesForTest;
 std::set<uint64_t> targetColorUniqueSourcesForTest;
+std::set<uint64_t> targetColorUniqueAcquisitionSourcesForTest;
 std::set<uint64_t> targetColorUniqueFullKeysForTest;
 std::set<uint64_t> targetColorUniqueNoDestinationKeysForTest;
 std::set<uint64_t> targetColorUniqueIntrinsicKeysForTest;
@@ -86,6 +87,7 @@ uint64_t targetColorPendingReplacementsForTest;
 uint64_t targetColorRejectionsForTest[SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST];
 std::set<uint64_t> physicalVariantUniqueFullKeysForTest;
 std::set<uint64_t> physicalVariantUniqueNoSurfaceSizeKeysForTest;
+std::set<uint64_t> physicalVariantUniqueSourcesForTest;
 uint64_t physicalVariantPendingReplacementsForTest;
 uint64_t physicalVariantRejectionsForTest[SKIA_RASTER_REJECT_REASON_COUNT_FOR_TEST];
 uint64_t sharedSlotTargetToPhysicalForTest;
@@ -154,6 +156,19 @@ uint64_t rasterVariantIntrinsicKeyHash(
     return hash;
 }
 
+uint64_t rasterSourceDiagnosticIdentity(
+        const skia_image_backing_internal::NativeImageBackingRecord* source) {
+    return static_cast<uint64_t>(reinterpret_cast<uintptr_t>(source));
+}
+
+uint64_t sourceScopedRasterVariantKeyHash(
+        const skia_image_backing_internal::NativeImageBackingRecord* source,
+        uint64_t keyHash) {
+    return diagnosticHash(
+        diagnosticHash(UINT64_C(0xcbf29ce484222325), rasterSourceDiagnosticIdentity(source)),
+        keyHash);
+}
+
 void recordRasterVariantIdentityForTest(
         skia_image_backing_internal::NativeImageBackingRecord* source,
         const skia_image_backing_internal::RasterVariantKey& key) {
@@ -162,17 +177,19 @@ void recordRasterVariantIdentityForTest(
     }
     const bool physical = key.kind == skia_image_backing_internal::RASTER_VARIANT_PHYSICAL;
     if (physical) {
-        physicalVariantUniqueFullKeysForTest.insert(rasterVariantKeyHash(key, false, false));
+        physicalVariantUniqueSourcesForTest.insert(rasterSourceDiagnosticIdentity(source));
+        physicalVariantUniqueFullKeysForTest.insert(
+            sourceScopedRasterVariantKeyHash(source, rasterVariantKeyHash(key, false, false)));
         physicalVariantUniqueNoSurfaceSizeKeysForTest.insert(
-            rasterVariantKeyHash(key, false, true));
+            sourceScopedRasterVariantKeyHash(source, rasterVariantKeyHash(key, false, true)));
     } else {
-        targetColorUniqueSourcesForTest.insert(diagnosticHash(
-            diagnosticHash(reinterpret_cast<uintptr_t>(source), key.sourceGeneration),
-            key.sourceDecodeGeneration));
-        targetColorUniqueFullKeysForTest.insert(rasterVariantKeyHash(key, false, false));
+        targetColorUniqueAcquisitionSourcesForTest.insert(rasterSourceDiagnosticIdentity(source));
+        targetColorUniqueFullKeysForTest.insert(
+            sourceScopedRasterVariantKeyHash(source, rasterVariantKeyHash(key, false, false)));
         targetColorUniqueNoDestinationKeysForTest.insert(
-            rasterVariantKeyHash(key, true, false));
-        targetColorUniqueIntrinsicKeysForTest.insert(rasterVariantIntrinsicKeyHash(key));
+            sourceScopedRasterVariantKeyHash(source, rasterVariantKeyHash(key, true, false)));
+        targetColorUniqueIntrinsicKeysForTest.insert(
+            sourceScopedRasterVariantKeyHash(source, rasterVariantIntrinsicKeyHash(key)));
     }
 }
 
@@ -1175,6 +1192,12 @@ void recordTargetColorAttemptForTest() {
     }
 }
 
+void recordTargetColorSourceForTest(NativeImageBackingRecord* source) {
+    if (backingAccountingForTest && source) {
+        targetColorUniqueSourcesForTest.insert(rasterSourceDiagnosticIdentity(source));
+    }
+}
+
 void recordTargetColorFallbackForTest() {
     if (backingAccountingForTest) {
         ++targetColorFallbacksForTest;
@@ -1923,6 +1946,7 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     genericGeometryDrawsForTest = 0;
     smoothResampleDrawsForTest = 0;
     targetColorUniqueSourcesForTest.clear();
+    targetColorUniqueAcquisitionSourcesForTest.clear();
     targetColorUniqueFullKeysForTest.clear();
     targetColorUniqueNoDestinationKeysForTest.clear();
     targetColorUniqueIntrinsicKeysForTest.clear();
@@ -1931,6 +1955,7 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
               std::end(targetColorRejectionsForTest), 0);
     physicalVariantUniqueFullKeysForTest.clear();
     physicalVariantUniqueNoSurfaceSizeKeysForTest.clear();
+    physicalVariantUniqueSourcesForTest.clear();
     physicalVariantPendingReplacementsForTest = 0;
     std::fill(std::begin(physicalVariantRejectionsForTest),
               std::end(physicalVariantRejectionsForTest), 0);
@@ -2053,6 +2078,7 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
         physicalVariantEvictionsForTest = 0;
         physicalVariantBytesForTest = 0;
         targetColorUniqueSourcesForTest.clear();
+        targetColorUniqueAcquisitionSourcesForTest.clear();
         targetColorUniqueFullKeysForTest.clear();
         targetColorUniqueNoDestinationKeysForTest.clear();
         targetColorUniqueIntrinsicKeysForTest.clear();
@@ -2061,6 +2087,7 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
                   std::end(targetColorRejectionsForTest), 0);
         physicalVariantUniqueFullKeysForTest.clear();
         physicalVariantUniqueNoSurfaceSizeKeysForTest.clear();
+        physicalVariantUniqueSourcesForTest.clear();
         physicalVariantPendingReplacementsForTest = 0;
         std::fill(std::begin(physicalVariantRejectionsForTest),
                   std::end(physicalVariantRejectionsForTest), 0);
@@ -2349,12 +2376,16 @@ int64_t diagnosticMetricForTest(int32 kind) {
         return static_cast<int64_t>(targetColorUniqueIntrinsicKeysForTest.size());
     case 4:
         return static_cast<int64_t>(targetColorPendingReplacementsForTest);
+    case 5:
+        return static_cast<int64_t>(targetColorUniqueAcquisitionSourcesForTest.size());
     case 16:
         return static_cast<int64_t>(physicalVariantUniqueFullKeysForTest.size());
     case 17:
         return static_cast<int64_t>(physicalVariantUniqueNoSurfaceSizeKeysForTest.size());
     case 18:
         return static_cast<int64_t>(physicalVariantPendingReplacementsForTest);
+    case 19:
+        return static_cast<int64_t>(physicalVariantUniqueSourcesForTest.size());
     case 32:
         return static_cast<int64_t>(sharedSlotTargetToPhysicalForTest);
     case 33:

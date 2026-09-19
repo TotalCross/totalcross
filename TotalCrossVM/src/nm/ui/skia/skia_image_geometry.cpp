@@ -1048,6 +1048,7 @@ static GeometryDrawResult drawTargetColorVariant(const SkiaImageDrawPlanData* pl
         return GEOMETRY_NOT_HANDLED;
     }
     skia_image_backing_internal::recordTargetColorAttemptForTest();
+    skia_image_backing_internal::recordTargetColorSourceForTest(source);
     SkPixmap targetPixels;
     if (!canvas || !canvas->peekPixels(&targetPixels)
         || !targetColorTypeSupported(targetPixels.colorType())) {
