@@ -30,6 +30,13 @@ From the extracted bundle directory, run the full suite with:
 python3 run-benchmark.py --phase full
 ```
 
+The scroll CSV keeps `frame_time_ns` as the paced interval between frame
+starts. The active-work columns measure the same frame's work region:
+`scroll_work_ns` covers `scrollContent`, `paint_work_ns` covers
+`repaintNow()`, and `work_time_ns` covers both operations. JPEG deltas in that
+row are captured around the same region. Run summaries and `summary.csv`
+include P50/P95/P99/MAX work and paint aggregates.
+
 The full phase runs the 126-process scroll matrix and aggregation, then the
 90-process decode matrix and aggregation, and finally writes one combined ZIP
 under `results/`. The decode matrix covers five acquisition/order/size
@@ -45,6 +52,19 @@ reject counts. Detailed reject reasons, phase-separated `jpegDecode` data, and
 feature statuses remain in each run's `counters.json`. Attempt-based features
 use `NOT_REACHED`, `ATTEMPTED_NO_HIT`, or `EXERCISED` in addition to
 `DISABLED`.
+
+For the writePixels policy experiment, use the focused scroll-only profile:
+
+```sh
+python3 run-benchmark.py --profile write-pixels-policy --phase matrix
+```
+
+It plans exactly two rounds over masks `0, 4, 2, 6, 32795, 32799`, with
+prefetch off/on, for 24 processes. Pairwise control/enabled results are
+written to `results/write-pixels-policy-comparison.csv`; contradictory work
+P50 directions across the two rounds are marked `INCONCLUSIVE_VARIANCE`.
+This profile is intended for writePixels policy work and does not run the
+standalone decode matrix.
 
 For package checks without either full matrix, `--phase self-test` validates
 the bundle and `--phase smokes` runs the four scroll smoke processes. Decode

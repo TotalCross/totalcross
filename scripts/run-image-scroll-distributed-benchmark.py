@@ -36,10 +36,20 @@ MASKS = (
     0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
     4096, 8192, 16384, 32768, 32799, 40991, 49183, 57375,
 )
+WRITE_PIXELS_POLICY_MASKS = (0, 4, 2, 6, 32795, 32799)
 PREFETCH_PROFILES = ("off", "on")
 ROUNDS = 3
 SEED = 73001
 EXPECTED_PROCESSES = len(MASKS) * len(PREFETCH_PROFILES) * ROUNDS
+PROFILES = {
+    "full": (MASKS, ROUNDS, EXPECTED_PROCESSES),
+    "write-pixels-policy": (
+        WRITE_PIXELS_POLICY_MASKS,
+        2,
+        len(WRITE_PIXELS_POLICY_MASKS) * len(PREFETCH_PROFILES) * 2,
+    ),
+}
+CONTROLLED_PAIRS = ((0, 4), (2, 6), (32795, 32799))
 PROCESS_TIMEOUT_SECONDS = 180
 FIXTURE = "ImageScrollRealWorkloadBenchmarkApp"
 FNV_OFFSET = 0xCBF29CE484222325
@@ -47,7 +57,9 @@ FNV_PRIME = 0x100000001B3
 TEMPORAL_SUMMARY_FIELDS = (
     "uiBuildElapsedNs", "prefetchElapsedNs", "durationNs",
     "frameTimeP50Ns", "frameTimeP90Ns", "frameTimeP95Ns", "frameTimeP99Ns",
-    "frameTimeMaxNs", "largestStallNs",
+    "frameTimeMaxNs", "workTimeP50Ns", "workTimeP95Ns", "workTimeP99Ns",
+    "workTimeMaxNs", "paintTimeP50Ns", "paintTimeP95Ns", "paintTimeP99Ns",
+    "paintTimeMaxNs", "largestStallNs",
 )
 FRAME_THRESHOLD_COUNT_FIELDS = (
     "framesOver16_67Count", "framesOver33_3Count",
@@ -55,6 +67,7 @@ FRAME_THRESHOLD_COUNT_FIELDS = (
 )
 FRAME_FIELDS = (
     "frame_index", "elapsed_ns", "frame_time_ns", "scroll_value",
+    "scroll_work_ns", "paint_work_ns", "work_time_ns",
     "jpeg_decode_count", "jpeg_decode_ns", "jpeg_full_count", "jpeg_full_ns",
     "jpeg_half_count", "jpeg_half_ns", "jpeg_quarter_count", "jpeg_quarter_ns",
     "jpeg_eighth_count", "jpeg_eighth_ns", "jpeg_other_count", "jpeg_other_ns",
@@ -80,6 +93,19 @@ class BenchmarkFailure(RuntimeError):
 def require(condition, message):
     if not condition:
         raise BenchmarkFailure(message)
+
+
+def profile_config(name):
+    try:
+        masks, rounds, expected_processes = PROFILES[name]
+    except KeyError as error:
+        raise BenchmarkFailure(f"unknown benchmark profile: {name}") from error
+    return {
+        "name": name,
+        "masks": masks,
+        "rounds": rounds,
+        "expected_processes": expected_processes,
+    }
 
 
 def load_manifest(bundle):
@@ -378,7 +404,9 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
         "ui_build_elapsed_ns", "prefetch_elapsed_ns", "elapsed_total_ns",
         "frame_time_min_ns", "frame_time_p90_ns", "frame_time_p50_ns",
         "frame_time_p95_ns", "frame_time_p99_ns", "frame_time_max_ns",
-        "largest_stall_ns",
+        "work_time_p50_ns", "work_time_p95_ns", "work_time_p99_ns",
+        "work_time_max_ns", "paint_time_p50_ns", "paint_time_p95_ns",
+        "paint_time_p99_ns", "paint_time_max_ns", "largest_stall_ns",
     ):
         require_record_ns(pass_record, field, f"{field} in pass record")
     for field in (
@@ -398,9 +426,16 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
             require(len(row) == len(FRAME_FIELDS), f"invalid row in {frames_path}")
             require_nonnegative_ns(int(row[1]), f"{frames_path} elapsed_ns")
             require_nonnegative_ns(int(row[2]), f"{frames_path} frame_time_ns")
-            for index in (4, 6, 8, 10, 12, 14):
+            require_nonnegative_ns(int(row[4]), f"{frames_path} scroll_work_ns")
+            require_nonnegative_ns(int(row[5]), f"{frames_path} paint_work_ns")
+            require_nonnegative_ns(int(row[6]), f"{frames_path} work_time_ns")
+            require(int(row[6]) >= int(row[4]),
+                    f"{frames_path} work_time_ns is less than scroll_work_ns")
+            require(int(row[6]) >= int(row[5]),
+                    f"{frames_path} work_time_ns is less than paint_work_ns")
+            for index in (7, 9, 11, 13, 15, 17):
                 require_nonnegative_count(int(row[index]), f"{frames_path} {FRAME_FIELDS[index]}")
-            for index in (5, 7, 9, 11, 13, 15):
+            for index in (8, 10, 12, 14, 16, 18):
                 require_nonnegative_ns(int(row[index]), f"{frames_path} {FRAME_FIELDS[index]}")
 
     for path, expected_fields in (
@@ -557,42 +592,42 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, la
     return summary
 
 
-def lcg_permutation(round_number):
-    combinations = list(range(len(MASKS) * len(PREFETCH_PROFILES)))
+def lcg_permutation(round_number, masks):
+    combinations = list(range(len(masks) * len(PREFETCH_PROFILES)))
     state = (SEED + 0x9E3779B97F4A7C15 * (round_number + 1)) & 0xFFFFFFFFFFFFFFFF
     for index in range(len(combinations) - 1, 0, -1):
         state = (state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
         swap = (state >> 1) % (index + 1)
         combinations[index], combinations[swap] = combinations[swap], combinations[index]
     return tuple(
-        (MASKS[combination // 2], PREFETCH_PROFILES[combination % 2])
+        (masks[combination // 2], PREFETCH_PROFILES[combination % 2])
         for combination in combinations
     )
 
 
-def write_suite_plan(output):
+def write_suite_plan(output, masks, rounds, expected_processes):
     lines = ["round\torder\trun\tmask\tprefetch"]
     planned = []
     order = 0
-    for round_number in range(ROUNDS):
-        for mask, prefetch in lcg_permutation(round_number):
+    for round_number in range(rounds):
+        for mask, prefetch in lcg_permutation(round_number, masks):
             run = round_number + 1
             lines.append(f"{run}\t{order}\t{run}\t{mask}\t{prefetch}")
             planned.append((round_number, order, run, mask, prefetch))
             order += 1
-    require(len(planned) == EXPECTED_PROCESSES,
-            f"suite plan does not contain {EXPECTED_PROCESSES} processes")
+    require(len(planned) == expected_processes,
+            f"suite plan does not contain {expected_processes} processes")
     combination_counts = {}
     for _, _, _, mask, prefetch in planned:
         key = (mask, prefetch)
         combination_counts[key] = combination_counts.get(key, 0) + 1
     require(set(combination_counts) == {
-        (mask, prefetch) for mask in MASKS for prefetch in PREFETCH_PROFILES
+        (mask, prefetch) for mask in masks for prefetch in PREFETCH_PROFILES
     }, "suite plan combinations differ")
-    require(all(count == ROUNDS for count in combination_counts.values()),
-            "suite plan does not contain three runs per combination")
+    require(all(count == rounds for count in combination_counts.values()),
+            f"suite plan does not contain {rounds} runs per combination")
     require(len({(run, mask, prefetch) for _, _, run, mask, prefetch in planned})
-            == EXPECTED_PROCESSES, "suite plan contains duplicate runs")
+            == expected_processes, "suite plan contains duplicate runs")
     (output / "suite-plan.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
     return planned
 
@@ -606,8 +641,8 @@ def require_smokes_completed(output, corpus_digest):
         validate_run_artifacts(output, log_path, mask, prefetch, 0, corpus_digest)
 
 
-def run_matrix(bundle, manifest, output, corpus_digest):
-    plan = write_suite_plan(output)
+def run_matrix(bundle, manifest, output, corpus_digest, masks, rounds, expected_processes):
+    plan = write_suite_plan(output, masks, rounds, expected_processes)
     completed = 0
     for _, _, run, mask, prefetch in plan:
         run_process(
@@ -615,13 +650,116 @@ def run_matrix(bundle, manifest, output, corpus_digest):
             f"matrix-{run}-{mask}-{prefetch}",
         )
         completed += 1
-        print(f"matrix progress={completed}/{EXPECTED_PROCESSES}")
-    require(completed == EXPECTED_PROCESSES,
-            f"matrix did not complete {EXPECTED_PROCESSES} processes")
+        print(f"matrix progress={completed}/{expected_processes}")
+    require(completed == expected_processes,
+            f"matrix did not complete {expected_processes} processes")
     return plan
 
 
-def aggregate(output, plan):
+def delta_percent(control, enabled):
+    if control == 0:
+        return None
+    return round((enabled - control) * 100.0 / control, 6)
+
+
+def direction(delta):
+    if delta < 0:
+        return "improvement"
+    if delta > 0:
+        return "regression"
+    return "no-change"
+
+
+def write_pairwise_comparison(output, records, masks, rounds):
+    for control, enabled in CONTROLLED_PAIRS:
+        require(control in masks and enabled in masks,
+                f"focused profile lacks controlled pair {control}->{enabled}")
+    by_key = {(record["mask"], record["prefetch"], record["run"]): record
+              for record in records}
+    fields = [
+        "pair", "control_mask", "enabled_mask", "prefetch", "run", "variance_status",
+        "control_work_p50_ns", "enabled_work_p50_ns", "work_p50_delta_ns",
+        "work_p50_delta_pct", "control_work_p95_ns", "enabled_work_p95_ns",
+        "work_p95_delta_ns", "work_p95_delta_pct", "control_paint_p50_ns",
+        "enabled_paint_p50_ns", "paint_p50_delta_ns", "paint_p50_delta_pct",
+        "control_paint_p95_ns", "enabled_paint_p95_ns", "paint_p95_delta_ns",
+        "paint_p95_delta_pct",
+    ]
+    rows = []
+    for control, enabled in CONTROLLED_PAIRS:
+        for prefetch in PREFETCH_PROFILES:
+            pair_records = []
+            for run in range(1, rounds + 1):
+                control_record = by_key.get((control, prefetch, run))
+                enabled_record = by_key.get((enabled, prefetch, run))
+                require(control_record is not None and enabled_record is not None,
+                        f"missing controlled pair {control}->{enabled},"
+                        f" prefetch={prefetch},run={run}")
+                work_delta = (enabled_record["work_time_p50_ns"]
+                              - control_record["work_time_p50_ns"])
+                pair_records.append(work_delta)
+            directions = {direction(delta) for delta in pair_records}
+            variance_status = ("INCONCLUSIVE_VARIANCE" if len(directions) > 1
+                               else "CONSISTENT_DIRECTION")
+            for run in range(1, rounds + 1):
+                control_record = by_key[(control, prefetch, run)]
+                enabled_record = by_key[(enabled, prefetch, run)]
+                work_p50_delta = (enabled_record["work_time_p50_ns"]
+                                  - control_record["work_time_p50_ns"])
+                work_p95_delta = (enabled_record["work_time_p95_ns"]
+                                  - control_record["work_time_p95_ns"])
+                paint_p50_delta = (enabled_record["paint_time_p50_ns"]
+                                   - control_record["paint_time_p50_ns"])
+                paint_p95_delta = (enabled_record["paint_time_p95_ns"]
+                                   - control_record["paint_time_p95_ns"])
+                rows.append({
+                    "pair": f"{control}->{enabled}",
+                    "control_mask": control,
+                    "enabled_mask": enabled,
+                    "prefetch": prefetch,
+                    "run": run,
+                    "variance_status": variance_status,
+                    "control_work_p50_ns": control_record["work_time_p50_ns"],
+                    "enabled_work_p50_ns": enabled_record["work_time_p50_ns"],
+                    "work_p50_delta_ns": work_p50_delta,
+                    "work_p50_delta_pct": delta_percent(
+                        control_record["work_time_p50_ns"],
+                        enabled_record["work_time_p50_ns"],
+                    ),
+                    "control_work_p95_ns": control_record["work_time_p95_ns"],
+                    "enabled_work_p95_ns": enabled_record["work_time_p95_ns"],
+                    "work_p95_delta_ns": work_p95_delta,
+                    "work_p95_delta_pct": delta_percent(
+                        control_record["work_time_p95_ns"],
+                        enabled_record["work_time_p95_ns"],
+                    ),
+                    "control_paint_p50_ns": control_record["paint_time_p50_ns"],
+                    "enabled_paint_p50_ns": enabled_record["paint_time_p50_ns"],
+                    "paint_p50_delta_ns": paint_p50_delta,
+                    "paint_p50_delta_pct": delta_percent(
+                        control_record["paint_time_p50_ns"],
+                        enabled_record["paint_time_p50_ns"],
+                    ),
+                    "control_paint_p95_ns": control_record["paint_time_p95_ns"],
+                    "enabled_paint_p95_ns": enabled_record["paint_time_p95_ns"],
+                    "paint_p95_delta_ns": paint_p95_delta,
+                    "paint_p95_delta_pct": delta_percent(
+                        control_record["paint_time_p95_ns"],
+                        enabled_record["paint_time_p95_ns"],
+                    ),
+                })
+    path = output / "write-pixels-policy-comparison.csv"
+    with path.open("w", newline="", encoding="utf-8") as destination:
+        writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    require(len(rows) == len(CONTROLLED_PAIRS) * len(PREFETCH_PROFILES) * rounds,
+            "pairwise comparison row count differs")
+    print(f"pairwise comparison passed,path={path},rows={len(rows)}")
+    return path
+
+
+def aggregate(output, plan, masks, rounds, expected_processes, profile_name):
     records = []
     for _, order, run, mask, prefetch in plan:
         path = expected_run_dir(output, mask, prefetch, run) / "summary.json"
@@ -655,6 +793,14 @@ def aggregate(output, plan):
             "frame_p95_ns": summary["frameTimeP95Ns"],
             "frame_p99_ns": summary["frameTimeP99Ns"],
             "frame_max_ns": summary["frameTimeMaxNs"],
+            "work_time_p50_ns": summary["workTimeP50Ns"],
+            "work_time_p95_ns": summary["workTimeP95Ns"],
+            "work_time_p99_ns": summary["workTimeP99Ns"],
+            "work_time_max_ns": summary["workTimeMaxNs"],
+            "paint_time_p50_ns": summary["paintTimeP50Ns"],
+            "paint_time_p95_ns": summary["paintTimeP95Ns"],
+            "paint_time_p99_ns": summary["paintTimeP99Ns"],
+            "paint_time_max_ns": summary["paintTimeMaxNs"],
             "frames_over_16_67_count": summary["framesOver16_67Count"],
             "frames_over_33_3_count": summary["framesOver33_3Count"],
             "frames_over_50_count": summary["framesOver50Count"],
@@ -665,13 +811,13 @@ def aggregate(output, plan):
             "memory_peak_resident_bytes": summary["memoryPeakResidentBytes"],
             **diagnostics,
         })
-    require(len(records) == EXPECTED_PROCESSES,
-            f"aggregation did not find {EXPECTED_PROCESSES} summaries")
+    require(len(records) == expected_processes,
+            f"aggregation did not find {expected_processes} summaries")
     rows = []
     for prefetch in PREFETCH_PROFILES:
         baseline = [record for record in records
                     if record["prefetch"] == prefetch and record["mask"] == 0]
-        require(len(baseline) == ROUNDS, f"missing mask zero baseline for {prefetch}")
+        require(len(baseline) == rounds, f"missing mask zero baseline for {prefetch}")
         baseline_p50 = sum(record["frame_p50_ns"] for record in baseline) // len(baseline)
         baseline_p95 = sum(record["frame_p95_ns"] for record in baseline) // len(baseline)
         for record in records:
@@ -687,6 +833,9 @@ def aggregate(output, plan):
     fields = [
         "order", "run", "prefetch", "mask", "status", "frame_count", "frame_p50_ns",
         "frame_p90_ns", "frame_p95_ns", "frame_p99_ns", "frame_max_ns",
+        "work_time_p50_ns", "work_time_p95_ns", "work_time_p99_ns", "work_time_max_ns",
+        "paint_time_p50_ns", "paint_time_p95_ns", "paint_time_p99_ns",
+        "paint_time_max_ns",
         "frames_over_16_67_count", "frames_over_33_3_count", "frames_over_50_count",
         "frames_over_100_count", "largest_stall_ns", "largest_consecutive_over_33_3",
         "prefetch_elapsed_ns", "memory_peak_resident_bytes",
@@ -699,11 +848,13 @@ def aggregate(output, plan):
         writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(sorted(rows, key=lambda row: (row["run"], row["prefetch"], row["mask"])))
-    require(sum(1 for row in rows if row["mask"] == 0 and row["prefetch"] == "off") == ROUNDS,
+    require(sum(1 for row in rows if row["mask"] == 0 and row["prefetch"] == "off") == rounds,
             "aggregated off baselines are incomplete")
-    require(sum(1 for row in rows if row["mask"] == 0 and row["prefetch"] == "on") == ROUNDS,
+    require(sum(1 for row in rows if row["mask"] == 0 and row["prefetch"] == "on") == rounds,
             "aggregated on baselines are incomplete")
     print(f"aggregation passed,summary={path},rows={len(rows)}")
+    if profile_name == "write-pixels-policy":
+        write_pairwise_comparison(output, records, masks, rounds)
     return path
 
 
@@ -729,11 +880,14 @@ def run_decode_phase(bundle, phase):
             f"decode {phase} phase failed with exit code {completed.returncode}")
 
 
-def run_phase(bundle, phase):
+def run_phase(bundle, phase, profile_name):
     if phase in ("decode-self-test", "decode-smokes"):
         decode_phase = "self-test" if phase == "decode-self-test" else "smokes"
         run_decode_phase(bundle, decode_phase)
         return
+    profile = profile_config(profile_name)
+    if phase == "full":
+        require(profile_name == "full", "full phase requires the full profile")
     manifest = load_manifest(bundle)
     output = bundle / "results"
     if phase in ("self-test", "full"):
@@ -754,8 +908,14 @@ def run_phase(bundle, phase):
         if phase == "smokes":
             return
     require_smokes_completed(output, corpus_digest)
-    plan = run_matrix(bundle, manifest, output, corpus_digest)
-    aggregate(output, plan)
+    plan = run_matrix(
+        bundle, manifest, output, corpus_digest, profile["masks"], profile["rounds"],
+        profile["expected_processes"],
+    )
+    aggregate(
+        output, plan, profile["masks"], profile["rounds"], profile["expected_processes"],
+        profile_name,
+    )
     if phase == "full":
         run_decode_phase(bundle, "full")
     write_zip(bundle, output)
@@ -772,10 +932,14 @@ def main(argv):
                             "decode-self-test", "decode-smokes"), default="full",
         help="run one fail-fast phase; full includes scroll and decode matrices",
     )
+    parser.add_argument(
+        "--profile", choices=tuple(PROFILES), default="full",
+        help="scroll matrix profile (default: full)",
+    )
     args = parser.parse_args(argv[1:])
     bundle = args.bundle.expanduser().resolve()
     require(bundle.is_dir(), f"bundle directory not found: {bundle}")
-    run_phase(bundle, args.phase)
+    run_phase(bundle, args.phase, args.profile)
     return 0
 
 
