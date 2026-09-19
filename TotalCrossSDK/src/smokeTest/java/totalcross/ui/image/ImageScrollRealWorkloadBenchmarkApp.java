@@ -796,6 +796,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void writeEnvironment() throws Exception {
+    long targetWidth = Image.nativeMetricForBenchmarkTest(9);
+    long targetHeight = Image.nativeMetricForBenchmarkTest(10);
+    long targetRowBytes = Image.nativeMetricForBenchmarkTest(8);
+    long targetAlphaType = Image.nativeMetricForBenchmarkTest(7);
+    long targetColorType = Image.nativeMetricForBenchmarkTest(6);
+    long targetColorClass = Image.nativeMetricForBenchmarkTest(12);
+    long kN32ColorType = Image.nativeMetricForBenchmarkTest(11);
+    long rendererBackend = Image.nativeMetricForBenchmarkTest(13);
     String json = "{\n"
         + "  \"os\":\"" + escapeJson(Settings.platform) + "\",\n"
         + "  \"osVersion\":\"unavailable\",\n"
@@ -817,15 +825,18 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"density\":" + Settings.screenDensity + ",\n"
         + "  \"systemDisplayScale\":null,\n"
         + "  \"refreshRate\":null,\n"
-        + "  \"sdlDrawableWidth\":null,\n"
-        + "  \"sdlDrawableHeight\":null,\n"
-        + "  \"skiaSurfaceWidth\":null,\n"
-        + "  \"skiaSurfaceHeight\":null,\n"
-        + "  \"rendererBackend\":\"unavailable\",\n"
-        + "  \"kN32SkColorType\":null,\n"
-        + "  \"skiaSurfaceColorType\":null,\n"
-        + "  \"skiaSurfaceAlphaType\":null,\n"
-        + "  \"skiaSurfaceRowBytes\":null,\n"
+        + "  \"sdlDrawableWidth\":" + jsonMetric(targetWidth) + ",\n"
+        + "  \"sdlDrawableHeight\":" + jsonMetric(targetHeight) + ",\n"
+        + "  \"skiaSurfaceWidth\":" + jsonMetric(targetWidth) + ",\n"
+        + "  \"skiaSurfaceHeight\":" + jsonMetric(targetHeight) + ",\n"
+        + "  \"rendererBackend\":\"" + rendererBackendName(rendererBackend) + "\",\n"
+        + "  \"accounting\":\"" + accountingProfile + "\",\n"
+        + "  \"kN32SkColorType\":" + jsonMetric(kN32ColorType) + ",\n"
+        + "  \"skiaSurfaceColorType\":" + jsonMetric(targetColorType) + ",\n"
+        + "  \"skiaSurfaceColorClassification\":\""
+        + targetColorClassification(targetColorClass) + "\",\n"
+        + "  \"skiaSurfaceAlphaType\":" + jsonMetric(targetAlphaType) + ",\n"
+        + "  \"skiaSurfaceRowBytes\":" + jsonMetric(targetRowBytes) + ",\n"
         + "  \"totalCrossVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"sdkVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"benchmarkVersion\":\"1\",\n"
@@ -859,6 +870,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private static String jsonMetric(long value) {
     return value < 0 ? "null" : String.valueOf(value);
+  }
+
+  private static String rendererBackendName(long value) {
+    return value == 1 ? "software" : value == 2 ? "gpu" : "unavailable";
+  }
+
+  private static String targetColorClassification(long value) {
+    return value == 1 ? "BGRA8888" : value == 2 ? "RGB565" : value == 0 ? "OTHER" : "unavailable";
   }
 
   private void writeRunSummary(PassResult result) throws Exception {

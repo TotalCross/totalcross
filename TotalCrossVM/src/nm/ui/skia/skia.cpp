@@ -333,24 +333,48 @@ int32 colorType(uint32 pixelformat) {
 #endif
 
 int64_t skia_benchmark_native_metric(int32 kind) {
-    if (!surface) {
-        return -1;
+    const auto readMetric = [kind](const SkImageInfo& info) -> int64_t {
+        switch (kind) {
+        case 0:
+            return static_cast<int64_t>(info.colorType());
+        case 1:
+            return static_cast<int64_t>(info.alphaType());
+        case 2:
+            return static_cast<int64_t>(info.minRowBytes());
+        case 3:
+            return static_cast<int64_t>(info.width());
+        case 4:
+            return static_cast<int64_t>(info.height());
+        case 5:
+            return static_cast<int64_t>(kN32_SkColorType);
+        case 6:
+            if (info.colorType() == kBGRA_8888_SkColorType) {
+                return 1;
+            }
+            if (info.colorType() == kRGB_565_SkColorType) {
+                return 2;
+            }
+            return 0;
+        default:
+            return -1;
+        }
+    };
+    if (kind == 7) {
+#if TC_GRAPHICS_SOFTWARE
+        return 1;
+#elif TC_GRAPHICS_GLES
+        return 2;
+#else
+        return 0;
+#endif
     }
-    const SkImageInfo info = surface->imageInfo();
-    switch (kind) {
-    case 0:
-        return static_cast<int64_t>(info.colorType());
-    case 1:
-        return static_cast<int64_t>(info.alphaType());
-    case 2:
-        return static_cast<int64_t>(info.minRowBytes());
-    case 3:
-        return static_cast<int64_t>(info.width());
-    case 4:
-        return static_cast<int64_t>(info.height());
-    case 5:
-        return static_cast<int64_t>(kN32_SkColorType);
-    default:
-        return -1;
+    if (surface) {
+        return readMetric(surface->imageInfo());
     }
+#if TC_GRAPHICS_SOFTWARE
+    if (bitmap.width() > 0 && bitmap.height() > 0) {
+        return readMetric(bitmap.info());
+    }
+#endif
+    return -1;
 }
