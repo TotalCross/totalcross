@@ -551,8 +551,15 @@ def validate_structural_diagnostics(counters, run_dir, mask):
             counter_value(counters, key, f"{run_dir} {key}") for key in reject_keys
         )
         if mask & bit:
-            require(attempts > 0 or measured_rejects > 0,
+            require(attempts > 0,
                     f"{run_dir} mask {mask} did not exercise {attempts_key}")
+            if bit in (8192, 32768):
+                mapping_root_to_device = counter_value(
+                    counters, f"{attempts_key[:-8]}MappingRootToDevice",
+                    f"{run_dir} root-to-device mapping rejects for {attempts_key}",
+                )
+                require(mapping_root_to_device < attempts,
+                        f"{run_dir} mask {mask} remains 100% root-to-device rejects for {attempts_key}")
         else:
             require(attempts == 0 and measured_rejects == 0,
                     f"{run_dir} mask {mask} exercised disabled raster path {attempts_key}")
