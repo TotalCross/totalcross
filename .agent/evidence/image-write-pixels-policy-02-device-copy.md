@@ -19,3 +19,17 @@ SPDX-License-Identifier: LGPL-2.1-only
   execution has run for Plan 2.
 - Next milestone: implement the shared device-space planner and regular-path
   accounting in `skia_image_backing.cpp`.
+
+## 2026-09-18 — Milestone 1 implementation
+
+- Revision: `5e9540d70` (`perf(skia): enable device space write pixels`).
+- Implemented one device-space positive scale+translate planner for regular
+  `writePixels()` paths, with explicit device clip and source-subset mapping.
+- Added regular attempts, hits, fallbacks, copied-byte, and clipped-hit
+  counters through the native bridge and benchmark JSON/CSV validation.
+- Checks passed: focused copyright-header validation, `git diff --check`,
+  staged whitespace validation, Python AST parsing, and commit-message
+  validation.
+- Deferred by plan: native macOS build/tests, SDK build, package/self-test,
+  focused smoke matrix, and the 24-process benchmark.
+- Next milestone: native correctness tests and macOS ARM64 validation.

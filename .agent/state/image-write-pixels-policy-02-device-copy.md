@@ -8,12 +8,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Plan 2 bootstrap is complete; Milestone 1 is next.
+- Milestone 1 implementation is complete; Milestone 2 is active.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Plan 1 closure revision: `8ab1c6b28a6238c2e2aea53afcd6103bfc46d45b`.
 - Plan 2 specification revision: `9594720fa`.
-- Next action: inspect the existing regular writePixels planner and counters,
-  then implement one device-space planner for diagnostics and execution.
+- Next action: add the native correctness matrix for regular device-space
+  copies, then build and run the macOS ARM64 native test gate.
 
 ## Working set
 
@@ -45,7 +45,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - [x] Verify Plan 1 closure and commit the Plan 2 specification.
 - [x] Create Plan 2 bootstrap state and evidence.
-- [ ] Milestone 1: implement the device-space policy and regular counters.
+- [x] Milestone 1: implement the device-space policy and regular counters.
 - [ ] Milestone 2: add native clipping/transform tests and run focused smokes.
 - [ ] Milestone 3: run the focused macOS matrix and close the plan.
 
@@ -53,10 +53,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Bootstrap checks: branch, Plan 1 closure, Plan 2 specification, headers,
   size, and staged whitespace.
+- Milestone 1 commit: `5e9540d70`.
+- Milestone 1 checks: focused copyright-header validation, `git diff --check`,
+  staged whitespace validation, Python AST parsing for the benchmark runner,
+  and commit-message validation.
 - No SDK/native build, native smoke, package, or 24-process benchmark has run
-  for Plan 2.
-- The first implementation commit must use static/header/whitespace checks
-  only; native validation begins at the Milestone 2 gate.
+  for Plan 2; native validation begins at the Milestone 2 gate.
 - Preserve verbose validation logs outside tracked source and record compact
   paths/results here and in the append-only evidence file.
 
