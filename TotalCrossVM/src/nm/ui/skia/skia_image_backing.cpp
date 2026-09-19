@@ -92,7 +92,15 @@ uint64_t sharedSlotTargetToPhysicalForTest;
 uint64_t sharedSlotPhysicalToTargetForTest;
 uint64_t sharedPendingTargetToPhysicalForTest;
 uint64_t sharedPendingPhysicalToTargetForTest;
+uint64_t targetColorSaveCountBucketsForTest[6];
+uint64_t physicalVariantSaveCountBucketsForTest[6];
 uint64_t physicalIdentitySaveCountBucketsForTest[6];
+uint64_t targetColorMappingSubreasonsForTest[
+    SKIA_RASTER_MAPPING_REJECT_REASON_COUNT_FOR_TEST];
+uint64_t physicalVariantMappingSubreasonsForTest[
+    SKIA_RASTER_MAPPING_REJECT_REASON_COUNT_FOR_TEST];
+uint64_t physicalIdentityMappingSubreasonsForTest[
+    SKIA_RASTER_MAPPING_REJECT_REASON_COUNT_FOR_TEST];
 uint64_t backingBytesLiveByFormatForTest[4];
 uint64_t backingBytesPeakByFormatForTest[4];
 uint64_t compactDirectDecodeCountForTest;
@@ -136,6 +144,16 @@ uint64_t rasterVariantKeyHash(const skia_image_backing_internal::RasterVariantKe
     return hash;
 }
 
+uint64_t rasterVariantIntrinsicKeyHash(
+        const skia_image_backing_internal::RasterVariantKey& key) {
+    uint64_t hash = UINT64_C(0xcbf29ce484222325);
+    hash = diagnosticHash(hash, key.sourceGeneration);
+    hash = diagnosticHash(hash, key.sourceDecodeGeneration);
+    hash = diagnosticHash(hash,
+                          static_cast<uint64_t>(static_cast<int64_t>(key.targetColorType)));
+    return hash;
+}
+
 void recordRasterVariantIdentityForTest(
         skia_image_backing_internal::NativeImageBackingRecord* source,
         const skia_image_backing_internal::RasterVariantKey& key) {
@@ -154,7 +172,7 @@ void recordRasterVariantIdentityForTest(
         targetColorUniqueFullKeysForTest.insert(rasterVariantKeyHash(key, false, false));
         targetColorUniqueNoDestinationKeysForTest.insert(
             rasterVariantKeyHash(key, true, false));
-        targetColorUniqueIntrinsicKeysForTest.insert(rasterVariantKeyHash(key, true, true));
+        targetColorUniqueIntrinsicKeysForTest.insert(rasterVariantIntrinsicKeyHash(key));
     }
 }
 
@@ -1183,12 +1201,43 @@ void recordPhysicalVariantRejectionForTest(int32 reason) {
     }
 }
 
-void recordPhysicalIdentitySaveCountForTest(int32 saveCount) {
-    if (!backingAccountingForTest) {
+static void recordSaveCountForTest(uint64_t* buckets, int32 saveCount) {
+    if (!backingAccountingForTest || !buckets) {
         return;
     }
     const int32 bucket = saveCount <= 0 ? 0 : saveCount >= 5 ? 5 : saveCount;
-    ++physicalIdentitySaveCountBucketsForTest[bucket];
+    ++buckets[bucket];
+}
+
+void recordTargetColorSaveCountForTest(int32 saveCount) {
+    recordSaveCountForTest(targetColorSaveCountBucketsForTest, saveCount);
+}
+
+void recordPhysicalVariantSaveCountForTest(int32 saveCount) {
+    recordSaveCountForTest(physicalVariantSaveCountBucketsForTest, saveCount);
+}
+
+void recordPhysicalIdentitySaveCountForTest(int32 saveCount) {
+    recordSaveCountForTest(physicalIdentitySaveCountBucketsForTest, saveCount);
+}
+
+static void recordMappingSubreasonForTest(uint64_t* counters, int32 reason) {
+    if (backingAccountingForTest && counters && reason >= 0
+        && reason < SKIA_RASTER_MAPPING_REJECT_REASON_COUNT_FOR_TEST) {
+        ++counters[reason];
+    }
+}
+
+void recordTargetColorMappingSubreasonForTest(int32 reason) {
+    recordMappingSubreasonForTest(targetColorMappingSubreasonsForTest, reason);
+}
+
+void recordPhysicalVariantMappingSubreasonForTest(int32 reason) {
+    recordMappingSubreasonForTest(physicalVariantMappingSubreasonsForTest, reason);
+}
+
+void recordPhysicalIdentityMappingSubreasonForTest(int32 reason) {
+    recordMappingSubreasonForTest(physicalIdentityMappingSubreasonsForTest, reason);
 }
 
 static SkImageInfo testRasterInfo(int32 width, int32 height, int32 colorType) {
@@ -1275,18 +1324,12 @@ RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVa
         source->pendingRasterVariant = true;
         source->pendingRasterVariantKey = key;
         source->pendingRasterVariantObservations = 1;
-        if (backingAccountingForTest && !physical) {
-            ++targetColorFallbacksForTest;
-        }
         return RASTER_VARIANT_OBSERVED;
     }
     sk_sp<SkImage> candidate = materializer();
     if (!candidate) {
         source->pendingRasterVariant = false;
         source->pendingRasterVariantObservations = 0;
-        if (backingAccountingForTest && !physical) {
-            ++targetColorFallbacksForTest;
-        }
         return RASTER_VARIANT_FAILED;
     }
     if (backingAccountingForTest && source->rasterVariant.valid) {
@@ -1895,8 +1938,18 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
     sharedSlotPhysicalToTargetForTest = 0;
     sharedPendingTargetToPhysicalForTest = 0;
     sharedPendingPhysicalToTargetForTest = 0;
+    std::fill(std::begin(targetColorSaveCountBucketsForTest),
+              std::end(targetColorSaveCountBucketsForTest), 0);
+    std::fill(std::begin(physicalVariantSaveCountBucketsForTest),
+              std::end(physicalVariantSaveCountBucketsForTest), 0);
     std::fill(std::begin(physicalIdentitySaveCountBucketsForTest),
               std::end(physicalIdentitySaveCountBucketsForTest), 0);
+    std::fill(std::begin(targetColorMappingSubreasonsForTest),
+              std::end(targetColorMappingSubreasonsForTest), 0);
+    std::fill(std::begin(physicalVariantMappingSubreasonsForTest),
+              std::end(physicalVariantMappingSubreasonsForTest), 0);
+    std::fill(std::begin(physicalIdentityMappingSubreasonsForTest),
+              std::end(physicalIdentityMappingSubreasonsForTest), 0);
     if (!backingAccountingForTest) {
         return;
     }
@@ -2015,8 +2068,18 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
         sharedSlotPhysicalToTargetForTest = 0;
         sharedPendingTargetToPhysicalForTest = 0;
         sharedPendingPhysicalToTargetForTest = 0;
+        std::fill(std::begin(targetColorSaveCountBucketsForTest),
+                  std::end(targetColorSaveCountBucketsForTest), 0);
+        std::fill(std::begin(physicalVariantSaveCountBucketsForTest),
+                  std::end(physicalVariantSaveCountBucketsForTest), 0);
         std::fill(std::begin(physicalIdentitySaveCountBucketsForTest),
                   std::end(physicalIdentitySaveCountBucketsForTest), 0);
+        std::fill(std::begin(targetColorMappingSubreasonsForTest),
+                  std::end(targetColorMappingSubreasonsForTest), 0);
+        std::fill(std::begin(physicalVariantMappingSubreasonsForTest),
+                  std::end(physicalVariantMappingSubreasonsForTest), 0);
+        std::fill(std::begin(physicalIdentityMappingSubreasonsForTest),
+                  std::end(physicalIdentityMappingSubreasonsForTest), 0);
     }
 }
 
@@ -2258,7 +2321,22 @@ int64_t diagnosticMetricForTest(int32 kind) {
         return static_cast<int64_t>(physicalVariantRejectionsForTest[kind - 24]);
     }
     if (kind >= 40 && kind < 46) {
-        return static_cast<int64_t>(physicalIdentitySaveCountBucketsForTest[kind - 40]);
+        return static_cast<int64_t>(targetColorSaveCountBucketsForTest[kind - 40]);
+    }
+    if (kind >= 48 && kind < 54) {
+        return static_cast<int64_t>(physicalVariantSaveCountBucketsForTest[kind - 48]);
+    }
+    if (kind >= 56 && kind < 62) {
+        return static_cast<int64_t>(physicalIdentitySaveCountBucketsForTest[kind - 56]);
+    }
+    if (kind >= 64 && kind < 74) {
+        return static_cast<int64_t>(targetColorMappingSubreasonsForTest[kind - 64]);
+    }
+    if (kind >= 80 && kind < 90) {
+        return static_cast<int64_t>(physicalVariantMappingSubreasonsForTest[kind - 80]);
+    }
+    if (kind >= 96 && kind < 106) {
+        return static_cast<int64_t>(physicalIdentityMappingSubreasonsForTest[kind - 96]);
     }
     switch (kind) {
     case 0:

@@ -108,28 +108,44 @@ DIAGNOSTIC_SUMMARY_FIELDS = (
     "write_pixels_regular_fallbacks", "write_pixels_regular_copied_bytes",
     "write_pixels_regular_clipped_hits",
 )
+SAVE_COUNT_BUCKETS = ("0", "1", "2", "3", "4", "5OrMore")
+MAPPING_SUBREASONS = (
+    "CompileGeometry", "MatrixInversion", "RootToDevice", "DestinationAxis",
+    "DestinationFractional", "SourceMapping", "ValidRoot", "UnsupportedTransform",
+    "ExplicitClip", "VisibleMapping",
+)
 POLICY_DIAGNOSTIC_COUNTERS = (
     "physicalIdentityRejectCanvas", "physicalIdentityRejectSurface",
-    "physicalIdentityRejectClip", "physicalIdentityRejectPartial",
+    "physicalIdentityRejectClip",
     "physicalIdentityRejectMapping", "physicalIdentityRejectBacking",
     "physicalIdentityRejectExecution", "targetColorUniqueSources",
     "targetColorFallbacks", "targetColorConvertedBytes",
     "targetColorUniqueFullKeys", "targetColorUniqueNoDestinationKeys",
     "targetColorUniqueIntrinsicKeys", "targetColorPendingReplacements",
     "targetColorRejectCanvas", "targetColorRejectSurface", "targetColorRejectClip",
-    "targetColorRejectPartial", "targetColorRejectMapping", "targetColorRejectBacking",
+    "targetColorRejectMapping", "targetColorRejectBacking",
     "targetColorRejectExecution", "physicalVariantUniqueFullKeys",
     "physicalVariantUniqueNoSurfaceSizeKeys", "physicalVariantPendingReplacements",
     "physicalVariantEvictions",
     "physicalVariantRejectCanvas", "physicalVariantRejectSurface",
-    "physicalVariantRejectClip", "physicalVariantRejectPartial",
+    "physicalVariantRejectClip",
     "physicalVariantRejectMapping", "physicalVariantRejectBacking",
     "physicalVariantRejectExecution", "sharedSlotTargetToPhysical",
     "sharedSlotPhysicalToTarget", "sharedPendingTargetToPhysical",
-    "sharedPendingPhysicalToTarget", "physicalIdentitySaveCount0",
-    "physicalIdentitySaveCount1", "physicalIdentitySaveCount2",
-    "physicalIdentitySaveCount3", "physicalIdentitySaveCount4",
-    "physicalIdentitySaveCount5OrMore",
+    "sharedPendingPhysicalToTarget",
+)
+POLICY_DIAGNOSTIC_COUNTERS += tuple(
+    f"{feature}SaveCount{bucket}"
+    for feature in ("targetColor", "physicalVariant")
+    for bucket in SAVE_COUNT_BUCKETS
+)
+POLICY_DIAGNOSTIC_COUNTERS += tuple(
+    f"physicalIdentitySaveCount{bucket}" for bucket in SAVE_COUNT_BUCKETS
+)
+POLICY_DIAGNOSTIC_COUNTERS += tuple(
+    f"{feature}Mapping{subreason}"
+    for feature in ("targetColor", "physicalVariant", "physicalIdentity")
+    for subreason in MAPPING_SUBREASONS
 )
 MEMORY_FIELDS = (
     "checkpoint", "elapsed_ns", "current_resident_bytes", "peak_resident_bytes",

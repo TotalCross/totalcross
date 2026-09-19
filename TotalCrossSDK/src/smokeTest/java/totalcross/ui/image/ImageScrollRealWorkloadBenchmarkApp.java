@@ -42,6 +42,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       "DIAGNOSTIC_ACCOUNTING", "RASTER_TARGET_COLORTYPE_CONVERSION",
       "RASTER_PHYSICAL_VARIANT_CACHE", "RASTER_PHYSICAL_IDENTITY_FOLDING"
   };
+  private static final String[] SAVE_COUNT_BUCKET_NAMES = {
+      "0", "1", "2", "3", "4", "5OrMore"
+  };
+  private static final String[] MAPPING_SUBREASON_NAMES = {
+      "CompileGeometry", "MatrixInversion", "RootToDevice", "DestinationAxis",
+      "DestinationFractional", "SourceMapping", "ValidRoot", "UnsupportedTransform",
+      "ExplicitClip", "VisibleMapping"
+  };
 
   private ScrollContainer mainContainer;
   private ScrollContainer scroll;
@@ -326,6 +334,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private static long diagnosticMetric(int kind) {
     return NativeImageBacking.benchmarkMetricForTest(100 + kind);
+  }
+
+  private static long[] diagnosticMetrics(int firstKind, int count) {
+    long[] values = new long[count];
+    for (int i = 0; i < count; i++) {
+      values[i] = diagnosticMetric(firstKind + i);
+    }
+    return values;
   }
 
   private void captureTargetMetrics() {
@@ -1033,7 +1049,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendCounter(json, "physicalIdentityRejectCanvas", counters.physicalIdentityRejectCanvas, true);
     appendCounter(json, "physicalIdentityRejectSurface", counters.physicalIdentityRejectSurface, true);
     appendCounter(json, "physicalIdentityRejectClip", counters.physicalIdentityRejectClip, true);
-    appendCounter(json, "physicalIdentityRejectPartial", counters.physicalIdentityRejectPartial, true);
     appendCounter(json, "physicalIdentityRejectMapping", counters.physicalIdentityRejectMapping, true);
     appendCounter(json, "physicalIdentityRejectBacking", counters.physicalIdentityRejectBacking, true);
     appendCounter(json, "physicalIdentityRejectExecution", counters.physicalIdentityRejectExecution, true);
@@ -1048,7 +1063,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendCounter(json, "targetColorRejectCanvas", counters.targetColorRejectCanvas, true);
     appendCounter(json, "targetColorRejectSurface", counters.targetColorRejectSurface, true);
     appendCounter(json, "targetColorRejectClip", counters.targetColorRejectClip, true);
-    appendCounter(json, "targetColorRejectPartial", counters.targetColorRejectPartial, true);
     appendCounter(json, "targetColorRejectMapping", counters.targetColorRejectMapping, true);
     appendCounter(json, "targetColorRejectBacking", counters.targetColorRejectBacking, true);
     appendCounter(json, "targetColorRejectExecution", counters.targetColorRejectExecution, true);
@@ -1060,7 +1074,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendCounter(json, "physicalVariantRejectCanvas", counters.physicalVariantRejectCanvas, true);
     appendCounter(json, "physicalVariantRejectSurface", counters.physicalVariantRejectSurface, true);
     appendCounter(json, "physicalVariantRejectClip", counters.physicalVariantRejectClip, true);
-    appendCounter(json, "physicalVariantRejectPartial", counters.physicalVariantRejectPartial, true);
     appendCounter(json, "physicalVariantRejectMapping", counters.physicalVariantRejectMapping, true);
     appendCounter(json, "physicalVariantRejectBacking", counters.physicalVariantRejectBacking, true);
     appendCounter(json, "physicalVariantRejectExecution",
@@ -1071,13 +1084,18 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         counters.sharedPendingTargetToPhysical, true);
     appendCounter(json, "sharedPendingPhysicalToTarget",
         counters.sharedPendingPhysicalToTarget, true);
-    appendCounter(json, "physicalIdentitySaveCount0", counters.physicalIdentitySaveCount0, true);
-    appendCounter(json, "physicalIdentitySaveCount1", counters.physicalIdentitySaveCount1, true);
-    appendCounter(json, "physicalIdentitySaveCount2", counters.physicalIdentitySaveCount2, true);
-    appendCounter(json, "physicalIdentitySaveCount3", counters.physicalIdentitySaveCount3, true);
-    appendCounter(json, "physicalIdentitySaveCount4", counters.physicalIdentitySaveCount4, true);
-    appendCounter(json, "physicalIdentitySaveCount5OrMore",
-        counters.physicalIdentitySaveCount5OrMore, true);
+    appendDiagnosticMetrics(json, "targetColorSaveCount", SAVE_COUNT_BUCKET_NAMES,
+        counters.targetColorSaveCount);
+    appendDiagnosticMetrics(json, "physicalVariantSaveCount", SAVE_COUNT_BUCKET_NAMES,
+        counters.physicalVariantSaveCount);
+    appendDiagnosticMetrics(json, "physicalIdentitySaveCount", SAVE_COUNT_BUCKET_NAMES,
+        counters.physicalIdentitySaveCount);
+    appendDiagnosticMetrics(json, "targetColorMapping", MAPPING_SUBREASON_NAMES,
+        counters.targetColorMappingSubreasons);
+    appendDiagnosticMetrics(json, "physicalVariantMapping", MAPPING_SUBREASON_NAMES,
+        counters.physicalVariantMappingSubreasons);
+    appendDiagnosticMetrics(json, "physicalIdentityMapping", MAPPING_SUBREASON_NAMES,
+        counters.physicalIdentityMappingSubreasons);
     appendCounter(json, "backingLiveBytes", counters.backingLiveBytes, true);
     appendCounter(json, "backingPeakBytes", counters.backingPeakBytes, true);
     json.append("  \"features\":{\n");
@@ -1118,6 +1136,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static void appendCounter(StringBuilder json, String name, long value, boolean comma) {
     json.append("  \"").append(name).append("\":").append(value)
         .append(comma ? ",\n" : "\n");
+  }
+
+  private static void appendDiagnosticMetrics(StringBuilder json, String prefix,
+      String[] names, long[] values) {
+    for (int i = 0; i < names.length; i++) {
+      appendCounter(json, prefix + names[i], values[i], true);
+    }
   }
 
   private static void appendJpegDecodeSection(StringBuilder json, String name, Counters counters,
@@ -1292,7 +1317,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(",target_color_reject_canvas=").append(counters.targetColorRejectCanvas)
         .append(",target_color_reject_surface=").append(counters.targetColorRejectSurface)
         .append(",target_color_reject_clip=").append(counters.targetColorRejectClip)
-        .append(",target_color_reject_partial=").append(counters.targetColorRejectPartial)
         .append(",target_color_reject_mapping=").append(counters.targetColorRejectMapping)
         .append(",target_color_reject_backing=").append(counters.targetColorRejectBacking)
         .append(",target_color_reject_execution=").append(counters.targetColorRejectExecution)
@@ -1305,7 +1329,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(",physical_variant_reject_canvas=").append(counters.physicalVariantRejectCanvas)
         .append(",physical_variant_reject_surface=").append(counters.physicalVariantRejectSurface)
         .append(",physical_variant_reject_clip=").append(counters.physicalVariantRejectClip)
-        .append(",physical_variant_reject_partial=").append(counters.physicalVariantRejectPartial)
         .append(",physical_variant_reject_mapping=").append(counters.physicalVariantRejectMapping)
         .append(",physical_variant_reject_backing=").append(counters.physicalVariantRejectBacking)
         .append(",physical_variant_reject_execution=")
@@ -1316,13 +1339,27 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(counters.sharedPendingTargetToPhysical)
         .append(",shared_pending_physical_to_target=")
         .append(counters.sharedPendingPhysicalToTarget)
-        .append(",physical_identity_save_count_0=").append(counters.physicalIdentitySaveCount0)
-        .append(",physical_identity_save_count_1=").append(counters.physicalIdentitySaveCount1)
-        .append(",physical_identity_save_count_2=").append(counters.physicalIdentitySaveCount2)
-        .append(",physical_identity_save_count_3=").append(counters.physicalIdentitySaveCount3)
-        .append(",physical_identity_save_count_4=").append(counters.physicalIdentitySaveCount4)
-        .append(",physical_identity_save_count_5_or_more=")
-        .append(counters.physicalIdentitySaveCount5OrMore);
+        .append(",physical_identity_save_count_diagnostics=separate_by_feature");
+    appendDiagnosticDetails(details, "target_color_save_count_", SAVE_COUNT_BUCKET_NAMES,
+        counters.targetColorSaveCount);
+    appendDiagnosticDetails(details, "physical_variant_save_count_", SAVE_COUNT_BUCKET_NAMES,
+        counters.physicalVariantSaveCount);
+    appendDiagnosticDetails(details, "physical_identity_save_count_", SAVE_COUNT_BUCKET_NAMES,
+        counters.physicalIdentitySaveCount);
+    appendDiagnosticDetails(details, "target_color_mapping_", MAPPING_SUBREASON_NAMES,
+        counters.targetColorMappingSubreasons);
+    appendDiagnosticDetails(details, "physical_variant_mapping_", MAPPING_SUBREASON_NAMES,
+        counters.physicalVariantMappingSubreasons);
+    appendDiagnosticDetails(details, "physical_identity_mapping_", MAPPING_SUBREASON_NAMES,
+        counters.physicalIdentityMappingSubreasons);
+  }
+
+  private static void appendDiagnosticDetails(StringBuilder details, String prefix,
+      String[] names, long[] values) {
+    for (int i = 0; i < names.length; i++) {
+      details.append(",").append(prefix).append(names[i].toLowerCase()).append("=")
+          .append(values[i]);
+    }
   }
 
   private static final class Counters {
@@ -1386,7 +1423,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long physicalIdentityRejectCanvas = NativeImageBacking.physicalIdentityRejectionCountForTest(0);
     final long physicalIdentityRejectSurface = NativeImageBacking.physicalIdentityRejectionCountForTest(1);
     final long physicalIdentityRejectClip = NativeImageBacking.physicalIdentityRejectionCountForTest(2);
-    final long physicalIdentityRejectPartial = NativeImageBacking.physicalIdentityRejectionCountForTest(3);
     final long physicalIdentityRejectMapping = NativeImageBacking.physicalIdentityRejectionCountForTest(4);
     final long physicalIdentityRejectBacking = NativeImageBacking.physicalIdentityRejectionCountForTest(5);
     final long physicalIdentityRejectExecution = NativeImageBacking.physicalIdentityRejectionCountForTest(6);
@@ -1409,7 +1445,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long targetColorRejectCanvas = diagnosticMetric(8);
     final long targetColorRejectSurface = diagnosticMetric(9);
     final long targetColorRejectClip = diagnosticMetric(10);
-    final long targetColorRejectPartial = diagnosticMetric(11);
     final long targetColorRejectMapping = diagnosticMetric(12);
     final long targetColorRejectBacking = diagnosticMetric(13);
     final long targetColorRejectExecution = diagnosticMetric(14);
@@ -1419,7 +1454,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long physicalVariantRejectCanvas = diagnosticMetric(24);
     final long physicalVariantRejectSurface = diagnosticMetric(25);
     final long physicalVariantRejectClip = diagnosticMetric(26);
-    final long physicalVariantRejectPartial = diagnosticMetric(27);
     final long physicalVariantRejectMapping = diagnosticMetric(28);
     final long physicalVariantRejectBacking = diagnosticMetric(29);
     final long physicalVariantRejectExecution = diagnosticMetric(30);
@@ -1427,12 +1461,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long sharedSlotPhysicalToTarget = diagnosticMetric(33);
     final long sharedPendingTargetToPhysical = diagnosticMetric(34);
     final long sharedPendingPhysicalToTarget = diagnosticMetric(35);
-    final long physicalIdentitySaveCount0 = diagnosticMetric(40);
-    final long physicalIdentitySaveCount1 = diagnosticMetric(41);
-    final long physicalIdentitySaveCount2 = diagnosticMetric(42);
-    final long physicalIdentitySaveCount3 = diagnosticMetric(43);
-    final long physicalIdentitySaveCount4 = diagnosticMetric(44);
-    final long physicalIdentitySaveCount5OrMore = diagnosticMetric(45);
+    final long[] targetColorSaveCount = diagnosticMetrics(40, 6);
+    final long[] physicalVariantSaveCount = diagnosticMetrics(48, 6);
+    final long[] physicalIdentitySaveCount = diagnosticMetrics(56, 6);
+    final long[] targetColorMappingSubreasons = diagnosticMetrics(64, 10);
+    final long[] physicalVariantMappingSubreasons = diagnosticMetrics(80, 10);
+    final long[] physicalIdentityMappingSubreasons = diagnosticMetrics(96, 10);
     final long genericGeometryDraws = NativeImageBacking.genericGeometryDrawsForTest();
     final long smoothResampleDraws = NativeImageBacking.smoothResampleDrawsForTest();
     final long backingLiveBytes = NativeImageBacking.backingBytesLiveForTest();
@@ -1494,7 +1528,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           + ",physical_identity_reject_canvas=" + physicalIdentityRejectCanvas
           + ",physical_identity_reject_surface=" + physicalIdentityRejectSurface
           + ",physical_identity_reject_clip=" + physicalIdentityRejectClip
-          + ",physical_identity_reject_partial=" + physicalIdentityRejectPartial
           + ",physical_identity_reject_mapping=" + physicalIdentityRejectMapping
           + ",physical_identity_reject_backing=" + physicalIdentityRejectBacking
           + ",physical_identity_reject_execution=" + physicalIdentityRejectExecution

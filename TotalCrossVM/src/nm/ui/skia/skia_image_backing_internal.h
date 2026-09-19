@@ -112,7 +112,12 @@ void recordTargetColorFallbackForTest();
 void recordPhysicalVariantEvictionForTest();
 void recordTargetColorRejectionForTest(int32 reason);
 void recordPhysicalVariantRejectionForTest(int32 reason);
+void recordTargetColorSaveCountForTest(int32 saveCount);
+void recordPhysicalVariantSaveCountForTest(int32 saveCount);
 void recordPhysicalIdentitySaveCountForTest(int32 saveCount);
+void recordTargetColorMappingSubreasonForTest(int32 reason);
+void recordPhysicalVariantMappingSubreasonForTest(int32 reason);
+void recordPhysicalIdentityMappingSubreasonForTest(int32 reason);
 int64_t diagnosticMetricForTest(int32 kind);
 
 enum RasterVariantUse : uint8_t {
