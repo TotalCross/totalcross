@@ -1890,6 +1890,7 @@ void skia_image_backing_release(int64_t handle) {
         }
         auto found = backings.find(handle);
         if (found != backings.end()) {
+            skia_forget_known_rectangular_clip(found->second->canvas());
             recordBackingReleased(*found->second);
             backings.erase(found);
         }

@@ -420,6 +420,7 @@ static bool directApplyColor2(NativeImageBackingRecord* source, int32 parameter1
             return false;
         }
         source->image = std::move(image);
+        skia_forget_known_rectangular_clip(source->canvas());
         source->surface.reset();
         skia_image_backing_internal::markMutated(source);
         return true;
@@ -463,6 +464,7 @@ int skia_image_backing_apply_color_mutation(int64_t handle, int32 operation, int
             return 0;
         }
         source->image = std::move(image);
+        skia_forget_known_rectangular_clip(source->canvas());
         source->surface.reset();
         skia_image_backing_internal::markMutated(source);
         return 1;

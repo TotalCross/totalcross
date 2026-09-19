@@ -129,6 +129,10 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
         return newId;
     }
 
+    if (imageSurfaces[static_cast<size_t>(id)]) {
+        skia_forget_known_rectangular_clip(
+            imageSurfaces[static_cast<size_t>(id)]->canvas.get());
+    }
     imageSurfaces[static_cast<size_t>(id)] = std::move(imageSurface);
     return id;
 }

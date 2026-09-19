@@ -199,6 +199,7 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 
 void destroySkiaScreen()
 {
+    skia_forget_known_rectangular_clip(canvas);
 #if TC_GRAPHICS_SOFTWARE
     delete canvas;
 #endif

@@ -166,12 +166,12 @@ static bool testBoldStyle(const char* fontPath) {
 
 static bool expectBackingPixel(int64_t handle, int32 x, int32 y, Pixel expected,
                                const char* message) {
-    Pixel row[8] = {};
-    if (!skia_image_backing_read_argb_rows(handle, row, y, x + 1, 1)) {
+    std::vector<Pixel> row(static_cast<size_t>(x) + 1);
+    if (!skia_image_backing_read_argb_rows(handle, row.data(), y, x + 1, 1)) {
         std::fprintf(stderr, "%s: unable to read backing pixel\n", message);
         return false;
     }
-    const Pixel actual = row[x];
+    const Pixel actual = row[static_cast<size_t>(x)];
     if (actual == expected) {
         return true;
     }
@@ -381,29 +381,53 @@ static int64_t createGeometryTestSource() {
     return source;
 }
 
+static int64_t createGeometryTestSolidSource(int width, int height) {
+    const size_t pixelCount = static_cast<size_t>(width) * static_cast<size_t>(height);
+    auto* owned = static_cast<std::uint8_t*>(std::malloc(pixelCount * 4));
+    if (!owned) {
+        return 0;
+    }
+    for (size_t i = 0; i < pixelCount; ++i) {
+        owned[i * 4] = 0x24;
+        owned[i * 4 + 1] = 0x48;
+        owned[i * 4 + 2] = 0x6C;
+        owned[i * 4 + 3] = 0xFF;
+    }
+    const int64_t source = skia_image_backing_create_from_rgba_pixels(owned, width, height);
+    if (source) {
+        skia_image_backing_set_opacity(source, SKIA_IMAGE_OPACITY_OPAQUE);
+    }
+    return source;
+}
+
 static SkiaImageDrawPlanData makeGeometryTestPlan(int64_t source, int32 optimizationMask,
                                                    const int32* operations,
                                                    const int32* parameters,
                                                    const int32* dimensions,
-                                                   double outputContentScale = 1.0) {
+                                                   double outputContentScale = 1.0,
+                                                   int rootWidth = 2, int rootHeight = 2,
+                                                   int rootLogicalWidth = 2,
+                                                   int rootLogicalHeight = 2,
+                                                   double rootContentScale = 1.0,
+                                                   int outputWidth = 2, int outputHeight = 2) {
     SkiaImageDrawPlanData plan{};
     plan.rootHandle = source;
-    plan.rootWidth = 2;
-    plan.rootHeight = 2;
-    plan.rootLogicalWidth = 2;
-    plan.rootLogicalHeight = 2;
+    plan.rootWidth = rootWidth;
+    plan.rootHeight = rootHeight;
+    plan.rootLogicalWidth = rootLogicalWidth;
+    plan.rootLogicalHeight = rootLogicalHeight;
     plan.rootFrameCount = 1;
-    plan.rootWidthOfAllFrames = 2;
-    plan.rootContentScale = 1.0;
+    plan.rootWidthOfAllFrames = rootWidth;
+    plan.rootContentScale = rootContentScale;
     plan.operations = operations;
     plan.parameters = parameters;
     plan.dimensions = dimensions;
     plan.sourceDecodeGeneration = 7;
     plan.operationCount = 1;
-    plan.outputWidth = 2;
-    plan.outputHeight = 2;
+    plan.outputWidth = outputWidth;
+    plan.outputHeight = outputHeight;
     plan.outputFrameCount = 1;
-    plan.outputWidthOfAllFrames = 2;
+    plan.outputWidthOfAllFrames = outputWidth;
     plan.alphaMask = 255;
     plan.materializeAlphaMask = 255;
     plan.outputAlphaMask = 255;
@@ -424,6 +448,38 @@ static bool testRasterGeometryPolicyM3() {
     bool passed = true;
 
     {
+        Pixel firstPixels[4] = { 0xFF102030, 0xFF405060, 0xFF708090, 0xFFA0B0C0 };
+        Pixel replacementPixels[4] = { 0xFFCCDDEE, 0xFFCCDDEE, 0xFFCCDDEE, 0xFFCCDDEE };
+        const int bitmap = skia_makeBitmap(-1, firstPixels, 2, 2);
+        SkCanvas* oldCanvas = bitmap >= 0 ? skiaGetCanvas(bitmap) : nullptr;
+        if (bitmap >= 0) {
+            skia_setClip(bitmap, 0, 0, 1, 1);
+        }
+        const bool registered = oldCanvas && skia_is_known_rectangular_clip(oldCanvas);
+        const bool replaced = bitmap >= 0 && skia_makeBitmap(
+            bitmap, replacementPixels, 2, 2) == bitmap;
+        SkCanvas* newCanvas = bitmap >= 0 ? skiaGetCanvas(bitmap) : nullptr;
+        passed = passed && bitmap >= 0 && registered && replaced && newCanvas
+            && !skia_is_known_rectangular_clip(oldCanvas)
+            && !skia_is_known_rectangular_clip(newCanvas);
+        skia_deleteBitmap(bitmap);
+    }
+
+    {
+        const int64_t backing = skia_image_backing_create_empty_for_test(
+            2, 2, SKIA_TEST_COLOR_BGRA8888);
+        const int surface = skia_image_backing_surface_id(backing);
+        SkCanvas* oldCanvas = skia_image_backing_canvas(backing);
+        if (oldCanvas) {
+            skia_setClip(surface, 0, 0, 1, 1);
+        }
+        const bool registered = oldCanvas && skia_is_known_rectangular_clip(oldCanvas);
+        skia_image_backing_release(backing);
+        passed = passed && backing && surface < 0 && registered
+            && !skia_is_known_rectangular_clip(oldCanvas);
+    }
+
+    {
         const int64_t source = createGeometryTestSource();
         const int64_t target = skia_image_backing_create_empty_for_test(
             4, 4, SKIA_TEST_COLOR_BGRA8888);
@@ -442,6 +498,103 @@ static bool testRasterGeometryPolicyM3() {
                                   "target-color first-position pixel")
             && expectBackingPixel(target, 2, 2, 0xFFA0B0C0,
                                   "target-color moved-position pixel");
+        skia_image_backing_release(source);
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int32 smoothOperations[] = { SKIA_IMAGE_DRAW_SMOOTH_SCALE };
+        const int32 smoothDimensions[] = { 179, 179 };
+        const int64_t source = createGeometryTestSolidSource(1000, 1000);
+        const int64_t target = skia_image_backing_create_empty_for_test(
+            358, 358, SKIA_TEST_COLOR_BGRA8888);
+        const int surface = skia_image_backing_surface_id(target);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 15, smoothOperations, parameters, smoothDimensions, 2.0,
+            1000, 1000, 1000, 1000, 1.0, 179, 179);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->clear(SK_ColorMAGENTA);
+            skia_setSurfaceScale(surface, 2.0);
+            canvas->translate(0.25f, 0.25f);
+        }
+        skia_image_backing_reset_accounting_for_test();
+        const bool fractionalDraw = canvas
+            && skia_image_backing_draw_geometry_to_surface(
+                surface, &plan, 0, 0, 179, 179, 0, 0, 179, 179) != 0;
+        passed = passed && source && target && fractionalDraw
+            && skia_image_backing_physical_identity_attempts_for_test() == 1
+            && skia_image_backing_physical_identity_hits_for_test() == 0
+            && skia_image_backing_physical_identity_fallbacks_for_test() == 1
+            && skia_image_backing_diagnostic_metric(
+                96 + SKIA_RASTER_MAPPING_REJECT_DESTINATION_FRACTIONAL_FOR_TEST) == 1
+            && expectBackingPixel(target, 1, 1, 0xFF24486C,
+                                  "fractional smooth fallback pixel");
+        skia_image_backing_release(source);
+        skia_image_backing_release(target);
+    }
+
+    {
+        const int32 smoothOperations[] = { SKIA_IMAGE_DRAW_SMOOTH_SCALE };
+        const int32 smoothDimensions[] = { 179, 179 };
+        const int64_t source = createGeometryTestSolidSource(1000, 1000);
+        const int64_t target = skia_image_backing_create_empty_for_test(
+            358, 358, SKIA_TEST_COLOR_BGRA8888);
+        const int surface = skia_image_backing_surface_id(target);
+        const SkiaImageDrawPlanData plan = makeGeometryTestPlan(
+            source, 1 << 13, smoothOperations, parameters, smoothDimensions, 2.0,
+            1000, 1000, 1000, 1000, 1.0, 179, 179);
+        SkCanvas* canvas = skia_image_backing_canvas(target);
+        if (canvas) {
+            canvas->clear(SK_ColorMAGENTA);
+            skia_setSurfaceScale(surface, 2.0);
+        }
+        skia_image_backing_reset_accounting_for_test();
+        const bool first = canvas
+            && skia_image_backing_draw_geometry_to_surface(
+                surface, &plan, 0, 0, 179, 179, 0, 0, 179, 179) != 0;
+        const bool second = canvas
+            && skia_image_backing_draw_geometry_to_surface(
+                surface, &plan, 0, 0, 179, 179, 0, 0, 179, 179) != 0;
+        const bool smoothPassed = source && target && first && second
+            && skia_image_backing_target_color_attempts_for_test() == 2
+            && skia_image_backing_target_color_materializations_for_test() == 1
+            && skia_image_backing_target_color_fallbacks_for_test() == 1
+            && skia_image_backing_diagnostic_metric(
+                64 + SKIA_RASTER_MAPPING_REJECT_SOURCE_MAPPING_FOR_TEST) == 0
+            && expectBackingPixel(target, 0, 0, 0xFF24486C,
+                                  "smooth 2x target-color top-left pixel")
+            && expectBackingPixel(target, 357, 357, 0xFF24486C,
+                                  "smooth 2x target-color bottom-right pixel");
+        passed = passed && smoothPassed;
+        const int64_t clippedTarget = skia_image_backing_create_empty_for_test(
+            358, 358, SKIA_TEST_COLOR_BGRA8888);
+        const int clippedSurface = skia_image_backing_surface_id(clippedTarget);
+        SkCanvas* clippedCanvas = skia_image_backing_canvas(clippedTarget);
+        if (clippedCanvas) {
+            clippedCanvas->clear(SK_ColorMAGENTA);
+            skia_setSurfaceScale(clippedSurface, 2.0);
+            skia_setClip(clippedSurface, 0, 0, 179, 179);
+        }
+        skia_image_backing_reset_accounting_for_test();
+        const bool clipped = clippedCanvas
+            && skia_image_backing_draw_geometry_to_surface(
+                clippedSurface, &plan, 0, 0, 179, 179, -1, 0, 178, 179) != 0;
+        if (clippedCanvas) {
+            skia_restoreClip(clippedSurface);
+        }
+        passed = passed && clippedTarget && clippedSurface < 0 && clipped
+            && skia_image_backing_target_color_attempts_for_test() == 1
+            && skia_image_backing_diagnostic_metric(5) == 1
+            && skia_image_backing_target_color_hits_for_test() == 1
+            && skia_image_backing_target_color_fallbacks_for_test() == 0
+            && skia_image_backing_diagnostic_metric(
+                64 + SKIA_RASTER_MAPPING_REJECT_VISIBLE_MAPPING_FOR_TEST) == 0
+            && expectBackingPixel(clippedTarget, 0, 0, 0xFF24486C,
+                                  "fractional clipped smooth fallback pixel")
+            && expectBackingPixel(clippedTarget, 357, 357, 0xFFFF00FF,
+                                  "fractional clipped smooth fallback outside");
+        skia_image_backing_release(clippedTarget);
         skia_image_backing_release(source);
         skia_image_backing_release(target);
     }

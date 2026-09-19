@@ -396,7 +396,15 @@ static bool integerDoubleValue(double value, int32* result) {
         return false;
     }
     const double rounded = std::round(value);
-    if (value != rounded || rounded < std::numeric_limits<int32>::min()
+    // Matrix inversion and device translations use SkScalar floats. Accept a
+    // few float ULPs when the intended boundary is integral; larger fractions
+    // remain fallback cases.
+    const double magnitude = std::max(1.0, std::abs(value));
+    constexpr double kFloatRoundingUlps = 4.0;
+    const double roundingTolerance = kFloatRoundingUlps
+        * static_cast<double>(std::numeric_limits<float>::epsilon()) * magnitude;
+    if (std::abs(value - rounded) > roundingTolerance
+        || rounded < std::numeric_limits<int32>::min()
         || rounded > std::numeric_limits<int32>::max()) {
         return false;
     }
@@ -457,7 +465,8 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
                                     float srcRight, float srcBottom, float dstLeft, float dstTop,
                                     float dstRight, float dstBottom, const SkRect* explicitClip,
                                     RasterPhysicalPlan* result, int32* rejectionReason,
-                                    int32* mappingSubreason) {
+                                    int32* mappingSubreason,
+                                    bool allowFractionalVisibleMapping = false) {
     if (mappingSubreason) {
         *mappingSubreason = -1;
     }
@@ -527,18 +536,15 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
                                         SKIA_RASTER_MAPPING_REJECT_UNSUPPORTED_TRANSFORM_FOR_TEST);
     }
 
-    const SkPoint rootOriginInCanvas = mapPoint(rootToCanvas, 0, 0);
-    const SkPoint rootXInCanvas = mapPoint(rootToCanvas, 1, 0);
-    const SkPoint rootYInCanvas = mapPoint(rootToCanvas, 0, 1);
-    const SkPoint rootOrigin = mapPoint(canvasMatrix, rootOriginInCanvas.fX, rootOriginInCanvas.fY);
-    const SkPoint rootX = mapPoint(canvasMatrix, rootXInCanvas.fX, rootXInCanvas.fY);
-    const SkPoint rootY = mapPoint(canvasMatrix, rootYInCanvas.fX, rootYInCanvas.fY);
-    const double rootToDeviceScaleX = static_cast<double>(rootX.fX - rootOrigin.fX);
-    const double rootToDeviceScaleY = static_cast<double>(rootY.fY - rootOrigin.fY);
-    if (!std::isfinite(rootToDeviceScaleX) || !std::isfinite(rootToDeviceScaleY)
+    const double canvasToRootScaleX = canvasToRoot.getScaleX();
+    const double canvasToRootScaleY = canvasToRoot.getScaleY();
+    const double rootToDeviceScaleX = canvasScaleX / canvasToRootScaleX;
+    const double rootToDeviceScaleY = canvasScaleY / canvasToRootScaleY;
+    if (!std::isfinite(canvasToRootScaleX) || !std::isfinite(canvasToRootScaleY)
+        || !std::isfinite(rootToDeviceScaleX) || !std::isfinite(rootToDeviceScaleY)
         || rootToDeviceScaleX <= 0 || rootToDeviceScaleY <= 0
-        || !exactValue(rootX.fY - rootOrigin.fY, 0)
-        || !exactValue(rootY.fX - rootOrigin.fX, 0)) {
+        || !exactValue(canvasToRoot.getSkewX(), 0)
+        || !exactValue(canvasToRoot.getSkewY(), 0)) {
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST,
                                         mappingSubreason,
@@ -578,14 +584,22 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
                                         mappingSubreason,
                                         SKIA_RASTER_MAPPING_REJECT_DESTINATION_FRACTIONAL_FOR_TEST);
     }
-    const double sourceLeftValue = (static_cast<double>(destinationLeft) - rootOrigin.fX)
-        / rootToDeviceScaleX;
-    const double sourceTopValue = (static_cast<double>(destinationTop) - rootOrigin.fY)
-        / rootToDeviceScaleY;
-    const double sourceRightValue = (static_cast<double>(destinationRight) - rootOrigin.fX)
-        / rootToDeviceScaleX;
-    const double sourceBottomValue = (static_cast<double>(destinationBottom) - rootOrigin.fY)
-        / rootToDeviceScaleY;
+    const double destinationLogicalLeft =
+        (static_cast<double>(destinationLeft) - canvasMatrix.getTranslateX()) / canvasScaleX;
+    const double destinationLogicalTop =
+        (static_cast<double>(destinationTop) - canvasMatrix.getTranslateY()) / canvasScaleY;
+    const double destinationLogicalRight =
+        (static_cast<double>(destinationRight) - canvasMatrix.getTranslateX()) / canvasScaleX;
+    const double destinationLogicalBottom =
+        (static_cast<double>(destinationBottom) - canvasMatrix.getTranslateY()) / canvasScaleY;
+    const double sourceLeftValue = transform.a
+        * (srcLeft + (destinationLogicalLeft - dstLeft) / scaleX) + transform.tx;
+    const double sourceTopValue = transform.d
+        * (srcTop + (destinationLogicalTop - dstTop) / scaleY) + transform.ty;
+    const double sourceRightValue = transform.a
+        * (srcLeft + (destinationLogicalRight - dstLeft) / scaleX) + transform.tx;
+    const double sourceBottomValue = transform.d
+        * (srcTop + (destinationLogicalBottom - dstTop) / scaleY) + transform.ty;
     if (!integerDoubleValue(sourceLeftValue, &sourceLeft)
         || !integerDoubleValue(sourceTopValue, &sourceTop)
         || !integerDoubleValue(sourceRightValue, &sourceRight)
@@ -720,18 +734,22 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
     int32 visibleSourceTop;
     int32 visibleSourceRight;
     int32 visibleSourceBottom;
-    if (!integerDoubleValue(visibleSourceLeftValue, &visibleSourceLeft)
-        || !integerDoubleValue(visibleSourceTopValue, &visibleSourceTop)
-        || !integerDoubleValue(visibleSourceRightValue, &visibleSourceRight)
-        || !integerDoubleValue(visibleSourceBottomValue, &visibleSourceBottom)) {
+    const bool visibleSourceIntegral = integerDoubleValue(visibleSourceLeftValue, &visibleSourceLeft)
+        && integerDoubleValue(visibleSourceTopValue, &visibleSourceTop)
+        && integerDoubleValue(visibleSourceRightValue, &visibleSourceRight)
+        && integerDoubleValue(visibleSourceBottomValue, &visibleSourceBottom);
+    if (!visibleSourceIntegral && !allowFractionalVisibleMapping) {
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST,
                                         mappingSubreason,
                                         SKIA_RASTER_MAPPING_REJECT_VISIBLE_MAPPING_FOR_TEST);
     }
-    if (visibleSourceRight <= visibleSourceLeft || visibleSourceBottom <= visibleSourceTop
-        || visibleSourceLeft < validRootLeft || visibleSourceTop < validRootTop
-        || visibleSourceRight > validRootRight || visibleSourceBottom > validRootBottom) {
+    if (!std::isfinite(visibleSourceLeftValue) || !std::isfinite(visibleSourceTopValue)
+        || !std::isfinite(visibleSourceRightValue) || !std::isfinite(visibleSourceBottomValue)
+        || visibleSourceRightValue <= visibleSourceLeftValue
+        || visibleSourceBottomValue <= visibleSourceTopValue
+        || visibleSourceLeftValue < validRootLeft || visibleSourceTopValue < validRootTop
+        || visibleSourceRightValue > validRootRight || visibleSourceBottomValue > validRootBottom) {
         return rejectRasterPhysicalPlan(rejectionReason,
                                         SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST,
                                         mappingSubreason,
@@ -762,13 +780,13 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
     const float visibleDestinationLogicalBottom = static_cast<float>(dstTop
         + (visibleDestinationBottom - destinationTop) * pixelsPerDestinationY);
     const float visibleSourceLogicalLeft = static_cast<float>(srcLeft
-        + (visibleSourceLeft - sourceLeft) * pixelsPerSourceX);
+        + (visibleSourceLeftValue - sourceLeft) * pixelsPerSourceX);
     const float visibleSourceLogicalTop = static_cast<float>(srcTop
-        + (visibleSourceTop - sourceTop) * pixelsPerSourceY);
+        + (visibleSourceTopValue - sourceTop) * pixelsPerSourceY);
     const float visibleSourceLogicalRight = static_cast<float>(srcLeft
-        + (visibleSourceRight - sourceLeft) * pixelsPerSourceX);
+        + (visibleSourceRightValue - sourceLeft) * pixelsPerSourceX);
     const float visibleSourceLogicalBottom = static_cast<float>(srcTop
-        + (visibleSourceBottom - sourceTop) * pixelsPerSourceY);
+        + (visibleSourceBottomValue - sourceTop) * pixelsPerSourceY);
     if (!std::isfinite(visibleDestinationLogicalLeft)
         || !std::isfinite(visibleDestinationLogicalTop)
         || !std::isfinite(visibleDestinationLogicalRight)
@@ -788,10 +806,12 @@ static bool buildRasterPhysicalPlan(const SkiaImageDrawPlanData* plan, SkCanvas*
                                                 static_cast<float>(fullSourceRight),
                                                 static_cast<float>(fullSourceBottom));
     result->fullDestinationPixels = fullDestination;
-    result->sourcePixels = SkRect::MakeLTRB(static_cast<float>(visibleSourceLeft),
-                                             static_cast<float>(visibleSourceTop),
-                                             static_cast<float>(visibleSourceRight),
-                                             static_cast<float>(visibleSourceBottom));
+    result->sourcePixels = visibleSourceIntegral
+        ? SkRect::MakeLTRB(static_cast<float>(visibleSourceLeft),
+                           static_cast<float>(visibleSourceTop),
+                           static_cast<float>(visibleSourceRight),
+                           static_cast<float>(visibleSourceBottom))
+        : result->fullSourcePixels;
     result->destinationPixels = SkRect::MakeLTRB(static_cast<float>(visibleDestinationLeft),
                                                   static_cast<float>(visibleDestinationTop),
                                                   static_cast<float>(visibleDestinationRight),
@@ -1116,9 +1136,12 @@ static GeometryDrawResult drawTargetColorVariant(const SkiaImageDrawPlanData* pl
     RasterPhysicalPlan physicalPlan;
     int32 rejectionReason = SKIA_RASTER_REJECT_EXECUTION_FAILURE_FOR_TEST;
     int32 mappingSubreason = -1;
+    // Color conversion preserves the source raster; a clipped fractional
+    // source edge can therefore remain in the shader after the full mapping
+    // and bounds proofs above succeed.
     if (!buildRasterPhysicalPlan(plan, canvas, source, srcLeft, srcTop, srcRight, srcBottom,
                                  dstLeft, dstTop, dstRight, dstBottom, explicitClip,
-                                 &physicalPlan, &rejectionReason, &mappingSubreason)) {
+                                 &physicalPlan, &rejectionReason, &mappingSubreason, true)) {
         skia_image_backing_internal::recordTargetColorRejectionForTest(rejectionReason);
         if (rejectionReason == SKIA_RASTER_REJECT_MAPPING_GEOMETRY_FOR_TEST
             && mappingSubreason >= 0) {
@@ -1162,7 +1185,7 @@ static GeometryDrawResult drawTargetColorVariant(const SkiaImageDrawPlanData* pl
         return GEOMETRY_HANDLED_MUTATED;
     }
     GeometryTransform identityTransform = physicalPlan.transform;
-    identityTransform.smooth = false;
+    identityTransform.smooth = physicalPlan.transform.smooth;
     identityTransform.validRoot = physicalPlan.sourcePixels;
     SkiaImageDrawColorFilters colorFilters;
     if (geometryDrawCompiled(canvas, variant.get(), identityTransform,
