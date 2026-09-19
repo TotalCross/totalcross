@@ -120,6 +120,15 @@ TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeIm
 #endif
 }
 
+TC_API void tuiNIB_targetMetricsForBenchmark(NMParams p) // totalcross/ui/image/NativeImageBacking private static long targetMetricsForBenchmarkTestNative();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_benchmark_native_metric(8);
+#else
+   p->retL = -1;
+#endif
+}
+
 TC_API void tuiNIB_resetAccountingTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static void resetAccountingTestNative();
 {
 #if TC_RENDERER_SKIA

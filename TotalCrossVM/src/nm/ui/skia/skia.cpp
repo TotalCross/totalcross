@@ -109,6 +109,12 @@ float __wrap_exp2f(float x) {
 
 sk_sp<SkSurface> surface;
 SkCanvas *canvas;
+int64_t benchmarkTargetColorType = -1;
+int64_t benchmarkTargetAlphaType = -1;
+int64_t benchmarkTargetRowBytes = -1;
+int64_t benchmarkTargetWidth = -1;
+int64_t benchmarkTargetHeight = -1;
+int64_t benchmarkTargetColorClass = -1;
 SkPaint forePaint; // used for contours
 SkPaint backPaint; // used for fills
 SkPaint alphaPaint; // used for alphaMask
@@ -121,6 +127,16 @@ std::vector<std::unique_ptr<SkiaImageSurface>> imageSurfaces;
 
 std::map<std::string, int> typefaceIndexMap;
 
+void recordBenchmarkTargetMetrics(const SkImageInfo& info) {
+    benchmarkTargetColorType = static_cast<int64_t>(info.colorType());
+    benchmarkTargetAlphaType = static_cast<int64_t>(info.alphaType());
+    benchmarkTargetRowBytes = static_cast<int64_t>(info.minRowBytes());
+    benchmarkTargetWidth = static_cast<int64_t>(info.width());
+    benchmarkTargetHeight = static_cast<int64_t>(info.height());
+    benchmarkTargetColorClass = info.colorType() == kBGRA_8888_SkColorType ? 1
+        : info.colorType() == kRGB_565_SkColorType ? 2 : 0;
+}
+
 void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
@@ -130,6 +146,7 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
                                            h,
                                            (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), pixels, pitch);
     canvas = new SkCanvas(bitmap);
+    recordBenchmarkTargetMetrics(bitmap.info());
 #elif TC_GRAPHICS_GLES
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
     // the different OpenGL variants (Core, ES, etc). Most of the code bellow is dedicated to create
@@ -159,6 +176,7 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     // We cache a reference for the surface and canvas for later use.
     surface = gpuSurface;
     canvas = gpuCanvas;
+    recordBenchmarkTargetMetrics(surface->imageInfo());
 #else
     #error "Unsupported graphics backend"
 #endif
@@ -185,6 +203,12 @@ void destroySkiaScreen()
     canvas = nullptr;
     bitmap.reset();
     surface.reset();
+    benchmarkTargetColorType = -1;
+    benchmarkTargetAlphaType = -1;
+    benchmarkTargetRowBytes = -1;
+    benchmarkTargetWidth = -1;
+    benchmarkTargetHeight = -1;
+    benchmarkTargetColorClass = -1;
 }
 
 void flushSkia()
@@ -333,32 +357,24 @@ int32 colorType(uint32 pixelformat) {
 #endif
 
 int64_t skia_benchmark_native_metric(int32 kind) {
-    const auto readMetric = [kind](const SkImageInfo& info) -> int64_t {
-        switch (kind) {
-        case 0:
-            return static_cast<int64_t>(info.colorType());
-        case 1:
-            return static_cast<int64_t>(info.alphaType());
-        case 2:
-            return static_cast<int64_t>(info.minRowBytes());
-        case 3:
-            return static_cast<int64_t>(info.width());
-        case 4:
-            return static_cast<int64_t>(info.height());
-        case 5:
-            return static_cast<int64_t>(kN32_SkColorType);
-        case 6:
-            if (info.colorType() == kBGRA_8888_SkColorType) {
-                return 1;
-            }
-            if (info.colorType() == kRGB_565_SkColorType) {
-                return 2;
-            }
-            return 0;
-        default:
+    if (kind == 8) {
+        if (benchmarkTargetWidth < 0) {
             return -1;
         }
-    };
+        const auto encode = [](int64_t value, int32 bits) -> uint64_t {
+            return value < 0 ? 0 : static_cast<uint64_t>(value + 1)
+                & ((static_cast<uint64_t>(1) << bits) - 1);
+        };
+        const uint64_t packed = encode(benchmarkTargetWidth, 10)
+            | (encode(benchmarkTargetHeight, 10) << 10)
+            | (encode(benchmarkTargetRowBytes, 16) << 20)
+            | (encode(benchmarkTargetColorType, 4) << 36)
+            | (encode(benchmarkTargetAlphaType, 3) << 40)
+            | (encode(kN32_SkColorType, 4) << 43)
+            | (encode(benchmarkTargetColorClass, 2) << 47)
+            | (encode(TC_GRAPHICS_SOFTWARE ? 1 : TC_GRAPHICS_GLES ? 2 : 0, 2) << 49);
+        return static_cast<int64_t>(packed);
+    }
     if (kind == 7) {
 #if TC_GRAPHICS_SOFTWARE
         return 1;
@@ -368,13 +384,22 @@ int64_t skia_benchmark_native_metric(int32 kind) {
         return 0;
 #endif
     }
-    if (surface) {
-        return readMetric(surface->imageInfo());
+    switch (kind) {
+    case 0:
+        return benchmarkTargetColorType;
+    case 1:
+        return benchmarkTargetAlphaType;
+    case 2:
+        return benchmarkTargetRowBytes;
+    case 3:
+        return benchmarkTargetWidth;
+    case 4:
+        return benchmarkTargetHeight;
+    case 5:
+        return static_cast<int64_t>(kN32_SkColorType);
+    case 6:
+        return benchmarkTargetColorClass;
+    default:
+        return -1;
     }
-#if TC_GRAPHICS_SOFTWARE
-    if (bitmap.width() > 0 && bitmap.height() > 0) {
-        return readMetric(bitmap.info());
-    }
-#endif
-    return -1;
 }

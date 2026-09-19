@@ -146,6 +146,10 @@ final class NativeImageBacking extends ImageBacking {
     return backingAccountingEnabledForTest;
   }
 
+  static long targetMetricsForBenchmarkTest() {
+    return targetMetricsForBenchmarkTestNative();
+  }
+
   static long backingRecordsCreatedForTest() {
     return backingCreatedTestNative();
   }
@@ -601,6 +605,11 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private static boolean isAvailableNative() {
     return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long targetMetricsForBenchmarkTestNative() {
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy

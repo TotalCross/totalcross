@@ -1100,6 +1100,10 @@ TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeIm
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_targetMetricsForBenchmark(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long targetMetricsForBenchmarkTestNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_resetAccountingTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void resetAccountingTestNative();
 {
 }

@@ -57,6 +57,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String datasetHashArgument;
   private String prefetchProfile;
   private String accountingProfile;
+  private long benchmarkTargetWidth = -1;
+  private long benchmarkTargetHeight = -1;
+  private long benchmarkTargetRowBytes = -1;
+  private long benchmarkTargetAlphaType = -1;
+  private long benchmarkTargetColorType = -1;
+  private long benchmarkTargetColorClass = -1;
+  private long benchmarkN32ColorType = -1;
+  private long benchmarkRendererBackend = -1;
   private long prefetchElapsedNs;
   private long prefetchRequestCount;
   private long prefetchReadyCount;
@@ -134,6 +142,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
       requireBenchmarkResolution();
       configureMask();
+      captureTargetMetrics();
       Image.resetImageOperationAccountingForBenchmarkTest(accountingEnabled());
       ImagePreparation.resetAccountingForTest();
 
@@ -313,6 +322,26 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private boolean accountingEnabled() {
     return "on".equals(accountingProfile);
+  }
+
+  private void captureTargetMetrics() {
+    long packed = NativeImageBacking.targetMetricsForBenchmarkTest();
+    benchmarkTargetWidth = unpackMetric(packed, 0, 10);
+    benchmarkTargetHeight = unpackMetric(packed, 10, 10);
+    benchmarkTargetRowBytes = unpackMetric(packed, 20, 16);
+    benchmarkTargetColorType = unpackMetric(packed, 36, 4);
+    benchmarkTargetAlphaType = unpackMetric(packed, 40, 3);
+    benchmarkN32ColorType = unpackMetric(packed, 43, 4);
+    benchmarkTargetColorClass = unpackMetric(packed, 47, 2);
+    benchmarkRendererBackend = unpackMetric(packed, 49, 2);
+  }
+
+  private static long unpackMetric(long packed, int shift, int bits) {
+    if (packed < 0) {
+      return -1;
+    }
+    long encoded = (packed >>> shift) & ((1L << bits) - 1);
+    return encoded == 0 ? -1 : encoded - 1;
   }
 
   private static String[] sortedCorpusPaths(String directory) throws Exception {
@@ -796,14 +825,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void writeEnvironment() throws Exception {
-    long targetWidth = Image.nativeMetricForBenchmarkTest(9);
-    long targetHeight = Image.nativeMetricForBenchmarkTest(10);
-    long targetRowBytes = Image.nativeMetricForBenchmarkTest(8);
-    long targetAlphaType = Image.nativeMetricForBenchmarkTest(7);
-    long targetColorType = Image.nativeMetricForBenchmarkTest(6);
-    long targetColorClass = Image.nativeMetricForBenchmarkTest(12);
-    long kN32ColorType = Image.nativeMetricForBenchmarkTest(11);
-    long rendererBackend = Image.nativeMetricForBenchmarkTest(13);
     String json = "{\n"
         + "  \"os\":\"" + escapeJson(Settings.platform) + "\",\n"
         + "  \"osVersion\":\"unavailable\",\n"
@@ -825,18 +846,18 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"density\":" + Settings.screenDensity + ",\n"
         + "  \"systemDisplayScale\":null,\n"
         + "  \"refreshRate\":null,\n"
-        + "  \"sdlDrawableWidth\":" + jsonMetric(targetWidth) + ",\n"
-        + "  \"sdlDrawableHeight\":" + jsonMetric(targetHeight) + ",\n"
-        + "  \"skiaSurfaceWidth\":" + jsonMetric(targetWidth) + ",\n"
-        + "  \"skiaSurfaceHeight\":" + jsonMetric(targetHeight) + ",\n"
-        + "  \"rendererBackend\":\"" + rendererBackendName(rendererBackend) + "\",\n"
+        + "  \"sdlDrawableWidth\":" + jsonMetric(benchmarkTargetWidth) + ",\n"
+        + "  \"sdlDrawableHeight\":" + jsonMetric(benchmarkTargetHeight) + ",\n"
+        + "  \"skiaSurfaceWidth\":" + jsonMetric(benchmarkTargetWidth) + ",\n"
+        + "  \"skiaSurfaceHeight\":" + jsonMetric(benchmarkTargetHeight) + ",\n"
+        + "  \"rendererBackend\":\"" + rendererBackendName(benchmarkRendererBackend) + "\",\n"
         + "  \"accounting\":\"" + accountingProfile + "\",\n"
-        + "  \"kN32SkColorType\":" + jsonMetric(kN32ColorType) + ",\n"
-        + "  \"skiaSurfaceColorType\":" + jsonMetric(targetColorType) + ",\n"
+        + "  \"kN32SkColorType\":" + jsonMetric(benchmarkN32ColorType) + ",\n"
+        + "  \"skiaSurfaceColorType\":" + jsonMetric(benchmarkTargetColorType) + ",\n"
         + "  \"skiaSurfaceColorClassification\":\""
-        + targetColorClassification(targetColorClass) + "\",\n"
-        + "  \"skiaSurfaceAlphaType\":" + jsonMetric(targetAlphaType) + ",\n"
-        + "  \"skiaSurfaceRowBytes\":" + jsonMetric(targetRowBytes) + ",\n"
+        + targetColorClassification(benchmarkTargetColorClass) + "\",\n"
+        + "  \"skiaSurfaceAlphaType\":" + jsonMetric(benchmarkTargetAlphaType) + ",\n"
+        + "  \"skiaSurfaceRowBytes\":" + jsonMetric(benchmarkTargetRowBytes) + ",\n"
         + "  \"totalCrossVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"sdkVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"benchmarkVersion\":\"1\",\n"

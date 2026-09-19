@@ -147,6 +147,7 @@ TC_API void tuiNIB_createEmptyForTestNative_iii(NMParams p);
 TC_API void tuiNIB_adoptDetachedNativeImpl_l(NMParams p);
 TC_API void tuiNIB_releaseDetachedNativeImpl(NMParams p);
 TC_API void tuiNIB_isAvailableNative(NMParams p);
+TC_API void tuiNIB_targetMetricsForBenchmark(NMParams p);
 TC_API void tuiNIB_resetAccountingTestNative(NMParams p);
 TC_API void tuiNIB_clearAccountingTestNative(NMParams p);
 TC_API void tuiNIB_backingCreatedTestNative(NMParams p);
