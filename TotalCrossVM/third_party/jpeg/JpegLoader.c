@@ -600,12 +600,12 @@ static ImageDecodeStatus jpegLoadInternal(Context currentContext, TCObject image
          allocation->pixelStorage = null;
       }
       if (nativeHandle) {
-         if (allocation->storageFormat != IMAGE_BACKING_FORMAT_RGBA8888) {
-            if (detached)
-               skia_image_backing_set_detached_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
-            else
-               skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
-         } else if (opacityMetadata) {
+         if (detached)
+            skia_image_backing_set_detached_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+         else
+            skia_image_backing_set_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
+         imageRecordTestCounter("opacityKnownIntrinsicForTest");
+         if (allocation->storageFormat == IMAGE_BACKING_FORMAT_RGBA8888 && opacityMetadata) {
             if (detached)
                skia_image_backing_set_detached_opacity(nativeHandle, SKIA_IMAGE_OPACITY_OPAQUE);
             else

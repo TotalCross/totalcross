@@ -929,6 +929,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendJpegDecodeSection(json, "prefetch", prefetchCounters, true);
     appendJpegDecodeSection(json, "scroll", counters, false);
     json.append("  },\n");
+    appendCounter(json, "opacityKnownIntrinsic", counters.opacityKnownIntrinsic, true);
+    appendCounter(json, "opacityKnownFromSource", counters.opacityKnownFromSource, true);
+    appendCounter(json, "opacityDeterminedDuringDecode",
+        counters.opacityDeterminedDuringDecode, true);
+    appendCounter(json, "opacityFallbackScans", counters.opacityFallbackScans, true);
     appendCounter(json, "physicalIdentityAttempts", counters.physicalIdentityAttempts, true);
     appendCounter(json, "physicalIdentityHits", counters.physicalIdentityHits, true);
     appendCounter(json, "physicalIdentityFallbacks", counters.physicalIdentityFallbacks, true);
@@ -1164,6 +1169,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long jpegRequestedBestFitCount = Image.jpegNativeDecodeRequestedBestFitCountForTest;
     final long jpegDecodeFailureCount = Image.jpegNativeDecodeFailureCountForTest;
     final long decodeFinalBufferBytes = Image.decodeFinalBufferBytesForTest();
+    final long opacityKnownIntrinsic = Image.opacityKnownIntrinsicForTest();
+    final long opacityKnownFromSource = Image.opacityKnownFromSourceForTest();
+    final long opacityDeterminedDuringDecode = Image.opacityDeterminedDuringDecodeForTest();
+    final long opacityFallbackScans = Image.opacityFallbackScansForTest();
     final long imageMaterializations = Image.materializationCountForTest();
     final long imagePipelines = Image.imagePipelineCreatedCountForTest();
     final long drawPlansCreated = Image.imageDrawPlanCreatedCountForTest();
@@ -1241,6 +1250,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           + ",jpeg_quarter_count=" + jpegQuarterCount
           + ",jpeg_eighth_count=" + jpegEighthCount
           + ",jpeg_other_count=" + jpegOtherCount
+          + ",opacity_known_intrinsic=" + opacityKnownIntrinsic
+          + ",opacity_known_from_source=" + opacityKnownFromSource
+          + ",opacity_determined_decode=" + opacityDeterminedDuringDecode
+          + ",opacity_fallback_scans=" + opacityFallbackScans
           + ",image_materializations=" + imageMaterializations
           + ",image_pipelines=" + imagePipelines
           + ",draw_plans_created=" + drawPlansCreated

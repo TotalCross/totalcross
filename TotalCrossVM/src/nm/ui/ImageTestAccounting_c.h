@@ -24,6 +24,7 @@ typedef struct {
    int32* copiedDecodeCount;
    int32* decodeCopiedBytes;
    int32* decodeFinalBufferBytes;
+   int32* opacityKnownIntrinsic;
    int32* opacityKnownFromSource;
    int32* opacityDeterminedDuringDecode;
    int32* opacityFallbackScans;
@@ -68,6 +69,7 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
    imageTestAccountingState.copiedDecodeCount = null;
    imageTestAccountingState.decodeCopiedBytes = null;
    imageTestAccountingState.decodeFinalBufferBytes = null;
+   imageTestAccountingState.opacityKnownIntrinsic = null;
    imageTestAccountingState.opacityKnownFromSource = null;
    imageTestAccountingState.opacityDeterminedDuringDecode = null;
    imageTestAccountingState.opacityFallbackScans = null;
@@ -127,6 +129,8 @@ static void imageSetTestAccounting(Context context, int32 enabled) {
       getStaticFieldInt(imageClass, "decodeCopiedBytesForTest");
    imageTestAccountingState.decodeFinalBufferBytes =
       getStaticFieldInt(imageClass, "decodeFinalBufferBytesForTest");
+   imageTestAccountingState.opacityKnownIntrinsic =
+      getStaticFieldInt(imageClass, "opacityKnownIntrinsicForTest");
    imageTestAccountingState.opacityKnownFromSource =
       getStaticFieldInt(imageClass, "opacityKnownFromSourceForTest");
    imageTestAccountingState.opacityDeterminedDuringDecode =
@@ -221,6 +225,9 @@ static int32* imageTestAccountingField(const char* fieldName) {
    }
    if (strcmp(fieldName, "decodeFinalBufferBytesForTest") == 0) {
       return imageTestAccountingState.decodeFinalBufferBytes;
+   }
+   if (strcmp(fieldName, "opacityKnownIntrinsicForTest") == 0) {
+      return imageTestAccountingState.opacityKnownIntrinsic;
    }
    if (strcmp(fieldName, "opacityKnownFromSourceForTest") == 0) {
       return imageTestAccountingState.opacityKnownFromSource;

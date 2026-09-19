@@ -101,6 +101,7 @@ public class Image extends GfxSurface {
   static int copiedDecodeCountForTest;
   static int decodeCopiedBytesForTest;
   static int decodeFinalBufferBytesForTest;
+  static int opacityKnownIntrinsicForTest;
   static int opacityKnownFromSourceForTest;
   static int opacityDeterminedDuringDecodeForTest;
   static int opacityFallbackScansForTest;
@@ -288,6 +289,7 @@ public class Image extends GfxSurface {
     copiedDecodeCountForTest = 0;
     decodeCopiedBytesForTest = 0;
     decodeFinalBufferBytesForTest = 0;
+    opacityKnownIntrinsicForTest = 0;
     opacityKnownFromSourceForTest = 0;
     opacityDeterminedDuringDecodeForTest = 0;
     opacityFallbackScansForTest = 0;
@@ -416,6 +418,10 @@ public class Image extends GfxSurface {
 
   static int opacityKnownFromSourceForTest() {
     return opacityKnownFromSourceForTest;
+  }
+
+  static int opacityKnownIntrinsicForTest() {
+    return opacityKnownIntrinsicForTest;
   }
 
   static int opacityDeterminedDuringDecodeForTest() {
