@@ -102,6 +102,10 @@ of these Plan 3 commits. They are recorded, not amended or rewritten:
 New commits `feea98e56`, `31bdef4bf`, and `5d4b3a300` are signed and
 message-line compliant. History was not rewritten.
 
+The M2 correction commits `ca71cbe0b` and `5149d7450` are signed with
+Conventional titles, but their body lines exceed 80 characters. They were not
+amended because this execution explicitly preserves history.
+
 ## M2 audit gate
 
 Passed: macOS ARM64 native rebuild, SDK distribution, package, self-test, and
