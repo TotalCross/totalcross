@@ -67,9 +67,9 @@ historical corpus is present, self-test hash `588a7e0f4019424a`. Resolve it
 only from `$TC_IMAGE_CORPUS`, then `~/Downloads/win32/win32`; otherwise
 stop.
 
-Current execution status: bootstrap and M1 implementation are complete, but
-the M1 correction gate must be rerun after the target-metric bridge fix.
-`STOP / REVIEW 1` is not approved yet. M2, M3, and M4 have not started.
+Current execution status: bootstrap and the corrected M1 rerun are complete.
+`STOP / REVIEW 1` is approved and closed. M2 is the next authorized stage, but
+M2, M3, and M4 have not started.
 
 ## Architecture and fixed decisions
 
@@ -194,7 +194,9 @@ by accounting mode. Do not infer a P95 regression from one process.
 
 M1 accepts only when clipping, intrinsic opacity, accounting-off isolation,
 physical target metrics, package self-test, six smokes, and all 20 A/B
-processes pass. Then stop at `STOP / REVIEW 1`; no M2 work before approval.
+processes pass. The corrected rerun satisfied these criteria; `STOP / REVIEW 1`
+is approved and closed, and M2 is the next authorized stage. M2 is not
+executed by this documentation closure.
 
 ### M2 — evidence-only identity and eligibility audit
 

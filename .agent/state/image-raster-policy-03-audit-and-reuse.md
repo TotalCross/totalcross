@@ -32,8 +32,9 @@ source/evidence paths needed for the next action.
 - [x] (2026-09-18) Create bootstrap state, evidence, and editorial handoff.
 - [x] (2026-09-19) Implement M1 correctness and benchmark hygiene.
 - [x] (2026-09-19) Correct the native target-metric transport and rerun M1.
-- [ ] STOP / REVIEW 1 — ready for explicit reviewer approval.
-- [ ] M2–M4 — not started; each remains gated by recorded review approval.
+- [x] (2026-09-19) STOP / REVIEW 1 — technically approved and closed.
+- [ ] M2 — next stage authorized, not started in this command.
+- [ ] M3–M4 — not started; each remains gated by recorded review approval.
 
 ## M1 correction gate
 
@@ -56,8 +57,9 @@ truncation, not a physical target; it is preserved only as historical evidence.
 
 The five-round median work P50 delta for `32795 -> 32799` is -18.66% with
 accounting on and -18.54% with accounting off. Work P95 is +1.83% on and
-+10.20% off; tails increase in both modes. These are observations, not a
-causal promotion claim.
++10.20% off; off-mode work P99 is `26478916 -> 28147333`, a delta of
+`+1668417` (`+6.30%`). Tails increase in both modes. These are observations,
+not a causal promotion claim.
 
 Mask `4` is the bit-1-disabled intrinsic JPEG proof. Its off smoke recorded
 175 intrinsic-known results and 2 fallback scans overall. Mask `32799`
@@ -98,8 +100,8 @@ message-line compliant. History was not rewritten.
 
 ## Next action
 
-Stop at `STOP / REVIEW 1`. Await explicit reviewer approval. Do not start
-M2.
+M1 is closed. M2 is the next authorized stage, but it was not started in this
+documentation closure.
 
 ## Resume command
 

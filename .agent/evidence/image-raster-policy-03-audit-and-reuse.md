@@ -41,7 +41,9 @@ Five-round median work P50 is `4250584 -> 3457375` on
 (`-18.66%`) and `4253458 -> 3464666` off (`-18.54%`). Work P95 is
 `6011834 -> 6122042` on (`+1.83%`) and
 `5856083 -> 6453292` off (`+10.20%`). Work P99/MAX increase in both
-modes. Accounting-off retains timing and reports diagnostics unavailable.
+modes; corrected off-mode work P99 is `26478916 -> 28147333`, delta
+`+1668417` (`+6.30%`). Accounting-off retains timing and reports diagnostics
+unavailable.
 
 Mask `4` is the no-bit-1 intrinsic JPEG proof: its off smoke recorded 175
 intrinsic-known results and 2 fallback scans overall. Mask `32799` includes
@@ -66,6 +68,7 @@ message-line compliant.
 
 ## Review boundary
 
-M1 is ready for `STOP / REVIEW 1`. M2 has not started and no optimization
-policy, cache identity, materialization timing, default mask, or shared slot
-has been changed.
+`STOP / REVIEW 1` is technically approved and closed. M2 is the next
+authorized stage, but was not started in this documentation closure. No
+optimization policy, cache identity, materialization timing, default mask, or
+shared slot has been changed.

@@ -13,14 +13,15 @@ self-test, six-smoke, and exact 20-process A/B gates. The corrected bridge
 reports the real software target `1080x1920`, rowBytes `4320`, BGRA8888,
 alpha `2`, `kN32=4`, and software backend. Median active work improves
 18.66% with accounting on and 18.54% off; tails rise and remain a review
-topic. Execution stops at `STOP / REVIEW 1`.
+topic. `STOP / REVIEW 1` is technically approved and closed; M2 is the next
+authorized stage but was not started in this documentation closure.
 
 ## Original Plan versus Actual Outcome
 
 The four-milestone plan remains intact. M1 was rerun after correcting the
 target metric transport. No default mask, delayed target-color materialization,
-cache identity, or shared raster-variant slot changed. M2–M4 remain gated and
-were not started.
+cache identity, or shared raster-variant slot changed. M2 is authorized but was
+not started; M3–M4 remain gated.
 
 ## What Changed
 
@@ -64,7 +65,9 @@ ZIP hash was
 `9f2d6ee03838b30814f1b76830b1fa14b80dc30929e5b02d4f58263f134c5264`.
 
 The five-round work P50 delta `32795 -> 32799` is -18.66% with accounting on
-and -18.54% off. Work P95 is +1.83% on and +10.20% off; P99/MAX also rise.
+and -18.54% off. Work P95 is +1.83% on and +10.20% off; corrected off-mode
+work P99 is `26478916 -> 28147333`, delta `+1668417` (`+6.30%`). P99/MAX
+also rise.
 Mask `4/off` recorded 175 intrinsic-known results and 2 fallback scans
 overall. Mask `32799/off` recorded 175 intrinsic-known, 177
 metadata-known, and 0 fallback scans.
@@ -79,10 +82,11 @@ historical preservation, and the review boundary.
 
 ## Limitations, Remaining Work, and Open Questions
 
-M2 identity/eligibility diagnostics, M3 approved structural changes, and M4
-reuse/RGB565 measurements remain. No performance promotion or structural
-correction follows from M1 alone. The old target dimensions are preserved as
-historical evidence but must not be combined with corrected results.
+M2 identity/eligibility diagnostics is the next authorized stage; M3 approved
+structural changes and M4 reuse/RGB565 measurements remain after it. M2 was
+not started here. No performance promotion or structural correction follows
+from M1 alone. The old target dimensions are preserved as historical evidence
+but must not be combined with corrected results.
 
 ## Possible Article Angles
 
@@ -99,6 +103,6 @@ metadata-enabled mask 32799.
 
 ## Claims Requiring Human Review
 
-Review is required before M2. Any cache-identity, eligibility, materialization,
+M1 review is closed. Any cache-identity, eligibility, materialization,
 default-mask, shared-slot, RGB565, or cross-platform conclusion requires the
 later gates in the active plan.
