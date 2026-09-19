@@ -197,6 +197,49 @@ Detailed rows and logs are recorded in
 
 `STOP / REVIEW 3` is ready. M4 remains unauthorized.
 
+## 2026-09-19 — M3 scaled-mapping corrective rerun
+
+The prior M3 package was superseded after the real 2× logical-to-physical
+mapping requirement was made explicit. Implementation HEAD is `367fc887c`,
+with native mapping/test correction `0528eb62b` and structural runner gate
+`367fc887c`. Historical commits `0129316af` and `11c7349a1` were preserved;
+their over-80-character body lines were recorded rather than rewritten.
+
+The macOS ARM64 Release rebuild passed for `tcvm`, `Launcher`, and
+`skia_surface_test`. Native coverage now includes final pixels after target
+position changes, final pixels across compatible surface sizes, a real 2×
+draw, rectangular clip/outside pixels, `saveLayer` fallback, and
+non-rectangular/rotation/skew/perspective/invalid-mapping fallbacks.
+
+The new bundle
+`build/image-raster-policy-03-package-m3-scaled2/image-scroll-benchmark-macos-arm64`
+passed self-test and the exact ten-process structural smoke: masks `0`,
+`8192`, `16384`, `32768`, `57344`; prefetch on; accounting on; two rounds;
+10/10 pass. Every process completed 189 frames, reached `scroll_end=39091`,
+and reported `overallPass=true`. The corpus remained 663 JPEGs with hash
+`588a7e0f4019424a`; target metrics remained physical `1080x1920`, rowBytes
+`4320`, BGRA8888, alpha `2`, and software backend.
+
+The strengthened gate observed target-color attempts/fallbacks/hits/material-
+izations `12/12/0/0` and identity attempts/hits/fallbacks `12/0/12`; both
+had `RootToDevice=0` and later `SourceMapping=12`. Physical variants recorded
+lookups/misses/hits/stores `12/12/0/0`, with `12` full and `12`
+no-surface-size keys and no `RootToDevice` rejects. Disabled paths remained
+zero, writePixels accounting was consistent, and no clip/pixel corruption was
+observed. The workload did not reach the later observations needed for target
+materialization or physical stores; this is structural evidence without a
+performance conclusion.
+
+Artifacts: SDK JAR
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`; SDK ZIP
+`d1bbd5301db88a2eea4362732c09ed320311e53d6adc0b4d5c45c68f209e46d7`; runtime
+`33f50a0cc910947fe2b102c4e1c65aed37ca4d830734ad2c9daedd965bf3c2e0`; Launcher
+`ef6f924f3beda71e6615badf94dd93d5dd167a332250aa22e6dc3855cbcf384a`; bundle
+ZIP `86b7239434a6771c21a1d1460a7d84d3af9cddfd78854b18b46de3867328740f`; and
+result ZIP `2622321e0a1178fc368a11e359c5085c17f38e0b44b430e2680fe94f787fafd4`.
+Detailed rows and logs remain in
+`.agent/benchmarks/image-raster-policy-03/m3-structural-validation.md`.
+
 ## 2026-09-19 — M2 source-scoped key correction
 
 Implementation commit: `f4dab5e23` (`fix(benchmark): scope raster identity diagnostics by backing`).

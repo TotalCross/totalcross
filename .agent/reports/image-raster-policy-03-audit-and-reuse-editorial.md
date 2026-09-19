@@ -22,9 +22,10 @@ process, endpoint reached, and no timeout.
 
 The four-milestone plan remains intact. M1 was rerun after correcting the
 target metric transport. M2 added accounting-gated identity and eligibility
-diagnostics and ran only its prescribed four-process profile. M3 then applied
-only the three changes recorded in the approved state section and ran its
-prescribed ten-process structural profile. M4 remains gated.
+diagnostics and ran only its prescribed four-process profile. M3 applied the
+approved identity/clip corrections, then required a corrective rerun for
+logical-to-physical scale proof and the stricter structural gate. M4 remains
+gated.
 
 ## What Changed
 
@@ -44,6 +45,13 @@ active cache key, and all unique-key sets are namespaced by source backing for
 diagnostics. `PARTIAL_INTERSECTION` is not emitted because no real condition
 was classified. The runner enforces that scoped key counts cover the sources
 that reached acquisition or observation.
+
+The M3 correction maps device-space destinations back to integral source
+pixels using finite positive axis-aligned X/Y scales compatible with the
+effective content scale. It rejects inconsistent, fractional, clipped, or
+non-axis-aligned mappings. Saved states are accepted only when the repository
+clip wrapper recorded a rectangular clip; unknown rectangular states and
+`saveLayer` remain on the generic path.
 
 ## Decisions and Trade-offs
 
@@ -68,6 +76,13 @@ Historical commit-message checks found lines over 80 characters in
 The first M2 package attempt used a new Java helper absent from the existing
 `TCUI.tcz`, producing `NoSuchMethodError`. The helper was removed in favor of
 the existing native metric method; the rebuilt package passed all M2 checks.
+
+The first M3 structural rerun still rejected every real target-color and
+identity candidate at `root-to-device`: the workload uses logical `540x960`
+on a physical `1080x1920` target. The native 2× test exposed the missing
+mapping proof. After the fix, candidates passed that stage and reached later
+source-mapping fallbacks, while the automatic scroll still reached its
+endpoint without timeout.
 
 ## Validation and Measurable Results
 
@@ -159,6 +174,29 @@ runtime SHA-256 is
 result ZIP SHA-256 is
 `da92c7308be840f83da66ca0b361abac55e4eef4a82583255419307fb76666ca`.
 This is structural evidence, not a performance-promotion result.
+
+### M3 scaled-mapping corrective rerun
+
+Implementation HEAD `367fc887c` includes the native correction `0528eb62b`
+and the runner gate `367fc887c`. The new bundle
+`build/image-raster-policy-03-package-m3-scaled2/image-scroll-benchmark-macos-arm64`
+passed the same exact ten-process profile. All processes completed 189 frames,
+reached `scroll_end=39091`, and reported `overallPass=true`; target metrics
+remained `1080x1920`, rowBytes `4320`, BGRA8888, alpha `2`, software.
+
+The gate recorded target-color attempts/fallbacks/hits/materializations
+`12/12/0/0` and identity attempts/hits/fallbacks `12/0/12`. Both paths had
+`RootToDevice=0` and later `SourceMapping=12`, proving that the 2× mapping
+stage was traversed. Physical variant lookups/misses/hits/stores were
+`12/12/0/0`, with `12` full and no-surface-size keys. Disabled paths and
+writePixels accounting remained valid. The zero materializations/stores are
+reported as delayed-observation behavior, without a performance conclusion.
+
+The native test added final-pixel checks for target and physical reuse, a real
+2× draw, outside-clip protection, and explicit `saveLayer`, perspective,
+rotation, skew, non-rectangular, and invalid-mapping fallbacks. The updated
+summary and hashes are in
+`.agent/benchmarks/image-raster-policy-03/m3-structural-validation.md`.
 
 ## Useful Evidence and Examples
 

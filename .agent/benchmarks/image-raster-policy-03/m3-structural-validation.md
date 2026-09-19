@@ -6,30 +6,29 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # M3 — structural validation
 
-Implementation commit: `0129316af` (`fix(vm,benchmark): apply approved raster
-reuse corrections`). The implementation changed only the approved M3
-families:
+Implementation HEAD: `367fc887c`.
 
-- the real target-color key now contains source generation, source decode
-  generation, target color type, and kind;
-- the real physical key no longer contains target surface width or height;
-- saved canvas states are accepted only when the current Skia clip is a
-  non-empty rectangle; non-rectangular clips remain on the fallback path.
-
-Delayed materialization, default masks, the single shared raster-variant slot,
-and fallback behavior were preserved.
+The historical M3 implementation commit `0129316af` remains unchanged and
+preserved the approved corrections: canonical intrinsic target-color identity,
+physical identity without target surface dimensions, and conservative saved
+rectangular-clip handling. Follow-up commits `0528eb62b` and `367fc887c`
+corrected logical-to-physical mapping and strengthened the structural gate.
+Defaults, delayed materialization, the single shared raster-variant slot, and
+fallback behavior remain unchanged.
 
 ## Native validation
 
-The macOS ARM64 native build and `skia_surface_test` passed. The M3 test covers
-target position changes, compatible surface sizes, saved rectangular clips,
-outside-clip protection, translated positive-scale matrices, and conservative
-fallback for non-rectangular clips, rotation, and skew.
+The macOS ARM64 Release build passed for `tcvm`, `Launcher`, and
+`skia_surface_test`. The native test passed with final-pixel assertions for
+target-color reuse after a position change and physical-variant reuse across
+compatible surface sizes. It also covers a real 2× logical-to-physical draw,
+rectangular clip protection and outside pixels, `saveLayer` fallback,
+non-rectangular clip, rotation, skew, perspective, and invalid mapping cases.
 
 ## Bundle gate
 
 Final bundle:
-`build/image-raster-policy-03-package-m3-native/image-scroll-benchmark-macos-arm64`
+`build/image-raster-policy-03-package-m3-scaled2/image-scroll-benchmark-macos-arm64`
 
 The bundle passed self-test and the exact `raster-structural-smoke` profile:
 
@@ -41,48 +40,52 @@ The bundle passed self-test and the exact `raster-structural-smoke` profile:
 | rounds/processes | `2 / 10` |
 | process results | `10/10 PASS` |
 | frames per process | `189` |
-| scroll endpoint | `39091` |
+| scroll | `0 -> 39091`, endpoint reached |
 | corpus | `663` JPEGs, hash `588a7e0f4019424a` |
 | target | `1080x1920`, rowBytes `4320`, BGRA8888, software |
 
-No process timed out. The runner verified that disabled paths remained at zero,
-enabled paths produced attempts or measured rejection reasons, and writePixels
-attempts equaled hits plus fallbacks. All benchmark output reported
-`overallPass=true`.
+No process timed out. Every pass record reached `scroll_end=39091` and every
+summary reported `overallPass=true`. Disabled paths stayed at zero and
+writePixels attempts equaled hits plus fallbacks.
 
-Aggregate counters over the ten processes:
+The strengthened runner gate also proved that enabled target-color and
+physical-identity candidates were not rejected 100% at `RootToDevice`:
 
-- target-color: attempts/fallbacks/hits/materializations `12/12/0/0`; all
-  twelve rejects were `root-to-device` mapping rejects;
-- physical variant: lookups/misses/hits/stores `12/12/0/0`; twelve full keys
-  and twelve no-surface-size keys were observed;
-- physical identity: attempts/hits/fallbacks `12/0/12`; all twelve rejects
-  were `root-to-device` mapping rejects;
-- writePixels attempts/hits/fallbacks `0/0/0`.
+- target-color: attempts/fallbacks/hits/materializations `12/12/0/0`,
+  `RootToDevice=0`, later `SourceMapping=12`;
+- physical identity: attempts/hits/fallbacks `12/0/12`,
+  `RootToDevice=0`, later `SourceMapping=12`;
+- physical variant: lookups/misses/hits/stores `12/12/0/0`, with `12` full
+  keys and `12` no-surface-size keys, and no `RootToDevice` rejects.
 
-The workload still does not reach target-key acquisition or a second physical
-observation, so zero benchmark hits are documented eligibility/delayed-
-observation outcomes rather than a performance conclusion. The native tests
-are the direct evidence for key reuse and rectangular saved-clip behavior.
+The real workload therefore traversed the scaled mapping proof and reached
+later source-mapping fallback behavior. Target-color materialization and
+physical-variant stores remained zero because this profile did not produce the
+required later observation; that is documented structural evidence, not a
+performance conclusion.
 
 ## Artifacts and hashes
 
 - SDK compile/deploy JAR SHA-256:
   `4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`;
+- SDK package ZIP SHA-256:
+  `d1bbd5301db88a2eea4362732c09ed320311e53d6adc0b4d5c45c68f209e46d7`;
 - runtime SHA-256:
-  `a7fd330a1fc983d4a0e63e6a53a91edc766995b6cf35e06f6f4218448ad838d3`;
+  `33f50a0cc910947fe2b102c4e1c65aed37ca4d830734ad2c9daedd965bf3c2e0`;
+- Launcher SHA-256:
+  `ef6f924f3beda71e6615badf94dd93d5dd167a332250aa22e6dc3855cbcf384a`;
 - bundle ZIP SHA-256:
-  `70fe022ebb57991f0aa69d53e3c894994ce9ea49bb501605635a17b3eaf879f`;
+  `86b7239434a6771c21a1d1460a7d84d3af9cddfd78854b18b46de3867328740f`;
 - result ZIP SHA-256:
-  `da92c7308be840f83da66ca0b361abac55e4eef4a82583255419307fb76666ca`.
+  `2622321e0a1178fc368a11e359c5085c17f38e0b44b430e2680fe94f787fafd4`.
 
 Logs are outside the repository:
 
-- `/tmp/image-raster-policy-03-m3-native-build.log`;
-- `/tmp/image-raster-policy-03-m3-native-test.log`;
-- `/tmp/image-raster-policy-03-m3-native-package.log`;
-- `/tmp/image-raster-policy-03-m3-native-self-test.log`;
-- `/tmp/image-raster-policy-03-m3-native-structural-smoke.log`.
+- `/tmp/image-raster-m3-scaled-native-build.log`;
+- `/tmp/image-raster-m3-scaled-native-test.log`;
+- `/tmp/image-raster-m3-scaled2-package.log`;
+- `/tmp/image-raster-m3-scaled2-self-test.log`;
+- `/tmp/image-raster-m3-scaled2-structural-smoke.log`.
 
 `STOP / REVIEW 3` is ready. M4 reuse and RGB565/target-color measurements
 remain gated and were not started.

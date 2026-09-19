@@ -113,8 +113,11 @@ of these Plan 3 commits. They are recorded, not amended or rewritten:
 - `1f5bdbbea`: line lengths 90 and 122;
 - `f02f9dcff`: line length 273;
 - `1fb0b1d35`: line length 86.
+- `0129316af`: line lengths 114 and 87;
+- `11c7349a1`: line length 94.
 
-New commits `feea98e56`, `31bdef4bf`, and `5d4b3a300` are signed and
+New commits `feea98e56`, `31bdef4bf`, `5d4b3a300`, `0528eb62b`, and
+`367fc887c` are signed and
 message-line compliant. History was not rewritten.
 
 The M2 correction commits `ca71cbe0b` and `5149d7450` are signed with
@@ -155,42 +158,40 @@ endpoint in about 3.01 seconds; no timeout occurred.
 
 ## M3 structural gate
 
-Passed: signed implementation commit `0129316af` applied exactly the three
-approved changes: canonical intrinsic target-color identity, removal of
-physical target surface dimensions from the real key, and conservative
-rectangular saved-clip eligibility. Delayed materialization, default masks,
-the single shared slot, and fallback behavior remain unchanged.
+Passed at implementation HEAD `367fc887c`, preserving historical signed
+implementation commit `0129316af` and validation commit `11c7349a1`. The
+follow-up native correction `0528eb62b` proves finite positive axis-aligned
+logical-to-physical scales, content-scale compatibility, integral source and
+visible mappings, and safe clips. Unknown rectangular states, `saveLayer` or
+equivalent compositing, non-rectangular clips, rotation, skew, perspective,
+and inconsistent mappings remain fallback cases. Defaults, delayed
+materialization, the single shared slot, and fallback behavior remain fixed.
 
-Native macOS ARM64 build and `skia_surface_test` passed. The native tests cover
-target position changes, compatible surface sizes, saved rectangular clips,
-outside-clip protection, translated positive-scale matrices, and fallback for
-non-rectangular clips, rotation, and skew.
+The macOS ARM64 Release build passed for `tcvm`, `Launcher`, and
+`skia_surface_test`. The native tests assert final pixels for target-color
+position reuse and physical reuse across compatible surfaces, plus real 2×
+mapping, clip/outside pixels, `saveLayer`, and invalid-transform fallbacks.
 
 The final bundle is
-`build/image-raster-policy-03-package-m3-native/image-scroll-benchmark-macos-arm64`.
+`build/image-raster-policy-03-package-m3-scaled2/image-scroll-benchmark-macos-arm64`.
 It passed self-test and the exact `raster-structural-smoke` profile: masks
 `0`, `8192`, `16384`, `32768`, and `57344`; prefetch on; accounting on; two
-rounds; ten processes. Each process completed 189 frames and reached scroll
-endpoint `39091`; no timeout occurred. Target metrics remain physical
-`1080x1920`, rowBytes `4320`, color type `6` (`BGRA8888`), alpha `2`, and
-software backend.
+rounds; ten processes. All 10/10 processes completed 189 frames, reached
+`scroll_end=39091`, reported `overallPass=true`, and did not time out. Target
+metrics remain physical `1080x1920`, rowBytes `4320`, color type `6`
+(`BGRA8888`), alpha `2`, and software backend.
 
-Aggregate structural counters are target attempts/fallbacks/hits/materializations
-`12/12/0/0`, all target mapping rejects `root-to-device`; physical lookups,
-misses, hits, and stores `12/12/0/0`, with `12` full and no-surface-size keys;
-and identity attempts/hits/fallbacks `12/0/12`, all identity mapping rejects
-`root-to-device`. The runner verified disabled paths stayed at zero and
-writePixels accounting remained consistent. This is structural evidence, not
-a performance-promotion gate.
+Aggregate target attempts/fallbacks/hits/materializations are `12/12/0/0`,
+with `RootToDevice=0` and later `SourceMapping=12`. Identity
+attempts/hits/fallbacks are `12/0/12`, also with `RootToDevice=0` and
+`SourceMapping=12`. Physical lookups/misses/hits/stores are `12/12/0/0`,
+with `12` full and `12` no-surface-size keys and no root-to-device rejects.
+Disabled paths stayed at zero and writePixels accounting remained consistent.
+The zero materializations/stores are delayed-observation outcomes, not a
+performance conclusion.
 
-Bundle SHA-256 is
-`70fe022ebb57991f0aa69d53e3c894994ce9ea49bb501605635a17b3eaf879f`;
-runtime SHA-256 is
-`a7fd330a1fc983d4a0e63e6a53a91edc766995b6cf35e06f6f4218448ad838d3`;
-result ZIP SHA-256 is
-`da92c7308be840f83da66ca0b361abac55e4eef4a82583255419307fb76666ca`.
-Detailed rows are in
-`.agent/benchmarks/image-raster-policy-03/m3-structural-validation.md`.
+SDK JAR, SDK ZIP, runtime, Launcher, bundle ZIP, and result ZIP hashes are
+recorded in `.agent/benchmarks/image-raster-policy-03/m3-structural-validation.md`.
 
 ## Next action
 

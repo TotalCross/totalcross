@@ -224,11 +224,25 @@ unapproved candidate. Build the changed SDK bridge if needed, macOS ARM64
 `tcvm`/`Launcher` as required, `skia_surface_test`, one bundle, and
 self-test.
 
+The approved implementation must retain the corrections from `0129316af`:
+canonical target-color identity, physical keys independent of target surface
+dimensions, delayed materialization, default masks, and one shared
+raster-variant slot. `buildRasterPhysicalPlan()` must prove finite positive
+logical-to-physical X/Y scales, axis alignment, content-scale compatibility,
+integral source/destination/visible mappings, and safe clips; inconsistent
+mappings remain fallback cases. Saved states are eligible only for the known
+rectangular clip wrapper. Unknown rectangular states, `saveLayer` or equivalent
+compositing, non-rectangular clips, rotation, skew, and perspective remain
+fallback cases.
+
 Run `raster-structural-smoke`: masks 0, 8192, 16384, 32768, 57344; prefetch
 on; accounting on; two rounds; ten processes. Require 10/10 pass, approved
 paths to produce expected candidates/hits or documented measured reasons,
-valid target metrics, no clip corruption, and no writePixels regression. This
-is observational, not a performance-promotion gate. Stop at
+valid target metrics, no clip/pixel corruption, and no writePixels regression.
+For masks enabling bits 8192 and 32768, require real attempts and require
+their `MappingRootToDevice` counts to be below attempts, with later measured
+behavior documented even when delayed materialization leaves hits at zero.
+This is observational, not a performance-promotion gate. Stop at
 `STOP / REVIEW 3`.
 
 ### M4 — reuse and RGB565 versus target color
