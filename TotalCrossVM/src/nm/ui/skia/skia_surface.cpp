@@ -7,6 +7,49 @@
 
 #include <cmath>
 
+namespace {
+
+std::map<const SkCanvas*, std::vector<int>> knownRectangularClipSaves;
+
+}
+
+void skia_mark_known_rectangular_clip(SkCanvas* targetCanvas) {
+    if (targetCanvas) {
+        knownRectangularClipSaves[targetCanvas].push_back(targetCanvas->getSaveCount());
+    }
+}
+
+void skia_unmark_known_rectangular_clip(SkCanvas* targetCanvas) {
+    if (!targetCanvas) {
+        return;
+    }
+    const auto it = knownRectangularClipSaves.find(targetCanvas);
+    if (it == knownRectangularClipSaves.end()) {
+        return;
+    }
+    if (!it->second.empty()) {
+        it->second.pop_back();
+    }
+    if (it->second.empty()) {
+        knownRectangularClipSaves.erase(it);
+    }
+}
+
+void skia_forget_known_rectangular_clip(SkCanvas* targetCanvas) {
+    if (targetCanvas) {
+        knownRectangularClipSaves.erase(targetCanvas);
+    }
+}
+
+bool skia_is_known_rectangular_clip(const SkCanvas* targetCanvas) {
+    if (!targetCanvas) {
+        return false;
+    }
+    const auto it = knownRectangularClipSaves.find(targetCanvas);
+    return it != knownRectangularClipSaves.end() && !it->second.empty()
+        && it->second.back() == targetCanvas->getSaveCount();
+}
+
 static void releaseProc(void* addr, void*) {
     delete[] static_cast<int32*>(addr);
 }
@@ -93,6 +136,9 @@ int skia_makeBitmap(int32 id, void *data, int32 w, int32 h) {
 void skia_deleteBitmap(int32 id) {
     SKIA_TRACE()
     if (id >= 0 && static_cast<size_t>(id) < imageSurfaces.size()) {
+        if (imageSurfaces[id]) {
+            skia_forget_known_rectangular_clip(imageSurfaces[id]->canvas.get());
+        }
         imageSurfaces[static_cast<size_t>(id)].reset();
     }
 }
@@ -101,11 +147,13 @@ void skia_setClip(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2) {
     if (SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface)) {
         targetCanvas->save();
         targetCanvas->clipRect(SkRect::MakeLTRB(x1, y1, x2, y2));
+        skia_mark_known_rectangular_clip(targetCanvas);
     }
 }
 
 void skia_restoreClip(int32 skiaSurface) {
     if (SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface)) {
+        skia_unmark_known_rectangular_clip(targetCanvas);
         targetCanvas->restore();
     }
 }

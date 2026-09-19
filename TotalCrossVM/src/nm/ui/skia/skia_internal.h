@@ -106,6 +106,10 @@ extern std::vector<std::unique_ptr<SkiaImageSurface>> imageSurfaces;
 
 SkCanvas* skiaGetCanvas(int32 surfaceId);
 SkBitmap* skiaGetBitmap(int32 surfaceId);
+void skia_mark_known_rectangular_clip(SkCanvas* canvas);
+void skia_unmark_known_rectangular_clip(SkCanvas* canvas);
+void skia_forget_known_rectangular_clip(SkCanvas* canvas);
+bool skia_is_known_rectangular_clip(const SkCanvas* canvas);
 
 extern std::vector<sk_sp<SkTypeface>> typefaces;
 extern std::map<std::string, int> typefaceIndexMap;
