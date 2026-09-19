@@ -1174,11 +1174,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long writePixelsHits = NativeImageBacking.writePixelsHitsForTest();
     final long writePixelsFallbacks = NativeImageBacking.writePixelsFallbacksForTest();
     final long writePixelsCopiedBytes = NativeImageBacking.writePixelsCopiedBytesForTest();
-    final long writePixelsRegularAttempts = NativeImageBacking.writePixelsRegularAttemptsForTest();
-    final long writePixelsRegularHits = NativeImageBacking.writePixelsRegularHitsForTest();
-    final long writePixelsRegularFallbacks = NativeImageBacking.writePixelsRegularFallbacksForTest();
-    final long writePixelsRegularCopiedBytes = NativeImageBacking.writePixelsRegularCopiedBytesForTest();
-    final long writePixelsRegularClippedHits = NativeImageBacking.writePixelsRegularClippedHitsForTest();
+    final long writePixelsRegularAttempts = NativeImageBacking.writePixelsRegAttempts();
+    final long writePixelsRegularHits = NativeImageBacking.writePixelsRegHits();
+    final long writePixelsRegularFallbacks = NativeImageBacking.writePixelsRegFallbacks();
+    final long writePixelsRegularCopiedBytes = NativeImageBacking.writePixelsRegBytes();
+    final long writePixelsRegularClippedHits = NativeImageBacking.writePixelsRegClipped();
     final long writePixelsRejectInvalidTargetOrSource = NativeImageBacking.writePixelsRejectInvalidTargetOrSourceForTest();
     final long writePixelsRejectAlphaMask = NativeImageBacking.writePixelsRejectAlphaMaskForTest();
     final long writePixelsRejectMatrix = NativeImageBacking.writePixelsRejectMatrixForTest();

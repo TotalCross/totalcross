@@ -562,8 +562,11 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, run, la
     command = [
         str(executable),
         "/scr", SCREEN_SPEC,
-        "-p", str(bundle),
-        f"--app-root={bundle}",
+        # The macOS launcher resolves the application root relative to cwd;
+        # using the absolute bundle path trips its path handling and raises
+        # SIGTRAP before the benchmark can emit diagnostics.
+        "-p", ".",
+        "--app-root=.",
         "--mode=benchmark",
         "--corpus=corpus/imag",
         "--output=results",

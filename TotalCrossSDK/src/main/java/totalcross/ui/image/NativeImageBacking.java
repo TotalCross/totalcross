@@ -186,24 +186,24 @@ final class NativeImageBacking extends ImageBacking {
     return writePixelsCopyBytesTest();
   }
 
-  static long writePixelsRegularAttemptsForTest() {
-    return writePixelsRegularAttemptsTest();
+  static long writePixelsRegAttempts() {
+    return writePixelsRegAttTest();
   }
 
-  static long writePixelsRegularHitsForTest() {
-    return writePixelsRegularHitsTest();
+  static long writePixelsRegHits() {
+    return writePixelsRegHitTest();
   }
 
-  static long writePixelsRegularFallbacksForTest() {
-    return writePixelsRegularFallbacksTest();
+  static long writePixelsRegFallbacks() {
+    return writePixelsRegFbTest();
   }
 
-  static long writePixelsRegularCopiedBytesForTest() {
-    return writePixelsRegularCopyBytesTest();
+  static long writePixelsRegBytes() {
+    return writePixelsRegBytesTest();
   }
 
-  static long writePixelsRegularClippedHitsForTest() {
-    return writePixelsRegularClippedHitsTest();
+  static long writePixelsRegClipped() {
+    return writePixelsRegClipTest();
   }
 
   static long writePixelsRejectInvalidTargetOrSourceForTest() {
@@ -662,27 +662,27 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
-  private static long writePixelsRegularAttemptsTest() {
+  private static long writePixelsRegAttTest() {
     return 0;
   }
 
   @ReplacedByNativeOnDeploy
-  private static long writePixelsRegularHitsTest() {
+  private static long writePixelsRegHitTest() {
     return 0;
   }
 
   @ReplacedByNativeOnDeploy
-  private static long writePixelsRegularFallbacksTest() {
+  private static long writePixelsRegFbTest() {
     return 0;
   }
 
   @ReplacedByNativeOnDeploy
-  private static long writePixelsRegularCopyBytesTest() {
+  private static long writePixelsRegBytesTest() {
     return 0;
   }
 
   @ReplacedByNativeOnDeploy
-  private static long writePixelsRegularClippedHitsTest() {
+  private static long writePixelsRegClipTest() {
     return 0;
   }
 

@@ -175,11 +175,11 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsHitsTest"), &tuiNIB_writePixelsHitsTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsFallbacksTest"), &tuiNIB_writePixelsFallbacksTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsCopyBytesTest"), &tuiNIB_writePixelsCopyBytesTest);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegularAttemptsTest"), &tuiNIB_writePixelsRegularAttemptsTest);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegularHitsTest"), &tuiNIB_writePixelsRegularHitsTest);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegularFallbacksTest"), &tuiNIB_writePixelsRegularFallbacksTest);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegularCopyBytesTest"), &tuiNIB_writePixelsRegularCopyBytesTest);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegularClippedHitsTest"), &tuiNIB_writePixelsRegularClippedHitsTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegAttTest"), &tuiNIB_writePixelsRegAttTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegHitTest"), &tuiNIB_writePixelsRegHitTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegFbTest"), &tuiNIB_writePixelsRegFbTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegBytesTest"), &tuiNIB_writePixelsRegBytesTest);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegClipTest"), &tuiNIB_writePixelsRegClipTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRejectInvalid"), &tuiNIB_writePixelsRejectInvalid);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRejectAlpha"), &tuiNIB_writePixelsRejectAlpha);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRejectMatrix"), &tuiNIB_writePixelsRejectMatrix);

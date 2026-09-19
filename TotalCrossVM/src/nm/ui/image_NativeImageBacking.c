@@ -487,7 +487,7 @@ TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/N
 #endif
 }
 
-TC_API void tuiNIB_writePixelsRegularAttemptsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularAttemptsTest();
+TC_API void tuiNIB_writePixelsRegAttTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegAttTest();
 {
 #if TC_RENDERER_SKIA
    p->retL = skia_image_backing_write_pixels_regular_attempts_for_test();
@@ -496,7 +496,7 @@ TC_API void tuiNIB_writePixelsRegularAttemptsTest(NMParams p) // totalcross/ui/i
 #endif
 }
 
-TC_API void tuiNIB_writePixelsRegularHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularHitsTest();
+TC_API void tuiNIB_writePixelsRegHitTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegHitTest();
 {
 #if TC_RENDERER_SKIA
    p->retL = skia_image_backing_write_pixels_regular_hits_for_test();
@@ -505,7 +505,7 @@ TC_API void tuiNIB_writePixelsRegularHitsTest(NMParams p) // totalcross/ui/image
 #endif
 }
 
-TC_API void tuiNIB_writePixelsRegularFallbacksTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularFallbacksTest();
+TC_API void tuiNIB_writePixelsRegFbTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegFbTest();
 {
 #if TC_RENDERER_SKIA
    p->retL = skia_image_backing_write_pixels_regular_fallbacks_for_test();
@@ -514,7 +514,7 @@ TC_API void tuiNIB_writePixelsRegularFallbacksTest(NMParams p) // totalcross/ui/
 #endif
 }
 
-TC_API void tuiNIB_writePixelsRegularCopyBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularCopyBytesTest();
+TC_API void tuiNIB_writePixelsRegBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegBytesTest();
 {
 #if TC_RENDERER_SKIA
    p->retL = skia_image_backing_write_pixels_regular_copied_bytes_for_test();
@@ -523,7 +523,7 @@ TC_API void tuiNIB_writePixelsRegularCopyBytesTest(NMParams p) // totalcross/ui/
 #endif
 }
 
-TC_API void tuiNIB_writePixelsRegularClippedHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegularClippedHitsTest();
+TC_API void tuiNIB_writePixelsRegClipTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRegClipTest();
 {
 #if TC_RENDERER_SKIA
    p->retL = skia_image_backing_write_pixels_regular_clipped_hits_for_test();

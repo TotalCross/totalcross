@@ -140,11 +140,11 @@ TC_API void tuiNIB_writePixelsAttemptsTest(NMParams p);
 TC_API void tuiNIB_writePixelsHitsTest(NMParams p);
 TC_API void tuiNIB_writePixelsFallbacksTest(NMParams p);
 TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p);
-TC_API void tuiNIB_writePixelsRegularAttemptsTest(NMParams p);
-TC_API void tuiNIB_writePixelsRegularHitsTest(NMParams p);
-TC_API void tuiNIB_writePixelsRegularFallbacksTest(NMParams p);
-TC_API void tuiNIB_writePixelsRegularCopyBytesTest(NMParams p);
-TC_API void tuiNIB_writePixelsRegularClippedHitsTest(NMParams p);
+TC_API void tuiNIB_writePixelsRegAttTest(NMParams p);
+TC_API void tuiNIB_writePixelsRegHitTest(NMParams p);
+TC_API void tuiNIB_writePixelsRegFbTest(NMParams p);
+TC_API void tuiNIB_writePixelsRegBytesTest(NMParams p);
+TC_API void tuiNIB_writePixelsRegClipTest(NMParams p);
 TC_API void tuiNIB_physicalIdentityAttemptsT(NMParams p);
 TC_API void tuiNIB_physicalIdentityHitsTest(NMParams p);
 TC_API void tuiNIB_physicalIdentityFallbacks(NMParams p);
@@ -1253,23 +1253,23 @@ TC_API void tuiNIB_writePixelsCopyBytesTest(NMParams p) // totalcross/ui/image/N
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRegularAttemptsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegularAttemptsTest();
+TC_API void tuiNIB_writePixelsRegAttTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegAttTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRegularHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegularHitsTest();
+TC_API void tuiNIB_writePixelsRegHitTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegHitTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRegularFallbacksTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegularFallbacksTest();
+TC_API void tuiNIB_writePixelsRegFbTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegFbTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRegularCopyBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegularCopyBytesTest();
+TC_API void tuiNIB_writePixelsRegBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegBytesTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_writePixelsRegularClippedHitsTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegularClippedHitsTest();
+TC_API void tuiNIB_writePixelsRegClipTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegClipTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////

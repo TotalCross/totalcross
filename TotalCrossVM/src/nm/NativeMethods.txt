@@ -143,11 +143,11 @@ totalcross/ui/image/NativeImageBacking|native private static long writePixelsAtt
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsHitsTest();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsFallbacksTest();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsCopyBytesTest();
-totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegularAttemptsTest();
-totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegularHitsTest();
-totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegularFallbacksTest();
-totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegularCopyBytesTest();
-totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegularClippedHitsTest();
+totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegAttTest();
+totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegHitTest();
+totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegFbTest();
+totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegBytesTest();
+totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegClipTest();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsRejectInvalid();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsRejectAlpha();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsRejectMatrix();
