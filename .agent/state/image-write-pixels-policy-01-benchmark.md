@@ -35,6 +35,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Validation and deferrals
 
+- The preserved bootstrap commit `fe6eef5ae` has overlong body lines under the
+  commit checker; it was not amended because this plan forbids history rewrite.
 - No SDK/native build or smoke has run for this plan.
 - No source files have been changed by this plan yet.
 - Build only SDK at the Milestone 1 gate; do not build native macOS for this
