@@ -229,19 +229,26 @@ canonical target-color identity, physical keys independent of target surface
 dimensions, delayed materialization, default masks, and one shared
 raster-variant slot. `buildRasterPhysicalPlan()` must prove finite positive
 logical-to-physical X/Y scales, axis alignment, content-scale compatibility,
-integral source/destination/visible mappings, and safe clips; inconsistent
-mappings remain fallback cases. Saved states are eligible only for the known
-rectangular clip wrapper. Unknown rectangular states, `saveLayer` or equivalent
-compositing, non-rectangular clips, rotation, skew, and perspective remain
-fallback cases.
+integral source/destination mappings, and safe clips. Source boundaries that
+are integral but differ only by bounded `SkScalar` float rounding are accepted
+after a direct double-precision mapping; genuinely fractional or inconsistent
+identity mappings remain fallback cases. Target-color conversion may retain a
+fractional visible source edge only after those full-source and bounds proofs,
+then uses the color-converted raster with the original geometry sampling.
+Saved states are eligible only for the known rectangular clip wrapper. Unknown
+rectangular states, `saveLayer` or equivalent compositing, non-rectangular
+clips, rotation, skew, and perspective remain fallback cases.
 
 Run `raster-structural-smoke`: masks 0, 8192, 16384, 32768, 57344; prefetch
 on; accounting on; two rounds; ten processes. Require 10/10 pass, approved
 paths to produce expected candidates/hits or documented measured reasons,
 valid target metrics, no clip/pixel corruption, and no writePixels regression.
 For masks enabling bits 8192 and 32768, require real attempts and require
-their `MappingRootToDevice` counts to be below attempts, with later measured
-behavior documented even when delayed materialization leaves hits at zero.
+their `MappingRootToDevice` counts to be below attempts. For bit 8192 also
+require `targetColorAcquisitionSources > 0`; do not require a hit or
+materialization because delayed observation remains part of the contract.
+Document later measured behavior and preserve fallback proof for fractional or
+inconsistent mappings.
 This is observational, not a performance-promotion gate. Stop at
 `STOP / REVIEW 3`.
 

@@ -89,3 +89,44 @@ Logs are outside the repository:
 
 `STOP / REVIEW 3` is ready. M4 reuse and RGB565/target-color measurements
 remain gated and were not started.
+
+## Final corrective rerun
+
+Implementation HEAD: `3c7864115`, with native correction `922ce2921`.
+The lifecycle registry is cleared before canvas replacement, backing release,
+screen shutdown, and color-mutation surface replacement. The native tests
+also assert final pixels for a real 2x smooth target, fractional target-color
+clipping, and inconsistent fractional identity fallback.
+
+The final macOS ARM64 build passed for `tcvm`, `Launcher`, and
+`skia_surface_test`. The final bundle is
+`build/image-raster-policy-03-package-m3-final/image-scroll-benchmark-macos-arm64`.
+Self-test passed with 663 JPEGs and corpus hash `588a7e0f4019424a`. The exact
+matrix passed 10/10 processes for masks `0,8192,16384,32768,57344`, prefetch
+on, accounting on, and two rounds. Each process completed 189 frames and
+reached the automatic-scroll endpoint; no timeout occurred.
+
+The final aggregate counters are:
+
+| counter | value |
+|---|---|
+| target color attempts/fallbacks/hits/materializations/acquisition sources | `12/12/0/0/12` |
+| target mapping RootToDevice/SourceMapping/VisibleMapping | `0/0/0` |
+| physical identity attempts/hits/fallbacks | `12/0/12` |
+| physical identity mapping RootToDevice/SourceMapping/VisibleMapping | `0/0/12` |
+| physical variant lookups/misses/hits/stores | `12/12/0/0` |
+| disabled paths | zero |
+| writePixels accounting | consistent |
+
+The target remained physical `1080x1920`, rowBytes `4320`, BGRA8888, alpha 2,
+software. Runtime SHA-256 is
+`62318f5b09172aa2518c1bd9dc2d0013c7fdff548af71cc85d95b8145d584ee2`;
+Launcher SHA-256 is
+`ef6f924f3beda71e6615badf94dd93d5dd167a332250aa22e6dc3855cbcf384a`;
+bundle ZIP SHA-256 is
+`6ee02bc362dcb7e8578044eab2b0834b0271c70ed73b1fac6330f251d87fcef5`;
+result ZIP SHA-256 is
+`8067a4a6b4b55a49afc49956a127b7b6cd7b65905b97376d52c8f893a1c80886`.
+
+This remains structural evidence only. M4 reuse and RGB565/target-color
+measurements remain gated and were not started.

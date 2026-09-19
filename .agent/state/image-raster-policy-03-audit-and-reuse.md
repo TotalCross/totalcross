@@ -37,6 +37,8 @@ source/evidence paths needed for the next action.
   STOP / REVIEW 2 is ready.
 - [x] M3 — approved structural corrections and validation passed;
   STOP / REVIEW 3 is ready.
+- [x] (2026-09-19) Correct the M3 lifecycle registry and scaled source mapping;
+  rerun the exact ten-process gate with target-color acquisition required.
 - [ ] M4 — not started; remains gated by recorded M3 review approval.
 
 ## M1 correction gate
@@ -127,6 +129,11 @@ amended because this execution explicitly preserves history.
 The source-scoping commit `f4dab5e23` is also signed and preserved without
 amend; its body line is 83 characters.
 
+The signed M3 follow-up commits `922ce2921` and `3c7864115` are preserved.
+Their bodies contain historical lines longer than 80 characters because the
+commit-message audit was run after creation and history is not rewritten:
+`922ce2921` has lines 223 and 323; `3c7864115` has lines 126 and 178.
+
 ## M2 audit gate
 
 Passed: macOS ARM64 native rebuild, SDK distribution, package, self-test, and
@@ -192,6 +199,46 @@ performance conclusion.
 
 SDK JAR, SDK ZIP, runtime, Launcher, bundle ZIP, and result ZIP hashes are
 recorded in `.agent/benchmarks/image-raster-policy-03/m3-structural-validation.md`.
+
+## M3 final corrective gate
+
+The final implementation validation used signed commits `922ce2921` and
+`3c7864115`. The native change clears the rectangular-clip registry before
+bitmap replacement, backing release, screen shutdown, and color-mutation
+surface replacement. Native tests prove that a reused bitmap/canvas address
+does not inherit an old clip authorization.
+
+`buildRasterPhysicalPlan()` now computes source boundaries from the double
+geometry transform rather than an inverted float matrix. Four bounded float
+ULPs are accepted only around an integral boundary. Target-color conversion
+may use a fractional visible source edge only after full-source and bounds
+proofs, preserving the original smooth sampling; identity folding and
+inconsistent mappings remain fallback cases.
+
+The final package is
+`build/image-raster-policy-03-package-m3-final/image-scroll-benchmark-macos-arm64`.
+Self-test passed with 663 JPEGs and corpus hash `588a7e0f4019424a`. The exact
+structural matrix passed 10/10 processes: masks `0,8192,16384,32768,57344`,
+prefetch on, accounting on, two rounds, 189 frames per process, and automatic
+scroll endpoint reached. Aggregate target-color attempts/fallbacks/hits/
+materializations/acquisition sources are `12/12/0/0/12`; target mapping
+RootToDevice/SourceMapping/VisibleMapping are `0/0/0`. Identity attempts/
+hits/fallbacks are `12/0/12`, with RootToDevice/SourceMapping/VisibleMapping
+`0/0/12`, proving fractional clipped mappings still fall back. Physical
+lookups/misses/hits/stores are `12/12/0/0`. Disabled paths remain zero and
+writePixels accounting is consistent.
+
+The tested target is physical `1080x1920`, rowBytes `4320`, BGRA8888, alpha 2,
+software. Runtime SHA-256 is
+`62318f5b09172aa2518c1bd9dc2d0013c7fdff548af71cc85d95b8145d584ee2`;
+Launcher SHA-256 remains
+`ef6f924f3beda71e6615badf94dd93d5dd167a332250aa22e6dc3855cbcf384a`;
+bundle ZIP SHA-256 is
+`6ee02bc362dcb7e8578044eab2b0834b0271c70ed73b1fac6330f251d87fcef5`;
+result ZIP SHA-256 is
+`8067a4a6b4b55a49afc49956a127b7b6cd7b65905b97376d52c8f893a1c80886`.
+This remains structural evidence only; delayed materialization and M4 reuse/
+RGB565 measurements remain gated.
 
 ## Next action
 

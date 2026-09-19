@@ -279,3 +279,60 @@ identity mapping subreason (`6` each); save-count buckets and shared-slot
 transitions remain zero. The source-scoping correction changes only the
 diagnostic counts, not the prior eligibility or delayed-observation
 conclusions. `STOP / REVIEW 2` remains in force; M3 is not authorized.
+
+## 2026-09-19 — M3 final lifecycle and mapping correction
+
+Implementation commits `922ce2921` and `3c7864115` preserve the validated M3
+behavior while closing the remaining structural gap. The canvas registry is
+cleared before bitmap replacement, backing release, screen shutdown, and
+color-mutation surface replacement. Native tests cover reused bitmap/canvas
+addresses and backing release after a known rectangular clip.
+
+The old real-workload `SourceMapping=12/12` was caused by two numeric effects:
+an exact integer test rejected source boundaries such as `999.999971`, and an
+inverted `SkMatrix` accumulated translation error near large device positions.
+The fix computes source boundaries from double-precision geometry and accepts
+only bounded float-rounding error. A real source 1000x1000, output 179x179,
+output scale 2, and physical 358x358 target now passes source mapping proof.
+Fractional visible clipping remains safe: target-color uses the converted
+raster with the original smooth shader after full-source and bounds proof,
+while identity folding still falls back on `VisibleMapping`.
+
+Native validation passed for macOS ARM64 `tcvm`, `Launcher`, and
+`skia_surface_test`. The test asserts final pixels for the 2x smooth target
+path and fractional target-color clip, and for an inconsistent fractional
+identity transform asserts generic fallback plus final pixels. Existing
+rotation, skew, perspective, saveLayer, non-rectangular clip, and lifecycle
+coverage also passed.
+
+The final package is
+`build/image-raster-policy-03-package-m3-final/image-scroll-benchmark-macos-arm64`.
+Self-test passed with corpus hash `588a7e0f4019424a`, and the exact matrix
+passed 10/10: masks `0,8192,16384,32768,57344`, prefetch on, accounting on,
+two rounds, 189 frames per process, and automatic-scroll endpoint reached.
+Aggregate counters are:
+
+- target color attempts/fallbacks/hits/materializations/acquisition sources:
+  `12/12/0/0/12`;
+- target mapping RootToDevice/SourceMapping/VisibleMapping: `0/0/0`;
+- physical identity attempts/hits/fallbacks: `12/0/12`;
+- physical identity mapping RootToDevice/SourceMapping/VisibleMapping:
+  `0/0/12`;
+- physical variant lookups/misses/hits/stores: `12/12/0/0`;
+- disabled paths: zero; `writePixels` accounting: consistent.
+
+Target metrics remained physical `1080x1920`, rowBytes `4320`, BGRA8888,
+alpha 2, software. Runtime SHA-256 is
+`62318f5b09172aa2518c1bd9dc2d0013c7fdff548af71cc85d95b8145d584ee2`;
+Launcher SHA-256 is
+`ef6f924f3beda71e6615badf94dd93d5dd167a332250aa22e6dc3855cbcf384a`;
+bundle ZIP SHA-256 is
+`6ee02bc362dcb7e8578044eab2b0834b0271c70ed73b1fac6330f251d87fcef5`;
+result ZIP SHA-256 is
+`8067a4a6b4b55a49afc49956a127b7b6cd7b65905b97376d52c8f893a1c80886`.
+Logs: `/tmp/image-raster-policy-03-final-native-build-2.log`,
+`/tmp/image-raster-policy-03-skia-surface-test-final.log`,
+`/tmp/image-raster-m3-final-self-test-2.log`, and
+`/tmp/image-raster-m3-final-structural-matrix-2.log`.
+
+`STOP / REVIEW 3` is ready. M4 remains unauthorized and was not started.

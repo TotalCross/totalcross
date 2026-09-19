@@ -48,10 +48,14 @@ that reached acquisition or observation.
 
 The M3 correction maps device-space destinations back to integral source
 pixels using finite positive axis-aligned X/Y scales compatible with the
-effective content scale. It rejects inconsistent, fractional, clipped, or
-non-axis-aligned mappings. Saved states are accepted only when the repository
-clip wrapper recorded a rectangular clip; unknown rectangular states and
-`saveLayer` remain on the generic path.
+effective content scale. It computes boundaries from double geometry and
+accepts only bounded float-rounding error. Target-color conversion may retain
+a fractional visible edge after full-source and bounds proof; identity folding
+still rejects inconsistent or fractional mappings. Saved states are accepted
+only when the repository clip wrapper recorded a rectangular clip; unknown
+rectangular states and `saveLayer` remain on the generic path. Lifecycle
+cleanup clears clip authorization before tracked canvases are replaced or
+destroyed.
 
 ## Decisions and Trade-offs
 
@@ -197,6 +201,33 @@ The native test added final-pixel checks for target and physical reuse, a real
 rotation, skew, non-rectangular, and invalid-mapping fallbacks. The updated
 summary and hashes are in
 `.agent/benchmarks/image-raster-policy-03/m3-structural-validation.md`.
+
+### M3 final corrective gate
+
+Implementation commits `922ce2921` and `3c7864115` close the remaining
+structural failure without changing defaults, delayed materialization, or the
+single shared variant slot. The real-workload `SourceMapping=12/12` was
+traced to exact-integrality checks applied to float-rounded boundaries and to
+translation error from an inverted float matrix. Direct double-precision
+mapping now accepts only bounded float error. Target-color keeps the original
+smooth shader for a fractional visible edge only after full-source and bounds
+proof; inconsistent fractional identity still falls back.
+
+The final package
+`build/image-raster-policy-03-package-m3-final/image-scroll-benchmark-macos-arm64`
+passed self-test and the exact ten-process matrix. Masks were
+`0,8192,16384,32768,57344`, prefetch and accounting were on, two rounds ran,
+all 10/10 processes completed 189 frames, and automatic scroll reached
+`39091` without timeout. The target remained physical `1080x1920`, rowBytes
+`4320`, BGRA8888, alpha `2`, software.
+
+Final aggregate target-color attempts/fallbacks/hits/materializations/
+acquisition sources were `12/12/0/0/12`; target mapping
+RootToDevice/SourceMapping/VisibleMapping was `0/0/0`. Physical identity
+attempts/hits/fallbacks were `12/0/12`, with mapping `0/0/12`. Physical
+variant lookups/misses/hits/stores were `12/12/0/0`; disabled paths were zero
+and writePixels accounting was consistent. This is structural evidence only;
+M4 reuse and RGB565/target-color measurements remain gated.
 
 ## Useful Evidence and Examples
 
