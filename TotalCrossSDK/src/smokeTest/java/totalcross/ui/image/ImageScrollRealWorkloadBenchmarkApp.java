@@ -415,8 +415,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       long jpegEighthNsBefore = Image.jpegNativeDecodeEighthNsForTest;
       long jpegOtherCountBefore = Image.jpegNativeDecodeOtherCountForTest;
       long jpegOtherNsBefore = Image.jpegNativeDecodeOtherNsForTest;
-      long workStartNs = System.nanoTime();
       int before = scroll.sbV.getValue();
+      long workStartNs = System.nanoTime();
       long scrollWorkNs = 0;
       if (target != before) {
         long scrollWorkStartNs = System.nanoTime();
