@@ -8,11 +8,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Plan 1 bootstrap complete; Milestone 1 is next.
+- Milestone 1 complete; Milestone 2 is next.
 - Required branch: `perf/image-decode-distributed-benchmark`.
 - Starting HEAD: `02c7e1f528b4d198e6eecb57885313129ee7c294`.
-- Next action: add same-frame active-work timing while preserving paced
-  `frame_time_ns` and all rendering/policy behavior.
+- Milestone 1 commit: `11042035e`.
+- Next action: add the focused runner profile and pairwise comparison artifact.
 
 ## Working set
 
@@ -29,7 +29,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Progress
 
 - [x] Bootstrap plan/state/evidence and record scoped pre-existing files.
-- [ ] Add active-work timing and validate its schema.
+- [x] Add active-work timing and validate its schema.
 - [ ] Add the 24-process focused runner profile and pairwise output.
 - [ ] Close Plan 1 and hand off to the device-copy policy plan.
 
@@ -37,8 +37,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - The preserved bootstrap commit `fe6eef5ae` has overlong body lines under the
   commit checker; it was not amended because this plan forbids history rewrite.
-- No SDK/native build or smoke has run for this plan.
-- No source files have been changed by this plan yet.
+- Milestone 1 validation passed: `compileSmokeTestJava` and `dist -x test`.
+- Full logs: `/tmp/image-write-pixels-policy-01-compile-smoke.log` and
+  `/tmp/image-write-pixels-policy-01-sdk-dist.log`.
+- No native macOS build or smoke has run for this plan.
+- Active-work schema is present in `frames.csv`, `summary.json`, and pass output;
+  the source validates nonnegative work and work >= each component.
 - Build only SDK at the Milestone 1 gate; do not build native macOS for this
   measurement-only change.
 - Do not run the 24-process focused benchmark; Plan 2 owns execution.
