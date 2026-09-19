@@ -31,16 +31,21 @@ only the active source paths next.
 
 - [x] (2026-09-18) Verify branch, ancestry, and preserve unrelated local files.
 - [x] (2026-09-18) Create bootstrap state, evidence, and editorial handoff.
-- [ ] Milestone 1: correctness and benchmark hygiene.
-- [ ] STOP / REVIEW 1.
+- [x] (2026-09-19) Milestone 1: correctness and benchmark hygiene.
+- [ ] STOP / REVIEW 1 — awaiting explicit reviewer approval.
 - [ ] Milestones 2–4, each gated by explicit recorded review approval.
 
 ## Validation and deferrals
 
 - Bootstrap checks: branch/ancestry, focused header validation, whitespace,
   and plan syntax/size inspection.
-- No native build or benchmark has run for this plan.
-- Expensive validation is deferred to the Milestone 1 gate.
+- Milestone 1 native gate passed: SDK distribution, macOS ARM64 `tcvm`,
+  `Launcher`, `skia_surface_test`, bundle packaging, and bundle self-test.
+- Six accounting-on smokes passed, followed by the 20-process accounting A/B
+  matrix. The required corpus self-test hash was `588a7e0f4019424a`.
+- Detailed samples and aggregate deltas are in
+  `.agent/benchmarks/image-raster-policy-03/m1-write-pixels-accounting.md`.
+- Deferred: all Milestone 2+ work and the historical full profile.
 
 ## Decisions still active
 
@@ -62,8 +67,33 @@ bootstrap status check. Do not stage them.
 
 ## Next action
 
-Inspect the Milestone 1 active source paths, implement the strengthened clip
-proof first, then the JPEG opacity, accounting, and target-format contracts.
+Stop for review. Do not begin Milestone 2 until the reviewer explicitly
+approves continuation and that approval is recorded below.
+
+## Milestone 1 outcome
+
+- Strong clipped writePixels proof passed in `skia_surface_test`; outside
+  sentinel pixels remained unchanged.
+- JPEG opacity is published intrinsically on successful native publication;
+  diagnostic smoke evidence shows intrinsic opacity with bit 1 disabled and
+  no scan in the prefetch-off candidate path.
+- Accounting-off retains external work/paint timing and writes unavailable
+  diagnostics markers without requiring counter fields.
+- Native target metrics are captured once from the active Skia target through
+  the established NativeImageBacking bridge. The original Image bridge was
+  unsafe in the deployed VM and was not used for final environment reporting.
+- The five-round A/B median work P50 delta for `32795 -> 32799` was -19.52%
+  with accounting on and -19.16% with accounting off. P95/tail deltas are
+  reported without a causal claim.
+
+## Review record
+
+Pending explicit reviewer approval for Milestone 2.
+
+Commit-message validation notes: commits `82f4af600`, `ed09cf657`,
+`f02f9dcff`, and `1fb0b1d35` contain historical body-line formatting defects
+detected by post-commit checks. History was not rewritten, per the execution
+constraints; the defects are recorded here for reviewer visibility.
 
 ## Resume command
 
