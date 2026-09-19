@@ -8,23 +8,23 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Editorial Summary
 
-Milestone 1 correction and the M2 evidence-only identity audit are complete.
+Milestone 1 correction, the M2 identity audit, and the approved M3 structural
+corrections are complete.
 The corrected bridge reports the real software target `1080x1920`, rowBytes
 `4320`, BGRA8888, alpha `2`, `kN32=4`, and software backend. M2 passed the
 four-process audit profile and found no target-key acquisition, no variant
 hits/stores, no cross-kind replacement, and no canvas/save-state rejection.
-`STOP / REVIEW 1` is closed and `STOP / REVIEW 2` is ready; M3 remains
-unauthorized. The review-correction rerun also confirmed that the app's
-automatic scroll completes: 189 frames per process, endpoint reached, and no
-timeout.
+`STOP / REVIEW 1` and `STOP / REVIEW 2` are closed; `STOP / REVIEW 3` is
+ready. The app's automatic scroll completed in M2 and M3: 189 frames per
+process, endpoint reached, and no timeout.
 
 ## Original Plan versus Actual Outcome
 
 The four-milestone plan remains intact. M1 was rerun after correcting the
 target metric transport. M2 added accounting-gated identity and eligibility
-diagnostics and ran only its prescribed four-process profile. No default mask,
-delayed target-color materialization, cache identity, or shared raster-variant
-slot changed. M3–M4 remain gated.
+diagnostics and ran only its prescribed four-process profile. M3 then applied
+only the three changes recorded in the approved state section and ran its
+prescribed ten-process structural profile. M4 remains gated.
 
 ## What Changed
 
@@ -126,6 +126,40 @@ eviction, or canvas/save-state rejection as causes. Target fallbacks equal
 target attempts in the applicable runs, and all three feature-specific
 save-count bucket vectors are zero.
 
+### M3 approved structural results
+
+Implementation commit `0129316af` applied the approved canonical target-color
+identity, removed physical surface dimensions from the physical key, and
+replaced blanket save-count rejection with a rectangular saved-clip proof.
+Delayed materialization, default masks, and the single shared slot remained
+unchanged.
+
+The final macOS ARM64 bundle
+`build/image-raster-policy-03-package-m3-native/image-scroll-benchmark-macos-arm64`
+passed self-test and the exact ten-process `raster-structural-smoke` profile.
+Masks were `0,8192,16384,32768,57344`, with prefetch and accounting on, over
+two rounds. All ten processes passed, completed 189 frames, and reached scroll
+endpoint `39091`; no timeout occurred. The target remained software
+`1080x1920`, rowBytes `4320`, BGRA8888, alpha `2`.
+
+Aggregate target attempts/fallbacks/hits/materializations were `12/12/0/0`,
+with all rejects classified as `root-to-device`. Physical variant
+lookups/misses/hits/stores were `12/12/0/0`, with twelve full and
+no-surface-size keys. Identity attempts/hits/fallbacks were `12/0/12`, again
+all `root-to-device`. Disabled paths remained at zero and writePixels
+accounting stayed consistent. Native tests directly confirmed target position
+reuse, physical reuse across compatible surface sizes, saved rectangular clip
+protection, translated positive-scale handling, and fallback for non-rectangular
+clips, rotation, and skew.
+
+Bundle SHA-256 is
+`70fe022ebb57991f0aa69d53e3c894994ce9ea49bb501605635a17b3eaf879f`;
+runtime SHA-256 is
+`a7fd330a1fc983d4a0e63e6a53a91edc766995b6cf35e06f6f4218448ad838d3`;
+result ZIP SHA-256 is
+`da92c7308be840f83da66ca0b361abac55e4eef4a82583255419307fb76666ca`.
+This is structural evidence, not a performance-promotion result.
+
 ## Useful Evidence and Examples
 
 See
@@ -140,9 +174,10 @@ historical preservation, and the review boundary.
 
 M2 is complete, but its one-round workload produced no second observation and
 no target-key acquisition; therefore it cannot establish reuse or key
-fragmentation beyond the observed eligible physical keys. M3 approved
-structural changes and M4 reuse/RGB565 measurements remain after review. No
-performance promotion or structural correction follows from M1 or M2 alone.
+fragmentation beyond the observed eligible physical keys. M3 is structural
+evidence only: its workload still did not produce benchmark cache hits, while
+the native tests prove the approved reuse cases. M4 reuse/RGB565 measurements
+remain after review. No performance promotion follows from M3.
 The old target dimensions are preserved as historical evidence but must not be
 combined with corrected results.
 
@@ -161,6 +196,6 @@ metadata-enabled mask 32799.
 
 ## Claims Requiring Human Review
 
-M1 review is closed and M2 is ready at `STOP / REVIEW 2`. Any cache-identity,
-eligibility, materialization, default-mask, shared-slot, RGB565, or
-cross-platform correction requires explicit reviewer approval of M3/M4.
+M1 and M2 are closed; M3 is ready at `STOP / REVIEW 3`. M4 reuse, RGB565,
+target-color performance, default-mask, shared-slot, and cross-platform claims
+still require explicit reviewer approval.

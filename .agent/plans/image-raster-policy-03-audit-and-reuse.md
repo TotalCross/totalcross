@@ -67,9 +67,10 @@ historical corpus is present, self-test hash `588a7e0f4019424a`. Resolve it
 only from `$TC_IMAGE_CORPUS`, then `~/Downloads/win32/win32`; otherwise
 stop.
 
-Current execution status: bootstrap and the corrected M1 rerun are complete.
-`STOP / REVIEW 1` is approved and closed. M2 is the next authorized stage, but
-M2, M3, and M4 have not started.
+Current execution status: M1 and M2 are complete, and the approved M3
+structural corrections and gate are complete. `STOP / REVIEW 1` is closed;
+`STOP / REVIEW 2` is closed by the recorded approval; `STOP / REVIEW 3` is
+ready. M4 remains unauthorized.
 
 ## Architecture and fixed decisions
 

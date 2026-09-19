@@ -151,6 +151,52 @@ target attempts in the applicable masks (`3/3` for each target-enabled run).
 of the M2 JSON or runner contract. `STOP / REVIEW 2` remains in force and M3
 is still unauthorized.
 
+## 2026-09-19 — M3 approved structural corrections
+
+Implementation commit: `0129316af` (`fix(vm,benchmark): apply approved raster
+reuse corrections`). The commit implements exactly the approved M3 changes:
+canonical intrinsic target-color identity, removal of physical target surface
+dimensions from the real key, and a conservative rectangular saved-clip proof.
+Delayed materialization, default masks, the single shared slot, and fallback
+behavior were not changed.
+
+The macOS ARM64 build passed for `tcvm`, `Launcher`, and `skia_surface_test`.
+The native surface test passed with coverage for position changes, compatible
+surface-size changes, saved rectangular clips, outside-clip protection,
+translated positive-scale matrices, and non-rectangular/rotation/skew
+fallbacks.
+
+The final bundle is
+`build/image-raster-policy-03-package-m3-native/image-scroll-benchmark-macos-arm64`.
+It passed self-test and the exact `raster-structural-smoke` profile: masks
+`0`, `8192`, `16384`, `32768`, and `57344`; prefetch on; accounting on; two
+rounds; ten processes. Every process passed, completed 189 frames, and reached
+scroll endpoint `39091`; no timeout occurred. The corpus remained 663 JPEGs
+with hash `588a7e0f4019424a`; SDK JAR SHA-256 remained
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`.
+
+The software target remained physical `1080x1920`, rowBytes `4320`, color type
+`6` (`BGRA8888`), alpha `2`, and backend `software`. Aggregate counters over
+the ten processes were target attempts/fallbacks/hits/materializations
+`12/12/0/0` with all rejects classified as `root-to-device`; physical
+lookups/misses/hits/stores `12/12/0/0` with `12` full and no-surface-size keys;
+and identity attempts/hits/fallbacks `12/0/12` with all rejects classified as
+`root-to-device`. Disabled paths remained zero and writePixels accounting was
+consistent. The workload's zero hits are explained by eligibility and delayed
+observation; native tests directly prove the approved key reuse and clip
+behavior. This is structural evidence, not a performance-promotion result.
+
+Bundle ZIP SHA-256 is
+`70fe022ebb57991f0aa69d53e3c894994ce9ea49bb501605635a17b3eaf879f`;
+runtime SHA-256 is
+`a7fd330a1fc983d4a0e63e6a53a91edc766995b6cf35e06f6f4218448ad838d3`;
+result ZIP SHA-256 is
+`da92c7308be840f83da66ca0b361abac55e4eef4a82583255419307fb76666ca`.
+Detailed rows and logs are recorded in
+`.agent/benchmarks/image-raster-policy-03/m3-structural-validation.md`.
+
+`STOP / REVIEW 3` is ready. M4 remains unauthorized.
+
 ## 2026-09-19 — M2 source-scoped key correction
 
 Implementation commit: `f4dab5e23` (`fix(benchmark): scope raster identity diagnostics by backing`).

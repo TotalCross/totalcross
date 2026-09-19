@@ -35,7 +35,9 @@ source/evidence paths needed for the next action.
 - [x] (2026-09-19) STOP / REVIEW 1 — technically approved and closed.
 - [x] M2 — identity and eligibility audit passed; review correction rerun passed;
   STOP / REVIEW 2 is ready.
-- [ ] M3–M4 — not started; each remains gated by recorded review approval.
+- [x] M3 — approved structural corrections and validation passed;
+  STOP / REVIEW 3 is ready.
+- [ ] M4 — not started; remains gated by recorded M3 review approval.
 
 ## M1 correction gate
 
@@ -77,7 +79,8 @@ benchmark remain deferred.
 - Do not change default optimization masks.
 - Preserve delayed target-color materialization and the single raster-variant
   slot through all four milestones.
-- M2 is diagnostic-only; structural corrections require explicit review.
+- M2 remains diagnostic-only; M3 applied only the explicitly approved
+  structural corrections.
 - Do not infer causality from M1 timing alone.
 - M2 observed no target-key acquisition, no physical-variant hit/store, no
   cross-kind replacement, and no canvas/save-state rejection. Zero-hit causes
@@ -85,7 +88,19 @@ benchmark remain deferred.
 
 ## Approved M3 changes
 
-None. M3 is not authorized until M2 review.
+The user's explicit instruction to start M3 authorizes the three candidate
+changes listed by the plan:
+
+1. Use canonical intrinsic target-color identity for the real target-color
+   variant key: source generations and target color type only.
+2. Remove physical target surface dimensions from the real variant identity
+   only after the implementation and structural tests prove independence.
+3. Replace blanket `saveCount == 1` rejection with a conservative proof that
+   the canvas state and clip are rectangular and safe for the fast path.
+
+Delayed materialization, default masks, the single shared slot, and fallback
+behavior remain fixed. Any candidate that cannot meet the proof remains a
+fallback and is not relaxed.
 
 ## Historical commit-message findings
 
@@ -138,10 +153,48 @@ shared-slot and pending cross-kind replacements are zero.
 exists. Each process completed 189 frames and reached the automatic-scroll
 endpoint in about 3.01 seconds; no timeout occurred.
 
+## M3 structural gate
+
+Passed: signed implementation commit `0129316af` applied exactly the three
+approved changes: canonical intrinsic target-color identity, removal of
+physical target surface dimensions from the real key, and conservative
+rectangular saved-clip eligibility. Delayed materialization, default masks,
+the single shared slot, and fallback behavior remain unchanged.
+
+Native macOS ARM64 build and `skia_surface_test` passed. The native tests cover
+target position changes, compatible surface sizes, saved rectangular clips,
+outside-clip protection, translated positive-scale matrices, and fallback for
+non-rectangular clips, rotation, and skew.
+
+The final bundle is
+`build/image-raster-policy-03-package-m3-native/image-scroll-benchmark-macos-arm64`.
+It passed self-test and the exact `raster-structural-smoke` profile: masks
+`0`, `8192`, `16384`, `32768`, and `57344`; prefetch on; accounting on; two
+rounds; ten processes. Each process completed 189 frames and reached scroll
+endpoint `39091`; no timeout occurred. Target metrics remain physical
+`1080x1920`, rowBytes `4320`, color type `6` (`BGRA8888`), alpha `2`, and
+software backend.
+
+Aggregate structural counters are target attempts/fallbacks/hits/materializations
+`12/12/0/0`, all target mapping rejects `root-to-device`; physical lookups,
+misses, hits, and stores `12/12/0/0`, with `12` full and no-surface-size keys;
+and identity attempts/hits/fallbacks `12/0/12`, all identity mapping rejects
+`root-to-device`. The runner verified disabled paths stayed at zero and
+writePixels accounting remained consistent. This is structural evidence, not
+a performance-promotion gate.
+
+Bundle SHA-256 is
+`70fe022ebb57991f0aa69d53e3c894994ce9ea49bb501605635a17b3eaf879f`;
+runtime SHA-256 is
+`a7fd330a1fc983d4a0e63e6a53a91edc766995b6cf35e06f6f4218448ad838d3`;
+result ZIP SHA-256 is
+`da92c7308be840f83da66ca0b361abac55e4eef4a82583255419307fb76666ca`.
+Detailed rows are in
+`.agent/benchmarks/image-raster-policy-03/m3-structural-validation.md`.
+
 ## Next action
 
-STOP / REVIEW 2. Await explicit reviewer recording of exact approved M3
-structural changes. M3 is not authorized and must not start from this state.
+STOP / REVIEW 3. M4 remains gated and has not started.
 
 ## Resume command
 
