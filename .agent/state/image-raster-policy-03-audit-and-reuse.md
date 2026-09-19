@@ -106,6 +106,9 @@ The M2 correction commits `ca71cbe0b` and `5149d7450` are signed with
 Conventional titles, but their body lines exceed 80 characters. They were not
 amended because this execution explicitly preserves history.
 
+The source-scoping commit `f4dab5e23` is also signed and preserved without
+amend; its body line is 83 characters.
+
 ## M2 audit gate
 
 Passed: macOS ARM64 native rebuild, SDK distribution, package, self-test, and
