@@ -410,7 +410,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     int endpoint = forward ? maximum : minimum;
     ImageRasterBenchmarkSupport.require(scroll.sbV.getValue() == expectedStart,
         name + " did not start at the expected scrollbar endpoint");
-    Image.resetImageOperationAccountingForBenchmarkTest();
+    Image.resetImageOperationAccountingForBenchmarkTest(accountingEnabled());
     long startNs = System.nanoTime();
     long[] frameTimesNs = new long[256];
     long[] frameElapsedNs = new long[256];
