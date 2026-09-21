@@ -41,6 +41,7 @@ MASKS = (
 WRITE_PIXELS_POLICY_MASKS = (0, 4, 2, 6, 32795, 32799)
 RASTER_POLICY_AUDIT_MASKS = (8192, 16384, 32768, 57344)
 RASTER_STRUCTURAL_SMOKE_MASKS = (0, 8192, 16384, 32768, 57344)
+M4_REUSE_MASKS = (0, 32, 8192, 8224)
 PREFETCH_PROFILES = ("off", "on")
 ACCOUNTING_PROFILES = ("on", "off")
 ROUNDS = 3
@@ -85,6 +86,26 @@ PROFILES = {
         "require_policy_diagnostics": True,
         "require_structural_diagnostics": True,
         "require_standard_smokes": False,
+    },
+    "m4-reuse-diagnostic": {
+        "masks": M4_REUSE_MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("on",),
+        "rounds": 1,
+        "expected_processes": len(M4_REUSE_MASKS) * len(PREFETCH_PROFILES),
+        "require_policy_diagnostics": True,
+        "require_structural_diagnostics": True,
+        "require_standard_smokes": False,
+        "reuse_passes": 3,
+    },
+    "m4-reuse-performance": {
+        "masks": M4_REUSE_MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("off",),
+        "rounds": 3,
+        "expected_processes": len(M4_REUSE_MASKS) * len(PREFETCH_PROFILES) * 3,
+        "require_standard_smokes": False,
+        "reuse_passes": 3,
     },
 }
 CONTROLLED_PAIRS = ((0, 4), (2, 6), (32795, 32799))
@@ -632,6 +653,133 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
         require(header == expected_fields, f"{path} must use canonical ns fields")
 
 
+def validate_reuse_run_artifacts(output, log_path, mask, prefetch, accounting, run,
+                                 dataset_digest, require_policy_diagnostics,
+                                 require_structural_diagnostics, pass_count):
+    lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    pass_records = [
+        parse_record(line) for line in lines
+        if line.startswith(f"fixture={FIXTURE},record=pass")
+    ]
+    summary_records = [
+        parse_record(line) for line in lines
+        if line.startswith(f"fixture={FIXTURE},record=summary")
+    ]
+    require(len(pass_records) == pass_count,
+            f"{log_path.name} must contain {pass_count} pass records")
+    require(len(summary_records) == 1, f"{log_path.name} must contain one summary record")
+    expected_passes = ("cold-forward", "warm-reverse", "warm-forward")
+    pass_records.sort(key=lambda record: int(record.get("pass_index", "-1")))
+    summary_record = summary_records[0]
+    for index, record in enumerate(pass_records):
+        expected = {
+            "resolution": "540x960",
+            "requested_mask": str(mask),
+            "effective_mask": str(mask),
+            "prefetch_profile": prefetch,
+            "accounting": accounting,
+            "image_count": str(EXPECTED_JPEGS),
+            "pass": expected_passes[index],
+            "pass_index": str(index + 1),
+            "pass_count": str(pass_count),
+        }
+        for key, value in expected.items():
+            require(record.get(key) == value,
+                    f"{log_path.name} pass {index + 1} {key}={record.get(key)!r},"
+                    f" expected {value!r}")
+    require(summary_record.get("overallPass") == "true",
+            f"{log_path.name} did not report overallPass=true")
+    require(summary_record.get("resolution") == "540x960"
+            and summary_record.get("requested_mask") == str(mask)
+            and summary_record.get("effective_mask") == str(mask)
+            and summary_record.get("prefetch_profile") == prefetch
+            and summary_record.get("passes") == str(pass_count),
+            f"{log_path.name} summary configuration mismatch")
+    if accounting == "off":
+        for key in ("prefetch_request_count", "prefetch_ready_count",
+                    "prefetch_failed_count", "prefetch_not_prefetchable_count"):
+            require(summary_record.get(key) == "0",
+                    f"{log_path.name} {key} must be zero when accounting is off")
+    elif prefetch == "off":
+        for key in ("prefetch_request_count", "prefetch_ready_count",
+                    "prefetch_failed_count", "prefetch_not_prefetchable_count"):
+            require(summary_record.get(key) == "0",
+                    f"{log_path.name} {key} must be zero")
+    else:
+        require(summary_record.get("prefetch_request_count") == str(EXPECTED_JPEGS),
+                f"{log_path.name} prefetch request count is not 663")
+        require(summary_record.get("prefetch_ready_count") == str(EXPECTED_JPEGS - 3),
+                f"{log_path.name} prefetch ready count is not 660")
+        require(summary_record.get("prefetch_failed_count") == "0",
+                f"{log_path.name} prefetch failed count is not zero")
+        require(summary_record.get("prefetch_not_prefetchable_count") == "3",
+                f"{log_path.name} prefetch not-prefetchable count is not 3")
+
+    run_dir = expected_run_dir(output, mask, prefetch, accounting, run)
+    environment = json.loads((output / "environment.json").read_text(encoding="utf-8"))
+    require(environment.get("datasetFileCount") == EXPECTED_JPEGS
+            and environment.get("datasetHash") == dataset_digest,
+            f"{output}/environment.json dataset mismatch")
+    require(environment.get("expectedLogicalWidth") == 540
+            and environment.get("expectedLogicalHeight") == 960
+            and environment.get("effectiveLogicalWidth") == 540
+            and environment.get("effectiveLogicalHeight") == 960,
+            f"{output}/environment.json is not 540x960")
+    target_width = environment.get("skiaSurfaceWidth")
+    target_height = environment.get("skiaSurfaceHeight")
+    target_row_bytes = environment.get("skiaSurfaceRowBytes")
+    target_color_type = environment.get("skiaSurfaceColorType")
+    target_alpha_type = environment.get("skiaSurfaceAlphaType")
+    n32_color_type = environment.get("kN32SkColorType")
+    target_class = environment.get("skiaSurfaceColorClassification")
+    require(isinstance(target_width, int) and target_width > 0
+            and isinstance(target_height, int) and target_height > 0
+            and isinstance(target_row_bytes, int) and target_row_bytes > 0
+            and isinstance(target_color_type, int) and target_color_type >= 0
+            and isinstance(target_alpha_type, int) and target_alpha_type >= 0
+            and isinstance(n32_color_type, int) and n32_color_type >= 0,
+            f"{output}/environment.json lacks native target metrics")
+    require(target_class in ("BGRA8888", "RGB565", "OTHER"),
+            f"{output}/environment.json lacks target-color classification")
+    require(environment.get("rendererBackend") in ("software", "gpu"),
+            f"{output}/environment.json lacks renderer backend")
+    require(target_width == EXPECTED_TARGET_WIDTH and target_height == EXPECTED_TARGET_HEIGHT,
+            f"{output}/environment.json has unexpected physical target size")
+    minimum_row_bytes = {"BGRA8888": target_width * 4,
+                         "RGB565": target_width * 2,
+                         "OTHER": target_width}[target_class]
+    require(target_row_bytes >= minimum_row_bytes,
+            f"{output}/environment.json has an inconsistent target pitch")
+
+    for index, record in enumerate(pass_records):
+        pass_dir = run_dir / "passes" / record["pass"]
+        for name in ("summary.json", "frames.csv", "counters.json", "memory.csv", "timeline.csv"):
+            require((pass_dir / name).is_file(), f"{pass_dir / name} is missing")
+        run_summary = json.loads((pass_dir / "summary.json").read_text(encoding="utf-8"))
+        counters = json.loads((pass_dir / "counters.json").read_text(encoding="utf-8"))
+        require(run_summary.get("status") == "PASS", f"{pass_dir}/summary.json is not PASS")
+        require(run_summary.get("requestedMask") == mask
+                and run_summary.get("effectiveMask") == mask
+                and run_summary.get("prefetch") == prefetch
+                and run_summary.get("accounting") == accounting
+                and run_summary.get("imageCount") == EXPECTED_JPEGS
+                and run_summary.get("pass") == record["pass"],
+                f"{pass_dir}/summary.json configuration mismatch")
+        require(run_summary.get("frameCount", 0) > 1,
+                f"{pass_dir}/summary.json has no measured frames")
+        validate_temporal_artifacts(pass_dir, run_summary, record, summary_record)
+        validate_diagnostic_counters(counters, pass_dir, accounting,
+                                     require_policy_diagnostics)
+        if require_structural_diagnostics:
+            require(accounting == "on",
+                    f"{pass_dir} structural diagnostics require accounting")
+            validate_structural_diagnostics(counters, pass_dir, mask)
+
+    for name in ("summary.json", "frames.csv", "counters.json", "memory.csv", "timeline.csv"):
+        require((run_dir / name).is_file(), f"{run_dir / name} is missing")
+    return json.loads((run_dir / "summary.json").read_text(encoding="utf-8"))
+
+
 def tail(path, count=60):
     return "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[-count:])
 
@@ -644,7 +792,12 @@ def expected_run_dir(output, mask, prefetch, accounting, run):
 
 def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, dataset_digest,
                            require_policy_diagnostics=False,
-                           require_structural_diagnostics=False):
+                           require_structural_diagnostics=False, passes=1):
+    if passes != 1:
+        return validate_reuse_run_artifacts(
+            output, log_path, mask, prefetch, accounting, run, dataset_digest,
+            require_policy_diagnostics, require_structural_diagnostics, passes,
+        )
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     pass_records = [
         parse_record(line) for line in lines
@@ -765,7 +918,8 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
 
 
 def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run, label,
-                require_policy_diagnostics=False, require_structural_diagnostics=False):
+                require_policy_diagnostics=False, require_structural_diagnostics=False,
+                passes=1):
     executable = executable_path(bundle, manifest)
     logs = output / "logs"
     logs.mkdir(parents=True, exist_ok=True)
@@ -784,6 +938,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         f"--image-optimization={mask}",
         f"--prefetch={prefetch}",
         f"--accounting={accounting}",
+        f"--passes={passes}",
         f"--run={run}",
         f"--dataset-hash={corpus_digest}",
     ]
@@ -814,7 +969,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
     try:
         summary = validate_run_artifacts(
             output, log_path, mask, prefetch, accounting, run, corpus_digest,
-            require_policy_diagnostics, require_structural_diagnostics
+            require_policy_diagnostics, require_structural_diagnostics, passes
         )
     except BenchmarkFailure as error:
         print(f"{label} failed validation; log={log_path}", file=sys.stderr)
@@ -894,7 +1049,8 @@ def require_smokes_completed(output, corpus_digest):
 
 def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles,
                accounting_profiles, rounds, expected_processes,
-               require_policy_diagnostics=False, require_structural_diagnostics=False):
+               require_policy_diagnostics=False, require_structural_diagnostics=False,
+               passes=1):
     plan = write_suite_plan(output, masks, prefetch_profiles, accounting_profiles,
                             rounds, expected_processes)
     completed = 0
@@ -903,6 +1059,7 @@ def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles
             bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run,
             f"matrix-{run}-{mask}-{prefetch}-{accounting}",
             require_policy_diagnostics, require_structural_diagnostics,
+            passes,
         )
         completed += 1
         print(f"matrix progress={completed}/{expected_processes}")
@@ -1134,6 +1291,179 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
     return path
 
 
+def write_reuse_pairwise_comparison(output, rows, masks, prefetch_profiles, rounds):
+    pairs = ((0, 32), (0, 8192), (32, 8224), (8192, 8224))
+    for control, enabled in pairs:
+        require(control in masks and enabled in masks,
+                f"reuse profile lacks controlled pair {control}->{enabled}")
+    pass_names = ("cold-forward", "warm-reverse", "warm-forward")
+    by_key = {(row["mask"], row["prefetch"], row["run"], row["pass"]): row
+              for row in rows}
+    fields = [
+        "pair", "prefetch", "run", "pass", "variance_status",
+        "control_work_p50_ns", "enabled_work_p50_ns", "work_p50_delta_ns",
+        "work_p50_delta_pct", "control_work_p95_ns", "enabled_work_p95_ns",
+        "work_p95_delta_ns", "work_p95_delta_pct", "control_paint_p50_ns",
+        "enabled_paint_p50_ns", "paint_p50_delta_ns", "paint_p50_delta_pct",
+        "control_paint_p95_ns", "enabled_paint_p95_ns", "paint_p95_delta_ns",
+        "paint_p95_delta_pct",
+    ]
+    output_rows = []
+    for control, enabled in pairs:
+        for prefetch in prefetch_profiles:
+            for pass_name in pass_names:
+                deltas = []
+                for run in range(1, rounds + 1):
+                    control_row = by_key.get((control, prefetch, run, pass_name))
+                    enabled_row = by_key.get((enabled, prefetch, run, pass_name))
+                    require(control_row is not None and enabled_row is not None,
+                            f"missing reuse pair {control}->{enabled},"
+                            f" prefetch={prefetch},run={run},pass={pass_name}")
+                    deltas.append(enabled_row["work_time_p50_ns"]
+                                   - control_row["work_time_p50_ns"])
+                directions = {direction(delta) for delta in deltas}
+                variance_status = ("INCONCLUSIVE_VARIANCE" if len(directions) > 1
+                                   else "CONSISTENT_DIRECTION")
+                for run in range(1, rounds + 1):
+                    control_row = by_key[(control, prefetch, run, pass_name)]
+                    enabled_row = by_key[(enabled, prefetch, run, pass_name)]
+                    work_p50_delta = (enabled_row["work_time_p50_ns"]
+                                      - control_row["work_time_p50_ns"])
+                    work_p95_delta = (enabled_row["work_time_p95_ns"]
+                                      - control_row["work_time_p95_ns"])
+                    paint_p50_delta = (enabled_row["paint_time_p50_ns"]
+                                       - control_row["paint_time_p50_ns"])
+                    paint_p95_delta = (enabled_row["paint_time_p95_ns"]
+                                       - control_row["paint_time_p95_ns"])
+                    output_rows.append({
+                        "pair": f"{control}->{enabled}",
+                        "prefetch": prefetch,
+                        "run": run,
+                        "pass": pass_name,
+                        "variance_status": variance_status,
+                        "control_work_p50_ns": control_row["work_time_p50_ns"],
+                        "enabled_work_p50_ns": enabled_row["work_time_p50_ns"],
+                        "work_p50_delta_ns": work_p50_delta,
+                        "work_p50_delta_pct": delta_percent(
+                            control_row["work_time_p50_ns"], enabled_row["work_time_p50_ns"]),
+                        "control_work_p95_ns": control_row["work_time_p95_ns"],
+                        "enabled_work_p95_ns": enabled_row["work_time_p95_ns"],
+                        "work_p95_delta_ns": work_p95_delta,
+                        "work_p95_delta_pct": delta_percent(
+                            control_row["work_time_p95_ns"], enabled_row["work_time_p95_ns"]),
+                        "control_paint_p50_ns": control_row["paint_time_p50_ns"],
+                        "enabled_paint_p50_ns": enabled_row["paint_time_p50_ns"],
+                        "paint_p50_delta_ns": paint_p50_delta,
+                        "paint_p50_delta_pct": delta_percent(
+                            control_row["paint_time_p50_ns"], enabled_row["paint_time_p50_ns"]),
+                        "control_paint_p95_ns": control_row["paint_time_p95_ns"],
+                        "enabled_paint_p95_ns": enabled_row["paint_time_p95_ns"],
+                        "paint_p95_delta_ns": paint_p95_delta,
+                        "paint_p95_delta_pct": delta_percent(
+                            control_row["paint_time_p95_ns"], enabled_row["paint_time_p95_ns"]),
+                    })
+    path = output / "m4-reuse-pairwise.csv"
+    with path.open("w", newline="", encoding="utf-8") as destination:
+        writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(output_rows)
+    print(f"reuse pairwise comparison passed,path={path},rows={len(output_rows)}")
+    return path
+
+
+def aggregate_reuse(output, plan, masks, prefetch_profiles, accounting_profiles, rounds,
+                    expected_processes, profile_name, require_policy_diagnostics,
+                    require_structural_diagnostics, pass_count):
+    counter_fields = (
+        "imageMaterializations", "nativeGeometryMaterializations", "backingLiveBytes",
+        "backingPeakBytes", "targetColorAttempts", "targetColorHits",
+        "targetColorFallbacks", "targetColorMaterializations", "targetColorConvertedBytes",
+        "targetColorUniqueSources", "targetColorUniqueFullKeys",
+        "targetColorUniqueNoDestinationKeys", "targetColorUniqueIntrinsicKeys",
+        "targetColorAcquisitionSources", "physicalVariantLookups", "physicalVariantHits",
+        "physicalVariantMisses", "physicalVariantStores", "physicalVariantEvictions",
+        "physicalVariantBytes", "physicalVariantUniqueSources",
+        "physicalVariantUniqueFullKeys", "physicalVariantUniqueNoSurfaceSizeKeys",
+        "physicalVariantPendingReplacements", "sharedSlotTargetToPhysical",
+        "sharedSlotPhysicalToTarget", "sharedPendingTargetToPhysical",
+        "sharedPendingPhysicalToTarget", "physicalIdentityAttempts",
+        "physicalIdentityHits", "physicalIdentityFallbacks",
+    )
+    pass_names = ("cold-forward", "warm-reverse", "warm-forward")
+    environment = json.loads((output / "environment.json").read_text(encoding="utf-8"))
+    rows = []
+    for _, order, run, mask, prefetch, accounting in plan:
+        base = expected_run_dir(output, mask, prefetch, accounting, run)
+        for pass_index, pass_name in enumerate(pass_names, start=1):
+            pass_dir = base / "passes" / pass_name
+            summary_path = pass_dir / "summary.json"
+            counters_path = pass_dir / "counters.json"
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            counters = json.loads(counters_path.read_text(encoding="utf-8"))
+            require(summary.get("status") == "PASS", f"invalid reuse status: {summary_path}")
+            require(summary.get("pass") == pass_name
+                    and summary.get("requestedMask") == mask
+                    and summary.get("effectiveMask") == mask
+                    and summary.get("prefetch") == prefetch
+                    and summary.get("accounting") == accounting,
+                    f"invalid reuse configuration: {summary_path}")
+            diagnostics = validate_diagnostic_counters(
+                counters, pass_dir, accounting, require_policy_diagnostics)
+            if require_structural_diagnostics:
+                validate_structural_diagnostics(counters, pass_dir, mask)
+            for field in TEMPORAL_SUMMARY_FIELDS:
+                require_nonnegative_ns(summary.get(field), f"{summary_path} {field}")
+            for field in FRAME_THRESHOLD_COUNT_FIELDS:
+                require_nonnegative_count(summary.get(field), f"{summary_path} {field}")
+            row = {
+                "order": order,
+                "run": run,
+                "pass_index": pass_index,
+                "pass": pass_name,
+                "prefetch": prefetch,
+                "accounting": accounting,
+                "mask": mask,
+                "status": summary["status"],
+                "frame_count": summary["frameCount"],
+                "frame_p50_ns": summary["frameTimeP50Ns"],
+                "frame_p95_ns": summary["frameTimeP95Ns"],
+                "frame_p99_ns": summary["frameTimeP99Ns"],
+                "frame_max_ns": summary["frameTimeMaxNs"],
+                "work_time_p50_ns": summary["workTimeP50Ns"],
+                "work_time_p95_ns": summary["workTimeP95Ns"],
+                "work_time_p99_ns": summary["workTimeP99Ns"],
+                "work_time_max_ns": summary["workTimeMaxNs"],
+                "paint_time_p50_ns": summary["paintTimeP50Ns"],
+                "paint_time_p95_ns": summary["paintTimeP95Ns"],
+                "paint_time_p99_ns": summary["paintTimeP99Ns"],
+                "paint_time_max_ns": summary["paintTimeMaxNs"],
+                "target_color_class": environment.get("skiaSurfaceColorClassification"),
+                "raster_bytes": counters.get("accounting", {}).get("raster", {}).get("bytes"),
+                **diagnostics,
+            }
+            for field in counter_fields:
+                row[field] = counters.get(field)
+            rows.append(row)
+    require(len(rows) == expected_processes * pass_count,
+            f"reuse aggregation did not find {expected_processes * pass_count} pass summaries")
+    fields = [
+        "order", "run", "pass_index", "pass", "prefetch", "accounting", "mask", "status",
+        "frame_count", "frame_p50_ns", "frame_p95_ns", "frame_p99_ns", "frame_max_ns",
+        "work_time_p50_ns", "work_time_p95_ns", "work_time_p99_ns", "work_time_max_ns",
+        "paint_time_p50_ns", "paint_time_p95_ns", "paint_time_p99_ns", "paint_time_max_ns",
+        "target_color_class", "raster_bytes",
+    ] + list(counter_fields)
+    path = output / "m4-reuse-passes.csv"
+    with path.open("w", newline="", encoding="utf-8") as destination:
+        writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(sorted(rows, key=lambda row: (row["run"], row["pass_index"],
+                                                       row["prefetch"], row["mask"])))
+    write_reuse_pairwise_comparison(output, rows, masks, prefetch_profiles, rounds)
+    print(f"reuse aggregation passed,summary={path},rows={len(rows)}")
+    return path
+
+
 def write_zip(bundle, output):
     archive = output / f"totalcross-image-benchmark-results-{time.time_ns()}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as destination:
@@ -1193,13 +1523,23 @@ def run_phase(bundle, phase, profile_name):
         profile["accounting"], profile["rounds"], profile["expected_processes"],
         profile.get("require_policy_diagnostics", False),
         profile.get("require_structural_diagnostics", False),
+        profile.get("reuse_passes", 1),
     )
-    aggregate(
-        output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
-        profile["rounds"], profile["expected_processes"], profile_name,
-        profile.get("require_policy_diagnostics", False),
-        profile.get("require_structural_diagnostics", False),
-    )
+    if profile.get("reuse_passes", 1) == 1:
+        aggregate(
+            output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
+            profile["rounds"], profile["expected_processes"], profile_name,
+            profile.get("require_policy_diagnostics", False),
+            profile.get("require_structural_diagnostics", False),
+        )
+    else:
+        aggregate_reuse(
+            output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
+            profile["rounds"], profile["expected_processes"], profile_name,
+            profile.get("require_policy_diagnostics", False),
+            profile.get("require_structural_diagnostics", False),
+            profile["reuse_passes"],
+        )
     if phase == "full":
         run_decode_phase(bundle, "full")
     write_zip(bundle, output)

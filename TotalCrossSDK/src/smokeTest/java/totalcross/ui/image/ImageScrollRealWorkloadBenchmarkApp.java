@@ -60,6 +60,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String imageDir;
   private String maskArgument;
   private long runNumber;
+  private int benchmarkPassCount = 1;
   private String outputDir;
   private String runOutputDir;
   private String datasetHashArgument;
@@ -119,6 +120,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           getCommandLine(), "image-optimization", null);
       runNumber = parseRunNumber(ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "run", "0"));
+      benchmarkPassCount = ImageRasterBenchmarkSupport.integerArgument(
+          getCommandLine(), "passes", 1);
       outputDir = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "output", "benchmark-output");
       datasetHashArgument = ImageRasterBenchmarkSupport.argument(
@@ -136,6 +139,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           "missing --image-optimization=<mask>");
       ImageRasterBenchmarkSupport.require(scrollDurationNs > 0,
           "duration must be positive");
+      ImageRasterBenchmarkSupport.require(benchmarkPassCount == 1 || benchmarkPassCount == 3,
+          "passes must be 1 or 3");
       ImageRasterBenchmarkSupport.require("off".equals(prefetchProfile)
           || "on".equals(prefetchProfile),
           "prefetch must be off or on");
@@ -214,13 +219,31 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       prefetchTimer = null;
     }
     try {
-      Image.resetImageOperationAccountingForBenchmarkTest(accountingEnabled());
       int minimum = scroll.sbV.getMinimum();
       int maximum = validMaximum();
-      PassResult cold = runPass("cold", true, minimum, maximum);
-      printPass(cold);
-      writeRunFrames(cold);
-      writeRunSummary(cold);
+      for (int passIndex = 0; passIndex < benchmarkPassCount; passIndex++) {
+        boolean forward = passIndex != 1;
+        String passName = benchmarkPassCount == 1 ? "cold"
+            : passIndex == 0 ? "cold-forward"
+            : passIndex == 1 ? "warm-reverse" : "warm-forward";
+        PassResult result = runPass(passName, forward,
+            forward ? minimum : maximum, maximum);
+        printPass(result, passIndex + 1, benchmarkPassCount);
+        if (benchmarkPassCount == 1) {
+          writeRunFrames(result);
+          writeRunSummary(result);
+        } else {
+          String passOutputDir = ImageRasterBenchmarkSupport.joinPath(
+              ImageRasterBenchmarkSupport.joinPath(runOutputDir, "passes"), passName);
+          ImageRasterBenchmarkSupport.ensureDirectory(passOutputDir);
+          writeRunFrames(result, passOutputDir);
+          writeRunSummary(result, passOutputDir);
+          if (passIndex == benchmarkPassCount - 1) {
+            writeRunFrames(result);
+            writeRunSummary(result);
+          }
+        }
+      }
       finishBenchmark(true, "");
     } catch (Throwable failure) {
       String error = reportFailure(failure);
@@ -257,6 +280,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",requested_mask=" + requestedMask
         + ",effective_mask=" + effectiveMask
         + ",run=" + runNumber
+        + ",passes=" + benchmarkPassCount
         + ",output_dir=" + String.valueOf(runOutputDir)
         + ",image_dir=" + String.valueOf(imageDir)
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
@@ -778,7 +802,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     ImageRasterBenchmarkSupport.require(value >= 0, "negative " + description);
   }
 
-  private void printPass(PassResult result) {
+  private void printPass(PassResult result, int passIndex, int passCount) {
     System.out.println("fixture=ImageScrollRealWorkloadBenchmarkApp,record=pass"
         + ",resolution=" + width + "x" + height
         + ",prefetch_profile=" + prefetchProfile
@@ -786,6 +810,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",requested_mask=" + (maskArgument == null ? "default" : maskArgument)
         + ",effective_mask=" + ImageOptimizationSettings.getEffectiveMask()
         + ",run=" + runNumber
+        + ",pass_index=" + passIndex + ",pass_count=" + passCount
         + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
         + ",ui_build_elapsed_ns=" + uiBuildElapsedNs
@@ -830,6 +855,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void writeRunFrames(PassResult result) throws Exception {
+    writeRunFrames(result, runOutputDir);
+  }
+
+  private void writeRunFrames(PassResult result, String targetDir) throws Exception {
     StringBuilder frames = new StringBuilder(4096);
     frames.append("frame_index,elapsed_ns,frame_time_ns,scroll_value,scroll_work_ns,paint_work_ns,work_time_ns,")
         .append("jpeg_decode_count,jpeg_decode_ns,")
@@ -848,7 +877,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           .append(result.frameJpegOtherCounts[i]).append(',').append(result.frameJpegOtherNs[i]).append('\n');
     }
     ImageRasterBenchmarkSupport.writeUtf8(
-        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "frames.csv"), frames.toString());
+        ImageRasterBenchmarkSupport.joinPath(targetDir, "frames.csv"), frames.toString());
   }
 
   private void writeEnvironment() throws Exception {
@@ -929,12 +958,17 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void writeRunSummary(PassResult result) throws Exception {
+    writeRunSummary(result, runOutputDir);
+  }
+
+  private void writeRunSummary(PassResult result, String targetDir) throws Exception {
     long requestedMask = ImageOptimizationSettings.getMask();
     long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
     String json = "{\n"
         + "  \"fixture\":\"ImageScrollRealWorkloadBenchmarkApp\",\n"
         + "  \"status\":\"" + (requestedMask == effectiveMask ? "PASS" : "INVALID_CONFIGURATION") + "\",\n"
         + "  \"run\":" + runNumber + ",\n"
+        + "  \"pass\":\"" + result.name + "\",\n"
         + "  \"corpus\":\"" + escapeJson(imageDir) + "\",\n"
         + "  \"imageCount\":" + imageControlCount + ",\n"
         + "  \"columns\":" + COLUMN_COUNT + ",\n"
@@ -969,18 +1003,22 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + result.maxConsecutiveOverNs(FRAME_THRESHOLD_33_3_NS) + "\n"
         + "}\n";
     ImageRasterBenchmarkSupport.writeUtf8(
-        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "summary.json"), json);
-    writeCounters(result.counters);
+        ImageRasterBenchmarkSupport.joinPath(targetDir, "summary.json"), json);
+    writeCounters(result.counters, targetDir);
   }
 
   private void writeCounters(Counters counters) throws Exception {
+    writeCounters(counters, runOutputDir);
+  }
+
+  private void writeCounters(Counters counters, String targetDir) throws Exception {
     StringBuilder json = new StringBuilder(4096);
     json.append("{\n");
     if (!counters.accountingAvailable) {
       json.append("  \"accountingEnabled\":false,\n")
           .append("  \"diagnosticsAvailable\":false\n}\n");
       ImageRasterBenchmarkSupport.writeUtf8(
-          ImageRasterBenchmarkSupport.joinPath(runOutputDir, "counters.json"), json.toString());
+          ImageRasterBenchmarkSupport.joinPath(targetDir, "counters.json"), json.toString());
       return;
     }
     json.append("  \"accountingEnabled\":true,\n")
@@ -1134,7 +1172,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(",\"argb4444Bytes\":").append(jsonMetric(counters.argb4444Bytes)).append("}\n")
         .append("  }\n}\n");
     ImageRasterBenchmarkSupport.writeUtf8(
-        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "counters.json"), json.toString());
+        ImageRasterBenchmarkSupport.joinPath(targetDir, "counters.json"), json.toString());
   }
 
   private static void appendCounter(StringBuilder json, String name, long value, boolean comma) {
