@@ -54,7 +54,7 @@ Bootstrap:
 ## Progress
 
 - [x] Bootstrap the branch and commit this plan plus initial state.
-- [ ] M1 — implement the minimal raster scroll-reuse path and instrumentation.
+- [x] M1 — implement the minimal raster scroll-reuse path and instrumentation.
 - [ ] M2 — add the reduced realistic benchmark and prove visual/behavioral
       correctness on macOS.
 - [ ] M3 — run the small diagnostic/performance matrices, commit results, and
