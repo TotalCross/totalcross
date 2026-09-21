@@ -41,6 +41,8 @@ source/evidence paths needed for the next action.
   rerun the exact ten-process gate with target-color acquisition required.
 - [x] (2026-09-21) Bound integral-coordinate tolerance to local float ULPs
   with a `1/1024` cap; focused numeric tests and the exact M3 gate passed.
+- [x] (2026-09-21) Recorded the final ULP correction and fresh M3 evidence in
+  documentation commit `f9d878fb7`.
 - [ ] M4 — not started; remains gated by recorded M3 review approval.
 
 ## M1 correction gate
