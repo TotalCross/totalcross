@@ -719,9 +719,10 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
             require(diagnostics_available in (0, 1),
                     f"{frames_path} diagnostics_available must be 0 or 1")
             for name, value in values.items():
-                if name in ("diagnostics_available", "visible_control_first",
+                if name in FRAME_FIELDS[:19] or "jpeg_decode" in name or name in (
+                            "diagnostics_available", "visible_control_first",
                             "visible_control_last", "visible_control_count",
-                            "visible_control_path_hash") or "jpeg_decode" in name:
+                            "visible_control_path_hash"):
                     continue
                 numeric = int(value)
                 if diagnostics_available:
