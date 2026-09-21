@@ -478,7 +478,7 @@ TC_API void tugG_scrollRasterRegion_iiiii(NMParams p) // totalcross/ui/gfx/Graph
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_hashRasterRegionForTest_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public static long hashRasterRegionForTest(int x, int y, int width, int height);
+TC_API void tugG_hashRasterRegion_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public static long hashRasterRegion(int x, int y, int width, int height);
 {
 #if TC_RENDERER_SKIA && TC_GRAPHICS_SOFTWARE
    p->retL = skia_hash_raster_region(p->i32[0], p->i32[1], p->i32[2], p->i32[3]);

@@ -239,7 +239,7 @@ totalcross/ui/gfx/Graphics|native public int getRGB(int []data, int offset, int 
 totalcross/ui/gfx/Graphics|native public int setRGB(int []data, int offset, int x, int y, int w, int h);
 totalcross/ui/gfx/Graphics|native public static void fadeScreen(int fadeValue);
 totalcross/ui/gfx/Graphics|native public static boolean scrollRasterRegion(int x, int y, int width, int height, int deltaY);
-totalcross/ui/gfx/Graphics|native public static long hashRasterRegionForTest(int x, int y, int width, int height);
+totalcross/ui/gfx/Graphics|native public static long hashRasterRegion(int x, int y, int width, int height);
 totalcross/ui/gfx/Graphics|native public static boolean isSoftwareRasterBackend();
 totalcross/ui/font/Font|native void fontCreate();
 totalcross/ui/font/FontMetrics|native void fontMetricsCreate();

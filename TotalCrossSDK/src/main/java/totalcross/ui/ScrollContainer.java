@@ -124,6 +124,21 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     return r;
   }
 
+  /** Returns a deterministic hash of the physical scrolling viewport for benchmark assertions. */
+  public long rasterReuseViewportHashForTest() {
+    Rect viewport = bag0.getAbsoluteRect();
+    double scale = Graphics.getMainWindowContentScale();
+    int px0 = physicalInteger(viewport.x * scale);
+    int py0 = physicalInteger(viewport.y * scale);
+    int px1 = physicalInteger((viewport.x + viewport.width) * scale);
+    int py1 = physicalInteger((viewport.y + viewport.height) * scale);
+    if (px0 == Integer.MIN_VALUE || py0 == Integer.MIN_VALUE || px1 == Integer.MIN_VALUE
+        || py1 == Integer.MIN_VALUE || px1 <= px0 || py1 <= py0) {
+      return 0;
+    }
+    return Graphics.hashRasterRegion(px0, py0, px1 - px0, py1 - py0);
+  }
+
   /** Asynchronously prepares every image descendant of the scrolling content. */
   public void prepareForDisplay(final Runnable onComplete) {
     Runnable request = new Runnable() {

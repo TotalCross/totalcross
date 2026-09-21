@@ -269,7 +269,7 @@ TC_API void tugG_getRGB_Iiiiii(NMParams p);
 TC_API void tugG_setRGB_Iiiiii(NMParams p);
 TC_API void tugG_fadeScreen_i(NMParams p);
 TC_API void tugG_scrollRasterRegion_iiiii(NMParams p);
-TC_API void tugG_hashRasterRegionForTest_iiii(NMParams p);
+TC_API void tugG_hashRasterRegion_iiii(NMParams p);
 TC_API void tugG_isSoftwareRasterBackend(NMParams p);
 TC_API void tugG_drawText_Ciiiibi(NMParams p);
 TC_API void tugG_drawText_siiiibi(NMParams p);

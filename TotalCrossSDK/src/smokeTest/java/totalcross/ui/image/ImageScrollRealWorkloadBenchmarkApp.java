@@ -13,10 +13,12 @@ import totalcross.ui.Container;
 import totalcross.ui.Flick;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
+import totalcross.ui.RenderingOptimizations;
 import totalcross.ui.ScrollContainer;
 import totalcross.ui.Window;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
+import totalcross.ui.gfx.Graphics;
 
 /** Real-corpus scrolling workload based on the customer-provided Tcsort layout. */
 public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements TimerListener {
@@ -31,6 +33,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final long FRAME_THRESHOLD_33_3_NS = 33_300_000L;
   private static final long FRAME_THRESHOLD_50_NS = 50_000_000L;
   private static final long FRAME_THRESHOLD_100_NS = 100_000_000L;
+  private static final int POC_IMAGE_COUNT = 120;
+  private static final int POC_SEGMENT_COUNT = 4;
+  private static final int[] POC_SEGMENT_DURATIONS_MS = {500, 250, 200, 150};
+  private static final long POC_FRAME_INTERVAL_NS = 16L * NANOS_PER_MILLISECOND;
   private static final int EXPECTED_LOGICAL_WIDTH = 540;
   private static final int EXPECTED_LOGICAL_HEIGHT = 960;
   private static final String MODE_BENCHMARK = "benchmark";
@@ -67,6 +73,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String datasetHashArgument;
   private String prefetchProfile;
   private String accountingProfile;
+  private String benchmarkProfile;
+  private boolean scrollRasterReuseProfile;
+  private int workloadImageCount = IMAGE_COUNT;
+  private int measuredRowPaints;
+  private int measuredImagePaints;
   private long benchmarkTargetWidth = -1;
   private long benchmarkTargetHeight = -1;
   private long benchmarkTargetRowBytes = -1;
@@ -134,14 +145,21 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           getCommandLine(), "prefetch", "off");
       accountingProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "accounting", "on");
+      benchmarkProfile = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "profile", "standard");
+      scrollRasterReuseProfile = "scroll-raster-reuse-poc".equals(benchmarkProfile);
+      workloadImageCount = scrollRasterReuseProfile ? POC_IMAGE_COUNT : IMAGE_COUNT;
+      configureScrollRasterReuse();
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
           "missing --corpus=<dir>");
       ImageRasterBenchmarkSupport.require(maskArgument != null && maskArgument.length() > 0,
           "missing --image-optimization=<mask>");
       ImageRasterBenchmarkSupport.require(scrollDurationNs > 0,
           "duration must be positive");
-      ImageRasterBenchmarkSupport.require(benchmarkPassCount == 1 || benchmarkPassCount == 3,
-          "passes must be 1 or 3");
+      ImageRasterBenchmarkSupport.require(scrollRasterReuseProfile
+          ? benchmarkPassCount == 2 : benchmarkPassCount == 1 || benchmarkPassCount == 3,
+          scrollRasterReuseProfile ? "scroll raster reuse profile requires passes=2"
+              : "passes must be 1 or 3");
       ImageRasterBenchmarkSupport.require("off".equals(prefetchProfile)
           || "on".equals(prefetchProfile),
           "prefetch must be off or on");
@@ -162,14 +180,17 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
       long buildStartNs = System.nanoTime();
       String[] imagePaths = sortedCorpusPaths(imageDir);
-      ImageRasterBenchmarkSupport.require(imagePaths.length == IMAGE_COUNT,
-          "expected exactly " + IMAGE_COUNT + " corpus files but found " + imagePaths.length);
+      ImageRasterBenchmarkSupport.require(imagePaths.length >= workloadImageCount,
+          "expected at least " + workloadImageCount + " corpus files but found " + imagePaths.length);
+      if (imagePaths.length != workloadImageCount) {
+        imagePaths = Arrays.copyOf(imagePaths, workloadImageCount);
+      }
       buildUi(imagePaths);
       benchmarkImagePaths = imagePaths;
       uiBuildElapsedNs = System.nanoTime() - buildStartNs;
-      ImageRasterBenchmarkSupport.require(rowCount == IMAGE_COUNT / COLUMN_COUNT,
+      ImageRasterBenchmarkSupport.require(rowCount == workloadImageCount / COLUMN_COUNT,
           "unexpected row count " + rowCount);
-      ImageRasterBenchmarkSupport.require(imageControlCount == IMAGE_COUNT,
+      ImageRasterBenchmarkSupport.require(imageControlCount == workloadImageCount,
           "unexpected ImageControl count " + imageControlCount);
       ImageRasterBenchmarkSupport.require(scroll.sbV != null, "real workload vertical scrollbar");
       int minimum = scroll.sbV.getMinimum();
@@ -221,6 +242,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       prefetchTimer = null;
     }
     try {
+      if (scrollRasterReuseProfile) {
+        executeScrollRasterReuseProfile();
+        finishBenchmark(true, "");
+        return;
+      }
       int minimum = scroll.sbV.getMinimum();
       int maximum = validMaximum();
       for (int passIndex = 0; passIndex < benchmarkPassCount; passIndex++) {
@@ -287,7 +313,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",passes=" + benchmarkPassCount
         + ",output_dir=" + String.valueOf(runOutputDir)
         + ",image_dir=" + String.valueOf(imageDir)
-        + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
+        + ",profile=" + benchmarkProfile
+        + ",image_count=" + workloadImageCount + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
         + ",ui_build_elapsed_ns=" + uiBuildElapsedNs
         + ",prefetch_elapsed_ns=" + prefetchElapsedNs
@@ -334,6 +361,17 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
   }
 
+  private void configureScrollRasterReuse() {
+    String reuse = ImageRasterBenchmarkSupport.argument(
+        getCommandLine(), "rendering-reuse", "off");
+    ImageRasterBenchmarkSupport.require("off".equals(reuse) || "on".equals(reuse),
+        "rendering-reuse must be off or on");
+    RenderingOptimizations.setMask("on".equals(reuse)
+        ? RenderingOptimizations.SCROLL_RASTER_REUSE : 0);
+    RenderingOptimizations.setDiagnosticsEnabledForTest(scrollRasterReuseProfile);
+    RenderingOptimizations.resetDiagnosticsForTest();
+  }
+
   private static long parseRunNumber(String value) {
     try {
       long run = Long.parseLong(value);
@@ -347,7 +385,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private String runName() {
-    return "mask-" + (maskArgument == null ? "default" : maskArgument)
+    return (scrollRasterReuseProfile ? benchmarkProfile + "-" : "")
+        + "mask-" + (maskArgument == null ? "default" : maskArgument)
         + "-prefetch-" + prefetchProfile + "-accounting-" + accountingProfile
         + "-run-" + runNumber;
   }
@@ -438,14 +477,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           ImageRasterBenchmarkSupport.require(controlsInRow == COLUMN_COUNT,
               "previous row did not contain exactly three ImageControls");
         }
-        row = new Container();
+        row = scrollRasterReuseProfile ? new MeasuredRow() : new Container();
         row.setBackColor(totalcross.ui.gfx.Color.darker(totalcross.ui.gfx.Color.GREEN));
         scroll.add(row, LEFT, AFTER + 2, width, tileWidth);
         rowCount++;
         controlsInRow = 0;
       }
       Image image = new Image(imagePaths[i]).getSmoothScaledInstance(tileWidth, tileWidth);
-      row.add(new ImageControl(image), AFTER + 1, TOP, tileWidth, tileWidth);
+      row.add(scrollRasterReuseProfile ? new MeasuredImageControl(image)
+          : new ImageControl(image), AFTER + 1, TOP, tileWidth, tileWidth);
       controlsInRow++;
       imageControlCount++;
     }
@@ -465,8 +505,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     int firstRow = Math.max(0, scrollValue / rowHeight);
     int visibleRows = Math.max(1, Settings.screenHeight / rowHeight + 2);
     int lastRow = Math.min(rowCount - 1, firstRow + visibleRows);
-    int first = Math.min(IMAGE_COUNT - 1, firstRow * COLUMN_COUNT);
-    int last = Math.min(IMAGE_COUNT - 1, (lastRow + 1) * COLUMN_COUNT - 1);
+    int first = Math.min(workloadImageCount - 1, firstRow * COLUMN_COUNT);
+    int last = Math.min(workloadImageCount - 1, (lastRow + 1) * COLUMN_COUNT - 1);
     long hash = 0xcbf29ce484222325L;
     for (int index = first; index <= last; index++) {
       hash ^= index;
@@ -657,6 +697,189 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         Arrays.copyOf(framePaintMetrics, frames), counters);
   }
 
+  private void executeScrollRasterReuseProfile() throws Exception {
+    int minimum = scroll.sbV.getMinimum();
+    int maximum = validMaximum();
+    int visibleExtent = Math.max(1, scroll.getClientRect().height);
+    int[] waypoints = {
+        minimum,
+        clampScrollValue(minimum + 7L * visibleExtent, minimum, maximum),
+        clampScrollValue(minimum + 4L * visibleExtent, minimum, maximum),
+        clampScrollValue(minimum + 5L * visibleExtent, minimum, maximum),
+        clampScrollValue(minimum + (9L * visibleExtent) / 2L, minimum, maximum)
+    };
+    StringBuilder frames = new StringBuilder(16384);
+    StringBuilder waypointRows = new StringBuilder(4096);
+    frames.append("pass,frame_index,segment_index,elapsed_ns,segment_elapsed_ns,")
+        .append("target_scroll,scroll_value,requested_delta,actual_delta,hit,fallback_reason,")
+        .append("decision_ns,move_ns,dirty_paint_ns,screen_update_ns,scroll_work_ns,")
+        .append("paint_work_ns,work_time_ns,row_paints,image_paints\n");
+    waypointRows.append("pass,waypoint_index,target_scroll,actual_scroll,hash,elapsed_ns,hit,")
+        .append("attempts,hits,fallbacks,post_move_recoveries\n");
+
+    for (int passIndex = 0; passIndex < benchmarkPassCount; passIndex++) {
+      resetToScrollStart(minimum);
+      normalRepaint();
+      RenderingOptimizations.resetDiagnosticsForTest();
+      resetMeasuredPaintCounters();
+      PocPassResult result = runScrollRasterReusePass(passIndex == 0 ? "cold" : "warm",
+          waypoints, frames, waypointRows);
+      validateScrollRasterReusePass(result);
+      printScrollRasterReusePass(result, passIndex + 1);
+    }
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "scroll_raster_reuse_frames.csv"),
+        frames.toString());
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "scroll_raster_reuse_waypoints.csv"),
+        waypointRows.toString());
+    RenderingOptimizations.resetDiagnosticsForTest();
+  }
+
+  private PocPassResult runScrollRasterReusePass(String name, int[] waypoints,
+      StringBuilder frames, StringBuilder waypointRows) {
+    long passStartNs = System.nanoTime();
+    int frameIndex = 0;
+    for (int segmentIndex = 0; segmentIndex < POC_SEGMENT_COUNT; segmentIndex++) {
+      int segmentStart = waypoints[segmentIndex];
+      int segmentEnd = waypoints[segmentIndex + 1];
+      long segmentStartNs = System.nanoTime();
+      long segmentDurationNs = POC_SEGMENT_DURATIONS_MS[segmentIndex] * NANOS_PER_MILLISECOND;
+      long nextFrameNs = 0;
+      while (true) {
+        long frameStartNs = System.nanoTime();
+        long segmentElapsedNs = frameStartNs - segmentStartNs;
+        if (frameIndex > 0 && segmentElapsedNs < nextFrameNs) {
+          long remainingNs = nextFrameNs - segmentElapsedNs;
+          Vm.sleep((int) Math.min(4L, Math.max(1L,
+              (remainingNs + NANOS_PER_MILLISECOND - 1) / NANOS_PER_MILLISECOND)));
+          continue;
+        }
+        long boundedElapsedNs = Math.min(segmentElapsedNs, segmentDurationNs);
+        int target = boundedElapsedNs >= segmentDurationNs ? segmentEnd
+            : interpolateScroll(segmentStart, segmentEnd, boundedElapsedNs, segmentDurationNs);
+        int before = scroll.sbV.getValue();
+        long decisionBefore = RenderingOptimizations.diagnosticMetricForTest(8);
+        long moveBefore = RenderingOptimizations.diagnosticMetricForTest(9);
+        long dirtyBefore = RenderingOptimizations.diagnosticMetricForTest(10);
+        long screenBefore = RenderingOptimizations.diagnosticMetricForTest(11);
+        resetMeasuredPaintCounters();
+        Window.needsPaint = false;
+        long workStartNs = System.nanoTime();
+        long scrollStartNs = System.nanoTime();
+        ImageRasterBenchmarkSupport.require(scroll.scrollContent(0, target - before, true)
+            || target == before, name + " stopped before reaching target");
+        long scrollWorkNs = System.nanoTime() - scrollStartNs;
+        boolean hit = target != before
+            && RenderingOptimizations.diagnosticMetricForTest(19) == 1;
+        long paintWorkNs = hit ? 0 : normalRepaint();
+        long workTimeNs = System.nanoTime() - workStartNs;
+        long actualDelta = scroll.sbV.getValue() - before;
+        String fallbackReason = RenderingOptimizations.lastFallbackReasonForTest();
+        frames.append(name).append(',').append(frameIndex).append(',').append(segmentIndex).append(',')
+            .append(frameStartNs - passStartNs).append(',').append(segmentElapsedNs).append(',')
+            .append(target).append(',').append(scroll.sbV.getValue()).append(',')
+            .append(target - before).append(',').append(actualDelta).append(',').append(hit ? 1 : 0)
+            .append(',').append(fallbackReason).append(',')
+            .append(RenderingOptimizations.diagnosticMetricForTest(8) - decisionBefore).append(',')
+            .append(RenderingOptimizations.diagnosticMetricForTest(9) - moveBefore).append(',')
+            .append(RenderingOptimizations.diagnosticMetricForTest(10) - dirtyBefore).append(',')
+            .append(RenderingOptimizations.diagnosticMetricForTest(12)).append(',')
+            .append(scrollWorkNs).append(',').append(paintWorkNs).append(',').append(workTimeNs)
+            .append(',').append(measuredRowPaints).append(',').append(measuredImagePaints).append('\n');
+        frameIndex++;
+        if (boundedElapsedNs >= segmentDurationNs && scroll.sbV.getValue() == segmentEnd) {
+          long hash = scroll.rasterReuseViewportHashForTest();
+          waypointRows.append(name).append(',').append(segmentIndex + 1).append(',')
+              .append(segmentEnd).append(',').append(scroll.sbV.getValue()).append(',')
+              .append(ImageRasterBenchmarkSupport.hashString(hash)).append(',')
+              .append(System.nanoTime() - passStartNs).append(',')
+              .append(RenderingOptimizations.diagnosticMetricForTest(19)).append(',')
+              .append(RenderingOptimizations.diagnosticMetricForTest(0)).append(',')
+              .append(RenderingOptimizations.diagnosticMetricForTest(1)).append(',')
+              .append(RenderingOptimizations.diagnosticMetricForTest(2)).append(',')
+              .append(RenderingOptimizations.diagnosticMetricForTest(110)).append('\n');
+          break;
+        }
+        nextFrameNs += POC_FRAME_INTERVAL_NS;
+      }
+    }
+    return new PocPassResult(name, System.nanoTime() - passStartNs, frameIndex,
+        RenderingOptimizations.diagnosticMetricForTest(0),
+        RenderingOptimizations.diagnosticMetricForTest(1),
+        RenderingOptimizations.diagnosticMetricForTest(2),
+        RenderingOptimizations.diagnosticMetricForTest(4),
+        RenderingOptimizations.diagnosticMetricForTest(5),
+        RenderingOptimizations.diagnosticMetricForTest(6),
+        RenderingOptimizations.diagnosticMetricForTest(7),
+        RenderingOptimizations.diagnosticMetricForTest(11),
+        RenderingOptimizations.diagnosticMetricForTest(110));
+  }
+
+  private void validateScrollRasterReusePass(PocPassResult result) {
+    ImageRasterBenchmarkSupport.require(result.attempts == result.hits + result.fallbacks,
+        result.name + " raster reuse accounting mismatch");
+    ImageRasterBenchmarkSupport.require(result.postMoveRecoveries == 0,
+        result.name + " had post-move recovery");
+    if (RenderingOptimizations.getMask() != 0) {
+      ImageRasterBenchmarkSupport.require(result.hits > 0,
+          result.name + " did not record raster reuse hits");
+    } else {
+      ImageRasterBenchmarkSupport.require(result.hits == 0,
+          result.name + " recorded hits with raster reuse disabled");
+    }
+  }
+
+  private void printScrollRasterReusePass(PocPassResult result, int passIndex) {
+    System.out.println("fixture=ImageScrollRealWorkloadBenchmarkApp,record=scroll-raster-reuse"
+        + ",profile=" + benchmarkProfile + ",pass=" + result.name
+        + ",pass_index=" + passIndex + ",rendering_reuse="
+        + (RenderingOptimizations.getMask() == 0 ? "off" : "on")
+        + ",image_count=" + workloadImageCount + ",frame_count=" + result.frameCount
+        + ",elapsed_ns=" + result.elapsedNs + ",attempts=" + result.attempts
+        + ",hits=" + result.hits + ",fallbacks=" + result.fallbacks
+        + ",viewport_pixels=" + result.viewportPixels + ",reused_pixels="
+        + result.reusedPixels + ",dirty_pixels=" + result.dirtyPixels
+        + ",moved_bytes=" + result.movedBytes + ",screen_update_ns="
+        + result.screenUpdateNs + ",post_move_recoveries=" + result.postMoveRecoveries
+        + ",segment_durations_ms=500,250,200,150");
+    System.out.flush();
+  }
+
+  private void resetToScrollStart(int minimum) {
+    long mask = RenderingOptimizations.getMask();
+    RenderingOptimizations.setMask(0);
+    int delta = minimum - scroll.sbV.getValue();
+    if (delta != 0) {
+      ImageRasterBenchmarkSupport.require(scroll.scrollContent(0, delta, true),
+          "could not reset scroll raster profile position");
+    }
+    normalRepaint();
+    RenderingOptimizations.setMask(mask);
+  }
+
+  private long normalRepaint() {
+    Window.needsPaint = true;
+    long startNs = System.nanoTime();
+    scroll.repaintNow();
+    Window.needsPaint = false;
+    return System.nanoTime() - startNs;
+  }
+
+  private void resetMeasuredPaintCounters() {
+    measuredRowPaints = 0;
+    measuredImagePaints = 0;
+  }
+
+  private static int interpolateScroll(int start, int end, long elapsedNs, long durationNs) {
+    long distance = (long) end - start;
+    return (int) (start + distance * elapsedNs / durationNs);
+  }
+
+  private static int clampScrollValue(long value, int minimum, int maximum) {
+    return (int) Math.max(minimum, Math.min(maximum, value));
+  }
+
   private static void validateJpegDiagnostics(Counters counters, String phase) {
     ImageRasterBenchmarkSupport.require(counters != null, phase + " counters are missing");
     if (!counters.accountingAvailable) {
@@ -834,7 +1057,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",effective_mask=" + ImageOptimizationSettings.getEffectiveMask()
         + ",run=" + runNumber
         + ",pass_index=" + passIndex + ",pass_count=" + passCount
-        + ",image_count=" + IMAGE_COUNT + ",rows=" + rowCount
+        + ",profile=" + benchmarkProfile
+        + ",image_count=" + workloadImageCount + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
         + ",ui_build_elapsed_ns=" + uiBuildElapsedNs
         + ",prefetch_elapsed_ns=" + prefetchElapsedNs
@@ -1022,7 +1246,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"totalCrossVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"sdkVersion\":\"" + escapeJson(Settings.versionStr) + "\",\n"
         + "  \"benchmarkVersion\":\"1\",\n"
-        + "  \"datasetFileCount\":" + IMAGE_COUNT + ",\n"
+        + "  \"datasetFileCount\":" + workloadImageCount + ",\n"
         + "  \"datasetHash\":\"" + escapeJson(datasetHashArgument) + "\",\n"
         + "  \"columns\":" + COLUMN_COUNT + "\n"
         + "}\n";
@@ -1341,6 +1565,58 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private static String escapeJson(String value) {
     return value.replace("\\", "\\\\").replace("\"", "\\\"");
+  }
+
+  private final class MeasuredRow extends Container {
+    @Override
+    public void onPaint(Graphics g) {
+      measuredRowPaints++;
+      super.onPaint(g);
+    }
+  }
+
+  private final class MeasuredImageControl extends ImageControl {
+    MeasuredImageControl(Image image) {
+      super(image);
+    }
+
+    @Override
+    public void onPaint(Graphics g) {
+      measuredImagePaints++;
+      super.onPaint(g);
+    }
+  }
+
+  private static final class PocPassResult {
+    final String name;
+    final long elapsedNs;
+    final int frameCount;
+    final long attempts;
+    final long hits;
+    final long fallbacks;
+    final long viewportPixels;
+    final long reusedPixels;
+    final long dirtyPixels;
+    final long movedBytes;
+    final long screenUpdateNs;
+    final long postMoveRecoveries;
+
+    PocPassResult(String name, long elapsedNs, int frameCount, long attempts, long hits,
+        long fallbacks, long viewportPixels, long reusedPixels, long dirtyPixels, long movedBytes,
+        long screenUpdateNs, long postMoveRecoveries) {
+      this.name = name;
+      this.elapsedNs = elapsedNs;
+      this.frameCount = frameCount;
+      this.attempts = attempts;
+      this.hits = hits;
+      this.fallbacks = fallbacks;
+      this.viewportPixels = viewportPixels;
+      this.reusedPixels = reusedPixels;
+      this.dirtyPixels = dirtyPixels;
+      this.movedBytes = movedBytes;
+      this.screenUpdateNs = screenUpdateNs;
+      this.postMoveRecoveries = postMoveRecoveries;
+    }
   }
 
   private static final class FrameMetrics {

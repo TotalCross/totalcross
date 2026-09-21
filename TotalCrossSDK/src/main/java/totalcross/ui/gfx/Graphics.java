@@ -289,7 +289,7 @@ public final class Graphics {
 
   /** Returns a deterministic hash of physical screen bytes for benchmark waypoints. */
   @ReplacedByNativeOnDeploy
-  public static long hashRasterRegionForTest(int x, int y, int width, int height) {
+  public static long hashRasterRegion(int x, int y, int width, int height) {
     if (mainWindowPixels == null || x < 0 || y < 0 || width <= 0 || height <= 0
         || (long) x + width > mainWindowPixelWidth || (long) y + height > mainWindowPixelHeight) {
       return 0;
