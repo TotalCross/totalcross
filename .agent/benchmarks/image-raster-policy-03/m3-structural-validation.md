@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # M3 — structural validation
 
-Implementation HEAD: `367fc887c`.
+Implementation HEAD: `404424e3c`.
 
 The historical M3 implementation commit `0129316af` remains unchanged and
 preserved the approved corrections: canonical intrinsic target-color identity,
@@ -130,3 +130,44 @@ result ZIP SHA-256 is
 
 This remains structural evidence only. M4 reuse and RGB565/target-color
 measurements remain gated and were not started.
+
+## Final ULP-boundary correction
+
+Implementation HEAD: `404424e3c`.
+`integerDoubleValue()` now uses the local float spacing from adjacent
+`nextafterf` values, capped at `1/1024` pixel. Native focused tests accept
+`999.999971 -> 1000` and `1000.000029 -> 1000`, and reject `1000.01`,
+`1000000.1`, and `1000000.4`.
+
+The macOS ARM64 build passed for `tcvm`, `Launcher`, and
+`skia_surface_test`. The final package directory is
+`build/image-raster-policy-03-package-m3-final/image-scroll-benchmark-macos-arm64`.
+Self-test passed with 663 JPEGs and corpus hash `588a7e0f4019424a`. The exact
+structural matrix passed 10/10 processes for masks
+`0,8192,16384,32768,57344`, prefetch on, accounting on, and two rounds.
+Every process completed 189 frames and reached `scroll_end=39091`.
+
+Final aggregate counters remain:
+
+| counter | value |
+|---|---|
+| target color attempts/fallbacks/hits/materializations/acquisition sources | `12/12/0/0/12` |
+| target mapping RootToDevice/SourceMapping/VisibleMapping | `0/0/0` |
+| physical identity attempts/hits/fallbacks | `12/0/12` |
+| physical identity mapping RootToDevice/SourceMapping/VisibleMapping | `0/0/12` |
+| physical variant lookups/misses/hits/stores | `12/12/0/0` |
+| disabled paths | zero |
+| writePixels accounting | consistent |
+
+Runtime SHA-256 is
+`6b5a5d7590b6fdb862a0c1e213c277ba47508d7a4bca557ed9c24c518fe8b84a`;
+result ZIP SHA-256 is
+`41515e8d90d518c1bfaa7c4073aedb55e886b960043f70349e089dd7cd6d431f`;
+bundle ZIP SHA-256 is
+`f722781d007cd3c3dcb3c0e3848e5d7013b43fade85ec7ccde8b3d24f3e62f16`.
+Logs: `/tmp/image-raster-m3-ulp-build.log`,
+`/tmp/image-raster-m3-ulp-native-test.log`,
+`/tmp/image-raster-m3-ulp-self-test.log`, and
+`/tmp/image-raster-m3-ulp-structural-matrix.log`.
+
+All M3 acceptance criteria pass. M4 remains gated and was not started.

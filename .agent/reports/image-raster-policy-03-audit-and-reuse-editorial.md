@@ -229,6 +229,22 @@ variant lookups/misses/hits/stores were `12/12/0/0`; disabled paths were zero
 and writePixels accounting was consistent. This is structural evidence only;
 M4 reuse and RGB565/target-color measurements remain gated.
 
+### M3 final ULP-boundary correction
+
+Implementation HEAD `404424e3c` replaces the magnitude-scaled integral test
+with adjacent-float ULP spacing and a `1/1024`-pixel absolute cap. The focused
+native cases accept `999.999971` and `1000.000029` as `1000`, while rejecting
+`1000.01`, `1000000.1`, and `1000000.4`. This preserves the real 2x source
+mapping proof without making large-coordinate subpixels eligible.
+
+The updated macOS ARM64 package passed self-test and the exact structural
+matrix: 10/10 processes, 189 frames each, masks
+`0,8192,16384,32768,57344`, prefetch/accounting on, and automatic scroll at
+`39091` for every fresh log. Counters remained target-color
+`12/12/0/0/12`, target mapping `0/0/0`, identity `12/0/12` with mapping
+`0/0/12`, physical variants `12/12/0/0`, disabled paths zero, and
+writePixels accounting consistent. M4 remains gated.
+
 ## Useful Evidence and Examples
 
 See

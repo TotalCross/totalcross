@@ -336,3 +336,42 @@ Logs: `/tmp/image-raster-policy-03-final-native-build-2.log`,
 `/tmp/image-raster-m3-final-structural-matrix-2.log`.
 
 `STOP / REVIEW 3` is ready. M4 remains unauthorized and was not started.
+
+## 2026-09-21 — M3 ULP-boundary correction
+
+Implementation commit `404424e3c` replaces the unbounded magnitude-scaled
+tolerance in `integerDoubleValue()`. It now measures the adjacent `float`
+spacing with `nextafterf` on both sides and caps the accepted error at
+`1/1024` pixel. Focused native cases accept `999.999971` and `1000.000029`
+as `1000`, while rejecting `1000.01`, `1000000.1`, and `1000000.4`.
+
+The macOS ARM64 `tcvm`, `Launcher`, and `skia_surface_test` build passed.
+The native test passed the focused tolerance cases, final pixels for the
+1000x1000 to 179x179 smooth path at content scale 2 and physical 358x358,
+fractional target-color clipping, inconsistent fractional identity fallback,
+and prior lifecycle/clip/transform coverage.
+
+The updated package directory
+`build/image-raster-policy-03-package-m3-final/image-scroll-benchmark-macos-arm64`
+passed self-test with 663 JPEGs and corpus hash `588a7e0f4019424a`. The exact
+structural matrix passed 10/10: masks `0,8192,16384,32768,57344`, prefetch
+on, accounting on, two rounds, 189 frames per process, and
+`scroll_end=39091` in every fresh log. Aggregate target-color
+attempts/fallbacks/hits/materializations/acquisition sources were
+`12/12/0/0/12`, target mapping was `0/0/0`, identity was `12/0/12` with
+mapping `0/0/12`, physical variants were `12/12/0/0`, disabled paths were
+zero, and writePixels accounting was consistent.
+
+Runtime SHA-256 is
+`6b5a5d7590b6fdb862a0c1e213c277ba47508d7a4bca557ed9c24c518fe8b84a`;
+result ZIP SHA-256 is
+`41515e8d90d518c1bfaa7c4073aedb55e886b960043f70349e089dd7cd6d431f`;
+bundle ZIP SHA-256 is
+`f722781d007cd3c3dcb3c0e3848e5d7013b43fade85ec7ccde8b3d24f3e62f16`.
+Logs: `/tmp/image-raster-m3-ulp-build.log`,
+`/tmp/image-raster-m3-ulp-native-test.log`,
+`/tmp/image-raster-m3-ulp-self-test.log`, and
+`/tmp/image-raster-m3-ulp-structural-matrix.log`.
+
+All M3 acceptance criteria pass at `404424e3c`; `STOP / REVIEW 3` is ready.
+M4 remains unauthorized and was not started.

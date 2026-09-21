@@ -39,6 +39,8 @@ source/evidence paths needed for the next action.
   STOP / REVIEW 3 is ready.
 - [x] (2026-09-19) Correct the M3 lifecycle registry and scaled source mapping;
   rerun the exact ten-process gate with target-color acquisition required.
+- [x] (2026-09-21) Bound integral-coordinate tolerance to local float ULPs
+  with a `1/1024` cap; focused numeric tests and the exact M3 gate passed.
 - [ ] M4 — not started; remains gated by recorded M3 review approval.
 
 ## M1 correction gate
@@ -133,6 +135,11 @@ The signed M3 follow-up commits `922ce2921` and `3c7864115` are preserved.
 Their bodies contain historical lines longer than 80 characters because the
 commit-message audit was run after creation and history is not rewritten:
 `922ce2921` has lines 223 and 323; `3c7864115` has lines 126 and 178.
+
+The signed ULP-boundary correction commit `404424e3c` is preserved. Its first
+body line was found to exceed 80 characters by the post-commit audit; it was
+not amended or rewritten. The exception is recorded here alongside the prior
+historical findings.
 
 ## M2 audit gate
 
@@ -239,6 +246,46 @@ result ZIP SHA-256 is
 `8067a4a6b4b55a49afc49956a127b7b6cd7b65905b97376d52c8f893a1c80886`.
 This remains structural evidence only; delayed materialization and M4 reuse/
 RGB565 measurements remain gated.
+
+## M3 final ULP-boundary correction
+
+Implementation HEAD: `404424e3c` (`fix(vm,skia): bound float rounding tolerance`).
+`integerDoubleValue()` now derives the local float spacing from both adjacent
+`nextafterf` values and caps accepted error at `1/1024` pixel. The focused
+native test accepts `999.999971 -> 1000` and `1000.000029 -> 1000`, while
+rejecting `1000.01`, `1000000.1`, and `1000000.4`. This prevents large
+coordinates from making material subpixel mappings eligible.
+
+Validation passed:
+
+- `ninja -C build/image-scroll-diagnostics-macos tcvm Launcher
+  skia_surface_test`;
+- `build/image-scroll-diagnostics-macos/skia_surface_test`, including the
+  five ULP cases, final-pixel M3 geometry, fractional/inconsistent fallback,
+  lifecycle, clip, and copy assertions;
+- package self-test with 663 JPEGs and corpus hash `588a7e0f4019424a`;
+- exact `raster-structural-smoke` matrix, masks
+  `0,8192,16384,32768,57344`, prefetch/accounting on, two rounds, 10/10
+  PASS, 189 frames each, automatic-scroll endpoint reached.
+
+The fresh matrix aggregate remains target-color attempts/fallbacks/hits/
+materializations/acquisition sources `12/12/0/0/12`, target mapping
+RootToDevice/SourceMapping/VisibleMapping `0/0/0`, physical identity
+attempts/hits/fallbacks `12/0/12`, identity mapping `0/0/12`, physical
+variant lookups/misses/hits/stores `12/12/0/0`, disabled paths zero, and
+writePixels accounting consistent. Runtime SHA-256 is
+`6b5a5d7590b6fdb862a0c1e213c277ba47508d7a4bca557ed9c24c518fe8b84a`;
+result ZIP SHA-256 is
+`41515e8d90d518c1bfaa7c4073aedb55e886b960043f70349e089dd7cd6d431f`;
+bundle ZIP SHA-256 is
+`f722781d007cd3c3dcb3c0e3848e5d7013b43fade85ec7ccde8b3d24f3e62f16`.
+Logs: `/tmp/image-raster-m3-ulp-build.log`,
+`/tmp/image-raster-m3-ulp-native-test.log`,
+`/tmp/image-raster-m3-ulp-self-test.log`, and
+`/tmp/image-raster-m3-ulp-structural-matrix.log`.
+
+All M3 acceptance criteria pass at this HEAD. `STOP / REVIEW 3` is ready;
+M4 remains gated and was not started.
 
 ## Next action
 
