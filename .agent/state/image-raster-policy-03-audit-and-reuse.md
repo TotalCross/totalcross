@@ -43,7 +43,8 @@ source/evidence paths needed for the next action.
   with a `1/1024` cap; focused numeric tests and the exact M3 gate passed.
 - [x] (2026-09-21) Recorded the final ULP correction and fresh M3 evidence in
   documentation commit `f9d878fb7`.
-- [ ] M4 — not started; remains gated by recorded M3 review approval.
+- [ ] M4 — active; preserve the M3 gate and begin the three-pass reuse
+  workload defined by the plan.
 
 ## M1 correction gate
 
@@ -291,7 +292,9 @@ M4 remains gated and was not started.
 
 ## Next action
 
-STOP / REVIEW 3. M4 remains gated and has not started.
+M4 is active. Add the three-pass reuse workload and its diagnostic runner
+profile before starting the accounting-on matrix. Preserve the M3 evidence;
+do not change defaults, delayed materialization, or the shared variant slot.
 
 ## Resume command
 
