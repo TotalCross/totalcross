@@ -487,6 +487,15 @@ TC_API void tugG_hashRasterRegionForTest_iiii(NMParams p) // totalcross/ui/gfx/G
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tugG_isSoftwareRasterBackend(NMParams p) // totalcross/ui/gfx/Graphics native public static boolean isSoftwareRasterBackend();
+{
+#if TC_RENDERER_SKIA && TC_GRAPHICS_SOFTWARE
+   p->retI = 1;
+#else
+   p->retI = 0;
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
    TCObject g = p->obj[0];

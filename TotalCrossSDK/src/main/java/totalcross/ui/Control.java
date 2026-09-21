@@ -2125,13 +2125,21 @@ public class Control extends GfxSurface {
    */
   public static void safeUpdateScreen() {
     if (MainWindow.isMainThread()) {
+      long start = RenderingOptimizations.diagnosticsEnabled() ? System.nanoTime() : 0;
       updateScreen();
+      if (start != 0) {
+        RenderingOptimizations.recordScreenUpdate(System.nanoTime() - start);
+      }
     } else if (!callingUpdScr) {
       callingUpdScr = true;
       MainWindow.getMainWindow().runOnMainThread(new Runnable() {
         @Override
         public void run() {
+          long start = RenderingOptimizations.diagnosticsEnabled() ? System.nanoTime() : 0;
           updateScreen();
+          if (start != 0) {
+            RenderingOptimizations.recordScreenUpdate(System.nanoTime() - start);
+          }
           Thread.yield();
           callingUpdScr = false;
         }

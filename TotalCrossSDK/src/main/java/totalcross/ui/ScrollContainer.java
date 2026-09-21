@@ -513,6 +513,8 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   
   private boolean internalScrollContent(int dx, int dy, boolean fromFlick) {
     boolean scrolled = false;
+    final boolean pendingPaintBeforeScroll = Window.needsPaint;
+    int actualVerticalDelta = 0;
     if((sbV != null || sbH != null) && dx == 0 && dy == 0) {
       if (scrollStarted) {
         scrollStarted = false;
@@ -538,18 +540,157 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       lastV = sbV.value;
 
       if (oldValue != lastV) {
+        actualVerticalDelta = lastV - oldValue;
         bagSetRect(KEEP, contentInsets.top - lastV, KEEP, KEEP, false);
         scrolled = true;
-        if (!fromFlick) {
-          sbV.tempShow();
-        }
       }
     }
 
+    boolean rasterReuseHit = false;
+    if (RenderingOptimizations.isEnabled(RenderingOptimizations.SCROLL_RASTER_REUSE)) {
+      if (dx != 0 && dy == 0) {
+        RenderingOptimizations.recordUnsupportedHorizontal();
+      }
+      if (dy != 0 && sbV != null) {
+        rasterReuseHit = tryRasterReuse(dx, dy, actualVerticalDelta, pendingPaintBeforeScroll);
+      }
+    }
+    if (!rasterReuseHit && !fromFlick && scrolled && sbV != null && dy != 0) {
+      sbV.tempShow();
+    }
     if (scrolled) {
-      Window.needsPaint = true;
+      if (!rasterReuseHit) {
+        Window.needsPaint = true;
+      }
     }
     return scrolled;
+  }
+
+  private boolean tryRasterReuse(int dx, int requestedDy, int actualDy, boolean pendingPaintBeforeScroll) {
+    final long decisionStart = System.nanoTime();
+    RenderingOptimizations.beginRasterReuseAttempt(requestedDy, actualDy);
+    if (dx != 0) {
+      RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+      RenderingOptimizations.recordRasterReuseFallback(RenderingOptimizations.FALLBACK_UNSUPPORTED_HORIZONTAL);
+      return false;
+    }
+    if (!Graphics.isSoftwareRasterBackend()) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_UNSUPPORTED_BACKEND);
+    }
+    if (!isTopMost()) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_NOT_TOPMOST);
+    }
+    if (pendingPaintBeforeScroll) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_PENDING_REPAINT);
+    }
+    if (offscreen != null || offscreen0 != null || bag.offscreen != null || bag.offscreen0 != null
+        || bag0.offscreen != null || bag0.offscreen0 != null) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_LEGACY_OFFSCREEN);
+    }
+    if (transparentBackground || bag.transparentBackground || bag0.transparentBackground) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_TRANSPARENT_CONTENT);
+    }
+    Rect viewport = bag0.getAbsoluteRect();
+    if (hasPaintAboveViewport(viewport)) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_OVERLAPPING_CONTROL);
+    }
+    if (sbV == null || sbV.transparentBackground) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_OVERLAY_SCROLLBAR);
+    }
+
+    double scale = Graphics.getMainWindowContentScale();
+    int px0 = physicalInteger(viewport.x * scale);
+    int py0 = physicalInteger(viewport.y * scale);
+    int px1 = physicalInteger((viewport.x + viewport.width) * scale);
+    int py1 = physicalInteger((viewport.y + viewport.height) * scale);
+    int physicalDelta = physicalInteger(actualDy * scale);
+    if (px0 == Integer.MIN_VALUE || py0 == Integer.MIN_VALUE || px1 == Integer.MIN_VALUE
+        || py1 == Integer.MIN_VALUE || physicalDelta == Integer.MIN_VALUE || px1 <= px0
+        || py1 <= py0 || px0 < 0 || py0 < 0 || px1 > Graphics.getMainWindowPixelWidth()
+        || py1 > Graphics.getMainWindowPixelHeight()) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_NON_INTEGRAL_GEOMETRY);
+    }
+    int physicalWidth = px1 - px0;
+    int physicalHeight = py1 - py0;
+    long viewportPixels = (long) physicalWidth * physicalHeight;
+    RenderingOptimizations.recordRasterReuseGeometry(viewportPixels);
+    if (physicalDelta == 0 || Math.abs((long) physicalDelta) >= physicalHeight) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_DELTA_OUT_OF_RANGE);
+    }
+    RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+
+    long moveStart = System.nanoTime();
+    if (!Graphics.scrollRasterRegion(px0, py0, physicalWidth, physicalHeight, -physicalDelta)) {
+      RenderingOptimizations.recordRasterReuseMove(System.nanoTime() - moveStart);
+      RenderingOptimizations.recordRasterReuseFallback(RenderingOptimizations.FALLBACK_NATIVE_MOVE_FAILURE);
+      return false;
+    }
+    RenderingOptimizations.recordRasterReuseMove(System.nanoTime() - moveStart);
+
+    int dirtyViewportY0 = actualDy > 0 ? viewport.height - actualDy : 0;
+    int dirtyHeight = Math.abs(actualDy);
+    int dirtyBagY0 = -bag.y + dirtyViewportY0;
+    try {
+      long dirtyStart = System.nanoTime();
+      Graphics bagGraphics = bag.getGraphics();
+      if (bagGraphics == null) {
+        throw new IllegalStateException("scroll bag graphics unavailable");
+      }
+      bagGraphics.setClip(0, dirtyBagY0, bag.width, dirtyHeight);
+      bag.onPaint(bagGraphics);
+      bag.paintDirtyChildren(dirtyBagY0, dirtyBagY0 + dirtyHeight, bag.verticalOnly);
+      sbV.onPaint(sbV.getGraphics());
+      RenderingOptimizations.recordRasterReuseDirtyPaint(System.nanoTime() - dirtyStart);
+      safeUpdateScreen();
+    } catch (Throwable recovery) {
+      RenderingOptimizations.recordRasterReuseFallback(RenderingOptimizations.FALLBACK_POST_MOVE_RECOVERY);
+      Window.needsPaint = true;
+      return false;
+    }
+
+    long dirtyPixels = (long) physicalWidth * Math.abs((long) physicalDelta);
+    long reusedPixels = viewportPixels - dirtyPixels;
+    int pitch = bag.getGraphics() == null ? physicalWidth * 4 : bag.getGraphics().getSurfacePixelPitch();
+    int bytesPerPixel = pitch > 0 && Graphics.getMainWindowPixelWidth() > 0
+        ? Math.max(1, pitch / Graphics.getMainWindowPixelWidth()) : 4;
+    RenderingOptimizations.recordRasterReuseHit(viewportPixels, reusedPixels, dirtyPixels,
+        reusedPixels * bytesPerPixel);
+    return true;
+  }
+
+  private boolean rasterReuseFallback(long decisionStart, int reason) {
+    RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+    RenderingOptimizations.recordRasterReuseFallback(reason);
+    return false;
+  }
+
+  private static int physicalInteger(double value) {
+    if (!Double.isFinite(value)) {
+      return Integer.MIN_VALUE;
+    }
+    double rounded = Math.rint(value);
+    if (rounded != value || rounded < Integer.MIN_VALUE + 1.0 || rounded > Integer.MAX_VALUE) {
+      return Integer.MIN_VALUE;
+    }
+    return (int) rounded;
+  }
+
+  private boolean hasPaintAboveViewport(Rect viewport) {
+    Control child = this;
+    while (child.parent != null) {
+      for (Control sibling = child.next; sibling != null; sibling = sibling.next) {
+        if (sibling.isVisible() && rectanglesIntersect(sibling.getAbsoluteRect(), viewport)) {
+          return true;
+        }
+      }
+      child = child.parent;
+    }
+    return false;
+  }
+
+  private static boolean rectanglesIntersect(Rect first, Rect second) {
+    return first.x < second.x + second.width && second.x < first.x + first.width
+        && first.y < second.y + second.height && second.y < first.y + first.height;
   }
 
   @Override

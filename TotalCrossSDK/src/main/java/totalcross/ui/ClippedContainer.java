@@ -108,4 +108,71 @@ public class ClippedContainer extends Container {
       }
     }
   }
+
+  /** Paints only children intersecting a dirty bag-local vertical strip. */
+  void paintDirtyChildren(int dirtyY0, int dirtyYf, boolean useVerticalSearch) {
+    computeClipRect();
+    final int searchY0 = Math.max(bagClipY0, dirtyY0);
+    final int searchYf = Math.min(bagClipYf, dirtyYf);
+    if (searchY0 >= searchYf) {
+      return;
+    }
+    Window pw = getParentWindow();
+    if (pw == Window.topMost) {
+      pw = null;
+    }
+    if (useVerticalSearch) {
+      Object[] items = tabOrder.items;
+      int n = tabOrder.size();
+      if (n == 0) {
+        lastMid = -1;
+        return;
+      }
+      int first = lastMid != -1 && lastMid < n
+          && ((Control) items[lastMid]).isVisibleAndInside(searchY0, searchYf)
+          ? lastMid : findOneVisible(searchY0, searchYf, 0, n);
+      if (first < 0) {
+        lastMid = -1;
+        return;
+      }
+      while (first > 0 && ((Control) items[first - 1]).isVisibleAndInside(searchY0, searchYf)) {
+        first--;
+      }
+      int last = first - 1;
+      for (int i = first; i < n; i++) {
+        Control child = (Control) items[i];
+        if (child == null) {
+          continue;
+        }
+        if (last >= first && !child.isVisibleAndInside(searchY0, searchYf)) {
+          break;
+        }
+        if (child.isVisibleAndInside(searchY0, searchYf)
+            && (pw == null || !child.isObscured(pw))) {
+          paintDirtyChild(child, dirtyY0, dirtyYf);
+          last = i;
+        }
+      }
+      lastMid = last < first ? -1 : (first + last) / 2;
+    } else {
+      for (Control child = children; child != null; child = child.next) {
+        if (child.isVisibleAndInside(bagClipX0, searchY0, bagClipXf, searchYf)
+            && (pw == null || !child.isObscured(pw))) {
+          paintDirtyChild(child, dirtyY0, dirtyYf);
+        }
+      }
+    }
+  }
+
+  private void paintDirtyChild(Control child, int dirtyY0, int dirtyYf) {
+    Graphics childGraphics = child.getGraphics();
+    if (childGraphics == null) {
+      return;
+    }
+    childGraphics.setClip(0, dirtyY0 - child.y, child.width, dirtyYf - dirtyY0);
+    child.onPaint(childGraphics);
+    if (child.asContainer != null) {
+      child.asContainer.paintChildren();
+    }
+  }
 }

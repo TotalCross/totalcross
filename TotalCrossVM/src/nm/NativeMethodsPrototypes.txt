@@ -219,6 +219,7 @@ TC_API void tugG_setRGB_Iiiiii(NMParams p);
 TC_API void tugG_fadeScreen_i(NMParams p);
 TC_API void tugG_scrollRasterRegion_iiiii(NMParams p);
 TC_API void tugG_hashRasterRegionForTest_iiii(NMParams p);
+TC_API void tugG_isSoftwareRasterBackend(NMParams p);
 TC_API void tufF_fontCreate(NMParams p);
 TC_API void tufFM_fontMetricsCreate(NMParams p);
 TC_API void tufFM_charWidth_c(NMParams p);
@@ -1590,6 +1591,10 @@ TC_API void tugG_scrollRasterRegion_iiiii(NMParams p) // totalcross/ui/gfx/Graph
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_hashRasterRegionForTest_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public static long hashRasterRegionForTest(int x, int y, int width, int height);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_isSoftwareRasterBackend(NMParams p) // totalcross/ui/gfx/Graphics native public static boolean isSoftwareRasterBackend();
 {
 }
 //////////////////////////////////////////////////////////////////////////

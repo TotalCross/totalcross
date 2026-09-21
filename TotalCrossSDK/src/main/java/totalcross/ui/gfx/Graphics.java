@@ -308,6 +308,12 @@ public final class Graphics {
     return hash;
   }
 
+  /** Returns whether the deployed screen uses the software Skia raster backend. */
+  @ReplacedByNativeOnDeploy
+  public static boolean isSoftwareRasterBackend() {
+    return true;
+  }
+
   /**
    * Updates destination-owned scales after a runtime surface configuration change.
    *
