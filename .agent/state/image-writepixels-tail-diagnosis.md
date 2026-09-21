@@ -11,9 +11,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Milestone 0 bootstrap is active.
 - Branch: `perf/writepixels-tail-diagnosis`.
 - Requested base: `perf/image-decode-distributed-benchmark`.
-- Last logical commit: none for this plan yet.
-- Next action: record parent/base SHA and corpus/package prerequisites, then
-  commit the plan/state/evidence bootstrap.
+- Base and starting HEAD: `d5a682e0d1a32928f1e96bc62be083f6f2d813df`.
+- Last logical commit: `a3c1c8820` (`docs(benchmark): plan writePixels tail
+  diagnosis`).
+- Next action: implement the narrow per-frame attribution slice.
 
 ## Working set
 
@@ -39,6 +40,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Created the branch from the checked-out
   `perf/image-decode-distributed-benchmark` branch without touching existing
   untracked artifacts.
+- Confirmed `/Users/flsobral/Downloads/win32/win32/imag` contains 663
+  JPEG-named files and the branch starts at the requested base commit.
 
 ## Deferred validation
 
@@ -46,6 +49,12 @@ SPDX-License-Identifier: LGPL-2.1-only
   instrumentation milestone as required by the objective.
 - No benchmark matrix yet; fresh samples wait for schema and package gates.
 - No historical M1–M4 evidence was modified.
+
+## Historical commit-message audit
+
+The post-commit checker found over-80-character body lines in `a3c1c8820`.
+The signed commit is preserved without amendment or history rewriting, and all
+subsequent commit messages will be wrapped before validation.
 
 ## Active decisions
 
