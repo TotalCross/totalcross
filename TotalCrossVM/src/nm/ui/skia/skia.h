@@ -64,6 +64,14 @@ int64_t skia_image_backing_diagnostic_metric(int32 kind);
 void initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
 void destroySkiaScreen();
 void flushSkia();
+bool skia_scroll_raster_region(int32 x, int32 y, int32 width, int32 height, int32 deltaY);
+uint64_t skia_hash_raster_region(int32 x, int32 y, int32 width, int32 height);
+bool skia_scroll_raster_region_for_test(void* pixels, int32 width, int32 height, int32 rowBytes,
+                                        int32 colorType, int32 x, int32 y, int32 regionWidth,
+                                        int32 regionHeight, int32 deltaY);
+uint64_t skia_hash_raster_region_for_test(void* pixels, int32 width, int32 height, int32 rowBytes,
+                                          int32 colorType, int32 x, int32 y, int32 regionWidth,
+                                          int32 regionHeight);
 
 int skia_makeTypeface(char* name, void *data, int32 size);
 int32 skia_getTypefaceIndex(char* name);

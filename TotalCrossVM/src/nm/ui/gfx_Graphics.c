@@ -469,6 +469,24 @@ TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native p
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tugG_scrollRasterRegion_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public static boolean scrollRasterRegion(int x, int y, int width, int height, int deltaY);
+{
+#if TC_RENDERER_SKIA && TC_GRAPHICS_SOFTWARE
+   p->retI = skia_scroll_raster_region(p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4]);
+#else
+   p->retI = 0;
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_hashRasterRegionForTest_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public static long hashRasterRegionForTest(int x, int y, int width, int height);
+{
+#if TC_RENDERER_SKIA && TC_GRAPHICS_SOFTWARE
+   p->retL = skia_hash_raster_region(p->i32[0], p->i32[1], p->i32[2], p->i32[3]);
+#else
+   p->retL = 0;
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
    TCObject g = p->obj[0];

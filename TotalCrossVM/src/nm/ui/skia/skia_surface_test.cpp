@@ -24,6 +24,76 @@ static bool expectEqual(Pixel actual, Pixel expected, const char* message) {
     return false;
 }
 
+static bool testScrollRasterRegionForColorType(int32 colorType, int bytesPerPixel) {
+    constexpr int width = 7;
+    constexpr int height = 8;
+    const int rowBytes = width * bytesPerPixel;
+    std::vector<unsigned char> pixels(static_cast<size_t>(rowBytes) * height);
+    for (int row = 0; row < height; ++row) {
+        for (int column = 0; column < rowBytes; ++column) {
+            pixels[static_cast<size_t>(row) * rowBytes + column]
+                = static_cast<unsigned char>(row * 17 + column);
+        }
+    }
+    const std::vector<unsigned char> original = pixels;
+    const uint64_t originalHash = skia_hash_raster_region_for_test(
+        pixels.data(), width, height, rowBytes, colorType, 1, 1, 5, 6);
+    if (originalHash == 0 || originalHash != skia_hash_raster_region_for_test(
+            pixels.data(), width, height, rowBytes, colorType, 1, 1, 5, 6)) {
+        std::fputs("raster region hash was not deterministic\n", stderr);
+        return false;
+    }
+    if (!skia_scroll_raster_region_for_test(pixels.data(), width, height, rowBytes, colorType,
+                                            1, 1, 5, 6, -2)) {
+        std::fputs("negative raster region move failed\n", stderr);
+        return false;
+    }
+    for (int row = 0; row < 6; ++row) {
+        const int expectedRow = row < 4 ? row + 2 : row;
+        if (std::memcmp(pixels.data() + static_cast<size_t>(row + 1) * rowBytes + bytesPerPixel,
+                        original.data() + static_cast<size_t>(expectedRow + 1) * rowBytes
+                            + bytesPerPixel,
+                        static_cast<size_t>(5 * bytesPerPixel)) != 0) {
+            std::fputs("negative raster region move copied the wrong row\n", stderr);
+            return false;
+        }
+    }
+    pixels = original;
+    if (!skia_scroll_raster_region_for_test(pixels.data(), width, height, rowBytes, colorType,
+                                            1, 1, 5, 6, 2)) {
+        std::fputs("positive raster region move failed\n", stderr);
+        return false;
+    }
+    for (int row = 0; row < 6; ++row) {
+        const int expectedRow = row >= 2 ? row - 2 : row;
+        if (std::memcmp(pixels.data() + static_cast<size_t>(row + 1) * rowBytes + bytesPerPixel,
+                        original.data() + static_cast<size_t>(expectedRow + 1) * rowBytes
+                            + bytesPerPixel,
+                        static_cast<size_t>(5 * bytesPerPixel)) != 0) {
+            std::fputs("positive raster region move copied the wrong row\n", stderr);
+            return false;
+        }
+    }
+    pixels = original;
+    if (skia_scroll_raster_region_for_test(pixels.data(), width, height, rowBytes, colorType,
+                                           1, 1, 5, 6, 6)
+        || std::memcmp(pixels.data(), original.data(), pixels.size()) != 0) {
+        std::fputs("invalid raster region move was accepted or mutated pixels\n", stderr);
+        return false;
+    }
+    return true;
+}
+
+static bool testScrollRasterRegion() {
+    const bool bgra = testScrollRasterRegionForColorType(kBGRA_8888_SkColorType, 4);
+    const bool rgb565 = testScrollRasterRegionForColorType(kRGB_565_SkColorType, 2);
+    if (!bgra || !rgb565) {
+        return false;
+    }
+    std::puts("scroll raster region assertions passed");
+    return true;
+}
+
 static bool readBinaryFile(const char* path, std::vector<unsigned char>& data) {
     std::ifstream input(path, std::ios::binary | std::ios::ate);
     if (!input) {
@@ -877,6 +947,9 @@ static bool testRasterGeometryPolicyM3() {
 }
 
 int main(int argc, char** argv) {
+    if (!testScrollRasterRegion()) {
+        return 1;
+    }
     if (argc > 1) {
         if (!testTypefaceRegistry(argv[1]) || !testBoldStyle(argv[1])) {
             return 1;

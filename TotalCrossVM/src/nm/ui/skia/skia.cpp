@@ -62,6 +62,8 @@
 
 #include <vector>
 #include <map>
+#include <cstring>
+#include <cstdlib>
 
 
 extern "C" {
@@ -224,6 +226,141 @@ void flushSkia()
 #if TC_WINDOWING_SDL
     TCSDL_UpdateTexture(bitmap.width(), bitmap.height(), bitmap.rowBytes(),bitmap.getPixels());
 #endif
+}
+
+static size_t scrollRasterBytesPerPixel(SkColorType colorType) {
+    switch (colorType) {
+    case kBGRA_8888_SkColorType:
+        return 4;
+    case kRGB_565_SkColorType:
+        return 2;
+    default:
+        return 0;
+    }
+}
+
+static bool validScrollRasterRegion(const SkBitmap& target, int32 x, int32 y, int32 width,
+                                    int32 height, int32 deltaY, size_t* bytesPerPixel) {
+    const size_t pixelBytes = scrollRasterBytesPerPixel(target.colorType());
+    if (target.getPixels() == nullptr || pixelBytes == 0 || x < 0 || y < 0 || width <= 0
+        || height <= 0 || (deltaY != 0
+            && std::llabs(static_cast<long long>(deltaY)) >= height)
+        || static_cast<int64_t>(x) + width > target.width()
+        || static_cast<int64_t>(y) + height > target.height()
+        || target.rowBytes() < static_cast<size_t>(target.width()) * pixelBytes) {
+        return false;
+    }
+    *bytesPerPixel = pixelBytes;
+    return true;
+}
+
+static bool scrollRasterBitmap(SkBitmap& target, int32 x, int32 y, int32 width, int32 height,
+                               int32 deltaY) {
+    if (deltaY == 0) {
+        return false;
+    }
+    size_t bytesPerPixel = 0;
+    if (!validScrollRasterRegion(target, x, y, width, height, deltaY, &bytesPerPixel)) {
+        return false;
+    }
+    const size_t rowBytes = static_cast<size_t>(width) * bytesPerPixel;
+    const size_t stride = target.rowBytes();
+    auto* pixels = static_cast<uint8_t*>(target.getPixels());
+    const int32 shift = deltaY > 0 ? deltaY : -deltaY;
+    const int32 retainedHeight = height - shift;
+    if (deltaY > 0) {
+        for (int32 row = retainedHeight - 1; row >= 0; --row) {
+            std::memmove(pixels + static_cast<size_t>(y + row + deltaY) * stride
+                             + static_cast<size_t>(x) * bytesPerPixel,
+                         pixels + static_cast<size_t>(y + row) * stride
+                             + static_cast<size_t>(x) * bytesPerPixel,
+                         rowBytes);
+        }
+    } else {
+        for (int32 row = 0; row < retainedHeight; ++row) {
+            std::memmove(pixels + static_cast<size_t>(y + row) * stride
+                             + static_cast<size_t>(x) * bytesPerPixel,
+                         pixels + static_cast<size_t>(y + row - deltaY) * stride
+                             + static_cast<size_t>(x) * bytesPerPixel,
+                         rowBytes);
+        }
+    }
+    target.notifyPixelsChanged();
+    return true;
+}
+
+static uint64_t hashRasterBitmap(const SkBitmap& target, int32 x, int32 y, int32 width,
+                                 int32 height) {
+    size_t bytesPerPixel = 0;
+    if (!validScrollRasterRegion(target, x, y, width, height, 0, &bytesPerPixel)) {
+        return 0;
+    }
+    const size_t rowBytes = static_cast<size_t>(width) * bytesPerPixel;
+    const size_t stride = target.rowBytes();
+    const auto* pixels = static_cast<const uint8_t*>(target.getPixels());
+    uint64_t hash = UINT64_C(0xcbf29ce484222325);
+    for (int32 row = 0; row < height; ++row) {
+        const auto* source = pixels + static_cast<size_t>(y + row) * stride
+            + static_cast<size_t>(x) * bytesPerPixel;
+        for (size_t index = 0; index < rowBytes; ++index) {
+            hash ^= source[index];
+            hash *= UINT64_C(0x100000001b3);
+        }
+    }
+    return hash;
+}
+
+bool skia_scroll_raster_region(int32 x, int32 y, int32 width, int32 height, int32 deltaY) {
+#if TC_GRAPHICS_SOFTWARE
+    return scrollRasterBitmap(bitmap, x, y, width, height, deltaY);
+#else
+    UNUSED(x)
+    UNUSED(y)
+    UNUSED(width)
+    UNUSED(height)
+    UNUSED(deltaY)
+    return false;
+#endif
+}
+
+uint64_t skia_hash_raster_region(int32 x, int32 y, int32 width, int32 height) {
+#if TC_GRAPHICS_SOFTWARE
+    return hashRasterBitmap(bitmap, x, y, width, height);
+#else
+    UNUSED(x)
+    UNUSED(y)
+    UNUSED(width)
+    UNUSED(height)
+    return 0;
+#endif
+}
+
+bool skia_scroll_raster_region_for_test(void* pixels, int32 width, int32 height, int32 rowBytes,
+                                        int32 colorType, int32 x, int32 y, int32 regionWidth,
+                                        int32 regionHeight, int32 deltaY) {
+    SkBitmap target;
+    const SkColorType skColorType = static_cast<SkColorType>(colorType);
+    const SkAlphaType alphaType = skColorType == kRGB_565_SkColorType
+        ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+    if (!target.installPixels(SkImageInfo::Make(width, height, skColorType, alphaType),
+                               pixels, static_cast<size_t>(rowBytes))) {
+        return false;
+    }
+    return scrollRasterBitmap(target, x, y, regionWidth, regionHeight, deltaY);
+}
+
+uint64_t skia_hash_raster_region_for_test(void* pixels, int32 width, int32 height, int32 rowBytes,
+                                          int32 colorType, int32 x, int32 y, int32 regionWidth,
+                                          int32 regionHeight) {
+    SkBitmap target;
+    const SkColorType skColorType = static_cast<SkColorType>(colorType);
+    const SkAlphaType alphaType = skColorType == kRGB_565_SkColorType
+        ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+    if (!target.installPixels(SkImageInfo::Make(width, height, skColorType, alphaType),
+                              pixels, static_cast<size_t>(rowBytes))) {
+        return 0;
+    }
+    return hashRasterBitmap(target, x, y, regionWidth, regionHeight);
 }
 
 // Creates a SkTypeface object out of a in-memory TTF file (probably inside some TCZ archive)

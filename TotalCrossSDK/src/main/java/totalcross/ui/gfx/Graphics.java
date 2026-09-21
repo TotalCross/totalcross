@@ -264,6 +264,50 @@ public final class Graphics {
     return (int) scaled;
   }
 
+  /** Moves a physical screen raster region for the software scroll fast path. */
+  @ReplacedByNativeOnDeploy
+  public static boolean scrollRasterRegion(int x, int y, int width, int height, int deltaY) {
+    if (mainWindowPixels == null || x < 0 || y < 0 || width <= 0 || height <= 0 || deltaY == 0
+        || Math.abs((long) deltaY) >= height || (long) x + width > mainWindowPixelWidth
+        || (long) y + height > mainWindowPixelHeight) {
+      return false;
+    }
+    int retainedHeight = height - Math.abs(deltaY);
+    if (deltaY > 0) {
+      for (int row = retainedHeight - 1; row >= 0; row--) {
+        System.arraycopy(mainWindowPixels, (y + row) * mainWindowPixelWidth + x,
+            mainWindowPixels, (y + row + deltaY) * mainWindowPixelWidth + x, width);
+      }
+    } else {
+      for (int row = 0; row < retainedHeight; row++) {
+        System.arraycopy(mainWindowPixels, (y + row - deltaY) * mainWindowPixelWidth + x,
+            mainWindowPixels, (y + row) * mainWindowPixelWidth + x, width);
+      }
+    }
+    return true;
+  }
+
+  /** Returns a deterministic hash of physical screen bytes for benchmark waypoints. */
+  @ReplacedByNativeOnDeploy
+  public static long hashRasterRegionForTest(int x, int y, int width, int height) {
+    if (mainWindowPixels == null || x < 0 || y < 0 || width <= 0 || height <= 0
+        || (long) x + width > mainWindowPixelWidth || (long) y + height > mainWindowPixelHeight) {
+      return 0;
+    }
+    long hash = 0xcbf29ce484222325L;
+    for (int row = 0; row < height; row++) {
+      int offset = (y + row) * mainWindowPixelWidth + x;
+      for (int column = 0; column < width; column++) {
+        int pixel = mainWindowPixels[offset + column];
+        hash = (hash ^ (pixel & 0xFF)) * 0x100000001b3L;
+        hash = (hash ^ ((pixel >>> 8) & 0xFF)) * 0x100000001b3L;
+        hash = (hash ^ ((pixel >>> 16) & 0xFF)) * 0x100000001b3L;
+        hash = (hash ^ ((pixel >>> 24) & 0xFF)) * 0x100000001b3L;
+      }
+    }
+    return hash;
+  }
+
   /**
    * Updates destination-owned scales after a runtime surface configuration change.
    *
