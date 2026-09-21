@@ -6,19 +6,25 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Scroll raster reuse POC state
 
-- Active milestone: M0 — bootstrap and plan state.
+- Active milestone: M1 — implement raster reuse and diagnostics.
 - Branch: `perf/scroll-raster-reuse-poc`.
 - Base branch: `perf/writepixels-tail-diagnosis`.
 - Base SHA: `c57c985a9c5e2030ee72a989b5b5917d932103dd`.
-- Current HEAD: `c57c985a9c5e2030ee72a989b5b5917d932103dd`.
-- Next action: commit this plan, state, and initial evidence as the M0
-  documentation checkpoint, then inspect the native raster and SDK scroll paths
-  named by the plan before implementing M1.
+- Current HEAD: `b91ab518ead60beba1002f60edb94f9d389086ef`.
+- Last logical commit: `b91ab518ead60beba1002f60edb94f9d389086ef` — bootstrap
+  plan, state, and evidence.
+- Next action: inspect the native raster, Graphics replacement, ScrollContainer,
+  ClippedContainer, and existing benchmark paths before implementing the native
+  primitive slice.
 - Active paths: `.agent/plans/scroll-raster-reuse-poc-plan.md`,
   `.agent/state/scroll-raster-reuse-poc.md`,
   `.agent/evidence/scroll-raster-reuse-poc.md`.
-- Focused validation completed: required base branch/ref verified; no build
-  run, as required for M0.
+- Focused validation completed: required base branch/ref verified; copyright
+  headers validated for the three bootstrap files; staged diff check passed;
+  no build run, as required for M0.
+- Commit-message validation: the bootstrap commit was created, but the local
+  checker reported one body line over 80 characters; no history rewrite will be
+  performed, and subsequent commit bodies will be wrapped.
 - Deferred validation: all SDK/native builds, smoke tests, benchmark runs, and
   final result aggregation until their planned milestones.
 - Decisions still active: vertical-only software-raster reuse; default mask
