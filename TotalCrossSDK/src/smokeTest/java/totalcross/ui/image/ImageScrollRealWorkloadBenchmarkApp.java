@@ -238,6 +238,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           ImageRasterBenchmarkSupport.ensureDirectory(passOutputDir);
           writeRunFrames(result, passOutputDir);
           writeRunSummary(result, passOutputDir);
+          writeRunMemory(passOutputDir);
+          writeRunTimeline(passOutputDir);
           if (passIndex == benchmarkPassCount - 1) {
             writeRunFrames(result);
             writeRunSummary(result);
@@ -926,18 +928,26 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void writeMemory() throws Exception {
+    writeRunMemory(runOutputDir);
+  }
+
+  private void writeRunMemory(String targetDir) throws Exception {
     StringBuilder csv = new StringBuilder(2048);
     csv.append("checkpoint,elapsed_ns,current_resident_bytes,peak_resident_bytes,private_bytes,phys_footprint_bytes\n");
     csv.append("memory_unavailable,0,unavailable,unavailable,unavailable,unavailable\n");
     ImageRasterBenchmarkSupport.writeUtf8(
-        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "memory.csv"), csv.toString());
+        ImageRasterBenchmarkSupport.joinPath(targetDir, "memory.csv"), csv.toString());
   }
 
   private void writeTimeline() throws Exception {
+    writeRunTimeline(runOutputDir);
+  }
+
+  private void writeRunTimeline(String targetDir) throws Exception {
     StringBuilder timeline = new StringBuilder(1024);
     timeline.append("event,elapsed_ns,value\n");
     ImageRasterBenchmarkSupport.writeUtf8(
-        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "timeline.csv"), timeline.toString());
+        ImageRasterBenchmarkSupport.joinPath(targetDir, "timeline.csv"), timeline.toString());
   }
 
   private static String reportFailure(Throwable failure) {

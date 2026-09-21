@@ -547,7 +547,7 @@ def validate_diagnostic_counters(counters, run_dir, accounting,
     }
 
 
-def validate_structural_diagnostics(counters, run_dir, mask):
+def validate_structural_diagnostics(counters, run_dir, mask, allow_inactive=False):
     """Require every approved M3 path to expose activity or a measured reject."""
     path_specs = (
         (8192, "targetColorAttempts", (
@@ -566,14 +566,20 @@ def validate_structural_diagnostics(counters, run_dir, mask):
             "physicalIdentityRejectBacking", "physicalIdentityRejectExecution",
         )),
     )
+    exercised = set()
     for bit, attempts_key, reject_keys in path_specs:
         attempts = counter_value(counters, attempts_key, f"{run_dir} {attempts_key}")
         measured_rejects = sum(
             counter_value(counters, key, f"{run_dir} {key}") for key in reject_keys
         )
         if mask & bit:
+            if attempts == 0 and allow_inactive:
+                require(measured_rejects == 0,
+                        f"{run_dir} mask {mask} has unaccounted inactive {attempts_key}")
+                continue
             require(attempts > 0,
                     f"{run_dir} mask {mask} did not exercise {attempts_key}")
+            exercised.add(bit)
             if bit in (8192, 32768):
                 mapping_root_to_device = counter_value(
                     counters, f"{attempts_key[:-8]}MappingRootToDevice",
@@ -599,6 +605,7 @@ def validate_structural_diagnostics(counters, run_dir, mask):
                                     f"{run_dir} writePixels fallbacks")
     require(write_attempts == write_hits + write_fallbacks,
             f"{run_dir} writePixels accounting regressed")
+    return exercised
 
 
 def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_record):
@@ -671,6 +678,7 @@ def validate_reuse_run_artifacts(output, log_path, mask, prefetch, accounting, r
     expected_passes = ("cold-forward", "warm-reverse", "warm-forward")
     pass_records.sort(key=lambda record: int(record.get("pass_index", "-1")))
     summary_record = summary_records[0]
+    structural_activity = set()
     for index, record in enumerate(pass_records):
         expected = {
             "resolution": "540x960",
@@ -773,7 +781,21 @@ def validate_reuse_run_artifacts(output, log_path, mask, prefetch, accounting, r
         if require_structural_diagnostics:
             require(accounting == "on",
                     f"{pass_dir} structural diagnostics require accounting")
-            validate_structural_diagnostics(counters, pass_dir, mask)
+            structural_activity.update(
+                validate_structural_diagnostics(
+                    counters, pass_dir, mask, allow_inactive=index > 0,
+                )
+            )
+
+    if require_structural_diagnostics:
+        for bit, attempts_key in (
+            (8192, "targetColorAttempts"),
+            (16384, "physicalVariantLookups"),
+            (32768, "physicalIdentityAttempts"),
+        ):
+            if mask & bit:
+                require(bit in structural_activity,
+                        f"{run_dir} reuse passes never exercised {attempts_key}")
 
     for name in ("summary.json", "frames.csv", "counters.json", "memory.csv", "timeline.csv"):
         require((run_dir / name).is_file(), f"{run_dir / name} is missing")
@@ -1380,7 +1402,8 @@ def aggregate_reuse(output, plan, masks, prefetch_profiles, accounting_profiles,
         "targetColorFallbacks", "targetColorMaterializations", "targetColorConvertedBytes",
         "targetColorUniqueSources", "targetColorUniqueFullKeys",
         "targetColorUniqueNoDestinationKeys", "targetColorUniqueIntrinsicKeys",
-        "targetColorAcquisitionSources", "physicalVariantLookups", "physicalVariantHits",
+        "targetColorAcquisitionSources", "targetColorPendingReplacements",
+        "physicalVariantLookups", "physicalVariantHits",
         "physicalVariantMisses", "physicalVariantStores", "physicalVariantEvictions",
         "physicalVariantBytes", "physicalVariantUniqueSources",
         "physicalVariantUniqueFullKeys", "physicalVariantUniqueNoSurfaceSizeKeys",
@@ -1394,6 +1417,7 @@ def aggregate_reuse(output, plan, masks, prefetch_profiles, accounting_profiles,
     rows = []
     for _, order, run, mask, prefetch, accounting in plan:
         base = expected_run_dir(output, mask, prefetch, accounting, run)
+        structural_activity = set()
         for pass_index, pass_name in enumerate(pass_names, start=1):
             pass_dir = base / "passes" / pass_name
             summary_path = pass_dir / "summary.json"
@@ -1410,7 +1434,11 @@ def aggregate_reuse(output, plan, masks, prefetch_profiles, accounting_profiles,
             diagnostics = validate_diagnostic_counters(
                 counters, pass_dir, accounting, require_policy_diagnostics)
             if require_structural_diagnostics:
-                validate_structural_diagnostics(counters, pass_dir, mask)
+                structural_activity.update(
+                    validate_structural_diagnostics(
+                        counters, pass_dir, mask, allow_inactive=pass_index > 1,
+                    )
+                )
             for field in TEMPORAL_SUMMARY_FIELDS:
                 require_nonnegative_ns(summary.get(field), f"{summary_path} {field}")
             for field in FRAME_THRESHOLD_COUNT_FIELDS:
@@ -1444,6 +1472,15 @@ def aggregate_reuse(output, plan, masks, prefetch_profiles, accounting_profiles,
             for field in counter_fields:
                 row[field] = counters.get(field)
             rows.append(row)
+        if require_structural_diagnostics:
+            for bit, attempts_key in (
+                (8192, "targetColorAttempts"),
+                (16384, "physicalVariantLookups"),
+                (32768, "physicalIdentityAttempts"),
+            ):
+                if mask & bit:
+                    require(bit in structural_activity,
+                            f"{base} reuse passes never exercised {attempts_key}")
     require(len(rows) == expected_processes * pass_count,
             f"reuse aggregation did not find {expected_processes * pass_count} pass summaries")
     fields = [
@@ -1452,7 +1489,7 @@ def aggregate_reuse(output, plan, masks, prefetch_profiles, accounting_profiles,
         "work_time_p50_ns", "work_time_p95_ns", "work_time_p99_ns", "work_time_max_ns",
         "paint_time_p50_ns", "paint_time_p95_ns", "paint_time_p99_ns", "paint_time_max_ns",
         "target_color_class", "raster_bytes",
-    ] + list(counter_fields)
+    ] + list(DIAGNOSTIC_SUMMARY_FIELDS) + list(counter_fields)
     path = output / "m4-reuse-passes.csv"
     with path.open("w", newline="", encoding="utf-8") as destination:
         writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
