@@ -1448,10 +1448,13 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
 
 
 def write_reuse_pairwise_comparison(output, rows, masks, prefetch_profiles, rounds):
-    pairs = ((0, 32), (0, 8192), (32, 8224), (8192, 8224))
-    for control, enabled in pairs:
-        require(control in masks and enabled in masks,
-                f"reuse profile lacks controlled pair {control}->{enabled}")
+    candidate_pairs = (
+        (0, 32), (0, 8192), (32, 8224), (8192, 8224),
+        (32795, 32799), (32827, 32831),
+    )
+    pairs = tuple((control, enabled) for control, enabled in candidate_pairs
+                  if control in masks and enabled in masks)
+    require(pairs, "reuse profile lacks a controlled pair")
     pass_names = ("cold-forward", "warm-reverse", "warm-forward")
     by_key = {(row["mask"], row["prefetch"], row["run"], row["pass"]): row
               for row in rows}
