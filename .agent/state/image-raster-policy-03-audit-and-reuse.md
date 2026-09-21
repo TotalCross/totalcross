@@ -296,9 +296,11 @@ M4 remains gated and was not started.
 The prior M4 implementation and measurements at `cfdbb480e` are invalid. Its
 `warm-reverse` pass started at the maximum but interpolated from the minimum,
 so its `frames.csv`, aggregates, result ZIPs, and `STOP / REVIEW 4` statement
-must not be used or combined with the corrected rerun. The implementation fix
-is `6007c732b`; it makes interpolation direction-aware without rebuilding the
-UI or clearing image, backing, draw-plan, or raster caches. The runner now
+must not be used or combined with the corrected rerun. The implementation fixes
+are `6007c732b` and `b6140c1a2`; they make interpolation direction-aware and
+sample the requested endpoint before elapsed-time interpolation, without
+rebuilding the UI or clearing image, backing, draw-plan, or raster caches. The
+runner now
 proves pass direction, endpoints, monotonicity, multiple frames, and full
 range in every `frames.csv`.
 
@@ -344,7 +346,7 @@ Those measurements are retained only as invalidated historical artifacts.
 ## Next action
 
 Rerun the complete corrected M4 diagnostic and performance matrices from
-`6007c732b`, then replace the invalidated M4 summary/evidence/report with the
+`b6140c1a2`, then replace the invalidated M4 summary/evidence/report with the
 corrected hashes and traversal proof. Preserve observational interpretation
 and the no-change decisions for defaults, delayed materialization, and the
 single shared variant slot.
