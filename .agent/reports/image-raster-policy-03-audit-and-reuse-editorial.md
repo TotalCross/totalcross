@@ -15,8 +15,9 @@ The corrected bridge reports the real software target `1080x1920`, rowBytes
 four-process audit profile and found no target-key acquisition, no variant
 hits/stores, no cross-kind replacement, and no canvas/save-state rejection.
 `STOP / REVIEW 1` and `STOP / REVIEW 2` are closed; `STOP / REVIEW 3` is
-ready. The app's automatic scroll completed in M2 and M3: 189 frames per
-process, endpoint reached, and no timeout.
+ready. M4 also passed its diagnostic and primary performance matrices; the
+three-pass automatic-scroll workload reached its endpoint without timeout.
+`STOP / REVIEW 4` is ready.
 
 ## Original Plan versus Actual Outcome
 
@@ -24,8 +25,9 @@ The four-milestone plan remains intact. M1 was rerun after correcting the
 target metric transport. M2 added accounting-gated identity and eligibility
 diagnostics and ran only its prescribed four-process profile. M3 applied the
 approved identity/clip corrections, then required a corrective rerun for
-logical-to-physical scale proof and the stricter structural gate. M4 remains
-gated.
+logical-to-physical scale proof and the stricter structural gate. M4 added the
+prescribed three-pass reuse workload, ran both matrices on the final HEAD, and
+preserved the plan's review boundary.
 
 ## What Changed
 
@@ -57,6 +59,13 @@ rectangular states and `saveLayer` remain on the generic path. Lifecycle
 cleanup clears clip authorization before tracked canvases are replaced or
 destroyed.
 
+M4 adds `cold-forward`, `warm-reverse`, and `warm-forward` pass artifacts while
+leaving the single-pass default intact. The runner validates each pass and
+aggregates per-pass timing, lifecycle counters, scoped key multiplicity,
+target classification, bytes, pending replacements, and shared-slot
+transitions. Warm-pass structural diagnostics may be inactive only after the
+same run has exercised the enabled path and the counters remain consistent.
+
 ## Decisions and Trade-offs
 
 Keep intrinsic JPEG opacity independent of bit 1. Use mask `4` for the
@@ -64,6 +73,10 @@ no-bit-1 proof. Mask `32799` includes `RASTER_OPACITY_METADATA` and is
 metadata-enabled, not bit-1-disabled. Accounting off retains external timing
 but makes native diagnostics unavailable. Delayed materialization, defaults,
 and the single raster-variant slot remain unchanged.
+On the measured macOS target, classification is BGRA8888. The 8192 path is
+therefore a target-color attempt toward BGRA8888, not evidence of an RGB565
+surface target; RGB565 is interpreted only as the separate source-storage
+comparison prescribed by M4.
 
 ## Unexpected Problems and Discoveries
 
@@ -87,6 +100,13 @@ on a physical `1080x1920` target. The native 2× test exposed the missing
 mapping proof. After the fix, candidates passed that stage and reached later
 source-mapping fallbacks, while the automatic scroll still reached its
 endpoint without timeout.
+
+The first M4 package fixture lacked the official resource JAR and then lacked
+the SDK `etc` directory; both packaging issues were fixed in temporary SDK
+staging without changing repository sources. The first reuse validation also
+treated zero warm-pass activity as a failure and omitted one diagnostic CSV
+field. The validator and aggregation were corrected narrowly, then both M4
+matrices were rerun on the final HEAD.
 
 ## Validation and Measurable Results
 
@@ -245,13 +265,38 @@ matrix: 10/10 processes, 189 frames each, masks
 `0/0/12`, physical variants `12/12/0/0`, disabled paths zero, and
 writePixels accounting consistent. M4 remains gated.
 
+### M4 reuse and RGB565/target-color measurement
+
+Implementation HEAD `cfdbb480e`; final bundle:
+`build/image-raster-policy-04-package-m4-final2/image-scroll-benchmark-macos-arm64`.
+The bundle self-test passed with 663 JPEGs, corpus hash `588a7e0f4019424a`,
+and physical target `1080x1920`, rowBytes `4320`, BGRA8888, software.
+
+The accounting-on diagnostic matrix passed 8/8 processes and 24 pass rows for
+masks `0,32,8192,8224`, prefetch off/on, one round, and three ordered passes.
+The accounting-off performance matrix passed 24/24 processes and 72 pass rows
+over three rounds. Per-pass evidence is in
+`.agent/benchmarks/image-raster-policy-03/m4-reuse-rgb565-target-color.md`
+and the two result ZIPs recorded there.
+
+The target-color diagnostic totals for masks 8192/8224 were
+`1014/1014/0/0` for attempts/fallbacks/hits/materializations, with zero
+converted bytes. The largest scoped target-key set was `204` sources and
+`202` full/no-destination/intrinsic/acquisition keys. Target pending
+replacements and shared-slot transitions/pending replacements were zero. The
+performance pairwise output had 30 consistent-direction rows and 42
+inconclusive-variance rows; only the four plan-approved comparisons were
+emitted, so no timing-only causality or default recommendation follows.
+
 ## Useful Evidence and Examples
 
 See
 `.agent/benchmarks/image-raster-policy-03/m1-write-pixels-accounting.md`
 for all 20 M1 raw rows and medians,
 `.agent/benchmarks/image-raster-policy-03/m2-variant-audit.md` for M2
-calculations, and
+calculations,
+`.agent/benchmarks/image-raster-policy-03/m4-reuse-rgb565-target-color.md`
+for M4 per-pass and pairwise results, and
 `.agent/evidence/image-raster-policy-03-audit-and-reuse.md` for hashes,
 historical preservation, and the review boundary.
 
@@ -262,7 +307,8 @@ no target-key acquisition; therefore it cannot establish reuse or key
 fragmentation beyond the observed eligible physical keys. M3 is structural
 evidence only: its workload still did not produce benchmark cache hits, while
 the native tests prove the approved reuse cases. M4 reuse/RGB565 measurements
-remain after review. No performance promotion follows from M3.
+are complete as observational evidence, but remain subject to `STOP / REVIEW
+4`; no performance promotion follows from timing alone.
 The old target dimensions are preserved as historical evidence but must not be
 combined with corrected results.
 
@@ -277,10 +323,14 @@ hardware conclusions.
 Lead with the corrected physical target evidence, then show the interleaved
 20-process design, the stable median writePixels benefit, and the unresolved
 tail behavior. Explain the mask-4 intrinsic opacity proof before describing
-metadata-enabled mask 32799.
+metadata-enabled mask 32799. Then use M4 to show how BGRA8888 target
+classification separates target-color fallback evidence from RGB565
+source-storage comparisons, with warm-pass reuse reported as lifecycle data
+rather than inferred from timing.
 
 ## Claims Requiring Human Review
 
-M1 and M2 are closed; M3 is ready at `STOP / REVIEW 3`. M4 reuse, RGB565,
-target-color performance, default-mask, shared-slot, and cross-platform claims
-still require explicit reviewer approval.
+M1 through M3 are closed at their recorded boundaries and M4 is ready at
+`STOP / REVIEW 4`. RGB565 quality/default-mask changes, target-color
+performance promotion, shared-slot changes, and cross-platform
+generalization still require explicit reviewer approval.

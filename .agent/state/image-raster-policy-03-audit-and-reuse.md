@@ -43,8 +43,8 @@ source/evidence paths needed for the next action.
   with a `1/1024` cap; focused numeric tests and the exact M3 gate passed.
 - [x] (2026-09-21) Recorded the final ULP correction and fresh M3 evidence in
   documentation commit `f9d878fb7`.
-- [ ] M4 — active; preserve the M3 gate and begin the three-pass reuse
-  workload defined by the plan.
+- [x] (2026-09-21) M4 — three-pass reuse workload, diagnostic matrix, and
+  primary performance matrix passed at the final implementation HEAD.
 
 ## M1 correction gate
 
@@ -290,11 +290,52 @@ Logs: `/tmp/image-raster-m3-ulp-build.log`,
 All M3 acceptance criteria pass at this HEAD. `STOP / REVIEW 3` is ready;
 M4 remains gated and was not started.
 
+## M4 reuse and target-color measurement
+
+Implementation commits are `92dd7a2b3` for the three-pass workload and
+`cfdbb480e` for per-pass artifact validation, warm-pass structural handling,
+and complete reuse aggregation fields. The final macOS ARM64 bundle is
+`build/image-raster-policy-04-package-m4-final2/image-scroll-benchmark-macos-arm64`.
+Self-test passed with 663 JPEGs, corpus hash `588a7e0f4019424a`, target
+`1080x1920`, rowBytes `4320`, BGRA8888, and software rendering. SDK JAR hash
+is `4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`; the
+runtime hash is
+`6b5a5d7590b6fdb862a0c1e213c277ba47508d7a4bca557ed9c24c518fe8b84a`.
+
+The accounting-on diagnostic matrix passed 8/8 processes and 24 pass rows for
+masks `0,32,8192,8224`, prefetch off/on, one round, and three passes. Its
+result ZIP hash is
+`887295c8732ab81b893d8d42c458db35dc4e3312821e2cf6fd47cb960ac7154c`.
+The accounting-off performance matrix passed 24/24 processes and 72 pass
+rows for the same masks/prefetch modes over three rounds. Its result ZIP hash
+is `002a9d9adc246fdaf975adef6c18daee5c6513f1aaa0e2c40c14669903ccb`.
+
+The target classified as BGRA8888, so 8192 attempted conversion toward
+BGRA8888 and fell back: diagnostic totals for masks 8192/8224 were
+`1014/1014/0/0` for attempts/fallbacks/hits/materializations, with zero
+converted bytes. The largest scoped target-key set was `204` sources and
+`202` full/no-destination/intrinsic/acquisition keys. Target-color pending
+replacements and all shared-slot transitions/pending replacements were zero.
+The performance pairwise CSV classified 30 of 72 rows as
+`CONSISTENT_DIRECTION` and 42 as `INCONCLUSIVE_VARIANCE`; only the four
+plan-approved comparisons were emitted and interpreted.
+
+Full per-pass timing, lifecycle, bytes, target classification, key
+multiplicity, and pairwise evidence is in
+`.agent/benchmarks/image-raster-policy-03/m4-reuse-rgb565-target-color.md`
+and the result ZIPs. No defaults, delayed materialization, or shared variant
+slot changed. A full SDK distribution rebuild was deferred because the SDK
+JAR was unchanged; the changed smoke sources were compiled and deployed
+against that JAR.
+
+`STOP / REVIEW 4` is ready. Preserve the M4 artifacts and do not begin an
+optimization or M5 follow-up without review.
+
 ## Next action
 
-M4 is active. Add the three-pass reuse workload and its diagnostic runner
-profile before starting the accounting-on matrix. Preserve the M3 evidence;
-do not change defaults, delayed materialization, or the shared variant slot.
+Obtain human review at `STOP / REVIEW 4`, keeping RGB565/target-color timing
+interpretations observational and preserving the no-change decisions for
+defaults, delayed materialization, and the single shared variant slot.
 
 ## Resume command
 

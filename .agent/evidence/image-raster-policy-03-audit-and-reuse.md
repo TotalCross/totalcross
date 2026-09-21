@@ -375,3 +375,48 @@ Logs: `/tmp/image-raster-m3-ulp-build.log`,
 
 All M3 acceptance criteria pass at `404424e3c`; `STOP / REVIEW 3` is ready.
 M4 remains unauthorized and was not started.
+
+## 2026-09-21 — M4 reuse and target-color measurement
+
+Implementation HEAD: `cfdbb480e`. The three-pass workload was added in
+`92dd7a2b3`; `cfdbb480e` completed per-pass artifact emission and reuse-aware
+diagnostic aggregation. The final bundle is
+`build/image-raster-policy-04-package-m4-final2/image-scroll-benchmark-macos-arm64`.
+
+The bundle self-test passed with 663 JPEGs and corpus hash
+`588a7e0f4019424a`. The target was `1080x1920`, rowBytes `4320`, BGRA8888,
+alpha `2`, and software rendering. SDK JAR SHA-256 was
+`4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`; runtime
+SHA-256 was
+`6b5a5d7590b6fdb862a0c1e213c277ba47508d7a4bca557ed9c24c518fe8b84a`.
+
+The diagnostic profile passed 8/8 processes and 24 pass rows: masks
+`0,32,8192,8224`, prefetch off/on, accounting on, one round, and the ordered
+passes `cold-forward`, `warm-reverse`, `warm-forward`. Its result ZIP SHA-256
+is `887295c8732ab81b893d8d42c458db35dc4e3312821e2cf6fd47cb960ac7154c`.
+The performance profile passed 24/24 processes and 72 pass rows with the same
+masks/prefetch modes, accounting off, and three rounds. Its result ZIP
+SHA-256 is `002a9d9adc246fdaf975adef6c18daee5c6513f1aaa0e2c40c14669903ccb`.
+
+The per-pass CSV includes work P50/P95/P99/MAX, paint P50/P95/P99/MAX,
+process/round identity, lifecycle counters, raster bytes, target
+classification, scoped key multiplicity, target pending replacements, and
+shared-slot transitions. The final performance CSV has 72 rows and SHA-256
+`d296be3d90d85f3dd4b87354758a32bf9a29764ef76a9803b7b5780e5659f430`; its
+pairwise CSV has 72 rows and SHA-256
+`a22d983a09602c55a5d8dc1471495cd271b39c77190fa2ca1151c15349b57894`.
+
+The target classified as BGRA8888. For masks 8192/8224, accounting-on
+diagnostic totals were `1014` target-color attempts, `1014` fallbacks, zero
+hits, zero materializations, and zero converted bytes. The largest target-key
+set was `204` source keys and `202` full/no-destination/intrinsic/acquisition
+keys. Target pending replacements and all shared-slot transitions/pending
+replacements were zero. Timing comparisons were emitted only for `0->32`,
+`0->8192`, `32->8224`, and `8192->8224`; 30/72 were consistent-direction and
+42/72 inconclusive-variance. No timing-only causal claim was made.
+
+The automatic scroll reached the validated endpoint for every process. A full
+SDK distribution rebuild was deferred because the SDK JAR was unchanged; the
+changed Java smoke sources were compiled and deployed against that JAR.
+Defaults, delayed materialization, and the single shared variant slot were
+not changed. `STOP / REVIEW 4` is ready.
