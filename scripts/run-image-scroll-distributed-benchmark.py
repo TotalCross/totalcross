@@ -631,6 +631,7 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
         require_record_ns(summary_record, field, f"{field} in summary record")
 
     frames_path = run_dir / "frames.csv"
+    positions = []
     with frames_path.open(newline="", encoding="utf-8") as source:
         reader = csv.reader(source)
         require(tuple(next(reader, ())) == FRAME_FIELDS,
@@ -642,6 +643,7 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
             require_nonnegative_ns(int(row[4]), f"{frames_path} scroll_work_ns")
             require_nonnegative_ns(int(row[5]), f"{frames_path} paint_work_ns")
             require_nonnegative_ns(int(row[6]), f"{frames_path} work_time_ns")
+            positions.append(int(row[3]))
             require(int(row[6]) >= int(row[4]),
                     f"{frames_path} work_time_ns is less than scroll_work_ns")
             require(int(row[6]) >= int(row[5]),
@@ -650,6 +652,7 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
                 require_nonnegative_count(int(row[index]), f"{frames_path} {FRAME_FIELDS[index]}")
             for index in (8, 10, 12, 14, 16, 18):
                 require_nonnegative_ns(int(row[index]), f"{frames_path} {FRAME_FIELDS[index]}")
+    validate_scroll_trajectory(frames_path, positions, pass_record)
 
     for path, expected_fields in (
         (run_dir / "memory.csv", MEMORY_FIELDS),
@@ -658,6 +661,33 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
         with path.open(newline="", encoding="utf-8") as source:
             header = tuple(next(csv.reader(source), ()))
         require(header == expected_fields, f"{path} must use canonical ns fields")
+
+
+def validate_scroll_trajectory(frames_path, positions, pass_record):
+    require(len(positions) > 1,
+            f"{frames_path} must contain multiple measured frames")
+    direction = pass_record.get("direction")
+    require(direction in ("top-to-bottom", "bottom-to-top"),
+            f"{frames_path} has an invalid traversal direction")
+    expected_start = int(pass_record["scroll_start"])
+    expected_end = int(pass_record["scroll_end"])
+    expected_distance = int(pass_record["scroll_distance"])
+    require(expected_distance == abs(expected_end - expected_start),
+            f"{frames_path} pass record has an inconsistent scroll distance")
+    require(positions[0] == expected_start,
+            f"{frames_path} does not start at the recorded endpoint")
+    require(positions[-1] == expected_end,
+            f"{frames_path} does not end at the recorded endpoint")
+    if direction == "top-to-bottom":
+        require(all(previous <= current
+                    for previous, current in zip(positions, positions[1:])),
+                f"{frames_path} forward traversal is not non-decreasing")
+    else:
+        require(all(previous >= current
+                    for previous, current in zip(positions, positions[1:])),
+                f"{frames_path} reverse traversal is not non-increasing")
+    require(max(positions) - min(positions) == expected_distance,
+            f"{frames_path} does not cover the full scrollbar range")
 
 
 def validate_reuse_run_artifacts(output, log_path, mask, prefetch, accounting, run,

@@ -496,9 +496,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         Vm.sleep((int) Math.min(4L, sleepMs));
         continue;
       }
-      int target = elapsedNs >= scrollDurationNs
-          ? endpoint
-          : minimum + (int) ((long) (maximum - minimum) * elapsedNs / scrollDurationNs);
+      int target;
+      if (elapsedNs >= scrollDurationNs) {
+        target = endpoint;
+      } else {
+        int progress = (int) ((long) (maximum - minimum) * elapsedNs / scrollDurationNs);
+        target = forward ? minimum + progress : maximum - progress;
+      }
       long jpegDecodeCountBefore = Image.jpegNativeDecodeCountForTest;
       long jpegDecodeNsBefore = Image.jpegNativeDecodeNsForTest;
       long jpegFullCountBefore = Image.jpegNativeDecodeFullCountForTest;
