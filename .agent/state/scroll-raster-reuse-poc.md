@@ -10,9 +10,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Branch: `perf/scroll-raster-reuse-poc`.
 - Base branch: `perf/writepixels-tail-diagnosis`.
 - Base SHA: `c57c985a9c5e2030ee72a989b5b5917d932103dd`.
-- Current HEAD: `a11ced0d5949cf48e4e367f9217aa05b8a85e522`.
-- Last logical commit: `a11ced0d5949cf48e4e367f9217aa05b8a85e522` — add the
-  reduced scroll-raster-reuse correctness profile.
+- Current HEAD: `a7df2f5ac33212f8add87d62d389baab3708ee54`.
+- Last logical commit: `a7df2f5ac33212f8add87d62d389baab3708ee54` — record the
+  raster reuse harness status and deployment blocker.
 - Next action: free or obtain host disk space, deploy the updated macOS smoke
   app, then run the OFF and ON two-pass waypoint matrix.
 - Active paths: `.agent/plans/scroll-raster-reuse-poc-plan.md`,
