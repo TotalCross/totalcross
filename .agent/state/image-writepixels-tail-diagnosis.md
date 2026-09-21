@@ -8,13 +8,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone 0 bootstrap is active.
+- Milestone 1 bounded per-frame attribution is complete; Milestone 2 fresh
+  SDK/macOS package and matrix execution is active.
 - Branch: `perf/writepixels-tail-diagnosis`.
 - Requested base: `perf/image-decode-distributed-benchmark`.
 - Base and starting HEAD: `d5a682e0d1a32928f1e96bc62be083f6f2d813df`.
-- Last logical commit: `a3c1c8820` (`docs(benchmark): plan writePixels tail
-  diagnosis`).
-- Next action: implement the narrow per-frame attribution slice.
+- Last logical commit: `bc4a207e9` (`test(benchmark): add per-frame writePixels
+  attribution`).
+- Next action: run the fresh accounting-on diagnostic and reuse matrices, then
+  the accounting-off timing controls.
 
 ## Working set
 
@@ -42,18 +44,33 @@ SPDX-License-Identifier: LGPL-2.1-only
   untracked artifacts.
 - Confirmed `/Users/flsobral/Downloads/win32/win32/imag` contains 663
   JPEG-named files and the branch starts at the requested base commit.
+- Added frame-scope writePixels attempts, hits, fallbacks, copied bytes,
+  clipped/full counts, dimensions, and backing format metrics.
+- Added scroll-versus-paint frame deltas for JPEG decode, materialization,
+  target-color, physical-variant, backing, and storage-format counters.
+- Extended the packaged macOS runner with diagnostic, reuse, and timing
+  profiles while keeping rendering policy and defaults unchanged.
+- SDK distribution passed through `TotalCrossSDK/gradlew-agent dist -x test`;
+  native macOS `tcvm` and `Launcher` Release build passed.
+- Native `skia_surface_test`, bundle self-test, and all six packaged macOS
+  smoke cases passed after fixing bridge-name truncation and CSV termination.
+- Fresh SDK ZIP: `/tmp/writepixels-tail-diagnosis-m1/TotalCross-7.2.2-bridgefix.zip`.
+- SDK ZIP SHA-256:
+  `ee5f6be1f97424a70598c35cb701d3daec8b67418d774ef5d851cfd20570834a`.
+- Runtime SHA-256:
+  `ca59b0a0436ada76fd34a4ec1dcdafd37dcf418acb5e89f3c00d36b5beb7d975`.
 
 ## Deferred validation
 
-- No SDK/native build yet; builds are deferred until the end of the related
-  instrumentation milestone as required by the objective.
-- No benchmark matrix yet; fresh samples wait for schema and package gates.
+- No fresh diagnostic or timing matrix has been run yet; it starts from the
+  packaged bundle after this checkpoint.
 - No historical M1–M4 evidence was modified.
 
 ## Historical commit-message audit
 
 The post-commit checker found over-80-character body lines in `a3c1c8820` and
-`67310f920`. Both signed commits are preserved without amendment or history
+`67310f920`. The implementation commit `bc4a207e9` also has one over-80
+body line. All three signed commits are preserved without amendment or history
 rewriting. Subsequent commit messages will be wrapped before validation.
 
 ## Active decisions
