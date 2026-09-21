@@ -497,7 +497,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         continue;
       }
       int target;
-      if (elapsedNs >= scrollDurationNs) {
+      if (frames == 0) {
+        target = expectedStart;
+      } else if (elapsedNs >= scrollDurationNs) {
         target = endpoint;
       } else {
         int progress = (int) ((long) (maximum - minimum) * elapsedNs / scrollDurationNs);
