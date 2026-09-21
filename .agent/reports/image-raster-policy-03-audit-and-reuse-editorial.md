@@ -15,8 +15,9 @@ The corrected bridge reports the real software target `1080x1920`, rowBytes
 four-process audit profile and found no target-key acquisition, no variant
 hits/stores, no cross-kind replacement, and no canvas/save-state rejection.
 `STOP / REVIEW 1` and `STOP / REVIEW 2` are closed; `STOP / REVIEW 3` is
-ready. M4 also passed its diagnostic and primary performance matrices; the
-three-pass automatic-scroll workload reached its endpoint without timeout.
+ready. M4 passed its corrected diagnostic and primary performance matrices;
+the three-pass automatic-scroll workload reached its endpoint without timeout
+and every pass proved its direction and full range.
 `STOP / REVIEW 4` is ready.
 
 ## Original Plan versus Actual Outcome
@@ -267,8 +268,8 @@ writePixels accounting consistent. M4 remains gated.
 
 ### M4 reuse and RGB565/target-color measurement
 
-Implementation HEAD `cfdbb480e`; final bundle:
-`build/image-raster-policy-04-package-m4-final2/image-scroll-benchmark-macos-arm64`.
+Implementation HEAD `b6140c1a2`; final bundle:
+`build/image-raster-policy-04-package-m4-corrected2/image-scroll-benchmark-macos-arm64`.
 The bundle self-test passed with 663 JPEGs, corpus hash `588a7e0f4019424a`,
 and physical target `1080x1920`, rowBytes `4320`, BGRA8888, software.
 
@@ -279,12 +280,17 @@ over three rounds. Per-pass evidence is in
 `.agent/benchmarks/image-raster-policy-03/m4-reuse-rgb565-target-color.md`
 and the two result ZIPs recorded there.
 
+The corrected trajectory proof passed 24/24 diagnostic and 72/72 performance
+pass directories: forward passes were non-decreasing `0 -> 39091`, reverse
+passes were non-increasing `39091 -> 0`, all passes had multiple frames, and
+all covered the full range.
+
 The target-color diagnostic totals for masks 8192/8224 were
-`1014/1014/0/0` for attempts/fallbacks/hits/materializations, with zero
-converted bytes. The largest scoped target-key set was `204` sources and
-`202` full/no-destination/intrinsic/acquisition keys. Target pending
+`1002/1002/0/0` for attempts/fallbacks/hits/materializations, with zero
+converted bytes. The largest scoped target-key set was `195` sources and
+`195` full/no-destination/intrinsic/acquisition keys. Target pending
 replacements and shared-slot transitions/pending replacements were zero. The
-performance pairwise output had 30 consistent-direction rows and 42
+performance pairwise output had 15 consistent-direction rows and 57
 inconclusive-variance rows; only the four plan-approved comparisons were
 emitted, so no timing-only causality or default recommendation follows.
 
@@ -309,8 +315,10 @@ evidence only: its workload still did not produce benchmark cache hits, while
 the native tests prove the approved reuse cases. M4 reuse/RGB565 measurements
 are complete as observational evidence, but remain subject to `STOP / REVIEW
 4`; no performance promotion follows from timing alone.
-The old target dimensions are preserved as historical evidence but must not be
-combined with corrected results.
+The prior M4 bundle is preserved only as invalidated historical evidence and
+must not be combined with the corrected results. The corrected target remains
+BGRA8888, so target-color fallback counts are not evidence of materialized
+RGB565 conversion.
 
 ## Possible Article Angles
 

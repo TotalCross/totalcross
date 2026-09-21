@@ -43,9 +43,8 @@ source/evidence paths needed for the next action.
   with a `1/1024` cap; focused numeric tests and the exact M3 gate passed.
 - [x] (2026-09-21) Recorded the final ULP correction and fresh M3 evidence in
   documentation commit `f9d878fb7`.
-- [ ] (2026-09-21) M4 — prior measurements invalidated because `warm-reverse`
-  used the forward interpolation formula; corrected rerun is pending at
-  implementation HEAD `6007c732b`.
+- [x] (2026-09-21) M4 — corrected direction-aware reuse workload and complete
+  diagnostic/performance rerun passed at implementation HEAD `b6140c1a2`.
 
 ## M1 correction gate
 
@@ -291,65 +290,62 @@ Logs: `/tmp/image-raster-m3-ulp-build.log`,
 All M3 acceptance criteria pass at this HEAD. `STOP / REVIEW 3` is ready;
 M4 remains gated and was not started.
 
-## M4 reuse and target-color measurement — invalidated
+## M4 reuse and target-color measurement
 
-The prior M4 implementation and measurements at `cfdbb480e` are invalid. Its
-`warm-reverse` pass started at the maximum but interpolated from the minimum,
-so its `frames.csv`, aggregates, result ZIPs, and `STOP / REVIEW 4` statement
-must not be used or combined with the corrected rerun. The implementation fixes
-are `6007c732b` and `b6140c1a2`; they make interpolation direction-aware and
-sample the requested endpoint before elapsed-time interpolation, without
-rebuilding the UI or clearing image, backing, draw-plan, or raster caches. The
-runner now
-proves pass direction, endpoints, monotonicity, multiple frames, and full
+The prior M4 measurements at `cfdbb480e` were invalidated because
+`warm-reverse` used the forward interpolation formula. Corrections are in
+`6007c732b` and `b6140c1a2`: interpolation is direction-aware and the first
+frame samples the requested endpoint before elapsed-time interpolation. UI,
+image/backing, draw-plan, and raster caches are preserved between passes. The
+runner proves direction, endpoints, monotonicity, multiple frames, and full
 range in every `frames.csv`.
 
-Implementation commits are `92dd7a2b3` for the three-pass workload and
-`cfdbb480e` for per-pass artifact validation, warm-pass structural handling,
-and complete reuse aggregation fields. The final macOS ARM64 bundle is
-`build/image-raster-policy-04-package-m4-final2/image-scroll-benchmark-macos-arm64`.
+The final macOS ARM64 bundle is
+`build/image-raster-policy-04-package-m4-corrected2/image-scroll-benchmark-macos-arm64`.
 Self-test passed with 663 JPEGs, corpus hash `588a7e0f4019424a`, target
 `1080x1920`, rowBytes `4320`, BGRA8888, and software rendering. SDK JAR hash
 is `4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`; the
 runtime hash is
-`6b5a5d7590b6fdb862a0c1e213c277ba47508d7a4bca557ed9c24c518fe8b84a`.
+`6b5a5d7590b6fdb862a0c1e213c277ba47508d7a4bca557ed9c24c518fe8b84a`; bundle
+ZIP hash is
+`8a9ac1c624f2ed96e1c82bc6b316c2b010bb097d4b576cb86aaaa07e3071df05`.
 
-The accounting-on diagnostic matrix passed 8/8 processes and 24 pass rows for
-masks `0,32,8192,8224`, prefetch off/on, one round, and three passes. Its
-result ZIP hash is
-`887295c8732ab81b893d8d42c458db35dc4e3312821e2cf6fd47cb960ac7154c`.
-The accounting-off performance matrix passed 24/24 processes and 72 pass
-rows for the same masks/prefetch modes over three rounds. Its result ZIP hash
-is `002a9d9adc246fdaf975adef6c18daee5c6513f1aaa0e2c40c14669903ccb`.
+The diagnostic matrix passed 8/8 processes and 24 pass rows for masks
+`0,32,8192,8224`, prefetch off/on, accounting on, one round, and three
+passes. Its result ZIP hash is
+`f0a8ff44d4d5c5d60ea8fcd77a4574027ab72e102130754cbdac232d0e98a2a5`.
+The performance matrix passed 24/24 processes and 72 pass rows for the same
+masks/prefetch modes, accounting off, and three rounds. Its result ZIP hash is
+`80a0ff53aa2533161d6c8eb1e657dcd53d57bab6914995a06d1007a5a3bb3f7a`.
 
-The target classified as BGRA8888, so 8192 attempted conversion toward
-BGRA8888 and fell back: diagnostic totals for masks 8192/8224 were
-`1014/1014/0/0` for attempts/fallbacks/hits/materializations, with zero
-converted bytes. The largest scoped target-key set was `204` sources and
-`202` full/no-destination/intrinsic/acquisition keys. Target-color pending
-replacements and all shared-slot transitions/pending replacements were zero.
-The performance pairwise CSV classified 30 of 72 rows as
-`CONSISTENT_DIRECTION` and 42 as `INCONCLUSIVE_VARIANCE`; only the four
-plan-approved comparisons were emitted and interpreted.
+Independent traversal inspection passed 24/24 diagnostic and 72/72
+performance pass directories: forward passes begin at `0` and end at `39091`
+with non-decreasing positions; reverse passes begin at `39091` and end at `0`
+with non-increasing positions; every pass has multiple frames and covers the
+full range. The target classified as BGRA8888, so masks 8192/8224 attempted
+conversion toward BGRA8888 and fell back: totals were `1002/1002/0/0` for
+attempts/fallbacks/hits/materializations, with zero converted bytes. The
+largest scoped target-key set was `195` sources and `195` full,
+no-destination, intrinsic, and acquisition keys. Target pending replacements
+and all shared-slot transitions/pending replacements were zero.
 
-Full per-pass timing, lifecycle, bytes, target classification, key
-multiplicity, and pairwise evidence is in
+The performance pairwise CSV classified 15 of 72 rows as
+`CONSISTENT_DIRECTION` and 57 as `INCONCLUSIVE_VARIANCE`; only
+`0->32`, `0->8192`, `32->8224`, and `8192->8224` were emitted/interpreted.
+Full per-pass evidence is in
 `.agent/benchmarks/image-raster-policy-03/m4-reuse-rgb565-target-color.md`
-and the result ZIPs. No defaults, delayed materialization, or shared variant
-slot changed. A full SDK distribution rebuild was deferred because the SDK
-JAR was unchanged; the changed smoke sources were compiled and deployed
-against that JAR.
+and the corrected result ZIPs. No defaults, delayed materialization, or
+shared variant slot changed. A full SDK distribution rebuild was deferred
+because the SDK JAR was unchanged; the changed smoke sources were compiled
+and deployed against that JAR.
 
-Those measurements are retained only as invalidated historical artifacts.
-`STOP / REVIEW 4` is not ready until the corrected matrices complete.
+`STOP / REVIEW 4` is ready. Do not begin post-M4 optimization or M5.
 
 ## Next action
 
-Rerun the complete corrected M4 diagnostic and performance matrices from
-`b6140c1a2`, then replace the invalidated M4 summary/evidence/report with the
-corrected hashes and traversal proof. Preserve observational interpretation
-and the no-change decisions for defaults, delayed materialization, and the
-single shared variant slot.
+Obtain human review at `STOP / REVIEW 4`, keeping RGB565/target-color timing
+interpretations observational and preserving the no-change decisions for
+defaults, delayed materialization, and the single shared variant slot.
 
 ## Resume command
 

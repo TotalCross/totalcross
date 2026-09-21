@@ -420,3 +420,51 @@ SDK distribution rebuild was deferred because the SDK JAR was unchanged; the
 changed Java smoke sources were compiled and deployed against that JAR.
 Defaults, delayed materialization, and the single shared variant slot were
 not changed. `STOP / REVIEW 4` is ready.
+
+## 2026-09-21 — M4 corrected direction-aware rerun
+
+The preceding M4 record is invalidated. Its `warm-reverse` pass used the
+forward interpolation formula, and a subsequent attempt exposed that a first
+frame could be sampled after a small elapsed-time displacement. Do not combine
+those artifacts with this record. Commits `6007c732b` and `b6140c1a2` correct
+direction-aware interpolation and explicitly sample each pass endpoint first;
+the UI and all image/backing/draw-plan/raster caches remain shared between
+passes.
+
+Final implementation HEAD: `b6140c1a2`. Final bundle:
+`build/image-raster-policy-04-package-m4-corrected2/image-scroll-benchmark-macos-arm64`.
+Self-test passed with 663 JPEGs, corpus hash `588a7e0f4019424a`, target
+`1080x1920`, rowBytes `4320`, BGRA8888, alpha `2`, software renderer, and SDK
+JAR hash `4c1d1a70069dae3c8cc5e11b77eb55d69c300793a896726dfb27bf3b8538e711`.
+Runtime SHA-256:
+`6b5a5d7590b6fdb862a0c1e213c277ba47508d7a4bca557ed9c24c518fe8b84a`.
+Bundle ZIP SHA-256:
+`8a9ac1c624f2ed96e1c82bc6b316c2b010bb097d4b576cb86aaaa07e3071df05`.
+
+The diagnostic matrix passed 8/8 processes and 24 pass rows with masks
+`0,32,8192,8224`, prefetch off/on, accounting on, one round, and three
+passes. Result ZIP SHA-256:
+`f0a8ff44d4d5c5d60ea8fcd77a4574027ab72e102130754cbdac232d0e98a2a5`.
+The performance matrix passed 24/24 processes and 72 pass rows with the same
+masks/prefetch modes, accounting off, and three rounds. Result ZIP SHA-256:
+`80a0ff53aa2533161d6c8eb1e657dcd53d57bab6914995a06d1007a5a3bb3f7a`.
+
+Traversal validation passed independently for all 96 pass directories:
+forward passes were non-decreasing `0 -> 39091`, reverse passes were
+non-increasing `39091 -> 0`, every pass had multiple measured frames, and all
+passes covered the full range. Diagnostic per-pass and pairwise CSV hashes are
+`6f92250676a3b4d4ac0ebe2cc28e3e182381dd56c17af11baee2c79e1f038cec` and
+`134dfa4b289de98265ad4d0a37e52d609f3e20e41060cfee623b942829847fa6`.
+Performance CSV hashes are
+`d4100bc0245ac4831cb173c404c6080fddef6350e73b86c6dd78cc2f9e0f7eeb` and
+`982f172e9efcf89c407347d44abb9b976ee8c8ec5e3ef45ca0cf3f394b2816f1`.
+
+The corrected target classified as BGRA8888. Masks 8192/8224 produced
+`1002/1002/0/0` target-color attempts/fallbacks/hits/materializations, zero
+converted bytes, and zero target pending replacements. The maximum scoped
+target-key set was `195` sources and `195` full/no-destination/intrinsic/
+acquisition keys. Shared-slot transitions and pending replacements were zero.
+The performance pairwise classification was 15 consistent-direction and 57
+inconclusive-variance rows; only `0->32`, `0->8192`, `32->8224`, and
+`8192->8224` were emitted and interpreted. No timing-only causal claim was
+made. `STOP / REVIEW 4` is ready.
