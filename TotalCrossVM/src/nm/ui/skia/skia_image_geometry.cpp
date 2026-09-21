@@ -396,13 +396,22 @@ static bool integerDoubleValue(double value, int32* result) {
         return false;
     }
     const double rounded = std::round(value);
-    // Matrix inversion and device translations use SkScalar floats. Accept a
-    // few float ULPs when the intended boundary is integral; larger fractions
-    // remain fallback cases.
-    const double magnitude = std::max(1.0, std::abs(value));
-    constexpr double kFloatRoundingUlps = 4.0;
-    const double roundingTolerance = kFloatRoundingUlps
-        * static_cast<double>(std::numeric_limits<float>::epsilon()) * magnitude;
+    const float floatValue = static_cast<float>(value);
+    if (!std::isfinite(floatValue)) {
+        return false;
+    }
+    // Matrix inversion and device translations use SkScalar floats. Use the
+    // actual adjacent-float spacing at this coordinate, but cap the accepted
+    // error so large coordinates cannot turn material subpixels into pixels.
+    const float lowerFloat = std::nextafterf(floatValue, -std::numeric_limits<float>::infinity());
+    const float upperFloat = std::nextafterf(floatValue, std::numeric_limits<float>::infinity());
+    const double lowerUlp = std::abs(static_cast<double>(floatValue)
+        - static_cast<double>(lowerFloat));
+    const double upperUlp = std::abs(static_cast<double>(upperFloat)
+        - static_cast<double>(floatValue));
+    constexpr double kMaxFloatRoundingTolerance = 1.0 / 1024.0;
+    const double roundingTolerance = std::min(
+        std::max(lowerUlp, upperUlp), kMaxFloatRoundingTolerance);
     if (std::abs(value - rounded) > roundingTolerance
         || rounded < std::numeric_limits<int32>::min()
         || rounded > std::numeric_limits<int32>::max()) {
@@ -1603,6 +1612,10 @@ static GeometryDrawResult geometryDraw(const SkiaImageDrawPlanData* plan, SkCanv
     }
 }
 
+}
+
+bool skia_image_geometry_integer_double_value_for_test(double value, int32* result) {
+    return integerDoubleValue(value, result);
 }
 
 void skia_image_backing_clear_physical_variant_if_equivalent(

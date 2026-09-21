@@ -5,6 +5,7 @@
 #include "skia.h"
 #include "skia_image_backing.h"
 #include "skia_image_backing_internal.h"
+#include "skia_image_geometry_internal.h"
 
 #include "include/core/SkPath.h"
 
@@ -379,6 +380,37 @@ static int64_t createGeometryTestSource() {
         skia_image_backing_set_opacity(source, SKIA_IMAGE_OPACITY_OPAQUE);
     }
     return source;
+}
+
+static bool testIntegerDoubleValueTolerance() {
+    struct Case {
+        double value;
+        bool accepted;
+        const char* name;
+    };
+    const Case cases[] = {
+        { 999.999971, true, "999.999971" },
+        { 1000.000029, true, "1000.000029" },
+        { 1000.01, false, "1000.01" },
+        { 1000000.1, false, "1000000.1" },
+        { 1000000.4, false, "1000000.4" },
+    };
+    bool passed = true;
+    for (const Case& testCase : cases) {
+        int32 result = 0;
+        const bool accepted = skia_image_geometry_integer_double_value_for_test(
+            testCase.value, &result);
+        const bool correct = accepted == testCase.accepted
+            && (!accepted || result == 1000);
+        if (!correct) {
+            std::fprintf(stderr, "integer mapping tolerance failed for %s\n", testCase.name);
+        }
+        passed = passed && correct;
+    }
+    if (passed) {
+        std::puts("integer mapping tolerance assertions passed");
+    }
+    return passed;
 }
 
 static int64_t createGeometryTestSolidSource(int width, int height) {
@@ -851,6 +883,9 @@ int main(int argc, char** argv) {
         }
     }
     if (!testRegularDeviceSpaceWritePixels()) {
+        return 1;
+    }
+    if (!testIntegerDoubleValueTolerance()) {
         return 1;
     }
     if (!testRasterGeometryPolicyM3()) {

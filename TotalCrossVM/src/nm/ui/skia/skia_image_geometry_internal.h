@@ -25,6 +25,7 @@ struct GeometryTransform {
 
 bool skia_image_geometry_compile(const SkiaImageDrawPlanData* plan, int frameOverride,
                                  GeometryTransform* transform);
+bool skia_image_geometry_integer_double_value_for_test(double value, int32* result);
 bool skia_image_geometry_draw_compiled(SkCanvas* canvas, const SkImage* image,
                                        const GeometryTransform& transform, float srcLeft,
                                        float srcTop, float srcRight, float srcBottom, float dstLeft,
