@@ -40,3 +40,24 @@ SPDX-License-Identifier: LGPL-2.1-only
   `ca59b0a0436ada76fd34a4ec1dcdafd37dcf418acb5e89f3c00d36b5beb7d975`.
 - 2026-09-21: the post-commit message checker reported one over-80-character
   body line in `bc4a207e9`; the signed commit remains unchanged.
+- 2026-09-21: the profile-aware reuse comparator fix was committed as signed
+  `e6d6651db`; the corrected reuse matrix passed 16 processes, 48 pass
+  summaries, and 24 pairwise rows for `32795->32799` and `32827->32831`.
+- 2026-09-21: accounting-off validator fixes were committed as signed
+  `8dff4345a`; the final timing controls passed 12 cold and 4 reuse processes.
+  Earlier failed attempts are preserved in their task-specific build output;
+  no raw result directory was deleted.
+- 2026-09-21: final raw ZIPs were hashed as diagnostic
+  `33c4cbb7860f71d2f8f4909716f48dc56487f2d43fbef6dacfa1c63a472bdd7f`, reuse
+  `4141a252629bb7232aaa69d7f53a0a4aa1cbacbdf71f1c9783fe55dc53a2cd05`, and
+  timing
+  `e94de16e3319bddc5e276adbcc1aab96798b88600f0e7c8ec6d34eb63e1051d8`.
+- 2026-09-21: analyzer commit `df2504b0e` persisted 48 paired percentile
+  rows and 108 P95/P99/MAX outlier rows. Every enabled selected outlier had
+  writePixels hits; all observed hits were full, not clipped. Copy bytes were
+  bounded at 7,732,800 per frame, and prefetch-on cold copy/work correlations
+  were 0.011915 and 0.012663 for the two enabled masks.
+- 2026-09-21: the paired artifact review selected Outcome 2. Cold outliers
+  commonly contain decode/materialization activity; warm outliers can persist
+  without new materialization. The report records identity-match limits and
+  the absence of a separate copy-duration timer.

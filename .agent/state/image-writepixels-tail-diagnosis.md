@@ -8,15 +8,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestone 1 bounded per-frame attribution is complete; Milestone 2 fresh
-  SDK/macOS package and matrix execution is active.
+- Milestones 1–3 are complete; the STOP / REVIEW gate is active and the
+  diagnosis is frozen at Outcome 2.
 - Branch: `perf/writepixels-tail-diagnosis`.
 - Requested base: `perf/image-decode-distributed-benchmark`.
 - Base and starting HEAD: `d5a682e0d1a32928f1e96bc62be083f6f2d813df`.
-- Last logical commit: `bc4a207e9` (`test(benchmark): add per-frame writePixels
-  attribution`).
-- Next action: run the fresh accounting-on diagnostic and reuse matrices, then
-  the accounting-off timing controls.
+- Last logical commit: `df2504b0e` (`docs(benchmark): persist writePixels tail
+  analysis`).
+- Next action: commit the final plan/state/evidence/report checkpoint, then
+  stop for review without starting optimization work.
 
 ## Working set
 
@@ -59,19 +59,31 @@ SPDX-License-Identifier: LGPL-2.1-only
   `ee5f6be1f97424a70598c35cb701d3daec8b67418d774ef5d851cfd20570834a`.
 - Runtime SHA-256:
   `ca59b0a0436ada76fd34a4ec1dcdafd37dcf418acb5e89f3c00d36b5beb7d975`.
+- Accounting-on diagnostic matrix passed: 24 processes across four masks,
+  prefetch off/on, and three rounds; result ZIP SHA-256
+  `33c4cbb7860f71d2f8f4909716f48dc56487f2d43fbef6dacfa1c63a472bdd7f`.
+- Accounting-on reuse matrix passed: 16 processes, three passes per process;
+  result ZIP SHA-256
+  `4141a252629bb7232aaa69d7f53a0a4aa1cbacbdf71f1c9783fe55dc53a2cd05`.
+- Accounting-off timing matrices passed: 12 cold and 4 reuse processes;
+  result ZIP SHA-256
+  `e94de16e3319bddc5e276adbcc1aab96798b88600f0e7c8ec6d34eb63e1051d8`.
+- Tracked analysis contains 48 paired rows and 108 selected outlier rows;
+  68 outliers have equal identity hashes and 40 use nearest-scroll matches.
 
 ## Deferred validation
 
-- No fresh diagnostic or timing matrix has been run yet; it starts from the
-  packaged bundle after this checkpoint.
+- Android, iOS, Windows, Linux, broad historical matrices, and follow-up
+  optimization benchmarks remain deferred because they are outside this
+  macOS diagnosis.
 - No historical M1–M4 evidence was modified.
 
 ## Historical commit-message audit
 
-The post-commit checker found over-80-character body lines in `a3c1c8820` and
-`67310f920`. The implementation commit `bc4a207e9` also has one over-80
-body line. All three signed commits are preserved without amendment or history
-rewriting. Subsequent commit messages will be wrapped before validation.
+The post-commit checker found over-80-character or literal escaped paragraph
+markers in historical signed commits `a3c1c8820`, `67310f920`, `bc4a207e9`,
+and `14ce18a5e`. They are preserved without amendment or history rewriting.
+Later commits use separate wrapped message arguments and pass the checker.
 
 ## Active decisions
 

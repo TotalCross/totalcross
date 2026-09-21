@@ -62,15 +62,15 @@ analysis artifacts for this plan are tracked and committed.
 - [x] (2026-09-21) Read `AGENTS.md`, `.agent/PLANS.md`, and the repository
   `logical-commits` guidance; inspected the existing M1–M4 evidence and the
   current runner, workload, and native writePixels counters.
-- [ ] Bootstrap this plan with a focused state/evidence commit and confirm the
+- [x] Bootstrap this plan with a focused state/evidence commit and confirm the
   exact base revision and corpus/package prerequisites.
-- [ ] Milestone 1: add only the missing bounded per-frame attribution and
+- [x] Milestone 1: add only the missing bounded per-frame attribution and
   validate its schema and accounting invariants.
-- [ ] Milestone 2: build/package macOS at the end of instrumentation work and
+- [x] Milestone 2: build/package macOS at the end of instrumentation work and
   collect fresh paired cold and warm/reuse samples.
-- [ ] Milestone 3: persist outliers, analyze paired controls, and prepare the
+- [x] Milestone 3: persist outliers, analyze paired controls, and prepare the
   evidence-based outcome.
-- [ ] STOP / REVIEW: freeze the diagnosis before any follow-up optimization is
+- [x] STOP / REVIEW: freeze the diagnosis before any follow-up optimization is
   designed or implemented.
 
 ## Current Architecture and Scope
@@ -358,15 +358,24 @@ not from raw logs.
 
 ## Outcomes & Retrospective
 
-This section remains intentionally open until Milestone 3. At completion it
-will summarize the accepted measurement changes, fresh matrix coverage, raw
-artifact locations, paired outlier findings, limitations, and the selected
-STOP / REVIEW outcome. It must distinguish direct measurements from
-interpretation and must not turn a P50 improvement into a promotion claim.
+The measurement changes are limited to accounting-gated frame-scope fields,
+scroll/paint deltas, identity context, and focused-profile validation. Fresh
+evidence covers 24 diagnostic, 16 reuse, 12 cold timing, and 4 reuse timing
+processes on the packaged macOS ARM64 bundle.
+
+Raw roots and ZIP hashes are recorded in `summary.md`; paired rows and
+outliers are in `pairwise.csv` and `outliers.csv`. Outliers show bounded
+full-copy totals, weak prefetch-on copy/work association, and pipeline activity
+that explains the tail better than copy scaling. RGB565 backing bytes appeared,
+but observed writePixels hits reported RGBA8888 format.
+
+The selected STOP / REVIEW outcome is Outcome 2: writePixels is behaving as an
+opportunistic fast path and expensive frames are dominated by other pipeline
+work. This conclusion does not authorize a policy/default, GPU, dirty-region,
+or scroll-reuse redesign.
 
 ## Revision Note
 
-Initial plan created on 2026-09-21 from the requested objective. It narrows
-the work to paired writePixels tail attribution and explicitly carries the
-RGB565 source-backing stratum, cold/warm reuse coverage, segment timing, raw
-outlier retention, and final STOP / REVIEW gate.
+Initial plan created on 2026-09-21. It covers
+paired writePixels attribution, RGB565 backing, cold/warm reuse, segment
+timing, raw outliers, and the final STOP / REVIEW gate.
