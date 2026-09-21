@@ -164,6 +164,8 @@ TC_API void tuiNIB_writePixelsRegHitTest(NMParams p);
 TC_API void tuiNIB_writePixelsRegFbTest(NMParams p);
 TC_API void tuiNIB_writePixelsRegBytesTest(NMParams p);
 TC_API void tuiNIB_writePixelsRegClipTest(NMParams p);
+TC_API void tuiNIB_writePixelsFrameResetTest(NMParams p);
+TC_API void tuiNIB_writePixelsFrameMetricTest_i(NMParams p);
 TC_API void tuiNIB_writePixelsRejectInvalid(NMParams p);
 TC_API void tuiNIB_writePixelsRejectAlpha(NMParams p);
 TC_API void tuiNIB_writePixelsRejectMatrix(NMParams p);

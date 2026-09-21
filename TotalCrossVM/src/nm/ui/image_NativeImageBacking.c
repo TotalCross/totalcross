@@ -541,6 +541,23 @@ TC_API void tuiNIB_writePixelsRegClipTest(NMParams p) // totalcross/ui/image/Nat
 #endif
 }
 
+TC_API void tuiNIB_writePixelsFrameResetTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static void writePixelsFrameResetTest();
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_reset_write_pixels_frame_metrics_for_test();
+#endif
+   UNUSED(p);
+}
+
+TC_API void tuiNIB_writePixelsFrameMetricTest_i(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsFrameMetricTest(int kind);
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_write_pixels_frame_metric_for_test(p->i32[0]);
+#else
+   p->retL = -1;
+#endif
+}
+
 TC_API void tuiNIB_writePixelsRejectInvalid(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsRejectInvalid();
 {
 #if TC_RENDERER_SKIA

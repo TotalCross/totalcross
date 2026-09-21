@@ -53,6 +53,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private ScrollContainer mainContainer;
   private ScrollContainer scroll;
+  private String[] benchmarkImagePaths;
   private int tileWidth;
   private int rowCount;
   private int imageControlCount;
@@ -164,6 +165,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.require(imagePaths.length == IMAGE_COUNT,
           "expected exactly " + IMAGE_COUNT + " corpus files but found " + imagePaths.length);
       buildUi(imagePaths);
+      benchmarkImagePaths = imagePaths;
       uiBuildElapsedNs = System.nanoTime() - buildStartNs;
       ImageRasterBenchmarkSupport.require(rowCount == IMAGE_COUNT / COLUMN_COUNT,
           "unexpected row count " + rowCount);
@@ -458,6 +460,23 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         scroll.sbV.getMaximum() - scroll.sbV.getVisibleItems());
   }
 
+  private long[] visibleControlIdentity(int scrollValue) {
+    int rowHeight = Math.max(1, tileWidth + 2);
+    int firstRow = Math.max(0, scrollValue / rowHeight);
+    int visibleRows = Math.max(1, Settings.screenHeight / rowHeight + 2);
+    int lastRow = Math.min(rowCount - 1, firstRow + visibleRows);
+    int first = Math.min(IMAGE_COUNT - 1, firstRow * COLUMN_COUNT);
+    int last = Math.min(IMAGE_COUNT - 1, (lastRow + 1) * COLUMN_COUNT - 1);
+    long hash = 0xcbf29ce484222325L;
+    for (int index = first; index <= last; index++) {
+      hash ^= index;
+      hash *= 0x100000001b3L;
+      hash ^= benchmarkImagePaths[index].hashCode();
+      hash *= 0x100000001b3L;
+    }
+    return new long[] {first, last, last - first + 1, hash};
+  }
+
   private PassResult runPass(String name, boolean forward, int expectedStart, int maximum) {
     int minimum = scroll.sbV.getMinimum();
     int endpoint = forward ? maximum : minimum;
@@ -483,6 +502,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long[] frameJpegEighthNs = new long[256];
     long[] frameJpegOtherCounts = new long[256];
     long[] frameJpegOtherNs = new long[256];
+    FrameMetrics[] frameMetrics = new FrameMetrics[256];
+    FrameMetrics[] frameScrollMetrics = new FrameMetrics[256];
+    FrameMetrics[] framePaintMetrics = new FrameMetrics[256];
     int frames = 0;
     long previousFrameStartNs = startNs;
     while (true) {
@@ -505,43 +527,28 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         int progress = (int) ((long) (maximum - minimum) * elapsedNs / scrollDurationNs);
         target = forward ? minimum + progress : maximum - progress;
       }
-      long jpegDecodeCountBefore = Image.jpegNativeDecodeCountForTest;
-      long jpegDecodeNsBefore = Image.jpegNativeDecodeNsForTest;
-      long jpegFullCountBefore = Image.jpegNativeDecodeFullCountForTest;
-      long jpegFullNsBefore = Image.jpegNativeDecodeFullNsForTest;
-      long jpegHalfCountBefore = Image.jpegNativeDecodeHalfCountForTest;
-      long jpegHalfNsBefore = Image.jpegNativeDecodeHalfNsForTest;
-      long jpegQuarterCountBefore = Image.jpegNativeDecodeQuarterCountForTest;
-      long jpegQuarterNsBefore = Image.jpegNativeDecodeQuarterNsForTest;
-      long jpegEighthCountBefore = Image.jpegNativeDecodeEighthCountForTest;
-      long jpegEighthNsBefore = Image.jpegNativeDecodeEighthNsForTest;
-      long jpegOtherCountBefore = Image.jpegNativeDecodeOtherCountForTest;
-      long jpegOtherNsBefore = Image.jpegNativeDecodeOtherNsForTest;
       int before = scroll.sbV.getValue();
       long workStartNs = System.nanoTime();
       long scrollWorkNs = 0;
+      NativeImageBacking.resetWritePixelsFrameMetricsForTest();
+      FrameMetrics scrollBefore = FrameMetrics.capture();
       if (target != before) {
         long scrollWorkStartNs = System.nanoTime();
         ImageRasterBenchmarkSupport.require(scroll.scrollContent(0, target - before, true),
             name + " stopped before reaching time-based target");
         scrollWorkNs = Math.max(0, System.nanoTime() - scrollWorkStartNs);
       }
+      FrameMetrics scrollAfter = FrameMetrics.capture();
+      FrameMetrics scrollMetrics = FrameMetrics.delta(scrollBefore, scrollAfter);
+      NativeImageBacking.resetWritePixelsFrameMetricsForTest();
+      FrameMetrics paintBefore = FrameMetrics.capture();
       long paintWorkStartNs = System.nanoTime();
       scroll.repaintNow();
       long paintWorkNs = Math.max(0, System.nanoTime() - paintWorkStartNs);
+      FrameMetrics paintAfter = FrameMetrics.capture();
+      FrameMetrics paintMetrics = FrameMetrics.delta(paintBefore, paintAfter);
+      FrameMetrics frameAttribution = FrameMetrics.merge(scrollMetrics, paintMetrics);
       long workTimeNs = Math.max(0, System.nanoTime() - workStartNs);
-      long jpegDecodeCountAfter = Image.jpegNativeDecodeCountForTest;
-      long jpegDecodeNsAfter = Image.jpegNativeDecodeNsForTest;
-      long jpegFullCountAfter = Image.jpegNativeDecodeFullCountForTest;
-      long jpegFullNsAfter = Image.jpegNativeDecodeFullNsForTest;
-      long jpegHalfCountAfter = Image.jpegNativeDecodeHalfCountForTest;
-      long jpegHalfNsAfter = Image.jpegNativeDecodeHalfNsForTest;
-      long jpegQuarterCountAfter = Image.jpegNativeDecodeQuarterCountForTest;
-      long jpegQuarterNsAfter = Image.jpegNativeDecodeQuarterNsForTest;
-      long jpegEighthCountAfter = Image.jpegNativeDecodeEighthCountForTest;
-      long jpegEighthNsAfter = Image.jpegNativeDecodeEighthNsForTest;
-      long jpegOtherCountAfter = Image.jpegNativeDecodeOtherCountForTest;
-      long jpegOtherNsAfter = Image.jpegNativeDecodeOtherNsForTest;
       long frameTimeNs = frames == 0
           ? paintWorkNs : Math.max(0, frameStartNs - previousFrameStartNs);
       if (frames == frameTimesNs.length) {
@@ -564,6 +571,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         frameJpegEighthNs = Arrays.copyOf(frameJpegEighthNs, newLength);
         frameJpegOtherCounts = Arrays.copyOf(frameJpegOtherCounts, newLength);
         frameJpegOtherNs = Arrays.copyOf(frameJpegOtherNs, newLength);
+        frameMetrics = Arrays.copyOf(frameMetrics, newLength);
+        frameScrollMetrics = Arrays.copyOf(frameScrollMetrics, newLength);
+        framePaintMetrics = Arrays.copyOf(framePaintMetrics, newLength);
       }
       frameTimesNs[frames] = frameTimeNs;
       frameElapsedNs[frames] = elapsedNs;
@@ -571,18 +581,21 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       frameScrollWorkNs[frames] = scrollWorkNs;
       framePaintWorkNs[frames] = paintWorkNs;
       frameWorkTimeNs[frames] = workTimeNs;
-      frameJpegDecodeCounts[frames] = jpegDecodeCountAfter - jpegDecodeCountBefore;
-      frameJpegDecodeNs[frames] = jpegDecodeNsAfter - jpegDecodeNsBefore;
-      frameJpegFullCounts[frames] = jpegFullCountAfter - jpegFullCountBefore;
-      frameJpegFullNs[frames] = jpegFullNsAfter - jpegFullNsBefore;
-      frameJpegHalfCounts[frames] = jpegHalfCountAfter - jpegHalfCountBefore;
-      frameJpegHalfNs[frames] = jpegHalfNsAfter - jpegHalfNsBefore;
-      frameJpegQuarterCounts[frames] = jpegQuarterCountAfter - jpegQuarterCountBefore;
-      frameJpegQuarterNs[frames] = jpegQuarterNsAfter - jpegQuarterNsBefore;
-      frameJpegEighthCounts[frames] = jpegEighthCountAfter - jpegEighthCountBefore;
-      frameJpegEighthNs[frames] = jpegEighthNsAfter - jpegEighthNsBefore;
-      frameJpegOtherCounts[frames] = jpegOtherCountAfter - jpegOtherCountBefore;
-      frameJpegOtherNs[frames] = jpegOtherNsAfter - jpegOtherNsBefore;
+      frameMetrics[frames] = frameAttribution;
+      frameScrollMetrics[frames] = scrollMetrics;
+      framePaintMetrics[frames] = paintMetrics;
+      frameJpegDecodeCounts[frames] = frameAttribution.jpegDecodeCount;
+      frameJpegDecodeNs[frames] = frameAttribution.jpegDecodeNs;
+      frameJpegFullCounts[frames] = frameAttribution.jpegFullCount;
+      frameJpegFullNs[frames] = frameAttribution.jpegFullNs;
+      frameJpegHalfCounts[frames] = frameAttribution.jpegHalfCount;
+      frameJpegHalfNs[frames] = frameAttribution.jpegHalfNs;
+      frameJpegQuarterCounts[frames] = frameAttribution.jpegQuarterCount;
+      frameJpegQuarterNs[frames] = frameAttribution.jpegQuarterNs;
+      frameJpegEighthCounts[frames] = frameAttribution.jpegEighthCount;
+      frameJpegEighthNs[frames] = frameAttribution.jpegEighthNs;
+      frameJpegOtherCounts[frames] = frameAttribution.jpegOtherCount;
+      frameJpegOtherNs[frames] = frameAttribution.jpegOtherNs;
       frames++;
       previousFrameStartNs = frameStartNs;
       if (scroll.sbV.getValue() == endpoint && elapsedNs >= scrollDurationNs) {
@@ -639,7 +652,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         actualFrameJpegDecodeCounts, actualFrameJpegDecodeNs, actualFrameJpegFullCounts,
         actualFrameJpegFullNs, actualFrameJpegHalfCounts, actualFrameJpegHalfNs,
         actualFrameJpegQuarterCounts, actualFrameJpegQuarterNs, actualFrameJpegEighthCounts,
-        actualFrameJpegEighthNs, actualFrameJpegOtherCounts, actualFrameJpegOtherNs, counters);
+        actualFrameJpegEighthNs, actualFrameJpegOtherCounts, actualFrameJpegOtherNs,
+        Arrays.copyOf(frameMetrics, frames), Arrays.copyOf(frameScrollMetrics, frames),
+        Arrays.copyOf(framePaintMetrics, frames), counters);
   }
 
   private static void validateJpegDiagnostics(Counters counters, String phase) {
@@ -871,8 +886,37 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     frames.append("frame_index,elapsed_ns,frame_time_ns,scroll_value,scroll_work_ns,paint_work_ns,work_time_ns,")
         .append("jpeg_decode_count,jpeg_decode_ns,")
         .append("jpeg_full_count,jpeg_full_ns,jpeg_half_count,jpeg_half_ns,jpeg_quarter_count,")
-        .append("jpeg_quarter_ns,jpeg_eighth_count,jpeg_eighth_ns,jpeg_other_count,jpeg_other_ns\n");
+        .append("jpeg_quarter_ns,jpeg_eighth_count,jpeg_eighth_ns,jpeg_other_count,jpeg_other_ns,")
+        .append("diagnostics_available,visible_control_first,visible_control_last,")
+        .append("visible_control_count,visible_control_path_hash,")
+        .append("write_pixels_attempts,write_pixels_hits,write_pixels_fallbacks,write_pixels_copied_bytes,")
+        .append("write_pixels_regular_attempts,write_pixels_regular_hits,")
+        .append("write_pixels_regular_fallbacks,write_pixels_regular_copied_bytes,")
+        .append("write_pixels_full_hits,write_pixels_clipped_hits,")
+        .append("write_pixels_full_copied_bytes,write_pixels_clipped_copied_bytes,")
+        .append("write_pixels_last_width,write_pixels_last_height,write_pixels_last_format,")
+        .append("image_materializations,native_geometry_materializations,")
+        .append("target_color_attempts,target_color_hits,target_color_materializations,")
+        .append("target_color_fallbacks,target_color_converted_bytes,")
+        .append("physical_variant_lookups,physical_variant_hits,physical_variant_misses,")
+        .append("physical_variant_materializations,physical_variant_evictions,physical_variant_bytes,")
+        .append("backing_live_bytes,backing_peak_bytes,rgba8888_bytes,rgb565_bytes,gray8_bytes,"
+            + "argb4444_bytes,")
+        .append("scroll_jpeg_decode_count,scroll_jpeg_decode_ns,scroll_image_materializations,")
+        .append("scroll_native_geometry_materializations,scroll_write_pixels_attempts,")
+        .append("scroll_write_pixels_hits,scroll_write_pixels_fallbacks,scroll_write_pixels_copied_bytes,")
+        .append("scroll_target_color_attempts,scroll_target_color_hits,")
+        .append("scroll_physical_variant_lookups,scroll_physical_variant_hits,")
+        .append("scroll_physical_variant_misses,")
+        .append("paint_jpeg_decode_count,paint_jpeg_decode_ns,paint_image_materializations,")
+        .append("paint_native_geometry_materializations,paint_write_pixels_attempts,")
+        .append("paint_write_pixels_hits,paint_write_pixels_fallbacks,paint_write_pixels_copied_bytes,")
+        .append("paint_target_color_attempts,paint_target_color_hits,")
+        .append("paint_physical_variant_lookups,paint_physical_variant_hits,")
+        .append("paint_physical_variant_misses\n");
     for (int i = 0; i < result.frames; i++) {
+      FrameMetrics metrics = result.frameMetrics[i];
+      long[] identity = visibleControlIdentity(result.framePositions[i]);
       frames.append(i).append(',').append(result.frameElapsedNs[i]).append(',')
           .append(result.frameTimesNs[i]).append(',').append(result.framePositions[i]).append(',')
           .append(result.frameScrollWorkNs[i]).append(',').append(result.framePaintWorkNs[i]).append(',')
@@ -882,10 +926,53 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           .append(result.frameJpegHalfCounts[i]).append(',').append(result.frameJpegHalfNs[i]).append(',')
           .append(result.frameJpegQuarterCounts[i]).append(',').append(result.frameJpegQuarterNs[i]).append(',')
           .append(result.frameJpegEighthCounts[i]).append(',').append(result.frameJpegEighthNs[i]).append(',')
-          .append(result.frameJpegOtherCounts[i]).append(',').append(result.frameJpegOtherNs[i]).append('\n');
+          .append(result.frameJpegOtherCounts[i]).append(',').append(result.frameJpegOtherNs[i]).append(',')
+          .append(metrics.diagnosticsAvailable ? 1 : 0).append(',')
+          .append(identity[0]).append(',').append(identity[1]).append(',').append(identity[2]).append(',')
+          .append(identity[3]).append(',');
+      appendFullMetrics(frames, metrics);
+      appendSegmentMetrics(frames, "", result.frameScrollMetrics[i]);
+      frames.append(',');
+      appendSegmentMetrics(frames, "", result.framePaintMetrics[i]);
+      frames.append('\n');
     }
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(targetDir, "frames.csv"), frames.toString());
+  }
+
+  private static void appendFullMetrics(StringBuilder output, FrameMetrics metrics) {
+    output.append(metrics.writePixelsAttempts).append(',').append(metrics.writePixelsHits).append(',')
+        .append(metrics.writePixelsFallbacks).append(',').append(metrics.writePixelsCopiedBytes).append(',')
+        .append(metrics.writePixelsRegularAttempts).append(',').append(metrics.writePixelsRegularHits).append(',')
+        .append(metrics.writePixelsRegularFallbacks).append(',')
+        .append(metrics.writePixelsRegularCopiedBytes).append(',')
+        .append(metrics.writePixelsFullHits).append(',').append(metrics.writePixelsClippedHits).append(',')
+        .append(metrics.writePixelsFullCopiedBytes).append(',')
+        .append(metrics.writePixelsClippedCopiedBytes).append(',')
+        .append(metrics.writePixelsLastWidth).append(',').append(metrics.writePixelsLastHeight).append(',')
+        .append(metrics.writePixelsLastFormat).append(',')
+        .append(metrics.imageMaterializations).append(',').append(metrics.nativeGeometryMaterializations).append(',')
+        .append(metrics.targetColorAttempts).append(',').append(metrics.targetColorHits).append(',')
+        .append(metrics.targetColorMaterializations).append(',').append(metrics.targetColorFallbacks).append(',')
+        .append(metrics.targetColorConvertedBytes).append(',')
+        .append(metrics.physicalVariantLookups).append(',').append(metrics.physicalVariantHits).append(',')
+        .append(metrics.physicalVariantMisses).append(',')
+        .append(metrics.physicalVariantMaterializations).append(',')
+        .append(metrics.physicalVariantEvictions).append(',').append(metrics.physicalVariantBytes).append(',')
+        .append(metrics.backingLiveBytes).append(',').append(metrics.backingPeakBytes).append(',')
+        .append(metrics.rgba8888Bytes).append(',').append(metrics.rgb565Bytes).append(',')
+        .append(metrics.gray8Bytes).append(',').append(metrics.argb4444Bytes).append(',');
+  }
+
+  private static void appendSegmentMetrics(StringBuilder output, String unusedPrefix,
+      FrameMetrics metrics) {
+    output.append(metrics.jpegDecodeCount).append(',').append(metrics.jpegDecodeNs).append(',')
+        .append(metrics.imageMaterializations).append(',').append(metrics.nativeGeometryMaterializations).append(',')
+        .append(metrics.writePixelsAttempts).append(',').append(metrics.writePixelsHits).append(',')
+        .append(metrics.writePixelsFallbacks).append(',').append(metrics.writePixelsCopiedBytes).append(',')
+        .append(metrics.targetColorAttempts).append(',').append(metrics.targetColorHits).append(',')
+        .append(metrics.physicalVariantLookups).append(',').append(metrics.physicalVariantHits).append(',')
+        .append(metrics.physicalVariantMisses);
   }
 
   private void writeEnvironment() throws Exception {
@@ -1246,6 +1333,258 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     return value.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 
+  private static final class FrameMetrics {
+    final boolean diagnosticsAvailable;
+    final long jpegDecodeCount;
+    final long jpegDecodeNs;
+    final long jpegFullCount;
+    final long jpegFullNs;
+    final long jpegHalfCount;
+    final long jpegHalfNs;
+    final long jpegQuarterCount;
+    final long jpegQuarterNs;
+    final long jpegEighthCount;
+    final long jpegEighthNs;
+    final long jpegOtherCount;
+    final long jpegOtherNs;
+    final long imageMaterializations;
+    final long nativeGeometryMaterializations;
+    final long writePixelsAttempts;
+    final long writePixelsHits;
+    final long writePixelsFallbacks;
+    final long writePixelsCopiedBytes;
+    final long writePixelsRegularAttempts;
+    final long writePixelsRegularHits;
+    final long writePixelsRegularFallbacks;
+    final long writePixelsRegularCopiedBytes;
+    final long writePixelsFullHits;
+    final long writePixelsClippedHits;
+    final long writePixelsFullCopiedBytes;
+    final long writePixelsClippedCopiedBytes;
+    final long writePixelsLastWidth;
+    final long writePixelsLastHeight;
+    final long writePixelsLastFormat;
+    final long targetColorAttempts;
+    final long targetColorHits;
+    final long targetColorMaterializations;
+    final long targetColorFallbacks;
+    final long targetColorConvertedBytes;
+    final long physicalVariantLookups;
+    final long physicalVariantHits;
+    final long physicalVariantMisses;
+    final long physicalVariantMaterializations;
+    final long physicalVariantEvictions;
+    final long physicalVariantBytes;
+    final long backingLiveBytes;
+    final long backingPeakBytes;
+    final long rgba8888Bytes;
+    final long rgb565Bytes;
+    final long gray8Bytes;
+    final long argb4444Bytes;
+
+    private FrameMetrics(boolean diagnosticsAvailable, long jpegDecodeCount, long jpegDecodeNs,
+        long jpegFullCount, long jpegFullNs, long jpegHalfCount, long jpegHalfNs,
+        long jpegQuarterCount, long jpegQuarterNs, long jpegEighthCount, long jpegEighthNs,
+        long jpegOtherCount, long jpegOtherNs, long imageMaterializations,
+        long nativeGeometryMaterializations, long writePixelsAttempts, long writePixelsHits,
+        long writePixelsFallbacks, long writePixelsCopiedBytes, long writePixelsRegularAttempts,
+        long writePixelsRegularHits, long writePixelsRegularFallbacks,
+        long writePixelsRegularCopiedBytes, long writePixelsFullHits, long writePixelsClippedHits,
+        long writePixelsFullCopiedBytes, long writePixelsClippedCopiedBytes,
+        long writePixelsLastWidth, long writePixelsLastHeight, long writePixelsLastFormat,
+        long targetColorAttempts, long targetColorHits, long targetColorMaterializations,
+        long targetColorFallbacks, long targetColorConvertedBytes, long physicalVariantLookups,
+        long physicalVariantHits, long physicalVariantMisses, long physicalVariantMaterializations,
+        long physicalVariantEvictions, long physicalVariantBytes, long backingLiveBytes,
+        long backingPeakBytes, long rgba8888Bytes, long rgb565Bytes, long gray8Bytes,
+        long argb4444Bytes) {
+      this.diagnosticsAvailable = diagnosticsAvailable;
+      this.jpegDecodeCount = jpegDecodeCount;
+      this.jpegDecodeNs = jpegDecodeNs;
+      this.jpegFullCount = jpegFullCount;
+      this.jpegFullNs = jpegFullNs;
+      this.jpegHalfCount = jpegHalfCount;
+      this.jpegHalfNs = jpegHalfNs;
+      this.jpegQuarterCount = jpegQuarterCount;
+      this.jpegQuarterNs = jpegQuarterNs;
+      this.jpegEighthCount = jpegEighthCount;
+      this.jpegEighthNs = jpegEighthNs;
+      this.jpegOtherCount = jpegOtherCount;
+      this.jpegOtherNs = jpegOtherNs;
+      this.imageMaterializations = imageMaterializations;
+      this.nativeGeometryMaterializations = nativeGeometryMaterializations;
+      this.writePixelsAttempts = writePixelsAttempts;
+      this.writePixelsHits = writePixelsHits;
+      this.writePixelsFallbacks = writePixelsFallbacks;
+      this.writePixelsCopiedBytes = writePixelsCopiedBytes;
+      this.writePixelsRegularAttempts = writePixelsRegularAttempts;
+      this.writePixelsRegularHits = writePixelsRegularHits;
+      this.writePixelsRegularFallbacks = writePixelsRegularFallbacks;
+      this.writePixelsRegularCopiedBytes = writePixelsRegularCopiedBytes;
+      this.writePixelsFullHits = writePixelsFullHits;
+      this.writePixelsClippedHits = writePixelsClippedHits;
+      this.writePixelsFullCopiedBytes = writePixelsFullCopiedBytes;
+      this.writePixelsClippedCopiedBytes = writePixelsClippedCopiedBytes;
+      this.writePixelsLastWidth = writePixelsLastWidth;
+      this.writePixelsLastHeight = writePixelsLastHeight;
+      this.writePixelsLastFormat = writePixelsLastFormat;
+      this.targetColorAttempts = targetColorAttempts;
+      this.targetColorHits = targetColorHits;
+      this.targetColorMaterializations = targetColorMaterializations;
+      this.targetColorFallbacks = targetColorFallbacks;
+      this.targetColorConvertedBytes = targetColorConvertedBytes;
+      this.physicalVariantLookups = physicalVariantLookups;
+      this.physicalVariantHits = physicalVariantHits;
+      this.physicalVariantMisses = physicalVariantMisses;
+      this.physicalVariantMaterializations = physicalVariantMaterializations;
+      this.physicalVariantEvictions = physicalVariantEvictions;
+      this.physicalVariantBytes = physicalVariantBytes;
+      this.backingLiveBytes = backingLiveBytes;
+      this.backingPeakBytes = backingPeakBytes;
+      this.rgba8888Bytes = rgba8888Bytes;
+      this.rgb565Bytes = rgb565Bytes;
+      this.gray8Bytes = gray8Bytes;
+      this.argb4444Bytes = argb4444Bytes;
+    }
+
+    static FrameMetrics capture() {
+      boolean available = Image.diagnosticAccountingEnabledForTest();
+      if (!available) {
+        return new FrameMetrics(false, Image.jpegNativeDecodeCountForTest,
+            Image.jpegNativeDecodeNsForTest, Image.jpegNativeDecodeFullCountForTest,
+            Image.jpegNativeDecodeFullNsForTest, Image.jpegNativeDecodeHalfCountForTest,
+            Image.jpegNativeDecodeHalfNsForTest, Image.jpegNativeDecodeQuarterCountForTest,
+            Image.jpegNativeDecodeQuarterNsForTest, Image.jpegNativeDecodeEighthCountForTest,
+            Image.jpegNativeDecodeEighthNsForTest, Image.jpegNativeDecodeOtherCountForTest,
+            Image.jpegNativeDecodeOtherNsForTest, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1);
+      }
+      return new FrameMetrics(true, Image.jpegNativeDecodeCountForTest,
+          Image.jpegNativeDecodeNsForTest, Image.jpegNativeDecodeFullCountForTest,
+          Image.jpegNativeDecodeFullNsForTest, Image.jpegNativeDecodeHalfCountForTest,
+          Image.jpegNativeDecodeHalfNsForTest, Image.jpegNativeDecodeQuarterCountForTest,
+          Image.jpegNativeDecodeQuarterNsForTest, Image.jpegNativeDecodeEighthCountForTest,
+          Image.jpegNativeDecodeEighthNsForTest, Image.jpegNativeDecodeOtherCountForTest,
+          Image.jpegNativeDecodeOtherNsForTest, Image.materializationCountForTest(),
+          Image.nativeGeometryMaterializationCountForTest(), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_ATTEMPTS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_HITS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_FALLBACKS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_COPIED_BYTES), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_REGULAR_ATTEMPTS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_REGULAR_HITS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_REGULAR_FALLBACKS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_REGULAR_COPIED_BYTES), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_FULL_HITS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_CLIPPED_HITS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_FULL_COPIED_BYTES), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_CLIPPED_COPIED_BYTES), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_LAST_WIDTH), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_LAST_HEIGHT), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_LAST_FORMAT),
+          NativeImageBacking.targetColorAttemptsForTest(), NativeImageBacking.targetColorHitsForTest(),
+          NativeImageBacking.targetColorMaterializationsForTest(),
+          NativeImageBacking.targetColorFallbacksForTest(),
+          NativeImageBacking.targetColorConvertedBytesForTest(),
+          NativeImageBacking.physicalVariantLookupsForTest(),
+          NativeImageBacking.physicalVariantHitsForTest(),
+          NativeImageBacking.physicalVariantMissesForTest(),
+          NativeImageBacking.physicalVariantMaterializationsForTest(),
+          NativeImageBacking.physicalVariantEvictionsForTest(),
+          NativeImageBacking.physicalVariantBytesForTest(),
+          NativeImageBacking.backingBytesLiveForTest(),
+          NativeImageBacking.backingBytesPeakLiveForTest(),
+          NativeImageBacking.rgba8888BackingBytesForTest(),
+          NativeImageBacking.rgb565BackingBytesForTest(),
+          NativeImageBacking.gray8BackingBytesForTest(),
+          NativeImageBacking.argb4444BackingBytesForTest());
+    }
+
+    private static long frameMetric(int kind) {
+      return NativeImageBacking.writePixelsFrameMetricForTest(kind);
+    }
+
+    static FrameMetrics delta(FrameMetrics before, FrameMetrics after) {
+      boolean available = after.diagnosticsAvailable;
+      return new FrameMetrics(available, after.jpegDecodeCount - before.jpegDecodeCount,
+          after.jpegDecodeNs - before.jpegDecodeNs, after.jpegFullCount - before.jpegFullCount,
+          after.jpegFullNs - before.jpegFullNs, after.jpegHalfCount - before.jpegHalfCount,
+          after.jpegHalfNs - before.jpegHalfNs, after.jpegQuarterCount - before.jpegQuarterCount,
+          after.jpegQuarterNs - before.jpegQuarterNs, after.jpegEighthCount - before.jpegEighthCount,
+          after.jpegEighthNs - before.jpegEighthNs, after.jpegOtherCount - before.jpegOtherCount,
+          after.jpegOtherNs - before.jpegOtherNs, available ? after.imageMaterializations
+              - before.imageMaterializations : -1, available ? after.nativeGeometryMaterializations
+              - before.nativeGeometryMaterializations : -1, after.writePixelsAttempts,
+          after.writePixelsHits, after.writePixelsFallbacks, after.writePixelsCopiedBytes,
+          after.writePixelsRegularAttempts, after.writePixelsRegularHits,
+          after.writePixelsRegularFallbacks, after.writePixelsRegularCopiedBytes,
+          after.writePixelsFullHits, after.writePixelsClippedHits,
+          after.writePixelsFullCopiedBytes, after.writePixelsClippedCopiedBytes,
+          after.writePixelsLastWidth, after.writePixelsLastHeight, after.writePixelsLastFormat,
+          available ? after.targetColorAttempts - before.targetColorAttempts : -1,
+          available ? after.targetColorHits - before.targetColorHits : -1,
+          available ? after.targetColorMaterializations - before.targetColorMaterializations : -1,
+          available ? after.targetColorFallbacks - before.targetColorFallbacks : -1,
+          available ? after.targetColorConvertedBytes - before.targetColorConvertedBytes : -1,
+          available ? after.physicalVariantLookups - before.physicalVariantLookups : -1,
+          available ? after.physicalVariantHits - before.physicalVariantHits : -1,
+          available ? after.physicalVariantMisses - before.physicalVariantMisses : -1,
+          available ? after.physicalVariantMaterializations
+              - before.physicalVariantMaterializations : -1,
+          available ? after.physicalVariantEvictions - before.physicalVariantEvictions : -1,
+          available ? after.physicalVariantBytes - before.physicalVariantBytes : -1,
+          available ? after.backingLiveBytes : -1, available ? after.backingPeakBytes : -1,
+          available ? after.rgba8888Bytes : -1, available ? after.rgb565Bytes : -1,
+          available ? after.gray8Bytes : -1, available ? after.argb4444Bytes : -1);
+    }
+
+    static FrameMetrics merge(FrameMetrics first, FrameMetrics second) {
+      boolean available = first.diagnosticsAvailable && second.diagnosticsAvailable;
+      return new FrameMetrics(available, first.jpegDecodeCount + second.jpegDecodeCount,
+          first.jpegDecodeNs + second.jpegDecodeNs, first.jpegFullCount + second.jpegFullCount,
+          first.jpegFullNs + second.jpegFullNs, first.jpegHalfCount + second.jpegHalfCount,
+          first.jpegHalfNs + second.jpegHalfNs, first.jpegQuarterCount + second.jpegQuarterCount,
+          first.jpegQuarterNs + second.jpegQuarterNs, first.jpegEighthCount + second.jpegEighthCount,
+          first.jpegEighthNs + second.jpegEighthNs, first.jpegOtherCount + second.jpegOtherCount,
+          first.jpegOtherNs + second.jpegOtherNs, available ? first.imageMaterializations
+              + second.imageMaterializations : -1, available ? first.nativeGeometryMaterializations
+              + second.nativeGeometryMaterializations : -1, add(first.writePixelsAttempts,
+              second.writePixelsAttempts), add(first.writePixelsHits, second.writePixelsHits),
+          add(first.writePixelsFallbacks, second.writePixelsFallbacks),
+          add(first.writePixelsCopiedBytes, second.writePixelsCopiedBytes),
+          add(first.writePixelsRegularAttempts, second.writePixelsRegularAttempts),
+          add(first.writePixelsRegularHits, second.writePixelsRegularHits),
+          add(first.writePixelsRegularFallbacks, second.writePixelsRegularFallbacks),
+          add(first.writePixelsRegularCopiedBytes, second.writePixelsRegularCopiedBytes),
+          add(first.writePixelsFullHits, second.writePixelsFullHits),
+          add(first.writePixelsClippedHits, second.writePixelsClippedHits),
+          add(first.writePixelsFullCopiedBytes, second.writePixelsFullCopiedBytes),
+          add(first.writePixelsClippedCopiedBytes, second.writePixelsClippedCopiedBytes),
+          second.writePixelsLastWidth >= 0 ? second.writePixelsLastWidth : first.writePixelsLastWidth,
+          second.writePixelsLastHeight >= 0 ? second.writePixelsLastHeight : first.writePixelsLastHeight,
+          second.writePixelsLastFormat >= 0 ? second.writePixelsLastFormat : first.writePixelsLastFormat,
+          available ? first.targetColorAttempts + second.targetColorAttempts : -1,
+          available ? first.targetColorHits + second.targetColorHits : -1,
+          available ? first.targetColorMaterializations + second.targetColorMaterializations : -1,
+          available ? first.targetColorFallbacks + second.targetColorFallbacks : -1,
+          available ? first.targetColorConvertedBytes + second.targetColorConvertedBytes : -1,
+          available ? first.physicalVariantLookups + second.physicalVariantLookups : -1,
+          available ? first.physicalVariantHits + second.physicalVariantHits : -1,
+          available ? first.physicalVariantMisses + second.physicalVariantMisses : -1,
+          available ? first.physicalVariantMaterializations + second.physicalVariantMaterializations : -1,
+          available ? first.physicalVariantEvictions + second.physicalVariantEvictions : -1,
+          available ? first.physicalVariantBytes + second.physicalVariantBytes : -1,
+          available ? second.backingLiveBytes : -1, available ? second.backingPeakBytes : -1,
+          available ? second.rgba8888Bytes : -1, available ? second.rgb565Bytes : -1,
+          available ? second.gray8Bytes : -1, available ? second.argb4444Bytes : -1);
+    }
+
+    private static long add(long first, long second) {
+      return first < 0 || second < 0 ? -1 : first + second;
+    }
+  }
+
   private static final class PassResult {
     final String name;
     final boolean forward;
@@ -1276,6 +1615,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long[] frameJpegEighthNs;
     final long[] frameJpegOtherCounts;
     final long[] frameJpegOtherNs;
+    final FrameMetrics[] frameMetrics;
+    final FrameMetrics[] frameScrollMetrics;
+    final FrameMetrics[] framePaintMetrics;
     final Counters counters;
 
     PassResult(String name, boolean forward, int minimum, int end, int maximum, long elapsedNs,
@@ -1286,7 +1628,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         long[] frameJpegFullCounts, long[] frameJpegFullNs, long[] frameJpegHalfCounts,
         long[] frameJpegHalfNs, long[] frameJpegQuarterCounts, long[] frameJpegQuarterNs,
         long[] frameJpegEighthCounts, long[] frameJpegEighthNs,
-        long[] frameJpegOtherCounts, long[] frameJpegOtherNs, Counters counters) {
+        long[] frameJpegOtherCounts, long[] frameJpegOtherNs, FrameMetrics[] frameMetrics,
+        FrameMetrics[] frameScrollMetrics, FrameMetrics[] framePaintMetrics, Counters counters) {
       this.name = name;
       this.forward = forward;
       this.minimum = minimum;
@@ -1316,6 +1659,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       this.frameJpegEighthNs = frameJpegEighthNs;
       this.frameJpegOtherCounts = frameJpegOtherCounts;
       this.frameJpegOtherNs = frameJpegOtherNs;
+      this.frameMetrics = frameMetrics;
+      this.frameScrollMetrics = frameScrollMetrics;
+      this.framePaintMetrics = framePaintMetrics;
       this.counters = counters;
     }
 

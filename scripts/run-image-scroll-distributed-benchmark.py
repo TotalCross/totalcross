@@ -42,6 +42,7 @@ WRITE_PIXELS_POLICY_MASKS = (0, 4, 2, 6, 32795, 32799)
 RASTER_POLICY_AUDIT_MASKS = (8192, 16384, 32768, 57344)
 RASTER_STRUCTURAL_SMOKE_MASKS = (0, 8192, 16384, 32768, 57344)
 M4_REUSE_MASKS = (0, 32, 8192, 8224)
+WRITE_PIXELS_TAIL_MASKS = (32795, 32799, 32827, 32831)
 PREFETCH_PROFILES = ("off", "on")
 ACCOUNTING_PROFILES = ("on", "off")
 ROUNDS = 3
@@ -107,6 +108,42 @@ PROFILES = {
         "require_standard_smokes": False,
         "reuse_passes": 3,
     },
+    "write-pixels-tail-diagnostic": {
+        "masks": WRITE_PIXELS_TAIL_MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("on",),
+        "rounds": 3,
+        "expected_processes": len(WRITE_PIXELS_TAIL_MASKS) * len(PREFETCH_PROFILES) * 3,
+        "require_standard_smokes": False,
+        "require_policy_diagnostics": True,
+    },
+    "write-pixels-tail-reuse": {
+        "masks": WRITE_PIXELS_TAIL_MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("on",),
+        "rounds": 2,
+        "expected_processes": len(WRITE_PIXELS_TAIL_MASKS) * len(PREFETCH_PROFILES) * 2,
+        "require_standard_smokes": False,
+        "require_policy_diagnostics": True,
+        "reuse_passes": 3,
+    },
+    "write-pixels-tail-timing": {
+        "masks": (32795, 32799),
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("off",),
+        "rounds": 3,
+        "expected_processes": 2 * len(PREFETCH_PROFILES) * 3,
+        "require_standard_smokes": False,
+    },
+    "write-pixels-tail-timing-reuse": {
+        "masks": (32795, 32799),
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("off",),
+        "rounds": 1,
+        "expected_processes": 2 * len(PREFETCH_PROFILES),
+        "require_standard_smokes": False,
+        "reuse_passes": 3,
+    },
 }
 CONTROLLED_PAIRS = ((0, 4), (2, 6), (32795, 32799))
 PROCESS_TIMEOUT_SECONDS = 180
@@ -130,6 +167,31 @@ FRAME_FIELDS = (
     "jpeg_decode_count", "jpeg_decode_ns", "jpeg_full_count", "jpeg_full_ns",
     "jpeg_half_count", "jpeg_half_ns", "jpeg_quarter_count", "jpeg_quarter_ns",
     "jpeg_eighth_count", "jpeg_eighth_ns", "jpeg_other_count", "jpeg_other_ns",
+    "diagnostics_available", "visible_control_first", "visible_control_last",
+    "visible_control_count", "visible_control_path_hash", "write_pixels_attempts",
+    "write_pixels_hits", "write_pixels_fallbacks", "write_pixels_copied_bytes",
+    "write_pixels_regular_attempts", "write_pixels_regular_hits",
+    "write_pixels_regular_fallbacks", "write_pixels_regular_copied_bytes",
+    "write_pixels_full_hits", "write_pixels_clipped_hits",
+    "write_pixels_full_copied_bytes", "write_pixels_clipped_copied_bytes",
+    "write_pixels_last_width", "write_pixels_last_height", "write_pixels_last_format",
+    "image_materializations", "native_geometry_materializations", "target_color_attempts",
+    "target_color_hits", "target_color_materializations", "target_color_fallbacks",
+    "target_color_converted_bytes", "physical_variant_lookups", "physical_variant_hits",
+    "physical_variant_misses", "physical_variant_materializations",
+    "physical_variant_evictions", "physical_variant_bytes", "backing_live_bytes",
+    "backing_peak_bytes", "rgba8888_bytes", "rgb565_bytes", "gray8_bytes", "argb4444_bytes",
+    "scroll_jpeg_decode_count", "scroll_jpeg_decode_ns", "scroll_image_materializations",
+    "scroll_native_geometry_materializations", "scroll_write_pixels_attempts",
+    "scroll_write_pixels_hits", "scroll_write_pixels_fallbacks", "scroll_write_pixels_copied_bytes",
+    "scroll_target_color_attempts", "scroll_target_color_hits",
+    "scroll_physical_variant_lookups", "scroll_physical_variant_hits",
+    "scroll_physical_variant_misses", "paint_jpeg_decode_count", "paint_jpeg_decode_ns",
+    "paint_image_materializations", "paint_native_geometry_materializations",
+    "paint_write_pixels_attempts", "paint_write_pixels_hits", "paint_write_pixels_fallbacks",
+    "paint_write_pixels_copied_bytes", "paint_target_color_attempts", "paint_target_color_hits",
+    "paint_physical_variant_lookups", "paint_physical_variant_hits",
+    "paint_physical_variant_misses",
 )
 DIAGNOSTIC_SUMMARY_FIELDS = (
     "jpeg_decode_count", "jpeg_decode_ns", "jpeg_full_count", "jpeg_half_count",
@@ -638,6 +700,7 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
                 f"{frames_path} must use canonical ns fields")
         for row in reader:
             require(len(row) == len(FRAME_FIELDS), f"invalid row in {frames_path}")
+            values = dict(zip(FRAME_FIELDS, row))
             require_nonnegative_ns(int(row[1]), f"{frames_path} elapsed_ns")
             require_nonnegative_ns(int(row[2]), f"{frames_path} frame_time_ns")
             require_nonnegative_ns(int(row[4]), f"{frames_path} scroll_work_ns")
@@ -652,6 +715,47 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
                 require_nonnegative_count(int(row[index]), f"{frames_path} {FRAME_FIELDS[index]}")
             for index in (8, 10, 12, 14, 16, 18):
                 require_nonnegative_ns(int(row[index]), f"{frames_path} {FRAME_FIELDS[index]}")
+            diagnostics_available = int(values["diagnostics_available"])
+            require(diagnostics_available in (0, 1),
+                    f"{frames_path} diagnostics_available must be 0 or 1")
+            for name, value in values.items():
+                if name in ("diagnostics_available", "visible_control_first",
+                            "visible_control_last", "visible_control_count",
+                            "visible_control_path_hash") or "jpeg_decode" in name:
+                    continue
+                numeric = int(value)
+                if diagnostics_available:
+                    require(numeric >= 0 or name in (
+                        "write_pixels_last_width", "write_pixels_last_height",
+                        "write_pixels_last_format"),
+                        f"{frames_path} {name} must be nonnegative or an empty-copy marker")
+                else:
+                    require(numeric == -1,
+                            f"{frames_path} {name} must be unavailable when accounting is off")
+            if diagnostics_available:
+                require(int(values["write_pixels_attempts"]) == int(values["write_pixels_hits"])
+                        + int(values["write_pixels_fallbacks"]),
+                        f"{frames_path} writePixels attempts do not reconcile")
+                require(int(values["write_pixels_hits"]) == int(values["write_pixels_full_hits"])
+                        + int(values["write_pixels_clipped_hits"]),
+                        f"{frames_path} writePixels hit extents do not reconcile")
+                require(int(values["write_pixels_regular_attempts"])
+                        == int(values["write_pixels_regular_hits"])
+                        + int(values["write_pixels_regular_fallbacks"]),
+                        f"{frames_path} regular writePixels attempts do not reconcile")
+                for name in (
+                    "write_pixels_attempts", "write_pixels_hits", "write_pixels_fallbacks",
+                    "write_pixels_copied_bytes", "image_materializations",
+                    "native_geometry_materializations", "target_color_attempts",
+                    "target_color_hits", "physical_variant_lookups", "physical_variant_hits",
+                    "physical_variant_misses",
+                ):
+                    scroll_name = "scroll_" + name
+                    paint_name = "paint_" + name
+                    if scroll_name in values and paint_name in values:
+                        require(int(values[name]) == int(values[scroll_name])
+                                + int(values[paint_name]),
+                                f"{frames_path} {name} does not equal segment sum")
     validate_scroll_trajectory(frames_path, positions, pass_record)
 
     for path, expected_fields in (

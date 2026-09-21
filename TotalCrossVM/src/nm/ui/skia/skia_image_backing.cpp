@@ -47,6 +47,21 @@ uint64_t writePixelsRegularHitsForTest;
 uint64_t writePixelsRegularFallbacksForTest;
 uint64_t writePixelsRegularCopiedBytesForTest;
 uint64_t writePixelsRegularClippedHitsForTest;
+uint64_t writePixelsFrameAttemptsForTest;
+uint64_t writePixelsFrameHitsForTest;
+uint64_t writePixelsFrameFallbacksForTest;
+uint64_t writePixelsFrameCopiedBytesForTest;
+uint64_t writePixelsFrameRegularAttemptsForTest;
+uint64_t writePixelsFrameRegularHitsForTest;
+uint64_t writePixelsFrameRegularFallbacksForTest;
+uint64_t writePixelsFrameRegularCopiedBytesForTest;
+uint64_t writePixelsFrameFullHitsForTest;
+uint64_t writePixelsFrameClippedHitsForTest;
+uint64_t writePixelsFrameFullCopiedBytesForTest;
+uint64_t writePixelsFrameClippedCopiedBytesForTest;
+int32 writePixelsFrameLastWidthForTest = -1;
+int32 writePixelsFrameLastHeightForTest = -1;
+int32 writePixelsFrameLastFormatForTest = -1;
 uint64_t writePixelsRejectInvalidTargetOrSourceForTest;
 uint64_t writePixelsRejectAlphaMaskForTest;
 uint64_t writePixelsRejectMatrixForTest;
@@ -114,6 +129,24 @@ uint64_t promotionAttemptsForTest;
 uint64_t promotionSuccessesForTest;
 uint64_t promotionFailuresForTest;
 uint64_t promotionBytesForTest;
+
+void resetWritePixelsFrameMetricsForTest() {
+    writePixelsFrameAttemptsForTest = 0;
+    writePixelsFrameHitsForTest = 0;
+    writePixelsFrameFallbacksForTest = 0;
+    writePixelsFrameCopiedBytesForTest = 0;
+    writePixelsFrameRegularAttemptsForTest = 0;
+    writePixelsFrameRegularHitsForTest = 0;
+    writePixelsFrameRegularFallbacksForTest = 0;
+    writePixelsFrameRegularCopiedBytesForTest = 0;
+    writePixelsFrameFullHitsForTest = 0;
+    writePixelsFrameClippedHitsForTest = 0;
+    writePixelsFrameFullCopiedBytesForTest = 0;
+    writePixelsFrameClippedCopiedBytesForTest = 0;
+    writePixelsFrameLastWidthForTest = -1;
+    writePixelsFrameLastHeightForTest = -1;
+    writePixelsFrameLastFormatForTest = -1;
+}
 
 uint64_t diagnosticHash(uint64_t hash, uint64_t value) {
     hash ^= value + UINT64_C(0x9e3779b97f4a7c15) + (hash << 6) + (hash >> 2);
@@ -257,8 +290,10 @@ void recordWritePixelsAttemptForTest(bool regular) {
         return;
     }
     ++writePixelsAttemptsForTest;
+    ++writePixelsFrameAttemptsForTest;
     if (regular) {
         ++writePixelsRegularAttemptsForTest;
+        ++writePixelsFrameRegularAttemptsForTest;
     }
 }
 
@@ -267,26 +302,43 @@ void recordWritePixelsFallbackForTest(bool regular) {
         return;
     }
     ++writePixelsFallbacksForTest;
+    ++writePixelsFrameFallbacksForTest;
     if (regular) {
         ++writePixelsRegularFallbacksForTest;
+        ++writePixelsFrameRegularFallbacksForTest;
     }
 }
 
-void recordWritePixelsHitForTest(bool regular, bool clipped, uint64_t copiedBytes) {
+void recordWritePixelsHitForTest(bool regular, bool clipped, uint64_t copiedBytes,
+                                 int32 width, int32 height, ImageBackingFormat format) {
     if (!backingAccountingForTest) {
         return;
     }
     ++writePixelsHitsForTest;
+    ++writePixelsFrameHitsForTest;
     if (regular) {
         ++writePixelsRegularHitsForTest;
+        ++writePixelsFrameRegularHitsForTest;
         if (clipped) {
             ++writePixelsRegularClippedHitsForTest;
         }
     }
+    if (clipped) {
+        ++writePixelsFrameClippedHitsForTest;
+        writePixelsFrameClippedCopiedBytesForTest += copiedBytes;
+    } else {
+        ++writePixelsFrameFullHitsForTest;
+        writePixelsFrameFullCopiedBytesForTest += copiedBytes;
+    }
     writePixelsCopiedBytesForTest += copiedBytes;
+    writePixelsFrameCopiedBytesForTest += copiedBytes;
     if (regular) {
         writePixelsRegularCopiedBytesForTest += copiedBytes;
+        writePixelsFrameRegularCopiedBytesForTest += copiedBytes;
     }
+    writePixelsFrameLastWidthForTest = width;
+    writePixelsFrameLastHeightForTest = height;
+    writePixelsFrameLastFormatForTest = static_cast<int32>(format);
 }
 
 skia_image_backing_internal::NativeImageBackingRecord* findBacking(int64_t handle) {
@@ -621,7 +673,9 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
     }
     const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
         * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
-    recordWritePixelsHitForTest(true, plan.clipped, copiedBytes);
+    recordWritePixelsHitForTest(true, plan.clipped, copiedBytes,
+                                plan.sourcePixels.width(), plan.sourcePixels.height(),
+                                IMAGE_BACKING_FORMAT_RGBA8888);
     return 1;
 #else
     UNUSED(targetCanvas)
@@ -704,7 +758,9 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
             }
             const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
                 * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
-            recordWritePixelsHitForTest(true, plan.clipped, copiedBytes);
+            recordWritePixelsHitForTest(true, plan.clipped, copiedBytes,
+                                        plan.sourcePixels.width(), plan.sourcePixels.height(),
+                                        source->format);
             return 1;
         } catch (const std::bad_alloc&) {
             return fallback();
@@ -729,7 +785,9 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
     }
     const uint64_t copiedBytes = static_cast<uint64_t>(plan.sourcePixels.width())
         * static_cast<uint64_t>(plan.sourcePixels.height()) * 4;
-    recordWritePixelsHitForTest(true, plan.clipped, copiedBytes);
+    recordWritePixelsHitForTest(true, plan.clipped, copiedBytes,
+                                plan.sourcePixels.width(), plan.sourcePixels.height(),
+                                source->format);
     return 1;
 #else
     UNUSED(targetCanvas)
@@ -787,7 +845,7 @@ int tryDirectImageCopy(SkCanvas* targetCanvas, const SkImage* image,
         return fallback();
     }
     recordWritePixelsHitForTest(false, false, static_cast<uint64_t>(width)
-        * static_cast<uint64_t>(height) * 4);
+        * static_cast<uint64_t>(height) * 4, width, height, IMAGE_BACKING_FORMAT_RGBA8888);
     return 1;
 #else
     UNUSED(targetCanvas)
@@ -873,7 +931,7 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
             }
         }
         recordWritePixelsHitForTest(false, false, static_cast<uint64_t>(width)
-            * static_cast<uint64_t>(height) * 4);
+            * static_cast<uint64_t>(height) * 4, width, height, source->format);
         return 1;
     } catch (const std::bad_alloc&) {
         return fallback();
@@ -1903,6 +1961,7 @@ void skia_image_backing_reset_accounting_for_test(void) {
 }
 
 void skia_image_backing_clear_accounting_counters_for_test(void) {
+    resetWritePixelsFrameMetricsForTest();
     backingRecordsCreatedForTest = 0;
     backingRecordsReleasedForTest = 0;
     backingRecordsLiveForTest = 0;
@@ -2017,6 +2076,7 @@ void skia_image_backing_clear_accounting_counters_for_test(void) {
 void skia_image_backing_set_accounting_for_test(int enabled) {
     backingAccountingForTest = enabled != 0;
     screen_diagnostics_set_for_test(enabled);
+    resetWritePixelsFrameMetricsForTest();
     if (!backingAccountingForTest) {
         backingRecordsCreatedForTest = 0;
         backingRecordsReleasedForTest = 0;
@@ -2169,6 +2229,50 @@ uint64_t skia_image_backing_write_pixels_regular_copied_bytes_for_test(void) {
 
 uint64_t skia_image_backing_write_pixels_regular_clipped_hits_for_test(void) {
     return writePixelsRegularClippedHitsForTest;
+}
+
+void skia_image_backing_reset_write_pixels_frame_metrics_for_test(void) {
+    resetWritePixelsFrameMetricsForTest();
+}
+
+int64_t skia_image_backing_write_pixels_frame_metric_for_test(int32 kind) {
+    if (!backingAccountingForTest) {
+        return -1;
+    }
+    switch (kind) {
+    case 0:
+        return static_cast<int64_t>(writePixelsFrameAttemptsForTest);
+    case 1:
+        return static_cast<int64_t>(writePixelsFrameHitsForTest);
+    case 2:
+        return static_cast<int64_t>(writePixelsFrameFallbacksForTest);
+    case 3:
+        return static_cast<int64_t>(writePixelsFrameCopiedBytesForTest);
+    case 4:
+        return static_cast<int64_t>(writePixelsFrameRegularAttemptsForTest);
+    case 5:
+        return static_cast<int64_t>(writePixelsFrameRegularHitsForTest);
+    case 6:
+        return static_cast<int64_t>(writePixelsFrameRegularFallbacksForTest);
+    case 7:
+        return static_cast<int64_t>(writePixelsFrameRegularCopiedBytesForTest);
+    case 8:
+        return static_cast<int64_t>(writePixelsFrameFullHitsForTest);
+    case 9:
+        return static_cast<int64_t>(writePixelsFrameClippedHitsForTest);
+    case 10:
+        return static_cast<int64_t>(writePixelsFrameFullCopiedBytesForTest);
+    case 11:
+        return static_cast<int64_t>(writePixelsFrameClippedCopiedBytesForTest);
+    case 12:
+        return writePixelsFrameLastWidthForTest;
+    case 13:
+        return writePixelsFrameLastHeightForTest;
+    case 14:
+        return writePixelsFrameLastFormatForTest;
+    default:
+        return -1;
+    }
 }
 
 uint64_t skia_image_backing_write_pixels_reject_invalid_target_or_source_for_test(void) {

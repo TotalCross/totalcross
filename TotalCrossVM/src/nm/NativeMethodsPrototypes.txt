@@ -145,6 +145,8 @@ TC_API void tuiNIB_writePixelsRegHitTest(NMParams p);
 TC_API void tuiNIB_writePixelsRegFbTest(NMParams p);
 TC_API void tuiNIB_writePixelsRegBytesTest(NMParams p);
 TC_API void tuiNIB_writePixelsRegClipTest(NMParams p);
+TC_API void tuiNIB_writePixelsFrameResetTest(NMParams p);
+TC_API void tuiNIB_writePixelsFrameMetricTest_i(NMParams p);
 TC_API void tuiNIB_physicalIdentityAttemptsT(NMParams p);
 TC_API void tuiNIB_physicalIdentityHitsTest(NMParams p);
 TC_API void tuiNIB_physicalIdentityFallbacks(NMParams p);
@@ -1270,6 +1272,14 @@ TC_API void tuiNIB_writePixelsRegBytesTest(NMParams p) // totalcross/ui/image/Na
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_writePixelsRegClipTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsRegClipTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_writePixelsFrameResetTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void writePixelsFrameResetTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_writePixelsFrameMetricTest_i(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long writePixelsFrameMetricTest(int kind);
 {
 }
 //////////////////////////////////////////////////////////////////////////

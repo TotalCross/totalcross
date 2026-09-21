@@ -14,6 +14,21 @@ final class NativeImageBacking extends ImageBacking {
   static final int TEST_COLOR_RGBA8888 = 0;
   static final int TEST_COLOR_BGRA8888 = 1;
   static final int TEST_COLOR_RGB565 = 2;
+  static final int WRITE_PIXELS_FRAME_ATTEMPTS = 0;
+  static final int WRITE_PIXELS_FRAME_HITS = 1;
+  static final int WRITE_PIXELS_FRAME_FALLBACKS = 2;
+  static final int WRITE_PIXELS_FRAME_COPIED_BYTES = 3;
+  static final int WRITE_PIXELS_FRAME_REGULAR_ATTEMPTS = 4;
+  static final int WRITE_PIXELS_FRAME_REGULAR_HITS = 5;
+  static final int WRITE_PIXELS_FRAME_REGULAR_FALLBACKS = 6;
+  static final int WRITE_PIXELS_FRAME_REGULAR_COPIED_BYTES = 7;
+  static final int WRITE_PIXELS_FRAME_FULL_HITS = 8;
+  static final int WRITE_PIXELS_FRAME_CLIPPED_HITS = 9;
+  static final int WRITE_PIXELS_FRAME_FULL_COPIED_BYTES = 10;
+  static final int WRITE_PIXELS_FRAME_CLIPPED_COPIED_BYTES = 11;
+  static final int WRITE_PIXELS_FRAME_LAST_WIDTH = 12;
+  static final int WRITE_PIXELS_FRAME_LAST_HEIGHT = 13;
+  static final int WRITE_PIXELS_FRAME_LAST_FORMAT = 14;
 
   private static boolean backingAccountingEnabledForTest;
   private long nativeHandle;
@@ -208,6 +223,14 @@ final class NativeImageBacking extends ImageBacking {
 
   static long writePixelsRegClipped() {
     return writePixelsRegClipTest();
+  }
+
+  static void resetWritePixelsFrameMetricsForTest() {
+    writePixelsFrameResetTest();
+  }
+
+  static long writePixelsFrameMetricForTest(int kind) {
+    return writePixelsFrameMetricTest(kind);
   }
 
   static long writePixelsRejectInvalidTargetOrSourceForTest() {
@@ -693,6 +716,15 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private static long writePixelsRegClipTest() {
     return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void writePixelsFrameResetTest() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long writePixelsFrameMetricTest(int kind) {
+    return -1;
   }
 
   @ReplacedByNativeOnDeploy

@@ -120,6 +120,8 @@ void recordTargetColorMappingSubreasonForTest(int32 reason);
 void recordPhysicalVariantMappingSubreasonForTest(int32 reason);
 void recordPhysicalIdentityMappingSubreasonForTest(int32 reason);
 int64_t diagnosticMetricForTest(int32 kind);
+void skia_image_backing_reset_write_pixels_frame_metrics_for_test(void);
+int64_t skia_image_backing_write_pixels_frame_metric_for_test(int32 kind);
 
 enum RasterVariantUse : uint8_t {
     RASTER_VARIANT_NOT_USED = 0,
