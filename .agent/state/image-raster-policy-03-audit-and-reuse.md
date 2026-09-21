@@ -43,8 +43,9 @@ source/evidence paths needed for the next action.
   with a `1/1024` cap; focused numeric tests and the exact M3 gate passed.
 - [x] (2026-09-21) Recorded the final ULP correction and fresh M3 evidence in
   documentation commit `f9d878fb7`.
-- [x] (2026-09-21) M4 — three-pass reuse workload, diagnostic matrix, and
-  primary performance matrix passed at the final implementation HEAD.
+- [ ] (2026-09-21) M4 — prior measurements invalidated because `warm-reverse`
+  used the forward interpolation formula; corrected rerun is pending at
+  implementation HEAD `6007c732b`.
 
 ## M1 correction gate
 
@@ -290,7 +291,16 @@ Logs: `/tmp/image-raster-m3-ulp-build.log`,
 All M3 acceptance criteria pass at this HEAD. `STOP / REVIEW 3` is ready;
 M4 remains gated and was not started.
 
-## M4 reuse and target-color measurement
+## M4 reuse and target-color measurement — invalidated
+
+The prior M4 implementation and measurements at `cfdbb480e` are invalid. Its
+`warm-reverse` pass started at the maximum but interpolated from the minimum,
+so its `frames.csv`, aggregates, result ZIPs, and `STOP / REVIEW 4` statement
+must not be used or combined with the corrected rerun. The implementation fix
+is `6007c732b`; it makes interpolation direction-aware without rebuilding the
+UI or clearing image, backing, draw-plan, or raster caches. The runner now
+proves pass direction, endpoints, monotonicity, multiple frames, and full
+range in every `frames.csv`.
 
 Implementation commits are `92dd7a2b3` for the three-pass workload and
 `cfdbb480e` for per-pass artifact validation, warm-pass structural handling,
@@ -328,14 +338,16 @@ slot changed. A full SDK distribution rebuild was deferred because the SDK
 JAR was unchanged; the changed smoke sources were compiled and deployed
 against that JAR.
 
-`STOP / REVIEW 4` is ready. Preserve the M4 artifacts and do not begin an
-optimization or M5 follow-up without review.
+Those measurements are retained only as invalidated historical artifacts.
+`STOP / REVIEW 4` is not ready until the corrected matrices complete.
 
 ## Next action
 
-Obtain human review at `STOP / REVIEW 4`, keeping RGB565/target-color timing
-interpretations observational and preserving the no-change decisions for
-defaults, delayed materialization, and the single shared variant slot.
+Rerun the complete corrected M4 diagnostic and performance matrices from
+`6007c732b`, then replace the invalidated M4 summary/evidence/report with the
+corrected hashes and traversal proof. Preserve observational interpretation
+and the no-change decisions for defaults, delayed materialization, and the
+single shared variant slot.
 
 ## Resume command
 
