@@ -52,9 +52,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Historical commit-message audit
 
-The post-commit checker found over-80-character body lines in `a3c1c8820`.
-The signed commit is preserved without amendment or history rewriting, and all
-subsequent commit messages will be wrapped before validation.
+The post-commit checker found over-80-character body lines in `a3c1c8820` and
+`67310f920`. Both signed commits are preserved without amendment or history
+rewriting. Subsequent commit messages will be wrapped before validation.
 
 ## Active decisions
 
