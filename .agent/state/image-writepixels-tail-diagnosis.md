@@ -13,10 +13,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Branch: `perf/writepixels-tail-diagnosis`.
 - Requested base: `perf/image-decode-distributed-benchmark`.
 - Base and starting HEAD: `d5a682e0d1a32928f1e96bc62be083f6f2d813df`.
-- Last logical commit: `df2504b0e` (`docs(benchmark): persist writePixels tail
-  analysis`).
-- Next action: commit the final plan/state/evidence/report checkpoint, then
-  stop for review without starting optimization work.
+- Last logical commit: `766a27166` (`docs(benchmark): close writePixels tail
+  diagnosis`).
+- Next action: stop for review without starting optimization work.
 
 ## Working set
 
