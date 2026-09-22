@@ -76,8 +76,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String accountingProfile;
   private String benchmarkProfile;
   private boolean scrollRasterReuseProfile;
+  private boolean releaseDefaultScrollProfile;
+  private boolean rasterReuseBenchmarkProfile;
   private String renderingReuseProfile;
   private int workloadImageCount = IMAGE_COUNT;
+  private long nativeDrawMask = -1;
+  private long nativeDecodeMask = -1;
+  private long observedDrawMask = -1;
+  private long observedDecodeMask = -1;
   private int measuredRowPaints;
   private int measuredImagePaints;
   private long benchmarkTargetWidth = -1;
@@ -150,8 +156,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           getCommandLine(), "accounting", "on");
       benchmarkProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "profile", "standard");
-      scrollRasterReuseProfile = "scroll-raster-reuse-poc".equals(benchmarkProfile)
-          || "release-default-scroll".equals(benchmarkProfile);
+      scrollRasterReuseProfile = "scroll-raster-reuse-poc".equals(benchmarkProfile);
+      releaseDefaultScrollProfile = "release-default-scroll".equals(benchmarkProfile);
+      rasterReuseBenchmarkProfile = scrollRasterReuseProfile || releaseDefaultScrollProfile;
       workloadImageCount = scrollRasterReuseProfile ? POC_IMAGE_COUNT : IMAGE_COUNT;
       configureScrollRasterReuse();
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
@@ -162,9 +169,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           "missing --image-optimization=<mask> outside the release-default-scroll profile");
       ImageRasterBenchmarkSupport.require(scrollDurationNs > 0,
           "duration must be positive");
-      ImageRasterBenchmarkSupport.require(scrollRasterReuseProfile
+      ImageRasterBenchmarkSupport.require(rasterReuseBenchmarkProfile
           ? benchmarkPassCount == 2 : benchmarkPassCount == 1 || benchmarkPassCount == 3,
-          scrollRasterReuseProfile ? "scroll raster reuse profile requires passes=2"
+          rasterReuseBenchmarkProfile ? "scroll raster reuse profile requires passes=2"
               : "passes must be 1 or 3");
       ImageRasterBenchmarkSupport.require("off".equals(prefetchProfile)
           || "on".equals(prefetchProfile),
@@ -180,6 +187,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImageRasterBenchmarkSupport.ensureDirectory(runOutputDir);
       requireBenchmarkResolution();
       configureMask();
+      validateDefaultMaskTransport();
       captureTargetMetrics();
       Image.resetImageOperationAccountingForBenchmarkTest(accountingEnabled());
       ImagePreparation.resetAccountingForTest();
@@ -248,7 +256,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       prefetchTimer = null;
     }
     try {
-      if (scrollRasterReuseProfile) {
+      if (rasterReuseBenchmarkProfile) {
         executeScrollRasterReuseProfile();
         finishBenchmark(true, "");
         return;
@@ -316,6 +324,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",accounting=" + accountingProfile
         + ",requested_mask=" + requestedMask
         + ",effective_mask=" + effectiveMask
+        + ",native_draw_mask=" + nativeDrawMask
+        + ",native_decode_mask=" + nativeDecodeMask
+        + ",observed_draw_mask=" + observedDrawMask
+        + ",observed_decode_mask=" + observedDecodeMask
         + ",run=" + runNumber
         + ",passes=" + benchmarkPassCount
         + ",output_dir=" + String.valueOf(runOutputDir)
@@ -371,6 +383,29 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
   }
 
+  private void validateDefaultMaskTransport() throws Exception {
+    if (!releaseDefaultScrollProfile) {
+      return;
+    }
+    long expected = ImageOptimizationSettings.DEFAULT_EFFECTIVE_MASK;
+    long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
+    nativeDrawMask = Image.nativeOptimizationMaskForDrawForTest();
+    nativeDecodeMask = Image.nativeOptimizationMaskForDecodeForTest();
+    Image probe = new Image(1, 1);
+    observedDrawMask = Image.nativeOptimizationMaskObservedForTest(probe, true) & 0xFFFFFFFFL;
+    observedDecodeMask = Image.nativeOptimizationMaskObservedForTest(probe, false) & 0xFFFFFFFFL;
+    ImageRasterBenchmarkSupport.require(effectiveMask == expected,
+        "release default Java effective mask must be 32799");
+    ImageRasterBenchmarkSupport.require(nativeDrawMask == expected,
+        "release default native draw mask must be 32799");
+    ImageRasterBenchmarkSupport.require(nativeDecodeMask == expected,
+        "release default native decode mask must be 32799");
+    ImageRasterBenchmarkSupport.require(observedDrawMask == expected,
+        "release default observed draw mask must be 32799");
+    ImageRasterBenchmarkSupport.require(observedDecodeMask == expected,
+        "release default observed decode mask must be 32799");
+  }
+
   private void configureScrollRasterReuse() {
     renderingReuseProfile = ImageRasterBenchmarkSupport.argument(
         getCommandLine(), "rendering-reuse", "off");
@@ -380,9 +415,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     RenderingOptimizations.setMask("on".equals(renderingReuseProfile)
         ? RenderingOptimizations.SCROLL_RASTER_REUSE : 0);
     RenderingOptimizations.setDiagnosticsEnabledForTest(
-        scrollRasterReuseProfile && accountingEnabled());
+        rasterReuseBenchmarkProfile && accountingEnabled());
     RenderingOptimizations.resetDiagnosticsForTest();
-    Control.setBenchmarkScreenTimingForTest(scrollRasterReuseProfile);
+    Control.setBenchmarkScreenTimingForTest(rasterReuseBenchmarkProfile);
     Control.resetBenchmarkScreenTimingForTest();
   }
 
@@ -399,10 +434,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private String runName() {
-    return (scrollRasterReuseProfile ? benchmarkProfile + "-" : "")
+    return (rasterReuseBenchmarkProfile ? benchmarkProfile + "-" : "")
         + "mask-" + (maskArgument == null ? "default" : maskArgument)
         + "-prefetch-" + prefetchProfile + "-accounting-" + accountingProfile
-        + (scrollRasterReuseProfile ? "-reuse-" + renderingReuseProfile : "")
+        + (rasterReuseBenchmarkProfile ? "-reuse-" + renderingReuseProfile : "")
         + "-run-" + runNumber;
   }
 
@@ -498,14 +533,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           ImageRasterBenchmarkSupport.require(controlsInRow == COLUMN_COUNT,
               "previous row did not contain exactly three ImageControls");
         }
-        row = scrollRasterReuseProfile ? new MeasuredRow() : new Container();
+        row = rasterReuseBenchmarkProfile ? new MeasuredRow() : new Container();
         row.setBackColor(totalcross.ui.gfx.Color.darker(totalcross.ui.gfx.Color.GREEN));
         scroll.add(row, LEFT, AFTER + 2, width, tileWidth);
         rowCount++;
         controlsInRow = 0;
       }
       Image image = new Image(imagePaths[i]).getSmoothScaledInstance(tileWidth, tileWidth);
-      row.add(scrollRasterReuseProfile ? new MeasuredImageControl(image)
+      row.add(rasterReuseBenchmarkProfile ? new MeasuredImageControl(image)
           : new ImageControl(image), AFTER + 1, TOP, tileWidth, tileWidth);
       controlsInRow++;
       imageControlCount++;

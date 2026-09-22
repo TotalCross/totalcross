@@ -17,7 +17,8 @@ bash scripts/package-image-scroll-benchmark.sh \
   --target macos-arm64
 ```
 
-For Windows, provide both source attestations:
+For Windows, provide the benchmark source and an explicit SDK source
+attestation:
 
 ```sh
 bash scripts/package-image-scroll-benchmark.sh \
@@ -36,7 +37,9 @@ Each variant contributes the same 663 `.jpg`-named paths. The package records
 the source revision, runtime SHA-256, and Windows `tcvm.dll` SHA-256 in
 `manifest.json`; a stale Windows runtime is rejected during packaging.
 Windows packaging also requires `--sdk-source-commit` (equal to
-`--source-commit`) as an explicit SDK-runtime attestation.
+`--source-commit`) as an explicit `sdkSourceAttestation`. This is an
+operator-provided provenance assertion, not cryptographic proof that the SDK
+ZIP was built from that revision.
 
 From the extracted bundle directory, run the full suite with:
 
@@ -56,8 +59,11 @@ The default Windows ZIP runs the self-test followed by 44 benchmark processes:
 scroll-reuse performance cases, and six release/default-scroll cases. The
 correctness and performance cases invoke
 `--profile=scroll-raster-reuse-poc --rendering-reuse=off|on`; every one uses
-mask 0, prefetch on, and cold plus warm passes. The release/default-scroll
-cases omit the mask argument and require effective mask 32799.
+mask 0, prefetch on, the 120-image POC workload, and cold plus warm passes.
+The release/default-scroll cases use the full 663-image client corpus, omit
+the mask argument, require effective mask 32799 through Java and native
+draw/decode and observed-mask probes, and run reuse off/on with accounting
+off.
 
 With `--include-decode`, the full phase additionally runs the existing
 90-process decode matrix and aggregation. Without decode assets, any decode

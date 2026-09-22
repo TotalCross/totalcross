@@ -307,7 +307,7 @@ deploy_target() {
          exit 1
       }
       [ "$sdk_source_commit" = "$source_commit" ] || {
-         echo "Windows SDK source commit $sdk_source_commit differs from benchmark source $source_commit" >&2
+         echo "Windows SDK source attestation differs from benchmark source $source_commit" >&2
          exit 1
       }
    fi
@@ -477,10 +477,10 @@ $decode_manifest_fields
   "selfTestPhaseCount": 1,
   "expectedProcessCount": 44,
   "profiles": {
-    "reduced-image-optimizations": {"masks":[0,6,8,16,32,8192,16384,32768,32795,32799],"prefetch":["on"],"accounting":["off"],"renderingReuse":[],"rounds":3,"processCount":30},
-    "scroll-raster-correctness": {"masks":[0],"prefetch":["on"],"accounting":["on"],"renderingReuse":["off","on"],"rounds":1,"processCount":2},
-    "scroll-raster-performance": {"masks":[0],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6},
-    "release-default-scroll": {"masks":["default"],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6,"defaultEffectiveMask":32799}
+    "reduced-image-optimizations": {"masks":[0,6,8,16,32,8192,16384,32768,32795,32799],"prefetch":["on"],"accounting":["off"],"renderingReuse":[],"rounds":3,"processCount":30,"workloadImages":663},
+    "scroll-raster-correctness": {"masks":[0],"prefetch":["on"],"accounting":["on"],"renderingReuse":["off","on"],"rounds":1,"processCount":2,"workloadImages":120},
+    "scroll-raster-performance": {"masks":[0],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6,"workloadImages":120},
+    "release-default-scroll": {"masks":["default"],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6,"defaultEffectiveMask":32799,"workloadImages":663}
   },
   "sdkJar": "dist/totalcross-sdk.jar",
   "sdkJarSha256": "$sdk_compile_sha256",
@@ -488,7 +488,7 @@ $decode_manifest_fields
   "sdkJarSha256Deploy": "$sdk_deploy_sha256",
   "chimeSha256": "$chime_sha256",
   "sourceCommit": "$source_commit",
-  "sdkSourceCommit": $sdk_source_commit_json,
+  "sdkSourceAttestation": $sdk_source_commit_json,
   "runtimeSha256": "$runtime_sha256",
   "tcvmSha256": $tcvm_json
 }

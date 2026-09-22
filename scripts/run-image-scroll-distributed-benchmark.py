@@ -61,6 +61,7 @@ PROFILES = {
         "rounds": ROUNDS,
         "expected_processes": REDUCED_PROCESS_COUNT,
         "passes": 1,
+        "workload_images": EXPECTED_JPEGS,
     },
     "scroll-raster-correctness": {
         "masks": (0,),
@@ -71,6 +72,7 @@ PROFILES = {
         "expected_processes": CORRECTNESS_PROCESS_COUNT,
         "passes": 2,
         "app_profile": "scroll-raster-reuse-poc",
+        "workload_images": 120,
     },
     "scroll-raster-performance": {
         "masks": (0,),
@@ -81,6 +83,7 @@ PROFILES = {
         "expected_processes": PERFORMANCE_PROCESS_COUNT,
         "passes": 2,
         "app_profile": "scroll-raster-reuse-poc",
+        "workload_images": 120,
     },
     "release-default-scroll": {
         "masks": (None,),
@@ -92,6 +95,7 @@ PROFILES = {
         "passes": 2,
         "default_effective_mask": DEFAULT_EFFECTIVE_MASK,
         "app_profile": "release-default-scroll",
+        "workload_images": EXPECTED_JPEGS,
     },
 }
 PROCESS_TIMEOUT_SECONDS = 180
@@ -259,22 +263,26 @@ def load_manifest(bundle):
         "reduced-image-optimizations": {
             "masks": list(MASKS), "prefetch": ["on"], "accounting": ["off"],
             "renderingReuse": [], "rounds": ROUNDS, "processCount": REDUCED_PROCESS_COUNT,
+            "workloadImages": EXPECTED_JPEGS,
         },
         "scroll-raster-correctness": {
             "masks": [0], "prefetch": ["on"], "accounting": ["on"],
             "renderingReuse": ["off", "on"], "rounds": 1,
             "processCount": CORRECTNESS_PROCESS_COUNT,
+            "workloadImages": 120,
         },
         "scroll-raster-performance": {
             "masks": [0], "prefetch": ["on"], "accounting": ["off"],
             "renderingReuse": ["off", "on"], "rounds": ROUNDS,
             "processCount": PERFORMANCE_PROCESS_COUNT,
+            "workloadImages": 120,
         },
         "release-default-scroll": {
             "masks": ["default"], "prefetch": ["on"], "accounting": ["off"],
             "renderingReuse": ["off", "on"], "rounds": ROUNDS,
             "processCount": RELEASE_PROCESS_COUNT,
             "defaultEffectiveMask": DEFAULT_EFFECTIVE_MASK,
+            "workloadImages": EXPECTED_JPEGS,
         },
     }
     require(manifest.get("profiles") == expected_profiles,
@@ -289,8 +297,8 @@ def load_manifest(bundle):
         require(isinstance(manifest.get("tcvmSha256"), str)
                 and len(manifest["tcvmSha256"]) == 64,
                 "Windows manifest tcvmSha256 is missing")
-        require(manifest.get("sdkSourceCommit") == source_commit,
-                "Windows manifest SDK source commit differs from benchmark source")
+        require(manifest.get("sdkSourceAttestation") == source_commit,
+                "Windows manifest SDK source attestation differs from benchmark source")
     require(manifest.get("screenArgument") == SCREEN_ARGUMENT,
             "manifest screen argument differs")
     return manifest
@@ -433,7 +441,7 @@ def self_test(bundle, manifest, output):
         "sdkJarSha256Compile": manifest["sdkJarSha256Compile"],
         "sdkJarSha256Deploy": manifest["sdkJarSha256Deploy"],
         "sourceCommit": manifest["sourceCommit"],
-        "sdkSourceCommit": manifest.get("sdkSourceCommit"),
+        "sdkSourceAttestation": manifest.get("sdkSourceAttestation"),
         "runtimeSha256": manifest["runtimeSha256"],
         "tcvmSha256": manifest.get("tcvmSha256"),
         "executable": str(executable.relative_to(bundle)),
@@ -1010,7 +1018,8 @@ def percentile(values, fraction):
 
 
 def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
-                                    prefetch, accounting, rendering_reuse, run):
+                                    prefetch, accounting, rendering_reuse, run,
+                                    expected_image_count):
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     pass_records = [
         parse_record(line) for line in lines
@@ -1034,12 +1043,17 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
         "requested_mask": str(expected_mask),
         "effective_mask": str(expected_mask),
         "passes": "2",
-        "image_count": "120",
+        "image_count": str(expected_image_count),
     }.items():
         require(summary.get(key) == value,
                 f"{log_path.name} summary {key}={summary.get(key)!r}, expected {value!r}")
     require(profile != "release-default-scroll" or expected_mask == DEFAULT_EFFECTIVE_MASK,
             f"{log_path.name} release profile did not use effective mask 32799")
+    if profile == "release-default-scroll":
+        for key in ("native_draw_mask", "native_decode_mask",
+                    "observed_draw_mask", "observed_decode_mask"):
+            require(summary.get(key) == str(DEFAULT_EFFECTIVE_MASK),
+                    f"{log_path.name} release profile {key} is not 32799")
 
     run_dir = expected_reuse_run_dir(
         output, profile, mask, prefetch, accounting, rendering_reuse, run
@@ -1047,7 +1061,7 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
     environment_path = output / "environment.json"
     require(environment_path.is_file(), f"{environment_path} is missing")
     environment = json.loads(environment_path.read_text(encoding="utf-8"))
-    require(environment.get("datasetFileCount") == 120
+    require(environment.get("datasetFileCount") == expected_image_count
             and environment.get("datasetHash") == manifest.get("datasetHash"),
             f"{environment_path} has an unexpected scroll corpus identity")
     require(environment.get("effectiveLogicalWidth") == 540
@@ -1134,7 +1148,7 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
         for key, value in {
             "profile": profile,
             "rendering_reuse": rendering_reuse,
-            "image_count": "120",
+            "image_count": str(expected_image_count),
         }.items():
             require(record.get(key) == value,
                     f"{log_path.name} {pass_name} {key}={record.get(key)!r}, expected {value!r}")
@@ -1233,7 +1247,8 @@ def write_reuse_suite_plan(output, profile):
 
 
 def run_scroll_reuse_process(bundle, manifest, output, corpus_digest, profile,
-                             mask, prefetch, accounting, rendering_reuse, run):
+                             mask, prefetch, accounting, rendering_reuse, run,
+                             expected_image_count):
     executable = executable_path(bundle, manifest)
     logs = output / "logs"
     logs.mkdir(parents=True, exist_ok=True)
@@ -1264,7 +1279,8 @@ def run_scroll_reuse_process(bundle, manifest, output, corpus_digest, profile,
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed with exit code {completed.returncode}")
     rows, hashes = validate_scroll_reuse_artifacts(
-        output, log_path, manifest, profile, mask, prefetch, accounting, rendering_reuse, run
+        output, log_path, manifest, profile, mask, prefetch, accounting, rendering_reuse, run,
+        expected_image_count,
     )
     print(f"{label} passed,artifacts={expected_reuse_run_dir(output, profile, mask, prefetch, accounting, rendering_reuse, run)}")
     return rows, hashes
@@ -1323,7 +1339,7 @@ def run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile):
         app_profile = profile.get("app_profile", profile["name"])
         rows, hashes = run_scroll_reuse_process(
             bundle, manifest, output, corpus_digest, app_profile, mask, prefetch,
-            accounting, rendering_reuse, run
+            accounting, rendering_reuse, run, profile["workload_images"]
         )
         key = (run, mask, prefetch, accounting, rendering_reuse)
         rows_by_key[key] = rows
@@ -2068,11 +2084,19 @@ def write_default_execution_summary(output, manifest):
     summary = {
         "status": "PASS",
         "sourceCommit": manifest["sourceCommit"],
+        "sdkSourceAttestation": manifest.get("sdkSourceAttestation"),
         "runtimeSha256": manifest["runtimeSha256"],
         "tcvmSha256": manifest.get("tcvmSha256"),
         "selfTestProcessCount": 1,
         "profileProcessCounts": {
             name: profile_config(name)["expected_processes"]
+            for name in (
+                "reduced-image-optimizations", "scroll-raster-correctness",
+                "scroll-raster-performance", "release-default-scroll",
+            )
+        },
+        "profileWorkloadImages": {
+            name: profile_config(name)["workload_images"]
             for name in (
                 "reduced-image-optimizations", "scroll-raster-correctness",
                 "scroll-raster-performance", "release-default-scroll",
