@@ -898,10 +898,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
               && result.fallbacks == RenderingOptimizations.diagnosticMetricForTest(2),
           result.name + " local reuse outcome disagrees with accounting");
     } else {
-      for (int kind = 0; kind <= 20; kind++) {
+      for (int kind = 0; kind < 20; kind++) {
         ImageRasterBenchmarkSupport.require(RenderingOptimizations.diagnosticMetricForTest(kind) == 0,
             result.name + " unexpectedly enabled rendering diagnostics");
       }
+      ImageRasterBenchmarkSupport.require(RenderingOptimizations.diagnosticMetricForTest(20) == -1,
+          result.name + " unexpectedly recorded a rendering fallback reason");
       for (int reason = 0; reason < 12; reason++) {
         ImageRasterBenchmarkSupport.require(
             RenderingOptimizations.diagnosticMetricForTest(100 + reason) == 0,
