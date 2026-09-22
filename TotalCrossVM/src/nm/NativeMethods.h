@@ -271,6 +271,8 @@ TC_API void tugG_fadeScreen_i(NMParams p);
 TC_API void tugG_scrollRasterRegion_iiiii(NMParams p);
 TC_API void tugG_hashRasterRegion_iiii(NMParams p);
 TC_API void tugG_isSoftwareRasterBackend(NMParams p);
+TC_API void tugG_getMainWindowPixelWidth(NMParams p);
+TC_API void tugG_getMainWindowPixelHeight(NMParams p);
 TC_API void tugG_drawText_Ciiiibi(NMParams p);
 TC_API void tugG_drawText_siiiibi(NMParams p);
 TC_API void tugG_drawText_siiiiibi(NMParams p);

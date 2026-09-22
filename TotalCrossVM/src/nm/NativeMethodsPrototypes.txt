@@ -220,6 +220,8 @@ TC_API void tugG_fadeScreen_i(NMParams p);
 TC_API void tugG_scrollRasterRegion_iiiii(NMParams p);
 TC_API void tugG_hashRasterRegion_iiii(NMParams p);
 TC_API void tugG_isSoftwareRasterBackend(NMParams p);
+TC_API void tugG_getMainWindowPixelWidth(NMParams p);
+TC_API void tugG_getMainWindowPixelHeight(NMParams p);
 TC_API void tufF_fontCreate(NMParams p);
 TC_API void tufFM_fontMetricsCreate(NMParams p);
 TC_API void tufFM_charWidth_c(NMParams p);
@@ -1595,6 +1597,14 @@ TC_API void tugG_hashRasterRegion_iiii(NMParams p) // totalcross/ui/gfx/Graphics
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_isSoftwareRasterBackend(NMParams p) // totalcross/ui/gfx/Graphics native public static boolean isSoftwareRasterBackend();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_getMainWindowPixelWidth(NMParams p) // totalcross/ui/gfx/Graphics native public static int getMainWindowPixelWidth();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_getMainWindowPixelHeight(NMParams p) // totalcross/ui/gfx/Graphics native public static int getMainWindowPixelHeight();
 {
 }
 //////////////////////////////////////////////////////////////////////////

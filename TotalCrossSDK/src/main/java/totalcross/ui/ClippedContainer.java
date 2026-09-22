@@ -169,7 +169,7 @@ public class ClippedContainer extends Container {
     if (childGraphics == null) {
       return;
     }
-    childGraphics.setClip(0, dirtyY0 - child.y, child.width, dirtyYf - dirtyY0);
+    childGraphics.setClip(0, 0, child.width, child.height);
     child.onPaint(childGraphics);
     if (child.asContainer != null) {
       child.asContainer.paintChildren();

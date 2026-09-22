@@ -700,7 +700,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private void executeScrollRasterReuseProfile() throws Exception {
     int minimum = scroll.sbV.getMinimum();
     int maximum = validMaximum();
-    int visibleExtent = Math.max(1, scroll.getClientRect().height);
+    int visibleExtent = Math.max(1, scroll.getRect().height);
     int[] waypoints = {
         minimum,
         clampScrollValue(minimum + 7L * visibleExtent, minimum, maximum),
@@ -714,7 +714,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append("target_scroll,scroll_value,requested_delta,actual_delta,hit,fallback_reason,")
         .append("decision_ns,move_ns,dirty_paint_ns,screen_update_ns,scroll_work_ns,")
         .append("paint_work_ns,work_time_ns,row_paints,image_paints\n");
-    waypointRows.append("pass,waypoint_index,target_scroll,actual_scroll,hash,elapsed_ns,hit,")
+    waypointRows.append("pass,waypoint_index,target_scroll,actual_scroll,hash,top_hash,bottom_hash,elapsed_ns,hit,")
         .append("attempts,hits,fallbacks,post_move_recoveries\n");
 
     for (int passIndex = 0; passIndex < benchmarkPassCount; passIndex++) {
@@ -722,6 +722,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       normalRepaint();
       RenderingOptimizations.resetDiagnosticsForTest();
       resetMeasuredPaintCounters();
+      waypointRows.append(passIndex == 0 ? "cold" : "warm").append(",0,")
+          .append(minimum).append(',').append(scroll.sbV.getValue()).append(',')
+          .append(ImageRasterBenchmarkSupport.hashString(scroll.rasterReuseViewportHashForTest())).append(',')
+          .append(ImageRasterBenchmarkSupport.hashString(scroll.rasterReuseViewportHashForTest(0, 455)))
+          .append(',').append(ImageRasterBenchmarkSupport.hashString(scroll.rasterReuseViewportHashForTest(455, 455)))
+          .append(",0,0,0,0,0,0\n");
       PocPassResult result = runScrollRasterReusePass(passIndex == 0 ? "cold" : "warm",
           waypoints, frames, waypointRows);
       validateScrollRasterReusePass(result);
@@ -793,6 +799,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           waypointRows.append(name).append(',').append(segmentIndex + 1).append(',')
               .append(segmentEnd).append(',').append(scroll.sbV.getValue()).append(',')
               .append(ImageRasterBenchmarkSupport.hashString(hash)).append(',')
+              .append(ImageRasterBenchmarkSupport.hashString(scroll.rasterReuseViewportHashForTest(0, 455)))
+              .append(',').append(ImageRasterBenchmarkSupport.hashString(
+                  scroll.rasterReuseViewportHashForTest(455, 455))).append(',')
               .append(System.nanoTime() - passStartNs).append(',')
               .append(RenderingOptimizations.diagnosticMetricForTest(19)).append(',')
               .append(RenderingOptimizations.diagnosticMetricForTest(0)).append(',')
@@ -823,11 +832,28 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         result.name + " had post-move recovery");
     if (RenderingOptimizations.getMask() != 0) {
       ImageRasterBenchmarkSupport.require(result.hits > 0,
-          result.name + " did not record raster reuse hits");
+          result.name + " did not record raster reuse hits: attempts=" + result.attempts
+              + ",fallbacks=" + result.fallbacks + ",reasons=" + rasterReuseFallbackDetails()
+              + ",geometry=" + scroll.rasterReuseViewportGeometryForTest());
     } else {
       ImageRasterBenchmarkSupport.require(result.hits == 0,
           result.name + " recorded hits with raster reuse disabled");
     }
+  }
+
+  private static String rasterReuseFallbackDetails() {
+    StringBuilder details = new StringBuilder();
+    for (int reason = 0; reason < 12; reason++) {
+      long count = RenderingOptimizations.diagnosticMetricForTest(100 + reason);
+      if (count != 0) {
+        if (details.length() != 0) {
+          details.append(';');
+        }
+        details.append(RenderingOptimizations.fallbackReasonNameForTest(reason))
+            .append('=').append(count);
+      }
+    }
+    return details.toString();
   }
 
   private void printScrollRasterReusePass(PocPassResult result, int passIndex) {

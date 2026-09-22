@@ -496,6 +496,16 @@ TC_API void tugG_isSoftwareRasterBackend(NMParams p) // totalcross/ui/gfx/Graphi
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tugG_getMainWindowPixelWidth(NMParams p) // totalcross/ui/gfx/Graphics native public static int getMainWindowPixelWidth();
+{
+   p->retI = screen.screenW;
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_getMainWindowPixelHeight(NMParams p) // totalcross/ui/gfx/Graphics native public static int getMainWindowPixelHeight();
+{
+   p->retI = screen.screenH;
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
    TCObject g = p->obj[0];

@@ -235,11 +235,13 @@ public final class Graphics {
   }
 
   /** Returns the physical width of the Java simulator's shared screen backing. */
+  @ReplacedByNativeOnDeploy
   public static int getMainWindowPixelWidth() {
     return mainWindowPixelWidth;
   }
 
   /** Returns the physical height of the Java simulator's shared screen backing. */
+  @ReplacedByNativeOnDeploy
   public static int getMainWindowPixelHeight() {
     return mainWindowPixelHeight;
   }

@@ -139,6 +139,34 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     return Graphics.hashRasterRegion(px0, py0, px1 - px0, py1 - py0);
   }
 
+  /** Returns a deterministic hash of a logical vertical viewport slice for benchmark diagnosis. */
+  public long rasterReuseViewportHashForTest(int logicalY, int logicalHeight) {
+    Rect viewport = bag0.getAbsoluteRect();
+    if (logicalY < 0 || logicalHeight <= 0 || logicalY + logicalHeight > viewport.height) {
+      return 0;
+    }
+    double scale = Graphics.getMainWindowContentScale();
+    int px0 = physicalInteger(viewport.x * scale);
+    int py0 = physicalInteger((viewport.y + logicalY) * scale);
+    int px1 = physicalInteger((viewport.x + viewport.width) * scale);
+    int py1 = physicalInteger((viewport.y + logicalY + logicalHeight) * scale);
+    if (px0 == Integer.MIN_VALUE || py0 == Integer.MIN_VALUE || px1 == Integer.MIN_VALUE
+        || py1 == Integer.MIN_VALUE || px1 <= px0 || py1 <= py0) {
+      return 0;
+    }
+    return Graphics.hashRasterRegion(px0, py0, px1 - px0, py1 - py0);
+  }
+
+  /** Returns viewport geometry details for raster-reuse benchmark diagnostics. */
+  public String rasterReuseViewportGeometryForTest() {
+    Rect viewport = bag0.getAbsoluteRect();
+    double scale = Graphics.getMainWindowContentScale();
+    return viewport.x + "," + viewport.y + "," + viewport.width + "," + viewport.height
+        + ",scale=" + scale + ",px=" + (viewport.x * scale) + ","
+        + (viewport.y * scale) + "," + ((viewport.x + viewport.width) * scale) + ","
+        + ((viewport.y + viewport.height) * scale);
+  }
+
   /** Asynchronously prepares every image descendant of the scrolling content. */
   public void prepareForDisplay(final Runnable onComplete) {
     Runnable request = new Runnable() {
@@ -647,11 +675,29 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     int dirtyBagY0 = -bag.y + dirtyViewportY0;
     try {
       long dirtyStart = System.nanoTime();
-      Graphics bagGraphics = bag.getGraphics();
-      if (bagGraphics == null) {
+      Graphics rootGraphics = getGraphics();
+      if (rootGraphics == null) {
         throw new IllegalStateException("scroll bag graphics unavailable");
       }
+      rootGraphics.setClip(0, bag0.y + dirtyViewportY0, width, dirtyHeight);
+      fillBackground(rootGraphics, backColor, foreColor, 0, bag0.y + dirtyViewportY0,
+          width, dirtyHeight);
+      onPaint(rootGraphics);
+      Graphics bag0Graphics = bag0.getGraphics();
+      if (bag0Graphics == null) {
+        throw new IllegalStateException("scroll viewport graphics unavailable");
+      }
+      bag0Graphics.setClip(0, dirtyViewportY0, bag0.width, dirtyHeight);
+      bag0.fillBackground(bag0Graphics, bag0.backColor, bag0.foreColor, 0, dirtyViewportY0,
+          bag0.width, dirtyHeight);
+      bag0.onPaint(bag0Graphics);
+      Graphics bagGraphics = bag.getGraphics();
+      if (bagGraphics == null) {
+        throw new IllegalStateException("scroll content graphics unavailable");
+      }
       bagGraphics.setClip(0, dirtyBagY0, bag.width, dirtyHeight);
+      bag.fillBackground(bagGraphics, bag.backColor, bag.foreColor, 0, dirtyBagY0,
+          bag.width, dirtyHeight);
       bag.onPaint(bagGraphics);
       bag.paintDirtyChildren(dirtyBagY0, dirtyBagY0 + dirtyHeight, bag.verticalOnly);
       sbV.onPaint(sbV.getGraphics());
