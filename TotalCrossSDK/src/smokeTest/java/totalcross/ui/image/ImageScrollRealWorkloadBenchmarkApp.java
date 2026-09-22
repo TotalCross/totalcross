@@ -951,6 +951,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(metrics.writePixelsClippedCopiedBytes).append(',')
         .append(metrics.writePixelsLastWidth).append(',').append(metrics.writePixelsLastHeight).append(',')
         .append(metrics.writePixelsLastFormat).append(',')
+        .append(metrics.writePixelsTotalNs).append(',').append(metrics.writePixelsPreparationNs).append(',')
+        .append(metrics.writePixelsCopyNs).append(',').append(metrics.writePixelsRgb565ConversionNs).append(',')
         .append(metrics.imageMaterializations).append(',').append(metrics.nativeGeometryMaterializations).append(',')
         .append(metrics.targetColorAttempts).append(',').append(metrics.targetColorHits).append(',')
         .append(metrics.targetColorMaterializations).append(',').append(metrics.targetColorFallbacks).append(',')
@@ -970,6 +972,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(metrics.imageMaterializations).append(',').append(metrics.nativeGeometryMaterializations).append(',')
         .append(metrics.writePixelsAttempts).append(',').append(metrics.writePixelsHits).append(',')
         .append(metrics.writePixelsFallbacks).append(',').append(metrics.writePixelsCopiedBytes).append(',')
+        .append(metrics.writePixelsTotalNs).append(',').append(metrics.writePixelsPreparationNs).append(',')
+        .append(metrics.writePixelsCopyNs).append(',').append(metrics.writePixelsRgb565ConversionNs).append(',')
         .append(metrics.targetColorAttempts).append(',').append(metrics.targetColorHits).append(',')
         .append(metrics.physicalVariantLookups).append(',').append(metrics.physicalVariantHits).append(',')
         .append(metrics.physicalVariantMisses);
@@ -1364,6 +1368,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long writePixelsLastWidth;
     final long writePixelsLastHeight;
     final long writePixelsLastFormat;
+    final long writePixelsTotalNs;
+    final long writePixelsPreparationNs;
+    final long writePixelsCopyNs;
+    final long writePixelsRgb565ConversionNs;
     final long targetColorAttempts;
     final long targetColorHits;
     final long targetColorMaterializations;
@@ -1392,6 +1400,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         long writePixelsRegularCopiedBytes, long writePixelsFullHits, long writePixelsClippedHits,
         long writePixelsFullCopiedBytes, long writePixelsClippedCopiedBytes,
         long writePixelsLastWidth, long writePixelsLastHeight, long writePixelsLastFormat,
+        long writePixelsTotalNs, long writePixelsPreparationNs, long writePixelsCopyNs,
+        long writePixelsRgb565ConversionNs,
         long targetColorAttempts, long targetColorHits, long targetColorMaterializations,
         long targetColorFallbacks, long targetColorConvertedBytes, long physicalVariantLookups,
         long physicalVariantHits, long physicalVariantMisses, long physicalVariantMaterializations,
@@ -1428,6 +1438,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       this.writePixelsLastWidth = writePixelsLastWidth;
       this.writePixelsLastHeight = writePixelsLastHeight;
       this.writePixelsLastFormat = writePixelsLastFormat;
+      this.writePixelsTotalNs = writePixelsTotalNs;
+      this.writePixelsPreparationNs = writePixelsPreparationNs;
+      this.writePixelsCopyNs = writePixelsCopyNs;
+      this.writePixelsRgb565ConversionNs = writePixelsRgb565ConversionNs;
       this.targetColorAttempts = targetColorAttempts;
       this.targetColorHits = targetColorHits;
       this.targetColorMaterializations = targetColorMaterializations;
@@ -1458,7 +1472,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
             Image.jpegNativeDecodeEighthNsForTest, Image.jpegNativeDecodeOtherCountForTest,
             Image.jpegNativeDecodeOtherNsForTest, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1);
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
       }
       return new FrameMetrics(true, Image.jpegNativeDecodeCountForTest,
           Image.jpegNativeDecodeNsForTest, Image.jpegNativeDecodeFullCountForTest,
@@ -1480,9 +1494,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
               NativeImageBacking.WRITE_PIXELS_FRAME_CLIPPED_HITS), frameMetric(
               NativeImageBacking.WRITE_PIXELS_FRAME_FULL_COPIED_BYTES), frameMetric(
               NativeImageBacking.WRITE_PIXELS_FRAME_CLIPPED_COPIED_BYTES), frameMetric(
-              NativeImageBacking.WRITE_PIXELS_FRAME_LAST_WIDTH), frameMetric(
-              NativeImageBacking.WRITE_PIXELS_FRAME_LAST_HEIGHT), frameMetric(
-              NativeImageBacking.WRITE_PIXELS_FRAME_LAST_FORMAT),
+          NativeImageBacking.WRITE_PIXELS_FRAME_LAST_WIDTH), frameMetric(
+          NativeImageBacking.WRITE_PIXELS_FRAME_LAST_HEIGHT), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_LAST_FORMAT), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_TOTAL_NS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_PREPARATION_NS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_COPY_NS), frameMetric(
+              NativeImageBacking.WRITE_PIXELS_FRAME_RGB565_CONVERSION_NS),
           NativeImageBacking.targetColorAttemptsForTest(), NativeImageBacking.targetColorHitsForTest(),
           NativeImageBacking.targetColorMaterializationsForTest(),
           NativeImageBacking.targetColorFallbacksForTest(),
@@ -1522,6 +1540,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           after.writePixelsFullHits, after.writePixelsClippedHits,
           after.writePixelsFullCopiedBytes, after.writePixelsClippedCopiedBytes,
           after.writePixelsLastWidth, after.writePixelsLastHeight, after.writePixelsLastFormat,
+          after.writePixelsTotalNs, after.writePixelsPreparationNs, after.writePixelsCopyNs,
+          after.writePixelsRgb565ConversionNs,
           available ? after.targetColorAttempts - before.targetColorAttempts : -1,
           available ? after.targetColorHits - before.targetColorHits : -1,
           available ? after.targetColorMaterializations - before.targetColorMaterializations : -1,
@@ -1564,6 +1584,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           second.writePixelsLastWidth >= 0 ? second.writePixelsLastWidth : first.writePixelsLastWidth,
           second.writePixelsLastHeight >= 0 ? second.writePixelsLastHeight : first.writePixelsLastHeight,
           second.writePixelsLastFormat >= 0 ? second.writePixelsLastFormat : first.writePixelsLastFormat,
+          add(first.writePixelsTotalNs, second.writePixelsTotalNs),
+          add(first.writePixelsPreparationNs, second.writePixelsPreparationNs),
+          add(first.writePixelsCopyNs, second.writePixelsCopyNs),
+          add(first.writePixelsRgb565ConversionNs, second.writePixelsRgb565ConversionNs),
           available ? first.targetColorAttempts + second.targetColorAttempts : -1,
           available ? first.targetColorHits + second.targetColorHits : -1,
           available ? first.targetColorMaterializations + second.targetColorMaterializations : -1,

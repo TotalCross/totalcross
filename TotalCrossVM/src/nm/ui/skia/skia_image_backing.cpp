@@ -5,6 +5,7 @@
 #include "skia_image_backing_internal.h"
 #include "skia_image_geometry_internal.h"
 
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -59,6 +60,10 @@ uint64_t writePixelsFrameFullHitsForTest;
 uint64_t writePixelsFrameClippedHitsForTest;
 uint64_t writePixelsFrameFullCopiedBytesForTest;
 uint64_t writePixelsFrameClippedCopiedBytesForTest;
+uint64_t writePixelsFrameTotalNsForTest;
+uint64_t writePixelsFramePreparationNsForTest;
+uint64_t writePixelsFrameCopyNsForTest;
+uint64_t writePixelsFrameRgb565ConversionNsForTest;
 int32 writePixelsFrameLastWidthForTest = -1;
 int32 writePixelsFrameLastHeightForTest = -1;
 int32 writePixelsFrameLastFormatForTest = -1;
@@ -143,6 +148,10 @@ void resetWritePixelsFrameMetricsForTest() {
     writePixelsFrameClippedHitsForTest = 0;
     writePixelsFrameFullCopiedBytesForTest = 0;
     writePixelsFrameClippedCopiedBytesForTest = 0;
+    writePixelsFrameTotalNsForTest = 0;
+    writePixelsFramePreparationNsForTest = 0;
+    writePixelsFrameCopyNsForTest = 0;
+    writePixelsFrameRgb565ConversionNsForTest = 0;
     writePixelsFrameLastWidthForTest = -1;
     writePixelsFrameLastHeightForTest = -1;
     writePixelsFrameLastFormatForTest = -1;
@@ -339,6 +348,82 @@ void recordWritePixelsHitForTest(bool regular, bool clipped, uint64_t copiedByte
     writePixelsFrameLastWidthForTest = width;
     writePixelsFrameLastHeightForTest = height;
     writePixelsFrameLastFormatForTest = static_cast<int32>(format);
+}
+
+uint64_t writePixelsNowNsForTest() {
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count());
+}
+
+void recordWritePixelsTimingForTest(uint64_t totalNs, uint64_t preparationNs,
+                                    uint64_t copyNs, uint64_t rgb565ConversionNs) {
+    if (!backingAccountingForTest) {
+        return;
+    }
+    writePixelsFrameTotalNsForTest += totalNs;
+    writePixelsFramePreparationNsForTest += preparationNs;
+    writePixelsFrameCopyNsForTest += copyNs;
+    writePixelsFrameRgb565ConversionNsForTest += rgb565ConversionNs;
+}
+
+struct WritePixelsTimingForTest {
+    bool active = backingAccountingForTest;
+    uint64_t startNs = active ? writePixelsNowNsForTest() : 0;
+    uint64_t phaseNs = startNs;
+    uint64_t preparationNs = 0;
+    uint64_t copyNs = 0;
+    uint64_t rgb565ConversionNs = 0;
+    bool copied = false;
+
+    uint64_t beginCopy() {
+        if (!active) {
+            return 0;
+        }
+        const uint64_t nowNs = writePixelsNowNsForTest();
+        preparationNs += nowNs - phaseNs;
+        phaseNs = nowNs;
+        return nowNs;
+    }
+
+    void endCopy(uint64_t copyStartNs) {
+        if (!active) {
+            return;
+        }
+        const uint64_t nowNs = writePixelsNowNsForTest();
+        copyNs += nowNs - copyStartNs;
+        phaseNs = nowNs;
+        copied = true;
+    }
+
+    uint64_t beginRgb565Conversion() {
+        return active ? writePixelsNowNsForTest() : 0;
+    }
+
+    void endRgb565Conversion(uint64_t conversionStartNs) {
+        if (active) {
+            rgb565ConversionNs += writePixelsNowNsForTest() - conversionStartNs;
+        }
+    }
+
+    ~WritePixelsTimingForTest() {
+        if (!active) {
+            return;
+        }
+        const uint64_t totalNs = writePixelsNowNsForTest() - startNs;
+        if (!copied) {
+            preparationNs = totalNs;
+        }
+        recordWritePixelsTimingForTest(totalNs, preparationNs, copyNs, rgb565ConversionNs);
+    }
+};
+
+template <typename WritePixelsCallable>
+bool timedWritePixelsForTest(WritePixelsTimingForTest& timing,
+                             WritePixelsCallable&& writePixels) {
+    const uint64_t copyStartNs = timing.beginCopy();
+    const bool result = writePixels();
+    timing.endCopy(copyStartNs);
+    return result;
 }
 
 skia_image_backing_internal::NativeImageBackingRecord* findBacking(int64_t handle) {
@@ -638,6 +723,7 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
     if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
         return 0;
     }
+    WritePixelsTimingForTest timing;
     recordWritePixelsAttemptForTest(true);
     auto fallback = []() {
         recordWritePixelsFallbackForTest(true);
@@ -664,8 +750,11 @@ int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 widt
         }
         return fallback();
     }
-    if (!targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
-                                   plan.destinationPixels.left(), plan.destinationPixels.top())) {
+    if (!timedWritePixelsForTest(timing, [&]() {
+            return targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
+                                             plan.destinationPixels.left(),
+                                             plan.destinationPixels.top());
+        })) {
         if (backingAccountingForTest) {
             ++writePixelsRejectWriteFailureForTest;
         }
@@ -706,6 +795,7 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
     if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
         return 0;
     }
+    WritePixelsTimingForTest timing;
     recordWritePixelsAttemptForTest(true);
     auto fallback = []() {
         recordWritePixelsFallbackForTest(true);
@@ -740,16 +830,25 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
             const SkImageInfo info = rasterInfo(plan.sourcePixels.width(), 1,
                 IMAGE_BACKING_FORMAT_RGBA8888);
             for (int32 row = 0; row < plan.sourcePixels.height(); ++row) {
-                if (!readRgbaBytes(source, rgba.data(), plan.sourcePixels.left(),
-                                   plan.sourcePixels.top() + row, plan.sourcePixels.width(), 1)) {
+                const uint64_t conversionStartNs = source->format == IMAGE_BACKING_FORMAT_RGB565
+                    ? timing.beginRgb565Conversion() : 0;
+                const bool read = readRgbaBytes(source, rgba.data(), plan.sourcePixels.left(),
+                                                plan.sourcePixels.top() + row,
+                                                plan.sourcePixels.width(), 1);
+                if (source->format == IMAGE_BACKING_FORMAT_RGB565) {
+                    timing.endRgb565Conversion(conversionStartNs);
+                }
+                if (!read) {
                     if (backingAccountingForTest) {
                         ++writePixelsRejectSourcePixelsForTest;
                     }
                     return fallback();
                 }
-                if (!targetCanvas->writePixels(info, rgba.data(), rowBytes,
-                                               plan.destinationPixels.left(),
-                                               plan.destinationPixels.top() + row)) {
+                if (!timedWritePixelsForTest(timing, [&]() {
+                        return targetCanvas->writePixels(info, rgba.data(), rowBytes,
+                                                         plan.destinationPixels.left(),
+                                                         plan.destinationPixels.top() + row);
+                    })) {
                     if (backingAccountingForTest) {
                         ++writePixelsRejectWriteFailureForTest;
                     }
@@ -776,8 +875,11 @@ int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
         }
         return fallback();
     }
-    if (!targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
-                                   plan.destinationPixels.left(), plan.destinationPixels.top())) {
+    if (!timedWritePixelsForTest(timing, [&]() {
+            return targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
+                                             plan.destinationPixels.left(),
+                                             plan.destinationPixels.top());
+        })) {
         if (backingAccountingForTest) {
             ++writePixelsRejectWriteFailureForTest;
         }
@@ -816,6 +918,7 @@ int tryDirectImageCopy(SkCanvas* targetCanvas, const SkImage* image,
     if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
         return 0;
     }
+    WritePixelsTimingForTest timing;
     recordWritePixelsAttemptForTest(false);
     auto fallback = []() {
         recordWritePixelsFallbackForTest(false);
@@ -840,8 +943,10 @@ int tryDirectImageCopy(SkCanvas* targetCanvas, const SkImage* image,
     SkPixmap subset;
     const SkIRect sourceRect = SkIRect::MakeLTRB(sourceLeft, sourceTop, sourceRight, sourceBottom);
     if (!image->peekPixels(&pixmap) || !pixmap.extractSubset(&subset, sourceRect)
-        || !targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
-                                      destinationLeft, destinationTop)) {
+        || !timedWritePixelsForTest(timing, [&]() {
+               return targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
+                                                destinationLeft, destinationTop);
+           })) {
         return fallback();
     }
     recordWritePixelsHitForTest(false, false, static_cast<uint64_t>(width)
@@ -875,6 +980,7 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
     if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
         return 0;
     }
+    WritePixelsTimingForTest timing;
     recordWritePixelsAttemptForTest(false);
     auto fallback = []() {
         recordWritePixelsFallbackForTest(false);
@@ -914,8 +1020,11 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
                 : source->surface && source->surface->peekPixels(&pixmap);
             if (!peeked
                 || !pixmap.extractSubset(&subset, sourceRect)
-                || !targetCanvas->writePixels(subset.info(), subset.addr(), subset.rowBytes(),
-                                              destinationLeft, destinationTop)) {
+                || !timedWritePixelsForTest(timing, [&]() {
+                       return targetCanvas->writePixels(subset.info(), subset.addr(),
+                                                        subset.rowBytes(), destinationLeft,
+                                                        destinationTop);
+                   })) {
                 return fallback();
             }
         } else {
@@ -923,9 +1032,17 @@ int tryDirectPhysicalCopy(SkCanvas* targetCanvas, NativeImageBackingRecord* sour
             std::vector<uint8_t> rgba(rowBytes);
             const SkImageInfo info = rasterInfo(width, 1, IMAGE_BACKING_FORMAT_RGBA8888);
             for (int32 row = 0; row < height; ++row) {
-                if (!readRgbaBytes(source, rgba.data(), sourceLeft, sourceTop + row, width, 1)
-                    || !targetCanvas->writePixels(info, rgba.data(), rowBytes,
-                                                  destinationLeft, destinationTop + row)) {
+                const uint64_t conversionStartNs = source->format == IMAGE_BACKING_FORMAT_RGB565
+                    ? timing.beginRgb565Conversion() : 0;
+                const bool read = readRgbaBytes(source, rgba.data(), sourceLeft,
+                                                sourceTop + row, width, 1);
+                if (source->format == IMAGE_BACKING_FORMAT_RGB565) {
+                    timing.endRgb565Conversion(conversionStartNs);
+                }
+                if (!read || !timedWritePixelsForTest(timing, [&]() {
+                        return targetCanvas->writePixels(info, rgba.data(), rowBytes,
+                                                         destinationLeft, destinationTop + row);
+                    })) {
                     return fallback();
                 }
             }
@@ -2270,6 +2387,14 @@ int64_t skia_image_backing_write_pixels_frame_metric_for_test(int32 kind) {
         return writePixelsFrameLastHeightForTest;
     case 14:
         return writePixelsFrameLastFormatForTest;
+    case 15:
+        return static_cast<int64_t>(writePixelsFrameTotalNsForTest);
+    case 16:
+        return static_cast<int64_t>(writePixelsFramePreparationNsForTest);
+    case 17:
+        return static_cast<int64_t>(writePixelsFrameCopyNsForTest);
+    case 18:
+        return static_cast<int64_t>(writePixelsFrameRgb565ConversionNsForTest);
     default:
         return -1;
     }

@@ -43,6 +43,7 @@ RASTER_POLICY_AUDIT_MASKS = (8192, 16384, 32768, 57344)
 RASTER_STRUCTURAL_SMOKE_MASKS = (0, 8192, 16384, 32768, 57344)
 M4_REUSE_MASKS = (0, 32, 8192, 8224)
 WRITE_PIXELS_TAIL_MASKS = (32795, 32799, 32827, 32831)
+WRITE_PIXELS_PRIMARY_MASKS = (32795, 32799)
 PREFETCH_PROFILES = ("off", "on")
 ACCOUNTING_PROFILES = ("on", "off")
 ROUNDS = 3
@@ -144,6 +145,33 @@ PROFILES = {
         "require_standard_smokes": False,
         "reuse_passes": 3,
     },
+    "write-pixels-tail-direct-timing": {
+        "masks": WRITE_PIXELS_PRIMARY_MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("on",),
+        "rounds": 2,
+        "expected_processes": len(WRITE_PIXELS_PRIMARY_MASKS) * len(PREFETCH_PROFILES) * 2,
+        "require_standard_smokes": False,
+        "require_policy_diagnostics": True,
+    },
+    "write-pixels-tail-direct-timing-reuse": {
+        "masks": WRITE_PIXELS_PRIMARY_MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("on",),
+        "rounds": 1,
+        "expected_processes": len(WRITE_PIXELS_PRIMARY_MASKS) * len(PREFETCH_PROFILES),
+        "require_standard_smokes": False,
+        "require_policy_diagnostics": True,
+        "reuse_passes": 3,
+    },
+    "write-pixels-tail-direct-timing-control": {
+        "masks": WRITE_PIXELS_PRIMARY_MASKS,
+        "prefetch": PREFETCH_PROFILES,
+        "accounting": ("off",),
+        "rounds": 1,
+        "expected_processes": len(WRITE_PIXELS_PRIMARY_MASKS) * len(PREFETCH_PROFILES),
+        "require_standard_smokes": False,
+    },
 }
 CONTROLLED_PAIRS = ((0, 4), (2, 6), (32795, 32799))
 PROCESS_TIMEOUT_SECONDS = 180
@@ -175,6 +203,8 @@ FRAME_FIELDS = (
     "write_pixels_full_hits", "write_pixels_clipped_hits",
     "write_pixels_full_copied_bytes", "write_pixels_clipped_copied_bytes",
     "write_pixels_last_width", "write_pixels_last_height", "write_pixels_last_format",
+    "write_pixels_total_ns", "write_pixels_preparation_ns", "write_pixels_copy_ns",
+    "write_pixels_rgb565_conversion_ns",
     "image_materializations", "native_geometry_materializations", "target_color_attempts",
     "target_color_hits", "target_color_materializations", "target_color_fallbacks",
     "target_color_converted_bytes", "physical_variant_lookups", "physical_variant_hits",
@@ -184,14 +214,23 @@ FRAME_FIELDS = (
     "scroll_jpeg_decode_count", "scroll_jpeg_decode_ns", "scroll_image_materializations",
     "scroll_native_geometry_materializations", "scroll_write_pixels_attempts",
     "scroll_write_pixels_hits", "scroll_write_pixels_fallbacks", "scroll_write_pixels_copied_bytes",
+    "scroll_write_pixels_total_ns", "scroll_write_pixels_preparation_ns",
+    "scroll_write_pixels_copy_ns", "scroll_write_pixels_rgb565_conversion_ns",
     "scroll_target_color_attempts", "scroll_target_color_hits",
     "scroll_physical_variant_lookups", "scroll_physical_variant_hits",
     "scroll_physical_variant_misses", "paint_jpeg_decode_count", "paint_jpeg_decode_ns",
     "paint_image_materializations", "paint_native_geometry_materializations",
     "paint_write_pixels_attempts", "paint_write_pixels_hits", "paint_write_pixels_fallbacks",
-    "paint_write_pixels_copied_bytes", "paint_target_color_attempts", "paint_target_color_hits",
+    "paint_write_pixels_copied_bytes", "paint_write_pixels_total_ns",
+    "paint_write_pixels_preparation_ns", "paint_write_pixels_copy_ns",
+    "paint_write_pixels_rgb565_conversion_ns", "paint_target_color_attempts",
+    "paint_target_color_hits",
     "paint_physical_variant_lookups", "paint_physical_variant_hits",
     "paint_physical_variant_misses",
+)
+WRITE_PIXELS_TIMING_FIELDS = (
+    "write_pixels_total_ns", "write_pixels_preparation_ns",
+    "write_pixels_copy_ns", "write_pixels_rgb565_conversion_ns",
 )
 DIAGNOSTIC_SUMMARY_FIELDS = (
     "jpeg_decode_count", "jpeg_decode_ns", "jpeg_full_count", "jpeg_half_count",
@@ -744,13 +783,23 @@ def validate_temporal_artifacts(run_dir, run_summary, pass_record, summary_recor
                         == int(values["write_pixels_regular_hits"])
                         + int(values["write_pixels_regular_fallbacks"]),
                         f"{frames_path} regular writePixels attempts do not reconcile")
+                require(int(values["write_pixels_total_ns"])
+                        >= int(values["write_pixels_preparation_ns"]),
+                        f"{frames_path} writePixels total time is less than preparation time")
+                require(int(values["write_pixels_total_ns"])
+                        >= int(values["write_pixels_copy_ns"]),
+                        f"{frames_path} writePixels total time is less than copy time")
+                require(int(values["write_pixels_preparation_ns"])
+                        >= int(values["write_pixels_rgb565_conversion_ns"]),
+                        f"{frames_path} RGB565 conversion exceeds preparation time")
                 for name in (
                     "write_pixels_attempts", "write_pixels_hits", "write_pixels_fallbacks",
-                    "write_pixels_copied_bytes", "image_materializations",
+                    "write_pixels_copied_bytes",
+                    "image_materializations",
                     "native_geometry_materializations", "target_color_attempts",
                     "target_color_hits", "physical_variant_lookups", "physical_variant_hits",
                     "physical_variant_misses",
-                ):
+                ) + WRITE_PIXELS_TIMING_FIELDS:
                     scroll_name = "scroll_" + name
                     paint_name = "paint_" + name
                     if scroll_name in values and paint_name in values:

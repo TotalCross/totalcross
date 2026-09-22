@@ -29,6 +29,10 @@ final class NativeImageBacking extends ImageBacking {
   static final int WRITE_PIXELS_FRAME_LAST_WIDTH = 12;
   static final int WRITE_PIXELS_FRAME_LAST_HEIGHT = 13;
   static final int WRITE_PIXELS_FRAME_LAST_FORMAT = 14;
+  static final int WRITE_PIXELS_FRAME_TOTAL_NS = 15;
+  static final int WRITE_PIXELS_FRAME_PREPARATION_NS = 16;
+  static final int WRITE_PIXELS_FRAME_COPY_NS = 17;
+  static final int WRITE_PIXELS_FRAME_RGB565_CONVERSION_NS = 18;
 
   private static boolean backingAccountingEnabledForTest;
   private long nativeHandle;

@@ -36,6 +36,11 @@ CSV_FIELDS = (
     "enabled_write_pixels_copied_bytes", "control_image_materializations",
     "enabled_image_materializations", "control_native_geometry_materializations",
     "enabled_native_geometry_materializations",
+    "control_write_pixels_total_ns", "enabled_write_pixels_total_ns",
+    "control_write_pixels_preparation_ns", "enabled_write_pixels_preparation_ns",
+    "control_write_pixels_copy_ns", "enabled_write_pixels_copy_ns",
+    "control_write_pixels_rgb565_conversion_ns",
+    "enabled_write_pixels_rgb565_conversion_ns",
 )
 OUTLIER_FIELDS = (
     "kind", "pair", "prefetch", "run", "pass", "threshold", "raw_frames",
@@ -45,6 +50,11 @@ OUTLIER_FIELDS = (
     "write_pixels_full_hits", "write_pixels_clipped_hits",
     "write_pixels_full_copied_bytes", "write_pixels_clipped_copied_bytes",
     "write_pixels_last_width", "write_pixels_last_height", "write_pixels_last_format",
+    "write_pixels_total_ns", "write_pixels_preparation_ns", "write_pixels_copy_ns",
+    "write_pixels_rgb565_conversion_ns", "write_pixels_preparation_work_fraction",
+    "write_pixels_copy_work_fraction", "write_pixels_rgb565_work_fraction",
+    "jpeg_decode_work_fraction", "remaining_paint_work_ns",
+    "remaining_paint_work_fraction",
     "image_materializations", "native_geometry_materializations",
     "jpeg_decode_count", "jpeg_decode_ns", "target_color_attempts",
     "target_color_hits", "physical_variant_lookups", "physical_variant_hits",
@@ -139,6 +149,8 @@ def build_cells(root, kind, masks, accounting, runs, reuse):
 
 
 def sum_frame_field(cell, field):
+    if not cell["frames"] or field not in cell["frames"][0]:
+        return ""
     values = [integer(row, field) for row in cell["frames"]]
     if not values or values[0] < 0:
         return ""
@@ -149,9 +161,17 @@ def summary_value(cell, field):
     return int(cell["summary"][field])
 
 
+def optional_integer(row, key):
+    return int(row[key]) if key in row else None
+
+
+def timing_sum(cell, field):
+    return sum_frame_field(cell, field)
+
+
 def pairwise_rows(cells, kind, accounting, masks, runs, pass_names):
     rows = []
-    pairs = PAIRS if kind not in ("timing", "timing-reuse") else (PAIRS[0],)
+    pairs = PAIRS if kind in ("diagnostic", "reuse") else (PAIRS[0],)
     for control_mask, enabled_mask in pairs:
         for prefetch in PREFETCH:
             for run in runs:
@@ -202,6 +222,22 @@ def pairwise_rows(cells, kind, accounting, masks, runs, pass_names):
                             control, "native_geometry_materializations"),
                         "enabled_native_geometry_materializations": sum_frame_field(
                             enabled, "native_geometry_materializations"),
+                        "control_write_pixels_total_ns": timing_sum(
+                            control, "write_pixels_total_ns"),
+                        "enabled_write_pixels_total_ns": timing_sum(
+                            enabled, "write_pixels_total_ns"),
+                        "control_write_pixels_preparation_ns": timing_sum(
+                            control, "write_pixels_preparation_ns"),
+                        "enabled_write_pixels_preparation_ns": timing_sum(
+                            enabled, "write_pixels_preparation_ns"),
+                        "control_write_pixels_copy_ns": timing_sum(
+                            control, "write_pixels_copy_ns"),
+                        "enabled_write_pixels_copy_ns": timing_sum(
+                            enabled, "write_pixels_copy_ns"),
+                        "control_write_pixels_rgb565_conversion_ns": timing_sum(
+                            control, "write_pixels_rgb565_conversion_ns"),
+                        "enabled_write_pixels_rgb565_conversion_ns": timing_sum(
+                            enabled, "write_pixels_rgb565_conversion_ns"),
                     })
     return rows
 
@@ -231,6 +267,17 @@ def outlier_rows(enabled_cell, control_cell, pair, copy_threshold):
                 continue
             control_frame, match_method = match_control(frame, control_cell["frames"])
             copy_bytes = integer(frame, "write_pixels_copied_bytes")
+            work_time = integer(frame, "work_time_ns")
+            paint_work = integer(frame, "paint_work_ns")
+            write_pixels_total = optional_integer(frame, "write_pixels_total_ns")
+            write_pixels_preparation = optional_integer(frame, "write_pixels_preparation_ns")
+            write_pixels_copy = optional_integer(frame, "write_pixels_copy_ns")
+            rgb565_conversion = optional_integer(frame, "write_pixels_rgb565_conversion_ns")
+            decode_ns = integer(frame, "scroll_jpeg_decode_ns") + integer(
+                frame, "paint_jpeg_decode_ns")
+            paint_write_pixels_total = optional_integer(frame, "paint_write_pixels_total_ns")
+            remaining_paint = (max(0, paint_work - paint_write_pixels_total)
+                               if paint_write_pixels_total is not None else None)
             rows.append({
                 "kind": enabled_cell["kind"],
                 "pair": pair,
@@ -264,7 +311,7 @@ def outlier_rows(enabled_cell, control_cell, pair, copy_threshold):
                 "control_visible_control_path_hash": control_frame[
                     "visible_control_path_hash"],
                 "control_work_time_ns": control_frame["work_time_ns"],
-                "paired_work_delta_ns": integer(frame, "work_time_ns")
+                "paired_work_delta_ns": work_time
                 - integer(control_frame, "work_time_ns"),
                 "identity_equal": int(
                     frame["visible_control_path_hash"]
@@ -280,6 +327,25 @@ def outlier_rows(enabled_cell, control_cell, pair, copy_threshold):
                 "paint_dominant": int(
                     integer(frame, "paint_work_ns") > integer(frame, "scroll_work_ns")
                 ),
+                "write_pixels_total_ns": write_pixels_total,
+                "write_pixels_preparation_ns": write_pixels_preparation,
+                "write_pixels_copy_ns": write_pixels_copy,
+                "write_pixels_rgb565_conversion_ns": rgb565_conversion,
+                "write_pixels_preparation_work_fraction": round(
+                    write_pixels_preparation / work_time, 6)
+                if write_pixels_preparation is not None and work_time else "",
+                "write_pixels_copy_work_fraction": round(
+                    write_pixels_copy / work_time, 6)
+                if write_pixels_copy is not None and work_time else "",
+                "write_pixels_rgb565_work_fraction": round(
+                    rgb565_conversion / work_time, 6)
+                if rgb565_conversion is not None and work_time else "",
+                "jpeg_decode_work_fraction": round(
+                    decode_ns / work_time, 6) if work_time else "",
+                "remaining_paint_work_ns": remaining_paint,
+                "remaining_paint_work_fraction": round(
+                    remaining_paint / work_time, 6)
+                if remaining_paint is not None and work_time else "",
             })
     return rows
 
@@ -332,6 +398,9 @@ def main():
     parser.add_argument("--diagnostic-root", type=Path, required=True)
     parser.add_argument("--reuse-root", type=Path, required=True)
     parser.add_argument("--timing-root", type=Path, required=True)
+    parser.add_argument("--direct-root", type=Path)
+    parser.add_argument("--direct-reuse-root", type=Path)
+    parser.add_argument("--control-root", type=Path)
     parser.add_argument("--sdk-zip", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
@@ -347,11 +416,29 @@ def main():
     timing = build_cells(timing_root, "timing", (32795, 32799), "off", range(1, 4), False)
     timing_reuse = build_cells(timing_root, "timing-reuse", (32795, 32799),
                                "off", (1,), True)
+    direct = None
+    direct_reuse = None
+    control_cells = None
+    if args.direct_root and args.direct_reuse_root and args.control_root:
+        direct_root = args.direct_root.expanduser().resolve()
+        direct_reuse_root = args.direct_reuse_root.expanduser().resolve()
+        control_root = args.control_root.expanduser().resolve()
+        direct = build_cells(direct_root, "direct-timing", (32795, 32799),
+                             "on", range(1, 3), False)
+        direct_reuse = build_cells(direct_reuse_root, "direct-timing-reuse",
+                                   (32795, 32799), "on", (1,), True)
+        control_cells = build_cells(control_root, "direct-timing-control",
+                                    (32795, 32799), "off", (1,), False)
     pair_rows = pairwise_rows(diagnostic, "diagnostic", "on", MASKS, range(1, 4), ("cold",))
     pair_rows += pairwise_rows(reuse, "reuse", "on", MASKS, range(1, 3), PASS_NAMES)
     pair_rows += pairwise_rows(timing, "timing", "off", (32795, 32799), range(1, 4), ("cold",))
     pair_rows += pairwise_rows(timing_reuse, "timing-reuse", "off",
                                (32795, 32799), (1,), PASS_NAMES)
+    if direct is not None:
+        pair_rows += pairwise_rows(direct, "direct-timing", "on",
+                                   (32795, 32799), range(1, 3), ("cold",))
+        pair_rows += pairwise_rows(direct_reuse, "direct-timing-reuse", "on",
+                                   (32795, 32799), (1,), PASS_NAMES)
     write_csv(output / "pairwise.csv", CSV_FIELDS, pair_rows)
 
     outlier_rows_all = []
@@ -370,11 +457,31 @@ def main():
                         threshold = percentile(positive, 95) if positive else 0
                         outlier_rows_all += outlier_rows(
                             enabled, control, f"{control_mask}->{enabled_mask}", threshold)
+    if direct is not None:
+        for cells, kind, runs in ((direct, "direct-timing", range(1, 3)),
+                                  (direct_reuse, "direct-timing-reuse", (1,))):
+            for prefetch in PREFETCH:
+                for run in runs:
+                    pass_names = ("cold",) if kind == "direct-timing" else PASS_NAMES
+                    for pass_name in pass_names:
+                        enabled = cells[(32799, prefetch, run, pass_name)]
+                        disabled = cells[(32795, prefetch, run, pass_name)]
+                        positive = [integer(row, "write_pixels_copied_bytes")
+                                    for row in enabled["frames"]
+                                    if integer(row, "write_pixels_copied_bytes") > 0]
+                        threshold = percentile(positive, 95) if positive else 0
+                        outlier_rows_all += outlier_rows(
+                            enabled, disabled, "32795->32799", threshold)
     write_csv(output / "outliers.csv", OUTLIER_FIELDS, outlier_rows_all)
 
     scaling = copy_stats(diagnostic, (32799, 32831))
+    direct_status = "disabled"
+    if direct is not None:
+        direct_status = (f"enabled,direct_cells={len(direct)},"
+                         f"direct_reuse_cells={len(direct_reuse)},"
+                         f"control_cells={len(control_cells)}")
     print(f"analysis passed,output={output},pairwise_rows={len(pair_rows)},"
-          f"outlier_rows={len(outlier_rows_all)}")
+          f"outlier_rows={len(outlier_rows_all)},direct_timing={direct_status}")
 
 
 if __name__ == "__main__":
