@@ -642,36 +642,46 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   }
 
   private boolean tryRasterReuse(int dx, int requestedDy, int actualDy, boolean pendingPaintBeforeScroll) {
-    final long decisionStart = System.nanoTime();
+    final boolean diagnosticsEnabled = RenderingOptimizations.diagnosticsEnabled();
+    final long decisionStart = diagnosticsEnabled ? System.nanoTime() : 0;
     RenderingOptimizations.beginRasterReuseAttempt(requestedDy, actualDy);
     if (dx != 0) {
       lastRasterReuseFallbackReasonForTest = RenderingOptimizations.FALLBACK_UNSUPPORTED_HORIZONTAL;
-      RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+      if (diagnosticsEnabled) {
+        RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+      }
       RenderingOptimizations.recordRasterReuseFallback(RenderingOptimizations.FALLBACK_UNSUPPORTED_HORIZONTAL);
       return false;
     }
     if (!Graphics.isSoftwareRasterBackend()) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_UNSUPPORTED_BACKEND);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_UNSUPPORTED_BACKEND);
     }
     if (!isTopMost()) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_NOT_TOPMOST);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_NOT_TOPMOST);
     }
     if (pendingPaintBeforeScroll) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_PENDING_REPAINT);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_PENDING_REPAINT);
     }
     if (offscreen != null || offscreen0 != null || bag.offscreen != null || bag.offscreen0 != null
         || bag0.offscreen != null || bag0.offscreen0 != null) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_LEGACY_OFFSCREEN);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_LEGACY_OFFSCREEN);
     }
     if (transparentBackground || bag.transparentBackground || bag0.transparentBackground) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_TRANSPARENT_CONTENT);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_TRANSPARENT_CONTENT);
     }
     Rect viewport = bag0.getAbsoluteRect();
     if (hasPaintAboveViewport(viewport)) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_OVERLAPPING_CONTROL);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_OVERLAPPING_CONTROL);
     }
     if (sbV == null || sbV.transparentBackground) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_OVERLAY_SCROLLBAR);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_OVERLAY_SCROLLBAR);
     }
 
     double scale = Graphics.getMainWindowContentScale();
@@ -684,7 +694,8 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
         || py1 == Integer.MIN_VALUE || physicalDelta == Integer.MIN_VALUE || px1 <= px0
         || py1 <= py0 || px0 < 0 || py0 < 0 || px1 > Graphics.getMainWindowPixelWidth()
         || py1 > Graphics.getMainWindowPixelHeight()) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_NON_INTEGRAL_GEOMETRY);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_NON_INTEGRAL_GEOMETRY);
     }
     int physicalWidth = px1 - px0;
     int physicalHeight = py1 - py0;
@@ -692,28 +703,36 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     lastRasterReuseViewportPixelsForTest = viewportPixels;
     RenderingOptimizations.recordRasterReuseGeometry(viewportPixels);
     if (physicalDelta == 0 || Math.abs((long) physicalDelta) >= physicalHeight) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_DELTA_OUT_OF_RANGE);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_DELTA_OUT_OF_RANGE);
     }
     int bytesPerPixel = Graphics.getMainWindowPixelBytes();
     if (bytesPerPixel <= 0) {
-      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_UNSUPPORTED_BACKEND);
+      return rasterReuseFallback(diagnosticsEnabled, decisionStart,
+          RenderingOptimizations.FALLBACK_UNSUPPORTED_BACKEND);
     }
-    RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+    if (diagnosticsEnabled) {
+      RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+    }
 
-    long moveStart = System.nanoTime();
+    long moveStart = diagnosticsEnabled ? System.nanoTime() : 0;
     if (!Graphics.scrollRasterRegion(px0, py0, physicalWidth, physicalHeight, -physicalDelta)) {
       lastRasterReuseFallbackReasonForTest = RenderingOptimizations.FALLBACK_NATIVE_MOVE_FAILURE;
-      RenderingOptimizations.recordRasterReuseMove(System.nanoTime() - moveStart);
+      if (diagnosticsEnabled) {
+        RenderingOptimizations.recordRasterReuseMove(System.nanoTime() - moveStart);
+      }
       RenderingOptimizations.recordRasterReuseFallback(RenderingOptimizations.FALLBACK_NATIVE_MOVE_FAILURE);
       return false;
     }
-    RenderingOptimizations.recordRasterReuseMove(System.nanoTime() - moveStart);
+    if (diagnosticsEnabled) {
+      RenderingOptimizations.recordRasterReuseMove(System.nanoTime() - moveStart);
+    }
 
     int dirtyViewportY0 = actualDy > 0 ? viewport.height - actualDy : 0;
     int dirtyHeight = Math.abs(actualDy);
     int dirtyBagY0 = -bag.y + dirtyViewportY0;
     try {
-      long dirtyStart = System.nanoTime();
+      long dirtyStart = diagnosticsEnabled ? System.nanoTime() : 0;
       Graphics rootGraphics = getGraphics();
       if (rootGraphics == null) {
         throw new IllegalStateException("scroll bag graphics unavailable");
@@ -740,7 +759,9 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       bag.onPaint(bagGraphics);
       bag.paintDirtyChildren(dirtyBagY0, dirtyBagY0 + dirtyHeight, bag.verticalOnly);
       sbV.onPaint(sbV.getGraphics());
-      RenderingOptimizations.recordRasterReuseDirtyPaint(System.nanoTime() - dirtyStart);
+      if (diagnosticsEnabled) {
+        RenderingOptimizations.recordRasterReuseDirtyPaint(System.nanoTime() - dirtyStart);
+      }
       safeUpdateScreen();
     } catch (Throwable recovery) {
       lastRasterReusePostMoveRecoveryForTest = true;
@@ -761,9 +782,11 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     return true;
   }
 
-  private boolean rasterReuseFallback(long decisionStart, int reason) {
+  private boolean rasterReuseFallback(boolean diagnosticsEnabled, long decisionStart, int reason) {
     lastRasterReuseFallbackReasonForTest = reason;
-    RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+    if (diagnosticsEnabled) {
+      RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
+    }
     RenderingOptimizations.recordRasterReuseFallback(reason);
     return false;
   }
