@@ -248,10 +248,13 @@ def load_manifest(bundle):
             "manifest matrixProcessCount differs")
     require(manifest.get("selfTestPhaseCount") == 1,
             "manifest selfTestPhaseCount differs")
-    require(tuple(manifest.get("corpusVariants", ())) == SCROLL_CORPUS_VARIANTS,
-            "manifest scroll corpus variants differ")
     require(manifest.get("includeDecodeAssets") in (False, True),
             "manifest includeDecodeAssets must be boolean")
+    expected_corpus_variants = (DECODE_CORPUS_VARIANTS
+                                if manifest["includeDecodeAssets"]
+                                else SCROLL_CORPUS_VARIANTS)
+    require(tuple(manifest.get("corpusVariants", ())) == expected_corpus_variants,
+            "manifest corpus variants differ")
     expected_profiles = {
         "reduced-image-optimizations": {
             "masks": list(MASKS), "prefetch": ["on"], "accounting": ["off"],
