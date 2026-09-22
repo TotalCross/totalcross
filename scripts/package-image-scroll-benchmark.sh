@@ -7,7 +7,7 @@
 set -euo pipefail
 
 usage() {
-   echo "Usage: $0 --sdk-zip <TotalCross-version.zip> --corpus <variant-root> --output <dir> [--target <target>|--all] [--include-decode] [--source-commit <sha>]" >&2
+   echo "Usage: $0 --sdk-zip <TotalCross-version.zip> --corpus <variant-root> --output <dir> [--target <target>|--all] [--include-decode] [--source-commit <sha>] [--sdk-source-commit <sha>]" >&2
    echo "Targets: windows-x64 macos-arm64 linux-x64 linux-arm64 linux-armv7" >&2
 }
 
@@ -26,6 +26,7 @@ output_dir=""
 targets=()
 include_decode=false
 source_commit="${SOURCE_COMMIT:-${GITHUB_SHA:-}}"
+sdk_source_commit="${SDK_SOURCE_COMMIT:-}"
 
 while [ "$#" -gt 0 ]; do
    case "$1" in
@@ -60,6 +61,11 @@ while [ "$#" -gt 0 ]; do
       --source-commit)
          [ "$#" -ge 2 ] || { usage; exit 2; }
          source_commit=$2
+         shift 2
+         ;;
+      --sdk-source-commit)
+         [ "$#" -ge 2 ] || { usage; exit 2; }
+         sdk_source_commit=$2
          shift 2
          ;;
       -h|--help)
@@ -295,6 +301,16 @@ deploy_target() {
    local install_name=$3
    local executable_name=$4
    local runtime_name=$5
+   if [ "$target" = windows-x64 ]; then
+      [ -n "$sdk_source_commit" ] || {
+         echo "Windows packaging requires --sdk-source-commit to attest the SDK runtime" >&2
+         exit 1
+      }
+      [ "$sdk_source_commit" = "$source_commit" ] || {
+         echo "Windows SDK source commit $sdk_source_commit differs from benchmark source $source_commit" >&2
+         exit 1
+      }
+   fi
    local deploy_dir="$work_dir/deploy-$target"
    local bundle_dir="$output_dir/image-scroll-benchmark-$target"
    mkdir -p "$deploy_dir"
@@ -409,6 +425,7 @@ deploy_target() {
    local include_decode_json=false corpus_variants_json='["imag"]'
    local decode_manifest_fields=""
    local tcvm_json=null
+   local sdk_source_commit_json=null
    if [ "$include_decode" = true ]; then
       include_decode_json=true
       corpus_variants_json='["imag","lossless","decode-baseline","decode-fast","aggresive-480","aggresive-540"]'
@@ -432,6 +449,9 @@ EOF
    fi
    if [ -n "$tcvm_sha256" ]; then
       tcvm_json="\"$tcvm_sha256\""
+   fi
+   if [ -n "$sdk_source_commit" ]; then
+      sdk_source_commit_json="\"$sdk_source_commit\""
    fi
    cat > "$bundle_dir/manifest.json" <<EOF
 {
@@ -468,6 +488,7 @@ $decode_manifest_fields
   "sdkJarSha256Deploy": "$sdk_deploy_sha256",
   "chimeSha256": "$chime_sha256",
   "sourceCommit": "$source_commit",
+  "sdkSourceCommit": $sdk_source_commit_json,
   "runtimeSha256": "$runtime_sha256",
   "tcvmSha256": $tcvm_json
 }

@@ -23,6 +23,8 @@ the existing decode suite; the input root must then also contain `lossless`,
 Each variant contributes the same 663 `.jpg`-named paths. The package records
 the source revision, runtime SHA-256, and Windows `tcvm.dll` SHA-256 in
 `manifest.json`; a stale Windows runtime is rejected during packaging.
+Windows packaging also requires `--sdk-source-commit` (equal to
+`--source-commit`) as an explicit SDK-runtime attestation.
 
 From the extracted bundle directory, run the full suite with:
 

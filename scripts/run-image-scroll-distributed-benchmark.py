@@ -289,6 +289,8 @@ def load_manifest(bundle):
         require(isinstance(manifest.get("tcvmSha256"), str)
                 and len(manifest["tcvmSha256"]) == 64,
                 "Windows manifest tcvmSha256 is missing")
+        require(manifest.get("sdkSourceCommit") == source_commit,
+                "Windows manifest SDK source commit differs from benchmark source")
     require(manifest.get("screenArgument") == SCREEN_ARGUMENT,
             "manifest screen argument differs")
     return manifest
@@ -431,6 +433,7 @@ def self_test(bundle, manifest, output):
         "sdkJarSha256Compile": manifest["sdkJarSha256Compile"],
         "sdkJarSha256Deploy": manifest["sdkJarSha256Deploy"],
         "sourceCommit": manifest["sourceCommit"],
+        "sdkSourceCommit": manifest.get("sdkSourceCommit"),
         "runtimeSha256": manifest["runtimeSha256"],
         "tcvmSha256": manifest.get("tcvmSha256"),
         "executable": str(executable.relative_to(bundle)),
