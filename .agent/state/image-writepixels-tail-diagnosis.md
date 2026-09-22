@@ -13,8 +13,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Branch: `perf/writepixels-tail-diagnosis`.
 - Requested base: `perf/image-decode-distributed-benchmark`.
 - Base and starting HEAD: `d5a682e0d1a32928f1e96bc62be083f6f2d813df`.
-- Last logical commit: `240f43303` (`docs(benchmark): record direct
-  writePixels timing outcome`).
+- Last logical commit: `f7c24175a` (`docs(benchmark): record timing commit
+  audit`).
 - Next action: review the direct timing artifacts; do not start optimization
   work or rerun broad historical matrices.
 
