@@ -61,7 +61,7 @@ Bootstrap:
       evaluate the outcome at `STOP / REVIEW` (prior result set invalidated).
 - [x] Correction rerun — validate repaint preservation, endpoint filtering,
       native byte accounting, overlay fallback, and diagnostics-off measurement.
-- [ ] Final timer-gating rerun — rebuild the affected SDK/macOS targets and
+- [x] Final timer-gating rerun — rebuild the affected SDK/macOS targets and
       replace the invalidated M3 matrix with fresh diagnostics-off results.
 
 Correction rerun completed at source/results HEAD `d9930c603`: current-HEAD M2
@@ -74,6 +74,12 @@ The final timer-gating correction is now at `f7e662508`. It changes only
 whether diagnostic clock reads execute when diagnostics are disabled. The
 previous M3 performance set is invalidated pending the required six-process
 rerun; M2 is retained and is not rerun.
+
+The final timer-gating M3 rerun completed at `f7e662508`. All six fresh
+processes passed the diagnostics-off timer gate and waypoint checks. Median
+work improved, but ON P95/P99/MAX tails regressed materially because of
+screen-update tails, so the strict final classification is
+`PRESENTATION-BOUND`; fixed-duration pass totals were not used.
 
 ## Current Architecture and Scope
 

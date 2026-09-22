@@ -4,62 +4,59 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Scroll raster reuse POC — invalidated prior M3 results
+# Scroll raster reuse POC — final timer-gating M3 results
 
-> INVALIDATED: these M3 measurements were collected at `d9930c603` before the
-> timer-gating correction at `f7e662508`. Do not use them for final
-> classification; the replacement six-process M3 matrix is pending.
-
+- Source/results HEAD: `f7e662508` on `perf/scroll-raster-reuse-poc`.
 - Base: `perf/writepixels-tail-diagnosis@c6cc3bcbf9e28ead3edabb69c12e5c31926a55d0`.
-- Invalidated measurement HEAD: `d9930c603`.
-- Replacement measurement HEAD: `f7e662508`.
-- Workload: 120 sorted JPEGs, three columns, 540x960 software raster,
+- Workload: 120 sorted JPEGs, three columns, 540x960 logical software raster,
   image optimization mask 0, prefetch ON, two cold/warm passes.
-- M2: one OFF and one ON correctness process with accounting ON.
-- M3: exactly three independent OFF and three independent ON processes with
-  image accounting OFF and rendering diagnostics OFF.
+- M3: exactly three independent OFF and three independent ON processes; image
+  accounting and rendering diagnostics were OFF in every process.
 - Classification: `PRESENTATION-BOUND`.
 
-## Correctness and accounting
+## Correctness and timer gate
 
-The current M2 OFF/ON pair matched every full, top-slice, and bottom-slice
-waypoint hash in both passes. ON recorded 71/71 local hits per pass, zero
-fallbacks, zero post-move recoveries, and no pending repaint after measured
-frames. OFF recorded zero hits. The target was BGRA8888 with rowBytes 4320
-and four bytes per pixel; ON moved `117126000 * 4 = 468504000` bytes per pass.
+All six fresh M3 processes completed with `overallPass=true`. Every cold and
+warm pass matched the five full/top/bottom waypoint hashes. ON recorded 71/71
+local fast-path hits per pass, zero fallbacks, and zero post-move recoveries;
+OFF recorded zero hits. The target remained BGRA8888 with rowBytes 4320 and
+four bytes per pixel, so ON moved `117126000 * 4 = 468504000` bytes per pass.
 
-All six M3 processes also matched every waypoint hash across all rounds. Each
-pass emitted 75 trace rows, of which 71 were actual movement frames; endpoint
-rows remain in the trace with zero work and are excluded from every percentile.
-M3 diagnostics and accounting were disabled, while local hit/outcome metrics
-still reported 71/71 ON hits and zero OFF hits.
+The source audit found all nine diagnostic `System.nanoTime()` expressions in
+`tryRasterReuse` conditional on diagnostics being enabled. The six runtime
+frame traces independently reported zero decision, move, and dirty-paint
+diagnostic timer deltas while diagnostics were OFF. Benchmark-local hit and
+screen-update timing remained active.
 
-The fast path reduced average row/image paints by about 70.4%:
+The fast path reduced average row/image paints by 70.38% cold and 70.60%
+warm:
 
 | pass | OFF rows/images | ON rows/images |
 | --- | ---: | ---: |
-| cold | 6.000 / 18.000 | 1.775 / 5.324 |
-| warm | 6.014 / 18.042 | 1.784 / 5.352 |
+| cold | 6.023 / 18.070 | 1.784 / 5.352 |
+| warm | 6.005 / 18.014 | 1.765 / 5.296 |
 
-Reuse coverage was `0.839266` (`117126000 / 139557600`) in every ON pass.
+Reuse coverage was `0.839266` in every ON pass.
 
 ## Movement-frame timing
 
-Values are P50/P95/P99/MAX milliseconds over 213 measured frames per mode and
-pass, aggregated across the three M3 processes.
+Values are P50/P95/P99/MAX milliseconds over 213 measured movement frames per
+mode and pass, aggregated across the three fresh processes. Endpoint rows were
+retained for waypoint traceability but excluded from every distribution.
 
 | pass | work OFF | work ON | screen OFF | screen ON |
 | --- | ---: | ---: | ---: | ---: |
-| cold | 4.099/4.463/4.561/4.760 | 2.712/3.274/3.471/3.635 | 1.501/1.699/1.935/2.056 | 1.524/1.775/1.824/1.848 |
-| warm | 4.047/4.374/4.520/4.963 | 2.622/3.425/3.779/3.828 | 1.503/1.721/1.900/1.994 | 1.498/1.800/2.019/2.216 |
+| cold | 4.096/4.580/4.668/4.746 | 2.857/7.267/8.133/8.362 | 1.455/1.654/1.700/1.722 | 1.578/4.633/5.342/5.824 |
+| warm | 4.031/4.565/4.852/5.053 | 2.664/6.610/7.742/9.514 | 1.447/1.655/1.880/2.173 | 1.456/4.550/5.398/8.001 |
 
-Median measured work fell 33.8% cold and 35.2% warm. Screen-update P50 stayed
-near 1.5 ms, with a small cold increase and no material warm improvement. The
-time-paced pass totals were effectively unchanged: cold medians were 1250.831
-ms OFF versus 1251.545 ms ON; warm medians were 1250.516 ms OFF versus
-1249.873 ms ON. The optimization removes real raster/UI work, but unchanged
-full-frame presentation remains the limiting end-to-end stage.
+Median work improved 30.2% cold and 33.9% warm, but the ON P95/P99/MAX work
+tails regressed materially. The corresponding screen-update tails account for
+the regression, while median screen-update time stayed near 1.5 ms. Therefore
+the fresh matrix does not satisfy the plan's no-material-tail-regression gate
+for `PROMISING`; unchanged full-frame presentation is the next bottleneck and
+the strict existing classification is `PRESENTATION-BOUND`. Fixed-duration
+pass totals were not used for this classification.
 
-The compact CSVs in this directory contain the current-HEAD diagnostic,
-movement-frame, waypoint-hash, performance, and top-frame evidence. The
-previous result set was invalidated and is not mixed into these files.
+The previous M3 set at `d9930c603` was invalidated before this replacement and
+is not mixed into these artifacts. M2 correctness remains retained from the
+prior correction checkpoint and was not rerun.

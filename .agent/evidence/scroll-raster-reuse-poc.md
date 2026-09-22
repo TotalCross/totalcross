@@ -113,6 +113,36 @@ SPDX-License-Identifier: LGPL-2.1-only
   rendering diagnostics disabled, and regenerate all final artifacts from
   those fresh movement frames.
 
+## 2026-09-22 — final timer-gating M3 rerun
+
+- source/results revision: `f7e662508`; base:
+  `perf/writepixels-tail-diagnosis@c6cc3bcbf9e28ead3edabb69c12e5c31926a55d0`.
+- build gate: SDK `dist -x test` and smoke compilation passed. The affected
+  Java SDK/macOS package was rebuilt without a clean; the existing native
+  macOS runtime was reused because the correction is SDK-only.
+- matrix: exactly three OFF and three ON independent processes completed with
+  accounting and rendering diagnostics OFF, 540x960 software BGRA8888, and
+  150 trace rows per pass including 142 movement rows. Endpoint rows were
+  excluded from all timing distributions.
+- correctness: all six processes matched every waypoint hash. ON recorded
+  71/71 local hits per pass, zero fallbacks and recoveries; OFF recorded zero
+  hits. Reuse coverage was `0.839266`; moved bytes were `468504000` per ON
+  pass using four bytes per pixel.
+- timer gate: source audit found all nine `tryRasterReuse` diagnostic clock
+  reads conditional on diagnostics; all six runtime traces reported zero
+  decision, move, and dirty-paint diagnostic timer deltas.
+- performance: aggregate work P50/P95/P99/MAX was
+  `4.096/4.580/4.668/4.746 ms` OFF versus
+  `2.857/7.267/8.133/8.362 ms` ON cold, and
+  `4.031/4.565/4.852/5.053 ms` OFF versus
+  `2.664/6.610/7.742/9.514 ms` ON warm. Paint reduction was 70.38% cold
+  and 70.60% warm.
+- outcome: ON median work improved, but material ON tails were caused by
+  screen-update tails, so the strict classification is
+  `PRESENTATION-BOUND`, not `PROMISING`. Fixed-duration pass totals were not
+  used. The prior M3 set and discarded precondition/deploy-only attempts are
+  not mixed into the final artifacts.
+
 ## 2026-09-21 — corrected M2/M3 rerun
 
 - source/results revision: `d9930c603`; branch:
