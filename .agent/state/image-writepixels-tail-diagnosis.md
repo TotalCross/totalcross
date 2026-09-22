@@ -8,14 +8,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-- Milestones 1–3 are complete; the STOP / REVIEW gate is active and the
-  diagnosis is frozen at Outcome 2.
+- The direct writePixels timing correction is complete and the STOP / REVIEW
+  gate is active at corrected Outcome 2.
 - Branch: `perf/writepixels-tail-diagnosis`.
 - Requested base: `perf/image-decode-distributed-benchmark`.
 - Base and starting HEAD: `d5a682e0d1a32928f1e96bc62be083f6f2d813df`.
-- Last logical commit: `766a27166` (`docs(benchmark): close writePixels tail
-  diagnosis`).
-- Next action: stop for review without starting optimization work.
+- Last logical commit: `70a4dec44` (`fix(benchmark): emit writePixels timing
+  headers`).
+- Next action: review the direct timing artifacts; do not start optimization
+  work or rerun broad historical matrices.
 
 ## Working set
 
@@ -45,6 +46,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   JPEG-named files and the branch starts at the requested base commit.
 - Added frame-scope writePixels attempts, hits, fallbacks, copied bytes,
   clipped/full counts, dimensions, and backing format metrics.
+- Added accounting-gated writePixels total, preparation, actual-copy, and
+  RGB565 conversion timers with scroll/paint CSV attribution.
 - Added scroll-versus-paint frame deltas for JPEG decode, materialization,
   target-color, physical-variant, backing, and storage-format counters.
 - Extended the packaged macOS runner with diagnostic, reuse, and timing
@@ -69,6 +72,12 @@ SPDX-License-Identifier: LGPL-2.1-only
   `e94de16e3319bddc5e276adbcc1aab96798b88600f0e7c8ec6d34eb63e1051d8`.
 - Tracked analysis contains 48 paired rows and 108 selected outlier rows;
   68 outliers have equal identity hashes and 40 use nearest-scroll matches.
+- Native target and SDK distribution passed after the timing extension.
+- Corrected SDK/macOS package self-test and six smoke cases passed.
+- Fresh direct matrix passed: 8 accounting-on cold, 4 accounting-on reuse,
+  and 4 accounting-off control processes on `32795 -> 32799`, prefetch OFF/ON.
+- Direct analyzer wrote 10 paired rows and 30 timing outlier rows under
+  `.agent/benchmarks/image-writepixels-tail-diagnosis/timing-correction/`.
 
 ## Deferred validation
 
@@ -80,9 +89,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Historical commit-message audit
 
 The post-commit checker found over-80-character or literal escaped paragraph
-markers in historical signed commits `a3c1c8820`, `67310f920`, `bc4a207e9`,
-and `14ce18a5e`. They are preserved without amendment or history rewriting.
-Later commits use separate wrapped message arguments and pass the checker.
+markers in signed commits `a3c1c8820`, `67310f920`, `bc4a207e9`,
+`14ce18a5e`, `58ce284aa`, and `70a4dec44`. They are preserved without
+amendment or history rewriting. New commit messages must remain wrapped.
 
 ## Active decisions
 
@@ -91,6 +100,11 @@ Later commits use separate wrapped message arguments and pass the checker.
 - Attribution uses accounting-on; accounting-off is a later timing control.
 - `work_time_ns` is primary; scroll and paint timings are attribution fields.
 - No policy/default/renderer behavior changes are authorized.
+- Direct timing shows the largest 39.1 ms prefetch-on cold tail contained
+  0.514 ms total writePixels, 0.508 ms actual copy, and 5.6 us preparation;
+  the largest prefetch-off tails contained under 1.2 ms total writePixels.
+- Corrected STOP / REVIEW outcome: Outcome 2. Historical compact analysis is
+  preserved; the timing-correction artifact is the fresh basis for this claim.
 
 ## Deliberate out-of-scope local files
 

@@ -61,3 +61,30 @@ SPDX-License-Identifier: LGPL-2.1-only
   commonly contain decode/materialization activity; warm outliers can persist
   without new materialization. The report records identity-match limits and
   the absence of a separate copy-duration timer.
+- 2026-09-21: correction reopened the STOP / REVIEW gate because the prior
+  Outcome 2 was not justified without direct writePixels duration. Signed
+  source commit `58ce284aa` adds accounting-gated total-path, pre-copy
+  preparation, actual `targetCanvas->writePixels`, and RGB565 conversion
+  timers, plus scroll/paint CSV fields and focused runner validation.
+- 2026-09-21: corrected native `tcvm` Release target and SDK `dist -x test`
+  passed. The post-commit checker reported one over-80-character body line in
+  `58ce284aa`; history is preserved without amendment.
+- 2026-09-21: the first corrected package attempt failed before benchmark
+  execution because it used an older SDK ZIP missing the existing diagnostic
+  bridge. The task-specific failed output was preserved; rebuilding from
+  `build/TotalCross/dist/totalcross-sdk.jar` produced package v3.
+- 2026-09-21: corrected package v3 passed self-test and six macOS smoke cases.
+  The focused fresh matrix passed 8 accounting-on cold, 4 accounting-on
+  three-pass reuse, and 4 accounting-off cold processes on `32795 -> 32799`.
+  The direct analyzer retained 10 paired rows and 30 P95/P99/MAX rows under
+  `timing-correction/`.
+- 2026-09-21: direct timing found the largest prefetch-on cold tail at
+  39,112,500 ns with 513,917 ns total writePixels, 507,500 ns actual copy,
+  and 5,627 ns preparation. The largest prefetch-off tail was 373,441,250 ns
+  with 1,064,040 ns total writePixels and 0.278% copy/work. Reuse showed the
+  same pattern: 30,140,875 ns with 299,541 ns total writePixels on and
+  380,697,625 ns with 1,155,623 ns total off.
+- 2026-09-21: correction evidence supports Outcome 2. The accounting-off
+  control marked all new timing fields unavailable as `-1`; RGB565 conversion
+  timing was available but zero in the 32-bit primary pair. Historical M1–M4
+  compact artifacts were not rewritten.

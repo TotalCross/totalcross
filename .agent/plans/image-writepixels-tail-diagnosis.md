@@ -70,8 +70,10 @@ analysis artifacts for this plan are tracked and committed.
   collect fresh paired cold and warm/reuse samples.
 - [x] Milestone 3: persist outliers, analyze paired controls, and prepare the
   evidence-based outcome.
-- [x] STOP / REVIEW: freeze the diagnosis before any follow-up optimization is
-  designed or implemented.
+- [x] (2026-09-21) Correction milestone: measure total writePixels,
+  preparation, actual copy, and RGB565 conversion time on the primary pair.
+- [x] (2026-09-21) STOP / REVIEW: direct timing supports corrected Outcome 2;
+  no follow-up optimization is designed.
 
 ## Current Architecture and Scope
 
@@ -358,24 +360,16 @@ not from raw logs.
 
 ## Outcomes & Retrospective
 
-The measurement changes are limited to accounting-gated frame-scope fields,
-scroll/paint deltas, identity context, and focused-profile validation. Fresh
-evidence covers 24 diagnostic, 16 reuse, 12 cold timing, and 4 reuse timing
-processes on the packaged macOS ARM64 bundle.
+M1–M4 and the first diagnosis remain historical context. They added
+accounting-gated frame attribution and fresh macOS samples, but measured copy
+bytes rather than copy duration. The correction closed that evidence gap.
 
-Raw roots and ZIP hashes are recorded in `summary.md`; paired rows and
-outliers are in `pairwise.csv` and `outliers.csv`. Outliers show bounded
-full-copy totals, weak prefetch-on copy/work association, and pipeline activity
-that explains the tail better than copy scaling. RGB565 backing bytes appeared,
-but observed writePixels hits reported RGBA8888 format.
-
-The selected STOP / REVIEW outcome is Outcome 2: writePixels is behaving as an
-opportunistic fast path and expensive frames are dominated by other pipeline
-work. This conclusion does not authorize a policy/default, GPU, dirty-region,
-or scroll-reuse redesign.
+The correction adds only timing fields and three focused primary-pair profiles:
+accounting-on cold, accounting-on reuse, and a minimal accounting-off cold
+control. Direct timing supports Outcome 2: the expensive tail is not caused by
+writePixels itself. No policy, default, renderer, image format, or GPU
+behavior changes.
 
 ## Revision Note
 
-Initial plan created on 2026-09-21. It covers
-paired writePixels attribution, RGB565 backing, cold/warm reuse, segment
-timing, raw outliers, and the final STOP / REVIEW gate.
+Initial plan created on 2026-09-21; correction reopened on 2026-09-21.

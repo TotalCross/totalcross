@@ -114,6 +114,18 @@ def run_directory(root, mask, prefetch, accounting, run, pass_name=None):
     return directory
 
 
+def display_path(path):
+    resolved = path.resolve()
+    marker = "/results/"
+    resolved_text = resolved.as_posix()
+    if marker in resolved_text:
+        return "results/" + resolved_text.split(marker, 1)[1]
+    try:
+        return str(resolved.relative_to(Path.cwd().resolve()))
+    except ValueError:
+        return str(resolved)
+
+
 def load_cell(root, kind, mask, prefetch, accounting, run, pass_name=None):
     directory = run_directory(root, mask, prefetch, accounting, run, pass_name)
     frames_path = directory / "frames.csv"
@@ -285,8 +297,8 @@ def outlier_rows(enabled_cell, control_cell, pair, copy_threshold):
                 "run": enabled_cell["run"],
                 "pass": enabled_cell["pass"],
                 "threshold": label,
-                "raw_frames": str((enabled_cell["directory"] / "frames.csv").resolve()),
-                "raw_summary": str((enabled_cell["directory"] / "summary.json").resolve()),
+                "raw_frames": display_path(enabled_cell["directory"] / "frames.csv"),
+                "raw_summary": display_path(enabled_cell["directory"] / "summary.json"),
                 "frame_index": frame["frame_index"],
                 "scroll_value": frame["scroll_value"],
                 "visible_control_path_hash": frame["visible_control_path_hash"],
@@ -395,27 +407,31 @@ def write_csv(path, fields, rows):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--diagnostic-root", type=Path, required=True)
-    parser.add_argument("--reuse-root", type=Path, required=True)
-    parser.add_argument("--timing-root", type=Path, required=True)
+    parser.add_argument("--diagnostic-root", type=Path)
+    parser.add_argument("--reuse-root", type=Path)
+    parser.add_argument("--timing-root", type=Path)
     parser.add_argument("--direct-root", type=Path)
     parser.add_argument("--direct-reuse-root", type=Path)
     parser.add_argument("--control-root", type=Path)
     parser.add_argument("--sdk-zip", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    diagnostic_root = args.diagnostic_root.expanduser().resolve()
-    reuse_root = args.reuse_root.expanduser().resolve()
-    timing_root = args.timing_root.expanduser().resolve()
     sdk_zip = args.sdk_zip.expanduser().resolve()
     output = args.output.expanduser().resolve()
     output.mkdir(parents=True, exist_ok=True)
 
-    diagnostic = build_cells(diagnostic_root, "diagnostic", MASKS, "on", range(1, 4), False)
-    reuse = build_cells(reuse_root, "reuse", MASKS, "on", range(1, 3), True)
-    timing = build_cells(timing_root, "timing", (32795, 32799), "off", range(1, 4), False)
-    timing_reuse = build_cells(timing_root, "timing-reuse", (32795, 32799),
-                               "off", (1,), True)
+    diagnostic = reuse = timing = timing_reuse = None
+    if args.diagnostic_root and args.reuse_root and args.timing_root:
+        diagnostic_root = args.diagnostic_root.expanduser().resolve()
+        reuse_root = args.reuse_root.expanduser().resolve()
+        timing_root = args.timing_root.expanduser().resolve()
+        diagnostic = build_cells(diagnostic_root, "diagnostic", MASKS, "on",
+                                 range(1, 4), False)
+        reuse = build_cells(reuse_root, "reuse", MASKS, "on", range(1, 3), True)
+        timing = build_cells(timing_root, "timing", (32795, 32799), "off",
+                             range(1, 4), False)
+        timing_reuse = build_cells(timing_root, "timing-reuse", (32795, 32799),
+                                   "off", (1,), True)
     direct = None
     direct_reuse = None
     control_cells = None
@@ -429,11 +445,15 @@ def main():
                                    (32795, 32799), "on", (1,), True)
         control_cells = build_cells(control_root, "direct-timing-control",
                                     (32795, 32799), "off", (1,), False)
-    pair_rows = pairwise_rows(diagnostic, "diagnostic", "on", MASKS, range(1, 4), ("cold",))
-    pair_rows += pairwise_rows(reuse, "reuse", "on", MASKS, range(1, 3), PASS_NAMES)
-    pair_rows += pairwise_rows(timing, "timing", "off", (32795, 32799), range(1, 4), ("cold",))
-    pair_rows += pairwise_rows(timing_reuse, "timing-reuse", "off",
-                               (32795, 32799), (1,), PASS_NAMES)
+    pair_rows = []
+    if diagnostic is not None:
+        pair_rows += pairwise_rows(diagnostic, "diagnostic", "on", MASKS,
+                                   range(1, 4), ("cold",))
+        pair_rows += pairwise_rows(reuse, "reuse", "on", MASKS, range(1, 3), PASS_NAMES)
+        pair_rows += pairwise_rows(timing, "timing", "off", (32795, 32799),
+                                   range(1, 4), ("cold",))
+        pair_rows += pairwise_rows(timing_reuse, "timing-reuse", "off",
+                                   (32795, 32799), (1,), PASS_NAMES)
     if direct is not None:
         pair_rows += pairwise_rows(direct, "direct-timing", "on",
                                    (32795, 32799), range(1, 3), ("cold",))
@@ -442,8 +462,11 @@ def main():
     write_csv(output / "pairwise.csv", CSV_FIELDS, pair_rows)
 
     outlier_rows_all = []
-    for cells, kind, runs in ((diagnostic, "diagnostic", range(1, 4)),
-                              (reuse, "reuse", range(1, 3))):
+    historical_cells = () if diagnostic is None else (
+        (diagnostic, "diagnostic", range(1, 4)),
+        (reuse, "reuse", range(1, 3)),
+    )
+    for cells, kind, runs in historical_cells:
         for control_mask, enabled_mask in PAIRS:
             for prefetch in PREFETCH:
                 for run in runs:
@@ -474,7 +497,7 @@ def main():
                             enabled, disabled, "32795->32799", threshold)
     write_csv(output / "outliers.csv", OUTLIER_FIELDS, outlier_rows_all)
 
-    scaling = copy_stats(diagnostic, (32799, 32831))
+    scaling = copy_stats(diagnostic, (32799, 32831)) if diagnostic is not None else []
     direct_status = "disabled"
     if direct is not None:
         direct_status = (f"enabled,direct_cells={len(direct)},"
