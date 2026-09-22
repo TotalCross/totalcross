@@ -4,9 +4,15 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Scroll raster reuse POC — corrected final results
+# Scroll raster reuse POC — invalidated prior M3 results
 
-- HEAD: `d9930c603` on `perf/scroll-raster-reuse-poc`.
+> INVALIDATED: these M3 measurements were collected at `d9930c603` before the
+> timer-gating correction at `f7e662508`. Do not use them for final
+> classification; the replacement six-process M3 matrix is pending.
+
+- Base: `perf/writepixels-tail-diagnosis@c6cc3bcbf9e28ead3edabb69c12e5c31926a55d0`.
+- Invalidated measurement HEAD: `d9930c603`.
+- Replacement measurement HEAD: `f7e662508`.
 - Workload: 120 sorted JPEGs, three columns, 540x960 software raster,
   image optimization mask 0, prefetch ON, two cold/warm passes.
 - M2: one OFF and one ON correctness process with accounting ON.

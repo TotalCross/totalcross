@@ -1,6 +1,6 @@
 # Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 # SPDX-License-Identifier: LGPL-2.1-only
-# HEAD=d9930c603; percentiles use measured=1 movement frames only
+# INVALIDATED prior M3 data at d9930c603; replacement pending at f7e662508
 mode,pass,sample_frames,work_p50_ns,work_p95_ns,work_p99_ns,work_max_ns,screen_p50_ns,screen_p95_ns,screen_p99_ns,screen_max_ns,scroll_p50_ns,scroll_p95_ns,scroll_p99_ns,scroll_max_ns,paint_p50_ns,paint_p95_ns,paint_p99_ns,paint_max_ns,row_paints_avg,image_paints_avg,pass_total_median_ns,pass_total_min_ns,pass_total_max_ns
 off,cold,213,4099291,4463292,4561208,4759750,1500875,1698584,1935375,2056416,20083,35667,51042,59083,4072834,4443583,4536083,4736125,6.000,18.000,1250830917,1250440583,1251453208
 off,warm,213,4047333,4374042,4519833,4963084,1503041,1720750,1900334,1993709,20167,35333,51833,83292,4026375,4351833,4498167,4937875,6.014,18.042,1250516084,1249981834,1252587167

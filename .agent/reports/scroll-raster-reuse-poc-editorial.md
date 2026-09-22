@@ -6,23 +6,20 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Scroll raster reuse POC editorial handoff
 
-Status: `STOP / REVIEW`
+Status: `INVALIDATED — TIMER-GATING M3 RERUN IN PROGRESS`
 
-Classification: `PRESENTATION-BOUND`
+Classification: `INVALIDATED`
 
-The previous result set remains invalidated. The corrected source/results
-revision is `d9930c603`. The M2 OFF/ON correctness pair and the complete six
-process M3 matrix passed the corrected measurement contract: repaint state is
-preserved, endpoint rows are excluded from timing distributions, moved bytes
-use the target's four-byte BGRA8888 format, direct visible `bag0` overlays
-fall back, and accounting/diagnostics are genuinely disabled in M3.
+The previous M3 result set is invalidated because the diagnostic timer reads
+were still executed when diagnostics were disabled. The current source
+revision is `f7e662508`, based on
+`perf/writepixels-tail-diagnosis@c6cc3bcbf9e28ead3edabb69c12e5c31926a55d0`.
+The timer-only change preserves rendering, counters, eligibility, repaint
+semantics, local hit metrics, and screen-update benchmark timing.
 
-ON achieved 71/71 local hits per measured pass with zero fallback or recovery;
-OFF achieved zero hits. Average row/image paints fell from `6.000/18.000` to
-`1.775/5.324` cold and from `6.014/18.042` to `1.784/5.352` warm. Measured
-work P50 improved 33.8% cold and 35.2% warm, while screen-update P50 stayed
-near 1.5 ms and paced pass totals stayed effectively flat. Full-frame
-presentation therefore limits the end-to-end gain.
+M2 correctness remains retained and is not rerun. Exactly three OFF and three
+ON M3 processes, with accounting and rendering diagnostics disabled, are
+required before replacing the final distributions and classification.
 
 The current compact evidence is in
 `.agent/benchmarks/scroll-raster-reuse-poc/final/`. No SDL upload changes,

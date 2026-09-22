@@ -1,6 +1,6 @@
 # Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 # SPDX-License-Identifier: LGPL-2.1-only
-# HEAD=d9930c603; M3 image accounting and rendering diagnostics are disabled
+# INVALIDATED prior M3 data at d9930c603; replacement pending at f7e662508
 mode,round,pass,measured_frames,attempts,hits,fallbacks,post_move_recoveries,viewport_pixels,reused_pixels,dirty_pixels,target_pixel_bytes,moved_bytes,reuse_coverage,hit_rate,hash_match,accounting,rendering_diagnostics
 off,1,cold,213,0,0,0,0,0,0,0,4,0,0.000000,0.000000,true,off,off
 off,1,warm,213,0,0,0,0,0,0,0,4,0,0.000000,0.000000,true,off,off

@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Scroll raster reuse POC evidence
 
-## 2026-09-21 — M0 bootstrap
+## 2026-09-21 — M0 bootstrap (pre-rebase history)
 
 - revision: `c57c985a9c5e2030ee72a989b5b5917d932103dd`
 - branch: `perf/scroll-raster-reuse-poc`
@@ -98,6 +98,20 @@ SPDX-License-Identifier: LGPL-2.1-only
 - required replacement: rebuild current HEAD, rerun the M2 OFF/ON correctness
   pair, rerun exactly three OFF and three ON M3 processes with accounting and
   rendering diagnostics disabled, and regenerate all final distributions.
+
+## 2026-09-22 — timer-gating rerun invalidation
+
+- current base: `perf/writepixels-tail-diagnosis` at
+  `c6cc3bcbf9e28ead3edabb69c12e5c31926a55d0`.
+- current source revision: `f7e662508` — diagnostic decision, raster-move,
+  and dirty-paint clock reads are now conditional on diagnostics being enabled.
+- status: the prior M3 performance set from `d9930c603` is invalidated and
+  must not be used for final classification. M2 correctness remains retained
+  and is not rerun.
+- required replacement: rebuild only the affected SDK/macOS targets, run
+  exactly three OFF and three ON M3 processes with image accounting and
+  rendering diagnostics disabled, and regenerate all final artifacts from
+  those fresh movement frames.
 
 ## 2026-09-21 — corrected M2/M3 rerun
 

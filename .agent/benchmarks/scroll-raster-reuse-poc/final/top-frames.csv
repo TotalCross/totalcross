@@ -1,6 +1,6 @@
 # Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 # SPDX-License-Identifier: LGPL-2.1-only
-# HEAD=d9930c603; top five measured movement frames by work_time_ns
+# INVALIDATED prior M3 data at d9930c603; replacement pending at f7e662508
 mode,pass,rank,round,frame_index,scroll_value,work_time_ns,screen_update_ns,hit
 off,cold,1,3,12,2437,4759750,2056416,0
 off,cold,2,3,17,3451,4589166,1592042,0
