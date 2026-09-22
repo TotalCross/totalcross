@@ -85,7 +85,7 @@ PROFILES = {
     "release-default-scroll": {
         "masks": (None,),
         "prefetch": ("on",),
-        "accounting": ("on",),
+        "accounting": ("off",),
         "rendering_reuse": ("off", "on"),
         "rounds": ROUNDS,
         "expected_processes": RELEASE_PROCESS_COUNT,
