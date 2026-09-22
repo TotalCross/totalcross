@@ -6,28 +6,28 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Scroll raster reuse POC state
 
-- Active milestone: `STOP / REVIEW` — final timer-gating M3 rerun complete.
+- Active milestone: `STOP / REVIEW` — distributed package correction complete.
 - Branch: `perf/scroll-raster-reuse-poc`.
 - Base branch: `perf/writepixels-tail-diagnosis`.
 - Base SHA: `c6cc3bcbf9e28ead3edabb69c12e5c31926a55d0`.
-- Current source HEAD: `f7e662508` (diagnostic timer-gating correction).
-- Last logical implementation commit: `f7e662508` — gate scroll reuse
-  diagnostic timers.
-- Next action: none; stop for review. M2 was not rerun.
+- Current source HEAD: this state revision; verify with `git rev-parse HEAD`.
+- Functional implementation checkpoint: `9deef878a`.
+- Next action: none; do not rerun macOS performance or structural-smoke phases.
 - Active paths: `.agent/plans/scroll-raster-reuse-poc-plan.md`,
   `.agent/state/scroll-raster-reuse-poc.md`,
   `.agent/evidence/scroll-raster-reuse-poc.md`.
-- Focused validation completed: SDK `classes`, SDK `dist -x test`, smoke Java
-  compilation, source timer-gating audit, and the complete six-process M3
-  matrix. Prior macOS native and M2 gates remain retained.
+- Focused validation completed: Python and shell syntax checks, focused
+  copyright-header validation, smoke-test Java compilation, profile-plan
+  reconciliation, default package self-test, default decode-negative check,
+  and decode-enabled package self-test. Prior POC evidence remains retained.
 - The prior M2 correctness result remains retained; only the prior M3
   performance set is invalidated for this timer-gating correction.
 - Prior correction issues were fixed: repaint state, endpoint filtering,
   native byte accounting, diagnostics-off local hit measurement, and overlay
   fallback. They are not reopened by this timer-only change.
-- Commit-message validation: the first two correction commits are signed and
-  conventional, but their body-line checks reported overlong lines. No history
-  rewrite will be performed; remaining commits use wrapped body paragraphs.
+- The functional correction commit is signed and conventional; its local
+  message check reports only the known overlong body-line warning caused by a
+  literal `\\n` in the shell-created body. No history rewrite is performed.
 - Corrected M2: OFF/ON waypoint hashes matched; ON recorded 71/71 local hits,
   zero fallbacks and recoveries, and four-byte BGRA8888 moved-byte accounting.
 - Prior corrected M3 checkpoint: three OFF and three ON processes passed with
@@ -44,15 +44,34 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Final classification: `PRESENTATION-BOUND`; fresh artifacts are under
   `.agent/benchmarks/scroll-raster-reuse-poc/final/`.
 - Final review status: `STOP / REVIEW`; no follow-up optimization is in scope.
-- Deferred validation: none within this plan.
-- Decisions still active: vertical-only software-raster reuse; default mask
-  value zero; unchanged SDL full-frame upload/presentation; no ImageOptimization
-  bits enabled.
+- Deferred validation: the full 44-process suite and macOS performance reruns
+  were intentionally skipped because this correction changes workload
+  selection and gates but does not provide new performance evidence.
+- Decisions still active: vertical-only software-raster reuse; unchanged SDL
+  full-frame upload/presentation; release default mask 32799 through Java,
+  native draw/decode, and observed-mask probes.
 - Deliberate out-of-scope local files: `.agent/benchmarks/image-scroll-prefetch/**`,
   `.agent/plans/image-optimization-mask-*.md`, `TotalCrossSDK/IOSDateFixture.tcz`,
   `TotalCrossSDK/ImageScrollRealWorkloadBenchmarkApp.log`,
   `TotalCrossSDK/etc/launchers/**`, and `scripts/__pycache__/**`.
-- Blockers: none after removing only stale generated package artifacts and
-  increasing the TCZ deploy child heap for the large benchmark staging jar.
-- Resume command: read this file, then inspect the active plan's M1 paths and
-  the latest evidence record before taking the next action.
+- Blockers: the available SDK fixture lacks the required
+  `dist/etc/launchers/win32/Launcher.exe`; no Windows ZIP or Windows
+  benchmark result is claimed. Runtime SHA validation and the explicit Windows
+  SDK source attestation remain required.
+
+## Distributed package correction
+
+- The default non-decode suite remains 44 benchmark processes: 30 reduced
+  ImageOptimizations, 2 correctness, 6 performance, and 6 release/default-
+  scroll processes, plus one self-test process.
+- Correctness and performance retain the 120-image `scroll-raster-reuse-poc`
+  workload. Release/default-scroll uses all 663 `corpus/imag` client images,
+  no explicit ImageOptimizations mask, prefetch on, accounting off, reuse
+  off/on for three rounds, and cold plus warm passes.
+- `manifest.json` records `sdkSourceAttestation`; Windows requires the
+  supplied `--sdk-source-commit` value to equal `--source-commit`. This is an
+  explicit operator attestation, not cryptographic proof of the SDK ZIP's
+  build revision.
+- `--include-decode` remains optional. The default package rejects decode
+  phases with a rebuild instruction, and the decode-enabled package self-test
+  remains valid.
