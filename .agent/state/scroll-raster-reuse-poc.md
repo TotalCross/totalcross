@@ -34,6 +34,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   were disabled, while local outcome metrics remained valid.
 - Classification: `PRESENTATION-BOUND`; final artifacts are under
   `.agent/benchmarks/scroll-raster-reuse-poc/final/`.
+- Final evidence commit: `ac0abff74` — record corrected reuse results.
+- Final review status: `STOP / REVIEW`; no follow-up optimization is in scope.
 - Deferred validation: none within this plan.
 - Decisions still active: vertical-only software-raster reuse; default mask
   value zero; unchanged SDL full-frame upload/presentation; no ImageOptimization
