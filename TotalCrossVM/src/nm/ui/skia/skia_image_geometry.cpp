@@ -354,6 +354,36 @@ enum GeometryDrawResult {
     GEOMETRY_HANDLED_MUTATED = 2,
 };
 
+static bool integerDoubleValue(double value, int32* result) {
+    if (!std::isfinite(value)) {
+        return false;
+    }
+    const double rounded = std::round(value);
+    const float floatValue = static_cast<float>(value);
+    if (!std::isfinite(floatValue)) {
+        return false;
+    }
+    // Matrix inversion and device translations use SkScalar floats. Use the
+    // actual adjacent-float spacing at this coordinate, but cap the accepted
+    // error so large coordinates cannot turn material subpixels into pixels.
+    const float lowerFloat = std::nextafterf(floatValue, -std::numeric_limits<float>::infinity());
+    const float upperFloat = std::nextafterf(floatValue, std::numeric_limits<float>::infinity());
+    const double lowerUlp = std::abs(static_cast<double>(floatValue)
+        - static_cast<double>(lowerFloat));
+    const double upperUlp = std::abs(static_cast<double>(upperFloat)
+        - static_cast<double>(floatValue));
+    constexpr double kMaxFloatRoundingTolerance = 1.0 / 1024.0;
+    const double roundingTolerance = std::min(
+        std::max(lowerUlp, upperUlp), kMaxFloatRoundingTolerance);
+    if (std::abs(value - rounded) > roundingTolerance
+        || rounded < std::numeric_limits<int32>::min()
+        || rounded > std::numeric_limits<int32>::max()) {
+        return false;
+    }
+    *result = static_cast<int32>(rounded);
+    return true;
+}
+
 #if TC_GRAPHICS_SOFTWARE
 
 struct RasterPhysicalPlan {
@@ -383,36 +413,6 @@ static bool integerValue(float value, int32* result) {
     }
     const double rounded = std::round(static_cast<double>(value));
     if (value != static_cast<float>(rounded)
-        || rounded < std::numeric_limits<int32>::min()
-        || rounded > std::numeric_limits<int32>::max()) {
-        return false;
-    }
-    *result = static_cast<int32>(rounded);
-    return true;
-}
-
-static bool integerDoubleValue(double value, int32* result) {
-    if (!std::isfinite(value)) {
-        return false;
-    }
-    const double rounded = std::round(value);
-    const float floatValue = static_cast<float>(value);
-    if (!std::isfinite(floatValue)) {
-        return false;
-    }
-    // Matrix inversion and device translations use SkScalar floats. Use the
-    // actual adjacent-float spacing at this coordinate, but cap the accepted
-    // error so large coordinates cannot turn material subpixels into pixels.
-    const float lowerFloat = std::nextafterf(floatValue, -std::numeric_limits<float>::infinity());
-    const float upperFloat = std::nextafterf(floatValue, std::numeric_limits<float>::infinity());
-    const double lowerUlp = std::abs(static_cast<double>(floatValue)
-        - static_cast<double>(lowerFloat));
-    const double upperUlp = std::abs(static_cast<double>(upperFloat)
-        - static_cast<double>(floatValue));
-    constexpr double kMaxFloatRoundingTolerance = 1.0 / 1024.0;
-    const double roundingTolerance = std::min(
-        std::max(lowerUlp, upperUlp), kMaxFloatRoundingTolerance);
-    if (std::abs(value - rounded) > roundingTolerance
         || rounded < std::numeric_limits<int32>::min()
         || rounded > std::numeric_limits<int32>::max()) {
         return false;
