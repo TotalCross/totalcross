@@ -17,6 +17,18 @@ bash scripts/package-image-scroll-benchmark.sh \
   --target macos-arm64
 ```
 
+For Windows, provide both source attestations:
+
+```sh
+bash scripts/package-image-scroll-benchmark.sh \
+  --sdk-zip /path/to/TotalCross-version.zip \
+  --corpus /path/to/corpus \
+  --output /path/to/output \
+  --target windows-x64 \
+  --source-commit "$SOURCE_COMMIT" \
+  --sdk-source-commit "$SOURCE_COMMIT"
+```
+
 Only `corpus/imag` is copied by default. Pass `--include-decode` to preserve
 the existing decode suite; the input root must then also contain `lossless`,
 `decode-baseline`, `decode-fast`, `aggressive-480`, and `aggressive-540`.
