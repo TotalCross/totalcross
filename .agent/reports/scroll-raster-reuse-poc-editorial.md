@@ -6,23 +6,18 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Scroll raster reuse POC editorial handoff
 
-Status: `STOP / REVIEW`
+Status: `INVALIDATED — CORRECTION RERUN IN PROGRESS`
 
-Classification: `PRESENTATION-BOUND`
+Classification: `INVALIDATED`
 
-The implementation is correct on the fixed macOS software-raster workload.
-Three OFF and three ON accounting-OFF processes completed two passes each.
-Every cold/warm waypoint hash matched across modes and remained stable across
-rounds. ON had 71 hits from 71 attempts per pass, no fallbacks, and no
-post-move recoveries. OFF had no hits.
+The previously recorded result set is not valid for the corrected measurement
+contract. The old harness manually cleared repaint state, relied on diagnostic
+hit counters in accounting-off mode, measured endpoint samples, and reported
+pixel counts as bytes.
 
-The ON path reduced row and image paint calls by about 67% and reduced median
-measured work by 34% in both passes. Full-frame presentation remained active;
-screen-update P50 stayed near 1.5 ms and did not improve with the optimization.
-The paced pass totals were effectively unchanged cold and slightly worse warm,
-so this result supports a later presentation study without authorizing one in
-this plan.
+The correction implementation is at `5fcd2ab95`. Fresh M2 correctness and the
+complete six-process M3 matrix are required before classification.
 
-Evidence and compact result files are committed under
-`.agent/benchmarks/scroll-raster-reuse-poc/final/`. No SDL upload changes,
-default enablement, or follow-up optimization were made.
+Existing compact result files must be replaced rather than mixed with fresh
+samples. No SDL upload changes, default enablement, or follow-up optimization
+is authorized by this plan.

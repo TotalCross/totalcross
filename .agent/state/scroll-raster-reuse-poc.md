@@ -6,26 +6,27 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Scroll raster reuse POC state
 
-- Active milestone: STOP / REVIEW — all planned work complete.
+- Active milestone: M2 correction rerun — previous result set invalidated.
 - Branch: `perf/scroll-raster-reuse-poc`.
 - Base branch: `perf/writepixels-tail-diagnosis`.
 - Base SHA: `c57c985a9c5e2030ee72a989b5b5917d932103dd`.
-- Current HEAD: `4acd53808` (results checkpoint; this state refresh follows).
-- Last logical commit: `4acd53808` — record the scroll reuse benchmark results.
-- Next action: none; stop at `STOP / REVIEW`.
+- Current HEAD: `5fcd2ab95` (correction implementation checkpoint).
+- Last logical commit: `5fcd2ab95` — measure actual scroll movement frames.
+- Next action: rebuild/deploy the current HEAD, rerun M2 OFF/ON correctness,
+  then rerun the complete six-process M3 matrix before replacing final results.
 - Active paths: `.agent/plans/scroll-raster-reuse-poc-plan.md`,
   `.agent/state/scroll-raster-reuse-poc.md`,
   `.agent/evidence/scroll-raster-reuse-poc.md`.
-- Focused validation completed: SDK `dist` passed after the dirty-background
-  fix; `compileSmokeTestJava`, changed-file copyright validation, and staged
-  diff checks passed; macOS CMake/Ninja Release build and focused native raster
-  tests passed; the corrected M2 macOS OFF/ON pair matched every cold/warm
-  waypoint hash with 71/71 ON hits and zero recoveries.
-- Commit-message validation: the signed implementation and results commits
-  contain literal escaped-newline sequences as overlong body lines; no history
-  rewrite will be performed. This state-refresh commit uses wrapped lines.
-- Deferred validation: none; the six-process performance matrix and final
-  result aggregation are complete.
+- Focused validation completed: SDK `classes`, SDK `dist -x test`, smoke Java
+  compilation, macOS CMake/Ninja Release build, and the focused native raster
+  test passed for the correction implementation.
+- Previous M2/M3 results are invalid because the old harness reset repaint
+  state, counted diagnostic hits in accounting-off mode, synthesized endpoint
+  repaint work, and reported pixel counts as bytes. They must not be reused.
+- Commit-message validation: the first two correction commits are signed and
+  conventional, but their body-line checks reported overlong lines. No history
+  rewrite will be performed; remaining commits use wrapped body paragraphs.
+- Deferred validation: corrected macOS M2 and the six-process M3 matrix.
 - Decisions still active: vertical-only software-raster reuse; default mask
   value zero; unchanged SDL full-frame upload/presentation; no ImageOptimization
   bits enabled.

@@ -86,3 +86,15 @@ SPDX-License-Identifier: LGPL-2.1-only
   top-frame evidence are in
   `.agent/benchmarks/scroll-raster-reuse-poc/final/`.
 - results commit: `4acd53808`.
+
+## 2026-09-21 — correction rerun invalidation
+
+- current implementation checkpoints: `83ac08834`, `b2ea8e2fc`, `5fcd2ab95`.
+- status: prior M2/M3 result set invalidated.
+- reason: the prior harness manually cleared `Window.needsPaint`, used
+  rendering diagnostics to identify hits while accounting was off, included
+  no-movement endpoint samples in work measurements, and treated pixel pitch
+  as bytes. The fast path also lacked direct bag0 overlay rejection.
+- required replacement: rebuild current HEAD, rerun the M2 OFF/ON correctness
+  pair, rerun exactly three OFF and three ON M3 processes with accounting and
+  rendering diagnostics disabled, and regenerate all final distributions.

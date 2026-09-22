@@ -56,9 +56,11 @@ Bootstrap:
 - [x] Bootstrap the branch and commit this plan plus initial state.
 - [x] M1 — implement the minimal raster scroll-reuse path and instrumentation.
 - [x] M2 — add the reduced realistic benchmark and prove visual/behavioral
-      correctness on macOS.
+      correctness on macOS (prior result set invalidated by correction rerun).
 - [x] M3 — run the small diagnostic/performance matrices, commit results, and
-      evaluate the outcome at `STOP / REVIEW`.
+      evaluate the outcome at `STOP / REVIEW` (prior result set invalidated).
+- [ ] Correction rerun — validate repaint preservation, endpoint filtering,
+      native byte accounting, overlay fallback, and diagnostics-off measurement.
 
 ## Current Architecture and Scope
 
