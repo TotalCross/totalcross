@@ -59,8 +59,14 @@ Bootstrap:
       correctness on macOS (prior result set invalidated by correction rerun).
 - [x] M3 — run the small diagnostic/performance matrices, commit results, and
       evaluate the outcome at `STOP / REVIEW` (prior result set invalidated).
-- [ ] Correction rerun — validate repaint preservation, endpoint filtering,
+- [x] Correction rerun — validate repaint preservation, endpoint filtering,
       native byte accounting, overlay fallback, and diagnostics-off measurement.
+
+Correction rerun completed at source/results HEAD `d9930c603`: current-HEAD M2
+OFF/ON correctness passed, and exactly three OFF plus three ON M3 processes
+passed with endpoint rows excluded from distributions. The result is
+`PRESENTATION-BOUND`; final evidence is committed under the benchmark result
+directory and the work stops at `STOP / REVIEW`.
 
 ## Current Architecture and Scope
 

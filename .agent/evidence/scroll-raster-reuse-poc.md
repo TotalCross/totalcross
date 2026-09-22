@@ -98,3 +98,28 @@ SPDX-License-Identifier: LGPL-2.1-only
 - required replacement: rebuild current HEAD, rerun the M2 OFF/ON correctness
   pair, rerun exactly three OFF and three ON M3 processes with accounting and
   rendering diagnostics disabled, and regenerate all final distributions.
+
+## 2026-09-21 — corrected M2/M3 rerun
+
+- source/results revision: `d9930c603`; branch:
+  `perf/scroll-raster-reuse-poc`.
+- M2: one OFF and one ON process completed cold and warm passes. All five
+  waypoint hashes matched in both passes; ON recorded 71/71 local hits per
+  pass, zero fallbacks and recoveries, and OFF recorded zero hits.
+- M2 accounting: target BGRA8888, rowBytes 4320, four bytes per pixel;
+  viewport `139557600`, reused `117126000`, dirty `22431600`, and moved bytes
+  `468504000` per ON pass. The fast path preserved repaint state after hits.
+- M3: exactly three independent OFF and three independent ON processes
+  completed. Each pass emitted 75 trace rows with 71 measured movement frames;
+  endpoint rows were retained for traceability but excluded from percentiles.
+  Rendering diagnostics and image accounting were disabled; local metrics
+  reported 71/71 ON hits and zero OFF hits.
+- performance: combined movement-frame work P50/P95/P99/MAX was
+  `4.099/4.463/4.561/4.760 ms` OFF versus `2.712/3.274/3.471/3.635 ms`
+  ON cold, and `4.047/4.374/4.520/4.963 ms` OFF versus
+  `2.622/3.425/3.779/3.828 ms` ON warm. Screen-update P50 remained near
+  `1.5 ms`; paced pass totals were effectively unchanged.
+- outcome: `PRESENTATION-BOUND`; average row/image paints fell from
+  `6.000/18.000` to `1.775/5.324` cold and from `6.014/18.042` to
+  `1.784/5.352` warm. Compact current-HEAD evidence is in
+  `.agent/benchmarks/scroll-raster-reuse-poc/final/`.
