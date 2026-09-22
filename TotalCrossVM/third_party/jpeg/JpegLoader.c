@@ -659,7 +659,7 @@ static ImageDecodeStatus jpegLoadInternal(Context currentContext, TCObject image
 
 ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,
       TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode, int32 modeArg1, int32 modeArg2,
-      bool zeroCopy, bool opacityMetadata)
+      /* bool */ int32 zeroCopy, /* bool */ int32 opacityMetadata)
 {
    ImageDecodeStatus status = jpegLoadInternal(currentContext, imageObj, inputStreamObj, bufObj, tcz, first4, size,
       mode, modeArg1, modeArg2, zeroCopy, opacityMetadata, false, 0, null);
@@ -670,7 +670,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
 
 ImageDecodeStatus jpegLoadDetached(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
       TCObject bufObj, TCZFile tcz, const char* first4, int32 size, JpegDecodeMode mode,
-      int32 modeArg1, int32 modeArg2, bool zeroCopy, bool opacityMetadata, int32 decodeMask,
+      int32 modeArg1, int32 modeArg2, /* bool */ int32 zeroCopy,
+      /* bool */ int32 opacityMetadata, int32 decodeMask,
       int64* detachedHandle)
 {
    ImageDecodeStatus status = jpegLoadInternal(currentContext, imageObj, inputStreamObj, bufObj, tcz, first4, size,
@@ -797,7 +798,8 @@ finish:
    return ret;
 }
 
-bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality)
+/* bool */ int32 image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj,
+      int32 quality)
 {
    JPEGFILE dstFile;
    TCJpegErrorManager errbase;
