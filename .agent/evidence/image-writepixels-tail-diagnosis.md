@@ -88,3 +88,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   control marked all new timing fields unavailable as `-1`; RGB565 conversion
   timing was available but zero in the 32-bit primary pair. Historical M1–M4
   compact artifacts were not rewritten.
+- 2026-09-21: timing-correction plan, state, report, analyzer, summary, paired
+  rows, and outliers were committed as signed `240f43303`. The post-commit
+  checker reported over-80-character body lines; the commit is preserved
+  without amendment.

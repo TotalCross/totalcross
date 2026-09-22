@@ -13,8 +13,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Branch: `perf/writepixels-tail-diagnosis`.
 - Requested base: `perf/image-decode-distributed-benchmark`.
 - Base and starting HEAD: `d5a682e0d1a32928f1e96bc62be083f6f2d813df`.
-- Last logical commit: `70a4dec44` (`fix(benchmark): emit writePixels timing
-  headers`).
+- Last logical commit: `240f43303` (`docs(benchmark): record direct
+  writePixels timing outcome`).
 - Next action: review the direct timing artifacts; do not start optimization
   work or rerun broad historical matrices.
 
@@ -90,8 +90,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 The post-commit checker found over-80-character or literal escaped paragraph
 markers in signed commits `a3c1c8820`, `67310f920`, `bc4a207e9`,
-`14ce18a5e`, `58ce284aa`, and `70a4dec44`. They are preserved without
-amendment or history rewriting. New commit messages must remain wrapped.
+`14ce18a5e`, `58ce284aa`, `70a4dec44`, and `240f43303`. They are preserved
+without amendment or history rewriting. New commit messages must remain
+wrapped.
 
 ## Active decisions
 
