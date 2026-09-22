@@ -7,7 +7,7 @@
 set -euo pipefail
 
 usage() {
-   echo "Usage: $0 --sdk-zip <TotalCross-version.zip> --corpus <variant-root> --output <dir> [--target <target>|--all]" >&2
+   echo "Usage: $0 --sdk-zip <TotalCross-version.zip> --corpus <variant-root> --output <dir> [--target <target>|--all] [--include-decode] [--source-commit <sha>]" >&2
    echo "Targets: windows-x64 macos-arm64 linux-x64 linux-arm64 linux-armv7" >&2
 }
 
@@ -24,6 +24,8 @@ sdk_zip=""
 corpus_dir="${TC_IMAGE_CORPUS:-}"
 output_dir=""
 targets=()
+include_decode=false
+source_commit="${SOURCE_COMMIT:-${GITHUB_SHA:-}}"
 
 while [ "$#" -gt 0 ]; do
    case "$1" in
@@ -51,6 +53,15 @@ while [ "$#" -gt 0 ]; do
          targets=(windows-x64 macos-arm64 linux-x64 linux-arm64 linux-armv7)
          shift
          ;;
+      --include-decode)
+         include_decode=true
+         shift
+         ;;
+      --source-commit)
+         [ "$#" -ge 2 ] || { usage; exit 2; }
+         source_commit=$2
+         shift 2
+         ;;
       -h|--help)
          usage
          exit 0
@@ -69,6 +80,17 @@ done
 [ -n "$output_dir" ] || { usage; echo "Missing --output" >&2; exit 2; }
 [ "${#targets[@]}" -gt 0 ] || targets=(windows-x64 macos-arm64 linux-x64 linux-arm64 linux-armv7)
 
+repo_commit=$(git -C "$repo_dir" rev-parse HEAD 2>/dev/null || true)
+[ -n "$source_commit" ] || source_commit=$repo_commit
+[ -n "$source_commit" ] || {
+   echo "Could not determine source commit; pass --source-commit" >&2
+   exit 1
+}
+[ "$source_commit" = "$repo_commit" ] || {
+   echo "Source commit $source_commit differs from repository HEAD $repo_commit; refusing stale provenance" >&2
+   exit 1
+}
+
 sdk_zip=$(cd "$(dirname "$sdk_zip")" && pwd)/$(basename "$sdk_zip")
 corpus_dir=$(cd "$corpus_dir" && pwd)
 mkdir -p "$output_dir"
@@ -86,8 +108,24 @@ cleanup() {
 trap cleanup EXIT
 
 staged_corpus="$work_dir/corpus"
-python3 "$repo_dir/scripts/package-image-decode-corpus.py" \
-   "$corpus_dir" "$staged_corpus"
+if [ "$include_decode" = true ]; then
+   python3 "$repo_dir/scripts/package-image-decode-corpus.py" \
+      "$corpus_dir" "$staged_corpus"
+else
+   source_imag="$corpus_dir/imag"
+   [ -d "$source_imag" ] || {
+      echo "Scroll corpus must contain an imag directory: $source_imag" >&2
+      exit 1
+   }
+   mkdir -p "$staged_corpus/imag"
+   cp -R "$source_imag"/. "$staged_corpus/imag/"
+   imag_count=$(find "$staged_corpus/imag" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print | wc -l | tr -d ' ')
+   [ "$imag_count" -eq 663 ] || {
+      echo "Scroll corpus imag must contain exactly 663 JPEG files; found $imag_count" >&2
+      exit 1
+   }
+   echo "corpus staged,variants=1,images_per_variant=663,decode_assets=false"
+fi
 
 # Extraction must precede compilation so the source is always compiled against
 # the SDK shipped by the caller, never against a repository-generated SDK.
@@ -112,45 +150,50 @@ sdk_jar="$sdk_root/dist/totalcross-sdk.jar"
 sdk_compile_sha256=$(sha256_file "$sdk_jar")
 deploy_classpath="$sdk_jar:$sdk_root/dist/libs/*"
 
-tcz_builder_source="$repo_dir/scripts/BuildImageDecodeLibraryTcz.java"
-tcz_builder_classes="$work_dir/tcz-builder-classes"
-tcz_builder_log="$work_dir/tcz-builder-javac.log"
-mkdir -p "$tcz_builder_classes"
-if ! javac -source 17 -target 17 -encoding UTF-8 -cp "$deploy_classpath" \
-      -d "$tcz_builder_classes" "$tcz_builder_source" \
-      > "$tcz_builder_log" 2>&1; then
-   tail -100 "$tcz_builder_log" >&2
-   echo "TCZ builder compilation failed; full log: $tcz_builder_log" >&2
-   exit 1
-fi
-decode_library_dir="$work_dir/decode-libraries"
-mkdir -p "$decode_library_dir"
-for variant in imag lossless decode-baseline decode-fast aggresive-480 aggresive-540; do
-   case "$variant" in
-      imag) library_name=DecodeImagLib.tcz ;;
-      lossless) library_name=DecodeLosslessLib.tcz ;;
-      decode-baseline) library_name=DecodeBaselineLib.tcz ;;
-      decode-fast) library_name=DecodeFastLib.tcz ;;
-      aggresive-480) library_name=DecodeAggresive480Lib.tcz ;;
-      aggresive-540) library_name=DecodeAggresive540Lib.tcz ;;
-   esac
-   java -cp "$deploy_classpath:$tcz_builder_classes" BuildImageDecodeLibraryTcz \
-      "$staged_corpus/$variant" "$variant" "$decode_library_dir/$library_name" \
-      > "$work_dir/tcz-$variant.log" 2>&1 || {
-      tail -80 "$work_dir/tcz-$variant.log" >&2
-      echo "TCZ creation failed for $variant; full log: $work_dir/tcz-$variant.log" >&2
+if [ "$include_decode" = true ]; then
+   tcz_builder_source="$repo_dir/scripts/BuildImageDecodeLibraryTcz.java"
+   tcz_builder_classes="$work_dir/tcz-builder-classes"
+   tcz_builder_log="$work_dir/tcz-builder-javac.log"
+   mkdir -p "$tcz_builder_classes"
+   if ! javac -source 17 -target 17 -encoding UTF-8 -cp "$deploy_classpath" \
+         -d "$tcz_builder_classes" "$tcz_builder_source" \
+         > "$tcz_builder_log" 2>&1; then
+      tail -100 "$tcz_builder_log" >&2
+      echo "TCZ builder compilation failed; full log: $tcz_builder_log" >&2
       exit 1
-   }
-done
+   fi
+   decode_library_dir="$work_dir/decode-libraries"
+   mkdir -p "$decode_library_dir"
+   for variant in imag lossless decode-baseline decode-fast aggresive-480 aggresive-540; do
+      case "$variant" in
+         imag) library_name=DecodeImagLib.tcz ;;
+         lossless) library_name=DecodeLosslessLib.tcz ;;
+         decode-baseline) library_name=DecodeBaselineLib.tcz ;;
+         decode-fast) library_name=DecodeFastLib.tcz ;;
+         aggresive-480) library_name=DecodeAggresive480Lib.tcz ;;
+         aggresive-540) library_name=DecodeAggresive540Lib.tcz ;;
+      esac
+      java -cp "$deploy_classpath:$tcz_builder_classes" BuildImageDecodeLibraryTcz \
+         "$staged_corpus/$variant" "$variant" "$decode_library_dir/$library_name" \
+         > "$work_dir/tcz-$variant.log" 2>&1 || {
+         tail -80 "$work_dir/tcz-$variant.log" >&2
+         echo "TCZ creation failed for $variant; full log: $work_dir/tcz-$variant.log" >&2
+         exit 1
+      }
+   done
+fi
 
 benchmark_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.java"
-decode_benchmark_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageDecodeBenchmarkApp.java"
 support_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageRasterBenchmarkSupport.java"
 compiled_dir="$work_dir/benchmark-classes"
 benchmark_build_log="$work_dir/benchmark-javac.log"
 mkdir -p "$compiled_dir"
+benchmark_sources=("$benchmark_source" "$support_source")
+if [ "$include_decode" = true ]; then
+   benchmark_sources+=("$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageDecodeBenchmarkApp.java")
+fi
 if ! javac -source 17 -target 17 -encoding UTF-8 -cp "$sdk_jar" -d "$compiled_dir" \
-      "$benchmark_source" "$decode_benchmark_source" "$support_source" \
+      "${benchmark_sources[@]}" \
       > "$benchmark_build_log" 2>&1; then
    tail -100 "$benchmark_build_log" >&2
    echo "Benchmark JAR compilation failed; full log: $benchmark_build_log" >&2
@@ -168,18 +211,20 @@ jar tf "$benchmark_jar" | grep -Fqx \
    echo "Benchmark JAR does not contain ImageScrollRealWorkloadBenchmarkApp" >&2
    exit 1
 }
-decode_benchmark_jar="$work_dir/ImageDecodeBenchmarkApp.jar"
-(
-   cd "$compiled_dir"
-   jar -cf "$decode_benchmark_jar" \
-      totalcross/ui/image/ImageDecodeBenchmarkApp*.class \
-      totalcross/ui/image/ImageRasterBenchmarkSupport*.class
-)
-jar tf "$decode_benchmark_jar" | grep -Fqx \
-   'totalcross/ui/image/ImageDecodeBenchmarkApp.class' || {
-   echo "Decode benchmark JAR does not contain ImageDecodeBenchmarkApp" >&2
-   exit 1
-}
+if [ "$include_decode" = true ]; then
+   decode_benchmark_jar="$work_dir/ImageDecodeBenchmarkApp.jar"
+   (
+      cd "$compiled_dir"
+      jar -cf "$decode_benchmark_jar" \
+         totalcross/ui/image/ImageDecodeBenchmarkApp*.class \
+         totalcross/ui/image/ImageRasterBenchmarkSupport*.class
+   )
+   jar tf "$decode_benchmark_jar" | grep -Fqx \
+      'totalcross/ui/image/ImageDecodeBenchmarkApp.class' || {
+      echo "Decode benchmark JAR does not contain ImageDecodeBenchmarkApp" >&2
+      exit 1
+   }
+fi
 
 chime_resource_dir="$work_dir/chime-resource"
 mkdir -p "$chime_resource_dir"
@@ -230,10 +275,12 @@ sdk_deploy_sha256=$(sha256_file "$sdk_jar")
 }
 runner_source="$repo_dir/scripts/run-image-scroll-distributed-benchmark.py"
 [ -f "$runner_source" ] || { echo "Official distributed runner not found: $runner_source" >&2; exit 1; }
-decode_runner_source="$repo_dir/scripts/run-image-decode-benchmark.py"
-[ -f "$decode_runner_source" ] || { echo "Decode runner not found: $decode_runner_source" >&2; exit 1; }
-decode_aggregator_source="$repo_dir/scripts/aggregate-image-decode-benchmark.py"
-[ -f "$decode_aggregator_source" ] || { echo "Decode aggregator not found: $decode_aggregator_source" >&2; exit 1; }
+if [ "$include_decode" = true ]; then
+   decode_runner_source="$repo_dir/scripts/run-image-decode-benchmark.py"
+   [ -f "$decode_runner_source" ] || { echo "Decode runner not found: $decode_runner_source" >&2; exit 1; }
+   decode_aggregator_source="$repo_dir/scripts/aggregate-image-decode-benchmark.py"
+   [ -f "$decode_aggregator_source" ] || { echo "Decode aggregator not found: $decode_aggregator_source" >&2; exit 1; }
+fi
 
 target_supported() {
    case "$1" in
@@ -249,7 +296,6 @@ deploy_target() {
    local executable_name=$4
    local runtime_name=$5
    local deploy_dir="$work_dir/deploy-$target"
-   local decode_deploy_dir="$work_dir/deploy-$target-decode"
    local bundle_dir="$output_dir/image-scroll-benchmark-$target"
    mkdir -p "$deploy_dir"
    cp "$benchmark_jar" "$deploy_dir/ImageScrollRealWorkloadBenchmarkApp.jar"
@@ -265,40 +311,48 @@ deploy_target() {
    local install_dir="$deploy_dir/install/$install_name"
    [ -d "$install_dir" ] || { echo "Deployment output not found: $install_dir" >&2; exit 1; }
 
-   mkdir -p "$decode_deploy_dir"
-   cp "$decode_benchmark_jar" "$decode_deploy_dir/ImageDecodeBenchmarkApp.jar"
-   (
-      cd "$decode_deploy_dir"
-      TOTALCROSS3_HOME="$sdk_root" java -cp "$deploy_classpath" tc.Deploy \
-         ImageDecodeBenchmarkApp.jar "$deploy_platform" \
-         > "$work_dir/deploy-$target-decode.log" 2>&1
-   ) || {
-      tail -80 "$work_dir/deploy-$target-decode.log" >&2
-      echo "Decode tc.Deploy failed for $target; full log: $work_dir/deploy-$target-decode.log" >&2
-      exit 1
-   }
-   local decode_install_dir="$decode_deploy_dir/install/$install_name"
-   [ -d "$decode_install_dir" ] || {
-      echo "Decode deployment output not found: $decode_install_dir" >&2
-      exit 1
-   }
-   local decode_executable_name=ImageDecodeBenchmarkApp
-   [ "$target" != windows-x64 ] || decode_executable_name=ImageDecodeBenchmarkApp.exe
-   [ -f "$decode_install_dir/$decode_executable_name" ] || {
-      echo "Decode executable not found: $decode_install_dir/$decode_executable_name" >&2
-      exit 1
-   }
-   [ -f "$decode_install_dir/ImageDecodeBenchmarkApp.tcz" ] || {
-      echo "Decode application TCZ not found in $decode_install_dir" >&2
-      exit 1
-   }
+   local decode_executable_name=""
+   if [ "$include_decode" = true ]; then
+      local decode_deploy_dir="$work_dir/deploy-$target-decode"
+      mkdir -p "$decode_deploy_dir"
+      cp "$decode_benchmark_jar" "$decode_deploy_dir/ImageDecodeBenchmarkApp.jar"
+      (
+         cd "$decode_deploy_dir"
+         TOTALCROSS3_HOME="$sdk_root" java -cp "$deploy_classpath" tc.Deploy \
+            ImageDecodeBenchmarkApp.jar "$deploy_platform" \
+            > "$work_dir/deploy-$target-decode.log" 2>&1
+      ) || {
+         tail -80 "$work_dir/deploy-$target-decode.log" >&2
+         echo "Decode tc.Deploy failed for $target; full log: $work_dir/deploy-$target-decode.log" >&2
+         exit 1
+      }
+      local decode_install_dir="$decode_deploy_dir/install/$install_name"
+      [ -d "$decode_install_dir" ] || {
+         echo "Decode deployment output not found: $decode_install_dir" >&2
+         exit 1
+      }
+      decode_executable_name=ImageDecodeBenchmarkApp
+      [ "$target" != windows-x64 ] || decode_executable_name=ImageDecodeBenchmarkApp.exe
+      [ -f "$decode_install_dir/$decode_executable_name" ] || {
+         echo "Decode executable not found: $decode_install_dir/$decode_executable_name" >&2
+         exit 1
+      }
+      [ -f "$decode_install_dir/ImageDecodeBenchmarkApp.tcz" ] || {
+         echo "Decode application TCZ not found in $decode_install_dir" >&2
+         exit 1
+      }
+   fi
    rm -rf "$bundle_dir"
    mkdir -p "$bundle_dir/corpus"
    cp -R "$install_dir"/. "$bundle_dir/"
-   cp "$decode_install_dir/$decode_executable_name" "$bundle_dir/"
-   cp "$decode_install_dir/ImageDecodeBenchmarkApp.tcz" "$bundle_dir/"
+   if [ "$include_decode" = true ]; then
+      cp "$decode_install_dir/$decode_executable_name" "$bundle_dir/"
+      cp "$decode_install_dir/ImageDecodeBenchmarkApp.tcz" "$bundle_dir/"
+   fi
    cp -R "$staged_corpus/." "$bundle_dir/corpus/"
-   cp "$decode_library_dir"/*.tcz "$bundle_dir/"
+   if [ "$include_decode" = true ]; then
+      cp "$decode_library_dir"/*.tcz "$bundle_dir/"
+   fi
 
    cp "$chime_resource" "$bundle_dir/chime.mp3"
    cmp -s "$chime_resource" "$bundle_dir/chime.mp3" || {
@@ -308,12 +362,19 @@ deploy_target() {
 
    local variant_count image_count library_count
    variant_count=$(find "$bundle_dir/corpus" -mindepth 1 -maxdepth 1 -type d -print | wc -l | tr -d ' ')
-   image_count=$(find "$bundle_dir/corpus" -type f -iname '*.jpg' -print | wc -l | tr -d ' ')
+   image_count=$(find "$bundle_dir/corpus" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print | wc -l | tr -d ' ')
    library_count=$(find "$bundle_dir" -maxdepth 1 -type f -name 'Decode*Lib.tcz' -print | wc -l | tr -d ' ')
-   [ "$variant_count" -eq 6 ] && [ "$image_count" -eq 3978 ] && [ "$library_count" -eq 6 ] || {
-      echo "Bundle must contain six 663-image variants and six decode libraries; found variants=$variant_count images=$image_count libraries=$library_count" >&2
-      exit 1
-   }
+   if [ "$include_decode" = true ]; then
+      [ "$variant_count" -eq 6 ] && [ "$image_count" -eq 3978 ] && [ "$library_count" -eq 6 ] || {
+         echo "Bundle must contain six 663-image variants and six decode libraries; found variants=$variant_count images=$image_count libraries=$library_count" >&2
+         exit 1
+      }
+   else
+      [ "$variant_count" -eq 1 ] && [ "$image_count" -eq 663 ] && [ "$library_count" -eq 0 ] || {
+         echo "Default bundle must contain only corpus/imag with 663 images and no decode libraries; found variants=$variant_count images=$image_count libraries=$library_count" >&2
+         exit 1
+      }
+   fi
    [ -f "$bundle_dir/$executable_name" ] || {
       echo "Deployed executable not found in bundle: $executable_name" >&2
       exit 1
@@ -322,30 +383,40 @@ deploy_target() {
       echo "Deployed native runtime not found in bundle: $runtime_name" >&2
       exit 1
    }
+   local runtime_sha256 tcvm_sha256=""
+   runtime_sha256=$(sha256_file "$bundle_dir/$runtime_name")
+   if [ "$target" = windows-x64 ]; then
+      local sdk_tcvm="$sdk_root/dist/vm/win32/tcvm.dll"
+      [ -f "$sdk_tcvm" ] || {
+         echo "Windows SDK runtime not found: $sdk_tcvm" >&2
+         exit 1
+      }
+      cmp -s "$sdk_tcvm" "$bundle_dir/$runtime_name" || {
+         echo "Windows deployed tcvm.dll differs from the SDK ZIP runtime; refusing stale runtime" >&2
+         exit 1
+      }
+      tcvm_sha256=$(sha256_file "$bundle_dir/$runtime_name")
+   fi
 
    cp "$runner_source" "$bundle_dir/run-benchmark.py"
    chmod +x "$bundle_dir/run-benchmark.py"
-   cp "$decode_runner_source" "$bundle_dir/run-image-decode-benchmark.py"
-   cp "$decode_aggregator_source" "$bundle_dir/aggregate-image-decode-benchmark.py"
-   chmod +x "$bundle_dir/run-image-decode-benchmark.py" \
-      "$bundle_dir/aggregate-image-decode-benchmark.py"
-   cat > "$bundle_dir/manifest.json" <<EOF
-{
-  "schemaVersion": 1,
-  "benchmark": "image-scroll",
-  "target": "$target",
-  "screenArgument": "/scr -1,-1,540,960",
-  "executable": "$executable_name",
-  "runtime": "$runtime_name",
+   if [ "$include_decode" = true ]; then
+      cp "$decode_runner_source" "$bundle_dir/run-image-decode-benchmark.py"
+      cp "$decode_aggregator_source" "$bundle_dir/aggregate-image-decode-benchmark.py"
+      chmod +x "$bundle_dir/run-image-decode-benchmark.py" \
+         "$bundle_dir/aggregate-image-decode-benchmark.py"
+   fi
+   local include_decode_json=false corpus_variants_json='["imag"]'
+   local decode_manifest_fields=""
+   local tcvm_json=null
+   if [ "$include_decode" = true ]; then
+      include_decode_json=true
+      corpus_variants_json='["imag","lossless","decode-baseline","decode-fast","aggresive-480","aggresive-540"]'
+      decode_manifest_fields=$(cat <<EOF
   "decodeExecutable": "$decode_executable_name",
   "decodeApplicationTcz": "ImageDecodeBenchmarkApp.tcz",
   "decodeRunner": "run-image-decode-benchmark.py",
   "decodeAggregator": "aggregate-image-decode-benchmark.py",
-  "runner": "run-benchmark.py",
-  "chime": "chime.mp3",
-  "datasetFileCount": 663,
-  "datasetHash": "$dataset_hash",
-  "corpusVariants": ["imag", "lossless", "decode-baseline", "decode-fast", "aggresive-480", "aggresive-540"],
   "decodeImageCount": 663,
   "decodeExpectedProcessCount": 90,
   "decodeLibraries": {
@@ -356,17 +427,49 @@ deploy_target() {
     "aggresive-480": "DecodeAggresive480Lib.tcz",
     "aggresive-540": "DecodeAggresive540Lib.tcz"
   },
+EOF
+)
+   fi
+   if [ -n "$tcvm_sha256" ]; then
+      tcvm_json="\"$tcvm_sha256\""
+   fi
+   cat > "$bundle_dir/manifest.json" <<EOF
+{
+  "schemaVersion": 1,
+  "benchmark": "image-scroll",
+  "target": "$target",
+  "screenArgument": "/scr -1,-1,540,960",
+  "executable": "$executable_name",
+  "runtime": "$runtime_name",
+  "runner": "run-benchmark.py",
+  "includeDecodeAssets": $include_decode_json,
+  "chime": "chime.mp3",
+  "datasetFileCount": 663,
+  "datasetHash": "$dataset_hash",
+  "corpusVariants": $corpus_variants_json,
+$decode_manifest_fields
   "columns": 3,
-  "masks": [0,1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,32799,40991,49183,57375],
-  "prefetchProfiles": ["off","on"],
+  "masks": [0,6,8,16,32,8192,16384,32768,32795,32799],
+  "prefetchProfiles": ["on"],
   "rounds": 3,
   "seed": 73001,
-  "expectedProcessCount": 126,
+  "matrixProcessCount": 44,
+  "selfTestPhaseCount": 1,
+  "expectedProcessCount": 44,
+  "profiles": {
+    "reduced-image-optimizations": {"masks":[0,6,8,16,32,8192,16384,32768,32795,32799],"prefetch":["on"],"accounting":["off"],"renderingReuse":[],"rounds":3,"processCount":30},
+    "scroll-raster-correctness": {"masks":[0],"prefetch":["on"],"accounting":["on"],"renderingReuse":["off","on"],"rounds":1,"processCount":2},
+    "scroll-raster-performance": {"masks":[0],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6},
+    "release-default-scroll": {"masks":["default"],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6,"defaultEffectiveMask":32799}
+  },
   "sdkJar": "dist/totalcross-sdk.jar",
   "sdkJarSha256": "$sdk_compile_sha256",
   "sdkJarSha256Compile": "$sdk_compile_sha256",
   "sdkJarSha256Deploy": "$sdk_deploy_sha256",
-  "chimeSha256": "$chime_sha256"
+  "chimeSha256": "$chime_sha256",
+  "sourceCommit": "$source_commit",
+  "runtimeSha256": "$runtime_sha256",
+  "tcvmSha256": $tcvm_json
 }
 EOF
    local archive

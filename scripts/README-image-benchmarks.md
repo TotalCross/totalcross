@@ -6,8 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Distributed image benchmark bundles
 
-The image benchmark package combines the existing scroll benchmark with an
-image-decode suite. Build a bundle from the SDK ZIP and six-variant corpus:
+The image benchmark package contains the distributed scroll benchmark. Build a
+default bundle from the SDK ZIP and a corpus root containing `imag`:
 
 ```sh
 bash scripts/package-image-scroll-benchmark.sh \
@@ -17,12 +17,12 @@ bash scripts/package-image-scroll-benchmark.sh \
   --target macos-arm64
 ```
 
-The corpus root must contain `imag`, `lossless`, `decode-baseline`,
-`decode-fast`, `aggressive-480`, and `aggressive-540`. Each variant contributes
-the same 663 `.jpg`-named paths. The package maps the last two directories to
-`aggresive-480` and `aggresive-540` in the bundle. Format is detected from each
-file's contents. The bundle contains six `Decode*Lib.tcz` SDK library resources
-alongside the scroll and decode applications.
+Only `corpus/imag` is copied by default. Pass `--include-decode` to preserve
+the existing decode suite; the input root must then also contain `lossless`,
+`decode-baseline`, `decode-fast`, `aggressive-480`, and `aggressive-540`.
+Each variant contributes the same 663 `.jpg`-named paths. The package records
+the source revision, runtime SHA-256, and Windows `tcvm.dll` SHA-256 in
+`manifest.json`; a stale Windows runtime is rejected during packaging.
 
 From the extracted bundle directory, run the full suite with:
 
@@ -37,13 +37,17 @@ starts. The active-work columns measure the same frame's work region:
 row are captured around the same region. Run summaries and `summary.csv`
 include P50/P95/P99/MAX work and paint aggregates.
 
-The full phase runs the 126-process scroll matrix and aggregation, then the
-90-process decode matrix and aggregation, and finally writes one combined ZIP
-under `results/`. The decode matrix covers five acquisition/order/size
-scenarios, six variants, and three rounds. Per-image timings remain in
-nanoseconds in `results/decode/decode-detailed.csv`; process and variant
-summaries are in `process-summary.csv` and `decode-summary.csv` in that same
-directory.
+The default Windows ZIP runs the self-test followed by 44 benchmark processes:
+30 reduced ImageOptimizations cases, two scroll-reuse correctness cases, six
+scroll-reuse performance cases, and six release/default-scroll cases. The
+correctness and performance cases invoke
+`--profile=scroll-raster-reuse-poc --rendering-reuse=off|on`; every one uses
+mask 0, prefetch on, and cold plus warm passes. The release/default-scroll
+cases omit the mask argument and require effective mask 32799.
+
+With `--include-decode`, the full phase additionally runs the existing
+90-process decode matrix and aggregation. Without decode assets, any decode
+phase fails clearly and leaves the scroll phases unaffected.
 
 The scroll `results/summary.csv` retains its baseline and frame timing columns
 and also carries compact JPEG decode count/ns fields plus writePixels attempts,
@@ -53,21 +57,22 @@ feature statuses remain in each run's `counters.json`. Attempt-based features
 use `NOT_REACHED`, `ATTEMPTED_NO_HIT`, or `EXERCISED` in addition to
 `DISABLED`.
 
-For the writePixels policy experiment, use the focused scroll-only profile:
+The reduced ImageOptimizations profile uses exactly these masks with prefetch
+on, accounting off, and three rounds:
+
+`0, 6, 8, 16, 32, 8192, 16384, 32768, 32795, 32799`
+
+This retains dependency combinations, including writePixels plus opacity;
+opacity alone is not tested.
+
+For a focused scroll-reuse profile, use:
 
 ```sh
-python3 run-benchmark.py --profile write-pixels-policy --phase matrix
+python3 run-benchmark.py --profile scroll-raster-correctness --phase matrix
+python3 run-benchmark.py --profile scroll-raster-performance --phase matrix
+python3 run-benchmark.py --profile release-default-scroll --phase matrix
 ```
 
-It plans exactly two rounds over masks `0, 4, 2, 6, 32795, 32799`, with
-prefetch off/on, for 24 processes. Pairwise control/enabled results are
-written to `results/write-pixels-policy-comparison.csv`; contradictory work
-P50 directions across the two rounds are marked `INCONCLUSIVE_VARIANCE`.
-This profile is intended for writePixels policy work and does not run the
-standalone decode matrix.
-
-For package checks without either full matrix, `--phase self-test` validates
-the bundle and `--phase smokes` runs the four scroll smoke processes. Decode
-checks are separate: run `--phase decode-self-test` before
-`--phase decode-smokes`; the latter runs the five prescribed decode smoke
-combinations and writes `results/decode/smoke-summary.csv`.
+For package checks without a matrix, `--phase self-test` validates the bundle.
+Decode checks remain separate when decode assets are included:
+`--phase decode-self-test` followed by `--phase decode-smokes`.

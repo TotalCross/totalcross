@@ -9,6 +9,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 from pathlib import Path
 import signal
 import subprocess
@@ -20,7 +21,8 @@ import zipfile
 EXPECTED_JPEGS = 663
 EXPECTED_TARGET_WIDTH = 1080
 EXPECTED_TARGET_HEIGHT = 1920
-CORPUS_VARIANTS = (
+SCROLL_CORPUS_VARIANTS = ("imag",)
+DECODE_CORPUS_VARIANTS = (
     "imag", "lossless", "decode-baseline", "decode-fast",
     "aggresive-480", "aggresive-540",
 )
@@ -35,145 +37,63 @@ DECODE_LIBRARIES = {
 SCREEN_SPEC = "-1,-1,540,960"
 SCREEN_ARGUMENT = "/scr " + SCREEN_SPEC
 MASKS = (
-    0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
-    4096, 8192, 16384, 32768, 32799, 40991, 49183, 57375,
+    0, 6, 8, 16, 32, 8192, 16384, 32768, 32795, 32799,
 )
-WRITE_PIXELS_POLICY_MASKS = (0, 4, 2, 6, 32795, 32799)
-RASTER_POLICY_AUDIT_MASKS = (8192, 16384, 32768, 57344)
-RASTER_STRUCTURAL_SMOKE_MASKS = (0, 8192, 16384, 32768, 57344)
-M4_REUSE_MASKS = (0, 32, 8192, 8224)
-WRITE_PIXELS_TAIL_MASKS = (32795, 32799, 32827, 32831)
-WRITE_PIXELS_PRIMARY_MASKS = (32795, 32799)
-PREFETCH_PROFILES = ("off", "on")
+DEFAULT_EFFECTIVE_MASK = 32799
+PREFETCH_PROFILES = ("on",)
 ACCOUNTING_PROFILES = ("on", "off")
 ROUNDS = 3
 SEED = 73001
-EXPECTED_PROCESSES = len(MASKS) * len(PREFETCH_PROFILES) * ROUNDS
+REDUCED_PROCESS_COUNT = len(MASKS) * ROUNDS
+CORRECTNESS_PROCESS_COUNT = 2
+PERFORMANCE_PROCESS_COUNT = 6
+RELEASE_PROCESS_COUNT = 6
+DEFAULT_MATRIX_PROCESS_COUNT = (
+    REDUCED_PROCESS_COUNT + CORRECTNESS_PROCESS_COUNT
+    + PERFORMANCE_PROCESS_COUNT + RELEASE_PROCESS_COUNT
+)
+DEFAULT_EXPECTED_PROCESS_COUNT = DEFAULT_MATRIX_PROCESS_COUNT
 PROFILES = {
-    "full": {
+    "reduced-image-optimizations": {
         "masks": MASKS,
         "prefetch": PREFETCH_PROFILES,
-        "accounting": ("on",),
+        "accounting": ("off",),
         "rounds": ROUNDS,
-        "expected_processes": EXPECTED_PROCESSES,
+        "expected_processes": REDUCED_PROCESS_COUNT,
+        "passes": 1,
     },
-    "write-pixels-policy": {
-        "masks": WRITE_PIXELS_POLICY_MASKS,
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("on",),
-        "rounds": 2,
-        "expected_processes": len(WRITE_PIXELS_POLICY_MASKS) * len(PREFETCH_PROFILES) * 2,
-    },
-    "write-pixels-accounting-ab": {
-        "masks": (32795, 32799),
-        "prefetch": ("on",),
-        "accounting": ACCOUNTING_PROFILES,
-        "rounds": 5,
-        "expected_processes": 2 * 1 * 2 * 5,
-    },
-    "raster-policy-audit": {
-        "masks": RASTER_POLICY_AUDIT_MASKS,
+    "scroll-raster-correctness": {
+        "masks": (0,),
         "prefetch": ("on",),
         "accounting": ("on",),
+        "rendering_reuse": ("off", "on"),
         "rounds": 1,
-        "expected_processes": len(RASTER_POLICY_AUDIT_MASKS),
-        "require_policy_diagnostics": True,
+        "expected_processes": CORRECTNESS_PROCESS_COUNT,
+        "passes": 2,
+        "app_profile": "scroll-raster-reuse-poc",
     },
-    "raster-structural-smoke": {
-        "masks": RASTER_STRUCTURAL_SMOKE_MASKS,
+    "scroll-raster-performance": {
+        "masks": (0,),
+        "prefetch": ("on",),
+        "accounting": ("off",),
+        "rendering_reuse": ("off", "on"),
+        "rounds": ROUNDS,
+        "expected_processes": PERFORMANCE_PROCESS_COUNT,
+        "passes": 2,
+        "app_profile": "scroll-raster-reuse-poc",
+    },
+    "release-default-scroll": {
+        "masks": (None,),
         "prefetch": ("on",),
         "accounting": ("on",),
-        "rounds": 2,
-        "expected_processes": len(RASTER_STRUCTURAL_SMOKE_MASKS) * 2,
-        "require_policy_diagnostics": True,
-        "require_structural_diagnostics": True,
-        "require_standard_smokes": False,
-    },
-    "m4-reuse-diagnostic": {
-        "masks": M4_REUSE_MASKS,
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("on",),
-        "rounds": 1,
-        "expected_processes": len(M4_REUSE_MASKS) * len(PREFETCH_PROFILES),
-        "require_policy_diagnostics": True,
-        "require_structural_diagnostics": True,
-        "require_standard_smokes": False,
-        "reuse_passes": 3,
-    },
-    "m4-reuse-performance": {
-        "masks": M4_REUSE_MASKS,
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("off",),
-        "rounds": 3,
-        "expected_processes": len(M4_REUSE_MASKS) * len(PREFETCH_PROFILES) * 3,
-        "require_standard_smokes": False,
-        "reuse_passes": 3,
-    },
-    "write-pixels-tail-diagnostic": {
-        "masks": WRITE_PIXELS_TAIL_MASKS,
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("on",),
-        "rounds": 3,
-        "expected_processes": len(WRITE_PIXELS_TAIL_MASKS) * len(PREFETCH_PROFILES) * 3,
-        "require_standard_smokes": False,
-        "require_policy_diagnostics": True,
-    },
-    "write-pixels-tail-reuse": {
-        "masks": WRITE_PIXELS_TAIL_MASKS,
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("on",),
-        "rounds": 2,
-        "expected_processes": len(WRITE_PIXELS_TAIL_MASKS) * len(PREFETCH_PROFILES) * 2,
-        "require_standard_smokes": False,
-        "require_policy_diagnostics": True,
-        "reuse_passes": 3,
-    },
-    "write-pixels-tail-timing": {
-        "masks": (32795, 32799),
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("off",),
-        "rounds": 3,
-        "expected_processes": 2 * len(PREFETCH_PROFILES) * 3,
-        "require_standard_smokes": False,
-    },
-    "write-pixels-tail-timing-reuse": {
-        "masks": (32795, 32799),
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("off",),
-        "rounds": 1,
-        "expected_processes": 2 * len(PREFETCH_PROFILES),
-        "require_standard_smokes": False,
-        "reuse_passes": 3,
-    },
-    "write-pixels-tail-direct-timing": {
-        "masks": WRITE_PIXELS_PRIMARY_MASKS,
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("on",),
-        "rounds": 2,
-        "expected_processes": len(WRITE_PIXELS_PRIMARY_MASKS) * len(PREFETCH_PROFILES) * 2,
-        "require_standard_smokes": False,
-        "require_policy_diagnostics": True,
-    },
-    "write-pixels-tail-direct-timing-reuse": {
-        "masks": WRITE_PIXELS_PRIMARY_MASKS,
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("on",),
-        "rounds": 1,
-        "expected_processes": len(WRITE_PIXELS_PRIMARY_MASKS) * len(PREFETCH_PROFILES),
-        "require_standard_smokes": False,
-        "require_policy_diagnostics": True,
-        "reuse_passes": 3,
-    },
-    "write-pixels-tail-direct-timing-control": {
-        "masks": WRITE_PIXELS_PRIMARY_MASKS,
-        "prefetch": PREFETCH_PROFILES,
-        "accounting": ("off",),
-        "rounds": 1,
-        "expected_processes": len(WRITE_PIXELS_PRIMARY_MASKS) * len(PREFETCH_PROFILES),
-        "require_standard_smokes": False,
+        "rendering_reuse": ("off", "on"),
+        "rounds": ROUNDS,
+        "expected_processes": RELEASE_PROCESS_COUNT,
+        "passes": 2,
+        "default_effective_mask": DEFAULT_EFFECTIVE_MASK,
+        "app_profile": "release-default-scroll",
     },
 }
-CONTROLLED_PAIRS = ((0, 4), (2, 6), (32795, 32799))
 PROCESS_TIMEOUT_SECONDS = 180
 FIXTURE = "ImageScrollRealWorkloadBenchmarkApp"
 FNV_OFFSET = 0xCBF29CE484222325
@@ -322,16 +242,50 @@ def load_manifest(bundle):
             "manifest prefetch matrix differs")
     require(manifest.get("rounds") == ROUNDS, "manifest rounds differs")
     require(manifest.get("seed") == SEED, "manifest seed differs")
-    require(manifest.get("expectedProcessCount") == EXPECTED_PROCESSES,
+    require(manifest.get("expectedProcessCount") == DEFAULT_EXPECTED_PROCESS_COUNT,
             "manifest expectedProcessCount differs")
-    require(tuple(manifest.get("corpusVariants", ())) == CORPUS_VARIANTS,
-            "manifest decode corpus variants differ")
-    require(manifest.get("decodeImageCount") == EXPECTED_JPEGS,
-            "manifest decode image count is not 663")
-    require(manifest.get("decodeExpectedProcessCount") == 90,
-            "manifest decode process count is not 90")
-    require(manifest.get("decodeLibraries") == DECODE_LIBRARIES,
-            "manifest decode library names differ")
+    require(manifest.get("matrixProcessCount") == DEFAULT_MATRIX_PROCESS_COUNT,
+            "manifest matrixProcessCount differs")
+    require(manifest.get("selfTestPhaseCount") == 1,
+            "manifest selfTestPhaseCount differs")
+    require(tuple(manifest.get("corpusVariants", ())) == SCROLL_CORPUS_VARIANTS,
+            "manifest scroll corpus variants differ")
+    require(manifest.get("includeDecodeAssets") in (False, True),
+            "manifest includeDecodeAssets must be boolean")
+    expected_profiles = {
+        "reduced-image-optimizations": {
+            "masks": list(MASKS), "prefetch": ["on"], "accounting": ["off"],
+            "renderingReuse": [], "rounds": ROUNDS, "processCount": REDUCED_PROCESS_COUNT,
+        },
+        "scroll-raster-correctness": {
+            "masks": [0], "prefetch": ["on"], "accounting": ["on"],
+            "renderingReuse": ["off", "on"], "rounds": 1,
+            "processCount": CORRECTNESS_PROCESS_COUNT,
+        },
+        "scroll-raster-performance": {
+            "masks": [0], "prefetch": ["on"], "accounting": ["off"],
+            "renderingReuse": ["off", "on"], "rounds": ROUNDS,
+            "processCount": PERFORMANCE_PROCESS_COUNT,
+        },
+        "release-default-scroll": {
+            "masks": ["default"], "prefetch": ["on"], "accounting": ["off"],
+            "renderingReuse": ["off", "on"], "rounds": ROUNDS,
+            "processCount": RELEASE_PROCESS_COUNT,
+            "defaultEffectiveMask": DEFAULT_EFFECTIVE_MASK,
+        },
+    }
+    require(manifest.get("profiles") == expected_profiles,
+            "manifest profile matrix differs")
+    source_commit = manifest.get("sourceCommit")
+    require(isinstance(source_commit, str) and len(source_commit) >= 7,
+            "manifest sourceCommit is missing")
+    runtime_sha = manifest.get("runtimeSha256")
+    require(isinstance(runtime_sha, str) and len(runtime_sha) == 64,
+            "manifest runtimeSha256 is missing")
+    if manifest.get("target") == "windows-x64":
+        require(isinstance(manifest.get("tcvmSha256"), str)
+                and len(manifest["tcvmSha256"]) == 64,
+                "Windows manifest tcvmSha256 is missing")
     require(manifest.get("screenArgument") == SCREEN_ARGUMENT,
             "manifest screen argument differs")
     return manifest
@@ -379,43 +333,59 @@ def executable_path(bundle, manifest):
 def validate_bundle(bundle, manifest):
     corpus = bundle / "corpus"
     require(corpus.is_dir(), f"bundle corpus not found: {corpus}")
+    expected_variants = (DECODE_CORPUS_VARIANTS if manifest["includeDecodeAssets"]
+                         else SCROLL_CORPUS_VARIANTS)
     require(tuple(sorted(path.name for path in corpus.iterdir() if path.is_dir()))
-            == tuple(sorted(CORPUS_VARIANTS)),
-            "bundle corpus must contain the six declared variants")
+            == tuple(sorted(expected_variants)),
+            "bundle corpus variants differ from manifest")
     images = jpeg_paths(corpus / "imag")
     require(len(images) == EXPECTED_JPEGS,
             "bundle corpus imag must contain exactly 663 JPEG files")
     base_names = [path.relative_to(corpus / "imag").as_posix() for path in images]
-    for variant in CORPUS_VARIANTS:
-        variant_root = corpus / variant
-        variant_files = sorted(path for path in variant_root.rglob("*") if path.is_file())
-        variant_images = jpeg_paths(variant_root)
-        names = [path.relative_to(variant_root).as_posix() for path in variant_images]
-        require(len(variant_files) == EXPECTED_JPEGS and len(variant_images) == EXPECTED_JPEGS,
-                f"bundle corpus {variant} must contain exactly 663 files")
-        require(names == base_names, f"bundle corpus {variant} names differ from imag")
     require(dataset_hash(corpus / "imag", images) == manifest.get("datasetHash"),
             "bundle dataset hash differs from manifest")
-    for variant, library_name in DECODE_LIBRARIES.items():
-        library = bundle / library_name
-        require(library.is_file() and library.stat().st_size > 0,
-                f"decode library is missing: {library_name}")
-    decode_executable = manifest.get("decodeExecutable")
-    require(isinstance(decode_executable, str) and decode_executable
-            and (bundle / decode_executable).is_file(),
-            "decode benchmark executable is missing")
-    decode_tcz = manifest.get("decodeApplicationTcz")
-    require(decode_tcz == "ImageDecodeBenchmarkApp.tcz"
-            and (bundle / decode_tcz).is_file(),
-            "decode application TCZ is missing")
-    decode_runner = manifest.get("decodeRunner")
-    require(decode_runner == "run-image-decode-benchmark.py"
-            and (bundle / decode_runner).is_file(),
-            "decode benchmark runner is missing")
-    decode_aggregator = manifest.get("decodeAggregator")
-    require(decode_aggregator == "aggregate-image-decode-benchmark.py"
-            and (bundle / decode_aggregator).is_file(),
-            "decode benchmark aggregator is missing")
+    decode_assets = (
+        *(bundle / name for name in DECODE_LIBRARIES.values()),
+        bundle / "ImageDecodeBenchmarkApp.tcz",
+        bundle / "run-image-decode-benchmark.py",
+        bundle / "aggregate-image-decode-benchmark.py",
+    )
+    if manifest["includeDecodeAssets"]:
+        require(tuple(sorted(path.name for path in corpus.iterdir() if path.is_dir()))
+                == tuple(sorted(DECODE_CORPUS_VARIANTS)),
+                "decode-enabled bundle must contain six corpus variants")
+        for variant in DECODE_CORPUS_VARIANTS:
+            variant_root = corpus / variant
+            variant_files = sorted(path for path in variant_root.rglob("*") if path.is_file())
+            variant_images = jpeg_paths(variant_root)
+            names = [path.relative_to(variant_root).as_posix() for path in variant_images]
+            require(len(variant_files) == EXPECTED_JPEGS
+                    and len(variant_images) == EXPECTED_JPEGS,
+                    f"bundle corpus {variant} must contain exactly 663 files")
+            require(names == base_names, f"bundle corpus {variant} names differ from imag")
+        for variant, library_name in DECODE_LIBRARIES.items():
+            library = bundle / library_name
+            require(library.is_file() and library.stat().st_size > 0,
+                    f"decode library is missing: {library_name}")
+        decode_executable = manifest.get("decodeExecutable")
+        require(isinstance(decode_executable, str) and decode_executable
+                and (bundle / decode_executable).is_file(),
+                "decode benchmark executable is missing")
+        decode_tcz = manifest.get("decodeApplicationTcz")
+        require(decode_tcz == "ImageDecodeBenchmarkApp.tcz"
+                and (bundle / decode_tcz).is_file(),
+                "decode application TCZ is missing")
+        decode_runner = manifest.get("decodeRunner")
+        require(decode_runner == "run-image-decode-benchmark.py"
+                and (bundle / decode_runner).is_file(),
+                "decode benchmark runner is missing")
+        decode_aggregator = manifest.get("decodeAggregator")
+        require(decode_aggregator == "aggregate-image-decode-benchmark.py"
+                and (bundle / decode_aggregator).is_file(),
+                "decode benchmark aggregator is missing")
+    else:
+        require(not any(path.exists() for path in decode_assets),
+                "decode assets are present in a package without includeDecodeAssets")
     require(not (bundle / "device").exists(),
             "bundle must not contain a physical device directory")
     require(manifest.get("chime") == "chime.mp3",
@@ -429,6 +399,12 @@ def validate_bundle(bundle, manifest):
     runtime = manifest.get("runtime")
     require(isinstance(runtime, str) and (bundle / runtime).is_file(),
             "bundle native runtime is missing")
+    runtime_sha = sha256_file(bundle / runtime)
+    require(runtime_sha == manifest["runtimeSha256"],
+            "bundle native runtime differs from manifest")
+    if manifest.get("target") == "windows-x64":
+        require(runtime == "tcvm.dll" and runtime_sha == manifest["tcvmSha256"],
+                "Windows bundle tcvm.dll provenance differs from manifest")
     compile_hash = manifest.get("sdkJarSha256Compile")
     deploy_hash = manifest.get("sdkJarSha256Deploy")
     require(isinstance(compile_hash, str) and len(compile_hash) == 64,
@@ -451,6 +427,9 @@ def self_test(bundle, manifest, output):
         "datasetHash": corpus_digest,
         "sdkJarSha256Compile": manifest["sdkJarSha256Compile"],
         "sdkJarSha256Deploy": manifest["sdkJarSha256Deploy"],
+        "sourceCommit": manifest["sourceCommit"],
+        "runtimeSha256": manifest["runtimeSha256"],
+        "tcvmSha256": manifest.get("tcvmSha256"),
         "executable": str(executable.relative_to(bundle)),
         "runtime": manifest["runtime"],
     }
@@ -994,6 +973,356 @@ def expected_run_dir(output, mask, prefetch, accounting, run):
     return output / "runs" / (
         f"mask-{mask}-prefetch-{prefetch}-accounting-{accounting}-run-{run}"
     )
+
+
+def mask_token(mask):
+    return "default" if mask is None else str(mask)
+
+
+def expected_reuse_run_dir(output, profile, mask, prefetch, accounting,
+                           rendering_reuse, run):
+    return output / "runs" / (
+        f"{profile}-mask-{mask_token(mask)}-prefetch-{prefetch}-accounting-{accounting}"
+        f"-reuse-{rendering_reuse}-run-{run}"
+    )
+
+
+def integer_field(row, field, description, minimum=0):
+    try:
+        value = int(row[field])
+    except (KeyError, TypeError, ValueError) as error:
+        raise BenchmarkFailure(f"{description} {field} is not an integer") from error
+    require(value >= minimum, f"{description} {field} is below {minimum}")
+    return value
+
+
+def percentile(values, fraction):
+    require(values, "cannot calculate a percentile from an empty sequence")
+    ordered = sorted(values)
+    index = max(0, min(len(ordered) - 1, math.ceil(fraction * len(ordered)) - 1))
+    return ordered[index]
+
+
+def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
+                                    prefetch, accounting, rendering_reuse, run):
+    lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    pass_records = [
+        parse_record(line) for line in lines
+        if line.startswith(f"fixture={FIXTURE},record=scroll-raster-reuse")
+    ]
+    summary_records = [
+        parse_record(line) for line in lines
+        if line.startswith(f"fixture={FIXTURE},record=summary")
+    ]
+    require(len(pass_records) == 2, f"{log_path.name} must contain cold and warm pass records")
+    require(len(summary_records) == 1, f"{log_path.name} must contain one summary record")
+    pass_records.sort(key=lambda record: int(record.get("pass_index", "-1")))
+    expected_mask = DEFAULT_EFFECTIVE_MASK if mask is None else mask
+    expected_passes = ("cold", "warm")
+    summary = summary_records[0]
+    require(summary.get("overallPass") == "true", f"{log_path.name} did not pass")
+    for key, value in {
+        "profile": profile,
+        "prefetch_profile": prefetch,
+        "accounting": accounting,
+        "requested_mask": str(expected_mask),
+        "effective_mask": str(expected_mask),
+        "passes": "2",
+        "image_count": "120",
+    }.items():
+        require(summary.get(key) == value,
+                f"{log_path.name} summary {key}={summary.get(key)!r}, expected {value!r}")
+    require(profile != "release-default-scroll" or expected_mask == DEFAULT_EFFECTIVE_MASK,
+            f"{log_path.name} release profile did not use effective mask 32799")
+
+    run_dir = expected_reuse_run_dir(
+        output, profile, mask, prefetch, accounting, rendering_reuse, run
+    )
+    environment_path = output / "environment.json"
+    require(environment_path.is_file(), f"{environment_path} is missing")
+    environment = json.loads(environment_path.read_text(encoding="utf-8"))
+    require(environment.get("datasetFileCount") == 120
+            and environment.get("datasetHash") == manifest.get("datasetHash"),
+            f"{environment_path} has an unexpected scroll corpus identity")
+    require(environment.get("effectiveLogicalWidth") == 540
+            and environment.get("effectiveLogicalHeight") == 960,
+            f"{environment_path} is not 540x960")
+    target_pixel_bytes = environment.get("skiaSurfacePixelBytes")
+    require(isinstance(target_pixel_bytes, int) and target_pixel_bytes in (2, 4),
+            f"{environment_path} lacks a supported target pixel width")
+    for name in ("scroll_raster_reuse_frames.csv", "scroll_raster_reuse_waypoints.csv",
+                 "memory.csv", "timeline.csv"):
+        require((run_dir / name).is_file(), f"{run_dir / name} is missing")
+    memory_path = run_dir / "memory.csv"
+    with memory_path.open(newline="", encoding="utf-8") as source:
+        memory_reader = csv.DictReader(source)
+        require({"checkpoint", "peak_resident_bytes"} <= set(memory_reader.fieldnames or ()),
+                f"{memory_path} lacks memory fields")
+        memory_rows = list(memory_reader)
+    require(memory_rows, f"{memory_path} has no memory checkpoint")
+    memory_peak = memory_rows[-1].get("peak_resident_bytes", "unavailable")
+    if memory_peak != "unavailable":
+        try:
+            require(int(memory_peak) >= 0, f"{memory_path} has a negative memory peak")
+        except ValueError as error:
+            raise BenchmarkFailure(f"{memory_path} memory peak is invalid") from error
+
+    frames_path = run_dir / "scroll_raster_reuse_frames.csv"
+    movement_values = {
+        pass_name: {name: [] for name in ("work_time_ns", "screen_update_ns")}
+        for pass_name in expected_passes
+    }
+    paint_totals = {
+        pass_name: {"row_paints": 0, "image_paints": 0}
+        for pass_name in expected_passes
+    }
+    frame_passes = set()
+    with frames_path.open(newline="", encoding="utf-8") as source:
+        reader = csv.DictReader(source)
+        required = {
+            "pass", "actual_delta", "movement", "measured", "work_time_ns",
+            "screen_update_ns", "row_paints", "image_paints",
+        }
+        require(required <= set(reader.fieldnames or ()),
+                f"{frames_path} lacks scroll reuse frame fields")
+        for row_data in reader:
+            pass_name = row_data.get("pass")
+            require(pass_name in expected_passes, f"{frames_path} has an unexpected pass")
+            frame_passes.add(pass_name)
+            for field in ("actual_delta", "movement", "measured", "work_time_ns",
+                          "screen_update_ns", "row_paints", "image_paints"):
+                integer_field(row_data, field, str(frames_path))
+            if row_data["movement"] == "1" and row_data["measured"] == "1":
+                movement_values[pass_name]["work_time_ns"].append(int(row_data["work_time_ns"]))
+                movement_values[pass_name]["screen_update_ns"].append(int(row_data["screen_update_ns"]))
+                paint_totals[pass_name]["row_paints"] += int(row_data["row_paints"])
+                paint_totals[pass_name]["image_paints"] += int(row_data["image_paints"])
+    require(frame_passes == set(expected_passes), f"{frames_path} lacks a cold or warm pass")
+    require(all(movement_values[pass_name]["work_time_ns"] for pass_name in expected_passes),
+            f"{frames_path} has no measured movement frames")
+
+    waypoint_hashes = {}
+    waypoint_path = run_dir / "scroll_raster_reuse_waypoints.csv"
+    with waypoint_path.open(newline="", encoding="utf-8") as source:
+        reader = csv.DictReader(source)
+        required = {"pass", "waypoint_index", "hash", "top_hash", "bottom_hash"}
+        require(required <= set(reader.fieldnames or ()),
+                f"{waypoint_path} lacks viewport hash fields")
+        for row_data in reader:
+            pass_name = row_data.get("pass")
+            require(pass_name in expected_passes, f"{waypoint_path} has an unexpected pass")
+            index = integer_field(row_data, "waypoint_index", str(waypoint_path))
+            require(0 <= index <= 4, f"{waypoint_path} has an invalid waypoint index")
+            hashes = tuple(row_data.get(field, "") for field in ("hash", "top_hash", "bottom_hash"))
+            require(all(len(value) == 16 for value in hashes),
+                    f"{waypoint_path} has an invalid viewport hash")
+            waypoint_hashes[(pass_name, index)] = hashes
+    require(len(waypoint_hashes) == 10,
+            f"{waypoint_path} must contain five waypoints for cold and warm")
+
+    records_by_pass = {record.get("pass"): record for record in pass_records}
+    rows = []
+    for pass_name in expected_passes:
+        record = records_by_pass.get(pass_name)
+        require(record is not None, f"{log_path.name} lacks {pass_name} reuse metrics")
+        for key, value in {
+            "profile": profile,
+            "rendering_reuse": rendering_reuse,
+            "image_count": "120",
+        }.items():
+            require(record.get(key) == value,
+                    f"{log_path.name} {pass_name} {key}={record.get(key)!r}, expected {value!r}")
+        attempts = integer_field(record, "attempts", log_path.name)
+        hits = integer_field(record, "hits", log_path.name)
+        fallbacks = integer_field(record, "fallbacks", log_path.name)
+        recoveries = integer_field(record, "post_move_recoveries", log_path.name)
+        viewport_pixels = integer_field(record, "viewport_pixels", log_path.name)
+        reused_pixels = integer_field(record, "reused_pixels", log_path.name)
+        dirty_pixels = integer_field(record, "dirty_pixels", log_path.name)
+        moved_bytes = integer_field(record, "moved_bytes", log_path.name)
+        movement_frames = integer_field(record, "movement_frames", log_path.name)
+        require(movement_frames == len(movement_values[pass_name]["work_time_ns"]),
+                f"{log_path.name} {pass_name} movement-frame count differs")
+        if rendering_reuse == "on":
+            require(attempts == hits + fallbacks,
+                    f"{log_path.name} {pass_name} attempts do not reconcile")
+            require(hits > 0, f"{log_path.name} {pass_name} has no reuse hits")
+        else:
+            require(attempts == hits == fallbacks == 0,
+                    f"{log_path.name} {pass_name} disabled reuse accounting is nonzero")
+        require(recoveries == 0, f"{log_path.name} {pass_name} recorded recovery")
+        require(moved_bytes == reused_pixels * target_pixel_bytes,
+                f"{log_path.name} {pass_name} moved-byte accounting differs")
+        rows.append({
+            "profile": profile,
+            "run": run,
+            "mask": mask_token(mask),
+            "effective_mask": expected_mask,
+            "prefetch": prefetch,
+            "accounting": accounting,
+            "rendering_reuse": rendering_reuse,
+            "pass": pass_name,
+            "movement_frames": movement_frames,
+            "movement_p50_ns": percentile(movement_values[pass_name]["work_time_ns"], 0.50),
+            "movement_p95_ns": percentile(movement_values[pass_name]["work_time_ns"], 0.95),
+            "movement_p99_ns": percentile(movement_values[pass_name]["work_time_ns"], 0.99),
+            "movement_max_ns": percentile(movement_values[pass_name]["work_time_ns"], 1.0),
+            "screen_p50_ns": percentile(movement_values[pass_name]["screen_update_ns"], 0.50),
+            "screen_p95_ns": percentile(movement_values[pass_name]["screen_update_ns"], 0.95),
+            "screen_p99_ns": percentile(movement_values[pass_name]["screen_update_ns"], 0.99),
+            "screen_max_ns": percentile(movement_values[pass_name]["screen_update_ns"], 1.0),
+            "row_paints": paint_totals[pass_name]["row_paints"],
+            "image_paints": paint_totals[pass_name]["image_paints"],
+            "attempts": attempts,
+            "hits": hits,
+            "fallbacks": fallbacks,
+            "recoveries": recoveries,
+            "hit_rate": round(hits / attempts, 9) if attempts else 0.0,
+            "viewport_pixels": viewport_pixels,
+            "reused_pixels": reused_pixels,
+            "dirty_pixels": dirty_pixels,
+            "moved_bytes": moved_bytes,
+            "reuse_coverage": round(reused_pixels / viewport_pixels, 9)
+            if viewport_pixels else 0.0,
+            "target_pixel_bytes": target_pixel_bytes,
+            "memory_peak_resident_bytes": memory_peak,
+        })
+    return rows, waypoint_hashes
+
+
+def write_reuse_suite_plan(output, profile):
+    combinations = [
+        (mask, prefetch, accounting, rendering_reuse)
+        for mask in profile["masks"]
+        for prefetch in profile["prefetch"]
+        for accounting in profile["accounting"]
+        for rendering_reuse in profile["rendering_reuse"]
+    ]
+    planned = []
+    order = 0
+    for round_number in range(profile["rounds"]):
+        ordered = list(combinations)
+        state = (SEED + 0x9E3779B97F4A7C15 * (round_number + 1)) & 0xFFFFFFFFFFFFFFFF
+        for index in range(len(ordered) - 1, 0, -1):
+            state = (state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
+            swap = (state >> 1) % (index + 1)
+            ordered[index], ordered[swap] = ordered[swap], ordered[index]
+        for mask, prefetch, accounting, rendering_reuse in ordered:
+            run = round_number + 1
+            planned.append((round_number, order, run, mask, prefetch, accounting, rendering_reuse))
+            order += 1
+    require(len(planned) == profile["expected_processes"],
+            f"reuse suite plan does not contain {profile['expected_processes']} processes")
+    lines = ["round\torder\trun\tmask\tprefetch\taccounting\trendering_reuse"]
+    lines.extend(
+        f"{round_number + 1}\t{order_number}\t{run}\t{mask_token(mask)}\t{prefetch}"
+        f"\t{accounting}\t{rendering_reuse}"
+        for round_number, order_number, run, mask, prefetch, accounting, rendering_reuse
+        in planned
+    )
+    (output / f"{profile['name']}-suite-plan.tsv").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
+    return planned
+
+
+def run_scroll_reuse_process(bundle, manifest, output, corpus_digest, profile,
+                             mask, prefetch, accounting, rendering_reuse, run):
+    executable = executable_path(bundle, manifest)
+    logs = output / "logs"
+    logs.mkdir(parents=True, exist_ok=True)
+    label = (f"{profile}-run-{run}-mask-{mask_token(mask)}-prefetch-{prefetch}"
+             f"-accounting-{accounting}-reuse-{rendering_reuse}")
+    log_path = logs / f"{label}.log"
+    command = [
+        str(executable), "/scr", SCREEN_SPEC, "-p", ".", "--app-root=.",
+        "--mode=benchmark", "--corpus=corpus/imag", "--output=results",
+        f"--profile={profile}", f"--rendering-reuse={rendering_reuse}",
+        f"--prefetch={prefetch}", f"--accounting={accounting}", "--passes=2",
+        f"--run={run}", f"--dataset-hash={corpus_digest}",
+    ]
+    if mask is not None:
+        command.append(f"--image-optimization={mask}")
+    try:
+        with log_path.open("w", encoding="utf-8") as log:
+            completed = subprocess.run(
+                command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, text=True,
+                check=False, timeout=PROCESS_TIMEOUT_SECONDS
+            )
+    except subprocess.TimeoutExpired:
+        with log_path.open("a", encoding="utf-8") as log:
+            log.write(f"\nbenchmark_timeout_seconds={PROCESS_TIMEOUT_SECONDS}\n")
+        raise BenchmarkFailure(f"{label} timed out; log={log_path}")
+    if completed.returncode:
+        print(f"{label} failed,exit_code={completed.returncode},log={log_path}", file=sys.stderr)
+        print(tail(log_path), file=sys.stderr)
+        raise BenchmarkFailure(f"{label} failed with exit code {completed.returncode}")
+    rows, hashes = validate_scroll_reuse_artifacts(
+        output, log_path, manifest, profile, mask, prefetch, accounting, rendering_reuse, run
+    )
+    print(f"{label} passed,artifacts={expected_reuse_run_dir(output, profile, mask, prefetch, accounting, rendering_reuse, run)}")
+    return rows, hashes
+
+
+def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_by_key):
+    by_pair = {}
+    for _, _, run, mask, prefetch, accounting, rendering_reuse in plan:
+        by_pair.setdefault((run, mask, prefetch, accounting), {})[rendering_reuse] = (
+            rows_by_key[(run, mask, prefetch, accounting, rendering_reuse)],
+            hashes_by_key[(run, mask, prefetch, accounting, rendering_reuse)],
+        )
+    summary_rows = []
+    hash_rows = []
+    for (run, mask, prefetch, accounting), modes in by_pair.items():
+        require(set(modes) == {"off", "on"},
+                f"{profile['name']} run {run} lacks an off/on pair")
+        off_rows, off_hashes = modes["off"]
+        on_rows, on_hashes = modes["on"]
+        require(off_hashes == on_hashes,
+                f"{profile['name']} run {run} viewport hashes differ between reuse modes")
+        for rendering_reuse, rows in (("off", off_rows), ("on", on_rows)):
+            summary_rows.extend(rows)
+            for (pass_name, waypoint_index), hashes in sorted(
+                    (off_hashes if rendering_reuse == "off" else on_hashes).items()):
+                hash_rows.append({
+                    "profile": profile["name"], "run": run, "mask": mask_token(mask),
+                    "prefetch": prefetch, "accounting": accounting,
+                    "rendering_reuse": rendering_reuse, "pass": pass_name,
+                    "waypoint_index": waypoint_index, "hash": hashes[0],
+                    "top_hash": hashes[1], "bottom_hash": hashes[2],
+                })
+    summary_fields = list(summary_rows[0]) if summary_rows else []
+    summary_path = output / f"scroll-raster-summary-{profile['name']}.csv"
+    with summary_path.open("w", newline="", encoding="utf-8") as destination:
+        writer = csv.DictWriter(destination, fieldnames=summary_fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(summary_rows)
+    hash_path = output / f"scroll-raster-waypoint-hashes-{profile['name']}.csv"
+    with hash_path.open("w", newline="", encoding="utf-8") as destination:
+        writer = csv.DictWriter(destination, fieldnames=list(hash_rows[0]), lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(hash_rows)
+    require(len(summary_rows) == profile["expected_processes"] * 2,
+            f"{profile['name']} summary row count differs")
+    print(f"scroll reuse aggregation passed,profile={profile['name']},"
+          f"rows={len(summary_rows)},summary={summary_path},hashes={hash_path}")
+    return summary_path, hash_path
+
+
+def run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile):
+    plan = write_reuse_suite_plan(output, profile)
+    rows_by_key = {}
+    hashes_by_key = {}
+    for _, _, run, mask, prefetch, accounting, rendering_reuse in plan:
+        app_profile = profile.get("app_profile", profile["name"])
+        rows, hashes = run_scroll_reuse_process(
+            bundle, manifest, output, corpus_digest, app_profile, mask, prefetch,
+            accounting, rendering_reuse, run
+        )
+        key = (run, mask, prefetch, accounting, rendering_reuse)
+        rows_by_key[key] = rows
+        hashes_by_key[key] = hashes
+    return aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_by_key)
 
 
 def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, dataset_digest,
@@ -1700,8 +2029,12 @@ def write_zip(bundle, output):
 
 
 def run_decode_phase(bundle, phase):
+    manifest = load_manifest(bundle)
+    require(manifest.get("includeDecodeAssets") is True,
+            "decode phase requested but this package has no decode assets; "
+            "rebuild it with --include-decode")
     script = bundle / "run-image-decode-benchmark.py"
-    require(script.is_file(), f"decode benchmark runner is missing: {script}")
+    require(script.is_file(), f"decode phase requested but runner is missing: {script}")
     completed = subprocess.run(
         [sys.executable, str(script), "--bundle", str(bundle), "--phase", phase],
         cwd=bundle, check=False,
@@ -1710,14 +2043,51 @@ def run_decode_phase(bundle, phase):
             f"decode {phase} phase failed with exit code {completed.returncode}")
 
 
+def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name):
+    profile = profile_config(profile_name)
+    if profile.get("rendering_reuse"):
+        return run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile)
+    plan = run_matrix(
+        bundle, manifest, output, corpus_digest, profile["masks"], profile["prefetch"],
+        profile["accounting"], profile["rounds"], profile["expected_processes"],
+        passes=profile.get("passes", 1),
+    )
+    return aggregate(
+        output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
+        profile["rounds"], profile["expected_processes"], profile_name,
+    )
+
+
+def write_default_execution_summary(output, manifest):
+    summary = {
+        "status": "PASS",
+        "sourceCommit": manifest["sourceCommit"],
+        "runtimeSha256": manifest["runtimeSha256"],
+        "tcvmSha256": manifest.get("tcvmSha256"),
+        "selfTestProcessCount": 1,
+        "profileProcessCounts": {
+            name: profile_config(name)["expected_processes"]
+            for name in (
+                "reduced-image-optimizations", "scroll-raster-correctness",
+                "scroll-raster-performance", "release-default-scroll",
+            )
+        },
+        "expectedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
+        "decodeIncluded": manifest["includeDecodeAssets"],
+    }
+    require(sum(summary["profileProcessCounts"].values())
+            == summary["expectedProcessCount"],
+            "default execution process count does not reconcile")
+    path = output / "default-execution-summary.json"
+    path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(f"default execution passed,processes={summary['expectedProcessCount']},summary={path}")
+
+
 def run_phase(bundle, phase, profile_name):
-    if phase in ("decode-self-test", "decode-smokes"):
-        decode_phase = "self-test" if phase == "decode-self-test" else "smokes"
+    if phase in ("decode-self-test", "decode-smokes", "decode-full"):
+        decode_phase = phase.removeprefix("decode-")
         run_decode_phase(bundle, decode_phase)
         return
-    profile = profile_config(profile_name)
-    if phase == "full":
-        require(profile_name == "full", "full phase requires the full profile")
     manifest = load_manifest(bundle)
     output = bundle / "results"
     if phase in ("self-test", "full"):
@@ -1729,43 +2099,25 @@ def run_phase(bundle, phase, profile_name):
         require(len(images) == EXPECTED_JPEGS, "corpus changed after self-test")
     if phase == "self-test":
         return
-    if phase in ("smokes", "full"):
-        for mask, prefetch in (
-            (0, "off"), (0, "on"), (4, "off"), (4, "on"),
-            (32799, "off"), (32799, "on"),
-        ):
-            run_process(
-                bundle, manifest, output, corpus_digest, mask, prefetch, "on", 0,
-                f"smoke-{mask}-{prefetch}-accounting-on",
-            )
-        if phase == "smokes":
-            return
-    if 0 in profile["masks"] and profile.get("require_standard_smokes", True):
-        require_smokes_completed(output, corpus_digest)
-    plan = run_matrix(
-        bundle, manifest, output, corpus_digest, profile["masks"], profile["prefetch"],
-        profile["accounting"], profile["rounds"], profile["expected_processes"],
-        profile.get("require_policy_diagnostics", False),
-        profile.get("require_structural_diagnostics", False),
-        profile.get("reuse_passes", 1),
-    )
-    if profile.get("reuse_passes", 1) == 1:
-        aggregate(
-            output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
-            profile["rounds"], profile["expected_processes"], profile_name,
-            profile.get("require_policy_diagnostics", False),
-            profile.get("require_structural_diagnostics", False),
-        )
-    else:
-        aggregate_reuse(
-            output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
-            profile["rounds"], profile["expected_processes"], profile_name,
-            profile.get("require_policy_diagnostics", False),
-            profile.get("require_structural_diagnostics", False),
-            profile["reuse_passes"],
-        )
     if phase == "full":
-        run_decode_phase(bundle, "full")
+        for name in (
+            "reduced-image-optimizations", "scroll-raster-correctness",
+            "scroll-raster-performance", "release-default-scroll",
+        ):
+            run_scroll_profile(bundle, manifest, output, corpus_digest, name)
+        write_default_execution_summary(output, manifest)
+        if manifest["includeDecodeAssets"]:
+            run_decode_phase(bundle, "full")
+        write_zip(bundle, output)
+        return
+    if phase == "smokes":
+        profile_name = "reduced-image-optimizations"
+    elif phase == "matrix":
+        require(profile_name != "full", "matrix phase requires a named scroll profile")
+    elif phase != profile_name:
+        require(phase in PROFILES, f"unsupported scroll phase: {phase}")
+        profile_name = phase
+    run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name)
     write_zip(bundle, output)
 
 
@@ -1776,12 +2128,15 @@ def main(argv):
         help="bundle directory (defaults to the current directory)",
     )
     parser.add_argument(
-        "--phase", choices=("self-test", "smokes", "matrix", "full",
-                            "decode-self-test", "decode-smokes"), default="full",
-        help="run one fail-fast phase; full includes scroll and decode matrices",
+        "--phase", choices=(
+            "self-test", "smokes", "matrix", "full", "reduced-image-optimizations",
+            "scroll-raster-correctness", "scroll-raster-performance",
+            "release-default-scroll", "decode-self-test", "decode-smokes", "decode-full",
+        ), default="full",
+        help="run one fail-fast phase; full runs the 44-process non-decode suite",
     )
     parser.add_argument(
-        "--profile", choices=tuple(PROFILES), default="full",
+        "--profile", choices=("full",) + tuple(PROFILES), default="full",
         help="scroll matrix profile (default: full)",
     )
     args = parser.parse_args(argv[1:])

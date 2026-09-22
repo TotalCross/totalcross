@@ -76,6 +76,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String accountingProfile;
   private String benchmarkProfile;
   private boolean scrollRasterReuseProfile;
+  private String renderingReuseProfile;
   private int workloadImageCount = IMAGE_COUNT;
   private int measuredRowPaints;
   private int measuredImagePaints;
@@ -149,13 +150,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           getCommandLine(), "accounting", "on");
       benchmarkProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "profile", "standard");
-      scrollRasterReuseProfile = "scroll-raster-reuse-poc".equals(benchmarkProfile);
+      scrollRasterReuseProfile = "scroll-raster-reuse-poc".equals(benchmarkProfile)
+          || "release-default-scroll".equals(benchmarkProfile);
       workloadImageCount = scrollRasterReuseProfile ? POC_IMAGE_COUNT : IMAGE_COUNT;
       configureScrollRasterReuse();
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
           "missing --corpus=<dir>");
-      ImageRasterBenchmarkSupport.require(maskArgument != null && maskArgument.length() > 0,
-          "missing --image-optimization=<mask>");
+      ImageRasterBenchmarkSupport.require(
+          (maskArgument != null && maskArgument.length() > 0)
+              || "release-default-scroll".equals(benchmarkProfile),
+          "missing --image-optimization=<mask> outside the release-default-scroll profile");
       ImageRasterBenchmarkSupport.require(scrollDurationNs > 0,
           "duration must be positive");
       ImageRasterBenchmarkSupport.require(scrollRasterReuseProfile
@@ -357,6 +361,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private void configureMask() {
     ImageOptimizationSettings.resetForTest();
+    if (maskArgument == null || maskArgument.length() == 0) {
+      return;
+    }
     try {
       ImageOptimizationSettings.setMask(Long.parseLong(maskArgument));
     } catch (NumberFormatException error) {
@@ -365,11 +372,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void configureScrollRasterReuse() {
-    String reuse = ImageRasterBenchmarkSupport.argument(
+    renderingReuseProfile = ImageRasterBenchmarkSupport.argument(
         getCommandLine(), "rendering-reuse", "off");
-    ImageRasterBenchmarkSupport.require("off".equals(reuse) || "on".equals(reuse),
+    ImageRasterBenchmarkSupport.require("off".equals(renderingReuseProfile)
+        || "on".equals(renderingReuseProfile),
         "rendering-reuse must be off or on");
-    RenderingOptimizations.setMask("on".equals(reuse)
+    RenderingOptimizations.setMask("on".equals(renderingReuseProfile)
         ? RenderingOptimizations.SCROLL_RASTER_REUSE : 0);
     RenderingOptimizations.setDiagnosticsEnabledForTest(
         scrollRasterReuseProfile && accountingEnabled());
@@ -394,6 +402,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     return (scrollRasterReuseProfile ? benchmarkProfile + "-" : "")
         + "mask-" + (maskArgument == null ? "default" : maskArgument)
         + "-prefetch-" + prefetchProfile + "-accounting-" + accountingProfile
+        + (scrollRasterReuseProfile ? "-reuse-" + renderingReuseProfile : "")
         + "-run-" + runNumber;
   }
 
