@@ -240,6 +240,12 @@ public final class Graphics {
     return mainWindowPixelWidth;
   }
 
+  /** Returns the bytes occupied by one pixel in the software main-window surface. */
+  @ReplacedByNativeOnDeploy
+  public static int getMainWindowPixelBytes() {
+    return 4;
+  }
+
   /** Returns the physical height of the Java simulator's shared screen backing. */
   @ReplacedByNativeOnDeploy
   public static int getMainWindowPixelHeight() {

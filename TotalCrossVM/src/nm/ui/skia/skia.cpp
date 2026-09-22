@@ -239,6 +239,26 @@ static size_t scrollRasterBytesPerPixel(SkColorType colorType) {
     }
 }
 
+int32 skia_screen_pixel_bytes() {
+#if TC_GRAPHICS_SOFTWARE
+    if (bitmap.getPixels() == nullptr || bitmap.width() <= 0 || bitmap.rowBytes() == 0) {
+        return 0;
+    }
+    const size_t pixelBytes = scrollRasterBytesPerPixel(bitmap.colorType());
+    if (pixelBytes == 0
+        || bitmap.rowBytes() < static_cast<size_t>(bitmap.width()) * pixelBytes) {
+        return 0;
+    }
+    return static_cast<int32>(pixelBytes);
+#else
+    return 0;
+#endif
+}
+
+int32 skia_raster_bytes_per_pixel_for_test(int32 colorType) {
+    return static_cast<int32>(scrollRasterBytesPerPixel(static_cast<SkColorType>(colorType)));
+}
+
 static bool validScrollRasterRegion(const SkBitmap& target, int32 x, int32 y, int32 width,
                                     int32 height, int32 deltaY, size_t* bytesPerPixel) {
     const size_t pixelBytes = scrollRasterBytesPerPixel(target.colorType());

@@ -65,6 +65,8 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
 void destroySkiaScreen();
 void flushSkia();
 bool skia_scroll_raster_region(int32 x, int32 y, int32 width, int32 height, int32 deltaY);
+int32 skia_screen_pixel_bytes();
+int32 skia_raster_bytes_per_pixel_for_test(int32 colorType);
 uint64_t skia_hash_raster_region(int32 x, int32 y, int32 width, int32 height);
 bool skia_scroll_raster_region_for_test(void* pixels, int32 width, int32 height, int32 rowBytes,
                                         int32 colorType, int32 x, int32 y, int32 regionWidth,

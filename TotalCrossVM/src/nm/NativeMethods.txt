@@ -242,6 +242,7 @@ totalcross/ui/gfx/Graphics|native public static boolean scrollRasterRegion(int x
 totalcross/ui/gfx/Graphics|native public static long hashRasterRegion(int x, int y, int width, int height);
 totalcross/ui/gfx/Graphics|native public static boolean isSoftwareRasterBackend();
 totalcross/ui/gfx/Graphics|native public static int getMainWindowPixelWidth();
+totalcross/ui/gfx/Graphics|native public static int getMainWindowPixelBytes();
 totalcross/ui/gfx/Graphics|native public static int getMainWindowPixelHeight();
 totalcross/ui/font/Font|native void fontCreate();
 totalcross/ui/font/FontMetrics|native void fontMetricsCreate();

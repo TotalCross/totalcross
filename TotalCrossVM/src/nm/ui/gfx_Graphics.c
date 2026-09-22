@@ -501,6 +501,15 @@ TC_API void tugG_getMainWindowPixelWidth(NMParams p) // totalcross/ui/gfx/Graphi
    p->retI = screen.screenW;
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tugG_getMainWindowPixelBytes(NMParams p) // totalcross/ui/gfx/Graphics native public static int getMainWindowPixelBytes();
+{
+#if TC_RENDERER_SKIA && TC_GRAPHICS_SOFTWARE
+   p->retI = skia_screen_pixel_bytes();
+#else
+   p->retI = 0;
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_getMainWindowPixelHeight(NMParams p) // totalcross/ui/gfx/Graphics native public static int getMainWindowPixelHeight();
 {
    p->retI = screen.screenH;

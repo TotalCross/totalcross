@@ -261,6 +261,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_hashRasterRegion_iiii"), &tugG_hashRasterRegion_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_isSoftwareRasterBackend"), &tugG_isSoftwareRasterBackend);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_getMainWindowPixelWidth"), &tugG_getMainWindowPixelWidth);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_getMainWindowPixelBytes"), &tugG_getMainWindowPixelBytes);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_getMainWindowPixelHeight"), &tugG_getMainWindowPixelHeight);
    htPutPtr(&htNativeProcAddresses, hashCode("tufF_fontCreate"), &tufF_fontCreate);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_fontMetricsCreate"), &tufFM_fontMetricsCreate);

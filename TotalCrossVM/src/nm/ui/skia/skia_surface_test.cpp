@@ -85,6 +85,12 @@ static bool testScrollRasterRegionForColorType(int32 colorType, int bytesPerPixe
 }
 
 static bool testScrollRasterRegion() {
+    if (skia_raster_bytes_per_pixel_for_test(kBGRA_8888_SkColorType) != 4
+        || skia_raster_bytes_per_pixel_for_test(kRGB_565_SkColorType) != 2
+        || skia_raster_bytes_per_pixel_for_test(kRGBA_8888_SkColorType) != 0) {
+        std::fputs("raster format byte accounting is incorrect\n", stderr);
+        return false;
+    }
     const bool bgra = testScrollRasterRegionForColorType(kBGRA_8888_SkColorType, 4);
     const bool rgb565 = testScrollRasterRegionForColorType(kRGB_565_SkColorType, 2);
     if (!bgra || !rgb565) {
