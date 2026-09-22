@@ -52,3 +52,36 @@ SPDX-License-Identifier: LGPL-2.1-only
 - blocker: macOS deploy retried twice and failed with `No space left on device`
   during TCZ generation. The host data volume reported about 202 MiB free;
   no benchmark result is claimed.
+
+## 2026-09-21 — M2 correctness gate
+
+- revision: `99929d06f`
+- status: PASS
+- workload: 120 sorted JPEGs, three columns, 540x960 macOS software raster,
+  image optimization mask 0, prefetch ON, two cold/warm passes.
+- correctness: OFF/ON hashes matched at all five waypoints in both passes;
+  ON recorded 71/71 hits, zero fallbacks, and zero post-move recoveries;
+  OFF recorded zero hits.
+- accounting: `attempts = hits + fallbacks`; ON reused 117126000 pixels and
+  repainted 22431600 of 139557600 viewport pixels, moving 117126000 bytes.
+- fix: explicit dirty-strip fills were required because equal-color parent
+  backgrounds intentionally skip normal `onPaint` fills; row-selective nested
+  repaint then matched the normal repaint hashes.
+- validation: SDK dist, smoke Java compilation, native Release build/test,
+  focused header validation, and diff checks passed.
+
+## 2026-09-21 — M3 performance matrix
+
+- revision: `99929d06f`; accounting OFF; three independent OFF and three
+  independent ON processes, each with cold and warm passes.
+- status: PASS; all six processes completed and all waypoint hashes remained
+  stable across rounds.
+- performance: combined 225-frame medians improved from 4.079 ms to 2.681 ms
+  cold and 4.022 ms to 2.634 ms warm for measured work; average row/image
+  paints fell from 6.013/18.040 to 1.996/5.987 cold and from 6.018/18.053 to
+  2.004/6.013 warm.
+- presentation: screen-update P50 remained approximately 1.5 ms, and paced
+  pass totals did not improve materially; classify `PRESENTATION-BOUND`.
+- artifacts: compact summaries, waypoint hashes, frame distributions, and
+  top-frame evidence are in
+  `.agent/benchmarks/scroll-raster-reuse-poc/final/`.
