@@ -40,6 +40,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Prior classification: `PRESENTATION-BOUND` (invalidated pending rerun);
   final artifacts are under `.agent/benchmarks/scroll-raster-reuse-poc/final/`.
 - Previous final evidence commit: `ac0abff74` — invalidated M3 results.
+- Final evidence commit: `8d086003f` — record timer-gated M3 results.
 - Final classification: `PRESENTATION-BOUND`; fresh artifacts are under
   `.agent/benchmarks/scroll-raster-reuse-poc/final/`.
 - Final review status: `STOP / REVIEW`; no follow-up optimization is in scope.
