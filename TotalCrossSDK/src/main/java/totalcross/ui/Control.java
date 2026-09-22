@@ -351,6 +351,8 @@ public class Control extends GfxSurface {
 
   private List<Listener> listeners = new ArrayList<>();
   private static boolean callingUpdScr, callingRepNow;
+  private static boolean benchmarkScreenTimingForTest;
+  private static long benchmarkLastScreenUpdateNsForTest;
 
   /** Alpha to be used in some controls, ranging from 0 to 255. */
   public int alphaValue = 255;
@@ -2125,26 +2127,60 @@ public class Control extends GfxSurface {
    */
   public static void safeUpdateScreen() {
     if (MainWindow.isMainThread()) {
-      long start = RenderingOptimizations.diagnosticsEnabled() ? System.nanoTime() : 0;
+      boolean measure = RenderingOptimizations.diagnosticsEnabled() || benchmarkScreenTimingForTest;
+      long start = measure ? System.nanoTime() : 0;
       updateScreen();
       if (start != 0) {
-        RenderingOptimizations.recordScreenUpdate(System.nanoTime() - start);
+        long elapsed = System.nanoTime() - start;
+        if (RenderingOptimizations.diagnosticsEnabled()) {
+          RenderingOptimizations.recordScreenUpdate(elapsed);
+        }
+        if (benchmarkScreenTimingForTest) {
+          benchmarkLastScreenUpdateNsForTest = Math.max(0, elapsed);
+        }
       }
     } else if (!callingUpdScr) {
       callingUpdScr = true;
       MainWindow.getMainWindow().runOnMainThread(new Runnable() {
         @Override
         public void run() {
-          long start = RenderingOptimizations.diagnosticsEnabled() ? System.nanoTime() : 0;
+          boolean measure = RenderingOptimizations.diagnosticsEnabled() || benchmarkScreenTimingForTest;
+          long start = measure ? System.nanoTime() : 0;
           updateScreen();
           if (start != 0) {
-            RenderingOptimizations.recordScreenUpdate(System.nanoTime() - start);
+            long elapsed = System.nanoTime() - start;
+            if (RenderingOptimizations.diagnosticsEnabled()) {
+              RenderingOptimizations.recordScreenUpdate(elapsed);
+            }
+            if (benchmarkScreenTimingForTest) {
+              benchmarkLastScreenUpdateNsForTest = Math.max(0, elapsed);
+            }
           }
           Thread.yield();
           callingUpdScr = false;
         }
       });
     }
+  }
+
+  /** Enables benchmark-only screen timing without enabling rendering diagnostics. */
+  public static void setBenchmarkScreenTimingForTest(boolean enabled) {
+    benchmarkScreenTimingForTest = enabled;
+    if (!enabled) {
+      benchmarkLastScreenUpdateNsForTest = 0;
+    }
+  }
+
+  /** Clears the last benchmark-only screen timing sample. */
+  public static void resetBenchmarkScreenTimingForTest() {
+    benchmarkLastScreenUpdateNsForTest = 0;
+  }
+
+  /** Returns and clears the last benchmark-only screen timing sample. */
+  public static long consumeBenchmarkScreenUpdateNsForTest() {
+    long elapsed = benchmarkLastScreenUpdateNsForTest;
+    benchmarkLastScreenUpdateNsForTest = 0;
+    return elapsed;
   }
 
   /** Returns the control's width. */

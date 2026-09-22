@@ -85,6 +85,13 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   private int contentExtentHeight;
   private long displayPreparationGeneration;
   private DisplayPreparationBatch displayPreparationBatch;
+  private boolean lastRasterReuseHitForTest;
+  private boolean lastRasterReusePostMoveRecoveryForTest;
+  private int lastRasterReuseFallbackReasonForTest = -1;
+  private long lastRasterReuseViewportPixelsForTest;
+  private long lastRasterReuseReusedPixelsForTest;
+  private long lastRasterReuseDirtyPixelsForTest;
+  private long lastRasterReuseMovedBytesForTest;
 
   /** Automatically scrolls the container when an item is clicked.
    * @see #hsIgnoreAutoScroll 
@@ -165,6 +172,19 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
         + ",scale=" + scale + ",px=" + (viewport.x * scale) + ","
         + (viewport.y * scale) + "," + ((viewport.x + viewport.width) * scale) + ","
         + ((viewport.y + viewport.height) * scale);
+  }
+
+  /** Returns the last raster-reuse outcome without consulting diagnostic accounting. */
+  public long[] rasterReuseLastMetricsForTest() {
+    return new long[] {
+        lastRasterReuseHitForTest ? 1 : 0,
+        lastRasterReusePostMoveRecoveryForTest ? 1 : 0,
+        lastRasterReuseFallbackReasonForTest,
+        lastRasterReuseViewportPixelsForTest,
+        lastRasterReuseReusedPixelsForTest,
+        lastRasterReuseDirtyPixelsForTest,
+        lastRasterReuseMovedBytesForTest
+    };
   }
 
   /** Asynchronously prepares every image descendant of the scrolling content. */
@@ -557,6 +577,13 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   private boolean internalScrollContent(int dx, int dy, boolean fromFlick) {
     boolean scrolled = false;
     final boolean pendingPaintBeforeScroll = Window.needsPaint;
+    lastRasterReuseHitForTest = false;
+    lastRasterReusePostMoveRecoveryForTest = false;
+    lastRasterReuseFallbackReasonForTest = -1;
+    lastRasterReuseViewportPixelsForTest = 0;
+    lastRasterReuseReusedPixelsForTest = 0;
+    lastRasterReuseDirtyPixelsForTest = 0;
+    lastRasterReuseMovedBytesForTest = 0;
     int actualVerticalDelta = 0;
     if((sbV != null || sbH != null) && dx == 0 && dy == 0) {
       if (scrollStarted) {
@@ -595,6 +622,11 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
         RenderingOptimizations.recordUnsupportedHorizontal();
       }
       if (dy != 0 && sbV != null) {
+        // setRect marks the moved bag for repaint. Clear only that synchronous request;
+        // any repaint requested by the fast path itself remains visible to the caller.
+        if (scrolled && !pendingPaintBeforeScroll && Window.needsPaint) {
+          Window.needsPaint = false;
+        }
         rasterReuseHit = tryRasterReuse(dx, dy, actualVerticalDelta, pendingPaintBeforeScroll);
       }
     }
@@ -613,6 +645,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     final long decisionStart = System.nanoTime();
     RenderingOptimizations.beginRasterReuseAttempt(requestedDy, actualDy);
     if (dx != 0) {
+      lastRasterReuseFallbackReasonForTest = RenderingOptimizations.FALLBACK_UNSUPPORTED_HORIZONTAL;
       RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
       RenderingOptimizations.recordRasterReuseFallback(RenderingOptimizations.FALLBACK_UNSUPPORTED_HORIZONTAL);
       return false;
@@ -656,14 +689,20 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     int physicalWidth = px1 - px0;
     int physicalHeight = py1 - py0;
     long viewportPixels = (long) physicalWidth * physicalHeight;
+    lastRasterReuseViewportPixelsForTest = viewportPixels;
     RenderingOptimizations.recordRasterReuseGeometry(viewportPixels);
     if (physicalDelta == 0 || Math.abs((long) physicalDelta) >= physicalHeight) {
       return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_DELTA_OUT_OF_RANGE);
+    }
+    int bytesPerPixel = Graphics.getMainWindowPixelBytes();
+    if (bytesPerPixel <= 0) {
+      return rasterReuseFallback(decisionStart, RenderingOptimizations.FALLBACK_UNSUPPORTED_BACKEND);
     }
     RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
 
     long moveStart = System.nanoTime();
     if (!Graphics.scrollRasterRegion(px0, py0, physicalWidth, physicalHeight, -physicalDelta)) {
+      lastRasterReuseFallbackReasonForTest = RenderingOptimizations.FALLBACK_NATIVE_MOVE_FAILURE;
       RenderingOptimizations.recordRasterReuseMove(System.nanoTime() - moveStart);
       RenderingOptimizations.recordRasterReuseFallback(RenderingOptimizations.FALLBACK_NATIVE_MOVE_FAILURE);
       return false;
@@ -704,6 +743,8 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       RenderingOptimizations.recordRasterReuseDirtyPaint(System.nanoTime() - dirtyStart);
       safeUpdateScreen();
     } catch (Throwable recovery) {
+      lastRasterReusePostMoveRecoveryForTest = true;
+      lastRasterReuseFallbackReasonForTest = RenderingOptimizations.FALLBACK_POST_MOVE_RECOVERY;
       RenderingOptimizations.recordRasterReuseFallback(RenderingOptimizations.FALLBACK_POST_MOVE_RECOVERY);
       Window.needsPaint = true;
       return false;
@@ -711,15 +752,17 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
 
     long dirtyPixels = (long) physicalWidth * Math.abs((long) physicalDelta);
     long reusedPixels = viewportPixels - dirtyPixels;
-    int pitch = bag.getGraphics() == null ? physicalWidth * 4 : bag.getGraphics().getSurfacePixelPitch();
-    int bytesPerPixel = pitch > 0 && Graphics.getMainWindowPixelWidth() > 0
-        ? Math.max(1, pitch / Graphics.getMainWindowPixelWidth()) : 4;
+    lastRasterReuseHitForTest = true;
+    lastRasterReuseReusedPixelsForTest = reusedPixels;
+    lastRasterReuseDirtyPixelsForTest = dirtyPixels;
+    lastRasterReuseMovedBytesForTest = reusedPixels * bytesPerPixel;
     RenderingOptimizations.recordRasterReuseHit(viewportPixels, reusedPixels, dirtyPixels,
-        reusedPixels * bytesPerPixel);
+        lastRasterReuseMovedBytesForTest);
     return true;
   }
 
   private boolean rasterReuseFallback(long decisionStart, int reason) {
+    lastRasterReuseFallbackReasonForTest = reason;
     RenderingOptimizations.recordRasterReuseDecision(System.nanoTime() - decisionStart);
     RenderingOptimizations.recordRasterReuseFallback(reason);
     return false;
@@ -737,6 +780,12 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   }
 
   private boolean hasPaintAboveViewport(Rect viewport) {
+    for (Control overlay = bag0.getFirstChild(); overlay != null; overlay = overlay.next) {
+      if (overlay != bag && overlay.isVisible()
+          && rectanglesIntersect(overlay.getAbsoluteRect(), viewport)) {
+        return true;
+      }
+    }
     Control child = this;
     while (child.parent != null) {
       for (Control sibling = child.next; sibling != null; sibling = sibling.next) {
