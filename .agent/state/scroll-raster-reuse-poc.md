@@ -10,10 +10,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Branch: `perf/scroll-raster-reuse-poc`.
 - Base branch: `perf/writepixels-tail-diagnosis`.
 - Base SHA: `c57c985a9c5e2030ee72a989b5b5917d932103dd`.
-- Current HEAD: `99929d06f`.
-- Last logical commit: `99929d06f` — complete the scroll reuse repaint path.
-- Next action: commit the final evidence/report artifacts, then refresh this
-  state with the resulting documentation commit hash.
+- Current HEAD: `4acd53808` (results checkpoint; this state refresh follows).
+- Last logical commit: `4acd53808` — record the scroll reuse benchmark results.
+- Next action: none; stop at `STOP / REVIEW`.
 - Active paths: `.agent/plans/scroll-raster-reuse-poc-plan.md`,
   `.agent/state/scroll-raster-reuse-poc.md`,
   `.agent/evidence/scroll-raster-reuse-poc.md`.
@@ -22,9 +21,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   diff checks passed; macOS CMake/Ninja Release build and focused native raster
   tests passed; the corrected M2 macOS OFF/ON pair matched every cold/warm
   waypoint hash with 71/71 ON hits and zero recoveries.
-- Commit-message validation: the current commit was created signed, but the
-  local checker found a literal escaped-newline sequence as one overlong body
-  line; no history rewrite will be performed.
+- Commit-message validation: the signed implementation and results commits
+  contain literal escaped-newline sequences as overlong body lines; no history
+  rewrite will be performed. This state-refresh commit uses wrapped lines.
 - Deferred validation: none; the six-process performance matrix and final
   result aggregation are complete.
 - Decisions still active: vertical-only software-raster reuse; default mask

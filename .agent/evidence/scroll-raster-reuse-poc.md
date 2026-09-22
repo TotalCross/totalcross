@@ -85,3 +85,4 @@ SPDX-License-Identifier: LGPL-2.1-only
 - artifacts: compact summaries, waypoint hashes, frame distributions, and
   top-frame evidence are in
   `.agent/benchmarks/scroll-raster-reuse-poc/final/`.
+- results commit: `4acd53808`.
