@@ -65,6 +65,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private int tileWidth;
   private int rowCount;
   private int imageControlCount;
+  private long corpusFileEnumerationElapsedNs;
+  private long imageLoadElapsedNs;
+  private long imageScaleElapsedNs;
+  private long imageControlAttachElapsedNs;
   private long uiBuildElapsedNs;
   private String imageDir;
   private String maskArgument;
@@ -202,7 +206,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       ImagePreparation.resetAccountingForTest();
 
       long buildStartNs = System.nanoTime();
+      long corpusScanStartNs = System.nanoTime();
       String[] imagePaths = sortedCorpusPaths(imageDir);
+      corpusFileEnumerationElapsedNs = System.nanoTime() - corpusScanStartNs;
       ImageRasterBenchmarkSupport.require(imagePaths.length >= workloadImageCount,
           "expected at least " + workloadImageCount + " corpus files but found " + imagePaths.length);
       if (imagePaths.length != workloadImageCount) {
@@ -344,6 +350,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",profile=" + benchmarkProfile
         + ",image_count=" + workloadImageCount + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
+        + ",corpus_file_enumeration_elapsed_ns=" + corpusFileEnumerationElapsedNs
+        + ",image_load_elapsed_ns=" + imageLoadElapsedNs
+        + ",image_scale_elapsed_ns=" + imageScaleElapsedNs
+        + ",image_control_attach_elapsed_ns=" + imageControlAttachElapsedNs
         + ",ui_build_elapsed_ns=" + uiBuildElapsedNs
         + ",prefetch_elapsed_ns=" + prefetchElapsedNs
         + ",prefetch_request_count=" + prefetchRequestCount
@@ -557,9 +567,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         rowCount++;
         controlsInRow = 0;
       }
-      Image image = new Image(imagePaths[i]).getSmoothScaledInstance(tileWidth, tileWidth);
+      long imageLoadStartNs = System.nanoTime();
+      Image loadedImage = new Image(imagePaths[i]);
+      imageLoadElapsedNs += System.nanoTime() - imageLoadStartNs;
+      long imageScaleStartNs = System.nanoTime();
+      Image image = loadedImage.getSmoothScaledInstance(tileWidth, tileWidth);
+      imageScaleElapsedNs += System.nanoTime() - imageScaleStartNs;
+      long imageControlAttachStartNs = System.nanoTime();
       row.add(rasterReuseBenchmarkProfile ? new MeasuredImageControl(image)
           : new ImageControl(image), AFTER + 1, TOP, tileWidth, tileWidth);
+      imageControlAttachElapsedNs += System.nanoTime() - imageControlAttachStartNs;
       controlsInRow++;
       imageControlCount++;
     }
@@ -1222,6 +1239,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",profile=" + benchmarkProfile
         + ",image_count=" + workloadImageCount + ",rows=" + rowCount
         + ",image_controls=" + imageControlCount + ",tile_logical=" + tileWidth
+        + ",corpus_file_enumeration_elapsed_ns=" + corpusFileEnumerationElapsedNs
+        + ",image_load_elapsed_ns=" + imageLoadElapsedNs
+        + ",image_scale_elapsed_ns=" + imageScaleElapsedNs
+        + ",image_control_attach_elapsed_ns=" + imageControlAttachElapsedNs
         + ",ui_build_elapsed_ns=" + uiBuildElapsedNs
         + ",prefetch_elapsed_ns=" + prefetchElapsedNs
         + ",prefetch_request_count=" + prefetchRequestCount
@@ -1415,7 +1436,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"benchmarkVersion\":\"1\",\n"
         + "  \"datasetFileCount\":" + workloadImageCount + ",\n"
         + "  \"datasetHash\":\"" + escapeJson(datasetHashArgument) + "\",\n"
-        + "  \"columns\":" + COLUMN_COUNT + "\n"
+        + "  \"columns\":" + COLUMN_COUNT + ",\n"
+        + "  \"corpusFileEnumerationElapsedNs\":" + corpusFileEnumerationElapsedNs + ",\n"
+        + "  \"imageLoadElapsedNs\":" + imageLoadElapsedNs + ",\n"
+        + "  \"imageScaleElapsedNs\":" + imageScaleElapsedNs + ",\n"
+        + "  \"imageControlAttachElapsedNs\":" + imageControlAttachElapsedNs + "\n"
         + "}\n";
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(outputDir, "environment.json"), json);
@@ -1485,6 +1510,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"accounting\":\"" + accountingProfile + "\",\n"
         + "  \"requestedMask\":" + requestedMask + ",\n"
         + "  \"effectiveMask\":" + effectiveMask + ",\n"
+        + "  \"corpusFileEnumerationElapsedNs\":" + corpusFileEnumerationElapsedNs + ",\n"
+        + "  \"imageLoadElapsedNs\":" + imageLoadElapsedNs + ",\n"
+        + "  \"imageScaleElapsedNs\":" + imageScaleElapsedNs + ",\n"
+        + "  \"imageControlAttachElapsedNs\":" + imageControlAttachElapsedNs + ",\n"
         + "  \"uiBuildElapsedNs\":" + uiBuildElapsedNs + ",\n"
         + "  \"prefetchElapsedNs\":" + prefetchElapsedNs + ",\n"
         + "  \"memoryPeakResidentBytes\":-1,\n"
@@ -1649,6 +1678,24 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         counters.physicalIdentityMappingSubreasons);
     appendCounter(json, "backingLiveBytes", counters.backingLiveBytes, true);
     appendCounter(json, "backingPeakBytes", counters.backingPeakBytes, true);
+    json.append("  \"prefetchPhases\":{\n")
+        .append("    \"imageMaterializations\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.imageMaterializations).append(",\n")
+        .append("    \"nativeGeometryMaterializations\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.nativeGeometryMaterializations)
+        .append(",\n")
+        .append("    \"targetColorMaterializations\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.targetColorMaterializations)
+        .append(",\n")
+        .append("    \"targetColorConvertedBytes\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.targetColorConvertedBytes)
+        .append(",\n")
+        .append("    \"physicalVariantStores\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.physicalVariantStores)
+        .append(",\n")
+        .append("    \"physicalVariantBytes\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.physicalVariantBytes).append("\n")
+        .append("  },\n");
     json.append("  \"features\":{\n");
     long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
     for (int feature = 0; feature < FEATURE_NAMES.length; feature++) {

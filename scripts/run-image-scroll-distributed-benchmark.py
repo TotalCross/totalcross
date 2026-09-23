@@ -214,6 +214,20 @@ DIAGNOSTIC_SUMMARY_FIELDS = (
     "write_pixels_regular_fallbacks", "write_pixels_regular_copied_bytes",
     "write_pixels_regular_clipped_hits",
 )
+PREFETCH_PHASE_SUMMARY_FIELDS = (
+    ("corpusFileEnumerationElapsedNs", "corpus_file_enumeration_ns"),
+    ("imageLoadElapsedNs", "image_load_ns"),
+    ("imageScaleElapsedNs", "image_scale_ns"),
+    ("imageControlAttachElapsedNs", "image_control_attach_ns"),
+)
+PREFETCH_DIAGNOSTIC_COUNTER_FIELDS = (
+    ("imageMaterializations", "prefetch_image_materializations"),
+    ("nativeGeometryMaterializations", "prefetch_native_geometry_materializations"),
+    ("targetColorMaterializations", "prefetch_target_color_materializations"),
+    ("targetColorConvertedBytes", "prefetch_target_color_converted_bytes"),
+    ("physicalVariantStores", "prefetch_physical_variant_stores"),
+    ("physicalVariantBytes", "prefetch_physical_variant_bytes"),
+)
 SAVE_COUNT_BUCKETS = ("0", "1", "2", "3", "4", "5OrMore")
 MAPPING_SUBREASONS = (
     "CompileGeometry", "MatrixInversion", "RootToDevice", "DestinationAxis",
@@ -1279,6 +1293,32 @@ def validate_diagnostic_counters(counters, run_dir, accounting,
     }
 
 
+def prefetch_phase_summary_fields(summary, path, required=False):
+    fields = {}
+    for json_name, csv_name in PREFETCH_PHASE_SUMMARY_FIELDS:
+        value = summary.get(json_name)
+        if required:
+            require_nonnegative_ns(value, f"{path} {json_name}")
+        elif value is not None:
+            require_nonnegative_ns(value, f"{path} {json_name}")
+        fields[csv_name] = value
+    if required:
+        require_nonnegative_ns(summary.get("uiBuildElapsedNs"), f"{path} uiBuildElapsedNs")
+        require_nonnegative_ns(summary.get("prefetchElapsedNs"), f"{path} prefetchElapsedNs")
+    return fields
+
+
+def validate_prefetch_diagnostic_counters(counters, run_dir):
+    phases = counters.get("prefetchPhases")
+    require(isinstance(phases, dict), f"{run_dir}/counters.json lacks prefetchPhases")
+    values = {}
+    for json_name, csv_name in PREFETCH_DIAGNOSTIC_COUNTER_FIELDS:
+        values[csv_name] = counter_value(
+            phases, json_name, f"{run_dir} prefetch phase {json_name}"
+        )
+    return values
+
+
 def validate_structural_diagnostics(counters, run_dir, mask, allow_inactive=False):
     """Require every approved M3 path to expose activity or a measured reject."""
     path_specs = (
@@ -2318,6 +2358,15 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
             require_policy_diagnostics, require_structural_diagnostics, passes,
             physical_baseline,
         )
+        if profile_name == "prefetch-diagnostics":
+            run_dir = expected_run_dir(output, mask, prefetch, accounting, run)
+            prefetch_phase_summary_fields(
+                summary, run_dir / "summary.json", required=True
+            )
+            validate_prefetch_diagnostic_counters(
+                read_json_file(run_dir / "counters.json", "diagnostic counters"),
+                run_dir,
+            )
     except FatalBenchmarkFailure:
         raise
     except BenchmarkFailure as error:
@@ -2603,6 +2652,13 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
                 counters, path.parent, accounting,
                 require_policy_diagnostics
             )
+            phase_fields = prefetch_phase_summary_fields(
+                summary, path, required=profile_name == "prefetch-diagnostics"
+            )
+            prefetch_counter_fields = (
+                validate_prefetch_diagnostic_counters(counters, path.parent)
+                if profile_name == "prefetch-diagnostics" else {}
+            )
             if require_structural_diagnostics:
                 require(accounting == "on",
                         f"{path.parent} structural diagnostics require accounting")
@@ -2646,6 +2702,8 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
                 "memory_peak_resident_bytes": summary["memoryPeakResidentBytes"],
                 **physical_fields,
                 **diagnostics,
+                **phase_fields,
+                **prefetch_counter_fields,
             })
     require(len(records) == expected_processes * pass_count,
             f"aggregation did not find {expected_processes * pass_count} summaries")
@@ -2708,14 +2766,20 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
         "frames_over_16_67_count", "frames_over_33_3_count", "frames_over_50_count",
         "frames_over_100_count", "largest_stall_ns", "largest_consecutive_over_33_3",
         "prefetch_elapsed_ns", "memory_peak_resident_bytes",
+        *(csv_name for _, csv_name in PREFETCH_PHASE_SUMMARY_FIELDS),
         "logical_width", "logical_height", "physical_width", "physical_height",
         "physical_row_bytes", "physical_pixel_bytes", "physical_color_type",
         "physical_alpha_type", "physical_color_classification", "renderer_backend",
     ] + list(DIAGNOSTIC_SUMMARY_FIELDS) + [
+        csv_name for _, csv_name in PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
+    ] + [
         "baseline_scope",
         "baseline_mask0_p50_ns", "delta_p50_ns", "baseline_mask0_p95_ns", "delta_p95_ns",
     ]
-    path = output / "summary.csv"
+    path = output / (
+        "prefetch-diagnostics.csv" if profile_name == "prefetch-diagnostics"
+        else "summary.csv"
+    )
     with path.open("w", newline="", encoding="utf-8") as destination:
         writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
         writer.writeheader()

@@ -487,6 +487,37 @@ def assert_exploratory_plan_and_execution():
             and diagnostic["accounting"] == ("on",)
             and diagnostic["expected_processes"] == 5,
             "prefetch diagnostic profile configuration differs")
+    with tempfile.TemporaryDirectory(prefix="image-scroll-diagnostic-plan-test-") as temp:
+        diagnostic_plan = RUNNER.write_suite_plan(
+            Path(temp), diagnostic["masks"], diagnostic["prefetch"],
+            diagnostic["accounting"], diagnostic["rounds"],
+            diagnostic["expected_processes"],
+        )
+        require(len(diagnostic_plan) == 5
+                and {entry[3] for entry in diagnostic_plan}
+                == set(diagnostic["masks"]),
+                "diagnostic profile does not isolate its five masks")
+        phase_summary = {
+            "uiBuildElapsedNs": 100,
+            "prefetchElapsedNs": 200,
+            **{json_name: 1 for json_name, _ in RUNNER.PREFETCH_PHASE_SUMMARY_FIELDS},
+        }
+        phase_fields = RUNNER.prefetch_phase_summary_fields(
+            phase_summary, "diagnostic summary", required=True
+        )
+        require(phase_fields["image_load_ns"] == 1,
+                "diagnostic phase timing was not mapped")
+        counter_payload = {
+            "prefetchPhases": {
+                json_name: 1
+                for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
+            }
+        }
+        counter_fields = RUNNER.validate_prefetch_diagnostic_counters(
+            counter_payload, "diagnostic run"
+        )
+        require(counter_fields["prefetch_target_color_converted_bytes"] == 1,
+                "diagnostic native conversion counter was not mapped")
     with tempfile.TemporaryDirectory(prefix="image-scroll-exploratory-plan-test-") as temp:
         output = Path(temp)
         plan = RUNNER.write_suite_plan(
@@ -598,6 +629,58 @@ def assert_aggregation_and_final_status():
                 and [row["pass"] for row in multipass_rows] == list(pass_names)
                 and all(row["pass_index"] for row in multipass_rows),
                 "three-pass aggregation did not preserve independent pass rows")
+
+        diagnostic_output = output / "prefetch-diagnostic"
+        diagnostic_output.mkdir()
+        diagnostic_profile = RUNNER.profile_config("prefetch-diagnostics")
+        diagnostic_plan = RUNNER.write_suite_plan(
+            diagnostic_output, diagnostic_profile["masks"],
+            diagnostic_profile["prefetch"], diagnostic_profile["accounting"],
+            diagnostic_profile["rounds"], diagnostic_profile["expected_processes"],
+        )
+        for _, _, run, mask, prefetch, accounting in diagnostic_plan:
+            run_dir = RUNNER.expected_run_dir(
+                diagnostic_output, mask, prefetch, accounting, run
+            )
+            run_dir.mkdir(parents=True)
+            diagnostic_summary = {
+                "status": "PASS", "requestedMask": mask, "effectiveMask": mask,
+                "prefetch": prefetch, "accounting": accounting,
+                "frameCount": 2, "memoryPeakResidentBytes": 1,
+                "largestConsecutiveOver33_3": 0,
+                "uiBuildElapsedNs": 10, "prefetchElapsedNs": 20,
+            }
+            for field in RUNNER.PREFETCH_PHASE_SUMMARY_FIELDS:
+                diagnostic_summary[field[0]] = 1
+            for field in RUNNER.TEMPORAL_SUMMARY_FIELDS:
+                diagnostic_summary[field] = 1
+            for field in RUNNER.FRAME_THRESHOLD_COUNT_FIELDS:
+                diagnostic_summary[field] = 0
+            (run_dir / "summary.json").write_text(
+                json.dumps(diagnostic_summary)
+            )
+            (run_dir / "counters.json").write_text(json.dumps({
+                "prefetchPhases": {
+                    json_name: 1
+                    for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
+                }
+            }))
+        with mock.patch.object(RUNNER, "validate_diagnostic_counters", return_value={}):
+            diagnostic_summary_path = RUNNER.aggregate(
+                diagnostic_output, diagnostic_plan,
+                diagnostic_profile["masks"], diagnostic_profile["prefetch"],
+                diagnostic_profile["accounting"], diagnostic_profile["rounds"],
+                diagnostic_profile["expected_processes"], "prefetch-diagnostics",
+            )
+        require(diagnostic_summary_path.name == "prefetch-diagnostics.csv",
+                "diagnostic aggregation used the normal summary path")
+        with diagnostic_summary_path.open(newline="", encoding="utf-8") as source:
+            diagnostic_rows = list(csv.DictReader(source))
+        require(len(diagnostic_rows) == 5
+                and all(row["image_load_ns"] == "1"
+                        and row["prefetch_target_color_converted_bytes"] == "1"
+                        for row in diagnostic_rows),
+                "diagnostic aggregation omitted phase or conversion metrics")
 
         pairwise_records = [
             {"mask": 0, "prefetch": "on", "run": 1, "status": "VALIDATION_FAILED"},
