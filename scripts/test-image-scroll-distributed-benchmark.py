@@ -280,6 +280,98 @@ def assert_fatal_execution_stops():
                     "fatal execution was not recorded in the failure artifact")
 
 
+def assert_reuse_hash_mismatch_is_non_fatal():
+    manifest = {
+        "sourceCommit": "test-source",
+        "sdkSourceAttestation": "test-source",
+        "runtimeSha256": "0" * 64,
+        "includeDecodeAssets": False,
+    }
+    profile = {
+        "name": "test-reuse",
+        "app_profile": "test-reuse",
+        "expected_processes": 2,
+    }
+    plan = [
+        (0, 0, 1, 0, "on", "off", "off"),
+        (0, 1, 1, 0, "on", "off", "on"),
+    ]
+    rows_by_key = {}
+    hashes_by_key = {}
+    for rendering_reuse in ("off", "on"):
+        key = (1, 0, "on", "off", rendering_reuse)
+        rows_by_key[key] = [
+            {
+                "profile": "test-reuse", "run": 1, "mask": "0",
+                "rendering_reuse": rendering_reuse, "pass": pass_name,
+                "status": "PASS", "validation_status": "VALID",
+                "validation_error": "", "comparison_status": "VALID",
+            }
+            for pass_name in ("cold", "warm")
+        ]
+        hash_value = "hash-off" if rendering_reuse == "off" else "hash-on"
+        hashes_by_key[key] = {
+            (pass_name, 0): (hash_value, f"top-{hash_value}", f"bottom-{hash_value}")
+            for pass_name in ("cold", "warm")
+        }
+
+    with tempfile.TemporaryDirectory(prefix="image-scroll-reuse-mismatch-test-") as temp:
+        output = Path(temp)
+        summary_path, hash_path = RUNNER.aggregate_scroll_reuse(
+            output, manifest, profile, plan, rows_by_key, hashes_by_key
+        )
+        failures = RUNNER.load_validation_failures(output)
+        comparison_failures = [
+            record for record in failures.values()
+            if record["configuration"].get("renderingReuse") == "off-on-comparison"
+        ]
+        require(len(comparison_failures) == 1,
+                "hash mismatch did not produce one comparison failure")
+        failure = comparison_failures[0]
+        require(not failure["fatal"] and failure["status"] == "VALIDATION_FAILED",
+                "hash mismatch was not recorded as non-fatal")
+        require(failure["configuration"]["run"] == 1
+                and "viewport hashes differ" in failure["messages"][0],
+                "hash mismatch failure lost its run or exact message")
+        require(len(failure["artifactPaths"]) == 4,
+                "hash mismatch failure did not preserve comparison artifacts")
+
+        with summary_path.open(newline="", encoding="utf-8") as source:
+            summary_rows = list(csv.DictReader(source))
+        require(len(summary_rows) == 4
+                and all(row["status"] == "VALIDATION_FAILED"
+                        and row["comparison_status"] == "INCOMPLETE_VALIDATION"
+                        for row in summary_rows),
+                "hash mismatch did not invalidate affected aggregate rows")
+        with hash_path.open(newline="", encoding="utf-8") as source:
+            hash_rows = list(csv.DictReader(source))
+        require(hash_rows and all(row["status"] == "VALIDATION_FAILED"
+                                  and row["comparison_status"] == "INCOMPLETE_VALIDATION"
+                                  for row in hash_rows),
+                "hash mismatch did not invalidate waypoint comparison rows")
+
+
+def assert_final_status_output():
+    manifest = {
+        "sourceCommit": "test-source",
+        "sdkSourceAttestation": "test-source",
+        "runtimeSha256": "0" * 64,
+        "includeDecodeAssets": False,
+    }
+    for status in ("PASS", "PASS_WITH_VALIDATION_FAILURES", "INCOMPLETE"):
+        with tempfile.TemporaryDirectory(prefix="image-scroll-status-output-test-") as temp:
+            output = Path(temp)
+            stream = io.StringIO()
+            with contextlib.redirect_stdout(stream):
+                RUNNER.write_default_execution_summary(
+                    output, manifest, status=status, fatal_error=(
+                        "process failed" if status == "INCOMPLETE" else None
+                    )
+                )
+            require(f"default execution status={status}," in stream.getvalue(),
+                    f"console output did not report {status}")
+
+
 def assert_aggregation_and_final_status():
     manifest = {
         "sourceCommit": "test-source",
@@ -394,6 +486,7 @@ def main():
     assert_physical_target_baseline()
     assert_validation_failure_continuation()
     assert_fatal_execution_stops()
+    assert_reuse_hash_mismatch_is_non_fatal()
     assert_aggregation_and_final_status()
 
     default = RUNNER.profile_config("release-default-scroll")

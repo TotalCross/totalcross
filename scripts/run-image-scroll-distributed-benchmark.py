@@ -1800,9 +1800,35 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
         off_rows, off_hashes = modes["off"]
         on_rows, on_hashes = modes["on"]
         pair_valid = off_rows is not None and on_rows is not None
-        if pair_valid:
-            require(off_hashes == on_hashes,
-                    f"{profile['name']} run {run} viewport hashes differ between reuse modes")
+        comparison_error = None
+        if pair_valid and off_hashes != on_hashes:
+            comparison_error = BenchmarkFailure(
+                f"{profile['name']} run {run} viewport hashes differ between reuse "
+                f"modes: off={off_hashes!r}, on={on_hashes!r}"
+            )
+            comparison_key = configuration_key(
+                profile["name"], run, mask, prefetch, accounting,
+                "off-on-comparison",
+            )
+            if comparison_key not in failures:
+                off_run_dir = expected_reuse_run_dir(
+                    output, app_profile, mask, prefetch, accounting, "off", run
+                )
+                on_run_dir = expected_reuse_run_dir(
+                    output, app_profile, mask, prefetch, accounting, "on", run
+                )
+                off_log = output / "logs" / (
+                    f"{app_profile}-run-{run}-mask-{mask_token(mask)}-prefetch-"
+                    f"{prefetch}-accounting-{accounting}-reuse-off.log"
+                )
+                record = append_validation_failure(
+                    output, profile["name"], run, mask, prefetch, accounting,
+                    "off-on-comparison", comparison_error, off_log,
+                    [off_run_dir, on_run_dir, off_log, off_log.with_name(
+                        off_log.name.replace("reuse-off", "reuse-on")
+                    )],
+                )
+                failures[comparison_key] = record
         for rendering_reuse, rows in (("off", off_rows), ("on", on_rows)):
             if rows is None:
                 failure = failures.get(
@@ -1821,7 +1847,15 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
                     for pass_name in ("cold", "warm")
                 )
                 continue
-            if not pair_valid:
+            if comparison_error is not None:
+                for row in rows:
+                    row.update({
+                        "status": "VALIDATION_FAILED",
+                        "validation_status": "VALIDATION_FAILED",
+                        "validation_error": str(comparison_error),
+                        "comparison_status": "INCOMPLETE_VALIDATION",
+                    })
+            elif not pair_valid:
                 for row in rows:
                     row["comparison_status"] = "INCOMPLETE_VALIDATION"
             summary_rows.extend(rows)
@@ -1831,8 +1865,16 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
                     "profile": profile["name"], "run": run, "mask": mask_token(mask),
                     "prefetch": prefetch, "accounting": accounting,
                     "rendering_reuse": rendering_reuse, "pass": pass_name,
-                    "status": "PASS", "validation_status": "VALID",
-                    "validation_error": "", "waypoint_index": waypoint_index,
+                    "status": ("VALIDATION_FAILED" if comparison_error is not None
+                               else "PASS"),
+                    "validation_status": ("VALIDATION_FAILED"
+                                           if comparison_error is not None else "VALID"),
+                    "validation_error": (str(comparison_error)
+                                          if comparison_error is not None else ""),
+                    "comparison_status": ("INCOMPLETE_VALIDATION"
+                                           if comparison_error is not None or not pair_valid
+                                           else "VALID"),
+                    "waypoint_index": waypoint_index,
                     "hash": hashes[0], "top_hash": hashes[1], "bottom_hash": hashes[2],
                 })
     summary_fields = list(summary_rows[0]) if summary_rows else []
@@ -1845,7 +1887,8 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
     with hash_path.open("w", newline="", encoding="utf-8") as destination:
         hash_fields = [
             "profile", "run", "mask", "prefetch", "accounting", "rendering_reuse",
-            "pass", "status", "validation_status", "validation_error", "waypoint_index",
+            "pass", "status", "validation_status", "validation_error",
+            "comparison_status", "waypoint_index",
             "hash", "top_hash", "bottom_hash",
         ]
         writer = csv.DictWriter(destination, fieldnames=hash_fields, lineterminator="\n")
