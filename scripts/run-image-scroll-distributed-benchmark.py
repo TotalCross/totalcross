@@ -48,9 +48,12 @@ REDUCED_PROCESS_COUNT = len(MASKS) * ROUNDS
 CORRECTNESS_PROCESS_COUNT = 2
 PERFORMANCE_PROCESS_COUNT = 6
 RELEASE_PROCESS_COUNT = 6
+RELEASE_CANDIDATE_PROCESS_COUNT = 6
+RELEASE_CANDIDATE_MASK = 32795
 DEFAULT_MATRIX_PROCESS_COUNT = (
     REDUCED_PROCESS_COUNT + CORRECTNESS_PROCESS_COUNT
     + PERFORMANCE_PROCESS_COUNT + RELEASE_PROCESS_COUNT
+    + RELEASE_CANDIDATE_PROCESS_COUNT
 )
 DEFAULT_EXPECTED_PROCESS_COUNT = DEFAULT_MATRIX_PROCESS_COUNT
 PROFILES = {
@@ -95,6 +98,17 @@ PROFILES = {
         "passes": 2,
         "default_effective_mask": DEFAULT_EFFECTIVE_MASK,
         "app_profile": "release-default-scroll",
+        "workload_images": EXPECTED_JPEGS,
+    },
+    "release-candidate-scroll": {
+        "masks": (RELEASE_CANDIDATE_MASK,),
+        "prefetch": ("on",),
+        "accounting": ("off",),
+        "rendering_reuse": ("off", "on"),
+        "rounds": ROUNDS,
+        "expected_processes": RELEASE_CANDIDATE_PROCESS_COUNT,
+        "passes": 2,
+        "app_profile": "release-candidate-scroll",
         "workload_images": EXPECTED_JPEGS,
     },
 }
@@ -282,6 +296,12 @@ def load_manifest(bundle):
             "renderingReuse": ["off", "on"], "rounds": ROUNDS,
             "processCount": RELEASE_PROCESS_COUNT,
             "defaultEffectiveMask": DEFAULT_EFFECTIVE_MASK,
+            "workloadImages": EXPECTED_JPEGS,
+        },
+        "release-candidate-scroll": {
+            "masks": [RELEASE_CANDIDATE_MASK], "prefetch": ["on"], "accounting": ["off"],
+            "renderingReuse": ["off", "on"], "rounds": ROUNDS,
+            "processCount": RELEASE_CANDIDATE_PROCESS_COUNT,
             "workloadImages": EXPECTED_JPEGS,
         },
     }
@@ -1050,6 +1070,8 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
                 f"{log_path.name} summary {key}={summary.get(key)!r}, expected {value!r}")
     require(profile != "release-default-scroll" or expected_mask == DEFAULT_EFFECTIVE_MASK,
             f"{log_path.name} release profile did not use effective mask 32799")
+    require(profile != "release-candidate-scroll" or expected_mask == RELEASE_CANDIDATE_MASK,
+            f"{log_path.name} release candidate did not use effective mask 32795")
     if profile == "release-default-scroll":
         for key in ("native_draw_mask", "native_decode_mask",
                     "observed_draw_mask", "observed_decode_mask"):
@@ -2096,6 +2118,7 @@ def write_default_execution_summary(output, manifest):
             for name in (
                 "reduced-image-optimizations", "scroll-raster-correctness",
                 "scroll-raster-performance", "release-default-scroll",
+                "release-candidate-scroll",
             )
         },
         "profileWorkloadImages": {
@@ -2103,6 +2126,7 @@ def write_default_execution_summary(output, manifest):
             for name in (
                 "reduced-image-optimizations", "scroll-raster-correctness",
                 "scroll-raster-performance", "release-default-scroll",
+                "release-candidate-scroll",
             )
         },
         "expectedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
@@ -2136,6 +2160,7 @@ def run_phase(bundle, phase, profile_name):
         for name in (
             "reduced-image-optimizations", "scroll-raster-correctness",
             "scroll-raster-performance", "release-default-scroll",
+            "release-candidate-scroll",
         ):
             run_scroll_profile(bundle, manifest, output, corpus_digest, name)
         write_default_execution_summary(output, manifest)
@@ -2164,9 +2189,10 @@ def main(argv):
         "--phase", choices=(
             "self-test", "smokes", "matrix", "full", "reduced-image-optimizations",
             "scroll-raster-correctness", "scroll-raster-performance",
-            "release-default-scroll", "decode-self-test", "decode-smokes", "decode-full",
+            "release-default-scroll", "release-candidate-scroll", "decode-self-test",
+            "decode-smokes", "decode-full",
         ), default="full",
-        help="run one fail-fast phase; full runs the 44-process non-decode suite",
+        help="run one fail-fast phase; full runs the 50-process non-decode suite",
     )
     parser.add_argument(
         "--profile", choices=("full",) + tuple(PROFILES), default="full",

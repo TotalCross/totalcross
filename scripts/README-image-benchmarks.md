@@ -54,16 +54,19 @@ starts. The active-work columns measure the same frame's work region:
 row are captured around the same region. Run summaries and `summary.csv`
 include P50/P95/P99/MAX work and paint aggregates.
 
-The default Windows ZIP runs the self-test followed by 44 benchmark processes:
+The default Windows ZIP runs the self-test followed by 50 benchmark processes:
 30 reduced ImageOptimizations cases, two scroll-reuse correctness cases, six
-scroll-reuse performance cases, and six release/default-scroll cases. The
+scroll-reuse performance cases, six release/default-scroll cases, and six
+release-candidate-scroll cases. The
 correctness and performance cases invoke
 `--profile=scroll-raster-reuse-poc --rendering-reuse=off|on`; every one uses
 mask 0, prefetch on, the 120-image POC workload, and cold plus warm passes.
 The release/default-scroll cases use the full 663-image client corpus, omit
 the mask argument, require effective mask 32799 through Java and native
 draw/decode and observed-mask probes, and run reuse off/on with accounting
-off.
+off. The release-candidate-scroll cases use the same corpus and reuse matrix
+with an explicit mask of 32795; Java and native effective-mask probes must
+remain 32795.
 
 With `--include-decode`, the full phase additionally runs the existing
 90-process decode matrix and aggregation. Without decode assets, any decode
@@ -91,6 +94,7 @@ For a focused scroll-reuse profile, use:
 python3 run-benchmark.py --profile scroll-raster-correctness --phase matrix
 python3 run-benchmark.py --profile scroll-raster-performance --phase matrix
 python3 run-benchmark.py --profile release-default-scroll --phase matrix
+python3 run-benchmark.py --profile release-candidate-scroll --phase matrix
 ```
 
 For package checks without a matrix, `--phase self-test` validates the bundle.

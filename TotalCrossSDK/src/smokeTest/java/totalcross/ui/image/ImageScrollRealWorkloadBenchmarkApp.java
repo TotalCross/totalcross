@@ -35,6 +35,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final long FRAME_THRESHOLD_50_NS = 50_000_000L;
   private static final long FRAME_THRESHOLD_100_NS = 100_000_000L;
   private static final int POC_IMAGE_COUNT = 120;
+  private static final long RELEASE_CANDIDATE_MASK = 32795L;
   private static final int POC_SEGMENT_COUNT = 4;
   private static final int[] POC_SEGMENT_DURATIONS_MS = {500, 250, 200, 150};
   private static final long POC_FRAME_INTERVAL_NS = 16L * NANOS_PER_MILLISECOND;
@@ -77,6 +78,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String benchmarkProfile;
   private boolean scrollRasterReuseProfile;
   private boolean releaseDefaultScrollProfile;
+  private boolean releaseCandidateScrollProfile;
   private boolean rasterReuseBenchmarkProfile;
   private String renderingReuseProfile;
   private int workloadImageCount = IMAGE_COUNT;
@@ -158,7 +160,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           getCommandLine(), "profile", "standard");
       scrollRasterReuseProfile = "scroll-raster-reuse-poc".equals(benchmarkProfile);
       releaseDefaultScrollProfile = "release-default-scroll".equals(benchmarkProfile);
-      rasterReuseBenchmarkProfile = scrollRasterReuseProfile || releaseDefaultScrollProfile;
+      releaseCandidateScrollProfile = "release-candidate-scroll".equals(benchmarkProfile);
+      rasterReuseBenchmarkProfile = scrollRasterReuseProfile || releaseDefaultScrollProfile
+          || releaseCandidateScrollProfile;
       workloadImageCount = scrollRasterReuseProfile ? POC_IMAGE_COUNT : IMAGE_COUNT;
       configureScrollRasterReuse();
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
@@ -384,10 +388,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private void validateDefaultMaskTransport() throws Exception {
-    if (!releaseDefaultScrollProfile) {
+    if (!releaseDefaultScrollProfile && !releaseCandidateScrollProfile) {
       return;
     }
-    long expected = ImageOptimizationSettings.DEFAULT_EFFECTIVE_MASK;
+    long expected = releaseDefaultScrollProfile
+        ? ImageOptimizationSettings.DEFAULT_EFFECTIVE_MASK : RELEASE_CANDIDATE_MASK;
+    String profileLabel = releaseDefaultScrollProfile ? "release default" : "release candidate";
     long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
     nativeDrawMask = Image.nativeOptimizationMaskForDrawForTest();
     nativeDecodeMask = Image.nativeOptimizationMaskForDecodeForTest();
@@ -395,15 +401,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     observedDrawMask = Image.nativeOptimizationMaskObservedForTest(probe, true) & 0xFFFFFFFFL;
     observedDecodeMask = Image.nativeOptimizationMaskObservedForTest(probe, false) & 0xFFFFFFFFL;
     ImageRasterBenchmarkSupport.require(effectiveMask == expected,
-        "release default Java effective mask must be 32799");
+        profileLabel + " Java effective mask must be " + expected);
     ImageRasterBenchmarkSupport.require(nativeDrawMask == expected,
-        "release default native draw mask must be 32799");
+        profileLabel + " native draw mask must be " + expected);
     ImageRasterBenchmarkSupport.require(nativeDecodeMask == expected,
-        "release default native decode mask must be 32799");
+        profileLabel + " native decode mask must be " + expected);
     ImageRasterBenchmarkSupport.require(observedDrawMask == expected,
-        "release default observed draw mask must be 32799");
+        profileLabel + " observed draw mask must be " + expected);
     ImageRasterBenchmarkSupport.require(observedDecodeMask == expected,
-        "release default observed decode mask must be 32799");
+        profileLabel + " observed decode mask must be " + expected);
   }
 
   private void configureScrollRasterReuse() {
