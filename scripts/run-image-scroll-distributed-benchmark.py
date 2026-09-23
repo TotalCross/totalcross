@@ -63,7 +63,10 @@ PREFETCH_PROFILES = ("on",)
 ACCOUNTING_PROFILES = ("on", "off")
 ROUNDS = 3
 SEED = 73001
-REDUCED_PROCESS_COUNT = len(MASKS) * ROUNDS
+EXPLORATORY_PASS_COUNT = 3
+REDUCED_PROCESS_COUNT = len(MASKS)
+PREFETCH_DIAGNOSTIC_MASKS = (0, 4, 6, 38, 32799)
+PREFETCH_DIAGNOSTIC_PROCESS_COUNT = len(PREFETCH_DIAGNOSTIC_MASKS)
 CORRECTNESS_PROCESS_COUNT = 2
 PERFORMANCE_PROCESS_COUNT = 6
 RELEASE_PROCESS_COUNT = 6
@@ -80,9 +83,10 @@ PROFILES = {
         "masks": MASKS,
         "prefetch": PREFETCH_PROFILES,
         "accounting": ("off",),
-        "rounds": ROUNDS,
+        "rounds": 1,
         "expected_processes": REDUCED_PROCESS_COUNT,
-        "passes": 1,
+        "passes": EXPLORATORY_PASS_COUNT,
+        "exploratory": True,
         "workload_images": EXPECTED_JPEGS,
     },
     "scroll-raster-correctness": {
@@ -128,6 +132,17 @@ PROFILES = {
         "expected_processes": RELEASE_CANDIDATE_PROCESS_COUNT,
         "passes": 2,
         "app_profile": "release-candidate-scroll",
+        "workload_images": EXPECTED_JPEGS,
+    },
+    "prefetch-diagnostics": {
+        "masks": PREFETCH_DIAGNOSTIC_MASKS,
+        "prefetch": ("on",),
+        "accounting": ("on",),
+        "rounds": 1,
+        "expected_processes": PREFETCH_DIAGNOSTIC_PROCESS_COUNT,
+        "passes": 1,
+        "diagnostic": True,
+        "app_profile": "prefetch-diagnostics",
         "workload_images": EXPECTED_JPEGS,
     },
 }
@@ -253,6 +268,14 @@ class BenchmarkFailure(RuntimeError):
 
 class FatalBenchmarkFailure(BenchmarkFailure):
     """An infrastructure or execution failure that must stop the suite."""
+
+
+def benchmark_pass_names(pass_count):
+    if pass_count == 1:
+        return ("cold",)
+    if pass_count == 3:
+        return ("cold-forward", "warm-reverse", "warm-forward")
+    raise BenchmarkFailure(f"unsupported non-reuse pass count: {pass_count}")
 
 
 RESULTS_STATE_FILE = "execution-state.json"
@@ -838,6 +861,14 @@ def load_manifest(bundle):
             "manifest expectedProcessCount differs")
     require(manifest.get("matrixProcessCount") == DEFAULT_MATRIX_PROCESS_COUNT,
             "manifest matrixProcessCount differs")
+    require(manifest.get("exploratoryPassCount") == EXPLORATORY_PASS_COUNT,
+            "manifest exploratoryPassCount differs")
+    require(tuple(manifest.get("prefetchDiagnosticMasks", ()))
+            == PREFETCH_DIAGNOSTIC_MASKS,
+            "manifest prefetch diagnostic masks differ")
+    require(manifest.get("prefetchDiagnosticProcessCount")
+            == PREFETCH_DIAGNOSTIC_PROCESS_COUNT,
+            "manifest prefetch diagnostic process count differs")
     require(manifest.get("selfTestPhaseCount") == 1,
             "manifest selfTestPhaseCount differs")
     require(manifest.get("includeDecodeAssets") in (False, True),
@@ -853,7 +884,8 @@ def load_manifest(bundle):
     expected_profiles = {
         "reduced-image-optimizations": {
             "masks": list(MASKS), "prefetch": ["on"], "accounting": ["off"],
-            "renderingReuse": [], "rounds": ROUNDS, "processCount": REDUCED_PROCESS_COUNT,
+            "renderingReuse": [], "rounds": 1, "processCount": REDUCED_PROCESS_COUNT,
+            "passes": EXPLORATORY_PASS_COUNT,
             "workloadImages": EXPECTED_JPEGS,
         },
         "scroll-raster-correctness": {
@@ -879,6 +911,12 @@ def load_manifest(bundle):
             "masks": [RELEASE_CANDIDATE_MASK], "prefetch": ["on"], "accounting": ["off"],
             "renderingReuse": ["off", "on"], "rounds": ROUNDS,
             "processCount": RELEASE_CANDIDATE_PROCESS_COUNT,
+            "workloadImages": EXPECTED_JPEGS,
+        },
+        "prefetch-diagnostics": {
+            "masks": list(PREFETCH_DIAGNOSTIC_MASKS), "prefetch": ["on"],
+            "accounting": ["on"], "renderingReuse": [], "rounds": 1,
+            "processCount": PREFETCH_DIAGNOSTIC_PROCESS_COUNT, "passes": 1,
             "workloadImages": EXPECTED_JPEGS,
         },
     }
@@ -1453,7 +1491,7 @@ def validate_reuse_run_artifacts(output, log_path, mask, prefetch, accounting, r
     require(len(pass_records) == pass_count,
             f"{log_path.name} must contain {pass_count} pass records")
     require(len(summary_records) == 1, f"{log_path.name} must contain one summary record")
-    expected_passes = ("cold-forward", "warm-reverse", "warm-forward")
+    expected_passes = benchmark_pass_names(pass_count)
     pass_records.sort(key=lambda record: int(record.get("pass_index", "-1")))
     summary_record = summary_records[0]
     structural_activity = set()
@@ -2519,7 +2557,8 @@ def write_pairwise_comparison(output, records, masks, rounds):
 
 def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, rounds,
               expected_processes, profile_name, require_policy_diagnostics=False,
-              require_structural_diagnostics=False):
+              require_structural_diagnostics=False, pass_count=1):
+    pass_names = benchmark_pass_names(pass_count)
     records = []
     physical_target = load_physical_target_baseline(output)
     physical_fields = physical_summary_fields(physical_target)
@@ -2528,99 +2567,116 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
         failure = failures.get(
             configuration_key(profile_name, run, mask, prefetch, accounting)
         )
-        if failure is not None:
+        for pass_index, pass_name in enumerate(pass_names, start=1):
+            base = expected_run_dir(output, mask, prefetch, accounting, run)
+            if failure is not None:
+                records.append({
+                    "order": order,
+                    "run": run,
+                    "pass_index": pass_index,
+                    "pass": pass_name,
+                    "prefetch": prefetch,
+                    "accounting": accounting,
+                    "mask": mask,
+                    "status": "VALIDATION_FAILED",
+                    "validation_status": "VALIDATION_FAILED",
+                    "validation_error": validation_failure_message(failure),
+                    **physical_fields,
+                })
+                continue
+            path = (base / "summary.json" if pass_count == 1
+                    else base / "passes" / pass_name / "summary.json")
+            try:
+                summary = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as error:
+                raise BenchmarkFailure(f"invalid matrix summary: {path}") from error
+            require(summary.get("status") == "PASS", f"invalid matrix status: {path}")
+            require(summary.get("requestedMask") == mask
+                    and summary.get("effectiveMask") == mask,
+                    f"matrix mask mismatch: {path}")
+            counters_path = path.parent / "counters.json"
+            try:
+                counters = json.loads(counters_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as error:
+                raise BenchmarkFailure(f"invalid matrix counters: {counters_path}") from error
+            diagnostics = validate_diagnostic_counters(
+                counters, path.parent, accounting,
+                require_policy_diagnostics
+            )
+            if require_structural_diagnostics:
+                require(accounting == "on",
+                        f"{path.parent} structural diagnostics require accounting")
+                validate_structural_diagnostics(counters, path.parent, mask)
+            for field in TEMPORAL_SUMMARY_FIELDS:
+                require_nonnegative_ns(summary.get(field), f"{path} {field}")
+            for field in FRAME_THRESHOLD_COUNT_FIELDS:
+                require_nonnegative_count(summary.get(field), f"{path} {field}")
             records.append({
                 "order": order,
                 "run": run,
+                "pass_index": pass_index,
+                "pass": pass_name,
                 "prefetch": prefetch,
                 "accounting": accounting,
                 "mask": mask,
-                "status": "VALIDATION_FAILED",
-                "validation_status": "VALIDATION_FAILED",
-                "validation_error": validation_failure_message(failure),
+                "status": summary["status"],
+                "validation_status": "VALID",
+                "validation_error": "",
+                "frame_count": summary["frameCount"],
+                "frame_p50_ns": summary["frameTimeP50Ns"],
+                "frame_p90_ns": summary["frameTimeP90Ns"],
+                "frame_p95_ns": summary["frameTimeP95Ns"],
+                "frame_p99_ns": summary["frameTimeP99Ns"],
+                "frame_max_ns": summary["frameTimeMaxNs"],
+                "work_time_p50_ns": summary["workTimeP50Ns"],
+                "work_time_p95_ns": summary["workTimeP95Ns"],
+                "work_time_p99_ns": summary["workTimeP99Ns"],
+                "work_time_max_ns": summary["workTimeMaxNs"],
+                "paint_time_p50_ns": summary["paintTimeP50Ns"],
+                "paint_time_p95_ns": summary["paintTimeP95Ns"],
+                "paint_time_p99_ns": summary["paintTimeP99Ns"],
+                "paint_time_max_ns": summary["paintTimeMaxNs"],
+                "frames_over_16_67_count": summary["framesOver16_67Count"],
+                "frames_over_33_3_count": summary["framesOver33_3Count"],
+                "frames_over_50_count": summary["framesOver50Count"],
+                "frames_over_100_count": summary["framesOver100Count"],
+                "largest_stall_ns": summary["largestStallNs"],
+                "largest_consecutive_over_33_3": summary["largestConsecutiveOver33_3"],
+                "prefetch_elapsed_ns": summary["prefetchElapsedNs"],
+                "memory_peak_resident_bytes": summary["memoryPeakResidentBytes"],
                 **physical_fields,
+                **diagnostics,
             })
-            continue
-        path = expected_run_dir(output, mask, prefetch, accounting, run) / "summary.json"
-        try:
-            summary = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError) as error:
-            raise BenchmarkFailure(f"invalid matrix summary: {path}") from error
-        require(summary.get("status") == "PASS", f"invalid matrix status: {path}")
-        require(summary.get("requestedMask") == mask
-                and summary.get("effectiveMask") == mask,
-                f"matrix mask mismatch: {path}")
-        counters_path = path.parent / "counters.json"
-        try:
-            counters = json.loads(counters_path.read_text(encoding="utf-8"))
-        except (OSError, ValueError) as error:
-            raise BenchmarkFailure(f"invalid matrix counters: {counters_path}") from error
-        diagnostics = validate_diagnostic_counters(
-            counters, path.parent, accounting,
-            require_policy_diagnostics
-        )
-        if require_structural_diagnostics:
-            require(accounting == "on",
-                    f"{path.parent} structural diagnostics require accounting")
-            validate_structural_diagnostics(counters, path.parent, mask)
-        for field in TEMPORAL_SUMMARY_FIELDS:
-            require_nonnegative_ns(summary.get(field), f"{path} {field}")
-        for field in FRAME_THRESHOLD_COUNT_FIELDS:
-            require_nonnegative_count(summary.get(field), f"{path} {field}")
-        records.append({
-            "order": order,
-            "run": run,
-            "prefetch": prefetch,
-            "accounting": accounting,
-            "mask": mask,
-            "status": summary["status"],
-            "validation_status": "VALID",
-            "validation_error": "",
-            "frame_count": summary["frameCount"],
-            "frame_p50_ns": summary["frameTimeP50Ns"],
-            "frame_p90_ns": summary["frameTimeP90Ns"],
-            "frame_p95_ns": summary["frameTimeP95Ns"],
-            "frame_p99_ns": summary["frameTimeP99Ns"],
-            "frame_max_ns": summary["frameTimeMaxNs"],
-            "work_time_p50_ns": summary["workTimeP50Ns"],
-            "work_time_p95_ns": summary["workTimeP95Ns"],
-            "work_time_p99_ns": summary["workTimeP99Ns"],
-            "work_time_max_ns": summary["workTimeMaxNs"],
-            "paint_time_p50_ns": summary["paintTimeP50Ns"],
-            "paint_time_p95_ns": summary["paintTimeP95Ns"],
-            "paint_time_p99_ns": summary["paintTimeP99Ns"],
-            "paint_time_max_ns": summary["paintTimeMaxNs"],
-            "frames_over_16_67_count": summary["framesOver16_67Count"],
-            "frames_over_33_3_count": summary["framesOver33_3Count"],
-            "frames_over_50_count": summary["framesOver50Count"],
-            "frames_over_100_count": summary["framesOver100Count"],
-            "largest_stall_ns": summary["largestStallNs"],
-            "largest_consecutive_over_33_3": summary["largestConsecutiveOver33_3"],
-            "prefetch_elapsed_ns": summary["prefetchElapsedNs"],
-            "memory_peak_resident_bytes": summary["memoryPeakResidentBytes"],
-            **physical_fields,
-            **diagnostics,
-        })
-    require(len(records) == expected_processes,
-            f"aggregation did not find {expected_processes} summaries")
+    require(len(records) == expected_processes * pass_count,
+            f"aggregation did not find {expected_processes * pass_count} summaries")
     rows = []
     for prefetch in prefetch_profiles:
         for accounting in accounting_profiles:
-            baseline = [record for record in records
-                        if record["prefetch"] == prefetch
-                        and record["accounting"] == accounting
-                        and record["mask"] == 0
-                        and record["status"] == "PASS"]
+            baselines = {}
             if 0 in masks:
-                baseline_available = len(baseline) == rounds
-                if baseline_available:
-                    baseline_p50 = sum(record["frame_p50_ns"] for record in baseline) // len(baseline)
-                    baseline_p95 = sum(record["frame_p95_ns"] for record in baseline) // len(baseline)
+                for pass_name in pass_names:
+                    baseline = [record for record in records
+                                if record["prefetch"] == prefetch
+                                and record["accounting"] == accounting
+                                and record["mask"] == 0
+                                and record["pass"] == pass_name
+                                and record["status"] == "PASS"]
+                    available = len(baseline) == rounds
+                    baselines[pass_name] = (
+                        available,
+                        sum(record["frame_p50_ns"] for record in baseline) // len(baseline)
+                        if available else None,
+                        sum(record["frame_p95_ns"] for record in baseline) // len(baseline)
+                        if available else None,
+                    )
             for record in records:
                 if record["prefetch"] != prefetch or record["accounting"] != accounting:
                     continue
                 row = dict(record)
                 row["baseline_scope"] = "same-machine-same-prefetch-mask0"
+                baseline_available, baseline_p50, baseline_p95 = baselines.get(
+                    record["pass"], (False, None, None)
+                )
                 valid_comparison = (record["status"] == "PASS"
                                     and (0 not in masks or baseline_available))
                 row["comparison_status"] = (
@@ -2642,7 +2698,7 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
                 )
                 rows.append(row)
     fields = [
-        "order", "run", "prefetch", "accounting", "mask", "status",
+        "order", "run", "pass_index", "pass", "prefetch", "accounting", "mask", "status",
         "validation_status", "validation_error", "comparison_status", "frame_count",
         "frame_p50_ns",
         "frame_p90_ns", "frame_p95_ns", "frame_p99_ns", "frame_max_ns",
@@ -2663,7 +2719,9 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
     with path.open("w", newline="", encoding="utf-8") as destination:
         writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
-        writer.writerows(sorted(rows, key=lambda row: (row["run"], row["prefetch"], row["mask"])))
+        writer.writerows(sorted(rows, key=lambda row: (
+            row["run"], row["pass_index"], row["prefetch"], row["mask"]
+        )))
     print(f"aggregation passed,summary={path},rows={len(rows)}")
     if profile_name == "write-pixels-policy":
         write_pairwise_comparison(output, records, masks, rounds)
@@ -2924,6 +2982,7 @@ def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name, tr
     return aggregate(
         output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
         profile["rounds"], profile["expected_processes"], profile_name,
+        pass_count=profile.get("passes", 1),
     )
 
 
@@ -2969,6 +3028,25 @@ def write_default_execution_summary(output, manifest, status="PASS", tracker=Non
                 "scroll-raster-performance", "release-default-scroll",
                 "release-candidate-scroll",
             )
+        },
+        "profilePassCounts": {
+            name: profile_config(name).get("passes", 1)
+            for name in (
+                "reduced-image-optimizations", "scroll-raster-correctness",
+                "scroll-raster-performance", "release-default-scroll",
+                "release-candidate-scroll",
+            )
+        },
+        "expectedMeasuredPassCount": (
+            REDUCED_PROCESS_COUNT * EXPLORATORY_PASS_COUNT
+            + (CORRECTNESS_PROCESS_COUNT + PERFORMANCE_PROCESS_COUNT
+               + RELEASE_PROCESS_COUNT + RELEASE_CANDIDATE_PROCESS_COUNT) * 2
+        ),
+        "diagnosticProfile": {
+            "name": "prefetch-diagnostics",
+            "processCount": PREFETCH_DIAGNOSTIC_PROCESS_COUNT,
+            "masks": list(PREFETCH_DIAGNOSTIC_MASKS),
+            "accounting": "on",
         },
         "profileWorkloadImages": {
             name: profile_config(name)["workload_images"]
@@ -3082,10 +3160,11 @@ def main(argv):
         "--phase", choices=(
             "self-test", "smokes", "matrix", "full", "reduced-image-optimizations",
             "scroll-raster-correctness", "scroll-raster-performance",
-            "release-default-scroll", "release-candidate-scroll", "decode-self-test",
+            "release-default-scroll", "release-candidate-scroll", "prefetch-diagnostics",
+            "decode-self-test",
             "decode-smokes", "decode-full",
         ), default="full",
-        help="run one fail-fast phase; full runs the 50-process non-decode suite",
+        help="run one fail-fast phase; full runs the 30-process non-decode suite",
     )
     parser.add_argument(
         "--profile", choices=("full",) + tuple(PROFILES), default="full",

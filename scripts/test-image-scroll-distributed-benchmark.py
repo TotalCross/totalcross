@@ -478,6 +478,46 @@ def assert_final_status_output():
                     f"console output did not report {status}")
 
 
+def assert_exploratory_plan_and_execution():
+    profile = RUNNER.profile_config("reduced-image-optimizations")
+    require(profile["passes"] == 3 and profile["rounds"] == 1,
+            "exploratory profile does not use one process with three passes")
+    diagnostic = RUNNER.profile_config("prefetch-diagnostics")
+    require(diagnostic["masks"] == (0, 4, 6, 38, 32799)
+            and diagnostic["accounting"] == ("on",)
+            and diagnostic["expected_processes"] == 5,
+            "prefetch diagnostic profile configuration differs")
+    with tempfile.TemporaryDirectory(prefix="image-scroll-exploratory-plan-test-") as temp:
+        output = Path(temp)
+        plan = RUNNER.write_suite_plan(
+            output, profile["masks"], profile["prefetch"], profile["accounting"],
+            profile["rounds"], profile["expected_processes"],
+        )
+        plan_masks = [mask for _, _, _, mask, _, _ in plan]
+        require(len(plan) == len(RUNNER.MASKS) and set(plan_masks) == set(RUNNER.MASKS),
+                "exploratory plan does not contain one entry per mask")
+        require(Counter(plan_masks) == Counter(RUNNER.MASKS),
+                "exploratory plan repeats or omits a mask")
+        with mock.patch.object(RUNNER, "run_process", return_value="PASS") as process:
+            RUNNER.run_matrix(
+                Path(temp) / "bundle", {}, output, "digest", profile["masks"],
+                profile["prefetch"], profile["accounting"], profile["rounds"],
+                profile["expected_processes"], passes=profile["passes"],
+                profile_name=profile["name"],
+            )
+        require(process.call_count == len(RUNNER.MASKS),
+                "exploratory masks were not isolated into one process each")
+        calls_by_mask = {call.args[4]: call for call in process.call_args_list}
+        require(set(calls_by_mask) == set(RUNNER.MASKS),
+                "exploratory process calls do not cover the mask matrix")
+        require(all(call.args[5:7] == ("on", "off") for call in process.call_args_list),
+                "exploratory process configuration changed")
+        require(all(call.args[11] == 3 for call in process.call_args_list),
+                "exploratory process did not request three measured passes")
+        require(len({call.args[8] for call in process.call_args_list}) == len(RUNNER.MASKS),
+                "exploratory process labels are not isolated")
+
+
 def assert_aggregation_and_final_status():
     manifest = {
         "sourceCommit": "test-source",
@@ -522,6 +562,42 @@ def assert_aggregation_and_final_status():
         require(failed["comparison_status"] == "INCOMPLETE_VALIDATION"
                 and "viewport hash mismatch" in failed["validation_error"],
                 "aggregate did not mark validation failure as incomplete")
+
+        multipass_output = output / "multipass"
+        multipass_output.mkdir()
+        multipass_plan = RUNNER.write_suite_plan(
+            multipass_output, (0,), ("on",), ("off",), 1, 1
+        )
+        multipass_base = RUNNER.expected_run_dir(
+            multipass_output, 0, "on", "off", 1
+        )
+        pass_names = ("cold-forward", "warm-reverse", "warm-forward")
+        for pass_name in pass_names:
+            pass_dir = multipass_base / "passes" / pass_name
+            pass_dir.mkdir(parents=True)
+            multipass_summary = {
+                "status": "PASS", "requestedMask": 0, "effectiveMask": 0,
+                "prefetch": "on", "accounting": "off", "pass": pass_name,
+                "frameCount": 2, "memoryPeakResidentBytes": 1,
+                "largestConsecutiveOver33_3": 0,
+            }
+            for field in RUNNER.TEMPORAL_SUMMARY_FIELDS:
+                multipass_summary[field] = 1
+            for field in RUNNER.FRAME_THRESHOLD_COUNT_FIELDS:
+                multipass_summary[field] = 0
+            (pass_dir / "summary.json").write_text(json.dumps(multipass_summary))
+            (pass_dir / "counters.json").write_text("{}")
+        with mock.patch.object(RUNNER, "validate_diagnostic_counters", return_value={}):
+            multipass_summary_path = RUNNER.aggregate(
+                multipass_output, multipass_plan, (0,), ("on",), ("off",),
+                1, 1, "test-profile", pass_count=3,
+            )
+        with multipass_summary_path.open(newline="", encoding="utf-8") as source:
+            multipass_rows = list(csv.DictReader(source))
+        require(len(multipass_rows) == 3
+                and [row["pass"] for row in multipass_rows] == list(pass_names)
+                and all(row["pass_index"] for row in multipass_rows),
+                "three-pass aggregation did not preserve independent pass rows")
 
         pairwise_records = [
             {"mask": 0, "prefetch": "on", "run": 1, "status": "VALIDATION_FAILED"},
@@ -583,10 +659,10 @@ def assert_aggregation_and_final_status():
 
 
 def main():
-    require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 50,
-            "default matrix process count is not 50")
-    require(RUNNER.DEFAULT_EXPECTED_PROCESS_COUNT == 50,
-            "default expected process count is not 50")
+    require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 30,
+            "default matrix process count is not 30")
+    require(RUNNER.DEFAULT_EXPECTED_PROCESS_COUNT == 30,
+            "default expected process count is not 30")
     assert_results_state_diagnostics()
     assert_clean_full_and_resume_preflight()
     assert_physical_target_baseline()
@@ -596,6 +672,7 @@ def main():
     assert_reuse_hash_mismatch_is_non_fatal()
     assert_aggregation_and_final_status()
     assert_final_status_output()
+    assert_exploratory_plan_and_execution()
 
     default = RUNNER.profile_config("release-default-scroll")
     candidate = RUNNER.profile_config("release-candidate-scroll")
@@ -611,7 +688,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="image-scroll-matrix-test-") as temp:
         output = Path(temp)
         reduced_plan = RUNNER.write_suite_plan(
-            output, RUNNER.MASKS, ("on",), ("off",), RUNNER.ROUNDS,
+            output, RUNNER.MASKS, ("on",), ("off",), 1,
             RUNNER.REDUCED_PROCESS_COUNT,
         )
         reduced_keys = [
@@ -622,12 +699,12 @@ def main():
             (mask, prefetch, accounting)
             for _, mask, prefetch, accounting in reduced_keys
         )
-        require(len(reduced_plan) == 30, "reduced plan process count differs")
+        require(len(reduced_plan) == 10, "reduced plan process count differs")
         require(len(set(reduced_keys)) == len(reduced_keys),
                 "reduced plan contains duplicates")
         require(reduced_counts == Counter(
             (mask, "on", "off")
-            for mask in RUNNER.MASKS for _ in range(RUNNER.ROUNDS)
+            for mask in RUNNER.MASKS
         ),
                 "reduced plan combinations differ")
 
@@ -637,7 +714,7 @@ def main():
         )
         reuse_plans = {name: assert_reuse_plan(name, output) for name in names}
         total = len(reduced_plan) + sum(len(plan) for plan in reuse_plans.values())
-        require(total == 50, f"default plan contains {total} processes")
+        require(total == 30, f"default plan contains {total} processes")
 
         manifest = {
             "sourceCommit": "test",
@@ -648,22 +725,32 @@ def main():
         }
         RUNNER.write_default_execution_summary(output, manifest)
         summary = json.loads((output / "default-execution-summary.json").read_text())
-        require(summary["expectedProcessCount"] == 50,
-                "default summary process count is not 50")
+        require(summary["expectedProcessCount"] == 30,
+                "default summary process count is not 30")
+        require(summary["profileProcessCounts"]["reduced-image-optimizations"] == 10,
+                "exploratory summary process count differs")
+        require(summary["profilePassCounts"]["reduced-image-optimizations"] == 3,
+                "exploratory summary pass count differs")
+        require(summary["expectedMeasuredPassCount"] == 70,
+                "default summary measured-pass count differs")
         require(summary["profileProcessCounts"]["release-default-scroll"] == 6,
                 "real default summary count differs")
         require(summary["profileProcessCounts"]["release-candidate-scroll"] == 6,
                 "release candidate summary count differs")
 
     package_script = Path(__file__).with_name("package-image-scroll-benchmark.sh").read_text()
-    require('"matrixProcessCount": 50' in package_script,
-            "package manifest matrix count is not 50")
-    require('"expectedProcessCount": 50' in package_script,
-            "package manifest expected count is not 50")
+    require('"matrixProcessCount": 30' in package_script,
+            "package manifest matrix count is not 30")
+    require('"expectedProcessCount": 30' in package_script,
+            "package manifest expected count is not 30")
+    require('"passes":3,"processCount":10' in package_script,
+            "package manifest exploratory pass count is not three")
+    require('"prefetch-diagnostics": {"masks":[0,4,6,38,32799]' in package_script,
+            "package manifest lacks prefetch diagnostic profile")
     require('"release-candidate-scroll": {"masks":[32795]' in package_script,
             "package manifest lacks release candidate profile")
 
-    print("image-scroll matrix tests passed,processes=50,unique_combinations=true")
+    print("image-scroll matrix tests passed,processes=30,exploratory_passes=3,unique_combinations=true")
 
 
 if __name__ == "__main__":
