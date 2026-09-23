@@ -123,6 +123,30 @@ int64_t diagnosticMetricForTest(int32 kind);
 void skia_image_backing_reset_write_pixels_frame_metrics_for_test(void);
 int64_t skia_image_backing_write_pixels_frame_metric_for_test(int32 kind);
 
+struct GeometryMaterializationTimingForTest {
+    bool active;
+    uint64_t startNs;
+    uint64_t phaseStartNs;
+    uint64_t sourceSnapshotNs;
+    uint64_t surfaceAllocationNs;
+    uint64_t compileNs;
+    uint64_t drawNs;
+    uint64_t snapshotNs;
+    uint64_t registerNs;
+
+    GeometryMaterializationTimingForTest();
+    void beginPhase();
+    uint64_t endPhase();
+    void addSourceSnapshot(uint64_t elapsedNs);
+    void addSurfaceAllocation(uint64_t elapsedNs);
+    void addCompile(uint64_t elapsedNs);
+    void addDraw(uint64_t elapsedNs);
+    void addSnapshot(uint64_t elapsedNs);
+    void addRegister(uint64_t elapsedNs);
+    void commit(ImageBackingFormat sourceFormat, uint64_t sourcePixels,
+                uint64_t outputPixels);
+};
+
 enum RasterVariantUse : uint8_t {
     RASTER_VARIANT_NOT_USED = 0,
     RASTER_VARIANT_OBSERVED = 1,

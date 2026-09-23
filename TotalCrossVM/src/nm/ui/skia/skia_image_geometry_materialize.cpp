@@ -13,6 +13,7 @@
 #include <memory>
 
 using skia_image_backing_internal::NativeImageBackingRecord;
+using skia_image_backing_internal::GeometryMaterializationTimingForTest;
 using skia_image_backing_internal::findBacking;
 using skia_image_backing_internal::rasterInfo;
 using skia_image_backing_internal::registerBacking;
@@ -104,7 +105,8 @@ static bool supportedVariantColorType(SkColorType colorType) {
 
 static sk_sp<SkImage> materializeGeometryImage(const SkiaImageDrawPlanData* plan,
                                                 SkColorType colorType,
-                                                GeometryMaterializationDimensions* dimensions) {
+                                                GeometryMaterializationDimensions* dimensions,
+                                                GeometryMaterializationTimingForTest* timing) {
     if (!dimensions || !geometryMaterializationDimensions(plan, dimensions)
         || !supportedVariantColorType(colorType)) {
         return nullptr;
@@ -114,7 +116,13 @@ static sk_sp<SkImage> materializeGeometryImage(const SkiaImageDrawPlanData* plan
         return nullptr;
     }
     try {
+        if (timing) {
+            timing->beginPhase();
+        }
         sk_sp<SkImage> image = source->snapshot();
+        if (timing) {
+            timing->addSourceSnapshot(timing->endPhase());
+        }
         if (!image) {
             return nullptr;
         }
@@ -124,11 +132,20 @@ static sk_sp<SkImage> materializeGeometryImage(const SkiaImageDrawPlanData* plan
             ? kOpaque_SkAlphaType : kUnpremul_SkAlphaType;
         const SkImageInfo info = SkImageInfo::Make(dimensions->fullWidth,
                                                   dimensions->physicalHeight, colorType, alphaType);
+        if (timing) {
+            timing->beginPhase();
+        }
         sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+        if (timing) {
+            timing->addSurfaceAllocation(timing->endPhase());
+        }
         if (!surface) {
             return nullptr;
         }
         SkCanvas* target = surface->getCanvas();
+        if (timing) {
+            timing->beginPhase();
+        }
         target->clear(SK_ColorTRANSPARENT);
         if (dimensions->frameLayout && dimensions->prefixOperationCount > 0 && plan->dimensions) {
             SkiaImageDrawPlanData prefix = *plan;
@@ -147,11 +164,19 @@ static sk_sp<SkImage> materializeGeometryImage(const SkiaImageDrawPlanData* plan
             }
             target->scale(static_cast<float>(plan->outputContentScale),
                           static_cast<float>(plan->outputContentScale));
-            if (!skia_image_geometry_draw_compiled(target, image.get(), transform, 0, 0,
+            if (timing) {
+                timing->addCompile(timing->endPhase());
+                timing->beginPhase();
+            }
+            const bool drawn = skia_image_geometry_draw_compiled(target, image.get(), transform, 0, 0,
                 static_cast<float>(prefix.outputWidth), static_cast<float>(prefix.outputHeight),
                 0, 0, static_cast<float>(prefix.outputWidth), static_cast<float>(prefix.outputHeight),
                 plan->materializeAlphaMask,
-                std::abs(plan->outputContentScale - 1.0) < 0.000001, &colorFilters)) {
+                std::abs(plan->outputContentScale - 1.0) < 0.000001, &colorFilters);
+            if (timing) {
+                timing->addDraw(timing->endPhase());
+            }
+            if (!drawn) {
                 return nullptr;
             }
         } else {
@@ -161,18 +186,36 @@ static sk_sp<SkImage> materializeGeometryImage(const SkiaImageDrawPlanData* plan
                 GeometryTransform transform;
                 SkiaImageDrawColorFilters colorFilters;
                 if (!skia_image_geometry_compile(plan, frame, &transform)
-                    || !skia_image_draw_color_filters(plan, &colorFilters)
-                    || !skia_image_geometry_draw_compiled(target, image.get(), transform, 0, 0,
-                        static_cast<float>(plan->outputWidth), static_cast<float>(plan->outputHeight),
-                        static_cast<float>(frame * plan->outputWidth), 0,
-                        static_cast<float>((frame + 1) * plan->outputWidth),
-                        static_cast<float>(plan->outputHeight), plan->materializeAlphaMask,
-                        std::abs(plan->outputContentScale - 1.0) < 0.000001, &colorFilters)) {
+                    || !skia_image_draw_color_filters(plan, &colorFilters)) {
+                    return nullptr;
+                }
+                if (timing) {
+                    timing->addCompile(timing->endPhase());
+                    timing->beginPhase();
+                }
+                const bool drawn = skia_image_geometry_draw_compiled(target, image.get(), transform,
+                    0, 0, static_cast<float>(plan->outputWidth),
+                    static_cast<float>(plan->outputHeight),
+                    static_cast<float>(frame * plan->outputWidth), 0,
+                    static_cast<float>((frame + 1) * plan->outputWidth),
+                    static_cast<float>(plan->outputHeight), plan->materializeAlphaMask,
+                    std::abs(plan->outputContentScale - 1.0) < 0.000001, &colorFilters);
+                if (timing) {
+                    timing->addDraw(timing->endPhase());
+                }
+                if (!drawn) {
                     return nullptr;
                 }
             }
         }
-        return surface->makeImageSnapshot();
+        if (timing) {
+            timing->beginPhase();
+        }
+        sk_sp<SkImage> snapshot = surface->makeImageSnapshot();
+        if (timing) {
+            timing->addSnapshot(timing->endPhase());
+        }
+        return snapshot;
     } catch (const std::bad_alloc&) {
         return nullptr;
     }
@@ -180,7 +223,9 @@ static sk_sp<SkImage> materializeGeometryImage(const SkiaImageDrawPlanData* plan
 
 int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan) {
     GeometryMaterializationDimensions dimensions;
-    sk_sp<SkImage> image = materializeGeometryImage(plan, kRGBA_8888_SkColorType, &dimensions);
+    GeometryMaterializationTimingForTest timing;
+    sk_sp<SkImage> image = materializeGeometryImage(plan, kRGBA_8888_SkColorType, &dimensions,
+                                                    &timing);
     if (!image) {
         return 0;
     }
@@ -189,6 +234,7 @@ int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* pla
         return 0;
     }
     try {
+        timing.beginPhase();
         std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
         backing->image = std::move(image);
         backing->width = dimensions.fullWidth;
@@ -196,7 +242,16 @@ int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* pla
         if (preservesOpaquePixels(plan, source, dimensions.prefixOperationCount)) {
             backing->opacity = SKIA_IMAGE_OPACITY_OPAQUE;
         }
-        return registerBacking(std::move(backing));
+        const int64_t handle = registerBacking(std::move(backing));
+        timing.addRegister(timing.endPhase());
+        if (handle != 0) {
+            timing.commit(source->format,
+                          static_cast<uint64_t>(source->width)
+                              * static_cast<uint64_t>(source->height),
+                          static_cast<uint64_t>(dimensions.fullWidth)
+                              * static_cast<uint64_t>(dimensions.physicalHeight));
+        }
+        return handle;
     } catch (const std::bad_alloc&) {
         return 0;
     }
@@ -205,7 +260,7 @@ int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* pla
 sk_sp<SkImage> skia_image_backing_materialize_geometry_variant(
     const SkiaImageDrawPlanData* plan, SkColorType colorType, int32* width, int32* height) {
     GeometryMaterializationDimensions dimensions;
-    sk_sp<SkImage> image = materializeGeometryImage(plan, colorType, &dimensions);
+    sk_sp<SkImage> image = materializeGeometryImage(plan, colorType, &dimensions, nullptr);
     if (width) {
         *width = image ? dimensions.fullWidth : 0;
     }

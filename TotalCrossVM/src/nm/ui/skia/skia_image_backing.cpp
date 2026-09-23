@@ -134,6 +134,24 @@ uint64_t promotionAttemptsForTest;
 uint64_t promotionSuccessesForTest;
 uint64_t promotionFailuresForTest;
 uint64_t promotionBytesForTest;
+uint64_t geometryMaterializationCountForTest;
+uint64_t geometryMaterializationTotalNsForTest;
+uint64_t geometrySourceSnapshotNsForTest;
+uint64_t geometrySurfaceAllocationNsForTest;
+uint64_t geometryCompileNsForTest;
+uint64_t geometryDrawNsForTest;
+uint64_t geometrySnapshotNsForTest;
+uint64_t geometryRegisterNsForTest;
+uint64_t geometryRgba8888CountForTest;
+uint64_t geometryRgba8888DrawNsForTest;
+uint64_t geometryRgb565CountForTest;
+uint64_t geometryRgb565DrawNsForTest;
+uint64_t geometryGray8CountForTest;
+uint64_t geometryGray8DrawNsForTest;
+uint64_t geometryArgb4444CountForTest;
+uint64_t geometryArgb4444DrawNsForTest;
+uint64_t geometrySourcePixelsForTest;
+uint64_t geometryOutputPixelsForTest;
 
 void resetWritePixelsFrameMetricsForTest() {
     writePixelsFrameAttemptsForTest = 0;
@@ -155,6 +173,27 @@ void resetWritePixelsFrameMetricsForTest() {
     writePixelsFrameLastWidthForTest = -1;
     writePixelsFrameLastHeightForTest = -1;
     writePixelsFrameLastFormatForTest = -1;
+}
+
+void resetGeometryMaterializationMetricsForTest() {
+    geometryMaterializationCountForTest = 0;
+    geometryMaterializationTotalNsForTest = 0;
+    geometrySourceSnapshotNsForTest = 0;
+    geometrySurfaceAllocationNsForTest = 0;
+    geometryCompileNsForTest = 0;
+    geometryDrawNsForTest = 0;
+    geometrySnapshotNsForTest = 0;
+    geometryRegisterNsForTest = 0;
+    geometryRgba8888CountForTest = 0;
+    geometryRgba8888DrawNsForTest = 0;
+    geometryRgb565CountForTest = 0;
+    geometryRgb565DrawNsForTest = 0;
+    geometryGray8CountForTest = 0;
+    geometryGray8DrawNsForTest = 0;
+    geometryArgb4444CountForTest = 0;
+    geometryArgb4444DrawNsForTest = 0;
+    geometrySourcePixelsForTest = 0;
+    geometryOutputPixelsForTest = 0;
 }
 
 uint64_t diagnosticHash(uint64_t hash, uint64_t value) {
@@ -1317,6 +1356,102 @@ int skia_image_backing_try_write_pixels(void* targetCanvas, int64_t sourceHandle
 
 namespace skia_image_backing_internal {
 
+GeometryMaterializationTimingForTest::GeometryMaterializationTimingForTest()
+    : active(backingAccountingForTest),
+      startNs(active ? writePixelsNowNsForTest() : 0),
+      phaseStartNs(startNs), sourceSnapshotNs(0), surfaceAllocationNs(0), compileNs(0),
+      drawNs(0), snapshotNs(0), registerNs(0) {
+}
+
+void GeometryMaterializationTimingForTest::beginPhase() {
+    if (active) {
+        phaseStartNs = writePixelsNowNsForTest();
+    }
+}
+
+uint64_t GeometryMaterializationTimingForTest::endPhase() {
+    if (!active) {
+        return 0;
+    }
+    const uint64_t nowNs = writePixelsNowNsForTest();
+    const uint64_t elapsedNs = nowNs - phaseStartNs;
+    phaseStartNs = nowNs;
+    return elapsedNs;
+}
+
+void GeometryMaterializationTimingForTest::addSourceSnapshot(uint64_t elapsedNs) {
+    if (active) {
+        sourceSnapshotNs += elapsedNs;
+    }
+}
+
+void GeometryMaterializationTimingForTest::addSurfaceAllocation(uint64_t elapsedNs) {
+    if (active) {
+        surfaceAllocationNs += elapsedNs;
+    }
+}
+
+void GeometryMaterializationTimingForTest::addCompile(uint64_t elapsedNs) {
+    if (active) {
+        compileNs += elapsedNs;
+    }
+}
+
+void GeometryMaterializationTimingForTest::addDraw(uint64_t elapsedNs) {
+    if (active) {
+        drawNs += elapsedNs;
+    }
+}
+
+void GeometryMaterializationTimingForTest::addSnapshot(uint64_t elapsedNs) {
+    if (active) {
+        snapshotNs += elapsedNs;
+    }
+}
+
+void GeometryMaterializationTimingForTest::addRegister(uint64_t elapsedNs) {
+    if (active) {
+        registerNs += elapsedNs;
+    }
+}
+
+void GeometryMaterializationTimingForTest::commit(ImageBackingFormat sourceFormat,
+                                                  uint64_t sourcePixels,
+                                                  uint64_t outputPixels) {
+    if (!active || !backingAccountingForTest) {
+        return;
+    }
+    ++geometryMaterializationCountForTest;
+    geometryMaterializationTotalNsForTest += writePixelsNowNsForTest() - startNs;
+    geometrySourceSnapshotNsForTest += sourceSnapshotNs;
+    geometrySurfaceAllocationNsForTest += surfaceAllocationNs;
+    geometryCompileNsForTest += compileNs;
+    geometryDrawNsForTest += drawNs;
+    geometrySnapshotNsForTest += snapshotNs;
+    geometryRegisterNsForTest += registerNs;
+    geometrySourcePixelsForTest += sourcePixels;
+    geometryOutputPixelsForTest += outputPixels;
+    switch (sourceFormat) {
+    case IMAGE_BACKING_FORMAT_RGB565:
+        ++geometryRgb565CountForTest;
+        geometryRgb565DrawNsForTest += drawNs;
+        break;
+    case IMAGE_BACKING_FORMAT_GRAY8:
+        ++geometryGray8CountForTest;
+        geometryGray8DrawNsForTest += drawNs;
+        break;
+    case IMAGE_BACKING_FORMAT_ARGB4444:
+        ++geometryArgb4444CountForTest;
+        geometryArgb4444DrawNsForTest += drawNs;
+        break;
+    case IMAGE_BACKING_FORMAT_RGBA8888:
+    default:
+        ++geometryRgba8888CountForTest;
+        geometryRgba8888DrawNsForTest += drawNs;
+        break;
+    }
+}
+
 NativeImageBackingRecord* findBacking(int64_t handle) {
     return ::findBacking(handle);
 }
@@ -2079,6 +2214,7 @@ void skia_image_backing_reset_accounting_for_test(void) {
 
 void skia_image_backing_clear_accounting_counters_for_test(void) {
     resetWritePixelsFrameMetricsForTest();
+    resetGeometryMaterializationMetricsForTest();
     backingRecordsCreatedForTest = 0;
     backingRecordsReleasedForTest = 0;
     backingRecordsLiveForTest = 0;
@@ -2194,6 +2330,7 @@ void skia_image_backing_set_accounting_for_test(int enabled) {
     backingAccountingForTest = enabled != 0;
     screen_diagnostics_set_for_test(enabled);
     resetWritePixelsFrameMetricsForTest();
+    resetGeometryMaterializationMetricsForTest();
     if (!backingAccountingForTest) {
         backingRecordsCreatedForTest = 0;
         backingRecordsReleasedForTest = 0;
@@ -2624,6 +2761,42 @@ int64_t diagnosticMetricForTest(int32 kind) {
         return static_cast<int64_t>(sharedPendingTargetToPhysicalForTest);
     case 35:
         return static_cast<int64_t>(sharedPendingPhysicalToTargetForTest);
+    case 106:
+        return static_cast<int64_t>(geometryMaterializationCountForTest);
+    case 107:
+        return static_cast<int64_t>(geometryMaterializationTotalNsForTest);
+    case 108:
+        return static_cast<int64_t>(geometrySourceSnapshotNsForTest);
+    case 109:
+        return static_cast<int64_t>(geometrySurfaceAllocationNsForTest);
+    case 110:
+        return static_cast<int64_t>(geometryCompileNsForTest);
+    case 111:
+        return static_cast<int64_t>(geometryDrawNsForTest);
+    case 112:
+        return static_cast<int64_t>(geometrySnapshotNsForTest);
+    case 113:
+        return static_cast<int64_t>(geometryRegisterNsForTest);
+    case 114:
+        return static_cast<int64_t>(geometryRgba8888CountForTest);
+    case 115:
+        return static_cast<int64_t>(geometryRgba8888DrawNsForTest);
+    case 116:
+        return static_cast<int64_t>(geometryRgb565CountForTest);
+    case 117:
+        return static_cast<int64_t>(geometryRgb565DrawNsForTest);
+    case 118:
+        return static_cast<int64_t>(geometryGray8CountForTest);
+    case 119:
+        return static_cast<int64_t>(geometryGray8DrawNsForTest);
+    case 120:
+        return static_cast<int64_t>(geometryArgb4444CountForTest);
+    case 121:
+        return static_cast<int64_t>(geometryArgb4444DrawNsForTest);
+    case 122:
+        return static_cast<int64_t>(geometrySourcePixelsForTest);
+    case 123:
+        return static_cast<int64_t>(geometryOutputPixelsForTest);
     default:
         return 0;
     }
