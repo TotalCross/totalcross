@@ -1006,7 +1006,8 @@ def integer_field(row, field, description, minimum=0):
         value = int(row[field])
     except (KeyError, TypeError, ValueError) as error:
         raise BenchmarkFailure(f"{description} {field} is not an integer") from error
-    require(value >= minimum, f"{description} {field} is below {minimum}")
+    if minimum is not None:
+        require(value >= minimum, f"{description} {field} is below {minimum}")
     return value
 
 
@@ -1100,7 +1101,7 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
     with frames_path.open(newline="", encoding="utf-8") as source:
         reader = csv.DictReader(source)
         required = {
-            "pass", "actual_delta", "movement", "measured", "work_time_ns",
+            "pass", "requested_delta", "actual_delta", "movement", "measured", "work_time_ns",
             "screen_update_ns", "row_paints", "image_paints",
         }
         require(required <= set(reader.fieldnames or ()),
@@ -1109,8 +1110,10 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
             pass_name = row_data.get("pass")
             require(pass_name in expected_passes, f"{frames_path} has an unexpected pass")
             frame_passes.add(pass_name)
-            for field in ("actual_delta", "movement", "measured", "work_time_ns",
-                          "screen_update_ns", "row_paints", "image_paints"):
+            for field in ("requested_delta", "actual_delta"):
+                integer_field(row_data, field, str(frames_path), minimum=None)
+            for field in ("movement", "measured", "work_time_ns", "screen_update_ns",
+                          "row_paints", "image_paints"):
                 integer_field(row_data, field, str(frames_path))
             if row_data["movement"] == "1" and row_data["measured"] == "1":
                 movement_values[pass_name]["work_time_ns"].append(int(row_data["work_time_ns"]))
