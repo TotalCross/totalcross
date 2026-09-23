@@ -233,7 +233,7 @@ def assert_environment_metadata():
             mock.patch.object(RUNNER.platform, "release", return_value="24.5.0"), \
             mock.patch.object(RUNNER.platform, "machine", return_value="arm64"), \
             mock.patch.object(RUNNER, "host_cpu_model", return_value="Apple CPU"):
-        macos = RUNNER.collect_host_environment_metadata({"target": "macos-arm64"})
+        macos = RUNNER.collect_host_environment_metadata({"packageTarget": "macos-arm64"})
     require(macos["packageTarget"] == "macos-arm64"
             and macos["hostOs"] == "Darwin"
             and macos["hostArchitecture"] == "arm64"

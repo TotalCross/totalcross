@@ -268,6 +268,10 @@ def require(condition, message):
         raise BenchmarkFailure(message)
 
 
+def manifest_package_target(manifest):
+    return manifest.get("packageTarget") or manifest.get("target")
+
+
 def describe_results_os_error(operation, path, error):
     details = []
     winerror = getattr(error, "winerror", None)
@@ -309,6 +313,7 @@ def write_execution_state(output, status, manifest, **fields):
         "schemaVersion": 1,
         "fixture": FIXTURE,
         "status": status,
+        "packageTarget": manifest_package_target(manifest),
         "sourceCommit": manifest.get("sourceCommit"),
         "sdkSourceAttestation": manifest.get("sdkSourceAttestation"),
         "runtimeSha256": manifest.get("runtimeSha256"),
@@ -457,7 +462,7 @@ def collect_host_environment_metadata(manifest):
     except Exception:
         host_architecture = None
     return {
-        "packageTarget": manifest.get("target"),
+        "packageTarget": manifest_package_target(manifest),
         "hostOs": _optional_text(host_os),
         "hostOsVersion": _optional_text(host_os_version),
         "hostArchitecture": _optional_text(host_architecture),
@@ -506,7 +511,7 @@ def environment_baseline_from_environment(environment, manifest, description):
         field: environment.get(field) for field in ENVIRONMENT_BASELINE_FIELDS
     }
     return validate_environment_baseline_values(
-        values, target, description, manifest.get("target")
+        values, target, description, manifest_package_target(manifest)
     )
 
 
@@ -553,7 +558,7 @@ def load_physical_target_baseline(output, manifest=None):
             f"{path} environment baseline is missing")
     validate_environment_baseline_values(
         environment_baseline, target, f"{path} environment baseline",
-        manifest.get("target") if manifest is not None else None,
+        manifest_package_target(manifest) if manifest is not None else None,
     )
     return target
 
@@ -569,7 +574,7 @@ def load_environment_baseline(output, manifest=None):
     values = payload.get("environmentBaseline")
     return validate_environment_baseline_values(
         values, target, f"{path} environment baseline",
-        manifest.get("target") if manifest is not None else None,
+        manifest_package_target(manifest) if manifest is not None else None,
     )
 
 
@@ -837,7 +842,8 @@ def load_manifest(bundle):
             "manifest selfTestPhaseCount differs")
     require(manifest.get("includeDecodeAssets") in (False, True),
             "manifest includeDecodeAssets must be boolean")
-    require(isinstance(manifest.get("target"), str) and manifest["target"],
+    package_target = manifest_package_target(manifest)
+    require(isinstance(package_target, str) and package_target,
             "manifest package target is missing")
     expected_corpus_variants = (DECODE_CORPUS_VARIANTS
                                 if manifest["includeDecodeAssets"]
@@ -884,7 +890,7 @@ def load_manifest(bundle):
     runtime_sha = manifest.get("runtimeSha256")
     require(isinstance(runtime_sha, str) and len(runtime_sha) == 64,
             "manifest runtimeSha256 is missing")
-    if manifest["target"] == "windows-x64":
+    if package_target == "windows-x64":
         require(isinstance(manifest.get("tcvmSha256"), str)
                 and len(manifest["tcvmSha256"]) == 64,
                 "Windows manifest tcvmSha256 is missing")
@@ -1006,7 +1012,7 @@ def validate_bundle(bundle, manifest):
     runtime_sha = sha256_file(bundle / runtime)
     require(runtime_sha == manifest["runtimeSha256"],
             "bundle native runtime differs from manifest")
-    if manifest["target"] == "windows-x64":
+    if manifest_package_target(manifest) == "windows-x64":
         require(runtime == "tcvm.dll" and runtime_sha == manifest["tcvmSha256"],
                 "Windows bundle tcvm.dll provenance differs from manifest")
     compile_hash = manifest.get("sdkJarSha256Compile")
@@ -1033,6 +1039,7 @@ def self_test(bundle, manifest, output):
         "sourceCommit": manifest["sourceCommit"],
         "sdkSourceAttestation": manifest.get("sdkSourceAttestation"),
         "runtimeSha256": manifest["runtimeSha256"],
+        "packageTarget": manifest_package_target(manifest),
         "tcvmSha256": manifest.get("tcvmSha256"),
         "executable": str(executable.relative_to(bundle)),
         "runtime": manifest["runtime"],
