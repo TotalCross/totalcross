@@ -10,6 +10,7 @@ import csv
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import signal
 import subprocess
@@ -232,9 +233,146 @@ class BenchmarkFailure(RuntimeError):
     pass
 
 
+class FatalBenchmarkFailure(BenchmarkFailure):
+    """An infrastructure or execution failure that must stop the suite."""
+
+
+RESULTS_STATE_FILE = "execution-state.json"
+VALIDATION_FAILURES_FILE = "validation-failures.jsonl"
+PHYSICAL_TARGET_BASELINE_FILE = "physical-target-baseline.json"
+VALID_RESUME_STATUSES = frozenset({
+    "SELF_TEST_PASS", "PASS", "PASS_WITH_VALIDATION_FAILURES",
+})
+
+
 def require(condition, message):
     if not condition:
         raise BenchmarkFailure(message)
+
+
+def describe_results_os_error(operation, path, error):
+    details = []
+    winerror = getattr(error, "winerror", None)
+    if winerror is not None:
+        details.append(f"Windows error {winerror}")
+    errno_value = getattr(error, "errno", None)
+    if errno_value is not None:
+        details.append(f"errno {errno_value}")
+    text = getattr(error, "strerror", None) or str(error)
+    if text:
+        details.append(text)
+    detail = ", ".join(details) if details else "unknown OS error"
+    return (
+        f"cannot {operation} results path {path}: {detail}. "
+        "Check that the bundle is local and that the current user can "
+        "create, read, write, and delete files in results."
+    )
+
+
+def write_json_file(path, payload, description):
+    try:
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8")
+    except OSError as error:
+        raise FatalBenchmarkFailure(
+            describe_results_os_error(f"write {description}", path, error)
+        ) from error
+
+
+def read_json_file(path, description):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise BenchmarkFailure(f"invalid {description}: {path}") from error
+
+
+def write_execution_state(output, status, manifest, **fields):
+    state = {
+        "schemaVersion": 1,
+        "fixture": FIXTURE,
+        "status": status,
+        "sourceCommit": manifest.get("sourceCommit"),
+        "sdkSourceAttestation": manifest.get("sdkSourceAttestation"),
+        "runtimeSha256": manifest.get("runtimeSha256"),
+        "expectedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
+        **fields,
+    }
+    write_json_file(output / RESULTS_STATE_FILE, state, "execution state")
+
+
+def inspect_results_state(output):
+    if not output.exists():
+        return "CLEAN_START", "results directory does not exist"
+    if not output.is_dir():
+        return "PARTIAL_INVALID", "results path exists but is not a directory"
+    state_path = output / RESULTS_STATE_FILE
+    marker_path = output / "self-test.json"
+    if not state_path.is_file() or not marker_path.is_file():
+        return (
+            "PARTIAL_INVALID",
+            "results lacks both a valid execution-state.json and self-test.json",
+        )
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return "PARTIAL_INVALID", f"results state or self-test is not valid JSON: {error}"
+    if state.get("fixture") != FIXTURE:
+        return "PARTIAL_INVALID", "execution-state.json belongs to another fixture"
+    if marker.get("fixture") != FIXTURE or marker.get("status") != "PASS":
+        return "PARTIAL_INVALID", "self-test.json is not a passing fixture marker"
+    status = state.get("status")
+    if status not in VALID_RESUME_STATUSES:
+        return "PARTIAL_INVALID", f"execution state is {status!r}, not resumable"
+    return "VALID_RESUME", f"execution state is {status}"
+
+
+def probe_results_directory(output):
+    probe = output / f".runner-results-probe-{os.getpid()}-{time.time_ns()}"
+    payload = "image-scroll-runner-results-probe\n"
+    try:
+        with probe.open("x", encoding="utf-8") as destination:
+            destination.write(payload)
+        if probe.read_text(encoding="utf-8") != payload:
+            raise OSError("probe contents changed during read")
+        probe.unlink()
+    except OSError as error:
+        try:
+            if probe.exists():
+                probe.unlink()
+        except OSError:
+            pass
+        raise FatalBenchmarkFailure(
+            describe_results_os_error("create/read/write/delete", probe, error)
+        ) from error
+
+
+def preflight(bundle, manifest, output, phase):
+    validate_bundle(bundle, manifest)
+    state, detail = inspect_results_state(output)
+    if state == "PARTIAL_INVALID":
+        raise FatalBenchmarkFailure(
+            f"results state is partial/invalid for {bundle}: {detail}; "
+            "preserve the directory for review and start with a fresh bundle "
+            "or restore a complete self-test state"
+        )
+    if phase != "self-test" and state == "CLEAN_START":
+        raise FatalBenchmarkFailure(
+            f"results state is clean for {output}; run --phase self-test "
+            "before resuming benchmark processes"
+        )
+    try:
+        output.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        raise FatalBenchmarkFailure(
+            describe_results_os_error("create", output, error)
+        ) from error
+    probe_results_directory(output)
+    if state == "CLEAN_START":
+        write_execution_state(output, "PREFLIGHT_PASS", manifest,
+                              resultsState="CLEAN_START")
+    print(f"results preflight passed,state={state.lower()},phase={phase},path={output}")
+    return state
 
 
 def profile_config(name):
@@ -451,7 +589,6 @@ def validate_bundle(bundle, manifest):
 
 def self_test(bundle, manifest, output):
     corpus, images, corpus_digest, executable = validate_bundle(bundle, manifest)
-    output.mkdir(parents=True, exist_ok=True)
     marker = {
         "fixture": FIXTURE,
         "status": "PASS",
@@ -467,8 +604,11 @@ def self_test(bundle, manifest, output):
         "executable": str(executable.relative_to(bundle)),
         "runtime": manifest["runtime"],
     }
-    (output / "self-test.json").write_text(
-        json.dumps(marker, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    write_json_file(output / "self-test.json", marker, "self-test marker")
+    write_execution_state(
+        output, "SELF_TEST_PASS", manifest,
+        resultsState="VALID_RESUME", datasetFileCount=len(images),
+        datasetHash=corpus_digest,
     )
     print("self-test passed,screen=540x960,corpus_jpegs=663,"
           f"sdk_jar_sha256={manifest['sdkJarSha256Compile']}")
@@ -2147,6 +2287,7 @@ def run_phase(bundle, phase, profile_name):
         return
     manifest = load_manifest(bundle)
     output = bundle / "results"
+    preflight(bundle, manifest, output, phase)
     if phase in ("self-test", "full"):
         _, _, corpus_digest = self_test(bundle, manifest, output)
     else:
@@ -2156,6 +2297,7 @@ def run_phase(bundle, phase, profile_name):
         require(len(images) == EXPECTED_JPEGS, "corpus changed after self-test")
     if phase == "self-test":
         return
+    write_execution_state(output, "RUNNING", manifest, resultsState="RUNNING")
     if phase == "full":
         for name in (
             "reduced-image-optimizations", "scroll-raster-correctness",
@@ -2167,6 +2309,7 @@ def run_phase(bundle, phase, profile_name):
         if manifest["includeDecodeAssets"]:
             run_decode_phase(bundle, "full")
         write_zip(bundle, output)
+        write_execution_state(output, "PASS", manifest, resultsState="COMPLETE")
         return
     if phase == "smokes":
         profile_name = "reduced-image-optimizations"
@@ -2177,6 +2320,7 @@ def run_phase(bundle, phase, profile_name):
         profile_name = phase
     run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name)
     write_zip(bundle, output)
+    write_execution_state(output, "PASS", manifest, resultsState="COMPLETE")
 
 
 def main(argv):

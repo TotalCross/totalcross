@@ -11,6 +11,7 @@ from itertools import product
 import json
 from pathlib import Path
 import tempfile
+from unittest import mock
 
 
 RUNNER_PATH = Path(__file__).with_name("run-image-scroll-distributed-benchmark.py")
@@ -52,11 +53,60 @@ def assert_reuse_plan(name, output):
     return plan
 
 
+def assert_results_state_diagnostics():
+    manifest = {
+        "sourceCommit": "test-source",
+        "sdkSourceAttestation": "test-source",
+        "runtimeSha256": "0" * 64,
+    }
+    with tempfile.TemporaryDirectory(prefix="image-scroll-results-state-test-") as temp:
+        root = Path(temp)
+        output = root / "results"
+        state, detail = RUNNER.inspect_results_state(output)
+        require(state == "CLEAN_START" and "does not exist" in detail,
+                "missing results directory was not a clean start")
+
+        output.mkdir()
+        RUNNER.probe_results_directory(output)
+        require(not list(output.glob(".runner-results-probe-*")),
+                "results probe file was not deleted")
+        (output / "self-test.json").write_text(json.dumps({
+            "fixture": RUNNER.FIXTURE, "status": "PASS",
+        }))
+        RUNNER.write_execution_state(output, "SELF_TEST_PASS", manifest)
+        state, detail = RUNNER.inspect_results_state(output)
+        require(state == "VALID_RESUME" and "SELF_TEST_PASS" in detail,
+                "complete self-test was not a valid resume state")
+
+        RUNNER.write_execution_state(output, "RUNNING", manifest)
+        state, detail = RUNNER.inspect_results_state(output)
+        require(state == "PARTIAL_INVALID" and "not resumable" in detail,
+                "active execution was treated as a valid resume")
+
+        (output / RUNNER.RESULTS_STATE_FILE).unlink()
+        state, detail = RUNNER.inspect_results_state(output)
+        require(state == "PARTIAL_INVALID" and "lacks both" in detail,
+                "partial results were treated as a successful self-test")
+
+        probe = root / "probe-file"
+        probe.write_text("not a directory")
+        with mock.patch.object(RUNNER, "probe_results_directory",
+                               side_effect=RUNNER.FatalBenchmarkFailure("access denied")):
+            try:
+                RUNNER.probe_results_directory(probe)
+            except RUNNER.FatalBenchmarkFailure as error:
+                require(str(error) == "access denied",
+                        "results access failure was not preserved")
+            else:
+                raise AssertionError("results access failure did not stop execution")
+
+
 def main():
     require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 50,
             "default matrix process count is not 50")
     require(RUNNER.DEFAULT_EXPECTED_PROCESS_COUNT == 50,
             "default expected process count is not 50")
+    assert_results_state_diagnostics()
 
     default = RUNNER.profile_config("release-default-scroll")
     candidate = RUNNER.profile_config("release-candidate-scroll")
