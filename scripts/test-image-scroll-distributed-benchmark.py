@@ -217,6 +217,11 @@ def assert_fatal_execution_stops():
                 raise AssertionError("fatal execution failure was swallowed")
             require(process.call_count == 1,
                     "matrix continued after a fatal execution failure")
+            failures = RUNNER.load_validation_failures(output)
+            require(any(record["fatal"]
+                        and record["classification"] == "FATAL_EXECUTION"
+                        for record in failures.values()),
+                    "fatal execution was not recorded in the failure artifact")
 
 
 def assert_aggregation_and_final_status():

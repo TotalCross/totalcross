@@ -24,6 +24,9 @@ continuation for regular processes with fatal execution failures.
 Checkpoint 4 is committed as `87d94eafc`: invalid aggregate rows, incomplete
 pairwise status, final execution status/counts, and focused tests.
 
+A follow-up fatal-diagnostics fix is staged: fatal launch/timeout/exit failures
+are recorded with `fatal: true` before immediate termination.
+
 ## Active paths
 
 - `scripts/run-image-scroll-distributed-benchmark.py`

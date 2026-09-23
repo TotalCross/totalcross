@@ -160,6 +160,9 @@ commits are signed and have valid Conventional Commit subjects; their bodies
 contain lines over the repository's 80-character advisory limit. History was
 not rewritten because the user explicitly prohibited it.
 
+The validation-failure artifact also records fatal execution failures with
+`fatal: true` before the runner stops.
+
 ## Revision Note
 
 Created for the Windows-hardening and resilient post-run validation work.

@@ -484,8 +484,9 @@ def configuration_key(profile, run, mask, prefetch, accounting, rendering_reuse=
     )
 
 
-def append_validation_failure(output, profile, run, mask, prefetch, accounting,
-                              rendering_reuse, error, log_path, artifact_paths):
+def append_failure_record(output, profile, run, mask, prefetch, accounting,
+                          rendering_reuse, error, log_path, artifact_paths,
+                          status, classification, fatal):
     configuration = {
         "profile": profile,
         "run": run,
@@ -495,9 +496,9 @@ def append_validation_failure(output, profile, run, mask, prefetch, accounting,
         "renderingReuse": rendering_reuse,
     }
     record = {
-        "status": "VALIDATION_FAILED",
-        "classification": "NON_FATAL_VALIDATION",
-        "fatal": False,
+        "status": status,
+        "classification": classification,
+        "fatal": fatal,
         "configurationKey": configuration_key(
             profile, run, mask, prefetch, accounting, rendering_reuse
         ),
@@ -514,9 +515,33 @@ def append_validation_failure(output, profile, run, mask, prefetch, accounting,
         raise FatalBenchmarkFailure(
             describe_results_os_error("preserve validation failure in", path, write_error)
         ) from write_error
+    return record
+
+
+def append_validation_failure(output, profile, run, mask, prefetch, accounting,
+                              rendering_reuse, error, log_path, artifact_paths):
+    record = append_failure_record(
+        output, profile, run, mask, prefetch, accounting, rendering_reuse,
+        error, log_path, artifact_paths, "VALIDATION_FAILED",
+        "NON_FATAL_VALIDATION", False,
+    )
     print(
         f"WARNING {profile} run={run} mask={mask} reuse={rendering_reuse} "
         f"VALIDATION_FAILED; log={log_path}; error={error}",
+        file=sys.stderr,
+    )
+    return record
+
+
+def append_execution_failure(output, profile, run, mask, prefetch, accounting,
+                             rendering_reuse, error, log_path, artifact_paths):
+    record = append_failure_record(
+        output, profile, run, mask, prefetch, accounting, rendering_reuse,
+        error, log_path, artifact_paths, "INCOMPLETE", "FATAL_EXECUTION", True,
+    )
+    print(
+        f"ERROR {profile} run={run} mask={mask} reuse={rendering_reuse} "
+        f"FATAL_EXECUTION; log={log_path}; error={error}",
         file=sys.stderr,
     )
     return record
@@ -1662,8 +1687,34 @@ def run_scroll_reuse_process(bundle, manifest, output, corpus_digest, profile,
     except subprocess.TimeoutExpired:
         with log_path.open("a", encoding="utf-8") as log:
             log.write(f"\nbenchmark_timeout_seconds={PROCESS_TIMEOUT_SECONDS}\n")
+        reason = f"timed out after {PROCESS_TIMEOUT_SECONDS} seconds"
+        append_execution_failure(
+            output, profile, run, mask, prefetch, accounting, rendering_reuse,
+            reason, log_path,
+            [expected_reuse_run_dir(
+                output, profile, mask, prefetch, accounting, rendering_reuse, run
+            )],
+        )
         raise BenchmarkFailure(f"{label} timed out; log={log_path}")
+    except OSError as error:
+        reason = f"process launch failed: {error}"
+        append_execution_failure(
+            output, profile, run, mask, prefetch, accounting, rendering_reuse,
+            reason, log_path,
+            [expected_reuse_run_dir(
+                output, profile, mask, prefetch, accounting, rendering_reuse, run
+            )],
+        )
+        raise BenchmarkFailure(f"{label} failed: {reason}") from error
     if completed.returncode:
+        reason = f"exited with code {completed.returncode}"
+        append_execution_failure(
+            output, profile, run, mask, prefetch, accounting, rendering_reuse,
+            reason, log_path,
+            [expected_reuse_run_dir(
+                output, profile, mask, prefetch, accounting, rendering_reuse, run
+            )],
+        )
         print(f"{label} failed,exit_code={completed.returncode},log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed with exit code {completed.returncode}")
@@ -1968,15 +2019,33 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
                 f"\nbenchmark_timeout_seconds={PROCESS_TIMEOUT_SECONDS}\n"
             )
         reason = f"timed out after {PROCESS_TIMEOUT_SECONDS} seconds"
+        append_execution_failure(
+            output, profile_name, run, mask, prefetch, accounting, None,
+            reason, log_path,
+            [expected_run_dir(output, mask, prefetch, accounting, run)],
+        )
         print(f"{label} failed: {reason}; log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed: {reason}")
+    except OSError as error:
+        reason = f"process launch failed: {error}"
+        append_execution_failure(
+            output, profile_name, run, mask, prefetch, accounting, None,
+            reason, log_path,
+            [expected_run_dir(output, mask, prefetch, accounting, run)],
+        )
+        raise BenchmarkFailure(f"{label} failed: {reason}") from error
     if completed.returncode:
         if completed.returncode < 0:
             signal_name = signal.Signals(-completed.returncode).name
             reason = f"terminated by {signal_name}"
         else:
             reason = f"exited with code {completed.returncode}"
+        append_execution_failure(
+            output, profile_name, run, mask, prefetch, accounting, None,
+            reason, log_path,
+            [expected_run_dir(output, mask, prefetch, accounting, run)],
+        )
         print(f"{label} failed: {reason}; log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed: {reason}")
