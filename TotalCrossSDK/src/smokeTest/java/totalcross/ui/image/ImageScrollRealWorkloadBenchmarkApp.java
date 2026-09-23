@@ -58,6 +58,25 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       "DestinationFractional", "SourceMapping", "ValidRoot", "UnsupportedTransform",
       "ExplicitClip", "VisibleMapping"
   };
+  // Diagnostic metric IDs 106-123 are reserved for geometry materialization accounting.
+  private static final int GEOMETRY_METRIC_MATERIALIZATION_COUNT = 106;
+  private static final int GEOMETRY_METRIC_MATERIALIZATION_TOTAL_NS = 107;
+  private static final int GEOMETRY_METRIC_SOURCE_SNAPSHOT_NS = 108;
+  private static final int GEOMETRY_METRIC_SURFACE_ALLOCATION_NS = 109;
+  private static final int GEOMETRY_METRIC_COMPILE_NS = 110;
+  private static final int GEOMETRY_METRIC_DRAW_NS = 111;
+  private static final int GEOMETRY_METRIC_SNAPSHOT_NS = 112;
+  private static final int GEOMETRY_METRIC_REGISTER_NS = 113;
+  private static final int GEOMETRY_METRIC_RGBA8888_COUNT = 114;
+  private static final int GEOMETRY_METRIC_RGBA8888_DRAW_NS = 115;
+  private static final int GEOMETRY_METRIC_RGB565_COUNT = 116;
+  private static final int GEOMETRY_METRIC_RGB565_DRAW_NS = 117;
+  private static final int GEOMETRY_METRIC_GRAY8_COUNT = 118;
+  private static final int GEOMETRY_METRIC_GRAY8_DRAW_NS = 119;
+  private static final int GEOMETRY_METRIC_ARGB4444_COUNT = 120;
+  private static final int GEOMETRY_METRIC_ARGB4444_DRAW_NS = 121;
+  private static final int GEOMETRY_METRIC_SOURCE_PIXELS = 122;
+  private static final int GEOMETRY_METRIC_OUTPUT_PIXELS = 123;
 
   private ScrollContainer mainContainer;
   private ScrollContainer scroll;
@@ -1708,6 +1727,72 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append("    \"nativeGeometryMaterializations\":")
         .append(prefetchCounters == null ? 0 : prefetchCounters.nativeGeometryMaterializations)
         .append(",\n")
+        .append("    \"geometryMaterializationCount\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryMaterializationCount)
+        .append(",\n")
+        .append("    \"geometryMaterializationTotalNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryMaterializationTotalNs)
+        .append(",\n")
+        .append("    \"geometrySourceSnapshotNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometrySourceSnapshotNs)
+        .append(",\n")
+        .append("    \"geometrySurfaceAllocationNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometrySurfaceAllocationNs)
+        .append(",\n")
+        .append("    \"geometryCompileNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryCompileNs)
+        .append(",\n")
+        .append("    \"geometryDrawNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryDrawNs)
+        .append(",\n")
+        .append("    \"geometrySnapshotNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometrySnapshotNs)
+        .append(",\n")
+        .append("    \"geometryRegisterNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryRegisterNs)
+        .append(",\n")
+        .append("    \"geometryRgba8888Count\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryRgba8888Count)
+        .append(",\n")
+        .append("    \"geometryRgba8888DrawNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryRgba8888DrawNs)
+        .append(",\n")
+        .append("    \"geometryRgb565Count\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryRgb565Count)
+        .append(",\n")
+        .append("    \"geometryRgb565DrawNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryRgb565DrawNs)
+        .append(",\n")
+        .append("    \"geometryGray8Count\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryGray8Count)
+        .append(",\n")
+        .append("    \"geometryGray8DrawNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryGray8DrawNs)
+        .append(",\n")
+        .append("    \"geometryArgb4444Count\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryArgb4444Count)
+        .append(",\n")
+        .append("    \"geometryArgb4444DrawNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryArgb4444DrawNs)
+        .append(",\n")
+        .append("    \"geometrySourcePixels\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometrySourcePixels)
+        .append(",\n")
+        .append("    \"geometryOutputPixels\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryOutputPixels)
+        .append(",\n")
+        .append("    \"geometryUnaccountedNs\":")
+        .append(prefetchCounters == null ? 0 : prefetchCounters.geometryUnaccountedNs())
+        .append(",\n")
+        .append("    \"geometryDrawNsPerMaterialization\":")
+        .append(jsonDouble(prefetchCounters == null
+            ? -1 : prefetchCounters.geometryDrawNsPerMaterialization())).append(",\n")
+        .append("    \"geometryDrawNsPerSourceMegapixel\":")
+        .append(jsonDouble(prefetchCounters == null
+            ? -1 : prefetchCounters.geometryDrawNsPerSourceMegapixel())).append(",\n")
+        .append("    \"geometryDrawNsPerOutputMegapixel\":")
+        .append(jsonDouble(prefetchCounters == null
+            ? -1 : prefetchCounters.geometryDrawNsPerOutputMegapixel())).append(",\n")
         .append("    \"targetColorAttempts\":")
         .append(prefetchCounters == null ? 0 : prefetchCounters.targetColorAttempts).append(",\n")
         .append("    \"targetColorHits\":")
@@ -2370,6 +2455,24 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final long drawPlanCacheHits = Image.imageDrawPlanCacheHitCountForTest();
     final long directDrawPlanExecutions = Image.directDrawPlanExecutionCountForTest();
     final long nativeGeometryMaterializations = Image.nativeGeometryMaterializationCountForTest();
+    final long geometryMaterializationCount = diagnosticMetric(GEOMETRY_METRIC_MATERIALIZATION_COUNT);
+    final long geometryMaterializationTotalNs = diagnosticMetric(GEOMETRY_METRIC_MATERIALIZATION_TOTAL_NS);
+    final long geometrySourceSnapshotNs = diagnosticMetric(GEOMETRY_METRIC_SOURCE_SNAPSHOT_NS);
+    final long geometrySurfaceAllocationNs = diagnosticMetric(GEOMETRY_METRIC_SURFACE_ALLOCATION_NS);
+    final long geometryCompileNs = diagnosticMetric(GEOMETRY_METRIC_COMPILE_NS);
+    final long geometryDrawNs = diagnosticMetric(GEOMETRY_METRIC_DRAW_NS);
+    final long geometrySnapshotNs = diagnosticMetric(GEOMETRY_METRIC_SNAPSHOT_NS);
+    final long geometryRegisterNs = diagnosticMetric(GEOMETRY_METRIC_REGISTER_NS);
+    final long geometryRgba8888Count = diagnosticMetric(GEOMETRY_METRIC_RGBA8888_COUNT);
+    final long geometryRgba8888DrawNs = diagnosticMetric(GEOMETRY_METRIC_RGBA8888_DRAW_NS);
+    final long geometryRgb565Count = diagnosticMetric(GEOMETRY_METRIC_RGB565_COUNT);
+    final long geometryRgb565DrawNs = diagnosticMetric(GEOMETRY_METRIC_RGB565_DRAW_NS);
+    final long geometryGray8Count = diagnosticMetric(GEOMETRY_METRIC_GRAY8_COUNT);
+    final long geometryGray8DrawNs = diagnosticMetric(GEOMETRY_METRIC_GRAY8_DRAW_NS);
+    final long geometryArgb4444Count = diagnosticMetric(GEOMETRY_METRIC_ARGB4444_COUNT);
+    final long geometryArgb4444DrawNs = diagnosticMetric(GEOMETRY_METRIC_ARGB4444_DRAW_NS);
+    final long geometrySourcePixels = diagnosticMetric(GEOMETRY_METRIC_SOURCE_PIXELS);
+    final long geometryOutputPixels = diagnosticMetric(GEOMETRY_METRIC_OUTPUT_PIXELS);
     final long writePixelsAttempts = NativeImageBacking.writePixelsAttemptsForTest();
     final long writePixelsHits = NativeImageBacking.writePixelsHitsForTest();
     final long writePixelsFallbacks = NativeImageBacking.writePixelsFallbacksForTest();
@@ -2464,6 +2567,32 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       return rgba8888Bytes + rgb565Bytes + gray8Bytes + argb4444Bytes;
     }
 
+    long geometryUnaccountedNs() {
+      if (geometryMaterializationTotalNs < 0 || geometrySourceSnapshotNs < 0
+          || geometrySurfaceAllocationNs < 0 || geometryCompileNs < 0
+          || geometryDrawNs < 0 || geometrySnapshotNs < 0 || geometryRegisterNs < 0) {
+        return -1;
+      }
+      return geometryMaterializationTotalNs - geometrySourceSnapshotNs
+          - geometrySurfaceAllocationNs - geometryCompileNs - geometryDrawNs
+          - geometrySnapshotNs - geometryRegisterNs;
+    }
+
+    double geometryDrawNsPerMaterialization() {
+      return geometryMaterializationCount > 0
+          ? (double) geometryDrawNs / geometryMaterializationCount : -1;
+    }
+
+    double geometryDrawNsPerSourceMegapixel() {
+      return geometrySourcePixels > 0
+          ? geometryDrawNs / (geometrySourcePixels / 1000000.0) : -1;
+    }
+
+    double geometryDrawNsPerOutputMegapixel() {
+      return geometryOutputPixels > 0
+          ? geometryDrawNs / (geometryOutputPixels / 1000000.0) : -1;
+    }
+
     String details() {
       StringBuilder details = new StringBuilder(",targeted_jpeg_decodes=" + targetedJpegDecodes
           + ",full_jpeg_decodes=" + fullJpegDecodes
@@ -2484,6 +2613,28 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           + ",draw_plan_cache_hits=" + drawPlanCacheHits
           + ",direct_draw_plan_executions=" + directDrawPlanExecutions
           + ",native_geometry_materializations=" + nativeGeometryMaterializations
+          + ",geometry_materialization_count=" + geometryMaterializationCount
+          + ",geometry_materialization_total_ns=" + geometryMaterializationTotalNs
+          + ",geometry_source_snapshot_ns=" + geometrySourceSnapshotNs
+          + ",geometry_surface_allocation_ns=" + geometrySurfaceAllocationNs
+          + ",geometry_compile_ns=" + geometryCompileNs
+          + ",geometry_draw_ns=" + geometryDrawNs
+          + ",geometry_snapshot_ns=" + geometrySnapshotNs
+          + ",geometry_register_ns=" + geometryRegisterNs
+          + ",geometry_rgba8888_count=" + geometryRgba8888Count
+          + ",geometry_rgba8888_draw_ns=" + geometryRgba8888DrawNs
+          + ",geometry_rgb565_count=" + geometryRgb565Count
+          + ",geometry_rgb565_draw_ns=" + geometryRgb565DrawNs
+          + ",geometry_gray8_count=" + geometryGray8Count
+          + ",geometry_gray8_draw_ns=" + geometryGray8DrawNs
+          + ",geometry_argb4444_count=" + geometryArgb4444Count
+          + ",geometry_argb4444_draw_ns=" + geometryArgb4444DrawNs
+          + ",geometry_source_pixels=" + geometrySourcePixels
+          + ",geometry_output_pixels=" + geometryOutputPixels
+          + ",geometry_unaccounted_ns=" + geometryUnaccountedNs()
+          + ",geometry_draw_ns_per_materialization=" + geometryDrawNsPerMaterialization()
+          + ",geometry_draw_ns_per_source_megapixel=" + geometryDrawNsPerSourceMegapixel()
+          + ",geometry_draw_ns_per_output_megapixel=" + geometryDrawNsPerOutputMegapixel()
           + ",write_pixels_attempts=" + writePixelsAttempts
           + ",write_pixels_hits=" + writePixelsHits
           + ",write_pixels_fallbacks=" + writePixelsFallbacks

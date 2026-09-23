@@ -235,6 +235,24 @@ PREFETCH_DIAGNOSTIC_COUNTER_FIELDS = (
     ("jpegOtherNs", "prefetch_jpeg_other_ns"),
     ("imageMaterializations", "prefetch_image_materializations"),
     ("nativeGeometryMaterializations", "prefetch_native_geometry_materializations"),
+    ("geometryMaterializationCount", "prefetch_geometry_materialization_count"),
+    ("geometryMaterializationTotalNs", "prefetch_geometry_materialization_total_ns"),
+    ("geometrySourceSnapshotNs", "prefetch_geometry_source_snapshot_ns"),
+    ("geometrySurfaceAllocationNs", "prefetch_geometry_surface_allocation_ns"),
+    ("geometryCompileNs", "prefetch_geometry_compile_ns"),
+    ("geometryDrawNs", "prefetch_geometry_draw_ns"),
+    ("geometrySnapshotNs", "prefetch_geometry_snapshot_ns"),
+    ("geometryRegisterNs", "prefetch_geometry_register_ns"),
+    ("geometryRgba8888Count", "prefetch_geometry_rgba8888_count"),
+    ("geometryRgba8888DrawNs", "prefetch_geometry_rgba8888_draw_ns"),
+    ("geometryRgb565Count", "prefetch_geometry_rgb565_count"),
+    ("geometryRgb565DrawNs", "prefetch_geometry_rgb565_draw_ns"),
+    ("geometryGray8Count", "prefetch_geometry_gray8_count"),
+    ("geometryGray8DrawNs", "prefetch_geometry_gray8_draw_ns"),
+    ("geometryArgb4444Count", "prefetch_geometry_argb4444_count"),
+    ("geometryArgb4444DrawNs", "prefetch_geometry_argb4444_draw_ns"),
+    ("geometrySourcePixels", "prefetch_geometry_source_pixels"),
+    ("geometryOutputPixels", "prefetch_geometry_output_pixels"),
     ("targetColorAttempts", "prefetch_target_color_attempts"),
     ("targetColorHits", "prefetch_target_color_hits"),
     ("targetColorMaterializations", "prefetch_target_color_materializations"),
@@ -246,6 +264,12 @@ PREFETCH_DIAGNOSTIC_COUNTER_FIELDS = (
     ("physicalVariantStores", "prefetch_physical_variant_stores"),
     ("physicalVariantEvictions", "prefetch_physical_variant_evictions"),
     ("physicalVariantBytes", "prefetch_physical_variant_bytes"),
+)
+PREFETCH_DIAGNOSTIC_DERIVED_FIELDS = (
+    ("geometryUnaccountedNs", "prefetch_geometry_unaccounted_ns"),
+    ("geometryDrawNsPerMaterialization", "prefetch_geometry_draw_ns_per_materialization"),
+    ("geometryDrawNsPerSourceMegapixel", "prefetch_geometry_draw_ns_per_source_megapixel"),
+    ("geometryDrawNsPerOutputMegapixel", "prefetch_geometry_draw_ns_per_output_megapixel"),
 )
 SAVE_COUNT_BUCKETS = ("0", "1", "2", "3", "4", "5OrMore")
 MAPPING_SUBREASONS = (
@@ -1169,6 +1193,16 @@ def counter_value(mapping, key, description):
     return value
 
 
+def optional_nonnegative_number(mapping, key, description):
+    value = mapping.get(key)
+    if value is None:
+        return None
+    require(type(value) in (int, float) and not isinstance(value, bool)
+            and math.isfinite(value) and value >= 0,
+            f"{description} must be a non-negative finite number or null")
+    return value
+
+
 def validate_jpeg_counter_section(section, description):
     require(isinstance(section, dict), f"{description} jpeg section is invalid")
     count = counter_value(section, "count", f"{description} jpeg count")
@@ -1335,6 +1369,10 @@ def validate_prefetch_diagnostic_counters(counters, run_dir):
         values[csv_name] = counter_value(
             phases, json_name, f"{run_dir} prefetch phase {json_name}"
         )
+    for json_name, csv_name in PREFETCH_DIAGNOSTIC_DERIVED_FIELDS:
+        values[csv_name] = optional_nonnegative_number(
+            phases, json_name, f"{run_dir} prefetch phase {json_name}"
+        )
     require(
         values["prefetch_jpeg_decode_count"] == sum(
             values[f"prefetch_jpeg_{bucket}_count"]
@@ -1349,6 +1387,70 @@ def validate_prefetch_diagnostic_counters(counters, run_dir):
         ),
         f"{run_dir} prefetch JPEG decode ns does not equal bucket ns",
     )
+    require(
+        values["prefetch_geometry_materialization_count"]
+        == values["prefetch_native_geometry_materializations"],
+        f"{run_dir} geometry materialization count does not match the existing event count",
+    )
+    geometry_count = values["prefetch_geometry_materialization_count"]
+    geometry_total = values["prefetch_geometry_materialization_total_ns"]
+    geometry_phases = sum(values[name] for name in (
+        "prefetch_geometry_source_snapshot_ns",
+        "prefetch_geometry_surface_allocation_ns",
+        "prefetch_geometry_compile_ns",
+        "prefetch_geometry_draw_ns",
+        "prefetch_geometry_snapshot_ns",
+        "prefetch_geometry_register_ns",
+    ))
+    geometry_unaccounted = values["prefetch_geometry_unaccounted_ns"]
+    require(geometry_unaccounted <= geometry_total,
+            f"{run_dir} geometry unaccounted time exceeds total time")
+    require(geometry_total == geometry_phases + geometry_unaccounted,
+            f"{run_dir} geometry phase times do not reconcile")
+    format_counts = sum(values[name] for name in (
+        "prefetch_geometry_rgba8888_count", "prefetch_geometry_rgb565_count",
+        "prefetch_geometry_gray8_count", "prefetch_geometry_argb4444_count",
+    ))
+    format_draw_ns = sum(values[name] for name in (
+        "prefetch_geometry_rgba8888_draw_ns", "prefetch_geometry_rgb565_draw_ns",
+        "prefetch_geometry_gray8_draw_ns", "prefetch_geometry_argb4444_draw_ns",
+    ))
+    require(format_counts == geometry_count,
+            f"{run_dir} geometry source color counts do not reconcile")
+    require(format_draw_ns == values["prefetch_geometry_draw_ns"],
+            f"{run_dir} geometry source color draw times do not reconcile")
+    source_pixels = values["prefetch_geometry_source_pixels"]
+    output_pixels = values["prefetch_geometry_output_pixels"]
+    if geometry_count == 0:
+        require(source_pixels == 0 and output_pixels == 0,
+                f"{run_dir} geometry pixels are nonzero without materializations")
+    else:
+        require(source_pixels > 0 and output_pixels > 0,
+                f"{run_dir} geometry materializations lack pixel totals")
+    expected_per_materialization = (
+        values["prefetch_geometry_draw_ns"] / geometry_count
+        if geometry_count else None
+    )
+    expected_per_source_megapixel = (
+        values["prefetch_geometry_draw_ns"] / (source_pixels / 1_000_000.0)
+        if source_pixels else None
+    )
+    expected_per_output_megapixel = (
+        values["prefetch_geometry_draw_ns"] / (output_pixels / 1_000_000.0)
+        if output_pixels else None
+    )
+    for key, expected in (
+        ("prefetch_geometry_draw_ns_per_materialization", expected_per_materialization),
+        ("prefetch_geometry_draw_ns_per_source_megapixel", expected_per_source_megapixel),
+        ("prefetch_geometry_draw_ns_per_output_megapixel", expected_per_output_megapixel),
+    ):
+        actual = values[key]
+        require(
+            (actual is None and expected is None)
+            or (actual is not None and expected is not None
+                and math.isclose(actual, expected, rel_tol=1e-9, abs_tol=1e-6)),
+            f"{run_dir} derived geometry metric {key} is inconsistent",
+        )
     return values
 
 
@@ -2821,6 +2923,8 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
         "physical_alpha_type", "physical_color_classification", "renderer_backend",
     ] + list(DIAGNOSTIC_SUMMARY_FIELDS) + [
         csv_name for _, csv_name in PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
+    ] + [
+        csv_name for _, csv_name in PREFETCH_DIAGNOSTIC_DERIVED_FIELDS
     ] + [
         "baseline_scope",
         "baseline_mask0_p50_ns", "delta_p50_ns", "baseline_mask0_p95_ns", "delta_p95_ns",

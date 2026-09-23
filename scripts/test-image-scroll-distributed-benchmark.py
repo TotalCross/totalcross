@@ -531,14 +531,38 @@ def assert_exploratory_plan_and_execution():
             "jpegEighthNs": 10,
             "jpegOtherCount": 1,
             "jpegOtherNs": 10,
+            "geometryMaterializationTotalNs": 7,
+            "geometrySourceSnapshotNs": 1,
+            "geometrySurfaceAllocationNs": 1,
+            "geometryCompileNs": 1,
+            "geometryDrawNs": 1,
+            "geometrySnapshotNs": 1,
+            "geometryRegisterNs": 1,
+            "geometryRgba8888Count": 1,
+            "geometryRgba8888DrawNs": 1,
+            "geometryRgb565Count": 0,
+            "geometryRgb565DrawNs": 0,
+            "geometryGray8Count": 0,
+            "geometryGray8DrawNs": 0,
+            "geometryArgb4444Count": 0,
+            "geometryArgb4444DrawNs": 0,
+            "geometrySourcePixels": 1,
+            "geometryOutputPixels": 1,
+            "geometryUnaccountedNs": 1,
+            "geometryDrawNsPerMaterialization": 1.0,
+            "geometryDrawNsPerSourceMegapixel": 1000000.0,
+            "geometryDrawNsPerOutputMegapixel": 1000000.0,
         })
         counter_payload = {"prefetchPhases": prefetch_phase_values}
         counter_fields = RUNNER.validate_prefetch_diagnostic_counters(
             counter_payload, "diagnostic run"
         )
         require(counter_fields["prefetch_jpeg_decode_ns"] == 50
-                and counter_fields["prefetch_target_color_converted_bytes"] == 1,
-                "diagnostic JPEG or native conversion counter was not mapped")
+                and counter_fields["prefetch_target_color_converted_bytes"] == 1
+                and counter_fields["prefetch_geometry_draw_ns"] == 1
+                and counter_fields["prefetch_geometry_unaccounted_ns"] == 1
+                and counter_fields["prefetch_geometry_draw_ns_per_materialization"] == 1.0,
+                "diagnostic JPEG, native conversion, or geometry counter was not mapped")
         invalid_counter_payload = {
             "prefetchPhases": dict(prefetch_phase_values, jpegDecodeNs=49)
         }
@@ -688,6 +712,27 @@ def assert_aggregation_and_final_status():
             "jpegEighthNs": 10,
             "jpegOtherCount": 1,
             "jpegOtherNs": 10,
+            "geometryMaterializationTotalNs": 7,
+            "geometrySourceSnapshotNs": 1,
+            "geometrySurfaceAllocationNs": 1,
+            "geometryCompileNs": 1,
+            "geometryDrawNs": 1,
+            "geometrySnapshotNs": 1,
+            "geometryRegisterNs": 1,
+            "geometryRgba8888Count": 1,
+            "geometryRgba8888DrawNs": 1,
+            "geometryRgb565Count": 0,
+            "geometryRgb565DrawNs": 0,
+            "geometryGray8Count": 0,
+            "geometryGray8DrawNs": 0,
+            "geometryArgb4444Count": 0,
+            "geometryArgb4444DrawNs": 0,
+            "geometrySourcePixels": 1,
+            "geometryOutputPixels": 1,
+            "geometryUnaccountedNs": 1,
+            "geometryDrawNsPerMaterialization": 1.0,
+            "geometryDrawNsPerSourceMegapixel": 1000000.0,
+            "geometryDrawNsPerOutputMegapixel": 1000000.0,
         })
         for _, _, run, mask, prefetch, accounting in diagnostic_plan:
             run_dir = RUNNER.expected_run_dir(
@@ -728,8 +773,11 @@ def assert_aggregation_and_final_status():
                 and all(row["image_load_ns"] == "1"
                         and row["prefetch_jpeg_decode_ns"] == "50"
                         and row["prefetch_target_color_converted_bytes"] == "1"
+                        and row["prefetch_geometry_draw_ns"] == "1"
+                        and row["prefetch_geometry_unaccounted_ns"] == "1"
+                        and row["prefetch_geometry_draw_ns_per_output_megapixel"] == "1000000.0"
                         for row in diagnostic_rows),
-                "diagnostic aggregation omitted phase or conversion metrics")
+                "diagnostic aggregation omitted phase, conversion, or geometry metrics")
 
         reuse_profile = dict(
             RUNNER.profile_config("scroll-raster-performance"),
