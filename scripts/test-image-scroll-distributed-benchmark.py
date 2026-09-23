@@ -845,6 +845,8 @@ def assert_exploratory_comparison_aggregation():
             (row["pair"], row["pass"]) for row in comparison_rows
         }
         require(len(comparison_rows) == 24
+                and {row["prefetch"] for row in comparison_rows} == {"on"}
+                and {row["run"] for row in comparison_rows} == {"1"}
                 and actual_combinations == expected_combinations,
                 "exploratory comparison rows do not cover all pair/pass combinations")
         failed_comparisons = [
