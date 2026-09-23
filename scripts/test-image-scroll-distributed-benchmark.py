@@ -488,6 +488,7 @@ def main():
     assert_fatal_execution_stops()
     assert_reuse_hash_mismatch_is_non_fatal()
     assert_aggregation_and_final_status()
+    assert_final_status_output()
 
     default = RUNNER.profile_config("release-default-scroll")
     candidate = RUNNER.profile_config("release-candidate-scroll")

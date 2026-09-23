@@ -2805,7 +2805,13 @@ def write_default_execution_summary(output, manifest, status="PASS", tracker=Non
             "default execution process count does not reconcile")
     path = output / "default-execution-summary.json"
     path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(f"default execution passed,processes={summary['expectedProcessCount']},summary={path}")
+    print(
+        f"default execution status={status},"
+        f"processes={summary['expectedProcessCount']},"
+        f"completed={summary['completedProcessCount']},"
+        f"validation_failures={summary['validationFailedProcessCount']},"
+        f"summary={path}"
+    )
 
 
 def run_phase(bundle, phase, profile_name):
