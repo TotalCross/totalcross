@@ -731,21 +731,6 @@ def assert_aggregation_and_final_status():
                         for row in diagnostic_rows),
                 "diagnostic aggregation omitted phase or conversion metrics")
 
-        pairwise_records = [
-            {"mask": 4, "prefetch": "on", "run": 1, "status": "VALIDATION_FAILED"},
-            {"mask": 6, "prefetch": "on", "run": 1, "status": "PASS",
-             "work_time_p50_ns": 20, "work_time_p95_ns": 30,
-             "paint_time_p50_ns": 10, "paint_time_p95_ns": 15},
-        ]
-        pairwise_path = RUNNER.write_pairwise_comparison(
-            output, pairwise_records, (4, 6), 1
-        )
-        with pairwise_path.open(newline="", encoding="utf-8") as source:
-            pairwise_rows = list(csv.DictReader(source))
-        incomplete = next(row for row in pairwise_rows if row["pair"] == "4->6")
-        require(incomplete["variance_status"] == "INCOMPLETE_VALIDATION",
-                "pairwise comparison did not mark an invalid side")
-
         reuse_profile = dict(
             RUNNER.profile_config("scroll-raster-performance"),
             expected_processes=2,
@@ -790,6 +775,93 @@ def assert_aggregation_and_final_status():
                 "final summary did not preserve validation-failure status")
 
 
+def assert_exploratory_comparison_aggregation():
+    profile = RUNNER.profile_config("reduced-image-optimizations")
+    pass_names = RUNNER.benchmark_pass_names(profile["passes"])
+    with tempfile.TemporaryDirectory(
+            prefix="image-scroll-exploratory-comparison-test-") as temp:
+        output = Path(temp)
+        plan = RUNNER.write_suite_plan(
+            output, profile["masks"], profile["prefetch"], profile["accounting"],
+            profile["rounds"], profile["expected_processes"],
+        )
+        failure_log = output / "logs" / "mask-4-validation.log"
+        failure_log.parent.mkdir()
+        failure_log.write_text("viewport hash mismatch")
+        RUNNER.append_validation_failure(
+            output, profile["name"], 1, 4, "on", "off", None,
+            RUNNER.BenchmarkFailure("viewport hash mismatch"), failure_log,
+            [output / "runs" / "mask-4-failed"],
+        )
+        for _, _, run, mask, prefetch, accounting in plan:
+            if mask == 4:
+                continue
+            base = RUNNER.expected_run_dir(output, mask, prefetch, accounting, run)
+            for pass_index, pass_name in enumerate(pass_names, start=1):
+                pass_dir = base / "passes" / pass_name
+                pass_dir.mkdir(parents=True)
+                measurement = pass_index * 1000 + mask * pass_index
+                summary = {
+                    "status": "PASS", "requestedMask": mask,
+                    "effectiveMask": mask, "prefetch": prefetch,
+                    "accounting": accounting, "pass": pass_name,
+                    "frameCount": 2, "memoryPeakResidentBytes": 1,
+                    "largestConsecutiveOver33_3": 0,
+                }
+                for field in RUNNER.TEMPORAL_SUMMARY_FIELDS:
+                    summary[field] = measurement
+                for field in RUNNER.FRAME_THRESHOLD_COUNT_FIELDS:
+                    summary[field] = 0
+                (pass_dir / "summary.json").write_text(json.dumps(summary))
+                (pass_dir / "counters.json").write_text("{}")
+        with mock.patch.object(RUNNER, "validate_diagnostic_counters", return_value={}):
+            summary_path = RUNNER.aggregate(
+                output, plan, profile["masks"], profile["prefetch"],
+                profile["accounting"], profile["rounds"],
+                profile["expected_processes"], profile["name"],
+                pass_count=profile["passes"],
+            )
+        comparison_path = output / "exploratory-mask-comparison.csv"
+        require(summary_path.is_file() and comparison_path.is_file(),
+                "exploratory aggregation did not create its artifacts")
+        with summary_path.open(newline="", encoding="utf-8") as source:
+            summary_rows = list(csv.DictReader(source))
+        failed_summary_rows = [
+            row for row in summary_rows
+            if row["mask"] == "4" and row["status"] == "VALIDATION_FAILED"
+        ]
+        require(len(summary_rows) == 33 and len(failed_summary_rows) == 3
+                and all(row["comparison_status"] == "INCOMPLETE_VALIDATION"
+                        for row in failed_summary_rows),
+                "exploratory aggregation did not preserve failed pass rows")
+        with comparison_path.open(newline="", encoding="utf-8") as source:
+            comparison_rows = list(csv.DictReader(source))
+        expected_combinations = {
+            (f"{control}->{enabled}", pass_name)
+            for control, enabled in RUNNER.CONTROLLED_PAIRS
+            for pass_name in pass_names
+        }
+        actual_combinations = {
+            (row["pair"], row["pass"]) for row in comparison_rows
+        }
+        require(len(comparison_rows) == 24
+                and actual_combinations == expected_combinations,
+                "exploratory comparison rows do not cover all pair/pass combinations")
+        failed_comparisons = [
+            row for row in comparison_rows if row["pair"] == "4->6"
+        ]
+        require(len(failed_comparisons) == 3
+                and all(row["variance_status"] == "INCOMPLETE_VALIDATION"
+                        for row in failed_comparisons),
+                "comparison validation failure was not preserved per pass")
+        pass_deltas = [
+            int(row["work_p50_delta_ns"])
+            for row in comparison_rows if row["pair"] == "5->7"
+        ]
+        require(pass_deltas == [2, 4, 6],
+                "comparison keys did not preserve independent pass samples")
+
+
 def main():
     require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 31,
             "default matrix process count is not 31")
@@ -803,6 +875,7 @@ def main():
     assert_fatal_execution_stops()
     assert_reuse_hash_mismatch_is_non_fatal()
     assert_aggregation_and_final_status()
+    assert_exploratory_comparison_aggregation()
     assert_final_status_output()
     assert_exploratory_plan_and_execution()
 

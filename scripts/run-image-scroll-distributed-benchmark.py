@@ -2522,11 +2522,16 @@ def direction(delta):
     return "no-change"
 
 
-def write_pairwise_comparison(output, records, masks, rounds):
-    by_key = {(record["mask"], record["prefetch"], record["run"]): record
-              for record in records}
+def write_exploratory_mask_comparison(output, records, masks, prefetch_profiles,
+                                      rounds, pass_count):
+    pass_names = benchmark_pass_names(pass_count)
+    by_key = {
+        (record["mask"], record["prefetch"], record["run"], record["pass"]): record
+        for record in records
+    }
     fields = [
-        "pair", "control_mask", "enabled_mask", "prefetch", "run", "variance_status",
+        "pair", "control_mask", "enabled_mask", "prefetch", "run", "pass",
+        "variance_status",
         "control_work_p50_ns", "enabled_work_p50_ns", "work_p50_delta_ns",
         "work_p50_delta_pct", "control_work_p95_ns", "enabled_work_p95_ns",
         "work_p95_delta_ns", "work_p95_delta_pct", "control_paint_p50_ns",
@@ -2535,105 +2540,116 @@ def write_pairwise_comparison(output, records, masks, rounds):
         "paint_p95_delta_pct",
     ]
     rows = []
-    def empty_row(control, enabled, prefetch, run, status):
+    def empty_row(control, enabled, prefetch, run, pass_name, status):
         row = {field: None for field in fields}
         row.update({
             "pair": f"{control}->{enabled}", "control_mask": control,
             "enabled_mask": enabled, "prefetch": prefetch, "run": run,
-            "variance_status": status,
+            "pass": pass_name, "variance_status": status,
         })
         return row
 
     for control, enabled in CONTROLLED_PAIRS:
         if control not in masks or enabled not in masks:
-            for prefetch in PREFETCH_PROFILES:
-                for run in range(1, rounds + 1):
-                    rows.append(empty_row(
-                        control, enabled, prefetch, run, "NOT_PLANNED"
-                    ))
+            for prefetch in prefetch_profiles:
+                for pass_name in pass_names:
+                    for run in range(1, rounds + 1):
+                        rows.append(empty_row(
+                            control, enabled, prefetch, run, pass_name,
+                            "NOT_PLANNED"
+                        ))
             continue
-        for prefetch in PREFETCH_PROFILES:
-            pair_records = []
-            pair_validity = []
-            for run in range(1, rounds + 1):
-                control_record = by_key.get((control, prefetch, run))
-                enabled_record = by_key.get((enabled, prefetch, run))
-                valid = (control_record is not None and enabled_record is not None
-                         and control_record.get("status") == "PASS"
-                         and enabled_record.get("status") == "PASS")
-                pair_validity.append(valid)
-                if not valid:
-                    pair_records.append(None)
-                    continue
-                work_delta = (enabled_record["work_time_p50_ns"]
-                              - control_record["work_time_p50_ns"])
-                pair_records.append(work_delta)
-            directions = {direction(delta) for delta in pair_records if delta is not None}
-            if not all(pair_validity):
-                variance_status = "INCOMPLETE_VALIDATION"
-            else:
-                variance_status = ("INCONCLUSIVE_VARIANCE" if len(directions) > 1
-                                   else "CONSISTENT_DIRECTION")
-            for run in range(1, rounds + 1):
-                control_record = by_key.get((control, prefetch, run))
-                enabled_record = by_key.get((enabled, prefetch, run))
-                if not pair_validity[run - 1]:
-                    rows.append(empty_row(
-                        control, enabled, prefetch, run, variance_status
-                    ))
-                    continue
-                work_p50_delta = (enabled_record["work_time_p50_ns"]
-                                  - control_record["work_time_p50_ns"])
-                work_p95_delta = (enabled_record["work_time_p95_ns"]
-                                  - control_record["work_time_p95_ns"])
-                paint_p50_delta = (enabled_record["paint_time_p50_ns"]
-                                   - control_record["paint_time_p50_ns"])
-                paint_p95_delta = (enabled_record["paint_time_p95_ns"]
-                                   - control_record["paint_time_p95_ns"])
-                rows.append({
-                    "pair": f"{control}->{enabled}",
-                    "control_mask": control,
-                    "enabled_mask": enabled,
-                    "prefetch": prefetch,
-                    "run": run,
-                    "variance_status": variance_status,
-                    "control_work_p50_ns": control_record["work_time_p50_ns"],
-                    "enabled_work_p50_ns": enabled_record["work_time_p50_ns"],
-                    "work_p50_delta_ns": work_p50_delta,
-                    "work_p50_delta_pct": delta_percent(
-                        control_record["work_time_p50_ns"],
-                        enabled_record["work_time_p50_ns"],
-                    ),
-                    "control_work_p95_ns": control_record["work_time_p95_ns"],
-                    "enabled_work_p95_ns": enabled_record["work_time_p95_ns"],
-                    "work_p95_delta_ns": work_p95_delta,
-                    "work_p95_delta_pct": delta_percent(
-                        control_record["work_time_p95_ns"],
-                        enabled_record["work_time_p95_ns"],
-                    ),
-                    "control_paint_p50_ns": control_record["paint_time_p50_ns"],
-                    "enabled_paint_p50_ns": enabled_record["paint_time_p50_ns"],
-                    "paint_p50_delta_ns": paint_p50_delta,
-                    "paint_p50_delta_pct": delta_percent(
-                        control_record["paint_time_p50_ns"],
-                        enabled_record["paint_time_p50_ns"],
-                    ),
-                    "control_paint_p95_ns": control_record["paint_time_p95_ns"],
-                    "enabled_paint_p95_ns": enabled_record["paint_time_p95_ns"],
-                    "paint_p95_delta_ns": paint_p95_delta,
-                    "paint_p95_delta_pct": delta_percent(
-                        control_record["paint_time_p95_ns"],
-                        enabled_record["paint_time_p95_ns"],
-                    ),
-                })
-    path = output / "write-pixels-policy-comparison.csv"
+        for prefetch in prefetch_profiles:
+            for pass_name in pass_names:
+                pair_records = []
+                pair_validity = []
+                for run in range(1, rounds + 1):
+                    control_record = by_key.get((control, prefetch, run, pass_name))
+                    enabled_record = by_key.get((enabled, prefetch, run, pass_name))
+                    valid = (control_record is not None and enabled_record is not None
+                             and control_record.get("status") == "PASS"
+                             and enabled_record.get("status") == "PASS")
+                    pair_validity.append(valid)
+                    if not valid:
+                        pair_records.append(None)
+                        continue
+                    pair_records.append(
+                        enabled_record["work_time_p50_ns"]
+                        - control_record["work_time_p50_ns"]
+                    )
+                directions = {
+                    direction(delta) for delta in pair_records if delta is not None
+                }
+                if not all(pair_validity):
+                    variance_status = "INCOMPLETE_VALIDATION"
+                else:
+                    variance_status = (
+                        "INCONCLUSIVE_VARIANCE" if len(directions) > 1
+                        else "CONSISTENT_DIRECTION"
+                    )
+                for run in range(1, rounds + 1):
+                    control_record = by_key.get((control, prefetch, run, pass_name))
+                    enabled_record = by_key.get((enabled, prefetch, run, pass_name))
+                    if not pair_validity[run - 1]:
+                        rows.append(empty_row(
+                            control, enabled, prefetch, run, pass_name,
+                            variance_status,
+                        ))
+                        continue
+                    work_p50_delta = (enabled_record["work_time_p50_ns"]
+                                      - control_record["work_time_p50_ns"])
+                    work_p95_delta = (enabled_record["work_time_p95_ns"]
+                                      - control_record["work_time_p95_ns"])
+                    paint_p50_delta = (enabled_record["paint_time_p50_ns"]
+                                       - control_record["paint_time_p50_ns"])
+                    paint_p95_delta = (enabled_record["paint_time_p95_ns"]
+                                       - control_record["paint_time_p95_ns"])
+                    rows.append({
+                        "pair": f"{control}->{enabled}",
+                        "control_mask": control,
+                        "enabled_mask": enabled,
+                        "prefetch": prefetch,
+                        "run": run,
+                        "pass": pass_name,
+                        "variance_status": variance_status,
+                        "control_work_p50_ns": control_record["work_time_p50_ns"],
+                        "enabled_work_p50_ns": enabled_record["work_time_p50_ns"],
+                        "work_p50_delta_ns": work_p50_delta,
+                        "work_p50_delta_pct": delta_percent(
+                            control_record["work_time_p50_ns"],
+                            enabled_record["work_time_p50_ns"],
+                        ),
+                        "control_work_p95_ns": control_record["work_time_p95_ns"],
+                        "enabled_work_p95_ns": enabled_record["work_time_p95_ns"],
+                        "work_p95_delta_ns": work_p95_delta,
+                        "work_p95_delta_pct": delta_percent(
+                            control_record["work_time_p95_ns"],
+                            enabled_record["work_time_p95_ns"],
+                        ),
+                        "control_paint_p50_ns": control_record["paint_time_p50_ns"],
+                        "enabled_paint_p50_ns": enabled_record["paint_time_p50_ns"],
+                        "paint_p50_delta_ns": paint_p50_delta,
+                        "paint_p50_delta_pct": delta_percent(
+                            control_record["paint_time_p50_ns"],
+                            enabled_record["paint_time_p50_ns"],
+                        ),
+                        "control_paint_p95_ns": control_record["paint_time_p95_ns"],
+                        "enabled_paint_p95_ns": enabled_record["paint_time_p95_ns"],
+                        "paint_p95_delta_ns": paint_p95_delta,
+                        "paint_p95_delta_pct": delta_percent(
+                            control_record["paint_time_p95_ns"],
+                            enabled_record["paint_time_p95_ns"],
+                        ),
+                    })
+    path = output / "exploratory-mask-comparison.csv"
     with path.open("w", newline="", encoding="utf-8") as destination:
         writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
-    require(len(rows) == len(CONTROLLED_PAIRS) * len(PREFETCH_PROFILES) * rounds,
+    require(len(rows) == (len(CONTROLLED_PAIRS) * len(prefetch_profiles)
+                          * rounds * len(pass_names)),
             "pairwise comparison row count differs")
-    print(f"pairwise comparison passed,path={path},rows={len(rows)}")
+    print(f"exploratory comparison passed,path={path},rows={len(rows)}")
     return path
 
 
@@ -2820,8 +2836,10 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
             row["run"], row["pass_index"], row["prefetch"], row["mask"]
         )))
     print(f"aggregation passed,summary={path},rows={len(rows)}")
-    if profile_name == "write-pixels-policy":
-        write_pairwise_comparison(output, records, masks, rounds)
+    if profile_name == "reduced-image-optimizations":
+        write_exploratory_mask_comparison(
+            output, records, masks, prefetch_profiles, rounds, pass_count
+        )
     return path
 
 
