@@ -5,6 +5,7 @@
 package tc.tools.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,11 +24,13 @@ import tc.tools.converter.tclass.TCMethod;
 class NativeImageBackingConverterTest {
   private static final String CLASS_NAME = "totalcross/ui/image/NativeImageBacking";
   private static final String[] METHODS = {
-      "createEmptyNative", "snapshotNative", "makeMutableNative", "readPixelsNative", "releaseNativeHandle"
+      "createEmptyNative", "snapshotNative", "makeMutableNative", "readPixelsNative",
+      "releaseNativeHandle", "writePixelsFrameMetric"
   };
   private static final String[] SYMBOLS = {
       "tuiNIB_createEmptyNative_ii", "tuiNIB_snapshotNative", "tuiNIB_makeMutableNative",
-      "tuiNIB_readPixelsNative_Iiiiii", "tuiNIB_releaseNativeHandle_l"
+      "tuiNIB_readPixelsNative_Iiiiii", "tuiNIB_releaseNativeHandle_l",
+      "tuiNIB_writePixelsFrameMetric_i"
   };
 
   @BeforeAll
@@ -60,6 +63,7 @@ class NativeImageBackingConverterTest {
     String declarations = Files.readString(vmRoot.resolve("src/nm/NativeMethods.txt"));
     String prototypes = Files.readString(vmRoot.resolve("src/nm/NativeMethodsPrototypes.txt"));
     String header = Files.readString(vmRoot.resolve("src/nm/NativeMethods.h"));
+    String bridge = Files.readString(vmRoot.resolve("src/nm/ui/image_NativeImageBacking.c"));
     String registrations = Files.readString(vmRoot.resolve("src/init/nativeProcAddressesTC.c"));
     for (int i = 0; i < SYMBOLS.length; i++) {
       assertTrue(declarations.contains(CLASS_NAME + "|native"), "missing source declaration for " + METHODS[i]);
@@ -67,9 +71,26 @@ class NativeImageBackingConverterTest {
           "missing generated prototype for " + SYMBOLS[i]);
       assertTrue(header.contains("TC_API void " + SYMBOLS[i] + "(NMParams p);"),
           "missing native header declaration for " + SYMBOLS[i]);
+      assertTrue(bridge.contains("TC_API void " + SYMBOLS[i] + "(NMParams p)"),
+          "missing native bridge implementation for " + SYMBOLS[i]);
       assertTrue(registrations.contains("hashCode(\"" + SYMBOLS[i] + "\"), &" + SYMBOLS[i]),
           "missing native registration for " + SYMBOLS[i]);
     }
+  }
+
+  @Test
+  void frameMetricNativeSignatureIsNotTruncated() throws Exception {
+    String symbol = "tuiNIB_writePixelsFrameMetric_i";
+    assertTrue(symbol.length() < 32, "frame metric native symbol reaches the limit");
+    Path vmRoot = Path.of("..", "TotalCrossVM");
+    String prototypes = Files.readString(vmRoot.resolve("src/nm/NativeMethodsPrototypes.txt"));
+    String registrations = Files.readString(vmRoot.resolve("src/init/nativeProcAddressesTC.c"));
+    assertTrue(prototypes.contains("TC_API void " + symbol + "(NMParams p);"),
+        "generated frame metric prototype was truncated or renamed");
+    assertTrue(registrations.contains("hashCode(\"" + symbol + "\"), &" + symbol),
+        "frame metric registration does not match the generated symbol");
+    assertFalse(registrations.contains("tuiNIB_writePixelsFrameMetricTes"),
+        "frame metric registration still uses the truncated signature");
   }
 
   private static boolean hasNativeMethod(TCClass converted, String name) {

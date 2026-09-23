@@ -234,7 +234,7 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   static long writePixelsFrameMetricForTest(int kind) {
-    return writePixelsFrameMetricTest(kind);
+    return writePixelsFrameMetric(kind);
   }
 
   static long writePixelsRejectInvalidTargetOrSourceForTest() {
@@ -727,7 +727,7 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
-  private static long writePixelsFrameMetricTest(int kind) {
+  private static long writePixelsFrameMetric(int kind) {
     return -1;
   }
 

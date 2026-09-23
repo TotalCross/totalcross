@@ -181,7 +181,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegBytesTest"), &tuiNIB_writePixelsRegBytesTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRegClipTest"), &tuiNIB_writePixelsRegClipTest);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsFrameResetTest"), &tuiNIB_writePixelsFrameResetTest);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsFrameMetricTes"), &tuiNIB_writePixelsFrameMetricTest_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsFrameMetric_i"), &tuiNIB_writePixelsFrameMetric_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRejectInvalid"), &tuiNIB_writePixelsRejectInvalid);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRejectAlpha"), &tuiNIB_writePixelsRejectAlpha);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_writePixelsRejectMatrix"), &tuiNIB_writePixelsRejectMatrix);

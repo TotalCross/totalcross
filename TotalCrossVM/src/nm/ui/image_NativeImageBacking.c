@@ -549,7 +549,7 @@ TC_API void tuiNIB_writePixelsFrameResetTest(NMParams p) // totalcross/ui/image/
    UNUSED(p);
 }
 
-TC_API void tuiNIB_writePixelsFrameMetricTest_i(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsFrameMetricTest(int kind);
+TC_API void tuiNIB_writePixelsFrameMetric_i(NMParams p) // totalcross/ui/image/NativeImageBacking private static long writePixelsFrameMetric(int kind);
 {
 #if TC_RENDERER_SKIA
    p->retL = skia_image_backing_write_pixels_frame_metric_for_test(p->i32[0]);

@@ -149,7 +149,7 @@ totalcross/ui/image/NativeImageBacking|native private static long writePixelsReg
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegBytesTest();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsRegClipTest();
 totalcross/ui/image/NativeImageBacking|native private static void writePixelsFrameResetTest();
-totalcross/ui/image/NativeImageBacking|native private static long writePixelsFrameMetricTest(int kind);
+totalcross/ui/image/NativeImageBacking|native private static long writePixelsFrameMetric(int kind);
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsRejectInvalid();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsRejectAlpha();
 totalcross/ui/image/NativeImageBacking|native private static long writePixelsRejectMatrix();
