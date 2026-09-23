@@ -462,6 +462,78 @@ def physical_summary_fields(target):
     return fields
 
 
+def configuration_key(profile, run, mask, prefetch, accounting, rendering_reuse=None):
+    return json.dumps(
+        [profile, run, mask, prefetch, accounting, rendering_reuse],
+        separators=(",", ":"),
+    )
+
+
+def append_validation_failure(output, profile, run, mask, prefetch, accounting,
+                              rendering_reuse, error, log_path, artifact_paths):
+    configuration = {
+        "profile": profile,
+        "run": run,
+        "mask": mask,
+        "prefetch": prefetch,
+        "accounting": accounting,
+        "renderingReuse": rendering_reuse,
+    }
+    record = {
+        "status": "VALIDATION_FAILED",
+        "classification": "NON_FATAL_VALIDATION",
+        "fatal": False,
+        "configurationKey": configuration_key(
+            profile, run, mask, prefetch, accounting, rendering_reuse
+        ),
+        "configuration": configuration,
+        "messages": [str(error)],
+        "logPath": str(log_path),
+        "artifactPaths": [str(path) for path in artifact_paths],
+    }
+    path = output / VALIDATION_FAILURES_FILE
+    try:
+        with path.open("a", encoding="utf-8") as destination:
+            destination.write(json.dumps(record, sort_keys=True) + "\n")
+    except OSError as write_error:
+        raise FatalBenchmarkFailure(
+            describe_results_os_error("preserve validation failure in", path, write_error)
+        ) from write_error
+    print(
+        f"WARNING {profile} run={run} mask={mask} reuse={rendering_reuse} "
+        f"VALIDATION_FAILED; log={log_path}; error={error}",
+        file=sys.stderr,
+    )
+    return record
+
+
+def load_validation_failures(output):
+    path = output / VALIDATION_FAILURES_FILE
+    if not path.is_file():
+        return {}
+    failures = {}
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise FatalBenchmarkFailure(
+            describe_results_os_error("read", path, error)
+        ) from error
+    for line_number, line in enumerate(lines, start=1):
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except ValueError as error:
+            raise FatalBenchmarkFailure(
+                f"invalid validation failure record at {path}:{line_number}"
+            ) from error
+        key = record.get("configurationKey")
+        require(isinstance(key, str) and key,
+                f"validation failure record at {path}:{line_number} lacks configurationKey")
+        failures[key] = record
+    return failures
+
+
 def preflight(bundle, manifest, output, phase):
     validate_bundle(bundle, manifest)
     state, detail = inspect_results_state(output)
@@ -1547,21 +1619,33 @@ def run_scroll_reuse_process(bundle, manifest, output, corpus_digest, profile,
         print(f"{label} failed,exit_code={completed.returncode},log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed with exit code {completed.returncode}")
-    environment = read_json_file(output / "environment.json", "benchmark environment")
-    physical_baseline = capture_physical_target_baseline(
-        output, environment, {
-            "profile": profile, "run": run, "mask": mask,
-            "prefetch": prefetch, "accounting": accounting,
-            "renderingReuse": rendering_reuse,
-        }
-    )
-    rows, hashes = validate_scroll_reuse_artifacts(
-        output, log_path, manifest, profile, mask, prefetch, accounting, rendering_reuse, run,
-        expected_image_count, physical_baseline,
-    )
+    try:
+        environment = read_json_file(output / "environment.json", "benchmark environment")
+        physical_baseline = capture_physical_target_baseline(
+            output, environment, {
+                "profile": profile, "run": run, "mask": mask,
+                "prefetch": prefetch, "accounting": accounting,
+                "renderingReuse": rendering_reuse,
+            }
+        )
+        rows, hashes = validate_scroll_reuse_artifacts(
+            output, log_path, manifest, profile, mask, prefetch, accounting,
+            rendering_reuse, run, expected_image_count, physical_baseline,
+        )
+    except FatalBenchmarkFailure:
+        raise
+    except BenchmarkFailure as error:
+        append_validation_failure(
+            output, profile, run, mask, prefetch, accounting, rendering_reuse,
+            error, log_path,
+            [expected_reuse_run_dir(
+                output, profile, mask, prefetch, accounting, rendering_reuse, run
+            )],
+        )
+        return None, None, "VALIDATION_FAILED"
     print(f"{label} passed,physical_target={physical_baseline},"
           f"artifacts={expected_reuse_run_dir(output, profile, mask, prefetch, accounting, rendering_reuse, run)}")
-    return rows, hashes
+    return rows, hashes, "PASS"
 
 
 def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_by_key):
@@ -1615,7 +1699,7 @@ def run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile):
     hashes_by_key = {}
     for _, _, run, mask, prefetch, accounting, rendering_reuse in plan:
         app_profile = profile.get("app_profile", profile["name"])
-        rows, hashes = run_scroll_reuse_process(
+        rows, hashes, _status = run_scroll_reuse_process(
             bundle, manifest, output, corpus_digest, app_profile, mask, prefetch,
             accounting, rendering_reuse, run, profile["workload_images"]
         )
@@ -1731,7 +1815,7 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
 
 def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run, label,
                 require_policy_diagnostics=False, require_structural_diagnostics=False,
-                passes=1):
+                passes=1, profile_name="matrix"):
     executable = executable_path(bundle, manifest)
     logs = output / "logs"
     logs.mkdir(parents=True, exist_ok=True)
@@ -1778,29 +1862,34 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         print(f"{label} failed: {reason}; log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed: {reason}")
-    environment = read_json_file(output / "environment.json", "benchmark environment")
-    physical_baseline = capture_physical_target_baseline(
-        output, environment, {
-            "label": label, "run": run, "mask": mask,
-            "prefetch": prefetch, "accounting": accounting,
-        }
-    )
     try:
+        environment = read_json_file(output / "environment.json", "benchmark environment")
+        physical_baseline = capture_physical_target_baseline(
+            output, environment, {
+                "label": label, "run": run, "mask": mask,
+                "prefetch": prefetch, "accounting": accounting,
+            }
+        )
         summary = validate_run_artifacts(
             output, log_path, mask, prefetch, accounting, run, corpus_digest,
             require_policy_diagnostics, require_structural_diagnostics, passes,
             physical_baseline,
         )
-    except BenchmarkFailure as error:
-        print(f"{label} failed validation; log={log_path}", file=sys.stderr)
-        print(tail(log_path), file=sys.stderr)
+    except FatalBenchmarkFailure:
         raise
+    except BenchmarkFailure as error:
+        append_validation_failure(
+            output, profile_name, run, mask, prefetch, accounting,
+            None, error, log_path,
+            [expected_run_dir(output, mask, prefetch, accounting, run)],
+        )
+        return "VALIDATION_FAILED"
     print(f"{label} passed,exit_code=0,resolution=540x960,"
           f"requested_mask={mask},effective_mask={mask},prefetch={prefetch},"
           f"accounting={accounting},"
           f"physical_target={physical_baseline},"
           f"artifacts={expected_run_dir(output, mask, prefetch, accounting, run)}")
-    return summary
+    return "PASS"
 
 
 def lcg_permutation(round_number, masks, prefetch_profiles, accounting_profiles):
@@ -1871,7 +1960,7 @@ def require_smokes_completed(output, corpus_digest):
 def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles,
                accounting_profiles, rounds, expected_processes,
                require_policy_diagnostics=False, require_structural_diagnostics=False,
-               passes=1):
+               passes=1, profile_name="matrix"):
     plan = write_suite_plan(output, masks, prefetch_profiles, accounting_profiles,
                             rounds, expected_processes)
     completed = 0
@@ -1881,6 +1970,7 @@ def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles
             f"matrix-{run}-{mask}-{prefetch}-{accounting}",
             require_policy_diagnostics, require_structural_diagnostics,
             passes,
+            profile_name,
         )
         completed += 1
         print(f"matrix progress={completed}/{expected_processes}")
@@ -2345,7 +2435,7 @@ def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name):
     plan = run_matrix(
         bundle, manifest, output, corpus_digest, profile["masks"], profile["prefetch"],
         profile["accounting"], profile["rounds"], profile["expected_processes"],
-        passes=profile.get("passes", 1),
+        passes=profile.get("passes", 1), profile_name=profile_name,
     )
     return aggregate(
         output, plan, profile["masks"], profile["prefetch"], profile["accounting"],

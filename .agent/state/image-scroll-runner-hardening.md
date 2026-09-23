@@ -8,15 +8,18 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active milestone
 
-Checkpoint 3: non-fatal post-run validation.
+Checkpoint 4: aggregation/final-status handling and tests.
 
 ## Last completed checkpoint
 
 Checkpoint 1 is committed as `e639ee2c1`: results preflight, access probing,
 and clean/resume/partial execution-state diagnostics.
 
-Checkpoint 2 is implemented and staged for commit: dynamic physical-target
-baseline capture, 540x960 logical validation, and physical fields in summaries.
+Checkpoint 2 is committed as `319c59f8c`: dynamic physical-target baseline
+capture, 540x960 logical validation, and physical fields in summaries.
+
+Checkpoint 3 is implemented and staged for commit: non-fatal validation
+recording/continuation for regular processes with fatal execution failures.
 
 ## Active paths
 
@@ -26,13 +29,13 @@ baseline capture, 540x960 logical validation, and physical fields in summaries.
 
 ## Next concrete action
 
-Implement non-fatal post-run validation recording and continuation for regular
-and raster-reuse processes. Keep execution, timeout, exit-code, and output
-preservation failures fatal.
+Make regular/reuse aggregation tolerate invalid planned runs, mark incomplete
+pairwise comparisons, and write final PASS/PASS_WITH_VALIDATION_FAILURES/
+INCOMPLETE summaries. Add focused aggregation and status tests.
 
 ## Validation and evidence
 
-Focused matrix/runner tests and Python compilation pass through checkpoint 2.
+Focused matrix/runner tests and Python compilation pass through checkpoint 3.
 Full benchmark and native builds are explicitly deferred by the user.
 
 ## Decisions still active

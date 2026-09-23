@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 import tempfile
 from unittest import mock
+from types import SimpleNamespace
 
 
 RUNNER_PATH = Path(__file__).with_name("run-image-scroll-distributed-benchmark.py")
@@ -146,6 +147,77 @@ def assert_physical_target_baseline():
                 "physical target baseline was not persisted")
 
 
+def assert_validation_failure_continuation():
+    manifest = {
+        "executable": "benchmark-app",
+        "includeDecodeAssets": False,
+    }
+    with tempfile.TemporaryDirectory(prefix="image-scroll-validation-test-") as temp:
+        root = Path(temp)
+        bundle = root / "bundle"
+        output = bundle / "results"
+        output.mkdir(parents=True)
+        (bundle / "benchmark-app").write_text("fake executable")
+        environment = physical_environment(540, 960)
+        environment.update({
+            "datasetFileCount": 663,
+            "datasetHash": "test-digest",
+        })
+        (output / "environment.json").write_text(json.dumps(environment))
+        completed = [SimpleNamespace(returncode=0), SimpleNamespace(returncode=0)]
+        with mock.patch.object(RUNNER.subprocess, "run", side_effect=completed), \
+                mock.patch.object(
+                    RUNNER, "validate_run_artifacts",
+                    side_effect=[RUNNER.BenchmarkFailure("bad viewport hash"), {}],
+                ):
+            first = RUNNER.run_process(
+                bundle, manifest, output, "test-digest", 0, "on", "off", 1,
+                "test-first-matrix-1", profile_name="test-profile",
+            )
+            second = RUNNER.run_process(
+                bundle, manifest, output, "test-digest", 0, "on", "off", 2,
+                "test-second-matrix-2", profile_name="test-profile",
+            )
+        require(first == "VALIDATION_FAILED", "validation failure did not return a status")
+        require(second == "PASS", "later process did not continue after validation failure")
+        failures = RUNNER.load_validation_failures(output)
+        require(len(failures) == 1, "validation failure artifact has wrong count")
+        failure = next(iter(failures.values()))
+        require(failure["fatal"] is False
+                and failure["status"] == "VALIDATION_FAILED",
+                "validation failure was not classified as non-fatal")
+        require(failure["configuration"]["profile"] == "test-profile"
+                and failure["messages"] == ["bad viewport hash"],
+                "validation failure configuration/message was not preserved")
+        require(Path(failure["logPath"]).is_file(),
+                "validation failure log path was not preserved")
+
+
+def assert_fatal_execution_stops():
+    manifest = {"executable": "benchmark-app"}
+    with tempfile.TemporaryDirectory(prefix="image-scroll-fatal-test-") as temp:
+        root = Path(temp)
+        bundle = root / "bundle"
+        output = bundle / "results"
+        output.mkdir(parents=True)
+        (bundle / "benchmark-app").write_text("fake executable")
+        with mock.patch.object(
+            RUNNER.subprocess, "run", return_value=SimpleNamespace(returncode=17)
+        ) as process:
+            try:
+                RUNNER.run_matrix(
+                    bundle, manifest, output, "test-digest", (0,), ("on",),
+                    ("off",), 2, 2, profile_name="fatal-profile",
+                )
+            except RUNNER.BenchmarkFailure as error:
+                require("exited with code 17" in str(error),
+                        "fatal exit error did not preserve the exit code")
+            else:
+                raise AssertionError("fatal execution failure was swallowed")
+            require(process.call_count == 1,
+                    "matrix continued after a fatal execution failure")
+
+
 def main():
     require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 50,
             "default matrix process count is not 50")
@@ -153,6 +225,8 @@ def main():
             "default expected process count is not 50")
     assert_results_state_diagnostics()
     assert_physical_target_baseline()
+    assert_validation_failure_continuation()
+    assert_fatal_execution_stops()
 
     default = RUNNER.profile_config("release-default-scroll")
     candidate = RUNNER.profile_config("release-candidate-scroll")
