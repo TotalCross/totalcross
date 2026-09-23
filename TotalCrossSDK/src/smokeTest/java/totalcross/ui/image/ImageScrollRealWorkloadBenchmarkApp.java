@@ -97,6 +97,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private long benchmarkTargetPixelBytes = -1;
   private long benchmarkN32ColorType = -1;
   private long benchmarkRendererBackend = -1;
+  private long benchmarkDrawableWidth = -1;
+  private long benchmarkDrawableHeight = -1;
+  private long benchmarkRefreshRate = -1;
+  private double benchmarkSurfaceScaleX = -1;
+  private double benchmarkSurfaceScaleY = -1;
   private long prefetchElapsedNs;
   private long prefetchRequestCount;
   private long prefetchReadyCount;
@@ -476,7 +481,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     benchmarkN32ColorType = NativeImageBacking.benchmarkMetricForTest(5);
     benchmarkTargetColorClass = NativeImageBacking.benchmarkMetricForTest(6);
     benchmarkRendererBackend = NativeImageBacking.benchmarkMetricForTest(7);
+    benchmarkDrawableWidth = NativeImageBacking.benchmarkMetricForTest(8);
+    benchmarkDrawableHeight = NativeImageBacking.benchmarkMetricForTest(9);
+    benchmarkRefreshRate = NativeImageBacking.benchmarkMetricForTest(10);
     benchmarkTargetPixelBytes = Graphics.getMainWindowPixelBytes();
+    if (benchmarkTargetWidth > 0 && benchmarkTargetHeight > 0) {
+      benchmarkSurfaceScaleX = (double) benchmarkTargetWidth / EXPECTED_LOGICAL_WIDTH;
+      benchmarkSurfaceScaleY = (double) benchmarkTargetHeight / EXPECTED_LOGICAL_HEIGHT;
+    }
     validateTargetMetrics();
   }
 
@@ -1361,13 +1373,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private void writeEnvironment() throws Exception {
     String json = "{\n"
-        + "  \"os\":\"" + escapeJson(Settings.platform) + "\",\n"
-        + "  \"osVersion\":\"unavailable\",\n"
-        + "  \"architecture\":\"unavailable\",\n"
-        + "  \"endianness\":\"unavailable\",\n"
-        + "  \"cpu\":\"unavailable\",\n"
-        + "  \"gpu\":\"unavailable\",\n"
+        + "  \"packageTarget\":null,\n"
+        + "  \"hostOs\":null,\n"
+        + "  \"hostOsVersion\":null,\n"
+        + "  \"hostArchitecture\":null,\n"
+        + "  \"endianness\":null,\n"
+        + "  \"cpuModel\":null,\n"
+        + "  \"gpu\":null,\n"
         + "  \"ramTotalBytes\":null,\n"
+        + "  \"totalCrossPlatform\":\"" + escapeJson(Settings.platform) + "\",\n"
         + "  \"expectedLogicalWidth\":" + EXPECTED_LOGICAL_WIDTH + ",\n"
         + "  \"expectedLogicalHeight\":" + EXPECTED_LOGICAL_HEIGHT + ",\n"
         + "  \"effectiveLogicalWidth\":" + Settings.screenWidth + ",\n"
@@ -1380,11 +1394,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"totalCrossScreenHeight\":" + Settings.screenHeight + ",\n"
         + "  \"density\":" + Settings.screenDensity + ",\n"
         + "  \"systemDisplayScale\":null,\n"
-        + "  \"refreshRate\":null,\n"
-        + "  \"sdlDrawableWidth\":" + jsonMetric(benchmarkTargetWidth) + ",\n"
-        + "  \"sdlDrawableHeight\":" + jsonMetric(benchmarkTargetHeight) + ",\n"
+        + "  \"refreshRate\":" + jsonMetric(benchmarkRefreshRate) + ",\n"
+        + "  \"sdlDrawableWidth\":" + jsonMetric(benchmarkDrawableWidth) + ",\n"
+        + "  \"sdlDrawableHeight\":" + jsonMetric(benchmarkDrawableHeight) + ",\n"
         + "  \"skiaSurfaceWidth\":" + jsonMetric(benchmarkTargetWidth) + ",\n"
         + "  \"skiaSurfaceHeight\":" + jsonMetric(benchmarkTargetHeight) + ",\n"
+        + "  \"surfaceScaleX\":" + jsonDouble(benchmarkSurfaceScaleX) + ",\n"
+        + "  \"surfaceScaleY\":" + jsonDouble(benchmarkSurfaceScaleY) + ",\n"
         + "  \"rendererBackend\":\"" + rendererBackendName(benchmarkRendererBackend) + "\",\n"
         + "  \"accounting\":\"" + accountingProfile + "\",\n"
         + "  \"kN32SkColorType\":" + jsonMetric(benchmarkN32ColorType) + ",\n"
@@ -1435,6 +1451,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private static String jsonMetric(long value) {
     return value < 0 ? "null" : String.valueOf(value);
+  }
+
+  private static String jsonDouble(double value) {
+    return value > 0 && !Double.isInfinite(value) && !Double.isNaN(value)
+        ? String.valueOf(value) : "null";
   }
 
   private static String rendererBackendName(long value) {

@@ -181,6 +181,31 @@ int32 TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration *confi
    return true;
 }
 
+int32 TCSDL_GetBenchmarkMetric(int32 kind)
+{
+   if (window == NULL || renderer == NULL)
+      return -1;
+   if (kind == 0 || kind == 1)
+   {
+      int width = 0;
+      int height = 0;
+      if (SDL_GetRendererOutputSize(renderer, &width, &height) != 0
+         || width <= 0 || height <= 0)
+         return -1;
+      return kind == 0 ? width : height;
+   }
+   if (kind == 2)
+   {
+      int displayIndex = SDL_GetWindowDisplayIndex(window);
+      SDL_DisplayMode displayMode;
+      if (displayIndex < 0 || SDL_GetCurrentDisplayMode(displayIndex, &displayMode) != 0
+         || displayMode.refresh_rate <= 0)
+         return -1;
+      return displayMode.refresh_rate;
+   }
+   return -1;
+}
+
 static int32 sdlWindowPosition(TCWindowPositionMode mode, int32 position)
 {
    return mode == TC_WINDOW_POSITION_CENTER ? SDL_WINDOWPOS_CENTERED

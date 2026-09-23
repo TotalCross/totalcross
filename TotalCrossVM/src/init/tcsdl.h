@@ -25,6 +25,8 @@ extern "C" {
     // Returns whether the resize request was submitted; SDL event metrics confirm its result.
     int32 TCSDL_SetWindowSize(int32 width, int32 height);
     int32 TCSDL_QueryWindowMetrics(ScreenSurface screen, TScreenConfiguration* configuration);
+    // kind 0/1: renderer drawable width/height; kind 2: current display refresh rate.
+    int32 TCSDL_GetBenchmarkMetric(int32 kind);
     int32 TCSDL_CreateBackBuffer(ScreenSurface screen);
     void TCSDL_DestroyBackBuffer(ScreenSurface screen);
     void TCSDL_DestroyWindow(ScreenSurface screen);

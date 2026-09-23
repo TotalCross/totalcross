@@ -544,6 +544,24 @@ int64_t skia_benchmark_native_metric(int32 kind) {
         return static_cast<int64_t>(kN32_SkColorType);
     case 6:
         return benchmarkTargetColorClass;
+    case 8:
+#if TC_WINDOWING_SDL
+        return TCSDL_GetBenchmarkMetric(0);
+#else
+        return -1;
+#endif
+    case 9:
+#if TC_WINDOWING_SDL
+        return TCSDL_GetBenchmarkMetric(1);
+#else
+        return -1;
+#endif
+    case 10:
+#if TC_WINDOWING_SDL
+        return TCSDL_GetBenchmarkMetric(2);
+#else
+        return -1;
+#endif
     default:
         return -1;
     }
