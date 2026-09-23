@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active milestone
 
-STOP / REVIEW after the runner-regression closeout.
+STOP / REVIEW after environment-metadata hardening.
 
 ## Last completed checkpoint
 
@@ -31,29 +31,41 @@ termination.
 The clean-full, comparison-continuation, and final-console regressions are
 committed as `248c6667f`, `4b2a937f5`, and `fe185aca8`, respectively.
 
+Environment metadata hardening is committed as `d4c0d45d4` (Python baseline
+and validation), `08204807b` (SDL drawable and refresh-rate hooks), and
+`a330b6aa1` (package-target provenance in state and summaries).
+
 ## Active paths
 
 - `scripts/run-image-scroll-distributed-benchmark.py`
 - `scripts/test-image-scroll-distributed-benchmark.py`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.java`
+- `TotalCrossVM/src/init/tcsdl.cpp`
+- `TotalCrossVM/src/init/tcsdl.h`
+- `TotalCrossVM/src/nm/ui/skia/skia.cpp`
 - `.agent/exec-plan-image-scroll-runner-hardening.md`
 
 ## Next concrete action
 
-Report the implementation commits plus this plan closeout, focused test
-results, deferred full benchmark/native validation, and the no-push status.
+Report the implementation commits plus this plan closeout, focused test and
+syntax results, deferred full benchmark/native build, and the no-push status.
 
 ## Validation and evidence
 
-Focused matrix/runner, aggregation, continuation, and Python compilation tests
-pass through the regression closeout. The package script syntax check and
-copyright-header validation pass. GPG signatures are required and verified for
-the three continuation commits. Full benchmark and native builds are
-explicitly deferred by the user.
+Focused matrix/runner, aggregation, continuation, environment metadata, and
+Python compilation tests pass. The package script syntax check, Java compile,
+SDL-enabled and non-SDL native syntax checks, copyright-header validation, and
+diff checks pass. GPG signatures are verified for the three environment
+commits. Full benchmark execution and native target builds were not run.
 
 ## Decisions still active
 
 - Logical target remains 540x960; physical target is captured and compared at
   runtime without a DPI assumption.
+- `packageTarget` comes from manifest target provenance; host OS, version,
+  architecture, byte order, and optional CPU model come from the Python host.
+- SDL drawable size and refresh rate are native measurements; Skia surface
+  metrics remain separate, and unavailable optional values remain null.
 - Post-exit validation failures are non-fatal; execution failures are fatal.
 - Existing results directories without the new state marker are invalid rather
   than successful resumes.
