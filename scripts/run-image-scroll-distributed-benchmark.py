@@ -20,8 +20,6 @@ import zipfile
 
 
 EXPECTED_JPEGS = 663
-EXPECTED_TARGET_WIDTH = 1080
-EXPECTED_TARGET_HEIGHT = 1920
 SCROLL_CORPUS_VARIANTS = ("imag",)
 DECODE_CORPUS_VARIANTS = (
     "imag", "lossless", "decode-baseline", "decode-fast",
@@ -37,6 +35,12 @@ DECODE_LIBRARIES = {
 }
 SCREEN_SPEC = "-1,-1,540,960"
 SCREEN_ARGUMENT = "/scr " + SCREEN_SPEC
+LOGICAL_TARGET = {"width": 540, "height": 960}
+PHYSICAL_TARGET_FIELDS = (
+    "skiaSurfaceWidth", "skiaSurfaceHeight", "skiaSurfaceRowBytes",
+    "skiaSurfacePixelBytes", "skiaSurfaceColorType", "skiaSurfaceAlphaType",
+    "skiaSurfaceColorClassification", "rendererBackend",
+)
 MASKS = (
     0, 6, 8, 16, 32, 8192, 16384, 32768, 32795, 32799,
 )
@@ -347,6 +351,117 @@ def probe_results_directory(output):
         ) from error
 
 
+def physical_target_from_environment(environment, description):
+    target = {}
+    for field in PHYSICAL_TARGET_FIELDS:
+        value = environment.get(field)
+        if field in ("skiaSurfaceColorClassification", "rendererBackend"):
+            require(isinstance(value, str) and value,
+                    f"{description} lacks {field}")
+        else:
+            require(type(value) is int and value >= 0,
+                    f"{description} has invalid {field}")
+        target[field] = value
+    require(target["skiaSurfaceWidth"] > 0 and target["skiaSurfaceHeight"] > 0,
+            f"{description} has an invalid physical target size")
+    require(target["skiaSurfaceRowBytes"] > 0 and target["skiaSurfacePixelBytes"] > 0,
+            f"{description} has invalid physical target storage metrics")
+    require(target["skiaSurfaceColorClassification"] in (
+        "BGRA8888", "RGB565", "OTHER",
+    ), f"{description} lacks target-color classification")
+    require(target["rendererBackend"] in ("software", "gpu"),
+            f"{description} lacks renderer backend")
+    minimum_row_bytes = {
+        "BGRA8888": target["skiaSurfaceWidth"] * 4,
+        "RGB565": target["skiaSurfaceWidth"] * 2,
+        "OTHER": target["skiaSurfaceWidth"],
+    }[target["skiaSurfaceColorClassification"]]
+    require(target["skiaSurfaceRowBytes"] >= minimum_row_bytes,
+            f"{description} has an inconsistent target pitch")
+    return target
+
+
+def validate_physical_target(environment, baseline, description):
+    require(environment.get("expectedLogicalWidth") == LOGICAL_TARGET["width"]
+            and environment.get("expectedLogicalHeight") == LOGICAL_TARGET["height"]
+            and environment.get("effectiveLogicalWidth") == LOGICAL_TARGET["width"]
+            and environment.get("effectiveLogicalHeight") == LOGICAL_TARGET["height"],
+            f"{description} is not 540x960")
+    target = physical_target_from_environment(environment, description)
+    if baseline is not None:
+        for field in PHYSICAL_TARGET_FIELDS:
+            require(target[field] == baseline[field],
+                    f"{description} {field} differs from the execution baseline: "
+                    f"{target[field]!r} != {baseline[field]!r}")
+    return target
+
+
+def load_physical_target_baseline(output):
+    path = output / PHYSICAL_TARGET_BASELINE_FILE
+    if not path.is_file():
+        return None
+    payload = read_json_file(path, "physical target baseline")
+    require(payload.get("fixture") == FIXTURE,
+            f"{path} belongs to another fixture")
+    require(payload.get("logicalTarget") == LOGICAL_TARGET,
+            f"{path} logical target differs from 540x960")
+    target = payload.get("physicalTarget")
+    require(isinstance(target, dict), f"{path} physical target is missing")
+    return physical_target_from_environment(target, str(path))
+
+
+def capture_physical_target_baseline(output, environment, configuration):
+    baseline = load_physical_target_baseline(output)
+    try:
+        target = physical_target_from_environment(
+            environment, str(output / "environment.json")
+        )
+    except BenchmarkFailure:
+        return baseline
+    if baseline is None:
+        payload = {
+            "schemaVersion": 1,
+            "fixture": FIXTURE,
+            "logicalTarget": dict(LOGICAL_TARGET),
+            "physicalTarget": target,
+            "firstProcess": configuration,
+        }
+        write_json_file(output / PHYSICAL_TARGET_BASELINE_FILE, payload,
+                        "physical target baseline")
+        return target
+    for field in PHYSICAL_TARGET_FIELDS:
+        require(target[field] == baseline[field],
+                f"{output / 'environment.json'} {field} differs from the "
+                f"execution baseline: {target[field]!r} != {baseline[field]!r}")
+    return baseline
+
+
+def physical_summary_fields(target):
+    fields = {
+        "logical_width": LOGICAL_TARGET["width"],
+        "logical_height": LOGICAL_TARGET["height"],
+    }
+    if target is None:
+        fields.update({
+            "physical_width": None, "physical_height": None,
+            "physical_row_bytes": None, "physical_pixel_bytes": None,
+            "physical_color_type": None, "physical_alpha_type": None,
+            "physical_color_classification": None, "renderer_backend": None,
+        })
+    else:
+        fields.update({
+            "physical_width": target["skiaSurfaceWidth"],
+            "physical_height": target["skiaSurfaceHeight"],
+            "physical_row_bytes": target["skiaSurfaceRowBytes"],
+            "physical_pixel_bytes": target["skiaSurfacePixelBytes"],
+            "physical_color_type": target["skiaSurfaceColorType"],
+            "physical_alpha_type": target["skiaSurfaceAlphaType"],
+            "physical_color_classification": target["skiaSurfaceColorClassification"],
+            "renderer_backend": target["rendererBackend"],
+        })
+    return fields
+
+
 def preflight(bundle, manifest, output, phase):
     validate_bundle(bundle, manifest)
     state, detail = inspect_results_state(output)
@@ -368,6 +483,15 @@ def preflight(bundle, manifest, output, phase):
             describe_results_os_error("create", output, error)
         ) from error
     probe_results_directory(output)
+    if (output / PHYSICAL_TARGET_BASELINE_FILE).is_file():
+        try:
+            load_physical_target_baseline(output)
+        except BenchmarkFailure as error:
+            raise FatalBenchmarkFailure(
+                f"results state is partial/invalid: {error}; "
+                "preserve the directory for review and start with a fresh "
+                "bundle or restore a complete baseline"
+            ) from error
     if state == "CLEAN_START":
         write_execution_state(output, "PREFLIGHT_PASS", manifest,
                               resultsState="CLEAN_START")
@@ -999,7 +1123,8 @@ def validate_scroll_trajectory(frames_path, positions, pass_record):
 
 def validate_reuse_run_artifacts(output, log_path, mask, prefetch, accounting, run,
                                  dataset_digest, require_policy_diagnostics,
-                                 require_structural_diagnostics, pass_count):
+                                 require_structural_diagnostics, pass_count,
+                                 physical_baseline=None):
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     pass_records = [
         parse_record(line) for line in lines
@@ -1070,31 +1195,9 @@ def validate_reuse_run_artifacts(output, log_path, mask, prefetch, accounting, r
             and environment.get("effectiveLogicalWidth") == 540
             and environment.get("effectiveLogicalHeight") == 960,
             f"{output}/environment.json is not 540x960")
-    target_width = environment.get("skiaSurfaceWidth")
-    target_height = environment.get("skiaSurfaceHeight")
-    target_row_bytes = environment.get("skiaSurfaceRowBytes")
-    target_color_type = environment.get("skiaSurfaceColorType")
-    target_alpha_type = environment.get("skiaSurfaceAlphaType")
-    n32_color_type = environment.get("kN32SkColorType")
-    target_class = environment.get("skiaSurfaceColorClassification")
-    require(isinstance(target_width, int) and target_width > 0
-            and isinstance(target_height, int) and target_height > 0
-            and isinstance(target_row_bytes, int) and target_row_bytes > 0
-            and isinstance(target_color_type, int) and target_color_type >= 0
-            and isinstance(target_alpha_type, int) and target_alpha_type >= 0
-            and isinstance(n32_color_type, int) and n32_color_type >= 0,
-            f"{output}/environment.json lacks native target metrics")
-    require(target_class in ("BGRA8888", "RGB565", "OTHER"),
-            f"{output}/environment.json lacks target-color classification")
-    require(environment.get("rendererBackend") in ("software", "gpu"),
-            f"{output}/environment.json lacks renderer backend")
-    require(target_width == EXPECTED_TARGET_WIDTH and target_height == EXPECTED_TARGET_HEIGHT,
-            f"{output}/environment.json has unexpected physical target size")
-    minimum_row_bytes = {"BGRA8888": target_width * 4,
-                         "RGB565": target_width * 2,
-                         "OTHER": target_width}[target_class]
-    require(target_row_bytes >= minimum_row_bytes,
-            f"{output}/environment.json has an inconsistent target pitch")
+    validate_physical_target(
+        environment, physical_baseline, f"{output}/environment.json"
+    )
 
     for index, record in enumerate(pass_records):
         pass_dir = run_dir / "passes" / record["pass"]
@@ -1180,7 +1283,7 @@ def percentile(values, fraction):
 
 def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
                                     prefetch, accounting, rendering_reuse, run,
-                                    expected_image_count):
+                                    expected_image_count, physical_baseline=None):
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     pass_records = [
         parse_record(line) for line in lines
@@ -1223,16 +1326,16 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
     )
     environment_path = output / "environment.json"
     require(environment_path.is_file(), f"{environment_path} is missing")
-    environment = json.loads(environment_path.read_text(encoding="utf-8"))
+    environment = read_json_file(environment_path, "benchmark environment")
     require(environment.get("datasetFileCount") == expected_image_count
             and environment.get("datasetHash") == manifest.get("datasetHash"),
             f"{environment_path} has an unexpected scroll corpus identity")
-    require(environment.get("effectiveLogicalWidth") == 540
-            and environment.get("effectiveLogicalHeight") == 960,
-            f"{environment_path} is not 540x960")
-    target_pixel_bytes = environment.get("skiaSurfacePixelBytes")
-    require(isinstance(target_pixel_bytes, int) and target_pixel_bytes in (2, 4),
-            f"{environment_path} lacks a supported target pixel width")
+    physical_target = validate_physical_target(
+        environment, physical_baseline, str(environment_path)
+    )
+    target_pixel_bytes = physical_target["skiaSurfacePixelBytes"]
+    require(target_pixel_bytes in (2, 4),
+            f"{environment_path} has an unsupported target pixel width")
     for name in ("scroll_raster_reuse_frames.csv", "scroll_raster_reuse_waypoints.csv",
                  "memory.csv", "timeline.csv"):
         require((run_dir / name).is_file(), f"{run_dir / name} is missing")
@@ -1371,6 +1474,7 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
             if viewport_pixels else 0.0,
             "target_pixel_bytes": target_pixel_bytes,
             "memory_peak_resident_bytes": memory_peak,
+            **physical_summary_fields(physical_target),
         })
     return rows, waypoint_hashes
 
@@ -1443,11 +1547,20 @@ def run_scroll_reuse_process(bundle, manifest, output, corpus_digest, profile,
         print(f"{label} failed,exit_code={completed.returncode},log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed with exit code {completed.returncode}")
+    environment = read_json_file(output / "environment.json", "benchmark environment")
+    physical_baseline = capture_physical_target_baseline(
+        output, environment, {
+            "profile": profile, "run": run, "mask": mask,
+            "prefetch": prefetch, "accounting": accounting,
+            "renderingReuse": rendering_reuse,
+        }
+    )
     rows, hashes = validate_scroll_reuse_artifacts(
         output, log_path, manifest, profile, mask, prefetch, accounting, rendering_reuse, run,
-        expected_image_count,
+        expected_image_count, physical_baseline,
     )
-    print(f"{label} passed,artifacts={expected_reuse_run_dir(output, profile, mask, prefetch, accounting, rendering_reuse, run)}")
+    print(f"{label} passed,physical_target={physical_baseline},"
+          f"artifacts={expected_reuse_run_dir(output, profile, mask, prefetch, accounting, rendering_reuse, run)}")
     return rows, hashes
 
 
@@ -1514,11 +1627,13 @@ def run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile):
 
 def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, dataset_digest,
                            require_policy_diagnostics=False,
-                           require_structural_diagnostics=False, passes=1):
+                           require_structural_diagnostics=False, passes=1,
+                           physical_baseline=None):
     if passes != 1:
         return validate_reuse_run_artifacts(
             output, log_path, mask, prefetch, accounting, run, dataset_digest,
             require_policy_diagnostics, require_structural_diagnostics, passes,
+            physical_baseline,
         )
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     pass_records = [
@@ -1604,34 +1719,9 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
     require(environment.get("datasetFileCount") == EXPECTED_JPEGS
             and environment.get("datasetHash") == dataset_digest,
             f"{output}/environment.json dataset mismatch")
-    target_width = environment.get("skiaSurfaceWidth")
-    target_height = environment.get("skiaSurfaceHeight")
-    target_row_bytes = environment.get("skiaSurfaceRowBytes")
-    target_color_type = environment.get("skiaSurfaceColorType")
-    target_alpha_type = environment.get("skiaSurfaceAlphaType")
-    n32_color_type = environment.get("kN32SkColorType")
-    require(isinstance(target_width, int) and target_width > 0
-            and isinstance(target_height, int) and target_height > 0
-            and isinstance(target_row_bytes, int) and target_row_bytes > 0
-            and isinstance(target_color_type, int) and target_color_type >= 0
-            and isinstance(target_alpha_type, int) and target_alpha_type >= 0
-            and isinstance(n32_color_type, int) and n32_color_type >= 0,
-            f"{output}/environment.json lacks native target metrics")
-    require(environment.get("skiaSurfaceColorClassification") in (
-        "BGRA8888", "RGB565", "OTHER",
-    ), f"{output}/environment.json lacks target-color classification")
-    require(environment.get("rendererBackend") in ("software", "gpu"),
-            f"{output}/environment.json lacks renderer backend")
-    require(target_width == EXPECTED_TARGET_WIDTH
-            and target_height == EXPECTED_TARGET_HEIGHT,
-            f"{output}/environment.json has unexpected physical target size")
-    minimum_row_bytes = {
-        "BGRA8888": target_width * 4,
-        "RGB565": target_width * 2,
-        "OTHER": target_width,
-    }[environment["skiaSurfaceColorClassification"]]
-    require(target_row_bytes >= minimum_row_bytes,
-            f"{output}/environment.json has an inconsistent target pitch")
+    physical_target = validate_physical_target(
+        environment, physical_baseline, f"{output}/environment.json"
+    )
     validate_diagnostic_counters(counters, run_dir, accounting, require_policy_diagnostics)
     if require_structural_diagnostics:
         require(accounting == "on", f"{run_dir} structural diagnostics require accounting")
@@ -1688,10 +1778,18 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         print(f"{label} failed: {reason}; log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed: {reason}")
+    environment = read_json_file(output / "environment.json", "benchmark environment")
+    physical_baseline = capture_physical_target_baseline(
+        output, environment, {
+            "label": label, "run": run, "mask": mask,
+            "prefetch": prefetch, "accounting": accounting,
+        }
+    )
     try:
         summary = validate_run_artifacts(
             output, log_path, mask, prefetch, accounting, run, corpus_digest,
-            require_policy_diagnostics, require_structural_diagnostics, passes
+            require_policy_diagnostics, require_structural_diagnostics, passes,
+            physical_baseline,
         )
     except BenchmarkFailure as error:
         print(f"{label} failed validation; log={log_path}", file=sys.stderr)
@@ -1700,6 +1798,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
     print(f"{label} passed,exit_code=0,resolution=540x960,"
           f"requested_mask={mask},effective_mask={mask},prefetch={prefetch},"
           f"accounting={accounting},"
+          f"physical_target={physical_baseline},"
           f"artifacts={expected_run_dir(output, mask, prefetch, accounting, run)}")
     return summary
 
@@ -1897,6 +1996,8 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
               expected_processes, profile_name, require_policy_diagnostics=False,
               require_structural_diagnostics=False):
     records = []
+    physical_target = load_physical_target_baseline(output)
+    physical_fields = physical_summary_fields(physical_target)
     for _, order, run, mask, prefetch, accounting in plan:
         path = expected_run_dir(output, mask, prefetch, accounting, run) / "summary.json"
         try:
@@ -1953,6 +2054,7 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
             "largest_consecutive_over_33_3": summary["largestConsecutiveOver33_3"],
             "prefetch_elapsed_ns": summary["prefetchElapsedNs"],
             "memory_peak_resident_bytes": summary["memoryPeakResidentBytes"],
+            **physical_fields,
             **diagnostics,
         })
     require(len(records) == expected_processes,
@@ -1991,6 +2093,9 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
         "frames_over_16_67_count", "frames_over_33_3_count", "frames_over_50_count",
         "frames_over_100_count", "largest_stall_ns", "largest_consecutive_over_33_3",
         "prefetch_elapsed_ns", "memory_peak_resident_bytes",
+        "logical_width", "logical_height", "physical_width", "physical_height",
+        "physical_row_bytes", "physical_pixel_bytes", "physical_color_type",
+        "physical_alpha_type", "physical_color_classification", "renderer_backend",
     ] + list(DIAGNOSTIC_SUMMARY_FIELDS) + [
         "baseline_scope",
         "baseline_mask0_p50_ns", "delta_p50_ns", "baseline_mask0_p95_ns", "delta_p95_ns",
@@ -2192,6 +2297,9 @@ def aggregate_reuse(output, plan, masks, prefetch_profiles, accounting_profiles,
         "work_time_p50_ns", "work_time_p95_ns", "work_time_p99_ns", "work_time_max_ns",
         "paint_time_p50_ns", "paint_time_p95_ns", "paint_time_p99_ns", "paint_time_max_ns",
         "target_color_class", "raster_bytes",
+        "logical_width", "logical_height", "physical_width", "physical_height",
+        "physical_row_bytes", "physical_pixel_bytes", "physical_color_type",
+        "physical_alpha_type", "physical_color_classification", "renderer_backend",
     ] + list(DIAGNOSTIC_SUMMARY_FIELDS) + list(counter_fields)
     path = output / "m4-reuse-passes.csv"
     with path.open("w", newline="", encoding="utf-8") as destination:
@@ -2246,12 +2354,15 @@ def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name):
 
 
 def write_default_execution_summary(output, manifest):
+    physical_target = load_physical_target_baseline(output)
     summary = {
         "status": "PASS",
         "sourceCommit": manifest["sourceCommit"],
         "sdkSourceAttestation": manifest.get("sdkSourceAttestation"),
         "runtimeSha256": manifest["runtimeSha256"],
         "tcvmSha256": manifest.get("tcvmSha256"),
+        "logicalTarget": dict(LOGICAL_TARGET),
+        "physicalTarget": physical_target,
         "selfTestProcessCount": 1,
         "profileProcessCounts": {
             name: profile_config(name)["expected_processes"]

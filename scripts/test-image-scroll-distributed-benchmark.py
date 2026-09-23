@@ -101,12 +101,58 @@ def assert_results_state_diagnostics():
                 raise AssertionError("results access failure did not stop execution")
 
 
+def physical_environment(width, height, pixel_bytes=4, renderer="software"):
+    classification = "BGRA8888" if pixel_bytes == 4 else "RGB565"
+    return {
+        "expectedLogicalWidth": 540,
+        "expectedLogicalHeight": 960,
+        "effectiveLogicalWidth": 540,
+        "effectiveLogicalHeight": 960,
+        "skiaSurfaceWidth": width,
+        "skiaSurfaceHeight": height,
+        "skiaSurfaceRowBytes": width * pixel_bytes,
+        "skiaSurfacePixelBytes": pixel_bytes,
+        "skiaSurfaceColorType": 1 if pixel_bytes == 4 else 2,
+        "skiaSurfaceAlphaType": 1,
+        "skiaSurfaceColorClassification": classification,
+        "rendererBackend": renderer,
+    }
+
+
+def assert_physical_target_baseline():
+    one_x = physical_environment(540, 960)
+    two_x = physical_environment(1080, 1920)
+    first = RUNNER.validate_physical_target(one_x, None, "1x environment")
+    second = RUNNER.validate_physical_target(two_x, None, "2x environment")
+    require(first["skiaSurfaceWidth"] == 540 and second["skiaSurfaceWidth"] == 1080,
+            "1x/2x physical targets were not accepted")
+    require(first["skiaSurfaceHeight"] == 960 and second["skiaSurfaceHeight"] == 1920,
+            "1x/2x physical target heights were not accepted")
+    try:
+        RUNNER.validate_physical_target(two_x, first, "changed environment")
+    except RUNNER.BenchmarkFailure as error:
+        require("skiaSurfaceWidth" in str(error),
+                "physical target change did not name the differing field")
+    else:
+        raise AssertionError("physical target change was accepted")
+
+    with tempfile.TemporaryDirectory(prefix="image-scroll-physical-target-test-") as temp:
+        output = Path(temp)
+        captured = RUNNER.capture_physical_target_baseline(
+            output, one_x, {"profile": "test", "run": 1}
+        )
+        require(captured == first, "physical target baseline was not captured")
+        require(RUNNER.load_physical_target_baseline(output) == first,
+                "physical target baseline was not persisted")
+
+
 def main():
     require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 50,
             "default matrix process count is not 50")
     require(RUNNER.DEFAULT_EXPECTED_PROCESS_COUNT == 50,
             "default expected process count is not 50")
     assert_results_state_diagnostics()
+    assert_physical_target_baseline()
 
     default = RUNNER.profile_config("release-default-scroll")
     candidate = RUNNER.profile_config("release-candidate-scroll")

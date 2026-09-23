@@ -36,8 +36,8 @@ outside the temporary fixtures created by the focused tests.
 ## Progress
 
 - [x] Read repository, ExecPlan, and logical-commit instructions.
-- [ ] Add results preflight and state diagnostics; commit checkpoint 1.
-- [ ] Add dynamic physical-target baseline and summary fields; commit checkpoint 2.
+- [x] Add results preflight and state diagnostics; commit checkpoint 1.
+- [x] Add dynamic physical-target baseline and summary fields; commit checkpoint 2.
 - [ ] Make post-run validation failures non-fatal and record exact errors;
   commit checkpoint 3.
 - [ ] Make aggregation/final status resilient; add focused tests and commit

@@ -8,12 +8,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active milestone
 
-Checkpoint 1: preflight/results-state diagnostics.
+Checkpoint 3: non-fatal post-run validation.
 
 ## Last completed checkpoint
 
-None. Branch starts at `d01bcb180628370cbdde7c14f9b836aa840d0a7d` with the
-50-process matrix and package metadata already committed.
+Checkpoint 1 is committed as `e639ee2c1`: results preflight, access probing,
+and clean/resume/partial execution-state diagnostics.
+
+Checkpoint 2 is implemented and staged for commit: dynamic physical-target
+baseline capture, 540x960 logical validation, and physical fields in summaries.
 
 ## Active paths
 
@@ -23,14 +26,14 @@ None. Branch starts at `d01bcb180628370cbdde7c14f9b836aa840d0a7d` with the
 
 ## Next concrete action
 
-Implement preflight bundle/results validation, the create/read/write/delete
-probe, and execution-state classification. Add tests for clean, valid-resume,
-partial, and access-failure results states.
+Implement non-fatal post-run validation recording and continuation for regular
+and raster-reuse processes. Keep execution, timeout, exit-code, and output
+preservation failures fatal.
 
 ## Validation and evidence
 
-No new validation has run for this plan yet. Full benchmark and native builds
-are explicitly deferred by the user.
+Focused matrix/runner tests and Python compilation pass through checkpoint 2.
+Full benchmark and native builds are explicitly deferred by the user.
 
 ## Decisions still active
 
