@@ -480,8 +480,15 @@ def assert_final_status_output():
 
 def assert_exploratory_plan_and_execution():
     profile = RUNNER.profile_config("reduced-image-optimizations")
+    require(profile["masks"] == (4, 5, 6, 7, 38, 8198, 16390, 24582,
+                                  32774, 57350, 32799),
+            "exploratory mask matrix differs")
     require(profile["passes"] == 3 and profile["rounds"] == 1,
             "exploratory profile does not use one process with three passes")
+    require(RUNNER.CONTROLLED_PAIRS == (
+                (4, 6), (5, 7), (6, 38), (6, 8198),
+                (6, 16390), (6, 32774), (6, 57350), (6, 32799),
+            ), "controlled comparisons do not center on mask 6")
     diagnostic = RUNNER.profile_config("prefetch-diagnostics")
     require(diagnostic["masks"] == (0, 4, 6, 38, 32799)
             and diagnostic["accounting"] == ("on",)
@@ -725,17 +732,17 @@ def assert_aggregation_and_final_status():
                 "diagnostic aggregation omitted phase or conversion metrics")
 
         pairwise_records = [
-            {"mask": 0, "prefetch": "on", "run": 1, "status": "VALIDATION_FAILED"},
-            {"mask": 32, "prefetch": "on", "run": 1, "status": "PASS",
+            {"mask": 4, "prefetch": "on", "run": 1, "status": "VALIDATION_FAILED"},
+            {"mask": 6, "prefetch": "on", "run": 1, "status": "PASS",
              "work_time_p50_ns": 20, "work_time_p95_ns": 30,
              "paint_time_p50_ns": 10, "paint_time_p95_ns": 15},
         ]
         pairwise_path = RUNNER.write_pairwise_comparison(
-            output, pairwise_records, (0, 32), 1
+            output, pairwise_records, (4, 6), 1
         )
         with pairwise_path.open(newline="", encoding="utf-8") as source:
             pairwise_rows = list(csv.DictReader(source))
-        incomplete = next(row for row in pairwise_rows if row["pair"] == "0->32")
+        incomplete = next(row for row in pairwise_rows if row["pair"] == "4->6")
         require(incomplete["variance_status"] == "INCOMPLETE_VALIDATION",
                 "pairwise comparison did not mark an invalid side")
 
@@ -784,10 +791,10 @@ def assert_aggregation_and_final_status():
 
 
 def main():
-    require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 30,
-            "default matrix process count is not 30")
-    require(RUNNER.DEFAULT_EXPECTED_PROCESS_COUNT == 30,
-            "default expected process count is not 30")
+    require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 31,
+            "default matrix process count is not 31")
+    require(RUNNER.DEFAULT_EXPECTED_PROCESS_COUNT == 31,
+            "default expected process count is not 31")
     assert_results_state_diagnostics()
     assert_clean_full_and_resume_preflight()
     assert_physical_target_baseline()
@@ -824,7 +831,7 @@ def main():
             (mask, prefetch, accounting)
             for _, mask, prefetch, accounting in reduced_keys
         )
-        require(len(reduced_plan) == 10, "reduced plan process count differs")
+        require(len(reduced_plan) == 11, "reduced plan process count differs")
         require(len(set(reduced_keys)) == len(reduced_keys),
                 "reduced plan contains duplicates")
         require(reduced_counts == Counter(
@@ -839,7 +846,7 @@ def main():
         )
         reuse_plans = {name: assert_reuse_plan(name, output) for name in names}
         total = len(reduced_plan) + sum(len(plan) for plan in reuse_plans.values())
-        require(total == 30, f"default plan contains {total} processes")
+        require(total == 31, f"default plan contains {total} processes")
 
         manifest = {
             "sourceCommit": "test",
@@ -850,13 +857,13 @@ def main():
         }
         RUNNER.write_default_execution_summary(output, manifest)
         summary = json.loads((output / "default-execution-summary.json").read_text())
-        require(summary["expectedProcessCount"] == 30,
-                "default summary process count is not 30")
-        require(summary["profileProcessCounts"]["reduced-image-optimizations"] == 10,
+        require(summary["expectedProcessCount"] == 31,
+                "default summary process count is not 31")
+        require(summary["profileProcessCounts"]["reduced-image-optimizations"] == 11,
                 "exploratory summary process count differs")
         require(summary["profilePassCounts"]["reduced-image-optimizations"] == 3,
                 "exploratory summary pass count differs")
-        require(summary["expectedMeasuredPassCount"] == 70,
+        require(summary["expectedMeasuredPassCount"] == 73,
                 "default summary measured-pass count differs")
         require(summary["profileProcessCounts"]["release-default-scroll"] == 6,
                 "real default summary count differs")
@@ -864,22 +871,24 @@ def main():
                 "release candidate summary count differs")
 
     package_script = Path(__file__).with_name("package-image-scroll-benchmark.sh").read_text()
-    require('"matrixProcessCount": 30' in package_script,
-            "package manifest matrix count is not 30")
-    require('"expectedProcessCount": 30' in package_script,
-            "package manifest expected count is not 30")
+    require('"matrixProcessCount": 31' in package_script,
+            "package manifest matrix count is not 31")
+    require('"expectedProcessCount": 31' in package_script,
+            "package manifest expected count is not 31")
     require('"exploratoryPassCount": 3' in package_script,
             "package manifest exploratory pass count is not three")
     require('"prefetchDiagnosticProcessCount": 5' in package_script,
             "package manifest diagnostic process count is not five")
-    require('"passes":3,"processCount":10' in package_script,
-            "package manifest exploratory pass count is not three")
+    require('"passes":3,"processCount":11' in package_script,
+            "package manifest exploratory process count is not eleven")
+    require('"masks":[4,5,6,7,38,8198,16390,24582,32774,57350,32799]' in package_script,
+            "package manifest exploratory masks differ")
     require('"prefetch-diagnostics": {"masks":[0,4,6,38,32799]' in package_script,
             "package manifest lacks prefetch diagnostic profile")
     require('"release-candidate-scroll": {"masks":[32795]' in package_script,
             "package manifest lacks release candidate profile")
 
-    print("image-scroll matrix tests passed,processes=30,exploratory_passes=3,unique_combinations=true")
+    print("image-scroll matrix tests passed,processes=31,exploratory_passes=3,unique_combinations=true")
 
 
 if __name__ == "__main__":

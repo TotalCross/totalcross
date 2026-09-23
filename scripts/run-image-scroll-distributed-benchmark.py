@@ -52,11 +52,11 @@ ENVIRONMENT_INTEGER_FIELDS = frozenset({
 })
 ENVIRONMENT_FLOAT_FIELDS = frozenset({"surfaceScaleX", "surfaceScaleY"})
 MASKS = (
-    0, 6, 8, 16, 32, 8192, 16384, 32768, 32795, 32799,
+    4, 5, 6, 7, 38, 8198, 16390, 24582, 32774, 57350, 32799,
 )
 CONTROLLED_PAIRS = (
-    (0, 32), (0, 8192), (32, 8224), (8192, 8224),
-    (32795, 32799), (32827, 32831),
+    (4, 6), (5, 7), (6, 38), (6, 8198),
+    (6, 16390), (6, 32774), (6, 57350), (6, 32799),
 )
 DEFAULT_EFFECTIVE_MASK = 32799
 PREFETCH_PROFILES = ("on",)
@@ -3261,7 +3261,7 @@ def main(argv):
             "decode-self-test",
             "decode-smokes", "decode-full",
         ), default="full",
-        help="run one fail-fast phase; full runs the 30-process non-decode suite",
+        help="run one fail-fast phase; full runs the 31-process non-decode suite",
     )
     parser.add_argument(
         "--profile", choices=("full",) + tuple(PROFILES), default="full",
