@@ -2593,89 +2593,105 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           ? geometryDrawNs / (geometryOutputPixels / 1000000.0) : -1;
     }
 
+    private void appendDecodeAndGeometryDetails(StringBuilder details) {
+      details.append(",full_jpeg_decodes=").append(fullJpegDecodes)
+          .append(",jpeg_decode_count=").append(jpegDecodeCount)
+          .append(",jpeg_decode_ns=").append(jpegDecodeNs)
+          .append(",jpeg_full_count=").append(jpegFullCount)
+          .append(",jpeg_half_count=").append(jpegHalfCount)
+          .append(",jpeg_quarter_count=").append(jpegQuarterCount)
+          .append(",jpeg_eighth_count=").append(jpegEighthCount)
+          .append(",jpeg_other_count=").append(jpegOtherCount)
+          .append(",opacity_known_intrinsic=").append(opacityKnownIntrinsic)
+          .append(",opacity_known_from_source=").append(opacityKnownFromSource)
+          .append(",opacity_determined_decode=").append(opacityDeterminedDuringDecode)
+          .append(",opacity_fallback_scans=").append(opacityFallbackScans)
+          .append(",image_materializations=").append(imageMaterializations)
+          .append(",image_pipelines=").append(imagePipelines)
+          .append(",draw_plans_created=").append(drawPlansCreated)
+          .append(",draw_plan_cache_hits=").append(drawPlanCacheHits)
+          .append(",direct_draw_plan_executions=").append(directDrawPlanExecutions)
+          .append(",native_geometry_materializations=").append(nativeGeometryMaterializations)
+          .append(",geometry_materialization_count=").append(geometryMaterializationCount)
+          .append(",geometry_materialization_total_ns=").append(geometryMaterializationTotalNs)
+          .append(",geometry_source_snapshot_ns=").append(geometrySourceSnapshotNs)
+          .append(",geometry_surface_allocation_ns=").append(geometrySurfaceAllocationNs)
+          .append(",geometry_compile_ns=").append(geometryCompileNs)
+          .append(",geometry_draw_ns=").append(geometryDrawNs)
+          .append(",geometry_snapshot_ns=").append(geometrySnapshotNs)
+          .append(",geometry_register_ns=").append(geometryRegisterNs)
+          .append(",geometry_rgba8888_count=").append(geometryRgba8888Count)
+          .append(",geometry_rgba8888_draw_ns=").append(geometryRgba8888DrawNs)
+          .append(",geometry_rgb565_count=").append(geometryRgb565Count)
+          .append(",geometry_rgb565_draw_ns=").append(geometryRgb565DrawNs)
+          .append(",geometry_gray8_count=").append(geometryGray8Count)
+          .append(",geometry_gray8_draw_ns=").append(geometryGray8DrawNs)
+          .append(",geometry_argb4444_count=").append(geometryArgb4444Count)
+          .append(",geometry_argb4444_draw_ns=").append(geometryArgb4444DrawNs)
+          .append(",geometry_source_pixels=").append(geometrySourcePixels)
+          .append(",geometry_output_pixels=").append(geometryOutputPixels)
+          .append(",geometry_unaccounted_ns=").append(geometryUnaccountedNs())
+          .append(",geometry_draw_ns_per_materialization=")
+          .append(geometryDrawNsPerMaterialization())
+          .append(",geometry_draw_ns_per_source_megapixel=")
+          .append(geometryDrawNsPerSourceMegapixel())
+          .append(",geometry_draw_ns_per_output_megapixel=")
+          .append(geometryDrawNsPerOutputMegapixel());
+    }
+
+    private void appendWritePixelsDetails(StringBuilder details) {
+      details.append(",write_pixels_attempts=").append(writePixelsAttempts)
+          .append(",write_pixels_hits=").append(writePixelsHits)
+          .append(",write_pixels_fallbacks=").append(writePixelsFallbacks)
+          .append(",write_pixels_copied_bytes=").append(writePixelsCopiedBytes)
+          .append(",write_pixels_regular_attempts=").append(writePixelsRegularAttempts)
+          .append(",write_pixels_regular_hits=").append(writePixelsRegularHits)
+          .append(",write_pixels_regular_fallbacks=").append(writePixelsRegularFallbacks)
+          .append(",write_pixels_regular_copied_bytes=").append(writePixelsRegularCopiedBytes)
+          .append(",write_pixels_regular_clipped_hits=").append(writePixelsRegularClippedHits)
+          .append(",write_pixels_device_1to1_candidates=")
+          .append(writePixelsDeviceOneToOneCandidates)
+          .append(",write_pixels_device_1to1_known_opaque_candidates=")
+          .append(writePixelsDeviceOneToOneKnownOpaqueCandidates)
+          .append(",write_pixels_reject_matrix=").append(writePixelsRejectMatrix)
+          .append(",write_pixels_reject_save_count=").append(writePixelsRejectSaveCount)
+          .append(",write_pixels_reject_size_mismatch=").append(writePixelsRejectSizeMismatch);
+    }
+
+    private void appendReuseDetails(StringBuilder details) {
+      details.append(",physical_identity_attempts=").append(physicalIdentityAttempts)
+          .append(",physical_identity_hits=").append(physicalIdentityHits)
+          .append(",physical_identity_fallbacks=").append(physicalIdentityFallbacks)
+          .append(",physical_identity_reject_canvas=").append(physicalIdentityRejectCanvas)
+          .append(",physical_identity_reject_surface=").append(physicalIdentityRejectSurface)
+          .append(",physical_identity_reject_clip=").append(physicalIdentityRejectClip)
+          .append(",physical_identity_reject_mapping=").append(physicalIdentityRejectMapping)
+          .append(",physical_identity_reject_backing=").append(physicalIdentityRejectBacking)
+          .append(",physical_identity_reject_execution=").append(physicalIdentityRejectExecution)
+          .append(",target_color_attempts=").append(targetColorAttempts)
+          .append(",target_color_hits=").append(targetColorHits)
+          .append(",target_color_materializations=").append(targetColorMaterializations)
+          .append(",target_color_fallbacks=").append(targetColorFallbacks)
+          .append(",target_color_converted_bytes=").append(targetColorConvertedBytes)
+          .append(",physical_variant_lookups=").append(physicalVariantLookups)
+          .append(",physical_variant_hits=").append(physicalVariantHits)
+          .append(",physical_variant_misses=").append(physicalVariantMisses)
+          .append(",physical_variant_stores=").append(physicalVariantStores)
+          .append(",physical_variant_evictions=").append(physicalVariantEvictions)
+          .append(",physical_variant_bytes=").append(physicalVariantBytes);
+    }
+
     String details() {
-      StringBuilder details = new StringBuilder(",targeted_jpeg_decodes=" + targetedJpegDecodes
-          + ",full_jpeg_decodes=" + fullJpegDecodes
-          + ",jpeg_decode_count=" + jpegDecodeCount
-          + ",jpeg_decode_ns=" + jpegDecodeNs
-          + ",jpeg_full_count=" + jpegFullCount
-          + ",jpeg_half_count=" + jpegHalfCount
-          + ",jpeg_quarter_count=" + jpegQuarterCount
-          + ",jpeg_eighth_count=" + jpegEighthCount
-          + ",jpeg_other_count=" + jpegOtherCount
-          + ",opacity_known_intrinsic=" + opacityKnownIntrinsic
-          + ",opacity_known_from_source=" + opacityKnownFromSource
-          + ",opacity_determined_decode=" + opacityDeterminedDuringDecode
-          + ",opacity_fallback_scans=" + opacityFallbackScans
-          + ",image_materializations=" + imageMaterializations
-          + ",image_pipelines=" + imagePipelines
-          + ",draw_plans_created=" + drawPlansCreated
-          + ",draw_plan_cache_hits=" + drawPlanCacheHits
-          + ",direct_draw_plan_executions=" + directDrawPlanExecutions
-          + ",native_geometry_materializations=" + nativeGeometryMaterializations
-          + ",geometry_materialization_count=" + geometryMaterializationCount
-          + ",geometry_materialization_total_ns=" + geometryMaterializationTotalNs
-          + ",geometry_source_snapshot_ns=" + geometrySourceSnapshotNs
-          + ",geometry_surface_allocation_ns=" + geometrySurfaceAllocationNs
-          + ",geometry_compile_ns=" + geometryCompileNs
-          + ",geometry_draw_ns=" + geometryDrawNs
-          + ",geometry_snapshot_ns=" + geometrySnapshotNs
-          + ",geometry_register_ns=" + geometryRegisterNs
-          + ",geometry_rgba8888_count=" + geometryRgba8888Count
-          + ",geometry_rgba8888_draw_ns=" + geometryRgba8888DrawNs
-          + ",geometry_rgb565_count=" + geometryRgb565Count
-          + ",geometry_rgb565_draw_ns=" + geometryRgb565DrawNs
-          + ",geometry_gray8_count=" + geometryGray8Count
-          + ",geometry_gray8_draw_ns=" + geometryGray8DrawNs
-          + ",geometry_argb4444_count=" + geometryArgb4444Count
-          + ",geometry_argb4444_draw_ns=" + geometryArgb4444DrawNs
-          + ",geometry_source_pixels=" + geometrySourcePixels
-          + ",geometry_output_pixels=" + geometryOutputPixels
-          + ",geometry_unaccounted_ns=" + geometryUnaccountedNs()
-          + ",geometry_draw_ns_per_materialization=" + geometryDrawNsPerMaterialization()
-          + ",geometry_draw_ns_per_source_megapixel=" + geometryDrawNsPerSourceMegapixel()
-          + ",geometry_draw_ns_per_output_megapixel=" + geometryDrawNsPerOutputMegapixel()
-          + ",write_pixels_attempts=" + writePixelsAttempts
-          + ",write_pixels_hits=" + writePixelsHits
-          + ",write_pixels_fallbacks=" + writePixelsFallbacks
-          + ",write_pixels_copied_bytes=" + writePixelsCopiedBytes
-          + ",write_pixels_regular_attempts=" + writePixelsRegularAttempts
-          + ",write_pixels_regular_hits=" + writePixelsRegularHits
-          + ",write_pixels_regular_fallbacks=" + writePixelsRegularFallbacks
-          + ",write_pixels_regular_copied_bytes=" + writePixelsRegularCopiedBytes
-          + ",write_pixels_regular_clipped_hits=" + writePixelsRegularClippedHits
-          + ",write_pixels_device_1to1_candidates=" + writePixelsDeviceOneToOneCandidates
-          + ",write_pixels_device_1to1_known_opaque_candidates="
-          + writePixelsDeviceOneToOneKnownOpaqueCandidates
-          + ",write_pixels_reject_matrix=" + writePixelsRejectMatrix
-          + ",write_pixels_reject_save_count=" + writePixelsRejectSaveCount
-          + ",write_pixels_reject_size_mismatch=" + writePixelsRejectSizeMismatch
-          + ",physical_identity_attempts=" + physicalIdentityAttempts
-          + ",physical_identity_hits=" + physicalIdentityHits
-          + ",physical_identity_fallbacks=" + physicalIdentityFallbacks
-          + ",physical_identity_reject_canvas=" + physicalIdentityRejectCanvas
-          + ",physical_identity_reject_surface=" + physicalIdentityRejectSurface
-          + ",physical_identity_reject_clip=" + physicalIdentityRejectClip
-          + ",physical_identity_reject_mapping=" + physicalIdentityRejectMapping
-          + ",physical_identity_reject_backing=" + physicalIdentityRejectBacking
-          + ",physical_identity_reject_execution=" + physicalIdentityRejectExecution
-          + ",target_color_attempts=" + targetColorAttempts
-          + ",target_color_hits=" + targetColorHits
-          + ",target_color_materializations=" + targetColorMaterializations
-          + ",target_color_fallbacks=" + targetColorFallbacks
-          + ",target_color_converted_bytes=" + targetColorConvertedBytes
-          + ",physical_variant_lookups=" + physicalVariantLookups
-          + ",physical_variant_hits=" + physicalVariantHits
-          + ",physical_variant_misses=" + physicalVariantMisses
-          + ",physical_variant_stores=" + physicalVariantStores
-          + ",physical_variant_evictions=" + physicalVariantEvictions
-          + ",physical_variant_bytes=" + physicalVariantBytes);
+      StringBuilder details = new StringBuilder(",targeted_jpeg_decodes=")
+          .append(targetedJpegDecodes);
+      appendDecodeAndGeometryDetails(details);
+      appendWritePixelsDetails(details);
+      appendReuseDetails(details);
       appendPolicyDiagnosticDetails(details, this);
-      return details
-          + ",generic_geometry_draws=" + genericGeometryDraws
-          + ",smooth_resample_draws=" + smoothResampleDraws
-          + ",backing_live_bytes=" + backingLiveBytes
-          + ",backing_peak_bytes=" + backingPeakBytes;
+      return details.append(",generic_geometry_draws=").append(genericGeometryDraws)
+          .append(",smooth_resample_draws=").append(smoothResampleDraws)
+          .append(",backing_live_bytes=").append(backingLiveBytes)
+          .append(",backing_peak_bytes=").append(backingPeakBytes).toString();
     }
 
     long featureHits(int feature) {
