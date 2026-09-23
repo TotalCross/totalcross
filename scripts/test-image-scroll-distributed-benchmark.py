@@ -162,6 +162,18 @@ def assert_clean_full_and_resume_preflight():
 def physical_environment(width, height, pixel_bytes=4, renderer="software"):
     classification = "BGRA8888" if pixel_bytes == 4 else "RGB565"
     return {
+        "packageTarget": "windows-x64",
+        "hostOs": "Windows",
+        "hostOsVersion": "11.0",
+        "hostArchitecture": "AMD64",
+        "endianness": "little",
+        "totalCrossPlatform": "win32",
+        "cpuModel": None,
+        "refreshRate": 60,
+        "sdlDrawableWidth": width,
+        "sdlDrawableHeight": height,
+        "surfaceScaleX": width / 540,
+        "surfaceScaleY": height / 960,
         "expectedLogicalWidth": 540,
         "expectedLogicalHeight": 960,
         "effectiveLogicalWidth": 540,
@@ -196,18 +208,92 @@ def assert_physical_target_baseline():
 
     with tempfile.TemporaryDirectory(prefix="image-scroll-physical-target-test-") as temp:
         output = Path(temp)
+        manifest = {"target": "windows-x64"}
         captured = RUNNER.capture_physical_target_baseline(
-            output, one_x, {"profile": "test", "run": 1}
+            output, one_x, {"profile": "test", "run": 1}, manifest
         )
         require(captured == first, "physical target baseline was not captured")
-        require(RUNNER.load_physical_target_baseline(output) == first,
+        require(RUNNER.load_physical_target_baseline(output, manifest) == first,
                 "physical target baseline was not persisted")
+
+
+def assert_environment_metadata():
+    with mock.patch.object(RUNNER.platform, "system", return_value="Windows"), \
+            mock.patch.object(RUNNER.platform, "release", return_value="11.0"), \
+            mock.patch.object(RUNNER.platform, "machine", return_value="AMD64"), \
+            mock.patch.object(RUNNER, "host_cpu_model", return_value="Intel CPU"):
+        windows = RUNNER.collect_host_environment_metadata({"target": "windows-x64"})
+    require(windows == {
+        "packageTarget": "windows-x64", "hostOs": "Windows",
+        "hostOsVersion": "11.0", "hostArchitecture": "AMD64",
+        "endianness": windows["endianness"], "cpuModel": "Intel CPU",
+    }, "Windows host metadata was not collected separately from the package target")
+
+    with mock.patch.object(RUNNER.platform, "system", return_value="Darwin"), \
+            mock.patch.object(RUNNER.platform, "release", return_value="24.5.0"), \
+            mock.patch.object(RUNNER.platform, "machine", return_value="arm64"), \
+            mock.patch.object(RUNNER, "host_cpu_model", return_value="Apple CPU"):
+        macos = RUNNER.collect_host_environment_metadata({"target": "macos-arm64"})
+    require(macos["packageTarget"] == "macos-arm64"
+            and macos["hostOs"] == "Darwin"
+            and macos["hostArchitecture"] == "arm64"
+            and macos["cpuModel"] == "Apple CPU",
+            "macOS host metadata was not collected separately from the package target")
+
+    one_x = physical_environment(540, 960)
+    two_x = physical_environment(1080, 1920)
+    two_x.update({"sdlDrawableWidth": 540, "sdlDrawableHeight": 960})
+    manifest = {"target": "windows-x64"}
+    first = RUNNER.environment_baseline_from_environment(
+        one_x, manifest, "1x environment"
+    )
+    second = RUNNER.environment_baseline_from_environment(
+        two_x, manifest, "2x environment"
+    )
+    require(first["surfaceScaleX"] == 1.0 and first["surfaceScaleY"] == 1.0,
+            "1x surface scale was not derived from the Skia surface")
+    require(second["surfaceScaleX"] == 2.0 and second["surfaceScaleY"] == 2.0,
+            "2x surface scale was not derived from the Skia surface")
+    require(second["sdlDrawableWidth"] == 540
+            and second["sdlDrawableHeight"] == 960
+            and second["sdlDrawableWidth"] != two_x["skiaSurfaceWidth"],
+            "SDL drawable dimensions were copied from the Skia surface")
+
+    unavailable = dict(one_x)
+    unavailable.update({
+        "cpuModel": None, "refreshRate": None,
+        "sdlDrawableWidth": None, "sdlDrawableHeight": None,
+    })
+    accepted = RUNNER.environment_baseline_from_environment(
+        unavailable, manifest, "unavailable optional environment"
+    )
+    require(accepted["cpuModel"] is None and accepted["refreshRate"] is None
+            and accepted["sdlDrawableWidth"] is None,
+            "unavailable optional environment fields were not preserved")
+
+    with tempfile.TemporaryDirectory(prefix="image-scroll-environment-baseline-test-") as temp:
+        output = Path(temp)
+        RUNNER.capture_physical_target_baseline(
+            output, one_x, {"profile": "test", "run": 1}, manifest
+        )
+        changed = dict(one_x)
+        changed["refreshRate"] = 75
+        try:
+            RUNNER.capture_physical_target_baseline(
+                output, changed, {"profile": "test", "run": 2}, manifest
+            )
+        except RUNNER.BenchmarkFailure as error:
+            require("refreshRate" in str(error),
+                    "environment baseline mismatch did not name refreshRate")
+        else:
+            raise AssertionError("environment baseline accepted a changed refresh rate")
 
 
 def assert_validation_failure_continuation():
     manifest = {
         "executable": "benchmark-app",
         "includeDecodeAssets": False,
+        "target": "windows-x64",
     }
     with tempfile.TemporaryDirectory(prefix="image-scroll-validation-test-") as temp:
         root = Path(temp)
@@ -223,6 +309,7 @@ def assert_validation_failure_continuation():
         (output / "environment.json").write_text(json.dumps(environment))
         completed = [SimpleNamespace(returncode=0), SimpleNamespace(returncode=0)]
         with mock.patch.object(RUNNER.subprocess, "run", side_effect=completed), \
+                mock.patch.object(RUNNER, "host_cpu_model", return_value=None), \
                 mock.patch.object(
                     RUNNER, "validate_run_artifacts",
                     side_effect=[RUNNER.BenchmarkFailure("bad viewport hash"), {}],
@@ -349,6 +436,25 @@ def assert_reuse_hash_mismatch_is_non_fatal():
                                   and row["comparison_status"] == "INCOMPLETE_VALIDATION"
                                   for row in hash_rows),
                 "hash mismatch did not invalidate waypoint comparison rows")
+
+        tracker = RUNNER.new_execution_tracker()
+        tracker.update({
+            "plannedProcessCount": 2, "launchedProcessCount": 2,
+            "completedProcessCount": 2, "validProcessCount": 2,
+            "validationFailedProcessCount": 0,
+        })
+        stream = io.StringIO()
+        with contextlib.redirect_stdout(stream):
+            RUNNER.write_default_execution_summary(
+                output, manifest, status="PASS_WITH_VALIDATION_FAILURES",
+                tracker=tracker,
+            )
+        final = json.loads((output / "default-execution-summary.json").read_text())
+        require(final["validationFailedProcessCount"] == 0
+                and final["validationFailureCount"] == 1,
+                "comparison-only failure counts were conflated with failed processes")
+        require("validation_failed_processes=0,validation_failures=1" in stream.getvalue(),
+                "comparison-only failure diagnostics used misleading counts")
 
 
 def assert_final_status_output():
@@ -484,6 +590,7 @@ def main():
     assert_results_state_diagnostics()
     assert_clean_full_and_resume_preflight()
     assert_physical_target_baseline()
+    assert_environment_metadata()
     assert_validation_failure_continuation()
     assert_fatal_execution_stops()
     assert_reuse_hash_mismatch_is_non_fatal()

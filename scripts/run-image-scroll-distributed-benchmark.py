@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 import os
+import platform
 from pathlib import Path
 import signal
 import subprocess
@@ -41,6 +42,15 @@ PHYSICAL_TARGET_FIELDS = (
     "skiaSurfacePixelBytes", "skiaSurfaceColorType", "skiaSurfaceAlphaType",
     "skiaSurfaceColorClassification", "rendererBackend",
 )
+ENVIRONMENT_BASELINE_FIELDS = (
+    "packageTarget", "hostOs", "hostOsVersion", "hostArchitecture",
+    "endianness", "totalCrossPlatform", "cpuModel", "refreshRate",
+    "sdlDrawableWidth", "sdlDrawableHeight", "surfaceScaleX", "surfaceScaleY",
+)
+ENVIRONMENT_INTEGER_FIELDS = frozenset({
+    "refreshRate", "sdlDrawableWidth", "sdlDrawableHeight",
+})
+ENVIRONMENT_FLOAT_FIELDS = frozenset({"surfaceScaleX", "surfaceScaleY"})
 MASKS = (
     0, 6, 8, 16, 32, 8192, 16384, 32768, 32795, 32799,
 )
@@ -396,13 +406,128 @@ def physical_target_from_environment(environment, description):
     return target
 
 
-def validate_physical_target(environment, baseline, description):
+def _optional_text(value):
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    return value or None
+
+
+def host_cpu_model():
+    candidates = []
+    for getter in (platform.processor, lambda: platform.uname().processor):
+        try:
+            candidates.append(getter())
+        except Exception:
+            pass
+    try:
+        host_os = platform.system()
+    except Exception:
+        host_os = None
+    if host_os == "Windows":
+        candidates.insert(0, os.environ.get("PROCESSOR_IDENTIFIER"))
+    if host_os == "Linux":
+        try:
+            for line in Path("/proc/cpuinfo").read_text(
+                    encoding="utf-8", errors="replace").splitlines():
+                key, separator, value = line.partition(":")
+                if separator and key.strip().lower() in ("model name", "hardware"):
+                    candidates.insert(0, value)
+                    break
+        except OSError:
+            pass
+    for candidate in candidates:
+        candidate = _optional_text(candidate)
+        if candidate and candidate.lower() not in ("unknown", "unavailable"):
+            return candidate
+    return None
+
+
+def collect_host_environment_metadata(manifest):
+    try:
+        host_os = platform.system()
+    except Exception:
+        host_os = None
+    try:
+        host_os_version = platform.release()
+    except Exception:
+        host_os_version = None
+    try:
+        host_architecture = platform.machine()
+    except Exception:
+        host_architecture = None
+    return {
+        "packageTarget": manifest.get("target"),
+        "hostOs": _optional_text(host_os),
+        "hostOsVersion": _optional_text(host_os_version),
+        "hostArchitecture": _optional_text(host_architecture),
+        "endianness": sys.byteorder,
+        "cpuModel": host_cpu_model(),
+    }
+
+
+def validate_environment_baseline_values(values, target, description,
+                                         package_target=None):
+    require(isinstance(values, dict), f"{description} is missing")
+    for field in ENVIRONMENT_BASELINE_FIELDS:
+        require(field in values, f"{description} lacks {field}")
+    if package_target is not None:
+        require(values["packageTarget"] == package_target,
+                f"{description} packageTarget differs from the bundle")
+    for field in ("packageTarget", "hostOs", "totalCrossPlatform"):
+        require(isinstance(values[field], str) and values[field],
+                f"{description} lacks {field}")
+    for field in ("hostOsVersion", "hostArchitecture", "endianness", "cpuModel"):
+        require(values[field] is None or (
+            isinstance(values[field], str) and bool(values[field])
+        ), f"{description} has invalid {field}")
+    for field in ENVIRONMENT_INTEGER_FIELDS:
+        value = values[field]
+        require(value is None or (type(value) is int and value > 0),
+                f"{description} has invalid {field}")
+    for field in ENVIRONMENT_FLOAT_FIELDS:
+        value = values[field]
+        require(type(value) in (int, float) and math.isfinite(value) and value > 0,
+                f"{description} has invalid {field}")
+    require(math.isclose(
+        values["surfaceScaleX"], target["skiaSurfaceWidth"] / LOGICAL_TARGET["width"],
+        rel_tol=0.0, abs_tol=1e-12,
+    ), f"{description} surfaceScaleX is not derived from the Skia surface")
+    require(math.isclose(
+        values["surfaceScaleY"], target["skiaSurfaceHeight"] / LOGICAL_TARGET["height"],
+        rel_tol=0.0, abs_tol=1e-12,
+    ), f"{description} surfaceScaleY is not derived from the Skia surface")
+    return dict(values)
+
+
+def environment_baseline_from_environment(environment, manifest, description):
+    target = physical_target_from_environment(environment, description)
+    values = {
+        field: environment.get(field) for field in ENVIRONMENT_BASELINE_FIELDS
+    }
+    return validate_environment_baseline_values(
+        values, target, description, manifest.get("target")
+    )
+
+
+def enrich_environment_metadata(output, manifest):
+    path = output / "environment.json"
+    environment = read_json_file(path, "benchmark environment")
+    require(isinstance(environment, dict), f"{path} must contain an object")
+    environment.update(collect_host_environment_metadata(manifest))
+    write_json_file(path, environment, "benchmark environment metadata")
+    return environment
+
+
+def validate_physical_target(environment, baseline, description, manifest=None):
     require(environment.get("expectedLogicalWidth") == LOGICAL_TARGET["width"]
             and environment.get("expectedLogicalHeight") == LOGICAL_TARGET["height"]
             and environment.get("effectiveLogicalWidth") == LOGICAL_TARGET["width"]
             and environment.get("effectiveLogicalHeight") == LOGICAL_TARGET["height"],
             f"{description} is not 540x960")
     target = physical_target_from_environment(environment, description)
+    if manifest is not None:
+        environment_baseline_from_environment(environment, manifest, description)
     if baseline is not None:
         for field in PHYSICAL_TARGET_FIELDS:
             require(target[field] == baseline[field],
@@ -411,7 +536,7 @@ def validate_physical_target(environment, baseline, description):
     return target
 
 
-def load_physical_target_baseline(output):
+def load_physical_target_baseline(output, manifest=None):
     path = output / PHYSICAL_TARGET_BASELINE_FILE
     if not path.is_file():
         return None
@@ -422,23 +547,52 @@ def load_physical_target_baseline(output):
             f"{path} logical target differs from 540x960")
     target = payload.get("physicalTarget")
     require(isinstance(target, dict), f"{path} physical target is missing")
-    return physical_target_from_environment(target, str(path))
+    target = physical_target_from_environment(target, str(path))
+    environment_baseline = payload.get("environmentBaseline")
+    require(isinstance(environment_baseline, dict),
+            f"{path} environment baseline is missing")
+    validate_environment_baseline_values(
+        environment_baseline, target, f"{path} environment baseline",
+        manifest.get("target") if manifest is not None else None,
+    )
+    return target
 
 
-def capture_physical_target_baseline(output, environment, configuration):
-    baseline = load_physical_target_baseline(output)
+def load_environment_baseline(output, manifest=None):
+    path = output / PHYSICAL_TARGET_BASELINE_FILE
+    if not path.is_file():
+        return None
+    payload = read_json_file(path, "physical target baseline")
+    target = physical_target_from_environment(
+        payload.get("physicalTarget", {}), str(path)
+    )
+    values = payload.get("environmentBaseline")
+    return validate_environment_baseline_values(
+        values, target, f"{path} environment baseline",
+        manifest.get("target") if manifest is not None else None,
+    )
+
+
+def capture_physical_target_baseline(output, environment, configuration, manifest=None):
+    baseline = load_physical_target_baseline(output, manifest)
     try:
         target = physical_target_from_environment(
             environment, str(output / "environment.json")
         )
     except BenchmarkFailure:
         return baseline
+    environment_baseline = None
+    if manifest is not None:
+        environment_baseline = environment_baseline_from_environment(
+            environment, manifest, str(output / "environment.json")
+        )
     if baseline is None:
         payload = {
             "schemaVersion": 1,
             "fixture": FIXTURE,
             "logicalTarget": dict(LOGICAL_TARGET),
             "physicalTarget": target,
+            "environmentBaseline": environment_baseline,
             "firstProcess": configuration,
         }
         write_json_file(output / PHYSICAL_TARGET_BASELINE_FILE, payload,
@@ -448,6 +602,16 @@ def capture_physical_target_baseline(output, environment, configuration):
         require(target[field] == baseline[field],
                 f"{output / 'environment.json'} {field} differs from the "
                 f"execution baseline: {target[field]!r} != {baseline[field]!r}")
+    if manifest is not None:
+        baseline_payload = read_json_file(
+            output / PHYSICAL_TARGET_BASELINE_FILE, "physical target baseline"
+        )
+        baseline_environment = baseline_payload.get("environmentBaseline")
+        for field in ENVIRONMENT_BASELINE_FIELDS:
+            require(environment_baseline[field] == baseline_environment[field],
+                    f"{output / 'environment.json'} {field} differs from the "
+                    f"execution baseline: {environment_baseline[field]!r} != "
+                    f"{baseline_environment[field]!r}")
     return baseline
 
 
@@ -486,7 +650,7 @@ def configuration_key(profile, run, mask, prefetch, accounting, rendering_reuse=
 
 def append_failure_record(output, profile, run, mask, prefetch, accounting,
                           rendering_reuse, error, log_path, artifact_paths,
-                          status, classification, fatal):
+                          status, classification, fatal, scope="process"):
     configuration = {
         "profile": profile,
         "run": run,
@@ -499,6 +663,7 @@ def append_failure_record(output, profile, run, mask, prefetch, accounting,
         "status": status,
         "classification": classification,
         "fatal": fatal,
+        "scope": scope,
         "configurationKey": configuration_key(
             profile, run, mask, prefetch, accounting, rendering_reuse
         ),
@@ -519,11 +684,12 @@ def append_failure_record(output, profile, run, mask, prefetch, accounting,
 
 
 def append_validation_failure(output, profile, run, mask, prefetch, accounting,
-                              rendering_reuse, error, log_path, artifact_paths):
+                              rendering_reuse, error, log_path, artifact_paths,
+                              scope="process"):
     record = append_failure_record(
         output, profile, run, mask, prefetch, accounting, rendering_reuse,
         error, log_path, artifact_paths, "VALIDATION_FAILED",
-        "NON_FATAL_VALIDATION", False,
+        "NON_FATAL_VALIDATION", False, scope,
     )
     print(
         f"WARNING {profile} run={run} mask={mask} reuse={rendering_reuse} "
@@ -626,7 +792,7 @@ def preflight(bundle, manifest, output, phase):
     probe_results_directory(output)
     if (output / PHYSICAL_TARGET_BASELINE_FILE).is_file():
         try:
-            load_physical_target_baseline(output)
+            load_physical_target_baseline(output, manifest)
         except BenchmarkFailure as error:
             raise FatalBenchmarkFailure(
                 f"results state is partial/invalid: {error}; "
@@ -671,6 +837,8 @@ def load_manifest(bundle):
             "manifest selfTestPhaseCount differs")
     require(manifest.get("includeDecodeAssets") in (False, True),
             "manifest includeDecodeAssets must be boolean")
+    require(isinstance(manifest.get("target"), str) and manifest["target"],
+            "manifest package target is missing")
     expected_corpus_variants = (DECODE_CORPUS_VARIANTS
                                 if manifest["includeDecodeAssets"]
                                 else SCROLL_CORPUS_VARIANTS)
@@ -716,7 +884,7 @@ def load_manifest(bundle):
     runtime_sha = manifest.get("runtimeSha256")
     require(isinstance(runtime_sha, str) and len(runtime_sha) == 64,
             "manifest runtimeSha256 is missing")
-    if manifest.get("target") == "windows-x64":
+    if manifest["target"] == "windows-x64":
         require(isinstance(manifest.get("tcvmSha256"), str)
                 and len(manifest["tcvmSha256"]) == 64,
                 "Windows manifest tcvmSha256 is missing")
@@ -838,7 +1006,7 @@ def validate_bundle(bundle, manifest):
     runtime_sha = sha256_file(bundle / runtime)
     require(runtime_sha == manifest["runtimeSha256"],
             "bundle native runtime differs from manifest")
-    if manifest.get("target") == "windows-x64":
+    if manifest["target"] == "windows-x64":
         require(runtime == "tcvm.dll" and runtime_sha == manifest["tcvmSha256"],
                 "Windows bundle tcvm.dll provenance differs from manifest")
     compile_hash = manifest.get("sdkJarSha256Compile")
@@ -1719,13 +1887,13 @@ def run_scroll_reuse_process(bundle, manifest, output, corpus_digest, profile,
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed with exit code {completed.returncode}")
     try:
-        environment = read_json_file(output / "environment.json", "benchmark environment")
+        environment = enrich_environment_metadata(output, manifest)
         physical_baseline = capture_physical_target_baseline(
             output, environment, {
                 "profile": profile, "run": run, "mask": mask,
                 "prefetch": prefetch, "accounting": accounting,
                 "renderingReuse": rendering_reuse,
-            }
+            }, manifest,
         )
         rows, hashes = validate_scroll_reuse_artifacts(
             output, log_path, manifest, profile, mask, prefetch, accounting,
@@ -1826,7 +1994,7 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
                     "off-on-comparison", comparison_error, off_log,
                     [off_run_dir, on_run_dir, off_log, off_log.with_name(
                         off_log.name.replace("reuse-off", "reuse-on")
-                    )],
+                    )], scope="comparison",
                 )
                 failures[comparison_key] = record
         for rendering_reuse, rows in (("off", off_rows), ("on", on_rows)):
@@ -2093,12 +2261,12 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         print(tail(log_path), file=sys.stderr)
         raise BenchmarkFailure(f"{label} failed: {reason}")
     try:
-        environment = read_json_file(output / "environment.json", "benchmark environment")
+        environment = enrich_environment_metadata(output, manifest)
         physical_baseline = capture_physical_target_baseline(
             output, environment, {
                 "label": label, "run": run, "mask": mask,
                 "prefetch": prefetch, "accounting": accounting,
-            }
+            }, manifest,
         )
         summary = validate_run_artifacts(
             output, log_path, mask, prefetch, accounting, run, corpus_digest,
@@ -2754,16 +2922,20 @@ def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name, tr
 
 def write_default_execution_summary(output, manifest, status="PASS", tracker=None,
                                     fatal_error=None):
-    physical_target = load_physical_target_baseline(output)
+    physical_target = load_physical_target_baseline(output, manifest)
+    environment_baseline = load_environment_baseline(output, manifest)
     failures = list(load_validation_failures(output).values())
+    process_failures = [
+        record for record in failures if record.get("scope", "process") == "process"
+    ]
     if tracker is None:
         tracker = new_execution_tracker()
         tracker.update({
             "plannedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
             "launchedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
             "completedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
-            "validProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT - len(failures),
-            "validationFailedProcessCount": len(failures),
+            "validProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT - len(process_failures),
+            "validationFailedProcessCount": len(process_failures),
         })
     summary = {
         "status": status,
@@ -2773,11 +2945,13 @@ def write_default_execution_summary(output, manifest, status="PASS", tracker=Non
         "tcvmSha256": manifest.get("tcvmSha256"),
         "logicalTarget": dict(LOGICAL_TARGET),
         "physicalTarget": physical_target,
+        "environmentCharacteristics": environment_baseline,
         "plannedProcessCount": tracker["plannedProcessCount"],
         "launchedProcessCount": tracker["launchedProcessCount"],
         "completedProcessCount": tracker["completedProcessCount"],
         "validProcessCount": tracker["validProcessCount"],
         "validationFailedProcessCount": tracker["validationFailedProcessCount"],
+        "validationFailureCount": len(failures),
         "validationFailures": failures,
         "fatalFailure": fatal_error,
         "selfTestProcessCount": 1,
@@ -2809,7 +2983,8 @@ def write_default_execution_summary(output, manifest, status="PASS", tracker=Non
         f"default execution status={status},"
         f"processes={summary['expectedProcessCount']},"
         f"completed={summary['completedProcessCount']},"
-        f"validation_failures={summary['validationFailedProcessCount']},"
+        f"validation_failed_processes={summary['validationFailedProcessCount']},"
+        f"validation_failures={summary['validationFailureCount']},"
         f"summary={path}"
     )
 
