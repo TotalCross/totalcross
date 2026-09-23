@@ -426,7 +426,7 @@ def validate_bundle(bundle, manifest):
             "deploy SDK SHA-256 is missing")
     require(compile_hash == deploy_hash == manifest.get("sdkJarSha256"),
             "compile/deploy SDK SHA-256 values differ")
-    return corpus, images, dataset_hash(corpus, images), executable
+    return corpus, images, dataset_hash(corpus / "imag", images), executable
 
 
 def self_test(bundle, manifest, output):
