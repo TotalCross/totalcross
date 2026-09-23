@@ -612,7 +612,7 @@ def preflight(bundle, manifest, output, phase):
             "preserve the directory for review and start with a fresh bundle "
             "or restore a complete self-test state"
         )
-    if phase != "self-test" and state == "CLEAN_START":
+    if phase not in ("self-test", "full") and state == "CLEAN_START":
         raise FatalBenchmarkFailure(
             f"results state is clean for {output}; run --phase self-test "
             "before resuming benchmark processes"

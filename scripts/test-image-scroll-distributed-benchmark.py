@@ -7,7 +7,9 @@
 
 from collections import Counter
 import csv
+import contextlib
 import importlib.util
+import io
 from itertools import product
 import json
 from pathlib import Path
@@ -101,6 +103,60 @@ def assert_results_state_diagnostics():
                         "results access failure was not preserved")
             else:
                 raise AssertionError("results access failure did not stop execution")
+
+
+def assert_clean_full_and_resume_preflight():
+    manifest = {
+        "sourceCommit": "test-source",
+        "sdkSourceAttestation": "test-source",
+        "runtimeSha256": "0" * 64,
+        "includeDecodeAssets": False,
+    }
+    with tempfile.TemporaryDirectory(prefix="image-scroll-clean-start-test-") as temp:
+        bundle = Path(temp) / "bundle"
+        output = bundle / "results"
+        bundle.mkdir()
+
+        def fake_self_test(_bundle, test_manifest, test_output):
+            (test_output / "self-test.json").write_text(json.dumps({
+                "fixture": RUNNER.FIXTURE,
+                "status": "PASS",
+                "datasetFileCount": RUNNER.EXPECTED_JPEGS,
+                "sourceCommit": test_manifest["sourceCommit"],
+            }))
+            RUNNER.write_execution_state(
+                test_output, "SELF_TEST_PASS", test_manifest,
+            )
+            return test_output, [], "test-digest"
+
+        with mock.patch.object(RUNNER, "load_manifest", return_value=manifest), \
+                mock.patch.object(RUNNER, "validate_bundle", return_value=(
+                    bundle / "corpus", [], "test-digest", bundle / "benchmark-app"
+                )), \
+                mock.patch.object(RUNNER, "self_test", side_effect=fake_self_test), \
+                mock.patch.object(RUNNER, "run_scroll_profile"), \
+                mock.patch.object(RUNNER, "write_zip"):
+            RUNNER.run_phase(bundle, "full", "full")
+
+        state = json.loads((output / RUNNER.RESULTS_STATE_FILE).read_text())
+        require(state["status"] == "PASS",
+                "clean full execution did not complete successfully")
+        summary = json.loads((output / "default-execution-summary.json").read_text())
+        require(summary["status"] == "PASS",
+                "clean full execution did not write a PASS summary")
+
+    with tempfile.TemporaryDirectory(prefix="image-scroll-resume-preflight-test-") as temp:
+        bundle = Path(temp) / "bundle"
+        bundle.mkdir()
+        output = bundle / "results"
+        with mock.patch.object(RUNNER, "validate_bundle"):
+            try:
+                RUNNER.preflight(bundle, manifest, output, "matrix")
+            except RUNNER.FatalBenchmarkFailure as error:
+                require("run --phase self-test" in str(error),
+                        "clean resume failure did not explain the required self-test")
+            else:
+                raise AssertionError("clean resume phase was accepted without self-test")
 
 
 def physical_environment(width, height, pixel_bytes=4, renderer="software"):
@@ -334,6 +390,7 @@ def main():
     require(RUNNER.DEFAULT_EXPECTED_PROCESS_COUNT == 50,
             "default expected process count is not 50")
     assert_results_state_diagnostics()
+    assert_clean_full_and_resume_preflight()
     assert_physical_target_baseline()
     assert_validation_failure_continuation()
     assert_fatal_execution_stops()
