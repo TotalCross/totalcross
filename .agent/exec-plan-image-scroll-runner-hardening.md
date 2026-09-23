@@ -40,7 +40,7 @@ outside the temporary fixtures created by the focused tests.
 - [x] Add dynamic physical-target baseline and summary fields; commit checkpoint 2.
 - [x] Make post-run validation failures non-fatal and record exact errors;
   commit checkpoint 3.
-- [ ] Make aggregation/final status resilient; add focused tests and commit
+- [x] Make aggregation/final status resilient; add focused tests and commit
   checkpoint 4.
 - [ ] Run final focused validation, diff checks, and stop at `STOP / REVIEW`.
 
@@ -154,9 +154,9 @@ resuming.
 
 ## Outcomes & Retrospective
 
-Pending implementation. Final outcomes will record the four logical commits,
-focused test results, deferred full-benchmark/native validation, and any
-platform limitations in the final response.
+Implementation is complete through checkpoint 4. Final outcomes will record the
+four logical commits, focused test results, deferred full-benchmark/native
+validation, and any platform limitations in the final response.
 
 ## Revision Note
 

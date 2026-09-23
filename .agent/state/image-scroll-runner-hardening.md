@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active milestone
 
-Checkpoint 4: aggregation/final-status handling and tests.
+Finalization after checkpoint 4.
 
 ## Last completed checkpoint
 
@@ -18,8 +18,11 @@ and clean/resume/partial execution-state diagnostics.
 Checkpoint 2 is committed as `319c59f8c`: dynamic physical-target baseline
 capture, 540x960 logical validation, and physical fields in summaries.
 
-Checkpoint 3 is implemented and staged for commit: non-fatal validation
-recording/continuation for regular processes with fatal execution failures.
+Checkpoint 3 is committed as `9d27d71f8`: non-fatal validation recording and
+continuation for regular processes with fatal execution failures.
+
+Checkpoint 4 is implemented and staged for commit: invalid aggregate rows,
+incomplete pairwise status, final execution status/counts, and focused tests.
 
 ## Active paths
 
@@ -29,13 +32,14 @@ recording/continuation for regular processes with fatal execution failures.
 
 ## Next concrete action
 
-Make regular/reuse aggregation tolerate invalid planned runs, mark incomplete
-pairwise comparisons, and write final PASS/PASS_WITH_VALIDATION_FAILURES/
-INCOMPLETE summaries. Add focused aggregation and status tests.
+Run the final headers, staged diff, commit-message, signature, and focused test
+audit; then report the four logical commits and deferred full benchmark/native
+validation.
 
 ## Validation and evidence
 
-Focused matrix/runner tests and Python compilation pass through checkpoint 3.
+Focused matrix/runner, aggregation, continuation, and Python compilation tests
+pass through checkpoint 4. `bash -n` for the package script also passes.
 Full benchmark and native builds are explicitly deferred by the user.
 
 ## Decisions still active

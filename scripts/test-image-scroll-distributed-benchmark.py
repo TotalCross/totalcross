@@ -6,6 +6,7 @@
 """Focused matrix tests for the distributed image-scroll benchmark runner."""
 
 from collections import Counter
+import csv
 import importlib.util
 from itertools import product
 import json
@@ -218,6 +219,110 @@ def assert_fatal_execution_stops():
                     "matrix continued after a fatal execution failure")
 
 
+def assert_aggregation_and_final_status():
+    manifest = {
+        "sourceCommit": "test-source",
+        "sdkSourceAttestation": "test-source",
+        "runtimeSha256": "0" * 64,
+        "tcvmSha256": "0" * 64,
+        "includeDecodeAssets": False,
+    }
+    with tempfile.TemporaryDirectory(prefix="image-scroll-aggregate-test-") as temp:
+        output = Path(temp)
+        plan = RUNNER.write_suite_plan(output, (0,), ("on",), ("off",), 2, 2)
+        log_path = output / "logs" / "failed.log"
+        log_path.parent.mkdir()
+        log_path.write_text("post-run validation failed")
+        RUNNER.append_validation_failure(
+            output, "test-profile", 1, 0, "on", "off", None,
+            RUNNER.BenchmarkFailure("viewport hash mismatch"), log_path,
+            [output / "runs" / "failed"],
+        )
+        valid_dir = RUNNER.expected_run_dir(output, 0, "on", "off", 2)
+        valid_dir.mkdir(parents=True)
+        valid_summary = {
+            "status": "PASS", "requestedMask": 0, "effectiveMask": 0,
+            "frameCount": 2, "memoryPeakResidentBytes": 1,
+            "largestConsecutiveOver33_3": 0,
+        }
+        for field in RUNNER.TEMPORAL_SUMMARY_FIELDS:
+            valid_summary[field] = 1
+        for field in RUNNER.FRAME_THRESHOLD_COUNT_FIELDS:
+            valid_summary[field] = 0
+        (valid_dir / "summary.json").write_text(json.dumps(valid_summary))
+        (valid_dir / "counters.json").write_text("{}")
+        with mock.patch.object(RUNNER, "validate_diagnostic_counters", return_value={}):
+            summary_path = RUNNER.aggregate(
+                output, plan, (0,), ("on",), ("off",), 2, 2,
+                "test-profile",
+            )
+        with summary_path.open(newline="", encoding="utf-8") as source:
+            rows = list(csv.DictReader(source))
+        require(len(rows) == 2, "aggregate omitted a validation-failed process")
+        failed = next(row for row in rows if row["status"] == "VALIDATION_FAILED")
+        require(failed["comparison_status"] == "INCOMPLETE_VALIDATION"
+                and "viewport hash mismatch" in failed["validation_error"],
+                "aggregate did not mark validation failure as incomplete")
+
+        pairwise_records = [
+            {"mask": 0, "prefetch": "on", "run": 1, "status": "VALIDATION_FAILED"},
+            {"mask": 32, "prefetch": "on", "run": 1, "status": "PASS",
+             "work_time_p50_ns": 20, "work_time_p95_ns": 30,
+             "paint_time_p50_ns": 10, "paint_time_p95_ns": 15},
+        ]
+        pairwise_path = RUNNER.write_pairwise_comparison(
+            output, pairwise_records, (0, 32), 1
+        )
+        with pairwise_path.open(newline="", encoding="utf-8") as source:
+            pairwise_rows = list(csv.DictReader(source))
+        incomplete = next(row for row in pairwise_rows if row["pair"] == "0->32")
+        require(incomplete["variance_status"] == "INCOMPLETE_VALIDATION",
+                "pairwise comparison did not mark an invalid side")
+
+        reuse_profile = dict(
+            RUNNER.profile_config("scroll-raster-performance"),
+            expected_processes=2,
+        )
+        reuse_plan = [
+            (0, 0, 1, 0, "on", "off", "off"),
+            (0, 1, 1, 0, "on", "off", "on"),
+        ]
+        reuse_log = output / "logs" / "reuse-failed.log"
+        for rendering_reuse in ("off", "on"):
+            RUNNER.append_validation_failure(
+                output, "scroll-raster-reuse-poc", 1, 0, "on", "off",
+                rendering_reuse,
+                RUNNER.BenchmarkFailure("reuse viewport mismatch"), reuse_log,
+                [output / "runs" / f"reuse-{rendering_reuse}"],
+            )
+        reuse_summary, reuse_hashes = RUNNER.aggregate_scroll_reuse(
+            output, manifest, reuse_profile, reuse_plan,
+            {(1, 0, "on", "off", mode): None for mode in ("off", "on")},
+            {(1, 0, "on", "off", mode): None for mode in ("off", "on")},
+        )
+        with reuse_summary.open(newline="", encoding="utf-8") as source:
+            reuse_rows = list(csv.DictReader(source))
+        require(len(reuse_rows) == 4
+                and all(row["status"] == "VALIDATION_FAILED" for row in reuse_rows),
+                "reuse aggregation did not preserve invalid runs")
+        require(reuse_hashes.is_file(), "reuse hash artifact was not written")
+
+        tracker = RUNNER.new_execution_tracker()
+        tracker.update({
+            "plannedProcessCount": 4, "launchedProcessCount": 4,
+            "completedProcessCount": 4, "validProcessCount": 1,
+            "validationFailedProcessCount": 3,
+        })
+        RUNNER.write_default_execution_summary(
+            output, manifest, status="PASS_WITH_VALIDATION_FAILURES", tracker=tracker
+        )
+        final = json.loads((output / "default-execution-summary.json").read_text())
+        require(final["status"] == "PASS_WITH_VALIDATION_FAILURES"
+                and final["validationFailedProcessCount"] == 3
+                and len(final["validationFailures"]) == 3,
+                "final summary did not preserve validation-failure status")
+
+
 def main():
     require(RUNNER.DEFAULT_MATRIX_PROCESS_COUNT == 50,
             "default matrix process count is not 50")
@@ -227,6 +332,7 @@ def main():
     assert_physical_target_baseline()
     assert_validation_failure_continuation()
     assert_fatal_execution_stops()
+    assert_aggregation_and_final_status()
 
     default = RUNNER.profile_config("release-default-scroll")
     candidate = RUNNER.profile_config("release-candidate-scroll")

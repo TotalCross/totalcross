@@ -44,6 +44,10 @@ PHYSICAL_TARGET_FIELDS = (
 MASKS = (
     0, 6, 8, 16, 32, 8192, 16384, 32768, 32795, 32799,
 )
+CONTROLLED_PAIRS = (
+    (0, 32), (0, 8192), (32, 8224), (8192, 8224),
+    (32795, 32799), (32827, 32831),
+)
 DEFAULT_EFFECTIVE_MASK = 32799
 PREFETCH_PROFILES = ("on",)
 ACCOUNTING_PROFILES = ("on", "off")
@@ -304,7 +308,7 @@ def write_execution_state(output, status, manifest, **fields):
     write_json_file(output / RESULTS_STATE_FILE, state, "execution state")
 
 
-def inspect_results_state(output):
+def inspect_results_state(output, manifest=None):
     if not output.exists():
         return "CLEAN_START", "results directory does not exist"
     if not output.is_dir():
@@ -328,6 +332,17 @@ def inspect_results_state(output):
     status = state.get("status")
     if status not in VALID_RESUME_STATUSES:
         return "PARTIAL_INVALID", f"execution state is {status!r}, not resumable"
+    if manifest is not None:
+        if state.get("sourceCommit") != manifest.get("sourceCommit"):
+            return "PARTIAL_INVALID", "execution state source provenance differs from bundle"
+        if marker.get("sourceCommit") != manifest.get("sourceCommit"):
+            return "PARTIAL_INVALID", "self-test source provenance differs from bundle"
+        if marker.get("datasetFileCount") != EXPECTED_JPEGS:
+            return "PARTIAL_INVALID", "self-test dataset count differs from bundle"
+        if marker.get("sdkJarSha256Compile") != manifest.get("sdkJarSha256Compile"):
+            return "PARTIAL_INVALID", "self-test SDK compile hash differs from bundle"
+        if marker.get("runtimeSha256") != manifest.get("runtimeSha256"):
+            return "PARTIAL_INVALID", "self-test runtime hash differs from bundle"
     return "VALID_RESUME", f"execution state is {status}"
 
 
@@ -534,9 +549,38 @@ def load_validation_failures(output):
     return failures
 
 
+def new_execution_tracker():
+    return {
+        "plannedProcessCount": 0,
+        "launchedProcessCount": 0,
+        "completedProcessCount": 0,
+        "validProcessCount": 0,
+        "validationFailedProcessCount": 0,
+    }
+
+
+def track_process_start(tracker):
+    if tracker is not None:
+        tracker["launchedProcessCount"] += 1
+
+
+def track_process_complete(tracker, status):
+    if tracker is None:
+        return
+    tracker["completedProcessCount"] += 1
+    if status == "VALIDATION_FAILED":
+        tracker["validationFailedProcessCount"] += 1
+    else:
+        tracker["validProcessCount"] += 1
+
+
+def validation_failure_message(record):
+    return "; ".join(record.get("messages", ())) or "validation failed"
+
+
 def preflight(bundle, manifest, output, phase):
     validate_bundle(bundle, manifest)
-    state, detail = inspect_results_state(output)
+    state, detail = inspect_results_state(output, manifest)
     if state == "PARTIAL_INVALID":
         raise FatalBenchmarkFailure(
             f"results state is partial/invalid for {bundle}: {detail}; "
@@ -1522,6 +1566,10 @@ def validate_scroll_reuse_artifacts(output, log_path, manifest, profile, mask,
             "accounting": accounting,
             "rendering_reuse": rendering_reuse,
             "pass": pass_name,
+            "status": "PASS",
+            "validation_status": "VALID",
+            "validation_error": "",
+            "comparison_status": "VALID",
             "movement_frames": movement_frames,
             "movement_p50_ns": percentile(movement_values[pass_name]["work_time_ns"], 0.50),
             "movement_p95_ns": percentile(movement_values[pass_name]["work_time_ns"], 0.95),
@@ -1648,12 +1696,50 @@ def run_scroll_reuse_process(bundle, manifest, output, corpus_digest, profile,
     return rows, hashes, "PASS"
 
 
+def invalid_reuse_summary_row(profile, run, mask, prefetch, accounting,
+                              rendering_reuse, pass_name, failure, physical_target):
+    fields = (
+        "profile", "run", "mask", "effective_mask", "prefetch", "accounting",
+        "rendering_reuse", "pass", "status", "validation_status", "validation_error",
+        "comparison_status",
+        "movement_frames", "movement_p50_ns", "movement_p95_ns", "movement_p99_ns",
+        "movement_max_ns", "screen_p50_ns", "screen_p95_ns", "screen_p99_ns",
+        "screen_max_ns", "row_paints", "image_paints", "attempts", "hits", "fallbacks",
+        "recoveries", "hit_rate", "viewport_pixels", "reused_pixels", "dirty_pixels",
+        "moved_bytes", "reuse_coverage", "target_pixel_bytes",
+        "memory_peak_resident_bytes", "logical_width", "logical_height",
+        "physical_width", "physical_height", "physical_row_bytes",
+        "physical_pixel_bytes", "physical_color_type", "physical_alpha_type",
+        "physical_color_classification", "renderer_backend",
+    )
+    row = {field: None for field in fields}
+    row.update({
+        "profile": profile,
+        "run": run,
+        "mask": mask_token(mask),
+        "effective_mask": DEFAULT_EFFECTIVE_MASK if mask is None else mask,
+        "prefetch": prefetch,
+        "accounting": accounting,
+        "rendering_reuse": rendering_reuse,
+        "pass": pass_name,
+        "status": "VALIDATION_FAILED",
+        "validation_status": "VALIDATION_FAILED",
+        "validation_error": validation_failure_message(failure),
+        "comparison_status": "INCOMPLETE_VALIDATION",
+        **physical_summary_fields(physical_target),
+    })
+    return row
+
+
 def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_by_key):
+    failures = load_validation_failures(output)
+    physical_target = load_physical_target_baseline(output)
+    app_profile = profile.get("app_profile", profile["name"])
     by_pair = {}
     for _, _, run, mask, prefetch, accounting, rendering_reuse in plan:
         by_pair.setdefault((run, mask, prefetch, accounting), {})[rendering_reuse] = (
-            rows_by_key[(run, mask, prefetch, accounting, rendering_reuse)],
-            hashes_by_key[(run, mask, prefetch, accounting, rendering_reuse)],
+            rows_by_key.get((run, mask, prefetch, accounting, rendering_reuse)),
+            hashes_by_key.get((run, mask, prefetch, accounting, rendering_reuse)),
         )
     summary_rows = []
     hash_rows = []
@@ -1662,9 +1748,31 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
                 f"{profile['name']} run {run} lacks an off/on pair")
         off_rows, off_hashes = modes["off"]
         on_rows, on_hashes = modes["on"]
-        require(off_hashes == on_hashes,
-                f"{profile['name']} run {run} viewport hashes differ between reuse modes")
+        pair_valid = off_rows is not None and on_rows is not None
+        if pair_valid:
+            require(off_hashes == on_hashes,
+                    f"{profile['name']} run {run} viewport hashes differ between reuse modes")
         for rendering_reuse, rows in (("off", off_rows), ("on", on_rows)):
+            if rows is None:
+                failure = failures.get(
+                    configuration_key(
+                        app_profile, run, mask, prefetch, accounting, rendering_reuse
+                    )
+                )
+                require(failure is not None,
+                        f"missing validation failure for {profile['name']} run {run} "
+                        f"reuse={rendering_reuse}")
+                summary_rows.extend(
+                    invalid_reuse_summary_row(
+                        profile["name"], run, mask, prefetch, accounting,
+                        rendering_reuse, pass_name, failure, physical_target
+                    )
+                    for pass_name in ("cold", "warm")
+                )
+                continue
+            if not pair_valid:
+                for row in rows:
+                    row["comparison_status"] = "INCOMPLETE_VALIDATION"
             summary_rows.extend(rows)
             for (pass_name, waypoint_index), hashes in sorted(
                     (off_hashes if rendering_reuse == "off" else on_hashes).items()):
@@ -1672,8 +1780,9 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
                     "profile": profile["name"], "run": run, "mask": mask_token(mask),
                     "prefetch": prefetch, "accounting": accounting,
                     "rendering_reuse": rendering_reuse, "pass": pass_name,
-                    "waypoint_index": waypoint_index, "hash": hashes[0],
-                    "top_hash": hashes[1], "bottom_hash": hashes[2],
+                    "status": "PASS", "validation_status": "VALID",
+                    "validation_error": "", "waypoint_index": waypoint_index,
+                    "hash": hashes[0], "top_hash": hashes[1], "bottom_hash": hashes[2],
                 })
     summary_fields = list(summary_rows[0]) if summary_rows else []
     summary_path = output / f"scroll-raster-summary-{profile['name']}.csv"
@@ -1683,7 +1792,12 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
         writer.writerows(summary_rows)
     hash_path = output / f"scroll-raster-waypoint-hashes-{profile['name']}.csv"
     with hash_path.open("w", newline="", encoding="utf-8") as destination:
-        writer = csv.DictWriter(destination, fieldnames=list(hash_rows[0]), lineterminator="\n")
+        hash_fields = [
+            "profile", "run", "mask", "prefetch", "accounting", "rendering_reuse",
+            "pass", "status", "validation_status", "validation_error", "waypoint_index",
+            "hash", "top_hash", "bottom_hash",
+        ]
+        writer = csv.DictWriter(destination, fieldnames=hash_fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(hash_rows)
     require(len(summary_rows) == profile["expected_processes"] * 2,
@@ -1693,16 +1807,20 @@ def aggregate_scroll_reuse(output, manifest, profile, plan, rows_by_key, hashes_
     return summary_path, hash_path
 
 
-def run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile):
+def run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile, tracker=None):
     plan = write_reuse_suite_plan(output, profile)
+    if tracker is not None:
+        tracker["plannedProcessCount"] += len(plan)
     rows_by_key = {}
     hashes_by_key = {}
     for _, _, run, mask, prefetch, accounting, rendering_reuse in plan:
         app_profile = profile.get("app_profile", profile["name"])
+        track_process_start(tracker)
         rows, hashes, _status = run_scroll_reuse_process(
             bundle, manifest, output, corpus_digest, app_profile, mask, prefetch,
             accounting, rendering_reuse, run, profile["workload_images"]
         )
+        track_process_complete(tracker, _status)
         key = (run, mask, prefetch, accounting, rendering_reuse)
         rows_by_key[key] = rows
         hashes_by_key[key] = hashes
@@ -1960,18 +2078,22 @@ def require_smokes_completed(output, corpus_digest):
 def run_matrix(bundle, manifest, output, corpus_digest, masks, prefetch_profiles,
                accounting_profiles, rounds, expected_processes,
                require_policy_diagnostics=False, require_structural_diagnostics=False,
-               passes=1, profile_name="matrix"):
+               passes=1, profile_name="matrix", tracker=None):
     plan = write_suite_plan(output, masks, prefetch_profiles, accounting_profiles,
                             rounds, expected_processes)
+    if tracker is not None:
+        tracker["plannedProcessCount"] += len(plan)
     completed = 0
     for _, _, run, mask, prefetch, accounting in plan:
-        run_process(
+        track_process_start(tracker)
+        status = run_process(
             bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run,
             f"matrix-{run}-{mask}-{prefetch}-{accounting}",
             require_policy_diagnostics, require_structural_diagnostics,
             passes,
             profile_name,
         )
+        track_process_complete(tracker, status)
         completed += 1
         print(f"matrix progress={completed}/{expected_processes}")
     require(completed == expected_processes,
@@ -1994,9 +2116,6 @@ def direction(delta):
 
 
 def write_pairwise_comparison(output, records, masks, rounds):
-    for control, enabled in CONTROLLED_PAIRS:
-        require(control in masks and enabled in masks,
-                f"focused profile lacks controlled pair {control}->{enabled}")
     by_key = {(record["mask"], record["prefetch"], record["run"]): record
               for record in records}
     fields = [
@@ -2009,24 +2128,53 @@ def write_pairwise_comparison(output, records, masks, rounds):
         "paint_p95_delta_pct",
     ]
     rows = []
+    def empty_row(control, enabled, prefetch, run, status):
+        row = {field: None for field in fields}
+        row.update({
+            "pair": f"{control}->{enabled}", "control_mask": control,
+            "enabled_mask": enabled, "prefetch": prefetch, "run": run,
+            "variance_status": status,
+        })
+        return row
+
     for control, enabled in CONTROLLED_PAIRS:
+        if control not in masks or enabled not in masks:
+            for prefetch in PREFETCH_PROFILES:
+                for run in range(1, rounds + 1):
+                    rows.append(empty_row(
+                        control, enabled, prefetch, run, "NOT_PLANNED"
+                    ))
+            continue
         for prefetch in PREFETCH_PROFILES:
             pair_records = []
+            pair_validity = []
             for run in range(1, rounds + 1):
                 control_record = by_key.get((control, prefetch, run))
                 enabled_record = by_key.get((enabled, prefetch, run))
-                require(control_record is not None and enabled_record is not None,
-                        f"missing controlled pair {control}->{enabled},"
-                        f" prefetch={prefetch},run={run}")
+                valid = (control_record is not None and enabled_record is not None
+                         and control_record.get("status") == "PASS"
+                         and enabled_record.get("status") == "PASS")
+                pair_validity.append(valid)
+                if not valid:
+                    pair_records.append(None)
+                    continue
                 work_delta = (enabled_record["work_time_p50_ns"]
                               - control_record["work_time_p50_ns"])
                 pair_records.append(work_delta)
-            directions = {direction(delta) for delta in pair_records}
-            variance_status = ("INCONCLUSIVE_VARIANCE" if len(directions) > 1
-                               else "CONSISTENT_DIRECTION")
+            directions = {direction(delta) for delta in pair_records if delta is not None}
+            if not all(pair_validity):
+                variance_status = "INCOMPLETE_VALIDATION"
+            else:
+                variance_status = ("INCONCLUSIVE_VARIANCE" if len(directions) > 1
+                                   else "CONSISTENT_DIRECTION")
             for run in range(1, rounds + 1):
-                control_record = by_key[(control, prefetch, run)]
-                enabled_record = by_key[(enabled, prefetch, run)]
+                control_record = by_key.get((control, prefetch, run))
+                enabled_record = by_key.get((enabled, prefetch, run))
+                if not pair_validity[run - 1]:
+                    rows.append(empty_row(
+                        control, enabled, prefetch, run, variance_status
+                    ))
+                    continue
                 work_p50_delta = (enabled_record["work_time_p50_ns"]
                                   - control_record["work_time_p50_ns"])
                 work_p95_delta = (enabled_record["work_time_p95_ns"]
@@ -2088,7 +2236,24 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
     records = []
     physical_target = load_physical_target_baseline(output)
     physical_fields = physical_summary_fields(physical_target)
+    failures = load_validation_failures(output)
     for _, order, run, mask, prefetch, accounting in plan:
+        failure = failures.get(
+            configuration_key(profile_name, run, mask, prefetch, accounting)
+        )
+        if failure is not None:
+            records.append({
+                "order": order,
+                "run": run,
+                "prefetch": prefetch,
+                "accounting": accounting,
+                "mask": mask,
+                "status": "VALIDATION_FAILED",
+                "validation_status": "VALIDATION_FAILED",
+                "validation_error": validation_failure_message(failure),
+                **physical_fields,
+            })
+            continue
         path = expected_run_dir(output, mask, prefetch, accounting, run) / "summary.json"
         try:
             summary = json.loads(path.read_text(encoding="utf-8"))
@@ -2122,6 +2287,8 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
             "accounting": accounting,
             "mask": mask,
             "status": summary["status"],
+            "validation_status": "VALID",
+            "validation_error": "",
             "frame_count": summary["frameCount"],
             "frame_p50_ns": summary["frameTimeP50Ns"],
             "frame_p90_ns": summary["frameTimeP90Ns"],
@@ -2155,26 +2322,41 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
             baseline = [record for record in records
                         if record["prefetch"] == prefetch
                         and record["accounting"] == accounting
-                        and record["mask"] == 0]
+                        and record["mask"] == 0
+                        and record["status"] == "PASS"]
             if 0 in masks:
-                require(len(baseline) == rounds,
-                        f"missing mask zero baseline for {prefetch}/{accounting}")
-                baseline_p50 = sum(record["frame_p50_ns"] for record in baseline) // len(baseline)
-                baseline_p95 = sum(record["frame_p95_ns"] for record in baseline) // len(baseline)
+                baseline_available = len(baseline) == rounds
+                if baseline_available:
+                    baseline_p50 = sum(record["frame_p50_ns"] for record in baseline) // len(baseline)
+                    baseline_p95 = sum(record["frame_p95_ns"] for record in baseline) // len(baseline)
             for record in records:
                 if record["prefetch"] != prefetch or record["accounting"] != accounting:
                     continue
                 row = dict(record)
                 row["baseline_scope"] = "same-machine-same-prefetch-mask0"
-                row["baseline_mask0_p50_ns"] = baseline_p50 if 0 in masks else None
-                row["delta_p50_ns"] = (record["frame_p50_ns"] - baseline_p50
-                                        if 0 in masks else None)
-                row["baseline_mask0_p95_ns"] = baseline_p95 if 0 in masks else None
-                row["delta_p95_ns"] = (record["frame_p95_ns"] - baseline_p95
-                                        if 0 in masks else None)
+                valid_comparison = (record["status"] == "PASS"
+                                    and (0 not in masks or baseline_available))
+                row["comparison_status"] = (
+                    "VALID" if valid_comparison else "INCOMPLETE_VALIDATION"
+                )
+                row["baseline_mask0_p50_ns"] = (
+                    baseline_p50 if 0 in masks and baseline_available else None
+                )
+                row["delta_p50_ns"] = (
+                    record["frame_p50_ns"] - baseline_p50
+                    if valid_comparison and 0 in masks else None
+                )
+                row["baseline_mask0_p95_ns"] = (
+                    baseline_p95 if 0 in masks and baseline_available else None
+                )
+                row["delta_p95_ns"] = (
+                    record["frame_p95_ns"] - baseline_p95
+                    if valid_comparison and 0 in masks else None
+                )
                 rows.append(row)
     fields = [
-        "order", "run", "prefetch", "accounting", "mask", "status", "frame_count",
+        "order", "run", "prefetch", "accounting", "mask", "status",
+        "validation_status", "validation_error", "comparison_status", "frame_count",
         "frame_p50_ns",
         "frame_p90_ns", "frame_p95_ns", "frame_p99_ns", "frame_max_ns",
         "work_time_p50_ns", "work_time_p95_ns", "work_time_p99_ns", "work_time_max_ns",
@@ -2195,13 +2377,6 @@ def aggregate(output, plan, masks, prefetch_profiles, accounting_profiles, round
         writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(sorted(rows, key=lambda row: (row["run"], row["prefetch"], row["mask"])))
-    if 0 in masks:
-        for prefetch in prefetch_profiles:
-            for accounting in accounting_profiles:
-                require(sum(1 for row in rows if row["mask"] == 0
-                            and row["prefetch"] == prefetch
-                            and row["accounting"] == accounting) == rounds,
-                        f"aggregated {prefetch}/{accounting} baselines are incomplete")
     print(f"aggregation passed,summary={path},rows={len(rows)}")
     if profile_name == "write-pixels-policy":
         write_pairwise_comparison(output, records, masks, rounds)
@@ -2215,7 +2390,6 @@ def write_reuse_pairwise_comparison(output, rows, masks, prefetch_profiles, roun
     )
     pairs = tuple((control, enabled) for control, enabled in candidate_pairs
                   if control in masks and enabled in masks)
-    require(pairs, "reuse profile lacks a controlled pair")
     pass_names = ("cold-forward", "warm-reverse", "warm-forward")
     by_key = {(row["mask"], row["prefetch"], row["run"], row["pass"]): row
               for row in rows}
@@ -2229,6 +2403,14 @@ def write_reuse_pairwise_comparison(output, rows, masks, prefetch_profiles, roun
         "paint_p95_delta_pct",
     ]
     output_rows = []
+    def empty_row(control, enabled, prefetch, run, pass_name, status):
+        row = {field: None for field in fields}
+        row.update({
+            "pair": f"{control}->{enabled}", "prefetch": prefetch,
+            "run": run, "pass": pass_name, "variance_status": status,
+        })
+        return row
+
     for control, enabled in pairs:
         for prefetch in prefetch_profiles:
             for pass_name in pass_names:
@@ -2236,17 +2418,30 @@ def write_reuse_pairwise_comparison(output, rows, masks, prefetch_profiles, roun
                 for run in range(1, rounds + 1):
                     control_row = by_key.get((control, prefetch, run, pass_name))
                     enabled_row = by_key.get((enabled, prefetch, run, pass_name))
-                    require(control_row is not None and enabled_row is not None,
-                            f"missing reuse pair {control}->{enabled},"
-                            f" prefetch={prefetch},run={run},pass={pass_name}")
+                    valid = (control_row is not None and enabled_row is not None
+                             and control_row.get("status") == "PASS"
+                             and enabled_row.get("status") == "PASS")
+                    if not valid:
+                        deltas.append(None)
+                        continue
                     deltas.append(enabled_row["work_time_p50_ns"]
                                    - control_row["work_time_p50_ns"])
-                directions = {direction(delta) for delta in deltas}
-                variance_status = ("INCONCLUSIVE_VARIANCE" if len(directions) > 1
-                                   else "CONSISTENT_DIRECTION")
+                directions = {direction(delta) for delta in deltas if delta is not None}
+                variance_status = (
+                    "INCOMPLETE_VALIDATION" if any(delta is None for delta in deltas)
+                    else "INCONCLUSIVE_VARIANCE" if len(directions) > 1
+                    else "CONSISTENT_DIRECTION"
+                )
                 for run in range(1, rounds + 1):
-                    control_row = by_key[(control, prefetch, run, pass_name)]
-                    enabled_row = by_key[(enabled, prefetch, run, pass_name)]
+                    control_row = by_key.get((control, prefetch, run, pass_name))
+                    enabled_row = by_key.get((enabled, prefetch, run, pass_name))
+                    if (control_row is None or enabled_row is None
+                            or control_row.get("status") != "PASS"
+                            or enabled_row.get("status") != "PASS"):
+                        output_rows.append(empty_row(
+                            control, enabled, prefetch, run, pass_name, variance_status
+                        ))
+                        continue
                     work_p50_delta = (enabled_row["work_time_p50_ns"]
                                       - control_row["work_time_p50_ns"])
                     work_p95_delta = (enabled_row["work_time_p95_ns"]
@@ -2428,14 +2623,16 @@ def run_decode_phase(bundle, phase):
             f"decode {phase} phase failed with exit code {completed.returncode}")
 
 
-def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name):
+def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name, tracker=None):
     profile = profile_config(profile_name)
     if profile.get("rendering_reuse"):
-        return run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile)
+        return run_scroll_reuse_matrix(
+            bundle, manifest, output, corpus_digest, profile, tracker
+        )
     plan = run_matrix(
         bundle, manifest, output, corpus_digest, profile["masks"], profile["prefetch"],
         profile["accounting"], profile["rounds"], profile["expected_processes"],
-        passes=profile.get("passes", 1), profile_name=profile_name,
+        passes=profile.get("passes", 1), profile_name=profile_name, tracker=tracker,
     )
     return aggregate(
         output, plan, profile["masks"], profile["prefetch"], profile["accounting"],
@@ -2443,16 +2640,34 @@ def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name):
     )
 
 
-def write_default_execution_summary(output, manifest):
+def write_default_execution_summary(output, manifest, status="PASS", tracker=None,
+                                    fatal_error=None):
     physical_target = load_physical_target_baseline(output)
+    failures = list(load_validation_failures(output).values())
+    if tracker is None:
+        tracker = new_execution_tracker()
+        tracker.update({
+            "plannedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
+            "launchedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
+            "completedProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT,
+            "validProcessCount": DEFAULT_EXPECTED_PROCESS_COUNT - len(failures),
+            "validationFailedProcessCount": len(failures),
+        })
     summary = {
-        "status": "PASS",
+        "status": status,
         "sourceCommit": manifest["sourceCommit"],
         "sdkSourceAttestation": manifest.get("sdkSourceAttestation"),
         "runtimeSha256": manifest["runtimeSha256"],
         "tcvmSha256": manifest.get("tcvmSha256"),
         "logicalTarget": dict(LOGICAL_TARGET),
         "physicalTarget": physical_target,
+        "plannedProcessCount": tracker["plannedProcessCount"],
+        "launchedProcessCount": tracker["launchedProcessCount"],
+        "completedProcessCount": tracker["completedProcessCount"],
+        "validProcessCount": tracker["validProcessCount"],
+        "validationFailedProcessCount": tracker["validationFailedProcessCount"],
+        "validationFailures": failures,
+        "fatalFailure": fatal_error,
         "selfTestProcessCount": 1,
         "profileProcessCounts": {
             name: profile_config(name)["expected_processes"]
@@ -2499,29 +2714,62 @@ def run_phase(bundle, phase, profile_name):
     if phase == "self-test":
         return
     write_execution_state(output, "RUNNING", manifest, resultsState="RUNNING")
-    if phase == "full":
-        for name in (
-            "reduced-image-optimizations", "scroll-raster-correctness",
-            "scroll-raster-performance", "release-default-scroll",
-            "release-candidate-scroll",
-        ):
-            run_scroll_profile(bundle, manifest, output, corpus_digest, name)
-        write_default_execution_summary(output, manifest)
-        if manifest["includeDecodeAssets"]:
-            run_decode_phase(bundle, "full")
+    tracker = new_execution_tracker()
+    try:
+        if phase == "full":
+            for name in (
+                "reduced-image-optimizations", "scroll-raster-correctness",
+                "scroll-raster-performance", "release-default-scroll",
+                "release-candidate-scroll",
+            ):
+                run_scroll_profile(bundle, manifest, output, corpus_digest, name, tracker)
+            if manifest["includeDecodeAssets"]:
+                run_decode_phase(bundle, "full")
+            failures = load_validation_failures(output)
+            status = ("PASS_WITH_VALIDATION_FAILURES" if failures
+                      else "PASS")
+            write_default_execution_summary(
+                output, manifest, status=status, tracker=tracker
+            )
+            write_zip(bundle, output)
+            write_execution_state(output, status, manifest,
+                                  resultsState="COMPLETE", **tracker)
+            return
+        if phase == "smokes":
+            profile_name = "reduced-image-optimizations"
+        elif phase == "matrix":
+            require(profile_name != "full", "matrix phase requires a named scroll profile")
+        elif phase != profile_name:
+            require(phase in PROFILES, f"unsupported scroll phase: {phase}")
+            profile_name = phase
+        run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name, tracker)
         write_zip(bundle, output)
-        write_execution_state(output, "PASS", manifest, resultsState="COMPLETE")
-        return
-    if phase == "smokes":
-        profile_name = "reduced-image-optimizations"
-    elif phase == "matrix":
-        require(profile_name != "full", "matrix phase requires a named scroll profile")
-    elif phase != profile_name:
-        require(phase in PROFILES, f"unsupported scroll phase: {phase}")
-        profile_name = phase
-    run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name)
-    write_zip(bundle, output)
-    write_execution_state(output, "PASS", manifest, resultsState="COMPLETE")
+        failures = load_validation_failures(output)
+        status = "PASS_WITH_VALIDATION_FAILURES" if failures else "PASS"
+        write_execution_state(output, status, manifest,
+                              resultsState="COMPLETE", **tracker)
+    except (BenchmarkFailure, OSError) as error:
+        if phase == "full":
+            try:
+                write_default_execution_summary(
+                    output, manifest, status="INCOMPLETE", tracker=tracker,
+                    fatal_error=str(error),
+                )
+                write_execution_state(output, "INCOMPLETE", manifest,
+                                      resultsState="INCOMPLETE",
+                                      fatalFailure=str(error), **tracker)
+            except (BenchmarkFailure, OSError) as state_error:
+                print(f"could not preserve fatal execution status: {state_error}",
+                      file=sys.stderr)
+        else:
+            try:
+                write_execution_state(output, "INCOMPLETE", manifest,
+                                      resultsState="INCOMPLETE",
+                                      fatalFailure=str(error))
+            except (BenchmarkFailure, OSError) as state_error:
+                print(f"could not preserve fatal execution status: {state_error}",
+                      file=sys.stderr)
+        raise
 
 
 def main(argv):
