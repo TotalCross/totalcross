@@ -155,8 +155,8 @@ resuming.
 ## Outcomes & Retrospective
 
 Implementation is complete through checkpoint 4. Focused validation passes and
-the full benchmark/native build remain deferred. The four implementation
-commits are signed and have valid Conventional Commit subjects; their bodies
+the full benchmark/native build remain deferred. The implementation commits
+are signed and have valid Conventional Commit subjects; several bodies
 contain lines over the repository's 80-character advisory limit. History was
 not rewritten because the user explicitly prohibited it.
 
