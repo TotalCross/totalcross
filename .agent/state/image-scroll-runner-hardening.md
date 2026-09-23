@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active milestone
 
-STOP / REVIEW after checkpoint 4.
+STOP / REVIEW after the runner-regression closeout.
 
 ## Last completed checkpoint
 
@@ -28,6 +28,9 @@ A follow-up fatal-diagnostics fix is committed as `9d95da261`: fatal
 launch/timeout/exit failures are recorded with `fatal: true` before immediate
 termination.
 
+The clean-full, comparison-continuation, and final-console regressions are
+committed as `248c6667f`, `4b2a937f5`, and `fe185aca8`, respectively.
+
 ## Active paths
 
 - `scripts/run-image-scroll-distributed-benchmark.py`
@@ -37,16 +40,15 @@ termination.
 ## Next concrete action
 
 Report the implementation commits plus this plan closeout, focused test
-results, deferred full benchmark/native validation, and the no-rewrite commit
-message limitation.
+results, deferred full benchmark/native validation, and the no-push status.
 
 ## Validation and evidence
 
 Focused matrix/runner, aggregation, continuation, and Python compilation tests
-pass through checkpoint 4. `bash -n` for the package script also passes. GPG
-signatures are good for all four implementation commits. The historical body
-line checker reports overlong body lines; rewriting was explicitly forbidden.
-Full benchmark and native builds are explicitly deferred by the user.
+pass through the regression closeout. The package script syntax check and
+copyright-header validation pass. GPG signatures are required and verified for
+the three continuation commits. Full benchmark and native builds are
+explicitly deferred by the user.
 
 ## Decisions still active
 
