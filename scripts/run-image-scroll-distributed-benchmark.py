@@ -221,11 +221,30 @@ PREFETCH_PHASE_SUMMARY_FIELDS = (
     ("imageControlAttachElapsedNs", "image_control_attach_ns"),
 )
 PREFETCH_DIAGNOSTIC_COUNTER_FIELDS = (
+    ("jpegDecodeCount", "prefetch_jpeg_decode_count"),
+    ("jpegDecodeNs", "prefetch_jpeg_decode_ns"),
+    ("jpegFullCount", "prefetch_jpeg_full_count"),
+    ("jpegFullNs", "prefetch_jpeg_full_ns"),
+    ("jpegHalfCount", "prefetch_jpeg_half_count"),
+    ("jpegHalfNs", "prefetch_jpeg_half_ns"),
+    ("jpegQuarterCount", "prefetch_jpeg_quarter_count"),
+    ("jpegQuarterNs", "prefetch_jpeg_quarter_ns"),
+    ("jpegEighthCount", "prefetch_jpeg_eighth_count"),
+    ("jpegEighthNs", "prefetch_jpeg_eighth_ns"),
+    ("jpegOtherCount", "prefetch_jpeg_other_count"),
+    ("jpegOtherNs", "prefetch_jpeg_other_ns"),
     ("imageMaterializations", "prefetch_image_materializations"),
     ("nativeGeometryMaterializations", "prefetch_native_geometry_materializations"),
+    ("targetColorAttempts", "prefetch_target_color_attempts"),
+    ("targetColorHits", "prefetch_target_color_hits"),
     ("targetColorMaterializations", "prefetch_target_color_materializations"),
+    ("targetColorFallbacks", "prefetch_target_color_fallbacks"),
     ("targetColorConvertedBytes", "prefetch_target_color_converted_bytes"),
+    ("physicalVariantLookups", "prefetch_physical_variant_lookups"),
+    ("physicalVariantHits", "prefetch_physical_variant_hits"),
+    ("physicalVariantMisses", "prefetch_physical_variant_misses"),
     ("physicalVariantStores", "prefetch_physical_variant_stores"),
+    ("physicalVariantEvictions", "prefetch_physical_variant_evictions"),
     ("physicalVariantBytes", "prefetch_physical_variant_bytes"),
 )
 SAVE_COUNT_BUCKETS = ("0", "1", "2", "3", "4", "5OrMore")
@@ -1316,6 +1335,20 @@ def validate_prefetch_diagnostic_counters(counters, run_dir):
         values[csv_name] = counter_value(
             phases, json_name, f"{run_dir} prefetch phase {json_name}"
         )
+    require(
+        values["prefetch_jpeg_decode_count"] == sum(
+            values[f"prefetch_jpeg_{bucket}_count"]
+            for bucket in ("full", "half", "quarter", "eighth", "other")
+        ),
+        f"{run_dir} prefetch JPEG decode count does not equal bucket counts",
+    )
+    require(
+        values["prefetch_jpeg_decode_ns"] == sum(
+            values[f"prefetch_jpeg_{bucket}_ns"]
+            for bucket in ("full", "half", "quarter", "eighth", "other")
+        ),
+        f"{run_dir} prefetch JPEG decode ns does not equal bucket ns",
+    )
     return values
 
 

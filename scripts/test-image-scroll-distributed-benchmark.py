@@ -507,17 +507,43 @@ def assert_exploratory_plan_and_execution():
         )
         require(phase_fields["image_load_ns"] == 1,
                 "diagnostic phase timing was not mapped")
-        counter_payload = {
-            "prefetchPhases": {
-                json_name: 1
-                for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
-            }
+        prefetch_phase_values = {
+            json_name: 1
+            for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
         }
+        prefetch_phase_values.update({
+            "jpegDecodeCount": 5,
+            "jpegDecodeNs": 50,
+            "jpegFullCount": 1,
+            "jpegFullNs": 10,
+            "jpegHalfCount": 1,
+            "jpegHalfNs": 10,
+            "jpegQuarterCount": 1,
+            "jpegQuarterNs": 10,
+            "jpegEighthCount": 1,
+            "jpegEighthNs": 10,
+            "jpegOtherCount": 1,
+            "jpegOtherNs": 10,
+        })
+        counter_payload = {"prefetchPhases": prefetch_phase_values}
         counter_fields = RUNNER.validate_prefetch_diagnostic_counters(
             counter_payload, "diagnostic run"
         )
-        require(counter_fields["prefetch_target_color_converted_bytes"] == 1,
-                "diagnostic native conversion counter was not mapped")
+        require(counter_fields["prefetch_jpeg_decode_ns"] == 50
+                and counter_fields["prefetch_target_color_converted_bytes"] == 1,
+                "diagnostic JPEG or native conversion counter was not mapped")
+        invalid_counter_payload = {
+            "prefetchPhases": dict(prefetch_phase_values, jpegDecodeNs=49)
+        }
+        try:
+            RUNNER.validate_prefetch_diagnostic_counters(
+                invalid_counter_payload, "inconsistent diagnostic run"
+            )
+        except RUNNER.BenchmarkFailure as error:
+            require("decode ns" in str(error),
+                    "JPEG timing inconsistency did not identify decode ns")
+        else:
+            raise AssertionError("inconsistent JPEG timing was accepted")
     with tempfile.TemporaryDirectory(prefix="image-scroll-exploratory-plan-test-") as temp:
         output = Path(temp)
         plan = RUNNER.write_suite_plan(
@@ -638,6 +664,24 @@ def assert_aggregation_and_final_status():
             diagnostic_profile["prefetch"], diagnostic_profile["accounting"],
             diagnostic_profile["rounds"], diagnostic_profile["expected_processes"],
         )
+        diagnostic_phase_values = {
+            json_name: 1
+            for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
+        }
+        diagnostic_phase_values.update({
+            "jpegDecodeCount": 5,
+            "jpegDecodeNs": 50,
+            "jpegFullCount": 1,
+            "jpegFullNs": 10,
+            "jpegHalfCount": 1,
+            "jpegHalfNs": 10,
+            "jpegQuarterCount": 1,
+            "jpegQuarterNs": 10,
+            "jpegEighthCount": 1,
+            "jpegEighthNs": 10,
+            "jpegOtherCount": 1,
+            "jpegOtherNs": 10,
+        })
         for _, _, run, mask, prefetch, accounting in diagnostic_plan:
             run_dir = RUNNER.expected_run_dir(
                 diagnostic_output, mask, prefetch, accounting, run
@@ -660,10 +704,7 @@ def assert_aggregation_and_final_status():
                 json.dumps(diagnostic_summary)
             )
             (run_dir / "counters.json").write_text(json.dumps({
-                "prefetchPhases": {
-                    json_name: 1
-                    for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
-                }
+                "prefetchPhases": diagnostic_phase_values
             }))
         with mock.patch.object(RUNNER, "validate_diagnostic_counters", return_value={}):
             diagnostic_summary_path = RUNNER.aggregate(
@@ -678,6 +719,7 @@ def assert_aggregation_and_final_status():
             diagnostic_rows = list(csv.DictReader(source))
         require(len(diagnostic_rows) == 5
                 and all(row["image_load_ns"] == "1"
+                        and row["prefetch_jpeg_decode_ns"] == "50"
                         and row["prefetch_target_color_converted_bytes"] == "1"
                         for row in diagnostic_rows),
                 "diagnostic aggregation omitted phase or conversion metrics")
