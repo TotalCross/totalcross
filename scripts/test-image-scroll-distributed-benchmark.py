@@ -826,6 +826,10 @@ def main():
             "package manifest matrix count is not 30")
     require('"expectedProcessCount": 30' in package_script,
             "package manifest expected count is not 30")
+    require('"exploratoryPassCount": 3' in package_script,
+            "package manifest exploratory pass count is not three")
+    require('"prefetchDiagnosticProcessCount": 5' in package_script,
+            "package manifest diagnostic process count is not five")
     require('"passes":3,"processCount":10' in package_script,
             "package manifest exploratory pass count is not three")
     require('"prefetch-diagnostics": {"masks":[0,4,6,38,32799]' in package_script,
