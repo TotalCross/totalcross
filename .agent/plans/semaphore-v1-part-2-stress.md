@@ -88,8 +88,8 @@ deployed binaries, build directories, and per-sample output are not.
 - [x] Add standard-API compatibility/negative-resolution coverage.
 - [x] Add deterministic multi-thread Semaphore stress smoke.
 - [x] Add 200-sample release-to-acquire wake-latency smoke.
-- [ ] Run SDK/macOS-only milestone validation.
-- [ ] Finalize state/evidence/editorial report and close the two-part plan.
+- [x] Run SDK/macOS-only milestone validation.
+- [x] Finalize state/evidence/editorial report and close the two-part plan.
 
 ## Fixed Architecture and Scope
 
@@ -250,9 +250,9 @@ Compute and report:
 Use deterministic integer nanosecond data. Do not introduce an absolute
 latency pass/fail threshold. The test passes when all 200 samples complete
 without timeout/lost wakeup and every recorded duration is non-negative.
-For the even sample count, report p50 as the midpoint of the two central
-values, p95 with the nearest-rank method, and mean rounded to the nearest
-integer nanosecond.
+For the even sample count, report p50 as the floor of the midpoint between the
+two central values, p95 with the nearest-rank method, and mean rounded to the
+nearest integer nanosecond.
 
 Raw per-sample values are ordinary test output. Do not commit them. Append only
 the compact aggregate result to `.agent/evidence/semaphore-v1.jsonl`.
@@ -467,13 +467,18 @@ All decisions dated 2026-09-24.
 
 ## Outcomes & Retrospective
 
-At completion, record only measured facts:
+Part 2 closed after the focused converter suite passed 3/3, SDK distribution
+and smoke compilation passed, and all three deployed native macOS smokes
+passed against the unchanged Part 1 dylib. The stress reconciled 20,000
+produced and acquired permits across four producers and four consumers.
 
-- stress operation count and reconciliation result;
-- wake-latency aggregate;
-- SDK/macOS validation status;
-- deferred platform validation;
-- any semantic limitation retained.
+The 200 wake-latency samples reported min 1,250 ns, p50 3,166 ns, nearest-rank
+p95 16,208 ns, max 63,375 ns, and rounded mean 5,239 ns. This is a measurement
+from the tested macOS run, not a cross-platform prediction.
+
+Windows, Android, Linux, and iOS native builds and execution remain deferred.
+The deployed `acquire()` still cannot be interrupted by the TotalCross VM.
+No image-prefetch performance was measured or inferred.
 
 Do not infer or estimate image-prefetch gains.
 

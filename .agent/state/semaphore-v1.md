@@ -6,53 +6,52 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Semaphore v1 execution state
 
-- Part/milestone/slice: Part 1 / Milestone 1 complete; Part 2 / milestone closure active.
+- Part/milestone/slice: Part 1 / Milestone 1 complete; Part 2 / Milestone 2 complete.
 - Branch: `feat/semaphore-v1`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
-- Part 1 final milestone commit: `daef7cee82370feb9995ad410dfb82dd25e190c5`
-  (`docs(plan): record semaphore core milestone`). The final Part 1 correctness
-  smoke passed against `build-semaphore/libtcvm.dylib`.
-- Latest Part 1 functional commit: `b3a4a0e565be1232e3d67d3a24146938db989537`
-  (`fix(vm): add semaphore prototypes to generated index`).
-- Part 2 plan checkpoint: `694e8c35e` tracks the plan and activates Part 2.
-- Active paths: `.agent/plans/semaphore-v1-part-2-stress.md`, this file,
+- Part 1 final milestone commit: `daef7cee82370feb9995ad410dfb82dd25e190c5`.
+- Part 2 plan checkpoint: `694e8c35e`.
+- Part 2 slices: compatibility test `3689a905b`; deterministic stress
+  `c5ecff6c2`; wake latency `479172ffe`; converter fixture fix `c76b9b76a`.
+- Final non-documentation commit: `c76b9b76a`
+  (`fix(test): align semaphore fixture with bundled ASM`). Final plan, state,
+  evidence, and editorial closure are committed as
+  `docs(plan): complete semaphore v1 validation`.
+- Active/completed paths: `.agent/plans/semaphore-v1-part-1-core.md`,
+  `.agent/plans/semaphore-v1-part-2-stress.md`, this file,
   `.agent/evidence/semaphore-v1.jsonl`,
   `.agent/reports/semaphore-v1-editorial.md`,
+  `TotalCrossSDK/build.gradle`,
   `TotalCrossSDK/src/main/java/jdkcompat/util/concurrent/Semaphore4D.java`,
-  `TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent/`,
-  `TotalCrossSDK/build.gradle`, the converter test, and
-  `build-semaphore/libtcvm.dylib`.
-- Latest Part 2 logical commit: `694e8c35e`
-  (`docs(plan): define semaphore stress validation plan`).
-- Slice 2B added source-compiled standard-API resolution coverage for all
-  supported calls and the four unsupported overloads. Per plan, execution is
-  deferred until milestone closure.
-- Latest Part 2 implementation commit: `479172ffe`
-  (`test(sdk): measure semaphore wake latency`).
-- Slice 2C added a deterministic 20,000-handoff smoke with four producers,
-  four consumers, Semaphore start/readiness/completion handshakes, exact count
-  reconciliation, and a 60-second native-process timeout.
-- Slice 2D added a sequential 20-warm-up/200-sample release-to-acquire
-  measurement with aggregate count/min/p50/p95/max/mean output and a
-  60-second native-process timeout.
-- Closure discovery: the converter fixture first used an unavailable ASM9
-  constant, then ASM5 rejected the host-default classfile version. It now uses
-  ASM5 and compiles for Java 8; the focused converter suite passed 3/3 after
-  that correction.
-- Next action: run SDK distribution and smoke compilation, then run all three
-  native macOS smokes against the unchanged Part 1 dylib.
-- Validation completed: Part 1 converter test passed 2/2 and Part 2 focused
-  converter suite passed 3/3; generator matched 6 native prototypes and
-  registrations; SDK dist and smoke compilation passed; CMake
-  configure and macOS `tcvm` build passed (123 Ninja steps); deployed smoke
-  passed with `fixture=SemaphoreSmokeApp,overallPass=true`. Focused header,
-  diff, and later commit-message checks passed. The first converter run failed
-  on missing prototypes and passed after the focused fix. Two earlier
-  commit-message checks failed because body lines exceeded 80 characters; those
-  commits remain unchanged per plan.
-- Validation deferred: focused Part 2 converter test, SDK build tasks, native
-  macOS correctness/stress/latency runs are now due at milestone closure;
-  Windows, Android, Linux, and iOS native builds/runs remain out of scope.
+  the focused converter test, and three Semaphore smoke apps.
+- Validation passed: focused converter suite, 3 tests / 0 failures;
+  `./gradlew-agent dist -x test`; `./gradlew-agent compileSmokeTestJava`;
+  Part 1 correctness smoke; 20,000-handoff stress with 20,000 produced and
+  20,000 acquired; 200-sample wake-latency smoke. Evidence and log paths are
+  indexed in `.agent/evidence/semaphore-v1.jsonl`.
+- SDK distribution reported 21 tasks seen, 17 actionable, and no Javadoc
+  errors or warnings. The three deployed macOS smokes each passed their
+  60-second process timeout.
+- Native runtime: reused
+  `/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/build-semaphore/libtcvm.dylib`
+  (SHA-256 `797c1e7ce24fa4d0742fea17ac5006153547e925ff67f815b64aa3bdd2dba415`).
+  No `TotalCrossVM` path changed after the Part 1 closure commit, so no native
+  rebuild was needed.
+- Wake-latency aggregate: min 1,250 ns; p50 3,166 ns; nearest-rank p95
+  16,208 ns; max 63,375 ns; rounded mean 5,239 ns. It describes this macOS
+  run only.
+- Closure discovery: two initial focused converter attempts exposed the
+  bundled ASM 5.2 API and classfile-version constraints. The fixture now uses
+  ASM5 and `javac --release 8`; the rerun passed.
+- Deferred validation: Windows, Android, Linux, and iOS native builds and
+  execution. Only SDK and macOS were built. No image-prefetch performance
+  claim was tested.
+- Retained semantic limitation: `acquire()` declares
+  `InterruptedException`, but the TotalCross native wait is effectively
+  uninterruptible.
+- Earlier Part 1 commit-message checks failed on body-line length; those
+  commits remain unchanged as required by the plan. New Part 2 commit-message
+  checks passed.
 - Blockers: none.
 - Unrelated dirty paths to preserve: `totalcross.code-workspace`,
   `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`,
@@ -69,5 +68,5 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/ImageScrollRealWorkloadBenchmarkApp.log`,
   `TotalCrossSDK/etc/launchers/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`.
-- Resume command: read this file, then continue
-  `.agent/plans/semaphore-v1-part-2-stress.md` from Slice 2B.
+- Resume: Part 2 is complete. Read the Part 2 plan and editorial report for
+  the accepted results and platform limits before any follow-on work.
