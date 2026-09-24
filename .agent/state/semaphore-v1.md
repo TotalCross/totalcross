@@ -6,9 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Semaphore v1 execution state
 
-- Part/milestone/slice: Part 1 / Milestone 1, Part 2 / Milestone 2, and the
-  blocked-wait methodology correction are complete; compile-time diagnostic
-  gating is active.
+- Part/milestone/slice: Part 1 / Milestone 1, Part 2 / Milestone 2, blocked-wait
+  methodology correction, and compile-time diagnostic gating are validated.
 - Branch: `feat/semaphore-v1`; same worktree, no history rewrite.
 - Original follow-up base: `128a1fa36bd4c249ea51d31e2b2be970f455f942`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
@@ -17,10 +16,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Methodology checkpoint: `8f223f65f`; correction implementation:
   `1ae094b3cb099d2c2c4a54398107b9911c70d64b`
   (`fix(vm): confirm blocked semaphore wake samples`), signed and validated.
+- Compile-time gating implementation: `ea5e6e36d`
+  (`fix(vm): gate semaphore test diagnostics`), signed and validated.
 - Current baseline verified: `ff2519a776525ba9db0dea5543e706fdc0194d21`.
-- Active objective: remove diagnostic fields, branches, hook, and registration
-  from the default TCVM while opting in only for the dedicated macOS smoke
-  runtime. Preserve the corrected 20-warm-up/200-sample protocol.
+- Completed objective: remove diagnostic fields, branches, hook, and
+  registration from the default TCVM while opting in for the dedicated macOS
+  smoke runtime. Preserve the corrected 20-warm-up/200-sample protocol.
 - Active plan and handoff: `.agent/plans/semaphore-v1-part-2-stress.md`,
   `.agent/evidence/semaphore-v1.jsonl`, and
   `.agent/reports/semaphore-v1-editorial.md`.
@@ -32,20 +33,28 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Earlier latency aggregate (min 1,250 ns; p50 3,166 ns; p95 16,208 ns;
   max 63,375 ns; mean 5,239 ns) remains unconfirmed and is not blocked-wake
   evidence.
-- Corrected macOS result: 20 warm-ups and 200 measured samples; all 220
-  handshakes confirmed a waiter before release. min 1,500 ns, p50 2,500 ns,
-  nearest-rank p95 6,041 ns, max 27,834 ns, rounded mean 3,201 ns. This is
+- Latest gated macOS result: 20 warm-ups and 200 measured samples; all 220
+  handshakes confirmed a waiter before release. min 2,042 ns, p50 3,041 ns,
+  nearest-rank p95 8,709 ns, max 148,916 ns, rounded mean 5,596 ns. This is
   descriptive evidence for the tested macOS machine only.
+- The dedicated enabled CMake build passed with the macro on both
+  `concurrent_Semaphore.c` and `nativeProcAddressesTC.c`; `nm` found the hook.
+  A fresh configuration with no diagnostic option resolved to OFF and built
+  with neither compile define nor hook symbol. CMake caches, compile commands,
+  and hashes are indexed in evidence.
 - Validation passed: 3 focused converter tests; smoke-source compilation and
-  SDK distribution; macOS CMake/Ninja `tcvm` build; correctness smoke; stress
-  smoke with 20,000 expected/produced/acquired handoffs; and latency smoke.
-  Logs and full commands are indexed in `.agent/evidence/semaphore-v1.jsonl`.
+  SDK distribution; enabled and disabled macOS CMake/Ninja `tcvm` builds;
+  correctness smoke; stress with 20,000 expected/produced/acquired handoffs;
+  and latency smoke. All macOS smokes passed their 60-second timeouts.
 - SDK summary: 22 tasks seen, 18 actionable, zero Javadoc errors or warnings.
-  All three deployed macOS smokes passed their 60-second timeouts.
-- Rebuilt native runtime:
+- Enabled native runtime:
   `/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/build-semaphore/libtcvm.dylib`
   with SHA-256
-  `8caeee9e84485666604405fd8bd70206d393aac45b685f87cf9afd99612492de`.
+  `494fa48a6c4ef92c6f07f832bce072d59d56a755c12343fdd906e2e077290202`.
+- Default native runtime:
+  `/Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/build-semaphore-default-check/libtcvm.dylib`
+  with SHA-256
+  `ae6412d4dd95bebdec9f8db11c067898f8692c59bf1ea6180da5097e283dbb4b`.
 - Platform limit: the blocked-wait proof is validated on macOS POSIX condition
   waits. The Windows wrapper releases its critical section before waiting on
   an event, so this hook does not prove the Windows event wait has started.
@@ -71,12 +80,6 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/ImageScrollRealWorkloadBenchmarkApp.log`,
   `TotalCrossSDK/etc/launchers/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`.
-- Current implementation edits: `TotalCrossVM/CMakeLists.txt`,
-  `TotalCrossVM/src/nm/util/concurrent_Semaphore.c`,
-  `TotalCrossVM/src/init/nativeProcAddressesTC.c`, and
-  `TotalCrossSDK/src/test/java/tc/tools/converter/SemaphoreConverterTest.java`.
-- Next action: finish the static assertions and plan acceptance commands, then
-  run focused SDK validation, diagnostic-enabled macOS smokes, and a separate
-  default-off macOS `tcvm` build. Recheck native symbols and compile commands.
+- Next action: commit the final plan/state/evidence/report checkpoint.
 - Resume: read this state and the “Compile-Time Diagnostic Gating” section in
   `.agent/plans/semaphore-v1-part-2-stress.md` first.

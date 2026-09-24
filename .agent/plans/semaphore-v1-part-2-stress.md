@@ -91,7 +91,7 @@ deployed binaries, build directories, and per-sample output are not.
 - [x] Run SDK/macOS-only milestone validation.
 - [x] Finalize state/evidence/editorial report and close the two-part plan.
 - [x] Correct blocked-wait latency confirmation and validate the follow-up.
-- [ ] Gate the waiter diagnostic out of default production builds.
+- [x] Gate the waiter diagnostic out of default production builds.
 
 ## Fixed Architecture and Scope
 
@@ -548,20 +548,19 @@ the rebuilt dylib hash, and counts are indexed in
 
 ## Compile-Time Diagnostic Gating
 
-The next slice removes diagnostic state and branches from normal TCVM builds
-while retaining the corrected macOS smoke. Add the default-off CMake option
+This slice removes diagnostic state and branches from normal TCVM builds while
+retaining the corrected macOS smoke. It adds the default-off CMake option
 `TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS`; define its C macro only on `tcvm` when
 enabled. Guard the extra Semaphore state fields, acquire signal, destruction,
 native hook, and native address registration. Keep Android and Windows build
 files at their default-off behavior.
 
-Acceptance: focused converter assertions prove the public v1 surface is
-unchanged, the default-preprocessed state and acquire path contain no
-diagnostics, the native hook and registration are conditional, and the Java
-bridge remains in `src/smokeTest`. Build `build-semaphore` with the option ON,
-rerun SDK and all three macOS smokes against it, then build a separate normal
-macOS `tcvm` with the option OFF and verify the hook symbol is absent. Record
-both configurations and artifact identities in the evidence index.
+Acceptance passed: converter assertions protect the public v1 surface, verify
+the default native state/acquire path and conditional registration, and keep
+the Java bridge outside `src/main`. `build-semaphore` built with diagnostics
+ON and passed all macOS smokes; the separate default-OFF `tcvm` build passed
+with no hook symbol. Compile commands and both artifact identities are in the
+evidence index.
 
 Use explicit configurations:
 
@@ -569,10 +568,9 @@ Use explicit configurations:
       -DCMAKE_BUILD_TYPE=Release -G Ninja \
       -DTC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=ON
     ninja -C build-semaphore tcvm
-    cmake -S TotalCrossVM -B build-semaphore-default \
-      -DCMAKE_BUILD_TYPE=Release -G Ninja \
-      -DTC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=OFF
-    ninja -C build-semaphore-default tcvm
+    cmake -S TotalCrossVM -B build-semaphore-default-check \
+      -DCMAKE_BUILD_TYPE=Release -G Ninja
+    ninja -C build-semaphore-default-check tcvm
 
 Run the SDK converter test, `compileSmokeTestJava dist -x test`, then
 `runSemaphoreSmokeMacOS`, `runSemaphoreStressSmokeMacOS`, and

@@ -40,6 +40,9 @@ not claimed by `Semaphore4D`.
   measured handshakes, each released only after native waiter confirmation.
 - Added a smoke-source-only native `awaitWaiters` bridge used by correctness
   and latency smokes; the production Semaphore API remains unchanged.
+- Added default-off `TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS` CMake gating so
+  production builds omit diagnostic state, acquire branches, hook, and address
+  registration. The dedicated macOS smoke runtime opts in explicitly.
 - Added Gradle compile, jar, deploy, and timed native-run tasks for both smokes.
 - Extended converter coverage to compile a standard-Java source fixture and
   resolve the supported and intentionally unsupported declarations.
@@ -79,11 +82,16 @@ the validated macOS POSIX path, this confirms the consumer entered the
 condition wait before release. The legacy Windows wrapper unlocks before its
 event wait, so this proof is not claimed for Windows.
 
+The follow-up removed diagnostic storage and work from default builds. The
+default macOS `tcvm` compiled with the option OFF and had no diagnostic symbol;
+the dedicated macOS runtime compiled with the option ON and exported the hook.
+The compile databases confirmed the define appears only in the enabled build.
+
 ## Validation and Measurable Results
 
 - `./gradlew-agent test --tests tc.tools.converter.SemaphoreConverterTest`:
-  passed, 3 tests / 0 failures. Follow-up log:
-  `TotalCrossSDK/agent-logs/20260924-144041-test-agent.log`.
+  passed, 3 tests / 0 failures. Gating log:
+  `TotalCrossSDK/agent-logs/20260924-145931-test-agent.log`.
 - `./gradlew-agent dist -x test`: passed in 9 seconds; 21 tasks seen, 17
   actionable, zero Javadoc errors and warnings. Log:
   `TotalCrossSDK/agent-logs/20260924-024354-dist-agent.log`.
@@ -97,21 +105,31 @@ event wait, so this proof is not claimed for Windows.
   blocked waiter before release. Its aggregate (minimum 1,250 ns; p50 3,166 ns;
   nearest-rank p95 16,208 ns; maximum 63,375 ns; rounded mean 5,239 ns) is
   superseded and must not be cited as blocked-waiter latency.
-- Follow-up `./gradlew-agent compileSmokeTestJava dist -x test`: passed, 22
-  tasks seen, 18 actionable, zero Javadoc errors and warnings. Log:
-  `TotalCrossSDK/agent-logs/20260924-144110-compileSmokeTestJava-agent.log`.
-- CMake configure and `ninja -C build-semaphore tcvm` passed; 7 Ninja steps
-  built the macOS dylib. Logs: `/tmp/semaphore-correction-cmake.log` and
-  `/tmp/semaphore-correction-ninja.log`.
-- The rebuilt dylib is
+- `./gradlew-agent compileSmokeTestJava dist -x test`: passed, 22 tasks seen,
+  18 actionable, zero Javadoc errors and warnings. Log:
+  `TotalCrossSDK/agent-logs/20260924-150028-compileSmokeTestJava-agent.log`.
+- The diagnostic-enabled macOS configure/build passed with option ON and 123
+  Ninja steps. Logs: `/tmp/semaphore-gating-cmake-on.log` and
+  `/tmp/semaphore-gating-ninja-on.log`.
+- A fresh normal macOS configure without a diagnostic option resolved to OFF
+  and built in 123 Ninja steps. Its compile commands had no diagnostic define
+  and `nm -g` found no hook symbol. Logs: `/tmp/semaphore-gating-cmake-default.log`
+  and `/tmp/semaphore-gating-ninja-default.log`.
+- Compile commands contain `TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=1` for
+  `concurrent_Semaphore.c` and `nativeProcAddressesTC.c` only in the enabled
+  build. `nm -g` found `tucSTD_awaitWaiters_si` in the enabled dylib and not
+  in the default dylib.
+- Enabled runtime:
   `build-semaphore/libtcvm.dylib`, SHA-256
-  `8caeee9e84485666604405fd8bd70206d393aac45b685f87cf9afd99612492de`.
+  `494fa48a6c4ef92c6f07f832bce072d59d56a755c12343fdd906e2e077290202`.
+- Default runtime: `build-semaphore-default-check/libtcvm.dylib`, SHA-256
+  `ae6412d4dd95bebdec9f8db11c067898f8692c59bf1ea6180da5097e283dbb4b`.
 - All three deployed macOS smokes passed their 60-second process timeouts.
   Correctness passed; stress reconciled 20,000 expected, produced, and
-  acquired handoffs. Latency reported 200 samples with all 220 warm-up and
-  measured handshakes confirmed: min 1,500 ns, p50 2,500 ns, nearest-rank p95
-  6,041 ns, max 27,834 ns, rounded mean 3,201 ns. Full log:
-  `TotalCrossSDK/agent-logs/20260924-144156-runSemaphoreSmokeMacOS-full.log`.
+  acquired handoffs. The latest latency run confirmed all 220 handshakes and
+  200 measured samples: min 2,042 ns, p50 3,041 ns, nearest-rank p95 8,709
+  ns, max 148,916 ns, rounded mean 5,596 ns. Full log:
+  `TotalCrossSDK/agent-logs/20260924-150057-runSemaphoreSmokeMacOS-full.log`.
 - Focused copyright-header, diff, and signed commit-message checks passed.
 
 Only SDK and macOS were built. Windows, Android, Linux, and iOS native builds
@@ -127,8 +145,9 @@ operations to `jdkcompat.util.concurrent.Semaphore4D`. It checks the
 
 The stress result reconciles `expected=20000`, `produced=20000`, and
 `acquired=20000`. The corrected latency summary was
-`count=200,blockedConfirmed=200,confirmedHandshakes=220,minNs=1500,p50Ns=2500,p95Ns=6041,maxNs=27834,meanNs=3201`.
-The prior summary remains historical, unconfirmed interval data.
+`count=200,blockedConfirmed=200,confirmedHandshakes=220,minNs=2042,p50Ns=3041,p95Ns=8709,maxNs=148916,meanNs=5596`.
+Earlier corrected runs remain descriptive too; the original unconfirmed
+aggregate is historical interval data only.
 
 ## Limitations, Remaining Work, and Open Questions
 
