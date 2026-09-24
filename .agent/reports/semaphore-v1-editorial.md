@@ -167,6 +167,11 @@ functional behavior with Semaphore handshakes and process timeouts. Android,
 Linux, and iOS native validation remains deferred. The TotalCross VM does not
 currently interrupt a blocked `acquire()` despite its Java declaration.
 
+The available Windows App host presented an unverified self-signed certificate
+named `SUPERWABA2`. No trust override was accepted, and no Windows test result
+was produced. A verified Windows host or user confirmation of that certificate
+is still required before the package can be run there.
+
 No `ImagePreparation` performance claim was tested. Any future evaluation of
 Semaphore as a production wake mechanism belongs in a separate plan.
 

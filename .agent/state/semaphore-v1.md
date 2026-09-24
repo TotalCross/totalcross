@@ -76,9 +76,13 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Local package preparation passed: Java 17 compile/deploy from the pinned
   artifacts, package ZIP integrity, and every manifest file hash. This is not
   a Windows execution result. Windows test status remains pending.
-- Next action: run `run-semaphore-windows-tests.cmd` on Windows and collect
-  `results-summary.txt`, both per-test stdout/stderr logs, and updated
-  `provenance.json`. Do not record Windows PASS until that execution exists.
+- Windows host access: the saved Windows App device presented a self-signed,
+  unverified certificate named `SUPERWABA2`. I did not trust or continue past
+  the warning. No Windows test executable was launched.
+- Next action: the user must verify the host/certificate in Windows App, or
+  run `run-semaphore-windows-tests.cmd` on another trusted Windows host and
+  return `results-summary.txt`, per-test stdout/stderr logs, and updated
+  `provenance.json`. Do not record Windows PASS before that execution.
 - Unrelated dirty paths to preserve: `totalcross.code-workspace`,
   `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`,
   `.agent/benchmarks/image-scroll-prefetch/final-fixed/`,
@@ -96,8 +100,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Earlier Part 1 commit-message body-length failures remain unchanged under
   the no-rewrite rule; the initial Windows package commit adds one further
   body-length failure. Later package correction commits passed their checks.
-- Unresolved work is the actual Windows execution only; native Windows build
-  was taken from the verified workflow artifact and not rebuilt locally.
+- Unresolved work is the actual Windows execution. Native Windows build was
+  taken from the verified workflow artifact and not rebuilt locally; the
+  saved RDP host remains unverified pending the user's trust decision.
 - Resume: read this state, then run the packaged `.cmd` on Windows. Keep the
   returned summary, logs, and provenance with the artifact before updating
   this state, evidence, and editorial report with results.
