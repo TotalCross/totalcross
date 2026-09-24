@@ -8,11 +8,15 @@ typedef struct
 {
    MUTEX_TYPE mutex;
    THREAD_CONDITION_TYPE condition;
+#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
    THREAD_CONDITION_TYPE diagnosticCondition;
+#endif
    int32 permits;
    int32 waiters;
+#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
    int32 diagnosticWaiters;
    bool diagnosticConditionInitialized;
+#endif
    bool initialized;
 } SemaphoreState;
 
@@ -125,8 +129,10 @@ TC_API void jucS_destroy(NMParams p) // java/util/concurrent/Semaphore native pr
       if (state->initialized)
       {
          state->initialized = false;
+#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
          if (state->diagnosticConditionInitialized)
             DESTROY_THREAD_CONDITION(&state->diagnosticCondition);
+#endif
          DESTROY_THREAD_CONDITION(&state->condition);
          DESTROY_MUTEX_VAR(state->mutex);
       }
@@ -145,8 +151,10 @@ static void acquireSemaphore(NMParams p)
    while (state->permits <= 0)
    {
       state->waiters++;
+#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
       if (state->diagnosticWaiters > 0)
          SIGNAL_THREAD_CONDITION(&state->diagnosticCondition);
+#endif
       WAIT_THREAD_CONDITION(&state->condition, &state->mutex);
       state->waiters--;
    }
@@ -168,6 +176,7 @@ TC_API void jucS_acquireUninterruptibly(NMParams p) // java/util/concurrent/Sema
 }
 
 //////////////////////////////////////////////////////////////////////////
+#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
 TC_API void tucSTD_awaitWaiters_si(NMParams p) // totalcross/util/concurrent/SemaphoreTestDiagnostics native public static int awaitWaiters(java.util.concurrent.Semaphore semaphore, int minimumWaiters);
 {
    SemaphoreState *state;
@@ -213,6 +222,7 @@ TC_API void tucSTD_awaitWaiters_si(NMParams p) // totalcross/util/concurrent/Sem
    p->retI = state->waiters;
    RELEASE_MUTEX_VAR(state->mutex);
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jucS_tryAcquire(NMParams p) // java/util/concurrent/Semaphore native public boolean tryAcquire();

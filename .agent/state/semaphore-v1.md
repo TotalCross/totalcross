@@ -7,7 +7,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Semaphore v1 execution state
 
 - Part/milestone/slice: Part 1 / Milestone 1, Part 2 / Milestone 2, and the
-  blocked-wait latency methodology correction are complete.
+  blocked-wait methodology correction are complete; compile-time diagnostic
+  gating is active.
 - Branch: `feat/semaphore-v1`; same worktree, no history rewrite.
 - Original follow-up base: `128a1fa36bd4c249ea51d31e2b2be970f455f942`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
@@ -16,6 +17,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Methodology checkpoint: `8f223f65f`; correction implementation:
   `1ae094b3cb099d2c2c4a54398107b9911c70d64b`
   (`fix(vm): confirm blocked semaphore wake samples`), signed and validated.
+- Current baseline verified: `ff2519a776525ba9db0dea5543e706fdc0194d21`.
+- Active objective: remove diagnostic fields, branches, hook, and registration
+  from the default TCVM while opting in only for the dedicated macOS smoke
+  runtime. Preserve the corrected 20-warm-up/200-sample protocol.
 - Active plan and handoff: `.agent/plans/semaphore-v1-part-2-stress.md`,
   `.agent/evidence/semaphore-v1.jsonl`, and
   `.agent/reports/semaphore-v1-editorial.md`.
@@ -66,5 +71,12 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/ImageScrollRealWorkloadBenchmarkApp.log`,
   `TotalCrossSDK/etc/launchers/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`.
-- Resume: no implementation or validation work remains. If revisited, read
-  this state first and keep any new latency claim platform-scoped.
+- Current implementation edits: `TotalCrossVM/CMakeLists.txt`,
+  `TotalCrossVM/src/nm/util/concurrent_Semaphore.c`,
+  `TotalCrossVM/src/init/nativeProcAddressesTC.c`, and
+  `TotalCrossSDK/src/test/java/tc/tools/converter/SemaphoreConverterTest.java`.
+- Next action: finish the static assertions and plan acceptance commands, then
+  run focused SDK validation, diagnostic-enabled macOS smokes, and a separate
+  default-off macOS `tcvm` build. Recheck native symbols and compile commands.
+- Resume: read this state and the “Compile-Time Diagnostic Gating” section in
+  `.agent/plans/semaphore-v1-part-2-stress.md` first.

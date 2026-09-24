@@ -91,6 +91,7 @@ deployed binaries, build directories, and per-sample output are not.
 - [x] Run SDK/macOS-only milestone validation.
 - [x] Finalize state/evidence/editorial report and close the two-part plan.
 - [x] Correct blocked-wait latency confirmation and validate the follow-up.
+- [ ] Gate the waiter diagnostic out of default production builds.
 
 ## Fixed Architecture and Scope
 
@@ -544,3 +545,36 @@ and this measurement run only. The original 200 intervals remain historical,
 unconfirmed data and are not blocked-wake evidence. Detailed commands, logs,
 the rebuilt dylib hash, and counts are indexed in
 `.agent/evidence/semaphore-v1.jsonl`.
+
+## Compile-Time Diagnostic Gating
+
+The next slice removes diagnostic state and branches from normal TCVM builds
+while retaining the corrected macOS smoke. Add the default-off CMake option
+`TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS`; define its C macro only on `tcvm` when
+enabled. Guard the extra Semaphore state fields, acquire signal, destruction,
+native hook, and native address registration. Keep Android and Windows build
+files at their default-off behavior.
+
+Acceptance: focused converter assertions prove the public v1 surface is
+unchanged, the default-preprocessed state and acquire path contain no
+diagnostics, the native hook and registration are conditional, and the Java
+bridge remains in `src/smokeTest`. Build `build-semaphore` with the option ON,
+rerun SDK and all three macOS smokes against it, then build a separate normal
+macOS `tcvm` with the option OFF and verify the hook symbol is absent. Record
+both configurations and artifact identities in the evidence index.
+
+Use explicit configurations:
+
+    cmake -S TotalCrossVM -B build-semaphore \
+      -DCMAKE_BUILD_TYPE=Release -G Ninja \
+      -DTC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=ON
+    ninja -C build-semaphore tcvm
+    cmake -S TotalCrossVM -B build-semaphore-default \
+      -DCMAKE_BUILD_TYPE=Release -G Ninja \
+      -DTC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=OFF
+    ninja -C build-semaphore-default tcvm
+
+Run the SDK converter test, `compileSmokeTestJava dist -x test`, then
+`runSemaphoreSmokeMacOS`, `runSemaphoreStressSmokeMacOS`, and
+`runSemaphoreWakeLatencySmokeMacOS` with `-PtcvmDylib` pointing to the enabled
+`build-semaphore/libtcvm.dylib`.

@@ -33,6 +33,7 @@ class SemaphoreConverterTest {
   private static final String DEVICE_OWNER = "jdkcompat.util.concurrent.Semaphore4D";
   private static final String DIAGNOSTIC_OWNER = "totalcross/util/concurrent/SemaphoreTestDiagnostics";
   private static final String DIAGNOSTIC_SYMBOL = "tucSTD_awaitWaiters_si";
+  private static final String DIAGNOSTIC_FLAG = "TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS";
   private static final String[] METHODS = { "acquire", "acquireUninterruptibly", "tryAcquire", "release" };
   private static final String[] DESCRIPTORS = { "()V", "()V", "()Z", "()V" };
   private static final String[] SYMBOLS = {
@@ -142,7 +143,8 @@ class SemaphoreConverterTest {
     String implementation = Files.readString(vmRoot.resolve("src/nm/util/concurrent_Semaphore.c"));
     String diagnosticSource = Files.readString(
         Path.of("src/smokeTest/java/totalcross/util/concurrent/SemaphoreTestDiagnostics.java"));
-    Path productionDiagnosticSource = Path.of("src/main/java/totalcross/util/concurrent/SemaphoreTestDiagnostics.java");
+    Path productionDiagnosticSource = Path.of(
+        "src/main/java/totalcross/util/concurrent/SemaphoreTestDiagnostics.java");
     String[] expectedDeclarations = {
         OWNER + "|native private void create(int permits);",
         OWNER + "|native private void destroy();",
@@ -181,6 +183,33 @@ class SemaphoreConverterTest {
     assertTrue(registrations.contains("hashCode(\"" + DIAGNOSTIC_SYMBOL + "\"), &" + DIAGNOSTIC_SYMBOL));
     assertTrue(implementation.contains("TC_API void " + DIAGNOSTIC_SYMBOL + "(NMParams p)"));
 
+    String defaultImplementation = withoutSemaphoreDiagnostics(implementation);
+    assertFalse(defaultImplementation.contains("diagnosticCondition"),
+        "default Semaphore state must omit diagnostic condition fields");
+    assertFalse(defaultImplementation.contains("diagnosticWaiters"),
+        "default acquire path must omit diagnostic branches");
+    assertFalse(defaultImplementation.contains(DIAGNOSTIC_SYMBOL),
+        "default VM must not compile the diagnostic native method");
+    assertFalse(withoutSemaphoreDiagnostics(registrations).contains(DIAGNOSTIC_SYMBOL),
+        "default VM must not register the diagnostic native method");
+    assertTrue(implementation.contains("#if defined(" + DIAGNOSTIC_FLAG
+        + ")\n   THREAD_CONDITION_TYPE diagnosticCondition;"),
+        "diagnostic state fields must be behind the opt-in flag");
+    assertTrue(implementation.contains("#if defined(" + DIAGNOSTIC_FLAG + ")\nTC_API void "
+        + DIAGNOSTIC_SYMBOL + "(NMParams p)"), "diagnostic native method must be opt-in");
+    String diagnosticRegistration = "   htPutPtr(&htNativeProcAddresses, hashCode(\""
+        + DIAGNOSTIC_SYMBOL + "\"), &" + DIAGNOSTIC_SYMBOL + ");";
+    assertTrue(registrations.contains("#if defined(" + DIAGNOSTIC_FLAG + ")\n"
+        + diagnosticRegistration + "\n#endif"),
+        "diagnostic native address must be registered only in diagnostic builds");
+    assertTrue(cmake.contains("option(" + DIAGNOSTIC_FLAG
+        + "\n  \"Enable test-only Semaphore native diagnostics\"\n  OFF\n)"),
+        "diagnostics must be disabled by default");
+    assertTrue(cmake.contains("if(" + DIAGNOSTIC_FLAG + ")\n  target_compile_definitions(tcvm PRIVATE "
+        + DIAGNOSTIC_FLAG + "=1)\nendif()"), "CMake must define diagnostics only when enabled");
+    assertFalse(android.contains(DIAGNOSTIC_FLAG), "Android builds must not opt in by default");
+    assertFalse(vcproj.contains(DIAGNOSTIC_FLAG), "Windows builds must not opt in by default");
+
     assertTrue(cmake.contains("nm/util/concurrent_Semaphore.c"));
     assertTrue(android.contains("nm/util/concurrent_Semaphore.c"));
     assertTrue(vcproj.contains("nm\\util\\concurrent_Semaphore.c"));
@@ -197,5 +226,25 @@ class SemaphoreConverterTest {
       assertEquals(DEVICE_OWNER, resolution.deviceOwner, call);
       assertEquals(OWNER, resolution.declarationOwner, call);
     }
+  }
+
+  private static String withoutSemaphoreDiagnostics(String source) {
+    StringBuilder output = new StringBuilder();
+    int excludedDepth = 0;
+    for (String line : source.split("\\R", -1)) {
+      String trimmed = line.trim();
+      if (excludedDepth == 0 && trimmed.equals("#if defined(" + DIAGNOSTIC_FLAG + ")")) {
+        excludedDepth = 1;
+        continue;
+      }
+      if (excludedDepth > 0) {
+        if (trimmed.startsWith("#if ")) excludedDepth++;
+        if (trimmed.equals("#endif")) excludedDepth--;
+      } else {
+        output.append(line).append('\n');
+      }
+    }
+    assertEquals(0, excludedDepth, "diagnostic preprocessor blocks must be balanced");
+    return output.toString();
   }
 }

@@ -52,6 +52,10 @@ option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
 option(TC_ENABLE_C_AOT "Build the experimental portable-C TCIR backend" OFF)
 option(TC_ENABLE_SLJIT_JIT "Build the experimental SLJIT TCIR backend" OFF)
 option(TC_ENABLE_COMPILED_DISPATCH "Integrate experimental TCIR dispatch into executeMethod" OFF)
+option(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS
+  "Enable test-only Semaphore native diagnostics"
+  OFF
+)
 
 if(TC_BUILD_IR_BENCHMARKS AND NOT TC_ENABLE_SLJIT_JIT)
   message(FATAL_ERROR "TC_BUILD_IR_BENCHMARKS requires TC_ENABLE_SLJIT_JIT=ON")
@@ -225,6 +229,10 @@ target_compile_definitions(
   PRIVATE
     TC_PLATFORM_CONFIGURED=1
 )
+
+if(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
+  target_compile_definitions(tcvm PRIVATE TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=1)
+endif()
 
 # Android fail-fast
 if(TC_TARGET_ANDROID)
