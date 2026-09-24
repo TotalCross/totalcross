@@ -109,8 +109,9 @@ changes. Do not amend/rewrite history. Do not push unless explicitly requested.
       (`efc679d8`; 26 tests passed).
 - [x] Milestone 2: update benchmark expectations and add the PowerShell runner
       (`e391aaf1`; focused benchmark tests passed).
-- [ ] Milestone 3: close the SDK/macOS build and native-smoke gate.
-- [ ] Hand off to Part 2.
+- [x] Milestone 3: close the SDK/macOS build and native-smoke gate
+      (`689e27da`; SDK dist and ordinary/indexed PNG smokes passed).
+- [x] Hand off to Part 2 after the Part 1 checkpoint commit.
 
 ## Current Architecture and Fixed Decisions
 
@@ -527,9 +528,19 @@ and deliberate out-of-scope files.
 
 ## Outcomes & Retrospective
 
-During execution keep only milestone-level facts here or in state. At Part 1
-completion, record delivered behavior, commit hashes, focused validation, and
-the Part 2 handoff.
+Static PNG prefetch, benchmark diagnostics, and the Windows runner contract are
+committed in `efc679d8` and `e391aaf1`. The SDK distribution and deployed
+macOS Release runtime passed; ordinary and indexed PNG smokes verified READY
+completion, dimensions, backing adoption, immediate reuse, and discarded
+candidate release. The dedicated smoke coverage is in `689e27da`.
+
+The smoke sets `ImageControl.allowBeyondLimits` so its preparation requests
+`DRAW_READY` and keeps the decoded source backing available for assertions.
+The PNG Java-result path does not populate the JPEG detached-decode mask
+diagnostic.
+
+Part 1 is complete. The state file hands off to Part 2's fresh macOS
+six-process benchmark.
 
 ## Revision Note
 
