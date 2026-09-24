@@ -13,6 +13,7 @@ import io
 from itertools import product
 import json
 from pathlib import Path
+import re
 import tempfile
 from unittest import mock
 from types import SimpleNamespace
@@ -23,6 +24,13 @@ SPEC = importlib.util.spec_from_file_location("image_scroll_runner", RUNNER_PATH
 RUNNER = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(RUNNER)
+FORMAT_COUNTER_PATH = Path(__file__).with_name("count-image-corpus-formats.py")
+FORMAT_COUNTER_SPEC = importlib.util.spec_from_file_location(
+    "image_corpus_format_counter", FORMAT_COUNTER_PATH
+)
+FORMAT_COUNTER = importlib.util.module_from_spec(FORMAT_COUNTER_SPEC)
+assert FORMAT_COUNTER_SPEC.loader is not None
+FORMAT_COUNTER_SPEC.loader.exec_module(FORMAT_COUNTER)
 
 
 def require(condition, message):
@@ -284,9 +292,9 @@ def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
         "accounting": "on",
         "imageCount": RUNNER.EXPECTED_JPEGS,
         "prefetchRequestCount": RUNNER.EXPECTED_JPEGS,
-        "prefetchReadyCount": RUNNER.EXPECTED_JPEGS - 3,
+        "prefetchReadyCount": RUNNER.EXPECTED_PREFETCH_READY_COUNT,
         "prefetchFailedCount": 0,
-        "prefetchNotPrefetchableCount": 3,
+        "prefetchNotPrefetchableCount": RUNNER.EXPECTED_PREFETCH_NOT_PREFETCHABLE_COUNT,
         "requestedMask": mask,
         "effectiveMask": mask,
         "prefetchElapsedNs": elapsed_ns,
@@ -294,7 +302,7 @@ def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
     }
     for json_name, _ in RUNNER.PREFETCH_PHASE_SUMMARY_FIELDS:
         summary[json_name] = 1
-    decoded_entries = RUNNER.EXPECTED_JPEGS - 3
+    decoded_entries = RUNNER.EXPECTED_PREFETCH_READY_COUNT
     thread_count = decoded_entries if mode == "legacy" else 1
     poll_count = 2 if mode == "worker-poll" else 0
     sem_wake_count = decoded_entries - 1 if mode == "worker-semaphore" else 0
@@ -338,6 +346,137 @@ def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
         "workerSemaphoreOutstandingWakeCount": 0,
     })
     return summary, {"accountingEnabled": True, "prefetchPhases": phases}
+
+
+def assert_prefetch_thread_artifact_contract():
+    with tempfile.TemporaryDirectory(prefix="image-scroll-thread-artifacts-test-") as temp:
+        run_dir = Path(temp)
+        for mode, sleep_ms in RUNNER.PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS:
+            for mask in RUNNER.PREFETCH_THREAD_DIAGNOSTIC_MASKS:
+                summary, counters = thread_artifacts(mode, sleep_ms, mask, 100)
+                with mock.patch.object(
+                        RUNNER, "validate_prefetch_diagnostic_counters", return_value={}):
+                    RUNNER.validate_prefetch_thread_run_artifacts(
+                        summary, counters, run_dir, mask, mode, sleep_ms
+                    )
+
+        summary, counters = thread_artifacts("legacy", 0, 6, 100)
+        summary["prefetchReadyCount"] = 660
+        summary["prefetchNotPrefetchableCount"] = 3
+        try:
+            with mock.patch.object(
+                    RUNNER, "validate_prefetch_diagnostic_counters", return_value={}):
+                RUNNER.validate_prefetch_thread_run_artifacts(
+                    summary, counters, run_dir, 6, "legacy", 0
+                )
+        except RUNNER.BenchmarkFailure:
+            pass
+        else:
+            raise AssertionError("663/660/0/3 prefetch outcomes were accepted")
+
+        summary, counters = thread_artifacts("worker-semaphore", 0, 6, 100)
+        counters["prefetchPhases"]["workerSemaphoreAcquireCount"] += 1
+        try:
+            with mock.patch.object(
+                    RUNNER, "validate_prefetch_diagnostic_counters", return_value={}):
+                RUNNER.validate_prefetch_thread_run_artifacts(
+                    summary, counters, run_dir, 6, "worker-semaphore", 0
+                )
+        except RUNNER.BenchmarkFailure:
+            pass
+        else:
+            raise AssertionError("unbalanced semaphore notifications were accepted")
+
+
+def assert_content_formats_and_windows_runner_contract():
+    with tempfile.TemporaryDirectory(prefix="image-scroll-format-count-test-") as temp:
+        corpus = Path(temp)
+        for index in range(660):
+            suffix = ".jpeg" if index % 2 else ".jpg"
+            (corpus / f"image-{index:03d}{suffix}").write_bytes(b"\xff\xd8\xff\xd9")
+        for index in range(3):
+            (corpus / f"image-png-{index}.jpg").write_bytes(b"\x89PNG\r\n\x1a\n")
+        require(FORMAT_COUNTER.count_image_formats(corpus)
+                == {"total": 663, "jpeg": 660, "png": 3},
+                "content format counter did not identify 660 JPEG and 3 PNG payloads")
+
+    package_script = Path(__file__).with_name("package-image-scroll-benchmark.sh").read_text()
+    require('"contentFormatCounts": $content_format_counts_json' in package_script
+            and "content_format_counts_json=" in package_script
+            and all(name in package_script for name in ("$imag_total", "$imag_jpeg", "$imag_png")),
+            "package manifest does not record image content counts")
+    require("count-image-corpus-formats.py" in package_script
+            and '"$staged_corpus/imag"' in package_script
+            and "-eq 660" in package_script and "-eq 3" in package_script,
+            "package step does not validate staged JPEG and PNG payload counts")
+    runner_source = Path(__file__).with_name(
+        "run-prefetch-thread-benchmark-windows.ps1"
+    )
+    runner = runner_source.read_text()
+    runner_branch = package_script.split(
+        "local windows_runner_manifest_field=\"\"", 1
+    )[1].split("\n   fi\n", 1)[0]
+    runner_block_start = package_script.index('local windows_runner_manifest_field=""')
+    runner_condition = package_script.index(
+        'if [ "$target" = windows-x64 ]; then', runner_block_start
+    )
+    runner_condition_end = package_script.index("\n   fi", runner_condition)
+    require('cp "$windows_runner_source" "$bundle_dir/run-prefetch-thread-benchmark-windows.ps1"'
+            in runner_branch
+            and '"windowsPrefetchThreadRunner": "run-prefetch-thread-benchmark-windows.ps1"'
+            in runner_branch
+            and runner_condition < package_script.index(
+                'cp "$windows_runner_source"', runner_condition) < runner_condition_end,
+            "PowerShell runner is not included and named only for Windows bundles")
+    require(runner_source.stat().st_size < 20 * 1024,
+            "Windows PowerShell runner exceeds 20 KB")
+    require(re.search(
+        r"(?im)^\s*(?:&\s*)?(?:python(?:\d+(?:\.\d+)*)?|py|java|git|curl|wget|"
+        r"Invoke-WebRequest|Invoke-RestMethod|Start-BitsTransfer|winget|choco|scoop)\b",
+        runner,
+    ) is None, "Windows runner contains a forbidden external tool call")
+    for required in (
+        "ConvertFrom-Json", "Start-Process", "-PassThru", "$process.Handle",
+        "WaitForExit($timeoutMilliseconds)", "$process.WaitForExit()",
+        "$process.ExitCode", "summary.json", "counters.json",
+        "workerSemaphoreReleaseCount", "workerSemaphoreAcquireCount",
+        "workerSemaphoreWakeCount", "workerSemaphoreOutstandingWakeCount",
+        "$runLabels -contains $runLabel", "$runLabels += $runLabel",
+        "$resultName = \"prefetch-thread-$timestamp-$PID\"",
+        "$appOutputRelative = 'p' + (ConvertTo-Base36 $epochSeconds)",
+        "manifest.datasetFileCount -ne 663", "manifest.contentFormatCounts.total -ne 663",
+        "manifest.contentFormatCounts.jpeg -ne 660", "manifest.contentFormatCounts.png -ne 3",
+        "$manifestHash = [string]$manifest.datasetHash", "--dataset-hash=$manifestHash",
+        "-RedirectStandardOutput $stdoutPath", "-RedirectStandardError $stderrPath",
+        "DebugConsole.txt", "Compress-Archive",
+    ):
+        require(required in runner, f"Windows runner contract is missing {required}")
+    wait_sequence = (
+        runner.index("$null = $process.Handle"),
+        runner.index("$process.WaitForExit($timeoutMilliseconds)"),
+        runner.index("$process.WaitForExit()"),
+        runner.index("$process.ExitCode"),
+    )
+    require(wait_sequence == tuple(sorted(wait_sequence)),
+            "Windows process handle, wait, and exit code are not ordered safely")
+    require("System.Collections.Generic.List[object]" not in runner,
+            "Windows runner stores result rows in a generic list")
+    for expected in (
+        "@{ Mode = 'legacy'; SleepMs = 0; Masks = @(6, 38) }",
+        "@{ Mode = 'worker-poll'; SleepMs = 1; Masks = @(6, 38) }",
+        "@{ Mode = 'worker-semaphore'; SleepMs = 0; Masks = @(6, 38) }",
+        "'/scr'", "'-1,-1,540,960'", "'--prefetch=on'", "'--accounting=on'",
+    ):
+        require(expected in runner, f"Windows runner matrix or arguments lack {expected}")
+    pft_payload = " ".join((
+        "--app-root=.", "--mode=benchmark", "--corpus=corpus/imag",
+        "--output=p123abc", "--image-optimization=38", "--prefetch=on",
+        "--accounting=on", "--run=1", "--dataset-hash=0123456789abcdef",
+        "--prefetch-thread-mode=worker-semaphore",
+        "--prefetch-worker-sleep-ms=0", "--profile=pft",
+    ))
+    require(len(pft_payload) <= 247,
+            "Windows prefetch thread application arguments exceed the startup limit")
 
 
 def assert_prefetch_thread_diagnostics():
@@ -478,7 +617,7 @@ def assert_prefetch_thread_diagnostics():
                      row["prefetch_ready_count"], row["prefetch_failed_count"],
                      row["prefetch_not_prefetchable_count"],
                      row["worker_semaphore_outstanding_wake_count"])
-                    == ("663", "663", "660", "0", "3", "0")
+                    == ("663", "663", "663", "0", "0", "0")
                     for row in csv_rows),
                 "prefetch thread CSV omitted equivalent workload outcomes")
         aggregate = json.loads((output / "prefetch-thread-diagnostics-summary.json").read_text())
@@ -1282,6 +1421,8 @@ def main():
     assert_clean_full_and_resume_preflight()
     assert_zip_failure_marks_incomplete()
     assert_prefetch_thread_diagnostics()
+    assert_prefetch_thread_artifact_contract()
+    assert_content_formats_and_windows_runner_contract()
     assert_results_zip_contract()
     assert_physical_target_baseline()
     assert_environment_metadata()
@@ -1358,6 +1499,9 @@ def main():
                 "release candidate summary count differs")
 
     package_script = Path(__file__).with_name("package-image-scroll-benchmark.sh").read_text()
+    require(RUNNER.EXPECTED_CONTENT_FORMAT_COUNTS
+            == {"total": 663, "jpeg": 660, "png": 3},
+            "runner expected content format counts differ")
     require('"matrixProcessCount": 31' in package_script,
             "package manifest matrix count is not 31")
     require('"expectedProcessCount": 31' in package_script,

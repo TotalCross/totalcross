@@ -127,11 +127,21 @@ else
    cp -R "$source_imag"/. "$staged_corpus/imag/"
    imag_count=$(find "$staged_corpus/imag" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print | wc -l | tr -d ' ')
    [ "$imag_count" -eq 663 ] || {
-      echo "Scroll corpus imag must contain exactly 663 JPEG files; found $imag_count" >&2
+      echo "Scroll corpus imag must contain exactly 663 .jpg/.jpeg-named files; found $imag_count" >&2
       exit 1
    }
    echo "corpus staged,variants=1,images_per_variant=663,decode_assets=false"
 fi
+
+format_counter="$repo_dir/scripts/count-image-corpus-formats.py"
+[ -f "$format_counter" ] || { echo "Image format counter not found: $format_counter" >&2; exit 1; }
+format_counts=$(python3 "$format_counter" "$staged_corpus/imag") || exit $?
+IFS=$'\t' read -r imag_total imag_jpeg imag_png <<<"$format_counts"
+[ "$imag_total" -eq 663 ] && [ "$imag_jpeg" -eq 660 ] && [ "$imag_png" -eq 3 ] || {
+   echo "Scroll corpus imag content must be 663 files (660 JPEG, 3 PNG); found total=$imag_total jpeg=$imag_jpeg png=$imag_png" >&2
+   exit 1
+}
+content_format_counts_json="{\"total\":$imag_total,\"jpeg\":$imag_jpeg,\"png\":$imag_png}"
 
 # Extraction must precede compilation so the source is always compiled against
 # the SDK shipped by the caller, never against a repository-generated SDK.
@@ -416,6 +426,16 @@ deploy_target() {
 
    cp "$runner_source" "$bundle_dir/run-benchmark.py"
    chmod +x "$bundle_dir/run-benchmark.py"
+   local windows_runner_manifest_field=""
+   if [ "$target" = windows-x64 ]; then
+      local windows_runner_source="$repo_dir/scripts/run-prefetch-thread-benchmark-windows.ps1"
+      [ -f "$windows_runner_source" ] || {
+         echo "Windows prefetch thread runner not found: $windows_runner_source" >&2
+         exit 1
+      }
+      cp "$windows_runner_source" "$bundle_dir/run-prefetch-thread-benchmark-windows.ps1"
+      windows_runner_manifest_field='"windowsPrefetchThreadRunner": "run-prefetch-thread-benchmark-windows.ps1",'
+   fi
    if [ "$include_decode" = true ]; then
       cp "$decode_runner_source" "$bundle_dir/run-image-decode-benchmark.py"
       cp "$decode_aggregator_source" "$bundle_dir/aggregate-image-decode-benchmark.py"
@@ -462,9 +482,11 @@ EOF
   "executable": "$executable_name",
   "runtime": "$runtime_name",
   "runner": "run-benchmark.py",
+$windows_runner_manifest_field
   "includeDecodeAssets": $include_decode_json,
   "chime": "chime.mp3",
   "datasetFileCount": 663,
+  "contentFormatCounts": $content_format_counts_json,
   "datasetHash": "$dataset_hash",
   "corpusVariants": $corpus_variants_json,
 $decode_manifest_fields

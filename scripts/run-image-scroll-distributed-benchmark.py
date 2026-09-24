@@ -22,6 +22,10 @@ import zipfile
 
 
 EXPECTED_JPEGS = 663
+EXPECTED_CONTENT_FORMAT_COUNTS = {"total": 663, "jpeg": 660, "png": 3}
+EXPECTED_PREFETCH_READY_COUNT = EXPECTED_JPEGS
+EXPECTED_PREFETCH_FAILED_COUNT = 0
+EXPECTED_PREFETCH_NOT_PREFETCHABLE_COUNT = 0
 SCROLL_CORPUS_VARIANTS = ("imag",)
 DECODE_CORPUS_VARIANTS = (
     "imag", "lossless", "decode-baseline", "decode-fast",
@@ -963,6 +967,8 @@ def load_manifest(bundle):
     require(manifest.get("benchmark") == "image-scroll", "unexpected benchmark manifest")
     require(manifest.get("datasetFileCount") == EXPECTED_JPEGS,
             "manifest datasetFileCount is not 663")
+    require(manifest.get("contentFormatCounts") == EXPECTED_CONTENT_FORMAT_COUNTS,
+            "manifest contentFormatCounts must be 663 total, 660 JPEG, and 3 PNG")
     require(tuple(manifest.get("masks", ())) == MASKS, "manifest mask matrix differs")
     require(tuple(manifest.get("prefetchProfiles", ())) == PREFETCH_PROFILES,
             "manifest prefetch matrix differs")
@@ -1121,7 +1127,7 @@ def validate_bundle(bundle, manifest):
             "bundle corpus variants differ from manifest")
     images = jpeg_paths(corpus / "imag")
     require(len(images) == EXPECTED_JPEGS,
-            "bundle corpus imag must contain exactly 663 JPEG files")
+            "bundle corpus imag must contain exactly 663 .jpg/.jpeg-named files")
     base_names = [path.relative_to(corpus / "imag").as_posix() for path in images]
     require(dataset_hash(corpus / "imag", images) == manifest.get("datasetHash"),
             "bundle dataset hash differs from manifest")
@@ -1221,7 +1227,7 @@ def self_test(bundle, manifest, output):
         resultsState="VALID_RESUME", datasetFileCount=len(images),
         datasetHash=corpus_digest,
     )
-    print("self-test passed,screen=540x960,corpus_jpegs=663,"
+    print("self-test passed,screen=540x960,corpus_images=663,"
           f"sdk_jar_sha256={manifest['sdkJarSha256Compile']}")
     return corpus, images, corpus_digest
 
@@ -1556,11 +1562,11 @@ def validate_prefetch_thread_run_artifacts(summary, counters, run_dir, mask,
         summary, "prefetchNotPrefetchableCount", f"{run_dir} not-prefetchable count"
     )
     require(request_count == EXPECTED_JPEGS
-            and ready_count == EXPECTED_JPEGS - 3
-            and failed_count == 0
-            and not_prefetchable_count == 3
+            and ready_count == EXPECTED_PREFETCH_READY_COUNT
+            and failed_count == EXPECTED_PREFETCH_FAILED_COUNT
+            and not_prefetchable_count == EXPECTED_PREFETCH_NOT_PREFETCHABLE_COUNT
             and ready_count + failed_count + not_prefetchable_count == request_count,
-            f"{run_dir} preparation outcomes do not account for the 663-image workload")
+            f"{run_dir} preparation outcomes do not match 663/663/0/0")
     require(summary.get("requestedMask") == mask and summary.get("effectiveMask") == mask,
             f"{run_dir}/summary.json mask mismatch")
     require_nonnegative_ns(summary.get("prefetchElapsedNs"),
@@ -1902,12 +1908,13 @@ def validate_reuse_run_artifacts(output, log_path, mask, prefetch, accounting, r
     else:
         require(summary_record.get("prefetch_request_count") == str(EXPECTED_JPEGS),
                 f"{log_path.name} prefetch request count is not 663")
-        require(summary_record.get("prefetch_ready_count") == str(EXPECTED_JPEGS - 3),
-                f"{log_path.name} prefetch ready count is not 660")
-        require(summary_record.get("prefetch_failed_count") == "0",
+        require(summary_record.get("prefetch_ready_count") == str(EXPECTED_PREFETCH_READY_COUNT),
+                f"{log_path.name} prefetch ready count is not 663")
+        require(summary_record.get("prefetch_failed_count") == str(EXPECTED_PREFETCH_FAILED_COUNT),
                 f"{log_path.name} prefetch failed count is not zero")
-        require(summary_record.get("prefetch_not_prefetchable_count") == "3",
-                f"{log_path.name} prefetch not-prefetchable count is not 3")
+        require(summary_record.get("prefetch_not_prefetchable_count")
+                == str(EXPECTED_PREFETCH_NOT_PREFETCHABLE_COUNT),
+                f"{log_path.name} prefetch not-prefetchable count is not zero")
 
     run_dir = expected_run_dir(output, mask, prefetch, accounting, run)
     environment = json.loads((output / "environment.json").read_text(encoding="utf-8"))
@@ -2569,12 +2576,13 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
     else:
         require(summary_record.get("prefetch_request_count") == str(EXPECTED_JPEGS),
                 f"{log_path.name} prefetch request count is not 663")
-        require(summary_record.get("prefetch_ready_count") == str(EXPECTED_JPEGS - 3),
-                f"{log_path.name} prefetch ready count is not 660")
-        require(summary_record.get("prefetch_failed_count") == "0",
+        require(summary_record.get("prefetch_ready_count") == str(EXPECTED_PREFETCH_READY_COUNT),
+                f"{log_path.name} prefetch ready count is not 663")
+        require(summary_record.get("prefetch_failed_count") == str(EXPECTED_PREFETCH_FAILED_COUNT),
                 f"{log_path.name} prefetch failed count is not zero")
-        require(summary_record.get("prefetch_not_prefetchable_count") == "3",
-                f"{log_path.name} prefetch not-prefetchable count is not 3")
+        require(summary_record.get("prefetch_not_prefetchable_count")
+                == str(EXPECTED_PREFETCH_NOT_PREFETCHABLE_COUNT),
+                f"{log_path.name} prefetch not-prefetchable count is not zero")
 
     run_dir = run_dir or expected_run_dir(output, mask, prefetch, accounting, run)
     for name in ("summary.json", "frames.csv", "counters.json", "memory.csv", "timeline.csv"):

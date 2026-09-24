@@ -33,9 +33,19 @@ bash scripts/package-image-scroll-benchmark.sh \
 Only `corpus/imag` is copied by default. Pass `--include-decode` to preserve
 the existing decode suite; the input root must then also contain `lossless`,
 `decode-baseline`, `decode-fast`, `aggressive-480`, and `aggressive-540`.
-Each variant contributes the same 663 `.jpg`-named paths. The package records
-the source revision, runtime SHA-256, and Windows `tcvm.dll` SHA-256 in
-`manifest.json`; a stale Windows runtime is rejected during packaging.
+Each variant contributes the same 663 `.jpg`/`.jpeg`-named paths. The customer
+corpus contains 660 JPEG payloads and 3 PNG payloads; the package records those
+content counts in `manifest.json`, along with the source revision, runtime
+SHA-256, and Windows `tcvm.dll` SHA-256. A stale Windows runtime is rejected
+during packaging. Windows bundles also include a PowerShell 5.1 runner for the
+six prefetch-thread diagnostic processes. Run it from the extracted bundle
+root with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-prefetch-thread-benchmark-windows.ps1
+```
+
+The runner stores per-process output and a ZIP of its evidence under `results`.
 Windows packaging also requires `--sdk-source-commit` (equal to
 `--source-commit`) as an explicit `sdkSourceAttestation`. This is an
 operator-provided provenance assertion, not cryptographic proof that the SDK
