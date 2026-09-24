@@ -25,6 +25,23 @@ final class ImagePreparation {
   private static long readyCount;
   private static long failedCount;
   private static long notPrefetchableCount;
+  private static long preparationEntryCount;
+  private static long preparationEntryTotalNs;
+  private static long threadCreateCount;
+  private static long threadObjectCreateNs;
+  private static long threadStartCount;
+  private static long threadStartCallNs;
+  private static long threadStartLatencyNs;
+  private static long decodeEntryCount;
+  private static long decodeWorkerNs;
+  private static long uiDispatchCount;
+  private static long uiDispatchWaitNs;
+  private static long adoptNs;
+  private static long finishPreparationNs;
+  private static long finishBookkeepingNs;
+  private static long workerPollCount;
+  private static long workerSleepRequestedNs;
+  private static long workerIdleElapsedNs;
 
   private ImagePreparation() {
   }
@@ -35,6 +52,23 @@ final class ImagePreparation {
       readyCount = 0;
       failedCount = 0;
       notPrefetchableCount = 0;
+      preparationEntryCount = 0;
+      preparationEntryTotalNs = 0;
+      threadCreateCount = 0;
+      threadObjectCreateNs = 0;
+      threadStartCount = 0;
+      threadStartCallNs = 0;
+      threadStartLatencyNs = 0;
+      decodeEntryCount = 0;
+      decodeWorkerNs = 0;
+      uiDispatchCount = 0;
+      uiDispatchWaitNs = 0;
+      adoptNs = 0;
+      finishPreparationNs = 0;
+      finishBookkeepingNs = 0;
+      workerPollCount = 0;
+      workerSleepRequestedNs = 0;
+      workerIdleElapsedNs = 0;
     }
   }
 
@@ -59,6 +93,108 @@ final class ImagePreparation {
   static long notPrefetchableCountForTest() {
     synchronized (LOCK) {
       return notPrefetchableCount;
+    }
+  }
+
+  static long preparationEntryCountForTest() {
+    synchronized (LOCK) {
+      return preparationEntryCount;
+    }
+  }
+
+  static long preparationEntryTotalNsForTest() {
+    synchronized (LOCK) {
+      return preparationEntryTotalNs;
+    }
+  }
+
+  static long threadCreateCountForTest() {
+    synchronized (LOCK) {
+      return threadCreateCount;
+    }
+  }
+
+  static long threadObjectCreateNsForTest() {
+    synchronized (LOCK) {
+      return threadObjectCreateNs;
+    }
+  }
+
+  static long threadStartCountForTest() {
+    synchronized (LOCK) {
+      return threadStartCount;
+    }
+  }
+
+  static long threadStartCallNsForTest() {
+    synchronized (LOCK) {
+      return threadStartCallNs;
+    }
+  }
+
+  static long threadStartLatencyNsForTest() {
+    synchronized (LOCK) {
+      return threadStartLatencyNs;
+    }
+  }
+
+  static long decodeEntryCountForTest() {
+    synchronized (LOCK) {
+      return decodeEntryCount;
+    }
+  }
+
+  static long decodeWorkerNsForTest() {
+    synchronized (LOCK) {
+      return decodeWorkerNs;
+    }
+  }
+
+  static long uiDispatchCountForTest() {
+    synchronized (LOCK) {
+      return uiDispatchCount;
+    }
+  }
+
+  static long uiDispatchWaitNsForTest() {
+    synchronized (LOCK) {
+      return uiDispatchWaitNs;
+    }
+  }
+
+  static long adoptNsForTest() {
+    synchronized (LOCK) {
+      return adoptNs;
+    }
+  }
+
+  static long finishPreparationNsForTest() {
+    synchronized (LOCK) {
+      return finishPreparationNs;
+    }
+  }
+
+  static long finishBookkeepingNsForTest() {
+    synchronized (LOCK) {
+      return finishBookkeepingNs;
+    }
+  }
+
+  static long workerPollCountForTest() {
+    synchronized (LOCK) {
+      return workerPollCount;
+    }
+  }
+
+  static long workerSleepRequestedNsForTest() {
+    synchronized (LOCK) {
+      return workerSleepRequestedNs;
+    }
+  }
+
+  static long workerIdleElapsedNsForTest() {
+    synchronized (LOCK) {
+      return workerIdleElapsedNs;
     }
   }
 
@@ -153,6 +289,11 @@ final class ImagePreparation {
       activeEntry = entry;
       alreadyDecoded = entry.request.alreadyDecoded;
       entry.state = alreadyDecoded ? State.ADOPTING : State.DECODING;
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        preparationEntryCount++;
+        entry.preparationAccountingEnabled = true;
+        entry.preparationStartNs = System.nanoTime();
+      }
     }
     if (alreadyDecoded) {
       try {
@@ -168,18 +309,28 @@ final class ImagePreparation {
       return;
     }
     try {
-      new Thread(new Runnable() {
+      startPreparationThread(new Runnable() {
         @Override
         public void run() {
           decode(entry);
         }
-      }).start();
+      });
     } catch (Throwable failure) {
       finish(entry, FAILED);
     }
   }
 
   private static void decode(final Entry entry) {
+    final boolean accounting = Image.diagnosticAccountingEnabledForTest();
+    final long decodeStartNs = accounting ? System.nanoTime() : 0;
+    if (accounting) {
+      synchronized (LOCK) {
+        if (Image.diagnosticAccountingEnabledForTest()) {
+          decodeEntryCount++;
+        }
+      }
+    }
+    boolean decodeTimeRecorded = false;
     DetachedCandidate candidate = null;
     try {
       if (entry.request.nativeAvailable) {
@@ -194,21 +345,32 @@ final class ImagePreparation {
       if (adoptionHook != null) {
         adoptionHook.run();
       }
+      boolean shouldAdopt;
       synchronized (LOCK) {
-        if (entry.state != State.DECODING) {
-          candidate.release();
-          return;
+        shouldAdopt = entry.state == State.DECODING;
+        if (shouldAdopt) {
+          entry.state = State.ADOPTING;
         }
-        entry.state = State.ADOPTING;
       }
+      if (!shouldAdopt) {
+        candidate.release();
+        recordDecodeWorkerTime(accounting, decodeStartNs);
+        decodeTimeRecorded = true;
+        return;
+      }
+      recordDecodeWorkerTime(accounting, decodeStartNs);
+      decodeTimeRecorded = true;
       final DetachedCandidate detached = candidate;
-      postUi(new Runnable() {
+      postUiAdoption(new Runnable() {
         @Override
         public void run() {
           adopt(entry, detached);
         }
       });
     } catch (Throwable failure) {
+      if (!decodeTimeRecorded) {
+        recordDecodeWorkerTime(accounting, decodeStartNs);
+      }
       if (candidate != null) {
         candidate.release();
       }
@@ -218,7 +380,7 @@ final class ImagePreparation {
 
   private static void adoptAlreadyDecoded(final Entry entry) {
     try {
-      entry.request.image.finishPreparation(entry.request, entry.requirement);
+      finishImagePreparation(entry);
       finish(entry, READY);
     } catch (Throwable failure) {
       finish(entry, FAILED);
@@ -226,27 +388,40 @@ final class ImagePreparation {
   }
 
   private static void adopt(final Entry entry, DetachedCandidate candidate) {
+    final boolean accounting = Image.diagnosticAccountingEnabledForTest();
+    final long adoptStartNs = accounting ? System.nanoTime() : 0;
+    boolean adopted = false;
     try {
       if (!entry.request.image.isPreparationCurrent(entry.request)) {
         candidate.release();
-        finish(entry, FAILED);
-        return;
-      }
-      if (candidate.javaResult != null) {
-        entry.request.image.adoptJavaPreparationResult(entry.request, candidate.javaResult);
-        candidate.javaResult = null;
       } else {
-        entry.request.image.adoptNativePreparationHandle(entry.request, candidate.takeNativeHandle());
+        if (candidate.javaResult != null) {
+          entry.request.image.adoptJavaPreparationResult(entry.request, candidate.javaResult);
+          candidate.javaResult = null;
+        } else {
+          entry.request.image.adoptNativePreparationHandle(entry.request, candidate.takeNativeHandle());
+        }
+        adopted = true;
       }
-      entry.request.image.finishPreparation(entry.request, entry.requirement);
-      finish(entry, READY);
     } catch (Throwable failure) {
       candidate.release();
+    }
+    recordAdoptTime(accounting, adoptStartNs);
+    if (!adopted) {
+      finish(entry, FAILED);
+      return;
+    }
+    try {
+      finishImagePreparation(entry);
+      finish(entry, READY);
+    } catch (Throwable failure) {
       finish(entry, FAILED);
     }
   }
 
   private static void finish(final Entry entry, int state) {
+    final boolean accounting = Image.diagnosticAccountingEnabledForTest();
+    final long finishStartNs = accounting ? System.nanoTime() : 0;
     ArrayList<Runnable> callbacks;
     synchronized (LOCK) {
       if (entry.state == State.READY || entry.state == State.FAILED) {
@@ -264,7 +439,156 @@ final class ImagePreparation {
     for (int i = 0; i < callbacks.size(); i++) {
       postCompletion(callbacks.get(i));
     }
+    recordFinishBookkeepingTime(accounting, finishStartNs, entry);
     scheduleNext();
+  }
+
+  private static void startPreparationThread(final Runnable runnable) {
+    final boolean accounting = Image.diagnosticAccountingEnabledForTest();
+    if (!accounting) {
+      new Thread(runnable).start();
+      return;
+    }
+    final ThreadStartTiming timing = new ThreadStartTiming();
+    Runnable measuredRunnable = new Runnable() {
+      @Override
+      public void run() {
+        if (Image.diagnosticAccountingEnabledForTest()) {
+          recordThreadStartLatency(System.nanoTime() - timing.startNs);
+        }
+        runnable.run();
+      }
+    };
+    long createStartNs = System.nanoTime();
+    Thread thread = new Thread(measuredRunnable);
+    long createElapsedNs = System.nanoTime() - createStartNs;
+    recordThreadCreated(createElapsedNs);
+    timing.startNs = System.nanoTime();
+    long startCallStartNs = timing.startNs;
+    boolean started = false;
+    try {
+      thread.start();
+      started = true;
+    } finally {
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        long startCallElapsedNs = System.nanoTime() - startCallStartNs;
+        synchronized (LOCK) {
+          threadStartCallNs += startCallElapsedNs;
+          if (started) {
+            threadStartCount++;
+          }
+        }
+      }
+    }
+  }
+
+  private static void finishImagePreparation(Entry entry) throws ImageException {
+    final boolean accounting = Image.diagnosticAccountingEnabledForTest();
+    if (!accounting) {
+      entry.request.image.finishPreparation(entry.request, entry.requirement);
+      return;
+    }
+    long startNs = System.nanoTime();
+    try {
+      entry.request.image.finishPreparation(entry.request, entry.requirement);
+    } finally {
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        long elapsedNs = System.nanoTime() - startNs;
+        synchronized (LOCK) {
+          finishPreparationNs += elapsedNs;
+        }
+      }
+    }
+  }
+
+  private static void postUiAdoption(final Runnable adoption) {
+    final boolean accounting = Image.diagnosticAccountingEnabledForTest();
+    if (!accounting) {
+      postUi(adoption);
+      return;
+    }
+    synchronized (LOCK) {
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        uiDispatchCount++;
+      }
+    }
+    final long dispatchStartNs = System.nanoTime();
+    postUi(new Runnable() {
+      @Override
+      public void run() {
+        if (Image.diagnosticAccountingEnabledForTest()) {
+          recordUiDispatchWait(System.nanoTime() - dispatchStartNs);
+        }
+        adoption.run();
+      }
+    });
+  }
+
+  private static void recordThreadCreated(long elapsedNs) {
+    synchronized (LOCK) {
+      if (!Image.diagnosticAccountingEnabledForTest()) {
+        return;
+      }
+      threadCreateCount++;
+      threadObjectCreateNs += elapsedNs;
+    }
+  }
+
+  private static void recordThreadStartLatency(long elapsedNs) {
+    synchronized (LOCK) {
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        threadStartLatencyNs += elapsedNs;
+      }
+    }
+  }
+
+  private static void recordDecodeWorkerTime(boolean accounting, long startNs) {
+    if (!accounting || !Image.diagnosticAccountingEnabledForTest()) {
+      return;
+    }
+    long elapsedNs = System.nanoTime() - startNs;
+    synchronized (LOCK) {
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        decodeWorkerNs += elapsedNs;
+      }
+    }
+  }
+
+  private static void recordUiDispatchWait(long elapsedNs) {
+    synchronized (LOCK) {
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        uiDispatchWaitNs += elapsedNs;
+      }
+    }
+  }
+
+  private static void recordAdoptTime(boolean accounting, long startNs) {
+    if (!accounting || !Image.diagnosticAccountingEnabledForTest()) {
+      return;
+    }
+    long elapsedNs = System.nanoTime() - startNs;
+    synchronized (LOCK) {
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        adoptNs += elapsedNs;
+      }
+    }
+  }
+
+  private static void recordFinishBookkeepingTime(boolean accounting, long startNs, Entry entry) {
+    if (!accounting || !Image.diagnosticAccountingEnabledForTest()) {
+      return;
+    }
+    long endNs = System.nanoTime();
+    synchronized (LOCK) {
+      if (!Image.diagnosticAccountingEnabledForTest()) {
+        return;
+      }
+      finishBookkeepingNs += endNs - startNs;
+      if (entry.preparationAccountingEnabled) {
+        preparationEntryTotalNs += endNs - entry.preparationStartNs;
+        entry.preparationAccountingEnabled = false;
+      }
+    }
   }
 
   private static void recordOutcome(int state, long count) {
@@ -364,11 +688,17 @@ final class ImagePreparation {
     final ArrayList<Runnable> callbacks = new ArrayList<Runnable>();
     int requirement;
     int state = State.QUEUED;
+    long preparationStartNs;
+    boolean preparationAccountingEnabled;
 
     Entry(Request request, int requirement) {
       this.request = request;
       this.requirement = requirement;
     }
+  }
+
+  private static final class ThreadStartTiming {
+    long startNs;
   }
 
   private static final class State {

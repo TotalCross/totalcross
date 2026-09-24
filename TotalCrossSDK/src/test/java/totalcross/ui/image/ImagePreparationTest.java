@@ -131,6 +131,93 @@ class ImagePreparationTest {
   }
 
   @Test
+  void legacyLifecycleAccountingMeasuresSerializedEntriesAndResets() throws Exception {
+    boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
+    CountDownLatch firstDecodeReachedAdoption = new CountDownLatch(1);
+    CountDownLatch continueFirstDecode = new CountDownLatch(1);
+    CountDownLatch firstCallbackEntered = new CountDownLatch(1);
+    CountDownLatch continueFirstCallback = new CountDownLatch(1);
+    CountDownLatch secondCallbackEntered = new CountDownLatch(1);
+    CountDownLatch continueSecondCallback = new CountDownLatch(1);
+    CountDownLatch completed = new CountDownLatch(2);
+    ImagePreparation.setRunUiInlineForTest(true);
+    Image.setDiagnosticAccountingForTest(true);
+    ImagePreparation.resetAccountingForTest();
+    ImagePreparation.setBeforeAdoptionHookForTest(new Runnable() {
+      @Override
+      public void run() {
+        firstDecodeReachedAdoption.countDown();
+        try {
+          continueFirstDecode.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException interrupted) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    });
+    try {
+      Image first = new Image(jpeg(512, 384)).getSmoothScaledInstance(128, 96);
+      Image second = new Image(jpeg(640, 480)).getSmoothScaledInstance(160, 120);
+
+      ImagePreparation.request(first, 1, ImageDrawingBridge.COPY_READY,
+          blockingCompletion(firstCallbackEntered, continueFirstCallback, completed));
+      assertTrue(firstDecodeReachedAdoption.await(5, TimeUnit.SECONDS));
+      ImagePreparation.request(second, 1, ImageDrawingBridge.COPY_READY,
+          blockingCompletion(secondCallbackEntered, continueSecondCallback, completed));
+
+      assertEquals(1, ImagePreparation.threadCreateCountForTest());
+      assertEquals(1, ImagePreparation.threadStartCountForTest());
+      continueFirstDecode.countDown();
+      assertTrue(firstCallbackEntered.await(5, TimeUnit.SECONDS));
+      continueFirstCallback.countDown();
+      assertTrue(secondCallbackEntered.await(5, TimeUnit.SECONDS));
+      long firstPreparationTotalNs = ImagePreparation.preparationEntryTotalNsForTest();
+      assertTrue(firstPreparationTotalNs > 0);
+      continueSecondCallback.countDown();
+      assertTrue(completed.await(5, TimeUnit.SECONDS));
+      awaitPreparationTotalAbove(firstPreparationTotalNs);
+
+      assertEquals(2, ImagePreparation.preparationEntryCountForTest());
+      assertEquals(2, ImagePreparation.threadCreateCountForTest());
+      assertEquals(2, ImagePreparation.threadStartCountForTest());
+      assertEquals(2, ImagePreparation.decodeEntryCountForTest());
+      assertEquals(2, ImagePreparation.uiDispatchCountForTest());
+      assertDiagnosticMetricsNonNegative();
+
+      ImagePreparation.resetAccountingForTest();
+      assertDiagnosticMetricsZero();
+    } finally {
+      continueFirstDecode.countDown();
+      continueFirstCallback.countDown();
+      continueSecondCallback.countDown();
+      ImagePreparation.setBeforeAdoptionHookForTest(null);
+      ImagePreparation.setRunUiInlineForTest(false);
+      Image.setDiagnosticAccountingForTest(previousAccounting);
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
+  void lifecycleAccountingStaysZeroWhenDisabled() throws Exception {
+    boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
+    CountDownLatch completed = new CountDownLatch(1);
+    ImagePreparation.setRunUiInlineForTest(true);
+    Image.setDiagnosticAccountingForTest(false);
+    ImagePreparation.resetAccountingForTest();
+    try {
+      Image image = new Image(jpeg(512, 384)).getSmoothScaledInstance(128, 96);
+      ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, completed::countDown);
+
+      assertTrue(completed.await(5, TimeUnit.SECONDS));
+      assertDiagnosticMetricsZero();
+      assertEquals(0, ImagePreparation.requestCountForTest());
+    } finally {
+      ImagePreparation.setRunUiInlineForTest(false);
+      Image.setDiagnosticAccountingForTest(previousAccounting);
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
   void alreadyDecodedCopyReadyAdoptionIsDeferredOnUiThread() throws Exception {
     new Launcher();
     MainWindow.resetPreviewState();
@@ -205,6 +292,10 @@ class ImagePreparationTest {
       assertEquals(materializations + count, Image.materializationCountForTest());
       assertEquals(0, Image.targetedDecodeInvocationCountForTest()
           + Image.fullDecodeInvocationCountForTest());
+      assertEquals(count, ImagePreparation.preparationEntryCountForTest());
+      assertEquals(0, ImagePreparation.threadCreateCountForTest());
+      assertEquals(0, ImagePreparation.threadStartCountForTest());
+      assertEquals(0, ImagePreparation.decodeEntryCountForTest());
       for (Image image : images) {
         assertNotNull(image.cachedMaterializedForDrawing(1));
       }
@@ -349,6 +440,67 @@ class ImagePreparationTest {
     ImagePreparationCandidate candidate = image.createPreparationCandidate(request);
     image.adoptPreparationCandidate(request, candidate);
     return image;
+  }
+
+  private static void assertDiagnosticMetricsNonNegative() {
+    assertTrue(ImagePreparation.preparationEntryTotalNsForTest() >= 0);
+    assertTrue(ImagePreparation.threadObjectCreateNsForTest() >= 0);
+    assertTrue(ImagePreparation.threadStartCallNsForTest() >= 0);
+    assertTrue(ImagePreparation.threadStartLatencyNsForTest() >= 0);
+    assertTrue(ImagePreparation.decodeWorkerNsForTest() >= 0);
+    assertTrue(ImagePreparation.uiDispatchWaitNsForTest() >= 0);
+    assertTrue(ImagePreparation.adoptNsForTest() >= 0);
+    assertTrue(ImagePreparation.finishPreparationNsForTest() >= 0);
+    assertTrue(ImagePreparation.finishBookkeepingNsForTest() >= 0);
+    assertTrue(ImagePreparation.workerPollCountForTest() >= 0);
+    assertTrue(ImagePreparation.workerSleepRequestedNsForTest() >= 0);
+    assertTrue(ImagePreparation.workerIdleElapsedNsForTest() >= 0);
+  }
+
+  private static Runnable blockingCompletion(final CountDownLatch entered,
+      final CountDownLatch release, final CountDownLatch completed) {
+    return new Runnable() {
+      @Override
+      public void run() {
+        entered.countDown();
+        try {
+          release.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException interrupted) {
+          Thread.currentThread().interrupt();
+        } finally {
+          completed.countDown();
+        }
+      }
+    };
+  }
+
+  private static void awaitPreparationTotalAbove(long previousTotalNs) throws Exception {
+    long deadlineNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+    while (ImagePreparation.preparationEntryTotalNsForTest() <= previousTotalNs
+        && System.nanoTime() < deadlineNs) {
+      Thread.yield();
+    }
+    assertTrue(ImagePreparation.preparationEntryTotalNsForTest() > previousTotalNs);
+  }
+
+  private static void assertDiagnosticMetricsZero() {
+    assertEquals(0, ImagePreparation.preparationEntryCountForTest());
+    assertEquals(0, ImagePreparation.preparationEntryTotalNsForTest());
+    assertEquals(0, ImagePreparation.threadCreateCountForTest());
+    assertEquals(0, ImagePreparation.threadObjectCreateNsForTest());
+    assertEquals(0, ImagePreparation.threadStartCountForTest());
+    assertEquals(0, ImagePreparation.threadStartCallNsForTest());
+    assertEquals(0, ImagePreparation.threadStartLatencyNsForTest());
+    assertEquals(0, ImagePreparation.decodeEntryCountForTest());
+    assertEquals(0, ImagePreparation.decodeWorkerNsForTest());
+    assertEquals(0, ImagePreparation.uiDispatchCountForTest());
+    assertEquals(0, ImagePreparation.uiDispatchWaitNsForTest());
+    assertEquals(0, ImagePreparation.adoptNsForTest());
+    assertEquals(0, ImagePreparation.finishPreparationNsForTest());
+    assertEquals(0, ImagePreparation.finishBookkeepingNsForTest());
+    assertEquals(0, ImagePreparation.workerPollCountForTest());
+    assertEquals(0, ImagePreparation.workerSleepRequestedNsForTest());
+    assertEquals(0, ImagePreparation.workerIdleElapsedNsForTest());
   }
 
   private static final class QueuedMainWindow extends MainWindow {

@@ -72,8 +72,10 @@ below 20 KB / ~600 lines; do not refactor existing files for size.
 
 ## Progress
 
-- [ ] Activate branch and commit this plan artifact.
-- [ ] Milestone 1: instrument the existing legacy thread lifecycle.
+- [x] Activation: created `perf/prefetch-thread-diagnostics` from the pinned
+      base and committed this plan artifact as `e6e15cf94`.
+- [x] Milestone 1: added diagnostic-gated legacy lifecycle accounting and
+      focused tests; `ImagePreparationTest` passes.
 - [ ] Milestone 2: add the configurable serialized single worker.
 - [ ] Milestone 3: add six-process phase, automatic self-test, aggregation, and
       narrow ZIP contract.
