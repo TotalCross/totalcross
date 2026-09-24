@@ -14,7 +14,10 @@ concurrency checks. Part 2 verified the four supported operations, kept
 unsupported overloads unresolved, reconciled 20,000 handoffs, and measured 200
 confirmed blocked-waiter release-to-acquire intervals on macOS. A follow-up
 added a smoke-only native waiter diagnostic and corrected the earlier
-measurement protocol. No production consumer or public Semaphore API was
+measurement protocol. A Windows follow-up now uses unique auto-reset entry
+events to prove each waiter is entering its condition wait. The hosted Windows
+build, package, correctness, stress, and latency runs passed; all 220 latency
+handshakes were confirmed. No production consumer or public Semaphore API was
 changed.
 
 ## Original Plan versus Actual Outcome
@@ -23,7 +26,9 @@ Both sequential plans completed on `feat/semaphore-v1` from the specified
 planning base. Part 1 supplied the one-permit, non-fair, untimed native-backed
 API and macOS correctness smoke. Part 2 added source-based converter coverage,
 deterministic stress, and descriptive wake-latency evidence. The build matrix
-remained limited to the SDK and macOS as planned.
+was initially limited to the SDK and macOS. The authorized Windows follow-up
+adds one hosted, Windows-only build and smoke workflow without changing the
+default production runtime.
 
 The compatibility fixture imports `java.util.concurrent.Semaphore`, compiles
 against Java 8 APIs, and resolves its emitted bytecode calls through the
@@ -40,6 +45,12 @@ not claimed by `Semaphore4D`.
   measured handshakes, each released only after native waiter confirmation.
 - Added a smoke-source-only native `awaitWaiters` bridge used by correctness
   and latency smokes; the production Semaphore API remains unchanged.
+- Added a diagnostics-on Windows waiter-entry protocol using one auto-reset
+  event per waiter and `SignalObjectAndWait`, plus a separate rescan event.
+  The ordinary Windows wait path and the POSIX diagnostic path are unchanged.
+- Added a three-waiter preflight to the latency app and a Windows workflow that
+  builds diagnostics-off and diagnostics-on runtimes separately, deploys all
+  three apps, and uses a Python-free PowerShell 5.1 runner.
 - Added default-off `TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS` CMake gating so
   production builds omit diagnostic state, acquire branches, hook, and address
   registration. The dedicated macOS smoke runtime opts in explicitly.
@@ -86,6 +97,10 @@ The follow-up removed diagnostic storage and work from default builds. The
 default macOS `tcvm` compiled with the option OFF and had no diagnostic symbol;
 the dedicated macOS runtime compiled with the option ON and exported the hook.
 The compile databases confirmed the define appears only in the enabled build.
+The Windows wait-entry protocol uses per-waiter auto-reset events so concurrent
+confirmations cannot coalesce. GitHub Actions checks that the normal Windows
+runtime omits the hook registration and `SignalObjectAndWait` import, then
+packages the separate diagnostics-on runtime.
 
 ## Validation and Measurable Results
 
@@ -130,12 +145,18 @@ The compile databases confirmed the define appears only in the enabled build.
   200 measured samples: min 2,042 ns, p50 3,041 ns, nearest-rank p95 8,709
   ns, max 148,916 ns, rounded mean 5,596 ns. Full log:
   `TotalCrossSDK/agent-logs/20260924-150057-runSemaphoreSmokeMacOS-full.log`.
+- After the Windows waiter-entry change, diagnostics-off and diagnostics-on
+  macOS builds both passed in 113 Ninja steps. All three current smokes passed;
+  latency confirmed 200 measured waiters, 220 warm-up/sample handshakes, and
+  three concurrent waiters. Its descriptive result was min 2,291 ns, p50 3,645
+  ns, nearest-rank p95 52,167 ns, max 2,646,875 ns, mean 37,577 ns. Log:
+  `TotalCrossSDK/agent-logs/20260924-170458-runSemaphoreSmokeMacOS-full.log`.
 - Focused copyright-header, diff, and signed commit-message checks passed.
 
-The original SDK/macOS validation did not build Windows, Android, Linux, or
-iOS locally. The Windows apps from the Python-free package based on workflow
-run `36040721060` and runtime source SHA `0badac435cc2c6af31de4bb0adad9ed58e6cd0c5`
-produced these markers without timing out:
+The user later supplied the corrected-runner result for the Python-free package
+based on workflow run `36040721060` and runtime source SHA
+`0badac435cc2c6af31de4bb0adad9ed58e6cd0c5`. Package files were verified, and
+both apps passed with exit code 0 and no timeout. Their markers were:
 
 ```text
 fixture=SemaphoreSmokeApp,overallPass=true,checks=7
@@ -146,16 +167,32 @@ The first PowerShell 5.1 runner reported a false negative because it did not
 reliably capture process exit state and searched only redirected stdout/stderr,
 while TotalCross output may be written to `DebugConsole.txt`.
 
+That corrected-runner result covers the diagnostics-off runtime's correctness
+and stress behavior. It does not establish that a Windows waiter had entered
+its condition wait or support a latency claim.
+
 The runner now acquires the process handle before its timed wait, performs a
 final parameterless `WaitForExit()`, reads `ExitCode`, clears stale
 `DebugConsole.txt` before each test, and saves fresh per-test console output.
 Required markers are checked across stdout, stderr, and that console output.
 The replacement package preserves the same workflow/source provenance and
-the executables/runtime byte-for-byte. Local static checks, manifest hashes,
-ZIP integrity, and binary comparisons passed. No local PowerShell runtime was
-available for parsing or execution. The corrected runner has not yet been
-rerun on Windows. See the replacement package and latest evidence entry under
+executables/runtime byte-for-byte. Local static checks, manifest hashes, ZIP
+integrity, and binary comparisons passed. Its updated provenance records the
+user-provided runner pass. See the replacement package and latest evidence
+entry under
 `.agent/artifacts/semaphore-windows-validation-run-36040721060-runner-fix`.
+
+The dedicated workflow run `36053759681` passed on Windows Server 2022 using
+PowerShell 5.1. It built the diagnostics-off production runtime and a separate
+diagnostics-on runtime, passed the SDK build, verified all 16 package manifest
+hashes, and passed correctness, stress, and latency with exit code 0 and no
+timeouts. Correctness reported seven checks; stress reconciled 20,000 expected,
+produced, and acquired handoffs. The latency marker reported 20 warm-ups,
+200 measured samples, 200 blocked waiters, all 220 confirmed handshakes, and
+three waiters confirmed in the multi-waiter preflight. The Windows descriptive
+latency was min 7,900 ns, p50 12,400 ns, nearest-rank p95 13,900 ns, max
+35,500 ns, and mean 12,973 ns. This is a result for the hosted Windows
+environment only.
 
 ## Useful Evidence and Examples
 
@@ -172,19 +209,17 @@ aggregate is historical interval data only.
 
 ## Limitations, Remaining Work, and Open Questions
 
-The corrected latency result is descriptive evidence for this macOS machine;
-it is not a performance threshold or a cross-platform prediction. The proof
-uses macOS POSIX condition behavior. The Windows event path has not been
-executed and is not covered by the blocked-wait claim. The Windows package
-does not claim to observe a thread inside `WaitForSingleObject`; it checks
-functional behavior with Semaphore handshakes and process timeouts. Android,
-Linux, and iOS native validation remains deferred. The TotalCross VM does not
-currently interrupt a blocked `acquire()` despite its Java declaration.
+The corrected macOS and Windows latency results are descriptive evidence for
+their tested environments; they are not performance thresholds or predictions
+for other machines. The original Windows correctness/stress result used a
+diagnostics-off runtime and did not prove entry into the event wait; the later
+diagnostics-on Windows run confirmed all 220 handshakes. Android, Linux, and
+iOS native validation remains deferred. The TotalCross VM does not currently
+interrupt a blocked `acquire()` despite its Java declaration.
 
-The available Windows App host presented an unverified self-signed certificate
-named `SUPERWABA2`. No trust override was accepted, and no Windows test result
-was produced. A verified Windows host or user confirmation of that certificate
-is still required before the package can be run there.
+The earlier Windows App host presented an unverified self-signed certificate
+named `SUPERWABA2`; no trust override was accepted. The corrected-runner result
+and dedicated hosted workflow avoid relying on that host.
 
 No `ImagePreparation` performance claim was tested. Any future evaluation of
 Semaphore as a production wake mechanism belongs in a separate plan.
@@ -201,15 +236,16 @@ Semaphore as a production wake mechanism belongs in a separate plan.
 
 Introduce the compatibility boundary and native blocking path, then show how
 the converter fixture protects the v1 contract. Follow with exact handoff
-reconciliation and the 200-sample wake measurement. Close by separating the
-macOS results from deferred platform execution and unmeasured consumer gains.
+reconciliation and the 200-sample wake measurements. Close by separating the
+macOS and Windows results from deferred Android, Linux, and iOS execution and
+unmeasured consumer gains.
 
 ## Claims Requiring Human Review
 
-- Confirm Windows and WinCE event API behavior on supported toolchains before
-  claiming runtime support there.
+- Confirm WinCE event API behavior on supported toolchains before claiming
+  runtime support there.
 - Decide how merge policy should handle the unchanged Part 1 commit-message
   body-length failures and the body-length failure in signed commit
   `5e6a03b4e`, which was preserved without rewriting history.
-- Treat the latency aggregate as descriptive evidence for this tested macOS
-  machine only.
+- Treat each latency aggregate as descriptive evidence for its tested macOS or
+  hosted Windows environment only.

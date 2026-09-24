@@ -14,7 +14,8 @@ executed before `semaphore-v1-part-2-stress.md`.
 
 Implement the core deployed `java.util.concurrent.Semaphore` compatibility
 surface in TotalCross and prove, on native macOS, that waiting threads block
-without polling and wake correctly after `release()`.
+without polling and wake correctly after `release()`. The authorized Windows
+follow-up below adds hosted validation of its event wait and wake path.
 
 The work is intentionally limited to Semaphore itself. Do not modify
 `ImagePreparation`, image benchmarks, `AsyncTask`, executors, or any production
@@ -132,8 +133,19 @@ outputs, caches, or logs.
   PASS markers without timing out; the original PowerShell wrapper produced a
   false negative.
 - [x] (2026-09-24T19:26:28Z) Fix PowerShell 5.1 process/output capture and
-  package a replacement with unchanged Windows binaries; corrected-runner
-  rerun remains pending.
+  package a replacement with unchanged Windows binaries; the corrected runner
+  later passed with package files verified.
+- [x] (2026-09-24T20:11:47Z) Add Windows-only per-waiter diagnostics using
+  `SignalObjectAndWait`; rebuild default-off and diagnostics-on macOS runtimes
+  and pass all three smokes, including 220 confirmed latency handshakes.
+- [x] (2026-09-24T20:11:47Z) Add a Windows-only hosted workflow that keeps the
+  normal runtime diagnostics-off, builds a second runtime with diagnostics-on,
+  and packages the PowerShell 5.1 run.
+- [x] (2026-09-24T20:21:01Z) Complete hosted Windows validation in run
+  `36053759681`: diagnostics-off production and diagnostics-on runtime builds,
+  SDK/package build, and PowerShell 5.1 correctness, stress, and 220-confirmation
+  latency smokes all passed. A first run exposed a converter test parser gap;
+  the focused fix passed and the workflow retried successfully.
 
 ## Current Architecture and Fixed Decisions
 
@@ -291,9 +303,34 @@ Build operations are allowed only for:
 
 They are allowed only at the end of this milestone.
 
-Do not build Windows, Android, Linux, or iOS. Source integration for those
-targets is required, but native validation is deferred and must be reported as
-such.
+The initial milestone deferred Windows, Android, Linux, and iOS native builds.
+The authorized follow-up below supersedes that restriction for Windows only;
+Android, Linux, and iOS remain deferred.
+
+### Windows validation follow-up
+
+The diagnostics-on Windows waiter must leave its `CRITICAL_SECTION` and call
+`SignalObjectAndWait` with a unique auto-reset diagnostic event while beginning
+its wait on the Semaphore condition event. A unique event per waiter prevents
+auto-reset confirmations from coalescing. `awaitWaiters` consumes each
+confirmation and checks the waiter is still pending under the Semaphore state
+lock. Its shared auto-reset event only wakes the observer to rescan registered
+or completed waiters. Keep the POSIX diagnostic path unchanged.
+
+The normal Windows runtime must build with the CMake diagnostics option omitted
+and contain no diagnostic definition, native hook registration, or
+`SignalObjectAndWait` import. A separate runtime builds with
+`TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=ON`. The branch workflow deploys the
+correctness, 4+4/20,000 stress, and latency apps and runs them under Windows
+PowerShell 5.1 without Python. Latency uses 20 warm-ups plus 200 measured
+samples; every release timestamp follows waiter-entry confirmation. Report
+min, p50, nearest-rank p95, max, mean, and counts. Claim blocked-waiter wake
+latency only when all 220 handshakes pass. Do not add sleep/poll assumptions or
+absolute performance thresholds.
+
+If the hosted Windows environment is unavailable, stop after verifying the
+diagnostic package and leave Windows execution pending. Do not claim a Windows
+measurement without a completed trusted run.
 
 ## Plan of Work
 
@@ -504,12 +541,17 @@ Milestone 1 is accepted only if:
 - no Semaphore wait path uses sleep/poll/spin;
 - overflow does not wrap;
 - durable execution artifacts are committed;
-- Windows/Android/iOS native execution is explicitly reported as deferred.
+- The Windows validation follow-up passes its default-off and diagnostics-on
+  builds, correctness and stress smokes, and 220-confirmation latency smoke;
+  otherwise package provenance and pending status are recorded without a
+  measurement claim.
+- Android, Linux, and iOS native execution is explicitly reported as deferred.
 
 ## Risks and Predetermined Responses
 
-- Windows event signals can coalesce.
-  Use permit count as truth and chained wakeups after successful acquire.
+- Windows auto-reset event signals can coalesce. Keep the permit count
+  authoritative, chain wakeups after successful acquire, and use distinct
+  diagnostic entry events so waiter confirmations do not coalesce.
 
 - Condition initialization can fail.
   Unwind any initialized resource immediately and throw; no partial state.
@@ -567,7 +609,13 @@ Add only discoveries that materially affect Part 2.
 - Treat deployed `acquire()` as effectively uninterruptible.
 - POSIX/Android/macOS use pthread conditions.
 - Windows uses auto-reset events with chained wakeups.
-- Build only SDK/macOS, only at milestone closure.
+- Windows diagnostic confirmations use one auto-reset entry event per waiter
+  and `SignalObjectAndWait`; the diagnostics-off path keeps the ordinary event
+  wait and has no diagnostic registration.
+- A manual/push-filtered hosted Windows follow-up builds the ordinary runtime
+  and a separate diagnostics-on runtime, then runs the Windows smoke package.
+- Initial closure builds only SDK/macOS; the authorized Windows follow-up uses
+  GitHub Actions and leaves Android, Linux, and iOS deferred.
 - Do not modify any Semaphore consumer.
 
 All decisions dated 2026-09-24.
@@ -582,12 +630,19 @@ the native macOS `tcvm` target built in 123 Ninja steps; and the deployed
 Semaphore smoke passed with its required marker. The first converter run found
 missing generated prototypes; the focused fix and rerun passed.
 
-Windows, Android, Linux, and iOS native execution remains unvalidated. The
-Windows auto-reset-event path is source-integrated and chains wakeups based on
-the permit count, but this milestone does not claim a Windows build or run.
-Two earlier commit-message checks failed on body-line length; those commits
-remain unchanged as required by this plan. See
-`.agent/reports/semaphore-v1-editorial.md` for the full handoff and
+The authorized Windows follow-up passed on hosted Windows Server 2022. Both
+Windows runtime variants built, the default runtime passed static checks for
+absent diagnostic registration/imports, and correctness, 4+4/20,000 stress,
+and blocked-wait latency passed. All 220 latency handshakes were confirmed;
+the descriptive summary was min 7,900 ns, p50 12,400 ns, nearest-rank p95
+13,900 ns, max 35,500 ns, and mean 12,973 ns. The first hosted run exposed a
+converter test parser that did not recognize a platform-qualified diagnostic
+guard; a focused fix passed locally and the retried SDK workflow passed.
+Android, Linux, and iOS native execution remains deferred. Two earlier
+commit-message checks failed on body-line length; a later Windows diagnostic
+implementation commit also failed because its body contained literal
+backslash-n sequences. These signed commits remain unchanged as required by
+this plan. See `.agent/reports/semaphore-v1-editorial.md` for the handoff and
 `.agent/evidence/semaphore-v1.jsonl` for validation records. Do not infer
 `ImagePreparation` performance from this work.
 
@@ -602,3 +657,8 @@ Do not start Part 2 until Part 1 state says Milestone 1 is complete.
 Initial revision, 2026-09-24: split from a larger plan to comply with the
 20 KB/~600-line new-file limit and scoped Part 1 to the core primitive,
 compatibility class, registration, and native macOS correctness proof.
+
+Windows follow-up, 2026-09-24: correct the waiter-entry proof for Windows event
+waits, build a dedicated diagnostics-on runtime through GitHub Actions, and
+record the hosted smoke/measurement result separately from the initial
+macOS-only milestone.
