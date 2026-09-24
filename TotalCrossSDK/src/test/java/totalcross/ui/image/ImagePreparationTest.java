@@ -233,6 +233,10 @@ class ImagePreparationTest {
     ImagePreparation.configurePrefetchThreadModeForDiagnostic(
         ImagePreparation.PREFETCH_THREAD_MODE_WORKER, 2);
     assertEquals(2, ImagePreparation.prefetchWorkerSleepMsForTest());
+    ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+        ImagePreparation.PREFETCH_THREAD_MODE_WORKER_SEMAPHORE, 0);
+    assertEquals(0, ImagePreparation.prefetchWorkerSleepMsForTest());
+    assertSemaphoreSleepRejected(1);
     ImagePreparation.resetThreadModeForTest();
   }
 
@@ -328,6 +332,82 @@ class ImagePreparationTest {
       assertEquals(0, ImagePreparation.decodeEntryCountForTest());
       assertEquals(1, ImagePreparation.preparationEntryCountForTest());
       assertTrue(ImagePreparation.finishPreparationNsForTest() >= 0);
+    } finally {
+      while (mainWindow.queuedCount() > 0) {
+        mainWindow.runNext();
+      }
+      ImagePreparation.setRunUiInlineForTest(false);
+      ImagePreparation.resetThreadModeForTest();
+      Image.setDiagnosticAccountingForTest(previousAccounting);
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
+  void semaphoreWorkerCoalescesWakeupsAndWaitsForEachUiFinish() throws Exception {
+    boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
+    new Launcher();
+    MainWindow.resetPreviewState();
+    QueuedMainWindow mainWindow = new QueuedMainWindow();
+    ImagePreparation.resetThreadModeForTest();
+    ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+        ImagePreparation.PREFETCH_THREAD_MODE_WORKER_SEMAPHORE, 0);
+    ImagePreparation.setRunUiInlineForTest(false);
+    Image.setDiagnosticAccountingForTest(true);
+    ImagePreparation.resetAccountingForTest();
+    try {
+      Image first = new Image(jpeg(512, 384)).getSmoothScaledInstance(128, 96);
+      Image second = new Image(jpeg(640, 480)).getSmoothScaledInstance(160, 120);
+      Image third = new Image(jpeg(720, 540)).getSmoothScaledInstance(180, 135);
+
+      ImagePreparation.request(first, 1, ImageDrawingBridge.COPY_READY, null);
+      awaitQueuedAdoption(mainWindow);
+      awaitSemaphoreWorkerWaiting();
+      ImagePreparation.request(second, 1, ImageDrawingBridge.COPY_READY, null);
+      ImagePreparation.request(third, 1, ImageDrawingBridge.COPY_READY, null);
+
+      assertEquals(1, ImagePreparation.decodeEntryCountForTest());
+      assertTrue(ImagePreparation.activeEntryInFlightForTest());
+      assertEquals(0, ImagePreparation.workerSemaphoreReleaseCountForTest());
+      mainWindow.runNext();
+
+      awaitQueuedAdoption(mainWindow);
+      awaitSemaphoreWorkerWaiting();
+      assertEquals(2, ImagePreparation.decodeEntryCountForTest());
+      assertEquals(1, ImagePreparation.workerSemaphoreReleaseCountForTest());
+      assertEquals(1, ImagePreparation.workerSemaphoreAcquireCountForTest());
+      assertEquals(1, ImagePreparation.workerSemaphoreWakeCountForTest());
+      assertEquals(0, ImagePreparation.workerSemaphoreOutstandingWakeCountForTest());
+      mainWindow.runNext();
+
+      awaitQueuedAdoption(mainWindow);
+      awaitSemaphoreWorkerWaiting();
+      assertEquals(3, ImagePreparation.decodeEntryCountForTest());
+      assertEquals(2, ImagePreparation.workerSemaphoreReleaseCountForTest());
+      assertEquals(2, ImagePreparation.workerSemaphoreAcquireCountForTest());
+      assertEquals(2, ImagePreparation.workerSemaphoreWakeCountForTest());
+      assertEquals(0, ImagePreparation.workerSemaphoreOutstandingWakeCountForTest());
+      mainWindow.runNext();
+
+      assertEquals(0, mainWindow.queuedCount());
+      awaitSemaphoreWorkerWaiting();
+      assertEquals(3, ImagePreparation.readyCountForTest());
+      assertEquals(0, ImagePreparation.failedCountForTest());
+      assertEquals(3, ImagePreparation.preparationEntryCountForTest());
+      assertEquals(1, ImagePreparation.threadCreateCountForTest());
+      assertEquals(1, ImagePreparation.threadStartCountForTest());
+      assertEquals(0, ImagePreparation.workerPollCountForTest());
+      assertEquals(0, ImagePreparation.workerSleepRequestedNsForTest());
+
+      ImagePreparation.shutdownWorkerForTest();
+      assertFalse(ImagePreparation.workerRunningForTest());
+      assertEquals(3, ImagePreparation.workerSemaphoreReleaseCountForTest());
+      assertEquals(3, ImagePreparation.workerSemaphoreAcquireCountForTest());
+      assertEquals(2, ImagePreparation.workerSemaphoreWakeCountForTest());
+      assertEquals(0, ImagePreparation.workerSemaphoreOutstandingWakeCountForTest());
+      assertEquals(ImagePreparation.PREFETCH_THREAD_MODE_WORKER_SEMAPHORE,
+          ImagePreparation.prefetchThreadModeForTest());
+      assertDiagnosticMetricsNonNegative();
     } finally {
       while (mainWindow.queuedCount() > 0) {
         mainWindow.runNext();
@@ -678,6 +758,9 @@ class ImagePreparationTest {
     assertTrue(ImagePreparation.workerPollCountForTest() >= 0);
     assertTrue(ImagePreparation.workerSleepRequestedNsForTest() >= 0);
     assertTrue(ImagePreparation.workerIdleElapsedNsForTest() >= 0);
+    assertTrue(ImagePreparation.workerSemaphoreReleaseCountForTest() >= 0);
+    assertTrue(ImagePreparation.workerSemaphoreAcquireCountForTest() >= 0);
+    assertTrue(ImagePreparation.workerSemaphoreWakeCountForTest() >= 0);
   }
 
   private static Runnable blockingCompletion(final CountDownLatch entered,
@@ -706,6 +789,34 @@ class ImagePreparationTest {
       rejected = true;
     }
     assertTrue(rejected);
+  }
+
+  private static void assertSemaphoreSleepRejected(int sleepMs) {
+    boolean rejected = false;
+    try {
+      ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+          ImagePreparation.PREFETCH_THREAD_MODE_WORKER_SEMAPHORE, sleepMs);
+    } catch (IllegalArgumentException expected) {
+      rejected = true;
+    }
+    assertTrue(rejected);
+  }
+
+  private static void awaitQueuedAdoption(QueuedMainWindow mainWindow) {
+    long deadlineNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+    while (mainWindow.queuedCount() == 0 && System.nanoTime() < deadlineNs) {
+      Thread.yield();
+    }
+    assertEquals(1, mainWindow.queuedCount());
+  }
+
+  private static void awaitSemaphoreWorkerWaiting() {
+    long deadlineNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+    while (!ImagePreparation.workerWaitingOnSemaphoreForTest()
+        && System.nanoTime() < deadlineNs) {
+      Thread.yield();
+    }
+    assertTrue(ImagePreparation.workerWaitingOnSemaphoreForTest());
   }
 
   private static void awaitWorkerPoll() {
@@ -737,23 +848,31 @@ class ImagePreparationTest {
     assertEquals(0, ImagePreparation.workerPollCountForTest());
     assertEquals(0, ImagePreparation.workerSleepRequestedNsForTest());
     assertEquals(0, ImagePreparation.workerIdleElapsedNsForTest());
+    assertEquals(0, ImagePreparation.workerSemaphoreReleaseCountForTest());
+    assertEquals(0, ImagePreparation.workerSemaphoreAcquireCountForTest());
+    assertEquals(0, ImagePreparation.workerSemaphoreWakeCountForTest());
+    assertEquals(0, ImagePreparation.workerSemaphoreOutstandingWakeCountForTest());
   }
 
   private static final class QueuedMainWindow extends MainWindow {
     private final ArrayList<Runnable> queued = new ArrayList<Runnable>();
 
     @Override
-    public void runOnMainThread(Runnable runnable, boolean singleInstance) {
+    public synchronized void runOnMainThread(Runnable runnable, boolean singleInstance) {
       queued.add(runnable);
     }
 
-    int queuedCount() {
+    synchronized int queuedCount() {
       return queued.size();
     }
 
     void runNext() {
-      assertFalse(queued.isEmpty());
-      queued.remove(0).run();
+      Runnable next;
+      synchronized (this) {
+        assertFalse(queued.isEmpty());
+        next = queued.remove(0);
+      }
+      next.run();
     }
   }
 }

@@ -5,6 +5,7 @@
 package totalcross.ui.image;
 
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
 import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
@@ -16,15 +17,20 @@ final class ImagePreparation {
   static final int FAILED = 1;
   static final int NOT_PREFETCHABLE = 2;
   static final String PREFETCH_THREAD_MODE_LEGACY = "legacy";
-  static final String PREFETCH_THREAD_MODE_WORKER = "worker";
+  static final String PREFETCH_THREAD_MODE_WORKER_POLL = "worker-poll";
+  static final String PREFETCH_THREAD_MODE_WORKER = PREFETCH_THREAD_MODE_WORKER_POLL;
+  static final String PREFETCH_THREAD_MODE_WORKER_SEMAPHORE = "worker-semaphore";
 
   private static final Lock LOCK = new Lock();
+  private static Semaphore workerWakeSemaphore;
   private static final ArrayList<Entry> entries = new ArrayList<Entry>();
   private static final ArrayList<Entry> pending = new ArrayList<Entry>();
   private static Entry activeEntry;
   private static Thread prefetchWorker;
   private static boolean workerShutdownRequested;
   private static boolean workerCanClaim = true;
+  private static boolean workerWakePending;
+  private static boolean workerWaitingOnSemaphore;
   private static String prefetchThreadMode = PREFETCH_THREAD_MODE_LEGACY;
   private static int prefetchWorkerSleepMs;
   private static volatile Runnable beforeAdoptionHookForTest;
@@ -50,6 +56,9 @@ final class ImagePreparation {
   private static long workerPollCount;
   private static long workerSleepRequestedNs;
   private static long workerIdleElapsedNs;
+  private static long workerSemaphoreReleaseCount;
+  private static long workerSemaphoreAcquireCount;
+  private static long workerSemaphoreWakeCount;
 
   private ImagePreparation() {
   }
@@ -77,6 +86,9 @@ final class ImagePreparation {
       workerPollCount = 0;
       workerSleepRequestedNs = 0;
       workerIdleElapsedNs = 0;
+      workerSemaphoreReleaseCount = 0;
+      workerSemaphoreAcquireCount = 0;
+      workerSemaphoreWakeCount = 0;
     }
   }
 
@@ -206,6 +218,30 @@ final class ImagePreparation {
     }
   }
 
+  static long workerSemaphoreReleaseCountForTest() {
+    synchronized (LOCK) {
+      return workerSemaphoreReleaseCount;
+    }
+  }
+
+  static long workerSemaphoreAcquireCountForTest() {
+    synchronized (LOCK) {
+      return workerSemaphoreAcquireCount;
+    }
+  }
+
+  static long workerSemaphoreWakeCountForTest() {
+    synchronized (LOCK) {
+      return workerSemaphoreWakeCount;
+    }
+  }
+
+  static long workerSemaphoreOutstandingWakeCountForTest() {
+    synchronized (LOCK) {
+      return workerSemaphoreReleaseCount - workerSemaphoreAcquireCount;
+    }
+  }
+
   static String prefetchThreadModeForTest() {
     synchronized (LOCK) {
       return prefetchThreadMode;
@@ -230,18 +266,30 @@ final class ImagePreparation {
     }
   }
 
+  static boolean workerWaitingOnSemaphoreForTest() {
+    synchronized (LOCK) {
+      return workerWaitingOnSemaphore;
+    }
+  }
+
   static void configurePrefetchThreadModeForDiagnostic(String mode, int workerSleepMs) {
     final String normalizedMode;
     final int normalizedSleepMs;
     if (PREFETCH_THREAD_MODE_LEGACY.equals(mode)) {
       normalizedMode = PREFETCH_THREAD_MODE_LEGACY;
       normalizedSleepMs = 0;
-    } else if (PREFETCH_THREAD_MODE_WORKER.equals(mode)) {
+    } else if (PREFETCH_THREAD_MODE_WORKER.equals(mode) || "worker".equals(mode)) {
       if (workerSleepMs <= 0) {
         throw new IllegalArgumentException("worker sleep must be positive");
       }
       normalizedMode = PREFETCH_THREAD_MODE_WORKER;
       normalizedSleepMs = workerSleepMs;
+    } else if (PREFETCH_THREAD_MODE_WORKER_SEMAPHORE.equals(mode)) {
+      if (workerSleepMs != 0) {
+        throw new IllegalArgumentException("semaphore worker sleep must be zero");
+      }
+      normalizedMode = PREFETCH_THREAD_MODE_WORKER_SEMAPHORE;
+      normalizedSleepMs = 0;
     } else {
       throw new IllegalArgumentException("unknown prefetch thread mode");
     }
@@ -251,8 +299,14 @@ final class ImagePreparation {
       }
       prefetchThreadMode = normalizedMode;
       prefetchWorkerSleepMs = normalizedSleepMs;
+      if (PREFETCH_THREAD_MODE_WORKER_SEMAPHORE.equals(normalizedMode)
+          && workerWakeSemaphore == null) {
+        workerWakeSemaphore = new Semaphore(0);
+      }
       workerShutdownRequested = false;
       workerCanClaim = true;
+      workerWakePending = false;
+      workerWaitingOnSemaphore = false;
     }
   }
 
@@ -261,6 +315,9 @@ final class ImagePreparation {
     synchronized (LOCK) {
       workerShutdownRequested = true;
       worker = prefetchWorker;
+      if (worker != null && PREFETCH_THREAD_MODE_WORKER_SEMAPHORE.equals(prefetchThreadMode)) {
+        releaseSemaphoreWakeLocked();
+      }
     }
     if (worker != null && worker != Thread.currentThread()) {
       for (int remainingMs = 5000; remainingMs > 0; remainingMs--) {
@@ -287,6 +344,7 @@ final class ImagePreparation {
       workerCanClaim = true;
       if (prefetchWorker == null) {
         workerShutdownRequested = false;
+        workerWaitingOnSemaphore = false;
       }
     }
   }
@@ -377,11 +435,12 @@ final class ImagePreparation {
     final boolean workerMode;
     boolean startWorker = false;
     synchronized (LOCK) {
+      final boolean persistentWorkerMode = isPersistentWorkerMode(prefetchThreadMode);
       if (activeEntry != null || pending.isEmpty()
-          || PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode) && !workerCanClaim) {
+          || persistentWorkerMode && !workerCanClaim) {
         return;
       }
-      workerMode = PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode);
+      workerMode = persistentWorkerMode;
       if (workerMode && !pending.get(0).request.alreadyDecoded) {
         entry = null;
         alreadyDecoded = false;
@@ -440,8 +499,15 @@ final class ImagePreparation {
 
   private static void ensureWorkerStarted() {
     synchronized (LOCK) {
-      if (!PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode) || workerShutdownRequested
-          || prefetchWorker != null) {
+      if (!isPersistentWorkerMode(prefetchThreadMode) || workerShutdownRequested) {
+        return;
+      }
+      if (prefetchWorker != null) {
+        if (PREFETCH_THREAD_MODE_WORKER_SEMAPHORE.equals(prefetchThreadMode)
+            && activeEntry == null && workerCanClaim && !pending.isEmpty()
+            && !pending.get(0).request.alreadyDecoded) {
+          releaseSemaphoreWakeLocked();
+        }
         return;
       }
       prefetchWorker = startPreparationThread(new Runnable() {
@@ -469,20 +535,27 @@ final class ImagePreparation {
     try {
       while (true) {
         Entry entry = null;
-        int sleepMs;
+        int sleepMs = 0;
+        boolean waitOnSemaphore = false;
         synchronized (LOCK) {
-          if (workerShutdownRequested || !PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode)) {
+          if (workerShutdownRequested || !isPersistentWorkerMode(prefetchThreadMode)) {
             return;
           }
           if (activeEntry == null && workerCanClaim && !pending.isEmpty()
               && !pending.get(0).request.alreadyDecoded) {
             entry = pending.remove(0);
             activateEntryLocked(entry, false);
+          } else if (PREFETCH_THREAD_MODE_WORKER_SEMAPHORE.equals(prefetchThreadMode)) {
+            workerWaitingOnSemaphore = true;
+            waitOnSemaphore = true;
+          } else {
+            sleepMs = prefetchWorkerSleepMs;
           }
-          sleepMs = prefetchWorkerSleepMs;
         }
         if (entry != null) {
           decode(entry);
+        } else if (waitOnSemaphore) {
+          awaitSemaphoreWake();
         } else {
           sleepWorkerPoll(sleepMs);
         }
@@ -491,12 +564,43 @@ final class ImagePreparation {
       synchronized (LOCK) {
         if (prefetchWorker == Thread.currentThread()) {
           prefetchWorker = null;
+          workerWaitingOnSemaphore = false;
         }
         if (prefetchWorker == null) {
           workerShutdownRequested = false;
         }
       }
     }
+  }
+
+  private static void awaitSemaphoreWake() {
+    workerWakeSemaphore.acquireUninterruptibly();
+    synchronized (LOCK) {
+      if (Image.diagnosticAccountingEnabledForTest()) {
+        workerSemaphoreAcquireCount++;
+      }
+      workerWakePending = false;
+      workerWaitingOnSemaphore = false;
+      if (!workerShutdownRequested && Image.diagnosticAccountingEnabledForTest()) {
+        workerSemaphoreWakeCount++;
+      }
+    }
+  }
+
+  private static void releaseSemaphoreWakeLocked() {
+    if (!workerWaitingOnSemaphore || workerWakePending) {
+      return;
+    }
+    workerWakePending = true;
+    if (Image.diagnosticAccountingEnabledForTest()) {
+      workerSemaphoreReleaseCount++;
+    }
+    workerWakeSemaphore.release();
+  }
+
+  private static boolean isPersistentWorkerMode(String mode) {
+    return PREFETCH_THREAD_MODE_WORKER.equals(mode)
+        || PREFETCH_THREAD_MODE_WORKER_SEMAPHORE.equals(mode);
   }
 
   private static void sleepWorkerPoll(int sleepMs) {
@@ -633,7 +737,7 @@ final class ImagePreparation {
       entries.remove(entry);
       if (activeEntry == entry) {
         activeEntry = null;
-        if (PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode)) {
+        if (isPersistentWorkerMode(prefetchThreadMode)) {
           workerCanClaim = false;
           releaseWorkerClaim = true;
         }
