@@ -85,7 +85,15 @@ if ! git -C "$repo_root" diff --quiet HEAD -- \
 fi
 
 stage=$(mktemp -d "${TMPDIR:-/tmp}/semaphore-windows-package.XXXXXX")
-trap 'rm -rf "$stage"' EXIT HUP INT TERM
+cleanup_stage() {
+  local status=$?
+  if [ "$status" -eq 0 ]; then
+    rm -rf "$stage"
+  else
+    echo "Preparation files retained for debugging: $stage" >&2
+  fi
+}
+trap cleanup_stage EXIT
 package_dir="$stage/$output_name"
 mkdir -p "$stage/windows" "$stage/sdk"
 unzip -q "$windows_artifact_zip" -d "$stage/windows"
@@ -116,7 +124,6 @@ fi
 deploy_sdk="$stage/deploy-sdk"
 mkdir -p "$package_dir" \
   "$stage/classes/correctness" "$stage/classes/stress" \
-  "$stage/deploy/correctness" "$stage/deploy/stress" \
   "$deploy_sdk"
 
 cp -R "$sdk_root/etc" "$deploy_sdk/etc"
@@ -134,40 +141,32 @@ jar cf "$stage/SemaphoreStressSmokeApp.jar" -C "$stage/classes/stress" .
 
 classpath="$sdk_root/dist/totalcross-sdk.jar:$sdk_root/dist/libs/*"
 for app in SemaphoreSmokeApp SemaphoreStressSmokeApp; do
-  if [ "$app" = 'SemaphoreSmokeApp' ]; then
-    deploy_dir="$stage/deploy/correctness"
-  else
-    deploy_dir="$stage/deploy/stress"
-  fi
   app_log="$stage/$app-deploy.log"
-  if ! (cd "$deploy_dir" && \
-      GIT_HOME= TOTALCROSS_HOME="$deploy_sdk" TOTALCROSS3_HOME="$deploy_sdk" \
+  if ! (cd "$deploy_sdk" && \
       java -cp "$classpath" tc.Deploy "$stage/$app.jar" -win32) >"$app_log" 2>&1; then
     echo "Windows deployment failed for $app; log: $app_log" >&2
     tail -60 "$app_log" >&2
     exit 1
   fi
-  if [ ! -f "$deploy_dir/win32/$app.exe" ]; then
+  if [ ! -f "$deploy_sdk/win32/$app.exe" ]; then
     echo "Deployment did not produce $app.exe; log: $app_log" >&2
     tail -60 "$app_log" >&2
     exit 1
   fi
 done
 
-for deploy_dir in "$stage/deploy/correctness/win32" "$stage/deploy/stress/win32"; do
-  while IFS= read -r file; do
-    name=$(basename "$file")
-    destination="$package_dir/$name"
-    if [ -e "$destination" ]; then
-      if [ "$(sha256_file "$destination")" != "$(sha256_file "$file")" ]; then
-        echo "Deployments produced conflicting files named $name." >&2
-        exit 1
-      fi
-    else
-      cp "$file" "$destination"
+while IFS= read -r file; do
+  name=$(basename "$file")
+  destination="$package_dir/$name"
+  if [ -e "$destination" ]; then
+    if [ "$(sha256_file "$destination")" != "$(sha256_file "$file")" ]; then
+      echo "Deployments produced conflicting files named $name." >&2
+      exit 1
     fi
-  done < <(find "$deploy_dir" -maxdepth 1 -type f -print | LC_ALL=C sort)
-done
+  else
+    cp "$file" "$destination"
+  fi
+done < <(find "$deploy_sdk/win32" -maxdepth 1 -type f -print | LC_ALL=C sort)
 
 for file in \
   "$package_dir/SemaphoreSmokeApp.exe" \
