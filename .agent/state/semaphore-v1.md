@@ -6,28 +6,28 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Semaphore v1 execution state
 
-- Part/milestone/slice: 1 / 1 / closure validation.
+- Part/milestone/slice: 1 / 1 complete; Part 2 is next.
 - Branch: `feat/semaphore-v1`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
-- Last logical commit: `38f86debe33082842dfa5d22a1d3254323f35e59`
-  (`feat(sdk): add semaphore v1 compatibility surface`).
+- Last logical commit: `b3a4a0e565be1232e3d67d3a24146938db989537`
+  (`fix(vm): add semaphore prototypes to generated index`).
 - Active paths: `.agent/plans/semaphore-v1-part-1-core.md`, this file,
   `.agent/evidence/semaphore-v1.jsonl`,
   `TotalCrossSDK/src/main/java/jdkcompat/util/concurrent/Semaphore4D.java`,
   `TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent/`,
   `TotalCrossSDK/build.gradle`, the converter test, and `build-semaphore/`.
-- Next action: commit the six generated prototype declarations with the failure
-  evidence, then rerun the converter test before continuing closure.
-- Validation completed: base SHA matched; branch created; plan/state/evidence
-  header validation and diff check passed; Slice 1A header validation and diff
-  check passed. Both earlier commit-message checks found body lines over 80
-  characters; earlier commits remain unchanged per plan. Slice 1B header and
-  diff checks plus commit-message validation passed. Slice 1C header, staged
-  diff, and commit-message checks passed. The first converter-test run failed:
-  the mapping test passed, but generated prototypes were missing. SDK and native
-  builds have not started.
-- Validation deferred: SDK and native macOS builds until Milestone 1 closure;
-  non-macOS native builds are deferred by plan policy.
+- Next action: continue with `.agent/plans/semaphore-v1-part-2-stress.md` only
+  when that part is explicitly requested.
+- Validation completed: converter test passed 2/2; generator matched 6 native
+  prototypes and registrations; SDK dist and smoke compilation passed; CMake
+  configure and macOS `tcvm` build passed (123 Ninja steps); deployed smoke
+  passed with `fixture=SemaphoreSmokeApp,overallPass=true`. Focused header,
+  diff, and later commit-message checks passed. The first converter run failed
+  on missing prototypes and passed after the focused fix. Two earlier
+  commit-message checks failed because body lines exceeded 80 characters; those
+  commits remain unchanged per plan.
+- Validation deferred: Windows, Android, Linux, and iOS native builds/runs;
+  Part 2 stress coverage.
 - Blockers: none.
 - Unrelated dirty paths to preserve: `totalcross.code-workspace`,
   `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`,
@@ -45,4 +45,5 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/ImageScrollRealWorkloadBenchmarkApp.log`,
   `TotalCrossSDK/etc/launchers/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`.
-- Resume command: read this file, then continue at the next action above.
+- Resume command: read this file, then open
+  `.agent/plans/semaphore-v1-part-2-stress.md` if Part 2 is requested.

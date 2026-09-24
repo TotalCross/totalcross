@@ -122,12 +122,12 @@ outputs, caches, or logs.
 
 ## Progress
 
-- [ ] Checkpoint 0: establish branch and commit plan/state/evidence.
-- [ ] Slice 1A: add the internal VM blocking condition abstraction.
-- [ ] Slice 1B: add native Semaphore storage/operations and registration.
-- [ ] Slice 1C: add `Semaphore4D`, converter coverage, and correctness smoke.
-- [ ] Milestone 1 closure: SDK + macOS build and native smoke.
-- [ ] Hand off to Part 2.
+- [x] (2026-09-24T04:59:12Z) Checkpoint 0: commit branch, plan, state, and evidence.
+- [x] (2026-09-24T05:00:54Z) Slice 1A: add OS blocking condition primitives.
+- [x] (2026-09-24T05:08:44Z) Slice 1B: add native operations and registrations.
+- [x] (2026-09-24T05:13:43Z) Slice 1C: add Java surface and native smoke.
+- [x] (2026-09-24T05:15:53Z) Fix generated prototype declarations.
+- [x] (2026-09-24T05:17:42Z) Pass Milestone 1 validation and hand off to Part 2.
 
 ## Current Architecture and Fixed Decisions
 
@@ -568,8 +568,22 @@ All decisions dated 2026-09-24.
 
 ## Outcomes & Retrospective
 
-At closure, record factual delivery and validation only. Do not predict
-`ImagePreparation` performance.
+Part 1 delivered the non-fair, one-permit Semaphore v1 surface through
+`jdkcompat.util.concurrent.Semaphore4D`, with signed initial permits, stored
+release-before-acquire, real OS blocking, and overflow protection. The focused
+converter suite passed 2 tests; SDK distribution and smoke compilation passed;
+the native macOS `tcvm` target built in 123 Ninja steps; and the deployed
+Semaphore smoke passed with its required marker. The first converter run found
+missing generated prototypes; the focused fix and rerun passed.
+
+Windows, Android, Linux, and iOS native execution remains unvalidated. The
+Windows auto-reset-event path is source-integrated and chains wakeups based on
+the permit count, but this milestone does not claim a Windows build or run.
+Two earlier commit-message checks failed on body-line length; those commits
+remain unchanged as required by this plan. See
+`.agent/reports/semaphore-v1-editorial.md` for the full handoff and
+`.agent/evidence/semaphore-v1.jsonl` for validation records. Do not infer
+`ImagePreparation` performance from this work.
 
 The required next step after successful completion is:
 
