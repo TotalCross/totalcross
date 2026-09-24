@@ -875,8 +875,18 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
             }
         }
         resourceIncludes.each { resourceInclude ->
-            from(smokeTestResourcesDir) {
-                include resourceInclude
+            if (resourceInclude instanceof Map) {
+                def source = resourceInclude.source
+                def destination = resourceInclude.destination
+                def targetName = resourceInclude.targetName
+                from(source) {
+                    into destination
+                    rename { targetName }
+                }
+            } else {
+                from(smokeTestResourcesDir) {
+                    include resourceInclude
+                }
             }
         }
         into classesDir
@@ -1269,11 +1279,18 @@ registerImageMacSmoke('ImagePreparation', 'ImagePreparationSmokeApp',
     'image-preparation-smoke', true, false, [
         'fixture=ImagePreparationSmokeApp',
         'detachedAdoption=true',
+        'pngPrefetch=true',
+        'pngDimensions=true',
+        'nativeBackingValid=true',
+        'immediateReuse=true',
+        'discardedCandidateReleased=true',
+        'denominatorBeforeDraw=1',
         'uiCompletion=true',
         'responsive=true',
         'deferredPlan=true',
         'overallPass=true'
-    ])
+    ], [[source: 'docs/companion_resources/images/ball.png',
+         destination: 'image-abi', targetName: 'indexed.png']])
 
 registerImageMacSmoke('ImageWarmCopyRectBenchmark', 'ImageWarmCopyRectBenchmarkApp',
     'image-warm-copyrect-benchmark', false, false, [

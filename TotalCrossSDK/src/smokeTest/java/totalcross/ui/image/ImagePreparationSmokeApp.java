@@ -30,6 +30,12 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
   private int targetedBeforeDraw = -1;
   private int denominatorBeforeDraw = -1;
   private int detachedOptimizationMask = -1;
+  private int sourceWidth = -1;
+  private int sourceHeight = -1;
+  private String pngKind = "ordinary";
+  private long candidateBackingCreated = -1;
+  private long candidateBackingReleased = -1;
+  private long candidateBackingLive = -1;
   private long started;
 
   @Override
@@ -41,18 +47,34 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
     String error = "";
     try {
       ImageRasterBenchmarkSupport.configureApplicationRasterFeatures("post-enabled");
-      Image.resetImageOperationAccountingForTest();
-      NativeImageBacking.failNextAdoptionForTest();
       screen = getGraphics();
-      image = new Image("image-abi/lena512.jpg").getSmoothScaledInstance(128, 128);
-      source = (EncodedImageSource) image.pipelineForSmoke().root();
+      String pngPath = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "png", "image-abi/tiny.png");
+      pngKind = pngPath.endsWith("indexed.png") ? "indexed" : "ordinary";
+      Image encoded = new Image(pngPath);
+      sourceWidth = encoded.getWidth();
+      sourceHeight = encoded.getHeight();
+      source = (EncodedImageSource) encoded.pipelineForSmoke().root();
+      image = encoded.getSmoothScaledInstance(128, 128);
       scroll = new ScrollContainer(false, false);
       Container row = new Container();
-      row.add(new ImageControl(image), LEFT, TOP, 128, 128);
-      row.add(new ImageControl(image), AFTER, TOP, 128, 128);
+      ImageControl first = new ImageControl(image);
+      first.allowBeyondLimits = true;
+      ImageControl second = new ImageControl(image);
+      second.allowBeyondLimits = true;
+      row.add(first, LEFT, TOP, 128, 128);
+      row.add(second, AFTER, TOP, 128, 128);
       scroll.add(row, LEFT, TOP, 256, 128);
       scroll.setRect(0, 0, 256, 128);
       scroll.resize();
+      Image.resetImageOperationAccountingForTest();
+      NativeImageBacking.resetBackingAccountingForTest();
+      ImagePreparation.setBeforeAdoptionHookForTest(new Runnable() {
+        @Override
+        public void run() {
+          throw new RuntimeException("discard first prepared candidate");
+        }
+      });
       started = Vm.getTimeStamp();
       scroll.prepareForDisplay(new Runnable() {
             @Override
@@ -86,8 +108,33 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
     denominatorBeforeDraw = source == null ? -1 : source.decodedDenominator();
     targetedBeforeDraw = Image.targetedDecodeInvocationCountForTest();
     detachedOptimizationMask = Image.detachedDecodeOptimizationMaskForTest();
-    boolean capturedOptimizationMask = detachedOptimizationMask == (int) ImageOptimizationSettings.effectiveMask();
+    boolean pngSource = source != null
+        && source.getFormat() == ImageEncodedStructure.Format.PNG;
+    boolean capturedOptimizationMask = pngSource ? detachedOptimizationMask == 0
+        : detachedOptimizationMask == (int) ImageOptimizationSettings.effectiveMask();
     boolean stillDeferred = image != null && image.pipelineForSmoke() != null;
+    boolean nativeBackingValid = false;
+    boolean pngDimensions = false;
+    boolean fullPngDecode = false;
+    boolean discardedCandidateReleased = false;
+    if (callbackSeen) {
+      ImageBacking decodedBacking = source == null ? null : source.decodedBackingForReuse(1);
+      nativeBackingValid = decodedBacking instanceof NativeImageBacking
+          && decodedBacking.isValid();
+      int expectedSourceWidth = pngKind.equals("indexed") ? 182 : 36;
+      int expectedSourceHeight = pngKind.equals("indexed") ? 26 : 36;
+      pngDimensions = sourceWidth == expectedSourceWidth && sourceHeight == expectedSourceHeight
+          && source.decodedWidth() == sourceWidth && source.decodedHeight() == sourceHeight
+          && image.getWidth() == 128 && image.getHeight() == 128;
+      fullPngDecode = source != null && source.decodedDenominator() == 1
+          && Image.fullDecodeInvocationCountForTest() == 2
+          && Image.targetedDecodeInvocationCountForTest() == 0;
+      candidateBackingCreated = NativeImageBacking.backingRecordsCreatedForTest();
+      candidateBackingReleased = NativeImageBacking.backingRecordsReleasedForTest();
+      candidateBackingLive = NativeImageBacking.backingRecordsLiveForTest();
+      discardedCandidateReleased = candidateBackingCreated == 2
+          && candidateBackingReleased == 1 && candidateBackingLive == 1;
+    }
     boolean drew = false;
     try {
       if (callbackSeen && screen != null) {
@@ -99,12 +146,17 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
       drew = false;
     }
     if (!callbackSeen && Vm.getTimeStamp() - started >= 5000) {
-      finish(false, false, timerTicks > 0, false, "preparation timeout");
+      finish(false, false, timerTicks > 0, false, false, false, false, false, false,
+          "preparation timeout");
       return;
     }
     if (callbackSeen) {
-      finish(decoded && drew && adoptionFailureRetried && capturedOptimizationMask,
-          callbackOnUi, timerTicks > 0, stillDeferred, "");
+      boolean detachedAdoption = decoded && drew && adoptionFailureRetried
+          && capturedOptimizationMask && nativeBackingValid && pngDimensions
+          && fullPngDecode && discardedCandidateReleased;
+      finish(detachedAdoption, callbackOnUi, timerTicks > 0, stillDeferred,
+          fullPngDecode, pngDimensions, nativeBackingValid, drew,
+          discardedCandidateReleased, "");
     }
   }
 
@@ -126,13 +178,23 @@ public class ImagePreparationSmokeApp extends MainWindow implements TimerListene
   }
 
   private void finish(boolean detachedAdoption, boolean uiCompletion, boolean responsive,
-      boolean deferredPlan, String error) {
+      boolean deferredPlan, boolean fullPngDecode, boolean pngDimensions,
+      boolean nativeBackingValid, boolean immediateReuse, boolean discardedCandidateReleased,
+      String error) {
     if (timer != null) {
       removeTimer(timer);
       timer = null;
     }
     boolean pass = detachedAdoption && uiCompletion && responsive && deferredPlan && error.length() == 0;
     System.out.println("fixture=ImagePreparationSmokeApp,detachedAdoption=" + detachedAdoption
+        + ",pngKind=" + pngKind + ",pngPrefetch=" + fullPngDecode
+        + ",pngDimensions=" + pngDimensions + ",nativeBackingValid=" + nativeBackingValid
+        + ",sourceWidth=" + sourceWidth + ",sourceHeight=" + sourceHeight
+        + ",immediateReuse=" + immediateReuse
+        + ",discardedCandidateReleased=" + discardedCandidateReleased
+        + ",candidateBackingCreated=" + candidateBackingCreated
+        + ",candidateBackingReleased=" + candidateBackingReleased
+        + ",candidateBackingLive=" + candidateBackingLive
         + ",uiCompletion=" + uiCompletion + ",responsive=" + responsive
         + ",deferredPlan=" + deferredPlan + ",timerTicks=" + timerTicks
         + ",callbackCount=" + callbackCount + ",adoptionFailureRetried=" + adoptionFailureRetried
