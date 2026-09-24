@@ -3679,9 +3679,9 @@ def run_phase(bundle, phase, profile_name):
             write_default_execution_summary(
                 output, manifest, status=status, tracker=tracker
             )
-            write_zip(bundle, output)
             write_execution_state(output, status, manifest,
                                   resultsState="COMPLETE", **tracker)
+            write_zip(bundle, output)
             return
         if phase == "smokes":
             profile_name = "reduced-image-optimizations"
@@ -3691,11 +3691,11 @@ def run_phase(bundle, phase, profile_name):
             require(phase in PROFILES, f"unsupported scroll phase: {phase}")
             profile_name = phase
         run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name, tracker)
-        write_zip(bundle, output)
         failures = load_validation_failures(output)
         status = "PASS_WITH_VALIDATION_FAILURES" if failures else "PASS"
         write_execution_state(output, status, manifest,
                               resultsState="COMPLETE", **tracker)
+        write_zip(bundle, output)
     except (BenchmarkFailure, OSError) as error:
         if phase == "full":
             try:

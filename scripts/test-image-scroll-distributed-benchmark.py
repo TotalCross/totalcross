@@ -105,6 +105,21 @@ def assert_results_state_diagnostics():
                 raise AssertionError("results access failure did not stop execution")
 
 
+def assert_archive_execution_state_complete(output):
+    archives = sorted(output.glob("totalcross-image-benchmark-results-*.zip"))
+    require(archives, "completed phase did not create a results ZIP")
+    with RUNNER.zipfile.ZipFile(archives[-1]) as source:
+        require("results/execution-state.json" in source.namelist(),
+                "results ZIP omitted execution-state.json")
+        state = json.loads(source.read("results/execution-state.json"))
+    require(state.get("status") != "RUNNING",
+            "results ZIP captured execution state while RUNNING")
+    require(state.get("status") in ("PASS", "PASS_WITH_VALIDATION_FAILURES"),
+            "results ZIP did not capture a final successful execution status")
+    require(state.get("resultsState") == "COMPLETE",
+            "results ZIP did not capture COMPLETE results state")
+
+
 def assert_clean_full_and_resume_preflight():
     manifest = {
         "sourceCommit": "test-source",
@@ -135,8 +150,7 @@ def assert_clean_full_and_resume_preflight():
                     "test-digest", bundle / "benchmark-app"
                 )), \
                 mock.patch.object(RUNNER, "self_test", side_effect=fake_self_test), \
-                mock.patch.object(RUNNER, "run_scroll_profile"), \
-                mock.patch.object(RUNNER, "write_zip"):
+                mock.patch.object(RUNNER, "run_scroll_profile"):
             RUNNER.run_phase(bundle, "full", "full")
 
         state = json.loads((output / RUNNER.RESULTS_STATE_FILE).read_text())
@@ -145,6 +159,7 @@ def assert_clean_full_and_resume_preflight():
         summary = json.loads((output / "default-execution-summary.json").read_text())
         require(summary["status"] == "PASS",
                 "clean full execution did not write a PASS summary")
+        assert_archive_execution_state_complete(output)
 
     with tempfile.TemporaryDirectory(prefix="image-scroll-auto-self-test-test-") as temp:
         bundle = Path(temp) / "bundle"
@@ -168,13 +183,13 @@ def assert_clean_full_and_resume_preflight():
                     "test-digest", bundle / "benchmark-app"
                 )), \
                 mock.patch.object(RUNNER, "self_test", side_effect=fake_self_test), \
-                mock.patch.object(RUNNER, "run_scroll_profile") as run_profile, \
-                mock.patch.object(RUNNER, "write_zip"):
+                mock.patch.object(RUNNER, "run_scroll_profile") as run_profile:
             RUNNER.run_phase(bundle, "matrix", "prefetch-diagnostics")
         require(calls == ["self-test"],
                 "clean non-decode phase did not automatically run self-test")
         require(run_profile.call_count == 1,
                 "clean non-decode phase did not continue to its requested profile")
+        assert_archive_execution_state_complete(output)
 
     with tempfile.TemporaryDirectory(prefix="image-scroll-valid-self-test-resume-") as temp:
         bundle = Path(temp) / "bundle"
@@ -215,6 +230,49 @@ def assert_clean_full_and_resume_preflight():
         require(sentinel.read_text() == "preserve me"
                 and not (output / "self-test.json").exists(),
                 "partial results preflight changed existing data")
+
+
+def assert_zip_failure_marks_incomplete():
+    manifest = {
+        "sourceCommit": "test-source",
+        "sdkSourceAttestation": "test-source",
+        "runtimeSha256": "0" * 64,
+        "includeDecodeAssets": False,
+    }
+    with tempfile.TemporaryDirectory(prefix="image-scroll-zip-failure-test-") as temp:
+        bundle = Path(temp) / "bundle"
+        output = bundle / "results"
+        bundle.mkdir()
+
+        def fake_self_test(_bundle, test_manifest, test_output):
+            (test_output / "self-test.json").write_text(json.dumps({
+                "fixture": RUNNER.FIXTURE,
+                "status": "PASS",
+                "datasetFileCount": RUNNER.EXPECTED_JPEGS,
+                "sourceCommit": test_manifest["sourceCommit"],
+            }))
+            RUNNER.write_execution_state(test_output, "SELF_TEST_PASS", test_manifest)
+            return test_output, [], "test-digest"
+
+        with mock.patch.object(RUNNER, "load_manifest", return_value=manifest), \
+                mock.patch.object(RUNNER, "validate_bundle", return_value=(
+                    bundle / "corpus", list(range(RUNNER.EXPECTED_JPEGS)),
+                    "test-digest", bundle / "benchmark-app"
+                )), \
+                mock.patch.object(RUNNER, "self_test", side_effect=fake_self_test), \
+                mock.patch.object(RUNNER, "run_scroll_profile"), \
+                mock.patch.object(RUNNER, "write_zip", side_effect=OSError("zip failed")):
+            try:
+                RUNNER.run_phase(bundle, "matrix", "prefetch-diagnostics")
+            except OSError as error:
+                require(str(error) == "zip failed",
+                        "ZIP failure was replaced by a different error")
+            else:
+                raise AssertionError("ZIP creation failure was ignored")
+
+        state = json.loads((output / RUNNER.RESULTS_STATE_FILE).read_text())
+        require(state.get("status") == "INCOMPLETE",
+                "ZIP failure did not leave execution state INCOMPLETE")
 
 
 def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
@@ -1141,6 +1199,7 @@ def main():
             "default expected process count is not 31")
     assert_results_state_diagnostics()
     assert_clean_full_and_resume_preflight()
+    assert_zip_failure_marks_incomplete()
     assert_prefetch_thread_diagnostics()
     assert_results_zip_contract()
     assert_physical_target_baseline()
