@@ -218,6 +218,165 @@ class ImagePreparationTest {
   }
 
   @Test
+  void prefetchThreadModeDefaultsToLegacyAndValidatesSleep() {
+    ImagePreparation.resetThreadModeForTest();
+    assertEquals(ImagePreparation.PREFETCH_THREAD_MODE_LEGACY,
+        ImagePreparation.prefetchThreadModeForTest());
+    assertEquals(0, ImagePreparation.prefetchWorkerSleepMsForTest());
+
+    ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+        ImagePreparation.PREFETCH_THREAD_MODE_LEGACY, 20);
+    assertEquals(0, ImagePreparation.prefetchWorkerSleepMsForTest());
+
+    assertWorkerSleepRejected(0);
+    assertWorkerSleepRejected(-1);
+    ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+        ImagePreparation.PREFETCH_THREAD_MODE_WORKER, 1);
+    assertEquals(1, ImagePreparation.prefetchWorkerSleepMsForTest());
+    ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+        ImagePreparation.PREFETCH_THREAD_MODE_WORKER, 2);
+    assertEquals(2, ImagePreparation.prefetchWorkerSleepMsForTest());
+    ImagePreparation.resetThreadModeForTest();
+  }
+
+  @Test
+  void workerModeSerializesMultipleDecodesOnOnePersistentThread() throws Exception {
+    boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
+    CountDownLatch firstDecodeReachedAdoption = new CountDownLatch(1);
+    CountDownLatch continueFirstDecode = new CountDownLatch(1);
+    CountDownLatch completed = new CountDownLatch(2);
+    ImagePreparation.resetThreadModeForTest();
+    ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+        ImagePreparation.PREFETCH_THREAD_MODE_WORKER, 1);
+    ImagePreparation.setRunUiInlineForTest(true);
+    Image.setDiagnosticAccountingForTest(true);
+    ImagePreparation.resetAccountingForTest();
+    ImagePreparation.setBeforeAdoptionHookForTest(new Runnable() {
+      @Override
+      public void run() {
+        firstDecodeReachedAdoption.countDown();
+        try {
+          continueFirstDecode.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException interrupted) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    });
+    try {
+      Image first = new Image(jpeg(512, 384)).getSmoothScaledInstance(128, 96);
+      Image second = new Image(jpeg(640, 480)).getSmoothScaledInstance(160, 120);
+
+      ImagePreparation.request(first, 1, ImageDrawingBridge.COPY_READY, completed::countDown);
+      assertTrue(firstDecodeReachedAdoption.await(5, TimeUnit.SECONDS));
+      assertTrue(ImagePreparation.workerRunningForTest());
+      assertTrue(ImagePreparation.activeEntryInFlightForTest());
+      ImagePreparation.request(second, 1, ImageDrawingBridge.COPY_READY, completed::countDown);
+
+      assertEquals(1, ImagePreparation.threadCreateCountForTest());
+      assertEquals(1, ImagePreparation.decodeEntryCountForTest());
+      continueFirstDecode.countDown();
+      assertTrue(completed.await(5, TimeUnit.SECONDS));
+      awaitWorkerPoll();
+
+      assertEquals(2, ImagePreparation.preparationEntryCountForTest());
+      assertEquals(1, ImagePreparation.threadCreateCountForTest());
+      assertEquals(1, ImagePreparation.threadStartCountForTest());
+      assertEquals(2, ImagePreparation.decodeEntryCountForTest());
+      assertTrue(ImagePreparation.workerPollCountForTest() > 0);
+      assertTrue(ImagePreparation.workerSleepRequestedNsForTest() > 0);
+      assertTrue(ImagePreparation.workerIdleElapsedNsForTest() > 0);
+      assertDiagnosticMetricsNonNegative();
+
+      ImagePreparation.shutdownWorkerForTest();
+      assertFalse(ImagePreparation.workerRunningForTest());
+      assertEquals(ImagePreparation.PREFETCH_THREAD_MODE_WORKER,
+          ImagePreparation.prefetchThreadModeForTest());
+    } finally {
+      continueFirstDecode.countDown();
+      ImagePreparation.setBeforeAdoptionHookForTest(null);
+      ImagePreparation.setRunUiInlineForTest(false);
+      ImagePreparation.resetThreadModeForTest();
+      Image.setDiagnosticAccountingForTest(previousAccounting);
+      MainWindow.resetPreviewState();
+    }
+    assertEquals(ImagePreparation.PREFETCH_THREAD_MODE_LEGACY,
+        ImagePreparation.prefetchThreadModeForTest());
+    assertEquals(0, ImagePreparation.prefetchWorkerSleepMsForTest());
+  }
+
+  @Test
+  void workerModeKeepsAlreadyDecodedAdoptionOnTheUiQueue() throws Exception {
+    boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
+    new Launcher();
+    MainWindow.resetPreviewState();
+    QueuedMainWindow mainWindow = new QueuedMainWindow();
+    ImagePreparation.resetThreadModeForTest();
+    ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+        ImagePreparation.PREFETCH_THREAD_MODE_WORKER, 2);
+    ImagePreparation.setRunUiInlineForTest(true);
+    Image.setDiagnosticAccountingForTest(true);
+    ImagePreparation.resetAccountingForTest();
+    try {
+      Image image = alreadyDecodedImage();
+      CountDownLatch completed = new CountDownLatch(1);
+      ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, completed::countDown);
+
+      assertEquals(1, mainWindow.queuedCount());
+      assertFalse(ImagePreparation.workerRunningForTest());
+      assertEquals(0, ImagePreparation.threadCreateCountForTest());
+      mainWindow.runNext();
+
+      assertTrue(completed.await(0, TimeUnit.MILLISECONDS));
+      assertEquals(0, ImagePreparation.threadCreateCountForTest());
+      assertEquals(0, ImagePreparation.decodeEntryCountForTest());
+      assertEquals(1, ImagePreparation.preparationEntryCountForTest());
+      assertTrue(ImagePreparation.finishPreparationNsForTest() >= 0);
+    } finally {
+      while (mainWindow.queuedCount() > 0) {
+        mainWindow.runNext();
+      }
+      ImagePreparation.setRunUiInlineForTest(false);
+      ImagePreparation.resetThreadModeForTest();
+      Image.setDiagnosticAccountingForTest(previousAccounting);
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
+  void workerModeFailureCanRetryWithoutCreatingAnotherThread() throws Exception {
+    boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
+    ImagePreparation.resetThreadModeForTest();
+    ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+        ImagePreparation.PREFETCH_THREAD_MODE_WORKER, 1);
+    ImagePreparation.setRunUiInlineForTest(true);
+    Image.setDiagnosticAccountingForTest(true);
+    ImagePreparation.resetAccountingForTest();
+    try {
+      Image image = new Image(jpeg(512, 384)).getSmoothScaledInstance(128, 96);
+      Image.failNextTargetedDecodeInfrastructureForTest();
+      CountDownLatch failed = new CountDownLatch(1);
+      ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, failed::countDown);
+      assertTrue(failed.await(5, TimeUnit.SECONDS));
+
+      CountDownLatch retried = new CountDownLatch(1);
+      ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, retried::countDown);
+      assertTrue(retried.await(5, TimeUnit.SECONDS));
+      awaitWorkerPoll();
+
+      assertEquals(1, ImagePreparation.failedCountForTest());
+      assertEquals(1, ImagePreparation.readyCountForTest());
+      assertEquals(2, ImagePreparation.decodeEntryCountForTest());
+      assertEquals(1, ImagePreparation.threadCreateCountForTest());
+      assertEquals(1, ImagePreparation.threadStartCountForTest());
+    } finally {
+      ImagePreparation.setRunUiInlineForTest(false);
+      ImagePreparation.resetThreadModeForTest();
+      Image.setDiagnosticAccountingForTest(previousAccounting);
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
   void alreadyDecodedCopyReadyAdoptionIsDeferredOnUiThread() throws Exception {
     new Launcher();
     MainWindow.resetPreviewState();
@@ -472,6 +631,28 @@ class ImagePreparationTest {
         }
       }
     };
+  }
+
+  private static void assertWorkerSleepRejected(int sleepMs) {
+    boolean rejected = false;
+    try {
+      ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+          ImagePreparation.PREFETCH_THREAD_MODE_WORKER, sleepMs);
+    } catch (IllegalArgumentException expected) {
+      rejected = true;
+    }
+    assertTrue(rejected);
+  }
+
+  private static void awaitWorkerPoll() {
+    long deadlineNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+    while ((ImagePreparation.workerPollCountForTest() == 0
+        || ImagePreparation.workerIdleElapsedNsForTest() == 0)
+        && System.nanoTime() < deadlineNs) {
+      Thread.yield();
+    }
+    assertTrue(ImagePreparation.workerPollCountForTest() > 0);
+    assertTrue(ImagePreparation.workerIdleElapsedNsForTest() > 0);
   }
 
   private static void awaitPreparationTotalAbove(long previousTotalNs) throws Exception {

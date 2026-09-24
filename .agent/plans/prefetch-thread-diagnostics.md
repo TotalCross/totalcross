@@ -76,7 +76,8 @@ below 20 KB / ~600 lines; do not refactor existing files for size.
       base and committed this plan artifact as `e6e15cf94`.
 - [x] Milestone 1: added diagnostic-gated legacy lifecycle accounting and
       focused tests; `ImagePreparationTest` passes.
-- [ ] Milestone 2: add the configurable serialized single worker.
+- [x] Milestone 2: added the configurable serialized worker, polling metrics,
+      and Java SE shutdown/reset coverage; `ImagePreparationTest` passes.
 - [ ] Milestone 3: add six-process phase, automatic self-test, aggregation, and
       narrow ZIP contract.
 - [ ] Milestone 4: run allowed SDK/macOS validation and finalize artifacts.

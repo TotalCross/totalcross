@@ -6,6 +6,7 @@ package totalcross.ui.image;
 
 import java.util.ArrayList;
 
+import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
 import totalcross.util.concurrent.Lock;
 
@@ -14,11 +15,18 @@ final class ImagePreparation {
   static final int READY = 0;
   static final int FAILED = 1;
   static final int NOT_PREFETCHABLE = 2;
+  static final String PREFETCH_THREAD_MODE_LEGACY = "legacy";
+  static final String PREFETCH_THREAD_MODE_WORKER = "worker";
 
   private static final Lock LOCK = new Lock();
   private static final ArrayList<Entry> entries = new ArrayList<Entry>();
   private static final ArrayList<Entry> pending = new ArrayList<Entry>();
   private static Entry activeEntry;
+  private static Thread prefetchWorker;
+  private static boolean workerShutdownRequested;
+  private static boolean workerCanClaim = true;
+  private static String prefetchThreadMode = PREFETCH_THREAD_MODE_LEGACY;
+  private static int prefetchWorkerSleepMs;
   private static volatile Runnable beforeAdoptionHookForTest;
   private static volatile boolean runUiInlineForTest;
   private static long requestCount;
@@ -198,6 +206,92 @@ final class ImagePreparation {
     }
   }
 
+  static String prefetchThreadModeForTest() {
+    synchronized (LOCK) {
+      return prefetchThreadMode;
+    }
+  }
+
+  static int prefetchWorkerSleepMsForTest() {
+    synchronized (LOCK) {
+      return prefetchWorkerSleepMs;
+    }
+  }
+
+  static boolean workerRunningForTest() {
+    synchronized (LOCK) {
+      return prefetchWorker != null;
+    }
+  }
+
+  static boolean activeEntryInFlightForTest() {
+    synchronized (LOCK) {
+      return activeEntry != null;
+    }
+  }
+
+  static void configurePrefetchThreadModeForDiagnostic(String mode, int workerSleepMs) {
+    final String normalizedMode;
+    final int normalizedSleepMs;
+    if (PREFETCH_THREAD_MODE_LEGACY.equals(mode)) {
+      normalizedMode = PREFETCH_THREAD_MODE_LEGACY;
+      normalizedSleepMs = 0;
+    } else if (PREFETCH_THREAD_MODE_WORKER.equals(mode)) {
+      if (workerSleepMs <= 0) {
+        throw new IllegalArgumentException("worker sleep must be positive");
+      }
+      normalizedMode = PREFETCH_THREAD_MODE_WORKER;
+      normalizedSleepMs = workerSleepMs;
+    } else {
+      throw new IllegalArgumentException("unknown prefetch thread mode");
+    }
+    synchronized (LOCK) {
+      if (activeEntry != null || !pending.isEmpty() || prefetchWorker != null) {
+        throw new IllegalStateException("cannot change prefetch thread mode while busy");
+      }
+      prefetchThreadMode = normalizedMode;
+      prefetchWorkerSleepMs = normalizedSleepMs;
+      workerShutdownRequested = false;
+      workerCanClaim = true;
+    }
+  }
+
+  static void shutdownWorkerForTest() {
+    final Thread worker;
+    synchronized (LOCK) {
+      workerShutdownRequested = true;
+      worker = prefetchWorker;
+    }
+    if (worker != null && worker != Thread.currentThread()) {
+      worker.interrupt();
+      try {
+        worker.join(5000);
+      } catch (InterruptedException interrupted) {
+        Thread.currentThread().interrupt();
+      }
+    }
+    synchronized (LOCK) {
+      if (prefetchWorker == worker && (worker == null || !worker.isAlive())) {
+        prefetchWorker = null;
+      }
+      if (prefetchWorker == null) {
+        workerShutdownRequested = false;
+      }
+    }
+  }
+
+  static void resetThreadModeForTest() {
+    shutdownWorkerForTest();
+    synchronized (LOCK) {
+      prefetchThreadMode = PREFETCH_THREAD_MODE_LEGACY;
+      prefetchWorkerSleepMs = 0;
+      workerCanClaim = true;
+      if (prefetchWorker == null) {
+        workerShutdownRequested = false;
+      }
+    }
+  }
+
   static int activeEntryCountForTest() {
     synchronized (LOCK) {
       return entries.size();
@@ -281,19 +375,31 @@ final class ImagePreparation {
   private static void scheduleNext() {
     final Entry entry;
     final boolean alreadyDecoded;
+    final boolean workerMode;
+    boolean startWorker = false;
     synchronized (LOCK) {
-      if (activeEntry != null || pending.isEmpty()) {
+      if (activeEntry != null || pending.isEmpty()
+          || PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode) && !workerCanClaim) {
         return;
       }
-      entry = pending.remove(0);
-      activeEntry = entry;
-      alreadyDecoded = entry.request.alreadyDecoded;
-      entry.state = alreadyDecoded ? State.ADOPTING : State.DECODING;
-      if (Image.diagnosticAccountingEnabledForTest()) {
-        preparationEntryCount++;
-        entry.preparationAccountingEnabled = true;
-        entry.preparationStartNs = System.nanoTime();
+      workerMode = PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode);
+      if (workerMode && !pending.get(0).request.alreadyDecoded) {
+        entry = null;
+        alreadyDecoded = false;
+        startWorker = true;
+      } else {
+        entry = pending.remove(0);
+        alreadyDecoded = entry.request.alreadyDecoded;
+        activateEntryLocked(entry, alreadyDecoded);
       }
+    }
+    if (startWorker) {
+      try {
+        ensureWorkerStarted();
+      } catch (Throwable failure) {
+        failNextPendingWorkerStart();
+      }
+      return;
     }
     if (alreadyDecoded) {
       try {
@@ -308,6 +414,9 @@ final class ImagePreparation {
       }
       return;
     }
+    if (workerMode) {
+      return;
+    }
     try {
       startPreparationThread(new Runnable() {
         @Override
@@ -317,6 +426,99 @@ final class ImagePreparation {
       });
     } catch (Throwable failure) {
       finish(entry, FAILED);
+    }
+  }
+
+  private static void activateEntryLocked(Entry entry, boolean alreadyDecoded) {
+    activeEntry = entry;
+    entry.state = alreadyDecoded ? State.ADOPTING : State.DECODING;
+    if (Image.diagnosticAccountingEnabledForTest()) {
+      preparationEntryCount++;
+      entry.preparationAccountingEnabled = true;
+      entry.preparationStartNs = System.nanoTime();
+    }
+  }
+
+  private static void ensureWorkerStarted() {
+    synchronized (LOCK) {
+      if (!PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode) || workerShutdownRequested
+          || prefetchWorker != null) {
+        return;
+      }
+      prefetchWorker = startPreparationThread(new Runnable() {
+        @Override
+        public void run() {
+          runPrefetchWorker();
+        }
+      }, true);
+    }
+  }
+
+  private static void failNextPendingWorkerStart() {
+    final Entry failed;
+    synchronized (LOCK) {
+      if (activeEntry != null || pending.isEmpty()) {
+        return;
+      }
+      failed = pending.remove(0);
+      activateEntryLocked(failed, false);
+    }
+    finish(failed, FAILED);
+  }
+
+  private static void runPrefetchWorker() {
+    try {
+      while (true) {
+        Entry entry = null;
+        int sleepMs;
+        synchronized (LOCK) {
+          if (workerShutdownRequested || !PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode)) {
+            return;
+          }
+          if (activeEntry == null && workerCanClaim && !pending.isEmpty()
+              && !pending.get(0).request.alreadyDecoded) {
+            entry = pending.remove(0);
+            activateEntryLocked(entry, false);
+          }
+          sleepMs = prefetchWorkerSleepMs;
+        }
+        if (entry != null) {
+          decode(entry);
+        } else {
+          sleepWorkerPoll(sleepMs);
+        }
+      }
+    } finally {
+      synchronized (LOCK) {
+        if (prefetchWorker == Thread.currentThread()) {
+          prefetchWorker = null;
+        }
+        if (prefetchWorker == null) {
+          workerShutdownRequested = false;
+        }
+      }
+    }
+  }
+
+  private static void sleepWorkerPoll(int sleepMs) {
+    final boolean accounting = Image.diagnosticAccountingEnabledForTest();
+    final long sleepStartNs = accounting ? System.nanoTime() : 0;
+    if (accounting) {
+      synchronized (LOCK) {
+        if (Image.diagnosticAccountingEnabledForTest()) {
+          workerPollCount++;
+          workerSleepRequestedNs += (long) sleepMs * 1000000L;
+        }
+      }
+    }
+    Vm.sleep(sleepMs);
+    if (accounting && Image.diagnosticAccountingEnabledForTest()) {
+      long sleepElapsedNs = System.nanoTime() - sleepStartNs;
+      synchronized (LOCK) {
+        if (Image.diagnosticAccountingEnabledForTest()) {
+          workerIdleElapsedNs += sleepElapsedNs;
+        }
+      }
     }
   }
 
@@ -423,6 +625,7 @@ final class ImagePreparation {
     final boolean accounting = Image.diagnosticAccountingEnabledForTest();
     final long finishStartNs = accounting ? System.nanoTime() : 0;
     ArrayList<Runnable> callbacks;
+    boolean releaseWorkerClaim = false;
     synchronized (LOCK) {
       if (entry.state == State.READY || entry.state == State.FAILED) {
         return;
@@ -431,6 +634,10 @@ final class ImagePreparation {
       entries.remove(entry);
       if (activeEntry == entry) {
         activeEntry = null;
+        if (PREFETCH_THREAD_MODE_WORKER.equals(prefetchThreadMode)) {
+          workerCanClaim = false;
+          releaseWorkerClaim = true;
+        }
       }
       callbacks = new ArrayList<Runnable>(entry.callbacks);
       entry.callbacks.clear();
@@ -440,14 +647,27 @@ final class ImagePreparation {
       postCompletion(callbacks.get(i));
     }
     recordFinishBookkeepingTime(accounting, finishStartNs, entry);
+    if (releaseWorkerClaim) {
+      synchronized (LOCK) {
+        workerCanClaim = true;
+      }
+    }
     scheduleNext();
   }
 
-  private static void startPreparationThread(final Runnable runnable) {
+  private static Thread startPreparationThread(final Runnable runnable) {
+    return startPreparationThread(runnable, false);
+  }
+
+  private static Thread startPreparationThread(final Runnable runnable, boolean daemon) {
     final boolean accounting = Image.diagnosticAccountingEnabledForTest();
     if (!accounting) {
-      new Thread(runnable).start();
-      return;
+      Thread thread = new Thread(runnable);
+      if (daemon) {
+        thread.setDaemon(true);
+      }
+      thread.start();
+      return thread;
     }
     final ThreadStartTiming timing = new ThreadStartTiming();
     Runnable measuredRunnable = new Runnable() {
@@ -463,6 +683,9 @@ final class ImagePreparation {
     Thread thread = new Thread(measuredRunnable);
     long createElapsedNs = System.nanoTime() - createStartNs;
     recordThreadCreated(createElapsedNs);
+    if (daemon) {
+      thread.setDaemon(true);
+    }
     timing.startNs = System.nanoTime();
     long startCallStartNs = timing.startNs;
     boolean started = false;
@@ -480,6 +703,7 @@ final class ImagePreparation {
         }
       }
     }
+    return thread;
   }
 
   private static void finishImagePreparation(Entry entry) throws ImageException {
