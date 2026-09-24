@@ -80,6 +80,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/ImageScrollRealWorkloadBenchmarkApp.log`,
   `TotalCrossSDK/etc/launchers/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`.
-- Next action: commit the final plan/state/evidence/report checkpoint.
-- Resume: read this state and the “Compile-Time Diagnostic Gating” section in
+- Final plan/state/evidence/report checkpoint: `f39ccf22d`
+  (`docs(plan): close semaphore diagnostic gating`). No implementation or
+  validation work remains.
+- Resume: if the goal is reopened, read this state and the
+  “Compile-Time Diagnostic Gating” section in
   `.agent/plans/semaphore-v1-part-2-stress.md` first.
