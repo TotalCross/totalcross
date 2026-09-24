@@ -6,18 +6,23 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Semaphore v1 execution state
 
-- Part/milestone/slice: 1 / 1 complete; Part 2 is next.
+- Part/milestone/slice: Part 1 / Milestone 1 complete; Part 2 / Checkpoint 2A active.
 - Branch: `feat/semaphore-v1`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
-- Last logical commit: `b3a4a0e565be1232e3d67d3a24146938db989537`
+- Part 1 final milestone commit: `daef7cee82370feb9995ad410dfb82dd25e190c5`
+  (`docs(plan): record semaphore core milestone`). The final Part 1 correctness
+  smoke passed against `build-semaphore/libtcvm.dylib`.
+- Latest Part 1 functional commit: `b3a4a0e565be1232e3d67d3a24146938db989537`
   (`fix(vm): add semaphore prototypes to generated index`).
-- Active paths: `.agent/plans/semaphore-v1-part-1-core.md`, this file,
+- Active paths: `.agent/plans/semaphore-v1-part-2-stress.md`, this file,
   `.agent/evidence/semaphore-v1.jsonl`,
+  `.agent/reports/semaphore-v1-editorial.md`,
   `TotalCrossSDK/src/main/java/jdkcompat/util/concurrent/Semaphore4D.java`,
   `TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent/`,
-  `TotalCrossSDK/build.gradle`, the converter test, and `build-semaphore/`.
-- Next action: continue with `.agent/plans/semaphore-v1-part-2-stress.md` only
-  when that part is explicitly requested.
+  `TotalCrossSDK/build.gradle`, the converter test, and
+  `build-semaphore/libtcvm.dylib`.
+- Next action: commit the Part 2 plan and this activation state; then implement
+  Slice 2B compatibility-resolution coverage.
 - Validation completed: converter test passed 2/2; generator matched 6 native
   prototypes and registrations; SDK dist and smoke compilation passed; CMake
   configure and macOS `tcvm` build passed (123 Ninja steps); deployed smoke
@@ -27,7 +32,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   commit-message checks failed because body lines exceeded 80 characters; those
   commits remain unchanged per plan.
 - Validation deferred: Windows, Android, Linux, and iOS native builds/runs;
-  Part 2 stress coverage.
+  all Part 2 compatibility, stress, and wake-latency work.
 - Blockers: none.
 - Unrelated dirty paths to preserve: `totalcross.code-workspace`,
   `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`,
@@ -37,7 +42,6 @@ SPDX-License-Identifier: LGPL-2.1-only
   `.agent/plans/image-optimization-mask-02-fix.md`,
   `.agent/plans/image-scroll-prefetch-reduction.md`,
   `.agent/plans/prefetch-thread-diagnostics-execplan.md`,
-  `.agent/plans/semaphore-v1-part-2-stress.md`,
   `.agent/state/image-scroll-prefetch-reduction.md`,
   `ImageScrollRasterFastPathBenchmarkApp.log`,
   `ImageScrollRealWorkloadBenchmarkApp.log`,
@@ -45,5 +49,5 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/ImageScrollRealWorkloadBenchmarkApp.log`,
   `TotalCrossSDK/etc/launchers/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`.
-- Resume command: read this file, then open
-  `.agent/plans/semaphore-v1-part-2-stress.md` if Part 2 is requested.
+- Resume command: read this file, then continue
+  `.agent/plans/semaphore-v1-part-2-stress.md` from Slice 2B.
