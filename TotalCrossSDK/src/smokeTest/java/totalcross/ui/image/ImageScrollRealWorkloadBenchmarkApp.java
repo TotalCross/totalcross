@@ -2726,88 +2726,121 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
 
     String details() {
-      StringBuilder details = new StringBuilder(",targeted_jpeg_decodes=" + targetedJpegDecodes
-          + ",full_jpeg_decodes=" + fullJpegDecodes
-          + ",jpeg_decode_count=" + jpegDecodeCount
-          + ",jpeg_decode_ns=" + jpegDecodeNs
-          + ",jpeg_full_count=" + jpegFullCount
-          + ",jpeg_half_count=" + jpegHalfCount
-          + ",jpeg_quarter_count=" + jpegQuarterCount
-          + ",jpeg_eighth_count=" + jpegEighthCount
-          + ",jpeg_other_count=" + jpegOtherCount
-          + ",opacity_known_intrinsic=" + opacityKnownIntrinsic
-          + ",opacity_known_from_source=" + opacityKnownFromSource
-          + ",opacity_determined_decode=" + opacityDeterminedDuringDecode
-          + ",opacity_fallback_scans=" + opacityFallbackScans
-          + ",image_materializations=" + imageMaterializations
-          + ",image_pipelines=" + imagePipelines
-          + ",draw_plans_created=" + drawPlansCreated
-          + ",draw_plan_cache_hits=" + drawPlanCacheHits
-          + ",direct_draw_plan_executions=" + directDrawPlanExecutions
-          + ",native_geometry_materializations=" + nativeGeometryMaterializations
-          + ",geometry_materialization_count=" + geometryMaterializationCount
-          + ",geometry_materialization_total_ns=" + geometryMaterializationTotalNs
-          + ",geometry_source_snapshot_ns=" + geometrySourceSnapshotNs
-          + ",geometry_surface_allocation_ns=" + geometrySurfaceAllocationNs
-          + ",geometry_compile_ns=" + geometryCompileNs
-          + ",geometry_draw_ns=" + geometryDrawNs
-          + ",geometry_snapshot_ns=" + geometrySnapshotNs
-          + ",geometry_register_ns=" + geometryRegisterNs
-          + ",geometry_rgba8888_count=" + geometryRgba8888Count
-          + ",geometry_rgba8888_draw_ns=" + geometryRgba8888DrawNs
-          + ",geometry_rgb565_count=" + geometryRgb565Count
-          + ",geometry_rgb565_draw_ns=" + geometryRgb565DrawNs
-          + ",geometry_gray8_count=" + geometryGray8Count
-          + ",geometry_gray8_draw_ns=" + geometryGray8DrawNs
-          + ",geometry_argb4444_count=" + geometryArgb4444Count
-          + ",geometry_argb4444_draw_ns=" + geometryArgb4444DrawNs
-          + ",geometry_source_pixels=" + geometrySourcePixels
-          + ",geometry_output_pixels=" + geometryOutputPixels
-          + ",geometry_unaccounted_ns=" + geometryUnaccountedNs()
-          + ",geometry_draw_ns_per_materialization=" + geometryDrawNsPerMaterialization()
-          + ",geometry_draw_ns_per_source_megapixel=" + geometryDrawNsPerSourceMegapixel()
-          + ",geometry_draw_ns_per_output_megapixel=" + geometryDrawNsPerOutputMegapixel()
-          + ",write_pixels_attempts=" + writePixelsAttempts
-          + ",write_pixels_hits=" + writePixelsHits
-          + ",write_pixels_fallbacks=" + writePixelsFallbacks
-          + ",write_pixels_copied_bytes=" + writePixelsCopiedBytes
-          + ",write_pixels_regular_attempts=" + writePixelsRegularAttempts
-          + ",write_pixels_regular_hits=" + writePixelsRegularHits
-          + ",write_pixels_regular_fallbacks=" + writePixelsRegularFallbacks
-          + ",write_pixels_regular_copied_bytes=" + writePixelsRegularCopiedBytes
-          + ",write_pixels_regular_clipped_hits=" + writePixelsRegularClippedHits
-          + ",write_pixels_device_1to1_candidates=" + writePixelsDeviceOneToOneCandidates
-          + ",write_pixels_device_1to1_known_opaque_candidates="
-          + writePixelsDeviceOneToOneKnownOpaqueCandidates
-          + ",write_pixels_reject_matrix=" + writePixelsRejectMatrix
-          + ",write_pixels_reject_save_count=" + writePixelsRejectSaveCount
-          + ",write_pixels_reject_size_mismatch=" + writePixelsRejectSizeMismatch
-          + ",physical_identity_attempts=" + physicalIdentityAttempts
-          + ",physical_identity_hits=" + physicalIdentityHits
-          + ",physical_identity_fallbacks=" + physicalIdentityFallbacks
-          + ",physical_identity_reject_canvas=" + physicalIdentityRejectCanvas
-          + ",physical_identity_reject_surface=" + physicalIdentityRejectSurface
-          + ",physical_identity_reject_clip=" + physicalIdentityRejectClip
-          + ",physical_identity_reject_mapping=" + physicalIdentityRejectMapping
-          + ",physical_identity_reject_backing=" + physicalIdentityRejectBacking
-          + ",physical_identity_reject_execution=" + physicalIdentityRejectExecution
-          + ",target_color_attempts=" + targetColorAttempts
-          + ",target_color_hits=" + targetColorHits
-          + ",target_color_materializations=" + targetColorMaterializations
-          + ",target_color_fallbacks=" + targetColorFallbacks
-          + ",target_color_converted_bytes=" + targetColorConvertedBytes
-          + ",physical_variant_lookups=" + physicalVariantLookups
-          + ",physical_variant_hits=" + physicalVariantHits
-          + ",physical_variant_misses=" + physicalVariantMisses
-          + ",physical_variant_stores=" + physicalVariantStores
-          + ",physical_variant_evictions=" + physicalVariantEvictions
-          + ",physical_variant_bytes=" + physicalVariantBytes);
+      StringBuilder details = new StringBuilder(2048);
+      appendDecodeDetails(details);
+      appendGeometryDetails(details);
+      appendWritePixelsDetails(details);
+      appendPhysicalIdentityDetails(details);
+      appendColorCacheDetails(details);
       appendPolicyDiagnosticDetails(details, this);
-      return details
-          + ",generic_geometry_draws=" + genericGeometryDraws
-          + ",smooth_resample_draws=" + smoothResampleDraws
-          + ",backing_live_bytes=" + backingLiveBytes
-          + ",backing_peak_bytes=" + backingPeakBytes;
+      appendCounter(details, "generic_geometry_draws", genericGeometryDraws);
+      appendCounter(details, "smooth_resample_draws", smoothResampleDraws);
+      appendCounter(details, "backing_live_bytes", backingLiveBytes);
+      appendCounter(details, "backing_peak_bytes", backingPeakBytes);
+      return details.toString();
+    }
+
+    private void appendDecodeDetails(StringBuilder details) {
+      appendCounter(details, "targeted_jpeg_decodes", targetedJpegDecodes);
+      appendCounter(details, "full_jpeg_decodes", fullJpegDecodes);
+      appendCounter(details, "jpeg_decode_count", jpegDecodeCount);
+      appendCounter(details, "jpeg_decode_ns", jpegDecodeNs);
+      appendCounter(details, "jpeg_full_count", jpegFullCount);
+      appendCounter(details, "jpeg_half_count", jpegHalfCount);
+      appendCounter(details, "jpeg_quarter_count", jpegQuarterCount);
+      appendCounter(details, "jpeg_eighth_count", jpegEighthCount);
+      appendCounter(details, "jpeg_other_count", jpegOtherCount);
+      appendCounter(details, "opacity_known_intrinsic", opacityKnownIntrinsic);
+      appendCounter(details, "opacity_known_from_source", opacityKnownFromSource);
+      appendCounter(details, "opacity_determined_decode", opacityDeterminedDuringDecode);
+      appendCounter(details, "opacity_fallback_scans", opacityFallbackScans);
+      appendCounter(details, "image_materializations", imageMaterializations);
+      appendCounter(details, "image_pipelines", imagePipelines);
+      appendCounter(details, "draw_plans_created", drawPlansCreated);
+      appendCounter(details, "draw_plan_cache_hits", drawPlanCacheHits);
+      appendCounter(details, "direct_draw_plan_executions", directDrawPlanExecutions);
+      appendCounter(details, "native_geometry_materializations", nativeGeometryMaterializations);
+    }
+
+    private void appendGeometryDetails(StringBuilder details) {
+      appendCounter(details, "geometry_materialization_count", geometryMaterializationCount);
+      appendCounter(details, "geometry_materialization_total_ns", geometryMaterializationTotalNs);
+      appendCounter(details, "geometry_source_snapshot_ns", geometrySourceSnapshotNs);
+      appendCounter(details, "geometry_surface_allocation_ns", geometrySurfaceAllocationNs);
+      appendCounter(details, "geometry_compile_ns", geometryCompileNs);
+      appendCounter(details, "geometry_draw_ns", geometryDrawNs);
+      appendCounter(details, "geometry_snapshot_ns", geometrySnapshotNs);
+      appendCounter(details, "geometry_register_ns", geometryRegisterNs);
+      appendCounter(details, "geometry_rgba8888_count", geometryRgba8888Count);
+      appendCounter(details, "geometry_rgba8888_draw_ns", geometryRgba8888DrawNs);
+      appendCounter(details, "geometry_rgb565_count", geometryRgb565Count);
+      appendCounter(details, "geometry_rgb565_draw_ns", geometryRgb565DrawNs);
+      appendCounter(details, "geometry_gray8_count", geometryGray8Count);
+      appendCounter(details, "geometry_gray8_draw_ns", geometryGray8DrawNs);
+      appendCounter(details, "geometry_argb4444_count", geometryArgb4444Count);
+      appendCounter(details, "geometry_argb4444_draw_ns", geometryArgb4444DrawNs);
+      appendCounter(details, "geometry_source_pixels", geometrySourcePixels);
+      appendCounter(details, "geometry_output_pixels", geometryOutputPixels);
+      appendCounter(details, "geometry_unaccounted_ns", geometryUnaccountedNs());
+      appendCounter(details, "geometry_draw_ns_per_materialization",
+          geometryDrawNsPerMaterialization());
+      appendCounter(details, "geometry_draw_ns_per_source_megapixel",
+          geometryDrawNsPerSourceMegapixel());
+      appendCounter(details, "geometry_draw_ns_per_output_megapixel",
+          geometryDrawNsPerOutputMegapixel());
+    }
+
+    private void appendWritePixelsDetails(StringBuilder details) {
+      appendCounter(details, "write_pixels_attempts", writePixelsAttempts);
+      appendCounter(details, "write_pixels_hits", writePixelsHits);
+      appendCounter(details, "write_pixels_fallbacks", writePixelsFallbacks);
+      appendCounter(details, "write_pixels_copied_bytes", writePixelsCopiedBytes);
+      appendCounter(details, "write_pixels_regular_attempts", writePixelsRegularAttempts);
+      appendCounter(details, "write_pixels_regular_hits", writePixelsRegularHits);
+      appendCounter(details, "write_pixels_regular_fallbacks", writePixelsRegularFallbacks);
+      appendCounter(details, "write_pixels_regular_copied_bytes", writePixelsRegularCopiedBytes);
+      appendCounter(details, "write_pixels_regular_clipped_hits", writePixelsRegularClippedHits);
+      appendCounter(details, "write_pixels_device_1to1_candidates",
+          writePixelsDeviceOneToOneCandidates);
+      appendCounter(details, "write_pixels_device_1to1_known_opaque_candidates",
+          writePixelsDeviceOneToOneKnownOpaqueCandidates);
+      appendCounter(details, "write_pixels_reject_matrix", writePixelsRejectMatrix);
+      appendCounter(details, "write_pixels_reject_save_count", writePixelsRejectSaveCount);
+      appendCounter(details, "write_pixels_reject_size_mismatch", writePixelsRejectSizeMismatch);
+    }
+
+    private void appendPhysicalIdentityDetails(StringBuilder details) {
+      appendCounter(details, "physical_identity_attempts", physicalIdentityAttempts);
+      appendCounter(details, "physical_identity_hits", physicalIdentityHits);
+      appendCounter(details, "physical_identity_fallbacks", physicalIdentityFallbacks);
+      appendCounter(details, "physical_identity_reject_canvas", physicalIdentityRejectCanvas);
+      appendCounter(details, "physical_identity_reject_surface", physicalIdentityRejectSurface);
+      appendCounter(details, "physical_identity_reject_clip", physicalIdentityRejectClip);
+      appendCounter(details, "physical_identity_reject_mapping", physicalIdentityRejectMapping);
+      appendCounter(details, "physical_identity_reject_backing", physicalIdentityRejectBacking);
+      appendCounter(details, "physical_identity_reject_execution", physicalIdentityRejectExecution);
+    }
+
+    private void appendColorCacheDetails(StringBuilder details) {
+      appendCounter(details, "target_color_attempts", targetColorAttempts);
+      appendCounter(details, "target_color_hits", targetColorHits);
+      appendCounter(details, "target_color_materializations", targetColorMaterializations);
+      appendCounter(details, "target_color_fallbacks", targetColorFallbacks);
+      appendCounter(details, "target_color_converted_bytes", targetColorConvertedBytes);
+      appendCounter(details, "physical_variant_lookups", physicalVariantLookups);
+      appendCounter(details, "physical_variant_hits", physicalVariantHits);
+      appendCounter(details, "physical_variant_misses", physicalVariantMisses);
+      appendCounter(details, "physical_variant_stores", physicalVariantStores);
+      appendCounter(details, "physical_variant_evictions", physicalVariantEvictions);
+      appendCounter(details, "physical_variant_bytes", physicalVariantBytes);
+    }
+
+    private static void appendCounter(StringBuilder details, String name, long value) {
+      details.append(',').append(name).append('=').append(value);
+    }
+
+    private static void appendCounter(StringBuilder details, String name, double value) {
+      details.append(',').append(name).append('=').append(value);
     }
 
     long featureHits(int feature) {

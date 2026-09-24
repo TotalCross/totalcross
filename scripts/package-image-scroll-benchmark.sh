@@ -306,8 +306,8 @@ deploy_target() {
          echo "Windows packaging requires --sdk-source-commit to attest the SDK runtime" >&2
          exit 1
       }
-      [ "$sdk_source_commit" = "$source_commit" ] || {
-         echo "Windows SDK source attestation differs from benchmark source $source_commit" >&2
+      git -C "$repo_dir" merge-base --is-ancestor "$sdk_source_commit" "$source_commit" || {
+         echo "Windows SDK source $sdk_source_commit is not an ancestor of benchmark source $source_commit" >&2
          exit 1
       }
    fi

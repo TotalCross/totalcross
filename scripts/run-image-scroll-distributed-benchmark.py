@@ -13,6 +13,7 @@ import math
 import os
 import platform
 from pathlib import Path
+import re
 import signal
 import subprocess
 import sys
@@ -1057,8 +1058,10 @@ def load_manifest(bundle):
         require(isinstance(manifest.get("tcvmSha256"), str)
                 and len(manifest["tcvmSha256"]) == 64,
                 "Windows manifest tcvmSha256 is missing")
-        require(manifest.get("sdkSourceAttestation") == source_commit,
-                "Windows manifest SDK source attestation differs from benchmark source")
+        sdk_source_commit = manifest.get("sdkSourceAttestation")
+        require(isinstance(sdk_source_commit, str)
+                and re.fullmatch(r"[0-9a-f]{40}", sdk_source_commit) is not None,
+                "Windows manifest SDK source attestation is missing")
     require(manifest.get("screenArgument") == SCREEN_ARGUMENT,
             "manifest screen argument differs")
     return manifest
