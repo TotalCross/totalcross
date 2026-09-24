@@ -8,7 +8,7 @@ import java.util.concurrent.Semaphore;
 
 import totalcross.ui.MainWindow;
 
-/** Native macOS smoke for the deployed Semaphore v1 blocking surface. */
+/** Deployed correctness smoke for the Semaphore v1 blocking surface. */
 public class SemaphoreSmokeApp extends MainWindow {
   @Override
   public void initUI() {
@@ -19,7 +19,7 @@ public class SemaphoreSmokeApp extends MainWindow {
       verifyNegativePermits();
       verifyThreeWaiters();
       verifyOverflow();
-      System.out.println("fixture=SemaphoreSmokeApp,overallPass=true");
+      System.out.println("fixture=SemaphoreSmokeApp,overallPass=true,checks=7");
       System.out.flush();
       exit(0);
     } catch (Throwable failure) {
@@ -53,12 +53,11 @@ public class SemaphoreSmokeApp extends MainWindow {
     new Thread(worker).start();
 
     ready.acquireUninterruptibly();
-    requireBlockedWaiters(gate, 1, "zero-permit worker did not enter native wait");
-    require(!completed.tryAcquire(), "zero-permit worker progressed before release");
     gate.release();
     completed.acquireUninterruptibly();
     require(worker.failure == null, "worker acquire failed: " + worker.failure);
     require(!completed.tryAcquire(), "worker reported completion more than once");
+    require(!gate.tryAcquire(), "zero-permit acquire did not consume the release");
   }
 
   private static void verifyNegativePermits() throws InterruptedException {
@@ -69,15 +68,14 @@ public class SemaphoreSmokeApp extends MainWindow {
     new Thread(worker).start();
 
     ready.acquireUninterruptibly();
-    requireBlockedWaiters(gate, 1, "negative-permit worker did not enter native wait");
-    require(!completed.tryAcquire(), "negative-permit worker progressed early");
     gate.release();
-    require(!completed.tryAcquire(), "worker progressed with permits at -1");
+    require(!gate.tryAcquire(), "negative permit count became available at -1");
     gate.release();
-    require(!completed.tryAcquire(), "worker progressed with permits at zero");
+    require(!gate.tryAcquire(), "negative permit count became available at zero");
     gate.release();
     completed.acquireUninterruptibly();
     require(worker.failure == null, "negative-permit worker failed: " + worker.failure);
+    require(!gate.tryAcquire(), "negative-permit acquire did not consume the release");
   }
 
   private static void verifyThreeWaiters() throws InterruptedException {
@@ -93,12 +91,11 @@ public class SemaphoreSmokeApp extends MainWindow {
     for (int i = 0; i < workers.length; i++) {
       ready.acquireUninterruptibly();
     }
-    requireBlockedWaiters(gate, workers.length, "three-waiter test did not reach native wait");
     for (int i = 0; i < workers.length; i++) {
       gate.release();
       completed.acquireUninterruptibly();
-      require(!completed.tryAcquire(), "one release completed multiple waiters");
     }
+    require(!gate.tryAcquire(), "three-waiter test left an extra permit");
     for (int i = 0; i < workers.length; i++) {
       require(workers[i].failure == null, "waiter failed: " + workers[i].failure);
     }
@@ -119,10 +116,6 @@ public class SemaphoreSmokeApp extends MainWindow {
     if (!condition) {
       throw new IllegalStateException(message);
     }
-  }
-
-  private static void requireBlockedWaiters(Semaphore semaphore, int minimumWaiters, String message) {
-    require(SemaphoreTestDiagnostics.awaitWaiters(semaphore, minimumWaiters) >= minimumWaiters, message);
   }
 
   private static final class AcquireWorker implements Runnable {

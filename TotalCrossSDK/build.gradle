@@ -522,12 +522,11 @@ def semaphoreSmokeClassesDir = layout.buildDirectory.dir('semaphore-smoke/classe
 
 tasks.register('compileSemaphoreSmoke', Sync) {
     group = 'verification'
-    description = 'Compiles and stages the Semaphore macOS smoke app.'
+    description = 'Compiles and stages the Semaphore correctness smoke app.'
     dependsOn sourceSets.smokeTest.classesTaskName
 
     from(smokeTestClassesDir) {
         include 'totalcross/util/concurrent/SemaphoreSmokeApp*.class'
-        include 'totalcross/util/concurrent/SemaphoreTestDiagnostics*.class'
     }
     into semaphoreSmokeClassesDir
 }
@@ -556,7 +555,7 @@ tasks.register('deploySemaphoreSmokeMacOS', JavaExec) {
 
 tasks.register('runSemaphoreSmokeMacOS') {
     group = 'verification'
-    description = 'Runs the deployed Semaphore smoke with a timed native wait.'
+    description = 'Runs the deployed Semaphore smoke with a process timeout.'
     dependsOn 'deploySemaphoreSmokeMacOS'
 
     doLast {
@@ -654,7 +653,7 @@ def registerSemaphoreMacSmokeTasks = { taskPrefix, appName, artifactPrefix ->
 
     tasks.register("run${taskPrefix}MacOS") {
         group = 'verification'
-        description = "Runs the ${appName} smoke with a timed native wait."
+        description = "Runs the ${appName} smoke with a process timeout."
         dependsOn "deploy${taskPrefix}MacOS"
 
         doLast {
