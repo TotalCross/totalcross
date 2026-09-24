@@ -132,9 +132,16 @@ The compile databases confirmed the define appears only in the enabled build.
   `TotalCrossSDK/agent-logs/20260924-150057-runSemaphoreSmokeMacOS-full.log`.
 - Focused copyright-header, diff, and signed commit-message checks passed.
 
-Only SDK and macOS were built. Windows, Android, Linux, and iOS native builds
-and execution were deferred. Full commands, sample aggregates, and logs are
-indexed in `.agent/evidence/semaphore-v1.jsonl`.
+The original SDK/macOS validation did not build Windows, Android, Linux, or
+iOS locally. A Python-free Windows correctness/stress package was later
+prepared from successful workflow run `36040721060`, built from
+runtime source SHA `0badac435cc2c6af31de4bb0adad9ed58e6cd0c5`. It uses the
+default-off diagnostic configuration and includes the workflow Windows
+`tcvm.dll`, deployed executables, PowerShell 5.1 runner, and artifact hashes.
+Package deployment and ZIP/hash checks passed on macOS; Windows execution is
+still pending, so no Windows runtime pass is claimed. See the package folder
+and ZIP under `.agent/artifacts/semaphore-windows-validation-run-36040721060`
+and the latest record in `.agent/evidence/semaphore-v1.jsonl`.
 
 ## Useful Evidence and Examples
 
@@ -154,9 +161,11 @@ aggregate is historical interval data only.
 The corrected latency result is descriptive evidence for this macOS machine;
 it is not a performance threshold or a cross-platform prediction. The proof
 uses macOS POSIX condition behavior. The Windows event path has not been
-executed and is not covered by the blocked-wait claim. Android, Linux, and iOS
-native validation remains deferred. The TotalCross VM does not currently
-interrupt a blocked `acquire()` despite its Java declaration.
+executed and is not covered by the blocked-wait claim. The Windows package
+does not claim to observe a thread inside `WaitForSingleObject`; it checks
+functional behavior with Semaphore handshakes and process timeouts. Android,
+Linux, and iOS native validation remains deferred. The TotalCross VM does not
+currently interrupt a blocked `acquire()` despite its Java declaration.
 
 No `ImagePreparation` performance claim was tested. Any future evaluation of
 Semaphore as a production wake mechanism belongs in a separate plan.
@@ -180,7 +189,8 @@ macOS results from deferred platform execution and unmeasured consumer gains.
 
 - Confirm Windows and WinCE event API behavior on supported toolchains before
   claiming runtime support there.
-- Decide how merge policy should handle the two unchanged Part 1
-  commit-message body-length failures.
+- Decide how merge policy should handle the unchanged Part 1 commit-message
+  body-length failures and the body-length failure in signed commit
+  `5e6a03b4e`, which was preserved without rewriting history.
 - Treat the latency aggregate as descriptive evidence for this tested macOS
   machine only.

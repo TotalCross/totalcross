@@ -128,6 +128,7 @@ outputs, caches, or logs.
 - [x] (2026-09-24T05:13:43Z) Slice 1C: add Java surface and native smoke.
 - [x] (2026-09-24T05:15:53Z) Fix generated prototype declarations.
 - [x] (2026-09-24T05:17:42Z) Pass Milestone 1 validation and hand off to Part 2.
+- [x] (2026-09-24T18:55:50Z) Prepare the Windows correctness/stress package; Windows execution remains pending.
 
 ## Current Architecture and Fixed Decisions
 

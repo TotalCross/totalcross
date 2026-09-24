@@ -7,7 +7,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 # Semaphore v1 execution state
 
 - Part/milestone/slice: Part 1 / Milestone 1, Part 2 / Milestone 2, blocked-wait
-  methodology correction, and compile-time diagnostic gating are validated.
+  methodology correction, and diagnostic gating are validated. The Windows
+  correctness/stress package is prepared; actual Windows execution is pending.
 - Branch: `feat/semaphore-v1`; same worktree, no history rewrite.
 - Original follow-up base: `128a1fa36bd4c249ea51d31e2b2be970f455f942`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
@@ -18,7 +19,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   (`fix(vm): confirm blocked semaphore wake samples`), signed and validated.
 - Compile-time gating implementation: `ea5e6e36d`
   (`fix(vm): gate semaphore test diagnostics`), signed and validated.
-- Current baseline verified: `ff2519a776525ba9db0dea5543e706fdc0194d21`.
+- Implementation baseline for the Windows package: `f59bb65c399ba53bdf63430bffe92ddf2f590c43`.
 - Completed objective: remove diagnostic fields, branches, hook, and
   registration from the default TCVM while opting in for the dedicated macOS
   smoke runtime. Preserve the corrected 20-warm-up/200-sample protocol.
@@ -63,9 +64,21 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Retained semantic limitation: TotalCross `acquire()` declares
   `InterruptedException`, but the native wait is effectively uninterruptible.
   No `ImagePreparation` performance claim was tested.
-- Earlier Part 1 commit-message body-length failures remain unchanged under
-  the no-rewrite rule; the correction commit message validation passed.
-- Blockers: none.
+- Package preparation commits: `5e6a03b4e`, `76677b26a`, and `f59bb65c3`;
+  each is signed. Message checks pass for the last two. The first package
+  commit has body lines over 80 characters and is preserved without rewrite.
+- Workflow run `36040721060` succeeded from runtime source SHA
+  `0badac435cc2c6af31de4bb0adad9ed58e6cd0c5`. The Windows workflow uses the
+  CMake default `TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=OFF`.
+- Package folder and ZIP:
+  `.agent/artifacts/semaphore-windows-validation-run-36040721060/` and
+  `.agent/artifacts/semaphore-windows-validation-run-36040721060.zip`.
+- Local package preparation passed: Java 17 compile/deploy from the pinned
+  artifacts, package ZIP integrity, and every manifest file hash. This is not
+  a Windows execution result. Windows test status remains pending.
+- Next action: run `run-semaphore-windows-tests.cmd` on Windows and collect
+  `results-summary.txt`, both per-test stdout/stderr logs, and updated
+  `provenance.json`. Do not record Windows PASS until that execution exists.
 - Unrelated dirty paths to preserve: `totalcross.code-workspace`,
   `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`,
   `.agent/benchmarks/image-scroll-prefetch/final-fixed/`,
@@ -80,9 +93,11 @@ SPDX-License-Identifier: LGPL-2.1-only
   `TotalCrossSDK/ImageScrollRealWorkloadBenchmarkApp.log`,
   `TotalCrossSDK/etc/launchers/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`.
-- Final plan/state/evidence/report checkpoint: `f39ccf22d`
-  (`docs(plan): close semaphore diagnostic gating`). No implementation or
-  validation work remains.
-- Resume: if the goal is reopened, read this state and the
-  “Compile-Time Diagnostic Gating” section in
-  `.agent/plans/semaphore-v1-part-2-stress.md` first.
+- Earlier Part 1 commit-message body-length failures remain unchanged under
+  the no-rewrite rule; the initial Windows package commit adds one further
+  body-length failure. Later package correction commits passed their checks.
+- Unresolved work is the actual Windows execution only; native Windows build
+  was taken from the verified workflow artifact and not rebuilt locally.
+- Resume: read this state, then run the packaged `.cmd` on Windows. Keep the
+  returned summary, logs, and provenance with the artifact before updating
+  this state, evidence, and editorial report with results.
