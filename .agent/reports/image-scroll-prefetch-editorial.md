@@ -25,7 +25,8 @@ The corrected implementation uses `COPY_READY` for the default
 candidate, UI-thread adoption/finalization completes it, and only then does
 `scheduleNext()` authorize another candidate. There is no persistent worker,
 `waitForAdoption`, busy waiting, or additional concurrency primitive. The
-TCVM-compatible coordinator uses `totalcross.util.concurrent.Lock`.
+TCVM-compatible coordinator uses `totalcross.util.concurrent.Lock`. This
+remains the production default path.
 
 Shared `EncodedImageSource` instances use stable content identity for final
 materialized variants, while decoded-backing generation remains specific to
@@ -48,6 +49,45 @@ at most 3, and warm/warm2 JPEG decodes and materializations were zero. Both
 target-color converted bytes and physical-variant bytes were zero. The
 benchmark resets image, native-backing, and preparation accounting after UI
 construction and immediately before `prepareForDisplay`.
+
+## Semaphore worker comparison
+
+Milestone 2 adds two opt-in comparison strategies while keeping the production
+default on legacy per-entry threads. `worker-poll` uses the existing 1 ms sleep;
+`worker-semaphore` uses a persistent serialized worker and coalesced Semaphore
+wake notifications. The macOS matrix ran once per configuration on the 663-JPEG
+corpus. Times below are seconds except thread-start call time and start latency,
+which are milliseconds. Poll values show count / requested sleep seconds /
+measured idle seconds. Semaphore values show release / acquire / work wake /
+outstanding wake counts.
+
+| Mask | Strategy | Wall (s) | Prep (s) | Decode (s) | UI wait (s) | Finish (s) | Starts / call ms / latency ms | Poll count / requested s / idle s | Semaphore release / acquire / wake / outstanding |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 6 | legacy | 19.930 | 14.876 | 1.459 | 0.817 | 11.725 | 642 / 41.457 / 858.508 | 0 / 0.000 / 0.000 | 0 / 0 / 0 / 0 |
+| 6 | worker-poll | 18.853 | 14.111 | 1.591 | 0.752 | 11.755 | 1 / 0.028 / 1.357 | 9601 / 9.601 / 12.091 | 0 / 0 / 0 / 0 |
+| 6 | worker-semaphore | 18.382 | 14.056 | 1.503 | 0.782 | 11.759 | 1 / 0.025 / 1.163 | 0 / 0.000 / 0.000 | 641 / 641 / 641 / 0 |
+| 38 | legacy | 16.817 | 12.575 | 1.364 | 0.850 | 9.496 | 642 / 36.365 / 851.621 | 0 / 0.000 / 0.000 | 0 / 0 / 0 / 0 |
+| 38 | worker-poll | 16.453 | 11.744 | 1.382 | 0.819 | 9.533 | 1 / 0.029 / 1.331 | 7906 / 7.906 / 9.951 | 0 / 0 / 0 / 0 |
+| 38 | worker-semaphore | 15.956 | 11.669 | 1.370 | 0.767 | 9.520 | 1 / 0.027 / 1.344 | 0 / 0.000 / 0.000 | 641 / 641 / 641 / 0 |
+
+Each process passed with 663 requests, 660 ready, zero failed, and three
+not-prefetchable images. There were 642 unique activated preparation entries;
+each was decoded, adopted, and finished once. No process deadlocked, and both
+Semaphore processes ended with zero outstanding wakes. These are single-run
+measurements for comparison, not statistical performance claims. The exact
+per-run data is in `prefetch-thread-diagnostics.csv` and
+`prefetch-thread-diagnostics-summary.json` under
+`.agent/benchmarks/image-scroll-prefetch/worker-semaphore-milestone2/package-macos-final/image-scroll-benchmark-macos-arm64/results/`.
+
+The Windows x64 package is prepared at
+`.agent/benchmarks/image-scroll-prefetch/worker-semaphore-milestone2/package-windows-ci36053759681/image-scroll-benchmark-windows-x64.zip`.
+It uses the production runtime from trusted workflow run `36053759681` at
+`ca7d77d88880ac5c6c666bd2b67721c2bead7063`; the current branch has no
+`TotalCrossVM` source changes relative to that runtime source commit. The
+current SDK and benchmark application were packaged at source commit
+`8945bbff4825a1aa695a9dbdf189e0b5fa74ce8a`. Windows measurements for both masks
+and all three strategies remain pending because this exact local revision is
+not available to the trusted Windows workflow. No Windows values are inferred.
 
 ## Review notes
 

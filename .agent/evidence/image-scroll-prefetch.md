@@ -76,3 +76,26 @@ SPDX-License-Identifier: LGPL-2.1-only
   ImagePreparation, shared-source, ScrollContainer, and traversal tests passed,
   Release SDK dist passed, and the existing ImagePreparation macOS smoke passed;
   the 663-JPEG matrix was not rerun because image/decode behavior was unchanged
+- 2026-09-24 | semaphore comparison | implementation and focused validation |
+  pass | signed commits `9913a6847`, `fbc53cb26`, `8945bbff4`; 20 focused
+  ImagePreparation tests, Python runner suite, SDK distribution, macOS Release
+  `tcvm` build, copyright validation, and commit checks passed; default remains
+  legacy
+- 2026-09-24 | semaphore comparison | macOS real workload | pass | exact
+  663-JPEG corpus; masks 6 and 38 across legacy, worker-poll (1 ms), and
+  worker-semaphore; six processes passed with 663 requests/660 ready/0 failed/
+  3 unsupported, 642 unique preparation entries and no missing/duplicate
+  decode/adoption/finish; each semaphore row had 641 releases/acquires/work
+  wakes and zero outstanding wakes; full CSV and JSON summary are in
+  `.agent/benchmarks/image-scroll-prefetch/worker-semaphore-milestone2/package-macos-final/image-scroll-benchmark-macos-arm64/results/`;
+  final run log is
+  `.agent/benchmarks/image-scroll-prefetch/worker-semaphore-milestone2/macos-prefetch-thread-diagnostics-final.log`
+- 2026-09-24 | semaphore comparison | Windows package | prepared | bundle is
+  `.agent/benchmarks/image-scroll-prefetch/worker-semaphore-milestone2/package-windows-ci36053759681/image-scroll-benchmark-windows-x64.zip`;
+  package SHA-256 `7e08772842dc922af07636dbffbf773018b1c3b209a2ded13534a529394c7ba7`;
+  production runtime came from trusted workflow run `36053759681` at
+  `ca7d77d88880ac5c6c666bd2b67721c2bead7063`, with no `TotalCrossVM` source
+  delta to current HEAD; `tcvm.dll` SHA-256
+  `5ebfa185fbf3031258c5463d6da488cce149be7adc799ae9b41bb052834e51bc`;
+  Windows measurements remain pending because the current source is local and
+  unavailable to the exact-commit Windows workflow
