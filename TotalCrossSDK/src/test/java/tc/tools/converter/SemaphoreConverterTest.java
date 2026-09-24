@@ -31,6 +31,8 @@ import tc.tools.converter.bytecode.ByteCode;
 class SemaphoreConverterTest {
   private static final String OWNER = "java/util/concurrent/Semaphore";
   private static final String DEVICE_OWNER = "jdkcompat.util.concurrent.Semaphore4D";
+  private static final String DIAGNOSTIC_OWNER = "totalcross/util/concurrent/SemaphoreTestDiagnostics";
+  private static final String DIAGNOSTIC_SYMBOL = "tucSTD_awaitWaiters_si";
   private static final String[] METHODS = { "acquire", "acquireUninterruptibly", "tryAcquire", "release" };
   private static final String[] DESCRIPTORS = { "()V", "()V", "()Z", "()V" };
   private static final String[] SYMBOLS = {
@@ -138,6 +140,9 @@ class SemaphoreConverterTest {
     String android = Files.readString(vmRoot.resolve("src/jni/Android.mk"));
     String vcproj = Files.readString(vmRoot.resolve("vc2008/TCVM.vcproj"));
     String implementation = Files.readString(vmRoot.resolve("src/nm/util/concurrent_Semaphore.c"));
+    String diagnosticSource = Files.readString(
+        Path.of("src/smokeTest/java/totalcross/util/concurrent/SemaphoreTestDiagnostics.java"));
+    Path productionDiagnosticSource = Path.of("src/main/java/totalcross/util/concurrent/SemaphoreTestDiagnostics.java");
     String[] expectedDeclarations = {
         OWNER + "|native private void create(int permits);",
         OWNER + "|native private void destroy();",
@@ -160,6 +165,21 @@ class SemaphoreConverterTest {
       assertTrue(implementation.contains("TC_API void " + SYMBOLS[i] + "(NMParams p)"),
           "missing native implementation for " + SYMBOLS[i]);
     }
+
+    String diagnosticDeclaration = DIAGNOSTIC_OWNER
+        + "|native public static int awaitWaiters(java.util.concurrent.Semaphore semaphore, int minimumWaiters);";
+    assertTrue(declarations.contains(diagnosticDeclaration), "missing smoke diagnostic declaration");
+    assertFalse(declarations.contains(OWNER + "|native public static int awaitWaiters"),
+        "the diagnostic must not extend java.util.concurrent.Semaphore");
+    assertEquals(6, declarations.lines().filter(line -> line.startsWith(OWNER + "|")).count(),
+        "the public Semaphore v1 native surface must remain unchanged");
+    assertTrue(diagnosticSource.contains("native int awaitWaiters(Semaphore semaphore, int minimumWaiters)"),
+        "missing smoke-source-only diagnostic bridge");
+    assertFalse(Files.exists(productionDiagnosticSource), "diagnostic bridge must stay out of SDK main sources");
+    assertTrue(prototypes.contains("TC_API void " + DIAGNOSTIC_SYMBOL + "(NMParams p);"));
+    assertTrue(header.contains("TC_API void " + DIAGNOSTIC_SYMBOL + "(NMParams p);"));
+    assertTrue(registrations.contains("hashCode(\"" + DIAGNOSTIC_SYMBOL + "\"), &" + DIAGNOSTIC_SYMBOL));
+    assertTrue(implementation.contains("TC_API void " + DIAGNOSTIC_SYMBOL + "(NMParams p)"));
 
     assertTrue(cmake.contains("nm/util/concurrent_Semaphore.c"));
     assertTrue(android.contains("nm/util/concurrent_Semaphore.c"));

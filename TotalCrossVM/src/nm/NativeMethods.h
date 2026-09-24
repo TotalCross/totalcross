@@ -706,6 +706,7 @@ TC_API void jucS_acquire(NMParams p);
 TC_API void jucS_acquireUninterruptibly(NMParams p);
 TC_API void jucS_tryAcquire(NMParams p);
 TC_API void jucS_release(NMParams p);
+TC_API void tucSTD_awaitWaiters_si(NMParams p);
 
 #ifdef __cplusplus
 }

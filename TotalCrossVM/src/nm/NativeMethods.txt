@@ -658,3 +658,4 @@ java/util/concurrent/Semaphore|native public void acquire() throws InterruptedEx
 java/util/concurrent/Semaphore|native public void acquireUninterruptibly();
 java/util/concurrent/Semaphore|native public boolean tryAcquire();
 java/util/concurrent/Semaphore|native public void release();
+totalcross/util/concurrent/SemaphoreTestDiagnostics|native public static int awaitWaiters(java.util.concurrent.Semaphore semaphore, int minimumWaiters);

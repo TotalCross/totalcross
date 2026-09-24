@@ -8,7 +8,7 @@ import java.util.concurrent.Semaphore;
 
 import totalcross.ui.MainWindow;
 
-/** Measures sequential release-to-acquire wake latency for the Semaphore v1 API. */
+/** Measures sequential wake latency after confirming a blocked Semaphore waiter. */
 public class SemaphoreWakeLatencySmokeApp extends MainWindow {
   private static final int WARMUP_COUNT = 20;
   private static final int SAMPLE_COUNT = 200;
@@ -18,8 +18,11 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
   public void initUI() {
     try {
       LatencySummary summary = measure();
-      System.out.println("fixture=SemaphoreWakeLatencySmokeApp,overallPass=true,count=" + SAMPLE_COUNT
-          + ",minNs=" + summary.minimum + ",p50Ns=" + summary.median + ",p95Ns=" + summary.p95
+      System.out.println("fixture=SemaphoreWakeLatencySmokeApp,overallPass=true"
+          + ",method=blocked-waiter-release-to-acquire,count=" + SAMPLE_COUNT
+          + ",blockedConfirmed=" + summary.blockedConfirmed
+          + ",confirmedHandshakes=" + summary.confirmedHandshakes + ",minNs=" + summary.minimum
+          + ",p50Ns=" + summary.median + ",p95Ns=" + summary.p95
           + ",maxNs=" + summary.maximum + ",meanNs=" + summary.mean);
       System.out.flush();
       exit(0);
@@ -33,14 +36,19 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
 
   private static LatencySummary measure() {
     Semaphore tested = new Semaphore(0);
-    Semaphore consumerReady = new Semaphore(0);
+    Semaphore consumerStart = new Semaphore(0);
     Semaphore sampleCompleted = new Semaphore(0);
-    Consumer consumer = new Consumer(tested, consumerReady, sampleCompleted);
+    Consumer consumer = new Consumer(tested, consumerStart, sampleCompleted);
     new Thread(consumer).start();
 
     long[] samples = new long[SAMPLE_COUNT];
+    int confirmedHandshakes = 0;
+    int blockedMeasuredSamples = 0;
     for (int i = 0; i < TOTAL_COUNT; i++) {
-      consumerReady.acquireUninterruptibly();
+      consumerStart.release();
+      int waiterCount = SemaphoreTestDiagnostics.awaitWaiters(tested, 1);
+      if (waiterCount <= 0) throw new IllegalStateException("diagnostic did not confirm a waiter");
+      confirmedHandshakes++;
       consumer.releaseTimeNs = System.nanoTime();
       tested.release();
       sampleCompleted.acquireUninterruptibly();
@@ -49,12 +57,18 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
       }
       long elapsed = consumer.elapsedNs;
       if (elapsed < 0) throw new IllegalStateException("negative wake duration: " + elapsed);
-      if (i >= WARMUP_COUNT) samples[i - WARMUP_COUNT] = elapsed;
+      if (i >= WARMUP_COUNT) {
+        samples[i - WARMUP_COUNT] = elapsed;
+        blockedMeasuredSamples++;
+      }
     }
-    return summarize(samples);
+    if (confirmedHandshakes != TOTAL_COUNT || blockedMeasuredSamples != SAMPLE_COUNT) {
+      throw new IllegalStateException("blocked waiter confirmations were incomplete");
+    }
+    return summarize(samples, blockedMeasuredSamples, confirmedHandshakes);
   }
 
-  private static LatencySummary summarize(long[] samples) {
+  private static LatencySummary summarize(long[] samples, int blockedConfirmed, int confirmedHandshakes) {
     long[] sorted = new long[samples.length];
     long quotientSum = 0;
     long remainderSum = 0;
@@ -77,20 +91,21 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
         + (sorted[SAMPLE_COUNT / 2] - sorted[(SAMPLE_COUNT / 2) - 1]) / 2;
     int p95Index = ((SAMPLE_COUNT * 95 + 99) / 100) - 1;
     long roundedMean = quotientSum + ((remainderSum + (SAMPLE_COUNT / 2)) / SAMPLE_COUNT);
-    return new LatencySummary(sorted[0], median, sorted[p95Index], sorted[sorted.length - 1], roundedMean);
+    return new LatencySummary(sorted[0], median, sorted[p95Index], sorted[sorted.length - 1], roundedMean,
+        blockedConfirmed, confirmedHandshakes);
   }
 
   private static final class Consumer implements Runnable {
     private final Semaphore tested;
-    private final Semaphore ready;
+    private final Semaphore start;
     private final Semaphore completed;
     private volatile long releaseTimeNs;
     private volatile long elapsedNs;
     private volatile Throwable failure;
 
-    Consumer(Semaphore tested, Semaphore ready, Semaphore completed) {
+    Consumer(Semaphore tested, Semaphore start, Semaphore completed) {
       this.tested = tested;
-      this.ready = ready;
+      this.start = start;
       this.completed = completed;
     }
 
@@ -98,7 +113,7 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
     public void run() {
       for (int i = 0; i < TOTAL_COUNT; i++) {
         try {
-          ready.release();
+          start.acquireUninterruptibly();
           tested.acquireUninterruptibly();
           elapsedNs = System.nanoTime() - releaseTimeNs;
         } catch (Throwable error) {
@@ -117,13 +132,18 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
     final long p95;
     final long maximum;
     final long mean;
+    final int blockedConfirmed;
+    final int confirmedHandshakes;
 
-    LatencySummary(long minimum, long median, long p95, long maximum, long mean) {
+    LatencySummary(long minimum, long median, long p95, long maximum, long mean, int blockedConfirmed,
+        int confirmedHandshakes) {
       this.minimum = minimum;
       this.median = median;
       this.p95 = p95;
       this.maximum = maximum;
       this.mean = mean;
+      this.blockedConfirmed = blockedConfirmed;
+      this.confirmedHandshakes = confirmedHandshakes;
     }
   }
 }

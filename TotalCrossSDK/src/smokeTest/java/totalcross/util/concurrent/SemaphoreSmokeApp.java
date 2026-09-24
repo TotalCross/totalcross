@@ -53,6 +53,7 @@ public class SemaphoreSmokeApp extends MainWindow {
     new Thread(worker).start();
 
     ready.acquireUninterruptibly();
+    requireBlockedWaiters(gate, 1, "zero-permit worker did not enter native wait");
     require(!completed.tryAcquire(), "zero-permit worker progressed before release");
     gate.release();
     completed.acquireUninterruptibly();
@@ -68,6 +69,7 @@ public class SemaphoreSmokeApp extends MainWindow {
     new Thread(worker).start();
 
     ready.acquireUninterruptibly();
+    requireBlockedWaiters(gate, 1, "negative-permit worker did not enter native wait");
     require(!completed.tryAcquire(), "negative-permit worker progressed early");
     gate.release();
     require(!completed.tryAcquire(), "worker progressed with permits at -1");
@@ -91,6 +93,7 @@ public class SemaphoreSmokeApp extends MainWindow {
     for (int i = 0; i < workers.length; i++) {
       ready.acquireUninterruptibly();
     }
+    requireBlockedWaiters(gate, workers.length, "three-waiter test did not reach native wait");
     for (int i = 0; i < workers.length; i++) {
       gate.release();
       completed.acquireUninterruptibly();
@@ -116,6 +119,10 @@ public class SemaphoreSmokeApp extends MainWindow {
     if (!condition) {
       throw new IllegalStateException(message);
     }
+  }
+
+  private static void requireBlockedWaiters(Semaphore semaphore, int minimumWaiters, String message) {
+    require(SemaphoreTestDiagnostics.awaitWaiters(semaphore, minimumWaiters) >= minimumWaiters, message);
   }
 
   private static final class AcquireWorker implements Runnable {

@@ -527,6 +527,7 @@ tasks.register('compileSemaphoreSmoke', Sync) {
 
     from(smokeTestClassesDir) {
         include 'totalcross/util/concurrent/SemaphoreSmokeApp*.class'
+        include 'totalcross/util/concurrent/SemaphoreTestDiagnostics*.class'
     }
     into semaphoreSmokeClassesDir
 }
@@ -624,6 +625,7 @@ def registerSemaphoreMacSmokeTasks = { taskPrefix, appName, artifactPrefix ->
 
         from(smokeTestClassesDir) {
             include "totalcross/util/concurrent/${appName}*.class"
+            include 'totalcross/util/concurrent/SemaphoreTestDiagnostics*.class'
         }
         into classesDir
     }

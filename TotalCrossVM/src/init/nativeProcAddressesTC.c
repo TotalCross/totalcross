@@ -697,5 +697,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jucS_acquireUninterruptibly"), &jucS_acquireUninterruptibly);
    htPutPtr(&htNativeProcAddresses, hashCode("jucS_tryAcquire"), &jucS_tryAcquire);
    htPutPtr(&htNativeProcAddresses, hashCode("jucS_release"), &jucS_release);
+   htPutPtr(&htNativeProcAddresses, hashCode("tucSTD_awaitWaiters_si"), &tucSTD_awaitWaiters_si);
    htPutPtr(&htNativeProcAddresses, hashCode("getMainContext"), &getMainContext);
 }
