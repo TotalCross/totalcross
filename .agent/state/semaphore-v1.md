@@ -6,23 +6,26 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Semaphore v1 execution state
 
-- Part/milestone/slice: 1 / 1 / 1B.
+- Part/milestone/slice: 1 / 1 / 1C.
 - Branch: `feat/semaphore-v1`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
-- Last logical commit: `4a3e9c36aa223affea6a4cf3594872295709d8ee`
-  (`feat(vm): add blocking thread condition primitive`).
+- Last logical commit: `24396834bc32ccfaabb74de403857c951c068d02`
+  (`feat(vm): implement native semaphore operations`).
 - Active paths: `.agent/plans/semaphore-v1-part-1-core.md`, this file,
-  `.agent/evidence/semaphore-v1.jsonl`, `TotalCrossVM/src/nm/`,
-  `TotalCrossVM/src/tcvm/tcthread.h`, and the three native source inventories.
-- Next action: stage and review only the native Semaphore implementation,
-  converter test, registrations, and this state update; commit Slice 1B with a
-  valid message. Keep builds deferred.
+  `.agent/evidence/semaphore-v1.jsonl`,
+  `TotalCrossSDK/src/main/java/jdkcompat/util/concurrent/Semaphore4D.java`,
+  `TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent/`,
+  `TotalCrossSDK/build.gradle`, and the converter test.
+- Next action: run focused header validation and diff checks for Slice 1C, then
+  commit the compatibility class, smoke source, Gradle tasks, and state update.
+  After that, run the planned milestone closure validations.
 - Validation completed: base SHA matched; branch created; plan/state/evidence
   header validation and diff check passed; Slice 1A header validation and diff
   check passed. Both earlier commit-message checks found body lines over 80
-  characters; earlier commits remain unchanged per plan. Slice 1B header
-  validation and diff check passed; converter test and builds are deferred to
-  milestone closure. No builds run.
+  characters; earlier commits remain unchanged per plan. Slice 1B header and
+  diff checks plus commit-message validation passed. Converter test execution,
+  SDK/macOS builds, and native smoke are deferred to milestone closure. No
+  builds run yet.
 - Validation deferred: SDK and native macOS builds until Milestone 1 closure;
   non-macOS native builds are deferred by plan policy.
 - Blockers: none.
