@@ -89,6 +89,35 @@ Pthreads on Posix (iPhone, Linux, ...)
  #error "Mutexes are not implemented"
 #endif
 
+/* Condition waits block in the OS; callers must loop on their own predicate. */
+#if defined(WIN32)
+ typedef struct
+ {
+    HANDLE event;
+ } THREAD_CONDITION_TYPE;
+
+ /* Auto-reset events preserve legacy Windows/WinCE support. Signals do not
+    count permits: the permit count remains authoritative, and a waiter must
+    chain a signal while permits and waiters remain. */
+ #define INIT_THREAD_CONDITION(condition) \
+   (((condition)->event = CreateEvent(NULL, FALSE, FALSE, NULL)) != NULL)
+ #define WAIT_THREAD_CONDITION(condition, mutex) \
+   do { \
+      LeaveCriticalSection(mutex); \
+      WaitForSingleObject((condition)->event, INFINITE); \
+      EnterCriticalSection(mutex); \
+   } while (0)
+ #define SIGNAL_THREAD_CONDITION(condition) SetEvent((condition)->event)
+ #define DESTROY_THREAD_CONDITION(condition) CloseHandle((condition)->event)
+#elif defined(POSIX) || defined(ANDROID)
+ typedef pthread_cond_t THREAD_CONDITION_TYPE;
+ #define INIT_THREAD_CONDITION(condition) pthread_cond_init((condition), NULL)
+ #define WAIT_THREAD_CONDITION(condition, mutex) \
+   pthread_cond_wait((condition), (mutex))
+ #define SIGNAL_THREAD_CONDITION(condition) pthread_cond_signal((condition))
+ #define DESTROY_THREAD_CONDITION(condition) pthread_cond_destroy((condition))
+#endif
+
 #define INIT_MUTEX(x)    INIT_MUTEX_VAR(MUTEX_VAR(x))
 #define RESERVE_MUTEX(x) RESERVE_MUTEX_VAR(MUTEX_VAR(x))
 #define RELEASE_MUTEX(x) RELEASE_MUTEX_VAR(MUTEX_VAR(x))
