@@ -78,8 +78,9 @@ below 20 KB / ~600 lines; do not refactor existing files for size.
       focused tests; `ImagePreparationTest` passes.
 - [x] Milestone 2: added the configurable serialized worker, polling metrics,
       and Java SE shutdown/reset coverage; `ImagePreparationTest` passes.
-- [ ] Milestone 3: add six-process phase, automatic self-test, aggregation, and
-      narrow ZIP contract.
+- [x] Milestone 3: added the six-process profile, automatic self-test, strategy
+      aggregation, manifest metadata, and narrow ZIP contract; focused runner
+      tests, syntax, header, and diff checks pass.
 - [ ] Milestone 4: run allowed SDK/macOS validation and finalize artifacts.
 
 ## Current Architecture and Scope

@@ -67,6 +67,14 @@ EXPLORATORY_PASS_COUNT = 3
 REDUCED_PROCESS_COUNT = len(MASKS)
 PREFETCH_DIAGNOSTIC_MASKS = (0, 4, 6, 38, 32799)
 PREFETCH_DIAGNOSTIC_PROCESS_COUNT = len(PREFETCH_DIAGNOSTIC_MASKS)
+PREFETCH_THREAD_DIAGNOSTIC_MASKS = (6, 38)
+PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS = (
+    ("legacy", 0), ("worker", 1), ("worker", 2),
+)
+PREFETCH_THREAD_DIAGNOSTIC_PROCESS_COUNT = (
+    len(PREFETCH_THREAD_DIAGNOSTIC_MASKS)
+    * len(PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS)
+)
 CORRECTNESS_PROCESS_COUNT = 2
 PERFORMANCE_PROCESS_COUNT = 6
 RELEASE_PROCESS_COUNT = 6
@@ -143,6 +151,18 @@ PROFILES = {
         "passes": 1,
         "diagnostic": True,
         "app_profile": "prefetch-diagnostics",
+        "workload_images": EXPECTED_JPEGS,
+    },
+    "prefetch-thread-diagnostics": {
+        "masks": PREFETCH_THREAD_DIAGNOSTIC_MASKS,
+        "prefetch": ("on",),
+        "accounting": ("on",),
+        "rounds": 1,
+        "expected_processes": PREFETCH_THREAD_DIAGNOSTIC_PROCESS_COUNT,
+        "passes": 1,
+        "thread_diagnostic": True,
+        "thread_configurations": PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS,
+        "app_profile": "prefetch-thread-diagnostics",
         "workload_images": EXPECTED_JPEGS,
     },
 }
@@ -270,6 +290,25 @@ PREFETCH_DIAGNOSTIC_DERIVED_FIELDS = (
     ("geometryDrawNsPerMaterialization", "prefetch_geometry_draw_ns_per_materialization"),
     ("geometryDrawNsPerSourceMegapixel", "prefetch_geometry_draw_ns_per_source_megapixel"),
     ("geometryDrawNsPerOutputMegapixel", "prefetch_geometry_draw_ns_per_output_megapixel"),
+)
+PREFETCH_THREAD_COUNTER_FIELDS = (
+    ("preparationEntryCount", "preparation_entry_count"),
+    ("preparationEntryTotalNs", "preparation_entry_total_ns"),
+    ("threadCreateCount", "thread_create_count"),
+    ("threadObjectCreateNs", "thread_object_create_ns"),
+    ("threadStartCount", "thread_start_count"),
+    ("threadStartCallNs", "thread_start_call_ns"),
+    ("threadStartLatencyNs", "thread_start_latency_ns"),
+    ("decodeEntryCount", "decode_entry_count"),
+    ("decodeWorkerNs", "decode_worker_ns"),
+    ("uiDispatchCount", "ui_dispatch_count"),
+    ("uiDispatchWaitNs", "ui_dispatch_wait_ns"),
+    ("adoptNs", "adopt_ns"),
+    ("finishPreparationNs", "finish_preparation_ns"),
+    ("finishBookkeepingNs", "finish_bookkeeping_ns"),
+    ("workerPollCount", "worker_poll_count"),
+    ("workerSleepRequestedNs", "worker_sleep_requested_ns"),
+    ("workerIdleElapsedNs", "worker_idle_elapsed_ns"),
 )
 SAVE_COUNT_BUCKETS = ("0", "1", "2", "3", "4", "5OrMore")
 MAPPING_SUBREASONS = (
@@ -726,16 +765,21 @@ def physical_summary_fields(target):
     return fields
 
 
-def configuration_key(profile, run, mask, prefetch, accounting, rendering_reuse=None):
+def configuration_key(profile, run, mask, prefetch, accounting, rendering_reuse=None,
+                      prefetch_thread_mode=None, prefetch_worker_sleep_ms=None):
+    configuration = [profile, run, mask, prefetch, accounting, rendering_reuse]
+    if prefetch_thread_mode is not None:
+        configuration.extend((prefetch_thread_mode, prefetch_worker_sleep_ms))
     return json.dumps(
-        [profile, run, mask, prefetch, accounting, rendering_reuse],
+        configuration,
         separators=(",", ":"),
     )
 
 
 def append_failure_record(output, profile, run, mask, prefetch, accounting,
                           rendering_reuse, error, log_path, artifact_paths,
-                          status, classification, fatal, scope="process"):
+                          status, classification, fatal, scope="process",
+                          prefetch_thread_mode=None, prefetch_worker_sleep_ms=None):
     configuration = {
         "profile": profile,
         "run": run,
@@ -744,13 +788,17 @@ def append_failure_record(output, profile, run, mask, prefetch, accounting,
         "accounting": accounting,
         "renderingReuse": rendering_reuse,
     }
+    if prefetch_thread_mode is not None:
+        configuration["prefetchThreadMode"] = prefetch_thread_mode
+        configuration["prefetchWorkerSleepMs"] = prefetch_worker_sleep_ms
     record = {
         "status": status,
         "classification": classification,
         "fatal": fatal,
         "scope": scope,
         "configurationKey": configuration_key(
-            profile, run, mask, prefetch, accounting, rendering_reuse
+            profile, run, mask, prefetch, accounting, rendering_reuse,
+            prefetch_thread_mode, prefetch_worker_sleep_ms,
         ),
         "configuration": configuration,
         "messages": [str(error)],
@@ -770,11 +818,13 @@ def append_failure_record(output, profile, run, mask, prefetch, accounting,
 
 def append_validation_failure(output, profile, run, mask, prefetch, accounting,
                               rendering_reuse, error, log_path, artifact_paths,
-                              scope="process"):
+                              scope="process", prefetch_thread_mode=None,
+                              prefetch_worker_sleep_ms=None):
     record = append_failure_record(
         output, profile, run, mask, prefetch, accounting, rendering_reuse,
         error, log_path, artifact_paths, "VALIDATION_FAILED",
         "NON_FATAL_VALIDATION", False, scope,
+        prefetch_thread_mode, prefetch_worker_sleep_ms,
     )
     print(
         f"WARNING {profile} run={run} mask={mask} reuse={rendering_reuse} "
@@ -785,10 +835,13 @@ def append_validation_failure(output, profile, run, mask, prefetch, accounting,
 
 
 def append_execution_failure(output, profile, run, mask, prefetch, accounting,
-                             rendering_reuse, error, log_path, artifact_paths):
+                             rendering_reuse, error, log_path, artifact_paths,
+                             prefetch_thread_mode=None, prefetch_worker_sleep_ms=None):
     record = append_failure_record(
         output, profile, run, mask, prefetch, accounting, rendering_reuse,
         error, log_path, artifact_paths, "INCOMPLETE", "FATAL_EXECUTION", True,
+        prefetch_thread_mode=prefetch_thread_mode,
+        prefetch_worker_sleep_ms=prefetch_worker_sleep_ms,
     )
     print(
         f"ERROR {profile} run={run} mask={mask} reuse={rendering_reuse} "
@@ -863,11 +916,6 @@ def preflight(bundle, manifest, output, phase):
             "preserve the directory for review and start with a fresh bundle "
             "or restore a complete self-test state"
         )
-    if phase not in ("self-test", "full") and state == "CLEAN_START":
-        raise FatalBenchmarkFailure(
-            f"results state is clean for {output}; run --phase self-test "
-            "before resuming benchmark processes"
-        )
     try:
         output.mkdir(parents=True, exist_ok=True)
     except OSError as error:
@@ -926,6 +974,16 @@ def load_manifest(bundle):
     require(manifest.get("prefetchDiagnosticProcessCount")
             == PREFETCH_DIAGNOSTIC_PROCESS_COUNT,
             "manifest prefetch diagnostic process count differs")
+    require(tuple(manifest.get("prefetchThreadDiagnosticMasks", ()))
+            == PREFETCH_THREAD_DIAGNOSTIC_MASKS,
+            "manifest prefetch thread diagnostic masks differ")
+    require(tuple(tuple(item) for item in manifest.get(
+                "prefetchThreadDiagnosticConfigurations", ()))
+            == PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS,
+            "manifest prefetch thread diagnostic configurations differ")
+    require(manifest.get("prefetchThreadDiagnosticProcessCount")
+            == PREFETCH_THREAD_DIAGNOSTIC_PROCESS_COUNT,
+            "manifest prefetch thread diagnostic process count differs")
     require(manifest.get("selfTestPhaseCount") == 1,
             "manifest selfTestPhaseCount differs")
     require(manifest.get("includeDecodeAssets") in (False, True),
@@ -974,6 +1032,15 @@ def load_manifest(bundle):
             "masks": list(PREFETCH_DIAGNOSTIC_MASKS), "prefetch": ["on"],
             "accounting": ["on"], "renderingReuse": [], "rounds": 1,
             "processCount": PREFETCH_DIAGNOSTIC_PROCESS_COUNT, "passes": 1,
+            "workloadImages": EXPECTED_JPEGS,
+        },
+        "prefetch-thread-diagnostics": {
+            "masks": list(PREFETCH_THREAD_DIAGNOSTIC_MASKS),
+            "prefetch": ["on"], "accounting": ["on"],
+            "renderingReuse": [], "rounds": 1, "passes": 1,
+            "processCount": PREFETCH_THREAD_DIAGNOSTIC_PROCESS_COUNT,
+            "threadConfigurations": [list(item)
+                                     for item in PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS],
             "workloadImages": EXPECTED_JPEGS,
         },
     }
@@ -1454,6 +1521,75 @@ def validate_prefetch_diagnostic_counters(counters, run_dir):
     return values
 
 
+def validate_prefetch_thread_run_artifacts(summary, counters, run_dir, mask,
+                                           prefetch_thread_mode,
+                                           prefetch_worker_sleep_ms):
+    require(prefetch_thread_mode in ("legacy", "worker"),
+            f"{run_dir} has an unknown prefetch thread mode")
+    expected_sleep_ms = 0 if prefetch_thread_mode == "legacy" else prefetch_worker_sleep_ms
+    require(expected_sleep_ms in (0, 1, 2),
+            f"{run_dir} has an unsupported prefetch worker sleep")
+    require(summary.get("prefetchThreadMode") == prefetch_thread_mode,
+            f"{run_dir}/summary.json prefetch thread mode mismatch")
+    require(summary.get("prefetchWorkerSleepMs") == expected_sleep_ms,
+            f"{run_dir}/summary.json prefetch worker sleep mismatch")
+    require(summary.get("prefetch") == "on" and summary.get("accounting") == "on",
+            f"{run_dir}/summary.json must enable prefetch accounting")
+    require(summary.get("imageCount") == EXPECTED_JPEGS,
+            f"{run_dir}/summary.json image count mismatch")
+    require(summary.get("requestedMask") == mask and summary.get("effectiveMask") == mask,
+            f"{run_dir}/summary.json mask mismatch")
+    require_nonnegative_ns(summary.get("prefetchElapsedNs"),
+                           f"{run_dir}/summary.json prefetchElapsedNs")
+    prefetch_phase_summary_fields(summary, run_dir / "summary.json", required=True)
+    jpeg_geometry = validate_prefetch_diagnostic_counters(counters, run_dir)
+    phases = counters.get("prefetchPhases")
+    require(isinstance(phases, dict), f"{run_dir}/counters.json lacks prefetchPhases")
+    require(phases.get("prefetchThreadMode") == prefetch_thread_mode,
+            f"{run_dir}/counters.json prefetch thread mode mismatch")
+    require_nonnegative_count(phases.get("prefetchWorkerSleepMs"),
+                              f"{run_dir} prefetchWorkerSleepMs")
+    require(phases.get("prefetchWorkerSleepMs") == expected_sleep_ms,
+            f"{run_dir}/counters.json prefetch worker sleep mismatch")
+    values = {
+        csv_name: counter_value(
+            phases, json_name, f"{run_dir} prefetch thread phase {json_name}"
+        )
+        for json_name, csv_name in PREFETCH_THREAD_COUNTER_FIELDS
+    }
+    decoded_entries = values["decode_entry_count"]
+    require(values["preparation_entry_count"] >= decoded_entries,
+            f"{run_dir} decoded entry count exceeds activated preparation entries")
+    require(values["ui_dispatch_count"] <= decoded_entries,
+            f"{run_dir} UI dispatch count exceeds decoded entries")
+    if decoded_entries:
+        if prefetch_thread_mode == "legacy":
+            require(values["thread_create_count"] == decoded_entries,
+                    f"{run_dir} legacy thread count differs from decoded entries")
+        else:
+            require(values["thread_create_count"] == 1,
+                    f"{run_dir} worker mode did not create exactly one worker thread")
+            require(values["worker_poll_count"] > 0,
+                    f"{run_dir} worker mode did not record a polling sleep")
+    else:
+        require(values["thread_create_count"] == 0,
+                f"{run_dir} created a prefetch thread without decode entries")
+    require(values["thread_start_count"] == values["thread_create_count"],
+            f"{run_dir} thread start count differs from created threads")
+    if prefetch_thread_mode == "worker":
+        expected_requested_ns = (
+            values["worker_poll_count"] * expected_sleep_ms * 1000000
+        )
+        require(values["worker_sleep_requested_ns"] == expected_requested_ns,
+                f"{run_dir} requested worker sleep time does not match poll count")
+    else:
+        require(values["worker_poll_count"] == 0
+                and values["worker_sleep_requested_ns"] == 0
+                and values["worker_idle_elapsed_ns"] == 0,
+                f"{run_dir} legacy mode recorded worker polling")
+    return {**jpeg_geometry, **values}
+
+
 def validate_structural_diagnostics(counters, run_dir, mask, allow_inactive=False):
     """Require every approved M3 path to expose activity or a measured reject."""
     path_specs = (
@@ -1778,6 +1914,14 @@ def tail(path, count=60):
 def expected_run_dir(output, mask, prefetch, accounting, run):
     return output / "runs" / (
         f"mask-{mask}-prefetch-{prefetch}-accounting-{accounting}-run-{run}"
+    )
+
+
+def expected_prefetch_thread_run_dir(output, prefetch_thread_mode,
+                                    prefetch_worker_sleep_ms, mask, run):
+    return output / "runs" / (
+        f"prefetch-thread-{prefetch_thread_mode}-sleep-{prefetch_worker_sleep_ms}"
+        f"-mask-{mask}-run-{run}"
     )
 
 
@@ -2312,7 +2456,7 @@ def run_scroll_reuse_matrix(bundle, manifest, output, corpus_digest, profile, tr
 def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, dataset_digest,
                            require_policy_diagnostics=False,
                            require_structural_diagnostics=False, passes=1,
-                           physical_baseline=None):
+                           physical_baseline=None, run_dir=None):
     if passes != 1:
         return validate_reuse_run_artifacts(
             output, log_path, mask, prefetch, accounting, run, dataset_digest,
@@ -2373,7 +2517,7 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
         require(summary_record.get("prefetch_not_prefetchable_count") == "3",
                 f"{log_path.name} prefetch not-prefetchable count is not 3")
 
-    run_dir = expected_run_dir(output, mask, prefetch, accounting, run)
+    run_dir = run_dir or expected_run_dir(output, mask, prefetch, accounting, run)
     for name in ("summary.json", "frames.csv", "counters.json", "memory.csv", "timeline.csv"):
         require((run_dir / name).is_file(), f"{run_dir / name} is missing")
     try:
@@ -2415,11 +2559,13 @@ def validate_run_artifacts(output, log_path, mask, prefetch, accounting, run, da
 
 def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run, label,
                 require_policy_diagnostics=False, require_structural_diagnostics=False,
-                passes=1, profile_name="matrix"):
+                passes=1, profile_name="matrix", prefetch_thread_mode=None,
+                prefetch_worker_sleep_ms=None, profile_run_dir=None, app_profile=None):
     executable = executable_path(bundle, manifest)
     logs = output / "logs"
     logs.mkdir(parents=True, exist_ok=True)
     log_path = logs / f"{label}.log"
+    run_dir = profile_run_dir or expected_run_dir(output, mask, prefetch, accounting, run)
     command = [
         str(executable),
         "/scr", SCREEN_SPEC,
@@ -2438,6 +2584,15 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         f"--run={run}",
         f"--dataset-hash={corpus_digest}",
     ]
+    if prefetch_thread_mode is not None:
+        require(prefetch_worker_sleep_ms is not None,
+                "prefetch thread mode requires a worker sleep value")
+        command.extend((
+            f"--prefetch-thread-mode={prefetch_thread_mode}",
+            f"--prefetch-worker-sleep-ms={prefetch_worker_sleep_ms}",
+        ))
+    if app_profile is not None:
+        command.append(f"--profile={app_profile}")
     try:
         with log_path.open("w", encoding="utf-8") as log:
             completed = subprocess.run(
@@ -2453,7 +2608,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         append_execution_failure(
             output, profile_name, run, mask, prefetch, accounting, None,
             reason, log_path,
-            [expected_run_dir(output, mask, prefetch, accounting, run)],
+            [run_dir], prefetch_thread_mode, prefetch_worker_sleep_ms,
         )
         print(f"{label} failed: {reason}; log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
@@ -2463,7 +2618,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         append_execution_failure(
             output, profile_name, run, mask, prefetch, accounting, None,
             reason, log_path,
-            [expected_run_dir(output, mask, prefetch, accounting, run)],
+            [run_dir], prefetch_thread_mode, prefetch_worker_sleep_ms,
         )
         raise BenchmarkFailure(f"{label} failed: {reason}") from error
     if completed.returncode:
@@ -2475,7 +2630,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         append_execution_failure(
             output, profile_name, run, mask, prefetch, accounting, None,
             reason, log_path,
-            [expected_run_dir(output, mask, prefetch, accounting, run)],
+            [run_dir], prefetch_thread_mode, prefetch_worker_sleep_ms,
         )
         print(f"{label} failed: {reason}; log={log_path}", file=sys.stderr)
         print(tail(log_path), file=sys.stderr)
@@ -2491,7 +2646,7 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         summary = validate_run_artifacts(
             output, log_path, mask, prefetch, accounting, run, corpus_digest,
             require_policy_diagnostics, require_structural_diagnostics, passes,
-            physical_baseline,
+            physical_baseline, run_dir,
         )
         if profile_name == "prefetch-diagnostics":
             run_dir = expected_run_dir(output, mask, prefetch, accounting, run)
@@ -2502,20 +2657,29 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
                 read_json_file(run_dir / "counters.json", "diagnostic counters"),
                 run_dir,
             )
+        elif profile_name == "prefetch-thread-diagnostics":
+            validate_prefetch_thread_run_artifacts(
+                summary, read_json_file(run_dir / "counters.json", "thread diagnostic counters"),
+                run_dir, mask, prefetch_thread_mode, prefetch_worker_sleep_ms,
+            )
     except FatalBenchmarkFailure:
         raise
     except BenchmarkFailure as error:
         append_validation_failure(
             output, profile_name, run, mask, prefetch, accounting,
             None, error, log_path,
-            [expected_run_dir(output, mask, prefetch, accounting, run)],
+            [run_dir], prefetch_thread_mode=prefetch_thread_mode,
+            prefetch_worker_sleep_ms=prefetch_worker_sleep_ms,
         )
         return "VALIDATION_FAILED"
+    thread_details = (
+        f"thread_mode={prefetch_thread_mode},worker_sleep_ms={prefetch_worker_sleep_ms},"
+        if prefetch_thread_mode is not None else ""
+    )
     print(f"{label} passed,exit_code=0,resolution=540x960,"
           f"requested_mask={mask},effective_mask={mask},prefetch={prefetch},"
-          f"accounting={accounting},"
-          f"physical_target={physical_baseline},"
-          f"artifacts={expected_run_dir(output, mask, prefetch, accounting, run)}")
+          f"accounting={accounting},{thread_details}"
+          f"physical_target={physical_baseline},artifacts={run_dir}")
     return "PASS"
 
 
@@ -2569,6 +2733,37 @@ def write_suite_plan(output, masks, prefetch_profiles, accounting_profiles, roun
                  for _, _, run, mask, prefetch, accounting in planned})
             == expected_processes, "suite plan contains duplicate runs")
     (output / "suite-plan.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return planned
+
+
+def write_prefetch_thread_suite_plan(output, profile):
+    lines = ["order\trun\tthread_mode\tworker_sleep_ms\tmask\tprefetch\taccounting"]
+    planned = []
+    run = 1
+    for thread_mode, sleep_ms in profile["thread_configurations"]:
+        for mask in profile["masks"]:
+            order = run - 1
+            planned.append((order, run, thread_mode, sleep_ms, mask, "on", "on"))
+            lines.append(
+                f"{order}\t{run}\t{thread_mode}\t{sleep_ms}\t{mask}\ton\ton"
+            )
+            run += 1
+    require(len(planned) == profile["expected_processes"],
+            "prefetch thread plan process count differs")
+    expected = {
+        (thread_mode, sleep_ms, mask)
+        for thread_mode, sleep_ms in profile["thread_configurations"]
+        for mask in profile["masks"]
+    }
+    require({(mode, sleep_ms, mask) for _, _, mode, sleep_ms, mask, _, _ in planned}
+            == expected, "prefetch thread plan combinations differ")
+    require(len({(mode, sleep_ms, mask, run_number)
+                 for _, run_number, mode, sleep_ms, mask, _, _ in planned})
+            == profile["expected_processes"],
+            "prefetch thread plan contains duplicate runs")
+    (output / "prefetch-thread-diagnostics-suite-plan.tsv").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
     return planned
 
 
@@ -3164,11 +3359,19 @@ def aggregate_reuse(output, plan, masks, prefetch_profiles, accounting_profiles,
 def write_zip(bundle, output):
     archive = output / f"totalcross-image-benchmark-results-{time.time_ns()}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as destination:
-        for path in sorted(bundle.rglob("*")):
-            if (path.is_file() and path != archive
-                    and not path.name.startswith("totalcross-image-benchmark-results-")):
-                destination.write(path, path.relative_to(bundle).as_posix())
-    print(f"final ZIP={archive}")
+        results_files = sorted(path for path in output.rglob("*")
+                               if path.is_file() and not path.is_symlink()
+                               and path != archive
+                               and not path.name.startswith(
+                                   "totalcross-image-benchmark-results-"))
+        for path in results_files:
+            destination.write(path, path.relative_to(bundle).as_posix())
+        debug_console = bundle / "DebugConsole.txt"
+        debug_console_included = debug_console.is_file() and not debug_console.is_symlink()
+        if debug_console_included:
+            destination.write(debug_console, "DebugConsole.txt")
+    debug_status = "included" if debug_console_included else "absent"
+    print(f"final ZIP={archive},debug_console={debug_status}")
     return archive
 
 
@@ -3187,8 +3390,156 @@ def run_decode_phase(bundle, phase):
             f"decode {phase} phase failed with exit code {completed.returncode}")
 
 
+def aggregate_prefetch_thread_diagnostics(output, plan):
+    failures = load_validation_failures(output)
+    rows = []
+    for order, run, thread_mode, sleep_ms, mask, prefetch, accounting in plan:
+        run_dir = expected_prefetch_thread_run_dir(output, thread_mode, sleep_ms, mask, run)
+        key = configuration_key(
+            "prefetch-thread-diagnostics", run, mask, prefetch, accounting,
+            prefetch_thread_mode=thread_mode, prefetch_worker_sleep_ms=sleep_ms,
+        )
+        failure = failures.get(key)
+        summary_path = run_dir / "summary.json"
+        counters_path = run_dir / "counters.json"
+        summary = None
+        counters = None
+        if summary_path.is_file():
+            try:
+                summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as error:
+                if failure is None:
+                    raise BenchmarkFailure(f"invalid thread summary: {summary_path}") from error
+        if counters_path.is_file():
+            try:
+                counters = json.loads(counters_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as error:
+                if failure is None:
+                    raise BenchmarkFailure(f"invalid thread counters: {counters_path}") from error
+        if failure is None:
+            require(summary is not None and counters is not None,
+                    f"thread diagnostic artifacts are missing for {run_dir}")
+            metrics = validate_prefetch_thread_run_artifacts(
+                summary, counters, run_dir, mask, thread_mode, sleep_ms,
+            )
+            validation_status = "VALID"
+            validation_error = ""
+            status = "PASS"
+        else:
+            metrics = {}
+            phases = counters.get("prefetchPhases", {}) if isinstance(counters, dict) else {}
+            metrics.update({
+                csv_name: phases.get(json_name)
+                for json_name, csv_name in PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
+            })
+            metrics.update({
+                csv_name: phases.get(json_name)
+                for json_name, csv_name in PREFETCH_DIAGNOSTIC_DERIVED_FIELDS
+            })
+            metrics.update({
+                csv_name: phases.get(json_name)
+                for json_name, csv_name in PREFETCH_THREAD_COUNTER_FIELDS
+            })
+            validation_status = "VALIDATION_FAILED"
+            validation_error = validation_failure_message(failure)
+            status = "VALIDATION_FAILED"
+        row = {
+            "order": order,
+            "run": run,
+            "thread_mode": thread_mode,
+            "worker_sleep_ms": sleep_ms,
+            "mask": mask,
+            "prefetch": prefetch,
+            "accounting": accounting,
+            "status": status,
+            "validation_status": validation_status,
+            "validation_error": validation_error,
+            "prefetch_elapsed_ns": summary.get("prefetchElapsedNs") if summary else None,
+            **metrics,
+        }
+        for json_name, csv_name in PREFETCH_PHASE_SUMMARY_FIELDS:
+            row[csv_name] = summary.get(json_name) if summary else None
+        rows.append(row)
+    require(len(rows) == PREFETCH_THREAD_DIAGNOSTIC_PROCESS_COUNT,
+            "prefetch thread aggregation did not produce six process rows")
+    fields = [
+        "order", "run", "thread_mode", "worker_sleep_ms", "mask", "prefetch",
+        "accounting", "status", "validation_status", "validation_error",
+        "prefetch_elapsed_ns",
+        *(csv_name for _, csv_name in PREFETCH_PHASE_SUMMARY_FIELDS),
+        *(csv_name for _, csv_name in PREFETCH_DIAGNOSTIC_COUNTER_FIELDS),
+        *(csv_name for _, csv_name in PREFETCH_DIAGNOSTIC_DERIVED_FIELDS),
+        *(csv_name for _, csv_name in PREFETCH_THREAD_COUNTER_FIELDS),
+    ]
+    csv_path = output / "prefetch-thread-diagnostics.csv"
+    with csv_path.open("w", newline="", encoding="utf-8") as destination:
+        writer = csv.DictWriter(destination, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(sorted(rows, key=lambda row: row["run"]))
+
+    row_lookup = {(row["thread_mode"], row["worker_sleep_ms"], row["mask"]): row
+                  for row in rows}
+    comparisons = []
+    for mask in PREFETCH_THREAD_DIAGNOSTIC_MASKS:
+        legacy = row_lookup[("legacy", 0, mask)]
+        for sleep_ms in (1, 2):
+            worker = row_lookup[("worker", sleep_ms, mask)]
+            valid = (legacy["status"] == "PASS" and worker["status"] == "PASS")
+            legacy_elapsed = legacy["prefetch_elapsed_ns"]
+            worker_elapsed = worker["prefetch_elapsed_ns"]
+            valid = (valid and type(legacy_elapsed) is int and type(worker_elapsed) is int)
+            comparisons.append({
+                "mask": mask,
+                "workerSleepMs": sleep_ms,
+                "legacyPrefetchElapsedNs": legacy_elapsed,
+                "workerPrefetchElapsedNs": worker_elapsed,
+                "deltaNs": worker_elapsed - legacy_elapsed if valid else None,
+                "status": "VALID" if valid else "INCOMPLETE_VALIDATION",
+            })
+    json_path = output / "prefetch-thread-diagnostics-summary.json"
+    write_json_file(json_path, {
+        "status": ("PASS" if all(row["status"] == "PASS" for row in rows)
+                   else "PASS_WITH_VALIDATION_FAILURES"),
+        "comparisonSemantics": "descriptive_only",
+        "expectedProcessCount": PREFETCH_THREAD_DIAGNOSTIC_PROCESS_COUNT,
+        "processCount": len(rows),
+        "rows": rows,
+        "comparisons": comparisons,
+    }, "prefetch thread diagnostic summary")
+    print(f"prefetch thread aggregation passed,csv={csv_path},json={json_path},rows={len(rows)}")
+    return csv_path
+
+
+def run_prefetch_thread_diagnostic_profile(bundle, manifest, output, corpus_digest,
+                                           profile, tracker=None):
+    plan = write_prefetch_thread_suite_plan(output, profile)
+    if tracker is not None:
+        tracker["plannedProcessCount"] += len(plan)
+    for completed, (_, run, thread_mode, sleep_ms, mask, prefetch, accounting) in enumerate(
+            plan, start=1):
+        run_dir = expected_prefetch_thread_run_dir(output, thread_mode, sleep_ms, mask, run)
+        label = f"prefetch-thread-{thread_mode}-{sleep_ms}ms-mask-{mask}-run-{run}"
+        track_process_start(tracker)
+        status = run_process(
+            bundle, manifest, output, corpus_digest, mask, prefetch, accounting, run, label,
+            passes=profile["passes"], profile_name=profile["name"],
+            prefetch_thread_mode=thread_mode,
+            prefetch_worker_sleep_ms=sleep_ms, profile_run_dir=run_dir,
+            app_profile=profile["app_profile"],
+        )
+        track_process_complete(tracker, status)
+        print(f"prefetch thread progress={completed}/{profile['expected_processes']}")
+    require(len(plan) == profile["expected_processes"],
+            "prefetch thread profile did not launch six processes")
+    return aggregate_prefetch_thread_diagnostics(output, plan)
+
+
 def run_scroll_profile(bundle, manifest, output, corpus_digest, profile_name, tracker=None):
     profile = profile_config(profile_name)
+    if profile.get("thread_diagnostic"):
+        return run_prefetch_thread_diagnostic_profile(
+            bundle, manifest, output, corpus_digest, profile, tracker
+        )
     if profile.get("rendering_reuse"):
         return run_scroll_reuse_matrix(
             bundle, manifest, output, corpus_digest, profile, tracker
@@ -3300,13 +3651,13 @@ def run_phase(bundle, phase, profile_name):
         return
     manifest = load_manifest(bundle)
     output = bundle / "results"
-    preflight(bundle, manifest, output, phase)
-    if phase in ("self-test", "full"):
+    results_state = preflight(bundle, manifest, output, phase)
+    if results_state == "CLEAN_START":
         _, _, corpus_digest = self_test(bundle, manifest, output)
     else:
         _, images, corpus_digest, _ = validate_bundle(bundle, manifest)
         require((output / "self-test.json").is_file(),
-                "self-test must pass before this phase")
+                "valid resume state is missing its self-test marker")
         require(len(images) == EXPECTED_JPEGS, "corpus changed after self-test")
     if phase == "self-test":
         return
@@ -3380,6 +3731,7 @@ def main(argv):
             "self-test", "smokes", "matrix", "full", "reduced-image-optimizations",
             "scroll-raster-correctness", "scroll-raster-performance",
             "release-default-scroll", "release-candidate-scroll", "prefetch-diagnostics",
+            "prefetch-thread-diagnostics",
             "decode-self-test",
             "decode-smokes", "decode-full",
         ), default="full",

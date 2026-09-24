@@ -131,7 +131,8 @@ def assert_clean_full_and_resume_preflight():
 
         with mock.patch.object(RUNNER, "load_manifest", return_value=manifest), \
                 mock.patch.object(RUNNER, "validate_bundle", return_value=(
-                    bundle / "corpus", [], "test-digest", bundle / "benchmark-app"
+                    bundle / "corpus", list(range(RUNNER.EXPECTED_JPEGS)),
+                    "test-digest", bundle / "benchmark-app"
                 )), \
                 mock.patch.object(RUNNER, "self_test", side_effect=fake_self_test), \
                 mock.patch.object(RUNNER, "run_scroll_profile"), \
@@ -145,18 +146,239 @@ def assert_clean_full_and_resume_preflight():
         require(summary["status"] == "PASS",
                 "clean full execution did not write a PASS summary")
 
-    with tempfile.TemporaryDirectory(prefix="image-scroll-resume-preflight-test-") as temp:
+    with tempfile.TemporaryDirectory(prefix="image-scroll-auto-self-test-test-") as temp:
         bundle = Path(temp) / "bundle"
         bundle.mkdir()
         output = bundle / "results"
+        calls = []
+
+        def fake_self_test(_bundle, test_manifest, test_output):
+            calls.append("self-test")
+            (test_output / "self-test.json").write_text(json.dumps({
+                "fixture": RUNNER.FIXTURE, "status": "PASS",
+                "datasetFileCount": RUNNER.EXPECTED_JPEGS,
+                "sourceCommit": test_manifest["sourceCommit"],
+            }))
+            RUNNER.write_execution_state(test_output, "SELF_TEST_PASS", test_manifest)
+            return test_output, [], "test-digest"
+
+        with mock.patch.object(RUNNER, "load_manifest", return_value=manifest), \
+                mock.patch.object(RUNNER, "validate_bundle", return_value=(
+                    bundle / "corpus", list(range(RUNNER.EXPECTED_JPEGS)),
+                    "test-digest", bundle / "benchmark-app"
+                )), \
+                mock.patch.object(RUNNER, "self_test", side_effect=fake_self_test), \
+                mock.patch.object(RUNNER, "run_scroll_profile") as run_profile, \
+                mock.patch.object(RUNNER, "write_zip"):
+            RUNNER.run_phase(bundle, "matrix", "prefetch-diagnostics")
+        require(calls == ["self-test"],
+                "clean non-decode phase did not automatically run self-test")
+        require(run_profile.call_count == 1,
+                "clean non-decode phase did not continue to its requested profile")
+
+    with tempfile.TemporaryDirectory(prefix="image-scroll-valid-self-test-resume-") as temp:
+        bundle = Path(temp) / "bundle"
+        output = bundle / "results"
+        bundle.mkdir()
+        output.mkdir()
+        marker = {
+            "fixture": RUNNER.FIXTURE, "status": "PASS",
+            "datasetFileCount": RUNNER.EXPECTED_JPEGS,
+            "sourceCommit": manifest["sourceCommit"],
+            "runtimeSha256": manifest["runtimeSha256"],
+        }
+        (output / "self-test.json").write_text(json.dumps(marker))
+        RUNNER.write_execution_state(output, "SELF_TEST_PASS", manifest)
+        with mock.patch.object(RUNNER, "load_manifest", return_value=manifest), \
+                mock.patch.object(RUNNER, "validate_bundle", return_value=(
+                    bundle / "corpus", list(range(RUNNER.EXPECTED_JPEGS)),
+                    "test-digest", bundle / "benchmark-app"
+                )), \
+                mock.patch.object(RUNNER, "self_test") as self_test:
+            RUNNER.run_phase(bundle, "self-test", "full")
+        self_test.assert_not_called()
+
+    with tempfile.TemporaryDirectory(prefix="image-scroll-partial-results-test-") as temp:
+        bundle = Path(temp) / "bundle"
+        output = bundle / "results"
+        output.mkdir(parents=True)
+        sentinel = output / "partial.txt"
+        sentinel.write_text("preserve me")
         with mock.patch.object(RUNNER, "validate_bundle"):
             try:
-                RUNNER.preflight(bundle, manifest, output, "matrix")
+                RUNNER.preflight(bundle, manifest, output, "prefetch-thread-diagnostics")
             except RUNNER.FatalBenchmarkFailure as error:
-                require("run --phase self-test" in str(error),
-                        "clean resume failure did not explain the required self-test")
+                require("partial/invalid" in str(error),
+                        "partial results failure did not identify the state")
             else:
-                raise AssertionError("clean resume phase was accepted without self-test")
+                raise AssertionError("partial results state was overwritten")
+        require(sentinel.read_text() == "preserve me"
+                and not (output / "self-test.json").exists(),
+                "partial results preflight changed existing data")
+
+
+def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
+    summary = {
+        "prefetchThreadMode": mode,
+        "prefetchWorkerSleepMs": sleep_ms,
+        "prefetch": "on",
+        "accounting": "on",
+        "imageCount": RUNNER.EXPECTED_JPEGS,
+        "requestedMask": mask,
+        "effectiveMask": mask,
+        "prefetchElapsedNs": elapsed_ns,
+        "uiBuildElapsedNs": 1,
+    }
+    for json_name, _ in RUNNER.PREFETCH_PHASE_SUMMARY_FIELDS:
+        summary[json_name] = 1
+    phases = {
+        json_name: 0 for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
+    }
+    phases.update({
+        json_name: None for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_DERIVED_FIELDS
+    })
+    phases["geometryUnaccountedNs"] = 0
+    thread_counts = {
+        "preparationEntryCount": 1,
+        "preparationEntryTotalNs": 10,
+        "threadCreateCount": 1,
+        "threadObjectCreateNs": 2,
+        "threadStartCount": 1,
+        "threadStartCallNs": 3,
+        "threadStartLatencyNs": 4,
+        "decodeEntryCount": 1,
+        "decodeWorkerNs": 5,
+        "uiDispatchCount": 1,
+        "uiDispatchWaitNs": 6,
+        "adoptNs": 7,
+        "finishPreparationNs": 8,
+        "finishBookkeepingNs": 9,
+        "workerPollCount": 1 if mode == "worker" else 0,
+        "workerSleepRequestedNs": sleep_ms * 1_000_000 if mode == "worker" else 0,
+        "workerIdleElapsedNs": 11 if mode == "worker" else 0,
+    }
+    phases.update({"prefetchThreadMode": mode, "prefetchWorkerSleepMs": sleep_ms})
+    phases.update(thread_counts)
+    return summary, {"accountingEnabled": True, "prefetchPhases": phases}
+
+
+def assert_prefetch_thread_diagnostics():
+    profile = RUNNER.profile_config("prefetch-thread-diagnostics")
+    require(profile["masks"] == (6, 38)
+            and profile["thread_configurations"] == (("legacy", 0),
+                                                       ("worker", 1),
+                                                       ("worker", 2)),
+            "prefetch thread diagnostic configuration differs")
+    with tempfile.TemporaryDirectory(prefix="image-scroll-prefetch-thread-test-") as temp:
+        output = Path(temp)
+        plan = RUNNER.write_prefetch_thread_suite_plan(output, profile)
+        expected = [
+            (mode, sleep_ms, mask)
+            for mode, sleep_ms in profile["thread_configurations"]
+            for mask in profile["masks"]
+        ]
+        require([(mode, sleep_ms, mask) for _, _, mode, sleep_ms, mask, _, _ in plan]
+                == expected and len(plan) == 6,
+                "prefetch thread suite plan is not the exact six-process matrix")
+        run_dirs = [RUNNER.expected_prefetch_thread_run_dir(
+            output, mode, sleep_ms, mask, run
+        ) for _, run, mode, sleep_ms, mask, _, _ in plan]
+        require(len(set(run_dirs)) == 6,
+                "prefetch thread run directories are not unique")
+
+        bundle = output / "bundle"
+        bundle.mkdir()
+        custom_run_dir = RUNNER.expected_prefetch_thread_run_dir(
+            output, "legacy", 0, 6, 1
+        )
+        captured = {}
+
+        def fake_subprocess(command, **_kwargs):
+            captured["command"] = command
+            return SimpleNamespace(returncode=0)
+
+        with mock.patch.object(RUNNER, "executable_path", return_value=bundle / "app"), \
+                mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_subprocess), \
+                mock.patch.object(RUNNER, "enrich_environment_metadata", return_value={}), \
+                mock.patch.object(RUNNER, "capture_physical_target_baseline", return_value={}), \
+                mock.patch.object(RUNNER, "validate_run_artifacts", return_value={}), \
+                mock.patch.object(RUNNER, "read_json_file", return_value={}), \
+                mock.patch.object(RUNNER, "validate_prefetch_thread_run_artifacts"):
+            RUNNER.run_process(
+                bundle, {}, output, "digest", 6, "on", "on", 1, "thread-legacy",
+                profile_name="prefetch-thread-diagnostics",
+                prefetch_thread_mode="legacy", prefetch_worker_sleep_ms=0,
+                profile_run_dir=custom_run_dir,
+                app_profile="prefetch-thread-diagnostics",
+            )
+        command = captured["command"]
+        require("--prefetch-thread-mode=legacy" in command
+                and "--prefetch-worker-sleep-ms=0" in command
+                and "--profile=prefetch-thread-diagnostics" in command,
+                "runner omitted prefetch-thread app arguments")
+        require(RUNNER.configuration_key(
+                    "prefetch-thread-diagnostics", 1, 6, "on", "on",
+                    prefetch_thread_mode="worker", prefetch_worker_sleep_ms=1,
+                ) != RUNNER.configuration_key(
+                    "prefetch-thread-diagnostics", 1, 6, "on", "on",
+                    prefetch_thread_mode="worker", prefetch_worker_sleep_ms=2,
+                ), "thread strategy and sleep do not distinguish run keys")
+
+        elapsed_by = {("legacy", 0): 1000, ("worker", 1): 1100, ("worker", 2): 1200}
+        for _, run, mode, sleep_ms, mask, _, _ in plan:
+            run_dir = RUNNER.expected_prefetch_thread_run_dir(
+                output, mode, sleep_ms, mask, run
+            )
+            run_dir.mkdir(parents=True, exist_ok=True)
+            summary, counters = thread_artifacts(
+                mode, sleep_ms, mask, elapsed_by[(mode, sleep_ms)]
+            )
+            (run_dir / "summary.json").write_text(json.dumps(summary))
+            (run_dir / "counters.json").write_text(json.dumps(counters))
+        csv_path = RUNNER.aggregate_prefetch_thread_diagnostics(output, plan)
+        with csv_path.open(newline="", encoding="utf-8") as source:
+            csv_rows = list(csv.DictReader(source))
+        require(len(csv_rows) == 6
+                and all(row["status"] == "PASS" for row in csv_rows),
+                "prefetch thread aggregate did not retain six validated rows")
+        require({"prefetch_elapsed_ns", "prefetch_jpeg_decode_count",
+                 "prefetch_geometry_draw_ns",
+                 "preparation_entry_count", "thread_start_latency_ns",
+                 "worker_sleep_requested_ns"}.issubset(csv_rows[0]),
+                "prefetch thread CSV omitted existing or preparation metrics")
+        aggregate = json.loads((output / "prefetch-thread-diagnostics-summary.json").read_text())
+        require(aggregate["processCount"] == 6 and len(aggregate["rows"]) == 6,
+                "prefetch thread JSON summary process count differs")
+        require([(item["mask"], item["workerSleepMs"], item["deltaNs"])
+                 for item in aggregate["comparisons"]]
+                == [(mask, sleep_ms, sleep_ms * 100)
+                    for mask in (6, 38) for sleep_ms in (1, 2)],
+                "prefetch thread descriptive elapsed deltas differ")
+
+
+def assert_results_zip_contract():
+    with tempfile.TemporaryDirectory(prefix="image-scroll-results-zip-test-") as temp:
+        bundle = Path(temp) / "bundle"
+        output = bundle / "results"
+        nested = output / "runs" / "one"
+        nested.mkdir(parents=True)
+        bundle.mkdir(exist_ok=True)
+        (nested / "summary.json").write_text("{}")
+        (output / "totalcross-image-benchmark-results-old.zip").write_bytes(b"zip")
+        (bundle / "manifest.json").write_text("{}")
+        (bundle / "benchmark-app").write_text("app")
+        (bundle / "DebugConsole.txt").write_text("debug")
+        archive = RUNNER.write_zip(bundle, output)
+        with RUNNER.zipfile.ZipFile(archive) as source:
+            require(set(source.namelist()) == {"results/runs/one/summary.json",
+                                              "DebugConsole.txt"},
+                    "results ZIP contains files outside the contract")
+        archive.unlink()
+        (bundle / "DebugConsole.txt").unlink()
+        archive = RUNNER.write_zip(bundle, output)
+        with RUNNER.zipfile.ZipFile(archive) as source:
+            require(set(source.namelist()) == {"results/runs/one/summary.json"},
+                    "results ZIP without DebugConsole has unexpected files")
 
 
 def physical_environment(width, height, pixel_bytes=4, renderer="software"):
@@ -919,6 +1141,8 @@ def main():
             "default expected process count is not 31")
     assert_results_state_diagnostics()
     assert_clean_full_and_resume_preflight()
+    assert_prefetch_thread_diagnostics()
+    assert_results_zip_contract()
     assert_physical_target_baseline()
     assert_environment_metadata()
     assert_validation_failure_continuation()
@@ -1002,12 +1226,18 @@ def main():
             "package manifest exploratory pass count is not three")
     require('"prefetchDiagnosticProcessCount": 5' in package_script,
             "package manifest diagnostic process count is not five")
+    require('"prefetchThreadDiagnosticMasks": [6,38]' in package_script,
+            "package manifest prefetch thread masks differ")
+    require('"prefetchThreadDiagnosticProcessCount": 6' in package_script,
+            "package manifest prefetch thread process count differs")
     require('"passes":3,"processCount":11' in package_script,
             "package manifest exploratory process count is not eleven")
     require('"masks":[4,5,6,7,38,8198,16390,24582,32774,57350,32799]' in package_script,
             "package manifest exploratory masks differ")
     require('"prefetch-diagnostics": {"masks":[0,4,6,38,32799]' in package_script,
             "package manifest lacks prefetch diagnostic profile")
+    require('"prefetch-thread-diagnostics": {"masks":[6,38]' in package_script,
+            "package manifest lacks prefetch thread diagnostic profile")
     require('"release-candidate-scroll": {"masks":[32795]' in package_script,
             "package manifest lacks release candidate profile")
 

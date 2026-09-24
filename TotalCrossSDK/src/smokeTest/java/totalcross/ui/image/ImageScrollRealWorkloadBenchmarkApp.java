@@ -97,6 +97,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private String runOutputDir;
   private String datasetHashArgument;
   private String prefetchProfile;
+  private String prefetchThreadMode = ImagePreparation.PREFETCH_THREAD_MODE_LEGACY;
+  private int prefetchWorkerSleepMs;
   private String accountingProfile;
   private String benchmarkProfile;
   private boolean scrollRasterReuseProfile;
@@ -136,6 +138,23 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private long prefetchFullJpegDecodes;
   private long prefetchImageMaterializations;
   private long prefetchNativeGeometryMaterializations;
+  private long prefetchPreparationEntryCount;
+  private long prefetchPreparationEntryTotalNs;
+  private long prefetchThreadCreateCount;
+  private long prefetchThreadObjectCreateNs;
+  private long prefetchThreadStartCount;
+  private long prefetchThreadStartCallNs;
+  private long prefetchThreadStartLatencyNs;
+  private long prefetchDecodeEntryCount;
+  private long prefetchDecodeWorkerNs;
+  private long prefetchUiDispatchCount;
+  private long prefetchUiDispatchWaitNs;
+  private long prefetchAdoptNs;
+  private long prefetchFinishPreparationNs;
+  private long prefetchFinishBookkeepingNs;
+  private long prefetchWorkerPollCount;
+  private long prefetchWorkerSleepRequestedNs;
+  private long prefetchWorkerIdleElapsedNs;
   private Counters prefetchCounters;
   private boolean benchmarkStarted;
   private boolean prefetchComplete;
@@ -182,6 +201,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       scrollDurationNs = (long) scrollDurationMs * NANOS_PER_MILLISECOND;
       prefetchProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "prefetch", "off");
+      prefetchThreadMode = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "prefetch-thread-mode",
+          ImagePreparation.PREFETCH_THREAD_MODE_LEGACY);
+      int requestedWorkerSleepMs = ImageRasterBenchmarkSupport.integerArgument(
+          getCommandLine(), "prefetch-worker-sleep-ms", 0);
+      ImagePreparation.configurePrefetchThreadModeForDiagnostic(
+          prefetchThreadMode, requestedWorkerSleepMs);
+      prefetchThreadMode = ImagePreparation.prefetchThreadModeForTest();
+      prefetchWorkerSleepMs = ImagePreparation.prefetchWorkerSleepMsForTest();
       accountingProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "accounting", "on");
       benchmarkProfile = ImageRasterBenchmarkSupport.argument(
@@ -340,6 +368,23 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     prefetchFullJpegDecodes = Image.fullDecodeInvocationCountForTest();
     prefetchImageMaterializations = Image.materializationCountForTest();
     prefetchNativeGeometryMaterializations = Image.nativeGeometryMaterializationCountForTest();
+    prefetchPreparationEntryCount = ImagePreparation.preparationEntryCountForTest();
+    prefetchPreparationEntryTotalNs = ImagePreparation.preparationEntryTotalNsForTest();
+    prefetchThreadCreateCount = ImagePreparation.threadCreateCountForTest();
+    prefetchThreadObjectCreateNs = ImagePreparation.threadObjectCreateNsForTest();
+    prefetchThreadStartCount = ImagePreparation.threadStartCountForTest();
+    prefetchThreadStartCallNs = ImagePreparation.threadStartCallNsForTest();
+    prefetchThreadStartLatencyNs = ImagePreparation.threadStartLatencyNsForTest();
+    prefetchDecodeEntryCount = ImagePreparation.decodeEntryCountForTest();
+    prefetchDecodeWorkerNs = ImagePreparation.decodeWorkerNsForTest();
+    prefetchUiDispatchCount = ImagePreparation.uiDispatchCountForTest();
+    prefetchUiDispatchWaitNs = ImagePreparation.uiDispatchWaitNsForTest();
+    prefetchAdoptNs = ImagePreparation.adoptNsForTest();
+    prefetchFinishPreparationNs = ImagePreparation.finishPreparationNsForTest();
+    prefetchFinishBookkeepingNs = ImagePreparation.finishBookkeepingNsForTest();
+    prefetchWorkerPollCount = ImagePreparation.workerPollCountForTest();
+    prefetchWorkerSleepRequestedNs = ImagePreparation.workerSleepRequestedNsForTest();
+    prefetchWorkerIdleElapsedNs = ImagePreparation.workerIdleElapsedNsForTest();
     prefetchCounters = Counters.capture();
     validateJpegDiagnostics(prefetchCounters, "prefetch");
   }
@@ -385,6 +430,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",prefetch_full_jpeg_decodes=" + prefetchFullJpegDecodes
         + ",prefetch_image_materializations=" + prefetchImageMaterializations
         + ",prefetch_native_geometry_materializations=" + prefetchNativeGeometryMaterializations
+        + (prefetchThreadDiagnosticProfile()
+            ? ",prefetch_thread_mode=" + prefetchThreadMode
+                + ",prefetch_worker_sleep_ms=" + prefetchWorkerSleepMs
+                + ",prefetch_thread_create_count=" + prefetchThreadCreateCount
+                + ",prefetch_preparation_entry_total_ns=" + prefetchPreparationEntryTotalNs
+                + ",prefetch_worker_poll_count=" + prefetchWorkerPollCount
+            : "")
         + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error);
     System.out.println(summary);
@@ -474,6 +526,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private String runName() {
+    if (prefetchThreadDiagnosticProfile()) {
+      return "prefetch-thread-" + prefetchThreadMode + "-sleep-" + prefetchWorkerSleepMs
+          + "-mask-" + maskArgument + "-run-" + runNumber;
+    }
     return (rasterReuseBenchmarkProfile ? benchmarkProfile + "-" : "")
         + "mask-" + (maskArgument == null ? "default" : maskArgument)
         + "-prefetch-" + prefetchProfile + "-accounting-" + accountingProfile
@@ -483,6 +539,70 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
 
   private boolean prefetchEnabled() {
     return "on".equals(prefetchProfile);
+  }
+
+  private boolean prefetchThreadDiagnosticProfile() {
+    return "prefetch-thread-diagnostics".equals(benchmarkProfile);
+  }
+
+  private String prefetchThreadSummaryFields() {
+    if (!prefetchThreadDiagnosticProfile()) {
+      return "";
+    }
+    StringBuilder json = new StringBuilder()
+        .append(",\n  \"prefetchThreadMode\":\"").append(prefetchThreadMode).append("\"")
+        .append(",\n  \"prefetchWorkerSleepMs\":").append(prefetchWorkerSleepMs);
+    appendPrefetchThreadSummaryMetric(json, "preparationEntryCount", prefetchPreparationEntryCount);
+    appendPrefetchThreadSummaryMetric(json, "preparationEntryTotalNs", prefetchPreparationEntryTotalNs);
+    appendPrefetchThreadSummaryMetric(json, "threadCreateCount", prefetchThreadCreateCount);
+    appendPrefetchThreadSummaryMetric(json, "threadObjectCreateNs", prefetchThreadObjectCreateNs);
+    appendPrefetchThreadSummaryMetric(json, "threadStartCount", prefetchThreadStartCount);
+    appendPrefetchThreadSummaryMetric(json, "threadStartCallNs", prefetchThreadStartCallNs);
+    appendPrefetchThreadSummaryMetric(json, "threadStartLatencyNs", prefetchThreadStartLatencyNs);
+    appendPrefetchThreadSummaryMetric(json, "decodeEntryCount", prefetchDecodeEntryCount);
+    appendPrefetchThreadSummaryMetric(json, "decodeWorkerNs", prefetchDecodeWorkerNs);
+    appendPrefetchThreadSummaryMetric(json, "uiDispatchCount", prefetchUiDispatchCount);
+    appendPrefetchThreadSummaryMetric(json, "uiDispatchWaitNs", prefetchUiDispatchWaitNs);
+    appendPrefetchThreadSummaryMetric(json, "adoptNs", prefetchAdoptNs);
+    appendPrefetchThreadSummaryMetric(json, "finishPreparationNs", prefetchFinishPreparationNs);
+    appendPrefetchThreadSummaryMetric(json, "finishBookkeepingNs", prefetchFinishBookkeepingNs);
+    appendPrefetchThreadSummaryMetric(json, "workerPollCount", prefetchWorkerPollCount);
+    appendPrefetchThreadSummaryMetric(json, "workerSleepRequestedNs", prefetchWorkerSleepRequestedNs);
+    appendPrefetchThreadSummaryMetric(json, "workerIdleElapsedNs", prefetchWorkerIdleElapsedNs);
+    return json.toString();
+  }
+
+  private static void appendPrefetchThreadSummaryMetric(StringBuilder json, String name, long value) {
+    json.append(",\n  \"").append(name).append("\":").append(value);
+  }
+
+  private void appendPrefetchThreadPhases(StringBuilder json) {
+    if (!prefetchThreadDiagnosticProfile()) {
+      return;
+    }
+    json.append(",\n    \"prefetchThreadMode\":\"").append(prefetchThreadMode).append("\"")
+        .append(",\n    \"prefetchWorkerSleepMs\":").append(prefetchWorkerSleepMs);
+    appendPrefetchThreadPhase(json, "preparationEntryCount", prefetchPreparationEntryCount);
+    appendPrefetchThreadPhase(json, "preparationEntryTotalNs", prefetchPreparationEntryTotalNs);
+    appendPrefetchThreadPhase(json, "threadCreateCount", prefetchThreadCreateCount);
+    appendPrefetchThreadPhase(json, "threadObjectCreateNs", prefetchThreadObjectCreateNs);
+    appendPrefetchThreadPhase(json, "threadStartCount", prefetchThreadStartCount);
+    appendPrefetchThreadPhase(json, "threadStartCallNs", prefetchThreadStartCallNs);
+    appendPrefetchThreadPhase(json, "threadStartLatencyNs", prefetchThreadStartLatencyNs);
+    appendPrefetchThreadPhase(json, "decodeEntryCount", prefetchDecodeEntryCount);
+    appendPrefetchThreadPhase(json, "decodeWorkerNs", prefetchDecodeWorkerNs);
+    appendPrefetchThreadPhase(json, "uiDispatchCount", prefetchUiDispatchCount);
+    appendPrefetchThreadPhase(json, "uiDispatchWaitNs", prefetchUiDispatchWaitNs);
+    appendPrefetchThreadPhase(json, "adoptNs", prefetchAdoptNs);
+    appendPrefetchThreadPhase(json, "finishPreparationNs", prefetchFinishPreparationNs);
+    appendPrefetchThreadPhase(json, "finishBookkeepingNs", prefetchFinishBookkeepingNs);
+    appendPrefetchThreadPhase(json, "workerPollCount", prefetchWorkerPollCount);
+    appendPrefetchThreadPhase(json, "workerSleepRequestedNs", prefetchWorkerSleepRequestedNs);
+    appendPrefetchThreadPhase(json, "workerIdleElapsedNs", prefetchWorkerIdleElapsedNs);
+  }
+
+  private static void appendPrefetchThreadPhase(StringBuilder json, String name, long value) {
+    json.append(",\n    \"").append(name).append("\":").append(value);
   }
 
   private boolean accountingEnabled() {
@@ -1557,7 +1677,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"framesOver100Count\":" + result.countOverNs(FRAME_THRESHOLD_100_NS) + ",\n"
         + "  \"largestStallNs\":" + result.percentileNs(100) + ",\n"
         + "  \"largestConsecutiveOver33_3\":"
-        + result.maxConsecutiveOverNs(FRAME_THRESHOLD_33_3_NS) + "\n"
+        + result.maxConsecutiveOverNs(FRAME_THRESHOLD_33_3_NS)
+        + prefetchThreadSummaryFields() + "\n"
         + "}\n";
     ImageRasterBenchmarkSupport.writeUtf8(
         ImageRasterBenchmarkSupport.joinPath(targetDir, "summary.json"), json);
@@ -1818,8 +1939,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         .append(prefetchCounters == null ? 0 : prefetchCounters.physicalVariantEvictions)
         .append(",\n")
         .append("    \"physicalVariantBytes\":")
-        .append(prefetchCounters == null ? 0 : prefetchCounters.physicalVariantBytes).append("\n")
-        .append("  },\n");
+        .append(prefetchCounters == null ? 0 : prefetchCounters.physicalVariantBytes);
+    appendPrefetchThreadPhases(json);
+    json.append("\n  },\n");
     json.append("  \"features\":{\n");
     long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
     for (int feature = 0; feature < FEATURE_NAMES.length; feature++) {

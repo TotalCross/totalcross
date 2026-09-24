@@ -475,6 +475,9 @@ $decode_manifest_fields
   "exploratoryPassCount": 3,
   "prefetchDiagnosticMasks": [0,4,6,38,32799],
   "prefetchDiagnosticProcessCount": 5,
+  "prefetchThreadDiagnosticMasks": [6,38],
+  "prefetchThreadDiagnosticConfigurations": [["legacy",0],["worker",1],["worker",2]],
+  "prefetchThreadDiagnosticProcessCount": 6,
   "seed": 73001,
   "matrixProcessCount": 31,
   "selfTestPhaseCount": 1,
@@ -485,7 +488,8 @@ $decode_manifest_fields
     "scroll-raster-performance": {"masks":[0],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6,"workloadImages":120},
     "release-default-scroll": {"masks":["default"],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6,"defaultEffectiveMask":32799,"workloadImages":663},
     "release-candidate-scroll": {"masks":[32795],"prefetch":["on"],"accounting":["off"],"renderingReuse":["off","on"],"rounds":3,"processCount":6,"workloadImages":663},
-    "prefetch-diagnostics": {"masks":[0,4,6,38,32799],"prefetch":["on"],"accounting":["on"],"renderingReuse":[],"rounds":1,"passes":1,"processCount":5,"workloadImages":663}
+    "prefetch-diagnostics": {"masks":[0,4,6,38,32799],"prefetch":["on"],"accounting":["on"],"renderingReuse":[],"rounds":1,"passes":1,"processCount":5,"workloadImages":663},
+    "prefetch-thread-diagnostics": {"masks":[6,38],"prefetch":["on"],"accounting":["on"],"renderingReuse":[],"rounds":1,"passes":1,"processCount":6,"threadConfigurations":[["legacy",0],["worker",1],["worker",2]],"workloadImages":663}
   },
   "sdkJar": "dist/totalcross-sdk.jar",
   "sdkJarSha256": "$sdk_compile_sha256",
