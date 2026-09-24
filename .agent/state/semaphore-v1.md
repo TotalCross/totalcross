@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Semaphore v1 execution state
 
-- Part/milestone/slice: Part 1 / Milestone 1 complete; Part 2 / Slice 2D active.
+- Part/milestone/slice: Part 1 / Milestone 1 complete; Part 2 / milestone closure active.
 - Branch: `feat/semaphore-v1`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
 - Part 1 final milestone commit: `daef7cee82370feb9995ad410dfb82dd25e190c5`
@@ -27,13 +27,16 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Slice 2B added source-compiled standard-API resolution coverage for all
   supported calls and the four unsupported overloads. Per plan, execution is
   deferred until milestone closure.
-- Latest Part 2 logical commit: `3689a905b`
-  (`test(converter): cover semaphore v1 compatibility surface`).
+- Latest Part 2 logical commit: `c5ecff6c2`
+  (`test(sdk): stress semaphore blocking semantics`).
 - Slice 2C added a deterministic 20,000-handoff smoke with four producers,
   four consumers, Semaphore start/readiness/completion handshakes, exact count
   reconciliation, and a 60-second native-process timeout.
-- Next action: add the sequential 20-warm-up/200-sample release-to-acquire
-  wake-latency smoke and aggregate output.
+- Slice 2D added a sequential 20-warm-up/200-sample release-to-acquire
+  measurement with aggregate count/min/p50/p95/max/mean output and a
+  60-second native-process timeout.
+- Next action: close the milestone with focused converter/SDK validation and
+  all three native macOS smokes against the unchanged Part 1 dylib.
 - Validation completed: converter test passed 2/2; generator matched 6 native
   prototypes and registrations; SDK dist and smoke compilation passed; CMake
   configure and macOS `tcvm` build passed (123 Ninja steps); deployed smoke
@@ -43,8 +46,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   commit-message checks failed because body lines exceeded 80 characters; those
   commits remain unchanged per plan.
 - Validation deferred: focused Part 2 converter test, SDK build tasks, native
-  macOS correctness/stress/latency runs until milestone closure; Windows,
-  Android, Linux, and iOS native builds/runs remain out of scope.
+  macOS correctness/stress/latency runs are now due at milestone closure;
+  Windows, Android, Linux, and iOS native builds/runs remain out of scope.
 - Blockers: none.
 - Unrelated dirty paths to preserve: `totalcross.code-workspace`,
   `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`,

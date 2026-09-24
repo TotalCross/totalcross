@@ -712,6 +712,7 @@ def registerSemaphoreMacSmokeTasks = { taskPrefix, appName, artifactPrefix ->
 }
 
 registerSemaphoreMacSmokeTasks('SemaphoreStressSmoke', 'SemaphoreStressSmokeApp', 'semaphore-stress')
+registerSemaphoreMacSmokeTasks('SemaphoreWakeLatencySmoke', 'SemaphoreWakeLatencySmokeApp', 'semaphore-wake-latency')
 
 def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
 def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')

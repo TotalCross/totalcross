@@ -87,7 +87,7 @@ deployed binaries, build directories, and per-sample output are not.
 - [x] Checkpoint 2A: commit this Part 2 plan if not already tracked.
 - [x] Add standard-API compatibility/negative-resolution coverage.
 - [x] Add deterministic multi-thread Semaphore stress smoke.
-- [ ] Add 200-sample release-to-acquire wake-latency smoke.
+- [x] Add 200-sample release-to-acquire wake-latency smoke.
 - [ ] Run SDK/macOS-only milestone validation.
 - [ ] Finalize state/evidence/editorial report and close the two-part plan.
 
@@ -250,6 +250,9 @@ Compute and report:
 Use deterministic integer nanosecond data. Do not introduce an absolute
 latency pass/fail threshold. The test passes when all 200 samples complete
 without timeout/lost wakeup and every recorded duration is non-negative.
+For the even sample count, report p50 as the midpoint of the two central
+values, p95 with the nearest-rank method, and mean rounded to the nearest
+integer nanosecond.
 
 Raw per-sample values are ordinary test output. Do not commit them. Append only
 the compact aggregate result to `.agent/evidence/semaphore-v1.jsonl`.
