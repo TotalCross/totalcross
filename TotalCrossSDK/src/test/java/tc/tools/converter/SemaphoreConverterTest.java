@@ -6,13 +6,25 @@ package tc.tools.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import tc.tools.converter.bytecode.ByteCode;
 
@@ -54,6 +66,68 @@ class SemaphoreConverterTest {
   }
 
   @Test
+  void sourceImportMapsSupportedCallsAndRejectsUnsupportedOverloads(@TempDir Path directory) throws Exception {
+    Path source = directory.resolve("fixtures/SemaphoreApiFixture.java");
+    Path output = directory.resolve("classes");
+    Files.createDirectories(source.getParent());
+    Files.createDirectories(output);
+    Files.writeString(source, String.join("\n",
+        "package fixtures;",
+        "import java.util.concurrent.Semaphore;",
+        "import java.util.concurrent.TimeUnit;",
+        "class SemaphoreApiFixture {",
+        "  static void supported() throws InterruptedException {",
+        "    Semaphore semaphore = new Semaphore(1);",
+        "    semaphore.acquire();",
+        "    semaphore.acquireUninterruptibly();",
+        "    semaphore.tryAcquire();",
+        "    semaphore.release();",
+        "  }",
+        "  static void unsupported() throws InterruptedException {",
+        "    Semaphore semaphore = new Semaphore(1, true);",
+        "    semaphore.acquire(1);",
+        "    semaphore.tryAcquire(1, TimeUnit.SECONDS);",
+        "    semaphore.release(1);",
+        "  }",
+        "}",
+        ""));
+
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    assertNotNull(compiler, "Semaphore declaration fixture requires a JDK compiler");
+    ByteArrayOutputStream compilerErrors = new ByteArrayOutputStream();
+    int compilationResult = compiler.run(null, null, compilerErrors,
+        "-proc:none", "-d", output.toString(), source.toString());
+    assertEquals(0, compilationResult, compilerErrors.toString());
+
+    Set<String> calls = new HashSet<>();
+    Path fixtureClass = output.resolve("fixtures/SemaphoreApiFixture.class");
+    new ClassReader(Files.readAllBytes(fixtureClass)).accept(new ClassVisitor(Opcodes.ASM9) {
+      @Override
+      public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
+          String[] exceptions) {
+        return new MethodVisitor(Opcodes.ASM9) {
+          @Override
+          public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+            if (OWNER.equals(owner)) calls.add(name + descriptor);
+          }
+        };
+      }
+    }, 0);
+
+    Set<String> supportedCalls = Set.of(
+        "<init>(I)V", "acquire()V", "acquireUninterruptibly()V", "tryAcquire()Z", "release()V");
+    Set<String> unsupportedCalls = Set.of(
+        "<init>(IZ)V", "acquire(I)V", "tryAcquire(JLjava/util/concurrent/TimeUnit;)Z", "release(I)V");
+    Set<String> expectedCalls = new HashSet<>(supportedCalls);
+    expectedCalls.addAll(unsupportedCalls);
+    assertEquals(expectedCalls, calls, "compiled source must exercise the exact v1 and unsupported members");
+
+    MethodDeclarationResolver.beginConversionRun();
+    for (String call : supportedCalls) assertMappedCall(call, true);
+    for (String call : unsupportedCalls) assertMappedCall(call, false);
+  }
+
+  @Test
   void nativeRegistrationsAndSourceInventoriesStaySynchronized() throws Exception {
     Path vmRoot = Path.of("..", "TotalCrossVM");
     String declarations = Files.readString(vmRoot.resolve("src/nm/NativeMethods.txt"));
@@ -90,5 +164,18 @@ class SemaphoreConverterTest {
     assertTrue(cmake.contains("nm/util/concurrent_Semaphore.c"));
     assertTrue(android.contains("nm/util/concurrent_Semaphore.c"));
     assertTrue(vcproj.contains("nm\\util\\concurrent_Semaphore.c"));
+  }
+
+  private static void assertMappedCall(String call, boolean supported) {
+    int descriptorStart = call.indexOf('(');
+    String name = call.substring(0, descriptorStart);
+    String descriptor = call.substring(descriptorStart);
+    MethodDeclarationResolver.Resolution resolution = MethodDeclarationResolver.resolve(OWNER, name, descriptor);
+    assertTrue(resolution.deviceClassFound, "missing device Semaphore mapping for " + call);
+    assertEquals(supported, resolution.deviceMemberFound, "unexpected v1 support for " + call);
+    if (supported) {
+      assertEquals(DEVICE_OWNER, resolution.deviceOwner, call);
+      assertEquals(OWNER, resolution.declarationOwner, call);
+    }
   }
 }
