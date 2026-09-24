@@ -12,10 +12,10 @@ Semaphore v1 now has a deployed compatibility surface for the standard Java
 class, a native blocking implementation, and focused compatibility and
 concurrency checks. Part 2 verified the four supported operations, kept
 unsupported overloads unresolved, reconciled 20,000 handoffs, and measured 200
-release-to-acquire intervals on macOS. A follow-up review found that the
-original latency protocol did not prove the consumer was blocked before the
-release; its values are not blocked-waiter latency evidence. No production
-consumer was changed.
+confirmed blocked-waiter release-to-acquire intervals on macOS. A follow-up
+added a smoke-only native waiter diagnostic and corrected the earlier
+measurement protocol. No production consumer or public Semaphore API was
+changed.
 
 ## Original Plan versus Actual Outcome
 
@@ -37,12 +37,13 @@ not claimed by `Semaphore4D`.
   threads, Semaphore readiness/start/completion handshakes, and 20,000 total
   handoffs. Neither smoke uses sleep or polling for coordination.
 - Added a separate sequential wake-latency smoke with 20 warm-ups and 200
-  measured handshakes.
+  measured handshakes, each released only after native waiter confirmation.
+- Added a smoke-source-only native `awaitWaiters` bridge used by correctness
+  and latency smokes; the production Semaphore API remains unchanged.
 - Added Gradle compile, jar, deploy, and timed native-run tasks for both smokes.
 - Extended converter coverage to compile a standard-Java source fixture and
   resolve the supported and intentionally unsupported declarations.
-- Reused the Part 1 native dylib because no `TotalCrossVM` source changed after
-  the Part 1 closure commit.
+- Rebuilt and used the macOS native dylib after adding the waiter diagnostic.
 
 ## Decisions and Trade-offs
 
@@ -71,16 +72,18 @@ body-line length; those commits remain unchanged under the plan's no-rewrite
 rule. All Part 2 commit-message checks passed.
 
 Reviewing the latency protocol found that `consumerReady` was released before
-`acquireUninterruptibly()`. The producer could therefore release before the
-consumer entered the native condition wait. The prior aggregate is retained as
-unconfirmed interval data and is not called blocked-thread wake latency. A
-smoke-only native waiter diagnostic is being added before measuring again.
+`acquireUninterruptibly()`. The old aggregate is retained as unconfirmed
+interval data and is not blocked-wait evidence. A smoke-only native diagnostic
+now waits for a requested `waiters` count under the Semaphore state mutex. On
+the validated macOS POSIX path, this confirms the consumer entered the
+condition wait before release. The legacy Windows wrapper unlocks before its
+event wait, so this proof is not claimed for Windows.
 
 ## Validation and Measurable Results
 
 - `./gradlew-agent test --tests tc.tools.converter.SemaphoreConverterTest`:
-  passed, 3 tests / 0 failures. Final log:
-  `TotalCrossSDK/agent-logs/20260924-024625-test-agent.log`.
+  passed, 3 tests / 0 failures. Follow-up log:
+  `TotalCrossSDK/agent-logs/20260924-144041-test-agent.log`.
 - `./gradlew-agent dist -x test`: passed in 9 seconds; 21 tasks seen, 17
   actionable, zero Javadoc errors and warnings. Log:
   `TotalCrossSDK/agent-logs/20260924-024354-dist-agent.log`.
@@ -94,11 +97,22 @@ smoke-only native waiter diagnostic is being added before measuring again.
   blocked waiter before release. Its aggregate (minimum 1,250 ns; p50 3,166 ns;
   nearest-rank p95 16,208 ns; maximum 63,375 ns; rounded mean 5,239 ns) is
   superseded and must not be cited as blocked-waiter latency.
-- The exact reused dylib is
+- Follow-up `./gradlew-agent compileSmokeTestJava dist -x test`: passed, 22
+  tasks seen, 18 actionable, zero Javadoc errors and warnings. Log:
+  `TotalCrossSDK/agent-logs/20260924-144110-compileSmokeTestJava-agent.log`.
+- CMake configure and `ninja -C build-semaphore tcvm` passed; 7 Ninja steps
+  built the macOS dylib. Logs: `/tmp/semaphore-correction-cmake.log` and
+  `/tmp/semaphore-correction-ninja.log`.
+- The rebuilt dylib is
   `build-semaphore/libtcvm.dylib`, SHA-256
-  `797c1e7ce24fa4d0742fea17ac5006153547e925ff67f815b64aa3bdd2dba415`.
-  Its source inputs were unchanged after Part 1, so no native rebuild ran.
-- Focused copyright-header, diff, and Part 2 commit-message checks passed.
+  `8caeee9e84485666604405fd8bd70206d393aac45b685f87cf9afd99612492de`.
+- All three deployed macOS smokes passed their 60-second process timeouts.
+  Correctness passed; stress reconciled 20,000 expected, produced, and
+  acquired handoffs. Latency reported 200 samples with all 220 warm-up and
+  measured handshakes confirmed: min 1,500 ns, p50 2,500 ns, nearest-rank p95
+  6,041 ns, max 27,834 ns, rounded mean 3,201 ns. Full log:
+  `TotalCrossSDK/agent-logs/20260924-144156-runSemaphoreSmokeMacOS-full.log`.
+- Focused copyright-header, diff, and signed commit-message checks passed.
 
 Only SDK and macOS were built. Windows, Android, Linux, and iOS native builds
 and execution were deferred. Full commands, sample aggregates, and logs are
@@ -112,16 +126,18 @@ operations to `jdkcompat.util.concurrent.Semaphore4D`. It checks the
 `release(I)V` as unsupported members.
 
 The stress result reconciles `expected=20000`, `produced=20000`, and
-`acquired=20000`. The latency summary was
-`count=200,minNs=1250,p50Ns=3166,p95Ns=16208,maxNs=63375,meanNs=5239`.
+`acquired=20000`. The corrected latency summary was
+`count=200,blockedConfirmed=200,confirmedHandshakes=220,minNs=1500,p50Ns=2500,p95Ns=6041,maxNs=27834,meanNs=3201`.
+The prior summary remains historical, unconfirmed interval data.
 
 ## Limitations, Remaining Work, and Open Questions
 
-The blocked-wait latency methodology correction is in progress; no corrected
-blocked-wait result is available yet. The Windows event path has not been
-executed, and Android, Linux, and iOS native validation remains deferred. The
-TotalCross VM does not currently interrupt a blocked `acquire()` despite its
-Java declaration.
+The corrected latency result is descriptive evidence for this macOS machine;
+it is not a performance threshold or a cross-platform prediction. The proof
+uses macOS POSIX condition behavior. The Windows event path has not been
+executed and is not covered by the blocked-wait claim. Android, Linux, and iOS
+native validation remains deferred. The TotalCross VM does not currently
+interrupt a blocked `acquire()` despite its Java declaration.
 
 No `ImagePreparation` performance claim was tested. Any future evaluation of
 Semaphore as a production wake mechanism belongs in a separate plan.

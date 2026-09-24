@@ -90,6 +90,7 @@ deployed binaries, build directories, and per-sample output are not.
 - [x] Add 200-sample release-to-acquire wake-latency smoke.
 - [x] Run SDK/macOS-only milestone validation.
 - [x] Finalize state/evidence/editorial report and close the two-part plan.
+- [x] Correct blocked-wait latency confirmation and validate the follow-up.
 
 ## Fixed Architecture and Scope
 
@@ -502,29 +503,44 @@ aggregate only as historical, unblocked/unconfirmed interval evidence.
 
 Follow-up work on the same branch and worktree:
 
-- [ ] Add a smoke-source-only `SemaphoreTestDiagnostics.awaitWaiter` native
-  hook; do not add a method to `java.util.concurrent.Semaphore`.
-- [ ] Update the correctness and latency smokes so the native hook confirms a
-  positive waiter count before each release; preserve the 20 + 200 sample
-  protocol, statistics, and process timeout.
-- [ ] Rebuild SDK and macOS `tcvm`, run converter/smoke validation, and rerun
-  correctness, stress, and latency against that exact dylib.
+- [x] Add smoke-source-only `SemaphoreTestDiagnostics.awaitWaiters`; do not
+  add a method to `java.util.concurrent.Semaphore`.
+- [x] Update the correctness and latency smokes to confirm the required waiter
+  count before release; preserve the 20 + 200 protocol and statistics.
+- [x] Rebuild SDK and macOS `tcvm`, then rerun converter, correctness, stress,
+  and latency validation against that exact dylib.
 
 The diagnostic hook waits on a lazy diagnostic condition associated with the
 Semaphore state. `acquireSemaphore()` signals it after incrementing
 `waiters`, while holding the same state mutex, only when a diagnostic waiter
-is registered. `awaitWaiter()` loops on `waiters > 0` under that mutex and
-sets its result before unlocking. Its condition wait can reacquire the mutex
-only after the acquiring thread releases it into the OS Semaphore wait; the
-subsequent production `release()` must acquire that same mutex. This
-establishes the blocked state without sleeps, timed polling, or assumptions.
+is registered. `awaitWaiters(minimumWaiters)` loops until the native count
+reaches the requested value under that mutex. On macOS, the POSIX condition
+wait atomically releases the mutex while waiting, so the diagnostic hook can
+reacquire it only after the acquiring thread enters the OS wait. The
+subsequent production `release()` must acquire that same mutex. This proves
+the measured macOS waiter is blocked without sleeps or timed polling.
 
 Keep the diagnostic Java class in `src/smokeTest/java` and use it only from
 the smoke apps. Initialize its condition lazily so ordinary Semaphore use
 does not allocate diagnostic OS resources. The public v1 API and permit
 predicate remain unchanged.
 
+The Windows condition wrapper releases its critical section before waiting on
+an auto-reset event, so this waiter-count hook does not prove the event wait
+has started on Windows. The corrected blocked-wait claim applies to the
+validated macOS POSIX path only; no Windows latency claim is made.
+
 Call the corrected result **blocked waiter release-to-acquire wake latency**
 only if the run confirms all 220 handshakes, including every one of the 200
-measured samples, observed `waiters > 0` before release. Otherwise report the
+measured samples, observed `waiters > 0` before release. The completed run
+reported 200 blocked samples and 220 confirmed handshakes. Otherwise report a
 run as incomplete and do not use it as blocked-wake evidence.
+
+## Correction Outcome
+
+The corrected macOS result was min 1,500 ns, p50 2,500 ns, nearest-rank p95
+6,041 ns, max 27,834 ns, and rounded mean 3,201 ns. It describes this machine
+and this measurement run only. The original 200 intervals remain historical,
+unconfirmed data and are not blocked-wake evidence. Detailed commands, logs,
+the rebuilt dylib hash, and counts are indexed in
+`.agent/evidence/semaphore-v1.jsonl`.
