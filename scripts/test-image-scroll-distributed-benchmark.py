@@ -239,40 +239,41 @@ def assert_zip_failure_marks_incomplete():
         "runtimeSha256": "0" * 64,
         "includeDecodeAssets": False,
     }
-    with tempfile.TemporaryDirectory(prefix="image-scroll-zip-failure-test-") as temp:
-        bundle = Path(temp) / "bundle"
-        output = bundle / "results"
-        bundle.mkdir()
+    for phase, profile in (("matrix", "prefetch-diagnostics"), ("full", "full")):
+        with tempfile.TemporaryDirectory(prefix="image-scroll-zip-failure-test-") as temp:
+            bundle = Path(temp) / "bundle"
+            output = bundle / "results"
+            bundle.mkdir()
 
-        def fake_self_test(_bundle, test_manifest, test_output):
-            (test_output / "self-test.json").write_text(json.dumps({
-                "fixture": RUNNER.FIXTURE,
-                "status": "PASS",
-                "datasetFileCount": RUNNER.EXPECTED_JPEGS,
-                "sourceCommit": test_manifest["sourceCommit"],
-            }))
-            RUNNER.write_execution_state(test_output, "SELF_TEST_PASS", test_manifest)
-            return test_output, [], "test-digest"
+            def fake_self_test(_bundle, test_manifest, test_output):
+                (test_output / "self-test.json").write_text(json.dumps({
+                    "fixture": RUNNER.FIXTURE,
+                    "status": "PASS",
+                    "datasetFileCount": RUNNER.EXPECTED_JPEGS,
+                    "sourceCommit": test_manifest["sourceCommit"],
+                }))
+                RUNNER.write_execution_state(test_output, "SELF_TEST_PASS", test_manifest)
+                return test_output, [], "test-digest"
 
-        with mock.patch.object(RUNNER, "load_manifest", return_value=manifest), \
-                mock.patch.object(RUNNER, "validate_bundle", return_value=(
-                    bundle / "corpus", list(range(RUNNER.EXPECTED_JPEGS)),
-                    "test-digest", bundle / "benchmark-app"
-                )), \
-                mock.patch.object(RUNNER, "self_test", side_effect=fake_self_test), \
-                mock.patch.object(RUNNER, "run_scroll_profile"), \
-                mock.patch.object(RUNNER, "write_zip", side_effect=OSError("zip failed")):
-            try:
-                RUNNER.run_phase(bundle, "matrix", "prefetch-diagnostics")
-            except OSError as error:
-                require(str(error) == "zip failed",
-                        "ZIP failure was replaced by a different error")
-            else:
-                raise AssertionError("ZIP creation failure was ignored")
+            with mock.patch.object(RUNNER, "load_manifest", return_value=manifest), \
+                    mock.patch.object(RUNNER, "validate_bundle", return_value=(
+                        bundle / "corpus", list(range(RUNNER.EXPECTED_JPEGS)),
+                        "test-digest", bundle / "benchmark-app"
+                    )), \
+                    mock.patch.object(RUNNER, "self_test", side_effect=fake_self_test), \
+                    mock.patch.object(RUNNER, "run_scroll_profile"), \
+                    mock.patch.object(RUNNER, "write_zip", side_effect=OSError("zip failed")):
+                try:
+                    RUNNER.run_phase(bundle, phase, profile)
+                except OSError as error:
+                    require(str(error) == "zip failed",
+                            "ZIP failure was replaced by a different error")
+                else:
+                    raise AssertionError("ZIP creation failure was ignored")
 
-        state = json.loads((output / RUNNER.RESULTS_STATE_FILE).read_text())
-        require(state.get("status") == "INCOMPLETE",
-                "ZIP failure did not leave execution state INCOMPLETE")
+            state = json.loads((output / RUNNER.RESULTS_STATE_FILE).read_text())
+            require(state.get("status") == "INCOMPLETE",
+                    f"{phase} ZIP failure did not leave execution state INCOMPLETE")
 
 
 def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
