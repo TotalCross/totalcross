@@ -12,7 +12,10 @@ Semaphore v1 now has a deployed compatibility surface for the standard Java
 class, a native blocking implementation, and focused compatibility and
 concurrency checks. Part 2 verified the four supported operations, kept
 unsupported overloads unresolved, reconciled 20,000 handoffs, and measured 200
-release-to-acquire wake samples on macOS. No production consumer was changed.
+release-to-acquire intervals on macOS. A follow-up review found that the
+original latency protocol did not prove the consumer was blocked before the
+release; its values are not blocked-waiter latency evidence. No production
+consumer was changed.
 
 ## Original Plan versus Actual Outcome
 
@@ -67,6 +70,12 @@ Javadoc errors or warnings. Two earlier Part 1 commit-message checks failed on
 body-line length; those commits remain unchanged under the plan's no-rewrite
 rule. All Part 2 commit-message checks passed.
 
+Reviewing the latency protocol found that `consumerReady` was released before
+`acquireUninterruptibly()`. The producer could therefore release before the
+consumer entered the native condition wait. The prior aggregate is retained as
+unconfirmed interval data and is not called blocked-thread wake latency. A
+smoke-only native waiter diagnostic is being added before measuring again.
+
 ## Validation and Measurable Results
 
 - `./gradlew-agent test --tests tc.tools.converter.SemaphoreConverterTest`:
@@ -81,8 +90,10 @@ rule. All Part 2 commit-message checks passed.
   `fixture=SemaphoreSmokeApp,overallPass=true`.
 - Stress passed with 4 producers, 4 consumers, 20,000 expected/produced/
   acquired handoffs, and no timeout.
-- Wake latency passed all 200 samples: minimum 1,250 ns; p50 3,166 ns;
-  nearest-rank p95 16,208 ns; maximum 63,375 ns; rounded mean 5,239 ns.
+- The prior latency smoke completed 200 intervals, but did not confirm a
+  blocked waiter before release. Its aggregate (minimum 1,250 ns; p50 3,166 ns;
+  nearest-rank p95 16,208 ns; maximum 63,375 ns; rounded mean 5,239 ns) is
+  superseded and must not be cited as blocked-waiter latency.
 - The exact reused dylib is
   `build-semaphore/libtcvm.dylib`, SHA-256
   `797c1e7ce24fa4d0742fea17ac5006153547e925ff67f815b64aa3bdd2dba415`.
@@ -106,10 +117,11 @@ The stress result reconciles `expected=20000`, `produced=20000`, and
 
 ## Limitations, Remaining Work, and Open Questions
 
-This latency result describes one native macOS run; it is not a prediction for
-other systems. The Windows event path has not been executed, and Android,
-Linux, and iOS native validation remains deferred. The TotalCross VM does not
-currently interrupt a blocked `acquire()` despite its Java declaration.
+The blocked-wait latency methodology correction is in progress; no corrected
+blocked-wait result is available yet. The Windows event path has not been
+executed, and Android, Linux, and iOS native validation remains deferred. The
+TotalCross VM does not currently interrupt a blocked `acquire()` despite its
+Java declaration.
 
 No `ImagePreparation` performance claim was tested. Any future evaluation of
 Semaphore as a production wake mechanism belongs in a separate plan.

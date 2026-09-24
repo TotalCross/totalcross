@@ -472,9 +472,11 @@ and smoke compilation passed, and all three deployed native macOS smokes
 passed against the unchanged Part 1 dylib. The stress reconciled 20,000
 produced and acquired permits across four producers and four consumers.
 
-The 200 wake-latency samples reported min 1,250 ns, p50 3,166 ns, nearest-rank
-p95 16,208 ns, max 63,375 ns, and rounded mean 5,239 ns. This is a measurement
-from the tested macOS run, not a cross-platform prediction.
+The original 200 release-to-acquire intervals reported min 1,250 ns, p50
+3,166 ns, nearest-rank p95 16,208 ns, max 63,375 ns, and rounded mean
+5,239 ns. A follow-up review found that the producer could release before the
+consumer entered the native wait. These values are unconfirmed intervals and
+must not be cited as blocked-waiter latency.
 
 Windows, Android, Linux, and iOS native builds and execution remain deferred.
 The deployed `acquire()` still cannot be interrupted by the TotalCross VM.
@@ -490,3 +492,39 @@ persistent `ImagePreparation` worker.
 Initial revision, 2026-09-24: sequential Part 2 split from the larger Semaphore
 plan to satisfy the 20 KB/~600-line new-file limit. Scope is compatibility,
 stress, wake-latency evidence, and final handoff only.
+
+## Wake-Latency Methodology Correction
+
+The original latency smoke signaled `consumerReady` before calling
+`acquireUninterruptibly()`. That handshake did not prove that the consumer had
+incremented the native waiters count or entered the OS wait. Retain the old
+aggregate only as historical, unblocked/unconfirmed interval evidence.
+
+Follow-up work on the same branch and worktree:
+
+- [ ] Add a smoke-source-only `SemaphoreTestDiagnostics.awaitWaiter` native
+  hook; do not add a method to `java.util.concurrent.Semaphore`.
+- [ ] Update the correctness and latency smokes so the native hook confirms a
+  positive waiter count before each release; preserve the 20 + 200 sample
+  protocol, statistics, and process timeout.
+- [ ] Rebuild SDK and macOS `tcvm`, run converter/smoke validation, and rerun
+  correctness, stress, and latency against that exact dylib.
+
+The diagnostic hook waits on a lazy diagnostic condition associated with the
+Semaphore state. `acquireSemaphore()` signals it after incrementing
+`waiters`, while holding the same state mutex, only when a diagnostic waiter
+is registered. `awaitWaiter()` loops on `waiters > 0` under that mutex and
+sets its result before unlocking. Its condition wait can reacquire the mutex
+only after the acquiring thread releases it into the OS Semaphore wait; the
+subsequent production `release()` must acquire that same mutex. This
+establishes the blocked state without sleeps, timed polling, or assumptions.
+
+Keep the diagnostic Java class in `src/smokeTest/java` and use it only from
+the smoke apps. Initialize its condition lazily so ordinary Semaphore use
+does not allocate diagnostic OS resources. The public v1 API and permit
+predicate remain unchanged.
+
+Call the corrected result **blocked waiter release-to-acquire wake latency**
+only if the run confirms all 220 handshakes, including every one of the 200
+measured samples, observed `waiters > 0` before release. Otherwise report the
+run as incomplete and do not use it as blocked-wake evidence.
