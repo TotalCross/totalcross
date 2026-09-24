@@ -464,14 +464,23 @@ def assert_prefetch_thread_diagnostics():
         require(len(csv_rows) == 6
                 and all(row["status"] == "PASS" for row in csv_rows),
                 "prefetch thread aggregate did not retain six validated rows")
-        require({"process_wall_ns", "prefetch_elapsed_ns", "prefetch_jpeg_decode_count",
+        require({"image_count", "prefetch_request_count", "prefetch_ready_count",
+                 "prefetch_failed_count", "prefetch_not_prefetchable_count",
+                 "process_wall_ns", "prefetch_elapsed_ns", "prefetch_jpeg_decode_count",
                  "prefetch_geometry_draw_ns",
                  "preparation_entry_count", "thread_start_latency_ns",
                  "worker_sleep_requested_ns", "ui_wait_ns",
                  "worker_semaphore_release_count",
                  "worker_semaphore_acquire_count",
-                 "worker_semaphore_wake_count"}.issubset(csv_rows[0]),
+                "worker_semaphore_wake_count"}.issubset(csv_rows[0]),
                 "prefetch thread CSV omitted existing or preparation metrics")
+        require(all((row["image_count"], row["prefetch_request_count"],
+                     row["prefetch_ready_count"], row["prefetch_failed_count"],
+                     row["prefetch_not_prefetchable_count"],
+                     row["worker_semaphore_outstanding_wake_count"])
+                    == ("663", "663", "660", "0", "3", "0")
+                    for row in csv_rows),
+                "prefetch thread CSV omitted equivalent workload outcomes")
         aggregate = json.loads((output / "prefetch-thread-diagnostics-summary.json").read_text())
         require(aggregate["processCount"] == 6 and len(aggregate["rows"]) == 6,
                 "prefetch thread JSON summary process count differs")

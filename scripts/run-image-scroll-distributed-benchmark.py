@@ -1556,8 +1556,10 @@ def validate_prefetch_thread_run_artifacts(summary, counters, run_dir, mask,
         summary, "prefetchNotPrefetchableCount", f"{run_dir} not-prefetchable count"
     )
     require(request_count == EXPECTED_JPEGS
-            and ready_count + failed_count + not_prefetchable_count == request_count
-            and failed_count == 0,
+            and ready_count == EXPECTED_JPEGS - 3
+            and failed_count == 0
+            and not_prefetchable_count == 3
+            and ready_count + failed_count + not_prefetchable_count == request_count,
             f"{run_dir} preparation outcomes do not account for the 663-image workload")
     require(summary.get("requestedMask") == mask and summary.get("effectiveMask") == mask,
             f"{run_dir}/summary.json mask mismatch")
@@ -1580,13 +1582,11 @@ def validate_prefetch_thread_run_artifacts(summary, counters, run_dir, mask,
         for json_name, csv_name in PREFETCH_THREAD_COUNTER_FIELDS
     }
     decoded_entries = values["decode_entry_count"]
-    require(values["preparation_entry_count"] >= decoded_entries,
-            f"{run_dir} decoded entry count exceeds activated preparation entries")
-    require(values["preparation_entry_count"] == ready_count
-            and decoded_entries == ready_count,
-            f"{run_dir} did not prepare every ready image exactly once")
-    require(values["ui_dispatch_count"] <= decoded_entries,
-            f"{run_dir} UI dispatch count exceeds decoded entries")
+    require(values["preparation_entry_count"] == decoded_entries
+            and decoded_entries <= ready_count,
+            f"{run_dir} activated entries were not each decoded exactly once")
+    require(values["ui_dispatch_count"] == decoded_entries,
+            f"{run_dir} decoded entries did not each dispatch adoption exactly once")
     semaphore_releases = values["worker_semaphore_release_count"]
     semaphore_acquires = values["worker_semaphore_acquire_count"]
     semaphore_wakes = values["worker_semaphore_wake_count"]
@@ -3535,6 +3535,13 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
             "status": status,
             "validation_status": validation_status,
             "validation_error": validation_error,
+            "image_count": summary.get("imageCount") if summary else None,
+            "prefetch_request_count": summary.get("prefetchRequestCount") if summary else None,
+            "prefetch_ready_count": summary.get("prefetchReadyCount") if summary else None,
+            "prefetch_failed_count": summary.get("prefetchFailedCount") if summary else None,
+            "prefetch_not_prefetchable_count": (
+                summary.get("prefetchNotPrefetchableCount") if summary else None
+            ),
             "process_wall_ns": process_wall_ns,
             "prefetch_elapsed_ns": summary.get("prefetchElapsedNs") if summary else None,
             **metrics,
@@ -3547,6 +3554,8 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
     fields = [
         "order", "run", "thread_mode", "worker_sleep_ms", "mask", "prefetch",
         "accounting", "status", "validation_status", "validation_error",
+        "image_count", "prefetch_request_count", "prefetch_ready_count",
+        "prefetch_failed_count", "prefetch_not_prefetchable_count",
         "process_wall_ns", "prefetch_elapsed_ns",
         *(csv_name for _, csv_name in PREFETCH_PHASE_SUMMARY_FIELDS),
         *(csv_name for _, csv_name in PREFETCH_DIAGNOSTIC_COUNTER_FIELDS),
@@ -3562,11 +3571,14 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
     row_lookup = {(row["thread_mode"], row["worker_sleep_ms"], row["mask"]): row
                   for row in rows}
     comparison_fields = (
+        "image_count", "prefetch_request_count", "prefetch_ready_count",
+        "prefetch_failed_count", "prefetch_not_prefetchable_count",
         "process_wall_ns", "prefetch_elapsed_ns", "preparation_entry_total_ns",
         "decode_worker_ns", "ui_wait_ns", "finish_preparation_ns",
         "thread_start_count", "thread_start_call_ns", "worker_poll_count",
-        "worker_sleep_requested_ns", "worker_semaphore_release_count",
-        "worker_semaphore_acquire_count", "worker_semaphore_wake_count",
+        "worker_sleep_requested_ns", "worker_idle_elapsed_ns",
+        "worker_semaphore_release_count", "worker_semaphore_acquire_count",
+        "worker_semaphore_wake_count", "worker_semaphore_outstanding_wake_count",
     )
     comparisons = []
     for mask in PREFETCH_THREAD_DIAGNOSTIC_MASKS:
@@ -3579,6 +3591,19 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
                 "status": row["status"],
                 **{field: row.get(field) for field in comparison_fields},
             })
+        strategies_rows = [
+            row_lookup[(mode, sleep_ms, mask)]
+            for mode, sleep_ms in PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS
+        ]
+        if all(row["status"] == "PASS" for row in strategies_rows):
+            outcome_fields = (
+                "image_count", "prefetch_request_count", "prefetch_ready_count",
+                "prefetch_failed_count", "prefetch_not_prefetchable_count",
+                "preparation_entry_count", "decode_entry_count",
+            )
+            for field in outcome_fields:
+                require(len({row[field] for row in strategies_rows}) == 1,
+                        f"mask {mask} strategy outcomes differ for {field}")
         comparisons.append({"mask": mask, "strategies": strategies})
     json_path = output / "prefetch-thread-diagnostics-summary.json"
     write_json_file(json_path, {
