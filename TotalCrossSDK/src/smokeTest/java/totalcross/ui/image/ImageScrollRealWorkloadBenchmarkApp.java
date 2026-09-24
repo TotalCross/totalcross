@@ -552,7 +552,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   }
 
   private boolean prefetchThreadDiagnosticProfile() {
-    return "prefetch-thread-diagnostics".equals(benchmarkProfile);
+    return "pft".equals(benchmarkProfile);
   }
 
   private String prefetchThreadSummaryFields() {

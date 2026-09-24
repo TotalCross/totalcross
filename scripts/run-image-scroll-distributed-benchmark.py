@@ -162,7 +162,7 @@ PROFILES = {
         "passes": 1,
         "thread_diagnostic": True,
         "thread_configurations": PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS,
-        "app_profile": "prefetch-thread-diagnostics",
+        "app_profile": "pft",
         "workload_images": EXPECTED_JPEGS,
     },
 }
@@ -1039,6 +1039,7 @@ def load_manifest(bundle):
             "prefetch": ["on"], "accounting": ["on"],
             "renderingReuse": [], "rounds": 1, "passes": 1,
             "processCount": PREFETCH_THREAD_DIAGNOSTIC_PROCESS_COUNT,
+            "appProfile": "pft",
             "threadConfigurations": [list(item)
                                      for item in PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS],
             "workloadImages": EXPECTED_JPEGS,

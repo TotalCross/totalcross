@@ -328,6 +328,8 @@ def assert_prefetch_thread_diagnostics():
                                                        ("worker", 1),
                                                        ("worker", 2)),
             "prefetch thread diagnostic configuration differs")
+    require(profile["app_profile"] == "pft",
+            "prefetch thread public phase does not map to its short app profile")
     with tempfile.TemporaryDirectory(prefix="image-scroll-prefetch-thread-test-") as temp:
         output = Path(temp)
         plan = RUNNER.write_prefetch_thread_suite_plan(output, profile)
@@ -347,34 +349,66 @@ def assert_prefetch_thread_diagnostics():
 
         bundle = output / "bundle"
         bundle.mkdir()
-        custom_run_dir = RUNNER.expected_prefetch_thread_run_dir(
-            output, "legacy", 0, 6, 1
-        )
-        captured = {}
+        commands_by_target = {}
 
         def fake_subprocess(command, **_kwargs):
-            captured["command"] = command
+            commands_by_target[current_target[0]] = command
             return SimpleNamespace(returncode=0)
 
-        with mock.patch.object(RUNNER, "executable_path", return_value=bundle / "app"), \
-                mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_subprocess), \
+        current_target = [None]
+        with mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_subprocess), \
                 mock.patch.object(RUNNER, "enrich_environment_metadata", return_value={}), \
                 mock.patch.object(RUNNER, "capture_physical_target_baseline", return_value={}), \
                 mock.patch.object(RUNNER, "validate_run_artifacts", return_value={}), \
                 mock.patch.object(RUNNER, "read_json_file", return_value={}), \
                 mock.patch.object(RUNNER, "validate_prefetch_thread_run_artifacts"):
-            RUNNER.run_process(
-                bundle, {}, output, "digest", 6, "on", "on", 1, "thread-legacy",
-                profile_name="prefetch-thread-diagnostics",
-                prefetch_thread_mode="legacy", prefetch_worker_sleep_ms=0,
-                profile_run_dir=custom_run_dir,
-                app_profile="prefetch-thread-diagnostics",
-            )
-        command = captured["command"]
-        require("--prefetch-thread-mode=legacy" in command
-                and "--prefetch-worker-sleep-ms=0" in command
-                and "--profile=prefetch-thread-diagnostics" in command,
-                "runner omitted prefetch-thread app arguments")
+            for target, executable_name in (
+                    ("windows-x64", "ImageScrollRealWorkloadBenchmarkApp.exe"),
+                    ("macos-arm64", "ImageScrollRealWorkloadBenchmarkApp")):
+                (bundle / executable_name).touch()
+                current_target[0] = target
+                RUNNER.run_process(
+                    bundle, {"target": target, "executable": executable_name}, output,
+                    "0123456789abcdef", 38, "on", "on", 1,
+                    f"thread-worker-{target}",
+                    profile_name="prefetch-thread-diagnostics",
+                    prefetch_thread_mode="worker", prefetch_worker_sleep_ms=2,
+                    profile_run_dir=RUNNER.expected_prefetch_thread_run_dir(
+                        output, "worker", 2, 38, 1
+                    ),
+                    app_profile=profile["app_profile"],
+                )
+
+        def desktop_application_payload(command):
+            # The desktop startup parser consumes these VM-level options before
+            # copying the remaining application arguments into commandLine[256].
+            payload = []
+            skip_next = False
+            for argument in command[1:]:
+                if skip_next:
+                    skip_next = False
+                elif argument in ("/scr", "-p"):
+                    skip_next = True
+                else:
+                    payload.append(argument)
+            return " ".join(payload)
+
+        require(set(commands_by_target) == {"windows-x64", "macos-arm64"},
+                "runner command regression omitted a desktop target")
+        for target, command in commands_by_target.items():
+            require(command[-1] == "--profile=pft"
+                    and "--prefetch-thread-mode=worker" in command
+                    and "--prefetch-worker-sleep-ms=2" in command,
+                    f"{target} runner omitted prefetch-thread app arguments")
+            payload = desktop_application_payload(command)
+            legacy_profile_command = list(command)
+            legacy_profile_command[-1] = "--profile=prefetch-thread-diagnostics"
+            legacy_payload = desktop_application_payload(legacy_profile_command)
+            require(len(legacy_payload) >= 255,
+                    f"{target} regression command no longer reaches the VM limit")
+            require(len(payload) <= 247,
+                    f"{target} application payload lacks headroom below the VM limit: "
+                    f"{len(payload)} characters")
         require(RUNNER.configuration_key(
                     "prefetch-thread-diagnostics", 1, 6, "on", "on",
                     prefetch_thread_mode="worker", prefetch_worker_sleep_ms=1,
@@ -1298,6 +1332,8 @@ def main():
             "package manifest lacks prefetch diagnostic profile")
     require('"prefetch-thread-diagnostics": {"masks":[6,38]' in package_script,
             "package manifest lacks prefetch thread diagnostic profile")
+    require('"appProfile":"pft"' in package_script,
+            "package manifest prefetch thread app profile differs")
     require('"release-candidate-scroll": {"masks":[32795]' in package_script,
             "package manifest lacks release candidate profile")
 
