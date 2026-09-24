@@ -86,7 +86,7 @@ deployed binaries, build directories, and per-sample output are not.
 
 - [x] Checkpoint 2A: commit this Part 2 plan if not already tracked.
 - [x] Add standard-API compatibility/negative-resolution coverage.
-- [ ] Add deterministic multi-thread Semaphore stress smoke.
+- [x] Add deterministic multi-thread Semaphore stress smoke.
 - [ ] Add 200-sample release-to-acquire wake-latency smoke.
 - [ ] Run SDK/macOS-only milestone validation.
 - [ ] Finalize state/evidence/editorial report and close the two-part plan.

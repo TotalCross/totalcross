@@ -613,6 +613,106 @@ tasks.register('runSemaphoreSmokeMacOS') {
     }
 }
 
+def registerSemaphoreMacSmokeTasks = { taskPrefix, appName, artifactPrefix ->
+    def classesDir = layout.buildDirectory.dir("${artifactPrefix}-smoke/classes")
+    def archiveDir = layout.buildDirectory.dir("${artifactPrefix}-smoke/archive")
+
+    tasks.register("compile${taskPrefix}", Sync) {
+        group = 'verification'
+        description = "Compiles and stages the ${appName} macOS smoke app."
+        dependsOn sourceSets.smokeTest.classesTaskName
+
+        from(smokeTestClassesDir) {
+            include "totalcross/util/concurrent/${appName}*.class"
+        }
+        into classesDir
+    }
+
+    tasks.register("jar${taskPrefix}", Jar) {
+        group = 'verification'
+        description = "Packages the ${appName} macOS smoke app for deployment."
+        dependsOn "compile${taskPrefix}"
+        archiveFileName = "${appName}.jar"
+        destinationDirectory = archiveDir
+        from(classesDir)
+    }
+
+    tasks.register("deploy${taskPrefix}MacOS", JavaExec) {
+        group = 'verification'
+        description = "Deploys the ${appName} smoke app for macOS."
+        dependsOn 'copySdkDependencies', "jar${taskPrefix}"
+
+        mainClass = 'tc.Deploy'
+        classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+            include '*.jar'
+        }
+        workingDir archiveDir.get().asFile
+        args = ["${appName}.jar", '-macos']
+    }
+
+    tasks.register("run${taskPrefix}MacOS") {
+        group = 'verification'
+        description = "Runs the ${appName} smoke with a timed native wait."
+        dependsOn "deploy${taskPrefix}MacOS"
+
+        doLast {
+            def nativeRuntime = project.findProperty('tcvmDylib')
+            if (!nativeRuntime) {
+                throw new GradleException("run${taskPrefix}MacOS requires -PtcvmDylib=<absolute path>")
+            }
+            def nativeRuntimeFile = new File(nativeRuntime.toString())
+            if (!nativeRuntimeFile.isAbsolute()) {
+                throw new GradleException('tcvmDylib must be an absolute path')
+            }
+            if (!nativeRuntimeFile.isFile()) {
+                throw new GradleException('Native runtime not found: ' + nativeRuntimeFile)
+            }
+
+            def installDir = archiveDir.get().dir('install/macos').asFile
+            copy {
+                from nativeRuntimeFile
+                into installDir
+                rename { 'libtcvm.dylib' }
+            }
+            def executable = new File(installDir, appName)
+            if (!executable.isFile()) {
+                throw new GradleException('Native smoke executable not found: ' + executable)
+            }
+
+            def process = new ProcessBuilder(executable.absolutePath)
+                .directory(installDir)
+                .redirectErrorStream(true)
+                .start()
+            def smokeOutput = new ByteArrayOutputStream()
+            def outputReader = new Thread({
+                process.inputStream.withCloseable { stream -> stream.transferTo(smokeOutput) }
+            } as Runnable, "${taskPrefix}-output")
+            outputReader.setDaemon(true)
+            outputReader.start()
+
+            boolean finished = process.waitFor(60L, java.util.concurrent.TimeUnit.SECONDS)
+            if (!finished) {
+                process.destroyForcibly()
+                process.waitFor()
+                outputReader.join(5000L)
+                throw new GradleException("${appName} native macOS smoke timed out after 60 seconds.")
+            }
+            outputReader.join()
+
+            def output = smokeOutput.toString('UTF-8')
+            logger.lifecycle(output.trim())
+            def exitCode = process.exitValue()
+            def marker = "fixture=${appName},overallPass=true"
+            if (exitCode != 0 || !output.contains(marker)) {
+                throw new GradleException("${appName} native macOS smoke failed: exitCode=" + exitCode
+                    + ', markerPresent=' + output.contains(marker))
+            }
+        }
+    }
+}
+
+registerSemaphoreMacSmokeTasks('SemaphoreStressSmoke', 'SemaphoreStressSmokeApp', 'semaphore-stress')
+
 def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
 def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')
 def standardStreamsSmokeClassesDir = layout.buildDirectory.dir('standard-streams-smoke/classes')

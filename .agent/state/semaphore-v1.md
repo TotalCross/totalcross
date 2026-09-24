@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Semaphore v1 execution state
 
-- Part/milestone/slice: Part 1 / Milestone 1 complete; Part 2 / Slice 2C active.
+- Part/milestone/slice: Part 1 / Milestone 1 complete; Part 2 / Slice 2D active.
 - Branch: `feat/semaphore-v1`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
 - Part 1 final milestone commit: `daef7cee82370feb9995ad410dfb82dd25e190c5`
@@ -27,8 +27,13 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Slice 2B added source-compiled standard-API resolution coverage for all
   supported calls and the four unsupported overloads. Per plan, execution is
   deferred until milestone closure.
-- Next action: add deterministic 20,000-handoff producer/consumer stress and
-  the 200-sample wake-latency smoke.
+- Latest Part 2 logical commit: `3689a905b`
+  (`test(converter): cover semaphore v1 compatibility surface`).
+- Slice 2C added a deterministic 20,000-handoff smoke with four producers,
+  four consumers, Semaphore start/readiness/completion handshakes, exact count
+  reconciliation, and a 60-second native-process timeout.
+- Next action: add the sequential 20-warm-up/200-sample release-to-acquire
+  wake-latency smoke and aggregate output.
 - Validation completed: converter test passed 2/2; generator matched 6 native
   prototypes and registrations; SDK dist and smoke compilation passed; CMake
   configure and macOS `tcvm` build passed (123 Ninja steps); deployed smoke
