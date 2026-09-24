@@ -11,12 +11,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.CRC32;
 
 import javax.imageio.ImageIO;
 
@@ -48,6 +52,158 @@ class ImagePreparationTest {
     assertEquals(1, source.decodedGeneration());
     assertNotNull(source.decodedBackingForReuse(first.denominator));
     assertSame(first.pipeline, image.pipelineForSmoke());
+  }
+
+  @Test
+  void jpegRequestKeepsItsChosenDenominatorAndNativeAvailability() throws Exception {
+    Image image = new Image(jpeg(512, 384)).getSmoothScaledInstance(128, 96);
+    ImagePreparation.Request request = image.createPreparationRequest(1, true,
+        ImageDrawingBridge.DRAW_READY);
+
+    assertEquals(-1, request.status);
+    assertEquals(ImageDecodeRequirement.choose(request.source, request.pipeline,
+        request.targetWidth, request.targetHeight), request.denominator);
+    assertTrue(request.nativeAvailable);
+  }
+
+  @Test
+  void staticPngUsesDenominatorOneAndReusesDecodedBacking() throws Exception {
+    Image image = new Image(png(8, 6)).getSmoothScaledInstance(4, 3);
+    ImagePreparation.Request request = image.createPreparationRequest(2, true,
+        ImageDrawingBridge.COPY_READY);
+
+    assertEquals(-1, request.status);
+    assertEquals(ImageEncodedStructure.Format.PNG, request.source.getFormat());
+    assertEquals(8, request.targetWidth);
+    assertEquals(6, request.targetHeight);
+    assertEquals(1, request.denominator);
+    assertFalse(request.nativeAvailable);
+
+    request.source.installDecodedBacking(new RasterImageBacking(request.targetWidth,
+        request.targetHeight, 1, request.targetWidth,
+        new int[request.targetWidth * request.targetHeight], null),
+        request.targetWidth, request.targetHeight, 1);
+    ImagePreparation.Request reused = image.createPreparationRequest(2, true,
+        ImageDrawingBridge.COPY_READY);
+
+    assertTrue(reused.alreadyDecoded);
+    assertEquals(-1, reused.status);
+    assertEquals(1, reused.denominator);
+  }
+
+  @Test
+  void multiFramePngAndUnsupportedFormatsRemainNotPrefetchable() throws Exception {
+    Image animatedPng = new Image(pngWithFrameCount(8, 6, 2)).getSmoothScaledInstance(4, 3);
+    ImagePreparation.Request animatedRequest = animatedPng.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+    Image bitmap = new Image(bmp(8, 6)).getSmoothScaledInstance(4, 3);
+    ImagePreparation.Request bitmapRequest = bitmap.createPreparationRequest(1, false,
+        ImageDrawingBridge.COPY_READY);
+
+    assertEquals(2, animatedRequest.source.getFrameCount());
+    assertEquals(ImagePreparation.NOT_PREFETCHABLE, animatedRequest.status);
+    assertEquals(ImageEncodedStructure.Format.BMP, bitmapRequest.source.getFormat());
+    assertEquals(ImagePreparation.NOT_PREFETCHABLE, bitmapRequest.status);
+  }
+
+  @Test
+  void staticPngPrefetchFinishesReadyOnceAndReusesTheDecodedBacking() throws Exception {
+    ImagePreparation.resetThreadModeForTest();
+    ImagePreparation.setRunUiInlineForTest(true);
+    MainWindow.resetPreviewState();
+    Image.resetImageOperationAccountingForTest();
+    ImagePreparation.resetAccountingForTest();
+    try {
+      Image image = new Image(png(8, 6)).getSmoothScaledInstance(4, 3);
+      ImagePreparation.Request request = image.createPreparationRequest(1, true,
+          ImageDrawingBridge.DRAW_READY);
+      CountDownLatch completed = new CountDownLatch(1);
+      AtomicInteger callbacks = new AtomicInteger();
+
+      ImagePreparation.request(image, 1, ImageDrawingBridge.DRAW_READY, () -> {
+        callbacks.incrementAndGet();
+        completed.countDown();
+      });
+
+      assertTrue(completed.await(5, TimeUnit.SECONDS));
+      assertEquals(1, callbacks.get());
+      assertEquals(1, Image.fullDecodeInvocationCountForTest());
+      assertNotNull(request.source.decodedBackingForReuse(1));
+      assertEquals(1, request.source.decodedGeneration());
+
+      ImagePreparation.Request reused = image.createPreparationRequest(1, true,
+          ImageDrawingBridge.DRAW_READY);
+      assertEquals(-1, reused.status);
+      assertTrue(reused.alreadyDecoded);
+      assertFalse(reused.nativeAvailable);
+      assertEquals(1, Image.fullDecodeInvocationCountForTest());
+    } finally {
+      ImagePreparation.setRunUiInlineForTest(false);
+      ImagePreparation.resetThreadModeForTest();
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
+  void staticPngDecodeFailureFinishesFailedWithoutBlocking() throws Exception {
+    ImagePreparation.resetThreadModeForTest();
+    ImagePreparation.setRunUiInlineForTest(true);
+    MainWindow.resetPreviewState();
+    Image.resetImageOperationAccountingForTest();
+    ImagePreparation.resetAccountingForTest();
+    try {
+      Image image = new Image(corruptPngIdat(png(8, 6))).getSmoothScaledInstance(4, 3);
+      CountDownLatch completed = new CountDownLatch(1);
+      AtomicInteger callbacks = new AtomicInteger();
+
+      ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, () -> {
+        callbacks.incrementAndGet();
+        completed.countDown();
+      });
+
+      assertTrue(completed.await(5, TimeUnit.SECONDS));
+      assertEquals(1, callbacks.get());
+      assertEquals(1, ImagePreparation.failedCountForTest());
+      assertEquals(0, ImagePreparation.readyCountForTest());
+      assertEquals(0, ImagePreparation.activeEntryCountForTest());
+    } finally {
+      ImagePreparation.setRunUiInlineForTest(false);
+      ImagePreparation.resetThreadModeForTest();
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
+  void javaResultCandidateTransfersBackingAndStalePngCandidateReleasesOnce() throws Exception {
+    Image image = new Image(png(8, 6)).getSmoothScaledInstance(4, 3);
+    ImagePreparation.Request request = image.createPreparationRequest(1, false,
+        ImageDrawingBridge.DRAW_READY);
+    ImagePreparation.JavaResult result = image.createJavaPreparationResult(request);
+    ImageBacking prepared = result.backing;
+    ImagePreparation.DetachedCandidate adopted = ImagePreparation.DetachedCandidate.fromJavaResult(result);
+
+    adopted.adoptJavaResult(request);
+    assertNull(adopted.javaResult);
+    assertSame(prepared, request.source.decodedBackingForReuse(1));
+    adopted.release();
+    assertSame(prepared, request.source.decodedBackingForReuse(1));
+
+    Image staleImage = new Image(png(8, 6)).getSmoothScaledInstance(4, 3);
+    ImagePreparation.Request staleRequest = staleImage.createPreparationRequest(1, false,
+        ImageDrawingBridge.DRAW_READY);
+    NativeImageBacking nativeBacking = NativeImageBacking.fromHandle(1,
+        staleRequest.targetWidth, staleRequest.targetHeight);
+    ImagePreparation.DetachedCandidate stale = ImagePreparation.DetachedCandidate.fromJavaResult(
+        new ImagePreparation.JavaResult(nativeBacking, staleRequest.targetWidth,
+            staleRequest.targetHeight, 1));
+    staleImage.getPixels();
+
+    assertThrows(ImageException.class, () -> stale.adoptJavaResult(staleRequest));
+    stale.release();
+    assertNull(stale.javaResult);
+    assertFalse(nativeBacking.isValid());
+    stale.release();
+    assertFalse(nativeBacking.isValid());
   }
 
   @Test
@@ -102,7 +258,7 @@ class ImagePreparationTest {
 
   @Test
   void nonPrefetchableImageRetainsNormalFallback() throws Exception {
-    Image image = new Image(png(2, 2)).getSmoothScaledInstance(2, 2);
+    Image image = new Image(bmp(2, 2)).getSmoothScaledInstance(2, 2);
     ImagePreparation.Request request = image.createPreparationRequest(1, false,
         ImageDrawingBridge.COPY_READY);
 
@@ -734,6 +890,84 @@ class ImagePreparationTest {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     ImageIO.write(image, "png", bytes);
     return bytes.toByteArray();
+  }
+
+  private static byte[] bmp(int width, int height) throws Exception {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    ImageIO.write(image, "bmp", bytes);
+    return bytes.toByteArray();
+  }
+
+  private static byte[] pngWithFrameCount(int width, int height, int frameCount) throws Exception {
+    byte[] encoded = png(width, height);
+    int position = 8;
+    while (position + 12 <= encoded.length) {
+      int length = readInt(encoded, position);
+      if (encoded[position + 4] == 'I' && encoded[position + 5] == 'D'
+          && encoded[position + 6] == 'A' && encoded[position + 7] == 'T') {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        result.write(encoded, 0, position);
+        writePngChunk(result, "tEXt", ("Comment\0FC=" + frameCount).getBytes(StandardCharsets.ISO_8859_1));
+        result.write(encoded, position, encoded.length - position);
+        return result.toByteArray();
+      }
+      position += length + 12;
+    }
+    throw new IllegalArgumentException("PNG fixture has no IDAT chunk");
+  }
+
+  private static byte[] corruptPngIdat(byte[] validPng) {
+    byte[] corrupted = validPng.clone();
+    int position = 8;
+    while (position + 12 <= corrupted.length) {
+      int length = readInt(corrupted, position);
+      int data = position + 8;
+      if (corrupted[position + 4] == 'I' && corrupted[position + 5] == 'D'
+          && corrupted[position + 6] == 'A' && corrupted[position + 7] == 'T') {
+        if (length < 2) {
+          throw new IllegalArgumentException("PNG IDAT fixture is too short");
+        }
+        corrupted[data] = 0;
+        corrupted[data + 1] = 0;
+        CRC32 crc = new CRC32();
+        crc.update(corrupted, position + 4, length + 4);
+        writeInt(corrupted, data + length, (int) crc.getValue());
+        return corrupted;
+      }
+      position += length + 12;
+    }
+    throw new IllegalArgumentException("PNG fixture has no IDAT chunk");
+  }
+
+  private static void writePngChunk(ByteArrayOutputStream output, String name, byte[] data) {
+    byte[] type = name.getBytes(StandardCharsets.ISO_8859_1);
+    writeInt(output, data.length);
+    output.write(type, 0, type.length);
+    output.write(data, 0, data.length);
+    CRC32 crc = new CRC32();
+    crc.update(type);
+    crc.update(data);
+    writeInt(output, (int) crc.getValue());
+  }
+
+  private static int readInt(byte[] bytes, int offset) {
+    return ((bytes[offset] & 0xff) << 24) | ((bytes[offset + 1] & 0xff) << 16)
+        | ((bytes[offset + 2] & 0xff) << 8) | (bytes[offset + 3] & 0xff);
+  }
+
+  private static void writeInt(ByteArrayOutputStream bytes, int value) {
+    bytes.write((value >>> 24) & 0xff);
+    bytes.write((value >>> 16) & 0xff);
+    bytes.write((value >>> 8) & 0xff);
+    bytes.write(value & 0xff);
+  }
+
+  private static void writeInt(byte[] bytes, int offset, int value) {
+    bytes[offset] = (byte) (value >>> 24);
+    bytes[offset + 1] = (byte) (value >>> 16);
+    bytes[offset + 2] = (byte) (value >>> 8);
+    bytes[offset + 3] = (byte) value;
   }
 
   private static Image alreadyDecodedImage() throws Exception {

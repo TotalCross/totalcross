@@ -701,8 +701,7 @@ final class ImagePreparation {
         candidate.release();
       } else {
         if (candidate.javaResult != null) {
-          entry.request.image.adoptJavaPreparationResult(entry.request, candidate.javaResult);
-          candidate.javaResult = null;
+          candidate.adoptJavaResult(entry.request);
         } else {
           entry.request.image.adoptNativePreparationHandle(entry.request, candidate.takeNativeHandle());
         }
@@ -966,7 +965,7 @@ final class ImagePreparation {
     }
   }
 
-  private static final class DetachedCandidate {
+  static final class DetachedCandidate {
     JavaResult javaResult;
     long nativeHandle;
 
@@ -986,6 +985,11 @@ final class ImagePreparation {
       long handle = nativeHandle;
       nativeHandle = 0;
       return handle;
+    }
+
+    void adoptJavaResult(Request request) throws ImageException {
+      request.image.adoptJavaPreparationResult(request, javaResult);
+      javaResult = null;
     }
 
     void release() {

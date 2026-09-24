@@ -1013,7 +1013,10 @@ public class Image extends GfxSurface {
           requirement, optimizationMask, ImagePreparation.NOT_PREFETCHABLE);
     }
     EncodedImageSource source = (EncodedImageSource) deferred.root();
-    if (source.getFormat() != ImageEncodedStructure.Format.JPEG) {
+    ImageEncodedStructure.Format format = source.getFormat();
+    boolean jpeg = format == ImageEncodedStructure.Format.JPEG;
+    boolean staticPng = format == ImageEncodedStructure.Format.PNG && source.getFrameCount() == 1;
+    if (!jpeg && !staticPng) {
       return new ImagePreparation.Request(this, deferred, source, destinationScale,
           Double.doubleToLongBits(destinationScale), source.contentIdentity(), 0, 0, 1, false,
           nativeAvailable, requirement, optimizationMask, ImagePreparation.NOT_PREFETCHABLE);
@@ -1021,12 +1024,12 @@ public class Image extends GfxSurface {
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
     int targetWidth = scaledDimensionAllowingZero(deferred.logicalWidth(), effectiveScale);
     int targetHeight = scaledDimension(deferred.logicalHeight(), effectiveScale);
-    int denominator = ImageDecodeRequirement.choose(source, deferred, targetWidth, targetHeight);
+    int denominator = staticPng ? 1 : ImageDecodeRequirement.choose(source, deferred, targetWidth, targetHeight);
     long sourceContentIdentity = source.contentIdentity();
     boolean alreadyDecoded = source.decodedBackingForReuse(denominator) != null;
     ImagePreparation.Request request = new ImagePreparation.Request(this, deferred, source, destinationScale,
         Double.doubleToLongBits(destinationScale), sourceContentIdentity, targetWidth, targetHeight,
-        denominator, alreadyDecoded, nativeAvailable, requirement, optimizationMask, -1);
+        denominator, alreadyDecoded, staticPng ? false : nativeAvailable, requirement, optimizationMask, -1);
     if (isPreparationReady(request)) {
       request.status = ImagePreparation.READY;
     }
@@ -1045,7 +1048,9 @@ public class Image extends GfxSurface {
       throws ImageException {
     Image decoded = decodeEncodedSourceJava(request.source, request.targetWidth, request.targetHeight,
         request.denominator);
-    return new ImagePreparation.JavaResult(decoded.backing, decoded.width, decoded.height,
+    ImageBacking backing = decoded.backing;
+    decoded.backing = null;
+    return new ImagePreparation.JavaResult(backing, decoded.width, decoded.height,
         request.denominator);
   }
 
@@ -1610,14 +1615,17 @@ public class Image extends GfxSurface {
 
   private static Image decodeEncodedSourceJava(EncodedImageSource source,
       int targetWidth, int targetHeight, int denominator) throws ImageException {
-    if (source == null || source.getFormat() != ImageEncodedStructure.Format.JPEG
-        || targetWidth <= 0 || targetHeight <= 0
-        || (denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8)) {
-      throw new ImageException("Image preparation requires a JPEG and positive dimensions");
+    ImageEncodedStructure.Format format = source == null ? null : source.getFormat();
+    boolean png = format == ImageEncodedStructure.Format.PNG;
+    boolean jpeg = format == ImageEncodedStructure.Format.JPEG;
+    if ((!jpeg && !png) || targetWidth <= 0 || targetHeight <= 0
+        || (png && denominator != 1)
+        || (jpeg && denominator != 1 && denominator != 2 && denominator != 4 && denominator != 8)) {
+      throw new ImageException("Image preparation requires a supported encoded image and positive dimensions");
     }
     Image decoded = new Image();
     decoded.initializeDecodeTarget(source);
-    if (denominator == 1) {
+    if (png || denominator == 1) {
       decoded.decodeEncodedSource(source);
     } else {
       decoded.decodeEncodedSourceTiered(source, targetWidth, targetHeight, denominator);
