@@ -642,10 +642,10 @@ final class ImagePreparation {
       entry.callbacks.clear();
       recordOutcomeLocked(state == READY ? READY : FAILED, callbacks.size());
     }
-    recordFinishBookkeepingTime(accounting, finishStartNs, entry);
     for (int i = 0; i < callbacks.size(); i++) {
       postCompletion(callbacks.get(i));
     }
+    recordFinishBookkeepingTime(accounting, finishStartNs, entry);
     if (releaseWorkerClaim) {
       synchronized (LOCK) {
         workerCanClaim = true;

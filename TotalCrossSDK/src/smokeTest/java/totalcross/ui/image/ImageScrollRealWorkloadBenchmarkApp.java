@@ -285,8 +285,18 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           @Override
           public void run() {
             prefetchElapsedNs = System.nanoTime() - prefetchStartNs;
-            capturePrefetchAccounting();
-            prefetchComplete = true;
+            runOnMainThread(new Runnable() {
+              @Override
+              public void run() {
+                try {
+                  capturePrefetchAccounting();
+                  prefetchComplete = true;
+                } catch (Throwable failure) {
+                  String error = reportFailure(failure);
+                  finishBenchmark(false, error);
+                }
+              }
+            }, false);
           }
         });
         return;

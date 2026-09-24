@@ -131,7 +131,7 @@ class ImagePreparationTest {
   }
 
   @Test
-  void legacyLifecycleAccountingMeasuresSerializedEntriesAndResets() throws Exception {
+  void legacyLifecycleAccountingMeasuresSerializedEntries() throws Exception {
     boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
     CountDownLatch firstDecodeReachedAdoption = new CountDownLatch(1);
     CountDownLatch continueFirstDecode = new CountDownLatch(1);
@@ -168,11 +168,11 @@ class ImagePreparationTest {
       assertEquals(1, ImagePreparation.threadStartCountForTest());
       continueFirstDecode.countDown();
       assertTrue(firstCallbackEntered.await(5, TimeUnit.SECONDS));
-      long firstPreparationTotalNs = ImagePreparation.preparationEntryTotalNsForTest();
-      assertTrue(firstPreparationTotalNs > 0);
+      assertEquals(0, ImagePreparation.preparationEntryTotalNsForTest());
       continueFirstCallback.countDown();
       assertTrue(secondCallbackEntered.await(5, TimeUnit.SECONDS));
-      assertTrue(ImagePreparation.preparationEntryTotalNsForTest() > firstPreparationTotalNs);
+      long firstPreparationTotalNs = ImagePreparation.preparationEntryTotalNsForTest();
+      assertTrue(firstPreparationTotalNs > 0);
       continueSecondCallback.countDown();
       assertTrue(completed.await(5, TimeUnit.SECONDS));
 
@@ -182,9 +182,6 @@ class ImagePreparationTest {
       assertEquals(2, ImagePreparation.decodeEntryCountForTest());
       assertEquals(2, ImagePreparation.uiDispatchCountForTest());
       assertDiagnosticMetricsNonNegative();
-
-      ImagePreparation.resetAccountingForTest();
-      assertDiagnosticMetricsZero();
     } finally {
       continueFirstDecode.countDown();
       continueFirstCallback.countDown();
@@ -468,7 +465,7 @@ class ImagePreparationTest {
   }
 
   @Test
-  void completionCallbackSeesFinalPreparationAccounting() throws Exception {
+  void deferredCompletionSnapshotSeesFinalAccountingAfterCallbackBookkeeping() throws Exception {
     boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
     new Launcher();
     MainWindow.resetPreviewState();
@@ -476,7 +473,9 @@ class ImagePreparationTest {
     ImagePreparation.setRunUiInlineForTest(true);
     Image.setDiagnosticAccountingForTest(true);
     ImagePreparation.resetAccountingForTest();
-    long[] callbackMetrics = {-1, -1};
+    long[] callbackMetrics = {-1, -1, -1};
+    long[] deferredMetrics = {-1, -1};
+    long[] callbackWork = {0};
     try {
       Image image = alreadyDecodedImage();
       CountDownLatch completed = new CountDownLatch(1);
@@ -485,19 +484,43 @@ class ImagePreparationTest {
         public void run() {
           callbackMetrics[0] = ImagePreparation.finishBookkeepingNsForTest();
           callbackMetrics[1] = ImagePreparation.preparationEntryTotalNsForTest();
-          completed.countDown();
+          long callbackStartNs = System.nanoTime();
+          long checksum = 0;
+          for (int i = 0; i < 10000; i++) {
+            checksum += i;
+          }
+          callbackWork[0] = checksum;
+          callbackMetrics[2] = System.nanoTime() - callbackStartNs;
+          mainWindow.runOnMainThread(new Runnable() {
+            @Override
+            public void run() {
+              deferredMetrics[0] = ImagePreparation.finishBookkeepingNsForTest();
+              deferredMetrics[1] = ImagePreparation.preparationEntryTotalNsForTest();
+              completed.countDown();
+            }
+          }, false);
         }
       });
 
       assertEquals(1, mainWindow.queuedCount());
       mainWindow.runNext();
+      assertEquals(1, mainWindow.queuedCount());
+      assertEquals(0, callbackMetrics[0]);
+      assertEquals(0, callbackMetrics[1]);
+      mainWindow.runNext();
 
       assertTrue(completed.await(0, TimeUnit.MILLISECONDS));
       assertEquals(1, ImagePreparation.preparationEntryCountForTest());
-      assertTrue(callbackMetrics[0] > 0);
-      assertTrue(callbackMetrics[1] > 0);
-      assertEquals(ImagePreparation.finishBookkeepingNsForTest(), callbackMetrics[0]);
-      assertEquals(ImagePreparation.preparationEntryTotalNsForTest(), callbackMetrics[1]);
+      assertEquals(49995000, callbackWork[0]);
+      assertTrue(callbackMetrics[2] > 0);
+      assertTrue(deferredMetrics[0] >= callbackMetrics[2]);
+      assertTrue(deferredMetrics[1] >= callbackMetrics[2]);
+      assertTrue(deferredMetrics[0] > 0);
+      assertTrue(deferredMetrics[1] > 0);
+      assertEquals(ImagePreparation.finishBookkeepingNsForTest(), deferredMetrics[0]);
+      assertEquals(ImagePreparation.preparationEntryTotalNsForTest(), deferredMetrics[1]);
+      ImagePreparation.resetAccountingForTest();
+      assertDiagnosticMetricsZero();
     } finally {
       while (mainWindow.queuedCount() > 0) {
         mainWindow.runNext();
