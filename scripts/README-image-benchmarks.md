@@ -100,3 +100,16 @@ python3 run-benchmark.py --profile release-candidate-scroll --phase matrix
 For package checks without a matrix, `--phase self-test` validates the bundle.
 Decode checks remain separate when decode assets are included:
 `--phase decode-self-test` followed by `--phase decode-smokes`.
+
+The focused ImagePreparation comparison is packaged for `macos-arm64` and
+`windows-x64`. Run it with:
+
+```sh
+python3 run-benchmark.py --phase prefetch-thread-diagnostics
+```
+
+It runs masks 6 and 38 across `legacy`, `worker-poll` (1 ms), and
+`worker-semaphore`, for six measured processes. The summary includes process
+wall time, preparation/decode/UI-wait/finish timings, thread and polling
+counters, and Semaphore release/acquire/wake counts. It uses the same 663-image
+`corpus/imag` as the rest of the scroll benchmark.

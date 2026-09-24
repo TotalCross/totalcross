@@ -70,7 +70,7 @@ PREFETCH_DIAGNOSTIC_MASKS = (0, 4, 6, 38, 32799)
 PREFETCH_DIAGNOSTIC_PROCESS_COUNT = len(PREFETCH_DIAGNOSTIC_MASKS)
 PREFETCH_THREAD_DIAGNOSTIC_MASKS = (6, 38)
 PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS = (
-    ("legacy", 0), ("worker", 1), ("worker", 2),
+    ("legacy", 0), ("worker-poll", 1), ("worker-semaphore", 0),
 )
 PREFETCH_THREAD_DIAGNOSTIC_PROCESS_COUNT = (
     len(PREFETCH_THREAD_DIAGNOSTIC_MASKS)
@@ -304,12 +304,17 @@ PREFETCH_THREAD_COUNTER_FIELDS = (
     ("decodeWorkerNs", "decode_worker_ns"),
     ("uiDispatchCount", "ui_dispatch_count"),
     ("uiDispatchWaitNs", "ui_dispatch_wait_ns"),
+    ("uiWaitNs", "ui_wait_ns"),
     ("adoptNs", "adopt_ns"),
     ("finishPreparationNs", "finish_preparation_ns"),
     ("finishBookkeepingNs", "finish_bookkeeping_ns"),
     ("workerPollCount", "worker_poll_count"),
     ("workerSleepRequestedNs", "worker_sleep_requested_ns"),
     ("workerIdleElapsedNs", "worker_idle_elapsed_ns"),
+    ("workerSemaphoreReleaseCount", "worker_semaphore_release_count"),
+    ("workerSemaphoreAcquireCount", "worker_semaphore_acquire_count"),
+    ("workerSemaphoreWakeCount", "worker_semaphore_wake_count"),
+    ("workerSemaphoreOutstandingWakeCount", "worker_semaphore_outstanding_wake_count"),
 )
 SAVE_COUNT_BUCKETS = ("0", "1", "2", "3", "4", "5OrMore")
 MAPPING_SUBREASONS = (
@@ -1528,10 +1533,10 @@ def validate_prefetch_diagnostic_counters(counters, run_dir):
 def validate_prefetch_thread_run_artifacts(summary, counters, run_dir, mask,
                                            prefetch_thread_mode,
                                            prefetch_worker_sleep_ms):
-    require(prefetch_thread_mode in ("legacy", "worker"),
+    require(prefetch_thread_mode in ("legacy", "worker-poll", "worker-semaphore"),
             f"{run_dir} has an unknown prefetch thread mode")
-    expected_sleep_ms = 0 if prefetch_thread_mode == "legacy" else prefetch_worker_sleep_ms
-    require(expected_sleep_ms in (0, 1, 2),
+    expected_sleep_ms = 1 if prefetch_thread_mode == "worker-poll" else 0
+    require(prefetch_worker_sleep_ms == expected_sleep_ms,
             f"{run_dir} has an unsupported prefetch worker sleep")
     require(summary.get("prefetchThreadMode") == prefetch_thread_mode,
             f"{run_dir}/summary.json prefetch thread mode mismatch")
@@ -1541,6 +1546,19 @@ def validate_prefetch_thread_run_artifacts(summary, counters, run_dir, mask,
             f"{run_dir}/summary.json must enable prefetch accounting")
     require(summary.get("imageCount") == EXPECTED_JPEGS,
             f"{run_dir}/summary.json image count mismatch")
+    request_count = counter_value(summary, "prefetchRequestCount",
+                                  f"{run_dir} prefetch request count")
+    ready_count = counter_value(summary, "prefetchReadyCount",
+                                f"{run_dir} prefetch ready count")
+    failed_count = counter_value(summary, "prefetchFailedCount",
+                                 f"{run_dir} prefetch failed count")
+    not_prefetchable_count = counter_value(
+        summary, "prefetchNotPrefetchableCount", f"{run_dir} not-prefetchable count"
+    )
+    require(request_count == EXPECTED_JPEGS
+            and ready_count + failed_count + not_prefetchable_count == request_count
+            and failed_count == 0,
+            f"{run_dir} preparation outcomes do not account for the 663-image workload")
     require(summary.get("requestedMask") == mask and summary.get("effectiveMask") == mask,
             f"{run_dir}/summary.json mask mismatch")
     require_nonnegative_ns(summary.get("prefetchElapsedNs"),
@@ -1564,33 +1582,70 @@ def validate_prefetch_thread_run_artifacts(summary, counters, run_dir, mask,
     decoded_entries = values["decode_entry_count"]
     require(values["preparation_entry_count"] >= decoded_entries,
             f"{run_dir} decoded entry count exceeds activated preparation entries")
+    require(values["preparation_entry_count"] == ready_count
+            and decoded_entries == ready_count,
+            f"{run_dir} did not prepare every ready image exactly once")
     require(values["ui_dispatch_count"] <= decoded_entries,
             f"{run_dir} UI dispatch count exceeds decoded entries")
+    semaphore_releases = values["worker_semaphore_release_count"]
+    semaphore_acquires = values["worker_semaphore_acquire_count"]
+    semaphore_wakes = values["worker_semaphore_wake_count"]
+    semaphore_outstanding = values["worker_semaphore_outstanding_wake_count"]
     if decoded_entries:
         if prefetch_thread_mode == "legacy":
             require(values["thread_create_count"] == decoded_entries,
                     f"{run_dir} legacy thread count differs from decoded entries")
+            require(values["worker_poll_count"] == 0,
+                    f"{run_dir} legacy mode recorded worker polling")
+            require(semaphore_releases == semaphore_acquires == semaphore_wakes == 0
+                    and semaphore_outstanding == 0,
+                    f"{run_dir} legacy mode recorded semaphore activity")
+        elif prefetch_thread_mode == "worker-poll":
+            require(values["thread_create_count"] == 1,
+                    f"{run_dir} polling mode did not create exactly one worker thread")
+            require(values["worker_poll_count"] > 0,
+                    f"{run_dir} polling mode did not record a polling sleep")
+            require(semaphore_releases == semaphore_acquires == semaphore_wakes == 0
+                    and semaphore_outstanding == 0,
+                    f"{run_dir} polling mode recorded semaphore activity")
         else:
             require(values["thread_create_count"] == 1,
-                    f"{run_dir} worker mode did not create exactly one worker thread")
-            require(values["worker_poll_count"] > 0,
-                    f"{run_dir} worker mode did not record a polling sleep")
+                    f"{run_dir} semaphore mode did not create exactly one worker thread")
+            require(values["worker_poll_count"] == 0
+                    and values["worker_sleep_requested_ns"] == 0
+                    and values["worker_idle_elapsed_ns"] == 0,
+                    f"{run_dir} semaphore mode recorded polling")
+            require(semaphore_releases == semaphore_acquires == semaphore_wakes
+                    and semaphore_outstanding == 0
+                    and semaphore_releases <= decoded_entries,
+                    f"{run_dir} semaphore notifications are unbalanced or accumulated")
     else:
         require(values["thread_create_count"] == 0,
                 f"{run_dir} created a prefetch thread without decode entries")
+        require(semaphore_releases == semaphore_acquires == semaphore_wakes == 0
+                and semaphore_outstanding == 0,
+                f"{run_dir} recorded semaphore activity without decode entries")
     require(values["thread_start_count"] == values["thread_create_count"],
             f"{run_dir} thread start count differs from created threads")
-    if prefetch_thread_mode == "worker":
+    if prefetch_thread_mode == "worker-poll":
         expected_requested_ns = (
             values["worker_poll_count"] * expected_sleep_ms * 1000000
         )
         require(values["worker_sleep_requested_ns"] == expected_requested_ns,
                 f"{run_dir} requested worker sleep time does not match poll count")
-    else:
+    elif prefetch_thread_mode == "legacy":
         require(values["worker_poll_count"] == 0
                 and values["worker_sleep_requested_ns"] == 0
                 and values["worker_idle_elapsed_ns"] == 0,
                 f"{run_dir} legacy mode recorded worker polling")
+    for json_name, expected in (
+        ("workerSemaphoreReleaseCount", semaphore_releases),
+        ("workerSemaphoreAcquireCount", semaphore_acquires),
+        ("workerSemaphoreWakeCount", semaphore_wakes),
+        ("workerSemaphoreOutstandingWakeCount", semaphore_outstanding),
+    ):
+        require(summary.get(json_name) == expected,
+                f"{run_dir}/summary.json {json_name} differs from counters.json")
     return {**jpeg_geometry, **values}
 
 
@@ -2584,10 +2639,11 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
         f"--image-optimization={mask}",
         f"--prefetch={prefetch}",
         f"--accounting={accounting}",
-        f"--passes={passes}",
         f"--run={run}",
         f"--dataset-hash={corpus_digest}",
     ]
+    if prefetch_thread_mode is None or passes != 1:
+        command.append(f"--passes={passes}")
     if prefetch_thread_mode is not None:
         require(prefetch_worker_sleep_ms is not None,
                 "prefetch thread mode requires a worker sleep value")
@@ -2598,11 +2654,19 @@ def run_process(bundle, manifest, output, corpus_digest, mask, prefetch, account
     if app_profile is not None:
         command.append(f"--profile={app_profile}")
     try:
+        process_start_ns = time.monotonic_ns()
         with log_path.open("w", encoding="utf-8") as log:
             completed = subprocess.run(
                 command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, text=True,
                 check=False, timeout=PROCESS_TIMEOUT_SECONDS
             )
+        process_wall_ns = time.monotonic_ns() - process_start_ns
+        if prefetch_thread_mode is not None:
+            run_dir.mkdir(parents=True, exist_ok=True)
+            write_json_file(run_dir / "runner-process.json", {
+                "processWallNs": process_wall_ns,
+                "exitCode": completed.returncode,
+            }, "runner process timing")
     except subprocess.TimeoutExpired:
         with log_path.open("a", encoding="utf-8") as log:
             log.write(
@@ -3406,8 +3470,10 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
         failure = failures.get(key)
         summary_path = run_dir / "summary.json"
         counters_path = run_dir / "counters.json"
+        process_path = run_dir / "runner-process.json"
         summary = None
         counters = None
+        process_metadata = None
         if summary_path.is_file():
             try:
                 summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -3420,9 +3486,18 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
             except (OSError, ValueError) as error:
                 if failure is None:
                     raise BenchmarkFailure(f"invalid thread counters: {counters_path}") from error
+        if process_path.is_file():
+            try:
+                process_metadata = json.loads(process_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as error:
+                if failure is None:
+                    raise BenchmarkFailure(f"invalid runner process metadata: {process_path}") from error
         if failure is None:
-            require(summary is not None and counters is not None,
+            require(summary is not None and counters is not None and process_metadata is not None,
                     f"thread diagnostic artifacts are missing for {run_dir}")
+            process_wall_ns = process_metadata.get("processWallNs")
+            require_nonnegative_ns(process_wall_ns,
+                                   f"{process_path} processWallNs")
             metrics = validate_prefetch_thread_run_artifacts(
                 summary, counters, run_dir, mask, thread_mode, sleep_ms,
             )
@@ -3431,6 +3506,8 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
             status = "PASS"
         else:
             metrics = {}
+            process_wall_ns = (process_metadata.get("processWallNs")
+                               if process_metadata else None)
             phases = counters.get("prefetchPhases", {}) if isinstance(counters, dict) else {}
             metrics.update({
                 csv_name: phases.get(json_name)
@@ -3458,6 +3535,7 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
             "status": status,
             "validation_status": validation_status,
             "validation_error": validation_error,
+            "process_wall_ns": process_wall_ns,
             "prefetch_elapsed_ns": summary.get("prefetchElapsedNs") if summary else None,
             **metrics,
         }
@@ -3469,7 +3547,7 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
     fields = [
         "order", "run", "thread_mode", "worker_sleep_ms", "mask", "prefetch",
         "accounting", "status", "validation_status", "validation_error",
-        "prefetch_elapsed_ns",
+        "process_wall_ns", "prefetch_elapsed_ns",
         *(csv_name for _, csv_name in PREFETCH_PHASE_SUMMARY_FIELDS),
         *(csv_name for _, csv_name in PREFETCH_DIAGNOSTIC_COUNTER_FIELDS),
         *(csv_name for _, csv_name in PREFETCH_DIAGNOSTIC_DERIVED_FIELDS),
@@ -3483,23 +3561,25 @@ def aggregate_prefetch_thread_diagnostics(output, plan):
 
     row_lookup = {(row["thread_mode"], row["worker_sleep_ms"], row["mask"]): row
                   for row in rows}
+    comparison_fields = (
+        "process_wall_ns", "prefetch_elapsed_ns", "preparation_entry_total_ns",
+        "decode_worker_ns", "ui_wait_ns", "finish_preparation_ns",
+        "thread_start_count", "thread_start_call_ns", "worker_poll_count",
+        "worker_sleep_requested_ns", "worker_semaphore_release_count",
+        "worker_semaphore_acquire_count", "worker_semaphore_wake_count",
+    )
     comparisons = []
     for mask in PREFETCH_THREAD_DIAGNOSTIC_MASKS:
-        legacy = row_lookup[("legacy", 0, mask)]
-        for sleep_ms in (1, 2):
-            worker = row_lookup[("worker", sleep_ms, mask)]
-            valid = (legacy["status"] == "PASS" and worker["status"] == "PASS")
-            legacy_elapsed = legacy["prefetch_elapsed_ns"]
-            worker_elapsed = worker["prefetch_elapsed_ns"]
-            valid = (valid and type(legacy_elapsed) is int and type(worker_elapsed) is int)
-            comparisons.append({
-                "mask": mask,
+        strategies = []
+        for thread_mode, sleep_ms in PREFETCH_THREAD_DIAGNOSTIC_CONFIGURATIONS:
+            row = row_lookup[(thread_mode, sleep_ms, mask)]
+            strategies.append({
+                "strategy": thread_mode,
                 "workerSleepMs": sleep_ms,
-                "legacyPrefetchElapsedNs": legacy_elapsed,
-                "workerPrefetchElapsedNs": worker_elapsed,
-                "deltaNs": worker_elapsed - legacy_elapsed if valid else None,
-                "status": "VALID" if valid else "INCOMPLETE_VALIDATION",
+                "status": row["status"],
+                **{field: row.get(field) for field in comparison_fields},
             })
+        comparisons.append({"mask": mask, "strategies": strategies})
     json_path = output / "prefetch-thread-diagnostics-summary.json"
     write_json_file(json_path, {
         "status": ("PASS" if all(row["status"] == "PASS" for row in rows)

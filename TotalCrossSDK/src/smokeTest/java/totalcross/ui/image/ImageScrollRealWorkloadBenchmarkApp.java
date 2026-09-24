@@ -155,6 +155,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private long prefetchWorkerPollCount;
   private long prefetchWorkerSleepRequestedNs;
   private long prefetchWorkerIdleElapsedNs;
+  private long prefetchWorkerSemaphoreReleaseCount;
+  private long prefetchWorkerSemaphoreAcquireCount;
+  private long prefetchWorkerSemaphoreWakeCount;
+  private long prefetchWorkerSemaphoreOutstandingWakeCount;
   private Counters prefetchCounters;
   private boolean benchmarkStarted;
   private boolean prefetchComplete;
@@ -395,6 +399,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     prefetchWorkerPollCount = ImagePreparation.workerPollCountForTest();
     prefetchWorkerSleepRequestedNs = ImagePreparation.workerSleepRequestedNsForTest();
     prefetchWorkerIdleElapsedNs = ImagePreparation.workerIdleElapsedNsForTest();
+    prefetchWorkerSemaphoreReleaseCount = ImagePreparation.workerSemaphoreReleaseCountForTest();
+    prefetchWorkerSemaphoreAcquireCount = ImagePreparation.workerSemaphoreAcquireCountForTest();
+    prefetchWorkerSemaphoreWakeCount = ImagePreparation.workerSemaphoreWakeCountForTest();
+    prefetchWorkerSemaphoreOutstandingWakeCount =
+        ImagePreparation.workerSemaphoreOutstandingWakeCountForTest();
     prefetchCounters = Counters.capture();
     validateJpegDiagnostics(prefetchCounters, "prefetch");
   }
@@ -446,6 +455,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
                 + ",prefetch_thread_create_count=" + prefetchThreadCreateCount
                 + ",prefetch_preparation_entry_total_ns=" + prefetchPreparationEntryTotalNs
                 + ",prefetch_worker_poll_count=" + prefetchWorkerPollCount
+                + ",prefetch_worker_semaphore_release_count="
+                + prefetchWorkerSemaphoreReleaseCount
+                + ",prefetch_worker_semaphore_acquire_count="
+                + prefetchWorkerSemaphoreAcquireCount
+                + ",prefetch_worker_semaphore_wake_count="
+                + prefetchWorkerSemaphoreWakeCount
             : "")
         + ",overallPass=" + overallPass
         + (error.length() == 0 ? "" : ",error=" + error);
@@ -562,6 +577,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     StringBuilder json = new StringBuilder()
         .append(",\n  \"prefetchThreadMode\":\"").append(prefetchThreadMode).append("\"")
         .append(",\n  \"prefetchWorkerSleepMs\":").append(prefetchWorkerSleepMs);
+    appendPrefetchThreadSummaryMetric(json, "prefetchRequestCount", prefetchRequestCount);
+    appendPrefetchThreadSummaryMetric(json, "prefetchReadyCount", prefetchReadyCount);
+    appendPrefetchThreadSummaryMetric(json, "prefetchFailedCount", prefetchFailedCount);
+    appendPrefetchThreadSummaryMetric(json, "prefetchNotPrefetchableCount",
+        prefetchNotPrefetchableCount);
     appendPrefetchThreadSummaryMetric(json, "preparationEntryCount", prefetchPreparationEntryCount);
     appendPrefetchThreadSummaryMetric(json, "preparationEntryTotalNs", prefetchPreparationEntryTotalNs);
     appendPrefetchThreadSummaryMetric(json, "threadCreateCount", prefetchThreadCreateCount);
@@ -573,12 +593,21 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendPrefetchThreadSummaryMetric(json, "decodeWorkerNs", prefetchDecodeWorkerNs);
     appendPrefetchThreadSummaryMetric(json, "uiDispatchCount", prefetchUiDispatchCount);
     appendPrefetchThreadSummaryMetric(json, "uiDispatchWaitNs", prefetchUiDispatchWaitNs);
+    appendPrefetchThreadSummaryMetric(json, "uiWaitNs", prefetchUiDispatchWaitNs);
     appendPrefetchThreadSummaryMetric(json, "adoptNs", prefetchAdoptNs);
     appendPrefetchThreadSummaryMetric(json, "finishPreparationNs", prefetchFinishPreparationNs);
     appendPrefetchThreadSummaryMetric(json, "finishBookkeepingNs", prefetchFinishBookkeepingNs);
     appendPrefetchThreadSummaryMetric(json, "workerPollCount", prefetchWorkerPollCount);
     appendPrefetchThreadSummaryMetric(json, "workerSleepRequestedNs", prefetchWorkerSleepRequestedNs);
     appendPrefetchThreadSummaryMetric(json, "workerIdleElapsedNs", prefetchWorkerIdleElapsedNs);
+    appendPrefetchThreadSummaryMetric(json, "workerSemaphoreReleaseCount",
+        prefetchWorkerSemaphoreReleaseCount);
+    appendPrefetchThreadSummaryMetric(json, "workerSemaphoreAcquireCount",
+        prefetchWorkerSemaphoreAcquireCount);
+    appendPrefetchThreadSummaryMetric(json, "workerSemaphoreWakeCount",
+        prefetchWorkerSemaphoreWakeCount);
+    appendPrefetchThreadSummaryMetric(json, "workerSemaphoreOutstandingWakeCount",
+        prefetchWorkerSemaphoreOutstandingWakeCount);
     return json.toString();
   }
 
@@ -603,12 +632,21 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     appendPrefetchThreadPhase(json, "decodeWorkerNs", prefetchDecodeWorkerNs);
     appendPrefetchThreadPhase(json, "uiDispatchCount", prefetchUiDispatchCount);
     appendPrefetchThreadPhase(json, "uiDispatchWaitNs", prefetchUiDispatchWaitNs);
+    appendPrefetchThreadPhase(json, "uiWaitNs", prefetchUiDispatchWaitNs);
     appendPrefetchThreadPhase(json, "adoptNs", prefetchAdoptNs);
     appendPrefetchThreadPhase(json, "finishPreparationNs", prefetchFinishPreparationNs);
     appendPrefetchThreadPhase(json, "finishBookkeepingNs", prefetchFinishBookkeepingNs);
     appendPrefetchThreadPhase(json, "workerPollCount", prefetchWorkerPollCount);
     appendPrefetchThreadPhase(json, "workerSleepRequestedNs", prefetchWorkerSleepRequestedNs);
     appendPrefetchThreadPhase(json, "workerIdleElapsedNs", prefetchWorkerIdleElapsedNs);
+    appendPrefetchThreadPhase(json, "workerSemaphoreReleaseCount",
+        prefetchWorkerSemaphoreReleaseCount);
+    appendPrefetchThreadPhase(json, "workerSemaphoreAcquireCount",
+        prefetchWorkerSemaphoreAcquireCount);
+    appendPrefetchThreadPhase(json, "workerSemaphoreWakeCount",
+        prefetchWorkerSemaphoreWakeCount);
+    appendPrefetchThreadPhase(json, "workerSemaphoreOutstandingWakeCount",
+        prefetchWorkerSemaphoreOutstandingWakeCount);
   }
 
   private static void appendPrefetchThreadPhase(StringBuilder json, String name, long value) {

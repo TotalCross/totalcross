@@ -283,6 +283,10 @@ def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
         "prefetch": "on",
         "accounting": "on",
         "imageCount": RUNNER.EXPECTED_JPEGS,
+        "prefetchRequestCount": RUNNER.EXPECTED_JPEGS,
+        "prefetchReadyCount": RUNNER.EXPECTED_JPEGS - 3,
+        "prefetchFailedCount": 0,
+        "prefetchNotPrefetchableCount": 3,
         "requestedMask": mask,
         "effectiveMask": mask,
         "prefetchElapsedNs": elapsed_ns,
@@ -290,6 +294,10 @@ def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
     }
     for json_name, _ in RUNNER.PREFETCH_PHASE_SUMMARY_FIELDS:
         summary[json_name] = 1
+    decoded_entries = RUNNER.EXPECTED_JPEGS - 3
+    thread_count = decoded_entries if mode == "legacy" else 1
+    poll_count = 2 if mode == "worker-poll" else 0
+    sem_wake_count = decoded_entries - 1 if mode == "worker-semaphore" else 0
     phases = {
         json_name: 0 for json_name, _ in RUNNER.PREFETCH_DIAGNOSTIC_COUNTER_FIELDS
     }
@@ -298,26 +306,37 @@ def thread_artifacts(mode, sleep_ms, mask, elapsed_ns):
     })
     phases["geometryUnaccountedNs"] = 0
     thread_counts = {
-        "preparationEntryCount": 1,
+        "preparationEntryCount": decoded_entries,
         "preparationEntryTotalNs": 10,
-        "threadCreateCount": 1,
+        "threadCreateCount": thread_count,
         "threadObjectCreateNs": 2,
-        "threadStartCount": 1,
+        "threadStartCount": thread_count,
         "threadStartCallNs": 3,
         "threadStartLatencyNs": 4,
-        "decodeEntryCount": 1,
+        "decodeEntryCount": decoded_entries,
         "decodeWorkerNs": 5,
-        "uiDispatchCount": 1,
+        "uiDispatchCount": decoded_entries,
         "uiDispatchWaitNs": 6,
+        "uiWaitNs": 6,
         "adoptNs": 7,
         "finishPreparationNs": 8,
         "finishBookkeepingNs": 9,
-        "workerPollCount": 1 if mode == "worker" else 0,
-        "workerSleepRequestedNs": sleep_ms * 1_000_000 if mode == "worker" else 0,
-        "workerIdleElapsedNs": 11 if mode == "worker" else 0,
+        "workerPollCount": poll_count,
+        "workerSleepRequestedNs": poll_count * sleep_ms * 1_000_000,
+        "workerIdleElapsedNs": 11 if poll_count else 0,
+        "workerSemaphoreReleaseCount": sem_wake_count,
+        "workerSemaphoreAcquireCount": sem_wake_count,
+        "workerSemaphoreWakeCount": sem_wake_count,
+        "workerSemaphoreOutstandingWakeCount": 0,
     }
     phases.update({"prefetchThreadMode": mode, "prefetchWorkerSleepMs": sleep_ms})
     phases.update(thread_counts)
+    summary.update({
+        "workerSemaphoreReleaseCount": sem_wake_count,
+        "workerSemaphoreAcquireCount": sem_wake_count,
+        "workerSemaphoreWakeCount": sem_wake_count,
+        "workerSemaphoreOutstandingWakeCount": 0,
+    })
     return summary, {"accountingEnabled": True, "prefetchPhases": phases}
 
 
@@ -325,8 +344,8 @@ def assert_prefetch_thread_diagnostics():
     profile = RUNNER.profile_config("prefetch-thread-diagnostics")
     require(profile["masks"] == (6, 38)
             and profile["thread_configurations"] == (("legacy", 0),
-                                                       ("worker", 1),
-                                                       ("worker", 2)),
+                                                       ("worker-poll", 1),
+                                                       ("worker-semaphore", 0)),
             "prefetch thread diagnostic configuration differs")
     require(profile["app_profile"] == "pft",
             "prefetch thread public phase does not map to its short app profile")
@@ -366,18 +385,20 @@ def assert_prefetch_thread_diagnostics():
                     ("windows-x64", "ImageScrollRealWorkloadBenchmarkApp.exe"),
                     ("macos-arm64", "ImageScrollRealWorkloadBenchmarkApp")):
                 (bundle / executable_name).touch()
-                current_target[0] = target
-                RUNNER.run_process(
-                    bundle, {"target": target, "executable": executable_name}, output,
-                    "0123456789abcdef", 38, "on", "on", 1,
-                    f"thread-worker-{target}",
-                    profile_name="prefetch-thread-diagnostics",
-                    prefetch_thread_mode="worker", prefetch_worker_sleep_ms=2,
-                    profile_run_dir=RUNNER.expected_prefetch_thread_run_dir(
-                        output, "worker", 2, 38, 1
-                    ),
-                    app_profile=profile["app_profile"],
-                )
+                for thread_mode, sleep_ms in profile["thread_configurations"]:
+                    current_target[0] = (target, thread_mode)
+                    RUNNER.run_process(
+                        bundle, {"target": target, "executable": executable_name}, output,
+                        "0123456789abcdef", 38, "on", "on", 1,
+                        f"thread-{thread_mode}-{target}",
+                        profile_name="prefetch-thread-diagnostics",
+                        prefetch_thread_mode=thread_mode,
+                        prefetch_worker_sleep_ms=sleep_ms,
+                        profile_run_dir=RUNNER.expected_prefetch_thread_run_dir(
+                            output, thread_mode, sleep_ms, 38, 1
+                        ),
+                        app_profile=profile["app_profile"],
+                    )
 
         def desktop_application_payload(command):
             # The desktop startup parser consumes these VM-level options before
@@ -393,13 +414,17 @@ def assert_prefetch_thread_diagnostics():
                     payload.append(argument)
             return " ".join(payload)
 
-        require(set(commands_by_target) == {"windows-x64", "macos-arm64"},
-                "runner command regression omitted a desktop target")
-        for target, command in commands_by_target.items():
+        require(set(commands_by_target) == {
+                    (target, mode)
+                    for target in ("windows-x64", "macos-arm64")
+                    for mode, _ in profile["thread_configurations"]
+                }, "runner command regression omitted a target or strategy")
+        for (target, mode), command in commands_by_target.items():
+            sleep_ms = dict(profile["thread_configurations"])[mode]
             require(command[-1] == "--profile=pft"
-                    and "--prefetch-thread-mode=worker" in command
-                    and "--prefetch-worker-sleep-ms=2" in command,
-                    f"{target} runner omitted prefetch-thread app arguments")
+                    and f"--prefetch-thread-mode={mode}" in command
+                    and f"--prefetch-worker-sleep-ms={sleep_ms}" in command,
+                    f"{target}/{mode} runner omitted prefetch-thread app arguments")
             payload = desktop_application_payload(command)
             legacy_profile_command = list(command)
             legacy_profile_command[-1] = "--profile=prefetch-thread-diagnostics"
@@ -407,17 +432,18 @@ def assert_prefetch_thread_diagnostics():
             require(len(legacy_payload) >= 255,
                     f"{target} regression command no longer reaches the VM limit")
             require(len(payload) <= 247,
-                    f"{target} application payload lacks headroom below the VM limit: "
+                    f"{target}/{mode} application payload lacks headroom below the VM limit: "
                     f"{len(payload)} characters")
         require(RUNNER.configuration_key(
                     "prefetch-thread-diagnostics", 1, 6, "on", "on",
-                    prefetch_thread_mode="worker", prefetch_worker_sleep_ms=1,
+                    prefetch_thread_mode="worker-poll", prefetch_worker_sleep_ms=1,
                 ) != RUNNER.configuration_key(
                     "prefetch-thread-diagnostics", 1, 6, "on", "on",
-                    prefetch_thread_mode="worker", prefetch_worker_sleep_ms=2,
+                    prefetch_thread_mode="worker-semaphore", prefetch_worker_sleep_ms=0,
                 ), "thread strategy and sleep do not distinguish run keys")
 
-        elapsed_by = {("legacy", 0): 1000, ("worker", 1): 1100, ("worker", 2): 1200}
+        elapsed_by = {("legacy", 0): 1000, ("worker-poll", 1): 1100,
+                      ("worker-semaphore", 0): 1200}
         for _, run, mode, sleep_ms, mask, _, _ in plan:
             run_dir = RUNNER.expected_prefetch_thread_run_dir(
                 output, mode, sleep_ms, mask, run
@@ -428,25 +454,36 @@ def assert_prefetch_thread_diagnostics():
             )
             (run_dir / "summary.json").write_text(json.dumps(summary))
             (run_dir / "counters.json").write_text(json.dumps(counters))
+            (run_dir / "runner-process.json").write_text(json.dumps({
+                "processWallNs": 10_000 + run,
+                "exitCode": 0,
+            }))
         csv_path = RUNNER.aggregate_prefetch_thread_diagnostics(output, plan)
         with csv_path.open(newline="", encoding="utf-8") as source:
             csv_rows = list(csv.DictReader(source))
         require(len(csv_rows) == 6
                 and all(row["status"] == "PASS" for row in csv_rows),
                 "prefetch thread aggregate did not retain six validated rows")
-        require({"prefetch_elapsed_ns", "prefetch_jpeg_decode_count",
+        require({"process_wall_ns", "prefetch_elapsed_ns", "prefetch_jpeg_decode_count",
                  "prefetch_geometry_draw_ns",
                  "preparation_entry_count", "thread_start_latency_ns",
-                 "worker_sleep_requested_ns"}.issubset(csv_rows[0]),
+                 "worker_sleep_requested_ns", "ui_wait_ns",
+                 "worker_semaphore_release_count",
+                 "worker_semaphore_acquire_count",
+                 "worker_semaphore_wake_count"}.issubset(csv_rows[0]),
                 "prefetch thread CSV omitted existing or preparation metrics")
         aggregate = json.loads((output / "prefetch-thread-diagnostics-summary.json").read_text())
         require(aggregate["processCount"] == 6 and len(aggregate["rows"]) == 6,
                 "prefetch thread JSON summary process count differs")
-        require([(item["mask"], item["workerSleepMs"], item["deltaNs"])
-                 for item in aggregate["comparisons"]]
-                == [(mask, sleep_ms, sleep_ms * 100)
-                    for mask in (6, 38) for sleep_ms in (1, 2)],
-                "prefetch thread descriptive elapsed deltas differ")
+        require([item["mask"] for item in aggregate["comparisons"]] == [6, 38]
+                and all([strategy["strategy"] for strategy in item["strategies"]]
+                        == ["legacy", "worker-poll", "worker-semaphore"]
+                        for item in aggregate["comparisons"]),
+                "prefetch thread strategy comparisons differ")
+        require(all(strategy["process_wall_ns"] > 0
+                    for item in aggregate["comparisons"]
+                    for strategy in item["strategies"]),
+                "prefetch thread comparison omitted process wall time")
 
 
 def assert_results_zip_contract():
@@ -1324,6 +1361,9 @@ def main():
             "package manifest prefetch thread masks differ")
     require('"prefetchThreadDiagnosticProcessCount": 6' in package_script,
             "package manifest prefetch thread process count differs")
+    require('[["legacy",0],["worker-poll",1],["worker-semaphore",0]]'
+            in package_script,
+            "package manifest prefetch thread strategy matrix differs")
     require('"passes":3,"processCount":11' in package_script,
             "package manifest exploratory process count is not eleven")
     require('"masks":[4,5,6,7,38,8198,16390,24582,32774,57350,32799]' in package_script,
