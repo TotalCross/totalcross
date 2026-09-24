@@ -136,19 +136,19 @@ javac --release 17 -classpath "$sdk_root/dist/totalcross-sdk.jar" \
   -d "$stage/classes/correctness" "$correctness_source"
 javac --release 17 -classpath "$sdk_root/dist/totalcross-sdk.jar" \
   -d "$stage/classes/stress" "$stress_source"
-jar cf "$stage/SemaphoreSmokeApp.jar" -C "$stage/classes/correctness" .
-jar cf "$stage/SemaphoreStressSmokeApp.jar" -C "$stage/classes/stress" .
+jar cf "$deploy_sdk/SemaphoreSmokeApp.jar" -C "$stage/classes/correctness" .
+jar cf "$deploy_sdk/SemaphoreStressSmokeApp.jar" -C "$stage/classes/stress" .
 
 classpath="$sdk_root/dist/totalcross-sdk.jar:$sdk_root/dist/libs/*"
 for app in SemaphoreSmokeApp SemaphoreStressSmokeApp; do
   app_log="$stage/$app-deploy.log"
   if ! (cd "$deploy_sdk" && \
-      java -cp "$classpath" tc.Deploy "$stage/$app.jar" -win32) >"$app_log" 2>&1; then
+      java -cp "$classpath" tc.Deploy "$deploy_sdk/$app.jar" -win32) >"$app_log" 2>&1; then
     echo "Windows deployment failed for $app; log: $app_log" >&2
     tail -60 "$app_log" >&2
     exit 1
   fi
-  if [ ! -f "$deploy_sdk/win32/$app.exe" ]; then
+  if [ ! -f "$deploy_sdk/install/win32/$app.exe" ]; then
     echo "Deployment did not produce $app.exe; log: $app_log" >&2
     tail -60 "$app_log" >&2
     exit 1
@@ -166,7 +166,7 @@ while IFS= read -r file; do
   else
     cp "$file" "$destination"
   fi
-done < <(find "$deploy_sdk/win32" -maxdepth 1 -type f -print | LC_ALL=C sort)
+done < <(find "$deploy_sdk/install/win32" -maxdepth 1 -type f -print | LC_ALL=C sort)
 
 for file in \
   "$package_dir/SemaphoreSmokeApp.exe" \
