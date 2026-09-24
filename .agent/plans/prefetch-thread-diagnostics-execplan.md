@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Implement prefetch thread diagnostics and worker comparison
 
-## Milestone 2 extension — Semaphore comparison (active)
+## Milestone 2 extension — Semaphore comparison (completed; Windows pending)
 
 The current branch is `feat/semaphore-v1` at
 `205f6ba127a966d645d3025069cc403b2033f287`. This user-directed milestone
@@ -31,9 +31,9 @@ for semaphore mode.
 
 Run the focused SDK tests, Python runner tests, relevant SDK/macOS milestone-end
 validation, and the macOS 2x3 real corpus matrix when supported. Prepare the
-same Windows x64 diagnostic package/process through the established Windows
-build path. Windows measurements remain explicitly pending unless the matrix
-can run on trusted Windows. Append durable outcomes to
+same Windows x64 package/process through the established Windows build path.
+Windows measurements remain explicitly pending unless the matrix can run on
+trusted Windows. Append durable outcomes to
 `.agent/evidence/image-scroll-prefetch.md` and update the active state and
 editorial report. Keep benchmark outputs and deployed binaries untracked.
 
@@ -82,11 +82,12 @@ new files must stay below 20 KB / ~600 lines.
       `9913a6847`.
 - [x] Add exact 2x3 strategy matrix, counters, process wall timing, package
       metadata, and runner fixtures; focused Python runner suite passed.
-- [ ] Run SDK distribution and macOS native validation plus the 663-image 2x3
-      matrix.
-- [ ] Prepare Windows package through the established Windows native workflow;
-      run measurements only if trusted Windows execution is available.
-- [ ] Milestone 4: run allowed SDK/macOS validation and finalize artifacts.
+- [x] Run SDK distribution and macOS native validation plus the 663-image 2x3
+      matrix; all six processes passed.
+- [x] Prepare the Windows package from the established production artifact;
+      record measurements as pending because the exact local revision is not
+      available to the trusted Windows workflow.
+- [x] Finalize the milestone evidence, state, and editorial report.
 
 ## Current Architecture and Scope
 
@@ -460,8 +461,10 @@ No performance threshold is an acceptance criterion.
 
 ## Risks and Open Questions
 
-Windows benchmark execution availability remains to be confirmed; if it is not
-available, preserve the package and report Windows measurements as pending.
+The current local commits cannot be selected by the established exact-SHA
+Windows workflow without publishing them. Preserve the prepared package and
+report Windows measurements as pending until that trusted execution is
+available.
 
 Fixed mitigations:
 
@@ -522,9 +525,27 @@ Date for all initial decisions: 2026-09-23.
 
 ## Outcomes & Retrospective
 
-Not yet implemented. At completion replace this with factual commits delivered,
-behavior/results produced, validations actually run, measured macOS data if any,
-and exact deferred items/reasons. Do not turn estimates into measured claims.
+Completed 2026-09-24 in signed commits `9913a6847`, `fbc53cb26`, and
+`8945bbff4`. Added the coalesced Semaphore-backed persistent worker and focused
+lifecycle coverage, retained legacy as default, and added the exact six-process
+comparison with workload and outstanding-wake validation. Signed commit
+`68f72fe96` records the results table and evidence index.
+
+Focused SDK and Python runner validations passed. The SDK distribution and
+macOS Release `tcvm` build passed. All six macOS processes passed against the
+663-JPEG corpus with matching request/outcome counts, 642 unique activated
+entries, and zero outstanding Semaphore wakes. The detailed per-mask timing and
+counter table is in `.agent/reports/image-scroll-prefetch-editorial.md`; exact
+CSV, JSON, and logs are indexed in `.agent/evidence/image-scroll-prefetch.md`.
+
+The Windows x64 benchmark package is prepared from the current SDK and the
+production Windows artifact from trusted workflow run `36053759681`. Its
+`tcvm.dll` hash matches that artifact, whose source commit is an ancestor with
+no `TotalCrossVM` source delta to this HEAD. Windows execution is pending: the
+current commits are local and the established workflow checks out an exact
+pushed commit. No Windows timing is inferred from macOS data. Generated
+benchmark outputs and binaries remain uncommitted, and the production default
+remains legacy.
 
 ## Revision Note
 
