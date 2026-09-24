@@ -168,13 +168,13 @@ class ImagePreparationTest {
       assertEquals(1, ImagePreparation.threadStartCountForTest());
       continueFirstDecode.countDown();
       assertTrue(firstCallbackEntered.await(5, TimeUnit.SECONDS));
-      continueFirstCallback.countDown();
-      assertTrue(secondCallbackEntered.await(5, TimeUnit.SECONDS));
       long firstPreparationTotalNs = ImagePreparation.preparationEntryTotalNsForTest();
       assertTrue(firstPreparationTotalNs > 0);
+      continueFirstCallback.countDown();
+      assertTrue(secondCallbackEntered.await(5, TimeUnit.SECONDS));
+      assertTrue(ImagePreparation.preparationEntryTotalNsForTest() > firstPreparationTotalNs);
       continueSecondCallback.countDown();
       assertTrue(completed.await(5, TimeUnit.SECONDS));
-      awaitPreparationTotalAbove(firstPreparationTotalNs);
 
       assertEquals(2, ImagePreparation.preparationEntryCountForTest());
       assertEquals(2, ImagePreparation.threadCreateCountForTest());
@@ -468,6 +468,47 @@ class ImagePreparationTest {
   }
 
   @Test
+  void completionCallbackSeesFinalPreparationAccounting() throws Exception {
+    boolean previousAccounting = Image.diagnosticAccountingEnabledForTest();
+    new Launcher();
+    MainWindow.resetPreviewState();
+    QueuedMainWindow mainWindow = new QueuedMainWindow();
+    ImagePreparation.setRunUiInlineForTest(true);
+    Image.setDiagnosticAccountingForTest(true);
+    ImagePreparation.resetAccountingForTest();
+    long[] callbackMetrics = {-1, -1};
+    try {
+      Image image = alreadyDecodedImage();
+      CountDownLatch completed = new CountDownLatch(1);
+      ImagePreparation.request(image, 1, ImageDrawingBridge.COPY_READY, new Runnable() {
+        @Override
+        public void run() {
+          callbackMetrics[0] = ImagePreparation.finishBookkeepingNsForTest();
+          callbackMetrics[1] = ImagePreparation.preparationEntryTotalNsForTest();
+          completed.countDown();
+        }
+      });
+
+      assertEquals(1, mainWindow.queuedCount());
+      mainWindow.runNext();
+
+      assertTrue(completed.await(0, TimeUnit.MILLISECONDS));
+      assertEquals(1, ImagePreparation.preparationEntryCountForTest());
+      assertTrue(callbackMetrics[0] > 0);
+      assertTrue(callbackMetrics[1] > 0);
+      assertEquals(ImagePreparation.finishBookkeepingNsForTest(), callbackMetrics[0]);
+      assertEquals(ImagePreparation.preparationEntryTotalNsForTest(), callbackMetrics[1]);
+    } finally {
+      while (mainWindow.queuedCount() > 0) {
+        mainWindow.runNext();
+      }
+      ImagePreparation.setRunUiInlineForTest(false);
+      Image.setDiagnosticAccountingForTest(previousAccounting);
+      MainWindow.resetPreviewState();
+    }
+  }
+
+  @Test
   void inFlightDrawRequestPromotesToCopyReady() throws Exception {
     MainWindow.resetPreviewState();
     ImagePreparation.resetAccountingForTest();
@@ -653,15 +694,6 @@ class ImagePreparationTest {
     }
     assertTrue(ImagePreparation.workerPollCountForTest() > 0);
     assertTrue(ImagePreparation.workerIdleElapsedNsForTest() > 0);
-  }
-
-  private static void awaitPreparationTotalAbove(long previousTotalNs) throws Exception {
-    long deadlineNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
-    while (ImagePreparation.preparationEntryTotalNsForTest() <= previousTotalNs
-        && System.nanoTime() < deadlineNs) {
-      Thread.yield();
-    }
-    assertTrue(ImagePreparation.preparationEntryTotalNsForTest() > previousTotalNs);
   }
 
   private static void assertDiagnosticMetricsZero() {
