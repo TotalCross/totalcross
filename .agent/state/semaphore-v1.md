@@ -27,18 +27,23 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Slice 2B added source-compiled standard-API resolution coverage for all
   supported calls and the four unsupported overloads. Per plan, execution is
   deferred until milestone closure.
-- Latest Part 2 logical commit: `c5ecff6c2`
-  (`test(sdk): stress semaphore blocking semantics`).
+- Latest Part 2 implementation commit: `479172ffe`
+  (`test(sdk): measure semaphore wake latency`).
 - Slice 2C added a deterministic 20,000-handoff smoke with four producers,
   four consumers, Semaphore start/readiness/completion handshakes, exact count
   reconciliation, and a 60-second native-process timeout.
 - Slice 2D added a sequential 20-warm-up/200-sample release-to-acquire
   measurement with aggregate count/min/p50/p95/max/mean output and a
   60-second native-process timeout.
-- Next action: close the milestone with focused converter/SDK validation and
-  all three native macOS smokes against the unchanged Part 1 dylib.
-- Validation completed: converter test passed 2/2; generator matched 6 native
-  prototypes and registrations; SDK dist and smoke compilation passed; CMake
+- Closure discovery: the converter fixture first used an unavailable ASM9
+  constant, then ASM5 rejected the host-default classfile version. It now uses
+  ASM5 and compiles for Java 8; the focused converter suite passed 3/3 after
+  that correction.
+- Next action: run SDK distribution and smoke compilation, then run all three
+  native macOS smokes against the unchanged Part 1 dylib.
+- Validation completed: Part 1 converter test passed 2/2 and Part 2 focused
+  converter suite passed 3/3; generator matched 6 native prototypes and
+  registrations; SDK dist and smoke compilation passed; CMake
   configure and macOS `tcvm` build passed (123 Ninja steps); deployed smoke
   passed with `fixture=SemaphoreSmokeApp,overallPass=true`. Focused header,
   diff, and later commit-message checks passed. The first converter run failed

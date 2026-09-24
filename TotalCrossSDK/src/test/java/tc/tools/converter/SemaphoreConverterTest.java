@@ -96,16 +96,16 @@ class SemaphoreConverterTest {
     assertNotNull(compiler, "Semaphore declaration fixture requires a JDK compiler");
     ByteArrayOutputStream compilerErrors = new ByteArrayOutputStream();
     int compilationResult = compiler.run(null, null, compilerErrors,
-        "-proc:none", "-d", output.toString(), source.toString());
+        "-proc:none", "--release", "8", "-d", output.toString(), source.toString());
     assertEquals(0, compilationResult, compilerErrors.toString());
 
     Set<String> calls = new HashSet<>();
     Path fixtureClass = output.resolve("fixtures/SemaphoreApiFixture.class");
-    new ClassReader(Files.readAllBytes(fixtureClass)).accept(new ClassVisitor(Opcodes.ASM9) {
+    new ClassReader(Files.readAllBytes(fixtureClass)).accept(new ClassVisitor(Opcodes.ASM5) {
       @Override
       public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
           String[] exceptions) {
-        return new MethodVisitor(Opcodes.ASM9) {
+        return new MethodVisitor(Opcodes.ASM5) {
           @Override
           public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
             if (OWNER.equals(owner)) calls.add(name + descriptor);
