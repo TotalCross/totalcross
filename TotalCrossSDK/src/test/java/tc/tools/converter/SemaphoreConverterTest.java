@@ -233,7 +233,7 @@ class SemaphoreConverterTest {
     int excludedDepth = 0;
     for (String line : source.split("\\R", -1)) {
       String trimmed = line.trim();
-      if (excludedDepth == 0 && trimmed.equals("#if defined(" + DIAGNOSTIC_FLAG + ")")) {
+      if (excludedDepth == 0 && trimmed.startsWith("#if defined(" + DIAGNOSTIC_FLAG + ")")) {
         excludedDepth = 1;
         continue;
       }

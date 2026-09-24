@@ -11,6 +11,7 @@ on:
     - feat/semaphore-v1
     paths:
     - TotalCrossVM/src/nm/util/concurrent_Semaphore.c
+    - TotalCrossSDK/src/test/java/tc/tools/converter/SemaphoreConverterTest.java
   workflow_dispatch:
 
 jobs:
