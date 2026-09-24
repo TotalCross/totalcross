@@ -81,7 +81,9 @@ below 20 KB / ~600 lines; do not refactor existing files for size.
 - [x] Milestone 3: added the six-process profile, automatic self-test, strategy
       aggregation, manifest metadata, and narrow ZIP contract; focused runner
       tests, syntax, header, and diff checks pass.
-- [ ] Milestone 4: run allowed SDK/macOS validation and finalize artifacts.
+- [x] Milestone 4: SDK distribution, focused Java tests, benchmark app compile,
+      and macOS `tcvm` build pass; editorial outcome recorded. Real corpus run
+      deferred because no valid `TC_IMAGE_CORPUS` is available.
 
 ## Current Architecture and Scope
 
@@ -477,6 +479,8 @@ destructive Git rollback. Inspect only relevant changed paths and short log tail
   times in one serial run.
 - TotalCross lacks Java `wait/notify`; this first worker experiment uses
   `Vm.sleep` polling instead of broadening runtime/API scope.
+- TotalCross deployment rejects `Thread.interrupt()` and `Thread.setDaemon()`;
+  the Java SE shutdown hook now waits for the polling worker to observe its flag.
 - Existing geometry diagnostics already localize geometry materialization; this
   plan measures coordinator overhead around them instead of reopening Skia.
 
@@ -500,9 +504,14 @@ Date for all initial decisions: 2026-09-23.
 
 ## Outcomes & Retrospective
 
-Not yet implemented. At completion replace this with factual commits delivered,
-behavior/results produced, validations actually run, measured macOS data if any,
-and exact deferred items/reasons. Do not turn estimates into measured claims.
+Completed on the pinned base in commits `e6e15cf94`, `1953ad05a`, `2d3d41ae2`,
+`75fda6ef2`, and `5caad29d3`. Legacy remains the default, while the new
+serialized worker and six-process diagnostic profile are available for focused
+evaluation. Runner, SDK, benchmark app compilation, and macOS native build
+checks passed after fixing deployment-incompatible thread API usage. No
+performance data was collected because a valid 663-image corpus was unavailable.
+The commit-message checker found an overlong body line in the benchmark and SDK
+fix commits; history was preserved as required by the no-rewrite policy.
 
 ## Revision Note
 
