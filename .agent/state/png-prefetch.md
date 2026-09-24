@@ -9,38 +9,40 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Active plan: `.agent/plans/png-prefetch-part-1.md`.
 - Branch: `feat/png-prefetch`.
 - Immutable base: `86d470c64b7dfc0ab6ac24314f32f0d630ff1990`.
-- Active milestone: 2 — benchmark expectations, manifest content counts, and
-  the Python-free Windows PowerShell runner.
-- Last functional commit: `efc679d88a8f09999304224bd5642f4122d6d505`.
-- Last plan commit: `4549dadd24d1c808908c89f2aa8908a71bf4f441` (signed).
-- Active paths: benchmark app, Python runner/tests, package script, benchmark
-  README, new Windows PowerShell runner, and this plan/state/evidence trio.
-- Next action: inspect hard-coded 663/660/0/3 expectations and package manifest
-  construction, then implement the 663/663/0/0 and 660-JPEG/3-PNG contracts.
+- Active milestone: 3 — SDK distribution and deployed macOS PNG smoke.
+- Last functional commit: `e391aaf11dff` (`feat(benchmark): support png prefetch diagnostics`; signed).
+- Last plan commit: `0ef3606c4b57` (Milestone 1 checkpoint; signed).
+- Active paths: SDK build outputs/logs and the existing macOS native runtime and
+  ImagePreparation smoke flow; update this plan/state/evidence trio at the
+  Milestone 3 checkpoint.
+- Next action: run `cd TotalCrossSDK && ./gradlew-agent dist -x test` once,
+  saving verbose output under a task-specific log.
 - Base validation: activation checkout equaled the immutable base; its object
   exists and is an ancestor of `feat/semaphore-v1`; `feat/png-prefetch` was
   created at that base.
-- Completed validation: `cd TotalCrossSDK && ./gradlew-agent test --tests
-  totalcross.ui.image.ImagePreparationTest` passed all 26 tests; focused
-  copyright validation checked 5 files with no changes; scoped diff check
-  passed.
-- Milestone 1 commit: signed `feat(image): add static png prefetch`; its commit
-  message and committed headers validated. Test runs and logs are indexed in
-  `.agent/evidence/png-prefetch.md`.
-- Deferred validation: SDK distribution and deployed macOS native smoke remain
-  deferred to Milestone 3.
+- Completed Milestone 1: signed `feat(image): add static png prefetch`; 26
+  focused SDK tests passed. Logs are indexed in `.agent/evidence/png-prefetch.md`.
+- Completed Milestone 2: signed `feat(benchmark): support png prefetch
+  diagnostics`; Python compilation, focused benchmark tests, Bash syntax,
+  headers, and staged whitespace checks passed. Benchmark test log:
+  `/tmp/png-prefetch-m2-benchmark-tests.log`.
+- Deferred validation: SDK distribution and deployed macOS native smoke are
+  active in Milestone 3. PowerShell execution was unavailable because this
+  macOS host has no PowerShell runtime; package tests validate its matrix,
+  required calls, forbidden dependencies, and size.
 - Commit-message validation found the initial plan commit body exceeded 80
   characters because the shell preserved literal `\n` text. The plan forbids
   rewriting history, so preserve that signed commit and validate all later
   messages before committing.
 - Active decisions: static PNG only, denominator 1, Java-result candidate;
-  JPEG semantics and production `legacy` strategy stay unchanged; no
-  `TotalCrossVM` changes.
+  JPEG semantics and production `legacy` strategy stay unchanged; benchmark
+  package counts image content by signature; no `TotalCrossVM` changes.
 - Blockers: none. The planned prior state file was absent, so resumption began
   from the plan's activation section.
 - Preserve unrelated local paths, including existing `.agent/artifacts/`,
   `.agent/benchmarks/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`; leave the existing `totalcross.code-workspace` change
   untouched.
-- Resume: read this file, then Milestone 2 in the Part 1 plan; inspect scoped
-  status and continue at the next action above.
+- Resume: read this file, then Milestone 3 in the Part 1 plan; inspect the SDK
+  build and existing macOS smoke procedure before proceeding past the next
+  action above.

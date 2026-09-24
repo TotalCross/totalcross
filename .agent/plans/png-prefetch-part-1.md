@@ -107,7 +107,8 @@ changes. Do not amend/rewrite history. Do not push unless explicitly requested.
       (`4549dadd`, 2026-09-24).
 - [x] Milestone 1: static PNG prefetch and focused SDK tests
       (`efc679d8`; 26 tests passed).
-- [ ] Milestone 2: update benchmark expectations and add the PowerShell runner.
+- [x] Milestone 2: update benchmark expectations and add the PowerShell runner
+      (`e391aaf1`; focused benchmark tests passed).
 - [ ] Milestone 3: close the SDK/macOS build and native-smoke gate.
 - [ ] Hand off to Part 2.
 
