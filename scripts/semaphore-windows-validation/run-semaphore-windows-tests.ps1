@@ -9,6 +9,10 @@ if ($env:OS -ne 'Windows_NT') {
     Write-Error 'This validation runner must be started on Windows.'
     exit 2
 }
+if ($PSVersionTable.PSVersion.Major -ne 5 -or $PSVersionTable.PSVersion.Minor -ne 1) {
+    Write-Error 'This validation runner requires Windows PowerShell 5.1.'
+    exit 2
+}
 
 $packageRoot = [System.IO.Path]::GetFullPath($PSScriptRoot)
 $provenancePath = Join-Path $packageRoot 'provenance.json'
@@ -21,9 +25,25 @@ if (-not (Test-Path -LiteralPath $provenancePath -PathType Leaf)) {
 }
 
 $provenance = Get-Content -LiteralPath $provenancePath -Raw | ConvertFrom-Json
-if ($provenance.workflow.runId -ne 36040721060 -or
-        $provenance.workflow.sourceSha -ne '0badac435cc2c6af31de4bb0adad9ed58e6cd0c5') {
-    Write-Error 'The package provenance does not match the approved workflow run and source SHA.'
+$validationMode = $provenance.validationMode
+if (-not $validationMode) { $validationMode = 'functional' }
+if ($validationMode -eq 'windows-diagnostic') {
+    if ($provenance.workflow.runId -le 0 -or
+            $provenance.workflow.sourceSha -notmatch '^[0-9a-fA-F]{40}$' -or
+            $provenance.runtimeConfiguration.TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS -ne 'ON') {
+        Write-Error 'The diagnostic package provenance is incomplete or does not enable Semaphore diagnostics.'
+        exit 2
+    }
+}
+elseif ($validationMode -eq 'functional') {
+    if ($provenance.workflow.runId -ne 36040721060 -or
+            $provenance.workflow.sourceSha -ne '0badac435cc2c6af31de4bb0adad9ed58e6cd0c5') {
+        Write-Error 'The package provenance does not match the approved workflow run and source SHA.'
+        exit 2
+    }
+}
+else {
+    Write-Error "Unsupported Semaphore validation mode: $validationMode"
     exit 2
 }
 
@@ -62,6 +82,16 @@ $tests = @(
         )
     }
 )
+if ($validationMode -eq 'windows-diagnostic') {
+    $tests += [pscustomobject]@{
+        name = 'wake-latency'
+        executable = 'SemaphoreWakeLatencySmokeApp.exe'
+        timeoutSeconds = 180
+        requiredMarkers = @(
+            'fixture=SemaphoreWakeLatencySmokeApp,overallPass=true,method=blocked-waiter-release-to-acquire,count=200,blockedConfirmed=200,confirmedHandshakes=220,multiWaiterConfirmed=3'
+        )
+    }
+}
 
 foreach ($test in $tests) {
     $stdoutName = "$($test.name).stdout.log"

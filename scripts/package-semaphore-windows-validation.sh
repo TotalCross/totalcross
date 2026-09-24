@@ -5,7 +5,11 @@
 
 set -euo pipefail
 
-if [ "$#" -ne 3 ]; then
+validation_mode=${SEMAPHORE_WINDOWS_VALIDATION_MODE:-functional}
+if [ "$validation_mode" = 'windows-diagnostic' ] && [ "$#" -ne 4 ]; then
+  echo "Usage: SEMAPHORE_WINDOWS_VALIDATION_MODE=windows-diagnostic $0 <sdk.zip> <windows-production.zip> <windows-diagnostics.zip> <output-folder>" >&2
+  exit 2
+elif [ "$validation_mode" != 'windows-diagnostic' ] && [ "$#" -ne 3 ]; then
   echo "Usage: $0 <workflow-sdk-artifact.zip> <workflow-windows-artifact.zip> <output-folder>" >&2
   exit 2
 fi
@@ -13,7 +17,13 @@ fi
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 sdk_artifact_arg=$1
 windows_artifact_arg=$2
-output_arg=$3
+if [ "$validation_mode" = 'windows-diagnostic' ]; then
+  diagnostic_artifact_arg=$3
+  output_arg=$4
+else
+  diagnostic_artifact_arg=''
+  output_arg=$3
+fi
 output_parent_arg=$(dirname "$output_arg")
 mkdir -p "$output_parent_arg"
 output_parent=$(cd "$output_parent_arg" && pwd)
@@ -21,14 +31,31 @@ output_name=$(basename "$output_arg")
 output_dir="$output_parent/$output_name"
 zip_path="$output_dir.zip"
 
-workflow_run_id=36040721060
-runtime_source_sha=0badac435cc2c6af31de4bb0adad9ed58e6cd0c5
-windows_artifact_id=10826514166
-windows_artifact_sha=749e41bb3fc136dc8021ef037cdbecd6e898be471be5221ce37e4ec3f23fb81e
-sdk_artifact_id=10826538938
-sdk_artifact_sha=ee867104a02f80241480543ad99bf1f70edae2cdbd843af902be60f93b37cbbe
-expected_launcher_sha=28acbad889979d8c4ee656aaa352747eae8092f83edc76fecbcaacf094fddaee
-expected_tcvm_sha=b063aa213d028a6674a4d42ae1018a8edda98b6dce9cd51292b37ad653a7cc8b
+diagnostic_mode=false
+if [ "$validation_mode" = 'windows-diagnostic' ]; then
+  diagnostic_mode=true
+  workflow_run_id=${GITHUB_RUN_ID:?GITHUB_RUN_ID is required for a diagnostic package}
+  runtime_source_sha=${GITHUB_SHA:?GITHUB_SHA is required for a diagnostic package}
+  windows_artifact_id=null
+  production_windows_artifact_id=null
+  sdk_artifact_id=null
+  expected_launcher_sha=''
+  expected_tcvm_sha=''
+  windows_artifact_name=windows-semaphore-diagnostics
+  production_windows_artifact_name=windows
+  diagnostics_setting=ON
+else
+  workflow_run_id=36040721060
+  runtime_source_sha=0badac435cc2c6af31de4bb0adad9ed58e6cd0c5
+  windows_artifact_id=10826514166
+  production_windows_artifact_id=10826514166
+  sdk_artifact_id=10826538938
+  expected_launcher_sha=28acbad889979d8c4ee656aaa352747eae8092f83edc76fecbcaacf094fddaee
+  expected_tcvm_sha=b063aa213d028a6674a4d42ae1018a8edda98b6dce9cd51292b37ad653a7cc8b
+  windows_artifact_name=windows
+  production_windows_artifact_name=windows
+  diagnostics_setting=OFF
+fi
 
 sha256_file() {
   if command -v shasum >/dev/null 2>&1; then
@@ -44,12 +71,25 @@ for artifact in "$sdk_artifact_arg" "$windows_artifact_arg"; do
     exit 1
   fi
 done
+if [ "$diagnostic_mode" = true ] && [ ! -f "$diagnostic_artifact_arg" ]; then
+  echo "Workflow diagnostic artifact ZIP is missing: $diagnostic_artifact_arg" >&2
+  exit 1
+fi
 sdk_artifact_zip=$(cd "$(dirname "$sdk_artifact_arg")" && pwd)/$(basename "$sdk_artifact_arg")
 windows_artifact_zip=$(cd "$(dirname "$windows_artifact_arg")" && pwd)/$(basename "$windows_artifact_arg")
-if [ "$(sha256_file "$sdk_artifact_zip")" != "$sdk_artifact_sha" ] ||
-    [ "$(sha256_file "$windows_artifact_zip")" != "$windows_artifact_sha" ]; then
-  echo 'Workflow artifact ZIP hashes do not match run 36040721060.' >&2
-  exit 1
+sdk_artifact_sha=$(sha256_file "$sdk_artifact_zip")
+windows_artifact_sha=$(sha256_file "$windows_artifact_zip")
+production_windows_artifact_sha=$windows_artifact_sha
+if [ "$diagnostic_mode" = true ]; then
+  diagnostic_artifact_zip=$(cd "$(dirname "$diagnostic_artifact_arg")" && pwd)/$(basename "$diagnostic_artifact_arg")
+  windows_artifact_sha=$(sha256_file "$diagnostic_artifact_zip")
+fi
+if [ "$diagnostic_mode" = false ]; then
+  if [ "$sdk_artifact_sha" != ee867104a02f80241480543ad99bf1f70edae2cdbd843af902be60f93b37cbbe ] ||
+      [ "$windows_artifact_sha" != 749e41bb3fc136dc8021ef037cdbecd6e898be471be5221ce37e4ec3f23fb81e ]; then
+    echo 'Workflow artifact ZIP hashes do not match run 36040721060.' >&2
+    exit 1
+  fi
 fi
 
 if [ -e "$output_dir" ] || [ -e "$zip_path" ]; then
@@ -67,7 +107,17 @@ fi
 smoke_dir="$repo_root/TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent"
 correctness_source="$smoke_dir/SemaphoreSmokeApp.java"
 stress_source="$smoke_dir/SemaphoreStressSmokeApp.java"
-for source in "$correctness_source" "$stress_source"; do
+latency_source="$smoke_dir/SemaphoreWakeLatencySmokeApp.java"
+diagnostic_source="$smoke_dir/SemaphoreTestDiagnostics.java"
+sources=("$correctness_source" "$stress_source")
+apps=(SemaphoreSmokeApp SemaphoreStressSmokeApp)
+correctness_sources=("$correctness_source")
+if [ "$diagnostic_mode" = true ]; then
+  sources+=("$latency_source" "$diagnostic_source")
+  apps+=(SemaphoreWakeLatencySmokeApp)
+  correctness_sources+=("$diagnostic_source")
+fi
+for source in "${sources[@]}"; do
   if [ ! -f "$source" ]; then
     echo "Smoke source is missing: $source" >&2
     exit 1
@@ -78,6 +128,8 @@ smoke_source_sha=$(git -C "$repo_root" rev-parse HEAD)
 if ! git -C "$repo_root" diff --quiet HEAD -- \
   TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent/SemaphoreSmokeApp.java \
   TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent/SemaphoreStressSmokeApp.java \
+  TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent/SemaphoreWakeLatencySmokeApp.java \
+  TotalCrossSDK/src/smokeTest/java/totalcross/util/concurrent/SemaphoreTestDiagnostics.java \
   scripts/semaphore-windows-validation \
   scripts/package-semaphore-windows-validation.sh; then
   echo 'Commit the semaphore smoke and runner sources before packaging.' >&2
@@ -96,7 +148,15 @@ cleanup_stage() {
 trap cleanup_stage EXIT
 package_dir="$stage/$output_name"
 mkdir -p "$stage/windows" "$stage/sdk"
-unzip -q "$windows_artifact_zip" -d "$stage/windows"
+if [ "$diagnostic_mode" = true ]; then
+  mkdir -p "$stage/windows-production" "$stage/windows-diagnostics"
+  unzip -q "$windows_artifact_zip" -d "$stage/windows-production"
+  unzip -q "$diagnostic_artifact_zip" -d "$stage/windows-diagnostics"
+  cp "$stage/windows-production/Launcher.exe" "$stage/windows/Launcher.exe"
+  cp "$stage/windows-diagnostics/tcvm.dll" "$stage/windows/tcvm.dll"
+else
+  unzip -q "$windows_artifact_zip" -d "$stage/windows"
+fi
 unzip -p "$sdk_artifact_zip" sdk-build.tar.gz | tar -xz -C "$stage/sdk"
 sdk_root="$stage/sdk/build/TotalCross"
 windows_runtime="$stage/windows"
@@ -115,15 +175,17 @@ done
 
 actual_launcher_sha=$(sha256_file "$windows_runtime/Launcher.exe")
 actual_tcvm_sha=$(sha256_file "$windows_runtime/tcvm.dll")
-if [ "$actual_launcher_sha" != "$expected_launcher_sha" ] ||
-    [ "$actual_tcvm_sha" != "$expected_tcvm_sha" ]; then
-  echo 'Windows runtime file hashes do not match workflow run 36040721060.' >&2
-  exit 1
+if [ "$diagnostic_mode" = false ]; then
+  if [ "$actual_launcher_sha" != "$expected_launcher_sha" ] ||
+      [ "$actual_tcvm_sha" != "$expected_tcvm_sha" ]; then
+    echo 'Windows runtime file hashes do not match workflow run 36040721060.' >&2
+    exit 1
+  fi
 fi
 
 deploy_sdk="$stage/deploy-sdk"
 mkdir -p "$package_dir" \
-  "$stage/classes/correctness" "$stage/classes/stress" \
+  "$stage/classes/correctness" "$stage/classes/stress" "$stage/classes/latency" \
   "$deploy_sdk"
 
 cp -R "$sdk_root/etc" "$deploy_sdk/etc"
@@ -133,14 +195,21 @@ cp "$windows_runtime/Launcher.exe" "$deploy_sdk/etc/launchers/win32/Launcher.exe
 cp "$windows_runtime/tcvm.dll" "$deploy_sdk/dist/vm/win32/tcvm.dll"
 
 javac --release 17 -classpath "$sdk_root/dist/totalcross-sdk.jar" \
-  -d "$stage/classes/correctness" "$correctness_source"
+  -d "$stage/classes/correctness" "${correctness_sources[@]}"
 javac --release 17 -classpath "$sdk_root/dist/totalcross-sdk.jar" \
   -d "$stage/classes/stress" "$stress_source"
+if [ "$diagnostic_mode" = true ]; then
+  javac --release 17 -classpath "$sdk_root/dist/totalcross-sdk.jar" \
+    -d "$stage/classes/latency" "$latency_source" "$diagnostic_source"
+fi
 jar cf "$deploy_sdk/SemaphoreSmokeApp.jar" -C "$stage/classes/correctness" .
 jar cf "$deploy_sdk/SemaphoreStressSmokeApp.jar" -C "$stage/classes/stress" .
+if [ "$diagnostic_mode" = true ]; then
+  jar cf "$deploy_sdk/SemaphoreWakeLatencySmokeApp.jar" -C "$stage/classes/latency" .
+fi
 
 classpath="$sdk_root/dist/totalcross-sdk.jar:$sdk_root/dist/libs/*"
-for app in SemaphoreSmokeApp SemaphoreStressSmokeApp; do
+for app in "${apps[@]}"; do
   app_log="$stage/$app-deploy.log"
   if ! (cd "$deploy_sdk" && \
       java -cp "$classpath" tc.Deploy "$deploy_sdk/$app.jar" -win32) >"$app_log" 2>&1; then
@@ -168,16 +237,21 @@ while IFS= read -r file; do
   fi
 done < <(find "$deploy_sdk/install/win32" -maxdepth 1 -type f -print | LC_ALL=C sort)
 
-for file in \
-  "$package_dir/SemaphoreSmokeApp.exe" \
-  "$package_dir/SemaphoreStressSmokeApp.exe" \
-  "$package_dir/tcvm.dll"; do
+for app in "${apps[@]}"; do
+  file="$package_dir/$app.exe"
   if [ ! -f "$file" ]; then
     echo "Final package file is missing: $file" >&2
     exit 1
   fi
 done
-if [ "$(sha256_file "$package_dir/tcvm.dll")" != "$expected_tcvm_sha" ]; then
+for file in "$package_dir/tcvm.dll"; do
+  if [ ! -f "$file" ]; then
+    echo "Final package file is missing: $file" >&2
+    exit 1
+  fi
+done
+if [ "$diagnostic_mode" = false ] &&
+    [ "$(sha256_file "$package_dir/tcvm.dll")" != "$expected_tcvm_sha" ]; then
   echo 'Packaged tcvm.dll does not match the workflow Windows artifact.' >&2
   exit 1
 fi
@@ -199,7 +273,7 @@ while IFS= read -r file; do
   name=$(basename "$file")
   case "$name" in
     *.dll) origin='windows artifact' ;;
-    SemaphoreSmokeApp.tcz|SemaphoreStressSmokeApp.tcz) origin='deployed smoke app' ;;
+    SemaphoreSmokeApp.tcz|SemaphoreStressSmokeApp.tcz|SemaphoreWakeLatencySmokeApp.tcz) origin='deployed smoke app' ;;
     *.tcz) origin='sdk-build artifact' ;;
     *) continue ;;
   esac
@@ -207,6 +281,18 @@ while IFS= read -r file; do
   if [ -n "$runtime_records" ]; then runtime_records="$runtime_records,"; fi
   runtime_records="$runtime_records{\"file\":\"$name\",\"sha256\":\"$hash\",\"origin\":\"$origin\"}"
 done < <(find "$package_dir" -maxdepth 1 -type f -print | LC_ALL=C sort)
+
+production_windows_record=''
+if [ "$diagnostic_mode" = true ]; then
+  production_windows_record=$(cat <<EOF
+    "windowsProduction": {
+      "id": $production_windows_artifact_id,
+      "name": "$production_windows_artifact_name",
+      "sha256": "$production_windows_artifact_sha"
+    },
+EOF
+)
+fi
 
 cat > "$package_dir/provenance.json" <<EOF
 {
@@ -216,13 +302,18 @@ cat > "$package_dir/provenance.json" <<EOF
     "sourceSha": "$runtime_source_sha",
     "status": "success"
   },
+  "validationMode": "$validation_mode",
+  "runtimeConfiguration": {
+    "TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS": "$diagnostics_setting"
+  },
   "smokeSourceSha": "$smoke_source_sha",
   "artifacts": {
     "windows": {
       "id": $windows_artifact_id,
-      "name": "windows",
+      "name": "$windows_artifact_name",
       "sha256": "$windows_artifact_sha"
     },
+$production_windows_record
     "sdkBuild": {
       "id": $sdk_artifact_id,
       "name": "sdk-build",
@@ -232,7 +323,8 @@ cat > "$package_dir/provenance.json" <<EOF
   "deploymentTemplate": {
     "file": "Launcher.exe",
     "sha256": "$actual_launcher_sha",
-    "artifactId": $windows_artifact_id
+    "artifactId": $production_windows_artifact_id,
+    "artifactName": "$production_windows_artifact_name"
   },
   "runtimeFiles": [$runtime_records],
   "files": [$file_records],

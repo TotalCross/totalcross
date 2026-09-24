@@ -1,0 +1,110 @@
+---
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Semaphore Windows diagnostic validation
+
+on:
+  push:
+    branches:
+    - feat/semaphore-v1
+    paths:
+    - TotalCrossVM/src/nm/util/concurrent_Semaphore.c
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      semaphore-windows-only: true
+      semaphore-test-diagnostics-windows: true
+    secrets: inherit
+
+  package:
+    name: Deploy Semaphore Windows smoke apps
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Check out workflow source
+      uses: actions/checkout@v6
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Download SDK build
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build
+        path: sdk-build
+
+    - name: Download production Windows runtime
+      uses: actions/download-artifact@v7
+      with:
+        name: windows
+        path: windows-production
+
+    - name: Download diagnostic Windows runtime
+      uses: actions/download-artifact@v7
+      with:
+        name: windows-semaphore-diagnostics
+        path: windows-diagnostics
+
+    - name: Prepare artifact archives
+      shell: bash
+      run: |
+        mkdir -p "${RUNNER_TEMP}/semaphore-artifacts"
+        zip -q -j "${RUNNER_TEMP}/semaphore-artifacts/sdk-build.zip" \
+          sdk-build/sdk-build.tar.gz
+        zip -q -j "${RUNNER_TEMP}/semaphore-artifacts/windows-production.zip" \
+          windows-production/Launcher.exe
+        zip -q -j "${RUNNER_TEMP}/semaphore-artifacts/windows-diagnostics.zip" \
+          windows-diagnostics/tcvm.dll
+
+    - name: Package Windows diagnostic smoke apps
+      shell: bash
+      env:
+        SEMAPHORE_WINDOWS_VALIDATION_MODE: windows-diagnostic
+      run: |
+        scripts/package-semaphore-windows-validation.sh \
+          "${RUNNER_TEMP}/semaphore-artifacts/sdk-build.zip" \
+          "${RUNNER_TEMP}/semaphore-artifacts/windows-production.zip" \
+          "${RUNNER_TEMP}/semaphore-artifacts/windows-diagnostics.zip" \
+          ".agent/artifacts/semaphore-windows-diagnostic-run-${GITHUB_RUN_ID}"
+
+    - name: Upload prepared Windows package
+      uses: actions/upload-artifact@v7
+      with:
+        name: semaphore-windows-diagnostic-package
+        path: .agent/artifacts/semaphore-windows-diagnostic-run-${{ github.run_id }}
+        if-no-files-found: error
+        retention-days: 14
+
+  run-windows:
+    name: Run Windows Semaphore smokes
+    needs: package
+    runs-on: windows-2022
+    steps:
+    - name: Download Windows package
+      uses: actions/download-artifact@v7
+      with:
+        name: semaphore-windows-diagnostic-package
+        path: semaphore-windows-diagnostic-package
+
+    - name: Run PowerShell 5.1 validation
+      shell: cmd
+      run: >-
+        powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass
+        -File "semaphore-windows-diagnostic-package\run-semaphore-windows-tests.ps1"
+
+    - name: Upload Windows results and updated provenance
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: semaphore-windows-diagnostic-results
+        path: semaphore-windows-diagnostic-package
+        if-no-files-found: error
+        retention-days: 30

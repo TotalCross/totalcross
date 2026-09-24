@@ -13,6 +13,16 @@ on:
         required: false
         type: boolean
         default: false
+      semaphore-windows-only:
+        description: Limit this run to the Windows runtime and SDK builds
+        required: false
+        type: boolean
+        default: false
+      semaphore-test-diagnostics-windows:
+        description: Build an additional Windows TCVM with Semaphore diagnostics enabled
+        required: false
+        type: boolean
+        default: false
 
 env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
@@ -127,6 +137,7 @@ jobs:
 
   build-linux:
     name: Build '${{ matrix.project }}'
+    if: ${{ !inputs.semaphore-windows-only }}
     needs: checkout-source
     strategy:
       fail-fast: false
@@ -385,7 +396,21 @@ jobs:
         findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         findstr /C:"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>" Launcher.vcxproj >NUL || exit /b 1
         findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" Launcher.vcxproj >NUL || exit /b 1
+        findstr /C:"TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS" tcvm.vcxproj >NUL
+        if not errorlevel 1 exit /b 1
         cmake --build . --config Release
+        popd
+
+    - name: Build diagnostic Windows VM
+      if: ${{ inputs.semaphore-test-diagnostics-windows }}
+      shell: cmd
+      run: |
+        mkdir TotalCrossVM\vc2022-semaphore-diagnostics
+        pushd TotalCrossVM\vc2022-semaphore-diagnostics
+        cmake ..\ -G"Visual Studio 17 2022" -A Win32 -DTC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=ON || exit /b 1
+        findstr /C:"TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=1" tcvm.vcxproj >NUL || exit /b 1
+        cmake --build . --config Release || exit /b 1
+        if not exist Release\tcvm.dll exit /b 1
         popd
 
     - name: Verify static Windows runtime dependencies
@@ -413,6 +438,10 @@ jobs:
           'TotalCrossVM\vc2022\Release\Launcher.exe',
           'TotalCrossVM\vc2022\Release\tcvm.dll'
         )
+        $diagnosticRuntime = 'TotalCrossVM\vc2022-semaphore-diagnostics\Release\tcvm.dll'
+        if (Test-Path $diagnosticRuntime) {
+          $binaries += $diagnosticRuntime
+        }
         $dynamicRuntimePattern = '(?i)\b(?:VCRUNTIME[^ \t\r\n]*|MSVCP[^ \t\r\n]*|MSVCRT[^ \t\r\n]*|UCRTBASE|CONCRT[^ \t\r\n]*|API-MS-WIN-CRT-[^ \t\r\n]*)\.DLL\b'
         foreach ($binary in $binaries) {
           if (-not (Test-Path $binary)) {
@@ -429,6 +458,23 @@ jobs:
           if ($dynamicRuntime) {
             throw "Dynamic MSVC/UCRT runtime imported by ${binary}: $($dynamicRuntime -join '; ')"
           }
+
+          if ($binary -match '(?i)tcvm\.dll$') {
+            $imports = & $dumpbin /IMPORTS $binary 2>&1
+            if ($LASTEXITCODE -ne 0) {
+              throw "dumpbin imports inspection failed for $binary"
+            }
+            $usesAtomicWait = $imports | Select-String -Pattern '\bSignalObjectAndWait\b'
+            $binaryText = [System.Text.Encoding]::ASCII.GetString([System.IO.File]::ReadAllBytes($binary))
+            $hasDiagnosticRegistration = $binaryText.Contains('tucSTD_awaitWaiters_si')
+            $isDiagnosticRuntime = $binary -like '*vc2022-semaphore-diagnostics*'
+            if ($isDiagnosticRuntime -and (-not $usesAtomicWait -or -not $hasDiagnosticRegistration)) {
+              throw "Diagnostic waiter confirmation is missing from ${binary}"
+            }
+            if (-not $isDiagnosticRuntime -and ($usesAtomicWait -or $hasDiagnosticRegistration)) {
+              throw "Semaphore diagnostics leaked into the normal runtime: $binary"
+            }
+          }
         }
 
     - name: Upload Windows build artifacts
@@ -439,8 +485,17 @@ jobs:
           TotalCrossVM/vc2022/Release/*.dll
           TotalCrossVM/vc2022/Release/*.exe
 
+    - name: Upload diagnostic Windows runtime
+      if: ${{ inputs.semaphore-test-diagnostics-windows }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-semaphore-diagnostics
+        path: TotalCrossVM/vc2022-semaphore-diagnostics/Release/tcvm.dll
+        if-no-files-found: error
+
   build-windows-native-legacy:
     name: Build `windows-native-legacy`
+    if: ${{ !inputs.semaphore-windows-only }}
     needs: checkout-source
     runs-on: windows-2022
 
@@ -500,6 +555,7 @@ jobs:
 
   build-macos-arm64:
     name: Build `macos-arm64`
+    if: ${{ !inputs.semaphore-windows-only }}
     needs: checkout-source
     runs-on: macos-15
 
@@ -616,6 +672,7 @@ jobs:
 
   build-android:
     name: Build `Android`
+    if: ${{ !inputs.semaphore-windows-only }}
     needs: checkout-source
     runs-on: ubuntu-24.04
     env:
@@ -703,6 +760,7 @@ jobs:
 
   build-ios:
     name: Build `iOS`
+    if: ${{ !inputs.semaphore-windows-only }}
     needs: checkout-source
     runs-on: macos-15
 
