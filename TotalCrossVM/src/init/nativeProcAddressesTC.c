@@ -691,5 +691,11 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_deactivate"), &tidsS_deactivate);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_ss"), &tidsS_setParam_ss);
+   htPutPtr(&htNativeProcAddresses, hashCode("jucS_create_i"), &jucS_create_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("jucS_destroy"), &jucS_destroy);
+   htPutPtr(&htNativeProcAddresses, hashCode("jucS_acquire"), &jucS_acquire);
+   htPutPtr(&htNativeProcAddresses, hashCode("jucS_acquireUninterruptibly"), &jucS_acquireUninterruptibly);
+   htPutPtr(&htNativeProcAddresses, hashCode("jucS_tryAcquire"), &jucS_tryAcquire);
+   htPutPtr(&htNativeProcAddresses, hashCode("jucS_release"), &jucS_release);
    htPutPtr(&htNativeProcAddresses, hashCode("getMainContext"), &getMainContext);
 }

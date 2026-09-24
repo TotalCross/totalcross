@@ -700,6 +700,12 @@ TC_API void tidgGL_requestOutput_si(NMParams p);
 TC_API void tidgGL_setValue_i(NMParams p);
 TC_API void tidgGL_requestInput_s(NMParams p);
 TC_API void tidgGL_getValue(NMParams p);
+TC_API void jucS_create_i(NMParams p);
+TC_API void jucS_destroy(NMParams p);
+TC_API void jucS_acquire(NMParams p);
+TC_API void jucS_acquireUninterruptibly(NMParams p);
+TC_API void jucS_tryAcquire(NMParams p);
+TC_API void jucS_release(NMParams p);
 
 #ifdef __cplusplus
 }

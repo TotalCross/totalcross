@@ -652,3 +652,9 @@ totalcross/telephony/SmsManager|public native void registerSmsReceiver(totalcros
 totalcross/firebase/iid/FirebaseInstanceId|public native String getToken();
 totalcross/notification/NotificationManager|public void notify(totalross.notification.Notification notification);
 totalcross/qrcode/QRCode|private native byte[][] nativeGetBytes(String text, int errorCorrection, int version);
+java/util/concurrent/Semaphore|native private void create(int permits);
+java/util/concurrent/Semaphore|native private void destroy();
+java/util/concurrent/Semaphore|native public void acquire() throws InterruptedException;
+java/util/concurrent/Semaphore|native public void acquireUninterruptibly();
+java/util/concurrent/Semaphore|native public boolean tryAcquire();
+java/util/concurrent/Semaphore|native public void release();

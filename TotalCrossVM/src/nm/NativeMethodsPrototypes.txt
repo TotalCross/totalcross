@@ -3246,3 +3246,27 @@ TC_API void tnNM_notify_n(NMParams p) // totalcross/notification/NotificationMan
 TC_API void tqQRC_nativeGetBytes_sii(NMParams p) // totalcross/qrcode/QRCode private native byte[][] nativeGetBytes(String text, int errorCorrection, int version);
 {
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void jucS_create_i(NMParams p) // java/util/concurrent/Semaphore native private void create(int permits);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jucS_destroy(NMParams p) // java/util/concurrent/Semaphore native private void destroy();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jucS_acquire(NMParams p) // java/util/concurrent/Semaphore native public void acquire() throws InterruptedException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jucS_acquireUninterruptibly(NMParams p) // java/util/concurrent/Semaphore native public void acquireUninterruptibly();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jucS_tryAcquire(NMParams p) // java/util/concurrent/Semaphore native public boolean tryAcquire();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jucS_release(NMParams p) // java/util/concurrent/Semaphore native public void release();
+{
+}

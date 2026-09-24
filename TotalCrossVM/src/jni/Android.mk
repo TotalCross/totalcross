@@ -162,6 +162,7 @@ NM_UI_FILES =                                 \
 
 NM_UTIL_FILES =                               \
 	$(TC_SRCDIR)/nm/util/concurrent_Lock.c     \
+	$(TC_SRCDIR)/nm/util/concurrent_Semaphore.c \
 	$(TC_SRCDIR)/nm/util/zip_ZLib.c            \
 	$(TC_SRCDIR)/nm/util/BigInteger.c          \
 

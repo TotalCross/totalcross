@@ -1520,6 +1520,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\nm\util\concurrent_Semaphore.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\nm\util\zip_ZLib.c"
 					>
 					<FileConfiguration

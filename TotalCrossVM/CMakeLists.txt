@@ -672,6 +672,7 @@ set(SOURCES
     ${TC_SRCDIR}/nm/ui/dialog_FilePicker.c
 
     ${TC_SRCDIR}/nm/util/concurrent_Lock.c
+    ${TC_SRCDIR}/nm/util/concurrent_Semaphore.c
     ${TC_SRCDIR}/nm/util/zip_ZLib.c
     ${TC_SRCDIR}/nm/util/BigInteger.c
     ${TC_SRCDIR}/nm/util/Locale.c
