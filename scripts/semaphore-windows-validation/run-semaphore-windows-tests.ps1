@@ -66,16 +66,33 @@ $tests = @(
 foreach ($test in $tests) {
     $stdoutName = "$($test.name).stdout.log"
     $stderrName = "$($test.name).stderr.log"
+    $debugConsoleName = "$($test.name).debugconsole.log"
     $stdoutPath = Join-Path $resultsDir $stdoutName
     $stderrPath = Join-Path $resultsDir $stderrName
+    $debugConsolePath = Join-Path $packageRoot 'DebugConsole.txt'
+    $debugConsoleResultPath = Join-Path $resultsDir $debugConsoleName
     $executablePath = Join-Path $packageRoot $test.executable
+    $process = $null
+    $processHandle = [IntPtr]::Zero
     $exitCode = $null
     $timedOut = $false
     $status = 'failed'
     $errorMessage = $null
     $missingMarkers = @()
+    $debugConsoleOutput = ''
+
+    Remove-Item -LiteralPath @(
+        $stdoutPath,
+        $stderrPath,
+        $debugConsolePath,
+        $debugConsoleResultPath
+    ) -Force -ErrorAction SilentlyContinue
+    $debugConsoleCleared = -not (Test-Path -LiteralPath $debugConsolePath)
 
     try {
+        if (-not $debugConsoleCleared) {
+            throw 'Could not remove stale DebugConsole.txt before the test.'
+        }
         if ($fileFailures.Count -gt 0) {
             throw 'Package file integrity validation failed.'
         }
@@ -89,43 +106,81 @@ foreach ($test in $tests) {
             -RedirectStandardOutput $stdoutPath `
             -RedirectStandardError $stderrPath `
             -PassThru
+        $processHandle = $process.Handle
 
         if (-not $process.WaitForExit($test.timeoutSeconds * 1000)) {
             $timedOut = $true
             try { $process.Kill() } catch { }
-            $process.WaitForExit()
-            throw "Timed out after $($test.timeoutSeconds) seconds."
         }
 
+        $process.WaitForExit()
         $exitCode = $process.ExitCode
-        $output = ''
-        if (Test-Path -LiteralPath $stdoutPath) {
-            $output += Get-Content -LiteralPath $stdoutPath -Raw
+        if ($timedOut) {
+            $errorMessage = "Timed out after $($test.timeoutSeconds) seconds."
         }
-        if (Test-Path -LiteralPath $stderrPath) {
-            $output += Get-Content -LiteralPath $stderrPath -Raw
-        }
-
-        foreach ($marker in $test.requiredMarkers) {
-            if (-not $output.Contains($marker)) {
-                $missingMarkers += $marker
-            }
-        }
-        if ($exitCode -ne 0) {
-            throw "Process exited with code $exitCode."
-        }
-        if ($missingMarkers.Count -gt 0) {
-            throw "Required PASS marker missing: $($missingMarkers -join '; ')"
-        }
-        $status = 'passed'
     }
     catch {
         $errorMessage = $_.Exception.Message
-        if (-not (Test-Path -LiteralPath $stdoutPath)) {
-            Set-Content -LiteralPath $stdoutPath -Value '' -Encoding UTF8
+    }
+    finally {
+        if ($debugConsoleCleared -and
+                (Test-Path -LiteralPath $debugConsolePath -PathType Leaf)) {
+            try {
+                Copy-Item -LiteralPath $debugConsolePath `
+                    -Destination $debugConsoleResultPath -Force
+                $debugConsoleOutput = Get-Content `
+                    -LiteralPath $debugConsoleResultPath -Raw
+            }
+            catch {
+                if (-not $errorMessage) {
+                    $errorMessage = "Could not capture DebugConsole.txt: $($_.Exception.Message)"
+                }
+            }
         }
-        if (-not (Test-Path -LiteralPath $stderrPath)) {
-            Set-Content -LiteralPath $stderrPath -Value $errorMessage -Encoding UTF8
+        else {
+            try {
+                Set-Content -LiteralPath $debugConsoleResultPath `
+                    -Value '' -Encoding UTF8
+            }
+            catch {
+                if (-not $errorMessage) {
+                    $errorMessage = "Could not create the DebugConsole result: $($_.Exception.Message)"
+                }
+            }
+        }
+
+        if ($null -ne $process) {
+            try { $process.Dispose() } catch { }
+        }
+    }
+
+    if (-not (Test-Path -LiteralPath $stdoutPath -PathType Leaf)) {
+        Set-Content -LiteralPath $stdoutPath -Value '' -Encoding UTF8
+    }
+    if (-not (Test-Path -LiteralPath $stderrPath -PathType Leaf)) {
+        $stderrValue = ''
+        if ($errorMessage) { $stderrValue = $errorMessage }
+        Set-Content -LiteralPath $stderrPath -Value $stderrValue -Encoding UTF8
+    }
+
+    $output = (Get-Content -LiteralPath $stdoutPath -Raw) + [Environment]::NewLine +
+        (Get-Content -LiteralPath $stderrPath -Raw) + [Environment]::NewLine +
+        $debugConsoleOutput
+    foreach ($marker in $test.requiredMarkers) {
+        if (-not $output.Contains($marker)) {
+            $missingMarkers += $marker
+        }
+    }
+
+    if (-not $errorMessage) {
+        if ($exitCode -ne 0) {
+            $errorMessage = "Process exited with code $exitCode."
+        }
+        elseif ($missingMarkers.Count -gt 0) {
+            $errorMessage = "Required PASS marker missing: $($missingMarkers -join '; ')"
+        }
+        else {
+            $status = 'passed'
         }
     }
 
@@ -140,6 +195,7 @@ foreach ($test in $tests) {
         error = $errorMessage
         stdout = "results/$stdoutName"
         stderr = "results/$stderrName"
+        debugConsole = "results/$debugConsoleName"
     }
 }
 
