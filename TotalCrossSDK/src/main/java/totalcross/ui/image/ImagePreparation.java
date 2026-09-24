@@ -263,17 +263,16 @@ final class ImagePreparation {
       worker = prefetchWorker;
     }
     if (worker != null && worker != Thread.currentThread()) {
-      worker.interrupt();
-      try {
-        worker.join(5000);
-      } catch (InterruptedException interrupted) {
-        Thread.currentThread().interrupt();
+      for (int remainingMs = 5000; remainingMs > 0; remainingMs--) {
+        synchronized (LOCK) {
+          if (prefetchWorker != worker) {
+            break;
+          }
+        }
+        Vm.sleep(1);
       }
     }
     synchronized (LOCK) {
-      if (prefetchWorker == worker && (worker == null || !worker.isAlive())) {
-        prefetchWorker = null;
-      }
       if (prefetchWorker == null) {
         workerShutdownRequested = false;
       }
@@ -450,7 +449,7 @@ final class ImagePreparation {
         public void run() {
           runPrefetchWorker();
         }
-      }, true);
+      });
     }
   }
 
@@ -656,16 +655,9 @@ final class ImagePreparation {
   }
 
   private static Thread startPreparationThread(final Runnable runnable) {
-    return startPreparationThread(runnable, false);
-  }
-
-  private static Thread startPreparationThread(final Runnable runnable, boolean daemon) {
     final boolean accounting = Image.diagnosticAccountingEnabledForTest();
     if (!accounting) {
       Thread thread = new Thread(runnable);
-      if (daemon) {
-        thread.setDaemon(true);
-      }
       thread.start();
       return thread;
     }
@@ -683,9 +675,6 @@ final class ImagePreparation {
     Thread thread = new Thread(measuredRunnable);
     long createElapsedNs = System.nanoTime() - createStartNs;
     recordThreadCreated(createElapsedNs);
-    if (daemon) {
-      thread.setDaemon(true);
-    }
     timing.startNs = System.nanoTime();
     long startCallStartNs = timing.startNs;
     boolean started = false;
