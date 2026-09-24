@@ -107,6 +107,16 @@ Pthreads on Posix (iPhone, Linux, ...)
       WaitForSingleObject((condition)->event, INFINITE); \
       EnterCriticalSection(mutex); \
    } while (0)
+#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
+ #define WAIT_THREAD_CONDITION_WITH_DIAGNOSTIC(condition, mutex, diagnosticEvent, pending) \
+   do { \
+      LeaveCriticalSection(mutex); \
+      SignalObjectAndWait((diagnosticEvent), (condition)->event, INFINITE, FALSE); \
+      /* Report a wake before reacquiring the lock so awaitWaiters can reject it. */ \
+      InterlockedExchange((volatile LONG *)(pending), 0); \
+      EnterCriticalSection(mutex); \
+   } while (0)
+#endif
  #define SIGNAL_THREAD_CONDITION(condition) SetEvent((condition)->event)
  #define DESTROY_THREAD_CONDITION(condition) CloseHandle((condition)->event)
 #elif defined(POSIX) || defined(ANDROID)

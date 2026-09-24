@@ -17,11 +17,13 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
   @Override
   public void initUI() {
     try {
-      LatencySummary summary = measure();
+      int multiWaiterConfirmed = verifyMultipleWaiters();
+      LatencySummary summary = measure(multiWaiterConfirmed);
       System.out.println("fixture=SemaphoreWakeLatencySmokeApp,overallPass=true"
           + ",method=blocked-waiter-release-to-acquire,count=" + SAMPLE_COUNT
           + ",blockedConfirmed=" + summary.blockedConfirmed
-          + ",confirmedHandshakes=" + summary.confirmedHandshakes + ",minNs=" + summary.minimum
+          + ",confirmedHandshakes=" + summary.confirmedHandshakes
+          + ",multiWaiterConfirmed=" + summary.multiWaiterConfirmed + ",minNs=" + summary.minimum
           + ",p50Ns=" + summary.median + ",p95Ns=" + summary.p95
           + ",maxNs=" + summary.maximum + ",meanNs=" + summary.mean);
       System.out.flush();
@@ -34,7 +36,36 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
     }
   }
 
-  private static LatencySummary measure() {
+  private static int verifyMultipleWaiters() {
+    final int waiterCount = 3;
+    Semaphore tested = new Semaphore(0);
+    Semaphore ready = new Semaphore(0);
+    Semaphore completed = new Semaphore(0);
+    DiagnosticWaiter[] waiters = new DiagnosticWaiter[waiterCount];
+    for (int i = 0; i < waiters.length; i++) {
+      waiters[i] = new DiagnosticWaiter(tested, ready, completed);
+      new Thread(waiters[i]).start();
+    }
+
+    for (int i = 0; i < waiters.length; i++) ready.acquireUninterruptibly();
+    int confirmed = SemaphoreTestDiagnostics.awaitWaiters(tested, waiterCount);
+    if (confirmed != waiterCount) {
+      throw new IllegalStateException("native diagnostics confirmed " + confirmed
+          + " of " + waiterCount + " concurrent waiters");
+    }
+    for (int i = 0; i < waiters.length; i++) {
+      tested.release();
+      completed.acquireUninterruptibly();
+    }
+    for (int i = 0; i < waiters.length; i++) {
+      if (waiters[i].failure != null) {
+        throw new IllegalStateException("diagnostic waiter failed: " + waiters[i].failure);
+      }
+    }
+    return confirmed;
+  }
+
+  private static LatencySummary measure(int multiWaiterConfirmed) {
     Semaphore tested = new Semaphore(0);
     Semaphore consumerStart = new Semaphore(0);
     Semaphore sampleCompleted = new Semaphore(0);
@@ -47,7 +78,9 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
     for (int i = 0; i < TOTAL_COUNT; i++) {
       consumerStart.release();
       int waiterCount = SemaphoreTestDiagnostics.awaitWaiters(tested, 1);
-      if (waiterCount <= 0) throw new IllegalStateException("diagnostic did not confirm a waiter");
+      if (waiterCount != 1) {
+        throw new IllegalStateException("diagnostic expected one blocked waiter but confirmed " + waiterCount);
+      }
       confirmedHandshakes++;
       consumer.releaseTimeNs = System.nanoTime();
       tested.release();
@@ -65,10 +98,11 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
     if (confirmedHandshakes != TOTAL_COUNT || blockedMeasuredSamples != SAMPLE_COUNT) {
       throw new IllegalStateException("blocked waiter confirmations were incomplete");
     }
-    return summarize(samples, blockedMeasuredSamples, confirmedHandshakes);
+    return summarize(samples, blockedMeasuredSamples, confirmedHandshakes, multiWaiterConfirmed);
   }
 
-  private static LatencySummary summarize(long[] samples, int blockedConfirmed, int confirmedHandshakes) {
+  private static LatencySummary summarize(long[] samples, int blockedConfirmed, int confirmedHandshakes,
+      int multiWaiterConfirmed) {
     long[] sorted = new long[samples.length];
     long quotientSum = 0;
     long remainderSum = 0;
@@ -92,7 +126,7 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
     int p95Index = ((SAMPLE_COUNT * 95 + 99) / 100) - 1;
     long roundedMean = quotientSum + ((remainderSum + (SAMPLE_COUNT / 2)) / SAMPLE_COUNT);
     return new LatencySummary(sorted[0], median, sorted[p95Index], sorted[sorted.length - 1], roundedMean,
-        blockedConfirmed, confirmedHandshakes);
+        blockedConfirmed, confirmedHandshakes, multiWaiterConfirmed);
   }
 
   private static final class Consumer implements Runnable {
@@ -126,6 +160,31 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
     }
   }
 
+  private static final class DiagnosticWaiter implements Runnable {
+    private final Semaphore tested;
+    private final Semaphore ready;
+    private final Semaphore completed;
+    private volatile Throwable failure;
+
+    DiagnosticWaiter(Semaphore tested, Semaphore ready, Semaphore completed) {
+      this.tested = tested;
+      this.ready = ready;
+      this.completed = completed;
+    }
+
+    @Override
+    public void run() {
+      try {
+        ready.release();
+        tested.acquireUninterruptibly();
+      } catch (Throwable error) {
+        failure = error;
+      } finally {
+        completed.release();
+      }
+    }
+  }
+
   private static final class LatencySummary {
     final long minimum;
     final long median;
@@ -134,9 +193,10 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
     final long mean;
     final int blockedConfirmed;
     final int confirmedHandshakes;
+    final int multiWaiterConfirmed;
 
     LatencySummary(long minimum, long median, long p95, long maximum, long mean, int blockedConfirmed,
-        int confirmedHandshakes) {
+        int confirmedHandshakes, int multiWaiterConfirmed) {
       this.minimum = minimum;
       this.median = median;
       this.p95 = p95;
@@ -144,6 +204,7 @@ public class SemaphoreWakeLatencySmokeApp extends MainWindow {
       this.mean = mean;
       this.blockedConfirmed = blockedConfirmed;
       this.confirmedHandshakes = confirmedHandshakes;
+      this.multiWaiterConfirmed = multiWaiterConfirmed;
     }
   }
 }

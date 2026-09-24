@@ -4,19 +4,31 @@
 
 #include "tcvm.h"
 
+#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS) && defined(WIN32)
+typedef struct SemaphoreDiagnosticWaiter
+{
+   HANDLE entryEvent;
+   volatile LONG pending;
+   bool entryConfirmed;
+   struct SemaphoreDiagnosticWaiter *next;
+} SemaphoreDiagnosticWaiter;
+#endif
+
 typedef struct
 {
    MUTEX_TYPE mutex;
    THREAD_CONDITION_TYPE condition;
 #if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
    THREAD_CONDITION_TYPE diagnosticCondition;
+#if defined(WIN32)
+   SemaphoreDiagnosticWaiter *diagnosticWaiters;
+#else
+   int32 diagnosticWaiters;
+#endif
+   bool diagnosticConditionInitialized;
 #endif
    int32 permits;
    int32 waiters;
-#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
-   int32 diagnosticWaiters;
-   bool diagnosticConditionInitialized;
-#endif
    bool initialized;
 } SemaphoreState;
 
@@ -150,6 +162,38 @@ static void acquireSemaphore(NMParams p)
    RESERVE_MUTEX_VAR(state->mutex);
    while (state->permits <= 0)
    {
+#if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS) && defined(WIN32)
+      SemaphoreDiagnosticWaiter diagnosticWaiter;
+      SemaphoreDiagnosticWaiter **waiterCursor;
+
+      diagnosticWaiter.entryEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+      if (diagnosticWaiter.entryEvent == NULL)
+      {
+         RELEASE_MUTEX_VAR(state->mutex);
+         throwException(p->currentContext, RuntimeException, "Could not initialize Semaphore waiter diagnostic event");
+         return;
+      }
+      InterlockedExchange(&diagnosticWaiter.pending, 1);
+      diagnosticWaiter.entryConfirmed = false;
+      diagnosticWaiter.next = state->diagnosticWaiters;
+      state->diagnosticWaiters = &diagnosticWaiter;
+      state->waiters++;
+      if (state->diagnosticConditionInitialized)
+         SIGNAL_THREAD_CONDITION(&state->diagnosticCondition);
+
+      WAIT_THREAD_CONDITION_WITH_DIAGNOSTIC(&state->condition, &state->mutex,
+         diagnosticWaiter.entryEvent, &diagnosticWaiter.pending);
+
+      waiterCursor = &state->diagnosticWaiters;
+      while (*waiterCursor != null && *waiterCursor != &diagnosticWaiter)
+         waiterCursor = &(*waiterCursor)->next;
+      if (*waiterCursor == &diagnosticWaiter)
+         *waiterCursor = diagnosticWaiter.next;
+      if (state->diagnosticConditionInitialized)
+         SIGNAL_THREAD_CONDITION(&state->diagnosticCondition);
+      state->waiters--;
+      CloseHandle(diagnosticWaiter.entryEvent);
+#else
       state->waiters++;
 #if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
       if (state->diagnosticWaiters > 0)
@@ -157,6 +201,7 @@ static void acquireSemaphore(NMParams p)
 #endif
       WAIT_THREAD_CONDITION(&state->condition, &state->mutex);
       state->waiters--;
+#endif
    }
    state->permits--;
    signalNextSemaphoreWaiter(state);
@@ -195,15 +240,59 @@ TC_API void tucSTD_awaitWaiters_si(NMParams p) // totalcross/util/concurrent/Sem
       return;
 
    RESERVE_MUTEX_VAR(state->mutex);
+#if defined(WIN32)
+   if (!state->diagnosticConditionInitialized)
+   {
+      initialized = INIT_THREAD_CONDITION(&state->diagnosticCondition) != 0;
+      if (!initialized)
+      {
+         RELEASE_MUTEX_VAR(state->mutex);
+         throwException(p->currentContext, RuntimeException, "Could not initialize Semaphore diagnostic condition");
+         return;
+      }
+      state->diagnosticConditionInitialized = true;
+   }
+
+   for (;;)
+   {
+      SemaphoreDiagnosticWaiter *waiter;
+      int32 confirmedWaiters = 0;
+
+      for (waiter = state->diagnosticWaiters; waiter != null; waiter = waiter->next)
+      {
+         if (!waiter->entryConfirmed)
+         {
+            DWORD waitResult = WaitForSingleObject(waiter->entryEvent, INFINITE);
+            if (waitResult != WAIT_OBJECT_0)
+            {
+               RELEASE_MUTEX_VAR(state->mutex);
+               throwException(p->currentContext, RuntimeException, "Could not confirm Semaphore waiter entry");
+               return;
+            }
+            waiter->entryConfirmed = true;
+         }
+
+         if (InterlockedCompareExchange(&waiter->pending, 1, 1) != 0)
+            confirmedWaiters++;
+      }
+
+      if (confirmedWaiters >= minimumWaiters && state->waiters >= minimumWaiters && state->permits <= 0)
+      {
+         p->retI = state->waiters;
+         RELEASE_MUTEX_VAR(state->mutex);
+         return;
+      }
+
+      /* Per-waiter events retain every entry confirmation; this shared event
+         only wakes the observer to rescan registration and completion changes. */
+      WAIT_THREAD_CONDITION(&state->diagnosticCondition, &state->mutex);
+   }
+#else
    if (state->waiters < minimumWaiters)
    {
       if (!state->diagnosticConditionInitialized)
       {
-#if defined(WIN32)
-         initialized = INIT_THREAD_CONDITION(&state->diagnosticCondition) != 0;
-#else
          initialized = INIT_THREAD_CONDITION(&state->diagnosticCondition) == 0;
-#endif
          if (!initialized)
          {
             RELEASE_MUTEX_VAR(state->mutex);
@@ -221,6 +310,7 @@ TC_API void tucSTD_awaitWaiters_si(NMParams p) // totalcross/util/concurrent/Sem
 
    p->retI = state->waiters;
    RELEASE_MUTEX_VAR(state->mutex);
+#endif
 }
 #endif
 
