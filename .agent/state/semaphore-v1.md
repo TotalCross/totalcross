@@ -8,7 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Part/milestone/slice: Part 1 / Milestone 1, Part 2 / Milestone 2, blocked-wait
   methodology correction, and diagnostic gating are validated. The Windows
-  correctness/stress package is prepared; actual Windows execution is pending.
+  correctness and stress apps passed on Windows; the original PowerShell
+  wrapper produced a false negative. A corrected runner package is prepared;
+  its Windows rerun remains pending.
 - Branch: `feat/semaphore-v1`; same worktree, no history rewrite.
 - Original follow-up base: `128a1fa36bd4c249ea51d31e2b2be970f455f942`.
 - Planning base: `0aeea1029f24a7e3e4f29c8f1f339ffad0a141f2`.
@@ -73,16 +75,38 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Package folder and ZIP:
   `.agent/artifacts/semaphore-windows-validation-run-36040721060/` and
   `.agent/artifacts/semaphore-windows-validation-run-36040721060.zip`.
-- Local package preparation passed: Java 17 compile/deploy from the pinned
-  artifacts, package ZIP integrity, and every manifest file hash. This is not
-  a Windows execution result. Windows test status remains pending.
-- Windows host access: the saved Windows App device presented a self-signed,
-  unverified certificate named `SUPERWABA2`. I did not trust or continue past
-  the warning. No Windows test executable was launched.
-- Next action: the user must verify the host/certificate in Windows App, or
-  run `run-semaphore-windows-tests.cmd` on another trusted Windows host and
-  return `results-summary.txt`, per-test stdout/stderr logs, and updated
-  `provenance.json`. Do not record Windows PASS before that execution.
+- Windows app execution produced the required markers without timeouts:
+  ```text
+  fixture=SemaphoreSmokeApp,overallPass=true,checks=7
+  fixture=SemaphoreStressSmokeApp,overallPass=true,producers=4,consumers=4,expected=20000,produced=20000,acquired=20000
+  ```
+  The original PowerShell runner falsely rejected this result because process
+  exit/output capture did not account for the Windows PowerShell 5.1 handle
+  behavior and TotalCross `DebugConsole.txt` output.
+- Runner fix commit: `74b79757a95e2772ac2b41863309c99723212cb4`
+  (`fix(packager,windows): capture semaphore runner console output`), signed.
+  The runner now obtains the process handle before the timed wait, performs a
+  final parameterless `WaitForExit()`, reads `ExitCode`, removes stale console
+  output, captures a per-test console log, and scans stdout, stderr, and that
+  log for PASS markers.
+- Replacement package folder and ZIP:
+  `.agent/artifacts/semaphore-windows-validation-run-36040721060-runner-fix/`
+  and `.agent/artifacts/semaphore-windows-validation-run-36040721060-runner-fix.zip`.
+  ZIP SHA-256: `bb3c0de98e2ccb36477dedf60e3157f39803e030b1f4d0b1c2b3191fed4359f0`.
+  It preserves the original workflow/source provenance and all nine runtime
+  files; the two Windows executables, their TCZs, and `tcvm.dll` match the
+  original package byte-for-byte. Its fixed-runner execution remains pending.
+- Local validation passed: focused header validation, `git diff --check`,
+  eight runner contract assertions, ZIP integrity, manifest hashes, and
+  comparisons proving the pinned executables/runtime are unchanged. No
+  PowerShell runtime was available locally for parsing or execution. No Windows
+  rebuild or corrected-runner Windows rerun was performed.
+- Historical host note: the earlier Windows App connection showed an
+  unverified self-signed certificate named `SUPERWABA2`; no test was launched
+  at that checkpoint. The later Windows app execution result above supersedes
+  that checkpoint's pending status.
+- Next: the replacement package is ready for a corrected-runner rerun. Do not
+  claim the runner itself passed on Windows until that result is returned.
 - Unrelated dirty paths to preserve: `totalcross.code-workspace`,
   `.agent/benchmarks/image-scroll-prefetch/final-definitive-pass/`,
   `.agent/benchmarks/image-scroll-prefetch/final-fixed/`,
@@ -100,9 +124,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Earlier Part 1 commit-message body-length failures remain unchanged under
   the no-rewrite rule; the initial Windows package commit adds one further
   body-length failure. Later package correction commits passed their checks.
-- Unresolved work is the actual Windows execution. Native Windows build was
-  taken from the verified workflow artifact and not rebuilt locally; the
-  saved RDP host remains unverified pending the user's trust decision.
-- Resume: read this state, then run the packaged `.cmd` on Windows. Keep the
-  returned summary, logs, and provenance with the artifact before updating
-  this state, evidence, and editorial report with results.
+- The underlying Windows correctness/stress apps have passed. Remaining
+  follow-up is a run of the corrected PowerShell wrapper to verify its
+  exit-code and DebugConsole capture on Windows. The native Windows runtime
+  still comes from the verified workflow artifact; it was not rebuilt locally.
+- Resume: use the runner-fix package and keep the returned summary, stdout,
+  stderr, per-test DebugConsole logs, and updated provenance with the artifact.

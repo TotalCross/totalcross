@@ -133,15 +133,29 @@ The compile databases confirmed the define appears only in the enabled build.
 - Focused copyright-header, diff, and signed commit-message checks passed.
 
 The original SDK/macOS validation did not build Windows, Android, Linux, or
-iOS locally. A Python-free Windows correctness/stress package was later
-prepared from successful workflow run `36040721060`, built from
-runtime source SHA `0badac435cc2c6af31de4bb0adad9ed58e6cd0c5`. It uses the
-default-off diagnostic configuration and includes the workflow Windows
-`tcvm.dll`, deployed executables, PowerShell 5.1 runner, and artifact hashes.
-Package deployment and ZIP/hash checks passed on macOS; Windows execution is
-still pending, so no Windows runtime pass is claimed. See the package folder
-and ZIP under `.agent/artifacts/semaphore-windows-validation-run-36040721060`
-and the latest record in `.agent/evidence/semaphore-v1.jsonl`.
+iOS locally. The Windows apps from the Python-free package based on workflow
+run `36040721060` and runtime source SHA `0badac435cc2c6af31de4bb0adad9ed58e6cd0c5`
+produced these markers without timing out:
+
+```text
+fixture=SemaphoreSmokeApp,overallPass=true,checks=7
+fixture=SemaphoreStressSmokeApp,overallPass=true,producers=4,consumers=4,expected=20000,produced=20000,acquired=20000
+```
+
+The first PowerShell 5.1 runner reported a false negative because it did not
+reliably capture process exit state and searched only redirected stdout/stderr,
+while TotalCross output may be written to `DebugConsole.txt`.
+
+The runner now acquires the process handle before its timed wait, performs a
+final parameterless `WaitForExit()`, reads `ExitCode`, clears stale
+`DebugConsole.txt` before each test, and saves fresh per-test console output.
+Required markers are checked across stdout, stderr, and that console output.
+The replacement package preserves the same workflow/source provenance and
+the executables/runtime byte-for-byte. Local static checks, manifest hashes,
+ZIP integrity, and binary comparisons passed. No local PowerShell runtime was
+available for parsing or execution. The corrected runner has not yet been
+rerun on Windows. See the replacement package and latest evidence entry under
+`.agent/artifacts/semaphore-windows-validation-run-36040721060-runner-fix`.
 
 ## Useful Evidence and Examples
 
