@@ -10,11 +10,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Branch: `feat/png-prefetch`.
 - Immutable base: `86d470c64b7dfc0ab6ac24314f32f0d630ff1990`.
 - Active milestone: 4A — fresh macOS six-process benchmark.
-- Last functional commit: `f8308ac31` (`fix(bench): guard windows manifest metadata order`; signed).
+- Last functional commit: `689e27daf126` (`test(image): cover deployed png prefetch`; signed).
 - Previous plan checkpoint: `1dee6189369f` (Milestone 2; signed).
 - Active paths: fresh macOS benchmark package/run scripts, the existing
   663-image corpus, and Part 2 evidence/report files.
-- Next action: Part 2 Milestone 4A — run the fresh six-process macOS benchmark.
+- Next action: run the Part 2 fresh macOS six-process benchmark after this
+  Part 1 checkpoint is committed.
 - Base validation: activation checkout equaled the immutable base; its object
   exists and is an ancestor of `feat/semaphore-v1`; `feat/png-prefetch` was
   created at that base.
@@ -28,11 +29,6 @@ SPDX-License-Identifier: LGPL-2.1-only
   (`689e27daf126`); SDK distribution, Release `tcvm`/`Launcher` build, and
   ordinary/indexed deployed macOS PNG smokes passed. Details and artifact
   identity are indexed in `.agent/evidence/png-prefetch.md`.
-- Pre-Part-2 branch-validation correction: initialize `manifestHash` before
-  metadata use, defer `RUNNING` until manifest and image payload validation,
-  and preserve `FAILED` metadata/ZIP generation on validation errors. The
-  README now documents SDK-runtime source ancestry, and focused static checks
-  guard the ordering. Validation is indexed in `.agent/evidence/png-prefetch.md`.
 - Deferred validation: PowerShell execution was unavailable because this
   macOS host has no PowerShell runtime; package tests validate its matrix,
   required calls, forbidden dependencies, and size. Windows/Linux/Android/iOS
