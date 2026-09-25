@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.ui;
 
 import totalcross.sys.Settings;
@@ -7,6 +12,7 @@ import totalcross.ui.event.PenEvent;
 import totalcross.ui.event.PenListener;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
+import totalcross.ui.event.UpdateListener;
 import totalcross.ui.font.Font;
 import totalcross.util.Vector;
 
@@ -24,7 +30,7 @@ import totalcross.util.Vector;
  * 
  * This class is for internal use. You should use the ScrollContainer class instead.
  */
-public class Flick implements PenListener, TimerListener {
+public class Flick implements PenListener, TimerListener, UpdateListener {
   public static final int BOTH_DIRECTIONS = 0;
   public static final int HORIZONTAL_DIRECTION_ONLY = 1;
   public static final int VERTICAL_DIRECTION_ONLY = 2;
@@ -570,60 +576,70 @@ public class Flick implements PenListener, TimerListener {
   @Override
   public void timerTriggered(TimerEvent e) {
     if (e == timer && !totalcross.unit.UIRobot.abort) {
-      double t = Vm.getTimeStamp() - t0;
-
-      // No rounding is done, the maximum rounding error is 1 pixel.
-      int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
-      int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
-      // check if the amount will overflow the scrollDistance
-      if (scrollDistance != 0 && absNewFlickPos > scrollDistanceRemaining) {
-        newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
-      }
-      int flickMotion = newFlickPos - flickPos;
-      flickPos = newFlickPos;
-      boolean endReached = flickMotion == 0;
-
-      if (!endReached) {
-        switch (flickDirection) {
-        case DragEvent.UP:
-        case DragEvent.DOWN:
-          if (listeners != null) {
-            for (int i = listeners.size(); --i >= 0;) {
-              ((Scrollable) listeners.items[i]).scrollContent(0, -flickMotion, true);
-            }
-          }
-          if (!target.scrollContent(0, -flickMotion, true)) {
-            endReached = true;
-          }
-          break;
-
-        case DragEvent.LEFT:
-        case DragEvent.RIGHT:
-          if (listeners != null) {
-            for (int i = listeners.size(); --i >= 0;) {
-              ((Scrollable) listeners.items[i]).scrollContent(-flickMotion, 0, true);
-            }
-          }
-          if (!target.scrollContent(-flickMotion, 0, true)) {
-            endReached = true;
-          }
-          break;
-        }
-      }
-      if (endReached || currentFlick == null || t > t1) // Reached the end.
-      {
-        lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
-        stop(false);
-      }
-      if (pagepos != null) {
-        int p = target.getScrollPosition(flickDirection);
-        if (p < 0) {
-          p = -p;
-        }
-        pagepos.setPosition((p / scrollDistance) + 1);
-      }
-
+      advanceFlickFrame();
       e.consumed = true;
+    }
+  }
+
+  @Override
+  public void updateListenerTriggered(int elapsedMilliseconds) {
+    if (!totalcross.unit.UIRobot.abort) {
+      advanceFlickFrame();
+    }
+  }
+
+  private void advanceFlickFrame() {
+    double t = Vm.getTimeStamp() - t0;
+
+    // No rounding is done, the maximum rounding error is 1 pixel.
+    int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
+    int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
+    // check if the amount will overflow the scrollDistance
+    if (scrollDistance != 0 && absNewFlickPos > scrollDistanceRemaining) {
+      newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
+    }
+    int flickMotion = newFlickPos - flickPos;
+    flickPos = newFlickPos;
+    boolean endReached = flickMotion == 0;
+
+    if (!endReached) {
+      switch (flickDirection) {
+      case DragEvent.UP:
+      case DragEvent.DOWN:
+        if (listeners != null) {
+          for (int i = listeners.size(); --i >= 0;) {
+            ((Scrollable) listeners.items[i]).scrollContent(0, -flickMotion, true);
+          }
+        }
+        if (!target.scrollContent(0, -flickMotion, true)) {
+          endReached = true;
+        }
+        break;
+
+      case DragEvent.LEFT:
+      case DragEvent.RIGHT:
+        if (listeners != null) {
+          for (int i = listeners.size(); --i >= 0;) {
+            ((Scrollable) listeners.items[i]).scrollContent(-flickMotion, 0, true);
+          }
+        }
+        if (!target.scrollContent(-flickMotion, 0, true)) {
+          endReached = true;
+        }
+        break;
+      }
+    }
+    if (endReached || currentFlick == null || t > t1) // Reached the end.
+    {
+      lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
+      stop(false);
+    }
+    if (pagepos != null) {
+      int p = target.getScrollPosition(flickDirection);
+      if (p < 0) {
+        p = -p;
+      }
+      pagepos.setPosition((p / scrollDistance) + 1);
     }
   }
 
