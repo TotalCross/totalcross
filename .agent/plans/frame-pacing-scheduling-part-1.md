@@ -367,8 +367,8 @@ history in multiple files.
 
 - [x] (2026-09-25) Activate the plan branch and commit the plans and supporting
   state/evidence scaffolding.
-- [ ] Stage 1 implementation and focused tests are in progress; benchmark and
-  committed results remain.
+- [x] (2026-09-25) Stage 1 implementation, focused tests, preflight, and six
+  measured processes passed; canonical results are in the signed checkpoint.
 - [ ] Stage 2 Flick driver implementation, tests, macOS benchmark, committed results.
 - [ ] Stage 3 clock implementation, tests, macOS benchmark, committed results.
 - [ ] Handoff state to Part 2.

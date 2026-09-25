@@ -57,3 +57,24 @@ files; raw process output and temporary run directories stay outside Git.
   The runner now omits default options and the bundle-verified dataset hash, and
   tests that each Part 1 command fits 255 characters. Canonical files were not
   written; retry pending.
+- 2026-09-25: Signed command-line correction `7b5013bfd` removes redundant
+  defaults, the manifest-verified dataset-hash argument, and the explicit
+  semaphore sleep default so all Part 1 profile arguments fit. Six contract
+  tests, focused headers, diff check, signature, and commit-message validation
+  pass. A compact direct probe recorded `synthetic-60hz` at 16,666,667 ns.
+  Stage 1 matrix retry pending.
+- 2026-09-25: Stage 1 passed. The preflight had 663 requests, 663 READY, zero
+  failed or non-prefetchable images, 189 frame rows, and zero scroll JPEG
+  decodes or image/native-geometry materializations. Six measured rows passed:
+  three each for `synthetic-current-16ms` and `synthetic-60hz`. Across the six
+  rows, frame counts were 181-189; sleep requests 506-552; requested sleep
+  totals 1.887-2.062 s; actual sleep totals 2.124-2.314 s; sleep overshoot p95
+  527,000-530,084 ns and max 538,667-759,208 ns; deadline error p95
+  1,391,459-2,076,458 ns and max 4,340,084-72,757,625 ns. Quantiles were
+  ordered, sleep totals were populated with actual >= requested, and all
+  per-row pacing counters were non-empty. Canonical files are
+  `.agent/evidence/frame-pacing-stage-1-macos.csv` (4,006 bytes) and
+  `.agent/evidence/frame-pacing-stage-1-macos.json` (14,533 bytes), both below
+  20 KiB. Run logs are under
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-1-3p_g2aj9`;
+  process outputs remain in the `/tmp/frame-pacing-stage-1.JrzRFt` bundle.
