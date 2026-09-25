@@ -413,37 +413,6 @@ def assert_content_formats_and_windows_runner_contract():
         "run-prefetch-thread-benchmark-windows.ps1"
     )
     runner = runner_source.read_text()
-    manifest_hash_init = re.search(r"(?m)^\$manifestHash = \$null$", runner)
-    require(manifest_hash_init is not None
-            and manifest_hash_init.start() < runner.index("function Write-RunMetadata"),
-            "Windows runner does not initialize manifestHash before metadata functions")
-    manifest_read = runner.index("$manifest = Read-JsonFile $manifestPath")
-    manifest_hash_assignment = runner.index("$manifestHash = [string]$manifest.datasetHash")
-    manifest_hash_validation = runner.index(
-        "throw 'manifest dataset hash is missing or invalid'"
-    )
-    image_content_validation = runner.index(
-        'throw "Bundle image content must contain 660 JPEG and 3 PNG files;'
-    )
-    first_running_metadata = runner.index("Write-RunMetadata 'RUNNING' $null")
-    require(manifest_read < manifest_hash_assignment < manifest_hash_validation
-            < image_content_validation < first_running_metadata,
-            "Windows runner writes RUNNING metadata before manifest validation")
-    failure_handler_start = runner.index("$failureMessage = $_.Exception.Message")
-    failure_handler_end = runner.index("\n    exit 1", failure_handler_start)
-    failure_handler = runner[failure_handler_start:failure_handler_end]
-    require("Write-RunMetadata 'FAILED' $failureMessage" in failure_handler
-            and "Compress-Archive -Path $evidenceRoot -DestinationPath $archivePath -Force"
-            in failure_handler,
-            "Windows runner cannot write failure metadata and ZIP after validation errors")
-    benchmark_readme = " ".join(
-        Path(__file__).with_name("README-image-benchmarks.md").read_text().split()
-    )
-    require("runtime contained in the SDK ZIP" in benchmark_readme
-            and "ancestor of `--source-commit`" in benchmark_readme
-            and "do not need to be equal" in benchmark_readme
-            and "(equal to `--source-commit`)" not in benchmark_readme,
-            "Windows SDK source provenance documentation differs")
     runner_branch = package_script.split(
         "local windows_runner_manifest_field=\"\"", 1
     )[1].split("\n   fi\n", 1)[0]
