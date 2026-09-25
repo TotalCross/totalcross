@@ -8,16 +8,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-M1 implementation is complete. M2: finalize all requested per-process frame
-threshold metrics, commit the runner correction, then rebuild/package from the
-exact final source SHA. The Windows benchmark itself remains unexecuted.
+Implementation, focused validation, final-source workflow, package creation, and
+provenance are complete. The Windows benchmark itself remains unexecuted.
 
 ## Last logical commit
 
-`75b0fb97a` adds the app profile and benchmark-gated SDL pixel-format evidence.
-It is signed. `8617a0a35` records the initial plan and state. The implementation
-base is `1c6306b0861c589b8c6abe5f494c5c623db346f9`, the verified HEAD of
-`origin/feat/frame-pacing-scheduling-diagnostics`.
+`7af05d79f7a74a7e3ace2aad9e5bafea2cc2ccba` contains the signed app/native,
+package/runner, and threshold-metrics commits. It is pushed to
+`origin/feat/frame-pacing-scheduling-diagnostics`. Base was
+`1c6306b0861c589b8c6abe5f494c5c623db346f9`.
 
 ## Active paths
 
@@ -42,26 +41,26 @@ do not stage or alter those paths.
 
 ## Next concrete action
 
-Commit the added 16.67/20/25 ms process thresholds, then push the exact source
-SHA and dispatch `package.yml`; package from that run's full SDK artifact.
+No benchmark run remains in this task. The operator ZIP and provenance report
+are ready at the recorded paths.
 
 ## Validation and deferrals
 
 - Current implementation includes the dedicated 663-image app profile, gated
   SDL format reporting, dedicated package mode, two correctness preflights,
   six-process runner, periodic process progress, and cold/warm summaries.
-- The previous exact-source workflow run `36182451240` for `35b7a0139` succeeded;
-  its full SDK artifact ID is `10884319717`, SDK ZIP SHA-256 is
-  `3500878397f787d6cf5dd62c2c98ba44fa6dfab6f5878c867733de6257d69d98`. A final
-  workflow run is required after adding all requested process thresholds.
+- Final exact-source `package.yml` run `36183652625` succeeded for
+  `7af05d79f7a74a7e3ace2aad9e5bafea2cc2ccba`; full SDK artifact ID is
+  `10885666470`, downloaded ZIP SHA-256 is
+  `bb0f66a0a15fb6bf9eb5b8988140e712b39a17f00541102a2943074bd4bfe1b8`.
+- Package ZIP is `/tmp/scroll-raster-reuse-windows/package-final/image-scroll-raster-reuse-windows-x64.zip`,
+  SHA-256 `97709db4cd69a326f5a3232a99981c73ad49ff53dda45b09a84421d643774235`.
 - Passed after the threshold correction: four new runner/package contract groups,
   existing frame-pacing contracts (13 checks), existing image-scroll
   distributed-benchmark suite, `bash -n scripts/package-image-scroll-benchmark.sh`,
   `git diff --check`, and focused copyright-header validation.
-- Local PowerShell parsing and SDK/native compilation were unavailable: this
-  host has no PowerShell runtime, SDK JAR, or configured native build tree.
-  The exact-source package workflow will perform artifact builds; no local
-  Windows build or benchmark has been run.
-- Windows build and Windows benchmark execution are explicitly prohibited.
-- Successful workflow dispatch, full SDK artifact, package SHA, and final
-  provenance remain required.
+- ZIP integrity, package manifest, runtime/app/runner hashes, corpus digest and
+  file counts all passed. The packager compiled and deployed the app using the
+  action-built SDK ZIP.
+- Local PowerShell parsing was unavailable on this macOS host. No local Windows
+  build or benchmark execution occurred; benchmark process count is zero.

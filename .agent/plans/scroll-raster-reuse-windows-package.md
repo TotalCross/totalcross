@@ -41,9 +41,9 @@ and host provenance. Windows execution is not part of local validation.
 - [x] Add focused Windows runner, preflight, six-process matrix, summaries, and
   Windows-specific package mode to the existing packager.
 - [x] Add focused contract checks and one-command README instructions.
-- [ ] Run required focused validation, commit signed logical slices, push only
+- [x] Run required focused validation, commit signed logical slices, push only
   the requested branch, and dispatch `package.yml` for the final SHA.
-- [ ] Package from the successful full SDK ZIP artifact, record provenance,
+- [x] Package from the successful full SDK ZIP artifact, record provenance,
   and confirm no local Windows build or benchmark execution occurred.
 
 ## Current Architecture and Scope
@@ -148,8 +148,12 @@ new exact SHA, and dispatch only that SHA. Do not rewrite signed history.
 
 ## Outcomes & Retrospective
 
-Pending implementation and action-built package. Do not claim Windows runtime
-execution; the operator-facing ZIP is prepared for later execution.
+The signed benchmark source commit `7af05d79f7a74a7e3ace2aad9e5bafea2cc2ccba`
+is pushed to the requested branch. Its `package.yml` run `36183652625` succeeded
+and produced the full SDK artifact used to make the 44,555,487-byte Windows x64
+package. The package manifest hashes the action-built `tcvm.dll`, app, runner and corpus;
+archive integrity and manifest checks passed. Local static validators passed.
+No benchmark process was run; the package is ready for later operator execution.
 
 ## Revision Note
 

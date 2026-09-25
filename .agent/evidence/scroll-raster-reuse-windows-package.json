@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "_copyright": "Copyright (C) 2026 Amalgam Solucoes em TI Ltda",
+  "_spdxLicenseIdentifier": "LGPL-2.1-only",
+  "benchmark": "scroll-raster-reuse-windows",
+  "repository": "TotalCross/totalcross",
+  "sourceBranch": "feat/frame-pacing-scheduling-diagnostics",
+  "sourceCommit": "7af05d79f7a74a7e3ace2aad9e5bafea2cc2ccba",
+  "logicalCommits": [
+    "8617a0a350c19dc4353c5d4c50dc60c11a61f68e",
+    "75b0fb97a5b58a445555642323394adb585683f5",
+    "35b7a01396e550fa10a9b9a4f12e477544b4018e",
+    "7af05d79f7a74a7e3ace2aad9e5bafea2cc2ccba"
+  ],
+  "workflow": {
+    "name": "Packages `totalcross`",
+    "runId": 36183652625,
+    "url": "https://github.com/TotalCross/totalcross/actions/runs/36183652625",
+    "headCommit": "7af05d79f7a74a7e3ace2aad9e5bafea2cc2ccba",
+    "conclusion": "success",
+    "sdkArtifact": {
+      "id": 10885666470,
+      "name": "TotalCross-7.2.2",
+      "sizeBytes": 129127182,
+      "downloadedZipBytes": 129669457,
+      "downloadedZipSha256": "bb0f66a0a15fb6bf9eb5b8988140e712b39a17f00541102a2943074bd4bfe1b8"
+    }
+  },
+  "sdk": {
+    "sourceAttestation": "7af05d79f7a74a7e3ace2aad9e5bafea2cc2ccba",
+    "sdkJarSha256": "970855e8a27f9dfc9b34c0e7cec10548b8ab39e13ce96d54bb6bdd1e2a84c9c2",
+    "tcvmSha256": "88f7bcb4b4cd252c6a36de09b42317926a0af1524b2a2167af741ff76f5547d9"
+  },
+  "corpus": {
+    "sourcePath": "/Users/flsobral/Downloads/totalcross-image-benchmark-results-1790206393754100300/corpus",
+    "datasetFileCount": 663,
+    "contentFormatCounts": { "total": 663, "jpeg": 660, "png": 3 },
+    "datasetHash": "af39fea695191a27"
+  },
+  "package": {
+    "path": "/tmp/scroll-raster-reuse-windows/package-final/image-scroll-raster-reuse-windows-x64.zip",
+    "sizeBytes": 44555487,
+    "sha256": "97709db4cd69a326f5a3232a99981c73ad49ff53dda45b09a84421d643774235",
+    "applicationExeSha256": "c3590c52529d09d2ec82d81507f5255328530addcc1d6fcd86584944465bab31",
+    "applicationTczSha256": "991eda748d7aef8787c595e17faf3266cd0d9e97dfb7bb3ee701e2a1743dc3e8",
+    "runnerSha256": "ecad630e922c8b9100c6d364c42cf43cefac8f6850f175d18189548d670eda75",
+    "runnerCompanionSha256": "5fda1820c308ab0e614146c12b27f34d09b9e2e401d8e7864708fa40fff6c3f1",
+    "runnerAnalysisSha256": "369b40443707e2f688c50d0cbe99d820e181fd89086516f5ddff49fc4aebf169",
+    "preflightProcessCount": 2,
+    "measuredProcessCount": 6,
+    "measuredModeOrder": ["off", "off", "off", "on", "on", "on"],
+    "windowsExecuted": false
+  },
+  "validation": {
+    "runnerPackageContracts": "passed (4 groups)",
+    "framePacingContracts": "passed (13 checks)",
+    "imageScrollDistributedContracts": "passed",
+    "packageShellSyntax": "passed",
+    "gitDiffCheck": "passed",
+    "copyrightHeaders": "passed",
+    "sdkPackageWorkflow": "passed",
+    "packageZipIntegrity": "passed",
+    "packageManifestAndHashes": "passed",
+    "powershellRuntimeParse": "unavailable on this macOS host",
+    "localWindowsBuilds": 0,
+    "benchmarkProcessesExecuted": 0
+  }
+}
