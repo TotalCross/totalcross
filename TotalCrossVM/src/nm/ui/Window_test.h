@@ -223,7 +223,13 @@ TESTCASE(windowResolveStartupFullscreenPolicy)
 
 TESTCASE(tuW_pumpEvents) // totalcross/ui/Window native public static void pumpEvents();
 {
+#if TC_OS_DESKTOP && TC_WINDOWING_SDL
+   int32 i;
+   for (i = 0; i < 7; i++)
+      ASSERT2_EQUALS(I32, 1, eventLoopTestResult(i));
+#else
    TEST_SKIP;
+#endif
    finish: ;
 }
 TESTCASE(tuW_setSIP_icb) // totalcross/ui/Window native public void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);

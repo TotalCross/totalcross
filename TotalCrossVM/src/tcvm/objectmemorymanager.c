@@ -1143,6 +1143,7 @@ heaperror:
       if (currentContext != mainContext) // in opengl, an image can only be freed in the main context, otherwise the texture will not be released
       {                                                                                       
          callGConMainThread = true; // set to run the gc on main thread so that the images can be collected
+         wakeMainEventLoop();
          markAllImages(); // marking all images
       }
 #endif                                         

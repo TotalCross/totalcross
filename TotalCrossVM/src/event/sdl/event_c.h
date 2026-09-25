@@ -25,6 +25,19 @@ static int32 scaleFingerCount;
 static bool scaleGestureActive;
 static double lastScaleDistance;
 static int32 pendingScreenRotationOrientation;
+static Uint32 sdlMainLoopWakeEvent = (Uint32)-1;
+
+#if TC_OS_DESKTOP
+static bool privateHasMainLoopWakeEvent(void)
+{
+   return sdlMainLoopWakeEvent != (Uint32)-1;
+}
+#endif
+
+static bool privateIsWakeEventType(Uint32 eventType, Uint32 wakeEventType)
+{
+   return wakeEventType != (Uint32)-1 && eventType == wakeEventType;
+}
 
 static int32 screenOrientation(int32 width, int32 height)
 {
@@ -426,13 +439,11 @@ static void handleTextInputEvent(SDL_Event event)
    }
 }
 
-void privatePumpEvent(Context currentContext)
+static bool privateDispatchEvent(Context currentContext, SDL_Event event)
 {
-   SDL_Event event;
    UNUSED(currentContext)
-
-   if (!SDL_PollEvent(&event))
-      return;
+   if (privateIsWakeEventType(event.type, sdlMainLoopWakeEvent))
+      return true;
 
    switch (event.type)
    {
@@ -497,7 +508,33 @@ void privatePumpEvent(Context currentContext)
          keepRunning = false;
          break;
    }
+   return false;
 }
+
+void privatePumpEvent(Context currentContext)
+{
+   SDL_Event event;
+   if (SDL_PollEvent(&event))
+      privateDispatchEvent(currentContext, event);
+}
+
+#if TC_OS_DESKTOP
+static bool privateWaitEvent(SDL_Event *event, int32 timeoutMs)
+{
+   return timeoutMs < 0 ? SDL_WaitEvent(event) != 0
+      : SDL_WaitEventTimeout(event, timeoutMs) != 0;
+}
+
+static void privateWakeMainEventLoop(void)
+{
+   SDL_Event event;
+   if (!privateHasMainLoopWakeEvent())
+      return;
+   SDL_zero(event);
+   event.type = sdlMainLoopWakeEvent;
+   SDL_PushEvent(&event);
+}
+#endif
 
 bool privateInitEvent()
 {
@@ -506,6 +543,10 @@ bool privateInitEvent()
 
 void sdlEventWindowCreated(void)
 {
+#if TC_OS_DESKTOP
+   if (sdlMainLoopWakeEvent == (Uint32)-1)
+      sdlMainLoopWakeEvent = SDL_RegisterEvents(1);
+#endif
    SDL_StartTextInput();
 }
 

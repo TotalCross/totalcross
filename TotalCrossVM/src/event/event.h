@@ -16,6 +16,13 @@ extern "C" {
 void mainEventLoop(Context currentContext);
 void pumpEvents(Context currentContext);
 int32 isEventAvailable();
+void wakeMainEventLoop(void);
+bool eventLoopTimerDeadlineWasEarlier(bool absoluteMode, int64 previousDeadline,
+   int64 nextDeadline);
+
+#ifdef ENABLE_TEST_SUITE
+int32 eventLoopTestResult(int32 testCase);
+#endif
 
 int32 initEvent();
 void destroyEvent();

@@ -46,8 +46,11 @@ static int64 calculateAbsoluteTimerDeadlineNs(int64 nowNs,
 //////////////////////////////////////////////////////////////////////////
 void setTimerInterval(int32 t)
 {
+   int32 previousTimerTick = nextTimerTick;
+   int64 previousDeadlineNs = nextTimerDeadlineNs;
+   bool absoluteMode = isAbsoluteTimerDeadlineMode();
    nextTimerTick = getTimeStamp() + t;
-   if (isAbsoluteTimerDeadlineMode())
+   if (absoluteMode)
    {
       int64 pendingDeadlineNs = nextTimerDeadlineNs;
       int32 previousIntervalMs = absoluteTimerIntervalMs;
@@ -67,6 +70,10 @@ void setTimerInterval(int32 t)
          absoluteTimerIntervalMs = t;
       }
    }
+   if (t > 0 && eventLoopTimerDeadlineWasEarlier(absoluteMode,
+         absoluteMode ? previousDeadlineNs : previousTimerTick,
+         absoluteMode ? nextTimerDeadlineNs : nextTimerTick))
+      wakeMainEventLoop();
 }
 
 static int32 parseTimerDeadlineMode(const char *value)
