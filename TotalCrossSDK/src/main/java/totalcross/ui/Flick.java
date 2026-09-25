@@ -31,6 +31,43 @@ import totalcross.util.Vector;
  * This class is for internal use. You should use the ScrollContainer class instead.
  */
 public class Flick implements PenListener, TimerListener, UpdateListener {
+  static final String FRAME_DRIVER_TIMER = "timer";
+  static final String FRAME_DRIVER_UPDATE = "update";
+
+  interface FrameDriverHost {
+    void addTimer(Flick flick, int intervalMs);
+    void removeTimer(Flick flick);
+    void addUpdateListener(Flick flick);
+    void removeUpdateListener(Flick flick);
+  }
+
+  interface FrameObserver {
+    void frameAdvanced(long callbackStartNs, long callbackEndNs, long scrollWorkNs,
+        int flickPosition, boolean finished);
+  }
+
+  private static final FrameDriverHost DEFAULT_FRAME_DRIVER_HOST = new FrameDriverHost() {
+    @Override
+    public void addTimer(Flick flick, int intervalMs) {
+      ((Control) flick.target).addTimer(flick.timer, intervalMs);
+    }
+
+    @Override
+    public void removeTimer(Flick flick) {
+      ((Control) flick.target).removeTimer(flick.timer);
+    }
+
+    @Override
+    public void addUpdateListener(Flick flick) {
+      MainWindow.mainWindowInstance.addUpdateListener(flick);
+    }
+
+    @Override
+    public void removeUpdateListener(Flick flick) {
+      MainWindow.mainWindowInstance.removeUpdateListener(flick);
+    }
+  };
+
   public static final int BOTH_DIRECTIONS = 0;
   public static final int HORIZONTAL_DIRECTION_ONLY = 1;
   public static final int VERTICAL_DIRECTION_ONLY = 2;
@@ -112,6 +149,12 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
 
   // Timer that runs the flick animation.
   TimerEvent timer;
+  private String frameDriver = FRAME_DRIVER_TIMER;
+  private String registeredFrameDriver;
+  private boolean frameDriverRegistered;
+  private FrameDriverHost frameDriverHost = DEFAULT_FRAME_DRIVER_HOST;
+  private FrameObserver benchmarkFrameObserver;
+  private boolean benchmarkMotionActive;
 
   // Container owning this Flick object.
   private Scrollable target;
@@ -150,7 +193,74 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
   public Flick(Scrollable s) {
     target = s;
     addEvents((Control) s);
-    timer = new TimerEvent();
+  }
+
+  void configureFrameDriverForBenchmark(String driver, int timerFps) {
+    if (frameDriverRegistered || currentFlick == this) {
+      throw new IllegalStateException("cannot change the Flick driver while active");
+    }
+    if (FRAME_DRIVER_TIMER.equals(driver)) {
+      if (timerFps != 40 && timerFps != 60) {
+        throw new IllegalArgumentException("benchmark timer fps must be 40 or 60");
+      }
+      frameRate = timerFps;
+    } else if (FRAME_DRIVER_UPDATE.equals(driver)) {
+      if (timerFps != 0) {
+        throw new IllegalArgumentException("UpdateListener driver has no timer fps");
+      }
+    } else {
+      throw new IllegalArgumentException("benchmark driver must be timer or update");
+    }
+    frameDriver = driver;
+  }
+
+  void setFrameDriverHostForTest(FrameDriverHost host) {
+    if (frameDriverRegistered || currentFlick == this) {
+      throw new IllegalStateException("cannot replace the Flick driver host while active");
+    }
+    if (host == null) {
+      throw new NullPointerException("frame driver host");
+    }
+    frameDriverHost = host;
+  }
+
+  void startBenchmarkMotion(int durationMs, int totalDisplacement, int startOffsetMs,
+      FrameObserver observer) {
+    if (durationMs <= 0 || totalDisplacement == 0 || startOffsetMs < 0) {
+      throw new IllegalArgumentException("invalid benchmark Flick motion");
+    }
+    if (currentFlick != null || frameDriverRegistered) {
+      throw new IllegalStateException("another Flick is already active");
+    }
+    benchmarkFrameObserver = observer;
+    benchmarkMotionActive = true;
+    flickDirection = DragEvent.UP;
+    t0 = Vm.getTimeStamp() - startOffsetMs;
+    t1 = durationMs;
+    v0 = 2.0 * totalDisplacement / durationMs;
+    a = -2.0 * totalDisplacement / ((double) durationMs * durationMs);
+    flickPos = 0;
+    startAnimation(target);
+    if (currentFlick != this || !frameDriverRegistered) {
+      benchmarkMotionActive = false;
+      throw new IllegalStateException("benchmark Flick could not start scrolling");
+    }
+  }
+
+  double benchmarkInitialVelocityForTest() {
+    return v0;
+  }
+
+  double benchmarkAccelerationForTest() {
+    return a;
+  }
+
+  String frameDriverForTest() {
+    return frameDriver;
+  }
+
+  boolean frameDriverRegisteredForTest() {
+    return frameDriverRegistered;
   }
 
   /** Call this method to set the PagePosition control that will be updated with the current page
@@ -518,18 +628,50 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
       }
     }
 
-    // Start the animation
+    startAnimation(e.target);
+  }
+
+  private void startAnimation(Object eventTarget) {
     int scrollDirection = DragEvent.getInverseDirection(flickDirection);
     calledFlickStarted = false;
-    if (target.canScrollContent(scrollDirection, e.target)) {
+    if (target.canScrollContent(scrollDirection, eventTarget)) {
       calledFlickStarted = true;
       if (target.flickStarted()) {
         callListeners(true, false);
         currentFlick = this;
         flickPos = 0;
-        ((Control) target).addTimer(timer, 1000 / frameRate);
+        registerFrameDriver();
       }
     }
+  }
+
+  private void registerFrameDriver() {
+    if (frameDriverRegistered) {
+      throw new IllegalStateException("Flick frame driver is already registered");
+    }
+    if (FRAME_DRIVER_TIMER.equals(frameDriver)) {
+      if (timer == null) {
+        timer = new TimerEvent();
+      }
+      frameDriverHost.addTimer(this, 1000 / frameRate);
+    } else {
+      frameDriverHost.addUpdateListener(this);
+    }
+    registeredFrameDriver = frameDriver;
+    frameDriverRegistered = true;
+  }
+
+  private void unregisterFrameDriver() {
+    if (!frameDriverRegistered) {
+      return;
+    }
+    if (FRAME_DRIVER_TIMER.equals(registeredFrameDriver)) {
+      frameDriverHost.removeTimer(this);
+    } else {
+      frameDriverHost.removeUpdateListener(this);
+    }
+    registeredFrameDriver = null;
+    frameDriverRegistered = false;
   }
 
   /** Calls the listeners of this flick. */
@@ -557,10 +699,11 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
 
     if (calledFlickStarted) {
       calledFlickStarted = false;
-      ((Control) target).removeTimer(timer);
+      unregisterFrameDriver();
       callListeners(false, atPenDown);
       target.flickEnded(atPenDown);
     }
+    benchmarkMotionActive = false;
   }
 
   @Override
@@ -575,7 +718,9 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
    */
   @Override
   public void timerTriggered(TimerEvent e) {
-    if (e == timer && !totalcross.unit.UIRobot.abort) {
+    if (e == timer && frameDriverRegistered
+        && FRAME_DRIVER_TIMER.equals(registeredFrameDriver)
+        && !totalcross.unit.UIRobot.abort) {
       advanceFlickFrame();
       e.consumed = true;
     }
@@ -583,64 +728,81 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
 
   @Override
   public void updateListenerTriggered(int elapsedMilliseconds) {
-    if (!totalcross.unit.UIRobot.abort) {
+    if (frameDriverRegistered && FRAME_DRIVER_UPDATE.equals(registeredFrameDriver)
+        && !totalcross.unit.UIRobot.abort) {
       advanceFlickFrame();
     }
   }
 
   private void advanceFlickFrame() {
-    double t = Vm.getTimeStamp() - t0;
-
-    // No rounding is done, the maximum rounding error is 1 pixel.
-    int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
-    int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
-    // check if the amount will overflow the scrollDistance
-    if (scrollDistance != 0 && absNewFlickPos > scrollDistanceRemaining) {
-      newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
-    }
-    int flickMotion = newFlickPos - flickPos;
-    flickPos = newFlickPos;
-    boolean endReached = flickMotion == 0;
-
-    if (!endReached) {
-      switch (flickDirection) {
-      case DragEvent.UP:
-      case DragEvent.DOWN:
-        if (listeners != null) {
-          for (int i = listeners.size(); --i >= 0;) {
-            ((Scrollable) listeners.items[i]).scrollContent(0, -flickMotion, true);
-          }
-        }
-        if (!target.scrollContent(0, -flickMotion, true)) {
-          endReached = true;
-        }
-        break;
-
-      case DragEvent.LEFT:
-      case DragEvent.RIGHT:
-        if (listeners != null) {
-          for (int i = listeners.size(); --i >= 0;) {
-            ((Scrollable) listeners.items[i]).scrollContent(-flickMotion, 0, true);
-          }
-        }
-        if (!target.scrollContent(-flickMotion, 0, true)) {
-          endReached = true;
-        }
-        break;
+      FrameObserver observer = benchmarkFrameObserver;
+      long callbackStartNs = observer == null ? 0 : System.nanoTime();
+      double t = Vm.getTimeStamp() - t0;
+      boolean durationReached = benchmarkMotionActive && t >= t1;
+      if (durationReached) {
+        t = t1;
       }
-    }
-    if (endReached || currentFlick == null || t > t1) // Reached the end.
-    {
-      lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
-      stop(false);
-    }
-    if (pagepos != null) {
-      int p = target.getScrollPosition(flickDirection);
-      if (p < 0) {
-        p = -p;
+
+      // No rounding is done, the maximum rounding error is 1 pixel.
+      int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
+      int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
+      // check if the amount will overflow the scrollDistance
+      if (scrollDistance != 0 && absNewFlickPos > scrollDistanceRemaining) {
+        newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
       }
-      pagepos.setPosition((p / scrollDistance) + 1);
-    }
+      int flickMotion = newFlickPos - flickPos;
+      flickPos = newFlickPos;
+      boolean endReached = flickMotion == 0;
+      long scrollWorkStartNs = observer == null ? 0 : System.nanoTime();
+
+      if (!endReached) {
+        switch (flickDirection) {
+        case DragEvent.UP:
+        case DragEvent.DOWN:
+          if (listeners != null) {
+            for (int i = listeners.size(); --i >= 0;) {
+              ((Scrollable) listeners.items[i]).scrollContent(0, -flickMotion, true);
+            }
+          }
+          if (!target.scrollContent(0, -flickMotion, true)) {
+            endReached = true;
+          }
+          break;
+
+        case DragEvent.LEFT:
+        case DragEvent.RIGHT:
+          if (listeners != null) {
+            for (int i = listeners.size(); --i >= 0;) {
+              ((Scrollable) listeners.items[i]).scrollContent(-flickMotion, 0, true);
+            }
+          }
+          if (!target.scrollContent(-flickMotion, 0, true)) {
+            endReached = true;
+          }
+          break;
+        }
+      }
+      long scrollWorkNs = observer == null ? 0 : System.nanoTime() - scrollWorkStartNs;
+      if (durationReached) {
+        endReached = true;
+      }
+      if (endReached || currentFlick == null || t > t1) // Reached the end.
+      {
+        lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
+        stop(false);
+      }
+      if (pagepos != null) {
+        int p = target.getScrollPosition(flickDirection);
+        if (p < 0) {
+          p = -p;
+        }
+        pagepos.setPosition((p / scrollDistance) + 1);
+      }
+
+      if (observer != null) {
+        observer.frameAdvanced(callbackStartNs, System.nanoTime(), scrollWorkNs, flickPos,
+            currentFlick != this);
+      }
   }
 
 }
