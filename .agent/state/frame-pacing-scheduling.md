@@ -16,9 +16,11 @@ until Part 1 closes.
 
 ## Last logical commit
 
-`fab38b8e0` — signed Stage 1 implementation and test commit. Its commit-message
-and signature checks passed. Activation commit `de7ad8077` was signed; its body
-length issue is recorded in the evidence index and was not rewritten.
+`992ec1ccc` — signed macOS relative-output-path runner correction. Its
+signature passed; the post-commit message check found one body line longer than
+80 characters. Neither this commit nor activation commit `de7ad8077` was
+rewritten; both message limitations are recorded in the evidence index.
+`fab38b8e0` is the signed Stage 1 implementation and test commit.
 
 ## Active paths
 
@@ -63,23 +65,22 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-The initial Stage 1 correctness preflight exited with signal `-5` before app
-output; its log and execution directory are retained under
-`/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-1-l46l2s78`.
-The existing macOS runner uses a bundle-relative output path, while the new
-runner passed an absolute temporary path. The runner now uses a unique,
-bundle-relative output directory per invocation. Re-run its focused contract
-checks and the Stage 1 preflight/matrix; commit canonical CSV/JSON only after
-every process validates.
+The initial absolute and then hidden-directory bundle-relative Stage 1
+preflights exited with signal `-5` before app output. A direct run with a
+non-hidden bundle-relative output directory passed. The runner now creates a
+unique, visible bundle-relative directory per invocation. Re-run focused
+contract checks and the Stage 1 preflight/matrix; commit canonical CSV/JSON only
+after every process validates.
 
 ## Validation and deferrals
 
 - Activation header validation and staged diff checks passed. The signature is
   valid; the commit-message body-length check failed as recorded above.
-- Python frame-pacing contract tests pass (5 cases before output-path fix); shared image-scroll
-  distributed benchmark tests pass; focused headers and diff checks pass.
-  `SyntheticPacingTest` passed. The Stage 1 process matrix is pending. The shared
-  test log is `/tmp/frame-pacing-stage-1-distributed-tests.log`.
+- Python frame-pacing contract tests pass (6 cases after the output-path fix);
+  shared image-scroll distributed benchmark tests pass; focused headers and
+  diff checks pass. `SyntheticPacingTest`, SDK packaging, and macOS ARM64 CMake
+  configure/build passed. The Stage 1 process matrix is pending. The shared test
+  log is `/tmp/frame-pacing-stage-1-distributed-tests.log`.
 - SDK and macOS ARM64 builds are now in scope at this Stage 1 milestone
   closure. No Windows or other platform build is in scope.
 

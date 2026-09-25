@@ -118,7 +118,7 @@ def process_command(executable, bundle, output_dir, run, dataset_digest,
 
 def run_process(bundle, executable, manifest, dataset_digest, runtime_identity,
                 config, stage, sample, accounting, work_root, preflight=False):
-    output_dir = (bundle / f".frame-pacing-results-{work_root.name}" / "outputs"
+    output_dir = (bundle / f"frame-pacing-results-{work_root.name}" / "outputs"
                   / f"{sample:02d}-{config.name}")
     output_dir.mkdir(parents=True, exist_ok=True)
     log_dir = work_root / "logs"

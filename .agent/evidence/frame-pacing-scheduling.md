@@ -31,3 +31,13 @@ files; raw process output and temporary run directories stay outside Git.
   absolute output path although the established macOS runner uses a path
   relative to the bundle working directory. The runner now uses a unique,
   bundle-relative output directory; rerun pending.
+- 2026-09-25: Signed correction commit `992ec1ccc` adds the relative output
+  argument and contract test; all six frame-pacing contract tests and focused
+  header/diff checks pass. The signature is valid. The post-commit message
+  validator found one body line over 80 characters; history was not rewritten.
+- 2026-09-25: The bundle-relative retry also exited `-5` because its output
+  directory began with a dot. A direct invocation with `run=0` and a normal
+  bundle-relative output directory completed successfully and produced one
+  summary. The runner now uses a visible, invocation-unique directory; matrix
+  retry pending. The failed execution log and run directories remain under
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/` and the `/tmp` bundle.
