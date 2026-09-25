@@ -100,23 +100,23 @@ def validate_bundle(bundle):
     return bundle, manifest, executable, digest, runtime_identity
 
 
-def process_command(executable, bundle, output_dir, run, dataset_digest,
-                    config, accounting):
+def process_command(executable, bundle, output_dir, run, config, accounting):
     relative_output_dir = Path(output_dir).resolve().relative_to(
         Path(bundle).resolve()
     )
+    # The native VM copies app arguments into a 256-byte command-line buffer.
+    # Omit defaults and manifest-verified metadata so every Part 1 config fits.
     return [
         str(executable), "/scr", SCREEN_SPEC, "-p", ".", "--app-root=.",
-        "--mode=benchmark", "--corpus=corpus/imag",
+        "--corpus=corpus/imag",
         f"--output={relative_output_dir.as_posix()}",
         f"--image-optimization={EXPECTED_MASK}", "--prefetch=on",
-        f"--accounting={accounting}", "--passes=1", f"--run={run}",
-        f"--dataset-hash={dataset_digest}", "--prefetch-thread-mode=worker-semaphore",
-        "--prefetch-worker-sleep-ms=0", "--duration=3000", *config.app_arguments(),
+        f"--accounting={accounting}", f"--run={run}", "--duration=3000",
+        "--prefetch-thread-mode=worker-semaphore", *config.app_arguments(),
     ]
 
 
-def run_process(bundle, executable, manifest, dataset_digest, runtime_identity,
+def run_process(bundle, executable, manifest, runtime_identity,
                 config, stage, sample, accounting, work_root, preflight=False):
     invocation_id = work_root.name.rsplit("-", 1)[-1]
     output_dir = bundle / f"pacing-{invocation_id}" / f"{sample:02d}"
@@ -124,8 +124,7 @@ def run_process(bundle, executable, manifest, dataset_digest, runtime_identity,
     log_dir = work_root / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     log_path = log_dir / f"{sample:02d}-{config.name}.log"
-    command = process_command(executable, bundle, output_dir, sample, dataset_digest,
-                              config, accounting)
+    command = process_command(executable, bundle, output_dir, sample, config, accounting)
     started_ns = time.monotonic_ns()
     try:
         with log_path.open("w", encoding="utf-8") as log:
@@ -184,12 +183,12 @@ def run_stage(args):
             f"stage {args.stage} is not implemented in Part 1 (available: 1, 2, 3)")
     require(args.rounds == ROUNDS,
             f"frame-pacing measurements require exactly {ROUNDS} rounds")
-    bundle, manifest, executable, dataset_digest, runtime_identity = validate_bundle(args.bundle)
+    bundle, manifest, executable, _, runtime_identity = validate_bundle(args.bundle)
     configs = STAGES[args.stage]
     work_root = Path(tempfile.mkdtemp(prefix=f"frame-pacing-stage-{args.stage}-"))
     try:
         _, preflight = run_process(
-            bundle, executable, manifest, dataset_digest, runtime_identity,
+            bundle, executable, manifest, runtime_identity,
             configs[0], args.stage, 0, "on", work_root, preflight=True,
         )
         rows = []
@@ -197,7 +196,7 @@ def run_stage(args):
         for config in configs:
             for _ in range(args.rounds):
                 row, _ = run_process(
-                    bundle, executable, manifest, dataset_digest, runtime_identity,
+                    bundle, executable, manifest, runtime_identity,
                     config, args.stage, sample, "off", work_root,
                 )
                 rows.append(row)

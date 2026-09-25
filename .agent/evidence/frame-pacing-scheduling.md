@@ -49,3 +49,11 @@ files; raw process output and temporary run directories stay outside Git.
   though a direct run with the shorter relative path
   `frame-pacing-probe-run0/results` passed. The runner now uses a short relative
   path with a unique invocation token and sample number. Matrix retry pending.
+- 2026-09-25: With the short output path, the Stage 1 runner completed its
+  correctness preflight and three `synthetic-current-16ms` samples, then stopped
+  when the `synthetic-60hz` summary reported the 16 ms default. The native VM
+  stores app command-line arguments in a 256-byte buffer
+  (`TotalCrossVM/src/init/globals.c`). A compact direct command honored 60 Hz.
+  The runner now omits default options and the bundle-verified dataset hash, and
+  tests that each Part 1 command fits 255 characters. Canonical files were not
+  written; retry pending.

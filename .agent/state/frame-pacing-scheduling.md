@@ -65,13 +65,12 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-The initial absolute and then hidden-directory bundle-relative Stage 1
-preflights exited with signal `-5` before app output. A direct run with
-`run=0`, a visible bundle-relative output directory, and the full correctness
-validator passed (663 requests/READY, 189 frame rows). A longer, nested visible
-output path still exited `-5`; the runner now uses a short relative path with a
-unique invocation token and sample number. Run the Stage 1 preflight/matrix;
-commit canonical CSV/JSON only after every process validates.
+Two launcher failures were caused by unsupported output paths and were fixed.
+The next matrix reached its second pacing profile but the native 256-byte app
+command-line buffer truncated `--synthetic-pacing=synthetic-60hz`, so validation
+stopped before canonical evidence writing. The runner now omits default and
+manifest-verified options to fit all Part 1 configurations. Rerun focused
+contracts and the Stage 1 preflight/matrix.
 
 ## Validation and deferrals
 

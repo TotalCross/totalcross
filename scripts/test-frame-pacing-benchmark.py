@@ -141,13 +141,24 @@ def test_process_output_path_is_bundle_relative():
         bundle.mkdir()
         output_dir = bundle / "pacing-test" / "00"
         command = RUNNER.process_command(
-            bundle / "app", bundle, output_dir, 1, "dataset", RUNNER.STAGES[1][0], "off"
+            bundle / "app", bundle, output_dir, 1, RUNNER.STAGES[1][0], "off"
         )
         output_arguments = [argument for argument in command
                             if argument.startswith("--output=")]
         require(output_arguments == [
             "--output=pacing-test/00"
         ], "macOS launcher output path is not bundle-relative")
+        for configs in RUNNER.STAGES.values():
+            for config in configs:
+                command = RUNNER.process_command(
+                    bundle / "app", bundle,
+                    bundle / "pacing-abcdefgh" / "99", 99, config, "off",
+                )
+                app_arguments = command[5:]
+                require(len(" ".join(app_arguments)) <= 255,
+                        f"{config.name} exceeds the native app command-line limit")
+                require(app_arguments[-1] == config.app_arguments()[-1],
+                        f"{config.name} pacing option is not retained last")
 
 
 def test_failure_handling_does_not_launch_or_accept_failed_process():
@@ -162,7 +173,7 @@ def test_failure_handling_does_not_launch_or_accept_failed_process():
             return SimpleNamespace(returncode=7)
         with mock.patch.object(RUNNER.subprocess, "run", side_effect=failed_process):
             try:
-                RUNNER.run_process(bundle, bundle / "app", {}, "hash", "runtime",
+                RUNNER.run_process(bundle, bundle / "app", {}, "runtime",
                                    config, 1, 1, "off", work)
             except RUNNER.BenchmarkFailure as error:
                 require("exited 7" in str(error), "exit status was lost")
@@ -174,7 +185,7 @@ def test_failure_handling_does_not_launch_or_accept_failed_process():
         with mock.patch.object(RUNNER.subprocess, "run",
                                side_effect=RUNNER.subprocess.TimeoutExpired("app", 180)):
             try:
-                RUNNER.run_process(bundle, bundle / "app", {}, "hash", "runtime",
+                RUNNER.run_process(bundle, bundle / "app", {}, "runtime",
                                    config, 1, 1, "off", work)
             except RUNNER.BenchmarkFailure as error:
                 require("timed out" in str(error), "timeout failure was lost")
