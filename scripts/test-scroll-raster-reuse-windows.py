@@ -90,7 +90,10 @@ def test_windows_contracts():
             "expectedFinalDisplacement" in HELPER and "actualFinalDisplacement" in HELPER,
             "runner must match final scroll displacement against preflight waypoints")
     require("function Write-PassSummaryCsv" in RUNNER and "passSummaries=$passSummaries.ToArray()" in HELPER and
-            "'screenUpdateP95Ns'" in ANALYSIS and "foreach ($passName in @('cold','warm'))" in HELPER,
+            "'screenUpdateP95Ns'" in ANALYSIS and "foreach ($passName in @('cold','warm'))" in HELPER and
+            all(field in ANALYSIS for field in (
+                "framesOver16_67Count", "framesOver20Count", "framesOver22_22Count",
+                "framesOver25Count", "framesOver33_3Count", "framesOver50Count")),
             "runner must preserve separate cold/warm distributions and screen-update comparisons")
     require("TC_SCROLL_RASTER_REUSE_SDL_PIXEL_FORMAT=%s" in SDL,
             "native runtime must record its selected SDL pixel format")

@@ -8,8 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-M1 implementation is complete. M2: create signed logical commits, push the
-requested branch, dispatch the exact SHA, then package from its action-built SDK.
+M1 implementation is complete. M2: finalize all requested per-process frame
+threshold metrics, commit the runner correction, then rebuild/package from the
+exact final source SHA. The Windows benchmark itself remains unexecuted.
 
 ## Last logical commit
 
@@ -41,15 +42,19 @@ do not stage or alter those paths.
 
 ## Next concrete action
 
-Review and commit the package, runner, tests, and README as a signed logical
-slice, then push only the requested branch and start its SDK package workflow.
+Commit the added 16.67/20/25 ms process thresholds, then push the exact source
+SHA and dispatch `package.yml`; package from that run's full SDK artifact.
 
 ## Validation and deferrals
 
 - Current implementation includes the dedicated 663-image app profile, gated
   SDL format reporting, dedicated package mode, two correctness preflights,
   six-process runner, periodic process progress, and cold/warm summaries.
-- Passed after the final edits: four new runner/package contract groups,
+- The previous exact-source workflow run `36182451240` for `35b7a0139` succeeded;
+  its full SDK artifact ID is `10884319717`, SDK ZIP SHA-256 is
+  `3500878397f787d6cf5dd62c2c98ba44fa6dfab6f5878c867733de6257d69d98`. A final
+  workflow run is required after adding all requested process thresholds.
+- Passed after the threshold correction: four new runner/package contract groups,
   existing frame-pacing contracts (13 checks), existing image-scroll
   distributed-benchmark suite, `bash -n scripts/package-image-scroll-benchmark.sh`,
   `git diff --check`, and focused copyright-header validation.

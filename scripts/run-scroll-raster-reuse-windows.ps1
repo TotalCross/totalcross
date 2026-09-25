@@ -208,6 +208,12 @@ function Write-ProcessSummaryCsv {
     $fields = @(
         'mode','sample','exitCode','processWallNs','imageCount','prefetchRequestCount','prefetchReadyCount',
         'prefetchFailedCount','prefetchNotPrefetchableCount','frameCount','measuredFrameCount',
+        'frameIntervalP50Ns','frameIntervalP95Ns','frameIntervalP99Ns','frameIntervalMaxNs',
+        'activeWorkP50Ns','activeWorkP95Ns','activeWorkP99Ns','activeWorkMaxNs',
+        'paintP50Ns','paintP95Ns','paintP99Ns','paintMaxNs',
+        'screenUpdateP50Ns','screenUpdateP95Ns','screenUpdateP99Ns','screenUpdateMaxNs',
+        'framesOver16_67Count','framesOver20Count','framesOver22_22Count',
+        'framesOver25Count','framesOver33_3Count','framesOver50Count',
         'attempts','hits','fallbacks','hitRate','reusedPixels','dirtyPixels','movedBytes','postMoveRecoveries',
         'scrollJpegDecodes','scrollTargetedJpegDecodes','scrollFullJpegDecodes','scrollImageMaterializations',
         'scrollNativeGeometryMaterializations','expectedFinalDisplacement','actualFinalDisplacement',
@@ -225,7 +231,8 @@ function Write-PassSummaryCsv {
         'activeWorkP50Ns','activeWorkP95Ns','activeWorkP99Ns','activeWorkMaxNs',
         'paintP50Ns','paintP95Ns','paintP99Ns','paintMaxNs',
         'screenUpdateP50Ns','screenUpdateP95Ns','screenUpdateP99Ns','screenUpdateMaxNs',
-        'framesOver22_22Count','framesOver33_3Count','framesOver50Count'
+        'framesOver16_67Count','framesOver20Count','framesOver22_22Count',
+        'framesOver25Count','framesOver33_3Count','framesOver50Count'
     )
     $rows = New-Object 'System.Collections.Generic.List[object]'
     foreach ($summary in $script:processSummaries) {

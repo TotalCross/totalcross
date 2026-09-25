@@ -156,15 +156,6 @@ function Get-RecordLong {
     return [long]::Parse([string]$Record[$Name], [System.Globalization.CultureInfo]::InvariantCulture)
 }
 
-function Get-ThresholdCounts {
-    param([long[]]$Values)
-    return [PSCustomObject]@{
-        framesOver22_22Count=@($Values | Where-Object { $_ -gt 22220000 }).Count
-        framesOver33_3Count=@($Values | Where-Object { $_ -gt 33300000 }).Count
-        framesOver50Count=@($Values | Where-Object { $_ -gt 50000000 }).Count
-    }
-}
-
 function Get-ProcessSummary {
     param([string]$Mode, [int]$Sample, [string]$OutputDirectory,
         [hashtable]$Completion, [hashtable[]]$PassRecords,
@@ -205,60 +196,39 @@ function Get-ProcessSummary {
     foreach ($passName in @('cold','warm')) {
         $passRows = @($frameRows | Where-Object { $_.pass -eq $passName })
         if ($passRows.Count -lt 2) { throw "Not enough $passName frame rows under $OutputDirectory" }
-        $passIntervals = New-Object 'System.Collections.Generic.List[long]'
-        $passWork = New-Object 'System.Collections.Generic.List[long]'
-        $passPaint = New-Object 'System.Collections.Generic.List[long]'
-        $passScreen = New-Object 'System.Collections.Generic.List[long]'
-        $previousElapsed = $null
-        foreach ($row in $passRows) {
-            $elapsed = Get-Long $row 'elapsed_ns'
-            if ($null -ne $previousElapsed) {
-                $interval = $elapsed - [long]$previousElapsed
-                if ($interval -lt 0) { throw "Negative $passName frame interval under $OutputDirectory" }
-                $passIntervals.Add($interval)
-            }
-            $previousElapsed = $elapsed
-            if ((Get-Long $row 'measured') -ne 0) {
-                $passWork.Add((Get-Long $row 'work_time_ns'))
-                $passPaint.Add((Get-Long $row 'paint_work_ns'))
-                $passScreen.Add((Get-Long $row 'screen_update_ns'))
-            }
-        }
-        $passFrameDistribution = Get-DistributionFields ([long[]]$passIntervals.ToArray()) 'frameInterval'
-        $passWorkDistribution = Get-DistributionFields ([long[]]$passWork.ToArray()) 'activeWork'
-        $passPaintDistribution = Get-DistributionFields ([long[]]$passPaint.ToArray()) 'paint'
-        $passScreenDistribution = Get-DistributionFields ([long[]]$passScreen.ToArray()) 'screenUpdate'
-        $passThresholds = Get-ThresholdCounts ([long[]]$passIntervals.ToArray())
-        $passSummaries.Add([PSCustomObject]@{
-            mode=$Mode; sample=$Sample; pass=$passName
-            frameCount=$passRows.Count; measuredFrameCount=$passWork.Count
-            frameIntervalP50Ns=$passFrameDistribution.frameIntervalP50Ns
-            frameIntervalP95Ns=$passFrameDistribution.frameIntervalP95Ns
-            frameIntervalP99Ns=$passFrameDistribution.frameIntervalP99Ns
-            frameIntervalMaxNs=$passFrameDistribution.frameIntervalMaxNs
-            activeWorkP50Ns=$passWorkDistribution.activeWorkP50Ns
-            activeWorkP95Ns=$passWorkDistribution.activeWorkP95Ns
-            activeWorkP99Ns=$passWorkDistribution.activeWorkP99Ns
-            activeWorkMaxNs=$passWorkDistribution.activeWorkMaxNs
-            paintP50Ns=$passPaintDistribution.paintP50Ns
-            paintP95Ns=$passPaintDistribution.paintP95Ns
-            paintP99Ns=$passPaintDistribution.paintP99Ns
-            paintMaxNs=$passPaintDistribution.paintMaxNs
-            screenUpdateP50Ns=$passScreenDistribution.screenUpdateP50Ns
-            screenUpdateP95Ns=$passScreenDistribution.screenUpdateP95Ns
-            screenUpdateP99Ns=$passScreenDistribution.screenUpdateP99Ns
-            screenUpdateMaxNs=$passScreenDistribution.screenUpdateMaxNs
-            framesOver22_22Count=$passThresholds.framesOver22_22Count
-            framesOver33_3Count=$passThresholds.framesOver33_3Count
-            framesOver50Count=$passThresholds.framesOver50Count
-        })
+        $metrics = Get-FrameMetrics $passRows
+        $metrics | Add-Member -NotePropertyName mode -NotePropertyValue $Mode
+        $metrics | Add-Member -NotePropertyName sample -NotePropertyValue $Sample
+        $metrics | Add-Member -NotePropertyName pass -NotePropertyValue $passName
+        $passSummaries.Add($metrics)
     }
+    $processMetrics = Get-FrameMetrics $frameRows
     return [PSCustomObject]@{
         mode=$Mode; sample=$Sample; exitCode=$ExitCode; status='PASS'
         imageCount=[int]$Completion['image_count']; prefetchRequestCount=[int]$Completion['prefetch_request_count']
         prefetchReadyCount=[int]$Completion['prefetch_ready_count']; prefetchFailedCount=[int]$Completion['prefetch_failed_count']
         prefetchNotPrefetchableCount=[int]$Completion['prefetch_not_prefetchable_count']
-        frameCount=$frameRows.Count; measuredFrameCount=[long]$reuse['frame_count']
+        frameCount=$processMetrics.frameCount; measuredFrameCount=$processMetrics.measuredFrameCount
+        frameIntervalP50Ns=$processMetrics.frameIntervalP50Ns
+        frameIntervalP95Ns=$processMetrics.frameIntervalP95Ns
+        frameIntervalP99Ns=$processMetrics.frameIntervalP99Ns
+        frameIntervalMaxNs=$processMetrics.frameIntervalMaxNs
+        activeWorkP50Ns=$processMetrics.activeWorkP50Ns
+        activeWorkP95Ns=$processMetrics.activeWorkP95Ns
+        activeWorkP99Ns=$processMetrics.activeWorkP99Ns
+        activeWorkMaxNs=$processMetrics.activeWorkMaxNs
+        paintP50Ns=$processMetrics.paintP50Ns; paintP95Ns=$processMetrics.paintP95Ns
+        paintP99Ns=$processMetrics.paintP99Ns; paintMaxNs=$processMetrics.paintMaxNs
+        screenUpdateP50Ns=$processMetrics.screenUpdateP50Ns
+        screenUpdateP95Ns=$processMetrics.screenUpdateP95Ns
+        screenUpdateP99Ns=$processMetrics.screenUpdateP99Ns
+        screenUpdateMaxNs=$processMetrics.screenUpdateMaxNs
+        framesOver16_67Count=$processMetrics.framesOver16_67Count
+        framesOver20Count=$processMetrics.framesOver20Count
+        framesOver22_22Count=$processMetrics.framesOver22_22Count
+        framesOver25Count=$processMetrics.framesOver25Count
+        framesOver33_3Count=$processMetrics.framesOver33_3Count
+        framesOver50Count=$processMetrics.framesOver50Count
         attempts=$attempts; hits=[long]$reuse['hits']; fallbacks=[long]$reuse['fallbacks']
         hitRate=$hitRate
         reusedPixels=[long]$reuse['reused_pixels']; dirtyPixels=[long]$reuse['dirty_pixels']

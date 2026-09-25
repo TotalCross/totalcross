@@ -21,6 +21,69 @@ function Get-DistributionFields {
     return $distribution
 }
 
+function Get-ThresholdCounts {
+    param([long[]]$Values)
+    return [PSCustomObject]@{
+        framesOver16_67Count=@($Values | Where-Object { $_ -gt 16670000 }).Count
+        framesOver20Count=@($Values | Where-Object { $_ -gt 20000000 }).Count
+        framesOver22_22Count=@($Values | Where-Object { $_ -gt 22220000 }).Count
+        framesOver25Count=@($Values | Where-Object { $_ -gt 25000000 }).Count
+        framesOver33_3Count=@($Values | Where-Object { $_ -gt 33300000 }).Count
+        framesOver50Count=@($Values | Where-Object { $_ -gt 50000000 }).Count
+    }
+}
+
+function Get-FrameMetrics {
+    param([object[]]$Rows)
+    $intervals = New-Object 'System.Collections.Generic.List[long]'
+    $work = New-Object 'System.Collections.Generic.List[long]'
+    $paint = New-Object 'System.Collections.Generic.List[long]'
+    $screen = New-Object 'System.Collections.Generic.List[long]'
+    $previousByPass = @{}
+    foreach ($row in $Rows) {
+        $elapsed = [long]::Parse([string]$row.elapsed_ns, [System.Globalization.CultureInfo]::InvariantCulture)
+        if ($previousByPass.ContainsKey($row.pass)) {
+            $interval = $elapsed - [long]$previousByPass[$row.pass]
+            if ($interval -lt 0) { throw "Negative $($row.pass) frame interval" }
+            $intervals.Add($interval)
+        }
+        $previousByPass[$row.pass] = $elapsed
+        if ([long]::Parse([string]$row.measured, [System.Globalization.CultureInfo]::InvariantCulture) -ne 0) {
+            $work.Add([long]::Parse([string]$row.work_time_ns, [System.Globalization.CultureInfo]::InvariantCulture))
+            $paint.Add([long]::Parse([string]$row.paint_work_ns, [System.Globalization.CultureInfo]::InvariantCulture))
+            $screen.Add([long]::Parse([string]$row.screen_update_ns, [System.Globalization.CultureInfo]::InvariantCulture))
+        }
+    }
+    $frameDistribution = Get-DistributionFields ([long[]]$intervals.ToArray()) 'frameInterval'
+    $workDistribution = Get-DistributionFields ([long[]]$work.ToArray()) 'activeWork'
+    $paintDistribution = Get-DistributionFields ([long[]]$paint.ToArray()) 'paint'
+    $screenDistribution = Get-DistributionFields ([long[]]$screen.ToArray()) 'screenUpdate'
+    $thresholds = Get-ThresholdCounts ([long[]]$intervals.ToArray())
+    return [PSCustomObject]@{
+        frameCount=$Rows.Count; measuredFrameCount=$work.Count
+        frameIntervalP50Ns=$frameDistribution.frameIntervalP50Ns
+        frameIntervalP95Ns=$frameDistribution.frameIntervalP95Ns
+        frameIntervalP99Ns=$frameDistribution.frameIntervalP99Ns
+        frameIntervalMaxNs=$frameDistribution.frameIntervalMaxNs
+        activeWorkP50Ns=$workDistribution.activeWorkP50Ns
+        activeWorkP95Ns=$workDistribution.activeWorkP95Ns
+        activeWorkP99Ns=$workDistribution.activeWorkP99Ns
+        activeWorkMaxNs=$workDistribution.activeWorkMaxNs
+        paintP50Ns=$paintDistribution.paintP50Ns; paintP95Ns=$paintDistribution.paintP95Ns
+        paintP99Ns=$paintDistribution.paintP99Ns; paintMaxNs=$paintDistribution.paintMaxNs
+        screenUpdateP50Ns=$screenDistribution.screenUpdateP50Ns
+        screenUpdateP95Ns=$screenDistribution.screenUpdateP95Ns
+        screenUpdateP99Ns=$screenDistribution.screenUpdateP99Ns
+        screenUpdateMaxNs=$screenDistribution.screenUpdateMaxNs
+        framesOver16_67Count=$thresholds.framesOver16_67Count
+        framesOver20Count=$thresholds.framesOver20Count
+        framesOver22_22Count=$thresholds.framesOver22_22Count
+        framesOver25Count=$thresholds.framesOver25Count
+        framesOver33_3Count=$thresholds.framesOver33_3Count
+        framesOver50Count=$thresholds.framesOver50Count
+    }
+}
+
 function Write-AggregateComparison {
     param([PSCustomObject[]]$Summaries, [string]$Path)
     $fields = @(

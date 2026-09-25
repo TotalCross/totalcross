@@ -122,6 +122,9 @@ Package acceptance: manifest says six measured processes; the runner matrix is
 OFF 1-3 then ON 1-3; two preflights validate 663/660/3, prefetch, no
 scroll-time decode/materialization/geometry work, final displacement, and
 matching hashes; measured config differs only in reuse; output ZIP is compact;
+each process records frame interval, active work, paint, screen-update and
+counts above 16.67, 20, 22.22, 25, 33.3 and 50 ms, with separate cold/warm
+summaries; aggregate deltas include the specified 22.22, 33.3 and 50 ms counts;
 runtime SHA matches the SDK artifact; provenance names the exact source SHA,
 successful workflow and full SDK artifact; `windowsExecuted` is false.
 
