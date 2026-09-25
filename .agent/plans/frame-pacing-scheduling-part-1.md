@@ -371,8 +371,9 @@ history in multiple files.
   measured processes passed; canonical results are in the signed checkpoint.
 - [x] (2026-09-25) Stage 2 Flick drivers, tests, preflight, and nine measured
   processes passed; canonical results are in the signed checkpoint.
-- [ ] Stage 3 clock implementation, tests, macOS benchmark, committed results.
-- [ ] Handoff state to Part 2.
+- [x] (2026-09-25) Stage 3 clock implementation, tests, preflight, and twelve
+  measured processes passed; canonical results are in the signed checkpoint.
+- [x] (2026-09-25) Part 1 state is complete; Part 2 is the next sequenced plan.
 
 ## Decision Log
 

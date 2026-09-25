@@ -94,3 +94,25 @@ files; raw process output and temporary run directories stay outside Git.
   temporary SDK copy with the verified Stage 1 runtime. Runner logs are under
   `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-2-m1heay10`;
   the temporary bundle is under `/tmp/frame-pacing-stage-2.HOkeMU`.
+- 2026-09-25: The first Stage 3 run validated all twelve measured processes
+  and the preflight, then refused to publish because compact JSON still
+  exceeded 20 KiB. No canonical Stage 3 files were written. The attempt is
+  preserved under
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-3-75ed7xcf`.
+  The JSON writer now omits null-only row fields and tests both caps.
+- 2026-09-25: Stage 3 passed after that writer correction. The preflight
+  recorded 663 requests and READY images, zero failed/non-prefetchable images,
+  148 frame rows, and zero scroll JPEG decodes or image/native-geometry
+  materializations. Twelve fresh measured processes passed across
+  `timer-60-millis`, `timer-60-nano`, `update-millis`, and `update-nano`; all
+  twelve finished at the checked -22,440 px Flick displacement. Frame counts
+  were 144-150, 137-151, 139, and 136-142 respectively. Clock labels appear in
+  every result row. Canonical evidence is
+  `.agent/evidence/frame-pacing-stage-3-macos.csv` (6,813 bytes) and
+  `.agent/evidence/frame-pacing-stage-3-macos.json` (17,699 bytes), both below
+  20 KiB. The bundle manifest points to app source commit `fb9dda02b` and
+  runtime SHA-256
+  `ac48fc121de338951824d645f5c7d5e37090e33d6cc6a085bf9d4553906895e0`.
+  Runner logs are under
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-3-_2dw0y1j`;
+  the temporary bundle is under `/tmp/frame-pacing-stage-3.uEenM3`.

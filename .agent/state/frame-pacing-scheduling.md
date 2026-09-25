@@ -8,16 +8,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-Stages 1 and 2 are complete on branch `feat/frame-pacing-scheduling-diagnostics`,
-based on immutable commit `d7a9ec93faf9f2da0724611de115649176d0b033`. Stage 3
-clock comparison is active. The user requested
-`.agent/plans/frame-pacing-scheduling-part-1.md`; Part 2 remains out of scope
-until Part 1 closes.
+Part 1 (Stages 1-3) is complete on branch
+`feat/frame-pacing-scheduling-diagnostics`, based on immutable commit
+`d7a9ec93faf9f2da0724611de115649176d0b033`. The requested Part 1 work is
+finished; Part 2 is the sequenced follow-on plan.
 
 ## Last logical commit
 
-`b7b7e13fb` — compact frame-pacing evidence and enforce the 20 KiB cap;
-signature and focused validations passed. Stage 2 code commits are
+`de3a6af1a` — omit null row fields from compact evidence JSON and test the
+Stage 3 size limit. Stage 3 clock code is `fb9dda02b`; Stage 2 code commits are
 `6ead9cd9d` (shared Flick advancement), `90bdb5f41` (TimerEvent/UpdateListener
 drivers and tests), and `697d460ec` (benchmark harness and packaging). Stage 1
 implementation is `fab38b8e0`. Earlier signed commits `992ec1ccc` and
@@ -46,6 +45,8 @@ and both are recorded in the evidence index.
 - `.agent/evidence/frame-pacing-stage-1-macos.json`
 - `.agent/evidence/frame-pacing-stage-2-macos.csv`
 - `.agent/evidence/frame-pacing-stage-2-macos.json`
+- `.agent/evidence/frame-pacing-stage-3-macos.csv`
+- `.agent/evidence/frame-pacing-stage-3-macos.json`
 
 ## Preservation inventory
 
@@ -74,31 +75,34 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-Implement the Stage 3 benchmark-only animation clock selector. Keep gesture
-sampling on the millisecond clock, test exact integer-millisecond equivalence
-and sub-millisecond nano progress, then package and run the Stage 3 matrix.
+Part 1 has no remaining work. The next sequenced slice is in
+`.agent/plans/frame-pacing-scheduling-part-2.md`.
 
 ## Validation and deferrals
 
 - Activation header validation and staged diff checks passed. The signature is
   valid; the commit-message body-length check failed as recorded above.
-- Stage 1 passed with six measured processes and a successful preflight. Stage
-  2 passed with nine measured processes and a successful preflight; all nine
-  completed at -22,440 px. The latest frame-pacing contract suite passes eight
-  cases, `FlickDriverTest` and `SyntheticPacingTest` pass, and shared image-scroll
-  distributed benchmark tests pass.
-- `./gradlew-agent dist -x test`, `(cd scripts && ./package-sdk.sh)`, and the
-  macOS ARM64 benchmark package step passed. The Stage 2 bundle reused runtime
-  SHA-256 `ac48fc121de338951824d645f5c7d5e37090e33d6cc6a085bf9d4553906895e0`;
-  the unrelated preexisting package-directory dylib was left untouched.
-- Stage 2 canonical files are below the 20 KiB limit. The compact JSON writer
-  checks both file sizes before replacing existing evidence. No Windows or
-  other platform build is in scope.
+- Stage 1 passed with six measured processes; Stage 2 passed with nine, all at
+  -22,440 px; Stage 3 passed with twelve, all at -22,440 px. Every stage passed
+  its preflight. Stage 3 rows explicitly identify `millis` or `nano`. Canonical
+  CSV/JSON files for all stages are below 20 KiB.
+- The first Stage 3 matrix validated all processes but the writer rejected the
+  JSON size. The append-only evidence index records that attempt. The writer now
+  omits null-only row fields and enforces both file-size caps before replacing
+  evidence; the nine-case contract suite passes.
+- `FlickDriverTest` and `SyntheticPacingTest` pass. SDK package builds and
+  macOS ARM64 benchmark packaging passed for Stages 2 and 3. The Stage 3 bundle
+  reused runtime SHA-256
+  `ac48fc121de338951824d645f5c7d5e37090e33d6cc6a085bf9d4553906895e0`.
+  No native VM files changed from the pinned base. Windows, Linux, Android,
+  iOS, and Part 2 validations were out of scope.
 
 ## Active decisions and blockers
 
 - Preserve production defaults: TimerEvent at 40 fps and legacy millisecond
   animation time.
+- Nano clock selection is benchmark-only; gesture sampling and the native
+  timer scheduler retain their existing millisecond behavior.
 - Branch base and current starting commit matched the plan's immutable SHA.
 - `TC_IMAGE_CORPUS` is unset. Use the explicitly recorded
   `/Users/flsobral/Downloads/win32/win32` root from
@@ -107,6 +111,5 @@ and sub-millisecond nano progress, then package and run the Stage 3 matrix.
 
 ## Resume command
 
-Read this file first, then the active Stage heading in
-`.agent/plans/frame-pacing-scheduling-part-1.md`; search the evidence index only
-for that stage.
+Read this file first, then `.agent/plans/frame-pacing-scheduling-part-2.md` for
+the next sequenced plan.
