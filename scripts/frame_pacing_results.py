@@ -217,7 +217,10 @@ def write_evidence(csv_path, json_path, stage, rounds, manifest, runtime_identit
         "rounds": rounds,
         "processCount": expected_rows,
         "preflight": preflight,
-        "rows": rows,
+        "rows": [
+            {field: value for field, value in row.items() if value is not None}
+            for row in rows
+        ],
     }
     temp_paths = []
     try:

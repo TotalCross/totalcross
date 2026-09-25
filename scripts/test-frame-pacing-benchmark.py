@@ -320,6 +320,55 @@ def test_stage_two_evidence_fits_canonical_size_limit():
             raise AssertionError("oversize evidence was accepted")
 
 
+def test_stage_three_evidence_fits_canonical_size_limit():
+    configs = RUNNER.STAGES[3]
+    manifest = {"sourceCommit": "test-source"}
+    rows = []
+    for config in configs:
+        summary = stage_one_summary(config)
+        summary.pop("syntheticPacingProfile")
+        summary.pop("syntheticPacingIntervalNs")
+        for field in CONTRACT.PACING_SUMMARY_FIELDS:
+            summary.pop(field)
+        summary.update({
+            "driver": config.driver,
+            "timerFps": config.timer_fps if config.timer_fps is not None else 0,
+            "clock": config.clock,
+            "timerDeadlinePolicy": config.timer_deadline_policy,
+            "eventLoopPolicy": config.event_loop_policy,
+            "yieldPolicy": config.yield_policy,
+            "expectedCallbackIntervalNs": config.expected_callback_interval_ns,
+            "callbackCount": 181,
+        })
+        for field in (
+            "callbackDeltaP50Ns", "callbackDeltaP95Ns", "callbackDeltaP99Ns",
+            "callbackDeltaMaxNs", "callbackAbsoluteLatenessP50Ns",
+            "callbackAbsoluteLatenessP95Ns", "callbackAbsoluteLatenessP99Ns",
+            "callbackAbsoluteLatenessMaxNs", "callbackDeltaErrorP50Ns",
+            "callbackDeltaErrorP95Ns", "callbackDeltaErrorP99Ns",
+            "callbackDeltaErrorMaxNs",
+        ):
+            summary[field] = 1_000_000
+        for sample in range(1, 4):
+            rows.append(RUNNER.make_row(
+                3, config, sample, manifest, "runtime", summary, 1
+            ))
+    with tempfile.TemporaryDirectory(prefix="frame-pacing-stage-three-size-") as temp:
+        root = Path(temp)
+        csv_path = root / "stage.csv"
+        json_path = root / "stage.json"
+        RUNNER.write_evidence(csv_path, json_path, 3, 3, manifest,
+                              "runtime", {"status": "PASS"}, rows)
+        require(csv_path.stat().st_size < 20 * 1024
+                and json_path.stat().st_size < 20 * 1024,
+                "stage 3 canonical evidence exceeds 20 KiB")
+        payload = json.loads(json_path.read_text(encoding="utf-8"))
+        require(len(payload["rows"]) == 12,
+                "stage 3 JSON evidence row count differs")
+        require(all("syntheticPacingProfile" not in row for row in payload["rows"]),
+                "null-only fields were retained in compact JSON rows")
+
+
 def main():
     require(RUNNER_PATH.stat().st_size < 20 * 1024,
             "frame-pacing runner exceeds the plan's 20 KiB limit")
@@ -332,6 +381,7 @@ def main():
         test_failure_handling_does_not_launch_or_accept_failed_process,
         test_evidence_row_count_and_safe_failure,
         test_stage_two_evidence_fits_canonical_size_limit,
+        test_stage_three_evidence_fits_canonical_size_limit,
     )
     for test in tests:
         test()
