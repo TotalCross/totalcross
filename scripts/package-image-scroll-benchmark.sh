@@ -7,7 +7,7 @@
 set -euo pipefail
 
 usage() {
-   echo "Usage: $0 --sdk-zip <TotalCross-version.zip> --corpus <variant-root> --output <dir> [--target <target>|--all] [--include-decode] [--source-commit <sha>] [--sdk-source-commit <sha>]" >&2
+   echo "Usage: $0 --sdk-zip <TotalCross-version.zip> --corpus <variant-root> --output <dir> [--target <target>|--all] [--include-decode] [--windows-scroll-raster-reuse] [--source-commit <sha>] [--sdk-source-commit <sha>]" >&2
    echo "Targets: windows-x64 macos-arm64 linux-x64 linux-arm64 linux-armv7" >&2
 }
 
@@ -25,6 +25,7 @@ corpus_dir="${TC_IMAGE_CORPUS:-}"
 output_dir=""
 targets=()
 include_decode=false
+windows_scroll_raster_reuse=false
 source_commit="${SOURCE_COMMIT:-${GITHUB_SHA:-}}"
 sdk_source_commit="${SDK_SOURCE_COMMIT:-}"
 
@@ -58,6 +59,10 @@ while [ "$#" -gt 0 ]; do
          include_decode=true
          shift
          ;;
+      --windows-scroll-raster-reuse)
+         windows_scroll_raster_reuse=true
+         shift
+         ;;
       --source-commit)
          [ "$#" -ge 2 ] || { usage; exit 2; }
          source_commit=$2
@@ -85,6 +90,16 @@ done
 [ -d "$corpus_dir" ] || { echo "Corpus directory not found: $corpus_dir" >&2; exit 2; }
 [ -n "$output_dir" ] || { usage; echo "Missing --output" >&2; exit 2; }
 [ "${#targets[@]}" -gt 0 ] || targets=(windows-x64 macos-arm64 linux-x64 linux-arm64 linux-armv7)
+if [ "$windows_scroll_raster_reuse" = true ]; then
+   [ "${#targets[@]}" -eq 1 ] && [ "${targets[0]}" = windows-x64 ] || {
+      echo "The scroll-raster-reuse package requires exactly --target windows-x64" >&2
+      exit 2
+   }
+   [ "$include_decode" = false ] || {
+      echo "The scroll-raster-reuse package does not include decode assets" >&2
+      exit 2
+   }
+fi
 
 repo_commit=$(git -C "$repo_dir" rev-parse HEAD 2>/dev/null || true)
 [ -n "$source_commit" ] || source_commit=$repo_commit
@@ -101,6 +116,7 @@ sdk_zip=$(cd "$(dirname "$sdk_zip")" && pwd)/$(basename "$sdk_zip")
 corpus_dir=$(cd "$corpus_dir" && pwd)
 mkdir -p "$output_dir"
 output_dir=$(cd "$output_dir" && pwd)
+sdk_zip_sha256=$(sha256_file "$sdk_zip")
 
 case "$(uname -s)" in
    Darwin|Linux) : ;;
@@ -330,6 +346,10 @@ deploy_target() {
    fi
    local deploy_dir="$work_dir/deploy-$target"
    local bundle_dir="$output_dir/image-scroll-benchmark-$target"
+   if [ "$windows_scroll_raster_reuse" = true ]; then
+      bundle_dir="$output_dir/image-scroll-raster-reuse-windows-x64"
+      rm -rf "$bundle_dir"
+   fi
    mkdir -p "$deploy_dir"
    cp "$benchmark_jar" "$deploy_dir/ImageScrollRealWorkloadBenchmarkApp.jar"
    (
@@ -387,11 +407,13 @@ deploy_target() {
       cp "$decode_library_dir"/*.tcz "$bundle_dir/"
    fi
 
-   cp "$chime_resource" "$bundle_dir/chime.mp3"
-   cmp -s "$chime_resource" "$bundle_dir/chime.mp3" || {
-      echo "Bundle chime resource differs from the official SDK resource" >&2
-      exit 1
-   }
+   if [ "$windows_scroll_raster_reuse" = false ]; then
+      cp "$chime_resource" "$bundle_dir/chime.mp3"
+      cmp -s "$chime_resource" "$bundle_dir/chime.mp3" || {
+         echo "Bundle chime resource differs from the official SDK resource" >&2
+         exit 1
+      }
+   fi
 
    local variant_count image_count library_count
    variant_count=$(find "$bundle_dir/corpus" -mindepth 1 -maxdepth 1 -type d -print | wc -l | tr -d ' ')
@@ -416,6 +438,12 @@ deploy_target() {
       echo "Deployed native runtime not found in bundle: $runtime_name" >&2
       exit 1
    }
+   if [ "$windows_scroll_raster_reuse" = true ]; then
+      [ -f "$bundle_dir/ImageScrollRealWorkloadBenchmarkApp.tcz" ] || {
+         echo "Scroll-raster-reuse application TCZ not found in bundle" >&2
+         exit 1
+      }
+   fi
    local runtime_sha256 tcvm_sha256=""
    runtime_sha256=$(sha256_file "$bundle_dir/$runtime_name")
    if [ "$target" = windows-x64 ]; then
@@ -431,10 +459,33 @@ deploy_target() {
       tcvm_sha256=$(sha256_file "$bundle_dir/$runtime_name")
    fi
 
-   cp "$runner_source" "$bundle_dir/run-benchmark.py"
-   chmod +x "$bundle_dir/run-benchmark.py"
+   if [ "$windows_scroll_raster_reuse" = false ]; then
+      cp "$runner_source" "$bundle_dir/run-benchmark.py"
+      chmod +x "$bundle_dir/run-benchmark.py"
+   fi
    local windows_runner_manifest_field=""
-   if [ "$target" = windows-x64 ]; then
+   if [ "$windows_scroll_raster_reuse" = true ]; then
+      local scroll_runner_source="$repo_dir/scripts/run-scroll-raster-reuse-windows.ps1"
+      local scroll_runner_companion="$repo_dir/scripts/scroll-raster-reuse-windows-functions.ps1"
+      local scroll_runner_analysis="$repo_dir/scripts/scroll-raster-reuse-windows-analysis.ps1"
+      local scroll_readme_source="$repo_dir/scripts/README-scroll-raster-reuse-windows.md"
+      [ -f "$scroll_runner_source" ] && [ -f "$scroll_runner_companion" ] && \
+         [ -f "$scroll_runner_analysis" ] && [ -f "$scroll_readme_source" ] || {
+         echo "Windows scroll-raster-reuse package files are missing" >&2
+         exit 1
+      }
+      cp "$scroll_runner_source" "$bundle_dir/run-scroll-raster-reuse-windows.ps1"
+      cp "$scroll_runner_companion" "$bundle_dir/scroll-raster-reuse-windows-functions.ps1"
+      cp "$scroll_runner_analysis" "$bundle_dir/scroll-raster-reuse-windows-analysis.ps1"
+      cp "$scroll_readme_source" "$bundle_dir/README.md"
+      windows_runner_manifest_field=$(cat <<EOF
+  "scrollRasterReuseRunner": "run-scroll-raster-reuse-windows.ps1",
+  "scrollRasterReuseRunnerCompanion": "scroll-raster-reuse-windows-functions.ps1",
+  "scrollRasterReuseRunnerAnalysis": "scroll-raster-reuse-windows-analysis.ps1",
+  "scrollRasterReuseReadme": "README.md",
+EOF
+)
+   elif [ "$target" = windows-x64 ]; then
       local windows_runner_source="$repo_dir/scripts/run-prefetch-thread-benchmark-windows.ps1"
       [ -f "$windows_runner_source" ] || {
          echo "Windows prefetch thread runner not found: $windows_runner_source" >&2
@@ -496,6 +547,54 @@ EOF
    if [ -n "$sdk_source_commit" ]; then
       sdk_source_commit_json="\"$sdk_source_commit\""
    fi
+   if [ "$windows_scroll_raster_reuse" = true ]; then
+      local scroll_runner_sha256 scroll_companion_sha256 scroll_analysis_sha256
+      scroll_runner_sha256=$(sha256_file "$bundle_dir/run-scroll-raster-reuse-windows.ps1")
+      scroll_companion_sha256=$(sha256_file "$bundle_dir/scroll-raster-reuse-windows-functions.ps1")
+      scroll_analysis_sha256=$(sha256_file "$bundle_dir/scroll-raster-reuse-windows-analysis.ps1")
+      cat > "$bundle_dir/manifest.json" <<EOF
+{
+  "schemaVersion": 1,
+  "benchmark": "scroll-raster-reuse-windows",
+  "target": "windows-x64",
+  "executable": "$executable_name",
+  "applicationTcz": "ImageScrollRealWorkloadBenchmarkApp.tcz",
+  "runtime": "$runtime_name",
+  "sourceCommit": "$source_commit",
+  "sdkSourceAttestation": "$sdk_source_commit",
+  "sdkZipSha256": "$sdk_zip_sha256",
+  "sdkJarSha256": "$sdk_compile_sha256",
+  "runtimeSha256": "$runtime_sha256",
+  "tcvmSha256": "$tcvm_sha256",
+  "datasetFileCount": 663,
+  "contentFormatCounts": $content_format_counts_json,
+  "datasetHash": "$dataset_hash",
+  "corpusPath": "corpus/imag",
+  "columns": 3,
+  "logicalWidth": 540,
+  "logicalHeight": 960,
+  "imageOptimizationMask": 6,
+  "prefetch": "on",
+  "prefetchThreadMode": "worker-semaphore",
+  "flickDriver": "TimerEvent",
+  "flickFrameRate": 60,
+  "flickClock": "nano",
+  "timerDeadlineMode": "absolute",
+  "eventLoopMode": "poll",
+  "threadYieldMode": "legacy",
+  "sdlPixelFormatRequest": "auto",
+  "passCount": 2,
+  "preflightProcessCount": 2,
+  "measuredProcessCount": 6,
+  "measuredModeOrder": ["off", "off", "off", "on", "on", "on"],
+  "renderingReuseBit": 1,
+  "runnerSha256": "$scroll_runner_sha256",
+  "runnerCompanionSha256": "$scroll_companion_sha256",
+  "runnerAnalysisSha256": "$scroll_analysis_sha256",
+  "windowsExecuted": false
+}
+EOF
+   else
    cat > "$bundle_dir/manifest.json" <<EOF
 {
   "schemaVersion": 1,
@@ -547,10 +646,16 @@ $decode_manifest_fields
   "tcvmSha256": $tcvm_json
 }
 EOF
+   fi
    local archive
    case "$target" in
       windows-x64|macos-arm64)
-         archive="$output_dir/image-scroll-benchmark-$target.zip"
+         if [ "$windows_scroll_raster_reuse" = true ]; then
+            archive="$output_dir/image-scroll-raster-reuse-windows-x64.zip"
+            rm -f "$archive"
+         else
+            archive="$output_dir/image-scroll-benchmark-$target.zip"
+         fi
          (cd "$output_dir" && zip -q -r "$(basename "$archive")" "$(basename "$bundle_dir")")
          ;;
       linux-*)

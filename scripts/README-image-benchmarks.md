@@ -78,6 +78,28 @@ powershell -ExecutionPolicy Bypass -File .\run-frame-pacing-benchmark-windows.ps
 The frame-pacing runner stores all five stage summaries, process logs, and a
 results ZIP under `results`.
 
+## Windows scroll raster reuse comparison
+
+Add `--windows-scroll-raster-reuse` when packaging the Windows x64 target to
+produce a small bundle for the 663-image OFF/ON comparison. It requires exactly
+`--target windows-x64` and cannot be combined with `--include-decode`:
+
+```sh
+bash scripts/package-image-scroll-benchmark.sh \
+  --sdk-zip /path/to/TotalCross-version.zip \
+  --corpus /path/to/corpus \
+  --output /path/to/output \
+  --target windows-x64 \
+  --windows-scroll-raster-reuse \
+  --source-commit "$SOURCE_COMMIT" \
+  --sdk-source-commit "$SDK_SOURCE_COMMIT"
+```
+
+The dedicated package includes its own one-command PowerShell 5.1 README and
+runner. It runs two correctness preflights followed by OFF × 3 and ON × 3
+measured processes. The operator command is documented in the package's
+`README.md`.
+
 Windows packaging also requires `--sdk-source-commit` as an explicit
 `sdkSourceAttestation`; its revision must be an ancestor of the benchmark
 source revision. This is an operator-provided provenance assertion, not

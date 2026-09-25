@@ -8,13 +8,15 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-M0: adapt the existing raster-reuse smoke app for a dedicated full-corpus
-Windows comparison, then package from the exact action-built SDK artifact.
+M1 implementation is complete. M2: create signed logical commits, push the
+requested branch, dispatch the exact SHA, then package from its action-built SDK.
 
 ## Last logical commit
 
-None. Initial base is `1c6306b0861c589b8c6abe5f494c5c623db346f9`, the verified
-HEAD of `origin/feat/frame-pacing-scheduling-diagnostics`.
+`75b0fb97a` adds the app profile and benchmark-gated SDL pixel-format evidence.
+It is signed. `8617a0a35` records the initial plan and state. The implementation
+base is `1c6306b0861c589b8c6abe5f494c5c623db346f9`, the verified HEAD of
+`origin/feat/frame-pacing-scheduling-diagnostics`.
 
 ## Active paths
 
@@ -25,6 +27,7 @@ HEAD of `origin/feat/frame-pacing-scheduling-diagnostics`.
 - `scripts/package-image-scroll-benchmark.sh`
 - `scripts/run-scroll-raster-reuse-windows.ps1`
 - `scripts/scroll-raster-reuse-windows-functions.ps1`
+- `scripts/scroll-raster-reuse-windows-analysis.ps1`
 - `scripts/test-scroll-raster-reuse-windows.py`
 - `scripts/README-image-benchmarks.md`
 - `.agent/evidence/scroll-raster-reuse-windows-package.json`
@@ -38,14 +41,22 @@ do not stage or alter those paths.
 
 ## Next concrete action
 
-Add the dedicated 663-image profile without changing the existing 120-image
-POC or full-corpus release profiles. Confirm benchmark-only SDL selected-format
-reporting and then implement runner/package support.
+Review and commit the package, runner, tests, and README as a signed logical
+slice, then push only the requested branch and start its SDK package workflow.
 
 ## Validation and deferrals
 
-- Current local HEAD equals remote target HEAD. No source changes or tests have
-  been made in the isolated worktree yet.
+- Current implementation includes the dedicated 663-image app profile, gated
+  SDL format reporting, dedicated package mode, two correctness preflights,
+  six-process runner, periodic process progress, and cold/warm summaries.
+- Passed after the final edits: four new runner/package contract groups,
+  existing frame-pacing contracts (13 checks), existing image-scroll
+  distributed-benchmark suite, `bash -n scripts/package-image-scroll-benchmark.sh`,
+  `git diff --check`, and focused copyright-header validation.
+- Local PowerShell parsing and SDK/native compilation were unavailable: this
+  host has no PowerShell runtime, SDK JAR, or configured native build tree.
+  The exact-source package workflow will perform artifact builds; no local
+  Windows build or benchmark has been run.
 - Windows build and Windows benchmark execution are explicitly prohibited.
 - Successful workflow dispatch, full SDK artifact, package SHA, and final
   provenance remain required.

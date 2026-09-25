@@ -37,10 +37,10 @@ and host provenance. Windows execution is not part of local validation.
 
 - [x] Confirm local and remote target branch HEADs match the requested SHA.
 - [x] Read the existing raster-reuse state and implementation contract.
-- [ ] Add a 663-image benchmark profile and exact SDL pixel-format evidence.
-- [ ] Add focused Windows runner, preflight, six-process matrix, summaries, and
+- [x] Add a 663-image benchmark profile and exact SDL pixel-format evidence.
+- [x] Add focused Windows runner, preflight, six-process matrix, summaries, and
   Windows-specific package mode to the existing packager.
-- [ ] Add focused contract checks and one-command README instructions.
+- [x] Add focused contract checks and one-command README instructions.
 - [ ] Run required focused validation, commit signed logical slices, push only
   the requested branch, and dispatch `package.yml` for the final SHA.
 - [ ] Package from the successful full SDK ZIP artifact, record provenance,
