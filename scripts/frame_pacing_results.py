@@ -95,6 +95,22 @@ def validate_summary(summary, stage, config, accounting, fixture):
                 and summary["totalRequestedSleepNs"] > 0,
                 "synthetic pacer did not record sleep requests")
     else:
+        expected_timer_fps = config.timer_fps if config.timer_fps is not None else 0
+        require(summary.get("driver") == config.driver,
+                "Flick driver differs from configuration")
+        require(summary.get("timerFps") == expected_timer_fps,
+                "Flick timer fps differs from configuration")
+        require(summary.get("clock") == config.clock,
+                "Flick clock differs from configuration")
+        require(summary.get("timerDeadlinePolicy") == config.timer_deadline_policy,
+                "timer deadline policy differs from configuration")
+        require(summary.get("eventLoopPolicy") == config.event_loop_policy,
+                "event loop policy differs from configuration")
+        require(summary.get("yieldPolicy") == config.yield_policy,
+                "event loop yield policy differs from configuration")
+        require(summary.get("expectedCallbackIntervalNs")
+                == config.expected_callback_interval_ns,
+                "expected callback interval differs from configuration")
         callback_fields = (
             "callbackCount", "callbackDeltaP50Ns", "callbackDeltaP95Ns",
             "callbackDeltaP99Ns", "callbackDeltaMaxNs",

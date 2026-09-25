@@ -201,10 +201,11 @@ fi
 
 benchmark_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.java"
 support_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageRasterBenchmarkSupport.java"
+flick_support_source="$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/FlickBenchmarkSupport.java"
 compiled_dir="$work_dir/benchmark-classes"
 benchmark_build_log="$work_dir/benchmark-javac.log"
 mkdir -p "$compiled_dir"
-benchmark_sources=("$benchmark_source" "$support_source")
+benchmark_sources=("$benchmark_source" "$support_source" "$flick_support_source")
 if [ "$include_decode" = true ]; then
    benchmark_sources+=("$repo_dir/TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageDecodeBenchmarkApp.java")
 fi
@@ -220,11 +221,17 @@ benchmark_jar="$work_dir/ImageScrollRealWorkloadBenchmarkApp.jar"
    cd "$compiled_dir"
    jar -cf "$benchmark_jar" \
       totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp*.class \
-      totalcross/ui/image/ImageRasterBenchmarkSupport*.class
+      totalcross/ui/image/ImageRasterBenchmarkSupport*.class \
+      totalcross/ui/FlickBenchmarkSupport*.class
 )
 jar tf "$benchmark_jar" | grep -Fqx \
    'totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.class' || {
    echo "Benchmark JAR does not contain ImageScrollRealWorkloadBenchmarkApp" >&2
+   exit 1
+}
+jar tf "$benchmark_jar" | grep -Fqx \
+   'totalcross/ui/FlickBenchmarkSupport.class' || {
+   echo "Benchmark JAR does not contain FlickBenchmarkSupport" >&2
    exit 1
 }
 if [ "$include_decode" = true ]; then

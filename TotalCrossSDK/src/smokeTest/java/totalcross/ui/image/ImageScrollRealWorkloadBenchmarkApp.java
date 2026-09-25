@@ -12,6 +12,7 @@ import totalcross.sys.Vm;
 import totalcross.ui.Container;
 import totalcross.ui.Control;
 import totalcross.ui.Flick;
+import totalcross.ui.FlickBenchmarkSupport;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
 import totalcross.ui.RenderingOptimizations;
@@ -19,10 +20,12 @@ import totalcross.ui.ScrollContainer;
 import totalcross.ui.Window;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
+import totalcross.ui.event.UpdateListener;
 import totalcross.ui.gfx.Graphics;
 
 /** Real-corpus scrolling workload based on the customer-provided Tcsort layout. */
-public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements TimerListener {
+public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
+    implements TimerListener, UpdateListener {
   private static final int IMAGE_COUNT = 663;
   private static final int COLUMN_COUNT = 3;
   private static final int SCROLL_STEP = 120;
@@ -169,6 +172,21 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private long scrollDurationNs = SCROLL_DURATION_MS * NANOS_PER_MILLISECOND;
   private String syntheticPacingProfile;
   private long syntheticPacingIntervalNs;
+  private String flickPacingDriver;
+  private String flickPacingClock;
+  private int flickPacingFps;
+  private FlickBenchmarkSupport.Recording flickPacingRecording;
+  private FrameMetrics flickPacingLastMetrics;
+  private long[] flickPacingIntervalsNs = new long[256];
+  private long[] flickPacingWorkNs = new long[256];
+  private long[] flickPacingPaintNs = new long[256];
+  private long[] flickPacingLatenessNs = new long[256];
+  private long[] flickPacingDeltaErrorNs = new long[256];
+  private long[] flickPacingScrollPositions = new long[256];
+  private long[] flickPacingJpegDecodeCounts = new long[256];
+  private long[] flickPacingImageMaterializations = new long[256];
+  private long[] flickPacingGeometryMaterializations = new long[256];
+  private int flickPacingFrameCount;
 
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
@@ -210,6 +228,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       syntheticPacingProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "synthetic-pacing", "synthetic-current-16ms");
       syntheticPacingIntervalNs = syntheticPacingIntervalNs(syntheticPacingProfile);
+      flickPacingDriver = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "flick-driver", null);
+      flickPacingClock = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "flick-clock", "millis");
+      flickPacingFps = ImageRasterBenchmarkSupport.integerArgument(
+          getCommandLine(), "flick-fps", 0);
+      validateFlickPacingArguments();
       prefetchProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "prefetch", "off");
       prefetchThreadMode = ImageRasterBenchmarkSupport.argument(
@@ -344,6 +369,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         finishBenchmark(true, "");
         return;
       }
+      if (flickPacingDriver != null) {
+        startFlickPacingBenchmark();
+        return;
+      }
       int minimum = scroll.sbV.getMinimum();
       int maximum = validMaximum();
       for (int passIndex = 0; passIndex < benchmarkPassCount; passIndex++) {
@@ -376,6 +405,208 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       String error = reportFailure(failure);
       finishBenchmark(false, error);
     }
+  }
+
+  private void validateFlickPacingArguments() {
+    if (flickPacingDriver == null) {
+      ImageRasterBenchmarkSupport.require(flickPacingFps == 0,
+          "flick-fps requires flick-driver");
+      return;
+    }
+    ImageRasterBenchmarkSupport.require("millis".equals(flickPacingClock)
+        || "nano".equals(flickPacingClock), "flick-clock must be millis or nano");
+    if ("timer".equals(flickPacingDriver)) {
+      ImageRasterBenchmarkSupport.require(flickPacingFps == 40 || flickPacingFps == 60,
+          "timer Flick driver requires --flick-fps=40 or 60");
+    } else if ("update".equals(flickPacingDriver)) {
+      ImageRasterBenchmarkSupport.require(flickPacingFps == 0,
+          "UpdateListener Flick driver does not accept --flick-fps");
+    } else {
+      throw new IllegalArgumentException("flick-driver must be timer or update");
+    }
+  }
+
+  private void startFlickPacingBenchmark() {
+    int minimum = scroll.sbV.getMinimum();
+    int maximum = validMaximum();
+    ImageRasterBenchmarkSupport.require(maximum - minimum
+        >= Math.abs(FlickBenchmarkSupport.MOTION_DISPLACEMENT),
+        "real workload cannot provide the deterministic Flick displacement");
+    scroll.sbV.setValue(minimum);
+    flickPacingFrameCount = 0;
+    Image.resetImageOperationAccountingForBenchmarkTest(accountingEnabled());
+    NativeImageBacking.resetWritePixelsFrameMetricsForTest();
+    flickPacingLastMetrics = FrameMetrics.capture();
+    addUpdateListener(this);
+    flickPacingRecording = FlickBenchmarkSupport.start(scroll, flickPacingDriver,
+        flickPacingFps, new FlickBenchmarkSupport.FrameListener() {
+          @Override
+          public void frameCompleted(FlickBenchmarkSupport.Frame frame) {
+            recordFlickPacingFrame(frame);
+          }
+        });
+  }
+
+  private void recordFlickPacingFrame(FlickBenchmarkSupport.Frame frame) {
+    ensureFlickPacingCapacity(flickPacingFrameCount + 1);
+    int index = flickPacingFrameCount++;
+    flickPacingIntervalsNs[index] = frame.intervalNs();
+    flickPacingWorkNs[index] = frame.workNs();
+    flickPacingPaintNs[index] = frame.paintWorkNs();
+    flickPacingLatenessNs[index] = frame.callbackLatenessNs();
+    flickPacingDeltaErrorNs[index] = frame.callbackDeltaErrorNs();
+    flickPacingScrollPositions[index] = scroll.sbV.getValue();
+    FrameMetrics currentMetrics = FrameMetrics.capture();
+    FrameMetrics delta = FrameMetrics.delta(flickPacingLastMetrics, currentMetrics);
+    flickPacingLastMetrics = currentMetrics;
+    flickPacingJpegDecodeCounts[index] = delta.jpegDecodeCount;
+    flickPacingImageMaterializations[index] = delta.imageMaterializations;
+    flickPacingGeometryMaterializations[index] = delta.nativeGeometryMaterializations;
+  }
+
+  private void ensureFlickPacingCapacity(int required) {
+    if (required <= flickPacingIntervalsNs.length) {
+      return;
+    }
+    int capacity = Math.max(required, flickPacingIntervalsNs.length * 2);
+    flickPacingIntervalsNs = Arrays.copyOf(flickPacingIntervalsNs, capacity);
+    flickPacingWorkNs = Arrays.copyOf(flickPacingWorkNs, capacity);
+    flickPacingPaintNs = Arrays.copyOf(flickPacingPaintNs, capacity);
+    flickPacingLatenessNs = Arrays.copyOf(flickPacingLatenessNs, capacity);
+    flickPacingDeltaErrorNs = Arrays.copyOf(flickPacingDeltaErrorNs, capacity);
+    flickPacingScrollPositions = Arrays.copyOf(flickPacingScrollPositions, capacity);
+    flickPacingJpegDecodeCounts = Arrays.copyOf(flickPacingJpegDecodeCounts, capacity);
+    flickPacingImageMaterializations = Arrays.copyOf(
+        flickPacingImageMaterializations, capacity);
+    flickPacingGeometryMaterializations = Arrays.copyOf(
+        flickPacingGeometryMaterializations, capacity);
+  }
+
+  @Override
+  public void updateListenerTriggered(int elapsedMilliseconds) {
+    if (flickPacingRecording != null && flickPacingRecording.complete()) {
+      try {
+        finishFlickPacingBenchmark();
+      } catch (Throwable failure) {
+        String error = reportFailure(failure);
+        finishBenchmark(false, error);
+      }
+    }
+  }
+
+  private void finishFlickPacingBenchmark() throws Exception {
+    removeUpdateListener(this);
+    FlickBenchmarkSupport.Frame[] frames = flickPacingRecording.frames();
+    ImageRasterBenchmarkSupport.require(flickPacingFrameCount == frames.length
+        && flickPacingFrameCount > 1, "Flick pacing callback recording is incomplete");
+    ImageRasterBenchmarkSupport.require(flickPacingRecording.finalFlickPosition()
+        == FlickBenchmarkSupport.MOTION_DISPLACEMENT,
+        "deterministic Flick motion stopped at the wrong displacement");
+    writeFlickPacingFrames(frames);
+    writeFlickPacingSummary(frames);
+    finishBenchmark(true, "");
+  }
+
+  private void writeFlickPacingFrames(FlickBenchmarkSupport.Frame[] frames) throws Exception {
+    StringBuilder csv = new StringBuilder(frames.length * 112);
+    csv.append("frame_index,elapsed_ns,frame_time_ns,scroll_value,scroll_work_ns,")
+        .append("paint_work_ns,work_time_ns,callback_lateness_ns,callback_delta_error_ns,")
+        .append("scroll_jpeg_decode_count,scroll_image_materializations,")
+        .append("scroll_native_geometry_materializations\n");
+    for (int i = 0; i < frames.length; i++) {
+      FlickBenchmarkSupport.Frame frame = frames[i];
+      csv.append(i).append(',').append(frame.elapsedNs()).append(',')
+          .append(frame.intervalNs()).append(',').append(flickPacingScrollPositions[i]).append(',')
+          .append(frame.scrollWorkNs()).append(',').append(frame.paintWorkNs()).append(',')
+          .append(frame.workNs()).append(',').append(frame.callbackLatenessNs()).append(',')
+          .append(frame.callbackDeltaErrorNs()).append(',')
+          .append(flickPacingJpegDecodeCounts[i]).append(',')
+          .append(flickPacingImageMaterializations[i]).append(',')
+          .append(flickPacingGeometryMaterializations[i]).append('\n');
+    }
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "frames.csv"), csv.toString());
+  }
+
+  private void writeFlickPacingSummary(FlickBenchmarkSupport.Frame[] frames) throws Exception {
+    long requestedMask = ImageOptimizationSettings.getMask();
+    long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
+    long expectedIntervalNs = flickPacingRecording.expectedIntervalNs();
+    String timerDeadlinePolicy = "timer".equals(flickPacingDriver)
+        ? "native-relative" : "not-applicable";
+    String eventLoopPolicy = "timer".equals(flickPacingDriver)
+        ? "timer-events" : "update-listener";
+    String json = "{\n"
+        + "  \"fixture\":\"ImageScrollRealWorkloadBenchmarkApp\",\n"
+        + "  \"status\":\"" + (requestedMask == effectiveMask ? "PASS" : "INVALID_CONFIGURATION") + "\",\n"
+        + "  \"imageCount\":" + imageControlCount + ",\n"
+        + "  \"prefetch\":\"" + prefetchProfile + "\",\n"
+        + "  \"prefetchThreadMode\":\"" + prefetchThreadMode + "\",\n"
+        + "  \"prefetchWorkerSleepMs\":" + prefetchWorkerSleepMs + ",\n"
+        + "  \"accounting\":\"" + accountingProfile + "\",\n"
+        + "  \"requestedMask\":" + requestedMask + ",\n"
+        + "  \"effectiveMask\":" + effectiveMask + ",\n"
+        + "  \"driver\":\"" + flickPacingDriver + "\",\n"
+        + "  \"timerFps\":" + flickPacingFps + ",\n"
+        + "  \"clock\":\"" + flickPacingClock + "\",\n"
+        + "  \"timerDeadlinePolicy\":\"" + timerDeadlinePolicy + "\",\n"
+        + "  \"eventLoopPolicy\":\"" + eventLoopPolicy + "\",\n"
+        + "  \"yieldPolicy\":\"none\",\n"
+        + "  \"expectedCallbackIntervalNs\":" + expectedIntervalNs + ",\n"
+        + "  \"durationNs\":" + flickPacingRecording.durationNs() + ",\n"
+        + "  \"frameCount\":" + frames.length + ",\n"
+        + "  \"callbackCount\":" + frames.length + ",\n"
+        + "  \"frameTimeP50Ns\":" + flickPacingPercentile(flickPacingIntervalsNs, 50) + ",\n"
+        + "  \"frameTimeP95Ns\":" + flickPacingPercentile(flickPacingIntervalsNs, 95) + ",\n"
+        + "  \"frameTimeP99Ns\":" + flickPacingPercentile(flickPacingIntervalsNs, 99) + ",\n"
+        + "  \"frameTimeMaxNs\":" + flickPacingPercentile(flickPacingIntervalsNs, 100) + ",\n"
+        + "  \"workTimeP50Ns\":" + flickPacingPercentile(flickPacingWorkNs, 50) + ",\n"
+        + "  \"workTimeP95Ns\":" + flickPacingPercentile(flickPacingWorkNs, 95) + ",\n"
+        + "  \"workTimeP99Ns\":" + flickPacingPercentile(flickPacingWorkNs, 99) + ",\n"
+        + "  \"workTimeMaxNs\":" + flickPacingPercentile(flickPacingWorkNs, 100) + ",\n"
+        + "  \"paintTimeP50Ns\":" + flickPacingPercentile(flickPacingPaintNs, 50) + ",\n"
+        + "  \"paintTimeP95Ns\":" + flickPacingPercentile(flickPacingPaintNs, 95) + ",\n"
+        + "  \"paintTimeP99Ns\":" + flickPacingPercentile(flickPacingPaintNs, 99) + ",\n"
+        + "  \"paintTimeMaxNs\":" + flickPacingPercentile(flickPacingPaintNs, 100) + ",\n"
+        + "  \"framesOver16_67Count\":" + flickPacingCountOver(FRAME_THRESHOLD_16_67_NS) + ",\n"
+        + "  \"framesOver20Count\":" + flickPacingCountOver(FRAME_THRESHOLD_20_NS) + ",\n"
+        + "  \"framesOver25Count\":" + flickPacingCountOver(FRAME_THRESHOLD_25_NS) + ",\n"
+        + "  \"framesOver33_3Count\":" + flickPacingCountOver(FRAME_THRESHOLD_33_3_NS) + ",\n"
+        + "  \"framesOver50Count\":" + flickPacingCountOver(FRAME_THRESHOLD_50_NS) + ",\n"
+        + "  \"framesOver100Count\":" + flickPacingCountOver(FRAME_THRESHOLD_100_NS) + ",\n"
+        + "  \"callbackDeltaP50Ns\":" + flickPacingPercentile(flickPacingIntervalsNs, 50) + ",\n"
+        + "  \"callbackDeltaP95Ns\":" + flickPacingPercentile(flickPacingIntervalsNs, 95) + ",\n"
+        + "  \"callbackDeltaP99Ns\":" + flickPacingPercentile(flickPacingIntervalsNs, 99) + ",\n"
+        + "  \"callbackDeltaMaxNs\":" + flickPacingPercentile(flickPacingIntervalsNs, 100) + ",\n"
+        + "  \"callbackAbsoluteLatenessP50Ns\":" + flickPacingPercentile(flickPacingLatenessNs, 50) + ",\n"
+        + "  \"callbackAbsoluteLatenessP95Ns\":" + flickPacingPercentile(flickPacingLatenessNs, 95) + ",\n"
+        + "  \"callbackAbsoluteLatenessP99Ns\":" + flickPacingPercentile(flickPacingLatenessNs, 99) + ",\n"
+        + "  \"callbackAbsoluteLatenessMaxNs\":" + flickPacingPercentile(flickPacingLatenessNs, 100) + ",\n"
+        + "  \"callbackDeltaErrorP50Ns\":" + flickPacingPercentile(flickPacingDeltaErrorNs, 50) + ",\n"
+        + "  \"callbackDeltaErrorP95Ns\":" + flickPacingPercentile(flickPacingDeltaErrorNs, 95) + ",\n"
+        + "  \"callbackDeltaErrorP99Ns\":" + flickPacingPercentile(flickPacingDeltaErrorNs, 99) + ",\n"
+        + "  \"callbackDeltaErrorMaxNs\":" + flickPacingPercentile(flickPacingDeltaErrorNs, 100) + ",\n"
+        + "  \"prefetchRequestCount\":" + prefetchRequestCount + ",\n"
+        + "  \"prefetchReadyCount\":" + prefetchReadyCount + ",\n"
+        + "  \"prefetchFailedCount\":" + prefetchFailedCount + ",\n"
+        + "  \"prefetchNotPrefetchableCount\":" + prefetchNotPrefetchableCount + ",\n"
+        + "  \"finalFlickPosition\":" + flickPacingRecording.finalFlickPosition() + "\n"
+        + "}\n";
+    ImageRasterBenchmarkSupport.writeUtf8(
+        ImageRasterBenchmarkSupport.joinPath(runOutputDir, "summary.json"), json);
+  }
+
+  private long flickPacingPercentile(long[] values, int percent) {
+    long[] sorted = Arrays.copyOf(values, flickPacingFrameCount);
+    Arrays.sort(sorted);
+    int index = percent >= 100 ? sorted.length - 1
+        : Math.max(0, (int) Math.ceil(sorted.length * percent / 100.0) - 1);
+    return sorted[index];
+  }
+
+  private int flickPacingCountOver(long thresholdNs) {
+    return countFramesOverThresholdNs(
+        Arrays.copyOf(flickPacingIntervalsNs, flickPacingFrameCount), thresholdNs);
   }
 
   private void capturePrefetchAccounting() {

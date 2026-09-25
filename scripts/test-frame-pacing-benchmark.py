@@ -116,6 +116,42 @@ def test_summary_contract():
         raise AssertionError("missing required summary field was accepted")
 
 
+def test_flick_summary_matches_configuration():
+    config = RUNNER.STAGES[2][0]
+    summary = stage_one_summary(config)
+    summary.update({
+        "driver": config.driver,
+        "timerFps": config.timer_fps,
+        "clock": config.clock,
+        "timerDeadlinePolicy": config.timer_deadline_policy,
+        "eventLoopPolicy": config.event_loop_policy,
+        "yieldPolicy": config.yield_policy,
+        "expectedCallbackIntervalNs": config.expected_callback_interval_ns,
+        "callbackCount": 181,
+        "callbackDeltaP50Ns": 16_000_000,
+        "callbackDeltaP95Ns": 17_000_000,
+        "callbackDeltaP99Ns": 18_000_000,
+        "callbackDeltaMaxNs": 20_000_000,
+        "callbackAbsoluteLatenessP50Ns": 0,
+        "callbackAbsoluteLatenessP95Ns": 1_000_000,
+        "callbackAbsoluteLatenessP99Ns": 2_000_000,
+        "callbackAbsoluteLatenessMaxNs": 3_000_000,
+        "callbackDeltaErrorP50Ns": 1_000_000,
+        "callbackDeltaErrorP95Ns": 2_000_000,
+        "callbackDeltaErrorP99Ns": 3_000_000,
+        "callbackDeltaErrorMaxNs": 4_000_000,
+    })
+    RUNNER.validate_summary(summary, 2, config, "off", RUNNER.FIXTURE)
+    summary["clock"] = "nano"
+    try:
+        RUNNER.validate_summary(summary, 2, config, "off", RUNNER.FIXTURE)
+    except RUNNER.BenchmarkFailure as error:
+        require("clock differs" in str(error),
+                "wrong clock failure did not identify the mismatch")
+    else:
+        raise AssertionError("a mismatched Flick clock was accepted")
+
+
 def test_preflight_contract():
     completion = {
         "prefetch_request_count": "663",
@@ -232,6 +268,7 @@ def main():
     tests = (
         test_exact_stage_matrices,
         test_summary_contract,
+        test_flick_summary_matches_configuration,
         test_preflight_contract,
         test_process_output_path_is_bundle_relative,
         test_failure_handling_does_not_launch_or_accept_failed_process,
