@@ -521,12 +521,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
   private void finishFlickPacingBenchmark() throws Exception {
     removeUpdateListener(this);
     FlickBenchmarkSupport.Frame[] frames = flickPacingRecording.frames();
+    writeFlickPacingFrames(frames);
     ImageRasterBenchmarkSupport.require(flickPacingFrameCount == frames.length
         && flickPacingFrameCount > 1, "Flick pacing callback recording is incomplete");
-    ImageRasterBenchmarkSupport.require(flickPacingRecording.finalFlickPosition()
+    int finalPosition = flickPacingRecording.finalFlickPosition();
+    ImageRasterBenchmarkSupport.require(finalPosition
         == FlickBenchmarkSupport.MOTION_DISPLACEMENT,
-        "deterministic Flick motion stopped at the wrong displacement");
-    writeFlickPacingFrames(frames);
+        "deterministic Flick position was " + finalPosition + " instead of "
+            + FlickBenchmarkSupport.MOTION_DISPLACEMENT + ", frames=" + frames.length
+            + ", scroll=" + scroll.sbV.getValue());
     writeFlickPacingSummary(frames);
     finishBenchmark(true, "");
   }
