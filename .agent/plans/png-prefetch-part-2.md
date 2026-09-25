@@ -93,7 +93,7 @@ Do not push unless explicitly requested.
 
 - [x] Milestone 4A: package and run fresh macOS six-process benchmark.
 - [x] Milestone 4B: record/compare macOS results.
-- [ ] Milestone 4C: create and validate Windows x64 package.
+- [x] Milestone 4C: create and validate Windows x64 package.
 - [ ] Finalization: editorial report, state/evidence reconciliation, commit
       checks.
 
@@ -102,6 +102,14 @@ processes. Compact per-row timing, frame, lifecycle, and cold-scroll counters
 are in `.agent/evidence/png-prefetch-macos.csv`; interpretation and baseline
 comparison are in `.agent/evidence/png-prefetch.md`. Each configuration ran
 once; performance findings are descriptive.
+
+Milestone 4C passed: the Windows x64 archive contains the current benchmark app
+and PowerShell runner with the trusted Windows runtime, and its manifest,
+dataset, no-external-tool contract, and ZIP contents validated. The initial SDK
+staging ZIP lacked `Launcher.exe`; the trusted Windows launcher was added to the
+temporary package input. No Windows build or package execution was performed.
+The ZIP remains outside Git; hashes and paths are recorded in the evidence
+index. Next, complete the editorial report and final state/commit checks.
 
 ## Milestone 4A — Fresh macOS benchmark
 
