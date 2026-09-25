@@ -264,6 +264,9 @@ class FlickDriverTest {
 
     @Override
     public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick) {
+      if (xDelta == 0 && yDelta == 0) {
+        return false;
+      }
       scrollY += yDelta;
       return true;
     }

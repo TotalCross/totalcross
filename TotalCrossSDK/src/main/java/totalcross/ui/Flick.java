@@ -781,7 +781,7 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
       boolean endReached = flickMotion == 0 && !benchmarkMotionActive;
       long scrollWorkStartNs = observer == null ? 0 : System.nanoTime();
 
-      if (!endReached) {
+      if (!endReached && flickMotion != 0) {
         switch (flickDirection) {
         case DragEvent.UP:
         case DragEvent.DOWN:
