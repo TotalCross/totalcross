@@ -60,9 +60,11 @@ Expected implementation paths in Part 1:
 - `TotalCrossSDK/src/main/java/totalcross/ui/Flick.java`
 - `TotalCrossSDK/src/smokeTest/java/totalcross/ui/FlickBenchmarkSupport.java`
 - `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/ImageScrollRealWorkloadBenchmarkApp.java`
+- `TotalCrossSDK/src/smokeTest/java/totalcross/ui/image/SyntheticPacingTest.java`
 - `TotalCrossSDK/src/test/java/totalcross/ui/FlickTest.java` or the nearest
   existing focused Flick test file
 - `scripts/run-frame-pacing-benchmark.py`
+- `scripts/frame_pacing_contract.py` and `scripts/frame_pacing_results.py`
 - `scripts/test-frame-pacing-benchmark.py`
 - `scripts/package-image-scroll-benchmark.sh`
 - `scripts/README-image-benchmarks.md`
@@ -363,8 +365,10 @@ every result row; no native scheduler or event-loop source changed in Part 1.
 Use this section as a compact live checklist; rewrite rather than duplicating
 history in multiple files.
 
-- [ ] Activate branch and commit plans/state/evidence scaffolding.
-- [ ] Stage 1 implementation, focused tests, macOS benchmark, committed results.
+- [x] (2026-09-25) Activate the plan branch and commit the plans and supporting
+  state/evidence scaffolding.
+- [ ] Stage 1 implementation and focused tests are in progress; benchmark and
+  committed results remain.
 - [ ] Stage 2 Flick driver implementation, tests, macOS benchmark, committed results.
 - [ ] Stage 3 clock implementation, tests, macOS benchmark, committed results.
 - [ ] Handoff state to Part 2.

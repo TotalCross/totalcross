@@ -31,6 +31,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private static final long NANOS_PER_MILLISECOND = 1000000L;
   private static final long FRAME_INTERVAL_NS = FRAME_INTERVAL_MS * NANOS_PER_MILLISECOND;
   private static final long FRAME_THRESHOLD_16_67_NS = 16_670_000L;
+  private static final long FRAME_THRESHOLD_20_NS = 20_000_000L;
+  private static final long FRAME_THRESHOLD_25_NS = 25_000_000L;
   private static final long FRAME_THRESHOLD_33_3_NS = 33_300_000L;
   private static final long FRAME_THRESHOLD_50_NS = 50_000_000L;
   private static final long FRAME_THRESHOLD_100_NS = 100_000_000L;
@@ -165,6 +167,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private TimerEvent prefetchTimer;
   private boolean benchmarkReady;
   private long scrollDurationNs = SCROLL_DURATION_MS * NANOS_PER_MILLISECOND;
+  private String syntheticPacingProfile;
+  private long syntheticPacingIntervalNs;
 
   public ImageScrollRealWorkloadBenchmarkApp() {
     super("", Window.NO_BORDER);
@@ -203,6 +207,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       int scrollDurationMs = ImageRasterBenchmarkSupport.integerArgument(
           getCommandLine(), "duration", SCROLL_DURATION_MS);
       scrollDurationNs = (long) scrollDurationMs * NANOS_PER_MILLISECOND;
+      syntheticPacingProfile = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "synthetic-pacing", "synthetic-current-16ms");
+      syntheticPacingIntervalNs = syntheticPacingIntervalNs(syntheticPacingProfile);
       prefetchProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "prefetch", "off");
       prefetchThreadMode = ImageRasterBenchmarkSupport.argument(
@@ -795,6 +802,40 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     return new long[] {first, last, last - first + 1, hash};
   }
 
+  static long syntheticPacingIntervalNs(String profile) {
+    if ("synthetic-current-16ms".equals(profile)) {
+      return FRAME_INTERVAL_NS;
+    }
+    if ("synthetic-60hz".equals(profile)) {
+      return 16_666_667L;
+    }
+    throw new IllegalArgumentException("unsupported synthetic pacing profile: " + profile);
+  }
+
+  static long sleepOvershootNs(long requestedNs, long actualNs) {
+    return Math.max(0L, actualNs - requestedNs);
+  }
+
+  static long deadlineErrorNs(long targetDeadlineNs, long actualFrameStartNs) {
+    return actualFrameStartNs - targetDeadlineNs;
+  }
+
+  static long[] frameThresholdsNs() {
+    return new long[] {FRAME_THRESHOLD_16_67_NS, FRAME_THRESHOLD_20_NS,
+        FRAME_THRESHOLD_25_NS, FRAME_THRESHOLD_33_3_NS, FRAME_THRESHOLD_50_NS,
+        FRAME_THRESHOLD_100_NS};
+  }
+
+  static int countFramesOverThresholdNs(long[] frameTimesNs, long thresholdNs) {
+    int count = 0;
+    for (long frameTimeNs : frameTimesNs) {
+      if (frameTimeNs > thresholdNs) {
+        count++;
+      }
+    }
+    return count;
+  }
+
   private PassResult runPass(String name, boolean forward, int expectedStart, int maximum) {
     int minimum = scroll.sbV.getMinimum();
     int endpoint = forward ? maximum : minimum;
@@ -820,6 +861,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     long[] frameJpegEighthNs = new long[256];
     long[] frameJpegOtherCounts = new long[256];
     long[] frameJpegOtherNs = new long[256];
+    PacingTrace pacingTrace = new PacingTrace();
     FrameMetrics[] frameMetrics = new FrameMetrics[256];
     FrameMetrics[] frameScrollMetrics = new FrameMetrics[256];
     FrameMetrics[] framePaintMetrics = new FrameMetrics[256];
@@ -828,14 +870,20 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     while (true) {
       long frameStartNs = System.nanoTime();
       long elapsedNs = frameStartNs - startNs;
-      long nextFrameNs = (long) frames * FRAME_INTERVAL_NS;
+      long nextFrameNs = (long) frames * syntheticPacingIntervalNs;
+      long targetDeadlineNs = startNs + nextFrameNs;
       if (frames > 0 && elapsedNs < nextFrameNs) {
         long remainingNs = nextFrameNs - elapsedNs;
         long sleepMs = Math.max(1L,
             (remainingNs + NANOS_PER_MILLISECOND - 1) / NANOS_PER_MILLISECOND);
-        Vm.sleep((int) Math.min(4L, sleepMs));
+        long requestedSleepNs = Math.min(4L, sleepMs) * NANOS_PER_MILLISECOND;
+        long sleepStartNs = System.nanoTime();
+        Vm.sleep((int) (requestedSleepNs / NANOS_PER_MILLISECOND));
+        long actualSleepNs = Math.max(0L, System.nanoTime() - sleepStartNs);
+        pacingTrace.recordSleep(frames, requestedSleepNs, actualSleepNs);
         continue;
       }
+      pacingTrace.recordFrame(frames, targetDeadlineNs, frameStartNs);
       int target;
       if (frames == 0) {
         target = expectedStart;
@@ -966,7 +1014,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     return new PassResult(name, forward, minimum, endpoint, maximum, elapsedNs, frames,
         actualFrameTimesNs, actualFrameElapsedNs, actualFramePositions, actualFrameScrollWorkNs,
         actualFramePaintWorkNs, actualFrameWorkTimeNs, sortedFrameTimesNs, sortedWorkTimeNs,
-        sortedPaintWorkNs,
+        sortedPaintWorkNs, pacingTrace,
         actualFrameJpegDecodeCounts, actualFrameJpegDecodeNs, actualFrameJpegFullCounts,
         actualFrameJpegFullNs, actualFrameJpegHalfCounts, actualFrameJpegHalfNs,
         actualFrameJpegQuarterCounts, actualFrameJpegQuarterNs, actualFrameJpegEighthCounts,
@@ -1461,6 +1509,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + ",paint_time_p99_ns=" + result.paintTimePercentileNs(99)
         + ",paint_time_max_ns=" + result.paintTimePercentileNs(100)
         + ",frames_over_16_67_count=" + result.countOverNs(FRAME_THRESHOLD_16_67_NS)
+        + ",frames_over_20_count=" + result.countOverNs(FRAME_THRESHOLD_20_NS)
+        + ",frames_over_25_count=" + result.countOverNs(FRAME_THRESHOLD_25_NS)
         + ",frames_over_33_3_count=" + result.countOverNs(FRAME_THRESHOLD_33_3_NS)
         + ",frames_over_50_count=" + result.countOverNs(FRAME_THRESHOLD_50_NS)
         + ",frames_over_100_count=" + result.countOverNs(FRAME_THRESHOLD_100_NS)
@@ -1478,6 +1528,8 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
   private void writeRunFrames(PassResult result, String targetDir) throws Exception {
     StringBuilder frames = new StringBuilder(4096);
     frames.append("frame_index,elapsed_ns,frame_time_ns,scroll_value,scroll_work_ns,paint_work_ns,work_time_ns,")
+        .append("target_deadline_ns,actual_frame_start_ns,deadline_error_ns,")
+        .append("sleep_requested_ns,sleep_actual_ns,sleep_call_count,")
         .append("jpeg_decode_count,jpeg_decode_ns,")
         .append("jpeg_full_count,jpeg_full_ns,jpeg_half_count,jpeg_half_ns,jpeg_quarter_count,")
         .append("jpeg_quarter_ns,jpeg_eighth_count,jpeg_eighth_ns,jpeg_other_count,jpeg_other_ns,")
@@ -1521,6 +1573,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
           .append(result.frameTimesNs[i]).append(',').append(result.framePositions[i]).append(',')
           .append(result.frameScrollWorkNs[i]).append(',').append(result.framePaintWorkNs[i]).append(',')
           .append(result.frameWorkTimeNs[i]).append(',')
+          .append(result.pacingTrace.targetDeadlineNs[i]).append(',')
+          .append(result.pacingTrace.actualFrameStartNs[i]).append(',')
+          .append(result.pacingTrace.deadlineErrorNs[i]).append(',')
+          .append(result.pacingTrace.sleepRequestedNs[i]).append(',')
+          .append(result.pacingTrace.sleepActualNs[i]).append(',')
+          .append(result.pacingTrace.sleepCallCounts[i]).append(',')
           .append(result.frameJpegDecodeCounts[i]).append(',').append(result.frameJpegDecodeNs[i]).append(',')
           .append(result.frameJpegFullCounts[i]).append(',').append(result.frameJpegFullNs[i]).append(',')
           .append(result.frameJpegHalfCounts[i]).append(',').append(result.frameJpegHalfNs[i]).append(',')
@@ -1694,7 +1752,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"imageCount\":" + imageControlCount + ",\n"
         + "  \"columns\":" + COLUMN_COUNT + ",\n"
         + "  \"prefetch\":\"" + prefetchProfile + "\",\n"
+        + "  \"prefetchThreadMode\":\"" + prefetchThreadMode + "\",\n"
+        + "  \"prefetchWorkerSleepMs\":" + prefetchWorkerSleepMs + ",\n"
         + "  \"accounting\":\"" + accountingProfile + "\",\n"
+        + "  \"syntheticPacingProfile\":\"" + syntheticPacingProfile + "\",\n"
+        + "  \"syntheticPacingIntervalNs\":" + syntheticPacingIntervalNs + ",\n"
         + "  \"requestedMask\":" + requestedMask + ",\n"
         + "  \"effectiveMask\":" + effectiveMask + ",\n"
         + "  \"corpusFileEnumerationElapsedNs\":" + corpusFileEnumerationElapsedNs + ",\n"
@@ -1720,9 +1782,22 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
         + "  \"paintTimeP99Ns\":" + result.paintTimePercentileNs(99) + ",\n"
         + "  \"paintTimeMaxNs\":" + result.paintTimePercentileNs(100) + ",\n"
         + "  \"framesOver16_67Count\":" + result.countOverNs(FRAME_THRESHOLD_16_67_NS) + ",\n"
+        + "  \"framesOver20Count\":" + result.countOverNs(FRAME_THRESHOLD_20_NS) + ",\n"
+        + "  \"framesOver25Count\":" + result.countOverNs(FRAME_THRESHOLD_25_NS) + ",\n"
         + "  \"framesOver33_3Count\":" + result.countOverNs(FRAME_THRESHOLD_33_3_NS) + ",\n"
         + "  \"framesOver50Count\":" + result.countOverNs(FRAME_THRESHOLD_50_NS) + ",\n"
         + "  \"framesOver100Count\":" + result.countOverNs(FRAME_THRESHOLD_100_NS) + ",\n"
+        + "  \"sleepRequestCount\":" + result.pacingTrace.sleepRequestCount + ",\n"
+        + "  \"totalRequestedSleepNs\":" + result.pacingTrace.totalRequestedSleepNs + ",\n"
+        + "  \"totalActualSleepNs\":" + result.pacingTrace.totalActualSleepNs + ",\n"
+        + "  \"sleepOvershootP50Ns\":" + result.pacingTrace.sleepOvershootPercentileNs(50) + ",\n"
+        + "  \"sleepOvershootP95Ns\":" + result.pacingTrace.sleepOvershootPercentileNs(95) + ",\n"
+        + "  \"sleepOvershootP99Ns\":" + result.pacingTrace.sleepOvershootPercentileNs(99) + ",\n"
+        + "  \"sleepOvershootMaxNs\":" + result.pacingTrace.sleepOvershootPercentileNs(100) + ",\n"
+        + "  \"deadlineErrorP50Ns\":" + result.pacingTrace.deadlineErrorPercentileNs(50) + ",\n"
+        + "  \"deadlineErrorP95Ns\":" + result.pacingTrace.deadlineErrorPercentileNs(95) + ",\n"
+        + "  \"deadlineErrorP99Ns\":" + result.pacingTrace.deadlineErrorPercentileNs(99) + ",\n"
+        + "  \"deadlineErrorMaxNs\":" + result.pacingTrace.deadlineErrorPercentileNs(100) + ",\n"
         + "  \"largestStallNs\":" + result.percentileNs(100) + ",\n"
         + "  \"largestConsecutiveOver33_3\":"
         + result.maxConsecutiveOverNs(FRAME_THRESHOLD_33_3_NS)
@@ -2407,6 +2482,84 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
   }
 
+  private static final class PacingTrace {
+    long[] targetDeadlineNs = new long[256];
+    long[] actualFrameStartNs = new long[256];
+    long[] deadlineErrorNs = new long[256];
+    long[] sleepRequestedNs = new long[256];
+    long[] sleepActualNs = new long[256];
+    int[] sleepCallCounts = new int[256];
+    long[] sleepOvershootsNs = new long[32];
+    int frameCount;
+    int sleepRequestCount;
+    long totalRequestedSleepNs;
+    long totalActualSleepNs;
+
+    void recordFrame(int frameIndex, long targetNs, long actualStartNs) {
+      ensureFrameCapacity(frameIndex);
+      targetDeadlineNs[frameIndex] = targetNs;
+      actualFrameStartNs[frameIndex] = actualStartNs;
+      deadlineErrorNs[frameIndex] = ImageScrollRealWorkloadBenchmarkApp
+          .deadlineErrorNs(targetNs, actualStartNs);
+      frameCount = Math.max(frameCount, frameIndex + 1);
+    }
+
+    void recordSleep(int frameIndex, long requestedNs, long actualNs) {
+      ensureFrameCapacity(frameIndex);
+      if (sleepRequestCount == sleepOvershootsNs.length) {
+        sleepOvershootsNs = Arrays.copyOf(sleepOvershootsNs, sleepOvershootsNs.length * 2);
+      }
+      sleepRequestedNs[frameIndex] += requestedNs;
+      sleepActualNs[frameIndex] += actualNs;
+      sleepCallCounts[frameIndex]++;
+      sleepOvershootsNs[sleepRequestCount] = ImageScrollRealWorkloadBenchmarkApp
+          .sleepOvershootNs(requestedNs, actualNs);
+      sleepRequestCount++;
+      totalRequestedSleepNs += requestedNs;
+      totalActualSleepNs += actualNs;
+    }
+
+    long sleepOvershootPercentileNs(int percent) {
+      return percentile(sleepOvershootsNs, sleepRequestCount, percent);
+    }
+
+    long deadlineErrorPercentileNs(int percent) {
+      return percentile(deadlineErrorNs, frameCount, percent);
+    }
+
+    private void ensureFrameCapacity(int frameIndex) {
+      if (frameIndex < targetDeadlineNs.length) {
+        return;
+      }
+      int newLength = targetDeadlineNs.length;
+      while (newLength <= frameIndex) {
+        newLength *= 2;
+      }
+      targetDeadlineNs = Arrays.copyOf(targetDeadlineNs, newLength);
+      actualFrameStartNs = Arrays.copyOf(actualFrameStartNs, newLength);
+      deadlineErrorNs = Arrays.copyOf(deadlineErrorNs, newLength);
+      sleepRequestedNs = Arrays.copyOf(sleepRequestedNs, newLength);
+      sleepActualNs = Arrays.copyOf(sleepActualNs, newLength);
+      sleepCallCounts = Arrays.copyOf(sleepCallCounts, newLength);
+    }
+
+    private static long percentile(long[] values, int count, int percent) {
+      if (count == 0) {
+        return 0L;
+      }
+      long[] sorted = Arrays.copyOf(values, count);
+      Arrays.sort(sorted);
+      if (percent <= 0) {
+        return sorted[0];
+      }
+      if (percent >= 100) {
+        return sorted[sorted.length - 1];
+      }
+      int index = (int) Math.ceil(sorted.length * percent / 100.0) - 1;
+      return sorted[Math.max(0, Math.min(sorted.length - 1, index))];
+    }
+  }
+
   private static final class PassResult {
     final String name;
     final boolean forward;
@@ -2440,12 +2593,14 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     final FrameMetrics[] frameMetrics;
     final FrameMetrics[] frameScrollMetrics;
     final FrameMetrics[] framePaintMetrics;
+    final PacingTrace pacingTrace;
     final Counters counters;
 
     PassResult(String name, boolean forward, int minimum, int end, int maximum, long elapsedNs,
         int frames, long[] frameTimesNs, long[] frameElapsedNs, int[] framePositions,
         long[] frameScrollWorkNs, long[] framePaintWorkNs, long[] frameWorkTimeNs,
         long[] sortedFrameTimesNs, long[] sortedWorkTimeNs, long[] sortedPaintWorkNs,
+        PacingTrace pacingTrace,
         long[] frameJpegDecodeCounts, long[] frameJpegDecodeNs,
         long[] frameJpegFullCounts, long[] frameJpegFullNs, long[] frameJpegHalfCounts,
         long[] frameJpegHalfNs, long[] frameJpegQuarterCounts, long[] frameJpegQuarterNs,
@@ -2469,6 +2624,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
       this.sortedFrameTimesNs = sortedFrameTimesNs;
       this.sortedWorkTimeNs = sortedWorkTimeNs;
       this.sortedPaintWorkNs = sortedPaintWorkNs;
+      this.pacingTrace = pacingTrace;
       this.frameJpegDecodeCounts = frameJpegDecodeCounts;
       this.frameJpegDecodeNs = frameJpegDecodeNs;
       this.frameJpegFullCounts = frameJpegFullCounts;
@@ -2511,13 +2667,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow implements T
     }
 
     int countOverNs(long thresholdNs) {
-      int count = 0;
-      for (long frameTimeNs : sortedFrameTimesNs) {
-        if (frameTimeNs > thresholdNs) {
-          count++;
-        }
-      }
-      return count;
+      return countFramesOverThresholdNs(sortedFrameTimesNs, thresholdNs);
     }
 
     int maxConsecutiveOverNs(long thresholdNs) {

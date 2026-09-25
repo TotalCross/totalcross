@@ -17,6 +17,25 @@ bash scripts/package-image-scroll-benchmark.sh \
   --target macos-arm64
 ```
 
+## Frame pacing investigation
+
+Part 1 uses the same macOS ARM64 bundle and 663-image corpus to measure the
+synthetic 16 ms and 60 Hz pacers, then the real Flick drivers and animation
+clocks. Run a stage from the repository root:
+
+```sh
+python3 scripts/run-frame-pacing-benchmark.py \
+  --stage 1 --rounds 3 \
+  --bundle /path/to/image-scroll-benchmark-macos-arm64 \
+  --evidence-csv .agent/evidence/frame-pacing-stage-1-macos.csv \
+  --evidence-json .agent/evidence/frame-pacing-stage-1-macos.json
+```
+
+The runner first validates one accounting-enabled preflight process, then starts
+three fresh processes per configuration. It replaces the two canonical stage
+result files only after every process and evidence row passes validation.
+Process logs and detailed frame files stay in temporary execution directories.
+
 For Windows, `--source-commit` identifies the benchmark source revision.
 `--sdk-source-commit` identifies the source revision of the runtime contained
 in the SDK ZIP. It must be an ancestor of `--source-commit`; they do not need
