@@ -68,8 +68,9 @@ function Get-DatasetDigest {
     if ($images.Count -ne 663) { throw "Corpus must contain 663 named images; found $($images.Count)" }
     $paths = [string[]]@($images | ForEach-Object { $_.FullName })
     [Array]::Sort($paths, [System.StringComparer]::Ordinal)
-    $script:fnvLow = [UInt32]0x84222325
-    $script:fnvHigh = [UInt32]0xcbf29ce4
+    $hexStyle = [System.Globalization.NumberStyles]::HexNumber
+    $script:fnvLow = [UInt32]::Parse('84222325', $hexStyle)
+    $script:fnvHigh = [UInt32]::Parse('cbf29ce4', $hexStyle)
     $formats = @{ jpeg = 0; png = 0 }
     $buffer = New-Object byte[] 65536
     $separator = [byte[]]@(0)

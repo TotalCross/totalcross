@@ -513,6 +513,12 @@ def test_windows_runner_matrix_and_process_contract():
             and "Get-DatasetDigest $corpusPath" in runner
             and "Corpus magic counts must be 660 JPEG and 3 PNG" in helper,
             "Windows runner does not validate runtime and dataset identities")
+    require("$hexStyle = [System.Globalization.NumberStyles]::HexNumber" in helper
+            and "[UInt32]::Parse('84222325', $hexStyle)" in helper
+            and "[UInt32]::Parse('cbf29ce4', $hexStyle)" in helper
+            and "[UInt32]0x84222325" not in helper
+            and "[UInt32]0xcbf29ce4" not in helper,
+            "Windows FNV seeds are not parsed as unsigned hexadecimal values")
     require("$manifest.framePacingRunnerCompanion -ne 'frame-pacing-benchmark-windows-functions.ps1'" in runner,
             "Windows runner does not validate the packaged companion identity")
 
