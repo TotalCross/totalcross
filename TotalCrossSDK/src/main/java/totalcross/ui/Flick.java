@@ -33,6 +33,8 @@ import totalcross.util.Vector;
 public class Flick implements PenListener, TimerListener, UpdateListener {
   static final String FRAME_DRIVER_TIMER = "timer";
   static final String FRAME_DRIVER_UPDATE = "update";
+  static final String FRAME_CLOCK_MILLIS = "millis";
+  static final String FRAME_CLOCK_NANO = "nano";
 
   interface FrameDriverHost {
     void addTimer(Flick flick, int intervalMs);
@@ -137,6 +139,8 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
   // Beginning of a flick
   private double v0;
   private int t0;
+  private long animationStartNs;
+  private String frameClock = FRAME_CLOCK_MILLIS;
 
   // Flick progress
   private int flickPos;
@@ -224,6 +228,16 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
     frameDriverHost = host;
   }
 
+  void configureFrameClockForBenchmark(String clock) {
+    if (frameDriverRegistered || currentFlick == this) {
+      throw new IllegalStateException("cannot change the Flick clock while active");
+    }
+    if (!FRAME_CLOCK_MILLIS.equals(clock) && !FRAME_CLOCK_NANO.equals(clock)) {
+      throw new IllegalArgumentException("benchmark clock must be millis or nano");
+    }
+    frameClock = clock;
+  }
+
   void startBenchmarkMotion(int durationMs, int totalDisplacement, int startOffsetMs,
       FrameObserver observer) {
     if (durationMs <= 0 || totalDisplacement == 0 || startOffsetMs < 0) {
@@ -236,6 +250,7 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
     benchmarkMotionActive = true;
     flickDirection = DragEvent.UP;
     t0 = Vm.getTimeStamp() - startOffsetMs;
+    animationStartNs = System.nanoTime() - startOffsetMs * 1000000L;
     t1 = durationMs;
     v0 = 2.0 * totalDisplacement / durationMs;
     a = -2.0 * totalDisplacement / ((double) durationMs * durationMs);
@@ -261,6 +276,23 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
 
   boolean frameDriverRegisteredForTest() {
     return frameDriverRegistered;
+  }
+
+  String frameClockForTest() {
+    return frameClock;
+  }
+
+  void setAnimationClockOriginForTest(int millisecondOrigin, long nanoOrigin) {
+    t0 = millisecondOrigin;
+    animationStartNs = nanoOrigin;
+  }
+
+  double animationElapsedMillisecondsForTest(int millisecondNow, long nanoNow) {
+    return animationElapsedMilliseconds(millisecondNow, nanoNow);
+  }
+
+  int flickPositionAtElapsedMillisecondsForTest(double elapsedMilliseconds) {
+    return calculateFlickPosition(elapsedMilliseconds);
   }
 
   /** Call this method to set the PagePosition control that will be updated with the current page
@@ -737,19 +769,13 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
   private void advanceFlickFrame() {
       FrameObserver observer = benchmarkFrameObserver;
       long callbackStartNs = observer == null ? 0 : System.nanoTime();
-      double t = Vm.getTimeStamp() - t0;
+      double t = animationElapsedMilliseconds();
       boolean durationReached = benchmarkMotionActive && t >= t1;
       if (durationReached) {
         t = t1;
       }
 
-      // No rounding is done, the maximum rounding error is 1 pixel.
-      int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
-      int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
-      // check if the amount will overflow the scrollDistance
-      if (scrollDistance != 0 && absNewFlickPos > scrollDistanceRemaining) {
-        newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
-      }
+      int newFlickPos = calculateFlickPosition(t);
       int flickMotion = newFlickPos - flickPos;
       flickPos = newFlickPos;
       boolean endReached = flickMotion == 0;
@@ -803,6 +829,31 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
         observer.frameAdvanced(callbackStartNs, System.nanoTime(), scrollWorkNs, flickPos,
             currentFlick != this);
       }
+  }
+
+  private double animationElapsedMilliseconds() {
+    if (FRAME_CLOCK_NANO.equals(frameClock)) {
+      return animationElapsedMilliseconds(0, System.nanoTime());
+    }
+    return animationElapsedMilliseconds(Vm.getTimeStamp(), 0);
+  }
+
+  private double animationElapsedMilliseconds(int millisecondNow, long nanoNow) {
+    return FRAME_CLOCK_NANO.equals(frameClock)
+        ? (nanoNow - animationStartNs) / 1000000.0
+        : millisecondNow - t0;
+  }
+
+  private int calculateFlickPosition(double elapsedMilliseconds) {
+    // No rounding is done, the maximum rounding error is 1 pixel.
+    int newFlickPos = (int) (v0 * elapsedMilliseconds
+        + a * elapsedMilliseconds * elapsedMilliseconds / 2.0);
+    int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
+    // check if the amount will overflow the scrollDistance
+    if (scrollDistance != 0 && absNewFlickPos > scrollDistanceRemaining) {
+      newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
+    }
+    return newFlickPos;
   }
 
 }

@@ -439,7 +439,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
     flickPacingLastMetrics = FrameMetrics.capture();
     addUpdateListener(this);
     flickPacingRecording = FlickBenchmarkSupport.start(scroll, flickPacingDriver,
-        flickPacingFps, new FlickBenchmarkSupport.FrameListener() {
+        flickPacingFps, flickPacingClock, new FlickBenchmarkSupport.FrameListener() {
           @Override
           public void frameCompleted(FlickBenchmarkSupport.Frame frame) {
             recordFlickPacingFrame(frame);

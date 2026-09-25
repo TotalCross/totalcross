@@ -54,6 +54,7 @@ class FlickDriverTest {
     TestScrollable target = newTestScrollable();
     assertEquals(Flick.FRAME_DRIVER_TIMER, target.getFlick().frameDriverForTest());
     assertEquals(40, target.getFlick().frameRate);
+    assertEquals(Flick.FRAME_CLOCK_MILLIS, target.getFlick().frameClockForTest());
     assertNull(target.getFlick().timer);
   }
 
@@ -113,6 +114,46 @@ class FlickDriverTest {
     assertFalse(flick.frameDriverRegisteredForTest());
     assertEquals(1, host.updateRemoveCount);
     assertEquals(1, target.flickEndedCount);
+  }
+
+  @Test
+  void animationClocksMatchAtMillisecondBoundariesAndNanoKeepsSubmillisecondProgress() {
+    TestScrollable millisTarget = newTestScrollable();
+    FlickBenchmarkSupport.DriverHostRecorder millisHost =
+        new FlickBenchmarkSupport.DriverHostRecorder();
+    FlickBenchmarkSupport.startForTest(millisTarget, Flick.FRAME_DRIVER_UPDATE, 0,
+        Flick.FRAME_CLOCK_MILLIS, millisHost, 0);
+    Flick millisFlick = millisTarget.getFlick();
+    millisFlick.setAnimationClockOriginForTest(100, 1_000_000_000L);
+    double millisElapsed = millisFlick.animationElapsedMillisecondsForTest(
+        1100, 2_000_000_000L);
+    int millisPosition = millisFlick.flickPositionAtElapsedMillisecondsForTest(millisElapsed);
+    assertEquals(1000.0, millisElapsed, 0.0);
+    assertEquals(Flick.FRAME_CLOCK_MILLIS, millisFlick.frameClockForTest());
+    millisFlick.stop(false);
+
+    TestScrollable nanoTarget = newTestScrollable();
+    FlickBenchmarkSupport.DriverHostRecorder nanoHost =
+        new FlickBenchmarkSupport.DriverHostRecorder();
+    FlickBenchmarkSupport.startForTest(nanoTarget, Flick.FRAME_DRIVER_UPDATE, 0,
+        Flick.FRAME_CLOCK_NANO, nanoHost, 0);
+    Flick nanoFlick = nanoTarget.getFlick();
+    nanoFlick.setAnimationClockOriginForTest(100, 1_000_000_000L);
+    double nanoElapsed = nanoFlick.animationElapsedMillisecondsForTest(
+        1100, 2_000_000_000L);
+    int nanoPosition = nanoFlick.flickPositionAtElapsedMillisecondsForTest(nanoElapsed);
+    assertEquals(1000.0, nanoElapsed, 0.0);
+    assertEquals(millisPosition, nanoPosition);
+
+    double millisSubmillisecond = millisFlick.animationElapsedMillisecondsForTest(
+        100, 1_000_500_000L);
+    double nanoSubmillisecond = nanoFlick.animationElapsedMillisecondsForTest(
+        100, 1_000_500_000L);
+    assertEquals(0.0, millisSubmillisecond, 0.0);
+    assertEquals(0.5, nanoSubmillisecond, 0.000000001);
+    assertEquals(0, millisFlick.flickPositionAtElapsedMillisecondsForTest(millisSubmillisecond));
+    assertEquals(-7, nanoFlick.flickPositionAtElapsedMillisecondsForTest(nanoSubmillisecond));
+    nanoFlick.stop(false);
   }
 
   private static void assertTimerDriver(int fps, int intervalMs) {

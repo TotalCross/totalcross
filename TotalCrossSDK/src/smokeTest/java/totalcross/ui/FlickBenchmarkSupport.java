@@ -191,16 +191,29 @@ public final class FlickBenchmarkSupport {
 
   public static Recording start(Scrollable target, String driver, int timerFps,
       FrameListener listener) {
-    return start(target, driver, timerFps, listener, null, 0, true);
+    return start(target, driver, timerFps, Flick.FRAME_CLOCK_MILLIS,
+        listener, null, 0, true);
+  }
+
+  public static Recording start(Scrollable target, String driver, int timerFps,
+      String clock, FrameListener listener) {
+    return start(target, driver, timerFps, clock, listener, null, 0, true);
   }
 
   static Recording startForTest(Scrollable target, String driver, int timerFps,
       DriverHostRecorder host, int startOffsetMs) {
-    return start(target, driver, timerFps, null, host, startOffsetMs, false);
+    return startForTest(target, driver, timerFps, Flick.FRAME_CLOCK_MILLIS,
+        host, startOffsetMs);
+  }
+
+  static Recording startForTest(Scrollable target, String driver, int timerFps,
+      String clock, DriverHostRecorder host, int startOffsetMs) {
+    return start(target, driver, timerFps, clock, null, host, startOffsetMs, false);
   }
 
   private static Recording start(Scrollable target, String driver, int timerFps,
-      FrameListener listener, DriverHostRecorder host, int startOffsetMs, boolean repaint) {
+      String clock, FrameListener listener, DriverHostRecorder host,
+      int startOffsetMs, boolean repaint) {
     if (target == null) {
       throw new NullPointerException("scrollable target");
     }
@@ -231,6 +244,7 @@ public final class FlickBenchmarkSupport {
       flick.setFrameDriverHostForTest(host);
     }
     flick.configureFrameDriverForBenchmark(driver, timerFps);
+    flick.configureFrameClockForBenchmark(clock);
     flick.startBenchmarkMotion(MOTION_DURATION_MS, MOTION_DISPLACEMENT, startOffsetMs,
         recording);
     return recording;
