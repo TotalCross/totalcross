@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "target": "windows-x64",
+  "actionSourceSha": "8a0cdc9bdc10b25484749e9493201abce6be2fce",
+  "workflow": {
+    "name": "Packages totalcross",
+    "runId": 36103442356,
+    "runUrl": "https://github.com/TotalCross/totalcross/actions/runs/36103442356",
+    "conclusion": "success"
+  },
+  "sdkArtifact": {
+    "id": 10850736552,
+    "name": "TotalCross-7.2.2",
+    "sha256": "d647675b4dd4447d314936c822b8d815a11c32df2a693b85f0ed8e033581db46",
+    "sizeBytes": 129669307
+  },
+  "windowsPackage": {
+    "file": "image-scroll-benchmark-windows-x64.zip",
+    "sha256": "9cdc54ff890d9f47a730c3c7557130b9b79e48545ad07f7ecf1064a0bbebe649",
+    "sizeBytes": 44588822,
+    "tcvmDllSha256": "5976a999dd5e4c3432d5791ad4cc1031b7ec8fe77fef7a9330cfe88a27ac0d51",
+    "sourceCommit": "8a0cdc9bdc10b25484749e9493201abce6be2fce",
+    "sdkSourceAttestation": "8a0cdc9bdc10b25484749e9493201abce6be2fce",
+    "windowsExecuted": false
+  },
+  "runners": [
+    {
+      "file": "run-frame-pacing-benchmark-windows.ps1",
+      "sha256": "26136b66c70b8d770ca79588640a578e31d502a57827dd45cd8056cced9dd16b"
+    },
+    {
+      "file": "frame-pacing-benchmark-windows-functions.ps1",
+      "sha256": "205fa880ee075f95e924fff3f7972cc01d19c657c102d944ed62b792ac468ba3"
+    }
+  ],
+  "dataset": {
+    "hash": "af39fea695191a27",
+    "fileCount": 663,
+    "contentFormatCounts": {
+      "total": 663,
+      "jpeg": 660,
+      "png": 3
+    }
+  },
+  "staticPackageCheck": "passed"
+}

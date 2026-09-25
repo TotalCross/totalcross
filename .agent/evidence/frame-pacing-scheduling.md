@@ -162,3 +162,9 @@ files; raw process output and temporary run directories stay outside Git.
   output is `/tmp/frame-pacing-stage-5-matrix.log`; process logs are under
   `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-5-ltbiqj_i`;
   the temporary bundle is `/tmp/frame-pacing-stage-5-package`.
+- 2026-09-25: The Windows runner/package integration passed 13 static contract
+  checks and the distributed-benchmark suite. The exact source SHA was pushed;
+  `package.yml` run `36103442356` succeeded. The action SDK and Windows bundle
+  passed static identity/content checks. Hashes, artifact IDs, counts, and
+  `windowsExecuted=false` are recorded once in
+  `.agent/evidence/frame-pacing-windows-package.json`.

@@ -459,11 +459,12 @@ the repository validator and keep body lines <=80 characters.
 
 - [x] Stage 4 implementation, macOS benchmark, committed evidence.
 - [x] Stage 5 implementation, macOS benchmark, committed evidence.
-- [ ] Pure PowerShell Windows 48-process runner and package integration.
-- [ ] Final focused validation and signature/size audit.
-- [ ] Push exact source SHA and run `package.yml`.
-- [ ] Download successful action SDK and create Windows package.
-- [ ] Commit package provenance/editorial closure and push final evidence commit.
+- [x] Pure PowerShell Windows 48-process runner and package integration.
+- [x] Final focused validation and signature/size audit.
+- [x] Push exact source SHA and run `package.yml` successfully.
+- [x] Download successful action SDK and create the statically checked
+  Windows package.
+- [x] Commit package provenance/editorial closure and push the final evidence commit.
 
 ## Decision Log
 
@@ -525,6 +526,4 @@ Windows runtime execution as deferred to the operator.
 
 ## Revision Note
 
-Part 2 fixes the remaining architecture and publication workflow up front so a
-resuming Luna agent does not need to choose timer semantics, wake mechanics,
-yield behavior, benchmark matrices, or GitHub artifact provenance rules.
+Part 2 records the remaining design and publication workflow for resumption.

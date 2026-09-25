@@ -8,17 +8,16 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-Part 1 (Stages 1-3) is complete on branch
-`feat/frame-pacing-scheduling-diagnostics`, based on immutable commit
-`d7a9ec93faf9f2da0724611de115649176d0b033`. Part 2 is active and Stage 4 is
-complete: relative/absolute native deadline scheduling passed its 12-process
-macOS matrix, and its evidence is committed. Stage 5 is complete: SDL wait and
-native yield commits passed the nine-process macOS matrix; its evidence is the
-current checkpoint.
+Part 1 (Stages 1-3) and Part 2 (Stages 4-5 plus Windows packaging) are complete
+on branch `feat/frame-pacing-scheduling-diagnostics`, based on immutable
+commit `d7a9ec93faf9f2da0724611de115649176d0b033`. All five macOS matrices and
+preflights passed. The Windows runner/package contract and static package check
+passed; the benchmark executable was not run on Windows.
 
 ## Last logical commit
 
-`bbbf6befa` records Stage 5 evidence; `0ee9086f7` adds the native yield
+`8a0cdc9bd` packages the Windows pacing runner and manifest; `bbbf6befa`
+records Stage 5 evidence; `0ee9086f7` adds the native yield
 selector; `703045cf9` adds the SDL
 event-driven wait mode. `92f5e94e6` skips empty
 benchmark Flick scrolls after rounded frames;
@@ -69,6 +68,7 @@ and both are recorded in the evidence index.
 - `.agent/evidence/frame-pacing-stage-4-macos.json`
 - `.agent/evidence/frame-pacing-stage-5-macos.csv`
 - `.agent/evidence/frame-pacing-stage-5-macos.json`
+- `.agent/evidence/frame-pacing-windows-package.json`
 
 ## Preservation inventory
 
@@ -97,10 +97,9 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-Sign the Windows runner/package integration checkpoint after final focused
-validation. Then push the exact source SHA, run `package.yml`, package the
-action-built Windows SDK, and record package provenance. Polling and legacy
-`Sleep(1)` remain the defaults.
+Create and push the final signed evidence/docs closure commit. Both plans are
+complete; the resulting branch HEAD is reported in the completion message.
+Polling and legacy `Sleep(1)` remain the defaults.
 
 ## Validation and deferrals
 
@@ -136,6 +135,11 @@ action-built Windows SDK, and record package provenance. Polling and legacy
 - The Windows PowerShell runner/package contract suite passed (13 checks), and
   the shared distributed-benchmark tests passed. Windows execution remains
   deferred as specified; this macOS host has no PowerShell runtime.
+- The final source was pushed at the exact SHA selected for `package.yml` run
+  `36103442356`; the workflow completed successfully, including package deploy
+  checks on macOS ARM, Windows x86/64, and Linux x86/64. Its action SDK and the
+  statically checked Windows package are recorded in
+  `.agent/evidence/frame-pacing-windows-package.json`.
 - `FlickDriverTest` and `SyntheticPacingTest` pass. SDK package builds and
   macOS ARM64 benchmark packaging passed for Stages 2 and 3. The Stage 3 bundle
   reused runtime SHA-256
