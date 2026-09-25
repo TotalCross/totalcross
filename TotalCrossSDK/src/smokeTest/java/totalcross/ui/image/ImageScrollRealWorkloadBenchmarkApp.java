@@ -107,6 +107,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
   private String accountingProfile;
   private String benchmarkProfile;
   private boolean scrollRasterReuseProfile;
+  private boolean windowsScrollRasterReuseProfile;
   private boolean releaseDefaultScrollProfile;
   private boolean releaseCandidateScrollProfile;
   private boolean rasterReuseBenchmarkProfile;
@@ -215,12 +216,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
       ImageRasterBenchmarkSupport.require(MODE_BENCHMARK.equals(mode),
           "unsupported mode: " + mode);
       imageDir = ImageRasterBenchmarkSupport.argument(getCommandLine(), "corpus", null);
-      maskArgument = ImageRasterBenchmarkSupport.argument(
-          getCommandLine(), "image-optimization", null);
+      benchmarkProfile = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "profile", "standard");
+      boolean windowsRasterReuseDefaults =
+          "scroll-raster-reuse-windows".equals(benchmarkProfile);
+      maskArgument = ImageRasterBenchmarkSupport.argument(getCommandLine(),
+          "image-optimization", windowsRasterReuseDefaults ? "6" : null);
       runNumber = parseRunNumber(ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "run", "0"));
       benchmarkPassCount = ImageRasterBenchmarkSupport.integerArgument(
-          getCommandLine(), "passes", 1);
+          getCommandLine(), "passes", windowsRasterReuseDefaults ? 2 : 1);
       outputDir = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "output", "benchmark-output");
       datasetHashArgument = ImageRasterBenchmarkSupport.argument(
@@ -239,6 +244,23 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
           getCommandLine(), "flick-fps", 0);
       flickTimerDeadlineMode = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "deadline", "relative");
+      String flickConfiguration = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "flick-config", null);
+      if (flickConfiguration != null) {
+        String[] fields = flickConfiguration.split(",");
+        ImageRasterBenchmarkSupport.require(fields.length == 6,
+            "flick-config must contain driver,fps,clock,deadline,event-loop,yield");
+        flickPacingDriver = fields[0];
+        try {
+          flickPacingFps = Integer.parseInt(fields[1]);
+        } catch (NumberFormatException error) {
+          throw new IllegalArgumentException("flick-config fps must be an integer");
+        }
+        flickPacingClock = fields[2];
+        flickTimerDeadlineMode = fields[3];
+        flickEventLoopMode = fields[4];
+        flickThreadYieldMode = fields[5];
+      }
       String pacingModes = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "pacing", null);
       if (pacingModes != null) {
@@ -250,11 +272,12 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         flickThreadYieldMode = modes[2];
       }
       validateFlickPacingArguments();
-      prefetchProfile = ImageRasterBenchmarkSupport.argument(
-          getCommandLine(), "prefetch", "off");
+      prefetchProfile = ImageRasterBenchmarkSupport.argument(getCommandLine(), "prefetch",
+          windowsRasterReuseDefaults ? "on" : "off");
       prefetchThreadMode = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "prefetch-thread-mode",
-          ImagePreparation.PREFETCH_THREAD_MODE_LEGACY);
+          windowsRasterReuseDefaults ? ImagePreparation.PREFETCH_THREAD_MODE_WORKER_SEMAPHORE
+              : ImagePreparation.PREFETCH_THREAD_MODE_LEGACY);
       int requestedWorkerSleepMs = ImageRasterBenchmarkSupport.integerArgument(
           getCommandLine(), "prefetch-worker-sleep-ms", 0);
       ImagePreparation.configurePrefetchThreadModeForDiagnostic(
@@ -262,14 +285,13 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
       prefetchThreadMode = ImagePreparation.prefetchThreadModeForTest();
       prefetchWorkerSleepMs = ImagePreparation.prefetchWorkerSleepMsForTest();
       accountingProfile = ImageRasterBenchmarkSupport.argument(
-          getCommandLine(), "accounting", "on");
-      benchmarkProfile = ImageRasterBenchmarkSupport.argument(
-          getCommandLine(), "profile", "standard");
+          getCommandLine(), "accounting", windowsRasterReuseDefaults ? "off" : "on");
       scrollRasterReuseProfile = "scroll-raster-reuse-poc".equals(benchmarkProfile);
+      windowsScrollRasterReuseProfile = "scroll-raster-reuse-windows".equals(benchmarkProfile);
       releaseDefaultScrollProfile = "release-default-scroll".equals(benchmarkProfile);
       releaseCandidateScrollProfile = "release-candidate-scroll".equals(benchmarkProfile);
-      rasterReuseBenchmarkProfile = scrollRasterReuseProfile || releaseDefaultScrollProfile
-          || releaseCandidateScrollProfile;
+      rasterReuseBenchmarkProfile = scrollRasterReuseProfile || windowsScrollRasterReuseProfile
+          || releaseDefaultScrollProfile || releaseCandidateScrollProfile;
       workloadImageCount = scrollRasterReuseProfile ? POC_IMAGE_COUNT : IMAGE_COUNT;
       configureScrollRasterReuse();
       ImageRasterBenchmarkSupport.require(imageDir != null && imageDir.length() > 0,
@@ -290,6 +312,19 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
       ImageRasterBenchmarkSupport.require("off".equals(accountingProfile)
           || "on".equals(accountingProfile),
           "accounting must be off or on");
+      if (windowsRasterReuseDefaults) {
+        ImageRasterBenchmarkSupport.require("6".equals(maskArgument),
+            "Windows scroll raster reuse requires image-optimization=6");
+        ImageRasterBenchmarkSupport.require("on".equals(prefetchProfile)
+            && ImagePreparation.PREFETCH_THREAD_MODE_WORKER_SEMAPHORE.equals(prefetchThreadMode)
+            && prefetchWorkerSleepMs == 0,
+            "Windows scroll raster reuse requires worker-semaphore prefetch without worker sleep");
+        ImageRasterBenchmarkSupport.require("timer".equals(flickPacingDriver)
+            && flickPacingFps == 60 && "nano".equals(flickPacingClock)
+            && "absolute".equals(flickTimerDeadlineMode)
+            && "poll".equals(flickEventLoopMode) && "legacy".equals(flickThreadYieldMode),
+            "Windows scroll raster reuse requires TimerEvent 60 nano, absolute, poll, legacy");
+      }
       ImageRasterBenchmarkSupport.ensureDirectory(outputDir);
       ImageRasterBenchmarkSupport.ensureDirectory(
           ImageRasterBenchmarkSupport.joinPath(outputDir, "runs"));
@@ -719,6 +754,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         + ",prefetch_full_jpeg_decodes=" + prefetchFullJpegDecodes
         + ",prefetch_image_materializations=" + prefetchImageMaterializations
         + ",prefetch_native_geometry_materializations=" + prefetchNativeGeometryMaterializations
+        + (windowsScrollRasterReuseProfile
+            ? ",prefetch_thread_mode=" + prefetchThreadMode
+                + ",prefetch_worker_sleep_ms=" + prefetchWorkerSleepMs
+                + ",flick_driver=" + flickPacingDriver + ",flick_fps=" + flickPacingFps
+                + ",flick_clock=" + flickPacingClock
+                + ",timer_deadline_mode=" + flickTimerDeadlineMode
+                + ",event_loop_mode=" + flickEventLoopMode
+                + ",thread_yield_mode=" + flickThreadYieldMode
+            : "")
         + (prefetchThreadDiagnosticProfile()
             ? ",prefetch_thread_mode=" + prefetchThreadMode
                 + ",prefetch_worker_sleep_ms=" + prefetchWorkerSleepMs
@@ -1334,6 +1378,11 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
 
   private PocPassResult runScrollRasterReusePass(String name, int[] waypoints,
       StringBuilder frames, StringBuilder waypointRows) {
+    long jpegDecodeStart = Image.jpegNativeDecodeCountForTest;
+    long targetedDecodeStart = Image.targetedDecodeInvocationCountForTest();
+    long fullDecodeStart = Image.fullDecodeInvocationCountForTest();
+    long imageMaterializationStart = Image.materializationCountForTest();
+    long nativeGeometryMaterializationStart = Image.nativeGeometryMaterializationCountForTest();
     long passStartNs = System.nanoTime();
     int frameIndex = 0;
     int movementFrameCount = 0;
@@ -1449,9 +1498,21 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         nextFrameNs += POC_FRAME_INTERVAL_NS;
       }
     }
+    int startScroll = waypoints[0];
+    int expectedFinalScroll = waypoints[waypoints.length - 1];
+    int actualFinalScroll = scroll.sbV.getValue();
+    ImageRasterBenchmarkSupport.require(actualFinalScroll == expectedFinalScroll,
+        name + " final scroll position differs from its expected waypoint: expected="
+            + expectedFinalScroll + ",actual=" + actualFinalScroll);
     return new PocPassResult(name, System.nanoTime() - passStartNs, frameIndex,
         movementFrameCount, attempts, hits, fallbacks, viewportPixels, reusedPixels,
-        dirtyPixels, movedBytes, screenUpdateNs, postMoveRecoveries);
+        dirtyPixels, movedBytes, screenUpdateNs, postMoveRecoveries,
+        Image.jpegNativeDecodeCountForTest - jpegDecodeStart,
+        Image.targetedDecodeInvocationCountForTest() - targetedDecodeStart,
+        Image.fullDecodeInvocationCountForTest() - fullDecodeStart,
+        Image.materializationCountForTest() - imageMaterializationStart,
+        Image.nativeGeometryMaterializationCountForTest() - nativeGeometryMaterializationStart,
+        startScroll, expectedFinalScroll, actualFinalScroll);
   }
 
   private void validateScrollRasterReusePass(PocPassResult result) {
@@ -1459,7 +1520,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         result.name + " raster reuse accounting mismatch");
     ImageRasterBenchmarkSupport.require(result.postMoveRecoveries == 0,
         result.name + " had post-move recovery");
-    if (RenderingOptimizations.getMask() != 0) {
+    if (RenderingOptimizations.getMask() != 0 && !windowsScrollRasterReuseProfile) {
       ImageRasterBenchmarkSupport.require(result.hits > 0,
           result.name + " did not record raster reuse hits: attempts=" + result.attempts
               + ",fallbacks=" + result.fallbacks + ",reasons=" + rasterReuseFallbackDetails()
@@ -1490,6 +1551,20 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
     ImageRasterBenchmarkSupport.require(
         result.movedBytes == result.reusedPixels * benchmarkTargetPixelBytes,
         result.name + " moved-byte accounting mismatch");
+    if (windowsScrollRasterReuseProfile && accountingEnabled()) {
+      ImageRasterBenchmarkSupport.require(result.jpegDecodes == 0
+          && result.targetedJpegDecodes == 0
+          && result.fullJpegDecodes == 0,
+          result.name + " performed scroll-time JPEG decoding: total=" + result.jpegDecodes
+              + ",targeted="
+              + result.targetedJpegDecodes + ",full=" + result.fullJpegDecodes);
+      ImageRasterBenchmarkSupport.require(result.imageMaterializations == 0,
+          result.name + " performed scroll-time image materialization: "
+              + result.imageMaterializations);
+      ImageRasterBenchmarkSupport.require(result.nativeGeometryMaterializations == 0,
+          result.name + " performed scroll-time native geometry materialization: "
+              + result.nativeGeometryMaterializations);
+    }
   }
 
   private static String rasterReuseFallbackDetails() {
@@ -1520,6 +1595,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         + result.reusedPixels + ",dirty_pixels=" + result.dirtyPixels
         + ",moved_bytes=" + result.movedBytes + ",screen_update_ns="
         + result.screenUpdateNs + ",post_move_recoveries=" + result.postMoveRecoveries
+        + ",scroll_jpeg_decode_count=" + result.jpegDecodes
+        + ",scroll_targeted_jpeg_decodes=" + result.targetedJpegDecodes
+        + ",scroll_full_jpeg_decodes=" + result.fullJpegDecodes
+        + ",scroll_image_materializations=" + result.imageMaterializations
+        + ",scroll_native_geometry_materializations=" + result.nativeGeometryMaterializations
+        + ",start_scroll=" + result.startScroll
+        + ",expected_final_scroll=" + result.expectedFinalScroll
+        + ",actual_final_scroll=" + result.actualFinalScroll
+        + ",expected_final_displacement=" + result.expectedFinalDisplacement
+        + ",actual_final_displacement=" + result.actualFinalDisplacement
         + ",segment_durations_ms=500,250,200,150");
     System.out.flush();
   }
@@ -2452,11 +2537,23 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
     final long movedBytes;
     final long screenUpdateNs;
     final long postMoveRecoveries;
+    final long jpegDecodes;
+    final long targetedJpegDecodes;
+    final long fullJpegDecodes;
+    final long imageMaterializations;
+    final long nativeGeometryMaterializations;
+    final int startScroll;
+    final int expectedFinalScroll;
+    final int actualFinalScroll;
+    final int expectedFinalDisplacement;
+    final int actualFinalDisplacement;
 
     PocPassResult(String name, long elapsedNs, int frameCount, int movementFrameCount,
         long attempts, long hits,
         long fallbacks, long viewportPixels, long reusedPixels, long dirtyPixels, long movedBytes,
-        long screenUpdateNs, long postMoveRecoveries) {
+        long screenUpdateNs, long postMoveRecoveries, long jpegDecodes, long targetedJpegDecodes,
+        long fullJpegDecodes, long imageMaterializations, long nativeGeometryMaterializations,
+        int startScroll, int expectedFinalScroll, int actualFinalScroll) {
       this.name = name;
       this.elapsedNs = elapsedNs;
       this.frameCount = frameCount;
@@ -2470,6 +2567,16 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
       this.movedBytes = movedBytes;
       this.screenUpdateNs = screenUpdateNs;
       this.postMoveRecoveries = postMoveRecoveries;
+      this.jpegDecodes = jpegDecodes;
+      this.targetedJpegDecodes = targetedJpegDecodes;
+      this.fullJpegDecodes = fullJpegDecodes;
+      this.imageMaterializations = imageMaterializations;
+      this.nativeGeometryMaterializations = nativeGeometryMaterializations;
+      this.startScroll = startScroll;
+      this.expectedFinalScroll = expectedFinalScroll;
+      this.actualFinalScroll = actualFinalScroll;
+      this.expectedFinalDisplacement = expectedFinalScroll - startScroll;
+      this.actualFinalDisplacement = actualFinalScroll - startScroll;
     }
   }
 

@@ -119,6 +119,10 @@ static bool selectPixelFormat(ScreenSurface screen)
       if (texture != NULL)
       {
          selectedPixelFormat = candidates[i];
+         const char *scrollRasterReuseBenchmark = getenv("TC_SCROLL_RASTER_REUSE_BENCHMARK");
+         if (scrollRasterReuseBenchmark != NULL && scrollRasterReuseBenchmark[0] != '\0')
+            fprintf(stderr, "TC_SCROLL_RASTER_REUSE_SDL_PIXEL_FORMAT=%s\n",
+               SDL_GetPixelFormatName(selectedPixelFormat));
          return true;
       }
       if (requestedPixelFormat != TCSDL_PIXEL_FORMAT_AUTO)
