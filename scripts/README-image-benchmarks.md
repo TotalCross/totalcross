@@ -68,6 +68,16 @@ powershell -ExecutionPolicy Bypass -File .\run-prefetch-thread-benchmark-windows
 ```
 
 The runner stores per-process output and a ZIP of its evidence under `results`.
+
+Run the complete frame-pacing matrix from the extracted Windows bundle root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-frame-pacing-benchmark-windows.ps1
+```
+
+The frame-pacing runner stores all five stage summaries, process logs, and a
+results ZIP under `results`.
+
 Windows packaging also requires `--sdk-source-commit` as an explicit
 `sdkSourceAttestation`; its revision must be an ancestor of the benchmark
 source revision. This is an operator-provided provenance assertion, not

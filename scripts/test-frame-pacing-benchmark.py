@@ -9,6 +9,7 @@ import csv
 import importlib.util
 import json
 from pathlib import Path
+import re
 import sys
 import tempfile
 from types import SimpleNamespace
@@ -18,6 +19,10 @@ import frame_pacing_contract as CONTRACT
 
 
 RUNNER_PATH = Path(__file__).with_name("run-frame-pacing-benchmark.py")
+WINDOWS_RUNNER_PATH = Path(__file__).with_name("run-frame-pacing-benchmark-windows.ps1")
+WINDOWS_HELPER_PATH = Path(__file__).with_name("frame-pacing-benchmark-windows-functions.ps1")
+PACKAGER_PATH = Path(__file__).with_name("package-image-scroll-benchmark.sh")
+README_PATH = Path(__file__).with_name("README-image-benchmarks.md")
 SPEC = importlib.util.spec_from_file_location("frame_pacing_runner", RUNNER_PATH)
 RUNNER = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -444,6 +449,109 @@ def test_stage_four_five_modes_and_evidence_size():
                     f"stage {stage} canonical evidence exceeds 20 KiB")
 
 
+def test_windows_runner_matrix_and_process_contract():
+    runner = WINDOWS_RUNNER_PATH.read_text(encoding="utf-8")
+    helper = WINDOWS_HELPER_PATH.read_text(encoding="utf-8")
+    combined = runner + "\n" + helper
+    for path in (WINDOWS_RUNNER_PATH, WINDOWS_HELPER_PATH):
+        require(path.stat().st_size < 20 * 1024,
+                f"{path.name} exceeds the 20 KiB limit")
+        require(len(path.read_text(encoding="utf-8").splitlines()) < 600,
+                f"{path.name} exceeds the 600-line limit")
+
+    require(runner.index("Set-StrictMode -Version Latest")
+            < runner.index("$ErrorActionPreference = 'Stop'"),
+            "strict mode is not initialized before runner behavior")
+    metadata_initializers = (
+        "$datasetHash = $null", "$runtimeSha256 = $null", "$sourceCommit = $null",
+        "$completedProcesses = 0", "$completedPreflightProcesses = 0",
+        "$expectedMeasuredProcesses = 48", "$rowsByStage = @{}",
+    )
+    writer_position = runner.index("function Write-RunMetadata")
+    for initializer in metadata_initializers:
+        require(runner.index(initializer) < writer_position,
+                f"metadata variable is not initialized before the writer: {initializer}")
+    require(writer_position < runner.index("Write-RunMetadata 'RUNNING'"),
+            "metadata writer is called before it is defined")
+
+    csv_block = re.search(r"\$csvFields = @\((.*?)\n\)", runner, re.DOTALL)
+    require(csv_block is not None, "Windows runner is missing its CSV schema")
+    windows_csv_fields = tuple(re.findall(r"'([^']+)'", csv_block.group(1)))
+    require(windows_csv_fields == CONTRACT.CSV_FIELDS,
+            "Windows runner CSV schema differs from the shared benchmark contract")
+
+    actual = [(int(stage), name) for stage, name in re.findall(
+        r"@\{Stage=(\d); Name='([^']+)'", runner)]
+    expected = [(stage, config.name) for stage, configs in CONTRACT.STAGES.items()
+                for config in configs]
+    require(actual == expected, "Windows PowerShell matrix differs from the 48-process contract")
+    require("$expectedMeasuredProcesses = 48" in runner,
+            "Windows runner does not require exactly 48 measured processes")
+    require("$sample -le 3" in runner and "for ($stage = 1; $stage -le 5; $stage++)" in runner,
+            "Windows runner does not execute three samples for all five stages")
+    require("System.Collections.Generic.List[object]" not in combined,
+            "Windows runner must use ordinary PowerShell arrays")
+
+    forbidden = re.compile(
+        r"(?im)^\s*(?:&\s*)?(?:python(?:3)?|py|java|git|gh|curl|wget|"
+        r"Invoke-WebRequest|Invoke-RestMethod|Install-Module|winget)\b"
+    )
+    require(forbidden.search(combined) is None,
+            "Windows runner invokes a forbidden external tool or network command")
+    require("SetEnvironmentVariable($name, [string]$environmentValues[$name], 'Process')" in runner
+            and "SetEnvironmentVariable($name, $previousEnvironment[$name], 'Process')" in runner,
+            "Windows runner does not set and restore every diagnostic process mode")
+
+    launch = runner.index("Start-Process -FilePath $executablePath")
+    handle = runner.index("$null = $process.Handle", launch)
+    timed_wait = runner.index("$process.WaitForExit($timeoutMilliseconds)", handle)
+    final_wait = runner.index("$process.WaitForExit()", timed_wait)
+    require(launch < handle < timed_wait < final_wait
+            and "-PassThru" in runner[launch:timed_wait],
+            "Windows launch does not follow the handle and wait contract")
+    require("$manifest.runtimeSha256" in runner
+            and "Get-DatasetDigest $corpusPath" in runner
+            and "Corpus magic counts must be 660 JPEG and 3 PNG" in helper,
+            "Windows runner does not validate runtime and dataset identities")
+    require("$manifest.framePacingRunnerCompanion -ne 'frame-pacing-benchmark-windows-functions.ps1'" in runner,
+            "Windows runner does not validate the packaged companion identity")
+
+    failure_start = runner.index("} catch {\n    $failureMessage")
+    failure_path = runner[failure_start:]
+    for required in ("Write-RunMetadata 'FAILED'", "Write-StageSummaries",
+                     "Compress-Archive -Path $evidenceRoot"):
+        require(required in failure_path,
+                f"failure path is missing {required}")
+    require('"stage-$stage-summary.csv"' in runner,
+            "Windows results archive omits stage summary generation")
+    for artifact in ("execution-metadata.json",
+                     "runner-copies", "manifest.json", "frame-pacing-windows-results-"):
+        require(artifact in runner, f"Windows results archive omits {artifact}")
+
+
+def test_windows_package_manifest_and_documentation_contract():
+    runner = WINDOWS_RUNNER_PATH.read_text(encoding="utf-8")
+    helper = WINDOWS_HELPER_PATH.read_text(encoding="utf-8")
+    package = PACKAGER_PATH.read_text(encoding="utf-8")
+    readme = README_PATH.read_text(encoding="utf-8")
+    for field in (
+        '"framePacingRunner"', '"framePacingRunnerCompanion"',
+        '"framePacingSchemaVersion": 1',
+        '"framePacingMeasuredProcessCount": 48',
+        '"framePacingStages": [1, 2, 3, 4, 5]',
+    ):
+        require(field in package, f"Windows package manifest is missing {field}")
+    require("frame-pacing-benchmark-windows-functions.ps1" in runner
+            and "frame-pacing-benchmark-windows-functions.ps1" in package,
+            "Windows package omits the PowerShell companion")
+    command = "powershell -ExecutionPolicy Bypass -File .\\run-frame-pacing-benchmark-windows.ps1"
+    require(readme.count(command) == 1,
+            "README must document the Windows frame-pacing runner once")
+    for name in ("TC_TIMER_DEADLINE_MODE", "TC_EVENT_LOOP_MODE", "TC_THREAD_YIELD_MODE"):
+        require(name not in readme,
+                f"README documents internal diagnostic selector {name}")
+
+
 def main():
     require(RUNNER_PATH.stat().st_size < 20 * 1024,
             "frame-pacing runner exceeds the plan's 20 KiB limit")
@@ -459,6 +567,8 @@ def main():
         test_stage_two_evidence_fits_canonical_size_limit,
         test_stage_three_evidence_fits_canonical_size_limit,
         test_stage_four_five_modes_and_evidence_size,
+        test_windows_runner_matrix_and_process_contract,
+        test_windows_package_manifest_and_documentation_contract,
     )
     for test in tests:
         test()

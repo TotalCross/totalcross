@@ -18,7 +18,8 @@ current checkpoint.
 
 ## Last logical commit
 
-`0ee9086f7` adds the native yield selector; `703045cf9` adds the SDL
+`bbbf6befa` records Stage 5 evidence; `0ee9086f7` adds the native yield
+selector; `703045cf9` adds the SDL
 event-driven wait mode. `92f5e94e6` skips empty
 benchmark Flick scrolls after rounded frames;
 `85ff9a7b4` keeps benchmark Flick active through the rounded-frame plateau.
@@ -52,6 +53,8 @@ and both are recorded in the evidence index.
 - `scripts/frame_pacing_results.py`
 - `scripts/test-frame-pacing-benchmark.py`
 - `scripts/README-image-benchmarks.md`
+- `scripts/run-frame-pacing-benchmark-windows.ps1`
+- `scripts/frame-pacing-benchmark-windows-functions.ps1`
 - `TotalCrossVM/src/event/Event.c`
 - `TotalCrossVM/src/init/globals.c/.h`
 - `TotalCrossVM/src/nm/ui/MainWindow.c`
@@ -64,6 +67,8 @@ and both are recorded in the evidence index.
 - `.agent/evidence/frame-pacing-stage-3-macos.json`
 - `.agent/evidence/frame-pacing-stage-4-macos.csv`
 - `.agent/evidence/frame-pacing-stage-4-macos.json`
+- `.agent/evidence/frame-pacing-stage-5-macos.csv`
+- `.agent/evidence/frame-pacing-stage-5-macos.json`
 
 ## Preservation inventory
 
@@ -92,8 +97,10 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-Implement the pure PowerShell Windows runner and package integration from the
-Part 2 plan. Polling and legacy `Sleep(1)` remain the defaults.
+Sign the Windows runner/package integration checkpoint after final focused
+validation. Then push the exact source SHA, run `package.yml`, package the
+action-built Windows SDK, and record package provenance. Polling and legacy
+`Sleep(1)` remain the defaults.
 
 ## Validation and deferrals
 
@@ -126,6 +133,9 @@ Part 2 plan. Polling and legacy `Sleep(1)` remain the defaults.
   parsing. The nine-process macOS matrix and preflight passed; canonical
   evidence hashes and metric ranges are recorded in the evidence index. The
   harness is temporary under `/tmp`.
+- The Windows PowerShell runner/package contract suite passed (13 checks), and
+  the shared distributed-benchmark tests passed. Windows execution remains
+  deferred as specified; this macOS host has no PowerShell runtime.
 - `FlickDriverTest` and `SyntheticPacingTest` pass. SDK package builds and
   macOS ARM64 benchmark packaging passed for Stages 2 and 3. The Stage 3 bundle
   reused runtime SHA-256

@@ -441,7 +441,23 @@ deploy_target() {
          exit 1
       }
       cp "$windows_runner_source" "$bundle_dir/run-prefetch-thread-benchmark-windows.ps1"
-      windows_runner_manifest_field='"windowsPrefetchThreadRunner": "run-prefetch-thread-benchmark-windows.ps1",'
+      local pacing_runner_source="$repo_dir/scripts/run-frame-pacing-benchmark-windows.ps1"
+      local pacing_runner_companion="$repo_dir/scripts/frame-pacing-benchmark-windows-functions.ps1"
+      [ -f "$pacing_runner_source" ] && [ -f "$pacing_runner_companion" ] || {
+         echo "Windows frame-pacing runner files are missing" >&2
+         exit 1
+      }
+      cp "$pacing_runner_source" "$bundle_dir/run-frame-pacing-benchmark-windows.ps1"
+      cp "$pacing_runner_companion" "$bundle_dir/frame-pacing-benchmark-windows-functions.ps1"
+      windows_runner_manifest_field=$(cat <<EOF
+  "windowsPrefetchThreadRunner": "run-prefetch-thread-benchmark-windows.ps1",
+  "framePacingRunner": "run-frame-pacing-benchmark-windows.ps1",
+  "framePacingRunnerCompanion": "frame-pacing-benchmark-windows-functions.ps1",
+  "framePacingSchemaVersion": 1,
+  "framePacingMeasuredProcessCount": 48,
+  "framePacingStages": [1, 2, 3, 4, 5],
+EOF
+)
    fi
    if [ "$include_decode" = true ]; then
       cp "$decode_runner_source" "$bundle_dir/run-image-decode-benchmark.py"
