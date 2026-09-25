@@ -38,7 +38,18 @@ static bool isMinimized;
 
 static void checkTimer(Context currentContext)
 {
-   if (nextTimerTick != 0 && !isMinimized)
+   if (isAbsoluteTimerDeadlineMode())
+   {
+      int64 nowNs = getNanoTime();
+      if (nextTimerDeadlineNs != 0 && nowNs >= nextTimerDeadlineNs
+         && !isMinimized && _onTimerTick && _onTimerTick->code)
+      {
+         lastFiredTimerDeadlineNs = nextTimerDeadlineNs;
+         nextTimerDeadlineNs = 0;
+         executeMethod(currentContext, _onTimerTick, mainClass, true);
+      }
+   }
+   else if (nextTimerTick != 0 && !isMinimized)
    {
       int32 now = getTimeStamp();
 
