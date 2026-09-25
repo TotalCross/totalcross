@@ -16,6 +16,7 @@ passed; the benchmark executable was not run on Windows.
 
 ## Last logical commit
 
+`135b77f20` closes both plans with package provenance and the editorial report;
 `8a0cdc9bd` packages the Windows pacing runner and manifest; `bbbf6befa`
 records Stage 5 evidence; `0ee9086f7` adds the native yield
 selector; `703045cf9` adds the SDL
@@ -97,9 +98,9 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-Create and push the final signed evidence/docs closure commit. Both plans are
-complete; the resulting branch HEAD is reported in the completion message.
-Polling and legacy `Sleep(1)` remain the defaults.
+No further action remains. Part 1 and Part 2 are closed; the final remote
+branch HEAD is given in the completion report. Polling and legacy `Sleep(1)`
+remain the defaults.
 
 ## Validation and deferrals
 
