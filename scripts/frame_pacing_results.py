@@ -108,6 +108,12 @@ def validate_summary(summary, stage, config, accounting, fixture):
                 "event loop policy differs from configuration")
         require(summary.get("yieldPolicy") == config.yield_policy,
                 "event loop yield policy differs from configuration")
+        require(summary.get("timerDeadlineMode") == config.timer_deadline_mode,
+                "timer deadline mode differs from configuration")
+        require(summary.get("eventLoopMode") == config.event_loop_mode,
+                "event loop mode differs from configuration")
+        require(summary.get("threadYieldMode") == config.thread_yield_mode,
+                "thread yield mode differs from configuration")
         require(summary.get("expectedCallbackIntervalNs")
                 == config.expected_callback_interval_ns,
                 "expected callback interval differs from configuration")

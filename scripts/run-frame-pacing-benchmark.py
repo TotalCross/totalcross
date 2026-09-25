@@ -8,6 +8,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -116,6 +117,16 @@ def process_command(executable, bundle, output_dir, run, config, accounting):
     ]
 
 
+def process_environment(config):
+    environment = os.environ.copy()
+    environment.update({
+        "TC_TIMER_DEADLINE_MODE": config.timer_deadline_mode,
+        "TC_EVENT_LOOP_MODE": config.event_loop_mode,
+        "TC_THREAD_YIELD_MODE": config.thread_yield_mode,
+    })
+    return environment
+
+
 def run_process(bundle, executable, manifest, runtime_identity,
                 config, stage, sample, accounting, work_root, preflight=False):
     invocation_id = work_root.name.rsplit("-", 1)[-1]
@@ -131,6 +142,7 @@ def run_process(bundle, executable, manifest, runtime_identity,
             completed = subprocess.run(
                 command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT,
                 check=False, timeout=PROCESS_TIMEOUT_SECONDS,
+                env=process_environment(config),
             )
     except subprocess.TimeoutExpired as error:
         raise BenchmarkFailure(
@@ -180,7 +192,7 @@ def run_process(bundle, executable, manifest, runtime_identity,
 
 def run_stage(args):
     require(args.stage in STAGES,
-            f"stage {args.stage} is not implemented in Part 1 (available: 1, 2, 3)")
+            f"stage {args.stage} is not implemented (available: {', '.join(map(str, STAGES))})")
     require(args.rounds == ROUNDS,
             f"frame-pacing measurements require exactly {ROUNDS} rounds")
     bundle, manifest, executable, _, runtime_identity = validate_bundle(args.bundle)

@@ -174,6 +174,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
   private long syntheticPacingIntervalNs;
   private String flickPacingDriver;
   private String flickPacingClock;
+  private String flickTimerDeadlineMode = "relative";
+  private String flickEventLoopMode = "poll";
+  private String flickThreadYieldMode = "legacy";
   private int flickPacingFps;
   private FlickBenchmarkSupport.Recording flickPacingRecording;
   private FrameMetrics flickPacingLastMetrics;
@@ -234,6 +237,18 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
           getCommandLine(), "flick-clock", "millis");
       flickPacingFps = ImageRasterBenchmarkSupport.integerArgument(
           getCommandLine(), "flick-fps", 0);
+      flickTimerDeadlineMode = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "deadline", "relative");
+      String pacingModes = ImageRasterBenchmarkSupport.argument(
+          getCommandLine(), "pacing", null);
+      if (pacingModes != null) {
+        String[] modes = pacingModes.split(",");
+        ImageRasterBenchmarkSupport.require(modes.length == 3,
+            "pacing must contain timer, event-loop, and yield modes");
+        flickTimerDeadlineMode = modes[0];
+        flickEventLoopMode = modes[1];
+        flickThreadYieldMode = modes[2];
+      }
       validateFlickPacingArguments();
       prefetchProfile = ImageRasterBenchmarkSupport.argument(
           getCommandLine(), "prefetch", "off");
@@ -408,6 +423,15 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
   }
 
   private void validateFlickPacingArguments() {
+    ImageRasterBenchmarkSupport.require("relative".equals(flickTimerDeadlineMode)
+        || "absolute".equals(flickTimerDeadlineMode),
+        "timer deadline mode must be relative or absolute");
+    ImageRasterBenchmarkSupport.require("poll".equals(flickEventLoopMode)
+        || "wait".equals(flickEventLoopMode),
+        "event loop mode must be poll or wait");
+    ImageRasterBenchmarkSupport.require("legacy".equals(flickThreadYieldMode)
+        || "native".equals(flickThreadYieldMode),
+        "thread yield mode must be legacy or native");
     if (flickPacingDriver == null) {
       ImageRasterBenchmarkSupport.require(flickPacingFps == 0,
           "flick-fps requires flick-driver");
@@ -533,7 +557,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
     long effectiveMask = ImageOptimizationSettings.getEffectiveMask();
     long expectedIntervalNs = flickPacingRecording.expectedIntervalNs();
     String timerDeadlinePolicy = "timer".equals(flickPacingDriver)
-        ? "native-relative" : "not-applicable";
+        ? "native-" + flickTimerDeadlineMode : "not-applicable";
     String eventLoopPolicy = "timer".equals(flickPacingDriver)
         ? "timer-events" : "update-listener";
     String json = "{\n"
@@ -552,6 +576,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         + "  \"timerDeadlinePolicy\":\"" + timerDeadlinePolicy + "\",\n"
         + "  \"eventLoopPolicy\":\"" + eventLoopPolicy + "\",\n"
         + "  \"yieldPolicy\":\"none\",\n"
+        + "  \"timerDeadlineMode\":\"" + flickTimerDeadlineMode + "\",\n"
+        + "  \"eventLoopMode\":\"" + flickEventLoopMode + "\",\n"
+        + "  \"threadYieldMode\":\"" + flickThreadYieldMode + "\",\n"
         + "  \"expectedCallbackIntervalNs\":" + expectedIntervalNs + ",\n"
         + "  \"durationNs\":" + flickPacingRecording.durationNs() + ",\n"
         + "  \"frameCount\":" + frames.length + ",\n"

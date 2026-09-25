@@ -52,6 +52,9 @@ def stage_one_summary(config, accounting="off"):
         "prefetchReadyCount": 663,
         "prefetchFailedCount": 0,
         "prefetchNotPrefetchableCount": 0,
+        "timerDeadlineMode": config.timer_deadline_mode,
+        "eventLoopMode": config.event_loop_mode,
+        "threadYieldMode": config.thread_yield_mode,
     }
     for field in CONTRACT.SUMMARY_FIELDS:
         summary.setdefault(field, 0)
@@ -88,6 +91,9 @@ def test_exact_stage_matrices():
         1: ["synthetic-current-16ms", "synthetic-60hz"],
         2: ["timer-40-millis", "timer-60-millis", "update-millis"],
         3: ["timer-60-millis", "timer-60-nano", "update-millis", "update-nano"],
+        4: ["timer-60-nano-relative", "timer-60-nano-absolute",
+            "update-nano-relative", "update-nano-absolute"],
+        5: ["poll-legacy-yield", "wait-legacy-yield", "wait-native-yield"],
     }
     for stage, names in expected.items():
         require([config.name for config in RUNNER.STAGES[stage]] == names,
@@ -98,6 +104,13 @@ def test_exact_stage_matrices():
             "stage 2 evidence row count differs")
     require(len(RUNNER.STAGES[3]) * RUNNER.ROUNDS == 12,
             "stage 3 evidence row count differs")
+    require(len(RUNNER.STAGES[4]) * RUNNER.ROUNDS == 12,
+            "stage 4 evidence row count differs")
+    require(len(RUNNER.STAGES[5]) * RUNNER.ROUNDS == 9,
+            "stage 5 evidence row count differs")
+    require(sum(len(configs) for configs in RUNNER.STAGES.values())
+            * RUNNER.ROUNDS == 48,
+            "complete frame-pacing matrix is not 48 processes")
 
 
 def test_summary_contract():
@@ -195,6 +208,22 @@ def test_process_output_path_is_bundle_relative():
                         f"{config.name} exceeds the native app command-line limit")
                 require(app_arguments[-1] == config.app_arguments()[-1],
                         f"{config.name} pacing option is not retained last")
+
+
+def test_process_environment_sets_all_diagnostic_modes():
+    config = RUNNER.STAGES[5][2]
+    with mock.patch.dict("os.environ", {
+            "TC_TIMER_DEADLINE_MODE": "relative",
+            "TC_EVENT_LOOP_MODE": "poll",
+            "TC_THREAD_YIELD_MODE": "legacy",
+    }):
+        environment = RUNNER.process_environment(config)
+    require(environment["TC_TIMER_DEADLINE_MODE"] == "absolute",
+            "timer deadline mode leaked from the parent environment")
+    require(environment["TC_EVENT_LOOP_MODE"] == "wait",
+            "event loop mode leaked from the parent environment")
+    require(environment["TC_THREAD_YIELD_MODE"] == "native",
+            "thread yield mode leaked from the parent environment")
 
 
 def test_failure_handling_does_not_launch_or_accept_failed_process():
@@ -369,6 +398,52 @@ def test_stage_three_evidence_fits_canonical_size_limit():
                 "null-only fields were retained in compact JSON rows")
 
 
+def test_stage_four_five_modes_and_evidence_size():
+    manifest = {"sourceCommit": "test-source"}
+    for stage in (4, 5):
+        rows = []
+        for config in RUNNER.STAGES[stage]:
+            summary = stage_one_summary(config)
+            summary.pop("syntheticPacingProfile")
+            summary.pop("syntheticPacingIntervalNs")
+            for field in CONTRACT.PACING_SUMMARY_FIELDS:
+                summary.pop(field)
+            summary.update({
+                "driver": config.driver,
+                "timerFps": config.timer_fps if config.timer_fps is not None else 0,
+                "clock": config.clock,
+                "timerDeadlinePolicy": config.timer_deadline_policy,
+                "eventLoopPolicy": config.event_loop_policy,
+                "yieldPolicy": config.yield_policy,
+                "expectedCallbackIntervalNs": config.expected_callback_interval_ns,
+                "callbackCount": 181,
+            })
+            for field in (
+                "callbackDeltaP50Ns", "callbackDeltaP95Ns", "callbackDeltaP99Ns",
+                "callbackDeltaMaxNs", "callbackAbsoluteLatenessP50Ns",
+                "callbackAbsoluteLatenessP95Ns", "callbackAbsoluteLatenessP99Ns",
+                "callbackAbsoluteLatenessMaxNs", "callbackDeltaErrorP50Ns",
+                "callbackDeltaErrorP95Ns", "callbackDeltaErrorP99Ns",
+                "callbackDeltaErrorMaxNs",
+            ):
+                summary[field] = 1_000_000
+            RUNNER.validate_summary(summary, stage, config, "off", RUNNER.FIXTURE)
+            for sample in range(1, 4):
+                rows.append(RUNNER.make_row(
+                    stage, config, sample, manifest, "runtime", summary, 1
+                ))
+        with tempfile.TemporaryDirectory(
+                prefix=f"frame-pacing-stage-{stage}-size-") as temp:
+            root = Path(temp)
+            csv_path = root / "stage.csv"
+            json_path = root / "stage.json"
+            RUNNER.write_evidence(csv_path, json_path, stage, 3, manifest,
+                                  "runtime", {"status": "PASS"}, rows)
+            require(csv_path.stat().st_size < 20 * 1024
+                    and json_path.stat().st_size < 20 * 1024,
+                    f"stage {stage} canonical evidence exceeds 20 KiB")
+
+
 def main():
     require(RUNNER_PATH.stat().st_size < 20 * 1024,
             "frame-pacing runner exceeds the plan's 20 KiB limit")
@@ -378,10 +453,12 @@ def main():
         test_flick_summary_matches_configuration,
         test_preflight_contract,
         test_process_output_path_is_bundle_relative,
+        test_process_environment_sets_all_diagnostic_modes,
         test_failure_handling_does_not_launch_or_accept_failed_process,
         test_evidence_row_count_and_safe_failure,
         test_stage_two_evidence_fits_canonical_size_limit,
         test_stage_three_evidence_fits_canonical_size_limit,
+        test_stage_four_five_modes_and_evidence_size,
     )
     for test in tests:
         test()

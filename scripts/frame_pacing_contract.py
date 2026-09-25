@@ -51,6 +51,7 @@ CSV_FIELDS = (
     "callbackDeltaErrorP99Ns", "callbackDeltaErrorMaxNs",
     "measuredWallDurationNs", "processWallNs", "driver", "timerFps", "clock",
     "timerDeadlinePolicy", "eventLoopPolicy", "yieldPolicy",
+    "timerDeadlineMode", "eventLoopMode", "threadYieldMode",
     "prefetchThreadMode", "prefetchWorkerSleepMs",
     "expectedCallbackIntervalNs", "syntheticPacingProfile",
     "syntheticPacingIntervalNs", "sleepRequestCount", "totalRequestedSleepNs",
@@ -71,13 +72,23 @@ class Configuration:
     yield_policy: str
     expected_callback_interval_ns: Optional[int]
     synthetic_pacing_profile: Optional[str] = None
+    timer_deadline_mode: str = "relative"
+    event_loop_mode: str = "poll"
+    thread_yield_mode: str = "legacy"
 
     def app_arguments(self):
         if self.synthetic_pacing_profile is not None:
-            return [f"--synthetic-pacing={self.synthetic_pacing_profile}"]
-        args = [f"--flick-driver={self.driver}", f"--flick-clock={self.clock}"]
-        if self.timer_fps is not None:
-            args.append(f"--flick-fps={self.timer_fps}")
+            args = [f"--synthetic-pacing={self.synthetic_pacing_profile}"]
+        else:
+            args = [f"--flick-driver={self.driver}", f"--flick-clock={self.clock}"]
+            if self.timer_fps is not None:
+                args.append(f"--flick-fps={self.timer_fps}")
+        if (self.event_loop_mode, self.thread_yield_mode) != ("poll", "legacy"):
+            args.append("--pacing=" + ",".join((
+                self.timer_deadline_mode, self.event_loop_mode, self.thread_yield_mode,
+            )))
+        elif self.timer_deadline_mode != "relative":
+            args.append(f"--deadline={self.timer_deadline_mode}")
         return args
 
     def metadata(self):
@@ -89,6 +100,9 @@ class Configuration:
             "eventLoopPolicy": self.event_loop_policy,
             "yieldPolicy": self.yield_policy,
             "expectedCallbackIntervalNs": self.expected_callback_interval_ns,
+            "timerDeadlineMode": self.timer_deadline_mode,
+            "eventLoopMode": self.event_loop_mode,
+            "threadYieldMode": self.thread_yield_mode,
         }
 
 
@@ -118,6 +132,30 @@ STAGES = {
                       "update-listener", "none", 16_000_000),
         Configuration("update-nano", "update", None, "nano", "not-applicable",
                       "update-listener", "none", 16_000_000),
+    ),
+    4: (
+        Configuration("timer-60-nano-relative", "timer", 60, "nano",
+                      "native-relative", "timer-events", "none", 16_000_000),
+        Configuration("timer-60-nano-absolute", "timer", 60, "nano",
+                      "native-absolute", "timer-events", "none", 16_000_000,
+                      timer_deadline_mode="absolute"),
+        Configuration("update-nano-relative", "update", None, "nano",
+                      "not-applicable", "update-listener", "none", 16_000_000),
+        Configuration("update-nano-absolute", "update", None, "nano",
+                      "not-applicable", "update-listener", "none", 16_000_000,
+                      timer_deadline_mode="absolute"),
+    ),
+    5: (
+        Configuration("poll-legacy-yield", "update", None, "nano",
+                      "not-applicable", "update-listener", "none", 16_000_000,
+                      timer_deadline_mode="absolute"),
+        Configuration("wait-legacy-yield", "update", None, "nano",
+                      "not-applicable", "update-listener", "none", 16_000_000,
+                      timer_deadline_mode="absolute", event_loop_mode="wait"),
+        Configuration("wait-native-yield", "update", None, "nano",
+                      "not-applicable", "update-listener", "none", 16_000_000,
+                      timer_deadline_mode="absolute", event_loop_mode="wait",
+                      thread_yield_mode="native"),
     ),
 }
 
