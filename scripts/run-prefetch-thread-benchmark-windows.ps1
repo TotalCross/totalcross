@@ -19,6 +19,7 @@ $rows = @()
 $runLabels = @()
 $completedProcesses = 0
 $failureMessage = $null
+$manifestHash = $null
 
 function Write-RunMetadata {
     param([string]$Status, [string]$Failure)
@@ -202,7 +203,6 @@ function Assert-ThreadRun {
 try {
     New-Item -ItemType Directory -Path $resultsRoot -Force | Out-Null
     New-Item -ItemType Directory -Path $evidenceRoot | Out-Null
-    Write-RunMetadata 'RUNNING' $null
 
     $manifestPath = Join-Path $bundleRoot 'manifest.json'
     $manifest = Read-JsonFile $manifestPath
@@ -265,6 +265,7 @@ try {
     if ($actualFormats.jpeg -ne 660 -or $actualFormats.png -ne 3) {
         throw "Bundle image content must contain 660 JPEG and 3 PNG files; found $($actualFormats.jpeg)/$($actualFormats.png)"
     }
+    Write-RunMetadata 'RUNNING' $null
 
     do {
         $epochSeconds = [long](([DateTime]::UtcNow - [datetime]'1970-01-01').TotalSeconds)
