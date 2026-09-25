@@ -116,3 +116,31 @@ files; raw process output and temporary run directories stay outside Git.
   Runner logs are under
   `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-3-_2dw0y1j`;
   the temporary bundle is under `/tmp/frame-pacing-stage-3.uEenM3`.
+- 2026-09-25: Stage 4 first remained one pixel short despite extra fixture
+  scroll range. Frame CSVs showed a rounded zero-motion plateau before the
+  configured duration. Keeping the benchmark Flick active exposed a second
+  condition: ScrollContainer returns false for a zero-delta scroll call. The
+  fix skips that call; the focused Java test now uses a target that rejects
+  zero deltas. Commits `85ff9a7b4` and `92f5e94e6` contain the corrections.
+  The Flick smoke test and focused native timer test pass. A whole-suite native
+  test build first hit pre-existing `countObjectsIn` arity errors in the
+  unrelated object-memory test header; a temporary focused test target avoided
+  those unrelated cases and passed the timer test (1 succeeded, 0 failed).
+- 2026-09-25: Stage 4 passed its accounting-enabled preflight and all 12 fresh
+  measured processes across `timer-60-nano-relative`,
+  `timer-60-nano-absolute`, `update-nano-relative`, and
+  `update-nano-absolute`. The preflight recorded 663 requests and READY images,
+  zero failures/non-prefetchable images, and zero scroll JPEG decodes or image
+  materializations. Frame-count ranges were 146-149, 172-177, 144-149, and
+  138-154 respectively. The macOS ARM64 runtime identity is
+  `b710aa23d55323e10d8c5b57fc0a96154db372a7d24dbfd0543d22c1c1d43d86`; the
+  corpus hash is `af39fea695191a27`. Canonical evidence:
+  `.agent/evidence/frame-pacing-stage-4-macos.csv` (7,188 bytes,
+  SHA-256 `01def3e0b1e6d972c229727efaad2fac317a06dfc2abfd83f39dbb25ade80aa4`)
+  and `.agent/evidence/frame-pacing-stage-4-macos.json` (18,758 bytes,
+  SHA-256 `cf580bc16c31910d854d45ecb40ee85fdd5ad5ade4c3436d1f2e3098794b69fc`).
+  Runner output and per-process logs are under
+  `/tmp/frame-pacing-stage-4-matrix-final.log` and
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-4-04a_0apv`;
+  the temporary macOS bundle is under
+  `/tmp/frame-pacing-stage-4-bundle-final.6zMUkc`.

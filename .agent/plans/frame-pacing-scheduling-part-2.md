@@ -457,7 +457,7 @@ the repository validator and keep body lines <=80 characters.
 
 ## Progress
 
-- [ ] Stage 4 implementation, macOS benchmark, committed evidence.
+- [x] Stage 4 implementation, macOS benchmark, committed evidence.
 - [ ] Stage 5 implementation, macOS benchmark, committed evidence.
 - [ ] Pure PowerShell Windows 48-process runner and package integration.
 - [ ] Final focused validation and signature/size audit.

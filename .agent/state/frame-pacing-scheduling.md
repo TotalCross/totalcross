@@ -10,13 +10,21 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 Part 1 (Stages 1-3) is complete on branch
 `feat/frame-pacing-scheduling-diagnostics`, based on immutable commit
-`d7a9ec93faf9f2da0724611de115649176d0b033`. The requested Part 1 work is
-finished; Part 2 is the sequenced follow-on plan.
+`d7a9ec93faf9f2da0724611de115649176d0b033`. Part 2 is active and Stage 4 is
+complete: relative/absolute native deadline scheduling passed its 12-process
+macOS matrix, and its evidence is committed. Stage 5 event-loop wait and
+thread-yield work is next.
 
 ## Last logical commit
 
-`de3a6af1a` — omit null row fields from compact evidence JSON and test the
-Stage 3 size limit. Stage 3 clock code is `fb9dda02b`; Stage 2 code commits are
+`92f5e94e6` skips empty benchmark Flick scrolls after rounded frames;
+`85ff9a7b4` keeps benchmark Flick active through the rounded-frame plateau.
+`4c32898d7` — add headroom for the terminal Flick frame.
+`593bea07b` preserves failed Flick frame diagnostics.
+`feddea120` adds timer deadline and event/yield benchmark matrices;
+`2beb02475` adds absolute native deadlines with deterministic coverage. Stage 3
+evidence JSON change is `de3a6af1a`; Stage 3 clock code is `fb9dda02b`; Stage 2
+code commits are
 `6ead9cd9d` (shared Flick advancement), `90bdb5f41` (TimerEvent/UpdateListener
 drivers and tests), and `697d460ec` (benchmark harness and packaging). Stage 1
 implementation is `fab38b8e0`. Earlier signed commits `992ec1ccc` and
@@ -26,7 +34,7 @@ and both are recorded in the evidence index.
 ## Active paths
 
 - `.agent/plans/frame-pacing-scheduling-part-1.md`
-- `.agent/plans/frame-pacing-scheduling-part-2.md` (sequenced follow-on only)
+- `.agent/plans/frame-pacing-scheduling-part-2.md` (active)
 - `.agent/state/frame-pacing-scheduling.md`
 - `.agent/evidence/frame-pacing-scheduling.md`
 - `.agent/archive/frame-pacing-scheduling-history.md`
@@ -41,12 +49,18 @@ and both are recorded in the evidence index.
 - `scripts/frame_pacing_results.py`
 - `scripts/test-frame-pacing-benchmark.py`
 - `scripts/README-image-benchmarks.md`
+- `TotalCrossVM/src/event/Event.c`
+- `TotalCrossVM/src/init/globals.c/.h`
+- `TotalCrossVM/src/nm/ui/MainWindow.c`
+- `TotalCrossVM/src/nm/ui/MainWindow_test.h`
 - `.agent/evidence/frame-pacing-stage-1-macos.csv`
 - `.agent/evidence/frame-pacing-stage-1-macos.json`
 - `.agent/evidence/frame-pacing-stage-2-macos.csv`
 - `.agent/evidence/frame-pacing-stage-2-macos.json`
 - `.agent/evidence/frame-pacing-stage-3-macos.csv`
 - `.agent/evidence/frame-pacing-stage-3-macos.json`
+- `.agent/evidence/frame-pacing-stage-4-macos.csv`
+- `.agent/evidence/frame-pacing-stage-4-macos.json`
 
 ## Preservation inventory
 
@@ -75,8 +89,9 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-Part 1 has no remaining work. The next sequenced slice is in
-`.agent/plans/frame-pacing-scheduling-part-2.md`.
+Implement the SDL-only wait event loop and native thread-yield selector for
+Stage 5, with the focused wakeup and yield tests described by the Part 2 plan.
+Keep polling and legacy `Sleep(1)` as the defaults.
 
 ## Validation and deferrals
 
@@ -90,12 +105,24 @@ Part 1 has no remaining work. The next sequenced slice is in
   JSON size. The append-only evidence index records that attempt. The writer now
   omits null-only row fields and enforces both file-size caps before replacing
   evidence; the nine-case contract suite passes.
+- Stage 4 native scheduling code and deterministic cases are committed at
+  `2beb024753087a87adf58a2b736d81559990bdf3`; copyright and diff checks passed.
+  The Stage 4/5 matrices, summary mode fields, 48-process static contract, and
+  argument-size checks are committed at
+  `feddea120980cf805d176d5a078d94d18fecd49d`. The 11-case benchmark contract
+  suite passed. The CMake macOS ARM64 Release build and SDK packaging passed.
+  Stage 4 needed two benchmark-only Flick fixes: continue through the rounded
+  zero-motion plateau, then skip the zero-delta `scrollContent` call that the
+  real ScrollContainer treats as an end condition. The deterministic Flick
+  smoke test and focused native `setTimerInterval` test pass. Stage 4 then
+  passed all 12 measured processes and preflight. Evidence files are 7,188 and
+  18,758 bytes; their SHA-256 digests and the runtime identity are in the
+  evidence index.
 - `FlickDriverTest` and `SyntheticPacingTest` pass. SDK package builds and
   macOS ARM64 benchmark packaging passed for Stages 2 and 3. The Stage 3 bundle
   reused runtime SHA-256
   `ac48fc121de338951824d645f5c7d5e37090e33d6cc6a085bf9d4553906895e0`.
-  No native VM files changed from the pinned base. Windows, Linux, Android,
-  iOS, and Part 2 validations were out of scope.
+  Windows, Linux, Android, and iOS builds remain out of scope.
 
 ## Active decisions and blockers
 
