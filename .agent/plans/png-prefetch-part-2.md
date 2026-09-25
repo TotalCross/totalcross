@@ -94,8 +94,12 @@ Do not push unless explicitly requested.
 - [x] Milestone 4A: package and run fresh macOS six-process benchmark.
 - [x] Milestone 4B: record/compare macOS results.
 - [x] Milestone 4C: create and validate Windows x64 package.
-- [ ] Finalization: editorial report, state/evidence reconciliation, commit
+- [x] Finalization: editorial report, state/evidence reconciliation, commit
       checks.
+
+Finalization is recorded in `.agent/reports/png-prefetch-editorial.md`; compact
+results and provenance remain in `.agent/evidence/png-prefetch.md` and
+`.agent/evidence/png-prefetch-macos.csv`.
 
 Milestones 4A/4B passed on the exact 663-image corpus with six fresh macOS
 processes. Compact per-row timing, frame, lifecycle, and cold-scroll counters
@@ -444,14 +448,31 @@ command.
 
 ## Outcomes & Retrospective
 
-At completion state factually:
+All three PNG payloads became READY: every macOS strategy/mask row reported
+663 requests, 663 READY, 0 failed, and 0 not-prefetchable. The prior cold-scroll
+counter signature (3 full JPEG decodes, 3 image materializations, and 3 native
+geometry materializations) was absent in all six current rows. This does not
+establish that PNG support caused a frame change.
 
-- whether all three PNG payloads became READY;
-- whether the former three-image cold-path signature disappeared on macOS;
-- measured macOS strategy comparison;
-- Windows package path/hash and no-Python contract;
-- remaining limitations and deferred Windows measurements.
+Frame outlier counts moved in both directions across the six paired runs;
+aggregate counts above 33.3 ms changed from 7 to 6 and above 50 ms from 4 to 5.
+The single-run timing and frame comparison is descriptive, not evidence of a
+performance improvement. Semaphore notifications remained balanced at 644
+releases/acquires/wakes and zero outstanding wakes per row.
+
+The Windows x64 package is
+`/tmp/png-prefetch-part2.Kd03lw/windows-package/image-scroll-benchmark-windows-x64.zip`,
+SHA-256 `fb04343d5c6ea17bfa520ed80771cdd4e52e1871e515cdf26003d0745713c6dd`.
+Its manifest identifies the current benchmark source and trusted Windows
+runtime source; contents and the PowerShell no-external-tool runner passed
+static checks. The Windows package was not built or executed on Windows, and
+its benchmark measurements remain pending. The archive remains outside Git.
+
+No `TotalCrossVM` source changed. Part 2 adds compact macOS results, package
+provenance, state reconciliation, and the editorial handoff without changing
+the Part 1 implementation scope.
 
 ## Revision Note
 
-Initial Part 2 revision, 2026-09-24.
+Initial Part 2 revision, 2026-09-24. Finalized with macOS measurement,
+Windows package inspection, and editorial handoff, 2026-09-25.

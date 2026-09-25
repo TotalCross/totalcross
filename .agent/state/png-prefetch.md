@@ -8,17 +8,18 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 - Active plan: `.agent/plans/png-prefetch-part-2.md`.
 - Branch: `feat/png-prefetch`.
+- Status: complete; final focused checks passed.
 - Immutable base: `86d470c64b7dfc0ab6ac24314f32f0d630ff1990`.
-- Active milestone: Finalization — editorial report and final repository checks.
+- Active milestone: complete.
 - Last functional commit: `f8308ac31` (`fix(bench): guard windows manifest metadata order`; signed).
 - Previous plan checkpoint: `1dee6189369f` (Milestone 2; signed).
-- Last logical commit: `28aaf3357e2adfebf794f1467e5bf17c4654b468`
-  (`docs(benchmark): record png prefetch results`; signed).
-- Active paths: Part 2 plan, state, evidence, editorial report, and the
-  untracked Windows ZIP under `/tmp/png-prefetch-part2.Kd03lw/`.
-- Next action: create `.agent/reports/png-prefetch-editorial.md`, reconcile the
-  plan outcomes/state, run final size/header/diff/signature checks, and commit
-  the closeout. Do not run the Windows package on macOS.
+- Last milestone checkpoint: `84297622fe0b908ecdda8e316f86fc0920f9dd7e`
+  (`docs(benchmark): attest windows package provenance`; signed).
+- Active paths: completed Part 2 plan, state, evidence, editorial report, and
+  the untracked Windows ZIP under `/tmp/png-prefetch-part2.Kd03lw/`.
+- Next action: none. The signed closeout commit records this completed state.
+  See `.agent/reports/png-prefetch-editorial.md` for the factual handoff. Do
+  not run the Windows package on macOS.
 - Base validation: activation checkout equaled the immutable base; its object
   exists and is an ancestor of `feat/semaphore-v1`; `feat/png-prefetch` was
   created at that base.
@@ -48,6 +49,11 @@ SPDX-License-Identifier: LGPL-2.1-only
   `fb04343d5c6ea17bfa520ed80771cdd4e52e1871e515cdf26003d0745713c6dd`; it is
   intentionally untracked under `/tmp/png-prefetch-part2.Kd03lw/`. Windows
   execution and measurements remain unperformed by plan.
+- Completed Finalization: reconciled plan outcomes and evidence, wrote the
+  editorial handoff, passed the final size/header/whitespace/native-source
+  checks, and audited task signatures and message rules. All task commits are
+  signed; four historical messages retain documented overlong body lines under
+  the no-rewrite rule. No benchmark reruns or native builds are pending.
 - Pre-Part-2 branch-validation correction: initialize `manifestHash` before
   metadata use, defer `RUNNING` until manifest and image payload validation,
   and preserve `FAILED` metadata/ZIP generation on validation errors. The
@@ -57,10 +63,11 @@ SPDX-License-Identifier: LGPL-2.1-only
   macOS host has no PowerShell runtime; package tests validate its matrix,
   required calls, forbidden dependencies, and size. Windows/Linux/Android/iOS
   builds remain outside Part 1 scope.
-- Commit-message validation found the initial plan commit body exceeded 80
-  characters because the shell preserved literal `\n` text. The plan forbids
-  rewriting history, so preserve that signed commit and validate all later
-  messages before committing.
+- Commit audit through M4C verified all 15 task commits are signed; 11 messages
+  pass the workflow rules. Four earlier commits have body lines longer than 80
+  characters: `4549dadd24d1`, `4cd8ddd2b2d9`, `7471effb76a0`, and
+  `57ceaf1d0065`. Preserve them under the no-rewrite rule; validate new commit
+  messages before and after committing.
 - Active decisions: static PNG only, denominator 1, Java-result candidate;
   JPEG semantics and production `legacy` strategy stay unchanged; benchmark
   package counts image content by signature; no `TotalCrossVM` changes.
@@ -70,5 +77,6 @@ SPDX-License-Identifier: LGPL-2.1-only
   `.agent/benchmarks/`, `TotalCrossVM/xcode/generated/`, and
   `scripts/__pycache__/`; leave the existing `totalcross.code-workspace` change
   untouched.
-- Resume: read this file, then Finalization in the Part 2 plan. Do not rerun
-  the completed Part 1 build/smoke gates or M4A matrix.
+- Resume only if closeout validation or commit did not complete: read this file
+  and the finalization section. Do not rerun the Part 1 build/smoke gates or
+  M4A matrix.
