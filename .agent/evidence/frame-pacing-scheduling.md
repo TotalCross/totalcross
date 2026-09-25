@@ -22,3 +22,12 @@ files; raw process output and temporary run directories stay outside Git.
   not rewritten per plan policy. The corpus root was resolved from the existing
   evidence record `.agent/evidence/image-scroll-diagnostics-macos-02-benchmark.md`
   and validated at 663 files (660 JPEG, 3 PNG).
+- 2026-09-25: Stage 1 correctness preflight attempt exited with signal `-5`
+  before emitting app output. The retained log was empty at
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-1-l46l2s78/logs/00-synthetic-current-16ms.log`;
+  the complete execution directory remains at
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-1-l46l2s78`.
+  No canonical evidence files were written. Diagnosis found the runner passed an
+  absolute output path although the established macOS runner uses a path
+  relative to the bundle working directory. The runner now uses a unique,
+  bundle-relative output directory; rerun pending.

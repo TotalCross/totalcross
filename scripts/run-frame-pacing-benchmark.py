@@ -102,9 +102,13 @@ def validate_bundle(bundle):
 
 def process_command(executable, bundle, output_dir, run, dataset_digest,
                     config, accounting):
+    relative_output_dir = Path(output_dir).resolve().relative_to(
+        Path(bundle).resolve()
+    )
     return [
         str(executable), "/scr", SCREEN_SPEC, "-p", ".", "--app-root=.",
-        "--mode=benchmark", "--corpus=corpus/imag", f"--output={output_dir}",
+        "--mode=benchmark", "--corpus=corpus/imag",
+        f"--output={relative_output_dir.as_posix()}",
         f"--image-optimization={EXPECTED_MASK}", "--prefetch=on",
         f"--accounting={accounting}", "--passes=1", f"--run={run}",
         f"--dataset-hash={dataset_digest}", "--prefetch-thread-mode=worker-semaphore",
@@ -114,7 +118,8 @@ def process_command(executable, bundle, output_dir, run, dataset_digest,
 
 def run_process(bundle, executable, manifest, dataset_digest, runtime_identity,
                 config, stage, sample, accounting, work_root, preflight=False):
-    output_dir = work_root / "outputs" / f"{sample:02d}-{config.name}"
+    output_dir = (bundle / f".frame-pacing-results-{work_root.name}" / "outputs"
+                  / f"{sample:02d}-{config.name}")
     output_dir.mkdir(parents=True, exist_ok=True)
     log_dir = work_root / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)

@@ -135,6 +135,21 @@ def test_preflight_contract():
         raise AssertionError("scroll-time materialization was accepted")
 
 
+def test_process_output_path_is_bundle_relative():
+    with tempfile.TemporaryDirectory(prefix="frame-pacing-output-test-") as temp:
+        bundle = Path(temp) / "bundle"
+        bundle.mkdir()
+        output_dir = bundle / ".frame-pacing-results-test" / "outputs" / "run"
+        command = RUNNER.process_command(
+            bundle / "app", bundle, output_dir, 1, "dataset", RUNNER.STAGES[1][0], "off"
+        )
+        output_arguments = [argument for argument in command
+                            if argument.startswith("--output=")]
+        require(output_arguments == [
+            "--output=.frame-pacing-results-test/outputs/run"
+        ], "macOS launcher output path is not bundle-relative")
+
+
 def test_failure_handling_does_not_launch_or_accept_failed_process():
     config = RUNNER.STAGES[1][0]
     with tempfile.TemporaryDirectory(prefix="frame-pacing-failure-test-") as temp:
@@ -207,6 +222,7 @@ def main():
         test_exact_stage_matrices,
         test_summary_contract,
         test_preflight_contract,
+        test_process_output_path_is_bundle_relative,
         test_failure_handling_does_not_launch_or_accept_failed_process,
         test_evidence_row_count_and_safe_failure,
     )
