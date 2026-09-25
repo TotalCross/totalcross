@@ -454,7 +454,7 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
     int minimum = scroll.sbV.getMinimum();
     int maximum = validMaximum();
     ImageRasterBenchmarkSupport.require(maximum - minimum
-        >= Math.abs(FlickBenchmarkSupport.MOTION_DISPLACEMENT) + 1,
+        >= Math.abs(FlickBenchmarkSupport.MOTION_DISPLACEMENT),
         "real workload cannot provide the deterministic Flick displacement");
     scroll.sbV.setValue(minimum);
     flickPacingFrameCount = 0;
@@ -1041,10 +1041,6 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         "last row does not contain exactly three ImageControls");
     mainContainer.resize();
     scroll.resize();
-    if (flickPacingDriver != null) {
-      // Leave enough trailing scroll range for the exact terminal Flick pixel.
-      scroll.setContentInsets(0, 0, 0, 2);
-    }
   }
 
   private int validMaximum() {

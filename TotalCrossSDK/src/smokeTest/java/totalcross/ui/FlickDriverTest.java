@@ -117,6 +117,36 @@ class FlickDriverTest {
   }
 
   @Test
+  void benchmarkMotionContinuesThroughRoundedZeroPixelFramesUntilDuration() {
+    TestScrollable target = newTestScrollable();
+    FlickBenchmarkSupport.DriverHostRecorder host =
+        new FlickBenchmarkSupport.DriverHostRecorder();
+    FlickBenchmarkSupport.Recording recording = FlickBenchmarkSupport.startForTest(
+        target, Flick.FRAME_DRIVER_UPDATE, 0, Flick.FRAME_CLOCK_NANO, host, 0);
+    Flick flick = target.getFlick();
+
+    flick.setAnimationClockOriginForTest(0, System.nanoTime() - 2_990_000_000L);
+    flick.updateListenerTriggered(16);
+    assertEquals(-22_439, recording.finalFlickPosition());
+    assertFalse(recording.complete());
+
+    flick.setAnimationClockOriginForTest(0, System.nanoTime() - 2_996_000_000L);
+    flick.updateListenerTriggered(16);
+    assertEquals(-22_439, recording.finalFlickPosition());
+    assertEquals(22_439, target.scrollY);
+    assertFalse(recording.complete());
+
+    flick.setAnimationClockOriginForTest(0, System.nanoTime() - 3_001_000_000L);
+    flick.updateListenerTriggered(16);
+    assertTrue(recording.complete());
+    assertEquals(FlickBenchmarkSupport.MOTION_DISPLACEMENT,
+        recording.finalFlickPosition());
+    assertEquals(22_440, target.scrollY);
+    assertEquals(1, host.updateRemoveCount);
+    assertEquals(1, target.flickEndedCount);
+  }
+
+  @Test
   void animationClocksMatchAtMillisecondBoundariesAndNanoKeepsSubmillisecondProgress() {
     TestScrollable millisTarget = newTestScrollable();
     FlickBenchmarkSupport.DriverHostRecorder millisHost =

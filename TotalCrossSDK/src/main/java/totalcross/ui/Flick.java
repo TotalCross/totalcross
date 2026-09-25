@@ -778,7 +778,7 @@ public class Flick implements PenListener, TimerListener, UpdateListener {
       int newFlickPos = calculateFlickPosition(t);
       int flickMotion = newFlickPos - flickPos;
       flickPos = newFlickPos;
-      boolean endReached = flickMotion == 0;
+      boolean endReached = flickMotion == 0 && !benchmarkMotionActive;
       long scrollWorkStartNs = observer == null ? 0 : System.nanoTime();
 
       if (!endReached) {
