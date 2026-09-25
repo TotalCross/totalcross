@@ -16,10 +16,10 @@
   },
   "windowsPackage": {
     "file": "image-scroll-benchmark-windows-x64.zip",
-    "sha256": "9cdc54ff890d9f47a730c3c7557130b9b79e48545ad07f7ecf1064a0bbebe649",
-    "sizeBytes": 44588822,
+    "sha256": "69c25f39bf5ef5ab74a9945465ac850a061b2a61456ba039926a450a3856818a",
+    "sizeBytes": 44588887,
     "tcvmDllSha256": "5976a999dd5e4c3432d5791ad4cc1031b7ec8fe77fef7a9330cfe88a27ac0d51",
-    "sourceCommit": "8a0cdc9bdc10b25484749e9493201abce6be2fce",
+    "sourceCommit": "0ba5eec57dc0cf68ab940a99aa8c49a7a4dd1dd0",
     "sdkSourceAttestation": "8a0cdc9bdc10b25484749e9493201abce6be2fce",
     "windowsExecuted": false
   },
@@ -30,7 +30,7 @@
     },
     {
       "file": "frame-pacing-benchmark-windows-functions.ps1",
-      "sha256": "205fa880ee075f95e924fff3f7972cc01d19c657c102d944ed62b792ac468ba3"
+      "sha256": "dabcd8432dc2d9ffb832c13db104d4183e1f9fa8362e355e9b8c60315e61f1a2"
     }
   ],
   "dataset": {
@@ -41,6 +41,13 @@
       "jpeg": 660,
       "png": 3
     }
+  },
+  "supersededOperatorAttempt": {
+    "packageSourceCommit": "8a0cdc9bdc10b25484749e9493201abce6be2fce",
+    "packageSha256": "9cdc54ff890d9f47a730c3c7557130b9b79e48545ad07f7ecf1064a0bbebe649",
+    "reportedFailure": "PowerShell could not cast the signed Int32 FNV seed to UInt32 during corpus validation.",
+    "benchmarkExecutableStarted": false,
+    "measuredProcessesStarted": 0
   },
   "staticPackageCheck": "passed"
 }

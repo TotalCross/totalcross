@@ -11,12 +11,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 Part 1 (Stages 1-3) and Part 2 (Stages 4-5 plus Windows packaging) are complete
 on branch `feat/frame-pacing-scheduling-diagnostics`, based on immutable
 commit `d7a9ec93faf9f2da0724611de115649176d0b033`. All five macOS matrices and
-preflights passed. The Windows runner/package contract and static package check
-passed; the benchmark executable was not run on Windows.
+preflights passed. An operator run found an unsigned FNV seed conversion bug
+before preflight; the fix and replacement static package check passed. The
+replacement 48-process Windows matrix is pending operator execution.
 
 ## Last logical commit
 
-`135b77f20` closes both plans with package provenance and the editorial report;
+`0ba5eec57` fixes unsigned Windows FNV seed parsing; `135b77f20` closes both
+plans with package provenance and the editorial report;
 `8a0cdc9bd` packages the Windows pacing runner and manifest; `bbbf6befa`
 records Stage 5 evidence; `0ee9086f7` adds the native yield
 selector; `703045cf9` adds the SDL
@@ -98,9 +100,9 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-No further action remains. Part 1 and Part 2 are closed; the final remote
-branch HEAD is given in the completion report. Polling and legacy `Sleep(1)`
-remain the defaults.
+The operator should run the replacement Windows bundle and retain its result
+ZIP. Part 1 and Part 2 implementation are closed; polling and legacy
+`Sleep(1)` remain the defaults.
 
 ## Validation and deferrals
 
@@ -134,8 +136,10 @@ remain the defaults.
   evidence hashes and metric ranges are recorded in the evidence index. The
   harness is temporary under `/tmp`.
 - The Windows PowerShell runner/package contract suite passed (13 checks), and
-  the shared distributed-benchmark tests passed. Windows execution remains
-  deferred as specified; this macOS host has no PowerShell runtime.
+  the shared distributed-benchmark tests passed. The operator's first run
+  exposed a signed-to-unsigned FNV seed cast before preflight; the replacement
+  parses both seeds explicitly as hexadecimal `UInt32` values. The replacement
+  bundle has not yet been run on Windows.
 - The final source was pushed at the exact SHA selected for `package.yml` run
   `36103442356`; the workflow completed successfully, including package deploy
   checks on macOS ARM, Windows x86/64, and Linux x86/64. Its action SDK and the

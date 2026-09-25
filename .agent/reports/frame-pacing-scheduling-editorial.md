@@ -66,9 +66,12 @@ An early Stage 3 evidence JSON exceeded the 20 KiB cap after all processes had
 passed. The writer now omits null-only row fields and enforces the size cap
 before replacing canonical evidence.
 
-The Windows package was verifiable on macOS, but PowerShell 5.1 was not
-available here. The runner received static contract and package checks; its
-runtime behavior remains for an operator to exercise on Windows.
+The first operator run of the Windows package failed during corpus-hash
+initialization: PowerShell 5.1 parsed an FNV seed as a signed `Int32` before
+the cast to `UInt32`. The failure occurred before preflight and started no
+benchmark processes. The seeds now use `UInt32.Parse` with `HexNumber`; static
+contracts and a replacement package pass. The replacement still needs a
+Windows run.
 
 ## Validation and Measurable Results
 
@@ -116,10 +119,10 @@ do not support a broad platform comparison or production policy change. The
 measurements report callback and frame timing; they do not establish CPU
 energy savings from the SDL wait path.
 
-The Windows PowerShell runner was not executed or parsed by a Windows
-PowerShell runtime. An operator should run its 48-process matrix on the
-packaged Windows x64 bundle and retain the resulting ZIP before drawing
-Windows-specific conclusions.
+The corrected Windows PowerShell runner has not yet been exercised on
+Windows. An operator should run its 48-process matrix from the replacement
+bundle and retain the resulting ZIP before drawing Windows-specific
+conclusions.
 
 ## Possible Article Angles
 

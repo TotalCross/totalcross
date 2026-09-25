@@ -168,3 +168,10 @@ files; raw process output and temporary run directories stay outside Git.
   passed static identity/content checks. Hashes, artifact IDs, counts, and
   `windowsExecuted=false` are recorded once in
   `.agent/evidence/frame-pacing-windows-package.json`.
+- 2026-09-25: The operator reported a PowerShell 5.1 failure converting the
+  signed FNV offset-basis literal to `UInt32`. It occurred during dataset
+  validation, before preflight or measured launches. Commit `0ba5eec57` parses
+  both seed words with `UInt32.Parse`/`HexNumber`; the 13-check static suite
+  passed, and a replacement package passed runtime, runner, manifest, and
+  corpus identity checks. The updated package provenance records the original
+  failure and replacement. The corrected Windows matrix remains unrun.
