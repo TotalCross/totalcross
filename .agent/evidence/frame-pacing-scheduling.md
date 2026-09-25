@@ -41,3 +41,11 @@ files; raw process output and temporary run directories stay outside Git.
   summary. The runner now uses a visible, invocation-unique directory; matrix
   retry pending. The failed execution log and run directories remain under
   `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/` and the `/tmp` bundle.
+- 2026-09-25: The direct `run=0` output passed the full correctness validator:
+  663 prefetch requests, 663 READY, and 189 frame rows. Signed correction
+  commit `0a0c62ab7` uses a visible output directory. Its signature and
+  post-commit message validation pass; full Stage 1 matrix retry pending.
+- 2026-09-25: The runner's longer nested visible output path exited `-5`, even
+  though a direct run with the shorter relative path
+  `frame-pacing-probe-run0/results` passed. The runner now uses a short relative
+  path with a unique invocation token and sample number. Matrix retry pending.

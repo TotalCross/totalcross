@@ -139,14 +139,14 @@ def test_process_output_path_is_bundle_relative():
     with tempfile.TemporaryDirectory(prefix="frame-pacing-output-test-") as temp:
         bundle = Path(temp) / "bundle"
         bundle.mkdir()
-        output_dir = bundle / "frame-pacing-results-test" / "outputs" / "run"
+        output_dir = bundle / "pacing-test" / "00"
         command = RUNNER.process_command(
             bundle / "app", bundle, output_dir, 1, "dataset", RUNNER.STAGES[1][0], "off"
         )
         output_arguments = [argument for argument in command
                             if argument.startswith("--output=")]
         require(output_arguments == [
-            "--output=frame-pacing-results-test/outputs/run"
+            "--output=pacing-test/00"
         ], "macOS launcher output path is not bundle-relative")
 
 
