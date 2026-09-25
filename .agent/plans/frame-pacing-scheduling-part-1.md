@@ -369,7 +369,8 @@ history in multiple files.
   state/evidence scaffolding.
 - [x] (2026-09-25) Stage 1 implementation, focused tests, preflight, and six
   measured processes passed; canonical results are in the signed checkpoint.
-- [ ] Stage 2 Flick driver implementation, tests, macOS benchmark, committed results.
+- [x] (2026-09-25) Stage 2 Flick drivers, tests, preflight, and nine measured
+  processes passed; canonical results are in the signed checkpoint.
 - [ ] Stage 3 clock implementation, tests, macOS benchmark, committed results.
 - [ ] Handoff state to Part 2.
 

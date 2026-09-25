@@ -78,3 +78,19 @@ files; raw process output and temporary run directories stay outside Git.
   20 KiB. Run logs are under
   `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-1-3p_g2aj9`;
   process outputs remain in the `/tmp/frame-pacing-stage-1.JrzRFt` bundle.
+- 2026-09-25: Stage 2 passed. The accounting-enabled preflight recorded 663
+  requests and READY images, zero failed/non-prefetchable images, 118 frame
+  rows, and zero scroll JPEG decodes or image/native-geometry materializations.
+  Nine fresh measured processes passed across `timer-40-millis`,
+  `timer-60-millis`, and `update-millis`; all nine finished at the checked
+  -22,440 px Flick displacement. Frame counts were 117-119, 145-149, and
+  142-147 respectively. Canonical evidence is
+  `.agent/evidence/frame-pacing-stage-2-macos.csv` (5,384 bytes) and
+  `.agent/evidence/frame-pacing-stage-2-macos.json` (16,701 bytes), both below
+  20 KiB. The bundle manifest points to app source commit `697d460ec` and
+  runtime SHA-256
+  `ac48fc121de338951824d645f5c7d5e37090e33d6cc6a085bf9d4553906895e0`.
+  The package SDK output contained a different dylib; the benchmark used a
+  temporary SDK copy with the verified Stage 1 runtime. Runner logs are under
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-2-m1heay10`;
+  the temporary bundle is under `/tmp/frame-pacing-stage-2.HOkeMU`.
