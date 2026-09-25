@@ -529,7 +529,9 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         == FlickBenchmarkSupport.MOTION_DISPLACEMENT,
         "deterministic Flick position was " + finalPosition + " instead of "
             + FlickBenchmarkSupport.MOTION_DISPLACEMENT + ", frames=" + frames.length
-            + ", scroll=" + scroll.sbV.getValue());
+            + ", scroll=" + scroll.sbV.getValue() + ", scrollRange="
+            + (validMaximum() - scroll.sbV.getMinimum()) + ", barMaximum="
+            + scroll.sbV.getMaximum() + ", visibleItems=" + scroll.sbV.getVisibleItems());
     writeFlickPacingSummary(frames);
     finishBenchmark(true, "");
   }
