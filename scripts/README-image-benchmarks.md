@@ -17,8 +17,11 @@ bash scripts/package-image-scroll-benchmark.sh \
   --target macos-arm64
 ```
 
-For Windows, provide the benchmark source and an explicit SDK source
-attestation:
+For Windows, `--source-commit` identifies the benchmark source revision.
+`--sdk-source-commit` identifies the source revision of the runtime contained
+in the SDK ZIP. It must be an ancestor of `--source-commit`; they do not need
+to be equal. This allows Part 2 to reuse the previously trusted Windows runtime
+with the current SDK and benchmark source.
 
 ```sh
 bash scripts/package-image-scroll-benchmark.sh \
@@ -27,7 +30,7 @@ bash scripts/package-image-scroll-benchmark.sh \
   --output /path/to/output \
   --target windows-x64 \
   --source-commit "$SOURCE_COMMIT" \
-  --sdk-source-commit "$SOURCE_COMMIT"
+  --sdk-source-commit "$SDK_SOURCE_COMMIT"
 ```
 
 Only `corpus/imag` is copied by default. Pass `--include-decode` to preserve
@@ -46,10 +49,10 @@ powershell -ExecutionPolicy Bypass -File .\run-prefetch-thread-benchmark-windows
 ```
 
 The runner stores per-process output and a ZIP of its evidence under `results`.
-Windows packaging also requires `--sdk-source-commit` (equal to
-`--source-commit`) as an explicit `sdkSourceAttestation`. This is an
-operator-provided provenance assertion, not cryptographic proof that the SDK
-ZIP was built from that revision.
+Windows packaging also requires `--sdk-source-commit` as an explicit
+`sdkSourceAttestation`; its revision must be an ancestor of the benchmark
+source revision. This is an operator-provided provenance assertion, not
+cryptographic proof that the SDK ZIP was built from that revision.
 
 From the extracted bundle directory, run the full suite with:
 
