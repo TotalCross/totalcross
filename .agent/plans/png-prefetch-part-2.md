@@ -91,11 +91,17 @@ Do not push unless explicitly requested.
 
 ## Progress
 
-- [ ] Milestone 4A: package and run fresh macOS six-process benchmark.
-- [ ] Milestone 4B: record/compare macOS results.
+- [x] Milestone 4A: package and run fresh macOS six-process benchmark.
+- [x] Milestone 4B: record/compare macOS results.
 - [ ] Milestone 4C: create and validate Windows x64 package.
 - [ ] Finalization: editorial report, state/evidence reconciliation, commit
       checks.
+
+Milestones 4A/4B passed on the exact 663-image corpus with six fresh macOS
+processes. Compact per-row timing, frame, lifecycle, and cold-scroll counters
+are in `.agent/evidence/png-prefetch-macos.csv`; interpretation and baseline
+comparison are in `.agent/evidence/png-prefetch.md`. Each configuration ran
+once; performance findings are descriptive.
 
 ## Milestone 4A — Fresh macOS benchmark
 
