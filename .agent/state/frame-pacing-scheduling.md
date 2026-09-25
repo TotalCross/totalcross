@@ -12,12 +12,15 @@ Part 1 (Stages 1-3) is complete on branch
 `feat/frame-pacing-scheduling-diagnostics`, based on immutable commit
 `d7a9ec93faf9f2da0724611de115649176d0b033`. Part 2 is active and Stage 4 is
 complete: relative/absolute native deadline scheduling passed its 12-process
-macOS matrix, and its evidence is committed. Stage 5 event-loop wait and
-thread-yield work is next.
+macOS matrix, and its evidence is committed. Stage 5 is complete: SDL wait and
+native yield commits passed the nine-process macOS matrix; its evidence is the
+current checkpoint.
 
 ## Last logical commit
 
-`92f5e94e6` skips empty benchmark Flick scrolls after rounded frames;
+`0ee9086f7` adds the native yield selector; `703045cf9` adds the SDL
+event-driven wait mode. `92f5e94e6` skips empty
+benchmark Flick scrolls after rounded frames;
 `85ff9a7b4` keeps benchmark Flick active through the rounded-frame plateau.
 `4c32898d7` — add headroom for the terminal Flick frame.
 `593bea07b` preserves failed Flick frame diagnostics.
@@ -89,9 +92,8 @@ modify, or remove them as part of this plan:
 
 ## Next concrete action
 
-Implement the SDL-only wait event loop and native thread-yield selector for
-Stage 5, with the focused wakeup and yield tests described by the Part 2 plan.
-Keep polling and legacy `Sleep(1)` as the defaults.
+Implement the pure PowerShell Windows runner and package integration from the
+Part 2 plan. Polling and legacy `Sleep(1)` remain the defaults.
 
 ## Validation and deferrals
 
@@ -118,6 +120,12 @@ Keep polling and legacy `Sleep(1)` as the defaults.
   passed all 12 measured processes and preflight. Evidence files are 7,188 and
   18,758 bytes; their SHA-256 digests and the runtime identity are in the
   evidence index.
+- Stage 5 SDL wait-loop commit `703045cf9` and native yield commit
+  `0ee9086f7` passed a focused macOS native build and three native tests
+  covering timer scheduling, seven event-loop helper checks, and yield-mode
+  parsing. The nine-process macOS matrix and preflight passed; canonical
+  evidence hashes and metric ranges are recorded in the evidence index. The
+  harness is temporary under `/tmp`.
 - `FlickDriverTest` and `SyntheticPacingTest` pass. SDK package builds and
   macOS ARM64 benchmark packaging passed for Stages 2 and 3. The Stage 3 bundle
   reused runtime SHA-256

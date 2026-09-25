@@ -144,3 +144,21 @@ files; raw process output and temporary run directories stay outside Git.
   `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-4-04a_0apv`;
   the temporary macOS bundle is under
   `/tmp/frame-pacing-stage-4-bundle-final.6zMUkc`.
+- 2026-09-25: Stage 5 passed its accounting-enabled preflight and all nine fresh
+  measured processes across `poll-legacy-yield`, `wait-legacy-yield`, and
+  `wait-native-yield`. Preflight recorded 663 requests and READY images, zero
+  failures/non-prefetchable images, and zero scroll JPEG decodes or image/
+  native-geometry materializations. Each measured process completed with
+  `callbackCount == frameCount`; frame counts were 147-158, 138-145, and
+  139-145 respectively. Callback-delta P95 values ranged 31.6-32.5 ms and
+  callback-delta maxima ranged 63.7-112.6 ms. Runtime identity is
+  `88305c53cc59220680d62cdbcb7ece28e69545306942c6d8df1443984145df5b`, source
+  commit `0ee9086f71956bb992d1e7fe41842d9f80fa46e5`, and corpus hash
+  `af39fea695191a27`. Canonical evidence is
+  `.agent/evidence/frame-pacing-stage-5-macos.csv` (5,649 bytes, SHA-256
+  `46b7be1c504f90a1f4d7b53446fa6afb74dee8b05a75182a5e65953f19cf273f`) and
+  `.agent/evidence/frame-pacing-stage-5-macos.json` (14,138 bytes, SHA-256
+  `2e5aaf3a78abe20a85bc1f761792a4a51bcf72b3ccdff37c9ee73b03da8abd7b`). Runner
+  output is `/tmp/frame-pacing-stage-5-matrix.log`; process logs are under
+  `/var/folders/k8/02b7wfkd7fn32vtm3t5mwxwr0000gn/T/frame-pacing-stage-5-ltbiqj_i`;
+  the temporary bundle is `/tmp/frame-pacing-stage-5-package`.
