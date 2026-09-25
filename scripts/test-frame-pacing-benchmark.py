@@ -262,6 +262,64 @@ def test_evidence_row_count_and_safe_failure():
             raise AssertionError("wrong evidence row count was accepted")
 
 
+def test_stage_two_evidence_fits_canonical_size_limit():
+    config = RUNNER.STAGES[2][0]
+    summary = stage_one_summary(config)
+    summary.update({
+        "driver": config.driver,
+        "timerFps": config.timer_fps,
+        "clock": config.clock,
+        "timerDeadlinePolicy": config.timer_deadline_policy,
+        "eventLoopPolicy": config.event_loop_policy,
+        "yieldPolicy": config.yield_policy,
+        "expectedCallbackIntervalNs": config.expected_callback_interval_ns,
+        "callbackCount": 181,
+    })
+    for field in (
+        "callbackDeltaP50Ns", "callbackDeltaP95Ns", "callbackDeltaP99Ns",
+        "callbackDeltaMaxNs", "callbackAbsoluteLatenessP50Ns",
+        "callbackAbsoluteLatenessP95Ns", "callbackAbsoluteLatenessP99Ns",
+        "callbackAbsoluteLatenessMaxNs", "callbackDeltaErrorP50Ns",
+        "callbackDeltaErrorP95Ns", "callbackDeltaErrorP99Ns",
+        "callbackDeltaErrorMaxNs",
+    ):
+        summary[field] = 1_000_000
+    manifest = {"sourceCommit": "test-source"}
+    rows = [
+        RUNNER.make_row(2, config, sample, manifest, "runtime", summary, 1)
+        for sample in range(1, 10)
+    ]
+    with tempfile.TemporaryDirectory(prefix="frame-pacing-stage-two-size-") as temp:
+        root = Path(temp)
+        csv_path = root / "stage.csv"
+        json_path = root / "stage.json"
+        RUNNER.write_evidence(csv_path, json_path, 2, 3, manifest,
+                              "runtime", {"status": "PASS"}, rows)
+        require(csv_path.stat().st_size < 20 * 1024
+                and json_path.stat().st_size < 20 * 1024,
+                "stage 2 canonical evidence exceeds 20 KiB")
+
+        csv_path.write_text("previous csv\n", encoding="utf-8")
+        json_path.write_text("previous json\n", encoding="utf-8")
+        oversized_manifest = {"sourceCommit": "x" * (24 * 1024)}
+        oversized_rows = [
+            RUNNER.make_row(2, config, sample, oversized_manifest,
+                            "runtime", summary, 1)
+            for sample in range(1, 10)
+        ]
+        try:
+            RUNNER.write_evidence(csv_path, json_path, 2, 3, oversized_manifest,
+                                  "runtime", {"status": "PASS"}, oversized_rows)
+        except RUNNER.BenchmarkFailure as error:
+            require("20 KiB" in str(error),
+                    "oversize evidence failure did not identify the limit")
+            require(csv_path.read_text(encoding="utf-8") == "previous csv\n"
+                    and json_path.read_text(encoding="utf-8") == "previous json\n",
+                    "oversize evidence replaced the previous canonical files")
+        else:
+            raise AssertionError("oversize evidence was accepted")
+
+
 def main():
     require(RUNNER_PATH.stat().st_size < 20 * 1024,
             "frame-pacing runner exceeds the plan's 20 KiB limit")
@@ -273,6 +331,7 @@ def main():
         test_process_output_path_is_bundle_relative,
         test_failure_handling_does_not_launch_or_accept_failed_process,
         test_evidence_row_count_and_safe_failure,
+        test_stage_two_evidence_fits_canonical_size_limit,
     )
     for test in tests:
         test()

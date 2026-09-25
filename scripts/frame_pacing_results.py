@@ -230,8 +230,12 @@ def write_evidence(csv_path, json_path, stage, rounds, manifest, runtime_identit
         with tempfile.NamedTemporaryFile("w", encoding="utf-8", newline="",
                                          dir=json_path.parent, delete=False) as target:
             temp_paths.append(Path(target.name))
-            json.dump(payload, target, indent=2, sort_keys=True)
+            json.dump(payload, target, separators=(",", ":"), sort_keys=True)
             target.write("\n")
+        require(temp_paths[0].stat().st_size < 20 * 1024,
+                "canonical stage CSV exceeds 20 KiB")
+        require(temp_paths[1].stat().st_size < 20 * 1024,
+                "canonical stage JSON exceeds 20 KiB")
         os.replace(temp_paths[0], csv_path)
         os.replace(temp_paths[1], json_path)
     finally:
