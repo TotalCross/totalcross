@@ -34,7 +34,11 @@
   "corpus": {
     "sourcePath": "/Users/flsobral/Downloads/totalcross-image-benchmark-results-1790206393754100300/corpus",
     "datasetFileCount": 663,
-    "contentFormatCounts": { "total": 663, "jpeg": 660, "png": 3 },
+    "contentFormatCounts": {
+      "total": 663,
+      "jpeg": 660,
+      "png": 3
+    },
     "datasetHash": "af39fea695191a27"
   },
   "package": {
@@ -48,7 +52,14 @@
     "runnerAnalysisSha256": "369b40443707e2f688c50d0cbe99d820e181fd89086516f5ddff49fc4aebf169",
     "preflightProcessCount": 2,
     "measuredProcessCount": 6,
-    "measuredModeOrder": ["off", "off", "off", "on", "on", "on"],
+    "measuredModeOrder": [
+      "off",
+      "off",
+      "off",
+      "on",
+      "on",
+      "on"
+    ],
     "windowsExecuted": false
   },
   "validation": {
@@ -63,6 +74,125 @@
     "packageManifestAndHashes": "passed",
     "powershellRuntimeParse": "unavailable on this macOS host",
     "localWindowsBuilds": 0,
-    "benchmarkProcessesExecuted": 0
+    "benchmarkProcessesExecuted": 0,
+    "hotfixDiffCheck": "passed",
+    "hotfixPatchManifestHashes": "passed",
+    "hotfixPowershellParse": "unavailable on this macOS host",
+    "hotfixWindowsResume": "not used; successful full sequence ran",
+    "hotfixSourceBuild": "passed (exact SDK ZIP; Windows x64 deploy package created)",
+    "hotfixPackageHashes": "passed",
+    "hotfixPowerShellParse": "passed on Windows as part of complete benchmark run",
+    "windowsOperatorMeasuredProcesses": 6,
+    "hotfixWindowsBenchmark": "passed (2 preflights, 6 measured processes)"
+  },
+  "hotfix": {
+    "sourceCommit": "1e8d7c03f120356316603f6a32ca929d7423748c",
+    "packagePath": "/tmp/scroll-raster-reuse-windows/hotfix-package/image-scroll-raster-reuse-windows-x64.zip",
+    "packageSizeBytes": 44557233,
+    "packageSha256": "cf62c66b498b6376bf1943d6a4812b7aff6913c2b960a8bc0f7158a3abbb44d6",
+    "patchPath": "/tmp/scroll-raster-reuse-windows/hotfix-package/scroll-raster-reuse-windows-preflight-fix.zip",
+    "patchSizeBytes": 56711,
+    "patchSha256": "50de92eae3ef5e0c7c36a828f12167192a4e8edc04fc51d14e48f31b204d2666",
+    "applicationTczSha256": "bac0a5a835896af9e8cc8f8c6b95677366b58321c93aad6181bea70f526ee5c5",
+    "replaces": [
+      "ImageScrollRealWorkloadBenchmarkApp.tcz",
+      "run-scroll-raster-reuse-windows.ps1",
+      "scroll-raster-reuse-windows-functions.ps1",
+      "scroll-raster-reuse-windows-analysis.ps1",
+      "README.md",
+      "manifest.json"
+    ],
+    "supportsResumeFromPreflightOnFailureArchive": true,
+    "manifestHashesVerified": true
+  },
+  "operatorAttempts": [
+    {
+      "archivePath": "/Users/flsobral/Downloads/scroll-raster-reuse-windows-results-20260926-174457-904.zip",
+      "status": "FAILED",
+      "failure": "Scroll pass records are not cold,warm",
+      "corpusHash": "af39fea695191a27",
+      "corpusFiles": 663,
+      "appProcessesStarted": 1,
+      "offPreflightRecords": [
+        "cold",
+        "warm"
+      ],
+      "completedPreflightProcesses": 0,
+      "completedMeasuredProcesses": 0
+    },
+    {
+      "archivePath": "/Users/flsobral/Downloads/scroll-raster-reuse-windows-results-20260926-185338-152.zip",
+      "status": "FAILED",
+      "failure": "preflight-on exited with code 1",
+      "applicationError": "cold recorded hits with raster reuse disabled",
+      "sdlPixelFormat": "SDL_PIXELFORMAT_ARGB8888",
+      "corpusHash": "af39fea695191a27",
+      "completedPreflightProcesses": 1,
+      "completedMeasuredProcesses": 0
+    },
+    {
+      "archivePath": "/Users/flsobral/Downloads/scroll-raster-reuse-windows-results-20260926-222513-115.zip",
+      "status": "PASS",
+      "sourceCommit": "1e8d7c03f120356316603f6a32ca929d7423748c",
+      "corpusHash": "af39fea695191a27",
+      "corpusFiles": 663,
+      "completedPreflightProcesses": 2,
+      "completedMeasuredProcesses": 6,
+      "measuredModeOrder": [
+        "off",
+        "off",
+        "off",
+        "on",
+        "on",
+        "on"
+      ],
+      "matchedWaypoints": 10,
+      "finalScrollDisplacement": 4095,
+      "onSampleReuse": {
+        "attempts": 142,
+        "hits": 142,
+        "fallbacks": 0,
+        "hitRate": 1.0,
+        "reusedPixels": 58476600,
+        "movedBytes": 233906400
+      }
+    }
+  ],
+  "operatorBenchmarkResult": {
+    "status": "PASS",
+    "archivePath": "/Users/flsobral/Downloads/scroll-raster-reuse-windows-results-20260926-222513-115.zip",
+    "aggregateMedianChanges": {
+      "coldFrameIntervalP95Ns": {
+        "off": 17734300,
+        "on": 17777300,
+        "changePercent": 0.2425
+      },
+      "warmFrameIntervalP95Ns": {
+        "off": 18244100,
+        "on": 17872200,
+        "changePercent": -2.0385
+      },
+      "coldActiveWorkP95Ns": {
+        "off": 4753300,
+        "on": 2842000,
+        "changePercent": -40.21
+      },
+      "warmActiveWorkP95Ns": {
+        "off": 4397600,
+        "on": 2780800,
+        "changePercent": -36.7655
+      },
+      "coldScreenUpdateP95Ns": {
+        "off": 1570100,
+        "on": 1665400,
+        "changePercent": 6.0697
+      },
+      "warmScreenUpdateP95Ns": {
+        "off": 1459400,
+        "on": 1327300,
+        "changePercent": -9.0517
+      }
+    },
+    "interpretation": "Active work and warm frame interval improved; cold frame interval and screen-update results were mixed."
   }
 }
