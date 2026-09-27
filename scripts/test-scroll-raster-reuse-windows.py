@@ -41,6 +41,9 @@ def test_profile_and_scroll_counters():
             "Windows profile must retain the full 663-image workload")
     require('!windowsScrollRasterReuseProfile' in APP,
             "Windows profile must accept zero reuse hits on unsupported drawable formats")
+    require('boolean reuseExpected = RenderingOptimizations.getMask() != 0' in APP and
+            'benchmarkTargetPixelBytes == 2 || benchmarkTargetPixelBytes == 4' in APP,
+            "Windows profile must require reuse hits on supported pixel widths")
     require('expected_final_displacement=' in APP and 'actual_final_displacement=' in APP,
             "app records must expose expected and actual final scroll displacement")
 
@@ -86,6 +89,12 @@ def test_windows_contracts():
     require("Write-ExecutionMetadata 'FAILED'" in RUNNER and
             "Compress-Archive" in RUNNER and "Assert-PreflightMatch" in RUNNER,
             "runner must archive failures and compare correctness waypoints")
+    require("param([string]$ResumeFromArchive)" in RUNNER and
+            "Import-PreflightOffArchive" in RUNNER + ANALYSIS and
+            "preflight-on exited with code 1" in ANALYSIS and
+            "Scroll pass records are not cold,warm" in ANALYSIS and
+            "Expected one cold and one warm scroll pass record" in HELPER,
+            "runner must reuse the validated OFF preflight and parse cold/warm records explicitly")
     require("final displacement differs from its matching waypoints" in RUNNER and
             "expectedFinalDisplacement" in HELPER and "actualFinalDisplacement" in HELPER,
             "runner must match final scroll displacement against preflight waypoints")

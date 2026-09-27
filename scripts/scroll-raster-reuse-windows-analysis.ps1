@@ -123,3 +123,63 @@ function Write-AggregateComparison {
     }
     $rows | Export-Csv -LiteralPath $Path -NoTypeInformation -Encoding UTF8
 }
+
+function Import-PreflightOffArchive {
+    param([string]$ArchivePath, [string]$EvidenceRoot, [string]$SourceCommit, [string]$SdkSourceAttestation,
+        [string]$SdkZipSha256, [string]$DatasetHash, [string]$RuntimeSha256)
+    if (-not (Test-Path -LiteralPath $ArchivePath -PathType Leaf)) { throw "Resume archive does not exist: $ArchivePath" }
+    $resumeRoot = Join-Path $EvidenceRoot 'resume-import'
+    New-Item -ItemType Directory -Path $resumeRoot -Force | Out-Null
+    Expand-Archive -LiteralPath $ArchivePath -DestinationPath $resumeRoot -Force
+    $metadataFiles = @(Get-ChildItem -LiteralPath $resumeRoot -Filter 'execution-metadata.json' -Recurse -File)
+    if ($metadataFiles.Count -ne 1) { throw 'Resume archive must contain one execution metadata file' }
+    $priorRoot = Split-Path -Parent $metadataFiles[0].FullName
+    $prior = Read-JsonFile $metadataFiles[0].FullName
+    $priorManifest = Read-JsonFile (Join-Path $priorRoot 'manifest.json')
+    $parserFailure = $prior.failure -eq 'Scroll pass records are not cold,warm'
+    $onPreflightFailure = $prior.failure -eq 'preflight-on exited with code 1'
+    $expectedCompletedPreflights = if ($parserFailure) { 0 } elseif ($onPreflightFailure) { 1 } else { -1 }
+    if ($prior.status -ne 'FAILED' -or $expectedCompletedPreflights -lt 0 -or
+        $prior.completedPreflightProcesses -ne $expectedCompletedPreflights -or $prior.completedMeasuredProcesses -ne 0 -or
+        ($prior.sourceCommit -cne $SourceCommit -and $prior.sourceCommit -cne $SdkSourceAttestation) -or
+        $prior.sdkSourceAttestation -cne $SdkSourceAttestation -or $prior.sdkZipSha256 -cne $SdkZipSha256 -or
+        $prior.datasetHash -cne $DatasetHash -or
+        $prior.runtimeSha256 -cne $RuntimeSha256 -or $priorManifest.benchmark -ne 'scroll-raster-reuse-windows' -or
+        ($priorManifest.sourceCommit -cne $SourceCommit -and $priorManifest.sourceCommit -cne $SdkSourceAttestation) -or
+        $priorManifest.sdkSourceAttestation -cne $SdkSourceAttestation -or
+        $priorManifest.sdkZipSha256 -cne $SdkZipSha256 -or $priorManifest.datasetHash -cne $DatasetHash -or
+        $priorManifest.runtimeSha256 -cne $RuntimeSha256) {
+        throw 'Resume archive does not match a recognized failed preflight and current package'
+    }
+    $outputDirectory = Join-Path $priorRoot 'app-results/preflight-off'
+    $logRoot = Join-Path $priorRoot 'logs'
+    $logPaths = @((Join-Path $logRoot 'preflight-off.stdout.log'),(Join-Path $logRoot 'preflight-off.stderr.log'),
+        (Join-Path $logRoot 'preflight-off.DebugConsole.log'),(Join-Path $logRoot 'preflight-off.application.log'))
+    $completion = Get-CompletionRecord $logPaths
+    if ($completion['profile'] -ne 'scroll-raster-reuse-windows' -or $completion['passes'] -ne '2' -or
+        $completion['image_count'] -ne '663' -or $completion['prefetch_profile'] -ne 'on' -or
+        $completion['accounting'] -ne 'on' -or $completion['prefetch_thread_mode'] -ne 'worker-semaphore' -or
+        $completion['prefetch_worker_sleep_ms'] -ne '0' -or $completion['requested_mask'] -ne '6' -or
+        $completion['effective_mask'] -ne '6' -or $completion['flick_driver'] -ne 'timer' -or
+        $completion['flick_fps'] -ne '60' -or $completion['flick_clock'] -ne 'nano' -or
+        $completion['timer_deadline_mode'] -ne 'absolute' -or $completion['event_loop_mode'] -ne 'poll' -or
+        $completion['thread_yield_mode'] -ne 'legacy') { throw 'Resume archive OFF preflight configuration differs' }
+    $passRecords = @(Get-ScrollReuseRecords $logPaths)
+    $pixelRecords = @{}
+    foreach ($path in $logPaths) {
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { continue }
+        foreach ($line in (Get-Content -LiteralPath $path)) {
+            if ($line -match '^TC_SCROLL_RASTER_REUSE_SDL_PIXEL_FORMAT=(.+)$') { $pixelRecords[$Matches[1]] = $true }
+        }
+    }
+    if ($pixelRecords.Count -ne 1) { throw 'Resume archive OFF preflight has no unique SDL pixel format' }
+    $summary = Get-ProcessSummary 'off' 0 $outputDirectory $completion $passRecords `
+        ([string]@($pixelRecords.Keys)[0]) 0
+    if ($summary.logicalWidth -ne 540 -or $summary.logicalHeight -ne 960 -or
+        $summary.drawableWidth -le 0 -or $summary.drawableHeight -le 0) {
+        throw 'Resume archive OFF preflight dimensions are invalid'
+    }
+    Assert-PreflightRun $summary $completion $passRecords 'off'
+    Write-Host 'scroll raster reuse reused validated preflight-off from failure archive'
+    return $summary
+}

@@ -137,9 +137,22 @@ function Get-ScrollReuseRecords {
     param([string[]]$Paths)
     $lines = @(Get-UniqueRecords $Paths 'fixture=ImageScrollRealWorkloadBenchmarkApp,record=scroll-raster-reuse,')
     if ($lines.Count -ne 2) { throw "Expected cold and warm scroll records; found $($lines.Count)" }
-    $records = @($lines | ForEach-Object { Convert-RecordLine $_ } | Sort-Object pass)
-    if (($records.pass -join ',') -ne 'cold,warm') { throw 'Scroll pass records are not cold,warm' }
-    return $records
+    $cold = $null
+    $warm = $null
+    foreach ($line in $lines) {
+        $record = Convert-RecordLine $line
+        if ($record['pass'] -ceq 'cold' -and $null -eq $cold) {
+            $cold = $record
+        } elseif ($record['pass'] -ceq 'warm' -and $null -eq $warm) {
+            $warm = $record
+        } else {
+            throw "Unexpected or duplicate scroll pass record: $($record['pass'])"
+        }
+    }
+    if ($null -eq $cold -or $null -eq $warm) {
+        throw 'Expected one cold and one warm scroll pass record'
+    }
+    return @($cold, $warm)
 }
 
 function Get-Long {

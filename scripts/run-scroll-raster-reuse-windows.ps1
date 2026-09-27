@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-only
 
 [CmdletBinding()]
-param()
+param([string]$ResumeFromArchive)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -291,9 +291,20 @@ try {
         $digest.total -ne 663 -or $digest.jpeg -ne 660 -or $digest.png -ne 3) {
         throw 'Corpus digest or content magic counts differ from the manifest'
     }
-    Write-Host 'scroll raster reuse package validation passed; starting two preflights'
+    Write-Host 'scroll raster reuse package validation passed'
     Write-ExecutionMetadata 'RUNNING' $null
-    $offPreflight = Invoke-BenchmarkProcess 'off' 0 'on' -Preflight
+    if ([string]::IsNullOrWhiteSpace($ResumeFromArchive)) {
+        Write-Host 'scroll raster reuse starting two preflights'
+        $offPreflight = Invoke-BenchmarkProcess 'off' 0 'on' -Preflight
+    } else {
+        Write-Host 'scroll raster reuse resuming after archived preflight-off'
+        $offPreflight = Import-PreflightOffArchive $ResumeFromArchive $script:evidenceRoot `
+            ([string]$script:manifest.sourceCommit) ([string]$script:manifest.sdkSourceAttestation) `
+            ([string]$script:manifest.sdkZipSha256) $script:datasetHash $script:runtimeSha256
+        $script:completedPreflights++
+        $script:preflightSummaries.Add([PSCustomObject]@{ summary=$offPreflight; waypointPath=$offPreflight.waypointsPath })
+        Write-ExecutionMetadata 'RUNNING' $null
+    }
     $onPreflight = Invoke-BenchmarkProcess 'on' 0 'on' -Preflight
     $offWaypoints = $script:preflightSummaries[0].waypointPath
     $onWaypoints = $script:preflightSummaries[1].waypointPath

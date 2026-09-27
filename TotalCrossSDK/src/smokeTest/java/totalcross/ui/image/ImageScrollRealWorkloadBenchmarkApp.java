@@ -1520,7 +1520,10 @@ public class ImageScrollRealWorkloadBenchmarkApp extends MainWindow
         result.name + " raster reuse accounting mismatch");
     ImageRasterBenchmarkSupport.require(result.postMoveRecoveries == 0,
         result.name + " had post-move recovery");
-    if (RenderingOptimizations.getMask() != 0 && !windowsScrollRasterReuseProfile) {
+    boolean reuseExpected = RenderingOptimizations.getMask() != 0
+        && (!windowsScrollRasterReuseProfile
+            || benchmarkTargetPixelBytes == 2 || benchmarkTargetPixelBytes == 4);
+    if (reuseExpected) {
       ImageRasterBenchmarkSupport.require(result.hits > 0,
           result.name + " did not record raster reuse hits: attempts=" + result.attempts
               + ",fallbacks=" + result.fallbacks + ",reasons=" + rasterReuseFallbackDetails()

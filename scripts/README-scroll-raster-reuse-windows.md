@@ -20,6 +20,12 @@ ZIP is written under `results` on both success and failure. It contains both
 process summaries and separate cold/warm pass summaries, with OFF-to-ON median
 comparisons for each pass.
 
+For a package hotfix, extract every file in the hotfix archive over the package
+directory. Pass the existing failure ZIP with `-ResumeFromArchive`; the runner
+validates and reuses its OFF preflight, then runs the ON preflight and six
+measured processes. This continuation supports the cold/warm parser failure
+and the initial ON-preflight app assertion failure.
+
 The workload uses a logical 540 × 960 window. The runner records the drawable
 size, scale, SDL pixel format, renderer, and refresh rate reported by this
 machine; physical display dimensions may vary.
