@@ -54,9 +54,9 @@ Primary source paths:
 - [x] (2026-09-30) Fetched `origin/master`, verified RuntimeConfiguration,
   RuntimeSelector, RuntimeEnvironment, and RuntimeDiagnostics, and created the
   clean `feat/image-runtime-config` worktree from `623055afc`.
-- [ ] Commit this plan before implementation.
-- [ ] Complete Milestone 1: typed declarations, shared parser, feature bridge,
-  deployment pruning, and versioned metadata.
+- [x] (2026-09-30) Committed the plan first, then completed Milestone 1:
+  typed declarations, shared selector parsing, the feature bridge, deployment
+  pruning, the `tc.imageruntimeconfig` v1 codec, and focused tests (42 passed).
 - [ ] Complete Milestone 2: immutable policy, native/simulator startup,
   description contributors, API boundaries, and deployed smoke fixtures.
 - [ ] Run final validation, write the final report, commit it last, push, and
@@ -252,7 +252,10 @@ test freely. Keep SDK logs under `/tmp` or the ignored build directory.
 
 ## Outcomes & Retrospective
 
-Pending milestone completion.
+Milestone 1 uses B's selector parser, target pruning, metadata selector codec,
+and resolver. Image storage tags are explicit stable values; impossible target
+rules are omitted. Focused parsing, codec, converter deployment, collision,
+specificity, and B regression tests passed. Milestone 2 remains active.
 
 ## Revision Note
 

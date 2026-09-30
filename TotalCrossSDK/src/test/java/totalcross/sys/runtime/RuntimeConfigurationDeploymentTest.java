@@ -26,6 +26,7 @@ import totalcross.util.zip.TCZ;
 
 class RuntimeConfigurationDeploymentTest {
   private static final String METADATA_RESOURCE = "tc.runtimeconfig";
+  private static final String IMAGE_METADATA_RESOURCE = "tc.imageruntimeconfig";
 
   @TempDir
   Path workDir;
@@ -42,6 +43,7 @@ class RuntimeConfigurationDeploymentTest {
     DeploySettings.targetDir = null;
     DeploySettings.mainClassName = null;
     DeploySettings.runtimeConfigurationSelectors = null;
+    DeploySettings.imageRuntimeConfigurationRules = null;
 
     try {
       new Deploy(new String[] { classFile.toString(), "/o", output.toString() });
@@ -56,6 +58,15 @@ class RuntimeConfigurationDeploymentTest {
     List<RuntimeSelector> selectors = RuntimeConfigurationMetadata.decode(metadata);
     assertEquals(1, selectors.size());
     assertTrue(selectors.get(0).matches(
+        RuntimeEnvironmentTestSupport.environment("WindowsCE", 4, false)));
+
+    byte[] imageMetadata = readTczEntry(Path.of(DeploySettings.tczs[0]), IMAGE_METADATA_RESOURCE);
+    assertNotNull(imageMetadata, "Declared Image rules must be written to the application TCZ");
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<totalcross.ui.image.ImageStorageProfile>> imageRules =
+        ImageRuntimeConfigurationMetadata.decode(imageMetadata);
+    assertEquals(1, imageRules.size());
+    assertEquals(totalcross.ui.image.ImageStorageProfile.COMPACT, imageRules.get(0).requestedValue());
+    assertTrue(imageRules.get(0).selector().matches(
         RuntimeEnvironmentTestSupport.environment("WindowsCE", 4, false)));
   }
 
@@ -73,11 +84,17 @@ class RuntimeConfigurationDeploymentTest {
             + "import totalcross.sys.runtime.RuntimeConfiguration;\n"
             + "import totalcross.sys.runtime.RuntimeRule;\n"
             + "import totalcross.sys.runtime.RuntimeWhen;\n"
+            + "import totalcross.ui.image.ImageRuntimeRule;\n"
+            + "import totalcross.ui.image.ImageStorageProfile;\n"
             + "@RuntimeConfiguration\n"
             + "@RuntimeRule(when = @RuntimeWhen(allOf = {\n"
             + "  @RuntimeCondition(platform = Platform.WINDOWS),\n"
             + "  @RuntimeCondition(architecture = Architecture.ARM64)\n"
             + "}))\n"
+            + "@ImageRuntimeRule(when = @RuntimeWhen(allOf = {\n"
+            + "  @RuntimeCondition(platform = Platform.WINDOWS),\n"
+            + "  @RuntimeCondition(architecture = Architecture.ARM64)\n"
+            + "}), storage = ImageStorageProfile.COMPACT)\n"
             + "public class RuntimeConfigurationFixture extends totalcross.ui.MainWindow { }\n",
         StandardCharsets.UTF_8);
 
