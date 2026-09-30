@@ -36,6 +36,12 @@ class ArtifactBoundariesTest {
     }
 
     @Test
+    void apiDoesNotExposeStandardStreamRuntimeBridge() throws Exception {
+        assertFalse(entries("totalcross-api").contains("totalcross/sys/VmStandardOutputStream.class"));
+        assertTrue(entries("totalcross-runtime-java").contains("totalcross/sys/VmStandardOutputStream.class"));
+    }
+
+    @Test
     void converterAndDeployerRemainSeparate() throws Exception {
         Set<String> converter = entries("totalcross-converter");
         Set<String> deployer = entries("totalcross-deployer");
