@@ -32,6 +32,23 @@ class ImageDecodeRequirementTest {
   }
 
   @Test
+  void choosesExplicitRatioTierWithoutChangingExactOutputDimensions() throws Exception {
+    EncodedImageSource source = source(800, 600);
+    int width = 800 * 2 / 7 + (800 * 2 % 7 == 0 ? 0 : 1);
+    int height = 600 * 2 / 7 + (600 * 2 % 7 == 0 ? 0 : 1);
+    int denominator = ImageDecodeRequirement.chooseForTargetDimensions(
+        source.getIntrinsicWidth(), source.getIntrinsicHeight(), width, height);
+    ImageDecodePolicy policy = ImageDecodePolicy.explicitRatio(2, 7, denominator, width, height);
+    ImagePipeline root = new ImagePipeline(source, policy);
+    ImagePipeline scaled = append(root, ImagePipeline.SMOOTH_SCALE, 0, 0, 0, 0, width, height);
+
+    assertEquals(229, policy.logicalWidth());
+    assertEquals(172, policy.logicalHeight());
+    assertEquals(2, policy.decodeDenominator());
+    assertEquals(2, ImageDecodeRequirement.choose(source, scaled, width, height));
+  }
+
+  @Test
   void accountsForCropAnisotropyAndPhysicalDensity() throws Exception {
     EncodedImageSource source = source(800, 600);
     ImagePipeline root = new ImagePipeline(source);
