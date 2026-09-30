@@ -1,11 +1,11 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-//#define DEBUG_TO_ADB_ONLY // uncomment this to force all output to go to ADB
-
 #include "tcvm.h"
+#include "legacy_debug_console.h"
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/debug_c.h"
@@ -27,7 +27,7 @@ static char debugstrSmall[64]; // used during startup and exit, when debugstr is
 bool initDebug()
 {
    debugstr = (CharP) malloc(16384); // don't use xmalloc!
-   return debugstr != null && privateInitDebug();
+   return debugstr != null && legacyDebugConsoleInit() && privateInitDebug();
 }
 
 void destroyDebug()
@@ -41,8 +41,14 @@ void destroyDebug()
          debug("%3d",i);
 #endif
    privateDestroyDebug();
+   legacyDebugConsoleShutdown();
    free(debugstr);
    debugstr = null;
+}
+
+void closeDebug()
+{
+   legacyDebugConsoleClose();
 }
 
 void iphoneDebug(CharP s);

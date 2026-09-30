@@ -1,31 +1,19 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 // Debug
-
-static FILE* fdebug;
-static char debugPath[MAX_PATHNAME];
 
 static bool privateInitDebug()
 {
    return true;
 }
 
-void closeDebug()
-{
-   fclose(fdebug);
-   fdebug = null;
-}
-
 static void privateDestroyDebug()
 {
-   if (fdebug)
-   {
-      fputs("===============\r\n",fdebug);
-      closeDebug();
-   }
+   legacyDebugConsoleDestroy("===============\r\n");
 }
 
 static bool privateDebug(char* str)
@@ -45,25 +33,11 @@ static bool privateDebug(char* str)
    return true;
 #else
    bool err = true;
-   if (!fdebug)
+   if (strEq(str,ERASE_DEBUG_STR))
+      legacyDebugConsoleErase();
+   else
    {
-      xstrprintf(debugPath, "%s\\DebugConsole.txt",appPath);
-      fdebug = fopen(debugPath,"ab+");
-   }
-   if (fdebug)
-   {
-      if (strEq(str,ERASE_DEBUG_STR))
-      {
-         TCHAR debugPath2[MAX_PATHNAME];
-         CharP2TCHARPBuf(debugPath, debugPath2);
-         closeDebug();
-         DeleteFile(debugPath2);
-      }
-      else
-      {
-         fprintf(fdebug, "%s\r\n", str);
-         fflush(fdebug);
-      }
+      legacyDebugConsoleDebugLine(str, "\r\n", false);
    }
 #if defined(WINCE) && defined(_DEBUG)
 {
