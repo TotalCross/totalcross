@@ -22,11 +22,13 @@ feature plumbing remains outside application API artifacts.
 
 ## Working Set and Resume Protocol
 
-No `.agent/state` file will be created, per the task instructions. This plan is
-the resume record: read `Progress`, `Plan of Work`, and the active phase below
-before continuing. At completion, read `.agent/reports/image-runtime-config.md`
-for the factual handoff. Temporary build logs stay outside committed source;
-the final report records commands and outcomes without embedding logs.
+No task-specific `.agent/state` file will be created, per the task instructions.
+The base revision already contains unrelated tracked state files; preserve
+them. This plan is the resume record: read `Progress`, `Plan of Work`, and the
+active phase below before continuing. At completion, read
+`.agent/reports/image-runtime-config.md` for the factual handoff. Temporary
+build logs stay outside committed source; the final report records commands
+and outcomes without embedding logs.
 
 Primary source paths:
 
@@ -63,8 +65,10 @@ Primary source paths:
   normal `dist -x test`, diagnostics-on compilation/artifact checks, and native
   `tcvm`/`Launcher` Release build passed. A diagnostics-enabled distribution
   and matching macOS VM passed the F RuntimeDiagnostics smoke.
-- [ ] Run final validation, write the final report, commit it last, push, and
-  open a PR against `master` without merging.
+- [x] (2026-09-30) Final validation passed; the final report is the last
+  planned repository commit.
+- External handoff: push `feat/image-runtime-config` and open a PR against
+  `master` without merging.
 
 ## Current Architecture and Scope
 
@@ -211,9 +215,9 @@ diff-check results.
   and selector persistence.
   Rationale: preserve compatibility and avoid a second configuration system.
   Date: 2026-09-30.
-- Decision: Do not create `.agent/state`.
+- Decision: Do not create a task-specific `.agent/state` file.
   Rationale: explicit task instruction. Progress and resume instructions stay
-  in this plan.
+  in this plan; unrelated state files already tracked on the base remain intact.
   Date: 2026-09-30.
 
 ## Validation and Acceptance
@@ -232,9 +236,11 @@ slice. No native build occurs before Milestone 1 is complete.
   build, diagnostics-enabled SDK distribution, and deployed F RuntimeDiagnostics
   compatibility smoke also pass.
 - Final: `git diff --check origin/master...HEAD` passes; ordered history has the
-  plan first and report last; no `.agent/state`, mask API, numeric public option
-  IDs, Image decode/render edits, or hot-path configuration lookup exists.
-  Review new files for the requested approximate 20 KiB / 600-line limits.
+  plan first and report last; no task-specific `.agent/state` file, mask API,
+  numeric public option IDs, Image decode/render edits, or hot-path
+  configuration lookup exists. Pre-existing tracked state files remain
+  untouched. Review new files for the requested approximate 20 KiB / 600-line
+  limits.
 - Android, Windows, Linux, WinCE, and iOS builds are prohibited for this task.
   Full unrelated platform matrices and benchmarks are deferred because P1
   changes configuration paths only and does not alter a measured image hot
