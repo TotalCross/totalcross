@@ -65,14 +65,19 @@ public final class RuntimeConfigurationFeatureBridge {
   }
 
   /** Appends the registered feature sections in deterministic name order. */
-  public static synchronized void appendDescriptionSections(StringBuilder output) {
+  public static void appendDescriptionSections(StringBuilder output) {
     if (output == null) {
       throw new IllegalArgumentException("description output is required");
     }
-    for (Map.Entry<String, DescriptionContributor> entry : DESCRIPTION_CONTRIBUTORS.entrySet()) {
+    Map<String, DescriptionContributor> contributors = descriptionContributorsSnapshot();
+    for (Map.Entry<String, DescriptionContributor> entry : contributors.entrySet()) {
       output.append('\n').append(entry.getKey()).append('\n');
       output.append(entry.getValue().describe());
     }
+  }
+
+  private static synchronized Map<String, DescriptionContributor> descriptionContributorsSnapshot() {
+    return new TreeMap<String, DescriptionContributor>(DESCRIPTION_CONTRIBUTORS);
   }
 
   /** Internal diagnostic section provider. */
