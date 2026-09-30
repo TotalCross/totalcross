@@ -50,11 +50,20 @@ snapshots are:
   `4ee0f71527c242b5171753ed4350aefadd3ad2b0`, with raster and format follow-up
   snapshots `77b5275b35a52a064c4170165f44687c8c03d948` and
   `2555d63bd0be366790546315eb8947fd1e91b0c2`.
-- Runtime selector contract reference only:
-  `feat/runtime-configuration-api` at
-  `dc5fcc9dce25571ed0761ba8a0a49a6d42174be7`. P1 must use the corrected
-  foundation's final contract and must not depend on the current branch's
-  implementation classes.
+- Experimental public mask surface: commit
+  `fd86de1b1dfc4ee357681b5788f66a1f32be2a47` made
+  `ImageOptimizationSettings` public and added `setMask`, `getMask`, and
+  `getEffectiveMask` on the untagged reconstruction line. It is present in
+  `feat/frame-pacing-scheduling-diagnostics` but not in `origin/master`; a
+  source scan of all 63 repository release tags found none of those public
+  declarations.
+- Runtime selector contract reference only: the latest reviewed
+  `feat/runtime-configuration-api` snapshot at
+  `2ec80f3d30d68f9b864117c3881d02d22b817225`; generic diagnostics foundation
+  reference `feat/runtime-diagnostics` at
+  `3a7efb694dd9214389f65f5e82a9db1f12b46a78`. P1 consumes the merged
+  foundations' stable contracts and must not depend on temporary branch class
+  names or modify their generic rule annotation/wire schema.
 
 ## 2. Historical ID migration table
 
@@ -94,13 +103,87 @@ promised a particular concrete compact format.
 
 ### Public application request
 
-Propose one public semantic type, `ImageStorageProfile`, with `STANDARD` and
-`COMPACT` values. `STANDARD` is the default. `COMPACT` lets an application
-request a documented memory-versus-fidelity tradeoff without naming a bit,
-cache, or decoder implementation. It is public because an application can
-make this product-level tradeoff for its assets and deployment targets. The
-contract is best-effort; it does not promise a specific backing format or
-reduced memory for every image.
+The only currently justified public Image behavior request is
+`ImageStorageProfile`, owned by P1 in `totalcross.ui.image`:
+
+```java
+package totalcross.ui.image;
+
+public enum ImageStorageProfile {
+  STANDARD,
+  COMPACT
+}
+```
+
+`STANDARD` is the default. `COMPACT` requests the documented
+memory-versus-fidelity tradeoff without naming a bit, cache, or decoder
+implementation. It is public because an application can make this product
+choice for its assets and deployment targets. The contract is best-effort; it
+does not promise a particular backing format or reduced memory for every
+image.
+
+P1 also owns a repeatable, feature-specific declaration in the same package:
+
+```java
+package totalcross.ui.image;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import totalcross.sys.runtime.RuntimeWhen;
+
+@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.TYPE)
+@Repeatable(ImageRuntimeRules.class)
+public @interface ImageRuntimeRule {
+  RuntimeWhen when();
+  ImageStorageProfile storage();
+}
+
+@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.TYPE)
+public @interface ImageRuntimeRules {
+  ImageRuntimeRule[] value();
+}
+```
+
+The application entry class uses B's marker and the P1 action annotation:
+
+```java
+import totalcross.sys.GraphicsBackend;
+import totalcross.sys.Platform;
+import totalcross.sys.runtime.RuntimeCondition;
+import totalcross.sys.runtime.RuntimeConfiguration;
+import totalcross.sys.runtime.RuntimeWhen;
+import totalcross.ui.image.ImageRuntimeRule;
+import totalcross.ui.image.ImageStorageProfile;
+
+@RuntimeConfiguration
+@ImageRuntimeRule(
+    when = @RuntimeWhen(allOf = @RuntimeCondition(platform = Platform.ANDROID)),
+    storage = ImageStorageProfile.COMPACT)
+final class App {}
+```
+
+`RuntimeConfiguration`, `RuntimeWhen`, and `RuntimeCondition` remain owned by
+B in `totalcross.sys.runtime`; `Platform`, `RuntimeFamily`, `GraphicsBackend`,
+and `Architecture` remain owned by B in `totalcross.sys`. Use B's enum
+vocabulary exactly: `Platform.WINDOWS`, `MACOS`, `LINUX`, `ANDROID`, `IOS`,
+and `UNKNOWN`; `RuntimeFamily.DESKTOP`, `MOBILE`, `EMBEDDED`, and `UNKNOWN`;
+`GraphicsBackend.RASTER` and `GPU`; `Architecture.X86`, `X86_64`, `ARM32`,
+`ARM64`, and `UNKNOWN`. `ImageRuntimeRule` and its repeatable container are
+owned by P1 in `totalcross.ui.image`.
+`ImageRuntimeRule` carries exactly the selector and typed storage assignment.
+`when()` and `storage()` are required members. There is no `NONE` or default
+sentinel: every declared rule changes the one storage setting, and no matching
+rule means `STANDARD`.
+
+The annotation and its container use CLASS retention so conversion reads the
+class file before runtime. No runtime reflection is required. The public
+surface contains no `Object` value, generic map, string option key, feature ID,
+mask, or benchmark/worker/failure-injection control.
 
 No public switch is proposed for zero-copy, opacity metadata, `writePixels`,
 readback batching, direct-color conversion, physical identity folding, target
@@ -160,10 +243,11 @@ P1 must not encode or document it as an integer mask.
 
 ## 5. Requested versus effective state
 
-A runtime selector supplies an application request. P1 then applies the
-feature's rollout state and the finalized startup capabilities to produce the
-image subsystem's effective snapshot. Keep both values conceptually distinct.
-Diagnostics cannot participate in this decision.
+A matching `ImageRuntimeRule` supplies the typed application request. P1 then
+applies the feature's rollout state and finalized startup capabilities to
+produce the image subsystem's effective snapshot. Keep the requested
+`ImageStorageProfile` distinct from effective policy. Diagnostics cannot
+participate in this decision.
 
 `requested != effective` is expected when the runtime lacks an implementation
 or capability; when the selected renderer/backend cannot use the route; when a
@@ -187,35 +271,155 @@ not guess the backend or add per-draw resolution. RuntimeDiagnostics may later
 observe aggregate effective routes or fallbacks, but it never turns a policy on
 or off.
 
-## 6. Runtime selector integration
+## 6. Runtime selector, action transport, and startup integration
 
-P1 consumes the generic selector model over platform, runtime family,
-graphics backend, and architecture. The following examples are conceptual
-rules; the generic foundation owns syntax, normalization, specificity, pending
-resolution, and conflict handling:
+### Rule and conflict contract
 
-- **Platform-specific:** request `COMPACT` for `platform = Android`.
-- **Runtime-family-specific:** request `STANDARD` for `runtime family = JavaSE`.
-- **Graphics-backend-specific:** request `COMPACT` for `graphics backend = Software`.
-- **Architecture-specific:** request `COMPACT` for `architecture = ARM64`.
-- **More-specific override:** a platform-only Android rule requests
-  `COMPACT`; a matching Android + Software-backend rule requests
-  `STANDARD`. The more-specific matching selector wins under the generic
-  resolver's established ordering.
-- **Equal-specificity conflict:** two distinct matching selectors of equal
-  specificity request different storage profiles. P1 returns the generic
-  resolver's conflict result; it adds no declaration-order or image-specific
-  tie-break.
+`ImageRuntimeRule` is P1's typed action carrier. B's generic `RuntimeRule`
+remains a selector-only annotation; P1 does not add Image fields to it. The
+P1 converter parser reads `ImageRuntimeRule` and its repeatable container,
+converts each `when()` using B's `RuntimeWhen`/`RuntimeCondition` dimensions,
+and creates a P1-owned typed pair `(B selector, ImageStorageProfile action)`. It uses B's
+selector model and resolver semantics rather than implementing another
+specificity score. P1's ASM parser preserves B's `allOf`/`anyOf` structure and
+per-dimension enum alternatives, then uses B's typed selector model. The
+`RuntimeCondition` member name for runtime family is `family`; backend values
+are `GraphicsBackend.RASTER` or `GraphicsBackend.GPU`.
 
-P1 must not redefine selector semantics, add image-only selector axes, or
-resolve rules in image draw/decode/frame code. Application configuration is
-resolved once and its result feeds the typed requested policy.
+No matching Image rule requests `ImageStorageProfile.STANDARD`. For a matching
+rule, the more-specific selector overrides a less-specific selector. Equal
+specificity is evaluated after deploy-time pruning with B's specificity
+semantics. Different storage assignments at equal specificity fail
+startup-time resolution deterministically; declaration order never selects a
+winner. Equal-specificity assignments with the same value are not
+contradictory.
+
+For example, these actions resolve to `STANDARD` on an
+`Platform.ANDROID` runtime using `GraphicsBackend.RASTER`:
+
+```java
+@RuntimeConfiguration
+@ImageRuntimeRule(
+    when = @RuntimeWhen(allOf = @RuntimeCondition(platform = Platform.ANDROID)),
+    storage = ImageStorageProfile.COMPACT)
+@ImageRuntimeRule(
+    when = @RuntimeWhen(allOf = @RuntimeCondition(
+        platform = Platform.ANDROID, backend = GraphicsBackend.RASTER)),
+    storage = ImageStorageProfile.STANDARD)
+final class App {}
+```
+
+The second selector constrains two dimensions and overrides the matching
+platform-only selector. Other valid B selector examples are
+`family = RuntimeFamily.DESKTOP` and `architecture = Architecture.ARM64`.
+
+Two equally specific contradictory rules fail. For example:
+
+```java
+@ImageRuntimeRule(
+    when = @RuntimeWhen(allOf = @RuntimeCondition(
+        platform = Platform.WINDOWS, backend = GraphicsBackend.RASTER)),
+    storage = ImageStorageProfile.STANDARD)
+@ImageRuntimeRule(
+    when = @RuntimeWhen(allOf = @RuntimeCondition(
+        architecture = Architecture.X86_64, backend = GraphicsBackend.RASTER)),
+    storage = ImageStorageProfile.COMPACT)
+```
+
+On an environment with `Platform.WINDOWS`, `Architecture.X86_64`, and
+`GraphicsBackend.RASTER`, both rules match and each constrains two dimensions.
+B reports an equal-specificity conflict; P1 reports the storage setting and
+conflicting typed values without choosing by declaration order.
+
+### Converter and deployer ownership
+
+The P1 converter parser is feature-owned and ASM-based. It reads the
+CLASS-retained Image annotation from the same application entry class bytes
+that B scans. The generic parser continues to process only B's
+`@RuntimeConfiguration`/`@RuntimeRule` declarations. P1 requires B's
+`@RuntimeConfiguration` marker when an `@ImageRuntimeRule` is present, reports
+malformed fields with class/rule context, and does not require any generic
+`@RuntimeRule` to accompany the Image rule. Both parser results are retained
+separately by the deployer.
+
+At deployment, P1 passes each paired selector through B's existing
+deployment-target pruning operation as a one-selector input. If pruning removes
+the selector, P1 removes its paired storage action too. Otherwise P1 keeps the
+pruned selector and the same typed action together. This per-rule association
+preserves specificity after pruning and avoids trying to reconstruct which
+parallel action belonged to a removed selector. An empty retained Image rule
+set needs no Image metadata entry and resolves to the default.
+
+B owns generic selector parsing semantics, target facts, pruning, normalized
+selector representation, and match/specificity/conflict behavior. Deployment
+facts unavailable to B at packaging time, including an unfinalized graphics
+backend, stay dynamic for startup resolution. P1 owns
+Image annotation discovery/validation, typed action parsing, pairing, and
+Image-specific error context. No generic foundation source or
+`RuntimeRule` member changes are part of P1.
+
+### Feature metadata and startup binding
+
+P1 writes one reserved, feature-owned TCZ resource, `tc.imageruntimeconfig`.
+Its exact version-1 payload uses big-endian integers: four ASCII magic bytes
+`TCIR`; one version byte (`1`); an unsigned 16-bit retained-rule count; then,
+per rule, an unsigned 32-bit selector-payload length, that many
+selector-payload bytes, and one storage tag (`0x01` for `STANDARD`, `0x02` for
+`COMPACT`). Counts above 65,535 and selector payload lengths above
+`Integer.MAX_VALUE` are rejected. The selector payload is B's versioned
+generic selector encoding for exactly one selector after deploy-time pruning.
+P1 omits the entry when the retained-rule count is zero. Record order has no
+precedence meaning.
+
+P1 owns the outer magic/version, framing, and explicit closed action-tag
+mapping; it rejects an unknown magic, version, tag, malformed nested selector,
+length, or trailing bytes and never uses Java enum ordinals. These private wire
+tags are not public numeric feature IDs, option keys, or masks. B owns the
+nested selector payload format and its versioning. The deployer reserves the
+Image resource name and rejects an application resource collision. The
+`tc.imageruntimeconfig` resource is an internal container name, not a public
+string option key.
+
+At native startup, after the generic runtime environment and graphics facts
+are finalized but before the application main class loads, B performs generic
+environment initialization and P1's Image startup binder decodes
+`tc.imageruntimeconfig`. The simulator parses the main class's Image
+annotations before class initialization, then passes typed actions to the same
+P1 binder at the corresponding environment-finalization point. Neither path
+uses reflection. P1 pairs each decoded B selector with its typed action and
+submits the storage assignments to B's generic action-resolution contract;
+B owns selector matching, specificity, and equal-specificity conflict
+detection, while P1 owns the single Image storage setting descriptor and
+translates a conflict into a deterministic Image configuration startup error.
+
+The end-to-end ownership path is:
+
+1. P1 parses the CLASS-retained annotation into a B selector plus typed
+   `ImageStorageProfile` action.
+2. The deployer uses B's target pruning for that selector and keeps the action
+   paired only if the selector survives.
+3. P1 writes the pair to its versioned feature resource, nesting B's unchanged
+   selector payload.
+4. P1 startup decodes the feature resource and B decodes each nested selector.
+5. B's generic rule resolution selects the requested profile and reports
+   equal-specificity conflicts.
+6. P1 maps the requested profile to capability/rollout-limited effective
+   policy and publishes the immutable snapshot.
+
+The winning value is the requested `ImageStorageProfile`. P1 then evaluates it
+once against the finalized `RuntimeEnvironment` and image feature
+capabilities/rollout, producing the immutable effective Image policy described
+in section 5. A COMPACT request unsupported by the runtime becomes effective
+STANDARD. Later per-image format/alpha eligibility may choose standard backing
+without changing the immutable startup request or policy. RuntimeDiagnostics
+never participates in this resolution.
 
 ## 7. Internal adapter strategy
 
-An adapter is required only while a reconstructed consumer still accepts an
-integer mask or the historical `ImageOptimizationSettings` helper. The
-adapter:
+At P1, remove the unreleased public `setMask(long)`, `getMask()`, and
+`getEffectiveMask()` descriptors. An adapter is required only while a
+reconstructed consumer still accepts an integer mask or the historical
+`ImageOptimizationSettings` helper. The adapter:
 
 1. is internal and one-way from the typed effective snapshot to the remaining
    legacy consumer;
@@ -227,9 +431,16 @@ adapter:
 Migration/removal order is exact: P2 replaces IDs 0–4 at raster-core call
 sites; P3 replaces IDs 13–15 at variant/identity call sites; P4 replaces IDs
 5–7 at format selection and removes the adapter, historical settings helper,
-all remaining image-mask state, and the inert IDs 8–12 reservations. Each owner
-PR deletes its mapped portion rather than leaving compatibility scaffolding
-behind. P5–P11 consume named policy contracts and must not reintroduce a mask.
+all remaining image-mask state, and the inert IDs 8–12 reservations. P1 routes
+diagnostic collection through F and never adapts ID 12; P4 removes any
+remaining historical accounting slot with the rest of the old settings
+scaffolding. Each owner PR deletes its mapped portion rather than leaving
+compatibility scaffolding behind. P5–P11 consume named policy contracts and must not reintroduce a mask.
+
+A temporary integer representation is internal startup compatibility only. It
+is never public API, feature metadata, persistence, a wire format, or the input
+to B's selector resolver. No historical diagnostic-accounting control is ever
+adapted.
 
 If native interop temporarily still accepts a mask, keep that conversion in
 the same internal startup adapter. Do not persist it, expose it to apps, pass
@@ -289,9 +500,14 @@ not a global selector that silently starts work for every application image.
   In particular, `Settings.optimizeScroll` controls the historical
   image-based scroll behavior. Keep that behavior compatible and do not map the
   field to P7's distinct software framebuffer row-reuse feature.
-- The reconstructed `ImageOptimizationSettings` is package-private in the
-  reviewed phase snapshots. It is not a reason to retain a public legacy API.
-  Remove it after P4 deletes the last format-bit consumer.
+- An untagged reconstruction branch temporarily made
+  `ImageOptimizationSettings` public and exposed `setMask(long)`, `getMask()`,
+  and `getEffectiveMask()`. The reviewed repository release tags and
+  `origin/master` contain none of these declarations, so they are not a
+  released binary/source compatibility contract. P1 removes those public
+  descriptors and keeps any transitional adapter package-private and
+  one-way. P4 deletes the remaining helper and mask state after the last
+  format-bit consumer migrates.
 - Keep existing public `Image` constructors, factories, fields, and method
   descriptors unchanged. P1 adds only the documented typed application
   surface; it does not change image decode/render behavior before its owner
@@ -311,58 +527,70 @@ P1 should add focused tests for:
 
 1. The authoritative typed defaults, including requested and effective states.
 2. Each public and internal option category, validation, and immutable result.
-3. Platform, runtime-family, backend, and architecture rule application.
-4. More-specific override and equal-specificity conflict through the generic
-   resolver contract.
-5. Requested/effective divergence for unsupported renderer/backend,
+3. `ImageRuntimeRule` CLASS retention, repeatable-container parsing, typed
+   `storage()` decoding, required `@RuntimeConfiguration` marker, and errors
+   for malformed/missing members.
+4. Platform, runtime-family, backend, and architecture selectors using B's
+   exact enum values and `RuntimeWhen`/`RuntimeCondition` shapes.
+5. Converter/deployer pairing of each typed action with its selector, including
+   rules removed by deployment pruning and rules whose specificity changes
+   only by B's pruning contract.
+6. Versioned Image metadata round-trip, rejection of unknown action/container
+   versions, TCZ resource collision handling, and no change to B's generic
+   selector wire payload.
+7. More-specific override and contradictory equal-specificity conflict,
+   including reversed annotation declaration order; same-value equal-specific
+   actions remain valid.
+8. Requested/effective divergence for unsupported renderer/backend,
    unavailable native implementation, runtime/platform restriction, unsupported
    format, and rollout-disabled internal options.
-6. Adapter parity for all still-present legacy consumers, followed by tests
+9. Adapter parity for all still-present legacy consumers, followed by tests
    that each owner PR removes its adapter portion.
-7. API inspection proving there is no public integer-mask API, numeric feature
-   ID, raw native mask, string key, or benchmark/worker/failure-injection
-   option.
-8. No image diagnostic-accounting control in configuration; metric group
-   selection is delegated to RuntimeDiagnostics.
-9. Startup snapshot immutability and no re-resolution when environment or
-   caller-owned rule objects later change.
-10. Draw/decode/frame path checks proving selector/configuration lookup and
-    environment access happen only at startup, not in hot paths.
-11. A baseline parity test showing P1 alone does not change Image or Rendering
+10. API inspection proving there is no public integer-mask API, numeric feature
+    ID, raw native mask, string option key, untyped map, or benchmark/worker/
+    failure-injection option.
+11. No image diagnostic-accounting control in configuration; metric group
+    selection is delegated to RuntimeDiagnostics.
+12. Startup snapshot immutability, one-time rule resolution, and no runtime
+    reflection or hot-path selector/configuration/environment lookup.
+13. A baseline parity test showing P1 alone does not change Image or Rendering
     behavior before the owning feature PR is present.
-12. Compatibility checks for `Settings`, public `Image` descriptors, and any
+14. Compatibility checks for `Settings`, public `Image` descriptors, and any
     released API shim confirmed by artifact inspection.
 
 ## 12. Ordered P1 implementation checklist
 
-### Ordered checklist
-
-1. Rebase the feature work on the corrected RuntimeConfiguration and generic
-   RuntimeDiagnostics foundations. Read their final contracts; use only the
-   stable selector and group-gating behavior.
-2. Confirm the released public API surface and preserve existing `Settings`
-   and `Image` descriptors. Do not infer a public mask API from internal test
-   helpers.
-3. Add the single public `ImageStorageProfile` request with the
-   `STANDARD`/best-effort `COMPACT` contract. Keep all implementation and test
-   controls internal.
-4. Define one built-in defaults policy and separate requested values from
-   capability- and rollout-limited effective values.
-5. Resolve selectors and the finalized environment once during startup, then
-   publish one immutable effective image-policy snapshot.
-6. Keep diagnostics group selection outside image configuration and verify
-   that diagnostic enablement does not change effectiveness.
-7. Add the one-way startup adapter only for current legacy consumers; test
-   parity and record its removal in P2, P3, and P4 as specified above.
-8. Add test-only named configuration helpers and the focused test contract;
-   keep forced modes and failure hooks out of application/runtime metadata.
-9. Verify that P1 adds no raster/prefetch/frame behavior change. Hand P2–P11
-   only the typed contracts they own; remove each adapter segment in its owner
-   PR.
+1. Consume merged B RuntimeConfiguration and F RuntimeDiagnostics foundations;
+   use their final stable selector, deployment-pruning, resolver, startup, and
+   group-gating contracts.
+2. Add `ImageStorageProfile` in `totalcross.ui.image` with only `STANDARD` and
+   best-effort `COMPACT` values.
+3. Add CLASS-retained, TYPE-targeted, repeatable `ImageRuntimeRule` and its
+   `ImageRuntimeRules` container in `totalcross.ui.image`, requiring B's
+   `@RuntimeConfiguration` marker.
+4. Add the P1 converter parser and extend deployer integration to parse the
+   typed Image action alongside B's generic selector-only rules.
+5. Prune each Image selector through B's deployment logic and keep its typed
+   action paired with the surviving selector.
+6. Persist the pair in the versioned P1-owned `tc.imageruntimeconfig` resource,
+   nesting B's selector payload without changing `tc.runtimeconfig`.
+7. Decode the feature resource and resolve its selectors once at startup using
+   B's generic specificity/conflict semantics, before the app main class loads.
+8. Create the requested `ImageStorageProfile`, apply finalized environment,
+   capability, and rollout effectiveness once, then publish the immutable
+   effective Image policy.
+9. Remove the unreleased public mask methods, then create the temporary
+   internal startup mask adapter only for existing consumers; never put that
+   representation in metadata or public APIs. Remove IDs 0–4 in P2, IDs 13–15
+   in P3, and IDs 5–7 plus remaining mask/settings scaffolding in P4; keep IDs
+   8–12 dropped and never adapt diagnostic accounting.
+10. Verify P1 alone changes no rendering/decode behavior and that configuration
+    lookups stay out of hot paths.
 
 ## 13. Genuine open questions
 
-- Verify released SDK artifacts for any historically public image-mask or
-  `ImageOptimization` API. The reviewed reconstruction class is package-private
-  and the reviewed current branch exposes no public mask surface, but only the
-  shipped API artifacts can settle binary compatibility for older applications.
+None remain in the P1 rule/action or public-API design based on the inspected
+repository state. The historical mask methods were present only on an
+untagged reconstruction branch; the scan of 63 release tags and current
+`origin/master` found no released declaration to preserve. Existing released
+`Settings` and `Image` descriptors remain covered by the compatibility plan.
