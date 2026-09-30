@@ -16,6 +16,7 @@ import totalcross.sys.Architecture;
 import totalcross.sys.GraphicsBackend;
 import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
+import totalcross.sys.Settings;
 
 class RuntimeEnvironmentTest {
   @Test
@@ -123,6 +124,17 @@ class RuntimeEnvironmentTest {
     assertEquals(first, same);
     assertEquals(first.hashCode(), same.hashCode());
     assertNotEquals(first, different);
+  }
+
+  @Test
+  void currentEnvironmentMapsInitializedJavaSeSettings() {
+    RuntimeConfigurationStartup.initializeForSimulator(null, System.getProperty("os.name"),
+        System.getProperty("os.arch"));
+    RuntimeEnvironment environment = RuntimeEnvironment.current();
+
+    assertTrue(Settings.onJavaSE);
+    assertEquals(RuntimeEnvironment.fromRuntimeSettings(Settings.platform, true, System.getProperty("os.name"),
+        System.getProperty("os.arch"), 0, 0, 0), environment);
   }
 
   private static void assertEnvironment(String runtimePlatform, boolean onJavaSE, String osName, String osArch,

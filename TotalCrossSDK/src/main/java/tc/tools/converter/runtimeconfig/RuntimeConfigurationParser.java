@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools.converter.runtimeconfig;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,9 +54,13 @@ public final class RuntimeConfigurationParser {
     if (classBytes == null || classBytes.length == 0) {
       throw new IllegalArgumentException("class bytes are required to parse runtime configuration");
     }
+    byte[] asmBytes = normalizeClassVersionForMetadata(classBytes);
+    if (asmBytes == null) {
+      return null;
+    }
     ClassNode classNode = new ClassNode();
     try {
-      new ClassReader(classBytes).accept(classNode,
+      new ClassReader(asmBytes).accept(classNode,
           ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
     } catch (RuntimeException e) {
       throw new IllegalArgumentException("Cannot read runtime configuration class " + className, e);
@@ -103,6 +108,37 @@ public final class RuntimeConfigurationParser {
       selectors.add(parseWhen(when, context + ".when"));
     }
     return Collections.unmodifiableList(selectors);
+  }
+
+  private static byte[] normalizeClassVersionForMetadata(byte[] classBytes) {
+    if (classBytes.length < 8) {
+      return classBytes;
+    }
+    int majorVersion = ((classBytes[6] & 0xff) << 8) | (classBytes[7] & 0xff);
+    if (majorVersion <= 52) {
+      return classBytes;
+    }
+    if (!contains(classBytes, CONFIGURATION) && !contains(classBytes, RULE) && !contains(classBytes, RULES)
+        && !contains(classBytes, WHEN) && !contains(classBytes, CONDITION)) {
+      return null;
+    }
+    byte[] normalized = Arrays.copyOf(classBytes, classBytes.length);
+    normalized[6] = 0;
+    normalized[7] = 52;
+    return normalized;
+  }
+
+  private static boolean contains(byte[] bytes, String value) {
+    byte[] pattern = value.getBytes(StandardCharsets.UTF_8);
+    outer: for (int i = 0; i <= bytes.length - pattern.length; i++) {
+      for (int j = 0; j < pattern.length; j++) {
+        if (bytes[i + j] != pattern[j]) {
+          continue outer;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   private static RuntimeSelector parseWhen(AnnotationNode annotation, String context) {

@@ -214,11 +214,31 @@ static bool checkFullScreenPlatform() // guich@tc120_59
 TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
+   TCClass runtimeConfigurationClass;
+   Method runtimeConfigurationInit;
    int32 retc;
    
    // load libraries must be before checking the activation, because the tcz may have been splitted
    if (!loadLibraries(currentContext, vmPath, true))
       return exitProgram(115);
+
+   // 2.5 Resolve optional runtime configuration after Settings and graphics are stable.
+   runtimeConfigurationClass = loadClass(currentContext, "totalcross.sys.runtime.RuntimeConfigurationStartup", true);
+   if (runtimeConfigurationClass == null)
+   {
+      if (currentContext->thrownException != null)
+         showUnhandledException(currentContext, true);
+      return exitProgram(118);
+   }
+   runtimeConfigurationInit = getMethod(runtimeConfigurationClass, true, "initializeAtStartup", 0);
+   if (!runtimeConfigurationInit)
+      return exitProgram(119);
+   executeMethod(currentContext, runtimeConfigurationInit);
+   if (currentContext->thrownException != null)
+   {
+      showUnhandledException(currentContext, true);
+      return exitProgram(120);
+   }
    
    // 3. Load the main class (also calls its static initializer)
    c = loadClass(currentContext, mainClassName, true); // some fields of totalcross.sys.Settings may be set by the programmer at the static initializer, called now

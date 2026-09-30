@@ -18,6 +18,8 @@ import tc.preview.PreviewFrameSink;
 import tc.simulator.awt.WindowConfiguration;
 import totalcross.MainClass;
 import totalcross.sys.Settings;
+import totalcross.sys.GraphicsBackend;
+import totalcross.sys.runtime.RuntimeConfigurationStartup;
 import totalcross.ui.Container;
 import totalcross.ui.Control;
 import totalcross.ui.MainWindow;
@@ -301,6 +303,7 @@ public class Launcher extends SimulatorCore implements PreviewSession {
         Settings.resizableWindow, background, windowListener, componentListener);
     AwtWindow backend = new AwtWindow(launcher);
     backend.start(config);
+    RuntimeConfigurationStartup.finalizeSimulatorGraphicsBackend(GraphicsBackend.RASTER);
     launcher.setPresentationScale(backend.getScale());
     return backend;
   }
