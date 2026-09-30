@@ -22,6 +22,7 @@ import totalcross.util.Hashtable;
 import totalcross.util.IOUtils;
 import totalcross.util.IntVector;
 import totalcross.util.Vector;
+import totalcross.sys.runtime.RuntimeSelector;
 
 public class DeploySettings {
   public enum TcmMode {
@@ -43,6 +44,7 @@ public class DeploySettings {
   public static String appTitle;
   public static String applicationId, appVersion, companyInfo, companyContact;
   public static String mainClassName;
+  public static List<RuntimeSelector> runtimeConfigurationSelectors;
   public static String commandLine = "";
   public static boolean isMainWindow;
   public static boolean isJarOrZip;

@@ -28,6 +28,7 @@ import tc.tools.converter.bytecode.ByteCode;
 import tc.tools.converter.ir.CFG;
 import tc.tools.converter.ir.Instruction.Instruction;
 import tc.tools.converter.java.JavaClass;
+import tc.tools.converter.runtimeconfig.RuntimeConfigurationParser;
 import tc.tools.converter.java.JavaCode;
 import tc.tools.converter.java.JavaConstantInfo;
 import tc.tools.converter.java.JavaConstantPool;
@@ -360,6 +361,7 @@ public final class J2TC implements JConstants, TCConstants {
 
   private static void setApplicationProperties(JavaClass jc) throws Exception {
     TCZ.mainClassName = DeploySettings.mainClassName = jc.className;
+    DeploySettings.runtimeConfigurationSelectors = RuntimeConfigurationParser.parse(jc.bytes, jc.className);
     DeploySettings.isMainWindow = !isMainClassOrService(jc);
     if (!DeploySettings.isMainWindow) {
       DeployLogger.verbose("Application is MainClass or Service");
