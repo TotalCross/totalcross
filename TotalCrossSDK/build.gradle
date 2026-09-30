@@ -124,6 +124,7 @@ dependencies {
     // Smoke tests deliberately compile against the generated SDK artifact rather
     // than against sourceSets.main.output, so they validate the distributable JAR.
     smokeTestImplementation files('dist/totalcross-sdk.jar')
+    smokeTestCompileOnly files(tasks.named('totalcrossRuntimeJavaJar').flatMap { it.archiveFile })
 }
 
 def aggregateCompatibilityBaseline = providers.gradleProperty('aggregateCompatibilityBaseline')
@@ -430,6 +431,7 @@ tasks.named('compileSmokeTestJava', JavaCompile) {
     destinationDirectory = smokeTestClassesDir
     options.encoding = 'UTF-8'
     options.release.set(17)
+    dependsOn tasks.named('totalcrossRuntimeJavaJar')
 
     doFirst {
         if (!smokeTestSdkJar.isFile()) {
@@ -534,6 +536,152 @@ tasks.register('runSystemNanoTimeSmokeMacOS', Exec) {
                 + ', missing=' + missing)
         }
     }
+}
+
+def registerRuntimeConfigurationMacSmoke = { String suffix, String appClass, String expectedMarker ->
+    String taskSuffix = 'RuntimeConfiguration' + suffix + 'MacOSSmoke'
+    String deployTaskName = 'deploy' + taskSuffix
+    String runTaskName = 'run' + taskSuffix
+    String packagePath = 'totalcross/sys/runtime/' + appClass + '.class'
+    String jarName = appClass + '.jar'
+    String smokeDirName = 'runtime-configuration-' + suffix.toLowerCase() + '-smoke/classes'
+    def classesDir = layout.buildDirectory.dir(smokeDirName)
+
+    tasks.register('compile' + taskSuffix, Sync) {
+        group = 'verification'
+        description = 'Stages the ' + appClass + ' deployed macOS smoke fixture.'
+        dependsOn sourceSets.smokeTest.classesTaskName
+        from(smokeTestClassesDir) {
+            include packagePath
+        }
+        into classesDir
+    }
+
+    tasks.register('jar' + taskSuffix, Jar) {
+        group = 'verification'
+        description = 'Packages the ' + appClass + ' deployed macOS smoke fixture.'
+        dependsOn 'compile' + taskSuffix
+        archiveFileName = jarName
+        destinationDirectory = classesDir
+        from(classesDir)
+    }
+
+    tasks.register(deployTaskName, JavaExec) {
+        group = 'verification'
+        description = 'Deploys ' + appClass + ' with the aggregate SDK for native macOS.'
+        dependsOn 'dist', 'copySdkDependencies', 'jar' + taskSuffix
+        mainClass = 'tc.Deploy'
+        classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+            include '*.jar'
+        }
+        def sdkRoot = classesDir.get().dir('sdk-root').asFile
+        workingDir sdkRoot
+        environment 'TOTALCROSS3_HOME', sdkRoot.absolutePath
+        args = [classesDir.get().file(jarName).asFile.absolutePath, '-macos', '/o',
+                classesDir.get().dir('deploy-output').asFile.absolutePath]
+
+        doFirst {
+            def nativeRuntime = project.findProperty('tcvmDylib')
+            def nativeLauncher = project.findProperty('tcvmLauncher')
+            if (!nativeRuntime || !nativeLauncher) {
+                throw new GradleException(deployTaskName
+                    + ' requires -PtcvmDylib=<absolute path> and -PtcvmLauncher=<absolute path>')
+            }
+            def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+            def nativeLauncherFile = file(nativeLauncher).absoluteFile
+            if (!nativeRuntimeFile.isFile() || !nativeLauncherFile.isFile()) {
+                throw new GradleException('Native macOS VM inputs must both exist: '
+                    + nativeRuntimeFile + ', ' + nativeLauncherFile)
+            }
+            copy {
+                from project.file('dist/vm')
+                into new File(sdkRoot, 'dist/vm')
+            }
+            copy {
+                from project.file('etc/fonts')
+                into new File(sdkRoot, 'etc/fonts')
+            }
+            copy {
+                from nativeLauncherFile
+                into new File(sdkRoot, 'etc/launchers/macos')
+                rename { 'Launcher' }
+            }
+            copy {
+                from nativeRuntimeFile
+                into new File(sdkRoot, 'dist/vm/macos')
+                rename { 'libtcvm.dylib' }
+            }
+        }
+    }
+
+    tasks.register(runTaskName, Exec) {
+        group = 'verification'
+        description = 'Runs ' + appClass + ' in the supplied native macOS VM and checks its result.'
+        dependsOn 'deploy' + taskSuffix
+        ignoreExitValue = true
+        def smokeOutput = new ByteArrayOutputStream()
+
+        doFirst {
+            if (!System.getProperty('os.name').toLowerCase().contains('mac')) {
+                throw new GradleException(runTaskName + ' requires macOS ARM64.')
+            }
+            if (!(System.getProperty('os.arch').toLowerCase() in ['aarch64', 'arm64'])) {
+                throw new GradleException(runTaskName + ' requires an ARM64 host.')
+            }
+            def nativeRuntime = project.findProperty('tcvmDylib')
+            def nativeLauncher = project.findProperty('tcvmLauncher')
+            if (!nativeRuntime || !nativeLauncher) {
+                throw new GradleException(runTaskName
+                    + ' requires -PtcvmDylib=<absolute path> and -PtcvmLauncher=<absolute path>')
+            }
+            def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+            def nativeLauncherFile = file(nativeLauncher).absoluteFile
+            if (!nativeRuntimeFile.isFile() || !nativeLauncherFile.isFile()) {
+                throw new GradleException('Native macOS VM inputs must both exist: '
+                    + nativeRuntimeFile + ', ' + nativeLauncherFile)
+            }
+
+            def installDir = classesDir.get().dir('deploy-output/install/macos').asFile
+            def executable = new File(installDir, appClass)
+            copy {
+                from nativeRuntimeFile
+                into installDir
+                rename { 'libtcvm.dylib' }
+            }
+            copy {
+                from nativeLauncherFile
+                into installDir
+                rename { appClass }
+            }
+            executable.setExecutable(true, false)
+            commandLine executable.absolutePath
+            smokeOutput.reset()
+            standardOutput = smokeOutput
+            errorOutput = smokeOutput
+        }
+        workingDir classesDir.map { it.dir('deploy-output/install/macos').asFile }
+
+        doLast {
+            String output = smokeOutput.toString('UTF-8')
+            logger.lifecycle(output.trim())
+            int exitCode = executionResult.get().exitValue
+            if (exitCode != 0 || !output.contains(expectedMarker)) {
+                throw new GradleException(runTaskName + ' failed: exitCode=' + exitCode
+                    + ', expectedMarker=' + expectedMarker)
+            }
+        }
+    }
+}
+
+registerRuntimeConfigurationMacSmoke('Annotated', 'RuntimeConfigurationAnnotatedMacSmokeApp',
+        'runtime-config-annotated-pass platform=MACOS family=DESKTOP architecture=ARM64 backend=RASTER matchedRules=1')
+registerRuntimeConfigurationMacSmoke('NoMetadata', 'RuntimeConfigurationNoMetadataMacSmokeApp',
+        'runtime-config-no-metadata-pass platform=MACOS family=DESKTOP architecture=ARM64 backend=RASTER metadata=absent')
+
+tasks.register('runRuntimeConfigurationMacOSSmokes') {
+    group = 'verification'
+    description = 'Runs annotated and no-metadata runtime configuration apps in a native macOS ARM64 VM.'
+    dependsOn 'runRuntimeConfigurationAnnotatedMacOSSmoke', 'runRuntimeConfigurationNoMetadataMacOSSmoke'
 }
 
 def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
