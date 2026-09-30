@@ -240,6 +240,13 @@
 #define EncodedImageSource_comment(o) FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define EncodedImageSource_decodedBacking(o) FIELD_OBJ(o, OBJ_CLASS(o), 2)
 
+// totalcross.ui.image.ImagePreparationCandidate
+#define ImagePreparationCandidate_nativeHandle(o) FIELD_I64(o, OBJ_CLASS(o), 0)
+#define ImagePreparationCandidate_width(o)        FIELD_I32(o, 0)
+#define ImagePreparationCandidate_height(o)       FIELD_I32(o, 1)
+#define ImagePreparationCandidate_denominator(o)  FIELD_I32(o, 2)
+#define ImagePreparationCandidate_backing(o)      FIELD_OBJ(o, OBJ_CLASS(o), 0)
+
 #define ImageOrControl_surfaceType(o) FIELD_I32(o, 0)
 
 // totalcross.ui.Control

@@ -1,0 +1,52 @@
+feature=RASTER_TARGET_COLORTYPE_CONVERSION
+runtime_revision=37f489600449c81c4ead3eb677a01ec35d12112f
+s1_revision=07912a0f2d5d48705a5b7caa65f82a71ed7d3b57
+build=Release software-Skia macOS with TC_GRAPHICS_SOFTWARE=ON, TC_RENDERER_SKIA=ON, TC_WINDOWING_SDL=ON
+runner=scripts/run-image-optimization-benchmark.py
+samples=60
+workload=three warmups plus 60 timed batches of 1024 draws
+
+s1_rgba_median_ms=5477
+s1_rgba_p95_ms=5493
+s1_rgba_cv_pct=0.221
+s1_rgba_peak_rss_kb=115296
+s1_rgba_hash=000000D600000165
+
+s2_rgba_median_ms=5629
+s2_rgba_p95_ms=5646
+s2_rgba_cv_pct=0.178
+s2_rgba_peak_rss_kb=113280
+s2_rgba_hash=000000D600000165
+s2_rgba_target_color_counters=attempts:0,materializations:0,hits:0,fallbacks:0,bytes:0
+
+s3_rgba_median_ms=5642
+s3_rgba_p95_ms=5648
+s3_rgba_cv_pct=0.133
+s3_rgba_peak_rss_kb=115744
+s3_rgba_hash=000000D600000165
+s3_rgba_target_color_counters=attempts:0,materializations:0,hits:0,fallbacks:0,bytes:0
+
+s2_vs_s1_rgba_median_pct=2.775
+s2_vs_s1_rgba_peak_rss_pct=-1.748
+s3_vs_s1_rgba_median_pct=3.012
+s3_vs_s1_rgba_peak_rss_pct=0.389
+s3_vs_s2_rgba_median_pct=0.231
+escalation=none; all CVs below 5 percent and RGBA S2 elapsed/RSS deltas remain below 5 percent
+
+s2_bgra_median_ms=5667
+s2_bgra_p95_ms=5677
+s2_bgra_cv_pct=0.128
+s2_bgra_peak_rss_kb=114240
+s2_bgra_hash=000000D600000165
+s2_bgra_target_color_counters=attempts:0,materializations:0,hits:0,fallbacks:0,bytes:0
+s3_bgra_median_ms=1083
+s3_bgra_p95_ms=1089
+s3_bgra_cv_pct=0.329
+s3_bgra_peak_rss_kb=109184
+s3_bgra_hash=000000D600000165
+s3_bgra_target_color_counters=attempts:64512,materializations:1,hits:64510,fallbacks:1,bytes:160000
+
+focused_smokes=BGRA,RGB565,translucent,mutation,target-type-replacement,disabled-BGRA
+focused_result=all passed with exact stable hashes and canonical ARGB readback
+raw_artifacts=target-color-s2-60/{rgba,bgra}/,target-color-s3-60/{rgba,bgra}/
+validation=SDK image tests, SDK dist, macOS Release CMake/Ninja, exact-dylib smokes

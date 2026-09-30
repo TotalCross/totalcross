@@ -1,0 +1,8 @@
+scenario=pre
+revision=6d1c95f77fcb9c74d19b4e9393dba7c82cd37aee
+executable=/private/tmp/image-opt-phase3-milestone9b-true-base/TotalCrossSDK/build/image-compact-formats-benchmark/classes/install/macos/ImageCompactFormatsBenchmarkApp
+expected_samples=200
+recorded_samples=200
+peak_rss_kb=148784
+exit_code=0
+diagnostics=sample100,sample150 vmmap-summary+ps

@@ -1,0 +1,12 @@
+scenario=post-enabled
+revision=7cfa7521fb91f3db6be86b49fb8c1420006f8e30
+executable=/Users/flsobral/repos/totalcross-github/TotalCrossSDK/build/image-raster-readback-benchmark/classes/install/macos/ImageRasterReadbackBenchmarkApp
+expected_samples=60
+recorded_samples=60
+peak_rss_kb=214992
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count

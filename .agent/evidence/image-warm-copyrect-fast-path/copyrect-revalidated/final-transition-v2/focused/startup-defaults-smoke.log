@@ -1,0 +1,32 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :copySdkDependencies UP-TO-DATE
+> Task :compileSmokeTestJava UP-TO-DATE
+> Task :processSmokeTestResources UP-TO-DATE
+> Task :smokeTestClasses UP-TO-DATE
+> Task :compileImageStartupOptimizationDefaultsSmoke UP-TO-DATE
+> Task :jarImageStartupOptimizationDefaultsSmoke
+
+> Task :deployImageStartupOptimizationDefaultsSmokeMacOS
+TotalCross SDK version 7.2.2.0 running on mac os x with JDK 17.0
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+File /Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/TotalCrossSDK/build/image-startup-optimization-defaults-smoke/classes/ImageStartupOptimizationDefaultsSmokeApp.tcz written (-33% - 30569031 bytes)
+Application title not provided, using: ImageStartupOptimizationDefaultsSmokeApp
+Application id not provided. Created from "ImageStartupOptimizationDefaultsSmokeApp": puxy
+... Files written to folder /Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/TotalCrossSDK/build/image-startup-optimization-defaults-smoke/classes/install/macos/
+
+> Task :runImageStartupOptimizationDefaultsSmokeMacOS
+fixture=ImageStartupOptimizationDefaultsSmokeApp,startupBeforeSettingsApi=true,drawMask=32799,decodeMask=32799,expectedMask=32799,drawPass=true,decodePass=true,overallPass=true
+
+tuMW_exit_i
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 11s
+7 actionable tasks: 3 executed, 4 up-to-date

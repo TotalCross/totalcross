@@ -59,6 +59,8 @@ void graphicsDestroyPrimitives();
 static bool createScreenSurface(Context currentContext, bool isScreenChange);
 
 void updateScreen(Context currentContext);
+void screen_diagnostics_record_update_for_test(void);
+void screen_diagnostics_record_present_for_test(void);
 void graphicsScreenChange(int32 w, int32 h);
 void markWholeScreenDirty(Context currentContext);
 static bool translateAndClip(TCObject g, int32 *pX, int32 *pY, int32 *pWidth, int32 *pHeight);

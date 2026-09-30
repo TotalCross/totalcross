@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -25,6 +26,7 @@ import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageControlTarget;
+import totalcross.ui.image.ImageDrawingBridge;
 import totalcross.ui.image.ImageException;
 
 /** A control that can show an image bigger than its area and that can be dragged using a pen to show the hidden parts.
@@ -85,6 +87,17 @@ public class ImageControl extends Control {
     focusTraversable = true;
   }
 
+  @Override
+  void prepareForDisplay(DisplayPreparationContext context, DisplayPreparationSink sink) {
+    int requirement = allowBeyondLimits ? ImageDrawingBridge.DRAW_READY : ImageDrawingBridge.COPY_READY;
+    if (img != null) {
+      sink.request(img, requirement);
+    }
+    if (imgBack != null && imgBack != img) {
+      sink.request(imgBack, requirement);
+    }
+  }
+
   /** Pass true to enable dragging and events on the image. */
   public void setEventsEnabled(boolean enabled) {
     focusTraversable = isEventEnabled = enabled;
@@ -126,6 +139,7 @@ public class ImageControl extends Control {
         lastY = (height - getImageHeight()) / 2;
       }
     }
+    invalidateDisplayPreparationAncestors();
     Window.needsPaint = true;
   }
 
@@ -240,6 +254,7 @@ public class ImageControl extends Control {
   }
 
   private void scaleImage() {
+    Image previous = img;
     if (scaleToFit) {
       try {
         if (img0 == null) {
@@ -262,6 +277,9 @@ public class ImageControl extends Control {
         // keep original image
       }
     }
+    if (img != previous) {
+      invalidateDisplayPreparationAncestors();
+    }
   }
 
   private Image safeScale(int w, int h) throws ImageException {
@@ -270,6 +288,7 @@ public class ImageControl extends Control {
 
   @Override
   protected void onBoundsChanged(boolean screenChanged) {
+    invalidateDisplayPreparationAncestors();
     translateFromOrigin(c);
     postEvent(new SizeChangeEvent(this, width, height));
   }
@@ -369,6 +388,7 @@ public class ImageControl extends Control {
   /** Sets the given image as a freezed background of this image control. */
   public void setBackground(Image img) {
     imgBack = img;
+    invalidateDisplayPreparationAncestors();
   }
 
   /** Returns the background image set with setBackground */

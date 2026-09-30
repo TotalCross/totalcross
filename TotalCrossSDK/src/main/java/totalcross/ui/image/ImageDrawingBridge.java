@@ -12,6 +12,11 @@ package totalcross.ui.image;
  */
 @Deprecated
 public final class ImageDrawingBridge {
+  /** @hidden */
+  public static final int DRAW_READY = 0;
+  /** @hidden */
+  public static final int COPY_READY = 1;
+
   private ImageDrawingBridge() {
   }
 
@@ -23,10 +28,39 @@ public final class ImageDrawingBridge {
 
   /** @hidden */
   @Deprecated
+  public static Image cachedMaterializedForDrawing(Image image, double destinationScale)
+      throws ImageException {
+    if (image == null) {
+      throw new NullPointerException("image");
+    }
+    return image.cachedMaterializedForDrawing(destinationScale);
+  }
+
+  /** @hidden */
+  @Deprecated
   public static Object drawPlanForDrawing(Image image, double destinationScale) throws ImageException {
     if (image == null) {
       throw new NullPointerException("image");
     }
     return image.drawPlanForDrawing(destinationScale);
+  }
+
+  /** @hidden */
+  @Deprecated
+  public static boolean isCopyRectCompatible(Object drawPlan) {
+    return drawPlan instanceof ImageDrawPlan && ((ImageDrawPlan) drawPlan).isCopyRectCompatible();
+  }
+
+  /** @hidden */
+  @Deprecated
+  public static void prepareForDisplay(Image image, double destinationScale, Runnable onComplete) {
+    prepareForDisplay(image, destinationScale, DRAW_READY, onComplete);
+  }
+
+  /** @hidden */
+  @Deprecated
+  public static void prepareForDisplay(Image image, double destinationScale, int requirement,
+      Runnable onComplete) {
+    ImagePreparation.request(image, destinationScale, requirement, onComplete);
   }
 }

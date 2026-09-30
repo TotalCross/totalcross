@@ -31,11 +31,16 @@ static void registerWake(bool set)
 #endif
 
 #if defined(linux) || defined(__APPLE__)
+#include <limits.h>
 #include <unistd.h>
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 static inline bool copyResolvedPath(const char *path, char *out, size_t outSize)
 {
-   char resolved[MAX_PATHNAME];
+   char resolved[PATH_MAX];
    const char *resolvedPath;
 
    if (outSize == 0)

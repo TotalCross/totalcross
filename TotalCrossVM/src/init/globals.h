@@ -71,6 +71,8 @@ extern TCClass uiColorsClass;
 extern int32* unsafeAreaColorP;
 extern int32* vistaFadeStepP;
 extern TCClass imageClass;
+extern int32* imageOptimizationMaskForDecodePtr;
+extern int32* imageOptimizationMaskForDrawPtr;
 extern int32 totalTextureLoaded;
 
 // mem.c

@@ -1,0 +1,39 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :copySdkDependencies UP-TO-DATE
+> Task :compileSmokeTestJava
+> Task :processSmokeTestResources UP-TO-DATE
+> Task :smokeTestClasses
+> Task :compileImageWarmCopyRectBenchmark
+> Task :jarImageWarmCopyRectBenchmark
+
+> Task :deployImageWarmCopyRectBenchmarkMacOS
+TotalCross SDK version 7.2.2.0 running on mac os x with JDK 17.0
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+File /Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/TotalCrossSDK/build/image-warm-copyrect-benchmark/classes/ImageWarmCopyRectBenchmarkApp.tcz written (25% - 8101 bytes)
+Application title not provided, using: ImageWarmCopyRectBenchmarkApp
+Application id not provided. Created from "ImageWarmCopyRectBenchmarkApp": JrVX
+... Files written to folder /Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/TotalCrossSDK/build/image-warm-copyrect-benchmark/classes/install/macos/
+
+> Task :runImageWarmCopyRectBenchmarkMacOS
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=materialized,clip=full,average_ms=4.0,operations=256,hash=0000B1E6000027A5,materializations=0,native_geometry_materializations=0,physical_identity_attempts=0,physical_identity_hits=0,write_pixels_attempts=3328,write_pixels_hits=0,write_pixels_fallbacks=3328,write_pixels_copied_bytes=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=deferred-drawImage,clip=full,average_ms=4.0,operations=256,hash=0000B1E6000027A5,materializations=1,native_geometry_materializations=0,physical_identity_attempts=0,physical_identity_hits=0,write_pixels_attempts=3328,write_pixels_hits=0,write_pixels_fallbacks=3328,write_pixels_copied_bytes=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=deferred-copyRect,clip=full,average_ms=3.9,operations=256,hash=0000B1E6000027A5,materializations=1,native_geometry_materializations=0,physical_identity_attempts=0,physical_identity_hits=0,write_pixels_attempts=3328,write_pixels_hits=0,write_pixels_fallbacks=3328,write_pixels_copied_bytes=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=materialized,clip=partial,average_ms=1.9,operations=256,hash=0000E15200004025,materializations=0,native_geometry_materializations=0,physical_identity_attempts=0,physical_identity_hits=0,write_pixels_attempts=3328,write_pixels_hits=0,write_pixels_fallbacks=3328,write_pixels_copied_bytes=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=deferred-drawImage,clip=partial,average_ms=1.8,operations=256,hash=0000E15200004025,materializations=0,native_geometry_materializations=0,physical_identity_attempts=0,physical_identity_hits=0,write_pixels_attempts=3328,write_pixels_hits=0,write_pixels_fallbacks=3328,write_pixels_copied_bytes=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=case,operation=deferred-copyRect,clip=partial,average_ms=1.9,operations=256,hash=0000E15200004025,materializations=0,native_geometry_materializations=0,physical_identity_attempts=0,physical_identity_hits=0,write_pixels_attempts=3328,write_pixels_hits=0,write_pixels_fallbacks=3328,write_pixels_copied_bytes=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,record=identity-direct,average_ms=1.0,operations=256,hash=0000DACC0000A325,physical_identity_hits=2560,write_pixels_hits=2560,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageWarmCopyRectBenchmarkApp,overallPass=true
+
+tuMW_exit_i
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 9s
+7 actionable tasks: 5 executed, 2 up-to-date
