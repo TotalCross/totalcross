@@ -15,6 +15,8 @@ public class System4D {
   public static final PrintStream4D err =
       new PrintStream4D(new VmStandardOutputStream(VmStandardOutputStream.ERR), true);
 
+  public static native long nanoTime();
+
   
     /**
      * Copies the number of {@code length} elements of the Array {@code src}
