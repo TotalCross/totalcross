@@ -215,7 +215,9 @@ TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
    TCClass runtimeConfigurationClass;
+   TCClass imageRuntimeConfigurationClass;
    Method runtimeConfigurationInit;
+   Method imageRuntimeConfigurationInit;
    int32 retc;
    
    // load libraries must be before checking the activation, because the tcz may have been splitted
@@ -238,6 +240,24 @@ TC_API int32 startProgram(Context currentContext)
    {
       showUnhandledException(currentContext, true);
       return exitProgram(120);
+   }
+
+   imageRuntimeConfigurationClass = loadClass(currentContext,
+      "totalcross.sys.runtime.ImageRuntimeConfigurationStartup", true);
+   if (imageRuntimeConfigurationClass == null)
+   {
+      if (currentContext->thrownException != null)
+         showUnhandledException(currentContext, true);
+      return exitProgram(121);
+   }
+   imageRuntimeConfigurationInit = getMethod(imageRuntimeConfigurationClass, true, "initializeAtStartup", 0);
+   if (!imageRuntimeConfigurationInit)
+      return exitProgram(122);
+   executeMethod(currentContext, imageRuntimeConfigurationInit);
+   if (currentContext->thrownException != null)
+   {
+      showUnhandledException(currentContext, true);
+      return exitProgram(123);
    }
    
    // 3. Load the main class (also calls its static initializer)

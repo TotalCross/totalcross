@@ -12,10 +12,14 @@ import org.junit.jupiter.api.Test;
 
 import totalcross.sys.RuntimeFamily;
 import totalcross.sys.runtime.RuntimeConfigurationStartup;
+import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
 import totalcross.sys.runtime.RuntimeCondition;
 import totalcross.sys.runtime.RuntimeConfiguration;
 import totalcross.sys.runtime.RuntimeRule;
 import totalcross.sys.runtime.RuntimeWhen;
+import totalcross.sys.GraphicsBackend;
+import totalcross.ui.image.ImageRuntimeRule;
+import totalcross.ui.image.ImageStorageProfile;
 
 class RuntimeConfigurationSimulatorTest {
   private static final String INITIALIZED_PROPERTY = "totalcross.runtimeConfigurationFixture.initialized";
@@ -24,6 +28,7 @@ class RuntimeConfigurationSimulatorTest {
   void cleanup() {
     System.clearProperty(INITIALIZED_PROPERTY);
     RuntimeConfigurationStartup.initializeForSimulator(null);
+    ImageRuntimeConfigurationStartup.initializeForSimulator(null);
   }
 
   @Test
@@ -49,6 +54,25 @@ class RuntimeConfigurationSimulatorTest {
     assertNull(startupResult());
   }
 
+  @Test
+  void parsesImageRulesBeforeInitializationAndResolvesAfterRasterBackendFinalizes() throws Exception {
+    System.clearProperty(INITIALIZED_PROPERTY);
+    RuntimeConfigurationSimulator.initialize(getClass().getClassLoader(), ImageAnnotatedFixture.class.getName());
+
+    assertNull(System.getProperty(INITIALIZED_PROPERTY));
+    assertEquals(ImageStorageProfile.STANDARD,
+        ImageRuntimeConfigurationStartup.currentPolicy().requestedStorageProfile());
+
+    RuntimeConfigurationStartup.finalizeSimulatorGraphicsBackend(GraphicsBackend.RASTER);
+    ImageRuntimeConfigurationStartup.finalizeSimulatorGraphicsBackend();
+    assertEquals(ImageStorageProfile.COMPACT,
+        ImageRuntimeConfigurationStartup.currentPolicy().requestedStorageProfile());
+    assertEquals(ImageStorageProfile.STANDARD,
+        ImageRuntimeConfigurationStartup.currentPolicy().effectiveStorageProfile());
+    Class.forName(ImageAnnotatedFixture.class.getName(), true, getClass().getClassLoader());
+    assertEquals("loaded", System.getProperty(INITIALIZED_PROPERTY));
+  }
+
   @RuntimeConfiguration
   @RuntimeRule(when = @RuntimeWhen(allOf = { @RuntimeCondition(family = RuntimeFamily.DESKTOP) }))
   static class AnnotatedFixture {
@@ -58,6 +82,15 @@ class RuntimeConfigurationSimulatorTest {
   }
 
   static class PlainFixture {
+  }
+
+  @RuntimeConfiguration
+  @ImageRuntimeRule(when = @RuntimeWhen(allOf = { @RuntimeCondition(backend = GraphicsBackend.RASTER) }),
+      storage = ImageStorageProfile.COMPACT)
+  static class ImageAnnotatedFixture {
+    static {
+      System.setProperty(INITIALIZED_PROPERTY, "loaded");
+    }
   }
 
   private static Object startupResult() throws Exception {

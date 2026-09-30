@@ -9,8 +9,12 @@ import java.io.InputStream;
 import java.util.List;
 
 import tc.tools.converter.runtimeconfig.RuntimeConfigurationParser;
+import tc.tools.converter.runtimeconfig.ImageRuntimeConfigurationParser;
+import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
 import totalcross.sys.runtime.RuntimeConfigurationStartup;
 import totalcross.sys.runtime.RuntimeSelector;
+import totalcross.sys.runtime.RuntimeConfigurationFeatureBridge.FeatureRule;
+import totalcross.ui.image.ImageStorageProfile;
 
 /** Reads selector declarations from simulator class resources before app class initialization. */
 final class RuntimeConfigurationSimulator {
@@ -21,6 +25,7 @@ final class RuntimeConfigurationSimulator {
     String osName = System.getProperty("os.name");
     String osArch = System.getProperty("os.arch");
     List<RuntimeSelector> selectors = null;
+    List<FeatureRule<ImageStorageProfile>> imageRules = null;
     if (className != null) {
       String normalized = Launcher.normalizeMainWindowClassName(className);
       String resourceName = normalized.replace('.', '/') + ".class";
@@ -28,13 +33,16 @@ final class RuntimeConfigurationSimulator {
           : classLoader.getResourceAsStream(resourceName);
       if (resource != null) {
         try {
-          selectors = RuntimeConfigurationParser.parse(readAll(resource), normalized);
+          byte[] classBytes = readAll(resource);
+          selectors = RuntimeConfigurationParser.parse(classBytes, normalized);
+          imageRules = ImageRuntimeConfigurationParser.parse(classBytes, normalized);
         } finally {
           resource.close();
         }
       }
     }
     RuntimeConfigurationStartup.initializeForSimulator(selectors, osName, osArch);
+    ImageRuntimeConfigurationStartup.initializeForSimulator(imageRules);
   }
 
   private static byte[] readAll(InputStream input) throws IOException {

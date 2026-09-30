@@ -57,8 +57,12 @@ Primary source paths:
 - [x] (2026-09-30) Committed the plan first, then completed Milestone 1:
   typed declarations, shared selector parsing, the feature bridge, deployment
   pruning, the `tc.imageruntimeconfig` v1 codec, and focused tests (42 passed).
-- [ ] Complete Milestone 2: immutable policy, native/simulator startup,
-  description contributors, API boundaries, and deployed smoke fixtures.
+- [x] (2026-09-30) Completed Milestone 2: immutable requested/effective policy,
+  native/simulator startup, diagnostic contributors, artifact boundaries, and
+  six deployed macOS ARM64 smokes. Focused SDK tests, `artifactContentTest`,
+  normal `dist -x test`, diagnostics-on compilation/artifact checks, and native
+  `tcvm`/`Launcher` Release build passed. A diagnostics-enabled distribution
+  and matching macOS VM passed the F RuntimeDiagnostics smoke.
 - [ ] Run final validation, write the final report, commit it last, push, and
   open a PR against `master` without merging.
 
@@ -129,6 +133,14 @@ existing dirty worktree and its generated artifacts remain untouched.
 
 ### Milestone 2 — startup, policy, and description
 
+Status: complete. The immutable policy, native and simulator binding, report
+contributors, application artifact exclusions, and deployed fixtures are
+implemented. The normal diagnostics-off distribution and macOS ARM64 native
+  build passed. Focused diagnostics-on compilation/artifact checks and F unit
+  tests passed. The native RuntimeDiagnostics smoke will use a separate
+  diagnostics-enabled VM build, while Image and B regression smokes use the
+  normal diagnostics-off Release.
+
 1. Add one immutable internal Image policy snapshot. Preserve requested and
    effective storage separately; no rule and `STANDARD` resolve to
    `STANDARD`/`STANDARD`, while `COMPACT` resolves to `COMPACT`/`STANDARD` with
@@ -166,7 +178,8 @@ existing dirty worktree and its generated artifacts remain untouched.
    `dist -x test` with diagnostics off. Check compatibility with
    `-PruntimeDiagnostics=true` through focused compilation/artifact checks.
    Then build macOS ARM64 Release `tcvm` and `Launcher`, and run Image, B
-   RuntimeConfiguration, and practical F RuntimeDiagnostics deployed smokes.
+   RuntimeConfiguration deployed smokes. If practical, also build a matching
+   diagnostics-enabled `tcvm`/`Launcher` and run the F RuntimeDiagnostics smoke.
 
 ### Finalization
 
@@ -215,7 +228,9 @@ slice. No native build occurs before Milestone 1 is complete.
   `artifactContentTest`, diagnostics-on focused checks, and
   `./gradlew-agent dist -x test` pass. macOS ARM64 Release `tcvm` and `Launcher`
   build, then deployed default, COMPACT downgrade, specificity, conflict, B
-  regression, and practical F compatibility smokes pass.
+  regression smokes pass. A separate diagnostics-enabled macOS ARM64 Release
+  build, diagnostics-enabled SDK distribution, and deployed F RuntimeDiagnostics
+  compatibility smoke also pass.
 - Final: `git diff --check origin/master...HEAD` passes; ordered history has the
   plan first and report last; no `.agent/state`, mask API, numeric public option
   IDs, Image decode/render edits, or hot-path configuration lookup exists.
@@ -255,7 +270,17 @@ test freely. Keep SDK logs under `/tmp` or the ignored build directory.
 Milestone 1 uses B's selector parser, target pruning, metadata selector codec,
 and resolver. Image storage tags are explicit stable values; impossible target
 rules are omitted. Focused parsing, codec, converter deployment, collision,
-specificity, and B regression tests passed. Milestone 2 remains active.
+specificity, and B regression tests passed.
+
+Milestone 2 publishes one immutable typed policy after native environment
+initialization or simulator backend finalization. COMPACT remains a request and
+is reported as STANDARD with a downgrade reason. The public description report
+uses the internal sorted section registry; API/distribution tests keep feature
+startup, policy, metadata, and bridge classes out of application artifacts.
+Six deployed macOS ARM64 smokes passed. The conflict smoke observes the shared
+resolver exception before application entry loading; the current VM returns
+process status zero for this startup error path, so the fixture asserts the
+exception text. No Image decode/render path changed.
 
 ## Revision Note
 
