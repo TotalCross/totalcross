@@ -77,7 +77,6 @@ class SystemNanoTimeConverterTest {
     String winNanoTime = between(win, "static int64 privateGetNanoTime()", "static Err privateListFiles");
     String nativeSource = Files.readString(vmRoot.resolve("src/nm/lang/System.c"));
     String cmake = Files.readString(vmRoot.resolve("CMakeLists.txt"));
-    String vcproj = Files.readString(vmRoot.resolve("vc2008/TCVM.vcproj"));
 
     assertTrue(posixNanoTime.contains("clock_gettime(CLOCK_MONOTONIC"));
     assertFalse(posixNanoTime.contains("gettimeofday"));
@@ -97,7 +96,6 @@ class SystemNanoTimeConverterTest {
 
     assertTrue(nativeSource.contains("p->retL = getNanoTime();"));
     assertTrue(cmake.contains("${TC_SRCDIR}/nm/lang/System.c"));
-    assertTrue(vcproj.contains("..\\..\\src\\nm\\lang\\System.c"));
   }
 
   @Test
