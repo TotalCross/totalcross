@@ -30,6 +30,7 @@ import tc.tools.converter.ir.CFG;
 import tc.tools.converter.ir.Instruction.Instruction;
 import tc.tools.converter.java.JavaClass;
 import tc.tools.converter.runtimeconfig.RuntimeConfigurationParser;
+import tc.tools.converter.runtimeconfig.ImageRuntimeConfigurationParser;
 import tc.tools.converter.java.JavaCode;
 import tc.tools.converter.java.JavaConstantInfo;
 import tc.tools.converter.java.JavaConstantPool;
@@ -82,6 +83,7 @@ import totalcross.sys.RuntimeFamily;
 import totalcross.sys.Architecture;
 import totalcross.sys.Settings;
 import totalcross.sys.runtime.RuntimeConfigurationMetadata;
+import totalcross.sys.runtime.ImageRuntimeConfigurationMetadata;
 import totalcross.ui.image.Image;
 import totalcross.util.Hashtable;
 import totalcross.util.IntHashtable;
@@ -96,6 +98,7 @@ public final class J2TC implements JConstants, TCConstants {
   private static String totalcrossService = "totalcross/Service";
   private static String totalcrossUiMainWindow = "totalcross/ui/MainWindow";
   private static final String RUNTIME_CONFIGURATION_RESOURCE = "tc.runtimeconfig";
+  private static final String IMAGE_RUNTIME_CONFIGURATION_RESOURCE = "tc.imageruntimeconfig";
   public static boolean dump, dumpBytecodes;
   /** The output converted TCClass */
   public TCClass converted;
@@ -368,6 +371,7 @@ public final class J2TC implements JConstants, TCConstants {
   private static void setApplicationProperties(JavaClass jc) throws Exception {
     TCZ.mainClassName = DeploySettings.mainClassName = jc.className;
     DeploySettings.runtimeConfigurationSelectors = RuntimeConfigurationParser.parse(jc.bytes, jc.className);
+    DeploySettings.imageRuntimeConfigurationRules = ImageRuntimeConfigurationParser.parse(jc.bytes, jc.className);
     DeploySettings.isMainWindow = !isMainClassOrService(jc);
     if (!DeploySettings.isMainWindow) {
       DeployLogger.verbose("Application is MainClass or Service");
@@ -1173,6 +1177,7 @@ public final class J2TC implements JConstants, TCConstants {
     String cn = null;
     fName = fName.replace('\\', '/');
     DeploySettings.runtimeConfigurationSelectors = null;
+    DeploySettings.imageRuntimeConfigurationRules = null;
     ByteCode.initClasses();
     Java8LambdaLowering.beginConversionRun();
     MethodDeclarationResolver.beginConversionRun();
@@ -1357,40 +1362,22 @@ public final class J2TC implements JConstants, TCConstants {
         vin.addElement(
             new TCZ.Entry(DeploySettings.tcappProp, DeploySettings.TCAPP_PROP, DeploySettings.tcappProp.length));
       }
-      if (containsResource(vin, RUNTIME_CONFIGURATION_RESOURCE)) {
-        throw new IllegalArgumentException("Resource name " + RUNTIME_CONFIGURATION_RESOURCE
-            + " is reserved for runtime configuration metadata");
-      }
-      if (!DeploySettings.testClass && DeploySettings.runtimeConfigurationSelectors != null) {
-        List<RuntimeConfigurationMetadata.DeploymentTarget> targets = new ArrayList<RuntimeConfigurationMetadata.DeploymentTarget>();
-        if ((options & (Deploy.BUILD_WINCE | Deploy.BUILD_WINMO)) != 0) {
-          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.WINDOWS, RuntimeFamily.EMBEDDED, null));
+      validateReservedConfigurationResources(vin);
+      if (!DeploySettings.testClass && (DeploySettings.runtimeConfigurationSelectors != null
+          || DeploySettings.imageRuntimeConfigurationRules != null)) {
+        List<RuntimeConfigurationMetadata.DeploymentTarget> targets = deploymentTargets(options);
+        if (DeploySettings.runtimeConfigurationSelectors != null) {
+          byte[] metadata = RuntimeConfigurationMetadata.encodeForDeployment(
+              DeploySettings.runtimeConfigurationSelectors, targets);
+          vin.insertElementAt(new TCZ.Entry(metadata, RUNTIME_CONFIGURATION_RESOURCE, metadata.length), 0);
         }
-        if ((options & Deploy.BUILD_WIN32) != 0) {
-          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.WINDOWS, RuntimeFamily.DESKTOP, null));
+        if (DeploySettings.imageRuntimeConfigurationRules != null) {
+          byte[] metadata = ImageRuntimeConfigurationMetadata.encodeForDeployment(
+              DeploySettings.imageRuntimeConfigurationRules, targets);
+          if (metadata != null) {
+            vin.insertElementAt(new TCZ.Entry(metadata, IMAGE_RUNTIME_CONFIGURATION_RESOURCE, metadata.length), 0);
+          }
         }
-        if ((options & Deploy.BUILD_LINUX) != 0) {
-          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.LINUX, RuntimeFamily.DESKTOP, null));
-        }
-        if ((options & Deploy.BUILD_LINUX_ARM) != 0) {
-          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.LINUX, RuntimeFamily.EMBEDDED,
-              Architecture.ARM32));
-        }
-        if ((options & Deploy.BUILD_MACOS) != 0) {
-          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.MACOS, RuntimeFamily.DESKTOP, null));
-        }
-        if ((options & Deploy.BUILD_ANDROID) != 0) {
-          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.ANDROID, RuntimeFamily.MOBILE, null));
-        }
-        if ((options & Deploy.BUILD_IPHONE) != 0) {
-          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.IOS, RuntimeFamily.MOBILE, null));
-        }
-        if ((options & Deploy.BUILD_APPLET) != 0) {
-          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(null, RuntimeFamily.DESKTOP, null));
-        }
-        byte[] metadata = RuntimeConfigurationMetadata.encodeForDeployment(
-            DeploySettings.runtimeConfigurationSelectors, targets);
-        vin.insertElementAt(new TCZ.Entry(metadata, RUNTIME_CONFIGURATION_RESOURCE, metadata.length), 0);
       }
 
       TCMethod.checkJavaCalls = true;
@@ -1638,5 +1625,47 @@ public final class J2TC implements JConstants, TCConstants {
       }
     }
     return false;
+  }
+
+  static void validateReservedConfigurationResources(Vector entries) {
+    if (containsResource(entries, RUNTIME_CONFIGURATION_RESOURCE)) {
+      throw new IllegalArgumentException("Resource name " + RUNTIME_CONFIGURATION_RESOURCE
+          + " is reserved for runtime configuration metadata");
+    }
+    if (containsResource(entries, IMAGE_RUNTIME_CONFIGURATION_RESOURCE)) {
+      throw new IllegalArgumentException("Resource name " + IMAGE_RUNTIME_CONFIGURATION_RESOURCE
+          + " is reserved for Image runtime configuration metadata");
+    }
+  }
+
+  private static List<RuntimeConfigurationMetadata.DeploymentTarget> deploymentTargets(int options) {
+    List<RuntimeConfigurationMetadata.DeploymentTarget> targets =
+        new ArrayList<RuntimeConfigurationMetadata.DeploymentTarget>();
+    if ((options & (Deploy.BUILD_WINCE | Deploy.BUILD_WINMO)) != 0) {
+      targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.WINDOWS, RuntimeFamily.EMBEDDED, null));
+    }
+    if ((options & Deploy.BUILD_WIN32) != 0) {
+      targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.WINDOWS, RuntimeFamily.DESKTOP, null));
+    }
+    if ((options & Deploy.BUILD_LINUX) != 0) {
+      targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.LINUX, RuntimeFamily.DESKTOP, null));
+    }
+    if ((options & Deploy.BUILD_LINUX_ARM) != 0) {
+      targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.LINUX, RuntimeFamily.EMBEDDED,
+          Architecture.ARM32));
+    }
+    if ((options & Deploy.BUILD_MACOS) != 0) {
+      targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.MACOS, RuntimeFamily.DESKTOP, null));
+    }
+    if ((options & Deploy.BUILD_ANDROID) != 0) {
+      targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.ANDROID, RuntimeFamily.MOBILE, null));
+    }
+    if ((options & Deploy.BUILD_IPHONE) != 0) {
+      targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.IOS, RuntimeFamily.MOBILE, null));
+    }
+    if ((options & Deploy.BUILD_APPLET) != 0) {
+      targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(null, RuntimeFamily.DESKTOP, null));
+    }
+    return targets;
   }
 }
