@@ -8,6 +8,7 @@ import totalcross.sys.GraphicsBackend;
 import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
 import totalcross.sys.Vm;
+import totalcross.ui.image.ImageStorageProfile;
 import totalcross.ui.MainWindow;
 
 public final class RuntimeConfigurationNoMetadataMacSmokeApp extends MainWindow {
@@ -22,10 +23,21 @@ public final class RuntimeConfigurationNoMetadataMacSmokeApp extends MainWindow 
       require(environment.graphicsBackend() == GraphicsBackend.RASTER,
           "backend=" + environment.graphicsBackend());
       require(Vm.getFile("tc.runtimeconfig") == null, "runtime metadata resource exists");
+      require(Vm.getFile("tc.imageruntimeconfig") == null, "Image runtime metadata resource exists");
       require(RuntimeConfigurationStartup.current() == null, "configuration exists without metadata");
+      ImageRuntimePolicy imagePolicy = ImageRuntimeConfigurationStartup.currentPolicy();
+      require(imagePolicy.requestedStorageProfile() == ImageStorageProfile.STANDARD,
+          "requestedStorage=" + imagePolicy.requestedStorageProfile());
+      require(imagePolicy.effectiveStorageProfile() == ImageStorageProfile.STANDARD,
+          "effectiveStorage=" + imagePolicy.effectiveStorageProfile());
+      String report = RuntimeConfigurationReport.describe();
+      require(report.contains("Image\n  storage:\n    requested: STANDARD\n    effective: STANDARD"),
+          "Image default policy missing from report");
       System.out.println("runtime-config-no-metadata-pass platform=" + environment.platform()
           + " family=" + environment.runtimeFamily() + " architecture=" + environment.architecture()
-          + " backend=" + environment.graphicsBackend() + " metadata=absent");
+          + " backend=" + environment.graphicsBackend() + " metadata=absent"
+          + " imageStorageRequested=" + imagePolicy.requestedStorageProfile()
+          + " imageStorageEffective=" + imagePolicy.effectiveStorageProfile());
       System.out.flush();
       exit(0);
     } catch (Throwable failure) {
