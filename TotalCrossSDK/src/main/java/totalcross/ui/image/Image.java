@@ -127,7 +127,7 @@ public class Image extends GfxSurface {
   }
 
   static void resetTargetedDecodeInvocationCountForTest() {
-    imageOperationAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
     targetedDecodeInitializationFailureForTest = false;
     targetedDecodeInvocationCountForTest = 0;
     targetedDecodeRequestWidthForTest = 0;
@@ -162,7 +162,18 @@ public class Image extends GfxSurface {
   }
 
   static void resetImageOperationAccountingForTest() {
-    imageOperationAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
+    clearImageOperationAccountingCountersForTest();
+  }
+
+  static void setDiagnosticAccountingForTest(boolean enabled) {
+    imageOperationAccountingForTest = enabled;
+    backingReadbackAccountingForTest = enabled;
+    NativeImageBacking.setBackingAccountingForTest(enabled);
+    setDiagnosticAccountingTestNative(enabled);
+  }
+
+  static void clearImageOperationAccountingCountersForTest() {
     imageCreatedCountForTest = 0;
     imageFinalizedCountForTest = 0;
     imagePipelineCreatedCountForTest = 0;
@@ -181,9 +192,8 @@ public class Image extends GfxSurface {
     nativeGeometryMaterializationCountForTest = 0;
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
-    backingReadbackAccountingForTest = true;
     backingReadbackCountForTest = 0;
-    NativeImageBacking.resetBackingAccountingForTest();
+    NativeImageBacking.clearBackingAccountingCountersForTest();
   }
 
   static int imageCreatedCountForTest() {
@@ -256,9 +266,12 @@ public class Image extends GfxSurface {
 
   /** Test-only accounting for explicit deployed getPixels() snapshots. */
   static void resetBackingReadbackAccountingForTest() {
-    imageOperationAccountingForTest = true;
-    backingReadbackAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
     backingReadbackCountForTest = 0;
+  }
+
+  static boolean backingReadbackAccountingEnabledForTest() {
+    return backingReadbackAccountingForTest;
   }
 
   static int backingReadbackCountForTest() {
@@ -312,6 +325,10 @@ public class Image extends GfxSurface {
 
   @ReplacedByNativeOnDeploy
   private static void failNextNativeMaterializationForTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void setDiagnosticAccountingTestNative(boolean enabled) {
   }
 
   private static boolean consumeDecodedRasterAllocationFailureForTest() {
