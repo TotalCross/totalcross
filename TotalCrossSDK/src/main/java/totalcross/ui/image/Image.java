@@ -5289,7 +5289,6 @@ public class Image extends GfxSurface {
     return image;
   }
 
-  @ReplacedByNativeOnDeploy
   public static Image getJpegBestFit(String path, int targetWidth, int targetHeight)
       throws java.io.IOException, ImageException {
     validateJpegScaleArguments(targetWidth, targetHeight);
@@ -5305,7 +5304,6 @@ public class Image extends GfxSurface {
     return image.getSmoothScaledInstance(scaledWidth, scaledHeight);
   }
 
-  @ReplacedByNativeOnDeploy
   public static Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
       throws java.io.IOException, ImageException {
     validateJpegScaleArguments(scaleNumerator, scaleDenominator);

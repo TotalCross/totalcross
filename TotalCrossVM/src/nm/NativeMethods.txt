@@ -110,8 +110,6 @@ totalcross/ui/image/Image|native private void decodeEncodedSourceTiered(totalcro
 totalcross/ui/image/Image|native private static void failNextNativeMaterializationForTestNative();
 totalcross/ui/image/Image|native private void createJpgNative(totalcross.io.Stream s, int quality);
 totalcross/ui/image/Image|native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
-totalcross/ui/image/Image|native public static totalcross.ui.image.Image getJpegBestFit(String path, int targetWidth, int targetHeight) throws java.io.IOException, totalcross.ui.image.ImageException;
-totalcross/ui/image/Image|native public static totalcross.ui.image.Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator) throws java.io.IOException, totalcross.ui.image.ImageException;
 totalcross/ui/image/EncodedImageSource|native private void captureNative(byte []input, int length);
 totalcross/ui/image/EncodedImageSource|native private void captureNativePath(String path);
 totalcross/ui/image/EncodedImageSource|native private void releaseNativeBag();
