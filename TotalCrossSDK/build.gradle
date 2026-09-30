@@ -21,6 +21,15 @@ base {
     archivesName = 'totalcross-sdk'
 }
 
+// The opt-in SDK variant must match TC_ENABLE_RUNTIME_DIAGNOSTICS in CMake.
+def runtimeDiagnosticsEnabled = providers.gradleProperty('runtimeDiagnostics')
+    .map { it.toBoolean() }
+    .orElse(false)
+    .get()
+def runtimeDiagnosticsSourceDir = runtimeDiagnosticsEnabled
+    ? 'src/runtimeDiagnostics/java'
+    : 'src/runtimeDiagnosticsOff/java'
+
 // can't be used yet, enconding is a mess
 compileJava.options.encoding = 'UTF-8'
 
@@ -41,6 +50,7 @@ wrapper {
 sourceSets {
     main {
         java {
+            srcDir runtimeDiagnosticsSourceDir
             exclude 'tc/RunSSLSocketTestApplication.java'
             exclude 'tc/SSLSocketTest.java'
             exclude 'totalcross/LauncherApplet.java'
@@ -51,6 +61,9 @@ sourceSets {
     smokeTest {
         java {
             srcDir 'src/smokeTest/java'
+            if (!runtimeDiagnosticsEnabled) {
+                exclude 'totalcross/sys/RuntimeDiagnosticsSmokeApp.java'
+            }
         }
         resources {
             srcDir 'src/smokeTest/resources'
@@ -684,6 +697,117 @@ tasks.register('runRuntimeConfigurationMacOSSmokes') {
     dependsOn 'runRuntimeConfigurationAnnotatedMacOSSmoke', 'runRuntimeConfigurationNoMetadataMacOSSmoke'
 }
 
+def runtimeDiagnosticsSmokeDir = layout.buildDirectory.dir('runtime-diagnostics-smoke')
+tasks.register('compileRuntimeDiagnosticsSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the runtime diagnostics macOS smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+    doFirst {
+        if (!runtimeDiagnosticsEnabled) {
+            throw new GradleException('Compile this smoke with -PruntimeDiagnostics=true.')
+        }
+    }
+    from(smokeTestClassesDir) {
+        include 'totalcross/sys/RuntimeDiagnosticsSmokeApp.class'
+        include 'totalcross/sys/RuntimeDiagnosticsSmokeApp$*.class'
+    }
+    into runtimeDiagnosticsSmokeDir.map { it.dir('classes') }
+}
+
+tasks.register('jarRuntimeDiagnosticsSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the runtime diagnostics macOS smoke app for deployment.'
+    dependsOn 'compileRuntimeDiagnosticsSmoke'
+    archiveFileName = 'RuntimeDiagnosticsSmokeApp.jar'
+    destinationDirectory = runtimeDiagnosticsSmokeDir.map { it.dir('archive') }
+    from(runtimeDiagnosticsSmokeDir.map { it.dir('classes') })
+}
+
+tasks.register('deployRuntimeDiagnosticsSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the runtime diagnostics smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarRuntimeDiagnosticsSmoke'
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir runtimeDiagnosticsSmokeDir.get().dir('archive').asFile
+    args = ['RuntimeDiagnosticsSmokeApp.jar', '-macos']
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        def nativeLauncher = project.findProperty('tcvmLauncher')
+        if (!nativeRuntime || !nativeLauncher) {
+            throw new GradleException('Runtime diagnostics macOS deploy requires -PtcvmDylib and -PtcvmLauncher')
+        }
+        def nativeRuntimeFile = file(nativeRuntime)
+        def nativeLauncherFile = file(nativeLauncher)
+        if (!nativeRuntimeFile.isFile() || !nativeLauncherFile.isFile()) {
+            throw new GradleException('Runtime diagnostics macOS deploy requires existing VM and Launcher files')
+        }
+        copy {
+            from nativeRuntimeFile
+            into file('dist/vm/macos')
+            rename { 'libtcvm.dylib' }
+        }
+        copy {
+            from nativeLauncherFile
+            into file('etc/launchers/macos')
+            rename { 'Launcher' }
+        }
+    }
+}
+
+tasks.register('runRuntimeDiagnosticsSmokeMacOS') {
+    group = 'verification'
+    description = 'Runs the generic diagnostics bridge smoke with the macOS VM.'
+    dependsOn 'deployRuntimeDiagnosticsSmokeMacOS'
+
+    doLast {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runRuntimeDiagnosticsSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = new File(nativeRuntime.toString())
+        if (!nativeRuntimeFile.isAbsolute() || !nativeRuntimeFile.isFile()) {
+            throw new GradleException('tcvmDylib must name an existing absolute path')
+        }
+
+        def installDir = runtimeDiagnosticsSmokeDir.get().dir('archive/install/macos').asFile
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def executable = new File(installDir, 'RuntimeDiagnosticsSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException('Native smoke executable not found: ' + executable)
+        }
+        def process = new ProcessBuilder(executable.absolutePath)
+            .directory(installDir)
+            .redirectErrorStream(true)
+            .start()
+        def smokeOutput = new ByteArrayOutputStream()
+        def outputReader = new Thread({
+            process.inputStream.withCloseable { stream -> stream.transferTo(smokeOutput) }
+        } as Runnable, 'RuntimeDiagnosticsSmoke-output')
+        outputReader.setDaemon(true)
+        outputReader.start()
+        boolean finished = process.waitFor(60L, java.util.concurrent.TimeUnit.SECONDS)
+        if (!finished) {
+            process.destroyForcibly()
+            process.waitFor()
+            outputReader.join(5000L)
+            throw new GradleException('Runtime diagnostics macOS smoke timed out after 60 seconds.')
+        }
+        outputReader.join()
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = process.exitValue()
+        if (exitCode != 0 || !output.contains('fixture=RuntimeDiagnosticsSmokeApp,overallPass=true')) {
+            throw new GradleException('Runtime diagnostics macOS smoke failed: exitCode=' + exitCode)
+        }
+    }
+}
 def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
 def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')
 def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scaling/danfe') {

@@ -56,6 +56,10 @@ option(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS
   "Enable test-only Semaphore native diagnostics"
   OFF
 )
+option(TC_ENABLE_RUNTIME_DIAGNOSTICS
+  "Enable optional runtime diagnostics storage and native bridge"
+  OFF
+)
 
 if(TC_BUILD_IR_BENCHMARKS AND NOT TC_ENABLE_SLJIT_JIT)
   message(FATAL_ERROR "TC_BUILD_IR_BENCHMARKS requires TC_ENABLE_SLJIT_JIT=ON")
@@ -232,6 +236,10 @@ target_compile_definitions(
 
 if(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
   target_compile_definitions(tcvm PRIVATE TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS=1)
+endif()
+
+if(TC_ENABLE_RUNTIME_DIAGNOSTICS)
+  target_compile_definitions(tcvm PRIVATE TC_ENABLE_RUNTIME_DIAGNOSTICS=1)
 endif()
 
 # Android fail-fast
@@ -806,6 +814,10 @@ else()
     ${SOURCES}
     ${TC_SRCDIR}/nm/net/ssl/SSLContextMbedtls.c
   )
+endif()
+
+if(TC_ENABLE_RUNTIME_DIAGNOSTICS)
+  list(APPEND SOURCES ${TC_SRCDIR}/nm/sys/RuntimeDiagnostics.c)
 endif()
 
 include_directories(${TC_SRCDIR})

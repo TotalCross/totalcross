@@ -1,4 +1,9 @@
 
+TC_API void tsRDS_readMetricNative_i(NMParams p);
+TC_API void tsRDS_readMetricsNative_IL(NMParams p);
+TC_API void tsRDS_resetMetricsNative_i(NMParams p);
+TC_API void tsRDS_addNativeCountNative_l(NMParams p);
+TC_API void tsRDS_setNativeGaugeNative_l(NMParams p);
 TC_API void jlC_forName_s(NMParams p);
 TC_API void jlC_newInstance(NMParams p);
 TC_API void jlC_isInstance_o(NMParams p);
@@ -2951,5 +2956,25 @@ TC_API void jucS_release(NMParams p) // java/util/concurrent/Semaphore native pu
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tucSTD_awaitWaiters_si(NMParams p) // totalcross/util/concurrent/SemaphoreTestDiagnostics native public static int awaitWaiters(java.util.concurrent.Semaphore semaphore, int minimumWaiters);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsRDS_readMetricNative_i(NMParams p) // totalcross/sys/RuntimeDiagnosticsSupport native private static long readMetricNative(int metricId);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsRDS_readMetricsNative_IL(NMParams p) // totalcross/sys/RuntimeDiagnosticsSupport native private static void readMetricsNative(int []metricIds, long []values);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsRDS_resetMetricsNative_i(NMParams p) // totalcross/sys/RuntimeDiagnosticsSupport native private static void resetMetricsNative(int groupMask);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsRDS_addNativeCountNative_l(NMParams p) // totalcross/sys/RuntimeDiagnosticsSupport native private static void addNativeCountNative(long delta);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsRDS_setNativeGaugeNative_l(NMParams p) // totalcross/sys/RuntimeDiagnosticsSupport native private static void setNativeGaugeNative(long value);
 {
 }

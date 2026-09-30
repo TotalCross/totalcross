@@ -11,6 +11,12 @@
 extern "C" {
 #endif
 
+TC_API void tsRDS_readMetricNative_i(NMParams p);
+TC_API void tsRDS_readMetricsNative_IL(NMParams p);
+TC_API void tsRDS_resetMetricsNative_i(NMParams p);
+TC_API void tsRDS_addNativeCountNative_l(NMParams p);
+TC_API void tsRDS_setNativeGaugeNative_l(NMParams p);
+
 TC_API void jlC_forName_s(NMParams p);
 TC_API void jlC_newInstance(NMParams p);
 TC_API void jlC_isInstance_o(NMParams p);
