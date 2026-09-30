@@ -17,6 +17,38 @@
  #include "posix/Vm_c.h"
 #endif
 
+TC_API void tsrRE_nativeArchitectureCode(NMParams p)
+{
+#if TC_ARCH_ARM64
+   p->retI = 4;
+#elif TC_ARCH_X86_64
+   p->retI = 2;
+#elif TC_ARCH_ARM32
+   p->retI = 3;
+#elif TC_ARCH_X86
+   p->retI = 1;
+#else
+   p->retI = 0;
+#endif
+}
+
+TC_API void tsrRE_nativePlatformCode(NMParams p)
+{
+#if TC_OS_ANDROID
+   p->retI = 4;
+#elif TC_OS_IOS
+   p->retI = 5;
+#elif TC_OS_MACOS
+   p->retI = 2;
+#elif TC_OS_WINCE || TC_OS_WINDOWS
+   p->retI = 1;
+#elif TC_OS_LINUX
+   p->retI = 3;
+#else
+   p->retI = 0;
+#endif
+}
+
 void vmVibrate(int32 ms);
 #ifdef darwin
 int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, int32 wait);

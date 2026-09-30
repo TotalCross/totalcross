@@ -258,6 +258,9 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tsC_numberPad_ii"), &tsC_numberPad_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsT_update"), &tsT_update);
    htPutPtr(&htNativeProcAddresses, hashCode("tsS_refresh"), &tsS_refresh);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsrRE_nativeArchitectureCode"), &tsrRE_nativeArchitectureCode);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsrRE_nativePlatformCode"), &tsrRE_nativePlatformCode);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsrRE_nativeGraphicsBackendCode"), &tsrRE_nativeGraphicsBackendCode);
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_arrayCopy_oioii"), &tsV_arrayCopy_oioii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_preallocateArray_oi"), &tsV_preallocateArray_oi);
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_getTimeStamp"), &tsV_getTimeStamp);

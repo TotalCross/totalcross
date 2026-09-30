@@ -242,6 +242,9 @@ totalcross/sys/Convert|native public static String numberPad(String s, int size)
 totalcross/sys/Convert|native public static String numberPad(int s, int size);
 totalcross/sys/Time|native void update();
 totalcross/sys/Settings|native public static void refresh();
+totalcross/sys/runtime/RuntimeEnvironment|native private static int nativeArchitectureCode();
+totalcross/sys/runtime/RuntimeEnvironment|native private static int nativePlatformCode();
+totalcross/sys/runtime/RuntimeEnvironment|native private static int nativeGraphicsBackendCode();
 totalcross/sys/Vm|native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
 totalcross/sys/Vm|native public static void preallocateArray(Object sample, int length);
 totalcross/sys/Vm|native public static int getTimeStamp();

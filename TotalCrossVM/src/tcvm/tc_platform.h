@@ -18,6 +18,89 @@
  *     #ifdef TC_OS_ANDROID
  */
 
+/* ------------------------------------------------------------------------- */
+/* CPU architecture                                                          */
+/* ------------------------------------------------------------------------- */
+
+#define TC_ARCH_ARM32       0
+#define TC_ARCH_ARM64       0
+#define TC_ARCH_X86         0
+#define TC_ARCH_X86_64      0
+#define TC_ARCH_UNKNOWN     0
+
+/*
+ * ABI refinements. These do not represent separate CPU architectures.
+ */
+#define TC_ABI_ARM64EC      0
+
+/*
+ * ARM64EC must be checked before x86_64 because MSVC may define x64-related
+ * macros for ARM64EC builds.
+ */
+#if defined(_M_ARM64EC) || defined(__arm64ec__)
+
+#undef TC_ARCH_ARM64
+#define TC_ARCH_ARM64 1
+
+#undef TC_ABI_ARM64EC
+#define TC_ABI_ARM64EC 1
+
+#elif defined(__aarch64__) \
+   || defined(__arm64__) \
+   || defined(_M_ARM64) \
+   || (defined(TARGET_CPU_ARM64) && TARGET_CPU_ARM64)
+
+#undef TC_ARCH_ARM64
+#define TC_ARCH_ARM64 1
+
+#elif defined(__arm__) \
+   || defined(_M_ARM) \
+   || (defined(TARGET_CPU_ARM) && TARGET_CPU_ARM)
+
+#undef TC_ARCH_ARM32
+#define TC_ARCH_ARM32 1
+
+#elif defined(__x86_64__) \
+   || defined(__amd64__) \
+   || defined(_M_X64) \
+   || defined(_M_AMD64) \
+   || (defined(TARGET_CPU_X86_64) && TARGET_CPU_X86_64)
+
+#undef TC_ARCH_X86_64
+#define TC_ARCH_X86_64 1
+
+#elif defined(__i386__) \
+   || defined(_M_IX86) \
+   || (defined(TARGET_CPU_X86) && TARGET_CPU_X86)
+
+#undef TC_ARCH_X86
+#define TC_ARCH_X86 1
+
+#else
+
+#undef TC_ARCH_UNKNOWN
+#define TC_ARCH_UNKNOWN 1
+
+#endif
+
+/* ------------------------------------------------------------------------- */
+/* ARM architecture refinements                                              */
+/* ------------------------------------------------------------------------- */
+
+#define TC_ARCH_ARMV7 0
+
+#if TC_ARCH_ARM32 \
+    && (defined(__ARM_ARCH_7A__) \
+        || defined(__ARM_ARCH_7R__) \
+        || defined(__ARM_ARCH_7S__) \
+        || (defined(__ARM_ARCH) && __ARM_ARCH == 7) \
+        || (defined(_M_ARM) && _M_ARM == 7))
+
+#undef TC_ARCH_ARMV7
+#define TC_ARCH_ARMV7 1
+
+#endif
+
 #if defined(TC_PLATFORM_CONFIGURED)
 
 #include "tc_platform_config.h"
@@ -150,89 +233,6 @@
 
 #undef TC_ENV_MACCATALYST
 #define TC_ENV_MACCATALYST 1
-
-#endif
-
-/* ------------------------------------------------------------------------- */
-/* CPU architecture                                                          */
-/* ------------------------------------------------------------------------- */
-
-#define TC_ARCH_ARM32       0
-#define TC_ARCH_ARM64       0
-#define TC_ARCH_X86         0
-#define TC_ARCH_X86_64      0
-#define TC_ARCH_UNKNOWN     0
-
-/*
- * ABI refinements. These do not represent separate CPU architectures.
- */
-#define TC_ABI_ARM64EC      0
-
-/*
- * ARM64EC must be checked before x86_64 because MSVC may define x64-related
- * macros for ARM64EC builds.
- */
-#if defined(_M_ARM64EC) || defined(__arm64ec__)
-
-#undef TC_ARCH_ARM64
-#define TC_ARCH_ARM64 1
-
-#undef TC_ABI_ARM64EC
-#define TC_ABI_ARM64EC 1
-
-#elif defined(__aarch64__) \
-   || defined(__arm64__) \
-   || defined(_M_ARM64) \
-   || (defined(TARGET_CPU_ARM64) && TARGET_CPU_ARM64)
-
-#undef TC_ARCH_ARM64
-#define TC_ARCH_ARM64 1
-
-#elif defined(__arm__) \
-   || defined(_M_ARM) \
-   || (defined(TARGET_CPU_ARM) && TARGET_CPU_ARM)
-
-#undef TC_ARCH_ARM32
-#define TC_ARCH_ARM32 1
-
-#elif defined(__x86_64__) \
-   || defined(__amd64__) \
-   || defined(_M_X64) \
-   || defined(_M_AMD64) \
-   || (defined(TARGET_CPU_X86_64) && TARGET_CPU_X86_64)
-
-#undef TC_ARCH_X86_64
-#define TC_ARCH_X86_64 1
-
-#elif defined(__i386__) \
-   || defined(_M_IX86) \
-   || (defined(TARGET_CPU_X86) && TARGET_CPU_X86)
-
-#undef TC_ARCH_X86
-#define TC_ARCH_X86 1
-
-#else
-
-#undef TC_ARCH_UNKNOWN
-#define TC_ARCH_UNKNOWN 1
-
-#endif
-
-/* ------------------------------------------------------------------------- */
-/* ARM architecture refinements                                              */
-/* ------------------------------------------------------------------------- */
-
-#define TC_ARCH_ARMV7 0
-
-#if TC_ARCH_ARM32 \
-    && (defined(__ARM_ARCH_7A__) \
-        || defined(__ARM_ARCH_7R__) \
-        || defined(__ARM_ARCH_7S__) \
-        || (defined(__ARM_ARCH) && __ARM_ARCH == 7) \
-        || (defined(_M_ARM) && _M_ARM == 7))
-
-#undef TC_ARCH_ARMV7
-#define TC_ARCH_ARMV7 1
 
 #endif
 

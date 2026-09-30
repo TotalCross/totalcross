@@ -236,6 +236,9 @@ TC_API void tsC_numberPad_si(NMParams p);
 TC_API void tsC_numberPad_ii(NMParams p);
 TC_API void tsT_update(NMParams p);
 TC_API void tsS_refresh(NMParams p);
+TC_API void tsrRE_nativeArchitectureCode(NMParams p);
+TC_API void tsrRE_nativePlatformCode(NMParams p);
+TC_API void tsrRE_nativeGraphicsBackendCode(NMParams p);
 TC_API void tsV_arrayCopy_oioii(NMParams p);
 TC_API void tsV_preallocateArray_oi(NMParams p);
 TC_API void tsV_getTimeStamp(NMParams p);
@@ -1552,6 +1555,18 @@ TC_API void tsT_update(NMParams p) // totalcross/sys/Time native void update();
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsS_refresh(NMParams p) // totalcross/sys/Settings native public static void refresh();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsrRE_nativeArchitectureCode(NMParams p) // totalcross/sys/runtime/RuntimeEnvironment native private static int nativeArchitectureCode();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsrRE_nativePlatformCode(NMParams p) // totalcross/sys/runtime/RuntimeEnvironment native private static int nativePlatformCode();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsrRE_nativeGraphicsBackendCode(NMParams p) // totalcross/sys/runtime/RuntimeEnvironment native private static int nativeGraphicsBackendCode();
 {
 }
 //////////////////////////////////////////////////////////////////////////

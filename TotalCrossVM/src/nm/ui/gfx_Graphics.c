@@ -22,6 +22,13 @@
  #include "backend/graphics/software/gfx_Graphics_c.h"
 #endif
 
+static int32 runtimeGraphicsBackendCode;
+
+TC_API void tsrRE_nativeGraphicsBackendCode(NMParams p)
+{
+   p->retI = runtimeGraphicsBackendCode;
+}
+
 bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr) // no thread are running at this point
 {
    return startupGraphics(appTczAttr) && createScreenSurface(currentContext, false) && (screen.bpp != 8 || createColorPaletteLookupTables());
@@ -29,6 +36,7 @@ bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr) // no 
 
 void destroyGraphics()
 {
+   runtimeGraphicsBackendCode = 0;
    graphicsDestroyPrimitives();
    if (screen.pixels) graphicsDestroy(&screen, false);
    screen.pixels = null; // disallow future updates of the screen
@@ -42,6 +50,11 @@ bool initGraphicsAfterSettings(Context currentContext)
       destroyGraphics();
       return false;
    }
+#if TC_GRAPHICS_GLES
+   runtimeGraphicsBackendCode = 2;
+#else
+   runtimeGraphicsBackendCode = 1;
+#endif
    return true;
 }
 
