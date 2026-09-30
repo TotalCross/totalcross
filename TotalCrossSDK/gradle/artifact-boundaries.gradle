@@ -50,11 +50,12 @@ registerBoundaryJar('totalcrossSimulatorJar', 'totalcross-simulator') {
 tasks.register('artifactContentTest', Test) {
     group = 'verification'
     description = 'Verifies narrow artifact package boundaries.'
-    dependsOn jar, totalcrossApiJar, totalcrossRuntimeJavaJar, totalcrossConverterJar,
+    dependsOn 'dist', jar, totalcrossApiJar, totalcrossRuntimeJavaJar, totalcrossConverterJar,
             totalcrossDeployerJar, totalcrossSimulatorJar
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     systemProperty 'totalcross.artifact.dir', artifactOutput.get().asFile.absolutePath
+    systemProperty 'totalcross.aggregate.sdk.jar', project.file('dist/totalcross-sdk.jar').absolutePath
     useJUnitPlatform {
         includeTags 'artifact-boundary'
     }
