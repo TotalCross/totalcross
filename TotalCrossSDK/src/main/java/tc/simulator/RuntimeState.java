@@ -114,6 +114,7 @@ abstract class RuntimeState extends SimulatorSupport {
       }
 
       getRuntime().initializeSettings((Launcher) this);
+      RuntimeConfigurationSimulator.initialize(getAppClassLoader(), className);
 
       try {
         _class = getClass(); // guich@500_1: we can use ourselves

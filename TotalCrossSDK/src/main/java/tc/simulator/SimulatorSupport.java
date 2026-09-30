@@ -133,6 +133,8 @@ abstract class SimulatorSupport extends FontRegistry {
       JarClassPathLoader.addJar(libsFile, "slf4j-api");
       JarClassPathLoader.addJar(libsFile, "appdirs");
       JarClassPathLoader.addJar(libsFile, "thumbnailator");
+      JarClassPathLoader.addJar(libsFile, "asm");
+      JarClassPathLoader.addJar(libsFile, "asm-tree");
     } catch (java.io.IOException e) {
       e.printStackTrace();
     }
