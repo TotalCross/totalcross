@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -76,7 +77,11 @@ import totalcross.io.File;
 import totalcross.io.IOException;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
+import totalcross.sys.Platform;
+import totalcross.sys.RuntimeFamily;
+import totalcross.sys.Architecture;
 import totalcross.sys.Settings;
+import totalcross.sys.runtime.RuntimeConfigurationMetadata;
 import totalcross.ui.image.Image;
 import totalcross.util.Hashtable;
 import totalcross.util.IntHashtable;
@@ -90,6 +95,7 @@ public final class J2TC implements JConstants, TCConstants {
   private static String totalcrossMain = "totalcross/MainClass";
   private static String totalcrossService = "totalcross/Service";
   private static String totalcrossUiMainWindow = "totalcross/ui/MainWindow";
+  private static final String RUNTIME_CONFIGURATION_RESOURCE = "tc.runtimeconfig";
   public static boolean dump, dumpBytecodes;
   /** The output converted TCClass */
   public TCClass converted;
@@ -1166,6 +1172,7 @@ public final class J2TC implements JConstants, TCConstants {
   public static void process(String fName, int options) throws Exception {
     String cn = null;
     fName = fName.replace('\\', '/');
+    DeploySettings.runtimeConfigurationSelectors = null;
     ByteCode.initClasses();
     Java8LambdaLowering.beginConversionRun();
     MethodDeclarationResolver.beginConversionRun();
@@ -1349,6 +1356,41 @@ public final class J2TC implements JConstants, TCConstants {
       if (DeploySettings.tcappProp != null) {
         vin.addElement(
             new TCZ.Entry(DeploySettings.tcappProp, DeploySettings.TCAPP_PROP, DeploySettings.tcappProp.length));
+      }
+      if (containsResource(vin, RUNTIME_CONFIGURATION_RESOURCE)) {
+        throw new IllegalArgumentException("Resource name " + RUNTIME_CONFIGURATION_RESOURCE
+            + " is reserved for runtime configuration metadata");
+      }
+      if (!DeploySettings.testClass && DeploySettings.runtimeConfigurationSelectors != null) {
+        List<RuntimeConfigurationMetadata.DeploymentTarget> targets = new ArrayList<RuntimeConfigurationMetadata.DeploymentTarget>();
+        if ((options & (Deploy.BUILD_WINCE | Deploy.BUILD_WINMO)) != 0) {
+          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.WINDOWS, RuntimeFamily.EMBEDDED, null));
+        }
+        if ((options & Deploy.BUILD_WIN32) != 0) {
+          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.WINDOWS, RuntimeFamily.DESKTOP, null));
+        }
+        if ((options & Deploy.BUILD_LINUX) != 0) {
+          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.LINUX, RuntimeFamily.DESKTOP, null));
+        }
+        if ((options & Deploy.BUILD_LINUX_ARM) != 0) {
+          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.LINUX, RuntimeFamily.EMBEDDED,
+              Architecture.ARM32));
+        }
+        if ((options & Deploy.BUILD_MACOS) != 0) {
+          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.MACOS, RuntimeFamily.DESKTOP, null));
+        }
+        if ((options & Deploy.BUILD_ANDROID) != 0) {
+          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.ANDROID, RuntimeFamily.MOBILE, null));
+        }
+        if ((options & Deploy.BUILD_IPHONE) != 0) {
+          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(Platform.IOS, RuntimeFamily.MOBILE, null));
+        }
+        if ((options & Deploy.BUILD_APPLET) != 0) {
+          targets.add(new RuntimeConfigurationMetadata.DeploymentTarget(null, RuntimeFamily.DESKTOP, null));
+        }
+        byte[] metadata = RuntimeConfigurationMetadata.encodeForDeployment(
+            DeploySettings.runtimeConfigurationSelectors, targets);
+        vin.insertElementAt(new TCZ.Entry(metadata, RUNTIME_CONFIGURATION_RESOURCE, metadata.length), 0);
       }
 
       TCMethod.checkJavaCalls = true;
@@ -1586,5 +1628,15 @@ public final class J2TC implements JConstants, TCConstants {
       outputStream.write(buffer, 0, read);
     }
     return outputStream.toByteArray();
+  }
+
+  private static boolean containsResource(Vector entries, String resourceName) {
+    for (int i = 0; i < entries.size(); i++) {
+      TCZ.Entry entry = (TCZ.Entry) entries.items[i];
+      if (resourceName.equalsIgnoreCase(entry.name)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

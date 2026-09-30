@@ -24,6 +24,9 @@ import totalcross.sys.RuntimeFamily;
  * {@link #or(RuntimeSelector)}. {@link #any()} selects every environment.
  */
 public final class RuntimeSelector {
+  private static final Class<?>[] DIMENSIONS = {
+      Platform.class, RuntimeFamily.class, GraphicsBackend.class, Architecture.class
+  };
   private static final RuntimeSelector ANY = new RuntimeSelector(Collections.singletonList(Clause.empty()));
 
   private final List<Clause> clauses;
@@ -119,8 +122,8 @@ public final class RuntimeSelector {
     }
     int specificity = Integer.MAX_VALUE;
     for (Clause clause : clauses) {
-      if (clause.matches(environment) && clause.conditions.size() < specificity) {
-        specificity = clause.conditions.size();
+      if (clause.matches(environment) && clause.specificity() < specificity) {
+        specificity = clause.specificity();
       }
     }
     return specificity == Integer.MAX_VALUE ? -1 : specificity;
@@ -146,6 +149,112 @@ public final class RuntimeSelector {
       throw new IllegalArgumentException("a runtime condition must specify at least one dimension");
     }
     return new RuntimeSelector(Collections.singletonList(new Clause(conditions)));
+  }
+
+  static RuntimeSelector none() {
+    return new RuntimeSelector(Collections.<Clause>emptyList());
+  }
+
+  RuntimeSelector restrictToDeploymentTargets(List<DeploymentTarget> targets) {
+    if (targets == null || targets.isEmpty()) {
+      return this;
+    }
+    int commonMask = commonDimensionMask(targets);
+    List<Clause> restricted = new ArrayList<Clause>();
+    for (Clause clause : clauses) {
+      for (DeploymentTarget target : targets) {
+        Map<Class<? extends Enum<?>>, Set<Enum<?>>> conditions = new HashMap<Class<? extends Enum<?>>, Set<Enum<?>>>(clause.conditions);
+        boolean possible = true;
+        for (Class<?> dimension : DIMENSIONS) {
+          Enum<?> targetValue = target.valueFor(dimension);
+          Set<Enum<?>> accepted = conditions.get(dimension);
+          if (targetValue != null && accepted != null) {
+            if (!accepted.contains(targetValue)) {
+              possible = false;
+              break;
+            }
+            conditions.put(castDimension(dimension), Collections.<Enum<?>>singleton(targetValue));
+          }
+        }
+        if (possible) {
+          int staticMask = clause.staticDimensionMask;
+          for (Class<?> dimension : DIMENSIONS) {
+            int bit = dimensionBit(dimension);
+            if ((commonMask & bit) != 0 && conditions.remove(dimension) != null) {
+              staticMask |= bit;
+            }
+          }
+          restricted.add(new Clause(conditions, staticMask));
+        }
+      }
+    }
+    return restricted.isEmpty() ? null : new RuntimeSelector(restricted);
+  }
+
+  private static int commonDimensionMask(List<DeploymentTarget> targets) {
+    int mask = 0;
+    for (Class<?> dimension : DIMENSIONS) {
+      Enum<?> common = null;
+      boolean sameKnownValue = true;
+      for (DeploymentTarget target : targets) {
+        Enum<?> value = target.valueFor(dimension);
+        if (value == null || common != null && common != value) {
+          sameKnownValue = false;
+          break;
+        }
+        common = value;
+      }
+      if (sameKnownValue && common != null) {
+        mask |= dimensionBit(dimension);
+      }
+    }
+    return mask;
+  }
+
+  private static int dimensionBit(Class<?> dimension) {
+    for (int i = 0; i < DIMENSIONS.length; i++) {
+      if (DIMENSIONS[i] == dimension) {
+        return 1 << i;
+      }
+    }
+    return 0;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Class<? extends Enum<?>> castDimension(Class<?> dimension) {
+    return (Class<? extends Enum<?>>) dimension;
+  }
+
+  List<MetadataClause> clausesForMetadata() {
+    List<MetadataClause> result = new ArrayList<MetadataClause>();
+    for (Clause clause : clauses) {
+      Map<Class<? extends Enum<?>>, Set<Enum<?>>> copy = new HashMap<Class<? extends Enum<?>>, Set<Enum<?>>>();
+      for (Map.Entry<Class<? extends Enum<?>>, Set<Enum<?>>> entry : clause.conditions.entrySet()) {
+        copy.put(entry.getKey(), Collections.unmodifiableSet(new HashSet<Enum<?>>(entry.getValue())));
+      }
+      result.add(new MetadataClause(Collections.unmodifiableMap(copy), clause.staticDimensionMask));
+    }
+    return Collections.unmodifiableList(result);
+  }
+
+  boolean requiresDimension(Class<?> dimension) {
+    for (Clause clause : clauses) {
+      if (clause.conditions.containsKey(dimension)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static RuntimeSelector fromMetadataClauses(List<MetadataClause> clauses) {
+    if (clauses == null || clauses.isEmpty()) {
+      return none();
+    }
+    List<Clause> decoded = new ArrayList<Clause>(clauses.size());
+    for (MetadataClause clause : clauses) {
+      decoded.add(new Clause(clause.conditions, clause.staticDimensionMask));
+    }
+    return new RuntimeSelector(decoded);
   }
 
   private static <E extends Enum<E>> RuntimeSelector forDimension(Class<E> dimension, E[] values) {
@@ -204,13 +313,19 @@ public final class RuntimeSelector {
 
   private static final class Clause {
     private final Map<Class<? extends Enum<?>>, Set<Enum<?>>> conditions;
+    private final int staticDimensionMask;
 
     private Clause(Map<Class<? extends Enum<?>>, Set<Enum<?>>> conditions) {
+      this(conditions, 0);
+    }
+
+    private Clause(Map<Class<? extends Enum<?>>, Set<Enum<?>>> conditions, int staticDimensionMask) {
       Map<Class<? extends Enum<?>>, Set<Enum<?>>> copy = new HashMap<Class<? extends Enum<?>>, Set<Enum<?>>>();
       for (Map.Entry<Class<? extends Enum<?>>, Set<Enum<?>>> entry : conditions.entrySet()) {
         copy.put(entry.getKey(), Collections.unmodifiableSet(new HashSet<Enum<?>>(entry.getValue())));
       }
       this.conditions = Collections.unmodifiableMap(copy);
+      this.staticDimensionMask = staticDimensionMask & 0x0f;
     }
 
     private static Clause empty() {
@@ -233,7 +348,7 @@ public final class RuntimeSelector {
           merged.put(entry.getKey(), intersection);
         }
       }
-      return new Clause(merged);
+      return new Clause(merged, staticDimensionMask | other.staticDimensionMask);
     }
 
     private boolean matches(RuntimeEnvironment environment) {
@@ -247,7 +362,7 @@ public final class RuntimeSelector {
     }
 
     private boolean subsumes(Clause other) {
-      if (conditions.size() > other.conditions.size()) {
+      if (staticDimensionMask != other.staticDimensionMask || conditions.size() > other.conditions.size()) {
         return false;
       }
       for (Map.Entry<Class<? extends Enum<?>>, Set<Enum<?>>> condition : conditions.entrySet()) {
@@ -261,12 +376,62 @@ public final class RuntimeSelector {
 
     @Override
     public boolean equals(Object other) {
-      return other instanceof Clause && conditions.equals(((Clause) other).conditions);
+      return other instanceof Clause && staticDimensionMask == ((Clause) other).staticDimensionMask
+          && conditions.equals(((Clause) other).conditions);
     }
 
     @Override
     public int hashCode() {
-      return conditions.hashCode();
+      return 31 * conditions.hashCode() + staticDimensionMask;
+    }
+
+    private int specificity() {
+      int mask = staticDimensionMask;
+      for (Class<?> dimension : conditions.keySet()) {
+        mask |= dimensionBit(dimension);
+      }
+      int count = 0;
+      while (mask != 0) {
+        count += mask & 1;
+        mask >>>= 1;
+      }
+      return count;
+    }
+  }
+
+  static final class DeploymentTarget {
+    private final Platform platform;
+    private final RuntimeFamily family;
+    private final Architecture architecture;
+
+    DeploymentTarget(Platform platform, RuntimeFamily family, Architecture architecture) {
+      this.platform = platform;
+      this.family = family;
+      this.architecture = architecture;
+    }
+
+    Enum<?> valueFor(Class<?> dimension) {
+      if (dimension == Platform.class) {
+        return platform;
+      }
+      if (dimension == RuntimeFamily.class) {
+        return family;
+      }
+      if (dimension == Architecture.class) {
+        return architecture;
+      }
+      return null;
+    }
+  }
+
+  static final class MetadataClause {
+    final Map<Class<? extends Enum<?>>, Set<Enum<?>>> conditions;
+    final int staticDimensionMask;
+
+    MetadataClause(Map<Class<? extends Enum<?>>, Set<Enum<?>>> conditions, int staticDimensionMask) {
+      Map<Class<? extends Enum<?>>, Set<Enum<?>>> copy = new HashMap<Class<? extends Enum<?>>, Set<Enum<?>>>(conditions);
+      this.conditions = Collections.unmodifiableMap(copy);
+      this.staticDimensionMask = staticDimensionMask;
     }
   }
 }
