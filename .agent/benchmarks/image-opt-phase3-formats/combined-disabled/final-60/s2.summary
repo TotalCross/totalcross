@@ -1,0 +1,12 @@
+scenario=post-disabled
+revision=6fcb50a37651597b11388fec611a599576e7841b
+executable=/Users/flsobral/repos/totalcross-github/TotalCrossSDK/build/image-compact-formats-benchmark/classes/install/macos/ImageCompactFormatsBenchmarkApp
+expected_samples=60
+recorded_samples=60
+peak_rss_kb=154352
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count

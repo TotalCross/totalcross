@@ -23,10 +23,26 @@ public final class ImageDrawingBridge {
 
   /** @hidden */
   @Deprecated
+  public static Image cachedMaterializedForDrawing(Image image, double destinationScale)
+      throws ImageException {
+    if (image == null) {
+      throw new NullPointerException("image");
+    }
+    return image.cachedMaterializedForDrawing(destinationScale);
+  }
+
+  /** @hidden */
+  @Deprecated
   public static Object drawPlanForDrawing(Image image, double destinationScale) throws ImageException {
     if (image == null) {
       throw new NullPointerException("image");
     }
     return image.drawPlanForDrawing(destinationScale);
+  }
+
+  /** @hidden */
+  @Deprecated
+  public static boolean isCopyRectCompatible(Object drawPlan) {
+    return drawPlan instanceof ImageDrawPlan && ((ImageDrawPlan) drawPlan).isCopyRectCompatible();
   }
 }

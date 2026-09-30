@@ -1,0 +1,12 @@
+scenario=pre
+revision=9545c18207fab74d81340b24825c5a82ddbda7fd
+executable=/tmp/totalcross-image-opt-phase2-baseline/TotalCrossSDK/build/image-raster-opaque-draw-benchmark/classes/install/macos/ImageRasterOpaqueDrawBenchmarkApp
+expected_samples=60
+recorded_samples=60
+peak_rss_kb=121312
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count

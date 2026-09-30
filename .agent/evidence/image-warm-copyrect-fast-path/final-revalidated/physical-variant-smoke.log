@@ -1,0 +1,33 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :copySdkDependencies UP-TO-DATE
+> Task :compileSmokeTestJava
+> Task :processSmokeTestResources UP-TO-DATE
+> Task :smokeTestClasses
+> Task :compileImageRasterPhysicalVariantSmoke
+> Task :jarImageRasterPhysicalVariantSmoke
+
+> Task :deployImageRasterPhysicalVariantSmokeMacOS
+TotalCross SDK version 7.2.2.0 running on mac os x with JDK 17.0
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+File /Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/TotalCrossSDK/build/image-raster-physical-variant-smoke/classes/ImageRasterPhysicalVariantSmokeApp.tcz written (94% - 1381152 bytes)
+Application title not provided, using: ImageRasterPhysicalVariantSmokeApp
+Application id not provided. Created from "ImageRasterPhysicalVariantSmokeApp": ePHq
+... Files written to folder /Users/flsobral/repos/totalcross-image-scroll-raster-fast-path/TotalCrossSDK/build/image-raster-physical-variant-smoke/classes/install/macos/
+
+> Task :runImageRasterPhysicalVariantSmokeMacOS
+sample=1,elapsed_ms=12,case=repeat,pixel_hash=000000D600000165,physical_variant_lookups=1,physical_variant_hits=1,physical_variant_misses=0,physical_variant_materializations=0,physical_variant_evictions=0,physical_variant_bytes=0,write_pixels_attempts=1,write_pixels_hits=1,write_pixels_fallbacks=0,generic_geometry_draws=0,smooth_resample_draws=0
+fixture=ImageRasterPhysicalVariantSmokeApp,scenario=post-enabled,samples=1,completed_samples=1,case=repeat,pixel_hash=000000D600000165,physical_variant_lookups=1,physical_variant_hits=1,physical_variant_misses=0,physical_variant_materializations=0,physical_variant_evictions=0,physical_variant_bytes=0,write_pixels_attempts=1,write_pixels_hits=1,write_pixels_fallbacks=0,generic_geometry_draws=0,smooth_resample_draws=0,overallPass=true
+
+tuMW_exit_i
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 8s
+7 actionable tasks: 5 executed, 2 up-to-date

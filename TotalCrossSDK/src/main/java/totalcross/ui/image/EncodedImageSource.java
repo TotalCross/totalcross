@@ -9,6 +9,8 @@ import java.io.ByteArrayOutputStream;
 import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 import totalcross.Launcher;
+import totalcross.io.File;
+import totalcross.io.FileNotFoundException;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 
@@ -270,10 +272,17 @@ final class EncodedImageSource extends ImageSource {
   /** Replaced on deployed targets by TCZ-first native path capture. */
   @ReplacedByNativeOnDeploy
   private void captureNativePath(String path) throws ImageException, IOException {
-    if (path == null || Launcher.instance == null) {
+    if (path == null) {
       throw new ImageException("ERROR: can't open image file " + path);
     }
-    byte[] input = Launcher.instance.readBytes(path);
+    byte[] input = Launcher.instance == null ? null : Launcher.instance.readBytes(path);
+    if (input == null) {
+      try (File file = new File(path, File.READ_ONLY)) {
+        input = file.read();
+      } catch (FileNotFoundException e) {
+        throw new ImageException("ERROR: can't open image file " + path);
+      }
+    }
     if (input == null) {
       throw new ImageException("ERROR: can't open image file " + path);
     }

@@ -1,0 +1,32 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :copySdkDependencies UP-TO-DATE
+> Task :compileSmokeTestJava
+> Task :processSmokeTestResources UP-TO-DATE
+> Task :smokeTestClasses
+> Task :compileImageCopyRectDrawPlanSmoke
+> Task :jarImageCopyRectDrawPlanSmoke
+
+> Task :deployImageCopyRectDrawPlanSmokeMacOS
+TotalCross SDK version 7.2.2.0 running on mac os x with JDK 17.0
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+File /private/tmp/image-warm-copyrect-fast-path/TotalCrossSDK/build/image-copyrect-draw-plan-smoke/classes/ImageCopyRectDrawPlanSmokeApp.tcz written (25% - 8395 bytes)
+Application title not provided, using: ImageCopyRectDrawPlanSmokeApp
+Application id not provided. Created from "ImageCopyRectDrawPlanSmokeApp": ZmTW
+... Files written to folder /private/tmp/image-warm-copyrect-fast-path/TotalCrossSDK/build/image-copyrect-draw-plan-smoke/classes/install/macos/
+
+> Task :runImageCopyRectDrawPlanSmokeMacOS
+fixture=ImageCopyRectDrawPlanSmokeApp,full=true,clipped=true,noIntersection=true,frame=true,fallback=true,feature15Default=true,feature15Disabled=true,directDrawPlans=0,physicalIdentityHits=0,genericGeometryDraws=0,smoothResampleDraws=0,nativeGeometryMaterializations=0,overallPass=true
+
+tuMW_exit_i
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 8s
+7 actionable tasks: 5 executed, 2 up-to-date

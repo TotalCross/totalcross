@@ -1,0 +1,404 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Image scroll raster validation
+
+on:
+  push:
+    branches:
+      - perf/image-scroll-raster-fast-path
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Exact pushed commit SHA to validate
+        required: true
+        type: string
+
+env:
+  VALIDATION_COMMIT: ${{ inputs.commit || github.sha }}
+  SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
+  ZLIB_NG_GITHUB_TOKEN: ${{ secrets.ZLIB_NG_GITHUB_TOKEN }}
+  MINIZIP_NG_GITHUB_TOKEN: ${{ secrets.MINIZIP_NG_GITHUB_TOKEN }}
+  LIBPNG_GITHUB_TOKEN: ${{ secrets.LIBPNG_GITHUB_TOKEN }}
+  LIBJPEG_TURBO_GITHUB_TOKEN: ${{ secrets.LIBJPEG_TURBO_GITHUB_TOKEN }}
+  MBEDTLS_GITHUB_TOKEN: ${{ secrets.MBEDTLS_GITHUB_TOKEN }}
+  AXTLS_GITHUB_TOKEN: ${{ secrets.AXTLS_GITHUB_TOKEN }}
+  QRCODEGEN_GITHUB_TOKEN: ${{ secrets.QRCODEGEN_GITHUB_TOKEN }}
+  SKIA_GITHUB_TOKEN: ${{ secrets.SKIA_GITHUB_TOKEN }}
+  SDL2_GITHUB_TOKEN: ${{ secrets.SDL2_GITHUB_TOKEN }}
+
+jobs:
+  validate:
+    name: ${{ matrix.lane }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: linux-x86-64
+            project: linux-amd64
+            runner: ubuntu-22.04
+            platform: linux
+            arch: x86_64
+            expected_machine: x86-64
+            docker_platform: linux/amd64
+          - lane: linux-arm64
+            project: linux-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux
+            arch: aarch64
+            expected_machine: ARM aarch64
+            docker_platform: linux/arm64
+          - lane: windows-x86-64
+            runner: windows-2022
+            platform: windows
+            arch: x64
+
+    steps:
+      - name: Check out exact validation commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.VALIDATION_COMMIT }}
+          fetch-depth: 0
+
+      - name: Verify checked out commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$VALIDATION_COMMIT"
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Cache depot tools
+        uses: actions/cache@v5
+        with:
+          path: TotalCrossVM/deps/totalcross-depot-tools
+          key: image-scroll-depot-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('TotalCrossVM/deps/fetch-depot-tools.sh', 'TotalCrossVM/deps/totalcross-depot-tools.ref') }}
+
+      - name: Fetch pinned depot tools
+        shell: bash
+        run: TotalCrossVM/deps/fetch-depot-tools.sh
+
+      - name: Export non-empty dependency overrides
+        shell: bash
+        env:
+          SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
+          SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
+          ZLIB_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.ZLIB_NG_RELEASE_TAG }}
+          ZLIB_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.ZLIB_NG_GITHUB_REPO }}
+          MINIZIP_NG_RELEASE_TAG_OVERRIDE: ${{ secrets.MINIZIP_NG_RELEASE_TAG }}
+          MINIZIP_NG_GITHUB_REPO_OVERRIDE: ${{ secrets.MINIZIP_NG_GITHUB_REPO }}
+          LIBPNG_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBPNG_RELEASE_TAG }}
+          LIBPNG_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBPNG_GITHUB_REPO }}
+          LIBJPEG_TURBO_RELEASE_TAG_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_RELEASE_TAG }}
+          LIBJPEG_TURBO_GITHUB_REPO_OVERRIDE: ${{ secrets.LIBJPEG_TURBO_GITHUB_REPO }}
+          MBEDTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.MBEDTLS_RELEASE_TAG }}
+          MBEDTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.MBEDTLS_GITHUB_REPO }}
+          AXTLS_RELEASE_TAG_OVERRIDE: ${{ secrets.AXTLS_RELEASE_TAG }}
+          AXTLS_GITHUB_REPO_OVERRIDE: ${{ secrets.AXTLS_GITHUB_REPO }}
+          QRCODEGEN_RELEASE_TAG_OVERRIDE: ${{ secrets.QRCODEGEN_RELEASE_TAG }}
+          QRCODEGEN_GITHUB_REPO_OVERRIDE: ${{ secrets.QRCODEGEN_GITHUB_REPO }}
+          SKIA_RELEASE_TAG_OVERRIDE: ${{ secrets.SKIA_RELEASE_TAG }}
+          SKIA_GITHUB_REPO_OVERRIDE: ${{ secrets.SKIA_GITHUB_REPO }}
+          SDL2_RELEASE_TAG_OVERRIDE: ${{ secrets.SDL2_RELEASE_TAG }}
+          SDL2_GITHUB_REPO_OVERRIDE: ${{ secrets.SDL2_GITHUB_REPO }}
+        run: |
+          set -euo pipefail
+          for name in \
+            SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
+            ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
+            MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO \
+            LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+            LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
+            MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+            AXTLS_RELEASE_TAG AXTLS_GITHUB_REPO \
+            QRCODEGEN_RELEASE_TAG QRCODEGEN_GITHUB_REPO \
+            SKIA_RELEASE_TAG SKIA_GITHUB_REPO \
+            SDL2_RELEASE_TAG SDL2_GITHUB_REPO
+          do
+            value_name="${name}_OVERRIDE"
+            if [ -n "${!value_name:-}" ]; then
+              printf '%s=%s\n' "$name" "${!value_name}" >> "$GITHUB_ENV"
+            fi
+          done
+
+      - name: Fetch native dependencies for this lane
+        shell: bash
+        run: |
+          set -euo pipefail
+          depot="TotalCrossVM/deps/totalcross-depot-tools"
+          release_pin() {
+            awk -v dependency="$1" '
+              $0 == "  " dependency ":" { found = 1; next }
+              found && /^  [^ ]+:/ { exit }
+              found && $1 == "release:" { print $2; exit }
+            ' "$depot/deps.yml"
+          }
+          fetch_dep() {
+            local dependency="$1" token_env="$2" release_var="$3" repo_var="$4"
+            local release_tag="${!release_var:-}" repo="${!repo_var:-TotalCross/totalcross-depot-tools}"
+            [ -n "$release_tag" ] || release_tag="$(release_pin "$dependency")"
+            bash "$depot/$dependency/fetch.sh" \
+              --platform "${{ matrix.platform }}" \
+              --arch "${{ matrix.arch }}" \
+              --github-token-env "$token_env" \
+              --release-tag "$release_tag" \
+              --github-repo "$repo"
+          }
+          fetch_dep zlib-ng ZLIB_NG_GITHUB_TOKEN ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO
+          fetch_dep minizip-ng MINIZIP_NG_GITHUB_TOKEN MINIZIP_NG_RELEASE_TAG MINIZIP_NG_GITHUB_REPO
+          fetch_dep libpng LIBPNG_GITHUB_TOKEN LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO
+          fetch_dep libjpeg-turbo LIBJPEG_TURBO_GITHUB_TOKEN LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO
+          fetch_dep sqlite3 SQLITE3_GITHUB_TOKEN SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO
+          fetch_dep mbedtls MBEDTLS_GITHUB_TOKEN MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO
+          fetch_dep axtls AXTLS_GITHUB_TOKEN AXTLS_RELEASE_TAG AXTLS_GITHUB_REPO
+          fetch_dep qrcodegen QRCODEGEN_GITHUB_TOKEN QRCODEGEN_RELEASE_TAG QRCODEGEN_GITHUB_REPO
+          fetch_dep skia SKIA_GITHUB_TOKEN SKIA_RELEASE_TAG SKIA_GITHUB_REPO
+          if [ "${{ matrix.platform }}" = windows ] || [ "${{ matrix.platform }}" = linux ]; then
+            fetch_dep sdl2 SDL2_GITHUB_TOKEN SDL2_RELEASE_TAG SDL2_GITHUB_REPO
+          fi
+          skia_args=("$depot/skia/fetch.sh" --install-shared --github-token-env SKIA_GITHUB_TOKEN)
+          [ -z "${SKIA_RELEASE_TAG:-}" ] || skia_args+=(--release-tag "$SKIA_RELEASE_TAG")
+          [ -z "${SKIA_GITHUB_REPO:-}" ] || skia_args+=(--github-repo "$SKIA_GITHUB_REPO")
+          bash "${skia_args[@]}"
+
+      - name: Build SDK and fixture jar
+        shell: bash
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-user-home
+        run: |
+          set -euo pipefail
+          ./TotalCrossSDK/gradlew-agent dist -x test --no-daemon --console=plain > "$RUNNER_TEMP/sdk-dist.log" 2>&1
+          ./TotalCrossSDK/gradlew-agent jarImageScrollRasterFastPathBenchmark --no-daemon --console=plain > "$RUNNER_TEMP/sdk-fixture.log" 2>&1
+
+      - name: Install Linux graphics link dependencies
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libegl1-mesa-dev libgles2-mesa-dev \
+            libfontconfig1-dev libfreetype6-dev xvfb
+
+      - name: Build fresh Linux VM and launcher
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          mkdir -p build-image-scroll .ccache
+          DOCKER_ENV_ARGS=(
+            -e CCACHE_DIR=/ccache
+            -e CCACHE_BASEDIR=/sources
+            -e CCACHE_COMPRESS=true
+            -e CCACHE_MAXSIZE=1G
+            -e SQLITE3_GITHUB_TOKEN
+            -e ZLIB_NG_GITHUB_TOKEN
+            -e LIBPNG_GITHUB_TOKEN
+            -e MBEDTLS_GITHUB_TOKEN
+            -e LIBJPEG_TURBO_GITHUB_TOKEN
+          )
+          for env_name in \
+            SQLITE3_RELEASE_TAG SQLITE3_GITHUB_REPO \
+            ZLIB_NG_RELEASE_TAG ZLIB_NG_GITHUB_REPO \
+            LIBPNG_RELEASE_TAG LIBPNG_GITHUB_REPO \
+            MBEDTLS_RELEASE_TAG MBEDTLS_GITHUB_REPO \
+            LIBJPEG_TURBO_RELEASE_TAG LIBJPEG_TURBO_GITHUB_REPO \
+            SKIA_RELEASE_TAG SKIA_GITHUB_REPO
+          do
+            if [ -n "${!env_name:-}" ]; then
+              DOCKER_ENV_ARGS+=(-e "$env_name")
+            fi
+          done
+          docker run --platform ${{ matrix.docker_platform }} \
+            "${DOCKER_ENV_ARGS[@]}" \
+            -v ${PWD}/build-image-scroll:/build \
+            -v ${PWD}/.ccache:/ccache \
+            -v ${PWD}:/sources \
+            -t totalcross/${{ matrix.project }}:v1.0.7 bash -lc '
+            set -e
+            cmake --version
+            if command -v ccache >/dev/null; then
+              ccache --zero-stats || true
+              CMAKE_CCACHE_ARGS="-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+            else
+              echo "::warning::ccache is not installed in this Docker image; building without compiler cache"
+              CMAKE_CCACHE_ARGS=""
+            fi
+            cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release ${CMAKE_CCACHE_ARGS} -G Ninja &&
+            ninja
+            if command -v ccache >/dev/null; then
+              ccache --show-stats || true
+            fi
+          ' > "$RUNNER_TEMP/native-build.log" 2>&1
+          file "$(find build-image-scroll -type f -name libtcvm.so -print -quit)" \
+            "$(find build-image-scroll -type f -name Launcher -perm -u+x -print -quit)" \
+            | tee "$RUNNER_TEMP/native-identity.log"
+          grep -E "${{ matrix.expected_machine }}" "$RUNNER_TEMP/native-identity.log"
+
+      - name: Build fresh Windows x64 VM and launcher
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          cmake -S TotalCrossVM -B build-image-scroll -G 'Visual Studio 17 2022' -A x64 -DTCVM_SHARED=ON `
+            *> "$env:RUNNER_TEMP/native-configure.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build-image-scroll --config Release --target tcvm Launcher --parallel `
+            *> "$env:RUNNER_TEMP/native-build.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          'native_architecture=x86-64' | Add-Content $env:RUNNER_TEMP/native-identity.log
+
+      - name: Run fresh Linux runtime
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          classes_dir="$GITHUB_WORKSPACE/TotalCrossSDK/build/image-scroll-raster-fast-path-benchmark/classes"
+          run_dir="$RUNNER_TEMP/image-scroll-raster"
+          mkdir -p "$run_dir"
+          (cd "$classes_dir" && java -cp "$GITHUB_WORKSPACE/TotalCrossSDK/dist/totalcross-sdk.jar:$GITHUB_WORKSPACE/TotalCrossSDK/dist/libs/*" \
+            tc.Deploy ImageScrollRasterFastPathBenchmarkApp.jar /o "$run_dir" \
+            > "$RUNNER_TEMP/deploy.log" 2>&1)
+          launcher="$(find build-image-scroll -type f -name Launcher -perm -u+x -print -quit)"
+          runtime="$(find build-image-scroll -type f -name libtcvm.so -print -quit)"
+          test -n "$launcher" && test -n "$runtime"
+          cp "$GITHUB_WORKSPACE"/TotalCrossSDK/dist/vm/*.tcz "$run_dir/"
+          cp "$launcher" "$run_dir/ImageScrollRasterFastPathBenchmarkApp"
+          cp "$runtime" "$run_dir/libtcvm.so"
+          test -f "$run_dir/ImageScrollRasterFastPathBenchmarkApp.tcz"
+          chmod +x "$run_dir/ImageScrollRasterFastPathBenchmarkApp"
+          source_hash="$(sha256sum "$runtime" | awk '{print $1}')"
+          deployed_hash="$(sha256sum "$run_dir/libtcvm.so" | awk '{print $1}')"
+          test "$source_hash" = "$deployed_hash"
+          : > "$run_dir/run.log"
+          for variant_cache in disabled enabled; do
+            for frame_path in manual natural; do
+              for test_case in clipped unclipped; do
+                case_log="$run_dir/run-$variant_cache-$frame_path-$test_case.log"
+                (cd "$run_dir" && xvfb-run -a -s '-screen 0 1024x768x24' \
+                  ./ImageScrollRasterFastPathBenchmarkApp \
+                  --scenario=post-enabled --case="$test_case" --frame-path="$frame_path" \
+                  --variant-cache="$variant_cache" 2>&1) \
+                  | tee "$case_log" | tee -a "$run_dir/run.log"
+              grep -q 'fixture=ImageScrollRasterFastPathBenchmarkApp' "$case_log"
+              grep -q 'overallPass=true' "$case_log"
+              grep -q 'physical_identity_attempts=' "$case_log"
+              grep -q 'physical_identity_rejections_canvas_state=' "$case_log"
+              grep -q "frame_path=$frame_path" "$case_log"
+              grep -q 'no_intersection=' "$case_log"
+              grep -q 'target_color_materializations=' "$case_log"
+              grep -q 'physical_variant_evictions=' "$case_log"
+              grep -q 'native_present_calls=' "$case_log"
+              grep -q "variant_cache_profile=$variant_cache" "$case_log"
+              grep -q 'variant_cache=' "$case_log"
+              if [ "$frame_path" = natural ]; then
+                grep -q 'timer_ticks=' "$case_log"
+                grep -q 'frames=' "$case_log"
+              fi
+              done
+            done
+          done
+          {
+            echo "## ${{ matrix.lane }}"
+            echo "commit=$VALIDATION_COMMIT"
+            echo "runtime_sha256=$deployed_hash"
+            grep 'fixture=ImageScrollRasterFastPathBenchmarkApp' "$run_dir/run.log"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run fresh Windows x64 runtime
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $classesDir = Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/build/image-scroll-raster-fast-path-benchmark/classes'
+          $runDir = Join-Path $env:RUNNER_TEMP 'image-scroll-raster'
+          New-Item -ItemType Directory -Force $runDir | Out-Null
+          $classpath = (Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/dist/totalcross-sdk.jar') + ';' +
+            (Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/dist/libs/*')
+          Push-Location $classesDir
+          java -cp $classpath tc.Deploy ImageScrollRasterFastPathBenchmarkApp.jar /o $runDir `
+            *> (Join-Path $env:RUNNER_TEMP 'deploy.log')
+          if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
+          Pop-Location
+          $launcher = Get-ChildItem -Path build-image-scroll -Recurse -Filter Launcher.exe |
+            Where-Object { $_.FullName -match '\\Release\\' } | Select-Object -First 1
+          $runtime = Get-ChildItem -Path build-image-scroll -Recurse -Filter tcvm.dll |
+            Where-Object { $_.FullName -match '\\Release\\' } | Select-Object -First 1
+          if (-not $launcher -or -not $runtime) { throw 'Fresh Windows x64 VM or launcher was not built' }
+          Copy-Item (Join-Path $env:GITHUB_WORKSPACE 'TotalCrossSDK/dist/vm/*.tcz') $runDir
+          Copy-Item $launcher.FullName (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe')
+          Copy-Item $runtime.FullName (Join-Path $runDir 'tcvm.dll')
+          if (-not (Test-Path (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.tcz'))) {
+            throw 'Deployer did not produce the fixture TCZ'
+          }
+          $sourceHash = (Get-FileHash $runtime.FullName -Algorithm SHA256).Hash
+          $deployedHash = (Get-FileHash (Join-Path $runDir 'tcvm.dll') -Algorithm SHA256).Hash
+          if ($sourceHash -ne $deployedHash) { throw 'Deployed native runtime hash differs' }
+          $dependentLog = Join-Path $env:RUNNER_TEMP 'native-dependents.log'
+          $dumpbin = Get-Command dumpbin.exe -ErrorAction SilentlyContinue
+          if ($dumpbin) {
+            & $dumpbin.Source /DEPENDENTS $runtime.FullName *> $dependentLog
+          }
+          $runLog = Join-Path $runDir 'run.log'
+          $errorLog = Join-Path $runDir 'run-error.log'
+          $fixtureLog = Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.log'
+          Remove-Item $runLog, $errorLog, $fixtureLog -Force -ErrorAction SilentlyContinue
+          try {
+            $process = Start-Process -FilePath (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe') `
+              -WorkingDirectory $runDir -Wait -PassThru `
+              -RedirectStandardOutput $runLog -RedirectStandardError $errorLog
+            $processExitCode = $process.ExitCode
+            Set-Content (Join-Path $runDir 'process-exit.txt') $processExitCode
+          } catch {
+            $_ | Out-String | Set-Content $errorLog
+            throw
+          }
+          if ($processExitCode -ne 0) {
+            $cdb = Get-Item (Join-Path ${env:ProgramFiles(x86)} 'Windows Kits/10/Debuggers/x64/cdb.exe') `
+              -ErrorAction SilentlyContinue
+            if ($cdb) {
+              $crashLog = Join-Path $env:RUNNER_TEMP 'native-crash.log'
+              & $cdb.FullName -g -c 'sxe av; g; k; q' `
+                (Join-Path $runDir 'ImageScrollRasterFastPathBenchmarkApp.exe') *> $crashLog
+            }
+          }
+          if (Test-Path $fixtureLog) {
+            $output = Get-Content $fixtureLog -Raw
+          } else {
+            $output = (Get-Content $runLog -Raw -ErrorAction SilentlyContinue) +
+              (Get-Content $errorLog -Raw -ErrorAction SilentlyContinue)
+          }
+          if ($processExitCode -ne 0) {
+            Write-Output $output
+            exit $processExitCode
+          }
+          foreach ($marker in @('fixture=ImageScrollRasterFastPathBenchmarkApp', 'overallPass=true',
+              'physical_identity_attempts=', 'physical_identity_rejections_canvas_state=',
+              'no_intersection=', 'target_color_materializations=',
+              'physical_variant_evictions=', 'native_present_calls=', 'variant_cache_profile=',
+              'variant_cache=')) {
+            if ($output.IndexOf($marker, [StringComparison]::Ordinal) -lt 0) {
+              throw "Missing runtime marker: $marker"
+            }
+          }
+          Add-Content $env:GITHUB_STEP_SUMMARY "## ${{ matrix.lane }}"
+          Add-Content $env:GITHUB_STEP_SUMMARY "commit=$env:VALIDATION_COMMIT"
+          Add-Content $env:GITHUB_STEP_SUMMARY "runtime_sha256=$deployedHash"
+          Get-Content $runLog | Where-Object { $_ -like '*fixture=ImageScrollRasterFastPathBenchmarkApp*' } |
+            Add-Content $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: image-scroll-raster-${{ matrix.lane }}-failure
+          path: |
+            ${{ runner.temp }}/*.log
+            ${{ runner.temp }}/image-scroll-raster
+          if-no-files-found: ignore
+          retention-days: 3
