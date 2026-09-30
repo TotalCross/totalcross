@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tcvm.h"
+#include "legacy_debug_console.h"
 #include "standard_stream.h"
 
 #if defined(WINCE) || defined(WIN32)
@@ -92,7 +93,8 @@ void standardStreamDestroy()
 
 /* bool */ int32 standardStreamWrite(int32 stream, const uint8 *bytes, int32 length)
 {
-   bool result;
+   bool platformResult;
+   bool legacyResult;
    if (!standardStreamInitialized || !validStandardStream(stream) || length < 0 || (length > 0 && !bytes))
       return false;
 #if defined(WINCE) || defined(WIN32)
@@ -100,18 +102,20 @@ void standardStreamDestroy()
 #else
    pthread_mutex_lock(&standardStreamMutex);
 #endif
-   result = !standardStreamClosed[stream] && standardPlatformWrite(stream, bytes, length);
+   platformResult = !standardStreamClosed[stream] && standardPlatformWrite(stream, bytes, length);
+   legacyResult = !standardStreamClosed[stream] && legacyDebugConsoleWrite(bytes, length, false);
 #if defined(WINCE) || defined(WIN32)
    LeaveCriticalSection(&standardStreamMutex);
 #else
    pthread_mutex_unlock(&standardStreamMutex);
 #endif
-   return result;
+   return platformResult && legacyResult;
 }
 
 /* bool */ int32 standardStreamFlush(int32 stream, /* bool */ int32 durable)
 {
-   bool result;
+   bool platformResult;
+   bool legacyResult;
    if (!standardStreamInitialized || !validStandardStream(stream))
       return false;
 #if defined(WINCE) || defined(WIN32)
@@ -119,18 +123,20 @@ void standardStreamDestroy()
 #else
    pthread_mutex_lock(&standardStreamMutex);
 #endif
-   result = !standardStreamClosed[stream] && standardPlatformFlush(stream, durable);
+   platformResult = !standardStreamClosed[stream] && standardPlatformFlush(stream, durable);
+   legacyResult = !standardStreamClosed[stream] && legacyDebugConsoleFlush(durable);
 #if defined(WINCE) || defined(WIN32)
    LeaveCriticalSection(&standardStreamMutex);
 #else
    pthread_mutex_unlock(&standardStreamMutex);
 #endif
-   return result;
+   return platformResult && legacyResult;
 }
 
 /* bool */ int32 standardStreamClose(int32 stream)
 {
-   bool result;
+   bool platformResult;
+   bool legacyResult;
    if (!standardStreamInitialized || !validStandardStream(stream))
       return false;
 #if defined(WINCE) || defined(WIN32)
@@ -139,10 +145,11 @@ void standardStreamDestroy()
    pthread_mutex_lock(&standardStreamMutex);
 #endif
    if (standardStreamClosed[stream])
-      result = true;
+      platformResult = legacyResult = true;
    else
    {
-      result = standardPlatformClose(stream);
+      platformResult = standardPlatformClose(stream);
+      legacyResult = legacyDebugConsoleFlush(false);
       standardStreamClosed[stream] = true;
    }
 #if defined(WINCE) || defined(WIN32)
@@ -150,5 +157,5 @@ void standardStreamDestroy()
 #else
    pthread_mutex_unlock(&standardStreamMutex);
 #endif
-   return result;
+   return platformResult && legacyResult;
 }
