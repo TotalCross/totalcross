@@ -81,14 +81,35 @@ final class ImageDecodeRequirement {
       return 1;
     }
 
+    int denominator = chooseForTargetDimensions(visibleWidth, visibleHeight,
+        source.getIntrinsicWidth(), source.getIntrinsicHeight(), requestedPhysicalWidth, requestedPhysicalHeight);
+    ImageDecodePolicy policy = pipeline.decodePolicy();
+    if (policy.mode() != ImageDecodePolicy.Mode.TARGET_DECODE) {
+      // Preserve the factory's captured decode limit while allowing later transforms
+      // to request a finer decode when they need more pixels.
+      denominator = Math.min(denominator, policy.decodeDenominator());
+    }
+    return denominator;
+  }
+
+  static int chooseForTargetDimensions(int sourceWidth, int sourceHeight, int requestedWidth, int requestedHeight) {
+    return chooseForTargetDimensions(sourceWidth, sourceHeight, sourceWidth, sourceHeight,
+        requestedWidth, requestedHeight);
+  }
+
+  private static int chooseForTargetDimensions(int visibleWidth, int visibleHeight, int coverageWidth,
+      int coverageHeight, int requestedWidth, int requestedHeight) {
+    if (visibleWidth <= 0 || visibleHeight <= 0 || coverageWidth <= 0 || coverageHeight <= 0
+        || requestedWidth <= 0 || requestedHeight <= 0) {
+      return 1;
+    }
     double requiredFraction = Math.min(1,
-        Math.max((double) requestedPhysicalWidth / visibleWidth,
-            (double) requestedPhysicalHeight / visibleHeight));
+        Math.max((double) requestedWidth / visibleWidth, (double) requestedHeight / visibleHeight));
     int denominator = requiredFraction <= 0.125 ? 8
         : requiredFraction <= 0.25 ? 4
         : requiredFraction <= 0.5 ? 2 : 1;
-    while (denominator > 1 && !coversRequested(source.getIntrinsicWidth(), source.getIntrinsicHeight(),
-        denominator, requestedPhysicalWidth, requestedPhysicalHeight)) {
+    while (denominator > 1 && !coversRequested(coverageWidth, coverageHeight,
+        denominator, requestedWidth, requestedHeight)) {
       denominator /= 2;
     }
     return denominator;
