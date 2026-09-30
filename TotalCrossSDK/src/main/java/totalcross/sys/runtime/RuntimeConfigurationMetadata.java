@@ -46,16 +46,7 @@ public final class RuntimeConfigurationMetadata {
     if (selectors == null) {
       return null;
     }
-    if (targets != null && targets.contains(null)) {
-      throw new IllegalArgumentException("deployment targets cannot contain null");
-    }
-    List<RuntimeSelector.DeploymentTarget> selectorTargets = null;
-    if (targets != null) {
-      selectorTargets = new ArrayList<RuntimeSelector.DeploymentTarget>(targets.size());
-      for (DeploymentTarget target : targets) {
-        selectorTargets.add(new RuntimeSelector.DeploymentTarget(target.platform, target.family, target.architecture));
-      }
-    }
+    List<RuntimeSelector.DeploymentTarget> selectorTargets = selectorTargets(targets);
     List<RuntimeSelector> retained = new ArrayList<RuntimeSelector>(selectors.size());
     for (RuntimeSelector selector : selectors) {
       if (selector == null) {
@@ -67,6 +58,29 @@ public final class RuntimeConfigurationMetadata {
       }
     }
     return encode(retained);
+  }
+
+  /** Encodes one selector through the common pruning and selector wire format, or returns {@code null} if pruned. */
+  static byte[] encodeSingleSelectorForDeployment(RuntimeSelector selector, List<DeploymentTarget> targets) {
+    if (selector == null) {
+      throw new IllegalArgumentException("runtime configuration selector is required");
+    }
+    RuntimeSelector retained = selector.restrictToDeploymentTargets(selectorTargets(targets));
+    return retained == null ? null : encode(Collections.singletonList(retained));
+  }
+
+  private static List<RuntimeSelector.DeploymentTarget> selectorTargets(List<DeploymentTarget> targets) {
+    if (targets == null) {
+      return null;
+    }
+    List<RuntimeSelector.DeploymentTarget> selectorTargets = new ArrayList<RuntimeSelector.DeploymentTarget>(targets.size());
+    for (DeploymentTarget target : targets) {
+      if (target == null) {
+        throw new IllegalArgumentException("deployment targets cannot contain null");
+      }
+      selectorTargets.add(new RuntimeSelector.DeploymentTarget(target.platform, target.family, target.architecture));
+    }
+    return selectorTargets;
   }
 
   /** Decodes a versioned selector payload or throws when it is malformed. */
