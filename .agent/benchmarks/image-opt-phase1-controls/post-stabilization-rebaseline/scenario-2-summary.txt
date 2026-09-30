@@ -1,0 +1,12 @@
+scenario=post-disabled
+revision=1d8deacb14cd3847cffb4d238c3f0fa97830951d
+executable=/Users/flsobral/repos/totalcross-github/TotalCrossSDK/build/image-optimization-control-benchmark/classes/install/macos/ImageOptimizationControlBenchmarkApp
+expected_samples=200
+recorded_samples=200
+peak_rss_kb=115888
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count

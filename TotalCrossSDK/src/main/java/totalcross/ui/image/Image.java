@@ -94,6 +94,21 @@ public class Image extends GfxSurface {
   static int nativeGeometryMaterializationCountForTest;
   static int nativeColorReadbackCountForTest;
   static int directDrawPlanExecutionCountForTest;
+  static int zeroCopyDecodeCountForTest;
+  static int copiedDecodeCountForTest;
+  static int decodeCopiedBytesForTest;
+  static int decodeFinalBufferBytesForTest;
+  static int opacityKnownFromSourceForTest;
+  static int opacityDeterminedDuringDecodeForTest;
+  static int opacityFallbackScansForTest;
+  static int opacityFallbackPixelsForTest;
+  static int rowReadbackCountForTest;
+  static int fullReadbackCountForTest;
+  static int rowScratchPeakBytesForTest;
+  static int fullScratchBytesForTest;
+  static int directColorMaterializationCountForTest;
+  private static int nativeOptimizationMaskForDecode;
+  private static int nativeOptimizationMaskForDraw;
   private static boolean backingReadbackAccountingForTest;
   private static int backingReadbackCountForTest;
 
@@ -126,8 +141,13 @@ public class Image extends GfxSurface {
     failNextNativeMaterializationForTestNative();
   }
 
+  /** Test-only hook for exercising zero-copy decode cleanup after final allocation. */
+  static void failNextZeroCopyDecodeAfterAllocationForTest() {
+    failNextZeroCopyDecodeAfterAllocationForTestNative();
+  }
+
   static void resetTargetedDecodeInvocationCountForTest() {
-    imageOperationAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
     targetedDecodeInitializationFailureForTest = false;
     targetedDecodeInvocationCountForTest = 0;
     targetedDecodeRequestWidthForTest = 0;
@@ -162,7 +182,26 @@ public class Image extends GfxSurface {
   }
 
   static void resetImageOperationAccountingForTest() {
-    imageOperationAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
+    clearImageOperationAccountingCountersForTest();
+  }
+
+  static void setDiagnosticAccountingForTest(boolean enabled) {
+    imageOperationAccountingForTest = enabled;
+    backingReadbackAccountingForTest = enabled;
+    NativeImageBacking.setBackingAccountingForTest(enabled);
+    setDiagnosticAccountingTestNative(enabled);
+  }
+
+  static void setNativeOptimizationMaskForDrawForTest(long mask) {
+    nativeOptimizationMaskForDraw = (int) mask;
+  }
+
+  static void setNativeOptimizationMaskForDecodeForTest(long mask) {
+    nativeOptimizationMaskForDecode = (int) mask;
+  }
+
+  static void clearImageOperationAccountingCountersForTest() {
     imageCreatedCountForTest = 0;
     imageFinalizedCountForTest = 0;
     imagePipelineCreatedCountForTest = 0;
@@ -181,9 +220,21 @@ public class Image extends GfxSurface {
     nativeGeometryMaterializationCountForTest = 0;
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
-    backingReadbackAccountingForTest = true;
+    zeroCopyDecodeCountForTest = 0;
+    copiedDecodeCountForTest = 0;
+    decodeCopiedBytesForTest = 0;
+    decodeFinalBufferBytesForTest = 0;
+    opacityKnownFromSourceForTest = 0;
+    opacityDeterminedDuringDecodeForTest = 0;
+    opacityFallbackScansForTest = 0;
+    opacityFallbackPixelsForTest = 0;
+    rowReadbackCountForTest = 0;
+    fullReadbackCountForTest = 0;
+    rowScratchPeakBytesForTest = 0;
+    fullScratchBytesForTest = 0;
+    directColorMaterializationCountForTest = 0;
     backingReadbackCountForTest = 0;
-    NativeImageBacking.resetBackingAccountingForTest();
+    NativeImageBacking.clearBackingAccountingCountersForTest();
   }
 
   static int imageCreatedCountForTest() {
@@ -254,11 +305,84 @@ public class Image extends GfxSurface {
     return directDrawPlanExecutionCountForTest;
   }
 
+  static int zeroCopyDecodeCountForTest() {
+    return zeroCopyDecodeCountForTest;
+  }
+
+  static int copiedDecodeCountForTest() {
+    return copiedDecodeCountForTest;
+  }
+
+  static int decodeCopiedBytesForTest() {
+    return decodeCopiedBytesForTest;
+  }
+
+  static int decodeFinalBufferBytesForTest() {
+    return decodeFinalBufferBytesForTest;
+  }
+
+  static int opacityKnownFromSourceForTest() {
+    return opacityKnownFromSourceForTest;
+  }
+
+  static int opacityDeterminedDuringDecodeForTest() {
+    return opacityDeterminedDuringDecodeForTest;
+  }
+
+  static int opacityFallbackScansForTest() {
+    return opacityFallbackScansForTest;
+  }
+
+  static int opacityFallbackPixelsForTest() {
+    return opacityFallbackPixelsForTest;
+  }
+
+  static int rowReadbackCountForTest() {
+    return rowReadbackCountForTest;
+  }
+
+  static int fullReadbackCountForTest() {
+    return fullReadbackCountForTest;
+  }
+
+  static int rowScratchPeakBytesForTest() {
+    return rowScratchPeakBytesForTest;
+  }
+
+  static int fullScratchBytesForTest() {
+    return fullScratchBytesForTest;
+  }
+
+  static int directColorMaterializationCountForTest() {
+    return directColorMaterializationCountForTest;
+  }
+
+  static void recordRowReadbackForTest(int scratchBytes) {
+    recordRowReadbacksForTest(1, scratchBytes);
+  }
+
+  static void recordRowReadbacksForTest(int rowCount, int scratchBytes) {
+    rowReadbackCountForTest += rowCount;
+    if (scratchBytes > rowScratchPeakBytesForTest) {
+      rowScratchPeakBytesForTest = scratchBytes;
+    }
+  }
+
+  static void recordFullReadbackForTest(int scratchBytes) {
+    fullReadbackCountForTest++;
+    if (scratchBytes > fullScratchBytesForTest) {
+      fullScratchBytesForTest = scratchBytes;
+    }
+  }
+
   /** Test-only accounting for explicit deployed getPixels() snapshots. */
   static void resetBackingReadbackAccountingForTest() {
-    imageOperationAccountingForTest = true;
-    backingReadbackAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
     backingReadbackCountForTest = 0;
+  }
+
+  static boolean backingReadbackAccountingEnabledForTest() {
+    return backingReadbackAccountingForTest;
   }
 
   static int backingReadbackCountForTest() {
@@ -312,6 +436,14 @@ public class Image extends GfxSurface {
 
   @ReplacedByNativeOnDeploy
   private static void failNextNativeMaterializationForTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failNextZeroCopyDecodeAfterAllocationForTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void setDiagnosticAccountingTestNative(boolean enabled) {
   }
 
   private static boolean consumeDecodedRasterAllocationFailureForTest() {
@@ -534,6 +666,21 @@ public class Image extends GfxSurface {
     return new Image(width, height, contentScale);
   }
 
+  /** Test-only software raster target factory; never used by production code. */
+  static Image createTestRaster(int width, int height, double contentScale, int colorType)
+      throws ImageException {
+    Image result = createLogical(width, height, contentScale);
+    if (Settings.onJavaSE || !(result.backing instanceof NativeImageBacking)) {
+      return result;
+    }
+    NativeImageBacking previous = (NativeImageBacking) result.backing;
+    NativeImageBacking replacement = NativeImageBacking.createEmptyForTest(
+        result.width, result.height, colorType);
+    previous.release();
+    result.backing = replacement;
+    return result;
+  }
+
   /** Used only at desktop to get the image's pixels. */
   public int[] getPixels() {
     materializeCanonicalUnchecked();
@@ -715,6 +862,24 @@ public class Image extends GfxSurface {
     materializeCanonicalUnchecked();
     return !Settings.onJavaSE && backing instanceof NativeImageBacking
         && backing.isValid();
+  }
+
+  /** Test-only mutation of the native root retained by a deferred draw plan. */
+  void mutateDeferredRootForTest(double destinationScale) throws ImageException {
+    Object drawPlan = drawPlanForDrawing(destinationScale);
+    if (!(drawPlan instanceof ImageDrawPlan)) {
+      throw new ImageException("Deferred draw plan is unavailable");
+    }
+    Image root = ((ImageDrawPlan) drawPlan).root;
+    if (!(root.backing instanceof NativeImageBacking)
+        || !((NativeImageBacking) root.backing).mutateForTest()) {
+      throw new ImageException("Deferred draw root mutation failed");
+    }
+  }
+
+  /** Test-only non-mutating materialization hook for compact backing benchmarks. */
+  void materializeNativeBackingForTest() {
+    materializeCanonicalUnchecked();
   }
 
   private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
@@ -2373,6 +2538,10 @@ public class Image extends GfxSurface {
     }
     materializeCanonicalUnchecked();
     if (backing == null || !backing.isValid()) {
+      return null;
+    }
+    if (backing instanceof NativeImageBacking
+        && !((NativeImageBacking) backing).makeMutable()) {
       return null;
     }
 

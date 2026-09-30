@@ -1,0 +1,8 @@
+scenario=post-disabled
+revision=ecad01ce1ffac609bc7d61c029c4b9e981518145
+executable=/Users/flsobral/repos/totalcross-github/TotalCrossSDK/build/image-compact-formats-benchmark/classes/install/macos/ImageCompactFormatsBenchmarkApp
+expected_samples=200
+recorded_samples=200
+peak_rss_kb=159456
+exit_code=0
+diagnostics=sample100,sample150 vmmap-summary+ps
