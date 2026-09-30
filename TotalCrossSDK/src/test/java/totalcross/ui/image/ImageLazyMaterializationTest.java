@@ -4,6 +4,7 @@
 
 package totalcross.ui.image;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -15,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.CRC32;
@@ -153,18 +156,127 @@ class ImageLazyMaterializationTest {
   }
 
   @Test
-  void jpegScalingFactoriesAlwaysReturnMaterializedImages() throws Exception {
+  void jpegScalingFactoriesReturnLazyImagesWithStableMetadata() throws Exception {
     Path file = Files.createTempFile("totalcross-jpeg-scaling", ".jpg");
     tc.simulator.Launcher previous = (tc.simulator.Launcher) Launcher.instance;
     try {
-      Files.write(file, jpeg(4, 2));
+      Files.write(file, jpeg(32, 16));
       new tc.simulator.Launcher();
 
-      Image bestFit = Image.getJpegBestFit(file.toString(), 4, 2);
-      assertMaterialized(bestFit);
+      Image.resetImageOperationAccountingForTest();
+      Image bestFit = Image.getJpegBestFit(file.toString(), 8, 4);
+      assertLazyJpeg(bestFit, file.toString(), 8, 4);
+      ImageDecodePolicy bestFitPolicy = ((ImagePipeline) pipeline(bestFit)).decodePolicy();
+      assertEquals(ImageDecodePolicy.Mode.BEST_FIT, bestFitPolicy.mode());
+      assertEquals(8, bestFitPolicy.requestedWidth());
+      assertEquals(4, bestFitPolicy.requestedHeight());
+      assertEquals(4, bestFitPolicy.decodeDenominator());
+      assertEquals(8, bestFitPolicy.logicalWidth());
+      assertEquals(4, bestFitPolicy.logicalHeight());
+      assertEquals(0, Image.fullDecodeInvocationCountForTest());
+      assertEquals(0, Image.targetedDecodeInvocationCountForTest());
 
-      Image scaled = Image.getJpegScaled(file.toString(), 1, 1);
-      assertMaterialized(scaled);
+      Image.resetImageOperationAccountingForTest();
+      Image scaled = Image.getJpegScaled(file.toString(), 1, 4);
+      assertLazyJpeg(scaled, file.toString(), 8, 4);
+      ImageDecodePolicy explicitPolicy = ((ImagePipeline) pipeline(scaled)).decodePolicy();
+      assertEquals(ImageDecodePolicy.Mode.EXPLICIT_RATIO, explicitPolicy.mode());
+      assertEquals(1, explicitPolicy.scaleNumerator());
+      assertEquals(4, explicitPolicy.scaleDenominator());
+      assertEquals(4, explicitPolicy.decodeDenominator());
+      assertEquals(8, explicitPolicy.logicalWidth());
+      assertEquals(4, explicitPolicy.logicalHeight());
+      assertEquals(0, Image.fullDecodeInvocationCountForTest());
+      assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+    } finally {
+      Files.deleteIfExists(file);
+      Launcher.instance = previous;
+    }
+  }
+
+  @Test
+  void jpegBestFitPreservesEveryNativeDecodeTierAndLogicalDimensions() throws Exception {
+    Path file = Files.createTempFile("totalcross-jpeg-tiers", ".jpg");
+    tc.simulator.Launcher previous = (tc.simulator.Launcher) Launcher.instance;
+    try {
+      Files.write(file, jpeg(800, 600, 0x663311));
+      new tc.simulator.Launcher();
+      int[][] cases = {
+          {100, 75, 8},
+          {200, 150, 4},
+          {400, 300, 2},
+          {800, 600, 1}
+      };
+
+      for (int[] testCase : cases) {
+        Image.resetImageOperationAccountingForTest();
+        Image image = Image.getJpegBestFit(file.toString(), testCase[0], testCase[1]);
+        assertLazyJpeg(image, file.toString(), 800 / testCase[2], 600 / testCase[2]);
+        ImageDecodePolicy policy = ((ImagePipeline) pipeline(image)).decodePolicy();
+        assertEquals(testCase[2], policy.decodeDenominator());
+        assertEquals(0, Image.fullDecodeInvocationCountForTest());
+        assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+      }
+    } finally {
+      Files.deleteIfExists(file);
+      Launcher.instance = previous;
+    }
+  }
+
+  @Test
+  void jpegFactoryPublicDescriptorsRemainUnchanged() throws Exception {
+    Method bestFit = Image.class.getMethod("getJpegBestFit", String.class, int.class, int.class);
+    Method scaled = Image.class.getMethod("getJpegScaled", String.class, int.class, int.class);
+
+    assertEquals(Image.class, bestFit.getReturnType());
+    assertEquals(Image.class, scaled.getReturnType());
+    assertTrue(Modifier.isStatic(bestFit.getModifiers()));
+    assertTrue(Modifier.isStatic(scaled.getModifiers()));
+    assertFalse(Modifier.isNative(bestFit.getModifiers()));
+    assertFalse(Modifier.isNative(scaled.getModifiers()));
+    assertArrayEquals(new Class<?>[] {java.io.IOException.class, ImageException.class}, bestFit.getExceptionTypes());
+    assertArrayEquals(new Class<?>[] {java.io.IOException.class, ImageException.class}, scaled.getExceptionTypes());
+  }
+
+  @Test
+  void jpegFactoriesDecodeCapturedBytesAfterSamePathIsReplaced() throws Exception {
+    Path file = Files.createTempFile("totalcross-jpeg-replaced", ".jpg");
+    tc.simulator.Launcher previous = (tc.simulator.Launcher) Launcher.instance;
+    try {
+      byte[] firstBytes = jpeg(32, 16, 0xCC2200);
+      byte[] secondBytes = jpeg(32, 16, 0x0022CC);
+      byte[] replacementBytes = jpeg(32, 16, 0x22CC00);
+      Files.write(file, firstBytes);
+      new tc.simulator.Launcher();
+
+      Image bestFit = Image.getJpegBestFit(file.toString(), 8, 4);
+      Files.write(file, secondBytes);
+      Image scaled = Image.getJpegScaled(file.toString(), 1, 4);
+      Files.write(file, replacementBytes);
+
+      assertArrayEquals(scaledPixels(firstBytes, 8, 4), bestFit.getPixels());
+      assertArrayEquals(scaledPixels(secondBytes, 8, 4), scaled.getPixels());
+    } finally {
+      Files.deleteIfExists(file);
+      Launcher.instance = previous;
+    }
+  }
+
+  @Test
+  void jpegScaledFactoryDecodesCapturedBytesAfterSourceDeletion() throws Exception {
+    Path file = Files.createTempFile("totalcross-jpeg-deleted", ".jpg");
+    tc.simulator.Launcher previous = (tc.simulator.Launcher) Launcher.instance;
+    try {
+      byte[] original = jpeg(32, 16, 0xAA4411);
+      Files.write(file, original);
+      new tc.simulator.Launcher();
+
+      Image scaled = Image.getJpegScaled(file.toString(), 2, 7);
+      Files.delete(file);
+
+      assertEquals(10, scaled.getWidth());
+      assertEquals(5, scaled.getHeight());
+      assertArrayEquals(scaledPixels(original, 10, 5), scaled.getPixels());
     } finally {
       Files.deleteIfExists(file);
       Launcher.instance = previous;
@@ -245,10 +357,15 @@ class ImageLazyMaterializationTest {
   }
 
   private static byte[] jpeg(int width, int height) throws Exception {
+    return jpeg(width, height, 0);
+  }
+
+  private static byte[] jpeg(int width, int height, int baseColor) throws Exception {
     BufferedImage source = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-        source.setRGB(x, y, (x * 0x330000) | (y * 0x003300));
+        int detail = ((x * 0x330000) | (y * 0x003300)) & 0xFFFFFF;
+        source.setRGB(x, y, (baseColor ^ detail) & 0xFFFFFF);
       }
     }
     ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -256,9 +373,20 @@ class ImageLazyMaterializationTest {
     return output.toByteArray();
   }
 
-  private static void assertMaterialized(Image image) throws Exception {
-    assertNull(pipeline(image));
-    assertNotNull(image.getPixels());
+  private static void assertLazyJpeg(Image image, String path, int width, int height) throws Exception {
+    assertEquals(width, image.getWidth());
+    assertEquals(height, image.getHeight());
+    assertEquals(width, image.getPixelWidth());
+    assertEquals(height, image.getPixelHeight());
+    assertEquals(1, image.getFrameCount());
+    assertEquals(1, image.getContentScale());
+    assertEquals(path, image.getPath());
+    assertNull(pixelStorage(image));
+    assertNotNull(pipeline(image));
+  }
+
+  private static int[] scaledPixels(byte[] encoded, int width, int height) throws Exception {
+    return new Image(encoded).getSmoothScaledInstance(width, height).getPixels();
   }
 
   private static byte[] corruptIdat(byte[] source) {
