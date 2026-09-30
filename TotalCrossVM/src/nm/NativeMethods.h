@@ -139,8 +139,6 @@ TC_API void tuiI_freeTextureNative(NMParams p);
 TC_API void tuiI_applyFadeNative_i(NMParams p);
 TC_API void tuiI_createJpgNative_si(NMParams p);
 TC_API void tuiI_nativeResizeJpeg_ssi(NMParams p);
-TC_API void tuiI_getJpegBestFit_sii(NMParams p);
-TC_API void tuiI_getJpegScaled_sii(NMParams p);
 TC_API void tuiEIS_captureNative_Bi(NMParams p);
 TC_API void tuiEIS_captureNativePath_s(NMParams p);
 TC_API void tuiEIS_releaseNativeBag(NMParams p);
