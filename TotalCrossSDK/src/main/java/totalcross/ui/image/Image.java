@@ -86,6 +86,7 @@ public class Image extends GfxSurface {
   static int presentationOnlyPlanRecreationCountForTest;
   static int fullDecodeInvocationCountForTest;
   static int targetedDecodeInvocationCountForTest;
+  static int materializationCountForTest;
   static int targetedDecodeRequestWidthForTest;
   static int targetedDecodeRequestHeightForTest;
   static int targetedDecodeDenominatorForTest;
@@ -94,6 +95,21 @@ public class Image extends GfxSurface {
   static int nativeGeometryMaterializationCountForTest;
   static int nativeColorReadbackCountForTest;
   static int directDrawPlanExecutionCountForTest;
+  static int zeroCopyDecodeCountForTest;
+  static int copiedDecodeCountForTest;
+  static int decodeCopiedBytesForTest;
+  static int decodeFinalBufferBytesForTest;
+  static int opacityKnownFromSourceForTest;
+  static int opacityDeterminedDuringDecodeForTest;
+  static int opacityFallbackScansForTest;
+  static int opacityFallbackPixelsForTest;
+  static int rowReadbackCountForTest;
+  static int fullReadbackCountForTest;
+  static int rowScratchPeakBytesForTest;
+  static int fullScratchBytesForTest;
+  static int directColorMaterializationCountForTest;
+  private static int nativeOptimizationMaskForDecode;
+  private static int nativeOptimizationMaskForDraw;
   private static boolean backingReadbackAccountingForTest;
   private static int backingReadbackCountForTest;
 
@@ -126,8 +142,13 @@ public class Image extends GfxSurface {
     failNextNativeMaterializationForTestNative();
   }
 
+  /** Test-only hook for exercising zero-copy decode cleanup after final allocation. */
+  static void failNextZeroCopyDecodeAfterAllocationForTest() {
+    failNextZeroCopyDecodeAfterAllocationForTestNative();
+  }
+
   static void resetTargetedDecodeInvocationCountForTest() {
-    imageOperationAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
     targetedDecodeInitializationFailureForTest = false;
     targetedDecodeInvocationCountForTest = 0;
     targetedDecodeRequestWidthForTest = 0;
@@ -139,6 +160,10 @@ public class Image extends GfxSurface {
 
   static int targetedDecodeInvocationCountForTest() {
     return targetedDecodeInvocationCountForTest;
+  }
+
+  static int materializationCountForTest() {
+    return materializationCountForTest;
   }
 
   static int targetedDecodeWidthForTest() {
@@ -162,7 +187,26 @@ public class Image extends GfxSurface {
   }
 
   static void resetImageOperationAccountingForTest() {
-    imageOperationAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
+    clearImageOperationAccountingCountersForTest();
+  }
+
+  static void setDiagnosticAccountingForTest(boolean enabled) {
+    imageOperationAccountingForTest = enabled;
+    backingReadbackAccountingForTest = enabled;
+    NativeImageBacking.setBackingAccountingForTest(enabled);
+    setDiagnosticAccountingTestNative(enabled);
+  }
+
+  static void setNativeOptimizationMaskForDrawForTest(long mask) {
+    nativeOptimizationMaskForDraw = (int) mask;
+  }
+
+  static void setNativeOptimizationMaskForDecodeForTest(long mask) {
+    nativeOptimizationMaskForDecode = (int) mask;
+  }
+
+  static void clearImageOperationAccountingCountersForTest() {
     imageCreatedCountForTest = 0;
     imageFinalizedCountForTest = 0;
     imagePipelineCreatedCountForTest = 0;
@@ -172,6 +216,7 @@ public class Image extends GfxSurface {
     presentationOnlyPlanRecreationCountForTest = 0;
     fullDecodeInvocationCountForTest = 0;
     targetedDecodeInvocationCountForTest = 0;
+    materializationCountForTest = 0;
     targetedDecodeRequestWidthForTest = 0;
     targetedDecodeRequestHeightForTest = 0;
     targetedDecodeDenominatorForTest = 0;
@@ -181,9 +226,21 @@ public class Image extends GfxSurface {
     nativeGeometryMaterializationCountForTest = 0;
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
-    backingReadbackAccountingForTest = true;
+    zeroCopyDecodeCountForTest = 0;
+    copiedDecodeCountForTest = 0;
+    decodeCopiedBytesForTest = 0;
+    decodeFinalBufferBytesForTest = 0;
+    opacityKnownFromSourceForTest = 0;
+    opacityDeterminedDuringDecodeForTest = 0;
+    opacityFallbackScansForTest = 0;
+    opacityFallbackPixelsForTest = 0;
+    rowReadbackCountForTest = 0;
+    fullReadbackCountForTest = 0;
+    rowScratchPeakBytesForTest = 0;
+    fullScratchBytesForTest = 0;
+    directColorMaterializationCountForTest = 0;
     backingReadbackCountForTest = 0;
-    NativeImageBacking.resetBackingAccountingForTest();
+    NativeImageBacking.clearBackingAccountingCountersForTest();
   }
 
   static int imageCreatedCountForTest() {
@@ -217,6 +274,12 @@ public class Image extends GfxSurface {
   static void recordImagePipelineCreatedForTest() {
     if (imageOperationAccountingForTest) {
       imagePipelineCreatedCountForTest++;
+    }
+  }
+
+  private static void recordMaterializationForTest() {
+    if (imageOperationAccountingForTest) {
+      materializationCountForTest++;
     }
   }
 
@@ -254,11 +317,84 @@ public class Image extends GfxSurface {
     return directDrawPlanExecutionCountForTest;
   }
 
+  static int zeroCopyDecodeCountForTest() {
+    return zeroCopyDecodeCountForTest;
+  }
+
+  static int copiedDecodeCountForTest() {
+    return copiedDecodeCountForTest;
+  }
+
+  static int decodeCopiedBytesForTest() {
+    return decodeCopiedBytesForTest;
+  }
+
+  static int decodeFinalBufferBytesForTest() {
+    return decodeFinalBufferBytesForTest;
+  }
+
+  static int opacityKnownFromSourceForTest() {
+    return opacityKnownFromSourceForTest;
+  }
+
+  static int opacityDeterminedDuringDecodeForTest() {
+    return opacityDeterminedDuringDecodeForTest;
+  }
+
+  static int opacityFallbackScansForTest() {
+    return opacityFallbackScansForTest;
+  }
+
+  static int opacityFallbackPixelsForTest() {
+    return opacityFallbackPixelsForTest;
+  }
+
+  static int rowReadbackCountForTest() {
+    return rowReadbackCountForTest;
+  }
+
+  static int fullReadbackCountForTest() {
+    return fullReadbackCountForTest;
+  }
+
+  static int rowScratchPeakBytesForTest() {
+    return rowScratchPeakBytesForTest;
+  }
+
+  static int fullScratchBytesForTest() {
+    return fullScratchBytesForTest;
+  }
+
+  static int directColorMaterializationCountForTest() {
+    return directColorMaterializationCountForTest;
+  }
+
+  static void recordRowReadbackForTest(int scratchBytes) {
+    recordRowReadbacksForTest(1, scratchBytes);
+  }
+
+  static void recordRowReadbacksForTest(int rowCount, int scratchBytes) {
+    rowReadbackCountForTest += rowCount;
+    if (scratchBytes > rowScratchPeakBytesForTest) {
+      rowScratchPeakBytesForTest = scratchBytes;
+    }
+  }
+
+  static void recordFullReadbackForTest(int scratchBytes) {
+    fullReadbackCountForTest++;
+    if (scratchBytes > fullScratchBytesForTest) {
+      fullScratchBytesForTest = scratchBytes;
+    }
+  }
+
   /** Test-only accounting for explicit deployed getPixels() snapshots. */
   static void resetBackingReadbackAccountingForTest() {
-    imageOperationAccountingForTest = true;
-    backingReadbackAccountingForTest = true;
+    setDiagnosticAccountingForTest(true);
     backingReadbackCountForTest = 0;
+  }
+
+  static boolean backingReadbackAccountingEnabledForTest() {
+    return backingReadbackAccountingForTest;
   }
 
   static int backingReadbackCountForTest() {
@@ -312,6 +448,14 @@ public class Image extends GfxSurface {
 
   @ReplacedByNativeOnDeploy
   private static void failNextNativeMaterializationForTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failNextZeroCopyDecodeAfterAllocationForTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void setDiagnosticAccountingTestNative(boolean enabled) {
   }
 
   private static boolean consumeDecodedRasterAllocationFailureForTest() {
@@ -534,6 +678,21 @@ public class Image extends GfxSurface {
     return new Image(width, height, contentScale);
   }
 
+  /** Test-only software raster target factory; never used by production code. */
+  static Image createTestRaster(int width, int height, double contentScale, int colorType)
+      throws ImageException {
+    Image result = createLogical(width, height, contentScale);
+    if (Settings.onJavaSE || !(result.backing instanceof NativeImageBacking)) {
+      return result;
+    }
+    NativeImageBacking previous = (NativeImageBacking) result.backing;
+    NativeImageBacking replacement = NativeImageBacking.createEmptyForTest(
+        result.width, result.height, colorType);
+    previous.release();
+    result.backing = replacement;
+    return result;
+  }
+
   /** Used only at desktop to get the image's pixels. */
   public int[] getPixels() {
     materializeCanonicalUnchecked();
@@ -684,15 +843,30 @@ public class Image extends GfxSurface {
   }
 
   private void initializeDeferred(EncodedImageSource source) {
-    pipeline = new ImagePipeline(source);
-    width = source.getFrameCount() > 1 ? source.getLogicalWidth() : source.getIntrinsicWidth();
-    height = source.getIntrinsicHeight();
-    widthOfAllFrames = source.getIntrinsicWidth();
-    logicalWidth = source.getLogicalWidth();
-    logicalHeight = source.getLogicalHeight();
-    frameCount = source.getFrameCount();
+    initializeDeferred(new ImagePipeline(source),
+        source.getFrameCount() > 1 ? source.getLogicalWidth() : source.getIntrinsicWidth(),
+        source.getIntrinsicHeight(), source.getLogicalWidth(), source.getLogicalHeight(),
+        source.getFrameCount(), source.getIntrinsicWidth(), source.getComment());
+  }
+
+  private void initializeDeferredJpegFactory(EncodedImageSource source, ImageDecodePolicy policy,
+      int outputWidth, int outputHeight) {
+    initializeDeferred(new ImagePipeline(source, policy, outputWidth, outputHeight, outputWidth, outputHeight,
+        1, outputWidth), outputWidth, outputHeight, outputWidth, outputHeight, 1, outputWidth, null);
+  }
+
+  private void initializeDeferred(ImagePipeline deferred, int deferredWidth, int deferredHeight,
+      int deferredLogicalWidth, int deferredLogicalHeight, int deferredFrameCount,
+      int deferredWidthOfAllFrames, String deferredComment) {
+    pipeline = deferred;
+    width = deferredWidth;
+    height = deferredHeight;
+    widthOfAllFrames = deferredWidthOfAllFrames;
+    logicalWidth = deferredLogicalWidth;
+    logicalHeight = deferredLogicalHeight;
+    frameCount = deferredFrameCount;
     currentFrame = frameCount > 1 ? 0 : -1;
-    comment = source.getComment();
+    comment = deferredComment;
     contentScale = 1;
     surfaceType = 1;
     textureId = -1;
@@ -715,6 +889,24 @@ public class Image extends GfxSurface {
     materializeCanonicalUnchecked();
     return !Settings.onJavaSE && backing instanceof NativeImageBacking
         && backing.isValid();
+  }
+
+  /** Test-only mutation of the native root retained by a deferred draw plan. */
+  void mutateDeferredRootForTest(double destinationScale) throws ImageException {
+    Object drawPlan = drawPlanForDrawing(destinationScale);
+    if (!(drawPlan instanceof ImageDrawPlan)) {
+      throw new ImageException("Deferred draw plan is unavailable");
+    }
+    Image root = ((ImageDrawPlan) drawPlan).root;
+    if (!(root.backing instanceof NativeImageBacking)
+        || !((NativeImageBacking) root.backing).mutateForTest()) {
+      throw new ImageException("Deferred draw root mutation failed");
+    }
+  }
+
+  /** Test-only non-mutating materialization hook for compact backing benchmarks. */
+  void materializeNativeBackingForTest() {
+    materializeCanonicalUnchecked();
   }
 
   private void initializeDeferredTransform(ImagePipeline deferred, Image source) {
@@ -1332,6 +1524,16 @@ public class Image extends GfxSurface {
       if (cached != null) {
         throw cached;
       }
+      ImageDecodePolicy policy = deferred.decodePolicy();
+      if (policy.kind() != ImageDecodePolicy.TARGET_DECODE) {
+        ImagePipeline policyRoot = deferred;
+        while (policyRoot.previous() != null) {
+          policyRoot = policyRoot.previous();
+        }
+        current = materializeExplicitJpegPolicy(source, policy, policyRoot.width(), policyRoot.height());
+        recordMaterializationForTest();
+        return current;
+      }
       int requestedWidth = scaledDimensionAllowingZero(deferred.logicalWidth(), destinationScale);
       int requestedHeight = scaledDimension(deferred.logicalHeight(), destinationScale);
       int requestedDenominator = ImageDecodeRequirement.choose(source, deferred, requestedWidth, requestedHeight);
@@ -1380,6 +1582,7 @@ public class Image extends GfxSurface {
         }
         current = decoded;
       }
+      recordMaterializationForTest();
     } else {
       current = root instanceof BackingImageSource
           ? ((BackingImageSource) root).materialize()
@@ -1387,6 +1590,78 @@ public class Image extends GfxSurface {
     }
 
     return current;
+  }
+
+  private Image materializeExplicitJpegPolicy(EncodedImageSource source, ImageDecodePolicy policy,
+      int outputWidth, int outputHeight) throws ImageException {
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || outputWidth <= 0 || outputHeight <= 0) {
+      throw new DeterministicImageDecodeException("Explicit JPEG policy has invalid source metadata");
+    }
+    Image decoded = new Image();
+    decoded.initializeDecodeTarget(source);
+    try {
+      if (policy.kind() == ImageDecodePolicy.BEST_FIT) {
+        int denominator = jpegBestFitScaleDenominator(source.getIntrinsicWidth(), source.getIntrinsicHeight(),
+            policy.parameter1(), policy.parameter2());
+        if (Settings.onJavaSE) {
+          if (denominator == 1) {
+            decoded.decodeEncodedSource(source);
+          } else {
+            decoded.decodeEncodedSourceTiered(source, policy.parameter1(), policy.parameter2(), denominator);
+          }
+        } else {
+          decoded.decodeEncodedSourceBestFit(source, policy.parameter1(), policy.parameter2());
+        }
+        if (decoded.backing == null || !decoded.backing.isValid() || decoded.width != outputWidth
+            || decoded.height != outputHeight) {
+          throw new DeterministicImageDecodeException("JPEG best-fit dimensions do not match metadata");
+        }
+        consumeTargetedDecodeInitializationFailureForTest();
+        decoded.init(true);
+      } else if (policy.kind() == ImageDecodePolicy.EXPLICIT_RATIO) {
+        if (Settings.onJavaSE) {
+          decoded.decodeEncodedSource(source);
+          if (decoded.backing == null || !decoded.backing.isValid() || decoded.width <= 0 || decoded.height <= 0) {
+            throw new DeterministicImageDecodeException("Could not decode explicit-ratio JPEG source");
+          }
+          decoded.init(true);
+          try {
+            verifyDecodedMetadata(source, decoded);
+          } catch (DeterministicImageDecodeException failure) {
+            source.cacheDecodeFailure(failure);
+            throw failure;
+          }
+          if (decoded.width != outputWidth || decoded.height != outputHeight) {
+            decoded = decoded.eagerSmoothScaledInstance(outputWidth, outputHeight);
+          }
+        } else {
+          decoded.decodeEncodedSourceExplicitRatio(source, policy.parameter1(), policy.parameter2());
+          if (decoded.backing == null || !decoded.backing.isValid() || decoded.width != outputWidth
+              || decoded.height != outputHeight) {
+            throw new DeterministicImageDecodeException("JPEG explicit-ratio dimensions do not match metadata");
+          }
+          consumeTargetedDecodeInitializationFailureForTest();
+          decoded.init(true);
+        }
+      } else {
+        throw new IllegalStateException("Unknown explicit JPEG policy");
+      }
+    } catch (DeterministicImageDecodeException failure) {
+      source.cacheDecodeFailure(failure);
+      throw failure;
+    } catch (TransientImageMaterializationException failure) {
+      throw failure;
+    }
+    decoded.width = outputWidth;
+    decoded.height = outputHeight;
+    decoded.logicalWidth = outputWidth;
+    decoded.logicalHeight = outputHeight;
+    decoded.widthOfAllFrames = outputWidth;
+    decoded.frameCount = 1;
+    decoded.currentFrame = -1;
+    decoded.contentScale = 1;
+    decoded.comment = null;
+    return decoded;
   }
 
   private Image materializeCachedEncodedSource(EncodedImageSource source, ImageBacking cachedBacking)
@@ -1906,6 +2181,44 @@ public class Image extends GfxSurface {
     }
   }
 
+  /** Deploy replacement preserves the public JPEG best-fit denominator policy. */
+  @ReplacedByNativeOnDeploy
+  private void decodeEncodedSourceBestFit(EncodedImageSource source, int targetWidth, int targetHeight)
+      throws ImageException {
+    byte[] input = source.bytesForInternalDecode();
+    if (input == null) {
+      throw new ImageException("Encoded source has no Java backing");
+    }
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || targetWidth <= 0 || targetHeight <= 0) {
+      throw new ImageException("JPEG best-fit decode requires a JPEG image and positive dimensions");
+    }
+    int denominator = jpegBestFitScaleDenominator(source.getIntrinsicWidth(), source.getIntrinsicHeight(),
+        targetWidth, targetHeight);
+    if (denominator == 1) {
+      decodeEncodedSource(source);
+    } else {
+      decodeEncodedSourceTiered(source, targetWidth, targetHeight, denominator);
+    }
+  }
+
+  /** Deploy replacement passes the caller's exact positive ratio to libjpeg. */
+  @ReplacedByNativeOnDeploy
+  private void decodeEncodedSourceExplicitRatio(EncodedImageSource source, int numerator, int denominator)
+      throws ImageException {
+    byte[] input = source.bytesForInternalDecode();
+    if (input == null) {
+      throw new ImageException("Encoded source has no Java backing");
+    }
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || numerator <= 0 || denominator <= 0) {
+      throw new ImageException("JPEG explicit-ratio decode requires a JPEG image and positive ratio");
+    }
+    // JavaSE resolves arbitrary ratios with the full decoder plus the existing
+    // smooth resampler. This body is replaced by the native libjpeg bridge on
+    // deployed targets; retaining a safe full-decode fallback keeps the method
+    // valid if called by a non-deployed harness.
+    decodeEncodedSource(source);
+  }
+
   /** Deploy replacement uses the encoded native bag and jpegLoad's target sizing. */
   @ReplacedByNativeOnDeploy
   private void decodeEncodedSourceTargeted(EncodedImageSource source, int targetWidth, int targetHeight)
@@ -2373,6 +2686,10 @@ public class Image extends GfxSurface {
     }
     materializeCanonicalUnchecked();
     if (backing == null || !backing.isValid()) {
+      return null;
+    }
+    if (backing instanceof NativeImageBacking
+        && !((NativeImageBacking) backing).makeMutable()) {
       return null;
     }
 
@@ -4783,27 +5100,33 @@ public class Image extends GfxSurface {
     if (path == null) {
       throw new java.io.IOException();
     }
-    byte[] encoded = Vm.getFile(path);
-    if (encoded == null) {
-      try (File file = new File(path, File.READ_ONLY)) {
-        encoded = file.read();
+    EncodedImageSource source;
+    try {
+      source = EncodedImageSource.fromPath(path);
+    } catch (ImageException failure) {
+      if (Settings.onJavaSE) {
+        try (File file = new File(path, File.READ_ONLY)) {
+          if (!file.exists()) {
+            throw new java.io.IOException("Could not open JPEG source " + path, failure);
+          }
+        } catch (totalcross.io.IOException missing) {
+          throw new java.io.IOException("Could not open JPEG source " + path, missing);
+        }
       }
+      throw failure;
     }
-    EncodedImageSource source = EncodedImageSource.fromOwnedBytes(encoded);
     if (source.getFormat() != ImageEncodedStructure.Format.JPEG) {
       throw new ImageException(null);
     }
     return source;
   }
 
-  private static Image imageForCapturedSource(String path, EncodedImageSource source) {
+  private static Image imageForCapturedSource(String path) {
     Image image = new Image();
     image.path = path;
-    image.initializeDeferred(source);
     return image;
   }
 
-  @ReplacedByNativeOnDeploy
   public static Image getJpegBestFit(String path, int targetWidth, int targetHeight)
       throws java.io.IOException, ImageException {
     validateJpegScaleArguments(targetWidth, targetHeight);
@@ -4813,13 +5136,12 @@ public class Image extends GfxSurface {
         source.getIntrinsicWidth(), source.getIntrinsicHeight(), targetWidth, targetHeight);
     final int scaledWidth = jpegScaledDimension(source.getIntrinsicWidth(), 1, scaleDenominator);
     final int scaledHeight = jpegScaledDimension(source.getIntrinsicHeight(), 1, scaleDenominator);
-    Image image = imageForCapturedSource(path, source);
-    Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
-    result.materializeCanonicalChecked();
-    return result;
+    Image image = imageForCapturedSource(path);
+    image.initializeDeferredJpegFactory(source, ImageDecodePolicy.bestFit(targetWidth, targetHeight),
+        scaledWidth, scaledHeight);
+    return image;
   }
 
-  @ReplacedByNativeOnDeploy
   public static Image getJpegScaled(String path, int scaleNumerator, int scaleDenominator)
       throws java.io.IOException, ImageException {
     validateJpegScaleArguments(scaleNumerator, scaleDenominator);
@@ -4827,10 +5149,10 @@ public class Image extends GfxSurface {
 
     final int scaledWidth = jpegScaledDimension(source.getIntrinsicWidth(), scaleNumerator, scaleDenominator);
     final int scaledHeight = jpegScaledDimension(source.getIntrinsicHeight(), scaleNumerator, scaleDenominator);
-    Image image = imageForCapturedSource(path, source);
-    Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
-    result.materializeCanonicalChecked();
-    return result;
+    Image image = imageForCapturedSource(path);
+    image.initializeDeferredJpegFactory(source,
+        ImageDecodePolicy.explicitRatio(scaleNumerator, scaleDenominator), scaledWidth, scaledHeight);
+    return image;
   }
 
   @Override

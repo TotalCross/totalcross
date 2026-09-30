@@ -1,0 +1,73 @@
+Phase 2 raster extension 03 — integrated macOS closeout
+
+Runtime and provenance
+- Branch: perf/image-opt-phase2-raster
+- Native runtime: c6515a8f0 (ID 13/14 runtime; ID 15 remains earlier in history)
+- Final harness source: 7700966325b84b876d42822465b0c9a9d5f3b1ae
+- Frozen S1 runtime: a8a9480bd61aa510de423569af494d8dde69e8f2
+- S1 true-base adapter source: 7700966325b84b876d42822465b0c9a9d5f3b1ae
+- S1 true-base adapter SHA-256: ff13de81694fc7075602d1194648bc8fd5eaea58357821e952a814974cd950eb
+- Host: macOS 26.5.2, arm64, 16 GiB
+- Timed workload: three warmups, 1024 draws per sample; all samples completed
+
+Authoritative all-eight 60-sample controls
+
+scenario             median   p95       CV       peak RSS   result
+S1 frozen true base   912 ms   921 ms    0.516%   114432 KiB  pass
+S2 all disabled       912 ms   918.05 ms 0.429%   120656 KiB  pass
+S3 0-4,13-15 enabled   84.5 ms  91.05 ms  4.288%   125712 KiB  pass
+
+S2/S1 deltas are +0.000% elapsed and +5.439% RSS. The RSS trigger caused the
+required final-runtime pre-vs-disabled control below; it is not attributed to
+disabled-feature overhead. S3/S1 elapsed is -90.735% with exact output parity.
+
+Final-runtime pre-vs-disabled 200-sample control
+
+scenario             median   p95      CV       peak RSS   result
+pre, all enabled off 918 ms   927 ms   0.716%   114048 KiB  pass
+post-disabled        920 ms   924 ms   0.395%   113040 KiB  pass
+
+Final-runtime S2/pre deltas are +0.218% elapsed and -0.884% RSS. The required
+matched live snapshots also passed: pre RSS 116272 KiB and vmmap physical
+footprint peak 83.6M; disabled RSS 120528 KiB and physical footprint peak
+86.5M. The peak physical-footprint delta is +3.469%.
+
+Enabled 200-sample confirmation
+
+S3 measured median 87 ms, p95 94 ms, CV 6.086%, and peak RSS 135664 KiB.
+The CV escalation completed at the plan's 200-sample cap; all 200 samples and
+all output hashes were stable.
+
+Stable hashes across S1, S2, and S3
+- input JPEG: 0000F4870000A84E
+- input PNG: 0000900B0000BBA9
+- pixel: 00006C3E000043B0
+- encoded PNG: 0000675B00005B57
+- APPLY_COLOR2 color: 00002DBA0000C894
+- physical identity: 000000D600000165
+- physical variant: 000000D600000165
+
+Final S3 cumulative counters at sample 60
+- decode zero-copy 120; opacity known/determined 60/60
+- writePixels attempts/hits/fallbacks 61440/61440/0
+- row/full readbacks 116160/0; direct-color materializations 60
+- target-color attempts/materializations/hits/fallbacks/bytes 360/0/0/360/0
+- physical lookups/hits/misses/materializations/evictions/bytes
+  360/120/240/120/0/19200000
+
+Artifacts
+- 60-sample controls: closeout-s1-rerun-60, closeout-s2-rerun-60,
+  closeout-s3-rerun-60
+- final-runtime controls: closeout-final-pre-60, closeout-final-pre-200,
+  closeout-final-s2-200
+- enabled escalation: closeout-final-s3-200
+- matched diagnostics: closeout-final-pre-200/diagnostics-pre-01 and
+  closeout-final-s2-200/diagnostics-disabled-01
+- Superseded initial closeout directories remain unmodified and are not used;
+  the rerun directories preserve the corrected cross-scenario hash parity.
+
+Correctness
+- SDK image tests/dist, macOS Release software-Skia CMake/Ninja, adaptive
+  JPEG/zero-copy/retry, geometry/materialization, opacity, readback/writePixels,
+  identity guards, target BGRA/RGB565/translucent/mutation/replacement, and
+  all physical-variant cases passed against the exact final dylib.

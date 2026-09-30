@@ -153,18 +153,60 @@ class ImageLazyMaterializationTest {
   }
 
   @Test
-  void jpegScalingFactoriesAlwaysReturnMaterializedImages() throws Exception {
+  void jpegScalingFactoriesRemainDeferredUntilARealBarrier() throws Exception {
     Path file = Files.createTempFile("totalcross-jpeg-scaling", ".jpg");
     tc.simulator.Launcher previous = (tc.simulator.Launcher) Launcher.instance;
     try {
       Files.write(file, jpeg(4, 2));
       new tc.simulator.Launcher();
 
+      Image.resetImageOperationAccountingForTest();
       Image bestFit = Image.getJpegBestFit(file.toString(), 4, 2);
-      assertMaterialized(bestFit);
+      assertDeferred(bestFit, ImageDecodePolicy.BEST_FIT, 4, 2);
+      assertEquals(0, Image.fullDecodeInvocationCountForTest());
+      assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+      assertEquals(0, Image.materializationCountForTest());
+      assertEquals(4, bestFit.getPixelWidth());
+      assertEquals(2, bestFit.getPixelHeight());
+      assertEquals(8, bestFit.getPixels().length);
+      assertEquals(1, Image.fullDecodeInvocationCountForTest());
+      assertEquals(1, Image.materializationCountForTest());
+      assertNull(pipeline(bestFit));
 
+      Image.resetImageOperationAccountingForTest();
       Image scaled = Image.getJpegScaled(file.toString(), 1, 1);
-      assertMaterialized(scaled);
+      assertDeferred(scaled, ImageDecodePolicy.EXPLICIT_RATIO, 4, 2);
+      assertEquals(0, Image.fullDecodeInvocationCountForTest());
+      assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+      scaled.getPixels();
+      assertEquals(1, Image.fullDecodeInvocationCountForTest());
+      assertEquals(1, Image.materializationCountForTest());
+      assertNull(pipeline(scaled));
+    } finally {
+      Files.deleteIfExists(file);
+      Launcher.instance = previous;
+    }
+  }
+
+  @Test
+  void jpegFactoryDefersPayloadFailureAndCachesTheDeterministicResult() throws Exception {
+    Path file = Files.createTempFile("totalcross-jpeg-corrupt-payload", ".jpg");
+    tc.simulator.Launcher previous = (tc.simulator.Launcher) Launcher.instance;
+    try {
+      Files.write(file, corruptJpegEntropy(jpeg(8, 4)));
+      new tc.simulator.Launcher();
+
+      Image image = Image.getJpegScaled(file.toString(), 3, 4);
+      Object deferredPipeline = pipeline(image);
+      assertNotNull(deferredPipeline);
+      IllegalStateException first = assertThrows(IllegalStateException.class, image::getPixels);
+      IllegalStateException second = assertThrows(IllegalStateException.class, image::getPixels);
+
+      assertTrue(first.getCause() instanceof ImageException,
+          first.getCause() == null ? "missing cause" : first.getCause().getClass().getName());
+      assertSame(first.getCause(), second.getCause());
+      assertSame(deferredPipeline, pipeline(image));
+      assertNull(pixelStorage(image));
     } finally {
       Files.deleteIfExists(file);
       Launcher.instance = previous;
@@ -247,9 +289,15 @@ class ImageLazyMaterializationTest {
     return output.toByteArray();
   }
 
-  private static void assertMaterialized(Image image) throws Exception {
-    assertNull(pipeline(image));
-    assertNotNull(image.getPixels());
+  private static void assertDeferred(Image image, int policyKind, int width, int height) throws Exception {
+    ImagePipeline deferred = (ImagePipeline) pipeline(image);
+    assertNotNull(deferred);
+    assertEquals(policyKind, deferred.decodePolicy().kind());
+    assertEquals(width, image.getWidth());
+    assertEquals(height, image.getHeight());
+    assertEquals(width, image.getPixelWidth());
+    assertEquals(height, image.getPixelHeight());
+    assertNull(pixelStorage(image));
   }
 
   private static byte[] corruptIdat(byte[] source) {
@@ -268,6 +316,26 @@ class ImageLazyMaterializationTest {
       position += length + 12;
     }
     throw new AssertionError("PNG has no IDAT chunk");
+  }
+
+  private static byte[] corruptJpegEntropy(byte[] source) {
+    int sos = -1;
+    for (int i = 0; i + 1 < source.length; i++) {
+      if ((source[i] & 0xFF) == 0xFF && (source[i + 1] & 0xFF) == 0xDA) {
+        sos = i;
+        break;
+      }
+    }
+    assertTrue(sos >= 0);
+    int segmentLength = ((source[sos + 2] & 0xFF) << 8) | (source[sos + 3] & 0xFF);
+    int entropy = sos + 2 + segmentLength;
+    byte[] invalidEntropyTail = new byte[] {
+        (byte) 0xFF, (byte) 0xC3, 0, 8, 8, 0, 1, 0, 1, 1, (byte) 0xFF, (byte) 0xD9
+    };
+    byte[] result = new byte[entropy + invalidEntropyTail.length];
+    System.arraycopy(source, 0, result, 0, entropy);
+    System.arraycopy(invalidEntropyTail, 0, result, entropy, invalidEntropyTail.length);
+    return result;
   }
 
   private static int readInt(byte[] bytes, int position) {

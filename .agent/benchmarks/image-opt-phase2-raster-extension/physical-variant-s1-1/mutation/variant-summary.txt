@@ -1,0 +1,12 @@
+scenario=pre
+revision=07912a0f2d5d48705a5b7caa65f82a71ed7d3b57
+executable=/Users/flsobral/repos/totalcross-github/TotalCrossSDK/build/image-raster-variant-benchmark/classes/install/macos/ImageRasterVariantBenchmarkApp
+expected_samples=1
+recorded_samples=1
+peak_rss_kb=117264
+exit_code=0
+host=Darwin 25.5.0
+macos=26.5.2
+cpu=arm64
+ram_bytes=17179869184
+correctness=process_exit_and_sample_count
