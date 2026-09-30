@@ -844,6 +844,11 @@ TC_API int32 getTimeStamp()
    return privateGetTimeStamp() - firstTS;
 }
 
+TC_API int64 getNanoTime()
+{
+   return privateGetNanoTime();
+}
+
 #ifndef WIN32
 TC_API void Sleep(uint32 ms)
 {
