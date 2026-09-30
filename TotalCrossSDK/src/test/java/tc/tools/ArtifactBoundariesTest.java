@@ -58,16 +58,28 @@ class ArtifactBoundariesTest {
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeEnvironment.class"));
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeSelector.class"));
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeConfiguration.class"));
+        assertTrue(api.contains("totalcross/sys/runtime/RuntimeConfigurationReport.class"));
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeRule.class"));
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeRules.class"));
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeWhen.class"));
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeCondition.class"));
+        assertTrue(api.contains("totalcross/ui/image/ImageStorageProfile.class"));
+        assertTrue(api.contains("totalcross/ui/image/ImageRuntimeRule.class"));
+        assertTrue(api.contains("totalcross/ui/image/ImageRuntimeRules.class"));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationMetadata.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationStartup.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeConfigurationStartup.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimePolicy.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ResolvedRuntimeConfiguration.class"));
     }
 
@@ -122,20 +134,36 @@ class ArtifactBoundariesTest {
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeEnvironment.class"));
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeSelector.class"));
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeConfiguration.class"));
+        assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeConfigurationReport.class"));
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeRule.class"));
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeRules.class"));
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeWhen.class"));
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeCondition.class"));
+        assertTrue(sdk.contains("totalcross/ui/image/ImageStorageProfile.class"));
+        assertTrue(sdk.contains("totalcross/ui/image/ImageRuntimeRule.class"));
+        assertTrue(sdk.contains("totalcross/ui/image/ImageRuntimeRules.class"));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
+        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
+        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
+        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
+        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
+        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
+        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
+        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
+        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationMetadata.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationStartup.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeConfigurationStartup.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimePolicy.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeRuleResolver.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ResolvedRuntimeConfiguration.class"));
     }
@@ -154,11 +182,17 @@ class ArtifactBoundariesTest {
                 + "import totalcross.sys.runtime.RuntimeRule;\n"
                 + "import totalcross.sys.runtime.RuntimeSelector;\n"
                 + "import totalcross.sys.runtime.RuntimeWhen;\n"
+                + "import totalcross.sys.runtime.RuntimeConfigurationReport;\n"
+                + "import totalcross.ui.image.ImageRuntimeRule;\n"
+                + "import totalcross.ui.image.ImageStorageProfile;\n"
                 + "@RuntimeConfiguration\n"
                 + "@RuntimeRule(when=@RuntimeWhen(allOf=@RuntimeCondition(platform=Platform.MACOS)))\n"
+                + "@ImageRuntimeRule(when=@RuntimeWhen(allOf=@RuntimeCondition(platform=Platform.MACOS)), "
+                + "storage=ImageStorageProfile.COMPACT)\n"
                 + "public final class PublicRuntimeConfigurationSurface {\n"
                 + "  RuntimeEnvironment environment = RuntimeEnvironment.current();\n"
                 + "  RuntimeSelector selector = RuntimeSelector.platform(Platform.MACOS);\n"
+                + "  String describe() { return RuntimeConfigurationReport.describe(); }\n"
                 + "}\n");
         assertTrue(compile(compiler, sdkJar, publicSource, tempDir.resolve("public-classes")),
                 "public runtime configuration contracts must compile against the aggregate SDK");
@@ -166,10 +200,17 @@ class ArtifactBoundariesTest {
         Path internalSource = tempDir.resolve("InternalRuntimeConfigurationAccess.java");
         Files.writeString(internalSource, ""
                 + "import totalcross.sys.runtime.RuntimeConfigurationMetadata;\n"
+                + "import totalcross.sys.runtime.RuntimeConfigurationFeatureBridge;\n"
                 + "import totalcross.sys.runtime.RuntimeConfigurationStartup;\n"
+                + "import totalcross.sys.runtime.ImageRuntimeConfigurationMetadata;\n"
+                + "import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;\n"
+                + "import totalcross.sys.runtime.ImageRuntimePolicy;\n"
                 + "public final class InternalRuntimeConfigurationAccess {\n"
                 + "  Object decode(byte[] bytes) {\n"
                 + "    RuntimeConfigurationStartup.initializeForSimulator(null);\n"
+                + "    ImageRuntimeConfigurationStartup.initializeAtStartup();\n"
+                + "    ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();\n"
+                + "    RuntimeConfigurationFeatureBridge.appendDescriptionSections(new StringBuilder());\n"
                 + "    return RuntimeConfigurationMetadata.decode(bytes);\n"
                 + "  }\n"
                 + "}\n");

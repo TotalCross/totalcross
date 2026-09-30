@@ -182,6 +182,10 @@ jar {
     exclude 'totalcross/res/mp3/**', 'totalcross/chartypes.bin'
     exclude 'totalcross/sys/runtime/RuntimeConfigurationMetadata*.class'
     exclude 'totalcross/sys/runtime/RuntimeConfigurationStartup*.class'
+    exclude 'totalcross/sys/runtime/RuntimeConfigurationFeatureBridge*.class'
+    exclude 'totalcross/sys/runtime/ImageRuntimeConfigurationMetadata*.class'
+    exclude 'totalcross/sys/runtime/ImageRuntimeConfigurationStartup*.class'
+    exclude 'totalcross/sys/runtime/ImageRuntimePolicy*.class'
     exclude 'totalcross/sys/runtime/RuntimeRuleResolver*.class'
     exclude 'totalcross/sys/runtime/ResolvedRuntimeConfiguration*.class'
     from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
@@ -551,7 +555,8 @@ tasks.register('runSystemNanoTimeSmokeMacOS', Exec) {
     }
 }
 
-def registerRuntimeConfigurationMacSmoke = { String suffix, String appClass, String expectedMarker ->
+def registerRuntimeConfigurationMacSmoke = { String suffix, String appClass, String expectedMarker,
+        boolean expectStartupFailure ->
     String taskSuffix = 'RuntimeConfiguration' + suffix + 'MacOSSmoke'
     String deployTaskName = 'deploy' + taskSuffix
     String runTaskName = 'run' + taskSuffix
@@ -678,23 +683,47 @@ def registerRuntimeConfigurationMacSmoke = { String suffix, String appClass, Str
             String output = smokeOutput.toString('UTF-8')
             logger.lifecycle(output.trim())
             int exitCode = executionResult.get().exitValue
-            if (exitCode != 0 || !output.contains(expectedMarker)) {
+            boolean passed = expectStartupFailure
+                ? output.contains(expectedMarker)
+                : exitCode == 0 && output.contains(expectedMarker)
+            if (!passed) {
                 throw new GradleException(runTaskName + ' failed: exitCode=' + exitCode
-                    + ', expectedMarker=' + expectedMarker)
+                    + ', expectedMarker=' + expectedMarker + ', expectStartupFailure=' + expectStartupFailure)
             }
         }
     }
 }
 
 registerRuntimeConfigurationMacSmoke('Annotated', 'RuntimeConfigurationAnnotatedMacSmokeApp',
-        'runtime-config-annotated-pass platform=MACOS family=DESKTOP architecture=ARM64 backend=RASTER matchedRules=1')
+        'runtime-config-annotated-pass platform=MACOS family=DESKTOP architecture=ARM64 backend=RASTER matchedRules=1',
+        false)
 registerRuntimeConfigurationMacSmoke('NoMetadata', 'RuntimeConfigurationNoMetadataMacSmokeApp',
-        'runtime-config-no-metadata-pass platform=MACOS family=DESKTOP architecture=ARM64 backend=RASTER metadata=absent')
+        'runtime-config-no-metadata-pass platform=MACOS family=DESKTOP architecture=ARM64 backend=RASTER metadata=absent imageStorageRequested=STANDARD imageStorageEffective=STANDARD',
+        false)
+
+registerRuntimeConfigurationMacSmoke('ImageCompact', 'ImageRuntimeConfigurationCompactMacSmokeApp',
+        'image-runtime-compact-pass requested=COMPACT effective=STANDARD', false)
+registerRuntimeConfigurationMacSmoke('ImageSpecificity', 'ImageRuntimeConfigurationSpecificityMacSmokeApp',
+        'image-runtime-specificity-pass order=broad-first requested=STANDARD matchedRules=2', false)
+registerRuntimeConfigurationMacSmoke('ImageSpecificityReversed',
+        'ImageRuntimeConfigurationSpecificityReversedMacSmokeApp',
+        'image-runtime-specificity-pass order=specific-first requested=STANDARD matchedRules=2', false)
+registerRuntimeConfigurationMacSmoke('ImageConflict', 'ImageRuntimeConfigurationConflictMacSmokeApp',
+        'Equal-specificity runtime rules conflict for setting', true)
 
 tasks.register('runRuntimeConfigurationMacOSSmokes') {
     group = 'verification'
     description = 'Runs annotated and no-metadata runtime configuration apps in a native macOS ARM64 VM.'
     dependsOn 'runRuntimeConfigurationAnnotatedMacOSSmoke', 'runRuntimeConfigurationNoMetadataMacOSSmoke'
+}
+
+tasks.register('runImageRuntimeConfigurationMacOSSmokes') {
+    group = 'verification'
+    description = 'Runs Image configuration defaults, downgrade, specificity, and conflict smokes on macOS ARM64.'
+    dependsOn 'runRuntimeConfigurationAnnotatedMacOSSmoke', 'runRuntimeConfigurationNoMetadataMacOSSmoke',
+            'runRuntimeConfigurationImageCompactMacOSSmoke', 'runRuntimeConfigurationImageSpecificityMacOSSmoke',
+            'runRuntimeConfigurationImageSpecificityReversedMacOSSmoke',
+            'runRuntimeConfigurationImageConflictMacOSSmoke'
 }
 
 def runtimeDiagnosticsSmokeDir = layout.buildDirectory.dir('runtime-diagnostics-smoke')
