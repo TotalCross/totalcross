@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "skia_image_backing_internal.h"
+#include "skia_image_geometry_internal.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <cstdlib>
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <map>
 #include <memory>
@@ -31,6 +34,25 @@ uint64_t backingRecordsLiveForTest;
 uint64_t backingRecordsPeakLiveForTest;
 uint64_t backingBytesLiveForTest;
 uint64_t backingBytesPeakLiveForTest;
+uint64_t writePixelsAttemptsForTest;
+uint64_t writePixelsHitsForTest;
+uint64_t writePixelsFallbacksForTest;
+uint64_t writePixelsCopiedBytesForTest;
+uint64_t physicalIdentityAttemptsForTest;
+uint64_t physicalIdentityHitsForTest;
+uint64_t physicalIdentityFallbacksForTest;
+uint64_t physicalIdentityResamplesAvoidedForTest;
+uint64_t targetColorAttemptsForTest;
+uint64_t targetColorMaterializationsForTest;
+uint64_t targetColorHitsForTest;
+uint64_t targetColorFallbacksForTest;
+uint64_t targetColorConvertedBytesForTest;
+uint64_t physicalVariantLookupsForTest;
+uint64_t physicalVariantHitsForTest;
+uint64_t physicalVariantMissesForTest;
+uint64_t physicalVariantMaterializationsForTest;
+uint64_t physicalVariantEvictionsForTest;
+uint64_t physicalVariantBytesForTest;
 
 uint64_t backingBytes(const NativeImageBackingRecord& backing) {
     return static_cast<uint64_t>(backing.width) * static_cast<uint64_t>(backing.height) * 4;
@@ -137,12 +159,158 @@ int drawOnCanvas(SkCanvas* canvas, NativeImageBackingRecord* source,
     return 1;
 }
 
+bool proveOpaqueForWritePixels(NativeImageBackingRecord* source) {
+    if (!source) {
+        return false;
+    }
+    if (source->opacity == SKIA_IMAGE_OPACITY_OPAQUE) {
+        return true;
+    }
+    if (source->opacity == SKIA_IMAGE_OPACITY_TRANSLUCENT) {
+        return false;
+    }
+    sk_sp<SkImage> image = source->snapshot();
+    SkPixmap pixmap;
+    if (!image || !image->peekPixels(&pixmap)) {
+        return false;
+    }
+    bool opaque = true;
+    for (int32 y = 0; y < source->height && opaque; ++y) {
+        const uint8_t* row = static_cast<const uint8_t*>(pixmap.addr(0, y));
+        if (!row) {
+            return false;
+        }
+        for (int32 x = 0; x < source->width; ++x) {
+            if (row[static_cast<size_t>(x) * 4 + 3] != 0xff) {
+                opaque = false;
+                break;
+            }
+        }
+    }
+    source->opacity = opaque ? SKIA_IMAGE_OPACITY_OPAQUE : SKIA_IMAGE_OPACITY_TRANSLUCENT;
+    imageRecordOpacityFallbackScanForTest(static_cast<int32>(
+        static_cast<uint64_t>(source->width) * static_cast<uint64_t>(source->height)));
+    return opaque;
+}
+
+int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 width, int32 height,
+                        bool sourceOpaque, float srcLeft, float srcTop, float srcRight,
+                        float srcBottom, float dstLeft, float dstTop, float dstRight,
+                        float dstBottom, int32 alphaMask, int32 optimizationMask) {
+#if TC_GRAPHICS_SOFTWARE
+    constexpr int32 kOpaqueWritePixelsBit = 1 << 2;
+    if ((optimizationMask & kOpaqueWritePixelsBit) == 0) {
+        return 0;
+    }
+    ++writePixelsAttemptsForTest;
+    auto fallback = []() {
+        ++writePixelsFallbacksForTest;
+        return 0;
+    };
+    if (!targetCanvas || !image || width <= 0 || height <= 0 || alphaMask != 255
+        || !targetCanvas->getTotalMatrix().isIdentity()
+        || targetCanvas->getSaveCount() != 1 || srcLeft != 0.0f || srcTop != 0.0f
+        || srcRight != width || srcBottom != height
+        || srcRight - srcLeft != dstRight - dstLeft
+        || srcBottom - srcTop != dstBottom - dstTop
+        || std::floor(dstLeft) != dstLeft || std::floor(dstTop) != dstTop) {
+        return fallback() ? 1 : 0;
+    }
+    const int32 dstX = static_cast<int32>(dstLeft);
+    const int32 dstY = static_cast<int32>(dstTop);
+    const SkImageInfo targetInfo = targetCanvas->imageInfo();
+    if (dstX < 0 || dstY < 0 || dstX > targetInfo.width() - width
+        || dstY > targetInfo.height() - height) {
+        return fallback() ? 1 : 0;
+    }
+    if (!sourceOpaque) {
+        return fallback() ? 1 : 0;
+    }
+    SkPixmap pixmap;
+    if (!image->peekPixels(&pixmap)) {
+        return fallback();
+    }
+    if (!targetCanvas->writePixels(pixmap.info(), pixmap.addr(), pixmap.rowBytes(), dstX, dstY)) {
+        return fallback();
+    }
+    ++writePixelsHitsForTest;
+    writePixelsCopiedBytesForTest += static_cast<uint64_t>(width)
+        * static_cast<uint64_t>(height) * 4;
+    return 1;
+#else
+    UNUSED(targetCanvas)
+    UNUSED(image)
+    UNUSED(width)
+    UNUSED(height)
+    UNUSED(sourceOpaque)
+    UNUSED(srcLeft)
+    UNUSED(srcTop)
+    UNUSED(srcRight)
+    UNUSED(srcBottom)
+    UNUSED(dstLeft)
+    UNUSED(dstTop)
+    UNUSED(dstRight)
+    UNUSED(dstBottom)
+    UNUSED(alphaMask)
+    UNUSED(optimizationMask)
+    return 0;
+#endif
+}
+
+int tryWritePixels(SkCanvas* targetCanvas, NativeImageBackingRecord* source,
+                    float srcLeft, float srcTop, float srcRight, float srcBottom,
+                    float dstLeft, float dstTop, float dstRight, float dstBottom,
+                    int32 alphaMask, int32 optimizationMask) {
+    if (!source) {
+        return tryWritePixelsImage(targetCanvas, nullptr, 0, 0, false, srcLeft, srcTop,
+                                   srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+                                   alphaMask, optimizationMask);
+    }
+    const bool sourceOpaque = proveOpaqueForWritePixels(source);
+    sk_sp<SkImage> image = sourceOpaque ? source->snapshot() : nullptr;
+    return tryWritePixelsImage(targetCanvas, image.get(), source->width, source->height,
+                               sourceOpaque, srcLeft, srcTop, srcRight, srcBottom, dstLeft,
+                               dstTop, dstRight, dstBottom, alphaMask, optimizationMask);
+}
+
+static size_t rasterVariantBytes(SkColorType colorType, int32 width, int32 height) {
+    const size_t bytesPerPixel = colorType == kRGB_565_SkColorType ? 2 : 4;
+    return static_cast<size_t>(width) * static_cast<size_t>(height) * bytesPerPixel;
+}
+
+static sk_sp<SkImage> makeTargetColorVariant(NativeImageBackingRecord* source,
+                                               SkColorType targetColorType) {
+    if (!source || source->width <= 0 || source->height <= 0) {
+        return nullptr;
+    }
+    sk_sp<SkImage> image = source->snapshot();
+    if (!image) {
+        return nullptr;
+    }
+    const SkAlphaType alphaType = targetColorType == kRGB_565_SkColorType
+        ? kOpaque_SkAlphaType : kUnpremul_SkAlphaType;
+    const SkImageInfo info = SkImageInfo::Make(source->width, source->height, targetColorType,
+                                               alphaType);
+    sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+    if (!surface) {
+        return nullptr;
+    }
+    SkPaint paint;
+    paint.setFilterQuality(kNone_SkFilterQuality);
+    surface->getCanvas()->drawImage(image, 0, 0, &paint);
+    return surface->makeImageSnapshot();
+}
+
 SkImageInfo rasterInfo(int32 width, int32 height) {
     return SkImageInfo::Make(width, height, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
 }
 
 void releaseOwnedPixels(const void* pixels, void*) {
     delete[] static_cast<const uint8_t*>(pixels);
+}
+
+void releaseMallocPixels(const void* pixels, void*) {
+    std::free(const_cast<void*>(pixels));
 }
 
 bool readRgbaBytes(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
@@ -207,6 +375,16 @@ bool readRgba(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
 
 } // namespace
 
+int skia_image_backing_try_write_pixels(void* targetCanvas, int64_t sourceHandle,
+                                        float srcLeft, float srcTop, float srcRight,
+                                        float srcBottom, float dstLeft, float dstTop,
+                                        float dstRight, float dstBottom, int32 alphaMask,
+                                        int32 optimizationMask) {
+    return tryWritePixels(static_cast<SkCanvas*>(targetCanvas), findBacking(sourceHandle),
+                          srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight,
+                          dstBottom, alphaMask, optimizationMask);
+}
+
 namespace skia_image_backing_internal {
 
 NativeImageBackingRecord* findBacking(int64_t handle) {
@@ -219,6 +397,151 @@ int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing) {
 
 SkImageInfo rasterInfo(int32 width, int32 height) {
     return ::rasterInfo(width, height);
+}
+
+int tryWritePixelsImage(SkCanvas* targetCanvas, const SkImage* image, int32 width, int32 height,
+                        bool sourceOpaque, float srcLeft, float srcTop, float srcRight,
+                        float srcBottom, float dstLeft, float dstTop, float dstRight,
+                        float dstBottom, int32 alphaMask, int32 optimizationMask) {
+    return ::tryWritePixelsImage(targetCanvas, image, width, height, sourceOpaque, srcLeft,
+                                 srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight,
+                                 dstBottom, alphaMask, optimizationMask);
+}
+
+bool proveOpaque(NativeImageBackingRecord* source) {
+    return ::proveOpaqueForWritePixels(source);
+}
+
+void recordTargetColorAttemptForTest() {
+    if (backingAccountingForTest) {
+        ++targetColorAttemptsForTest;
+    }
+}
+
+void recordTargetColorFallbackForTest() {
+    if (backingAccountingForTest) {
+        ++targetColorFallbacksForTest;
+    }
+}
+
+static SkImageInfo testRasterInfo(int32 width, int32 height, int32 colorType) {
+    SkColorType skColorType = kUnknown_SkColorType;
+    SkAlphaType alphaType = kUnpremul_SkAlphaType;
+    if (colorType == SKIA_TEST_COLOR_RGBA8888) {
+        skColorType = kRGBA_8888_SkColorType;
+    } else if (colorType == SKIA_TEST_COLOR_BGRA8888) {
+        skColorType = kBGRA_8888_SkColorType;
+    } else if (colorType == SKIA_TEST_COLOR_RGB565) {
+        skColorType = kRGB_565_SkColorType;
+        alphaType = kOpaque_SkAlphaType;
+    }
+    return SkImageInfo::Make(width, height, skColorType, alphaType);
+}
+
+void markMutated(NativeImageBackingRecord* backing) {
+    if (!backing) {
+        return;
+    }
+    ++backing->generation;
+    backing->applyColor2AnalysisValid = false;
+    backing->opacity = SKIA_IMAGE_OPACITY_UNKNOWN;
+    clearRasterVariant(backing);
+}
+
+void clearRasterVariant(NativeImageBackingRecord* backing) {
+    if (!backing) {
+        return;
+    }
+    backing->rasterVariant.image.reset();
+    backing->rasterVariant.valid = false;
+    backing->pendingRasterVariant = false;
+    backing->pendingRasterVariantObservations = 0;
+}
+
+template<typename Materializer>
+RasterVariantUse acquireVariant(NativeImageBackingRecord* source, const RasterVariantKey& key,
+                                sk_sp<SkImage>* image, Materializer materializer) {
+    if (image) {
+        image->reset();
+    }
+    if (!source || !image) {
+        return RASTER_VARIANT_FAILED;
+    }
+    const bool physical = key.kind == RASTER_VARIANT_PHYSICAL;
+    if (physical) {
+        ++physicalVariantLookupsForTest;
+    }
+    if (source->rasterVariant.valid && source->rasterVariant.key == key) {
+        *image = source->rasterVariant.image;
+        if (physical) {
+            ++physicalVariantHitsForTest;
+        } else {
+            ++targetColorHitsForTest;
+        }
+        return *image ? RASTER_VARIANT_HIT : RASTER_VARIANT_FAILED;
+    }
+    if (physical) {
+        ++physicalVariantMissesForTest;
+    }
+
+    if (!source->pendingRasterVariant || !(source->pendingRasterVariantKey == key)) {
+        source->pendingRasterVariant = true;
+        source->pendingRasterVariantKey = key;
+        source->pendingRasterVariantObservations = 1;
+        if (!physical) {
+            ++targetColorFallbacksForTest;
+        }
+        return RASTER_VARIANT_OBSERVED;
+    }
+    sk_sp<SkImage> candidate = materializer();
+    if (!candidate) {
+        source->pendingRasterVariant = false;
+        source->pendingRasterVariantObservations = 0;
+        if (!physical) {
+            ++targetColorFallbacksForTest;
+        }
+        return RASTER_VARIANT_FAILED;
+    }
+    if (physical && source->rasterVariant.valid) {
+        ++physicalVariantEvictionsForTest;
+    }
+    source->rasterVariant.image = std::move(candidate);
+    source->rasterVariant.key = key;
+    source->rasterVariant.valid = true;
+    source->pendingRasterVariant = false;
+    source->pendingRasterVariantObservations = 0;
+    const size_t bytes = rasterVariantBytes(key.targetColorType == kRGB_565_SkColorType
+        ? kRGB_565_SkColorType : static_cast<SkColorType>(key.targetColorType),
+        source->rasterVariant.image->width(), source->rasterVariant.image->height());
+    if (physical) {
+        ++physicalVariantMaterializationsForTest;
+        physicalVariantBytesForTest += bytes;
+    } else {
+        ++targetColorMaterializationsForTest;
+        targetColorConvertedBytesForTest += bytes;
+    }
+    *image = source->rasterVariant.image;
+    return *image ? RASTER_VARIANT_MATERIALIZED : RASTER_VARIANT_FAILED;
+}
+
+RasterVariantUse acquireTargetColorVariant(NativeImageBackingRecord* source,
+                                           const RasterVariantKey& key, SkColorType targetColorType,
+                                           sk_sp<SkImage>* image) {
+    return acquireVariant(source, key, image,
+        [source, targetColorType]() {
+            return makeTargetColorVariant(source, targetColorType);
+        });
+}
+
+RasterVariantUse acquirePhysicalVariant(NativeImageBackingRecord* source,
+                                         const RasterVariantKey& key,
+                                         const SkiaImageDrawPlanData* plan,
+                                         SkColorType targetColorType, sk_sp<SkImage>* image) {
+    return acquireVariant(source, key, image,
+        [plan, targetColorType]() {
+            return skia_image_backing_materialize_geometry_variant(plan, targetColorType,
+                                                                    nullptr, nullptr);
+        });
 }
 
 }
@@ -241,6 +564,29 @@ int64_t skia_image_backing_create_empty(int32 width, int32 height) {
     }
 }
 
+int64_t skia_image_backing_create_empty_for_test(int32 width, int32 height, int32 colorType) {
+    if (width <= 0 || height <= 0 || colorType < SKIA_TEST_COLOR_RGBA8888
+        || colorType > SKIA_TEST_COLOR_RGB565) {
+        return 0;
+    }
+    try {
+        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
+        backing->surface = SkSurface::MakeRaster(
+            skia_image_backing_internal::testRasterInfo(width, height, colorType));
+        if (!backing->surface) {
+            return 0;
+        }
+        backing->width = width;
+        backing->height = height;
+        if (colorType == SKIA_TEST_COLOR_RGB565) {
+            backing->opacity = SKIA_IMAGE_OPACITY_OPAQUE;
+        }
+        return registerBackingRecord(std::move(backing));
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height) {
     if (!pixels || width <= 0 || height <= 0) {
         return 0;
@@ -253,6 +599,38 @@ int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, in
     const size_t byteCount = static_cast<size_t>(pixelCount) * 4;
     try {
         sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseOwnedPixels, nullptr);
+        sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height), data, rowBytes);
+        if (!image) {
+            return 0;
+        }
+        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
+        backing->image = std::move(image);
+        backing->width = width;
+        backing->height = height;
+        return registerBackingRecord(std::move(backing));
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
+int64_t skia_image_backing_create_from_owned_rgba_pixels(void* pixels, int32 width, int32 height) {
+    if (!pixels || width <= 0 || height <= 0) {
+        return 0;
+    }
+    const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
+    if (pixelCount > std::numeric_limits<size_t>::max() / 4) {
+        return 0;
+    }
+    std::unique_ptr<uint8_t, decltype(&std::free)> owner(
+        static_cast<uint8_t*>(pixels), &std::free);
+    const size_t rowBytes = static_cast<size_t>(width) * 4;
+    const size_t byteCount = static_cast<size_t>(pixelCount) * 4;
+    try {
+        sk_sp<SkData> data = SkData::MakeWithProc(pixels, byteCount, releaseMallocPixels, nullptr);
+        if (!data) {
+            return 0;
+        }
+        owner.release();
         sk_sp<SkImage> image = SkImage::MakeRasterData(rasterInfo(width, height), data, rowBytes);
         if (!image) {
             return 0;
@@ -291,6 +669,21 @@ int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 wid
     }
 }
 
+void skia_image_backing_set_opacity(int64_t handle, int32 opacity) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    if (!backing || (opacity != SKIA_IMAGE_OPACITY_UNKNOWN
+        && opacity != SKIA_IMAGE_OPACITY_OPAQUE
+        && opacity != SKIA_IMAGE_OPACITY_TRANSLUCENT)) {
+        return;
+    }
+    backing->opacity = opacity;
+}
+
+int32 skia_image_backing_opacity(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    return backing ? backing->opacity : SKIA_IMAGE_OPACITY_UNKNOWN;
+}
+
 int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle) {
     if (snapshotHandle) {
         *snapshotHandle = 0;
@@ -312,6 +705,7 @@ int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle) 
         backing->image = std::move(snapshot);
         backing->width = source->width;
         backing->height = source->height;
+        backing->opacity = source->opacity;
         const int64_t newHandle = registerBackingRecord(std::move(backing));
         if (newHandle == 0) {
             return SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE;
@@ -360,6 +754,23 @@ int skia_image_backing_make_mutable(int64_t handle) {
     }
 }
 
+int skia_image_backing_mutate_for_test(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    if (!backing || !skia_image_backing_make_mutable(handle)) {
+        return 0;
+    }
+    backing = findBacking(handle);
+    SkCanvas* canvas = backing ? backing->canvas() : nullptr;
+    if (!canvas) {
+        return 0;
+    }
+    SkPaint paint;
+    paint.setColor(SkColorSetARGB(255, 16, 32, 48));
+    canvas->drawRect(SkRect::MakeWH(backing->width, backing->height), paint);
+    skia_image_backing_internal::markMutated(backing);
+    return 1;
+}
+
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth) {
     NativeImageBackingRecord* source = findBacking(handle);
     if (!source || outputWidth <= 0 || outputHeight <= 0) {
@@ -385,6 +796,7 @@ int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 output
             SkCanvas::kStrict_SrcRectConstraint);
         backing->width = outputWidth;
         backing->height = outputHeight;
+        backing->opacity = source->opacity;
         return registerBackingRecord(std::move(backing));
     } catch (const std::bad_alloc&) {
         return 0;
@@ -404,8 +816,7 @@ int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
     const int result = drawOnCanvas(target->canvas(), source, srcLeft, srcTop, srcRight, srcBottom,
                                     dstLeft, dstTop, dstRight, dstBottom, alphaMask);
     if (result != 0) {
-        ++target->generation;
-        target->applyColor2AnalysisValid = false;
+        skia_image_backing_internal::markMutated(target);
     }
     return result;
 }
@@ -417,9 +828,20 @@ int32 skia_image_backing_surface_id(int64_t handle) {
 int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle,
                                        float srcLeft, float srcTop, float srcRight, float srcBottom,
                                        float dstLeft, float dstTop, float dstRight, float dstBottom,
-                                       int32 alphaMask) {
-    return drawOnCanvas(skiaGetCanvas(targetSurface), findBacking(sourceHandle), srcLeft, srcTop,
-                        srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+                                       int32 alphaMask, int32 optimizationMask) {
+    SkCanvas* canvas = skiaGetCanvas(targetSurface);
+    NativeImageBackingRecord* source = findBacking(sourceHandle);
+    if (skia_image_backing_try_write_pixels(canvas, sourceHandle, srcLeft, srcTop, srcRight,
+                       srcBottom, dstLeft, dstTop, dstRight, dstBottom, alphaMask, optimizationMask)) {
+        skia_image_backing_mark_surface_mutated(targetSurface);
+        return 1;
+    }
+    const int result = drawOnCanvas(canvas, source, srcLeft, srcTop, srcRight, srcBottom,
+                                    dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+    if (result != 0) {
+        skia_image_backing_mark_surface_mutated(targetSurface);
+    }
+    return result;
 }
 
 SkCanvas* skia_image_backing_canvas(int64_t handle) {
@@ -429,6 +851,13 @@ SkCanvas* skia_image_backing_canvas(int64_t handle) {
 
 SkCanvas* skia_image_backing_canvas_for_surface_id(int32 surfaceId) {
     return canvasForSurfaceAlias(surfaceId);
+}
+
+void skia_image_backing_mark_surface_mutated(int32 surfaceId) {
+    auto alias = surfaceAliases.find(surfaceId);
+    if (alias != surfaceAliases.end()) {
+        skia_image_backing_internal::markMutated(findBacking(alias->second));
+    }
 }
 
 int32 skia_image_backing_width(int64_t handle) {
@@ -454,6 +883,43 @@ int skia_image_backing_read_rgba_row(int64_t handle, void* output, int32 y, int3
     return readRgbaBytes(findBacking(handle), output, 0, y, width, 1) ? 1 : 0;
 }
 
+int skia_image_backing_read_argb_rows(int64_t handle, Pixel* output, int32 y, int32 width,
+                                      int32 height) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    if (!backing || !output || y < 0 || width <= 0 || height <= 0
+        || width > backing->width || y > backing->height - height) {
+        return 0;
+    }
+    try {
+        const size_t rowBytes = static_cast<size_t>(width) * 4;
+        std::vector<uint8_t> rgba(rowBytes);
+        const SkImageInfo info = rasterInfo(width, 1);
+        for (int32 row = 0; row < height; ++row) {
+            const int32 sourceY = y + row;
+            bool copied = false;
+            if (backing->surface) {
+                copied = backing->surface->readPixels(info, rgba.data(), rowBytes, 0, sourceY);
+            } else if (backing->image) {
+                copied = backing->image->readPixels(info, rgba.data(), rowBytes, 0, sourceY);
+            }
+            if (!copied) {
+                return 0;
+            }
+            Pixel* target = output + static_cast<size_t>(row) * width;
+            for (int32 x = 0; x < width; ++x) {
+                const uint8_t* pixel = rgba.data() + static_cast<size_t>(x) * 4;
+                target[x] = (static_cast<Pixel>(pixel[3]) << 24)
+                    | (static_cast<Pixel>(pixel[0]) << 16)
+                    | (static_cast<Pixel>(pixel[1]) << 8)
+                    | static_cast<Pixel>(pixel[2]);
+            }
+        }
+        return 1;
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
 void skia_image_backing_release(int64_t handle) {
     if (handle != 0) {
         auto alias = backingAliases.find(handle);
@@ -470,12 +936,20 @@ void skia_image_backing_release(int64_t handle) {
 }
 
 void skia_image_backing_reset_accounting_for_test(void) {
+    backingAccountingForTest = true;
+    skia_image_backing_clear_accounting_counters_for_test();
+}
+
+void skia_image_backing_clear_accounting_counters_for_test(void) {
     backingRecordsCreatedForTest = 0;
     backingRecordsReleasedForTest = 0;
     backingRecordsLiveForTest = 0;
     backingRecordsPeakLiveForTest = 0;
     backingBytesLiveForTest = 0;
     backingBytesPeakLiveForTest = 0;
+    if (!backingAccountingForTest) {
+        return;
+    }
     for (const auto& entry : backings) {
         if (entry.second) {
             ++backingRecordsLiveForTest;
@@ -484,7 +958,52 @@ void skia_image_backing_reset_accounting_for_test(void) {
     }
     backingRecordsPeakLiveForTest = backingRecordsLiveForTest;
     backingBytesPeakLiveForTest = backingBytesLiveForTest;
-    backingAccountingForTest = true;
+    writePixelsAttemptsForTest = 0;
+    writePixelsHitsForTest = 0;
+    writePixelsFallbacksForTest = 0;
+    writePixelsCopiedBytesForTest = 0;
+    physicalIdentityAttemptsForTest = 0;
+    physicalIdentityHitsForTest = 0;
+    physicalIdentityFallbacksForTest = 0;
+    physicalIdentityResamplesAvoidedForTest = 0;
+    targetColorAttemptsForTest = 0;
+    targetColorMaterializationsForTest = 0;
+    targetColorHitsForTest = 0;
+    targetColorFallbacksForTest = 0;
+    targetColorConvertedBytesForTest = 0;
+    physicalVariantLookupsForTest = 0;
+    physicalVariantHitsForTest = 0;
+    physicalVariantMissesForTest = 0;
+    physicalVariantMaterializationsForTest = 0;
+    physicalVariantEvictionsForTest = 0;
+    physicalVariantBytesForTest = 0;
+}
+
+void skia_image_backing_set_accounting_for_test(int enabled) {
+    backingAccountingForTest = enabled != 0;
+    if (!backingAccountingForTest) {
+        backingRecordsCreatedForTest = 0;
+        backingRecordsReleasedForTest = 0;
+        backingRecordsLiveForTest = 0;
+        backingRecordsPeakLiveForTest = 0;
+        backingBytesLiveForTest = 0;
+        backingBytesPeakLiveForTest = 0;
+        physicalIdentityAttemptsForTest = 0;
+        physicalIdentityHitsForTest = 0;
+        physicalIdentityFallbacksForTest = 0;
+        physicalIdentityResamplesAvoidedForTest = 0;
+        targetColorAttemptsForTest = 0;
+        targetColorMaterializationsForTest = 0;
+        targetColorHitsForTest = 0;
+        targetColorFallbacksForTest = 0;
+        targetColorConvertedBytesForTest = 0;
+        physicalVariantLookupsForTest = 0;
+        physicalVariantHitsForTest = 0;
+        physicalVariantMissesForTest = 0;
+        physicalVariantMaterializationsForTest = 0;
+        physicalVariantEvictionsForTest = 0;
+        physicalVariantBytesForTest = 0;
+    }
 }
 
 uint64_t skia_image_backing_records_created_for_test(void) {
@@ -509,4 +1028,104 @@ uint64_t skia_image_backing_bytes_live_for_test(void) {
 
 uint64_t skia_image_backing_bytes_peak_live_for_test(void) {
     return backingBytesPeakLiveForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_attempts_for_test(void) {
+    return writePixelsAttemptsForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_hits_for_test(void) {
+    return writePixelsHitsForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_fallbacks_for_test(void) {
+    return writePixelsFallbacksForTest;
+}
+
+uint64_t skia_image_backing_write_pixels_copied_bytes_for_test(void) {
+    return writePixelsCopiedBytesForTest;
+}
+
+void skia_image_backing_record_physical_identity_attempt_for_test(void) {
+    if (backingAccountingForTest) {
+        ++physicalIdentityAttemptsForTest;
+    }
+}
+
+void skia_image_backing_record_physical_identity_hit_for_test(void) {
+    if (backingAccountingForTest) {
+        ++physicalIdentityHitsForTest;
+    }
+}
+
+void skia_image_backing_record_physical_identity_fallback_for_test(void) {
+    if (backingAccountingForTest) {
+        ++physicalIdentityFallbacksForTest;
+    }
+}
+
+void skia_image_backing_record_physical_identity_resample_avoided_for_test(void) {
+    if (backingAccountingForTest) {
+        ++physicalIdentityResamplesAvoidedForTest;
+    }
+}
+
+uint64_t skia_image_backing_physical_identity_attempts_for_test(void) {
+    return physicalIdentityAttemptsForTest;
+}
+
+uint64_t skia_image_backing_physical_identity_hits_for_test(void) {
+    return physicalIdentityHitsForTest;
+}
+
+uint64_t skia_image_backing_physical_identity_fallbacks_for_test(void) {
+    return physicalIdentityFallbacksForTest;
+}
+
+uint64_t skia_image_backing_physical_identity_resamples_avoided_for_test(void) {
+    return physicalIdentityResamplesAvoidedForTest;
+}
+
+uint64_t skia_image_backing_target_color_attempts_for_test(void) {
+    return targetColorAttemptsForTest;
+}
+
+uint64_t skia_image_backing_target_color_materializations_for_test(void) {
+    return targetColorMaterializationsForTest;
+}
+
+uint64_t skia_image_backing_target_color_hits_for_test(void) {
+    return targetColorHitsForTest;
+}
+
+uint64_t skia_image_backing_target_color_fallbacks_for_test(void) {
+    return targetColorFallbacksForTest;
+}
+
+uint64_t skia_image_backing_target_color_converted_bytes_for_test(void) {
+    return targetColorConvertedBytesForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_lookups_for_test(void) {
+    return physicalVariantLookupsForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_hits_for_test(void) {
+    return physicalVariantHitsForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_misses_for_test(void) {
+    return physicalVariantMissesForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_materializations_for_test(void) {
+    return physicalVariantMaterializationsForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_evictions_for_test(void) {
+    return physicalVariantEvictionsForTest;
+}
+
+uint64_t skia_image_backing_physical_variant_bytes_for_test(void) {
+    return physicalVariantBytesForTest;
 }
