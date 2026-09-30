@@ -263,6 +263,57 @@ source/runtime hashes and host metadata. Keep the 663-image corpus external.
 Do not add a generic six-process runner, standalone corpus packager, copied
 PowerShell matrix, raw result archive, or tooling-only closeout after P1–P11.
 
+The durable runner contracts are feature-owned rather than consolidated after
+the implementation sequence:
+
+| Workload that survives | Owner and boundary |
+|---|---|
+| Clipped raster/copyRect parity and vertical row-reuse correctness | P6/P7 keep small deterministic fixtures and a deployed macOS native smoke where the Skia path differs from JavaSE. A matched Windows run is optional environment-specific evidence, not a universal timing gate. |
+| Decode and compact-format comparisons | P4/P5 keep focused synthetic tests. A corpus runner is justified only if the external corpus owner confirms continued access and distribution rights; keep decode source/order/size cases separate from scroll timing. |
+| Preparation readiness, queue lifecycle, and static PNG adoption | P8/P9/P10 own the cold/warm and JPEG/PNG workload needed to verify their changed path. The semaphore comparison remains test-only and cannot become a production worker selector. |
+| Flick and scheduling workloads | P11 keeps the 40/60 fps TimerEvent, UpdateListener, and 16 ms/16.667 ms synthetic workload shapes. Keep callback interval, callback work, and deadline error as separate measurements. |
+
+Use named test configurations such as `compact-off`/`compact-on`,
+`scroll-reuse-off`/`scroll-reuse-on`, `prefetch-legacy`/`prefetch-semaphore`,
+and the named Flick workload. Record requested and effective runtime options
+for each cell; these harness labels are not public API and must not serialize
+integer masks. Run each measured cell in a fresh process when process startup
+or static caches could affect it, and state explicitly that this does not clear
+the host filesystem cache.
+
+Consume F's bounded diagnostic snapshots/deltas for supported IMAGE,
+RENDERING, PREFETCH, SCHEDULING, and MEMORY groups. The selected diagnostic
+group only controls observation: it does not choose an image format, renderer
+path, worker, or pacing policy. Do not use historical `*ForTest` counters as
+the long-lived runner schema.
+
+For native macOS runs, build/deploy the fixture from the audited feature
+revision and attest both SDK and runtime hashes. Capture process output and
+completion status, but keep the runner specific to the owning fixture. On
+Windows, retain the durable PowerShell process-control techniques only when a
+supported Windows host needs them: capture the child exit code, enforce a
+timeout, preserve stdout/stderr and `DebugConsole.txt`, and verify the package,
+runtime, and dataset hashes against a manifest. Reuse one result schema where
+possible; do not copy the old profile-specific parser, matrix, package scripts,
+or resume archive wholesale.
+
+When an owner needs the 663-image workload, it remains an externally supplied
+corpus. Validate the expected relative paths/count, file identity, JPEG/PNG
+magic, and a versioned manifest/hash before running; record the three-column,
+221-row workload shape. The repository evidence does not establish a durable
+source or distribution rights, so the corpus and transformed variants stay
+outside Git. A missing corpus or rights confirmation is a tooling limitation,
+not a blocker for deterministic synthetic correctness tests.
+
+Every run that is retained as external evidence records source commit, SDK and
+runtime binary hashes, OS/architecture, Java/tool versions, build type, logical
+and drawable dimensions, scale/DPI, renderer/backend, refresh rate, corpus
+manifest/hash, requested/effective named settings, prefetch state, and the
+cold/warm protocol. Windows results also state RDP versus local console and
+SDL pixel format. Keep raw logs, per-process JSON/CSV, packages, TCZs, corpus
+copies, and run-specific manifests/hashes in external artifact storage; commit
+only source tests and durable report summaries.
+
 ## 11. Recommended implementation waves and merge order
 
 ```text
@@ -287,6 +338,14 @@ unless their optional integrated workload is included. P9 before P10 minimizes
 `ImagePreparation.java` churn. Every PR branch starts from the latest merge
 base named above; no implementation branch starts from a historical feature
 branch.
+
+The mandatory dependency edges, independent of that low-conflict merge order,
+are: B+F → P1; P1 → P2 → P3; P3 → P4 and P3 → P6; P1 → P7; P1+P5 → P8 →
+P9; P8 → P10 (P9 is the preferred shared-coordinator base); and F plus the
+already-present clock/output primitives → P11. P5 needs the existing encoded
+source/pipeline and common P1 policy state, but can be implemented in parallel
+with P2 after P1. P12 has no branch because E/K cancel the standalone tooling
+PR.
 
 ## 12. Genuine blockers and unresolved questions
 
