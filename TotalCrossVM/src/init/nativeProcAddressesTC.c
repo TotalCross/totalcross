@@ -625,6 +625,13 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jucS_acquireUninterruptibly"), &jucS_acquireUninterruptibly);
    htPutPtr(&htNativeProcAddresses, hashCode("jucS_tryAcquire"), &jucS_tryAcquire);
    htPutPtr(&htNativeProcAddresses, hashCode("jucS_release"), &jucS_release);
+#if defined(TC_ENABLE_RUNTIME_DIAGNOSTICS)
+   htPutPtr(&htNativeProcAddresses, hashCode("tsRDS_readMetricNative_i"), &tsRDS_readMetricNative_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsRDS_readMetricsNative_IL"), &tsRDS_readMetricsNative_IL);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsRDS_resetMetricsNative_i"), &tsRDS_resetMetricsNative_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsRDS_addNativeCountNative_l"), &tsRDS_addNativeCountNative_l);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsRDS_setNativeGaugeNative_l"), &tsRDS_setNativeGaugeNative_l);
+#endif
 #if defined(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
    htPutPtr(&htNativeProcAddresses, hashCode("tucSTD_awaitWaiters_si"), &tucSTD_awaitWaiters_si);
 #endif
