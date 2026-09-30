@@ -18,6 +18,11 @@ final class ImageDecodeRequirement {
         || requestedPhysicalWidth <= 0 || requestedPhysicalHeight <= 0) {
       return 1;
     }
+    ImageDecodePolicy policy = pipeline.decodePolicy();
+    if (policy.mode() != ImageDecodePolicy.Mode.TARGET_DECODE) {
+      // The eager factory result fixed this decode tier before later transforms were applied.
+      return policy.decodeDenominator();
+    }
 
     int visibleWidth = source.getIntrinsicWidth();
     int visibleHeight = source.getIntrinsicHeight();
@@ -83,12 +88,6 @@ final class ImageDecodeRequirement {
 
     int denominator = chooseForTargetDimensions(visibleWidth, visibleHeight,
         source.getIntrinsicWidth(), source.getIntrinsicHeight(), requestedPhysicalWidth, requestedPhysicalHeight);
-    ImageDecodePolicy policy = pipeline.decodePolicy();
-    if (policy.mode() != ImageDecodePolicy.Mode.TARGET_DECODE) {
-      // Preserve the factory's captured decode limit while allowing later transforms
-      // to request a finer decode when they need more pixels.
-      denominator = Math.min(denominator, policy.decodeDenominator());
-    }
     return denominator;
   }
 

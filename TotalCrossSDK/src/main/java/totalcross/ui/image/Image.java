@@ -5282,10 +5282,10 @@ public class Image extends GfxSurface {
     return source;
   }
 
-  private static Image imageForCapturedSource(String path, EncodedImageSource source) {
+  private static Image imageForCapturedSource(String path, EncodedImageSource source, ImageDecodePolicy policy) {
     Image image = new Image();
     image.path = path;
-    image.initializeDeferred(source);
+    image.initializeDeferred(source, policy);
     return image;
   }
 
@@ -5299,10 +5299,10 @@ public class Image extends GfxSurface {
         source.getIntrinsicWidth(), source.getIntrinsicHeight(), targetWidth, targetHeight);
     final int scaledWidth = jpegScaledDimension(source.getIntrinsicWidth(), 1, scaleDenominator);
     final int scaledHeight = jpegScaledDimension(source.getIntrinsicHeight(), 1, scaleDenominator);
-    Image image = imageForCapturedSource(path, source);
-    Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
-    result.materializeCanonicalChecked();
-    return result;
+    ImageDecodePolicy policy = ImageDecodePolicy.bestFit(targetWidth, targetHeight, scaleDenominator,
+        scaledWidth, scaledHeight);
+    Image image = imageForCapturedSource(path, source, policy);
+    return image.getSmoothScaledInstance(scaledWidth, scaledHeight);
   }
 
   @ReplacedByNativeOnDeploy
@@ -5313,10 +5313,12 @@ public class Image extends GfxSurface {
 
     final int scaledWidth = jpegScaledDimension(source.getIntrinsicWidth(), scaleNumerator, scaleDenominator);
     final int scaledHeight = jpegScaledDimension(source.getIntrinsicHeight(), scaleNumerator, scaleDenominator);
-    Image image = imageForCapturedSource(path, source);
-    Image result = image.getSmoothScaledInstance(scaledWidth, scaledHeight);
-    result.materializeCanonicalChecked();
-    return result;
+    int decodeDenominator = ImageDecodeRequirement.chooseForTargetDimensions(source.getIntrinsicWidth(),
+        source.getIntrinsicHeight(), scaledWidth, scaledHeight);
+    ImageDecodePolicy policy = ImageDecodePolicy.explicitRatio(scaleNumerator, scaleDenominator,
+        decodeDenominator, scaledWidth, scaledHeight);
+    Image image = imageForCapturedSource(path, source, policy);
+    return image.getSmoothScaledInstance(scaledWidth, scaledHeight);
   }
 
   @Override
