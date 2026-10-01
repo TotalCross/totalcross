@@ -116,6 +116,11 @@ import totalcross.util.Vector;
 public class Window extends Container {
   /** True if some area of any window is invalidated */
   public static boolean needsPaint;
+  private static boolean repaintActiveWindowsRunning;
+  private static Rect rasterReusePaintClip;
+  private static boolean rasterReusePaintFailed;
+  private static boolean activeRepaintFailed;
+  private static final Rect rasterReuseClipScratch = new Rect();
   /** Window's title */
   protected String title; // guich@102
   /** When this window is the top most and the user clicks outside, a beep is thrown. Set this to false do disable the beep. */
@@ -1777,62 +1782,147 @@ public class Window extends Container {
   /** Repaints the window stack from 0 to zStack.size().
    */  
   public static void repaintActiveWindows() {
-    int i, j, n;
-    boolean eas = enableUpdateScreen;
-    enableUpdateScreen = false;
-    boolean neededPaint = needsPaint;
-    needsPaint = false; // prevent from updating the screen
-    // guich@400_73 guich@400_76
-    boolean callUS = true;
+    if (repaintActiveWindowsRunning && rasterReusePaintClip != null) {
+      rasterReusePaintFailed = true;
+      needsPaint = true;
+      return;
+    }
+    boolean wasRepainting = repaintActiveWindowsRunning;
+    if (!wasRepainting) {
+      activeRepaintFailed = false;
+    }
+    repaintActiveWindowsRunning = true;
     try {
-      Object[] items = zStack.items;
-      Rect mainWindowRect = MainWindow.mainWindowInstance.getRect(); // size of the MainWindow
-      for (i = zStack.size(); --i > 0;) {
-        if (((Window) items[i]).getRect().equals(mainWindowRect)) {
-          break;
+      int i, j, n;
+      boolean eas = enableUpdateScreen;
+      enableUpdateScreen = false;
+      boolean neededPaint = needsPaint;
+      needsPaint = false; // prevent from updating the screen
+      // guich@400_73 guich@400_76
+      boolean callUS = true;
+      try {
+        Object[] items = zStack.items;
+        Rect mainWindowRect = MainWindow.mainWindowInstance.getRect(); // size of the MainWindow
+        for (i = zStack.size(); --i > 0;) {
+          if (((Window) items[i]).getRect().equals(mainWindowRect)) {
+            break;
+          }
         }
+        // guich@tc120_43: find the last fadeOtherWindows
+        int lastFade = 1000;
+        for (j = 0, n = zStack.size(); j < n; j++) {
+          if (((Window) items[j]).fadeOtherWindows) {
+            lastFade = j;
+          }
+        }
+        if (i == -1) {
+          i = 0;
+        }
+        for (n = zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
+        {
+          if (i == lastFade) {
+            Graphics.fadeScreen(fadeValue);
+          }
+          if (items[i] != null) {
+            ((Window) items[i])._doPaint();
+          }
+        }
+        if (neededPaint) {
+          topMost.onWindowPaintFinished();
+          if (topMost._focus != null && topMost._focus.getParentWindow() == topMost) {
+            topMost._focus.onWindowPaintFinished(); // guich@200b4: test if the last focused control belongs to this window; this corrects the painted control after a window is poped up
+          }
+          topMost.lastHighlighted = null;
+          if (topMost.highlighted != null) {
+            topMost.drawHighlight(topMost.highlighted);
+          }
+          safeUpdateScreen(); // tc100
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+        activeRepaintFailed = true;
+        if (rasterReusePaintClip != null) {
+          rasterReusePaintFailed = true;
+          needsPaint = true;
+        }
+        callUS = false;
       }
-      // guich@tc120_43: find the last fadeOtherWindows
-      int lastFade = 1000;
-      for (j = 0, n = zStack.size(); j < n; j++) {
-        if (((Window) items[j]).fadeOtherWindows) {
-          lastFade = j;
-        }
-      }
-      if (i == -1) {
-        i = 0;
-      }
-      for (n = zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
-      {
-        if (i == lastFade) {
-          Graphics.fadeScreen(fadeValue);
-        }
-        if (items[i] != null) {
-          ((Window) items[i])._doPaint();
-        }
-      }
-      if (neededPaint) {
-        topMost.onWindowPaintFinished();
-        if (topMost._focus != null && topMost._focus.getParentWindow() == topMost) {
-          topMost._focus.onWindowPaintFinished(); // guich@200b4: test if the last focused control belongs to this window; this corrects the painted control after a window is poped up
-        }
-        topMost.lastHighlighted = null;
-        if (topMost.highlighted != null) {
-          topMost.drawHighlight(topMost.highlighted);
-        }
-        safeUpdateScreen(); // tc100
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      callUS = false;
-    }
 
-    // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.
+      // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.
 
-    enableUpdateScreen = eas;
-    if (callUS) {
-      safeUpdateScreen();
+      enableUpdateScreen = eas;
+      if (callUS) {
+        safeUpdateScreen();
+      }
+    } finally {
+      repaintActiveWindowsRunning = wasRepainting;
     }
+  }
+
+  static boolean isRepaintingActiveWindows() {
+    return repaintActiveWindowsRunning;
+  }
+
+  static void constrainGraphicsToRasterReuseClip(Graphics graphics, int translationX, int translationY) {
+    Rect damage = rasterReusePaintClip;
+    if (damage == null || graphics == null) {
+      return;
+    }
+    graphics.getClip(rasterReuseClipScratch);
+    long left = Math.max((long) damage.x, (long) translationX + rasterReuseClipScratch.x);
+    long top = Math.max((long) damage.y, (long) translationY + rasterReuseClipScratch.y);
+    long right = Math.min((long) damage.x + damage.width,
+        (long) translationX + rasterReuseClipScratch.x + rasterReuseClipScratch.width);
+    long bottom = Math.min((long) damage.y + damage.height,
+        (long) translationY + rasterReuseClipScratch.y + rasterReuseClipScratch.height);
+    long localX = left - translationX;
+    long localY = top - translationY;
+    long width = Math.max(0, right - left);
+    long height = Math.max(0, bottom - top);
+    if (localX < Integer.MIN_VALUE || localX > Integer.MAX_VALUE || localY < Integer.MIN_VALUE
+        || localY > Integer.MAX_VALUE || width > Integer.MAX_VALUE || height > Integer.MAX_VALUE) {
+      graphics.setClip(0, 0, 0, 0);
+      return;
+    }
+    graphics.setClip((int) localX, (int) localY, (int) width, (int) height);
+  }
+
+  static boolean repaintActiveWindowsForRasterReuse(ScrollRasterReuse.Rect clip) {
+    if (clip == null || repaintActiveWindowsRunning || rasterReusePaintClip != null) {
+      needsPaint = true;
+      if (!repaintActiveWindowsRunning) {
+        repaintActiveWindowsForRasterReuseFallback();
+      }
+      return false;
+    }
+    rasterReusePaintClip = new Rect(clip.x, clip.y, clip.width, clip.height);
+    rasterReusePaintFailed = false;
+    needsPaint = true;
+    try {
+      repaintActiveWindows();
+    } finally {
+      rasterReusePaintClip = null;
+    }
+    boolean painted = !activeRepaintFailed && !rasterReusePaintFailed && !needsPaint;
+    if (!painted) {
+      repaintActiveWindowsForRasterReuseFallback();
+    }
+    return painted;
+  }
+
+  static boolean repaintActiveWindowsForRasterReuseFallback() {
+    if (repaintActiveWindowsRunning) {
+      needsPaint = true;
+      return false;
+    }
+    needsPaint = true;
+    activeRepaintFailed = false;
+    repaintActiveWindows();
+    boolean painted = !activeRepaintFailed && !needsPaint;
+    if (!painted) {
+      needsPaint = true;
+    }
+    return painted;
   }
 
   ////////////////////////////////////////////////////////////////////////////////////

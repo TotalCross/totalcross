@@ -12,6 +12,7 @@ import java.util.List;
 
 import totalcross.sys.Settings;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.Coord;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.Rect;
 
@@ -446,6 +447,8 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   
   private boolean internalScrollContent(int dx, int dy, boolean fromFlick) {
     boolean scrolled = false;
+    int appliedDx = 0;
+    int appliedDy = 0;
     if((sbV != null || sbH != null) && dx == 0 && dy == 0) {
       if (scrollStarted) {
         scrollStarted = false;
@@ -458,6 +461,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       lastH = sbH.value;
 
       if (oldValue != lastH) {
+        appliedDx = lastH - oldValue;
         bagSetRect(contentInsets.left - lastH, KEEP, KEEP, KEEP, false);
         scrolled = true;
         if (!fromFlick) {
@@ -471,6 +475,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
       lastV = sbV.value;
 
       if (oldValue != lastV) {
+        appliedDy = lastV - oldValue;
         bagSetRect(KEEP, contentInsets.top - lastV, KEEP, KEEP, false);
         scrolled = true;
         if (!fromFlick) {
@@ -480,9 +485,121 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     }
 
     if (scrolled) {
-      Window.needsPaint = true;
+      if (!(appliedDx == 0 && appliedDy != 0 && tryRasterReuse(appliedDx, appliedDy))) {
+        Window.needsPaint = true;
+      }
     }
     return scrolled;
+  }
+
+  private boolean tryRasterReuse(int dx, int dy) {
+    if (!ScrollRasterReuse.isEnabled()) {
+      return false;
+    }
+    ScrollRasterReuse.recordAttempt();
+    if (Window.isRepaintingActiveWindows()) {
+      ScrollRasterReuse.recordFallback(ScrollRasterReuse.FallbackReason.FULL_REPAINT_REQUIRED);
+      return false;
+    }
+
+    Graphics graphics = bag0.getGraphics();
+    if (graphics == null) {
+      ScrollRasterReuse.recordFallback(ScrollRasterReuse.FallbackReason.INVALID_VIEWPORT);
+      return false;
+    }
+    Rect clippedViewport = new Rect();
+    graphics.getClip(clippedViewport);
+    Coord translation = graphics.getTranslation();
+    long viewportX = (long) translation.x + clippedViewport.x;
+    long viewportY = (long) translation.y + clippedViewport.y;
+    if (viewportX < Integer.MIN_VALUE || viewportX > Integer.MAX_VALUE || viewportY < Integer.MIN_VALUE
+        || viewportY > Integer.MAX_VALUE || clippedViewport.width <= 0 || clippedViewport.height <= 0) {
+      ScrollRasterReuse.recordFallback(ScrollRasterReuse.FallbackReason.INVALID_VIEWPORT);
+      return false;
+    }
+    ScrollRasterReuse.Rect viewport = new ScrollRasterReuse.Rect((int) viewportX, (int) viewportY,
+        clippedViewport.width, clippedViewport.height);
+    double scale = graphics.getContentScale();
+    int width = graphics.getSurfacePixelWidth();
+    int height = graphics.getSurfacePixelHeight();
+    int stride = graphics.getSurfacePixelPitch();
+    int[] pixels = Graphics.mainWindowPixels;
+    long required = (long) stride * height;
+    boolean framebufferReady = width > 0 && height > 0 && stride > 0 && pixels != null
+        && required > 0 && required <= pixels.length;
+    ScrollRasterReuse.Surface surface = new ScrollRasterReuse.Surface(width, height, stride, Integer.BYTES,
+        framebufferReady, stride == width, framebufferReady);
+    boolean unsupportedScale = ScrollRasterReuse.isUnsupportedNativeScale(scale);
+    boolean fullRepaintRequired = !visible || !isDisplayed() || changed || bag.offscreen != null
+        || Window.isRepaintingActiveWindows() || hasRasterReuseOverlay(viewport)
+        || (sbV != null && sbV.isVisible() && sbV.transparentBackground)
+        || (sbH != null && sbH.isVisible() && sbH.transparentBackground);
+    ScrollRasterReuse.Plan plan = ScrollRasterReuse.plan(true, ScrollRasterReuse.isRasterBackend(), dx, dy,
+        viewport, scale, surface, unsupportedScale, false, fullRepaintRequired);
+    if (!plan.eligible()) {
+      ScrollRasterReuse.recordFallback(plan.fallbackReason);
+      return false;
+    }
+    ScrollRasterReuse.Rect logicalDamage = ScrollRasterReuse.toLogical(plan.exposed, scale);
+    if (logicalDamage == null) {
+      ScrollRasterReuse.recordFallback(ScrollRasterReuse.FallbackReason.UNSUPPORTED_TRANSFORM);
+      return false;
+    }
+
+    int moveStatus = ScrollRasterReuse.move(plan, surface);
+    if (moveStatus != ScrollRasterReuse.MOVE_SUCCEEDED) {
+      ScrollRasterReuse.recordFallback(ScrollRasterReuse.fallbackReasonForMove(moveStatus));
+      Window.needsPaint = true;
+      return false;
+    }
+
+    if (!Window.repaintActiveWindowsForRasterReuse(logicalDamage)) {
+      ScrollRasterReuse.recordFallback(ScrollRasterReuse.FallbackReason.FULL_REPAINT_REQUIRED);
+      return true;
+    }
+    if (sbV != null && sbV.isVisible()) {
+      sbV.repaintNow();
+    }
+    if (Window.needsPaint) {
+      ScrollRasterReuse.recordFallback(ScrollRasterReuse.FallbackReason.FULL_REPAINT_REQUIRED);
+      Window.repaintActiveWindows();
+      return true;
+    }
+    ScrollRasterReuse.recordSuccess();
+    return true;
+  }
+
+  private boolean hasRasterReuseOverlay(ScrollRasterReuse.Rect viewport) {
+    for (Control child = this.children; child != null; child = child.next) {
+      if (child != bag0 && child.isVisible() && intersectsViewport(child, viewport)) {
+        return true;
+      }
+    }
+    for (Control child = bag0.children; child != null; child = child.next) {
+      if (child != bag && child.isVisible() && intersectsViewport(child, viewport)) {
+        return true;
+      }
+    }
+    Control branch = this;
+    for (Container parent = this.parent; parent != null; parent = parent.parent) {
+      for (Control sibling = parent.children; sibling != null; sibling = sibling.next) {
+        if (sibling != branch && sibling.isVisible() && intersectsViewport(sibling, viewport)) {
+          return true;
+        }
+      }
+      branch = parent;
+    }
+    return getParentWindow() != Window.topMost || Window.zStack.size() != 1;
+  }
+
+  private static boolean intersectsViewport(Control control, ScrollRasterReuse.Rect viewport) {
+    Coord origin = new Coord();
+    control.translateFromOrigin(origin);
+    long left = Math.max((long) viewport.x, origin.x);
+    long top = Math.max((long) viewport.y, origin.y);
+    long right = Math.min((long) viewport.x + viewport.width, (long) origin.x + control.width);
+    long bottom = Math.min((long) viewport.y + viewport.height, (long) origin.y + control.height);
+    return right > left && bottom > top;
   }
 
   @Override

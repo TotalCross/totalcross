@@ -198,12 +198,14 @@ public final class Graphics {
 
   /** Returns the physical width of this destination surface, in pixels. */
   public int getSurfacePixelWidth() {
-    return surface instanceof Image ? ((Image) surface).getPixelWidth() : mainWindowPixelWidth;
+    return surface instanceof Image ? ((Image) surface).getPixelWidth()
+        : mainWindowPixelWidth > 0 ? mainWindowPixelWidth : pitch;
   }
 
   /** Returns the physical height of this destination surface, in pixels. */
   public int getSurfacePixelHeight() {
-    return surface instanceof Image ? ((Image) surface).getPixelHeight() : mainWindowPixelHeight;
+    return surface instanceof Image ? ((Image) surface).getPixelHeight()
+        : mainWindowPixelHeight > 0 ? mainWindowPixelHeight : scaleSurfaceDimension(Settings.screenHeight, contentScale);
   }
 
   /**
