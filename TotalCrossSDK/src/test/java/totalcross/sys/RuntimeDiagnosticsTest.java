@@ -18,6 +18,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import totalcross.ui.image.ImagePreparationFeatureBridge;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +39,7 @@ class RuntimeDiagnosticsTest {
     supportClass = Class.forName("totalcross.sys.RuntimeDiagnosticsSupport");
     RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.IMAGE, false);
     RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
     RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.RUNTIME, true);
     runtimeMetricsClass = Class.forName("totalcross.sys.RuntimeDiagnosticsSupport$RuntimeMetrics");
     bridgeField = runtimeMetricsClass.getDeclaredField("nativeBridge");
@@ -61,23 +64,54 @@ class RuntimeDiagnosticsTest {
       RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.RUNTIME, false);
       RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.IMAGE, false);
       RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+      RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
       bridgeField.set(null, originalBridge);
     }
   }
 
   @Test
   void publicMetadataContainsDomainsAndKindsWithoutMetricKeys() {
-    assertEquals(3, RuntimeDiagnosticSnapshot.Domain.values().length);
+    assertEquals(4, RuntimeDiagnosticSnapshot.Domain.values().length);
     assertEquals("RUNTIME", RuntimeDiagnosticSnapshot.Domain.RUNTIME.name());
     assertEquals("IMAGE", RuntimeDiagnosticSnapshot.Domain.IMAGE.name());
     assertEquals("SCHEDULING", RuntimeDiagnosticSnapshot.Domain.SCHEDULING.name());
     assertEquals(0, RuntimeDiagnosticSnapshot.Domain.RUNTIME.ordinal());
     assertEquals(1, RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal());
     assertEquals(2, RuntimeDiagnosticSnapshot.Domain.SCHEDULING.ordinal());
+    assertEquals("PREFETCH", RuntimeDiagnosticSnapshot.Domain.PREFETCH.name());
+    assertEquals(3, RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal());
     assertEquals(3, RuntimeDiagnosticSnapshot.Kind.values().length);
     assertEquals(RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(), 0);
     assertEquals(RuntimeDiagnosticSnapshot.Kind.GAUGE.ordinal(), 1);
     assertEquals(RuntimeDiagnosticSnapshot.Kind.TIMER.ordinal(), 2);
+  }
+
+  @Test
+  void prefetchDomainCollectsOnlyAggregateFeatureValues() throws Exception {
+    assumeTrue(RuntimeDiagnostics.isSupported());
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, true);
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.PREFETCH);
+    final int[] completions = {0};
+    ImagePreparationFeatureBridge.prepareForDisplay(null, 1.0, 1L, new Runnable() {
+      @Override
+      public void run() {
+        completions[0]++;
+      }
+    });
+
+    RuntimeDiagnosticSnapshot snapshot = RuntimeDiagnostics.snapshot();
+    assertEquals(1, completions[0]);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 0);
+    RuntimeDiagnosticsFeatureBridge.setGauge(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 8, 12L);
+    RuntimeDiagnosticsFeatureBridge.setGauge(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 9, 1L);
+    snapshot = RuntimeDiagnostics.snapshot();
+    assertEquals(3L, snapshot.getValue(RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(13L, snapshot.getValue(RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.GAUGE));
+    assertEquals(0, nativeValues.batchReads);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
   }
 
   @Test
@@ -325,6 +359,146 @@ class RuntimeDiagnosticsTest {
   }
 
   @Test
+  void schedulingAndPrefetchTogglesKeepMetricValuesIndependent() throws Exception {
+    assumeTrue(RuntimeDiagnostics.isSupported());
+    enableAndResetFeatureDomains();
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 0);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 1);
+    RuntimeDiagnosticsFeatureBridge.recordTimer(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 0, 17L);
+    RuntimeDiagnosticsFeatureBridge.recordTimer(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 1, 2L);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 0);
+    RuntimeDiagnosticsFeatureBridge.setGauge(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 8, 7L);
+    RuntimeDiagnosticsFeatureBridge.setGauge(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 9, 3L);
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, true);
+    assertTrue(RuntimeDiagnosticsFeatureBridge.isDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING));
+    assertTrue(RuntimeDiagnosticsFeatureBridge.isDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH));
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+    RuntimeDiagnosticSnapshot afterSchedulingToggle = RuntimeDiagnostics.snapshot();
+    assertEquals(1L, value(afterSchedulingToggle, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(10L, value(afterSchedulingToggle, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.GAUGE));
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, true);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, true);
+    assertTrue(RuntimeDiagnosticsFeatureBridge.isDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING));
+    assertTrue(RuntimeDiagnosticsFeatureBridge.isDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH));
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
+    RuntimeDiagnosticSnapshot afterPrefetchToggle = RuntimeDiagnostics.snapshot();
+    assertEquals(2L, value(afterPrefetchToggle, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(19L, value(afterPrefetchToggle, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.TIMER));
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, true);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+    RuntimeDiagnosticSnapshot prefetchValuesAfterBothToggles = RuntimeDiagnostics.snapshot();
+    assertEquals(1L, value(prefetchValuesAfterBothToggles, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(10L, value(prefetchValuesAfterBothToggles, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.GAUGE));
+  }
+
+  @Test
+  void resettingSchedulingAndPrefetchPreservesTheOtherDomain() throws Exception {
+    assumeTrue(RuntimeDiagnostics.isSupported());
+    enableAndResetFeatureDomains();
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 0);
+    RuntimeDiagnosticsFeatureBridge.recordTimer(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 0, 23L);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 1);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 0);
+    RuntimeDiagnosticsFeatureBridge.setGauge(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 8, 5L);
+
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.SCHEDULING);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+    RuntimeDiagnosticSnapshot prefetchAfterSchedulingReset = RuntimeDiagnostics.snapshot();
+    assertEquals(1L, value(prefetchAfterSchedulingReset, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(5L, value(prefetchAfterSchedulingReset, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.GAUGE));
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, true);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
+    RuntimeDiagnosticSnapshot schedulingAfterOwnReset = RuntimeDiagnostics.snapshot();
+    assertEquals(0L, value(schedulingAfterOwnReset, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(0L, value(schedulingAfterOwnReset, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.TIMER));
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, true);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 2);
+    RuntimeDiagnosticsFeatureBridge.recordTimer(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 1, 31L);
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.PREFETCH);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
+    RuntimeDiagnosticSnapshot schedulingAfterPrefetchReset = RuntimeDiagnostics.snapshot();
+    assertEquals(1L, value(schedulingAfterPrefetchReset, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(31L, value(schedulingAfterPrefetchReset, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.TIMER));
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, true);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+    RuntimeDiagnosticSnapshot prefetchAfterOwnReset = RuntimeDiagnostics.snapshot();
+    assertEquals(0L, value(prefetchAfterOwnReset, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(0L, value(prefetchAfterOwnReset, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.GAUGE));
+  }
+
+  @Test
+  void disabledSchedulingOrPrefetchDoesNotCollectWhileTheOtherIsEnabled() throws Exception {
+    assumeTrue(RuntimeDiagnostics.isSupported());
+    enableAndResetFeatureDomains();
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 0);
+    RuntimeDiagnosticsFeatureBridge.recordTimer(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 0, 17L);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 0);
+    RuntimeDiagnosticsFeatureBridge.setGauge(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 8, 4L);
+    RuntimeDiagnosticSnapshot prefetchWithSchedulingDisabled = RuntimeDiagnostics.snapshot();
+    assertEquals(1L, value(prefetchWithSchedulingDisabled, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(4L, value(prefetchWithSchedulingDisabled, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.GAUGE));
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, true);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
+    RuntimeDiagnosticSnapshot schedulingAfterDisabledEvents = RuntimeDiagnostics.snapshot();
+    assertEquals(0L, value(schedulingAfterDisabledEvents, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(0L, value(schedulingAfterDisabledEvents, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.TIMER));
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, true);
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.SCHEDULING);
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.PREFETCH);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, false);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 0);
+    RuntimeDiagnosticsFeatureBridge.setGauge(RuntimeDiagnosticSnapshot.Domain.PREFETCH, 9, 6L);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 2);
+    RuntimeDiagnosticsFeatureBridge.recordTimer(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, 1, 29L);
+    RuntimeDiagnosticSnapshot schedulingWithPrefetchDisabled = RuntimeDiagnostics.snapshot();
+    assertEquals(1L, value(schedulingWithPrefetchDisabled, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(29L, value(schedulingWithPrefetchDisabled, RuntimeDiagnosticSnapshot.Domain.SCHEDULING,
+        RuntimeDiagnosticSnapshot.Kind.TIMER));
+
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, true);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, false);
+    RuntimeDiagnosticSnapshot prefetchAfterDisabledEvents = RuntimeDiagnostics.snapshot();
+    assertEquals(0L, value(prefetchAfterDisabledEvents, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(0L, value(prefetchAfterDisabledEvents, RuntimeDiagnosticSnapshot.Domain.PREFETCH,
+        RuntimeDiagnosticSnapshot.Kind.GAUGE));
+  }
+
+  @Test
   void deltaRejectsDifferentMetricSetsAndPreservesGaugeMeaning() {
     int[] ids = {41};
     byte[] domains = {(byte) RuntimeDiagnosticSnapshot.Domain.RUNTIME.ordinal()};
@@ -340,6 +514,15 @@ class RuntimeDiagnosticsTest {
 
   private void enableDomain() {
     RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.RUNTIME, true);
+  }
+
+  private void enableAndResetFeatureDomains() throws Exception {
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING, true);
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.PREFETCH, true);
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.SCHEDULING);
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.PREFETCH);
   }
 
   private static long value(RuntimeDiagnosticSnapshot snapshot, RuntimeDiagnosticSnapshot.Kind kind) {

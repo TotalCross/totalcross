@@ -5,8 +5,8 @@
 package totalcross.ui.image;
 
 import totalcross.io.ByteArrayStream;
+import totalcross.io.File;
 import totalcross.sys.Settings;
-import totalcross.sys.Vm;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Color;
@@ -51,11 +51,21 @@ public class ImageNativeMaterializationSmokeApp extends MainWindow {
       require(decodedRed == 255 && decodedAlpha == 255,
           "PNG alpha readback red=" + decodedRed + ",alpha=" + decodedAlpha);
 
-      byte[] jpeg = Vm.getFile("image-abi/back3.jpg");
-      require(jpeg != null && jpeg.length > 0, "JPEG resource");
+      Image jpegSource = new Image(800, 450);
+      Graphics jpegGraphics = jpegSource.getGraphics();
+      jpegGraphics.backColor = Color.RED;
+      jpegGraphics.fillRect(0, 0, jpegSource.getWidth(), jpegSource.getHeight());
+      ByteArrayStream jpegOutput = new ByteArrayStream(8192);
+      jpegSource.createJpg(jpegOutput, 90);
+      byte[] jpeg = new byte[jpegOutput.getPos()];
+      System.arraycopy(jpegOutput.getBuffer(), 0, jpeg, 0, jpeg.length);
+      File jpegFile = new File("native-materialization.jpg", File.CREATE_EMPTY);
+      jpegFile.writeBytes(jpeg, 0, jpeg.length);
+      jpegFile.close();
       Image decodedJpeg = new Image(jpeg, jpeg.length);
       require(decodedJpeg.hasNativeBackingForSmoke(), "JPEG native backing");
-      Image targetedJpeg = Image.getJpegBestFit("image-abi/back3.jpg", 200, 113);
+      Image targetedJpeg = Image.getJpegBestFit("native-materialization.jpg", 200, 113);
+      targetedJpeg.getPixelRow(new byte[targetedJpeg.getPixelWidth() * 4], 0);
       require(targetedJpeg.getPixelWidth() == 200 && targetedJpeg.getPixelHeight() == 113
           && targetedJpeg.hasNativeBackingForSmoke(), "targeted JPEG native backing");
 

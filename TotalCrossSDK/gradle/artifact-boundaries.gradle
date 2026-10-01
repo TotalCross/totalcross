@@ -27,6 +27,13 @@ registerBoundaryJar('totalcrossApiJar', 'totalcross-api') {
     exclude 'totalcross/sys/runtime/ResolvedRuntimeConfiguration*.class'
     exclude 'totalcross/sys/RuntimeDiagnosticsFeatureBridge*.class'
     exclude 'totalcross/ui/image/ImageRasterFeatureBridge*.class'
+    exclude 'totalcross/ui/DisplayPreparationBatch*.class'
+    exclude 'totalcross/ui/DisplayPreparationContext*.class'
+    exclude 'totalcross/ui/image/ImagePreparationFeatureBridge*.class'
+    exclude 'totalcross/ui/image/ImagePreparationMetrics*.class'
+    exclude 'totalcross/ui/image/ImagePreparationRequest*.class'
+    exclude 'totalcross/ui/image/ImagePreparationScheduler*.class'
+    exclude 'totalcross/ui/image/PreparedImageResult*.class'
     exclude '**/*4D.class', '**/*4D$*.class', '**/*4D*.class'
 }
 
