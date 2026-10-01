@@ -889,13 +889,54 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
     tasks.register('deploy' + taskPrefix + 'MacOS', JavaExec) {
         group = 'verification'
         description = 'Deploys the ' + appClass + ' smoke app for macOS.'
-        dependsOn 'copySdkDependencies', 'jar' + taskPrefix
+        dependsOn 'dist', 'copySdkDependencies', 'jar' + taskPrefix
         mainClass = 'tc.Deploy'
         classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
             include '*.jar'
         }
         workingDir classesDir.get().asFile
+        environment 'TOTALCROSS3_HOME', classesDir.get().asFile.absolutePath
         args = [appClass + '.jar', '-macos']
+        doFirst {
+            def sdkRootDir = classesDir.get().asFile
+            copy {
+                from file('dist/vm')
+                into new File(sdkRootDir, 'dist/vm')
+            }
+            copy {
+                from file('dist/libs')
+                into new File(sdkRootDir, 'dist/libs')
+            }
+            copy {
+                from file('etc/fonts')
+                into new File(sdkRootDir, 'etc/fonts')
+            }
+            def nativeLauncher = project.findProperty('tcvmLauncher')
+            if (nativeLauncher) {
+                def nativeLauncherFile = file(nativeLauncher).absoluteFile
+                if (!nativeLauncherFile.isFile()) {
+                    throw new GradleException('Native macOS launcher not found: ' + nativeLauncherFile)
+                }
+                def launcherDir = new File(sdkRootDir, 'etc/launchers/macos')
+                copy {
+                    from nativeLauncherFile
+                    into launcherDir
+                    rename { 'Launcher' }
+                }
+            }
+            def nativeRuntime = project.findProperty('tcvmDylib')
+            if (nativeRuntime) {
+                def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+                if (!nativeRuntimeFile.isFile()) {
+                    throw new GradleException('Native macOS runtime not found: ' + nativeRuntimeFile)
+                }
+                copy {
+                    from nativeRuntimeFile
+                    into new File(sdkRootDir, 'dist/vm/macos')
+                    rename { 'libtcvm.dylib' }
+                }
+            }
+        }
     }
 
     tasks.register('run' + taskPrefix + 'MacOS', Exec) {
@@ -1265,6 +1306,22 @@ registerImageMacSmoke('ImageDeferredFrameFadeLayout', 'ImageDeferredFrameFadeLay
         'selectScaleSelectZero=true',
         'layoutSelectZero=true',
         'layoutSelectOne=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageLazyJpegFactory', 'ImageLazyJpegFactorySmokeApp',
+    'image-lazy-jpeg-factory-smoke', false, false, [
+        'fixture=ImageLazyJpegFactorySmokeApp',
+        'bestFitLazy=true',
+        'bestFitDraw=true',
+        'explicitRatioLazy=true',
+        'explicitRatioDraw=true',
+        'replacementCapture=true',
+        'deletionCapture=true',
+        'deterministicCache=true',
+        'transientRetry=true',
+        'publicJavaRoute=true',
+        'privateNativeDecode=true',
         'overallPass=true'
     ])
 
