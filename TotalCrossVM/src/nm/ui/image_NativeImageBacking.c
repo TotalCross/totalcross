@@ -14,6 +14,10 @@
 void imageBackingRecordMutation(TCObject imageObj, int32 opacityState)
 {
    TCObject backing = imageObj ? Image_backing(imageObj) : null;
+#if TC_RENDERER_SKIA
+   if (backing && strEq(OBJ_CLASS(backing)->name, "totalcross.ui.image.NativeImageBacking"))
+      skia_image_backing_invalidate_variants(NativeImageBacking_nativeHandle(backing));
+#endif
    if (imageObj) {
       int64 generation = Image_backingMutationGeneration(imageObj);
       if (backing && ImageBacking_mutationGeneration(backing) > generation)
@@ -217,6 +221,41 @@ TC_API void tuiNIB_snapshotNative(NMParams p) // totalcross/ui/image/NativeImage
    p->retL = status == SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE ? -1 : snapshotHandle;
 #else
    p->retL = 0;
+#endif
+}
+
+TC_API void tuiNIB_invalidateVariantsNative(NMParams p) // totalcross/ui/image/NativeImageBacking private void invalidateVariantsNative();
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_invalidate_variants(NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   UNUSED(p);
+#endif
+}
+
+TC_API void tuiNIB_observeVariantForTestNative_iI(NMParams p) // totalcross/ui/image/NativeImageBacking private int observeVariantForTestNative(int kind, int []exactKey);
+{
+#if TC_RENDERER_SKIA
+   TCObject key = p->obj[1];
+   if (!key || ARRAYOBJ_LEN(key) <= 0) {
+      p->retI = 3;
+      return;
+   }
+   p->retI = skia_image_backing_variant_observe_for_test(
+      NativeImageBacking_nativeHandle(p->obj[0]), p->i32[0],
+      (const uint32_t*)ARRAYOBJ_START(key), ARRAYOBJ_LEN(key));
+#else
+   p->retI = 3;
+#endif
+}
+
+TC_API void tuiNIB_variantStateForTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private int variantStateForTestNative();
+{
+#if TC_RENDERER_SKIA
+   p->retI = skia_image_backing_variant_state_for_test(
+      NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retI = 0;
 #endif
 }
 

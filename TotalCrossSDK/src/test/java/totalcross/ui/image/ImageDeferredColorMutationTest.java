@@ -139,6 +139,7 @@ class ImageDeferredColorMutationTest {
   @Test
   void deferredMutationInvalidatesCachedVariantsWithoutMutatingTheOldVariant() throws Exception {
     Image image = new Image(png(24, 20)).getSmoothScaledInstance(12, 10);
+    image.resolveForDrawing(1);
     Image oldVariant = image.resolveForDrawing(1);
     int[] oldPixels = oldVariant.getPixels().clone();
     assertEquals(1, pipeline(image).cachedVariantCountForSmoke());

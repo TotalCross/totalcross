@@ -151,8 +151,8 @@ public class ImageModifierWorkloadSmokeApp extends MainWindow {
       noPersistentSliderBacking = rootPipeline != null && rotatedPipeline != null
           && contrastedPipeline != null && rotatedAgain.pipelineForSmoke() != null
           && contrastedAgain.pipelineForSmoke() != null;
-      boundedCaches = rotatedPipeline.cachedVariantCountForSmoke() <= 2
-          && contrastedPipeline.cachedVariantCountForSmoke() <= 2;
+      boundedCaches = rotatedPipeline.cachedVariantCountForSmoke() <= 1
+          && contrastedPipeline.cachedVariantCountForSmoke() <= 1;
       transparentFill = hasAlpha(transparentPixels, 0);
       exactPixels = parity[0];
       brightnessPlusOne = brightnessOne[0];

@@ -8,6 +8,12 @@ import com.totalcross.annotations.ReplacedByNativeOnDeploy;
 
 /** Opaque native backing used by deployed Skia images. */
 final class NativeImageBacking extends ImageBacking {
+  static final int RASTER_VARIANT_TARGET_COLOR = 1;
+  static final int RASTER_VARIANT_PHYSICAL = 2;
+  static final int RASTER_VARIANT_MISS = 0;
+  static final int RASTER_VARIANT_MATERIALIZE = 1;
+  static final int RASTER_VARIANT_HIT = 2;
+
   private long nativeHandle;
   private final int width;
   private final int height;
@@ -242,6 +248,20 @@ final class NativeImageBacking extends ImageBacking {
     }
   }
 
+  void invalidateVariantsForMutation() {
+    if (nativeHandle != 0) {
+      invalidateVariantsNative();
+    }
+  }
+
+  int observeVariantForTest(int kind, int[] exactKey) {
+    return observeVariantForTestNative(kind, exactKey);
+  }
+
+  int variantStateForTest() {
+    return variantStateForTestNative();
+  }
+
   @Override
   protected void finalize() {
     release();
@@ -298,6 +318,20 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private long snapshotNative() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private void invalidateVariantsNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int observeVariantForTestNative(int kind, int[] exactKey) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int variantStateForTestNative() {
     return 0;
   }
 

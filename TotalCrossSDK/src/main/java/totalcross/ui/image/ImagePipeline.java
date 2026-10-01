@@ -36,18 +36,14 @@ final class ImagePipeline {
   private final int widthOfAllFrames;
   private final double contentScale;
 
-  // Each pipeline node owns two materialized-variant slots. The cache is
-  // deliberately not shared by roots or images so encoded sources remain
-  // authoritative after eviction.
-  private long cachedScale1Bits;
-  private long cachedScale2Bits;
-  private Image cachedVariant1;
-  private Image cachedVariant2;
-  private long cacheUseCounter;
-  private long cachedUse1;
-  private long cachedUse2;
-  private long cachedVariantGeneration1;
-  private long cachedVariantGeneration2;
+  // JavaSE fallback retains at most one exact representation, admitted on its
+  // second observation. Native variants are owned by the source backing.
+  private long cachedScaleBits;
+  private Image cachedVariant;
+  private long cachedVariantGeneration;
+  private long pendingScaleBits;
+  private long pendingGeneration;
+  private boolean pendingVariant;
   private long cachedDrawScale1Bits;
   private long cachedDrawScale2Bits;
   private ImageDrawPlan cachedDrawPlan1;
@@ -265,53 +261,19 @@ final class ImagePipeline {
     return false;
   }
 
-  Image cachedVariant(long scaleBits) {
-    if (cachedVariant1 != null && cachedScale1Bits == scaleBits) {
-      cachedUse1 = ++cacheUseCounter;
-      return cachedVariant1;
-    }
-    if (cachedVariant2 != null && cachedScale2Bits == scaleBits) {
-      cachedUse2 = ++cacheUseCounter;
-      return cachedVariant2;
-    }
-    return null;
-  }
-
-  void cacheVariant(long scaleBits, Image variant) {
-    long use = ++cacheUseCounter;
-    if (cachedVariant1 == null || cachedUse1 <= cachedUse2) {
-      if (cachedVariant1 != null) {
-        cachedVariant1.releaseTextureOnly();
-      }
-      cachedScale1Bits = scaleBits;
-      cachedVariant1 = variant;
-      cachedUse1 = use;
-    } else {
-      if (cachedVariant2 != null) {
-        cachedVariant2.releaseTextureOnly();
-      }
-      cachedScale2Bits = scaleBits;
-      cachedVariant2 = variant;
-      cachedUse2 = use;
-    }
-  }
-
   void releaseCachedVariantTextures() {
-    if (cachedVariant1 != null) {
-      cachedVariant1.releaseTextureOnly();
-    }
-    if (cachedVariant2 != null) {
-      cachedVariant2.releaseTextureOnly();
+    if (cachedVariant != null) {
+      cachedVariant.releaseTextureOnly();
     }
   }
 
   void clearCachedVariants() {
     releaseCachedVariantTextures();
-    cachedVariant1 = null;
-    cachedVariant2 = null;
-    cachedUse1 = cachedUse2 = 0;
-    cachedScale1Bits = cachedScale2Bits = 0;
-    cachedVariantGeneration1 = cachedVariantGeneration2 = 0;
+    cachedVariant = null;
+    cachedVariantGeneration = 0;
+    cachedScaleBits = 0;
+    pendingVariant = false;
+    pendingScaleBits = pendingGeneration = 0;
     cachedDrawPlan1 = null;
     cachedDrawPlan2 = null;
     cachedDrawUse1 = cachedDrawUse2 = 0;
@@ -365,56 +327,37 @@ final class ImagePipeline {
 
   /** Returns a materialized variant cached by this node, including a prefix node. */
   Image cachedMaterializedVariant(long scaleBits, long sourceDecodeGeneration) {
-    if (cachedVariant1 != null && cachedScale1Bits == scaleBits) {
-      if (cachedVariantGeneration1 != sourceDecodeGeneration) {
-        return null;
-      }
-      cachedUse1 = ++cacheUseCounter;
-      return cachedVariant1;
-    }
-    if (cachedVariant2 != null && cachedScale2Bits == scaleBits) {
-      if (cachedVariantGeneration2 != sourceDecodeGeneration) {
-        return null;
-      }
-      cachedUse2 = ++cacheUseCounter;
-      return cachedVariant2;
+    if (cachedVariant != null && cachedScaleBits == scaleBits
+        && cachedVariantGeneration == sourceDecodeGeneration) {
+      return cachedVariant;
     }
     return null;
   }
 
-  /** Caches a materialized variant on this node for later prefix reuse. */
-  void cacheMaterializedVariant(long scaleBits, Image variant, long sourceDecodeGeneration) {
-    long use = ++cacheUseCounter;
-    if (cachedVariant1 != null && cachedScale1Bits == scaleBits) {
-      cachedVariant1.releaseTextureOnly();
-      cachedVariant1 = variant;
-      cachedVariantGeneration1 = sourceDecodeGeneration;
-      cachedUse1 = use;
-    } else if (cachedVariant2 != null && cachedScale2Bits == scaleBits) {
-      cachedVariant2.releaseTextureOnly();
-      cachedVariant2 = variant;
-      cachedVariantGeneration2 = sourceDecodeGeneration;
-      cachedUse2 = use;
-    } else if (cachedVariant1 == null || cachedUse1 <= cachedUse2) {
-      if (cachedVariant1 != null) {
-        cachedVariant1.releaseTextureOnly();
-      }
-      cachedScale1Bits = scaleBits;
-      cachedVariant1 = variant;
-      cachedVariantGeneration1 = sourceDecodeGeneration;
-      cachedUse1 = use;
-    } else {
-      if (cachedVariant2 != null) {
-        cachedVariant2.releaseTextureOnly();
-      }
-      cachedScale2Bits = scaleBits;
-      cachedVariant2 = variant;
-      cachedVariantGeneration2 = sourceDecodeGeneration;
-      cachedUse2 = use;
+  /** Admits this exact representation after two consecutive observations. */
+  boolean observeMaterializedVariant(long scaleBits, long sourceDecodeGeneration) {
+    if (pendingVariant && pendingScaleBits == scaleBits && pendingGeneration == sourceDecodeGeneration) {
+      pendingVariant = false;
+      return true;
     }
+    pendingVariant = true;
+    pendingScaleBits = scaleBits;
+    pendingGeneration = sourceDecodeGeneration;
+    return false;
+  }
+
+  /** Caches the admitted representation on this node for later prefix reuse. */
+  void cacheMaterializedVariant(long scaleBits, Image variant, long sourceDecodeGeneration) {
+    if (cachedVariant != null && cachedVariant != variant) {
+      cachedVariant.releaseTextureOnly();
+    }
+    cachedScaleBits = scaleBits;
+    cachedVariant = variant;
+    cachedVariantGeneration = sourceDecodeGeneration;
+    pendingVariant = false;
   }
 
   int cachedVariantCountForSmoke() {
-    return (cachedVariant1 == null ? 0 : 1) + (cachedVariant2 == null ? 0 : 1);
+    return cachedVariant == null ? 0 : 1;
   }
 }

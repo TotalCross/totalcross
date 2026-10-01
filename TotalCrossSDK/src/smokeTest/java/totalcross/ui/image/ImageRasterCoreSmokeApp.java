@@ -21,6 +21,8 @@ public final class ImageRasterCoreSmokeApp extends MainWindow {
     boolean colorMutation = false;
     boolean mutationReadDraw = false;
     boolean physicalIdentity = false;
+    boolean variantAdmission = false;
+    boolean variantMutationInvalidation = false;
     boolean runtimeConfiguration = false;
     boolean diagnostics = false;
     String error = "";
@@ -88,6 +90,29 @@ public final class ImageRasterCoreSmokeApp extends MainWindow {
           && Image.nativeGeometryMaterializationCountForTest() == 0;
       require(physicalIdentity, "exact physical identity did not draw directly");
 
+      Image variantSource = new Image(2, 2);
+      NativeImageBacking variantBacking = (NativeImageBacking) variantSource.backing;
+      int[] firstKey = {0x12345678, 0x00000001};
+      int[] otherKey = {0x12345678, 0x00000002};
+      int first = variantBacking.observeVariantForTest(NativeImageBacking.RASTER_VARIANT_PHYSICAL, firstKey);
+      boolean pending = variantBacking.variantStateForTest() == 2;
+      int different = variantBacking.observeVariantForTest(NativeImageBacking.RASTER_VARIANT_PHYSICAL, otherKey);
+      int returnToFirst = variantBacking.observeVariantForTest(NativeImageBacking.RASTER_VARIANT_PHYSICAL, firstKey);
+      int admitted = variantBacking.observeVariantForTest(NativeImageBacking.RASTER_VARIANT_PHYSICAL, firstKey);
+      int hit = variantBacking.observeVariantForTest(NativeImageBacking.RASTER_VARIANT_PHYSICAL, firstKey);
+      variantAdmission = first == NativeImageBacking.RASTER_VARIANT_MISS && pending
+          && different == NativeImageBacking.RASTER_VARIANT_MISS
+          && returnToFirst == NativeImageBacking.RASTER_VARIANT_MISS
+          && admitted == NativeImageBacking.RASTER_VARIANT_MATERIALIZE
+          && hit == NativeImageBacking.RASTER_VARIANT_HIT
+          && variantBacking.variantStateForTest() == 1;
+      require(variantAdmission, "exact-key second-use admission did not produce one slot and a hit");
+      variantSource.recordBackingMutation(ImageBacking.OPACITY_UNKNOWN);
+      variantMutationInvalidation = variantBacking.variantStateForTest() == 0;
+      require(variantMutationInvalidation, "backing mutation retained raster variant state");
+      variantBacking.release();
+      variantMutationInvalidation = variantMutationInvalidation && variantBacking.variantStateForTest() == 0;
+
       String configuration = RuntimeConfigurationReport.describe();
       runtimeConfiguration = configuration.contains("rasterCore:")
           && configuration.contains("zeroCopyDecode: enabled")
@@ -109,13 +134,16 @@ public final class ImageRasterCoreSmokeApp extends MainWindow {
     }
 
     boolean overallPass = pngParity && jpegOpaque && opaqueWrite && alphaWriteFallback && colorMutation
-        && mutationReadDraw && physicalIdentity && runtimeConfiguration && diagnostics;
+        && mutationReadDraw && physicalIdentity && variantAdmission && variantMutationInvalidation
+        && runtimeConfiguration && diagnostics;
     System.out.println("fixture=ImageRasterCoreSmokeApp,pngParity=" + pngParity + ",jpegOpaque=" + jpegOpaque
         + ",opaqueWrite=" + opaqueWrite + ",alphaWriteFallback=" + alphaWriteFallback
         + ",colorMutation=" + colorMutation + ",mutationReadDraw=" + mutationReadDraw
         + ",physicalIdentity=" + physicalIdentity + ",identityHitCount="
         + Image.physicalIdentityHitCountForTest() + ",identityMaterializations="
         + Image.nativeGeometryMaterializationCountForTest()
+        + ",variantAdmission=" + variantAdmission + ",variantMutationInvalidation="
+        + variantMutationInvalidation
         + ",runtimeConfiguration=" + runtimeConfiguration + ",diagnostics=" + diagnostics
         + ",overallPass=" + overallPass + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();
