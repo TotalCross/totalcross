@@ -109,6 +109,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageLoad_s"), &tuiI_imageLoad_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_imageParse_sB"), &tuiI_imageParse_sB);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSource_e"), &tuiI_decodeEncodedSource_e);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceDirect_e"), &tuiI_decodeEncodedSourceDirect_e);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceTargeted"), &tuiI_decodeEncodedSourceTargeted);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_decodeEncodedSourceTiered_e"), &tuiI_decodeEncodedSourceTiered_e);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_failNextNativeMaterializati"), &tuiI_failNextNativeMaterializati);

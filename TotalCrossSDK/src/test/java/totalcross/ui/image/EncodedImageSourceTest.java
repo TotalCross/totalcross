@@ -61,12 +61,16 @@ class EncodedImageSourceTest {
     assertSame(source.decodedBackingForReuse(1), decoded.backing);
     assertEquals(1, source.decodedDenominator());
     assertEquals(1, source.decodedGeneration());
+    ImageBacking cachedBacking = decoded.backing;
     int[] decodedPixels = decoded.getPixels().clone();
+    assertNotSame(cachedBacking, decoded.backing);
+    assertSame(cachedBacking, source.decodedBackingForReuse(1));
 
     Image sibling = base.getScaledInstance(3, 2);
     sibling.resolveForDrawing(1);
     assertEquals(1, Image.fullDecodeInvocationCountForTest());
-    assertSame(source.decodedBackingForReuse(1), decoded.backing);
+    assertSame(cachedBacking, source.decodedBackingForReuse(1));
+    assertNotSame(cachedBacking, decoded.backing);
 
     Image barrier = base.getScaledInstance(6, 4);
     barrier.applyColor2(0xAA4080C0);

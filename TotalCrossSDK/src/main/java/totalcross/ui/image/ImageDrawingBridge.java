@@ -29,4 +29,20 @@ public final class ImageDrawingBridge {
     }
     return image.drawPlanForDrawing(destinationScale);
   }
+
+  /** @hidden */
+  @Deprecated
+  public static void prepareForMutation(Image image) {
+    if (image != null) {
+      image.prepareForGraphicsMutation();
+    }
+  }
+
+  /** @hidden */
+  @Deprecated
+  public static void recordMutation(Image image) {
+    if (image != null) {
+      image.recordGraphicsMutation();
+    }
+  }
 }

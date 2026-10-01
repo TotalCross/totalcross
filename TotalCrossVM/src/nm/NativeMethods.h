@@ -123,6 +123,7 @@ TC_API void tudFP_nativePresent(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);
 TC_API void tuiI_decodeEncodedSource_e(NMParams p);
+TC_API void tuiI_decodeEncodedSourceDirect_e(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTargeted(NMParams p);
 TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p);
 TC_API void tuiI_failNextNativeMaterializati(NMParams p);

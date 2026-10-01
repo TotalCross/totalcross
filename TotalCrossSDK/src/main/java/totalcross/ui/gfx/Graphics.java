@@ -358,6 +358,19 @@ public final class Graphics {
     return surface instanceof Image ? ((Image) surface).getPixels() : mainWindowPixels;
   }
 
+  private int[] getWritableSurfacePixels() {
+    if (surface instanceof Image) {
+      ImageDrawingBridge.prepareForMutation((Image) surface);
+    }
+    return getSurfacePixels(surface);
+  }
+
+  private void recordSurfaceMutation() {
+    if (surface instanceof Image) {
+      ImageDrawingBridge.recordMutation((Image) surface);
+    }
+  }
+
   /**
    * Refreshes the clipping bounds, translation and font for this Graphics.
    * 
@@ -764,7 +777,8 @@ public final class Graphics {
         w = x2 - x;
         h = y2 - y;
       }
-      int[] pix = getSurfacePixels(surface);
+      int[] pix = getWritableSurfacePixels();
+      recordSurfaceMutation();
       for (x += y * pitch; h-- > 0; x += pitch) {
         Convert.fill(pix, x, x + w, backColor | alpha);
       }
@@ -1049,7 +1063,8 @@ public final class Graphics {
       yMax = rasterClipY2;
     }
     yMin = (y0 < rasterClipY1) ? rasterClipY1 : y0;
-    int[] pixels = getSurfacePixels(surface);
+    int[] pixels = getWritableSurfacePixels();
+    recordSurfaceMutation();
 
     for (int k = 0; k < chrCount; k++) {
       char ch = text.charAt(chrStart++);
@@ -2265,7 +2280,8 @@ public final class Graphics {
       w = results[2];
       h = results[3];
 
-      int[] pixels = getSurfacePixels(surface);
+      int[] pixels = getWritableSurfacePixels();
+      recordSurfaceMutation();
       int count = w * h;
       if (!hasScaledBacking()) {
         int pos = y * pitch + x;
@@ -2390,7 +2406,8 @@ public final class Graphics {
         return;
       }
 
-      int[] dst = getSurfacePixels(surface);
+      int[] dst = getWritableSurfacePixels();
+      recordSurfaceMutation();
       boolean isSrcScreen = !(srcSurface instanceof Image);
       double srcScale = srcSurface instanceof Image ? ((Image) srcSurface).getContentScale()
           : mainWindowContentScale;
@@ -2638,7 +2655,8 @@ public final class Graphics {
       if (x < 0 || y < 0) {
         return;
       }
-      int[] pixels = getSurfacePixels(surface);
+      int[] pixels = getWritableSurfacePixels();
+      recordSurfaceMutation();
       if (hasScaledBacking()) {
         int x2 = scaleBackingEdge(x + 1);
         int y2 = scaleBackingEdge(y + 1);
@@ -2673,7 +2691,8 @@ public final class Graphics {
       if (x < 0 || y < 0 || w < 0) {
         return;
       }
-      int[] pix = getSurfacePixels(surface);
+      int[] pix = getWritableSurfacePixels();
+      recordSurfaceMutation();
       if (hasScaledBacking()) {
         int x2 = scaleBackingEdge(x + w);
         int y2 = scaleBackingEdge(y + 1);
@@ -2710,7 +2729,8 @@ public final class Graphics {
       if (x < 0 || y < 0 || h < 0) {
         return;
       }
-      int[] pixels = getSurfacePixels(surface);
+      int[] pixels = getWritableSurfacePixels();
+      recordSurfaceMutation();
       if (hasScaledBacking()) {
         int x2 = scaleBackingEdge(x + 1);
         int y2 = scaleBackingEdge(y + h);
@@ -3602,7 +3622,8 @@ public final class Graphics {
       y = scaleBackingEdge(y);
     }
     // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
-    int[] pixels = getSurfacePixels(surface);
+    int[] pixels = getWritableSurfacePixels();
+    recordSurfaceMutation();
     int p, oldR, oldG, oldB, newR, newG, newB, errR, errG, errB;
     for (int yy = y; yy < y2; yy++) {
       for (int xx = x; xx < x2; xx++) {

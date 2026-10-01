@@ -358,12 +358,20 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       dstPixels += Graphics_pitch(dstSurf);
    }
 #ifndef __gl2_h_
-   if (!currentContext->fullDirty && !Graphics_isImageSurface(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
+   if (Graphics_isImageSurface(dstSurf)) {
+      TCObject image = Graphics_surface(dstSurf);
+      Image_changed(image) = true;
+      imageBackingRecordMutation(image, IMAGE_BACKING_OPACITY_UNKNOWN);
+   } else if (!currentContext->fullDirty) {
+      markScreenDirty(currentContext, dstX, dstY, width, height);
+   }
 #else
-   if (Graphics_isImageSurface(dstSurf))
+   if (Graphics_isImageSurface(dstSurf)) {
       Image_changed(Graphics_surface(dstSurf)) = true;
-   else
+      imageBackingRecordMutation(Graphics_surface(dstSurf), IMAGE_BACKING_OPACITY_UNKNOWN);
+   } else {
       currentContext->fullDirty = true;
+   }
 #endif
 end:
    if (unlockSrc)
@@ -571,9 +579,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
       if (Graphics_useOpenGL(g))
       {
          glDrawPixel(x,y,pixel,255);
-         if (Graphics_isImageSurface(g))
-            Image_changed(Graphics_surface(g)) = true;
-         else
+         if (!Graphics_isImageSurface(g))
             currentContext->fullDirty = true;
       }
       else
@@ -581,6 +587,11 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
       {
          getGraphicsPixels(g)[y * Graphics_pitch(g) + x] = pixel;
          if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, 1, 1);
+      }
+      if (Graphics_isImageSurface(g)) {
+         TCObject image = Graphics_surface(g);
+         Image_changed(image) = true;
+         imageBackingRecordMutation(image, IMAGE_BACKING_OPACITY_UNKNOWN);
       }
    }
 }

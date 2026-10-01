@@ -32,7 +32,9 @@ class ImageFieldAbiTest {
       "master", "path", "pipeline"
   };
 
-  private static final String[] VALUE64_FIELDS = { "hwScaleW", "hwScaleH", "contentScale" };
+  private static final String[] VALUE64_FIELDS = {
+      "hwScaleW", "hwScaleH", "contentScale", "backingMutationGeneration"
+  };
 
   @BeforeAll
   static void initializeBytecodes() throws Exception {
@@ -55,6 +57,7 @@ class ImageFieldAbiTest {
     assertNativeMethods(converted, "imageLoad", "imageParse", "setCurrentFrameNative", "applyChangesNative",
         "changeColorsNative", "getPixelRowNative", "setTransparentColorNative", "freeTextureNative", "createJpgNative",
         "applyColorNative", "applyColor2Native", "applyFadeNative", "decodeEncodedSource",
+        "decodeEncodedSourceDirect",
         "failNextNativeMaterializationForTestNative", "nativeResizeJpeg",
         "getJpegBestFit", "getJpegScaled", "getModifiedNative");
   }
