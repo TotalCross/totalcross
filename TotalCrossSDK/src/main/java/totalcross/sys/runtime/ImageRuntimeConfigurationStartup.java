@@ -53,6 +53,11 @@ public final class ImageRuntimeConfigurationStartup {
     return currentPolicy;
   }
 
+  /** Internal native-decoder query for the already resolved storage capability. */
+  public static boolean compactStorageEnabledForNative() {
+    return currentPolicy().effectiveStorageProfile() == ImageStorageProfile.COMPACT;
+  }
+
   /** Internal fixture for exercising opt-in raster features without public configuration. */
   static synchronized void setRasterFeaturesForTest(boolean physicalIdentity,
       boolean targetColorConversion, boolean physicalVariantCache) {

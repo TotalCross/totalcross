@@ -566,11 +566,12 @@ tasks.register('runSystemNanoTimeSmokeMacOS', Exec) {
 }
 
 def registerRuntimeConfigurationMacSmoke = { String suffix, String appClass, String expectedMarker,
-        boolean expectStartupFailure ->
+        boolean expectStartupFailure, String packagePathPrefix = 'totalcross/sys/runtime/',
+        List resourceIncludes = [] ->
     String taskSuffix = 'RuntimeConfiguration' + suffix + 'MacOSSmoke'
     String deployTaskName = 'deploy' + taskSuffix
     String runTaskName = 'run' + taskSuffix
-    String packagePath = 'totalcross/sys/runtime/' + appClass + '.class'
+    String packagePath = packagePathPrefix + appClass + '.class'
     String jarName = appClass + '.jar'
     String smokeDirName = 'runtime-configuration-' + suffix.toLowerCase() + '-smoke/classes'
     def classesDir = layout.buildDirectory.dir(smokeDirName)
@@ -581,6 +582,11 @@ def registerRuntimeConfigurationMacSmoke = { String suffix, String appClass, Str
         dependsOn sourceSets.smokeTest.classesTaskName
         from(smokeTestClassesDir) {
             include packagePath
+        }
+        resourceIncludes.each { resourceInclude ->
+            from(smokeTestResourcesDir) {
+                include resourceInclude
+            }
         }
         into classesDir
     }
@@ -712,7 +718,17 @@ registerRuntimeConfigurationMacSmoke('NoMetadata', 'RuntimeConfigurationNoMetada
         false)
 
 registerRuntimeConfigurationMacSmoke('ImageCompact', 'ImageRuntimeConfigurationCompactMacSmokeApp',
-        'image-runtime-compact-pass requested=COMPACT effective=STANDARD', false)
+        'image-runtime-compact-pass requested=COMPACT effective=COMPACT', false)
+registerRuntimeConfigurationMacSmoke('ImageCompactStorage', 'ImageCompactStorageSmokeApp',
+        'fixture=ImageCompactStorageSmokeApp,policy=true,standardBaselineRgba=true,formatsAndAccounting=true,observersAndEncoding=true,equalityHash=true,drawParity=true,alphaQuality=true,promotionRetry=true,p3Invalidation=true,directMutationPromotion=true,graphicsMutationPromotion=true,compactMetrics=true,compactDecodeFailureRetry=true',
+        false, 'totalcross/ui/image/', ['image-compact/**'])
+registerRuntimeConfigurationMacSmoke('ImageRasterCore', 'ImageRasterCoreSmokeApp',
+        'fixture=ImageRasterCoreSmokeApp,', false, 'totalcross/ui/image/')
+tasks.named('compileRuntimeConfigurationImageRasterCoreMacOSSmoke') {
+    from(smokeTestClassesDir) {
+        include 'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'
+    }
+}
 registerRuntimeConfigurationMacSmoke('ImageSpecificity', 'ImageRuntimeConfigurationSpecificityMacSmokeApp',
         'image-runtime-specificity-pass order=broad-first requested=STANDARD matchedRules=2', false)
 registerRuntimeConfigurationMacSmoke('ImageSpecificityReversed',
@@ -1383,6 +1399,7 @@ registerImageMacSmoke('ImageRasterCoreSmoke', 'ImageRasterCoreSmokeApp',
         'diagnostics=true',
         'overallPass=true'
     ])
+
 tasks.named('compileImageRasterCoreSmoke') {
     from(smokeTestClassesDir) {
         include 'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'

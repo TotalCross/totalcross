@@ -137,6 +137,10 @@ public class Image extends GfxSurface {
     failNextNativeMaterializationForTestNative();
   }
 
+  static void failCompactCandidateForTest() {
+    failCompactCandidateNative();
+  }
+
   static void resetTargetedDecodeInvocationCountForTest() {
     imageOperationAccountingForTest = true;
     targetedDecodeInitializationFailureForTest = false;
@@ -358,6 +362,10 @@ public class Image extends GfxSurface {
 
   @ReplacedByNativeOnDeploy
   private static void failNextNativeMaterializationForTestNative() {
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failCompactCandidateNative() {
   }
 
   private static boolean consumeDecodedRasterAllocationFailureForTest() {
@@ -644,7 +652,7 @@ public class Image extends GfxSurface {
       }
     }
 
-    prepareForGraphicsMutation();
+    prepareForMutation();
     if (!(backing instanceof RasterImageBacking)
         || !((RasterImageBacking) backing).writePixels(input, offset, x, y, writeWidth, writeHeight,
             width, height)) {
@@ -714,9 +722,41 @@ public class Image extends GfxSurface {
     }
   }
 
-  void prepareForGraphicsMutation() {
+  void prepareForMutation() {
     materializeCanonicalUnchecked();
-    detachEncodedBackingForMutation();
+    if (!(backing instanceof NativeImageBacking)) {
+      detachEncodedBackingForMutation();
+      return;
+    }
+
+    NativeImageBacking nativeBacking = (NativeImageBacking) backing;
+    if (!nativeBacking.isCompact()) {
+      detachEncodedBackingForMutation();
+      return;
+    }
+
+    int previousOpacity = nativeBacking.opacityState();
+    if (backingSharedWithEncodedSource) {
+      NativeImageBacking promoted;
+      try {
+        promoted = (NativeImageBacking) nativeBacking.snapshot();
+      } catch (ImageException failure) {
+        throw new IllegalStateException("Could not detach the cached image backing", failure);
+      }
+      if (!promoted.makeMutable()) {
+        promoted.release();
+        throw new IllegalStateException("Could not promote compact image backing");
+      }
+      replaceBacking(promoted);
+      // replaceBacking advances the Java generation while preserving opacity. The native
+      // candidate has already dropped all inherited variant state during snapshot/promotion.
+      return;
+    }
+
+    if (!nativeBacking.makeMutable()) {
+      throw new IllegalStateException("Could not promote compact image backing");
+    }
+    recordBackingMutation(previousOpacity);
   }
 
   void recordGraphicsMutation() {
@@ -778,13 +818,12 @@ public class Image extends GfxSurface {
       return this;
     }
     materializeCanonicalUnchecked();
-    detachEncodedBackingForMutation();
     setTransparentColorEager(color);
     return this;
   }
 
   private void setTransparentColorEager(int color) {
-    detachEncodedBackingForMutation();
+    prepareForMutation();
     if (!Settings.onJavaSE) {
       setTransparentColorNative(color);
       return;
@@ -2938,8 +2977,7 @@ public class Image extends GfxSurface {
     if (backing == null || !backing.isValid()) {
       return null;
     }
-    detachEncodedBackingForMutation();
-
+    prepareForMutation();
     gfx.setFont(MainWindow.getDefaultFont());
     gfx.refresh(0, 0, logicalWidth, logicalHeight, 0, 0, null);
     return gfx;
@@ -3044,12 +3082,11 @@ public class Image extends GfxSurface {
       return;
     }
     materializeCanonicalUnchecked();
-    detachEncodedBackingForMutation();
     changeColorsEager(from, to);
   }
 
   private void changeColorsEager(int from, int to) {
-    detachEncodedBackingForMutation();
+    prepareForMutation();
     if (!Settings.onJavaSE) {
       changeColorsNative(from, to);
       return;
@@ -4931,13 +4968,12 @@ public class Image extends GfxSurface {
       return;
     }
     materializeCanonicalUnchecked();
-    detachEncodedBackingForMutation();
     applyColorEager(color);
   }
 
   private void applyColorEager(int color)
   {
-    detachEncodedBackingForMutation();
+    prepareForMutation();
     if (!Settings.onJavaSE) {
       applyColorNative(color);
       return;
@@ -5050,12 +5086,11 @@ public class Image extends GfxSurface {
       return;
     }
     materializeCanonicalUnchecked();
-    detachEncodedBackingForMutation();
     applyColor2Eager(color);
   }
 
   private void applyColor2Eager(int color) {
-    detachEncodedBackingForMutation();
+    prepareForMutation();
     boolean directColorMaterialization = ImageRuntimeConfigurationStartup.currentPolicy().rasterCore()
         .directColorMaterialization();
     if (!Settings.onJavaSE) {
@@ -5199,12 +5234,11 @@ public class Image extends GfxSurface {
       return;
     }
     materializeCanonicalUnchecked();
-    detachEncodedBackingForMutation();
     applyFadeEager(fadeValue);
   }
 
   private void applyFadeEager(int fadeValue) {
-    detachEncodedBackingForMutation();
+    prepareForMutation();
     if (!Settings.onJavaSE) {
       applyFadeNative(fadeValue);
       return;

@@ -21,6 +21,17 @@ final class NativeImageBacking extends ImageBacking {
   static final int FORMAT_RGB565 = 1;
   static final int FORMAT_GRAY8 = 2;
   static final int FORMAT_ARGB4444 = 3;
+  static final int TEST_METRIC_LIVE_BYTES_BY_FORMAT = 0;
+  static final int TEST_METRIC_PEAK_BYTES_BY_FORMAT = 1;
+  static final int TEST_METRIC_COMPACT_DECODE_COUNT_BY_FORMAT = 2;
+  static final int TEST_METRIC_COMPACT_DECODE_BYTES_BY_FORMAT = 3;
+  static final int TEST_METRIC_COMPACT_READBACK_COUNT = 4;
+  static final int TEST_METRIC_ROW_SCRATCH_PEAK_BYTES = 5;
+  static final int TEST_METRIC_FULL_RGBA_DECODE_TEMP_BYTES = 6;
+  static final int TEST_METRIC_PROMOTION_ATTEMPTS = 7;
+  static final int TEST_METRIC_PROMOTION_SUCCESSES = 8;
+  static final int TEST_METRIC_PROMOTION_FAILURES = 9;
+  static final int TEST_METRIC_PROMOTION_BYTES = 10;
 
   private long nativeHandle;
   private final int width;
@@ -127,7 +138,7 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   static boolean isCompactStorageAvailable() {
-    return compactStorageAvailableNative();
+    return compactAvailableNative();
   }
 
   static void resetBackingAccountingForTest() {
@@ -156,6 +167,10 @@ final class NativeImageBacking extends ImageBacking {
 
   static long backingBytesPeakLiveForTest() {
     return backingPeakBytesTest();
+  }
+
+  static long metricForTest(int metric, int format) {
+    return metricForTestNative(metric, format);
   }
 
   @Override
@@ -224,6 +239,15 @@ final class NativeImageBacking extends ImageBacking {
       throw new IllegalStateException("Native image backing has been released");
     }
     return makeMutableNative();
+  }
+
+  boolean isCompact() {
+    return nativeHandle != 0 && isCompactNative();
+  }
+
+  /** Test-only hook for exercising retryable compact-to-RGBA promotion failures. */
+  static void failNextPromotionForTest() {
+    failNextPromotionNative();
   }
 
   @Override
@@ -338,7 +362,7 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
-  private static boolean compactStorageAvailableNative() {
+  private static boolean compactAvailableNative() {
     return false;
   }
 
@@ -373,6 +397,11 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long backingPeakBytesTest() {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long metricForTestNative(int metric, int format) {
     return 0;
   }
 
@@ -431,6 +460,15 @@ final class NativeImageBacking extends ImageBacking {
   @ReplacedByNativeOnDeploy
   private boolean makeMutableNative() {
     return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private boolean isCompactNative() {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failNextPromotionNative() {
   }
 
   @ReplacedByNativeOnDeploy

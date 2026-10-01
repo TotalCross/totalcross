@@ -25,15 +25,14 @@ public final class ImageRuntimeConfigurationCompactMacSmokeApp extends MainWindo
       ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();
       require(policy.requestedStorageProfile() == ImageStorageProfile.COMPACT,
           "requestedStorage=" + policy.requestedStorageProfile());
-      require(policy.effectiveStorageProfile() == ImageStorageProfile.STANDARD,
+      require(policy.effectiveStorageProfile() == ImageStorageProfile.COMPACT,
           "effectiveStorage=" + policy.effectiveStorageProfile());
-      require("compact storage is not available in P1".equals(policy.storageReason()),
+      require(policy.storageReason() == null,
           "reason=" + policy.storageReason());
       String report = RuntimeConfigurationReport.describe();
       require(report.contains("requested: COMPACT"), "requested policy missing from report");
-      require(report.contains("effective: STANDARD"), "effective policy missing from report");
-      require(report.contains("reason: compact storage is not available in P1"), "downgrade missing from report");
-      System.out.println("image-runtime-compact-pass requested=COMPACT effective=STANDARD");
+      require(report.contains("effective: COMPACT"), "effective policy missing from report");
+      System.out.println("image-runtime-compact-pass requested=COMPACT effective=COMPACT");
       System.out.flush();
       exit(0);
     } catch (Throwable failure) {

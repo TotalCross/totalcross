@@ -20,5 +20,6 @@ bool imageReplaceNativeBacking(Context context, TCObject imageObj, int64 handle,
                                int32 width, int32 height);
 void imageBackingRecordMutation(TCObject imageObj, int32 opacityState);
 void imageBackingSetOpacity(TCObject imageObj, int32 opacityState);
+bool imageCompactStorageEnabled(Context context);
 
 #endif

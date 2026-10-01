@@ -37,14 +37,27 @@ contains concise results and supported limitations only.
   derived-variant keys, and single-slot/pending variant ownership.
 - [x] Implemented startup capability resolution, internal format metadata,
   actual row-byte/backing-byte accounting, and row-bounded RGBA observers.
-  Compact source selection remains disabled until decode paths land.
-- [ ] Implement structural format selection and direct compact JPEG/PNG source
-  decode, with compact observer and accounting evidence.
-- [ ] Add deterministic compact-format quality fixtures and full observer
-  coverage.
-- [ ] Add transactional promotion and complete P2/P3 lifecycle coverage.
-- [ ] Finish focused validation, macOS smoke and measurements, and the factual
-  implementation report.
+- [x] Implemented structural format selection and direct compact JPEG/PNG
+  source decode, with retry-safe candidate ownership.
+- [x] Added deterministic RGB, grayscale, alpha, and tRNS fixtures plus public
+  observer, encoding, equality, hash, drawing, and quality coverage.
+- [x] Added transactional RGBA promotion, failure injection and retry, source
+  sibling preservation, generation/opacity checks, and P3 variant invalidation.
+- [x] Routed deferred and direct `Image` pixel mutators through promotion and
+  promote compact images before returning a writable `Graphics` instance.
+- [x] Completed diagnostics-on SDK checks, artifact boundaries, macOS Release
+  native builds, deferred-mutation coverage, compact integration smoke, and
+  P2/P3 regression smoke.
+- [ ] Open the PR, confirm fresh enabled Merge Flow checks pass, and create the
+  factual technical handoff last.
+
+Measured by the 8x6 macOS ARM64 smoke: RGB565 uses 96 bytes, GRAY8 48 bytes,
+ARGB4444 96 bytes, and RGBA8888 192 bytes. The largest compact decode row
+scratch is 32 bytes, full-frame RGBA staging is 0 bytes, and seven compact
+fixtures materialized. The independent RGB565 reference differed by at most 9
+channel values; alpha compositing differed by at most 16. One controlled
+promotion grew backing storage from 96 to 192 bytes and measured 0 ms at the
+smoke timer's millisecond resolution.
 
 ## Current Architecture and Scope
 
@@ -250,23 +263,18 @@ macOS ARM64 Release native targets, compact and affected regression smokes,
 memory/quality measurements, fresh enabled GitHub Merge Flow, and
 `git diff --check origin/master...HEAD`. Record only commands actually run.
 
-## Risks and Open Questions
+## Risks and Compatibility Limits
 
-- Confirm the repository's pinned Skia revision exposes stable Gray8 and
-  ARGB4444 raster allocation/readback support on macOS ARM64.
-- Confirm libpng's current transformations and JPEG's adaptive scaling can
-  write compact scanlines without an intermediate full RGBA image.
-- Confirm `tRNS` semantics across supported PNG color types and preserve the
-  existing public transparency behavior.
-- Choose capability-bridge direction and native capability symbol after
-  confirming generated Java/native ABI conventions.
-- Promotion in-place must update byte accounting and native generation
-  atomically; replacement-handle promotion must preserve native object
-  ownership and exactly-once release.
-- P3 target-color conversion must accept compact source color types safely or
-  use its existing fallback without replacing canonical source storage.
-- CI platform jobs remain the compatibility gate for platforms that must not
-  be built locally.
+- macOS ARM64 native tests and smoke validate Gray8 and ARGB4444 allocation,
+  row layout, conversion, and promotion for the pinned Skia dependency.
+- PNG tRNS fixtures and direct JPEG/PNG smoke decodes validate the supported
+  row transformations without full-frame RGBA staging.
+- Promotion failure injection confirms the current handle stays compact and
+  retryable; successful promotion updates byte accounting and invalidates P3
+  variants while preserving generation, opacity, and shared-source ownership.
+- Platform compatibility outside macOS remains covered by the requested
+  GitHub Merge Flow; Android, Windows, Linux, WinCE, and iOS were not built
+  locally per task constraints.
 
 ## Idempotence and Recovery
 

@@ -296,10 +296,18 @@ int main(int argc, char** argv) {
             0x10, 0x20, 0x30, 0xFF, 0x40, 0x50, 0x60, 0xFF, 0x70, 0x80, 0x90, 0xFF,
             0xA0, 0xB0, 0xC0, 0xFF, 0xD0, 0xE0, 0xF0, 0xFF, 0x20, 0x40, 0x60, 0x80
         };
-        if (!skia_image_backing_write_rgba_pixels(compactBacking, rgbaRows, 0, 0, 3, 2, 12)
+        const uint8_t grayRows[6] = { 7, 129, 255, 0, 64, 200 };
+        const bool wrote = format == 2
+            ? skia_image_backing_write_gray_pixels(compactBacking, grayRows, 0, 0, 3, 2, 3)
+            : skia_image_backing_write_rgba_pixels(compactBacking, rgbaRows, 0, 0, 3, 2, 12);
+        if (!wrote
                 || !skia_image_backing_finish_decode(compactBacking)
                 || !skia_image_backing_read_row(compactBacking, snapshotPixels, 0, 2)) {
             std::fputs("compact backing write, freeze, or expanded readback failed\n", stderr);
+            return 1;
+        }
+        if (format == 2 && (!expectEqual(snapshotPixels[0], 0xFF070707, "GRAY8 expanded value")
+                || !expectEqual(snapshotPixels[1], 0xFF818181, "GRAY8 expanded row value"))) {
             return 1;
         }
         skia_image_backing_release(compactBacking);

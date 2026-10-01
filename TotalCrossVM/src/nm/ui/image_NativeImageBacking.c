@@ -38,6 +38,21 @@ void imageBackingSetOpacity(TCObject imageObj, int32 opacityState)
       ImageBacking_opacityState(backing) = opacityState;
 }
 
+bool imageCompactStorageEnabled(Context context)
+{
+#if TC_RENDERER_SKIA
+   TCClass policyClass = loadClass(context,
+      "totalcross.sys.runtime.ImageRuntimeConfigurationStartup", false);
+   Method compactStorageEnabled = policyClass
+      ? getMethod(policyClass, true, "compactStorageEnabledForNative", 0) : null;
+   return compactStorageEnabled != null
+      && executeMethod(context, compactStorageEnabled).asInt32 != 0;
+#else
+   UNUSED(context)
+   return false;
+#endif
+}
+
 bool imageInstallNativeBacking(Context context, TCObject imageObj, int64 handle,
                                int32 width, int32 height)
 {
@@ -153,7 +168,7 @@ TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeIm
 #endif
 }
 
-TC_API void tuiNIB_compactStorageAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static boolean compactStorageAvailableNative();
+TC_API void tuiNIB_compactAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static boolean compactAvailableNative();
 {
 #if TC_RENDERER_SKIA
    p->retI = skia_image_backing_compact_storage_available();
@@ -168,6 +183,15 @@ TC_API void tuiNIB_resetAccountingTestNative(NMParams p) // totalcross/ui/image/
    skia_image_backing_reset_accounting_for_test();
 #endif
    UNUSED(p);
+}
+
+TC_API void tuiNIB_metricForTestNative_ii(NMParams p) // totalcross/ui/image/NativeImageBacking private static long metricForTestNative(int metric, int format);
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_test_metric(p->i32[0], p->i32[1]);
+#else
+   p->retL = 0;
+#endif
 }
 
 TC_API void tuiNIB_backingCreatedTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static long backingCreatedTestNative();
@@ -341,10 +365,27 @@ TC_API void tuiNIB_failNextSnapshotNative(NMParams p) // totalcross/ui/image/Nat
    UNUSED(p);
 }
 
+TC_API void tuiNIB_failNextPromotionNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static void failNextPromotionNative();
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_fail_next_promotion_for_test();
+#endif
+   UNUSED(p);
+}
+
 TC_API void tuiNIB_makeMutableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private boolean makeMutableNative();
 {
 #if TC_RENDERER_SKIA
    p->retI = skia_image_backing_make_mutable(NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retI = 0;
+#endif
+}
+
+TC_API void tuiNIB_isCompactNative(NMParams p) // totalcross/ui/image/NativeImageBacking private boolean isCompactNative();
+{
+#if TC_RENDERER_SKIA
+   p->retI = skia_image_backing_is_compact(NativeImageBacking_nativeHandle(p->obj[0]));
 #else
    p->retI = 0;
 #endif

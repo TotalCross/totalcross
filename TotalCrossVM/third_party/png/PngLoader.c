@@ -44,11 +44,13 @@ typedef struct
    Context currentContext;
 #if TC_RENDERER_SKIA
    bool directDecode;
+   bool compactStorage;
+   bool nativeDecode;
+   int32 backingFormat;
 #endif
    bool hasTranslucent;
 #if TC_RENDERER_SKIA
    int64 nativeHandle;
-   uint8* rgbaRow;
 #endif
 
    png_infop info_ptr;
@@ -165,6 +167,8 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    userData.imageObj = imageObj;
 #if TC_RENDERER_SKIA
    userData.directDecode = directDecode;
+   userData.compactStorage = imageCompactStorageEnabled(currentContext);
+   userData.nativeDecode = directDecode || userData.compactStorage;
 #else
    UNUSED(directDecode)
 #endif
@@ -205,7 +209,8 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
 
-   if ((userData.pixelsObj == null && userData.pixels == null
+   if (decodeStatus != IMAGE_DECODE_SUCCESS
+      || (userData.pixelsObj == null && userData.pixels == null
 #if TC_RENDERER_SKIA
          && userData.nativeHandle == 0
 #endif
@@ -279,9 +284,17 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
 #endif
 #if TC_RENDERER_SKIA
    {
-      int64 handle = userData.directDecode ? userData.nativeHandle
+      int64 handle = userData.nativeDecode ? userData.nativeHandle
          : skia_image_backing_create_from_argb_pixels(userData.pixelStorage, userData.width, userData.height);
-      if (!userData.directDecode) {
+      if (userData.nativeDecode && (!handle || !skia_image_backing_finish_decode(handle))) {
+         if (handle) skia_image_backing_release(handle);
+         userData.nativeHandle = 0;
+         if (tcz != null)
+            tczClose(tcz);
+         heapDestroy(heap);
+         return IMAGE_DECODE_RESOURCE_FAILURE;
+      }
+      if (!userData.nativeDecode) {
          xfree(userData.pixelStorage);
          userData.pixels = null;
          userData.pixelStorage = null;
@@ -294,6 +307,8 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
          heapDestroy(heap);
          return IMAGE_DECODE_RESOURCE_FAILURE;
       }
+      if (userData.compactStorage)
+         skia_image_backing_record_compact_decode_for_test(handle);
       Image_width(imageObj) = userData.width;
       Image_height(imageObj) = userData.height;
       imageBackingSetOpacity(imageObj, userData.hasTranslucent
@@ -331,8 +346,18 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    int filter_method = 0;
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
    int32 num_trans = 0;
+   bool sourceAlpha;
+   bool sourceHasTransparency;
 
    png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,&interlace_type,&compression_type,&filter_method);
+   sourceAlpha = (color_type & PNG_COLOR_MASK_ALPHA) != 0;
+   sourceHasTransparency = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) != 0;
+#if TC_RENDERER_SKIA
+   if (userData->compactStorage) {
+      userData->backingFormat = color_type == PNG_COLOR_TYPE_GRAY && !sourceAlpha && !sourceHasTransparency
+         ? 2 : !sourceAlpha && !sourceHasTransparency ? 1 : 3;
+   }
+#endif
    
    /*
    | set up transformation params:
@@ -346,6 +371,10 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
       png_set_expand(png_ptr);
    if ((color_type == PNG_COLOR_TYPE_GRAY) || (color_type == PNG_COLOR_TYPE_GRAY_ALPHA))
       png_set_gray_to_rgb(png_ptr);
+#if TC_RENDERER_SKIA
+   if (userData->nativeDecode && !sourceAlpha && !sourceHasTransparency)
+      png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+#endif
 
    userData->lastPass = png_set_interlace_handling(png_ptr) - 1;
 
@@ -354,7 +383,13 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    info_ptr = userData->info_ptr;
    color_type = png_get_color_type(png_ptr, info_ptr);
    num_trans = 0; // MUST BE INITIALIZED BEFORE png_get_tRNS
-   if (color_type != PNG_COLOR_TYPE_PALETTE && png_get_tRNS(png_ptr, info_ptr, null, &num_trans, null) != 0 && num_trans != 0) // we don't support transparent palettes
+#if TC_RENDERER_SKIA
+   if (!userData->compactStorage && color_type != PNG_COLOR_TYPE_PALETTE
+         && png_get_tRNS(png_ptr, info_ptr, null, &num_trans, null) != 0 && num_trans != 0) // keep legacy color-key behavior
+#else
+   if (color_type != PNG_COLOR_TYPE_PALETTE
+         && png_get_tRNS(png_ptr, info_ptr, null, &num_trans, null) != 0 && num_trans != 0)
+#endif
       png_set_strip_alpha(png_ptr);
    if (width > 65535 || height > 65535)  // bad width/height?
    {
@@ -384,15 +419,15 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
       userData->quit = true;
       return;
    }
-   if (userData->directDecode) {
+   if (userData->nativeDecode) {
       if ((uint64)width * 4 > 0x7FFFFFFF) {
          *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
          userData->quit = true;
          return;
       }
-      userData->nativeHandle = skia_image_backing_create_empty((int32)width, (int32)height);
-      userData->rgbaRow = (uint8*)heapAlloc(userData->heap, (int32)width * 4);
-      if (!userData->nativeHandle || !userData->rgbaRow) {
+      userData->nativeHandle = skia_image_backing_create_empty_with_format((int32)width, (int32)height,
+         userData->compactStorage ? userData->backingFormat : 0);
+      if (!userData->nativeHandle) {
          if (userData->nativeHandle) {
             skia_image_backing_release(userData->nativeHandle);
             userData->nativeHandle = 0;
@@ -400,6 +435,14 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
          *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
          userData->quit = true;
          return;
+      }
+      if (userData->compactStorage) {
+         skia_image_backing_record_decode_scratch_for_test((uint64)userData->bytesPerRow, 0);
+         if (imageDecodeConsumeCompactCandidateFailureForTest()) {
+            *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+            userData->quit = true;
+            return;
+         }
       }
    } else {
       userData->pixelStorage = userData->pixels =
@@ -476,26 +519,17 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
       png_byte channels = png_get_channels(png_ptr, userData->info_ptr);
       png_get_tRNS(png_ptr, userData->info_ptr, null, &num_trans, null);
 #if TC_RENDERER_SKIA
-      if (userData->directDecode) {
-         uint8* rgba = userData->rgbaRow;
-         if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6)) {
-            for (x = 0; x < userData->width; x++, buffer += 4) {
-               rgba[x * 4] = buffer[0];
-               rgba[x * 4 + 1] = buffer[1];
-               rgba[x * 4 + 2] = buffer[2];
-               rgba[x * 4 + 3] = buffer[3];
-               if (buffer[3] < 255) userData->hasTranslucent = true;
-            }
-         } else {
-            for (x = 0; x < userData->width; x++, buffer += 3) {
-               rgba[x * 4] = buffer[0];
-               rgba[x * 4 + 1] = buffer[1];
-               rgba[x * 4 + 2] = buffer[2];
-               rgba[x * 4 + 3] = 255;
-            }
+      if (userData->nativeDecode) {
+         if (userData->bytesPerRow < userData->width * 4) {
+            *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
+            userData->quit = true;
+            return;
          }
-         if (!skia_image_backing_write_rgba_pixels(userData->nativeHandle, rgba, 0, (int32)row_num,
-               userData->width, 1, userData->width * 4)) {
+         for (x = 0; x < userData->width; x++) {
+            if (buffer[x * 4 + 3] < 255) userData->hasTranslucent = true;
+         }
+         if (!skia_image_backing_write_rgba_pixels(userData->nativeHandle, buffer, 0, (int32)row_num,
+               userData->width, 1, userData->bytesPerRow)) {
             *userData->decodeStatus = IMAGE_DECODE_RESOURCE_FAILURE;
             userData->quit = true;
             return;
