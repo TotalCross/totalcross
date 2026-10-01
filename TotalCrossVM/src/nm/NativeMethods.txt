@@ -112,6 +112,7 @@ totalcross/ui/image/Image|native private void createJpgNative(totalcross.io.Stre
 totalcross/ui/image/Image|native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
 totalcross/ui/image/EncodedImageSource|native private void captureNative(byte []input, int length);
 totalcross/ui/image/EncodedImageSource|native private void captureNativePath(String path);
+totalcross/ui/image/EncodedImageSource|native private void copyNativeBagFrom(totalcross.ui.image.EncodedImageSource source) throws totalcross.ui.image.ImageException;
 totalcross/ui/image/EncodedImageSource|native private void releaseNativeBag();
 totalcross/ui/image/NativeImageBacking|native private static long createEmptyNative(int width, int height);
 totalcross/ui/image/NativeImageBacking|native private static long createColorTest(int width, int height, int colorType);

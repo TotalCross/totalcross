@@ -36,9 +36,9 @@ import totalcross.io.Stream;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
 import totalcross.sys.Settings;
-import totalcross.sys.Vm;
 import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
 import totalcross.sys.runtime.ImageRuntimePolicy;
+import totalcross.sys.Vm;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.GfxSurface;
@@ -1270,6 +1270,146 @@ public class Image extends GfxSurface {
     return resolved;
   }
 
+  ImagePreparationRequest captureDisplayPreparationRequest(double destinationScale, long batchGeneration) {
+    ImagePipeline deferred = pipeline;
+    if (deferred == null || !(deferred.root() instanceof EncodedImageSource)
+        || !Double.isFinite(destinationScale) || destinationScale <= 0) {
+      return null;
+    }
+    EncodedImageSource source = (EncodedImageSource) deferred.root();
+    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || deferred.hasZeroWidthFrameLayout()) {
+      return null;
+    }
+    try {
+      int requestedWidth = scaledDimensionAllowingZero(deferred.logicalWidth(), destinationScale);
+      int requestedHeight = scaledDimension(deferred.logicalHeight(), destinationScale);
+      if (requestedWidth <= 0 || requestedHeight <= 0) {
+        return null;
+      }
+      int denominator = ImageDecodeRequirement.choose(source, deferred, requestedWidth, requestedHeight);
+      Image prototype = new Image();
+      prototype.initializeDeferredTransform(deferred, this);
+      prototype.currentFrame = currentFrame;
+      long targetMutationGeneration = backingMutationGenerationForP2();
+      return new ImagePreparationRequest(this, source, deferred, deferred.decodePolicy(),
+          Double.doubleToLongBits(destinationScale), destinationScale,
+          requestedWidth, requestedHeight, denominator,
+          source.decodedGeneration(), targetMutationGeneration,
+          ImageRuntimeConfigurationStartup.currentPolicy(), currentFrame,
+          width, height, logicalWidth, logicalHeight, ImagePreparationRequest.Readiness.DRAW_READY,
+          batchGeneration, prototype);
+    } catch (ImageException invalidDimensions) {
+      return null;
+    }
+  }
+
+  PreparedImageResult prepareDetachedForDisplay(ImagePreparationRequest request) {
+    EncodedImageSource detachedSource = null;
+    try {
+      detachedSource = request.source.detachedEncodedCopyForPreparation();
+      ImagePipeline detachedPipeline = request.pipeline.detachedCopy(detachedSource);
+      request.prototype.replacePipelineForPreparation(detachedPipeline);
+      Image ready = request.prototype.resolveForDrawing(request.destinationScale());
+      return PreparedImageResult.ready(detachedSource, detachedSource.decodedBackingForReuse(request.decodeDenominator),
+          detachedSource.decodedWidth(), detachedSource.decodedHeight(), detachedSource.decodedDenominator(), ready);
+    } catch (OutOfMemoryError allocationFailure) {
+      return PreparedImageResult.transientFailure(detachedSource);
+    } catch (ImageException failure) {
+      if (failure instanceof DeterministicImageDecodeException) {
+        return PreparedImageResult.deterministicFailure(detachedSource, failure);
+      }
+      return PreparedImageResult.transientFailure(detachedSource);
+    } catch (RuntimeException unexpectedFailure) {
+      return PreparedImageResult.transientFailure(detachedSource);
+    } finally {
+      request.prototype.discardPreparationPipeline();
+    }
+  }
+
+  ImagePreparationScheduler.TerminalState adoptPreparedForDisplay(
+      ImagePreparationRequest request, PreparedImageResult result) {
+    if (!isCurrentPreparationRequest(request)
+        || ImageRuntimeConfigurationStartup.currentPolicy() != request.effectivePolicy) {
+      return ImagePreparationScheduler.TerminalState.STALE;
+    }
+    long currentGeneration = request.source.decodedGeneration();
+    if (currentGeneration != request.sourceGeneration) {
+      if (isDisplayPreparationReady(request)) {
+        return ImagePreparationScheduler.TerminalState.READY;
+      }
+      if (request.source.decodedBackingForReuse(request.decodeDenominator) != null) {
+        // The synchronous decode won the shared source generation race, but may not have
+        // materialized this exact pipeline and scale. Preserve the detached exact variant
+        // without replacing the newer shared source backing.
+        if (result.failureKind == PreparedImageResult.FailureKind.NONE && result.variant != null
+            && result.variant.backing != null && result.variant.backing.isValid()) {
+          request.pipeline.cacheMaterializedVariant(request.materializedScaleBits(), result.variant,
+              currentGeneration);
+          return ImagePreparationScheduler.TerminalState.READY;
+        }
+        return ImagePreparationScheduler.TerminalState.STALE;
+      }
+      return ImagePreparationScheduler.TerminalState.STALE;
+    }
+    if (request.source.decodeFailure() != null) {
+      return ImagePreparationScheduler.TerminalState.DETERMINISTIC_FAILURE;
+    }
+    if (result.failureKind == PreparedImageResult.FailureKind.DETERMINISTIC) {
+      request.source.cacheDecodeFailure(result.failure);
+      return ImagePreparationScheduler.TerminalState.DETERMINISTIC_FAILURE;
+    }
+    if (result.failureKind == PreparedImageResult.FailureKind.TRANSIENT
+        || result.backing == null || result.variant == null) {
+      return ImagePreparationScheduler.TerminalState.TRANSIENT_FAILURE;
+    }
+    request.source.installDecodedBacking(result.backing, result.decodedWidth, result.decodedHeight,
+        result.decodeDenominator);
+    request.pipeline.cacheMaterializedVariant(request.materializedScaleBits(), result.variant,
+        request.source.decodedGeneration());
+    return ImagePreparationScheduler.TerminalState.READY;
+  }
+
+  boolean isCurrentPreparationRequest(ImagePreparationRequest request) {
+    return request != null && this == request.target && pipeline == request.pipeline
+        && pipeline != null && pipeline.root() == request.source
+        && pipeline.decodePolicy() == request.decodePolicy
+        && backingMutationGenerationForP2() == request.targetBackingMutationGeneration
+        && currentFrame == request.currentFrame
+        && width == request.imageWidth && height == request.imageHeight
+        && logicalWidth == request.logicalWidth && logicalHeight == request.logicalHeight
+        && isCurrentPreparationScale(request);
+  }
+
+  private static boolean isCurrentPreparationScale(ImagePreparationRequest request) {
+    totalcross.ui.MainWindow mainWindow = totalcross.ui.MainWindow.getMainWindow();
+    if (mainWindow == null) {
+      return true;
+    }
+    Graphics graphics = mainWindow.getGraphics();
+    return graphics == null || Double.doubleToLongBits(graphics.getContentScale()) == request.destinationScaleBits;
+  }
+
+  boolean isDisplayPreparationReady(ImagePreparationRequest request) {
+    if (!isCurrentPreparationRequest(request)
+        || ImageRuntimeConfigurationStartup.currentPolicy() != request.effectivePolicy
+        || request.source.decodeFailure() != null) {
+      return false;
+    }
+    long generation = request.source.decodedGeneration();
+    Image cached = request.pipeline.cachedMaterializedVariant(request.materializedScaleBits(), generation);
+    return cached != null && cached.backing != null && cached.backing.isValid()
+        || !request.pipeline.hasDeferredOperations()
+            && request.source.decodedBackingForReuse(request.decodeDenominator) != null;
+  }
+
+  private void replacePipelineForPreparation(ImagePipeline detachedPipeline) {
+    pipeline = detachedPipeline;
+  }
+
+  void discardPreparationPipeline() {
+    pipeline = null;
+  }
+
   /** Returns a cached native draw description when this pipeline is drawable with supported color stages. */
   Object drawPlanForDrawing(double destinationScale) throws ImageException {
     if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
@@ -2490,6 +2630,9 @@ public class Image extends GfxSurface {
         logicalWidth = source.getLogicalWidth();
         logicalHeight = source.getLogicalHeight();
         contentScale = contentScaleForDecodedDenominator(denominator);
+        if (consumeDecodedRasterAllocationFailureForTest()) {
+          throw new TransientImageMaterializationException("Simulated decoded-raster allocation failure");
+        }
         int[] decodedPixels = new int[width * height];
         frame.getRGB(0, 0, width, height, decodedPixels, 0, width);
         replaceBacking(new RasterImageBacking(width, height, 1, width, decodedPixels, null));
