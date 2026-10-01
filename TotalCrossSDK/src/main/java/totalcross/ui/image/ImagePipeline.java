@@ -237,6 +237,25 @@ final class ImagePipeline {
     return hasDrawableOperation;
   }
 
+  /** Returns whether drawing can apply this color-only pipeline without a transformed variant. */
+  boolean isTrivialDrawPlan() {
+    boolean hasColorOperation = false;
+    for (ImagePipeline node = this; node.previous() != null; node = node.previous()) {
+      switch (node.operationType) {
+      case TOUCH_UP:
+      case FADE:
+      case ALPHA:
+      case APPLY_FADE:
+      case APPLY_COLOR:
+        hasColorOperation = true;
+        break;
+      default:
+        return false;
+      }
+    }
+    return hasColorOperation;
+  }
+
   boolean hasZeroWidthFrameLayout() {
     for (ImagePipeline node = this; node.previous() != null; node = node.previous()) {
       if (node.operationType == FRAME_LAYOUT && node.logicalWidth == 0) {

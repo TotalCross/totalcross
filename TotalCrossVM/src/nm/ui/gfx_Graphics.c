@@ -405,14 +405,31 @@ TC_API void tugG_getRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 {
    TCObject g = p->obj[0];
    TCObject data = p->obj[1];
-   p->retI = getsetRGB(p->currentContext, g, data, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4],true);
+   bool usedOpaqueWrite, containsAlpha, fullImageWrite;
+   p->retI = getsetRGB(p->currentContext, g, data, p->i32[0], p->i32[1], p->i32[2], p->i32[3],
+      p->i32[4], true, false, &usedOpaqueWrite, &containsAlpha, &fullImageWrite);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_setRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public int setRGB(int []data, int offset, int x, int y, int w, int h);
+TC_API void tugG_setRGBNative_Iiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private long setRGBNative(int []data, int offset, int x, int y, int w, int h, boolean opaqueWriteEnabled);
 {
    TCObject g = p->obj[0];
    TCObject data = p->obj[1];
-   p->retI = getsetRGB(p->currentContext, g, data, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4],false);
+   bool usedOpaqueWrite = false, containsAlpha = false, fullImageWrite = false;
+   int32 copied = getsetRGB(p->currentContext, g, data, p->i32[0], p->i32[1], p->i32[2], p->i32[3],
+      p->i32[4], false, p->i32[5] != 0, &usedOpaqueWrite, &containsAlpha, &fullImageWrite);
+   if (copied > 0 && Graphics_isImageSurface(g)) {
+      TCObject image = Graphics_surface(g);
+      int32 opacity = IMAGE_BACKING_OPACITY_UNKNOWN;
+#ifdef SKIA_H
+      TCObject backing = Image_backing(image);
+      opacity = containsAlpha ? IMAGE_BACKING_OPACITY_HAS_ALPHA
+         : fullImageWrite ? IMAGE_BACKING_OPACITY_OPAQUE
+         : backing ? ImageBacking_opacityState(backing) : IMAGE_BACKING_OPACITY_UNKNOWN;
+#endif
+      Image_changed(image) = true;
+      imageBackingRecordMutation(image, opacity);
+   }
+   p->retL = ((int64)usedOpaqueWrite << 32) | ((uint32)copied);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native public static void fadeScreen(int fadeValue);

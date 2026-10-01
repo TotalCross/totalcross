@@ -414,7 +414,12 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
     expected.setCurrentFrame(1);
     actual.setCurrentFrame(1);
     boolean second = samePixels(expected, actual);
-    require(metadata && first && second, "high-density frame layout");
+    require(metadata && first && second, "high-density frame layout scale=" + contentScale
+        + " metadata=" + metadata + " first=" + first + " second=" + second
+        + " expectedWidth=" + expected.getPixelWidth() + " actualWidth=" + actual.getPixelWidth()
+        + " expectedHeight=" + expected.getPixelHeight() + " actualHeight=" + actual.getPixelHeight()
+        + " expectedPixels=" + java.util.Arrays.toString(expected.getPixels())
+        + " actualPixels=" + java.util.Arrays.toString(actual.getPixels()));
     return true;
   }
 
@@ -474,11 +479,11 @@ public class ImageDeferredFrameStateSmokeApp extends MainWindow {
   }
 
   private static void fillStrip(Image image) {
-    int width = image.getPixelWidth();
-    int[] pixels = image.getPixels();
-    for (int y = 0; y < image.getPixelHeight(); y++) {
-      for (int x = 0; x < width; x++) {
-        pixels[y * width + x] = 0xFF000000 | ((x + 1) << 16) | ((y + 2) << 8) | x + 3;
+    Graphics graphics = image.getGraphics();
+    for (int y = 0; y < image.getHeight(); y++) {
+      for (int x = 0; x < image.getWidth(); x++) {
+        graphics.backColor = stripPixel(x, y);
+        graphics.fillRect(x, y, 1, 1);
       }
     }
   }

@@ -187,7 +187,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillCircleGradient_iii"), &tugG_fillCircleGradient_iii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillPolygonGradient_IIi"), &tugG_fillPolygonGradient_IIi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_getRGB_Iiiiii"), &tugG_getRGB_Iiiiii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tugG_setRGB_Iiiiii"), &tugG_setRGB_Iiiiii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_setRGBNative_Iiiiiib"), &tugG_setRGBNative_Iiiiiib);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fadeScreen_i"), &tugG_fadeScreen_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tufF_fontCreate"), &tufF_fontCreate);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_fontMetricsCreate"), &tufFM_fontMetricsCreate);

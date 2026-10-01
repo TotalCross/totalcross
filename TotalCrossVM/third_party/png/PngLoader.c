@@ -42,10 +42,14 @@ typedef struct
    int32 rowsDecoded;
    volatile ImageDecodeStatus *decodeStatus;
    Context currentContext;
+#if TC_RENDERER_SKIA
    bool directDecode;
+#endif
    bool hasTranslucent;
+#if TC_RENDERER_SKIA
    int64 nativeHandle;
    uint8* rgbaRow;
+#endif
 
    png_infop info_ptr;
 } UserData;
@@ -159,7 +163,11 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    }
    userData.first4 = first4;
    userData.imageObj = imageObj;
+#if TC_RENDERER_SKIA
    userData.directDecode = directDecode;
+#else
+   UNUSED(directDecode)
+#endif
 
    IF_HEAP_ERROR(heap)
    {
@@ -197,8 +205,11 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
    while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
 
-   if ((userData.pixelsObj == null && userData.pixels == null && userData.nativeHandle == 0)
-      || userData.rowsDecoded < userData.height)
+   if ((userData.pixelsObj == null && userData.pixels == null
+#if TC_RENDERER_SKIA
+         && userData.nativeHandle == 0
+#endif
+      ) || userData.rowsDecoded < userData.height)
    {
       if (userData.upixels) png_free(png_ptr, userData.upixels);
 #if TC_RENDERER_SKIA
@@ -447,7 +458,11 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
 static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, int pass)
 {
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
-   if (!userData->pixelsObj && !userData->pixels && !userData->nativeHandle)
+   if (!userData->pixelsObj && !userData->pixels
+#if TC_RENDERER_SKIA
+         && !userData->nativeHandle
+#endif
+      )
       return;
    png_bytep old_row = userData->upixels;
    png_progressive_combine_row(png_ptr, old_row, new_row);
@@ -460,6 +475,7 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
       int32 num_trans = 0;
       png_byte channels = png_get_channels(png_ptr, userData->info_ptr);
       png_get_tRNS(png_ptr, userData->info_ptr, null, &num_trans, null);
+#if TC_RENDERER_SKIA
       if (userData->directDecode) {
          uint8* rgba = userData->rgbaRow;
          if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6)) {
@@ -488,6 +504,7 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
          userData->quit = (int32)row_num == (userData->height - 1);
          return;
       }
+#endif
       if (channels == 4 || (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 6))
          for (x = 0; x < userData->width; x++, buffer += 4)
          {

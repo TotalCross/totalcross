@@ -204,7 +204,7 @@ TC_API void tugG_fillEllipticalPieGradient_i(NMParams p);
 TC_API void tugG_fillCircleGradient_iii(NMParams p);
 TC_API void tugG_fillPolygonGradient_IIi(NMParams p);
 TC_API void tugG_getRGB_Iiiiii(NMParams p);
-TC_API void tugG_setRGB_Iiiiii(NMParams p);
+TC_API void tugG_setRGBNative_Iiiiiib(NMParams p);
 TC_API void tugG_fadeScreen_i(NMParams p);
 TC_API void tugG_drawText_Ciiiibi(NMParams p);
 TC_API void tugG_drawText_siiiibi(NMParams p);

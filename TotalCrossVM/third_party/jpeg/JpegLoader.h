@@ -50,8 +50,12 @@ typedef enum
    JPEG_DECODE_FULL,
    JPEG_DECODE_BEST_FIT,
    JPEG_DECODE_TARGET_DECODE,
+#if TC_RENDERER_SKIA
    JPEG_DECODE_EXPLICIT_RATIO,
    JPEG_DECODE_DIRECT_FULL
+#else
+   JPEG_DECODE_EXPLICIT_RATIO
+#endif
 } JpegDecodeMode;
 
 ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj,

@@ -171,7 +171,7 @@ TC_API void tugG_fillEllipticalPieGradient_i(NMParams p);
 TC_API void tugG_fillCircleGradient_iii(NMParams p);
 TC_API void tugG_fillPolygonGradient_IIi(NMParams p);
 TC_API void tugG_getRGB_Iiiiii(NMParams p);
-TC_API void tugG_setRGB_Iiiiii(NMParams p);
+TC_API void tugG_setRGBNative_Iiiiiib(NMParams p);
 TC_API void tugG_fadeScreen_i(NMParams p);
 TC_API void tufF_fontCreate(NMParams p);
 TC_API void tufFM_fontMetricsCreate(NMParams p);
@@ -1281,7 +1281,7 @@ TC_API void tugG_getRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_setRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public int setRGB(int []data, int offset, int x, int y, int w, int h);
+TC_API void tugG_setRGBNative_Iiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private long setRGBNative(int []data, int offset, int x, int y, int w, int h, boolean opaqueWriteEnabled);
 {
 }
 //////////////////////////////////////////////////////////////////////////

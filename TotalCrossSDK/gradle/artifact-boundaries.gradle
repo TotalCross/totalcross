@@ -25,6 +25,8 @@ registerBoundaryJar('totalcrossApiJar', 'totalcross-api') {
     exclude 'totalcross/sys/runtime/ImageRuntimePolicy*.class'
     exclude 'totalcross/sys/runtime/RuntimeRuleResolver*.class'
     exclude 'totalcross/sys/runtime/ResolvedRuntimeConfiguration*.class'
+    exclude 'totalcross/sys/RuntimeDiagnosticsFeatureBridge*.class'
+    exclude 'totalcross/ui/image/ImageRasterFeatureBridge*.class'
     exclude '**/*4D.class', '**/*4D$*.class', '**/*4D*.class'
 }
 

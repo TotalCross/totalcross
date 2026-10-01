@@ -20,8 +20,6 @@ public class ImageAbiSmokeApp extends MainWindow {
   private static final int JAVA_GRAY = 0xFF202020;
   // Native Pixel is stored in the VM's byte order in the Java int array.
   private static final int NATIVE_RED = 0xFF0000FF;
-  private static final int NATIVE_BLUE = 0x0000FFFF;
-  private static final int NATIVE_GRAY = 0x202020FF;
   private static final int FRAME_A = 0xFF102030;
   private static final int FRAME_B = 0xFF405060;
 
@@ -123,22 +121,19 @@ public class ImageAbiSmokeApp extends MainWindow {
       require(jpegArgumentValidationPass, "JPEG invalid arguments");
 
       Image mutable = new Image(2, 2);
-      int[] mutablePixels = mutable.getPixels();
-      for (int i = 0; i < mutablePixels.length; i++) {
-        mutablePixels[i] = NATIVE_RED;
-      }
+      fill(mutable, NATIVE_RED);
       mutable.changeColors(JAVA_RED, JAVA_BLUE);
-      int changedPixel = mutablePixels[0];
-      colorMutationPass = changedPixel == NATIVE_BLUE;
+      int changedPixel = mutable.getPixels()[0];
+      colorMutationPass = changedPixel == JAVA_BLUE;
       mutable.changeColors(JAVA_BLUE, JAVA_GRAY);
-      int grayPixel = mutablePixels[0];
+      int grayPixel = mutable.getPixels()[0];
       mutable.applyColor(0x00202020);
       byte[] mutatedRow = new byte[8];
       mutable.getPixelRow(mutatedRow, 0);
-      colorMutationPass = colorMutationPass && grayPixel == NATIVE_GRAY
+      colorMutationPass = colorMutationPass && grayPixel == JAVA_GRAY
           && mutatedRow[0] > 32 && mutatedRow[0] < 64 && mutatedRow[1] == mutatedRow[0]
           && mutatedRow[2] == mutatedRow[0] && (mutatedRow[3] & 0xFF) == 0xFF;
-      require(colorMutationPass, "native pixel mutations changed=" + changedPixel + ",final=" + mutablePixels[0]
+      require(colorMutationPass, "native pixel mutations changed=" + changedPixel + ",final=" + mutable.getPixels()[0]
           + ",row=" + (mutatedRow[0] & 0xFF) + "/" + (mutatedRow[1] & 0xFF) + "/"
           + (mutatedRow[2] & 0xFF) + "/" + (mutatedRow[3] & 0xFF));
 
@@ -191,10 +186,11 @@ public class ImageAbiSmokeApp extends MainWindow {
       require(hwScaleCopyPass, "hardware scale on derived image");
 
       Image frames = new Image(8, 2);
-      int[] framePixels = frames.getPixels();
-      for (int i = 0; i < framePixels.length; i++) {
-        framePixels[i] = (i % 8) < 4 ? FRAME_A : FRAME_B;
-      }
+      Graphics frameGraphics = frames.getGraphics();
+      frameGraphics.backColor = FRAME_A;
+      frameGraphics.fillRect(0, 0, 4, 2);
+      frameGraphics.backColor = FRAME_B;
+      frameGraphics.fillRect(4, 0, 4, 2);
       frames.setFrameCount(2);
       frames.setCurrentFrame(1);
       Image frame = frames.getFrameInstance(1);
@@ -284,10 +280,17 @@ public class ImageAbiSmokeApp extends MainWindow {
   }
 
   private static void fill(Image image, int pixel) {
-    int[] pixels = image.getPixels();
-    for (int i = 0; i < pixels.length; i++) {
-      pixels[i] = pixel;
-    }
+    Graphics graphics = image.getGraphics();
+    graphics.backColor = publicColor(pixel);
+    graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
+  }
+
+  private static int publicColor(int nativePixel) {
+    int red = nativePixel >>> 24;
+    int green = nativePixel >>> 16 & 0xFF;
+    int blue = nativePixel >>> 8 & 0xFF;
+    int alpha = nativePixel & 0xFF;
+    return alpha << 24 | red << 16 | green << 8 | blue;
   }
 
   private static byte[] row(Image image) {

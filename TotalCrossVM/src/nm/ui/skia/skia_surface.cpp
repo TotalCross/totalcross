@@ -224,7 +224,8 @@ void skia_setPixel(int32 skiaSurface, int32 x, int32 y, Pixel pixel) {
 }
 
 int32 skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
-                   int32 x, int32 y, int32 w, int32 h, int32 isGet) {
+                   int32 x, int32 y, int32 w, int32 h, int32 isGet,
+                   bool allowOpaqueWrite) {
     SKIA_TRACE()
 
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
@@ -232,20 +233,18 @@ int32 skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
         return 0;
     }
 
-    SkBitmap pixelBitmap;
-    const SkImageInfo imageInfo = SkImageInfo::Make(
-        w,
-        h,
-        kRGBA_8888_SkColorType,
-        kUnpremul_SkAlphaType);
-
-    if (!pixelBitmap.tryAllocPixels(imageInfo)) {
-        return 0;
-    }
-
     Pixel* pixelBuffer = static_cast<Pixel*>(pixels) + offset;
 
     if (isGet != 0) {
+        SkBitmap pixelBitmap;
+        const SkImageInfo imageInfo = SkImageInfo::Make(
+            w,
+            h,
+            kRGBA_8888_SkColorType,
+            kUnpremul_SkAlphaType);
+        if (!pixelBitmap.tryAllocPixels(imageInfo)) {
+            return 0;
+        }
         if (!targetCanvas->readPixels(pixelBitmap, x, y)) {
             return 0;
         }
@@ -272,6 +271,33 @@ int32 skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
         return 1;
     }
 
+    bool containsAlpha = false;
+    const size_t pixelCount = static_cast<size_t>(w) * static_cast<size_t>(h);
+    for (size_t index = 0; index < pixelCount; ++index) {
+        if ((pixelBuffer[index] >> 24) != 0xff) {
+            containsAlpha = true;
+            break;
+        }
+    }
+    if (allowOpaqueWrite && !containsAlpha) {
+        const SkImageInfo sourceInfo = SkImageInfo::Make(
+            w, h, kBGRA_8888_SkColorType, kOpaque_SkAlphaType);
+        const size_t sourceRowBytes = static_cast<size_t>(w) * sizeof(Pixel);
+        if (targetCanvas->writePixels(sourceInfo, pixelBuffer, sourceRowBytes, x, y)) {
+            return 3; // success plus the opaque direct-write bit
+        }
+    }
+
+    SkBitmap pixelBitmap;
+    const SkImageInfo imageInfo = SkImageInfo::Make(
+        w,
+        h,
+        kRGBA_8888_SkColorType,
+        kUnpremul_SkAlphaType);
+    if (!pixelBitmap.tryAllocPixels(imageInfo)) {
+        return 0;
+    }
+
     for (int32 row = 0; row < h; ++row) {
         uint8_t* rgba =
             static_cast<uint8_t*>(pixelBitmap.getAddr(0, row));
@@ -290,5 +316,8 @@ int32 skia_getsetRGB(int32 skiaSurface, void* pixels, int32 offset,
         }
     }
 
-    return targetCanvas->writePixels(pixelBitmap, x, y) ? 1 : 0;
+    if (!targetCanvas->writePixels(pixelBitmap, x, y)) {
+        return 0;
+    }
+    return containsAlpha ? 5 : 1; // success plus the input-alpha bit, when present
 }

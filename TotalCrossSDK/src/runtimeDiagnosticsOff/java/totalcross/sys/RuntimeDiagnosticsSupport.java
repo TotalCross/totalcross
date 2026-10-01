@@ -19,6 +19,22 @@ final class RuntimeDiagnosticsSupport {
     }
   }
 
+  static boolean isDomainEnabled(RuntimeDiagnosticSnapshot.Domain domain) {
+    return false;
+  }
+
+  static void recordCounter(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot) {
+    // The default SDK variant has no diagnostic storage or synchronization.
+  }
+
+  static void recordTimer(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot, long elapsedNanos) {
+    // The default SDK variant has no diagnostic storage or synchronization.
+  }
+
+  static void setGauge(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot, long value) {
+    // The default SDK variant has no diagnostic storage or synchronization.
+  }
+
   static RuntimeDiagnosticSnapshot snapshot() {
     return RuntimeDiagnosticSnapshot.empty();
   }

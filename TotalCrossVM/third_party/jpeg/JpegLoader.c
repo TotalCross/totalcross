@@ -238,8 +238,10 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
          cinfo.scale_num = modeArg1;
          cinfo.scale_denom = modeArg2;
          break;
+#if TC_RENDERER_SKIA
       case JPEG_DECODE_DIRECT_FULL:
          break;
+#endif
       case JPEG_DECODE_FULL:
       default:
          break;
@@ -349,6 +351,7 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    {
       buffer = buffer0[0];
       jpeg_read_scanlines(&cinfo, buffer0, 1);
+#if TC_RENDERER_SKIA
       if (mode == JPEG_DECODE_DIRECT_FULL) {
          uint8* rgba = rgbaRow;
          int32 y = (int32)cinfo.output_scanline - 1;
@@ -368,12 +371,14 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
             status = IMAGE_DECODE_CORRUPT;
             break;
          }
-         if (!skia_image_backing_write_rgba_pixels(nativeHandle, rgbaRow, 0, y,
+      if (!skia_image_backing_write_rgba_pixels(nativeHandle, rgbaRow, 0, y,
                width, 1, width * 4)) {
             status = IMAGE_DECODE_RESOURCE_FAILURE;
             break;
          }
-      } else if (cinfo.out_color_components == 1) // guich@tc114_12
+      } else
+#endif
+      if (cinfo.out_color_components == 1) // guich@tc114_12
          for (x = 0; x < width; x++, buffer++)
             *pixels++ = makePixelA(0xFF,(uint8)buffer[0], (uint8)buffer[0], (uint8)buffer[0]);
       else

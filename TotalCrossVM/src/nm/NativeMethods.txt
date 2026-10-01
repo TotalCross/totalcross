@@ -173,7 +173,7 @@ totalcross/ui/gfx/Graphics|native public void fillEllipticalPieGradient(int xc, 
 totalcross/ui/gfx/Graphics|native public void fillCircleGradient(int xc, int yc, int r);
 totalcross/ui/gfx/Graphics|native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
 totalcross/ui/gfx/Graphics|native public int getRGB(int []data, int offset, int x, int y, int w, int h);
-totalcross/ui/gfx/Graphics|native public int setRGB(int []data, int offset, int x, int y, int w, int h);
+totalcross/ui/gfx/Graphics|native private long setRGBNative(int []data, int offset, int x, int y, int w, int h, boolean opaqueWriteEnabled);
 totalcross/ui/gfx/Graphics|native public static void fadeScreen(int fadeValue);
 totalcross/ui/font/Font|native void fontCreate();
 totalcross/ui/font/FontMetrics|native void fontMetricsCreate();

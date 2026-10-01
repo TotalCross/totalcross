@@ -1,0 +1,48 @@
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
+package totalcross.ui.image;
+
+/** Internal cross-package bridge for raster-core behavior. */
+public final class ImageRasterFeatureBridge {
+  private ImageRasterFeatureBridge() {
+  }
+
+  /** @hidden */
+  public static void prepareForMutation(Image image) {
+    if (image != null) {
+      image.prepareForGraphicsMutation();
+    }
+  }
+
+  /** @hidden */
+  public static void recordMutation(Image image) {
+    if (image != null) {
+      image.recordGraphicsMutation();
+    }
+  }
+
+  /** @hidden */
+  public static boolean tryWriteOpaquePixels(Image image, int[] data, int offset,
+      int x, int y, int width, int height, boolean unscaled) {
+    if (image == null || !image.opaqueWritePixelsEnabledForP2()) {
+      return false;
+    }
+    boolean written = unscaled && image.tryWriteOpaquePixels(data, offset, x, y, width, height);
+    ImageRasterDiagnostics.record(written
+        ? ImageRasterDiagnostics.OPAQUE_WRITE_SUCCESS : ImageRasterDiagnostics.RASTER_FALLBACK);
+    return written;
+  }
+
+  /** @hidden */
+  public static void recordOpaqueWriteResult(boolean directWrite) {
+    ImageRasterDiagnostics.record(directWrite
+        ? ImageRasterDiagnostics.OPAQUE_WRITE_SUCCESS : ImageRasterDiagnostics.RASTER_FALLBACK);
+  }
+
+  /** @hidden */
+  public static void recordRasterFallback() {
+    ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+  }
+}
