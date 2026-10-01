@@ -720,8 +720,24 @@ registerRuntimeConfigurationMacSmoke('NoMetadata', 'RuntimeConfigurationNoMetada
 registerRuntimeConfigurationMacSmoke('ImageCompact', 'ImageRuntimeConfigurationCompactMacSmokeApp',
         'image-runtime-compact-pass requested=COMPACT effective=COMPACT', false)
 registerRuntimeConfigurationMacSmoke('ImageCompactStorage', 'ImageCompactStorageSmokeApp',
-        'fixture=ImageCompactStorageSmokeApp,policy=true,standardBaselineRgba=true,formatsAndAccounting=true,observersAndEncoding=true,equalityHash=true,drawParity=true,alphaQuality=true,promotionRetry=true,p3Invalidation=true,directMutationPromotion=true,graphicsMutationPromotion=true,compactMetrics=true,compactDecodeFailureRetry=true',
+        'fixture=ImageCompactStorageSmokeApp,policy=true,standardBaselineRgba=true,formatsAndAccounting=true,observersAndEncoding=true,equalityHash=true,drawParity=true,alphaQuality=true,promotionRetry=true,p3Invalidation=true,directMutationPromotion=true,graphicsMutationPromotion=true,p3PhysicalVariantReuse=true,p3TargetColorVariant=true,p3IncompatibleFallback=true,compactMetrics=true,compactDecodeFailureRetry=true',
         false, 'totalcross/ui/image/', ['image-compact/**'])
+tasks.named('compileRuntimeConfigurationImageCompactStorageMacOSSmoke') {
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/ImageCompactStorageSmokeSupport*.class'
+        include 'totalcross/ui/image/ImageCompactStorageP3SmokeSupport*.class'
+        include 'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'
+    }
+}
+registerRuntimeConfigurationMacSmoke('ImageStandardStorage', 'ImageStandardStorageSmokeApp',
+        'fixture=ImageStandardStorageSmokeApp,requested=true,effective=true,standardJpegRgba=true,standardJpegPixelParity=true,requestedStorage=STANDARD,effectiveStorage=STANDARD,standardPngRgba=true,standardPngPixelParity=true,standardAlphaRgba=true,standardAlphaPixelParity=true,standardAlphaCompositeParity=true,compactDecodeCount=0,compactDecodeBytes=0,overallPass=true',
+        false, 'totalcross/ui/image/', ['image-compact/**'])
+tasks.named('compileRuntimeConfigurationImageStandardStorageMacOSSmoke') {
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/ImageCompactStorageSmokeSupport*.class'
+        include 'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'
+    }
+}
 registerRuntimeConfigurationMacSmoke('ImageRasterCore', 'ImageRasterCoreSmokeApp',
         'fixture=ImageRasterCoreSmokeApp,', false, 'totalcross/ui/image/')
 tasks.named('compileRuntimeConfigurationImageRasterCoreMacOSSmoke') {
