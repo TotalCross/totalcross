@@ -22,62 +22,19 @@ accounting, a durable macOS smoke app, and the runtime's resolved Image policy.
 The observable contract includes actual resident bytes, public ARGB/RGBA
 semantics, retry-safe decode and promotion, and unchanged P2/P3 lifecycle rules.
 
-## Working Set and Resume Protocol
-
-This plan is intentionally self-contained and is the only planning record for
-this feature. Its milestone checkboxes and active milestone identify the next
-work. Do not create reconstruction notes, checkpoint diaries, or evidence
-indexes. Build output belongs in task-specific temporary logs; the final report
-contains concise results and supported limitations only.
-
-## Progress
-
-- [x] Confirmed the base contains P2 authoritative backing state, opacity and
-  mutation generation, bounded row readback, and P3 physical identity, exact
-  derived-variant keys, and single-slot/pending variant ownership.
-- [x] Implemented startup capability resolution, internal format metadata,
-  actual row-byte/backing-byte accounting, and row-bounded RGBA observers.
-- [x] Implemented structural format selection and direct compact JPEG/PNG
-  source decode, with retry-safe candidate ownership.
-- [x] Added deterministic RGB, grayscale, alpha, and tRNS fixtures plus public
-  observer, encoding, equality, hash, drawing, and quality coverage.
-- [x] Added transactional RGBA promotion, failure injection and retry, source
-  sibling preservation, generation/opacity checks, and P3 variant invalidation.
-- [x] Routed deferred and direct `Image` pixel mutators through promotion and
-  promote compact images before returning a writable `Graphics` instance.
-- [x] Completed diagnostics-on SDK checks, artifact boundaries, macOS Release
-  native builds, deferred-mutation coverage, compact integration smoke, and
-  P2/P3 regression smoke.
-- [ ] Open the PR, confirm fresh enabled Merge Flow checks pass, and create the
-  factual technical handoff last.
-
-Measured by the 8x6 macOS ARM64 smoke: RGB565 uses 96 bytes, GRAY8 48 bytes,
-ARGB4444 96 bytes, and RGBA8888 192 bytes. The largest compact decode row
-scratch is 32 bytes, full-frame RGBA staging is 0 bytes, and seven compact
-fixtures materialized. The independent RGB565 reference differed by at most 9
-channel values; alpha compositing differed by at most 16. One controlled
-promotion grew backing storage from 96 to 192 bytes and measured 0 ms at the
-smoke timer's millisecond resolution.
-
-## Current Architecture and Scope
+## Architecture and Scope
 
 ### Runtime policy
 
 `ImageStorageProfile` is public configuration with `STANDARD` and `COMPACT`.
 `ImageRuntimeConfigurationStartup` resolves deployment rules after runtime
-backend selection and publishes `ImageRuntimePolicy`. The current policy
-intentionally downgrades every compact request using a P1-only reason. Replace
-that placeholder with one resolved native compact-capability boolean. A
-deployed Skia runtime may opt in; JavaSE/simulator paths and non-Skia builds
-must resolve to `STANDARD` with a durable capability reason when native compact
-storage is unavailable. Keep application APIs limited to the profile enum.
-
-If startup cannot call the native capability probe across package boundaries,
-add one internal Image capability bridge following the existing internal
-bridge pattern. Exclude it from `totalcross-api`, the aggregate SDK, and
-distributed SDK artifacts, and extend artifact-content/compile-surface checks.
-Pass capability once to policy resolution; decoders consume effective policy
-instead of repeating platform checks.
+backend selection and publishes `ImageRuntimePolicy`. Resolve COMPACT only when
+the deployed native Skia runtime can create all compact formats. Resolve
+JavaSE, simulator, and non-Skia runtimes to STANDARD with the reason `native
+compact backing is unavailable`. Keep application APIs limited to the profile
+enum. The internal startup capability bridge must stay out of `totalcross-api`,
+the aggregate SDK, and distributed SDK artifacts. Resolve capability once;
+decoders consume the effective policy instead of repeating platform checks.
 
 ### Backing ownership and formats
 
@@ -85,12 +42,10 @@ Java `ImageBacking` owns opacity and monotonically increasing mutation
 generation. `NativeImageBacking` owns the native handle and delegates snapshots,
 mutability, dimensions, and row readback. In
 `TotalCrossVM/src/nm/ui/skia/skia_image_backing_internal.h`,
-`NativeImageBackingRecord` currently has a SkImage or SkSurface, dimensions,
-generation, opacity-analysis cache, and P3's exact one-slot/one-pending raster
-variant. `skia_image_backing.cpp` currently assumes every backing is 4 bytes per
-pixel and reads rows through RGBA conversion. Make record metadata authoritative
-for format, rowBytes, and resident backing byte count; preserve the existing
-generation, cache, snapshot, and ownership behavior.
+`NativeImageBackingRecord` owns a SkImage or SkSurface, dimensions, format,
+rowBytes, resident backing byte count, generation, opacity-analysis cache, and
+P3's exact one-slot/one-pending raster variant. Keep this metadata authoritative
+for snapshots, mutations, reads, accounting, and format reporting.
 
 Internal canonical formats are `RGBA8888`, `RGB565`, `GRAY8`, and `ARGB4444`.
 Map them to Skia's RGBA8888, RGB565, Gray8, and ARGB4444 color types with
@@ -101,15 +56,11 @@ RGBA8888. Only immutable/source content may remain compact.
 
 ### Decode and observation
 
-The existing native JPEG decoder has adaptive decode modes and a direct
-full-resolution Skia path that currently allocates an RGBA surface plus one
-RGBA row. The PNG decoder has libpng progressive callbacks, structure metadata,
-and an optional RGBA direct path; unsupported inputs may use the existing
-full-precision route. Extend those decoder paths rather than adding new public
-decoders. For supported compact sources, row conversion writes into one final
-compact candidate, and decoder ownership transfers that candidate to the Image
-only after successful completion. Decoder failure and install failure release
-an unpublished candidate once and leave retry possible.
+Extend the adaptive native JPEG decoder and libpng progressive callbacks rather
+than adding public decoders. For supported compact sources, row conversion
+writes into one final compact candidate, and decoder ownership transfers that
+candidate to the Image only after successful completion. Decoder failure and
+install failure release an unpublished candidate once and leave retry possible.
 
 Selection is structural and does not inspect all decoded pixels. Under
 effective COMPACT: structurally grayscale and opaque selects GRAY8; otherwise
@@ -160,7 +111,7 @@ channel order, alpha edges, hidden RGB under zero alpha, compositing quality,
 and no repeated-observer quantization. Set quality thresholds before reviewing
 the results.
 
-## Plan of Work
+## Implementation Sequence and Acceptance
 
 ### Milestone 1 — Capability and generic backing
 
@@ -211,84 +162,45 @@ RGBA8888; injected allocation/conversion failure preserves format, pixels,
 generation, opacity and variants; retry succeeds; shared immutable siblings
 remain compact; P3 draw and target-color fallback stay correct.
 
-### Milestone 5 — Integration and handoff
+### Milestone 5 — Integration and current-branch evidence
 
-Complete durable focused SDK tests and a macOS native smoke app covering all
-three compact formats, expected byte use, readback quality, observers, draw,
-promotion/failure retry, and P3. Record a small current-branch measurement of
-actual bytes, temporary decode bytes, row scratch, direct-decode counts, and
-one controlled promotion cost. Do not claim FPS improvements.
+Complete focused SDK tests and macOS native smoke apps covering all three
+compact formats, expected byte use, readback quality, observers, draw,
+promotion/failure retry, and a STANDARD-profile control. Keep compact-smoke
+orchestration separate from fixture models, expected pixels, and accounting.
+Exercise compact encoded sources through P3 physical-variant reuse,
+target-color conversion, and incompatible-physical fallback. Record actual
+bytes, temporary decode bytes, row scratch, direct-decode counts, and one
+controlled promotion cost. Do not claim FPS improvements.
 
 Run the smallest relevant SDK tests at each milestone. At finalization, run
 focused diagnostics-on IMAGE tests with `-PruntimeDiagnostics=true`,
-`artifactContentTest`, `dist -x test`, macOS ARM64 Release `tcvm` and `Launcher`,
-the compact smoke and directly affected P2/P3 smokes. Do not build Android,
-Windows, Linux, WinCE, or iOS locally. Make a PR against `master`, require a
-fresh green GitHub Merge Flow on enabled jobs, and do not merge.
+`artifactContentTest`, `dist -x test`, macOS ARM64 Release `tcvm` and
+`Launcher`, both compact and STANDARD storage smokes, and the directly affected
+P2/P3 and Q/P8 diagnostics smokes. Do not build Android, Windows, Linux, WinCE,
+or iOS locally. Require a fresh green GitHub Merge Flow on enabled jobs for a
+PR against `master`; leave the PR unmerged.
 
-Create `.agent/reports/image-compact-storage.md` last as a factual technical
-handoff. It reports the final capability rule, precedence and per-format
-eligibility, actual storage sizes/rowBytes, direct decode and ownership,
-observer behavior, promotion failure/retry, P2/P3 behavior, tests and builds
-actually run, measurements and limitations. It contains no worktree, rebase,
-commit-SHA, raw-log, checkpoint, or reconstruction history.
-
-## Decision Log
-
-- Decision: COMPACT is a runtime opt-in with deterministic internal
-  representation; it is not public pixel-format selection.
-  Rationale: preserve a small application-facing contract and stable selection.
-- Decision: only immutable encoded-source backings use compact storage;
-  mutable and derived destinations remain RGBA8888.
-  Rationale: observers and drawing must preserve canonical storage, while
-  mutation continues to meet full-precision semantics after transactional
-  promotion.
-- Decision: format eligibility is based on encoded structure, not a raster
-  scan or optional opacity analysis.
-  Rationale: selection stays bounded, repeatable, and independent of image
-  dimensions and metadata-cache success.
-
-## Validation and Acceptance
+## Validation Design
 
 Use the smallest relevant SDK/native check at each implementation slice.
 Validation escalation follows `AGENTS.md`; do not repeat expensive builds after
-documentation-only changes. Test commands and durable smoke entry points will
-be added to the SDK/native build configuration as their owners are identified.
-All build output goes to task-specific logs, summarized without dumping full
-logs.
+documentation-only changes. Store build output in task-specific logs and report
+summaries instead of full logs.
 
-Final acceptance requires focused policy/format/decode/observer/promotion/P2/P3
-tests, diagnostics-on IMAGE tests, artifact boundaries, SDK distribution,
-macOS ARM64 Release native targets, compact and affected regression smokes,
-memory/quality measurements, fresh enabled GitHub Merge Flow, and
-`git diff --check origin/master...HEAD`. Record only commands actually run.
+Acceptance covers focused policy/format/decode/observer/promotion/P2/P3 tests,
+diagnostics-on IMAGE tests, artifact boundaries, SDK distribution, macOS ARM64
+Release native targets, compact and affected regression smokes, memory/quality
+measurements, fresh enabled GitHub Merge Flow, and
+`git diff --check origin/master...HEAD`.
 
-## Risks and Compatibility Limits
+## Compatibility Limits
 
-- macOS ARM64 native tests and smoke validate Gray8 and ARGB4444 allocation,
-  row layout, conversion, and promotion for the pinned Skia dependency.
-- PNG tRNS fixtures and direct JPEG/PNG smoke decodes validate the supported
-  row transformations without full-frame RGBA staging.
-- Promotion failure injection confirms the current handle stays compact and
-  retryable; successful promotion updates byte accounting and invalidates P3
-  variants while preserving generation, opacity, and shared-source ownership.
-- Platform compatibility outside macOS remains covered by the requested
-  GitHub Merge Flow; Android, Windows, Linux, WinCE, and iOS were not built
-  locally per task constraints.
-
-## Idempotence and Recovery
-
-Perform all implementation in the feature branch created from fresh
-`origin/master`. Never alter unrelated worktree files or generated dependencies.
-Decoder candidates remain private until complete success; release candidate
-storage once on every failure path. Promotion builds a complete replacement
-before publishing, so failures are retryable. Rebase only after fetching; if
-`origin/master` advanced, resolve conflicts without discarding either side and
-rerun directly affected focused checks. Open one PR and leave it unmerged.
-
-## Outcomes & Retrospective
-
-Complete this section when the feature is done. Summarize the accepted compact
-backing behavior, the validation actually completed, known limitations, and
-deferred checks. Keep implementation detail and measured values in the final
-report rather than turning the plan into a checkpoint diary.
+- Skia must support Gray8 and ARGB4444 allocation and conversion in addition to
+  RGB565. Unsupported runtimes resolve COMPACT requests to STANDARD.
+- Unsupported or structurally unsafe decoder inputs use RGBA8888. Compact
+  alpha is premultiplied ARGB4444 and may differ from the full-precision source
+  within the established black/white compositing bound.
+- Local native validation is macOS ARM64. Other platform compatibility is
+  determined by enabled CI jobs; storage accounting does not imply an FPS
+  improvement.
