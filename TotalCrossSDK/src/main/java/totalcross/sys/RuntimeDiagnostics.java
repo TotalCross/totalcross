@@ -28,8 +28,9 @@ public final class RuntimeDiagnostics {
   }
 
   /**
-   * Returns an immutable snapshot. A disabled domain produces the shared empty
-   * snapshot without collecting Java or native values.
+   * Returns an immutable snapshot containing only enabled domains. When all
+   * domains are disabled, returns the shared empty snapshot without collecting
+   * Java or native values.
    */
   public static RuntimeDiagnosticSnapshot snapshot() {
     return RuntimeDiagnosticsSupport.snapshot();

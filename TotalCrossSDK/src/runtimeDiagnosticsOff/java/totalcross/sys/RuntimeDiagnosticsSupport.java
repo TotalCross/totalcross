@@ -23,6 +23,10 @@ final class RuntimeDiagnosticsSupport {
     return false;
   }
 
+  static long getDomainGeneration(RuntimeDiagnosticSnapshot.Domain domain) {
+    return 0L;
+  }
+
   static void recordCounter(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot) {
     // The default SDK variant has no diagnostic storage or synchronization.
   }

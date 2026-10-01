@@ -9,6 +9,8 @@ final class RuntimeDiagnosticsSupport {
   private static final RuntimeDiagnosticSnapshot EMPTY = RuntimeDiagnosticSnapshot.empty();
   private static volatile boolean runtimeGroupEnabled;
   private static volatile boolean imageGroupEnabled;
+  private static volatile boolean schedulingGroupEnabled;
+  private static volatile long schedulingGeneration;
 
   private RuntimeDiagnosticsSupport() {
   }
@@ -26,8 +28,18 @@ final class RuntimeDiagnosticsSupport {
     }
     if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME) {
       runtimeGroupEnabled = enabled;
-    } else {
+    } else if (domain == RuntimeDiagnosticSnapshot.Domain.IMAGE) {
       imageGroupEnabled = enabled;
+    } else if (domain == RuntimeDiagnosticSnapshot.Domain.SCHEDULING) {
+      if (schedulingGroupEnabled != enabled) {
+        if (enabled) {
+          schedulingGeneration++;
+          schedulingGroupEnabled = true;
+        } else {
+          schedulingGroupEnabled = false;
+          schedulingGeneration++;
+        }
+      }
     }
   }
 
@@ -35,7 +47,14 @@ final class RuntimeDiagnosticsSupport {
     if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME) {
       return runtimeGroupEnabled;
     }
-    return domain == RuntimeDiagnosticSnapshot.Domain.IMAGE && imageGroupEnabled;
+    if (domain == RuntimeDiagnosticSnapshot.Domain.IMAGE) {
+      return imageGroupEnabled;
+    }
+    return domain == RuntimeDiagnosticSnapshot.Domain.SCHEDULING && schedulingGroupEnabled;
+  }
+
+  static long getDomainGeneration(RuntimeDiagnosticSnapshot.Domain domain) {
+    return domain == RuntimeDiagnosticSnapshot.Domain.SCHEDULING ? schedulingGeneration : 0L;
   }
 
   static void recordCounter(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot) {
@@ -60,10 +79,10 @@ final class RuntimeDiagnosticsSupport {
   }
 
   static RuntimeDiagnosticSnapshot snapshot() {
-    if (!runtimeGroupEnabled && !imageGroupEnabled) {
+    if (!runtimeGroupEnabled && !imageGroupEnabled && !schedulingGroupEnabled) {
       return EMPTY;
     }
-    return RuntimeMetrics.snapshot(runtimeGroupEnabled, imageGroupEnabled);
+    return RuntimeMetrics.snapshot(runtimeGroupEnabled, imageGroupEnabled, schedulingGroupEnabled);
   }
 
   static void addJavaCounterForTest(long delta) {
@@ -112,7 +131,7 @@ final class RuntimeDiagnosticsSupport {
     if (domain == null) {
       throw new NullPointerException("domain is required");
     }
-    if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME ? !runtimeGroupEnabled : !imageGroupEnabled) {
+    if (!isDomainEnabled(domain)) {
       return;
     }
     RuntimeMetrics.reset(domain);
@@ -130,6 +149,11 @@ final class RuntimeDiagnosticsSupport {
         0x3001, 0x3002, 0x3003, 0x3004, 0x3005, 0x3006, 0x3007, 0x3008, 0x3009,
         0x300A, 0x300B, 0x300C, 0x300D, 0x300E, 0x300F, 0x3010, 0x3011
     };
+    private static final int FLICK_CALLBACK_COUNT_ID = 0x4001;
+    private static final int FLICK_ADVANCEMENT_COUNT_ID = 0x4002;
+    private static final int FLICK_COMPLETION_COUNT_ID = 0x4003;
+    private static final int FLICK_ADVANCEMENT_WORK_NANOS_ID = 0x4004;
+    private static final int FLICK_POSITIVE_LATENESS_NANOS_ID = 0x4005;
     private static final int[] METRIC_IDS = {
         JAVA_COUNTER_ID, JAVA_GAUGE_ID, JAVA_TIMER_ID, NATIVE_COUNTER_ID, NATIVE_GAUGE_ID
     };
@@ -192,6 +216,11 @@ final class RuntimeDiagnosticsSupport {
     private static long javaGauge;
     private static long javaTimerNanos;
     private static final long[] imageCounters = new long[IMAGE_METRIC_IDS.length];
+    private static long flickCallbackCount;
+    private static long flickAdvancementCount;
+    private static long flickCompletionCount;
+    private static long flickAdvancementWorkNanos;
+    private static long flickPositiveLatenessNanos;
     private static long epoch;
     private static NativeBridge nativeBridge = new VmNativeBridge();
 
@@ -199,14 +228,16 @@ final class RuntimeDiagnosticsSupport {
       // Calling this method initializes this holder only after the group is enabled.
     }
 
-    private static RuntimeDiagnosticSnapshot snapshot(boolean includeRuntime, boolean includeImage) {
-      if (!includeRuntime && !includeImage) {
+    private static RuntimeDiagnosticSnapshot snapshot(boolean includeRuntime, boolean includeImage,
+        boolean includeScheduling) {
+      if (!includeRuntime && !includeImage && !includeScheduling) {
         return EMPTY;
       }
       synchronized (COLLECTION_LOCK) {
         includeRuntime &= runtimeGroupEnabled;
         includeImage &= imageGroupEnabled;
-        if (!includeRuntime && !includeImage) {
+        includeScheduling &= schedulingGroupEnabled;
+        if (!includeRuntime && !includeImage && !includeScheduling) {
           return EMPTY;
         }
         if (includeRuntime) {
@@ -214,7 +245,8 @@ final class RuntimeDiagnosticsSupport {
         }
         int runtimeCount = includeRuntime ? METRIC_IDS.length : 0;
         int imageCount = includeImage ? IMAGE_METRIC_IDS.length : 0;
-        int total = runtimeCount + imageCount;
+        int schedulingCount = includeScheduling ? 5 : 0;
+        int total = runtimeCount + imageCount + schedulingCount;
         int[] metricIds = new int[total];
         byte[] domains = new byte[total];
         byte[] kinds = new byte[total];
@@ -235,9 +267,32 @@ final class RuntimeDiagnosticsSupport {
           System.arraycopy(IMAGE_DOMAINS, 0, domains, destination, imageCount);
           System.arraycopy(IMAGE_KINDS, 0, kinds, destination, imageCount);
           System.arraycopy(imageCounters, 0, values, destination, imageCount);
+          destination += imageCount;
+        }
+        if (includeScheduling) {
+          byte schedulingDomain = (byte) RuntimeDiagnosticSnapshot.Domain.SCHEDULING.ordinal();
+          destination = put(metricIds, domains, kinds, values, destination, FLICK_CALLBACK_COUNT_ID,
+              schedulingDomain, RuntimeDiagnosticSnapshot.Kind.COUNTER, flickCallbackCount);
+          destination = put(metricIds, domains, kinds, values, destination, FLICK_ADVANCEMENT_COUNT_ID,
+              schedulingDomain, RuntimeDiagnosticSnapshot.Kind.COUNTER, flickAdvancementCount);
+          destination = put(metricIds, domains, kinds, values, destination, FLICK_COMPLETION_COUNT_ID,
+              schedulingDomain, RuntimeDiagnosticSnapshot.Kind.COUNTER, flickCompletionCount);
+          destination = put(metricIds, domains, kinds, values, destination, FLICK_ADVANCEMENT_WORK_NANOS_ID,
+              schedulingDomain, RuntimeDiagnosticSnapshot.Kind.TIMER, flickAdvancementWorkNanos);
+          put(metricIds, domains, kinds, values, destination, FLICK_POSITIVE_LATENESS_NANOS_ID,
+              schedulingDomain, RuntimeDiagnosticSnapshot.Kind.TIMER, flickPositiveLatenessNanos);
         }
         return new RuntimeDiagnosticSnapshot(metricIds, domains, kinds, values, epoch);
       }
+    }
+
+    private static int put(int[] metricIds, byte[] domains, byte[] kinds, long[] values, int index,
+        int metricId, byte domain, RuntimeDiagnosticSnapshot.Kind kind, long value) {
+      metricIds[index] = metricId;
+      domains[index] = domain;
+      kinds[index] = (byte) kind.ordinal();
+      values[index] = value;
+      return index + 1;
     }
 
     private static void recordCounter(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot) {
@@ -256,6 +311,19 @@ final class RuntimeDiagnosticsSupport {
         } else if (featureMetricSlot == 1) {
           addNativeCounter(1L);
         }
+      } else if (domain == RuntimeDiagnosticSnapshot.Domain.SCHEDULING) {
+        synchronized (COLLECTION_LOCK) {
+          if (!schedulingGroupEnabled) {
+            return;
+          }
+          if (featureMetricSlot == 0) {
+            flickCallbackCount++;
+          } else if (featureMetricSlot == 1) {
+            flickAdvancementCount++;
+          } else if (featureMetricSlot == 2) {
+            flickCompletionCount++;
+          }
+        }
       }
     }
 
@@ -263,6 +331,17 @@ final class RuntimeDiagnosticsSupport {
         long elapsedNanos) {
       if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME && featureMetricSlot == 0) {
         addJavaTimer(elapsedNanos);
+      } else if (domain == RuntimeDiagnosticSnapshot.Domain.SCHEDULING) {
+        synchronized (COLLECTION_LOCK) {
+          if (!schedulingGroupEnabled) {
+            return;
+          }
+          if (featureMetricSlot == 0) {
+            flickAdvancementWorkNanos += Math.max(0L, elapsedNanos);
+          } else if (featureMetricSlot == 1) {
+            flickPositiveLatenessNanos += Math.max(0L, elapsedNanos);
+          }
+        }
       }
     }
 
@@ -331,6 +410,13 @@ final class RuntimeDiagnosticsSupport {
           for (int i = 0; i < imageCounters.length; i++) {
             imageCounters[i] = 0L;
           }
+          epoch++;
+        } else if (domain == RuntimeDiagnosticSnapshot.Domain.SCHEDULING && schedulingGroupEnabled) {
+          flickCallbackCount = 0L;
+          flickAdvancementCount = 0L;
+          flickCompletionCount = 0L;
+          flickAdvancementWorkNanos = 0L;
+          flickPositiveLatenessNanos = 0L;
           epoch++;
         }
       }
