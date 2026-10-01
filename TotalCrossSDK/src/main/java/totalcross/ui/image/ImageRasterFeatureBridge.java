@@ -7,6 +7,10 @@ package totalcross.ui.image;
 /** Internal cross-package bridge for raster-core behavior. */
 public final class ImageRasterFeatureBridge {
   public static final int DRAW_HANDLED = ImageRasterDiagnostics.DRAW_HANDLED;
+  static int copyRectPlanAttemptsForTest;
+  static int copyRectPlanHandledForTest;
+  static int copyRectPlanFallbacksForTest;
+  static int copyRectPlanLastStatusForTest;
 
   private ImageRasterFeatureBridge() {
   }
@@ -51,5 +55,16 @@ public final class ImageRasterFeatureBridge {
   /** @hidden */
   public static void recordDrawEvents(int status) {
     ImageRasterDiagnostics.recordDrawEvents(status);
+  }
+
+  /** @hidden */
+  public static void recordCopyRectPlanResult(int status) {
+    copyRectPlanAttemptsForTest++;
+    copyRectPlanLastStatusForTest = status;
+    if ((status & DRAW_HANDLED) != 0) {
+      copyRectPlanHandledForTest++;
+    } else {
+      copyRectPlanFallbacksForTest++;
+    }
   }
 }
