@@ -9,7 +9,8 @@ public final class RuntimeDiagnosticSnapshot {
   /** Broad observation domains; metric keys and identifiers remain internal. */
   public enum Domain {
     RUNTIME,
-    IMAGE
+    IMAGE,
+    SCHEDULING
   }
 
   /** The interpretation of a numeric observation. */

@@ -14,6 +14,11 @@ public final class RuntimeDiagnosticsFeatureBridge {
     return RuntimeDiagnosticsSupport.isDomainEnabled(domain);
   }
 
+  /** @hidden */
+  public static long getDomainGeneration(RuntimeDiagnosticSnapshot.Domain domain) {
+    return RuntimeDiagnosticsSupport.getDomainGeneration(domain);
+  }
+
   /** @hidden The metric slot is internal to the calling feature. */
   public static void recordCounter(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot) {
     RuntimeDiagnosticsSupport.recordCounter(domain, featureMetricSlot);
