@@ -11,7 +11,8 @@ public final class RuntimeDiagnosticSnapshot {
     RUNTIME,
     IMAGE,
     SCHEDULING,
-    PREFETCH
+    PREFETCH,
+    RENDERING
   }
 
   /** The interpretation of a numeric observation. */

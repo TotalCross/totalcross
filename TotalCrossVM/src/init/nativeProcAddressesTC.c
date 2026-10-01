@@ -187,6 +187,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawRoundRect_iiiii"), &tugG_drawRoundRect_iiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillRoundRect_iiiii"), &tugG_fillRoundRect_iiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_copyRectNative_giiiiii"), &tugG_copyRectNative_giiiiii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuSRR_moveRaster_iiiiiiiiiiiii"), &tuSRR_moveRaster_iiiiiiiiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawRoundGradient_iiiiiiiii"), &tugG_drawRoundGradient_iiiiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawImageNative_iiib"), &tugG_drawImageNative_iiib);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawGeometryNative_oiib"), &tugG_drawGeometryNative_oiib);

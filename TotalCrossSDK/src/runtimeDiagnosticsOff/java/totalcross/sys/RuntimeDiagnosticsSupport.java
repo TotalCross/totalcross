@@ -42,4 +42,5 @@ final class RuntimeDiagnosticsSupport {
   static RuntimeDiagnosticSnapshot snapshot() {
     return RuntimeDiagnosticSnapshot.empty();
   }
+
 }

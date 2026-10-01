@@ -35,4 +35,5 @@ public final class RuntimeDiagnostics {
   public static RuntimeDiagnosticSnapshot snapshot() {
     return RuntimeDiagnosticsSupport.snapshot();
   }
+
 }
