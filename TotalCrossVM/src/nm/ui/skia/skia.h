@@ -74,6 +74,7 @@ int64_t skia_image_backing_byte_count(int64_t handle);
 int64_t skia_image_backing_create_empty_with_color_type_for_test(int32 width, int32 height, int32 colorType);
 int32 skia_image_backing_color_type_for_test(int64_t handle);
 void skia_image_geometry_fail_next_physical_copy_write_pixels_for_test(void);
+int skia_image_backing_skew_surface_for_test(int32 surfaceId, float skewX, float skewY);
 void skia_image_backing_fail_next_variant_materialization_for_test(void);
 bool skia_image_backing_consume_variant_materialization_failure_for_test(void);
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height);

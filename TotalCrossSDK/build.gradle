@@ -721,7 +721,7 @@ registerRuntimeConfigurationMacSmoke('NoMetadata', 'RuntimeConfigurationNoMetada
 registerRuntimeConfigurationMacSmoke('ImageCompact', 'ImageRuntimeConfigurationCompactMacSmokeApp',
         'image-runtime-compact-pass requested=COMPACT effective=COMPACT', false)
 registerRuntimeConfigurationMacSmoke('ImageCompactStorage', 'ImageCompactStorageSmokeApp',
-        'fixture=ImageCompactStorageSmokeApp,policy=true,standardBaselineRgba=true,formatsAndAccounting=true,observersAndEncoding=true,equalityHash=true,drawParity=true,alphaQuality=true,promotionRetry=true,p3Invalidation=true,directMutationPromotion=true,graphicsMutationPromotion=true,p3PhysicalVariantReuse=true,p3TargetColorVariant=true,p3IncompatibleFallback=true,compactMetrics=true,compactDecodeFailureRetry=true',
+        'fixture=ImageCompactStorageSmokeApp,policy=true,standardBaselineRgba=true,formatsAndAccounting=true,observersAndEncoding=true,equalityHash=true,drawParity=true,alphaQuality=true,promotionRetry=true,p3Invalidation=true,directMutationPromotion=true,graphicsMutationPromotion=true,p3PhysicalVariantReuse=true,p3TargetColorVariant=true,p3IncompatibleFallback=true,p6Rgb565DirectCopy=true,p6Gray8Fallback=true,p6Argb4444Fallback=true,p6TargetColorCopyRect=true,p6CachedFinalReuse=true,compactMetrics=true,compactDecodeFailureRetry=true',
         false, 'totalcross/ui/image/', ['image-compact/**'])
 tasks.named('compileRuntimeConfigurationImageCompactStorageMacOSSmoke') {
     from(smokeTestClassesDir) {
@@ -1241,7 +1241,7 @@ registerImageMacSmoke('ImageScrollRasterFastPathSmoke', 'ImageScrollRasterFastPa
         'emptyIntersectionNoMutation=true',
         'planCopyHandled=true',
         'physicalIdentityCopy=true',
-        'cachedFinalRasterHits=0',
+        'cachedFinalRasterHits=1',
         'cacheProbeMissContinuesToPlanCopy=true',
         'deferredSourcesRemainDeferred=true',
         'overallPass=true'

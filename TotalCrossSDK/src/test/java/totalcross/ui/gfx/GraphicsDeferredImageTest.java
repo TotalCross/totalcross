@@ -8,7 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
+import java.util.zip.CRC32;
+
+import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
@@ -90,6 +95,37 @@ class GraphicsDeferredImageTest {
   }
 
   @Test
+  void copyRectPreservesCurrentFrameForDeferredSources() throws Exception {
+    byte[] encoded = twoFramePng();
+    Image expectedSource = new Image(encoded);
+    expectedSource.setCurrentFrame(1);
+    Image deferredSource = new Image(encoded);
+    deferredSource.setCurrentFrame(1);
+    expectedSource.getPixels();
+
+    Image expected = new Image(4, 2);
+    expected.getGraphics().copyRect(expectedSource, 0, 0, 4, 2, 0, 0);
+    Image actual = new Image(4, 2);
+    actual.getGraphics().copyRect(deferredSource, 0, 0, 4, 2, 0, 0);
+
+    assertArrayEquals(expected.getPixels(), actual.getPixels());
+    assertNull(backing(deferredSource));
+  }
+
+  @Test
+  void copyRectResolvesDeferredSourceAtDestinationContentScale() throws Exception {
+    Image base = new Image(2, 2);
+    java.util.Arrays.fill(base.getPixels(), 0xFF55AA33);
+    Image source = base.getSmoothScaledInstance(1, 1);
+    Image destination = Image.createLogical(1, 1, 2);
+
+    destination.getGraphics().copyRect(source, 0, 0, 1, 1, 0, 0);
+
+    assertAllPixels(destination, 0xFF55AA33);
+    assertNull(backing(source));
+  }
+
+  @Test
   void materializedSourceStillUsesItsExistingNaturalBacking() throws Exception {
     Image source = Image.createLogical(1, 1, 2);
     java.util.Arrays.fill(source.getPixels(), 0xFF0000FF);
@@ -117,5 +153,40 @@ class GraphicsDeferredImageTest {
     Image image = new Image(width, height);
     java.util.Arrays.fill(image.getPixels(), pixel);
     return image;
+  }
+
+  private static byte[] twoFramePng() throws Exception {
+    BufferedImage source = new BufferedImage(8, 2, BufferedImage.TYPE_INT_ARGB);
+    for (int y = 0; y < source.getHeight(); y++) {
+      for (int x = 0; x < source.getWidth(); x++) {
+        source.setRGB(x, y, x < 4 ? 0xFF204060 : 0xFFB06020);
+      }
+    }
+    ByteArrayOutputStream encoded = new ByteArrayOutputStream();
+    if (!ImageIO.write(source, "png", encoded)) {
+      throw new AssertionError("PNG writer unavailable");
+    }
+    byte[] png = encoded.toByteArray();
+    int iend = png.length - 12;
+    ByteArrayOutputStream withFrameCount = new ByteArrayOutputStream(png.length + 32);
+    withFrameCount.write(png, 0, iend);
+    byte[] text = "Comment\0FC=2".getBytes("ISO-8859-1");
+    byte[] type = "tEXt".getBytes("ISO-8859-1");
+    writeInt(withFrameCount, text.length);
+    withFrameCount.write(type);
+    withFrameCount.write(text);
+    CRC32 crc = new CRC32();
+    crc.update(type);
+    crc.update(text);
+    writeInt(withFrameCount, (int) crc.getValue());
+    withFrameCount.write(png, iend, 12);
+    return withFrameCount.toByteArray();
+  }
+
+  private static void writeInt(ByteArrayOutputStream output, int value) {
+    output.write(value >> 24);
+    output.write(value >> 16);
+    output.write(value >> 8);
+    output.write(value);
   }
 }
