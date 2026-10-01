@@ -4,6 +4,8 @@
 
 package totalcross.ui.image;
 
+import java.util.ArrayList;
+
 /** Immutable linked representation of an Image's deferred source and transforms. */
 final class ImagePipeline {
   static final int SCALE = 0;
@@ -168,6 +170,22 @@ final class ImagePipeline {
         width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames);
   }
 
+  /** Copies only immutable node data; materialized caches are always fresh. */
+  ImagePipeline detachedCopy(EncodedImageSource detachedRoot) {
+    ArrayList<ImagePipeline> nodes = new ArrayList<ImagePipeline>();
+    for (ImagePipeline node = this; node.previous != null; node = node.previous) {
+      nodes.add(node);
+    }
+    ImagePipeline copy = new ImagePipeline(detachedRoot, decodePolicy);
+    for (int i = nodes.size() - 1; i >= 0; i--) {
+      ImagePipeline node = nodes.get(i);
+      copy = copy.append(node.operationType, node.parameter1, node.parameter2, node.parameter3,
+          node.parameter4, node.width, node.height, node.logicalWidth, node.logicalHeight,
+          node.frameCount, node.widthOfAllFrames);
+    }
+    return copy;
+  }
+
   boolean hasGeometricNode() {
     for (ImagePipeline node = this; node.previous() != null; node = node.previous()) {
       if (node.operationType == SCALE || node.operationType == SMOOTH_SCALE || node.operationType == ROTATE_SCALE) {
@@ -175,6 +193,10 @@ final class ImagePipeline {
       }
     }
     return false;
+  }
+
+  boolean hasDeferredOperations() {
+    return previous != null;
   }
 
   boolean hasGeometryOperation() {

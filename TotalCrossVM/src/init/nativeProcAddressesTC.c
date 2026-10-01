@@ -126,6 +126,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeResizeJpeg_ssi"), &tuiI_nativeResizeJpeg_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_captureNative_Bi"), &tuiEIS_captureNative_Bi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_captureNativePath_s"), &tuiEIS_captureNativePath_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_copyNativeBagFrom_e"), &tuiEIS_copyNativeBagFrom_e);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiEIS_releaseNativeBag"), &tuiEIS_releaseNativeBag);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createEmptyNative_ii"), &tuiNIB_createEmptyNative_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiNIB_createColorTest_iii"), &tuiNIB_createColorTest_iii);

@@ -183,6 +183,42 @@ TC_API void tuiEIS_releaseNativeBag(NMParams p) // totalcross/ui/image/EncodedIm
    EncodedImageSource_nativeBag(p->obj[0]) = 0;
 }
 
+TC_API void tuiEIS_copyNativeBagFrom_e(NMParams p) // totalcross/ui/image/EncodedImageSource private void copyNativeBagFrom(totalcross.ui.image.EncodedImageSource source);
+{
+   TCObject destination = p->obj[0];
+   TCObject source = p->obj[1];
+   ImageEncodedBag* sourceBag = source
+      ? (ImageEncodedBag*)EncodedImageSource_nativeBag(source) : null;
+   ImageEncodedBag* copy;
+
+   if (!sourceBag || !sourceBag->bytes || sourceBag->length <= 0)
+   {
+      throwException(p->currentContext, ImageException, "Captured encoded image source is unavailable");
+      return;
+   }
+   copy = imageEncodedBagCreate(sourceBag->bytes, sourceBag->length);
+   if (!copy)
+   {
+      throwException(p->currentContext, OutOfMemoryError, null);
+      return;
+   }
+   if (EncodedImageSource_nativeBag(destination))
+   {
+      ImageEncodedBag* previous = (ImageEncodedBag*)EncodedImageSource_nativeBag(destination);
+      imageEncodedBagRelease(&previous);
+   }
+   EncodedImageSource_nativeBag(destination) = (int64)copy;
+   EncodedImageSource_formatCode(destination) = EncodedImageSource_formatCode(source);
+   EncodedImageSource_length(destination) = EncodedImageSource_length(source);
+   EncodedImageSource_intrinsicWidth(destination) = EncodedImageSource_intrinsicWidth(source);
+   EncodedImageSource_intrinsicHeight(destination) = EncodedImageSource_intrinsicHeight(source);
+   EncodedImageSource_logicalWidth(destination) = EncodedImageSource_logicalWidth(source);
+   EncodedImageSource_logicalHeight(destination) = EncodedImageSource_logicalHeight(source);
+   EncodedImageSource_frameCount(destination) = EncodedImageSource_frameCount(source);
+   EncodedImageSource_bytes(destination) = null;
+   EncodedImageSource_comment(destination) = EncodedImageSource_comment(source);
+}
+
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native private void imageLoad(String path);
 {

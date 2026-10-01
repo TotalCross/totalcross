@@ -174,6 +174,20 @@ final class EncodedImageSource extends ImageSource {
     return copy;
   }
 
+  /** Copies only immutable encoded input; mutable decoded state starts empty. */
+  EncodedImageSource detachedEncodedCopyForPreparation() throws ImageException {
+    EncodedImageSource copy = new EncodedImageSource();
+    if (bytes != null) {
+      byte[] owned = copyBytes();
+      copy.captureNative(owned, owned.length);
+    } else if (nativeBag != 0) {
+      copy.copyNativeBagFrom(this);
+    } else {
+      throw new ImageException("Captured encoded image source is unavailable");
+    }
+    return copy;
+  }
+
   byte[] bytesForInternalDecode() {
     return bytes;
   }
@@ -284,6 +298,16 @@ final class EncodedImageSource extends ImageSource {
   @ReplacedByNativeOnDeploy
   private void releaseNativeBag() {
     nativeBag = 0;
+  }
+
+  /** Replaced on deployed targets by a deep copy of the immutable native encoded bag. */
+  @ReplacedByNativeOnDeploy
+  private void copyNativeBagFrom(EncodedImageSource source) throws ImageException {
+    if (source == null || source.bytes == null) {
+      throw new ImageException("Native encoded image copy is unavailable in this runtime");
+    }
+    byte[] owned = source.copyBytes();
+    captureNative(owned, owned.length);
   }
 
   @Override
