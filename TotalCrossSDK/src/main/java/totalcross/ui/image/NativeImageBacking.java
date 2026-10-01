@@ -13,6 +13,10 @@ final class NativeImageBacking extends ImageBacking {
   static final int RASTER_VARIANT_MISS = 0;
   static final int RASTER_VARIANT_MATERIALIZE = 1;
   static final int RASTER_VARIANT_HIT = 2;
+  static final int TEST_COLOR_RGBA_8888 = 0;
+  static final int TEST_COLOR_BGRA_8888 = 1;
+  static final int TEST_COLOR_RGB_565 = 2;
+  static final int TEST_COLOR_ALPHA_8 = 3;
 
   private long nativeHandle;
   private final int width;
@@ -81,6 +85,15 @@ final class NativeImageBacking extends ImageBacking {
     long handle = createEmptyNative(width, height);
     if (handle == 0) {
       throw new ImageException("Could not create native image backing.");
+    }
+    return new NativeImageBacking(handle, width, height);
+  }
+
+  static NativeImageBacking createEmptyWithColorTypeForTest(int width, int height, int colorType)
+      throws ImageException {
+    long handle = createColorTest(width, height, colorType);
+    if (handle == 0) {
+      throw new ImageException("Could not create test image backing.");
     }
     return new NativeImageBacking(handle, width, height);
   }
@@ -255,11 +268,19 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   int observeVariantForTest(int kind, int[] exactKey) {
-    return observeVariantForTestNative(kind, exactKey);
+    return observeVarTest(kind, exactKey);
   }
 
   int variantStateForTest() {
-    return variantStateForTestNative();
+    return variantStateTest();
+  }
+
+  int colorTypeForTest() {
+    return colorTypeTest();
+  }
+
+  static void failNextVariantMaterializationForTest() {
+    failVariantTest();
   }
 
   @Override
@@ -269,6 +290,11 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private static long createEmptyNative(int width, int height) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static long createColorTest(int width, int height, int colorType) {
     return 0;
   }
 
@@ -326,13 +352,22 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
-  private int observeVariantForTestNative(int kind, int[] exactKey) {
+  private int observeVarTest(int kind, int[] exactKey) {
     return 0;
   }
 
   @ReplacedByNativeOnDeploy
-  private int variantStateForTestNative() {
+  private int variantStateTest() {
     return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int colorTypeTest() {
+    return -1;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static void failVariantTest() {
   }
 
   @ReplacedByNativeOnDeploy

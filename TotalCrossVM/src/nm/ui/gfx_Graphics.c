@@ -328,6 +328,24 @@ TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphi
    if (p->retI & SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT) {
       imageRecordTestCounter(p->currentContext, "physicalIdentityHitCountForTest");
    }
+   if (p->retI & SKIA_IMAGE_DRAW_TARGET_COLOR_MATERIALIZED) {
+      imageRecordTestCounter(p->currentContext, "targetColorVariantMaterializationCountForTest");
+   }
+   if (p->retI & SKIA_IMAGE_DRAW_TARGET_COLOR_HIT) {
+      imageRecordTestCounter(p->currentContext, "targetColorVariantHitCountForTest");
+   }
+   if (p->retI & SKIA_IMAGE_DRAW_TARGET_COLOR_FALLBACK) {
+      imageRecordTestCounter(p->currentContext, "targetColorVariantFallbackCountForTest");
+   }
+   if (p->retI & SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_MATERIALIZED) {
+      imageRecordTestCounter(p->currentContext, "physicalVariantMaterializationCountForTest");
+   }
+   if (p->retI & SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_HIT) {
+      imageRecordTestCounter(p->currentContext, "physicalVariantHitCountForTest");
+   }
+   if (p->retI & SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_FALLBACK) {
+      imageRecordTestCounter(p->currentContext, "physicalVariantFallbackCountForTest");
+   }
 #else
    p->retI = 0;
 #endif

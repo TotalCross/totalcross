@@ -127,7 +127,8 @@ final class RuntimeDiagnosticsSupport {
     private static final int NATIVE_GAUGE_ID = 0x2002;
     private static final int RUNTIME_GROUP_MASK = 1;
     private static final int[] IMAGE_METRIC_IDS = {
-        0x3001, 0x3002, 0x3003, 0x3004, 0x3005, 0x3006, 0x3007, 0x3008, 0x3009
+        0x3001, 0x3002, 0x3003, 0x3004, 0x3005, 0x3006, 0x3007, 0x3008, 0x3009,
+        0x300A, 0x300B, 0x300C, 0x300D, 0x300E, 0x300F, 0x3010, 0x3011
     };
     private static final int[] METRIC_IDS = {
         JAVA_COUNTER_ID, JAVA_GAUGE_ID, JAVA_TIMER_ID, NATIVE_COUNTER_ID, NATIVE_GAUGE_ID
@@ -156,9 +157,25 @@ final class RuntimeDiagnosticsSupport {
         (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal()
     };
     private static final byte[] IMAGE_KINDS = {
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),

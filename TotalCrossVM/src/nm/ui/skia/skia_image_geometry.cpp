@@ -10,13 +10,24 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <memory>
+#include <vector>
 
 using skia_image_backing_internal::NativeImageBackingRecord;
+using skia_image_backing_internal::RASTER_VARIANT_HIT;
+using skia_image_backing_internal::RASTER_VARIANT_INVALID;
+using skia_image_backing_internal::RASTER_VARIANT_MATERIALIZE;
+using skia_image_backing_internal::RASTER_VARIANT_MISS;
+using skia_image_backing_internal::RASTER_VARIANT_PHYSICAL;
+using skia_image_backing_internal::RASTER_VARIANT_TARGET_COLOR;
 using skia_image_backing_internal::findBacking;
 using skia_image_backing_internal::rasterInfo;
 using skia_image_backing_internal::registerBacking;
+using skia_image_backing_internal::rasterVariantFail;
+using skia_image_backing_internal::rasterVariantObserve;
+using skia_image_backing_internal::rasterVariantStore;
 
 namespace {
 
@@ -444,6 +455,365 @@ static bool physicalIdentityDraw(const SkiaImageDrawPlanData* plan, SkCanvas* ca
     return true;
 }
 
+static void appendWord(std::vector<uint32_t>* words, uint32_t value) {
+    words->push_back(value);
+}
+
+static void appendDouble(std::vector<uint32_t>* words, double value) {
+    uint64_t bits = 0;
+    std::memcpy(&bits, &value, sizeof(bits));
+    words->push_back(static_cast<uint32_t>(bits));
+    words->push_back(static_cast<uint32_t>(bits >> 32));
+}
+
+static void appendLong(std::vector<uint32_t>* words, uint64_t value) {
+    words->push_back(static_cast<uint32_t>(value));
+    words->push_back(static_cast<uint32_t>(value >> 32));
+}
+
+static void appendScalar(std::vector<uint32_t>* words, SkScalar value) {
+    uint32_t bits = 0;
+    std::memcpy(&bits, &value, sizeof(bits));
+    words->push_back(bits);
+}
+
+static bool buildRasterVariantKey(const SkiaImageDrawPlanData* plan,
+                                  const NativeImageBackingRecord* source, SkCanvas* canvas,
+                                  int32_t kind, float srcLeft, float srcTop, float srcRight,
+                                  float srcBottom, float dstLeft, float dstTop, float dstRight,
+                                  float dstBottom, std::vector<uint32_t>* words) {
+    if (!plan || !source || !canvas || !words || plan->operationCount < 0
+        || plan->operationCount > std::numeric_limits<int32_t>::max() / 4
+        || (plan->operationCount > 0 && (!plan->operations || !plan->parameters || !plan->dimensions))) {
+        return false;
+    }
+    try {
+        words->clear();
+        const size_t operationCount = static_cast<size_t>(plan->operationCount);
+        words->reserve(static_cast<size_t>(64) + operationCount * 7);
+        appendWord(words, static_cast<uint32_t>(kind));
+        appendLong(words, static_cast<uint64_t>(plan->sourceDecodeGeneration));
+        appendLong(words, static_cast<uint64_t>(plan->sourceMutationGeneration));
+        appendLong(words, static_cast<uint64_t>(plan->backingMutationGeneration));
+        appendLong(words, source->generation);
+        appendWord(words, static_cast<uint32_t>(plan->currentFrame));
+        appendWord(words, static_cast<uint32_t>(plan->operationCount));
+        appendWord(words, static_cast<uint32_t>(plan->rootWidth));
+        appendWord(words, static_cast<uint32_t>(plan->rootHeight));
+        appendWord(words, static_cast<uint32_t>(plan->rootLogicalWidth));
+        appendWord(words, static_cast<uint32_t>(plan->rootLogicalHeight));
+        appendWord(words, static_cast<uint32_t>(plan->rootFrameCount));
+        appendWord(words, static_cast<uint32_t>(plan->rootWidthOfAllFrames));
+        appendWord(words, static_cast<uint32_t>(plan->outputWidth));
+        appendWord(words, static_cast<uint32_t>(plan->outputHeight));
+        appendWord(words, static_cast<uint32_t>(plan->outputFrameCount));
+        appendWord(words, static_cast<uint32_t>(plan->outputWidthOfAllFrames));
+        appendWord(words, static_cast<uint32_t>(plan->alphaMask));
+        appendWord(words, static_cast<uint32_t>(plan->transparentColor));
+        appendWord(words, static_cast<uint32_t>(plan->materializeAlphaMask));
+        appendWord(words, static_cast<uint32_t>(plan->outputAlphaMask));
+        appendWord(words, static_cast<uint32_t>(plan->sourceOpacityState));
+        appendDouble(words, plan->rootContentScale);
+        appendDouble(words, plan->destinationScale);
+        appendDouble(words, plan->outputContentScale);
+        appendDouble(words, plan->hwScaleW);
+        appendDouble(words, plan->hwScaleH);
+        appendDouble(words, plan->rootHwScaleW);
+        appendDouble(words, plan->rootHwScaleH);
+        appendScalar(words, srcLeft);
+        appendScalar(words, srcTop);
+        appendScalar(words, srcRight);
+        appendScalar(words, srcBottom);
+        appendScalar(words, dstLeft);
+        appendScalar(words, dstTop);
+        appendScalar(words, dstRight);
+        appendScalar(words, dstBottom);
+        const SkImageInfo info = canvas->imageInfo();
+        appendWord(words, static_cast<uint32_t>(info.width()));
+        appendWord(words, static_cast<uint32_t>(info.height()));
+        appendWord(words, static_cast<uint32_t>(info.colorType()));
+        appendWord(words, static_cast<uint32_t>(info.alphaType()));
+        const uintptr_t colorSpace = reinterpret_cast<uintptr_t>(info.colorSpace());
+        appendLong(words, static_cast<uint64_t>(colorSpace));
+        const SkMatrix& matrix = canvas->getTotalMatrix();
+        SkScalar matrixValues[9];
+        matrix.get9(matrixValues);
+        for (SkScalar value : matrixValues) {
+            appendScalar(words, value);
+        }
+        appendWord(words, static_cast<uint32_t>(source->width));
+        appendWord(words, static_cast<uint32_t>(source->height));
+        for (int32_t i = 0; i < plan->operationCount; ++i) {
+            appendWord(words, static_cast<uint32_t>(plan->operations[i]));
+        }
+        for (size_t i = 0; i < operationCount * 4; ++i) {
+            appendWord(words, static_cast<uint32_t>(plan->parameters[i]));
+        }
+        for (size_t i = 0; i < operationCount * 2; ++i) {
+            appendWord(words, static_cast<uint32_t>(plan->dimensions[i]));
+        }
+        return true;
+    } catch (const std::bad_alloc&) {
+        words->clear();
+        return false;
+    }
+}
+
+static bool knownAlphaType(SkAlphaType type) {
+    return type == kPremul_SkAlphaType || type == kUnpremul_SkAlphaType
+        || type == kOpaque_SkAlphaType;
+}
+
+static bool knownRasterColorType(SkColorType type) {
+    return type == kRGBA_8888_SkColorType || type == kBGRA_8888_SkColorType
+        || type == kRGB_565_SkColorType;
+}
+
+static bool drawPlanImage(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                          const SkImage* image, float srcLeft, float srcTop, float srcRight,
+                          float srcBottom, float dstLeft, float dstTop, float dstRight,
+                          float dstBottom) {
+    GeometryTransform transform;
+    SkiaImageDrawColorFilters colorFilters;
+    return image && compileGeometry(plan, -1, &transform)
+        && skia_image_draw_color_filters(plan, &colorFilters)
+        && geometryDrawCompiled(canvas, image, transform, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, plan->alphaMask,
+            std::abs(plan->outputContentScale - 1.0) < 0.000001, &colorFilters);
+}
+
+static bool targetColorVariantDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                   float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                   float dstLeft, float dstTop, float dstRight, float dstBottom,
+                                   int* status) {
+    if (!plan || !plan->targetColorConversionEnabled || !canvas || !status) {
+        return false;
+    }
+    NativeImageBackingRecord* source = findBacking(plan->rootHandle);
+    if (!source) {
+        return false;
+    }
+    const SkImageInfo targetInfo = canvas->imageInfo();
+    const SkImageInfo sourceInfo = source->image ? source->image->imageInfo()
+        : source->surface ? source->surface->imageInfo() : SkImageInfo();
+    if (sourceInfo.colorType() == targetInfo.colorType()
+        && sourceInfo.colorSpace() == targetInfo.colorSpace()) {
+        return false;
+    }
+    *status |= SKIA_IMAGE_DRAW_TARGET_COLOR_ATTEMPT;
+    auto fallback = [&]() {
+        *status |= SKIA_IMAGE_DRAW_TARGET_COLOR_FALLBACK;
+        return false;
+    };
+    if (!plan->sourceBackingStable
+        || plan->sourceMutationGeneration != plan->backingMutationGeneration
+        || !knownRasterColorType(sourceInfo.colorType())
+        || !knownRasterColorType(targetInfo.colorType())
+        || !knownAlphaType(sourceInfo.alphaType()) || !knownAlphaType(targetInfo.alphaType())
+        || sourceInfo.colorSpace() != targetInfo.colorSpace()
+        || !canvas->getSurface() || canvas->getSurface()->recordingContext()) {
+        return fallback();
+    }
+    if (targetInfo.colorType() == kRGB_565_SkColorType
+        && (plan->sourceOpacityState != 1 || plan->alphaMask != 255 || plan->outputAlphaMask != 255
+            || plan->materializeAlphaMask != 255)) {
+        return fallback();
+    }
+    if (targetInfo.alphaType() == kOpaque_SkAlphaType && plan->sourceOpacityState != 1) {
+        return fallback();
+    }
+    if (targetInfo.colorType() == kRGB_565_SkColorType) {
+        GeometryTransform transform;
+        if (!compileGeometry(plan, -1, &transform) || transform.smooth) {
+            return fallback();
+        }
+        for (int32_t i = 0; i < plan->operationCount; ++i) {
+            if (plan->operations[i] >= SKIA_IMAGE_DRAW_TOUCH_UP
+                && plan->operations[i] <= SKIA_IMAGE_DRAW_SET_TRANSPARENT_COLOR) {
+                return fallback();
+            }
+        }
+    }
+
+    std::vector<uint32_t> key;
+    if (!buildRasterVariantKey(plan, source, canvas, RASTER_VARIANT_TARGET_COLOR,
+            srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, &key)) {
+        return fallback();
+    }
+    sk_sp<SkImage> variant;
+    bool provenOpaque = false;
+    const int decision = rasterVariantObserve(source, RASTER_VARIANT_TARGET_COLOR, key,
+                                               &variant, &provenOpaque);
+    if (decision == RASTER_VARIANT_HIT) {
+        if (!drawPlanImage(plan, canvas, variant.get(), srcLeft, srcTop, srcRight, srcBottom,
+                dstLeft, dstTop, dstRight, dstBottom)) {
+            return fallback();
+        }
+        *status |= SKIA_IMAGE_DRAW_TARGET_COLOR_HIT;
+        return true;
+    }
+    if (decision == RASTER_VARIANT_MISS) {
+        return fallback();
+    }
+    if (decision != RASTER_VARIANT_MATERIALIZE) {
+        return fallback();
+    }
+
+    if (skia_image_backing_consume_variant_materialization_failure_for_test()) {
+        rasterVariantFail(source, RASTER_VARIANT_TARGET_COLOR, key);
+        return fallback();
+    }
+    try {
+        sk_sp<SkImage> image = source->snapshot();
+        if (!image || !knownAlphaType(image->alphaType())) {
+            rasterVariantFail(source, RASTER_VARIANT_TARGET_COLOR, key);
+            return fallback();
+        }
+        SkAlphaType convertedAlpha = targetInfo.alphaType();
+        if (targetInfo.colorType() == kRGB_565_SkColorType) {
+            convertedAlpha = kOpaque_SkAlphaType;
+        }
+        SkImageInfo convertedInfo = SkImageInfo::Make(image->width(), image->height(),
+            targetInfo.colorType(), convertedAlpha, targetInfo.refColorSpace());
+        sk_sp<SkSurface> converted = SkSurface::MakeRaster(convertedInfo);
+        if (!converted) {
+            rasterVariantFail(source, RASTER_VARIANT_TARGET_COLOR, key);
+            return fallback();
+        }
+        converted->getCanvas()->clear(SK_ColorTRANSPARENT);
+        converted->getCanvas()->drawImage(image.get(), 0, 0);
+        variant = converted->makeImageSnapshot();
+        if (!variant || !rasterVariantStore(source, RASTER_VARIANT_TARGET_COLOR, key,
+                variant, plan->sourceOpacityState == 1)) {
+            rasterVariantFail(source, RASTER_VARIANT_TARGET_COLOR, key);
+            return fallback();
+        }
+    } catch (const std::bad_alloc&) {
+        rasterVariantFail(source, RASTER_VARIANT_TARGET_COLOR, key);
+        return fallback();
+    }
+    if (!drawPlanImage(plan, canvas, variant.get(), srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom)) {
+        return fallback();
+    }
+    *status |= SKIA_IMAGE_DRAW_TARGET_COLOR_MATERIALIZED;
+    return true;
+}
+
+static bool drawPhysicalVariant(SkCanvas* canvas, const SkImage* image) {
+    if (!canvas || !image || image->width() != canvas->imageInfo().width()
+        || image->height() != canvas->imageInfo().height()) {
+        return false;
+    }
+    SkPaint paint;
+    paint.setFilterQuality(kNone_SkFilterQuality);
+    canvas->save();
+    canvas->resetMatrix();
+    canvas->drawImageRect(image, SkRect::MakeWH(image->width(), image->height()),
+        SkRect::MakeWH(image->width(), image->height()), &paint,
+        SkCanvas::kStrict_SrcRectConstraint);
+    canvas->restore();
+    return true;
+}
+
+static bool physicalVariantDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                float dstLeft, float dstTop, float dstRight, float dstBottom,
+                                int* status) {
+    if (!plan || !plan->physicalVariantCacheEnabled || !canvas || !status) {
+        return false;
+    }
+    *status |= SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_ATTEMPT;
+    auto fallback = [&]() {
+        *status |= SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_FALLBACK;
+        return false;
+    };
+    NativeImageBackingRecord* source = findBacking(plan->rootHandle);
+    if (!source || !plan->sourceBackingStable
+        || plan->sourceMutationGeneration != plan->backingMutationGeneration
+        || !canvas->getSurface() || canvas->getSurface()->recordingContext()) {
+        return fallback();
+    }
+    const SkImageInfo info = canvas->imageInfo();
+    const int64_t pixelCount = static_cast<int64_t>(info.width()) * info.height();
+    if (info.width() <= 0 || info.height() <= 0 || pixelCount <= 0 || pixelCount > 4 * 1024 * 1024
+        || (info.colorType() != kRGBA_8888_SkColorType && info.colorType() != kBGRA_8888_SkColorType)
+        || !knownAlphaType(info.alphaType()) || info.alphaType() == kOpaque_SkAlphaType) {
+        return fallback();
+    }
+    const SkMatrix& matrix = canvas->getTotalMatrix();
+    if (matrix.hasPerspective() || matrix.getSkewX() != 0 || matrix.getSkewY() != 0
+        || !std::isfinite(matrix.getScaleX()) || !std::isfinite(matrix.getScaleY())
+        || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0
+        || !integerCoordinate(matrix.getTranslateX()) || !integerCoordinate(matrix.getTranslateY())) {
+        return fallback();
+    }
+    SkRect deviceBounds;
+    matrix.mapRect(&deviceBounds, SkRect::MakeLTRB(dstLeft, dstTop, dstRight, dstBottom));
+    if (!integerCoordinate(deviceBounds.left()) || !integerCoordinate(deviceBounds.top())
+        || !integerCoordinate(deviceBounds.right()) || !integerCoordinate(deviceBounds.bottom())) {
+        return fallback();
+    }
+
+    std::vector<uint32_t> key;
+    if (!buildRasterVariantKey(plan, source, canvas, RASTER_VARIANT_PHYSICAL,
+            srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, &key)) {
+        return fallback();
+    }
+    sk_sp<SkImage> variant;
+    bool provenOpaque = false;
+    const int decision = rasterVariantObserve(source, RASTER_VARIANT_PHYSICAL, key,
+                                               &variant, &provenOpaque);
+    UNUSED(provenOpaque)
+    if (decision == RASTER_VARIANT_HIT) {
+        if (!drawPhysicalVariant(canvas, variant.get())) {
+            return fallback();
+        }
+        *status |= SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_HIT;
+        return true;
+    }
+    if (decision == RASTER_VARIANT_MISS) {
+        return fallback();
+    }
+    if (decision != RASTER_VARIANT_MATERIALIZE) {
+        return fallback();
+    }
+
+    if (skia_image_backing_consume_variant_materialization_failure_for_test()) {
+        rasterVariantFail(source, RASTER_VARIANT_PHYSICAL, key);
+        return fallback();
+    }
+    try {
+        sk_sp<SkSurface> materialized = SkSurface::MakeRaster(info);
+        if (!materialized) {
+            rasterVariantFail(source, RASTER_VARIANT_PHYSICAL, key);
+            return fallback();
+        }
+        SkCanvas* target = materialized->getCanvas();
+        target->clear(SK_ColorTRANSPARENT);
+        target->setMatrix(matrix);
+        if (!geometryDraw(plan, target, srcLeft, srcTop, srcRight, srcBottom,
+                dstLeft, dstTop, dstRight, dstBottom, -1)) {
+            rasterVariantFail(source, RASTER_VARIANT_PHYSICAL, key);
+            return fallback();
+        }
+        variant = materialized->makeImageSnapshot();
+        if (!variant || !rasterVariantStore(source, RASTER_VARIANT_PHYSICAL, key,
+                variant, false)) {
+            rasterVariantFail(source, RASTER_VARIANT_PHYSICAL, key);
+            return fallback();
+        }
+    } catch (const std::bad_alloc&) {
+        rasterVariantFail(source, RASTER_VARIANT_PHYSICAL, key);
+        return fallback();
+    }
+    if (!drawPhysicalVariant(canvas, variant.get())) {
+        return fallback();
+    }
+    *status |= SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_MATERIALIZED;
+    return true;
+}
+
 }
 
 bool skia_image_geometry_compile(const SkiaImageDrawPlanData* plan, int frameOverride,
@@ -474,6 +844,15 @@ int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
             return status | SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT | SKIA_IMAGE_DRAW_HANDLED;
         }
         status |= SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_FALLBACK;
+    }
+    if (targetColorVariantDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, &status)) {
+        return status | SKIA_IMAGE_DRAW_HANDLED;
+    }
+    if ((status & SKIA_IMAGE_DRAW_TARGET_COLOR_ATTEMPT) == 0
+        && physicalVariantDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, &status)) {
+        return status | SKIA_IMAGE_DRAW_HANDLED;
     }
     return geometryDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
                         dstLeft, dstTop, dstRight, dstBottom, -1)
