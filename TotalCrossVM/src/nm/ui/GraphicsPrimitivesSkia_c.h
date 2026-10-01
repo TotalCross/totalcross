@@ -68,7 +68,8 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
    operations = ImageDrawPlan_operations(plan);
    parameters = ImageDrawPlan_parameters(plan);
    dimensions = ImageDrawPlan_dimensions(plan);
-   if (!root || !isNativeImageBacking(Image_backing(root)) || !operations || !parameters || !dimensions) {
+   TCObject sourceBacking = root ? Image_backing(root) : null;
+   if (!root || !isNativeImageBacking(sourceBacking) || !operations || !parameters || !dimensions) {
       return false;
    }
    data->rootHandle = NativeImageBacking_nativeHandle(Image_backing(root));
@@ -83,6 +84,8 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
    data->parameters = (const int32*)ARRAYOBJ_START(parameters);
    data->dimensions = (const int32*)ARRAYOBJ_START(dimensions);
    data->sourceDecodeGeneration = ImageDrawPlan_sourceDecodeGeneration(plan);
+   data->sourceMutationGeneration = Image_backingMutationGeneration(root);
+   data->backingMutationGeneration = ImageBacking_mutationGeneration(sourceBacking);
    data->operationCount = ARRAYOBJ_LEN(operations);
    data->outputWidth = ImageDrawPlan_outputWidth(plan);
    data->outputHeight = ImageDrawPlan_outputHeight(plan);
@@ -93,6 +96,11 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
    data->transparentColor = ImageDrawPlan_transparentColor(plan);
    data->materializeAlphaMask = ImageDrawPlan_materializeAlphaMask(plan);
    data->outputAlphaMask = ImageDrawPlan_outputAlphaMask(plan);
+   data->sourceBackingStable = !ImageBacking_mutableStorageEscaped(sourceBacking);
+   data->sourceOpacityState = ImageBacking_opacityState(sourceBacking);
+   data->physicalIdentityEnabled = ImageDrawPlan_physicalIdentityEnabled(plan);
+   data->targetColorConversionEnabled = ImageDrawPlan_targetColorConversionEnabled(plan);
+   data->physicalVariantCacheEnabled = ImageDrawPlan_physicalVariantCacheEnabled(plan);
    data->destinationScale = ImageDrawPlan_destinationScale(plan);
    data->outputContentScale = ImageDrawPlan_outputContentScale(plan);
    data->hwScaleW = ImageDrawPlan_hwScaleW(plan);
@@ -118,9 +126,9 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
       && data->operationCount * 2 <= ARRAYOBJ_LEN(dimensions);
 }
 
-static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
-                                 int32 srcX, int32 srcY, int32 width, int32 height,
-                                 int32 dstX, int32 dstY, int32 doClip)
+static int skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
+                                int32 srcX, int32 srcY, int32 width, int32 height,
+                                int32 dstX, int32 dstY, int32 doClip)
 {
    SkiaImageDrawPlanData data;
    int32 surfaceId;
@@ -171,7 +179,7 @@ static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObj
          height = Graphics_clipY2(dstSurf) - dstY;
       }
       if (width <= 0 || height <= 0) {
-         return true;
+         return SKIA_IMAGE_DRAW_HANDLED;
       }
       skia_setClip(surfaceId, Get_Clip(dstSurf));
       clipSet = true;
@@ -183,7 +191,7 @@ static bool skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObj
       skia_restoreClip(surfaceId);
    }
    UNUSED(currentContext)
-   return result != 0;
+   return result;
 }
 #endif
 

@@ -38,6 +38,7 @@ import totalcross.sys.InvalidNumberException;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
+import totalcross.sys.runtime.ImageRuntimePolicy;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.GfxSurface;
@@ -97,6 +98,7 @@ public class Image extends GfxSurface {
   static int nativeGeometryMaterializationCountForTest;
   static int nativeColorReadbackCountForTest;
   static int directDrawPlanExecutionCountForTest;
+  static int physicalIdentityHitCountForTest;
   private static boolean backingReadbackAccountingForTest;
   private static int backingReadbackCountForTest;
 
@@ -184,6 +186,7 @@ public class Image extends GfxSurface {
     nativeGeometryMaterializationCountForTest = 0;
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
+    physicalIdentityHitCountForTest = 0;
     backingReadbackAccountingForTest = true;
     backingReadbackCountForTest = 0;
     NativeImageBacking.resetBackingAccountingForTest();
@@ -255,6 +258,10 @@ public class Image extends GfxSurface {
 
   static int directDrawPlanExecutionCountForTest() {
     return directDrawPlanExecutionCountForTest;
+  }
+
+  static int physicalIdentityHitCountForTest() {
+    return physicalIdentityHitCountForTest;
   }
 
   /** Test-only accounting for explicit deployed getPixels() snapshots. */
@@ -1291,13 +1298,16 @@ public class Image extends GfxSurface {
     int sourceAlphaMask = root.alphaMask;
     int drawAlphaMask = bakesSourceAlpha ? multiplyAlphaMasks(sourceAlphaMask, outputAlphaMask) : outputAlphaMask;
     int materializeAlphaMask = bakesSourceAlpha ? sourceAlphaMask : 255;
+    ImageRuntimePolicy rasterPolicy = ImageRuntimeConfigurationStartup.currentPolicy();
     ImageDrawPlan plan = new ImageDrawPlan(root, operations, parameters, dimensions,
         root.width, root.height, root.logicalWidth, root.logicalHeight, root.frameCount, root.widthOfAllFrames,
         root.contentScale,
         deferred.logicalWidth(), deferred.logicalHeight(), deferred.frameCount(), deferred.widthOfAllFrames(),
         currentFrame, drawAlphaMask, transparentColor, materializeAlphaMask, outputAlphaMask, effectiveScale,
         deferred.hasGeometricNode() ? effectiveScale : root.contentScale, hwScaleW, hwScaleH,
-        root.hwScaleW, root.hwScaleH, sourceDecodeGeneration, this);
+        root.hwScaleW, root.hwScaleH, sourceDecodeGeneration, this,
+        rasterPolicy.rasterCore().physicalIdentity(), rasterPolicy.rasterVariants().targetColorConversion(),
+        rasterPolicy.rasterVariants().physicalVariantCache());
     deferred.cacheDrawPlan(scaleBits, plan);
     return plan;
   }

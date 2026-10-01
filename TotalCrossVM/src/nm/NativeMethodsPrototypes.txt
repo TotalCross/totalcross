@@ -1233,11 +1233,11 @@ TC_API void tugG_drawImageNative_iiib(NMParams p) // totalcross/ui/gfx/Graphics 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean drawGeometryNative(Object plan, int x, int y, boolean doClip);
+TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphics native private int drawGeometryNative(Object plan, int x, int y, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private boolean copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip);
+TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private int copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////

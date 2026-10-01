@@ -1664,7 +1664,9 @@ public final class Graphics {
   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
     Object drawPlan = resolveDrawPlanForDrawing(image);
     if (!Settings.onJavaSE && drawPlan != null) {
-      if (drawGeometryNative(drawPlan, x, y, doClip)) {
+      int drawStatus = drawGeometryNative(drawPlan, x, y, doClip);
+      ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
+      if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
         return;
       }
       ImageRasterFeatureBridge.recordRasterFallback();
@@ -1700,7 +1702,9 @@ public final class Graphics {
   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip) {
     Object drawPlan = resolveDrawPlanForDrawing(src);
     if (!Settings.onJavaSE && drawPlan != null) {
-      if (copyGeometryNative(drawPlan, x, y, width, height, doClip)) {
+      int drawStatus = copyGeometryNative(drawPlan, x, y, width, height, doClip);
+      ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
+      if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
         return;
       }
       ImageRasterFeatureBridge.recordRasterFallback();
@@ -1725,7 +1729,9 @@ public final class Graphics {
   public void drawImage(totalcross.ui.image.Image src, int x, int y) {
     Object drawPlan = resolveDrawPlanForDrawing(src);
     if (!Settings.onJavaSE && drawPlan != null) {
-      if (drawGeometryNative(drawPlan, x, y, true)) {
+      int drawStatus = drawGeometryNative(drawPlan, x, y, true);
+      ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
+      if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
         return;
       }
       ImageRasterFeatureBridge.recordRasterFallback();
@@ -1769,14 +1775,14 @@ public final class Graphics {
   }
 
   @ReplacedByNativeOnDeploy
-  private boolean drawGeometryNative(Object plan, int x, int y, boolean doClip) {
-    return false;
+  private int drawGeometryNative(Object plan, int x, int y, boolean doClip) {
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy
-  private boolean copyGeometryNative(Object plan, int x, int y, int width, int height,
+  private int copyGeometryNative(Object plan, int x, int y, int width, int height,
       boolean doClip) {
-    return false;
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy

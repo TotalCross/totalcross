@@ -126,7 +126,9 @@ final class RuntimeDiagnosticsSupport {
     private static final int NATIVE_COUNTER_ID = 0x2001;
     private static final int NATIVE_GAUGE_ID = 0x2002;
     private static final int RUNTIME_GROUP_MASK = 1;
-    private static final int[] IMAGE_METRIC_IDS = {0x3001, 0x3002, 0x3003, 0x3004, 0x3005, 0x3006};
+    private static final int[] IMAGE_METRIC_IDS = {
+        0x3001, 0x3002, 0x3003, 0x3004, 0x3005, 0x3006, 0x3007, 0x3008, 0x3009
+    };
     private static final int[] METRIC_IDS = {
         JAVA_COUNTER_ID, JAVA_GAUGE_ID, JAVA_TIMER_ID, NATIVE_COUNTER_ID, NATIVE_GAUGE_ID
     };
@@ -151,9 +153,15 @@ final class RuntimeDiagnosticsSupport {
         (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal()
     };
     private static final byte[] IMAGE_KINDS = {
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),

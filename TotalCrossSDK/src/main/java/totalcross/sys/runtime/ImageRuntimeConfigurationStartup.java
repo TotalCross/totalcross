@@ -52,6 +52,14 @@ public final class ImageRuntimeConfigurationStartup {
     return currentPolicy;
   }
 
+  /** Internal fixture for exercising opt-in raster features without public configuration. */
+  static synchronized void setRasterFeaturesForTest(boolean physicalIdentity,
+      boolean targetColorConversion, boolean physicalVariantCache) {
+    resolveIfReady();
+    currentPolicy = currentPolicy.withRasterFeaturesForTest(physicalIdentity,
+        targetColorConversion, physicalVariantCache);
+  }
+
   private static void initializeRules(
       List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules) {
     currentPolicy = ImageRuntimePolicy.defaults();

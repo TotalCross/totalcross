@@ -5,6 +5,7 @@
 package totalcross.ui.image;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -56,6 +57,9 @@ class ImageDeferredTransformsTest {
         ImageDrawPlan.CAPABILITY_DRAW_GEOMETRY
     }, plan.operationCapabilities);
     assertEquals(0, plan.sourceDecodeGeneration);
+    assertTrue(plan.physicalIdentityEnabled);
+    assertFalse(plan.targetColorConversionEnabled);
+    assertFalse(plan.physicalVariantCacheEnabled);
   }
 
   @Test

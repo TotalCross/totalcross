@@ -6,6 +6,8 @@ package totalcross.ui.image;
 
 /** Internal cross-package bridge for raster-core behavior. */
 public final class ImageRasterFeatureBridge {
+  public static final int DRAW_HANDLED = ImageRasterDiagnostics.DRAW_HANDLED;
+
   private ImageRasterFeatureBridge() {
   }
 
@@ -44,5 +46,10 @@ public final class ImageRasterFeatureBridge {
   /** @hidden */
   public static void recordRasterFallback() {
     ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+  }
+
+  /** @hidden */
+  public static void recordDrawEvents(int status) {
+    ImageRasterDiagnostics.recordDrawEvents(status);
   }
 }
