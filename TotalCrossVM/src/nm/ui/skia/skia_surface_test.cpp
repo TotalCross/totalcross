@@ -273,6 +273,37 @@ int main(int argc, char** argv) {
         std::fputs("invalid native backing handle was accepted\n", stderr);
         return 1;
     }
+
+    if (!skia_image_backing_compact_storage_available()) {
+        std::fputs("Skia did not provide the required compact image color types\n", stderr);
+        return 1;
+    }
+    const int expectedBytesPerPixel[] = { 4, 2, 1, 2 };
+    for (int format = 0; format < 4; ++format) {
+        const int64_t compactBacking = skia_image_backing_create_empty_with_format(3, 2, format);
+        if (!compactBacking || skia_image_backing_format(compactBacking) != format) {
+            std::fputs("compact backing format was not retained\n", stderr);
+            return 1;
+        }
+        const int32 compactRowBytes = skia_image_backing_row_bytes(compactBacking);
+        const int64_t compactBytes = skia_image_backing_byte_count(compactBacking);
+        if (compactRowBytes < 3 * expectedBytesPerPixel[format]
+                || compactBytes != static_cast<int64_t>(compactRowBytes) * 2) {
+            std::fputs("compact backing did not report its actual row layout\n", stderr);
+            return 1;
+        }
+        uint8_t rgbaRows[24] = {
+            0x10, 0x20, 0x30, 0xFF, 0x40, 0x50, 0x60, 0xFF, 0x70, 0x80, 0x90, 0xFF,
+            0xA0, 0xB0, 0xC0, 0xFF, 0xD0, 0xE0, 0xF0, 0xFF, 0x20, 0x40, 0x60, 0x80
+        };
+        if (!skia_image_backing_write_rgba_pixels(compactBacking, rgbaRows, 0, 0, 3, 2, 12)
+                || !skia_image_backing_finish_decode(compactBacking)
+                || !skia_image_backing_read_row(compactBacking, snapshotPixels, 0, 2)) {
+            std::fputs("compact backing write, freeze, or expanded readback failed\n", stderr);
+            return 1;
+        }
+        skia_image_backing_release(compactBacking);
+    }
     skia_image_backing_release(firstBacking);
     skia_image_backing_release(secondBacking);
     skia_image_backing_release(mutableBacking);

@@ -123,6 +123,8 @@ TC_API void tuiEIS_copyNativeBagFrom_e(NMParams p);
 TC_API void tuiEIS_releaseNativeBag(NMParams p);
 TC_API void tuiNIB_createEmptyNative_ii(NMParams p);
 TC_API void tuiNIB_createColorTest_iii(NMParams p);
+TC_API void tuiNIB_createEmptyFormatTest_iii(NMParams p);
+TC_API void tuiNIB_compactStorageAvailableNative(NMParams p);
 TC_API void tuiNIB_snapshotNative(NMParams p);
 TC_API void tuiNIB_invalidateVariantsNative(NMParams p);
 TC_API void tuiNIB_observeVarTest_iI(NMParams p);
@@ -1062,6 +1064,14 @@ TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeIm
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_compactStorageAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static boolean compactStorageAvailableNative();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_createEmptyFormatTest_iii(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long createEmptyFormatTest(int width, int height, int format);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_resetAccountingTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void resetAccountingTestNative();
 {
 }
@@ -1111,6 +1121,18 @@ TC_API void tuiNIB_variantStateTest(NMParams p) // totalcross/ui/image/NativeIma
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_colorTypeTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private int colorTypeTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_formatTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private int formatTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_rowBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private int rowBytesTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_backingBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private long backingBytesTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////

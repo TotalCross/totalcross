@@ -65,6 +65,12 @@ int32 skia_getsetRGB(int32 skiaSurface, void *dataObj, int32 offset, int32 x, in
 void skia_shiftScreen(float w, float h, float glShiftY);
 
 int64_t skia_image_backing_create_empty(int32 width, int32 height);
+int64_t skia_image_backing_create_empty_with_format(int32 width, int32 height, int32 format);
+int skia_image_backing_compact_storage_available(void);
+int skia_image_backing_finish_decode(int64_t handle);
+int32 skia_image_backing_format(int64_t handle);
+int32 skia_image_backing_row_bytes(int64_t handle);
+int64_t skia_image_backing_byte_count(int64_t handle);
 int64_t skia_image_backing_create_empty_with_color_type_for_test(int32 width, int32 height, int32 colorType);
 int32 skia_image_backing_color_type_for_test(int64_t handle);
 void skia_image_backing_fail_next_variant_materialization_for_test(void);

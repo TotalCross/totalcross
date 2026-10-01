@@ -116,7 +116,9 @@ totalcross/ui/image/EncodedImageSource|native private void copyNativeBagFrom(tot
 totalcross/ui/image/EncodedImageSource|native private void releaseNativeBag();
 totalcross/ui/image/NativeImageBacking|native private static long createEmptyNative(int width, int height);
 totalcross/ui/image/NativeImageBacking|native private static long createColorTest(int width, int height, int colorType);
+totalcross/ui/image/NativeImageBacking|native private static long createEmptyFormatTest(int width, int height, int format);
 totalcross/ui/image/NativeImageBacking|native private static boolean isAvailableNative();
+totalcross/ui/image/NativeImageBacking|native private static boolean compactStorageAvailableNative();
 totalcross/ui/image/NativeImageBacking|native private static void resetAccountingTestNative();
 totalcross/ui/image/NativeImageBacking|native private static long backingCreatedTestNative();
 totalcross/ui/image/NativeImageBacking|native private static long backingReleasedTestNative();
@@ -130,6 +132,9 @@ totalcross/ui/image/NativeImageBacking|native private void invalidateVariantsNat
 totalcross/ui/image/NativeImageBacking|native private int observeVarTest(int kind, int []exactKey);
 totalcross/ui/image/NativeImageBacking|native private int variantStateTest();
 totalcross/ui/image/NativeImageBacking|native private int colorTypeTest();
+totalcross/ui/image/NativeImageBacking|native private int formatTest();
+totalcross/ui/image/NativeImageBacking|native private int rowBytesTest();
+totalcross/ui/image/NativeImageBacking|native private long backingBytesTest();
 totalcross/ui/image/NativeImageBacking|native private static void failVariantTest();
 totalcross/ui/image/NativeImageBacking|native private static void failNextSnapshotNative();
 totalcross/ui/image/NativeImageBacking|native private boolean makeMutableNative();

@@ -34,6 +34,7 @@ registerBoundaryJar('totalcrossApiJar', 'totalcross-api') {
     exclude 'totalcross/ui/image/ImagePreparationRequest*.class'
     exclude 'totalcross/ui/image/ImagePreparationScheduler*.class'
     exclude 'totalcross/ui/image/PreparedImageResult*.class'
+    exclude 'totalcross/ui/image/ImageCompactStorageCapabilityBridge*.class'
     exclude '**/*4D.class', '**/*4D$*.class', '**/*4D*.class'
 }
 

@@ -57,12 +57,15 @@ class ArtifactBoundariesTest {
         Set<String> runtimeJava = entries("totalcross-runtime-java");
         String diagnosticsBridge = "totalcross/sys/RuntimeDiagnosticsFeatureBridge";
         String rasterBridge = "totalcross/ui/image/ImageRasterFeatureBridge";
+        String compactStorageBridge = "totalcross/ui/image/ImageCompactStorageCapabilityBridge";
 
         assertTrue(runtimeJava.contains(diagnosticsBridge + ".class"));
         assertTrue(runtimeJava.contains(rasterBridge + ".class"));
+        assertTrue(runtimeJava.contains(compactStorageBridge + ".class"));
         for (Set<String> applicationArtifact : java.util.List.of(api, sdk, distributedSdk)) {
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(diagnosticsBridge)));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(rasterBridge)));
+            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(compactStorageBridge)));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
                     "totalcross/ui/DisplayPreparation")));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
@@ -120,6 +123,8 @@ class ArtifactBoundariesTest {
         assertTrue(api.contains("totalcross/ui/image/ImageStorageProfile.class"));
         assertTrue(api.contains("totalcross/ui/image/ImageRuntimeRule.class"));
         assertTrue(api.contains("totalcross/ui/image/ImageRuntimeRules.class"));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith(
+                "totalcross/ui/image/ImageCompactStorageCapabilityBridge")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
@@ -211,6 +216,8 @@ class ArtifactBoundariesTest {
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
+        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith(
+                "totalcross/ui/image/ImageCompactStorageCapabilityBridge")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));

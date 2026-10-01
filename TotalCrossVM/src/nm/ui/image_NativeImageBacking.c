@@ -135,10 +135,28 @@ TC_API void tuiNIB_createColorTest_iii(NMParams p) // totalcross/ui/image/Native
 #endif
 }
 
+TC_API void tuiNIB_createEmptyFormatTest_iii(NMParams p) // totalcross/ui/image/NativeImageBacking private static long createEmptyFormatTest(int width, int height, int format);
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_create_empty_with_format(p->i32[0], p->i32[1], p->i32[2]);
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static boolean isAvailableNative();
 {
 #if TC_RENDERER_SKIA
    p->retI = 1;
+#else
+   p->retI = 0;
+#endif
+}
+
+TC_API void tuiNIB_compactStorageAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static boolean compactStorageAvailableNative();
+{
+#if TC_RENDERER_SKIA
+   p->retI = skia_image_backing_compact_storage_available();
 #else
    p->retI = 0;
 #endif
@@ -276,6 +294,33 @@ TC_API void tuiNIB_colorTypeTest(NMParams p) // totalcross/ui/image/NativeImageB
       NativeImageBacking_nativeHandle(p->obj[0]));
 #else
    p->retI = -1;
+#endif
+}
+
+TC_API void tuiNIB_formatTest(NMParams p) // totalcross/ui/image/NativeImageBacking private int formatTest();
+{
+#if TC_RENDERER_SKIA
+   p->retI = skia_image_backing_format(NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retI = -1;
+#endif
+}
+
+TC_API void tuiNIB_rowBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking private int rowBytesTest();
+{
+#if TC_RENDERER_SKIA
+   p->retI = skia_image_backing_row_bytes(NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retI = -1;
+#endif
+}
+
+TC_API void tuiNIB_backingBytesTest(NMParams p) // totalcross/ui/image/NativeImageBacking private long backingBytesTest();
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_byte_count(NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retL = -1;
 #endif
 }
 

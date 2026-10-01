@@ -11,7 +11,7 @@ import totalcross.ui.image.ImageStorageProfile;
 
 /** Internal immutable resolved Image policy snapshot published during startup. */
 public final class ImageRuntimePolicy {
-  private static final String COMPACT_UNAVAILABLE_REASON = "compact storage is not available in P1";
+  private static final String COMPACT_UNAVAILABLE_REASON = "native compact backing is unavailable";
   private static final RasterCorePolicy DEFAULT_RASTER_CORE = new RasterCorePolicy(true, true, true, true, true, true);
   private static final RasterVariantPolicy DEFAULT_RASTER_VARIANTS = new RasterVariantPolicy(false, false);
   private static final ScrollRasterReusePolicy DEFAULT_SCROLL_REUSE = new ScrollRasterReusePolicy(false);
@@ -56,11 +56,11 @@ public final class ImageRuntimePolicy {
         Collections.<String>emptyList());
   }
 
-  /** Resolves the request against P1 support; P4 owns COMPACT storage capability support. */
+  /** Resolves the request against the native compact-backing capability. */
   static ImageRuntimePolicy forRequestedStorage(ImageStorageProfile requestedStorageProfile,
-      List<String> matchedRuleNames) {
-    // P1 has no compact backing format; later capability work can relax this downgrade.
-    ImageStorageProfile effectiveStorageProfile = ImageStorageProfile.STANDARD;
+      List<String> matchedRuleNames, boolean compactBackingAvailable) {
+    ImageStorageProfile effectiveStorageProfile = requestedStorageProfile == ImageStorageProfile.COMPACT
+        && compactBackingAvailable ? ImageStorageProfile.COMPACT : ImageStorageProfile.STANDARD;
     String reason = requestedStorageProfile == effectiveStorageProfile ? null : COMPACT_UNAVAILABLE_REASON;
     return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, reason, matchedRuleNames);
   }
