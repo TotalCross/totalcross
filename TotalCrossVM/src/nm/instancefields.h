@@ -232,6 +232,9 @@
 #define ImageDrawPlan_hwScaleH(o)                FIELD_DBL(o, OBJ_CLASS(o), 4)
 #define ImageDrawPlan_rootHwScaleW(o)            FIELD_DBL(o, OBJ_CLASS(o), 5)
 #define ImageDrawPlan_rootHwScaleH(o)            FIELD_DBL(o, OBJ_CLASS(o), 6)
+#define ImageDrawPlan_physicalIdentityEnabled(o) FIELD_I32(o, 15)
+#define ImageDrawPlan_targetColorConversionEnabled(o) FIELD_I32(o, 16)
+#define ImageDrawPlan_physicalVariantCacheEnabled(o) FIELD_I32(o, 17)
 
 // totalcross/ui/image/EncodedImageSource
 #define EncodedImageSource_nativeBag(o) FIELD_I64(o, OBJ_CLASS(o), 0)

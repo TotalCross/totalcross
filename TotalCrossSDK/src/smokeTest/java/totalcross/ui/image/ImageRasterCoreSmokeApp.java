@@ -20,6 +20,7 @@ public final class ImageRasterCoreSmokeApp extends MainWindow {
     boolean alphaWriteFallback = false;
     boolean colorMutation = false;
     boolean mutationReadDraw = false;
+    boolean physicalIdentity = false;
     boolean runtimeConfiguration = false;
     boolean diagnostics = false;
     String error = "";
@@ -76,6 +77,17 @@ public final class ImageRasterCoreSmokeApp extends MainWindow {
           && (row[2] & 0xFF) == 0x56 && (row[3] & 0xFF) == 0xFF;
       require(mutationReadDraw, "readback after write/draw mismatch");
 
+      Image.resetImageOperationAccountingForTest();
+      Image identitySource = new Image(2, 2);
+      identitySource.getGraphics().setRGB(opaquePixels, 0, 0, 0, 2, 2);
+      Image identityDeferred = identitySource.getAlphaInstance(0);
+      Image identityTarget = new Image(2, 2);
+      identityTarget.getGraphics().drawImage(identityDeferred, 0, 0, true);
+      physicalIdentity = same(opaquePixels, identityTarget.getPixels())
+          && Image.physicalIdentityHitCountForTest() == 1
+          && Image.nativeGeometryMaterializationCountForTest() == 0;
+      require(physicalIdentity, "exact physical identity did not draw directly");
+
       String configuration = RuntimeConfigurationReport.describe();
       runtimeConfiguration = configuration.contains("rasterCore:")
           && configuration.contains("zeroCopyDecode: enabled")
@@ -97,10 +109,13 @@ public final class ImageRasterCoreSmokeApp extends MainWindow {
     }
 
     boolean overallPass = pngParity && jpegOpaque && opaqueWrite && alphaWriteFallback && colorMutation
-        && mutationReadDraw && runtimeConfiguration && diagnostics;
+        && mutationReadDraw && physicalIdentity && runtimeConfiguration && diagnostics;
     System.out.println("fixture=ImageRasterCoreSmokeApp,pngParity=" + pngParity + ",jpegOpaque=" + jpegOpaque
         + ",opaqueWrite=" + opaqueWrite + ",alphaWriteFallback=" + alphaWriteFallback
         + ",colorMutation=" + colorMutation + ",mutationReadDraw=" + mutationReadDraw
+        + ",physicalIdentity=" + physicalIdentity + ",identityHitCount="
+        + Image.physicalIdentityHitCountForTest() + ",identityMaterializations="
+        + Image.nativeGeometryMaterializationCountForTest()
         + ",runtimeConfiguration=" + runtimeConfiguration + ",diagnostics=" + diagnostics
         + ",overallPass=" + overallPass + (error.length() == 0 ? "" : ",error=" + error));
     System.out.flush();

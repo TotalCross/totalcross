@@ -116,6 +116,8 @@ typedef struct SkiaImageDrawPlanData {
     const int32* parameters;
     const int32* dimensions;
     int64_t sourceDecodeGeneration;
+    int64_t sourceMutationGeneration;
+    int64_t backingMutationGeneration;
     int32 operationCount;
     int32 outputWidth;
     int32 outputHeight;
@@ -126,6 +128,11 @@ typedef struct SkiaImageDrawPlanData {
     int32 transparentColor;
     int32 materializeAlphaMask;
     int32 outputAlphaMask;
+    int32 sourceBackingStable;
+    int32 sourceOpacityState;
+    int32 physicalIdentityEnabled;
+    int32 targetColorConversionEnabled;
+    int32 physicalVariantCacheEnabled;
     double destinationScale;
     double outputContentScale;
     double hwScaleW;
@@ -133,6 +140,10 @@ typedef struct SkiaImageDrawPlanData {
     double rootHwScaleW;
     double rootHwScaleH;
 } SkiaImageDrawPlanData;
+#define SKIA_IMAGE_DRAW_HANDLED (1 << 0)
+#define SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_ATTEMPT (1 << 1)
+#define SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT (1 << 2)
+#define SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_FALLBACK (1 << 3)
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);

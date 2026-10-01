@@ -365,6 +365,85 @@ static bool geometryDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas, fl
     }
 }
 
+static bool integerCoordinate(double value) {
+    return std::isfinite(value) && std::floor(value) == value;
+}
+
+static bool physicalIdentityDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                 float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                 float dstLeft, float dstTop, float dstRight, float dstBottom) {
+    if (!plan || !canvas || !plan->sourceBackingStable
+        || plan->sourceMutationGeneration != plan->backingMutationGeneration) {
+        return false;
+    }
+    NativeImageBackingRecord* source = findBacking(plan->rootHandle);
+    if (!source || source->width <= 0 || source->height <= 0) {
+        return false;
+    }
+
+    GeometryTransform transform;
+    if (!compileGeometry(plan, -1, &transform) || transform.hasFill || transform.smooth
+        || !std::isfinite(transform.a) || !std::isfinite(transform.d)
+        || transform.a <= 0 || transform.d <= 0 || transform.b != 0.0 || transform.c != 0.0
+        || !integerCoordinate(transform.tx) || !integerCoordinate(transform.ty)) {
+        return false;
+    }
+
+    const SkMatrix& matrix = canvas->getTotalMatrix();
+    if (matrix.hasPerspective() || matrix.getSkewX() != 0 || matrix.getSkewY() != 0
+        || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0
+        || transform.a != matrix.getScaleX() || transform.d != matrix.getScaleY()) {
+        return false;
+    }
+    const double sourceLeft = transform.a * srcLeft + transform.tx;
+    const double sourceTop = transform.d * srcTop + transform.ty;
+    const double sourceRight = transform.a * srcRight + transform.tx;
+    const double sourceBottom = transform.d * srcBottom + transform.ty;
+    SkRect sourceRect = SkRect::MakeLTRB(static_cast<float>(sourceLeft), static_cast<float>(sourceTop),
+                                         static_cast<float>(sourceRight), static_cast<float>(sourceBottom));
+    SkRect destinationRect = SkRect::MakeLTRB(dstLeft, dstTop, dstRight, dstBottom);
+    SkRect deviceDestination;
+    matrix.mapRect(&deviceDestination, destinationRect);
+    if (sourceRight <= sourceLeft || sourceBottom <= sourceTop
+        || sourceLeft < 0 || sourceTop < 0 || sourceRight > source->width || sourceBottom > source->height
+        || !transform.validRoot.contains(sourceRect)
+        || !integerCoordinate(sourceLeft) || !integerCoordinate(sourceTop)
+        || !integerCoordinate(sourceRight) || !integerCoordinate(sourceBottom)
+        || !integerCoordinate(deviceDestination.left()) || !integerCoordinate(deviceDestination.top())
+        || !integerCoordinate(deviceDestination.right()) || !integerCoordinate(deviceDestination.bottom())
+        || deviceDestination.width() != sourceRight - sourceLeft
+        || deviceDestination.height() != sourceBottom - sourceTop) {
+        return false;
+    }
+
+    sk_sp<SkImage> image;
+    SkiaImageDrawColorFilters colorFilters;
+    try {
+        image = source->snapshot();
+        if (!image || !skia_image_draw_color_filters(plan, &colorFilters)) {
+            return false;
+        }
+    } catch (const std::bad_alloc&) {
+        return false;
+    }
+    const SkImageInfo targetInfo = canvas->imageInfo();
+    if (image->colorType() == kUnknown_SkColorType || targetInfo.colorType() == kUnknown_SkColorType
+        || image->colorType() != targetInfo.colorType()
+        || image->alphaType() == kUnknown_SkAlphaType || targetInfo.alphaType() == kUnknown_SkAlphaType) {
+        return false;
+    }
+
+    SkPaint paint;
+    paint.setAlpha(plan->alphaMask);
+    paint.setFilterQuality(kNone_SkFilterQuality);
+    if (colorFilters.content) {
+        paint.setColorFilter(colorFilters.content);
+    }
+    canvas->drawImageRect(image.get(), sourceRect, destinationRect, &paint,
+                          SkCanvas::kStrict_SrcRectConstraint);
+    return true;
+}
+
 }
 
 bool skia_image_geometry_compile(const SkiaImageDrawPlanData* plan, int frameOverride,
@@ -386,6 +465,17 @@ bool skia_image_geometry_draw_compiled(SkCanvas* canvas, const SkImage* image,
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom) {
-    return geometryDraw(plan, skiaGetCanvas(targetSurface), srcLeft, srcTop, srcRight, srcBottom,
-                        dstLeft, dstTop, dstRight, dstBottom, -1) ? 1 : 0;
+    SkCanvas* canvas = skiaGetCanvas(targetSurface);
+    int status = 0;
+    if (plan && plan->physicalIdentityEnabled) {
+        status |= SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_ATTEMPT;
+        if (physicalIdentityDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+                                 dstLeft, dstTop, dstRight, dstBottom)) {
+            return status | SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT | SKIA_IMAGE_DRAW_HANDLED;
+        }
+        status |= SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_FALLBACK;
+    }
+    return geometryDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+                        dstLeft, dstTop, dstRight, dstBottom, -1)
+        ? status | SKIA_IMAGE_DRAW_HANDLED : status;
 }

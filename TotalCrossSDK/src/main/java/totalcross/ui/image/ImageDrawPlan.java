@@ -48,6 +48,9 @@ final class ImageDrawPlan {
   final double rootHwScaleW;
   final double rootHwScaleH;
   final long sourceDecodeGeneration;
+  final boolean physicalIdentityEnabled;
+  final boolean targetColorConversionEnabled;
+  final boolean physicalVariantCacheEnabled;
 
   ImageDrawPlan(Image root, int[] operations, int[] parameters, int[] dimensions, int rootWidth, int rootHeight,
       int rootLogicalWidth, int rootLogicalHeight, int rootFrameCount, int rootWidthOfAllFrames,
@@ -83,6 +86,21 @@ final class ImageDrawPlan {
       int transparentColor, int materializeAlphaMask, int outputAlphaMask, double destinationScale,
       double outputContentScale, double hwScaleW, double hwScaleH, double rootHwScaleW,
       double rootHwScaleH, long sourceDecodeGeneration, Image presentation) {
+    this(root, operations, parameters, dimensions, rootWidth, rootHeight, rootLogicalWidth, rootLogicalHeight,
+        rootFrameCount, rootWidthOfAllFrames, rootContentScale, outputWidth, outputHeight, outputFrameCount,
+        outputWidthOfAllFrames, currentFrame, alphaMask, transparentColor, materializeAlphaMask, outputAlphaMask,
+        destinationScale, outputContentScale, hwScaleW, hwScaleH, rootHwScaleW, rootHwScaleH,
+        sourceDecodeGeneration, presentation, true, false, false);
+  }
+
+  ImageDrawPlan(Image root, int[] operations, int[] parameters, int[] dimensions, int rootWidth, int rootHeight,
+      int rootLogicalWidth, int rootLogicalHeight, int rootFrameCount, int rootWidthOfAllFrames,
+      double rootContentScale, int outputWidth, int outputHeight,
+      int outputFrameCount, int outputWidthOfAllFrames, int currentFrame, int alphaMask,
+      int transparentColor, int materializeAlphaMask, int outputAlphaMask, double destinationScale,
+      double outputContentScale, double hwScaleW, double hwScaleH, double rootHwScaleW,
+      double rootHwScaleH, long sourceDecodeGeneration, Image presentation, boolean physicalIdentityEnabled,
+      boolean targetColorConversionEnabled, boolean physicalVariantCacheEnabled) {
     if (root == null || operations == null || parameters == null || dimensions == null
         || operations.length * 4 != parameters.length || operations.length * 2 != dimensions.length) {
       throw new IllegalArgumentException("Invalid image draw plan");
@@ -116,6 +134,9 @@ final class ImageDrawPlan {
     this.hwScaleH = hwScaleH;
     this.rootHwScaleW = rootHwScaleW;
     this.rootHwScaleH = rootHwScaleH;
+    this.physicalIdentityEnabled = physicalIdentityEnabled;
+    this.targetColorConversionEnabled = targetColorConversionEnabled;
+    this.physicalVariantCacheEnabled = physicalVariantCacheEnabled;
     Image.recordImageDrawPlanCreatedForTest();
   }
 

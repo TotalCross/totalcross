@@ -87,6 +87,24 @@ class ImageRuntimeConfigurationStartupTest {
   }
 
   @Test
+  void internalRasterFixtureCanSelectEachP3PolicyWithoutChangingDefaults() {
+    RuntimeConfigurationStartup.initializeForSimulator(null, "MacOS", "aarch64");
+    ImageRuntimeConfigurationStartup.initializeForSimulator(null);
+    ImageRuntimeConfigurationStartup.setRasterFeaturesForTest(false, true, true);
+
+    ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();
+    assertFalse(policy.rasterCore().physicalIdentity());
+    assertTrue(policy.rasterVariants().targetColorConversion());
+    assertTrue(policy.rasterVariants().physicalVariantCache());
+
+    ImageRuntimeConfigurationStartup.initializeForSimulator(null);
+    policy = ImageRuntimeConfigurationStartup.currentPolicy();
+    assertTrue(policy.rasterCore().physicalIdentity());
+    assertFalse(policy.rasterVariants().targetColorConversion());
+    assertFalse(policy.rasterVariants().physicalVariantCache());
+  }
+
+  @Test
   void equalSpecificityConflictFailsAfterBackendResolution() {
     RuntimeConfigurationStartup.initializeForSimulator(null, "MacOS", "aarch64");
     RuntimeSelector selector = RuntimeSelector.platform(Platform.MACOS)

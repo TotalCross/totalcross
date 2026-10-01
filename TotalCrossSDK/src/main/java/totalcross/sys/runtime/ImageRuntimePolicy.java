@@ -30,6 +30,13 @@ public final class ImageRuntimePolicy {
 
   private ImageRuntimePolicy(ImageStorageProfile requestedStorageProfile,
       ImageStorageProfile effectiveStorageProfile, String storageReason, List<String> matchedRuleNames) {
+    this(requestedStorageProfile, effectiveStorageProfile, storageReason, matchedRuleNames,
+        DEFAULT_RASTER_CORE, DEFAULT_RASTER_VARIANTS);
+  }
+
+  private ImageRuntimePolicy(ImageStorageProfile requestedStorageProfile,
+      ImageStorageProfile effectiveStorageProfile, String storageReason, List<String> matchedRuleNames,
+      RasterCorePolicy rasterCore, RasterVariantPolicy rasterVariants) {
     if (requestedStorageProfile == null || effectiveStorageProfile == null || matchedRuleNames == null) {
       throw new IllegalArgumentException("an Image policy requires requested and effective storage values");
     }
@@ -37,8 +44,8 @@ public final class ImageRuntimePolicy {
     this.effectiveStorageProfile = effectiveStorageProfile;
     this.storageReason = storageReason;
     this.matchedRuleNames = Collections.unmodifiableList(new ArrayList<String>(matchedRuleNames));
-    this.rasterCore = DEFAULT_RASTER_CORE;
-    this.rasterVariants = DEFAULT_RASTER_VARIANTS;
+    this.rasterCore = rasterCore;
+    this.rasterVariants = rasterVariants;
     this.scrollRasterReuse = DEFAULT_SCROLL_REUSE;
     this.imagePreparation = DEFAULT_PREPARATION;
     this.prefetchWorker = DEFAULT_PREFETCH_WORKER;
@@ -56,6 +63,16 @@ public final class ImageRuntimePolicy {
     ImageStorageProfile effectiveStorageProfile = ImageStorageProfile.STANDARD;
     String reason = requestedStorageProfile == effectiveStorageProfile ? null : COMPACT_UNAVAILABLE_REASON;
     return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, reason, matchedRuleNames);
+  }
+
+  ImageRuntimePolicy withRasterFeaturesForTest(boolean physicalIdentity,
+      boolean targetColorConversion, boolean physicalVariantCache) {
+    RasterCorePolicy core = new RasterCorePolicy(rasterCore.zeroCopyDecode, rasterCore.opacityMetadata,
+        rasterCore.opaqueWritePixels, rasterCore.rowReadback, rasterCore.directColorMaterialization,
+        physicalIdentity);
+    RasterVariantPolicy variants = new RasterVariantPolicy(targetColorConversion, physicalVariantCache);
+    return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, storageReason,
+        matchedRuleNames, core, variants);
   }
 
   /** Returns the rule-selected Image storage request. Internal feature access only. */

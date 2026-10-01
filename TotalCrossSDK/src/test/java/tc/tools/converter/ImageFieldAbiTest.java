@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -60,6 +62,26 @@ class ImageFieldAbiTest {
         "decodeEncodedSourceDirect",
         "failNextNativeMaterializationForTestNative", "nativeResizeJpeg",
         "getJpegBestFit", "getJpegScaled", "getModifiedNative");
+  }
+
+  @Test
+  void drawPlanPolicyFlagsMatchTheNativeFieldMap() throws Exception {
+    J2TC.htAddedClasses.clear();
+    J2TC.htExcludedClasses.clear();
+    GlobalConstantPool.init();
+
+    try (InputStream stream = totalcross.ui.image.Image.class.getResourceAsStream("ImageDrawPlan.class")) {
+      assertNotNull(stream, "ImageDrawPlan.class resource");
+      TCClass converted = new J2TC(new JavaClass(stream.readAllBytes(), false), true).converted;
+      assertEquals("physicalIdentityEnabled", fieldName(converted.int32InstanceFields[15]));
+      assertEquals("targetColorConversionEnabled", fieldName(converted.int32InstanceFields[16]));
+      assertEquals("physicalVariantCacheEnabled", fieldName(converted.int32InstanceFields[17]));
+    }
+
+    String fields = Files.readString(Path.of("..", "TotalCrossVM", "src", "nm", "instancefields.h"));
+    assertTrue(fields.contains("ImageDrawPlan_physicalIdentityEnabled(o) FIELD_I32(o, 15)"));
+    assertTrue(fields.contains("ImageDrawPlan_targetColorConversionEnabled(o) FIELD_I32(o, 16)"));
+    assertTrue(fields.contains("ImageDrawPlan_physicalVariantCacheEnabled(o) FIELD_I32(o, 17)"));
   }
 
   private static TCClass convertDirectImage() throws Exception {
