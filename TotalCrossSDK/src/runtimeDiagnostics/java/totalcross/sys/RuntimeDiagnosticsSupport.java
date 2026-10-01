@@ -8,6 +8,7 @@ package totalcross.sys;
 final class RuntimeDiagnosticsSupport {
   private static final RuntimeDiagnosticSnapshot EMPTY = RuntimeDiagnosticSnapshot.empty();
   private static volatile boolean runtimeGroupEnabled;
+  private static volatile boolean imageGroupEnabled;
 
   private RuntimeDiagnosticsSupport() {
   }
@@ -23,14 +24,46 @@ final class RuntimeDiagnosticsSupport {
     if (enabled) {
       RuntimeMetrics.initialize();
     }
-    runtimeGroupEnabled = enabled;
+    if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME) {
+      runtimeGroupEnabled = enabled;
+    } else {
+      imageGroupEnabled = enabled;
+    }
+  }
+
+  static boolean isDomainEnabled(RuntimeDiagnosticSnapshot.Domain domain) {
+    if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME) {
+      return runtimeGroupEnabled;
+    }
+    return domain == RuntimeDiagnosticSnapshot.Domain.IMAGE && imageGroupEnabled;
+  }
+
+  static void recordCounter(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot) {
+    if (!isDomainEnabled(domain)) {
+      return;
+    }
+    RuntimeMetrics.recordCounter(domain, featureMetricSlot);
+  }
+
+  static void recordTimer(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot, long elapsedNanos) {
+    if (!isDomainEnabled(domain)) {
+      return;
+    }
+    RuntimeMetrics.recordTimer(domain, featureMetricSlot, elapsedNanos);
+  }
+
+  static void setGauge(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot, long value) {
+    if (!isDomainEnabled(domain)) {
+      return;
+    }
+    RuntimeMetrics.setGauge(domain, featureMetricSlot, value);
   }
 
   static RuntimeDiagnosticSnapshot snapshot() {
-    if (!runtimeGroupEnabled) {
+    if (!runtimeGroupEnabled && !imageGroupEnabled) {
       return EMPTY;
     }
-    return RuntimeMetrics.snapshot();
+    return RuntimeMetrics.snapshot(runtimeGroupEnabled, imageGroupEnabled);
   }
 
   static void addJavaCounterForTest(long delta) {
@@ -79,10 +112,10 @@ final class RuntimeDiagnosticsSupport {
     if (domain == null) {
       throw new NullPointerException("domain is required");
     }
-    if (!runtimeGroupEnabled) {
+    if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME ? !runtimeGroupEnabled : !imageGroupEnabled) {
       return;
     }
-    RuntimeMetrics.reset();
+    RuntimeMetrics.reset(domain);
   }
 
   private static final class RuntimeMetrics {
@@ -93,6 +126,7 @@ final class RuntimeDiagnosticsSupport {
     private static final int NATIVE_COUNTER_ID = 0x2001;
     private static final int NATIVE_GAUGE_ID = 0x2002;
     private static final int RUNTIME_GROUP_MASK = 1;
+    private static final int[] IMAGE_METRIC_IDS = {0x3001, 0x3002, 0x3003, 0x3004, 0x3005, 0x3006};
     private static final int[] METRIC_IDS = {
         JAVA_COUNTER_ID, JAVA_GAUGE_ID, JAVA_TIMER_ID, NATIVE_COUNTER_ID, NATIVE_GAUGE_ID
     };
@@ -111,11 +145,28 @@ final class RuntimeDiagnosticsSupport {
         (byte) RuntimeDiagnosticSnapshot.Kind.GAUGE.ordinal()
     };
     private static final int[] NATIVE_METRIC_IDS = {NATIVE_COUNTER_ID, NATIVE_GAUGE_ID};
+    private static final byte[] IMAGE_DOMAINS = {
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.IMAGE.ordinal()
+    };
+    private static final byte[] IMAGE_KINDS = {
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal()
+    };
     private static final long[] NATIVE_VALUES = new long[NATIVE_METRIC_IDS.length];
     private static final Object COLLECTION_LOCK = new Object();
     private static long javaCounter;
     private static long javaGauge;
     private static long javaTimerNanos;
+    private static final long[] imageCounters = new long[IMAGE_METRIC_IDS.length];
     private static long epoch;
     private static NativeBridge nativeBridge = new VmNativeBridge();
 
@@ -123,17 +174,78 @@ final class RuntimeDiagnosticsSupport {
       // Calling this method initializes this holder only after the group is enabled.
     }
 
-    private static RuntimeDiagnosticSnapshot snapshot() {
-      if (!runtimeGroupEnabled) {
+    private static RuntimeDiagnosticSnapshot snapshot(boolean includeRuntime, boolean includeImage) {
+      if (!includeRuntime && !includeImage) {
         return EMPTY;
       }
       synchronized (COLLECTION_LOCK) {
-        if (!runtimeGroupEnabled) {
+        includeRuntime &= runtimeGroupEnabled;
+        includeImage &= imageGroupEnabled;
+        if (!includeRuntime && !includeImage) {
           return EMPTY;
         }
-        nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES);
-        long[] values = {javaCounter, javaGauge, javaTimerNanos, NATIVE_VALUES[0], NATIVE_VALUES[1]};
-        return new RuntimeDiagnosticSnapshot(METRIC_IDS, DOMAINS, KINDS, values, epoch);
+        if (includeRuntime) {
+          nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES);
+        }
+        int runtimeCount = includeRuntime ? METRIC_IDS.length : 0;
+        int imageCount = includeImage ? IMAGE_METRIC_IDS.length : 0;
+        int total = runtimeCount + imageCount;
+        int[] metricIds = new int[total];
+        byte[] domains = new byte[total];
+        byte[] kinds = new byte[total];
+        long[] values = new long[total];
+        int destination = 0;
+        if (includeRuntime) {
+          System.arraycopy(METRIC_IDS, 0, metricIds, destination, runtimeCount);
+          System.arraycopy(DOMAINS, 0, domains, destination, runtimeCount);
+          System.arraycopy(KINDS, 0, kinds, destination, runtimeCount);
+          values[destination++] = javaCounter;
+          values[destination++] = javaGauge;
+          values[destination++] = javaTimerNanos;
+          values[destination++] = NATIVE_VALUES[0];
+          values[destination++] = NATIVE_VALUES[1];
+        }
+        if (includeImage) {
+          System.arraycopy(IMAGE_METRIC_IDS, 0, metricIds, destination, imageCount);
+          System.arraycopy(IMAGE_DOMAINS, 0, domains, destination, imageCount);
+          System.arraycopy(IMAGE_KINDS, 0, kinds, destination, imageCount);
+          System.arraycopy(imageCounters, 0, values, destination, imageCount);
+        }
+        return new RuntimeDiagnosticSnapshot(metricIds, domains, kinds, values, epoch);
+      }
+    }
+
+    private static void recordCounter(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot) {
+      if (domain == RuntimeDiagnosticSnapshot.Domain.IMAGE) {
+        if (featureMetricSlot < 0 || featureMetricSlot >= imageCounters.length) {
+          return;
+        }
+        synchronized (COLLECTION_LOCK) {
+          if (imageGroupEnabled) {
+            imageCounters[featureMetricSlot]++;
+          }
+        }
+      } else if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME) {
+        if (featureMetricSlot == 0) {
+          addJavaCounter(1L);
+        } else if (featureMetricSlot == 1) {
+          addNativeCounter(1L);
+        }
+      }
+    }
+
+    private static void recordTimer(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot,
+        long elapsedNanos) {
+      if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME && featureMetricSlot == 0) {
+        addJavaTimer(elapsedNanos);
+      }
+    }
+
+    private static void setGauge(RuntimeDiagnosticSnapshot.Domain domain, int featureMetricSlot, long value) {
+      if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME && featureMetricSlot == 0) {
+        setJavaGauge(value);
+      } else if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME && featureMetricSlot == 1) {
+        setNativeGauge(value);
       }
     }
 
@@ -183,12 +295,17 @@ final class RuntimeDiagnosticsSupport {
       }
     }
 
-    private static void reset() {
+    private static void reset(RuntimeDiagnosticSnapshot.Domain domain) {
       synchronized (COLLECTION_LOCK) {
-        if (runtimeGroupEnabled) {
+        if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME && runtimeGroupEnabled) {
           javaCounter = 0L;
           javaTimerNanos = 0L;
           nativeBridge.resetMetrics(RUNTIME_GROUP_MASK);
+          epoch++;
+        } else if (domain == RuntimeDiagnosticSnapshot.Domain.IMAGE && imageGroupEnabled) {
+          for (int i = 0; i < imageCounters.length; i++) {
+            imageCounters[i] = 0L;
+          }
           epoch++;
         }
       }

@@ -576,7 +576,43 @@ public class Image extends GfxSurface {
   }
 
   int opacityStateForP2() {
+    if (!ImageRuntimeConfigurationStartup.currentPolicy().rasterCore().opacityMetadata()) {
+      return ImageBacking.OPACITY_UNKNOWN;
+    }
     return backing == null ? ImageBacking.OPACITY_UNKNOWN : backing.opacityState();
+  }
+
+  boolean opaqueWritePixelsEnabledForP2() {
+    return ImageRuntimeConfigurationStartup.currentPolicy().rasterCore().opaqueWritePixels();
+  }
+
+  boolean tryWriteOpaquePixels(int[] input, int offset, int x, int y, int writeWidth, int writeHeight) {
+    if (!opaqueWritePixelsEnabledForP2() || !Settings.onJavaSE || input == null
+        || offset < 0 || writeWidth < 0 || writeHeight < 0) {
+      return false;
+    }
+    long pixelCount = (long) writeWidth * writeHeight;
+    if (pixelCount > Integer.MAX_VALUE || (long) offset + pixelCount > input.length) {
+      return false;
+    }
+    for (long index = offset, end = offset + pixelCount; index < end; index++) {
+      if ((input[(int) index] >>> 24) != 0xFF) {
+        return false;
+      }
+    }
+
+    prepareForGraphicsMutation();
+    if (!(backing instanceof RasterImageBacking)
+        || !((RasterImageBacking) backing).writePixels(input, offset, x, y, writeWidth, writeHeight,
+            width, height)) {
+      return false;
+    }
+    int resultingOpacity = opacityStateForP2();
+    if (frameCount == 1 && x == 0 && y == 0 && writeWidth == width && writeHeight == height) {
+      resultingOpacity = ImageBacking.OPACITY_OPAQUE;
+    }
+    recordBackingMutation(resultingOpacity);
+    return true;
   }
 
   private void replaceBacking(ImageBacking candidate) {
@@ -606,6 +642,9 @@ public class Image extends GfxSurface {
   }
 
   void recordBackingMutation(int resultingOpacityState) {
+    if (!ImageRuntimeConfigurationStartup.currentPolicy().rasterCore().opacityMetadata()) {
+      resultingOpacityState = ImageBacking.OPACITY_UNKNOWN;
+    }
     long previousGeneration = backingMutationGenerationForP2();
     if (backing != null) {
       backing.markMutationAfter(previousGeneration, resultingOpacityState);
@@ -1180,7 +1219,12 @@ public class Image extends GfxSurface {
       throw new ImageException("Image destination scale must be finite and positive.");
     }
     ImagePipeline deferred = pipeline;
-    if (deferred == null || !deferred.isDrawFusable() || deferred.hasZeroWidthFrameLayout() || Settings.onJavaSE) {
+    if (deferred == null || Settings.onJavaSE) {
+      return null;
+    }
+    boolean trivialDrawPlan = deferred.isTrivialDrawPlan();
+    if (deferred.hasZeroWidthFrameLayout() || (!trivialDrawPlan && !deferred.isDrawFusable())) {
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
       return null;
     }
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
@@ -1204,6 +1248,7 @@ public class Image extends GfxSurface {
     }
     int prefixOperationCount = drawPrefixOperationCount(orderedNodes);
     if (prefixOperationCount < 0) {
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
       return null;
     }
     Image root = prefixOperationCount == 0
@@ -1214,6 +1259,7 @@ public class Image extends GfxSurface {
       root = promoteGeometryRoot(root);
     }
     if (!(root.backing instanceof NativeImageBacking)) {
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
       return null;
     }
     if (prefixOperationCount > 0) {
@@ -1307,7 +1353,8 @@ public class Image extends GfxSurface {
   }
 
   private Image resolvePipeline(ImagePipeline deferred, double destinationScale) throws ImageException {
-    if (!Settings.onJavaSE && deferred.isGeometryOnly() && !deferred.hasZeroWidthFrameLayout()
+    if (!Settings.onJavaSE && deferred.isGeometryOnly() && deferred.isDrawFusable()
+        && !deferred.hasZeroWidthFrameLayout()
         && !isPureFrameLayout(deferred)) {
       Image nativeGeometry = materializeNativeGeometry(deferred, destinationScale);
       if (nativeGeometry != null) {
@@ -1316,6 +1363,14 @@ public class Image extends GfxSurface {
     }
     ArrayList<ImagePipeline> nodes = pipelineNodes(deferred);
     Image current = materializePipelineRoot(deferred, nodes, destinationScale);
+    if (!Settings.onJavaSE && deferred.isGeometryOnly() && !deferred.isDrawFusable()
+        && current.backing instanceof NativeImageBacking) {
+      // A sequence with more than one frame-domain barrier cannot be compiled
+      // as one native geometry plan. Keep the established raster semantics for
+      // each barrier instead of combining their frame maps in Skia.
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+      current = copyNativeImageToRaster(current);
+    }
 
     for (int i = nodes.size() - 1; i >= 0;) {
       if (!Settings.onJavaSE && current.backing instanceof NativeImageBacking
@@ -1347,6 +1402,55 @@ public class Image extends GfxSurface {
       i--;
     }
     return current;
+  }
+
+  private static Image copyNativeImageToRaster(Image source) throws ImageException {
+    int fullWidth = source.frameCount > 1 ? source.widthOfAllFrames : source.width;
+    long storageLength = (long) fullWidth * source.height;
+    long visibleLength = (long) source.width * source.height;
+    if (fullWidth <= 0 || source.width <= 0 || source.height <= 0
+        || storageLength > Integer.MAX_VALUE || visibleLength > Integer.MAX_VALUE) {
+      return source;
+    }
+    try {
+      int[] storage = source.backing.readStoragePixels();
+      int[] visible = storage;
+      if (source.frameCount > 1) {
+        visible = new int[(int) visibleLength];
+        int frame = source.currentFrame < 0 ? source.frameCount - 1
+            : source.currentFrame >= source.frameCount ? 0 : source.currentFrame;
+        for (int y = 0; y < source.height; y++) {
+          Vm.arrayCopy(storage, y * fullWidth + frame * source.width,
+              visible, y * source.width, source.width);
+        }
+      }
+      RasterImageBacking raster = new RasterImageBacking(source.width, source.height,
+          source.frameCount, fullWidth, visible, source.frameCount > 1 ? storage : null);
+      source.backing.copyStateTo(raster);
+      Image result = new Image();
+      result.width = source.width;
+      result.height = source.height;
+      result.logicalWidth = source.logicalWidth;
+      result.logicalHeight = source.logicalHeight;
+      result.contentScale = source.contentScale;
+      result.frameCount = source.frameCount;
+      result.currentFrame = source.currentFrame;
+      result.widthOfAllFrames = source.widthOfAllFrames;
+      result.attachBacking(raster, false);
+      result.comment = source.comment;
+      result.path = source.path;
+      result.surfaceType = source.surfaceType;
+      result.transparentColor = source.transparentColor;
+      result.useAlpha = source.useAlpha;
+      result.alphaMask = source.alphaMask;
+      result.hwScaleW = source.hwScaleW;
+      result.hwScaleH = source.hwScaleH;
+      result.textureId = -1;
+      result.init();
+      return result;
+    } catch (OutOfMemoryError allocationFailure) {
+      throw new TransientImageMaterializationException(allocationFailure);
+    }
   }
 
   private static boolean isNativeGeometryNode(int operationType) {
@@ -1452,11 +1556,14 @@ public class Image extends GfxSurface {
         decoded.initializeDecodeTarget(source);
         boolean targeted = requestedDenominator > 1;
         boolean directDecode = false;
+        boolean directDecodeAttempted = false;
+        boolean directDecodeFallbackRecorded = false;
         try {
           if (!targeted && source.getFrameCount() == 1
               && (source.getFormat() == ImageEncodedStructure.Format.PNG
                   || source.getFormat() == ImageEncodedStructure.Format.JPEG)
               && ImageRuntimeConfigurationStartup.currentPolicy().rasterCore().zeroCopyDecode()) {
+            directDecodeAttempted = true;
             try {
               directDecode = decoded.decodeEncodedSourceDirect(source);
             } catch (TransientImageMaterializationException transientFailure) {
@@ -1464,7 +1571,14 @@ public class Image extends GfxSurface {
             } catch (OutOfMemoryError allocationFailure) {
               directDecode = false;
             }
+            ImageRasterDiagnostics.record(directDecode
+                ? ImageRasterDiagnostics.DIRECT_DECODE_SUCCESS : ImageRasterDiagnostics.DIRECT_DECODE_FALLBACK);
+            if (directDecode) {
+              recordFullDecodeInvocationForTest();
+            }
             if (!directDecode) {
+              ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+              directDecodeFallbackRecorded = true;
               decoded.initializeDecodeTarget(source);
             }
           }
@@ -1479,6 +1593,12 @@ public class Image extends GfxSurface {
             throw new DeterministicImageDecodeException("Could not decode encoded image");
           }
         } catch (DeterministicImageDecodeException failure) {
+          if (directDecodeAttempted && !directDecodeFallbackRecorded) {
+            if (!directDecode) {
+              ImageRasterDiagnostics.record(ImageRasterDiagnostics.DIRECT_DECODE_FALLBACK);
+            }
+            ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+          }
           source.cacheDecodeFailure(failure);
           throw failure;
         } catch (TransientImageMaterializationException failure) {
@@ -2044,7 +2164,6 @@ public class Image extends GfxSurface {
   /** Tries decoding into the final backing; unsupported or transient cases return false. */
   @ReplacedByNativeOnDeploy
   private boolean decodeEncodedSourceDirect(EncodedImageSource source) throws ImageException {
-    recordFullDecodeInvocationForTest();
     return decodeEncodedSourceDirectJavaSe(source);
   }
 
@@ -3002,9 +3121,22 @@ public class Image extends GfxSurface {
   final public void getPixelRow(byte[] fillIn, int y) {
     materializeCanonicalUnchecked();
     if (backing != null && backing.isValid()) {
-      if (!backing.readRgbaRow(fillIn, y)) {
+      boolean rowReadback = ImageRuntimeConfigurationStartup.currentPolicy().rasterCore().rowReadback();
+      int storageWidth = frameCount > 1 ? widthOfAllFrames : width;
+      if (rowReadback && backing.readRgbaRow(fillIn, y)) {
+        ImageRasterDiagnostics.record(ImageRasterDiagnostics.BOUNDED_READ_SUCCESS);
+        return;
+      }
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+      if (fillIn == null || y < 0 || y >= height || (long) storageWidth * 4 > fillIn.length) {
         throw new IllegalStateException("Could not read image backing row");
       }
+      int[] storage = backing.readStoragePixels();
+      long sourceOffset = (long) y * storageWidth;
+      if (storageWidth < 0 || sourceOffset + storageWidth > storage.length) {
+        throw new IllegalStateException("Could not read image backing row");
+      }
+      copyArgbRowToRgba(storage, (int) sourceOffset, storageWidth, fillIn);
       return;
     }
     if (!Settings.onJavaSE) {
@@ -3032,6 +3164,16 @@ public class Image extends GfxSurface {
   private static final int TOUCHEDUP_INSTANCE = 3;
   private static final int FADED_INSTANCE = 4;
   private static final int ALPHA_INSTANCE = 5;
+
+  private static void copyArgbRowToRgba(int[] source, int sourceOffset, int width, byte[] destination) {
+    for (int x = 0, pixel = sourceOffset, output = 0; x < width; x++, pixel++, output += 4) {
+      int value = source[pixel];
+      destination[output] = (byte) (value >> 16);
+      destination[output + 1] = (byte) (value >> 8);
+      destination[output + 2] = (byte) value;
+      destination[output + 3] = (byte) (value >>> 24);
+    }
+  }
 
   /** JavaSE implementation; deployed builds call the private native bridge. */
   private void getModifiedInstance(Image newImg, int angle, int percScale, int color,
@@ -4711,10 +4853,31 @@ public class Image extends GfxSurface {
 
   private void applyColor2Eager(int color) {
     detachEncodedBackingForMutation();
+    boolean directColorMaterialization = ImageRuntimeConfigurationStartup.currentPolicy().rasterCore()
+        .directColorMaterialization();
     if (!Settings.onJavaSE) {
-      applyColor2Native(color);
+      if (directColorMaterialization) {
+        applyColor2Native(color);
+        ImageRasterDiagnostics.record(ImageRasterDiagnostics.DIRECT_COLOR_SUCCESS);
+      } else {
+        ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+        applyColor2Native(color);
+      }
       return;
     }
+    if (directColorMaterialization && backing instanceof RasterImageBacking && backing.isValid()) {
+      int resultingOpacity = ((RasterImageBacking) backing).applyColor2(color);
+      if (frameCount != 1) {
+        backing.setOpacityState(resultingOpacity);
+        currentFrame = 2;
+        setCurrentFrame(0);
+      } else {
+        recordBackingMutation(resultingOpacity);
+      }
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.DIRECT_COLOR_SUCCESS);
+      return;
+    }
+    ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
     int r2 = Color.getRed(color);
     int g2 = Color.getGreen(color);
     int b2 = Color.getBlue(color);
@@ -5123,21 +5286,39 @@ public class Image extends GfxSurface {
       return Arrays.hashCode(rasterPixels);
     }
     if (backing != null && backing.isValid()) {
-      byte[] row = new byte[storageWidth * 4];
-      int result = 1;
-      for (int y = 0; y < height; y++) {
-        if (!backing.readRgbaRow(row, y)) {
-          throw new IllegalStateException("Could not read image backing row");
+      if (ImageRuntimeConfigurationStartup.currentPolicy().rasterCore().rowReadback()) {
+        long rowBytes = (long) storageWidth * 4;
+        if (rowBytes <= Integer.MAX_VALUE) {
+          try {
+            byte[] row = new byte[(int) rowBytes];
+            int result = 1;
+            boolean complete = true;
+            for (int y = 0; y < height; y++) {
+              if (!backing.readRgbaRow(row, y)) {
+                complete = false;
+                break;
+              }
+              for (int x = 0, offset = 0; x < storageWidth; x++, offset += 4) {
+                int pixel = ((row[offset + 3] & 0xFF) << 24)
+                    | ((row[offset] & 0xFF) << 16)
+                    | ((row[offset + 1] & 0xFF) << 8)
+                    | (row[offset + 2] & 0xFF);
+                result = 31 * result + pixel;
+              }
+            }
+            if (complete) {
+              ImageRasterDiagnostics.record(ImageRasterDiagnostics.BOUNDED_READ_SUCCESS);
+              return result;
+            }
+          } catch (OutOfMemoryError allocationFailure) {
+            // The existing full-storage path needs no temporary row buffer.
+          }
         }
-        for (int x = 0, offset = 0; x < storageWidth; x++, offset += 4) {
-          int pixel = ((row[offset + 3] & 0xFF) << 24)
-              | ((row[offset] & 0xFF) << 16)
-              | ((row[offset + 1] & 0xFF) << 8)
-              | (row[offset + 2] & 0xFF);
-          result = 31 * result + pixel;
-        }
+        ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+      } else {
+        ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
       }
-      return result;
+      return Arrays.hashCode(backing.readStoragePixels());
     }
     return super.hashCode();
   }

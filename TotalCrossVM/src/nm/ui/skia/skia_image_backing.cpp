@@ -372,7 +372,8 @@ int skia_image_backing_write_rgba_pixels(int64_t handle, const uint8_t* pixels, 
         return 0;
     }
     const SkPixmap source(rasterInfo(width, height), pixels, static_cast<size_t>(rowBytes));
-    if (!backing->surface->writePixels(source, x, y)) {
+    if (!backing->surface->getCanvas()->writePixels(source.info(), source.addr(),
+                                                     source.rowBytes(), x, y)) {
         return 0;
     }
     ++backing->generation;

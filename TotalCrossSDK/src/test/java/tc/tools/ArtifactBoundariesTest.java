@@ -9,6 +9,8 @@ import org.junit.jupiter.api.io.TempDir;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,6 +47,41 @@ class ArtifactBoundariesTest {
     void apiDoesNotExposeStandardStreamRuntimeBridge() throws Exception {
         assertFalse(entries("totalcross-api").contains("totalcross/sys/VmStandardOutputStream.class"));
         assertTrue(entries("totalcross-runtime-java").contains("totalcross/sys/VmStandardOutputStream.class"));
+    }
+
+    @Test
+    void rasterAndDiagnosticsFeatureBridgesStayInTheInternalRuntimeArtifact() throws Exception {
+        Set<String> api = entries("totalcross-api");
+        Set<String> sdk = entries("totalcross-sdk");
+        Set<String> distributedSdk = entries(DISTRIBUTED_SDK);
+        Set<String> runtimeJava = entries("totalcross-runtime-java");
+        String diagnosticsBridge = "totalcross/sys/RuntimeDiagnosticsFeatureBridge";
+        String rasterBridge = "totalcross/ui/image/ImageRasterFeatureBridge";
+
+        assertTrue(runtimeJava.contains(diagnosticsBridge + ".class"));
+        assertTrue(runtimeJava.contains(rasterBridge + ".class"));
+        for (Set<String> applicationArtifact : java.util.List.of(api, sdk, distributedSdk)) {
+            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(diagnosticsBridge)));
+            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(rasterBridge)));
+            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
+                    "totalcross/sys/RuntimeDiagnosticsImageBridge")));
+        }
+        assertFalse(runtimeJava.stream().anyMatch(name -> name.startsWith(
+                "totalcross/sys/RuntimeDiagnosticsImageBridge")));
+        assertFalse(Files.exists(Path.of("src/main/java/totalcross/sys/RuntimeDiagnosticsImageBridge.java")));
+    }
+
+    @Test
+    void imageDrawingBridgeRetainsItsPreP2PublicSurface() {
+        Set<String> publicMethods = java.util.Arrays.stream(totalcross.ui.image.ImageDrawingBridge.class
+                .getDeclaredMethods())
+                .filter(method -> Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
+                .map(ArtifactBoundariesTest::methodSignature)
+                .collect(Collectors.toSet());
+
+        assertTrue(publicMethods.equals(Set.of(
+                "resolveForDrawing(totalcross.ui.image.Image,double)",
+                "drawPlanForDrawing(totalcross.ui.image.Image,double)")));
     }
 
     @Test
@@ -128,6 +165,10 @@ class ArtifactBoundariesTest {
         Set<String> distributedSdk = entries(DISTRIBUTED_SDK);
         Set<String> runtimeJava = entries("totalcross-runtime-java");
         assertTrue(sdk.contains("totalcross/sys/Platform.class"));
+        assertTrue(sdk.contains("totalcross/sys/RuntimeDiagnostics.class"));
+        assertTrue(sdk.contains("totalcross/sys/RuntimeDiagnosticSnapshot.class"));
+        assertTrue(sdk.contains("totalcross/ui/image/Image.class"));
+        assertTrue(sdk.contains("totalcross/ui/gfx/Graphics.class"));
         assertTrue(sdk.contains("totalcross/sys/RuntimeFamily.class"));
         assertTrue(sdk.contains("totalcross/sys/GraphicsBackend.class"));
         assertTrue(sdk.contains("totalcross/sys/Architecture.class"));
@@ -176,6 +217,8 @@ class ArtifactBoundariesTest {
         Path publicSource = tempDir.resolve("PublicRuntimeConfigurationSurface.java");
         Files.writeString(publicSource, ""
                 + "import totalcross.sys.Platform;\n"
+                + "import totalcross.sys.RuntimeDiagnostics;\n"
+                + "import totalcross.sys.RuntimeDiagnosticSnapshot;\n"
                 + "import totalcross.sys.runtime.RuntimeConfiguration;\n"
                 + "import totalcross.sys.runtime.RuntimeCondition;\n"
                 + "import totalcross.sys.runtime.RuntimeEnvironment;\n"
@@ -185,6 +228,8 @@ class ArtifactBoundariesTest {
                 + "import totalcross.sys.runtime.RuntimeConfigurationReport;\n"
                 + "import totalcross.ui.image.ImageRuntimeRule;\n"
                 + "import totalcross.ui.image.ImageStorageProfile;\n"
+                + "import totalcross.ui.image.Image;\n"
+                + "import totalcross.ui.gfx.Graphics;\n"
                 + "@RuntimeConfiguration\n"
                 + "@RuntimeRule(when=@RuntimeWhen(allOf=@RuntimeCondition(platform=Platform.MACOS)))\n"
                 + "@ImageRuntimeRule(when=@RuntimeWhen(allOf=@RuntimeCondition(platform=Platform.MACOS)), "
@@ -192,6 +237,12 @@ class ArtifactBoundariesTest {
                 + "public final class PublicRuntimeConfigurationSurface {\n"
                 + "  RuntimeEnvironment environment = RuntimeEnvironment.current();\n"
                 + "  RuntimeSelector selector = RuntimeSelector.platform(Platform.MACOS);\n"
+                + "  Image image;\n"
+                + "  Graphics graphics;\n"
+                + "  RuntimeDiagnosticSnapshot diagnostics() {\n"
+                + "    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.IMAGE, true);\n"
+                + "    return RuntimeDiagnostics.snapshot();\n"
+                + "  }\n"
                 + "  String describe() { return RuntimeConfigurationReport.describe(); }\n"
                 + "}\n");
         assertTrue(compile(compiler, sdkJar, publicSource, tempDir.resolve("public-classes")),
@@ -199,14 +250,18 @@ class ArtifactBoundariesTest {
 
         Path internalSource = tempDir.resolve("InternalRuntimeConfigurationAccess.java");
         Files.writeString(internalSource, ""
+                + "import totalcross.sys.RuntimeDiagnosticsFeatureBridge;\n"
                 + "import totalcross.sys.runtime.RuntimeConfigurationMetadata;\n"
                 + "import totalcross.sys.runtime.RuntimeConfigurationFeatureBridge;\n"
                 + "import totalcross.sys.runtime.RuntimeConfigurationStartup;\n"
                 + "import totalcross.sys.runtime.ImageRuntimeConfigurationMetadata;\n"
                 + "import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;\n"
                 + "import totalcross.sys.runtime.ImageRuntimePolicy;\n"
+                + "import totalcross.ui.image.ImageRasterFeatureBridge;\n"
                 + "public final class InternalRuntimeConfigurationAccess {\n"
                 + "  Object decode(byte[] bytes) {\n"
+                + "    RuntimeDiagnosticsFeatureBridge.recordCounter(null, 0);\n"
+                + "    ImageRasterFeatureBridge.recordRasterFallback();\n"
                 + "    RuntimeConfigurationStartup.initializeForSimulator(null);\n"
                 + "    ImageRuntimeConfigurationStartup.initializeAtStartup();\n"
                 + "    ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();\n"
@@ -254,5 +309,10 @@ class ArtifactBoundariesTest {
         int result = compiler.run(null, diagnostics, diagnostics, "-classpath", sdkJar.toString(), "-d",
                 output.toString(), source.toString());
         return result == 0;
+    }
+
+    private static String methodSignature(Method method) {
+        return method.getName() + "(" + java.util.Arrays.stream(method.getParameterTypes())
+                .map(Class::getName).collect(Collectors.joining(",")) + ")";
     }
 }

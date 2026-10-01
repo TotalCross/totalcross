@@ -231,6 +231,11 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
    TCObject imageObj = p->obj[0];
    TCObject sourceObj = p->obj[1];
    imageRecordTestCounter(p->currentContext, "fullDecodeInvocationCountForTest");
+   if (imageDecodeConsumeAllocationFailureForTest()) {
+      throwExceptionNamed(p->currentContext,
+         "totalcross.ui.image.TransientImageMaterializationException", null);
+      return;
+   }
    ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
    if (!bag || !bag->bytes || bag->length <= 0)
    {
@@ -261,7 +266,8 @@ TC_API void tuiI_decodeEncodedSourceDirect_e(NMParams p) // totalcross/ui/image/
 #if TC_RENDERER_SKIA
    if (!bag || !bag->bytes || bag->length <= 0 || EncodedImageSource_frameCount(sourceObj) != 1)
       return;
-   imageRecordTestCounter(p->currentContext, "fullDecodeInvocationCountForTest");
+   if (failNextImageAllocationForTest)
+      return;
    if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_PNG) {
       status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length, true);
    } else if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_JPEG) {

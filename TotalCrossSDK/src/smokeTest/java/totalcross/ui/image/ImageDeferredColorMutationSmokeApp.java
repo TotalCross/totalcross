@@ -132,7 +132,9 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
       }
       jpegBackingPromotion = Image.fullDecodeInvocationCountForTest() == 1
           && promotionSource.decodedDenominator() == 1 && promotionSource.decodedGeneration() == 3;
-      require(jpegBackingPromotion, "JPEG backing promotion");
+      require(jpegBackingPromotion, "JPEG backing promotion fullDecode="
+          + Image.fullDecodeInvocationCountForTest() + " denominator=" + promotionSource.decodedDenominator()
+          + " generation=" + promotionSource.decodedGeneration());
 
       Image retryRoot = new Image(jpeg);
       EncodedImageSource retrySource = (EncodedImageSource) retryRoot.pipelineForSmoke().root();

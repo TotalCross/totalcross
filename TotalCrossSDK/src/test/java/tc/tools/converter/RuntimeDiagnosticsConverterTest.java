@@ -79,7 +79,7 @@ class RuntimeDiagnosticsConverterTest {
     String source = Files.readString(
         Path.of("src/runtimeDiagnostics/java/totalcross/sys/RuntimeDiagnosticsSupport.java"));
     int start = source.indexOf("static RuntimeDiagnosticSnapshot snapshot() {");
-    int gate = source.indexOf("if (!runtimeGroupEnabled)", start);
+    int gate = source.indexOf("if (!runtimeGroupEnabled && !imageGroupEnabled)", start);
     int lock = source.indexOf("synchronized (COLLECTION_LOCK)", start);
     int batchRead = source.indexOf("nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES)", start);
     int valuesAllocation = source.indexOf("long[] values =", start);

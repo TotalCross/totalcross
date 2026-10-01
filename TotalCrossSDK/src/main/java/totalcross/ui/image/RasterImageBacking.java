@@ -4,6 +4,8 @@
 
 package totalcross.ui.image;
 
+import totalcross.ui.gfx.Color;
+
 /** Java raster backing retained by Java SE and compatibility paths. */
 final class RasterImageBacking extends ImageBacking {
   private final int width;
@@ -40,8 +42,14 @@ final class RasterImageBacking extends ImageBacking {
 
   @Override
   boolean isValid() {
-    return width() > 0 && height > 0 && pixels != null
-        && (frameCount <= 1 || pixelsOfAllFrames != null);
+    int storageWidth = width();
+    long visiblePixelCount = (long) width * height;
+    long storagePixelCount = (long) storageWidth * height;
+    return frameCount > 0 && width >= 0 && height > 0 && storageWidth > 0 && pixels != null
+        && visiblePixelCount <= pixels.length
+        && (frameCount == 1 ? width > 0
+            : (long) width * frameCount <= storageWidth && pixelsOfAllFrames != null
+                && storagePixelCount <= pixelsOfAllFrames.length);
   }
 
   @Override
@@ -93,6 +101,71 @@ final class RasterImageBacking extends ImageBacking {
       System.arraycopy(source, (y + row) * storageWidth + x, output, offset + row * width, width);
     }
     return true;
+  }
+
+  boolean writePixels(int[] input, int offset, int x, int y, int width, int height,
+      int visibleWidth, int visibleHeight) {
+    long pixelCount = (long) width * height;
+    if (!isValid() || input == null || offset < 0 || x < 0 || y < 0 || width < 0 || height < 0
+        || visibleWidth != this.width || visibleHeight != this.height
+        || x > visibleWidth - width || y > visibleHeight - height
+        || pixelCount > Integer.MAX_VALUE || (long) offset + pixelCount > input.length) {
+      return false;
+    }
+    for (int row = 0; row < height; row++) {
+      System.arraycopy(input, offset + row * width, pixels, (y + row) * visibleWidth + x, width);
+    }
+    return true;
+  }
+
+  int applyColor2(int color) {
+    int redTarget = Color.getRed(color);
+    int greenTarget = Color.getGreen(color);
+    int blueTarget = Color.getBlue(color);
+    boolean changeAlpha = (color & 0xFF000000) == 0xAA000000;
+    int[] storage = readStoragePixels();
+    int highestBrightness = 0;
+    int highestPixel = 0;
+    for (int pixel : storage) {
+      if ((pixel & 0xFF000000) == 0xFF000000) {
+        int rgb = pixel & 0x00FFFFFF;
+        int brightness = Color.getBrightness(rgb);
+        if (brightness > highestBrightness) {
+          highestBrightness = brightness;
+          highestPixel = rgb;
+        }
+      }
+    }
+
+    int highestRed = (highestPixel >> 16) & 0xFF;
+    int highestGreen = (highestPixel >> 8) & 0xFF;
+    int highestBlue = highestPixel & 0xFF;
+    if (highestRed == 0) highestRed = 255;
+    if (highestGreen == 0) highestGreen = 255;
+    if (highestBlue == 0) highestBlue = 255;
+    int highestChannel = Math.max(highestRed, Math.max(highestGreen, highestBlue));
+
+    for (int index = 0; index < storage.length; index++) {
+      int pixel = storage[index];
+      if ((pixel & 0xFF000000) == 0) {
+        continue;
+      }
+      int red = ((pixel >> 16) & 0xFF) * redTarget / highestRed;
+      int green = ((pixel >> 8) & 0xFF) * greenTarget / highestGreen;
+      int blue = (pixel & 0xFF) * blueTarget / highestBlue;
+      if (red > 255) red = 255;
+      if (green > 255) green = 255;
+      if (blue > 255) blue = 255;
+      if (changeAlpha) {
+        int alpha = Math.max((pixel >> 16) & 0xFF, (pixel >> 8) & 0xFF);
+        alpha = Math.max(alpha, pixel & 0xFF) * 255 / highestChannel;
+        if (alpha > 255) alpha = 255;
+        storage[index] = (alpha << 24) | (red << 16) | (green << 8) | blue;
+      } else {
+        storage[index] = (pixel & 0xFF000000) | (red << 16) | (green << 8) | blue;
+      }
+    }
+    return changeAlpha ? OPACITY_UNKNOWN : opacityState();
   }
 
   int frameCount() {

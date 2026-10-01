@@ -188,6 +188,8 @@ jar {
     exclude 'totalcross/sys/runtime/ImageRuntimePolicy*.class'
     exclude 'totalcross/sys/runtime/RuntimeRuleResolver*.class'
     exclude 'totalcross/sys/runtime/ResolvedRuntimeConfiguration*.class'
+    exclude 'totalcross/sys/RuntimeDiagnosticsFeatureBridge*.class'
+    exclude 'totalcross/ui/image/ImageRasterFeatureBridge*.class'
     from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
     from new File(project.rootDir, 'etc/fonts/Material Icons.tcz')
     into("META-INF/maven/${project.group}/${base.archivesName.get()}") {
@@ -1197,6 +1199,20 @@ registerImageMacSmoke('ImageNativeMaterialization', 'ImageNativeMaterializationS
     'image-native-materialization-smoke', false, true, [
         'fixture=ImageNativeMaterializationSmokeApp',
         'pass=true'
+    ])
+
+registerImageMacSmoke('ImageRasterCoreSmoke', 'ImageRasterCoreSmokeApp',
+    'image-raster-core-smoke', false, false, [
+        'fixture=ImageRasterCoreSmokeApp',
+        'pngParity=true',
+        'jpegOpaque=true',
+        'opaqueWrite=true',
+        'alphaWriteFallback=true',
+        'colorMutation=true',
+        'mutationReadDraw=true',
+        'runtimeConfiguration=true',
+        'diagnostics=true',
+        'overallPass=true'
     ])
 
 registerImageMacSmoke('ImageDrawPresentationState', 'ImageDrawPresentationStateSmokeApp',

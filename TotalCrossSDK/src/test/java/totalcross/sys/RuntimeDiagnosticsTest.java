@@ -35,6 +35,7 @@ class RuntimeDiagnosticsTest {
       return;
     }
     supportClass = Class.forName("totalcross.sys.RuntimeDiagnosticsSupport");
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.IMAGE, false);
     RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.RUNTIME, true);
     runtimeMetricsClass = Class.forName("totalcross.sys.RuntimeDiagnosticsSupport$RuntimeMetrics");
     bridgeField = runtimeMetricsClass.getDeclaredField("nativeBridge");
@@ -57,14 +58,16 @@ class RuntimeDiagnosticsTest {
   void tearDown() throws Exception {
     if (supportClass != null) {
       RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.RUNTIME, false);
+      RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.IMAGE, false);
       bridgeField.set(null, originalBridge);
     }
   }
 
   @Test
   void publicMetadataContainsDomainsAndKindsWithoutMetricKeys() {
-    assertEquals(1, RuntimeDiagnosticSnapshot.Domain.values().length);
+    assertEquals(2, RuntimeDiagnosticSnapshot.Domain.values().length);
     assertEquals("RUNTIME", RuntimeDiagnosticSnapshot.Domain.RUNTIME.name());
+    assertEquals("IMAGE", RuntimeDiagnosticSnapshot.Domain.IMAGE.name());
     assertEquals(3, RuntimeDiagnosticSnapshot.Kind.values().length);
     assertEquals(RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(), 0);
     assertEquals(RuntimeDiagnosticSnapshot.Kind.GAUGE.ordinal(), 1);
@@ -204,6 +207,40 @@ class RuntimeDiagnosticsTest {
     assertEquals(0, first.size());
     assertEquals(0, nativeValues.batchReads);
     assertEquals(0, nativeValues.singleReads);
+  }
+
+  @Test
+  void imageCountersAreIsolatedAndResetByTheirDomain() throws Exception {
+    assumeTrue(RuntimeDiagnostics.isSupported());
+    RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.IMAGE, true);
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.IMAGE);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE, 0);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE, 5);
+
+    RuntimeDiagnosticSnapshot before = RuntimeDiagnostics.snapshot();
+    assertEquals(6, before.size());
+    assertEquals(2L, before.getValue(RuntimeDiagnosticSnapshot.Domain.IMAGE,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(0L, before.getValue(RuntimeDiagnosticSnapshot.Domain.RUNTIME,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertEquals(0, nativeValues.batchReads);
+
+    invoke("resetForTest", new Class<?>[] {RuntimeDiagnosticSnapshot.Domain.class},
+        RuntimeDiagnosticSnapshot.Domain.IMAGE);
+    RuntimeDiagnosticSnapshot after = RuntimeDiagnostics.snapshot();
+    assertEquals(0L, after.getValue(RuntimeDiagnosticSnapshot.Domain.IMAGE,
+        RuntimeDiagnosticSnapshot.Kind.COUNTER));
+    assertThrows(IllegalArgumentException.class, () -> after.deltaSince(before));
+  }
+
+  @Test
+  void imageEventsAreIgnoredBeforeTheImageDomainIsEnabled() throws Exception {
+    assumeTrue(RuntimeDiagnostics.isSupported());
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE, 0);
+    assertSame(RuntimeDiagnostics.snapshot(), RuntimeDiagnostics.snapshot());
+    assertEquals(0, RuntimeDiagnostics.snapshot().size());
+    assertEquals(0, nativeValues.batchReads);
   }
 
   @Test

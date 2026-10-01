@@ -8,7 +8,8 @@ package totalcross.sys;
 public final class RuntimeDiagnosticSnapshot {
   /** Broad observation domains; metric keys and identifiers remain internal. */
   public enum Domain {
-    RUNTIME
+    RUNTIME,
+    IMAGE
   }
 
   /** The interpretation of a numeric observation. */

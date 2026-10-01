@@ -12,12 +12,14 @@ import totalcross.Launcher;
 import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
+import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
 import totalcross.ui.Control;
 import totalcross.ui.UIColors;
 import totalcross.ui.Window;
 import totalcross.ui.font.Font;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageDrawingBridge;
+import totalcross.ui.image.ImageRasterFeatureBridge;
 import totalcross.ui.image.ImageException;
 import totalcross.util.Hashtable;
 
@@ -360,14 +362,14 @@ public final class Graphics {
 
   private int[] getWritableSurfacePixels() {
     if (surface instanceof Image) {
-      ImageDrawingBridge.prepareForMutation((Image) surface);
+      ImageRasterFeatureBridge.prepareForMutation((Image) surface);
     }
     return getSurfacePixels(surface);
   }
 
   private void recordSurfaceMutation() {
     if (surface instanceof Image) {
-      ImageDrawingBridge.recordMutation((Image) surface);
+      ImageRasterFeatureBridge.recordMutation((Image) surface);
     }
   }
 
@@ -1661,8 +1663,11 @@ public final class Graphics {
    */
   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
     Object drawPlan = resolveDrawPlanForDrawing(image);
-    if (!Settings.onJavaSE && drawPlan != null && drawGeometryNative(drawPlan, x, y, doClip)) {
-      return;
+    if (!Settings.onJavaSE && drawPlan != null) {
+      if (drawGeometryNative(drawPlan, x, y, doClip)) {
+        return;
+      }
+      ImageRasterFeatureBridge.recordRasterFallback();
     }
     image = resolveImageForDrawing(image);
     if (!Settings.onJavaSE) {
@@ -1694,9 +1699,11 @@ public final class Graphics {
    */
   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip) {
     Object drawPlan = resolveDrawPlanForDrawing(src);
-    if (!Settings.onJavaSE && drawPlan != null
-        && copyGeometryNative(drawPlan, x, y, width, height, doClip)) {
-      return;
+    if (!Settings.onJavaSE && drawPlan != null) {
+      if (copyGeometryNative(drawPlan, x, y, width, height, doClip)) {
+        return;
+      }
+      ImageRasterFeatureBridge.recordRasterFallback();
     }
     src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
@@ -1717,8 +1724,11 @@ public final class Graphics {
    */
   public void drawImage(totalcross.ui.image.Image src, int x, int y) {
     Object drawPlan = resolveDrawPlanForDrawing(src);
-    if (!Settings.onJavaSE && drawPlan != null && drawGeometryNative(drawPlan, x, y, true)) {
-      return;
+    if (!Settings.onJavaSE && drawPlan != null) {
+      if (drawGeometryNative(drawPlan, x, y, true)) {
+        return;
+      }
+      ImageRasterFeatureBridge.recordRasterFallback();
     }
     src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
@@ -2269,8 +2279,17 @@ public final class Graphics {
    * @return The total number of pixels copied from the array to the surface.
    * @throws ArrayIndexOutOfBoundsException If the data array has not enough RGB values.
    */
-  @ReplacedByNativeOnDeploy
   public int setRGB(int[] data, int offset, int x, int y, int w, int h) {
+    if (!Settings.onJavaSE) {
+      boolean opaqueWriteEnabled = ImageRuntimeConfigurationStartup.currentPolicy().rasterCore()
+          .opaqueWritePixels();
+      long result = setRGBNative(data, offset, x, y, w, h, opaqueWriteEnabled);
+      int copied = (int) result;
+      if (opaqueWriteEnabled && copied > 0) {
+        ImageRasterFeatureBridge.recordOpaqueWriteResult((result >>> 32) != 0);
+      }
+      return copied;
+    }
     if (!translateAndClip(x, y, w, h)) {
       return 0;
     } else {
@@ -2279,6 +2298,11 @@ public final class Graphics {
       y = results[1];
       w = results[2];
       h = results[3];
+
+      if (surface instanceof Image && ImageRasterFeatureBridge.tryWriteOpaquePixels((Image) surface,
+          data, offset, x, y, w, h, !hasScaledBacking())) {
+        return w * h;
+      }
 
       int[] pixels = getWritableSurfacePixels();
       recordSurfaceMutation();
@@ -2309,6 +2333,9 @@ public final class Graphics {
       return count;
     }
   }
+
+  private native long setRGBNative(int[] data, int offset, int x, int y, int w, int h,
+      boolean opaqueWriteEnabled);
 
   
   

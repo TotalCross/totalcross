@@ -1463,20 +1463,45 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
 
 //#ifndef SKIA_H
 #if 1
-static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet)
+static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32 offset,
+   int32 x, int32 y, int32 w, int32 h, bool isGet, bool allowOpaqueWrite,
+   bool* usedOpaqueWrite, bool* containsAlpha, bool* fullImageWrite)
 {
+   if (usedOpaqueWrite) *usedOpaqueWrite = false;
+   if (containsAlpha) *containsAlpha = false;
+   if (fullImageWrite) *fullImageWrite = false;
    if (dataObj == null)
       throwException(currentContext, NullPointerException, "Argument 'data' can't be null");
    else
-   if (!checkArrayRange(currentContext, dataObj, offset, w*h))
+   if ((int64)w * (int64)h > INT32_MAX || (int64)w * (int64)h < INT32_MIN)
+      throwException(currentContext, ArrayIndexOutOfBoundsException, "RGB region is too large");
+   else
+   if (!checkArrayRange(currentContext, dataObj, offset, (int32)((int64)w * (int64)h)))
       ;
    else
    if (translateAndClip(g, &x, &y, &w, &h))
    {
       Pixel* data = ((Pixel*)ARRAYOBJ_START(dataObj)) + offset;
 #ifdef SKIA_H
-      if (skia_getsetRGB(skiaSurfaceForGraphics(g), data, 0, x, y, w, h, isGet) == 1)
+      if (!isGet && Graphics_isImageSurface(g)) {
+         TCObject image = Graphics_surface(g);
+         if (image && Image_frameCount(image) == 1 && x == 0 && y == 0
+               && w == Graphics_width(g) && h == Graphics_height(g)
+               && w == Image_width(image) && h == Image_height(image)
+               && Graphics_transX(g) == 0 && Graphics_transY(g) == 0
+               && Graphics_clipX1(g) == 0 && Graphics_clipY1(g) == 0
+               && Graphics_clipX2(g) == Graphics_width(g)
+               && Graphics_clipY2(g) == Graphics_height(g)) {
+            if (fullImageWrite) *fullImageWrite = true;
+         }
+      }
+      int result = skia_getsetRGB(skiaSurfaceForGraphics(g), data, 0, x, y, w, h,
+         isGet, allowOpaqueWrite);
+      if (result & 1) {
+         if (usedOpaqueWrite) *usedOpaqueWrite = (result & 2) != 0;
+         if (containsAlpha) *containsAlpha = (result & 4) != 0;
          return w * h;
+      }
       return 0;
 #else
       int32 inc = Graphics_pitch(g), count = w * h;
@@ -1506,18 +1531,31 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
    return 0;
 }
 #else
-static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet)
+static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32 offset,
+   int32 x, int32 y, int32 w, int32 h, bool isGet, bool allowOpaqueWrite,
+   bool* usedOpaqueWrite, bool* containsAlpha, bool* fullImageWrite)
 {
+   UNUSED(allowOpaqueWrite)
+   if (usedOpaqueWrite) *usedOpaqueWrite = false;
+   if (containsAlpha) *containsAlpha = false;
+   if (fullImageWrite) *fullImageWrite = false;
    if (dataObj == null)
       throwException(currentContext, NullPointerException, "Argument 'data' can't be null");
    else
-   if (!checkArrayRange(currentContext, dataObj, offset, w*h))
+   if ((int64)w * (int64)h > INT32_MAX || (int64)w * (int64)h < INT32_MIN)
+      throwException(currentContext, ArrayIndexOutOfBoundsException, "RGB region is too large");
+   else
+   if (!checkArrayRange(currentContext, dataObj, offset, (int32)((int64)w * (int64)h)))
       ;
    else {
       Pixel* data = ((Pixel*)ARRAYOBJ_START(dataObj)) + offset;
       int32 count = w * h;
 
-      if (skia_getsetRGB(skiaSurfaceForGraphics(g), (void*) data, offset, x, y, w, h, isGet) == 1) {
+      int result = skia_getsetRGB(skiaSurfaceForGraphics(g), (void*) data, 0, x, y, w, h,
+         isGet, allowOpaqueWrite);
+      if (result & 1) {
+         if (usedOpaqueWrite) *usedOpaqueWrite = (result & 2) != 0;
+         if (containsAlpha) *containsAlpha = (result & 4) != 0;
          return count;
       }
    }
