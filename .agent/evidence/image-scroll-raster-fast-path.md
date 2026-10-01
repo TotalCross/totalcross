@@ -15,6 +15,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 - `python3 scripts/validate-copyright-headers.sh --files …` — passed for the changed first-party sources.
 - `git diff --check` — passed.
 
+## Milestone 2: cached-final probe
+
+- `./gradlew-agent test --tests totalcross.ui.image.ImageDestinationScaleTest --tests tc.tools.ArtifactBoundariesTest` — passed. Covers no materialization on cache miss, exact-scale hit behavior, decode-generation invalidation, invalid cached backing, the narrow bridge surface, and application-artifact exclusion. Log: `TotalCrossSDK/agent-logs/20261001-150052-test-agent.log`.
+- `./gradlew-agent dist -x test` — passed with diagnostics disabled. Log: `/tmp/tp6-m2-sdk-dist.log`.
+- `runImageScrollRasterFastPathSmokeMacOS` — passed. Five probes missed, three plan-aware copies were handled, none fell back, and deferred inputs remained unmaterialized. Log: `TotalCrossSDK/agent-logs/20261001-145908-runImageScrollRasterFastPathSmokeMacOS-full.log`.
+- `python3 scripts/validate-copyright-headers.sh --files …` — passed for 10 changed first-party files, 0 modified.
+- `git diff --check` — passed.
+
 ## Deferred
 
-Milestones 2–4 validation remains open: cache validity and artifact boundaries; physical direct-copy correctness and fallback coverage; diagnostics-on tests; warm microbenchmark; optional 663-image workload; final artifact/distribution checks; and Merge Flow.
+Milestone 3–4 validation remains open: physical direct-copy correctness and fallback coverage; diagnostics-on tests; warm microbenchmark; optional 663-image workload; final artifact/distribution checks; and Merge Flow.

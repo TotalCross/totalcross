@@ -50,7 +50,7 @@ class ArtifactBoundariesTest {
     }
 
     @Test
-    void rasterAndDiagnosticsFeatureBridgesStayInTheInternalRuntimeArtifact() throws Exception {
+    void rasterDrawingAndDiagnosticsFeatureBridgesStayInTheInternalRuntimeArtifact() throws Exception {
         Set<String> api = entries("totalcross-api");
         Set<String> sdk = entries("totalcross-sdk");
         Set<String> distributedSdk = entries(DISTRIBUTED_SDK);
@@ -58,14 +58,17 @@ class ArtifactBoundariesTest {
         String diagnosticsBridge = "totalcross/sys/RuntimeDiagnosticsFeatureBridge";
         String rasterBridge = "totalcross/ui/image/ImageRasterFeatureBridge";
         String compactStorageBridge = "totalcross/ui/image/ImageCompactStorageCapabilityBridge";
+        String drawingBridge = "totalcross/ui/image/ImageDrawingFeatureBridge";
 
         assertTrue(runtimeJava.contains(diagnosticsBridge + ".class"));
         assertTrue(runtimeJava.contains(rasterBridge + ".class"));
         assertTrue(runtimeJava.contains(compactStorageBridge + ".class"));
+        assertTrue(runtimeJava.contains(drawingBridge + ".class"));
         for (Set<String> applicationArtifact : java.util.List.of(api, sdk, distributedSdk)) {
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(diagnosticsBridge)));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(rasterBridge)));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(compactStorageBridge)));
+            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(drawingBridge)));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
                     "totalcross/ui/DisplayPreparation")));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
@@ -102,6 +105,18 @@ class ArtifactBoundariesTest {
                 .map(ArtifactBoundariesTest::methodSignature)
                 .collect(Collectors.toSet());
         assertTrue(publicPreparationMethods.equals(Set.of("prepareForDisplay(java.lang.Runnable)")));
+    }
+
+    @Test
+    void imageDrawingFeatureBridgeExposesOnlyTheCacheProbe() {
+        Set<String> publicMethods = java.util.Arrays.stream(totalcross.ui.image.ImageDrawingFeatureBridge.class
+                .getDeclaredMethods())
+                .filter(method -> Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
+                .map(ArtifactBoundariesTest::methodSignature)
+                .collect(Collectors.toSet());
+
+        assertTrue(publicMethods.equals(Set.of(
+                "cachedFinalRasterForDrawing(totalcross.ui.image.Image,double)")));
     }
 
     @Test
@@ -282,10 +297,12 @@ class ArtifactBoundariesTest {
                 + "import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;\n"
                 + "import totalcross.sys.runtime.ImageRuntimePolicy;\n"
                 + "import totalcross.ui.image.ImageRasterFeatureBridge;\n"
+                + "import totalcross.ui.image.ImageDrawingFeatureBridge;\n"
                 + "public final class InternalRuntimeConfigurationAccess {\n"
-                + "  Object decode(byte[] bytes) {\n"
+                + "  Object decode(byte[] bytes) throws Exception {\n"
                 + "    RuntimeDiagnosticsFeatureBridge.recordCounter(null, 0);\n"
                 + "    ImageRasterFeatureBridge.recordRasterFallback();\n"
+                + "    ImageDrawingFeatureBridge.cachedFinalRasterForDrawing(null, 1);\n"
                 + "    RuntimeConfigurationStartup.initializeForSimulator(null);\n"
                 + "    ImageRuntimeConfigurationStartup.initializeAtStartup();\n"
                 + "    ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();\n"

@@ -19,6 +19,7 @@ import totalcross.ui.Window;
 import totalcross.ui.font.Font;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageDrawingBridge;
+import totalcross.ui.image.ImageDrawingFeatureBridge;
 import totalcross.ui.image.ImageRasterFeatureBridge;
 import totalcross.ui.image.ImageException;
 import totalcross.util.Hashtable;
@@ -1514,19 +1515,29 @@ public final class Graphics {
   public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
     if (surface instanceof Image) {
       Image image = (Image) surface;
+      boolean usedCachedFinalRaster = false;
       if (!Settings.onJavaSE) {
-        Object drawPlan = resolveDrawPlanForDrawing(image);
-        if (drawPlan != null) {
-          int drawStatus = copyRectPlanNative(drawPlan, x, y, width, height, dstX, dstY, true);
-          ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
-          ImageRasterFeatureBridge.recordCopyRectPlanResult(drawStatus);
-          if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
-            return;
+        Image cached = cachedFinalRasterForDrawing(image);
+        ImageRasterFeatureBridge.recordCachedFinalRasterProbe(cached != null);
+        if (cached != null) {
+          surface = cached;
+          usedCachedFinalRaster = true;
+        } else {
+          Object drawPlan = resolveDrawPlanForDrawing(image);
+          if (drawPlan != null) {
+            int drawStatus = copyRectPlanNative(drawPlan, x, y, width, height, dstX, dstY, true);
+            ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
+            ImageRasterFeatureBridge.recordCopyRectPlanResult(drawStatus);
+            if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
+              return;
+            }
+            ImageRasterFeatureBridge.recordRasterFallback();
           }
-          ImageRasterFeatureBridge.recordRasterFallback();
         }
       }
-      surface = resolveImageForDrawing(image);
+      if (!usedCachedFinalRaster) {
+        surface = resolveImageForDrawing(image);
+      }
     }
     if (!Settings.onJavaSE) {
       copyRectNative(surface, x, y, width, height, dstX, dstY);
@@ -1770,6 +1781,17 @@ public final class Graphics {
       return ImageDrawingBridge.resolveForDrawing(image, getContentScale());
     } catch (ImageException failure) {
       throw new IllegalStateException("Could not resolve image for drawing", failure);
+    }
+  }
+
+  private Image cachedFinalRasterForDrawing(Image image) {
+    if (image == null) {
+      throw new NullPointerException("image");
+    }
+    try {
+      return ImageDrawingFeatureBridge.cachedFinalRasterForDrawing(image, getContentScale());
+    } catch (ImageException failure) {
+      throw new IllegalStateException("Could not probe cached image raster for drawing", failure);
     }
   }
 
