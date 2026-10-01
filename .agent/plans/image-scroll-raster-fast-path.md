@@ -6,126 +6,63 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image Scroll Raster Fast Path
 
-This ExecPlan follows `.agent/PLANS.md` and `AGENTS.md`.
-
-## Context
-
-Deferred Image pipelines already support a native draw plan, a two-entry draw-plan cache, and a one-entry materialized fallback admitted after a repeated request. Native P3 drawing first checks exact physical identity, then considers target-color and physical raster variants, then uses generic geometry. `Graphics.copyRect(GfxSurface, ...)` currently resolves an Image before native copy, so it cannot use those existing facilities while the image remains deferred.
+This plan follows `.agent/PLANS.md` and `AGENTS.md`.
 
 ## Purpose / Big Picture
 
-Allow `Graphics.copyRect(Image, ...)` and physically exact Image draws to reuse existing pixels during scrolling. Warm copies should be able to use an already cached final raster, a native plan-aware rectangle copy, or a safe direct software-raster copy. Unsupported or uncertain cases keep the existing materialization and rendering behavior.
-
-## Objectives
-
-- Make only the Image-source branch of `Graphics.copyRect` plan-aware, with explicit source and destination rectangles.
-- Probe and reuse the existing cached final materialization without creating another cache or materializing on a miss.
-- Reuse P3's exact physical identity proof for a bounded direct software copy.
-- Preserve source/frame semantics, translation, clipping, copy operation state, JavaSE behavior, and fallback behavior.
-- Add focused SDK/native tests, an artifact-safe internal bridge if needed, minimal IMAGE diagnostics, a warm-path smoke measurement, and a factual implementation report.
-
-## Scope
-
-P6 owns plan-aware `copyRect(Image, ...)`, reuse of the current one-slot materialized fallback, and direct copy after exact physical identity is proven. It does not change scheduler cadence, framebuffer scroll reuse, P3 cache capacity/admission, P3 variant priority, public runtime policy, or public API.
+Let `Graphics.copyRect(Image, ...)` reuse an existing final raster, copy from a deferred draw plan, or use a direct software-raster copy when P3 proves exact physical identity. The observable result is pixel parity with the established copy path while avoidable image materialization and generic geometry work are skipped on eligible warm paths.
 
 ## Current Architecture and Scope
 
-- `Graphics.copyRect(GfxSurface, ...)` resolves an Image before invoking the existing surface copy. Native copy accepts source x/y/width/height and destination x/y.
-- `Graphics.copyImageRect(Image, ...)` already attempts an `ImageDrawPlan`, but its native plan-copy API places the result at the origin. P6 must use a separate native operation with explicit destination coordinates; it must not translate the canvas to simulate placement.
-- `ImageDrawingBridge` has exactly two public static methods: `resolveForDrawing` and `drawPlanForDrawing`. Keep that surface unchanged.
-- `ImagePipeline` owns one JavaSE materialized representation with one pending observation and two independent draw-plan cache entries. P6 must not add another materialized cache.
-- The P3 native geometry path checks `physicalIdentity` before target-color conversion and physical variants. `ImageRuntimePolicy.RasterCorePolicy.physicalIdentity()` is enabled by default; target-color conversion and physical-variant caching remain disabled by default.
-- P2 backing state is authoritative for backing identity, mutation generation, validity, and opacity.
+- `Graphics.copyRect(GfxSurface, ...)` uses native surface copying. The Image-source overload can preserve deferred work by requesting a draw plan and passing explicit source and destination rectangles to native code.
+- `ImagePipeline` owns one materialized fallback slot with one pending admission and two independent draw-plan cache entries. P6 reuses these structures without increasing their capacity or changing admission frequency.
+- P3 checks exact physical identity before target-color conversion and physical variants, then falls back to generic geometry. P6 direct copying runs inside that identity stage and shares its mapping proof.
+- A narrow internal `ImageDrawingFeatureBridge` exposes the cached-final probe without adding a method to the two-method `ImageDrawingBridge`. It is excluded from application-facing SDK artifacts.
 
-## Architecture
+## Copy Resolution
 
-Keep the public API unchanged. Add only private native declarations to `Graphics` and, if a cache probe cannot use the existing two-method `ImageDrawingBridge`, a separate unsupported internal `ImageDrawingFeatureBridge`. The new bridge may expose only the cache probe required by P6, must not expose `ImagePipeline`, and must be absent from `totalcross-api`, `totalcross-sdk`, and distributed app SDK artifacts. Extend artifact and compile-surface tests to prove that boundary.
+For an Image source, preserve argument, frame, transform, and clip semantics and resolve in this order:
 
-Make native copy planning explicit: pass the plan, source rectangle, destination point, and clipping/state needed by the operation. Preserve the current `copyRectNative` path as the fallback. Keep JavaSE on its existing pixel-copy behavior.
+1. Reuse a valid cached final raster accepted for the exact destination scale and source decode generation.
+2. On a cache miss, attempt native plan-aware rectangle copying without materializing the Image.
+3. If the plan path cannot handle the operation, use the existing resolve/materialize path and native surface copy.
 
-Refactor the existing P3 physical mapping proof into an internal `RasterPhysicalPlan`-like result that contains the exact visible source and destination physical rectangles and whether direct copy is safe. P3 and P6 must consume the same conservative proof. Execute raw direct copy only for compatible software/raster backings and proven-safe pixel representations; otherwise continue through existing P3 or Skia rendering.
+A cache miss must not materialize a raster or alter admission. The cached raster is valid only for its exact scale key, current source/pipeline generation, matching decode generation, and a valid backing. Removing an invalid cached raster clears only that slot; it preserves a different pending scale/generation observation. Mutations and pipeline barriers clear both cached and pending admission data. Draw-plan caches remain independent.
 
-## copyRect plan path
+## Physical Identity Copy
 
-For an Image source, preserve null and argument behavior, then check the exact cached final raster for the destination content scale. On a hit, call the existing native surface `copyRect` with that raster. On a miss, obtain the current draw plan and attempt native plan-aware copy with explicit source and destination geometry under the current transform and clip. Return when handled, including an empty visible intersection. If unsupported or unhandled, resolve/materialize through the existing Image path and call the current native copy. Do not materialize before the plan attempt.
+Use P3's shared proof for stable backing and matching generations, valid source/frame bounds, exact integer mapping, axis-aligned positive transforms, equal physical source and destination extents, and enabled `physicalIdentity` policy. Trim source and destination rectangles to the actual rectangular clip before the proof. A fully clipped operation is a handled no-op and does not mutate the destination.
 
-Plan copy must preserve arbitrary source subrectangles, destination coordinates, current translation and clip, partial clipping, current-frame behavior, destination content scale, and copy operation semantics. It must never enlarge the copied region. A fully clipped request is a handled no-op with no destination or backing generation mutation.
+The direct write additionally requires effective alpha 255, no shader-dependent filter or fill, matching source and target color type, alpha type, and color space, readable source pixels, writable software-raster pixels, supported RGBA/BGRA 8888 or RGB 565 representation, and non-overlapping storage. A direct path reports success only when the bool-returning pixel-write operation succeeds. A failed write reports no direct-copy hit and continues through P3 identity drawing, variants, and generic rendering; the result must match that fallback.
 
-## Cached-final reuse
+Smooth operations qualify only when the final physical mapping is 1:1 and pixel-center sampling leaves no resampling. Unit output scale retains the smooth sampling path; the tested scale-2 case can copy directly.
 
-The probe returns only an already existing cached final Image accepted by P3's current validity rules: exact destination-scale identity, matching source decode generation, current source/pipeline state, and a still-valid cached Image. A miss does not materialize or change cache admission state. Keep the existing one-slot/one-pending policy and two-entry draw-plan cache independent.
+## Compatibility
 
-## Physical direct copy
+- Keep public drawing APIs, runtime policy, optimization masks, and toggles unchanged. Do not add another materialized-raster cache.
+- Preserve P3's exact-identity, target-color, physical-variant, generic-rendering order.
+- Preserve JavaSE copy semantics, P5 request-owned lazy JPEG decoding, current-frame selection, content scale, rotation/skew/fractional/format/overlap fallbacks, and RGB 565 copies.
+- Keep P11's `SCHEDULING` diagnostics domain and ordering unchanged. Add only IMAGE-domain counters needed to observe P6; counters do not select a path.
+- Do not change scheduling cadence, framebuffer reuse, dirty-strip painting, display/vsync, or P7 behavior.
+- P4 compact storage remains authoritative. Same-format compact RGB565 can use P6 direct copy; GRAY8 and ARGB4444 retain the P3/Skia fallback. P6 adds no compact conversion or source promotion.
+- Preserve Q/P8 explicit async preparation and adoption semantics; P6 does not trigger preparation automatically.
 
-The shared proof must require enabled `physicalIdentity` policy, stable authoritative source backing and matching relevant generations, exact integer mapping, equal physical extents, positive axis-aligned transforms, valid frame/source bounds, exact visible clip intersection, effective alpha 255, no color/filter/fill semantics requiring shaders, compatible source/destination pixel representation, and a destination with a safe writable software-raster path. Smooth-scale operations remain eligible only when the final physical mapping is exactly 1:1. Empty intersection is handled without mutation. Any uncertainty falls back.
+## Implementation Outline
 
-When P4 compact storage is present after rebase, use only its existing bounded row-read primitive if it safely supports the copy; otherwise fall back without promoting or mutating the compact source. Do not add independent compact conversion logic.
-
-## Compatibility constraints
-
-- No optimization mask, feature bit, new public toggle, or added public `ImageDrawingBridge` method.
-- Do not reorder P3 resolution: exact identity, target-color when applicable, physical variant, generic fallback. P6 direct copy is an execution within the identity stage.
-- No second materialized raster cache and no change to one-slot/one-pending admission.
-- Keep JavaSE semantic fallback and preserve P3 variant behavior.
-- Do not modify scheduler cadence, event-loop timing, display/vsync, framebuffer reuse, or dirty-strip repaint algorithms.
-- Keep new files below approximately 20 KB or 600 lines; do not split existing large files just to meet this limit.
-
-## Plan of Work
-
-1. **Plan-aware copyRect.** Add explicit plan-aware native copy and tests for full/subrect copies, non-zero destination, clipping, frame selection, destination scale, unsupported geometry/color fallback, and JavaSE parity. Acceptance: native plan attempt happens before Image resolution and preserves copy semantics.
-2. **Cached-final reuse.** Add the narrow non-materializing probe and artifact-surface tests. Cover exact hit, scale and decode-generation invalidation, invalid cached Image, and a miss that reaches draw-plan handling without materialization. Acceptance: no additional materialized cache exists.
-3. **Direct physical copy.** Factor the exact P3 mapping proof and use it for clipping and safe software-raster copy. Cover identity hits, smooth-scale physical identity, fallback cases, no-intersection no-mutation, policy disabled, and pixel-hash parity. Acceptance: hits avoid generic geometry and smooth resampling; P3 variant behavior stays unchanged.
-4. **Measurement and integration.** Run focused P2/P3 regressions, artifact checks, diagnostics-off SDK artifact validation, relevant IMAGE diagnostics-on tests, the warm-path smoke measurement, and the allowed macOS ARM64 native build/smokes. Run the optional 663-image workload only if the established corpus is present and exactly 663 images. Prepare the report, final diff checks, and one PR against `master`; do not merge.
-
-## Progress
-
-- [x] (2026-10-01) Added plan-aware native `copyRect(Image, ...)`; focused Java parity and macOS native smoke pass.
-- [x] (2026-10-01) Added the non-materializing cached-final probe, exact scale/decode-generation/backing-validity checks, and artifact exclusions/tests; focused SDK, distribution, and native smoke checks pass.
-- [ ] Milestone 3: shared physical proof, direct copy, and native correctness tests.
-- [ ] Milestone 4: measurement, integration validation, report, and PR.
-
-## Decision Log
-
-- Decision: Keep cache probing outside the two-method `ImageDrawingBridge` surface if required.
-  Rationale: That bridge's two-method public internal surface is an explicit compatibility constraint; a cache bridge must stay narrow and excluded from application artifacts.
-  Date: 2026-10-01.
-- Decision: Share P3's exact physical mapping proof rather than define P6's own identity approximation.
-  Rationale: A single conservative proof keeps P3 and P6 pixel semantics aligned.
-  Date: 2026-10-01.
-- Decision: An empty visible intersection is handled as a no-op.
-  Rationale: It preserves clipping semantics and prevents spurious destination mutation.
-  Date: 2026-10-01.
-- Decision: Keep the native copy-plan method name within the VM's 32-character symbol limit.
-  Rationale: Longer generated symbols are truncated during native method lookup.
-  Date: 2026-10-01.
+1. Make the Image-source `copyRect` overload probe the current cached final raster and attempt plan-aware native copy before the established materialization fallback.
+2. Reuse the exact existing one-slot materialized cache, preserving pending admission when only an invalid cached backing is removed.
+3. Share P3's physical-identity mapping proof with a bounded direct software-raster copy, including clipping and fallback when pixel writing fails.
+4. Verify semantic parity, cache admission, native fallbacks, diagnostics, artifact boundaries, warm-path behavior, and the enabled platform build matrix.
 
 ## Validation and Acceptance
 
-Use the smallest validation that proves each slice. Run focused SDK tests for each milestone; run native tests/builds where the C++ path changes. At integration, run `artifactContentTest` and `dist -x test` with diagnostics disabled, relevant IMAGE diagnostics tests with `-PruntimeDiagnostics=true`, and only macOS ARM64 Release `tcvm` and `Launcher` builds/smokes. Do not locally build Android, Windows, Linux, WinCE, or iOS. Run the warm microbenchmark with independent Images and full-visible/partial-clip cases; timing has no pass threshold. The 663-image workload is optional and is not a merge blocker.
+- Focused tests cover cached-final resolution order, exact scale/decode-generation validity, pending-B admission after invalid cached-A removal, and the two independent draw-plan cache entries.
+- `Graphics.copyRect` tests cover source/destination rectangles, translation, partial and empty clipping, current frames, content scale, JavaSE behavior, and unchanged fallback semantics.
+- Native tests cover direct hits, failed pixel writes with P3 fallback parity and no direct-hit status, RGB 565, smooth sampling boundaries, alpha/filter/policy guards, fractional placement, rotation, skew, format mismatch, overlap, clipping, and no-op mutation behavior.
+- Run focused and full SDK tests with diagnostics disabled and enabled, `artifactContentTest`, `compileSmokeTestJava`, and `dist -x test`. Build and run the macOS ARM64 native surface, P2 Raster Core, P3 geometry/materialization, P4 Compact and STANDARD Storage, P5 lazy JPEG, P6 fast/warm path, and Q/P8 async preparation smokes.
+- The PR Merge Flow must pass every enabled SDK, native, Android, and iOS job. A workflow-disabled job may be skipped.
+- Run the optional 663-image workload only when its established corpus is available and contains exactly 663 images; otherwise report it as unavailable.
 
-Acceptance includes P2 Raster Core and P3 Raster Variants regressions; Image deferred-transform and draw-plan tests; `Graphics.copyRect` semantics; converter/native ABI; artifact boundaries; diagnostics off/on; direct pixel-hash parity; and `git diff --check`. Record any deferred expensive validation and reason in the state file.
+## Delivered Result
 
-## Risks and Open Questions
-
-- The existing Skia P3 physical proof may depend on geometry-specific state; confirm its inputs before factoring it so P3 behavior does not widen.
-- The native surface abstraction may not expose a safe writable software raster for every target; unsupported destinations must fall back.
-- Translation and clipping must be mapped to exact physical source/destination rectangles without fractional rounding or overdraw.
-- Build and test targets for macOS ARM64 depend on the available Xcode/native dependency environment.
-- The optional 663-image corpus may not be available.
-
-## Working Set and Resume Protocol
-
-- `.agent/state/image-scroll-raster-fast-path.md` records the active milestone, paths, next safe action, focused validation, deferred checks, and resume command. Read it first when resuming.
-- `.agent/evidence/image-scroll-raster-fast-path.md` indexes compact validation and benchmark results. Read only entries relevant to the active milestone.
-- `.agent/reports/image-scroll-raster-fast-path.md` is the final factual implementation handoff; update at milestone completion and completion.
-- `.agent/archive/image-scroll-raster-fast-path-history.md` is reserved for completed milestone detail that would otherwise make this active plan too long; it is not read by default.
-
-## Idempotence and Recovery
-
-Keep changes limited to the paths listed in the active state file. Preserve unrelated local files and generated artifacts. Retry focused validation after fixing its cause; use task-specific log files and do not remove dependency caches or build outputs unless a specific stale artifact is proven to block the relevant command. A failed plan attempt must leave source/cache semantics unchanged.
-
-## Outcomes & Retrospective
-
-Milestone 1 routes deferred Image-source `copyRect` calls through a native geometry helper with explicit source and destination coordinates. Unsupported plans fall back to the existing materialized surface copy. The smoke verifies subrect, nonzero destination, translation, partial clipping, and empty-intersection generation stability.
-
-Milestone 2 probes the existing one-slot materialized-variant cache before building a draw plan. Cache hits require the exact effective scale and current encoded-source decode generation, and invalid cached backing is evicted without disturbing the independent draw-plan cache. The narrow `ImageDrawingFeatureBridge` stays out of application SDK artifacts; the pre-existing two-method `ImageDrawingBridge` surface is unchanged. The native smoke confirms cache misses continue to plan-aware copy while deferred sources remain unmaterialized. See the evidence index.
+`copyRect(Image, ...)` now follows the cache → plan-aware native copy → existing materialization chain. Direct copy uses P3's proof, writes only the visible clipped rectangle, and falls back when the write operation reports failure. Cache invalidation preserves an unrelated pending admission. Validation on master containing Q/P8 and S/P4 confirms compact RGB565 direct-copy parity and source identity/generation/opacity preservation; GRAY8 and ARGB4444 preserve their compact backing through fallback; target-color materialization/reuse stays in P3 order; and cached-final reuse preserves the compact authoritative source. The public API, P3 variant ordering, P5 lazy JPEG path, Q/P8 explicit preparation, P11 scheduling diagnostics, and framebuffer behavior remain unchanged.
