@@ -19,6 +19,9 @@ public final class ImageRasterFeatureBridge {
   static int identityAttemptsForTest;
   static int genericGeometryDrawsForTest;
   static int smoothResampleDrawsForTest;
+  static int targetColorVariantMaterializationsForTest;
+  static int targetColorVariantHitsForTest;
+  static int targetColorVariantFallbacksForTest;
   private static boolean drawAccountingEnabledForTest;
 
   private ImageRasterFeatureBridge() {
@@ -79,6 +82,15 @@ public final class ImageRasterFeatureBridge {
     if ((status & ImageRasterDiagnostics.DRAW_SMOOTH_RESAMPLE) != 0) {
       smoothResampleDrawsForTest++;
     }
+    if ((status & ImageRasterDiagnostics.DRAW_TARGET_COLOR_MATERIALIZED) != 0) {
+      targetColorVariantMaterializationsForTest++;
+    }
+    if ((status & ImageRasterDiagnostics.DRAW_TARGET_COLOR_HIT) != 0) {
+      targetColorVariantHitsForTest++;
+    }
+    if ((status & ImageRasterDiagnostics.DRAW_TARGET_COLOR_FALLBACK) != 0) {
+      targetColorVariantFallbacksForTest++;
+    }
   }
 
   /** @hidden */
@@ -126,5 +138,8 @@ public final class ImageRasterFeatureBridge {
     identityAttemptsForTest = 0;
     genericGeometryDrawsForTest = 0;
     smoothResampleDrawsForTest = 0;
+    targetColorVariantMaterializationsForTest = 0;
+    targetColorVariantHitsForTest = 0;
+    targetColorVariantFallbacksForTest = 0;
   }
 }

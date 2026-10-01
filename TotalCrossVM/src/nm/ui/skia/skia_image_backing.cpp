@@ -603,6 +603,15 @@ int32 skia_image_backing_color_type_for_test(int64_t handle) {
     return image ? static_cast<int32>(image->colorType()) : static_cast<int32>(kUnknown_SkColorType);
 }
 
+int skia_image_backing_skew_surface_for_test(int32 surfaceId, float skewX, float skewY) {
+    SkCanvas* target = canvasForSurfaceAlias(surfaceId);
+    if (!target) {
+        return 0;
+    }
+    target->skew(skewX, skewY);
+    return 1;
+}
+
 void skia_image_backing_fail_next_variant_materialization_for_test(void) {
     failNextVariantMaterializationForTest = true;
 }

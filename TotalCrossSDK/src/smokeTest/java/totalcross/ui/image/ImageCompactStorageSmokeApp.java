@@ -43,6 +43,11 @@ public final class ImageCompactStorageSmokeApp extends MainWindow {
     boolean p3PhysicalVariantReuse = false;
     boolean p3TargetColorVariant = false;
     boolean p3IncompatibleFallback = false;
+    boolean p6Rgb565DirectCopy = false;
+    boolean p6Gray8Fallback = false;
+    boolean p6Argb4444Fallback = false;
+    boolean p6TargetColorCopyRect = false;
+    boolean p6CachedFinalReuse = false;
     boolean compactMetrics = false;
     int rgb565ModelError = -1;
     int jpegSourceError = -1;
@@ -276,6 +281,18 @@ public final class ImageCompactStorageSmokeApp extends MainWindow {
       require(p3TargetColorVariant, "target-color variant replaced or promoted the compact source");
       p3IncompatibleFallback = ImageCompactStorageP3SmokeSupport.incompatiblePhysicalFallbackPreservesCompactSource();
       require(p3IncompatibleFallback, "incompatible physical path did not fall back with compact pixels intact");
+
+      stage = "p6-compact-source-integration";
+      p6Rgb565DirectCopy = ImageCompactStorageP3SmokeSupport.p6Rgb565DirectCopyPreservesCompactSource();
+      require(p6Rgb565DirectCopy, "P6 did not directly copy a compatible compact RGB565 source");
+      p6Gray8Fallback = ImageCompactStorageP3SmokeSupport.p6Gray8FallbackPreservesCompactSource();
+      require(p6Gray8Fallback, "P6 did not preserve the GRAY8 fallback source");
+      p6Argb4444Fallback = ImageCompactStorageP3SmokeSupport.p6Argb4444FallbackPreservesCompactSource();
+      require(p6Argb4444Fallback, "P6 did not preserve the ARGB4444 fallback source");
+      p6TargetColorCopyRect = ImageCompactStorageP3SmokeSupport.p6TargetColorCopyRectPreservesCompactSource();
+      require(p6TargetColorCopyRect, "P6 copyRect bypassed P3 target-color variant reuse");
+      p6CachedFinalReuse = ImageCompactStorageP3SmokeSupport.p6CachedFinalReusePreservesCompactSource();
+      require(p6CachedFinalReuse, "P6 did not reuse the compact source cached final raster");
     } catch (Throwable failure) {
       error = "stage=" + stage + "," + failure.getClass().getName() + ":"
           + String.valueOf(failure.getMessage()).replace(' ', '_');
@@ -285,7 +302,9 @@ public final class ImageCompactStorageSmokeApp extends MainWindow {
         && observersAndEncoding && drawParity
         && alphaQuality && promotionRetry && p3Invalidation && directMutationPromotion
         && graphicsMutationPromotion && compactMetrics && compactDecodeFailureRetry
-        && p3PhysicalVariantReuse && p3TargetColorVariant && p3IncompatibleFallback;
+        && p3PhysicalVariantReuse && p3TargetColorVariant && p3IncompatibleFallback
+        && p6Rgb565DirectCopy && p6Gray8Fallback && p6Argb4444Fallback
+        && p6TargetColorCopyRect && p6CachedFinalReuse;
     System.out.println("fixture=ImageCompactStorageSmokeApp,policy=" + policy
         + ",standardBaselineRgba=" + standardBaselineRgba
         + ",formatsAndAccounting=" + formatsAndAccounting
@@ -297,6 +316,11 @@ public final class ImageCompactStorageSmokeApp extends MainWindow {
         + ",p3PhysicalVariantReuse=" + p3PhysicalVariantReuse
         + ",p3TargetColorVariant=" + p3TargetColorVariant
         + ",p3IncompatibleFallback=" + p3IncompatibleFallback
+        + ",p6Rgb565DirectCopy=" + p6Rgb565DirectCopy
+        + ",p6Gray8Fallback=" + p6Gray8Fallback
+        + ",p6Argb4444Fallback=" + p6Argb4444Fallback
+        + ",p6TargetColorCopyRect=" + p6TargetColorCopyRect
+        + ",p6CachedFinalReuse=" + p6CachedFinalReuse
         + ",compactMetrics=" + compactMetrics + ",compactDecodeFailureRetry=" + compactDecodeFailureRetry
         + ",opaqueRgbBytes=" + (COLOR_ROW_BYTES * HEIGHT)
         + ",rgb565ModelError=" + rgb565ModelError + ",pngSourceRmse=" + pngSourceRmse

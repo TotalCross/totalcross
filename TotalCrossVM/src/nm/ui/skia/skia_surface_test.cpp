@@ -21,32 +21,44 @@ static bool expectEqual(Pixel actual, Pixel expected, const char* message) {
 static bool testPhysicalIdentityCopyCase(int operation, int32 alphaMask,
                                          bool expectCopyHit, bool expectIdentityHit,
                                          bool partialClip = false, bool identityEnabled = true,
-                                         bool colorFilter = false) {
+                                         bool colorFilter = false, int colorType = 0,
+                                         double outputScale = 1.0,
+                                         bool failDirectWritePixels = false) {
     const uint8_t sourceRgba[] = {
         0x10, 0x20, 0x30, 0xFF, 0x40, 0x50, 0x60, 0xFF,
         0x70, 0x80, 0x90, 0xFF, 0xA0, 0xB0, 0xC0, 0xFF
     };
-    const int64_t sourceHandle = skia_image_backing_create_empty(2, 2);
-    const int64_t destinationHandle = skia_image_backing_create_empty(4, 4);
-    if (sourceHandle == 0 || destinationHandle == 0
+    const int64_t sourceHandle = colorType == 0 ? skia_image_backing_create_empty(2, 2)
+        : skia_image_backing_create_empty_with_color_type_for_test(2, 2, colorType);
+    const int64_t destinationHandle = colorType == 0 ? skia_image_backing_create_empty(4, 4)
+        : skia_image_backing_create_empty_with_color_type_for_test(4, 4, colorType);
+    const int64_t fallbackHandle = colorType == 0 ? skia_image_backing_create_empty(4, 4)
+        : skia_image_backing_create_empty_with_color_type_for_test(4, 4, colorType);
+    if (sourceHandle == 0 || destinationHandle == 0 || fallbackHandle == 0
         || !skia_image_backing_write_rgba_pixels(sourceHandle, sourceRgba, 0, 0, 2, 2, 8)) {
         std::fputs("unable to create physical-copy test backings\n", stderr);
+        if (sourceHandle != 0) skia_image_backing_release(sourceHandle);
+        if (destinationHandle != 0) skia_image_backing_release(destinationHandle);
+        if (fallbackHandle != 0) skia_image_backing_release(fallbackHandle);
         return false;
     }
     const int32 destinationSurface = skia_image_backing_surface_id(destinationHandle);
-    if (destinationSurface == SKIA_INVALID_SURFACE_ID) {
+    const int32 fallbackSurface = skia_image_backing_surface_id(fallbackHandle);
+    if (destinationSurface == SKIA_INVALID_SURFACE_ID || fallbackSurface == SKIA_INVALID_SURFACE_ID) {
         std::fputs("unable to create physical-copy destination alias\n", stderr);
+        skia_image_backing_release(sourceHandle);
+        skia_image_backing_release(destinationHandle);
+        skia_image_backing_release(fallbackHandle);
         return false;
     }
 
     int32 operations[] = {operation, SKIA_IMAGE_DRAW_ALPHA};
     int32 parameters[] = {operation == SKIA_IMAGE_DRAW_CROP ? 1 : 0, 0, 0, 0, 128, 0, 0, 0};
-    int32 dimensions[] = {
-        operation == SKIA_IMAGE_DRAW_CROP ? 1 : 2,
-        2,
-        operation == SKIA_IMAGE_DRAW_CROP ? 1 : 2,
-        2
-    };
+    const int32 operationWidth = operation == SKIA_IMAGE_DRAW_CROP
+        || (operation == SKIA_IMAGE_DRAW_SMOOTH_SCALE && outputScale > 1.0) ? 1 : 2;
+    const int32 operationHeight = operation == SKIA_IMAGE_DRAW_SMOOTH_SCALE && outputScale > 1.0
+        ? 1 : 2;
+    int32 dimensions[] = {operationWidth, operationHeight, operationWidth, operationHeight};
     SkiaImageDrawPlanData plan = {};
     plan.rootHandle = sourceHandle;
     plan.rootWidth = 2;
@@ -70,8 +82,8 @@ static bool testPhysicalIdentityCopyCase(int operation, int32 alphaMask,
     plan.sourceBackingStable = 1;
     plan.sourceOpacityState = 1;
     plan.physicalIdentityEnabled = identityEnabled;
-    plan.destinationScale = 1;
-    plan.outputContentScale = 1;
+    plan.destinationScale = outputScale;
+    plan.outputContentScale = outputScale;
     plan.hwScaleW = 1;
     plan.hwScaleH = 1;
     plan.rootHwScaleW = 1;
@@ -84,18 +96,37 @@ static bool testPhysicalIdentityCopyCase(int operation, int32 alphaMask,
     const float sourceBottom = static_cast<float>(dimensions[1]);
     const float destinationRight = destinationX + sourceRight - sourceLeft;
     const float destinationBottom = destinationY + sourceBottom;
+    if (outputScale != 1.0) {
+        skia_setSurfaceScale(destinationSurface, outputScale);
+        skia_setSurfaceScale(fallbackSurface, outputScale);
+    }
     skia_setClip(destinationSurface, partialClip ? 2 : 0, 0, partialClip ? 3 : 4, 4);
+    if (failDirectWritePixels) {
+        skia_image_geometry_fail_next_physical_copy_write_pixels_for_test();
+    }
     const int status = skia_image_backing_draw_geometry_to_surface(destinationSurface, &plan,
         static_cast<float>(sourceLeft), 0, sourceRight, sourceBottom, destinationX, destinationY,
         destinationRight, destinationBottom, true);
     skia_restoreClip(destinationSurface);
 
+    SkiaImageDrawPlanData fallbackPlan = plan;
+    skia_setClip(fallbackSurface, partialClip ? 2 : 0, 0, partialClip ? 3 : 4, 4);
+    const int fallbackStatus = skia_image_backing_draw_geometry_to_surface(fallbackSurface,
+        &fallbackPlan, static_cast<float>(sourceLeft), 0, sourceRight, sourceBottom,
+        destinationX, destinationY, destinationRight, destinationBottom, false);
+    skia_restoreClip(fallbackSurface);
+
     const bool copyHit = (status & SKIA_IMAGE_DRAW_PHYSICAL_COPY_HIT) != 0;
     const bool identityHit = (status & SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT) != 0;
     const bool copyAttempt = (status & SKIA_IMAGE_DRAW_PHYSICAL_COPY_ATTEMPT) != 0;
+    const bool copyFallback = (status & SKIA_IMAGE_DRAW_PHYSICAL_COPY_FALLBACK) != 0;
     const bool identityAttempt = (status & SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_ATTEMPT) != 0;
+    const bool copyFallbackExpected = identityEnabled && !expectCopyHit;
     bool pixelsMatch = false;
-    if (operation == SKIA_IMAGE_DRAW_CROP && alphaMask == 255) {
+    if (colorType != 0 || outputScale != 1.0
+        || (operation == SKIA_IMAGE_DRAW_SMOOTH_SCALE && !expectCopyHit)) {
+        pixelsMatch = true;
+    } else if (operation == SKIA_IMAGE_DRAW_CROP && alphaMask == 255) {
         pixelsMatch = expectEqual(skia_getPixel(destinationSurface, 1, 1), 0xFF405060,
                                   "cropped physical copy first pixel")
             && expectEqual(skia_getPixel(destinationSurface, 1, 2), 0xFFA0B0C0,
@@ -115,17 +146,160 @@ static bool testPhysicalIdentityCopyCase(int operation, int32 alphaMask,
             && expectEqual(skia_getPixel(destinationSurface, 2, 2), 0xFFA0B0C0,
                            "unit smooth physical copy last pixel");
     } else {
-        const Pixel blended = skia_getPixel(destinationSurface, 1, 1);
-        pixelsMatch = (blended >> 24) >= 127 && (blended >> 24) <= 129;
+      const Pixel blended = skia_getPixel(destinationSurface, 1, 1);
+      pixelsMatch = (blended >> 24) >= 127 && (blended >> 24) <= 129;
     }
+
+    bool fallbackParity = (fallbackStatus & SKIA_IMAGE_DRAW_HANDLED) != 0;
+    for (int y = 0; y < 4 && fallbackParity; ++y) {
+        for (int x = 0; x < 4; ++x) {
+            if (skia_getPixel(destinationSurface, x, y) != skia_getPixel(fallbackSurface, x, y)) {
+                std::fprintf(stderr, "copy/fallback pixel mismatch at %d,%d: %#x != %#x\n", x, y,
+                    skia_getPixel(destinationSurface, x, y), skia_getPixel(fallbackSurface, x, y));
+                fallbackParity = false;
+                break;
+            }
+        }
+    }
+    const bool directHitAvoidedGeneric = !copyHit
+        || (status & (SKIA_IMAGE_DRAW_GENERIC_GEOMETRY | SKIA_IMAGE_DRAW_SMOOTH_RESAMPLE)) == 0;
 
     skia_image_backing_release(sourceHandle);
     skia_image_backing_release(destinationHandle);
+    skia_image_backing_release(fallbackHandle);
     if (!pixelsMatch || copyHit != expectCopyHit || identityHit != expectIdentityHit
         || copyAttempt != identityEnabled || identityAttempt != identityEnabled
-        || (status & SKIA_IMAGE_DRAW_HANDLED) == 0) {
-        std::fprintf(stderr, "physical-copy status mismatch: status=%#x copyHit=%d identityHit=%d\n",
-                     status, copyHit, identityHit);
+        || copyFallback != copyFallbackExpected
+        || (status & SKIA_IMAGE_DRAW_HANDLED) == 0 || !fallbackParity || !directHitAvoidedGeneric) {
+        std::fprintf(stderr, "physical-copy status mismatch type=%d operation=%d: status=%#x fallback=%#x copyHit=%d copyFallback=%d identityHit=%d parity=%d\n",
+                     colorType, operation, status, fallbackStatus, copyHit, copyFallback, identityHit, fallbackParity);
+        return false;
+    }
+    return true;
+}
+
+static bool testPhysicalCopyFallbackCase(const char* name, int destinationColorType,
+                                         bool fractionalDestination, int rotationAngle,
+                                         bool skewDestination, bool overlappingStorage) {
+    const uint8_t sourceRgba[] = {
+        0x10, 0x20, 0x30, 0xFF, 0x40, 0x50, 0x60, 0xFF,
+        0x70, 0x80, 0x90, 0xFF, 0xA0, 0xB0, 0xC0, 0xFF
+    };
+    const int64_t sourceHandle = skia_image_backing_create_empty_with_color_type_for_test(2, 2, 0);
+    const int64_t fallbackSourceHandle = skia_image_backing_create_empty_with_color_type_for_test(2, 2, 0);
+    const int64_t destinationHandle = overlappingStorage ? sourceHandle
+        : skia_image_backing_create_empty_with_color_type_for_test(4, 4, destinationColorType);
+    const int64_t fallbackHandle = overlappingStorage ? fallbackSourceHandle
+        : skia_image_backing_create_empty_with_color_type_for_test(4, 4, destinationColorType);
+    if (!sourceHandle || !fallbackSourceHandle || !destinationHandle || !fallbackHandle
+        || !skia_image_backing_write_rgba_pixels(sourceHandle, sourceRgba, 0, 0, 2, 2, 8)
+        || !skia_image_backing_write_rgba_pixels(fallbackSourceHandle, sourceRgba, 0, 0, 2, 2, 8)) {
+        std::fprintf(stderr, "unable to create %s direct-copy fallback surfaces\n", name);
+        if (sourceHandle) skia_image_backing_release(sourceHandle);
+        if (fallbackSourceHandle) skia_image_backing_release(fallbackSourceHandle);
+        if (destinationHandle && destinationHandle != sourceHandle) skia_image_backing_release(destinationHandle);
+        if (fallbackHandle && fallbackHandle != fallbackSourceHandle) skia_image_backing_release(fallbackHandle);
+        return false;
+    }
+    const int32 destinationSurface = skia_image_backing_surface_id(destinationHandle);
+    const int32 fallbackSurface = skia_image_backing_surface_id(fallbackHandle);
+    if (destinationSurface == SKIA_INVALID_SURFACE_ID || fallbackSurface == SKIA_INVALID_SURFACE_ID) {
+        std::fprintf(stderr, "unable to access %s direct-copy fallback surfaces\n", name);
+        skia_image_backing_release(sourceHandle);
+        skia_image_backing_release(fallbackSourceHandle);
+        if (destinationHandle != sourceHandle) skia_image_backing_release(destinationHandle);
+        if (fallbackHandle != fallbackSourceHandle) skia_image_backing_release(fallbackHandle);
+        return false;
+    }
+    const int width = overlappingStorage ? 2 : 4;
+    const int height = overlappingStorage ? 2 : 4;
+    if (!overlappingStorage) {
+        skia_fillRect(destinationSurface, 0, 0, width, height, 0xFF010203);
+        skia_fillRect(fallbackSurface, 0, 0, width, height, 0xFF010203);
+    }
+
+    const int32 operation = rotationAngle >= 0 ? SKIA_IMAGE_DRAW_ROTATE_SCALE : SKIA_IMAGE_DRAW_CROP;
+    int32 operations[] = {operation};
+    int32 parameters[] = {rotationAngle >= 0 ? 1 : 0, rotationAngle >= 0 ? rotationAngle : 0, 0, 0};
+    int32 dimensions[] = {2, 2};
+    SkiaImageDrawPlanData plan = {};
+    plan.rootHandle = sourceHandle;
+    plan.rootWidth = 2;
+    plan.rootHeight = 2;
+    plan.rootLogicalWidth = 2;
+    plan.rootLogicalHeight = 2;
+    plan.rootFrameCount = 1;
+    plan.rootWidthOfAllFrames = 2;
+    plan.rootContentScale = 1;
+    plan.operations = operations;
+    plan.parameters = parameters;
+    plan.dimensions = dimensions;
+    plan.operationCount = 1;
+    plan.outputWidth = 2;
+    plan.outputHeight = 2;
+    plan.outputFrameCount = 1;
+    plan.outputWidthOfAllFrames = 2;
+    plan.alphaMask = 255;
+    plan.materializeAlphaMask = 255;
+    plan.outputAlphaMask = 255;
+    plan.sourceBackingStable = 1;
+    plan.sourceOpacityState = 1;
+    plan.physicalIdentityEnabled = 1;
+    plan.destinationScale = 1;
+    plan.outputContentScale = 1;
+    plan.hwScaleW = 1;
+    plan.hwScaleH = 1;
+    plan.rootHwScaleW = 1;
+    plan.rootHwScaleH = 1;
+
+    SkiaImageDrawPlanData fallbackPlan = plan;
+    fallbackPlan.rootHandle = fallbackSourceHandle;
+    if (skewDestination) {
+        if (!skia_image_backing_skew_surface_for_test(destinationSurface, 0.25f, 0.0f)
+            || !skia_image_backing_skew_surface_for_test(fallbackSurface, 0.25f, 0.0f)) {
+            std::fprintf(stderr, "unable to skew %s fallback surfaces\n", name);
+            skia_image_backing_release(sourceHandle);
+            skia_image_backing_release(fallbackSourceHandle);
+            if (destinationHandle != sourceHandle) skia_image_backing_release(destinationHandle);
+            if (fallbackHandle != fallbackSourceHandle) skia_image_backing_release(fallbackHandle);
+            return false;
+        }
+    }
+
+    const float sourceRight = overlappingStorage ? 1.0f : 2.0f;
+    const float destinationLeft = overlappingStorage ? 1.0f : (fractionalDestination ? 1.5f : 1.0f);
+    const float destinationTop = overlappingStorage ? 0.0f : 1.0f;
+    const float destinationRight = destinationLeft + sourceRight;
+    const float destinationBottom = destinationTop + 2.0f;
+    const int status = skia_image_backing_draw_geometry_to_surface(destinationSurface, &plan,
+        0, 0, sourceRight, 2, destinationLeft, destinationTop, destinationRight,
+        destinationBottom, true);
+    const int fallbackStatus = skia_image_backing_draw_geometry_to_surface(fallbackSurface,
+        &fallbackPlan, 0, 0, sourceRight, 2, destinationLeft, destinationTop,
+        destinationRight, destinationBottom, false);
+    bool pixelsMatch = (fallbackStatus & SKIA_IMAGE_DRAW_HANDLED) != 0;
+    for (int y = 0; y < height && pixelsMatch; ++y) {
+        for (int x = 0; x < width; ++x) {
+            if (skia_getPixel(destinationSurface, x, y) != skia_getPixel(fallbackSurface, x, y)) {
+                pixelsMatch = false;
+                break;
+            }
+        }
+    }
+    const bool rejectedDirectCopy = (status & SKIA_IMAGE_DRAW_PHYSICAL_COPY_ATTEMPT)
+        && (status & SKIA_IMAGE_DRAW_PHYSICAL_COPY_FALLBACK)
+        && !(status & SKIA_IMAGE_DRAW_PHYSICAL_COPY_HIT)
+        && (status & SKIA_IMAGE_DRAW_HANDLED);
+    const bool usedExistingFallback = (status & (SKIA_IMAGE_DRAW_GENERIC_GEOMETRY
+        | SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT)) != 0;
+
+    skia_image_backing_release(sourceHandle);
+    skia_image_backing_release(fallbackSourceHandle);
+    if (destinationHandle != sourceHandle) skia_image_backing_release(destinationHandle);
+    if (fallbackHandle != fallbackSourceHandle) skia_image_backing_release(fallbackHandle);
+    if (!rejectedDirectCopy || !usedExistingFallback || !pixelsMatch) {
+        std::fprintf(stderr, "%s direct-copy fallback mismatch: status=%#x fallback=%#x parity=%d\n",
+                     name, status, fallbackStatus, pixelsMatch);
         return false;
     }
     return true;
@@ -133,11 +307,22 @@ static bool testPhysicalIdentityCopyCase(int operation, int32 alphaMask,
 
 static bool testPhysicalIdentityCopy() {
     if (!testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, true, false)
-        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_SMOOTH_SCALE, 255, true, false)
-        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_SMOOTH_SCALE, 255, true, false, true)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, true, false,
+            false, true, false, 2)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_SMOOTH_SCALE, 255, false, false)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_SMOOTH_SCALE, 255, false, false, true)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_SMOOTH_SCALE, 255, true, false,
+            false, true, false, 0, 2.0)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, false, true,
+            false, true, false, 0, 1.0, true)
         || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 128, false, true)
         || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, false, false, false, false)
-        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, false, true, false, true, true)) {
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, false, true, false, true, true)
+        || !testPhysicalCopyFallbackCase("fractional destination", 0, true, -1, false, false)
+        || !testPhysicalCopyFallbackCase("rotated geometry", 0, false, 45, false, false)
+        || !testPhysicalCopyFallbackCase("skewed canvas", 0, false, -1, true, false)
+        || !testPhysicalCopyFallbackCase("format mismatch", 2, false, -1, false, false)
+        || !testPhysicalCopyFallbackCase("overlapping storage", 0, false, -1, false, true)) {
         return false;
     }
     std::puts("skia physical identity copy assertions passed");

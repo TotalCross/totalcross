@@ -23,6 +23,8 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
     boolean emptyIntersectionNoMutation = false;
     boolean planCopyHandled = false;
     boolean physicalIdentityCopy = false;
+    boolean smoothScalePhysicalIdentityCopy = false;
+    boolean cachedFinalRasterCopy = false;
     boolean cacheProbeMissContinuesToPlanCopy = false;
     boolean deferredSourcesRemainDeferred = false;
     String error = "";
@@ -75,13 +77,18 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
       physicalIdentityCopy = physicalIdentityCopy();
       require(physicalIdentityCopy, "direct physical copy or its mutation record failed");
 
+      smoothScalePhysicalIdentityCopy = smoothScalePhysicalIdentityCopy();
+      require(smoothScalePhysicalIdentityCopy, "exact smooth-scale physical copy failed");
+
+      cachedFinalRasterCopy = cachedFinalRasterCopy(png);
+      require(cachedFinalRasterCopy, "cached final raster copy was not reused");
+
       planCopyHandled = ImageRasterFeatureBridge.copyRectPlanAttemptsForTest > 0
           && ImageRasterFeatureBridge.copyRectPlanHandledForTest > 0;
       require(planCopyHandled, "no plan-aware copy was handled");
       cacheProbeMissContinuesToPlanCopy = ImageRasterFeatureBridge.cachedFinalRasterProbesForTest > 0
-          && ImageRasterFeatureBridge.cachedFinalRasterMissesForTest
-              == ImageRasterFeatureBridge.cachedFinalRasterProbesForTest
-          && ImageRasterFeatureBridge.cachedFinalRasterHitsForTest == 0
+          && ImageRasterFeatureBridge.cachedFinalRasterMissesForTest > 0
+          && ImageRasterFeatureBridge.cachedFinalRasterHitsForTest == 1
           && ImageRasterFeatureBridge.copyRectPlanAttemptsForTest > 0
           && ImageRasterFeatureBridge.copyRectPlanAttemptsForTest
               <= ImageRasterFeatureBridge.cachedFinalRasterMissesForTest
@@ -92,13 +99,16 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
     }
 
     boolean overallPass = sourceSubrectAndDestination && translatedPartialClip
-        && emptyIntersectionNoMutation && physicalIdentityCopy && planCopyHandled
+        && emptyIntersectionNoMutation && physicalIdentityCopy && smoothScalePhysicalIdentityCopy
+        && cachedFinalRasterCopy && planCopyHandled
         && cacheProbeMissContinuesToPlanCopy
         && deferredSourcesRemainDeferred;
     System.out.println("fixture=ImageScrollRasterFastPathSmokeApp,sourceSubrectAndDestination="
         + sourceSubrectAndDestination + ",translatedPartialClip=" + translatedPartialClip
         + ",emptyIntersectionNoMutation=" + emptyIntersectionNoMutation + ",planCopyHandled="
         + planCopyHandled + ",physicalIdentityCopy=" + physicalIdentityCopy
+        + ",smoothScalePhysicalIdentityCopy=" + smoothScalePhysicalIdentityCopy
+        + ",cachedFinalRasterCopy=" + cachedFinalRasterCopy
         + ",copyPlanAttempts=" + ImageRasterFeatureBridge.copyRectPlanAttemptsForTest
         + ",cachedFinalRasterProbes=" + ImageRasterFeatureBridge.cachedFinalRasterProbesForTest
         + ",cachedFinalRasterHits=" + ImageRasterFeatureBridge.cachedFinalRasterHitsForTest
@@ -154,6 +164,55 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
         && (!diagnosticsSupported || imageDiagnosticDeltaForSmoke == 4)
         && deferred.backing == null && deferred.pipelineForSmoke() != null
         && actualDestination.backing.mutationGeneration() > generationBefore;
+  }
+
+  private static boolean cachedFinalRasterCopy(byte[] png) throws Exception {
+    Image source = deferredCrop(png);
+    source.resolveForDrawing(1);
+    Image cached = source.resolveForDrawing(1);
+    int cachedHitsBefore = ImageRasterFeatureBridge.cachedFinalRasterHitsForTest;
+    int planAttemptsBefore = ImageRasterFeatureBridge.copyRectPlanAttemptsForTest;
+
+    Image expectedDestination = filled(28, 28);
+    expectedDestination.getGraphics().copyRect(cached, 0, 0, 20, 20, 3, 4);
+    Image actualDestination = filled(28, 28);
+    actualDestination.getGraphics().copyRect(source, 0, 0, 20, 20, 3, 4);
+
+    return samePixels(expectedDestination, actualDestination)
+        && ImageRasterFeatureBridge.cachedFinalRasterHitsForTest == cachedHitsBefore + 1
+        && ImageRasterFeatureBridge.copyRectPlanAttemptsForTest == planAttemptsBefore
+        && source.backing == null && source.pipelineForSmoke() != null;
+  }
+
+  private static boolean smoothScalePhysicalIdentityCopy() throws Exception {
+    int[] pixels = {0xFF102030, 0xFF405060, 0xFF708090, 0xFFA0B0C0};
+    Image expectedBase = new Image(2, 2);
+    if (expectedBase.getGraphics().setRGB(pixels, 0, 0, 0, 2, 2) != pixels.length) {
+      return false;
+    }
+    Image expectedSource = expectedBase.getSmoothScaledInstance(1, 1);
+    Image materialized = expectedSource.resolveForDrawing(2);
+    Image expectedDestination = Image.createLogical(1, 1, 2);
+    expectedDestination.getGraphics().copyRect(materialized, 0, 0, 1, 1, 0, 0);
+
+    Image actualBase = new Image(2, 2);
+    if (actualBase.getGraphics().setRGB(pixels, 0, 0, 0, 2, 2) != pixels.length) {
+      return false;
+    }
+    Image deferredSource = actualBase.getSmoothScaledInstance(1, 1);
+    Image actualDestination = Image.createLogical(1, 1, 2);
+    int attemptsBefore = ImageRasterFeatureBridge.copyRectPlanAttemptsForTest;
+    int genericBefore = ImageRasterFeatureBridge.genericGeometryDrawsForTest;
+    int smoothBefore = ImageRasterFeatureBridge.smoothResampleDrawsForTest;
+    actualDestination.getGraphics().copyRect(deferredSource, 0, 0, 1, 1, 0, 0);
+    int status = ImageRasterFeatureBridge.copyRectPlanLastStatusForTest;
+
+    return samePixels(expectedDestination, actualDestination)
+        && (status & ImageRasterFeatureBridge.PHYSICAL_COPY_HIT) != 0
+        && ImageRasterFeatureBridge.copyRectPlanAttemptsForTest == attemptsBefore + 1
+        && ImageRasterFeatureBridge.genericGeometryDrawsForTest == genericBefore
+        && ImageRasterFeatureBridge.smoothResampleDrawsForTest == smoothBefore
+        && deferredSource.backing == null && deferredSource.pipelineForSmoke() != null;
   }
 
   private static Image filled(int width, int height) throws ImageException {
