@@ -4,8 +4,33 @@
 
 package totalcross.ui;
 
+import com.totalcross.annotations.ReplacedByNativeOnDeploy;
+
+import totalcross.sys.GraphicsBackend;
+import totalcross.sys.RuntimeDiagnosticSnapshot;
+import totalcross.sys.RuntimeDiagnosticsFeatureBridge;
+import totalcross.sys.Settings;
+import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
+import totalcross.sys.runtime.RuntimeEnvironment;
+import totalcross.sys.RuntimeDiagnostics;
+import totalcross.ui.gfx.Graphics;
+
 /** Conservative planning and internal execution support for vertical raster reuse. */
 final class ScrollRasterReuse {
+  private static final int ATTEMPT_METRIC_SLOT = 0;
+  private static final int SUCCESS_METRIC_SLOT = 1;
+  private static final int FALLBACK_METRIC_SLOT = 2;
+  private static final int RECOVERED_METRIC_SLOT = 3;
+  static final int MOVE_SUCCEEDED = 0;
+  static final int MOVE_UNAVAILABLE = 1;
+  static final int MOVE_INVALID_FRAMEBUFFER = 2;
+  static final int MOVE_PENDING_DAMAGE = 3;
+  static final int MOVE_FAILED = 4;
+
+  private static boolean testPolicyEnabled;
+  private static boolean failNextMoveForTest;
+  private static FallbackReason lastFallbackReason;
+
   enum FallbackReason {
     POLICY_DISABLED,
     NON_RASTER_BACKEND,
@@ -103,6 +128,126 @@ final class ScrollRasterReuse {
   private ScrollRasterReuse() {
   }
 
+  static boolean isEnabled() {
+    return testPolicyEnabled || ImageRuntimeConfigurationStartup.currentPolicy().scrollRasterReuse().enabled();
+  }
+
+  static boolean isRasterBackend() {
+    return RuntimeEnvironment.current().graphicsBackend() == GraphicsBackend.RASTER;
+  }
+
+  /** Package-private test fixture hook; no application-facing switch is added. */
+  static void setEnabledForTest(boolean enabled) {
+    testPolicyEnabled = enabled;
+  }
+
+  /** Forces the next move to fail before it modifies the framebuffer. */
+  static void failNextMoveForTest() {
+    failNextMoveForTest = true;
+  }
+
+  static FallbackReason lastFallbackReasonForTest() {
+    return lastFallbackReason;
+  }
+
+  static void recordFallback(FallbackReason reason) {
+    lastFallbackReason = reason;
+    if (reason != null) {
+      RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.RENDERING,
+          FALLBACK_METRIC_SLOT);
+    }
+  }
+
+  static void recordAttempt() {
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.RENDERING,
+        ATTEMPT_METRIC_SLOT);
+  }
+
+  static void recordSuccess() {
+    lastFallbackReason = null;
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.RENDERING,
+        SUCCESS_METRIC_SLOT);
+  }
+
+  static void recordMoveRecovered() {
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.RENDERING,
+        RECOVERED_METRIC_SLOT);
+  }
+
+  static void resetTestHooks() {
+    testPolicyEnabled = false;
+    failNextMoveForTest = false;
+    lastFallbackReason = null;
+  }
+
+  static int move(Plan plan, Surface surface) {
+    if (plan == null || !plan.eligible() || surface == null) {
+      return MOVE_INVALID_FRAMEBUFFER;
+    }
+    if (failNextMoveForTest) {
+      failNextMoveForTest = false;
+      return MOVE_FAILED;
+    }
+    if (Settings.onJavaSE) {
+      return moveJavaRasterRect(plan, surface);
+    }
+    return moveRaster(plan.source.x, plan.source.y, plan.source.width, plan.source.height,
+        plan.destination.x, plan.destination.y, plan.viewport.x, plan.viewport.y, plan.viewport.width,
+        plan.viewport.height, surface.width, surface.height, surface.stridePixels);
+  }
+
+  static boolean isUnsupportedNativeScale(double contentScale) {
+    return !Settings.onJavaSE && contentScale != 1.0;
+  }
+
+  private static int moveJavaRasterRect(Plan plan, Surface surface) {
+    int[] pixels = Graphics.mainWindowPixels;
+    long requiredLength = (long) surface.stridePixels * surface.height;
+    if (!surface.ready || pixels == null || requiredLength > pixels.length || plan.source.x < 0
+        || plan.source.y < 0 || plan.destination.x < 0 || plan.destination.y < 0
+        || (long) plan.source.x + plan.source.width > surface.width
+        || (long) plan.destination.x + plan.destination.width > surface.width
+        || (long) plan.source.y + plan.source.height > surface.height
+        || (long) plan.destination.y + plan.destination.height > surface.height) {
+      return MOVE_INVALID_FRAMEBUFFER;
+    }
+    if (plan.copyBottomUp) {
+      for (int row = plan.source.height - 1; row >= 0; row--) {
+        int sourceIndex = (plan.source.y + row) * surface.stridePixels + plan.source.x;
+        int destinationIndex = (plan.destination.y + row) * surface.stridePixels + plan.destination.x;
+        System.arraycopy(pixels, sourceIndex, pixels, destinationIndex, plan.source.width);
+      }
+    } else {
+      for (int row = 0; row < plan.source.height; row++) {
+        int sourceIndex = (plan.source.y + row) * surface.stridePixels + plan.source.x;
+        int destinationIndex = (plan.destination.y + row) * surface.stridePixels + plan.destination.x;
+        System.arraycopy(pixels, sourceIndex, pixels, destinationIndex, plan.source.width);
+      }
+    }
+    return MOVE_SUCCEEDED;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static int moveRaster(int srcX, int srcY, int width, int height, int dstX, int dstY,
+      int viewportX, int viewportY, int viewportWidth, int viewportHeight, int surfaceWidth, int surfaceHeight,
+      int stridePixels) {
+    return MOVE_UNAVAILABLE;
+  }
+
+  static FallbackReason fallbackReasonForMove(int status) {
+    switch (status) {
+    case MOVE_UNAVAILABLE:
+      return FallbackReason.NATIVE_MOVE_UNAVAILABLE;
+    case MOVE_PENDING_DAMAGE:
+      return FallbackReason.PENDING_DAMAGE_CONFLICT;
+    case MOVE_INVALID_FRAMEBUFFER:
+      return FallbackReason.INVALID_FRAMEBUFFER;
+    case MOVE_FAILED:
+    default:
+      return FallbackReason.NATIVE_MOVE_FAILED;
+    }
+  }
+
   /** Converts logical rectangle edges with the same nearest-edge rule as Graphics rasterization. */
   static Rect toPhysical(Rect logical, double scale) {
     if (logical == null || logical.width <= 0 || logical.height <= 0
@@ -150,61 +295,75 @@ final class ScrollRasterReuse {
     return new Rect((int) left, (int) top, (int) (right - left), (int) (bottom - top));
   }
 
+  static Rect toLogical(Rect physical, double scale) {
+    if (physical == null || !Double.isFinite(scale) || scale <= 0 || scale != Math.rint(scale)
+        || scale > Integer.MAX_VALUE) {
+      return null;
+    }
+    int integerScale = (int) scale;
+    if (physical.x % integerScale != 0 || physical.y % integerScale != 0
+        || physical.width % integerScale != 0 || physical.height % integerScale != 0) {
+      return null;
+    }
+    return new Rect(physical.x / integerScale, physical.y / integerScale,
+        physical.width / integerScale, physical.height / integerScale);
+  }
+
   static Plan plan(boolean policyEnabled, boolean rasterBackend, int dx, int dy,
       Rect logicalViewport, double contentScale, Surface surface, boolean unsupportedTransform,
       boolean pendingDamageConflict, boolean fullRepaintRequired) {
     if (!policyEnabled) {
-      return Plan.fallback(FallbackReason.POLICY_DISABLED);
+      return fallback(FallbackReason.POLICY_DISABLED);
     }
     if (!rasterBackend) {
-      return Plan.fallback(FallbackReason.NON_RASTER_BACKEND);
+      return fallback(FallbackReason.NON_RASTER_BACKEND);
     }
     if (dx != 0 || dy == 0) {
-      return Plan.fallback(FallbackReason.ZERO_OR_HORIZONTAL_SCROLL);
+      return fallback(FallbackReason.ZERO_OR_HORIZONTAL_SCROLL);
     }
     if (unsupportedTransform || !Double.isFinite(contentScale) || contentScale <= 0
         || contentScale != Math.rint(contentScale) || contentScale > Integer.MAX_VALUE) {
-      return Plan.fallback(FallbackReason.UNSUPPORTED_TRANSFORM);
+      return fallback(FallbackReason.UNSUPPORTED_TRANSFORM);
     }
     if (logicalViewport == null || logicalViewport.width <= 0 || logicalViewport.height <= 0) {
-      return Plan.fallback(FallbackReason.INVALID_VIEWPORT);
+      return fallback(FallbackReason.INVALID_VIEWPORT);
     }
     Rect physicalViewport = toPhysical(logicalViewport, contentScale);
     if (physicalViewport == null) {
-      return Plan.fallback(FallbackReason.INVALID_VIEWPORT);
+      return fallback(FallbackReason.INVALID_VIEWPORT);
     }
     if (surface == null || !surface.ready || !surface.stableStride || surface.width <= 0
         || surface.height <= 0 || surface.stridePixels < surface.width) {
-      return Plan.fallback(FallbackReason.INVALID_FRAMEBUFFER);
+      return fallback(FallbackReason.INVALID_FRAMEBUFFER);
     }
     if (surface.bytesPerPixel != Integer.BYTES) {
-      return Plan.fallback(FallbackReason.UNSUPPORTED_PIXEL_FORMAT);
+      return fallback(FallbackReason.UNSUPPORTED_PIXEL_FORMAT);
     }
     if (!surface.sourceValid) {
-      return Plan.fallback(FallbackReason.INVALID_FRAMEBUFFER);
+      return fallback(FallbackReason.INVALID_FRAMEBUFFER);
     }
     Rect clippedViewport = clip(physicalViewport, surface.width, surface.height);
     if (clippedViewport == null) {
-      return Plan.fallback(FallbackReason.INVALID_VIEWPORT);
+      return fallback(FallbackReason.INVALID_VIEWPORT);
     }
     if (pendingDamageConflict) {
-      return Plan.fallback(FallbackReason.PENDING_DAMAGE_CONFLICT);
+      return fallback(FallbackReason.PENDING_DAMAGE_CONFLICT);
     }
     if (fullRepaintRequired) {
-      return Plan.fallback(FallbackReason.FULL_REPAINT_REQUIRED);
+      return fallback(FallbackReason.FULL_REPAINT_REQUIRED);
     }
 
     long physicalDelta = (long) dy * (long) contentScale;
     long magnitude = Math.abs(physicalDelta);
     if (magnitude >= clippedViewport.height) {
-      return Plan.fallback(FallbackReason.DELTA_TOO_LARGE);
+      return fallback(FallbackReason.DELTA_TOO_LARGE);
     }
     long sourceY = physicalDelta > 0 ? (long) clippedViewport.y + physicalDelta : clippedViewport.y;
     long destinationY = physicalDelta < 0 ? (long) clippedViewport.y - physicalDelta : clippedViewport.y;
     long copyHeight = (long) clippedViewport.height - magnitude;
     if (sourceY < 0 || destinationY < 0 || copyHeight <= 0
         || sourceY + copyHeight > surface.height || destinationY + copyHeight > surface.height) {
-      return Plan.fallback(FallbackReason.INVALID_VIEWPORT);
+      return fallback(FallbackReason.INVALID_VIEWPORT);
     }
 
     Rect source = new Rect(clippedViewport.x, (int) sourceY, clippedViewport.width, (int) copyHeight);
@@ -217,5 +376,9 @@ final class ScrollRasterReuse {
       exposed = new Rect(clippedViewport.x, clippedViewport.y, clippedViewport.width, (int) magnitude);
     }
     return new Plan(null, clippedViewport, source, destination, exposed, destinationY > sourceY);
+  }
+
+  private static Plan fallback(FallbackReason reason) {
+    return Plan.fallback(reason);
   }
 }

@@ -204,6 +204,7 @@ TC_API void tugG_drawText_siii(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
 TC_API void tugG_fillRoundRect_iiiii(NMParams p);
 TC_API void tugG_copyRectNative_giiiiii(NMParams p);
+TC_API void tuSRR_moveRaster_iiiiiiiiiiiii(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
 TC_API void tugG_drawImageNative_iiib(NMParams p);
 TC_API void tugG_drawGeometryNative_oiib(NMParams p);

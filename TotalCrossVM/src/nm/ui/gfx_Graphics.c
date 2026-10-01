@@ -300,6 +300,119 @@ TC_API void tugG_copyRectNative_giiiiii(NMParams p) // totalcross/ui/gfx/Graphic
    if (hOrig)
       drawSurface(p->currentContext, hDest, hOrig, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], true);
 }
+
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuSRR_moveRaster_iiiiiiiiiiiii(NMParams p) // totalcross/ui/ScrollRasterReuse native private static int moveRaster(int srcX, int srcY, int width, int height, int dstX, int dstY, int viewportX, int viewportY, int viewportWidth, int viewportHeight, int surfaceWidth, int surfaceHeight, int stridePixels);
+{
+#if TC_GRAPHICS_SOFTWARE && !TC_RENDERER_SKIA && !TC_GRAPHICS_GLES
+   int32 srcX = p->i32[0];
+   int32 srcY = p->i32[1];
+   int32 width = p->i32[2];
+   int32 height = p->i32[3];
+   int32 dstX = p->i32[4];
+   int32 dstY = p->i32[5];
+   int32 viewportX = p->i32[6];
+   int32 viewportY = p->i32[7];
+   int32 viewportWidth = p->i32[8];
+   int32 viewportHeight = p->i32[9];
+   int32 surfaceWidth = p->i32[10];
+   int32 surfaceHeight = p->i32[11];
+   int32 stridePixels = p->i32[12];
+   TCObject pixelsObject;
+   uint64 requiredPixels;
+   Pixel32 *pixels;
+   int32 row;
+   bool screenUnlocked;
+
+   if (p->currentContext == null || width <= 0 || height <= 0 || viewportWidth <= 0 || viewportHeight <= 0
+       || srcX != viewportX || dstX != viewportX || width != viewportWidth
+       || (int64)srcX < 0 || (int64)viewportX < 0 || (int64)srcY < viewportY
+       || (int64)dstY < viewportY || (int64)viewportX + viewportWidth > surfaceWidth
+       || (int64)viewportY + viewportHeight > surfaceHeight
+       || (int64)srcY + height > (int64)viewportY + viewportHeight
+       || (int64)dstY + height > (int64)viewportY + viewportHeight)
+   {
+      p->retI = 2;
+      return;
+   }
+
+   // Follow updateScreen's screen-lock order so it cannot read the array mid-copy.
+   LOCKVAR(screen);
+   pixelsObject = screen.mainWindowPixels;
+   if (!screen.surfaceReady || screen.pendingChangeFlags != SCREEN_CHANGE_NONE
+       || screen.screenW <= 0 || screen.screenH <= 0 || pixelsObject == null
+       || pixelsObject != screen.mainWindowPixels || surfaceWidth != screen.screenW
+       || surfaceHeight != screen.screenH || stridePixels != screen.screenW
+       || stridePixels < surfaceWidth)
+   {
+      UNLOCKVAR(screen);
+      p->retI = 2;
+      return;
+   }
+
+   requiredPixels = (uint64)surfaceWidth * (uint64)surfaceHeight;
+   if (requiredPixels > (uint64)ARRAYOBJ_LEN(pixelsObject))
+   {
+      UNLOCKVAR(screen);
+      p->retI = 2;
+      return;
+   }
+
+   if (p->currentContext == null || p->currentContext->fullDirty
+       || p->currentContext->dirtyX1 != screen.screenW || p->currentContext->dirtyY1 != screen.screenH
+       || p->currentContext->dirtyX2 != 0 || p->currentContext->dirtyY2 != 0)
+   {
+      UNLOCKVAR(screen);
+      p->retI = 3;
+      return;
+   }
+
+   if (!graphicsLock(&screen, true))
+   {
+      UNLOCKVAR(screen);
+      p->retI = 4;
+      return;
+   }
+
+   pixels = (Pixel32 *)ARRAYOBJ_START(pixelsObject);
+   if (dstY > srcY)
+   {
+      for (row = height - 1; row >= 0; row--)
+      {
+         Pixel32 *source = pixels + (size_t)(srcY + row) * (size_t)stridePixels + (size_t)srcX;
+         Pixel32 *destination = pixels + (size_t)(dstY + row) * (size_t)stridePixels + (size_t)dstX;
+         xmemmove(destination, source, (size_t)width * sizeof(Pixel32));
+      }
+   }
+   else
+   {
+      for (row = 0; row < height; row++)
+      {
+         Pixel32 *source = pixels + (size_t)(srcY + row) * (size_t)stridePixels + (size_t)srcX;
+         Pixel32 *destination = pixels + (size_t)(dstY + row) * (size_t)stridePixels + (size_t)dstX;
+         xmemmove(destination, source, (size_t)width * sizeof(Pixel32));
+      }
+   }
+
+   screenUnlocked = graphicsLock(&screen, false);
+   // There was no previous damage under LOCKVAR, so the copied viewport is the
+   // complete dirty union for the next updateScreen conversion.
+   p->currentContext->dirtyX1 = viewportX;
+   p->currentContext->dirtyY1 = viewportY;
+   p->currentContext->dirtyX2 = viewportX + viewportWidth;
+   p->currentContext->dirtyY2 = viewportY + viewportHeight;
+   if (viewportX == 0 && viewportY == 0 && viewportWidth == screen.screenW
+       && viewportHeight == screen.screenH)
+   {
+      p->currentContext->fullDirty = true;
+   }
+   UNLOCKVAR(screen);
+   p->retI = screenUnlocked ? 0 : 4;
+#else
+   p->retI = 1;
+#endif
+}
+
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor);
 {
