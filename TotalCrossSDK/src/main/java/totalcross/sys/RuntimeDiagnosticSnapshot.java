@@ -10,7 +10,8 @@ public final class RuntimeDiagnosticSnapshot {
   public enum Domain {
     RUNTIME,
     IMAGE,
-    SCHEDULING
+    SCHEDULING,
+    PREFETCH
   }
 
   /** The interpretation of a numeric observation. */

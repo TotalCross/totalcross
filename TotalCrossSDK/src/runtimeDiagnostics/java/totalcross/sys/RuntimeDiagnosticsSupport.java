@@ -11,6 +11,7 @@ final class RuntimeDiagnosticsSupport {
   private static volatile boolean imageGroupEnabled;
   private static volatile boolean schedulingGroupEnabled;
   private static volatile long schedulingGeneration;
+  private static volatile boolean prefetchGroupEnabled;
 
   private RuntimeDiagnosticsSupport() {
   }
@@ -40,6 +41,8 @@ final class RuntimeDiagnosticsSupport {
           schedulingGeneration++;
         }
       }
+    } else if (domain == RuntimeDiagnosticSnapshot.Domain.PREFETCH) {
+      prefetchGroupEnabled = enabled;
     }
   }
 
@@ -50,7 +53,8 @@ final class RuntimeDiagnosticsSupport {
     if (domain == RuntimeDiagnosticSnapshot.Domain.IMAGE) {
       return imageGroupEnabled;
     }
-    return domain == RuntimeDiagnosticSnapshot.Domain.SCHEDULING && schedulingGroupEnabled;
+    return (domain == RuntimeDiagnosticSnapshot.Domain.SCHEDULING && schedulingGroupEnabled)
+        || (domain == RuntimeDiagnosticSnapshot.Domain.PREFETCH && prefetchGroupEnabled);
   }
 
   static long getDomainGeneration(RuntimeDiagnosticSnapshot.Domain domain) {
@@ -79,10 +83,11 @@ final class RuntimeDiagnosticsSupport {
   }
 
   static RuntimeDiagnosticSnapshot snapshot() {
-    if (!runtimeGroupEnabled && !imageGroupEnabled && !schedulingGroupEnabled) {
+    if (!runtimeGroupEnabled && !imageGroupEnabled && !schedulingGroupEnabled && !prefetchGroupEnabled) {
       return EMPTY;
     }
-    return RuntimeMetrics.snapshot(runtimeGroupEnabled, imageGroupEnabled, schedulingGroupEnabled);
+    return RuntimeMetrics.snapshot(runtimeGroupEnabled, imageGroupEnabled, schedulingGroupEnabled,
+        prefetchGroupEnabled);
   }
 
   static void addJavaCounterForTest(long delta) {
@@ -154,6 +159,10 @@ final class RuntimeDiagnosticsSupport {
     private static final int FLICK_COMPLETION_COUNT_ID = 0x4003;
     private static final int FLICK_ADVANCEMENT_WORK_NANOS_ID = 0x4004;
     private static final int FLICK_POSITIVE_LATENESS_NANOS_ID = 0x4005;
+    private static final int[] PREFETCH_METRIC_IDS = {
+        0x5001, 0x5002, 0x5003, 0x5004, 0x5005,
+        0x5006, 0x5007, 0x5008, 0x5009, 0x500A
+    };
     private static final int[] METRIC_IDS = {
         JAVA_COUNTER_ID, JAVA_GAUGE_ID, JAVA_TIMER_ID, NATIVE_COUNTER_ID, NATIVE_GAUGE_ID
     };
@@ -210,6 +219,30 @@ final class RuntimeDiagnosticsSupport {
         (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
         (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal()
     };
+    private static final byte[] PREFETCH_DOMAINS = {
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Domain.PREFETCH.ordinal()
+    };
+    private static final byte[] PREFETCH_KINDS = {
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.COUNTER.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.GAUGE.ordinal(),
+        (byte) RuntimeDiagnosticSnapshot.Kind.GAUGE.ordinal()
+    };
     private static final long[] NATIVE_VALUES = new long[NATIVE_METRIC_IDS.length];
     private static final Object COLLECTION_LOCK = new Object();
     private static long javaCounter;
@@ -221,6 +254,7 @@ final class RuntimeDiagnosticsSupport {
     private static long flickCompletionCount;
     private static long flickAdvancementWorkNanos;
     private static long flickPositiveLatenessNanos;
+    private static final long[] prefetchValues = new long[PREFETCH_METRIC_IDS.length];
     private static long epoch;
     private static NativeBridge nativeBridge = new VmNativeBridge();
 
@@ -229,15 +263,16 @@ final class RuntimeDiagnosticsSupport {
     }
 
     private static RuntimeDiagnosticSnapshot snapshot(boolean includeRuntime, boolean includeImage,
-        boolean includeScheduling) {
-      if (!includeRuntime && !includeImage && !includeScheduling) {
+        boolean includeScheduling, boolean includePrefetch) {
+      if (!includeRuntime && !includeImage && !includeScheduling && !includePrefetch) {
         return EMPTY;
       }
       synchronized (COLLECTION_LOCK) {
         includeRuntime &= runtimeGroupEnabled;
         includeImage &= imageGroupEnabled;
         includeScheduling &= schedulingGroupEnabled;
-        if (!includeRuntime && !includeImage && !includeScheduling) {
+        includePrefetch &= prefetchGroupEnabled;
+        if (!includeRuntime && !includeImage && !includeScheduling && !includePrefetch) {
           return EMPTY;
         }
         if (includeRuntime) {
@@ -246,7 +281,8 @@ final class RuntimeDiagnosticsSupport {
         int runtimeCount = includeRuntime ? METRIC_IDS.length : 0;
         int imageCount = includeImage ? IMAGE_METRIC_IDS.length : 0;
         int schedulingCount = includeScheduling ? 5 : 0;
-        int total = runtimeCount + imageCount + schedulingCount;
+        int prefetchCount = includePrefetch ? PREFETCH_METRIC_IDS.length : 0;
+        int total = runtimeCount + imageCount + schedulingCount + prefetchCount;
         int[] metricIds = new int[total];
         byte[] domains = new byte[total];
         byte[] kinds = new byte[total];
@@ -282,6 +318,12 @@ final class RuntimeDiagnosticsSupport {
           put(metricIds, domains, kinds, values, destination, FLICK_POSITIVE_LATENESS_NANOS_ID,
               schedulingDomain, RuntimeDiagnosticSnapshot.Kind.TIMER, flickPositiveLatenessNanos);
         }
+        if (includePrefetch) {
+          System.arraycopy(PREFETCH_METRIC_IDS, 0, metricIds, destination, prefetchCount);
+          System.arraycopy(PREFETCH_DOMAINS, 0, domains, destination, prefetchCount);
+          System.arraycopy(PREFETCH_KINDS, 0, kinds, destination, prefetchCount);
+          System.arraycopy(prefetchValues, 0, values, destination, prefetchCount);
+        }
         return new RuntimeDiagnosticSnapshot(metricIds, domains, kinds, values, epoch);
       }
     }
@@ -303,6 +345,15 @@ final class RuntimeDiagnosticsSupport {
         synchronized (COLLECTION_LOCK) {
           if (imageGroupEnabled) {
             imageCounters[featureMetricSlot]++;
+          }
+        }
+      } else if (domain == RuntimeDiagnosticSnapshot.Domain.PREFETCH) {
+        if (featureMetricSlot < 0 || featureMetricSlot >= 8) {
+          return;
+        }
+        synchronized (COLLECTION_LOCK) {
+          if (prefetchGroupEnabled) {
+            prefetchValues[featureMetricSlot]++;
           }
         }
       } else if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME) {
@@ -350,6 +401,13 @@ final class RuntimeDiagnosticsSupport {
         setJavaGauge(value);
       } else if (domain == RuntimeDiagnosticSnapshot.Domain.RUNTIME && featureMetricSlot == 1) {
         setNativeGauge(value);
+      } else if (domain == RuntimeDiagnosticSnapshot.Domain.PREFETCH
+          && (featureMetricSlot == 8 || featureMetricSlot == 9)) {
+        synchronized (COLLECTION_LOCK) {
+          if (prefetchGroupEnabled) {
+            prefetchValues[featureMetricSlot] = value;
+          }
+        }
       }
     }
 
@@ -417,6 +475,11 @@ final class RuntimeDiagnosticsSupport {
           flickCompletionCount = 0L;
           flickAdvancementWorkNanos = 0L;
           flickPositiveLatenessNanos = 0L;
+          epoch++;
+        } else if (domain == RuntimeDiagnosticSnapshot.Domain.PREFETCH && prefetchGroupEnabled) {
+          for (int i = 0; i < prefetchValues.length; i++) {
+            prefetchValues[i] = 0L;
+          }
           epoch++;
         }
       }
