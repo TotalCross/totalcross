@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -277,6 +278,24 @@ public class ImageControl extends Control {
   @Override
   public void onPaint(Graphics g) {
     paint(g, true);
+  }
+
+  @Override
+  void collectDisplayPreparation(DisplayPreparationContext context, Rect clip) {
+    if (!visible || offscreen != null || width <= 0 || height <= 0
+        || !context.intersects(getAbsoluteRect(), clip)) {
+      return;
+    }
+    Graphics graphics = getGraphics();
+    if (graphics == null) {
+      return;
+    }
+    double destinationScale = graphics.getContentScale();
+    if (img != null) {
+      Image displayed = tempHwScale == NOTEMP ? img : img0;
+      context.add(displayed, destinationScale);
+    }
+    context.add(imgBack, destinationScale);
   }
 
   private void paint(Graphics g, boolean drawBack) {

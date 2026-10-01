@@ -2735,6 +2735,10 @@ public class Control extends GfxSurface {
     return false;
   }
 
+  /** Internal no-op hook used by explicit display preparation discovery. */
+  void collectDisplayPreparation(DisplayPreparationContext context, Rect clip) {
+  }
+
   /** Returns true of the parent window is the top most one. 
    * @since TotalCross 1.66
    */
