@@ -31,6 +31,8 @@ class RuntimeDiagnosticsConverterTest {
     assertFalse(off.contains("static native "));
     assertFalse(off.contains("runtimeGroupEnabled"));
     assertFalse(off.contains("schedulingGroupEnabled"));
+    assertFalse(off.contains("renderingGroupEnabled"));
+    assertFalse(off.contains("prefetchGroupEnabled"));
     assertFalse(off.contains("schedulingGeneration"));
     assertFalse(off.contains("NATIVE_METRIC_IDS"));
     assertFalse(off.contains("long javaCounter"));
@@ -83,22 +85,48 @@ class RuntimeDiagnosticsConverterTest {
         Path.of("src/runtimeDiagnostics/java/totalcross/sys/RuntimeDiagnosticsSupport.java"));
     int start = source.indexOf("static RuntimeDiagnosticSnapshot snapshot() {");
     int gate = source.indexOf(
-        "if (!runtimeGroupEnabled && !imageGroupEnabled && !schedulingGroupEnabled && !prefetchGroupEnabled)", start);
+        "if (!runtimeGroupEnabled && !imageGroupEnabled && !schedulingGroupEnabled && !prefetchGroupEnabled",
+        start);
     int snapshotCall = source.indexOf("RuntimeMetrics.snapshot(runtimeGroupEnabled, imageGroupEnabled,",
         gate);
+    int schedulingArgument = source.indexOf("schedulingGroupEnabled", snapshotCall);
+    int prefetchArgument = source.indexOf("prefetchGroupEnabled", schedulingArgument);
+    int renderingArgument = source.indexOf("renderingGroupEnabled", prefetchArgument);
     int metricsStart = source.indexOf("private static RuntimeDiagnosticSnapshot snapshot(boolean includeRuntime,",
         snapshotCall);
     int metricsGate = source.indexOf(
-        "if (!includeRuntime && !includeImage && !includeScheduling && !includePrefetch)", metricsStart);
+        "if (!includeRuntime && !includeImage && !includeScheduling && !includePrefetch && !includeRendering)",
+        metricsStart);
     int lock = source.indexOf("synchronized (COLLECTION_LOCK)", metricsStart);
     int batchRead = source.indexOf("nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES)", metricsStart);
     int valuesAllocation = source.indexOf("long[] values = new long[total]", metricsStart);
     assertTrue(start >= 0 && gate > start && snapshotCall > gate);
+    assertTrue(source.substring(gate, snapshotCall).contains("&& !renderingGroupEnabled)"));
+    assertTrue(schedulingArgument >= snapshotCall && prefetchArgument > schedulingArgument
+        && renderingArgument > prefetchArgument);
     assertTrue(metricsStart > snapshotCall && metricsGate > metricsStart && lock > metricsGate);
     assertTrue(batchRead > lock && valuesAllocation > batchRead);
+    int schedulingAssembly = source.indexOf("if (includeScheduling) {", metricsStart);
+    int prefetchAssembly = source.indexOf("if (includePrefetch) {", schedulingAssembly);
+    int renderingAssembly = source.indexOf("if (includeRendering) {", prefetchAssembly);
+    assertTrue(schedulingAssembly >= metricsStart && prefetchAssembly > schedulingAssembly
+        && renderingAssembly > prefetchAssembly);
     assertTrue(source.contains("if (enabled) {\n      RuntimeMetrics.initialize();"));
     assertTrue(source.contains("private static final class RuntimeMetrics"));
     assertTrue(source.contains("nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES)"));
+    assertTrue(source.contains("0x5001, 0x5002, 0x5003, 0x5004, 0x5005"));
+    assertTrue(source.contains("0x5006, 0x5007, 0x5008, 0x5009, 0x500A"));
+    assertTrue(source.contains("FLICK_CALLBACK_COUNT_ID = 0x4001"));
+    assertTrue(source.contains("FLICK_ADVANCEMENT_COUNT_ID = 0x4002"));
+    assertTrue(source.contains("FLICK_COMPLETION_COUNT_ID = 0x4003"));
+    assertTrue(source.contains("FLICK_ADVANCEMENT_WORK_NANOS_ID = 0x4004"));
+    assertTrue(source.contains("FLICK_POSITIVE_LATENESS_NANOS_ID = 0x4005"));
+    assertTrue(source.contains("REUSE_ATTEMPT_ID = 0x6001"));
+    assertTrue(source.contains("REUSE_SUCCESS_ID = 0x6002"));
+    assertTrue(source.contains("REUSE_FALLBACK_ID = 0x6003"));
+    assertTrue(source.contains("MOVE_RECOVERED_ID = 0x6004"));
+    assertFalse(Files.readString(Path.of("src/main/java/totalcross/sys/RuntimeDiagnosticSnapshot.java"))
+        .contains("0x500"));
     assertTrue(source.contains("0x5001, 0x5002, 0x5003, 0x5004, 0x5005"));
     assertTrue(source.contains("0x5006, 0x5007, 0x5008, 0x5009, 0x500A"));
     assertFalse(Files.readString(Path.of("src/main/java/totalcross/sys/RuntimeDiagnosticSnapshot.java"))
