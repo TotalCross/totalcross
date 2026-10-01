@@ -37,8 +37,18 @@ public final class ImageRuntimePolicy {
   private ImageRuntimePolicy(ImageStorageProfile requestedStorageProfile,
       ImageStorageProfile effectiveStorageProfile, String storageReason, List<String> matchedRuleNames,
       RasterCorePolicy rasterCore, RasterVariantPolicy rasterVariants) {
+    this(requestedStorageProfile, effectiveStorageProfile, storageReason, matchedRuleNames,
+        rasterCore, rasterVariants, DEFAULT_SCROLL_REUSE);
+  }
+
+  private ImageRuntimePolicy(ImageStorageProfile requestedStorageProfile,
+      ImageStorageProfile effectiveStorageProfile, String storageReason, List<String> matchedRuleNames,
+      RasterCorePolicy rasterCore, RasterVariantPolicy rasterVariants, ScrollRasterReusePolicy scrollRasterReuse) {
     if (requestedStorageProfile == null || effectiveStorageProfile == null || matchedRuleNames == null) {
       throw new IllegalArgumentException("an Image policy requires requested and effective storage values");
+    }
+    if (rasterCore == null || rasterVariants == null || scrollRasterReuse == null) {
+      throw new IllegalArgumentException("an Image policy requires non-null feature policies");
     }
     this.requestedStorageProfile = requestedStorageProfile;
     this.effectiveStorageProfile = effectiveStorageProfile;
@@ -46,7 +56,7 @@ public final class ImageRuntimePolicy {
     this.matchedRuleNames = Collections.unmodifiableList(new ArrayList<String>(matchedRuleNames));
     this.rasterCore = rasterCore;
     this.rasterVariants = rasterVariants;
-    this.scrollRasterReuse = DEFAULT_SCROLL_REUSE;
+    this.scrollRasterReuse = scrollRasterReuse;
     this.imagePreparation = DEFAULT_PREPARATION;
     this.prefetchWorker = DEFAULT_PREFETCH_WORKER;
   }
@@ -72,7 +82,12 @@ public final class ImageRuntimePolicy {
         physicalIdentity);
     RasterVariantPolicy variants = new RasterVariantPolicy(targetColorConversion, physicalVariantCache);
     return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, storageReason,
-        matchedRuleNames, core, variants);
+        matchedRuleNames, core, variants, scrollRasterReuse);
+  }
+
+  ImageRuntimePolicy withScrollRasterReusePolicy(ScrollRasterReusePolicy scrollRasterReuse) {
+    return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, storageReason,
+        matchedRuleNames, rasterCore, rasterVariants, scrollRasterReuse);
   }
 
   /** Returns the rule-selected Image storage request. Internal feature access only. */
@@ -195,7 +210,7 @@ public final class ImageRuntimePolicy {
   public static final class ScrollRasterReusePolicy {
     private final boolean enabled;
 
-    private ScrollRasterReusePolicy(boolean enabled) {
+    ScrollRasterReusePolicy(boolean enabled) {
       this.enabled = enabled;
     }
 

@@ -1145,6 +1145,144 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
     }
 }
 
+def scrollRasterReuseSmokeClassesDir = layout.buildDirectory.dir('scroll-raster-reuse-smoke/classes')
+tasks.register('compileScrollRasterReuseSmoke', Sync) {
+    group = 'verification'
+    description = 'Stages the native macOS scroll raster reuse correctness smoke.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/ScrollRasterReuseSmokeApp*.class'
+        include 'totalcross/sys/runtime/ScrollRasterReuseTestSupport.class'
+    }
+    into scrollRasterReuseSmokeClassesDir
+}
+
+tasks.register('jarScrollRasterReuseSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the native macOS scroll raster reuse correctness smoke.'
+    dependsOn 'compileScrollRasterReuseSmoke'
+    archiveFileName = 'ScrollRasterReuseSmokeApp.jar'
+    destinationDirectory = scrollRasterReuseSmokeClassesDir
+    from(scrollRasterReuseSmokeClassesDir)
+}
+
+tasks.register('deployScrollRasterReuseSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the scroll raster reuse smoke for native macOS validation.'
+    dependsOn 'dist', 'copySdkDependencies', 'jarScrollRasterReuseSmoke'
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    def sdkRoot = scrollRasterReuseSmokeClassesDir.get().dir('sdk-root').asFile
+    workingDir sdkRoot
+    environment 'TOTALCROSS3_HOME', sdkRoot.absolutePath
+    args = [scrollRasterReuseSmokeClassesDir.get().file('ScrollRasterReuseSmokeApp.jar').asFile.absolutePath,
+            '-macos', '/o', scrollRasterReuseSmokeClassesDir.get().dir('deploy-output').asFile.absolutePath]
+
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        def nativeLauncher = project.findProperty('tcvmLauncher')
+        if (!nativeRuntime || !nativeLauncher) {
+            throw new GradleException('deployScrollRasterReuseSmokeMacOS requires -PtcvmDylib and -PtcvmLauncher')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        def nativeLauncherFile = file(nativeLauncher).absoluteFile
+        if (!nativeRuntimeFile.isFile() || !nativeLauncherFile.isFile()) {
+            throw new GradleException('Native macOS VM inputs must both exist: '
+                + nativeRuntimeFile + ', ' + nativeLauncherFile)
+        }
+        copy {
+            from project.file('dist/vm')
+            into new File(sdkRoot, 'dist/vm')
+        }
+        copy {
+            from project.file('etc/fonts')
+            into new File(sdkRoot, 'etc/fonts')
+        }
+        copy {
+            from nativeLauncherFile
+            into new File(sdkRoot, 'etc/launchers/macos')
+            rename { 'Launcher' }
+        }
+        copy {
+            from nativeRuntimeFile
+            into new File(sdkRoot, 'dist/vm/macos')
+            rename { 'libtcvm.dylib' }
+        }
+    }
+}
+
+tasks.register('runScrollRasterReuseSmokeMacOS', Exec) {
+    group = 'verification'
+    description = 'Runs the scroll raster reuse smoke with the built native macOS runtime.'
+    dependsOn 'deployScrollRasterReuseSmokeMacOS'
+    ignoreExitValue = true
+    def smokeOutput = new ByteArrayOutputStream()
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        def nativeLauncher = project.findProperty('tcvmLauncher')
+        if (!nativeRuntime || !nativeLauncher) {
+            throw new GradleException('runScrollRasterReuseSmokeMacOS requires -PtcvmDylib and -PtcvmLauncher')
+        }
+        def nativeRuntimeFile = file(nativeRuntime).absoluteFile
+        def nativeLauncherFile = file(nativeLauncher).absoluteFile
+        if (!nativeRuntimeFile.isFile() || !nativeLauncherFile.isFile()) {
+            throw new GradleException('Native macOS VM inputs must both exist: '
+                + nativeRuntimeFile + ', ' + nativeLauncherFile)
+        }
+        def installDir = scrollRasterReuseSmokeClassesDir.get().dir('deploy-output/install/macos').asFile
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        copy {
+            from nativeLauncherFile
+            into installDir
+            rename { 'ScrollRasterReuseSmokeApp' }
+        }
+        def executable = new File(installDir, 'ScrollRasterReuseSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException('Native smoke executable not found: ' + executable)
+        }
+        executable.setExecutable(true, false)
+        commandLine executable.absolutePath
+        smokeOutput.reset()
+        standardOutput = smokeOutput
+        errorOutput = smokeOutput
+    }
+    workingDir scrollRasterReuseSmokeClassesDir.map { it.dir('deploy-output/install/macos').asFile }
+    doLast {
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = executionResult.get().exitValue
+        def resultLines = output.readLines().findAll {
+            it.startsWith('fixture=ScrollRasterReuseSmokeApp,')
+        }
+        def resultLine = resultLines ? resultLines.last() : ''
+        def requiredFields = [
+            'fixture=ScrollRasterReuseSmokeApp',
+            'defaultOff=true',
+            'disabledPath=true',
+            'enabledDown=true',
+            'enabledUp=true',
+            'nearViewport=true',
+            'fallbackSafe=true',
+            'overallPass=true'
+        ]
+        def missing = requiredFields.findAll { !resultLine.contains(it) }
+        if (project.findProperty('scrollRasterReuseRequireNativePrimitive') == 'true'
+            && !resultLine.contains('nativePrimitive=true')) {
+            missing.add('nativePrimitive=true')
+        }
+        if (exitCode != 0 || !missing.isEmpty()) {
+            throw new GradleException('ScrollRasterReuseSmokeApp native macOS smoke failed: exitCode=' + exitCode
+                + ', missing=' + missing)
+        }
+    }
+}
+
 def configureImageMacSmokeSdk = { String taskPrefix, String smokeDirName ->
     tasks.named('deploy' + taskPrefix + 'MacOS') {
         doFirst {

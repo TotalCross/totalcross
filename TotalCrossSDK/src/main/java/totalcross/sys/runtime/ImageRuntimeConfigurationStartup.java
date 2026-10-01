@@ -66,6 +66,16 @@ public final class ImageRuntimeConfigurationStartup {
         targetColorConversion, physicalVariantCache);
   }
 
+  /** Publishes a typed policy supplied by an internal runtime integration. */
+  static synchronized void installInternalPolicy(ImageRuntimePolicy policy) {
+    if (policy == null) {
+      throw new IllegalArgumentException("an Image policy is required");
+    }
+    startupAttempted = true;
+    pendingRules = null;
+    currentPolicy = policy;
+  }
+
   private static void initializeRules(
       List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules) {
     currentPolicy = ImageRuntimePolicy.defaults();

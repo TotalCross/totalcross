@@ -27,7 +27,6 @@ final class ScrollRasterReuse {
   static final int MOVE_PENDING_DAMAGE = 3;
   static final int MOVE_FAILED = 4;
 
-  private static boolean testPolicyEnabled;
   private static boolean failNextMoveForTest;
   private static FallbackReason lastFallbackReason;
 
@@ -129,16 +128,11 @@ final class ScrollRasterReuse {
   }
 
   static boolean isEnabled() {
-    return testPolicyEnabled || ImageRuntimeConfigurationStartup.currentPolicy().scrollRasterReuse().enabled();
+    return ImageRuntimeConfigurationStartup.currentPolicy().scrollRasterReuse().enabled();
   }
 
   static boolean isRasterBackend() {
     return RuntimeEnvironment.current().graphicsBackend() == GraphicsBackend.RASTER;
-  }
-
-  /** Package-private test fixture hook; no application-facing switch is added. */
-  static void setEnabledForTest(boolean enabled) {
-    testPolicyEnabled = enabled;
   }
 
   /** Forces the next move to fail before it modifies the framebuffer. */
@@ -175,7 +169,6 @@ final class ScrollRasterReuse {
   }
 
   static void resetTestHooks() {
-    testPolicyEnabled = false;
     failNextMoveForTest = false;
     lastFallbackReason = null;
   }
