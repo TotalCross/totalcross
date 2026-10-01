@@ -78,9 +78,9 @@ unsupported until native logical-to-physical painting is proven equivalent.
 The default remains off. No performance benefit is claimed without a benchmark
 that exercises this path.
 
-## P6 integration gate
+## Relationship to P6
 
-Before merge, integrate the final P6 change, rebase P7 on that result, confirm
-the Image source-subrect path remains independent from framebuffer movement,
-run the combined P6/P7 regression suite and applicable native smokes, and pass
-a new Merge Flow. Keep P7 unmerged until that gate is complete.
+P6 copies a requested source rectangle from an Image backing; P7 moves pixels
+already present in the destination framebuffer. The paths do not call each
+other. They share Graphics and native raster code, so changes to those shared
+layers should preserve each path's independent eligibility and fallback rules.
