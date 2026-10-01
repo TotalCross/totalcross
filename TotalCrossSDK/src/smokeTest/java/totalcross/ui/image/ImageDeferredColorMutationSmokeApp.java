@@ -72,9 +72,11 @@ public class ImageDeferredColorMutationSmokeApp extends MainWindow {
       Image cachedSource = new Image(24, 20);
       fill(cachedSource, 0xFF204060);
       Image cached = cachedSource.getSmoothScaledInstance(18, 18);
+      cached.resolveForDrawing(1);
       Image oldVariant = cached.resolveForDrawing(1);
       int[] oldPixels = oldVariant.getPixels().clone();
       cached.applyColor(0xFFFFFFFF);
+      cached.resolveForDrawing(1);
       Image newVariant = cached.resolveForDrawing(1);
       cacheInvalidated = cached.pipelineForSmoke().cachedVariantCountForSmoke() == 1
           && oldVariant != newVariant && sameArray(oldPixels, oldVariant.getPixels())

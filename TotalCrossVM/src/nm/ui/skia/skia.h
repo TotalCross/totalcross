@@ -74,6 +74,10 @@ int skia_image_backing_write_rgba_pixels(int64_t handle, const uint8_t* pixels, 
 #define SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE 2
 int64_t skia_image_backing_snapshot(int64_t handle);
 int skia_image_backing_snapshot_status(int64_t handle, int64_t* snapshotHandle);
+void skia_image_backing_invalidate_variants(int64_t handle);
+int skia_image_backing_variant_observe_for_test(int64_t handle, int32 kind,
+    const uint32_t* words, int32 wordCount);
+int32 skia_image_backing_variant_state_for_test(int64_t handle);
 void skia_image_backing_fail_next_snapshot_for_test(void);
 int skia_image_backing_make_mutable(int64_t handle);
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth);

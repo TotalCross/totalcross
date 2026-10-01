@@ -17,6 +17,12 @@
 namespace {
 
 using skia_image_backing_internal::NativeImageBackingRecord;
+using skia_image_backing_internal::RASTER_VARIANT_HIT;
+using skia_image_backing_internal::RASTER_VARIANT_INVALID;
+using skia_image_backing_internal::RASTER_VARIANT_MATERIALIZE;
+using skia_image_backing_internal::RASTER_VARIANT_MISS;
+using skia_image_backing_internal::RASTER_VARIANT_PHYSICAL;
+using skia_image_backing_internal::RASTER_VARIANT_TARGET_COLOR;
 
 std::map<int64_t, std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord>> backings;
 std::map<int32, int64_t> surfaceAliases;
@@ -63,6 +69,94 @@ void recordBackingReleased(const NativeImageBackingRecord& backing) {
 skia_image_backing_internal::NativeImageBackingRecord* findBacking(int64_t handle) {
     auto found = backings.find(handle);
     return found == backings.end() ? nullptr : found->second.get();
+}
+
+int rasterVariantObserveInternal(NativeImageBackingRecord* backing, int32_t kind,
+                                 const std::vector<uint32_t>& words, sk_sp<SkImage>* hit,
+                                 bool* provenOpaque) {
+    if (hit) {
+        hit->reset();
+    }
+    if (provenOpaque) {
+        *provenOpaque = false;
+    }
+    if (!backing || (kind != RASTER_VARIANT_TARGET_COLOR && kind != RASTER_VARIANT_PHYSICAL)) {
+        return RASTER_VARIANT_INVALID;
+    }
+    if (backing->rasterVariantValid && backing->rasterVariant
+        && backing->rasterVariantKey.equals(kind, words)) {
+        if (backing->rasterVariantPending
+            && !backing->rasterVariantPendingKey.equals(kind, words)) {
+            backing->rasterVariantPending = false;
+            backing->rasterVariantPendingKey.words.clear();
+        }
+        if (hit) {
+            *hit = backing->rasterVariant;
+        }
+        if (provenOpaque) {
+            *provenOpaque = backing->rasterVariantOpaque;
+        }
+        return RASTER_VARIANT_HIT;
+    }
+    if (backing->rasterVariantPending && backing->rasterVariantPendingKey.equals(kind, words)) {
+        return RASTER_VARIANT_MATERIALIZE;
+    }
+    try {
+        backing->rasterVariantPendingKey.kind = kind;
+        backing->rasterVariantPendingKey.words = words;
+        backing->rasterVariantPending = true;
+        return RASTER_VARIANT_MISS;
+    } catch (const std::bad_alloc&) {
+        backing->rasterVariantPending = false;
+        backing->rasterVariantPendingKey.words.clear();
+        return RASTER_VARIANT_INVALID;
+    }
+}
+
+bool rasterVariantStoreInternal(NativeImageBackingRecord* backing, int32_t kind,
+                                const std::vector<uint32_t>& words, sk_sp<SkImage> image,
+                                bool provenOpaque) {
+    if (!backing || !image || !backing->rasterVariantPending
+        || !backing->rasterVariantPendingKey.equals(kind, words)) {
+        return false;
+    }
+    skia_image_backing_internal::RasterVariantKey candidate;
+    try {
+        candidate.kind = kind;
+        candidate.words = words;
+    } catch (const std::bad_alloc&) {
+        backing->rasterVariantPending = false;
+        backing->rasterVariantPendingKey.words.clear();
+        return false;
+    }
+    backing->rasterVariantKey = std::move(candidate);
+    backing->rasterVariant = std::move(image);
+    backing->rasterVariantOpaque = provenOpaque;
+    backing->rasterVariantValid = true;
+    backing->rasterVariantPending = false;
+    backing->rasterVariantPendingKey.words.clear();
+    return true;
+}
+
+void rasterVariantFailInternal(NativeImageBackingRecord* backing, int32_t kind,
+                               const std::vector<uint32_t>& words) {
+    if (backing && backing->rasterVariantPending
+        && backing->rasterVariantPendingKey.equals(kind, words)) {
+        backing->rasterVariantPending = false;
+        backing->rasterVariantPendingKey.words.clear();
+    }
+}
+
+void rasterVariantClearInternal(NativeImageBackingRecord* backing) {
+    if (!backing) {
+        return;
+    }
+    backing->rasterVariant.reset();
+    backing->rasterVariantValid = false;
+    backing->rasterVariantOpaque = false;
+    backing->rasterVariantKey.words.clear();
+    backing->rasterVariantPending = false;
+    backing->rasterVariantPendingKey.words.clear();
 }
 
 int64_t registerBackingRecord(std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing) {
@@ -221,6 +315,27 @@ SkImageInfo rasterInfo(int32 width, int32 height) {
     return ::rasterInfo(width, height);
 }
 
+int rasterVariantObserve(NativeImageBackingRecord* backing, int32_t kind,
+                         const std::vector<uint32_t>& words, sk_sp<SkImage>* hit,
+                         bool* provenOpaque) {
+    return ::rasterVariantObserveInternal(backing, kind, words, hit, provenOpaque);
+}
+
+bool rasterVariantStore(NativeImageBackingRecord* backing, int32_t kind,
+                        const std::vector<uint32_t>& words, sk_sp<SkImage> image,
+                        bool provenOpaque) {
+    return ::rasterVariantStoreInternal(backing, kind, words, std::move(image), provenOpaque);
+}
+
+void rasterVariantFail(NativeImageBackingRecord* backing, int32_t kind,
+                       const std::vector<uint32_t>& words) {
+    ::rasterVariantFailInternal(backing, kind, words);
+}
+
+void rasterVariantClear(NativeImageBackingRecord* backing) {
+    ::rasterVariantClearInternal(backing);
+}
+
 }
 
 int64_t skia_image_backing_create_empty(int32 width, int32 height) {
@@ -329,6 +444,58 @@ int64_t skia_image_backing_snapshot(int64_t handle) {
     int64_t snapshotHandle = 0;
     return skia_image_backing_snapshot_status(handle, &snapshotHandle)
         == SKIA_IMAGE_BACKING_SNAPSHOT_OK ? snapshotHandle : 0;
+}
+
+void skia_image_backing_invalidate_variants(int64_t handle) {
+    skia_image_backing_internal::rasterVariantClear(skia_image_backing_internal::findBacking(handle));
+}
+
+int skia_image_backing_variant_observe_for_test(int64_t handle, int32 kind,
+                                                const uint32_t* words, int32 wordCount) {
+    skia_image_backing_internal::NativeImageBackingRecord* backing =
+        skia_image_backing_internal::findBacking(handle);
+    if (!backing || !words || wordCount <= 0) {
+        return skia_image_backing_internal::RASTER_VARIANT_INVALID;
+    }
+    try {
+        const std::vector<uint32_t> key(words, words + wordCount);
+        const int decision = skia_image_backing_internal::rasterVariantObserve(backing, kind, key, nullptr, nullptr);
+        if (decision == skia_image_backing_internal::RASTER_VARIANT_MATERIALIZE) {
+            sk_sp<SkImage> source = backing->snapshot();
+            if (!source) {
+                skia_image_backing_internal::rasterVariantFail(backing, kind, key);
+                return skia_image_backing_internal::RASTER_VARIANT_INVALID;
+            }
+            sk_sp<SkSurface> copy = SkSurface::MakeRaster(source->imageInfo());
+            if (!copy) {
+                skia_image_backing_internal::rasterVariantFail(backing, kind, key);
+                return skia_image_backing_internal::RASTER_VARIANT_INVALID;
+            }
+            copy->getCanvas()->drawImage(source.get(), 0, 0);
+            sk_sp<SkImage> derived = copy->makeImageSnapshot();
+            if (!derived) {
+                skia_image_backing_internal::rasterVariantFail(backing, kind, key);
+                return skia_image_backing_internal::RASTER_VARIANT_INVALID;
+            }
+            if (!skia_image_backing_internal::rasterVariantStore(backing, kind, key,
+                    std::move(derived), false)) {
+                return skia_image_backing_internal::RASTER_VARIANT_INVALID;
+            }
+        }
+        return decision;
+    } catch (const std::bad_alloc&) {
+        return skia_image_backing_internal::RASTER_VARIANT_INVALID;
+    }
+}
+
+int32 skia_image_backing_variant_state_for_test(int64_t handle) {
+    skia_image_backing_internal::NativeImageBackingRecord* backing =
+        skia_image_backing_internal::findBacking(handle);
+    if (!backing) {
+        return 0;
+    }
+    return (backing->rasterVariantValid && backing->rasterVariant ? 1 : 0)
+        | (backing->rasterVariantPending ? 2 : 0);
 }
 
 void skia_image_backing_fail_next_snapshot_for_test(void) {

@@ -7,6 +7,7 @@ package totalcross.ui.image;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,27 +44,27 @@ class ImageDestinationScaleTest {
   }
 
   @Test
-  void repeatedScaleHitsLeafCacheAndThirdScaleEvictsLeastRecentUse() throws Exception {
+  void materializedFallbackAdmitsOneExactVariantOnSecondUse() throws Exception {
     Image image = new Image(png(96, 96)).getSmoothScaledInstance(48, 48);
 
-    Image one = image.resolveForDrawing(1);
-    Image two = image.resolveForDrawing(2);
-    assertSame(two, image.resolveForDrawing(2));
-    image.resolveForDrawing(4);
+    Image first = image.resolveForDrawing(2);
+    assertEquals(0, image.pipelineForSmoke().cachedVariantCountForSmoke());
+    Image admitted = image.resolveForDrawing(2);
+    assertNotSame(first, admitted);
+    assertEquals(1, image.pipelineForSmoke().cachedVariantCountForSmoke());
+    assertSame(admitted, image.resolveForDrawing(2));
 
-    assertEquals(2, image.pipelineForSmoke().cachedVariantCountForSmoke());
-    assertSame(two, image.resolveForDrawing(2));
-    Image oneAgain = image.resolveForDrawing(1);
-    assertEquals(48, oneAgain.getPixelWidth());
-    assertEquals(2, image.pipelineForSmoke().cachedVariantCountForSmoke());
-    assertSame(oneAgain, image.resolveForDrawing(1));
-    // The first 1x object was the evicted object; a fresh 1x variant proves the LRU was used.
-    assertNotNull(one);
+    image.resolveForDrawing(4);
+    assertEquals(1, image.pipelineForSmoke().cachedVariantCountForSmoke());
+    Image otherScale = image.resolveForDrawing(4);
+    assertSame(otherScale, image.resolveForDrawing(4));
+    assertEquals(1, image.pipelineForSmoke().cachedVariantCountForSmoke());
   }
 
   @Test
   void freeTextureReleasesVariantTexturesButKeepsCpuCache() throws Exception {
     Image image = new Image(png(96, 96)).getSmoothScaledInstance(48, 48);
+    image.resolveForDrawing(2);
     Image variant = image.resolveForDrawing(2);
 
     image.freeTexture();
@@ -90,6 +91,7 @@ class ImageDestinationScaleTest {
     image.alphaMask = 120;
     image.hwScaleW = 0.75;
     image.hwScaleH = 1.25;
+    image.resolveForDrawing(2);
     Image variant = image.resolveForDrawing(2);
     image.alphaMask = 80;
     image.hwScaleW = 0.5;
@@ -100,7 +102,8 @@ class ImageDestinationScaleTest {
     assertEquals(1.5, variant.hwScaleH);
 
     Image colorOnly = new Image(png(8, 8)).getAlphaInstance(-20);
-    Image natural = colorOnly.resolveForDrawing(1);
+    colorOnly.resolveForDrawing(1);
+    Image natural = colorOnly.resolveForDrawing(2);
     assertSame(natural, colorOnly.resolveForDrawing(2));
     assertEquals(1, natural.getContentScale());
     assertEquals(1, colorOnly.pipelineForSmoke().cachedVariantCountForSmoke());

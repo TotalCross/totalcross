@@ -126,6 +126,9 @@ totalcross/ui/image/NativeImageBacking|native private static long backingBytesLi
 totalcross/ui/image/NativeImageBacking|native private static long backingPeakBytesTest();
 totalcross/ui/image/NativeImageBacking|native private static long createFromArgbPixelsNative(int []pixels, int width, int height);
 totalcross/ui/image/NativeImageBacking|native private long snapshotNative();
+totalcross/ui/image/NativeImageBacking|native private void invalidateVariantsNative();
+totalcross/ui/image/NativeImageBacking|native private int observeVariantForTestNative(int kind, int []exactKey);
+totalcross/ui/image/NativeImageBacking|native private int variantStateForTestNative();
 totalcross/ui/image/NativeImageBacking|native private static void failNextSnapshotNative();
 totalcross/ui/image/NativeImageBacking|native private boolean makeMutableNative();
 totalcross/ui/image/NativeImageBacking|native private long scaleNative(int width, int height, boolean smooth);

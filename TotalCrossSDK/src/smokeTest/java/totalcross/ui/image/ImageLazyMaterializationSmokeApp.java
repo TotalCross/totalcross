@@ -289,11 +289,12 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
           && Image.targetedDecodeWidthForTest() == 800 && Image.targetedDecodeHeightForTest() == 450
           && aspectResult.getPixelWidth() == 200 && aspectResult.getPixelHeight() == 400;
       Image twoX = smoothJpeg.resolveForDrawing(2);
+      Image twoXAdmitted = smoothJpeg.resolveForDrawing(2);
       destinationScaleDimensions = oneX.getPixelWidth() == 64 && oneX.getPixelHeight() == 48
           && twoX.getPixelWidth() == 128 && twoX.getPixelHeight() == 96
           && fourX.getPixelWidth() == 256 && fourX.getPixelHeight() == 192;
-      destinationScaleCache = twoX == smoothJpeg.resolveForDrawing(2)
-          && smoothJpeg.pipelineForSmoke().cachedVariantCountForSmoke() <= 2;
+      destinationScaleCache = twoXAdmitted == smoothJpeg.resolveForDrawing(2)
+          && smoothJpeg.pipelineForSmoke().cachedVariantCountForSmoke() <= 1;
       smoothJpeg.hwScaleW = 0.5;
       smoothJpeg.hwScaleH = 1.5;
       Image presentation = smoothJpeg.resolveForDrawing(2);
@@ -640,14 +641,16 @@ public class ImageLazyMaterializationSmokeApp extends MainWindow {
 
   private static boolean checkFinalScaleCacheReuse() throws Exception {
     Image image = new Image(Vm.getFile("image-abi/tiny.png")).getSmoothScaledInstance(12, 10);
+    image.resolveForDrawing(1);
     Image one = image.resolveForDrawing(1);
-    Image two = image.resolveForDrawing(2);
     Image oneAgain = image.resolveForDrawing(1);
+    image.resolveForDrawing(2);
+    Image two = image.resolveForDrawing(2);
     Image twoAgain = image.resolveForDrawing(2);
     ImagePipeline pipeline = image.pipelineForSmoke();
     return one == oneAgain && two == twoAgain
         && one.getPixelWidth() == 12 && two.getPixelWidth() == 24
-        && pipeline != null && pipeline.cachedVariantCountForSmoke() == 2;
+        && pipeline != null && pipeline.cachedVariantCountForSmoke() == 1;
   }
 
   private static boolean checkFinalDetachedGetPixels() throws Exception {

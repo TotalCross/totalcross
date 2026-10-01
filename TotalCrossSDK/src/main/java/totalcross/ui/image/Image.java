@@ -656,8 +656,14 @@ public class Image extends GfxSurface {
     if (backing != null) {
       backing.markMutationAfter(previousGeneration, resultingOpacityState);
       backingMutationGeneration = backing.mutationGeneration();
+      if (backing instanceof NativeImageBacking) {
+        ((NativeImageBacking) backing).invalidateVariantsForMutation();
+      }
     } else {
       backingMutationGeneration = previousGeneration + 1;
+    }
+    if (pipeline != null) {
+      pipeline.clearCachedVariants();
     }
   }
 
@@ -1216,7 +1222,11 @@ public class Image extends GfxSurface {
     }
     Image resolved = resolvePipeline(deferred, effectiveScale);
     synchronizePresentationState(resolved);
-    deferred.cacheMaterializedVariant(scaleBits, resolved, sourceDecodeGeneration(deferred));
+    sourceDecodeGeneration = sourceDecodeGeneration(deferred);
+    boolean admitted = deferred.observeMaterializedVariant(scaleBits, sourceDecodeGeneration);
+    if (admitted) {
+      deferred.cacheMaterializedVariant(scaleBits, resolved, sourceDecodeGeneration);
+    }
     return resolved;
   }
 

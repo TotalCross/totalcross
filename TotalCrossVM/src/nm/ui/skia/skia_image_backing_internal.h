@@ -8,7 +8,31 @@
 #include "skia_image_backing.h"
 #include "skia_internal.h"
 
+#include <cstdint>
+#include <vector>
+
 namespace skia_image_backing_internal {
+
+enum RasterVariantKind {
+    RASTER_VARIANT_TARGET_COLOR = 1,
+    RASTER_VARIANT_PHYSICAL = 2
+};
+
+enum RasterVariantDecision {
+    RASTER_VARIANT_MISS = 0,
+    RASTER_VARIANT_MATERIALIZE = 1,
+    RASTER_VARIANT_HIT = 2,
+    RASTER_VARIANT_INVALID = 3
+};
+
+struct RasterVariantKey {
+    int32_t kind = 0;
+    std::vector<uint32_t> words;
+
+    bool equals(int32_t otherKind, const std::vector<uint32_t>& otherWords) const {
+        return kind == otherKind && words == otherWords;
+    }
+};
 
 struct NativeImageBackingRecord {
     sk_sp<SkImage> image;
@@ -22,6 +46,12 @@ struct NativeImageBackingRecord {
     uint8_t applyColor2HighestGreen = 0;
     uint8_t applyColor2HighestBlue = 0;
     uint8_t applyColor2HighestChannel = 0;
+    bool rasterVariantValid = false;
+    bool rasterVariantOpaque = false;
+    RasterVariantKey rasterVariantKey;
+    sk_sp<SkImage> rasterVariant;
+    bool rasterVariantPending = false;
+    RasterVariantKey rasterVariantPendingKey;
 
     SkCanvas* canvas() const {
         return surface ? surface->getCanvas() : nullptr;
@@ -35,6 +65,15 @@ struct NativeImageBackingRecord {
 NativeImageBackingRecord* findBacking(int64_t handle);
 int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing);
 SkImageInfo rasterInfo(int32 width, int32 height);
+int rasterVariantObserve(NativeImageBackingRecord* backing, int32_t kind,
+                         const std::vector<uint32_t>& words, sk_sp<SkImage>* hit,
+                         bool* provenOpaque);
+bool rasterVariantStore(NativeImageBackingRecord* backing, int32_t kind,
+                        const std::vector<uint32_t>& words, sk_sp<SkImage> image,
+                        bool provenOpaque);
+void rasterVariantFail(NativeImageBackingRecord* backing, int32_t kind,
+                       const std::vector<uint32_t>& words);
+void rasterVariantClear(NativeImageBackingRecord* backing);
 
 }
 
