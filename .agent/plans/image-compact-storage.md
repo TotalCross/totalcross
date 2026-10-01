@@ -35,10 +35,13 @@ contains concise results and supported limitations only.
 - [x] Confirmed the base contains P2 authoritative backing state, opacity and
   mutation generation, bounded row readback, and P3 physical identity, exact
   derived-variant keys, and single-slot/pending variant ownership.
-- [ ] Implement capability resolution and format-aware generic native backing
-  storage before enabling compact source selection.
-- [ ] Add direct compact JPEG/PNG source decode, compact observers, and format
-  accounting.
+- [x] Implemented startup capability resolution, internal format metadata,
+  actual row-byte/backing-byte accounting, and row-bounded RGBA observers.
+  Compact source selection remains disabled until decode paths land.
+- [ ] Implement structural format selection and direct compact JPEG/PNG source
+  decode, with compact observer and accounting evidence.
+- [ ] Add deterministic compact-format quality fixtures and full observer
+  coverage.
 - [ ] Add transactional promotion and complete P2/P3 lifecycle coverage.
 - [ ] Finish focused validation, macOS smoke and measurements, and the factual
   implementation report.

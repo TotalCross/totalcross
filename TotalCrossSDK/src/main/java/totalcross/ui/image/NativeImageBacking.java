@@ -17,6 +17,10 @@ final class NativeImageBacking extends ImageBacking {
   static final int TEST_COLOR_BGRA_8888 = 1;
   static final int TEST_COLOR_RGB_565 = 2;
   static final int TEST_COLOR_ALPHA_8 = 3;
+  static final int FORMAT_RGBA8888 = 0;
+  static final int FORMAT_RGB565 = 1;
+  static final int FORMAT_GRAY8 = 2;
+  static final int FORMAT_ARGB4444 = 3;
 
   private long nativeHandle;
   private final int width;
@@ -98,6 +102,15 @@ final class NativeImageBacking extends ImageBacking {
     return new NativeImageBacking(handle, width, height);
   }
 
+  static NativeImageBacking createEmptyWithFormatForTest(int width, int height, int format)
+      throws ImageException {
+    long handle = createEmptyFormatTest(width, height, format);
+    if (handle == 0) {
+      throw new ImageException("Could not create test image backing.");
+    }
+    return new NativeImageBacking(handle, width, height);
+  }
+
   static NativeImageBacking createFromArgbPixels(int[] pixels, int width, int height) throws ImageException {
     if (pixels == null || width <= 0 || height <= 0 || (long) width * height > pixels.length) {
       throw new ImageException("Invalid native image pixels.");
@@ -111,6 +124,10 @@ final class NativeImageBacking extends ImageBacking {
 
   static boolean isAvailable() {
     return isAvailableNative();
+  }
+
+  static boolean isCompactStorageAvailable() {
+    return compactStorageAvailableNative();
   }
 
   static void resetBackingAccountingForTest() {
@@ -279,6 +296,18 @@ final class NativeImageBacking extends ImageBacking {
     return colorTypeTest();
   }
 
+  int formatForTest() {
+    return formatTest();
+  }
+
+  int rowBytesForTest() {
+    return rowBytesTest();
+  }
+
+  long backingBytesForTest() {
+    return backingBytesTest();
+  }
+
   static void failNextVariantMaterializationForTest() {
     failVariantTest();
   }
@@ -299,7 +328,17 @@ final class NativeImageBacking extends ImageBacking {
   }
 
   @ReplacedByNativeOnDeploy
+  private static long createEmptyFormatTest(int width, int height, int format) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
   private static boolean isAvailableNative() {
+    return false;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private static boolean compactStorageAvailableNative() {
     return false;
   }
 
@@ -363,6 +402,21 @@ final class NativeImageBacking extends ImageBacking {
 
   @ReplacedByNativeOnDeploy
   private int colorTypeTest() {
+    return -1;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int formatTest() {
+    return -1;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int rowBytesTest() {
+    return -1;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private long backingBytesTest() {
     return -1;
   }
 

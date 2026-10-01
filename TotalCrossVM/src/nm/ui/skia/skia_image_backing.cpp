@@ -4,9 +4,10 @@
 
 #include "skia_image_backing_internal.h"
 
+#include "include/core/SkPixmap.h"
+
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <algorithm>
 #include <limits>
 #include <map>
@@ -23,6 +24,7 @@ using skia_image_backing_internal::RASTER_VARIANT_MATERIALIZE;
 using skia_image_backing_internal::RASTER_VARIANT_MISS;
 using skia_image_backing_internal::RASTER_VARIANT_PHYSICAL;
 using skia_image_backing_internal::RASTER_VARIANT_TARGET_COLOR;
+using skia_image_backing_internal::BackingFormat;
 
 std::map<int64_t, std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord>> backings;
 std::map<int32, int64_t> surfaceAliases;
@@ -40,7 +42,65 @@ uint64_t backingBytesLiveForTest;
 uint64_t backingBytesPeakLiveForTest;
 
 uint64_t backingBytes(const NativeImageBackingRecord& backing) {
-    return static_cast<uint64_t>(backing.width) * static_cast<uint64_t>(backing.height) * 4;
+    return backing.backingBytes;
+}
+
+BackingFormat backingFormatForColorType(SkColorType colorType) {
+    switch (colorType) {
+        case kRGBA_8888_SkColorType: return BackingFormat::RGBA8888;
+        case kRGB_565_SkColorType: return BackingFormat::RGB565;
+        case kGray_8_SkColorType: return BackingFormat::GRAY8;
+        case kARGB_4444_SkColorType: return BackingFormat::ARGB4444;
+        default: return BackingFormat::UNKNOWN;
+    }
+}
+
+bool captureStorageMetadata(NativeImageBackingRecord* backing) {
+    if (!backing || backing->width <= 0 || backing->height <= 0) {
+        return false;
+    }
+    SkPixmap pixmap;
+    SkImageInfo info;
+    size_t rowBytes = 0;
+    if (backing->surface && backing->surface->peekPixels(&pixmap)) {
+        info = pixmap.info();
+        rowBytes = pixmap.rowBytes();
+    } else if (backing->image && backing->image->peekPixels(&pixmap)) {
+        info = pixmap.info();
+        rowBytes = pixmap.rowBytes();
+    } else if (backing->surface) {
+        info = backing->surface->imageInfo();
+        rowBytes = info.minRowBytes();
+    } else if (backing->image) {
+        info = backing->image->imageInfo();
+        rowBytes = info.minRowBytes();
+    } else {
+        return false;
+    }
+    if (rowBytes == 0 || rowBytes < info.minRowBytes()
+            || rowBytes > std::numeric_limits<uint64_t>::max()
+                / static_cast<uint64_t>(backing->height)) {
+        return false;
+    }
+    backing->format = backingFormatForColorType(info.colorType());
+    backing->rowBytes = rowBytes;
+    backing->backingBytes = static_cast<uint64_t>(rowBytes) * backing->height;
+    return true;
+}
+
+SkColorType colorTypeForFormat(int32 format) {
+    switch (format) {
+        case 0: return kRGBA_8888_SkColorType;
+        case 1: return kRGB_565_SkColorType;
+        case 2: return kGray_8_SkColorType;
+        case 3: return kARGB_4444_SkColorType;
+        default: return kUnknown_SkColorType;
+    }
+}
+
+SkAlphaType alphaTypeForFormat(int32 format) {
+    return format == 1 || format == 2 ? kOpaque_SkAlphaType
+        : format == 3 ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
 }
 
 void recordBackingCreated(const NativeImageBackingRecord& backing) {
@@ -161,7 +221,7 @@ void rasterVariantClearInternal(NativeImageBackingRecord* backing) {
 }
 
 int64_t registerBackingRecord(std::unique_ptr<skia_image_backing_internal::NativeImageBackingRecord> backing) {
-    if (!backing || nextHandle <= 0) {
+    if (!backing || nextHandle <= 0 || !captureStorageMetadata(backing.get())) {
         return 0;
     }
     const int64_t handle = nextHandle++;
@@ -243,56 +303,44 @@ void releaseOwnedPixels(const void* pixels, void*) {
 bool readRgbaBytes(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
                    int32 width, int32 height) {
     if (!backing || !output || x < 0 || y < 0 || width <= 0 || height <= 0 ||
-        x > backing->width - width || y > backing->height - height) {
+        x > backing->width - width || y > backing->height - height ||
+        static_cast<uint64_t>(width) > std::numeric_limits<size_t>::max() / 4) {
         return false;
     }
-    const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
-    if (pixelCount > std::numeric_limits<size_t>::max() / 4) {
-        return false;
+    const SkImageInfo info = rasterInfo(width, height);
+    const size_t rowBytes = static_cast<size_t>(width) * 4;
+    if (backing->surface) {
+        return backing->surface->readPixels(info, output, rowBytes, x, y);
     }
-
-    try {
-        std::vector<uint8_t> rgba(static_cast<size_t>(pixelCount) * 4);
-        const SkImageInfo info = rasterInfo(width, height);
-        const size_t rowBytes = static_cast<size_t>(width) * 4;
-        bool copied = false;
-        if (backing->surface) {
-            copied = backing->surface->readPixels(info, rgba.data(), rowBytes, x, y);
-        } else if (backing->image) {
-            copied = backing->image->readPixels(info, rgba.data(), rowBytes, x, y);
-        }
-        if (!copied) {
-            return false;
-        }
-
-        std::memcpy(output, rgba.data(), rgba.size());
-        return true;
-    } catch (const std::bad_alloc&) {
-        return false;
-    }
+    return backing->image && backing->image->readPixels(info, output, rowBytes, x, y);
 }
 
 bool readRgba(NativeImageBackingRecord* backing, void* output, int32 x, int32 y,
               int32 width, int32 height) {
-    if (!output) {
+    if (!backing || !output || width <= 0 || height <= 0 || x < 0 || y < 0
+            || x > backing->width - width || y > backing->height - height) {
         return false;
     }
     const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
-    if (pixelCount > std::numeric_limits<size_t>::max() / sizeof(Pixel)) {
+    if (pixelCount > std::numeric_limits<size_t>::max() / sizeof(Pixel)
+            || static_cast<uint64_t>(width) > std::numeric_limits<size_t>::max() / 4) {
         return false;
     }
     try {
-        std::vector<uint8_t> rgba(static_cast<size_t>(pixelCount) * 4);
-        if (!readRgbaBytes(backing, rgba.data(), x, y, width, height)) {
-            return false;
-        }
+        std::vector<uint8_t> rgba(static_cast<size_t>(width) * 4);
         Pixel* pixels = static_cast<Pixel*>(output);
-        for (size_t i = 0; i < static_cast<size_t>(pixelCount); ++i) {
-            const uint8_t* pixel = rgba.data() + i * 4;
-            pixels[i] = (static_cast<Pixel>(pixel[3]) << 24)
-                | (static_cast<Pixel>(pixel[0]) << 16)
-                | (static_cast<Pixel>(pixel[1]) << 8)
-                | static_cast<Pixel>(pixel[2]);
+        for (int32 row = 0; row < height; ++row) {
+            if (!readRgbaBytes(backing, rgba.data(), x, y + row, width, 1)) {
+                return false;
+            }
+            for (int32 column = 0; column < width; ++column) {
+                const uint8_t* pixel = rgba.data() + static_cast<size_t>(column) * 4;
+                const size_t outputIndex = static_cast<size_t>(row) * width + column;
+                pixels[outputIndex] = (static_cast<Pixel>(pixel[3]) << 24)
+                    | (static_cast<Pixel>(pixel[0]) << 16)
+                    | (static_cast<Pixel>(pixel[1]) << 8)
+                    | static_cast<Pixel>(pixel[2]);
+            }
         }
         return true;
     } catch (const std::bad_alloc&) {
@@ -310,6 +358,25 @@ NativeImageBackingRecord* findBacking(int64_t handle) {
 
 int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing) {
     return ::registerBackingRecord(std::move(backing));
+}
+
+bool updateStorageMetadata(NativeImageBackingRecord* backing) {
+    if (!backing) {
+        return false;
+    }
+    const uint64_t oldBytes = backing->backingBytes;
+    if (!::captureStorageMetadata(backing)) {
+        return false;
+    }
+    if (backingAccountingForTest) {
+        if (backing->backingBytes >= oldBytes) {
+            backingBytesLiveForTest += backing->backingBytes - oldBytes;
+        } else {
+            backingBytesLiveForTest -= std::min(backingBytesLiveForTest, oldBytes - backing->backingBytes);
+        }
+        backingBytesPeakLiveForTest = std::max(backingBytesPeakLiveForTest, backingBytesLiveForTest);
+    }
+    return true;
 }
 
 SkImageInfo rasterInfo(int32 width, int32 height) {
@@ -355,6 +422,67 @@ int64_t skia_image_backing_create_empty(int32 width, int32 height) {
     } catch (const std::bad_alloc&) {
         return 0;
     }
+}
+
+int64_t skia_image_backing_create_empty_with_format(int32 width, int32 height, int32 format) {
+    const SkColorType colorType = colorTypeForFormat(format);
+    if (width <= 0 || height <= 0 || colorType == kUnknown_SkColorType) {
+        return 0;
+    }
+    try {
+        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
+        const SkImageInfo info = SkImageInfo::Make(width, height, colorType, alphaTypeForFormat(format));
+        backing->surface = SkSurface::MakeRaster(info);
+        if (!backing->surface) {
+            return 0;
+        }
+        backing->width = width;
+        backing->height = height;
+        return registerBackingRecord(std::move(backing));
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
+int skia_image_backing_compact_storage_available(void) {
+    const SkImageInfo grayInfo = SkImageInfo::Make(1, 1, kGray_8_SkColorType, kOpaque_SkAlphaType);
+    const SkImageInfo rgb565Info = SkImageInfo::Make(1, 1, kRGB_565_SkColorType, kOpaque_SkAlphaType);
+    const SkImageInfo argb4444Info = SkImageInfo::Make(1, 1, kARGB_4444_SkColorType, kPremul_SkAlphaType);
+    sk_sp<SkSurface> gray = SkSurface::MakeRaster(grayInfo);
+    sk_sp<SkSurface> rgb565 = SkSurface::MakeRaster(rgb565Info);
+    sk_sp<SkSurface> argb4444 = SkSurface::MakeRaster(argb4444Info);
+    return gray && rgb565 && argb4444 ? 1 : 0;
+}
+
+int skia_image_backing_finish_decode(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    if (!backing || !backing->surface || backing->image) {
+        return 0;
+    }
+    sk_sp<SkImage> image = backing->surface->makeImageSnapshot();
+    if (!image) {
+        return 0;
+    }
+    backing->image = std::move(image);
+    backing->surface.reset();
+    return skia_image_backing_internal::updateStorageMetadata(backing) ? 1 : 0;
+}
+
+int32 skia_image_backing_format(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    return backing ? static_cast<int32>(backing->format) : -1;
+}
+
+int32 skia_image_backing_row_bytes(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    return backing && backing->rowBytes <= static_cast<size_t>(std::numeric_limits<int32>::max())
+        ? static_cast<int32>(backing->rowBytes) : -1;
+}
+
+int64_t skia_image_backing_byte_count(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    return backing && backing->backingBytes <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())
+        ? static_cast<int64_t>(backing->backingBytes) : -1;
 }
 
 int64_t skia_image_backing_create_empty_with_color_type_for_test(int32 width, int32 height,
@@ -560,13 +688,26 @@ int skia_image_backing_make_mutable(int64_t handle) {
         return 0;
     }
     try {
+        sk_sp<SkImage> previousImage = backing->image;
         sk_sp<SkSurface> surface = SkSurface::MakeRaster(rasterInfo(backing->width, backing->height));
         if (!surface) {
             return 0;
         }
-        surface->getCanvas()->drawImage(backing->image, 0, 0);
+        surface->getCanvas()->drawImage(previousImage, 0, 0);
+        const bool compactPromotion = backing->format != BackingFormat::RGBA8888;
         backing->surface = std::move(surface);
         backing->image.reset();
+        if (!skia_image_backing_internal::updateStorageMetadata(backing)) {
+            backing->surface.reset();
+            backing->image = std::move(previousImage);
+            skia_image_backing_internal::updateStorageMetadata(backing);
+            return 0;
+        }
+        if (compactPromotion) {
+            ++backing->generation;
+            backing->applyColor2AnalysisValid = false;
+            rasterVariantClearInternal(backing);
+        }
         return 1;
     } catch (const std::bad_alloc&) {
         return 0;

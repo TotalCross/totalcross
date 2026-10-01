@@ -13,6 +13,14 @@
 
 namespace skia_image_backing_internal {
 
+enum class BackingFormat : uint8_t {
+    RGBA8888 = 0,
+    RGB565 = 1,
+    GRAY8 = 2,
+    ARGB4444 = 3,
+    UNKNOWN = 255
+};
+
 enum RasterVariantKind {
     RASTER_VARIANT_TARGET_COLOR = 1,
     RASTER_VARIANT_PHYSICAL = 2
@@ -37,8 +45,11 @@ struct RasterVariantKey {
 struct NativeImageBackingRecord {
     sk_sp<SkImage> image;
     sk_sp<SkSurface> surface;
-    int32 width;
-    int32 height;
+    int32 width = 0;
+    int32 height = 0;
+    BackingFormat format = BackingFormat::RGBA8888;
+    size_t rowBytes = 0;
+    uint64_t backingBytes = 0;
     uint64_t generation = 0;
     bool applyColor2AnalysisValid = false;
     uint64_t applyColor2AnalysisGeneration = 0;
@@ -64,6 +75,7 @@ struct NativeImageBackingRecord {
 
 NativeImageBackingRecord* findBacking(int64_t handle);
 int64_t registerBacking(std::unique_ptr<NativeImageBackingRecord> backing);
+bool updateStorageMetadata(NativeImageBackingRecord* backing);
 SkImageInfo rasterInfo(int32 width, int32 height);
 int rasterVariantObserve(NativeImageBackingRecord* backing, int32_t kind,
                          const std::vector<uint32_t>& words, sk_sp<SkImage>* hit,

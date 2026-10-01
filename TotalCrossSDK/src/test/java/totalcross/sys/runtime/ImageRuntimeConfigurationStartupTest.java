@@ -69,14 +69,14 @@ class ImageRuntimeConfigurationStartupTest {
     ImageRuntimePolicy resolved = ImageRuntimeConfigurationStartup.currentPolicy();
     assertEquals(ImageStorageProfile.COMPACT, resolved.requestedStorageProfile());
     assertEquals(ImageStorageProfile.STANDARD, resolved.effectiveStorageProfile());
-    assertEquals("compact storage is not available in P1", resolved.storageReason());
+    assertEquals("native compact backing is unavailable", resolved.storageReason());
     assertEquals(Collections.singletonList("image-rule-0"), resolved.matchedRuleNames());
 
     String report = RuntimeConfigurationReport.describe();
     assertTrue(report.contains("graphicsBackend: RASTER"));
     assertTrue(report.contains("requested: COMPACT"));
     assertTrue(report.contains("effective: STANDARD"));
-    assertTrue(report.contains("reason: compact storage is not available in P1"));
+    assertTrue(report.contains("reason: native compact backing is unavailable"));
     assertTrue(report.contains("zeroCopyDecode: enabled"));
     assertTrue(report.contains("targetColorConversion: disabled"));
     assertTrue(report.contains("prefetchWorker: LEGACY_PER_ENTRY_THREAD"));
@@ -84,6 +84,26 @@ class ImageRuntimeConfigurationStartupTest {
     ImageRuntimeConfigurationStartup.initializeForSimulator(rules);
     String repeatedInitialization = RuntimeConfigurationReport.describe();
     assertEquals(1, occurrences(repeatedInitialization, "\nImage\n"));
+  }
+
+  @Test
+  void compactCapabilityControlsEffectiveStorageWithoutChangingTheRequest() {
+    ImageRuntimePolicy compact = ImageRuntimePolicy.forRequestedStorage(ImageStorageProfile.COMPACT,
+        Collections.singletonList("image-rule-0"), true);
+    assertEquals(ImageStorageProfile.COMPACT, compact.requestedStorageProfile());
+    assertEquals(ImageStorageProfile.COMPACT, compact.effectiveStorageProfile());
+    assertNull(compact.storageReason());
+
+    ImageRuntimePolicy fallback = ImageRuntimePolicy.forRequestedStorage(ImageStorageProfile.COMPACT,
+        Collections.singletonList("image-rule-0"), false);
+    assertEquals(ImageStorageProfile.COMPACT, fallback.requestedStorageProfile());
+    assertEquals(ImageStorageProfile.STANDARD, fallback.effectiveStorageProfile());
+    assertEquals("native compact backing is unavailable", fallback.storageReason());
+
+    ImageRuntimePolicy standard = ImageRuntimePolicy.forRequestedStorage(ImageStorageProfile.STANDARD,
+        Collections.<String>emptyList(), true);
+    assertEquals(ImageStorageProfile.STANDARD, standard.effectiveStorageProfile());
+    assertNull(standard.storageReason());
   }
 
   @Test

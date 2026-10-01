@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 import totalcross.sys.Vm;
+import totalcross.ui.image.ImageCompactStorageCapabilityBridge;
 import totalcross.ui.image.ImageStorageProfile;
 
 /** Internal startup binding for resolving the optional Image TCZ configuration resource. */
@@ -83,8 +84,10 @@ public final class ImageRuntimeConfigurationStartup {
     RuntimeConfigurationFeatureBridge.FeatureResolution<ImageStorageProfile> resolution =
         RuntimeConfigurationFeatureBridge.resolveSingleSetting(environment, pendingRules,
             ImageStorageProfile.STANDARD);
+    boolean compactBackingAvailable = resolution.requestedValue() == ImageStorageProfile.COMPACT
+        && ImageCompactStorageCapabilityBridge.isAvailable();
     currentPolicy = ImageRuntimePolicy.forRequestedStorage(resolution.requestedValue(),
-        resolution.matchedRuleNames());
+        resolution.matchedRuleNames(), compactBackingAvailable);
     pendingRules = null;
   }
 
