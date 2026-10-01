@@ -447,6 +447,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   
   private boolean internalScrollContent(int dx, int dy, boolean fromFlick) {
     boolean scrolled = false;
+    boolean pendingDamage = Window.needsPaint;
     int appliedDx = 0;
     int appliedDy = 0;
     if((sbV != null || sbH != null) && dx == 0 && dy == 0) {
@@ -485,14 +486,14 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     }
 
     if (scrolled) {
-      if (!(appliedDx == 0 && appliedDy != 0 && tryRasterReuse(appliedDx, appliedDy))) {
+      if (!(appliedDx == 0 && appliedDy != 0 && tryRasterReuse(appliedDx, appliedDy, pendingDamage))) {
         Window.needsPaint = true;
       }
     }
     return scrolled;
   }
 
-  private boolean tryRasterReuse(int dx, int dy) {
+  private boolean tryRasterReuse(int dx, int dy, boolean pendingDamage) {
     if (!ScrollRasterReuse.isEnabled()) {
       return false;
     }
@@ -535,7 +536,7 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
         || (sbV != null && sbV.isVisible() && sbV.transparentBackground)
         || (sbH != null && sbH.isVisible() && sbH.transparentBackground);
     ScrollRasterReuse.Plan plan = ScrollRasterReuse.plan(true, ScrollRasterReuse.isRasterBackend(), dx, dy,
-        viewport, scale, surface, unsupportedScale, false, fullRepaintRequired);
+        viewport, scale, surface, unsupportedScale, pendingDamage, fullRepaintRequired);
     if (!plan.eligible()) {
       ScrollRasterReuse.recordFallback(plan.fallbackReason);
       return false;
@@ -549,8 +550,11 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
     int moveStatus = ScrollRasterReuse.move(plan, surface);
     if (moveStatus != ScrollRasterReuse.MOVE_SUCCEEDED) {
       ScrollRasterReuse.recordFallback(ScrollRasterReuse.fallbackReasonForMove(moveStatus));
-      Window.needsPaint = true;
-      return false;
+      if (Window.repaintActiveWindowsForRasterReuseFallback()
+          && moveStatus == ScrollRasterReuse.MOVE_FAILED) {
+        ScrollRasterReuse.recordMoveRecovered();
+      }
+      return true;
     }
 
     if (!Window.repaintActiveWindowsForRasterReuse(logicalDamage)) {
