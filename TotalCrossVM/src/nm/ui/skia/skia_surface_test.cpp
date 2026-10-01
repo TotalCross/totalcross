@@ -18,6 +18,132 @@ static bool expectEqual(Pixel actual, Pixel expected, const char* message) {
     return false;
 }
 
+static bool testPhysicalIdentityCopyCase(int operation, int32 alphaMask,
+                                         bool expectCopyHit, bool expectIdentityHit,
+                                         bool partialClip = false, bool identityEnabled = true,
+                                         bool colorFilter = false) {
+    const uint8_t sourceRgba[] = {
+        0x10, 0x20, 0x30, 0xFF, 0x40, 0x50, 0x60, 0xFF,
+        0x70, 0x80, 0x90, 0xFF, 0xA0, 0xB0, 0xC0, 0xFF
+    };
+    const int64_t sourceHandle = skia_image_backing_create_empty(2, 2);
+    const int64_t destinationHandle = skia_image_backing_create_empty(4, 4);
+    if (sourceHandle == 0 || destinationHandle == 0
+        || !skia_image_backing_write_rgba_pixels(sourceHandle, sourceRgba, 0, 0, 2, 2, 8)) {
+        std::fputs("unable to create physical-copy test backings\n", stderr);
+        return false;
+    }
+    const int32 destinationSurface = skia_image_backing_surface_id(destinationHandle);
+    if (destinationSurface == SKIA_INVALID_SURFACE_ID) {
+        std::fputs("unable to create physical-copy destination alias\n", stderr);
+        return false;
+    }
+
+    int32 operations[] = {operation, SKIA_IMAGE_DRAW_ALPHA};
+    int32 parameters[] = {operation == SKIA_IMAGE_DRAW_CROP ? 1 : 0, 0, 0, 0, 128, 0, 0, 0};
+    int32 dimensions[] = {
+        operation == SKIA_IMAGE_DRAW_CROP ? 1 : 2,
+        2,
+        operation == SKIA_IMAGE_DRAW_CROP ? 1 : 2,
+        2
+    };
+    SkiaImageDrawPlanData plan = {};
+    plan.rootHandle = sourceHandle;
+    plan.rootWidth = 2;
+    plan.rootHeight = 2;
+    plan.rootLogicalWidth = 2;
+    plan.rootLogicalHeight = 2;
+    plan.rootFrameCount = 1;
+    plan.rootWidthOfAllFrames = 2;
+    plan.rootContentScale = 1;
+    plan.operations = operations;
+    plan.parameters = parameters;
+    plan.dimensions = dimensions;
+    plan.operationCount = colorFilter ? 2 : 1;
+    plan.outputWidth = dimensions[0];
+    plan.outputHeight = dimensions[1];
+    plan.outputFrameCount = 1;
+    plan.outputWidthOfAllFrames = dimensions[0];
+    plan.alphaMask = alphaMask;
+    plan.materializeAlphaMask = 255;
+    plan.outputAlphaMask = alphaMask;
+    plan.sourceBackingStable = 1;
+    plan.sourceOpacityState = 1;
+    plan.physicalIdentityEnabled = identityEnabled;
+    plan.destinationScale = 1;
+    plan.outputContentScale = 1;
+    plan.hwScaleW = 1;
+    plan.hwScaleH = 1;
+    plan.rootHwScaleW = 1;
+    plan.rootHwScaleH = 1;
+
+    const int32 sourceLeft = partialClip ? 1 : 0;
+    const int32 destinationX = partialClip ? 2 : 1;
+    const int32 destinationY = 1;
+    const float sourceRight = static_cast<float>(dimensions[0]);
+    const float sourceBottom = static_cast<float>(dimensions[1]);
+    const float destinationRight = destinationX + sourceRight - sourceLeft;
+    const float destinationBottom = destinationY + sourceBottom;
+    skia_setClip(destinationSurface, partialClip ? 2 : 0, 0, partialClip ? 3 : 4, 4);
+    const int status = skia_image_backing_draw_geometry_to_surface(destinationSurface, &plan,
+        static_cast<float>(sourceLeft), 0, sourceRight, sourceBottom, destinationX, destinationY,
+        destinationRight, destinationBottom, true);
+    skia_restoreClip(destinationSurface);
+
+    const bool copyHit = (status & SKIA_IMAGE_DRAW_PHYSICAL_COPY_HIT) != 0;
+    const bool identityHit = (status & SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT) != 0;
+    const bool copyAttempt = (status & SKIA_IMAGE_DRAW_PHYSICAL_COPY_ATTEMPT) != 0;
+    const bool identityAttempt = (status & SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_ATTEMPT) != 0;
+    bool pixelsMatch = false;
+    if (operation == SKIA_IMAGE_DRAW_CROP && alphaMask == 255) {
+        pixelsMatch = expectEqual(skia_getPixel(destinationSurface, 1, 1), 0xFF405060,
+                                  "cropped physical copy first pixel")
+            && expectEqual(skia_getPixel(destinationSurface, 1, 2), 0xFFA0B0C0,
+                           "cropped physical copy second pixel")
+            && expectEqual(skia_getPixel(destinationSurface, 0, 0), 0,
+                           "cropped physical copy leaves other pixels unchanged");
+    } else if (operation == SKIA_IMAGE_DRAW_SMOOTH_SCALE && alphaMask == 255 && partialClip) {
+        pixelsMatch = expectEqual(skia_getPixel(destinationSurface, 2, 1), 0xFF405060,
+                                  "clipped physical copy first visible pixel")
+            && expectEqual(skia_getPixel(destinationSurface, 2, 2), 0xFFA0B0C0,
+                           "clipped physical copy last visible pixel")
+            && expectEqual(skia_getPixel(destinationSurface, 1, 1), 0,
+                           "clipped physical copy leaves hidden pixel unchanged");
+    } else if (operation == SKIA_IMAGE_DRAW_SMOOTH_SCALE && alphaMask == 255) {
+        pixelsMatch = expectEqual(skia_getPixel(destinationSurface, 1, 1), 0xFF102030,
+                                  "unit smooth physical copy first pixel")
+            && expectEqual(skia_getPixel(destinationSurface, 2, 2), 0xFFA0B0C0,
+                           "unit smooth physical copy last pixel");
+    } else {
+        const Pixel blended = skia_getPixel(destinationSurface, 1, 1);
+        pixelsMatch = (blended >> 24) >= 127 && (blended >> 24) <= 129;
+    }
+
+    skia_image_backing_release(sourceHandle);
+    skia_image_backing_release(destinationHandle);
+    if (!pixelsMatch || copyHit != expectCopyHit || identityHit != expectIdentityHit
+        || copyAttempt != identityEnabled || identityAttempt != identityEnabled
+        || (status & SKIA_IMAGE_DRAW_HANDLED) == 0) {
+        std::fprintf(stderr, "physical-copy status mismatch: status=%#x copyHit=%d identityHit=%d\n",
+                     status, copyHit, identityHit);
+        return false;
+    }
+    return true;
+}
+
+static bool testPhysicalIdentityCopy() {
+    if (!testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, true, false)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_SMOOTH_SCALE, 255, true, false)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_SMOOTH_SCALE, 255, true, false, true)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 128, false, true)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, false, false, false, false)
+        || !testPhysicalIdentityCopyCase(SKIA_IMAGE_DRAW_CROP, 255, false, true, false, true, true)) {
+        return false;
+    }
+    std::puts("skia physical identity copy assertions passed");
+    return true;
+}
+
 static bool readBinaryFile(const char* path, std::vector<unsigned char>& data) {
     std::ifstream input(path, std::ios::binary | std::ios::ate);
     if (!input) {
@@ -164,6 +290,9 @@ int main(int argc, char** argv) {
         if (!testTypefaceRegistry(argv[1]) || !testBoldStyle(argv[1])) {
             return 1;
         }
+    }
+    if (!testPhysicalIdentityCopy()) {
+        return 1;
     }
     Pixel sourcePixels[4] = { 0xFF102030, 0xFF405060, 0xFF708090, 0xFFA0B0C0 };
     Pixel destinationPixels[16] = {};

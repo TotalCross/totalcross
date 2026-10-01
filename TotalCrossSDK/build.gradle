@@ -1145,6 +1145,47 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
     }
 }
 
+def configureImageMacSmokeSdk = { String taskPrefix, String smokeDirName ->
+    tasks.named('deploy' + taskPrefix + 'MacOS') {
+        doFirst {
+            def nativeRuntime = project.findProperty('tcvmDylib')
+            def nativeLauncher = project.findProperty('tcvmLauncher')
+            if (!nativeRuntime || !nativeLauncher) {
+                throw new GradleException(taskPrefix + ' requires -PtcvmDylib and -PtcvmLauncher')
+            }
+            def runtimeFile = file(nativeRuntime).absoluteFile
+            def launcherFile = file(nativeLauncher).absoluteFile
+            if (!runtimeFile.isFile() || !launcherFile.isFile()) {
+                throw new GradleException('Native macOS VM inputs must both exist: ' + runtimeFile + ', ' + launcherFile)
+            }
+            def sdkRoot = layout.buildDirectory.dir(smokeDirName + '/classes').get().asFile
+            copy {
+                from project.file('dist/vm')
+                into new File(sdkRoot, 'dist/vm')
+            }
+            copy {
+                from project.file('dist/libs')
+                into new File(sdkRoot, 'dist/libs')
+            }
+            copy {
+                from project.file('etc/fonts')
+                into new File(sdkRoot, 'etc/fonts')
+            }
+            copy {
+                from launcherFile
+                into new File(sdkRoot, 'etc/launchers/macos')
+                rename { 'Launcher' }
+            }
+            copy {
+                from runtimeFile
+                into new File(sdkRoot, 'dist/vm/macos')
+                rename { 'libtcvm.dylib' }
+            }
+            environment 'TOTALCROSS3_HOME', sdkRoot.absolutePath
+        }
+    }
+}
+
 registerImageMacSmoke('ImageModifierWorkloadSmoke', 'ImageModifierWorkloadSmokeApp',
     'image-modifier-workload-smoke', true, false, [
         'fixture=ImageModifierWorkloadSmokeApp',
@@ -1199,11 +1240,18 @@ registerImageMacSmoke('ImageScrollRasterFastPathSmoke', 'ImageScrollRasterFastPa
         'translatedPartialClip=true',
         'emptyIntersectionNoMutation=true',
         'planCopyHandled=true',
+        'physicalIdentityCopy=true',
         'cachedFinalRasterHits=0',
         'cacheProbeMissContinuesToPlanCopy=true',
         'deferredSourcesRemainDeferred=true',
         'overallPass=true'
     ])
+
+tasks.named('compileImageScrollRasterFastPathSmoke') {
+    from(smokeTestClassesDir) {
+        include 'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'
+    }
+}
 
 tasks.named('deployImageScrollRasterFastPathSmokeMacOS') {
     doFirst {
@@ -1218,6 +1266,60 @@ tasks.named('deployImageScrollRasterFastPathSmokeMacOS') {
             throw new GradleException('Native macOS VM inputs must both exist: ' + runtimeFile + ', ' + launcherFile)
         }
         def sdkRoot = layout.buildDirectory.dir('image-scroll-raster-fast-path-smoke/classes').get().asFile
+        copy {
+            from project.file('dist/vm')
+            into new File(sdkRoot, 'dist/vm')
+        }
+        copy {
+            from project.file('dist/libs')
+            into new File(sdkRoot, 'dist/libs')
+        }
+        copy {
+            from project.file('etc/fonts')
+            into new File(sdkRoot, 'etc/fonts')
+        }
+        copy {
+            from launcherFile
+            into new File(sdkRoot, 'etc/launchers/macos')
+            rename { 'Launcher' }
+        }
+        copy {
+            from runtimeFile
+            into new File(sdkRoot, 'dist/vm/macos')
+            rename { 'libtcvm.dylib' }
+        }
+        environment 'TOTALCROSS3_HOME', sdkRoot.absolutePath
+    }
+}
+
+registerImageMacSmoke('ImageScrollRasterWarmPathSmoke', 'ImageScrollRasterWarmPathSmokeApp',
+    'image-scroll-raster-warm-path-smoke', false, false, [
+        'fixture=ImageScrollRasterWarmPathSmokeApp',
+        'fullVisibleParity=true',
+        'partialClipParity=true',
+        'deferredCopyUsesDirectPath=true',
+        'overallPass=true'
+    ])
+
+tasks.named('compileImageScrollRasterWarmPathSmoke') {
+    from(smokeTestClassesDir) {
+        include 'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'
+    }
+}
+
+tasks.named('deployImageScrollRasterWarmPathSmokeMacOS') {
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        def nativeLauncher = project.findProperty('tcvmLauncher')
+        if (!nativeRuntime || !nativeLauncher) {
+            throw new GradleException('Image scroll warm-path smoke requires -PtcvmDylib and -PtcvmLauncher')
+        }
+        def runtimeFile = file(nativeRuntime).absoluteFile
+        def launcherFile = file(nativeLauncher).absoluteFile
+        if (!runtimeFile.isFile() || !launcherFile.isFile()) {
+            throw new GradleException('Native macOS VM inputs must both exist: ' + runtimeFile + ', ' + launcherFile)
+        }
+        def sdkRoot = layout.buildDirectory.dir('image-scroll-raster-warm-path-smoke/classes').get().asFile
         copy {
             from project.file('dist/vm')
             into new File(sdkRoot, 'dist/vm')
@@ -1441,6 +1543,7 @@ registerImageMacSmoke('ImageNativeGeometry', 'ImageNativeGeometrySmokeApp',
         'colorCandidateMaterialization=true',
         'overallPass=true'
     ])
+configureImageMacSmokeSdk('ImageNativeGeometry', 'image-native-geometry-smoke')
 
 registerImageMacSmoke('ImageNativeMaterialization', 'ImageNativeMaterializationSmokeApp',
     'image-native-materialization-smoke', false, false, [
@@ -1468,7 +1571,7 @@ registerImageMacSmoke('ImageRasterCoreSmoke', 'ImageRasterCoreSmokeApp',
         'diagnostics=true',
         'overallPass=true'
     ])
-
+configureImageMacSmokeSdk('ImageRasterCoreSmoke', 'image-raster-core-smoke')
 tasks.named('compileImageRasterCoreSmoke') {
     from(smokeTestClassesDir) {
         include 'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'

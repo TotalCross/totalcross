@@ -5,12 +5,16 @@
 package totalcross.ui.image;
 
 import totalcross.sys.Vm;
+import totalcross.sys.RuntimeDiagnosticSnapshot;
+import totalcross.sys.RuntimeDiagnostics;
+import totalcross.sys.runtime.ImageRasterSmokeTestSupport;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.Graphics;
 
 /** Native smoke for deferred Image copyRect plan handling. */
 public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
   private static final int SENTINEL = 0xFF203040;
+  private static long imageDiagnosticDeltaForSmoke = -1;
 
   @Override
   public void initUI() {
@@ -18,11 +22,13 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
     boolean translatedPartialClip = false;
     boolean emptyIntersectionNoMutation = false;
     boolean planCopyHandled = false;
+    boolean physicalIdentityCopy = false;
     boolean cacheProbeMissContinuesToPlanCopy = false;
     boolean deferredSourcesRemainDeferred = false;
     String error = "";
 
     try {
+      ImageRasterFeatureBridge.resetDrawAccountingForTest();
       byte[] png = Vm.getFile("image-abi/tiny.png");
       require(png != null && png.length > 0, "PNG fixture");
 
@@ -66,6 +72,9 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
           && beforeHash == pixelHash(noOpDestination);
       require(emptyIntersectionNoMutation, "empty intersection changed destination");
 
+      physicalIdentityCopy = physicalIdentityCopy();
+      require(physicalIdentityCopy, "direct physical copy or its mutation record failed");
+
       planCopyHandled = ImageRasterFeatureBridge.copyRectPlanAttemptsForTest > 0
           && ImageRasterFeatureBridge.copyRectPlanHandledForTest > 0;
       require(planCopyHandled, "no plan-aware copy was handled");
@@ -83,18 +92,21 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
     }
 
     boolean overallPass = sourceSubrectAndDestination && translatedPartialClip
-        && emptyIntersectionNoMutation && planCopyHandled && cacheProbeMissContinuesToPlanCopy
+        && emptyIntersectionNoMutation && physicalIdentityCopy && planCopyHandled
+        && cacheProbeMissContinuesToPlanCopy
         && deferredSourcesRemainDeferred;
     System.out.println("fixture=ImageScrollRasterFastPathSmokeApp,sourceSubrectAndDestination="
         + sourceSubrectAndDestination + ",translatedPartialClip=" + translatedPartialClip
         + ",emptyIntersectionNoMutation=" + emptyIntersectionNoMutation + ",planCopyHandled="
-        + planCopyHandled + ",copyPlanAttempts=" + ImageRasterFeatureBridge.copyRectPlanAttemptsForTest
+        + planCopyHandled + ",physicalIdentityCopy=" + physicalIdentityCopy
+        + ",copyPlanAttempts=" + ImageRasterFeatureBridge.copyRectPlanAttemptsForTest
         + ",cachedFinalRasterProbes=" + ImageRasterFeatureBridge.cachedFinalRasterProbesForTest
         + ",cachedFinalRasterHits=" + ImageRasterFeatureBridge.cachedFinalRasterHitsForTest
         + ",cachedFinalRasterMisses=" + ImageRasterFeatureBridge.cachedFinalRasterMissesForTest
         + ",copyPlanHandledCount=" + ImageRasterFeatureBridge.copyRectPlanHandledForTest
         + ",copyPlanFallbacks=" + ImageRasterFeatureBridge.copyRectPlanFallbacksForTest
         + ",copyPlanLastStatus=" + ImageRasterFeatureBridge.copyRectPlanLastStatusForTest
+        + ",imageDiagnosticDelta=" + imageDiagnosticDeltaForSmoke
         + ",cacheProbeMissContinuesToPlanCopy=" + cacheProbeMissContinuesToPlanCopy
         + ",deferredSourcesRemainDeferred=" + deferredSourcesRemainDeferred
         + ",overallPass=" + overallPass + ",error=" + error);
@@ -103,6 +115,45 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
 
   private static Image deferredCrop(byte[] png) throws ImageException {
     return new Image(png).getClippedInstance(4, 4, 20, 20);
+  }
+
+  private static boolean physicalIdentityCopy() throws Exception {
+    ImageRasterSmokeTestSupport.setRasterFeatures(true, false, false);
+    int[] sourcePixels = {
+        0xFF102030, 0xFF405060,
+        0xFF708090, 0xFFA0B0C0
+    };
+    Image source = new Image(2, 2);
+    require(source.getGraphics().setRGB(sourcePixels, 0, 0, 0, 2, 2) == sourcePixels.length,
+        "could not initialize opaque source");
+    Image deferred = source.getClippedInstance(1, 0, 1, 2);
+
+    Image expectedDestination = filled(4, 4);
+    Graphics expectedGraphics = expectedDestination.getGraphics();
+    expectedGraphics.setClip(1, 2, 1, 1);
+    expectedGraphics.copyRect(deferred.resolveForDrawing(1), 0, 0, 1, 2, 1, 1);
+    Image actualDestination = filled(4, 4);
+    long generationBefore = actualDestination.backing.mutationGeneration();
+    Graphics actualGraphics = actualDestination.getGraphics();
+    actualGraphics.setClip(1, 2, 1, 1);
+    boolean diagnosticsSupported = RuntimeDiagnostics.isSupported();
+    if (diagnosticsSupported) {
+      RuntimeDiagnostics.setDomainEnabled(RuntimeDiagnosticSnapshot.Domain.IMAGE, true);
+    }
+    RuntimeDiagnosticSnapshot diagnosticsBefore = RuntimeDiagnostics.snapshot();
+    actualGraphics.copyRect(deferred, 0, 0, 1, 2, 1, 1);
+    RuntimeDiagnosticSnapshot diagnosticsAfter = RuntimeDiagnostics.snapshot();
+    if (diagnosticsSupported) {
+      imageDiagnosticDeltaForSmoke = diagnosticsAfter.deltaSince(diagnosticsBefore)
+          .getValue(RuntimeDiagnosticSnapshot.Domain.IMAGE, RuntimeDiagnosticSnapshot.Kind.COUNTER);
+    }
+    int status = ImageRasterFeatureBridge.copyRectPlanLastStatusForTest;
+
+    return samePixels(expectedDestination, actualDestination)
+        && (status & ImageRasterFeatureBridge.PHYSICAL_COPY_HIT) != 0
+        && (!diagnosticsSupported || imageDiagnosticDeltaForSmoke == 4)
+        && deferred.backing == null && deferred.pipelineForSmoke() != null
+        && actualDestination.backing.mutationGeneration() > generationBefore;
   }
 
   private static Image filled(int width, int height) throws ImageException {

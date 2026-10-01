@@ -73,6 +73,7 @@ int32 skia_image_backing_row_bytes(int64_t handle);
 int64_t skia_image_backing_byte_count(int64_t handle);
 int64_t skia_image_backing_create_empty_with_color_type_for_test(int32 width, int32 height, int32 colorType);
 int32 skia_image_backing_color_type_for_test(int64_t handle);
+void skia_image_geometry_fail_next_physical_copy_write_pixels_for_test(void);
 void skia_image_backing_fail_next_variant_materialization_for_test(void);
 bool skia_image_backing_consume_variant_materialization_failure_for_test(void);
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height);
@@ -174,9 +175,17 @@ typedef struct SkiaImageDrawPlanData {
 #define SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_HIT (1 << 9)
 #define SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_MATERIALIZED (1 << 10)
 #define SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_FALLBACK (1 << 11)
+#define SKIA_IMAGE_DRAW_PHYSICAL_COPY_ATTEMPT (1 << 12)
+#define SKIA_IMAGE_DRAW_PHYSICAL_COPY_HIT (1 << 13)
+#define SKIA_IMAGE_DRAW_PHYSICAL_COPY_FALLBACK (1 << 14)
+#define SKIA_IMAGE_DRAW_NOOP (1 << 15)
+#define SKIA_IMAGE_DRAW_GENERIC_GEOMETRY (1 << 16)
+#define SKIA_IMAGE_DRAW_SMOOTH_RESAMPLE (1 << 17)
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
-    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);
+    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
+    bool allowPhysicalCopy);
+void skia_image_backing_record_surface_mutation(int32 surfaceId);
 int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan);
 int32 skia_image_backing_width(int64_t handle);
 int32 skia_image_backing_height(int64_t handle);

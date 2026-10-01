@@ -324,6 +324,20 @@ SkCanvas* canvasForSurfaceAlias(int32 surfaceId) {
     return alias == surfaceAliases.end() ? nullptr : skia_image_backing_canvas(alias->second);
 }
 
+void recordSurfaceMutation(int32 surfaceId) {
+    auto alias = surfaceAliases.find(surfaceId);
+    if (alias == surfaceAliases.end()) {
+        return;
+    }
+    NativeImageBackingRecord* backing = findBacking(alias->second);
+    if (!backing) {
+        return;
+    }
+    ++backing->generation;
+    backing->applyColor2AnalysisValid = false;
+    skia_image_backing_internal::rasterVariantClear(backing);
+}
+
 int drawOnCanvas(SkCanvas* canvas, NativeImageBackingRecord* source,
                  float srcLeft, float srcTop, float srcRight, float srcBottom,
                  float dstLeft, float dstTop, float dstRight, float dstBottom,
@@ -922,6 +936,10 @@ SkCanvas* skia_image_backing_canvas(int64_t handle) {
 
 SkCanvas* skia_image_backing_canvas_for_surface_id(int32 surfaceId) {
     return canvasForSurfaceAlias(surfaceId);
+}
+
+void skia_image_backing_record_surface_mutation(int32 surfaceId) {
+    recordSurfaceMutation(surfaceId);
 }
 
 int32 skia_image_backing_width(int64_t handle) {
