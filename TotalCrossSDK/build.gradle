@@ -1213,10 +1213,19 @@ registerImageMacSmoke('ImageRasterCoreSmoke', 'ImageRasterCoreSmokeApp',
         'physicalIdentity=true',
         'identityHitCount=1',
         'identityMaterializations=0',
+        'variantAdmission=true',
+        'variantMutationInvalidation=true',
+        'targetColorVariants=true',
+        'physicalVariants=true',
         'runtimeConfiguration=true',
         'diagnostics=true',
         'overallPass=true'
     ])
+tasks.named('compileImageRasterCoreSmoke') {
+    from(smokeTestClassesDir) {
+        include 'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'
+    }
+}
 
 registerImageMacSmoke('ImageDrawPresentationState', 'ImageDrawPresentationStateSmokeApp',
     'image-draw-presentation-state-smoke', false, false, [
