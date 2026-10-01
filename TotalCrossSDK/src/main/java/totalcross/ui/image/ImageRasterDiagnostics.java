@@ -26,6 +26,10 @@ final class ImageRasterDiagnostics {
   static final int PHYSICAL_VARIANT_HIT = 14;
   static final int PHYSICAL_VARIANT_MATERIALIZED = 15;
   static final int PHYSICAL_VARIANT_FALLBACK = 16;
+  static final int COPY_RECT_PLAN_ATTEMPT = 17;
+  static final int COPY_RECT_PLAN_HANDLED = 18;
+  static final int COPY_RECT_PLAN_FALLBACK = 19;
+  static final int PHYSICAL_COPY_HIT = 20;
 
   static final int DRAW_HANDLED = 1;
   static final int DRAW_IDENTITY_ATTEMPT = 1 << 1;
@@ -39,6 +43,9 @@ final class ImageRasterDiagnostics {
   static final int DRAW_PHYSICAL_VARIANT_HIT = 1 << 9;
   static final int DRAW_PHYSICAL_VARIANT_MATERIALIZED = 1 << 10;
   static final int DRAW_PHYSICAL_VARIANT_FALLBACK = 1 << 11;
+  static final int DRAW_PHYSICAL_COPY_HIT = 1 << 13;
+  static final int DRAW_GENERIC_GEOMETRY = 1 << 16;
+  static final int DRAW_SMOOTH_RESAMPLE = 1 << 17;
 
   private ImageRasterDiagnostics() {
   }
@@ -73,5 +80,6 @@ final class ImageRasterDiagnostics {
     if ((status & DRAW_PHYSICAL_VARIANT_HIT) != 0) record(PHYSICAL_VARIANT_HIT);
     if ((status & DRAW_PHYSICAL_VARIANT_MATERIALIZED) != 0) record(PHYSICAL_VARIANT_MATERIALIZED);
     if ((status & DRAW_PHYSICAL_VARIANT_FALLBACK) != 0) record(PHYSICAL_VARIANT_FALLBACK);
+    if ((status & DRAW_PHYSICAL_COPY_HIT) != 0) record(PHYSICAL_COPY_HIT);
   }
 }

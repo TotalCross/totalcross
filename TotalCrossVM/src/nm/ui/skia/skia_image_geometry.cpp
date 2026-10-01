@@ -5,6 +5,7 @@
 #include "skia_image_backing_internal.h"
 #include "skia_image_geometry_internal.h"
 
+#include "include/core/SkPixmap.h"
 #include "include/core/SkSamplingOptions.h"
 
 #include <algorithm>
@@ -30,6 +31,8 @@ using skia_image_backing_internal::rasterVariantObserve;
 using skia_image_backing_internal::rasterVariantStore;
 
 namespace {
+
+static bool failNextPhysicalCopyWritePixelsForTest;
 
 static Pixel geometryFillColor(const SkiaImageDrawPlanData* plan, int32 publicColor) {
     if (publicColor == 0) {
@@ -380,10 +383,20 @@ static bool integerCoordinate(double value) {
     return std::isfinite(value) && std::floor(value) == value;
 }
 
-static bool physicalIdentityDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
-                                 float srcLeft, float srcTop, float srcRight, float srcBottom,
-                                 float dstLeft, float dstTop, float dstRight, float dstBottom) {
-    if (!plan || !canvas || !plan->sourceBackingStable
+struct PhysicalIdentityMapping {
+    NativeImageBackingRecord* source;
+    GeometryTransform transform;
+    SkMatrix matrix;
+    SkRect sourceRect;
+    SkRect destinationRect;
+    SkRect deviceDestination;
+};
+
+static bool physicalIdentityMapping(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                    float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                    float dstLeft, float dstTop, float dstRight, float dstBottom,
+                                    bool allowSmooth, PhysicalIdentityMapping* mapping) {
+    if (!plan || !canvas || !mapping || !plan->sourceBackingStable
         || plan->sourceMutationGeneration != plan->backingMutationGeneration) {
         return false;
     }
@@ -393,7 +406,10 @@ static bool physicalIdentityDraw(const SkiaImageDrawPlanData* plan, SkCanvas* ca
     }
 
     GeometryTransform transform;
-    if (!compileGeometry(plan, -1, &transform) || transform.hasFill || transform.smooth
+    if (!compileGeometry(plan, -1, &transform) || transform.hasFill
+        || (!allowSmooth && transform.smooth)
+        || (allowSmooth && transform.smooth
+            && std::abs(plan->outputContentScale - 1.0) < 0.000001)
         || !std::isfinite(transform.a) || !std::isfinite(transform.d)
         || transform.a <= 0 || transform.d <= 0 || transform.b != 0.0 || transform.c != 0.0
         || !integerCoordinate(transform.tx) || !integerCoordinate(transform.ty)) {
@@ -401,7 +417,8 @@ static bool physicalIdentityDraw(const SkiaImageDrawPlanData* plan, SkCanvas* ca
     }
 
     const SkMatrix& matrix = canvas->getTotalMatrix();
-    if (matrix.hasPerspective() || matrix.getSkewX() != 0 || matrix.getSkewY() != 0
+    if (matrix.hasPerspective() || !std::isfinite(matrix.getScaleX()) || !std::isfinite(matrix.getScaleY())
+        || matrix.getSkewX() != 0 || matrix.getSkewY() != 0
         || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0
         || transform.a != matrix.getScaleX() || transform.d != matrix.getScaleY()) {
         return false;
@@ -427,6 +444,25 @@ static bool physicalIdentityDraw(const SkiaImageDrawPlanData* plan, SkCanvas* ca
         return false;
     }
 
+    mapping->source = source;
+    mapping->transform = transform;
+    mapping->matrix = matrix;
+    mapping->sourceRect = sourceRect;
+    mapping->destinationRect = destinationRect;
+    mapping->deviceDestination = deviceDestination;
+    return true;
+}
+
+static bool physicalIdentityDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                 float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                 float dstLeft, float dstTop, float dstRight, float dstBottom) {
+    PhysicalIdentityMapping mapping;
+    if (!physicalIdentityMapping(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, false, &mapping)) {
+        return false;
+    }
+    NativeImageBackingRecord* source = mapping.source;
+
     sk_sp<SkImage> image;
     SkiaImageDrawColorFilters colorFilters;
     try {
@@ -450,8 +486,157 @@ static bool physicalIdentityDraw(const SkiaImageDrawPlanData* plan, SkCanvas* ca
     if (colorFilters.content) {
         paint.setColorFilter(colorFilters.content);
     }
-    canvas->drawImageRect(image.get(), sourceRect, destinationRect, &paint,
+    canvas->drawImageRect(image.get(), mapping.sourceRect, mapping.destinationRect, &paint,
                           SkCanvas::kStrict_SrcRectConstraint);
+    return true;
+}
+
+static bool writePhysicalCopyPixels(SkCanvas* canvas, const SkPixmap& source,
+                                    int x, int y) {
+    if (failNextPhysicalCopyWritePixelsForTest) {
+        failNextPhysicalCopyWritePixelsForTest = false;
+        return false;
+    }
+    // SkSurface::writePixels returns void in the pinned Skia API; SkCanvas reports success.
+    return canvas->writePixels(source.info(), source.addr(), source.rowBytes(), x, y);
+}
+
+static bool knownDirectCopyColorType(SkColorType type) {
+    return type == kRGBA_8888_SkColorType || type == kBGRA_8888_SkColorType
+        || type == kRGB_565_SkColorType;
+}
+
+static bool knownDirectCopyAlphaType(SkAlphaType type) {
+    return type == kPremul_SkAlphaType || type == kUnpremul_SkAlphaType
+        || type == kOpaque_SkAlphaType;
+}
+
+static bool memoryRangesOverlap(const void* first, size_t firstSize,
+                                const void* second, size_t secondSize) {
+    if (!first || !second) {
+        return true;
+    }
+    const uintptr_t firstStart = reinterpret_cast<uintptr_t>(first);
+    const uintptr_t secondStart = reinterpret_cast<uintptr_t>(second);
+    const uintptr_t maxAddress = std::numeric_limits<uintptr_t>::max();
+    if (firstSize > maxAddress - firstStart || secondSize > maxAddress - secondStart) {
+        return true;
+    }
+    return firstStart < secondStart + secondSize && secondStart < firstStart + firstSize;
+}
+
+static bool physicalIdentityCopyDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                     float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                     float dstLeft, float dstTop, float dstRight, float dstBottom) {
+    PhysicalIdentityMapping mapping;
+    if (!physicalIdentityMapping(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, true, &mapping)
+        || plan->alphaMask != 255 || plan->outputAlphaMask != 255
+        || plan->materializeAlphaMask != 255 || plan->sourceOpacityState != 1) {
+        return false;
+    }
+
+    SkiaImageDrawColorFilters colorFilters;
+    if (!skia_image_draw_color_filters(plan, &colorFilters)
+        || colorFilters.content || colorFilters.fill) {
+        return false;
+    }
+
+    SkSurface* target = canvas->getSurface();
+    if (!target || target->recordingContext() || canvas->getSaveCount() != 2
+        || !canvas->isClipRect()) {
+        return false;
+    }
+    SkIRect deviceClip;
+    if (!canvas->getDeviceClipBounds(&deviceClip)) {
+        return false;
+    }
+    const SkImageInfo targetInfo = target->imageInfo();
+    if (mapping.deviceDestination.left() < 0 || mapping.deviceDestination.top() < 0
+        || mapping.deviceDestination.right() > targetInfo.width()
+        || mapping.deviceDestination.bottom() > targetInfo.height()) {
+        return false;
+    }
+    const SkIRect deviceRect = SkIRect::MakeLTRB(
+        static_cast<int>(mapping.deviceDestination.left()),
+        static_cast<int>(mapping.deviceDestination.top()),
+        static_cast<int>(mapping.deviceDestination.right()),
+        static_cast<int>(mapping.deviceDestination.bottom()));
+    if (!deviceClip.contains(deviceRect) || deviceRect.isEmpty()
+        || deviceRect.right() <= deviceRect.left() || deviceRect.bottom() <= deviceRect.top()) {
+        return false;
+    }
+
+    SkPixmap sourcePixels;
+    SkPixmap targetPixels;
+    if (mapping.source->image) {
+        if (!mapping.source->image->peekPixels(&sourcePixels)) {
+            return false;
+        }
+    } else if (!mapping.source->surface || !mapping.source->surface->peekPixels(&sourcePixels)) {
+        return false;
+    }
+    if (!target->peekPixels(&targetPixels)) {
+        return false;
+    }
+
+    const SkImageInfo sourceInfo = sourcePixels.info();
+    const SkImageInfo targetPixelInfo = targetPixels.info();
+    const int sourceX = static_cast<int>(mapping.sourceRect.left());
+    const int sourceY = static_cast<int>(mapping.sourceRect.top());
+    const int copyWidth = static_cast<int>(mapping.sourceRect.width());
+    const int copyHeight = static_cast<int>(mapping.sourceRect.height());
+    const size_t bytesPerPixel = sourceInfo.bytesPerPixel();
+    const size_t maxSize = std::numeric_limits<size_t>::max();
+    if (sourceInfo.width() <= 0 || sourceInfo.height() <= 0
+        || targetPixelInfo.width() <= 0 || targetPixelInfo.height() <= 0
+        || bytesPerPixel == 0
+        || static_cast<size_t>(sourceInfo.width()) > maxSize / bytesPerPixel
+        || static_cast<size_t>(targetPixelInfo.width()) > maxSize / bytesPerPixel) {
+        return false;
+    }
+    const size_t minimumSourceRowBytes = static_cast<size_t>(sourceInfo.width()) * bytesPerPixel;
+    const size_t minimumTargetRowBytes = static_cast<size_t>(targetPixelInfo.width()) * bytesPerPixel;
+    if (sourceInfo.width() != mapping.source->width || sourceInfo.height() != mapping.source->height
+        || targetPixelInfo.width() != targetInfo.width() || targetPixelInfo.height() != targetInfo.height()
+        || targetPixelInfo.colorType() != targetInfo.colorType()
+        || targetPixelInfo.alphaType() != targetInfo.alphaType()
+        || targetPixelInfo.colorSpace() != targetInfo.colorSpace()
+        || sourceInfo.colorType() != targetPixelInfo.colorType()
+        || sourceInfo.alphaType() != targetPixelInfo.alphaType()
+        || sourceInfo.colorSpace() != targetPixelInfo.colorSpace()
+        || !knownDirectCopyColorType(sourceInfo.colorType())
+        || !knownDirectCopyAlphaType(sourceInfo.alphaType())
+        || copyWidth <= 0 || copyHeight <= 0
+        || sourcePixels.addr() == nullptr || targetPixels.writable_addr() == nullptr
+        || sourcePixels.rowBytes() < minimumSourceRowBytes
+        || targetPixels.rowBytes() < minimumTargetRowBytes) {
+        return false;
+    }
+    if (sourceInfo.height() > 0
+        && sourcePixels.rowBytes() > std::numeric_limits<size_t>::max() / sourceInfo.height()) {
+        return false;
+    }
+    if (targetPixelInfo.height() > 0
+        && targetPixels.rowBytes() > std::numeric_limits<size_t>::max() / targetPixelInfo.height()) {
+        return false;
+    }
+    const size_t sourceBytes = sourcePixels.rowBytes() * static_cast<size_t>(sourceInfo.height());
+    const size_t targetBytes = targetPixels.rowBytes() * static_cast<size_t>(targetPixelInfo.height());
+    if (memoryRangesOverlap(sourcePixels.addr(), sourceBytes,
+            targetPixels.addr(), targetBytes)) {
+        return false;
+    }
+
+    SkPixmap sourceRect;
+    const SkIRect sourceBounds = SkIRect::MakeLTRB(
+        sourceX, sourceY, sourceX + copyWidth, sourceY + copyHeight);
+    if (!sourcePixels.extractSubset(&sourceRect, sourceBounds)) {
+        return false;
+    }
+    if (!writePhysicalCopyPixels(canvas, sourceRect, deviceRect.left(), deviceRect.top())) {
+        return false;
+    }
     return true;
 }
 
@@ -816,6 +1001,10 @@ static bool physicalVariantDraw(const SkiaImageDrawPlanData* plan, SkCanvas* can
 
 }
 
+void skia_image_geometry_fail_next_physical_copy_write_pixels_for_test() {
+    failNextPhysicalCopyWritePixelsForTest = true;
+}
+
 bool skia_image_geometry_compile(const SkiaImageDrawPlanData* plan, int frameOverride,
                                  GeometryTransform* transform) {
     return compileGeometry(plan, frameOverride, transform);
@@ -834,11 +1023,20 @@ bool skia_image_geometry_draw_compiled(SkCanvas* canvas, const SkImage* image,
 
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
-    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom) {
+    float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
+    bool allowPhysicalCopy) {
     SkCanvas* canvas = skiaGetCanvas(targetSurface);
     int status = 0;
     if (plan && plan->physicalIdentityEnabled) {
         status |= SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_ATTEMPT;
+        if (allowPhysicalCopy) {
+            status |= SKIA_IMAGE_DRAW_PHYSICAL_COPY_ATTEMPT;
+            if (physicalIdentityCopyDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+                    dstLeft, dstTop, dstRight, dstBottom)) {
+                return status | SKIA_IMAGE_DRAW_PHYSICAL_COPY_HIT | SKIA_IMAGE_DRAW_HANDLED;
+            }
+            status |= SKIA_IMAGE_DRAW_PHYSICAL_COPY_FALLBACK;
+        }
         if (physicalIdentityDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
                                  dstLeft, dstTop, dstRight, dstBottom)) {
             return status | SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT | SKIA_IMAGE_DRAW_HANDLED;
@@ -854,7 +1052,17 @@ int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
             dstLeft, dstTop, dstRight, dstBottom, &status)) {
         return status | SKIA_IMAGE_DRAW_HANDLED;
     }
-    return geometryDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
-                        dstLeft, dstTop, dstRight, dstBottom, -1)
-        ? status | SKIA_IMAGE_DRAW_HANDLED : status;
+    if (!geometryDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+                      dstLeft, dstTop, dstRight, dstBottom, -1)) {
+        return status;
+    }
+    status |= SKIA_IMAGE_DRAW_HANDLED | SKIA_IMAGE_DRAW_GENERIC_GEOMETRY;
+    GeometryTransform transform;
+    PhysicalIdentityMapping exactMapping;
+    if (compileGeometry(plan, -1, &transform) && transform.smooth
+        && !physicalIdentityMapping(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, true, &exactMapping)) {
+        status |= SKIA_IMAGE_DRAW_SMOOTH_RESAMPLE;
+    }
+    return status;
 }

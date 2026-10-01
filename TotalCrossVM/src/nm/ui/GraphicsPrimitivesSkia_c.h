@@ -128,7 +128,7 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
 
 static int skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
                                 int32 srcX, int32 srcY, int32 width, int32 height,
-                                int32 dstX, int32 dstY, int32 doClip)
+                                int32 dstX, int32 dstY, int32 doClip, int32 allowPhysicalCopy)
 {
    SkiaImageDrawPlanData data;
    int32 surfaceId;
@@ -179,16 +179,25 @@ static int skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObje
          height = Graphics_clipY2(dstSurf) - dstY;
       }
       if (width <= 0 || height <= 0) {
-         return SKIA_IMAGE_DRAW_HANDLED;
+         return SKIA_IMAGE_DRAW_HANDLED | SKIA_IMAGE_DRAW_NOOP;
       }
       skia_setClip(surfaceId, Get_Clip(dstSurf));
       clipSet = true;
    }
    int result = skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
       (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
-      (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height));
+      (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height),
+      allowPhysicalCopy != 0 && doClip != 0);
    if (clipSet) {
       skia_restoreClip(surfaceId);
+   }
+   if (allowPhysicalCopy && (result & SKIA_IMAGE_DRAW_HANDLED)
+      && !(result & SKIA_IMAGE_DRAW_NOOP)) {
+      if (Graphics_isImageSurface(dstSurf)) {
+         skia_image_backing_record_surface_mutation(surfaceId);
+      } else {
+         markDirty(currentContext, dstSurf, dstX, dstY, width, height);
+      }
    }
    UNUSED(currentContext)
    return result;

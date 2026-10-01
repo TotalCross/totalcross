@@ -7,6 +7,7 @@ package totalcross.ui.image;
 /** Internal cross-package bridge for raster-core behavior. */
 public final class ImageRasterFeatureBridge {
   public static final int DRAW_HANDLED = ImageRasterDiagnostics.DRAW_HANDLED;
+  public static final int PHYSICAL_COPY_HIT = ImageRasterDiagnostics.DRAW_PHYSICAL_COPY_HIT;
   static int copyRectPlanAttemptsForTest;
   static int copyRectPlanHandledForTest;
   static int copyRectPlanFallbacksForTest;
@@ -14,6 +15,11 @@ public final class ImageRasterFeatureBridge {
   static int cachedFinalRasterProbesForTest;
   static int cachedFinalRasterHitsForTest;
   static int cachedFinalRasterMissesForTest;
+  static int physicalCopyHitsForTest;
+  static int identityAttemptsForTest;
+  static int genericGeometryDrawsForTest;
+  static int smoothResampleDrawsForTest;
+  private static boolean drawAccountingEnabledForTest;
 
   private ImageRasterFeatureBridge() {
   }
@@ -58,26 +64,67 @@ public final class ImageRasterFeatureBridge {
   /** @hidden */
   public static void recordDrawEvents(int status) {
     ImageRasterDiagnostics.recordDrawEvents(status);
+    if (!drawAccountingEnabledForTest) {
+      return;
+    }
+    if ((status & ImageRasterDiagnostics.DRAW_IDENTITY_ATTEMPT) != 0) {
+      identityAttemptsForTest++;
+    }
+    if ((status & ImageRasterDiagnostics.DRAW_PHYSICAL_COPY_HIT) != 0) {
+      physicalCopyHitsForTest++;
+    }
+    if ((status & ImageRasterDiagnostics.DRAW_GENERIC_GEOMETRY) != 0) {
+      genericGeometryDrawsForTest++;
+    }
+    if ((status & ImageRasterDiagnostics.DRAW_SMOOTH_RESAMPLE) != 0) {
+      smoothResampleDrawsForTest++;
+    }
   }
 
   /** @hidden */
   public static void recordCopyRectPlanResult(int status) {
-    copyRectPlanAttemptsForTest++;
-    copyRectPlanLastStatusForTest = status;
+    ImageRasterDiagnostics.record(ImageRasterDiagnostics.COPY_RECT_PLAN_ATTEMPT);
     if ((status & DRAW_HANDLED) != 0) {
-      copyRectPlanHandledForTest++;
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.COPY_RECT_PLAN_HANDLED);
     } else {
-      copyRectPlanFallbacksForTest++;
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.COPY_RECT_PLAN_FALLBACK);
+    }
+    if (drawAccountingEnabledForTest) {
+      copyRectPlanAttemptsForTest++;
+      copyRectPlanLastStatusForTest = status;
+      if ((status & DRAW_HANDLED) != 0) {
+        copyRectPlanHandledForTest++;
+      } else {
+        copyRectPlanFallbacksForTest++;
+      }
     }
   }
 
   /** @hidden */
   public static void recordCachedFinalRasterProbe(boolean hit) {
+    if (!drawAccountingEnabledForTest) {
+      return;
+    }
     cachedFinalRasterProbesForTest++;
     if (hit) {
       cachedFinalRasterHitsForTest++;
     } else {
       cachedFinalRasterMissesForTest++;
     }
+  }
+
+  static void resetDrawAccountingForTest() {
+    drawAccountingEnabledForTest = true;
+    copyRectPlanAttemptsForTest = 0;
+    copyRectPlanHandledForTest = 0;
+    copyRectPlanFallbacksForTest = 0;
+    copyRectPlanLastStatusForTest = 0;
+    cachedFinalRasterProbesForTest = 0;
+    cachedFinalRasterHitsForTest = 0;
+    cachedFinalRasterMissesForTest = 0;
+    physicalCopyHitsForTest = 0;
+    identityAttemptsForTest = 0;
+    genericGeometryDrawsForTest = 0;
+    smoothResampleDrawsForTest = 0;
   }
 }

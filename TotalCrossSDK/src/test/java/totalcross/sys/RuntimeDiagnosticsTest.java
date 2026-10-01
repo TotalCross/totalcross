@@ -261,7 +261,7 @@ class RuntimeDiagnosticsTest {
     RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE, 16);
 
     RuntimeDiagnosticSnapshot before = RuntimeDiagnostics.snapshot();
-    assertEquals(17, before.size());
+    assertEquals(21, before.size());
     assertEquals(4L, before.getValue(RuntimeDiagnosticSnapshot.Domain.IMAGE,
         RuntimeDiagnosticSnapshot.Kind.COUNTER));
     assertEquals(0L, before.getValue(RuntimeDiagnosticSnapshot.Domain.RUNTIME,
