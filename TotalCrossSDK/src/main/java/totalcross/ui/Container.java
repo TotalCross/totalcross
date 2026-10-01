@@ -622,6 +622,25 @@ public class Container extends Control {
     }
   }
 
+  @Override
+  void collectDisplayPreparation(DisplayPreparationContext context, Rect clip) {
+    if (!visible || offscreen != null) {
+      return;
+    }
+    Rect childClip = clip;
+    if (clipsChildrenToBounds()) {
+      childClip = context.intersection(clip, getAbsoluteRect());
+      if (childClip == null) {
+        return;
+      }
+    }
+    for (Control child = children; child != null; child = child.next) {
+      if (child.visible) {
+        child.collectDisplayPreparation(context, childClip);
+      }
+    }
+  }
+
   /** Sets the border for this container. The insets are changed after this method is called.
    * The BORDER_ROUNDED sets the background to transparent.
    * @see #BORDER_NONE

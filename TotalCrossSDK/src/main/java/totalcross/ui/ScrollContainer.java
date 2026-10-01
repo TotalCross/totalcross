@@ -99,11 +99,62 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   public static HashSet<Class<?>> hsIgnoreAutoScroll = new HashSet<Class<?>>(5);
 
   private List<ScrollEventHandler> scrollEventHandlerList = new ArrayList<>();
+  private long displayPreparationGeneration;
 
   /** Standard constructor for a new ScrollContainer, with both scrollbars enabled.
    */
   public ScrollContainer() {
     this(true);
+  }
+
+  /**
+   * Prepares currently visible encoded JPEG images in this scroll container for display.
+   * Call this method on the UI thread. The optional callback runs on the UI thread after the
+   * latest preparation batch settles; a later call supersedes only this callback.
+   *
+   * @param callback invoked once when this is still the latest batch, or {@code null}
+   */
+  public void prepareForDisplay(Runnable callback) {
+    long generation = ++displayPreparationGeneration;
+    DisplayPreparationBatch batch = new DisplayPreparationBatch(this, generation, callback);
+    if (bag != null && bag0 != null && bag0.offscreen == null
+        && isVisibleInHierarchy() && width > 0 && height > 0) {
+      Rect viewport = bag0.getAbsoluteRect();
+      Rect client = bag0.getClientRect();
+      Rect clip = new Rect(viewport.x + client.x, viewport.y + client.y, client.width, client.height);
+      for (Container ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
+        if (!ancestor.visible) {
+          clip.width = clip.height = 0;
+          break;
+        }
+        if (ancestor.clipsChildrenToBounds()) {
+          Rect clipped = batch.intersection(clip, ancestor.getAbsoluteRect());
+          if (clipped == null) {
+            clip.width = clip.height = 0;
+            break;
+          }
+          clip = clipped;
+        }
+      }
+      if (clip.width > 0 && clip.height > 0) {
+        DisplayPreparationContext context = new DisplayPreparationContext(batch);
+        bag.collectDisplayPreparation(context, clip);
+      }
+    }
+    batch.finishDiscovery();
+  }
+
+  private boolean isVisibleInHierarchy() {
+    for (Control control = this; control != null; control = control.parent) {
+      if (!control.visible) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  boolean isCurrentDisplayPreparationBatch(long generation) {
+    return displayPreparationGeneration == generation;
   }
 
   /** Returns the client rect from the area that scrolls */
