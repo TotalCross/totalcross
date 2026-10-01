@@ -99,6 +99,7 @@ public class Image extends GfxSurface {
   static int nativeColorReadbackCountForTest;
   static int directDrawPlanExecutionCountForTest;
   static int physicalIdentityHitCountForTest;
+  static int physicalIdentityFallbackCountForTest;
   static int targetColorVariantMaterializationCountForTest;
   static int targetColorVariantHitCountForTest;
   static int targetColorVariantFallbackCountForTest;
@@ -197,6 +198,7 @@ public class Image extends GfxSurface {
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
     physicalIdentityHitCountForTest = 0;
+    physicalIdentityFallbackCountForTest = 0;
     targetColorVariantMaterializationCountForTest = 0;
     targetColorVariantHitCountForTest = 0;
     targetColorVariantFallbackCountForTest = 0;
@@ -278,6 +280,10 @@ public class Image extends GfxSurface {
 
   static int physicalIdentityHitCountForTest() {
     return physicalIdentityHitCountForTest;
+  }
+
+  static int physicalIdentityFallbackCountForTest() {
+    return physicalIdentityFallbackCountForTest;
   }
 
   static int targetColorVariantMaterializationCountForTest() {
