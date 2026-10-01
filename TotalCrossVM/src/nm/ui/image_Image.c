@@ -22,6 +22,7 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObje
       TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength, bool directDecode);
 
 static bool failNextImageAllocationForTest;
+static bool failNextCompactCandidateForTest;
 
 static int32 jpegTargetDecodeDenominatorForTest(int32 sourceWidth, int32 sourceHeight,
    int32 targetWidth, int32 targetHeight)
@@ -43,6 +44,18 @@ int imageDecodeConsumeAllocationFailureForTest(void)
    bool fail = failNextImageAllocationForTest;
    failNextImageAllocationForTest = false;
    return fail;
+}
+
+int imageDecodeConsumeCompactCandidateFailureForTest(void)
+{
+   bool fail = failNextCompactCandidateForTest;
+   failNextCompactCandidateForTest = false;
+   return fail;
+}
+
+void imageDecodeFailNextCompactCandidateForTest(void)
+{
+   failNextCompactCandidateForTest = true;
 }
 
 static void throwImageDecodeStatus(Context context, ImageDecodeStatus status)
@@ -394,6 +407,12 @@ TC_API void tuiI_decodeEncodedSourceTiered_e(NMParams p) // totalcross/ui/image/
 TC_API void tuiI_failNextNativeMaterializati(NMParams p) // totalcross/ui/image/Image native private static void failNextNativeMaterializationForTestNative();
 {
    failNextImageAllocationForTest = true;
+   UNUSED(p);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_failCompactCandidateNative(NMParams p) // totalcross/ui/image/Image native private static void failCompactCandidateNative();
+{
+   imageDecodeFailNextCompactCandidateForTest();
    UNUSED(p);
 }
 //////////////////////////////////////////////////////////////////////////

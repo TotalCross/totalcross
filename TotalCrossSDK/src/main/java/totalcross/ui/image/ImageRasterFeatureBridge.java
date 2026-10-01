@@ -14,7 +14,7 @@ public final class ImageRasterFeatureBridge {
   /** @hidden */
   public static void prepareForMutation(Image image) {
     if (image != null) {
-      image.prepareForGraphicsMutation();
+      image.prepareForMutation();
     }
   }
 

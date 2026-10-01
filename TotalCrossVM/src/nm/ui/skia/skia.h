@@ -79,6 +79,8 @@ int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, in
 int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 width, int32 height);
 int skia_image_backing_write_rgba_pixels(int64_t handle, const uint8_t* pixels, int32 x, int32 y,
     int32 width, int32 height, int32 rowBytes);
+int skia_image_backing_write_gray_pixels(int64_t handle, const uint8_t* pixels, int32 x, int32 y,
+    int32 width, int32 height, int32 rowBytes);
 #define SKIA_IMAGE_BACKING_SNAPSHOT_OK 0
 #define SKIA_IMAGE_BACKING_SNAPSHOT_INVALID 1
 #define SKIA_IMAGE_BACKING_SNAPSHOT_ALLOCATION_FAILURE 2
@@ -90,6 +92,12 @@ int skia_image_backing_variant_observe_for_test(int64_t handle, int32 kind,
 int32 skia_image_backing_variant_state_for_test(int64_t handle);
 void skia_image_backing_fail_next_snapshot_for_test(void);
 int skia_image_backing_make_mutable(int64_t handle);
+int skia_image_backing_is_compact(int64_t handle);
+void skia_image_backing_fail_next_promotion_for_test(void);
+void skia_image_backing_record_decode_scratch_for_test(uint64_t rowScratchBytes,
+    uint64_t fullRgbaTempBytes);
+void skia_image_backing_record_compact_decode_for_test(int64_t handle);
+uint64_t skia_image_backing_test_metric(int32 metric, int32 format);
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth);
 #define SKIA_IMAGE_COLOR_APPLY_FADE 0
 #define SKIA_IMAGE_COLOR_FADE_INSTANCE 1

@@ -159,6 +159,10 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
 #if TC_RENDERER_SKIA
    int64 nativeHandle = 0;
    uint8* rgbaRow = null;
+   bool compactStorage = false;
+   bool compactDecode = false;
+   bool compactGray = false;
+   int32 backingFormat = 0;
 #endif
    volatile ImageDecodeStatus status = IMAGE_DECODE_SUCCESS;
 
@@ -187,6 +191,9 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       file.cursor = 0;
    }
    file.first4 = first4;
+#if TC_RENDERER_SKIA
+   compactStorage = imageCompactStorageEnabled(currentContext);
+#endif
 
    IF_HEAP_ERROR(heap)
    {
@@ -220,6 +227,15 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    }
    jpeg_tc_src(&cinfo); /* Specify data source for decompression */
    jpeg_read_header(&cinfo, TRUE); /* Read file header, set default decompression parameters */
+#if TC_RENDERER_SKIA
+   compactGray = cinfo.jpeg_color_space == JCS_GRAYSCALE && cinfo.num_components == 1;
+   compactDecode = compactStorage && (compactGray || cinfo.jpeg_color_space == JCS_RGB
+      || cinfo.jpeg_color_space == JCS_YCbCr);
+   if (compactDecode) {
+      backingFormat = compactGray ? 2 : 1;
+      cinfo.out_color_space = compactGray ? JCS_GRAYSCALE : JCS_EXT_RGBA;
+   }
+#endif
    /* override with specified decompression parameters */
    cinfo.dither_mode = JDITHER_NONE; // 8580 -> 5360
    cinfo.dct_method = JDCT_IFAST;
@@ -279,15 +295,19 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       heapDestroy(heap);
       return status;
    }
-   if (mode == JPEG_DECODE_DIRECT_FULL) {
+   if (compactDecode || mode == JPEG_DECODE_DIRECT_FULL) {
       if (width > 0x7FFFFFFF / 4) {
          status = IMAGE_DECODE_RESOURCE_FAILURE;
       } else {
-         nativeHandle = skia_image_backing_create_empty(width, height);
-         rgbaRow = (uint8*)heapAlloc(heap, width * 4);
-         if (!nativeHandle || !rgbaRow)
+         nativeHandle = skia_image_backing_create_empty_with_format(width, height,
+            compactDecode ? backingFormat : 0);
+         if (!compactDecode)
+            rgbaRow = (uint8*)heapAlloc(heap, width * 4);
+         if (!nativeHandle || (!compactDecode && !rgbaRow))
             status = IMAGE_DECODE_RESOURCE_FAILURE;
       }
+      if (compactDecode && imageDecodeConsumeCompactCandidateFailureForTest())
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
       if (status != IMAGE_DECODE_SUCCESS) {
          if (nativeHandle)
             skia_image_backing_release(nativeHandle);
@@ -345,6 +365,16 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
 
    /* Create decompressor output buffer. */
    buffer0 = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, (width * cinfo.output_components+3) & ~3, (JDIMENSION)1);
+#if TC_RENDERER_SKIA
+   if (compactStorage) {
+      uint64 rowScratchBytes = ((uint64)width * cinfo.output_components + 3) & ~((uint64)3);
+      uint64 fullRgbaTempBytes = !compactDecode && mode != JPEG_DECODE_DIRECT_FULL
+         && pixelStorage ? (uint64)width * height * sizeof(Pixel) : 0;
+      if (rgbaRow && (uint64)width * 4 > rowScratchBytes)
+         rowScratchBytes = (uint64)width * 4;
+      skia_image_backing_record_decode_scratch_for_test(rowScratchBytes, fullRgbaTempBytes);
+   }
+#endif
    jpeg_start_decompress(&cinfo); /* Start decompressor */
 
    while (cinfo.output_scanline < cinfo.output_height)  /* Process data */
@@ -352,7 +382,18 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
       buffer = buffer0[0];
       jpeg_read_scanlines(&cinfo, buffer0, 1);
 #if TC_RENDERER_SKIA
-      if (mode == JPEG_DECODE_DIRECT_FULL) {
+      if (compactDecode) {
+         const int32 y = (int32)cinfo.output_scanline - 1;
+         const bool rowWritten = compactGray && cinfo.out_color_components == 1
+            ? skia_image_backing_write_gray_pixels(nativeHandle, buffer, 0, y, width, 1, width)
+            : !compactGray && cinfo.out_color_components == 4
+               ? skia_image_backing_write_rgba_pixels(nativeHandle, buffer, 0, y, width, 1, width * 4)
+               : 0;
+         if (!rowWritten) {
+            status = IMAGE_DECODE_RESOURCE_FAILURE;
+            break;
+         }
+      } else if (mode == JPEG_DECODE_DIRECT_FULL) {
          uint8* rgba = rgbaRow;
          int32 y = (int32)cinfo.output_scanline - 1;
          if (cinfo.out_color_components == 1) {
@@ -409,7 +450,13 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    jpeg_finish_decompress(&cinfo);
    jpeg_destroy_decompress(&cinfo);
 #if TC_RENDERER_SKIA
-   if (mode != JPEG_DECODE_DIRECT_FULL) {
+   if (compactDecode) {
+      if (!skia_image_backing_finish_decode(nativeHandle)) {
+         skia_image_backing_release(nativeHandle);
+         nativeHandle = 0;
+         status = IMAGE_DECODE_RESOURCE_FAILURE;
+      }
+   } else if (mode != JPEG_DECODE_DIRECT_FULL) {
       nativeHandle = skia_image_backing_create_from_argb_pixels(pixelStorage, width, height);
       xfree(pixelStorage);
       pixelStorage = null;
@@ -417,6 +464,8 @@ ImageDecodeStatus jpegLoad(Context currentContext, TCObject imageObj, TCObject i
    if (!nativeHandle || !imageInstallNativeBacking(currentContext, imageObj, nativeHandle, width, height)) {
       status = IMAGE_DECODE_RESOURCE_FAILURE;
    } else {
+      if (compactDecode)
+         skia_image_backing_record_compact_decode_for_test(nativeHandle);
       Image_width(imageObj) = width;
       Image_height(imageObj) = height;
       imageBackingSetOpacity(imageObj, IMAGE_BACKING_OPACITY_OPAQUE);
