@@ -62,6 +62,69 @@ class ImageDestinationScaleTest {
   }
 
   @Test
+  void cachedFinalRasterProbeUsesExactScaleWithoutMaterializingOnMiss() throws Exception {
+    Image image = new Image(png(96, 96)).getSmoothScaledInstance(48, 48);
+    Image.resetImageOperationAccountingForTest();
+
+    assertNull(image.cachedFinalRasterForDrawing(2));
+    assertEquals(0, Image.imageCreatedCountForTest());
+    assertNull(image.backing);
+    assertNotNull(image.pipelineForSmoke());
+
+    image.resolveForDrawing(2);
+    Image cached = image.resolveForDrawing(2);
+    assertSame(cached, image.cachedFinalRasterForDrawing(2));
+    assertNull(image.cachedFinalRasterForDrawing(1));
+    assertNull(image.cachedFinalRasterForDrawing(4));
+  }
+
+  @Test
+  void cachedFinalRasterProbeRejectsChangedDecodeGenerationAndInvalidBacking() throws Exception {
+    Image image = new Image(png(96, 96)).getSmoothScaledInstance(48, 48);
+    image.resolveForDrawing(2);
+    Image cached = image.resolveForDrawing(2);
+    ImagePipeline pipeline = image.pipelineForSmoke();
+    EncodedImageSource source = (EncodedImageSource) pipeline.root();
+
+    source.evictDecodedBacking();
+    assertNull(image.cachedFinalRasterForDrawing(2));
+    assertNotSame(cached, image.resolveForDrawing(2));
+
+    Image currentCache = image.resolveForDrawing(2);
+    assertSame(currentCache, image.resolveForDrawing(2));
+    ImageBacking backing = currentCache.backing;
+    currentCache.backing = null;
+    assertNull(image.cachedFinalRasterForDrawing(2));
+    assertEquals(0, pipeline.cachedVariantCountForSmoke());
+    currentCache.backing = backing;
+  }
+
+  @Test
+  void invalidCachedRasterDoesNotErasePendingAdmissionForAnotherScale() throws Exception {
+    Image image = new Image(png(96, 96)).getSmoothScaledInstance(48, 48);
+    ImagePipeline pipeline = image.pipelineForSmoke();
+
+    image.resolveForDrawing(2);
+    Image cachedA = image.resolveForDrawing(2);
+    assertSame(cachedA, image.cachedFinalRasterForDrawing(2));
+
+    Image firstB = image.resolveForDrawing(4);
+    assertEquals(1, pipeline.cachedVariantCountForSmoke());
+
+    ImageBacking backingA = cachedA.backing;
+    cachedA.backing = null;
+    assertNull(image.cachedFinalRasterForDrawing(2));
+    cachedA.backing = backingA;
+    assertEquals(0, pipeline.cachedVariantCountForSmoke());
+
+    Image admittedB = image.resolveForDrawing(4);
+    assertEquals(1, pipeline.cachedVariantCountForSmoke());
+    assertNotSame(firstB, admittedB);
+    assertSame(admittedB, image.cachedFinalRasterForDrawing(4));
+    assertSame(admittedB, image.resolveForDrawing(4));
+  }
+
+  @Test
   void freeTextureReleasesVariantTexturesButKeepsCpuCache() throws Exception {
     Image image = new Image(png(96, 96)).getSmoothScaledInstance(48, 48);
     image.resolveForDrawing(2);

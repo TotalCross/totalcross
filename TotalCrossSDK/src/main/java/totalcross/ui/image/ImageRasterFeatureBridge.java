@@ -11,6 +11,9 @@ public final class ImageRasterFeatureBridge {
   static int copyRectPlanHandledForTest;
   static int copyRectPlanFallbacksForTest;
   static int copyRectPlanLastStatusForTest;
+  static int cachedFinalRasterProbesForTest;
+  static int cachedFinalRasterHitsForTest;
+  static int cachedFinalRasterMissesForTest;
 
   private ImageRasterFeatureBridge() {
   }
@@ -65,6 +68,16 @@ public final class ImageRasterFeatureBridge {
       copyRectPlanHandledForTest++;
     } else {
       copyRectPlanFallbacksForTest++;
+    }
+  }
+
+  /** @hidden */
+  public static void recordCachedFinalRasterProbe(boolean hit) {
+    cachedFinalRasterProbesForTest++;
+    if (hit) {
+      cachedFinalRasterHitsForTest++;
+    } else {
+      cachedFinalRasterMissesForTest++;
     }
   }
 }

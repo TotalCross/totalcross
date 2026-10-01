@@ -304,12 +304,7 @@ final class ImagePipeline {
   }
 
   void clearCachedVariants() {
-    releaseCachedVariantTextures();
-    cachedVariant = null;
-    cachedVariantGeneration = 0;
-    cachedScaleBits = 0;
-    pendingVariant = false;
-    pendingScaleBits = pendingGeneration = 0;
+    clearCachedMaterializedVariantAndPending();
     cachedDrawPlan1 = null;
     cachedDrawPlan2 = null;
     cachedDrawUse1 = cachedDrawUse2 = 0;
@@ -365,9 +360,27 @@ final class ImagePipeline {
   Image cachedMaterializedVariant(long scaleBits, long sourceDecodeGeneration) {
     if (cachedVariant != null && cachedScaleBits == scaleBits
         && cachedVariantGeneration == sourceDecodeGeneration) {
-      return cachedVariant;
+      if (cachedVariant.backing != null && cachedVariant.backing.isValid()) {
+        return cachedVariant;
+      }
+      clearCachedMaterializedVariantOnly();
     }
     return null;
+  }
+
+  private void clearCachedMaterializedVariantOnly() {
+    if (cachedVariant != null) {
+      cachedVariant.releaseTextureOnly();
+    }
+    cachedVariant = null;
+    cachedScaleBits = 0;
+    cachedVariantGeneration = 0;
+  }
+
+  private void clearCachedMaterializedVariantAndPending() {
+    clearCachedMaterializedVariantOnly();
+    pendingVariant = false;
+    pendingScaleBits = pendingGeneration = 0;
   }
 
   /** Admits this exact representation after two consecutive observations. */

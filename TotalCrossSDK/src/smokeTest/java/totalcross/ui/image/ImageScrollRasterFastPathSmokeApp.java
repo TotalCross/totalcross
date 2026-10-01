@@ -18,6 +18,7 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
     boolean translatedPartialClip = false;
     boolean emptyIntersectionNoMutation = false;
     boolean planCopyHandled = false;
+    boolean cacheProbeMissContinuesToPlanCopy = false;
     boolean deferredSourcesRemainDeferred = false;
     String error = "";
 
@@ -68,19 +69,33 @@ public class ImageScrollRasterFastPathSmokeApp extends MainWindow {
       planCopyHandled = ImageRasterFeatureBridge.copyRectPlanAttemptsForTest > 0
           && ImageRasterFeatureBridge.copyRectPlanHandledForTest > 0;
       require(planCopyHandled, "no plan-aware copy was handled");
+      cacheProbeMissContinuesToPlanCopy = ImageRasterFeatureBridge.cachedFinalRasterProbesForTest > 0
+          && ImageRasterFeatureBridge.cachedFinalRasterMissesForTest
+              == ImageRasterFeatureBridge.cachedFinalRasterProbesForTest
+          && ImageRasterFeatureBridge.cachedFinalRasterHitsForTest == 0
+          && ImageRasterFeatureBridge.copyRectPlanAttemptsForTest > 0
+          && ImageRasterFeatureBridge.copyRectPlanAttemptsForTest
+              <= ImageRasterFeatureBridge.cachedFinalRasterMissesForTest
+          && actualSource.backing == null && actualSource.pipelineForSmoke() != null;
+      require(cacheProbeMissContinuesToPlanCopy, "cache miss did not continue to plan-aware copy");
     } catch (Throwable failure) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
 
     boolean overallPass = sourceSubrectAndDestination && translatedPartialClip
-        && emptyIntersectionNoMutation && planCopyHandled && deferredSourcesRemainDeferred;
+        && emptyIntersectionNoMutation && planCopyHandled && cacheProbeMissContinuesToPlanCopy
+        && deferredSourcesRemainDeferred;
     System.out.println("fixture=ImageScrollRasterFastPathSmokeApp,sourceSubrectAndDestination="
         + sourceSubrectAndDestination + ",translatedPartialClip=" + translatedPartialClip
         + ",emptyIntersectionNoMutation=" + emptyIntersectionNoMutation + ",planCopyHandled="
         + planCopyHandled + ",copyPlanAttempts=" + ImageRasterFeatureBridge.copyRectPlanAttemptsForTest
+        + ",cachedFinalRasterProbes=" + ImageRasterFeatureBridge.cachedFinalRasterProbesForTest
+        + ",cachedFinalRasterHits=" + ImageRasterFeatureBridge.cachedFinalRasterHitsForTest
+        + ",cachedFinalRasterMisses=" + ImageRasterFeatureBridge.cachedFinalRasterMissesForTest
         + ",copyPlanHandledCount=" + ImageRasterFeatureBridge.copyRectPlanHandledForTest
         + ",copyPlanFallbacks=" + ImageRasterFeatureBridge.copyRectPlanFallbacksForTest
         + ",copyPlanLastStatus=" + ImageRasterFeatureBridge.copyRectPlanLastStatusForTest
+        + ",cacheProbeMissContinuesToPlanCopy=" + cacheProbeMissContinuesToPlanCopy
         + ",deferredSourcesRemainDeferred=" + deferredSourcesRemainDeferred
         + ",overallPass=" + overallPass + ",error=" + error);
     exit(overallPass ? 0 : 1);

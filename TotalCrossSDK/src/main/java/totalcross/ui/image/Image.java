@@ -1287,24 +1287,26 @@ public class Image extends GfxSurface {
     pipeline = null;
   }
 
+  /** Returns an existing materialized variant for this destination without resolving a cache miss. */
+  Image cachedFinalRasterForDrawing(double destinationScale) throws ImageException {
+    validateDrawingScale(destinationScale);
+    return cachedMaterializedVariantForDrawing(pipeline, destinationScale);
+  }
+
   /** Resolves a deferred image for a destination without adopting the result. */
-  /** Resolves this image for a destination raster without adopting the result. */
   Image resolveForDrawing(double destinationScale) throws ImageException {
-    if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
-      throw new ImageException("Image destination scale must be finite and positive.");
-    }
+    validateDrawingScale(destinationScale);
     ImagePipeline deferred = pipeline;
     if (deferred == null) {
       return this;
     }
+    Image cached = cachedMaterializedVariantForDrawing(deferred, destinationScale);
+    if (cached != null) {
+      return cached;
+    }
     double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
     long scaleBits = Double.doubleToLongBits(effectiveScale);
     long sourceDecodeGeneration = sourceDecodeGeneration(deferred);
-    Image cached = deferred.cachedMaterializedVariant(scaleBits, sourceDecodeGeneration);
-    if (cached != null) {
-      synchronizePresentationState(cached);
-      return cached;
-    }
     Image resolved = resolvePipeline(deferred, effectiveScale);
     synchronizePresentationState(resolved);
     sourceDecodeGeneration = sourceDecodeGeneration(deferred);
@@ -1453,6 +1455,27 @@ public class Image extends GfxSurface {
 
   void discardPreparationPipeline() {
     pipeline = null;
+  }
+
+  private Image cachedMaterializedVariantForDrawing(ImagePipeline deferred, double destinationScale)
+      throws ImageException {
+    if (deferred == null) {
+      return null;
+    }
+    double effectiveScale = deferred.hasGeometricNode() ? destinationScale : 1;
+    long scaleBits = Double.doubleToLongBits(effectiveScale);
+    long sourceDecodeGeneration = sourceDecodeGeneration(deferred);
+    Image cached = deferred.cachedMaterializedVariant(scaleBits, sourceDecodeGeneration);
+    if (cached != null) {
+      synchronizePresentationState(cached);
+    }
+    return cached;
+  }
+
+  private static void validateDrawingScale(double destinationScale) throws ImageException {
+    if (!Double.isFinite(destinationScale) || destinationScale <= 0) {
+      throw new ImageException("Image destination scale must be finite and positive.");
+    }
   }
 
   /** Returns a cached native draw description when this pipeline is drawable with supported color stages. */

@@ -80,7 +80,7 @@ When P4 compact storage is present after rebase, use only its existing bounded r
 ## Progress
 
 - [x] (2026-10-01) Added plan-aware native `copyRect(Image, ...)`; focused Java parity and macOS native smoke pass.
-- [ ] Milestone 2: cached-final probe and artifact-boundary tests.
+- [x] (2026-10-01) Added the non-materializing cached-final probe, exact scale/decode-generation/backing-validity checks, and artifact exclusions/tests; focused SDK, distribution, and native smoke checks pass.
 - [ ] Milestone 3: shared physical proof, direct copy, and native correctness tests.
 - [ ] Milestone 4: measurement, integration validation, report, and PR.
 
@@ -126,4 +126,6 @@ Keep changes limited to the paths listed in the active state file. Preserve unre
 
 ## Outcomes & Retrospective
 
-Milestone 1 routes deferred Image-source `copyRect` calls through a native geometry helper with explicit source and destination coordinates. Unsupported plans fall back to the existing materialized surface copy. The smoke verifies subrect, nonzero destination, translation, partial clipping, and empty-intersection generation stability. See the evidence index for focused validation. Update this section at later milestone boundaries and completion with remaining fallback limits.
+Milestone 1 routes deferred Image-source `copyRect` calls through a native geometry helper with explicit source and destination coordinates. Unsupported plans fall back to the existing materialized surface copy. The smoke verifies subrect, nonzero destination, translation, partial clipping, and empty-intersection generation stability.
+
+Milestone 2 probes the existing one-slot materialized-variant cache before building a draw plan. Cache hits require the exact effective scale and current encoded-source decode generation, and invalid cached backing is evicted without disturbing the independent draw-plan cache. The narrow `ImageDrawingFeatureBridge` stays out of application SDK artifacts; the pre-existing two-method `ImageDrawingBridge` surface is unchanged. The native smoke confirms cache misses continue to plan-aware copy while deferred sources remain unmaterialized. See the evidence index.
