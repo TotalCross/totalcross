@@ -190,6 +190,13 @@ jar {
     exclude 'totalcross/sys/runtime/ResolvedRuntimeConfiguration*.class'
     exclude 'totalcross/sys/RuntimeDiagnosticsFeatureBridge*.class'
     exclude 'totalcross/ui/image/ImageRasterFeatureBridge*.class'
+    exclude 'totalcross/ui/DisplayPreparationBatch*.class'
+    exclude 'totalcross/ui/DisplayPreparationContext*.class'
+    exclude 'totalcross/ui/image/ImagePreparationFeatureBridge*.class'
+    exclude 'totalcross/ui/image/ImagePreparationMetrics*.class'
+    exclude 'totalcross/ui/image/ImagePreparationRequest*.class'
+    exclude 'totalcross/ui/image/ImagePreparationScheduler*.class'
+    exclude 'totalcross/ui/image/PreparedImageResult*.class'
     from new File(project.rootDir, 'etc/fonts/TCFont.tcz')
     from new File(project.rootDir, 'etc/fonts/Material Icons.tcz')
     into("META-INF/maven/${project.group}/${base.archivesName.get()}") {
@@ -1350,7 +1357,7 @@ registerImageMacSmoke('ImageNativeGeometry', 'ImageNativeGeometrySmokeApp',
     ])
 
 registerImageMacSmoke('ImageNativeMaterialization', 'ImageNativeMaterializationSmokeApp',
-    'image-native-materialization-smoke', false, true, [
+    'image-native-materialization-smoke', false, false, [
         'fixture=ImageNativeMaterializationSmokeApp',
         'pass=true'
     ])
@@ -1435,6 +1442,20 @@ registerImageMacSmoke('ImageLazyJpegFactory', 'ImageLazyJpegFactorySmokeApp',
         'transientRetry=true',
         'publicJavaRoute=true',
         'privateNativeDecode=true',
+        'overallPass=true'
+    ])
+
+registerImageMacSmoke('ImageAsyncPreparation', 'ImageAsyncPreparationSmokeApp',
+    'image-async-preparation-smoke', false, false, [
+        'fixture=ImageAsyncPreparationSmokeApp',
+        'explicitPreparation=true',
+        'capturedPathDeleted=true',
+        'staleBatch=true',
+        'staleRequest=true',
+        'transientRetry=true',
+        'deterministicFailure=true',
+        'uiAdoption=true',
+        'drawReuse=true',
         'overallPass=true'
     ])
 

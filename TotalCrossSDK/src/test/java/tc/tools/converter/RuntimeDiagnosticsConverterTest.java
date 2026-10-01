@@ -83,12 +83,13 @@ class RuntimeDiagnosticsConverterTest {
         Path.of("src/runtimeDiagnostics/java/totalcross/sys/RuntimeDiagnosticsSupport.java"));
     int start = source.indexOf("static RuntimeDiagnosticSnapshot snapshot() {");
     int gate = source.indexOf(
-        "if (!runtimeGroupEnabled && !imageGroupEnabled && !schedulingGroupEnabled)", start);
+        "if (!runtimeGroupEnabled && !imageGroupEnabled && !schedulingGroupEnabled && !prefetchGroupEnabled)", start);
     int snapshotCall = source.indexOf("RuntimeMetrics.snapshot(runtimeGroupEnabled, imageGroupEnabled,",
         gate);
     int metricsStart = source.indexOf("private static RuntimeDiagnosticSnapshot snapshot(boolean includeRuntime,",
         snapshotCall);
-    int metricsGate = source.indexOf("if (!includeRuntime && !includeImage && !includeScheduling)", metricsStart);
+    int metricsGate = source.indexOf(
+        "if (!includeRuntime && !includeImage && !includeScheduling && !includePrefetch)", metricsStart);
     int lock = source.indexOf("synchronized (COLLECTION_LOCK)", metricsStart);
     int batchRead = source.indexOf("nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES)", metricsStart);
     int valuesAllocation = source.indexOf("long[] values = new long[total]", metricsStart);
@@ -98,6 +99,10 @@ class RuntimeDiagnosticsConverterTest {
     assertTrue(source.contains("if (enabled) {\n      RuntimeMetrics.initialize();"));
     assertTrue(source.contains("private static final class RuntimeMetrics"));
     assertTrue(source.contains("nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES)"));
+    assertTrue(source.contains("0x5001, 0x5002, 0x5003, 0x5004, 0x5005"));
+    assertTrue(source.contains("0x5006, 0x5007, 0x5008, 0x5009, 0x500A"));
+    assertFalse(Files.readString(Path.of("src/main/java/totalcross/sys/RuntimeDiagnosticSnapshot.java"))
+        .contains("0x500"));
     assertFalse(source.contains("System.nanoTime"));
   }
 

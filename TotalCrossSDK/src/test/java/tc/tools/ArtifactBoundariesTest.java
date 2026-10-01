@@ -64,6 +64,12 @@ class ArtifactBoundariesTest {
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(diagnosticsBridge)));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(rasterBridge)));
             assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
+                    "totalcross/ui/DisplayPreparation")));
+            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
+                    "totalcross/ui/image/ImagePreparation")));
+            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
+                    "totalcross/ui/image/PreparedImageResult")));
+            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
                     "totalcross/sys/RuntimeDiagnosticsImageBridge")));
         }
         assertFalse(runtimeJava.stream().anyMatch(name -> name.startsWith(
@@ -82,6 +88,17 @@ class ArtifactBoundariesTest {
         assertTrue(publicMethods.equals(Set.of(
                 "resolveForDrawing(totalcross.ui.image.Image,double)",
                 "drawPlanForDrawing(totalcross.ui.image.Image,double)")));
+    }
+
+    @Test
+    void scrollContainerExposesOnlyTheExplicitPreparationOperation() {
+        Set<String> publicPreparationMethods = java.util.Arrays.stream(
+                totalcross.ui.ScrollContainer.class.getDeclaredMethods())
+                .filter(method -> Modifier.isPublic(method.getModifiers()))
+                .filter(method -> method.getName().toLowerCase(java.util.Locale.ROOT).contains("prepar"))
+                .map(ArtifactBoundariesTest::methodSignature)
+                .collect(Collectors.toSet());
+        assertTrue(publicPreparationMethods.equals(Set.of("prepareForDisplay(java.lang.Runnable)")));
     }
 
     @Test
@@ -271,6 +288,19 @@ class ArtifactBoundariesTest {
                 + "}\n");
         assertFalse(compile(compiler, sdkJar, internalSource, tempDir.resolve("internal-classes")),
                 "application code must not compile against startup or codec plumbing");
+
+        Path imagePreparationSource = tempDir.resolve("InternalImagePreparationAccess.java");
+        Files.writeString(imagePreparationSource, ""
+                + "import totalcross.ui.image.ImagePreparationFeatureBridge;\n"
+                + "import totalcross.ui.image.ImagePreparationRequest;\n"
+                + "import totalcross.ui.image.ImagePreparationScheduler;\n"
+                + "import totalcross.ui.image.PreparedImageResult;\n"
+                + "public final class InternalImagePreparationAccess {\n"
+                + "  void prepare() { ImagePreparationFeatureBridge.prepareForDisplay(null, 1.0, 0L, null); }\n"
+                + "}\n");
+        assertFalse(compile(compiler, sdkJar, imagePreparationSource,
+                tempDir.resolve("image-preparation-internal-classes")),
+                "application code must not compile against Q preparation internals");
     }
 
     @Test
