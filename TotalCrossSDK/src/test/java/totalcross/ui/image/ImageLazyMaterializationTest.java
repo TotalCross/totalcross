@@ -87,7 +87,7 @@ class ImageLazyMaterializationTest {
 
   @Test
   void transientMaterializationFailureIsRetriedWithoutCaching() throws Exception {
-    Image image = new Image(png(2, 1));
+    Image image = new Image(bmp(2, 1));
     Object deferredPipeline = pipeline(image);
 
     Image.failNextDecodedRasterAllocationForTest();
@@ -203,6 +203,15 @@ class ImageLazyMaterializationTest {
     }
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     assertTrue(ImageIO.write(source, "png", output));
+    return output.toByteArray();
+  }
+
+  private static byte[] bmp(int width, int height) throws Exception {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    if (!ImageIO.write(image, "bmp", output)) {
+      throw new AssertionError("No BMP writer available");
+    }
     return output.toByteArray();
   }
 

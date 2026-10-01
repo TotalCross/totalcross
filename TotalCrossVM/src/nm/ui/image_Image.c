@@ -23,7 +23,7 @@
 #endif
 
 ImageDecodeStatus pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj,
-      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength);
+      TCZFile tcz, char* first4, const uint8* mapped, int32 mappedLength, bool directDecode);
 
 static bool failNextImageAllocationForTest;
 
@@ -203,7 +203,7 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
       tczRead(tcz, magic, 4);
       if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
          throwImageDecodeStatus(p->currentContext,
-            pngLoad(p->currentContext, imageObj, null, null, tcz, magic, null, 0));
+            pngLoad(p->currentContext, imageObj, null, null, tcz, magic, null, 0, false));
       } else
          throwImageDecodeStatus(p->currentContext,
             jpegLoad(p->currentContext, imageObj, null, null, tcz, magic, 0, JPEG_DECODE_FULL, 0, 0));
@@ -220,7 +220,7 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
    xmove4(magic, buf); // buf already comes filled from Java with the first 4 bytes
    if ((magic[0] & 0xFF) == 0x89 && magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G') {
       throwImageDecodeStatus(p->currentContext,
-         pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, null, 0));
+         pngLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, null, 0, false));
    } else
       throwImageDecodeStatus(p->currentContext,
          jpegLoad(p->currentContext, imageObj, streamObj, bufObj, null, magic, 0, JPEG_DECODE_FULL, 0, 0));
@@ -239,7 +239,7 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
    }
    ImageDecodeStatus status;
    if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_PNG)
-      status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length);
+      status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length, false);
    else if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_JPEG)
       status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
          JPEG_DECODE_FULL, 0, 0);
@@ -248,6 +248,40 @@ TC_API void tuiI_decodeEncodedSource_e(NMParams p) // totalcross/ui/image/Image 
       return;
    }
    throwImageDecodeStatus(p->currentContext, status);
+}
+
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_decodeEncodedSourceDirect_e(NMParams p) // totalcross/ui/image/Image private boolean decodeEncodedSourceDirect(totalcross.ui.image.EncodedImageSource source);
+{
+   TCObject imageObj = p->obj[0];
+   TCObject sourceObj = p->obj[1];
+   ImageEncodedBag* bag = (ImageEncodedBag*)EncodedImageSource_nativeBag(sourceObj);
+   ImageDecodeStatus status = IMAGE_DECODE_RESOURCE_FAILURE;
+   p->retI = 0;
+#if TC_RENDERER_SKIA
+   if (!bag || !bag->bytes || bag->length <= 0 || EncodedImageSource_frameCount(sourceObj) != 1)
+      return;
+   imageRecordTestCounter(p->currentContext, "fullDecodeInvocationCountForTest");
+   if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_PNG) {
+      status = pngLoad(p->currentContext, imageObj, null, null, null, null, bag->bytes, bag->length, true);
+   } else if (EncodedImageSource_formatCode(sourceObj) == IMAGE_ENCODED_JPEG) {
+      status = jpegLoad(p->currentContext, imageObj, null, null, null, (const char*)bag->bytes, bag->length,
+         JPEG_DECODE_DIRECT_FULL, 0, 0);
+   } else {
+      return;
+   }
+   if (status != IMAGE_DECODE_SUCCESS) {
+      throwImageDecodeStatus(p->currentContext, status);
+      return;
+   }
+   p->retI = status == IMAGE_DECODE_SUCCESS && Image_backing(imageObj) != null
+      && Image_width(imageObj) > 0 && Image_height(imageObj) > 0;
+#else
+   UNUSED(imageObj)
+   UNUSED(sourceObj)
+   UNUSED(bag)
+   UNUSED(status)
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 static void decodeEncodedSourceAtDenominator(NMParams p, int32 denominator, bool explicitRatio) {
@@ -382,6 +416,7 @@ static bool applyNativeColorMutation(Context currentContext, TCObject imageObj, 
 {
    int32 frameCount;
    int32 visibleWidth;
+   int32 opacityState;
    if (!imageUsesNativeBacking(imageObj)) {
       return false;
    }
@@ -392,6 +427,14 @@ static bool applyNativeColorMutation(Context currentContext, TCObject imageObj, 
          parameter2, frameCount, visibleWidth, Image_currentFrame(imageObj))) {
       return false;
    }
+   opacityState = ImageBacking_opacityState(Image_backing(imageObj));
+   if ((operation == SKIA_IMAGE_COLOR_APPLY_COLOR2 && (parameter1 & 0xFF000000) == 0xAA000000)
+         || (operation == SKIA_IMAGE_COLOR_CHANGE_COLORS
+            && ((parameter1 ^ parameter2) & 0xFF000000) != 0)
+         || operation == SKIA_IMAGE_COLOR_SET_TRANSPARENT_COLOR) {
+      opacityState = IMAGE_BACKING_OPACITY_UNKNOWN;
+   }
+   imageBackingRecordMutation(imageObj, opacityState);
    Image_changed(imageObj) = true;
    imageRecordTestCounter(currentContext, "nativeColorReadbackCountForTest");
    return true;
@@ -471,7 +514,10 @@ TC_API void tuiI_getModifiedNative_iiiiiii(NMParams p) // totalcross/ui/image/Im
 TC_API void tuiI_setCurrentFrameNative_i(NMParams p) // totalcross/ui/image/Image private void setCurrentFrameNative(int nr);
 {
    TCObject obj = p->obj[0];
+   int32 previousFrame = Image_currentFrame(obj);
    setCurrentFrame(obj, p->i32[0]);
+   if (Image_currentFrame(obj) != previousFrame && Image_backing(obj))
+      imageBackingRecordMutation(obj, ImageBacking_opacityState(Image_backing(obj)));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyColorNative_i(NMParams p) // totalcross/ui/image/Image private void applyColorNative(int color);

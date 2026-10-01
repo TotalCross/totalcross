@@ -7,6 +7,7 @@
 #include "tcvm.h"
 #include "PalmFont.h"
 #include "GraphicsPrimitives.h"
+#include "NativeImageBacking.h"
 #include "math.h"
 
 #define TRANSITION_NONE  0
@@ -296,7 +297,9 @@ static void markScreenDirty(Context currentContext, int32 x, int32 y, int32 w, i
 
 static void markPhysicalDirty(Context currentContext, TCObject surface, int x, int y, int w, int h) {
     if (Graphics_isImageSurface(surface)) {
-        Image_changed(Graphics_surface(surface)) = true;
+        TCObject image = Graphics_surface(surface);
+        Image_changed(image) = true;
+        imageBackingRecordMutation(image, IMAGE_BACKING_OPACITY_UNKNOWN);
     } else {
         currentContext->dirtyX1 = min32(currentContext->dirtyX1, x);
         currentContext->dirtyY1 = min32(currentContext->dirtyY1, y);

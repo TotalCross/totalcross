@@ -11,11 +11,36 @@
 #include "skia/skia.h"
 #endif
 
+void imageBackingRecordMutation(TCObject imageObj, int32 opacityState)
+{
+   TCObject backing = imageObj ? Image_backing(imageObj) : null;
+   if (imageObj) {
+      int64 generation = Image_backingMutationGeneration(imageObj);
+      if (backing && ImageBacking_mutationGeneration(backing) > generation)
+         generation = ImageBacking_mutationGeneration(backing);
+      generation++;
+      if (backing) {
+         ImageBacking_mutationGeneration(backing) = generation;
+         ImageBacking_opacityState(backing) = opacityState;
+      }
+      Image_backingMutationGeneration(imageObj) = generation;
+   }
+}
+
+void imageBackingSetOpacity(TCObject imageObj, int32 opacityState)
+{
+   TCObject backing = imageObj ? Image_backing(imageObj) : null;
+   if (backing)
+      ImageBacking_opacityState(backing) = opacityState;
+}
+
 bool imageInstallNativeBacking(Context context, TCObject imageObj, int64 handle,
                                int32 width, int32 height)
 {
 #if TC_RENDERER_SKIA
    TCObject backing;
+   TCObject previous;
+   int64 previousHandle = 0;
    if (!imageObj || handle == 0 || width <= 0 || height <= 0) {
       skia_image_backing_release(handle);
       throwException(context, ImageException, "Could not create native image backing");
@@ -31,7 +56,17 @@ bool imageInstallNativeBacking(Context context, TCObject imageObj, int64 handle,
    NativeImageBacking_width(backing) = width;
    NativeImageBacking_height(backing) = height;
    setObjectLock(backing, UNLOCKED);
+   previous = Image_backing(imageObj);
+   if (previous && strEq(OBJ_CLASS(previous)->name, "totalcross.ui.image.NativeImageBacking"))
+      previousHandle = NativeImageBacking_nativeHandle(previous);
    Image_backing(imageObj) = backing;
+   imageBackingRecordMutation(imageObj, 0);
+   if (previousHandle != 0 && previousHandle != handle) {
+      skia_image_backing_release(previousHandle);
+      NativeImageBacking_nativeHandle(previous) = 0;
+   } else if (previousHandle == handle && previous) {
+      NativeImageBacking_nativeHandle(previous) = 0;
+   }
    return true;
 #else
    UNUSED(context)
@@ -63,6 +98,7 @@ bool imageReplaceNativeBacking(Context context, TCObject imageObj, int64 handle,
       NativeImageBacking_nativeHandle(backing) = handle;
       NativeImageBacking_width(backing) = width;
       NativeImageBacking_height(backing) = height;
+      imageBackingRecordMutation(imageObj, 0);
       return true;
    }
    return imageInstallNativeBacking(context, imageObj, handle, width, height);

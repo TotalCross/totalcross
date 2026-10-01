@@ -174,7 +174,8 @@ final class NativeImageBacking extends ImageBacking {
 
   @Override
   boolean readRgbaRow(byte[] output, int y) {
-    return isValid() && output != null && y >= 0 && y < height && output.length >= width * 4
+    return isValid() && output != null && y >= 0 && y < height
+        && (long) output.length >= (long) width * 4
         && readRgbaRowNative(output, y, width);
   }
 
@@ -189,8 +190,10 @@ final class NativeImageBacking extends ImageBacking {
     return makeMutableNative();
   }
 
+  @Override
   boolean readPixels(int[] output, int offset, int x, int y, int width, int height) {
-    if (nativeHandle == 0 || output == null || offset < 0 || width < 0 || height < 0
+    if (nativeHandle == 0 || output == null || offset < 0 || x < 0 || y < 0 || width < 0 || height < 0
+        || x > this.width - width || y > this.height - height
         || (long) offset + (long) width * height > output.length) {
       return false;
     }
@@ -221,7 +224,9 @@ final class NativeImageBacking extends ImageBacking {
     if (snapshot < 0) {
       throw new TransientImageMaterializationException("Could not allocate native image snapshot");
     }
-    return new NativeImageBacking(snapshot, width, height);
+    NativeImageBacking copy = new NativeImageBacking(snapshot, width, height);
+    copyStateTo(copy);
+    return copy;
   }
 
   /** Test-only hook for exercising retryable native backing snapshot allocation failures. */

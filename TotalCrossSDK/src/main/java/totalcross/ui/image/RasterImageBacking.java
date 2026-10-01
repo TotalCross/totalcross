@@ -63,7 +63,8 @@ final class RasterImageBacking extends ImageBacking {
   @Override
   boolean readRgbaRow(byte[] output, int y) {
     int storageWidth = width();
-    if (!isValid() || output == null || y < 0 || y >= height || output.length < storageWidth * 4) {
+    if (!isValid() || output == null || y < 0 || y >= height
+        || (long) output.length < (long) storageWidth * 4) {
       return false;
     }
     int[] source = readStoragePixels();
@@ -74,6 +75,22 @@ final class RasterImageBacking extends ImageBacking {
       output[x * 4 + 1] = (byte) (value >> 8);
       output[x * 4 + 2] = (byte) value;
       output[x * 4 + 3] = (byte) (value >>> 24);
+    }
+    return true;
+  }
+
+  @Override
+  boolean readPixels(int[] output, int offset, int x, int y, int width, int height) {
+    int storageWidth = width();
+    long pixelCount = (long) width * height;
+    if (!isValid() || output == null || offset < 0 || x < 0 || y < 0 || width < 0 || height < 0
+        || x > storageWidth - width || y > this.height - height
+        || pixelCount > Integer.MAX_VALUE || (long) offset + pixelCount > output.length) {
+      return false;
+    }
+    int[] source = readStoragePixels();
+    for (int row = 0; row < height; row++) {
+      System.arraycopy(source, (y + row) * storageWidth + x, output, offset + row * width, width);
     }
     return true;
   }
@@ -97,9 +114,11 @@ final class RasterImageBacking extends ImageBacking {
   @Override
   ImageBacking snapshot() throws ImageException {
     try {
-      return new RasterImageBacking(width, height, frameCount, widthOfAllFrames,
+      RasterImageBacking snapshot = new RasterImageBacking(width, height, frameCount, widthOfAllFrames,
           pixels == null ? null : pixels.clone(),
           pixelsOfAllFrames == null ? null : pixelsOfAllFrames.clone());
+      copyStateTo(snapshot);
+      return snapshot;
     } catch (OutOfMemoryError oome) {
       throw new TransientImageMaterializationException(oome);
     }

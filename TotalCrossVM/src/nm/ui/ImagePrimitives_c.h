@@ -8,8 +8,8 @@
 
 #if TC_RENDERER_SKIA
 #include "skia/skia.h"
-#include "NativeImageBacking.h"
 #endif
+#include "NativeImageBacking.h"
 #include "ImageTestAccounting_c.h"
 
 static void setCurrentFrame(TCObject obj, int32 nr)
@@ -65,6 +65,7 @@ static void applyColor(TCObject obj, Pixel color) // guich@tc112_24
       setCurrentFrame(obj, 0);
    }
    Image_changed(obj) = true;
+   imageBackingRecordMutation(obj, ImageBacking_opacityState(Image_backing(obj)));
 }
 
 #define BIAS_BITS 16
@@ -325,6 +326,8 @@ static void changeColors(TCObject obj, Pixel from, Pixel to)
       setCurrentFrame(obj, 0);
    }
    Image_changed(obj) = true;
+   imageBackingRecordMutation(obj, ((from ^ to) & 0xFF000000) == 0
+      ? ImageBacking_opacityState(Image_backing(obj)) : IMAGE_BACKING_OPACITY_UNKNOWN);
 }
 
 static void getScaledInstance(TCObject thisObj, TCObject newObj)
@@ -693,6 +696,8 @@ static void applyColor2(TCObject obj, Pixel color)
       setCurrentFrame(obj, 0);
    }
    Image_changed(obj) = true;
+   imageBackingRecordMutation(obj, changeA
+      ? IMAGE_BACKING_OPACITY_UNKNOWN : ImageBacking_opacityState(Image_backing(obj)));
 }
 
 void setTransparentColor(TCObject obj, Pixel color);
@@ -703,6 +708,7 @@ void setTransparentColor(TCObject obj, Pixel color)
       : RasterImageBacking_pixelsOfAllFrames(Image_backing(obj));
    int32 len = ARRAYOBJ_LEN(pixelsObj);
    Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+   bool hasTransparent = false;
    if ((int32)color == -1) // no transparent pixels?
       for (; len-- > 0;)
          *pixels++ |= 0xFF000000;
@@ -710,6 +716,8 @@ void setTransparentColor(TCObject obj, Pixel color)
       for (; len-- > 0; pixels++)
       {
          Pixel p = *pixels & 0xFFFFFF;
+         if (p == color)
+            hasTransparent = true;
          *pixels = (p == color) ? color : p | 0xFF000000; // if is the transparent color, set the alpha to 0, otherwise, set to full bright
       }
    if (frameCount != 1)
@@ -718,6 +726,8 @@ void setTransparentColor(TCObject obj, Pixel color)
       setCurrentFrame(obj, 0);
    }
    Image_changed(obj) = true;
+   imageBackingRecordMutation(obj, (int32)color == -1 || !hasTransparent
+      ? IMAGE_BACKING_OPACITY_OPAQUE : IMAGE_BACKING_OPACITY_HAS_ALPHA);
 }
 
 static int timestampOldLimit;
@@ -752,4 +762,5 @@ static void applyFade(TCObject obj, int32 fadeValue)
       setCurrentFrame(obj, 0);
    }
    Image_changed(obj) = true;
+   imageBackingRecordMutation(obj, ImageBacking_opacityState(Image_backing(obj)));
 }

@@ -360,6 +360,26 @@ int skia_image_backing_make_mutable(int64_t handle) {
     }
 }
 
+int skia_image_backing_write_rgba_pixels(int64_t handle, const uint8_t* pixels, int32 x, int32 y,
+                                         int32 width, int32 height, int32 rowBytes) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    if (!backing || !pixels || width <= 0 || height <= 0 || x < 0 || y < 0
+        || x > backing->width - width || y > backing->height - height
+        || rowBytes < static_cast<int64_t>(width) * 4) {
+        return 0;
+    }
+    if (!skia_image_backing_make_mutable(handle)) {
+        return 0;
+    }
+    const SkPixmap source(rasterInfo(width, height), pixels, static_cast<size_t>(rowBytes));
+    if (!backing->surface->writePixels(source, x, y)) {
+        return 0;
+    }
+    ++backing->generation;
+    backing->applyColor2AnalysisValid = false;
+    return 1;
+}
+
 int64_t skia_image_backing_scale(int64_t handle, int32 outputWidth, int32 outputHeight, bool smooth) {
     NativeImageBackingRecord* source = findBacking(handle);
     if (!source || outputWidth <= 0 || outputHeight <= 0) {

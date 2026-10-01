@@ -104,6 +104,7 @@ totalcross/ui/image/Image|native private void setTransparentColorNative(int colo
 totalcross/ui/image/Image|native private void freeTextureNative();
 totalcross/ui/image/Image|native private void applyFadeNative(int fadeValue);
 totalcross/ui/image/Image|native private void decodeEncodedSource(totalcross.ui.image.EncodedImageSource source) throws totalcross.ui.image.ImageException;
+totalcross/ui/image/Image|native private boolean decodeEncodedSourceDirect(totalcross.ui.image.EncodedImageSource source) throws totalcross.ui.image.ImageException;
 totalcross/ui/image/Image|native private void decodeEncodedSourceTargeted(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight) throws totalcross.ui.image.ImageException;
 totalcross/ui/image/Image|native private void decodeEncodedSourceTiered(totalcross.ui.image.EncodedImageSource source, int targetWidth, int targetHeight, int denominator) throws totalcross.ui.image.ImageException;
 totalcross/ui/image/Image|native private static void failNextNativeMaterializationForTestNative();
@@ -130,6 +131,7 @@ totalcross/ui/image/NativeImageBacking|native private boolean makeMutableNative(
 totalcross/ui/image/NativeImageBacking|native private long scaleNative(int width, int height, boolean smooth);
 totalcross/ui/image/NativeImageBacking|native private static long materializeGeometryNative(totalcross.ui.image.ImageDrawPlan plan);
 totalcross/ui/image/NativeImageBacking|native private boolean readPixelsNative(int []output, int offset, int x, int y, int width, int height);
+totalcross/ui/image/NativeImageBacking|native private boolean readRgbaRowNative(byte []output, int y, int width);
 totalcross/ui/image/NativeImageBacking|native private static void releaseNativeHandle(long nativeHandle);
 totalcross/ui/gfx/Graphics|native protected void create(totalcross.ui.gfx.GfxSurface surface);
 totalcross/ui/gfx/Graphics|native public void dither(int x, int y, int w, int h);

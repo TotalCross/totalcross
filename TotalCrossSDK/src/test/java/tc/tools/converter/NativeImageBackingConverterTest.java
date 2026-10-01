@@ -23,11 +23,12 @@ import tc.tools.converter.tclass.TCMethod;
 class NativeImageBackingConverterTest {
   private static final String CLASS_NAME = "totalcross/ui/image/NativeImageBacking";
   private static final String[] METHODS = {
-      "createEmptyNative", "snapshotNative", "makeMutableNative", "readPixelsNative", "releaseNativeHandle"
+      "createEmptyNative", "snapshotNative", "makeMutableNative", "readPixelsNative",
+      "readRgbaRowNative", "releaseNativeHandle"
   };
   private static final String[] SYMBOLS = {
       "tuiNIB_createEmptyNative_ii", "tuiNIB_snapshotNative", "tuiNIB_makeMutableNative",
-      "tuiNIB_readPixelsNative_Iiiiii", "tuiNIB_releaseNativeHandle_l"
+      "tuiNIB_readPixelsNative_Iiiiii", "tuiNIB_readRgbaRowNative_Bii", "tuiNIB_releaseNativeHandle_l"
   };
 
   @BeforeAll
@@ -49,8 +50,23 @@ class NativeImageBackingConverterTest {
 
     assertNotNull(converted);
     assertEquals("nativeHandle", GlobalConstantPool.getMethodFieldName(converted.value64InstanceFields[0].cpName));
+    assertEquals("width", GlobalConstantPool.getMethodFieldName(converted.int32InstanceFields[0].cpName));
+    assertEquals("height", GlobalConstantPool.getMethodFieldName(converted.int32InstanceFields[1].cpName));
+    TCClass backing = convertBackingBase();
+    assertEquals("mutationGeneration",
+        GlobalConstantPool.getMethodFieldName(backing.value64InstanceFields[0].cpName));
+    assertEquals("opacityState", GlobalConstantPool.getMethodFieldName(backing.int32InstanceFields[0].cpName));
+    assertEquals("mutableStorageEscaped", GlobalConstantPool.getMethodFieldName(backing.int32InstanceFields[1].cpName));
     for (String method : METHODS) {
       assertTrue(hasNativeMethod(converted, method), "missing native bridge " + method);
+    }
+  }
+
+  private static TCClass convertBackingBase() throws Exception {
+    Class<?> backingClass = Class.forName("totalcross.ui.image.ImageBacking");
+    try (InputStream stream = backingClass.getResourceAsStream("ImageBacking.class")) {
+      assertNotNull(stream, "ImageBacking.class resource");
+      return new J2TC(new JavaClass(stream.readAllBytes(), false), true).converted;
     }
   }
 
@@ -70,6 +86,18 @@ class NativeImageBackingConverterTest {
       assertTrue(registrations.contains("hashCode(\"" + SYMBOLS[i] + "\"), &" + SYMBOLS[i]),
           "missing native registration for " + SYMBOLS[i]);
     }
+  }
+
+  @Test
+  void nativeFieldOffsetsIncludeMutableStorageEscapeState() throws Exception {
+    String fields = Files.readString(Path.of("..", "TotalCrossVM", "src", "nm", "instancefields.h"));
+    assertTrue(fields.contains("#define ImageBacking_mutableStorageEscaped(o) FIELD_I32(o, 1)"));
+    assertTrue(fields.contains("#define NativeImageBacking_width(o)        FIELD_I32(o, 2)"));
+    assertTrue(fields.contains("#define NativeImageBacking_height(o)       FIELD_I32(o, 3)"));
+    assertTrue(fields.contains("#define RasterImageBacking_width(o)              FIELD_I32(o, 2)"));
+    assertTrue(fields.contains("#define RasterImageBacking_height(o)             FIELD_I32(o, 3)"));
+    assertTrue(fields.contains("#define RasterImageBacking_frameCount(o)         FIELD_I32(o, 4)"));
+    assertTrue(fields.contains("#define RasterImageBacking_widthOfAllFrames(o)   FIELD_I32(o, 5)"));
   }
 
   private static boolean hasNativeMethod(TCClass converted, String name) {
