@@ -4,6 +4,7 @@
 
 package tc.tools.converter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -29,6 +30,8 @@ class RuntimeDiagnosticsConverterTest {
     assertTrue(off.contains("return RuntimeDiagnosticSnapshot.empty();"));
     assertFalse(off.contains("static native "));
     assertFalse(off.contains("runtimeGroupEnabled"));
+    assertFalse(off.contains("schedulingGroupEnabled"));
+    assertFalse(off.contains("schedulingGeneration"));
     assertFalse(off.contains("NATIVE_METRIC_IDS"));
     assertFalse(off.contains("long javaCounter"));
     assertFalse(off.contains("synchronized ("));
@@ -79,11 +82,18 @@ class RuntimeDiagnosticsConverterTest {
     String source = Files.readString(
         Path.of("src/runtimeDiagnostics/java/totalcross/sys/RuntimeDiagnosticsSupport.java"));
     int start = source.indexOf("static RuntimeDiagnosticSnapshot snapshot() {");
-    int gate = source.indexOf("if (!runtimeGroupEnabled && !imageGroupEnabled)", start);
-    int lock = source.indexOf("synchronized (COLLECTION_LOCK)", start);
-    int batchRead = source.indexOf("nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES)", start);
-    int valuesAllocation = source.indexOf("long[] values =", start);
-    assertTrue(start >= 0 && gate > start && lock > gate);
+    int gate = source.indexOf(
+        "if (!runtimeGroupEnabled && !imageGroupEnabled && !schedulingGroupEnabled)", start);
+    int snapshotCall = source.indexOf("RuntimeMetrics.snapshot(runtimeGroupEnabled, imageGroupEnabled,",
+        gate);
+    int metricsStart = source.indexOf("private static RuntimeDiagnosticSnapshot snapshot(boolean includeRuntime,",
+        snapshotCall);
+    int metricsGate = source.indexOf("if (!includeRuntime && !includeImage && !includeScheduling)", metricsStart);
+    int lock = source.indexOf("synchronized (COLLECTION_LOCK)", metricsStart);
+    int batchRead = source.indexOf("nativeBridge.readMetrics(NATIVE_METRIC_IDS, NATIVE_VALUES)", metricsStart);
+    int valuesAllocation = source.indexOf("long[] values = new long[total]", metricsStart);
+    assertTrue(start >= 0 && gate > start && snapshotCall > gate);
+    assertTrue(metricsStart > snapshotCall && metricsGate > metricsStart && lock > metricsGate);
     assertTrue(batchRead > lock && valuesAllocation > batchRead);
     assertTrue(source.contains("if (enabled) {\n      RuntimeMetrics.initialize();"));
     assertTrue(source.contains("private static final class RuntimeMetrics"));
@@ -112,6 +122,51 @@ class RuntimeDiagnosticsConverterTest {
     assertFalse(publicSnapshot.contains("getMetricId"));
     assertFalse(publicSnapshot.contains("getMetricKey"));
     assertFalse(publicSnapshot.contains("resetMetrics"));
+  }
+
+  @Test
+  void flickDiagnosticTimingIsLazyAndDisabledCallbacksSkipItsState() throws Exception {
+    String source = Files.readString(Path.of("src/main/java/totalcross/ui/Flick.java"));
+    String gate = "RuntimeDiagnosticsFeatureBridge.isDomainEnabled(RuntimeDiagnosticSnapshot.Domain.SCHEDULING)";
+    int reset = source.indexOf("private void resetDiagnosticTiming()");
+    int resetGate = source.indexOf("if (!" + gate + ")", reset);
+    int resetRead = source.indexOf("System.nanoTime()", resetGate);
+    int callback = source.indexOf("private DiagnosticTiming recordCallbackDiagnostics()");
+    int callbackGate = source.indexOf("if (!" + gate + ")", callback);
+    int callbackDisabledReturn = source.indexOf("return null;", callbackGate);
+    int callbackRead = source.indexOf("System.nanoTime()", callbackGate);
+    int advance = source.indexOf("private void advanceAnimationFromDriver(DiagnosticTiming timing)");
+    int advanceGate = source.indexOf("if (timing == null", advance);
+    int advanceDisabledReturn = source.indexOf("return;", advanceGate);
+    int workStart = source.indexOf("System.nanoTime()", advanceGate);
+    int workEnd = source.indexOf("System.nanoTime()", workStart + 1);
+    int motion = source.indexOf("private boolean advanceAnimation()");
+
+    assertTrue(source.contains("private DiagnosticTiming diagnosticTiming;"));
+    assertFalse(source.contains("private long diagnosticIntervalNanos"));
+    assertFalse(source.contains("private long expectedCallbackNanoTime"));
+    assertFalse(source.contains("private boolean expectedCallbackTimeSet"));
+    assertEquals(4, source.split("System.nanoTime\\(\\)", -1).length - 1);
+    assertTrue(reset >= 0 && resetGate > reset && resetRead > resetGate);
+    int resetOpeningBrace = source.indexOf('{', reset);
+    assertTrue(source.substring(resetOpeningBrace + 1, resetGate).trim().isEmpty());
+    assertTrue(source.indexOf("long intervalNanos", resetGate) > resetGate);
+    assertTrue(source.indexOf("diagnosticTiming", resetGate) > resetGate);
+    assertTrue(source.indexOf("new DiagnosticTiming()", resetGate) > resetGate);
+    assertTrue(callback >= 0 && callbackGate > callback && callbackDisabledReturn > callbackGate
+        && callbackRead > callbackDisabledReturn);
+    String callbackDisabledPath = source.substring(callbackGate, callbackDisabledReturn);
+    assertFalse(callbackDisabledPath.contains("diagnosticTiming"));
+    assertFalse(callbackDisabledPath.contains("System.nanoTime"));
+    assertFalse(callbackDisabledPath.contains("new DiagnosticTiming"));
+    assertTrue(advance >= 0 && advanceGate > advance && advanceDisabledReturn > advanceGate
+        && workStart > advanceDisabledReturn && workEnd > workStart);
+    String advanceDisabledPath = source.substring(advanceGate, advanceDisabledReturn);
+    assertTrue(advanceDisabledPath.contains("advanceAnimation();"));
+    assertFalse(advanceDisabledPath.contains("diagnosticTiming"));
+    assertFalse(advanceDisabledPath.contains("System.nanoTime"));
+    assertFalse(advanceDisabledPath.contains("recordCounter"));
+    assertTrue(motion > workEnd);
   }
 
   private static String withoutFlag(String source, String flag) {
