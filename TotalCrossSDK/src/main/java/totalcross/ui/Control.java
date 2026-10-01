@@ -1750,6 +1750,7 @@ public class Control extends GfxSurface {
     }
     g.refresh(sx + tx0 - expand, sy - expand + ty0, sw + expand + expand, sh + expand + expand, tx + tx0, ty + ty0,
         font);
+    Window.constrainGraphicsToRasterReuseClip(g, tx + tx0, ty + ty0);
     return g;
   }
 
