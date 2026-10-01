@@ -1191,6 +1191,56 @@ registerImageMacSmoke('ImageModifierMemorySmoke', 'ImageModifierMemorySmokeApp',
         'overallPass=true'
     ], ['image-modifier-memory/**'])
 
+registerImageMacSmoke('ImageScrollRasterFastPathSmoke', 'ImageScrollRasterFastPathSmokeApp',
+    'image-scroll-raster-fast-path-smoke', true, false, [
+        'fixture=ImageScrollRasterFastPathSmokeApp',
+        'sourceSubrectAndDestination=true',
+        'translatedPartialClip=true',
+        'emptyIntersectionNoMutation=true',
+        'planCopyHandled=true',
+        'deferredSourcesRemainDeferred=true',
+        'overallPass=true'
+    ])
+
+tasks.named('deployImageScrollRasterFastPathSmokeMacOS') {
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        def nativeLauncher = project.findProperty('tcvmLauncher')
+        if (!nativeRuntime || !nativeLauncher) {
+            throw new GradleException('Image scroll raster fast-path smoke requires -PtcvmDylib and -PtcvmLauncher')
+        }
+        def runtimeFile = file(nativeRuntime).absoluteFile
+        def launcherFile = file(nativeLauncher).absoluteFile
+        if (!runtimeFile.isFile() || !launcherFile.isFile()) {
+            throw new GradleException('Native macOS VM inputs must both exist: ' + runtimeFile + ', ' + launcherFile)
+        }
+        def sdkRoot = layout.buildDirectory.dir('image-scroll-raster-fast-path-smoke/classes').get().asFile
+        copy {
+            from project.file('dist/vm')
+            into new File(sdkRoot, 'dist/vm')
+        }
+        copy {
+            from project.file('dist/libs')
+            into new File(sdkRoot, 'dist/libs')
+        }
+        copy {
+            from project.file('etc/fonts')
+            into new File(sdkRoot, 'etc/fonts')
+        }
+        copy {
+            from launcherFile
+            into new File(sdkRoot, 'etc/launchers/macos')
+            rename { 'Launcher' }
+        }
+        copy {
+            from runtimeFile
+            into new File(sdkRoot, 'dist/vm/macos')
+            rename { 'libtcvm.dylib' }
+        }
+        environment 'TOTALCROSS3_HOME', sdkRoot.absolutePath
+    }
+}
+
 def registerSemaphoreMacSmokeTasks = { String taskPrefix, String appName, String artifactPrefix,
                                       boolean includeDiagnostics ->
     def classesDir = layout.buildDirectory.dir("${artifactPrefix}-smoke/classes")

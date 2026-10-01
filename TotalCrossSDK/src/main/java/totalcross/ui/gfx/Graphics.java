@@ -1513,7 +1513,20 @@ public final class Graphics {
    */
   public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
     if (surface instanceof Image) {
-      surface = resolveImageForDrawing((Image) surface);
+      Image image = (Image) surface;
+      if (!Settings.onJavaSE) {
+        Object drawPlan = resolveDrawPlanForDrawing(image);
+        if (drawPlan != null) {
+          int drawStatus = copyRectPlanNative(drawPlan, x, y, width, height, dstX, dstY, true);
+          ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
+          ImageRasterFeatureBridge.recordCopyRectPlanResult(drawStatus);
+          if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
+            return;
+          }
+          ImageRasterFeatureBridge.recordRasterFallback();
+        }
+      }
+      surface = resolveImageForDrawing(image);
     }
     if (!Settings.onJavaSE) {
       copyRectNative(surface, x, y, width, height, dstX, dstY);
@@ -1782,6 +1795,12 @@ public final class Graphics {
   @ReplacedByNativeOnDeploy
   private int copyGeometryNative(Object plan, int x, int y, int width, int height,
       boolean doClip) {
+    return 0;
+  }
+
+  @ReplacedByNativeOnDeploy
+  private int copyRectPlanNative(Object plan, int x, int y, int width, int height,
+      int dstX, int dstY, boolean doClip) {
     return 0;
   }
 

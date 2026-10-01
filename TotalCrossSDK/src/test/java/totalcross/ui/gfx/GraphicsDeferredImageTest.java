@@ -5,6 +5,7 @@
 package totalcross.ui.gfx;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.lang.reflect.Field;
@@ -47,6 +48,48 @@ class GraphicsDeferredImageTest {
   }
 
   @Test
+  void copyRectPreservesDeferredSourceRectangleDestinationTranslationAndClip() throws Exception {
+    Image base = new Image(3, 2);
+    int[] basePixels = base.getPixels();
+    for (int i = 0; i < basePixels.length; i++) {
+      basePixels[i] = 0xFF000000 | (i * 0x00112233);
+    }
+
+    Image expectedSource = base.getSmoothScaledInstance(6, 4);
+    int[] expectedSourcePixels = expectedSource.getPixels().clone();
+    Image deferredSource = base.getSmoothScaledInstance(6, 4);
+    Image expected = filledImage(6, 5, 0xFF202020);
+    Image actual = filledImage(6, 5, 0xFF202020);
+
+    Graphics expectedGraphics = expected.getGraphics();
+    expectedGraphics.translate(1, 1);
+    expectedGraphics.setClip(1, 1, 3, 2);
+    expectedGraphics.copyRect(expectedSource, 1, 0, 4, 4, 1, 0);
+
+    Graphics actualGraphics = actual.getGraphics();
+    actualGraphics.translate(1, 1);
+    actualGraphics.setClip(1, 1, 3, 2);
+    actualGraphics.copyRect(deferredSource, 1, 0, 4, 4, 1, 0);
+
+    assertArrayEquals(expected.getPixels(), actual.getPixels());
+    assertArrayEquals(expectedSourcePixels, expectedSource.getPixels());
+    assertNull(backing(deferredSource));
+  }
+
+  @Test
+  void copyRectWithEmptyVisibleIntersectionLeavesDestinationUnchanged() throws Exception {
+    Image base = new Image(2, 2);
+    java.util.Arrays.fill(base.getPixels(), 0xFFABCDEF);
+    Image source = base.getSmoothScaledInstance(4, 4);
+    Image destination = filledImage(3, 3, 0xFF123456);
+    int[] before = destination.getPixels().clone();
+
+    destination.getGraphics().copyRect(source, 0, 0, 2, 2, 8, 8);
+
+    assertArrayEquals(before, destination.getPixels());
+  }
+
+  @Test
   void materializedSourceStillUsesItsExistingNaturalBacking() throws Exception {
     Image source = Image.createLogical(1, 1, 2);
     java.util.Arrays.fill(source.getPixels(), 0xFF0000FF);
@@ -68,5 +111,11 @@ class GraphicsDeferredImageTest {
     for (int pixel : image.getPixels()) {
       assertEquals(expected, pixel);
     }
+  }
+
+  private static Image filledImage(int width, int height, int pixel) throws Exception {
+    Image image = new Image(width, height);
+    java.util.Arrays.fill(image.getPixels(), pixel);
+    return image;
   }
 }
