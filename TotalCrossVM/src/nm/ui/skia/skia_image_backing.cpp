@@ -30,6 +30,7 @@ std::map<int64_t, int32> backingAliases;
 int64_t nextHandle = 1;
 int32 nextSurfaceAlias = std::numeric_limits<int32>::min() + 1;
 bool failNextSnapshotAllocationForTest;
+bool failNextVariantMaterializationForTest;
 bool backingAccountingForTest;
 uint64_t backingRecordsCreatedForTest;
 uint64_t backingRecordsReleasedForTest;
@@ -354,6 +355,51 @@ int64_t skia_image_backing_create_empty(int32 width, int32 height) {
     } catch (const std::bad_alloc&) {
         return 0;
     }
+}
+
+int64_t skia_image_backing_create_empty_with_color_type_for_test(int32 width, int32 height,
+                                                                  int32 colorType) {
+    if (width <= 0 || height <= 0) {
+        return 0;
+    }
+    SkColorType targetType = kUnknown_SkColorType;
+    SkAlphaType alphaType = kUnpremul_SkAlphaType;
+    switch (colorType) {
+        case 0: targetType = kRGBA_8888_SkColorType; break;
+        case 1: targetType = kBGRA_8888_SkColorType; break;
+        case 2: targetType = kRGB_565_SkColorType; alphaType = kOpaque_SkAlphaType; break;
+        case 3: targetType = kAlpha_8_SkColorType; alphaType = kPremul_SkAlphaType; break;
+        default: return 0;
+    }
+    try {
+        std::unique_ptr<NativeImageBackingRecord> backing(new NativeImageBackingRecord());
+        const SkImageInfo info = SkImageInfo::Make(width, height, targetType, alphaType);
+        backing->surface = SkSurface::MakeRaster(info);
+        if (!backing->surface) {
+            return 0;
+        }
+        backing->width = width;
+        backing->height = height;
+        return registerBackingRecord(std::move(backing));
+    } catch (const std::bad_alloc&) {
+        return 0;
+    }
+}
+
+int32 skia_image_backing_color_type_for_test(int64_t handle) {
+    NativeImageBackingRecord* backing = findBacking(handle);
+    sk_sp<SkImage> image = backing ? backing->snapshot() : nullptr;
+    return image ? static_cast<int32>(image->colorType()) : static_cast<int32>(kUnknown_SkColorType);
+}
+
+void skia_image_backing_fail_next_variant_materialization_for_test(void) {
+    failNextVariantMaterializationForTest = true;
+}
+
+bool skia_image_backing_consume_variant_materialization_failure_for_test(void) {
+    const bool fail = failNextVariantMaterializationForTest;
+    failNextVariantMaterializationForTest = false;
+    return fail;
 }
 
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height) {

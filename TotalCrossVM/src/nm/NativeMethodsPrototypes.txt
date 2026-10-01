@@ -123,10 +123,13 @@ TC_API void tuiEIS_captureNative_Bi(NMParams p);
 TC_API void tuiEIS_captureNativePath_s(NMParams p);
 TC_API void tuiEIS_releaseNativeBag(NMParams p);
 TC_API void tuiNIB_createEmptyNative_ii(NMParams p);
+TC_API void tuiNIB_createColorTest_iii(NMParams p);
 TC_API void tuiNIB_snapshotNative(NMParams p);
 TC_API void tuiNIB_invalidateVariantsNative(NMParams p);
-TC_API void tuiNIB_observeVariantForTestNative_iI(NMParams p);
-TC_API void tuiNIB_variantStateForTestNative(NMParams p);
+TC_API void tuiNIB_observeVarTest_iI(NMParams p);
+TC_API void tuiNIB_variantStateTest(NMParams p);
+TC_API void tuiNIB_colorTypeTest(NMParams p);
+TC_API void tuiNIB_failVariantTest(NMParams p);
 TC_API void tuiNIB_failNextSnapshotNative(NMParams p);
 TC_API void tuiNIB_makeMutableNative(NMParams p);
 TC_API void tuiNIB_scaleNative_iib(NMParams p);
@@ -1056,6 +1059,10 @@ TC_API void tuiNIB_createEmptyNative_ii(NMParams p) // totalcross/ui/image/Nativ
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_createColorTest_iii(NMParams p) // totalcross/ui/image/NativeImageBacking native private static long createColorTest(int width, int height, int colorType);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private static boolean isAvailableNative();
 {
 }
@@ -1100,11 +1107,19 @@ TC_API void tuiNIB_invalidateVariantsNative(NMParams p) // totalcross/ui/image/N
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_observeVariantForTestNative_iI(NMParams p) // totalcross/ui/image/NativeImageBacking native private int observeVariantForTestNative(int kind, int []exactKey);
+TC_API void tuiNIB_observeVarTest_iI(NMParams p) // totalcross/ui/image/NativeImageBacking native private int observeVarTest(int kind, int []exactKey);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiNIB_variantStateForTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking native private int variantStateForTestNative();
+TC_API void tuiNIB_variantStateTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private int variantStateTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_colorTypeTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private int colorTypeTest();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiNIB_failVariantTest(NMParams p) // totalcross/ui/image/NativeImageBacking native private static void failVariantTest();
 {
 }
 //////////////////////////////////////////////////////////////////////////

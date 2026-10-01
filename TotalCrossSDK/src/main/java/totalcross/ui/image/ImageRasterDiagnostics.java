@@ -18,11 +18,27 @@ final class ImageRasterDiagnostics {
   static final int PHYSICAL_IDENTITY_ATTEMPT = 6;
   static final int PHYSICAL_IDENTITY_HIT = 7;
   static final int PHYSICAL_IDENTITY_FALLBACK = 8;
+  static final int TARGET_COLOR_ATTEMPT = 9;
+  static final int TARGET_COLOR_HIT = 10;
+  static final int TARGET_COLOR_MATERIALIZED = 11;
+  static final int TARGET_COLOR_FALLBACK = 12;
+  static final int PHYSICAL_VARIANT_ATTEMPT = 13;
+  static final int PHYSICAL_VARIANT_HIT = 14;
+  static final int PHYSICAL_VARIANT_MATERIALIZED = 15;
+  static final int PHYSICAL_VARIANT_FALLBACK = 16;
 
   static final int DRAW_HANDLED = 1;
   static final int DRAW_IDENTITY_ATTEMPT = 1 << 1;
   static final int DRAW_IDENTITY_HIT = 1 << 2;
   static final int DRAW_IDENTITY_FALLBACK = 1 << 3;
+  static final int DRAW_TARGET_COLOR_ATTEMPT = 1 << 4;
+  static final int DRAW_TARGET_COLOR_HIT = 1 << 5;
+  static final int DRAW_TARGET_COLOR_MATERIALIZED = 1 << 6;
+  static final int DRAW_TARGET_COLOR_FALLBACK = 1 << 7;
+  static final int DRAW_PHYSICAL_VARIANT_ATTEMPT = 1 << 8;
+  static final int DRAW_PHYSICAL_VARIANT_HIT = 1 << 9;
+  static final int DRAW_PHYSICAL_VARIANT_MATERIALIZED = 1 << 10;
+  static final int DRAW_PHYSICAL_VARIANT_FALLBACK = 1 << 11;
 
   private ImageRasterDiagnostics() {
   }
@@ -49,5 +65,13 @@ final class ImageRasterDiagnostics {
       RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE,
           PHYSICAL_IDENTITY_FALLBACK);
     }
+    if ((status & DRAW_TARGET_COLOR_ATTEMPT) != 0) record(TARGET_COLOR_ATTEMPT);
+    if ((status & DRAW_TARGET_COLOR_HIT) != 0) record(TARGET_COLOR_HIT);
+    if ((status & DRAW_TARGET_COLOR_MATERIALIZED) != 0) record(TARGET_COLOR_MATERIALIZED);
+    if ((status & DRAW_TARGET_COLOR_FALLBACK) != 0) record(TARGET_COLOR_FALLBACK);
+    if ((status & DRAW_PHYSICAL_VARIANT_ATTEMPT) != 0) record(PHYSICAL_VARIANT_ATTEMPT);
+    if ((status & DRAW_PHYSICAL_VARIANT_HIT) != 0) record(PHYSICAL_VARIANT_HIT);
+    if ((status & DRAW_PHYSICAL_VARIANT_MATERIALIZED) != 0) record(PHYSICAL_VARIANT_MATERIALIZED);
+    if ((status & DRAW_PHYSICAL_VARIANT_FALLBACK) != 0) record(PHYSICAL_VARIANT_FALLBACK);
   }
 }

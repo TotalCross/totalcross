@@ -125,6 +125,16 @@ TC_API void tuiNIB_createEmptyNative_ii(NMParams p) // totalcross/ui/image/Nativ
 #endif
 }
 
+TC_API void tuiNIB_createColorTest_iii(NMParams p) // totalcross/ui/image/NativeImageBacking private static long createColorTest(int width, int height, int colorType);
+{
+#if TC_RENDERER_SKIA
+   p->retL = skia_image_backing_create_empty_with_color_type_for_test(
+      p->i32[0], p->i32[1], p->i32[2]);
+#else
+   p->retL = 0;
+#endif
+}
+
 TC_API void tuiNIB_isAvailableNative(NMParams p) // totalcross/ui/image/NativeImageBacking private static boolean isAvailableNative();
 {
 #if TC_RENDERER_SKIA
@@ -233,7 +243,7 @@ TC_API void tuiNIB_invalidateVariantsNative(NMParams p) // totalcross/ui/image/N
 #endif
 }
 
-TC_API void tuiNIB_observeVariantForTestNative_iI(NMParams p) // totalcross/ui/image/NativeImageBacking private int observeVariantForTestNative(int kind, int []exactKey);
+TC_API void tuiNIB_observeVarTest_iI(NMParams p) // totalcross/ui/image/NativeImageBacking private int observeVarTest(int kind, int []exactKey);
 {
 #if TC_RENDERER_SKIA
    TCObject key = p->obj[1];
@@ -249,13 +259,32 @@ TC_API void tuiNIB_observeVariantForTestNative_iI(NMParams p) // totalcross/ui/i
 #endif
 }
 
-TC_API void tuiNIB_variantStateForTestNative(NMParams p) // totalcross/ui/image/NativeImageBacking private int variantStateForTestNative();
+TC_API void tuiNIB_variantStateTest(NMParams p) // totalcross/ui/image/NativeImageBacking private int variantStateTest();
 {
 #if TC_RENDERER_SKIA
    p->retI = skia_image_backing_variant_state_for_test(
       NativeImageBacking_nativeHandle(p->obj[0]));
 #else
    p->retI = 0;
+#endif
+}
+
+TC_API void tuiNIB_colorTypeTest(NMParams p) // totalcross/ui/image/NativeImageBacking private int colorTypeTest();
+{
+#if TC_RENDERER_SKIA
+   p->retI = skia_image_backing_color_type_for_test(
+      NativeImageBacking_nativeHandle(p->obj[0]));
+#else
+   p->retI = -1;
+#endif
+}
+
+TC_API void tuiNIB_failVariantTest(NMParams p) // totalcross/ui/image/NativeImageBacking private static void failVariantTest();
+{
+#if TC_RENDERER_SKIA
+   skia_image_backing_fail_next_variant_materialization_for_test();
+#else
+   UNUSED(p);
 #endif
 }
 

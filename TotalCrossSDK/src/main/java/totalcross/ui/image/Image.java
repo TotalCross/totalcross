@@ -99,6 +99,12 @@ public class Image extends GfxSurface {
   static int nativeColorReadbackCountForTest;
   static int directDrawPlanExecutionCountForTest;
   static int physicalIdentityHitCountForTest;
+  static int targetColorVariantMaterializationCountForTest;
+  static int targetColorVariantHitCountForTest;
+  static int targetColorVariantFallbackCountForTest;
+  static int physicalVariantMaterializationCountForTest;
+  static int physicalVariantHitCountForTest;
+  static int physicalVariantFallbackCountForTest;
   private static boolean backingReadbackAccountingForTest;
   private static int backingReadbackCountForTest;
 
@@ -187,6 +193,12 @@ public class Image extends GfxSurface {
     nativeColorReadbackCountForTest = 0;
     directDrawPlanExecutionCountForTest = 0;
     physicalIdentityHitCountForTest = 0;
+    targetColorVariantMaterializationCountForTest = 0;
+    targetColorVariantHitCountForTest = 0;
+    targetColorVariantFallbackCountForTest = 0;
+    physicalVariantMaterializationCountForTest = 0;
+    physicalVariantHitCountForTest = 0;
+    physicalVariantFallbackCountForTest = 0;
     backingReadbackAccountingForTest = true;
     backingReadbackCountForTest = 0;
     NativeImageBacking.resetBackingAccountingForTest();
@@ -262,6 +274,30 @@ public class Image extends GfxSurface {
 
   static int physicalIdentityHitCountForTest() {
     return physicalIdentityHitCountForTest;
+  }
+
+  static int targetColorVariantMaterializationCountForTest() {
+    return targetColorVariantMaterializationCountForTest;
+  }
+
+  static int targetColorVariantHitCountForTest() {
+    return targetColorVariantHitCountForTest;
+  }
+
+  static int targetColorVariantFallbackCountForTest() {
+    return targetColorVariantFallbackCountForTest;
+  }
+
+  static int physicalVariantMaterializationCountForTest() {
+    return physicalVariantMaterializationCountForTest;
+  }
+
+  static int physicalVariantHitCountForTest() {
+    return physicalVariantHitCountForTest;
+  }
+
+  static int physicalVariantFallbackCountForTest() {
+    return physicalVariantFallbackCountForTest;
   }
 
   /** Test-only accounting for explicit deployed getPixels() snapshots. */

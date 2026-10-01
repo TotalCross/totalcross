@@ -65,6 +65,10 @@ int32 skia_getsetRGB(int32 skiaSurface, void *dataObj, int32 offset, int32 x, in
 void skia_shiftScreen(float w, float h, float glShiftY);
 
 int64_t skia_image_backing_create_empty(int32 width, int32 height);
+int64_t skia_image_backing_create_empty_with_color_type_for_test(int32 width, int32 height, int32 colorType);
+int32 skia_image_backing_color_type_for_test(int64_t handle);
+void skia_image_backing_fail_next_variant_materialization_for_test(void);
+bool skia_image_backing_consume_variant_materialization_failure_for_test(void);
 int64_t skia_image_backing_create_from_rgba_pixels(void* pixels, int32 width, int32 height);
 int64_t skia_image_backing_create_from_argb_pixels(const void* pixels, int32 width, int32 height);
 int skia_image_backing_write_rgba_pixels(int64_t handle, const uint8_t* pixels, int32 x, int32 y,
@@ -148,6 +152,14 @@ typedef struct SkiaImageDrawPlanData {
 #define SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_ATTEMPT (1 << 1)
 #define SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT (1 << 2)
 #define SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_FALLBACK (1 << 3)
+#define SKIA_IMAGE_DRAW_TARGET_COLOR_ATTEMPT (1 << 4)
+#define SKIA_IMAGE_DRAW_TARGET_COLOR_HIT (1 << 5)
+#define SKIA_IMAGE_DRAW_TARGET_COLOR_MATERIALIZED (1 << 6)
+#define SKIA_IMAGE_DRAW_TARGET_COLOR_FALLBACK (1 << 7)
+#define SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_ATTEMPT (1 << 8)
+#define SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_HIT (1 << 9)
+#define SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_MATERIALIZED (1 << 10)
+#define SKIA_IMAGE_DRAW_PHYSICAL_VARIANT_FALLBACK (1 << 11)
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom);
