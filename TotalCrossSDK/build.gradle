@@ -839,6 +839,119 @@ tasks.register('runRuntimeDiagnosticsSmokeMacOS') {
         }
     }
 }
+
+def flickPacingDiagnosticsSmokeDir = layout.buildDirectory.dir('flick-pacing-diagnostics-smoke')
+tasks.register('compileFlickPacingDiagnosticsSmoke', Sync) {
+    group = 'verification'
+    description = 'Compiles and stages the Flick pacing diagnostics smoke app.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+    doFirst {
+        if (!runtimeDiagnosticsEnabled) {
+            throw new GradleException('Compile this smoke with -PruntimeDiagnostics=true.')
+        }
+    }
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/FlickPacingDiagnosticsSmokeApp.class'
+        include 'totalcross/ui/FlickPacingDiagnosticsSmokeApp$*.class'
+    }
+    into flickPacingDiagnosticsSmokeDir.map { it.dir('classes') }
+}
+
+tasks.register('jarFlickPacingDiagnosticsSmoke', Jar) {
+    group = 'verification'
+    description = 'Packages the Flick pacing diagnostics smoke app for macOS.'
+    dependsOn 'compileFlickPacingDiagnosticsSmoke'
+    archiveFileName = 'FlickPacingDiagnosticsSmokeApp.jar'
+    destinationDirectory = flickPacingDiagnosticsSmokeDir.map { it.dir('archive') }
+    from(flickPacingDiagnosticsSmokeDir.map { it.dir('classes') })
+}
+
+tasks.register('deployFlickPacingDiagnosticsSmokeMacOS', JavaExec) {
+    group = 'verification'
+    description = 'Deploys the Flick pacing diagnostics smoke app for macOS.'
+    dependsOn 'copySdkDependencies', 'jarFlickPacingDiagnosticsSmoke'
+    mainClass = 'tc.Deploy'
+    classpath = files(smokeTestSdkJar) + fileTree('dist/libs') {
+        include '*.jar'
+    }
+    workingDir flickPacingDiagnosticsSmokeDir.get().dir('archive').asFile
+    args = ['FlickPacingDiagnosticsSmokeApp.jar', '-macos']
+    doFirst {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        def nativeLauncher = project.findProperty('tcvmLauncher')
+        if (!nativeRuntime || !nativeLauncher) {
+            throw new GradleException('Flick pacing macOS deploy requires -PtcvmDylib and -PtcvmLauncher')
+        }
+        def nativeRuntimeFile = file(nativeRuntime)
+        def nativeLauncherFile = file(nativeLauncher)
+        if (!nativeRuntimeFile.isFile() || !nativeLauncherFile.isFile()) {
+            throw new GradleException('Flick pacing macOS deploy requires existing VM and Launcher files')
+        }
+        copy {
+            from nativeRuntimeFile
+            into file('dist/vm/macos')
+            rename { 'libtcvm.dylib' }
+        }
+        copy {
+            from nativeLauncherFile
+            into file('etc/launchers/macos')
+            rename { 'Launcher' }
+        }
+    }
+}
+
+tasks.register('runFlickPacingDiagnosticsSmokeMacOS') {
+    group = 'verification'
+    description = 'Runs the Flick pacing diagnostics smoke with the macOS VM.'
+    dependsOn 'deployFlickPacingDiagnosticsSmokeMacOS'
+
+    doLast {
+        def nativeRuntime = project.findProperty('tcvmDylib')
+        if (!nativeRuntime) {
+            throw new GradleException('runFlickPacingDiagnosticsSmokeMacOS requires -PtcvmDylib=<absolute path>')
+        }
+        def nativeRuntimeFile = new File(nativeRuntime.toString())
+        if (!nativeRuntimeFile.isAbsolute() || !nativeRuntimeFile.isFile()) {
+            throw new GradleException('tcvmDylib must name an existing absolute path')
+        }
+
+        def installDir = flickPacingDiagnosticsSmokeDir.get().dir('archive/install/macos').asFile
+        copy {
+            from nativeRuntimeFile
+            into installDir
+            rename { 'libtcvm.dylib' }
+        }
+        def executable = new File(installDir, 'FlickPacingDiagnosticsSmokeApp')
+        if (!executable.isFile()) {
+            throw new GradleException('Native Flick pacing smoke executable not found: ' + executable)
+        }
+        def process = new ProcessBuilder(executable.absolutePath)
+            .directory(installDir)
+            .redirectErrorStream(true)
+            .start()
+        def smokeOutput = new ByteArrayOutputStream()
+        def outputReader = new Thread({
+            process.inputStream.withCloseable { stream -> stream.transferTo(smokeOutput) }
+        } as Runnable, 'FlickPacingDiagnosticsSmoke-output')
+        outputReader.setDaemon(true)
+        outputReader.start()
+        boolean finished = process.waitFor(60L, java.util.concurrent.TimeUnit.SECONDS)
+        if (!finished) {
+            process.destroyForcibly()
+            process.waitFor()
+            outputReader.join(5000L)
+            throw new GradleException('Flick pacing diagnostics macOS smoke timed out after 60 seconds.')
+        }
+        outputReader.join()
+        def output = smokeOutput.toString('UTF-8')
+        logger.lifecycle(output.trim())
+        def exitCode = process.exitValue()
+        if (exitCode != 0 || !output.contains('fixture=FlickPacingDiagnosticsSmokeApp,overallPass=true')) {
+            throw new GradleException('Flick pacing diagnostics macOS smoke failed: exitCode=' + exitCode)
+        }
+    }
+}
+
 def logicalUiScalingSmokeClassesDir = layout.buildDirectory.dir('logical-ui-scaling-smoke/classes')
 def logicalUiScalingSmokeSdkJar = file('dist/totalcross-sdk.jar')
 def logicalUiScalingSmokeSources = fileTree('src/test/resources/logical-ui-scaling/danfe') {
