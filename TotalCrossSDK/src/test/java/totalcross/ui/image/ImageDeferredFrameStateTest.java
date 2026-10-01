@@ -31,22 +31,19 @@ class ImageDeferredFrameStateTest {
   private static final int FRAME_ONE = 0xFFB06020;
 
   @Test
-  void currentFrameNavigationIsMetadataOnlyAndReusesCachedVariants() throws Exception {
+  void currentFrameNavigationIsMetadataOnlyAndReusesOneCachedVariant() throws Exception {
     Image image = new Image(twoFramePng()).getSmoothScaledInstance(4, 2);
     assertNull(image.backing);
     assertEquals(0, image.getCurrentFrame());
 
-    Image oneX = image.resolveForDrawing(1);
+    image.resolveForDrawing(2);
     Image twoX = image.resolveForDrawing(2);
-    int[] oneFrameZero = oneX.getPixels().clone();
     int[] twoFrameZero = twoX.getPixels().clone();
 
     image.setCurrentFrame(-1);
     assertEquals(1, image.getCurrentFrame());
     assertNull(image.backing);
-    assertSame(oneX, image.resolveForDrawing(1));
     assertSame(twoX, image.resolveForDrawing(2));
-    assertFalse(Arrays.equals(oneFrameZero, oneX.getPixels()));
     assertFalse(Arrays.equals(twoFrameZero, twoX.getPixels()));
 
     image.nextFrame();
@@ -164,6 +161,7 @@ class ImageDeferredFrameStateTest {
     assertEquals(0, image.getCurrentFrame());
     assertEquals(ImagePipeline.FRAME_LAYOUT, pipeline(image).operationType());
 
+    image.resolveForDrawing(1);
     Image resolved = image.resolveForDrawing(1);
     assertEquals(2, resolved.getPixelWidth());
     assertEquals(5, intField(resolved, "widthOfAllFrames"));

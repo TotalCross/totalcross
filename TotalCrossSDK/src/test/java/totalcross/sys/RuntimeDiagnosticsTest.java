@@ -218,10 +218,11 @@ class RuntimeDiagnosticsTest {
     RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE, 0);
     RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE, 5);
     RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE, 8);
+    RuntimeDiagnosticsFeatureBridge.recordCounter(RuntimeDiagnosticSnapshot.Domain.IMAGE, 16);
 
     RuntimeDiagnosticSnapshot before = RuntimeDiagnostics.snapshot();
-    assertEquals(9, before.size());
-    assertEquals(3L, before.getValue(RuntimeDiagnosticSnapshot.Domain.IMAGE,
+    assertEquals(17, before.size());
+    assertEquals(4L, before.getValue(RuntimeDiagnosticSnapshot.Domain.IMAGE,
         RuntimeDiagnosticSnapshot.Kind.COUNTER));
     assertEquals(0L, before.getValue(RuntimeDiagnosticSnapshot.Domain.RUNTIME,
         RuntimeDiagnosticSnapshot.Kind.COUNTER));
