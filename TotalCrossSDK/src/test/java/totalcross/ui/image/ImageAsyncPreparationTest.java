@@ -161,6 +161,10 @@ class ImageAsyncPreparationTest {
     assertNull(source.decodeFailure());
     assertEquals(ImagePreparationScheduler.TerminalState.READY,
         image.adoptPreparedForDisplay(request, result));
+    result.releaseUnretainedCandidates(request);
+    result.releaseUnretainedCandidates(request);
+    assertTrue(result.backing.isValid(), "READY source backing survives idempotent result cleanup");
+    assertTrue(result.variant.backing.isValid(), "READY variant backing survives idempotent result cleanup");
     assertEquals(1, capturedPipeline.cachedVariantCountForSmoke());
     Image ready = image.resolveForDrawing(scale);
     assertSame(result.variant, ready);
@@ -190,6 +194,7 @@ class ImageAsyncPreparationTest {
     PreparedImageResult usefulResult = oldBatch.prototype.prepareDetachedForDisplay(oldBatch);
     assertEquals(ImagePreparationScheduler.TerminalState.READY,
         oldBatchTarget.adoptPreparedForDisplay(oldBatch, usefulResult));
+    usefulResult.releaseUnretainedCandidates(oldBatch);
     usefulResult.releaseDetachedEncodedSource();
   }
 
@@ -207,6 +212,7 @@ class ImageAsyncPreparationTest {
     assertEquals(sourceGeneration, request.source.decodedGeneration());
     assertEquals(ImagePreparationScheduler.TerminalState.STALE,
         image.adoptPreparedForDisplay(request, detached));
+    detached.releaseUnretainedCandidates(request);
     assertEquals(sourceGeneration, request.source.decodedGeneration());
     assertNull(request.source.decodedBackingForReuse(request.decodeDenominator));
     detached.releaseDetachedEncodedSource();
@@ -223,6 +229,7 @@ class ImageAsyncPreparationTest {
     image.recordGraphicsMutation();
     assertEquals(ImagePreparationScheduler.TerminalState.STALE,
         image.adoptPreparedForDisplay(request, failure));
+    failure.releaseUnretainedCandidates(request);
     assertNull(request.source.decodeFailure());
     failure.releaseDetachedEncodedSource();
   }
@@ -239,6 +246,7 @@ class ImageAsyncPreparationTest {
 
     assertEquals(ImagePreparationScheduler.TerminalState.READY,
         image.adoptPreparedForDisplay(request, detached));
+    detached.releaseUnretainedCandidates(request);
     assertEquals(winningGeneration, request.source.decodedGeneration());
     assertSame(synchronousBacking, request.source.decodedBackingForReuse(request.decodeDenominator));
     assertNotNull(synchronous);
@@ -259,12 +267,14 @@ class ImageAsyncPreparationTest {
     assertNull(firstAttempt.source.decodeFailure());
     assertEquals(ImagePreparationScheduler.TerminalState.TRANSIENT_FAILURE,
         retry.adoptPreparedForDisplay(firstAttempt, temporary));
+    temporary.releaseUnretainedCandidates(firstAttempt);
 
     ImagePreparationRequest secondAttempt = retry.captureDisplayPreparationRequest(scale, 7L);
     PreparedImageResult successful = secondAttempt.prototype.prepareDetachedForDisplay(secondAttempt);
     assertEquals(PreparedImageResult.FailureKind.NONE, successful.failureKind);
     assertEquals(ImagePreparationScheduler.TerminalState.READY,
         retry.adoptPreparedForDisplay(secondAttempt, successful));
+    successful.releaseUnretainedCandidates(secondAttempt);
     successful.releaseDetachedEncodedSource();
 
     Image corrupt = lazyImage(corruptJpegEntropy(jpeg(64, 48)));
@@ -273,6 +283,7 @@ class ImageAsyncPreparationTest {
     assertEquals(PreparedImageResult.FailureKind.DETERMINISTIC, invalid.failureKind);
     assertEquals(ImagePreparationScheduler.TerminalState.DETERMINISTIC_FAILURE,
         corrupt.adoptPreparedForDisplay(corruptRequest, invalid));
+    invalid.releaseUnretainedCandidates(corruptRequest);
     assertSame(invalid.failure, corruptRequest.source.decodeFailure());
     final int[] settled = {0};
     ImagePreparationScheduler.submit(corruptRequest, new Runnable() {

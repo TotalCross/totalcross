@@ -515,6 +515,7 @@ final class ImagePreparationScheduler {
   }
 
   private static void abandonWithoutUi(Work work, PreparedImageResult result) {
+    result.releaseUnretainedCandidates(null);
     result.releaseDetachedEncodedSource();
     synchronized (LOCK) {
       PENDING.remove(work);
@@ -542,6 +543,8 @@ final class ImagePreparationScheduler {
     long sourceGeneration = work.request.source.decodedGeneration();
     boolean ready = terminal == TerminalState.READY
         && work.request.target.isDisplayPreparationReady(work.request);
+    result.releaseUnretainedCandidates(work.request);
+    result.releaseDetachedEncodedSource();
     synchronized (LOCK) {
       work.state = stateFor(terminal);
       PENDING.remove(work);
@@ -559,7 +562,6 @@ final class ImagePreparationScheduler {
     }
     recordTerminal(terminal);
     updateQueueGauges();
-    result.releaseDetachedEncodedSource();
     invokeCompletions(completions, next);
   }
 

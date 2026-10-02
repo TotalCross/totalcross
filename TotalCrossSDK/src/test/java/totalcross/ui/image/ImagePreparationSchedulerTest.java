@@ -169,6 +169,7 @@ class ImagePreparationSchedulerTest {
     PreparedImageResult prepared = initial.prototype.prepareDetachedForDisplay(initial);
     assertEquals(ImagePreparationScheduler.TerminalState.READY,
         image.adoptPreparedForDisplay(initial, prepared));
+    prepared.releaseUnretainedCandidates(initial);
     prepared.releaseDetachedEncodedSource();
     final ImagePreparationRequest ready = image.captureDisplayPreparationRequest(scale, 104L);
     assertTrue(image.isDisplayPreparationReady(ready));
