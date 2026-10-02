@@ -6,6 +6,8 @@ package totalcross.sys.runtime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import totalcross.sys.Vm;
 import totalcross.ui.image.ImageCompactStorageCapabilityBridge;
@@ -97,22 +99,77 @@ public final class ImageRuntimeConfigurationStartup {
     if (!environment.isGraphicsBackendFinalized()) {
       return;
     }
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> storageRules =
-        new ArrayList<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>>(pendingRules.size());
-    for (RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions> rule : pendingRules) {
-      if (rule.requestedValue().storage() != ImageStorageProfile.DEFAULT) {
-        storageRules.add(new RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>(rule.name(),
-            rule.selector(), rule.requestedValue().storage()));
-      }
-    }
-    RuntimeConfigurationFeatureBridge.FeatureResolution<ImageStorageProfile> resolution =
-        RuntimeConfigurationFeatureBridge.resolveSingleSetting(environment, storageRules,
-            ImageStorageProfile.STANDARD);
-    boolean compactBackingAvailable = resolution.requestedValue() == ImageStorageProfile.COMPACT
+    RuntimeConfigurationFeatureBridge.FeatureResolution<ImageStorageProfile> storage =
+        RuntimeConfigurationFeatureBridge.resolveProjectedSetting(environment, pendingRules,
+            new RuntimeConfigurationFeatureBridge.ValueProjector<ImageRuntimeOptions, ImageStorageProfile>() {
+              @Override
+              public ImageStorageProfile project(ImageRuntimeOptions value) {
+                return value.storage() == ImageStorageProfile.DEFAULT ? null : value.storage();
+              }
+            }, ImageStorageProfile.STANDARD, "storage");
+    RuntimeConfigurationFeatureBridge.FeatureResolution<Boolean> targetColorConversion =
+        resolveFeatureState(environment, pendingRules, "targetColorConversion", new FeatureStateSelector() {
+          @Override
+          public RuntimeFeatureState state(ImageRuntimeOptions options) {
+            return options.targetColorConversion();
+          }
+        });
+    RuntimeConfigurationFeatureBridge.FeatureResolution<Boolean> physicalVariantCache =
+        resolveFeatureState(environment, pendingRules, "physicalVariantCache", new FeatureStateSelector() {
+          @Override
+          public RuntimeFeatureState state(ImageRuntimeOptions options) {
+            return options.physicalVariantCache();
+          }
+        });
+    RuntimeConfigurationFeatureBridge.FeatureResolution<Boolean> scrollRasterReuse =
+        resolveFeatureState(environment, pendingRules, "scrollRasterReuse", new FeatureStateSelector() {
+          @Override
+          public RuntimeFeatureState state(ImageRuntimeOptions options) {
+            return options.scrollRasterReuse();
+          }
+        });
+    RuntimeConfigurationFeatureBridge.FeatureResolution<ImagePrefetchWorkerMode> prefetchWorker =
+        RuntimeConfigurationFeatureBridge.resolveProjectedSetting(environment, pendingRules,
+            new RuntimeConfigurationFeatureBridge.ValueProjector<ImageRuntimeOptions, ImagePrefetchWorkerMode>() {
+              @Override
+              public ImagePrefetchWorkerMode project(ImageRuntimeOptions value) {
+                return value.prefetchWorker() == ImagePrefetchWorkerMode.DEFAULT ? null : value.prefetchWorker();
+              }
+            }, ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD, "prefetchWorker");
+
+    Set<String> matchedNames = new TreeSet<String>();
+    matchedNames.addAll(storage.matchedRuleNames());
+    matchedNames.addAll(targetColorConversion.matchedRuleNames());
+    matchedNames.addAll(physicalVariantCache.matchedRuleNames());
+    matchedNames.addAll(scrollRasterReuse.matchedRuleNames());
+    matchedNames.addAll(prefetchWorker.matchedRuleNames());
+    ImageStorageProfile requestedStorage = storage.requestedValue();
+    boolean compactBackingAvailable = requestedStorage == ImageStorageProfile.COMPACT
         && ImageCompactStorageCapabilityBridge.isAvailable();
-    currentPolicy = ImageRuntimePolicy.forRequestedStorage(resolution.requestedValue(),
-        resolution.matchedRuleNames(), compactBackingAvailable);
+    currentPolicy = ImageRuntimePolicy.forResolvedConfiguration(requestedStorage,
+        targetColorConversion.requestedValue().booleanValue(),
+        physicalVariantCache.requestedValue().booleanValue(),
+        scrollRasterReuse.requestedValue().booleanValue(), prefetchWorker.requestedValue(),
+        new ArrayList<String>(matchedNames), compactBackingAvailable);
     pendingRules = null;
+  }
+
+  private static RuntimeConfigurationFeatureBridge.FeatureResolution<Boolean> resolveFeatureState(
+      RuntimeEnvironment environment,
+      List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules,
+      String settingName, final FeatureStateSelector selector) {
+    return RuntimeConfigurationFeatureBridge.resolveProjectedSetting(environment, rules,
+        new RuntimeConfigurationFeatureBridge.ValueProjector<ImageRuntimeOptions, Boolean>() {
+          @Override
+          public Boolean project(ImageRuntimeOptions value) {
+            RuntimeFeatureState state = selector.state(value);
+            return state == RuntimeFeatureState.DEFAULT ? null : Boolean.valueOf(state == RuntimeFeatureState.ENABLED);
+          }
+        }, Boolean.FALSE, settingName);
+  }
+
+  private interface FeatureStateSelector {
+    RuntimeFeatureState state(ImageRuntimeOptions options);
   }
 
   private static void registerDescriptionContributor() {

@@ -7,16 +7,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
 
 /** Internal immutable resolved Image policy snapshot published during startup. */
 public final class ImageRuntimePolicy {
   private static final String COMPACT_UNAVAILABLE_REASON = "native compact backing is unavailable";
-  private static final RasterCorePolicy DEFAULT_RASTER_CORE = new RasterCorePolicy(true, true, true, true, true, true);
-  private static final RasterVariantPolicy DEFAULT_RASTER_VARIANTS = new RasterVariantPolicy(false, false);
-  private static final ScrollRasterReusePolicy DEFAULT_SCROLL_REUSE = new ScrollRasterReusePolicy(false);
-  private static final ImagePreparationPolicy DEFAULT_PREPARATION = new ImagePreparationPolicy(false);
-  private static final PrefetchWorkerPolicy DEFAULT_PREFETCH_WORKER = PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD;
 
   private final ImageStorageProfile requestedStorageProfile;
   private final ImageStorageProfile effectiveStorageProfile;
@@ -26,30 +22,19 @@ public final class ImageRuntimePolicy {
   private final RasterVariantPolicy rasterVariants;
   private final ScrollRasterReusePolicy scrollRasterReuse;
   private final ImagePreparationPolicy imagePreparation;
-  private final PrefetchWorkerPolicy prefetchWorker;
-
-  private ImageRuntimePolicy(ImageStorageProfile requestedStorageProfile,
-      ImageStorageProfile effectiveStorageProfile, String storageReason, List<String> matchedRuleNames) {
-    this(requestedStorageProfile, effectiveStorageProfile, storageReason, matchedRuleNames,
-        DEFAULT_RASTER_CORE, DEFAULT_RASTER_VARIANTS);
-  }
+  private final ImagePrefetchWorkerMode prefetchWorker;
 
   private ImageRuntimePolicy(ImageStorageProfile requestedStorageProfile,
       ImageStorageProfile effectiveStorageProfile, String storageReason, List<String> matchedRuleNames,
-      RasterCorePolicy rasterCore, RasterVariantPolicy rasterVariants) {
-    this(requestedStorageProfile, effectiveStorageProfile, storageReason, matchedRuleNames,
-        rasterCore, rasterVariants, DEFAULT_SCROLL_REUSE, DEFAULT_PREFETCH_WORKER);
-  }
-
-  private ImageRuntimePolicy(ImageStorageProfile requestedStorageProfile,
-      ImageStorageProfile effectiveStorageProfile, String storageReason, List<String> matchedRuleNames,
-      RasterCorePolicy rasterCore, RasterVariantPolicy rasterVariants, ScrollRasterReusePolicy scrollRasterReuse,
-      PrefetchWorkerPolicy prefetchWorker) {
-    if (requestedStorageProfile == null || effectiveStorageProfile == null || matchedRuleNames == null) {
-      throw new IllegalArgumentException("an Image policy requires requested and effective storage values");
-    }
-    if (rasterCore == null || rasterVariants == null || scrollRasterReuse == null || prefetchWorker == null) {
-      throw new IllegalArgumentException("an Image policy requires non-null feature policies");
+      RasterCorePolicy rasterCore, RasterVariantPolicy rasterVariants,
+      ScrollRasterReusePolicy scrollRasterReuse, ImagePreparationPolicy imagePreparation,
+      ImagePrefetchWorkerMode prefetchWorker) {
+    if (requestedStorageProfile == null || requestedStorageProfile == ImageStorageProfile.DEFAULT
+        || effectiveStorageProfile == null || effectiveStorageProfile == ImageStorageProfile.DEFAULT
+        || matchedRuleNames == null || rasterCore == null || rasterVariants == null
+        || scrollRasterReuse == null || imagePreparation == null || prefetchWorker == null
+        || prefetchWorker == ImagePrefetchWorkerMode.DEFAULT) {
+      throw new IllegalArgumentException("an Image policy requires concrete storage and feature values");
     }
     this.requestedStorageProfile = requestedStorageProfile;
     this.effectiveStorageProfile = effectiveStorageProfile;
@@ -58,22 +43,39 @@ public final class ImageRuntimePolicy {
     this.rasterCore = rasterCore;
     this.rasterVariants = rasterVariants;
     this.scrollRasterReuse = scrollRasterReuse;
-    this.imagePreparation = DEFAULT_PREPARATION;
+    this.imagePreparation = imagePreparation;
     this.prefetchWorker = prefetchWorker;
   }
 
   static ImageRuntimePolicy defaults() {
-    return new ImageRuntimePolicy(ImageStorageProfile.STANDARD, ImageStorageProfile.STANDARD, null,
-        Collections.<String>emptyList());
+    return forResolvedConfiguration(ImageStorageProfile.STANDARD, false, false, false,
+        ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD, Collections.<String>emptyList(), false);
   }
 
-  /** Resolves the request against the native compact-backing capability. */
+  /** Resolves the storage request against the native compact-backing capability. */
   static ImageRuntimePolicy forRequestedStorage(ImageStorageProfile requestedStorageProfile,
       List<String> matchedRuleNames, boolean compactBackingAvailable) {
+    return forResolvedConfiguration(requestedStorageProfile, false, false, false,
+        ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD, matchedRuleNames, compactBackingAvailable);
+  }
+
+  /** Constructs the one production policy snapshot from concrete resolved configuration values. */
+  static ImageRuntimePolicy forResolvedConfiguration(ImageStorageProfile requestedStorageProfile,
+      boolean targetColorConversion, boolean physicalVariantCache, boolean scrollRasterReuse,
+      ImagePrefetchWorkerMode prefetchWorker, List<String> matchedRuleNames,
+      boolean compactBackingAvailable) {
+    if (requestedStorageProfile == null || requestedStorageProfile == ImageStorageProfile.DEFAULT) {
+      throw new IllegalArgumentException("resolved Image storage must be STANDARD or COMPACT");
+    }
     ImageStorageProfile effectiveStorageProfile = requestedStorageProfile == ImageStorageProfile.COMPACT
         && compactBackingAvailable ? ImageStorageProfile.COMPACT : ImageStorageProfile.STANDARD;
     String reason = requestedStorageProfile == effectiveStorageProfile ? null : COMPACT_UNAVAILABLE_REASON;
-    return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, reason, matchedRuleNames);
+    RasterCorePolicy rasterCore = new RasterCorePolicy(true, true, true, true, true, true);
+    RasterVariantPolicy rasterVariants = new RasterVariantPolicy(targetColorConversion, physicalVariantCache);
+    ScrollRasterReusePolicy scrollPolicy = new ScrollRasterReusePolicy(scrollRasterReuse);
+    ImagePreparationPolicy preparation = new ImagePreparationPolicy(false);
+    return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, reason, matchedRuleNames,
+        rasterCore, rasterVariants, scrollPolicy, preparation, prefetchWorker);
   }
 
   ImageRuntimePolicy withRasterFeaturesForTest(boolean physicalIdentity,
@@ -82,18 +84,22 @@ public final class ImageRuntimePolicy {
         rasterCore.opaqueWritePixels, rasterCore.rowReadback, rasterCore.directColorMaterialization,
         physicalIdentity);
     RasterVariantPolicy variants = new RasterVariantPolicy(targetColorConversion, physicalVariantCache);
-    return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, storageReason,
-        matchedRuleNames, core, variants, scrollRasterReuse, prefetchWorker);
+    return copy(core, variants, scrollRasterReuse, imagePreparation, prefetchWorker);
   }
 
   ImageRuntimePolicy withScrollRasterReusePolicy(ScrollRasterReusePolicy scrollRasterReuse) {
-    return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, storageReason,
-        matchedRuleNames, rasterCore, rasterVariants, scrollRasterReuse, prefetchWorker);
+    return copy(rasterCore, rasterVariants, scrollRasterReuse, imagePreparation, prefetchWorker);
   }
 
-  ImageRuntimePolicy withPrefetchWorkerPolicyForTest(PrefetchWorkerPolicy prefetchWorker) {
+  ImageRuntimePolicy withPrefetchWorkerPolicyForTest(ImagePrefetchWorkerMode prefetchWorker) {
+    return copy(rasterCore, rasterVariants, scrollRasterReuse, imagePreparation, prefetchWorker);
+  }
+
+  private ImageRuntimePolicy copy(RasterCorePolicy core, RasterVariantPolicy variants,
+      ScrollRasterReusePolicy scrollPolicy, ImagePreparationPolicy preparation,
+      ImagePrefetchWorkerMode worker) {
     return new ImageRuntimePolicy(requestedStorageProfile, effectiveStorageProfile, storageReason,
-        matchedRuleNames, rasterCore, rasterVariants, scrollRasterReuse, prefetchWorker);
+        matchedRuleNames, core, variants, scrollPolicy, preparation, worker);
   }
 
   /** Returns the rule-selected Image storage request. Internal feature access only. */
@@ -111,7 +117,7 @@ public final class ImageRuntimePolicy {
     return storageReason;
   }
 
-  /** Returns diagnostic names of matching Image rules. */
+  /** Returns deterministic names of matching Image rules that assigned an option. */
   public List<String> matchedRuleNames() {
     return matchedRuleNames;
   }
@@ -132,23 +138,17 @@ public final class ImageRuntimePolicy {
     return imagePreparation;
   }
 
-  public PrefetchWorkerPolicy prefetchWorker() {
+  public ImagePrefetchWorkerMode prefetchWorker() {
     return prefetchWorker;
   }
 
-  /**
-   * Formats the resolved typed policy, including defaults reserved for future
-   * consumers. A field is operational only once its owning feature
-   * implementation consumes that policy.
-   */
+  /** Formats all resolved settings for the human-readable runtime configuration report. */
   String describeSection() {
-    StringBuilder output = new StringBuilder(320);
+    StringBuilder output = new StringBuilder(384);
     output.append("  storage:\n");
     output.append("    requested: ").append(requestedStorageProfile.name()).append('\n');
     output.append("    effective: ").append(effectiveStorageProfile.name()).append('\n');
-    if (storageReason != null) {
-      output.append("    reason: ").append(storageReason).append('\n');
-    }
+    output.append("    reason: ").append(storageReason == null ? "none" : storageReason).append('\n');
     output.append("\n  rasterCore:\n");
     output.append("    zeroCopyDecode: ").append(enabled(rasterCore.zeroCopyDecode)).append('\n');
     output.append("    opacityMetadata: ").append(enabled(rasterCore.opacityMetadata)).append('\n');
@@ -164,6 +164,16 @@ public final class ImageRuntimePolicy {
     output.append("\n  imagePreparation:\n");
     output.append("    automaticPreparation: ").append(enabled(imagePreparation.automaticPreparation)).append('\n');
     output.append("\n  prefetchWorker: ").append(prefetchWorker.name()).append('\n');
+    if (!matchedRuleNames.isEmpty()) {
+      output.append("\n  matchedRules: ");
+      for (int i = 0; i < matchedRuleNames.size(); i++) {
+        if (i != 0) {
+          output.append(", ");
+        }
+        output.append(matchedRuleNames.get(i));
+      }
+      output.append('\n');
+    }
     return output.toString();
   }
 
@@ -198,7 +208,7 @@ public final class ImageRuntimePolicy {
     public boolean physicalIdentity() { return physicalIdentity; }
   }
 
-  /** Typed raster-variant defaults consumed by P3. */
+  /** Typed raster-variant policy consumed by P3. */
   public static final class RasterVariantPolicy {
     private final boolean targetColorConversion;
     private final boolean physicalVariantCache;
@@ -212,7 +222,7 @@ public final class ImageRuntimePolicy {
     public boolean physicalVariantCache() { return physicalVariantCache; }
   }
 
-  /** Typed scroll-raster-reuse default consumed by P7. */
+  /** Typed scroll-raster-reuse policy consumed by P7. */
   public static final class ScrollRasterReusePolicy {
     private final boolean enabled;
 
@@ -223,7 +233,7 @@ public final class ImageRuntimePolicy {
     public boolean enabled() { return enabled; }
   }
 
-  /** Typed image-preparation default consumed by P8. */
+  /** Typed image-preparation policy consumed by P8. */
   public static final class ImagePreparationPolicy {
     private final boolean automaticPreparation;
 
@@ -232,11 +242,5 @@ public final class ImageRuntimePolicy {
     }
 
     public boolean automaticPreparation() { return automaticPreparation; }
-  }
-
-  /** Typed prefetch-worker default consumed by P9. */
-  public enum PrefetchWorkerPolicy {
-    LEGACY_PER_ENTRY_THREAD,
-    SEMAPHORE_PROCESS_WORKER
   }
 }

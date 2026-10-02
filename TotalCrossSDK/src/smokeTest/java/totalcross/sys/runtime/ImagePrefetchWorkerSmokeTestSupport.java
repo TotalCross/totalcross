@@ -4,6 +4,8 @@
 
 package totalcross.sys.runtime;
 
+import totalcross.ui.image.ImagePrefetchWorkerMode;
+
 /** Test-only policy fixture for the deployed image prefetch worker smoke. */
 public final class ImagePrefetchWorkerSmokeTestSupport {
   private static ImageRuntimePolicy originalPolicy;
@@ -17,7 +19,7 @@ public final class ImagePrefetchWorkerSmokeTestSupport {
     }
     originalPolicy = ImageRuntimeConfigurationStartup.currentPolicy();
     ImageRuntimeConfigurationStartup.installInternalPolicy(originalPolicy.withPrefetchWorkerPolicyForTest(
-        ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER));
+        ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER));
   }
 
   public static void restore() {

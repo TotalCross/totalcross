@@ -11,7 +11,6 @@ import java.util.TreeMap;
 
 /** Internal adapter for typed feature settings using the shared runtime configuration machinery. */
 public final class RuntimeConfigurationFeatureBridge {
-  private static final Object SINGLE_SETTING = new Object();
   private static final Map<String, DescriptionContributor> DESCRIPTION_CONTRIBUTORS =
       new TreeMap<String, DescriptionContributor>();
 
@@ -36,6 +35,11 @@ public final class RuntimeConfigurationFeatureBridge {
   /** Resolves one typed setting through B's shared specificity and conflict rules. */
   public static <T> FeatureResolution<T> resolveSingleSetting(RuntimeEnvironment environment,
       List<FeatureRule<T>> featureRules, T defaultValue) {
+    return resolveSingleSetting(environment, featureRules, defaultValue, "feature setting");
+  }
+
+  private static <T> FeatureResolution<T> resolveSingleSetting(RuntimeEnvironment environment,
+      List<FeatureRule<T>> featureRules, T defaultValue, String settingName) {
     if (environment == null || featureRules == null || defaultValue == null) {
       throw new IllegalArgumentException("environment, feature rules, and default value are required");
     }
@@ -45,14 +49,42 @@ public final class RuntimeConfigurationFeatureBridge {
         throw new IllegalArgumentException("feature rules cannot contain null");
       }
       List<RuntimeRuleResolver.Change> changes = Collections.singletonList(
-          new RuntimeRuleResolver.Change(SINGLE_SETTING, featureRule.requestedValue));
+          new RuntimeRuleResolver.Change(settingName, featureRule.requestedValue));
       rules.add(new RuntimeRuleResolver.Rule(featureRule.name, featureRule.selector, changes));
     }
     RuntimeRuleResolver.Resolution resolution = RuntimeRuleResolver.resolve(environment, rules);
-    Object value = resolution.requestedValues().get(SINGLE_SETTING);
+    Object value = resolution.requestedValues().get(settingName);
     @SuppressWarnings("unchecked")
     T requestedValue = value == null ? defaultValue : (T) value;
     return new FeatureResolution<T>(requestedValue, resolution.matchedRuleNames());
+  }
+
+  /** Resolves one projected property, omitting rules whose projector returns {@code null}. */
+  public static <S, T> FeatureResolution<T> resolveProjectedSetting(RuntimeEnvironment environment,
+      List<FeatureRule<S>> featureRules, ValueProjector<S, T> projector, T defaultValue) {
+    return resolveProjectedSetting(environment, featureRules, projector, defaultValue, "feature setting");
+  }
+
+  /** Resolves one named projected property, omitting rules whose projector returns {@code null}. */
+  public static <S, T> FeatureResolution<T> resolveProjectedSetting(RuntimeEnvironment environment,
+      List<FeatureRule<S>> featureRules, ValueProjector<S, T> projector, T defaultValue, String settingName) {
+    if (environment == null || featureRules == null || projector == null || defaultValue == null) {
+      throw new IllegalArgumentException("environment, feature rules, projector, and default value are required");
+    }
+    if (settingName == null || settingName.length() == 0) {
+      throw new IllegalArgumentException("a projected setting requires a name");
+    }
+    List<FeatureRule<T>> projected = new ArrayList<FeatureRule<T>>(featureRules.size());
+    for (FeatureRule<S> featureRule : featureRules) {
+      if (featureRule == null) {
+        throw new IllegalArgumentException("feature rules cannot contain null");
+      }
+      T value = projector.project(featureRule.requestedValue);
+      if (value != null) {
+        projected.add(new FeatureRule<T>(featureRule.name, featureRule.selector, value));
+      }
+    }
+    return resolveSingleSetting(environment, projected, defaultValue, settingName);
   }
 
   /** Registers or replaces a diagnostic section contributed by a runtime feature. */
@@ -83,6 +115,11 @@ public final class RuntimeConfigurationFeatureBridge {
   /** Internal diagnostic section provider. */
   public interface DescriptionContributor {
     String describe();
+  }
+
+  /** Maps a rule value to one setting; a {@code null} result means that the rule leaves it unassigned. */
+  public interface ValueProjector<S, T> {
+    T project(S value);
   }
 
   /** Typed adapter from one feature rule to B's common selector resolver. */

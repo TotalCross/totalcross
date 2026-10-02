@@ -7,7 +7,6 @@ package totalcross.ui.image;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
-import totalcross.sys.runtime.ImageRuntimePolicy;
 import totalcross.ui.MainWindow;
 
 /** One process-wide FIFO whose active request remains owned through UI adoption. */
@@ -369,7 +368,7 @@ final class ImagePreparationScheduler {
 
   private static void start(final Work work) {
     if (work.request.effectivePolicy.prefetchWorker()
-        == ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER) {
+        == ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER) {
       startSemaphoreWork(work);
     } else {
       startLegacyWork(work);
@@ -471,7 +470,7 @@ final class ImagePreparationScheduler {
         work = active;
         if (work == null || work.state != RequestState.PREPARING
             || work.request.effectivePolicy.prefetchWorker()
-                != ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER) {
+                != ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER) {
           continue;
         }
       }
