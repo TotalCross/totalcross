@@ -49,10 +49,12 @@ final class ImagePreparationScheduler {
   private static WorkerLifecycle workerLifecycle = WorkerLifecycle.NOT_STARTED;
   private static Semaphore workerWake;
   private static Semaphore shutdownCompleteForTest;
+  private static Semaphore workerWaitingNotificationForTest;
   private static Thread processWorker;
   private static int processWorkerStartCountForTest;
   private static int semaphoreWakeCountForTest;
   private static int preparationStartCountForTest;
+  private static boolean workerWaitingForSignalForTest;
 
   private ImagePreparationScheduler() {
   }
@@ -280,6 +282,29 @@ final class ImagePreparationScheduler {
     }
   }
 
+  static boolean workerWaitingForSignalForTest() {
+    synchronized (LOCK) {
+      return workerWaitingForSignalForTest;
+    }
+  }
+
+  static void awaitWorkerWaitingForSignalForTest() {
+    Semaphore notification;
+    synchronized (LOCK) {
+      if (workerWaitingForSignalForTest) {
+        return;
+      }
+      notification = new Semaphore(0);
+      workerWaitingNotificationForTest = notification;
+    }
+    notification.acquireUninterruptibly();
+    synchronized (LOCK) {
+      if (workerWaitingNotificationForTest == notification) {
+        workerWaitingNotificationForTest = null;
+      }
+    }
+  }
+
   static void shutdownSemaphoreWorkerForTest() {
     synchronized (LOCK) {
       if (active != null || !QUEUE.isEmpty() || !PENDING.isEmpty()) {
@@ -310,10 +335,13 @@ final class ImagePreparationScheduler {
       processWorker = null;
       workerWake = null;
       shutdownCompleteForTest = null;
+      workerWaitingNotificationForTest = null;
       workerLifecycle = WorkerLifecycle.NOT_STARTED;
       processWorkerStartCountForTest = 0;
       semaphoreWakeCountForTest = 0;
       preparationStartCountForTest = 0;
+      workerWaitingForSignalForTest = false;
+      workerWaitingNotificationForTest = null;
     }
   }
 
@@ -325,6 +353,7 @@ final class ImagePreparationScheduler {
       processWorkerStartCountForTest = 0;
       semaphoreWakeCountForTest = 0;
       preparationStartCountForTest = 0;
+      workerWaitingForSignalForTest = false;
     }
   }
 
@@ -420,9 +449,18 @@ final class ImagePreparationScheduler {
 
   private static void runSemaphoreWorker(Semaphore wake) {
     while (true) {
+      Semaphore waitingNotification;
+      synchronized (LOCK) {
+        workerWaitingForSignalForTest = true;
+        waitingNotification = workerWaitingNotificationForTest;
+      }
+      if (waitingNotification != null) {
+        waitingNotification.release();
+      }
       wake.acquireUninterruptibly();
       Work work;
       synchronized (LOCK) {
+        workerWaitingForSignalForTest = false;
         if (workerLifecycle == WorkerLifecycle.SHUTDOWN) {
           Semaphore stopped = shutdownCompleteForTest;
           if (stopped != null) {

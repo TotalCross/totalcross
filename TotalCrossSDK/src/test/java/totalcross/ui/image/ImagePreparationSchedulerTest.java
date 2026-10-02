@@ -7,6 +7,7 @@ package totalcross.ui.image;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,7 +31,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import totalcross.sys.runtime.ImagePrefetchWorkerTestSupport;
+import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
+import totalcross.ui.ScrollContainer;
 
 class ImagePreparationSchedulerTest {
   @BeforeAll
@@ -140,6 +143,14 @@ class ImagePreparationSchedulerTest {
     assertEquals(3, Image.targetedDecodeInvocationCountForTest());
     assertEquals(1, ImagePreparationScheduler.processWorkerStartCountForTest());
     assertEquals(3, ImagePreparationScheduler.semaphoreWakeCountForTest());
+    final int[] readyCallback = {0};
+    ImagePreparationScheduler.submit(firstRequest, new Runnable() {
+      @Override
+      public void run() { readyCallback[0]++; }
+    });
+    assertEquals(1, readyCallback[0]);
+    assertEquals(3, ImagePreparationScheduler.semaphoreWakeCountForTest(),
+        "already-ready work must not signal the idle process worker");
     assertSame(worker, ImagePreparationScheduler.processWorkerForTest());
     assertEquals("RUNNING_OR_BLOCKED", ImagePreparationScheduler.workerLifecycleForTest());
     awaitWorkerBlocked(worker);
@@ -149,6 +160,9 @@ class ImagePreparationSchedulerTest {
   void readyAndNotPrefetchableRequestsDoNotCreateOrWakeWorker() throws Exception {
     awaitSchedulerIdle();
     ImagePrefetchWorkerTestSupport.useSemaphoreWorker();
+    assertEquals("NOT_STARTED", ImagePreparationScheduler.workerLifecycleForTest());
+    assertNull(ImagePreparationScheduler.processWorkerForTest());
+
     Image image = lazyImage(jpeg(96, 64));
     double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
     ImagePreparationRequest initial = image.captureDisplayPreparationRequest(scale, 104L);
@@ -158,21 +172,43 @@ class ImagePreparationSchedulerTest {
     prepared.releaseDetachedEncodedSource();
     final ImagePreparationRequest ready = image.captureDisplayPreparationRequest(scale, 104L);
     assertTrue(image.isDisplayPreparationReady(ready));
-    final int[] callbacks = {0};
+    final int[] readyCallbacks = {0};
 
     ImagePreparationScheduler.submit(ready, new Runnable() {
       @Override
-      public void run() { callbacks[0]++; }
-    });
-    ImagePreparationScheduler.submit(null, new Runnable() {
-      @Override
-      public void run() { callbacks[0]++; }
+      public void run() { readyCallbacks[0]++; }
     });
 
-    assertEquals(2, callbacks[0]);
+    Image pngImage = new Image(png(24, 16));
+    assertEquals(ImageEncodedStructure.Format.PNG,
+        ((EncodedImageSource) pngImage.pipelineForSmoke().root()).getFormat());
+    assertNull(pngImage.captureDisplayPreparationRequest(scale, 105L),
+        "PNG remains outside the P9 prefetchable request path");
+
+    ScrollContainer scroll = new ScrollContainer(false, false);
+    scroll.setRect(0, 0, 100, 100);
+    ImageControl pngControl = new ImageControl(pngImage);
+    scroll.add(pngControl);
+    pngControl.setRect(5, 5, 24, 16);
+    scroll.resize();
+    final int[] pngCallbacks = {0};
+    final Thread[] pngCallbackThread = {null};
+    scroll.prepareForDisplay(new Runnable() {
+      @Override
+      public void run() {
+        pngCallbacks[0]++;
+        pngCallbackThread[0] = Thread.currentThread();
+      }
+    });
+
+    assertEquals(1, readyCallbacks[0]);
+    assertEquals(1, pngCallbacks[0], "the PNG preparation callback completes normally");
+    assertSame(Thread.currentThread(), pngCallbackThread[0]);
+    assertEquals("NOT_STARTED", ImagePreparationScheduler.workerLifecycleForTest());
     assertNull(ImagePreparationScheduler.processWorkerForTest());
     assertEquals(0, ImagePreparationScheduler.processWorkerStartCountForTest());
     assertEquals(0, ImagePreparationScheduler.semaphoreWakeCountForTest());
+    assertEquals(0, ImagePreparationScheduler.preparationStartCountForTest());
   }
 
   @Test
@@ -268,6 +304,20 @@ class ImagePreparationSchedulerTest {
     assertFalse(workerLoop.contains("availablePermits"));
     assertFalse(workerLoop.contains("Thread.yield"));
     assertFalse(workerLoop.contains("LockSupport"));
+  }
+
+  @Test
+  void capturedWorkerPolicyRemainsPartOfRequestIdentity() throws Exception {
+    Image image = lazyImage(jpeg(96, 64));
+    double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
+    ImagePrefetchWorkerTestSupport.useSemaphoreWorker();
+    ImagePreparationRequest semaphoreRequest = image.captureDisplayPreparationRequest(scale, 109L);
+    ImagePrefetchWorkerTestSupport.useLegacyWorker();
+    ImagePreparationRequest legacyRequest = image.captureDisplayPreparationRequest(scale, 110L);
+
+    assertNotSame(semaphoreRequest.effectivePolicy, legacyRequest.effectivePolicy);
+    assertFalse(semaphoreRequest.equivalentTo(legacyRequest));
+    assertNull(ImagePreparationScheduler.processWorkerForTest());
   }
 
   @Test
@@ -391,6 +441,7 @@ class ImagePreparationSchedulerTest {
   @Test
   void callbackExceptionDoesNotPreventNextFifoRequest() throws Exception {
     awaitSchedulerIdle();
+    ImagePrefetchWorkerTestSupport.useSemaphoreWorker();
     Image first = lazyImage(jpeg(64, 48));
     Image second = lazyImage(jpeg(64, 48));
     double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
@@ -424,6 +475,7 @@ class ImagePreparationSchedulerTest {
   @Test
   void pendingRegistryIsBoundedAndOverflowCanRetryLater() throws Exception {
     awaitSchedulerIdle();
+    ImagePrefetchWorkerTestSupport.useSemaphoreWorker();
     int limit = ImagePreparationScheduler.pendingLimitForTest();
     int requestCount = limit + 2;
     byte[] encoded = jpeg(32, 24);
@@ -458,6 +510,8 @@ class ImagePreparationSchedulerTest {
         return callbacks[0] == requestCount && ImagePreparationScheduler.idleForTest();
       }
     }, 30);
+    assertEquals(1, ImagePreparationScheduler.processWorkerStartCountForTest());
+    assertEquals(limit, ImagePreparationScheduler.semaphoreWakeCountForTest());
     assertEquals(ImagePreparationScheduler.readyLimitForTest(), ImagePreparationScheduler.readyCountForTest());
     assertTrue(ImagePreparationScheduler.readyMetadataRetainsNoPrototypeForTest(),
         "ready metadata must not retain worker prototype Images");
@@ -474,6 +528,7 @@ class ImagePreparationSchedulerTest {
         return callbacks[0] == requestCount + 1 && ImagePreparationScheduler.idleForTest();
       }
     });
+    assertEquals(limit + 1, ImagePreparationScheduler.semaphoreWakeCountForTest());
   }
 
   private static Image lazyImage(byte[] encoded) throws Exception {
@@ -511,6 +566,14 @@ class ImagePreparationSchedulerTest {
     return bytes.toByteArray();
   }
 
+  private static byte[] png(int width, int height) throws Exception {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    image.setRGB(0, 0, 0xFF336699);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    assertTrue(ImageIO.write(image, "png", bytes));
+    return bytes.toByteArray();
+  }
+
   private static void awaitWithoutUi(CompletionCheck condition) throws Exception {
     long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(8);
     while (!condition.isComplete() && System.nanoTime() < deadline) {
@@ -521,11 +584,13 @@ class ImagePreparationSchedulerTest {
 
   private static void awaitWorkerBlocked(Thread worker) throws Exception {
     assertNotNull(worker);
+    ImagePreparationScheduler.awaitWorkerWaitingForSignalForTest();
     long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(8);
     while (worker.getState() != Thread.State.WAITING && System.nanoTime() < deadline) {
       Thread.sleep(2L);
     }
     assertEquals(Thread.State.WAITING, worker.getState(), "the idle worker must block in Semaphore acquire");
+    assertTrue(ImagePreparationScheduler.workerWaitingForSignalForTest());
   }
 
   private static String methodBody(String source, String signature) {
