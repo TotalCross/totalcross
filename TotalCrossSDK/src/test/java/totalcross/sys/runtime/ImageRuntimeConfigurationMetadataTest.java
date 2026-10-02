@@ -24,7 +24,7 @@ import totalcross.ui.image.ImageStorageProfile;
 
 class ImageRuntimeConfigurationMetadataTest {
   @Test
-  void roundTripsImageRulesWithStableStorageTags() {
+  void roundTripsStorageRulesWithStableVersionTwoTags() {
     RuntimeSelector selector = RuntimeSelector.platform(Platform.MACOS)
         .and(RuntimeSelector.family(RuntimeFamily.DESKTOP));
     List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules = Arrays.asList(
@@ -36,7 +36,7 @@ class ImageRuntimeConfigurationMetadataTest {
         ImageRuntimeConfigurationMetadata.decode(encoded);
 
     assertArrayEquals(new byte[] { 0x54, 0x43, 0x49, 0x43 }, Arrays.copyOf(encoded, 4));
-    assertEquals(1, encoded[4] & 0xff);
+    assertEquals(2, encoded[4] & 0xff);
     assertEquals(2, unsignedShort(encoded, 5));
     assertEquals(0x01, storageTag(encoded, 0));
     assertEquals(0x02, storageTag(encoded, 1));
@@ -80,14 +80,15 @@ class ImageRuntimeConfigurationMetadataTest {
         Collections.singletonList(rule("compact", RuntimeSelector.platform(Platform.MACOS),
             ImageStorageProfile.COMPACT)), Collections.<RuntimeConfigurationMetadata.DeploymentTarget>emptyList());
     int payloadLength = readInt(valid, 7);
-    int tagOffset = 11 + payloadLength;
+    int presenceOffset = 11 + payloadLength;
+    int tagOffset = presenceOffset + 1;
 
     byte[] wrongMagic = valid.clone();
     wrongMagic[0] = 0;
     assertThrows(IllegalArgumentException.class, () -> ImageRuntimeConfigurationMetadata.decode(wrongMagic));
 
     byte[] wrongVersion = valid.clone();
-    wrongVersion[4] = 2;
+    wrongVersion[4] = 3;
     assertTrue(assertThrows(IllegalArgumentException.class,
         () -> ImageRuntimeConfigurationMetadata.decode(wrongVersion)).getMessage().contains("unsupported metadata version"));
 
@@ -105,9 +106,9 @@ class ImageRuntimeConfigurationMetadataTest {
         () -> ImageRuntimeConfigurationMetadata.decode(malformedSelector)).getMessage().contains("invalid selector payload"));
 
     byte[] zeroTag = valid.clone();
-    zeroTag[tagOffset] = 0;
+    zeroTag[presenceOffset] = 0;
     assertTrue(assertThrows(IllegalArgumentException.class,
-        () -> ImageRuntimeConfigurationMetadata.decode(zeroTag)).getMessage().contains("unknown storage tag"));
+        () -> ImageRuntimeConfigurationMetadata.decode(zeroTag)).getMessage().contains("empty presence mask"));
 
     byte[] unknownTag = valid.clone();
     unknownTag[tagOffset] = 3;
@@ -138,10 +139,10 @@ class ImageRuntimeConfigurationMetadataTest {
   private static int storageTag(byte[] encoded, int index) {
     int offset = 7;
     for (int i = 0; i < index; i++) {
-      offset += 4 + readInt(encoded, offset) + 1;
+      offset += 4 + readInt(encoded, offset) + 2;
     }
     int length = readInt(encoded, offset);
-    return encoded[offset + 4 + length] & 0xff;
+    return encoded[offset + 5 + length] & 0xff;
   }
 
   private static int unsignedShort(byte[] bytes, int offset) {
