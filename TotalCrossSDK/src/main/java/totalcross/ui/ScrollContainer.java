@@ -109,7 +109,8 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   }
 
   /**
-   * Prepares currently visible encoded JPEG images in this scroll container for display.
+   * Prepares visible encoded JPEG and single-frame PNG images in this scroll
+   * container for display.
    * Call this method on the UI thread. The optional callback runs on the UI thread after the
    * latest preparation batch settles; a later call supersedes only this callback.
    *
