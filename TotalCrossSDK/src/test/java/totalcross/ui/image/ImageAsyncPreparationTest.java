@@ -80,8 +80,135 @@ class ImageAsyncPreparationTest {
     Image gif = new Image(gif(48, 32));
     assertEquals(ImageEncodedStructure.Format.GIF, ((EncodedImageSource) gif.pipelineForSmoke().root()).getFormat());
     assertNull(gif.captureDisplayPreparationRequest(scale, 22L));
-    assertNull(staticPng.captureDisplayPreparationRequest(Double.MAX_VALUE, 23L),
+    Image zeroWidthLayout = new Image(png(1, 8));
+    zeroWidthLayout.setFrameCount(2);
+    assertTrue(zeroWidthLayout.pipelineForSmoke().hasZeroWidthFrameLayout());
+    assertNull(zeroWidthLayout.captureDisplayPreparationRequest(scale, 23L));
+    assertNull(staticPng.captureDisplayPreparationRequest(Double.MAX_VALUE, 24L),
         "a destination scale that overflows requested dimensions is rejected");
+  }
+
+  @Test
+  void staticPngUsesFullDecodeAccountingAndTheNextDrawReusesPreparedState() throws Exception {
+    Image image = new Image(png(128, 96));
+    double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
+    ImagePreparationRequest request = image.captureDisplayPreparationRequest(scale, 24L);
+    Image.resetImageOperationAccountingForTest();
+
+    PreparedImageResult result = request.prototype.prepareDetachedForDisplay(request);
+
+    assertEquals(PreparedImageResult.FailureKind.NONE, result.failureKind);
+    assertEquals(1, result.decodeDenominator);
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+    assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+    assertEquals(ImagePreparationScheduler.TerminalState.READY,
+        image.adoptPreparedForDisplay(request, result));
+    result.releaseUnretainedCandidates(request);
+    result.releaseDetachedEncodedSource();
+
+    int fullDecodesAfterPreparation = Image.fullDecodeInvocationCountForTest();
+    int targetedDecodesAfterPreparation = Image.targetedDecodeInvocationCountForTest();
+    assertSame(result.variant, image.resolveForDrawing(scale));
+    assertEquals(fullDecodesAfterPreparation, Image.fullDecodeInvocationCountForTest());
+    assertEquals(targetedDecodesAfterPreparation, Image.targetedDecodeInvocationCountForTest());
+  }
+
+  @Test
+  void staleCorruptPngDoesNotCacheItsDetachedFailureOnTheLiveSource() throws Exception {
+    Image image = new Image(corruptPngPayload(png(64, 48)));
+    double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
+    ImagePreparationRequest request = image.captureDisplayPreparationRequest(scale, 26L);
+    PreparedImageResult result = request.prototype.prepareDetachedForDisplay(request);
+    assertEquals(PreparedImageResult.FailureKind.DETERMINISTIC, result.failureKind);
+
+    image.applyColor2(0xFF4080C0);
+    assertEquals(ImagePreparationScheduler.TerminalState.STALE,
+        image.adoptPreparedForDisplay(request, result));
+    result.releaseUnretainedCandidates(request);
+    result.releaseDetachedEncodedSource();
+    assertNull(request.source.decodeFailure(), "stale detached failure must not poison the live source");
+  }
+
+  @Test
+  void pngPipelineScaleBackingAndSourceRaceUseExistingStaleRules() throws Exception {
+    double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
+
+    Image changedPipeline = new Image(png(96, 64));
+    ImagePreparationRequest pipelineRequest = changedPipeline.captureDisplayPreparationRequest(scale, 27L);
+    changedPipeline.applyColor2(0xFF4080C0);
+    assertEquals(ImagePreparationScheduler.TerminalState.STALE,
+        changedPipeline.adoptPreparedForDisplay(pipelineRequest, PreparedImageResult.transientFailure(null)));
+
+    Image changedScale = new Image(png(96, 64));
+    ImagePreparationRequest scaleRequest = changedScale.captureDisplayPreparationRequest(scale, 28L);
+    ImagePreparationRequest mismatchedScale = copyRequest(scaleRequest, scaleRequest.readiness,
+        scaleRequest.prototype, Math.nextUp(scale));
+    assertEquals(ImagePreparationScheduler.TerminalState.STALE,
+        changedScale.adoptPreparedForDisplay(mismatchedScale, PreparedImageResult.transientFailure(null)));
+
+    Image mutatedTarget = new Image(png(96, 64));
+    ImagePreparationRequest mutationRequest = mutatedTarget.captureDisplayPreparationRequest(scale, 29L);
+    PreparedImageResult mutationResult = mutationRequest.prototype.prepareDetachedForDisplay(mutationRequest);
+    mutatedTarget.recordGraphicsMutation();
+    assertEquals(ImagePreparationScheduler.TerminalState.STALE,
+        mutatedTarget.adoptPreparedForDisplay(mutationRequest, mutationResult));
+    mutationResult.releaseUnretainedCandidates(mutationRequest);
+    assertNull(mutationRequest.source.decodedBackingForReuse(mutationRequest.decodeDenominator));
+    mutationResult.releaseDetachedEncodedSource();
+
+    Image racedSource = new Image(png(96, 64)).getSmoothScaledInstance(48, 32);
+    ImagePreparationRequest raceRequest = racedSource.captureDisplayPreparationRequest(scale, 30L);
+    PreparedImageResult raceResult = raceRequest.prototype.prepareDetachedForDisplay(raceRequest);
+    Image synchronous = racedSource.resolveForDrawing(scale);
+    ImageBacking synchronousBacking = raceRequest.source.decodedBackingForReuse(raceRequest.decodeDenominator);
+    assertEquals(ImagePreparationScheduler.TerminalState.READY,
+        racedSource.adoptPreparedForDisplay(raceRequest, raceResult));
+    raceResult.releaseUnretainedCandidates(raceRequest);
+    assertNotNull(synchronous);
+    assertSame(synchronousBacking, raceRequest.source.decodedBackingForReuse(raceRequest.decodeDenominator));
+    assertSame(raceResult.variant, racedSource.resolveForDrawing(scale));
+    raceResult.releaseDetachedEncodedSource();
+
+    Image oldBatchTarget = new Image(png(96, 64));
+    ImagePreparationRequest oldBatch = oldBatchTarget.captureDisplayPreparationRequest(scale, 31L);
+    PreparedImageResult useful = oldBatch.prototype.prepareDetachedForDisplay(oldBatch);
+    assertEquals(ImagePreparationScheduler.TerminalState.READY,
+        oldBatchTarget.adoptPreparedForDisplay(oldBatch, useful));
+    useful.releaseUnretainedCandidates(oldBatch);
+    useful.releaseDetachedEncodedSource();
+  }
+
+  @Test
+  void staticPngAlsoPreparesWithTheLegacyPerEntryWorker() throws Exception {
+    ImagePrefetchWorkerTestSupport.useLegacyWorker();
+    Image image = new Image(png(96, 64));
+    double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
+    ImagePreparationRequest request = image.captureDisplayPreparationRequest(scale, 25L);
+    assertEquals(ImageRuntimePolicy.PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD,
+        request.effectivePolicy.prefetchWorker());
+    final Thread uiThread = Thread.currentThread();
+    final Thread[] callbackThread = {null};
+    Image.resetImageOperationAccountingForTest();
+
+    ImagePreparationScheduler.submit(request, new Runnable() {
+      @Override
+      public void run() {
+        callbackThread[0] = Thread.currentThread();
+      }
+    });
+    pumpUntil(new CompletionCheck() {
+      @Override
+      public boolean isComplete() {
+        return callbackThread[0] != null && ImagePreparationScheduler.idleForTest();
+      }
+    });
+
+    assertSame(uiThread, callbackThread[0]);
+    assertTrue(image.isDisplayPreparationReady(request));
+    assertNull(ImagePreparationScheduler.processWorkerForTest(),
+        "legacy PNG preparation does not create the Semaphore process worker");
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+    assertEquals(0, Image.targetedDecodeInvocationCountForTest());
   }
 
   @Test
@@ -403,6 +530,31 @@ class ImageAsyncPreparationTest {
     target[offset + 1] = (byte) (value >>> 16);
     target[offset + 2] = (byte) (value >>> 8);
     target[offset + 3] = (byte) value;
+  }
+
+  private static byte[] corruptPngPayload(byte[] source) {
+    byte[] result = source.clone();
+    for (int offset = 8; offset + 12 <= result.length;) {
+      int length = readInt(result, offset);
+      if (length < 0 || offset + 12L + length > result.length) {
+        throw new IllegalArgumentException("invalid PNG fixture");
+      }
+      if (result[offset + 4] == 'I' && result[offset + 5] == 'D'
+          && result[offset + 6] == 'A' && result[offset + 7] == 'T' && length > 0) {
+        result[offset + 8 + length / 2] ^= 0xFF;
+        CRC32 crc = new CRC32();
+        crc.update(result, offset + 4, length + 4);
+        writeInt(result, offset + 8 + length, (int) crc.getValue());
+        return result;
+      }
+      offset += length + 12;
+    }
+    throw new IllegalArgumentException("PNG fixture has no IDAT data");
+  }
+
+  private static int readInt(byte[] source, int offset) {
+    return (source[offset] & 0xFF) << 24 | (source[offset + 1] & 0xFF) << 16
+        | (source[offset + 2] & 0xFF) << 8 | source[offset + 3] & 0xFF;
   }
 
   private static byte[] gif(int width, int height) throws Exception {

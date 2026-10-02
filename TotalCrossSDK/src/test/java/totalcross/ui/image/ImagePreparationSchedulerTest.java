@@ -15,11 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.CRC32;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -62,14 +64,14 @@ class ImagePreparationSchedulerTest {
 
     final Thread uiThread = Thread.currentThread();
     Image first = lazyImage(jpeg(96, 64));
-    Image second = lazyImage(jpeg(96, 64));
+    Image second = new Image(png(96, 64));
     Image third = lazyImage(jpeg(96, 64));
     double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
     final ImagePreparationRequest firstRequest = first.captureDisplayPreparationRequest(scale, 101L);
     final ImagePreparationRequest secondRequest = second.captureDisplayPreparationRequest(scale, 102L);
     final ImagePreparationRequest thirdRequest = third.captureDisplayPreparationRequest(scale, 103L);
     final ArrayList<Integer> order = new ArrayList<Integer>();
-    final Thread[] callbackThreads = new Thread[4];
+    final Thread[] callbackThreads = new Thread[5];
     final int[] maxActive = {0};
     Image.resetImageOperationAccountingForTest();
 
@@ -84,7 +86,7 @@ class ImagePreparationSchedulerTest {
         ImagePreparationScheduler.submit(thirdRequest, new Runnable() {
           @Override
           public void run() {
-            callbackThreads[3] = Thread.currentThread();
+            callbackThreads[4] = Thread.currentThread();
             maxActive[0] = Math.max(maxActive[0], ImagePreparationScheduler.activeCountForTest());
             order.add(3);
           }
@@ -105,8 +107,16 @@ class ImagePreparationSchedulerTest {
         callbackThreads[2] = Thread.currentThread();
         maxActive[0] = Math.max(maxActive[0], ImagePreparationScheduler.activeCountForTest());
         assertEquals(2, ImagePreparationScheduler.preparationStartCountForTest(),
-            "the third decode must wait until the second adoption and callbacks finish");
+            "the third decode must wait until the PNG adoption and callbacks finish");
         order.add(2);
+      }
+    });
+    ImagePreparationScheduler.submit(secondRequest, new Runnable() {
+      @Override
+      public void run() {
+        callbackThreads[3] = Thread.currentThread();
+        maxActive[0] = Math.max(maxActive[0], ImagePreparationScheduler.activeCountForTest());
+        order.add(22);
       }
     });
 
@@ -129,18 +139,20 @@ class ImagePreparationSchedulerTest {
     pumpUntil(new CompletionCheck() {
       @Override
       public boolean isComplete() {
-        return order.size() == 4 && ImagePreparationScheduler.idleForTest();
+        return order.size() == 5 && ImagePreparationScheduler.idleForTest();
       }
     });
     assertEquals(1, order.get(0));
     assertEquals(11, order.get(1));
     assertEquals(2, order.get(2));
-    assertEquals(3, order.get(3));
+    assertEquals(22, order.get(3));
+    assertEquals(3, order.get(4));
     for (Thread callbackThread : callbackThreads) {
       assertSame(uiThread, callbackThread);
     }
     assertEquals(1, maxActive[0]);
-    assertEquals(3, Image.targetedDecodeInvocationCountForTest());
+    assertEquals(2, Image.targetedDecodeInvocationCountForTest());
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
     assertEquals(1, ImagePreparationScheduler.processWorkerStartCountForTest());
     assertEquals(3, ImagePreparationScheduler.semaphoreWakeCountForTest());
     final int[] readyCallback = {0};
@@ -180,11 +192,14 @@ class ImagePreparationSchedulerTest {
       public void run() { readyCallbacks[0]++; }
     });
 
-    Image unsupportedImage = new Image(gif(24, 16));
-    assertEquals(ImageEncodedStructure.Format.GIF,
+    Image unsupportedImage = new Image(pngWithFrameCount(png(48, 32), 2));
+    assertEquals(ImageEncodedStructure.Format.PNG,
         ((EncodedImageSource) unsupportedImage.pipelineForSmoke().root()).getFormat());
+    assertEquals(2, ((EncodedImageSource) unsupportedImage.pipelineForSmoke().root()).getFrameCount());
     assertNull(unsupportedImage.captureDisplayPreparationRequest(scale, 105L),
-        "unsupported formats remain outside the preparation path");
+        "multi-frame PNG remains outside the preparation path");
+    assertNotNull(unsupportedImage.resolveForDrawing(scale),
+        "multi-frame PNG retains synchronous drawing behavior");
 
     ScrollContainer scroll = new ScrollContainer(false, false);
     scroll.setRect(0, 0, 100, 100);
@@ -216,9 +231,11 @@ class ImagePreparationSchedulerTest {
   void semaphoreWorkerStartFailureIsTransientAndExplicitRetryStartsWorker() throws Exception {
     awaitSchedulerIdle();
     ImagePrefetchWorkerTestSupport.useSemaphoreWorker();
-    Image image = lazyImage(jpeg(96, 64));
+    Image image = new Image(png(96, 64));
     double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
     ImagePreparationRequest first = image.captureDisplayPreparationRequest(scale, 105L);
+    assertEquals(1, first.decodeDenominator);
+    Image.resetImageOperationAccountingForTest();
     final int[] completions = {0};
     ImagePreparationScheduler.failNextWorkerStartForTest();
     ImagePreparationScheduler.submit(first, new Runnable() {
@@ -250,6 +267,52 @@ class ImagePreparationSchedulerTest {
     assertTrue(image.isDisplayPreparationReady(retry));
     assertEquals(1, ImagePreparationScheduler.processWorkerStartCountForTest());
     assertEquals(1, ImagePreparationScheduler.semaphoreWakeCountForTest());
+    assertEquals(1, Image.fullDecodeInvocationCountForTest());
+    assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+  }
+
+  @Test
+  void corruptPngFailureIsCachedAtUiAdoptionAndTheFifoContinues() throws Exception {
+    awaitSchedulerIdle();
+    ImagePrefetchWorkerTestSupport.useSemaphoreWorker();
+    Image corrupt = new Image(corruptPngPayload(png(64, 48)));
+    Image valid = new Image(png(64, 48));
+    double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
+    ImagePreparationRequest corruptRequest = corrupt.captureDisplayPreparationRequest(scale, 111L);
+    ImagePreparationRequest validRequest = valid.captureDisplayPreparationRequest(scale, 112L);
+    assertNotNull(corruptRequest);
+    assertNotNull(validRequest);
+    assertNull(corruptRequest.source.decodeFailure(), "the live source is clean before UI adoption");
+    final ArrayList<Integer> order = new ArrayList<Integer>();
+    Image.resetImageOperationAccountingForTest();
+
+    ImagePreparationScheduler.submit(corruptRequest, new Runnable() {
+      @Override
+      public void run() {
+        assertNotNull(corruptRequest.source.decodeFailure(),
+            "a current deterministic failure is cached at terminal UI adoption");
+        order.add(1);
+      }
+    });
+    ImagePreparationScheduler.submit(validRequest, new Runnable() {
+      @Override
+      public void run() {
+        assertTrue(valid.isDisplayPreparationReady(validRequest));
+        order.add(2);
+      }
+    });
+
+    pumpUntil(new CompletionCheck() {
+      @Override
+      public boolean isComplete() {
+        return order.size() == 2 && ImagePreparationScheduler.idleForTest();
+      }
+    });
+
+    assertEquals(1, order.get(0));
+    assertEquals(2, order.get(1));
+    assertEquals(0, Image.targetedDecodeInvocationCountForTest());
+    assertEquals(2, Image.fullDecodeInvocationCountForTest());
   }
 
   @Test
@@ -573,6 +636,58 @@ class ImagePreparationSchedulerTest {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     assertTrue(ImageIO.write(image, "png", bytes));
     return bytes.toByteArray();
+  }
+
+  private static byte[] pngWithFrameCount(byte[] encoded, int frameCount) {
+    byte[] text = ("Comment\u0000FC=" + frameCount).getBytes(StandardCharsets.ISO_8859_1);
+    byte[] chunk = new byte[text.length + 12];
+    writeInt(chunk, 0, text.length);
+    chunk[4] = 't';
+    chunk[5] = 'E';
+    chunk[6] = 'X';
+    chunk[7] = 't';
+    System.arraycopy(text, 0, chunk, 8, text.length);
+    CRC32 crc = new CRC32();
+    crc.update(chunk, 4, text.length + 4);
+    writeInt(chunk, 8 + text.length, (int) crc.getValue());
+    int afterHeader = 33;
+    byte[] result = new byte[encoded.length + chunk.length];
+    System.arraycopy(encoded, 0, result, 0, afterHeader);
+    System.arraycopy(chunk, 0, result, afterHeader, chunk.length);
+    System.arraycopy(encoded, afterHeader, result, afterHeader + chunk.length, encoded.length - afterHeader);
+    return result;
+  }
+
+  private static byte[] corruptPngPayload(byte[] source) {
+    byte[] result = source.clone();
+    for (int offset = 8; offset + 12 <= result.length;) {
+      int length = readInt(result, offset);
+      if (length < 0 || offset + 12L + length > result.length) {
+        throw new IllegalArgumentException("invalid PNG fixture");
+      }
+      if (result[offset + 4] == 'I' && result[offset + 5] == 'D'
+          && result[offset + 6] == 'A' && result[offset + 7] == 'T' && length > 0) {
+        result[offset + 8 + length / 2] ^= 0xFF;
+        CRC32 crc = new CRC32();
+        crc.update(result, offset + 4, length + 4);
+        writeInt(result, offset + 8 + length, (int) crc.getValue());
+        return result;
+      }
+      offset += length + 12;
+    }
+    throw new IllegalArgumentException("PNG fixture has no IDAT data");
+  }
+
+  private static int readInt(byte[] source, int offset) {
+    return (source[offset] & 0xFF) << 24 | (source[offset + 1] & 0xFF) << 16
+        | (source[offset + 2] & 0xFF) << 8 | source[offset + 3] & 0xFF;
+  }
+
+  private static void writeInt(byte[] target, int offset, int value) {
+    target[offset] = (byte) (value >>> 24);
+    target[offset + 1] = (byte) (value >>> 16);
+    target[offset + 2] = (byte) (value >>> 8);
+    target[offset + 3] = (byte) value;
   }
 
   private static byte[] gif(int width, int height) throws Exception {
