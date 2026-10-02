@@ -31,7 +31,7 @@ active milestone below.
 - [x] Route activated work through the legacy or Semaphore execution path.
 - [x] Prove serialized lifecycle, failure recovery, idle shutdown, and focused P8 behavior.
 - [x] Run the requested SDK and macOS validation and write the final report.
-- [ ] Push the branch, open the requested PR, and pass a fresh GitHub Merge Flow.
+- [x] Push the branch, open the requested PR, and pass a fresh GitHub Merge Flow.
 
 ## Current Architecture and Scope
 
@@ -187,6 +187,6 @@ The internal policy and scheduler mode are implemented. Focused and broad SDK
 validation passes with diagnostics disabled and enabled. The macOS ARM64
 Release build and deployed compatibility smoke suite pass, including the P9
 smoke through the existing P8 `ScrollContainer.prepareForDisplay` path. The
-remaining gate is a fresh GitHub Merge Flow for the requested PR head. Durable
-validation and compatibility facts are recorded in
-`.agent/reports/image-prefetch-worker.md`.
+requested PR passes a fresh GitHub Merge Flow across all enabled lanes; the
+workflow continues to disable `linux-arm32v7-cross`. Durable validation and
+compatibility facts are recorded in `.agent/reports/image-prefetch-worker.md`.
