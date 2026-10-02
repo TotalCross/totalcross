@@ -6,18 +6,33 @@ package totalcross.ui.image;
 
 import totalcross.io.ByteArrayStream;
 import totalcross.io.File;
+import totalcross.sys.Architecture;
+import totalcross.sys.GraphicsBackend;
+import totalcross.sys.Platform;
+import totalcross.sys.RuntimeFamily;
 import totalcross.sys.Settings;
+import totalcross.sys.runtime.RuntimeCondition;
+import totalcross.sys.runtime.RuntimeConfiguration;
+import totalcross.sys.runtime.RuntimeWhen;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
 import totalcross.ui.ScrollContainer;
 import totalcross.ui.gfx.Graphics;
 
 /** Deployed macOS smoke for explicit async JPEG preparation and its lifecycle. */
+@RuntimeConfiguration
+@ImageRuntimeRule(when = @RuntimeWhen(allOf = {
+    @RuntimeCondition(platform = Platform.MACOS),
+    @RuntimeCondition(family = RuntimeFamily.DESKTOP),
+    @RuntimeCondition(architecture = Architecture.ARM64),
+    @RuntimeCondition(backend = GraphicsBackend.RASTER)
+}), prefetchWorker = ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD)
 public class ImageAsyncPreparationSmokeApp extends MainWindow {
   private static final String SOURCE_PATH = "p8-async-source.jpg";
   private static final String CORRUPT_PATH = "p8-async-corrupt.jpg";
 
   private boolean explicitPreparation;
+  private boolean explicitLegacyWorker;
   private boolean capturedPathDeleted;
   private boolean staleBatch;
   private boolean staleRequest;
@@ -42,6 +57,9 @@ public class ImageAsyncPreparationSmokeApp extends MainWindow {
       capturedPathDeleted = true;
       final double scale = getGraphics().getContentScale();
       final ImagePreparationRequest captured = initial.captureDisplayPreparationRequest(scale, 0L);
+      explicitLegacyWorker = captured != null
+          && captured.effectivePolicy.prefetchWorker() == ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD;
+      require(explicitLegacyWorker, "explicit LEGACY worker policy was not captured");
       final ScrollContainer initialScroll = addVisibleImage(initial);
       Image.resetImageOperationAccountingForTest();
       final int decodeCountBefore = Image.targetedDecodeInvocationCountForTest();
@@ -262,10 +280,11 @@ public class ImageAsyncPreparationSmokeApp extends MainWindow {
     if (failure != null) {
       error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
     }
-    boolean overall = passed && explicitPreparation && capturedPathDeleted && staleBatch
+    boolean overall = passed && explicitPreparation && explicitLegacyWorker && capturedPathDeleted && staleBatch
         && staleRequest && transientRetry && deterministicFailure && uiAdoption && drawReuse;
     System.out.println("fixture=ImageAsyncPreparationSmokeApp,explicitPreparation=" + explicitPreparation
-        + ",capturedPathDeleted=" + capturedPathDeleted + ",staleBatch=" + staleBatch
+        + ",explicitLegacyWorker=" + explicitLegacyWorker + ",capturedPathDeleted=" + capturedPathDeleted
+        + ",staleBatch=" + staleBatch
         + ",staleRequest=" + staleRequest + ",transientRetry=" + transientRetry
         + ",deterministicFailure=" + deterministicFailure + ",uiAdoption=" + uiAdoption
         + ",drawReuse=" + drawReuse + ",overallPass=" + overall

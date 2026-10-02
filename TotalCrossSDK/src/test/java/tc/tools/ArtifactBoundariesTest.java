@@ -135,7 +135,9 @@ class ArtifactBoundariesTest {
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeRules.class"));
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeWhen.class"));
         assertTrue(api.contains("totalcross/sys/runtime/RuntimeCondition.class"));
+        assertTrue(api.contains("totalcross/sys/runtime/RuntimeFeatureState.class"));
         assertTrue(api.contains("totalcross/ui/image/ImageStorageProfile.class"));
+        assertTrue(api.contains("totalcross/ui/image/ImagePrefetchWorkerMode.class"));
         assertTrue(api.contains("totalcross/ui/image/ImageRuntimeRule.class"));
         assertTrue(api.contains("totalcross/ui/image/ImageRuntimeRules.class"));
         assertFalse(api.stream().anyMatch(name -> name.startsWith(
@@ -146,6 +148,7 @@ class ArtifactBoundariesTest {
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeOptions")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationMetadata.class"));
@@ -154,6 +157,7 @@ class ArtifactBoundariesTest {
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeConfigurationStartup.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimePolicy.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeOptions.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ResolvedRuntimeConfiguration.class"));
     }
 
@@ -217,7 +221,9 @@ class ArtifactBoundariesTest {
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeRules.class"));
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeWhen.class"));
         assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeCondition.class"));
+        assertTrue(sdk.contains("totalcross/sys/runtime/RuntimeFeatureState.class"));
         assertTrue(sdk.contains("totalcross/ui/image/ImageStorageProfile.class"));
+        assertTrue(sdk.contains("totalcross/ui/image/ImagePrefetchWorkerMode.class"));
         assertTrue(sdk.contains("totalcross/ui/image/ImageRuntimeRule.class"));
         assertTrue(sdk.contains("totalcross/ui/image/ImageRuntimeRules.class"));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
@@ -226,6 +232,7 @@ class ArtifactBoundariesTest {
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
+        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeOptions")));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
         assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
@@ -236,6 +243,7 @@ class ArtifactBoundariesTest {
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
+        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeOptions")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
         assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationMetadata.class"));
@@ -244,6 +252,7 @@ class ArtifactBoundariesTest {
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeConfigurationStartup.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimePolicy.class"));
+        assertTrue(runtimeJava.contains("totalcross/sys/runtime/ImageRuntimeOptions.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeRuleResolver.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/ResolvedRuntimeConfiguration.class"));
     }
@@ -265,14 +274,19 @@ class ArtifactBoundariesTest {
                 + "import totalcross.sys.runtime.RuntimeSelector;\n"
                 + "import totalcross.sys.runtime.RuntimeWhen;\n"
                 + "import totalcross.sys.runtime.RuntimeConfigurationReport;\n"
+                + "import totalcross.sys.runtime.RuntimeFeatureState;\n"
                 + "import totalcross.ui.image.ImageRuntimeRule;\n"
+                + "import totalcross.ui.image.ImagePrefetchWorkerMode;\n"
                 + "import totalcross.ui.image.ImageStorageProfile;\n"
                 + "import totalcross.ui.image.Image;\n"
                 + "import totalcross.ui.gfx.Graphics;\n"
                 + "@RuntimeConfiguration\n"
                 + "@RuntimeRule(when=@RuntimeWhen(allOf=@RuntimeCondition(platform=Platform.MACOS)))\n"
                 + "@ImageRuntimeRule(when=@RuntimeWhen(allOf=@RuntimeCondition(platform=Platform.MACOS)), "
-                + "storage=ImageStorageProfile.COMPACT)\n"
+                + "storage=ImageStorageProfile.COMPACT, targetColorConversion=RuntimeFeatureState.ENABLED, "
+                + "physicalVariantCache=RuntimeFeatureState.DISABLED, "
+                + "scrollRasterReuse=RuntimeFeatureState.ENABLED, "
+                + "prefetchWorker=ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER)\n"
                 + "public final class PublicRuntimeConfigurationSurface {\n"
                 + "  RuntimeEnvironment environment = RuntimeEnvironment.current();\n"
                 + "  RuntimeSelector selector = RuntimeSelector.platform(Platform.MACOS);\n"

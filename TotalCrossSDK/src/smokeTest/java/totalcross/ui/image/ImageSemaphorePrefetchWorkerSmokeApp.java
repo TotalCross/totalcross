@@ -8,14 +8,34 @@ import java.util.ArrayList;
 
 import totalcross.io.ByteArrayStream;
 import totalcross.io.File;
+import totalcross.sys.Architecture;
+import totalcross.sys.GraphicsBackend;
+import totalcross.sys.Platform;
+import totalcross.sys.RuntimeFamily;
 import totalcross.sys.Settings;
-import totalcross.sys.runtime.ImagePrefetchWorkerSmokeTestSupport;
+import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
+import totalcross.sys.runtime.ImageRuntimePolicy;
+import totalcross.sys.runtime.RuntimeCondition;
+import totalcross.sys.runtime.RuntimeConfiguration;
+import totalcross.sys.runtime.RuntimeFeatureState;
+import totalcross.sys.runtime.RuntimeWhen;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
 import totalcross.ui.ScrollContainer;
 import totalcross.ui.gfx.Graphics;
 
 /** Deployed macOS smoke for serialized Semaphore-driven image preparation. */
+@RuntimeConfiguration
+@ImageRuntimeRule(when = @RuntimeWhen(allOf = {
+    @RuntimeCondition(platform = Platform.MACOS),
+    @RuntimeCondition(family = RuntimeFamily.DESKTOP),
+    @RuntimeCondition(architecture = Architecture.ARM64),
+    @RuntimeCondition(backend = GraphicsBackend.RASTER)
+}), storage = ImageStorageProfile.COMPACT,
+    targetColorConversion = RuntimeFeatureState.ENABLED,
+    physicalVariantCache = RuntimeFeatureState.ENABLED,
+    scrollRasterReuse = RuntimeFeatureState.ENABLED,
+    prefetchWorker = ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER)
 public class ImageSemaphorePrefetchWorkerSmokeApp extends MainWindow {
   private static final String CAPTURED_PATH = "p9-captured-source.jpg";
   private static final String STALE_PATH = "p9-stale-source.jpg";
@@ -45,6 +65,10 @@ public class ImageSemaphorePrefetchWorkerSmokeApp extends MainWindow {
   private boolean transientRetry;
   private boolean idleWorker;
   private boolean cleanShutdown;
+  private boolean typedOptionsPolicy;
+  private boolean compactBacking;
+  private boolean p3ProductionPaths;
+  private boolean scrollReuseEnabled;
   private boolean finished;
   private String error = "";
 
@@ -52,7 +76,32 @@ public class ImageSemaphorePrefetchWorkerSmokeApp extends MainWindow {
   public void initUI() {
     try {
       Settings.fingerTouch = false;
-      ImagePrefetchWorkerSmokeTestSupport.useSemaphoreWorker();
+      ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();
+      typedOptionsPolicy = policy.requestedStorageProfile() == ImageStorageProfile.COMPACT
+          && policy.effectiveStorageProfile() == ImageStorageProfile.COMPACT
+          && policy.rasterVariants().targetColorConversion()
+          && policy.rasterVariants().physicalVariantCache()
+          && policy.scrollRasterReuse().enabled()
+          && policy.prefetchWorker() == ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER
+          && policy.rasterCore().zeroCopyDecode()
+          && policy.rasterCore().opacityMetadata()
+          && policy.rasterCore().opaqueWritePixels()
+          && policy.rasterCore().rowReadback()
+          && policy.rasterCore().directColorMaterialization()
+          && policy.rasterCore().physicalIdentity()
+          && !policy.imagePreparation().automaticPreparation();
+      if (!typedOptionsPolicy) {
+        throw new IllegalStateException("production Image options policy was not fully resolved");
+      }
+      Image compactProbe = ImageCompactStorageSmokeSupport.load("opaque-color.png");
+      compactProbe.getPixels();
+      compactBacking = ImageCompactStorageSmokeSupport.nativeBacking(compactProbe).isCompact();
+      p3ProductionPaths = ImageCompactStorageP3SmokeSupport.productionConfiguredTargetColorPath();
+      scrollReuseEnabled = policy.scrollRasterReuse().enabled();
+      if (!compactBacking || !p3ProductionPaths || !scrollReuseEnabled) {
+        throw new IllegalStateException("production Image option consumer failed: "
+            + ImageCompactStorageP3SmokeSupport.productionVariantFailureDetails());
+      }
       scale = getGraphics().getContentScale();
       byte[] encoded = jpeg(0xFF2878C0);
       first = capturedImage(CAPTURED_PATH, encoded);
@@ -275,14 +324,16 @@ public class ImageSemaphorePrefetchWorkerSmokeApp extends MainWindow {
         ImagePreparationScheduler.shutdownSemaphoreWorkerForTest();
         cleanShutdown = "SHUTDOWN".equals(ImagePreparationScheduler.workerLifecycleForTest());
       }
-      ImagePrefetchWorkerSmokeTestSupport.restore();
     } catch (Throwable shutdownFailure) {
       overall = false;
       error = shutdownFailure.getClass().getName() + ":"
           + String.valueOf(shutdownFailure.getMessage()).replace(' ', '_');
     }
     overall &= cleanShutdown;
-    System.out.println("fixture=ImageSemaphorePrefetchWorkerSmokeApp,semaphoreWorker=" + semaphorePolicy
+    overall &= typedOptionsPolicy && compactBacking && p3ProductionPaths && scrollReuseEnabled;
+    System.out.println("fixture=ImageSemaphorePrefetchWorkerSmokeApp,typedOptionsPolicy=" + typedOptionsPolicy
+        + ",compactBacking=" + compactBacking + ",p3ProductionPaths=" + p3ProductionPaths
+        + ",scrollReuseEnabled=" + scrollReuseEnabled + ",semaphoreWorker=" + semaphorePolicy
         + ",multipleJpegRequests=" + multipleJpegRequests + ",oneSerializedWorker=" + oneSerializedWorker
         + ",uiCallbacks=" + uiCallbacks + ",activeAtMostOne=" + activeAtMostOne
         + ",fifoAdoption=" + fifoAdoption + ",deduplicated=" + deduplicated

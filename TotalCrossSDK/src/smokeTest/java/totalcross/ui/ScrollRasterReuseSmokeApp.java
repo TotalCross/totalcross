@@ -6,16 +6,32 @@ package totalcross.ui;
 
 import java.util.Arrays;
 
+import totalcross.sys.Architecture;
+import totalcross.sys.GraphicsBackend;
+import totalcross.sys.Platform;
+import totalcross.sys.RuntimeFamily;
 import totalcross.sys.Settings;
+import totalcross.sys.runtime.RuntimeCondition;
+import totalcross.sys.runtime.RuntimeConfiguration;
+import totalcross.sys.runtime.RuntimeFeatureState;
 import totalcross.sys.runtime.ScrollRasterReuseTestSupport;
+import totalcross.sys.runtime.RuntimeWhen;
 import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
 import totalcross.ui.gfx.Coord;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageRuntimeRule;
 
 /** Native macOS correctness smoke for Image content inside a scrolling raster viewport. */
+@RuntimeConfiguration
+@ImageRuntimeRule(when = @RuntimeWhen(allOf = {
+    @RuntimeCondition(platform = Platform.MACOS),
+    @RuntimeCondition(family = RuntimeFamily.DESKTOP),
+    @RuntimeCondition(architecture = Architecture.ARM64),
+    @RuntimeCondition(backend = GraphicsBackend.RASTER)
+}), scrollRasterReuse = RuntimeFeatureState.ENABLED)
 public final class ScrollRasterReuseSmokeApp extends MainWindow {
   private ScrollContainer scroll;
   private boolean lastStepReused;
@@ -52,8 +68,9 @@ public final class ScrollRasterReuseSmokeApp extends MainWindow {
   }
 
   private void runCorrectnessSmoke() {
-    boolean defaultOff = !totalcross.sys.runtime.ImageRuntimeConfigurationStartup.currentPolicy()
-        .scrollRasterReuse().enabled();
+    boolean productionPolicyEnabled = false;
+    boolean productionScrollApplied = false;
+    boolean productionScrollReused = false;
     boolean disabledPath = false;
     boolean enabledDown = false;
     boolean enabledUp = false;
@@ -66,7 +83,26 @@ public final class ScrollRasterReuseSmokeApp extends MainWindow {
     boolean conservativeScaleFallback = false;
     String failure = "";
     try {
-      require(defaultOff, "P7 policy defaults off");
+      productionPolicyEnabled = ScrollRasterReuse.isEnabled();
+      require(productionPolicyEnabled, "runtime configuration enables raster reuse");
+      ScrollRasterReuse.resetTestHooks();
+      repaintFull();
+      Window.needsPaint = false;
+      int productionBefore = scroll.sbV.getValue();
+      scroll.scrollContent(0, 3, true);
+      productionScrollApplied = scroll.sbV.getValue() != productionBefore;
+      productionScrollReused = ScrollRasterReuse.lastFallbackReasonForTest() == null;
+      require(productionScrollApplied, "configured vertical scroll is applied");
+      require(productionScrollReused, "configured eligible vertical scroll reuses raster rows; reason="
+          + ScrollRasterReuse.lastFallbackReasonForTest() + ",visible=" + scroll.visible + ",displayed="
+          + scroll.isDisplayed() + ",changed=" + scroll.changed + ",offscreen=" + (scroll.bag.offscreen != null)
+          + ",repainting=" + Window.isRepaintingActiveWindows() + ",vbar=" + scroll.sbV.isVisible()
+          + ",openGl=" + Settings.isOpenGL + ",parentTop=" + (scroll.getParentWindow() == Window.topMost)
+          + ",zStack=" + Window.zStack.size());
+      repaintFull();
+      scroll.scrollContent(0, -3, true);
+      repaintFull();
+
       ScrollRasterReuse.recordFallback(ScrollRasterReuse.FallbackReason.NON_RASTER_BACKEND);
       ScrollRasterReuseTestSupport.setEnabled(false);
       repaintFull();
@@ -131,10 +167,13 @@ public final class ScrollRasterReuseSmokeApp extends MainWindow {
       ScrollRasterReuseTestSupport.setEnabled(false);
     }
     boolean fallbackSafe = recoveredFailure || conservativeScaleFallback;
-    boolean pass = defaultOff && disabledPath && enabledDown && enabledUp && nearViewport && fallbackSafe
+    boolean pass = productionPolicyEnabled && productionScrollApplied && productionScrollReused
+        && disabledPath && enabledDown && enabledUp && nearViewport && fallbackSafe
         && failure.length() == 0;
     boolean nativeReuse = enabledDownReused && enabledUpReused && nearViewportReused;
-    System.out.println("fixture=ScrollRasterReuseSmokeApp,defaultOff=" + defaultOff + ",disabledPath="
+    System.out.println("fixture=ScrollRasterReuseSmokeApp,productionPolicyEnabled=" + productionPolicyEnabled
+        + ",productionScrollApplied=" + productionScrollApplied + ",productionScrollReused="
+        + productionScrollReused + ",disabledPath="
         + disabledPath + ",enabledDown=" + enabledDown + ",enabledUp=" + enabledUp + ",nearViewport="
         + nearViewport + ",nativeReuse=" + nativeReuse + ",nativePrimitive=" + nativePrimitive
         + ",recoveredFailure=" + recoveredFailure + ",conservativeScaleFallback=" + conservativeScaleFallback

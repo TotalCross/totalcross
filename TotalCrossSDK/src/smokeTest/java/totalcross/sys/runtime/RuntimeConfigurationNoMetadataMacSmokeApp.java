@@ -8,6 +8,7 @@ import totalcross.sys.GraphicsBackend;
 import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
 import totalcross.sys.Vm;
+import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
 import totalcross.ui.MainWindow;
 
@@ -30,6 +31,18 @@ public final class RuntimeConfigurationNoMetadataMacSmokeApp extends MainWindow 
           "requestedStorage=" + imagePolicy.requestedStorageProfile());
       require(imagePolicy.effectiveStorageProfile() == ImageStorageProfile.STANDARD,
           "effectiveStorage=" + imagePolicy.effectiveStorageProfile());
+      require(imagePolicy.rasterCore().zeroCopyDecode()
+          && imagePolicy.rasterCore().opacityMetadata()
+          && imagePolicy.rasterCore().opaqueWritePixels()
+          && imagePolicy.rasterCore().rowReadback()
+          && imagePolicy.rasterCore().directColorMaterialization()
+          && imagePolicy.rasterCore().physicalIdentity(), "stable raster defaults were not enabled");
+      require(!imagePolicy.rasterVariants().targetColorConversion()
+          && !imagePolicy.rasterVariants().physicalVariantCache()
+          && !imagePolicy.scrollRasterReuse().enabled()
+          && !imagePolicy.imagePreparation().automaticPreparation(), "opt-in defaults were not disabled");
+      require(imagePolicy.prefetchWorker() == ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD,
+          "prefetch worker=" + imagePolicy.prefetchWorker());
       String report = RuntimeConfigurationReport.describe();
       require(report.contains("Image\n  storage:\n    requested: STANDARD\n    effective: STANDARD"),
           "Image default policy missing from report");
@@ -37,7 +50,8 @@ public final class RuntimeConfigurationNoMetadataMacSmokeApp extends MainWindow 
           + " family=" + environment.runtimeFamily() + " architecture=" + environment.architecture()
           + " backend=" + environment.graphicsBackend() + " metadata=absent"
           + " imageStorageRequested=" + imagePolicy.requestedStorageProfile()
-          + " imageStorageEffective=" + imagePolicy.effectiveStorageProfile());
+          + " imageStorageEffective=" + imagePolicy.effectiveStorageProfile()
+          + " prefetchWorker=" + imagePolicy.prefetchWorker());
       System.out.flush();
       exit(0);
     } catch (Throwable failure) {

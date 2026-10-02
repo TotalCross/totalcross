@@ -186,6 +186,7 @@ jar {
     exclude 'totalcross/sys/runtime/ImageRuntimeConfigurationMetadata*.class'
     exclude 'totalcross/sys/runtime/ImageRuntimeConfigurationStartup*.class'
     exclude 'totalcross/sys/runtime/ImageRuntimePolicy*.class'
+    exclude 'totalcross/sys/runtime/ImageRuntimeOptions*.class'
     exclude 'totalcross/sys/runtime/RuntimeRuleResolver*.class'
     exclude 'totalcross/sys/runtime/ResolvedRuntimeConfiguration*.class'
     exclude 'totalcross/sys/RuntimeDiagnosticsFeatureBridge*.class'
@@ -568,7 +569,7 @@ tasks.register('runSystemNanoTimeSmokeMacOS', Exec) {
 
 def registerRuntimeConfigurationMacSmoke = { String suffix, String appClass, String expectedMarker,
         boolean expectStartupFailure, String packagePathPrefix = 'totalcross/sys/runtime/',
-        List resourceIncludes = [] ->
+        List resourceIncludes = [], List classIncludes = [] ->
     String taskSuffix = 'RuntimeConfiguration' + suffix + 'MacOSSmoke'
     String deployTaskName = 'deploy' + taskSuffix
     String runTaskName = 'run' + taskSuffix
@@ -587,6 +588,11 @@ def registerRuntimeConfigurationMacSmoke = { String suffix, String appClass, Str
         resourceIncludes.each { resourceInclude ->
             from(smokeTestResourcesDir) {
                 include resourceInclude
+            }
+        }
+        classIncludes.each { classInclude ->
+            from(smokeTestClassesDir) {
+                include classInclude
             }
         }
         into classesDir
@@ -720,6 +726,13 @@ registerRuntimeConfigurationMacSmoke('NoMetadata', 'RuntimeConfigurationNoMetada
 
 registerRuntimeConfigurationMacSmoke('ImageCompact', 'ImageRuntimeConfigurationCompactMacSmokeApp',
         'image-runtime-compact-pass requested=COMPACT effective=COMPACT', false)
+registerRuntimeConfigurationMacSmoke('ImageOptionsDisabled', 'ImageRuntimeOptionsDisabledMacSmokeApp',
+        'image-runtime-options-disabled-pass targetColorConversion=disabled physicalVariantCache=disabled p3PathsInactive=true',
+        false, 'totalcross/ui/image/', ['image-compact/**'], [
+            'totalcross/ui/image/ImageCompactStorageSmokeSupport*.class',
+            'totalcross/ui/image/ImageCompactStorageP3SmokeSupport*.class',
+            'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'
+        ])
 registerRuntimeConfigurationMacSmoke('ImageCompactStorage', 'ImageCompactStorageSmokeApp',
         'fixture=ImageCompactStorageSmokeApp,policy=true,standardBaselineRgba=true,formatsAndAccounting=true,observersAndEncoding=true,equalityHash=true,drawParity=true,alphaQuality=true,promotionRetry=true,p3Invalidation=true,directMutationPromotion=true,graphicsMutationPromotion=true,p3PhysicalVariantReuse=true,p3TargetColorVariant=true,p3IncompatibleFallback=true,p6Rgb565DirectCopy=true,p6Gray8Fallback=true,p6Argb4444Fallback=true,p6TargetColorCopyRect=true,p6CachedFinalReuse=true,compactMetrics=true,compactDecodeFailureRetry=true',
         false, 'totalcross/ui/image/', ['image-compact/**'])
@@ -765,6 +778,7 @@ tasks.register('runImageRuntimeConfigurationMacOSSmokes') {
     description = 'Runs Image configuration defaults, downgrade, specificity, and conflict smokes on macOS ARM64.'
     dependsOn 'runRuntimeConfigurationAnnotatedMacOSSmoke', 'runRuntimeConfigurationNoMetadataMacOSSmoke',
             'runRuntimeConfigurationImageCompactMacOSSmoke', 'runRuntimeConfigurationImageSpecificityMacOSSmoke',
+            'runRuntimeConfigurationImageOptionsDisabledMacOSSmoke',
             'runRuntimeConfigurationImageSpecificityReversedMacOSSmoke',
             'runRuntimeConfigurationImageConflictMacOSSmoke'
 }
@@ -1252,6 +1266,7 @@ tasks.register('runScrollRasterReuseSmokeMacOS', Exec) {
             throw new GradleException('Native smoke executable not found: ' + executable)
         }
         executable.setExecutable(true, false)
+        environment 'SDL_VIDEO_HIGHDPI_DISABLED', '1'
         commandLine executable.absolutePath
         smokeOutput.reset()
         standardOutput = smokeOutput
@@ -1268,7 +1283,9 @@ tasks.register('runScrollRasterReuseSmokeMacOS', Exec) {
         def resultLine = resultLines ? resultLines.last() : ''
         def requiredFields = [
             'fixture=ScrollRasterReuseSmokeApp',
-            'defaultOff=true',
+            'productionPolicyEnabled=true',
+            'productionScrollApplied=true',
+            'productionScrollReused=true',
             'disabledPath=true',
             'enabledDown=true',
             'enabledUp=true',
@@ -1782,6 +1799,7 @@ registerImageMacSmoke('ImageAsyncPreparation', 'ImageAsyncPreparationSmokeApp',
     'image-async-preparation-smoke', false, false, [
         'fixture=ImageAsyncPreparationSmokeApp',
         'explicitPreparation=true',
+        'explicitLegacyWorker=true',
         'capturedPathDeleted=true',
         'staleBatch=true',
         'staleRequest=true',
@@ -1795,6 +1813,10 @@ registerImageMacSmoke('ImageAsyncPreparation', 'ImageAsyncPreparationSmokeApp',
 registerImageMacSmoke('ImageSemaphorePrefetchWorker', 'ImageSemaphorePrefetchWorkerSmokeApp',
     'image-semaphore-prefetch-worker-smoke', false, false, [
         'fixture=ImageSemaphorePrefetchWorkerSmokeApp',
+        'typedOptionsPolicy=true',
+        'compactBacking=true',
+        'p3ProductionPaths=true',
+        'scrollReuseEnabled=true',
         'semaphoreWorker=true',
         'multipleJpegRequests=true',
         'oneSerializedWorker=true',
@@ -1809,7 +1831,22 @@ registerImageMacSmoke('ImageSemaphorePrefetchWorker', 'ImageSemaphorePrefetchWor
         'idleWorker=true',
         'cleanShutdown=true',
         'overallPass=true'
-    ], [], ['totalcross/sys/runtime/ImagePrefetchWorkerSmokeTestSupport*.class'])
+    ], ['image-compact/**'], [
+        'totalcross/ui/image/ImageCompactStorageSmokeSupport*.class',
+        'totalcross/ui/image/ImageCompactStorageP3SmokeSupport*.class',
+        'totalcross/sys/runtime/ImageRasterSmokeTestSupport*.class'
+    ])
+
+registerImageMacSmoke('ImagePhysicalVariantCache', 'ImagePhysicalVariantCacheSmokeApp',
+    'image-physical-variant-cache-smoke', false, false, [
+        'fixture=ImagePhysicalVariantCacheSmokeApp',
+        'typedOptionsPolicy=true',
+        'compactBacking=true',
+        'productionPhysicalVariantCache=true'
+    ], ['image-compact/**'], [
+        'totalcross/ui/image/ImageCompactStorageSmokeSupport*.class',
+        'totalcross/ui/image/ImageCompactStorageP3SmokeSupport*.class'
+    ])
 
 registerImageMacSmoke('ImagePngAsyncPreparation', 'ImagePngAsyncPreparationSmokeApp',
     'image-png-async-preparation-smoke', false, false, [

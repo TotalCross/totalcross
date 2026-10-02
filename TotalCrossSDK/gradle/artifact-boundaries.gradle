@@ -23,6 +23,7 @@ registerBoundaryJar('totalcrossApiJar', 'totalcross-api') {
     exclude 'totalcross/sys/runtime/ImageRuntimeConfigurationMetadata*.class'
     exclude 'totalcross/sys/runtime/ImageRuntimeConfigurationStartup*.class'
     exclude 'totalcross/sys/runtime/ImageRuntimePolicy*.class'
+    exclude 'totalcross/sys/runtime/ImageRuntimeOptions*.class'
     exclude 'totalcross/sys/runtime/RuntimeRuleResolver*.class'
     exclude 'totalcross/sys/runtime/ResolvedRuntimeConfiguration*.class'
     exclude 'totalcross/sys/RuntimeDiagnosticsFeatureBridge*.class'
