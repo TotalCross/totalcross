@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -10,6 +11,7 @@ import totalcross.sys.InvalidNumberException;
 
 public class Integer4D extends Number4D implements Comparable<Integer4D> {
   public static final Class<Integer> TYPE = Integer.class;
+  private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
   int v;
 
   public Integer4D(int v) {
@@ -68,7 +70,13 @@ public class Integer4D extends Number4D implements Comparable<Integer4D> {
   }
 
   public static String toHexString(int i) {
-    return Convert.unsigned2hex(i, 4);
+    char[] buf = new char[8];
+    int charPos = buf.length;
+    do {
+      buf[--charPos] = HEX_DIGITS[i & 0xF];
+      i >>>= 4;
+    } while (i != 0);
+    return new String(buf, charPos, buf.length - charPos);
   }
 
   public static String toString(int v) {
