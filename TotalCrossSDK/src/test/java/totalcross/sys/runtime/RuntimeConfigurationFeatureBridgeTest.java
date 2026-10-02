@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import totalcross.sys.Architecture;
 import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
+import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
 
 class RuntimeConfigurationFeatureBridgeTest {
@@ -57,6 +58,33 @@ class RuntimeConfigurationFeatureBridgeTest {
     assertThrows(RuntimeRuleResolver.ConfigurationConflictException.class,
         () -> RuntimeConfigurationFeatureBridge.resolveSingleSetting(environment,
             Arrays.asList(standard, compact), ImageStorageProfile.STANDARD));
+  }
+
+  @Test
+  void projectsOneOptionalPropertyThroughTheSharedSpecificityResolver() {
+    RuntimeEnvironment environment = RuntimeEnvironmentTestSupport.environment("MacOS", 4, false);
+    RuntimeSelector broad = RuntimeSelector.family(RuntimeFamily.DESKTOP);
+    RuntimeSelector specific = RuntimeSelector.platform(Platform.MACOS)
+        .and(RuntimeSelector.family(RuntimeFamily.DESKTOP));
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules = Arrays.asList(
+        new RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>("broad", broad,
+            ImageRuntimeOptions.storageOnly(ImageStorageProfile.COMPACT)),
+        new RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>("specific", specific,
+            new ImageRuntimeOptions(ImageStorageProfile.DEFAULT, RuntimeFeatureState.DEFAULT,
+                RuntimeFeatureState.DEFAULT, RuntimeFeatureState.DEFAULT,
+                ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD)));
+
+    RuntimeConfigurationFeatureBridge.FeatureResolution<ImageStorageProfile> resolution =
+        RuntimeConfigurationFeatureBridge.resolveProjectedSetting(environment, rules,
+            new RuntimeConfigurationFeatureBridge.ValueProjector<ImageRuntimeOptions, ImageStorageProfile>() {
+              @Override
+              public ImageStorageProfile project(ImageRuntimeOptions value) {
+                return value.storage() == ImageStorageProfile.DEFAULT ? null : value.storage();
+              }
+            }, ImageStorageProfile.STANDARD, "storage");
+
+    assertEquals(ImageStorageProfile.COMPACT, resolution.requestedValue());
+    assertEquals(Collections.singletonList("broad"), resolution.matchedRuleNames());
   }
 
   private static RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile> rule(String name,

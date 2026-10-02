@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -28,8 +29,10 @@ import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
 import totalcross.sys.runtime.RuntimeConfigurationFeatureBridge.FeatureRule;
 import totalcross.sys.runtime.ImageRuntimeOptions;
+import totalcross.sys.runtime.RuntimeFeatureState;
 import totalcross.ui.image.ImageRuntimeRule;
 import totalcross.ui.image.ImageRuntimeRules;
+import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
 
 class ImageRuntimeConfigurationParserTest {
@@ -56,6 +59,33 @@ class ImageRuntimeConfigurationParserTest {
   static class RepeatedRuleApplication {
   }
 
+  @RuntimeConfiguration
+  @ImageRuntimeRule(when = @RuntimeWhen(allOf = { @RuntimeCondition(platform = Platform.WINDOWS) }),
+      storage = ImageStorageProfile.COMPACT,
+      targetColorConversion = RuntimeFeatureState.ENABLED,
+      physicalVariantCache = RuntimeFeatureState.DISABLED,
+      scrollRasterReuse = RuntimeFeatureState.ENABLED,
+      prefetchWorker = ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER)
+  static class AllOptionsApplication {
+  }
+
+  @RuntimeConfiguration
+  @ImageRuntimeRule(when = @RuntimeWhen(allOf = { @RuntimeCondition(platform = Platform.WINDOWS) }),
+      targetColorConversion = RuntimeFeatureState.ENABLED)
+  static class BooleanOnlyApplication {
+  }
+
+  @RuntimeConfiguration
+  @ImageRuntimeRule(when = @RuntimeWhen(allOf = { @RuntimeCondition(platform = Platform.WINDOWS) }),
+      prefetchWorker = ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER)
+  static class PrefetchOnlyApplication {
+  }
+
+  @RuntimeConfiguration
+  @ImageRuntimeRule(when = @RuntimeWhen(allOf = { @RuntimeCondition(platform = Platform.WINDOWS) }))
+  static class AllDefaultsApplication {
+  }
+
   static class PlainApplication {
   }
 
@@ -79,6 +109,10 @@ class ImageRuntimeConfigurationParserTest {
     assertEquals(1, rules.size());
     assertEquals("image-rule-0", rules.get(0).name());
     assertEquals(ImageStorageProfile.COMPACT, rules.get(0).requestedValue().storage());
+    assertEquals(RuntimeFeatureState.DEFAULT, rules.get(0).requestedValue().targetColorConversion());
+    assertEquals(RuntimeFeatureState.DEFAULT, rules.get(0).requestedValue().physicalVariantCache());
+    assertEquals(RuntimeFeatureState.DEFAULT, rules.get(0).requestedValue().scrollRasterReuse());
+    assertEquals(ImagePrefetchWorkerMode.DEFAULT, rules.get(0).requestedValue().prefetchWorker());
     RuntimeEnvironment macArmRaster = RuntimeEnvironmentTestSupport.environment("MacOS", 4, false);
     assertTrue(rules.get(0).selector().matches(macArmRaster));
     assertFalse(rules.get(0).selector().matches(RuntimeEnvironmentTestSupport.environment("Linux", 4, false)));
@@ -96,6 +130,33 @@ class ImageRuntimeConfigurationParserTest {
     assertEquals(ImageStorageProfile.STANDARD, rules.get(1).requestedValue().storage());
     assertNull(ImageRuntimeConfigurationParser.parse(classBytes(PlainApplication.class),
         PlainApplication.class.getName()));
+  }
+
+  @Test
+  void exposesTypedEnumValuesAndParsesEachSupportedRuleShape() throws Exception {
+    assertEquals(Arrays.asList(RuntimeFeatureState.DEFAULT, RuntimeFeatureState.ENABLED,
+        RuntimeFeatureState.DISABLED), Arrays.asList(RuntimeFeatureState.values()));
+    assertEquals(Arrays.asList(ImagePrefetchWorkerMode.DEFAULT,
+        ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD,
+        ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER), Arrays.asList(ImagePrefetchWorkerMode.values()));
+    assertEquals(Arrays.asList(ImageStorageProfile.DEFAULT, ImageStorageProfile.STANDARD,
+        ImageStorageProfile.COMPACT), Arrays.asList(ImageStorageProfile.values()));
+
+    ImageRuntimeOptions all = onlyOptions(AllOptionsApplication.class);
+    assertEquals(ImageStorageProfile.COMPACT, all.storage());
+    assertEquals(RuntimeFeatureState.ENABLED, all.targetColorConversion());
+    assertEquals(RuntimeFeatureState.DISABLED, all.physicalVariantCache());
+    assertEquals(RuntimeFeatureState.ENABLED, all.scrollRasterReuse());
+    assertEquals(ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER, all.prefetchWorker());
+
+    ImageRuntimeOptions booleanOnly = onlyOptions(BooleanOnlyApplication.class);
+    assertEquals(ImageStorageProfile.DEFAULT, booleanOnly.storage());
+    assertEquals(RuntimeFeatureState.ENABLED, booleanOnly.targetColorConversion());
+    assertEquals(ImagePrefetchWorkerMode.DEFAULT, booleanOnly.prefetchWorker());
+
+    ImageRuntimeOptions prefetchOnly = onlyOptions(PrefetchOnlyApplication.class);
+    assertEquals(ImageStorageProfile.DEFAULT, prefetchOnly.storage());
+    assertEquals(ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER, prefetchOnly.prefetchWorker());
   }
 
   @Test
@@ -120,6 +181,26 @@ class ImageRuntimeConfigurationParserTest {
     IllegalArgumentException mixed = assertThrows(IllegalArgumentException.class,
         () -> ImageRuntimeConfigurationParser.parse(classWithImageRule(true, true, false, true), "sample.MixedRules"));
     assertTrue(mixed.getMessage().contains("cannot be mixed"));
+
+    IllegalArgumentException allDefaults = assertThrows(IllegalArgumentException.class,
+        () -> ImageRuntimeConfigurationParser.parse(classBytes(AllDefaultsApplication.class),
+            AllDefaultsApplication.class.getName()));
+    assertTrue(allDefaults.getMessage().contains("must explicitly assign at least one Image runtime option"));
+
+    IllegalArgumentException malformedDescriptor = assertThrows(IllegalArgumentException.class,
+        () -> ImageRuntimeConfigurationParser.parse(classWithMalformedEnumDescriptor(), "sample.BadDescriptor"));
+    assertTrue(malformedDescriptor.getMessage().contains("unexpected type"));
+
+    IllegalArgumentException unknownField = assertThrows(IllegalArgumentException.class,
+        () -> ImageRuntimeConfigurationParser.parse(classWithUnknownField(), "sample.UnknownField"));
+    assertTrue(unknownField.getMessage().contains("unknown field 'unexpected'"));
+  }
+
+  private static ImageRuntimeOptions onlyOptions(Class<?> fixture) throws Exception {
+    List<FeatureRule<ImageRuntimeOptions>> rules = ImageRuntimeConfigurationParser.parse(
+        classBytes(fixture), fixture.getName());
+    assertEquals(1, rules.size());
+    return rules.get(0).requestedValue();
   }
 
   private static byte[] classBytes(Class<?> type) throws IOException {
@@ -171,5 +252,30 @@ class ImageRuntimeConfigurationParserTest {
       rule.visitEnum("storage", Type.getDescriptor(ImageStorageProfile.class),
           unknownStorage ? "TINY" : ImageStorageProfile.STANDARD.name());
     }
+  }
+
+  private static byte[] classWithMalformedEnumDescriptor() {
+    ClassWriter writer = new ClassWriter(0);
+    writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "sample/BadDescriptor", null, "java/lang/Object", null);
+    writer.visitAnnotation(Type.getDescriptor(RuntimeConfiguration.class), false).visitEnd();
+    AnnotationVisitor rule = writer.visitAnnotation(Type.getDescriptor(ImageRuntimeRule.class), false);
+    rule.visitAnnotation("when", Type.getDescriptor(RuntimeWhen.class)).visitEnd();
+    rule.visitEnum("targetColorConversion", Type.getDescriptor(ImagePrefetchWorkerMode.class), "DEFAULT");
+    rule.visitEnd();
+    writer.visitEnd();
+    return writer.toByteArray();
+  }
+
+  private static byte[] classWithUnknownField() {
+    ClassWriter writer = new ClassWriter(0);
+    writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "sample/UnknownField", null, "java/lang/Object", null);
+    writer.visitAnnotation(Type.getDescriptor(RuntimeConfiguration.class), false).visitEnd();
+    AnnotationVisitor rule = writer.visitAnnotation(Type.getDescriptor(ImageRuntimeRule.class), false);
+    rule.visitAnnotation("when", Type.getDescriptor(RuntimeWhen.class)).visitEnd();
+    rule.visitEnum("storage", Type.getDescriptor(ImageStorageProfile.class), ImageStorageProfile.STANDARD.name());
+    rule.visit("unexpected", "value");
+    rule.visitEnd();
+    writer.visitEnd();
+    return writer.toByteArray();
   }
 }
