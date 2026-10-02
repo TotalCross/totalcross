@@ -179,31 +179,31 @@ class ImagePreparationSchedulerTest {
       public void run() { readyCallbacks[0]++; }
     });
 
-    Image pngImage = new Image(png(24, 16));
-    assertEquals(ImageEncodedStructure.Format.PNG,
-        ((EncodedImageSource) pngImage.pipelineForSmoke().root()).getFormat());
-    assertNull(pngImage.captureDisplayPreparationRequest(scale, 105L),
-        "PNG remains outside the P9 prefetchable request path");
+    Image unsupportedImage = new Image(gif(24, 16));
+    assertEquals(ImageEncodedStructure.Format.GIF,
+        ((EncodedImageSource) unsupportedImage.pipelineForSmoke().root()).getFormat());
+    assertNull(unsupportedImage.captureDisplayPreparationRequest(scale, 105L),
+        "unsupported formats remain outside the preparation path");
 
     ScrollContainer scroll = new ScrollContainer(false, false);
     scroll.setRect(0, 0, 100, 100);
-    ImageControl pngControl = new ImageControl(pngImage);
-    scroll.add(pngControl);
-    pngControl.setRect(5, 5, 24, 16);
+    ImageControl unsupportedControl = new ImageControl(unsupportedImage);
+    scroll.add(unsupportedControl);
+    unsupportedControl.setRect(5, 5, 24, 16);
     scroll.resize();
-    final int[] pngCallbacks = {0};
-    final Thread[] pngCallbackThread = {null};
+    final int[] unsupportedCallbacks = {0};
+    final Thread[] unsupportedCallbackThread = {null};
     scroll.prepareForDisplay(new Runnable() {
       @Override
       public void run() {
-        pngCallbacks[0]++;
-        pngCallbackThread[0] = Thread.currentThread();
+        unsupportedCallbacks[0]++;
+        unsupportedCallbackThread[0] = Thread.currentThread();
       }
     });
 
     assertEquals(1, readyCallbacks[0]);
-    assertEquals(1, pngCallbacks[0], "the PNG preparation callback completes normally");
-    assertSame(Thread.currentThread(), pngCallbackThread[0]);
+    assertEquals(1, unsupportedCallbacks[0], "unsupported preparation callback completes normally");
+    assertSame(Thread.currentThread(), unsupportedCallbackThread[0]);
     assertEquals("NOT_STARTED", ImagePreparationScheduler.workerLifecycleForTest());
     assertNull(ImagePreparationScheduler.processWorkerForTest());
     assertEquals(0, ImagePreparationScheduler.processWorkerStartCountForTest());
@@ -571,6 +571,13 @@ class ImagePreparationSchedulerTest {
     image.setRGB(0, 0, 0xFF336699);
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     assertTrue(ImageIO.write(image, "png", bytes));
+    return bytes.toByteArray();
+  }
+
+  private static byte[] gif(int width, int height) throws Exception {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    assertTrue(ImageIO.write(image, "gif", bytes));
     return bytes.toByteArray();
   }
 
