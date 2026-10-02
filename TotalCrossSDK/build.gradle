@@ -1003,7 +1003,7 @@ def imageDeferredFrameStateSmokeClassesDir = layout.buildDirectory.dir('image-de
 
 def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDirName,
                               boolean includeImageAbiResources, boolean includeBack3Resource,
-                              List requiredFields, List resourceIncludes = [] ->
+                              List requiredFields, List resourceIncludes = [], List classIncludes = [] ->
     def classesDir = layout.buildDirectory.dir(smokeDirName + '/classes')
     tasks.register('compile' + taskPrefix, Sync) {
         group = 'verification'
@@ -1026,6 +1026,11 @@ def registerImageMacSmoke = { String taskPrefix, String appClass, String smokeDi
         resourceIncludes.each { resourceInclude ->
             from(smokeTestResourcesDir) {
                 include resourceInclude
+            }
+        }
+        classIncludes.each { classInclude ->
+            from(smokeTestClassesDir) {
+                include classInclude
             }
         }
         into classesDir
@@ -1786,6 +1791,25 @@ registerImageMacSmoke('ImageAsyncPreparation', 'ImageAsyncPreparationSmokeApp',
         'drawReuse=true',
         'overallPass=true'
     ])
+
+registerImageMacSmoke('ImageSemaphorePrefetchWorker', 'ImageSemaphorePrefetchWorkerSmokeApp',
+    'image-semaphore-prefetch-worker-smoke', false, false, [
+        'fixture=ImageSemaphorePrefetchWorkerSmokeApp',
+        'semaphoreWorker=true',
+        'multipleJpegRequests=true',
+        'oneSerializedWorker=true',
+        'uiCallbacks=true',
+        'activeAtMostOne=true',
+        'fifoAdoption=true',
+        'deduplicated=true',
+        'drawReuse=true',
+        'capturedSource=true',
+        'staleResult=true',
+        'transientRetry=true',
+        'idleWorker=true',
+        'cleanShutdown=true',
+        'overallPass=true'
+    ], [], ['totalcross/sys/runtime/ImagePrefetchWorkerSmokeTestSupport*.class'])
 
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

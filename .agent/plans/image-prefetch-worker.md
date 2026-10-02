@@ -27,10 +27,11 @@ active milestone below.
 ## Progress
 
 - [x] Create this plan as the first feature commit.
-- [ ] Add the internal policy value and a test-only policy fixture.
-- [ ] Route activated work through the legacy or Semaphore execution path.
-- [ ] Prove serialized lifecycle, failure recovery, idle shutdown, and P8 behavior.
-- [ ] Run the requested SDK and macOS validation, write the report, and open the PR.
+- [x] Add the internal policy value and a test-only policy fixture.
+- [x] Route activated work through the legacy or Semaphore execution path.
+- [x] Prove serialized lifecycle, failure recovery, idle shutdown, and focused P8 behavior.
+- [x] Run the requested SDK and macOS validation and write the final report.
+- [ ] Push the branch, open the requested PR, and pass a fresh GitHub Merge Flow.
 
 ## Current Architecture and Scope
 
@@ -182,5 +183,10 @@ affected checks; do not merge master into it.
 
 ## Outcomes & Retrospective
 
-Pending implementation and final validation. The completion summary belongs in
+The internal policy and scheduler mode are implemented. Focused and broad SDK
+validation passes with diagnostics disabled and enabled. The macOS ARM64
+Release build and deployed compatibility smoke suite pass, including the P9
+smoke through the existing P8 `ScrollContainer.prepareForDisplay` path. The
+remaining gate is a fresh GitHub Merge Flow for the requested PR head. Durable
+validation and compatibility facts are recorded in
 `.agent/reports/image-prefetch-worker.md`.

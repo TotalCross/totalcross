@@ -25,11 +25,14 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
-import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
-import totalcross.sys.runtime.ImageRuntimePolicy;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import totalcross.sys.runtime.ImagePrefetchWorkerTestSupport;
+import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
+import totalcross.sys.runtime.ImageRuntimePolicy;
 import totalcross.ui.MainWindow;
 
 class ImageAsyncPreparationTest {
@@ -39,6 +42,20 @@ class ImageAsyncPreparationTest {
     if (MainWindow.getMainWindow() == null) {
       new MainWindow();
     }
+  }
+
+  @BeforeEach
+  void forceSemaphoreWorker() {
+    ImagePrefetchWorkerTestSupport.useSemaphoreWorker();
+  }
+
+  @AfterEach
+  void cleanupWorker() throws Exception {
+    if (!ImagePreparationScheduler.idleForTest()) {
+      awaitSchedulerIdle();
+    }
+    ImagePreparationSchedulerTestSupport.shutdownAndReset();
+    ImagePrefetchWorkerTestSupport.restore();
   }
 
   @Test
@@ -240,6 +257,7 @@ class ImageAsyncPreparationTest {
     });
     assertEquals(1, settled[0]);
     assertTrue(ImagePreparationScheduler.idleForTest());
+    assertNull(ImagePreparationScheduler.processWorkerForTest());
     invalid.releaseDetachedEncodedSource();
   }
 
