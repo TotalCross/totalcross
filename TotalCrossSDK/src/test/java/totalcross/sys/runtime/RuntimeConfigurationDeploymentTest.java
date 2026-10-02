@@ -65,7 +65,16 @@ class RuntimeConfigurationDeploymentTest {
     List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> imageRules =
         ImageRuntimeConfigurationMetadata.decode(imageMetadata);
     assertEquals(1, imageRules.size());
+    assertEquals(2, imageMetadata[4] & 0xff);
     assertEquals(totalcross.ui.image.ImageStorageProfile.COMPACT, imageRules.get(0).requestedValue().storage());
+    assertEquals(RuntimeFeatureState.ENABLED,
+        imageRules.get(0).requestedValue().targetColorConversion());
+    assertEquals(RuntimeFeatureState.DISABLED,
+        imageRules.get(0).requestedValue().physicalVariantCache());
+    assertEquals(RuntimeFeatureState.ENABLED,
+        imageRules.get(0).requestedValue().scrollRasterReuse());
+    assertEquals(totalcross.ui.image.ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER,
+        imageRules.get(0).requestedValue().prefetchWorker());
     assertTrue(imageRules.get(0).selector().matches(
         RuntimeEnvironmentTestSupport.environment("WindowsCE", 4, false)));
   }
@@ -82,9 +91,11 @@ class RuntimeConfigurationDeploymentTest {
             + "import totalcross.sys.Platform;\n"
             + "import totalcross.sys.runtime.RuntimeCondition;\n"
             + "import totalcross.sys.runtime.RuntimeConfiguration;\n"
+            + "import totalcross.sys.runtime.RuntimeFeatureState;\n"
             + "import totalcross.sys.runtime.RuntimeRule;\n"
             + "import totalcross.sys.runtime.RuntimeWhen;\n"
             + "import totalcross.ui.image.ImageRuntimeRule;\n"
+            + "import totalcross.ui.image.ImagePrefetchWorkerMode;\n"
             + "import totalcross.ui.image.ImageStorageProfile;\n"
             + "@RuntimeConfiguration\n"
             + "@RuntimeRule(when = @RuntimeWhen(allOf = {\n"
@@ -94,7 +105,11 @@ class RuntimeConfigurationDeploymentTest {
             + "@ImageRuntimeRule(when = @RuntimeWhen(allOf = {\n"
             + "  @RuntimeCondition(platform = Platform.WINDOWS),\n"
             + "  @RuntimeCondition(architecture = Architecture.ARM64)\n"
-            + "}), storage = ImageStorageProfile.COMPACT)\n"
+            + "}), storage = ImageStorageProfile.COMPACT, "
+            + "targetColorConversion = RuntimeFeatureState.ENABLED, "
+            + "physicalVariantCache = RuntimeFeatureState.DISABLED, "
+            + "scrollRasterReuse = RuntimeFeatureState.ENABLED, "
+            + "prefetchWorker = ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER)\n"
             + "public class RuntimeConfigurationFixture extends totalcross.ui.MainWindow { }\n",
         StandardCharsets.UTF_8);
 

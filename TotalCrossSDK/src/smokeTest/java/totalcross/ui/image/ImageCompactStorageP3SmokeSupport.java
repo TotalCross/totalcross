@@ -5,12 +5,140 @@
 package totalcross.ui.image;
 
 import totalcross.sys.runtime.ImageRasterSmokeTestSupport;
+import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
+import totalcross.sys.runtime.ImageRuntimePolicy;
 
 import static totalcross.ui.image.ImageCompactStorageSmokeSupport.*;
 
 /** Renderer-driven P3 checks whose canonical source is compact encoded storage. */
 final class ImageCompactStorageP3SmokeSupport {
+  private static String productionVariantFailureDetails = "";
+
   private ImageCompactStorageP3SmokeSupport() {
+  }
+
+  /** Exercises P3 target-color conversion under the policy resolved from app annotations. */
+  static boolean productionConfiguredTargetColorPath() throws Exception {
+    ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();
+    if (!policy.rasterVariants().targetColorConversion()) {
+      return false;
+    }
+    productionVariantFailureDetails = "";
+    return productionTargetColorVariant();
+  }
+
+  /** Exercises P3 physical-variant caching under a selector that leaves target-color conversion off. */
+  static boolean productionConfiguredPhysicalVariantPath() throws Exception {
+    ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();
+    if (policy.rasterVariants().targetColorConversion()
+        || !policy.rasterVariants().physicalVariantCache()) {
+      return false;
+    }
+    productionVariantFailureDetails = "";
+    return productionPhysicalVariantCache();
+  }
+
+  static String productionVariantFailureDetails() {
+    return productionVariantFailureDetails;
+  }
+
+  /** Confirms explicit DISABLED values leave both P3 variant paths inactive. */
+  static boolean productionDisabledVariantsRemainInactive() throws Exception {
+    ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();
+    if (policy.rasterVariants().targetColorConversion()
+        || policy.rasterVariants().physicalVariantCache()) {
+      return false;
+    }
+    Image colorSource = ImageCompactStorageSmokeSupport.load("opaque-color.png");
+    colorSource.getPixels();
+    Image colorDeferred = colorSource.getAlphaInstance(0);
+    Image colorTarget = new Image(colorSource.getPixelWidth(), colorSource.getPixelHeight());
+    replaceTargetBacking(colorTarget, NativeImageBacking.TEST_COLOR_BGRA_8888);
+    ImageRasterFeatureBridge.resetDrawAccountingForTest();
+    Image.resetImageOperationAccountingForTest();
+    colorTarget.getGraphics().drawImage(colorDeferred, 0, 0, true);
+    colorTarget.getGraphics().drawImage(colorDeferred, 0, 0, true);
+    colorTarget.getGraphics().drawImage(colorDeferred, 0, 0, true);
+    boolean noColorVariant = Image.targetColorVariantMaterializationCountForTest() == 0
+        && Image.targetColorVariantHitCountForTest() == 0;
+
+    Image physicalSource = ImageCompactStorageSmokeSupport.load("opaque-color.png");
+    physicalSource.getPixels();
+    Image physicalDeferred = physicalSource.getSmoothScaledInstance(4, 3);
+    NativeImageBacking canonical = sourceBacking(physicalDeferred);
+    Image physicalTarget = new Image(8, 8);
+    replaceTargetBacking(physicalTarget, canonical.formatForTest() == NativeImageBacking.FORMAT_RGB565
+        ? NativeImageBacking.TEST_COLOR_RGB_565 : NativeImageBacking.TEST_COLOR_RGBA_8888);
+    ImageRasterFeatureBridge.resetDrawAccountingForTest();
+    Image.resetImageOperationAccountingForTest();
+    physicalTarget.getGraphics().drawImage(physicalDeferred, 1, 1, true);
+    physicalTarget.getGraphics().drawImage(physicalDeferred, 1, 1, true);
+    physicalTarget.getGraphics().drawImage(physicalDeferred, 1, 1, true);
+    return noColorVariant && Image.physicalVariantMaterializationCountForTest() == 0
+        && Image.physicalVariantHitCountForTest() == 0;
+  }
+
+  private static boolean productionTargetColorVariant() throws Exception {
+    Image source = ImageCompactStorageSmokeSupport.load("opaque-color.png");
+    source.getPixels();
+    CompactSourceState imageSourceState = new CompactSourceState(source);
+    Image deferred = source.getAlphaInstance(0);
+    PipelineRootState pipelineRootState = new PipelineRootState(deferred);
+    NativeImageBacking canonical = pipelineRootState.backing;
+    Image target = new Image(source.getPixelWidth(), source.getPixelHeight());
+    NativeImageBacking targetBacking = replaceTargetBacking(target,
+        NativeImageBacking.TEST_COLOR_BGRA_8888);
+    ImageRasterFeatureBridge.resetDrawAccountingForTest();
+    Image.resetImageOperationAccountingForTest();
+    target.getGraphics().drawImage(deferred, 0, 0, true);
+    target.getGraphics().drawImage(deferred, 0, 0, true);
+    target.getGraphics().drawImage(deferred, 0, 0, true);
+    boolean passed = canonical.variantStateForTest() == 1
+        && Image.targetColorVariantMaterializationCountForTest() == 1
+        && Image.targetColorVariantHitCountForTest() == 1
+        && targetBacking.colorTypeForTest() != canonical.colorTypeForTest()
+        && imageSourceState.preserved() && pipelineRootState.preserved(deferred)
+        && imageSourceState.isCompact(NativeImageBacking.FORMAT_RGB565)
+        && pipelineRootState.isCompact(NativeImageBacking.FORMAT_RGB565);
+    if (!passed) {
+      productionVariantFailureDetails += "targetColor(state=" + canonical.variantStateForTest()
+          + ",materializations=" + Image.targetColorVariantMaterializationCountForTest()
+          + ",hits=" + Image.targetColorVariantHitCountForTest()
+          + ",targetType=" + targetBacking.colorTypeForTest()
+          + ",sourceType=" + canonical.colorTypeForTest()
+          + ",sourceFormat=" + canonical.formatForTest()
+          + ",sourceCompact=" + imageSourceState.isCompact(NativeImageBacking.FORMAT_RGB565)
+          + ",rootCompact=" + pipelineRootState.isCompact(NativeImageBacking.FORMAT_RGB565) + ");";
+    }
+    return passed;
+  }
+
+  private static boolean productionPhysicalVariantCache() throws Exception {
+    Image source = ImageCompactStorageSmokeSupport.load("opaque-color.png");
+    source.getPixels();
+    Image deferred = source.getSmoothScaledInstance(4, 3);
+    NativeImageBacking canonical = sourceBacking(deferred);
+    if (!canonical.isCompact() || canonical.formatForTest() != NativeImageBacking.FORMAT_RGB565) {
+      return false;
+    }
+    Image target = new Image(8, 8);
+    ImageRasterFeatureBridge.resetDrawAccountingForTest();
+    Image.resetImageOperationAccountingForTest();
+    target.getGraphics().drawImage(deferred, 1, 1, true);
+    target.getGraphics().drawImage(deferred, 1, 1, true);
+    target.getGraphics().drawImage(deferred, 1, 1, true);
+    boolean passed = canonical.variantStateForTest() == 1
+        && Image.physicalVariantMaterializationCountForTest() == 1
+        && Image.physicalVariantHitCountForTest() == 1
+        && canonical.isCompact() && canonical.formatForTest() == NativeImageBacking.FORMAT_RGB565;
+    if (!passed) {
+      productionVariantFailureDetails += "physicalVariant(state=" + canonical.variantStateForTest()
+          + ",materializations=" + Image.physicalVariantMaterializationCountForTest()
+          + ",hits=" + Image.physicalVariantHitCountForTest()
+          + ",sourceType=" + canonical.colorTypeForTest()
+          + ",sourceFormat=" + canonical.formatForTest() + ");";
+    }
+    return passed;
   }
 
   static boolean physicalVariantReuse() throws Exception {
