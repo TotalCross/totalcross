@@ -1811,6 +1811,49 @@ registerImageMacSmoke('ImageSemaphorePrefetchWorker', 'ImageSemaphorePrefetchWor
         'overallPass=true'
     ], [], ['totalcross/sys/runtime/ImagePrefetchWorkerSmokeTestSupport*.class'])
 
+registerImageMacSmoke('ImagePngAsyncPreparation', 'ImagePngAsyncPreparationSmokeApp',
+    'image-png-async-preparation-smoke', false, false, [
+        'fixture=ImagePngAsyncPreparationSmokeApp',
+        'semaphoreWorker=true',
+        'legacyWorker=false',
+        'staticPngDenominator=true',
+        'colorBackingReady=true',
+        'indexedBackingReady=true',
+        'asyncSubmission=true',
+        'uiCallbacks=true',
+        'singleWorker=true',
+        'activeAtMostOne=true',
+        'fullDecodeOnly=true',
+        'drawReuse=true',
+        'staleCandidatesReleased=true',
+        'idleWorker=true',
+        'cleanShutdown=true',
+        'overallPass=true'
+    ], ['image-compact/opaque-color.png', 'image-png/static-indexed.png'],
+    ['totalcross/sys/runtime/ImagePrefetchWorkerSmokeTestSupport*.class'])
+
+registerImageMacSmoke('ImagePngAsyncPreparationLegacy', 'ImagePngAsyncPreparationLegacySmokeApp',
+    'image-png-async-preparation-legacy-smoke', false, false, [
+        'fixture=ImagePngAsyncPreparationSmokeApp',
+        'semaphoreWorker=false',
+        'legacyWorker=true',
+        'staticPngDenominator=true',
+        'colorBackingReady=true',
+        'indexedBackingReady=true',
+        'asyncSubmission=true',
+        'uiCallbacks=true',
+        'singleWorker=false',
+        'activeAtMostOne=true',
+        'fullDecodeOnly=true',
+        'drawReuse=true',
+        'staleCandidatesReleased=true',
+        'idleWorker=true',
+        'cleanShutdown=true',
+        'overallPass=true'
+    ], ['image-compact/opaque-color.png', 'image-png/static-indexed.png'],
+    ['totalcross/ui/image/ImagePngAsyncPreparationSmokeApp*.class',
+     'totalcross/sys/runtime/ImagePrefetchWorkerSmokeTestSupport*.class'])
+
 tasks.named('processSmokeTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
