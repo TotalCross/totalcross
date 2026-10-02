@@ -4,6 +4,8 @@
 
 package totalcross.sys.runtime;
 
+import totalcross.ui.image.ImagePrefetchWorkerMode;
+
 /** Test-only fixture for selecting the internal image prefetch worker policy. */
 public final class ImagePrefetchWorkerTestSupport {
   private static ImageRuntimePolicy originalPolicy;
@@ -12,14 +14,14 @@ public final class ImagePrefetchWorkerTestSupport {
   }
 
   public static void useSemaphoreWorker() {
-    usePolicy(ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER);
+    usePolicy(ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER);
   }
 
   public static void useLegacyWorker() {
-    usePolicy(ImageRuntimePolicy.PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD);
+    usePolicy(ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD);
   }
 
-  private static void usePolicy(ImageRuntimePolicy.PrefetchWorkerPolicy workerPolicy) {
+  private static void usePolicy(ImagePrefetchWorkerMode workerPolicy) {
     ImageRuntimePolicy current = ImageRuntimeConfigurationStartup.currentPolicy();
     if (originalPolicy == null) {
       originalPolicy = current;

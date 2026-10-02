@@ -184,7 +184,7 @@ class ImageAsyncPreparationTest {
     Image image = new Image(png(96, 64));
     double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
     ImagePreparationRequest request = image.captureDisplayPreparationRequest(scale, 25L);
-    assertEquals(ImageRuntimePolicy.PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD,
+    assertEquals(totalcross.ui.image.ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD,
         request.effectivePolicy.prefetchWorker());
     final Thread uiThread = Thread.currentThread();
     final Thread[] callbackThread = {null};

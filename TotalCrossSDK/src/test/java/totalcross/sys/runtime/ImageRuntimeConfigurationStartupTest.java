@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import totalcross.sys.GraphicsBackend;
 import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
+import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
 
 class ImageRuntimeConfigurationStartupTest {
@@ -50,11 +51,12 @@ class ImageRuntimeConfigurationStartupTest {
     assertFalse(policy.rasterVariants().physicalVariantCache());
     assertFalse(policy.scrollRasterReuse().enabled());
     assertFalse(policy.imagePreparation().automaticPreparation());
-    assertEquals(ImageRuntimePolicy.PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD, policy.prefetchWorker());
+    assertEquals(ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD, policy.prefetchWorker());
     assertEquals(Arrays.asList(
-        ImageRuntimePolicy.PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD,
-        ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER),
-        Arrays.asList(ImageRuntimePolicy.PrefetchWorkerPolicy.values()));
+        ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD,
+        ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER),
+        Arrays.asList(ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD,
+            ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER));
   }
 
   @Test

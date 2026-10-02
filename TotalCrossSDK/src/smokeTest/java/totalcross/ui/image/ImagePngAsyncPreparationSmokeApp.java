@@ -7,7 +7,6 @@ package totalcross.ui.image;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 import totalcross.sys.runtime.ImagePrefetchWorkerSmokeTestSupport;
-import totalcross.sys.runtime.ImageRuntimePolicy;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
 import totalcross.ui.ScrollContainer;
@@ -67,9 +66,9 @@ public class ImagePngAsyncPreparationSmokeApp extends MainWindow {
       });
       processWorker = ImagePreparationScheduler.processWorkerForTest();
       semaphoreWorker = colorRequest != null && colorRequest.effectivePolicy.prefetchWorker()
-          == ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER;
+          == ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER;
       legacyWorker = colorRequest != null && colorRequest.effectivePolicy.prefetchWorker()
-          == ImageRuntimePolicy.PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD;
+          == ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD;
       if (forceSemaphoreWorker()) {
         singleWorker = processWorker != null
             && ImagePreparationScheduler.processWorkerStartCountForTest() == 1

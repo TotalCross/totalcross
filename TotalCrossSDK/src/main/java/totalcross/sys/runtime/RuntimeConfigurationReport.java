@@ -15,9 +15,9 @@ public final class RuntimeConfigurationReport {
    * rename fields between releases. Applications must not parse it as a
    * configuration protocol.
    *
-   * <p>The Image section describes the resolved typed policy, including defaults
-   * reserved for future consumers. A field is operational only once its owning
-   * feature implementation consumes that policy.
+   * <p>The Image section describes the resolved typed policy, including stable
+   * raster-core defaults and the effective values selected for existing Image
+   * feature consumers.
    *
    * @return a deterministic human-readable snapshot of environment and registered feature sections
    */

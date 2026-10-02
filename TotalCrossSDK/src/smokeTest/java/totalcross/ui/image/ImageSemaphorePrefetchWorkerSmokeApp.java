@@ -10,7 +10,6 @@ import totalcross.io.ByteArrayStream;
 import totalcross.io.File;
 import totalcross.sys.Settings;
 import totalcross.sys.runtime.ImagePrefetchWorkerSmokeTestSupport;
-import totalcross.sys.runtime.ImageRuntimePolicy;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
 import totalcross.ui.ScrollContainer;
@@ -68,7 +67,7 @@ public class ImageSemaphorePrefetchWorkerSmokeApp extends MainWindow {
       secondRequest = second.captureDisplayPreparationRequest(scale, 2L);
       thirdRequest = third.captureDisplayPreparationRequest(scale, 3L);
       semaphorePolicy = firstRequest.effectivePolicy.prefetchWorker()
-          == ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER;
+          == ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER;
       Image.resetImageOperationAccountingForTest();
 
       firstScroll.prepareForDisplay(new Runnable() {
