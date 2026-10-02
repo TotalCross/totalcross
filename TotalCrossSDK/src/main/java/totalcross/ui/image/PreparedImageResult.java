@@ -20,6 +20,7 @@ final class PreparedImageResult {
   final Image variant;
   final ImageException failure;
   final FailureKind failureKind;
+  private boolean candidatesReleased;
 
   private PreparedImageResult(EncodedImageSource detachedSource, ImageBacking backing,
       int decodedWidth, int decodedHeight, int decodeDenominator, Image variant,
@@ -48,7 +49,45 @@ final class PreparedImageResult {
     return new PreparedImageResult(source, null, 0, 0, 0, null, null, FailureKind.TRANSIENT);
   }
 
+  /** Releases detached native candidates that were not retained by live state. */
+  void releaseUnretainedCandidates(ImagePreparationRequest request) {
+    if (candidatesReleased) {
+      return;
+    }
+    candidatesReleased = true;
+
+    ImageBacking retainedSourceBacking = null;
+    ImageBacking retainedVariantBacking = null;
+    if (request != null) {
+      retainedSourceBacking = request.source.decodedBackingForReuse(request.decodeDenominator);
+      Image retainedVariant = request.pipeline.cachedMaterializedVariant(
+          request.materializedScaleBits(), request.source.decodedGeneration());
+      retainedVariantBacking = retainedVariant == null ? null : retainedVariant.backing;
+    }
+    ImageBacking detachedSourceBacking = detachedSource == null
+        ? null : detachedSource.decodedBackingForPreparationCleanup();
+    releaseIfUnretained(backing, retainedSourceBacking, retainedVariantBacking);
+    if (detachedSourceBacking != backing) {
+      releaseIfUnretained(detachedSourceBacking, retainedSourceBacking, retainedVariantBacking);
+    }
+    ImageBacking variantBacking = variant == null ? null : variant.backing;
+    if (variantBacking != backing && variantBacking != detachedSourceBacking) {
+      releaseIfUnretained(variantBacking, retainedSourceBacking, retainedVariantBacking);
+    }
+  }
+
+  private static void releaseIfUnretained(ImageBacking candidate,
+      ImageBacking retainedSourceBacking, ImageBacking retainedVariantBacking) {
+    if (candidate instanceof NativeImageBacking && candidate != retainedSourceBacking
+        && candidate != retainedVariantBacking) {
+      ((NativeImageBacking) candidate).release();
+    }
+  }
+
   void releaseDetachedEncodedSource() {
+    if (detachedSource != null) {
+      detachedSource.releaseForPreparation();
+    }
     detachedSource = null;
   }
 }

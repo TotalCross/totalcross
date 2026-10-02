@@ -219,6 +219,10 @@ final class EncodedImageSource extends ImageSource {
     return decodedBacking;
   }
 
+  ImageBacking decodedBackingForPreparationCleanup() {
+    return decodedBacking;
+  }
+
   int decodedWidth() {
     return decodedWidth;
   }
@@ -264,6 +268,12 @@ final class EncodedImageSource extends ImageSource {
 
   void releaseForSmoke() {
     releaseNativeBag();
+  }
+
+  void releaseForPreparation() {
+    releaseNativeBag();
+    bytes = null;
+    length = 0;
   }
 
   /** Replaced on deployed targets by an immutable native bag copy. */
