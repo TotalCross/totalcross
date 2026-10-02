@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import totalcross.sys.Architecture;
 import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
+import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
 
 class ImageRuntimeConfigurationMetadataTest {
@@ -47,6 +48,59 @@ class ImageRuntimeConfigurationMetadataTest {
   }
 
   @Test
+  void roundTripsEveryPropertyAndSparseRulesWithExplicitPresenceBits() {
+    RuntimeSelector selector = RuntimeSelector.platform(Platform.MACOS);
+    ImageRuntimeOptions all = new ImageRuntimeOptions(ImageStorageProfile.COMPACT,
+        RuntimeFeatureState.ENABLED, RuntimeFeatureState.DISABLED, RuntimeFeatureState.ENABLED,
+        ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER);
+    ImageRuntimeOptions sparse = new ImageRuntimeOptions(ImageStorageProfile.DEFAULT,
+        RuntimeFeatureState.DEFAULT, RuntimeFeatureState.DEFAULT, RuntimeFeatureState.ENABLED,
+        ImagePrefetchWorkerMode.DEFAULT);
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules = Arrays.asList(
+        optionRule("all", selector, all), optionRule("sparse", selector, sparse));
+    byte[] encoded = ImageRuntimeConfigurationMetadata.encodeForDeployment(rules,
+        Collections.<RuntimeConfigurationMetadata.DeploymentTarget>emptyList());
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> decoded =
+        ImageRuntimeConfigurationMetadata.decode(encoded);
+
+    assertEquals(0x1f, presenceMask(encoded, 0));
+    assertEquals(0x08, presenceMask(encoded, 1));
+    int valuesOffset = 12 + readInt(encoded, 7);
+    assertEquals(Arrays.asList(2, 1, 2, 1, 2), Arrays.asList(encoded[valuesOffset] & 0xff,
+        encoded[valuesOffset + 1] & 0xff, encoded[valuesOffset + 2] & 0xff,
+        encoded[valuesOffset + 3] & 0xff, encoded[valuesOffset + 4] & 0xff));
+    assertEquals(2, decoded.size());
+    assertEquals(ImageStorageProfile.COMPACT, decoded.get(0).requestedValue().storage());
+    assertEquals(RuntimeFeatureState.ENABLED, decoded.get(0).requestedValue().targetColorConversion());
+    assertEquals(RuntimeFeatureState.DISABLED, decoded.get(0).requestedValue().physicalVariantCache());
+    assertEquals(RuntimeFeatureState.ENABLED, decoded.get(0).requestedValue().scrollRasterReuse());
+    assertEquals(ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER,
+        decoded.get(0).requestedValue().prefetchWorker());
+    assertEquals(ImageStorageProfile.DEFAULT, decoded.get(1).requestedValue().storage());
+    assertEquals(RuntimeFeatureState.DEFAULT, decoded.get(1).requestedValue().targetColorConversion());
+    assertEquals(RuntimeFeatureState.DEFAULT, decoded.get(1).requestedValue().physicalVariantCache());
+    assertEquals(RuntimeFeatureState.ENABLED, decoded.get(1).requestedValue().scrollRasterReuse());
+    assertEquals(ImagePrefetchWorkerMode.DEFAULT, decoded.get(1).requestedValue().prefetchWorker());
+  }
+
+  @Test
+  void decodesLegacyVersionOneStorageRulesWithNewPropertiesUnassigned() {
+    byte[] encodedV2 = ImageRuntimeConfigurationMetadata.encodeForDeployment(
+        Collections.singletonList(rule("legacy", RuntimeSelector.platform(Platform.MACOS),
+            ImageStorageProfile.COMPACT)), Collections.<RuntimeConfigurationMetadata.DeploymentTarget>emptyList());
+    byte[] encodedV1 = asVersionOne(encodedV2);
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> decoded =
+        ImageRuntimeConfigurationMetadata.decode(encodedV1);
+
+    assertEquals(1, encodedV1[4] & 0xff);
+    assertEquals(ImageStorageProfile.COMPACT, decoded.get(0).requestedValue().storage());
+    assertEquals(RuntimeFeatureState.DEFAULT, decoded.get(0).requestedValue().targetColorConversion());
+    assertEquals(RuntimeFeatureState.DEFAULT, decoded.get(0).requestedValue().physicalVariantCache());
+    assertEquals(RuntimeFeatureState.DEFAULT, decoded.get(0).requestedValue().scrollRasterReuse());
+    assertEquals(ImagePrefetchWorkerMode.DEFAULT, decoded.get(0).requestedValue().prefetchWorker());
+  }
+
+  @Test
   void prunesImpossibleRulesAndPreservesSpecificityAcrossRetainedSelectors() {
     List<RuntimeConfigurationMetadata.DeploymentTarget> macArm64 = Collections.singletonList(
         new RuntimeConfigurationMetadata.DeploymentTarget(Platform.MACOS, RuntimeFamily.DESKTOP, Architecture.ARM64));
@@ -58,7 +112,9 @@ class ImageRuntimeConfigurationMetadataTest {
         .and(RuntimeSelector.family(RuntimeFamily.MOBILE));
     List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> source = Arrays.asList(
         rule("architecture", architecture, ImageStorageProfile.COMPACT),
-        rule("specific", specific, ImageStorageProfile.STANDARD),
+        optionRule("specific", specific, new ImageRuntimeOptions(ImageStorageProfile.STANDARD,
+            RuntimeFeatureState.DEFAULT, RuntimeFeatureState.DEFAULT, RuntimeFeatureState.ENABLED,
+            ImagePrefetchWorkerMode.DEFAULT)),
         rule("impossible", impossible, ImageStorageProfile.COMPACT));
 
     List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> decoded =
@@ -70,6 +126,7 @@ class ImageRuntimeConfigurationMetadataTest {
     assertEquals(1, decoded.get(0).selector().specificityFor(target));
     assertEquals(3, decoded.get(1).selector().specificityFor(target));
     assertEquals(ImageStorageProfile.STANDARD, decoded.get(1).requestedValue().storage());
+    assertEquals(RuntimeFeatureState.ENABLED, decoded.get(1).requestedValue().scrollRasterReuse());
     assertNull(ImageRuntimeConfigurationMetadata.encodeForDeployment(
         Collections.singletonList(rule("pruned", impossible, ImageStorageProfile.COMPACT)), macArm64));
   }
@@ -115,6 +172,37 @@ class ImageRuntimeConfigurationMetadataTest {
     assertTrue(assertThrows(IllegalArgumentException.class,
         () -> ImageRuntimeConfigurationMetadata.decode(unknownTag)).getMessage().contains("unknown storage tag"));
 
+    byte[] unknownPresenceBits = valid.clone();
+    unknownPresenceBits[presenceOffset] = 0x21;
+    assertTrue(assertThrows(IllegalArgumentException.class,
+        () -> ImageRuntimeConfigurationMetadata.decode(unknownPresenceBits)).getMessage()
+        .contains("unknown presence bits"));
+
+    byte[] featureRule = ImageRuntimeConfigurationMetadata.encodeForDeployment(
+        Collections.singletonList(optionRule("target", RuntimeSelector.platform(Platform.MACOS),
+            new ImageRuntimeOptions(ImageStorageProfile.DEFAULT, RuntimeFeatureState.ENABLED,
+                RuntimeFeatureState.DEFAULT, RuntimeFeatureState.DEFAULT, ImagePrefetchWorkerMode.DEFAULT))),
+        Collections.<RuntimeConfigurationMetadata.DeploymentTarget>emptyList());
+    int featurePresenceOffset = 11 + readInt(featureRule, 7);
+    byte[] unknownFeatureTag = featureRule.clone();
+    unknownFeatureTag[featurePresenceOffset + 1] = 3;
+    assertTrue(assertThrows(IllegalArgumentException.class,
+        () -> ImageRuntimeConfigurationMetadata.decode(unknownFeatureTag)).getMessage()
+        .contains("unknown target-color conversion tag"));
+
+    byte[] workerRule = ImageRuntimeConfigurationMetadata.encodeForDeployment(
+        Collections.singletonList(optionRule("worker", RuntimeSelector.platform(Platform.MACOS),
+            new ImageRuntimeOptions(ImageStorageProfile.DEFAULT, RuntimeFeatureState.DEFAULT,
+                RuntimeFeatureState.DEFAULT, RuntimeFeatureState.DEFAULT,
+                ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD))),
+        Collections.<RuntimeConfigurationMetadata.DeploymentTarget>emptyList());
+    int workerPresenceOffset = 11 + readInt(workerRule, 7);
+    byte[] unknownWorkerTag = workerRule.clone();
+    unknownWorkerTag[workerPresenceOffset + 1] = 3;
+    assertTrue(assertThrows(IllegalArgumentException.class,
+        () -> ImageRuntimeConfigurationMetadata.decode(unknownWorkerTag)).getMessage()
+        .contains("unknown prefetch worker tag"));
+
     byte[] trailing = Arrays.copyOf(valid, valid.length + 1);
     assertTrue(assertThrows(IllegalArgumentException.class,
         () -> ImageRuntimeConfigurationMetadata.decode(trailing)).getMessage().contains("trailing bytes"));
@@ -130,10 +218,51 @@ class ImageRuntimeConfigurationMetadataTest {
     assertTrue(temporaryMagicFailure.getMessage().contains("unexpected metadata signature"));
   }
 
+  @Test
+  void rejectsAnAllDefaultRuleDuringEncoding() {
+    ImageRuntimeOptions empty = new ImageRuntimeOptions(ImageStorageProfile.DEFAULT,
+        RuntimeFeatureState.DEFAULT, RuntimeFeatureState.DEFAULT, RuntimeFeatureState.DEFAULT,
+        ImagePrefetchWorkerMode.DEFAULT);
+    IllegalArgumentException failure = assertThrows(IllegalArgumentException.class,
+        () -> ImageRuntimeConfigurationMetadata.encodeForDeployment(
+            Collections.singletonList(optionRule("empty", RuntimeSelector.platform(Platform.MACOS), empty)),
+            Collections.<RuntimeConfigurationMetadata.DeploymentTarget>emptyList()));
+    assertTrue(failure.getMessage().contains("must explicitly assign at least one option"));
+  }
+
   private static RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions> rule(String name,
       RuntimeSelector selector, ImageStorageProfile profile) {
     return new RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>(name, selector,
         ImageRuntimeOptions.storageOnly(profile));
+  }
+
+  private static RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions> optionRule(String name,
+      RuntimeSelector selector, ImageRuntimeOptions options) {
+    return new RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>(name, selector, options);
+  }
+
+  private static byte[] asVersionOne(byte[] encodedV2) {
+    byte[] encodedV1 = new byte[encodedV2.length - 1];
+    int presenceOffset = 11 + readInt(encodedV2, 7);
+    System.arraycopy(encodedV2, 0, encodedV1, 0, presenceOffset);
+    encodedV1[4] = 1;
+    System.arraycopy(encodedV2, presenceOffset + 1, encodedV1, presenceOffset,
+        encodedV2.length - presenceOffset - 1);
+    return encodedV1;
+  }
+
+  private static int presenceMask(byte[] encoded, int index) {
+    int offset = 7;
+    for (int i = 0; i < index; i++) {
+      offset += 4 + readInt(encoded, offset) + 1 + valueCount(encoded, offset);
+    }
+    return encoded[offset + 4 + readInt(encoded, offset)] & 0xff;
+  }
+
+  private static int valueCount(byte[] encoded, int ruleOffset) {
+    int selectorLength = readInt(encoded, ruleOffset);
+    int mask = encoded[ruleOffset + 4 + selectorLength] & 0xff;
+    return Integer.bitCount(mask);
   }
 
   private static int storageTag(byte[] encoded, int index) {
