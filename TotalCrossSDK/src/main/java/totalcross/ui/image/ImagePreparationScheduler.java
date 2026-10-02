@@ -317,6 +317,17 @@ final class ImagePreparationScheduler {
     }
   }
 
+  static void resetWorkerTestCountersForTest() {
+    synchronized (LOCK) {
+      if (active != null || processWorker != null) {
+        throw new IllegalStateException("the worker counters can be reset only while the scheduler is idle");
+      }
+      processWorkerStartCountForTest = 0;
+      semaphoreWakeCountForTest = 0;
+      preparationStartCountForTest = 0;
+    }
+  }
+
   private static void updateQueueGauges() {
     int depth;
     int activeCount;
