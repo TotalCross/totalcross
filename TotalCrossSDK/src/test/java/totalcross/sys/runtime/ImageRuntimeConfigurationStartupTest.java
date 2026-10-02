@@ -51,6 +51,10 @@ class ImageRuntimeConfigurationStartupTest {
     assertFalse(policy.scrollRasterReuse().enabled());
     assertFalse(policy.imagePreparation().automaticPreparation());
     assertEquals(ImageRuntimePolicy.PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD, policy.prefetchWorker());
+    assertEquals(Arrays.asList(
+        ImageRuntimePolicy.PrefetchWorkerPolicy.LEGACY_PER_ENTRY_THREAD,
+        ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER),
+        Arrays.asList(ImageRuntimePolicy.PrefetchWorkerPolicy.values()));
   }
 
   @Test
