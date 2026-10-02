@@ -60,7 +60,7 @@ class ImageRuntimeConfigurationStartupTest {
   @Test
   void waitsForTheFinalSimulatorBackendThenPublishesRequestedAndEffectivePolicy() {
     RuntimeConfigurationStartup.initializeForSimulator(null, "MacOS", "aarch64");
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules = Collections.singletonList(
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules = Collections.singletonList(
         rule("image-rule-0", RuntimeSelector.backend(GraphicsBackend.RASTER), ImageStorageProfile.COMPACT));
     ImageRuntimeConfigurationStartup.initializeForSimulator(rules);
 
@@ -133,7 +133,7 @@ class ImageRuntimeConfigurationStartupTest {
     RuntimeConfigurationStartup.initializeForSimulator(null, "MacOS", "aarch64");
     RuntimeSelector selector = RuntimeSelector.platform(Platform.MACOS)
         .and(RuntimeSelector.family(RuntimeFamily.DESKTOP));
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules = Arrays.asList(
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules = Arrays.asList(
         rule("compact", selector, ImageStorageProfile.COMPACT),
         rule("standard", selector, ImageStorageProfile.STANDARD));
     ImageRuntimeConfigurationStartup.initializeForSimulator(rules);
@@ -143,9 +143,10 @@ class ImageRuntimeConfigurationStartupTest {
         () -> ImageRuntimeConfigurationStartup.finalizeSimulatorGraphicsBackend());
   }
 
-  private static RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile> rule(String name,
+  private static RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions> rule(String name,
       RuntimeSelector selector, ImageStorageProfile value) {
-    return new RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>(name, selector, value);
+    return new RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>(name, selector,
+        ImageRuntimeOptions.storageOnly(value));
   }
 
   private static int occurrences(String text, String value) {

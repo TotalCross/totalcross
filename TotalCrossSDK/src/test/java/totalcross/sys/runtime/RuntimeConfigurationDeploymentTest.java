@@ -62,10 +62,10 @@ class RuntimeConfigurationDeploymentTest {
 
     byte[] imageMetadata = readTczEntry(Path.of(DeploySettings.tczs[0]), IMAGE_METADATA_RESOURCE);
     assertNotNull(imageMetadata, "Declared Image rules must be written to the application TCZ");
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<totalcross.ui.image.ImageStorageProfile>> imageRules =
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> imageRules =
         ImageRuntimeConfigurationMetadata.decode(imageMetadata);
     assertEquals(1, imageRules.size());
-    assertEquals(totalcross.ui.image.ImageStorageProfile.COMPACT, imageRules.get(0).requestedValue());
+    assertEquals(totalcross.ui.image.ImageStorageProfile.COMPACT, imageRules.get(0).requestedValue().storage());
     assertTrue(imageRules.get(0).selector().matches(
         RuntimeEnvironmentTestSupport.environment("WindowsCE", 4, false)));
   }

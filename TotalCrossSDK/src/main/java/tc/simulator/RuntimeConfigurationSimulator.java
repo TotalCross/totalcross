@@ -14,7 +14,7 @@ import totalcross.sys.runtime.ImageRuntimeConfigurationStartup;
 import totalcross.sys.runtime.RuntimeConfigurationStartup;
 import totalcross.sys.runtime.RuntimeSelector;
 import totalcross.sys.runtime.RuntimeConfigurationFeatureBridge.FeatureRule;
-import totalcross.ui.image.ImageStorageProfile;
+import totalcross.sys.runtime.ImageRuntimeOptions;
 
 /** Reads selector declarations from simulator class resources before app class initialization. */
 final class RuntimeConfigurationSimulator {
@@ -25,7 +25,7 @@ final class RuntimeConfigurationSimulator {
     String osName = System.getProperty("os.name");
     String osArch = System.getProperty("os.arch");
     List<RuntimeSelector> selectors = null;
-    List<FeatureRule<ImageStorageProfile>> imageRules = null;
+    List<FeatureRule<ImageRuntimeOptions>> imageRules = null;
     if (className != null) {
       String normalized = Launcher.normalizeMainWindowClassName(className);
       String resourceName = normalized.replace('.', '/') + ".class";
