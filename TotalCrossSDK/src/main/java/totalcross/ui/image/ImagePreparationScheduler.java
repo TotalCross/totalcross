@@ -5,10 +5,12 @@
 package totalcross.ui.image;
 
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
+import totalcross.sys.runtime.ImageRuntimePolicy;
 import totalcross.ui.MainWindow;
 
-/** One process-wide FIFO. P9 may replace worker wakeup without changing request semantics. */
+/** One process-wide FIFO whose active request remains owned through UI adoption. */
 final class ImagePreparationScheduler {
   enum TerminalState {
     READY,
@@ -30,6 +32,12 @@ final class ImagePreparationScheduler {
     TRANSIENT_FAILURE
   }
 
+  private enum WorkerLifecycle {
+    NOT_STARTED,
+    RUNNING_OR_BLOCKED,
+    SHUTDOWN
+  }
+
   private static final Object LOCK = new Object();
   private static final int PENDING_LIMIT = 128;
   private static final int READY_LIMIT = 16;
@@ -38,6 +46,13 @@ final class ImagePreparationScheduler {
   private static final ArrayList<ReadyEntry> READY = new ArrayList<ReadyEntry>();
   private static Work active;
   private static boolean failNextWorkerStartForTest;
+  private static WorkerLifecycle workerLifecycle = WorkerLifecycle.NOT_STARTED;
+  private static Semaphore workerWake;
+  private static Semaphore shutdownCompleteForTest;
+  private static Thread processWorker;
+  private static int processWorkerStartCountForTest;
+  private static int semaphoreWakeCountForTest;
+  private static int preparationStartCountForTest;
 
   private ImagePreparationScheduler() {
   }
@@ -229,6 +244,79 @@ final class ImagePreparationScheduler {
     }
   }
 
+  static String workerLifecycleForTest() {
+    synchronized (LOCK) {
+      return workerLifecycle.name();
+    }
+  }
+
+  static Thread processWorkerForTest() {
+    synchronized (LOCK) {
+      return processWorker;
+    }
+  }
+
+  static int processWorkerStartCountForTest() {
+    synchronized (LOCK) {
+      return processWorkerStartCountForTest;
+    }
+  }
+
+  static int semaphoreWakeCountForTest() {
+    synchronized (LOCK) {
+      return semaphoreWakeCountForTest;
+    }
+  }
+
+  static int preparationStartCountForTest() {
+    synchronized (LOCK) {
+      return preparationStartCountForTest;
+    }
+  }
+
+  static String activeStateForTest() {
+    synchronized (LOCK) {
+      return active == null ? null : active.state.name();
+    }
+  }
+
+  static void shutdownSemaphoreWorkerForTest() {
+    synchronized (LOCK) {
+      if (active != null || !QUEUE.isEmpty() || !PENDING.isEmpty()) {
+        throw new IllegalStateException("the image preparation scheduler must be idle before worker shutdown");
+      }
+      if (workerLifecycle == WorkerLifecycle.NOT_STARTED) {
+        return;
+      }
+      workerLifecycle = WorkerLifecycle.SHUTDOWN;
+      shutdownCompleteForTest = new Semaphore(0);
+      workerWake.release();
+    }
+    Semaphore stopped;
+    synchronized (LOCK) {
+      stopped = shutdownCompleteForTest;
+    }
+    stopped.acquireUninterruptibly();
+  }
+
+  static void resetSemaphoreWorkerForTest() {
+    synchronized (LOCK) {
+      if (workerLifecycle == WorkerLifecycle.NOT_STARTED) {
+        return;
+      }
+      if (workerLifecycle != WorkerLifecycle.SHUTDOWN || processWorker == null || processWorker.isAlive()) {
+        throw new IllegalStateException("the image prefetch worker must exit before test reset");
+      }
+      processWorker = null;
+      workerWake = null;
+      shutdownCompleteForTest = null;
+      workerLifecycle = WorkerLifecycle.NOT_STARTED;
+      processWorkerStartCountForTest = 0;
+      semaphoreWakeCountForTest = 0;
+      preparationStartCountForTest = 0;
+    }
+  }
+
   private static void updateQueueGauges() {
     int depth;
     int activeCount;
@@ -240,45 +328,140 @@ final class ImagePreparationScheduler {
   }
 
   private static void start(final Work work) {
+    if (work.request.effectivePolicy.prefetchWorker()
+        == ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER) {
+      startSemaphoreWork(work);
+    } else {
+      startLegacyWork(work);
+    }
+  }
+
+  private static void startLegacyWork(final Work work) {
     try {
       synchronized (LOCK) {
-        if (failNextWorkerStartForTest) {
-          failNextWorkerStartForTest = false;
-          throw new IllegalStateException("Simulated image preparation worker start failure");
+        if (active != work || work.dispatched) {
+          return;
         }
+        work.dispatched = true;
+        failWorkerStartForTestLocked();
       }
       new Thread(new Runnable() {
         @Override
         public void run() {
-          PreparedImageResult result = work.request.prototype.prepareDetachedForDisplay(work.request);
-          synchronized (LOCK) {
-            work.state = RequestState.WAITING_ADOPTION;
-          }
-          MainWindow mainWindow = MainWindow.getMainWindow();
-          if (mainWindow == null) {
-            abandonWithoutUi(work, result);
-            return;
-          }
-          mainWindow.runOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-              finishOnUi(work, result);
-            }
-          }, false);
+          prepareAndPostAdoption(work);
         }
       }).start();
     } catch (RuntimeException | OutOfMemoryError startFailure) {
-      MainWindow mainWindow = MainWindow.getMainWindow();
-      if (mainWindow == null) {
-        finishOnUi(work, PreparedImageResult.transientFailure(null));
-      } else {
-        mainWindow.runOnMainThread(new Runnable() {
-          @Override
-          public void run() {
-            finishOnUi(work, PreparedImageResult.transientFailure(null));
-          }
-        }, false);
+      finishStartFailureOnUi(work);
+    }
+  }
+
+  private static void startSemaphoreWork(final Work work) {
+    try {
+      synchronized (LOCK) {
+        if (active != work || work.dispatched) {
+          return;
+        }
+        failWorkerStartForTestLocked();
+        if (workerLifecycle == WorkerLifecycle.NOT_STARTED) {
+          startProcessWorkerLocked();
+        }
+        if (workerLifecycle != WorkerLifecycle.RUNNING_OR_BLOCKED || workerWake == null) {
+          throw new IllegalStateException("the image prefetch worker is not available");
+        }
+        work.dispatched = true;
+        workerWake.release();
+        semaphoreWakeCountForTest++;
       }
+    } catch (RuntimeException | OutOfMemoryError startFailure) {
+      finishStartFailureOnUi(work);
+    }
+  }
+
+  private static void failWorkerStartForTestLocked() {
+    if (failNextWorkerStartForTest) {
+      failNextWorkerStartForTest = false;
+      throw new IllegalStateException("Simulated image preparation worker start failure");
+    }
+  }
+
+  private static void startProcessWorkerLocked() {
+    final Semaphore wake = new Semaphore(0);
+    final Thread worker = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        runSemaphoreWorker(wake);
+      }
+    });
+    workerWake = wake;
+    processWorker = worker;
+    workerLifecycle = WorkerLifecycle.RUNNING_OR_BLOCKED;
+    try {
+      worker.start();
+      processWorkerStartCountForTest++;
+    } catch (RuntimeException | OutOfMemoryError startFailure) {
+      workerWake = null;
+      processWorker = null;
+      workerLifecycle = WorkerLifecycle.NOT_STARTED;
+      throw startFailure;
+    }
+  }
+
+  private static void runSemaphoreWorker(Semaphore wake) {
+    while (true) {
+      wake.acquireUninterruptibly();
+      Work work;
+      synchronized (LOCK) {
+        if (workerLifecycle == WorkerLifecycle.SHUTDOWN) {
+          Semaphore stopped = shutdownCompleteForTest;
+          if (stopped != null) {
+            stopped.release();
+          }
+          return;
+        }
+        work = active;
+        if (work == null || work.state != RequestState.PREPARING
+            || work.request.effectivePolicy.prefetchWorker()
+                != ImageRuntimePolicy.PrefetchWorkerPolicy.SEMAPHORE_PROCESS_WORKER) {
+          continue;
+        }
+      }
+      prepareAndPostAdoption(work);
+    }
+  }
+
+  private static void prepareAndPostAdoption(final Work work) {
+    synchronized (LOCK) {
+      preparationStartCountForTest++;
+    }
+    final PreparedImageResult result = work.request.prototype.prepareDetachedForDisplay(work.request);
+    synchronized (LOCK) {
+      work.state = RequestState.WAITING_ADOPTION;
+    }
+    MainWindow mainWindow = MainWindow.getMainWindow();
+    if (mainWindow == null) {
+      abandonWithoutUi(work, result);
+      return;
+    }
+    mainWindow.runOnMainThread(new Runnable() {
+      @Override
+      public void run() {
+        finishOnUi(work, result);
+      }
+    }, false);
+  }
+
+  private static void finishStartFailureOnUi(final Work work) {
+    MainWindow mainWindow = MainWindow.getMainWindow();
+    if (mainWindow == null) {
+      finishOnUi(work, PreparedImageResult.transientFailure(null));
+    } else {
+      mainWindow.runOnMainThread(new Runnable() {
+        @Override
+        public void run() {
+          finishOnUi(work, PreparedImageResult.transientFailure(null));
+        }
+      }, false);
     }
   }
 
@@ -380,6 +563,7 @@ final class ImagePreparationScheduler {
     final ImagePreparationRequest request;
     final ArrayList<Runnable> completions = new ArrayList<Runnable>();
     RequestState state = RequestState.DISCOVERED;
+    boolean dispatched;
 
     Work(ImagePreparationRequest request, Runnable completion) {
       this.request = request;
