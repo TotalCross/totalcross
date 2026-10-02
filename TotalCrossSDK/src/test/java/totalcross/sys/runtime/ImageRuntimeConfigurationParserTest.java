@@ -27,6 +27,7 @@ import totalcross.sys.GraphicsBackend;
 import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
 import totalcross.sys.runtime.RuntimeConfigurationFeatureBridge.FeatureRule;
+import totalcross.sys.runtime.ImageRuntimeOptions;
 import totalcross.ui.image.ImageRuntimeRule;
 import totalcross.ui.image.ImageRuntimeRules;
 import totalcross.ui.image.ImageStorageProfile;
@@ -71,13 +72,13 @@ class ImageRuntimeConfigurationParserTest {
   @Test
   void parsesTypedSelectorAndDirectRuleWithoutInitializingEntryClass() throws Exception {
     System.clearProperty(INITIALIZED_PROPERTY);
-    List<FeatureRule<ImageStorageProfile>> rules = ImageRuntimeConfigurationParser.parse(
+    List<FeatureRule<ImageRuntimeOptions>> rules = ImageRuntimeConfigurationParser.parse(
         classBytes(SingleRuleApplication.class), SingleRuleApplication.class.getName());
 
     assertNull(System.getProperty(INITIALIZED_PROPERTY));
     assertEquals(1, rules.size());
     assertEquals("image-rule-0", rules.get(0).name());
-    assertEquals(ImageStorageProfile.COMPACT, rules.get(0).requestedValue());
+    assertEquals(ImageStorageProfile.COMPACT, rules.get(0).requestedValue().storage());
     RuntimeEnvironment macArmRaster = RuntimeEnvironmentTestSupport.environment("MacOS", 4, false);
     assertTrue(rules.get(0).selector().matches(macArmRaster));
     assertFalse(rules.get(0).selector().matches(RuntimeEnvironmentTestSupport.environment("Linux", 4, false)));
@@ -85,14 +86,14 @@ class ImageRuntimeConfigurationParserTest {
 
   @Test
   void parsesJavacRepeatableContainerWithStableDiagnosticNames() throws Exception {
-    List<FeatureRule<ImageStorageProfile>> rules = ImageRuntimeConfigurationParser.parse(
+    List<FeatureRule<ImageRuntimeOptions>> rules = ImageRuntimeConfigurationParser.parse(
         classBytes(RepeatedRuleApplication.class), RepeatedRuleApplication.class.getName());
 
     assertEquals(2, rules.size());
     assertEquals("image-rule-0", rules.get(0).name());
     assertEquals("image-rule-1", rules.get(1).name());
-    assertEquals(ImageStorageProfile.COMPACT, rules.get(0).requestedValue());
-    assertEquals(ImageStorageProfile.STANDARD, rules.get(1).requestedValue());
+    assertEquals(ImageStorageProfile.COMPACT, rules.get(0).requestedValue().storage());
+    assertEquals(ImageStorageProfile.STANDARD, rules.get(1).requestedValue().storage());
     assertNull(ImageRuntimeConfigurationParser.parse(classBytes(PlainApplication.class),
         PlainApplication.class.getName()));
   }
@@ -108,9 +109,9 @@ class ImageRuntimeConfigurationParserTest {
         () -> ImageRuntimeConfigurationParser.parse(classWithImageRule(false, true, false, false), "sample.MissingWhen"));
     assertTrue(missingWhen.getMessage().contains("missing required field 'when'"));
 
-    IllegalArgumentException missingStorage = assertThrows(IllegalArgumentException.class,
+    IllegalArgumentException emptyRule = assertThrows(IllegalArgumentException.class,
         () -> ImageRuntimeConfigurationParser.parse(classWithImageRule(true, false, false, false), "sample.MissingStorage"));
-    assertTrue(missingStorage.getMessage().contains("missing required field 'storage'"));
+    assertTrue(emptyRule.getMessage().contains("must explicitly assign at least one Image runtime option"));
 
     IllegalArgumentException unknownStorage = assertThrows(IllegalArgumentException.class,
         () -> ImageRuntimeConfigurationParser.parse(classWithImageRule(true, true, true, false), "sample.UnknownStorage"));

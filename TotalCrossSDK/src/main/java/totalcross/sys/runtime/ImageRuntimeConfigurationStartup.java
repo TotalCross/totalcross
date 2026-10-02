@@ -9,6 +9,7 @@ import java.util.List;
 
 import totalcross.sys.Vm;
 import totalcross.ui.image.ImageCompactStorageCapabilityBridge;
+import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
 
 /** Internal startup binding for resolving the optional Image TCZ configuration resource. */
@@ -16,7 +17,7 @@ public final class ImageRuntimeConfigurationStartup {
   private static final String RESOURCE_NAME = "tc.imageruntimeconfig";
 
   private static boolean startupAttempted;
-  private static List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> pendingRules;
+  private static List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> pendingRules;
   private static volatile ImageRuntimePolicy currentPolicy = ImageRuntimePolicy.defaults();
 
   private ImageRuntimeConfigurationStartup() {
@@ -36,7 +37,7 @@ public final class ImageRuntimeConfigurationStartup {
 
   /** Called by the simulator after parsing Image annotations and after B sets host facts. */
   public static synchronized void initializeForSimulator(
-      List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules) {
+      List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules) {
     startupAttempted = true;
     registerDescriptionContributor();
     initializeRules(rules);
@@ -77,14 +78,14 @@ public final class ImageRuntimeConfigurationStartup {
   }
 
   private static void initializeRules(
-      List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules) {
+      List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules) {
     currentPolicy = ImageRuntimePolicy.defaults();
     if (rules == null || rules.isEmpty()) {
       pendingRules = null;
       return;
     }
     pendingRules = Collections.unmodifiableList(
-        new ArrayList<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>>(rules));
+        new ArrayList<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>>(rules));
     resolveIfReady();
   }
 
@@ -96,8 +97,16 @@ public final class ImageRuntimeConfigurationStartup {
     if (!environment.isGraphicsBackendFinalized()) {
       return;
     }
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> storageRules =
+        new ArrayList<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>>(pendingRules.size());
+    for (RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions> rule : pendingRules) {
+      if (rule.requestedValue().storage() != ImageStorageProfile.DEFAULT) {
+        storageRules.add(new RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>(rule.name(),
+            rule.selector(), rule.requestedValue().storage()));
+      }
+    }
     RuntimeConfigurationFeatureBridge.FeatureResolution<ImageStorageProfile> resolution =
-        RuntimeConfigurationFeatureBridge.resolveSingleSetting(environment, pendingRules,
+        RuntimeConfigurationFeatureBridge.resolveSingleSetting(environment, storageRules,
             ImageStorageProfile.STANDARD);
     boolean compactBackingAvailable = resolution.requestedValue() == ImageStorageProfile.COMPACT
         && ImageCompactStorageCapabilityBridge.isAvailable();

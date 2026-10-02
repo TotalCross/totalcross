@@ -22,20 +22,28 @@ public final class ImageRuntimeConfigurationMetadata {
 
   /** Encodes retained Image rules, returning {@code null} when deployment prunes every rule. */
   public static byte[] encodeForDeployment(
-      List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules,
+      List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules,
       List<RuntimeConfigurationMetadata.DeploymentTarget> targets) {
     if (rules == null) {
       return null;
     }
     List<EncodedRule> retained = new ArrayList<EncodedRule>(rules.size());
-    for (RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile> rule : rules) {
+    for (RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions> rule : rules) {
       if (rule == null) {
         throw new IllegalArgumentException("Image runtime configuration rules cannot contain null");
       }
       byte[] selectorPayload = RuntimeConfigurationFeatureBridge.encodeSingleSelectorForDeployment(
           rule.selector(), targets);
       if (selectorPayload != null) {
-        retained.add(new EncodedRule(selectorPayload, storageTag(rule.requestedValue())));
+        ImageRuntimeOptions options = rule.requestedValue();
+        if (options.storage() == ImageStorageProfile.DEFAULT
+            || options.targetColorConversion() != RuntimeFeatureState.DEFAULT
+            || options.physicalVariantCache() != RuntimeFeatureState.DEFAULT
+            || options.scrollRasterReuse() != RuntimeFeatureState.DEFAULT
+            || options.prefetchWorker() != totalcross.ui.image.ImagePrefetchWorkerMode.DEFAULT) {
+          throw new IllegalArgumentException("Image runtime metadata v1 only supports explicit storage rules");
+        }
+        retained.add(new EncodedRule(selectorPayload, storageTag(options.storage())));
       }
     }
     if (retained.isEmpty()) {
@@ -58,7 +66,7 @@ public final class ImageRuntimeConfigurationMetadata {
   }
 
   /** Decodes Image rules and rejects malformed, unsupported, or non-canonical envelopes. */
-  public static List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> decode(byte[] bytes) {
+  public static List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> decode(byte[] bytes) {
     if (bytes == null || bytes.length == 0) {
       throw invalid("metadata is empty");
     }
@@ -75,8 +83,8 @@ public final class ImageRuntimeConfigurationMetadata {
       throw invalid("must contain at least one retained rule");
     }
 
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules =
-        new ArrayList<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>>(count);
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules =
+        new ArrayList<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>>(count);
     for (int i = 0; i < count; i++) {
       long payloadLength = input.readUnsignedInt();
       if (payloadLength > Integer.MAX_VALUE || payloadLength > input.remaining() - 1L) {
@@ -90,8 +98,8 @@ public final class ImageRuntimeConfigurationMetadata {
         throw invalid("rule " + i + " contains an invalid selector payload: " + e.getMessage());
       }
       ImageStorageProfile storage = storageProfile(input.readUnsignedByte(), i);
-      rules.add(new RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>("image-rule-" + i,
-          selector, storage));
+      rules.add(new RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>("image-rule-" + i,
+          selector, ImageRuntimeOptions.storageOnly(storage)));
     }
     if (input.remaining() != 0) {
       throw invalid("contains trailing bytes");

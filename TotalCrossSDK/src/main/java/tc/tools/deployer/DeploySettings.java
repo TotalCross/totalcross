@@ -24,7 +24,7 @@ import totalcross.util.IntVector;
 import totalcross.util.Vector;
 import totalcross.sys.runtime.RuntimeSelector;
 import totalcross.sys.runtime.RuntimeConfigurationFeatureBridge.FeatureRule;
-import totalcross.ui.image.ImageStorageProfile;
+import totalcross.sys.runtime.ImageRuntimeOptions;
 
 public class DeploySettings {
   public enum TcmMode {
@@ -47,7 +47,7 @@ public class DeploySettings {
   public static String applicationId, appVersion, companyInfo, companyContact;
   public static String mainClassName;
   public static List<RuntimeSelector> runtimeConfigurationSelectors;
-  public static List<FeatureRule<ImageStorageProfile>> imageRuntimeConfigurationRules;
+  public static List<FeatureRule<ImageRuntimeOptions>> imageRuntimeConfigurationRules;
   public static String commandLine = "";
   public static boolean isMainWindow;
   public static boolean isJarOrZip;

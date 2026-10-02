@@ -27,12 +27,12 @@ class ImageRuntimeConfigurationMetadataTest {
   void roundTripsImageRulesWithStableStorageTags() {
     RuntimeSelector selector = RuntimeSelector.platform(Platform.MACOS)
         .and(RuntimeSelector.family(RuntimeFamily.DESKTOP));
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> rules = Arrays.asList(
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules = Arrays.asList(
         rule("standard", selector, ImageStorageProfile.STANDARD),
         rule("compact", selector, ImageStorageProfile.COMPACT));
     byte[] encoded = ImageRuntimeConfigurationMetadata.encodeForDeployment(rules,
         Collections.<RuntimeConfigurationMetadata.DeploymentTarget>emptyList());
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> decoded =
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> decoded =
         ImageRuntimeConfigurationMetadata.decode(encoded);
 
     assertArrayEquals(new byte[] { 0x54, 0x43, 0x49, 0x43 }, Arrays.copyOf(encoded, 4));
@@ -40,8 +40,8 @@ class ImageRuntimeConfigurationMetadataTest {
     assertEquals(2, unsignedShort(encoded, 5));
     assertEquals(0x01, storageTag(encoded, 0));
     assertEquals(0x02, storageTag(encoded, 1));
-    assertEquals(ImageStorageProfile.STANDARD, decoded.get(0).requestedValue());
-    assertEquals(ImageStorageProfile.COMPACT, decoded.get(1).requestedValue());
+    assertEquals(ImageStorageProfile.STANDARD, decoded.get(0).requestedValue().storage());
+    assertEquals(ImageStorageProfile.COMPACT, decoded.get(1).requestedValue().storage());
     assertTrue(decoded.get(0).selector().matches(RuntimeEnvironmentTestSupport.environment("MacOS", 4, false)));
     assertFalse(decoded.get(0).selector().matches(RuntimeEnvironmentTestSupport.environment("Linux", 4, false)));
   }
@@ -56,12 +56,12 @@ class ImageRuntimeConfigurationMetadataTest {
         .and(RuntimeSelector.architecture(Architecture.ARM64));
     RuntimeSelector impossible = RuntimeSelector.platform(Platform.WINDOWS)
         .and(RuntimeSelector.family(RuntimeFamily.MOBILE));
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> source = Arrays.asList(
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> source = Arrays.asList(
         rule("architecture", architecture, ImageStorageProfile.COMPACT),
         rule("specific", specific, ImageStorageProfile.STANDARD),
         rule("impossible", impossible, ImageStorageProfile.COMPACT));
 
-    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>> decoded =
+    List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> decoded =
         ImageRuntimeConfigurationMetadata.decode(ImageRuntimeConfigurationMetadata.encodeForDeployment(source,
             macArm64));
     RuntimeEnvironment target = RuntimeEnvironmentTestSupport.environment("MacOS", 4, false);
@@ -69,7 +69,7 @@ class ImageRuntimeConfigurationMetadataTest {
     assertEquals(2, decoded.size());
     assertEquals(1, decoded.get(0).selector().specificityFor(target));
     assertEquals(3, decoded.get(1).selector().specificityFor(target));
-    assertEquals(ImageStorageProfile.STANDARD, decoded.get(1).requestedValue());
+    assertEquals(ImageStorageProfile.STANDARD, decoded.get(1).requestedValue().storage());
     assertNull(ImageRuntimeConfigurationMetadata.encodeForDeployment(
         Collections.singletonList(rule("pruned", impossible, ImageStorageProfile.COMPACT)), macArm64));
   }
@@ -129,9 +129,10 @@ class ImageRuntimeConfigurationMetadataTest {
     assertTrue(temporaryMagicFailure.getMessage().contains("unexpected metadata signature"));
   }
 
-  private static RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile> rule(String name,
+  private static RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions> rule(String name,
       RuntimeSelector selector, ImageStorageProfile profile) {
-    return new RuntimeConfigurationFeatureBridge.FeatureRule<ImageStorageProfile>(name, selector, profile);
+    return new RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>(name, selector,
+        ImageRuntimeOptions.storageOnly(profile));
   }
 
   private static int storageTag(byte[] encoded, int index) {

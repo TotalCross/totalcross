@@ -15,12 +15,15 @@ import org.objectweb.asm.tree.ClassNode;
 
 import totalcross.sys.runtime.RuntimeConfiguration;
 import totalcross.sys.runtime.RuntimeConfigurationFeatureBridge.FeatureRule;
+import totalcross.sys.runtime.ImageRuntimeOptions;
+import totalcross.sys.runtime.RuntimeFeatureState;
 import totalcross.sys.runtime.RuntimeRule;
 import totalcross.sys.runtime.RuntimeRules;
 import totalcross.sys.runtime.RuntimeSelector;
 import totalcross.sys.runtime.RuntimeWhen;
 import totalcross.ui.image.ImageRuntimeRule;
 import totalcross.ui.image.ImageRuntimeRules;
+import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
 
 /** Parses typed Image rules from application entry-class bytes without class initialization. */
@@ -34,14 +37,15 @@ public final class ImageRuntimeConfigurationParser {
 
   private static final Set<String> NO_FIELDS = Collections.emptySet();
   private static final Set<String> RULE_FIELDS = Collections.unmodifiableSet(
-      new java.util.HashSet<String>(java.util.Arrays.asList("when", "storage")));
+      new java.util.HashSet<String>(java.util.Arrays.asList("when", "storage", "targetColorConversion",
+          "physicalVariantCache", "scrollRasterReuse", "prefetchWorker")));
   private static final Set<String> RULES_FIELDS = Collections.singleton("value");
 
   private ImageRuntimeConfigurationParser() {
   }
 
   /** Parses Image rules or returns {@code null} when the entry class declares none. */
-  public static List<FeatureRule<ImageStorageProfile>> parse(byte[] classBytes, String className) {
+  public static List<FeatureRule<ImageRuntimeOptions>> parse(byte[] classBytes, String className) {
     ClassNode classNode = RuntimeSelectorAnnotationParser.readClassNode(classBytes, className,
         CONFIGURATION, RUNTIME_RULE, RUNTIME_RULES, WHEN,
         Type.getDescriptor(totalcross.sys.runtime.RuntimeCondition.class), IMAGE_RULE, IMAGE_RULES);
@@ -84,7 +88,7 @@ public final class ImageRuntimeConfigurationParser {
       throw invalid(owner, "@ImageRuntimeRule and its repeatable @ImageRuntimeRules container cannot be mixed");
     }
 
-    List<FeatureRule<ImageStorageProfile>> rules = new ArrayList<FeatureRule<ImageStorageProfile>>(
+    List<FeatureRule<ImageRuntimeOptions>> rules = new ArrayList<FeatureRule<ImageRuntimeOptions>>(
         ruleAnnotations.size());
     for (int i = 0; i < ruleAnnotations.size(); i++) {
       String context = owner + " @ImageRuntimeRule[" + i + "]";
@@ -93,17 +97,36 @@ public final class ImageRuntimeConfigurationParser {
       if (!values.containsKey("when")) {
         throw invalid(context, "is missing required field 'when'");
       }
-      if (!values.containsKey("storage")) {
-        throw invalid(context, "is missing required field 'storage'");
-      }
       AnnotationNode when = RuntimeSelectorAnnotationParser.nestedAnnotation(values.get("when"), WHEN,
           context + ".when");
       RuntimeSelector selector = RuntimeSelectorAnnotationParser.parseWhen(when, context + ".when");
-      ImageStorageProfile storage = RuntimeSelectorAnnotationParser.enumValue(values.get("storage"),
-          Type.getDescriptor(ImageStorageProfile.class), ImageStorageProfile.class, context + ".storage");
-      rules.add(new FeatureRule<ImageStorageProfile>("image-rule-" + i, selector, storage));
+      ImageStorageProfile storage = values.containsKey("storage")
+          ? RuntimeSelectorAnnotationParser.enumValue(values.get("storage"),
+              Type.getDescriptor(ImageStorageProfile.class), ImageStorageProfile.class, context + ".storage")
+          : ImageStorageProfile.DEFAULT;
+      RuntimeFeatureState targetColorConversion = featureState(values, "targetColorConversion", context);
+      RuntimeFeatureState physicalVariantCache = featureState(values, "physicalVariantCache", context);
+      RuntimeFeatureState scrollRasterReuse = featureState(values, "scrollRasterReuse", context);
+      ImagePrefetchWorkerMode prefetchWorker = values.containsKey("prefetchWorker")
+          ? RuntimeSelectorAnnotationParser.enumValue(values.get("prefetchWorker"),
+              Type.getDescriptor(ImagePrefetchWorkerMode.class), ImagePrefetchWorkerMode.class,
+              context + ".prefetchWorker")
+          : ImagePrefetchWorkerMode.DEFAULT;
+      ImageRuntimeOptions options = new ImageRuntimeOptions(storage, targetColorConversion,
+          physicalVariantCache, scrollRasterReuse, prefetchWorker);
+      if (!options.hasExplicitAssignment()) {
+        throw invalid(context, "must explicitly assign at least one Image runtime option");
+      }
+      rules.add(new FeatureRule<ImageRuntimeOptions>("image-rule-" + i, selector, options));
     }
     return Collections.unmodifiableList(rules);
+  }
+
+  private static RuntimeFeatureState featureState(Map<String, Object> values, String field, String context) {
+    return values.containsKey(field)
+        ? RuntimeSelectorAnnotationParser.enumValue(values.get(field),
+            Type.getDescriptor(RuntimeFeatureState.class), RuntimeFeatureState.class, context + "." + field)
+        : RuntimeFeatureState.DEFAULT;
   }
 
   private static IllegalArgumentException invalid(String context, String message) {
