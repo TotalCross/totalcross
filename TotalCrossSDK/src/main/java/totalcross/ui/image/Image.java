@@ -1324,7 +1324,10 @@ public class Image extends GfxSurface {
       return null;
     }
     EncodedImageSource source = (EncodedImageSource) deferred.root();
-    if (source.getFormat() != ImageEncodedStructure.Format.JPEG || deferred.hasZeroWidthFrameLayout()) {
+    ImageEncodedStructure.Format format = source.getFormat();
+    boolean jpeg = format == ImageEncodedStructure.Format.JPEG;
+    boolean staticPng = format == ImageEncodedStructure.Format.PNG && source.getFrameCount() == 1;
+    if ((!jpeg && !staticPng) || deferred.hasZeroWidthFrameLayout()) {
       return null;
     }
     try {
@@ -1333,7 +1336,8 @@ public class Image extends GfxSurface {
       if (requestedWidth <= 0 || requestedHeight <= 0) {
         return null;
       }
-      int denominator = ImageDecodeRequirement.choose(source, deferred, requestedWidth, requestedHeight);
+      int denominator = staticPng ? 1
+          : ImageDecodeRequirement.choose(source, deferred, requestedWidth, requestedHeight);
       Image prototype = new Image();
       prototype.initializeDeferredTransform(deferred, this);
       prototype.currentFrame = currentFrame;

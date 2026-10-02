@@ -14,10 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.CRC32;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -56,6 +58,30 @@ class ImageAsyncPreparationTest {
     }
     ImagePreparationSchedulerTestSupport.shutdownAndReset();
     ImagePrefetchWorkerTestSupport.restore();
+  }
+
+  @Test
+  void staticPngCaptureUsesDenominatorOneAndRejectsMultiFrameAndUnsupportedFormats() throws Exception {
+    double scale = MainWindow.getMainWindow().getGraphics().getContentScale();
+    Image staticPng = new Image(png(128, 96));
+    ImagePreparationRequest request = staticPng.captureDisplayPreparationRequest(scale, 20L);
+
+    assertNotNull(request);
+    assertEquals(ImageEncodedStructure.Format.PNG, request.source.getFormat());
+    assertEquals(1, request.source.getFrameCount());
+    assertEquals(1, request.decodeDenominator);
+
+    Image multiFramePng = new Image(pngWithFrameCount(png(128, 96), 2));
+    assertEquals(2, ((EncodedImageSource) multiFramePng.pipelineForSmoke().root()).getFrameCount());
+    assertNull(multiFramePng.captureDisplayPreparationRequest(scale, 21L));
+    assertNotNull(multiFramePng.resolveForDrawing(scale),
+        "multi-frame PNG keeps its ordinary synchronous drawing path");
+
+    Image gif = new Image(gif(48, 32));
+    assertEquals(ImageEncodedStructure.Format.GIF, ((EncodedImageSource) gif.pipelineForSmoke().root()).getFormat());
+    assertNull(gif.captureDisplayPreparationRequest(scale, 22L));
+    assertNull(staticPng.captureDisplayPreparationRequest(Double.MAX_VALUE, 23L),
+        "a destination scale that overflows requested dimensions is rejected");
   }
 
   @Test
@@ -329,6 +355,49 @@ class ImageAsyncPreparationTest {
     } finally {
       writer.dispose();
     }
+    return bytes.toByteArray();
+  }
+
+  private static byte[] png(int width, int height) throws Exception {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    image.setRGB(0, 0, 0xFF336699);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    assertTrue(ImageIO.write(image, "png", bytes));
+    return bytes.toByteArray();
+  }
+
+  private static byte[] pngWithFrameCount(byte[] encoded, int frameCount) {
+    byte[] text = ("Comment\u0000FC=" + frameCount).getBytes(StandardCharsets.ISO_8859_1);
+    byte[] chunk = new byte[text.length + 12];
+    writeInt(chunk, 0, text.length);
+    chunk[4] = 't';
+    chunk[5] = 'E';
+    chunk[6] = 'X';
+    chunk[7] = 't';
+    System.arraycopy(text, 0, chunk, 8, text.length);
+    CRC32 crc = new CRC32();
+    crc.update(chunk, 4, text.length + 4);
+    writeInt(chunk, 8 + text.length, (int) crc.getValue());
+
+    int afterHeader = 33;
+    byte[] result = new byte[encoded.length + chunk.length];
+    System.arraycopy(encoded, 0, result, 0, afterHeader);
+    System.arraycopy(chunk, 0, result, afterHeader, chunk.length);
+    System.arraycopy(encoded, afterHeader, result, afterHeader + chunk.length, encoded.length - afterHeader);
+    return result;
+  }
+
+  private static void writeInt(byte[] target, int offset, int value) {
+    target[offset] = (byte) (value >>> 24);
+    target[offset + 1] = (byte) (value >>> 16);
+    target[offset + 2] = (byte) (value >>> 8);
+    target[offset + 3] = (byte) value;
+  }
+
+  private static byte[] gif(int width, int height) throws Exception {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    assertTrue(ImageIO.write(image, "gif", bytes));
     return bytes.toByteArray();
   }
 
