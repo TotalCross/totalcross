@@ -39,8 +39,10 @@ final class ImagePipeline {
   private final int widthOfAllFrames;
   private final double contentScale;
 
-  // JavaSE fallback retains at most one exact representation, admitted on its
-  // second observation. Native variants are owned by the source backing.
+  // Each pipeline retains at most one exact final materialized representation.
+  // Generic/transient resolution uses second-observation admission. Drawing for
+  // an already-owned persistent UI consumer may admit its first successful
+  // materialization immediately. Native variants are owned by the source backing.
   private long cachedScaleBits;
   private Image cachedVariant;
   private long cachedVariantGeneration;
