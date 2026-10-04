@@ -14,7 +14,7 @@ import java.util.jar.Manifest;
 
 /** Reads the build identity embedded in the SDK artifact executing the converter. */
 public final class BuildIdentity {
-  public static final String TCZ_ENTRY_NAME = "META-INF/totalcross-build";
+  public static final String TCZ_ENTRY_NAME = "META-INF/totalcross-build.properties";
 
   private static final String BUILD_ID = "TotalCross-Build-ID";
   private static final String IDENTITY_VERSION = "TotalCross-Build-Identity-Version";
