@@ -946,6 +946,38 @@ public class Image extends GfxSurface {
     return pipeline;
   }
 
+  ImagePipeline pipelineForDrawingOwnership() {
+    return pipeline;
+  }
+
+  private synchronized void setPipeline(ImagePipeline replacement) {
+    ImagePipeline previous = pipeline;
+    if (previous == replacement) {
+      return;
+    }
+    int ownerCount = ImageDrawingBridge.persistentOwnerCount(this);
+    for (int i = 0; i < ownerCount; i++) {
+      if (previous != null) {
+        previous.releasePersistentDrawingOwner();
+      }
+    }
+    pipeline = replacement;
+    for (int i = 0; i < ownerCount; i++) {
+      if (replacement != null) {
+        replacement.retainPersistentDrawingOwner();
+      }
+    }
+    ImageDrawingBridge.updatePersistentOwnerPipeline(this, replacement);
+  }
+
+  private synchronized void setPipelineAfterMutation(ImagePipeline replacement) {
+    ImagePipeline previous = pipeline;
+    setPipeline(replacement);
+    if (previous != null && !previous.hasPersistentDrawingOwners()) {
+      previous.clearCachedVariants();
+    }
+  }
+
   /** Test-only representation probe that does not expose the native handle. */
   boolean hasNativeBackingForSmoke() {
     materializeCanonicalUnchecked();
@@ -990,9 +1022,8 @@ public class Image extends GfxSurface {
     if (previous == null) {
       throw new IllegalStateException("Deferred image pipeline is missing");
     }
-    previous.clearCachedVariants();
-    pipeline = previous.append(operationType, parameter1, parameter2, parameter3, parameter4,
-        width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames);
+    setPipelineAfterMutation(previous.append(operationType, parameter1, parameter2, parameter3, parameter4,
+        width, height, logicalWidth, logicalHeight, frameCount, widthOfAllFrames));
     hashCode = 0;
     replaceBacking(null);
     if (frameCount > 1 && (operationType == ImagePipeline.APPLY_COLOR
@@ -1283,12 +1314,12 @@ public class Image extends GfxSurface {
     textureId = -1;
     hashCode = 0;
     changed[0] = true;
-    deferred.clearCachedVariants();
-    pipeline = null;
+    setPipelineAfterMutation(null);
   }
 
   /** Returns an existing materialized variant for this destination without resolving a cache miss. */
   Image cachedFinalRasterForDrawing(double destinationScale) throws ImageException {
+    ImageDrawingBridge.cleanupPersistentOwnersForDrawing();
     validateDrawingScale(destinationScale);
     return cachedMaterializedVariantForDrawing(pipeline, destinationScale);
   }
@@ -1300,6 +1331,7 @@ public class Image extends GfxSurface {
 
   Image resolveForDrawing(double destinationScale, ImageRasterAdmission admissionMode)
       throws ImageException {
+    ImageDrawingBridge.cleanupPersistentOwnersForDrawing();
     validateDrawingScale(destinationScale);
     if (admissionMode == null) {
       throw new NullPointerException("admissionMode");
@@ -1463,11 +1495,11 @@ public class Image extends GfxSurface {
   }
 
   private void replacePipelineForPreparation(ImagePipeline detachedPipeline) {
-    pipeline = detachedPipeline;
+    setPipeline(detachedPipeline);
   }
 
   void discardPreparationPipeline() {
-    pipeline = null;
+    setPipeline(null);
   }
 
   private Image cachedMaterializedVariantForDrawing(ImagePipeline deferred, double destinationScale)
@@ -2864,9 +2896,8 @@ public class Image extends GfxSurface {
       int physicalFrameWidth = oldFullWidth / n;
       double canonicalScale = pipeline.hasGeometricNode() ? 1 : pipeline.contentScale();
       int logicalFrameWidth = (int) Math.ceil(physicalFrameWidth / canonicalScale);
-      pipeline.clearCachedVariants();
-      pipeline = pipeline.append(ImagePipeline.FRAME_LAYOUT, n, physicalFrameWidth, 0, 0,
-          physicalFrameWidth, height, logicalFrameWidth, logicalHeight, n, oldFullWidth);
+      setPipelineAfterMutation(pipeline.append(ImagePipeline.FRAME_LAYOUT, n, physicalFrameWidth, 0, 0,
+          physicalFrameWidth, height, logicalFrameWidth, logicalHeight, n, oldFullWidth));
       width = physicalFrameWidth;
       widthOfAllFrames = oldFullWidth;
       logicalWidth = logicalFrameWidth;

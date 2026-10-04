@@ -352,6 +352,10 @@ public class Control extends GfxSurface {
   private List<Listener> listeners = new ArrayList<>();
   private static boolean callingUpdScr, callingRepNow;
 
+  /** Internal lifecycle notification for controls whose retained resources follow their parent. */
+  void onParentChanged(Container oldParent, Container newParent) {
+  }
+
   /** Alpha to be used in some controls, ranging from 0 to 255. */
   public int alphaValue = 255;
 

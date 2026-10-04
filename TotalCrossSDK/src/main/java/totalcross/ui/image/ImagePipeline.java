@@ -56,6 +56,7 @@ final class ImagePipeline {
   private long cachedDrawUse2;
   private long cachedDrawGeneration1;
   private long cachedDrawGeneration2;
+  private int persistentDrawingOwnerCount;
 
   ImagePipeline(ImageSource root) {
     this(root, ImageDecodePolicy.targetDecode());
@@ -393,6 +394,30 @@ final class ImagePipeline {
     pendingScaleBits = scaleBits;
     pendingGeneration = sourceDecodeGeneration;
     return false;
+  }
+
+  void retainPersistentDrawingOwner() {
+    if (persistentDrawingOwnerCount == Integer.MAX_VALUE) {
+      throw new IllegalStateException("Too many persistent image drawing owners");
+    }
+    persistentDrawingOwnerCount++;
+  }
+
+  void releasePersistentDrawingOwner() {
+    if (persistentDrawingOwnerCount <= 0) {
+      throw new IllegalStateException("Persistent image drawing owner underflow");
+    }
+    if (--persistentDrawingOwnerCount == 0) {
+      clearCachedMaterializedVariantAndPending();
+    }
+  }
+
+  int persistentDrawingOwnerCountForSmoke() {
+    return persistentDrawingOwnerCount;
+  }
+
+  boolean hasPersistentDrawingOwners() {
+    return persistentDrawingOwnerCount > 0;
   }
 
   /** Caches the admitted representation on this node for later prefix reuse. */

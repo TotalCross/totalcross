@@ -28,6 +28,7 @@ import totalcross.util.Vector;
  */
 
 public class Container extends Control {
+  private static Control reparentingControl;
   private LayoutUnit layoutUnit = LayoutUnit.INHERIT;
   /** The children of the container. */
   protected Control children;
@@ -384,7 +385,13 @@ public class Container extends Control {
       control.uiAdjustmentsBasedOnFontHeightIsSupported = this.uiAdjustmentsBasedOnFontHeightIsSupported;
     }
     if (control.parent != null) {
-      control.parent.remove(control);
+      Control previousReparentingControl = reparentingControl;
+      reparentingControl = control;
+      try {
+        control.parent.remove(control);
+      } finally {
+        reparentingControl = previousReparentingControl;
+      }
     }
     if (control.asWindow != null) {
       throw new RuntimeException("A Window can't be added to a container: use popup instead.");
@@ -427,8 +434,14 @@ public class Container extends Control {
     }
     control.prev = tail;
     tail = control;
+    Container oldParent = control.parent;
     control.parent = this;
+    control.onParentChanged(oldParent, this);
     numChildren++;
+  }
+
+  static boolean isReparenting(Control control) {
+    return reparentingControl == control;
   }
 
   /**
@@ -479,7 +492,9 @@ public class Container extends Control {
     control.prev = null;
     numChildren--;
     Window.needsPaint = true; // guich@200b4_16: invalidate the hole container's area
+    Container oldParent = control.parent;
     control.parent = null;
+    control.onParentChanged(oldParent, null);
     if (control.asContainer != null && !control.asContainer.ignoreOnRemove) {
       control.asContainer.onRemove(); // guich@402_5
     }
