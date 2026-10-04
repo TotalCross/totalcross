@@ -13,6 +13,11 @@ on:
         required: false
         type: boolean
         default: false
+      selective:
+        description: Limit builds to the scope implied by pull request changes
+        required: false
+        type: boolean
+        default: false
 
 env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
@@ -29,12 +34,63 @@ jobs:
   checkout-source:
     name: Checkout source code
     runs-on: ubuntu-22.04
+    outputs:
+      scope: ${{ steps.select_build_scope.outputs.scope }}
 
     steps:
     - name: Checkout source code
       uses: actions/checkout@v6
       with:
         fetch-depth: 0
+
+    - name: Select build scope
+      id: select_build_scope
+      shell: bash
+      env:
+        SELECTIVE_BUILD: ${{ inputs.selective }}
+        PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        scope=full
+
+        if [ "${SELECTIVE_BUILD}" = "true" ]           && [ -n "${PR_BASE_SHA}" ]           && [ -n "${PR_HEAD_SHA}" ]
+        then
+          mapfile -t changed_files < <(
+            git diff --name-only "${PR_BASE_SHA}...${PR_HEAD_SHA}"
+          )
+
+          if [ "${#changed_files[@]}" -gt 0 ]; then
+            docs_only=true
+            sdk_only=true
+
+            for path in "${changed_files[@]}"; do
+              case "${path}" in
+                *.md|docs/*|.agent/*|.agents/*|LICENSE|NOTICE)
+                  ;;
+                *)
+                  docs_only=false
+                  ;;
+              esac
+
+              case "${path}" in
+                *.md|docs/*|.agent/*|.agents/*|LICENSE|NOTICE|TotalCrossSDK/*|scripts/package-sdk.sh)
+                  ;;
+                *)
+                  sdk_only=false
+                  ;;
+              esac
+            done
+
+            if ${docs_only}; then
+              scope=none
+            elif ${sdk_only}; then
+              scope=sdk
+            fi
+          fi
+        fi
+
+        printf 'scope=%s\n' "${scope}" >> "${GITHUB_OUTPUT}"
+        printf 'Selected build scope: %s\n' "${scope}"
 
     - name: Validate commit
       uses: ./.github/actions/validate-commit
@@ -46,9 +102,11 @@ jobs:
         pr-head-sha: ${{ github.event.pull_request.head.sha }}
 
     - name: Pack source code
+      if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
       run: tar --exclude=.git -czf "${RUNNER_TEMP}/source-code.tar.gz" .
 
     - name: Export dependency overrides
+      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       env:
         SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
         SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
@@ -87,6 +145,7 @@ jobs:
         done
 
     - name: Cache depot tools
+      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       uses: actions/cache@v5
       with:
         path: TotalCrossVM/deps/totalcross-depot-tools
@@ -94,14 +153,17 @@ jobs:
         enableCrossOsArchive: true
 
     - name: Fetch depot tools metadata
+      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       run: TotalCrossVM/deps/fetch-depot-tools.sh
 
     - name: Fetch native dependencies
+      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       env:
         PREPARED_NATIVE_DEPENDENCIES_INDEX: ${{ runner.temp }}/prepared-native-dependencies-index.jsonl
       run: scripts/prepare-native-dependencies.sh
 
     - name: Package prepared native dependencies
+      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       run: |
         args=(
           --depot-dir TotalCrossVM/deps/totalcross-depot-tools
@@ -111,6 +173,7 @@ jobs:
         scripts/package-native-dependencies.py "${args[@]}"
 
     - name: Upload prepared native dependencies
+      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       uses: actions/upload-artifact@v7
       with:
         name: prepared-native-dependencies
@@ -119,6 +182,7 @@ jobs:
         retention-days: 1
 
     - name: Upload source code
+      if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
       uses: actions/upload-artifact@v7
       with:
         name: source-code
@@ -126,6 +190,7 @@ jobs:
         retention-days: 1
 
   build-linux:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build '${{ matrix.project }}'
     needs: checkout-source
     strategy:
@@ -322,6 +387,7 @@ jobs:
         ninja
 
   build-windows:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `windows`
     needs: checkout-source
     runs-on: windows-2022
@@ -395,6 +461,7 @@ jobs:
           TotalCrossVM/vc2022/Release/*.exe
 
   build-windows-native-legacy:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `windows-native-legacy`
     needs: checkout-source
     runs-on: windows-2022
@@ -444,6 +511,7 @@ jobs:
         popd
 
   build-macos-arm64:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `macos-arm64`
     needs: checkout-source
     runs-on: macos-15
@@ -512,6 +580,7 @@ jobs:
           build/Launcher
 
   build-sdk:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'sdk' }}
     name: Build `SDK`
     needs: checkout-source
     runs-on: ubuntu-22.04
@@ -560,6 +629,7 @@ jobs:
         path: sdk-build.tar.gz
 
   build-android:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `Android`
     needs: checkout-source
     runs-on: ubuntu-24.04
@@ -647,6 +717,7 @@ jobs:
         path: build/TotalCross/dist/vm/android/TotalCross.aab
 
   build-ios:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `iOS`
     needs: checkout-source
     runs-on: macos-15
