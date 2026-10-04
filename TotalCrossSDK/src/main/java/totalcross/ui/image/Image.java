@@ -1295,7 +1295,15 @@ public class Image extends GfxSurface {
 
   /** Resolves a deferred image for a destination without adopting the result. */
   Image resolveForDrawing(double destinationScale) throws ImageException {
+    return resolveForDrawing(destinationScale, ImageRasterAdmission.SECOND_OBSERVATION);
+  }
+
+  Image resolveForDrawing(double destinationScale, ImageRasterAdmission admissionMode)
+      throws ImageException {
     validateDrawingScale(destinationScale);
+    if (admissionMode == null) {
+      throw new NullPointerException("admissionMode");
+    }
     ImagePipeline deferred = pipeline;
     if (deferred == null) {
       return this;
@@ -1310,7 +1318,8 @@ public class Image extends GfxSurface {
     Image resolved = resolvePipeline(deferred, effectiveScale);
     synchronizePresentationState(resolved);
     sourceDecodeGeneration = sourceDecodeGeneration(deferred);
-    boolean admitted = deferred.observeMaterializedVariant(scaleBits, sourceDecodeGeneration);
+    boolean admitted = admissionMode == ImageRasterAdmission.IMMEDIATE
+        || deferred.observeMaterializedVariant(scaleBits, sourceDecodeGeneration);
     if (admitted) {
       deferred.cacheMaterializedVariant(scaleBits, resolved, sourceDecodeGeneration);
     }
