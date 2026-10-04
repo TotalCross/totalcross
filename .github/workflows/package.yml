@@ -203,7 +203,7 @@ jobs:
 
         while IFS= read -r tcz; do
           artifacts+=("${tcz}")
-        done < <(find build/TotalCross/dist/vm -maxdepth 1 -type f -name '*.tcz' -print | sort)
+        done < <(find build/TotalCross/dist/vm -maxdepth 1 -type f -name '*.tcz' ! -name 'TCFont.tcz' -print | sort)
 
         for candidate in \
           linux-amd64/libtcvm.so linux-amd64/Launcher \
