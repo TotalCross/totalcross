@@ -131,6 +131,10 @@ jobs:
             encoding="utf-8",
         )
         PY
+        python3 scripts/provenance/build-identity.py \
+          --repository-root . \
+          --update-manifest build-provenance.json \
+          --format id
 
     - name: Pack source code
       if: ${{ steps.select_build_scope.outputs.scope != 'none' }}

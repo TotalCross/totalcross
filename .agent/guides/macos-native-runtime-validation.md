@@ -64,6 +64,15 @@ Launcher from another revision.
 
 Do not use a packaged dylib from another checkout or revision.
 
+Before accepting a local native smoke result, validate the embedded identities
+of the generated SDK JAR, application TCZ, native VM, and Launcher with:
+
+    python3 scripts/provenance/artifact-identity.py \\
+      <sdk.jar> <application.tcz> <libtcvm.dylib> <Launcher>
+
+A missing identity or mixed Build ID is a failed smoke setup. Do not run or
+interpret the application until the artifact set is coherent.
+
 Record:
 
     git rev-parse HEAD

@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
+import groovy.json.JsonSlurper
+
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'me.champeau.gradle.japicmp'
@@ -19,6 +21,15 @@ java {
 
 base {
     archivesName = 'totalcross-sdk'
+}
+
+def repositoryRoot = project.rootDir.parentFile
+def buildIdentityProvider = providers.exec {
+    workingDir repositoryRoot
+    commandLine 'python3', new File(repositoryRoot, 'scripts/provenance/build-identity.py').absolutePath,
+        '--repository-root', repositoryRoot.absolutePath, '--format', 'json'
+}.standardOutput.asText.map { output ->
+    new JsonSlurper().parseText(output.trim())
 }
 
 // The opt-in SDK variant must match TC_ENABLE_RUNTIME_DIAGNOSTICS in CMake.
@@ -212,13 +223,21 @@ jar {
     // collect all runtime dependencies shipped in dist/libs
     int i = 0
     String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++ == 0 ? String.format("%-50s", it.getName()) : String.format("%-62s", it.getName())) }.join(" ")
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        manifest.attributes(
+            'TotalCross-Build-Identity-Version': identity.build.identityVersion.toString(),
+            'TotalCross-Build-ID': identity.build.id,
+            'TotalCross-Source-Commit': identity.source.commit,
+            'TotalCross-Source-Tree': identity.source.tree,
+            'TotalCross-Source-Dirty': identity.source.dirty.toString()
+        )
+    }
     manifest {
         attributes('Main-Class': 'totalcross.Launcher')
-        manifest {
-            attributes(
-                "Class-Path": classpathVar
-            )
-        }
+        attributes(
+            "Class-Path": classpathVar
+        )
     }
 }
 
@@ -421,6 +440,21 @@ task copySdkDependencies(type: Copy) {
 
 tasks.withType(JavaExec).configureEach {
     classpath.from(tasks.named('totalcrossRuntimeJavaJar').flatMap { it.archiveFile })
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
+        systemProperty 'totalcross.build.id', identity.build.id
+        systemProperty 'totalcross.source.tree', identity.source.tree
+    }
+}
+
+tasks.withType(Test).configureEach {
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
+        systemProperty 'totalcross.build.id', identity.build.id
+        systemProperty 'totalcross.source.tree', identity.source.tree
+    }
 }
 
 task dist(dependsOn: [build, copySdkDependencies, 'sourcesJar', 'javadocJar']) {
