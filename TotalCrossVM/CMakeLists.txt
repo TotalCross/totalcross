@@ -20,6 +20,27 @@ include(FetchContent)
 # set the project name
 project(tcvm VERSION 7.2.2)
 
+find_program(TC_BUILD_IDENTITY_PYTHON NAMES python3 python)
+if(NOT TC_BUILD_IDENTITY_PYTHON)
+  message(FATAL_ERROR "TotalCross build identity requires Python 3")
+endif()
+execute_process(
+  COMMAND "${TC_BUILD_IDENTITY_PYTHON}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/provenance/build-identity.py"
+    --repository-root "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    --format json
+  RESULT_VARIABLE TC_BUILD_IDENTITY_RESULT
+  OUTPUT_VARIABLE TC_BUILD_IDENTITY_JSON
+  ERROR_VARIABLE TC_BUILD_IDENTITY_ERROR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if(NOT TC_BUILD_IDENTITY_RESULT EQUAL 0)
+  message(FATAL_ERROR "Unable to compute TotalCross build identity: ${TC_BUILD_IDENTITY_ERROR}")
+endif()
+string(JSON TC_BUILD_ID GET "${TC_BUILD_IDENTITY_JSON}" build id)
+string(JSON TC_SOURCE_TREE GET "${TC_BUILD_IDENTITY_JSON}" source tree)
+message(STATUS "TotalCross Build ID: ${TC_BUILD_ID}")
+
 if(MSVC AND NOT TC_MSVC_RUNTIME_POLICY_AVAILABLE)
   foreach(flag_var
       CMAKE_C_FLAGS
@@ -232,6 +253,8 @@ target_compile_definitions(
   tcvm
   PRIVATE
     TC_PLATFORM_CONFIGURED=1
+    TC_BUILD_ID="${TC_BUILD_ID}"
+    TC_SOURCE_TREE="${TC_SOURCE_TREE}"
 )
 
 if(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
@@ -699,6 +722,8 @@ set(SOURCES
 
     ${TC_SRCDIR}/event/Event.c
     ${TC_SRCDIR}/event/specialkeys.c
+
+    ${TC_SRCDIR}/util/build_identity.c
 
     ${TC_SRCDIR}/palmdb/palmdb.c
 
@@ -1560,7 +1585,12 @@ endif(MSVC)
 if(NOT TC_GENERATOR_XCODE)
 add_executable(Launcher 
   ${TC_SRCDIR}/launchers/${LAUNCHER_PATH}/Launcher.c
+  ${TC_SRCDIR}/util/build_identity.c
   ${LAUNCHER_RESOURCES}
+)
+target_compile_definitions(Launcher PRIVATE
+  TC_BUILD_ID="${TC_BUILD_ID}"
+  TC_SOURCE_TREE="${TC_SOURCE_TREE}"
 )
 
 if(TC_TARGET_WINCE)
