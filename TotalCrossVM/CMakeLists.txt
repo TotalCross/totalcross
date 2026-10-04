@@ -41,6 +41,20 @@ add_custom_target(tc-build-identity
   VERBATIM
 )
 
+set(TC_ARTIFACT_COMPATIBILITY_FILE
+  "${CMAKE_CURRENT_SOURCE_DIR}/../config/artifact-compatibility.properties")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${TC_ARTIFACT_COMPATIBILITY_FILE}")
+file(STRINGS
+  "${TC_ARTIFACT_COMPATIBILITY_FILE}"
+  TC_RUNTIME_ABI_LINE
+  REGEX "^runtimeAbi="
+)
+if(NOT TC_RUNTIME_ABI_LINE)
+  message(FATAL_ERROR "artifact compatibility contract is missing runtimeAbi")
+endif()
+string(REGEX REPLACE "^runtimeAbi=" "" TC_RUNTIME_ABI "${TC_RUNTIME_ABI_LINE}")
+
 if(MSVC AND NOT TC_MSVC_RUNTIME_POLICY_AVAILABLE)
   foreach(flag_var
       CMAKE_C_FLAGS
@@ -255,6 +269,7 @@ target_compile_definitions(
   tcvm
   PRIVATE
     TC_PLATFORM_CONFIGURED=1
+    TC_RUNTIME_ABI="${TC_RUNTIME_ABI}"
 )
 
 if(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
@@ -1599,6 +1614,9 @@ add_executable(Launcher
   ${TC_SRCDIR}/launchers/${LAUNCHER_PATH}/Launcher.c
   ${TC_SRCDIR}/util/build_identity.c
   ${LAUNCHER_RESOURCES}
+)
+target_compile_definitions(Launcher PRIVATE
+  TC_RUNTIME_ABI="${TC_RUNTIME_ABI}"
 )
 target_include_directories(Launcher PRIVATE "${TC_BUILD_IDENTITY_INCLUDE_DIR}")
 add_dependencies(Launcher tc-build-identity)

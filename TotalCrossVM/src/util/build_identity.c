@@ -16,14 +16,20 @@
 #define TC_SOURCE_TREE "unknown"
 #endif
 
+#ifndef TC_RUNTIME_ABI
+#define TC_RUNTIME_ABI "unknown"
+#endif
+
 #if defined(_MSC_VER)
 #define TC_BUILD_ID_USED __declspec(selectany)
 #  if defined(_M_IX86)
 #    pragma comment(linker, "/include:_totalcrossBuildIdentityMarker")
 #    pragma comment(linker, "/include:_totalcrossSourceTreeMarker")
+#    pragma comment(linker, "/include:_totalcrossRuntimeAbiMarker")
 #  else
 #    pragma comment(linker, "/include:totalcrossBuildIdentityMarker")
 #    pragma comment(linker, "/include:totalcrossSourceTreeMarker")
+#    pragma comment(linker, "/include:totalcrossRuntimeAbiMarker")
 #  endif
 #elif defined(__GNUC__) || defined(__clang__)
 #define TC_BUILD_ID_USED __attribute__((used))
@@ -36,3 +42,6 @@ TC_BUILD_ID_USED const char totalcrossBuildIdentityMarker[] =
 
 TC_BUILD_ID_USED const char totalcrossSourceTreeMarker[] =
     "TOTALCROSS_SOURCE_TREE:" TC_SOURCE_TREE;
+
+TC_BUILD_ID_USED const char totalcrossRuntimeAbiMarker[] =
+    "TOTALCROSS_RUNTIME_ABI:" TC_RUNTIME_ABI;

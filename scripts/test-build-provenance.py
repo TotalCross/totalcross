@@ -18,9 +18,15 @@ sys.dont_write_bytecode = True
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from provenance.build_identity import compute_build_id  # noqa: E402
+from provenance.compatibility_contract import (  # noqa: E402
+    parse_compatibility_contract,
+    read_compatibility_contract,
+)
 
 
 VALIDATOR = ROOT / "scripts" / "validate-build-provenance.py"
+COMPATIBILITY_VALIDATOR = ROOT / "scripts" / "provenance" / "validate-compatibility.py"
+BUILD_WORKFLOW = ROOT / ".github" / "workflows" / "build.yml"
 PACKAGE_WORKFLOW = ROOT / ".github" / "workflows" / "package.yml"
 REPOSITORY = "TotalCross/totalcross"
 SOURCE_COMMIT = "a" * 40
@@ -28,7 +34,7 @@ SOURCE_TREE = "b" * 40
 
 
 def manifest(repository=REPOSITORY, commit=SOURCE_COMMIT, tree=SOURCE_TREE, dirty=False,
-             include_build_identity=False, build_id=None):
+             include_build_identity=False, build_id=None, compatibility=None):
     value = {
         "schemaVersion": 1,
         "repository": repository,
@@ -40,6 +46,8 @@ def manifest(repository=REPOSITORY, commit=SOURCE_COMMIT, tree=SOURCE_TREE, dirt
             "identityVersion": 1,
             "id": build_id or compute_build_id(repository, tree),
         }
+    if compatibility is not None:
+        value["compatibility"] = compatibility
     return value
 
 
@@ -58,7 +66,9 @@ class BuildProvenanceTests(unittest.TestCase):
             (artifact / "build-provenance.json").write_text(json.dumps(value), encoding="utf-8")
         return artifact
 
-    def run_validator(self, artifacts, require_build_identity=False):
+    def run_validator(
+        self, artifacts, require_build_identity=False, compatibility_contract=None
+    ):
         command = [
             sys.executable,
             str(VALIDATOR),
@@ -72,6 +82,8 @@ class BuildProvenanceTests(unittest.TestCase):
         ]
         if require_build_identity:
             command.append("--require-build-identity")
+        if compatibility_contract is not None:
+            command.extend(("--compatibility-contract", str(compatibility_contract)))
         for name, outcome, artifact in artifacts:
             command.extend(("--artifact-download", f"{name}={outcome}={artifact}"))
         return subprocess.run(command, text=True, capture_output=True, check=False)
@@ -118,6 +130,152 @@ class BuildProvenanceTests(unittest.TestCase):
         )
         self.assertNotEqual(0, invalid.returncode)
         self.assertIn("build.identityVersion", invalid.stderr)
+
+    def test_compatibility_contract_is_checked_against_every_manifest(self):
+        contract = self.root / "artifact-compatibility.properties"
+        contract.write_text(
+            "schemaVersion=1\ntczFormat=200\nconverterAbi=1\nruntimeAbi=1\n",
+            encoding="utf-8",
+        )
+        expected = {
+            "schemaVersion": 1,
+            "tczFormat": 200,
+            "converterAbi": 1,
+            "runtimeAbi": 1,
+        }
+        sdk = self.write_artifact(
+            "sdk-valid-compatibility",
+            manifest(compatibility=expected),
+        )
+        valid = self.run_validator(
+            [("sdk", "success", sdk)], compatibility_contract=contract
+        )
+        self.assertEqual(0, valid.returncode, valid.stderr)
+
+        invalid_value = dict(expected, runtimeAbi=2)
+        incompatible = self.write_artifact(
+            "sdk-incompatible-runtime",
+            manifest(compatibility=invalid_value),
+        )
+        mismatch = self.run_validator(
+            [("sdk", "success", incompatible)], compatibility_contract=contract
+        )
+        self.assertNotEqual(0, mismatch.returncode)
+        self.assertIn("compatibility.runtimeAbi", mismatch.stderr)
+
+        boolean_value = dict(expected, runtimeAbi=True)
+        boolean_manifest = self.write_artifact(
+            "sdk-boolean-runtime",
+            manifest(compatibility=boolean_value),
+        )
+        invalid = self.run_validator(
+            [("sdk", "success", boolean_manifest)], compatibility_contract=contract
+        )
+        self.assertNotEqual(0, invalid.returncode)
+        self.assertIn("compatibility.runtimeAbi", invalid.stderr)
+
+    def test_repository_compatibility_contract_matches_java_and_native_tcz(self):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(COMPATIBILITY_VALIDATOR),
+                "--repository-root",
+                str(ROOT),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("validated compatibility contract", result.stdout)
+
+    def test_compatibility_contract_accepts_exact_registry_with_comments(self):
+        contract = parse_compatibility_contract(
+            "# canonical epochs\n"
+            "schemaVersion=1\n"
+            "tczFormat=200\n"
+            "converterAbi=1\n"
+            "runtimeAbi=12\n"
+        )
+        self.assertEqual(
+            {
+                "schemaVersion": 1,
+                "tczFormat": 200,
+                "converterAbi": 1,
+                "runtimeAbi": 12,
+            },
+            contract,
+        )
+        self.assertEqual(
+            {
+                "schemaVersion": 1,
+                "tczFormat": 200,
+                "converterAbi": 1,
+                "runtimeAbi": 1,
+            },
+            read_compatibility_contract(
+                ROOT / "config" / "artifact-compatibility.properties"
+            ),
+        )
+
+    def test_compatibility_contract_rejects_invalid_registry_syntax(self):
+        valid_lines = (
+            "schemaVersion=1\n"
+            "tczFormat=200\n"
+            "converterAbi=1\n"
+            "runtimeAbi=1\n"
+        )
+        invalid_contracts = (
+            (valid_lines + "runtimeAbi=2\n", "duplicate compatibility key"),
+            (valid_lines + "extra=1\n", "unknown compatibility key"),
+            ("schemaVersion=1\ntczFormat=200\nconverterAbi=1\n", "missing"),
+            (valid_lines + "broken\n", "invalid compatibility syntax"),
+            (valid_lines + "tczFormat=201=extra\n", "invalid compatibility syntax"),
+            (valid_lines.replace("runtimeAbi=1", "runtimeAbi=one"), "decimal integer"),
+            (valid_lines.replace("schemaVersion=1", "schemaVersion=2"), "unsupported"),
+            (valid_lines.replace("tczFormat=200", "tczFormat=0"), "positive integer"),
+            (valid_lines.replace("converterAbi=1", "converterAbi=-1"), "decimal integer"),
+            (valid_lines.replace("runtimeAbi=1", "runtimeAbi=0"), "positive integer"),
+            (valid_lines.replace("runtimeAbi=1", "runtimeAbi =1"), "invalid compatibility syntax"),
+        )
+        for text, message in invalid_contracts:
+            with self.subTest(text=text):
+                with self.assertRaisesRegex(ValueError, message):
+                    parse_compatibility_contract(text)
+
+    def test_provenance_compatibility_rejects_missing_and_unknown_keys(self):
+        expected = {
+            "schemaVersion": 1,
+            "tczFormat": 200,
+            "converterAbi": 1,
+            "runtimeAbi": 1,
+        }
+        missing_key = manifest(
+            compatibility={key: value for key, value in expected.items() if key != "runtimeAbi"}
+        )
+        sdk = self.write_artifact("sdk-missing-compatibility", missing_key)
+        missing_result = self.run_validator(
+            [("sdk", "success", sdk)],
+            compatibility_contract=ROOT / "config" / "artifact-compatibility.properties",
+        )
+        self.assertNotEqual(0, missing_result.returncode)
+        self.assertIn("compatibility: missing keys runtimeAbi", missing_result.stderr)
+
+        unknown_key = manifest(compatibility=dict(expected, runtimeAbi=1, extra=1))
+        sdk = self.write_artifact("sdk-unknown-compatibility", unknown_key)
+        unknown_result = self.run_validator(
+            [("sdk", "success", sdk)],
+            compatibility_contract=ROOT / "config" / "artifact-compatibility.properties",
+        )
+        self.assertNotEqual(0, unknown_result.returncode)
+        self.assertIn("compatibility: unknown keys extra", unknown_result.stderr)
+
+    def test_build_workflow_validates_and_records_compatibility(self):
+        workflow = BUILD_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("scripts/provenance/validate-compatibility.py", workflow)
+        self.assertIn("from compatibility_contract import read_compatibility_contract", workflow)
+        self.assertNotIn('line.split("=", 1)', workflow)
+        self.assertIn('"compatibility": compatibility', workflow)
 
     def test_manifest_extracted_from_sdk_tar_is_selected(self):
         source = self.write_artifact("sdk-tar-source", manifest())
@@ -213,6 +371,16 @@ class BuildProvenanceTests(unittest.TestCase):
                 )
         self.assertIn('--artifact-download "sdk=success=."', workflow)
         self.assertIn("--require-build-identity", workflow)
+        self.assertIn(
+            "--compatibility-contract config/artifact-compatibility.properties",
+            workflow,
+        )
+        self.assertEqual(
+            2,
+            workflow.count(
+                "--compatibility-contract config/artifact-compatibility.properties"
+            ),
+        )
         self.assertIn("scripts/provenance/artifact-identity.py", workflow)
         self.assertIn('sdk=success=build/TotalCross', workflow)
         self.assertIn("if: ${{ always() }}", workflow)

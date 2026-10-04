@@ -111,11 +111,20 @@ jobs:
       if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
       shell: bash
       run: |
+        python3 scripts/provenance/validate-compatibility.py --repository-root .
         python3 - <<'PY'
         import json
         import os
         from pathlib import Path
         import subprocess
+        import sys
+
+        sys.path.insert(0, str(Path("scripts/provenance").resolve()))
+        from compatibility_contract import read_compatibility_contract
+
+        compatibility = read_compatibility_contract(
+            Path("config/artifact-compatibility.properties")
+        )
 
         Path("build-provenance.json").write_text(
             json.dumps({
@@ -133,6 +142,7 @@ jobs:
                     "runId": os.environ["GITHUB_RUN_ID"],
                     "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"],
                 },
+                "compatibility": compatibility,
             }, sort_keys=True) + "\n",
             encoding="utf-8",
         )

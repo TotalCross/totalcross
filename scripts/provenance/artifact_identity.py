@@ -23,8 +23,17 @@ BUILD_ID_RE = re.compile(
 SOURCE_TREE_RE = re.compile(
     rb"TOTALCROSS_SOURCE_TREE:([0-9a-f]{64}|[0-9a-f]{40})\x00"
 )
+RUNTIME_ABI_MARKER = b"TOTALCROSS_RUNTIME_ABI:"
 TCZ_IDENTITY_ENTRY = "META-INF/totalcross-build.properties"
 RESOURCE_TCZ_NAMES = {"tcfont.tcz", "material icons.tcz"}
+TCZ_IDENTITY_PROPERTIES = (
+    "identityVersion",
+    "buildId",
+    "sourceTree",
+    "tczFormat",
+    "converterAbi",
+    "runtimeAbi",
+)
 
 ARTIFACT_DOWNLOAD_NAMES = {
     "sdk",
@@ -50,13 +59,18 @@ def parse_properties(data):
     result = {}
     for raw in data.decode("utf-8").splitlines():
         line = raw.strip()
-        if not line or line.startswith("#") or "=" not in line:
+        if not line or line.startswith("#"):
             continue
+        if "=" not in line:
+            raise ValueError(f"invalid TCZ build identity property: {line!r}")
         key, value = line.split("=", 1)
         key = key.strip()
+        value = value.strip()
+        if not key or not value:
+            raise ValueError(f"invalid TCZ build identity property: {line!r}")
         if key in result:
             raise ValueError(f"duplicate TCZ build identity property: {key}")
-        result[key] = value.strip()
+        result[key] = value
     return result
 
 
@@ -92,6 +106,9 @@ def jar_identity_bytes(data, path):
         "buildId": attrs.get("totalcross-build-id"),
         "sourceTree": attrs.get("totalcross-source-tree"),
         "identityVersion": attrs.get("totalcross-build-identity-version"),
+        "tczFormat": attrs.get("totalcross-tcz-format"),
+        "converterAbi": attrs.get("totalcross-converter-abi"),
+        "runtimeAbi": attrs.get("totalcross-runtime-abi"),
         "path": str(path),
     }
 
@@ -143,12 +160,42 @@ def tcz_identity_bytes(data, path):
             if identity is not None:
                 raise ValueError(f"duplicate TCZ build identity entry: {path}")
             props = parse_properties(payload)
+            missing = [key for key in TCZ_IDENTITY_PROPERTIES if not props.get(key)]
+            if missing:
+                raise ValueError(
+                    f"TCZ build identity is missing required properties in {path}: "
+                    + ", ".join(missing)
+                )
+            if props["identityVersion"] != "1":
+                raise ValueError(
+                    f"unsupported TCZ build identity version in {path}: "
+                    f"{props['identityVersion']!r}"
+                )
+            if not is_git_object_id(props["buildId"]) or len(props["buildId"]) != 64:
+                raise ValueError(f"TCZ build identity has an invalid buildId: {path}")
+            if not is_git_object_id(props["sourceTree"]):
+                raise ValueError(f"TCZ build identity has an invalid sourceTree: {path}")
+            metadata_format = _positive_epoch(props["tczFormat"])
+            if metadata_format is None:
+                raise ValueError(f"TCZ build identity has an invalid tczFormat: {path}")
+            if metadata_format != str(current_version):
+                raise ValueError(
+                    f"TCZ format mismatch in {path}: physical header is "
+                    f"{current_version}, embedded tczFormat is {metadata_format}"
+                )
+            for key in ("converterAbi", "runtimeAbi"):
+                if _positive_epoch(props[key]) is None:
+                    raise ValueError(
+                        f"TCZ build identity has an invalid {key}: {path}"
+                    )
             identity = {
                 "kind": "tcz",
                 "tczFormat": current_version,
                 "buildId": props.get("buildId"),
                 "sourceTree": props.get("sourceTree"),
                 "identityVersion": props.get("identityVersion"),
+                "converterAbi": props.get("converterAbi"),
+                "runtimeAbi": props.get("runtimeAbi"),
                 "path": str(path),
             }
     if identity is None:
@@ -158,35 +205,117 @@ def tcz_identity_bytes(data, path):
             "buildId": None,
             "sourceTree": None,
             "identityVersion": None,
+            "converterAbi": None,
+            "runtimeAbi": None,
             "path": str(path),
         }
     return identity
 
 
-def native_identity_stream(stream, path):
-    build_ids = set()
-    source_trees = set()
-    markers = (
-        (b"TOTALCROSS_BUILD_IDENTITY_V1:", BUILD_ID_RE, build_ids),
-        (b"TOTALCROSS_SOURCE_TREE:", SOURCE_TREE_RE, source_trees),
-    )
-    max_prefix_length = max(len(prefix) for prefix, _, _ in markers)
-    overlap = b""
-    while True:
-        chunk = stream.read(65536)
-        data = overlap + chunk
+class _RuntimeAbiScanner:
+    """Read complete NUL-terminated runtime ABI tokens across stream chunks."""
+
+    def __init__(self, path):
+        self.path = path
+        self.tail = b""
+        self.pending_digits = None
+        self.values = []
+
+    def _record(self, digits):
+        value = bytes(digits)
+        if not value:
+            raise ValueError(
+                f"native artifact has a malformed runtime ABI marker: {self.path}"
+            )
+        normalized = value.lstrip(b"0")
+        if not normalized:
+            raise ValueError(
+                f"native artifact has a nonpositive runtime ABI marker: {self.path}"
+            )
+        self.values.append(normalized.decode("ascii"))
+
+    def feed(self, chunk):
+        data = self.tail + chunk
+        cursor = 0
+
+        if self.pending_digits is not None:
+            start = cursor
+            while cursor < len(data) and 48 <= data[cursor] <= 57:
+                cursor += 1
+            self.pending_digits.extend(data[start:cursor])
+            if cursor == len(data):
+                return
+            if data[cursor] != 0:
+                raise ValueError(
+                    f"native artifact has a malformed runtime ABI marker: {self.path}"
+                )
+            self._record(self.pending_digits)
+            self.pending_digits = None
+            cursor += 1
+
+        while cursor < len(data):
+            marker_start = data.find(RUNTIME_ABI_MARKER, cursor)
+            if marker_start < 0:
+                self.tail = data[-(len(RUNTIME_ABI_MARKER) - 1):]
+                return
+
+            digits_start = marker_start + len(RUNTIME_ABI_MARKER)
+            cursor = digits_start
+            while cursor < len(data) and 48 <= data[cursor] <= 57:
+                cursor += 1
+            digits = data[digits_start:cursor]
+
+            if cursor == len(data):
+                self.pending_digits = bytearray(digits)
+                self.tail = b""
+                return
+            if data[cursor] != 0:
+                raise ValueError(
+                    f"native artifact has a malformed runtime ABI marker: {self.path}"
+                )
+            self._record(digits)
+            cursor += 1
+
+        self.tail = data[-(len(RUNTIME_ABI_MARKER) - 1):]
+
+    def finish(self):
+        if self.pending_digits is not None:
+            raise ValueError(
+                f"native artifact has a truncated runtime ABI marker: {self.path}"
+            )
+        return self.values
+
+
+class _NativeIdentityMarkerScanner:
+    """Read exact NUL-terminated build and source-tree markers in chunks."""
+
+    def __init__(self, path):
+        self.path = path
+        self.build_ids = set()
+        self.source_trees = set()
+        self.markers = (
+            (b"TOTALCROSS_BUILD_IDENTITY_V1:", BUILD_ID_RE, self.build_ids),
+            (b"TOTALCROSS_SOURCE_TREE:", SOURCE_TREE_RE, self.source_trees),
+        )
+        self.max_prefix_length = max(len(prefix) for prefix, _, _ in self.markers)
+        self.tail = b""
+
+    def feed(self, chunk):
+        data = self.tail + chunk
         cursor = 0
         incomplete_marker = None
         while cursor < len(data):
             candidates = [
                 (data.find(prefix, cursor), prefix, pattern, values)
-                for prefix, pattern, values in markers
+                for prefix, pattern, values in self.markers
             ]
             candidates = [candidate for candidate in candidates if candidate[0] >= 0]
             if not candidates:
                 break
 
-            position, prefix, pattern, values = min(candidates, key=lambda item: item[0])
+            position, prefix, pattern, values = min(
+                candidates, key=lambda item: item[0]
+            )
             match = pattern.match(data, position)
             if match is not None:
                 values.add(match.group(1).decode("ascii"))
@@ -195,29 +324,54 @@ def native_identity_stream(stream, path):
 
             value_start = position + len(prefix)
             terminator = data.find(b"\x00", value_start)
-            if terminator >= 0 or len(data) - value_start > 64 or not chunk:
+            if terminator >= 0 or len(data) - value_start > 64:
                 raise ValueError(
-                    f"native artifact has incomplete or conflicting identity markers: {path}"
+                    f"native artifact has incomplete or conflicting identity markers: {self.path}"
                 )
             incomplete_marker = position
             break
 
         if incomplete_marker is not None:
-            overlap = data[incomplete_marker:]
-        elif not chunk:
-            break
+            self.tail = data[incomplete_marker:]
         else:
-            overlap = data[-(max_prefix_length - 1):]
+            self.tail = data[-(self.max_prefix_length - 1):]
 
-    if not build_ids and not source_trees:
+    def finish(self):
+        for prefix, _, _ in self.markers:
+            position = self.tail.find(prefix)
+            if position >= 0 and b"\x00" not in self.tail[position + len(prefix):]:
+                raise ValueError(
+                    f"native artifact has incomplete or conflicting identity markers: {self.path}"
+                )
+        return self.build_ids, self.source_trees
+
+
+def native_identity_stream(stream, path):
+    identity_scanner = _NativeIdentityMarkerScanner(path)
+    runtime_scanner = _RuntimeAbiScanner(path)
+    while True:
+        chunk = stream.read(65536)
+        if not chunk:
+            break
+        identity_scanner.feed(chunk)
+        runtime_scanner.feed(chunk)
+
+    build_ids, source_trees = identity_scanner.finish()
+    runtime_abis = set(runtime_scanner.finish())
+    if not build_ids and not source_trees and not runtime_abis:
         return None
     if len(build_ids) != 1 or len(source_trees) != 1:
         raise ValueError(f"native artifact has incomplete or conflicting identity markers: {path}")
+    if not runtime_abis:
+        raise ValueError(f"native artifact is missing its runtime ABI marker: {path}")
+    if len(runtime_abis) > 1:
+        raise ValueError(f"native artifact has conflicting runtime ABI markers: {path}")
     return {
         "kind": "native",
         "buildId": next(iter(build_ids)),
         "sourceTree": next(iter(source_trees)),
         "identityVersion": "1",
+        "runtimeAbi": next(iter(runtime_abis)) if runtime_abis else None,
         "path": str(path),
     }
 
@@ -248,6 +402,92 @@ def validate_identity(row, repository, source_tree):
         )
 
 
+def _positive_epoch(value):
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        epoch = value
+    elif isinstance(value, str) and re.fullmatch(r"[0-9]+", value):
+        normalized = value.lstrip("0")
+        return normalized if normalized else None
+    else:
+        return None
+    return str(epoch) if epoch >= 1 else None
+
+
+def validate_compatibility(rows):
+    runtime_abis = set()
+    converter_abis = set()
+    tcz_formats = set()
+    missing_runtime = []
+    missing_converter = []
+    missing_tcz_format = []
+
+    for row in rows:
+        runtime_abi = _positive_epoch(row.get("runtimeAbi"))
+        if runtime_abi is None:
+            missing_runtime.append(row["path"])
+        else:
+            runtime_abis.add(runtime_abi)
+
+        if row.get("kind") in ("jar", "tcz"):
+            converter_abi = _positive_epoch(row.get("converterAbi"))
+            if converter_abi is None:
+                missing_converter.append(row["path"])
+            else:
+                converter_abis.add(converter_abi)
+
+            tcz_format = _positive_epoch(row.get("tczFormat"))
+            if tcz_format is None:
+                missing_tcz_format.append(row["path"])
+            else:
+                tcz_formats.add(tcz_format)
+
+    if missing_runtime:
+        raise ValueError("missing runtime ABI epoch: " + ", ".join(missing_runtime))
+    if missing_converter:
+        raise ValueError("missing converter ABI epoch: " + ", ".join(missing_converter))
+    if missing_tcz_format:
+        raise ValueError("missing TCZ format version: " + ", ".join(missing_tcz_format))
+    if len(runtime_abis) != 1:
+        raise ValueError("incompatible TotalCross runtime ABI epochs detected")
+    if len(converter_abis) > 1:
+        raise ValueError("incompatible TotalCross converter ABI epochs detected")
+    if len(tcz_formats) > 1:
+        raise ValueError("incompatible TotalCross TCZ format versions detected")
+
+    return {
+        "runtimeAbi": next(iter(runtime_abis)),
+        "converterAbi": next(iter(converter_abis)) if converter_abis else None,
+        "tczFormat": next(iter(tcz_formats)) if tcz_formats else None,
+    }
+
+
+def validate_artifact_set(rows, allow_mixed_builds=False):
+    missing = [
+        row["path"]
+        for row in rows
+        if not is_git_object_id(row.get("buildId"))
+        or len(row["buildId"]) != 64
+        or not is_git_object_id(row.get("sourceTree"))
+        or row.get("identityVersion") != "1"
+    ]
+    if missing:
+        raise ValueError(
+            "missing or incomplete embedded build identity: " + ", ".join(missing)
+        )
+
+    compatibility = validate_compatibility(rows)
+    if not allow_mixed_builds:
+        build_ids = {row["buildId"] for row in rows}
+        trees = {row["sourceTree"] for row in rows}
+        if len(build_ids) != 1:
+            raise ValueError("mixed TotalCross Build IDs detected")
+        if len(trees) != 1:
+            raise ValueError("mixed TotalCross source trees detected")
+    return compatibility
+
+
 def _identity_from_file(path):
     suffix = path.suffix.casefold()
     if suffix == ".jar":
@@ -262,6 +502,7 @@ def _identity_from_file(path):
             "buildId": None,
             "sourceTree": None,
             "identityVersion": None,
+            "runtimeAbi": None,
             "path": str(path),
         }
     return identity
@@ -492,4 +733,5 @@ def validate_downloads(specifications, repository, source_tree):
         rows.extend(artifact_rows)
     if not rows:
         raise ValueError("no embedded build identities were found in downloaded artifacts")
+    validate_artifact_set(rows)
     return rows
