@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: LGPL-2.1-only
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -17,6 +18,7 @@ def parse_args():
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--source-tree", required=True)
     parser.add_argument("--require-clean-source", action="store_true")
+    parser.add_argument("--require-build-identity", action="store_true")
     return parser.parse_args()
 
 
@@ -57,6 +59,31 @@ def main():
             mismatches.append(
                 f"source.dirty: expected False, got {source.get('dirty')!r}"
             )
+
+    if args.require_build_identity and isinstance(source, dict):
+        canonical = json.dumps(
+            {
+                "identityVersion": 1,
+                "repository": args.repository,
+                "sourceTree": args.source_tree,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        expected_build_id = hashlib.sha256(canonical).hexdigest()
+        build = value.get("build")
+        if not isinstance(build, dict):
+            mismatches.append(f"build: expected object, got {build!r}")
+        else:
+            if build.get("identityVersion") != 1:
+                mismatches.append(
+                    "build.identityVersion: expected 1, "
+                    f"got {build.get('identityVersion')!r}"
+                )
+            if build.get("id") != expected_build_id:
+                mismatches.append(
+                    f"build.id: expected {expected_build_id!r}, got {build.get('id')!r}"
+                )
 
     if mismatches:
         print(f"build provenance mismatch in {args.manifest}", file=sys.stderr)
