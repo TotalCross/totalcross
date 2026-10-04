@@ -128,7 +128,8 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
 
 static int skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
                                 int32 srcX, int32 srcY, int32 width, int32 height,
-                                int32 dstX, int32 dstY, int32 doClip, int32 allowPhysicalCopy)
+                                int32 dstX, int32 dstY, int32 doClip, int32 allowPhysicalCopy,
+                                int32 physicalCopyOnly)
 {
    SkiaImageDrawPlanData data;
    int32 surfaceId;
@@ -187,7 +188,7 @@ static int skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObje
    int result = skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
       (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
       (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height),
-      allowPhysicalCopy != 0 && doClip != 0);
+      allowPhysicalCopy != 0 && doClip != 0, physicalCopyOnly != 0);
    if (clipSet) {
       skia_restoreClip(surfaceId);
    }

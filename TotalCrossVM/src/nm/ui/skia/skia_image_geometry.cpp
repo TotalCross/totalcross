@@ -1024,7 +1024,7 @@ bool skia_image_geometry_draw_compiled(SkCanvas* canvas, const SkImage* image,
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
-    bool allowPhysicalCopy) {
+    bool allowPhysicalCopy, bool physicalCopyOnly) {
     SkCanvas* canvas = skiaGetCanvas(targetSurface);
     int status = 0;
     if (plan && plan->physicalIdentityEnabled) {
@@ -1037,11 +1037,17 @@ int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
             }
             status |= SKIA_IMAGE_DRAW_PHYSICAL_COPY_FALLBACK;
         }
+        if (physicalCopyOnly) {
+            return status;
+        }
         if (physicalIdentityDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
                                  dstLeft, dstTop, dstRight, dstBottom)) {
             return status | SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT | SKIA_IMAGE_DRAW_HANDLED;
         }
         status |= SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_FALLBACK;
+    }
+    if (physicalCopyOnly) {
+        return status;
     }
     if (targetColorVariantDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
             dstLeft, dstTop, dstRight, dstBottom, &status)) {
