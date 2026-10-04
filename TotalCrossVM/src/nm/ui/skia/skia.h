@@ -185,7 +185,7 @@ typedef struct SkiaImageDrawPlanData {
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
-    bool allowPhysicalCopy);
+    bool allowPhysicalCopy, bool physicalCopyOnly);
 void skia_image_backing_record_surface_mutation(int32 surfaceId);
 int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan);
 int32 skia_image_backing_width(int64_t handle);

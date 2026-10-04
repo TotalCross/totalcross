@@ -22,6 +22,8 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
+import totalcross.ui.gfx.Graphics;
+
 class ImageDestinationScaleTest {
   @Test
   void smoothPipelineResolvesPhysicalSizeWithoutAdoptingTheOriginal() throws Exception {
@@ -76,6 +78,38 @@ class ImageDestinationScaleTest {
     assertSame(cached, image.cachedFinalRasterForDrawing(2));
     assertNull(image.cachedFinalRasterForDrawing(1));
     assertNull(image.cachedFinalRasterForDrawing(4));
+  }
+
+  @Test
+  void copyRectResolvesAfterPlanMissAndReusesTheAdmittedFinalRaster() throws Exception {
+    Image base = new Image(4, 4);
+    int[] pixels = base.getPixels();
+    for (int i = 0; i < pixels.length; i++) {
+      pixels[i] = 0xFF000000 | (i * 0x000B1723);
+    }
+    Image source = base.getSmoothScaledInstance(2, 2);
+    Image firstDestination = new Image(2, 2);
+    Image secondDestination = new Image(2, 2);
+    Image warmDestination = new Image(2, 2);
+    Graphics firstGraphics = firstDestination.getGraphics();
+    Graphics secondGraphics = secondDestination.getGraphics();
+    Graphics warmGraphics = warmDestination.getGraphics();
+    Image.resetImageOperationAccountingForTest();
+
+    firstGraphics.copyRect(source, 0, 0, 2, 2, 0, 0);
+    assertNull(source.cachedFinalRasterForDrawing(1));
+    int firstMaterializationImageCount = Image.imageCreatedCountForTest();
+
+    secondGraphics.copyRect(source, 0, 0, 2, 2, 0, 0);
+    Image cached = source.cachedFinalRasterForDrawing(1);
+    assertNotNull(cached);
+    int admittedImageCount = Image.imageCreatedCountForTest();
+    assertTrue(admittedImageCount > firstMaterializationImageCount);
+
+    warmGraphics.copyRect(source, 0, 0, 2, 2, 0, 0);
+
+    assertEquals(admittedImageCount, Image.imageCreatedCountForTest());
+    assertArrayEquals(secondDestination.getPixels(), warmDestination.getPixels());
   }
 
   @Test
