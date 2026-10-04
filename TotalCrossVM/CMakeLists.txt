@@ -52,6 +52,16 @@ if(NOT TC_SOURCE_TREE_RESULT EQUAL 0)
 endif()
 message(STATUS "TotalCross Build ID: ${TC_BUILD_ID}")
 
+file(STRINGS
+  "${CMAKE_CURRENT_SOURCE_DIR}/../config/artifact-compatibility.properties"
+  TC_RUNTIME_ABI_LINE
+  REGEX "^runtimeAbi="
+)
+if(NOT TC_RUNTIME_ABI_LINE)
+  message(FATAL_ERROR "artifact compatibility contract is missing runtimeAbi")
+endif()
+string(REGEX REPLACE "^runtimeAbi=" "" TC_RUNTIME_ABI "${TC_RUNTIME_ABI_LINE}")
+
 if(MSVC AND NOT TC_MSVC_RUNTIME_POLICY_AVAILABLE)
   foreach(flag_var
       CMAKE_C_FLAGS
@@ -266,6 +276,7 @@ target_compile_definitions(
     TC_PLATFORM_CONFIGURED=1
     TC_BUILD_ID="${TC_BUILD_ID}"
     TC_SOURCE_TREE="${TC_SOURCE_TREE}"
+    TC_RUNTIME_ABI="${TC_RUNTIME_ABI}"
 )
 
 if(TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS)
@@ -1602,6 +1613,7 @@ add_executable(Launcher
 target_compile_definitions(Launcher PRIVATE
   TC_BUILD_ID="${TC_BUILD_ID}"
   TC_SOURCE_TREE="${TC_SOURCE_TREE}"
+  TC_RUNTIME_ABI="${TC_RUNTIME_ABI}"
 )
 
 if(TC_TARGET_WINCE)

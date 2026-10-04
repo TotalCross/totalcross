@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument("--source-tree", required=True)
     parser.add_argument("--require-clean-source", action="store_true")
     parser.add_argument("--require-build-identity", action="store_true")
+    parser.add_argument("--compatibility-contract", type=Path)
     return parser.parse_args()
 
 
@@ -84,6 +85,27 @@ def main():
                 mismatches.append(
                     f"build.id: expected {expected_build_id!r}, got {build.get('id')!r}"
                 )
+
+    if args.compatibility_contract is not None:
+        expected_compatibility = {}
+        for raw in args.compatibility_contract.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            key, expected_value = line.split("=", 1)
+            expected_compatibility[key.strip()] = int(expected_value.strip())
+        actual_compatibility = value.get("compatibility")
+        if not isinstance(actual_compatibility, dict):
+            mismatches.append(
+                f"compatibility: expected object, got {actual_compatibility!r}"
+            )
+        else:
+            for key, expected_value in expected_compatibility.items():
+                if actual_compatibility.get(key) != expected_value:
+                    mismatches.append(
+                        f"compatibility.{key}: expected {expected_value!r}, "
+                        f"got {actual_compatibility.get(key)!r}"
+                    )
 
     if mismatches:
         print(f"build provenance mismatch in {args.manifest}", file=sys.stderr)

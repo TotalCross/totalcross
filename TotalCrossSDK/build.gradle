@@ -24,6 +24,13 @@ base {
 }
 
 def repositoryRoot = project.rootDir.parentFile
+def compatibilityProperties = new Properties()
+new File(repositoryRoot, 'config/artifact-compatibility.properties').withInputStream {
+    compatibilityProperties.load(it)
+}
+def tczFormatVersion = compatibilityProperties.getProperty('tczFormat')
+def converterAbiVersion = compatibilityProperties.getProperty('converterAbi')
+def runtimeAbiVersion = compatibilityProperties.getProperty('runtimeAbi')
 def buildIdentityProvider = providers.exec {
     workingDir repositoryRoot
     commandLine 'python3', new File(repositoryRoot, 'scripts/provenance/build-identity.py').absolutePath,
@@ -230,7 +237,10 @@ jar {
             'TotalCross-Build-ID': identity.build.id,
             'TotalCross-Source-Commit': identity.source.commit,
             'TotalCross-Source-Tree': identity.source.tree,
-            'TotalCross-Source-Dirty': identity.source.dirty.toString()
+            'TotalCross-Source-Dirty': identity.source.dirty.toString(),
+            'TotalCross-TCZ-Format': tczFormatVersion,
+            'TotalCross-Converter-ABI': converterAbiVersion,
+            'TotalCross-Runtime-ABI': runtimeAbiVersion
         )
     }
     manifest {
@@ -445,6 +455,9 @@ tasks.withType(JavaExec).configureEach {
         systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
         systemProperty 'totalcross.build.id', identity.build.id
         systemProperty 'totalcross.source.tree', identity.source.tree
+        systemProperty 'totalcross.tcz.format', tczFormatVersion
+        systemProperty 'totalcross.converter.abi', converterAbiVersion
+        systemProperty 'totalcross.runtime.abi', runtimeAbiVersion
     }
 }
 
@@ -454,6 +467,9 @@ tasks.withType(Test).configureEach {
         systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
         systemProperty 'totalcross.build.id', identity.build.id
         systemProperty 'totalcross.source.tree', identity.source.tree
+        systemProperty 'totalcross.tcz.format', tczFormatVersion
+        systemProperty 'totalcross.converter.abi', converterAbiVersion
+        systemProperty 'totalcross.runtime.abi', runtimeAbiVersion
     }
 }
 
