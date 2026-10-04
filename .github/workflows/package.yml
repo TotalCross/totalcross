@@ -179,7 +179,8 @@ jobs:
               --repository "${GITHUB_REPOSITORY}" \
               --source-commit "${EXPECTED_SOURCE_COMMIT}" \
               --source-tree "${expected_source_tree}" \
-              --require-clean-source
+              --require-clean-source \
+              --require-build-identity
           fi
         done
 
@@ -187,6 +188,40 @@ jobs:
           echo "SDK build provenance is missing" >&2
           exit 1
         fi
+
+    - name: Validate embedded build identities
+      shell: bash
+      run: |
+        artifacts=()
+
+        sdk_jar="$(find build/TotalCross/dist -maxdepth 1 -type f -name 'totalcross-sdk-*.jar' -print -quit)"
+        if [ -z "${sdk_jar}" ]; then
+          echo "Could not locate versioned SDK jar for identity validation" >&2
+          exit 1
+        fi
+        artifacts+=("${sdk_jar}")
+
+        while IFS= read -r tcz; do
+          artifacts+=("${tcz}")
+        done < <(find build/TotalCross/dist/vm -maxdepth 1 -type f -name '*.tcz' -print | sort)
+
+        for candidate in \
+          linux-amd64/libtcvm.so linux-amd64/Launcher \
+          linux-arm32v7/libtcvm.so linux-arm32v7/Launcher \
+          linux-arm64/libtcvm.so linux-arm64/Launcher \
+          macos-arm64/libtcvm.dylib macos-arm64/Launcher
+        do
+          if [ -f "${candidate}" ]; then
+            artifacts+=("${candidate}")
+          fi
+        done
+
+        windows_vm="$(find windows -type f -iname 'tcvm.dll' -print -quit || true)"
+        windows_launcher="$(find windows -type f -iname 'launcher.exe' -print -quit || true)"
+        [ -z "${windows_vm}" ] || artifacts+=("${windows_vm}")
+        [ -z "${windows_launcher}" ] || artifacts+=("${windows_launcher}")
+
+        python3 scripts/provenance/artifact-identity.py "${artifacts[@]}"
 
     - name: Read TotalCross version
       id: totalcross-version
